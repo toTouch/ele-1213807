@@ -146,6 +146,7 @@ public class MerchantTokenServiceImpl implements MerchantTokenService {
             merchantLoginVO.setBindBusinessId(userBindBusinessDTO.getBindBusinessId());
             merchantLoginVO.setUid(user.getUid());
             merchantLoginVO.setUserType(user.getUserType());
+            merchantLoginVO.setBusinessInfo(userBindBusinessDTO.getEnterprisePackageAuth(), userBindBusinessDTO.getEnterprisePackageAuth());
             return Triple.of(true, null, merchantLoginVO);
             
         } finally {

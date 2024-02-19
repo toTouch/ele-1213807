@@ -25,7 +25,7 @@ public class MerchantPageRequest {
     
     private Long merchantGradeId;
     
-    private Long channelUserId;
+    private Long channelEmployeeUid;
     
     private Integer tenantId;
 }

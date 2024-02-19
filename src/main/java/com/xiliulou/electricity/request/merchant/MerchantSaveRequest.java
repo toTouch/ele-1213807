@@ -60,7 +60,7 @@ public class MerchantSaveRequest {
     /**
      * 渠道员Id
      */
-    private Long channelUserId;
+    private Long channelEmployeeUid;
     
     /**
      * 等级自动升级(0-关闭， 1-开启)

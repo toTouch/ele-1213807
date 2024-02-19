@@ -46,6 +46,31 @@ public class MerchantLoginVO {
      */
     private Integer userType;
     
+    /**
+     * 业务信息
+     */
+    private BusinessInfo businessInfo;
     
+    public void setBusinessInfo(Integer enterprisePackageAuth, Integer purchaseAuthority){
+        this.businessInfo = new BusinessInfo(enterprisePackageAuth, purchaseAuthority);
+    }
     
+}
+
+@Data
+class BusinessInfo {
+    /**
+     * 站点代付权限：1-开启，0-关闭
+     */
+    private Integer enterprisePackageAuth;
+    
+    /**
+     * 会员代付权限 0：关，1：开
+     */
+    private Integer purchaseAuthority;
+    
+    public BusinessInfo(Integer enterprisePackageAuth, Integer purchaseAuthority) {
+        this.enterprisePackageAuth = enterprisePackageAuth;
+        this.purchaseAuthority = purchaseAuthority;
+    }
 }

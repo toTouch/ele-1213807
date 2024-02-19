@@ -27,7 +27,7 @@ public class MerchantQueryModel {
     
     private Long merchantGradeId;
     
-    private Long channelUserId;
+    private Long channelEmployeeUid;
     
     private List<Long> idList;
 }

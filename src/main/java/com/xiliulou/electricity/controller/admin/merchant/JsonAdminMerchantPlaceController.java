@@ -24,6 +24,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -129,7 +130,8 @@ public class JsonAdminMerchantPlaceController extends BaseController {
      * @author maxiaodong
      */
     @GetMapping("/admin/merchant/place/pageCount")
-    public R pageCount(@RequestParam(value = "name", required = false) String name, @RequestParam(value = "merchantAreaId", required = false) Long merchantAreaId) {
+    public R pageCount(@RequestParam(value = "name", required = false) String name, @RequestParam(value = "merchantAreaId", required = false) Long merchantAreaId,
+            @RequestParam(value = "idList", required = false) List<Long> idList) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
@@ -141,7 +143,7 @@ public class JsonAdminMerchantPlaceController extends BaseController {
         
         Integer tenantId = TenantContextHolder.getTenantId();
     
-        MerchantPlacePageRequest merchantPlacePageRequest = MerchantPlacePageRequest.builder().name(name).tenantId(tenantId)
+        MerchantPlacePageRequest merchantPlacePageRequest = MerchantPlacePageRequest.builder().name(name).tenantId(tenantId).idList(idList)
                 .merchantAreaId(merchantAreaId).build();
         
         return R.ok(merchantPlaceService.countTotal(merchantPlacePageRequest));
@@ -154,7 +156,9 @@ public class JsonAdminMerchantPlaceController extends BaseController {
      * @author maxiaodong
      */
     @GetMapping("/admin/merchant/place/page")
-    public R page(@RequestParam("size") long size, @RequestParam("offset") long offset, @RequestParam(value = "name", required = false) String name, @RequestParam(value = "merchantAreaId", required = false) Long merchantAreaId) {
+    public R page(@RequestParam("size") long size, @RequestParam("offset") long offset, @RequestParam(value = "name", required = false) String name,
+            @RequestParam(value = "merchantAreaId", required = false) Long merchantAreaId,
+            @RequestParam(value = "idList", required = false) List<Long> idList) {
         if (size < 0 || size > 50) {
             size = 10L;
         }
@@ -173,7 +177,7 @@ public class JsonAdminMerchantPlaceController extends BaseController {
         }
         
         Integer tenantId = TenantContextHolder.getTenantId();
-        MerchantPlacePageRequest merchantPlacePageRequest = MerchantPlacePageRequest.builder().name(name).size(size).offset(offset).tenantId(tenantId)
+        MerchantPlacePageRequest merchantPlacePageRequest = MerchantPlacePageRequest.builder().name(name).idList(idList).size(size).offset(offset).tenantId(tenantId)
                 .merchantAreaId(merchantAreaId).name(name).build();
         
         return R.ok(merchantPlaceService.listByPage(merchantPlacePageRequest));

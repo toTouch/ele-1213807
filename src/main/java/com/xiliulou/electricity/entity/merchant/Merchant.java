@@ -50,7 +50,7 @@ public class Merchant {
     /**
      * 渠道员Id
      */
-    private Long channelUserId;
+    private Long channelEmployeeUid;
     
     /**
      * 租户Id
@@ -106,11 +106,4 @@ public class Merchant {
      * 修改时间
      */
     private Long updateTime;
-    
-    public final static Integer ENABLE = 1;
-    public final static Integer DISABLE = 0;
-    
-    public static final Integer DEL_NORMAL = 0;
-    public static final Integer DEL_DEL = 1;
-    
 }

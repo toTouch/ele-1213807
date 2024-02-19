@@ -3,6 +3,7 @@ package com.xiliulou.electricity.mapper.merchant;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.xiliulou.electricity.entity.merchant.ChannelEmployee;
 import com.xiliulou.electricity.request.merchant.ChannelEmployeeRequest;
+import com.xiliulou.electricity.vo.merchant.ChannelEmployeeVO;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
@@ -21,6 +22,8 @@ public interface ChannelEmployeeMapper extends BaseMapper<ChannelEmployee> {
     List<ChannelEmployee> selectListByCondition(ChannelEmployeeRequest channelEmployeeRequest);
     
     Integer countByCondition(ChannelEmployeeRequest channelEmployeeRequest);
+    
+    List<ChannelEmployeeVO> selectChannelEmployees(ChannelEmployeeRequest channelEmployeeRequest);
     
     Integer insertOne(ChannelEmployee channelEmployee);
     

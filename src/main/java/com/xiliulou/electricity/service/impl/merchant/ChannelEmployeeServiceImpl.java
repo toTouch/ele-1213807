@@ -1,7 +1,9 @@
 package com.xiliulou.electricity.service.impl.merchant;
 
+import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.i18n.MessageUtils;
 import com.xiliulou.db.dynamic.annotation.Slave;
+import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.User;
@@ -20,8 +22,11 @@ import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.vo.merchant.ChannelEmployeeVO;
 import com.xiliulou.security.authentication.console.CustomPasswordEncoder;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
@@ -56,6 +61,9 @@ public class ChannelEmployeeServiceImpl implements ChannelEmployeeService {
     
     @Resource
     ChannelEmployeeAmountMapper channelEmployeeAmountMapper;
+    
+    @Resource
+    private RedisService redisService;
     
     @Slave
     @Override
@@ -122,14 +130,34 @@ public class ChannelEmployeeServiceImpl implements ChannelEmployeeService {
         return channelEmployeeMapper.countByCondition(channelEmployeeRequest);
     }
     
+    @Slave
     @Override
-    public Integer saveChannelEmployee(ChannelEmployeeRequest channelEmployeeRequest) {
+    public List<ChannelEmployeeVO> queryChannelEmployees(ChannelEmployeeRequest channelEmployeeRequest) {
+    
+        List<ChannelEmployeeVO> channelEmployeeVOList  = channelEmployeeMapper.selectChannelEmployees(channelEmployeeRequest);
+        channelEmployeeVOList.parallelStream().forEach(item -> {
+            if (Objects.nonNull(item.getFranchiseeId())) {
+                Franchisee franchisee = franchiseeService.queryByIdFromCache(item.getFranchiseeId());
+                item.setFranchiseeName(franchisee.getName());
+            }
+        });
+        return channelEmployeeVOList;
+    }
+    
+    @Transactional(rollbackFor = Exception.class)
+    @Override
+    public Triple<Boolean, String, Object> saveChannelEmployee(ChannelEmployeeRequest channelEmployeeRequest) {
+    
+        if (!redisService.setNx(CacheConstant.CACHE_CHANNEL_EMPLOYEE_SAVE_LOCK + channelEmployeeRequest.getPhone(), "1", 5000L, false)) {
+            return Triple.of(false, null, "操作频繁,请稍后再试");
+        }
+        
         //租户
         Integer tenantId = TenantContextHolder.getTenantId();
         
         //创建渠道员工账户
         User user = User.builder().updateTime(System.currentTimeMillis()).createTime(System.currentTimeMillis()).phone(channelEmployeeRequest.getPhone())
-                .lockFlag(User.USER_UN_LOCK).gender(User.GENDER_MALE).lang(MessageUtils.LOCALE_ZH_CN).userType(User.TYPE_USER_NORMAL_WX_PRO).name("").salt("").avatar("")
+                .lockFlag(User.USER_UN_LOCK).gender(User.GENDER_MALE).lang(MessageUtils.LOCALE_ZH_CN).userType(User.TYPE_USER_CHANNEL).name(channelEmployeeRequest.getName()).salt("").avatar("")
                 .tenantId(tenantId).loginPwd(customPasswordEncoder.encode("1234#56!^1mjh")).delFlag(User.DEL_NORMAL).build();
         User userResult = userService.insert(user);
         
@@ -163,19 +191,32 @@ public class ChannelEmployeeServiceImpl implements ChannelEmployeeService {
         
         Integer result = channelEmployeeMapper.insertOne(channelEmployee);
         
-        return result;
+        return Triple.of(true, null, result);
     }
     
     @Override
-    public Integer updateChannelEmployee(ChannelEmployeeRequest channelEmployeeRequest) {
+    public Triple<Boolean, String, Object> updateChannelEmployee(ChannelEmployeeRequest channelEmployeeRequest) {
         
         ChannelEmployee channelEmployee = channelEmployeeMapper.selectById(channelEmployeeRequest.getId());
         if (Objects.isNull(channelEmployee)) {
-            log.error("");
-            throw new BizException("ELECTRICITY.0007", "不合法的参数");
+            log.error("not found channel employee by id, id = {}", channelEmployeeRequest.getId());
+            throw new BizException("120001", "当前渠道员工不存在");
         }
         
-        return null;
+        User updateUser = new User();
+        updateUser.setUid(channelEmployee.getUid());
+        updateUser.setPhone(channelEmployeeRequest.getPhone());
+        updateUser.setUserType(User.TYPE_USER_CHANNEL);
+        updateUser.setTenantId(TenantContextHolder.getTenantId());
+        updateUser.setUpdateTime(System.currentTimeMillis());
+        userService.updateMerchantUser(updateUser);
+    
+        ChannelEmployee channelEmployeeUpdate = new ChannelEmployee();
+        BeanUtils.copyProperties(channelEmployeeRequest, channelEmployeeUpdate);
+    
+        Integer result = channelEmployeeMapper.updateOne(channelEmployeeUpdate);
+        
+        return Triple.of(true, null, result);
     }
     
     @Override

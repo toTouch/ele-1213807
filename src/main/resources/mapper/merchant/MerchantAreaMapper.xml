@@ -88,7 +88,17 @@
                     #{id}
                 </foreach>
             </if>
+            <if test="tenantId != null">
+                and tenant_id = #{tenantId}
+            </if>
+            <if test="name != null and name != ''">
+                and name like concat('%', concat(#{name}, '%'))
+            </if>
         </where>
+        order by id desc
+        <if test="offset != null and size != null">
+            limit #{offset}, #{size}
+        </if>
     </select>
 
 </mapper>

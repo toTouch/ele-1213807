@@ -4,6 +4,7 @@ import com.xiliulou.electricity.dto.merchant.MerchantDeleteCacheDTO;
 import com.xiliulou.electricity.entity.merchant.Merchant;
 import com.xiliulou.electricity.request.merchant.MerchantPageRequest;
 import com.xiliulou.electricity.request.merchant.MerchantSaveRequest;
+import com.xiliulou.electricity.vo.merchant.MerchantPlaceUserVO;
 import com.xiliulou.electricity.vo.merchant.MerchantVO;
 import org.apache.commons.lang3.tuple.Triple;
 
@@ -38,4 +39,5 @@ public interface MerchantService {
     
     Merchant queryByUid(Long uid);
     
+    List<MerchantPlaceUserVO> queryPlaceListByUid(Long uid);
 }

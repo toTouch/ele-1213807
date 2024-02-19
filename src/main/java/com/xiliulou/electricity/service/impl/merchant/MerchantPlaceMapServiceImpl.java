@@ -5,6 +5,7 @@ import com.xiliulou.electricity.entity.merchant.MerchantPlaceMap;
 import com.xiliulou.electricity.mapper.merchant.MerchantPlaceMapMapper;
 import com.xiliulou.electricity.query.merchant.MerchantPlaceMapQueryModel;
 import com.xiliulou.electricity.service.merchant.MerchantPlaceMapService;
+import com.xiliulou.electricity.vo.merchant.MerchantPlaceUserVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -37,5 +38,15 @@ public class MerchantPlaceMapServiceImpl implements MerchantPlaceMapService {
     @Override
     public int batchDeleteByMerchantId(Long merchantId, Set<Long> placeIdList) {
         return merchantPlaceMapMapper.batchDeleteByMerchantId(merchantId, placeIdList);
+    }
+    
+    /**	* 小程序：员工添加下拉框场地选择
+     * @param merchantId
+     * @return
+     */
+    @Slave
+    @Override
+    public List<MerchantPlaceUserVO> queryListByMerchantId(Long merchantId) {
+        return merchantPlaceMapMapper.selectListByMerchant(merchantId);
     }
 }

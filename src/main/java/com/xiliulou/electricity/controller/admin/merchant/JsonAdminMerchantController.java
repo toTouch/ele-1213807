@@ -183,7 +183,7 @@ public class JsonAdminMerchantController extends BaseController {
         Integer tenantId = TenantContextHolder.getTenantId();
     
         MerchantPageRequest merchantPageRequest = MerchantPageRequest.builder().name(name).tenantId(tenantId)
-                .merchantGradeId(merchantGradeId).channelUserId(channelUserId).franchiseeId(franchiseeId).build();
+                .merchantGradeId(merchantGradeId).channelEmployeeUid(channelUserId).franchiseeId(franchiseeId).build();
         return R.ok(merchantService.countTotal(merchantPageRequest));
     }
     
@@ -215,7 +215,7 @@ public class JsonAdminMerchantController extends BaseController {
     
         Integer tenantId = TenantContextHolder.getTenantId();
         MerchantPageRequest merchantPageRequest = MerchantPageRequest.builder().name(name).size(size).offset(offset).tenantId(tenantId)
-                .merchantGradeId(merchantGradeId).channelUserId(channelUserId).franchiseeId(franchiseeId).build();
+                .merchantGradeId(merchantGradeId).channelEmployeeUid(channelUserId).franchiseeId(franchiseeId).build();
         
         return R.ok(merchantService.listByPage(merchantPageRequest));
     }
@@ -248,7 +248,7 @@ public class JsonAdminMerchantController extends BaseController {
      * @date 2023/11/21 13:15:54
      * @author maxiaodong
      */
-    @GetMapping("/admin/merchant/page")
+    @GetMapping("/admin/merchant/queryList")
     public R getDict(@RequestParam("size") long size, @RequestParam("offset") long offset, @RequestParam(value = "name", required = false) String name) {
         if (size < 0 || size > 50) {
             size = 10L;

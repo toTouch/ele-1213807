@@ -3,6 +3,7 @@ package com.xiliulou.electricity.service.merchant;
 import com.xiliulou.electricity.entity.merchant.ChannelEmployee;
 import com.xiliulou.electricity.request.merchant.ChannelEmployeeRequest;
 import com.xiliulou.electricity.vo.merchant.ChannelEmployeeVO;
+import org.apache.commons.lang3.tuple.Triple;
 
 import java.util.List;
 
@@ -42,18 +43,25 @@ public interface ChannelEmployeeService {
     Integer countChannelEmployee(ChannelEmployeeRequest channelEmployeeRequest);
     
     /**
+     * 根据条件，查询渠道员工信息
+     * @param channelEmployeeRequest
+     * @return
+     */
+    List<ChannelEmployeeVO> queryChannelEmployees(ChannelEmployeeRequest channelEmployeeRequest);
+    
+    /**
      * 保存渠道员工信息
      * @param channelEmployeeRequest
      * @return
      */
-    Integer saveChannelEmployee(ChannelEmployeeRequest channelEmployeeRequest);
+    Triple<Boolean, String, Object> saveChannelEmployee(ChannelEmployeeRequest channelEmployeeRequest);
     
     /**
      * 修改渠道员工信息
      * @param channelEmployeeRequest
      * @return
      */
-    Integer updateChannelEmployee(ChannelEmployeeRequest channelEmployeeRequest);
+    Triple<Boolean, String, Object> updateChannelEmployee(ChannelEmployeeRequest channelEmployeeRequest);
     
     Integer removeById(Long id);
 

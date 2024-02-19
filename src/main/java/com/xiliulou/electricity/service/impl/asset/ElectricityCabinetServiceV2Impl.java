@@ -268,10 +268,14 @@ public class ElectricityCabinetServiceV2Impl implements ElectricityCabinetV2Serv
         // 判断新的场地费用和就的场地费用是否存在变化如果存在变化则将变换存入到历史表
         if (Objects.nonNull(electricityCabinet.getPlaceFee())) {
             oldFee = electricityCabinet.getPlaceFee();
+        } else {
+            oldFee = new BigDecimal(NumberConstant.MINUS_ONE);
         }
     
         if (Objects.nonNull(outWarehouseRequest.getPlaceFee())) {
             newFee = outWarehouseRequest.getPlaceFee();
+        } else {
+            newFee = new BigDecimal(NumberConstant.MINUS_ONE);
         }
     
     
@@ -280,8 +284,13 @@ public class ElectricityCabinetServiceV2Impl implements ElectricityCabinetV2Serv
         if (!Objects.equals(newFee.compareTo(oldFee), NumberConstant.ZERO)) {
             merchantPlaceFeeRecord = new MerchantPlaceFeeRecord();
             merchantPlaceFeeRecord.setCabinetId(outWarehouseRequest.getId());
-            merchantPlaceFeeRecord.setNewPlaceFee(newFee);
-            merchantPlaceFeeRecord.setOldPlaceFee(oldFee);
+            if (!Objects.equals(newFee.compareTo(BigDecimal.ZERO), NumberConstant.MINUS_ONE)) {
+                merchantPlaceFeeRecord.setNewPlaceFee(newFee);
+            }
+            if (!Objects.equals(oldFee.compareTo(BigDecimal.ZERO), NumberConstant.MINUS_ONE)) {
+                merchantPlaceFeeRecord.setOldPlaceFee(oldFee);
+            }
+            
             if (Objects.nonNull(user)) {
                 merchantPlaceFeeRecord.setModifyUserId(user.getUid());
                 merchantPlaceFeeRecord.setTenantId(electricityCabinet.getTenantId());
@@ -290,6 +299,7 @@ public class ElectricityCabinetServiceV2Impl implements ElectricityCabinetV2Serv
                 merchantPlaceFeeRecord.setUpdateTime(currentTimeMillis);
             }
         }
+        
         return merchantPlaceFeeRecord;
     }
     
@@ -307,8 +317,6 @@ public class ElectricityCabinetServiceV2Impl implements ElectricityCabinetV2Serv
         if (!CollectionUtils.isEmpty(unStockList)) {
             return Triple.of(false, "100559", "已选择项中有已出库电柜，请重新选择后操作");
         }
-        
-        // 检测场地费是否发生过变更
         
         // 设置营业时间参数
         String businessTime = null;

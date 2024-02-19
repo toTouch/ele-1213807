@@ -142,4 +142,13 @@
         update t_coupon_issue_operate_record set phone=#{newPhone} where uid=#{uid} and tenant_id = #{tenantId}
     </update>
 
+    <insert id="batchInsert"  keyProperty="id" useGeneratedKeys="true">
+        insert into t_coupon_issue_operate_record
+        (coupon_id,uid,operate_name,phone,create_time,update_time,tenant_id)
+        values
+        <foreach collection="list" item="item" index="index" separator=",">
+            (#{item.couponId},#{item.uid},#{item.operateName},#{item.phone},#{item.createTime},#{item.updateTime},#{item.tenantId})
+        </foreach>
+    </insert>
+
 </mapper>
