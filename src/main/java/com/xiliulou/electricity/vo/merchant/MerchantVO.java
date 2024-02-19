@@ -15,25 +15,58 @@ public class MerchantVO {
     
     private Long id;
     
+    /**
+     * 商户名称
+     */
     private String name;
     
+    /**
+     * 联系方式
+     */
     private String phone;
     
+    /**
+     * 加盟商
+     */
     private String franchiseeName;
     
+    /**
+     * 等级
+     */
     private String gradeName;
     
+    /**
+     * 渠道员
+     */
     private String channelName;
-    
+    /**
+     * 场地数
+     */
     private Integer placeCount;
     
+    /**
+     * 电柜数
+     */
     private Integer cabinetCount;
     
+    /**
+     * 用户数
+     */
     private Integer userCount;
+    
+    /**
+     * 用户id集合
+     */
     private List<Long> userIdList;
     
+    /**
+     * 可提现金额
+     */
     private BigDecimal balance;
     
+    /**
+     * 已提现金额
+     */
     private BigDecimal withdrawAmount;
     
     /**
@@ -64,4 +97,9 @@ public class MerchantVO {
      * 邀请权限：邀请权限：0-开启，1-关闭
      */
     private Integer inviteAuth;
+    
+    /**
+     * 企业id
+     */
+    private Long enterpriseId;
 }

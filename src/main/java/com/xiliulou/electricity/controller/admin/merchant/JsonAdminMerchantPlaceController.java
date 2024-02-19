@@ -35,6 +35,7 @@ import java.util.Objects;
 @Slf4j
 @RestController
 public class JsonAdminMerchantPlaceController extends BaseController {
+    
     @Resource
     private MerchantPlaceService merchantPlaceService;
     
@@ -59,7 +60,7 @@ public class JsonAdminMerchantPlaceController extends BaseController {
         if (!r.getLeft()) {
             return R.fail(r.getMiddle(), (String) r.getRight());
         }
-    
+        
         MerchantPlace place = (MerchantPlace) r.getRight();
         
         return R.ok(place.getId());
@@ -86,7 +87,7 @@ public class JsonAdminMerchantPlaceController extends BaseController {
         if (!r.getLeft()) {
             return R.fail(r.getMiddle(), (String) r.getRight());
         }
-    
+        
         MerchantPlace merchantPlace = (MerchantPlace) r.getRight();
         merchantPlaceService.deleteCache(merchantPlace);
         
@@ -130,10 +131,8 @@ public class JsonAdminMerchantPlaceController extends BaseController {
      * @author maxiaodong
      */
     @GetMapping("/admin/merchant/place/pageCount")
-    public R pageCount(@RequestParam(value = "name", required = false) String name,
-            @RequestParam(value = "merchantAreaId", required = false) Long merchantAreaId,
-            @RequestParam(value = "merchantId", required = false) Long merchantId,
-            @RequestParam(value = "idList", required = false) List<Long> idList) {
+    public R pageCount(@RequestParam(value = "name", required = false) String name, @RequestParam(value = "merchantAreaId", required = false) Long merchantAreaId,
+            @RequestParam(value = "merchantId", required = false) Long merchantId, @RequestParam(value = "idList", required = false) List<Long> idList) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
@@ -144,7 +143,7 @@ public class JsonAdminMerchantPlaceController extends BaseController {
         }
         
         Integer tenantId = TenantContextHolder.getTenantId();
-    
+        
         MerchantPlacePageRequest merchantPlacePageRequest = MerchantPlacePageRequest.builder().merchantId(merchantId).name(name).tenantId(tenantId).idList(idList)
                 .merchantAreaId(merchantAreaId).build();
         
@@ -159,8 +158,7 @@ public class JsonAdminMerchantPlaceController extends BaseController {
      */
     @GetMapping("/admin/merchant/place/page")
     public R page(@RequestParam("size") long size, @RequestParam("offset") long offset, @RequestParam(value = "name", required = false) String name,
-            @RequestParam(value = "merchantAreaId", required = false) Long merchantAreaId,
-            @RequestParam(value = "merchantId", required = false) Long merchantId,
+            @RequestParam(value = "merchantAreaId", required = false) Long merchantAreaId, @RequestParam(value = "merchantId", required = false) Long merchantId,
             @RequestParam(value = "idList", required = false) List<Long> idList) {
         if (size < 0 || size > 50) {
             size = 10L;
@@ -180,9 +178,8 @@ public class JsonAdminMerchantPlaceController extends BaseController {
         }
         
         Integer tenantId = TenantContextHolder.getTenantId();
-        MerchantPlacePageRequest merchantPlacePageRequest = MerchantPlacePageRequest.builder().merchantId(merchantId)
-                .name(name).idList(idList).size(size).offset(offset).tenantId(tenantId)
-                .merchantAreaId(merchantAreaId).name(name).build();
+        MerchantPlacePageRequest merchantPlacePageRequest = MerchantPlacePageRequest.builder().merchantId(merchantId).name(name).idList(idList).size(size).offset(offset)
+                .tenantId(tenantId).merchantAreaId(merchantAreaId).name(name).build();
         
         return R.ok(merchantPlaceService.listByPage(merchantPlacePageRequest));
     }
@@ -194,7 +191,45 @@ public class JsonAdminMerchantPlaceController extends BaseController {
      * @author maxiaodong
      */
     @GetMapping("/admin/merchant/place/getCabinetList")
-    public R getCabinetList(@RequestParam("size") long size, @RequestParam("offset") long offset, @RequestParam(value = "cabinetName", required = false) String cabinetName, @RequestParam(value = "placeId") Long placeId) {
+    public R getCabinetList(@RequestParam("size") long size, @RequestParam("offset") long offset, @RequestParam(value = "cabinetName", required = false) String cabinetName,
+            @RequestParam(value = "placeId") Long placeId) {
+        if (size < 0 || size > 50) {
+            size = 50L;
+        }
+        
+        if (offset < 0) {
+            offset = 0L;
+        }
+        
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        
+        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+    
+        Integer tenantId = null;
+        if (!SecurityUtils.isAdmin()) {
+            tenantId = TenantContextHolder.getTenantId();
+        }
+        
+        MerchantPlacePageRequest merchantPlacePageRequest = MerchantPlacePageRequest.builder().size(size).offset(offset).tenantId(tenantId).placeId(placeId)
+                .cabinetName(cabinetName).build();
+        
+        return R.ok(merchantPlaceService.getCabinetList(merchantPlacePageRequest));
+    }
+    
+    /**
+     * @param
+     * @description 获取场地下拉框
+     * @date 2023/11/21 13:15:54
+     * @author maxiaodong
+     */
+    @GetMapping("/admin/merchant/place/queryPlaceList")
+    public R queryPlaceList(@RequestParam("size") long size, @RequestParam("offset") long offset, @RequestParam(value = "name", required = false) String name,
+            @RequestParam(value = "franchiseeId", required = false) Long franchiseeId, @RequestParam(value = "merchantId", required = false) Long merchantId) {
         if (size < 0 || size > 50) {
             size = 50L;
         }
@@ -212,10 +247,14 @@ public class JsonAdminMerchantPlaceController extends BaseController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         
-        Integer tenantId = TenantContextHolder.getTenantId();
-        MerchantPlacePageRequest merchantPlacePageRequest = MerchantPlacePageRequest.builder().size(size).offset(offset).tenantId(tenantId)
-                .cabinetName(cabinetName).build();
+        Integer tenantId = null;
+        if (!SecurityUtils.isAdmin()) {
+            tenantId = TenantContextHolder.getTenantId();
+        }
         
-        return R.ok(merchantPlaceService.getCabinetList(merchantPlacePageRequest));
+        MerchantPlacePageRequest merchantPlacePageRequest = MerchantPlacePageRequest.builder().size(size).offset(offset).tenantId(tenantId).name(name).franchiseeId(franchiseeId)
+                .merchantId(merchantId).franchiseeId(franchiseeId).build();
+        
+        return R.ok(merchantPlaceService.queryPlaceList(merchantPlacePageRequest));
     }
 }

@@ -30,4 +30,8 @@ public interface MerchantJoinRecordMapper {
     List<MerchantJoinRecord> selectList(MerchantJoinRecordQueryMode joinRecordQueryMode);
     
     List<MerchantJoinRecord> selectListByMerchantIdAndStatus(@Param("merchantId")Long merchantId, @Param("status")Integer status);
+    
+    Integer countTotal(MerchantJoinRecordQueryMode queryMode);
+    
+    List<MerchantJoinRecord> selectListByPage(MerchantJoinRecordQueryMode queryMode);
 }

@@ -113,6 +113,9 @@
             <if test="merchantAreaId != null">
                 and t.merchant_area_id = #{merchantAreaId}
             </if>
+            <if test="franchiseeId != null">
+                and t.franchisee_id = #{franchiseeId},
+            </if>
             <if test="idList != null and idList.size() > 0">
                 and t.id in
                 <foreach collection="idList" separator="," open="(" close=")" item="id">

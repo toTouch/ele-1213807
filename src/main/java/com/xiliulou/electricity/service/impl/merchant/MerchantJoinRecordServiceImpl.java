@@ -15,6 +15,7 @@ import com.xiliulou.electricity.entity.merchant.MerchantAttr;
 import com.xiliulou.electricity.entity.merchant.MerchantJoinRecord;
 import com.xiliulou.electricity.mapper.merchant.MerchantJoinRecordMapper;
 import com.xiliulou.electricity.query.merchant.MerchantJoinRecordQueryMode;
+import com.xiliulou.electricity.request.merchant.MerchantJoinRecordPageRequest;
 import com.xiliulou.electricity.service.TenantService;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.UserService;
@@ -24,13 +25,18 @@ import com.xiliulou.electricity.service.merchant.MerchantService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.AESUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
+import com.xiliulou.electricity.vo.merchant.MerchantJoinRecordVO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
 import java.util.Base64;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -311,6 +317,50 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
     @Override
     public List<MerchantJoinRecord> queryList(MerchantJoinRecordQueryMode joinRecordQueryMode) {
         return merchantJoinRecordMapper.selectList(joinRecordQueryMode);
+    }
+    
+    @Slave
+    @Override
+    public Integer countTotal(MerchantJoinRecordPageRequest merchantJoinRecordPageRequest) {
+        MerchantJoinRecordQueryMode queryMode = new MerchantJoinRecordQueryMode();
+        BeanUtils.copyProperties(merchantJoinRecordPageRequest, queryMode);
+        
+        return merchantJoinRecordMapper.countTotal(queryMode);
+    }
+    
+    @Slave
+    @Override
+    public List<MerchantJoinRecordVO> listByPage(MerchantJoinRecordPageRequest merchantJoinRecordPageRequest) {
+        MerchantJoinRecordQueryMode queryMode = new MerchantJoinRecordQueryMode();
+        BeanUtils.copyProperties(merchantJoinRecordPageRequest, queryMode);
+    
+        List<MerchantJoinRecord> list = merchantJoinRecordMapper.selectListByPage(queryMode);
+        if (ObjectUtils.isEmpty(list)) {
+            return Collections.EMPTY_LIST;
+        }
+    
+        List<MerchantJoinRecordVO> voList = new ArrayList<>();
+        for (MerchantJoinRecord merchantJoinRecord : list) {
+            MerchantJoinRecordVO vo = new MerchantJoinRecordVO();
+            BeanUtils.copyProperties(merchantJoinRecord, vo);
+            
+            // 查询用户信息
+            UserInfo userInfo = userInfoService.queryByUidFromCache(merchantJoinRecord.getJoinUid());
+            if (Objects.nonNull(userInfo)) {
+                vo.setUserName(userInfo.getName());
+                vo.setPhone(userInfo.getPhone());
+            }
+            
+            // 查询商户名称
+            Merchant merchant = merchantService.queryFromCacheById(merchantJoinRecord.getMerchantId());
+            if (Objects.nonNull(merchant)) {
+                vo.setMerchantName(merchant.getName());
+            }
+            
+            voList.add(vo);
+        }
+        
+        return voList;
     }
     
     

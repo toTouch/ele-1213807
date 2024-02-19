@@ -9,6 +9,7 @@ import com.xiliulou.electricity.constant.StringConstant;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.merchant.MerchantPlace;
 import com.xiliulou.electricity.entity.merchant.MerchantPlaceCabinetBind;
+import com.xiliulou.electricity.entity.merchant.MerchantPlaceMap;
 import com.xiliulou.electricity.mapper.merchant.MerchantMapper;
 import com.xiliulou.electricity.mapper.merchant.MerchantPlaceMapper;
 import com.xiliulou.electricity.query.merchant.MerchantPlaceCabinetBindQueryModel;
@@ -17,6 +18,7 @@ import com.xiliulou.electricity.request.merchant.MerchantPlacePageRequest;
 import com.xiliulou.electricity.request.merchant.MerchantPlaceSaveRequest;
 import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.merchant.MerchantPlaceCabinetBindService;
+import com.xiliulou.electricity.service.merchant.MerchantPlaceMapService;
 import com.xiliulou.electricity.service.merchant.MerchantPlaceService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
@@ -55,11 +57,6 @@ public class MerchantPlaceServiceImpl implements MerchantPlaceService {
     @Resource
     private MerchantMapper merchantMapper;
     
-    @Slave
-    @Override
-    public Integer existsByAreaId(Long areaId) {
-        return merchantMapper.existsByAreaId(areaId);
-    }
     private MerchantPlaceMapper merchantPlaceMapper;
     
     @Resource
@@ -69,7 +66,16 @@ public class MerchantPlaceServiceImpl implements MerchantPlaceService {
     private RedisService redisService;
     
     @Resource
+    private MerchantPlaceMapService merchantPlaceMapService;
+    
+    @Resource
     private MerchantPlaceCabinetBindService merchantPlaceCabinetBindService;
+    
+    @Slave
+    @Override
+    public Integer existsByAreaId(Long areaId) {
+        return merchantMapper.existsByAreaId(areaId);
+    }
     
     @Slave
     @Override
@@ -218,9 +224,9 @@ public class MerchantPlaceServiceImpl implements MerchantPlaceService {
         if (ObjectUtils.isEmpty(merchantPlaceList)) {
             return Collections.EMPTY_LIST;
         }
-    
+        
         List<MerchantPlaceVO> resList = new ArrayList<>();
-    
+        
         Set<Long> areaIdList = new HashSet<>();
         List<Long> idList = new ArrayList<>();
         merchantPlaceList.stream().forEach(item -> {
@@ -245,7 +251,9 @@ public class MerchantPlaceServiceImpl implements MerchantPlaceService {
             if (ObjectUtils.isNotEmpty(bindCabinetMap.get(merchantPlace.getId()))) {
                 List<MerchantPlaceCabinetBindVO> merchantPlaceCabinetBindVos = bindCabinetMap.get(merchantPlace.getId());
                 String cabinetName = merchantPlaceCabinetBindVos.stream().map(MerchantPlaceCabinetBindVO::getCabinetName).collect(Collectors.joining(StringConstant.COMMA_EN));
+                List<Long> cabinetIdList = merchantPlaceCabinetBindVos.stream().map(MerchantPlaceCabinetBindVO::getCabinetId).distinct().collect(Collectors.toList());
                 merchantPlaceVO.setCabinetName(cabinetName);
+                merchantPlaceVO.setCabinetIdList(cabinetIdList);
             }
             
             // 查询
@@ -285,7 +293,7 @@ public class MerchantPlaceServiceImpl implements MerchantPlaceService {
             log.error("place cabinet error, place is not exists, placeId={}, tenantId={}, curTenantId={}", merchantPlace.getTenantId(), merchantPlacePageRequest.getTenantId());
             return Triple.of(false, "", "场地不存在");
         }
-    
+        
         merchantPlacePageRequest.setFranchiseeId(merchantPlace.getFranchiseeId());
         
         MerchantPlaceQueryModel queryModel = new MerchantPlaceQueryModel();
@@ -304,7 +312,43 @@ public class MerchantPlaceServiceImpl implements MerchantPlaceService {
             });
         }
         
-        return Triple.of(true, null , merchantPlaceCabinetVOS);
+        return Triple.of(true, null, merchantPlaceCabinetVOS);
+    }
+    
+    @Slave
+    @Override
+    public List<MerchantPlaceVO> queryPlaceList(MerchantPlacePageRequest merchantPlacePageRequest) {
+        MerchantPlaceQueryModel merchantQueryModel = new MerchantPlaceQueryModel();
+        BeanUtils.copyProperties(merchantPlacePageRequest, merchantQueryModel);
+        List<MerchantPlace> merchantPlaceList = merchantPlaceMapper.selectListByPage(merchantQueryModel);
+        if (ObjectUtils.isEmpty(merchantPlaceList)) {
+            return Collections.EMPTY_LIST;
+        }
+        
+        // 查询场地是否已经被其他商户给绑定了
+        List<MerchantPlaceMap> merchantPlaceMaps = merchantPlaceMapService.queryBindList(merchantPlacePageRequest.getMerchantId(), merchantPlacePageRequest.getFranchiseeId());
+        List<Long> placeIdList = new ArrayList<>();
+        if (ObjectUtils.isNotEmpty(merchantPlaceMaps)) {
+            placeIdList = merchantPlaceMaps.stream().map(MerchantPlaceMap::getPlaceId).distinct().collect(Collectors.toList());
+        }
+        
+        List<MerchantPlaceVO> list = new ArrayList<>();
+        merchantPlaceList.forEach(item -> {
+        
+        });
+        for (MerchantPlaceMap item : merchantPlaceMaps) {
+            MerchantPlaceVO vo = new MerchantPlaceVO();
+            BeanUtils.copyProperties(item, vo);
+            // 如果是存在绑定关系的则禁用不能选择
+            if (placeIdList.contains(item.getPlaceId())) {
+                vo.setDisable(MerchantPlaceConstant.DISABLE);
+            } else {
+                vo.setDisable(MerchantPlaceConstant.ENABLE);
+            }
+            list.add(vo);
+        }
+        
+        return list;
     }
     
 }

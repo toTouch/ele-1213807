@@ -3,6 +3,8 @@ package com.xiliulou.electricity.service.merchant;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.merchant.MerchantJoinRecord;
 import com.xiliulou.electricity.query.merchant.MerchantJoinRecordQueryMode;
+import com.xiliulou.electricity.request.merchant.MerchantJoinRecordPageRequest;
+import com.xiliulou.electricity.vo.merchant.MerchantJoinRecordVO;
 
 import java.util.List;
 
@@ -51,4 +53,8 @@ public interface MerchantJoinRecordService {
     void handelProtectionAndStartExpired();
     
     List<MerchantJoinRecord> queryList(MerchantJoinRecordQueryMode joinRecordQueryMode);
+    
+    Integer countTotal(MerchantJoinRecordPageRequest merchantJoinRecordPageRequest);
+    
+    List<MerchantJoinRecordVO> listByPage(MerchantJoinRecordPageRequest merchantJoinRecordPageRequest);
 }

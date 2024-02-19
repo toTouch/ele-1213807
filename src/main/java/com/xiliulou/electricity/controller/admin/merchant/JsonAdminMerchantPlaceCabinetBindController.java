@@ -128,8 +128,11 @@ public class JsonAdminMerchantPlaceCabinetBindController extends BaseController 
         if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-        
-        Integer tenantId = TenantContextHolder.getTenantId();
+    
+        Integer tenantId = null;
+        if (!SecurityUtils.isAdmin()) {
+            tenantId = TenantContextHolder.getTenantId();
+        }
     
         MerchantPlaceCabinetPageRequest placeCabinetPageRequest = MerchantPlaceCabinetPageRequest.builder().sn(sn).status(status).tenantId(tenantId).build();
         
@@ -160,8 +163,12 @@ public class JsonAdminMerchantPlaceCabinetBindController extends BaseController 
         if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
+    
+        Integer tenantId = null;
+        if (!SecurityUtils.isAdmin()) {
+            tenantId = TenantContextHolder.getTenantId();
+        }
         
-        Integer tenantId = TenantContextHolder.getTenantId();
         MerchantPlaceCabinetPageRequest placeCabinetPageRequest = MerchantPlaceCabinetPageRequest.builder().placeId(placeId).sn(sn).size(size).offset(offset).tenantId(tenantId)
                 .status(status).build();
         
