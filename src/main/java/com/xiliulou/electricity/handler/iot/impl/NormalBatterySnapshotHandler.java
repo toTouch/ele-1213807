@@ -41,7 +41,7 @@ public class NormalBatterySnapshotHandler extends AbstractElectricityIotHandler 
         HardwareCommandQuery comm = HardwareCommandQuery.builder()
                 .sessionId(receiverMessage.getSessionId()).data(null)
                 .productKey(electricityCabinet.getProductKey()).deviceName(electricityCabinet.getDeviceName())
-                .command(ElectricityIotConstant.OFFLINE_ELE_EXCHANGE_ORDER_MANAGE_SUCCESS).build();
+                .command(ElectricityIotConstant.ELE_BATTERY_SNAPSHOT_RSP).build();
         Pair<Boolean, String> sendResult = eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
         if (!sendResult.getLeft()) {
             log.error("Snapshot ERROR! sessionId={}", receiverMessage.getSessionId());
