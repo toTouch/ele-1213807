@@ -152,8 +152,16 @@ public class JsonAdminMerchantAreaController extends BaseController {
         return R.ok(merchantAreaService.countTotal(query));
     }
     
-    @GetMapping("/admin/merchant/area/selectByTenantId")
-    public R listByTenantId(@RequestParam Integer tenantId) {
+    @GetMapping("/admin/merchant/area/selectAll")
+    public R listAll(@RequestParam("size") long size, @RequestParam("offset") long offset, @RequestParam(value = "name", required = false) String name) {
+        if (size < 0 || size > 50) {
+            size = 10L;
+        }
+    
+        if (offset < 0) {
+            offset = 0L;
+        }
+    
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
@@ -162,8 +170,10 @@ public class JsonAdminMerchantAreaController extends BaseController {
         if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
             return R.ok();
         }
+    
+        MerchantAreaQuery query = MerchantAreaQuery.builder().size(size).offset(offset).tenantId(TenantContextHolder.getTenantId()).name(name).build();
         
-        return R.ok(merchantAreaService.listByTenantId(tenantId));
+        return R.ok(merchantAreaService.listAll(query));
     }
     
 }

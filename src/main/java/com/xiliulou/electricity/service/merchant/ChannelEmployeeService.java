@@ -1,6 +1,5 @@
 package com.xiliulou.electricity.service.merchant;
 
-import com.xiliulou.electricity.entity.merchant.ChannelEmployee;
 import com.xiliulou.electricity.request.merchant.ChannelEmployeeRequest;
 import com.xiliulou.electricity.vo.merchant.ChannelEmployeeVO;
 import org.apache.commons.lang3.tuple.Triple;

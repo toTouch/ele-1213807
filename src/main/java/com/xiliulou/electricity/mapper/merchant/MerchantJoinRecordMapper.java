@@ -34,4 +34,6 @@ public interface MerchantJoinRecordMapper {
     Integer countTotal(MerchantJoinRecordQueryMode queryMode);
     
     List<MerchantJoinRecord> selectListByPage(MerchantJoinRecordQueryMode queryMode);
+    
+    Integer updateById(MerchantJoinRecord record);
 }

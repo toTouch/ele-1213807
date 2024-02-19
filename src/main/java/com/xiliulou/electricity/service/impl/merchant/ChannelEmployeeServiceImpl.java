@@ -5,6 +5,7 @@ import com.xiliulou.core.i18n.MessageUtils;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.CommonConstant;
+import com.xiliulou.electricity.constant.MerchantConstant;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.UserRole;
@@ -14,17 +15,19 @@ import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.merchant.ChannelEmployeeAmountMapper;
 import com.xiliulou.electricity.mapper.merchant.ChannelEmployeeMapper;
 import com.xiliulou.electricity.request.merchant.ChannelEmployeeRequest;
+import com.xiliulou.electricity.request.merchant.MerchantPageRequest;
 import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.UserRoleService;
 import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.service.merchant.ChannelEmployeeService;
+import com.xiliulou.electricity.service.merchant.MerchantAreaService;
+import com.xiliulou.electricity.service.merchant.MerchantService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.vo.merchant.ChannelEmployeeVO;
 import com.xiliulou.security.authentication.console.CustomPasswordEncoder;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -63,7 +66,13 @@ public class ChannelEmployeeServiceImpl implements ChannelEmployeeService {
     ChannelEmployeeAmountMapper channelEmployeeAmountMapper;
     
     @Resource
-    private RedisService redisService;
+    RedisService redisService;
+    
+    @Resource
+    MerchantService merchantService;
+    
+    @Resource
+    MerchantAreaService merchantAreaService;
     
     @Slave
     @Override
@@ -114,8 +123,13 @@ public class ChannelEmployeeServiceImpl implements ChannelEmployeeService {
             channelEmployeeVO.setFranchiseeName(franchisee.getName());
             
             //TODO 设置区域名称
+            //merchantAreaService.queryById(item.get)
             
-            //TODO 设置商户数
+            //设置商户数
+            MerchantPageRequest merchantPageRequest = new MerchantPageRequest();
+            merchantPageRequest.setChannelEmployeeUid(item.getUid());
+            Integer countTotal = merchantService.countTotal(merchantPageRequest);
+            channelEmployeeVO.setMerchantTotal(countTotal != null ? countTotal : 0);
             
             return channelEmployeeVO;
         }).collect(Collectors.toList());
@@ -158,12 +172,18 @@ public class ChannelEmployeeServiceImpl implements ChannelEmployeeService {
         //创建渠道员工账户
         User user = User.builder().updateTime(System.currentTimeMillis()).createTime(System.currentTimeMillis()).phone(channelEmployeeRequest.getPhone())
                 .lockFlag(User.USER_UN_LOCK).gender(User.GENDER_MALE).lang(MessageUtils.LOCALE_ZH_CN).userType(User.TYPE_USER_CHANNEL).name(channelEmployeeRequest.getName()).salt("").avatar("")
-                .tenantId(tenantId).loginPwd(customPasswordEncoder.encode("1234#56!^1mjh")).delFlag(User.DEL_NORMAL).build();
-        User userResult = userService.insert(user);
+                .tenantId(tenantId).loginPwd(customPasswordEncoder.encode("123456")).delFlag(User.DEL_NORMAL).build();
+    
+        // 如果是禁用则用户默认锁定
+        if (Objects.equals(channelEmployeeRequest.getStatus(), MerchantConstant.DISABLE)) {
+            user.setLockFlag(User.USER_LOCK);
+        }
         
+        User userResult = userService.insert(user);
+       
+        //TODO 设置角色, 渠道员工角色值待定
         Long roleId = 0L;
         
-        //设置角色
         UserRole userRole = new UserRole();
         userRole.setRoleId(roleId);
         userRole.setUid(userResult.getUid());
@@ -204,6 +224,14 @@ public class ChannelEmployeeServiceImpl implements ChannelEmployeeService {
         }
         
         User updateUser = new User();
+    
+        // 如果是禁用，则将用户置为锁定
+        if (Objects.equals(channelEmployeeRequest.getStatus(), MerchantConstant.DISABLE)) {
+            updateUser.setLockFlag(User.USER_LOCK);
+        } else  {
+            updateUser.setLockFlag(User.USER_UN_LOCK);
+        }
+        
         updateUser.setUid(channelEmployee.getUid());
         updateUser.setPhone(channelEmployeeRequest.getPhone());
         updateUser.setUserType(User.TYPE_USER_CHANNEL);
