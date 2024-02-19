@@ -16,7 +16,7 @@ import javax.annotation.Resource;
  * @mood
  */
 @Component
-@JobHandler(value = "hardwareFailureCabinetMsg")
+@JobHandler(value = "hardwareFailureCabinetMsgTask")
 @Slf4j
 public class HardwareFailureCabinetMsgTask extends IJobHandler {
 
