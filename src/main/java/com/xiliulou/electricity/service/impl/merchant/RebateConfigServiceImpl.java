@@ -141,7 +141,7 @@ public class RebateConfigServiceImpl implements RebateConfigService {
     public Triple<Boolean, String, Object> modify(RebateConfigRequest request) {
         RebateConfig rebateConfig = this.queryByIdFromCache(request.getId());
         if (Objects.isNull(rebateConfig) || !Objects.equals(rebateConfig.getTenantId(), TenantContextHolder.getTenantId())) {
-            return Triple.of(false, "100317", "返利配置不存在");
+            return Triple.of(false, "100319", "返利配置不存在");
         }
         
         RebateConfig rebateConfigUpdate = new RebateConfig();
