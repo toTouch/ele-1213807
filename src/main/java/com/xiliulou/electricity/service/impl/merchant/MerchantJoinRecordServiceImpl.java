@@ -5,6 +5,7 @@ import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
+import com.xiliulou.electricity.constant.MerchantConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.Tenant;
 import com.xiliulou.electricity.entity.User;
@@ -134,7 +135,7 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
     
             // 判断商户是否存在或被禁用
             Merchant merchant = merchantService.queryFromCacheById(merchantId);
-            if (Objects.isNull(merchant) || Objects.equals(merchant.getStatus(), Merchant.DISABLE)) {
+            if (Objects.isNull(merchant) || Objects.equals(merchant.getStatus(), MerchantConstant.DISABLE)) {
                 log.error("MERCHANT JOIN ERROR! not found merchant, merchantId={}", merchantId);
                 return R.fail("100463", "二维码已失效");
             }
@@ -173,7 +174,7 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
             }
     
             // 渠道员uid
-            Long channelEmployeeUid = merchant.getChannelUserId();
+            Long channelEmployeeUid = merchant.getChannelEmployeeUid();
             // 获取场地员工所绑定的场地
             Long placeId = null;
             if (Objects.equals(inviterType, MerchantJoinRecord.INVITER_TYPE_MERCHANT_PLACE_EMPLOYEE)) {
