@@ -154,7 +154,7 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
             }
             
             // 邀请人类型
-            if (!Objects.equals(inviterType, NumberConstant.ONE) && !Objects.equals(inviterType, NumberConstant.TWO)) {
+            if (!Objects.equals(inviterType,MerchantJoinRecord.INVITER_TYPE_MERCHANT_SELF) && !Objects.equals(inviterType, MerchantJoinRecord.INVITER_TYPE_MERCHANT_PLACE_EMPLOYEE)) {
                 log.info("MERCHANT JOIN ERROR! illegal operate! inviterUid={}, inviterType={}, joinUid={}", inviterUid, inviterType, joinUid);
                 return R.fail("100463", "二维码已失效");
             }
@@ -307,11 +307,14 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
         merchantJoinRecordMapper.updateExpired(merchantJoinRecord);
     }
     
+    @Override
+    public Integer updateById(MerchantJoinRecord record) {
+        return merchantJoinRecordMapper.updateById(record);
+    }
     @Slave
     @Override
     public List<MerchantJoinRecord> queryList(MerchantJoinRecordQueryMode joinRecordQueryMode) {
         return merchantJoinRecordMapper.selectList(joinRecordQueryMode);
     }
-    
     
 }
