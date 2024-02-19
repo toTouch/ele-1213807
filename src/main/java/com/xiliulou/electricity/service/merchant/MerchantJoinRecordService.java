@@ -46,4 +46,6 @@ public interface MerchantJoinRecordService {
      * 定时任务：保护期状态和有效期状态
      */
     void handelProtectionAndStartExpired();
+    
+    Integer updateById(MerchantJoinRecord record);
 }

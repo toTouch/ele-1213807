@@ -305,5 +305,9 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
         merchantJoinRecordMapper.updateExpired(merchantJoinRecord);
     }
     
+    @Override
+    public Integer updateById(MerchantJoinRecord record) {
+        return merchantJoinRecordMapper.updateById(record);
+    }
     
 }

@@ -27,4 +27,6 @@ public interface MerchantJoinRecordMapper {
     Integer updateExpired(@Param("merchantJoinRecord")MerchantJoinRecord merchantJoinRecord);
     
     List<MerchantJoinRecord> selectListByMerchantIdAndStatus(@Param("merchantId")Long merchantId, @Param("status")Integer status);
+    
+    Integer updateById(MerchantJoinRecord record);
 }
