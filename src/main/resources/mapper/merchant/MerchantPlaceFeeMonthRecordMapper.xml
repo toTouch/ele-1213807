@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.merchant.MerchantPlaceFeeMonthRecordMapper">
+    <insert id="save">
+        insert into t_merchant_place_fee_month_record  (month_date , place_id, eid, sn, rent_start_time ,rent_end_time,rent_days,place_fee,month_place_fee,
+            tenant_id, del_flag, create_time, update_time)
+        values (#{item.monthDate}, #{item.placeId}, #{item.eid}, #{item.sn}, #{item.rentStartTime}, #{item.rentEndTime}, #{item.rentDays}, #{item.placeFee},
+                #{item.monthPlaceFee}, #{item.tenantId}), #{item.delFlag}, #{item.createTime}, #{item.updateTime})
+    </insert>
+    
+    <select id="selectListBySettlementTime" resultType="com.xiliulou.electricity.vo.merchant.MerchantPlaceFeeMonthRecordVO">
+        select
+        month_date , place_id, eid, sn, rent_start_time ,rent_end_time,rent_days,place_fee,month_place_fee,
+        tenant_id, del_flag, create_time, update_time
+        from t_merchant_place_fee_month_record
+        where month_date = #{date} and tenant_id = #{tenantId}
+    </select>
+</mapper>
