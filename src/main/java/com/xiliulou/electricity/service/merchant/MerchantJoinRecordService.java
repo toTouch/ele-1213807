@@ -26,6 +26,11 @@ public interface MerchantJoinRecordService {
     Integer existsIfExpired(Long merchantId, Long joinUid);
     
     /**
+     * 根据参与人uid查询记录
+     */
+    MerchantJoinRecord queryByJoinUid(Long joinUid);
+    
+    /**
      * 修改参与状态
      */
     Integer updateStatus(Long merchantId, Long joinUid, Integer status);

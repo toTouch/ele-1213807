@@ -22,4 +22,5 @@ public interface UserInfoExtraService {
     
     Integer deleteByUid(Long uid);
     
+    void bindMerchant(Long uid, String orderId);
 }

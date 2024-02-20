@@ -258,4 +258,10 @@ public class ChannelEmployeeServiceImpl implements ChannelEmployeeService {
         
         return channelEmployeeMapper.removeById(id);
     }
+    
+    @Slave
+    @Override
+    public Integer existsByAreaId(Long id) {
+        return channelEmployeeMapper.existsByAreaId(id);
+    }
 }

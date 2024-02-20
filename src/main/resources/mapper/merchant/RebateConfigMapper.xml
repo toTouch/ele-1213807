@@ -53,6 +53,12 @@
         SELECT 1 FROM t_rebate_config WHERE del_flag=0 and mid = #{mid} AND level = #{level} LIMIT 1
     </select>
     
+    <select id="selectByMidAndMerchantLevel" resultMap="RebateConfigMap">
+        select
+            id, level, mid, channeler_invitation, channeler_renewal, merchant_invitation, merchant_renewal, status, del_flag, tenant_id, create_time, update_time
+        from t_rebate_config WHERE del_flag=0 and mid = #{mid} AND level = #{level}
+    </select>
+    
     <!--新增所有列-->
     <insert id="insert" keyProperty="id" useGeneratedKeys="true">
         insert into t_rebate_config(level, mid, channeler_invitation, channeler_renewal, merchant_invitation, merchant_renewal, status, del_flag,tenant_id, create_time, update_time)

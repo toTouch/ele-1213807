@@ -3,6 +3,7 @@ package com.xiliulou.electricity.service.impl.merchant;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.CommonConstant;
+import com.xiliulou.electricity.constant.MerchantConstant;
 import com.xiliulou.electricity.entity.merchant.MerchantAttr;
 import com.xiliulou.electricity.mapper.merchant.MerchantAttrMapper;
 import com.xiliulou.electricity.request.merchant.MerchantAttrRequest;
@@ -113,6 +114,30 @@ public class MerchantAttrServiceImpl implements MerchantAttrService {
         merchantAttrUpdate.setUpdateTime(System.currentTimeMillis());
         this.updateByMerchantId(merchantAttrUpdate);
         return Triple.of(true, null, null);
+    }
+    
+    @Override
+    public Boolean checkInvitationTime(Long merchantId, Long invitationTime) {
+        MerchantAttr merchantAttr = this.queryByMerchantIdFromCache(merchantId);
+        if (Objects.isNull(merchantAttr)) {
+            log.error("ELE ERROR!not found merchantAttr,merchantId={}", merchantId);
+            return Boolean.FALSE;
+        }
+        
+        if (Objects.isNull(merchantAttr.getInvitationValidTime()) || Objects.isNull(merchantAttr.getValidTimeUnit())) {
+            log.error("ELE ERROR!merchantAttr is illegal,merchantId={}", merchantId);
+            return Boolean.FALSE;
+        }
+        
+        Long validTime = merchantAttr.getInvitationValidTime() * (Objects.equals(merchantAttr.getValidTimeUnit(), MerchantConstant.INVITATION_TIME_UNIT_MINUTES) ? 1000 * 60L
+                : 1000 * 60 * 60L);
+        
+        if (System.currentTimeMillis() > (invitationTime + validTime)) {
+            log.error("ELE ERROR!invitation is expired,merchantId={}", merchantId);
+            return Boolean.FALSE;
+        }
+        
+        return Boolean.TRUE;
     }
     
     @Override

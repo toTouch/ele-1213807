@@ -185,6 +185,10 @@
     
     </select>
     
+    <select id="existsByAreaId" resultType="java.lang.Integer">
+        select count(1) from t_channel_employee where area_id = #{id} and del_flag = 0
+    </select>
+    
     <!--通过主键逻辑删除渠道员工-->
     <delete id="removeById">
         update t_channel_employee set del_flag = 1 where id = #{id}

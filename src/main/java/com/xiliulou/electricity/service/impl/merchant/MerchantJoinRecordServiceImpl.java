@@ -20,17 +20,21 @@ import com.xiliulou.electricity.service.TenantService;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.service.merchant.MerchantAttrService;
+import com.xiliulou.electricity.service.merchant.MerchantEmployeeService;
 import com.xiliulou.electricity.service.merchant.MerchantJoinRecordService;
 import com.xiliulou.electricity.service.merchant.MerchantService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.AESUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
+import com.xiliulou.electricity.vo.merchant.MerchantEmployeeVO;
 import com.xiliulou.electricity.vo.merchant.MerchantJoinRecordVO;
+import com.xiliulou.mq.service.RocketMqService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -39,6 +43,7 @@ import java.util.Base64;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 /**
  * @author HeYafeng
@@ -48,6 +53,9 @@ import java.util.Objects;
 @Slf4j
 @Service
 public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService {
+    
+    @Autowired
+    private RocketMqService rocketMqService;
     
     @Resource
     private RedisService redisService;
@@ -70,6 +78,9 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
     @Resource
     private MerchantJoinRecordMapper merchantJoinRecordMapper;
     
+    @Resource
+    private MerchantEmployeeService merchantEmployeeService;
+    
     @Override
     public R joinScanCode(String code) {
         Long joinUid = SecurityUtils.getUid();
@@ -86,16 +97,21 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
             }
             
             UserInfo userInfo = userInfoService.queryByUidFromCache(joinUid);
-            if (Objects.isNull(userInfo) || Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
+            if (Objects.isNull(userInfo)) {
                 log.error("MERCHANT JOIN ERROR! not found userInfo, joinUid={}", joinUid);
-                return R.fail(false, "ELECTRICITY.0024", "用户已被禁用");
+                return R.fail(false, "ELECTRICITY.0019", "未找到用户");
+            }
+            
+            if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
+                log.error("MERCHANT JOIN ERROR! user usable, joinUid={}", joinUid);
+                return R.fail(false, "120105", "该二维码暂时无法使用,请稍后再试");
             }
     
             // 是否在保护期内(保护期内不能扫商户码)
             Integer isInProtectionTime = this.existsInProtectionTimeByJoinUid(joinUid);
             if (Objects.isNull(isInProtectionTime)) {
                 log.error("MERCHANT JOIN ERROR! in protectionTime, joinUid={}", joinUid);
-                return R.fail(false, "300910", "商户保护期内，请稍后再试");
+                return R.fail(false, "120104", "商户保护期内，请稍后再试");
             }
             
             // 解析code
@@ -141,16 +157,26 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
     
             // 判断商户是否存在或被禁用
             Merchant merchant = merchantService.queryFromCacheById(merchantId);
-            if (Objects.isNull(merchant) || Objects.equals(merchant.getStatus(), MerchantConstant.DISABLE)) {
+            if (Objects.isNull(merchant) ) {
                 log.error("MERCHANT JOIN ERROR! not found merchant, merchantId={}", merchantId);
                 return R.fail("100463", "二维码已失效");
             }
             
+            if (Objects.equals(merchant.getStatus(), MerchantConstant.DISABLE)) {
+                log.error("MERCHANT JOIN ERROR! merchant disable, merchantId={}", merchantId);
+                return R.fail("120105", "该二维码暂时无法使用,请稍后再试");
+            }
+            
             // 判断邀请人是否存在或被禁用
             User inviterUser = userService.queryByUidFromCache(inviterUid);
-            if (Objects.isNull(inviterUser) || inviterUser.isLock()) {
+            if (Objects.isNull(inviterUser)) {
                 log.error("MERCHANT JOIN ERROR! not found inviterUser, inviterUid={}", inviterUid);
                 return R.fail(false, "ELECTRICITY.0024", "用户已被禁用");
+            }
+            
+            if (inviterUser.isLock()) {
+                log.error("MERCHANT JOIN ERROR! inviterUser locked, inviterUid={}", inviterUid);
+                return R.fail(false, "120105", "该二维码暂时无法使用,请稍后再试");
             }
             
             // 扫自己码
@@ -169,7 +195,7 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
             MerchantJoinRecord existsRecord = this.queryByMerchantIdAndJoinUid(merchantId, joinUid);
             if (Objects.nonNull(existsRecord) && Objects.equals(existsRecord.getStatus(), MerchantJoinRecord.STATUS_SUCCESS)) {
                 log.info("MERCHANT JOIN ERROR! user already join merchant, merchantId={}, inviterUid={}, joinUid={}", merchantId, inviterUid, joinUid);
-                return R.fail("100398", "您已参与过该活动，无法重复参加");
+                return R.fail("120106", "您已是会员用户,无法参加商户活动");
             }
             
             // 获取商户保护期和有效期
@@ -181,12 +207,10 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
     
             // 渠道员uid
             Long channelEmployeeUid = merchant.getChannelEmployeeUid();
-            // 获取场地员工所绑定的场地
-            Long placeId = null;
-            if (Objects.equals(inviterType, MerchantJoinRecord.INVITER_TYPE_MERCHANT_PLACE_EMPLOYEE)) {
-                // TODO
-            }
             
+            // 获取场地员工所绑定的场地
+            Long placeId = Optional.ofNullable(merchantEmployeeService.queryMerchantEmployeeByUid(inviterUid)).orElse(new MerchantEmployeeVO()).getPlaceId();
+    
             // 保存参与记录
             MerchantJoinRecord record = this.assembleRecord(merchantId, inviterUid, inviterType, joinUid, channelEmployeeUid, placeId, merchantAttr, tenant.getId());
             
@@ -288,6 +312,12 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
     @Override
     public Integer existsIfExpired(Long merchantId, Long joinUid) {
         return merchantJoinRecordMapper.existsIfExpired(merchantId, joinUid);
+    }
+    
+    @Slave
+    @Override
+    public MerchantJoinRecord queryByJoinUid(Long joinUid) {
+        return merchantJoinRecordMapper.selectByJoinUid(joinUid);
     }
     
     @Override
