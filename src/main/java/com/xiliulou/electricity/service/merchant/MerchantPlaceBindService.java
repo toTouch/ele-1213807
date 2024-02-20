@@ -1,6 +1,9 @@
 package com.xiliulou.electricity.service.merchant;
 
 import com.xiliulou.electricity.entity.merchant.MerchantPlaceBind;
+import com.xiliulou.electricity.vo.merchant.MerchantPlaceAndCabinetUserVO;
+import com.xiliulou.electricity.vo.merchant.MerchantPlaceCabinetVO;
+import com.xiliulou.electricity.vo.merchant.MerchantPlaceUserVO;
 
 import java.util.List;
 import java.util.Set;
@@ -14,5 +17,14 @@ public interface MerchantPlaceBindService {
     
     int batchInsert(List<MerchantPlaceBind> merchantPlaceBindList);
     
-    int batchUnBind(Set<Long> unBindList , Long merchantId, long updateTime);
+    int batchUnBind(Set<Long> unBindList, Long merchantId, long updateTime);
+    
+    /**
+     * 是否显示电费页面：0-不显示，1-显示
+     */
+    Integer isShowPowerPage(Long merchantId);
+    
+    MerchantPlaceAndCabinetUserVO listPlaceAndCabinetByMerchantId(Long merchantId);
+    
+    List<MerchantPlaceCabinetVO> listCabinetByPlaceId(Long merchantId, Long placeId);
 }

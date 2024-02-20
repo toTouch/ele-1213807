@@ -62,7 +62,7 @@ public class MerchantAreaServiceImpl implements MerchantAreaService {
             String areaName = saveRequest.getName();
             Integer areaExist = merchantAreaMapper.existsByAreaName(areaName, TenantContextHolder.getTenantId());
             if (Objects.nonNull(areaExist)) {
-                return R.fail("300904", "区域名称不能重复，请修改后操作");
+                return R.fail("120103", "区域名称不能重复，请修改后操作");
             }
             
             long now = System.currentTimeMillis();
@@ -79,17 +79,17 @@ public class MerchantAreaServiceImpl implements MerchantAreaService {
     public R deleteById(Long id) {
         Integer cabinetExist = electricityCabinetService.existsByAreaId(id);
         if (Objects.nonNull(cabinetExist)) {
-            return R.fail("300900", "该区域有电柜正在使用，请先解绑后操作");
+            return R.fail("120100", "该区域有电柜正在使用，请先解绑后操作");
         }
     
         Integer placeExist = merchantPlaceService.existsByAreaId(id);
         if (Objects.nonNull(placeExist)) {
-            return R.fail("300901", "该区域有场地正在使用，请先解绑后操作");
+            return R.fail("120101", "该区域有场地正在使用，请先解绑后操作");
         }
     
         Integer channelEmpExist = channelEmployeeService.existsByAreaId(id);
         if (Objects.nonNull(channelEmpExist)) {
-            return R.fail("300902", "该区域有渠道员正在使用，请先解绑后操作");
+            return R.fail("120102", "该区域有渠道员正在使用，请先解绑后操作");
         }
     
         return R.ok(merchantAreaMapper.deleteById(id, TenantContextHolder.getTenantId()));

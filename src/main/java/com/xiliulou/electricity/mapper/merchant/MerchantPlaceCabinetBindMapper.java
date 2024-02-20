@@ -3,8 +3,10 @@ package com.xiliulou.electricity.mapper.merchant;
 import com.xiliulou.electricity.entity.merchant.MerchantPlaceCabinetBind;
 import com.xiliulou.electricity.query.merchant.MerchantPlaceCabinetBindQueryModel;
 import com.xiliulou.electricity.vo.merchant.MerchantPlaceCabinetBindVO;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * @author maxiaodong
@@ -30,4 +32,6 @@ public interface MerchantPlaceCabinetBindMapper {
     Integer countTotal(MerchantPlaceCabinetBindQueryModel merchantQueryModel);
     
     List<MerchantPlaceCabinetBind> selectListByPage(MerchantPlaceCabinetBindQueryModel merchantQueryModel);
+    
+    List<MerchantPlaceCabinetBind> selectListByPlaceIds(@Param("placeIds")Set<Long> placeIds);
 }
