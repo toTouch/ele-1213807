@@ -37,6 +37,8 @@ public class UserInfoExtra {
      */
     private Long placeUid;
     
+    private Long placeId;
+    
     /**
      * 0--正常 1--删除
      */

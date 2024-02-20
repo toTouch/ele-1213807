@@ -10,9 +10,9 @@ import lombok.Data;
 @Data
 public class MerchantUpgrade {
     
-    private String msgId;
-    
-    private String orderId;
+    private Long merchantId;
     
     private Long uid;
+    
+    private String orderId;
 }

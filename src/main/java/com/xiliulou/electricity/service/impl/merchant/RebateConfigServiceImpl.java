@@ -151,4 +151,9 @@ public class RebateConfigServiceImpl implements RebateConfigService {
         
         return Triple.of(true, null, null);
     }
+    
+    @Override
+    public RebateConfig queryByMidAndMerchantLevel(Long memberCardId, String level) {
+        return this.rebateConfigMapper.selectByMidAndMerchantLevel(memberCardId, level);
+    }
 }

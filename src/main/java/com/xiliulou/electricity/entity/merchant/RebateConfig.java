@@ -7,6 +7,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import com.baomidou.mybatisplus.annotation.TableName;
 
+import java.math.BigDecimal;
+
 /**
  * 返利配置表(RebateConfig)实体类
  *
@@ -35,22 +37,22 @@ public class RebateConfig {
     /**
      * 渠道员拉新返现
      */
-    private Double channelerInvitation;
+    private BigDecimal channelerInvitation;
     
     /**
      * 渠道员续费返现
      */
-    private Double channelerRenewal;
+    private BigDecimal channelerRenewal;
     
     /**
      * 商户拉新返现
      */
-    private Double merchantInvitation;
+    private BigDecimal merchantInvitation;
     
     /**
      * 商户续费返现
      */
-    private Double merchantRenewal;
+    private BigDecimal merchantRenewal;
     
     /**
      * 状态 0:关闭,1:开启

@@ -25,7 +25,7 @@
         select
             id, level, name, rule
         from t_merchant_level
-        where tenant_id = #{tenantId}
+        where tenant_id = #{tenantId} order by id
     </select>
     
     <!--新增所有列-->

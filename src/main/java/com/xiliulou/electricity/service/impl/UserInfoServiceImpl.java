@@ -1837,6 +1837,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     
     @Override
     public Integer updateByUid(UserInfo userInfo) {
+        redisService.delete(CacheConstant.CACHE_USER_INFO + userInfo.getUid());
         Integer result = this.userInfoMapper.updateByUid(userInfo);
         redisService.delete(CacheConstant.CACHE_USER_INFO + userInfo.getUid());
         return result;

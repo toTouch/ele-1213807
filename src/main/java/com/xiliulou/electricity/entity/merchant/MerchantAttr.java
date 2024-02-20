@@ -23,7 +23,7 @@ public class MerchantAttr {
     private Long id;
     
     /**
-     * 升级条件
+     * 升级条件 1：拉新人数，2：续费人数，3：全部
      */
     private Integer upgradeCondition;
     

@@ -34,6 +34,40 @@ public interface MerchantConstant {
      */
     public final static Integer INVITE_AUTH_CLOSE = 1;
     
+    /**
+     * 邀请时效单位 0：分钟，1：小时
+     */
+    Integer INVITATION_TIME_UNIT_MINUTES = 0;
+    Integer INVITATION_TIME_UNIT_HOURS = 1;
+    
+    /**
+     * 类型 0：购买套餐，1：退租
+     */
+    Integer TYPE_PURCHASE = 0;
+    Integer TYPE_REFUND = 1;
+    
+    /**
+     * 升级条件 1：拉新人数，2：续费人数，3：全部
+     */
+    Integer UPGRADE_CONDITION_INVITATION = 1;
+    Integer UPGRADE_CONDITION_RENEWAL = 2;
+    Integer UPGRADE_CONDITION_ALL = 3;
+    
+    /**
+     * 返利类型 0:拉新，1：续费，2：差额
+     */
+    Integer MERCHANT_REBATE_TYPE_INVITATION = 0;
+    Integer MERCHANT_REBATE_TYPE_RENEWAL = 1;
+    Integer MERCHANT_REBATE_TYPE_DISCREPANCY = 2;
+    
+    /**
+     * 返利状态 0-未结算,1-已结算,2-已退回,3-已失效
+     */
+    Integer MERCHANT_REBATE_STATUS_NOT_SETTLE = 0;
+    Integer MERCHANT_REBATE_STATUS_SETTLED = 1;
+    Integer MERCHANT_REBATE_STATUS_RETURNED = 2;
+    Integer MERCHANT_REBATE_STATUS_EXPIRED = 3;
+    
     public static final Integer DEL_NORMAL = 0;
     public static final Integer DEL_DEL = 1;
 
