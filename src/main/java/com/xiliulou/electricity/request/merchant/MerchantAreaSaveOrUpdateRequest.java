@@ -13,7 +13,7 @@ import javax.validation.constraints.Size;
 
 /**
  * @author HeYafeng
- * @description TODO
+ * @description
  * @date 2024/2/6 13:42:11
  */
 @Data
@@ -31,26 +31,6 @@ public class MerchantAreaSaveOrUpdateRequest {
     @Size(min = 1, max = 10, message = "区域名称不合法", groups = {CreateGroup.class, UpdateGroup.class})
     @NotBlank(message = "区域名称不能为空", groups = {CreateGroup.class, UpdateGroup.class})
     private String name;
-    
-    /**
-     * 删除标记(0-未删除，1-已删除)
-     */
-    private Integer delFlag;
-    
-    /**
-     * 创建时间
-     */
-    private Long createTime;
-    
-    /**
-     * 更新时间
-     */
-    private Long updateTime;
-    
-    /**
-     * 租户ID
-     */
-    private Integer tenantId;
     
     /**
      * 备注

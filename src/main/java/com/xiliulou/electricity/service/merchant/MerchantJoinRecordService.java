@@ -51,6 +51,7 @@ public interface MerchantJoinRecordService {
     void handelProtectionAndStartExpired();
     
     Integer updateById(MerchantJoinRecord record);
+    
     List<MerchantJoinRecord> queryList(MerchantJoinRecordQueryMode joinRecordQueryMode);
     
     Integer countTotal(MerchantJoinRecordPageRequest merchantJoinRecordPageRequest);

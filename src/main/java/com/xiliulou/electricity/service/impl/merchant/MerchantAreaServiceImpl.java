@@ -83,9 +83,9 @@ public class MerchantAreaServiceImpl implements MerchantAreaService {
             return R.fail("300901", "该区域有场地正在使用，请先解绑后操作");
         }
     
-        // 商户?渠道员?
+        // todo:渠道员
     
-        return R.ok(merchantAreaMapper.deleteById(id));
+        return R.ok(merchantAreaMapper.deleteById(id, TenantContextHolder.getTenantId()));
     }
     
     @Override
@@ -97,7 +97,7 @@ public class MerchantAreaServiceImpl implements MerchantAreaService {
         }
         
         MerchantArea merchantArea = MerchantArea.builder().id(updateRequest.getId()).name(areaName).remark(updateRequest.getRemark()).updateTime(System.currentTimeMillis())
-                .build();
+                .tenantId(TenantContextHolder.getTenantId()).build();
         
         return R.ok(merchantAreaMapper.updateById(merchantArea));
     }
