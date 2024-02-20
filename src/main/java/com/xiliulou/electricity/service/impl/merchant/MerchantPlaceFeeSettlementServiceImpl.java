@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.service.impl.merchant;
 
 import com.alibaba.excel.EasyExcel;
+import com.xiliulou.electricity.entity.merchant.MerchantPlace;
 import com.xiliulou.electricity.entity.merchant.MerchantPlaceFeeMonthRecord;
 import com.xiliulou.electricity.mapper.merchant.MerchantPlaceFeeMonthRecordMapper;
 import com.xiliulou.electricity.service.excel.AutoHeadColumnWidthStyleStrategy;
@@ -9,6 +10,7 @@ import com.xiliulou.electricity.service.excel.HeadContentCellStyle;
 import com.xiliulou.electricity.service.excel.MergeSameRowsStrategy;
 import com.xiliulou.electricity.service.merchant.MerchantPlaceFeeMonthRecordService;
 import com.xiliulou.electricity.service.merchant.MerchantPlaceFeeSettlementService;
+import com.xiliulou.electricity.service.merchant.MerchantPlaceService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.vo.merchant.MerchantPlaceFeeMonthRecordVO;
 import lombok.extern.slf4j.Slf4j;
@@ -25,6 +27,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * @ClassName : MerchantPlaceFeeSettlementServiceImpl
@@ -39,30 +42,24 @@ public class MerchantPlaceFeeSettlementServiceImpl implements MerchantPlaceFeeSe
     @Resource
     private MerchantPlaceFeeMonthRecordService merchantPlaceFeeMonthRecordService;
     
+    @Resource
+    private MerchantPlaceService merchantPlaceService;
+    
     private List<MerchantPlaceFeeMonthRecordVO> getData(String date) {
-    
-       // List<MerchantPlaceFeeMonthRecord> merchantPlaceFeeMonthRecords = merchantPlaceFeeMonthRecordService.selectByMonthDate(date, TenantContextHolder.getTenantId());
         
-    
-        List<MerchantPlaceFeeMonthRecordVO> data = new ArrayList<>();
-        
-        MerchantPlaceFeeMonthRecordVO m1 = new MerchantPlaceFeeMonthRecordVO();
-        m1.setMonthDate("2024-01");
-        m1.setPlaceName("XXX");
-        m1.setMonthRentDays("20");
-        m1.setMonthTotalPlaceFee(new BigDecimal(0));
-        m1.setSn("SN10086");
-        m1.setRentDays("1");
-        m1.setRentStartTime("2022-01-25 11:08");
-        m1.setRentEndTime("2022-01-27 11:08");
-        m1.setPlaceFee(new BigDecimal(0));
-        m1.setMonthPlaceFee(new BigDecimal(0));
-        data.add(m1);
-        return data;
+        List<MerchantPlaceFeeMonthRecordVO> merchantPlaceFeeMonthRecords = merchantPlaceFeeMonthRecordService.selectByMonthDate(date, TenantContextHolder.getTenantId());
+        merchantPlaceFeeMonthRecords.parallelStream().forEach(merchantPlaceFeeMonthRecord -> {
+            Long placeId = merchantPlaceFeeMonthRecord.getPlaceId();
+            MerchantPlace merchantPlace = merchantPlaceService.queryFromCacheById(placeId);
+            if (Objects.nonNull(merchantPlace)) {
+                merchantPlaceFeeMonthRecord.setPlaceName(merchantPlace.getName());
+            }
+        });
+        return merchantPlaceFeeMonthRecords;
     }
     
     @Override
-    public void export(String date,HttpServletResponse response) {
+    public void export(String date, HttpServletResponse response) {
         
         String fileName = "场地费出账记录.xlsx";
         try {
@@ -102,11 +99,11 @@ public class MerchantPlaceFeeSettlementServiceImpl implements MerchantPlaceFeeSe
         return headers;
     }
     
-
     
     private static List<Map<String, String>> getComments() {
         List<Map<String, String>> commentList = new ArrayList<>();
-        commentList.add(CommentWriteHandler.createCommentMap("场地费出账记录", 1, 8, "当前显示的场地费为本月最新数值，若本月场地费有调整，系统会自动分段计算月场地费，故该列仅供参考。"));
+        commentList.add(
+                CommentWriteHandler.createCommentMap("场地费出账记录", 1, 8, "当前显示的场地费为本月最新数值，若本月场地费有调整，系统会自动分段计算月场地费，故该列仅供参考。"));
         return commentList;
     }
     

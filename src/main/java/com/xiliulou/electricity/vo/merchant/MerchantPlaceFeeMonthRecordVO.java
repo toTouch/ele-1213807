@@ -17,6 +17,8 @@ public class MerchantPlaceFeeMonthRecordVO {
     
     private String monthDate;
     
+    private Long placeId;
+    
     private String placeName;
     
     private String monthRentDays;

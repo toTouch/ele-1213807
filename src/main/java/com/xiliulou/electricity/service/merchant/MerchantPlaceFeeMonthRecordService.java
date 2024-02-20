@@ -1,6 +1,5 @@
 package com.xiliulou.electricity.service.merchant;
 
-import com.xiliulou.electricity.entity.merchant.MerchantPlaceFeeMonthRecord;
 import com.xiliulou.electricity.vo.merchant.MerchantPlaceFeeMonthRecordVO;
 
 import java.util.List;
