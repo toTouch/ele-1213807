@@ -180,8 +180,10 @@ public class JsonAdminMerchantController extends BaseController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
     
-        Integer tenantId = TenantContextHolder.getTenantId();
-    
+        Integer tenantId = null;
+        if (!SecurityUtils.isAdmin()) {
+            tenantId = TenantContextHolder.getTenantId();
+        }
         MerchantPageRequest merchantPageRequest = MerchantPageRequest.builder().name(name).tenantId(tenantId)
                 .merchantGradeId(merchantGradeId).channelEmployeeUid(channelUserId).franchiseeId(franchiseeId).build();
         return R.ok(merchantService.countTotal(merchantPageRequest));
@@ -213,7 +215,10 @@ public class JsonAdminMerchantController extends BaseController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
     
-        Integer tenantId = TenantContextHolder.getTenantId();
+        Integer tenantId = null;
+        if (!SecurityUtils.isAdmin()) {
+            tenantId = TenantContextHolder.getTenantId();
+        }
         MerchantPageRequest merchantPageRequest = MerchantPageRequest.builder().name(name).size(size).offset(offset).tenantId(tenantId)
                 .merchantGradeId(merchantGradeId).channelEmployeeUid(channelUserId).franchiseeId(franchiseeId).build();
         
@@ -222,7 +227,7 @@ public class JsonAdminMerchantController extends BaseController {
     
     /**
      * @param
-     * @description 商户列表分页
+     * @description 根据id查询商户信息
      * @date 2023/11/21 13:15:54
      * @author maxiaodong
      */

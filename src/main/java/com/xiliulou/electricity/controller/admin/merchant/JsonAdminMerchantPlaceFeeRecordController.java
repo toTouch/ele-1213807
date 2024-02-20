@@ -43,8 +43,11 @@ public class JsonAdminMerchantPlaceFeeRecordController extends BaseController {
         if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-        
-        Integer tenantId = TenantContextHolder.getTenantId();
+    
+        Integer tenantId = null;
+        if (!SecurityUtils.isAdmin()) {
+            tenantId = TenantContextHolder.getTenantId();
+        }
     
         MerchantPlaceFeeRecordPageRequest merchantPlacePageRequest = MerchantPlaceFeeRecordPageRequest.builder().cabinetId(cabinetId).tenantId(tenantId)
                 .tenantId(tenantId).build();
@@ -72,8 +75,12 @@ public class JsonAdminMerchantPlaceFeeRecordController extends BaseController {
         if (Objects.isNull(user)) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
+    
+        Integer tenantId = null;
+        if (!SecurityUtils.isAdmin()) {
+            tenantId = TenantContextHolder.getTenantId();
+        }
         
-        Integer tenantId = TenantContextHolder.getTenantId();
         MerchantPlaceFeeRecordPageRequest merchantPlacePageRequest = MerchantPlaceFeeRecordPageRequest.builder().cabinetId(cabinetId).size(size).offset(offset).tenantId(tenantId).build();
         
         return R.ok(merchantPlaceFeeRecordService.listByPage(merchantPlacePageRequest));

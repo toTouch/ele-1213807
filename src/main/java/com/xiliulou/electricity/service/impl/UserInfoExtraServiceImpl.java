@@ -1,11 +1,24 @@
 package com.xiliulou.electricity.service.impl;
 
 import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.constant.CacheConstant;
+import com.xiliulou.electricity.constant.MerchantConstant;
+import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.UserInfoExtra;
+import com.xiliulou.electricity.entity.merchant.Merchant;
+import com.xiliulou.electricity.entity.merchant.MerchantAttr;
+import com.xiliulou.electricity.entity.merchant.MerchantJoinRecord;
 import com.xiliulou.electricity.mapper.UserInfoExtraMapper;
+import com.xiliulou.electricity.mq.constant.MqProducerConstant;
+import com.xiliulou.electricity.mq.model.MerchantUpgrade;
 import com.xiliulou.electricity.service.UserInfoExtraService;
+import com.xiliulou.electricity.service.UserInfoService;
+import com.xiliulou.electricity.service.merchant.MerchantAttrService;
+import com.xiliulou.electricity.service.merchant.MerchantJoinRecordService;
+import com.xiliulou.electricity.service.merchant.MerchantService;
 import com.xiliulou.electricity.utils.DbUtils;
+import com.xiliulou.mq.service.RocketMqService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -27,7 +40,22 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
     private UserInfoExtraMapper userInfoExtraMapper;
     
     @Autowired
+    private UserInfoService userInfoService;
+    
+    @Autowired
     private RedisService redisService;
+    
+    @Autowired
+    private MerchantJoinRecordService merchantJoinRecordService;
+    
+    @Autowired
+    private MerchantAttrService merchantAttrService;
+    
+    @Autowired
+    private MerchantService merchantService;
+    
+    @Autowired
+    private RocketMqService rocketMqService;
     
     @Override
     public UserInfoExtra queryByUidFromDB(Long uid) {
@@ -77,5 +105,84 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
         });
         
         return delete;
+    }
+    
+    @Override
+    public void bindMerchant(Long uid, String orderId) {
+        UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
+        if (Objects.isNull(userInfo)) {
+            log.warn("BIND MERCHANT WARN!userInfo is null,uid={},orderId={}", uid, orderId);
+            return;
+        }
+        
+        if (Objects.nonNull(userInfo.getPayCount()) && userInfo.getPayCount() > 0) {
+            log.info("BIND MERCHANT WARN!payCount is illegal,payCount={},uid={},orderId={}", userInfo.getPayCount(), uid, orderId);
+            return;
+        }
+        
+        UserInfoExtra userInfoExtra = this.queryByUidFromCache(uid);
+        if (Objects.isNull(userInfoExtra)) {
+            log.warn("BIND MERCHANT WARN!userInfoExtra is null,uid={},orderId={}", uid, orderId);
+            return;
+        }
+        
+        if (Objects.nonNull(userInfoExtra.getMerchantId())) {
+            log.warn("BIND MERCHANT WARN!user already bind merchant,uid={},orderId={}", uid, orderId);
+            return;
+        }
+        
+        MerchantJoinRecord merchantJoinRecord = merchantJoinRecordService.queryByJoinUid(uid);
+        if (Objects.isNull(merchantJoinRecord)) {
+            log.warn("BIND MERCHANT WARN!merchantJoinRecord is null,uid={},orderId={}", uid, orderId);
+            return;
+        }
+        
+        Merchant merchant = merchantService.queryFromCacheById(merchantJoinRecord.getMerchantId());
+        if (Objects.isNull(merchant)) {
+            log.warn("BIND MERCHANT WARN!merchant is null,merchantId={},uid={}", merchantJoinRecord.getMerchantId(), uid);
+            return;
+        }
+        
+        if (Objects.equals(MerchantConstant.DISABLE, merchant.getStatus())) {
+            log.warn("BIND MERCHANT WARN!merchant is disable,merchantId={},uid={}", merchantJoinRecord.getMerchantId(), uid);
+            return;
+        }
+        
+        MerchantAttr merchantAttr = merchantAttrService.queryByMerchantId(merchantJoinRecord.getMerchantId());
+        if (Objects.isNull(merchantAttr)) {
+            log.warn("BIND MERCHANT WARN!merchantAttr is null,merchantId={},uid={}", merchantJoinRecord.getMerchantId(), uid);
+            return;
+        }
+        
+        //判断邀请是否过期
+        if (!merchantAttrService.checkInvitationTime(merchantJoinRecord.getMerchantId(), merchantJoinRecord.getStartTime())) {
+            log.warn("BIND MERCHANT WARN!invitation is expired,merchantId={},uid={}", merchantJoinRecord.getMerchantId(), uid);
+            return;
+        }
+        
+        UserInfoExtra userInfoExtraUpdate = new UserInfoExtra();
+        userInfoExtraUpdate.setUid(uid);
+        userInfoExtraUpdate.setMerchantId(merchantJoinRecord.getMerchantId());
+        userInfoExtraUpdate.setChannelEmployeeUid(merchantJoinRecord.getChannelEmployeeUid());
+        userInfoExtraUpdate.setUpdateTime(System.currentTimeMillis());
+        if (Objects.equals(MerchantJoinRecord.INVITER_TYPE_MERCHANT_PLACE_EMPLOYEE, merchantJoinRecord.getInviterType())) {
+            userInfoExtraUpdate.setPlaceUid(merchantJoinRecord.getInviterUid());
+            userInfoExtraUpdate.setPlaceId(merchantJoinRecord.getPlaceId());
+        }
+        
+        this.updateByUid(userInfoExtraUpdate);
+        
+        MerchantJoinRecord merchantJoinRecordUpdate = new MerchantJoinRecord();
+        merchantJoinRecordUpdate.setId(merchantJoinRecord.getId());
+        merchantJoinRecordUpdate.setStatus(MerchantJoinRecord.STATUS_SUCCESS);
+        merchantJoinRecordUpdate.setUpdateTime(System.currentTimeMillis());
+        merchantJoinRecordService.updateById(merchantJoinRecordUpdate);
+        
+        MerchantUpgrade merchantUpgrade = new MerchantUpgrade();
+        merchantUpgrade.setUid(uid);
+        merchantUpgrade.setOrderId(orderId);
+        merchantUpgrade.setMerchantId(merchant.getId());
+        //拉新成功  发送商户升级MQ
+        rocketMqService.sendAsyncMsg(MqProducerConstant.MERCHANT_UPGRADE_TOPIC, JsonUtil.toJson(merchantUpgrade));
     }
 }

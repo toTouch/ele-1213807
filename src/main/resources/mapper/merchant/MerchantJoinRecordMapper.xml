@@ -128,6 +128,43 @@
         select <include refid="basic_field"/>
         from t_merchant_join_record where del_flag = 0 and merchant_id = #{merchantId} and status = #{status}
     </select>
+    
+    <sql id="pageFilter">
+        <where>
+            del_flag = 0
+            <if test="tenantId != null">
+                and tenant_id = #{tenantId}
+            </if>
+            <if test="merchantId != null">
+                and merchant_id = #{merchantId}
+            </if>
+            <if test="status != null">
+                and status = #{status}
+            </if>
+        </where>
+    </sql>
+    
+    <select id="countTotal" resultType="java.lang.Integer">
+        SELECT
+        count(1)
+        FROM
+        t_merchant_join_record
+        <include refid="pageFilter"/>
+    </select>
+    
+    <select id="selectListByPage" resultType="com.xiliulou.electricity.entity.merchant.MerchantJoinRecord">
+        SELECT
+        <include refid="basic_field"/>
+        FROM
+        t_merchant_join_record
+        <include refid="pageFilter"/>
+        limit #{offset}, #{size}
+    </select>
+
+    <select id="selectByJoinUid" resultType="com.xiliulou.electricity.entity.merchant.MerchantJoinRecord">
+        select <include refid="basic_field"/>
+        from t_merchant_join_record where del_flag = 0 and join_uid = #{joinUid} order by id desc limit 1
+    </select>
 
 </mapper>
 

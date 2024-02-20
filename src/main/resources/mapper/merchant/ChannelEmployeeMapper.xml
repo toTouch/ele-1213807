@@ -6,6 +6,7 @@
         <result property="id" column="id" jdbcType="INTEGER"/>
         <result property="uid" column="uid" jdbcType="INTEGER"/>
         <result property="franchiseeId" column="franchisee_id" jdbcType="INTEGER"/>
+        <result property="areaId" column="area_id" jdbcType="INTEGER"/>
         <result property="status" column="status" jdbcType="INTEGER"/>
         <result property="delFlag" column="del_flag" jdbcType="INTEGER"/>
         <result property="remark" column="remark" jdbcType="VARCHAR"/>
@@ -15,7 +16,7 @@
     
     <!-- 基础字段 -->
     <sql id="selectChannelEmployee">
-        select id, uid, franchisee_id, status, del_flag, remark, create_time, update_time from t_channel_employee
+        select id, uid, franchisee_id, area_id, status, del_flag, remark, create_time, update_time from t_channel_employee
     </sql>
     
     <!--查根据id查询单条记录-->
@@ -89,6 +90,7 @@
         <trim prefix="(" suffix=")" suffixOverrides=",">
             uid,
             franchisee_id,
+            area_id,
             status,
             del_flag,
             remark,
@@ -98,6 +100,7 @@
         <trim prefix="values (" suffix=")" suffixOverrides=",">
             #{uid},
             #{franchiseeId},
+            #{areaId},
             #{status},
             #{delFlag},
             #{remark},
@@ -115,6 +118,9 @@
             </if>
             <if test="franchiseeId != null">
                 franchisee_id = #{franchiseeId},
+            </if>
+            <if test="areaId != null">
+                area_id = #{areaId},
             </if>
             <if test="status != null">
                 status = #{status},
@@ -141,6 +147,7 @@
             tu.name,
             tu.phone,
             tce.franchisee_id,
+            tce.area_id,
             tce.status,
             tce.del_flag,
             tce.remark,
@@ -162,6 +169,10 @@
                 and tce.franchisee_id = #{franchiseeId}
             </if>
         
+            <if test="areaId != null">
+                and tce.area_id = #{areaId}
+            </if>
+        
             <if test="name != null and name != ''">
                 and tu.name like '%${name}%'
             </if>
@@ -172,6 +183,10 @@
             limit #{offset}, #{limit}
         </if>
     
+    </select>
+    
+    <select id="existsByAreaId" resultType="java.lang.Integer">
+        select count(1) from t_channel_employee where area_id = #{id} and del_flag = 0
     </select>
     
     <!--通过主键逻辑删除渠道员工-->

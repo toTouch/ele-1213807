@@ -128,4 +128,9 @@ public class ElectricityCabinetQuery {
      */
     private Long areaId;
     
+    /**
+     * 柜机id集合
+     */
+    private List<Integer> idList;
+    
 }

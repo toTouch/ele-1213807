@@ -63,5 +63,6 @@ public interface ChannelEmployeeService {
     Triple<Boolean, String, Object> updateChannelEmployee(ChannelEmployeeRequest channelEmployeeRequest);
     
     Integer removeById(Long id);
-
+    
+    Integer existsByAreaId(Long id);
 }

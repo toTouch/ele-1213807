@@ -21,4 +21,6 @@ public interface MerchantPlaceMapService {
     int batchDeleteByMerchantId(Long id, Set<Long> placeIdList);
     
     List<MerchantPlaceUserVO> queryListByMerchantId(Long merchantId);
+    
+    List<MerchantPlaceMap> queryBindList(Long notMerchantId, Long franchiseeId);
 }

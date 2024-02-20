@@ -1,6 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.xiliulou.electricity.mapper.merchant.MerchantPlaceCabinetBindMapper">
+    <!-- 基础字段 -->
+    <sql id="basic_field">
+        id, place_id, cabinet_id, bind_time, un_bind_time, status, place_daily_settlement, month_settlement, month_settlement_detail, place_month_settlement, place_month_settlement_detail, tenant_id, del_flag, create_time, update_time
+    </sql>
+    
     <insert id="insert">
         insert into t_merchant_place_cabinet_bind (place_id, cabinet_id, bind_time, un_bind_time, status, tenant_id, create_time, update_time)
         values (#{placeId}, #{cabinetId}, #{bindTime},
@@ -173,5 +178,16 @@
         <if test="offset != null and limit != null">
             limit #{offset}, #{limit}
         </if>
+    </select>
+    
+    <select id="selectListByPlaceIds" resultType="com.xiliulou.electricity.entity.merchant.MerchantPlaceCabinetBind">
+        select <include refid="basic_field"/>
+            from t_merchant_place_cabinet_bind
+            <where>
+                del_flag = 0 and place_id in
+                <foreach collection="placeIds" separator="," open="(" close=")" item="placeId">
+                    #{placeId}
+                </foreach>
+            </where>
     </select>
 </mapper>

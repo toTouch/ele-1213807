@@ -63,12 +63,12 @@ public class Merchant {
     private Integer autoUpGrade;
     
     /**
-     * 状态：1-启用，0-禁用
+     * 状态：0-启用，1-禁用
      */
     private Integer status;
     
     /**
-     * 站点代付权限：1-开启，0-关闭
+     * 站点代付权限：0-开启，1-关闭
      */
     private Integer enterprisePackageAuth;
     

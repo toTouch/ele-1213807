@@ -26,4 +26,6 @@ public interface RebateConfigMapper {
     int deleteById(Long id);
     
     Integer existsRebateConfigByMidAndLevel(@Param("mid") Long mid, @Param("level") String level);
+    
+    RebateConfig selectByMidAndMerchantLevel(@Param("mid") Long mid, @Param("level") String level);
 }

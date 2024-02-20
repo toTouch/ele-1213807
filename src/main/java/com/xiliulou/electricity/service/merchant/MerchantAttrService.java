@@ -34,4 +34,9 @@ public interface MerchantAttrService {
      * @return
      */
     Integer initMerchantAttr(Long merchantId, Integer tenantId);
+    
+    /**
+     * 校验邀请时间是否在有效期内
+     */
+    Boolean checkInvitationTime(Long merchantId, Long invitationTime);
 }
