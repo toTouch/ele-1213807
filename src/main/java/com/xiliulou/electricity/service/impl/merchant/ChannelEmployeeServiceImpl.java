@@ -11,6 +11,7 @@ import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.UserRole;
 import com.xiliulou.electricity.entity.merchant.ChannelEmployee;
 import com.xiliulou.electricity.entity.merchant.ChannelEmployeeAmount;
+import com.xiliulou.electricity.entity.merchant.MerchantArea;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.merchant.ChannelEmployeeAmountMapper;
 import com.xiliulou.electricity.mapper.merchant.ChannelEmployeeMapper;
@@ -120,10 +121,15 @@ public class ChannelEmployeeServiceImpl implements ChannelEmployeeService {
             
             //设置加盟商名称
             Franchisee franchisee = franchiseeService.queryByIdFromCache(item.getFranchiseeId());
-            channelEmployeeVO.setFranchiseeName(franchisee.getName());
+            if(Objects.nonNull(franchisee)){
+                channelEmployeeVO.setFranchiseeName(franchisee.getName());
+            }
             
-            //TODO 设置区域名称
-            //merchantAreaService.queryById(item.get)
+            //设置区域名称
+            MerchantArea merchantArea = merchantAreaService.queryById(item.getAreaId());
+            if(Objects.nonNull(merchantArea)){
+                channelEmployeeVO.setAreaName(merchantArea.getName());
+            }
             
             //设置商户数
             MerchantPageRequest merchantPageRequest = new MerchantPageRequest();
@@ -251,5 +257,11 @@ public class ChannelEmployeeServiceImpl implements ChannelEmployeeService {
     public Integer removeById(Long id) {
         
         return channelEmployeeMapper.removeById(id);
+    }
+    
+    @Slave
+    @Override
+    public Integer existsByAreaId(Long id) {
+        return channelEmployeeMapper.existsByAreaId(id);
     }
 }
