@@ -920,8 +920,8 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
                     memberTermEntityUpdate.setDueTime(dueTime);
     
                     // 计算总的到期时间
-                    long l = memberTermEntity.getDueTime() - nowTime;
-                    memberTermEntity.setDueTimeTotal(memberTermEntity.getDueTimeTotal() - l);
+                    long diffTime = memberTermEntity.getDueTime() - nowTime;
+                    memberTermEntity.setDueTimeTotal(memberTermEntity.getDueTimeTotal() - diffTime);
     
                     // 计算余量
                     memberTermEntityUpdate.setResidue(packageOrderEntityNew.getConfineNum() + memberTermEntity.getResidue());
