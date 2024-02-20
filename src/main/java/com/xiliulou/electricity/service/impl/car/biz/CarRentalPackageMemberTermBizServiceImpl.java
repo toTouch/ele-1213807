@@ -880,30 +880,51 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
             memberTermEntityUpdate.setRentalPackageConfine(packageOrderEntityNew.getConfine());
             memberTermEntityUpdate.setId(memberTermEntity.getId());
             
-            // 计算到期时间
-            Integer tenancy = packageOrderEntityNew.getTenancy();
-            Integer tenancyUnit = packageOrderEntityNew.getTenancyUnit();
-            Long dueTime = ObjectUtils.isNotEmpty(memberTermEntity.getDueTime()) ? memberTermEntity.getDueTime() : nowTime;
-            if (RentalUnitEnum.DAY.getCode().equals(tenancyUnit)) {
-                dueTime = dueTime + (tenancy * TimeConstant.DAY_MILLISECOND);
-            }
-            if (RentalUnitEnum.MINUTE.getCode().equals(tenancyUnit)) {
-                dueTime = dueTime + (tenancy * TimeConstant.MINUTE_MILLISECOND);
-            }
-            
-            memberTermEntityUpdate.setDueTime(dueTime);
-            
-            // 计算余量
-            if (RenalPackageConfineEnum.NUMBER.getCode().equals(packageOrderEntityNew.getConfine())) {
-                if (memberTermEntity.getResidue() >= 0) {
-                    memberTermEntityUpdate.setResidue(packageOrderEntityNew.getConfineNum());
-                } else {
-                    memberTermEntityUpdate.setResidue(packageOrderEntityNew.getConfineNum() + memberTermEntity.getResidue());
+            if (memberTermEntity.getDueTime() <= nowTime) {
+                // 计算到期时间
+                Integer tenancy = packageOrderEntityNew.getTenancy();
+                Integer tenancyUnit = packageOrderEntityNew.getTenancyUnit();
+                Long dueTime = ObjectUtils.isNotEmpty(memberTermEntity.getDueTime()) ? memberTermEntity.getDueTime() : nowTime;
+                if (RentalUnitEnum.DAY.getCode().equals(tenancyUnit)) {
+                    dueTime = dueTime + (tenancy * TimeConstant.DAY_MILLISECOND);
                 }
-            } else {
-                memberTermEntityUpdate.setResidue(0L);
+                if (RentalUnitEnum.MINUTE.getCode().equals(tenancyUnit)) {
+                    dueTime = dueTime + (tenancy * TimeConstant.MINUTE_MILLISECOND);
+                }
+    
+                memberTermEntityUpdate.setDueTime(dueTime);
+    
+                // 计算余量
+                if (RenalPackageConfineEnum.NUMBER.getCode().equals(packageOrderEntityNew.getConfine())) {
+                    if (memberTermEntity.getResidue() >= 0) {
+                        memberTermEntityUpdate.setResidue(packageOrderEntityNew.getConfineNum());
+                    } else {
+                        memberTermEntityUpdate.setResidue(packageOrderEntityNew.getConfineNum() + memberTermEntity.getResidue());
+                    }
+                } else {
+                    memberTermEntityUpdate.setResidue(0L);
+                }
+            } else if (RenalPackageConfineEnum.NUMBER.getCode().equals(memberTermEntity.getRentalPackageConfine()) && memberTermEntity.getResidue() <= 0L) {
+                // 计算到期时间
+                Integer tenancy = packageOrderEntityNew.getTenancy();
+                Integer tenancyUnit = packageOrderEntityNew.getTenancyUnit();
+                Long dueTime = nowTime;
+                if (RentalUnitEnum.DAY.getCode().equals(tenancyUnit)) {
+                    dueTime = dueTime + (tenancy * TimeConstant.DAY_MILLISECOND);
+                }
+                if (RentalUnitEnum.MINUTE.getCode().equals(tenancyUnit)) {
+                    dueTime = dueTime + (tenancy * TimeConstant.MINUTE_MILLISECOND);
+                }
+    
+                memberTermEntityUpdate.setDueTime(dueTime);
+                
+                // 计算总的到期时间
+                long l = memberTermEntity.getDueTime() - nowTime;
+                memberTermEntity.setDueTimeTotal(memberTermEntity.getDueTimeTotal() - l);
+                
+                // 计算余量
+                memberTermEntityUpdate.setResidue(packageOrderEntityNew.getConfineNum() + memberTermEntity.getResidue());
             }
-            
             carRentalPackageMemberTermService.updateById(memberTermEntityUpdate);
             
             // 更改原订单状态及新订单状态
