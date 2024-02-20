@@ -124,7 +124,7 @@
         <where>
             `del_flag` = 0
                 and (
-                  AND `due_time` <![CDATA[ <= ]]> #{nowTime}
+                   `due_time` <![CDATA[ <= ]]> #{nowTime}
                     or (
                     `rental_package_confine` = 1
                     and `residue` <![CDATA[ <= ]]> 0
