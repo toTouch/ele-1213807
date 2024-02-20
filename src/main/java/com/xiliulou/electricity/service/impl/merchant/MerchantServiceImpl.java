@@ -10,8 +10,13 @@ import com.xiliulou.electricity.constant.MerchantConstant;
 import com.xiliulou.electricity.constant.MerchantPlaceConstant;
 import com.xiliulou.electricity.dto.merchant.MerchantDeleteCacheDTO;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
+import com.xiliulou.electricity.entity.CarLockCtrlHistory;
+import com.xiliulou.electricity.entity.ElectricityCar;
+import com.xiliulou.electricity.entity.ElectricityConfig;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.User;
+import com.xiliulou.electricity.entity.UserCar;
+import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.enterprise.EnterpriseInfo;
 import com.xiliulou.electricity.entity.merchant.Merchant;
 import com.xiliulou.electricity.entity.merchant.MerchantJoinRecord;
@@ -48,6 +53,7 @@ import com.xiliulou.electricity.service.merchant.MerchantPlaceService;
 import com.xiliulou.electricity.service.merchant.MerchantService;
 import com.xiliulou.electricity.service.merchant.MerchantUserAmountService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
+import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.merchant.ChannelEmployeeVO;
 import com.xiliulou.electricity.vo.merchant.MerchantPlaceCabinetBindVO;
@@ -869,6 +875,18 @@ public class MerchantServiceImpl implements MerchantService {
         // 查询是否已经绑定了员工
         
         return merchantPlaceUserVOS;
+    }
+    
+    @Override
+    public Integer updateById(Merchant merchant) {
+        Integer integer = merchantMapper.updateById(merchant);
+        
+        // 删除缓存
+        DbUtils.dbOperateSuccessThenHandleCache(integer, i -> {
+            redisService.delete(CacheConstant.CACHE_MERCHANT + merchant.getId());
+        });
+        
+        return integer;
     }
     
 }
