@@ -56,7 +56,7 @@ public class MerchantPlaceFeeSettlementServiceImpl implements MerchantPlaceFeeSe
     
     private List<MerchantPlaceFeeMonthRecordVO> getData(String monthDate) {
         
-        List<MerchantPlaceFeeMonthRecordVO> merchantPlaceFeeMonthRecords = merchantPlaceFeeMonthRecordService.selectByMonthDate(date, TenantContextHolder.getTenantId());
+        List<MerchantPlaceFeeMonthRecordVO> merchantPlaceFeeMonthRecords = merchantPlaceFeeMonthRecordService.selectByMonthDate(monthDate, TenantContextHolder.getTenantId());
         merchantPlaceFeeMonthRecords.parallelStream().forEach(merchantPlaceFeeMonthRecord -> {
             Long placeId = merchantPlaceFeeMonthRecord.getPlaceId();
             MerchantPlace merchantPlace = merchantPlaceService.queryFromCacheById(placeId);
