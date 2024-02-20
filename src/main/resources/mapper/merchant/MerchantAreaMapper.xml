@@ -18,7 +18,7 @@
     </insert>
     
     <delete id="deleteById">
-        delete from t_merchant_area where id = #{id}
+        delete from t_merchant_area where id = #{id} and tenant_id = #{tenantId}
     </delete>
     
     <select id="existsByAreaName" resultType="java.lang.Integer">
@@ -42,7 +42,7 @@
             </if>
         </set>
         <where>
-            id = #{id}
+            id = #{id} and tenant_id = #{tenantId}
         </where>
     </update>
     
