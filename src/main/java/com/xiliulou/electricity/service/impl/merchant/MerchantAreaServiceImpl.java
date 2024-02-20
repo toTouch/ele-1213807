@@ -11,6 +11,7 @@ import com.xiliulou.electricity.mapper.merchant.MerchantAreaMapper;
 import com.xiliulou.electricity.query.merchant.MerchantAreaQuery;
 import com.xiliulou.electricity.request.merchant.MerchantAreaSaveOrUpdateRequest;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
+import com.xiliulou.electricity.service.merchant.ChannelEmployeeService;
 import com.xiliulou.electricity.service.merchant.MerchantAreaService;
 import com.xiliulou.electricity.service.merchant.MerchantPlaceService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
@@ -46,6 +47,9 @@ public class MerchantAreaServiceImpl implements MerchantAreaService {
     
     @Resource
     private MerchantPlaceService merchantPlaceService;
+    
+    @Resource
+    private ChannelEmployeeService channelEmployeeService;
     
     @Override
     public R save(MerchantAreaSaveOrUpdateRequest saveRequest, Long operator) {
@@ -83,7 +87,10 @@ public class MerchantAreaServiceImpl implements MerchantAreaService {
             return R.fail("300901", "该区域有场地正在使用，请先解绑后操作");
         }
     
-        // todo:渠道员
+        Integer channelEmpExist = channelEmployeeService.existsByAreaId(id);
+        if (Objects.nonNull(channelEmpExist)) {
+            return R.fail("300902", "该区域有渠道员正在使用，请先解绑后操作");
+        }
     
         return R.ok(merchantAreaMapper.deleteById(id, TenantContextHolder.getTenantId()));
     }
