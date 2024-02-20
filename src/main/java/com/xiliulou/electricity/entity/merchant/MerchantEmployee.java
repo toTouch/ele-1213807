@@ -32,7 +32,7 @@ public class MerchantEmployee {
     /**
      * 商户员工状态
      */
-    private Integer status;
+    /*private Integer status;*/
     
     /**
      * 商户UID

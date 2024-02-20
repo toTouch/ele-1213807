@@ -59,8 +59,9 @@ public class JsonAdminElectricityCabinetOrderController {
                        @RequestParam(value = "source", required = false) Integer source,
                        @RequestParam(value = "paymentMethod", required = false) Integer paymentMethod,
                        @RequestParam(value = "electricityCabinetName", required = false) String electricityCabinetName,
-            @RequestParam(value = "oldCellNo", required = false) Integer oldCellNo,
-            @RequestParam(value = "uid", required = false) Long uid) {
+                       @RequestParam(value = "batterySn", required = false) String batterySn,
+                       @RequestParam(value = "oldCellNo", required = false) Integer oldCellNo,
+                       @RequestParam(value = "uid", required = false) Long uid) {
 
         if (size < 0 || size > 50) {
             size = 10L;
@@ -104,6 +105,7 @@ public class JsonAdminElectricityCabinetOrderController {
                 .franchiseeIds(franchiseeIds)
                 .storeIds(storeIds)
                 .source(source)
+                .batterySn(batterySn)
                 .electricityCabinetName(electricityCabinetName).oldCellNo(oldCellNo).uid(uid)
                 .tenantId(TenantContextHolder.getTenantId()).build();
         return electricityCabinetOrderService.queryList(electricityCabinetOrderQuery);
@@ -122,8 +124,9 @@ public class JsonAdminElectricityCabinetOrderController {
                             @RequestParam(value = "source", required = false) Integer source,
                             @RequestParam(value = "paymentMethod", required = false) Integer paymentMethod,
                             @RequestParam(value = "electricityCabinetName", required = false) String electricityCabinetName,
-            @RequestParam(value = "oldCellNo", required = false) Integer oldCellNo,
-            @RequestParam(value = "uid", required = false) Long uid) {
+                            @RequestParam(value = "batterySn", required = false) String batterySn,
+                            @RequestParam(value = "oldCellNo", required = false) Integer oldCellNo,
+                            @RequestParam(value = "uid", required = false) Long uid) {
 
         if (size < 0 || size > 50) {
             size = 10L;
@@ -155,6 +158,7 @@ public class JsonAdminElectricityCabinetOrderController {
                 .paymentMethod(paymentMethod)
                 .eleIdList(null)
                 .source(source)
+                .batterySn(batterySn)
                 .electricityCabinetName(electricityCabinetName).oldCellNo(oldCellNo).uid(uid)
                 .tenantId(null).build();
         return electricityCabinetOrderService.queryList(electricityCabinetOrderQuery);
@@ -198,8 +202,9 @@ public class JsonAdminElectricityCabinetOrderController {
                         @RequestParam(value = "source", required = false) Integer source,
                         @RequestParam(value = "paymentMethod", required = false) Integer paymentMethod,
                         @RequestParam(value = "electricityCabinetName", required = false) String electricityCabinetName,
-            @RequestParam(value = "oldCellNo", required = false) Integer oldCellNo,
-            @RequestParam(value = "uid", required = false) Long uid) {
+                        @RequestParam(value = "batterySn", required = false) String batterySn,
+                        @RequestParam(value = "oldCellNo", required = false) Integer oldCellNo,
+                        @RequestParam(value = "uid", required = false) Long uid) {
 
 
         TokenUser user = SecurityUtils.getUserInfo();
@@ -235,6 +240,7 @@ public class JsonAdminElectricityCabinetOrderController {
                 .franchiseeIds(franchiseeIds)
                 .storeIds(storeIds)
                 .source(source)
+                .batterySn(batterySn)
                 .electricityCabinetName(electricityCabinetName).oldCellNo(oldCellNo).uid(uid)
                 .tenantId(TenantContextHolder.getTenantId()).build();
         return electricityCabinetOrderService.queryCount(electricityCabinetOrderQuery);
@@ -250,8 +256,9 @@ public class JsonAdminElectricityCabinetOrderController {
                              @RequestParam(value = "source", required = false) Integer source,
                              @RequestParam(value = "paymentMethod", required = false) Integer paymentMethod,
                              @RequestParam(value = "electricityCabinetName", required = false) String electricityCabinetName,
-            @RequestParam(value = "oldCellNo", required = false) Integer oldCellNo,
-            @RequestParam(value = "uid", required = false) Long uid) {
+                             @RequestParam(value = "batterySn", required = false) String batterySn,
+                             @RequestParam(value = "oldCellNo", required = false) Integer oldCellNo,
+                             @RequestParam(value = "uid", required = false) Long uid) {
 
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
@@ -273,6 +280,7 @@ public class JsonAdminElectricityCabinetOrderController {
                 .paymentMethod(paymentMethod)
                 .eleIdList(null)
                 .source(source)
+                .batterySn(batterySn)
                 .electricityCabinetName(electricityCabinetName).oldCellNo(oldCellNo).uid(uid)
                 .tenantId(null).build();
         return electricityCabinetOrderService.queryCount(electricityCabinetOrderQuery);
@@ -290,11 +298,12 @@ public class JsonAdminElectricityCabinetOrderController {
                             @RequestParam(value = "phone", required = false) String phone,
                             @RequestParam(value = "status", required = false) String status,
                             @RequestParam(value = "beginTime", required = false) Long beginTime,
-            @RequestParam(value = "uid", required = false) Long uid,
+                            @RequestParam(value = "uid", required = false) Long uid,
                             @RequestParam(value = "endTime", required = false) Long endTime,
                             @RequestParam(value = "source", required = false) Integer source,
                             @RequestParam(value = "paymentMethod", required = false) Integer paymentMethod,
                             @RequestParam(value = "electricityCabinetName", required = false) String electricityCabinetName,
+                            @RequestParam(value = "batterySn", required = false) String batterySn,
                             @RequestParam(value = "oldCellNo", required = false) Integer oldCellNo,
                             HttpServletResponse response) {
 
@@ -327,6 +336,7 @@ public class JsonAdminElectricityCabinetOrderController {
                 .source(source)
                 .paymentMethod(paymentMethod)
                 .electricityCabinetName(electricityCabinetName)
+                .batterySn(batterySn)
                 .oldCellNo(oldCellNo)
                 .orderId(orderId)
                 .phone(phone)
