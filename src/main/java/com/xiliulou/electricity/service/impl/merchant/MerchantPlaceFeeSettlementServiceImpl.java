@@ -1,19 +1,25 @@
 package com.xiliulou.electricity.service.impl.merchant;
 
 import com.alibaba.excel.EasyExcel;
+import com.xiliulou.core.utils.DataUtil;
+import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.merchant.MerchantPlace;
 import com.xiliulou.electricity.entity.merchant.MerchantPlaceFeeMonthRecord;
+import com.xiliulou.electricity.entity.merchant.MerchantPlaceFeeMonthSummaryRecord;
 import com.xiliulou.electricity.mapper.merchant.MerchantPlaceFeeMonthRecordMapper;
+import com.xiliulou.electricity.query.merchant.MerchantPlaceFeeMonthSummaryRecordQueryModel;
 import com.xiliulou.electricity.service.excel.AutoHeadColumnWidthStyleStrategy;
 import com.xiliulou.electricity.service.excel.CommentWriteHandler;
 import com.xiliulou.electricity.service.excel.HeadContentCellStyle;
 import com.xiliulou.electricity.service.excel.MergeSameRowsStrategy;
 import com.xiliulou.electricity.service.merchant.MerchantPlaceFeeMonthRecordService;
+import com.xiliulou.electricity.service.merchant.MerchantPlaceFeeMonthSummaryRecordService;
 import com.xiliulou.electricity.service.merchant.MerchantPlaceFeeSettlementService;
 import com.xiliulou.electricity.service.merchant.MerchantPlaceService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.vo.merchant.MerchantPlaceFeeMonthRecordVO;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -45,7 +51,10 @@ public class MerchantPlaceFeeSettlementServiceImpl implements MerchantPlaceFeeSe
     @Resource
     private MerchantPlaceService merchantPlaceService;
     
-    private List<MerchantPlaceFeeMonthRecordVO> getData(String date) {
+    @Resource
+    private MerchantPlaceFeeMonthSummaryRecordService merchantPlaceFeeMonthSummaryRecordService;
+    
+    private List<MerchantPlaceFeeMonthRecordVO> getData(String monthDate) {
         
         List<MerchantPlaceFeeMonthRecordVO> merchantPlaceFeeMonthRecords = merchantPlaceFeeMonthRecordService.selectByMonthDate(date, TenantContextHolder.getTenantId());
         merchantPlaceFeeMonthRecords.parallelStream().forEach(merchantPlaceFeeMonthRecord -> {
@@ -59,7 +68,7 @@ public class MerchantPlaceFeeSettlementServiceImpl implements MerchantPlaceFeeSe
     }
     
     @Override
-    public void export(String date, HttpServletResponse response) {
+    public void export(String monthDate, HttpServletResponse response) {
         
         String fileName = "场地费出账记录.xlsx";
         try {
@@ -74,12 +83,28 @@ public class MerchantPlaceFeeSettlementServiceImpl implements MerchantPlaceFeeSe
                     .registerWriteHandler(new MergeSameRowsStrategy(2, new int[] {0, 1, 2, 3})).registerWriteHandler(HeadContentCellStyle.myHorizontalCellStyleStrategy())
                     .registerWriteHandler(new CommentWriteHandler(getComments(), "xlsx")).registerWriteHandler(new AutoHeadColumnWidthStyleStrategy())
                     // 注意：需要先调用registerWriteHandler()再调用sheet()方法才能使合并策略生效！！！
-                    .sheet("场地费出账记录").doWrite(getData(""));
+                    .sheet("场地费出账记录").doWrite(getData(monthDate));
             return;
         } catch (IOException e) {
             log.error("导出报表失败！", e);
         }
     }
+    
+    @Override
+    public R page(MerchantPlaceFeeMonthSummaryRecordQueryModel queryModel) {
+        List<MerchantPlaceFeeMonthSummaryRecord> merchantPlaceFeeMonthSummaryRecords = merchantPlaceFeeMonthSummaryRecordService.selectByCondition(queryModel);
+        if (DataUtil.collectionIsUsable(merchantPlaceFeeMonthSummaryRecords)) {
+            return R.ok(merchantPlaceFeeMonthSummaryRecords);
+        } else {
+            return R.ok();
+        }
+    }
+    
+    @Override
+    public R pageCount(MerchantPlaceFeeMonthSummaryRecordQueryModel queryModel) {
+        return R.ok(merchantPlaceFeeMonthSummaryRecordService.pageCountByCondition(queryModel));
+    }
+    
     
     /**
      * 创建表头
