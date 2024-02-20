@@ -23,6 +23,10 @@ public class ChannelEmployeeVO {
     
     private String franchiseeName;
     
+    private Long areaId;
+    
+    private String areaName;
+    
     private Integer status;
     
     private Integer merchantTotal;
