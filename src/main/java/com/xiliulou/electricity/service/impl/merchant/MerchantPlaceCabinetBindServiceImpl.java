@@ -31,6 +31,7 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -187,14 +188,14 @@ public class MerchantPlaceCabinetBindServiceImpl implements MerchantPlaceCabinet
         long currentTimeMillis = System.currentTimeMillis();
         // 检测结束时间是否小于系统当前时间
         if (placeCabinetBindSaveRequest.getUnBindTime() > currentTimeMillis) {
-            log.error("place un bind error, cabinet already un bind, id ={}, unBindTime={},curTime=", placeCabinetBindSaveRequest.getId(),
+            log.error("place un bind error, cabinet already un bind, id ={}, unBindTime={},curTime={}", placeCabinetBindSaveRequest.getId(),
                     placeCabinetBindSaveRequest.getUnBindTime(), currentTimeMillis);
             return Triple.of(false, "", "结束时间不能晚于当前时间");
         }
         
         // 检测结束时间是否小于绑定时间
         if (placeCabinetBindSaveRequest.getUnBindTime() > cabinetBind.getBindTime()) {
-            log.error("place un bind error, cabinet already un bind, id ={}, unBindTime={},bindTime=", placeCabinetBindSaveRequest.getId(),
+            log.error("place un bind error, cabinet already un bind, id ={}, unBindTime={},bindTime={}", placeCabinetBindSaveRequest.getId(),
                     placeCabinetBindSaveRequest.getUnBindTime(), cabinetBind.getBindTime());
             return Triple.of(false, "", "结束时间不能早于绑定时间");
         }
@@ -304,5 +305,10 @@ public class MerchantPlaceCabinetBindServiceImpl implements MerchantPlaceCabinet
         return calendar.getTimeInMillis();
     }
     
+    @Slave
+    @Override
+    public List<MerchantPlaceCabinetBind> listByPlaceIds(Set<Long> placeIds) {
+        return merchantPlaceCabinetBindMapper.selectListByPlaceIds(placeIds);
+    }
     
 }
