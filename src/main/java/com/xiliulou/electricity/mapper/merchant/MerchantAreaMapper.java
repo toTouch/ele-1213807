@@ -15,7 +15,7 @@ public interface MerchantAreaMapper {
     
     Integer insertOne(MerchantArea merchantArea);
     
-    Integer deleteById(Long id);
+    Integer deleteById(@Param("id")Long id, @Param("tenantId")Integer tenantId);
     
     Integer existsByAreaName(@Param("areaName") String areaName, @Param("tenantId") Integer tenantId);
     
