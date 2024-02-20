@@ -13,6 +13,7 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.util.CellRangeAddress;
 
 import java.util.List;
+import java.util.Objects;
 
 /**
  * @ClassName : MergeSameRowsStrategy
@@ -22,7 +23,9 @@ import java.util.List;
  */
 @Data
 public class MergeSameRowsStrategy implements CellWriteHandler {
+    
     private int[] mergeColumnIndex;
+    
     private int mergeRowIndex;
     
     public MergeSameRowsStrategy() {
@@ -56,12 +59,12 @@ public class MergeSameRowsStrategy implements CellWriteHandler {
         int curRowIndex = cell.getRowIndex();
         // 当前列
         int curColIndex = cell.getColumnIndex();
-    
+        
         if (curRowIndex > mergeRowIndex) {
             for (int i = 0; i < mergeColumnIndex.length; i++) {
                 if (curColIndex == mergeColumnIndex[i]) {
                     mergeWithPrevRow(writeSheetHolder, cell, curRowIndex, curColIndex);
-                    mergeWithPrevColumn(writeSheetHolder, cell, curRowIndex, curColIndex);
+                    // mergeWithPrevColumn(writeSheetHolder, cell, curRowIndex, curColIndex);
                     break;
                 }
             }
@@ -81,6 +84,13 @@ public class MergeSameRowsStrategy implements CellWriteHandler {
         Object curData = cell.getCellTypeEnum() == CellType.STRING ? cell.getStringCellValue() : cell.getNumericCellValue();
         Cell preCell = cell.getSheet().getRow(curRowIndex - 1).getCell(curColIndex);
         Object preData = preCell.getCellTypeEnum() == CellType.STRING ? preCell.getStringCellValue() : preCell.getNumericCellValue();
+        
+        // 仅针对场地费
+        Cell preCell111 = cell.getSheet().getRow(curRowIndex - 1).getCell(1);
+        Cell curCell111 = cell.getSheet().getRow(curRowIndex).getCell(1);
+        if (curRowIndex > 1 && curColIndex > 1 && !Objects.equals(preCell111.getStringCellValue(), curCell111.getStringCellValue())) {
+            return;
+        }
         
         // 比较当前行的第一列的单元格与上一行是否相同，相同合并当前单元格与上一行
         if (curData.equals(preData)) {
