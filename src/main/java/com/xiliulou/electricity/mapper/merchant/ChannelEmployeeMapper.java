@@ -31,5 +31,5 @@ public interface ChannelEmployeeMapper extends BaseMapper<ChannelEmployee> {
     
     Integer removeById(@Param("id") Long id);
     
-    
+    Integer existsByAreaId(Long id);
 }
