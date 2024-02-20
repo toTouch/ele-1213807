@@ -29,4 +29,6 @@ public interface MerchantMapper {
     Integer countTotal(MerchantQueryModel merchantQueryModel);
     
     Merchant selectByUid(@Param("uid") Long uid);
+    
+    Integer updateById(Merchant merchant);
 }

@@ -2,6 +2,8 @@ package com.xiliulou.electricity.vo.merchant;
 
 import lombok.Data;
 
+import java.util.List;
+
 /**
  * @author maxiaodong
  * @date 2024/2/16 14:32
@@ -28,10 +30,12 @@ public class MerchantPlaceVO {
      */
     private String cabinetName;
     
-    /**
-     * 状态
-     */
-    private String status;
+    private List<Long> cabinetIdList;
     
     private Long createTime;
+    
+    /**
+     * 是否被禁用：1 是，0 否
+     */
+    private Integer disable;
 }

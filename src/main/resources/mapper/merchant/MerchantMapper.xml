@@ -53,6 +53,32 @@
             id = #{id}
         </where>
     </update>
+    
+    <update id="updateById">
+        update t_merchant
+        <set>
+            <if test="inviteAuth != null">
+                invite_auth = #{inviteAuth},
+            </if>
+            <if test="merchantGradeId != null">
+                merchant_grade_id = #{merchantGradeId},
+            </if>
+            <if test="channelEmployeeUid != null">
+                channel_employee_uid = #{channelEmployeeUid},
+            </if>
+            <if test="autoUpGrade != null">
+                auto_up_grade = #{autoUpGrade},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime}
+            </if>
+        </set>
+        
+        <where>
+            id = #{id}
+        </where>
+    </update>
+    
     <delete id="removeById">
         update t_merchant set del_flag = #{delFlag}, update_time = #{updateTime} where id = #{id}
     </delete>

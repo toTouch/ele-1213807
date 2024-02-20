@@ -28,4 +28,13 @@ public class MerchantJoinRecordQueryMode {
     private Integer status;
     
     private Integer tenantId;
+    
+    /**
+     * 商户id
+     */
+    private Long merchantId;
+    
+    private Long size;
+    
+    private Long offset;
 }

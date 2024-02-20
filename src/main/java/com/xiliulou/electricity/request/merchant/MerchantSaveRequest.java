@@ -76,7 +76,7 @@ public class MerchantSaveRequest {
     private Integer status;
     
     /**
-     * 站点代付权限：1-开启，0-关闭
+     * 站点代付权限：0-开启，1-关闭
      */
     @Range(min = 0, max = 1, message = "站点代付权限不存在")
     @NotNull(message = "站点代付权限不能为空", groups = {CreateGroup.class, UpdateGroup.class})

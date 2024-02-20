@@ -10,11 +10,17 @@ import com.xiliulou.electricity.constant.MerchantConstant;
 import com.xiliulou.electricity.constant.MerchantPlaceConstant;
 import com.xiliulou.electricity.dto.merchant.MerchantDeleteCacheDTO;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
+import com.xiliulou.electricity.entity.CarLockCtrlHistory;
+import com.xiliulou.electricity.entity.ElectricityCar;
+import com.xiliulou.electricity.entity.ElectricityConfig;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.User;
+import com.xiliulou.electricity.entity.UserCar;
+import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.enterprise.EnterpriseInfo;
 import com.xiliulou.electricity.entity.merchant.Merchant;
 import com.xiliulou.electricity.entity.merchant.MerchantJoinRecord;
+import com.xiliulou.electricity.entity.merchant.MerchantLevel;
 import com.xiliulou.electricity.entity.merchant.MerchantPlace;
 import com.xiliulou.electricity.entity.merchant.MerchantPlaceBind;
 import com.xiliulou.electricity.entity.merchant.MerchantPlaceCabinetBind;
@@ -39,6 +45,7 @@ import com.xiliulou.electricity.service.enterprise.EnterprisePackageService;
 import com.xiliulou.electricity.service.merchant.ChannelEmployeeService;
 import com.xiliulou.electricity.service.merchant.MerchantAttrService;
 import com.xiliulou.electricity.service.merchant.MerchantJoinRecordService;
+import com.xiliulou.electricity.service.merchant.MerchantLevelService;
 import com.xiliulou.electricity.service.merchant.MerchantPlaceBindService;
 import com.xiliulou.electricity.service.merchant.MerchantPlaceCabinetBindService;
 import com.xiliulou.electricity.service.merchant.MerchantPlaceMapService;
@@ -46,10 +53,12 @@ import com.xiliulou.electricity.service.merchant.MerchantPlaceService;
 import com.xiliulou.electricity.service.merchant.MerchantService;
 import com.xiliulou.electricity.service.merchant.MerchantUserAmountService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
+import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.merchant.ChannelEmployeeVO;
 import com.xiliulou.electricity.vo.merchant.MerchantPlaceCabinetBindVO;
 import com.xiliulou.electricity.vo.merchant.MerchantPlaceUserVO;
+import com.xiliulou.electricity.vo.merchant.MerchantUpdateVO;
 import com.xiliulou.electricity.vo.merchant.MerchantVO;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
@@ -129,6 +138,9 @@ public class MerchantServiceImpl implements MerchantService {
     @Resource
     private MerchantJoinRecordService merchantJoinRecordService;
     
+    @Resource
+    private MerchantLevelService merchantLevelService;
+    
     
     /**
      * 商户保存
@@ -172,7 +184,13 @@ public class MerchantServiceImpl implements MerchantService {
             log.error("merchant save error, franchisee is null name={}, franchiseeId={}", merchantSaveRequest.getName(), merchantSaveRequest.getFranchiseeId());
             return Triple.of(false, "", "加盟商不存在");
         }
+        
         // 检测商户等级是否存在
+        MerchantLevel merchantLevel = merchantLevelService.queryById(merchantSaveRequest.getMerchantGradeId());
+        if (Objects.nonNull(merchantLevel) || Objects.equals(merchantLevel.getTenantId(), tenantId)) {
+            log.error("merchant save error, merchant level is null name={}, merchantLevelId={}", merchantSaveRequest.getName(), merchantSaveRequest.getMerchantGradeId());
+            return Triple.of(false, "", "商户等级不存在");
+        }
         
         // 检测渠道员是否存在
         if (Objects.nonNull(merchantSaveRequest.getChannelEmployeeUid())) {
@@ -347,32 +365,38 @@ public class MerchantServiceImpl implements MerchantService {
         // 检测商户名称是否存在
         User user = userService.checkMerchantExist(merchantSaveRequest.getName(), merchantSaveRequest.getPhone(), User.TYPE_USER_MERCHANT, tenantId, merchant.getUid());
         if (Objects.nonNull(user) && Objects.equals(user.getName(), merchantSaveRequest.getName())) {
-            log.error("merchant update error, name is exit name={}", merchantSaveRequest.getName());
+            log.error("merchant update error, name is exit id={}, name={}", merchantSaveRequest.getId(), merchantSaveRequest.getName());
             return Triple.of(false, "", "商户名称已经存在");
         }
         
         // 检测手机号
         if (Objects.nonNull(user) && Objects.equals(user.getPhone(), merchantSaveRequest.getPhone())) {
-            log.error("merchant update error, phone is exit name={}", merchantSaveRequest.getPhone());
+            log.error("merchant update error, phone is exit id={}, phone={}", merchantSaveRequest.getId(), merchantSaveRequest.getPhone());
             return Triple.of(false, "", "手机号已经存在");
         }
         
+        // 检测加盟上是否存在
         Franchisee franchisee = franchiseeService.queryByIdFromCache(merchantSaveRequest.getFranchiseeId());
         if (Objects.isNull(franchisee) || !Objects.equals(franchisee.getTenantId(), tenantId)) {
-            log.error("merchant update error, franchisee is null name={}, franchiseeId={}", merchantSaveRequest.getName(), merchantSaveRequest.getFranchiseeId());
+            log.error("merchant update error, franchisee is null id={}, franchiseeId={}", merchantSaveRequest.getId(), merchantSaveRequest.getFranchiseeId());
             return Triple.of(false, "", "加盟商不存在");
         }
         
         // 检测商户等级是否存在
+        MerchantLevel merchantLevel = merchantLevelService.queryById(merchantSaveRequest.getMerchantGradeId());
+        if (Objects.nonNull(merchantLevel) || Objects.equals(merchantLevel.getTenantId(), tenantId)) {
+            log.error("merchant update error, merchant level is null id={}, merchantLevelId={}", merchantSaveRequest.getId(), merchantSaveRequest.getMerchantGradeId());
+            return Triple.of(false, "", "商户等级不存在");
+        }
         
         // 检测渠道员是否存在
         if (Objects.nonNull(merchantSaveRequest.getChannelEmployeeUid())) {
             ChannelEmployeeVO channelEmployeeVO = channelEmployeeService.queryById(merchantSaveRequest.getChannelEmployeeUid());
             if (Objects.isNull(channelEmployeeVO)) {
-                log.error("merchant update error, channel us is not find name={}, channelUserId={}", merchantSaveRequest.getName(), merchantSaveRequest.getChannelEmployeeUid());
+                log.error("merchant update error, channel us is not find id={}, channelUserId={}", merchantSaveRequest.getId(), merchantSaveRequest.getChannelEmployeeUid());
             }
             if (Objects.nonNull(channelEmployeeVO) && !Objects.equals(channelEmployeeVO.getFranchiseeId(), merchantSaveRequest.getFranchiseeId())) {
-                log.error("merchant update error, channel us is not find name={}, franchiseeId={}, channelUserFranchiseeId={}, channelUserId={}", merchantSaveRequest.getName(), merchantSaveRequest.getFranchiseeId(), channelEmployeeVO.getFranchiseeId(), merchantSaveRequest.getChannelEmployeeUid());
+                log.error("merchant update error, channel us is not find id={}, franchiseeId={}, channelUserFranchiseeId={}, channelUserId={}", merchantSaveRequest.getId(), merchantSaveRequest.getFranchiseeId(), channelEmployeeVO.getFranchiseeId(), merchantSaveRequest.getChannelEmployeeUid());
             }
         }
         
@@ -383,14 +407,14 @@ public class MerchantServiceImpl implements MerchantService {
                     .delFlag(BatteryMemberCard.DEL_NORMAL).build();
             List<BatteryMemberCard> packageList = batteryMemberCardService.queryListByIdList(query);
             if (ObjectUtils.isEmpty(packageList)) {
-                log.error("merchant update error, package is not exist name={}, packageId={}", merchantSaveRequest.getName(), merchantSaveRequest.getEnterprisePackageIdList());
+                log.error("merchant update error, package is not exist id={}, packageId={}", merchantSaveRequest.getId(), merchantSaveRequest.getEnterprisePackageIdList());
                 return Triple.of(false, "", "企业套餐不存在");
             }
             
             Set<Long> memberCardIdList = packageList.stream().map(BatteryMemberCard::getId).collect(Collectors.toSet());
             if (!Objects.equals(packageList.size(), merchantSaveRequest.getEnterprisePackageIdList().size())) {
                 List<Long> diffIdList = merchantSaveRequest.getEnterprisePackageIdList().stream().filter(item -> !memberCardIdList.contains(item)).collect(Collectors.toList());
-                log.error("merchant update error,franchiseeId = {}, merchant name={},diff package Id ={}", merchantSaveRequest.getFranchiseeId(), merchantSaveRequest.getName(),
+                log.error("merchant update error,franchiseeId = {}, merchant merchantId={},diff package Id ={}", merchantSaveRequest.getFranchiseeId(), merchantSaveRequest.getId(),
                         diffIdList);
                 return Triple.of(false, "", "企业套餐不存在");
             }
@@ -407,14 +431,14 @@ public class MerchantServiceImpl implements MerchantService {
             
             List<MerchantPlace> placeList = merchantPlaceService.queryList(placeQueryModel);
             if (ObjectUtils.isEmpty(placeList)) {
-                log.error("merchant update error, place is not exist merchant name={}, placeId={}", merchantSaveRequest.getName(), merchantSaveRequest.getPlaceIdList());
+                log.error("merchant update error, place is not exist merchant id={}, placeId={}", merchantSaveRequest.getId(), merchantSaveRequest.getPlaceIdList());
                 return Triple.of(false, "", "场地不存在");
             }
             
             List<Long> placeIdList = placeList.stream().map(MerchantPlace::getId).collect(Collectors.toList());
             if (!Objects.equals(placeList.size(), merchantSaveRequest.getPlaceIdList().size())) {
                 List<Long> diffIdList = merchantSaveRequest.getPlaceIdList().stream().filter(item -> !placeIdList.contains(item)).collect(Collectors.toList());
-                log.error("merchant update error,merchant name={},diff place Id={}", merchantSaveRequest.getName(), diffIdList);
+                log.error("merchant update error,merchant merchantId={},diff place diffIdList={}", merchantSaveRequest.getId(), diffIdList);
                 return Triple.of(false, "", "场地不存在");
             }
             
@@ -425,7 +449,7 @@ public class MerchantServiceImpl implements MerchantService {
             List<MerchantPlaceMap> placeMapList = merchantPlaceMapService.queryList(queryModel);
             if (ObjectUtils.isNotEmpty(placeMapList)) {
                 Set<Long> collect = placeMapList.stream().map(MerchantPlaceMap::getPlaceId).collect(Collectors.toSet());
-                log.error("merchant update error,merchant name={}, place is bind placeId={}", merchantSaveRequest.getName(), collect);
+                log.error("merchant update error,merchant id={}, place is bind placeId={}", merchantSaveRequest.getId(), collect);
                 return Triple.of(false, "", "场地已经被绑定");
             }
         }
@@ -757,13 +781,13 @@ public class MerchantServiceImpl implements MerchantService {
         if (Objects.isNull(merchant) || !Objects.equals(merchant.getTenantId(), tenantId)) {
             return Triple.of(false, "", "商户不存在");
         }
-        
-        MerchantVO vo = new MerchantVO();
+    
+        MerchantUpdateVO vo = new MerchantUpdateVO();
         BeanUtils.copyProperties(merchant, vo);
         
         // 查询企业套餐
         List<Long> packageIdList = enterprisePackageService.selectByEnterpriseId(id);
-        vo.setPackageIdList(packageIdList);
+        vo.setEnterprisePackageIdList(packageIdList);
         
         Set<Long> merchantIdList = new HashSet<>();
         merchantIdList.add(id);
@@ -851,6 +875,18 @@ public class MerchantServiceImpl implements MerchantService {
         // 查询是否已经绑定了员工
         
         return merchantPlaceUserVOS;
+    }
+    
+    @Override
+    public Integer updateById(Merchant merchant) {
+        Integer integer = merchantMapper.updateById(merchant);
+        
+        // 删除缓存
+        DbUtils.dbOperateSuccessThenHandleCache(integer, i -> {
+            redisService.delete(CacheConstant.CACHE_MERCHANT + merchant.getId());
+        });
+        
+        return integer;
     }
     
 }

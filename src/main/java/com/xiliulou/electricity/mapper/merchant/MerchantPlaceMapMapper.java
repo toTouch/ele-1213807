@@ -22,4 +22,6 @@ public interface MerchantPlaceMapMapper {
     int batchDeleteByMerchantId(@Param("merchantId") Long merchantId, @Param("placeIdList") Set<Long> placeIdList);
     
     List<MerchantPlaceUserVO> selectListByMerchant(@Param("merchantId")Long merchantId);
+    
+    List<MerchantPlaceMap> selectBindList(@Param("notMerchantId") Long notMerchantId,@Param("franchiseeId") Long franchiseeId);
 }

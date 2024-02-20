@@ -49,4 +49,17 @@ public class MerchantPlaceMapServiceImpl implements MerchantPlaceMapService {
     public List<MerchantPlaceUserVO> queryListByMerchantId(Long merchantId) {
         return merchantPlaceMapMapper.selectListByMerchant(merchantId);
     }
+    
+    /**
+     * 商户编辑与新增页面查询场地下拉框数据
+     * @param notMerchantId
+     * @param franchiseeId
+     * @return
+     */
+    @Slave
+    @Override
+    public List<MerchantPlaceMap> queryBindList(Long notMerchantId, Long franchiseeId) {
+    
+        return merchantPlaceMapMapper.selectBindList(notMerchantId, franchiseeId);
+    }
 }
