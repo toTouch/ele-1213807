@@ -3,7 +3,6 @@ package com.xiliulou.electricity.service.merchant;
 import com.xiliulou.electricity.entity.merchant.MerchantPlaceBind;
 import com.xiliulou.electricity.vo.merchant.MerchantPlaceAndCabinetUserVO;
 import com.xiliulou.electricity.vo.merchant.MerchantPlaceCabinetVO;
-import com.xiliulou.electricity.vo.merchant.MerchantPlaceUserVO;
 
 import java.util.List;
 import java.util.Set;
