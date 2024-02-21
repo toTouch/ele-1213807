@@ -28,4 +28,6 @@ public interface RebateRecordMapper extends BaseMapper<RebateRecord> {
     Integer selectByPageCount(RebateRecordRequest query);
     
     List<RebateRecord> selectByPage(RebateRecordRequest query);
+    
+    RebateRecord selectByOriginalOrderId(String originalOrderId);
 }

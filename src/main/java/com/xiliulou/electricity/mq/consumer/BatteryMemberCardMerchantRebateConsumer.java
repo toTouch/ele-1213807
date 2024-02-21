@@ -2,6 +2,7 @@ package com.xiliulou.electricity.mq.consumer;
 
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.constant.MerchantConstant;
+import com.xiliulou.electricity.entity.BatteryMembercardRefundOrder;
 import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.UserInfoExtra;
@@ -13,6 +14,7 @@ import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.mq.constant.MqConsumerConstant;
 import com.xiliulou.electricity.mq.constant.MqProducerConstant;
 import com.xiliulou.electricity.mq.model.BatteryMemberCardMerchantRebate;
+import com.xiliulou.electricity.service.BatteryMembercardRefundOrderService;
 import com.xiliulou.electricity.service.ElectricityMemberCardOrderService;
 import com.xiliulou.electricity.service.UserInfoExtraService;
 import com.xiliulou.electricity.service.UserInfoService;
@@ -47,6 +49,9 @@ public class BatteryMemberCardMerchantRebateConsumer implements RocketMQListener
     private ElectricityMemberCardOrderService electricityMemberCardOrderService;
     
     @Autowired
+    private BatteryMembercardRefundOrderService batteryMembercardRefundOrderService;
+    
+    @Autowired
     private MerchantService merchantService;
     
     @Autowired
@@ -76,6 +81,17 @@ public class BatteryMemberCardMerchantRebateConsumer implements RocketMQListener
         if (Objects.isNull(batteryMemberCardMerchantRebate) || Objects.isNull(batteryMemberCardMerchantRebate.getType())) {
             return;
         }
+        
+        if (Objects.equals(MerchantConstant.TYPE_PURCHASE, batteryMemberCardMerchantRebate.getType())) {
+            //返利
+            handleRebate(batteryMemberCardMerchantRebate);
+        } else {
+            //退租
+            handleMemberCardRentRefund(batteryMemberCardMerchantRebate);
+        }
+    }
+    
+    private void handleRebate(BatteryMemberCardMerchantRebate batteryMemberCardMerchantRebate) {
         
         ElectricityMemberCardOrder electricityMemberCardOrder = electricityMemberCardOrderService.selectByOrderNo(batteryMemberCardMerchantRebate.getOrderId());
         if (Objects.isNull(electricityMemberCardOrder)) {
@@ -120,17 +136,6 @@ public class BatteryMemberCardMerchantRebateConsumer implements RocketMQListener
             return;
         }
         
-        if (Objects.equals(MerchantConstant.TYPE_PURCHASE, batteryMemberCardMerchantRebate.getType())) {
-            //返利
-            handleRebate(electricityMemberCardOrder, rebateConfig, merchant, userInfo, userInfoExtra, merchantLevel);
-        } else {
-            //退租
-            //            handleRentRefund(electricityMemberCardOrder,rebateConfig,merchant,userInfo,userInfoExtra,merchantLevel);
-        }
-    }
-    
-    private void handleRebate(ElectricityMemberCardOrder electricityMemberCardOrder, RebateConfig rebateConfig, Merchant merchant, UserInfo userInfo, UserInfoExtra userInfoExtra,
-            MerchantLevel merchantLevel) {
         //商户返现金额
         BigDecimal merchantRebate = null;
         
@@ -180,10 +185,55 @@ public class BatteryMemberCardMerchantRebateConsumer implements RocketMQListener
             rebateRecord.setMerchantRebate(BigDecimal.ZERO);
         }
         rebateRecordService.insert(rebateRecord);
+    }
+    
+    
+    private void handleMemberCardRentRefund(BatteryMemberCardMerchantRebate batteryMemberCardMerchantRebate) {
         
-        //商户返利  TODO
+        BatteryMembercardRefundOrder batteryMembercardRefundOrder = batteryMembercardRefundOrderService.selectByRefundOrderNo(batteryMemberCardMerchantRebate.getOrderId());
+        if (Objects.isNull(batteryMembercardRefundOrder)) {
+            log.warn("REBATE REFUND CONSUMER WARN!not found batteryMembercardRefundOrder,orderId={}", batteryMemberCardMerchantRebate.getOrderId());
+            return;
+        }
         
-        //渠道员返利  TODO
+        //获取返利记录
+        RebateRecord rebateRecord = rebateRecordService.queryByOriginalOrderId(batteryMembercardRefundOrder.getMemberCardOrderNo());
+        if (Objects.isNull(rebateRecord)) {
+            log.warn("REBATE REFUND CONSUMER WARN!not found rebateRecord,memberCardOrderId={}", batteryMembercardRefundOrder.getMemberCardOrderNo());
+            return;
+        }
         
+        RebateRecord rebateRecordInsert = new RebateRecord();
+        rebateRecordInsert.setUid(rebateRecord.getUid());
+        rebateRecordInsert.setName(rebateRecord.getName());
+        rebateRecordInsert.setPhone(rebateRecord.getPhone());
+        rebateRecordInsert.setOrderId(OrderIdUtil.generateBusinessOrderId(BusinessType.BATTERY_REBATE, rebateRecord.getUid()));
+        rebateRecordInsert.setOriginalOrderId(batteryMembercardRefundOrder.getRefundOrderNo());
+        rebateRecordInsert.setMemberCardId(rebateRecord.getMemberCardId());
+        rebateRecordInsert.setType(rebateRecord.getType());
+        rebateRecordInsert.setFranchiseeId(rebateRecord.getFranchiseeId());
+        rebateRecordInsert.setLevel(rebateRecord.getLevel());
+        rebateRecordInsert.setMerchantId(rebateRecord.getMerchantId());
+        rebateRecordInsert.setChanneler(rebateRecord.getChanneler());
+        rebateRecordInsert.setChannelerRebate(rebateRecord.getChannelerRebate());
+        rebateRecordInsert.setMerchantRebate(rebateRecord.getMerchantRebate());
+        rebateRecordInsert.setPlaceId(rebateRecord.getPlaceId());
+        rebateRecordInsert.setPlaceUid(rebateRecord.getPlaceUid());
+        rebateRecordInsert.setRebateTime(batteryMembercardRefundOrder.getCreateTime());
+        rebateRecordInsert.setTenantId(rebateRecord.getTenantId());
+        rebateRecordInsert.setCreateTime(System.currentTimeMillis());
+        rebateRecordInsert.setUpdateTime(System.currentTimeMillis());
+        
+        //返利记录已结算，重新生成 已退回 返利记录；
+        if (Objects.equals(MerchantConstant.MERCHANT_REBATE_STATUS_SETTLED, rebateRecord.getStatus())) {
+            rebateRecordInsert.setStatus(MerchantConstant.MERCHANT_REBATE_STATUS_RETURNED);
+        }
+        
+        //未结算，生成 已失效 返利记录
+        if (Objects.equals(MerchantConstant.MERCHANT_REBATE_STATUS_NOT_SETTLE, rebateRecord.getStatus())) {
+            rebateRecordInsert.setStatus(MerchantConstant.MERCHANT_REBATE_STATUS_EXPIRED);
+        }
+        
+        rebateRecordService.insert(rebateRecord);
     }
 }

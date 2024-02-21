@@ -1516,7 +1516,7 @@ public class UnionTradeOrderServiceImpl extends
         merchantRebate.setUid(uid);
         merchantRebate.setOrderId(orderId);
         merchantRebate.setType(MerchantConstant.TYPE_PURCHASE);
-        //续费成功  发送商户升级MQ
+        //续费成功  发送返利MQ
         rocketMqService.sendAsyncMsg(MqProducerConstant.BATTERY_MEMBER_CARD_MERCHANT_REBATE_TOPIC, JsonUtil.toJson(merchantRebate));
     }
 

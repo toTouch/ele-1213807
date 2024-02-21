@@ -1,7 +1,9 @@
 package com.xiliulou.electricity.service.impl.merchant;
 
+import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.i18n.MessageUtils;
 import com.xiliulou.db.dynamic.annotation.Slave;
+import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.constant.MerchantConstant;
 import com.xiliulou.electricity.entity.User;
@@ -56,6 +58,9 @@ public class MerchantEmployeeServiceImpl implements MerchantEmployeeService {
     
     @Resource
     private MerchantPlaceService merchantPlaceService;
+    
+    @Resource
+    RedisService redisService;
     
     @Transactional(rollbackFor = Exception.class)
     @Override
@@ -164,7 +169,21 @@ public class MerchantEmployeeServiceImpl implements MerchantEmployeeService {
     
     @Override
     public Integer removeMerchantEmployee(Long id) {
-        return null;
+        MerchantEmployee merchantEmployee = merchantEmployeeMapper.selectById(id);
+        if(Objects.isNull(merchantEmployee)) {
+            log.error("not found merchant employee by id, id = {}", id);
+            throw new BizException("120004", "商户员工不存在");
+        }
+        User user = userService.queryByUidFromCache(merchantEmployee.getUid());
+        
+        Integer result = 0;
+        if(Objects.nonNull(user)){
+            //userService.deleteInnerUser(merchantEmployee.getUid());
+            result = userService.removeById(merchantEmployee.getUid(), System.currentTimeMillis());
+            redisService.delete(CacheConstant.CACHE_USER_UID + merchantEmployee.getUid());
+            redisService.delete(CacheConstant.CACHE_USER_PHONE + user.getTenantId() + ":" + user.getPhone() + ":" + user.getUserType());
+        }
+        return result;
     }
     
     @Slave

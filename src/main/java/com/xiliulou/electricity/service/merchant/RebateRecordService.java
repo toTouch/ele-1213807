@@ -18,6 +18,8 @@ public interface RebateRecordService {
     
     RebateRecord queryByOrderId(String orderId);
     
+    RebateRecord queryByOriginalOrderId(String originalOrderId);
+    
     RebateRecord insert(RebateRecord rebateRecord);
     
     Integer updateById(RebateRecord rebateRecord);
