@@ -30,7 +30,9 @@
     <select id="selectByUid" resultMap="ChannelEmployeeAmountMap">
         <include refid="selectChannelEmployeeAmount"/>
         
-        where uid = #{uid} and del_flag=0
+        where uid = #{uid}
+        and tenant_id = #{tenantId}
+        and del_flag=0
     </select>
     
     <select id="selectListByCondition" resultMap="ChannelEmployeeAmountMap">
@@ -107,6 +109,22 @@
         </set>
         where id = #{id}
     </update>
+    
+    <!--<update id="addAmountByUid">
+        update t_channel_employee_amount
+        set balance = balance - #{income},
+            withdraw = withdraw + #{income}
+        where uid = #{uid}
+          and del_flg = 0
+    </update>
+    
+    <update id="reduceAmountByUid">
+        update t_channel_employee_amount
+        set balance = balance + #{income},
+            withdraw = withdraw - #{income}
+        where uid = #{uid}
+          and del_flg = 0
+    </update>-->
     
     
 </mapper>

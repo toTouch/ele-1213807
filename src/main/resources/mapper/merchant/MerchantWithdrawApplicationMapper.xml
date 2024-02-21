@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.merchant.MerchantUserAmountMapper">
+    
+    
+    <resultMap type="com.xiliulou.electricity.entity.merchant.MerchantWithdrawApplication" id="MerchantWithdrawApplicationMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="uid" column="uid" jdbcType="INTEGER"/>
+        <result property="orderNo" column="order_no" jdbcType="INTEGER"/>
+        <result property="bankName" column="bank_name" jdbcType="VARCHAR"/>
+        <result property="bankCode" column="bank_code" jdbcType="VARCHAR"/>
+        <result property="bankNumber" column="bank_number" jdbcType="VARCHAR"/>
+        <result property="accountName" column="account_name" jdbcType="VARCHAR"/>
+        <result property="amount" column="amount" jdbcType="DECIMAL"/>
+        <result property="remark" column="remark" jdbcType="VARCHAR"/>
+        <result property="status" column="status" jdbcType="INTEGER"/>
+        <result property="handlingFee" column="handling_fee" jdbcType="DECIMAL"/>
+        <result property="checkTime" column="check_time" jdbcType="INTEGER"/>
+        <result property="withdrawResult" column="withdraw_result" jdbcType="VARCHAR"/>
+        <result property="receiptTime" column="receipt_time" jdbcType="INTEGER"/>
+        <result property="tenantId" column="tenant_id" jdbcType="INTEGER"/>
+        
+        <result property="delFlag" column="del_flag" jdbcType="INTEGER"/>
+        <result property="createTime" column="create_time" jdbcType="INTEGER"/>
+        <result property="updateTime" column="update_time" jdbcType="INTEGER"/>
+       
+    </resultMap>
+    
+</mapper>

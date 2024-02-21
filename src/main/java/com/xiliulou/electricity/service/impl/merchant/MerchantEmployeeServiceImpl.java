@@ -96,12 +96,12 @@ public class MerchantEmployeeServiceImpl implements MerchantEmployeeService {
         UserRole userRole = new UserRole();
         userRole.setRoleId(roleId);
         userRole.setUid(userResult.getUid());
-        userRoleService.insert(userRole);
+        //userRoleService.insert(userRole);
         
         MerchantEmployee merchantEmployee = new MerchantEmployee();
         
         merchantEmployee.setUid(userResult.getUid());
-        merchantEmployee.setStatus(merchantEmployeeRequest.getStatus());
+        //merchantEmployee.setStatus(merchantEmployeeRequest.getStatus());
         merchantEmployee.setMerchantUid(merchantEmployeeRequest.getMerchantUid());
         merchantEmployee.setPlaceId(merchantEmployeeRequest.getPlaceId());
         merchantEmployee.setTenantId(merchantEmployeeRequest.getTenantId().longValue());
@@ -139,21 +139,21 @@ public class MerchantEmployeeServiceImpl implements MerchantEmployeeService {
             throw new BizException("120004", "商户员工不存在");
         }
     
-        User updateEmployeeUser = new User();
+        User updateUser = new User();
     
         // 如果是禁用，则将用户置为锁定
         if (Objects.equals(merchantEmployeeRequest.getStatus(), MerchantConstant.DISABLE)) {
-            updateEmployeeUser.setLockFlag(User.USER_LOCK);
+            updateUser.setLockFlag(User.USER_LOCK);
         } else  {
-            updateEmployeeUser.setLockFlag(User.USER_UN_LOCK);
+            updateUser.setLockFlag(User.USER_UN_LOCK);
         }
     
-        updateEmployeeUser.setUid(merchantEmployee.getUid());
-        updateEmployeeUser.setPhone(merchantEmployeeRequest.getPhone());
-        updateEmployeeUser.setUserType(User.TYPE_USER_MERCHANT_EMPLOYEE);
-        updateEmployeeUser.setTenantId(TenantContextHolder.getTenantId());
-        updateEmployeeUser.setUpdateTime(System.currentTimeMillis());
-        userService.updateMerchantUser(updateEmployeeUser);
+        updateUser.setUid(merchantEmployee.getUid());
+        updateUser.setPhone(merchantEmployeeRequest.getPhone());
+        updateUser.setUserType(User.TYPE_USER_MERCHANT_EMPLOYEE);
+        updateUser.setTenantId(TenantContextHolder.getTenantId());
+        updateUser.setUpdateTime(System.currentTimeMillis());
+        userService.updateMerchantUser(updateUser);
         
         MerchantEmployee merchantEmployeeUpdate = new MerchantEmployee();
         BeanUtils.copyProperties(merchantEmployeeRequest, merchantEmployeeUpdate);
