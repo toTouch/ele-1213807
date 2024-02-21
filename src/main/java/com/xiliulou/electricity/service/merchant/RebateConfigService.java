@@ -14,15 +14,15 @@ import java.util.List;
  * @since 2024-02-04 16:32:06
  */
 public interface RebateConfigService {
-
+    
     RebateConfig queryById(Long id);
-
+    
     RebateConfig queryByIdFromCache(Long id);
-
+    
     List<RebateConfigVO> listByPage(RebateConfigRequest rebateConfigRequest);
-
+    
     RebateConfig insert(RebateConfig rebateConfig);
-
+    
     Integer update(RebateConfig rebateConfig);
     
     Integer existsRebateConfigByMidAndLevel(Long mid, String level);
@@ -30,4 +30,6 @@ public interface RebateConfigService {
     Triple<Boolean, String, Object> modify(RebateConfigRequest request);
     
     Triple<Boolean, String, Object> save(RebateConfigRequest request);
+    
+    RebateConfig queryByMidAndMerchantLevel(Long memberCardId, String level);
 }

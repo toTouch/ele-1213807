@@ -298,6 +298,12 @@ public class UserBatteryMemberCardServiceImpl implements UserBatteryMemberCardSe
         return userBatteryMemberCardMapper.selectExpireExitList(offset, size);
     }
     
+    @Slave
+    @Override
+    public int queryRenewalNumberByMerchantId(Long merchantId, Integer tenantId) {
+        return userBatteryMemberCardMapper.selectRenewalNumberByMerchantId(merchantId, tenantId);
+    }
+    
     /**
      * 校验用户电池套餐是否过期
      */

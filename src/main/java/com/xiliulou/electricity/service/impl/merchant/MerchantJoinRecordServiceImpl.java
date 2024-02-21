@@ -28,11 +28,13 @@ import com.xiliulou.electricity.utils.AESUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.merchant.MerchantEmployeeVO;
 import com.xiliulou.electricity.vo.merchant.MerchantJoinRecordVO;
+import com.xiliulou.mq.service.RocketMqService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -51,6 +53,9 @@ import java.util.Optional;
 @Slf4j
 @Service
 public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService {
+    
+    @Autowired
+    private RocketMqService rocketMqService;
     
     @Resource
     private RedisService redisService;
@@ -307,6 +312,12 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
     @Override
     public Integer existsIfExpired(Long merchantId, Long joinUid) {
         return merchantJoinRecordMapper.existsIfExpired(merchantId, joinUid);
+    }
+    
+    @Slave
+    @Override
+    public MerchantJoinRecord queryByJoinUid(Long joinUid) {
+        return merchantJoinRecordMapper.selectByJoinUid(joinUid);
     }
     
     @Override

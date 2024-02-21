@@ -35,5 +35,7 @@ public interface MerchantJoinRecordMapper {
     
     List<MerchantJoinRecord> selectListByPage(MerchantJoinRecordQueryMode queryMode);
     
+    MerchantJoinRecord selectByJoinUid(Long joinUid);
+    
     Integer updateById(MerchantJoinRecord record);
 }

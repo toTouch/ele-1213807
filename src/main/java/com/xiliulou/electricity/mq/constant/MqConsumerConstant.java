@@ -33,4 +33,10 @@ public interface MqConsumerConstant {
      * 商户升级 consumer group
      */
     String MERCHANT_UPGRADE_CONSUMER_GROUP = "merchant_upgrade_consumer_group";
+    String MERCHANT_MODIFY_CONSUMER_GROUP = "merchant_modify_consumer_group";
+    
+    /**
+     * 商户返利 consumer group
+     */
+    String BATTERY_MEMBER_CARD_MERCHANT_REBATE_GROUP = "battery_member_card_merchant_rebate_group";
 }
