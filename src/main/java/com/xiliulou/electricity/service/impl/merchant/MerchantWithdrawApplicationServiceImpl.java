@@ -1,8 +1,11 @@
 package com.xiliulou.electricity.service.impl.merchant;
 
+import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.electricity.entity.merchant.MerchantWithdrawApplication;
 import com.xiliulou.electricity.mapper.merchant.MerchantWithdrawApplicationMapper;
 import com.xiliulou.electricity.request.merchant.MerchantWithdrawApplicationRequest;
+import com.xiliulou.electricity.service.UserService;
+import com.xiliulou.electricity.service.merchant.MerchantService;
 import com.xiliulou.electricity.service.merchant.MerchantWithdrawApplicationService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -23,8 +26,31 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
     @Resource
     private MerchantWithdrawApplicationMapper merchantWithdrawApplicationMapper;
     
+    @Resource
+    private MerchantService merchantService;
+    
+    @Resource
+    private UserService userService;
+    
+    @Resource
+    private RedisService redisService;
+    
+    
     @Override
     public Integer saveMerchantWithdrawApplication(MerchantWithdrawApplicationRequest merchantWithdrawApplicationRequest) {
+        
+        MerchantWithdrawApplication merchantWithdrawApplication = new MerchantWithdrawApplication();
+        merchantWithdrawApplication.setAmount(merchantWithdrawApplicationRequest.getAmount());
+        merchantWithdrawApplication.setUid(merchantWithdrawApplicationRequest.getMerchantUid());
+        merchantWithdrawApplication.setTenantId(merchantWithdrawApplicationRequest.getTenantId());
+        
+    
+        merchantWithdrawApplication.setCreateTime(System.currentTimeMillis());
+        merchantWithdrawApplication.setUpdateTime(System.currentTimeMillis());
+        
+        
+        merchantWithdrawApplicationMapper.insertOne(merchantWithdrawApplication);
+        
         return null;
     }
     
