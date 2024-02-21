@@ -4,11 +4,11 @@ import lombok.Data;
 
 /**
  * @author HeYafeng
- * @description 今日/昨日电量和电费
+ * @description 电量和电费
  * @date 2024/2/20 19:09:17
  */
 @Data
-public class MerchantCabinetDayPowerVO {
+public class MerchantCabinetPowerVO {
     
     private Double sumPower;
     
