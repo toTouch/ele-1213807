@@ -1,7 +1,9 @@
 package com.xiliulou.electricity.service.impl.merchant;
 
+import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.i18n.MessageUtils;
 import com.xiliulou.db.dynamic.annotation.Slave;
+import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.constant.MerchantConstant;
 import com.xiliulou.electricity.entity.User;
@@ -57,6 +59,9 @@ public class MerchantEmployeeServiceImpl implements MerchantEmployeeService {
     @Resource
     private MerchantPlaceService merchantPlaceService;
     
+    @Resource
+    RedisService redisService;
+    
     @Transactional(rollbackFor = Exception.class)
     @Override
     public Integer saveMerchantEmployee(MerchantEmployeeRequest merchantEmployeeRequest) {
@@ -96,12 +101,12 @@ public class MerchantEmployeeServiceImpl implements MerchantEmployeeService {
         UserRole userRole = new UserRole();
         userRole.setRoleId(roleId);
         userRole.setUid(userResult.getUid());
-        userRoleService.insert(userRole);
+        //userRoleService.insert(userRole);
         
         MerchantEmployee merchantEmployee = new MerchantEmployee();
         
         merchantEmployee.setUid(userResult.getUid());
-        merchantEmployee.setStatus(merchantEmployeeRequest.getStatus());
+        //merchantEmployee.setStatus(merchantEmployeeRequest.getStatus());
         merchantEmployee.setMerchantUid(merchantEmployeeRequest.getMerchantUid());
         merchantEmployee.setPlaceId(merchantEmployeeRequest.getPlaceId());
         merchantEmployee.setTenantId(merchantEmployeeRequest.getTenantId().longValue());
@@ -139,21 +144,21 @@ public class MerchantEmployeeServiceImpl implements MerchantEmployeeService {
             throw new BizException("120004", "商户员工不存在");
         }
     
-        User updateEmployeeUser = new User();
+        User updateUser = new User();
     
         // 如果是禁用，则将用户置为锁定
         if (Objects.equals(merchantEmployeeRequest.getStatus(), MerchantConstant.DISABLE)) {
-            updateEmployeeUser.setLockFlag(User.USER_LOCK);
+            updateUser.setLockFlag(User.USER_LOCK);
         } else  {
-            updateEmployeeUser.setLockFlag(User.USER_UN_LOCK);
+            updateUser.setLockFlag(User.USER_UN_LOCK);
         }
     
-        updateEmployeeUser.setUid(merchantEmployee.getUid());
-        updateEmployeeUser.setPhone(merchantEmployeeRequest.getPhone());
-        updateEmployeeUser.setUserType(User.TYPE_USER_MERCHANT_EMPLOYEE);
-        updateEmployeeUser.setTenantId(TenantContextHolder.getTenantId());
-        updateEmployeeUser.setUpdateTime(System.currentTimeMillis());
-        userService.updateMerchantUser(updateEmployeeUser);
+        updateUser.setUid(merchantEmployee.getUid());
+        updateUser.setPhone(merchantEmployeeRequest.getPhone());
+        updateUser.setUserType(User.TYPE_USER_MERCHANT_EMPLOYEE);
+        updateUser.setTenantId(TenantContextHolder.getTenantId());
+        updateUser.setUpdateTime(System.currentTimeMillis());
+        userService.updateMerchantUser(updateUser);
         
         MerchantEmployee merchantEmployeeUpdate = new MerchantEmployee();
         BeanUtils.copyProperties(merchantEmployeeRequest, merchantEmployeeUpdate);
@@ -164,7 +169,21 @@ public class MerchantEmployeeServiceImpl implements MerchantEmployeeService {
     
     @Override
     public Integer removeMerchantEmployee(Long id) {
-        return null;
+        MerchantEmployee merchantEmployee = merchantEmployeeMapper.selectById(id);
+        if(Objects.isNull(merchantEmployee)) {
+            log.error("not found merchant employee by id, id = {}", id);
+            throw new BizException("120004", "商户员工不存在");
+        }
+        User user = userService.queryByUidFromCache(merchantEmployee.getUid());
+        
+        Integer result = 0;
+        if(Objects.nonNull(user)){
+            //userService.deleteInnerUser(merchantEmployee.getUid());
+            result = userService.removeById(merchantEmployee.getUid(), System.currentTimeMillis());
+            redisService.delete(CacheConstant.CACHE_USER_UID + merchantEmployee.getUid());
+            redisService.delete(CacheConstant.CACHE_USER_PHONE + user.getTenantId() + ":" + user.getPhone() + ":" + user.getUserType());
+        }
+        return result;
     }
     
     @Slave

@@ -92,12 +92,12 @@ public class MerchantEmployeeRequest {
     /**
      * 偏移量
      */
-    private Integer offset;
+    private Long offset;
     
     /**
      * 取值数量
      */
-    private Integer size;
+    private Long size;
     
     
 }
