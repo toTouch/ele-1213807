@@ -7,7 +7,6 @@ import lombok.Data;
  * @description 区域
  * @date 2024/2/6 15:15:50
  */
-
 @Data
 public class MerchantAreaVO {
     
