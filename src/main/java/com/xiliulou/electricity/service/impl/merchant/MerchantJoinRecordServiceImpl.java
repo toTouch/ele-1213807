@@ -33,6 +33,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -101,6 +102,12 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
                 log.error("MERCHANT JOIN ERROR! not found userInfo, joinUid={}", joinUid);
                 return R.fail(false, "ELECTRICITY.0019", "未找到用户");
             }
+            
+            if (userInfo.getPayCount() > NumberConstant.ZERO) {
+                log.info("MERCHANT JOIN ERROR! Exist package pay count for current user, joinUid = {}", joinUid);
+                return R.fail("120106", "您已是会员用户,无法参加商户活动");
+            }
+            
             
             if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
                 log.error("MERCHANT JOIN ERROR! user usable, joinUid={}", joinUid);

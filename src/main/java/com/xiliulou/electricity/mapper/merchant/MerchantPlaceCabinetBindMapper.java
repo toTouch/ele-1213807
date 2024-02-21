@@ -33,5 +33,6 @@ public interface MerchantPlaceCabinetBindMapper {
     
     List<MerchantPlaceCabinetBind> selectListByPage(MerchantPlaceCabinetBindQueryModel merchantQueryModel);
     
-    List<MerchantPlaceCabinetBind> selectListByPlaceIds(@Param("placeIds")Set<Long> placeIds);
+    List<MerchantPlaceCabinetBind> selectListByConditions(@Param("placeIds")Set<Long> placeIds, @Param("cabinetIds") Set<Long> cabinetIds, @Param("status") Integer status, @Param("startTime") Long startTime, @Param("endTime") Long endTime);
+    
 }

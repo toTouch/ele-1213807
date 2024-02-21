@@ -307,8 +307,8 @@ public class MerchantPlaceCabinetBindServiceImpl implements MerchantPlaceCabinet
     
     @Slave
     @Override
-    public List<MerchantPlaceCabinetBind> listByPlaceIds(Set<Long> placeIds) {
-        return merchantPlaceCabinetBindMapper.selectListByPlaceIds(placeIds);
+    public List<MerchantPlaceCabinetBind> listByConditions(Set<Long> placeIds, Set<Long> cabinetIds, Integer status, Long startTime, Long endTime) {
+        return merchantPlaceCabinetBindMapper.selectListByConditions(placeIds, cabinetIds, status, startTime, endTime);
     }
     
 }

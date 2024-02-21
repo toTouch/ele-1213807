@@ -35,4 +35,5 @@ public interface MerchantCabinetPowerService {
     
     MerchantCabinetPowerVO thisMonthPowerAndCharge(MerchantCabinetPowerRequest request);
     
+    MerchantCabinetPowerVO lastMonthPowerAndCharge(MerchantCabinetPowerRequest request);
 }

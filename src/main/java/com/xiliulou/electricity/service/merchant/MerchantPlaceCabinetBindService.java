@@ -33,5 +33,6 @@ public interface MerchantPlaceCabinetBindService {
     
     List<MerchantPlaceCabinetBindVO> listByPage(MerchantPlaceCabinetPageRequest placeCabinetPageRequest);
     
-    List<MerchantPlaceCabinetBind> listByPlaceIds(Set<Long> placeIds);
+    List<MerchantPlaceCabinetBind> listByConditions(Set<Long> placeIds, Set<Long> cabinetIds, Integer status, Long startTime, Long endTime);
+    
 }

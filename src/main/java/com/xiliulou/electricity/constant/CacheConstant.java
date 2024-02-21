@@ -578,5 +578,7 @@ public interface CacheConstant {
     String MERCHANT_PLACE_CABINET_DELETE_UID = "merchant_place_cabinet_delete_uid:";
     
     String CACHE_CHANNEL_EMPLOYEE_SAVE_LOCK = "cache_channel_employee_save_lock:";
+    
+    String MERCHANT_PLACE_CABINET_SEARCH_LOCK = "merchant_place_cabinet_search_lock:";
 
 }

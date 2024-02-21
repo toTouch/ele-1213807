@@ -89,6 +89,18 @@ public class JsonUserMerchantCabinetPowerController extends BaseController {
     }
     
     /**
+     * 上月电费/电量
+     */
+    @GetMapping("/user/merchant/cabinetPower/lastMonthPowerData")
+    public R lastMonthPowerAndCharge(@RequestParam Long merchantId, @RequestParam(value = "placeId", required = false) Long placeId,
+            @RequestParam(value = "cabinetId", required = false) Long cabinetId) {
+        
+        MerchantCabinetPowerRequest request = MerchantCabinetPowerRequest.builder().merchantId(merchantId).placeId(placeId).cabinetId(cabinetId).build();
+        
+        return R.ok(merchantCabinetPowerService.lastMonthPowerAndCharge(request));
+    }
+    
+    /**
      * 累计电费/电量
      */
     public R totalPowerAndCharge(@RequestParam Long merchantId, @RequestParam(value = "placeId", required = false) Long placeId,
