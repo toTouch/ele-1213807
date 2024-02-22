@@ -21,6 +21,13 @@
         where id = #{id}
     </select>
     
+    <select id="selectNextByMerchantLevel" resultMap="MerchantLevelMap">
+        select
+            id, level, name, rule, del_flag, tenant_id, create_time, update_time
+        from t_merchant_level
+        where level > #{level} and tenant_id = #{tenantId} order by level limit 1
+    </select>
+    
     <select id="selectByTenantId" resultMap="MerchantLevelMap">
         select
             id, level, name, rule

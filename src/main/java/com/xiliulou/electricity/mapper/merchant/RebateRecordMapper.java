@@ -5,6 +5,7 @@ import com.xiliulou.electricity.entity.merchant.RebateRecord;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.xiliulou.electricity.query.merchant.MerchantPromotionFeeQueryModel;
 import com.xiliulou.electricity.request.merchant.RebateRecordRequest;
+import org.apache.ibatis.annotations.Param;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -32,6 +33,10 @@ public interface RebateRecordMapper extends BaseMapper<RebateRecord> {
     List<RebateRecord> selectByPage(RebateRecordRequest query);
     
     RebateRecord selectByOriginalOrderId(String originalOrderId);
+    
+    List<RebateRecord> selectNotSettleListByLimit(@Param("startTime") long startTime, @Param("endTime") long endTime, @Param("offset") int offset, @Param("size") int size);
+    
+    List<RebateRecord> selectCurrentMonthRebateRecord(@Param("startTime") long startTime, @Param("endTime") long endTime, @Param("offset") int offset, @Param("size") int size);
     
     BigDecimal sumMerchantByStatus(MerchantPromotionFeeQueryModel merchantPromotionFeeQueryModel);
     

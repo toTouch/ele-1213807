@@ -30,4 +30,12 @@ public interface MerchantLevelService {
     Triple<Boolean, String, Object> modify(MerchantLevelRequest request);
     
     List<MerchantLevelVO> list(Integer tenantId);
+    
+    /**
+     * 获取下一级商户等级
+     * @param level
+     * @param tenantId
+     * @return
+     */
+    MerchantLevel queryNextByMerchantLevel(String level, Integer tenantId);
 }

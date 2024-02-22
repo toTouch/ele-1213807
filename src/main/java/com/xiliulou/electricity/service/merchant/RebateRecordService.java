@@ -32,6 +32,15 @@ public interface RebateRecordService {
     
     Integer countByPage(RebateRecordRequest query);
     
+    /**
+     * 返利结算定时任务
+     */
+    void settleRebateRecordTask();
+    
+    void handleRebate(RebateRecord rebateRecord);
+    
+    List<RebateRecord> listCurrentMonthRebateRecord(long startTime, long endTime, int offset, int size);
+    
     BigDecimal sumMerchantByStatus(MerchantPromotionFeeQueryModel merchantPromotionFeeQueryModel);
     
     BigDecimal sumMerchantEmployeeByStatus(MerchantPromotionFeeQueryModel merchantPromotionFeeQueryModel);
