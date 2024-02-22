@@ -38,7 +38,7 @@ import java.util.Objects;
 public class ElectricityCabinetFileServiceImpl implements ElectricityCabinetFileService {
     @Resource
     private ElectricityCabinetFileMapper electricityCabinetFileMapper;
-    @Qualifier("aliyunOssService")
+    @Qualifier("hwOssService")
     @Autowired
     StorageService storageService;
     
@@ -91,6 +91,7 @@ public class ElectricityCabinetFileServiceImpl implements ElectricityCabinetFile
     }
 
     @Override
+    @Deprecated
     public void getMinioFile(String fileName, HttpServletResponse response) {
         int separator = fileName.lastIndexOf(StrUtil.DASHED);
         try (InputStream inputStream = storageService.getFile(fileName.substring(0, separator),

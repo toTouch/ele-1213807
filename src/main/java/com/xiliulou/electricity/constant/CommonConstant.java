@@ -28,9 +28,9 @@ public interface CommonConstant {
     String TENANT_ID = "tenantId";
     Integer TENANT_ID_DEFAULT = 0;
     //在线
-    String STATUS_ONLINE="online";
+    String STATUS_ONLINE="ONLINE";
     //离线
-    String STATUS_OFFLINE="offline";
+    String STATUS_OFFLINE="OFFLINE";
 
     String BUCKET_NAME="bucketName";
     String FILE_NAME="fileName";

@@ -6,7 +6,6 @@ import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.xiliulou.core.web.R;
-import com.xiliulou.electricity.annotation.Log;
 import com.xiliulou.electricity.entity.ElectricityCabinetFile;
 import com.xiliulou.electricity.query.CallBackQuery;
 import com.xiliulou.electricity.request.asset.ElectricityCabinetPictureBatchSaveRequest;
@@ -23,11 +22,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * 换电柜文件表(TElectricityCabinetFile)表控制层
@@ -45,7 +40,7 @@ public class JsonAdminElectricityCabinetFileController {
 	@Autowired
 	StorageConfig storageConfig;
 
-	@Qualifier("aliyunOssService")
+	@Qualifier("hwOssService")
 	@Autowired
 	StorageService storageService;
 
@@ -180,6 +175,7 @@ public class JsonAdminElectricityCabinetFileController {
 	 */
 
 	@GetMapping("/admin/electricityCabinetFileService/getMinioFile/{fileName}")
+	@Deprecated
 	public void getMinioFile(@PathVariable String fileName, HttpServletResponse response) {
 		electricityCabinetFileService.getMinioFile(fileName, response);
 	}

@@ -3,6 +3,7 @@ package com.xiliulou.electricity.handler.iot;
 import cn.hutool.core.util.StrUtil;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
+import com.xiliulou.hwiiot.service.HwIotService;
 import com.xiliulou.iot.entity.HardwareCommandQuery;
 import com.xiliulou.iot.entity.ReceiverMessage;
 import com.xiliulou.iot.entity.SendHardwareMessage;
@@ -23,7 +24,7 @@ import java.util.UUID;
 public abstract class AbstractElectricityIotHandler implements IElectricityHandler {
 
     @Autowired
-    PubHardwareService pubHardwareService;
+    HwIotService hwIotService;
 
     @Autowired
     ElectricityCabinetService electricityCabinetService;
@@ -31,31 +32,11 @@ public abstract class AbstractElectricityIotHandler implements IElectricityHandl
 
     @Override
     public Pair<Boolean, String> handleSendHardwareCommand(HardwareCommandQuery hardwareCommandQuery) {
-        Pair<SendHardwareMessage, String> message = this.generateMsg(hardwareCommandQuery);
-        return Pair.of(pubHardwareService.sendMessage(hardwareCommandQuery.getProductKey(), hardwareCommandQuery.getDeviceName(), message.getLeft()), message.getRight());
-    }
-
-    protected Pair<SendHardwareMessage, String> generateMsg(HardwareCommandQuery hardwareCommandQuery) {
-        String sessionId = generateSessionId(hardwareCommandQuery);
-        SendHardwareMessage message = SendHardwareMessage.builder()
-                .sessionId(sessionId)
-                .type(hardwareCommandQuery.getCommand())
-                .data(hardwareCommandQuery.getData()).build();
-        return Pair.of(message, sessionId);
-    }
-
-    protected String generateSessionId(HardwareCommandQuery hardwareCommandQuery) {
-        if (StrUtil.isEmpty(hardwareCommandQuery.getSessionId())) {
-            String var10000 = UUID.randomUUID().toString().replaceAll("-", "");
-            return var10000 + "_" + hardwareCommandQuery.getDeviceName();
-        } else {
-            return hardwareCommandQuery.getSessionId();
-        }
+        return hwIotService.handleSendHardwareCommand(hardwareCommandQuery);
     }
 
     @Override
     public boolean receiveMessageProcess(ReceiverMessage receiverMessage) {
-
         ElectricityCabinet electricityCabinet = electricityCabinetService.queryFromCacheByProductAndDeviceName(receiverMessage.getProductKey(), receiverMessage.getDeviceName());
         if (Objects.isNull(electricityCabinet)) {
             log.error("ELE ERROR! not found  electricity ,productKey={},deviceName={}", receiverMessage.getProductKey(), receiverMessage.getDeviceName());

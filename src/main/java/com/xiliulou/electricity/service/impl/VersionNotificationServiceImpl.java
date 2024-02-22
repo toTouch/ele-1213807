@@ -49,8 +49,8 @@ public class VersionNotificationServiceImpl implements VersionNotificationServic
     private TenantNotifyMailService tenantNotifyMailService;
     @Autowired
     private MailService mailService;
-    
-    @Qualifier("aliyunOssService")
+
+    @Qualifier("hwOssService")
     @Autowired
     StorageService storageService;
 
@@ -205,7 +205,7 @@ public class VersionNotificationServiceImpl implements VersionNotificationServic
      * @author HeYafeng
      */
     @Override
-    public R acquireVersionNotificationFileSign() {
-        return R.ok(storageService.getOssUploadSign("saas/versionNotification/"));
+    public R acquireVersionNotificationFileSign(String key) {
+        return R.ok(storageService.getOssUploadSign(key));
     }
 }
