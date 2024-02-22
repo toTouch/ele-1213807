@@ -8,6 +8,7 @@ import com.xiliulou.electricity.entity.merchant.Merchant;
 import com.xiliulou.electricity.entity.merchant.MerchantPlace;
 import com.xiliulou.electricity.entity.merchant.RebateRecord;
 import com.xiliulou.electricity.mapper.merchant.RebateRecordMapper;
+import com.xiliulou.electricity.query.merchant.MerchantPromotionFeeQueryModel;
 import com.xiliulou.electricity.request.merchant.RebateRecordRequest;
 import com.xiliulou.electricity.service.BatteryMemberCardService;
 import com.xiliulou.electricity.service.FranchiseeService;
@@ -22,6 +23,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
+import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -128,4 +130,15 @@ public class RebateRecordServiceImpl implements RebateRecordService {
     public Integer countByPage(RebateRecordRequest query) {
         return this.rebateRecordMapper.selectByPageCount(query);
     }
+    
+    @Override
+    public BigDecimal sumMerchantByStatus(MerchantPromotionFeeQueryModel merchantPromotionFeeQueryModel) {
+        return this.rebateRecordMapper.sumMerchantByStatus(merchantPromotionFeeQueryModel);
+    }
+    
+    @Override
+    public BigDecimal sumMerchantEmployeeByStatus(MerchantPromotionFeeQueryModel merchantPromotionFeeQueryModel) {
+        return this.rebateRecordMapper.sumMerchantEmployeeByStatus(merchantPromotionFeeQueryModel);
+    }
+    
 }

@@ -1,9 +1,11 @@
 package com.xiliulou.electricity.service.merchant;
 
 import com.xiliulou.electricity.entity.merchant.RebateRecord;
+import com.xiliulou.electricity.query.merchant.MerchantPromotionFeeQueryModel;
 import com.xiliulou.electricity.request.merchant.RebateRecordRequest;
 import com.xiliulou.electricity.vo.merchant.RebateRecordVO;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -29,4 +31,8 @@ public interface RebateRecordService {
     List<RebateRecordVO> listByPage(RebateRecordRequest query);
     
     Integer countByPage(RebateRecordRequest query);
+    
+    BigDecimal sumMerchantByStatus(MerchantPromotionFeeQueryModel merchantPromotionFeeQueryModel);
+    
+    BigDecimal sumMerchantEmployeeByStatus(MerchantPromotionFeeQueryModel merchantPromotionFeeQueryModel);
 }
