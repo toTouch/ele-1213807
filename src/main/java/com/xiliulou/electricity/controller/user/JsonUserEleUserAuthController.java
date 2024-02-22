@@ -150,16 +150,16 @@ public class JsonUserEleUserAuthController {
 	 * 获取上传身份证照片所需的签名
 	 */
 	@GetMapping(value = "/user/acquire/upload/idcard/file/sign")
-	public R getUploadIdcardFileSign() {
-        return eleUserAuthService.acquireIdcardFileSign();
+	public R getUploadIdcardFileSign(@RequestParam("key") String key) {
+		return eleUserAuthService.acquireIdcardFileSign(key);
 	}
 
 	/**
 	 * 获取上传自拍照片所需的签名
 	 */
 	@GetMapping(value = "/user/acquire/upload/selfie/file/sign")
-	public R getUploadselfieFileSign() {
-		return eleUserAuthService.acquireselfieFileSign();
+	public R getUploadselfieFileSign(@RequestParam("key") String key) {
+		return eleUserAuthService.acquireselfieFileSign(key);
 	}
 
 }

@@ -2,16 +2,11 @@ package com.xiliulou.electricity.controller.admin;
 
 import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.web.R;
-import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.query.VersionNotificationQuery;
 import com.xiliulou.electricity.service.VersionNotificationService;
-import com.xiliulou.electricity.utils.SecurityUtils;
-import com.xiliulou.security.bean.TokenUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.Objects;
 
 /**
  * @author : eclair
@@ -80,7 +75,7 @@ public class JsonAdminVersionNotificationController extends BaseController {
      * @author HeYafeng
      */
     @GetMapping(value = "/admin/acquire/upload/versionNotification/file/sign")
-    public R getUploadVersionNotificationFileSign() {
-        return notificationService.acquireVersionNotificationFileSign();
+    public R getUploadVersionNotificationFileSign(@RequestParam("key") String key) {
+        return notificationService.acquireVersionNotificationFileSign(key);
     }
 }

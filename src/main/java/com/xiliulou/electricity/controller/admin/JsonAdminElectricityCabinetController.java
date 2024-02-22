@@ -952,9 +952,9 @@ public class JsonAdminElectricityCabinetController extends BasicController {
     /**
      * 获取上传柜机照片所需的签名
      */
-    @GetMapping(value = "/admin/acquire/upload/cabiet/file/sign")
-    public R getUploadCabinetFileSign() {
-        return electricityCabinetService.acquireIdcardFileSign();
+    @GetMapping(value = "/admin/acquire/upload/cabinet/file/sign")
+    public R getUploadCabinetFileSign(@RequestParam("key") String key) {
+        return electricityCabinetService.acquireIdcardFileSign(key);
     }
 
     @GetMapping(value = "/admin/electricityCabinet/batchOperate/list")

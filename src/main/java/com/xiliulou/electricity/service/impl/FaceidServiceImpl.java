@@ -1,15 +1,12 @@
 package com.xiliulou.electricity.service.impl;
 
-import cn.hutool.core.util.IdUtil;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
-import com.xiliulou.electricity.dto.ActivityProcessDTO;
 import com.xiliulou.electricity.dto.FaceAuthResultDTO;
 import com.xiliulou.electricity.entity.*;
-import com.xiliulou.electricity.enums.ActivityEnum;
 import com.xiliulou.electricity.query.FaceidResultQuery;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
@@ -21,13 +18,11 @@ import com.xiliulou.faceid.entity.rsp.FaceidTokenRsp;
 import com.xiliulou.faceid.service.FaceidResultService;
 import com.xiliulou.faceid.service.FaceidTokenService;
 import com.xiliulou.storage.config.StorageConfig;
-import com.xiliulou.storage.service.StorageService;
 import com.xiliulou.storage.service.impl.AliyunOssService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayInputStream;
@@ -87,9 +82,6 @@ public class FaceidServiceImpl implements FaceidService {
 
     @Autowired
     StorageConfig storageConfig;
-    @Qualifier("aliyunOssService")
-    @Autowired
-    StorageService storageService;
     @Autowired
     AliyunOssService aliyunOssService;
 
