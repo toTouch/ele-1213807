@@ -4,11 +4,11 @@ import com.xiliulou.electricity.entity.merchant.MerchantPlaceCabinetBind;
 import com.xiliulou.electricity.query.merchant.MerchantPlaceCabinetBindQueryModel;
 import com.xiliulou.electricity.request.merchant.MerchantPlaceCabinetBindSaveRequest;
 import com.xiliulou.electricity.request.merchant.MerchantPlaceCabinetPageRequest;
+import com.xiliulou.electricity.request.merchant.MerchantPlaceCabinetConditionRequest;
 import com.xiliulou.electricity.vo.merchant.MerchantPlaceCabinetBindVO;
 import org.apache.commons.lang3.tuple.Triple;
 
 import java.util.List;
-import java.util.Set;
 
 /**
  * @author maxiaodong
@@ -33,5 +33,6 @@ public interface MerchantPlaceCabinetBindService {
     
     List<MerchantPlaceCabinetBindVO> listByPage(MerchantPlaceCabinetPageRequest placeCabinetPageRequest);
     
-    List<MerchantPlaceCabinetBind> listByPlaceIds(Set<Long> placeIds);
+    List<MerchantPlaceCabinetBind> listByConditions(MerchantPlaceCabinetConditionRequest request);
+    
 }
