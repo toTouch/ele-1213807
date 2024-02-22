@@ -200,5 +200,66 @@
     <delete id="deleteById">
         delete from t_rebate_record where id = #{id}
     </delete>
+    
+    <select id="sumMerchantByStatus"  resultType="java.math.BigDecimal">
+        select sum(merchant_rebate) from t_rebate_record
+        <where>
+            <if test="tenantId != null">
+                and tenant_id = #{tenantId}
+            </if>
+            <if test="type != null and type == 1">
+                and merchant_uid = #{uid}
+            </if>
+            <if test="type != null and type == 2">
+                and place_uid = #{uid}
+            </if>
+            <if test="status != null2">
+                and status = #{status}
+            </if>
+            <if test="rebateStartTime != null">
+                and rebate_time >= #{rebateStartTime}
+            </if>
+            <if test="rebateEndTime!=null">
+               and rebate_time &lt;= #{rebateEndTime}
+            </if>
+            <if test="settleStartTime != null">
+                and settle_time >= #{settleStartTime}
+            </if>
+            <if test="settleEndTime != null">
+                and settle_time &lt;= #{settleEndTime}
+            </if>
+        </where>
+    </select>
+    
+    <select id="sumMerchantEmployeeByStatus" resultType="java.math.BigDecimal">
+        select sum(channeler_rebate) from t_rebate_record
+        <where>
+            <if test="tenantId != null">
+                and tenant_id = #{tenantId}
+            </if>
+            <if test="type != null and type == 1">
+                and merchant_uid = #{uid}
+            </if>
+            <if test="type != null and type == 2">
+                and place_uid = #{uid}
+            </if>
+            <if test="status != null2">
+                and status = #{status}
+            </if>
+            <if test="rebateStartTime != null">
+                and rebate_time >= #{rebateStartTime}
+            </if>
+            <if test="rebateEndTime!=null">
+                and rebate_time &lt;= #{rebateEndTime}
+            </if>
+            <if test="settleStartTime != null">
+                and settle_time >= #{settleStartTime}
+            </if>
+            <if test="settleEndTime != null">
+                and settle_time &lt;= #{settleEndTime}
+            </if>
+        </where>
+        
+    </select>
 
 </mapper>

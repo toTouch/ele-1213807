@@ -9,5 +9,10 @@ import com.xiliulou.core.web.R;
  * @since: 2024-02-21
  */
 public interface MerchantPromotionFeeService {
-    R queryPromotionFeeHome(Integer type,Long uid);
+    R queryMerchantAvailableWithdrawAmount(Long uid);
+    
+    R queryMerchantPromotionFeeIncome(Integer type,Long uid);
+    
+    R queryMerchantPromotionScanCode(Integer type,Long uid);
+    
 }
