@@ -4,6 +4,7 @@ import com.xiliulou.electricity.entity.merchant.RebateRecord;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.xiliulou.electricity.query.merchant.MerchantPromotionFeeQueryModel;
+import com.xiliulou.electricity.query.merchant.MerchantPromotionRenewalQueryModel;
 import com.xiliulou.electricity.request.merchant.RebateRecordRequest;
 
 import java.math.BigDecimal;
@@ -33,7 +34,9 @@ public interface RebateRecordMapper extends BaseMapper<RebateRecord> {
     
     RebateRecord selectByOriginalOrderId(String originalOrderId);
     
-    BigDecimal sumMerchantByStatus(MerchantPromotionFeeQueryModel merchantPromotionFeeQueryModel);
+    BigDecimal sumByStatus(MerchantPromotionFeeQueryModel merchantPromotionFeeQueryModel);
     
     BigDecimal sumMerchantEmployeeByStatus(MerchantPromotionFeeQueryModel merchantPromotionFeeQueryModel);
+    
+    Integer countByTime(MerchantPromotionRenewalQueryModel queryModel);
 }
