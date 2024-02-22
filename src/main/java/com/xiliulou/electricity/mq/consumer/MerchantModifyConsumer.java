@@ -107,6 +107,11 @@ public class MerchantModifyConsumer implements RocketMQListener<String> {
                     log.warn("MERCHANT MODIFY CONSUMER WARN!rebateConfig is null,id={},memberCardId={},level={}", item.getId(), item.getMemberCardId(), item.getLevel());
                     return;
                 }
+    
+                if(Objects.equals( rebateConfig.getStatus(), MerchantConstant.REBATE_DISABLE)){
+                    log.warn("MERCHANT MODIFY CONSUMER WARN!rebateConfig is disable,id={},memberCardId={},level={}", item.getId(), item.getMemberCardId(), item.getLevel());
+                    return;
+                }
                 
                 if (Objects.equals(currentLevel, item.getLevel())) {
                     return;

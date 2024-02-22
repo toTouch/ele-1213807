@@ -146,6 +146,11 @@ public class BatteryMemberCardMerchantRebateConsumer implements RocketMQListener
             return;
         }
         
+        if(Objects.equals( rebateConfig.getStatus(), MerchantConstant.REBATE_DISABLE)){
+            log.warn("REBATE CONSUMER WARN!rebateConfig is disable,uid={},mid={}", electricityMemberCardOrder.getUid(), electricityMemberCardOrder.getMemberCardId());
+            return;
+        }
+        
         //商户返现金额
         BigDecimal merchantRebate = null;
         
