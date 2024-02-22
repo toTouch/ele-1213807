@@ -33,7 +33,7 @@ public interface MerchantCabinetPowerService {
     /**
      * 电费/场地费 筛选条件-获取要统计的柜机id
      */
-    List<Long> getNeedStaticsCabinetIds(MerchantPowerAndPlaceFeeRequest request);
+    List<Long> getRequestedCabinetIds(MerchantPowerAndPlaceFeeRequest request);
     
     List<MerchantPowerVO> powerData(MerchantCabinetPowerRequest request);
 }

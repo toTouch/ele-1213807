@@ -1,9 +1,7 @@
 package com.xiliulou.electricity.service.impl.merchant;
 
 import com.xiliulou.cache.redis.RedisService;
-import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.db.dynamic.annotation.Slave;
-import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.MerchantPlaceConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
@@ -24,7 +22,6 @@ import com.xiliulou.electricity.vo.merchant.MerchantPlaceCabinetVO;
 import com.xiliulou.electricity.vo.merchant.MerchantPlaceUserVO;
 import com.xiliulou.electricity.vo.merchant.MerchantPowerVO;
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -34,7 +31,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
@@ -212,7 +208,7 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
     
     @Slave
     @Override
-    public List<Long> getNeedStaticsCabinetIds(MerchantPowerAndPlaceFeeRequest request) {
+    public List<Long> getRequestedCabinetIds(MerchantPowerAndPlaceFeeRequest request) {
         Long merchantId = request.getMerchantId();
         if (Objects.isNull(merchantId)) {
             return null;
@@ -221,21 +217,8 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
         Long placeId = request.getPlaceId();
         Long cabinetId = request.getCabinetId();
         
-        // 设置key
-        String key = CacheConstant.MERCHANT_PLACE_CABINET_SEARCH_LOCK + merchantId;
-        if (Objects.nonNull(placeId)) {
-            key = key + placeId;
-            if (Objects.nonNull(cabinetId)) {
-                key = key + cabinetId;
-            }
-        }
-        
         // 先从缓存获取，如果未获取到再从数据库获取
         List<Long> cabinetIdList = null;
-        String cabinetIdStr = redisService.get(key);
-        if (StringUtils.isNotBlank(cabinetIdStr)) {
-            return JsonUtil.fromJsonArray(cabinetIdStr, Long.class);
-        }
         
         // 1.场地和柜机为null，查全量
         if (Objects.isNull(placeId) && Objects.isNull(cabinetId)) {
@@ -264,8 +247,9 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
             }
         }
         
-        // 存入缓存
-        redisService.saveWithString(key, cabinetIdList, 3L, TimeUnit.SECONDS);
+        if (CollectionUtils.isEmpty(cabinetIdList)) {
+            return Collections.emptyList();
+        }
         
         return cabinetIdList;
     }

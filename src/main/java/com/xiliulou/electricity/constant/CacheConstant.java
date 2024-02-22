@@ -579,6 +579,4 @@ public interface CacheConstant {
     
     String CACHE_CHANNEL_EMPLOYEE_SAVE_LOCK = "cache_channel_employee_save_lock:";
     
-    String MERCHANT_PLACE_CABINET_SEARCH_LOCK = "merchant_place_cabinet_search_lock:";
-
 }
