@@ -18,6 +18,8 @@ import java.math.BigDecimal;
 @AllArgsConstructor
 @Data
 public class MerchantWithdrawApplicationRequest {
+
+    private Long id;
     
     private Long merchantUid;
     

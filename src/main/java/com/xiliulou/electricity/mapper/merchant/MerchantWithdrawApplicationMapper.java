@@ -2,6 +2,7 @@ package com.xiliulou.electricity.mapper.merchant;
 
 import com.xiliulou.electricity.entity.merchant.MerchantWithdrawApplication;
 import com.xiliulou.electricity.request.merchant.MerchantWithdrawApplicationRequest;
+import com.xiliulou.electricity.vo.merchant.MerchantWithdrawApplicationVO;
 import feign.Param;
 
 import java.util.List;
@@ -17,11 +18,11 @@ public interface MerchantWithdrawApplicationMapper {
     
     Integer updateOne(MerchantWithdrawApplication merchantWithdrawApplication);
     
-    List<MerchantWithdrawApplication> queryList(MerchantWithdrawApplicationRequest merchantWithdrawApplicationRequest);
+    List<MerchantWithdrawApplicationVO> queryList(MerchantWithdrawApplicationRequest merchantWithdrawApplicationRequest);
     
     Integer countByCondition(MerchantWithdrawApplicationRequest merchantWithdrawApplicationRequest);
     
-    List<MerchantWithdrawApplication> selectListByCondition(MerchantWithdrawApplicationRequest merchantWithdrawApplicationRequest);
+    List<MerchantWithdrawApplicationVO> selectListByCondition(MerchantWithdrawApplicationRequest merchantWithdrawApplicationRequest);
   
     Integer removeById(@Param("id") Long id);
     

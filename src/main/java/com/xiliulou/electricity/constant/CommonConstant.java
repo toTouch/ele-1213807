@@ -1,7 +1,5 @@
 package com.xiliulou.electricity.constant;
 
-import java.util.concurrent.TimeUnit;
-
 /**
  * @author : eclair
  * @date : 2022/7/29 15:55
@@ -87,8 +85,8 @@ public interface CommonConstant {
      */
     Integer EXCEL_MAX_COUNT_TWO_THOUSAND = 2000;
     
-
+    String STR_COMMA = ",";
     
-    
+    Integer MSG_TYPE = 411;
     
 }

@@ -110,21 +110,21 @@
         where id = #{id}
     </update>
     
-    <!--<update id="addAmountByUid">
+    <update id="addAmountByUid">
         update t_channel_employee_amount
-        set balance = balance - #{income},
-            withdraw = withdraw + #{income}
+        set balance = balance + #{income}
         where uid = #{uid}
+          and tenat_id = #{tenantId}
           and del_flg = 0
     </update>
     
     <update id="reduceAmountByUid">
         update t_channel_employee_amount
-        set balance = balance + #{income},
-            withdraw = withdraw - #{income}
+        set balance = balance - #{income},
         where uid = #{uid}
+          and tenat_id = #{tenantId}
           and del_flg = 0
-    </update>-->
+    </update>
     
     
 </mapper>

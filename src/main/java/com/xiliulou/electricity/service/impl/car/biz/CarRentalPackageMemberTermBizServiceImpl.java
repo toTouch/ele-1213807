@@ -616,7 +616,7 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
         }
         // 更改状态
         if ((ObjectUtils.isNotEmpty(memberTermEntity.getDueTime()) && memberTermEntity.getDueTime() != 0L && memberTermEntity.getDueTime() <= System.currentTimeMillis()) || (
-                ObjectUtils.isNotEmpty(memberTermEntity.getResidue()) && memberTermEntity.getResidue() <= 0L)) {
+                Objects.equals(memberTermEntity.getRentalPackageConfine(), RenalPackageConfineEnum.NUMBER.getCode()) && ObjectUtils.isNotEmpty(memberTermEntity.getResidue()) && memberTermEntity.getResidue() <= 0L)) {
             userMemberInfoVo.setStatus(MemberTermStatusEnum.EXPIRE.getCode());
         }
         if (!CollectionUtils.isEmpty(batteryModelEntityList)) {
@@ -890,11 +890,16 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
             if (RentalUnitEnum.MINUTE.getCode().equals(tenancyUnit)) {
                 dueTime = dueTime + (tenancy * TimeConstant.MINUTE_MILLISECOND);
             }
-            
+
             memberTermEntityUpdate.setDueTime(dueTime);
+           
             
             // 计算余量
             if (RenalPackageConfineEnum.NUMBER.getCode().equals(packageOrderEntityNew.getConfine())) {
+                if (Objects.isNull(memberTermEntity.getResidue())) {
+                    memberTermEntity.setResidue(0L);
+                }
+                
                 if (memberTermEntity.getResidue() >= 0) {
                     memberTermEntityUpdate.setResidue(packageOrderEntityNew.getConfineNum());
                 } else {
