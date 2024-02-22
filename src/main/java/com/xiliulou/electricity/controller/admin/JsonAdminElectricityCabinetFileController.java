@@ -46,6 +46,7 @@ public class JsonAdminElectricityCabinetFileController {
 
 	//通知前端是aili还是oss
 	@GetMapping("/admin/electricityCabinetFileService/noticeIsOss")
+	@Deprecated
 	public R noticeIsOss() {
 		if (Objects.equals(StorageConfig.IS_USE_OSS, storageConfig.getIsUseOSS())) {
 			return R.ok(storageService.getOssUploadSign());
@@ -56,6 +57,7 @@ public class JsonAdminElectricityCabinetFileController {
 
 	//minio上传
 	@PostMapping("/admin/electricityCabinetFileService/minio/upload")
+	@Deprecated
 	public R minioUpload(@RequestParam("file") MultipartFile file) {
 		String fileName = IdUtil.simpleUUID() + StrUtil.DOT + FileUtil.extName(file.getOriginalFilename());
 		String bucketName = storageConfig.getBucketName();
