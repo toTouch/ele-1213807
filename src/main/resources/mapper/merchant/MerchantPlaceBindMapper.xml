@@ -33,6 +33,9 @@
     <select id="selectListByMerchantId" resultType="com.xiliulou.electricity.entity.merchant.MerchantPlaceBind">
         select <include refid="basic_field"/>
         from t_merchant_place_bind
+        <if test="status != null">
+            and type = #{status}
+        </if>
         where del_flag = 0 and merchant_id = #{merchantId}
     </select>
     

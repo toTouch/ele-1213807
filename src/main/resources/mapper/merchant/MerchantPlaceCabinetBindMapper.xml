@@ -200,6 +200,12 @@
                         #{placeId}
                     </foreach>
                 </if>
+                <if test="placeFeeSettleStatus != null">
+                    and place_month_settlement = #{placeFeeSettleStatus}
+                </if>
+                <if test="powerSettleStatus != null">
+                    and month_settlement = #{placeFeeSettleStatus}
+                </if>
                 <if test="cabinetIds != null and cabinetIds.size() > 0">
                     and cabinet_id in
                     <foreach collection="cabinetIds" separator="," open="(" close=")" item="cabinetId">

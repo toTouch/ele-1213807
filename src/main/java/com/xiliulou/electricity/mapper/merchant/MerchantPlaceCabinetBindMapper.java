@@ -2,6 +2,7 @@ package com.xiliulou.electricity.mapper.merchant;
 
 import com.xiliulou.electricity.entity.merchant.MerchantPlaceCabinetBind;
 import com.xiliulou.electricity.query.merchant.MerchantPlaceCabinetBindQueryModel;
+import com.xiliulou.electricity.query.merchant.MerchantPlaceCabinetConditionQueryModel;
 import com.xiliulou.electricity.vo.merchant.MerchantPlaceCabinetBindVO;
 import org.apache.ibatis.annotations.Param;
 
@@ -33,6 +34,6 @@ public interface MerchantPlaceCabinetBindMapper {
     
     List<MerchantPlaceCabinetBind> selectListByPage(MerchantPlaceCabinetBindQueryModel merchantQueryModel);
     
-    List<MerchantPlaceCabinetBind> selectListByConditions(@Param("placeIds")Set<Long> placeIds, @Param("cabinetIds") Set<Long> cabinetIds, @Param("status") Integer status, @Param("startTime") Long startTime, @Param("endTime") Long endTime);
+    List<MerchantPlaceCabinetBind> selectListByConditions(MerchantPlaceCabinetConditionQueryModel queryModel);
     
 }

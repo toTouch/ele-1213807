@@ -42,6 +42,15 @@ public class MerchantPlaceConstant {
      */
     public final static Integer MONTH_SETTLEMENT_POWER_NO = 1;
     
+    /**
+     * 商户场地结算标记（电费） 1-是
+     */
+    public final static Integer PLACE_MONTH_SETTLEMENT_POWER_YES = 1;
+    /**
+     * 商户场地结算标记（电费） 0-否
+     */
+    public final static Integer PLACE_MONTH_SETTLEMENT_POWER_NO = 0;
+    
     public static final Integer DEL_NORMAL = 0;
     public static final Integer DEL_DEL = 1;
 }
