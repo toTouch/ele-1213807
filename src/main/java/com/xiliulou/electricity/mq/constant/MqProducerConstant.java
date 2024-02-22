@@ -49,6 +49,11 @@ public interface MqProducerConstant {
      */
     String TOPIC_HARDWARE_FAILURE = "WARNING_BREAKDOWN_TOPIC";
     
+    /**
+     * 新硬件故障
+     */
+    String TOPIC_FAILURE_WARNING_BREAKDOWN = "FAILURE_WARNING_BREAKDOWN_TOPIC";
+    
     
     /**
      * 用户优惠券公用 topic

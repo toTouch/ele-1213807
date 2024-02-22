@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.TenantNoteRechargeMapper">
+    
+    <insert id="insertOne" keyProperty="id" useGeneratedKeys="true">
+        insert into t_tenant_note_recharge (id, tenant_id, tenant_note_id, uid, recharge_num, recharge_time, create_time)
+        values (#{id}, #{tenantId}, #{tenantNoteId}, #{uid}, #{rechargeNum}, #{rechargeTime}, #{createTime})
+    </insert>
+    
+    <select id="countTotal" resultType="java.lang.Integer">
+        SELECT count(1)
+        FROM t_tenant_note_recharge
+        where tenant_id = #{tenantId}
+    </select>
+    
+    <select id="selectListByPage" resultType="com.xiliulou.electricity.entity.TenantNoteRecharge">
+        SELECT id,
+               tenant_id,
+               tenant_note_id,
+               uid,
+               recharge_num,
+               recharge_time,
+               create_time
+        FROM t_tenant_note_recharge
+        where tenant_id = #{tenantId}
+        order by create_time desc
+        limit #{offset}, #{size}
+    </select>
+
+
+</mapper>

@@ -144,6 +144,7 @@ import com.xiliulou.electricity.vo.CabinetBatteryVO;
 import com.xiliulou.electricity.vo.EleCabinetDataAnalyseVO;
 import com.xiliulou.electricity.vo.ElectricityCabinetBatchOperateVo;
 import com.xiliulou.electricity.vo.ElectricityCabinetBoxVO;
+import com.xiliulou.electricity.vo.ElectricityCabinetCountVO;
 import com.xiliulou.electricity.vo.ElectricityCabinetExcelVO;
 import com.xiliulou.electricity.vo.ElectricityCabinetListMapVO;
 import com.xiliulou.electricity.vo.ElectricityCabinetMapVO;
@@ -1741,6 +1742,13 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         homeOne.put("offlineEleCount", offlineEleCount.toString());
         
         return R.ok(homeOne);
+    }
+    
+    @Slave
+    @Override
+    public List<ElectricityCabinetCountVO> queryCabinetCount(ElectricityCabinetQuery cabinetQuery) {
+        
+        return electricityCabinetMapper.selectCabinetCount(cabinetQuery);
     }
     
     @Override

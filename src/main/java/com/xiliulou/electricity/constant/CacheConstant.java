@@ -578,5 +578,19 @@ public interface CacheConstant {
     String MERCHANT_PLACE_CABINET_DELETE_UID = "merchant_place_cabinet_delete_uid:";
     
     String CACHE_CHANNEL_EMPLOYEE_SAVE_LOCK = "cache_channel_employee_save_lock:";
-
+    
+    String CACHE_FAILURE_ALARM_LOCK = "cache_failure_alarm_lock:";
+    
+    String CACHE_TENANT_NOTE_RECHARGE_LOCK = "cache_tenant_note_recharge_lock:";
+    
+    String CACHE_FAILURE_ALARM_UPDATE_LOCK = "cache_failure_alarm_update_lock:";
+    
+    String CACHE_FAILURE_ALARM_DELETE_LOCK = "cache_failure_alarm_delete_lock:";
+    
+    String CACHE_FAILURE_ALARM_BATCH_SET_LOCK = "cache_failure_alarm_batch_set_lock:";
+    
+    String CACHE_FAILURE_ALARM = "cache_failure_alarm:";
+    
+    String CACHE_TENANT_NOTE = "cache_tenant_note:";
+    
 }

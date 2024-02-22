@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.EleHardwareFailureWarnMsgMapper">
+    
+    <select id="selectList" parameterType="com.xiliulou.electricity.queryModel.failureAlarm.FailureWarnMsgTaskQueryModel" resultType="com.xiliulou.electricity.vo.failureAlarm.EleHardwareFailureWarnMsgVo">
+        SELECT
+            tenant_id as 'tenantId',
+            cabinet_id as 'cabinetId',
+            type,
+            count( 1 ) as 'failureWarnNum'
+        FROM
+        t_ele_hardware_failure_warn_msg
+        WHERE
+            alarm_time between  #{startTime} and #{endTime}
+        GROUP BY
+        tenant_id,
+        cabinet_id,
+        type
+    </select>
+    
+    <sql id="filter">
+        <where>
+            <if test="type != null">
+                t.type  = #{type}
+            </if>
+        
+            <if test="sn != null and sn != ''">
+                and (
+                EXISTS (
+                SELECT
+                1
+                FROM
+                t_electricity_cabinet a
+                WHERE
+                a.id = t.equipment_id
+                AND a.sn LIKE concat(
+                '%',
+                concat(
+                concat( #{sn}, '%' )))
+                )
+                OR
+    
+                EXISTS (
+                SELECT
+                1
+                FROM
+                t_electricity_battery b
+                WHERE
+                b.id = t.equipment_id
+                AND b.sn LIKE concat(
+                '%',
+                concat(
+                concat( #{sn}, '%' )))
+                )
+                )
+            </if>
+        
+            <if test="tenantId != null">
+                and t.tenant_id = #{tenantId}
+            </if>
+    
+            <if test="signalId != null">
+                and t.signal_id = #{signalId}
+            </if>
+        
+            <if test="alarmStartTime != null and alarmEndTime != null">
+                and t.alarm_time BETWEEN #{alarmStartTime} AND  #{alarmEndTime}
+            </if>
+        
+            <if test="alarmFlag != null">
+                and t.alarm_flag  = #{alarmFlag}
+            </if>
+            
+            <if test="signalIdList != null and signalIdList.size() > 0">
+                and t.signal_id in
+                <foreach collection="signalIdList" item="signalId" separator="," open="(" close=")">
+                    #{signalId}
+                </foreach>
+            </if>
+        </where>
+    </sql>
+    <select id="selectListByPage" resultType="com.xiliulou.electricity.entity.EleHardwareFailureWarnMsg">
+        SELECT
+            t.id,
+            t.cabinet_id,
+            t.tenant_id,
+            t.msg_type,
+            t.txn_no,
+            t.signal_id,
+            t.alarm_desc,
+            t.alarm_flag,
+            t.alarm_id,
+            t.cell_no,
+            t.sn,
+            t.type,
+            t.occur_num,
+            t.grade,
+            t.device_type,
+            t.failure_alarm_name,
+            t.tenant_name,
+            t.dev_id,
+            t.recover_time,
+            t.report_time,
+            t.alarm_time,
+            t.create_time,
+            t.battery_sn,
+            t.battery_id
+        FROM
+        t_ele_hardware_failure_warn_msg t
+        <include refid="filter"/>
+        order by t.alarm_time desc
+        limit #{offset}, #{size}
+    </select>
+    <select id="countTotal" resultType="java.lang.Integer">
+        SELECT
+          count(1)
+        FROM
+        t_ele_hardware_failure_warn_msg t
+        <include refid="filter"/>
+    </select>
+    <select id="selectListExport" resultType="com.xiliulou.electricity.vo.failureAlarm.FailureWarnMsgExcelVo">
+        SELECT
+        t.id,
+        t.cabinet_id,
+        t.tenant_id,
+        t.msg_type,
+        t.txn_no,
+        t.signal_id,
+        t.alarm_desc,
+        t.alarm_flag,
+        t.alarm_id,
+        t.cell_no,
+        t.sn,
+        t.type,
+        t.occur_num,
+        t.grade,
+        t.device_type,
+        t.failure_alarm_name,
+        t.tenant_name,
+        t.dev_id,
+        t.recover_time,
+        t.report_time,
+        t.alarm_time,
+        t.create_time,
+        t.battery_sn,
+        t.battery_id
+        FROM
+        t_ele_hardware_failure_warn_msg t
+        <include refid="filter"/>
+        order by t.alarm_time desc
+        limit #{offset}, #{size}
+    </select>
+    <select id="countFailureWarnNum" resultType="com.xiliulou.electricity.vo.failureAlarm.EleHardwareFailureWarnMsgVo">
+        SELECT
+            type,
+            count( 1 ) AS 'failureWarnNum'
+        FROM
+        t_ele_hardware_failure_warn_msg t
+        WHERE
+        alarm_time between  #{startTime} and #{endTime}
+        <if test="limitFailureAlarmStatus != null">
+            AND EXISTS ( SELECT 1 FROM t_failure_alarm a WHERE a.`status` = 0  AND a.del_flag = 0 AND a.signal_id = t.signal_id )
+        </if>
+        GROUP BY
+        type
+    </select>
+    <select id="selectListProportion" resultType="com.xiliulou.electricity.vo.failureAlarm.FailureWarnProportionVo">
+        SELECT
+            signal_id,
+            count(1) as 'count'
+        FROM
+            t_ele_hardware_failure_warn_msg t
+        WHERE
+          alarm_time between  #{alarmStartTime} and #{alarmEndTime}
+          AND EXISTS ( SELECT 1 FROM t_failure_alarm a WHERE a.`status` = 0  AND a.del_flag = 0 AND a.signal_id = t.signal_id )
+          and type = #{type}
+        GROUP BY signal_id
+    </select>
+    
+    <insert id="batchInsert">
+        insert into t_ele_hardware_failure_warn_msg(
+        cabinet_id, tenant_id, msg_type, txn_no, signal_id, alarm_desc, alarm_flag, alarm_id, cell_no,
+        sn, type, occur_num, grade, device_type, failure_alarm_name,
+        tenant_name, dev_id, recover_time, report_time, alarm_time, create_time) values
+        <foreach item="item" index="index" collection="list" separator=",">
+            (#{item.cabinetId}, #{item.tenantId}, #{item.msgType}, #{item.txnNo}, #{item.signalId}, #{item.alarmDesc},
+            #{item.alarmFlag}, #{item.alarmId}, #{item.cellNo}, #{item.sn}, #{item.type}, #{item.occurNum}, #{item.grade},
+            #{item.deviceType}, #{item.failureAlarmName}, #{item.tenantName}, #{item.devId}, #{item.recoverTime},
+            #{item.reportTime}, #{item.alarmTime}, #{item.createTime})
+        </foreach>
+    </insert>
+</mapper>
