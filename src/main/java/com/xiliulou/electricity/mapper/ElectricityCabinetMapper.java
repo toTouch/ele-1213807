@@ -12,6 +12,7 @@ import com.xiliulou.electricity.query.asset.ElectricityCabinetUpdateFranchiseeAn
 import com.xiliulou.electricity.query.asset.ElectricityCabinetListSnByFranchiseeQueryModel;
 import com.xiliulou.electricity.vo.EleCabinetDataAnalyseVO;
 import com.xiliulou.electricity.vo.ElectricityCabinetBatchOperateVo;
+import com.xiliulou.electricity.vo.ElectricityCabinetCountVO;
 import com.xiliulou.electricity.vo.ElectricityCabinetVO;
 import com.xiliulou.electricity.vo.SearchVo;
 import org.apache.ibatis.annotations.Param;
@@ -117,4 +118,7 @@ public interface ElectricityCabinetMapper extends BaseMapper<ElectricityCabinet>
     Integer existsByAreaId(Long areaId);
     
     List<AreaCabinetNumBO> countByAreaGroup(@Param("areaIdList") List<Long> areaIdList);
+    
+    List<ElectricityCabinetCountVO> selectCabinetCount(ElectricityCabinetQuery cabinetQuery);
+
 }

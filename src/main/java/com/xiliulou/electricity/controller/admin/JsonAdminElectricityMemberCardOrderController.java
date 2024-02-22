@@ -232,7 +232,15 @@ public class JsonAdminElectricityMemberCardOrderController extends BaseControlle
                 throw new CustomBusinessException("订单不存在！");
             }
         }
-    
+        
+        List<Long> storeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
+            storeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if (org.springframework.util.CollectionUtils.isEmpty(storeIds)) {
+                throw new CustomBusinessException("订单不存在！");
+            }
+        }
+        
         MemberCardOrderQuery memberCardOrderQuery = MemberCardOrderQuery.builder()
                 .payType(payType)
                 .phone(phone)
@@ -243,7 +251,8 @@ public class JsonAdminElectricityMemberCardOrderController extends BaseControlle
                 .queryEndTime(queryEndTime)
                 .tenantId(TenantContextHolder.getTenantId()).status(status).source(source).refId(refId)
                 .cardModel(memberCardModel).franchiseeId(franchiseeId).cardPayCount(payCount).userName(userName)
-                .franchiseeIds(franchiseeIds).build();
+                .franchiseeIds(franchiseeIds)
+                .storeIds(storeIds).build();
         electricityMemberCardOrderService.exportExcel(memberCardOrderQuery, response);
     }
 

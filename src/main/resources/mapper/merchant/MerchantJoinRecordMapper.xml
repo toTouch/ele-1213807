@@ -161,6 +161,34 @@
         select <include refid="basic_field"/>
         from t_merchant_join_record where del_flag = 0 and join_uid = #{joinUid} order by id desc limit 1
     </select>
+    
+    <select id="countByCondition" resultType="java.lang.Integer">
+        select IFNULL(count(1), 0) from (
+        select distinct(joinUid) from t_merchant_join_record
+        <where>
+            del_flag = 0
+            <if test="startTime != null">
+                and start_time >= #{startTime}
+            </if>
+            <if test="endTime != null">
+                and start_time<= #{endTime}
+            </if>
+            <if test="type != null">
+                and inviter_type = #{type}
+            </if>
+            <if test="inviterUid != null">
+                and inviter_uid = #{inviterUid}
+            </if>
+            <if test="status != null">
+                and status = #{status}
+            </if>
+            <if test="tenantId != null">
+                and tenant_id = #{tenantId}
+            </if>
+    
+        </where>
+        ) a
+    </select>
 
 </mapper>
 

@@ -13,7 +13,6 @@ import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.vo.PictureVO;
 import com.xiliulou.storage.config.StorageConfig;
-import com.xiliulou.storage.service.StorageService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.BeanUtils;
@@ -41,9 +40,6 @@ public class PictureServiceImpl implements PictureService {
     private PictureMapper pictureMapper;
     @Autowired
     StorageConfig storageConfig;
-    @Qualifier("aliyunOssService")
-    @Autowired
-    StorageService storageService;
 
     /**
      * 通过ID查询单条数据从DB

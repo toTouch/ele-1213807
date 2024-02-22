@@ -1,8 +1,10 @@
 package com.xiliulou.electricity.service.impl.merchant;
 
+import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.merchant.ChannelEmployeeAmount;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.merchant.ChannelEmployeeAmountMapper;
+import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.service.merchant.ChannelEmployeeAmountService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -25,10 +27,13 @@ public class ChannelEmployeeAmountServiceImpl implements ChannelEmployeeAmountSe
     @Resource
     private ChannelEmployeeAmountMapper channelEmployeeAmountMapper;
     
+    @Resource
+    UserService userService;
+    
     @Transactional
     @Override
     public Integer addAmount(BigDecimal amount, Long uid, Long tenantId) {
-        ChannelEmployeeAmount channelEmployeeAmount = channelEmployeeAmountMapper.selectByUid(uid, tenantId);
+       /* ChannelEmployeeAmount channelEmployeeAmount = channelEmployeeAmountMapper.selectByUid(uid, tenantId);
         if(Objects.isNull(channelEmployeeAmount)){
             log.error("add amount by uid error, not found channel employee amount info, uid = {}", uid);
             throw new BizException("120005", "渠道员余额账户不存在");
@@ -37,15 +42,22 @@ public class ChannelEmployeeAmountServiceImpl implements ChannelEmployeeAmountSe
         ChannelEmployeeAmount channelEmployeeAmountUpdate = new ChannelEmployeeAmount();
         channelEmployeeAmountUpdate.setUid(uid);
         channelEmployeeAmountUpdate.setBalance(balance.add(amount));
-        channelEmployeeAmountUpdate.setUpdateTime(System.currentTimeMillis());
+        channelEmployeeAmountUpdate.setUpdateTime(System.currentTimeMillis());*/
+        log.info("add amount for channel employee, amount = {}, uid = {}", amount, uid);
+        User user = userService.queryByUidFromCache(uid);
+        if(Objects.isNull(user)){
+            log.error("add amount by uid error, not found channel employee user, uid = {}", uid);
+            throw new BizException("120008", "渠道员不存在");
+        }
         
-        return channelEmployeeAmountMapper.updateOne(channelEmployeeAmountUpdate);
+        Integer result = channelEmployeeAmountMapper.addAmountByUid(amount, uid, tenantId);
+        return result;
     }
     
     @Transactional
     @Override
     public Integer reduceAmount(BigDecimal amount, Long uid, Long tenantId) {
-        ChannelEmployeeAmount channelEmployeeAmount = channelEmployeeAmountMapper.selectByUid(uid, tenantId);
+        /*ChannelEmployeeAmount channelEmployeeAmount = channelEmployeeAmountMapper.selectByUid(uid, tenantId);
         if(Objects.isNull(channelEmployeeAmount)){
             log.error("reduce amount by uid error, not found channel employee amount info, uid = {}", uid);
             throw new BizException("120005", "渠道员余额账户不存在");
@@ -60,8 +72,16 @@ public class ChannelEmployeeAmountServiceImpl implements ChannelEmployeeAmountSe
         ChannelEmployeeAmount channelEmployeeAmountUpdate = new ChannelEmployeeAmount();
         channelEmployeeAmountUpdate.setUid(uid);
         channelEmployeeAmountUpdate.setBalance(balance.subtract(amount));
-        channelEmployeeAmountUpdate.setUpdateTime(System.currentTimeMillis());
+        channelEmployeeAmountUpdate.setUpdateTime(System.currentTimeMillis());*/
+        
+        log.info("reduce amount for channel employee, amount = {}, uid = {}", amount, uid);
+        User user = userService.queryByUidFromCache(uid);
+        if(Objects.isNull(user)){
+            log.error("reduce amount by uid error, not found channel employee user, uid = {}", uid);
+            throw new BizException("120008", "渠道员不存在");
+        }
     
-        return channelEmployeeAmountMapper.updateOne(channelEmployeeAmountUpdate);
+        Integer result = channelEmployeeAmountMapper.reduceAmountByUid(amount, uid, tenantId);
+        return result;
     }
 }

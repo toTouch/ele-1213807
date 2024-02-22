@@ -1,7 +1,5 @@
 package com.xiliulou.electricity.constant;
 
-import java.util.concurrent.TimeUnit;
-
 /**
  * @author : eclair
  * @date : 2022/7/29 15:55
@@ -30,9 +28,9 @@ public interface CommonConstant {
     String TENANT_ID = "tenantId";
     Integer TENANT_ID_DEFAULT = 0;
     //在线
-    String STATUS_ONLINE="online";
+    String STATUS_ONLINE="ONLINE";
     //离线
-    String STATUS_OFFLINE="offline";
+    String STATUS_OFFLINE="OFFLINE";
 
     String BUCKET_NAME="bucketName";
     String FILE_NAME="fileName";
@@ -87,8 +85,8 @@ public interface CommonConstant {
      */
     Integer EXCEL_MAX_COUNT_TWO_THOUSAND = 2000;
     
-
+    String STR_COMMA = ",";
     
-    
+    Integer MSG_TYPE = 411;
     
 }

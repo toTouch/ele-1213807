@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.xiliulou.electricity.mapper.merchant.MerchantUserAmountMapper">
-    
+<mapper namespace="com.xiliulou.electricity.mapper.merchant.MerchantWithdrawApplicationMapper">
     
     <resultMap type="com.xiliulou.electricity.entity.merchant.MerchantWithdrawApplication" id="MerchantWithdrawApplicationMap">
         <result property="id" column="id" jdbcType="INTEGER"/>
@@ -25,5 +24,229 @@
         <result property="updateTime" column="update_time" jdbcType="INTEGER"/>
        
     </resultMap>
+    
+    <insert id="insertOne" keyProperty="id" useGeneratedKeys="true">
+        insert into t_merchant_withdraw_application
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            uid,
+            order_no,
+            bank_name,
+            bank_code,
+            bank_number,
+            account_name,
+            amount,
+            remark,
+            status,
+            del_flag,
+            create_time,
+            update_time,
+            tenant_id
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            #{uid},
+            #{orderNo},
+            #{bankName},
+            #{bankCode},
+            #{bankNumber},
+            #{accountName},
+            #{amount},
+            #{remark},
+            #{status},
+            #{delFlag},
+            #{createTime},
+            #{updateTime},
+            #{tenantId}
+        </trim>
+    </insert>
+    
+    <update id="updateOne">
+        update t_merchant_withdraw_application
+        <set>
+            <if test="uid != null">
+                uid = #{uid},
+            </if>
+            <if test="orderNo != null">
+                order_no = #{orderNo},
+            </if>
+            <if test="bankName != null">
+                bank_name = #{bankName},
+            </if>
+            <if test="bankCode != null">
+                bank_code = #{bankCode},
+            </if>
+            <if test="bankNumber != null">
+                bank_number = #{bankNumber},
+            </if>
+            <if test="accountName != null">
+                account_name = #{accountName},
+            </if>
+            <if test="amount != null">
+                amount = #{amount},
+            </if>
+            <if test="remark != null">
+                remark = #{remark},
+            </if>
+            <if test="status != null">
+                status = #{status},
+            </if>
+            <if test="delFlag != null">
+                del_flag = #{delFlag},
+            </if>
+            <if test="createTime != null">
+                create_time = #{createTime},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+    
+    <select id="queryList" resultType="com.xiliulou.electricity.vo.merchant.MerchantWithdrawApplicationVO">
+        select tmwa.id,
+               tmwa.uid,
+               tu.name,
+               tmwa.order_no,
+               tmwa.amount,
+               tmwa.remark,
+               tmwa.status,
+               tmwa.receipt_time,
+               tmwa.tenant_id,
+               tmwa.del_flag,
+               tmwa.create_time,
+               tmwa.update_time
+        from t_merchant_withdraw_application tmwa
+        left join t_user tu on tu.uid = tmwa.uid
+        <where>
+            tmwa.del_flag = 0
+            and tmwa.tenant_id = #{tenantId}
+            <if test="uid != null and uid != ''">
+                and tmwa.uid = #{uid}
+            </if>
+            
+            <if test="orderNo != null and orderNo != ''">
+                and tmwa.order_no = #{orderNo}
+            </if>
+
+            <if test="status != null and status != ''">
+                and tmwa.status = #{status}
+            </if>
+    
+            <if test="beginTime != null ">
+                and tmwa.create_time <![CDATA[ >=  ]]> #{beginTime}
+            </if>
+            <if test="endTime != null ">
+                and tmwa.create_time <![CDATA[ <=  ]]> #{endTime}
+            </if>
+
+        </where>
+        order by tmwa.create_time desc
+        <if test="offset != null and limit != null">
+            limit #{offset}, #{limit}
+        </if>
+
+    </select>
+    
+    <select id="countByCondition" resultType="Integer">
+        select count(1)
+        from t_merchant_withdraw_application tmwa
+        left join t_user tu on tu.uid = tmwa.uid
+        <where>
+            tmwa.del_flag = 0
+            and tmwa.tenant_id = #{tenantId}
+            <if test="uid != null and uid != ''">
+                and tmwa.uid = #{uid}
+            </if>
+            
+            <if test="orderNo != null and orderNo != ''">
+                and tmwa.order_no = #{orderNo}
+            </if>
+
+            <if test="status != null and status != ''">
+                and tmwa.status = #{status}
+            </if>
+            <if test="beginTime != null ">
+                and tmwa.create_time <![CDATA[ >=  ]]> #{beginTime}
+            </if>
+            <if test="endTime != null ">
+                and tmwa.create_time <![CDATA[ <=  ]]> #{endTime}
+            </if>
+        </where>
+    </select>
+    
+    <select id="selectListByCondition" resultType="com.xiliulou.electricity.vo.merchant.MerchantWithdrawApplicationVO">
+        select tmwa.id,
+        tmwa.uid,
+        tu.name,
+        tmwa.order_no,
+        tmwa.amount,
+        tmwa.remark,
+        tmwa.status,
+        tmwa.receipt_time,
+        tmwa.tenant_id,
+        tmwa.del_flag,
+        tmwa.create_time,
+        tmwa.update_time
+        from t_merchant_withdraw_application tmwa
+        left join t_user tu on tu.uid = tmwa.uid
+        <where>
+            tmwa.del_flag = 0
+            and tmwa.tenant_id = #{tenantId}
+            <if test="uid != null and uid != ''">
+                and tmwa.uid = #{uid}
+            </if>
+            
+            <if test="orderNo != null and orderNo != ''">
+                and tmwa.order_no = #{orderNo}
+            </if>
+            
+            <if test="status != null and status != ''">
+                and tmwa.status = #{status}
+            </if>
+            
+            <if test="beginTime != null ">
+                and tmwa.create_time <![CDATA[ >=  ]]> #{beginTime}
+            </if>
+            <if test="endTime != null ">
+                and tmwa.create_time <![CDATA[ <=  ]]> #{endTime}
+            </if>
+        
+        </where>
+        order by tmwa.create_time desc
+        <if test="offset != null and limit != null">
+            limit #{offset}, #{limit}
+        </if>
+    
+    </select>
+    
+    <select id="selectById" resultMap="MerchantWithdrawApplicationMap">
+        select tmwa.id,
+               tmwa.uid,
+               tmwa.order_no,
+               tmwa.amount,
+               tmwa.remark,
+               tmwa.status,
+               tmwa.receipt_time,
+               tmwa.tenant_id,
+               tmwa.del_flag,
+               tmwa.create_time,
+               tmwa.update_time
+        from t_merchant_withdraw_application tmwa
+        where id = #{id}
+        and del_flag = 0
+    </select>
+    
+    <!--通过主键物理删除渠道员工-->
+    <delete id="deleteById">
+        delete from t_merchant_withdraw_application
+        where id = #{id}
+    </delete>
+    
+    <!--通过主键逻辑删除渠道员工-->
+    <delete id="removeById">
+        update t_merchant_withdraw_application set del_flag = 1 where id = #{id}
+    </delete>
+    
+    
     
 </mapper>

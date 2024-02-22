@@ -64,6 +64,12 @@ public class MerchantLevelServiceImpl implements MerchantLevelService {
         return this.merchantLevelMapper.deleteById(id);
     }
     
+    @Slave
+    @Override
+    public MerchantLevel queryNextByMerchantLevel(String level, Integer tenantId) {
+        return this.merchantLevelMapper.selectNextByMerchantLevel(level, tenantId);
+    }
+    
     @Override
     public List<MerchantLevelVO> list(Integer tenantId) {
         List<MerchantLevel> merchantLevels = this.listByTenantId(tenantId);
@@ -89,6 +95,17 @@ public class MerchantLevelServiceImpl implements MerchantLevelService {
         MerchantLevel merchantLevel = this.queryById(request.getId());
         if (Objects.isNull(merchantLevel) || !Objects.equals(merchantLevel.getTenantId(), TenantContextHolder.getTenantId())) {
             return Triple.of(true, null, null);
+        }
+        
+        MerchantLevel nextMerchantLevel = this.queryNextByMerchantLevel(merchantLevel.getLevel(), merchantLevel.getTenantId());
+        if (Objects.nonNull(nextMerchantLevel) && StringUtils.isNotBlank(nextMerchantLevel.getRule())) {
+            MerchantLevelDTO merchantLevelDTO = JsonUtil.fromJson(nextMerchantLevel.getRule(), MerchantLevelDTO.class);
+            if (Objects.nonNull(merchantLevelDTO)) {
+                if ((Objects.nonNull(merchantLevelDTO.getInvitationUserCount()) && merchantLevelDTO.getInvitationUserCount() >= request.getInvitationUserCount()) || (
+                        Objects.nonNull(merchantLevelDTO.getRenewalUserCount()) && merchantLevelDTO.getRenewalUserCount() >= request.getRenewalUserCount())) {
+                    return Triple.of(false, "100320", "当前等级设置的人数需大于下一级别，请进行调整");
+                }
+            }
         }
         
         MerchantLevel merchantLevelUpdate = new MerchantLevel();

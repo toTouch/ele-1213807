@@ -33,13 +33,11 @@ import com.xiliulou.electricity.vo.activity.ShareActivityRuleVO;
 import com.xiliulou.electricity.vo.activity.ShareMoneyAndShareActivityVO;
 import com.xiliulou.security.bean.TokenUser;
 import com.xiliulou.storage.config.StorageConfig;
-import com.xiliulou.storage.service.StorageService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -84,9 +82,6 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 	@Autowired
 	StorageConfig storageConfig;
 
-	@Qualifier("aliyunOssService")
-	@Autowired
-	StorageService storageService;
 
 	@Autowired
 	ShareActivityRecordService shareActivityRecordService;
