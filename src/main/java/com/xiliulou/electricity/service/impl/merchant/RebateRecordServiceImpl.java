@@ -10,6 +10,7 @@ import com.xiliulou.electricity.entity.merchant.MerchantPlace;
 import com.xiliulou.electricity.entity.merchant.RebateRecord;
 import com.xiliulou.electricity.mapper.merchant.RebateRecordMapper;
 import com.xiliulou.electricity.query.merchant.MerchantPromotionFeeQueryModel;
+import com.xiliulou.electricity.query.merchant.MerchantPromotionRenewalQueryModel;
 import com.xiliulou.electricity.request.merchant.RebateRecordRequest;
 import com.xiliulou.electricity.service.BatteryMemberCardService;
 import com.xiliulou.electricity.service.FranchiseeService;
@@ -203,13 +204,13 @@ public class RebateRecordServiceImpl implements RebateRecordService {
     }
     
     @Override
-    public BigDecimal sumMerchantByStatus(MerchantPromotionFeeQueryModel merchantPromotionFeeQueryModel) {
-        return this.rebateRecordMapper.sumMerchantByStatus(merchantPromotionFeeQueryModel);
+    public BigDecimal sumByStatus(MerchantPromotionFeeQueryModel merchantPromotionFeeQueryModel) {
+        return this.rebateRecordMapper.sumByStatus(merchantPromotionFeeQueryModel);
     }
     
     @Override
-    public BigDecimal sumMerchantEmployeeByStatus(MerchantPromotionFeeQueryModel merchantPromotionFeeQueryModel) {
-        return this.rebateRecordMapper.sumMerchantEmployeeByStatus(merchantPromotionFeeQueryModel);
+    public Integer countByTime(MerchantPromotionRenewalQueryModel merchantPromotionRenewalQueryModel) {
+        return this.rebateRecordMapper.countByTime(merchantPromotionRenewalQueryModel);
     }
     
 }

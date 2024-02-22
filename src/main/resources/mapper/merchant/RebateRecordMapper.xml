@@ -219,19 +219,19 @@
         delete from t_rebate_record where id = #{id}
     </delete>
     
-    <select id="sumMerchantByStatus"  resultType="java.math.BigDecimal">
+    <select id="sumByStatus"  resultType="java.math.BigDecimal">
         select sum(merchant_rebate) from t_rebate_record
         <where>
             <if test="tenantId != null">
                 and tenant_id = #{tenantId}
             </if>
-            <if test="type != null and type == 1">
+            <if test="uid != null and type == 1">
                 and merchant_uid = #{uid}
             </if>
-            <if test="type != null and type == 2">
+            <if test="uid != null and type == 2">
                 and place_uid = #{uid}
             </if>
-            <if test="status != null2">
+            <if test="status != null">
                 and status = #{status}
             </if>
             <if test="rebateStartTime != null">
@@ -255,10 +255,10 @@
             <if test="tenantId != null">
                 and tenant_id = #{tenantId}
             </if>
-            <if test="type != null and type == 1">
+            <if test="uid != null and type == 1">
                 and merchant_uid = #{uid}
             </if>
-            <if test="type != null and type == 2">
+            <if test="uid != null and type == 2">
                 and place_uid = #{uid}
             </if>
             <if test="status != null2">
@@ -278,6 +278,30 @@
             </if>
         </where>
         
+    </select>
+    
+    <select id="countByTime" resultType="java.lang.Integer">
+        select IFNULL(count(1), 0) from t_rebate_record
+        <where>
+            <if test="tenantId != null">
+                and tenant_id = #{tenantId}
+            </if>
+            <if test="uid != null and type == 1">
+                and merchant_uid = #{uid}
+            </if>
+            <if test="uid != null and type == 2">
+                and place_uid = #{uid}
+            </if>
+            <if test="status != null">
+                and status = #{status}
+            </if>
+            <if test="startTime != null">
+                and create_time >= #{startTime}
+            </if>
+            <if test="endTime != null">
+                and create_time &lt;= #{endTime}
+            </if>
+        </where>
     </select>
 
 </mapper>
