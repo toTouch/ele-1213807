@@ -22,13 +22,14 @@ import com.xiliulou.electricity.vo.UserBatteryMemberCardChannelExitVo;
 import com.xiliulou.electricity.vo.enterprise.CloudBeanOrderExcelVO;
 import com.xiliulou.electricity.vo.enterprise.CloudBeanUseRecordVO;
 import com.xiliulou.storage.config.StorageConfig;
-import com.xiliulou.storage.service.impl.AliyunOssService;
+import com.xiliulou.storage.service.StorageService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -58,10 +59,10 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
     
     @Autowired
     StorageConfig storageConfig;
-    
 
+    @Qualifier("hwOssService")
     @Autowired
-    AliyunOssService aliyunOssService;
+    StorageService storageService;
     
     @Resource
     private CloudBeanUseRecordMapper cloudBeanUseRecordMapper;
@@ -676,8 +677,8 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
             EasyExcel.write(out, CloudBeanOrderExcelVO.class).sheet("sheet").registerWriteHandler(new AutoHeadColumnWidthStyleStrategy()).doWrite(cloudBeanOrderExcelVOList);
             
             String excelPath = CLOUD_BEAN_BILL_PATH + IdUtil.simpleUUID() + ".xlsx";
-            
-            aliyunOssService.uploadFile(storageConfig.getBucketName(), excelPath, new ByteArrayInputStream(out.toByteArray()));
+
+            storageService.uploadFile(storageConfig.getBucketName(), excelPath, new ByteArrayInputStream(out.toByteArray()));
             
             return Triple.of(true, null, StorageConfig.HTTPS + storageConfig.getBucketName() + "." + storageConfig.getOssEndpoint() + "/" +excelPath);
         } catch (Exception e) {

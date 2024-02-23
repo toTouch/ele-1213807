@@ -18,11 +18,12 @@ import com.xiliulou.faceid.entity.rsp.FaceidTokenRsp;
 import com.xiliulou.faceid.service.FaceidResultService;
 import com.xiliulou.faceid.service.FaceidTokenService;
 import com.xiliulou.storage.config.StorageConfig;
-import com.xiliulou.storage.service.impl.AliyunOssService;
+import com.xiliulou.storage.service.StorageService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayInputStream;
@@ -82,8 +83,9 @@ public class FaceidServiceImpl implements FaceidService {
 
     @Autowired
     StorageConfig storageConfig;
+    @Qualifier("hwOssService")
     @Autowired
-    AliyunOssService aliyunOssService;
+    StorageService storageService;
 
     @Autowired
     private EleUserAuthService eleUserAuthService;
@@ -346,7 +348,7 @@ public class FaceidServiceImpl implements FaceidService {
 
                 byte[] ocrFrontBytes = ImageUtil.base64ToImage(faceidResultRsp.getIdCardData().getOcrFront());
 
-                aliyunOssService.uploadFile(storageConfig.getBucketName(), ocrFrontPath, new ByteArrayInputStream(ocrFrontBytes));
+                storageService.uploadFile(storageConfig.getBucketName(), ocrFrontPath, new ByteArrayInputStream(ocrFrontBytes));
 
                 EleUserAuth userAuthFront = new EleUserAuth();
                 userAuthFront.setUid(userInfo.getUid());
@@ -362,7 +364,7 @@ public class FaceidServiceImpl implements FaceidService {
 
                 byte[] ocrBackBytes = ImageUtil.base64ToImage(faceidResultRsp.getIdCardData().getOcrBack());
 
-                aliyunOssService.uploadFile(storageConfig.getBucketName(), ocrBackPath, new ByteArrayInputStream(ocrBackBytes));
+                storageService.uploadFile(storageConfig.getBucketName(), ocrBackPath, new ByteArrayInputStream(ocrBackBytes));
 
                 EleUserAuth userAuthBack = new EleUserAuth();
                 userAuthBack.setUid(userInfo.getUid());

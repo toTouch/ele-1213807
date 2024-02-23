@@ -10,7 +10,7 @@ import com.xiliulou.electricity.mapper.OtaFileConfigMapper;
 import com.xiliulou.electricity.service.OtaFileConfigService;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.storage.config.StorageConfig;
-import com.xiliulou.storage.service.impl.AliyunOssService;
+import com.xiliulou.storage.service.StorageService;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -21,6 +21,7 @@ import org.apache.commons.fileupload.disk.DiskFileItem;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 import org.springframework.transaction.annotation.Transactional;
@@ -45,16 +46,14 @@ import org.springframework.web.multipart.commons.CommonsMultipartFile;
 @Slf4j
 public class OtaFileConfigServiceImpl implements OtaFileConfigService {
     
-    /**
-     * AliYunOss路径
-     */
-    //private static String aliYunOssUrl = "https://xiliulou-electricity.oss-cn-beijing.aliyuncs.com/";
-    
+
     @Resource
     private OtaFileConfigMapper otaFileConfigMapper;
-    
+
+
+    @Qualifier("hwOssService")
     @Autowired
-    private AliyunOssService aliyunOssService;
+    StorageService storageService;
     
     @Autowired
     private StorageConfig storageConfig;
@@ -200,8 +199,8 @@ public class OtaFileConfigServiceImpl implements OtaFileConfigService {
             byte[] fileByte = file.getBytes();
             ossInputStream = new ByteArrayInputStream(fileByte);
             sha256HexInputStream = new ByteArrayInputStream(fileByte);
-        
-            aliyunOssService.uploadFile(storageConfig.getBucketName(), ossPath, ossInputStream);
+
+            storageService.uploadFile(storageConfig.getBucketName(), ossPath, ossInputStream);
         
             String sha256Hex = DigestUtils.sha256Hex(sha256HexInputStream);
             OtaFileConfig otaFileConfig = queryByType(type);

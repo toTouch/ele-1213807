@@ -53,7 +53,6 @@ import com.xiliulou.electricity.vo.*;
 import com.xiliulou.electricity.vo.asset.AssetWarehouseNameVO;
 import com.xiliulou.hwiiot.service.HwIotService;
 import com.xiliulou.iot.entity.HardwareCommandQuery;
-import com.xiliulou.iot.service.IotAcsService;
 import com.xiliulou.mq.service.RocketMqService;
 import com.xiliulou.security.bean.TokenUser;
 import com.xiliulou.storage.config.StorageConfig;
@@ -178,10 +177,10 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     
     @Autowired
     TenantService tenantService;
-    
+
     @Autowired
-    private IotAcsService iotAcsService;
-    
+    HwIotService hwIotService;
+
     @Autowired
     EleBatteryServiceFeeOrderService eleBatteryServiceFeeOrderService;
     
@@ -3303,10 +3302,10 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         if (org.apache.commons.lang3.StringUtils.isBlank(productKey) || org.apache.commons.lang3.StringUtils.isBlank(deviceName)) {
             return R.fail("SYSTEM.0003", "参数不合法");
         }
-        
-        Pair<Boolean, Object> result = iotAcsService.queryDeviceStatus(productKey, deviceName);
+
+        Pair<Boolean, Object> result = hwIotService.queryDeviceStatus(deviceName);
         if (!result.getLeft()) {
-            log.error("acsClient link error! errorMsg={}", result.getLeft());
+            log.error("acsClient link error! errorMsg={}", result.getRight());
             return R.fail("CUPBOARD.10035", "iot链接失败，请联系管理员");
         }
         
