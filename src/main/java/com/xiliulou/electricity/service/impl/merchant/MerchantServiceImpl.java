@@ -889,4 +889,15 @@ public class MerchantServiceImpl implements MerchantService {
         return integer;
     }
     
+    @Override
+    public MerchantVO queryMerchantDetail() {
+        Merchant merchant = merchantMapper.selectByUid(SecurityUtils.getUid());
+        if (Objects.isNull(merchant)) {
+            return null;
+        }
+    
+        MerchantVO merchantVO = new MerchantVO();
+        BeanUtils.copyProperties(merchant, merchantVO);
+        return merchantVO;
+    }
 }
