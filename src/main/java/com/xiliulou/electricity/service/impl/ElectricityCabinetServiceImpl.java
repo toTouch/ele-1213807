@@ -179,9 +179,6 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     TenantService tenantService;
 
     @Autowired
-    HwIotService hwIotService;
-
-    @Autowired
     EleBatteryServiceFeeOrderService eleBatteryServiceFeeOrderService;
     
     @Autowired
