@@ -62,7 +62,7 @@ public class JsonAdminChannelEmployeePromotionController extends BaseController 
     }
     
     
-    @GetMapping("/admin/merchant/pageCount")
+    @GetMapping("/admin/channelEmployeePromotion/pageCount")
     public R channelEmployeeCount(@RequestParam(value = "time", required = false) Long time) {
         TokenUser user = SecurityUtils.getUserInfo();
     

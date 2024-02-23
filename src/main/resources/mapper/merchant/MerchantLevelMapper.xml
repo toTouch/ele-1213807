@@ -34,6 +34,18 @@
         from t_merchant_level
         where tenant_id = #{tenantId} order by id
     </select>
+    <select id="queryListByIdList" resultType="com.xiliulou.electricity.entity.merchant.MerchantLevel">
+        select
+            id, level, name, rule
+        from t_merchant_level
+        <where>
+            del_flag = 0
+            and id in
+          <foreach collection="idList" item="id" close=")" open="(" separator=",">
+            #{id}
+          </foreach>
+        </where>
+    </select>
     
     <!--新增所有列-->
     <insert id="insert" keyProperty="id" useGeneratedKeys="true">

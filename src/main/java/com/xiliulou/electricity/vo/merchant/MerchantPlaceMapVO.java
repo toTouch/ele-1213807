@@ -12,4 +12,9 @@ public class MerchantPlaceMapVO {
     private Long placeId;
     private Long merchantId;
     private String merchantName;
+    
+    /**
+     * 商户绑定场地的数量
+     */
+    private Integer count;
 }

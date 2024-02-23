@@ -27,4 +27,6 @@ public interface MerchantPlaceMapMapper {
     List<MerchantPlaceMap> selectBindList(@Param("notMerchantId") Long notMerchantId,@Param("franchiseeId") Long franchiseeId);
     
     List<MerchantPlaceMapVO> selectBindMerchantName(MerchantPlaceMapQueryModel placeMapQueryModel);
+    
+    List<MerchantPlaceMapVO> countByMerchantIdList(MerchantPlaceMapQueryModel placeMapQueryModel);
 }

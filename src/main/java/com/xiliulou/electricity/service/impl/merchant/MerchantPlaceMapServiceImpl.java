@@ -69,4 +69,10 @@ public class MerchantPlaceMapServiceImpl implements MerchantPlaceMapService {
     public List<MerchantPlaceMapVO> queryBindMerchantName(MerchantPlaceMapQueryModel placeMapQueryModel) {
         return merchantPlaceMapMapper.selectBindMerchantName(placeMapQueryModel);
     }
+    
+    @Slave
+    @Override
+    public List<MerchantPlaceMapVO> countByMerchantIdList(MerchantPlaceMapQueryModel placeMapQueryModel) {
+        return merchantPlaceMapMapper.countByMerchantIdList(placeMapQueryModel);
+    }
 }

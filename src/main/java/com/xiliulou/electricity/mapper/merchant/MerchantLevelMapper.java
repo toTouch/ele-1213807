@@ -26,4 +26,6 @@ public interface MerchantLevelMapper {
     int deleteById(Long id);
     
     MerchantLevel selectNextByMerchantLevel(@Param("level") String level, @Param("tenantId") Integer tenantId);
+    
+    List<MerchantLevel> queryListByIdList(@Param("idList") List<Long> levelIdList);
 }

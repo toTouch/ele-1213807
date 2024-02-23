@@ -26,4 +26,6 @@ public interface MerchantPlaceMapService {
     List<MerchantPlaceMap> queryBindList(Long notMerchantId, Long franchiseeId);
     
     List<MerchantPlaceMapVO> queryBindMerchantName(MerchantPlaceMapQueryModel placeMapQueryModel);
+    
+    List<MerchantPlaceMapVO> countByMerchantIdList(MerchantPlaceMapQueryModel placeMapQueryModel);
 }
