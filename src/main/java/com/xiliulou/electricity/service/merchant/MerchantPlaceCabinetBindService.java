@@ -9,6 +9,7 @@ import com.xiliulou.electricity.vo.merchant.MerchantPlaceCabinetBindVO;
 import org.apache.commons.lang3.tuple.Triple;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * @author maxiaodong
@@ -32,8 +33,6 @@ public interface MerchantPlaceCabinetBindService {
     Integer countTotal(MerchantPlaceCabinetPageRequest placeCabinetPageRequest);
     
     List<MerchantPlaceCabinetBindVO> listByPage(MerchantPlaceCabinetPageRequest placeCabinetPageRequest);
-    
-    List<MerchantPlaceCabinetBind> listByPlaceIds(Set<Long> placeIds);
     
     Integer removeByPlaceId(Long placeId, long updateTime, Integer delFlag);
     List<MerchantPlaceCabinetBind> listByConditions(MerchantPlaceCabinetConditionRequest request);

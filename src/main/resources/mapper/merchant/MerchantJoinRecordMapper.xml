@@ -171,7 +171,7 @@
                 and start_time >= #{startTime}
             </if>
             <if test="endTime != null">
-                and start_time<= #{endTime}
+                and start_time &lt;= #{endTime}
             </if>
             <if test="type != null">
                 and inviter_type = #{type}
