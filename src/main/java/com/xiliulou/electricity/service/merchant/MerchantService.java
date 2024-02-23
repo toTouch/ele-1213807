@@ -42,4 +42,6 @@ public interface MerchantService {
     List<MerchantPlaceUserVO> queryPlaceListByUid(Long uid);
     
     Integer updateById(Merchant merchant);
+    
+    MerchantVO queryMerchantDetail();
 }

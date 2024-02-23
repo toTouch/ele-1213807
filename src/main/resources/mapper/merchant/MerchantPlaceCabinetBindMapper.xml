@@ -186,14 +186,38 @@
         </if>
     </select>
     
-    <select id="selectListByPlaceIds" resultType="com.xiliulou.electricity.entity.merchant.MerchantPlaceCabinetBind">
+    <select id="selectListByConditions" resultType="com.xiliulou.electricity.entity.merchant.MerchantPlaceCabinetBind">
         select <include refid="basic_field"/>
             from t_merchant_place_cabinet_bind
             <where>
-                del_flag = 0 and place_id in
-                <foreach collection="placeIds" separator="," open="(" close=")" item="placeId">
-                    #{placeId}
-                </foreach>
+                del_flag = 0
+                <if test="status != null">
+                    and status = #{status}
+                </if>
+                <if test="startTime != null">
+                    and create_time &gt;= #{startTime}
+                </if>
+                <if test="endTime != null">
+                    and create_time &lt;= #{endTime}
+                </if>
+                <if test="placeIds != null and placeIds.size() > 0">
+                    and place_id in
+                    <foreach collection="placeIds" separator="," open="(" close=")" item="placeId">
+                        #{placeId}
+                    </foreach>
+                </if>
+                <if test="placeFeeSettleStatus != null">
+                    and place_month_settlement = #{placeFeeSettleStatus}
+                </if>
+                <if test="powerSettleStatus != null">
+                    and month_settlement = #{placeFeeSettleStatus}
+                </if>
+                <if test="cabinetIds != null and cabinetIds.size() > 0">
+                    and cabinet_id in
+                    <foreach collection="cabinetIds" separator="," open="(" close=")" item="cabinetId">
+                        #{cabinetId}
+                    </foreach>
+                </if>
             </where>
     </select>
     

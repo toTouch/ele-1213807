@@ -9,7 +9,9 @@ import com.xiliulou.electricity.entity.merchant.MerchantPlace;
 import com.xiliulou.electricity.entity.merchant.MerchantPlaceCabinetBind;
 import com.xiliulou.electricity.mapper.merchant.MerchantPlaceCabinetBindMapper;
 import com.xiliulou.electricity.query.merchant.MerchantPlaceCabinetBindQueryModel;
+import com.xiliulou.electricity.query.merchant.MerchantPlaceCabinetConditionQueryModel;
 import com.xiliulou.electricity.request.merchant.MerchantPlaceCabinetBindSaveRequest;
+import com.xiliulou.electricity.request.merchant.MerchantPlaceCabinetConditionRequest;
 import com.xiliulou.electricity.request.merchant.MerchantPlaceCabinetPageRequest;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
 import com.xiliulou.electricity.service.merchant.MerchantPlaceCabinetBindService;
@@ -200,7 +202,7 @@ public class MerchantPlaceCabinetBindServiceImpl implements MerchantPlaceCabinet
                     placeCabinetBindSaveRequest.getUnBindTime(), cabinetBind.getBindTime());
             return Triple.of(false, "", "结束时间不能早于绑定时间");
         }
-    
+        
         // 检测开始时间是否小于上个月的月初
         Long lastMonthDaytime = getLastMonthDay();
         if (placeCabinetBindSaveRequest.getUnBindTime() < lastMonthDaytime) {
@@ -270,23 +272,23 @@ public class MerchantPlaceCabinetBindServiceImpl implements MerchantPlaceCabinet
     @Override
     public List<MerchantPlaceCabinetBindVO> listByPage(MerchantPlaceCabinetPageRequest placeCabinetPageRequest) {
         List<MerchantPlaceCabinetBindVO> resList = new ArrayList<>();
-    
+        
         MerchantPlaceCabinetBindQueryModel merchantQueryModel = new MerchantPlaceCabinetBindQueryModel();
         BeanUtils.copyProperties(placeCabinetPageRequest, merchantQueryModel);
         
         List<MerchantPlaceCabinetBind> merchantPlaceList = this.merchantPlaceCabinetBindMapper.selectListByPage(merchantQueryModel);
-    
+        
         if (ObjectUtils.isEmpty(merchantPlaceList)) {
             return Collections.EMPTY_LIST;
         }
-    
+        
         for (MerchantPlaceCabinetBind merchantPlace : merchantPlaceList) {
             MerchantPlaceCabinetBindVO merchantPlaceVO = new MerchantPlaceCabinetBindVO();
             BeanUtils.copyProperties(merchantPlace, merchantPlaceVO);
             
             resList.add(merchantPlaceVO);
         }
-    
+        
         return resList;
     }
     
@@ -308,8 +310,11 @@ public class MerchantPlaceCabinetBindServiceImpl implements MerchantPlaceCabinet
     
     @Slave
     @Override
-    public List<MerchantPlaceCabinetBind> listByPlaceIds(Set<Long> placeIds) {
-        return merchantPlaceCabinetBindMapper.selectListByPlaceIds(placeIds);
+    public List<MerchantPlaceCabinetBind> listByConditions(MerchantPlaceCabinetConditionRequest request) {
+        MerchantPlaceCabinetConditionQueryModel queryModel = new MerchantPlaceCabinetConditionQueryModel();
+        BeanUtils.copyProperties(request, queryModel);
+        
+        return merchantPlaceCabinetBindMapper.selectListByConditions(queryModel);
     }
     
     

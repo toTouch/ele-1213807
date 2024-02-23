@@ -327,8 +327,8 @@ public class MerchantServiceImpl implements MerchantService {
                 
                 // 商户场地绑定历史
                 MerchantPlaceBind merchantPlaceBind = MerchantPlaceBind.builder().merchantId(merchant.getId()).placeId(placeId).bindTime(timeMillis)
-                        .delFlag(MerchantPlaceMap.DEL_NORMAL).type(MerchantPlaceConstant.BIND).merchantMonthSettlement(MerchantPlaceConstant.MONTH_SETTLEMENT_NO).tenantId(tenantId)
-                        .createTime(timeMillis).build();
+                        .delFlag(MerchantPlaceMap.DEL_NORMAL).type(MerchantPlaceConstant.BIND).merchantMonthSettlement(MerchantPlaceConstant.MONTH_SETTLEMENT_NO)
+                        .merchantMonthSettlementPower(MerchantPlaceConstant.MONTH_SETTLEMENT_POWER_NO).tenantId(tenantId).createTime(timeMillis).build();
                 merchantPlaceBindList.add(merchantPlaceBind);
             });
             
@@ -567,8 +567,8 @@ public class MerchantServiceImpl implements MerchantService {
                 
                 // 场地绑定历史
                 MerchantPlaceBind merchantPlaceBind = MerchantPlaceBind.builder().merchantId(merchant.getId()).placeId(placeId).bindTime(timeMillis)
-                        .delFlag(MerchantPlaceMap.DEL_NORMAL).type(MerchantPlaceConstant.BIND).merchantMonthSettlement(MerchantPlaceConstant.MONTH_SETTLEMENT_NO).tenantId(tenantId)
-                        .createTime(timeMillis).updateTime(timeMillis).build();
+                        .delFlag(MerchantPlaceMap.DEL_NORMAL).type(MerchantPlaceConstant.BIND).merchantMonthSettlement(MerchantPlaceConstant.MONTH_SETTLEMENT_NO)
+                        .merchantMonthSettlementPower(MerchantPlaceConstant.MONTH_SETTLEMENT_POWER_NO).tenantId(tenantId).createTime(timeMillis).updateTime(timeMillis).build();
                 merchantPlaceBindList.add(merchantPlaceBind);
             });
             
@@ -947,4 +947,15 @@ public class MerchantServiceImpl implements MerchantService {
         return integer;
     }
     
+    @Override
+    public MerchantVO queryMerchantDetail() {
+        Merchant merchant = merchantMapper.selectByUid(SecurityUtils.getUid());
+        if (Objects.isNull(merchant)) {
+            return null;
+        }
+    
+        MerchantVO merchantVO = new MerchantVO();
+        BeanUtils.copyProperties(merchant, merchantVO);
+        return merchantVO;
+    }
 }

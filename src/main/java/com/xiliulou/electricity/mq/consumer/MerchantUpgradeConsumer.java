@@ -87,7 +87,7 @@ public class MerchantUpgradeConsumer implements RocketMQListener<String> {
         }
         
         if (Objects.equals(MerchantConstant.DISABLE, merchant.getStatus())) {
-            log.warn("MERCHANT UPGRADE CONSUMER WARN!merchantAttr is disable,merchantId={}", userInfoExtra.getMerchantId());
+            log.warn("MERCHANT UPGRADE CONSUMER WARN!merchant is disable,merchantId={}", userInfoExtra.getMerchantId());
             return;
         }
         

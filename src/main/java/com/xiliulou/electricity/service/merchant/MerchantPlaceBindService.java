@@ -18,7 +18,8 @@ public interface MerchantPlaceBindService {
     
     /**
      * 根据商户id查询所有绑定记录
+     * @param status 状态 1-解绑，0-绑定
      */
-    List<MerchantPlaceBind> listByMerchantId(Long merchantId);
+    List<MerchantPlaceBind> listByMerchantId(Long merchantId, Integer status);
     
 }

@@ -25,7 +25,7 @@ import java.util.Objects;
  * @date : 2024/2/18 16:17
  */
 @Slf4j
-@Component("newRequestInterceptor")
+@Component("merchantCheckFilter")
 @Order(14)
 public class MerchantCheckFilter implements Filter {
     @Autowired
