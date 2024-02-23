@@ -2271,6 +2271,12 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
             log.warn("FREE DEPOSIT WARN! batteryMemberCard is disable,uid={},mid={}", userInfo.getUid(), query.getMemberCardId());
             return Triple.of(false, "100275", "电池套餐不可用");
         }
+        
+        //判断套餐是否为免押套餐
+        if(!Objects.equals( batteryMemberCard.getFreeDeposite(), BatteryMemberCard.YES)){
+            log.warn("FREE DEPOSIT WARN! batteryMemberCard is illegal,uid={},mid={}", userInfo.getUid(), query.getMemberCardId());
+            return Triple.of(false, "100275", "电池套餐不合法");
+        }
     
         if(Objects.nonNull(userInfo.getFranchiseeId()) && !Objects.equals(userInfo.getFranchiseeId(),NumberConstant.ZERO_L) && !Objects.equals(userInfo.getFranchiseeId(),batteryMemberCard.getFranchiseeId())){
             log.warn("BATTERY DEPOSIT WARN! batteryMemberCard franchiseeId not equals,uid={},mid={}", userInfo.getUid(), query.getMemberCardId());
