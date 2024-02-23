@@ -26,6 +26,11 @@ public class MerchantPlaceVO {
     private String merchantAreaName;
     
     /**
+     * 区域
+     */
+    private String merchantName;
+    
+    /**
      * 柜机名称
      */
     private String cabinetName;

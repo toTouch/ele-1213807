@@ -27,7 +27,7 @@ import com.xiliulou.esign.service.ElectronicSignatureService;
 import com.xiliulou.esign.service.PersonalAuthenticationService;
 import com.xiliulou.esign.service.SignatureFileService;
 import com.xiliulou.storage.config.StorageConfig;
-import com.xiliulou.storage.service.impl.AliyunOssService;
+import com.xiliulou.storage.service.impl.HwOssService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -59,7 +59,7 @@ public class EleCabinetSignatureServiceImpl implements EleCabinetSignatureServic
     @Autowired
     RedisService redisService;
     @Autowired
-    AliyunOssService aliyunOssService;
+    HwOssService hwOssService;
     @Autowired
     StorageConfig storageConfig;
     @Autowired
@@ -454,7 +454,7 @@ public class EleCabinetSignatureServiceImpl implements EleCabinetSignatureServic
                 url = new URL(downLoadUrl);
                 conn = (HttpURLConnection) url.openConnection();
                 inputStream = conn.getInputStream();
-                aliyunOssService.uploadFile(storageConfig.getBucketName(), pshPhotoPath, inputStream);
+                hwOssService.uploadFile(storageConfig.getBucketName(), pshPhotoPath, inputStream);
 
             } catch (Exception e) {
                 log.error("Save personal auth result fail, uid = {},result = {}", userInfo.getUid(), JsonUtil.toJson(psnAuthDetailResp));

@@ -10,7 +10,6 @@ import cn.hutool.core.util.StrUtil;
 import com.alibaba.excel.EasyExcel;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import com.aliyuncs.iot.model.v20180120.GetDeviceStatusResponse;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.google.api.client.util.Lists;
@@ -52,9 +51,8 @@ import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.*;
 import com.xiliulou.electricity.vo.asset.AssetWarehouseNameVO;
+import com.xiliulou.hwiiot.service.HwIotService;
 import com.xiliulou.iot.entity.HardwareCommandQuery;
-import com.xiliulou.iot.service.IotAcsService;
-import com.xiliulou.iot.service.PubHardwareService;
 import com.xiliulou.mq.service.RocketMqService;
 import com.xiliulou.security.bean.TokenUser;
 import com.xiliulou.storage.config.StorageConfig;
@@ -146,8 +144,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     StoreService storeService;
     
     @Autowired
-    PubHardwareService pubHardwareService;
-    
+    HwIotService hwIotService;
+
     @Autowired
     EleHardwareHandlerManager eleHardwareHandlerManager;
     
@@ -179,10 +177,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     
     @Autowired
     TenantService tenantService;
-    
-    @Autowired
-    private IotAcsService iotAcsService;
-    
+
     @Autowired
     EleBatteryServiceFeeOrderService eleBatteryServiceFeeOrderService;
     
@@ -1313,17 +1308,12 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     
     @Override
     public boolean deviceIsOnline(String productKey, String deviceName) {
-        GetDeviceStatusResponse getDeviceStatusResponse = pubHardwareService.queryDeviceStatusFromIot(productKey, deviceName);
-        if (Objects.isNull(getDeviceStatusResponse)) {
-            return false;
+        Pair<Boolean, Object> result = hwIotService.queryDeviceStatus(deviceName);
+        if (!result.getLeft()) {
+            log.error("QUERY DEVICE ERROR! productKey:{},deviceName:{} msg={}", productKey, deviceName, result.getRight());
         }
-        
-        GetDeviceStatusResponse.Data data = getDeviceStatusResponse.getData();
-        if (Objects.isNull(data)) {
-            return false;
-        }
-        
-        String status = Optional.ofNullable(data.getStatus()).orElse("UNKNOW").toLowerCase();
+
+        String status = result.getRight().toString();
         if ("ONLINE".equalsIgnoreCase(status)) {
             return true;
         }
@@ -3309,10 +3299,10 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         if (org.apache.commons.lang3.StringUtils.isBlank(productKey) || org.apache.commons.lang3.StringUtils.isBlank(deviceName)) {
             return R.fail("SYSTEM.0003", "参数不合法");
         }
-        
-        Pair<Boolean, Object> result = iotAcsService.queryDeviceStatus(productKey, deviceName);
+
+        Pair<Boolean, Object> result = hwIotService.queryDeviceStatus(deviceName);
         if (!result.getLeft()) {
-            log.error("acsClient link error! errorMsg={}", result.getLeft());
+            log.error("acsClient link error! errorMsg={}", result.getRight());
             return R.fail("CUPBOARD.10035", "iot链接失败，请联系管理员");
         }
         

@@ -2,6 +2,7 @@ package com.xiliulou.electricity.service.merchant;
 
 import com.xiliulou.electricity.entity.merchant.MerchantPlaceMap;
 import com.xiliulou.electricity.query.merchant.MerchantPlaceMapQueryModel;
+import com.xiliulou.electricity.vo.merchant.MerchantPlaceMapVO;
 import com.xiliulou.electricity.vo.merchant.MerchantPlaceUserVO;
 import com.xiliulou.electricity.vo.merchant.MerchantPlaceVO;
 
@@ -23,4 +24,8 @@ public interface MerchantPlaceMapService {
     List<MerchantPlaceUserVO> queryListByMerchantId(Long merchantId);
     
     List<MerchantPlaceMap> queryBindList(Long notMerchantId, Long franchiseeId);
+    
+    List<MerchantPlaceMapVO> queryBindMerchantName(MerchantPlaceMapQueryModel placeMapQueryModel);
+    
+    List<MerchantPlaceMapVO> countByMerchantIdList(MerchantPlaceMapQueryModel placeMapQueryModel);
 }

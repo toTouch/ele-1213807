@@ -59,4 +59,9 @@ public class MerchantJoinRecordVO {
      * 参与人uid
      */
     private Long joinUid;
+    
+    /**
+     * 某个商户下的用户的数量
+     */
+    private Long merchantUserNum;
 }

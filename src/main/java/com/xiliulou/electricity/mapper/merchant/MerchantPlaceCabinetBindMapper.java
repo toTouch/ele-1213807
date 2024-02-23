@@ -36,4 +36,9 @@ public interface MerchantPlaceCabinetBindMapper {
     
     List<MerchantPlaceCabinetBind> selectListByConditions(MerchantPlaceCabinetConditionQueryModel queryModel);
     
+    List<MerchantPlaceCabinetBind> selectListByPlaceIds(@Param("placeIds")Set<Long> placeIds);
+    
+    Integer countCabinetBindCount(MerchantPlaceCabinetBindQueryModel queryModel);
+    
+    Integer removeByPlaceId(@Param("placeId") Long placeId,@Param("updateTime") long updateTime,@Param("delFlag") Integer delFlag);
 }

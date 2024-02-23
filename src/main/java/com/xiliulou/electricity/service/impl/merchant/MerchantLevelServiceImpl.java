@@ -70,6 +70,12 @@ public class MerchantLevelServiceImpl implements MerchantLevelService {
         return this.merchantLevelMapper.selectNextByMerchantLevel(level, tenantId);
     }
     
+    @Slave
+    @Override
+    public List<MerchantLevel> queryListByIdList(List<Long> levelIdList) {
+        return merchantLevelMapper.queryListByIdList(levelIdList);
+    }
+    
     @Override
     public List<MerchantLevelVO> list(Integer tenantId) {
         List<MerchantLevel> merchantLevels = this.listByTenantId(tenantId);
