@@ -5,6 +5,8 @@ import com.xiliulou.electricity.listener.MessageDelayQueueListener;
 import com.xiliulou.electricity.queue.BatteryTrackRecordBatchSaveQueueService;
 import com.xiliulou.electricity.service.monitor.ThreadPoolMonitorComponent;
 import com.xiliulou.electricity.utils.WebUtils;
+import com.xiliulou.hwiiot.service.HwIotService;
+import com.xiliulou.hwiiot.subscribe.KafkaConsumerService;
 import com.xiliulou.iot.mns.MnsSubscriber;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,20 +23,20 @@ import javax.servlet.http.HttpServletRequest;
 @Slf4j
 public class JsonOuterShutDownController {
     @Autowired
-    MnsSubscriber mnsSubscriber;
-    @Autowired
     MessageDelayQueueListener messageDelayQueueListener;
     @Autowired
     ThreadPoolMonitorComponent threadPoolMonitorComponent;
     @Autowired
     BatteryTrackRecordBatchSaveQueueService batteryTrackRecordBatchSaveQueueService;
 
+    @Autowired
+    KafkaConsumerService kafkaConsumerService;
     @PostMapping("/outer/server/shutdown")
     public R shutDown(HttpServletRequest request) throws Exception {
         String ip = WebUtils.getIP(request);
         log.info(ip);
         if ("127.0.0.1".equalsIgnoreCase(ip) || "localhost".equalsIgnoreCase(ip)) {
-            mnsSubscriber.destroy();
+            kafkaConsumerService.stop();
             messageDelayQueueListener.destroy();
 //            threadPoolMonitorComponent.shutdown();
             batteryTrackRecordBatchSaveQueueService.destroy();
