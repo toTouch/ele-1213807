@@ -70,4 +70,9 @@ public class FailureWarnMsgPageQueryModel {
     private Long size;
     
     private Long offset;
+    
+    /**
+     * 柜机Id
+     */
+    private Integer cabinetId;
 }

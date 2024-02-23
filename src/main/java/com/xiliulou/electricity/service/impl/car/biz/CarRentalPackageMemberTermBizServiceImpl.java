@@ -892,12 +892,14 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
             }
 
             memberTermEntityUpdate.setDueTime(dueTime);
-            if (Objects.isNull(memberTermEntity.getResidue())) {
-                memberTermEntity.setResidue(0L);
-            }
+           
             
             // 计算余量
             if (RenalPackageConfineEnum.NUMBER.getCode().equals(packageOrderEntityNew.getConfine())) {
+                if (Objects.isNull(memberTermEntity.getResidue())) {
+                    memberTermEntity.setResidue(0L);
+                }
+                
                 if (memberTermEntity.getResidue() >= 0) {
                     memberTermEntityUpdate.setResidue(packageOrderEntityNew.getConfineNum());
                 } else {
