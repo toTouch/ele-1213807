@@ -34,4 +34,6 @@ public interface MerchantPlaceCabinetBindService {
     List<MerchantPlaceCabinetBindVO> listByPage(MerchantPlaceCabinetPageRequest placeCabinetPageRequest);
     
     List<MerchantPlaceCabinetBind> listByPlaceIds(Set<Long> placeIds);
+    
+    Integer removeByPlaceId(Long placeId, long updateTime, Integer delFlag);
 }

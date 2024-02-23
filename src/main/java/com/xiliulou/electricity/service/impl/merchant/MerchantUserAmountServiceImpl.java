@@ -47,4 +47,10 @@ public class MerchantUserAmountServiceImpl implements MerchantUserAmountService 
     public Integer reduceAmount(BigDecimal amount, Long uid, Long tenantId) {
         return merchantUserAmountMapper.reduceAmountByUid(amount, uid, tenantId);
     }
+    
+    @Slave
+    @Override
+    public MerchantUserAmount queryByUid(Long uid) {
+        return merchantUserAmountMapper.selectByUid(uid);
+    }
 }

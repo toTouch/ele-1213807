@@ -35,4 +35,9 @@ public class MerchantPlaceConstant {
     
     public static final Integer DEL_NORMAL = 0;
     public static final Integer DEL_DEL = 1;
+    
+    /**
+     * 柜机数量限制
+     */
+    public final static Integer BIND_CABINET_COUNT_LIMIT = 20;
 }

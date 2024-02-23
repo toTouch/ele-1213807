@@ -149,4 +149,19 @@
             and uid = #{uid}
         </where>
     </select>
+    
+    <select id="existsByName" resultType="java.lang.Integer">
+        SELECT
+            count(1)
+        FROM
+            t_merchant
+        WHERE
+            del_flag = 0
+            and tenant_id = #{tenantId}
+            and name = #{name}
+          <if test="id != null">
+              and id != #{id}
+          </if>
+          
+    </select>
 </mapper>

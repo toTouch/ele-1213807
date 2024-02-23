@@ -5,6 +5,7 @@ import com.xiliulou.electricity.entity.merchant.MerchantPlaceMap;
 import com.xiliulou.electricity.mapper.merchant.MerchantPlaceMapMapper;
 import com.xiliulou.electricity.query.merchant.MerchantPlaceMapQueryModel;
 import com.xiliulou.electricity.service.merchant.MerchantPlaceMapService;
+import com.xiliulou.electricity.vo.merchant.MerchantPlaceMapVO;
 import com.xiliulou.electricity.vo.merchant.MerchantPlaceUserVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -61,5 +62,11 @@ public class MerchantPlaceMapServiceImpl implements MerchantPlaceMapService {
     public List<MerchantPlaceMap> queryBindList(Long notMerchantId, Long franchiseeId) {
     
         return merchantPlaceMapMapper.selectBindList(notMerchantId, franchiseeId);
+    }
+    
+    @Slave
+    @Override
+    public List<MerchantPlaceMapVO> queryBindMerchantName(MerchantPlaceMapQueryModel placeMapQueryModel) {
+        return merchantPlaceMapMapper.selectBindMerchantName(placeMapQueryModel);
     }
 }
