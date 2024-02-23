@@ -4,7 +4,6 @@ import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.request.merchant.MerchantCabinetPowerRequest;
 import com.xiliulou.electricity.service.merchant.MerchantCabinetPowerService;
-import com.xiliulou.electricity.service.merchant.MerchantPlaceBindService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -24,9 +23,6 @@ public class JsonUserMerchantCabinetPowerController extends BaseController {
     
     @Resource
     MerchantCabinetPowerService merchantCabinetPowerService;
-    
-    @Resource
-    private MerchantPlaceBindService merchantPlaceBindService;
     
     /**
      * 是否显示电费页面：0-不显示，1-显示
@@ -53,48 +49,16 @@ public class JsonUserMerchantCabinetPowerController extends BaseController {
     }
     
     /**
-     * 今日电费/电量
+     * 统计：今日/昨日/本月/上月/累计-电量/电费
+     * 柜机列表：今日/本月/本年-电量/电费
      */
-    @GetMapping("/user/merchant/cabinetPower/todayPowerData")
-    public R todayPowerAndCharge(@RequestParam Long merchantId, @RequestParam(value = "placeId", required = false) Long placeId,
+    @GetMapping("/user/merchant/cabinetPower/PowerData")
+    public R powerData(@RequestParam Long merchantId, @RequestParam(value = "placeId", required = false) Long placeId,
             @RequestParam(value = "cabinetId", required = false) Long cabinetId) {
         
         MerchantCabinetPowerRequest request = MerchantCabinetPowerRequest.builder().merchantId(merchantId).placeId(placeId).cabinetId(cabinetId).build();
         
-        return R.ok(merchantCabinetPowerService.todayPowerAndCharge(request));
-    }
-    
-    /**
-     * 昨日电费/电量
-     */
-    @GetMapping("/user/merchant/cabinetPower/yesterdayPowerData")
-    public R yesterdayPowerAndCharge(@RequestParam Long merchantId, @RequestParam(value = "placeId", required = false) Long placeId,
-            @RequestParam(value = "cabinetId", required = false) Long cabinetId) {
-        
-        MerchantCabinetPowerRequest request = MerchantCabinetPowerRequest.builder().merchantId(merchantId).placeId(placeId).cabinetId(cabinetId).build();
-        
-        return R.ok(merchantCabinetPowerService.yesterdayPowerAndCharge(request));
-    }
-    
-    /**
-     * 本月电费/电量
-     */
-    @GetMapping("/user/merchant/cabinetPower/thisMonthPowerData")
-    public R thisMonthPowerAndCharge(@RequestParam Long merchantId, @RequestParam(value = "placeId", required = false) Long placeId,
-            @RequestParam(value = "cabinetId", required = false) Long cabinetId) {
-    
-        MerchantCabinetPowerRequest request = MerchantCabinetPowerRequest.builder().merchantId(merchantId).placeId(placeId).cabinetId(cabinetId).build();
-    
-        return R.ok(merchantCabinetPowerService.thisMonthPowerAndCharge(request));
-    }
-    
-    /**
-     * 累计电费/电量
-     */
-    public R totalPowerAndCharge(@RequestParam Long merchantId, @RequestParam(value = "placeId", required = false) Long placeId,
-            @RequestParam(value = "cabinetId", required = false) Long cabinetId) {
-    
-        return R.ok();
+        return R.ok(merchantCabinetPowerService.powerData(request));
     }
     
     /**
@@ -102,16 +66,7 @@ public class JsonUserMerchantCabinetPowerController extends BaseController {
      */
     public R lineData(@RequestParam Long merchantId, @RequestParam(value = "placeId", required = false) Long placeId,
             @RequestParam(value = "cabinetId", required = false) Long cabinetId, Long startTime, Long endTime) {
-    
-        return R.ok();
-    }
-    
-    /**
-     * 柜机电费列表
-     */
-    public R cabinetPowerList(@RequestParam Long merchantId, @RequestParam(value = "placeId", required = false) Long placeId,
-            @RequestParam(value = "cabinetId", required = false) Long cabinetId) {
-    
+        
         return R.ok();
     }
     
@@ -120,7 +75,7 @@ public class JsonUserMerchantCabinetPowerController extends BaseController {
      */
     public R cabinetPowerDetal(@RequestParam Long merchantId, @RequestParam(value = "placeId", required = false) Long placeId,
             @RequestParam(value = "cabinetId", required = false) Long cabinetId) {
-    
+        
         return R.ok();
     }
     

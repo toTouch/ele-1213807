@@ -1,8 +1,8 @@
 package com.xiliulou.electricity.controller.user.merchant;
 
 import com.xiliulou.core.web.R;
-import com.xiliulou.electricity.entity.merchant.Merchant;
 import com.xiliulou.electricity.service.merchant.MerchantPromotionFeeService;
+import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
@@ -62,5 +62,33 @@ public class JsonUserMerchantPromotionFeeController {
         }
         return merchantPromotionFeeService.queryMerchantPromotionScanCode(type, uid);
     }
+    
+    
+    @GetMapping("/user/merchant/promotionFee/renewal")
+    public R queryMerchantPromotionRenewal(@RequestParam("type") Integer type, @RequestParam("uid") Long uid) {
+        
+        //用户区分
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELECTRICITY  ERROR! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        return merchantPromotionFeeService.queryMerchantPromotionRenewal(type, uid);
+    }
+    
+    @GetMapping("/user/merchant/promotionFee/statistic/merchantIncome")
+    public R promotionFeeStatisticAnalysisIncome(@RequestParam("type") Integer type, @RequestParam("uid") Long uid,@RequestParam (value = "beginTime", required = false) Long beginTime, @RequestParam(value = "endTime", required = false) Long endTime) {
+        
+        //用户区分
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELECTRICITY  ERROR! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        
+        return merchantPromotionFeeService.statisticMerchantIncome(type,uid, beginTime,endTime);
+    }
+    
+    
     
 }

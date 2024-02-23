@@ -20,8 +20,6 @@ public interface MerchantJoinRecordMapper {
     
     MerchantJoinRecord selectByMerchantIdAndJoinUid(@Param("merchantId") Long merchantId, @Param("joinUid") Long joinUid);
     
-    Integer existsIfExpired(@Param("merchantId") Long merchantId, @Param("joinUid") Long joinUid);
-    
     Integer updateStatus(@Param("merchantId") Long merchantId, @Param("joinUid") Long joinUid, @Param("status") Integer status);
     
     Integer updateProtectionExpired(@Param("protectionJoinRecord") MerchantJoinRecord protectionJoinRecord);
