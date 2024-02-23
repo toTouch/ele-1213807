@@ -34,7 +34,7 @@ import java.util.Objects;
  * @date 2024/2/17 22:35
  * @desc
  */
-@Service("merchantPlaceMapService")
+@Service("merchantPlaceFeeRecordService")
 @Slf4j
 public class MerchantPlaceFeeRecordServiceImpl implements MerchantPlaceFeeRecordService {
     protected XllThreadPoolExecutorService executorService = XllThreadPoolExecutors.newFixedThreadPool("CABINET_PLACE_RECORD_HANDLE_THREAD_POOL", 2,

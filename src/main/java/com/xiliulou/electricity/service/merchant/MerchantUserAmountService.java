@@ -32,4 +32,6 @@ public interface MerchantUserAmountService {
      * @return
      */
     Integer reduceAmount(BigDecimal amount, Long uid, Long tenantId);
+    
+    MerchantUserAmount queryByUid(Long uid);
 }
