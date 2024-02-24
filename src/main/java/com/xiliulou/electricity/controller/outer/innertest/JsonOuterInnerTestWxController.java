@@ -73,7 +73,7 @@ public class JsonOuterInnerTestWxController {
     
     
     @GetMapping("/transferBatches")
-    public String transferBatches() throws Exception {
+    public String transferBatches(String batchNo) throws Exception {
         
         // Integer tenantId = 1014;
         
@@ -81,7 +81,7 @@ public class JsonOuterInnerTestWxController {
         
         HashMap<String, Object> params = new HashMap<>();
         params.put("appid", APP_ID);
-        params.put("out_batch_no", "1234567890TestOutBatchNo");
+        params.put("out_batch_no", batchNo);
         params.put("batch_name", "测试商家转账到零钱");
         params.put("batch_remark", "测试商家转账到零钱");
         params.put("total_amount", 2);
@@ -90,7 +90,7 @@ public class JsonOuterInnerTestWxController {
         List<Map<String, Object>> subParams = new ArrayList<>();
         for (int i = 0; i < 2; i++) {
             HashMap<String, Object> subParamMap = new HashMap<>();
-            subParamMap.put("out_detail_no", "1234567890TestOutBatchNo" + String.format("%03d", i));
+            subParamMap.put("out_detail_no", batchNo + "_detail_" +  String.format("%03d", i));
             subParamMap.put("transfer_amount", 1);
             subParamMap.put("transfer_remark", "推广费");
             subParamMap.put("openid", OPEN_ID);
@@ -107,6 +107,7 @@ public class JsonOuterInnerTestWxController {
         headers.put("Accept", "application/json");
         headers.put("Wechatpay-Serial", MCH_SERIAL_NO);
         
+        // {"status":200,"headers":{"Server":["nginx"],"Date":["Sat, 24 Feb 2024 06:50:54 GMT"],"Content-Type":["application/json; charset\u003dutf-8"],"Connection":["keep-alive"],"Keep-Alive":["timeout\u003d8"],"Cache-Control":["no-cache, must-revalidate"],"X-Content-Type-Options":["nosniff"],"Request-ID":["08CEA3E6AE0610C20418E0ABB1A80120A75E28CCA505-0"],"Content-Language":["zh-CN"],"Wechatpay-Nonce":["47f77f0a6ce0e9587ad5fb53ee5044d7"],"Wechatpay-Signature":["NnRrU7zsGv091Zqx8b5sDBMNQzf7oFnMEevRvNXHiYIZ+MVxefcFNeJEGB9wHm/aDwFgWwZ2n6l4xpk9+fd0XJebL6mWPOBMMql//Jksx0lZspyV0//4YVIZd6jus2KAGQVAA5UWcQ2QYsPRJs7WHHC4OAZgiB7RIRD0jEGleo7cHiZnePCPpLBu5cgyvIg8lKIsB7V0vABpw8HhWAjpMoO+io42PtC/cICIon1Y5yEQmkMFVSwQjU48sg3qpXyiuYMShKAOajRViljtPmbXYE2NADlXEjYvKIECLzEwJmEJUgTdNcHn2Vs6SeNLpfFWBYVyyT/s3Yi3LxrYaoNMTA\u003d\u003d"],"Wechatpay-Timestamp":["1708757454"],"Wechatpay-Serial":["22C4CE98FA3157B828B4BBF448DCC5986BB4EF3F"],"Wechatpay-Signature-Type":["WECHATPAY2-SHA256-RSA2048"]},"body":"{\"batch_id\":\"131000501099000111125732024022419471051882\",\"batch_status\":\"ACCEPTED\",\"create_time\":\"2024-02-24T14:50:54+08:00\",\"out_batch_no\":\"1234567890TestOutBatchNo\"}"}
         ResponseEntity<String> responseEntity = restTemplateService.postJsonForResponseEntity(url, paramsJson, headers);
         log.info("transferBatches responseEntity is {}", JsonUtil.toJson(responseEntity));
         
