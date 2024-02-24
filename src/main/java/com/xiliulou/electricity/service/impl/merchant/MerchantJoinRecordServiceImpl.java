@@ -5,8 +5,8 @@ import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
-import com.xiliulou.electricity.constant.merchant.MerchantConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
+import com.xiliulou.electricity.constant.merchant.MerchantConstant;
 import com.xiliulou.electricity.entity.Tenant;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.UserInfo;
@@ -29,13 +29,11 @@ import com.xiliulou.electricity.utils.AESUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.merchant.MerchantEmployeeVO;
 import com.xiliulou.electricity.vo.merchant.MerchantJoinRecordVO;
-import com.xiliulou.mq.service.RocketMqService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -54,9 +52,6 @@ import java.util.Optional;
 @Slf4j
 @Service
 public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService {
-    
-    @Autowired
-    private RocketMqService rocketMqService;
     
     @Resource
     private RedisService redisService;
@@ -361,7 +356,7 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
         
         List<MerchantJoinRecord> list = merchantJoinRecordMapper.selectListByPage(queryMode);
         if (ObjectUtils.isEmpty(list)) {
-            return Collections.EMPTY_LIST;
+            return Collections.emptyList();
         }
         
         List<MerchantJoinRecordVO> voList = new ArrayList<>();
@@ -390,7 +385,7 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
     
     @Override
     public Integer countByCondition(MerchantPromotionScanCodeQueryModel queryModel) {
-       return merchantJoinRecordMapper.countByCondition(queryModel);
+        return merchantJoinRecordMapper.countByCondition(queryModel);
     }
     
     @Slave

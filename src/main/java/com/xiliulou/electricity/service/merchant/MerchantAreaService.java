@@ -2,7 +2,7 @@ package com.xiliulou.electricity.service.merchant;
 
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.merchant.MerchantArea;
-import com.xiliulou.electricity.query.merchant.MerchantAreaQuery;
+import com.xiliulou.electricity.request.merchant.MerchantAreaRequest;
 import com.xiliulou.electricity.request.merchant.MerchantAreaSaveOrUpdateRequest;
 import com.xiliulou.electricity.vo.merchant.MerchantAreaVO;
 
@@ -21,13 +21,13 @@ public interface MerchantAreaService {
     
     R updateById(MerchantAreaSaveOrUpdateRequest updateRequest);
     
-    List<MerchantAreaVO> listByPage(MerchantAreaQuery query);
+    List<MerchantAreaVO> listByPage(MerchantAreaRequest request);
     
-    Integer countTotal(MerchantAreaQuery query);
+    Integer countTotal(MerchantAreaRequest request);
     
-    List<MerchantArea> listAll(MerchantAreaQuery query);
+    List<MerchantArea> listAll(MerchantAreaRequest request);
     
-    List<MerchantArea> queryList(MerchantAreaQuery areaQuery);
+    List<MerchantArea> queryList(MerchantAreaRequest request);
     
     MerchantArea queryById(Long id);
 }
