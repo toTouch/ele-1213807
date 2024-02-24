@@ -3,8 +3,6 @@ package com.xiliulou.electricity.service;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.bo.merchant.AreaCabinetNumBO;
 import com.xiliulou.electricity.entity.*;
-import com.xiliulou.electricity.dto.EleChargeConfigCalcDetailDto;
-import com.xiliulou.electricity.entity.EleChargeConfig;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.ElectricityCabinetBox;
 import com.xiliulou.electricity.entity.Message;
@@ -17,7 +15,6 @@ import com.xiliulou.electricity.vo.ElectricityCabinetCountVO;
 import com.xiliulou.electricity.vo.ElectricityCabinetVO;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
-import org.apache.ibatis.annotations.Param;
 
 import javax.servlet.http.HttpServletResponse;
 import java.util.HashMap;
@@ -170,7 +167,7 @@ public interface ElectricityCabinetService {
 
     List<ElectricityCabinet> selectByFranchiseeIds(List<Long> franchiseeIds);
 
-    R acquireIdcardFileSign();
+    R acquireIdcardFileSign(String key);
 
     R queryName(Integer tenant,Integer id);
 

@@ -6,9 +6,10 @@ import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
 import com.xiliulou.storage.config.StorageConfig;
-import com.xiliulou.storage.service.impl.AliyunOssService;
+import com.xiliulou.storage.service.StorageService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -16,7 +17,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -31,7 +31,8 @@ import java.util.Objects;
 @RefreshScope
 public class JsonAppElectricityController extends BaseController {
     @Autowired
-    AliyunOssService aliyunOssService;
+    @Qualifier("hwOssService")
+    StorageService storageService;
     @Autowired
     StorageConfig storageConfig;
     @Autowired
@@ -64,9 +65,9 @@ public class JsonAppElectricityController extends BaseController {
 
         String objectName = "logs/" + deviceName + file.getOriginalFilename();
         try {
-            aliyunOssService.uploadFile(storageConfig.getBucketName(), objectName, file.getInputStream());
+            storageService.uploadFile(storageConfig.getBucketName(), objectName, file.getInputStream());
 
-        } catch (IOException e) {
+        } catch (Exception e) {
             log.error("上传失败", e);
             e.printStackTrace();
         }

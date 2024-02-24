@@ -51,7 +51,7 @@ public class JsonAdminRebateRecordController extends BaseController {
     /**
      * 分页总数
      */
-    @GetMapping("/admin/battery/memberCard/queryCount")
+    @GetMapping("/admin/rebate/record/queryCount")
     public R pageCount(@RequestParam(value = "uid", required = false) Long uid, @RequestParam(value = "type", required = false) Integer type,
             @RequestParam(value = "franchiseeId", required = false) Long franchiseeId, @RequestParam(value = "channeler", required = false) Long channeler,
             @RequestParam(value = "merchantId", required = false) Long merchantId, @RequestParam(value = "beginTime", required = false) Long beginTime,

@@ -130,6 +130,7 @@
                 t_merchant_place_map m
                 WHERE
                 m.place_id = t.id
+                and m.merchant_id = #{merchantId}
             </if>
         </where>
     </sql>

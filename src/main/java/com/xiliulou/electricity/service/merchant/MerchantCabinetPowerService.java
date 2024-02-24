@@ -1,9 +1,10 @@
 package com.xiliulou.electricity.service.merchant;
 
 import com.xiliulou.electricity.request.merchant.MerchantCabinetPowerRequest;
-import com.xiliulou.electricity.vo.merchant.MerchantCabinetPowerVO;
+import com.xiliulou.electricity.request.merchant.MerchantPowerAndPlaceFeeRequest;
 import com.xiliulou.electricity.vo.merchant.MerchantPlaceAndCabinetUserVO;
 import com.xiliulou.electricity.vo.merchant.MerchantPlaceCabinetVO;
+import com.xiliulou.electricity.vo.merchant.MerchantPowerVO;
 
 import java.util.List;
 
@@ -29,10 +30,10 @@ public interface MerchantCabinetPowerService {
      */
     List<MerchantPlaceCabinetVO> listCabinetByPlaceId(Long merchantId, Long placeId);
     
-    MerchantCabinetPowerVO todayPowerAndCharge(MerchantCabinetPowerRequest request);
+    /**
+     * 电费/场地费 筛选条件-获取要统计的柜机id
+     */
+    List<Long> getRequestedCabinetIds(MerchantPowerAndPlaceFeeRequest request);
     
-    MerchantCabinetPowerVO yesterdayPowerAndCharge(MerchantCabinetPowerRequest request);
-    
-    MerchantCabinetPowerVO thisMonthPowerAndCharge(MerchantCabinetPowerRequest request);
-    
+    List<MerchantPowerVO> powerData(MerchantCabinetPowerRequest request);
 }

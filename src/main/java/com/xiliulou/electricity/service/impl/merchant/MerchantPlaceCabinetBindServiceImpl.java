@@ -9,7 +9,9 @@ import com.xiliulou.electricity.entity.merchant.MerchantPlace;
 import com.xiliulou.electricity.entity.merchant.MerchantPlaceCabinetBind;
 import com.xiliulou.electricity.mapper.merchant.MerchantPlaceCabinetBindMapper;
 import com.xiliulou.electricity.query.merchant.MerchantPlaceCabinetBindQueryModel;
+import com.xiliulou.electricity.query.merchant.MerchantPlaceCabinetConditionQueryModel;
 import com.xiliulou.electricity.request.merchant.MerchantPlaceCabinetBindSaveRequest;
+import com.xiliulou.electricity.request.merchant.MerchantPlaceCabinetConditionRequest;
 import com.xiliulou.electricity.request.merchant.MerchantPlaceCabinetPageRequest;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
 import com.xiliulou.electricity.service.merchant.MerchantPlaceCabinetBindService;
@@ -97,6 +99,7 @@ public class MerchantPlaceCabinetBindServiceImpl implements MerchantPlaceCabinet
         if (placeCabinetBindSaveRequest.getBindTime() < lastMonthDaytime) {
             log.error("place bind error, bind time less than last month day time, placeId ={}, bindTime={}, lastMonthDaytime={}", placeCabinetBindSaveRequest.getPlaceId(),
                     placeCabinetBindSaveRequest.getBindTime(), lastMonthDaytime);
+            // todo
             return Triple.of(false, "", "开始时间只可选择当月（包含当前时间，不得晚于当前时间），及上月时间");
         }
         
@@ -135,9 +138,9 @@ public class MerchantPlaceCabinetBindServiceImpl implements MerchantPlaceCabinet
         placeIdList.add(placeCabinetBindSaveRequest.getPlaceId());
         queryModel.setPlaceIdList(placeIdList);
         queryModel.setCabinetId(null);
-        List<MerchantPlaceCabinetBind> bindList = this.queryList(queryModel);
-        if (ObjectUtils.isNotEmpty(bindList) && (bindList.size() + 1) > 20) {
-            return Triple.of(false, "", "场地绑定柜机数量不能大于20");
+        Integer count = merchantPlaceCabinetBindMapper.countCabinetBindCount(queryModel);
+        if (ObjectUtils.isNotEmpty(count) && (count + 1) > MerchantPlaceConstant.BIND_CABINET_COUNT_LIMIT) {
+            return Triple.of(false, "", String.format("场地绑定柜机数量不能大于%s", MerchantPlaceConstant.BIND_CABINET_COUNT_LIMIT));
         }
         
         // 判断绑定的时间是否与解绑的历史数据存在重叠
@@ -199,7 +202,7 @@ public class MerchantPlaceCabinetBindServiceImpl implements MerchantPlaceCabinet
                     placeCabinetBindSaveRequest.getUnBindTime(), cabinetBind.getBindTime());
             return Triple.of(false, "", "结束时间不能早于绑定时间");
         }
-    
+        
         // 检测开始时间是否小于上个月的月初
         Long lastMonthDaytime = getLastMonthDay();
         if (placeCabinetBindSaveRequest.getUnBindTime() < lastMonthDaytime) {
@@ -269,23 +272,23 @@ public class MerchantPlaceCabinetBindServiceImpl implements MerchantPlaceCabinet
     @Override
     public List<MerchantPlaceCabinetBindVO> listByPage(MerchantPlaceCabinetPageRequest placeCabinetPageRequest) {
         List<MerchantPlaceCabinetBindVO> resList = new ArrayList<>();
-    
+        
         MerchantPlaceCabinetBindQueryModel merchantQueryModel = new MerchantPlaceCabinetBindQueryModel();
         BeanUtils.copyProperties(placeCabinetPageRequest, merchantQueryModel);
         
         List<MerchantPlaceCabinetBind> merchantPlaceList = this.merchantPlaceCabinetBindMapper.selectListByPage(merchantQueryModel);
-    
+        
         if (ObjectUtils.isEmpty(merchantPlaceList)) {
             return Collections.EMPTY_LIST;
         }
-    
+        
         for (MerchantPlaceCabinetBind merchantPlace : merchantPlaceList) {
             MerchantPlaceCabinetBindVO merchantPlaceVO = new MerchantPlaceCabinetBindVO();
             BeanUtils.copyProperties(merchantPlace, merchantPlaceVO);
             
             resList.add(merchantPlaceVO);
         }
-    
+        
         return resList;
     }
     
@@ -307,8 +310,40 @@ public class MerchantPlaceCabinetBindServiceImpl implements MerchantPlaceCabinet
     
     @Slave
     @Override
-    public List<MerchantPlaceCabinetBind> listByPlaceIds(Set<Long> placeIds) {
-        return merchantPlaceCabinetBindMapper.selectListByPlaceIds(placeIds);
+    public List<MerchantPlaceCabinetBind> listByConditions(MerchantPlaceCabinetConditionRequest request) {
+        MerchantPlaceCabinetConditionQueryModel queryModel = new MerchantPlaceCabinetConditionQueryModel();
+        BeanUtils.copyProperties(request, queryModel);
+        
+        return merchantPlaceCabinetBindMapper.selectListByConditions(queryModel);
+    }
+    
+    /**
+     * 检测绑定时间是否存在交叉
+     * @param placeId
+     * @param time
+     * @return
+     */
+    @Override
+    public Triple<Boolean, String, Object> checkBindTime(Long placeId, Long time) {
+        // 判断绑定的时间是否与解绑的历史数据存在重叠
+        List<Long> placeIdList = new ArrayList<>();
+        placeIdList.add(placeId);
+        MerchantPlaceCabinetBindQueryModel queryModel = MerchantPlaceCabinetBindQueryModel.builder().overlapTime(time)
+                .placeIdList(placeIdList).status(MerchantPlaceConstant.UN_BIND).build();
+        List<MerchantPlaceCabinetBind> unBindList = this.queryList(queryModel);
+        if (ObjectUtils.isNotEmpty(unBindList)) {
+            List<Long> ids = unBindList.stream().map(MerchantPlaceCabinetBind::getId).collect(Collectors.toList());
+            log.error("place un bind error, un bind time is overlap, id ={}, ids={}", placeId, ids);
+            return Triple.of(false, "", "您选择的开始时间与已有区间存在冲突，请重新选择");
+        }
+        
+        return Triple.of(true, null, null);
+    }
+    
+    
+    @Override
+    public Integer removeByPlaceId(Long placeId, long updateTime, Integer delFlag) {
+        return merchantPlaceCabinetBindMapper.removeByPlaceId(placeId, updateTime, delFlag);
     }
     
 }

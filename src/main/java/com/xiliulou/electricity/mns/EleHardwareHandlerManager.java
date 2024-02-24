@@ -4,13 +4,12 @@ import com.google.common.collect.Lists;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.thread.XllThreadPoolExecutors;
-import com.xiliulou.core.utils.TimeUtils;
 import com.xiliulou.electricity.config.TenantConfig;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.CommonConstant;
+import com.xiliulou.electricity.constant.ElectricityIotConstant;
 import com.xiliulou.electricity.entity.EleOnlineLog;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
-import com.xiliulou.electricity.constant.ElectricityIotConstant;
 import com.xiliulou.electricity.entity.Tenant;
 import com.xiliulou.electricity.handler.iot.IElectricityHandler;
 import com.xiliulou.electricity.service.EleOnlineLogService;
@@ -38,10 +37,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 
@@ -94,13 +90,16 @@ public class EleHardwareHandlerManager extends HardwareHandlerManager {
 
     @Override
     public boolean chooseCommandHandlerProcessReceiveMessage(ReceiverMessage receiverMessage) {
-        //更新柜机状态
-        updateElectricityCabinetStatus(receiverMessage);
+        if (StringUtils.isBlank(receiverMessage.getType())) {
+            //更新柜机状态
+            updateElectricityCabinetStatus(receiverMessage);
+            return true;
+        }
 
         IElectricityHandler electricityHandler = electricityHandlerMap.get(ElectricityIotConstant.acquireChargeHandlerName(receiverMessage.getType()));
         if (Objects.isNull(electricityHandler)) {
             if (!ElectricityIotConstant.isLegalCommand(receiverMessage.getType())) {
-                log.warn("ELE WARNNING!command not support handle,command:{}", receiverMessage.getType());
+                log.warn("ELE WARNING!command not support handle,command:{}", receiverMessage.getType());
             }
             return false;
         }
@@ -110,10 +109,6 @@ public class EleHardwareHandlerManager extends HardwareHandlerManager {
 
 
     private void updateElectricityCabinetStatus(ReceiverMessage receiverMessage) {
-        if (StringUtils.isNotBlank(receiverMessage.getType())) {
-            return;
-        }
-
 
         //电柜在线状态
         executorService.execute(() -> {
@@ -137,7 +132,7 @@ public class EleHardwareHandlerManager extends HardwareHandlerManager {
 
             EleOnlineLog eleOnlineLog = new EleOnlineLog();
             eleOnlineLog.setElectricityId(electricityCabinet.getId());
-            eleOnlineLog.setClientIp(receiverMessage.getClientIp());
+            eleOnlineLog.setClientIp(Optional.ofNullable(receiverMessage.getClientIp()).orElse(""));
             eleOnlineLog.setStatus(receiverMessage.getStatus());
             eleOnlineLog.setAppearTime(receiverMessage.getTime());
             eleOnlineLog.setCreateTime(System.currentTimeMillis());

@@ -49,6 +49,7 @@ public class JsonAdminMerchantController extends BaseController {
      * 修改商户升级条件
      */
     @PutMapping("/admin/merchantAttr/upgradeCondition")
+    @Log(title = "修改商户升级条件")
     public R updateUpgradeCondition(@RequestParam("merchantId") Long merchantId, @RequestParam("condition") Integer condition) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
@@ -66,6 +67,7 @@ public class JsonAdminMerchantController extends BaseController {
      * 修改邀请条件
      */
     @PutMapping("/admin/merchantAttr/invitationCondition")
+    @Log(title = "修改邀请条件")
     public R updateInvitationCondition(@RequestBody @Validated MerchantAttrRequest request) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {

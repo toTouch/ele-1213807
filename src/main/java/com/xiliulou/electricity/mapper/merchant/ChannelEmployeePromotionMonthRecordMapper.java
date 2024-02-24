@@ -1,0 +1,23 @@
+package com.xiliulou.electricity.mapper.merchant;
+
+import com.xiliulou.electricity.entity.merchant.ChannelEmployeePromotionMonthRecord;
+import com.xiliulou.electricity.query.merchant.ChannelEmployeePromotionQueryModel;
+import com.xiliulou.electricity.request.merchant.ChannelEmployeePromotionRequest;
+import com.xiliulou.electricity.vo.merchant.ChannelEmployeePromotionVO;
+import org.apache.ibatis.annotations.Param;
+
+import java.util.List;
+
+/**
+ * @author maxiaodong
+ * @date 2024/2/21 13:56
+ * @desc
+ */
+public interface ChannelEmployeePromotionMonthRecordMapper {
+    
+    void batchInsert(@Param("list") List<ChannelEmployeePromotionMonthRecord> list);
+    
+    List<ChannelEmployeePromotionVO> selectListByPage(ChannelEmployeePromotionRequest channelEmployeeRequest);
+    
+    Integer countTotal(ChannelEmployeePromotionQueryModel channelEmployeePromotionQueryModel);
+}

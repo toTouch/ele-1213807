@@ -3,6 +3,7 @@ package com.xiliulou.electricity.service.merchant;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.merchant.MerchantJoinRecord;
 import com.xiliulou.electricity.query.merchant.MerchantJoinRecordQueryMode;
+import com.xiliulou.electricity.query.merchant.MerchantPromotionScanCodeQueryModel;
 import com.xiliulou.electricity.request.merchant.MerchantJoinRecordPageRequest;
 import com.xiliulou.electricity.vo.merchant.MerchantJoinRecordVO;
 
@@ -19,11 +20,6 @@ public interface MerchantJoinRecordService {
      * 扫码参与
      */
     R joinScanCode(String code);
-    
-    /**
-     * 是否已过期
-     */
-    Integer existsIfExpired(Long merchantId, Long joinUid);
     
     /**
      * 根据参与人uid查询记录
@@ -62,4 +58,8 @@ public interface MerchantJoinRecordService {
     Integer countTotal(MerchantJoinRecordPageRequest merchantJoinRecordPageRequest);
     
     List<MerchantJoinRecordVO> listByPage(MerchantJoinRecordPageRequest merchantJoinRecordPageRequest);
+    
+    Integer countByCondition(MerchantPromotionScanCodeQueryModel queryModel);
+    
+    List<MerchantJoinRecordVO> countByMerchantIdList(MerchantJoinRecordQueryMode joinRecordQueryMode);
 }

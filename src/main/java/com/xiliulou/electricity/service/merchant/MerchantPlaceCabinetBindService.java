@@ -4,6 +4,7 @@ import com.xiliulou.electricity.entity.merchant.MerchantPlaceCabinetBind;
 import com.xiliulou.electricity.query.merchant.MerchantPlaceCabinetBindQueryModel;
 import com.xiliulou.electricity.request.merchant.MerchantPlaceCabinetBindSaveRequest;
 import com.xiliulou.electricity.request.merchant.MerchantPlaceCabinetPageRequest;
+import com.xiliulou.electricity.request.merchant.MerchantPlaceCabinetConditionRequest;
 import com.xiliulou.electricity.vo.merchant.MerchantPlaceCabinetBindVO;
 import org.apache.commons.lang3.tuple.Triple;
 
@@ -33,5 +34,8 @@ public interface MerchantPlaceCabinetBindService {
     
     List<MerchantPlaceCabinetBindVO> listByPage(MerchantPlaceCabinetPageRequest placeCabinetPageRequest);
     
-    List<MerchantPlaceCabinetBind> listByPlaceIds(Set<Long> placeIds);
+    Integer removeByPlaceId(Long placeId, long updateTime, Integer delFlag);
+    List<MerchantPlaceCabinetBind> listByConditions(MerchantPlaceCabinetConditionRequest request);
+    
+    Triple<Boolean, String, Object> checkBindTime(Long placeId, Long time);
 }

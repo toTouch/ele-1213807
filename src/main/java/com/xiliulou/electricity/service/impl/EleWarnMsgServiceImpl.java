@@ -8,8 +8,8 @@ import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.clickhouse.service.ClickHouseService;
 import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.core.web.R;
-import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.db.dynamic.annotation.DS;
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.AppMalfunctionConstant;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.CommonConstant;
@@ -73,7 +73,7 @@ public class EleWarnMsgServiceImpl implements EleWarnMsgService {
 
     @Resource
     private EleWarnMsgMapper eleWarnMsgMapper;
-    @Resource(name="aliyunOssService")
+    @Resource(name = "hwOssService")
     private StorageService storageService;
     @Autowired
     private ElectricityCabinetService electricityCabinetService;

@@ -15,6 +15,7 @@ import com.xiliulou.electricity.entity.merchant.MerchantAttr;
 import com.xiliulou.electricity.entity.merchant.MerchantJoinRecord;
 import com.xiliulou.electricity.mapper.merchant.MerchantJoinRecordMapper;
 import com.xiliulou.electricity.query.merchant.MerchantJoinRecordQueryMode;
+import com.xiliulou.electricity.query.merchant.MerchantPromotionScanCodeQueryModel;
 import com.xiliulou.electricity.request.merchant.MerchantJoinRecordPageRequest;
 import com.xiliulou.electricity.service.TenantService;
 import com.xiliulou.electricity.service.UserInfoService;
@@ -102,11 +103,16 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
                 return R.fail(false, "ELECTRICITY.0019", "未找到用户");
             }
             
+            if (userInfo.getPayCount() > NumberConstant.ZERO) {
+                log.info("MERCHANT JOIN ERROR! Exist package pay count for current user, joinUid = {}", joinUid);
+                return R.fail("120106", "您已是会员用户,无法参加商户活动");
+            }
+            
             if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
                 log.error("MERCHANT JOIN ERROR! user usable, joinUid={}", joinUid);
                 return R.fail(false, "120105", "该二维码暂时无法使用,请稍后再试");
             }
-    
+            
             // 是否在保护期内(保护期内不能扫商户码)
             Integer isInProtectionTime = this.existsInProtectionTimeByJoinUid(joinUid);
             if (Objects.isNull(isInProtectionTime)) {
@@ -121,20 +127,20 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
             } catch (Exception e) {
                 log.error("MERCHANT JOIN ERROR! decode fail, joinUid={}, code={}", joinUid, code);
             }
-    
+            
             if (StringUtils.isBlank(decrypt)) {
                 log.error("MERCHANT JOIN ERROR! merchant code decrypt error,code={}, joinUid={}", code, joinUid);
                 return R.fail("100463", "二维码已失效");
             }
-    
+            
             log.info("MERCHANT JOIN INFO! joinScanCode decrypt={}", decrypt);
-    
+            
             String[] split = decrypt.split(String.valueOf(StrUtil.C_COLON));
             if (ArrayUtils.isEmpty(split) || split.length != NumberConstant.THREE) {
                 log.error("MERCHANT JOIN ERROR! illegal code! code={}, joinUid={}", code, joinUid);
                 return R.fail("100463", "二维码已失效");
             }
-    
+            
             String merchantIdStr = split[NumberConstant.ZERO];
             String inviterUidStr = split[NumberConstant.ONE];
             String inviterTypeStr = split[NumberConstant.TWO];
@@ -142,7 +148,7 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
                 log.error("MERCHANT JOIN ERROR! illegal code! code={}, joinUid={}", code, joinUid);
                 return R.fail("100463", "二维码已失效");
             }
-    
+            
             Long merchantId;
             Long inviterUid;
             Integer inviterType;
@@ -151,13 +157,14 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
                 inviterUid = Long.parseLong(inviterUidStr);
                 inviterType = Integer.parseInt(inviterTypeStr);
             } catch (NumberFormatException e) {
-                log.error("MERCHANT JOIN ERROR! Invalid format, joinUid={}, merchantIdStr={}, inviterUidStr={}, inviterTypeStr={}", joinUid, merchantIdStr, inviterUidStr, inviterTypeStr);
+                log.error("MERCHANT JOIN ERROR! Invalid format, joinUid={}, merchantIdStr={}, inviterUidStr={}, inviterTypeStr={}", joinUid, merchantIdStr, inviterUidStr,
+                        inviterTypeStr);
                 return R.fail("100463", "二维码已失效");
             }
-    
+            
             // 判断商户是否存在或被禁用
             Merchant merchant = merchantService.queryFromCacheById(merchantId);
-            if (Objects.isNull(merchant) ) {
+            if (Objects.isNull(merchant)) {
                 log.error("MERCHANT JOIN ERROR! not found merchant, merchantId={}", merchantId);
                 return R.fail("100463", "二维码已失效");
             }
@@ -186,11 +193,12 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
             }
             
             // 邀请人类型
-            if (!Objects.equals(inviterType,MerchantJoinRecord.INVITER_TYPE_MERCHANT_SELF) && !Objects.equals(inviterType, MerchantJoinRecord.INVITER_TYPE_MERCHANT_PLACE_EMPLOYEE)) {
+            if (!Objects.equals(inviterType, MerchantJoinRecord.INVITER_TYPE_MERCHANT_SELF) && !Objects.equals(inviterType,
+                    MerchantJoinRecord.INVITER_TYPE_MERCHANT_PLACE_EMPLOYEE)) {
                 log.info("MERCHANT JOIN ERROR! illegal operate! inviterUid={}, inviterType={}, joinUid={}", inviterUid, inviterType, joinUid);
                 return R.fail("100463", "二维码已失效");
             }
-    
+            
             // 是否存在已邀请成功的记录
             MerchantJoinRecord existsRecord = this.queryByMerchantIdAndJoinUid(merchantId, joinUid);
             if (Objects.nonNull(existsRecord) && Objects.equals(existsRecord.getStatus(), MerchantJoinRecord.STATUS_SUCCESS)) {
@@ -204,13 +212,13 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
                 log.error("MERCHANT JOIN ERROR! not found merchantAttr, merchantId={}", merchantId);
                 return R.fail("100463", "二维码已失效");
             }
-    
+            
             // 渠道员uid
             Long channelEmployeeUid = merchant.getChannelEmployeeUid();
             
             // 获取场地员工所绑定的场地
             Long placeId = Optional.ofNullable(merchantEmployeeService.queryMerchantEmployeeByUid(inviterUid)).orElse(new MerchantEmployeeVO()).getPlaceId();
-    
+            
             // 保存参与记录
             MerchantJoinRecord record = this.assembleRecord(merchantId, inviterUid, inviterType, joinUid, channelEmployeeUid, placeId, merchantAttr, tenant.getId());
             
@@ -220,19 +228,20 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
         }
     }
     
-    private MerchantJoinRecord assembleRecord(Long merchantId, Long inviterUid, Integer inviterType, Long joinUid, Long channelEmployeeUid, Long placeId, MerchantAttr merchantAttr, Integer tenantId) {
+    private MerchantJoinRecord assembleRecord(Long merchantId, Long inviterUid, Integer inviterType, Long joinUid, Long channelEmployeeUid, Long placeId, MerchantAttr merchantAttr,
+            Integer tenantId) {
         long nowTime = System.currentTimeMillis();
         Integer protectionTime = merchantAttr.getInvitationProtectionTime();
         Integer protectionTimeUnit = merchantAttr.getProtectionTimeUnit();
         Integer validTime = merchantAttr.getInvitationValidTime();
         Integer validTimeUnit = merchantAttr.getValidTimeUnit();
-    
+        
         // 保护期过期时间
         long protectionExpireTime = NumberConstant.ZERO_L;
         if (Objects.nonNull(protectionTime) && Objects.nonNull(protectionTimeUnit)) {
             protectionExpireTime = (long) protectionTime * protectionTimeUnit;
         }
-    
+        
         // 参与有效期过期时间
         long expiredTime = NumberConstant.ZERO_L;
         if (Objects.nonNull(validTime) && Objects.nonNull(validTimeUnit)) {
@@ -240,28 +249,14 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
         }
         
         // 生成参与记录
-        return MerchantJoinRecord
-                .builder()
-                .merchantId(merchantId)
-                .channelEmployeeUid(channelEmployeeUid)
-                .placeId(placeId)
-                .inviterUid(inviterUid)
-                .inviterType(inviterType)
-                .joinUid(joinUid)
-                .startTime(nowTime)
-                .expiredTime(expiredTime)
-                .status(MerchantJoinRecord.STATUS_INIT)
-                .protectionTime(protectionExpireTime)
-                .protectionStatus(MerchantJoinRecord.PROTECTION_STATUS_NORMAL)
-                .delFlag(NumberConstant.ZERO)
-                .createTime(nowTime)
-                .updateTime(nowTime)
-                .tenantId(tenantId)
-                .build();
+        return MerchantJoinRecord.builder().merchantId(merchantId).channelEmployeeUid(channelEmployeeUid).placeId(placeId).inviterUid(inviterUid).inviterType(inviterType)
+                .joinUid(joinUid).startTime(nowTime).expiredTime(expiredTime).status(MerchantJoinRecord.STATUS_INIT).protectionTime(protectionExpireTime)
+                .protectionStatus(MerchantJoinRecord.PROTECTION_STATUS_NORMAL).delFlag(NumberConstant.ZERO).createTime(nowTime).updateTime(nowTime).tenantId(tenantId).build();
     }
     
     /**
      * 二维码加密
+     *
      * @param merchantId  商户id
      * @param inviterUid  邀请人uid
      * @param inviterType 邀请人类型
@@ -310,12 +305,6 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
     
     @Slave
     @Override
-    public Integer existsIfExpired(Long merchantId, Long joinUid) {
-        return merchantJoinRecordMapper.existsIfExpired(merchantId, joinUid);
-    }
-    
-    @Slave
-    @Override
     public MerchantJoinRecord queryByJoinUid(Long joinUid) {
         return merchantJoinRecordMapper.selectByJoinUid(joinUid);
     }
@@ -331,9 +320,10 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
     public List<MerchantJoinRecord> listByMerchantIdAndStatus(Long merchantId, Integer status) {
         return merchantJoinRecordMapper.selectListByMerchantIdAndStatus(merchantId, status);
     }
+    
     @Override
     public void handelProtectionAndStartExpired() {
-        MerchantJoinRecord protectionJoinRecord =  new MerchantJoinRecord();
+        MerchantJoinRecord protectionJoinRecord = new MerchantJoinRecord();
         protectionJoinRecord.setUpdateTime(System.currentTimeMillis());
         merchantJoinRecordMapper.updateProtectionExpired(protectionJoinRecord);
         
@@ -347,6 +337,7 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
     public Integer updateById(MerchantJoinRecord record) {
         return merchantJoinRecordMapper.updateById(record);
     }
+    
     @Slave
     @Override
     public List<MerchantJoinRecord> queryList(MerchantJoinRecordQueryMode joinRecordQueryMode) {
@@ -367,12 +358,12 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
     public List<MerchantJoinRecordVO> listByPage(MerchantJoinRecordPageRequest merchantJoinRecordPageRequest) {
         MerchantJoinRecordQueryMode queryMode = new MerchantJoinRecordQueryMode();
         BeanUtils.copyProperties(merchantJoinRecordPageRequest, queryMode);
-    
+        
         List<MerchantJoinRecord> list = merchantJoinRecordMapper.selectListByPage(queryMode);
         if (ObjectUtils.isEmpty(list)) {
             return Collections.EMPTY_LIST;
         }
-    
+        
         List<MerchantJoinRecordVO> voList = new ArrayList<>();
         for (MerchantJoinRecord merchantJoinRecord : list) {
             MerchantJoinRecordVO vo = new MerchantJoinRecordVO();
@@ -395,6 +386,17 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
         }
         
         return voList;
+    }
+    
+    @Override
+    public Integer countByCondition(MerchantPromotionScanCodeQueryModel queryModel) {
+       return merchantJoinRecordMapper.countByCondition(queryModel);
+    }
+    
+    @Slave
+    @Override
+    public List<MerchantJoinRecordVO> countByMerchantIdList(MerchantJoinRecordQueryMode joinRecordQueryMode) {
+        return merchantJoinRecordMapper.countByMerchantIdList(joinRecordQueryMode);
     }
     
     
