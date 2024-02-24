@@ -2,6 +2,7 @@ package com.xiliulou.electricity.controller.admin.merchant;
 
 import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.annotation.Log;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.request.merchant.MerchantLevelRequest;
 import com.xiliulou.electricity.service.merchant.MerchantLevelService;
@@ -52,6 +53,7 @@ public class JsonAdminMerchantLevelController extends BaseController {
      * 修改商户升级内容
      */
     @PutMapping("/admin/merchantLevel/update")
+    @Log(title = "修改商户等级配置")
     public R modify(@RequestBody @Validated MerchantLevelRequest request) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {

@@ -1,7 +1,7 @@
 package com.xiliulou.electricity.mq.consumer;
 
 import com.xiliulou.core.json.JsonUtil;
-import com.xiliulou.electricity.constant.MerchantConstant;
+import com.xiliulou.electricity.constant.merchant.MerchantConstant;
 import com.xiliulou.electricity.entity.UserInfoExtra;
 import com.xiliulou.electricity.entity.merchant.Merchant;
 import com.xiliulou.electricity.entity.merchant.MerchantAttr;
@@ -87,7 +87,7 @@ public class MerchantUpgradeConsumer implements RocketMQListener<String> {
         }
         
         if (Objects.equals(MerchantConstant.DISABLE, merchant.getStatus())) {
-            log.warn("MERCHANT UPGRADE CONSUMER WARN!merchantAttr is disable,merchantId={}", userInfoExtra.getMerchantId());
+            log.warn("MERCHANT UPGRADE CONSUMER WARN!merchant is disable,merchantId={}", userInfoExtra.getMerchantId());
             return;
         }
         

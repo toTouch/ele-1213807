@@ -21,11 +21,30 @@
         where id = #{id}
     </select>
     
+    <select id="selectNextByMerchantLevel" resultMap="MerchantLevelMap">
+        select
+            id, level, name, rule, del_flag, tenant_id, create_time, update_time
+        from t_merchant_level
+        where level > #{level} and tenant_id = #{tenantId} order by level limit 1
+    </select>
+    
     <select id="selectByTenantId" resultMap="MerchantLevelMap">
         select
             id, level, name, rule
         from t_merchant_level
         where tenant_id = #{tenantId} order by id
+    </select>
+    <select id="queryListByIdList" resultType="com.xiliulou.electricity.entity.merchant.MerchantLevel">
+        select
+            id, level, name, rule
+        from t_merchant_level
+        <where>
+            del_flag = 0
+            and id in
+          <foreach collection="idList" item="id" close=")" open="(" separator=",">
+            #{id}
+          </foreach>
+        </where>
     </select>
     
     <!--新增所有列-->

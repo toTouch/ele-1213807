@@ -14,6 +14,7 @@
         <result property="franchiseeId" column="franchisee_id" jdbcType="INTEGER"/>
         <result property="level" column="level" jdbcType="VARCHAR"/>
         <result property="merchantId" column="merchant_id" jdbcType="INTEGER"/>
+        <result property="merchantUid" column="merchant_uid" jdbcType="INTEGER"/>
         <result property="status" column="status" jdbcType="INTEGER"/>
         <result property="channeler" column="channeler" jdbcType="INTEGER"/>
         <result property="channelerRebate" column="channeler_rebate" jdbcType="NUMERIC"/>
@@ -30,28 +31,42 @@
     <!--查询单个-->
     <select id="selectById" resultMap="RebateRecordMap">
         select
-          id, uid, name, phone, order_id, original_order_id, member_card_id, type, franchisee_id, level, merchant_id, status, channeler, channeler_rebate, merchant_rebate, place_id, place_uid, rebate_time, settle_time, tenant_id, create_time, update_time
+          id, uid, name, phone, order_id, original_order_id, member_card_id, type, franchisee_id, level, merchant_id, merchant_uid, status, channeler, channeler_rebate, merchant_rebate, place_id, place_uid, rebate_time, settle_time, tenant_id, create_time, update_time
         from t_rebate_record
         where id = #{id}
     </select>
     
     <select id="selectByOrderId" resultMap="RebateRecordMap">
         select
-            id, uid, name, phone, order_id, original_order_id, member_card_id, type, franchisee_id, level, merchant_id, status, channeler, channeler_rebate, merchant_rebate, place_id, place_uid, rebate_time, settle_time, tenant_id, create_time, update_time
+            id, uid, name, phone, order_id, original_order_id, member_card_id, type, franchisee_id, level, merchant_id, merchant_uid, status, channeler, channeler_rebate, merchant_rebate, place_id, place_uid, rebate_time, settle_time, tenant_id, create_time, update_time
         from t_rebate_record
         where order_id = #{orderId}
     </select>
     
     <select id="selectByOriginalOrderId" resultMap="RebateRecordMap">
         select
-            id, uid, name, phone, order_id, original_order_id, member_card_id, type, franchisee_id, level, merchant_id, status, channeler, channeler_rebate, merchant_rebate, place_id, place_uid, rebate_time, settle_time, tenant_id, create_time, update_time
+            id, uid, name, phone, order_id, original_order_id, member_card_id, type, franchisee_id, level, merchant_id, merchant_uid, status, channeler, channeler_rebate, merchant_rebate, place_id, place_uid, rebate_time, settle_time, tenant_id, create_time, update_time
         from t_rebate_record
         where original_order_id = #{originalOrderId}
     </select>
     
+    <select id="selectNotSettleListByLimit" resultMap="RebateRecordMap">
+        select
+            id, uid, name, phone, order_id, original_order_id, member_card_id, type, franchisee_id, level, merchant_id, merchant_uid, status, channeler, channeler_rebate, merchant_rebate, place_id, place_uid, rebate_time, settle_time, tenant_id, create_time, update_time
+        from t_rebate_record
+        where  status =0 and create_time &gt;= #{startTime} and create_time &lt; #{endTime} limit #{offset}, #{size}
+    </select>
+    
+    <select id="selectCurrentMonthRebateRecord" resultMap="RebateRecordMap">
+        select
+            id, uid, name, phone, order_id, original_order_id, member_card_id, type, franchisee_id, level, merchant_id, merchant_uid, status, channeler, channeler_rebate, merchant_rebate, place_id, place_uid, rebate_time, settle_time, tenant_id, create_time, update_time
+        from t_rebate_record
+        where  status =1 and type in (0,1) and create_time &gt;= #{startTime} and create_time &lt; #{endTime} limit #{offset}, #{size}
+    </select>
+    
     <select id="selectByPage" resultMap="RebateRecordMap">
         select
-        id, uid, name, phone, order_id, original_order_id, member_card_id, type, franchisee_id, level, merchant_id, status, channeler, channeler_rebate, merchant_rebate, place_id, place_uid, rebate_time, settle_time, tenant_id, create_time, update_time
+        id, uid, name, phone, order_id, original_order_id, member_card_id, type, franchisee_id, level, merchant_id, merchant_uid, status, channeler, channeler_rebate, merchant_rebate, place_id, place_uid, rebate_time, settle_time, tenant_id, create_time, update_time
         from t_rebate_record
         <where>
             <if test="channeler != null">
@@ -121,8 +136,8 @@
     
     <!--新增所有列-->
     <insert id="insertOne" keyProperty="id" useGeneratedKeys="true">
-        insert into t_rebate_record(uid, name, phone, order_id, original_order_id, member_card_id, type, franchisee_id, level, merchant_id, status, channeler, channeler_rebate, merchant_rebate, place_id, place_uid, rebate_time, settle_time, tenant_id, create_time, update_time)
-        values (#{uid}, #{name}, #{phone}, #{orderId}, #{originalOrderId}, #{memberCardId}, #{type}, #{franchiseeId}, #{level}, #{merchantId}, #{status}, #{channeler}, #{channelerRebate}, #{merchantRebate}, #{placeId}, #{placeUid}, #{rebateTime}, #{settleTime}, #{tenantId}, #{createTime}, #{updateTime})
+        insert into t_rebate_record(uid, name, phone, order_id, original_order_id, member_card_id, type, franchisee_id, level, merchant_id, merchant_uid, status, channeler, channeler_rebate, merchant_rebate, place_id, place_uid, rebate_time, settle_time, tenant_id, create_time, update_time)
+        values (#{uid}, #{name}, #{phone}, #{orderId}, #{originalOrderId}, #{memberCardId}, #{type}, #{franchiseeId}, #{level}, #{merchantId}, #{merchantUid}, #{status}, #{channeler}, #{channelerRebate}, #{merchantRebate}, #{placeId}, #{placeUid}, #{rebateTime}, #{settleTime}, #{tenantId}, #{createTime}, #{updateTime})
     </insert>
 
     <!--通过主键修改数据-->
@@ -158,6 +173,9 @@
             </if>
             <if test="merchantId != null">
                 merchant_id = #{merchantId},
+            </if>
+            <if test="merchantUid != null">
+                merchant_uid = #{merchantUid},
             </if>
             <if test="status != null">
                 status = #{status},

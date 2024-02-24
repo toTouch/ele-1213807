@@ -22,11 +22,6 @@ public interface MerchantJoinRecordService {
     R joinScanCode(String code);
     
     /**
-     * 是否已过期
-     */
-    Integer existsIfExpired(Long merchantId, Long joinUid);
-    
-    /**
      * 根据参与人uid查询记录
      */
     MerchantJoinRecord queryByJoinUid(Long joinUid);
@@ -65,4 +60,6 @@ public interface MerchantJoinRecordService {
     List<MerchantJoinRecordVO> listByPage(MerchantJoinRecordPageRequest merchantJoinRecordPageRequest);
     
     Integer countByCondition(MerchantPromotionScanCodeQueryModel queryModel);
+    
+    List<MerchantJoinRecordVO> countByMerchantIdList(MerchantJoinRecordQueryMode joinRecordQueryMode);
 }

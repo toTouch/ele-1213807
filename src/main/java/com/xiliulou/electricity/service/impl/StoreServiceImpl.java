@@ -12,11 +12,7 @@ import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.StoreMapper;
-import com.xiliulou.electricity.query.ElectricityCabinetAddAndUpdate;
-import com.xiliulou.electricity.query.ElectricityCarModelQuery;
-import com.xiliulou.electricity.query.PictureQuery;
-import com.xiliulou.electricity.query.StoreAddAndUpdate;
-import com.xiliulou.electricity.query.StoreQuery;
+import com.xiliulou.electricity.query.*;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
@@ -28,14 +24,12 @@ import com.xiliulou.electricity.vo.StoreVO;
 import com.xiliulou.electricity.web.query.AdminUserQuery;
 import com.xiliulou.security.bean.TokenUser;
 import com.xiliulou.storage.config.StorageConfig;
-import com.xiliulou.storage.service.StorageService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
@@ -87,9 +81,6 @@ public class StoreServiceImpl implements StoreService {
     PictureService pictureService;
     @Autowired
     StorageConfig storageConfig;
-    @Qualifier("aliyunOssService")
-    @Autowired
-    StorageService storageService;
     @Autowired
     ElectricityCarModelService electricityCarModelService;
     @Autowired

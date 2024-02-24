@@ -11,6 +11,7 @@ import com.xiliulou.db.dynamic.annotation.EnableDynamicDataSource;
 import com.xiliulou.esign.EnableEsign;
 import com.xiliulou.faceid.EnableFaceid;
 import com.xiliulou.feishu.EnableFeishu;
+import com.xiliulou.hwiiot.EnableHuaweiIot;
 import com.xiliulou.iot.EnableIot;
 import com.xiliulou.mq.EnableMq;
 import com.xiliulou.pay.EnableFreeDeposit;
@@ -33,7 +34,7 @@ import org.springframework.context.annotation.EnableAspectJAutoProxy;
 @EnableDiscoveryClient
 /*@EnableCircuitBreaker*/
 @EnableRedis
-@EnableIot
+@EnableHuaweiIot
 @EnableStorage
 @EnableXllRestTemplate
 @EnableDynamicDataSource

@@ -57,7 +57,7 @@ public class MaintenanceRecordServiceImpl implements MaintenanceRecordService {
     @Autowired
     StorageConfig storageConfig;
 
-    @Qualifier("aliyunOssService")
+    @Qualifier("hwOssService")
     @Autowired
     StorageService storageService;
     @Autowired

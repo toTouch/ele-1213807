@@ -2,6 +2,7 @@ package com.xiliulou.electricity.service.merchant;
 
 import com.xiliulou.electricity.entity.merchant.MerchantWithdrawApplication;
 import com.xiliulou.electricity.request.merchant.MerchantWithdrawApplicationRequest;
+import com.xiliulou.electricity.vo.merchant.MerchantWithdrawApplicationVO;
 import org.apache.commons.lang3.tuple.Triple;
 
 import java.util.List;
@@ -21,7 +22,7 @@ public interface MerchantWithdrawApplicationService {
     
     Integer countMerchantWithdrawApplication(MerchantWithdrawApplicationRequest merchantWithdrawApplicationRequest);
     
-    List<MerchantWithdrawApplication> queryMerchantWithdrawApplicationList(MerchantWithdrawApplicationRequest merchantWithdrawApplicationRequest);
+    List<MerchantWithdrawApplicationVO> queryMerchantWithdrawApplicationList(MerchantWithdrawApplicationRequest merchantWithdrawApplicationRequest);
     
     MerchantWithdrawApplication queryMerchantWithdrawApplication(Long id);
     

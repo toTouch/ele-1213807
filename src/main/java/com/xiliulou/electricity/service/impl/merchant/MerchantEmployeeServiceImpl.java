@@ -5,7 +5,7 @@ import com.xiliulou.core.i18n.MessageUtils;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.CommonConstant;
-import com.xiliulou.electricity.constant.MerchantConstant;
+import com.xiliulou.electricity.constant.merchant.MerchantConstant;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.UserRole;
 import com.xiliulou.electricity.entity.merchant.Merchant;
@@ -236,5 +236,11 @@ public class MerchantEmployeeServiceImpl implements MerchantEmployeeService {
     @Override
     public Integer countMerchantEmployee(MerchantEmployeeRequest merchantEmployeeRequest) {
         return merchantEmployeeMapper.countByCondition(merchantEmployeeRequest);
+    }
+    
+    @Slave
+    @Override
+    public List<MerchantEmployee> queryListByPlaceId(List<Long> placeIdList) {
+        return merchantEmployeeMapper.selectListByPlaceId(placeIdList);
     }
 }

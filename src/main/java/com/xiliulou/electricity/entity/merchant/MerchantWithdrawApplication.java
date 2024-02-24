@@ -72,6 +72,11 @@ public class MerchantWithdrawApplication {
     private Long checkTime;
     
     /**
+     * 审核人
+     */
+    private Long operator;
+    
+    /**
      * 到账时间
      */
     private Long receiptTime;
@@ -85,6 +90,16 @@ public class MerchantWithdrawApplication {
      * 支付机构返回结果
      */
     private String withdrawResult;
+    
+    /**
+     * 支付机构返回的流水号
+     */
+    private String transactionId;
+    
+    /**
+     * 提现类型 1--微信 2--宝付
+     */
+    private Integer withdrawType;
     
     /**
      * 删除标记 (0-未删除，1-已删除)

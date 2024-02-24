@@ -69,7 +69,12 @@ public class RebateRecord {
      */
     private String level;
     
+    /**
+     * 商户id
+     */
     private Long merchantId;
+
+    private Long merchantUid;
     
     /**
      * 结算状态（0-未结算,1-已结算,2-已退回,3-已失效）

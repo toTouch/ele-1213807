@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.mapper.merchant;
 
 import com.xiliulou.electricity.entity.merchant.MerchantLevel;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
@@ -24,4 +25,7 @@ public interface MerchantLevelMapper {
 
     int deleteById(Long id);
     
+    MerchantLevel selectNextByMerchantLevel(@Param("level") String level, @Param("tenantId") Integer tenantId);
+    
+    List<MerchantLevel> queryListByIdList(@Param("idList") List<Long> levelIdList);
 }

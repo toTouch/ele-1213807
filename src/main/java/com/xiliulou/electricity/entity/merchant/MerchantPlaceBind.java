@@ -61,7 +61,12 @@ public class MerchantPlaceBind {
     private Long updateTime;
     
     /**
-     * 商户结算标记，0-否，1-是)
+     * 商户结算标记(0-是，1-否)
      */
     private Integer merchantMonthSettlement;
+    
+    /**
+     * 商户电费结算标记(0-是，1-否)
+     */
+    private Integer merchantMonthSettlementPower;
 }

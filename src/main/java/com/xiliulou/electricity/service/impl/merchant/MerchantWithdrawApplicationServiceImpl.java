@@ -1,7 +1,7 @@
 package com.xiliulou.electricity.service.impl.merchant;
 
 import com.xiliulou.cache.redis.RedisService;
-import com.xiliulou.core.web.R;
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.merchant.MerchantWithdrawApplication;
 import com.xiliulou.electricity.mapper.merchant.MerchantWithdrawApplicationMapper;
@@ -9,6 +9,7 @@ import com.xiliulou.electricity.request.merchant.MerchantWithdrawApplicationRequ
 import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.service.merchant.MerchantService;
 import com.xiliulou.electricity.service.merchant.MerchantWithdrawApplicationService;
+import com.xiliulou.electricity.vo.merchant.MerchantWithdrawApplicationVO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.stereotype.Service;
@@ -44,7 +45,7 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
     public Triple<Boolean, String, Object> saveMerchantWithdrawApplication(MerchantWithdrawApplicationRequest merchantWithdrawApplicationRequest) {
 
         //限频
-        Boolean getLockSuccess = redisService.setNx(CacheConstant.CACHE_WITHDRAW_USER_UID + merchantWithdrawApplicationRequest.getMerchantUid(), "1", 5L, false);
+        Boolean getLockSuccess = redisService.setNx(CacheConstant.CACHE_WITHDRAW_USER_UID + merchantWithdrawApplicationRequest.getMerchantUid(), "1", 3L, false);
         if (!getLockSuccess) {
             return Triple.of(false, null, "操作频繁,请稍后再试");
         }
@@ -61,9 +62,11 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
 
         //插入提现表
 
-        //TODO 扣除商户账户余额表中的余额，并创建提现记录。 该步操作是否应该放在审核成功之后？
-
-
+        //扣除商户账户余额表中的余额
+        
+        //创建提现申请记录, 批量提现时需要创建一条批次提现记录
+        
+        
 
 
 
@@ -98,7 +101,7 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
 
         //若为拒绝提现，则修改提现状态为已拒绝，并且修改提现记录表中的提现状态为已拒绝。
 
-        //扣除商户账户余额表中的余额，并创建提现记录，
+        //扣除商户账户余额表中的余额，并创建提现记录
 
         //判断需要线下提现或者线上提现。
 
@@ -115,18 +118,25 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
         return null;
     }
     
+    @Slave
     @Override
     public Integer countMerchantWithdrawApplication(MerchantWithdrawApplicationRequest merchantWithdrawApplicationRequest) {
-        return null;
+        
+        return merchantWithdrawApplicationMapper.countByCondition(merchantWithdrawApplicationRequest);
     }
     
+    @Slave
     @Override
-    public List<MerchantWithdrawApplication> queryMerchantWithdrawApplicationList(MerchantWithdrawApplicationRequest merchantWithdrawApplicationRequest) {
-        return null;
+    public List<MerchantWithdrawApplicationVO> queryMerchantWithdrawApplicationList(MerchantWithdrawApplicationRequest merchantWithdrawApplicationRequest) {
+        
+        List<MerchantWithdrawApplicationVO> merchantWithdrawApplicationVOList = merchantWithdrawApplicationMapper.selectListByCondition(merchantWithdrawApplicationRequest);
+        
+        return merchantWithdrawApplicationVOList;
     }
     
+    @Slave
     @Override
     public MerchantWithdrawApplication queryMerchantWithdrawApplication(Long id) {
-        return null;
+        return merchantWithdrawApplicationMapper.selectById(id);
     }
 }

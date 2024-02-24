@@ -3,7 +3,7 @@ package com.xiliulou.electricity.service.impl.merchant;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.CommonConstant;
-import com.xiliulou.electricity.constant.MerchantConstant;
+import com.xiliulou.electricity.constant.merchant.MerchantConstant;
 import com.xiliulou.electricity.entity.merchant.MerchantAttr;
 import com.xiliulou.electricity.mapper.merchant.MerchantAttrMapper;
 import com.xiliulou.electricity.request.merchant.MerchantAttrRequest;

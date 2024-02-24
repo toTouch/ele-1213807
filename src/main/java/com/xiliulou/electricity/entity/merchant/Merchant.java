@@ -55,7 +55,7 @@ public class Merchant {
     /**
      * 租户Id
      */
-    private Long tenantId;
+    private Integer tenantId;
     
     /**
      * 等级自动升级(1-关闭， 0-开启)

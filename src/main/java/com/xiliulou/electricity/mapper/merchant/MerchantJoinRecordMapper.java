@@ -3,6 +3,7 @@ package com.xiliulou.electricity.mapper.merchant;
 import com.xiliulou.electricity.entity.merchant.MerchantJoinRecord;
 import com.xiliulou.electricity.query.merchant.MerchantJoinRecordQueryMode;
 import com.xiliulou.electricity.query.merchant.MerchantPromotionScanCodeQueryModel;
+import com.xiliulou.electricity.vo.merchant.MerchantJoinRecordVO;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
@@ -19,8 +20,6 @@ public interface MerchantJoinRecordMapper {
     Integer existsInProtectionTimeByJoinUid(Long joinUid);
     
     MerchantJoinRecord selectByMerchantIdAndJoinUid(@Param("merchantId") Long merchantId, @Param("joinUid") Long joinUid);
-    
-    Integer existsIfExpired(@Param("merchantId") Long merchantId, @Param("joinUid") Long joinUid);
     
     Integer updateStatus(@Param("merchantId") Long merchantId, @Param("joinUid") Long joinUid, @Param("status") Integer status);
     
@@ -41,4 +40,6 @@ public interface MerchantJoinRecordMapper {
     Integer updateById(MerchantJoinRecord record);
     
     Integer countByCondition(MerchantPromotionScanCodeQueryModel queryModel);
+    
+    List<MerchantJoinRecordVO> countByMerchantIdList(MerchantJoinRecordQueryMode joinRecordQueryMode);
 }

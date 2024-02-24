@@ -102,4 +102,9 @@ public class MerchantVO {
      * 企业id
      */
     private Long enterpriseId;
+    
+    /**
+     * 商户等级Id
+     */
+    private Long merchantGradeId;
 }

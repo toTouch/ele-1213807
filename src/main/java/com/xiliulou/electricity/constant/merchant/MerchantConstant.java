@@ -1,4 +1,4 @@
-package com.xiliulou.electricity.constant;
+package com.xiliulou.electricity.constant.merchant;
 
 /**
  * 商户常量类
@@ -67,6 +67,12 @@ public interface MerchantConstant {
     Integer MERCHANT_REBATE_STATUS_SETTLED = 1;
     Integer MERCHANT_REBATE_STATUS_RETURNED = 2;
     Integer MERCHANT_REBATE_STATUS_EXPIRED = 3;
+    
+    /**
+     * 返利配置状态 0:关闭,1:开启
+     */
+    Integer REBATE_DISABLE = 0;
+    Integer REBATE_ENABLE = 1;
     
     public static final Integer DEL_NORMAL = 0;
     public static final Integer DEL_DEL = 1;

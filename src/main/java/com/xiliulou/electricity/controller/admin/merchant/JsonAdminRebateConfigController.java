@@ -2,6 +2,7 @@ package com.xiliulou.electricity.controller.admin.merchant;
 
 import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.annotation.Log;
 import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.request.merchant.RebateConfigRequest;
@@ -63,6 +64,7 @@ public class JsonAdminRebateConfigController extends BaseController {
      * @return
      */
     @PutMapping("/admin/rebateConfig/save")
+    @Log(title = "新增返利配置")
     public R save(@RequestBody @Validated(CreateGroup.class) RebateConfigRequest request) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
@@ -82,6 +84,7 @@ public class JsonAdminRebateConfigController extends BaseController {
      * @return
      */
     @PutMapping("/admin/rebateConfig/update")
+    @Log(title = "修改返利配置")
     public R modify(@RequestBody @Validated(UpdateGroup.class) RebateConfigRequest request) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {

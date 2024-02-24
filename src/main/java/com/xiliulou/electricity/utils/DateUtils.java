@@ -27,7 +27,7 @@ public class DateUtils {
         System.out.println(getTodayEndTimeStamp());
     }
     
-    static DateTimeFormatter MILLS_FORMAT_DATE = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
+    static DateTimeFormatter MILLS_FORMAT_DATE = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
     
     static SimpleDateFormat simpleDateFormatYearAndMonth =new SimpleDateFormat("yyyy-MM-dd");
     
@@ -39,7 +39,7 @@ public class DateUtils {
      */
     public static long parseMillsDateStrToTimestamp(String date) {
         LocalDateTime datetime = LocalDateTime.parse(date, MILLS_FORMAT_DATE);
-        return datetime.toInstant(ZoneOffset.of("+8")).toEpochMilli();
+        return datetime.toInstant(ZoneOffset.of("+0")).toEpochMilli();
     }
     
     public static long getTodayStartTimeStamp() {

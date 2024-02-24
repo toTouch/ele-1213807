@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.service.impl.merchant;
 
 import com.xiliulou.db.dynamic.annotation.Slave;
+import com.xiliulou.electricity.constant.merchant.MerchantConstant;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.User;
@@ -14,17 +15,24 @@ import com.xiliulou.electricity.request.merchant.RebateRecordRequest;
 import com.xiliulou.electricity.service.BatteryMemberCardService;
 import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.UserService;
+import com.xiliulou.electricity.service.merchant.ChannelEmployeeAmountService;
 import com.xiliulou.electricity.service.merchant.MerchantPlaceService;
 import com.xiliulou.electricity.service.merchant.MerchantService;
+import com.xiliulou.electricity.service.merchant.MerchantUserAmountService;
 import com.xiliulou.electricity.service.merchant.RebateRecordService;
+import com.xiliulou.electricity.utils.DateUtils;
 import com.xiliulou.electricity.vo.merchant.RebateRecordVO;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -44,6 +52,9 @@ public class RebateRecordServiceImpl implements RebateRecordService {
     private RebateRecordMapper rebateRecordMapper;
     
     @Autowired
+    private ApplicationContext applicationContext;
+    
+    @Autowired
     private FranchiseeService franchiseeService;
     
     @Autowired
@@ -57,6 +68,12 @@ public class RebateRecordServiceImpl implements RebateRecordService {
     
     @Autowired
     private MerchantPlaceService merchantPlaceService;
+    
+    @Autowired
+    private ChannelEmployeeAmountService channelEmployeeAmountService;
+    
+    @Autowired
+    private MerchantUserAmountService merchantUserAmountService;
     
     @Override
     public RebateRecord queryById(Long id) {
@@ -130,6 +147,60 @@ public class RebateRecordServiceImpl implements RebateRecordService {
     @Override
     public Integer countByPage(RebateRecordRequest query) {
         return this.rebateRecordMapper.selectByPageCount(query);
+    }
+    
+    @Slave
+    @Override
+    public List<RebateRecord> listCurrentMonthRebateRecord(long startTime, long endTime, int offset, int size) {
+        return this.rebateRecordMapper.selectCurrentMonthRebateRecord(startTime, endTime, offset, size);
+    }
+    
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void handleRebate(RebateRecord rebateRecord) {
+        BigDecimal merchantRebate = rebateRecord.getMerchantRebate();
+        BigDecimal channelerRebate = rebateRecord.getChannelerRebate();
+        
+        //未结算
+        if (Objects.equals(rebateRecord.getStatus(), MerchantConstant.MERCHANT_REBATE_STATUS_NOT_SETTLE)) {
+            //商户返利
+            merchantUserAmountService.addAmount(merchantRebate, rebateRecord.getMerchantUid(), rebateRecord.getTenantId().longValue());
+            
+            //渠道员返利
+            channelEmployeeAmountService.addAmount(channelerRebate, rebateRecord.getChanneler(), rebateRecord.getTenantId().longValue());
+        }
+        
+        RebateRecord rebateRecordUpdate = new RebateRecord();
+        rebateRecordUpdate.setId(rebateRecord.getId());
+        rebateRecordUpdate.setStatus(MerchantConstant.MERCHANT_REBATE_STATUS_SETTLED);
+        rebateRecordUpdate.setUpdateTime(System.currentTimeMillis());
+        applicationContext.getBean(RebateRecordService.class).updateById(rebateRecordUpdate);
+    }
+    
+    @Override
+    public void settleRebateRecordTask() {
+        int offset = 0;
+        int size = 200;
+        
+        long startTime = DateUtils.getDayStartTimeByLocalDate(LocalDate.now()) - 24 * 60 * 60 * 1000L;
+        long endTime = DateUtils.getDayStartTimeByLocalDate(LocalDate.now());
+        
+        while (true) {
+            List<RebateRecord> list = this.rebateRecordMapper.selectNotSettleListByLimit(startTime, endTime, offset, size);
+            if (CollectionUtils.isEmpty(list)) {
+                return;
+            }
+            
+            list.forEach(item -> {
+                try {
+                    applicationContext.getBean(RebateRecordService.class).handleRebate(item);
+                } catch (BeansException e) {
+                    log.error("HANDLE REBATE ERROR!orderId={}", item.getOrderId(), e);
+                }
+            });
+            
+            offset += size;
+        }
     }
     
     @Override

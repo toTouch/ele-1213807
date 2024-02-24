@@ -174,4 +174,25 @@ public class JsonAdminMerchantPlaceCabinetBindController extends BaseController 
         
         return R.ok(merchantPlaceCabinetBindService.listByPage(placeCabinetPageRequest));
     }
+    
+    /**
+     * 检测场地的绑定和解绑时间是否重复
+     *
+     * @param placeId
+     * @return
+     */
+    @GetMapping("/admin/merchant/place/cabinet/checkBindTime")
+    public R checkBindTime(@RequestParam("placeId") Long placeId, @RequestParam("time") Long time) {
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        
+        Triple<Boolean, String, Object> r = merchantPlaceCabinetBindService.checkBindTime(placeId, time);
+        if (!r.getLeft()) {
+            return R.fail(r.getMiddle(), (String) r.getRight());
+        }
+        
+        return R.ok();
+    }
 }

@@ -178,6 +178,7 @@
         select tmwa.id,
         tmwa.uid,
         tu.name,
+        tu.phone,
         tmwa.order_no,
         tmwa.amount,
         tmwa.remark,

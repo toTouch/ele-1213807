@@ -11,7 +11,7 @@
     <delete id="batchDeleteByMerchantId">
         delete from t_merchant_place_map
        <where>
-           merchant_id = #{item.merchantId}
+           merchant_id = #{merchantId}
            <if test="placeIdList != null and placeIdList.size() > 0">
                and place_id in
                <foreach collection="placeIdList" separator="," open="(" close=")" item="placeId">
@@ -86,5 +86,40 @@
             
         </where>
         
+    </select>
+    
+    <select id="selectBindMerchantName" resultType="com.xiliulou.electricity.vo.merchant.MerchantPlaceMapVO">
+        SELECT
+            m.place_id,
+            m.merchant_id,
+            t.`name` as 'merchantName'
+        FROM
+            t_merchant_place_map m
+                left join t_merchant t on t.id = m.merchant_id
+    
+        where
+            del_flag = 0
+          <if test="placeIdList != null">
+              and place_id in
+              <foreach collection="placeIdList" separator="," open="(" close=")" item="placeId">
+                  #{placeId}
+              </foreach>
+          </if>
+    </select>
+    
+    <select id="countByMerchantIdList" resultType="com.xiliulou.electricity.vo.merchant.MerchantPlaceMapVO">
+        SELECT
+            merchant_id,
+            count( 1 )
+        FROM
+            t_merchant_place_map
+        WHERE
+            del_flag = 0
+          AND merchant_id IN
+        <foreach collection="merchantIdList" separator="," open="(" close=")" item="merchantId">
+            #{merchantId}
+        </foreach>
+        GROUP BY
+            merchant_id
     </select>
 </mapper>

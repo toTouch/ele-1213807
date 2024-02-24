@@ -22,8 +22,4 @@ public class MerchantCabinetPowerRequest {
     private Long placeId;
     
     private Long cabinetId;
-    
-    private Long startTime;
-    
-    private Long endTime;
 }
