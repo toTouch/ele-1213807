@@ -23,6 +23,8 @@ public class NumberConstant {
     
     public static final Integer SEVENTY_FIVE = 75;
     
+    public static final Integer ONE_HUNDRED = 100;
+    
     public static final Integer TWO_HUNDRED = 200;
     
     public static final Integer FOUR = 4;

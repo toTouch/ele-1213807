@@ -787,10 +787,10 @@
         ecb.electricity_cabinet_id
         having del_flag=0
         <if test="lowChargeRate != null">
-            and sum( status = 0 ) / count( ecb.electricity_cabinet_id ) &lt;= #{lowChargeRate}
+            and FLOOR(sum( status = 0 ) * 100 / count( ecb.electricity_cabinet_id )) &lt;= #{lowChargeRate}
         </if>
         <if test="fullChargeRate != null">
-            and sum( status = 0 ) / count( ecb.electricity_cabinet_id ) &gt;= #{fullChargeRate}
+            and FLOOR(sum( status = 0 ) * 100 / count( ecb.electricity_cabinet_id )) &gt;= #{fullChargeRate}
         </if>
         <choose>
             <when test="orderByAverageNumber != null">
@@ -895,10 +895,10 @@
         ecb.electricity_cabinet_id
         having del_flag=0
         <if test="lowChargeRate != null">
-            and sum( status = 0 ) / count( ecb.electricity_cabinet_id ) &lt;= #{lowChargeRate}
+            and FLOOR(sum( status = 0 ) * 100 / count( ecb.electricity_cabinet_id )) &lt;= #{lowChargeRate}
         </if>
         <if test="fullChargeRate != null">
-            and sum( status = 0 ) / count( ecb.electricity_cabinet_id ) &gt;= #{fullChargeRate}
+            and FLOOR(sum( status = 0 ) * 100 / count( ecb.electricity_cabinet_id )) &gt;= #{fullChargeRate}
         </if>
         ) a
     </select>

@@ -932,6 +932,7 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
         }
     
         Long invitationUid = Long.parseLong(split[NumberConstant.ONE]);
+        // 是否自己扫自己的码
         if (Objects.equals(userInfo.getUid(), invitationUid)) {
             log.info("INVITATION ACTIVITY INFO! illegal operate! invitationUid={}, uid={}", invitationUid, userInfo.getUid());
             return Triple.of(true, null, null);
