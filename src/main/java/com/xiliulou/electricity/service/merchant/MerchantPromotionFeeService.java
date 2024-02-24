@@ -1,6 +1,9 @@
 package com.xiliulou.electricity.service.merchant;
 
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.query.merchant.MerchantPromotionDataDetailQueryModel;
+import com.xiliulou.electricity.query.merchant.MerchantPromotionEmployeeDetailQueryModel;
+import com.xiliulou.electricity.query.merchant.MerchantPromotionEmployeeDetailSpecificsQueryModel;
 
 /**
  * @ClassName : MerchantPromotionFeeService
@@ -23,4 +26,11 @@ public interface MerchantPromotionFeeService {
     
     R statisticChannelEmployeeMerchant(Integer type, Long uid, Long beginTime, Long endTime);
     
+    R selectMerchantEmployeeDetailList(MerchantPromotionEmployeeDetailQueryModel queryModel);
+    
+    R selectPromotionDataDetail(MerchantPromotionDataDetailQueryModel queryModel);
+    
+    R selectPromotionData(MerchantPromotionDataDetailQueryModel queryModel);
+    
+    R selectPromotionEmployeeDetailList(MerchantPromotionEmployeeDetailSpecificsQueryModel queryModel);
 }

@@ -19,5 +19,11 @@ public class MerchantWithdrawConstant {
     
     public static final Integer WITHDRAW_FAIL = 6;
     
+    public static final Integer WITHDRAW_TYPE_WECHAT = 1;
+    
+    public static final Integer WITHDRAW_TYPE_BAOFU = 2;
+    
+    public static final Integer WITHDRAW_MAX_AMOUNT = 500;
+    
     
 }

@@ -231,6 +231,9 @@
             <if test="uid != null and type == 2">
                 and place_uid = #{uid}
             </if>
+            <if test="uid != null and type == 3">
+                and channeler = #{uid}
+            </if>
             <if test="status != null">
                 and status = #{status}
             </if>
@@ -249,37 +252,6 @@
         </where>
     </select>
     
-    <select id="sumMerchantEmployeeByStatus" resultType="java.math.BigDecimal">
-        select sum(channeler_rebate) from t_rebate_record
-        <where>
-            <if test="tenantId != null">
-                and tenant_id = #{tenantId}
-            </if>
-            <if test="uid != null and type == 1">
-                and merchant_uid = #{uid}
-            </if>
-            <if test="uid != null and type == 2">
-                and place_uid = #{uid}
-            </if>
-            <if test="status != null2">
-                and status = #{status}
-            </if>
-            <if test="rebateStartTime != null">
-                and rebate_time >= #{rebateStartTime}
-            </if>
-            <if test="rebateEndTime!=null">
-                and rebate_time &lt;= #{rebateEndTime}
-            </if>
-            <if test="settleStartTime != null">
-                and settle_time >= #{settleStartTime}
-            </if>
-            <if test="settleEndTime != null">
-                and settle_time &lt;= #{settleEndTime}
-            </if>
-        </where>
-        
-    </select>
-    
     <select id="countByTime" resultType="java.lang.Integer">
         select IFNULL(count(1), 0) from t_rebate_record
         <where>
@@ -292,6 +264,9 @@
             <if test="uid != null and type == 2">
                 and place_uid = #{uid}
             </if>
+            <if test="uid != null and type == 3">
+                and channeler = #{uid}
+            </if>
             <if test="status != null">
                 and status = #{status}
             </if>
@@ -302,6 +277,43 @@
                 and create_time &lt;= #{endTime}
             </if>
         </where>
+    </select>
+    
+    <select id="selectListPromotionDetail" resultMap="RebateRecordMap">
+        select
+        id, uid, name, phone, member_card_id, merchant_id, merchant_uid, status, merchant_rebate, rebate_time
+        from t_rebate_record
+        <where>
+            <if test="channeler != null">
+                and channeler = #{channeler}
+            </if>
+            <if test="merchantId != null">
+                and merchant_id = #{merchantId}
+            </if>
+            <if test="franchiseeId != null">
+                and franchisee_id = #{franchiseeId}
+            </if>
+            <if test="orderId != null and orderId != ''">
+                and order_id =#{orderId}
+            </if>
+            <if test="type != null">
+                and type = #{type}
+            </if>
+            <if test="uid != null">
+                and uid = #{uid}
+            </if>
+            <if test="tenantId != null">
+                and tenant_id = #{tenantId}
+            </if>
+            <if test="beginTime != null">
+                and create_time &gt;= #{beginTime}
+            </if>
+            <if test="endTime != null">
+                and create_time &lt;= #{endTime}
+            </if>
+        </where>
+        order by id desc
+        limit #{offset}, #{size}
     </select>
 
 </mapper>

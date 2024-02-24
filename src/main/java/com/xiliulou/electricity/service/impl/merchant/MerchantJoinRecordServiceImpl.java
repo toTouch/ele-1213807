@@ -15,6 +15,7 @@ import com.xiliulou.electricity.entity.merchant.MerchantAttr;
 import com.xiliulou.electricity.entity.merchant.MerchantJoinRecord;
 import com.xiliulou.electricity.mapper.merchant.MerchantJoinRecordMapper;
 import com.xiliulou.electricity.query.merchant.MerchantJoinRecordQueryMode;
+import com.xiliulou.electricity.query.merchant.MerchantPromotionDataDetailQueryModel;
 import com.xiliulou.electricity.query.merchant.MerchantPromotionScanCodeQueryModel;
 import com.xiliulou.electricity.request.merchant.MerchantJoinRecordPageRequest;
 import com.xiliulou.electricity.service.TenantService;
@@ -392,6 +393,13 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
     @Override
     public List<MerchantJoinRecordVO> countByMerchantIdList(MerchantJoinRecordQueryMode joinRecordQueryMode) {
         return merchantJoinRecordMapper.countByMerchantIdList(joinRecordQueryMode);
+    }
+    
+    
+    @Slave
+    @Override
+    public List<MerchantJoinRecord> selectPromotionDataDetail(MerchantPromotionDataDetailQueryModel queryModel) {
+        return merchantJoinRecordMapper.selectListPromotionDataDetail(queryModel);
     }
     
     

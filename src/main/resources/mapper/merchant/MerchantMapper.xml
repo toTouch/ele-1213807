@@ -164,4 +164,20 @@
           </if>
           
     </select>
+    
+    <select id="countMerchantNumByTime" resultType="java.lang.Integer">
+        select IFNULL(count(1), 0) from t_merchant
+        <where>
+            del_flag = 0
+            <if test="tenantId != null">
+                and tenant_id = #{tenantId}
+            </if>
+            <if test="beginTime != null">
+                and create_time &gt;= #{beginTime}
+            </if>
+            <if test="endTime != null">
+                and create_time &lt; #{endTime}
+            </if>
+        </where>
+    </select>
 </mapper>
