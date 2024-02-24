@@ -990,6 +990,7 @@ public class MerchantServiceImpl implements MerchantService {
         return merchantVO;
     }
     
+    @Slave
     @Override
     public Integer countMerchantNumByTime(MerchantPromotionFeeMerchantNumQueryModel queryModel) {
         return merchantMapper.countMerchantNumByTime(queryModel);

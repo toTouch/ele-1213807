@@ -3,6 +3,7 @@ package com.xiliulou.electricity.service.merchant;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.query.merchant.MerchantPromotionDataDetailQueryModel;
 import com.xiliulou.electricity.query.merchant.MerchantPromotionEmployeeDetailQueryModel;
+import com.xiliulou.electricity.query.merchant.MerchantPromotionEmployeeDetailSpecificsQueryModel;
 
 /**
  * @ClassName : MerchantPromotionFeeService
@@ -31,4 +32,5 @@ public interface MerchantPromotionFeeService {
     
     R selectPromotionData(MerchantPromotionDataDetailQueryModel queryModel);
     
+    R selectPromotionEmployeeDetailList(MerchantPromotionEmployeeDetailSpecificsQueryModel queryModel);
 }

@@ -15,6 +15,7 @@ import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Objects;
 
@@ -43,68 +44,62 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
     
     @Override
     public Triple<Boolean, String, Object> saveMerchantWithdrawApplication(MerchantWithdrawApplicationRequest merchantWithdrawApplicationRequest) {
-
+        
         //限频
         Boolean getLockSuccess = redisService.setNx(CacheConstant.CACHE_WITHDRAW_USER_UID + merchantWithdrawApplicationRequest.getMerchantUid(), "1", 3L, false);
         if (!getLockSuccess) {
             return Triple.of(false, null, "操作频繁,请稍后再试");
         }
-
+        
         //查询商户余额表，是否存在商户账户
-
+        
         //检查余额表中的余额是否满足提现金额
-
+        
         //单次提现金额需要满足限制条件， 不小于2元，不大于20000？ 待确定
-
+        
         //查询银行卡信息，检查银行卡是否存在，并且检查该银行卡是否支持转账
-
+        
         //计算手续费
-
+        
         //插入提现表
-
+        
         //扣除商户账户余额表中的余额
         
         //创建提现申请记录, 批量提现时需要创建一条批次提现记录
         
-        
-
-
-
         MerchantWithdrawApplication merchantWithdrawApplication = new MerchantWithdrawApplication();
         merchantWithdrawApplication.setAmount(merchantWithdrawApplicationRequest.getAmount());
         merchantWithdrawApplication.setUid(merchantWithdrawApplicationRequest.getMerchantUid());
         merchantWithdrawApplication.setTenantId(merchantWithdrawApplicationRequest.getTenantId());
         
-    
         merchantWithdrawApplication.setCreateTime(System.currentTimeMillis());
         merchantWithdrawApplication.setUpdateTime(System.currentTimeMillis());
         
-        
         Integer result = merchantWithdrawApplicationMapper.insertOne(merchantWithdrawApplication);
         
-        return  Triple.of(true, null, result);
+        return Triple.of(true, null, result);
     }
-
+    
     public Triple<Boolean, String, Object> approveWithdrawApplication(MerchantWithdrawApplicationRequest merchantWithdrawApplicationRequest) {
-
+        
         //检查提现审核参数状态，是否为待审核状态
         MerchantWithdrawApplication merchantWithdrawApplication = merchantWithdrawApplicationMapper.selectById(merchantWithdrawApplicationRequest.getId());
-        if(Objects.isNull(merchantWithdrawApplication)){
+        if (Objects.isNull(merchantWithdrawApplication)) {
             return Triple.of(false, "", "提现申请不存在");
         }
-
+        
         //检查提现状态是否为审核中的状态
-
+        
         //检查入参中的状态是否为同意或者拒绝状态，若为其他状态，则提示错误。
-
+        
         //若为同意提现，则修改提现状态为已审核，并且修改提现记录表中的提现状态为已审核。
-
+        
         //若为拒绝提现，则修改提现状态为已拒绝，并且修改提现记录表中的提现状态为已拒绝。
-
+        
         //扣除商户账户余额表中的余额，并创建提现记录
-
+        
         //判断需要线下提现或者线上提现。
-
+        
         return null;
     }
     
@@ -138,5 +133,11 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
     @Override
     public MerchantWithdrawApplication queryMerchantWithdrawApplication(Long id) {
         return merchantWithdrawApplicationMapper.selectById(id);
+    }
+    
+    @Slave
+    @Override
+    public BigDecimal sumByStatus(Integer tenantId, Integer status, Long uid) {
+        return merchantWithdrawApplicationMapper.sumByStatus(tenantId, status, uid);
     }
 }

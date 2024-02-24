@@ -5,6 +5,7 @@ import com.xiliulou.electricity.request.merchant.MerchantWithdrawApplicationRequ
 import com.xiliulou.electricity.vo.merchant.MerchantWithdrawApplicationVO;
 import org.apache.commons.lang3.tuple.Triple;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -13,9 +14,9 @@ import java.util.List;
  * @date 2024/2/21 17:46
  */
 public interface MerchantWithdrawApplicationService {
-
+    
     Triple<Boolean, String, Object> saveMerchantWithdrawApplication(MerchantWithdrawApplicationRequest merchantWithdrawApplicationRequest);
-
+    
     Triple<Boolean, String, Object> updateMerchantWithdrawApplication(MerchantWithdrawApplicationRequest merchantWithdrawApplicationRequest);
     
     Integer removeMerchantWithdrawApplication(Long id);
@@ -25,5 +26,7 @@ public interface MerchantWithdrawApplicationService {
     List<MerchantWithdrawApplicationVO> queryMerchantWithdrawApplicationList(MerchantWithdrawApplicationRequest merchantWithdrawApplicationRequest);
     
     MerchantWithdrawApplication queryMerchantWithdrawApplication(Long id);
+    
+    BigDecimal sumByStatus(Integer tenantId, Integer status, Long uid);
     
 }
