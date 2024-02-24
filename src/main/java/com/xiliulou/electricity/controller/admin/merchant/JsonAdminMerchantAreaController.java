@@ -3,10 +3,9 @@ package com.xiliulou.electricity.controller.admin.merchant;
 import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.User;
-import com.xiliulou.electricity.query.merchant.MerchantAreaQuery;
+import com.xiliulou.electricity.request.merchant.MerchantAreaRequest;
 import com.xiliulou.electricity.request.merchant.MerchantAreaSaveOrUpdateRequest;
 import com.xiliulou.electricity.service.merchant.MerchantAreaService;
-import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
@@ -104,9 +103,25 @@ public class JsonAdminMerchantAreaController extends BaseController {
             return R.ok();
         }
         
-        MerchantAreaQuery query = MerchantAreaQuery.builder().size(size).offset(offset).tenantId(TenantContextHolder.getTenantId()).name(name).build();
+        MerchantAreaRequest request = MerchantAreaRequest.builder().size(size).offset(offset).name(name).build();
         
-        return R.ok(merchantAreaService.listByPage(query));
+        return R.ok(merchantAreaService.listByPage(request));
+    }
+    
+    @GetMapping("/admin/merchant/area/pageCount")
+    public R pageCount(@RequestParam(value = "name", required = false) String name) {
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        
+        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
+            return R.ok();
+        }
+        
+        MerchantAreaRequest request = MerchantAreaRequest.builder().name(name).build();
+        
+        return R.ok(merchantAreaService.countTotal(request));
     }
     
     /**
@@ -131,25 +146,9 @@ public class JsonAdminMerchantAreaController extends BaseController {
             return R.ok();
         }
         
-        MerchantAreaQuery query = MerchantAreaQuery.builder().size(size).offset(offset).tenantId(TenantContextHolder.getTenantId()).name(name).build();
+        MerchantAreaRequest request = MerchantAreaRequest.builder().size(size).offset(offset).name(name).build();
         
-        return R.ok(merchantAreaService.queryList(query));
-    }
-    
-    @GetMapping("/admin/merchant/area/pageCount")
-    public R pageCount(@RequestParam(value = "name", required = false) String name) {
-        TokenUser user = SecurityUtils.getUserInfo();
-        if (Objects.isNull(user)) {
-            return R.fail("ELECTRICITY.0001", "未找到用户");
-        }
-    
-        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
-            return R.ok();
-        }
-    
-        MerchantAreaQuery query = MerchantAreaQuery.builder().tenantId(TenantContextHolder.getTenantId()).name(name).build();
-    
-        return R.ok(merchantAreaService.countTotal(query));
+        return R.ok(merchantAreaService.queryList(request));
     }
     
     @GetMapping("/admin/merchant/area/selectAll")
@@ -157,23 +156,23 @@ public class JsonAdminMerchantAreaController extends BaseController {
         if (size < 0 || size > 50) {
             size = 10L;
         }
-    
+        
         if (offset < 0) {
             offset = 0L;
         }
-    
+        
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-    
+        
         if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
             return R.ok();
         }
-    
-        MerchantAreaQuery query = MerchantAreaQuery.builder().size(size).offset(offset).tenantId(TenantContextHolder.getTenantId()).name(name).build();
         
-        return R.ok(merchantAreaService.listAll(query));
+        MerchantAreaRequest request = MerchantAreaRequest.builder().size(size).offset(offset).name(name).build();
+        
+        return R.ok(merchantAreaService.listAll(request));
     }
     
 }

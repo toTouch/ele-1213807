@@ -1,7 +1,7 @@
 package com.xiliulou.electricity.mapper.merchant;
 
 import com.xiliulou.electricity.entity.merchant.MerchantArea;
-import com.xiliulou.electricity.query.merchant.MerchantAreaQuery;
+import com.xiliulou.electricity.query.merchant.MerchantAreaQueryModel;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
@@ -15,17 +15,17 @@ public interface MerchantAreaMapper {
     
     Integer insertOne(MerchantArea merchantArea);
     
-    Integer deleteById(@Param("id")Long id, @Param("tenantId")Integer tenantId);
+    Integer deleteById(@Param("id") Long id, @Param("tenantId") Integer tenantId);
     
     Integer existsByAreaName(@Param("areaName") String areaName, @Param("tenantId") Integer tenantId);
     
     Integer updateById(MerchantArea merchantArea);
     
-    List<MerchantArea> selectPage(MerchantAreaQuery query);
+    List<MerchantArea> selectPage(MerchantAreaQueryModel queryModel);
     
-    Integer countTotal(MerchantAreaQuery query);
+    Integer countTotal(MerchantAreaQueryModel queryModel);
     
-    List<MerchantArea> queryList(MerchantAreaQuery areaQuery);
+    List<MerchantArea> queryList(MerchantAreaQueryModel queryModel);
     
     MerchantArea selectById(Long id);
 }

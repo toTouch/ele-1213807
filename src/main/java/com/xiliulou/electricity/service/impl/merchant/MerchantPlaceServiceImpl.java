@@ -1,10 +1,10 @@
 package com.xiliulou.electricity.service.impl.merchant;
 
-import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
-import com.xiliulou.electricity.constant.merchant.MerchantPlaceConstant;
 import com.xiliulou.electricity.constant.StringConstant;
+import com.xiliulou.electricity.constant.merchant.MerchantPlaceConstant;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.merchant.MerchantArea;
 import com.xiliulou.electricity.entity.merchant.MerchantPlace;
@@ -12,10 +12,10 @@ import com.xiliulou.electricity.entity.merchant.MerchantPlaceCabinetBind;
 import com.xiliulou.electricity.entity.merchant.MerchantPlaceMap;
 import com.xiliulou.electricity.mapper.merchant.MerchantMapper;
 import com.xiliulou.electricity.mapper.merchant.MerchantPlaceMapper;
-import com.xiliulou.electricity.query.merchant.MerchantAreaQuery;
 import com.xiliulou.electricity.query.merchant.MerchantPlaceCabinetBindQueryModel;
 import com.xiliulou.electricity.query.merchant.MerchantPlaceMapQueryModel;
 import com.xiliulou.electricity.query.merchant.MerchantPlaceQueryModel;
+import com.xiliulou.electricity.request.merchant.MerchantAreaRequest;
 import com.xiliulou.electricity.request.merchant.MerchantPlacePageRequest;
 import com.xiliulou.electricity.request.merchant.MerchantPlaceSaveRequest;
 import com.xiliulou.electricity.service.FranchiseeService;
@@ -265,13 +265,12 @@ public class MerchantPlaceServiceImpl implements MerchantPlaceService {
         List<MerchantPlaceMapVO> merchantPlaceMaps = merchantPlaceMapService.queryBindMerchantName(placeMapQueryModel);
         Map<Long, String> merchantNameMap = new HashMap<>();
         if (ObjectUtils.isEmpty(merchantPlaceMaps)) {
-            merchantNameMap = merchantPlaceMaps.stream()
-                    .collect(Collectors.toMap(MerchantPlaceMapVO::getPlaceId, MerchantPlaceMapVO::getMerchantName, (key, key1) -> key1));
+            merchantNameMap = merchantPlaceMaps.stream().collect(Collectors.toMap(MerchantPlaceMapVO::getPlaceId, MerchantPlaceMapVO::getMerchantName, (key, key1) -> key1));
         }
         
         Map<Long, String> areaNameMap = new HashMap<>();
         if (ObjectUtils.isNotEmpty(areaIdList)) {
-            MerchantAreaQuery areaQuery = MerchantAreaQuery.builder().idList(areaIdList).build();
+            MerchantAreaRequest areaQuery = MerchantAreaRequest.builder().idList(areaIdList).build();
             List<MerchantArea> merchantAreaList = merchantAreaService.queryList(areaQuery);
             if (ObjectUtils.isNotEmpty(merchantAreaList)) {
                 areaNameMap = merchantAreaList.stream().collect(Collectors.toMap(MerchantArea::getId, MerchantArea::getName, (key, key1) -> key1));

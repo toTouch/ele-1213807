@@ -8,7 +8,8 @@ import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.merchant.MerchantArea;
 import com.xiliulou.electricity.mapper.merchant.MerchantAreaMapper;
-import com.xiliulou.electricity.query.merchant.MerchantAreaQuery;
+import com.xiliulou.electricity.query.merchant.MerchantAreaQueryModel;
+import com.xiliulou.electricity.request.merchant.MerchantAreaRequest;
 import com.xiliulou.electricity.request.merchant.MerchantAreaSaveOrUpdateRequest;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
 import com.xiliulou.electricity.service.merchant.ChannelEmployeeService;
@@ -81,17 +82,17 @@ public class MerchantAreaServiceImpl implements MerchantAreaService {
         if (Objects.nonNull(cabinetExist)) {
             return R.fail("120100", "该区域有电柜正在使用，请先解绑后操作");
         }
-    
+        
         Integer placeExist = merchantPlaceService.existsByAreaId(id);
         if (Objects.nonNull(placeExist)) {
             return R.fail("120101", "该区域有场地正在使用，请先解绑后操作");
         }
-    
+        
         Integer channelEmpExist = channelEmployeeService.existsByAreaId(id);
         if (Objects.nonNull(channelEmpExist)) {
             return R.fail("120102", "该区域有渠道员正在使用，请先解绑后操作");
         }
-    
+        
         return R.ok(merchantAreaMapper.deleteById(id, TenantContextHolder.getTenantId()));
     }
     
@@ -111,8 +112,11 @@ public class MerchantAreaServiceImpl implements MerchantAreaService {
     
     @Slave
     @Override
-    public List<MerchantAreaVO> listByPage(MerchantAreaQuery query) {
-        List<MerchantArea> merchantAreaList = merchantAreaMapper.selectPage(query);
+    public List<MerchantAreaVO> listByPage(MerchantAreaRequest request) {
+        MerchantAreaQueryModel queryModel = new MerchantAreaQueryModel();
+        BeanUtils.copyProperties(request, queryModel);
+        queryModel.setTenantId(TenantContextHolder.getTenantId());
+        List<MerchantArea> merchantAreaList = merchantAreaMapper.selectPage(queryModel);
         if (CollectionUtils.isEmpty(merchantAreaList)) {
             return Collections.emptyList();
         }
@@ -142,25 +146,37 @@ public class MerchantAreaServiceImpl implements MerchantAreaService {
     
     @Slave
     @Override
-    public Integer countTotal(MerchantAreaQuery query) {
-        return merchantAreaMapper.countTotal(query);
+    public Integer countTotal(MerchantAreaRequest request) {
+        MerchantAreaQueryModel queryModel = new MerchantAreaQueryModel();
+        BeanUtils.copyProperties(request, queryModel);
+        queryModel.setTenantId(TenantContextHolder.getTenantId());
+        
+        return merchantAreaMapper.countTotal(queryModel);
     }
     
     @Slave
     @Override
-    public List<MerchantArea> listAll(MerchantAreaQuery query) {
-        List<MerchantArea> merchantAreaList = merchantAreaMapper.selectPage(query);
+    public List<MerchantArea> listAll(MerchantAreaRequest request) {
+        MerchantAreaQueryModel queryModel = new MerchantAreaQueryModel();
+        BeanUtils.copyProperties(request, queryModel);
+        queryModel.setTenantId(TenantContextHolder.getTenantId());
+        
+        List<MerchantArea> merchantAreaList = merchantAreaMapper.selectPage(queryModel);
         if (CollectionUtils.isEmpty(merchantAreaList)) {
             return Collections.emptyList();
         }
-    
+        
         return merchantAreaList;
     }
     
     @Slave
     @Override
-    public List<MerchantArea> queryList(MerchantAreaQuery areaQuery) {
-        return merchantAreaMapper.queryList(areaQuery);
+    public List<MerchantArea> queryList(MerchantAreaRequest request) {
+        MerchantAreaQueryModel queryModel = new MerchantAreaQueryModel();
+        BeanUtils.copyProperties(request, queryModel);
+        queryModel.setTenantId(TenantContextHolder.getTenantId());
+        
+        return merchantAreaMapper.queryList(queryModel);
     }
     
     @Override
