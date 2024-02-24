@@ -84,14 +84,14 @@ public class JsonOuterInnerTestWxController {
         params.put("out_batch_no", batchNo);
         params.put("batch_name", "测试商家转账到零钱");
         params.put("batch_remark", "测试商家转账到零钱");
-        params.put("total_amount", 2);
+        params.put("total_amount", 20);
         params.put("total_num", 2);
         
         List<Map<String, Object>> subParams = new ArrayList<>();
         for (int i = 0; i < 2; i++) {
             HashMap<String, Object> subParamMap = new HashMap<>();
             subParamMap.put("out_detail_no", batchNo + "Detail" +  String.format("%03d", i));
-            subParamMap.put("transfer_amount", 1);
+            subParamMap.put("transfer_amount", 10);
             subParamMap.put("transfer_remark", "推广费");
             subParamMap.put("openid", OPEN_ID);
             subParams.add(subParamMap);
