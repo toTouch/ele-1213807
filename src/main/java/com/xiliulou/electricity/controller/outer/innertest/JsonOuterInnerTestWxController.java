@@ -90,7 +90,7 @@ public class JsonOuterInnerTestWxController {
         List<Map<String, Object>> subParams = new ArrayList<>();
         for (int i = 0; i < 2; i++) {
             HashMap<String, Object> subParamMap = new HashMap<>();
-            subParamMap.put("out_detail_no", batchNo + "_detail_" +  String.format("%03d", i));
+            subParamMap.put("out_detail_no", batchNo + "Detail" +  String.format("%03d", i));
             subParamMap.put("transfer_amount", 1);
             subParamMap.put("transfer_remark", "推广费");
             subParamMap.put("openid", OPEN_ID);
