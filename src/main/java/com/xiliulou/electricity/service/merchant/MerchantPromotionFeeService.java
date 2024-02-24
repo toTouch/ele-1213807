@@ -18,4 +18,9 @@ public interface MerchantPromotionFeeService {
     R queryMerchantPromotionRenewal(Integer type,Long uid);
     
     R statisticMerchantIncome(Integer type,Long uid,Long beginTime,Long endTime);
+    
+    R statisticUser(Integer type,Long uid,Long beginTime,Long endTime);
+    
+    R statisticChannelEmployeeMerchant(Integer type, Long uid, Long beginTime, Long endTime);
+    
 }

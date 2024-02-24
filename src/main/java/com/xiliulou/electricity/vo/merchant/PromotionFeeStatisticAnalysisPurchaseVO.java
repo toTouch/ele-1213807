@@ -5,14 +5,14 @@ import lombok.Data;
 import java.math.BigDecimal;
 
 /**
- * @ClassName : PromotionFeeStatisticAnalysisIncomeVO
+ * @ClassName : PromotionFeeStatisticAnalysisPurchseNumVO
  * @Description :
  * @Author : zhangyongbo
- * @since: 2024-02-22
+ * @since: 2024-02-24
  */
 @Data
-public class PromotionFeeStatisticAnalysisIncomeVO {
-    private BigDecimal totalIncome;
+public class PromotionFeeStatisticAnalysisPurchaseVO {
+    private Integer purchaseNum;
     
     private String statisticIncomeTime;
 }

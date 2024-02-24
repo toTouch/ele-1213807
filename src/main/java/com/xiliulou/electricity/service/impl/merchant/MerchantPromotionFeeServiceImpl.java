@@ -17,6 +17,11 @@ import com.xiliulou.electricity.utils.DateUtils;
 import com.xiliulou.electricity.vo.merchant.MerchantPromotionFeeIncomeVO;
 import com.xiliulou.electricity.vo.merchant.MerchantPromotionFeeRenewalVO;
 import com.xiliulou.electricity.vo.merchant.MerchantPromotionFeeScanCodeVO;
+import com.xiliulou.electricity.vo.merchant.PromotionFeeStatisticAnalysisIncomeVO;
+import com.xiliulou.electricity.vo.merchant.PromotionFeeStatisticAnalysisPurchaseVO;
+import com.xiliulou.electricity.vo.merchant.PromotionFeeStatisticAnalysisRenewalVO;
+import com.xiliulou.electricity.vo.merchant.PromotionFeeStatisticAnalysisUserScanCodeVO;
+import com.xiliulou.electricity.vo.merchant.PromotionFeeStatisticAnalysisUserVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -25,6 +30,8 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.temporal.TemporalAdjusters;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -70,6 +77,10 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
     
     @Override
     public R queryMerchantPromotionFeeIncome(Integer type, Long uid) {
+        if (!PromotionFeeQueryTypeEnum.contains(type)) {
+            return R.fail("300850", "该类型用户不存在");
+        }
+        
         MerchantPromotionFeeIncomeVO merchantPromotionFeeIncomeVO = new MerchantPromotionFeeIncomeVO();
         
         LocalDate lastMonthFirstDay = LocalDate.now().minusMonths(1).withDayOfMonth(1);
@@ -81,16 +92,9 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
         
         // 获取上月最后一天的时间戳
         long dayOfMonthEndTime = lastMonthLastDay.atTime(23, 59, 59).atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
+    
+        buildPromotionFeeIncomeVO(PromotionFeeQueryTypeEnum.MERCHANT.getCode(), uid, merchantPromotionFeeIncomeVO, dayOfMonthStartTime, dayOfMonthEndTime);
         
-        //商户
-        if (Objects.equals(type, PromotionFeeQueryTypeEnum.MERCHANT.getCode())) {
-            buildPromotionFeeIncomeVO(PromotionFeeQueryTypeEnum.MERCHANT.getCode(), uid, merchantPromotionFeeIncomeVO, dayOfMonthStartTime, dayOfMonthEndTime);
-        }
-        
-        //场地员工
-        if (Objects.equals(type, PromotionFeeQueryTypeEnum.MERCHANT_EMPLOYEE.getCode())) {
-            buildPromotionFeeIncomeVO(PromotionFeeQueryTypeEnum.MERCHANT_EMPLOYEE.getCode(), uid, merchantPromotionFeeIncomeVO, dayOfMonthStartTime, dayOfMonthEndTime);
-        }
         return R.ok(merchantPromotionFeeIncomeVO);
     }
     
@@ -140,24 +144,110 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
     }
     
     @Override
-    public R statisticMerchantIncome(Integer type,Long uid,Long beginTime,Long endTime) {
+    public R statisticMerchantIncome(Integer type, Long uid, Long beginTime, Long endTime) {
         if (!PromotionFeeQueryTypeEnum.contains(type)) {
             return R.fail("300850", "该类型用户不存在");
         }
-    
-        for (int i = 1; i < 8 ; i++) {
-            long timeAgoStartTime = DateUtils.getTimeAgoStartTime(i);
-            long timeAgoEndTime = DateUtils.getTimeAgoEndTime(i);
-            
+        
+        List<PromotionFeeStatisticAnalysisIncomeVO> incomeVOList = new ArrayList<>();
+        
+        Long startTime = beginTime;
+        while (startTime > endTime) {
+            PromotionFeeStatisticAnalysisIncomeVO incomeVO = new PromotionFeeStatisticAnalysisIncomeVO();
+            BigDecimal totalIncome = buildPromotionFeeTotalIncomeVO(type, uid, startTime);
+            incomeVO.setTotalIncome(totalIncome);
+            incomeVO.setStatisticIncomeTime(DateUtils.getYearAndMonthAndDayByTimeStamps(startTime));
+            incomeVOList.add(incomeVO);
+            startTime = startTime + (60 * 60 * 1000 * 24);
+            ;
         }
         
+        return R.ok(incomeVOList);
+    }
+    
+    @Override
+    public R statisticUser(Integer type, Long uid, Long beginTime, Long endTime) {
+        if (!PromotionFeeQueryTypeEnum.contains(type)) {
+            return R.fail("300850", "该类型用户不存在");
+        }
+        
+        PromotionFeeStatisticAnalysisUserVO userVO = new PromotionFeeStatisticAnalysisUserVO();
+        List<PromotionFeeStatisticAnalysisUserScanCodeVO> scanCodeVOList = new ArrayList<>();
+        
+        List<PromotionFeeStatisticAnalysisPurchaseVO> purchaseVOList = new ArrayList<>();
+        
+        List<PromotionFeeStatisticAnalysisRenewalVO> renewalVOList = new ArrayList<>();
+        
+        Long startTime = beginTime;
+        while (startTime > endTime) {
+            // 扫码人数
+            PromotionFeeStatisticAnalysisUserScanCodeVO scanCodeVO = new PromotionFeeStatisticAnalysisUserScanCodeVO();
+            Integer scanCodeNum = buildScanCodeCount(type, uid, startTime, DateUtils.getEndTimeStampByDate(startTime), null);
+            scanCodeVO.setScanCodeNum(scanCodeNum);
+            scanCodeVO.setStatisticIncomeTime(DateUtils.getYearAndMonthAndDayByTimeStamps(startTime));
+            scanCodeVOList.add(scanCodeVO);
+            
+            // 新增人数
+            PromotionFeeStatisticAnalysisPurchaseVO purchaseVO = new PromotionFeeStatisticAnalysisPurchaseVO();
+            Integer purchaseNum = buildScanCodeCount(type, uid, startTime, DateUtils.getEndTimeStampByDate(startTime), MerchantJoinRecord.STATUS_SUCCESS);
+            purchaseVO.setPurchaseNum(purchaseNum);
+            purchaseVO.setStatisticIncomeTime(DateUtils.getYearAndMonthAndDayByTimeStamps(startTime));
+            purchaseVOList.add(purchaseVO);
+            
+            // 续费人数
+            PromotionFeeStatisticAnalysisRenewalVO renewalVO = new PromotionFeeStatisticAnalysisRenewalVO();
+            Integer renewalNum = buildRenewalNum(type, uid, startTime, DateUtils.getEndTimeStampByDate(startTime));
+            renewalVO.setRenewalNum(renewalNum);
+            renewalVO.setStatisticIncomeTime(DateUtils.getYearAndMonthAndDayByTimeStamps(startTime));
+            renewalVOList.add(renewalVO);
+            
+            startTime = startTime + (60 * 60 * 1000 * 24);
+        }
+    
+        userVO.setPurchaseVOList(purchaseVOList);
+        userVO.setScanCodeVOList(scanCodeVOList);
+        userVO.setRenewalVOList(renewalVOList);
+        return R.ok(userVO);
+    }
+    
+    @Override
+    public R statisticChannelEmployeeMerchant(Integer type, Long uid, Long beginTime, Long endTime) {
         return null;
     }
+    
+    private BigDecimal buildPromotionFeeTotalIncomeVO(Integer type, Long uid, long endTime) {
+        PromotionFeeStatisticAnalysisIncomeVO incomeVO = new PromotionFeeStatisticAnalysisIncomeVO();
+        //累计收入：“结算日期” <= 今日，“结算状态” = 已结算 - 已退回；
+        MerchantPromotionFeeQueryModel allSettleIncomeQueryModel = MerchantPromotionFeeQueryModel.builder().status(MerchantConstant.MERCHANT_REBATE_STATUS_SETTLED).type(type)
+                .uid(uid).tenantId(TenantContextHolder.getTenantId()).settleEndTime(endTime).build();
+        BigDecimal allSettleIncome = rebateRecordService.sumByStatus(allSettleIncomeQueryModel);
+        
+        MerchantPromotionFeeQueryModel allReturnIncomeQueryModel = MerchantPromotionFeeQueryModel.builder().status(MerchantConstant.MERCHANT_REBATE_STATUS_RETURNED).type(type)
+                .uid(uid).tenantId(TenantContextHolder.getTenantId()).settleEndTime(endTime).build();
+        BigDecimal allReturnIncome = rebateRecordService.sumByStatus(allReturnIncomeQueryModel);
+        return allSettleIncome.subtract(allReturnIncome);
+    }
+    
+    
+    private Integer buildScanCodeCount(Integer type, Long uid, long startTime, long endTime, Integer status) {
+        //昨日扫码人数：扫码绑定时间=昨日0点～今日0点；
+        MerchantPromotionScanCodeQueryModel scanCodeQueryModel = MerchantPromotionScanCodeQueryModel.builder().tenantId(TenantContextHolder.getTenantId()).type(type)
+                .inviterUid(uid).startTime(startTime).status(status).endTime(endTime).build();
+        return merchantJoinRecordService.countByCondition(scanCodeQueryModel);
+    }
+    
+    private Integer buildRenewalNum(Integer type, Long uid, long startTime, long endTime) {
+        //昨日续费次数：购买指定套餐时间=昨日0点～今日0点，且套餐购买次数>1的购买成功次数
+        MerchantPromotionRenewalQueryModel renewalQueryModel = MerchantPromotionRenewalQueryModel.builder().tenantId(TenantContextHolder.getTenantId()).type(type).uid(uid)
+                .startTime(startTime).endTime(endTime).status(MerchantConstant.MERCHANT_REBATE_TYPE_RENEWAL).build();
+        return rebateRecordService.countByTime(renewalQueryModel);
+    }
+    
     
     private void buildPromotionFeePromotionRenewal(Integer type, Long uid, MerchantPromotionFeeRenewalVO merchantPromotionFeeRenewalVO, long dayOfMonthStartTime,
             long dayOfMonthEndTime) {
         
-        //今日续费次数：购买指定套餐时间=今日0点～当前时间，且套餐购买次数>1的购买成功次数
+       /* //今日续费次数：购买指定套餐时间=今日0点～当前时间，且套餐购买次数>1的购买成功次数
         MerchantPromotionRenewalQueryModel todayRenewalQueryModel = MerchantPromotionRenewalQueryModel.builder().tenantId(TenantContextHolder.getTenantId()).type(type).uid(uid)
                 .startTime(DateUtils.getTodayStartTime()).endTime(DateUtils.getTodayEndTimeStamp()).status(MerchantConstant.MERCHANT_REBATE_TYPE_RENEWAL).build();
         Integer todayRenewalCount = rebateRecordService.countByTime(todayRenewalQueryModel);
@@ -179,7 +269,16 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
         MerchantPromotionRenewalQueryModel lastMonthRenewalQueryModel = MerchantPromotionRenewalQueryModel.builder().tenantId(TenantContextHolder.getTenantId()).type(type).uid(uid)
                 .startTime(dayOfMonthStartTime).endTime(dayOfMonthEndTime).status(MerchantConstant.MERCHANT_REBATE_TYPE_RENEWAL).build();
         Integer lastMonthRenewalCount = rebateRecordService.countByTime(lastMonthRenewalQueryModel);
-        merchantPromotionFeeRenewalVO.setLastMonthRenewalCount(lastMonthRenewalCount);
+        merchantPromotionFeeRenewalVO.setLastMonthRenewalCount(lastMonthRenewalCount);*/
+        
+        //今日续费次数：购买指定套餐时间=今日0点～当前时间，且套餐购买次数>1的购买成功次数
+        merchantPromotionFeeRenewalVO.setTodayRenewalCount(buildRenewalNum(type, uid, DateUtils.getTodayStartTime(), System.currentTimeMillis()));
+        //昨日续费次数：购买指定套餐时间=昨日0点～今日0点，且套餐购买次数>1的购买成功次数
+        merchantPromotionFeeRenewalVO.setYesterdayRenewalCount(buildRenewalNum(type, uid, DateUtils.getTimeAgoStartTime(1), DateUtils.getTimeAgoEndTime(1)));
+        //本月续费次数：购买指定套餐时间=本月1号0点～当前时间，且套餐购买次数>1的购买成功次数
+        merchantPromotionFeeRenewalVO.setCurrentMonthRenewalCount(buildRenewalNum(type, uid, DateUtils.getDayOfMonthStartTime(1), System.currentTimeMillis()));
+        //上月续费次数：购买指定套餐时间=上月1号0点～本月1号0点，且套餐购买次数>1的购买成功次数
+        merchantPromotionFeeRenewalVO.setLastMonthRenewalCount(buildRenewalNum(type, uid, dayOfMonthStartTime, dayOfMonthEndTime));
         
         //累计续费次数：购买指定套餐时间<=当前时间，且套餐购买次数>1的购买成功次数
         MerchantPromotionRenewalQueryModel totalRenewalQueryModel = MerchantPromotionRenewalQueryModel.builder().tenantId(TenantContextHolder.getTenantId()).type(type).uid(uid)
@@ -190,7 +289,7 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
     
     private void buildPromotionFeePromotionScanCode(Integer type, Long uid, MerchantPromotionFeeScanCodeVO merchantPromotionFeeScanCodeVO, long dayOfMonthStartTime,
             long dayOfMonthEndTime) {
-        //今日扫码人数：扫码绑定时间=今日0点～当前时间；
+        /*//今日扫码人数：扫码绑定时间=今日0点～当前时间；
         MerchantPromotionScanCodeQueryModel todayScanCodeCountQueryModel = MerchantPromotionScanCodeQueryModel.builder().tenantId(TenantContextHolder.getTenantId()).type(type)
                 .inviterUid(uid).startTime(DateUtils.getTodayStartTime()).endTime(System.currentTimeMillis()).build();
         
@@ -213,7 +312,16 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
         MerchantPromotionScanCodeQueryModel lastMonthScanCodeCountQueryModel = MerchantPromotionScanCodeQueryModel.builder().tenantId(TenantContextHolder.getTenantId()).type(type)
                 .inviterUid(uid).startTime(dayOfMonthStartTime).endTime(dayOfMonthEndTime).build();
         Integer lastMonthScanCodeCount = merchantJoinRecordService.countByCondition(lastMonthScanCodeCountQueryModel);
-        merchantPromotionFeeScanCodeVO.setLastMonthScanCodeNum(lastMonthScanCodeCount);
+        merchantPromotionFeeScanCodeVO.setLastMonthScanCodeNum(lastMonthScanCodeCount);*/
+        
+        //今日扫码人数：扫码绑定时间=今日0点～当前时间；
+        merchantPromotionFeeScanCodeVO.setTodayScanCodeNum(buildScanCodeCount(type, uid, DateUtils.getTodayStartTime(), System.currentTimeMillis(), null));
+        //昨日扫码人数：扫码绑定时间=昨日0点～今日0点；
+        merchantPromotionFeeScanCodeVO.setYesterdayScanCodeNum(buildScanCodeCount(type, uid, DateUtils.getTimeAgoStartTime(1), DateUtils.getTimeAgoEndTime(1), null));
+        //本月扫码人数：扫码绑定时间=本月1号0点～当前时间
+        merchantPromotionFeeScanCodeVO.setCurrentMonthScanCodeNum(buildScanCodeCount(type, uid, DateUtils.getDayOfMonthStartTime(1), System.currentTimeMillis(), null));
+        //上月扫码人数：扫码绑定时间=上月1号0点～本月1号0点
+        merchantPromotionFeeScanCodeVO.setLastMonthScanCodeNum(buildScanCodeCount(type, uid, dayOfMonthStartTime, dayOfMonthEndTime, null));
         
         //累计扫码人数：扫码绑定时间<=当前时间
         MerchantPromotionScanCodeQueryModel totalScanCodeCountQueryModel = MerchantPromotionScanCodeQueryModel.builder().tenantId(TenantContextHolder.getTenantId()).type(type)
@@ -221,7 +329,7 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
         Integer totalScanCodeCount = merchantJoinRecordService.countByCondition(totalScanCodeCountQueryModel);
         merchantPromotionFeeScanCodeVO.setTotalScanCodeNum(totalScanCodeCount);
         
-        //今日成功人数：首次成功购买指定套餐时间=今日0点～当前时间，邀请状态=邀请成功
+       /* //今日成功人数：首次成功购买指定套餐时间=今日0点～当前时间，邀请状态=邀请成功
         MerchantPromotionScanCodeQueryModel todayPurchaseQueryModel = MerchantPromotionScanCodeQueryModel.builder().tenantId(TenantContextHolder.getTenantId()).type(type)
                 .inviterUid(uid).startTime(DateUtils.getTodayStartTime()).endTime(System.currentTimeMillis()).status(MerchantJoinRecord.STATUS_SUCCESS).build();
         Integer todayPurchase = merchantJoinRecordService.countByCondition(todayPurchaseQueryModel);
@@ -243,7 +351,19 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
         MerchantPromotionScanCodeQueryModel lastMonthPurchaseQueryModel = MerchantPromotionScanCodeQueryModel.builder().tenantId(TenantContextHolder.getTenantId()).type(type)
                 .inviterUid(uid).startTime(dayOfMonthStartTime).endTime(dayOfMonthEndTime).status(MerchantJoinRecord.STATUS_SUCCESS).build();
         Integer lastMonthPurchase = merchantJoinRecordService.countByCondition(lastMonthPurchaseQueryModel);
-        merchantPromotionFeeScanCodeVO.setLastMonthPurchaseNum(lastMonthPurchase);
+        merchantPromotionFeeScanCodeVO.setLastMonthPurchaseNum(lastMonthPurchase);*/
+        
+        //今日成功人数：首次成功购买指定套餐时间=今日0点～当前时间，邀请状态=邀请成功
+        merchantPromotionFeeScanCodeVO.setTodayPurchaseNum(
+                buildScanCodeCount(type, uid, DateUtils.getTodayStartTime(), System.currentTimeMillis(), MerchantJoinRecord.STATUS_SUCCESS));
+        //昨日成功人数：首次成功购买指定套餐时间=昨日0点～今日0点，邀请状态=邀请成功
+        merchantPromotionFeeScanCodeVO.setYesterdayPurchaseNum(
+                buildScanCodeCount(type, uid, DateUtils.getTimeAgoStartTime(1), DateUtils.getTimeAgoEndTime(1), MerchantJoinRecord.STATUS_SUCCESS));
+        //本月成功人数：首次成功购买指定套餐时间=本月1号0点～当前时间，邀请状态=邀请成功
+        merchantPromotionFeeScanCodeVO.setCurrentMonthPurchaseNum(
+                buildScanCodeCount(type, uid, DateUtils.getDayOfMonthStartTime(1), System.currentTimeMillis(), MerchantJoinRecord.STATUS_SUCCESS));
+        //上月成功人数：首次成功购买指定套餐时间=上月1号0点～本月1号0点，邀请状态=邀请成功
+        merchantPromotionFeeScanCodeVO.setLastMonthPurchaseNum(buildScanCodeCount(type, uid, dayOfMonthStartTime, dayOfMonthEndTime, MerchantJoinRecord.STATUS_SUCCESS));
         
         //累计成功人数：首次成功购买指定套餐时间<=当前时间，邀请状态=邀请成功
         MerchantPromotionScanCodeQueryModel totalPurchaseQueryModel = MerchantPromotionScanCodeQueryModel.builder().tenantId(TenantContextHolder.getTenantId()).type(type)
@@ -251,7 +371,6 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
         Integer totalPurchase = merchantJoinRecordService.countByCondition(totalPurchaseQueryModel);
         merchantPromotionFeeScanCodeVO.setTotalPurchaseNum(totalPurchase);
     }
-    
     
     private void buildPromotionFeeIncomeVO(Integer type, Long uid, MerchantPromotionFeeIncomeVO merchantPromotionFeeIncomeVO, long dayOfMonthStartTime, long dayOfMonthEndTime) {
         // 今日预估收入：“返现日期” = 今日，“结算状态” = 未结算；
@@ -297,7 +416,7 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
         BigDecimal lastMonthReturnSettleIncome = rebateRecordService.sumByStatus(lastMonthReturnSettleIncomeQueryModel);
         merchantPromotionFeeIncomeVO.setLastMonthIncome(lastMonthSettleIncome.subtract(lastMonthReturnSettleIncome));
         
-        //累计收入：“结算日期” <= 今日，“结算状态” = 已结算 - 已退回；
+  /*      //累计收入：“结算日期” <= 今日，“结算状态” = 已结算 - 已退回；
         MerchantPromotionFeeQueryModel allSettleIncomeQueryModel = MerchantPromotionFeeQueryModel.builder().status(MerchantConstant.MERCHANT_REBATE_STATUS_SETTLED).type(type)
                 .uid(uid).tenantId(TenantContextHolder.getTenantId()).settleEndTime(DateUtils.getTodayEndTimeStamp()).build();
         BigDecimal allSettleIncome = rebateRecordService.sumByStatus(allSettleIncomeQueryModel);
@@ -305,6 +424,8 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
         MerchantPromotionFeeQueryModel allReturnIncomeQueryModel = MerchantPromotionFeeQueryModel.builder().status(MerchantConstant.MERCHANT_REBATE_STATUS_RETURNED).type(type)
                 .uid(uid).tenantId(TenantContextHolder.getTenantId()).settleEndTime(DateUtils.getTodayEndTimeStamp()).build();
         BigDecimal allReturnIncome = rebateRecordService.sumByStatus(allReturnIncomeQueryModel);
-        merchantPromotionFeeIncomeVO.setLastMonthIncome(allSettleIncome.subtract(allReturnIncome));
+        merchantPromotionFeeIncomeVO.setLastMonthIncome(allSettleIncome.subtract(allReturnIncome));*/
+        merchantPromotionFeeIncomeVO.setLastMonthIncome(buildPromotionFeeTotalIncomeVO(type, uid, dayOfMonthEndTime));
+        
     }
 }

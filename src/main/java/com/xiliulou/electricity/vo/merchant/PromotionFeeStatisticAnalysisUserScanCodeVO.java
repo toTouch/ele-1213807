@@ -11,8 +11,8 @@ import java.math.BigDecimal;
  * @since: 2024-02-22
  */
 @Data
-public class PromotionFeeStatisticAnalysisIncomeVO {
-    private BigDecimal totalIncome;
+public class PromotionFeeStatisticAnalysisUserScanCodeVO {
+    private Integer scanCodeNum;
     
     private String statisticIncomeTime;
 }

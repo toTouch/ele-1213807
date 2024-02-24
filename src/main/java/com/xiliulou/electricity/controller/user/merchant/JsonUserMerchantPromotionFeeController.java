@@ -89,6 +89,30 @@ public class JsonUserMerchantPromotionFeeController {
         return merchantPromotionFeeService.statisticMerchantIncome(type,uid, beginTime,endTime);
     }
     
+    @GetMapping("/user/merchant/promotionFee/statistic/user")
+    public R promotionFeeStatisticAnalysisUser(@RequestParam("type") Integer type, @RequestParam("uid") Long uid,@RequestParam (value = "beginTime", required = false) Long beginTime, @RequestParam(value = "endTime", required = false) Long endTime) {
+        
+        //用户区分
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELECTRICITY  ERROR! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        
+        return merchantPromotionFeeService.statisticUser(type,uid, beginTime,endTime);
+    }
     
+    @GetMapping("/user/merchant/promotionFee/statistic/channelEmployeeMerchant")
+    public R promotionFeeStatisticAnalysisChannelEmployeeMerchant(@RequestParam("type") Integer type, @RequestParam("uid") Long uid,@RequestParam (value = "beginTime", required = false) Long beginTime, @RequestParam(value = "endTime", required = false) Long endTime) {
+        
+        //用户区分
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELECTRICITY  ERROR! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        
+        return merchantPromotionFeeService.statisticChannelEmployeeMerchant(type,uid, beginTime,endTime);
+    }
     
 }
