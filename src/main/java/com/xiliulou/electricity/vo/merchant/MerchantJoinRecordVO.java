@@ -63,5 +63,5 @@ public class MerchantJoinRecordVO {
     /**
      * 某个商户下的用户的数量
      */
-    private Long merchantUserNum;
+    private Integer merchantUserNum;
 }

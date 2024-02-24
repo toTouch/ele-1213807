@@ -60,4 +60,6 @@ public interface MerchantJoinRecordService {
     List<MerchantJoinRecordVO> listByPage(MerchantJoinRecordPageRequest merchantJoinRecordPageRequest);
     
     Integer countByCondition(MerchantPromotionScanCodeQueryModel queryModel);
+    
+    List<MerchantJoinRecordVO> countByMerchantIdList(MerchantJoinRecordQueryMode joinRecordQueryMode);
 }

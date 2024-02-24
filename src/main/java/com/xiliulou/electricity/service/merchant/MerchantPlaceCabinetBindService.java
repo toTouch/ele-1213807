@@ -37,4 +37,5 @@ public interface MerchantPlaceCabinetBindService {
     Integer removeByPlaceId(Long placeId, long updateTime, Integer delFlag);
     List<MerchantPlaceCabinetBind> listByConditions(MerchantPlaceCabinetConditionRequest request);
     
+    Triple<Boolean, String, Object> checkBindTime(Long placeId, Long time);
 }

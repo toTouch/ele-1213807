@@ -39,7 +39,7 @@ public interface MerchantService {
     
     Merchant queryByUid(Long uid);
     
-    List<MerchantPlaceUserVO> queryPlaceListByUid(Long uid);
+    List<MerchantPlaceUserVO> queryPlaceListByUid(Long uid, Long merchantEmployeeUid);
     
     Integer updateById(Merchant merchant);
     

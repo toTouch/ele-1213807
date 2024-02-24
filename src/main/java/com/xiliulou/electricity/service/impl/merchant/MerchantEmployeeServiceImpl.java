@@ -237,4 +237,10 @@ public class MerchantEmployeeServiceImpl implements MerchantEmployeeService {
     public Integer countMerchantEmployee(MerchantEmployeeRequest merchantEmployeeRequest) {
         return merchantEmployeeMapper.countByCondition(merchantEmployeeRequest);
     }
+    
+    @Slave
+    @Override
+    public List<MerchantEmployee> queryListByPlaceId(List<Long> placeIdList) {
+        return merchantEmployeeMapper.selectListByPlaceId(placeIdList);
+    }
 }

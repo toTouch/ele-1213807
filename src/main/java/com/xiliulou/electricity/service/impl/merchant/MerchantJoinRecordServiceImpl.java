@@ -393,5 +393,11 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
        return merchantJoinRecordMapper.countByCondition(queryModel);
     }
     
+    @Slave
+    @Override
+    public List<MerchantJoinRecordVO> countByMerchantIdList(MerchantJoinRecordQueryMode joinRecordQueryMode) {
+        return merchantJoinRecordMapper.countByMerchantIdList(joinRecordQueryMode);
+    }
+    
     
 }

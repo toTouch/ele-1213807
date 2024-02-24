@@ -317,6 +317,29 @@ public class MerchantPlaceCabinetBindServiceImpl implements MerchantPlaceCabinet
         return merchantPlaceCabinetBindMapper.selectListByConditions(queryModel);
     }
     
+    /**
+     * 检测绑定时间是否存在交叉
+     * @param placeId
+     * @param time
+     * @return
+     */
+    @Override
+    public Triple<Boolean, String, Object> checkBindTime(Long placeId, Long time) {
+        // 判断绑定的时间是否与解绑的历史数据存在重叠
+        List<Long> placeIdList = new ArrayList<>();
+        placeIdList.add(placeId);
+        MerchantPlaceCabinetBindQueryModel queryModel = MerchantPlaceCabinetBindQueryModel.builder().overlapTime(time)
+                .placeIdList(placeIdList).status(MerchantPlaceConstant.UN_BIND).build();
+        List<MerchantPlaceCabinetBind> unBindList = this.queryList(queryModel);
+        if (ObjectUtils.isNotEmpty(unBindList)) {
+            List<Long> ids = unBindList.stream().map(MerchantPlaceCabinetBind::getId).collect(Collectors.toList());
+            log.error("place un bind error, un bind time is overlap, id ={}, ids={}", placeId, ids);
+            return Triple.of(false, "", "您选择的开始时间与已有区间存在冲突，请重新选择");
+        }
+        
+        return Triple.of(true, null, null);
+    }
+    
     
     @Override
     public Integer removeByPlaceId(Long placeId, long updateTime, Integer delFlag) {

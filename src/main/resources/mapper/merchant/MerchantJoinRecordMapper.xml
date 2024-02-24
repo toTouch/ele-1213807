@@ -189,6 +189,20 @@
         </where>
         ) a
     </select>
+    
+    <select id="countByMerchantIdList" resultType="com.xiliulou.electricity.vo.merchant.MerchantJoinRecordVO">
+        SELECT
+            merchant_id,
+            count( 1 ) as 'merchantUserNum'
+        FROM
+            t_merchant_join_record
+        WHERE
+            del_flag = 0
+          and `status` = 1
+          AND merchant_id IN ( 0 )
+        GROUP BY
+            merchant_id
+    </select>
 
 </mapper>
 
