@@ -196,4 +196,12 @@
         delete from t_merchant_employee where id = #{id}
     </delete>
     
+    <select id="selectListByMerchantUid" resultType="com.xiliulou.electricity.entity.merchant.MerchantEmployee">
+        select uid,  place_id from t_merchant_employee where merchant_uid = #{merchantUid} and tenant_id = #{tenantId} and del_flag = 0
+        order by id desc
+        <if test="offset != null and size != null">
+            limit #{offset}, #{size}
+        </if>
+    </select>
+    
 </mapper>

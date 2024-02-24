@@ -334,6 +334,8 @@
         update t_merchant_withdraw_application set del_flag = 1 where id = #{id}
     </delete>
     
-    
+    <select id="sumByStatus" resultType="java.math.BigDecimal">
+        select sum(amount) from t_merchant_withdraw_application where del_flag=0 and tenant_id =#{tenantId} and status =#{status} and uid =#{uid}
+    </select>
     
 </mapper>

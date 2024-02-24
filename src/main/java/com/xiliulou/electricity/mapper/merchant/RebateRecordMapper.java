@@ -3,6 +3,7 @@ package com.xiliulou.electricity.mapper.merchant;
 import com.xiliulou.electricity.entity.merchant.RebateRecord;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.xiliulou.electricity.query.merchant.MerchantPromotionEmployeeDetailSpecificsQueryModel;
 import com.xiliulou.electricity.query.merchant.MerchantPromotionFeeQueryModel;
 import com.xiliulou.electricity.query.merchant.MerchantPromotionRenewalQueryModel;
 import com.xiliulou.electricity.request.merchant.RebateRecordRequest;
@@ -42,4 +43,6 @@ public interface RebateRecordMapper extends BaseMapper<RebateRecord> {
     BigDecimal sumByStatus(MerchantPromotionFeeQueryModel merchantPromotionFeeQueryModel);
     
     Integer countByTime(MerchantPromotionRenewalQueryModel queryModel);
+    
+    List<RebateRecord> selectListPromotionDetail(MerchantPromotionEmployeeDetailSpecificsQueryModel queryModel);
 }

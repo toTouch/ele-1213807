@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.mapper.merchant;
 
 import com.xiliulou.electricity.entity.merchant.Merchant;
+import com.xiliulou.electricity.query.merchant.MerchantPromotionFeeMerchantNumQueryModel;
 import com.xiliulou.electricity.query.merchant.MerchantQueryModel;
 import org.apache.ibatis.annotations.Param;
 
@@ -32,5 +33,7 @@ public interface MerchantMapper {
     
     Integer updateById(Merchant merchant);
     
-    Integer existsByName(@Param("name") String name,@Param("tenantId") Integer tenantId,@Param("id") Long id);
+    Integer existsByName(@Param("name") String name, @Param("tenantId") Integer tenantId, @Param("id") Long id);
+    
+    Integer countMerchantNumByTime(MerchantPromotionFeeMerchantNumQueryModel queryModel);
 }

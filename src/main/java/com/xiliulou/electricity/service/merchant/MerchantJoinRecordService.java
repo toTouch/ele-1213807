@@ -3,6 +3,7 @@ package com.xiliulou.electricity.service.merchant;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.merchant.MerchantJoinRecord;
 import com.xiliulou.electricity.query.merchant.MerchantJoinRecordQueryMode;
+import com.xiliulou.electricity.query.merchant.MerchantPromotionDataDetailQueryModel;
 import com.xiliulou.electricity.query.merchant.MerchantPromotionScanCodeQueryModel;
 import com.xiliulou.electricity.request.merchant.MerchantJoinRecordPageRequest;
 import com.xiliulou.electricity.vo.merchant.MerchantJoinRecordVO;
@@ -62,4 +63,6 @@ public interface MerchantJoinRecordService {
     Integer countByCondition(MerchantPromotionScanCodeQueryModel queryModel);
     
     List<MerchantJoinRecordVO> countByMerchantIdList(MerchantJoinRecordQueryMode joinRecordQueryMode);
+    
+    List<MerchantJoinRecord> selectPromotionDataDetail(MerchantPromotionDataDetailQueryModel queryModel);
 }

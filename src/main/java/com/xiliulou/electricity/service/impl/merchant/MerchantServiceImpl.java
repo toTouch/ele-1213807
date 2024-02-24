@@ -30,6 +30,7 @@ import com.xiliulou.electricity.query.merchant.MerchantJoinRecordQueryMode;
 import com.xiliulou.electricity.query.merchant.MerchantPlaceCabinetBindQueryModel;
 import com.xiliulou.electricity.query.merchant.MerchantPlaceMapQueryModel;
 import com.xiliulou.electricity.query.merchant.MerchantPlaceQueryModel;
+import com.xiliulou.electricity.query.merchant.MerchantPromotionFeeMerchantNumQueryModel;
 import com.xiliulou.electricity.query.merchant.MerchantQueryModel;
 import com.xiliulou.electricity.query.merchant.MerchantUserAmountQueryMode;
 import com.xiliulou.electricity.request.merchant.MerchantPageRequest;
@@ -987,5 +988,11 @@ public class MerchantServiceImpl implements MerchantService {
         MerchantVO merchantVO = new MerchantVO();
         BeanUtils.copyProperties(merchant, merchantVO);
         return merchantVO;
+    }
+    
+    @Slave
+    @Override
+    public Integer countMerchantNumByTime(MerchantPromotionFeeMerchantNumQueryModel queryModel) {
+        return merchantMapper.countMerchantNumByTime(queryModel);
     }
 }

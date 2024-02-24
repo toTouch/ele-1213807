@@ -3,11 +3,14 @@ package com.xiliulou.electricity.utils;
 import cn.hutool.core.date.DateUtil;
 import lombok.extern.slf4j.Slf4j;
 
+import java.text.SimpleDateFormat;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.TemporalAdjusters;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
@@ -26,6 +29,8 @@ public class DateUtils {
     }
     
     static DateTimeFormatter MILLS_FORMAT_DATE = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
+    
+    static SimpleDateFormat simpleDateFormatYearAndMonth =new SimpleDateFormat("yyyy-MM-dd");
     
     /**
      * 解析毫秒的时间字符串
@@ -176,4 +181,33 @@ public class DateUtils {
         return localDate.atStartOfDay().toEpochSecond(ZoneOffset.of("+8")) * 1000;
     }
     
+    public static String getYearAndMonthAndDayByTimeStamps(Long timeStamp) {
+        return simpleDateFormatYearAndMonth.format(timeStamp);
+    }
+    
+    /**
+     * 根据某个时间戳获取当天的结束时间戳
+     * @param timeStamp
+     * @return
+     */
+    public static Long getDayEndTimeStampByDate(Long timeStamp) {
+        LocalDate localDate = Instant.ofEpochMilli(timeStamp).atZone(ZoneOffset.of("+8")).toLocalDate();
+        return LocalDateTime.of(localDate, LocalTime.MAX).toEpochSecond(ZoneOffset.of("+8"))*1000;
+    }
+    
+    /**
+     * 根据某个时间戳获取当天的结束时间戳
+     * @param timeStamp
+     * @return
+     */
+    /**
+     * 根据某个时间戳获取当天的结束时间戳
+     * @param timeStamp
+     * @return
+     */
+    public static Long getMonthEndTimeStampByDate(Long timeStamp) {
+        LocalDate localDate = Instant.ofEpochMilli(timeStamp).atZone(ZoneOffset.of("+8")).toLocalDate();
+        return Date.from(localDate.with(TemporalAdjusters.lastDayOfMonth()).atTime(LocalTime.MAX).atZone(ZoneOffset.of("+8")).toInstant()).getTime() ;
+        // return LocalDateTime.of(localDate, LocalTime.MAX).toEpochSecond(ZoneOffset.of("+8"))*1000;
+    }
 }

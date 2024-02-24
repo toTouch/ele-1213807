@@ -73,7 +73,7 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
     @Transactional(rollbackFor = Exception.class)
     @Override
     public Triple<Boolean, String, Object> saveMerchantWithdrawApplication(MerchantWithdrawApplicationRequest merchantWithdrawApplicationRequest) {
-
+        
         //限频
         Boolean getLockSuccess = redisService.setNx(CacheConstant.CACHE_MERCHANT_WITHDRAW_APPLICATION + merchantWithdrawApplicationRequest.getMerchantUid(), "1", 3L, false);
         if (!getLockSuccess) {
@@ -103,7 +103,6 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
         }
 
         //查询银行卡信息，检查银行卡是否存在，并且检查该银行卡是否支持转账，若为微信转账，则不需要银行卡信息
-
         //计算手续费， 微信申请无手续费，若为其他方式提现，则需要考虑
 
         //插入提现表
@@ -123,7 +122,7 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
         //扣除商户账户余额表中的余额
         merchantUserAmountService.withdrawAmount(merchantWithdrawApplicationRequest.getAmount(), merchantWithdrawApplicationRequest.getMerchantUid(), merchantWithdrawApplicationRequest.getTenantId().longValue());
         
-        return  Triple.of(true, null, result);
+        return Triple.of(true, null, result);
     }
     
     @Transactional(rollbackFor = Exception.class)
@@ -199,7 +198,6 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
     @Transactional(rollbackFor = Exception.class)
     @Override
     public Triple<Boolean, String, Object> batchReviewMerchantWithdrawApplication(BatchReviewWithdrawApplicationRequest batchReviewWithdrawApplicationRequest) {
-    
         Integer tenantId = TenantContextHolder.getTenantId();
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
@@ -239,7 +237,6 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
             return Triple.of(false, "", "网络不佳，请刷新重试操作");
         }
     
-        //MerchantWithdrawApplication updateMerchantWithdrawApplication = new MerchantWithdrawApplication();
         batchReviewWithdrawApplicationRequest.setCheckTime(System.currentTimeMillis());
         batchReviewWithdrawApplicationRequest.setUpdateTime(System.currentTimeMillis());
         batchReviewWithdrawApplicationRequest.setTenantId(tenantId);
@@ -251,7 +248,7 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
             batchReviewWithdrawApplicationRequest.setRemark(batchReviewWithdrawApplicationRequest.getRemark());
             
             //批量修改商户提现记录信息为拒绝状态
-            //merchantWithdrawApplicationMapper.updateOne(updateMerchantWithdrawApplication);
+            Integer result = merchantWithdrawApplicationMapper.updateByIds(batchReviewWithdrawApplicationRequest);
             
             //TODO 将商户余额表中的提现金额重新加回去
             List<MerchantUserAmount> merchantUserAmountList = null; //merchantUserAmountService.queryList();
@@ -269,9 +266,6 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
                 }
                 
             });
-           
-            //批量修改商户提现记录信息为拒绝状态
-            Integer result = merchantWithdrawApplicationMapper.updateByIds(batchReviewWithdrawApplicationRequest);
             
             return Triple.of(true, "", result);
         }
@@ -304,8 +298,6 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
         
         //TODO 发起微信第三方提现申请
         
-        
-        
         return null;
     }
     
@@ -334,5 +326,11 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
     @Override
     public MerchantWithdrawApplication queryMerchantWithdrawApplication(Long id) {
         return merchantWithdrawApplicationMapper.selectById(id);
+    }
+    
+    @Slave
+    @Override
+    public BigDecimal sumByStatus(Integer tenantId, Integer status, Long uid) {
+        return merchantWithdrawApplicationMapper.sumByStatus(tenantId, status, uid);
     }
 }
