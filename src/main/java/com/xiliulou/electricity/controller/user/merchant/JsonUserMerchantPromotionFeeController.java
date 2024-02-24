@@ -1,8 +1,11 @@
 package com.xiliulou.electricity.controller.user.merchant;
 
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.query.merchant.MerchantPromotionDataDetailQueryModel;
+import com.xiliulou.electricity.query.merchant.MerchantPromotionEmployeeDetailQueryModel;
 import com.xiliulou.electricity.service.merchant.MerchantPromotionFeeService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
+import com.xiliulou.electricity.utils.DateUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
@@ -77,7 +80,8 @@ public class JsonUserMerchantPromotionFeeController {
     }
     
     @GetMapping("/user/merchant/promotionFee/statistic/merchantIncome")
-    public R promotionFeeStatisticAnalysisIncome(@RequestParam("type") Integer type, @RequestParam("uid") Long uid,@RequestParam (value = "beginTime", required = false) Long beginTime, @RequestParam(value = "endTime", required = false) Long endTime) {
+    public R promotionFeeStatisticAnalysisIncome(@RequestParam("type") Integer type, @RequestParam("uid") Long uid,
+            @RequestParam(value = "beginTime", required = false) Long beginTime, @RequestParam(value = "endTime", required = false) Long endTime) {
         
         //用户区分
         TokenUser user = SecurityUtils.getUserInfo();
@@ -86,11 +90,12 @@ public class JsonUserMerchantPromotionFeeController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         
-        return merchantPromotionFeeService.statisticMerchantIncome(type,uid, beginTime,endTime);
+        return merchantPromotionFeeService.statisticMerchantIncome(type, uid, beginTime, endTime);
     }
     
     @GetMapping("/user/merchant/promotionFee/statistic/user")
-    public R promotionFeeStatisticAnalysisUser(@RequestParam("type") Integer type, @RequestParam("uid") Long uid,@RequestParam (value = "beginTime", required = false) Long beginTime, @RequestParam(value = "endTime", required = false) Long endTime) {
+    public R promotionFeeStatisticAnalysisUser(@RequestParam("type") Integer type, @RequestParam("uid") Long uid,
+            @RequestParam(value = "beginTime", required = false) Long beginTime, @RequestParam(value = "endTime", required = false) Long endTime) {
         
         //用户区分
         TokenUser user = SecurityUtils.getUserInfo();
@@ -99,11 +104,12 @@ public class JsonUserMerchantPromotionFeeController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         
-        return merchantPromotionFeeService.statisticUser(type,uid, beginTime,endTime);
+        return merchantPromotionFeeService.statisticUser(type, uid, beginTime, endTime);
     }
     
     @GetMapping("/user/merchant/promotionFee/statistic/channelEmployeeMerchant")
-    public R promotionFeeStatisticAnalysisChannelEmployeeMerchant(@RequestParam("type") Integer type, @RequestParam("uid") Long uid,@RequestParam (value = "beginTime", required = false) Long beginTime, @RequestParam(value = "endTime", required = false) Long endTime) {
+    public R promotionFeeStatisticAnalysisChannelEmployeeMerchant(@RequestParam("type") Integer type, @RequestParam("uid") Long uid,
+            @RequestParam(value = "beginTime", required = false) Long beginTime, @RequestParam(value = "endTime", required = false) Long endTime) {
         
         //用户区分
         TokenUser user = SecurityUtils.getUserInfo();
@@ -112,7 +118,82 @@ public class JsonUserMerchantPromotionFeeController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         
-        return merchantPromotionFeeService.statisticChannelEmployeeMerchant(type,uid, beginTime,endTime);
+        return merchantPromotionFeeService.statisticChannelEmployeeMerchant(type, uid, beginTime, endTime);
     }
+    
+    @GetMapping("/user/merchant/promotion/employee/details/page")
+    public R promotionEmployeeDetails(@RequestParam("size") long size, @RequestParam("offset") Long offset, @RequestParam("merchantId") Long merchantId) {
+        if (size < 0 || size > 5) {
+            size = 5L;
+        }
+        
+        if (offset < 0) {
+            offset = 0L;
+        }
+        
+        MerchantPromotionEmployeeDetailQueryModel queryModel = MerchantPromotionEmployeeDetailQueryModel.builder().size(size).offset(offset).merchantUid(merchantId)
+                .tenantId(TenantContextHolder.getTenantId()).build();
+        
+        return merchantPromotionFeeService.selectMerchantEmployeeDetailList(queryModel);
+    }
+    
+    
+    /**
+     *
+     *  推广数据概览展示
+     * @param size
+     * @param offset
+     * @param uid
+     * @param type
+     * @param queryTime
+     * @param status
+     * @return
+     */
+    @GetMapping("/user/merchant/promotion/data/")
+    public R promotionDataPage(@RequestParam("size") long size, @RequestParam("offset") Long offset, @RequestParam(value = "uid",required = false) Long uid, @RequestParam(value = "type",required = false) Integer type,
+            @RequestParam(value = "queryTime",required = false) Long queryTime) {
+        if (size < 0 || size > 10) {
+            size = 10L;
+        }
+        
+        if (offset < 0) {
+            offset = 0L;
+        }
+        
+        MerchantPromotionDataDetailQueryModel queryModel = MerchantPromotionDataDetailQueryModel.builder().size(size).offset(offset).uid(uid).type(type)
+                .tenantId(TenantContextHolder.getTenantId()).startTime(queryTime).endTime(DateUtils.getMonthEndTimeStampByDate(queryTime)).build();
+        return merchantPromotionFeeService.selectPromotionData(queryModel);
+    }
+    
+    
+    /**
+     *
+     *  推广数据列表展示
+     * @param size 页码大小
+     * @param offset 页码
+     * @param uid uid
+     * @param type 类型
+     * @param queryTime 查询时间
+     * @param status 状态
+     * @return 推广数据列表
+     */
+    @GetMapping("/user/merchant/promotion/data/detail/page")
+    public R promotionDataPage(@RequestParam("size") long size, @RequestParam("offset") Long offset, @RequestParam(value = "uid",required = false) Long uid, @RequestParam(value = "type",required = false) Integer type,
+            @RequestParam(value = "queryTime",required = false) Long queryTime,@RequestParam(value = "status",required = false) Integer status) {
+        if (size < 0 || size > 10) {
+            size = 10L;
+        }
+        
+        if (offset < 0) {
+            offset = 0L;
+        }
+        
+        MerchantPromotionDataDetailQueryModel queryModel = MerchantPromotionDataDetailQueryModel.builder().size(size).offset(offset).uid(uid).type(type)
+                .tenantId(TenantContextHolder.getTenantId()).startTime(queryTime).endTime(DateUtils.getMonthEndTimeStampByDate(queryTime)).status(status).build();
+        return merchantPromotionFeeService.selectPromotionDataDetail(queryModel);
+    }
+    
+    
+    
     
 }

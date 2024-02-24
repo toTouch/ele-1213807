@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.mapper.merchant;
 
 import com.xiliulou.electricity.entity.merchant.MerchantEmployee;
+import com.xiliulou.electricity.query.merchant.MerchantPromotionEmployeeDetailQueryModel;
 import com.xiliulou.electricity.request.merchant.MerchantEmployeeRequest;
 import com.xiliulou.electricity.vo.merchant.MerchantEmployeeVO;
 import org.apache.ibatis.annotations.Param;
@@ -26,4 +27,6 @@ public interface MerchantEmployeeMapper {
     Integer removeById(@Param("id") Long id);
     
     List<MerchantEmployee> selectListByPlaceId(@Param("placeIdList") List<Long> placeIdList);
+    
+    List<MerchantEmployee> selectListByMerchantUid(MerchantPromotionEmployeeDetailQueryModel queryModel);
 }
