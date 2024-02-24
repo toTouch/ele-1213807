@@ -5,6 +5,7 @@ import com.xiliulou.electricity.constant.merchant.MerchantConstant;
 import com.xiliulou.electricity.entity.merchant.Merchant;
 import com.xiliulou.electricity.entity.merchant.MerchantJoinRecord;
 import com.xiliulou.electricity.enums.merchant.PromotionFeeQueryTypeEnum;
+import com.xiliulou.electricity.query.merchant.MerchantPromotionFeeMerchantNumQueryModel;
 import com.xiliulou.electricity.query.merchant.MerchantPromotionFeeQueryModel;
 import com.xiliulou.electricity.query.merchant.MerchantPromotionRenewalQueryModel;
 import com.xiliulou.electricity.query.merchant.MerchantPromotionScanCodeQueryModel;
@@ -18,6 +19,7 @@ import com.xiliulou.electricity.vo.merchant.MerchantPromotionFeeIncomeVO;
 import com.xiliulou.electricity.vo.merchant.MerchantPromotionFeeRenewalVO;
 import com.xiliulou.electricity.vo.merchant.MerchantPromotionFeeScanCodeVO;
 import com.xiliulou.electricity.vo.merchant.PromotionFeeStatisticAnalysisIncomeVO;
+import com.xiliulou.electricity.vo.merchant.PromotionFeeStatisticAnalysisMerchantVO;
 import com.xiliulou.electricity.vo.merchant.PromotionFeeStatisticAnalysisPurchaseVO;
 import com.xiliulou.electricity.vo.merchant.PromotionFeeStatisticAnalysisRenewalVO;
 import com.xiliulou.electricity.vo.merchant.PromotionFeeStatisticAnalysisUserScanCodeVO;
@@ -92,10 +94,24 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
         
         // 获取上月最后一天的时间戳
         long dayOfMonthEndTime = lastMonthLastDay.atTime(23, 59, 59).atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
-    
-        buildPromotionFeeIncomeVO(PromotionFeeQueryTypeEnum.MERCHANT.getCode(), uid, merchantPromotionFeeIncomeVO, dayOfMonthStartTime, dayOfMonthEndTime);
+        
+        buildPromotionFeeIncomeVO(type, uid, merchantPromotionFeeIncomeVO, dayOfMonthStartTime, dayOfMonthEndTime);
+        
+        if (Objects.equals(type, PromotionFeeQueryTypeEnum.CHANNEL_EMPLOYEE.getCode())) {
+            // 新增商戶數
+            buildMerchantNumVCountVO(uid, merchantPromotionFeeIncomeVO, dayOfMonthStartTime, dayOfMonthEndTime);
+        }
         
         return R.ok(merchantPromotionFeeIncomeVO);
+    }
+    
+    private void buildMerchantNumVCountVO(Long uid, MerchantPromotionFeeIncomeVO merchantPromotionFeeIncomeVO, long dayOfMonthStartTime, long dayOfMonthEndTime) {
+        //今日新增商户数：渠道与商户绑定时间在今日0点～当前时间内
+        merchantPromotionFeeIncomeVO.setTodayMerchantNum(buildMerchantNumCount(uid, DateUtils.getTodayStartTimeStamp(), System.currentTimeMillis()));
+        //本月新增商户数：渠道与商户绑定时间在本月1号0点～当前时间内
+        merchantPromotionFeeIncomeVO.setCurrentMonthMerchantNum(buildMerchantNumCount(uid, dayOfMonthStartTime, System.currentTimeMillis()));
+        //累计商户数：渠道与商户绑定时间<=当前时间
+        merchantPromotionFeeIncomeVO.setTotalMerchantNum(buildMerchantNumCount(uid, null, System.currentTimeMillis()));
     }
     
     @Override
@@ -203,7 +219,7 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
             
             startTime = startTime + (60 * 60 * 1000 * 24);
         }
-    
+        
         userVO.setPurchaseVOList(purchaseVOList);
         userVO.setScanCodeVOList(scanCodeVOList);
         userVO.setRenewalVOList(renewalVOList);
@@ -212,7 +228,29 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
     
     @Override
     public R statisticChannelEmployeeMerchant(Integer type, Long uid, Long beginTime, Long endTime) {
-        return null;
+        
+        //判斷是否是渠道员
+        if (!Objects.equals(type, PromotionFeeQueryTypeEnum.CHANNEL_EMPLOYEE.getCode())) {
+            return R.fail("300851", "不合法的用户类型");
+        }
+        List<PromotionFeeStatisticAnalysisMerchantVO> incomeVOList = new ArrayList<>();
+        
+        Long startTime = beginTime;
+        while (startTime > endTime) {
+            PromotionFeeStatisticAnalysisMerchantVO merchantVO = new PromotionFeeStatisticAnalysisMerchantVO();
+            merchantVO.setMerchantNum(buildMerchantNumCount(uid, startTime, DateUtils.getEndTimeStampByDate(startTime)));
+            merchantVO.setStatisticIncomeTime(DateUtils.getYearAndMonthAndDayByTimeStamps(startTime));
+            incomeVOList.add(merchantVO);
+            startTime = startTime + (60 * 60 * 1000 * 24);
+        }
+        return R.ok(incomeVOList);
+    }
+    
+    private Integer buildMerchantNumCount(Long uid, Long startTime, Long endTime) {
+        MerchantPromotionFeeMerchantNumQueryModel todayQueryModel = MerchantPromotionFeeMerchantNumQueryModel.builder().uid(uid).tenantId(TenantContextHolder.getTenantId())
+                .startTime(startTime).endTime(endTime).build();
+        //今日新增商户数：渠道与商户绑定时间在今日0点～当前时间内
+        return merchantService.countMerchantNumByTime(todayQueryModel);
     }
     
     private BigDecimal buildPromotionFeeTotalIncomeVO(Integer type, Long uid, long endTime) {

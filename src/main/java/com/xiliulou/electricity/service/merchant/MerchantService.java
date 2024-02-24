@@ -2,6 +2,7 @@ package com.xiliulou.electricity.service.merchant;
 
 import com.xiliulou.electricity.dto.merchant.MerchantDeleteCacheDTO;
 import com.xiliulou.electricity.entity.merchant.Merchant;
+import com.xiliulou.electricity.query.merchant.MerchantPromotionFeeMerchantNumQueryModel;
 import com.xiliulou.electricity.request.merchant.MerchantPageRequest;
 import com.xiliulou.electricity.request.merchant.MerchantSaveRequest;
 import com.xiliulou.electricity.vo.merchant.MerchantPlaceUserVO;
@@ -44,4 +45,6 @@ public interface MerchantService {
     Integer updateById(Merchant merchant);
     
     MerchantVO queryMerchantDetail();
+    
+    Integer countMerchantNumByTime(MerchantPromotionFeeMerchantNumQueryModel todayQueryModel);
 }
