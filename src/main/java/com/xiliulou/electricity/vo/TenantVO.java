@@ -49,5 +49,10 @@ public class TenantVO {
     private Integer freeDepositCapacity;
 
     private Integer esignCapacity;
+    
+    /**
+     * 短信次数
+     */
+    private Long noteNum;
 
 }

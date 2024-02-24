@@ -3,11 +3,14 @@ package com.xiliulou.electricity.utils;
 import cn.hutool.core.date.DateUtil;
 import lombok.extern.slf4j.Slf4j;
 
+import java.text.SimpleDateFormat;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.TemporalAdjusters;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
@@ -21,11 +24,16 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 public class DateUtils {
     
-    public static void main(String[] args) {
-        System.out.println(getTodayEndTimeStamp());
-    }
+    static DateTimeFormatter MILLS_FORMAT_DATE = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
     
-    static DateTimeFormatter MILLS_FORMAT_DATE = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
+    static SimpleDateFormat simpleDateFormatYearAndMonth = new SimpleDateFormat("yyyy-MM-dd");
+    
+    static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+    
+    /**
+     * 年月正则表达式：yyyy-MM
+     */
+    public static final String GREP_YEAR_MONTH = "^\\d{4}-\\d{2}$";
     
     /**
      * 解析毫秒的时间字符串
@@ -35,7 +43,7 @@ public class DateUtils {
      */
     public static long parseMillsDateStrToTimestamp(String date) {
         LocalDateTime datetime = LocalDateTime.parse(date, MILLS_FORMAT_DATE);
-        return datetime.toInstant(ZoneOffset.of("+8")).toEpochMilli();
+        return datetime.toInstant(ZoneOffset.of("+0")).toEpochMilli();
     }
     
     public static long getTodayStartTimeStamp() {
@@ -174,6 +182,64 @@ public class DateUtils {
      */
     public static long getDayStartTimeByLocalDate(LocalDate localDate) {
         return localDate.atStartOfDay().toEpochSecond(ZoneOffset.of("+8")) * 1000;
+    }
+    
+    public static String getYearAndMonthAndDayByTimeStamps(Long timeStamp) {
+        return simpleDateFormatYearAndMonth.format(timeStamp);
+    }
+    
+    /**
+     * 根据某个时间戳获取当天的结束时间戳
+     *
+     * @param timeStamp
+     * @return
+     */
+    public static Long getDayEndTimeStampByDate(Long timeStamp) {
+        LocalDate localDate = Instant.ofEpochMilli(timeStamp).atZone(ZoneOffset.of("+8")).toLocalDate();
+        return LocalDateTime.of(localDate, LocalTime.MAX).toEpochSecond(ZoneOffset.of("+8")) * 1000;
+    }
+    
+    /**
+     * 根据年月获取当月月第一天 年月：2024-01 返回: 2024-01-01
+     */
+    public static String getFirstDayByMonth(String yearMonth) {
+        // 分割年月字符串并转换为整数
+        int year = Integer.parseInt(yearMonth.split("-")[0]);
+        int month = Integer.parseInt(yearMonth.split("-")[1]);
+        
+        // 创建指定年月的第一天日期
+        LocalDate startDate = LocalDate.of(year, month, 1);
+        
+        return startDate.format(DATE_FORMATTER);
+    }
+    
+    /**
+     * 根据年月获取当月月最后一天 年月：2024-01 返回: 2024-01-31
+     */
+    public static String getLastDayByMonth(String yearMonth) {
+        // 分割年月字符串并转换为整数
+        int year = Integer.parseInt(yearMonth.split("-")[0]);
+        int month = Integer.parseInt(yearMonth.split("-")[1]);
+        
+        // 创建指定年月的第一天日期
+        LocalDate startDate = LocalDate.of(year, month, 1);
+        
+        // 获取该月的最后一天
+        LocalDate endDate = startDate.withDayOfMonth(startDate.lengthOfMonth());
+        
+        return endDate.format(DATE_FORMATTER);
+    }
+    
+    /**
+     * 根据某个时间戳获取当天的结束时间戳
+     *
+     * @param timeStamp
+     * @return
+     */
+    public static Long getMonthEndTimeStampByDate(Long timeStamp) {
+        LocalDate localDate = Instant.ofEpochMilli(timeStamp).atZone(ZoneOffset.of("+8")).toLocalDate();
+        return Date.from(localDate.with(TemporalAdjusters.lastDayOfMonth()).atTime(LocalTime.MAX).atZone(ZoneOffset.of("+8")).toInstant()).getTime();
+        // return LocalDateTime.of(localDate, LocalTime.MAX).toEpochSecond(ZoneOffset.of("+8"))*1000;
     }
     
 }

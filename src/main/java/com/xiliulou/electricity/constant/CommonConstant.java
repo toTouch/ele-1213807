@@ -14,6 +14,13 @@ public interface CommonConstant {
     String FRANCHISEE_CODE = "加盟商";
     String STORE_NAME = "STORE_USER";
     String STORE_CODE = "门店";
+    String MERCHANT_NAME="MERCHANT_USER";
+    String MERCHANTL_CODE="商户";
+    String CHANNEL_NAME="CHANNEL_USER";
+    String CHANNEL_CODE="渠道";
+    String MERCHANT_EMPLOYEE_NAME="MERCHANT_EMPLOYEE";
+    String MERCHANT_EMPLOYEE_CODE="渠道员工";
+    
     String MAINTAIN_NAME="MAINTAIN_USER";
     String MAINTAIN_CODE="运维";
 
@@ -21,9 +28,9 @@ public interface CommonConstant {
     String TENANT_ID = "tenantId";
     Integer TENANT_ID_DEFAULT = 0;
     //在线
-    String STATUS_ONLINE="online";
+    String STATUS_ONLINE="ONLINE";
     //离线
-    String STATUS_OFFLINE="offline";
+    String STATUS_OFFLINE="OFFLINE";
 
     String BUCKET_NAME="bucketName";
     String FILE_NAME="fileName";
@@ -51,7 +58,14 @@ public interface CommonConstant {
     Integer DEL_N = 0;
 
     Integer DEL_Y = 1;
-
+    
+    /**
+     * 时间单位 0：分钟，1：小时
+     */
+    Integer TIME_UNIT_MINUTES = 0;
+    Integer TIME_UNIT_HOURS = 1;
+    
+    
     /**
      * 版本
      */
@@ -70,5 +84,9 @@ public interface CommonConstant {
      * 最大导入数据不能超过2000
      */
     Integer EXCEL_MAX_COUNT_TWO_THOUSAND = 2000;
+    
+    String STR_COMMA = ",";
+    
+    Integer MSG_TYPE = 411;
     
 }

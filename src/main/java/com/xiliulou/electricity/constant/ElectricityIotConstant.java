@@ -36,6 +36,7 @@ public class ElectricityIotConstant {
     public static final String NORMAL_ELE_ORDER_OPERATE_HANDLER = "normalEleOrderOperateHandler";
     public static final String NORMAL_OFFLINE_ELE_EXCHANGE_HANDLER = "normalOffLineEleExchangeHandler";
     public static final String NORMAL_OTHER_CONFIG_HANDLER = "normalOtherConfigHandler";
+    @Deprecated
     public static final String NORMAL_POWER_CONSUMPTION_HANDLER = "normalPowerConsumptionHandler";
     public static final String NORMAL_NEW_EXCHANGE_ORDER_HANDLER = "newExchangeOrderHandler";
     public static final String NORMAL_ELE_WARN_MSG_HANDLER = "normalEleWarnMsgHandler";
@@ -69,6 +70,11 @@ public class ElectricityIotConstant {
     public static final String NORMAL_ELE_CHARGE_POWER_HANDLER = "normalEleChargePowerHandler";
 
     public static final String NEW_HARDWARE_WARN_MSG_HANDLER = "hardwareWarnMsgHandler";
+    
+    public static final String HARDWARE_FAILURE_WARN_MSG_HANDLER = "hardwareFailureWarnMsgHandler";
+    
+    
+    
     
     /**
      * 离线换电密码设置
@@ -308,6 +314,8 @@ public class ElectricityIotConstant {
     public static final String ELE_BATTERY_MULTI_PARAMS_READ_RSP = "battery_multi_rsp";
 
     public static final String ELE_BATTERY_SNAPSHOT = "battery_snap_shot";
+    public static final String ELE_BATTERY_SNAPSHOT_RSP = "battery_snap_shot_rsp";
+
 
     /**
      * 电柜模板 app参数设置
@@ -346,6 +354,12 @@ public class ElectricityIotConstant {
      */
     public static final String NEW_HARDWARE_WARN_MSG = "hardware_warn_msg";
     public static final String NEW_HARDWARE_WARN_MSG_ACK = "hardware_warn_msg_ack";
+    
+    /**
+     * 柜机故障告警上报
+     */
+    public static final String HARDWARE_FAILURE_WARN_MSG = "hardware_failure_warn_msg";
+    public static final String HARDWARE_FAILURE_WARN_MSG_ACK = "hardware_failure_warn_msg_ack";
     
     /**
      * 离线换电
@@ -552,6 +566,7 @@ public class ElectricityIotConstant {
         COMMAND_HANDLER_MAPS.put(ELE_BATTERY_MULTI_PARAM_SETTING, NORMAL_BATTERY_MULTI_SETTING_HANDLER);
         COMMAND_HANDLER_MAPS.put(TAKE_BATTERY_MODE, NORMAL_BATTERY_MULTI_SETTING_HANDLER);
         COMMAND_HANDLER_MAPS.put(ELE_BATTERY_SNAPSHOT, NORMAL_BATTERY_SNAPSHOT_HANDLER);
+        COMMAND_HANDLER_MAPS.put(ELE_BATTERY_SNAPSHOT_RSP, NORMAL_BATTERY_SNAPSHOT_HANDLER);
 
         COMMAND_HANDLER_MAPS.put(OTHER_SETTING_PARAM_TEMPLATE, NORMAL_OTHER_SETTING_PARAM_TEMPLATE_HANDLER);
         COMMAND_HANDLER_MAPS.put(READ_OTHER_SETTING_PARAM_TEMPLATE, NORMAL_OTHER_SETTING_PARAM_TEMPLATE_HANDLER);
@@ -575,6 +590,13 @@ public class ElectricityIotConstant {
 
         COMMAND_HANDLER_MAPS.put(NEW_HARDWARE_WARN_MSG, NEW_HARDWARE_WARN_MSG_HANDLER);
         COMMAND_HANDLER_MAPS.put(NEW_HARDWARE_WARN_MSG_ACK, NEW_HARDWARE_WARN_MSG_HANDLER);
+    
+        /**
+         * 柜机故障告警上报
+         */
+    
+        COMMAND_HANDLER_MAPS.put(HARDWARE_FAILURE_WARN_MSG, HARDWARE_FAILURE_WARN_MSG_HANDLER);
+        COMMAND_HANDLER_MAPS.put(HARDWARE_FAILURE_WARN_MSG_ACK, HARDWARE_FAILURE_WARN_MSG_HANDLER);
     
         /**
          * 离线换电密码设置

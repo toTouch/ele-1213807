@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.merchant.MerchantUserAmountMapper">
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        insert into t_merchant_user_amount (uid  , total_income  , balance  , withdraw_amount   , del_flag   , tenant_id   , remark
+                                    , create_time, update_time)
+        values (#{uid}, #{totalIncome}, #{balance}, #{withdrawAmount}, #{delFlag}, #{tenantId},#{remark},#{createTime}, #{updateTime})
+    </insert>
+    
+    <update id="addAmountByUid">
+        update t_merchant_user_amount
+        set balance = balance + #{income}
+        where uid = #{uid}
+          and tenant_id = #{tenantId}
+          and del_flg = 0
+    </update>
+    
+    <update id="reduceAmountByUid">
+        update t_merchant_user_amount
+        set balance = balance - #{income},
+            where uid = #{uid}
+                and tenant_id = #{tenantId}
+                and del_flg = 0
+    </update>
+    
+    <!--提现时，扣除余额，增加提现金额-->
+    <update id="withdrawAmountByUid">
+        update t_merchant_user_amount
+        set balance = balance - #{income},
+            withdraw = withdraw + #{income}
+            where uid = #{uid}
+                and tenant_id = #{tenantId}
+                and del_flg = 0
+    </update>
+    
+    <!--提现失败时，增加余额，减少提现金额-->
+    <update id="rollBackWithdrawAmountByUid">
+        update t_merchant_user_amount
+        set balance = balance + #{income},
+            withdraw = withdraw - #{income}
+        where uid = #{uid}
+          and tenant_id = #{tenantId}
+          and del_flg = 0
+    </update>
+    
+    <sql id="column">
+        uid  , total_income  , balance  , withdraw_amount   , del_flag   , tenant_id   , remark
+                                    , create_time, update_time
+    </sql>
+    <select id="queryList" resultType="com.xiliulou.electricity.entity.merchant.MerchantUserAmount">
+        select <include refid="column"/>
+        from t_merchant_user_amount
+       <where>
+           del_flag = 0
+           and tenant_id = #{tenantId}
+           <if test="uidList != null and uidList.size() > 0">
+               and uid in
+               <foreach collection="uidList" item="uid" close=")" open="(" separator=",">
+                   #{uid}
+               </foreach>
+           </if>
+       </where>
+       
+       
+    </select>
+    
+    <select id="selectByUid" resultType="com.xiliulou.electricity.entity.merchant.MerchantUserAmount">
+        select <include refid="column"/>
+            from t_merchant_user_amount
+            where del_flag = 0 and uid=#{uid}
+    </select>
+</mapper>

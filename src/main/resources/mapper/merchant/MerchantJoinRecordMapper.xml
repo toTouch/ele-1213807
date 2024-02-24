@@ -1,0 +1,237 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.merchant.MerchantJoinRecordMapper">
+    <!-- 基础字段 -->
+    <sql id="basic_field">
+        id, merchant_id, channel_employee_uid, place_id, inviter_uid, inviter_type, join_uid, start_time, expired_time, status, protection_time, protection_status, del_flag, create_time, update_time, tenant_id, remark
+    </sql>
+    
+    <!--新增所有列-->
+    <insert id="insertOne" keyProperty="id" useGeneratedKeys="true">
+        insert into t_merchant_join_record
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            merchant_id, channel_employee_uid, place_id, inviter_uid, inviter_type, join_uid, start_time, expired_time, status, protection_time, protection_status, del_flag, create_time, update_time, tenant_id, remark
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            #{id}, #{merchantId}, #{channelEmployeeUid}, #{placeId}, #{inviterUid}, #{inviterType}, #{joinUid}, #{startTime}, #{expiredTime}, #{status}, #{protectionTime}, #{protectionStatus}, #{delFlag}, #{createTime}, #{updateTime}, #{tenantTd}, #{remark}
+        </trim>
+    </insert>
+    
+    <update id="updateStatus">
+        update t_merchant_join_record
+        <set>
+            <if test="status != null">
+                status = #{status},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+            where merchant_id = #{merchantId} and join_uid = #{joinUid}
+        </set>
+    </update>
+    
+    <update id="updateProtectionExpired">
+        update t_merchant_join_record set protection_status = #{protectionStatus}, update_time=#{updateTime} where protection_time &lt;= #{updateTime}
+    </update>
+    
+    <update id="updateExpired">
+        update t_merchant_join_record set status = #{status}, update_time=#{updateTime} where expired_time &lt;= #{updateTime} and status =1
+    </update>
+    
+    <update id="updateById">
+        update t_merchant_join_record
+        <set>
+            <if test="merchant_id != null">
+                status = #{merchantId},
+            </if>
+            <if test="channelEmployeeUid != null">
+                channel_employee_uid = #{channelEmployeeUid},
+            </if>
+            <if test="placeId != null">
+                place_id = #{placeId},
+            </if>
+            <if test="inviterUid != null">
+                inviter_uid = #{inviterUid},
+            </if>
+            <if test="inviterType != null">
+                inviter_type = #{inviterType},
+            </if>
+            <if test="joinUid != null">
+                join_uid = #{joinUid},
+            </if>
+            <if test="startTime != null">
+                start_time = #{startTime},
+            </if>
+            <if test="expiredTime != null">
+                expired_time = #{expiredTime},
+            </if>
+            <if test="status != null">
+                status = #{status},
+            </if>
+            <if test="protectionTime != null">
+                protection_time = #{protectionTime},
+            </if>
+            <if test="protectionStatus != null">
+                protection_status = #{protectionStatus},
+            </if>
+            <if test="delFlag != null">
+                del_flag = #{delFlag},
+            </if>
+            <if test="updateTime  != null">
+                update_time = #{updateTime},
+            </if>
+            <if test="tenantId != null">
+                tenant_id = #{tenantId},
+            </if>
+            <if test="remark != null and remark != ''">
+            remark = #{remark},
+            </if>
+        </set>
+        <where>
+            id = #{id}
+        </where>
+    </update>
+    
+    <select id="existsInProtectionTimeByJoinUid" resultType="java.lang.Integer">
+        select count(1) from t_merchant_join_record where del_flag = 0 and protection_status = 0 and join_uid = #{joinUid}
+    </select>
+    
+     <select id="selectByMerchantIdAndJoinUid" resultType="com.xiliulou.electricity.entity.merchant.MerchantJoinRecord">
+         select <include refid="basic_field"/>
+         from t_merchant_join_record where del_flag = 0 and merchant_id = #{merchantId} and join_uid = #{joinUid}
+     </select>
+    
+    <select id="selectList" resultType="com.xiliulou.electricity.entity.merchant.MerchantJoinRecord">
+        select <include refid="basic_field"/>
+        from t_merchant_join_record
+        <where>
+            del_flag = 0
+            and tenant_id = #{tenantId}
+            <if test="merchantIdList != null and merchantIdList.size() > 0">
+                and merchant_id in
+                <foreach collection="merchantIdList" separator="," open="(" close=")" item="merchantId">
+                    #{merchantId}
+                </foreach>
+            </if>
+            
+            <if test="status != null">
+                and status = #{status}
+            </if>
+        </where>
+    </select>
+    
+    <select id="selectListByMerchantIdAndStatus" resultType="com.xiliulou.electricity.entity.merchant.MerchantJoinRecord">
+        select <include refid="basic_field"/>
+        from t_merchant_join_record where del_flag = 0 and merchant_id = #{merchantId} and status = #{status}
+    </select>
+    
+    <sql id="pageFilter">
+        <where>
+            del_flag = 0
+            <if test="tenantId != null">
+                and tenant_id = #{tenantId}
+            </if>
+            <if test="merchantId != null">
+                and merchant_id = #{merchantId}
+            </if>
+            <if test="status != null">
+                and status = #{status}
+            </if>
+        </where>
+    </sql>
+    
+    <select id="countTotal" resultType="java.lang.Integer">
+        SELECT
+        count(1)
+        FROM
+        t_merchant_join_record
+        <include refid="pageFilter"/>
+    </select>
+    
+    <select id="selectListByPage" resultType="com.xiliulou.electricity.entity.merchant.MerchantJoinRecord">
+        SELECT
+        <include refid="basic_field"/>
+        FROM
+        t_merchant_join_record
+        <include refid="pageFilter"/>
+        limit #{offset}, #{size}
+    </select>
+
+    <select id="selectByJoinUid" resultType="com.xiliulou.electricity.entity.merchant.MerchantJoinRecord">
+        select <include refid="basic_field"/>
+        from t_merchant_join_record where del_flag = 0 and join_uid = #{joinUid} order by id desc limit 1
+    </select>
+    
+    <select id="countByCondition" resultType="java.lang.Integer">
+        select IFNULL(count(1), 0) from (
+        select distinct(joinUid) from t_merchant_join_record
+        <where>
+            del_flag = 0
+            <if test="startTime != null">
+                and start_time >= #{startTime}
+            </if>
+            <if test="endTime != null">
+                and start_time &lt;= #{endTime}
+            </if>
+            <if test="type != null">
+                and inviter_type = #{type}
+            </if>
+            <if test="inviterUid != null">
+                and inviter_uid = #{inviterUid}
+            </if>
+            <if test="status != null">
+                and status = #{status}
+            </if>
+            <if test="tenantId != null">
+                and tenant_id = #{tenantId}
+            </if>
+    
+        </where>
+        ) a
+    </select>
+    
+    <select id="countByMerchantIdList" resultType="com.xiliulou.electricity.vo.merchant.MerchantJoinRecordVO">
+        SELECT
+            merchant_id,
+            count( 1 ) as 'merchantUserNum'
+        FROM
+            t_merchant_join_record
+        WHERE
+            del_flag = 0
+          and `status` = 1
+          AND merchant_id IN ( 0 )
+        GROUP BY
+            merchant_id
+    </select>
+    
+    <select id="selectListPromotionDataDetail" resultType="com.xiliulou.electricity.entity.merchant.MerchantJoinRecord">
+        select join_uid,start_time,status from t_merchant_join_record
+        <where>
+            del_flag = 0
+            <if test="startTime != null">
+                and start_time &gt;= #{startTime}
+            </if>
+            <if test="endTime != null">
+                and start_time &lt;= #{endTime}
+            </if>
+            <if test="type != null">
+                and inviter_type = #{type}
+            </if>
+            <if test="uid != null">
+                and inviter_uid = #{uid}
+            </if>
+            <if test="status != null">
+                and status = #{status}
+            </if>
+            <if test="tenantId != null">
+                and tenant_id = #{tenantId}
+            </if>
+            limit #{offset}, #{size}
+        </where>
+    </select>
+
+</mapper>
+
+
+
+

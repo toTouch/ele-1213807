@@ -47,7 +47,7 @@ public class StoreGoodsServiceImpl implements StoreGoodsService {
     @Autowired
     StorageConfig storageConfig;
 
-    @Qualifier("aliyunOssService")
+    @Qualifier("hwOssService")
     @Autowired
     StorageService storageService;
     @Autowired

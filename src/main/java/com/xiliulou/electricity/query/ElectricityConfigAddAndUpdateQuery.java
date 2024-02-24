@@ -148,6 +148,12 @@ public class ElectricityConfigAddAndUpdateQuery {
      */
     @Range(min = 0, max = 100, message = "请输入0-100的整数", groups = {CreateGroup.class, UpdateGroup.class})
     private Integer fullChargeRate;
+    
+    /**
+     * 渠道时限
+     */
+    private Integer channelTimeLimit;
+
 }
 
 

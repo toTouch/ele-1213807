@@ -188,6 +188,8 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
             electricityConfig.setAllowFreezeWithAssets(electricityConfigAddAndUpdateQuery.getAllowFreezeWithAssets());
             electricityConfig.setLowChargeRate(BigDecimal.valueOf(lowChargeRate));
             electricityConfig.setFullChargeRate(BigDecimal.valueOf(fullChargeRate));
+            electricityConfig.setChannelTimeLimit(electricityConfigAddAndUpdateQuery.getChannelTimeLimit());
+
             electricityConfigMapper.insert(electricityConfig);
             return R.ok();
         }
@@ -226,6 +228,8 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
         electricityConfig.setAllowFreezeWithAssets(electricityConfigAddAndUpdateQuery.getAllowFreezeWithAssets());
         electricityConfig.setLowChargeRate(BigDecimal.valueOf(lowChargeRate));
         electricityConfig.setFullChargeRate(BigDecimal.valueOf(fullChargeRate));
+        electricityConfig.setChannelTimeLimit(electricityConfigAddAndUpdateQuery.getChannelTimeLimit());
+        
         int updateResult = electricityConfigMapper.update(electricityConfig);
         if (updateResult > 0) {
             redisService.delete(CacheConstant.CACHE_ELE_SET_CONFIG + TenantContextHolder.getTenantId());

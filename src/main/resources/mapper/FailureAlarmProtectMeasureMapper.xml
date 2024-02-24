@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.FailureAlarmProtectMeasureMapper">
+    <insert id="batchInsert" keyProperty="id" useGeneratedKeys="true">
+        insert into t_failure_alarm_protect_measure
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            failure_alarm_id,
+            protect_measure
+        </trim>
+        values
+        <foreach item="item" index="index" collection="list" separator=",">
+            (
+            #{item.failureAlarmId},
+            #{item.protectMeasure}
+            )
+        </foreach>
+    </insert>
+    <delete id="deleteByFailureAlarmId">
+        delete from t_failure_alarm_protect_measure where failure_alarm_id = #{failureAlarmId}
+    </delete>
+    
+    <select id="selectListByFailureAlarmIdList" resultType="com.xiliulou.electricity.entity.FailureAlarmProtectMeasure">
+        select failure_alarm_id, protect_measure
+        from t_failure_alarm_protect_measure
+        <where>
+            failure_alarm_id in
+            <foreach collection="failureAlarmIdList" item="failureAlarmId" separator="," open="(" close=")">
+                #{failureAlarmId}
+            </foreach>
+        </where>
+    </select>
+</mapper>

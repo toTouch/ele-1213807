@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.merchant.MerchantMapper">
+    
+    <select id="existsByAreaId" resultType="java.lang.Integer">
+        select count(1) from t_merchant_place where del_flag = 0 and merchant_area_id = #{areaId}
+    </select>
+    <insert id="insert" keyProperty="id" useGeneratedKeys="true">
+        insert into t_merchant(id, name , franchisee_id , phone , merchant_grade_id , channel_employee_uid , tenant_id , auto_up_grade , status , enterprise_package_auth ,
+                               purchase_authority ,uid ,enterprise_id ,invite_auth , del_flag, create_time, update_time)
+        values (#{id}, #{name}, #{franchiseeId}, #{phone}, #{merchantGradeId}, #{channelEmployeeUid}, #{tenantId},#{autoUpGrade}, #{status}, #{enterprisePackageAuth},
+                #{purchaseAuthority},#{uid},#{enterpriseId},#{inviteAuth}, #{delFlag},
+                #{createTime}, #{updateTime})
+    </insert>
+    <update id="update">
+        update t_merchant
+            <set>
+                <if test="name != null and name != ''">
+                    name = #{name},
+                </if>
+                <if test="franchiseeId != null">
+                    franchisee_id = #{franchiseeId},
+                </if>
+                <if test="phone != null and phone != ''">
+                    phone = #{phone},
+                </if>
+                <if test="inviteAuth != null">
+                    invite_auth = #{inviteAuth},
+                </if>
+                <if test="merchantGradeId != null">
+                    merchant_grade_id = #{merchantGradeId},
+                </if>
+                <if test="channelEmployeeUid != null">
+                    channel_employee_uid = #{channelEmployeeUid},
+                </if>
+                <if test="autoUpGrade != null">
+                    auto_up_grade = #{autoUpGrade},
+                </if>
+                <if test="status != null">
+                    status = #{status},
+                </if>
+                <if test="enterprisePackageAuth != null">
+                    enterprise_package_auth = #{enterprisePackageAuth},
+                </if>
+                <if test="purchaseAuthority != null and purchaseAuthority != ''">
+                    purchase_authority = #{purchaseAuthority},
+                </if>
+                <if test="updateTime != null">
+                    update_time = #{updateTime}
+                </if>
+            </set>
+        <where>
+            id = #{id}
+        </where>
+    </update>
+    
+    <update id="updateById">
+        update t_merchant
+        <set>
+            <if test="inviteAuth != null">
+                invite_auth = #{inviteAuth},
+            </if>
+            <if test="merchantGradeId != null">
+                merchant_grade_id = #{merchantGradeId},
+            </if>
+            <if test="channelEmployeeUid != null">
+                channel_employee_uid = #{channelEmployeeUid},
+            </if>
+            <if test="autoUpGrade != null">
+                auto_up_grade = #{autoUpGrade},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime}
+            </if>
+        </set>
+        
+        <where>
+            id = #{id}
+        </where>
+    </update>
+    
+    <delete id="removeById">
+        update t_merchant set del_flag = #{delFlag}, update_time = #{updateTime} where id = #{id}
+    </delete>
+    <sql id="column">
+        id, name , franchisee_id , phone , merchant_grade_id , channel_employee_uid , tenant_id , auto_up_grade , status , enterprise_package_auth ,
+                               purchase_authority ,uid ,enterprise_id , del_flag, create_time, update_time
+    </sql>
+    <select id="select" resultType="com.xiliulou.electricity.entity.merchant.Merchant">
+        select
+            <include refid="column"/>
+        from t_merchant
+        where id=#{id}
+    </select>
+    
+    <sql id="pageFilter">
+        <where>
+            del_flag = 0
+            <if test="tenantId != null">
+                and tenant_id = #{tenantId}
+            </if>
+            <if test="name != null and name != ''">
+                and name like concat('%', concat(#{name}, '%'))
+            </if>
+            <if test="franchiseeId != null">
+                and franchisee_id = #{franchiseeId}
+            </if>
+            <if test="merchantGradeId != null">
+                and merchant_grade_id = #{merchantGradeId}
+            </if>
+            <if test="channelEmployeeUid != null">
+                and channel_employee_uid  = #{channelEmployeeUid}
+            </if>
+            <if test="idList != null and idList.size() > 0">
+                and id in
+                <foreach collection="idList" item="id" close=")" open="(" separator=",">
+                    #{id}
+                </foreach>
+            </if>
+            
+        </where>
+    </sql>
+    <select id="selectListByPage" resultType="com.xiliulou.electricity.entity.merchant.Merchant">
+        SELECT
+        <include refid="column"/>
+        FROM
+        t_merchant
+        <include refid="pageFilter"/>
+        order by id desc
+        <if test="offset != null and limit != null">
+            limit #{offset}, #{limit}
+        </if>
+    </select>
+    
+    <select id="countTotal" resultType="java.lang.Integer">
+        SELECT
+          count(1)
+        FROM
+        t_merchant
+        <include refid="pageFilter"/>
+    </select>
+    <select id="selectByUid" resultType="com.xiliulou.electricity.entity.merchant.Merchant">
+        SELECT
+        <include refid="column"/>
+        FROM
+        t_merchant
+        <where>
+            del_flag = 0
+            and uid = #{uid}
+        </where>
+    </select>
+    
+    <select id="existsByName" resultType="java.lang.Integer">
+        SELECT
+            count(1)
+        FROM
+            t_merchant
+        WHERE
+            del_flag = 0
+            and tenant_id = #{tenantId}
+            and name = #{name}
+          <if test="id != null">
+              and id != #{id}
+          </if>
+          
+    </select>
+    
+    <select id="countMerchantNumByTime" resultType="java.lang.Integer">
+        select IFNULL(count(1), 0) from t_merchant
+        <where>
+            del_flag = 0
+            <if test="tenantId != null">
+                and tenant_id = #{tenantId}
+            </if>
+            <if test="beginTime != null">
+                and create_time &gt;= #{beginTime}
+            </if>
+            <if test="endTime != null">
+                and create_time &lt; #{endTime}
+            </if>
+        </where>
+    </select>
+</mapper>

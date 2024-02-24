@@ -14,4 +14,8 @@ public interface StringConstant {
     
     String FORWARD_SLASH = "/";
     
+    String CHANGE_ROW = "\n";
+    
+    String PERCENT = "%";
+
 }

@@ -1,0 +1,147 @@
+package com.xiliulou.electricity.entity.merchant;
+
+import com.baomidou.mybatisplus.annotation.TableName;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+/**
+ * @author HeYafeng
+ * @description 扫码参与记录
+ * @date 2024/2/6 17:18:41
+ */
+
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
+@TableName("t_merchant_join_record")
+public class MerchantJoinRecord {
+    
+    /**
+     * 主键ID
+     */
+    private Long id;
+    
+    /**
+     * 商户ID
+     */
+    private Long merchantId;
+    
+    /**
+     * 渠道员uid
+     */
+    private Long channelEmployeeUid;
+    
+    /**
+     * 场地ID
+     */
+    private Long placeId;
+    
+    /**
+     * 邀请人uid
+     */
+    private Long inviterUid;
+    
+    /**
+     * 邀请人类型：1-商户本人 2-场地员工
+     */
+    private Integer inviterType;
+    
+    /**
+     * 参与人uid
+     */
+    private Long joinUid;
+    
+    /**
+     * 参与开始时间
+     */
+    private Long startTime;
+    
+    /**
+     * 参与过期时间
+     */
+    private Long expiredTime;
+    
+    /**
+     * 参与状态 1-已参与，2-邀请成功，3-已过期，4-已失效
+     */
+    private Integer status;
+    
+    /**
+     * 保护期过期时间
+     */
+    private Long protectionTime;
+    
+    /**
+     * 邀请保护期是否已过期(0-未过期，1-已过期)
+     */
+    private Integer protectionStatus;
+    
+    /**
+     * 删除标记(0-未删除，1-已删除)
+     */
+    private Integer delFlag;
+    
+    /**
+     * 创建时间
+     */
+    private Long createTime;
+    
+    /**
+     * 更新时间
+     */
+    private Long updateTime;
+    
+    /**
+     * 租户ID
+     */
+    private Integer tenantId;
+    
+    /**
+     * 备注
+     */
+    private String remark;
+    
+    /**
+     * 已参与
+     */
+    public static Integer STATUS_INIT = 1;
+    
+    /**
+     * 邀请成功
+     */
+    public static Integer STATUS_SUCCESS = 2;
+    
+    /**
+     * 已过期
+     */
+    public static Integer STATUS_EXPIRED = 3;
+    
+    /**
+     * 已失效
+     */
+    public static Integer STATUS_INVALID = 4;
+    
+    /**
+     * 邀请保护期未过期
+     */
+    public static Integer PROTECTION_STATUS_NORMAL = 0;
+    
+    /**
+     * 邀请保护期已过期
+     */
+    public static Integer PROTECTION_STATUS_EXPIRED = 1;
+    
+    /**
+     * 邀请人类型：1-商户本人
+     */
+    public static Integer INVITER_TYPE_MERCHANT_SELF = 1;
+    
+    /**
+     * 邀请人类型：2-场地员工
+     */
+    public static Integer INVITER_TYPE_MERCHANT_PLACE_EMPLOYEE = 2;
+    
+}

@@ -57,4 +57,7 @@ public interface UserBatteryMemberCardPackageService {
 
     Integer checkUserBatteryMemberCardPackageByUid(Long uid);
     
+    Integer deleteChannelMemberCardByUid(Long uid);
+    
+    List<UserBatteryMemberCardPackage> queryChannelListByUid(Long uid);
 }

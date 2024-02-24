@@ -49,6 +49,11 @@ public interface MqProducerConstant {
      */
     String TOPIC_HARDWARE_FAILURE = "WARNING_BREAKDOWN_TOPIC";
     
+    /**
+     * 新硬件故障
+     */
+    String TOPIC_FAILURE_WARNING_BREAKDOWN = "FAILURE_WARNING_BREAKDOWN_TOPIC";
+    
     
     /**
      * 用户优惠券公用 topic
@@ -61,5 +66,19 @@ public interface MqProducerConstant {
     String USER_COUPON_COMMON_TOPIC_TAG = "*";
     
     String ENTERPRISE_USER_COST_RECORD_TOPIC = "ENTERPRISE_USER_COST_RECORD_TOPIC";
+    
+    /**
+     * 商户升级topic
+     */
+    String MERCHANT_UPGRADE_TOPIC = "merchant_upgrade_topic";
+    /**
+     * 商户升级后重新计算返利
+     */
+    String MERCHANT_MODIFY_TOPIC = "merchant_modify_topic";
+    
+    /**
+     * 商户返利
+     */
+    String BATTERY_MEMBER_CARD_MERCHANT_REBATE_TOPIC = "battery_member_card_merchant_rebate_topic";
     
 }

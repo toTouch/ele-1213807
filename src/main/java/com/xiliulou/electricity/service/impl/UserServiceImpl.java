@@ -441,6 +441,27 @@ public class UserServiceImpl implements UserService {
         return userMapper.updatePhoneByUid(tenantId, uid, newPhone, System.currentTimeMillis());
     }
     
+    @Slave
+    @Override
+    public User checkMerchantExist(String name, String phone, Integer userType, Integer tenantId, Long uid) {
+        return userMapper.checkMerchantExist(name, phone, userType, tenantId, uid);
+    }
+    
+    @Override
+    public Integer updateMerchantUser(User updateUser) {
+        Integer update = userMapper.updateMerchantUser(updateUser);
+        if (update > 0) {
+            redisService.delete(CacheConstant.CACHE_USER_UID + updateUser.getUid());
+            redisService.delete(CacheConstant.CACHE_USER_PHONE + updateUser.getTenantId() + ":" + updateUser.getPhone() + ":" + updateUser.getUserType());
+        }
+        return update;
+    }
+    
+    @Override
+    public Integer removeById(Long uid, Long updateTime) {
+        return userMapper.removeById(uid, updateTime);
+    }
+    
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Pair<Boolean, Object> updateAdminUser(AdminUserQuery adminUserQuery) {
@@ -470,6 +491,7 @@ public class UserServiceImpl implements UserService {
                 return Pair.of(false, "用户名已经存在！无法修改！");
             }
         }
+        
 
         String decryptPassword = null;
         if (StrUtil.isNotEmpty(adminUserQuery.getPassword())) {
@@ -509,7 +531,15 @@ public class UserServiceImpl implements UserService {
                 }
             }
         }
-
+        
+        // 判断用户的数据类型是否为商户或者是渠道员
+        if (Objects.equals(user.getUserType(), User.TYPE_USER_MERCHANT) || Objects.equals(user.getUserType(), User.TYPE_USER_CHANNEL)) {
+            // 判断用户的手机号是否有变更 然后修改为禁用
+            if (!Objects.equals(user.getPhone(), adminUserQuery.getPhone())) {
+                updateUser.setLockFlag(User.USER_LOCK);
+            }
+        }
+        
         int i = updateUser(updateUser, user);
         //更新userInfo
         if (i > 0) {

@@ -56,6 +56,8 @@ public class ElectricityCabinetQuery {
     private Long endTime;
 
     private Integer tenantId;
+    
+    private List<Integer> tenantIdList;
 
     private List<Integer> eleIdList;
 
@@ -122,5 +124,15 @@ public class ElectricityCabinetQuery {
      * 柜机状态 0-全部 1-少电（默认） 2-多电 3-锁仓（只要有一个仓被锁就算锁仓） 4-离线
      */
     private Integer status;
+    
+    /**
+     * 区域ID
+     */
+    private Long areaId;
+    
+    /**
+     * 柜机id集合
+     */
+    private List<Integer> idList;
     
 }

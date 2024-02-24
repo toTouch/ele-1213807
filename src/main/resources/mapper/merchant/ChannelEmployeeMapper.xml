@@ -1,0 +1,204 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.merchant.ChannelEmployeeMapper">
+    
+    <resultMap type="com.xiliulou.electricity.entity.merchant.ChannelEmployee" id="ChannelEmployeeMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="uid" column="uid" jdbcType="INTEGER"/>
+        <result property="franchiseeId" column="franchisee_id" jdbcType="INTEGER"/>
+        <result property="areaId" column="area_id" jdbcType="INTEGER"/>
+        <result property="status" column="status" jdbcType="INTEGER"/>
+        <result property="delFlag" column="del_flag" jdbcType="INTEGER"/>
+        <result property="remark" column="remark" jdbcType="VARCHAR"/>
+        <result property="createTime" column="create_time" jdbcType="INTEGER"/>
+        <result property="updateTime" column="update_time" jdbcType="INTEGER"/>
+    </resultMap>
+    
+    <!-- 基础字段 -->
+    <sql id="selectChannelEmployee">
+        select id, uid, franchisee_id, area_id, status, del_flag, remark, create_time, update_time from t_channel_employee
+    </sql>
+    
+    <!--查根据id查询单条记录-->
+    <select id="selectById" resultMap="ChannelEmployeeMap">
+        <include refid="selectChannelEmployee"/>
+
+        where id = #{id} and del_flag=0
+    </select>
+    
+    <!--根据uid查询单条记录-->
+    <select id="selectByUid" resultMap="ChannelEmployeeMap">
+        <include refid="selectChannelEmployee"/>
+        
+        where uid = #{uid} and del_flag=0
+    </select>
+    
+    <!--查询渠道员工-->
+    <select id="selectListByCondition" resultMap="ChannelEmployeeMap">
+        <include refid="selectChannelEmployee"/>
+        <where>
+            del_flag = 0
+            <if test="id != null">
+                and id = #{id}
+            </if>
+            
+            <if test="uid != null">
+                and uid = #{uid}
+            </if>
+            
+            <if test="franchiseeId != null">
+                and franchisee_id = #{franchiseeId}
+            </if>
+    
+            <if test="idList != null and idList.size() > 0">
+                and id in
+                <foreach collection="idList" separator="," open="(" close=")" item="id">
+                    #{id}
+                </foreach>
+            </if>
+    
+        </where>
+        order by id desc
+        <if test="offset != null and limit != null">
+            limit #{offset}, #{limit}
+        </if>
+        
+    </select>
+    
+    <!--查询渠道员工数量-->
+    <select id="countByCondition" resultType="int">
+        select count(1) from t_channel_employee
+        <where>
+            del_flag = 0
+            <if test="id != null">
+                and id = #{id}
+            </if>
+            
+            <if test="uid != null">
+                and uid = #{uid}
+            </if>
+            
+            <if test="franchiseeId != null">
+                and franchisee_id = #{franchiseeId}
+            </if>
+        </where>
+    </select>
+    
+    <!--新增渠道员工-->
+    <insert id="insertOne" keyProperty="id" useGeneratedKeys="true">
+        insert into t_channel_employee
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            uid,
+            franchisee_id,
+            area_id,
+            status,
+            del_flag,
+            remark,
+            create_time,
+            update_time
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            #{uid},
+            #{franchiseeId},
+            #{areaId},
+            #{status},
+            #{delFlag},
+            #{remark},
+            #{createTime},
+            #{updateTime}
+        </trim>
+    </insert>
+    
+    <!--修改渠道员工-->
+    <update id="updateOne">
+        update t_channel_employee
+        <set>
+            <if test="uid != null">
+                uid = #{uid},
+            </if>
+            <if test="franchiseeId != null">
+                franchisee_id = #{franchiseeId},
+            </if>
+            <if test="areaId != null">
+                area_id = #{areaId},
+            </if>
+            <if test="status != null">
+                status = #{status},
+            </if>
+            <if test="delFlag != null">
+                del_flag = #{delFlag},
+            </if>
+            <if test="remark != null and remark != ''">
+                remark = #{remark},
+            </if>
+            <if test="createTime != null">
+                create_time = #{createTime},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+    
+    <select id="selectChannelEmployees" resultType="com.xiliulou.electricity.vo.merchant.ChannelEmployeeVO">
+        select tce.id,
+            tce.uid,
+            tu.name,
+            tu.phone,
+            tce.franchisee_id,
+            tce.area_id,
+            tce.status,
+            tce.del_flag,
+            tce.remark,
+            tce.create_time,
+            tce.update_time
+        from t_channel_employee tce
+        left join t_user tu on tu.id = tce.uid
+        <where>
+            tce.del_flag = 0
+            <if test="id != null">
+                and tce.id = #{id}
+            </if>
+            
+            <if test="uid != null">
+                and tce.uid = #{uid}
+            </if>
+            
+            <if test="franchiseeId != null">
+                and tce.franchisee_id = #{franchiseeId}
+            </if>
+        
+            <if test="areaId != null">
+                and tce.area_id = #{areaId}
+            </if>
+        
+            <if test="name != null and name != ''">
+                and tu.name like '%${name}%'
+            </if>
+        
+        </where>
+        order by tce.id desc
+        <if test="offset != null and limit != null">
+            limit #{offset}, #{limit}
+        </if>
+    
+    </select>
+    
+    <select id="existsByAreaId" resultType="java.lang.Integer">
+        select count(1) from t_channel_employee where area_id = #{id} and del_flag = 0
+    </select>
+    
+    <!--通过主键逻辑删除渠道员工-->
+    <delete id="removeById">
+        update t_channel_employee set del_flag = 1 where id = #{id}
+    </delete>
+    
+    <!--通过主键物理删除渠道员工-->
+    <delete id="deleteById">
+        delete from t_channel_employee where id = #{id}
+    </delete>
+    
+    
+    
+</mapper>

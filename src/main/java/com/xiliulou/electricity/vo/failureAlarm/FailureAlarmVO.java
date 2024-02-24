@@ -1,0 +1,96 @@
+package com.xiliulou.electricity.vo.failureAlarm;
+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.util.List;
+
+/**
+ * 故障预警设置
+ * @author maxiaodong
+ * @since 2023-12-15 14:06:24
+ */
+
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
+public class FailureAlarmVO {
+    
+    private Long id;
+    
+    /**
+     * 分类(1-故障， 2-告警)
+     */
+    private Integer type;
+    
+    /**
+     *等级(1- 一级， 2-二级，3- 三级，4 -四级)
+     */
+    private Integer grade;
+    
+    /**
+     *设备分类：1-电池  2-换电柜
+     */
+    private Integer deviceType;
+    
+    /**
+     * 信号量ID
+     */
+    private String signalId;
+    
+    /**
+     * 信号量标准名
+     */
+    private String signalName;
+    
+    
+    /**
+     * 信号说明
+     */
+    private String signalDesc;
+    
+    /**
+     * 事件描述
+     */
+    private String eventDesc;
+    
+    /**
+     * 运营商可见(0-不可见， 1-可见)
+     */
+    private Integer tenantVisible;
+    
+    /**
+     * 运作状态(0-启用， 1-禁用)
+     */
+    private Integer status;
+    
+    /**
+     * 删除标记(0-未删除，1-已删除)
+     */
+    private Integer delFlag;
+    
+    /**
+     * 创建时间
+     */
+    private Long createTime;
+    
+    /**
+     * 修改时间
+     */
+    private Long updateTime;
+    
+    /**
+     * 保护措施名称
+     */
+    private String protectMeasure;
+    
+    /**
+     * 保护措施集合
+     */
+    private List<Integer> protectMeasureList;
+    
+}
+
