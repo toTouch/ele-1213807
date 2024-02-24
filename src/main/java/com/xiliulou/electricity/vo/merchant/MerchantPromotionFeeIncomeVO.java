@@ -41,4 +41,19 @@ public class MerchantPromotionFeeIncomeVO {
      * 累计收入
      */
     private BigDecimal totalIncome;
+    
+    /**
+     * 今日新增商戶數
+     */
+    private Integer todayMerchantNum;
+    
+    /**
+     * 本月新增商户数
+     */
+    private Integer currentMonthMerchantNum;
+    
+    /**
+     * 累计商户数
+     */
+    private Integer totalMerchantNum;
 }
