@@ -9,6 +9,7 @@ import com.xiliulou.electricity.entity.merchant.Merchant;
 import com.xiliulou.electricity.entity.merchant.MerchantPlace;
 import com.xiliulou.electricity.entity.merchant.RebateRecord;
 import com.xiliulou.electricity.mapper.merchant.RebateRecordMapper;
+import com.xiliulou.electricity.query.merchant.MerchantPromotionEmployeeDetailSpecificsQueryModel;
 import com.xiliulou.electricity.query.merchant.MerchantPromotionFeeQueryModel;
 import com.xiliulou.electricity.query.merchant.MerchantPromotionRenewalQueryModel;
 import com.xiliulou.electricity.request.merchant.RebateRecordRequest;
@@ -21,8 +22,10 @@ import com.xiliulou.electricity.service.merchant.MerchantService;
 import com.xiliulou.electricity.service.merchant.MerchantUserAmountService;
 import com.xiliulou.electricity.service.merchant.RebateRecordService;
 import com.xiliulou.electricity.utils.DateUtils;
+import com.xiliulou.electricity.vo.merchant.MerchantPromotionEmployeeDetailSpecificsVO;
 import com.xiliulou.electricity.vo.merchant.RebateRecordVO;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
@@ -203,14 +206,34 @@ public class RebateRecordServiceImpl implements RebateRecordService {
         }
     }
     
+    @Slave
     @Override
     public BigDecimal sumByStatus(MerchantPromotionFeeQueryModel merchantPromotionFeeQueryModel) {
         return this.rebateRecordMapper.sumByStatus(merchantPromotionFeeQueryModel);
     }
     
+    @Slave
     @Override
     public Integer countByTime(MerchantPromotionRenewalQueryModel merchantPromotionRenewalQueryModel) {
         return this.rebateRecordMapper.countByTime(merchantPromotionRenewalQueryModel);
+    }
+    
+    @Slave
+    @Override
+    public List<MerchantPromotionEmployeeDetailSpecificsVO> selectListPromotionDetail(MerchantPromotionEmployeeDetailSpecificsQueryModel queryModel) {
+        List<RebateRecord> recordList = this.rebateRecordMapper.selectListPromotionDetail(queryModel);
+        if (CollectionUtils.isEmpty(recordList)) {
+            return Collections.emptyList();
+        }
+    
+        return recordList.parallelStream().map(item -> {
+             MerchantPromotionEmployeeDetailSpecificsVO specificsVO = new MerchantPromotionEmployeeDetailSpecificsVO();
+             BeanUtils.copyProperties(item,specificsVO);
+             BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(item.getMemberCardId());
+             specificsVO.setBatteryMemberCardName(Objects.nonNull(batteryMemberCard) ? batteryMemberCard.getName() : "");
+             
+            return specificsVO;
+        }).collect(Collectors.toList());
     }
     
 }

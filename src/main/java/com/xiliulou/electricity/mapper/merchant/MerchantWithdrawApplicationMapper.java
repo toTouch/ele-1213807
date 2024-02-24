@@ -5,6 +5,7 @@ import com.xiliulou.electricity.request.merchant.MerchantWithdrawApplicationRequ
 import com.xiliulou.electricity.vo.merchant.MerchantWithdrawApplicationVO;
 import feign.Param;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -27,5 +28,7 @@ public interface MerchantWithdrawApplicationMapper {
     Integer removeById(@Param("id") Long id);
     
     MerchantWithdrawApplication selectById(@Param("id") Long id);
+    
+    BigDecimal sumByStatus(@Param("tenantId") Integer tenantId,@Param("status") Integer status,@Param("uid") Long uid);
     
 }
