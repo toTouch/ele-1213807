@@ -4131,6 +4131,12 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
         if (Objects.isNull(userBatteryMemberCard)) {
+            //判断套餐是否为免押套餐
+            if (Objects.equals(userBatteryDeposit.getDepositType(), UserBatteryDeposit.DEPOSIT_TYPE_FREE) && !Objects.equals(batteryMemberCard.getFreeDeposite(), BatteryMemberCard.YES)) {
+                log.warn("ELE DEPOSIT WARN! batteryMemberCard is illegal,uid={},mid={}", userInfo.getUid(), query.getMembercardId());
+                return Triple.of(false, "100483", "电池套餐不合法");
+            }
+            
             //免押后给用户绑定套餐
             return freeDepositBindUserMembercerd(userInfo, batteryMemberCard);
         }
