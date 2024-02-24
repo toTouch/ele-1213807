@@ -13,6 +13,7 @@ import com.xiliulou.electricity.entity.merchant.MerchantEmployee;
 import com.xiliulou.electricity.entity.merchant.MerchantPlace;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.merchant.MerchantEmployeeMapper;
+import com.xiliulou.electricity.query.merchant.MerchantPromotionEmployeeDetailQueryModel;
 import com.xiliulou.electricity.request.merchant.MerchantEmployeeRequest;
 import com.xiliulou.electricity.service.UserRoleService;
 import com.xiliulou.electricity.service.UserService;
@@ -243,4 +244,11 @@ public class MerchantEmployeeServiceImpl implements MerchantEmployeeService {
     public List<MerchantEmployee> queryListByPlaceId(List<Long> placeIdList) {
         return merchantEmployeeMapper.selectListByPlaceId(placeIdList);
     }
+    
+    @Slave
+    @Override
+    public List<MerchantEmployee> selectByMerchantUid(MerchantPromotionEmployeeDetailQueryModel queryModel) {
+        return merchantEmployeeMapper.selectListByMerchantUid(queryModel);
+    }
+    
 }

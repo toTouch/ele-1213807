@@ -16,7 +16,7 @@ import java.util.Objects;
 public enum PromotionFeeQueryTypeEnum {
     
     MERCHANT(1, "商户"),
-   // MERCHANT_EMPLOYEE(2, "场地员工"),
+    MERCHANT_EMPLOYEE(2, "场地员工"),
     CHANNEL_EMPLOYEE(3, "渠道员"),
     ;
     
