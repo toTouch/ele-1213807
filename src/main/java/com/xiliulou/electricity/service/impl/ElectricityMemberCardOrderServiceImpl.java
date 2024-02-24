@@ -4122,6 +4122,12 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             return Triple.of(false, "100484", "用户押金与电池套餐押金不一致");
         }
         
+        //判断套餐是否为非免押套餐
+        if (!Objects.equals(userBatteryDeposit.getDepositType(), UserBatteryDeposit.DEPOSIT_TYPE_FREE) && Objects.equals(batteryMemberCard.getFreeDeposite(), BatteryMemberCard.YES)) {
+            log.warn("ELE DEPOSIT WARN! batteryMemberCard is illegal,uid={},mid={}", userInfo.getUid(), query.getMembercardId());
+            return Triple.of(false, "100483", "电池套餐免押类型不合法");
+        }
+        
         //是否有正在进行中的退押
         Integer refundCount = eleRefundOrderService.queryCountByOrderId(userBatteryDeposit.getOrderId(), EleRefundOrder.BATTERY_DEPOSIT_REFUND_ORDER);
         if (refundCount > 0) {
