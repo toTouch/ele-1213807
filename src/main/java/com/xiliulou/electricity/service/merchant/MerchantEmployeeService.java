@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.service.merchant;
 
 import com.xiliulou.electricity.entity.merchant.MerchantEmployee;
+import com.xiliulou.electricity.query.merchant.MerchantPromotionEmployeeDetailQueryModel;
 import com.xiliulou.electricity.request.merchant.MerchantEmployeeRequest;
 import com.xiliulou.electricity.vo.merchant.MerchantEmployeeVO;
 
@@ -28,4 +29,6 @@ public interface MerchantEmployeeService {
     Integer countMerchantEmployee(MerchantEmployeeRequest merchantEmployeeRequest);
     
     List<MerchantEmployee> queryListByPlaceId(List<Long> placeIdList);
+    
+    List<MerchantEmployee> selectByMerchantUid(MerchantPromotionEmployeeDetailQueryModel queryModel);
 }

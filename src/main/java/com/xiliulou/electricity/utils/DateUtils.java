@@ -10,6 +10,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.TemporalAdjusters;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
@@ -189,8 +190,24 @@ public class DateUtils {
      * @param timeStamp
      * @return
      */
-    public static Long getEndTimeStampByDate(Long timeStamp) {
+    public static Long getDayEndTimeStampByDate(Long timeStamp) {
         LocalDate localDate = Instant.ofEpochMilli(timeStamp).atZone(ZoneOffset.of("+8")).toLocalDate();
         return LocalDateTime.of(localDate, LocalTime.MAX).toEpochSecond(ZoneOffset.of("+8"))*1000;
+    }
+    
+    /**
+     * 根据某个时间戳获取当天的结束时间戳
+     * @param timeStamp
+     * @return
+     */
+    /**
+     * 根据某个时间戳获取当天的结束时间戳
+     * @param timeStamp
+     * @return
+     */
+    public static Long getMonthEndTimeStampByDate(Long timeStamp) {
+        LocalDate localDate = Instant.ofEpochMilli(timeStamp).atZone(ZoneOffset.of("+8")).toLocalDate();
+        return Date.from(localDate.with(TemporalAdjusters.lastDayOfMonth()).atTime(LocalTime.MAX).atZone(ZoneOffset.of("+8")).toInstant()).getTime() ;
+        // return LocalDateTime.of(localDate, LocalTime.MAX).toEpochSecond(ZoneOffset.of("+8"))*1000;
     }
 }
