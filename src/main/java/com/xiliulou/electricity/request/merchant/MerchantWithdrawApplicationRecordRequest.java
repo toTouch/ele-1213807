@@ -5,24 +5,25 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.math.BigDecimal;
-import java.util.List;
-
 /**
  * @author BaoYu
  * @description:
- * @date 2024/2/20 14:26
+ * @date 2024/2/24 14:24
  */
 
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
-public class MerchantWithdrawApplicationRequest {
-
-    private Long id;
+public class MerchantWithdrawApplicationRecordRequest {
     
     private Long merchantUid;
+    
+    private String batchNo;
+    
+    private String orderNo;
+    
+    private String transactionNo;
     
     private Integer status;
     
@@ -32,20 +33,5 @@ public class MerchantWithdrawApplicationRequest {
     
     private Long endTime;
     
-    /**
-     * 提现金额， 单位元
-     */
-    private BigDecimal amount;
-    
-    /**
-     * 租户ID
-     */
-    private Integer tenantId;
-    
-    private List<Long> franchiseeIds;
-    
-    private Long size;
-    
-    private Long offset;
     
 }

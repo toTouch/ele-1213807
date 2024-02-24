@@ -579,6 +579,10 @@ public interface CacheConstant {
     
     String CACHE_CHANNEL_EMPLOYEE_SAVE_LOCK = "cache_channel_employee_save_lock:";
     
+    String  CACHE_MERCHANT_WITHDRAW_APPLICATION = "cache_merchant_withdraw_application:";
+    
+    String CACHE_MERCHANT_WITHDRAW_APPLICATION_REVIEW = "cache_merchant_withdraw_application_review:";
+    
     String CACHE_FAILURE_ALARM_LOCK = "cache_failure_alarm_lock:";
     
     String CACHE_TENANT_NOTE_RECHARGE_LOCK = "cache_tenant_note_recharge_lock:";

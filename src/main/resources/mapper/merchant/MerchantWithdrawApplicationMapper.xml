@@ -89,6 +89,14 @@
             <if test="status != null">
                 status = #{status},
             </if>
+            <if test="operator != null">
+                operator = #{operator},
+            </if>
+    
+            <if test="receiptTime != null">
+                receipt_time = #{receiptTime},
+            </if>
+            
             <if test="delFlag != null">
                 del_flag = #{delFlag},
             </if>
@@ -100,6 +108,42 @@
             </if>
         </set>
         where id = #{id}
+    </update>
+    
+    <update id="updateByIds">
+        update t_merchant_withdraw_application
+        <set>
+            <if test="status != null">
+                status = #{status},
+            </if>
+            <if test="operator != null">
+                operator = #{operator},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+            <if test="checkTime != null">
+                check_time = #{checkTime},
+            </if>
+            <if test="remark != null and remark != ''">
+                remark = #{remark},
+            </if>
+           
+        </set>
+        
+        <where>
+            <if test="tenantId != null">
+                tenant_id = #{tenantId}
+            </if>
+            
+            <if test="ids != null and !ids.isEmpty()">
+                and id in
+                <foreach collection="ids" item="id" close=")" open="(" separator=",">
+                    #{id}
+                </foreach>
+            </if>
+        
+        </where>
     </update>
     
     <select id="queryList" resultType="com.xiliulou.electricity.vo.merchant.MerchantWithdrawApplicationVO">
@@ -171,6 +215,13 @@
             <if test="endTime != null ">
                 and tmwa.create_time <![CDATA[ <=  ]]> #{endTime}
             </if>
+    
+            <if test="franchiseeIds != null">
+                and bmro.franchisee_id in
+                <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
+                    #{id}
+                </foreach>
+            </if>
         </where>
     </select>
     
@@ -190,6 +241,7 @@
         tmwa.update_time
         from t_merchant_withdraw_application tmwa
         left join t_user tu on tu.uid = tmwa.uid
+        left join t_merchant tm om on tm.uid = tmwa.merchant_uid
         <where>
             tmwa.del_flag = 0
             and tmwa.tenant_id = #{tenantId}
@@ -211,6 +263,13 @@
             <if test="endTime != null ">
                 and tmwa.create_time <![CDATA[ <=  ]]> #{endTime}
             </if>
+    
+            <if test="franchiseeIds != null">
+                and bmro.franchisee_id in
+                <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
+                    #{id}
+                </foreach>
+            </if>
         
         </where>
         order by tmwa.create_time desc
@@ -218,6 +277,33 @@
             limit #{offset}, #{limit}
         </if>
     
+    </select>
+    
+    <select id="selectListByIds" resultType="com.xiliulou.electricity.entity.merchant.MerchantWithdrawApplication">
+        select tmwa.id,
+               tmwa.uid,
+               tmwa.order_no,
+               tmwa.amount,
+               tmwa.remark,
+               tmwa.status,
+               tmwa.receipt_time,
+               tmwa.tenant_id,
+               tmwa.del_flag,
+               tmwa.create_time,
+               tmwa.update_time
+        from t_merchant_withdraw_application tmwa
+        <where>
+            <if test="tenantId != null ">
+                and tmwa.tenant_id = #{tenantId}
+            </if>
+            <if test="ids != null and !ids.isEmpty()">
+                and tmwa.id in
+                <foreach collection="ids" item="id" close=")" open="(" separator=",">
+                    #{id}
+                </foreach>
+            </if>
+        </where>
+
     </select>
     
     <select id="selectById" resultMap="MerchantWithdrawApplicationMap">

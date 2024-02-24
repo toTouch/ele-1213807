@@ -1,7 +1,9 @@
 package com.xiliulou.electricity.service.merchant;
 
 import com.xiliulou.electricity.entity.merchant.MerchantWithdrawApplication;
+import com.xiliulou.electricity.request.merchant.BatchReviewWithdrawApplicationRequest;
 import com.xiliulou.electricity.request.merchant.MerchantWithdrawApplicationRequest;
+import com.xiliulou.electricity.request.merchant.ReviewWithdrawApplicationRequest;
 import com.xiliulou.electricity.vo.merchant.MerchantWithdrawApplicationVO;
 import org.apache.commons.lang3.tuple.Triple;
 
@@ -13,10 +15,27 @@ import java.util.List;
  * @date 2024/2/21 17:46
  */
 public interface MerchantWithdrawApplicationService {
-
+    
+    /**
+     * 申请提现
+     * @param merchantWithdrawApplicationRequest
+     * @return
+     */
     Triple<Boolean, String, Object> saveMerchantWithdrawApplication(MerchantWithdrawApplicationRequest merchantWithdrawApplicationRequest);
-
-    Triple<Boolean, String, Object> updateMerchantWithdrawApplication(MerchantWithdrawApplicationRequest merchantWithdrawApplicationRequest);
+    
+    /**
+     * 单条提现记录审批
+     * @param reviewWithdrawApplicationRequest
+     * @return
+     */
+    Triple<Boolean, String, Object> reviewMerchantWithdrawApplication(ReviewWithdrawApplicationRequest reviewWithdrawApplicationRequest);
+    
+    /**
+     * 批量提现记录审批
+     * @param batchReviewWithdrawApplicationRequest
+     * @return
+     */
+    Triple<Boolean, String, Object> batchReviewMerchantWithdrawApplication(BatchReviewWithdrawApplicationRequest batchReviewWithdrawApplicationRequest);
     
     Integer removeMerchantWithdrawApplication(Long id);
     
