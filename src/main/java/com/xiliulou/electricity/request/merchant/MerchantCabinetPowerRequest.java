@@ -5,6 +5,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 /**
  * @author HeYafeng
  * @description 小程序-电费请求参数
@@ -22,4 +24,6 @@ public class MerchantCabinetPowerRequest {
     private Long placeId;
     
     private Long cabinetId;
+    
+    List<String> monthList;
 }
