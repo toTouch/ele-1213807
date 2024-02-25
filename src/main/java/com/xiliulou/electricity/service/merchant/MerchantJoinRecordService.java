@@ -3,10 +3,12 @@ package com.xiliulou.electricity.service.merchant;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.merchant.MerchantJoinRecord;
 import com.xiliulou.electricity.query.merchant.MerchantJoinRecordQueryMode;
+import com.xiliulou.electricity.query.merchant.MerchantJoinUserQueryMode;
 import com.xiliulou.electricity.query.merchant.MerchantPromotionDataDetailQueryModel;
 import com.xiliulou.electricity.query.merchant.MerchantPromotionScanCodeQueryModel;
 import com.xiliulou.electricity.request.merchant.MerchantJoinRecordPageRequest;
 import com.xiliulou.electricity.vo.merchant.MerchantJoinRecordVO;
+import com.xiliulou.electricity.vo.merchant.MerchantJoinUserVO;
 
 import java.util.List;
 
@@ -65,4 +67,12 @@ public interface MerchantJoinRecordService {
     List<MerchantJoinRecordVO> countByMerchantIdList(MerchantJoinRecordQueryMode joinRecordQueryMode);
     
     List<MerchantJoinRecord> selectPromotionDataDetail(MerchantPromotionDataDetailQueryModel queryModel);
+
+    /**
+     * 商户端，用户管理，会员套餐详情信息查询
+     * @param merchantJoinUserQueryMode
+     * @return
+     */
+    List<MerchantJoinUserVO> selectJoinUserList(MerchantJoinUserQueryMode merchantJoinUserQueryMode);
+
 }
