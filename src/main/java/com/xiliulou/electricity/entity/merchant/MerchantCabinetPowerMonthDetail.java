@@ -1,7 +1,5 @@
 package com.xiliulou.electricity.entity.merchant;
 
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -23,7 +21,6 @@ public class MerchantCabinetPowerMonthDetail {
     /**
      * 主键ID
      */
-    @TableId(value = "id", type = IdType.AUTO)
     private Long id;
     
     /**
@@ -50,11 +47,6 @@ public class MerchantCabinetPowerMonthDetail {
      * 出账年月 yyyy-MM
      */
     private String date;
-    
-    /**
-     * 记录单号
-     */
-    private String recordNo;
     
     /**
      * 开始度数

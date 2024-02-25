@@ -2,6 +2,7 @@ package com.xiliulou.electricity.service.impl.merchant;
 
 import com.alibaba.excel.EasyExcel;
 import com.xiliulou.db.dynamic.annotation.Slave;
+import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.merchant.Merchant;
 import com.xiliulou.electricity.entity.merchant.MerchantPromotionDayRecord;
@@ -64,6 +65,12 @@ public class MerchantPromotionMonthRecordServiceImpl implements MerchantPromotio
     @Slave
     @Override
     public List<MerchantPromotionMonthRecordVO> listByPage(MerchantPromotionRequest request) {
+        String monthDate = request.getMonthDate();
+        //年月格式校验，判断date是否yyyy-MM格式
+        if (StringUtils.isBlank(monthDate) || !monthDate.matches(DateUtils.GREP_YEAR_MONTH)) {
+            return Collections.emptyList();
+        }
+        
         MerchantPromotionMonthRecordQueryModel queryModel = new MerchantPromotionMonthRecordQueryModel();
         BeanUtils.copyProperties(request, queryModel);
         queryModel.setTenantId(TenantContextHolder.getTenantId());
@@ -84,6 +91,12 @@ public class MerchantPromotionMonthRecordServiceImpl implements MerchantPromotio
     @Slave
     @Override
     public Integer countTotal(MerchantPromotionRequest request) {
+        String monthDate = request.getMonthDate();
+        //年月格式校验，判断date是否yyyy-MM格式
+        if (StringUtils.isBlank(monthDate) || !monthDate.matches(DateUtils.GREP_YEAR_MONTH)) {
+            return NumberConstant.ZERO;
+        }
+        
         MerchantPromotionMonthRecordQueryModel queryModel = new MerchantPromotionMonthRecordQueryModel();
         BeanUtils.copyProperties(request, queryModel);
         queryModel.setTenantId(TenantContextHolder.getTenantId());
@@ -94,10 +107,6 @@ public class MerchantPromotionMonthRecordServiceImpl implements MerchantPromotio
     @Slave
     @Override
     public void exportExcel(MerchantPromotionRequest request, HttpServletResponse response) {
-        MerchantPromotionDayRecordQueryModel queryModel = new MerchantPromotionDayRecordQueryModel();
-        BeanUtils.copyProperties(request, queryModel);
-        queryModel.setTenantId(TenantContextHolder.getTenantId());
-        
         // 根据年月获取当月第一天和最后一天的日期
         String monthDate = request.getMonthDate();
         //年月格式校验，判断date是否yyyy-MM格式
@@ -105,6 +114,8 @@ public class MerchantPromotionMonthRecordServiceImpl implements MerchantPromotio
             return;
         }
         
+        MerchantPromotionDayRecordQueryModel queryModel = new MerchantPromotionDayRecordQueryModel();
+        queryModel.setTenantId(TenantContextHolder.getTenantId());
         queryModel.setStartDate(DateUtils.getFirstDayByMonth(monthDate));
         queryModel.setEndDate(DateUtils.getLastDayByMonth(monthDate));
         
