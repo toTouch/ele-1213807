@@ -32,7 +32,7 @@ public class JsonUserMerchantPromotionFeeController {
     
     /**
      * 可提现金额
-     * @return
+     * @return 可提现金额
      */
     @GetMapping("/user/merchant/promotionFee/availableWithdrawAmount")
     public R queryMerchantAvailableWithdrawAmount() {
@@ -230,7 +230,7 @@ public class JsonUserMerchantPromotionFeeController {
      * @param queryTime
      * @return
      */
-    @GetMapping("/user/merchant/promotion/data/")
+    @GetMapping("/user/merchant/promotion/data")
     public R promotionDataPage(@RequestParam("size") long size, @RequestParam("offset") Long offset, @RequestParam(value = "uid",required = false) Long uid, @RequestParam(value = "type",required = false) Integer type,
             @RequestParam(value = "queryTime",required = false) Long queryTime) {
         if (size < 0 || size > 10) {
