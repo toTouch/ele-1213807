@@ -8,6 +8,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.TemporalAdjusters;
@@ -29,6 +30,10 @@ public class DateUtils {
     static SimpleDateFormat simpleDateFormatYearAndMonth = new SimpleDateFormat("yyyy-MM-dd");
     
     static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+    
+    static final DateTimeFormatter MONTH_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM");
+    
+    static final ZoneId CHINA_ZONE_ID = ZoneId.of("Asia/Shanghai");
     
     /**
      * 年月正则表达式：yyyy-MM
@@ -240,6 +245,14 @@ public class DateUtils {
         LocalDate localDate = Instant.ofEpochMilli(timeStamp).atZone(ZoneOffset.of("+8")).toLocalDate();
         return Date.from(localDate.with(TemporalAdjusters.lastDayOfMonth()).atTime(LocalTime.MAX).atZone(ZoneOffset.of("+8")).toInstant()).getTime();
         // return LocalDateTime.of(localDate, LocalTime.MAX).toEpochSecond(ZoneOffset.of("+8"))*1000;
+    }
+    
+    /**
+     * 获取某个月：yyyy-MM
+     */
+    public static String getMonthDate(Long month) {
+        LocalDate yesterdayInChina = LocalDate.now(CHINA_ZONE_ID).minusMonths(month);
+        return yesterdayInChina.format(MONTH_FORMATTER);
     }
     
 }
