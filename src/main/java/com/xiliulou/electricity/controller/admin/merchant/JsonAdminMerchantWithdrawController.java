@@ -2,7 +2,9 @@ package com.xiliulou.electricity.controller.admin.merchant;
 
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.User;
+import com.xiliulou.electricity.request.merchant.BatchReviewWithdrawApplicationRequest;
 import com.xiliulou.electricity.request.merchant.MerchantWithdrawApplicationRequest;
+import com.xiliulou.electricity.request.merchant.ReviewWithdrawApplicationRequest;
 import com.xiliulou.electricity.service.UserDataScopeService;
 import com.xiliulou.electricity.service.merchant.MerchantWithdrawApplicationService;
 import com.xiliulou.electricity.utils.SecurityUtils;
@@ -76,7 +78,7 @@ public class JsonAdminMerchantWithdrawController {
                 .franchiseeIds(franchiseeIds)
                 .size(size)
                 .offset(offset)
-                .merchantUid(uid)
+                .uid(uid)
                 .status(status)
                 .beginTime(beginTime)
                 .endTime(endTime)
@@ -116,7 +118,7 @@ public class JsonAdminMerchantWithdrawController {
         MerchantWithdrawApplicationRequest merchantWithdrawApplicationRequest = MerchantWithdrawApplicationRequest.builder()
                 .tenantId(user.getTenantId())
                 .franchiseeIds(franchiseeIds)
-                .merchantUid(uid)
+                .uid(uid)
                 .status(status)
                 .beginTime(beginTime)
                 .endTime(endTime)
@@ -125,8 +127,33 @@ public class JsonAdminMerchantWithdrawController {
         return R.ok(merchantWithdrawApplicationService.countMerchantWithdrawApplication(merchantWithdrawApplicationRequest));
     }
     
+    @GetMapping(value = "/admin/merchant/withdraw/review")
+    public R reviewMerchantWithdrawApplication(@RequestParam(value = "id") Long id,
+            @RequestParam(value = "remark", required = false) String remark,
+            @RequestParam(value = "status") Integer status) {
+        
+        ReviewWithdrawApplicationRequest reviewWithdrawApplicationRequest = ReviewWithdrawApplicationRequest.builder()
+                .remark(remark)
+                .status(status)
+                .id(id)
+                .build();
+        
+        return R.ok(merchantWithdrawApplicationService.reviewMerchantWithdrawApplication(reviewWithdrawApplicationRequest));
+    }
     
-
+    @GetMapping(value = "/admin/merchant/withdraw/batchReview")
+    public R batchReviewMerchantWithdrawApplication(@RequestParam(value = "ids") List<Long> ids,
+            @RequestParam(value = "remark", required = false) String remark,
+            @RequestParam(value = "status") Integer status) {
+        
+        BatchReviewWithdrawApplicationRequest batchReviewWithdrawApplicationRequest = BatchReviewWithdrawApplicationRequest.builder()
+                .remark(remark)
+                .status(status)
+                .ids(ids)
+                .build();
+        
+        return R.ok(merchantWithdrawApplicationService.batchReviewMerchantWithdrawApplication(batchReviewWithdrawApplicationRequest));
+    }
 
 
 }

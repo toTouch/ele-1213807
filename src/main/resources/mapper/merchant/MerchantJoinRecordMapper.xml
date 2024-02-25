@@ -230,6 +230,43 @@
         </where>
     </select>
 
+    <select id="selectJoinUserList" resultType="com.xiliulou.electricity.vo.merchant.MerchantJoinUserVO">
+            select tmjr.id,
+                tmjr.merchant_id,
+                tmjr.join_uid,
+                tui.name,
+                tui.phone,
+                tubmc.member_card_id as packageId,
+                tubmc.member_card_expire_time as expireTime,
+                tmjr.inviter_uid,
+                tmjr.inviter_type,
+                tmjr.status,
+                tmjr.tenant_id,
+                tmjr.protection_status,
+                tmjr.protection_time
+            from t_merchant_join_record tmjr
+            left join t_user_info tui on tui.uid = tmjr.join_uid
+            left join t_user_battery_member_card tubmc on tmjr.join_uid = tubmc.uid
+            <where>
+                tmjr.del_flag = 0
+                and tmjr.status = 2
+                <if test="merchantId != null">
+                    and tmjr.merchant_id = #{merchantId}
+                </if>
+
+                <if test="tenantId != null">
+                    and tmjr.tenant_id = #{tenantId}
+                </if>
+
+                <if test="expireTime != null">
+                    and tubmc.member_card_expire_time &lt;= #{expireTime}
+                </if>
+
+            </where>
+            order by tubmc.member_card_expire_time desc
+            limit #{offset}, #{size}
+    </select>
+
 </mapper>
 
 

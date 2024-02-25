@@ -4,7 +4,9 @@ import cn.hutool.core.util.StrUtil;
 import com.google.api.client.util.Maps;
 import com.xiliulou.core.thread.XllThreadPoolExecutorService;
 import com.xiliulou.core.thread.XllThreadPoolExecutors;
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.ElectricityCabinetDataAnalyseConstant;
+import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.EleCabinetCoreData;
 import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
@@ -13,6 +15,7 @@ import com.xiliulou.electricity.entity.ElectricityCabinetModel;
 import com.xiliulou.electricity.entity.ElectricityCabinetOrder;
 import com.xiliulou.electricity.entity.ElectricityCabinetPower;
 import com.xiliulou.electricity.entity.ElectricityCabinetServer;
+import com.xiliulou.electricity.entity.ElectricityConfig;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.Store;
 import com.xiliulou.electricity.entity.merchant.MerchantArea;
@@ -28,6 +31,7 @@ import com.xiliulou.electricity.service.ElectricityCabinetOrderService;
 import com.xiliulou.electricity.service.ElectricityCabinetPowerService;
 import com.xiliulou.electricity.service.ElectricityCabinetServerService;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
+import com.xiliulou.electricity.service.ElectricityConfigService;
 import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.StoreService;
 import com.xiliulou.electricity.service.merchant.MerchantAreaService;
@@ -49,6 +53,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -98,6 +103,8 @@ public class EleCabinetDataAnalyseServiceImpl implements EleCabinetDataAnalyseSe
     private EleWarnMsgService eleWarnMsgService;
     
     @Resource
+    private ElectricityConfigService electricityConfigService;
+    
     private MerchantAreaService merchantAreaService;
     
     
@@ -119,6 +126,50 @@ public class EleCabinetDataAnalyseServiceImpl implements EleCabinetDataAnalyseSe
         }
         
         return buildEleCabinetDataAnalyseVOs(electricityCabinetList, cabinetQuery);
+    }
+    
+    @Slave
+    @Override
+    public List<EleCabinetDataAnalyseVO> selectLowPowerPage(ElectricityCabinetQuery cabinetQuery) {
+        ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(cabinetQuery.getTenantId());
+        BigDecimal lowChargeRate = Optional.ofNullable(electricityConfig).map(ElectricityConfig::getLowChargeRate).orElse(NumberConstant.ZERO_BD);
+        
+        cabinetQuery.setLowChargeRate(lowChargeRate.doubleValue());
+        
+        return this.selectPowerPage(cabinetQuery);
+    }
+    
+    @Slave
+    @Override
+    public Integer selectLowPowerPageCount(ElectricityCabinetQuery cabinetQuery) {
+        ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(cabinetQuery.getTenantId());
+        BigDecimal lowChargeRate = Optional.ofNullable(electricityConfig).map(ElectricityConfig::getLowChargeRate).orElse(NumberConstant.ZERO_BD);
+        
+        cabinetQuery.setLowChargeRate(lowChargeRate.doubleValue());
+        
+        return this.selectPowerPageCount(cabinetQuery);
+    }
+    
+    @Slave
+    @Override
+    public List<EleCabinetDataAnalyseVO> selectFullPowerPage(ElectricityCabinetQuery cabinetQuery) {
+        ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(cabinetQuery.getTenantId());
+        BigDecimal fullChargeRate = Optional.ofNullable(electricityConfig).map(ElectricityConfig::getFullChargeRate).orElse(NumberConstant.ZERO_BD);
+        
+        cabinetQuery.setFullChargeRate(fullChargeRate.doubleValue());
+        
+        return this.selectPowerPage(cabinetQuery);
+    }
+    
+    @Slave
+    @Override
+    public Integer selectFullPowerPageCount(ElectricityCabinetQuery cabinetQuery) {
+        ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(cabinetQuery.getTenantId());
+        BigDecimal fullChargeRate = Optional.ofNullable(electricityConfig).map(ElectricityConfig::getFullChargeRate).orElse(NumberConstant.ZERO_BD);
+        
+        cabinetQuery.setFullChargeRate(fullChargeRate.doubleValue());
+        
+        return this.selectPowerPageCount(cabinetQuery);
     }
     
     @Override

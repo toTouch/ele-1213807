@@ -15,6 +15,7 @@ import com.xiliulou.electricity.entity.merchant.MerchantAttr;
 import com.xiliulou.electricity.entity.merchant.MerchantJoinRecord;
 import com.xiliulou.electricity.mapper.merchant.MerchantJoinRecordMapper;
 import com.xiliulou.electricity.query.merchant.MerchantJoinRecordQueryMode;
+import com.xiliulou.electricity.query.merchant.MerchantJoinUserQueryMode;
 import com.xiliulou.electricity.query.merchant.MerchantPromotionDataDetailQueryModel;
 import com.xiliulou.electricity.query.merchant.MerchantPromotionScanCodeQueryModel;
 import com.xiliulou.electricity.request.merchant.MerchantJoinRecordPageRequest;
@@ -30,6 +31,7 @@ import com.xiliulou.electricity.utils.AESUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.merchant.MerchantEmployeeVO;
 import com.xiliulou.electricity.vo.merchant.MerchantJoinRecordVO;
+import com.xiliulou.electricity.vo.merchant.MerchantJoinUserVO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.ObjectUtils;
@@ -401,6 +403,32 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
     public List<MerchantJoinRecord> selectPromotionDataDetail(MerchantPromotionDataDetailQueryModel queryModel) {
         return merchantJoinRecordMapper.selectListPromotionDataDetail(queryModel);
     }
-    
-    
+
+    @Override
+    public List<MerchantJoinUserVO> selectJoinUserList(MerchantJoinUserQueryMode merchantJoinUserQueryMode) {
+        //获取商户uid, 并检查当前商户是否存在且可用
+        Merchant merchant = merchantService.queryByUid(merchantJoinUserQueryMode.getMerchantUid());
+        if(Objects.isNull(merchant)){
+            return Collections.emptyList();
+        }
+
+        List<MerchantJoinUserVO> merchantJoinUserVOS = null;
+        //计算当前日期前三天的时间毫秒数
+        Long expiredTime = System.currentTimeMillis() - MerchantConstant.MERCHANT_JOIN_USER_PACKAGE_EXPIRE_DAY * 24 * 60 * 60 * 1000L;
+        if(MerchantConstant.MERCHANT_JOIN_USER_TYPE_NORMAL.equals(merchantJoinUserQueryMode.getType())){
+            merchantJoinUserQueryMode.setExpireTime(expiredTime);
+        } else if (MerchantConstant.MERCHANT_JOIN_USER_TYPE_OVERDUE_SOON.equals(merchantJoinUserQueryMode.getType())) {
+
+        } else if (MerchantConstant.MERCHANT_JOIN_USER_TYPE_EXPIRED.equals(merchantJoinUserQueryMode.getType())) {
+
+        }
+
+        //获取当前商户下的用户列表信息
+        merchantJoinUserVOS = merchantJoinRecordMapper.selectJoinUserList(merchantJoinUserQueryMode);
+
+
+        return null;
+    }
+
+
 }

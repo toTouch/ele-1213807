@@ -2,13 +2,18 @@ package com.xiliulou.electricity.controller.user.merchant;
 
 import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.query.merchant.MerchantJoinUserQueryMode;
 import com.xiliulou.electricity.service.merchant.MerchantJoinRecordService;
+import com.xiliulou.electricity.tenant.TenantContextHolder;
+import com.xiliulou.electricity.utils.SecurityUtils;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
+import java.util.Objects;
 
 /**
  * @author HeYafeng
@@ -33,4 +38,42 @@ public class JsonUserMerchantJoinRecordController extends BaseController {
     public R joinScanCode(@RequestParam String code) {
         return merchantJoinRecordService.joinScanCode(code);
     }
+
+    @GetMapping("/user/merchant/joinUserList")
+    public R queryJoinUserList(@RequestParam(value = "size", required = false) Long size,
+                               @RequestParam(value = "offset", required = false) Long offset,
+                               @RequestParam(value = "uid", required = false) Long uid,
+                               @RequestParam(value = "name", required = false) String name,
+                               @RequestParam(value = "type", required = true) Integer type) {
+
+        if (size == null || size <= 0) {
+            size = 10L;
+        }
+
+        if (offset == null || offset <= 0) {
+            offset = 0L;
+        }
+
+        Integer tenantId = TenantContextHolder.getTenantId();
+
+        Long merchantUid = SecurityUtils.getUid();
+        if (Objects.isNull(merchantUid)) {
+            log.error("query join user list error for merchant, not found merchant");
+            return R.fail("", "没有查询到相关商户");
+        }
+
+        MerchantJoinUserQueryMode merchantJoinUserQueryMode = MerchantJoinUserQueryMode.builder()
+                .size(size)
+                .offset(offset)
+                .name(name)
+                .uid(uid)
+                .type(type)
+                .merchantUid(merchantUid)
+                .tenantId(tenantId)
+                .build();
+
+        return R.ok(merchantJoinRecordService.selectJoinUserList(merchantJoinUserQueryMode));
+
+    }
+
 }

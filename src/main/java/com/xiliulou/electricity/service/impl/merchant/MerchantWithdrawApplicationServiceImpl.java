@@ -75,19 +75,19 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
     public Triple<Boolean, String, Object> saveMerchantWithdrawApplication(MerchantWithdrawApplicationRequest merchantWithdrawApplicationRequest) {
         
         //限频
-        Boolean getLockSuccess = redisService.setNx(CacheConstant.CACHE_MERCHANT_WITHDRAW_APPLICATION + merchantWithdrawApplicationRequest.getMerchantUid(), "1", 3L, false);
+        Boolean getLockSuccess = redisService.setNx(CacheConstant.CACHE_MERCHANT_WITHDRAW_APPLICATION + merchantWithdrawApplicationRequest.getUid(), "1", 3L, false);
         if (!getLockSuccess) {
             return Triple.of(false, null, "操作频繁,请稍后再试");
         }
 
         //检查商户是否存在
-        Merchant queryMerchant = merchantService.queryByUid(merchantWithdrawApplicationRequest.getMerchantUid());
+        Merchant queryMerchant = merchantService.queryByUid(merchantWithdrawApplicationRequest.getUid());
         if(Objects.isNull(queryMerchant)){
             return Triple.of(false, "", "商户不存在");
         }
     
         //查询商户余额表，是否存在商户账户
-        MerchantUserAmount merchantUserAmount = merchantUserAmountService.queryByUid(merchantWithdrawApplicationRequest.getMerchantUid());
+        MerchantUserAmount merchantUserAmount = merchantUserAmountService.queryByUid(merchantWithdrawApplicationRequest.getUid());
         if(Objects.isNull(merchantUserAmount)){
             return Triple.of(false, "", "商户余额账户不存在");
         }
@@ -108,9 +108,9 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
         //插入提现表
         MerchantWithdrawApplication merchantWithdrawApplication = new MerchantWithdrawApplication();
         merchantWithdrawApplication.setAmount(merchantWithdrawApplicationRequest.getAmount());
-        merchantWithdrawApplication.setUid(merchantWithdrawApplicationRequest.getMerchantUid());
+        merchantWithdrawApplication.setUid(merchantWithdrawApplicationRequest.getUid());
         merchantWithdrawApplication.setTenantId(merchantWithdrawApplicationRequest.getTenantId());
-        merchantWithdrawApplication.setOrderNo(OrderIdUtil.generateBusinessOrderId(BusinessType.MERCHANT_WITHDRAW, merchantWithdrawApplicationRequest.getMerchantUid()));
+        merchantWithdrawApplication.setOrderNo(OrderIdUtil.generateBusinessOrderId(BusinessType.MERCHANT_WITHDRAW, merchantWithdrawApplicationRequest.getUid()));
         merchantWithdrawApplication.setWithdrawType(MerchantWithdrawConstant.WITHDRAW_TYPE_WECHAT);
         merchantWithdrawApplication.setStatus(MerchantWithdrawConstant.REVIEW_IN_PROGRESS);
         merchantWithdrawApplication.setDelFlag(CommonConstant.DEL_N);
@@ -120,7 +120,7 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
         Integer result = merchantWithdrawApplicationMapper.insertOne(merchantWithdrawApplication);
 
         //扣除商户账户余额表中的余额
-        merchantUserAmountService.withdrawAmount(merchantWithdrawApplicationRequest.getAmount(), merchantWithdrawApplicationRequest.getMerchantUid(), merchantWithdrawApplicationRequest.getTenantId().longValue());
+        merchantUserAmountService.withdrawAmount(merchantWithdrawApplicationRequest.getAmount(), merchantWithdrawApplicationRequest.getUid(), merchantWithdrawApplicationRequest.getTenantId().longValue());
         
         return Triple.of(true, null, result);
     }
