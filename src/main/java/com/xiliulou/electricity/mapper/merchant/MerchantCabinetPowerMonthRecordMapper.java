@@ -1,5 +1,10 @@
 package com.xiliulou.electricity.mapper.merchant;
 
+import com.xiliulou.electricity.query.merchant.MerchantPowerQueryModel;
+import com.xiliulou.electricity.vo.merchant.MerchantCabinetPowerMonthRecordVO;
+
+import java.util.List;
+
 /**
  * @author HeYafeng
  * @description 电费月度统计
@@ -7,4 +12,7 @@ package com.xiliulou.electricity.mapper.merchant;
  */
 public interface MerchantCabinetPowerMonthRecordMapper {
     
+    List<MerchantCabinetPowerMonthRecordVO> selectListByPage(MerchantPowerQueryModel queryModel);
+    
+    Integer countTotal(MerchantPowerQueryModel queryModel);
 }
