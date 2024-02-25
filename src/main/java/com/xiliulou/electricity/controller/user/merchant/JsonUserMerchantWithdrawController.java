@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.controller.user.merchant;
 
+import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.request.merchant.MerchantWithdrawApplicationRequest;
 import com.xiliulou.electricity.service.merchant.MerchantWithdrawApplicationService;
@@ -24,7 +25,7 @@ import java.util.Objects;
 
 @Slf4j
 @RestController
-public class JsonUserMerchantWithdrawController {
+public class JsonUserMerchantWithdrawController extends BaseController {
     
     @Resource
     MerchantWithdrawApplicationService merchantWithdrawApplicationService;
@@ -32,7 +33,7 @@ public class JsonUserMerchantWithdrawController {
     @PostMapping("/user/merchant/withdraw/application")
     public R withdrawApplication(@Validated @RequestBody MerchantWithdrawApplicationRequest merchantWithdrawApplicationRequest) {
         
-        return R.ok(merchantWithdrawApplicationService.saveMerchantWithdrawApplication(merchantWithdrawApplicationRequest));
+        return returnTripleResult(merchantWithdrawApplicationService.saveMerchantWithdrawApplication(merchantWithdrawApplicationRequest));
     }
     
     @GetMapping("/user/merchant/withdrawList")
