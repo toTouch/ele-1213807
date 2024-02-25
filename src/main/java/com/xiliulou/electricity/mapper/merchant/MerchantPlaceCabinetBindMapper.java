@@ -41,4 +41,8 @@ public interface MerchantPlaceCabinetBindMapper {
     Integer countCabinetBindCount(MerchantPlaceCabinetBindQueryModel queryModel);
     
     Integer removeByPlaceId(@Param("placeId") Long placeId,@Param("updateTime") long updateTime,@Param("delFlag") Integer delFlag);
+    
+    List<MerchantPlaceCabinetBind> selectListByPlaceId(@Param("placeIdList") List<Long> placeIdList,@Param("placeMonthNotSettlement") Integer placeMonthNotSettlement);
+    
+    Integer checkIsBindByPlaceId(@Param("placeId") Long placeId,@Param("cabinetId") Long cabinetId);
 }

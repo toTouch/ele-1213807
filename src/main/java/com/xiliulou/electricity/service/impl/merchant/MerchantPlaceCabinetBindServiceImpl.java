@@ -339,6 +339,18 @@ public class MerchantPlaceCabinetBindServiceImpl implements MerchantPlaceCabinet
         return Triple.of(true, null, null);
     }
     
+    @Slave
+    @Override
+    public List<MerchantPlaceCabinetBind> queryListByPlaceId(List<Long> placeIdList, Integer placeMonthNotSettlement) {
+        return merchantPlaceCabinetBindMapper.selectListByPlaceId(placeIdList, placeMonthNotSettlement);
+    }
+    
+    @Slave
+    @Override
+    public Integer checkIsBindByPlaceId(Long placeId, Long cabinetId) {
+        return merchantPlaceCabinetBindMapper.checkIsBindByPlaceId(placeId, cabinetId);
+    }
+    
     
     @Override
     public Integer removeByPlaceId(Long placeId, long updateTime, Integer delFlag) {

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.merchant.MerchantPlaceFeeDailyRecordMapper">
+    <select id="selectList" resultType="java.math.BigDecimal">
+        select
+            sum(day_place_fee)
+        from t_merchant_place_fee_daily_record
+        where del_flag = 0
+        and eid = #{cabinetId}
+        and statement_date <![CDATA[ >=  ]]>  #{startTime}
+        and statement_date <![CDATA[ <=  ]]>  #{endTime}
+   group by eid
+    </select>
+
+</mapper>

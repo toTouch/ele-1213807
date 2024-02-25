@@ -22,4 +22,7 @@ public interface MerchantPlaceBindService {
      */
     List<MerchantPlaceBind> listByMerchantId(Long merchantId, Integer status);
     
+    Integer existPlaceFeeByMerchantId(Long merchantId);
+    
+    List<MerchantPlaceBind> queryNoSettleByMerchantId(Long merchantId);
 }
