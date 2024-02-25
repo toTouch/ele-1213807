@@ -24,6 +24,8 @@ public class MerchantJoinUserQueryMode {
 
     private Long merchantUid;
 
+    private Long merchantId;
+
     private Integer tenantId;
 
     /**
@@ -32,6 +34,8 @@ public class MerchantJoinUserQueryMode {
     private Integer type;
 
     private Long expireTime;
+
+    private Long currentTime;
 
     private Long size;
 

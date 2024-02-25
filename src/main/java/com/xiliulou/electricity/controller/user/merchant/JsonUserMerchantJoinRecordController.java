@@ -39,6 +39,15 @@ public class JsonUserMerchantJoinRecordController extends BaseController {
         return merchantJoinRecordService.joinScanCode(code);
     }
 
+    /**
+     * 商户端查询用户管理列表
+     * @param size
+     * @param offset
+     * @param uid
+     * @param name
+     * @param type
+     * @return
+     */
     @GetMapping("/user/merchant/joinUserList")
     public R queryJoinUserList(@RequestParam(value = "size", required = false) Long size,
                                @RequestParam(value = "offset", required = false) Long offset,

@@ -25,7 +25,15 @@ public class MerchantJoinUserVO {
 
     private Long packageId;
 
+    private String packageName;
+
     private Long expireTime;
+
+    private String orderId;
+
+    private Long purchasedTime;
+
+    private Long firstPurchasedTime;
 
     private Integer status;
 
