@@ -20,16 +20,14 @@ import com.xiliulou.electricity.request.merchant.MerchantPlaceFeeRequest;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
 import com.xiliulou.electricity.service.merchant.MerchantPlaceBindService;
 import com.xiliulou.electricity.service.merchant.MerchantPlaceCabinetBindService;
-import com.xiliulou.electricity.service.merchant.MerchantPlaceFeeDailyRecordService;
 import com.xiliulou.electricity.service.merchant.MerchantPlaceFeeMonthDetailService;
 import com.xiliulou.electricity.service.merchant.MerchantPlaceFeeMonthRecordService;
 import com.xiliulou.electricity.service.merchant.MerchantPlaceFeeMonthService;
-import com.xiliulou.electricity.service.merchant.MerchantPlaceFeeRecordService;
 import com.xiliulou.electricity.service.merchant.MerchantPlaceFeeService;
 import com.xiliulou.electricity.service.merchant.MerchantPlaceMapService;
 import com.xiliulou.electricity.service.merchant.MerchantPlaceService;
 import com.xiliulou.electricity.utils.DateUtils;
-import com.xiliulou.electricity.vo.merchant.MerchantPlaceCabinetFeeDetailItemVO;
+import com.xiliulou.electricity.vo.merchant.MerchantCabinetFeeDetailVO;
 import com.xiliulou.electricity.vo.merchant.MerchantPlaceCabinetFeeDetailVO;
 import com.xiliulou.electricity.vo.merchant.MerchantPlaceFeeCurMonthVO;
 import com.xiliulou.electricity.vo.merchant.MerchantPlaceFeeLineDataVO;
@@ -51,7 +49,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
@@ -292,8 +289,8 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
     }
     
     @Override
-    public List<MerchantPlaceCabinetFeeDetailItemVO> getPlaceDetailByCabinetId(MerchantPlaceFeeRequest request) {
-        List<MerchantPlaceCabinetFeeDetailItemVO> resList = new ArrayList<>();
+    public List<MerchantCabinetFeeDetailVO> getPlaceDetailByCabinetId(MerchantPlaceFeeRequest request) {
+        List<MerchantCabinetFeeDetailVO> resList = new ArrayList<>();
         // 获取当前月份
         String currentMonth = DateUtil.format(new Date(), "yyyy-MM");
         
@@ -306,7 +303,7 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
             
             if (ObjectUtils.isNotEmpty(curMothFeeRecords)) {
                 for (MerchantPlaceFeeMonthDetail placeFeeMonthDetail : curMothFeeRecords) {
-                    MerchantPlaceCabinetFeeDetailItemVO vo = new MerchantPlaceCabinetFeeDetailItemVO();
+                    MerchantCabinetFeeDetailVO vo = new MerchantCabinetFeeDetailVO();
                     vo.setPlaceFee(placeFeeMonthDetail.getPlaceFee());
                     MerchantPlace merchantPlace = merchantPlaceService.queryFromCacheById(placeFeeMonthDetail.getPlaceId());
                     if (Objects.nonNull(merchantPlace)) {
@@ -345,7 +342,7 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
             
             if (ObjectUtils.isNotEmpty(lastMothFeeRecords)) {
                 for (MerchantPlaceFeeMonthDetail placeFeeMonthDetail : lastMothFeeRecords) {
-                    MerchantPlaceCabinetFeeDetailItemVO vo = new MerchantPlaceCabinetFeeDetailItemVO();
+                    MerchantCabinetFeeDetailVO vo = new MerchantCabinetFeeDetailVO();
                     vo.setPlaceFee(placeFeeMonthDetail.getPlaceFee());
                     MerchantPlace merchantPlace = merchantPlaceService.queryFromCacheById(placeFeeMonthDetail.getPlaceId());
                     if (Objects.nonNull(merchantPlace)) {
@@ -374,7 +371,7 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
     
         if (ObjectUtils.isNotEmpty(placeFeeMonths)) {
             for (MerchantPlaceFeeMonthDetail placeFeeMonthDetail : placeFeeMonths) {
-                MerchantPlaceCabinetFeeDetailItemVO vo = new MerchantPlaceCabinetFeeDetailItemVO();
+                MerchantCabinetFeeDetailVO vo = new MerchantCabinetFeeDetailVO();
                 vo.setPlaceFee(placeFeeMonthDetail.getPlaceFee());
                 MerchantPlace merchantPlace = merchantPlaceService.queryFromCacheById(placeFeeMonthDetail.getPlaceId());
                 if (Objects.nonNull(merchantPlace)) {

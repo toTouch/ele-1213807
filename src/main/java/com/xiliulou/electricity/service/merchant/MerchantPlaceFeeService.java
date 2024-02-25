@@ -1,7 +1,7 @@
 package com.xiliulou.electricity.service.merchant;
 
 import com.xiliulou.electricity.request.merchant.MerchantPlaceFeeRequest;
-import com.xiliulou.electricity.vo.merchant.MerchantPlaceCabinetFeeDetailItemVO;
+import com.xiliulou.electricity.vo.merchant.MerchantCabinetFeeDetailVO;
 import com.xiliulou.electricity.vo.merchant.MerchantPlaceCabinetFeeDetailVO;
 import com.xiliulou.electricity.vo.merchant.MerchantPlaceFeeCurMonthVO;
 import com.xiliulou.electricity.vo.merchant.MerchantPlaceFeeLineDataVO;
@@ -28,5 +28,5 @@ public interface MerchantPlaceFeeService {
     
     List<MerchantPlaceCabinetFeeDetailVO> getCabinetPlaceDetail(MerchantPlaceFeeRequest request);
     
-    List<MerchantPlaceCabinetFeeDetailItemVO> getPlaceDetailByCabinetId(MerchantPlaceFeeRequest request);
+    List<MerchantCabinetFeeDetailVO> getPlaceDetailByCabinetId(MerchantPlaceFeeRequest request);
 }
