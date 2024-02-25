@@ -26,7 +26,7 @@ public class MerchantPromotionDayRecord {
     
     private Long inviterUid;
     
-    private BigDecimal dayFirstMoney ;
+    private BigDecimal dayFirstMoney;
     
     private BigDecimal dayRenewMoney;
     
@@ -48,5 +48,20 @@ public class MerchantPromotionDayRecord {
     private Long updateTime;
     
     private String remark;
+    
+    /**
+     * 返利类型 拉新
+     */
+    public static final int LASHIN = 0;
+    
+    /**
+     * 返利类型 续费
+     */
+    public static final int RENEW = 1;
+    
+    /**
+     * 返利类型 差额
+     */
+    public static final int BALANCE = 2;
     
 }

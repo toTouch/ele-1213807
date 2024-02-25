@@ -36,5 +36,7 @@ public class MerchantPromotionMonthDetailVO {
     
     private Integer type;
     
+    private String typeName;
+    
     private String date;
 }
