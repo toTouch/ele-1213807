@@ -58,4 +58,13 @@ public class MerchantPlaceConstant {
      * 柜机数量限制
      */
     public final static Integer BIND_CABINET_COUNT_LIMIT = 20;
+    
+    /**
+     * 两个月
+     */
+    public final static Integer TOW_MONTH_BEFORE = 2;
+    /**
+     * 上个月
+     */
+    public final static Integer LAST_MONTH = 1;
 }

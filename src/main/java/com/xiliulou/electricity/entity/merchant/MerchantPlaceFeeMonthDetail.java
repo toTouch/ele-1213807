@@ -46,6 +46,10 @@ public class MerchantPlaceFeeMonthDetail {
     /**
      * 计算月份
      */
+    private Long calculateDate;
+    /**
+     * 计算月份
+     */
     private Long calculateData;
     /**
      * 场地费范围总和（元）
@@ -54,7 +58,7 @@ public class MerchantPlaceFeeMonthDetail {
     /**
      * 租户Id
      */
-    private Long tenantId;
+    private Integer tenantId;
     /**
      * 删除标记(0-未删除，1-已删除)
      */
@@ -69,4 +73,9 @@ public class MerchantPlaceFeeMonthDetail {
      * 修改时间
      */
     private Long updateTime;
+    
+    /**
+     * 计算所在的月份
+     */
+    private String calculateMonth;
 }

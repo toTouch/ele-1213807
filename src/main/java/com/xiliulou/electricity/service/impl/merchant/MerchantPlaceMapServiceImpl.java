@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.service.impl.merchant;
 
 import com.xiliulou.db.dynamic.annotation.Slave;
+import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.merchant.MerchantPlaceMap;
 import com.xiliulou.electricity.mapper.merchant.MerchantPlaceMapMapper;
 import com.xiliulou.electricity.query.merchant.MerchantPlaceMapQueryModel;
@@ -8,6 +9,7 @@ import com.xiliulou.electricity.service.merchant.MerchantPlaceMapService;
 import com.xiliulou.electricity.vo.merchant.MerchantPlaceMapVO;
 import com.xiliulou.electricity.vo.merchant.MerchantPlaceUserVO;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -22,6 +24,7 @@ import java.util.Set;
 @Service("merchantPlaceMapService")
 @Slf4j
 public class MerchantPlaceMapServiceImpl implements MerchantPlaceMapService {
+    
     @Resource
     private MerchantPlaceMapMapper merchantPlaceMapMapper;
     
@@ -41,7 +44,9 @@ public class MerchantPlaceMapServiceImpl implements MerchantPlaceMapService {
         return merchantPlaceMapMapper.batchDeleteByMerchantId(merchantId, placeIdList);
     }
     
-    /**	* 小程序：员工添加下拉框场地选择
+    /**
+     * 小程序：员工添加下拉框场地选择
+     *
      * @param merchantId
      * @return
      */
@@ -53,6 +58,7 @@ public class MerchantPlaceMapServiceImpl implements MerchantPlaceMapService {
     
     /**
      * 商户编辑与新增页面查询场地下拉框数据
+     *
      * @param notMerchantId
      * @param franchiseeId
      * @return
@@ -60,7 +66,7 @@ public class MerchantPlaceMapServiceImpl implements MerchantPlaceMapService {
     @Slave
     @Override
     public List<MerchantPlaceMap> queryBindList(Long notMerchantId, Long franchiseeId) {
-    
+        
         return merchantPlaceMapMapper.selectBindList(notMerchantId, franchiseeId);
     }
     
@@ -74,5 +80,23 @@ public class MerchantPlaceMapServiceImpl implements MerchantPlaceMapService {
     @Override
     public List<MerchantPlaceMapVO> countByMerchantIdList(MerchantPlaceMapQueryModel placeMapQueryModel) {
         return merchantPlaceMapMapper.countByMerchantIdList(placeMapQueryModel);
+    }
+    
+    /**
+     * 根据是商户id获取绑定的柜机数量
+     *
+     * @param merchantId
+     * @return
+     */
+    @Slave
+    @Override
+    public Integer countCabinetNumByMerchantId(Long merchantId) {
+        List<Long> list = merchantPlaceMapMapper.selectCabinetIdsByMerchantId(merchantId);
+        
+        if (ObjectUtils.isNotEmpty(list)) {
+            return list.size();
+        }
+        
+        return NumberConstant.ZERO;
     }
 }

@@ -39,4 +39,33 @@
         where del_flag = 0 and merchant_id = #{merchantId}
     </select>
     
+    <select id="existPlaceFeeByMerchantId" resultType="java.lang.Integer">
+        SELECT
+            count(1)
+        FROM
+            t_merchant_place_bind a
+                left join t_merchant_place_cabinet_bind b on b.place_id = a.place_id
+        where
+            a.merchant_id = #{merchantId}
+            and b.del_flag = 0
+          and (
+                (exists (
+                    select 1 from t_electricity_cabinet c where c.id = b.cabinet_id and c.place_fee is not null)
+                    )
+                or (
+                    exists (select 1 from t_merchant_place_fee_record r where r.cabinet_id = b.cabinet_id and r.new_place_fee is not null)
+                    )
+            )
+    </select>
+    
+    <select id="queryNoSettleByMerchantId"
+            resultType="com.xiliulou.electricity.entity.merchant.MerchantPlaceBind">
+        select
+           <include refid="basic_field"/>
+        from t_merchant_place_bind
+                 where del_flag = 0
+                   and merchant_month_settlement = 1
+                   and merchant_id = #{merchantId}
+    </select>
+
 </mapper>

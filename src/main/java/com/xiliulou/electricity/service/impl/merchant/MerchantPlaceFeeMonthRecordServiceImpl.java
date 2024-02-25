@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.service.impl.merchant;
 
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.entity.Tenant;
 import com.xiliulou.electricity.entity.merchant.MerchantPlaceFeeMonthRecord;
 import com.xiliulou.electricity.mapper.merchant.MerchantPlaceFeeMonthRecordMapper;
@@ -25,5 +26,11 @@ public class MerchantPlaceFeeMonthRecordServiceImpl implements MerchantPlaceFeeM
     @Override
     public List<MerchantPlaceFeeMonthRecordVO> selectByMonthDate(String monthDate, Integer tenantId) {
         return merchantPlaceFeeMonthRecordMapper.selectListBySettlementTime(monthDate, tenantId);
+    }
+    
+    @Slave
+    @Override
+    public List<MerchantPlaceFeeMonthRecord> queryList(List<Long> placeIdList, List<String> monthList) {
+        return merchantPlaceFeeMonthRecordMapper.selectList(placeIdList, monthList);
     }
 }
