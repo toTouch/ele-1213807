@@ -4,6 +4,7 @@ import com.alibaba.excel.EasyExcel;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.merchant.Merchant;
+import com.xiliulou.electricity.entity.merchant.MerchantPromotionDayRecord;
 import com.xiliulou.electricity.entity.merchant.MerchantPromotionMonthRecord;
 import com.xiliulou.electricity.mapper.merchant.MerchantPromotionMonthRecordMapper;
 import com.xiliulou.electricity.query.merchant.MerchantPromotionDayRecordQueryModel;
@@ -116,6 +117,20 @@ public class MerchantPromotionMonthRecordServiceImpl implements MerchantPromotio
             item.setMonthDate(monthDate);
             item.setMerchantName(Optional.ofNullable(merchantService.queryFromCacheById(item.getMerchantId())).orElse(new Merchant()).getName());
             item.setInviterName(Optional.ofNullable(userService.queryByUidFromCache(item.getInviterUid())).orElse(new User()).getName());
+            
+            switch (item.getType()) {
+                case MerchantPromotionDayRecord.LASHIN:
+                    item.setTypeName("拉新");
+                    break;
+                case MerchantPromotionDayRecord.RENEW:
+                    item.setTypeName("续费");
+                    break;
+                case MerchantPromotionDayRecord.BALANCE:
+                    item.setTypeName("差额");
+                    break;
+                default:
+                    break;
+            }
             
         }).collect(Collectors.toList());
         
