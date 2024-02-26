@@ -89,7 +89,7 @@ public class JsonOuterInnerTestWxController {
         
         String url = String.format(WechatV3Constant.WE_TRANSFER_ORDER_QUERY_V3, batchNo, detailNo);
         
-        String token = WechatCredentialsUtils.getToken(HttpMethod.POST.toString(), Objects.requireNonNull(HttpUrl.parse(url)), null, MCH_ID, MCH_SERIAL_NO, getPrivateKey());
+        String token = WechatCredentialsUtils.getToken(HttpMethod.GET.toString(), Objects.requireNonNull(HttpUrl.parse(url)), null, MCH_ID, MCH_SERIAL_NO, getPrivateKey());
         HashMap<String, String> headers = Maps.newHashMap();
         headers.put("Authorization", WechatCredentialsUtils.getSchema() + " " + token);
         headers.put("Accept", "application/json");
@@ -120,7 +120,7 @@ public class JsonOuterInnerTestWxController {
         
         String paramsJson = JsonUtil.toJson(params);
         
-        String token = WechatCredentialsUtils.getToken(HttpMethod.GET.toString(), Objects.requireNonNull(HttpUrl.parse(url)), paramsJson, MCH_ID, MCH_SERIAL_NO, getPrivateKey());
+        String token = WechatCredentialsUtils.getToken(HttpMethod.GET.toString(), Objects.requireNonNull(HttpUrl.parse(url)), null, MCH_ID, MCH_SERIAL_NO, getPrivateKey());
         HashMap<String, String> headers = Maps.newHashMap();
         headers.put("Authorization", WechatCredentialsUtils.getSchema() + " " + token);
         headers.put("Accept", "application/json");

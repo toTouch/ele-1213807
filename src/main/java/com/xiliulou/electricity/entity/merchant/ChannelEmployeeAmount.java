@@ -31,6 +31,8 @@ public class ChannelEmployeeAmount {
     
     private BigDecimal withdrawAmount;
     
+    private Long franchiseeId;
+    
     private Integer tenantId;
     
     private Integer delFlag;
