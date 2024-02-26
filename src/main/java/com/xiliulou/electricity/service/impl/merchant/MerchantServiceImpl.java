@@ -52,6 +52,7 @@ import com.xiliulou.electricity.service.merchant.MerchantPlaceService;
 import com.xiliulou.electricity.service.merchant.MerchantService;
 import com.xiliulou.electricity.service.merchant.MerchantUserAmountService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
+import com.xiliulou.electricity.utils.AESUtils;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.merchant.ChannelEmployeeVO;
@@ -1005,8 +1006,9 @@ public class MerchantServiceImpl implements MerchantService {
         MerchantQrCodeVO vo = new MerchantQrCodeVO();
         vo.setMerchantId(merchantId);
         vo.setMerchantUid(uid);
-        vo.setType(1);
-        vo.setCode("");
+        vo.setType(MerchantConstant.MERCHANT_QR_CODE_TYPE);
+        vo.setCode(MerchantJoinRecordServiceImpl.codeEnCoder(merchantId, uid, 1));
+//        vo.setTenantCode(tenant.getCode());
         return vo;
     }
 }

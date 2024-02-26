@@ -263,7 +263,7 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
      * @param inviterUid  邀请人uid
      * @param inviterType 邀请人类型
      */
-    private static String codeEnCoder(Long merchantId, Long inviterUid, Integer inviterType) {
+    public static String codeEnCoder(Long merchantId, Long inviterUid, Integer inviterType) {
         String encrypt = AESUtils.encrypt(String.valueOf(merchantId + StrUtil.C_COLON + inviterUid + StrUtil.C_COLON + inviterType));
         
         if (StringUtils.isNotBlank(encrypt)) {

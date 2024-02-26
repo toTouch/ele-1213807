@@ -89,5 +89,7 @@ public interface MerchantConstant {
     
     public static final Integer DEL_NORMAL = 0;
     public static final Integer DEL_DEL = 1;
+    
+    public static final Integer MERCHANT_QR_CODE_TYPE = 1;
 
 }
