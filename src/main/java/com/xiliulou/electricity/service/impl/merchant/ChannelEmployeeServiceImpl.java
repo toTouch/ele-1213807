@@ -244,8 +244,6 @@ public class ChannelEmployeeServiceImpl implements ChannelEmployeeService {
         userService.updateMerchantUser(updateUser);
     
         ChannelEmployee channelEmployeeUpdate = new ChannelEmployee();
-        //BeanUtils.copyProperties(channelEmployeeRequest, channelEmployeeUpdate);
-    
         channelEmployeeUpdate.setId(channelEmployeeRequest.getId());
         channelEmployeeUpdate.setUid(channelEmployee.getUid());
         //channelEmployeeUpdate.setTenantId(tenantId);
