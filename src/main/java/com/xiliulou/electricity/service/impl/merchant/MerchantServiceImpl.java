@@ -200,7 +200,7 @@ public class MerchantServiceImpl implements MerchantService {
         
         // 检测商户等级是否存在
         MerchantLevel merchantLevel = merchantLevelService.queryById(merchantSaveRequest.getMerchantGradeId());
-        if (Objects.nonNull(merchantLevel) || !Objects.equals(merchantLevel.getTenantId(), tenantId)) {
+        if (Objects.isNull(merchantLevel) || !Objects.equals(merchantLevel.getTenantId(), tenantId)) {
             log.error("merchant save error, merchant level is null name={}, merchantLevelId={}", merchantSaveRequest.getName(), merchantSaveRequest.getMerchantGradeId());
             return Triple.of(false, "", "商户等级不存在");
         }
@@ -406,7 +406,7 @@ public class MerchantServiceImpl implements MerchantService {
         
         // 检测商户等级是否存在
         MerchantLevel merchantLevel = merchantLevelService.queryById(merchantSaveRequest.getMerchantGradeId());
-        if (Objects.nonNull(merchantLevel) || !Objects.equals(merchantLevel.getTenantId(), tenantId)) {
+        if (Objects.isNull(merchantLevel) || !Objects.equals(merchantLevel.getTenantId(), tenantId)) {
             log.error("merchant update error, merchant level is null id={}, merchantLevelId={}", merchantSaveRequest.getId(), merchantSaveRequest.getMerchantGradeId());
             return Triple.of(false, "", "商户等级不存在");
         }
