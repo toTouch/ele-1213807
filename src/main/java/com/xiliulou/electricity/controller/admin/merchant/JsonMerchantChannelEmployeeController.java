@@ -87,7 +87,7 @@ public class JsonMerchantChannelEmployeeController {
     }
     
     @GetMapping("/admin/merchant/queryChannelEmployees")
-    public R channelEmployeeList(@RequestParam("size") Integer size,
+    public R queryChannelEmployees(@RequestParam("size") Integer size,
             @RequestParam("offset") Integer offset,
             @RequestParam(value = "name", required = false) String name) {
         
