@@ -3,6 +3,7 @@ package com.xiliulou.electricity.mapper.merchant;
 import com.xiliulou.electricity.entity.merchant.MerchantPlaceFeeMonth;
 import org.apache.ibatis.annotations.Param;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -22,4 +23,6 @@ public interface MerchantPlaceFeeMonthMapper {
             ,@Param("monthList") List<String> monthList);
     
     List<MerchantPlaceFeeMonth> selectListByMerchantId(@Param("merchantId") Long merchantId,@Param("cabinetId") Long cabinetId,@Param("placeId") Long placeId);
+    
+    BigDecimal sumFeeByTime(@Param("merchantId") Long merchantId, @Param("placeId") Long placeId,@Param("cabinetId") Long cabinetId,@Param("time") Long time);
 }

@@ -8,6 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -54,5 +55,11 @@ public class MerchantPlaceFeeMonthServiceImpl implements MerchantPlaceFeeMonthSe
     @Override
     public List<MerchantPlaceFeeMonth> queryListByMerchantId(Long merchantId, Long cabinetId, Long placeId) {
         return merchantPlaceFeeMonthMapper.selectListByMerchantId(merchantId, cabinetId, placeId);
+    }
+    
+    @Slave
+    @Override
+    public BigDecimal sumFeeByTime(Long merchantId, Long placeId, Long cabinetId, Long time) {
+        return merchantPlaceFeeMonthMapper.sumFeeByTime(merchantId, placeId, cabinetId, time);
     }
 }
