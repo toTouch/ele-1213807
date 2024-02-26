@@ -57,6 +57,10 @@
             <if test="uid != null">
                 and tce.uid = #{uid}
             </if>
+    
+            <if test="name != null and name != ''">
+                and tce.name like concat('%', #{name}, '%')
+            </if>
             
             <if test="franchiseeId != null">
                 and tce.franchisee_id = #{franchiseeId}
@@ -94,6 +98,10 @@
         
             <if test="uid != null">
                 and tce.uid = #{uid}
+            </if>
+    
+            <if test="name != null and name != ''">
+                and tce.name like concat('%', #{name}, '%')
             </if>
         
             <if test="franchiseeId != null">
