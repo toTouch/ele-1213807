@@ -39,4 +39,16 @@ public class MerchantPlaceBindServiceImpl implements MerchantPlaceBindService {
         return placeBindMapper.selectListByMerchantId(merchantId, status);
     }
     
+    @Slave
+    @Override
+    public Integer existPlaceFeeByMerchantId(Long merchantId) {
+        return placeBindMapper.existPlaceFeeByMerchantId(merchantId);
+    }
+    
+    @Slave
+    @Override
+    public List<MerchantPlaceBind> queryNoSettleByMerchantId(Long merchantId) {
+        return placeBindMapper.queryNoSettleByMerchantId(merchantId);
+    }
+    
 }

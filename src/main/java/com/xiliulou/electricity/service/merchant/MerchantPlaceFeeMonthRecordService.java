@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.service.merchant;
 
+import com.xiliulou.electricity.entity.merchant.MerchantPlaceFeeMonthRecord;
 import com.xiliulou.electricity.vo.merchant.MerchantPlaceFeeMonthRecordVO;
 
 import java.util.List;
@@ -12,4 +13,6 @@ import java.util.List;
  */
 public interface MerchantPlaceFeeMonthRecordService {
     List<MerchantPlaceFeeMonthRecordVO> selectByMonthDate(String monthDate, Integer tenantId);
+    
+    List<MerchantPlaceFeeMonthRecord> queryList(List<Long> placeIdList, List<String> monthList);
 }

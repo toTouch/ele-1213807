@@ -93,7 +93,7 @@
     </update>
     
     <select id="existsInProtectionTimeByJoinUid" resultType="java.lang.Integer">
-        select count(1) from t_merchant_join_record where del_flag = 0 and protection_status = 0 and join_uid = #{joinUid}
+        select 1 from t_merchant_join_record where del_flag = 0 and protection_status = 0 and join_uid = #{joinUid}
     </select>
     
      <select id="selectByMerchantIdAndJoinUid" resultType="com.xiliulou.electricity.entity.merchant.MerchantJoinRecord">
@@ -238,6 +238,7 @@
                 tui.phone,
                 tubmc.member_card_id as packageId,
                 tubmc.member_card_expire_time as expireTime,
+                tubmc.order_id,
                 tmjr.inviter_uid,
                 tmjr.inviter_type,
                 tmjr.status,
@@ -260,6 +261,24 @@
 
                 <if test="expireTime != null">
                     and tubmc.member_card_expire_time &lt;= #{expireTime}
+                </if>
+
+                <if test="type != null">
+                    <choose>
+                        <when test="type == 2">
+                            and tubmc.member_card_expire_time &gt;= #{expireTime}
+                        </when>
+
+                        <when test="type == 3">
+                            and tubmc.member_card_expire_time &lt;= #{expireTime}
+                            and tubmc.member_card_expire_time &gt;= #{currentTime}
+                        </when>
+
+                        <when test="type == 4">
+                            and tubmc.member_card_expire_time &lt;= #{currentTime}
+                        </when>
+                    </choose>
+
                 </if>
 
             </where>

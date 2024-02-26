@@ -3,16 +3,19 @@ package com.xiliulou.electricity.utils;
 import cn.hutool.core.date.DateUtil;
 import lombok.extern.slf4j.Slf4j;
 
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.TemporalAdjusters;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -29,6 +32,10 @@ public class DateUtils {
     static SimpleDateFormat simpleDateFormatYearAndMonth = new SimpleDateFormat("yyyy-MM-dd");
     
     static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+    
+    static final DateTimeFormatter MONTH_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM");
+    
+    static final ZoneId CHINA_ZONE_ID = ZoneId.of("Asia/Shanghai");
     
     /**
      * 年月正则表达式：yyyy-MM
@@ -242,4 +249,33 @@ public class DateUtils {
         // return LocalDateTime.of(localDate, LocalTime.MAX).toEpochSecond(ZoneOffset.of("+8"))*1000;
     }
     
+    /**
+     * 获取某个月：yyyy-MM
+     */
+    public static String getMonthDate(Long month) {
+        LocalDate yesterdayInChina = LocalDate.now(CHINA_ZONE_ID).minusMonths(month);
+        return yesterdayInChina.format(MONTH_FORMATTER);
+    }
+    
+    /*
+     * 获取前某月第一天00:00:00的时间戳
+     */
+    public static long getBeforeMonthFirstDayTimestamp(Integer minusMonth) {
+        LocalDate lastMonthFirstDay = LocalDate.now().minusMonths(minusMonth).withDayOfMonth(1);
+        return lastMonthFirstDay.atStartOfDay().atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
+    }
+    
+    /**
+     * 获取前某月最后一天23:59:59时间戳
+     */
+    public static long getBeforeMonthLastDayTimestamp(Integer minusMonth) {
+        LocalDate lastMonthFirstDay = LocalDate.now().minusMonths(minusMonth).withDayOfMonth(1);
+        LocalDate lastMonthLastDay = lastMonthFirstDay.with(TemporalAdjusters.lastDayOfMonth());
+        return lastMonthLastDay.atTime(23, 59, 59).atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
+    }
+    
+    public static boolean isSameDay(long time1, long time2 ) {
+        SimpleDateFormat fmt = new SimpleDateFormat("yyyyMMdd");
+        return fmt.format(new Date(time1)).equals(fmt.format(new Date(time2)));
+    }
 }

@@ -68,4 +68,9 @@ public class MerchantPlaceFeeMonth {
      * 修改时间
      */
     private Long updateTime;
+    
+    /**
+     * 计算所在的月份
+     */
+    private String calculateMonth;
 }

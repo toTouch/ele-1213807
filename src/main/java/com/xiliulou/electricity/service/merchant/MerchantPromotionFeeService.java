@@ -12,17 +12,18 @@ import com.xiliulou.electricity.query.merchant.MerchantPromotionEmployeeDetailSp
  * @since: 2024-02-21
  */
 public interface MerchantPromotionFeeService {
+    
     R queryMerchantAvailableWithdrawAmount(Long uid);
     
-    R queryMerchantPromotionFeeIncome(Integer type,Long uid);
+    R queryMerchantPromotionFeeIncome(Integer type, Long uid);
     
-    R queryMerchantPromotionScanCode(Integer type,Long uid);
+    R queryMerchantPromotionScanCode(Integer type, Long uid);
     
-    R queryMerchantPromotionRenewal(Integer type,Long uid);
+    R queryMerchantPromotionRenewal(Integer type, Long uid);
     
-    R statisticMerchantIncome(Integer type,Long uid,Long beginTime,Long endTime);
+    R statisticMerchantIncome(Integer type, Long uid, Long beginTime, Long endTime);
     
-    R statisticUser(Integer type,Long uid,Long beginTime,Long endTime);
+    R statisticUser(Integer type, Long uid, Long beginTime, Long endTime);
     
     R statisticChannelEmployeeMerchant(Integer type, Long uid, Long beginTime, Long endTime);
     
@@ -33,4 +34,6 @@ public interface MerchantPromotionFeeService {
     R selectPromotionData(MerchantPromotionDataDetailQueryModel queryModel);
     
     R selectPromotionEmployeeDetailList(MerchantPromotionEmployeeDetailSpecificsQueryModel queryModel);
+    
+    R queryMerchantEmployees(Long merchantUid);
 }
