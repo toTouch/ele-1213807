@@ -33,6 +33,10 @@ public class DateUtils {
     
     static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
     
+    static final DateTimeFormatter MONTH_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM");
+    
+    static final ZoneId CHINA_ZONE_ID = ZoneId.of("Asia/Shanghai");
+    
     /**
      * 年月正则表达式：yyyy-MM
      */
@@ -246,6 +250,14 @@ public class DateUtils {
     }
     
     /**
+     * 获取某个月：yyyy-MM
+     */
+    public static String getMonthDate(Long month) {
+        LocalDate yesterdayInChina = LocalDate.now(CHINA_ZONE_ID).minusMonths(month);
+        return yesterdayInChina.format(MONTH_FORMATTER);
+    }
+    
+    /*
      * 获取前某月第一天00:00:00的时间戳
      */
     public static long getBeforeMonthFirstDayTimestamp(Integer minusMonth) {

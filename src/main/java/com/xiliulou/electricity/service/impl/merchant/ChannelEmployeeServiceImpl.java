@@ -210,7 +210,8 @@ public class ChannelEmployeeServiceImpl implements ChannelEmployeeService {
         ChannelEmployee channelEmployee = new ChannelEmployee();
         channelEmployee.setUid(userResult.getUid());
         channelEmployee.setTenantId(tenantId);
-        channelEmployee.setStatus(channelEmployeeRequest.getStatus());
+        channelEmployee.setAreaId(channelEmployeeRequest.getAreaId());
+        //channelEmployee.setStatus(channelEmployeeRequest.getStatus());
         channelEmployee.setDelFlag(CommonConstant.DEL_N);
         channelEmployee.setCreateTime(System.currentTimeMillis());
         channelEmployee.setUpdateTime(System.currentTimeMillis());
@@ -246,7 +247,14 @@ public class ChannelEmployeeServiceImpl implements ChannelEmployeeService {
         userService.updateMerchantUser(updateUser);
     
         ChannelEmployee channelEmployeeUpdate = new ChannelEmployee();
-        BeanUtils.copyProperties(channelEmployeeRequest, channelEmployeeUpdate);
+        //BeanUtils.copyProperties(channelEmployeeRequest, channelEmployeeUpdate);
+    
+        channelEmployeeUpdate.setId(channelEmployeeRequest.getId());
+        channelEmployeeUpdate.setUid(channelEmployee.getUid());
+        //channelEmployeeUpdate.setTenantId(tenantId);
+        channelEmployeeUpdate.setAreaId(channelEmployeeRequest.getAreaId());
+    
+        channelEmployeeUpdate.setUpdateTime(System.currentTimeMillis());
     
         Integer result = channelEmployeeMapper.updateOne(channelEmployeeUpdate);
         

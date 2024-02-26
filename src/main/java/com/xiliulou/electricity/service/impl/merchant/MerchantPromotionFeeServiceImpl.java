@@ -30,6 +30,7 @@ import com.xiliulou.electricity.utils.DateUtils;
 import com.xiliulou.electricity.vo.merchant.MerchantPromotionDataDetailVO;
 import com.xiliulou.electricity.vo.merchant.MerchantPromotionDataVO;
 import com.xiliulou.electricity.vo.merchant.MerchantPromotionEmployeeDetailVO;
+import com.xiliulou.electricity.vo.merchant.MerchantPromotionFeeEmployeeVO;
 import com.xiliulou.electricity.vo.merchant.MerchantPromotionFeeIncomeVO;
 import com.xiliulou.electricity.vo.merchant.MerchantPromotionFeeRenewalVO;
 import com.xiliulou.electricity.vo.merchant.MerchantPromotionFeeScanCodeVO;
@@ -83,6 +84,44 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
     
     @Resource
     private MerchantWithdrawApplicationService merchantWithdrawApplicationService;
+    
+    @Override
+    public R queryMerchantEmployees(Long merchantUid) {
+        //校验用户是否是商户
+        Merchant merchant = merchantService.queryByUid(merchantUid);
+        if (Objects.isNull(merchant)) {
+            log.error("find merchant user error, not found merchant user, uid = {}", merchantUid);
+            return R.fail("120007", "未找到商户");
+        }
+        
+        MerchantPromotionEmployeeDetailQueryModel employeeDetailQueryModel = MerchantPromotionEmployeeDetailQueryModel.builder().merchantUid(merchantUid)
+                .tenantId(TenantContextHolder.getTenantId()).build();
+        
+        List<MerchantEmployee> merchantEmployees = merchantEmployeeService.selectByMerchantUid(employeeDetailQueryModel);
+        
+        List<MerchantPromotionFeeEmployeeVO> promotionFeeEmployeeVOList = new ArrayList<>();
+        
+        MerchantPromotionFeeEmployeeVO merchantVO = new MerchantPromotionFeeEmployeeVO();
+        merchantVO.setType(PromotionFeeQueryTypeEnum.MERCHANT.getCode());
+        merchantVO.setUserName(merchant.getName());
+        merchantVO.setUid(merchant.getUid());
+        promotionFeeEmployeeVOList.add(merchantVO);
+        
+        if (CollectionUtils.isNotEmpty(merchantEmployees)) {
+            List<MerchantPromotionFeeEmployeeVO> employeeVOList = merchantEmployees.parallelStream().map(merchantEmployee -> {
+                MerchantPromotionFeeEmployeeVO employeeVO = new MerchantPromotionFeeEmployeeVO();
+                employeeVO.setType(PromotionFeeQueryTypeEnum.MERCHANT_EMPLOYEE.getCode());
+                User user = userService.queryByUidFromCache(merchantEmployee.getUid());
+                if(Objects.nonNull(user)){
+                    employeeVO.setUserName(user.getName());
+                }
+                employeeVO.setUid(merchantEmployee.getUid());
+                return employeeVO;
+            }).collect(Collectors.toList());
+            promotionFeeEmployeeVOList.addAll(employeeVOList);
+        }
+        return R.ok(promotionFeeEmployeeVOList);
+    }
     
     @Override
     public R queryMerchantAvailableWithdrawAmount(Long uid) {

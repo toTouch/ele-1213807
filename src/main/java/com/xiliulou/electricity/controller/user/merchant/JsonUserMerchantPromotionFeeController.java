@@ -30,9 +30,26 @@ public class JsonUserMerchantPromotionFeeController {
     @Resource
     private MerchantPromotionFeeService merchantPromotionFeeService;
     
+    
+    /**
+     * 获取商户下的场地员工(商户首页筛选条件)
+     * @return 可提现金额
+     */
+    @GetMapping("/user/merchant/promotionFee/merchantEmployee")
+    public R queryMerchantEmployees(@RequestParam("merchantId") Long merchantUid) {
+        
+        //用户区分
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELECTRICITY  ERROR! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        return merchantPromotionFeeService.queryMerchantEmployees(merchantUid);
+    }
+    
     /**
      * 可提现金额
-     * @return
+     * @return 可提现金额
      */
     @GetMapping("/user/merchant/promotionFee/availableWithdrawAmount")
     public R queryMerchantAvailableWithdrawAmount() {
@@ -230,7 +247,7 @@ public class JsonUserMerchantPromotionFeeController {
      * @param queryTime
      * @return
      */
-    @GetMapping("/user/merchant/promotion/data/")
+    @GetMapping("/user/merchant/promotion/data")
     public R promotionDataPage(@RequestParam("size") long size, @RequestParam("offset") Long offset, @RequestParam(value = "uid",required = false) Long uid, @RequestParam(value = "type",required = false) Integer type,
             @RequestParam(value = "queryTime",required = false) Long queryTime) {
         if (size < 0 || size > 10) {

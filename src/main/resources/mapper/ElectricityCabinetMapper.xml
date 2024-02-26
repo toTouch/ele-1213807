@@ -69,8 +69,8 @@
                 #{storeId}
             </foreach>
         </if>
-        <if test="areaId != null">
-            and area_id = #{areaId}
+        <if test="query.areaId != null">
+            and area_id = #{query.areaId}
         </if>
         order by id desc
         limit #{query.offset}, #{query.size}
@@ -1294,7 +1294,7 @@
     </select>
     
     <select id="countByAreaGroup" resultType="com.xiliulou.electricity.bo.merchant.AreaCabinetNumBO">
-        select area_id, count(*) as cabinetNum from cabinetNum
+        select any_value(area_id) as areaId, count(1) as cabinetNum from t_electricity_cabinet
         <where>
             <if test="areaIdList != null and areaIdList.size() > 0">
                 and area_id in
