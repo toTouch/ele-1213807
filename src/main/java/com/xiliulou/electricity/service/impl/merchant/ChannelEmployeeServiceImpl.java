@@ -275,8 +275,9 @@ public class ChannelEmployeeServiceImpl implements ChannelEmployeeService {
             log.error("not found channel employee by id, id = {}", id);
             throw new BizException("120008", "渠道员工不存在");
         }
+        channelEmployeeMapper.removeById(id, System.currentTimeMillis());
+        
         User user = userService.queryByUidFromCache(channelEmployee.getUid());
-    
         Integer result = 0;
         if(Objects.nonNull(user)){
             result = userService.removeById(channelEmployee.getUid(), System.currentTimeMillis());
