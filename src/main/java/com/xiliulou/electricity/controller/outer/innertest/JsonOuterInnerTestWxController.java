@@ -28,6 +28,7 @@ import org.springframework.http.client.ClientHttpRequestFactory;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 
@@ -85,7 +86,7 @@ public class JsonOuterInnerTestWxController {
      * @throws Exception
      */
     @GetMapping("/transferOrderQueryV3")
-    public WechatTransferBatchOrderQueryResult transferOrderQueryV3(String batchNo, String detailNo) throws Exception {
+    public WechatTransferBatchOrderQueryResult transferOrderQueryV3(@RequestParam("batchNo") String batchNo, @RequestParam("detailNo") String detailNo) throws Exception {
         
         String url = String.format(WechatV3Constant.WE_TRANSFER_ORDER_QUERY_V3, batchNo, detailNo);
         
