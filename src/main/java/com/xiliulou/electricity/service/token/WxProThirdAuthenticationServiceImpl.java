@@ -76,6 +76,9 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
 
     @Autowired
     UserInfoOldService userInfoOldService;
+    
+    @Autowired
+    UserInfoExtraService userInfoExtraService;
 
     @Autowired
     EleUserAuthOldService eleUserAuthOldService;
@@ -188,7 +191,8 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
                             .authStatus(UserInfo.AUTH_STATUS_STATUS_INIT).delFlag(User.DEL_NORMAL)
                             .usableStatus(UserInfo.USER_USABLE_STATUS).tenantId(tenantId).build();
                     UserInfo userInfo = userInfoService.insert(insertUserInfo);
-
+                    
+                    userInfoExtraService.insert(buildUserInfoExtra(userInfo));
                 }
                 
                 if(StringUtils.isBlank(userOauthBind.getThirdId())){
@@ -314,17 +318,8 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
                             .delFlag(User.DEL_NORMAL).usableStatus(UserInfo.USER_USABLE_STATUS).tenantId(tenantId)
                             .build();
                     UserInfo userInfo = userInfoService.insert(insertUserInfo);
-
-//                    Pair<Boolean, FranchiseeUserInfo> existFranchiseeUserInfo = checkFranchiseeUserInfoExists(
-//                            insertUserInfo.getId());
-//                    if (!existFranchiseeUserInfo.getLeft()) {
-//                        FranchiseeUserInfo insertFranchiseeUserInfo = FranchiseeUserInfo.builder()
-//                                .userInfoId(userInfo.getId()).updateTime(System.currentTimeMillis())
-//                                .createTime(System.currentTimeMillis()).serviceStatus(FranchiseeUserInfo.STATUS_IS_INIT)
-//                                .delFlag(User.DEL_NORMAL).tenantId(tenantId).build();
-//                        franchiseeUserInfoService.insert(insertFranchiseeUserInfo);
-//                    }
-
+    
+                    userInfoExtraService.insert(buildUserInfoExtra(userInfo));
                 }
                 return createSecurityUser(existPhone.getRight(), userOauthBind);
 
@@ -341,7 +336,7 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
         log.error("TOKEN ERROR! SYSTEM ERROR! params={}", authMap);
         throw new AuthenticationServiceException("系统异常！");
     }
-
+    
     private Pair<Boolean, UserInfo> checkUserInfoExists(Long uid) {
         UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
         return Objects.nonNull(userInfo) ? Pair.of(true, userInfo) : Pair.of(false, null);
@@ -380,32 +375,12 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
                 .tenantId(tenantId).delFlag(User.DEL_NORMAL)
                 .usableStatus(UserInfo.USER_USABLE_STATUS).build();
         UserInfo userInfo = userInfoService.insert(insertUserInfo);
+    
+        userInfoExtraService.insert(buildUserInfoExtra(userInfo));
 
         //参加新用户活动
         NewUserActivity newUserActivity = newUserActivityService.queryActivity();
         if (Objects.nonNull(newUserActivity)) {
-
-
-//            if (Objects.equals(newUserActivity.getDiscountType(), NewUserActivity.TYPE_COUNT) && Objects.nonNull(
-//                    newUserActivity.getCount()) && Objects.nonNull(newUserActivity.getDays())) {
-//
-//                UserBatteryMemberCard userBatteryMemberCard = new UserBatteryMemberCard();
-//
-//                userBatteryMemberCard.setUid(userInfo.getUid());
-//                userBatteryMemberCard.setCreateTime(System.currentTimeMillis());
-//                userBatteryMemberCard.setUpdateTime(System.currentTimeMillis());
-//                userBatteryMemberCard.setTenantId(tenantId);
-//                userBatteryMemberCard.setDelFlag(UserBatteryMemberCard.DEL_NORMAL);
-//                userBatteryMemberCard.setMemberCardStatus(UserBatteryMemberCard.MEMBER_CARD_NOT_DISABLE);
-//                userBatteryMemberCard.setMemberCardId(UserBatteryMemberCard.SEND_REMAINING_NUMBER);
-//                userBatteryMemberCard.setCardPayCount(NumberConstant.ZERO);
-//
-//
-//                userBatteryMemberCard.setRemainingNumber(newUserActivity.getCount());
-//                userBatteryMemberCard.setMemberCardExpireTime(
-//                        System.currentTimeMillis() + (newUserActivity.getDays() * (24 * 60 * 60 * 1000L)));
-//                userBatteryMemberCardService.insertOrUpdate(userBatteryMemberCard);
-//            }
             log.info("send the coupon to new user after logon, activity info = {}, user info = {}", newUserActivity.getId(), insert.getUid());
             //优惠券
             if (Objects.equals(newUserActivity.getDiscountType(), NewUserActivity.TYPE_COUPON) && Objects.nonNull(
@@ -417,16 +392,12 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
                 userCouponService.batchRelease(newUserActivity.getCouponId(), uids);
             }
         }
-
-//        FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoService.insert(insertFranchiseeUserInfo);
-
-
+        
         return createSecurityUser(insertUser, oauthBind);
     }
 
 
     private Pair<Boolean, User> checkPhoneExists(String purePhoneNumber, Integer tenantId) {
-//        User user = userService.queryByUserPhone(purePhoneNumber, User.TYPE_USER_NORMAL_WX_PRO, tenantId);
         User user = userService.queryByUserPhoneFromDB(purePhoneNumber, User.TYPE_USER_NORMAL_WX_PRO, tenantId);
         return Objects.nonNull(user) ? Pair.of(true, user) : Pair.of(false, null);
     }
@@ -464,5 +435,15 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
             cipher.init(Cipher.DECRYPT_MODE, keySpec, params);
             return new String(cipher.doFinal(encData), "UTF-8");
         }
+    }
+    
+    private UserInfoExtra buildUserInfoExtra(UserInfo userInfo) {
+        UserInfoExtra userInfoExtra = new UserInfoExtra();
+        userInfoExtra.setUid(userInfo.getUid());
+        userInfoExtra.setDelFlag(userInfo.getDelFlag());
+        userInfoExtra.setTenantId(userInfo.getTenantId());
+        userInfoExtra.setCreateTime(userInfo.getCreateTime());
+        userInfoExtra.setUpdateTime(userInfo.getUpdateTime());
+        return userInfoExtra;
     }
 }

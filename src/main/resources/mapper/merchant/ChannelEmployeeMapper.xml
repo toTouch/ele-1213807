@@ -34,7 +34,7 @@
     </select>
     
     <!--查询渠道员工-->
-    <select id="selectListByCondition" resultMap="ChannelEmployeeMap">
+    <select id="selectListByCondition" resultMap="com.xiliulou.electricity.vo.merchant.ChannelEmployeeVO">
         select tce.id,
                 tce.uid,
                 tu.name,
