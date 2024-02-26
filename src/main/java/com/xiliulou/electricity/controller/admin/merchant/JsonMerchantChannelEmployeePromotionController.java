@@ -4,7 +4,6 @@ import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.request.merchant.ChannelEmployeePromotionRequest;
-import com.xiliulou.electricity.request.merchant.ChannelEmployeeRequest;
 import com.xiliulou.electricity.service.merchant.ChannelEmployeePromotionMonthRecordService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
@@ -24,7 +23,7 @@ import java.util.Objects;
  */
 @Slf4j
 @RestController
-public class JsonAdminChannelEmployeePromotionController extends BaseController {
+public class JsonMerchantChannelEmployeePromotionController extends BaseController {
     
     @Resource
     private ChannelEmployeePromotionMonthRecordService channelEmployeePromotionMonthRecordService;

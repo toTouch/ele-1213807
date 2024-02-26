@@ -41,13 +41,12 @@
                 tu.phone,
                 tce.franchisee_id,
                 tce.area_id,
-                tce.status,
                 tce.del_flag,
                 tce.remark,
                 tce.create_time,
                 tce.update_time
         from t_channel_employee tce
-        left join t_user tu on tu.id = tce.uid
+        left join t_user tu on tu.uid = tce.uid
         <where>
             tce.del_flag = 0
             <if test="id != null">
@@ -79,8 +78,8 @@
     
         </where>
         order by tce.id desc
-        <if test="offset != null and limit != null">
-            limit #{offset}, #{limit}
+        <if test="offset != null and size != null">
+            limit #{offset}, #{size}
         </if>
         
     </select>
@@ -89,7 +88,7 @@
     <select id="countByCondition" resultType="int">
         select count(1)
         from t_channel_employee tce
-        left join t_user tu on tu.id = tce.uid
+        left join t_user tu on tu.uid = tce.uid
         <where>
             tce.del_flag = 0
             <if test="id != null">
@@ -217,8 +216,8 @@
         
         </where>
         order by tce.id desc
-        <if test="offset != null and limit != null">
-            limit #{offset}, #{limit}
+        <if test="offset != null and size != null">
+            limit #{offset}, #{size}
         </if>
     
     </select>

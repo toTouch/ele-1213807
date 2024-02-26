@@ -224,13 +224,13 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
         // 过滤已经审核的提现订单
         List<MerchantWithdrawApplication> alreadyAuditList = new ArrayList<>();
     
-        Set<Long> uidList = new HashSet<>();
+        Set<Long> uids = new HashSet<>();
     
         merchantWithdrawApplications.forEach(withdrawRecord -> {
             if (!Objects.equals(withdrawRecord.getStatus(), MerchantWithdrawConstant.REVIEW_IN_PROGRESS)) {
                 alreadyAuditList.add(withdrawRecord);
             }
-            uidList.add(withdrawRecord.getUid());
+            uids.add(withdrawRecord.getUid());
         });
     
         if (!CollectionUtils.isEmpty(alreadyAuditList)) {
@@ -250,8 +250,9 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
             //批量修改商户提现记录信息为拒绝状态
             Integer result = merchantWithdrawApplicationMapper.updateByIds(batchReviewWithdrawApplicationRequest);
             
-            //TODO 将商户余额表中的提现金额重新加回去
-            List<MerchantUserAmount> merchantUserAmountList = null; //merchantUserAmountService.queryList();
+            //将商户余额表中的提现金额重新加回去
+            List<Long> uidList = uids.stream().collect(Collectors.toList());
+            List<MerchantUserAmount> merchantUserAmountList = merchantUserAmountService.queryUserAmountList(uidList, tenantId.longValue());
             if(CollectionUtils.isEmpty(merchantUserAmountList)){
                 return Triple.of(false, "", "所选商户账户不存在");
             }

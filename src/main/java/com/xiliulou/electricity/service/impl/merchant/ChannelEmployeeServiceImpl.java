@@ -198,6 +198,7 @@ public class ChannelEmployeeServiceImpl implements ChannelEmployeeService {
         channelEmployeeAmount.setTotalIncome(BigDecimal.ZERO);
         channelEmployeeAmount.setBalance(BigDecimal.ZERO);
         channelEmployeeAmount.setWithdrawAmount(BigDecimal.ZERO);
+        channelEmployeeAmount.setTenantId(tenantId);
         channelEmployeeAmount.setCreateTime(System.currentTimeMillis());
         channelEmployeeAmount.setUpdateTime(System.currentTimeMillis());
         
