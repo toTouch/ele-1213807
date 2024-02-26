@@ -20,6 +20,7 @@ import javax.validation.constraints.NotNull;
 @AllArgsConstructor
 @NoArgsConstructor
 public class RebateConfigRequest {
+    private Integer tenantId;
     
     @NotNull(message = "id不能为空", groups = {UpdateGroup.class})
     private Long id;
