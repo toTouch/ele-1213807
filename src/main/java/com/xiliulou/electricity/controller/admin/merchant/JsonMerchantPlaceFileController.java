@@ -21,7 +21,7 @@ import java.util.Objects;
  * @date 2022-12-14-14:07
  */
 @RestController
-public class JsonAdminMerchantPlaceFileController extends BaseController {
+public class JsonMerchantPlaceFileController extends BaseController {
     @Autowired
     ElectricityCabinetFileService electricityCabinetFileService;
     
