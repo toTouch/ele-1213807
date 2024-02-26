@@ -204,7 +204,7 @@
             tce.create_time,
             tce.update_time
         from t_channel_employee tce
-        left join t_user tu on tu.id = tce.uid
+        left join t_user tu on tu.uid = tce.uid
         <where>
             tce.del_flag = 0
             <if test="id != null">
