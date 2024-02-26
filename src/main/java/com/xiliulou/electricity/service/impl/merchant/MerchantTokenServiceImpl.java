@@ -10,11 +10,9 @@ import com.xiliulou.electricity.dto.WXMinProPhoneResultDTO;
 import com.xiliulou.electricity.entity.ElectricityPayParams;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.UserOauthBind;
-import com.xiliulou.electricity.entity.merchant.ChannelEmployeeAmount;
 import com.xiliulou.electricity.entity.merchant.Merchant;
 import com.xiliulou.electricity.query.merchant.MerchantLoginRequest;
 import com.xiliulou.electricity.service.ElectricityPayParamsService;
-import com.xiliulou.electricity.service.UserChannelService;
 import com.xiliulou.electricity.service.UserOauthBindService;
 import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.service.merchant.ChannelEmployeeService;
@@ -26,6 +24,7 @@ import com.xiliulou.electricity.vo.merchant.ChannelEmployeeVO;
 import com.xiliulou.electricity.vo.merchant.MerchantLoginVO;
 import com.xiliulou.security.authentication.JwtTokenManager;
 import com.xiliulou.security.bean.TokenUser;
+import io.jsonwebtoken.lang.Collections;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Triple;
@@ -33,7 +32,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * @author : eclair
@@ -111,43 +113,45 @@ public class MerchantTokenServiceImpl implements MerchantTokenService {
             
             String purePhoneNumber = wxMinProPhoneResultDTO.getPurePhoneNumber();
             log.info("TOKEN INFO! 解析微信手机号:{}", purePhoneNumber);
-            
-            User user = userService.queryByUserPhone(purePhoneNumber, merchantLoginRequest.getUserType(), tenantId);
-            if (Objects.isNull(user)) {
+
+            List<User> users = userService.listUserByPhone(purePhoneNumber, tenantId);
+            if (Collections.isEmpty(users) || users.stream().filter(user -> User.TYPE_USER_MERCHANT.equals(user.getUserType()) || User.TYPE_USER_CHANNEL.equals(user.getUserType())).count() > 1) {
                 return Triple.of(false, null, "用户不存在");
             }
-            
-            if (user.isLock()) {
+
+            List<User> notLockUsers = users.stream().filter(user -> !user.isLock()).collect(Collectors.toList());
+            if (notLockUsers.isEmpty()) {
                 return Triple.of(false, null, "当前登录账号已禁用，请联系客服处理");
             }
-            
+
             // 用户是否绑定了业务信息
-            UserBindBusinessDTO userBindBusinessDTO = checkUserBindingBusiness(user);
-            if (!userBindBusinessDTO.isBinding()) {
+            Map<Long, UserBindBusinessDTO> userBindBusinessDTOS = users.stream().map(this::checkUserBindingBusiness).filter(e -> !e.isBinding()).collect(Collectors.toMap(UserBindBusinessDTO::getUid, e -> e));
+            if (userBindBusinessDTOS.isEmpty()) {
                 return Triple.of(false, null, "未找到绑定账号，请检查");
             }
-            
-            // 查看是否有绑定的第三方信息,如果没有绑定创建一个
-            if (!wxProThirdAuthenticationService.checkOpenIdExists(result.getOpenid(), tenantId).getLeft()) {
-                UserOauthBind oauthBind = UserOauthBind.builder().createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis())
-                        .phone(wxMinProPhoneResultDTO.getPurePhoneNumber()).uid(user.getUid()).accessToken("").refreshToken("").thirdNick("").tenantId(tenantId)
-                        .thirdId(result.getOpenid()).source(UserOauthBind.SOURCE_WX_PRO).status(UserOauthBind.STATUS_BIND).build();
-                userOauthBindService.insert(oauthBind);
-            }
-            
-            String token = jwtTokenManager.createTokenV2(user.getUserType(),
-                    new TokenUser(user.getUid(), user.getPhone(), user.getName(), user.getUserType(), user.getDataType(), user.getTenantId()), System.currentTimeMillis());
-            
-            // 返回登录信息
-            MerchantLoginVO merchantLoginVO = new MerchantLoginVO();
-            merchantLoginVO.setPhone(user.getPhone());
-            merchantLoginVO.setUsername(user.getName());
-            merchantLoginVO.setToken(token);
-            merchantLoginVO.setBindBusinessId(userBindBusinessDTO.getBindBusinessId());
-            merchantLoginVO.setUid(user.getUid());
-            merchantLoginVO.setUserType(user.getUserType());
-            merchantLoginVO.setBusinessInfo(userBindBusinessDTO.getEnterprisePackageAuth(), userBindBusinessDTO.getEnterprisePackageAuth());
-            return Triple.of(true, null, merchantLoginVO);
+
+            List<MerchantLoginVO> loginVOS = notLockUsers.parallelStream().map(e -> {
+                // 查看是否有绑定的第三方信息,如果没有绑定创建一个
+                if (!wxProThirdAuthenticationService.checkOpenIdExists(result.getOpenid(), tenantId).getLeft()) {
+                    UserOauthBind oauthBind = UserOauthBind.builder().createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis())
+                            .phone(wxMinProPhoneResultDTO.getPurePhoneNumber()).uid(e.getUid()).accessToken("").refreshToken("").thirdNick("").tenantId(tenantId)
+                            .thirdId(result.getOpenid()).source(UserOauthBind.SOURCE_WX_PRO).status(UserOauthBind.STATUS_BIND).build();
+                    userOauthBindService.insert(oauthBind);
+                }
+                String token = jwtTokenManager.createTokenV2(e.getUserType(),
+                        new TokenUser(e.getUid(), e.getPhone(), e.getName(), e.getUserType(), e.getDataType(), e.getTenantId()), System.currentTimeMillis());
+
+                MerchantLoginVO merchantLoginVO = new MerchantLoginVO();
+                merchantLoginVO.setPhone(e.getPhone());
+                merchantLoginVO.setUsername(e.getName());
+                merchantLoginVO.setToken(token);
+                merchantLoginVO.setBindBusinessId(userBindBusinessDTOS.get(e.getUid()).getBindBusinessId());
+                merchantLoginVO.setUid(e.getUid());
+                merchantLoginVO.setUserType(e.getUserType());
+                merchantLoginVO.setBusinessInfo(userBindBusinessDTOS.get(e.getUid()).getEnterprisePackageAuth(), userBindBusinessDTOS.get(e.getUid()).getEnterprisePackageAuth());
+                return merchantLoginVO;
+            }).collect(Collectors.toList());
+            return Triple.of(true, null, loginVOS);
             
         } finally {
             redisService.delete(CacheConstant.CAHCE_THIRD_OAHTH_KEY + merchantLoginRequest.getCode());
@@ -157,6 +161,7 @@ public class MerchantTokenServiceImpl implements MerchantTokenService {
     
     private UserBindBusinessDTO checkUserBindingBusiness(User user) {
         UserBindBusinessDTO userBindBusinessDTO = new UserBindBusinessDTO();
+        userBindBusinessDTO.setUid(user.getUid());
         if (User.TYPE_USER_MERCHANT.equals(user.getUserType())) {
             Merchant merchant = merchantService.queryByUid(user.getUid());
             if (Objects.isNull(merchant)) {
@@ -187,6 +192,8 @@ public class MerchantTokenServiceImpl implements MerchantTokenService {
 
 @Data
 class UserBindBusinessDTO {
+
+    private Long uid;
     
     private boolean isBinding;
     
