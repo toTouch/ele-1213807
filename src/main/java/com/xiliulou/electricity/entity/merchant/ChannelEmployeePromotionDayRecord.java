@@ -67,4 +67,9 @@ public class ChannelEmployeePromotionDayRecord {
      * 修改时间
      */
     private Long updateTime;
+    
+    /**
+     * 日费差额总额
+     */
+    private BigDecimal dayBalanceMoney;
 }
