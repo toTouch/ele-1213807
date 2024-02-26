@@ -68,7 +68,7 @@
             </if>
     
             <if test="tenantId != null">
-                and tce.tenant_id = #{tenantId},
+                and tce.tenant_id = #{tenantId}
             </if>
             
             <if test="areaId != null">
@@ -114,7 +114,7 @@
             </if>
     
             <if test="tenantId != null">
-                and tce.tenant_id = #{tenantId},
+                and tce.tenant_id = #{tenantId}
             </if>
         
             <if test="areaId != null">
@@ -224,7 +224,7 @@
             </if>
     
             <if test="tenantId != null">
-                and tce.tenant_id = #{tenantId},
+                and tce.tenant_id = #{tenantId}
             </if>
     
             <if test="name != null and name != ''">
