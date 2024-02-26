@@ -44,5 +44,5 @@ public interface MerchantPlaceCabinetBindMapper {
     
     Integer checkIsBindByPlaceId(@Param("placeId") Long placeId,@Param("cabinetId") Long cabinetId);
     
-    List<MerchantPlaceCabinetBind> selectListDayBindRecord(@Param("todayStartTime") Long todayStartTime, @Param("nowTime") Long nowTime);
+    List<MerchantPlaceCabinetBind> selectListDayBindRecord(@Param("todayStartTime") Long todayStartTime, @Param("nowTime") Long nowTime, @Param("cabinetIds") List<Long> cabinetIds);
 }

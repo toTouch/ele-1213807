@@ -353,8 +353,8 @@ public class MerchantPlaceCabinetBindServiceImpl implements MerchantPlaceCabinet
     
     @Slave
     @Override
-    public List<MerchantPlaceCabinetBind> listDayBindRecord(Long todayStartTime, Long nowTime) {
-        return merchantPlaceCabinetBindMapper.selectListDayBindRecord(todayStartTime, nowTime);
+    public List<MerchantPlaceCabinetBind> listDayBindRecord(Long todayStartTime, Long nowTime, List<Long> cabinetIds) {
+        return merchantPlaceCabinetBindMapper.selectListDayBindRecord(todayStartTime, nowTime, cabinetIds);
     }
     
     

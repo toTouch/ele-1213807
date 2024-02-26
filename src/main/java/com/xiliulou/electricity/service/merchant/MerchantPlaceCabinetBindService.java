@@ -43,6 +43,6 @@ public interface MerchantPlaceCabinetBindService {
     
     Integer checkIsBindByPlaceId(Long placeId, Long cabinetId);
     
-    List<MerchantPlaceCabinetBind> listDayBindRecord(Long todayStartTime, Long nowTime);
+    List<MerchantPlaceCabinetBind> listDayBindRecord(Long todayStartTime, Long nowTime, List<Long> cabinetIds);
     
 }
