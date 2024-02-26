@@ -18,4 +18,8 @@ public interface MerchantPlaceBindMapper {
     int batchUnBind(@Param("placeIdList") Set<Long> placeIdList,@Param("merchantId") Long merchantId,@Param("updateTime") long updateTime);
     
     List<MerchantPlaceBind> selectListByMerchantId(@Param("merchantId") Long merchantId, @Param("status") Integer status);
+    
+    Integer existPlaceFeeByMerchantId(@Param("merchantId") Long merchantId);
+    
+    List<MerchantPlaceBind> queryNoSettleByMerchantId(@Param("merchantId") Long merchantId);
 }

@@ -5,22 +5,19 @@ import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
-import com.xiliulou.electricity.constant.merchant.MerchantConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
-import com.xiliulou.electricity.entity.Tenant;
-import com.xiliulou.electricity.entity.User;
-import com.xiliulou.electricity.entity.UserInfo;
+import com.xiliulou.electricity.constant.merchant.MerchantConstant;
+import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.entity.merchant.Merchant;
 import com.xiliulou.electricity.entity.merchant.MerchantAttr;
 import com.xiliulou.electricity.entity.merchant.MerchantJoinRecord;
 import com.xiliulou.electricity.mapper.merchant.MerchantJoinRecordMapper;
 import com.xiliulou.electricity.query.merchant.MerchantJoinRecordQueryMode;
+import com.xiliulou.electricity.query.merchant.MerchantJoinUserQueryMode;
 import com.xiliulou.electricity.query.merchant.MerchantPromotionDataDetailQueryModel;
 import com.xiliulou.electricity.query.merchant.MerchantPromotionScanCodeQueryModel;
 import com.xiliulou.electricity.request.merchant.MerchantJoinRecordPageRequest;
-import com.xiliulou.electricity.service.TenantService;
-import com.xiliulou.electricity.service.UserInfoService;
-import com.xiliulou.electricity.service.UserService;
+import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.service.merchant.MerchantAttrService;
 import com.xiliulou.electricity.service.merchant.MerchantEmployeeService;
 import com.xiliulou.electricity.service.merchant.MerchantJoinRecordService;
@@ -30,13 +27,13 @@ import com.xiliulou.electricity.utils.AESUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.merchant.MerchantEmployeeVO;
 import com.xiliulou.electricity.vo.merchant.MerchantJoinRecordVO;
-import com.xiliulou.mq.service.RocketMqService;
+import com.xiliulou.electricity.vo.merchant.MerchantJoinUserVO;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -55,9 +52,6 @@ import java.util.Optional;
 @Slf4j
 @Service
 public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService {
-    
-    @Autowired
-    private RocketMqService rocketMqService;
     
     @Resource
     private RedisService redisService;
@@ -82,6 +76,12 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
     
     @Resource
     private MerchantEmployeeService merchantEmployeeService;
+
+    @Resource
+    BatteryMemberCardService batteryMemberCardService;
+
+    @Resource
+    ElectricityMemberCardOrderService electricityMemberCardOrderService;
     
     @Override
     public R joinScanCode(String code) {
@@ -362,7 +362,7 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
         
         List<MerchantJoinRecord> list = merchantJoinRecordMapper.selectListByPage(queryMode);
         if (ObjectUtils.isEmpty(list)) {
-            return Collections.EMPTY_LIST;
+            return Collections.emptyList();
         }
         
         List<MerchantJoinRecordVO> voList = new ArrayList<>();
@@ -391,7 +391,7 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
     
     @Override
     public Integer countByCondition(MerchantPromotionScanCodeQueryModel queryModel) {
-       return merchantJoinRecordMapper.countByCondition(queryModel);
+        return merchantJoinRecordMapper.countByCondition(queryModel);
     }
     
     @Slave
@@ -406,6 +406,66 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
     public List<MerchantJoinRecord> selectPromotionDataDetail(MerchantPromotionDataDetailQueryModel queryModel) {
         return merchantJoinRecordMapper.selectListPromotionDataDetail(queryModel);
     }
-    
-    
+
+    @Override
+    public List<MerchantJoinUserVO> selectJoinUserList(MerchantJoinUserQueryMode merchantJoinUserQueryMode) {
+        //获取商户uid, 并检查当前商户是否存在且可用
+        Merchant merchant = merchantService.queryByUid(merchantJoinUserQueryMode.getMerchantUid());
+        if(Objects.isNull(merchant)){
+            return Collections.emptyList();
+        }
+        merchantJoinUserQueryMode.setMerchantId(merchant.getId());
+
+        //计算当前日期后三天的时间毫秒数
+        Long currentTime = System.currentTimeMillis();
+        Long expiredTime = currentTime + MerchantConstant.MERCHANT_JOIN_USER_PACKAGE_EXPIRE_DAY * 24 * 60 * 60 * 1000L;
+        /*if(MerchantConstant.MERCHANT_JOIN_USER_TYPE_NORMAL.equals(merchantJoinUserQueryMode.getType())){
+            merchantJoinUserQueryMode.setExpireTime(expiredTime);
+        } else if (MerchantConstant.MERCHANT_JOIN_USER_TYPE_OVERDUE_SOON.equals(merchantJoinUserQueryMode.getType())) {
+
+        } else if (MerchantConstant.MERCHANT_JOIN_USER_TYPE_EXPIRED.equals(merchantJoinUserQueryMode.getType())) {
+
+        }*/
+        merchantJoinUserQueryMode.setCurrentTime(currentTime);
+        merchantJoinUserQueryMode.setExpireTime(expiredTime);
+
+        //获取当前商户下的用户列表信息
+        List<MerchantJoinUserVO> merchantJoinUserVOS = merchantJoinRecordMapper.selectJoinUserList(merchantJoinUserQueryMode);
+
+        if(CollectionUtils.isEmpty(merchantJoinUserVOS)) {
+            return Collections.emptyList();
+        }
+
+        merchantJoinUserVOS.forEach(merchantJoinUserVO -> {
+            //TODO 对电话号码中见四位做脱敏处理
+            String phone = merchantJoinUserVO.getPhone();
+            merchantJoinUserVO.setPhone(phone);
+
+            Long packageId = merchantJoinUserVO.getPackageId();
+            if (Objects.nonNull(packageId) && packageId != 0) {
+                BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(packageId);
+                if(Objects.nonNull(batteryMemberCard)){
+                    merchantJoinUserVO.setPackageName(batteryMemberCard.getName());
+                }
+            }
+
+            String orderId = merchantJoinUserVO.getOrderId();
+            if(Objects.nonNull(orderId)){
+                ElectricityMemberCardOrder electricityMemberCardOrder = electricityMemberCardOrderService.selectByOrderNo(orderId);
+                if(Objects.nonNull(electricityMemberCardOrder)){
+                    merchantJoinUserVO.setPurchasedTime(electricityMemberCardOrder.getCreateTime());
+                }
+            }
+
+            ElectricityMemberCardOrder firstMemberCardOrder = electricityMemberCardOrderService.selectFirstMemberCardOrder(merchantJoinUserVO.getJoinUid());
+            if(Objects.nonNull(firstMemberCardOrder)){
+                merchantJoinUserVO.setFirstPurchasedTime(firstMemberCardOrder.getCreateTime());
+            }
+
+        });
+
+        return merchantJoinUserVOS;
+    }
+
+
 }

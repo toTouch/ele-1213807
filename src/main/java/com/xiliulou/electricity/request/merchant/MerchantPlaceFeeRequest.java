@@ -6,20 +6,24 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * @author HeYafeng
- * @description 小程序-电费/场地费 筛选条件请求参数
- * @date 2024/2/20 19:05:20
+ * @author maxiaodong
+ * @date 2024/2/25 15:55
+ * @desc
  */
-
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class MerchantPowerAndPlaceFeeRequest {
-    
+public class MerchantPlaceFeeRequest {
     private Long merchantId;
     
     private Long placeId;
     
     private Long cabinetId;
+    
+    private Long startTime;
+    
+    private Long endTime;
+    
+    private String month;
 }

@@ -24,4 +24,6 @@ public interface MerchantPlaceFeeRecordService {
     Integer save(MerchantPlaceFeeRecord merchantPlaceFeeRecord);
     
     void asyncRecords(List<ElectricityCabinet> electricityCabinetList, ElectricityCabinetBatchOutWarehouseRequest batchOutWarehouseRequest, TokenUser userInfo);
+    
+    Integer existPlaceFeeByCabinetId(List<Long> cabinetIdList);
 }

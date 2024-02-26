@@ -76,7 +76,13 @@ public enum BusinessType {
     ASSET_WAREHOUSE_RECORD(73),
     
     //换电套餐返利
-    BATTERY_REBATE(80);
+    BATTERY_REBATE(80),
+    
+    //商户申请提现订单
+    MERCHANT_WITHDRAW(81),
+    
+    //商户申请提现批次号
+    MERCHANT_WITHDRAW_BATCH(82);
 
     private final Integer business;
 

@@ -193,7 +193,7 @@ public class ChannelEmployeeServiceImpl implements ChannelEmployeeService {
         UserRole userRole = new UserRole();
         userRole.setRoleId(roleId);
         userRole.setUid(userResult.getUid());
-        userRoleService.insert(userRole);
+        //userRoleService.insert(userRole);
         
         //创建渠道员工账户
         ChannelEmployeeAmount channelEmployeeAmount = new ChannelEmployeeAmount();

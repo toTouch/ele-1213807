@@ -67,7 +67,20 @@ public interface MerchantConstant {
     Integer MERCHANT_REBATE_STATUS_SETTLED = 1;
     Integer MERCHANT_REBATE_STATUS_RETURNED = 2;
     Integer MERCHANT_REBATE_STATUS_EXPIRED = 3;
-    
+
+    /**
+     * 用户查询条件类型 1:查询全部, 2:查询正常, 3:查询即将逾期, 4:查询已过期
+     */
+    Integer MERCHANT_JOIN_USER_TYPE_ALL = 1;
+    Integer MERCHANT_JOIN_USER_TYPE_NORMAL = 2;
+    Integer MERCHANT_JOIN_USER_TYPE_OVERDUE_SOON = 3;
+    Integer MERCHANT_JOIN_USER_TYPE_EXPIRED = 4;
+
+    /**
+     * 用户套餐过期天数，用于判断套餐即将过期
+     */
+    Integer MERCHANT_JOIN_USER_PACKAGE_EXPIRE_DAY = 3;
+
     /**
      * 返利配置状态 0:关闭,1:开启
      */

@@ -1,0 +1,230 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.merchant.MerchantWithdrawApplicationRecordMapper">
+
+    <insert id="insertOne"  keyProperty="id" useGeneratedKeys="true">
+        insert into t_merchant_withdraw_application_record
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            uid,
+            order_no,
+            batch_no,
+            transaction_no,
+            amount,
+            status,
+            tenant_id,
+            remark,
+            response,
+            create_time,
+            update_time,
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            #{uid},
+            #{orderNo},
+            #{batchNo},
+            #{transaction_no},
+            #{amount},
+            #{status},
+            #{tenantId},
+            #{remark},
+            #{response},
+            #{createTime},
+            #{updateTime},
+        </trim>
+    </insert>
+    
+    <insert id="batchInsert"  keyProperty="id" useGeneratedKeys="true">
+        insert into t_merchant_withdraw_application_record
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            uid,
+            order_no,
+            batch_no,
+            transaction_no,
+            amount,
+            status,
+            tenant_id,
+            remark,
+            response,
+            create_time,
+            update_time,
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <foreach collection="list" item="item" index="index" separator=",">
+                #{item.uid},
+                #{item.orderNo},
+                #{item.batchNo},
+                #{item.transaction_no},
+                #{item.amount},
+                #{item.status},
+                #{item.tenantId},
+                #{item.remark},
+                #{item.response},
+                #{item.createTime},
+                #{item.updateTime},
+            </foreach>
+        </trim>
+    </insert>
+    
+    <update id="updateOne">
+        update t_merchant_withdraw_application_record
+        <set>
+            <if test="status != null">
+                status = #{status},
+            </if>
+            
+            <if test="remark != null">
+                remark = #{remark},
+            </if>
+            
+            <if test="response != null">
+                response = #{response},
+            </if>
+        
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+    
+    <select id="selectListByCondition" resultType="com.xiliulou.electricity.vo.merchant.MerchantWithdrawApplicationRecordVO">
+        select mwar.id,
+               mwar.response,
+               mwar.create_time,
+               mwar.update_time,
+               mwar.tenant_id,
+               mwar.remark,
+               mwar.uid,
+               mwar.order_no,
+               mwar.transaction_no,
+               mwar.status
+        from t_merchant_withdraw_application_record mwar
+        <where>
+            mwar.tenant_id = #{tenantId}
+            <if test="id != null and id != ''">
+                and mwar.id = #{id}
+            </if>
+            
+            <if test="batchNo != null and batchNo != ''">
+                and mwar.batch_no = #{batchNo}
+            </if>
+            
+            <if test="transaction_no != null and transaction_no != ''">
+                and mwar.transaction_no
+                <![CDATA[ =  ]]> #{transaction_no}
+            </if>
+            
+            <if test="status != null and status != ''">
+                and mwar.status = #{status}
+            </if>
+            
+            <if test="beginTime != null ">
+                and mwar.create_time <![CDATA[ >=  ]]> #{beginTime}
+            </if>
+            <if test="endTime != null ">
+                and mwar.create_time <![CDATA[ <=  ]]> #{endTime}
+            </if>
+        </where>
+        order by mwar.create_time desc
+        <if test="offset != null and limit != null">
+            limit #{offset}, #{limit}
+        </if>
+    </select>
+    
+    <select id="countByCondition" resultType="Integer">
+        select count(1)
+        from t_merchant_withdraw_application_record mwar
+        <where>
+            mwar.tenant_id = #{tenantId}
+            <if test="id != null and id != ''">
+                and mwar.id = #{id}
+            </if>
+            
+            <if test="batchNo != null and batchNo != ''">
+                and mwar.batch_no = #{batchNo}
+            </if>
+            
+            <if test="transaction_no != null and transaction_no != ''">
+                and mwar.transaction_no
+                <![CDATA[ =  ]]> #{transaction_no}
+            </if>
+            
+            <if test="status != null and status != ''">
+                and mwar.status = #{status}
+            </if>
+            <if test="beginTime != null ">
+                and mwar.create_time <![CDATA[ >=  ]]> #{beginTime}
+            </if>
+    
+            <if test="endTime != null ">
+                and mwar.create_time <![CDATA[ <=  ]]> #{endTime}
+            </if>
+        </where>
+    </select>
+    
+    <select id="selectById" resultType="com.xiliulou.electricity.vo.merchant.MerchantWithdrawApplicationRecordVO">
+        select mwar.id,
+               mwar.response,
+               mwar.create_time,
+               mwar.update_time,
+               mwar.tenant_id,
+               mwar.remark,
+               mwar.uid,
+               mwar.order_no,
+               mwar.transaction_no,
+               mwar.status
+        from t_merchant_withdraw_application_record mwar
+        where id = #{id}
+        and del_flag = 0
+    </select>
+    
+    <select id="queryList" resultType="com.xiliulou.electricity.vo.merchant.MerchantWithdrawApplicationRecordVO">
+        select mwar.id,
+        mwar.response,
+        mwar.create_time,
+        mwar.update_time,
+        mwar.tenant_id,
+        mwar.remark,
+        mwar.uid,
+        mwar.order_no,
+        mwar.transaction_no,
+        mwar.status
+        from t_merchant_withdraw_application_record mwar
+        <where>
+            mwar.tenant_id = #{tenantId}
+            <if test="id != null and id != ''">
+                and mwar.id = #{id}
+            </if>
+            
+            <if test="batchNo != null and batchNo != ''">
+                and mwar.batch_no = #{batchNo}
+            </if>
+            
+            <if test="transaction_no != null and transaction_no != ''">
+                and mwar.transaction_no
+                <![CDATA[ =  ]]> #{transaction_no}
+            </if>
+            
+            <if test="status != null and status != ''">
+                and mwar.status = #{status}
+            </if>
+            
+            <if test="beginTime != null ">
+                and mwar.create_time <![CDATA[ >=  ]]> #{beginTime}
+            </if>
+            <if test="endTime != null ">
+                and mwar.create_time <![CDATA[ <=  ]]> #{endTime}
+            </if>
+        </where>
+        order by mwar.create_time desc
+        <if test="offset != null and limit != null">
+            limit #{offset}, #{limit}
+        </if>
+    </select>
+    
+    <delete id="removeById">
+        update t_merchant_withdraw_application_record
+        set del_flag = 1
+        where id = #{id}
+    </delete>
+    
+</mapper>
