@@ -58,6 +58,7 @@ public class MerchantPlaceServiceImpl implements MerchantPlaceService {
     @Resource
     private MerchantMapper merchantMapper;
     
+    @Resource
     private MerchantPlaceMapper merchantPlaceMapper;
     
     @Resource

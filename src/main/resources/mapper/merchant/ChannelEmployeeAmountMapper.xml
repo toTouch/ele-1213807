@@ -5,6 +5,7 @@
     <resultMap type="com.xiliulou.electricity.entity.merchant.ChannelEmployeeAmount" id="ChannelEmployeeAmountMap">
         <result property="id" column="id" jdbcType="INTEGER"/>
         <result property="uid" column="uid" jdbcType="INTEGER"/>
+        <result property="franchiseeId" column="franchisee_id" jdbcType="INTEGER"/>
         <result property="tenantId" column="tenant_id" jdbcType="INTEGER"/>
         <result property="delFlag" column="del_flag" jdbcType="INTEGER"/>
         <result property="createTime" column="create_time" jdbcType="INTEGER"/>
@@ -16,7 +17,7 @@
     
     <!-- 基础字段 -->
     <sql id="selectChannelEmployeeAmount">
-        select id, uid, total_income, withdraw_amount, balance,  tenant_id, del_flag, create_time, update_time from t_channel_employee_amount
+        select id, uid, total_income, withdraw_amount, balance, franchisee_id,tenant_id, del_flag, create_time, update_time from t_channel_employee_amount
     </sql>
     
     <!--根据id查询渠道员工账户余额信息-->
@@ -48,8 +49,8 @@
         </if>
         
         order by id desc
-        <if test="offset != null and limit != null">
-            limit #{offset}, #{limit}
+        <if test="offset != null and size != null">
+            limit #{offset}, #{size}
         </if>
     </select>
     
@@ -61,6 +62,7 @@
             total_income,
             withdraw_amount,
             balance,
+            franchisee_id,
             tenant_id,
             del_flag,
             create_time,
@@ -71,6 +73,7 @@
             #{totalIncome},
             #{withdrawAmount},
             #{balance},
+            #{franchiseeId},
             #{tenantId},
             #{delFlag},
             #{createTime},
@@ -93,6 +96,9 @@
             </if>
             <if test="balance != null">
                 balance = #{balance},
+            </if>
+            <if test="franchiseeId != null">
+                franchisee_id = #{franchiseeId},
             </if>
             <if test="tenantId != null">
                 tenant_id = #{tenantId},

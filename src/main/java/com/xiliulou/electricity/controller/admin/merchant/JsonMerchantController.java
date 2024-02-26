@@ -37,7 +37,7 @@ import java.util.Objects;
  */
 @Slf4j
 @RestController
-public class JsonAdminMerchantController extends BaseController {
+public class JsonMerchantController extends BaseController {
     
     @Autowired
     private MerchantAttrService merchantAttrService;

@@ -32,7 +32,7 @@ import java.util.Objects;
  */
 @Slf4j
 @RestController
-public class JsonAdminMerchantPlaceCabinetBindController extends BaseController {
+public class JsonMerchantPlaceCabinetBindController extends BaseController {
     @Resource
     private MerchantPlaceCabinetBindService merchantPlaceCabinetBindService;
     

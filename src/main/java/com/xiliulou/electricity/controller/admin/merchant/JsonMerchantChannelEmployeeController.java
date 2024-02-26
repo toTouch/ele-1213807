@@ -28,7 +28,7 @@ import java.util.Objects;
 
 @Slf4j
 @RestController
-public class JsonAdminChannelEmployeeController {
+public class JsonMerchantChannelEmployeeController {
     
     @Resource
     private ChannelEmployeeService channelEmployeeService;
@@ -48,7 +48,8 @@ public class JsonAdminChannelEmployeeController {
         if (offset < 0) {
             offset = 0;
         }
-    
+        
+        Integer tenantId = TenantContextHolder.getTenantId();
         ChannelEmployeeRequest channelEmployeeRequest = ChannelEmployeeRequest.builder()
                 .size(size)
                 .offset(offset)
@@ -56,6 +57,7 @@ public class JsonAdminChannelEmployeeController {
                 .name(name)
                 .franchiseeId(franchiseeId)
                 .areaId(areaId)
+                .tenantId(tenantId)
                 .build();
         //
         
@@ -71,15 +73,39 @@ public class JsonAdminChannelEmployeeController {
                                 @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
                                 @RequestParam(value = "areaId", required = false) Long areaId) {
     
+        Integer tenantId = TenantContextHolder.getTenantId();
         ChannelEmployeeRequest channelEmployeeRequest = ChannelEmployeeRequest.builder()
                 .uid(uid)
                 .name(name)
                 .franchiseeId(franchiseeId)
                 .areaId(areaId)
+                .tenantId(tenantId)
                 .build();
         
         return R.ok(channelEmployeeService.countChannelEmployee(channelEmployeeRequest));
         
+    }
+    
+    @GetMapping("/admin/merchant/queryChannelEmployees")
+    public R channelEmployeeList(@RequestParam("size") Integer size,
+            @RequestParam("offset") Integer offset,
+            @RequestParam(value = "name", required = false) String name) {
+        
+        if (size < 0 || size > 50) {
+            size = 10;
+        }
+        if (offset < 0) {
+            offset = 0;
+        }
+        
+        Integer tenantId = TenantContextHolder.getTenantId();
+        ChannelEmployeeRequest channelEmployeeRequest = ChannelEmployeeRequest.builder()
+                .size(size)
+                .offset(offset)
+                .name(name)
+                .tenantId(tenantId)
+                .build();
+        return R.ok(channelEmployeeService.queryChannelEmployees(channelEmployeeRequest));
     }
     
     @PostMapping("/admin/merchant/addChannelEmployee")

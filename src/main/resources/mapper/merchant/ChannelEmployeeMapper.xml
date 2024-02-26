@@ -7,7 +7,7 @@
         <result property="uid" column="uid" jdbcType="INTEGER"/>
         <result property="franchiseeId" column="franchisee_id" jdbcType="INTEGER"/>
         <result property="areaId" column="area_id" jdbcType="INTEGER"/>
-        <result property="status" column="status" jdbcType="INTEGER"/>
+        <result property="tenantId" column="tenant_id" jdbcType="INTEGER"/>
         <result property="delFlag" column="del_flag" jdbcType="INTEGER"/>
         <result property="remark" column="remark" jdbcType="VARCHAR"/>
         <result property="createTime" column="create_time" jdbcType="INTEGER"/>
@@ -16,7 +16,7 @@
     
     <!-- 基础字段 -->
     <sql id="selectChannelEmployee">
-        select id, uid, franchisee_id, area_id, status, del_flag, remark, create_time, update_time from t_channel_employee
+        select id, uid, franchisee_id, area_id, tenant_id, del_flag, remark, create_time, update_time from t_channel_employee
     </sql>
     
     <!--查根据id查询单条记录-->
@@ -34,20 +34,21 @@
     </select>
     
     <!--查询渠道员工-->
-    <select id="selectListByCondition" resultMap="com.xiliulou.electricity.vo.merchant.ChannelEmployeeVO">
+    <select id="selectListByCondition" resultType="com.xiliulou.electricity.vo.merchant.ChannelEmployeeVO">
         select tce.id,
                 tce.uid,
                 tu.name,
                 tu.phone,
+                tu.lock_flag as status,
                 tce.franchisee_id,
                 tce.area_id,
-                tce.status,
+                tce.tenant_id,
                 tce.del_flag,
                 tce.remark,
                 tce.create_time,
                 tce.update_time
         from t_channel_employee tce
-        left join t_user tu on tu.id = tce.uid
+        left join t_user tu on tu.uid = tce.uid
         <where>
             tce.del_flag = 0
             <if test="id != null">
@@ -64,6 +65,10 @@
             
             <if test="franchiseeId != null">
                 and tce.franchisee_id = #{franchiseeId}
+            </if>
+    
+            <if test="tenantId != null">
+                and tce.tenant_id = #{tenantId},
             </if>
             
             <if test="areaId != null">
@@ -79,8 +84,8 @@
     
         </where>
         order by tce.id desc
-        <if test="offset != null and limit != null">
-            limit #{offset}, #{limit}
+        <if test="offset != null and size != null">
+            limit #{offset}, #{size}
         </if>
         
     </select>
@@ -89,7 +94,7 @@
     <select id="countByCondition" resultType="int">
         select count(1)
         from t_channel_employee tce
-        left join t_user tu on tu.id = tce.uid
+        left join t_user tu on tu.uid = tce.uid
         <where>
             tce.del_flag = 0
             <if test="id != null">
@@ -106,6 +111,10 @@
         
             <if test="franchiseeId != null">
                 and tce.franchisee_id = #{franchiseeId}
+            </if>
+    
+            <if test="tenantId != null">
+                and tce.tenant_id = #{tenantId},
             </if>
         
             <if test="areaId != null">
@@ -129,7 +138,7 @@
             uid,
             franchisee_id,
             area_id,
-            status,
+            tenant_id,
             del_flag,
             remark,
             create_time,
@@ -139,7 +148,7 @@
             #{uid},
             #{franchiseeId},
             #{areaId},
-            #{status},
+            #{tenantId},
             #{delFlag},
             #{remark},
             #{createTime},
@@ -160,9 +169,11 @@
             <if test="areaId != null">
                 area_id = #{areaId},
             </if>
-            <if test="status != null">
-                status = #{status},
+            
+            <if test="tenantId != null">
+                tenant_id = #{tenantId},
             </if>
+           
             <if test="delFlag != null">
                 del_flag = #{delFlag},
             </if>
@@ -184,9 +195,10 @@
             tce.uid,
             tu.name,
             tu.phone,
+            tu.lock_flag as status
             tce.franchisee_id,
             tce.area_id,
-            tce.status,
+            tce.tenant_id,
             tce.del_flag,
             tce.remark,
             tce.create_time,
@@ -210,15 +222,19 @@
             <if test="areaId != null">
                 and tce.area_id = #{areaId}
             </if>
-        
+    
+            <if test="tenantId != null">
+                and tce.tenant_id = #{tenantId},
+            </if>
+    
             <if test="name != null and name != ''">
                 and tu.name like '%${name}%'
             </if>
         
         </where>
         order by tce.id desc
-        <if test="offset != null and limit != null">
-            limit #{offset}, #{limit}
+        <if test="offset != null and size != null">
+            limit #{offset}, #{size}
         </if>
     
     </select>

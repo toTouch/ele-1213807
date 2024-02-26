@@ -157,6 +157,13 @@ public class ChannelEmployeeServiceImpl implements ChannelEmployeeService {
                 Franchisee franchisee = franchiseeService.queryByIdFromCache(item.getFranchiseeId());
                 item.setFranchiseeName(franchisee.getName());
             }
+    
+            User user = userService.queryByUidFromCache(item.getUid());
+            if (Objects.nonNull(user)) {
+                item.setName(user.getName());
+                item.setPhone(user.getPhone());
+            }
+            
         });
         return channelEmployeeVOList;
     }
@@ -198,6 +205,8 @@ public class ChannelEmployeeServiceImpl implements ChannelEmployeeService {
         channelEmployeeAmount.setTotalIncome(BigDecimal.ZERO);
         channelEmployeeAmount.setBalance(BigDecimal.ZERO);
         channelEmployeeAmount.setWithdrawAmount(BigDecimal.ZERO);
+        channelEmployeeAmount.setFranchiseeId(channelEmployeeRequest.getFranchiseeId());
+        channelEmployeeAmount.setTenantId(tenantId);
         channelEmployeeAmount.setCreateTime(System.currentTimeMillis());
         channelEmployeeAmount.setUpdateTime(System.currentTimeMillis());
         
@@ -208,6 +217,7 @@ public class ChannelEmployeeServiceImpl implements ChannelEmployeeService {
         channelEmployee.setUid(userResult.getUid());
         channelEmployee.setTenantId(tenantId);
         channelEmployee.setAreaId(channelEmployeeRequest.getAreaId());
+        channelEmployee.setFranchiseeId(channelEmployeeRequest.getFranchiseeId());
         //channelEmployee.setStatus(channelEmployeeRequest.getStatus());
         channelEmployee.setDelFlag(CommonConstant.DEL_N);
         channelEmployee.setCreateTime(System.currentTimeMillis());
