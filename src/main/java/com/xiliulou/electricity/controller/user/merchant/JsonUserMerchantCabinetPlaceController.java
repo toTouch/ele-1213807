@@ -2,16 +2,22 @@ package com.xiliulou.electricity.controller.user.merchant;
 
 import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.entity.merchant.Merchant;
 import com.xiliulou.electricity.request.merchant.MerchantCabinetPowerRequest;
 import com.xiliulou.electricity.request.merchant.MerchantPlaceFeeRequest;
 import com.xiliulou.electricity.service.merchant.MerchantCabinetPowerService;
 import com.xiliulou.electricity.service.merchant.MerchantPlaceFeeService;
+import com.xiliulou.electricity.service.merchant.MerchantPlaceService;
+import com.xiliulou.electricity.service.merchant.MerchantService;
+import com.xiliulou.electricity.utils.SecurityUtils;
+import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
+import java.util.Objects;
 
 /**
  * @author maxiaodong
@@ -29,12 +35,26 @@ public class JsonUserMerchantCabinetPlaceController extends BaseController {
     @Resource
     private MerchantPlaceFeeService merchantPlaceFeeService;
     
+    @Resource
+    private MerchantService merchantService;
+    
     /**
      * 是否显示场地费页面：0-不显示，1-显示
      */
     @GetMapping("/user/merchant/place/isShowPlacePage")
-    public R isShowPlacePage(@RequestParam Long merchantId) {
-        return R.ok(merchantPlaceFeeService.isShowPlacePage(merchantId));
+    public R isShowPlacePage() {
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+    
+        Merchant merchant = merchantService.queryByUid(user.getUid());
+        if (Objects.isNull(merchant)) {
+            log.error("merchant place is Show Place Page merchant is null, uid={}", user.getUid());
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        
+        return R.ok(merchantPlaceFeeService.isShowPlacePage(merchant.getId()));
     }
     
     /**
@@ -42,6 +62,17 @@ public class JsonUserMerchantCabinetPlaceController extends BaseController {
      */
     @GetMapping("/user/merchant/cabinetPower/placeAndCabinetList")
     public R placeAndCabinetList(@RequestParam Long merchantId) {
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+    
+        Merchant merchant = merchantService.queryByUid(user.getUid());
+        if (Objects.isNull(merchant)) {
+            log.error("merchant place is Show Place Page merchant is null, uid={}", user.getUid());
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        
         return R.ok(merchantCabinetPowerService.listPlaceAndCabinetByMerchantId(merchantId));
     }
     

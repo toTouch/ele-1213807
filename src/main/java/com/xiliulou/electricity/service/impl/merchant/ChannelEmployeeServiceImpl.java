@@ -157,6 +157,13 @@ public class ChannelEmployeeServiceImpl implements ChannelEmployeeService {
                 Franchisee franchisee = franchiseeService.queryByIdFromCache(item.getFranchiseeId());
                 item.setFranchiseeName(franchisee.getName());
             }
+    
+            User user = userService.queryByUidFromCache(item.getUid());
+            if (Objects.nonNull(user)) {
+                item.setName(user.getName());
+                item.setPhone(user.getPhone());
+            }
+            
         });
         return channelEmployeeVOList;
     }
@@ -198,6 +205,7 @@ public class ChannelEmployeeServiceImpl implements ChannelEmployeeService {
         channelEmployeeAmount.setTotalIncome(BigDecimal.ZERO);
         channelEmployeeAmount.setBalance(BigDecimal.ZERO);
         channelEmployeeAmount.setWithdrawAmount(BigDecimal.ZERO);
+        channelEmployeeAmount.setTenantId(tenantId);
         channelEmployeeAmount.setCreateTime(System.currentTimeMillis());
         channelEmployeeAmount.setUpdateTime(System.currentTimeMillis());
         
