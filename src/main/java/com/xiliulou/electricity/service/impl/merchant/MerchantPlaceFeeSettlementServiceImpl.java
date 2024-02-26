@@ -17,9 +17,11 @@ import com.xiliulou.electricity.service.merchant.MerchantPlaceFeeMonthSummaryRec
 import com.xiliulou.electricity.service.merchant.MerchantPlaceFeeSettlementService;
 import com.xiliulou.electricity.service.merchant.MerchantPlaceService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
+import com.xiliulou.electricity.vo.merchant.MerchantPlaceFeeMonthRecordExportVO;
 import com.xiliulou.electricity.vo.merchant.MerchantPlaceFeeMonthRecordVO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
+import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -34,6 +36,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * @ClassName : MerchantPlaceFeeSettlementServiceImpl
@@ -54,17 +57,19 @@ public class MerchantPlaceFeeSettlementServiceImpl implements MerchantPlaceFeeSe
     @Resource
     private MerchantPlaceFeeMonthSummaryRecordService merchantPlaceFeeMonthSummaryRecordService;
     
-    private List<MerchantPlaceFeeMonthRecordVO> getData(String monthDate) {
+    private List<MerchantPlaceFeeMonthRecordExportVO> getData(String monthDate) {
         
         List<MerchantPlaceFeeMonthRecordVO> merchantPlaceFeeMonthRecords = merchantPlaceFeeMonthRecordService.selectByMonthDate(monthDate, TenantContextHolder.getTenantId());
-        merchantPlaceFeeMonthRecords.parallelStream().forEach(merchantPlaceFeeMonthRecord -> {
+        return merchantPlaceFeeMonthRecords.parallelStream().map(merchantPlaceFeeMonthRecord -> {
+            MerchantPlaceFeeMonthRecordExportVO exportVO = new MerchantPlaceFeeMonthRecordExportVO();
+            BeanUtils.copyProperties(merchantPlaceFeeMonthRecord,exportVO);
             Long placeId = merchantPlaceFeeMonthRecord.getPlaceId();
             MerchantPlace merchantPlace = merchantPlaceService.queryFromCacheById(placeId);
             if (Objects.nonNull(merchantPlace)) {
-                merchantPlaceFeeMonthRecord.setPlaceName(merchantPlace.getName());
+                exportVO.setPlaceName(merchantPlace.getName());
             }
-        });
-        return merchantPlaceFeeMonthRecords;
+            return exportVO;
+        }).collect(Collectors.toList());
     }
     
     @Override
@@ -72,7 +77,6 @@ public class MerchantPlaceFeeSettlementServiceImpl implements MerchantPlaceFeeSe
         
         String fileName = "场地费出账记录.xlsx";
         try {
-            ServletOutputStream outputStream = response.getOutputStream();
             // 告诉浏览器用什么软件可以打开此文件
             response.setHeader("content-Type", "application/vnd.ms-excel");
             // 下载文件的默认名称
@@ -84,8 +88,7 @@ public class MerchantPlaceFeeSettlementServiceImpl implements MerchantPlaceFeeSe
                     .registerWriteHandler(new CommentWriteHandler(getComments(), "xlsx")).registerWriteHandler(new AutoHeadColumnWidthStyleStrategy())
                     // 注意：需要先调用registerWriteHandler()再调用sheet()方法才能使合并策略生效！！！
                     .sheet("场地费出账记录").doWrite(getData(monthDate));
-            return;
-        } catch (IOException e) {
+        } catch (Exception e) {
             log.error("导出报表失败！", e);
         }
     }

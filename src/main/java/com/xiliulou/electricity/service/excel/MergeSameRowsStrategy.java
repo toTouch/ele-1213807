@@ -85,7 +85,7 @@ public class MergeSameRowsStrategy implements CellWriteHandler {
         Cell preCell = cell.getSheet().getRow(curRowIndex - 1).getCell(curColIndex);
         Object preData = preCell.getCellTypeEnum() == CellType.STRING ? preCell.getStringCellValue() : preCell.getNumericCellValue();
         
-        // 仅针对场地费
+       // 仅针对场地费
         Cell preCell111 = cell.getSheet().getRow(curRowIndex - 1).getCell(1);
         Cell curCell111 = cell.getSheet().getRow(curRowIndex).getCell(1);
         if (curRowIndex > 1 && curColIndex > 1 && !Objects.equals(preCell111.getStringCellValue(), curCell111.getStringCellValue())) {
