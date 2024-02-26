@@ -28,7 +28,7 @@ import java.util.Objects;
 
 @Slf4j
 @RestController
-public class JsonAdminChannelEmployeeController {
+public class JsonMerchantChannelEmployeeController {
     
     @Resource
     private ChannelEmployeeService channelEmployeeService;
