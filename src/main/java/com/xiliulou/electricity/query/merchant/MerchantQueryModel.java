@@ -30,4 +30,6 @@ public class MerchantQueryModel {
     private Long channelEmployeeUid;
     
     private List<Long> idList;
+    
+    private Integer tenantId;
 }

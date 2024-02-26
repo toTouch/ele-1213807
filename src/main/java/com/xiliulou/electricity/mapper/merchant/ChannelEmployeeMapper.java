@@ -19,7 +19,7 @@ public interface ChannelEmployeeMapper extends BaseMapper<ChannelEmployee> {
     
     ChannelEmployee selectByUid(@Param("uid") Long uid);
     
-    List<ChannelEmployee> selectListByCondition(ChannelEmployeeRequest channelEmployeeRequest);
+    List<ChannelEmployeeVO> selectListByCondition(ChannelEmployeeRequest channelEmployeeRequest);
     
     Integer countByCondition(ChannelEmployeeRequest channelEmployeeRequest);
     

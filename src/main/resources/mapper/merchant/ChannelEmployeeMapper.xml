@@ -34,31 +34,51 @@
     </select>
     
     <!--查询渠道员工-->
-    <select id="selectListByCondition" resultMap="ChannelEmployeeMap">
-        <include refid="selectChannelEmployee"/>
+    <select id="selectListByCondition" resultMap="com.xiliulou.electricity.vo.merchant.ChannelEmployeeVO">
+        select tce.id,
+                tce.uid,
+                tu.name,
+                tu.phone,
+                tce.franchisee_id,
+                tce.area_id,
+                tce.status,
+                tce.del_flag,
+                tce.remark,
+                tce.create_time,
+                tce.update_time
+        from t_channel_employee tce
+        left join t_user tu on tu.id = tce.uid
         <where>
-            del_flag = 0
+            tce.del_flag = 0
             <if test="id != null">
-                and id = #{id}
+                and tce.id = #{id}
             </if>
             
             <if test="uid != null">
-                and uid = #{uid}
+                and tce.uid = #{uid}
+            </if>
+    
+            <if test="name != null and name != ''">
+                and tce.name like concat('%', #{name}, '%')
             </if>
             
             <if test="franchiseeId != null">
-                and franchisee_id = #{franchiseeId}
+                and tce.franchisee_id = #{franchiseeId}
+            </if>
+            
+            <if test="areaId != null">
+                and tce.area_id = #{areaId}
             </if>
     
             <if test="idList != null and idList.size() > 0">
-                and id in
+                and tce.id in
                 <foreach collection="idList" separator="," open="(" close=")" item="id">
                     #{id}
                 </foreach>
             </if>
     
         </where>
-        order by id desc
+        order by tce.id desc
         <if test="offset != null and limit != null">
             limit #{offset}, #{limit}
         </if>
@@ -67,20 +87,38 @@
     
     <!--查询渠道员工数量-->
     <select id="countByCondition" resultType="int">
-        select count(1) from t_channel_employee
+        select count(1)
+        from t_channel_employee tce
+        left join t_user tu on tu.id = tce.uid
         <where>
-            del_flag = 0
+            tce.del_flag = 0
             <if test="id != null">
-                and id = #{id}
+                and tce.id = #{id}
             </if>
-            
+        
             <if test="uid != null">
-                and uid = #{uid}
+                and tce.uid = #{uid}
             </if>
-            
+    
+            <if test="name != null and name != ''">
+                and tce.name like concat('%', #{name}, '%')
+            </if>
+        
             <if test="franchiseeId != null">
-                and franchisee_id = #{franchiseeId}
+                and tce.franchisee_id = #{franchiseeId}
             </if>
+        
+            <if test="areaId != null">
+                and tce.area_id = #{areaId}
+            </if>
+        
+            <if test="idList != null and idList.size() > 0">
+                and tce.id in
+                <foreach collection="idList" separator="," open="(" close=")" item="id">
+                    #{id}
+                </foreach>
+            </if>
+    
         </where>
     </select>
     

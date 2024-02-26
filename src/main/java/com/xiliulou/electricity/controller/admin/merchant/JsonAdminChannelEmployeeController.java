@@ -35,7 +35,8 @@ public class JsonAdminChannelEmployeeController {
     @GetMapping("/admin/merchant/channelEmployeeList")
     public R channelEmployeeList(@RequestParam("size") Integer size,
                                  @RequestParam("offset") Integer offset,
-                                 @RequestParam(value = "uid", required = false) Long name,
+                                 @RequestParam(value = "uid", required = false) Long uid,
+                                 @RequestParam(value = "name", required = false) String name,
                                  @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
                                  @RequestParam(value = "areaId", required = false) Long areaId) {
     
@@ -50,7 +51,8 @@ public class JsonAdminChannelEmployeeController {
         ChannelEmployeeRequest channelEmployeeRequest = ChannelEmployeeRequest.builder()
                 .size(size)
                 .offset(offset)
-                .uid(name)
+                .uid(uid)
+                .name(name)
                 .franchiseeId(franchiseeId)
                 .areaId(areaId)
                 .build();
@@ -63,12 +65,14 @@ public class JsonAdminChannelEmployeeController {
     
     @GetMapping("/admin/merchant/channelEmployeeCount")
     public R channelEmployeeCount(
-                                @RequestParam(value = "uid", required = false) Long name,
+                                @RequestParam(value = "uid", required = false) Long uid,
+                                @RequestParam(value = "name", required = false) String name,
                                 @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
                                 @RequestParam(value = "areaId", required = false) Long areaId) {
     
         ChannelEmployeeRequest channelEmployeeRequest = ChannelEmployeeRequest.builder()
-                .uid(name)
+                .uid(uid)
+                .name(name)
                 .franchiseeId(franchiseeId)
                 .areaId(areaId)
                 .build();
