@@ -30,6 +30,23 @@ public class JsonUserMerchantPromotionFeeController {
     @Resource
     private MerchantPromotionFeeService merchantPromotionFeeService;
     
+    
+    /**
+     * 获取商户下的场地员工(商户首页筛选条件)
+     * @return 可提现金额
+     */
+    @GetMapping("/user/merchant/promotionFee/merchantEmployee")
+    public R queryMerchantEmployees(@RequestParam("merchantId") Long merchantUid) {
+        
+        //用户区分
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELECTRICITY  ERROR! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        return merchantPromotionFeeService.queryMerchantEmployees(merchantUid);
+    }
+    
     /**
      * 可提现金额
      * @return 可提现金额
