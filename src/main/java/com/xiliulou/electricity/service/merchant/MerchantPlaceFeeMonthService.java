@@ -3,6 +3,7 @@ package com.xiliulou.electricity.service.merchant;
 
 import com.xiliulou.electricity.entity.merchant.MerchantPlaceFeeMonth;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -21,4 +22,6 @@ public interface MerchantPlaceFeeMonthService {
     List<MerchantPlaceFeeMonth> queryListByMonth(Long placeId, Long cabinetId, List<String> xDataList);
     
     List<MerchantPlaceFeeMonth> queryListByMerchantId(Long merchantId, Long cabinetId, Long placeId);
+    
+    BigDecimal sumFeeByTime(Long merchantId, Long placeId, Long cabinetId, Long time);
 }
