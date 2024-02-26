@@ -185,8 +185,8 @@
 
         </where>
         order by tmwa.create_time desc
-        <if test="offset != null and limit != null">
-            limit #{offset}, #{limit}
+        <if test="offset != null and size != null">
+            limit #{offset}, #{size}
         </if>
 
     </select>
@@ -273,8 +273,8 @@
         
         </where>
         order by tmwa.create_time desc
-        <if test="offset != null and limit != null">
-            limit #{offset}, #{limit}
+        <if test="offset != null and size != null">
+            limit #{offset}, #{size}
         </if>
     
     </select>
