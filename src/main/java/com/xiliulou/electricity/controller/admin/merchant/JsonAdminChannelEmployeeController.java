@@ -10,6 +10,7 @@ import com.xiliulou.electricity.validator.UpdateGroup;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -114,7 +115,7 @@ public class JsonAdminChannelEmployeeController {
         return R.ok(channelEmployeeService.queryById(id));
     }
     
-    @GetMapping("/admin/merchant/removeChannelEmployee")
+    @DeleteMapping("/admin/merchant/removeChannelEmployee")
     public R removeChannelEmployee(@RequestParam("id") Long id) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
