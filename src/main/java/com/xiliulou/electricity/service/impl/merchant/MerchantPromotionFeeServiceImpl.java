@@ -3,6 +3,7 @@ package com.xiliulou.electricity.service.impl.merchant;
 import com.google.api.client.util.Lists;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.merchant.MerchantConstant;
+import com.xiliulou.electricity.constant.merchant.MerchantWithdrawConstant;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.merchant.Merchant;
 import com.xiliulou.electricity.entity.merchant.MerchantEmployee;
@@ -11,6 +12,7 @@ import com.xiliulou.electricity.entity.merchant.MerchantPlace;
 import com.xiliulou.electricity.enums.merchant.PromotionFeeQueryTypeEnum;
 import com.xiliulou.electricity.query.merchant.MerchantPromotionDataDetailQueryModel;
 import com.xiliulou.electricity.query.merchant.MerchantPromotionEmployeeDetailQueryModel;
+import com.xiliulou.electricity.query.merchant.MerchantPromotionEmployeeDetailSpecificsQueryModel;
 import com.xiliulou.electricity.query.merchant.MerchantPromotionFeeMerchantNumQueryModel;
 import com.xiliulou.electricity.query.merchant.MerchantPromotionFeeQueryModel;
 import com.xiliulou.electricity.query.merchant.MerchantPromotionRenewalQueryModel;
@@ -21,12 +23,14 @@ import com.xiliulou.electricity.service.merchant.MerchantJoinRecordService;
 import com.xiliulou.electricity.service.merchant.MerchantPlaceService;
 import com.xiliulou.electricity.service.merchant.MerchantPromotionFeeService;
 import com.xiliulou.electricity.service.merchant.MerchantService;
+import com.xiliulou.electricity.service.merchant.MerchantWithdrawApplicationService;
 import com.xiliulou.electricity.service.merchant.RebateRecordService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DateUtils;
 import com.xiliulou.electricity.vo.merchant.MerchantPromotionDataDetailVO;
 import com.xiliulou.electricity.vo.merchant.MerchantPromotionDataVO;
 import com.xiliulou.electricity.vo.merchant.MerchantPromotionEmployeeDetailVO;
+import com.xiliulou.electricity.vo.merchant.MerchantPromotionFeeEmployeeVO;
 import com.xiliulou.electricity.vo.merchant.MerchantPromotionFeeIncomeVO;
 import com.xiliulou.electricity.vo.merchant.MerchantPromotionFeeRenewalVO;
 import com.xiliulou.electricity.vo.merchant.MerchantPromotionFeeScanCodeVO;
@@ -78,6 +82,47 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
     @Resource
     private MerchantPlaceService merchantPlaceService;
     
+    @Resource
+    private MerchantWithdrawApplicationService merchantWithdrawApplicationService;
+    
+    @Override
+    public R queryMerchantEmployees(Long merchantUid) {
+        //校验用户是否是商户
+        Merchant merchant = merchantService.queryByUid(merchantUid);
+        if (Objects.isNull(merchant)) {
+            log.error("find merchant user error, not found merchant user, uid = {}", merchantUid);
+            return R.fail("120007", "未找到商户");
+        }
+        
+        MerchantPromotionEmployeeDetailQueryModel employeeDetailQueryModel = MerchantPromotionEmployeeDetailQueryModel.builder().merchantUid(merchantUid)
+                .tenantId(TenantContextHolder.getTenantId()).build();
+        
+        List<MerchantEmployee> merchantEmployees = merchantEmployeeService.selectByMerchantUid(employeeDetailQueryModel);
+        
+        List<MerchantPromotionFeeEmployeeVO> promotionFeeEmployeeVOList = new ArrayList<>();
+        
+        MerchantPromotionFeeEmployeeVO merchantVO = new MerchantPromotionFeeEmployeeVO();
+        merchantVO.setType(PromotionFeeQueryTypeEnum.MERCHANT.getCode());
+        merchantVO.setUserName(merchant.getName());
+        merchantVO.setUid(merchant.getUid());
+        promotionFeeEmployeeVOList.add(merchantVO);
+        
+        if (CollectionUtils.isNotEmpty(merchantEmployees)) {
+            List<MerchantPromotionFeeEmployeeVO> employeeVOList = merchantEmployees.parallelStream().map(merchantEmployee -> {
+                MerchantPromotionFeeEmployeeVO employeeVO = new MerchantPromotionFeeEmployeeVO();
+                employeeVO.setType(PromotionFeeQueryTypeEnum.MERCHANT_EMPLOYEE.getCode());
+                User user = userService.queryByUidFromCache(merchantEmployee.getUid());
+                if(Objects.nonNull(user)){
+                    employeeVO.setUserName(user.getName());
+                }
+                employeeVO.setUid(merchantEmployee.getUid());
+                return employeeVO;
+            }).collect(Collectors.toList());
+            promotionFeeEmployeeVOList.addAll(employeeVOList);
+        }
+        return R.ok(promotionFeeEmployeeVOList);
+    }
+    
     @Override
     public R queryMerchantAvailableWithdrawAmount(Long uid) {
         //校验用户是否是商户
@@ -94,10 +139,31 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
         // 获取已结算的收益（数据来源：返利记录）
         BigDecimal settleIncome = rebateRecordService.sumByStatus(settleQueryModel);
         settleQueryModel.setStatus(MerchantConstant.MERCHANT_REBATE_STATUS_RETURNED);
+        
         // 获取已退回的收益（数据来源：返利记录）
         BigDecimal returnIncome = rebateRecordService.sumByStatus(settleQueryModel);
         
-        return null;
+        //审核中
+        BigDecimal reviewInProgress = merchantWithdrawApplicationService.sumByStatus(TenantContextHolder.getTenantId(), MerchantWithdrawConstant.REVIEW_IN_PROGRESS, uid);
+        
+        //审核拒绝
+        BigDecimal reviewRefused = merchantWithdrawApplicationService.sumByStatus(TenantContextHolder.getTenantId(), MerchantWithdrawConstant.REVIEW_REFUSED, uid);
+        
+        //审核成功
+        BigDecimal reviewSuccess = merchantWithdrawApplicationService.sumByStatus(TenantContextHolder.getTenantId(), MerchantWithdrawConstant.REVIEW_SUCCESS, uid);
+        
+        //提现审核中
+        BigDecimal withdrawInProgress = merchantWithdrawApplicationService.sumByStatus(TenantContextHolder.getTenantId(), MerchantWithdrawConstant.WITHDRAW_IN_PROGRESS, uid);
+        
+        //提现成功
+        BigDecimal withdrawSuccess = merchantWithdrawApplicationService.sumByStatus(TenantContextHolder.getTenantId(), MerchantWithdrawConstant.WITHDRAW_SUCCESS, uid);
+        
+        //提现失败
+        BigDecimal withdrawFail = merchantWithdrawApplicationService.sumByStatus(TenantContextHolder.getTenantId(), MerchantWithdrawConstant.WITHDRAW_FAIL, uid);
+        
+        BigDecimal result = new BigDecimal(0);
+        return R.ok(result.add(settleIncome).add(reviewRefused).add(withdrawFail).subtract(reviewInProgress).subtract(reviewSuccess).subtract(withdrawInProgress)
+                .subtract(withdrawSuccess).subtract(returnIncome));
     }
     
     @Override
@@ -338,6 +404,11 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
                         MerchantJoinRecord.STATUS_SUCCESS));
         dataVO.setTotalIncome(buildPromotionFeeTotalIncomeVO(queryModel.getType(), queryModel.getUid(), DateUtils.getMonthEndTimeStampByDate(queryModel.getStartTime())));
         return R.ok(dataVO);
+    }
+    
+    @Override
+    public R selectPromotionEmployeeDetailList(MerchantPromotionEmployeeDetailSpecificsQueryModel queryModel) {
+        return R.ok(rebateRecordService.selectListPromotionDetail(queryModel));
     }
     
     private Integer buildMerchantNumCount(Long uid, Long startTime, Long endTime) {

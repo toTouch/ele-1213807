@@ -9,7 +9,6 @@ import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.security.bean.TokenUser;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -25,7 +24,7 @@ import java.util.Objects;
  */
 
 @RestController
-public class JsonAdminMerchantPlaceFeeSettlementController extends BaseController {
+public class JsonMerchantPlaceFeeSettlementController extends BaseController {
     
     @Resource
     private MerchantPlaceFeeSettlementService merchantPlaceFeeSettlementService;

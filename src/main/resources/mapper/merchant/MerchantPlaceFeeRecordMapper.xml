@@ -43,4 +43,17 @@
             limit #{offset}, #{limit}
         </if>
     </select>
+    
+    <select id="existPlaceFeeByCabinetId" resultType="java.lang.Integer">
+        SELECT
+            count(1)
+        FROM
+            t_merchant_place_fee_record
+        where
+            new_place_fee >= 0
+           and cabinet_id in
+          <foreach collection="cabinetIdList" separator="," open="(" close=")" item="cabinetId">
+            #{cabinetId}
+          </foreach>
+    </select>
 </mapper>

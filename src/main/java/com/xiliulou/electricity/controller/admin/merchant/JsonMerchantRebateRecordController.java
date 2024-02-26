@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
  */
 @Slf4j
 @RestController
-public class JsonAdminRebateRecordController extends BaseController {
+public class JsonMerchantRebateRecordController extends BaseController {
     
     @Autowired
     private RebateRecordService rebateRecordService;

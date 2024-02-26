@@ -4,12 +4,36 @@ import cn.hutool.core.util.StrUtil;
 import com.google.api.client.util.Maps;
 import com.xiliulou.core.thread.XllThreadPoolExecutorService;
 import com.xiliulou.core.thread.XllThreadPoolExecutors;
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.ElectricityCabinetDataAnalyseConstant;
-import com.xiliulou.electricity.entity.*;
+import com.xiliulou.electricity.constant.NumberConstant;
+import com.xiliulou.electricity.entity.EleCabinetCoreData;
+import com.xiliulou.electricity.entity.ElectricityBattery;
+import com.xiliulou.electricity.entity.ElectricityCabinet;
+import com.xiliulou.electricity.entity.ElectricityCabinetBox;
+import com.xiliulou.electricity.entity.ElectricityCabinetModel;
+import com.xiliulou.electricity.entity.ElectricityCabinetOrder;
+import com.xiliulou.electricity.entity.ElectricityCabinetPower;
+import com.xiliulou.electricity.entity.ElectricityCabinetServer;
+import com.xiliulou.electricity.entity.ElectricityConfig;
+import com.xiliulou.electricity.entity.Franchisee;
+import com.xiliulou.electricity.entity.Store;
 import com.xiliulou.electricity.entity.merchant.MerchantArea;
 import com.xiliulou.electricity.query.ElectricityCabinetQuery;
-import com.xiliulou.electricity.query.merchant.MerchantAreaQuery;
-import com.xiliulou.electricity.service.*;
+import com.xiliulou.electricity.request.merchant.MerchantAreaRequest;
+import com.xiliulou.electricity.service.EleCabinetCoreDataService;
+import com.xiliulou.electricity.service.EleCabinetDataAnalyseService;
+import com.xiliulou.electricity.service.EleWarnMsgService;
+import com.xiliulou.electricity.service.ElectricityBatteryService;
+import com.xiliulou.electricity.service.ElectricityCabinetBoxService;
+import com.xiliulou.electricity.service.ElectricityCabinetModelService;
+import com.xiliulou.electricity.service.ElectricityCabinetOrderService;
+import com.xiliulou.electricity.service.ElectricityCabinetPowerService;
+import com.xiliulou.electricity.service.ElectricityCabinetServerService;
+import com.xiliulou.electricity.service.ElectricityCabinetService;
+import com.xiliulou.electricity.service.ElectricityConfigService;
+import com.xiliulou.electricity.service.FranchiseeService;
+import com.xiliulou.electricity.service.StoreService;
 import com.xiliulou.electricity.service.merchant.MerchantAreaService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DateUtils;
@@ -26,13 +50,12 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -43,179 +66,243 @@ import java.util.stream.Collectors;
 @Service("eleCabinetDataAnalyseService")
 @Slf4j
 public class EleCabinetDataAnalyseServiceImpl implements EleCabinetDataAnalyseService {
-
+    
     private static final XllThreadPoolExecutorService DATA_ANALYSE_THREAD_POOL = XllThreadPoolExecutors.newFixedThreadPool("DATA-ANALYSE-THREAD-POOL", 4, "dataAnalyseThread:");
-
+    
     @Autowired
     private ElectricityCabinetService eleCabinetService;
+    
     @Autowired
     private ElectricityCabinetModelService eleCabinetModelService;
+    
     @Autowired
     private ElectricityCabinetServerService eleCabinetServerService;
+    
     @Autowired
     private EleCabinetCoreDataService eleCabinetCoreDataService;
+    
     @Autowired
     private FranchiseeService franchiseeService;
+    
     @Autowired
     private ElectricityCabinetPowerService eleCabinetPowerService;
+    
     @Autowired
     private ElectricityBatteryService electricityBatteryService;
+    
     @Autowired
     private ElectricityCabinetBoxService electricityCabinetBoxService;
+    
     @Autowired
     private ElectricityCabinetOrderService eleCabinetOrderService;
+    
     @Autowired
     private StoreService storeService;
+    
     @Autowired
     private EleWarnMsgService eleWarnMsgService;
     
     @Resource
+    private ElectricityConfigService electricityConfigService;
+    
     private MerchantAreaService merchantAreaService;
     
-
+    
     @Override
     public List<EleCabinetDataAnalyseVO> selectOfflineByPage(ElectricityCabinetQuery cabinetQuery) {
         List<EleCabinetDataAnalyseVO> electricityCabinetList = eleCabinetService.selecteleCabinetVOByQuery(cabinetQuery);
         if (CollectionUtils.isEmpty(electricityCabinetList)) {
             return Collections.emptyList();
         }
-
+        
         return buildEleCabinetDataAnalyseVOs(electricityCabinetList, cabinetQuery);
     }
-
+    
     @Override
     public List<EleCabinetDataAnalyseVO> selectLockPage(ElectricityCabinetQuery cabinetQuery) {
         List<EleCabinetDataAnalyseVO> electricityCabinetList = eleCabinetService.selectLockCellByQuery(cabinetQuery);
         if (CollectionUtils.isEmpty(electricityCabinetList)) {
             return Collections.emptyList();
         }
-
+        
         return buildEleCabinetDataAnalyseVOs(electricityCabinetList, cabinetQuery);
     }
-
+    
+    @Slave
+    @Override
+    public List<EleCabinetDataAnalyseVO> selectLowPowerPage(ElectricityCabinetQuery cabinetQuery) {
+        ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(cabinetQuery.getTenantId());
+        BigDecimal lowChargeRate = Optional.ofNullable(electricityConfig).map(ElectricityConfig::getLowChargeRate).orElse(NumberConstant.ZERO_BD);
+        
+        cabinetQuery.setLowChargeRate(lowChargeRate.doubleValue());
+        
+        return this.selectPowerPage(cabinetQuery);
+    }
+    
+    @Slave
+    @Override
+    public Integer selectLowPowerPageCount(ElectricityCabinetQuery cabinetQuery) {
+        ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(cabinetQuery.getTenantId());
+        BigDecimal lowChargeRate = Optional.ofNullable(electricityConfig).map(ElectricityConfig::getLowChargeRate).orElse(NumberConstant.ZERO_BD);
+        
+        cabinetQuery.setLowChargeRate(lowChargeRate.doubleValue());
+        
+        return this.selectPowerPageCount(cabinetQuery);
+    }
+    
+    @Slave
+    @Override
+    public List<EleCabinetDataAnalyseVO> selectFullPowerPage(ElectricityCabinetQuery cabinetQuery) {
+        ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(cabinetQuery.getTenantId());
+        BigDecimal fullChargeRate = Optional.ofNullable(electricityConfig).map(ElectricityConfig::getFullChargeRate).orElse(NumberConstant.ZERO_BD);
+        
+        cabinetQuery.setFullChargeRate(fullChargeRate.doubleValue());
+        
+        return this.selectPowerPage(cabinetQuery);
+    }
+    
+    @Slave
+    @Override
+    public Integer selectFullPowerPageCount(ElectricityCabinetQuery cabinetQuery) {
+        ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(cabinetQuery.getTenantId());
+        BigDecimal fullChargeRate = Optional.ofNullable(electricityConfig).map(ElectricityConfig::getFullChargeRate).orElse(NumberConstant.ZERO_BD);
+        
+        cabinetQuery.setFullChargeRate(fullChargeRate.doubleValue());
+        
+        return this.selectPowerPageCount(cabinetQuery);
+    }
+    
     @Override
     public List<EleCabinetDataAnalyseVO> selectPowerPage(ElectricityCabinetQuery cabinetQuery) {
         List<EleCabinetDataAnalyseVO> electricityCabinetList = eleCabinetService.selectPowerPage(cabinetQuery);
         if (CollectionUtils.isEmpty(electricityCabinetList)) {
             return Collections.emptyList();
         }
-
+        
         return buildEleCabinetDataAnalyseVOs(electricityCabinetList, cabinetQuery);
     }
-
+    
     @Override
     public Integer selectOfflinePageCount(ElectricityCabinetQuery cabinetQuery) {
         return eleCabinetService.selectOfflinePageCount(cabinetQuery);
     }
-
+    
     @Override
     public Integer selectLockPageCount(ElectricityCabinetQuery cabinetQuery) {
         return eleCabinetService.selectLockPageCount(cabinetQuery);
     }
-
+    
     @Override
     public Integer selectPowerPageCount(ElectricityCabinetQuery cabinetQuery) {
         return eleCabinetService.selectPowerPageCount(cabinetQuery);
     }
-
+    
     @Override
     public EleCabinetOrderAnalyseVO averageStatistics(Integer eid) {
         EleCabinetOrderAnalyseVO result = new EleCabinetOrderAnalyseVO();
-
+        
         ElectricityCabinet electricityCabinet = eleCabinetService.queryByIdFromCache(eid);
         if (Objects.isNull(electricityCabinet) || !Objects.equals(electricityCabinet.getTenantId(), TenantContextHolder.getTenantId())) {
             return result;
         }
-
+        
         //获取本月订单
-        List<ElectricityCabinetOrder> electricityCabinetOrders = eleCabinetOrderService.selectMonthExchangeOrders(electricityCabinet.getId(), DateUtils.get30AgoStartTime(), System.currentTimeMillis(), electricityCabinet.getTenantId());
+        List<ElectricityCabinetOrder> electricityCabinetOrders = eleCabinetOrderService.selectMonthExchangeOrders(electricityCabinet.getId(), DateUtils.get30AgoStartTime(),
+                System.currentTimeMillis(), electricityCabinet.getTenantId());
         if (CollectionUtils.isEmpty(electricityCabinetOrders)) {
             return result;
         }
-
+        
         //日均换电次数
         result.setAverageExchangeNumber(BigDecimal.valueOf(electricityCabinetOrders.size()).divide(BigDecimal.valueOf(30), 2, RoundingMode.HALF_UP).doubleValue());
-
+        
         //本月换电总人数
         long peopleNumber = electricityCabinetOrders.stream().map(ElectricityCabinetOrder::getUid).distinct().count();
-
+        
         //日均活跃度
         result.setAveragePeopleNumber(BigDecimal.valueOf(peopleNumber).divide(BigDecimal.valueOf(30), 2, RoundingMode.HALF_UP).doubleValue());
-
+        
         return result;
     }
-
+    
     @Override
     public EleCabinetOrderAnalyseVO todayStatistics(Integer eid) {
         EleCabinetOrderAnalyseVO result = new EleCabinetOrderAnalyseVO();
-
+        
         ElectricityCabinet electricityCabinet = eleCabinetService.queryByIdFromCache(eid);
         if (Objects.isNull(electricityCabinet) || !Objects.equals(electricityCabinet.getTenantId(), TenantContextHolder.getTenantId())) {
             return result;
         }
-
+        
         //今日换电订单
-        List<ElectricityCabinetOrder> electricityCabinetOrders = eleCabinetOrderService.selectTodayExchangeOrder(electricityCabinet.getId(), DateUtils.getTodayStartTimeStamp(), DateUtils.getTodayEndTimeStamp(), electricityCabinet.getTenantId());
+        List<ElectricityCabinetOrder> electricityCabinetOrders = eleCabinetOrderService.selectTodayExchangeOrder(electricityCabinet.getId(), DateUtils.getTodayStartTimeStamp(),
+                DateUtils.getTodayEndTimeStamp(), electricityCabinet.getTenantId());
         if (CollectionUtils.isEmpty(electricityCabinetOrders)) {
             return result;
         }
-
+        
         //今日换电数量
         result.setExchangeNumber(electricityCabinetOrders.size());
-
+        
         //今日活跃度
         result.setPeopleNumber((int) electricityCabinetOrders.stream().map(ElectricityCabinetOrder::getUid).distinct().count());
         
         return result;
     }
-
+    
     private List<EleCabinetDataAnalyseVO> buildEleCabinetDataAnalyseVOs(List<EleCabinetDataAnalyseVO> electricityCabinetList, ElectricityCabinetQuery cabinetQuery) {
         CompletableFuture<Void> acquireBasicInfo = CompletableFuture.runAsync(() -> electricityCabinetList.forEach(item -> {
-
+            
             ElectricityCabinetModel cabinetModel = eleCabinetModelService.queryByIdFromCache(item.getModelId());
             item.setModelName(Objects.nonNull(cabinetModel) ? cabinetModel.getName() : "");
-
+            
             EleCabinetCoreData eleCabinetCoreData = eleCabinetCoreDataService.selectByEid(item.getId());
             item.setTemp(Objects.nonNull(eleCabinetCoreData) ? eleCabinetCoreData.getTemp() : 0);
-
+            
             ElectricityCabinetServer eleCabinetServer = eleCabinetServerService.selectByEid(item.getId());
             item.setServerEndTime(Objects.nonNull(eleCabinetServer) ? eleCabinetServer.getServerEndTime() : System.currentTimeMillis());
-
+            
             ElectricityCabinetPower eleCabinetPower = eleCabinetPowerService.selectLatestByEid(item.getId());
             item.setPowerConsumption(Objects.nonNull(eleCabinetPower) ? eleCabinetPower.getSumPower() : 0);
-
+            
             Store store = storeService.queryByIdFromCache(item.getStoreId());
             item.setStoreName(Objects.nonNull(store) ? store.getName() : "");
-
+            
             Franchisee franchisee = franchiseeService.queryByIdFromCache(Objects.nonNull(store) ? store.getFranchiseeId() : 0);
             item.setFranchiseeName(Objects.nonNull(franchisee) ? franchisee.getName() : "");
-
+            
         }), DATA_ANALYSE_THREAD_POOL).exceptionally(e -> {
             log.error("ELE ERROR! acquire eleCabinet basic info fail", e);
             return null;
         });
-
+        
         CompletableFuture<Void> acquireCellInfo = CompletableFuture.runAsync(() -> electricityCabinetList.forEach(item -> {
-
+            
             Double fullyCharged = item.getFullyCharged();
-
+            
             List<ElectricityCabinetBox> cabinetBoxList = electricityCabinetBoxService.queryAllBoxByElectricityCabinetId(item.getId());
             if (CollectionUtils.isEmpty(cabinetBoxList)) {
                 return;
             }
-
-            long exchangeableNumber = cabinetBoxList.stream().filter(e -> StringUtils.isNotBlank(e.getSn()) && !StrUtil.contains(e.getSn(), "UNKNOW") && eleCabinetService.isExchangeable(e, fullyCharged)).count();
-
-            long fullBatteryNumber = cabinetBoxList.stream().filter(e -> StringUtils.isNotBlank(e.getSn()) && !StrUtil.contains(e.getSn(), "UNKNOW") && Objects.nonNull(e.getPower()) && Objects.equals(e.getPower().intValue(), 100)).count();
-
-            long emptyCellNumber = cabinetBoxList.stream().filter(e -> eleCabinetService.isNoElectricityBattery(e) && Objects.equals(e.getUsableStatus(), ElectricityCabinetBox.ELECTRICITY_CABINET_BOX_USABLE)).count();
-
+            
+            long exchangeableNumber = cabinetBoxList.stream()
+                    .filter(e -> StringUtils.isNotBlank(e.getSn()) && !StrUtil.contains(e.getSn(), "UNKNOW") && eleCabinetService.isExchangeable(e, fullyCharged)).count();
+            
+            long fullBatteryNumber = cabinetBoxList.stream()
+                    .filter(e -> StringUtils.isNotBlank(e.getSn()) && !StrUtil.contains(e.getSn(), "UNKNOW") && Objects.nonNull(e.getPower()) && Objects.equals(
+                            e.getPower().intValue(), 100)).count();
+            
+            long emptyCellNumber = cabinetBoxList.stream()
+                    .filter(e -> eleCabinetService.isNoElectricityBattery(e) && Objects.equals(e.getUsableStatus(), ElectricityCabinetBox.ELECTRICITY_CABINET_BOX_USABLE)).count();
+            
             long disableCellNumber = cabinetBoxList.stream().filter(e -> Objects.equals(e.getUsableStatus(), ElectricityCabinetBox.ELECTRICITY_CABINET_BOX_UN_USABLE)).count();
-
+            
             long openFanNumber = cabinetBoxList.stream().filter(e -> !Objects.equals(e.getIsFan(), ElectricityCabinetBox.OPEN_FAN)).count();
-
-            long chargeCellNumber = cabinetBoxList.stream().filter(e -> StringUtils.isNotBlank(e.getSn())).map(t -> electricityBatteryService.queryBySnFromDb(t.getSn())).filter(battery -> Objects.nonNull(battery) && (Objects.equals(battery.getChargeStatus(), ElectricityBattery.CHARGE_STATUS_STARTING) || Objects.equals(battery.getChargeStatus(), ElectricityBattery.CHARGE_STATUS_CHARGING))).count();
-
+            
+            long chargeCellNumber = cabinetBoxList.stream().filter(e -> StringUtils.isNotBlank(e.getSn())).map(t -> electricityBatteryService.queryBySnFromDb(t.getSn()))
+                    .filter(battery -> Objects.nonNull(battery) && (Objects.equals(battery.getChargeStatus(), ElectricityBattery.CHARGE_STATUS_STARTING) || Objects.equals(
+                            battery.getChargeStatus(), ElectricityBattery.CHARGE_STATUS_CHARGING))).count();
+            
             item.setFullBatteryNumber((int) fullBatteryNumber);
             item.setChargeBatteryNumber((int) chargeCellNumber);
             item.setEmptyCellNumber((int) emptyCellNumber);
@@ -226,10 +313,10 @@ public class EleCabinetDataAnalyseServiceImpl implements EleCabinetDataAnalyseSe
             log.error("ELE ERROR! acquire eleCabinet cell info fail", e);
             return null;
         });
-    
+        
         // 查询区域
         List<Long> areaIdList = electricityCabinetList.stream().map(EleCabinetDataAnalyseVO::getAreaId).filter(Objects::nonNull).distinct().collect(Collectors.toList());
-        MerchantAreaQuery areaQuery = MerchantAreaQuery.builder().idList(areaIdList).build();
+        MerchantAreaRequest areaQuery = MerchantAreaRequest.builder().idList(areaIdList).build();
         List<MerchantArea> merchantAreaList = merchantAreaService.queryList(areaQuery);
         Map<Long, String> areaNameMap = Maps.newHashMap();
         if (!CollectionUtils.isEmpty(merchantAreaList)) {
@@ -245,9 +332,9 @@ public class EleCabinetDataAnalyseServiceImpl implements EleCabinetDataAnalyseSe
             log.error("ELE ERROR! acquire eleCabinet cell info fail", e);
             return null;
         });
-
+        
         CompletableFuture<Void> future = CompletableFuture.allOf(acquireBasicInfo, acquireCellInfo, areaInfo);
-
+        
         try {
             future.get(10, TimeUnit.SECONDS);
         } catch (Exception e) {
@@ -255,23 +342,23 @@ public class EleCabinetDataAnalyseServiceImpl implements EleCabinetDataAnalyseSe
         }
         
         // 排序
-        if(Objects.equals(cabinetQuery.getOrderByAverageNumber(), ElectricityCabinetDataAnalyseConstant.ORDER_BY_AVERAGE_NUMBER_DESC)){
+        if (Objects.equals(cabinetQuery.getOrderByAverageNumber(), ElectricityCabinetDataAnalyseConstant.ORDER_BY_AVERAGE_NUMBER_DESC)) {
             return electricityCabinetList.stream().sorted(Comparator.comparing(EleCabinetDataAnalyseVO::getAverageNumber).reversed()).collect(Collectors.toList());
-        }else if(Objects.equals(cabinetQuery.getOrderByAverageNumber(), ElectricityCabinetDataAnalyseConstant.ORDER_BY_AVERAGE_NUMBER_ASC)){
+        } else if (Objects.equals(cabinetQuery.getOrderByAverageNumber(), ElectricityCabinetDataAnalyseConstant.ORDER_BY_AVERAGE_NUMBER_ASC)) {
             return electricityCabinetList.stream().sorted(Comparator.comparing(EleCabinetDataAnalyseVO::getAverageNumber)).collect(Collectors.toList());
-        }else if(Objects.equals(cabinetQuery.getOrderByAverageActivity(), ElectricityCabinetDataAnalyseConstant.ORDER_BY_AVERAGE_ACTIVITY_DESC)){
+        } else if (Objects.equals(cabinetQuery.getOrderByAverageActivity(), ElectricityCabinetDataAnalyseConstant.ORDER_BY_AVERAGE_ACTIVITY_DESC)) {
             return electricityCabinetList.stream().sorted(Comparator.comparing(EleCabinetDataAnalyseVO::getAverageActivity).reversed()).collect(Collectors.toList());
-        }else if(Objects.equals(cabinetQuery.getOrderByAverageActivity(), ElectricityCabinetDataAnalyseConstant.ORDER_BY_AVERAGE_ACTIVITY_ASC)){
+        } else if (Objects.equals(cabinetQuery.getOrderByAverageActivity(), ElectricityCabinetDataAnalyseConstant.ORDER_BY_AVERAGE_ACTIVITY_ASC)) {
             return electricityCabinetList.stream().sorted(Comparator.comparing(EleCabinetDataAnalyseVO::getAverageActivity)).collect(Collectors.toList());
-        }else if(Objects.equals(cabinetQuery.getOrderByTodayNumber(), ElectricityCabinetDataAnalyseConstant.ORDER_BY_TODAY_NUMBER_DESC)){
+        } else if (Objects.equals(cabinetQuery.getOrderByTodayNumber(), ElectricityCabinetDataAnalyseConstant.ORDER_BY_TODAY_NUMBER_DESC)) {
             return electricityCabinetList.stream().sorted(Comparator.comparing(EleCabinetDataAnalyseVO::getTodayNumber).reversed()).collect(Collectors.toList());
-        }else if(Objects.equals(cabinetQuery.getOrderByTodayNumber(), ElectricityCabinetDataAnalyseConstant.ORDER_BY_TODAY_NUMBER_ASC)){
+        } else if (Objects.equals(cabinetQuery.getOrderByTodayNumber(), ElectricityCabinetDataAnalyseConstant.ORDER_BY_TODAY_NUMBER_ASC)) {
             return electricityCabinetList.stream().sorted(Comparator.comparing(EleCabinetDataAnalyseVO::getTodayNumber)).collect(Collectors.toList());
-        }else if(Objects.equals(cabinetQuery.getOrderByTodayActivity(), ElectricityCabinetDataAnalyseConstant.ORDER_BY_TODAY_ACTIVITY_DESC)){
+        } else if (Objects.equals(cabinetQuery.getOrderByTodayActivity(), ElectricityCabinetDataAnalyseConstant.ORDER_BY_TODAY_ACTIVITY_DESC)) {
             return electricityCabinetList.stream().sorted(Comparator.comparing(EleCabinetDataAnalyseVO::getTodayActivity).reversed()).collect(Collectors.toList());
-        }else if(Objects.equals(cabinetQuery.getOrderByTodayActivity(), ElectricityCabinetDataAnalyseConstant.ORDER_BY_TODAY_ACTIVITY_ASC)){
+        } else if (Objects.equals(cabinetQuery.getOrderByTodayActivity(), ElectricityCabinetDataAnalyseConstant.ORDER_BY_TODAY_ACTIVITY_ASC)) {
             return electricityCabinetList.stream().sorted(Comparator.comparing(EleCabinetDataAnalyseVO::getTodayActivity)).collect(Collectors.toList());
-        }else {
+        } else {
             return electricityCabinetList.stream().sorted(Comparator.comparing(EleCabinetDataAnalyseVO::getAverageNumber).reversed()).collect(Collectors.toList());
         }
     }

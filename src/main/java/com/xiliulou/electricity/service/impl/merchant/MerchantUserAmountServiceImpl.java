@@ -36,16 +36,28 @@ public class MerchantUserAmountServiceImpl implements MerchantUserAmountService 
         return merchantUserAmountMapper.queryList(joinRecordQueryMode);
     }
     
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public Integer addAmount(BigDecimal amount, Long uid, Long tenantId) {
         return merchantUserAmountMapper.addAmountByUid(amount, uid, tenantId);
     }
     
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public Integer reduceAmount(BigDecimal amount, Long uid, Long tenantId) {
         return merchantUserAmountMapper.reduceAmountByUid(amount, uid, tenantId);
+    }
+    
+    @Transactional(rollbackFor = Exception.class)
+    @Override
+    public Integer withdrawAmount(BigDecimal amount, Long uid, Long tenantId) {
+        return merchantUserAmountMapper.withdrawAmountByUid(amount, uid, tenantId);
+    }
+    
+    @Transactional(rollbackFor = Exception.class)
+    @Override
+    public Integer rollBackWithdrawAmount(BigDecimal amount, Long uid, Long tenantId) {
+        return merchantUserAmountMapper.rollBackWithdrawAmountByUid(amount, uid, tenantId);
     }
     
     @Slave

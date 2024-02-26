@@ -140,4 +140,10 @@ public class MerchantPlaceFeeRecordServiceImpl implements MerchantPlaceFeeRecord
             });
         }
     }
+    
+    @Slave
+    @Override
+    public Integer existPlaceFeeByCabinetId(List<Long> cabinetIdList) {
+        return merchantPlaceFeeRecordMapper.existPlaceFeeByCabinetId(cabinetIdList);
+    }
 }

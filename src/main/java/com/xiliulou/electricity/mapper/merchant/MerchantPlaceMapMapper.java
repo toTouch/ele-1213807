@@ -29,4 +29,6 @@ public interface MerchantPlaceMapMapper {
     List<MerchantPlaceMapVO> selectBindMerchantName(MerchantPlaceMapQueryModel placeMapQueryModel);
     
     List<MerchantPlaceMapVO> countByMerchantIdList(MerchantPlaceMapQueryModel placeMapQueryModel);
+    
+    List<Long> selectCabinetIdsByMerchantId(@Param("merchantId") Long merchantId);
 }

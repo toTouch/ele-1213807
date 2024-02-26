@@ -1,8 +1,9 @@
 package com.xiliulou.electricity.service.impl.merchant;
 
 import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.db.dynamic.annotation.Slave;
-import com.xiliulou.electricity.constant.merchant.MerchantPlaceConstant;
+import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.merchant.MerchantPlace;
@@ -10,18 +11,23 @@ import com.xiliulou.electricity.entity.merchant.MerchantPlaceBind;
 import com.xiliulou.electricity.entity.merchant.MerchantPlaceCabinetBind;
 import com.xiliulou.electricity.request.merchant.MerchantCabinetPowerRequest;
 import com.xiliulou.electricity.request.merchant.MerchantPlaceCabinetConditionRequest;
-import com.xiliulou.electricity.request.merchant.MerchantPowerAndPlaceFeeRequest;
 import com.xiliulou.electricity.service.ElePowerService;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
+import com.xiliulou.electricity.service.merchant.MerchantCabinetPowerMonthRecordProService;
 import com.xiliulou.electricity.service.merchant.MerchantCabinetPowerService;
 import com.xiliulou.electricity.service.merchant.MerchantPlaceBindService;
 import com.xiliulou.electricity.service.merchant.MerchantPlaceCabinetBindService;
 import com.xiliulou.electricity.service.merchant.MerchantPlaceService;
+import com.xiliulou.electricity.utils.DateUtils;
+import com.xiliulou.electricity.vo.merchant.MerchantCabinetPowerDetailVO;
+import com.xiliulou.electricity.vo.merchant.MerchantCabinetPowerVO;
 import com.xiliulou.electricity.vo.merchant.MerchantPlaceAndCabinetUserVO;
 import com.xiliulou.electricity.vo.merchant.MerchantPlaceCabinetVO;
 import com.xiliulou.electricity.vo.merchant.MerchantPlaceUserVO;
 import com.xiliulou.electricity.vo.merchant.MerchantPowerVO;
+import com.xiliulou.electricity.vo.merchant.MerchantTotalPowerVO;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -31,6 +37,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
@@ -58,6 +65,94 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
     
     @Resource
     private RedisService redisService;
+    
+    @Resource
+    private MerchantCabinetPowerMonthRecordProService merchantCabinetPowerMonthRecordProService;
+    
+    @Slave
+    @Override
+    public MerchantPowerVO todayPower(MerchantCabinetPowerRequest request) {
+        //获取要查询的柜机
+        List<Long> cabinetIds = getStaticsCabinetIds(request);
+        
+        // 判断柜机和场地绑定时间，今天有没有往前拉？是否跨天
+        // 今日0点
+        Long todayStartTime = DateUtils.getTimeAgoStartTime(NumberConstant.ZERO);
+        
+        List<MerchantPlaceCabinetBind> cabinetBindList = merchantPlaceCabinetBindService.listDayBindRecord(todayStartTime, System.currentTimeMillis(), cabinetIds);
+        if (CollectionUtils.isNotEmpty(cabinetBindList)) {
+            return null;
+        }
+    
+        // 遍历场地柜机绑定记录
+        cabinetBindList.forEach(cabinetBind -> {
+        
+        });
+        
+        return null;
+    }
+    
+    @Slave
+    @Override
+    public MerchantPowerVO yesterdayPower(MerchantCabinetPowerRequest request) {
+        return null;
+    }
+    
+    @Slave
+    @Override
+    public MerchantPowerVO lastMonthPower(MerchantCabinetPowerRequest request) {
+        //获取要查询的柜机
+        List<Long> cabinetIds = getStaticsCabinetIds(request);
+        // 查询的月份
+        String monthDate = DateUtils.getMonthDate(NumberConstant.ONE_L);
+        
+        return merchantCabinetPowerMonthRecordProService.sumMonthPower(cabinetIds, monthDate);
+    }
+    
+    @Slave
+    @Override
+    public MerchantTotalPowerVO totalPower(MerchantCabinetPowerRequest request) {
+        return null;
+    }
+    
+    @Slave
+    @Override
+    public List<MerchantPowerVO> lineData(MerchantCabinetPowerRequest request) {
+        List<MerchantPowerVO> rspList = new ArrayList<>();
+        
+        //获取要查询的柜机
+        List<Long> cabinetIds = getStaticsCabinetIds(request);
+        // 查询的月份
+        List<String> monthList = request.getMonthList();
+        if (CollectionUtils.isNotEmpty(monthList)) {
+            for (String monthDate : monthList) {
+                if (!monthDate.matches(DateUtils.GREP_YEAR_MONTH)) {
+                    continue;
+                }
+                
+                MerchantPowerVO merchantPowerVO = merchantCabinetPowerMonthRecordProService.sumMonthPower(cabinetIds, monthDate);
+                rspList.add(merchantPowerVO);
+            }
+        }
+        
+        if (CollectionUtils.isEmpty(rspList)) {
+            return Collections.emptyList();
+        }
+        
+        return rspList;
+    }
+    
+    @Slave
+    @Override
+    public List<MerchantCabinetPowerVO> cabinetPowerList(MerchantCabinetPowerRequest request) {
+        return null;
+    }
+    
+    @Slave
+    @Override
+    public List<MerchantCabinetPowerDetailVO> cabinetPowerDetail(MerchantCabinetPowerRequest request) {
+        return null;
+    }
     
     @Slave
     @Override
@@ -149,82 +244,38 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
         return cabinetList;
     }
     
-    @Override
-    public List<MerchantPowerVO> powerData(MerchantCabinetPowerRequest request) {
-        Long merchantId = request.getMerchantId();
-        Long placeIdReq = request.getPlaceId();
-        Long cabinetIdReq = request.getCabinetId();
-        
-        if (Objects.isNull(merchantId)) {
-            return Collections.emptyList();
-        }
-        
-        // 1.全量查
-        if (Objects.isNull(placeIdReq) && Objects.isNull(cabinetIdReq)) {
-            // 1.1 根据merchantId获取商户场地绑定记录中所有未结算的记录（2个月前的数据在月结表已统计，比如：当前2月，去年11月的数据已月结统计）
-            List<MerchantPlaceBind> placeBindList = merchantPlaceBindService.listByMerchantId(merchantId, MerchantPlaceConstant.MONTH_SETTLEMENT_POWER_NO);
-            if (CollectionUtils.isEmpty(placeBindList)) {
-                return Collections.emptyList();
-            }
-            
-            // 1.2 遍历场地
-            Set<Long> placeIdSet = placeBindList.stream().map(MerchantPlaceBind::getPlaceId).collect(Collectors.toSet());
-            for (Long placeId : placeIdSet) {
-                // 根据placeId获取场地柜机绑定记录中所有未结束的记录
-                MerchantPlaceCabinetConditionRequest conditionRequest = MerchantPlaceCabinetConditionRequest.builder().placeIds(Set.of(placeId))
-                        .powerSettleStatus(MerchantPlaceConstant.PLACE_MONTH_SETTLEMENT_POWER_NO).build();
-                List<MerchantPlaceCabinetBind> cabinetBindList = merchantPlaceCabinetBindService.listByConditions(conditionRequest);
-                if (CollectionUtils.isEmpty(cabinetBindList)) {
-                    continue;
-                }
-                
-                Set<Long> cabinetIdSet = cabinetBindList.stream().map(MerchantPlaceCabinetBind::getCabinetId).collect(Collectors.toSet());
-                // 4.执行
-                //                List<CabinetPowerMonthRecordProRunnable> collect = cabinetIdSet.parallelStream()
-                //                        .map(eid -> new CabinetPowerMonthRecordProRunnable(eid, merchantCabinetPowerMonthRecordProService, merchantCabinetPowerMonthDetailProService,
-                //                                elePowerService, cabinetBindList, startTime, endTime, date, merchantId, placeId)).collect(Collectors.toList());
-                //
-                //                try {
-                //                    List<Future<Integer>> futures = executorService.invokeAll(collect);
-                //                } catch (InterruptedException e) {
-                //                    log.error("Merchant Cabinet Power Month Record Pro Exception occur! date={}", date, e);
-                //                }
-                
-            }
-        }
-        
-        // 2.查询所选场地下所有柜机
-        if (Objects.nonNull(placeIdReq) && Objects.isNull(cabinetIdReq)) {
-        
-        }
-        
-        // 3.查询指定柜机
-        if (Objects.nonNull(placeIdReq) && Objects.nonNull(cabinetIdReq)) {
-        
-        }
-        
-        return null;
-    }
-    
     @Slave
     @Override
-    public List<Long> getRequestedCabinetIds(MerchantPowerAndPlaceFeeRequest request) {
+    public List<Long> getStaticsCabinetIds(MerchantCabinetPowerRequest request) {
         Long merchantId = request.getMerchantId();
         if (Objects.isNull(merchantId)) {
-            return null;
+            return Collections.emptyList();
         }
         
         Long placeId = request.getPlaceId();
         Long cabinetId = request.getCabinetId();
         
+        // 设置key
+        String key = CacheConstant.MERCHANT_PLACE_CABINET_SEARCH_LOCK + merchantId;
+        if (Objects.nonNull(placeId)) {
+            key = key + placeId;
+            if (Objects.nonNull(cabinetId)) {
+                key = key + cabinetId;
+            }
+        }
+        
         // 先从缓存获取，如果未获取到再从数据库获取
         List<Long> cabinetIdList = null;
+        String cabinetIdStr = redisService.get(key);
+        if (StringUtils.isNotBlank(cabinetIdStr)) {
+            return JsonUtil.fromJsonArray(cabinetIdStr, Long.class);
+        }
         
         // 1.场地和柜机为null，查全量
         if (Objects.isNull(placeId) && Objects.isNull(cabinetId)) {
             MerchantPlaceAndCabinetUserVO merchantPlaceAndCabinetUserVO = this.listPlaceAndCabinetByMerchantId(merchantId);
             if (Objects.isNull(merchantPlaceAndCabinetUserVO) || CollectionUtils.isEmpty(merchantPlaceAndCabinetUserVO.getCabinetList())) {
-                return null;
+                return Collections.emptyList();
             }
             
             List<MerchantPlaceCabinetVO> cabinetList = merchantPlaceAndCabinetUserVO.getCabinetList();
@@ -247,9 +298,8 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
             }
         }
         
-        if (CollectionUtils.isEmpty(cabinetIdList)) {
-            return Collections.emptyList();
-        }
+        // 存入缓存
+        redisService.saveWithString(key, cabinetIdList, 3L, TimeUnit.SECONDS);
         
         return cabinetIdList;
     }

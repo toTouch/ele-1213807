@@ -38,4 +38,11 @@ public interface MerchantPlaceCabinetBindService {
     List<MerchantPlaceCabinetBind> listByConditions(MerchantPlaceCabinetConditionRequest request);
     
     Triple<Boolean, String, Object> checkBindTime(Long placeId, Long time);
+    
+    List<MerchantPlaceCabinetBind> queryListByPlaceId(List<Long> placeIdList, Integer placeMonthNotSettlement);
+    
+    Integer checkIsBindByPlaceId(Long placeId, Long cabinetId);
+    
+    List<MerchantPlaceCabinetBind> listDayBindRecord(Long todayStartTime, Long nowTime, List<Long> cabinetIds);
+    
 }

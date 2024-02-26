@@ -278,5 +278,42 @@
             </if>
         </where>
     </select>
+    
+    <select id="selectListPromotionDetail" resultMap="RebateRecordMap">
+        select
+        id, uid, name, phone, member_card_id, merchant_id, merchant_uid, status, merchant_rebate, rebate_time
+        from t_rebate_record
+        <where>
+            <if test="channeler != null">
+                and channeler = #{channeler}
+            </if>
+            <if test="merchantId != null">
+                and merchant_id = #{merchantId}
+            </if>
+            <if test="franchiseeId != null">
+                and franchisee_id = #{franchiseeId}
+            </if>
+            <if test="orderId != null and orderId != ''">
+                and order_id =#{orderId}
+            </if>
+            <if test="type != null">
+                and type = #{type}
+            </if>
+            <if test="uid != null">
+                and uid = #{uid}
+            </if>
+            <if test="tenantId != null">
+                and tenant_id = #{tenantId}
+            </if>
+            <if test="beginTime != null">
+                and create_time &gt;= #{beginTime}
+            </if>
+            <if test="endTime != null">
+                and create_time &lt;= #{endTime}
+            </if>
+        </where>
+        order by id desc
+        limit #{offset}, #{size}
+    </select>
 
 </mapper>

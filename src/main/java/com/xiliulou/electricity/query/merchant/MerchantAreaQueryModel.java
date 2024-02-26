@@ -17,7 +17,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class MerchantAreaQuery {
+public class MerchantAreaQueryModel {
     
     private Long size;
     

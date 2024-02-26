@@ -2,9 +2,11 @@ package com.xiliulou.electricity.mapper.merchant;
 
 import com.xiliulou.electricity.entity.merchant.MerchantJoinRecord;
 import com.xiliulou.electricity.query.merchant.MerchantJoinRecordQueryMode;
+import com.xiliulou.electricity.query.merchant.MerchantJoinUserQueryMode;
 import com.xiliulou.electricity.query.merchant.MerchantPromotionDataDetailQueryModel;
 import com.xiliulou.electricity.query.merchant.MerchantPromotionScanCodeQueryModel;
 import com.xiliulou.electricity.vo.merchant.MerchantJoinRecordVO;
+import com.xiliulou.electricity.vo.merchant.MerchantJoinUserVO;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
@@ -45,4 +47,7 @@ public interface MerchantJoinRecordMapper {
     List<MerchantJoinRecordVO> countByMerchantIdList(MerchantJoinRecordQueryMode joinRecordQueryMode);
     
     List<MerchantJoinRecord> selectListPromotionDataDetail(MerchantPromotionDataDetailQueryModel queryModel);
+
+    List<MerchantJoinUserVO> selectJoinUserList(MerchantJoinUserQueryMode merchantJoinUserQueryMode);
+
 }

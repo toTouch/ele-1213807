@@ -20,4 +20,6 @@ public interface MerchantPlaceFeeRecordMapper {
     Integer insert(MerchantPlaceFeeRecord merchantPlaceFeeRecord);
     
     Integer batchInsert(@Param("list") List<MerchantPlaceFeeRecord> placeFeeRecords);
+    
+    Integer existPlaceFeeByCabinetId(@Param("cabinetIdList") List<Long> cabinetIdList);
 }

@@ -2,7 +2,9 @@ package com.xiliulou.electricity.service;
 
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.User;
-import com.xiliulou.electricity.query.*;
+import com.xiliulou.electricity.query.UserInfoQuery;
+import com.xiliulou.electricity.query.UserSourceQuery;
+import com.xiliulou.electricity.query.UserSourceUpdateQuery;
 import com.xiliulou.electricity.vo.UserSearchVO;
 import com.xiliulou.electricity.vo.UserSourceVO;
 import com.xiliulou.electricity.web.query.AdminUserQuery;
@@ -87,6 +89,8 @@ public interface UserService {
 	String decryptPassword(String encryptPassword);
 
 	List<User> queryByTenantIdAndType(Integer tenantId, Integer status);
+
+    List<User> listUserByPhone(String phone, Integer tenantId);
 
     Triple<Boolean, String, Object> deleteNormalUser(Long uid);
 

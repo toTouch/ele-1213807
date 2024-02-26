@@ -122,4 +122,16 @@
         GROUP BY
             merchant_id
     </select>
+    
+    <select id="selectCabinetIdsByMerchantId" resultType="java.lang.Long">
+        SELECT
+            DISTINCT b.cabinet_id
+        FROM
+            t_merchant_place_map a
+                left join t_merchant_place_cabinet_bind b on b.place_id = a.place_id
+        where
+            a.merchant_id = #{merchantId}
+          and b.`status` = 1
+          and b.del_flag = 0;
+    </select>
 </mapper>

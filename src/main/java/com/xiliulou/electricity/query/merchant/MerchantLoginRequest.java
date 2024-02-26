@@ -29,10 +29,4 @@ public class MerchantLoginRequest {
     @NotNull(message = "iv不能为空")
     private String iv;
 
-    /**
-     * 用户类型
-     */
-    @NotNull(message = "userType不能为空")
-    @Range(min = 12, max = 13, message = "userType不合法")
-    private Integer userType;
 }
