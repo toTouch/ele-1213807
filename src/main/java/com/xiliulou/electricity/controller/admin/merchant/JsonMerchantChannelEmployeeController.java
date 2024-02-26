@@ -86,28 +86,6 @@ public class JsonMerchantChannelEmployeeController {
         
     }
     
-    @GetMapping("/admin/merchant/queryChannelEmployees")
-    public R queryChannelEmployees(@RequestParam("size") Integer size,
-            @RequestParam("offset") Integer offset,
-            @RequestParam(value = "name", required = false) String name) {
-        
-        if (size < 0 || size > 50) {
-            size = 10;
-        }
-        if (offset < 0) {
-            offset = 0;
-        }
-        
-        Integer tenantId = TenantContextHolder.getTenantId();
-        ChannelEmployeeRequest channelEmployeeRequest = ChannelEmployeeRequest.builder()
-                .size(size)
-                .offset(offset)
-                .name(name)
-                .tenantId(tenantId)
-                .build();
-        return R.ok(channelEmployeeService.queryChannelEmployees(channelEmployeeRequest));
-    }
-    
     @PostMapping("/admin/merchant/addChannelEmployee")
     public R addChannelEmployee(@RequestBody @Validated(value = CreateGroup.class) ChannelEmployeeRequest channelEmployeeRequest) {
         TokenUser user = SecurityUtils.getUserInfo();
@@ -173,11 +151,13 @@ public class JsonMerchantChannelEmployeeController {
             offset = 0;
         }
         
+        Integer tenantId = TenantContextHolder.getTenantId();
         ChannelEmployeeRequest channelEmployeeRequest = ChannelEmployeeRequest.builder()
                 .size(size)
                 .offset(offset)
                 .name(name)
                 .franchiseeId(franchiseeId)
+                .tenantId(tenantId)
                 .build();
         
         return R.ok(channelEmployeeService.queryChannelEmployees(channelEmployeeRequest));
