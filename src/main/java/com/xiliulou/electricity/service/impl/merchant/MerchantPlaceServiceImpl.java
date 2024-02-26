@@ -113,7 +113,7 @@ public class MerchantPlaceServiceImpl implements MerchantPlaceService {
         }
         
         if (Objects.nonNull(merchantPlaceSaveRequest.getMerchantAreaId())) {
-            MerchantArea merchantArea = merchantAreaService.queryById(merchantPlaceSaveRequest.getId());
+            MerchantArea merchantArea = merchantAreaService.queryById(merchantPlaceSaveRequest.getMerchantAreaId());
             if (Objects.isNull(merchantArea) || !Objects.equals(merchantArea.getTenantId(), tenantId)) {
                 log.error("merchant place save error, area is null name={}, merchantAreaId={}", merchantPlaceSaveRequest.getName(), merchantPlaceSaveRequest.getMerchantAreaId());
                 return Triple.of(false, "", "区域不存在");
@@ -150,7 +150,7 @@ public class MerchantPlaceServiceImpl implements MerchantPlaceService {
         }
         
         if (Objects.nonNull(merchantPlaceSaveRequest.getMerchantAreaId())) {
-            MerchantArea merchantArea = merchantAreaService.queryById(merchantPlaceSaveRequest.getId());
+            MerchantArea merchantArea = merchantAreaService.queryById(merchantPlaceSaveRequest.getMerchantAreaId());
             if (Objects.isNull(merchantArea) || !Objects.equals(merchantArea.getTenantId(), tenantId)) {
                 log.error("merchant place save error, area is null name={}, merchantAreaId={}", merchantPlaceSaveRequest.getName(), merchantPlaceSaveRequest.getMerchantAreaId());
                 return Triple.of(false, "", "区域不存在");
