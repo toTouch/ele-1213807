@@ -485,7 +485,12 @@ public class TradeOrderServiceImpl implements TradeOrderService {
                 return Triple.of(false, "100275", "电池套餐不可用");
             }
     
-            if (Objects.nonNull(userBatteryDeposit.getBatteryDeposit()) && batteryMemberCard.getDeposit().compareTo(userBatteryDeposit.getBatteryDeposit()) != 0) {
+            if (Objects.nonNull(userBatteryDeposit.getBatteryDeposit()) &&  Objects.equals( userBatteryDeposit.getDepositModifyFlag(), UserBatteryDeposit.DEPOSIT_MODIFY_NO) && batteryMemberCard.getDeposit().compareTo(userBatteryDeposit.getBatteryDeposit()) != 0) {
+                log.warn("BATTERY DEPOSIT WARN! batteryMemberCard not equals user deposit,uid={},mid={}", userInfo.getUid(), query.getMemberId());
+                return Triple.of(false, "100484", "用户押金与电池套餐押金不一致");
+            }
+    
+            if (Objects.nonNull(userBatteryDeposit.getBatteryDeposit()) && Objects.equals( userBatteryDeposit.getDepositModifyFlag(),UserBatteryDeposit.DEPOSIT_MODIFY_YES ) && batteryMemberCard.getDeposit().compareTo(userBatteryDeposit.getBeforeModifyDeposit()) != 0) {
                 log.warn("BATTERY DEPOSIT WARN! batteryMemberCard not equals user deposit,uid={},mid={}", userInfo.getUid(), query.getMemberId());
                 return Triple.of(false, "100484", "用户押金与电池套餐押金不一致");
             }
