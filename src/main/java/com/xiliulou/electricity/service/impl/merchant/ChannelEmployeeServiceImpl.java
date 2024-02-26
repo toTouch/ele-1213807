@@ -157,6 +157,13 @@ public class ChannelEmployeeServiceImpl implements ChannelEmployeeService {
                 Franchisee franchisee = franchiseeService.queryByIdFromCache(item.getFranchiseeId());
                 item.setFranchiseeName(franchisee.getName());
             }
+    
+            User user = userService.queryByUidFromCache(item.getUid());
+            if (Objects.nonNull(user)) {
+                item.setName(user.getName());
+                item.setPhone(user.getPhone());
+            }
+            
         });
         return channelEmployeeVOList;
     }
