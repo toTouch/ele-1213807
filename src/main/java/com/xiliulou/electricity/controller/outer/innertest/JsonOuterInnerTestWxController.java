@@ -5,7 +5,10 @@ import com.xiliulou.core.http.resttemplate.service.RestTemplateService;
 import com.xiliulou.core.http.resttemplate.service.impl.RestTemplateServiceImpl;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.pay.weixinv3.constant.WechatV3Constant;
+import com.xiliulou.pay.weixinv3.dto.WechatTransferBatchOrderQueryResult;
+import com.xiliulou.pay.weixinv3.dto.WechatTransferOrderResult;
 import com.xiliulou.pay.weixinv3.service.WechatV3MerchantLoadAndUpdateCertificateService;
+import com.xiliulou.pay.weixinv3.service.WechatV3TransferService;
 import com.xiliulou.pay.weixinv3.util.WechatCredentialsUtils;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.HttpUrl;
@@ -54,6 +57,9 @@ import java.util.Objects;
 @RequestMapping("/outer/inner/test/wx")
 public class JsonOuterInnerTestWxController {
     
+    @Resource
+    private WechatV3TransferService wechatV3TransferService;
+    
     RestTemplateService restTemplateService;
     
     @Resource
@@ -72,10 +78,62 @@ public class JsonOuterInnerTestWxController {
             + "-----END PRIVATE KEY-----\n";
     
     
-    @GetMapping("/transferBatches")
-    public String transferBatches(String batchNo) throws Exception {
+    /**
+     * 通过商家明细单号查询明细单
+     * @param batchNo
+     * @return
+     * @throws Exception
+     */
+    @GetMapping("/transferOrderQueryV3")
+    public WechatTransferBatchOrderQueryResult transferOrderQueryV3(String batchNo, String detailNo) throws Exception {
         
-        // Integer tenantId = 1014;
+        String url = String.format(WechatV3Constant.WE_TRANSFER_ORDER_QUERY_V3, batchNo, detailNo);
+        
+        String token = WechatCredentialsUtils.getToken(HttpMethod.POST.toString(), Objects.requireNonNull(HttpUrl.parse(url)), null, MCH_ID, MCH_SERIAL_NO, getPrivateKey());
+        HashMap<String, String> headers = Maps.newHashMap();
+        headers.put("Authorization", WechatCredentialsUtils.getSchema() + " " + token);
+        headers.put("Accept", "application/json");
+        
+        // {"status":200,"headers":{"Server":["nginx"],"Date":["Sat, 24 Feb 2024 06:50:54 GMT"],"Content-Type":["application/json; charset\u003dutf-8"],"Connection":["keep-alive"],"Keep-Alive":["timeout\u003d8"],"Cache-Control":["no-cache, must-revalidate"],"X-Content-Type-Options":["nosniff"],"Request-ID":["08CEA3E6AE0610C20418E0ABB1A80120A75E28CCA505-0"],"Content-Language":["zh-CN"],"Wechatpay-Nonce":["47f77f0a6ce0e9587ad5fb53ee5044d7"],"Wechatpay-Signature":["NnRrU7zsGv091Zqx8b5sDBMNQzf7oFnMEevRvNXHiYIZ+MVxefcFNeJEGB9wHm/aDwFgWwZ2n6l4xpk9+fd0XJebL6mWPOBMMql//Jksx0lZspyV0//4YVIZd6jus2KAGQVAA5UWcQ2QYsPRJs7WHHC4OAZgiB7RIRD0jEGleo7cHiZnePCPpLBu5cgyvIg8lKIsB7V0vABpw8HhWAjpMoO+io42PtC/cICIon1Y5yEQmkMFVSwQjU48sg3qpXyiuYMShKAOajRViljtPmbXYE2NADlXEjYvKIECLzEwJmEJUgTdNcHn2Vs6SeNLpfFWBYVyyT/s3Yi3LxrYaoNMTA\u003d\u003d"],"Wechatpay-Timestamp":["1708757454"],"Wechatpay-Serial":["22C4CE98FA3157B828B4BBF448DCC5986BB4EF3F"],"Wechatpay-Signature-Type":["WECHATPAY2-SHA256-RSA2048"]},"body":"{\"batch_id\":\"131000501099000111125732024022419471051882\",\"batch_status\":\"ACCEPTED\",\"create_time\":\"2024-02-24T14:50:54+08:00\",\"out_batch_no\":\"1234567890TestOutBatchNo\"}"}
+        ResponseEntity<String> responseEntity = restTemplateService.postJsonForResponseEntity(url, null, headers);
+        log.info("transferBatchOrderQueryV3 responseEntity is {}", JsonUtil.toJson(responseEntity));
+        
+        return JsonUtil.fromJson(responseEntity.getBody(), WechatTransferBatchOrderQueryResult.class);
+    }
+    
+    /**
+     * 通过商家批次单号查询批次单
+     * @param batchNo 商家批次单号
+     * @return
+     * @throws Exception
+     */
+    @GetMapping("/transferBatchOrderQueryV3")
+    public WechatTransferBatchOrderQueryResult transferBatchOrderQueryV3(String batchNo) throws Exception {
+        
+        String url = String.format(WechatV3Constant.WE_TRANSFER_BATCH_ORDER_QUERY_V3, batchNo);
+        
+        HashMap<String, Object> params = new HashMap<>();
+        
+        params.put("need_query_detail", false);
+        params.put("offset", 0);
+        params.put("limit", 100);
+        
+        String paramsJson = JsonUtil.toJson(params);
+        
+        String token = WechatCredentialsUtils.getToken(HttpMethod.POST.toString(), Objects.requireNonNull(HttpUrl.parse(url)), paramsJson, MCH_ID, MCH_SERIAL_NO, getPrivateKey());
+        HashMap<String, String> headers = Maps.newHashMap();
+        headers.put("Authorization", WechatCredentialsUtils.getSchema() + " " + token);
+        headers.put("Accept", "application/json");
+        
+        // {"status":200,"headers":{"Server":["nginx"],"Date":["Sat, 24 Feb 2024 06:50:54 GMT"],"Content-Type":["application/json; charset\u003dutf-8"],"Connection":["keep-alive"],"Keep-Alive":["timeout\u003d8"],"Cache-Control":["no-cache, must-revalidate"],"X-Content-Type-Options":["nosniff"],"Request-ID":["08CEA3E6AE0610C20418E0ABB1A80120A75E28CCA505-0"],"Content-Language":["zh-CN"],"Wechatpay-Nonce":["47f77f0a6ce0e9587ad5fb53ee5044d7"],"Wechatpay-Signature":["NnRrU7zsGv091Zqx8b5sDBMNQzf7oFnMEevRvNXHiYIZ+MVxefcFNeJEGB9wHm/aDwFgWwZ2n6l4xpk9+fd0XJebL6mWPOBMMql//Jksx0lZspyV0//4YVIZd6jus2KAGQVAA5UWcQ2QYsPRJs7WHHC4OAZgiB7RIRD0jEGleo7cHiZnePCPpLBu5cgyvIg8lKIsB7V0vABpw8HhWAjpMoO+io42PtC/cICIon1Y5yEQmkMFVSwQjU48sg3qpXyiuYMShKAOajRViljtPmbXYE2NADlXEjYvKIECLzEwJmEJUgTdNcHn2Vs6SeNLpfFWBYVyyT/s3Yi3LxrYaoNMTA\u003d\u003d"],"Wechatpay-Timestamp":["1708757454"],"Wechatpay-Serial":["22C4CE98FA3157B828B4BBF448DCC5986BB4EF3F"],"Wechatpay-Signature-Type":["WECHATPAY2-SHA256-RSA2048"]},"body":"{\"batch_id\":\"131000501099000111125732024022419471051882\",\"batch_status\":\"ACCEPTED\",\"create_time\":\"2024-02-24T14:50:54+08:00\",\"out_batch_no\":\"1234567890TestOutBatchNo\"}"}
+        ResponseEntity<String> responseEntity = restTemplateService.postJsonForResponseEntity(url, paramsJson, headers);
+        log.info("transferBatchOrderQueryV3 responseEntity is {}", JsonUtil.toJson(responseEntity));
+        
+        return JsonUtil.fromJson(responseEntity.getBody(), WechatTransferBatchOrderQueryResult.class);
+    }
+    
+    @GetMapping("/transferBatchesV3")
+    public WechatTransferOrderResult transferBatchesV3(String batchNo) throws Exception {
         
         String url = WechatV3Constant.WE_TRANSFER_BATCH_ORDER_V3;
         
@@ -109,14 +167,9 @@ public class JsonOuterInnerTestWxController {
         
         // {"status":200,"headers":{"Server":["nginx"],"Date":["Sat, 24 Feb 2024 06:50:54 GMT"],"Content-Type":["application/json; charset\u003dutf-8"],"Connection":["keep-alive"],"Keep-Alive":["timeout\u003d8"],"Cache-Control":["no-cache, must-revalidate"],"X-Content-Type-Options":["nosniff"],"Request-ID":["08CEA3E6AE0610C20418E0ABB1A80120A75E28CCA505-0"],"Content-Language":["zh-CN"],"Wechatpay-Nonce":["47f77f0a6ce0e9587ad5fb53ee5044d7"],"Wechatpay-Signature":["NnRrU7zsGv091Zqx8b5sDBMNQzf7oFnMEevRvNXHiYIZ+MVxefcFNeJEGB9wHm/aDwFgWwZ2n6l4xpk9+fd0XJebL6mWPOBMMql//Jksx0lZspyV0//4YVIZd6jus2KAGQVAA5UWcQ2QYsPRJs7WHHC4OAZgiB7RIRD0jEGleo7cHiZnePCPpLBu5cgyvIg8lKIsB7V0vABpw8HhWAjpMoO+io42PtC/cICIon1Y5yEQmkMFVSwQjU48sg3qpXyiuYMShKAOajRViljtPmbXYE2NADlXEjYvKIECLzEwJmEJUgTdNcHn2Vs6SeNLpfFWBYVyyT/s3Yi3LxrYaoNMTA\u003d\u003d"],"Wechatpay-Timestamp":["1708757454"],"Wechatpay-Serial":["22C4CE98FA3157B828B4BBF448DCC5986BB4EF3F"],"Wechatpay-Signature-Type":["WECHATPAY2-SHA256-RSA2048"]},"body":"{\"batch_id\":\"131000501099000111125732024022419471051882\",\"batch_status\":\"ACCEPTED\",\"create_time\":\"2024-02-24T14:50:54+08:00\",\"out_batch_no\":\"1234567890TestOutBatchNo\"}"}
         ResponseEntity<String> responseEntity = restTemplateService.postJsonForResponseEntity(url, paramsJson, headers);
-        log.info("transferBatches responseEntity is {}", JsonUtil.toJson(responseEntity));
+        log.info("transferBatchesV3 responseEntity is {}", JsonUtil.toJson(responseEntity));
         
-        if (responseEntity.getStatusCode().is2xxSuccessful()) {
-            String body = responseEntity.getBody();
-            log.info("transferBatches responseEntity body is {}", JsonUtil.toJson(responseEntity));
-        }
-        
-        return "OK";
+        return JsonUtil.fromJson(responseEntity.getBody(), WechatTransferOrderResult.class);
     }
     
     @PostConstruct
