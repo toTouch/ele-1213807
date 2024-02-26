@@ -50,4 +50,6 @@ public interface MerchantUserAmountService {
     Integer rollBackWithdrawAmount(BigDecimal amount, Long uid, Long tenantId);
     
     MerchantUserAmount queryByUid(Long uid);
+    
+    List<MerchantUserAmount> queryUserAmountList(List<Long> uidList, Long tenantId);
 }

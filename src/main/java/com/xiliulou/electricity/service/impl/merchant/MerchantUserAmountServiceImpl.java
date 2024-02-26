@@ -6,12 +6,15 @@ import com.xiliulou.electricity.mapper.merchant.MerchantUserAmountMapper;
 import com.xiliulou.electricity.query.merchant.MerchantUserAmountQueryMode;
 import com.xiliulou.electricity.service.merchant.MerchantUserAmountService;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections.CollectionUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
+import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * @author maxiaodong
@@ -64,5 +67,14 @@ public class MerchantUserAmountServiceImpl implements MerchantUserAmountService 
     @Override
     public MerchantUserAmount queryByUid(Long uid) {
         return merchantUserAmountMapper.selectByUid(uid);
+    }
+    
+    @Override
+    public List<MerchantUserAmount> queryUserAmountList(List<Long> uidList, Long tenantId) {
+        if(CollectionUtils.isEmpty(uidList) || Objects.isNull(tenantId)){
+            return Collections.EMPTY_LIST;
+        }
+        
+        return merchantUserAmountMapper.selectByUidList(uidList, tenantId);
     }
 }
