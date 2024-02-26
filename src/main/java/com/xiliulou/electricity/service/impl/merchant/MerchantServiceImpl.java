@@ -1001,7 +1001,12 @@ public class MerchantServiceImpl implements MerchantService {
     
     @Slave
     @Override
-    public MerchantQrCodeVO getMerchantQrCode(Long uid, Long id) {
-        return null;
+    public MerchantQrCodeVO getMerchantQrCode(Long uid, Long merchantId) {
+        MerchantQrCodeVO vo = new MerchantQrCodeVO();
+        vo.setMerchantId(merchantId);
+        vo.setMerchantUid(uid);
+        vo.setType(1);
+        vo.setCode("");
+        return vo;
     }
 }

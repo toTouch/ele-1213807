@@ -9,4 +9,8 @@ import lombok.Data;
  */
 @Data
 public class MerchantQrCodeVO {
+    private Long merchantId;
+    private Long merchantUid;
+    private Integer type;
+    private String code;
 }

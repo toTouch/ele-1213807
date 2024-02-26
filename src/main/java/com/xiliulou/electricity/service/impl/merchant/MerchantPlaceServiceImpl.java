@@ -126,6 +126,7 @@ public class MerchantPlaceServiceImpl implements MerchantPlaceService {
         long timeMillis = System.currentTimeMillis();
         merchantPlace.setCreateTime(timeMillis);
         merchantPlace.setUpdateTime(timeMillis);
+        merchantPlace.setTenantId(tenantId);
         merchantPlace.setDelFlag(MerchantPlaceConstant.DEL_NORMAL);
         merchantPlaceMapper.insert(merchantPlace);
         
