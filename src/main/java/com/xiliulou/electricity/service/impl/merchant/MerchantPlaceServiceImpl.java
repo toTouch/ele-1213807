@@ -116,7 +116,7 @@ public class MerchantPlaceServiceImpl implements MerchantPlaceService {
             MerchantArea merchantArea = merchantAreaService.queryById(merchantPlaceSaveRequest.getId());
             if (Objects.isNull(merchantArea) || !Objects.equals(merchantArea.getTenantId(), tenantId)) {
                 log.error("merchant place save error, area is null name={}, merchantAreaId={}", merchantPlaceSaveRequest.getName(), merchantPlaceSaveRequest.getMerchantAreaId());
-                return Triple.of(false, "", "加盟商不存在");
+                return Triple.of(false, "", "区域不存在");
             }
         }
         
@@ -153,7 +153,7 @@ public class MerchantPlaceServiceImpl implements MerchantPlaceService {
             MerchantArea merchantArea = merchantAreaService.queryById(merchantPlaceSaveRequest.getId());
             if (Objects.isNull(merchantArea) || !Objects.equals(merchantArea.getTenantId(), tenantId)) {
                 log.error("merchant place save error, area is null name={}, merchantAreaId={}", merchantPlaceSaveRequest.getName(), merchantPlaceSaveRequest.getMerchantAreaId());
-                return Triple.of(false, "", "加盟商不存在");
+                return Triple.of(false, "", "区域不存在");
             }
         }
         
