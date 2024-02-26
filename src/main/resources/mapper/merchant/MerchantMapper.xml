@@ -127,8 +127,8 @@
         t_merchant
         <include refid="pageFilter"/>
         order by id desc
-        <if test="offset != null and limit != null">
-            limit #{offset}, #{limit}
+        <if test="offset != null and size != null">
+            limit #{offset}, #{size}
         </if>
     </select>
     
