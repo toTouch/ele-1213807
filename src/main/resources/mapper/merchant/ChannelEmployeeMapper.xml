@@ -138,7 +138,7 @@
             uid,
             franchisee_id,
             area_id,
-            tenant_id
+            tenant_id,
             del_flag,
             remark,
             create_time,
