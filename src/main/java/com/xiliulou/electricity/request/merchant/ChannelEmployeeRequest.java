@@ -58,6 +58,11 @@ public class ChannelEmployeeRequest {
     private Long areaId;
     
     /**
+     * 租户ID
+     */
+    private Integer tenantId;
+    
+    /**
      * 状态
      */
     private Integer status;
