@@ -23,7 +23,9 @@
             <if test="type != null">
                 t.type  = #{type}
             </if>
-        
+            <if test="cabinetId != null">
+                and t.cabinet_id = #{cabinetId}
+            </if>
             <if test="sn != null and sn != ''">
                 and (
                 EXISTS (
