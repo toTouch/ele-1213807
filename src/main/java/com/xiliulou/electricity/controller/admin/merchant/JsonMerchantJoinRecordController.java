@@ -3,7 +3,6 @@ package com.xiliulou.electricity.controller.admin.merchant;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.request.merchant.MerchantJoinRecordPageRequest;
-import com.xiliulou.electricity.request.merchant.MerchantPageRequest;
 import com.xiliulou.electricity.service.merchant.MerchantJoinRecordService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
@@ -24,7 +23,7 @@ import java.util.Objects;
 
 @Slf4j
 @RestController
-public class MerchantJoinRecordController {
+public class JsonMerchantJoinRecordController {
     @Resource
     private MerchantJoinRecordService merchantJoinRecordService;
     

@@ -14,8 +14,8 @@
     <select id="queryList"
             resultType="com.xiliulou.electricity.entity.merchant.ChannelEmployeePromotionDayRecord">
         select
-            channel_employees_id , tenant_id , day_first_money , day_renew_money , day_total_money ,
-            fee_date ,del_flag ,create_time ,update_time
+            channel_employees_id , tenant_id , day_first_money , day_renew_money , day_total_money ,day_balance_money,
+        fee_date ,del_flag ,create_time ,update_time
         from t_channel_employee_promotion_day_record
         <where>
             del_flag = 0
