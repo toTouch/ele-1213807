@@ -27,4 +27,7 @@ public interface MerchantUserAmountMapper {
     Integer rollBackWithdrawAmountByUid(@Param("income") BigDecimal income, @Param("uid") Long uid, @Param("tenantId") Long tenantId);
     
     MerchantUserAmount selectByUid(@Param("uid") Long uid);
+    
+    List<MerchantUserAmount> selectByUidList(@Param("uidList") List<Long> uidList, @Param("tenantId") Long tenantId);
+    
 }
