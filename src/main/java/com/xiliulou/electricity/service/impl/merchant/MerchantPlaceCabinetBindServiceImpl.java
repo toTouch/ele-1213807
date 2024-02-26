@@ -351,6 +351,12 @@ public class MerchantPlaceCabinetBindServiceImpl implements MerchantPlaceCabinet
         return merchantPlaceCabinetBindMapper.checkIsBindByPlaceId(placeId, cabinetId);
     }
     
+    @Slave
+    @Override
+    public List<MerchantPlaceCabinetBind> listDayBindRecord(Long todayStartTime, Long nowTime) {
+        return merchantPlaceCabinetBindMapper.selectListDayBindRecord(todayStartTime, nowTime);
+    }
+    
     
     @Override
     public Integer removeByPlaceId(Long placeId, long updateTime, Integer delFlag) {

@@ -42,4 +42,7 @@ public interface MerchantPlaceCabinetBindService {
     List<MerchantPlaceCabinetBind> queryListByPlaceId(List<Long> placeIdList, Integer placeMonthNotSettlement);
     
     Integer checkIsBindByPlaceId(Long placeId, Long cabinetId);
+    
+    List<MerchantPlaceCabinetBind> listDayBindRecord(Long todayStartTime, Long nowTime);
+    
 }
