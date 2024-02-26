@@ -10,6 +10,7 @@ import com.xiliulou.electricity.constant.merchant.MerchantPlaceConstant;
 import com.xiliulou.electricity.dto.merchant.MerchantPlaceCabinetBindDTO;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.merchant.MerchantCabinetBindHistory;
+import com.xiliulou.electricity.entity.merchant.MerchantCabinetBindTime;
 import com.xiliulou.electricity.entity.merchant.MerchantPlace;
 import com.xiliulou.electricity.entity.merchant.MerchantPlaceBind;
 import com.xiliulou.electricity.entity.merchant.MerchantPlaceCabinetBind;
@@ -20,6 +21,7 @@ import com.xiliulou.electricity.mapper.merchant.MerchantPlaceFeeDailyRecordMappe
 import com.xiliulou.electricity.request.merchant.MerchantPlaceFeeRequest;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
 import com.xiliulou.electricity.service.merchant.MerchantCabinetBindHistoryService;
+import com.xiliulou.electricity.service.merchant.MerchantCabinetBindTimeService;
 import com.xiliulou.electricity.service.merchant.MerchantPlaceBindService;
 import com.xiliulou.electricity.service.merchant.MerchantPlaceCabinetBindService;
 import com.xiliulou.electricity.service.merchant.MerchantPlaceFeeMonthDetailService;
@@ -94,7 +96,9 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
     
     @Resource
     private MerchantPlaceFeeMonthDetailService merchantPlaceFeeMonthDetailService;
-   
+    
+    @Resource
+    private MerchantCabinetBindTimeService merchantCabinetBindTimeService;
     
     
     /**
@@ -256,19 +260,45 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
             curMothFeeRecords = curMothFeeRecords.stream().filter(item -> Objects.equals(item.getCabinetId(), request.getCabinetId())).collect(Collectors.toList());
         }
         Map<Long, BigDecimal> curMonthCabinetFeeMap = new HashMap<>();
-        
+        Map<Long, Long> cabinetTimeMap = new HashMap<>();
         if (ObjectUtils.isNotEmpty(curMothFeeRecords)) {
-            List<Long> curMonthCabinetIdList = curMothFeeRecords.stream().map(MerchantPlaceFeeMonthDetail::getCabinetId).collect(Collectors.toList());
+            List<Long> curMonthCabinetIdList = curMothFeeRecords.stream().map(MerchantPlaceFeeMonthDetail::getCabinetId).distinct().collect(Collectors.toList());
             if (ObjectUtils.isNotEmpty(curMonthCabinetIdList)) {
                 cabinetIdList.addAll(curMonthCabinetIdList);
             }
             curMonthCabinetFeeMap = curMothFeeRecords.stream()
                     .collect(Collectors.groupingBy(MerchantPlaceFeeMonthDetail::getCabinetId, Collectors.collectingAndThen(Collectors.toList(), e -> this.sumFee(e))));
+            Map<Long, Long> curCabinetTimeMap = curMothFeeRecords.stream().collect(Collectors.groupingBy(MerchantPlaceFeeMonthDetail::getCabinetId, Collectors.collectingAndThen(Collectors.toList(),
+                    e -> e.stream().sorted(Comparator.comparing(MerchantPlaceFeeMonthDetail::getStartTime).reversed()).findFirst().get().getStartTime())));
+            if (ObjectUtils.isNotEmpty(curCabinetTimeMap)) {
+                cabinetTimeMap.putAll(curCabinetTimeMap);
+            }
         }
         
         if (ObjectUtils.isEmpty(cabinetIdList)) {
             return Collections.emptyList();
         }
+        
+        // 查询柜机的绑定时间
+        List<MerchantCabinetBindTime> cabinetBindTimes = merchantCabinetBindTimeService.queryListByMerchantId(request.getMerchantId(), request.getCabinetId(),
+                request.getPlaceId());
+        if (ObjectUtils.isNotEmpty(cabinetBindTimes)) {
+            Map<Long, Long> bindTimeMap = cabinetBindTimes.stream().collect(Collectors.groupingBy(MerchantCabinetBindTime::getCabinetId, Collectors.collectingAndThen(Collectors.toList(),
+                    e -> e.stream().sorted(Comparator.comparing(MerchantCabinetBindTime::getBindTime).reversed()).findFirst().get().getBindTime())));
+            if (ObjectUtils.isNotEmpty(bindTimeMap) && ObjectUtils.isNotEmpty(cabinetTimeMap)) {
+                bindTimeMap.forEach((cabinetId, time) -> {
+                    if (ObjectUtils.isNotEmpty(cabinetTimeMap.get(cabinetId))) {
+                        if (time > cabinetTimeMap.get(cabinetId)) {
+                            cabinetTimeMap.put(cabinetId, time);
+                        }
+                    } else {
+                        cabinetTimeMap.put(cabinetId, time);
+                    }
+                });
+            }
+            
+        }
+        
         
         // 去重
         List<Long> cabinetIds = cabinetIdList.stream().distinct().collect(Collectors.toList());
@@ -295,10 +325,17 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
             if (ObjectUtils.isNotEmpty(finalLastMonthCabinetFeeMap.get(cabinetId))) {
                 historyFee = historyFee.add(finalLastMonthCabinetFeeMap.get(cabinetId));
             }
+            if (ObjectUtils.isNotEmpty(cabinetTimeMap.get(cabinetId))) {
+                vo.setTime(cabinetTimeMap.get(cabinetId));
+            } else {
+                vo.setTime(0L);
+            }
             historyFee = historyFee.add(vo.getCurrentMonthFee());
             vo.setMonthFeeSum(historyFee);
             resList.add(vo);
         });
+    
+        resList.stream().sorted(Comparator.comparing(MerchantPlaceCabinetFeeDetailVO::getTime).reversed());
         
         return resList;
     }
@@ -353,7 +390,7 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
         if (ObjectUtils.isEmpty(placeFeeMonths)) {
             return Collections.emptyList();
         }
-    
+        
         if (ObjectUtils.isNotEmpty(placeFeeMonths)) {
             for (MerchantCabinetBindHistory placeFeeMonthDetail : placeFeeMonths) {
                 MerchantCabinetFeeDetailVO vo = new MerchantCabinetFeeDetailVO();
@@ -932,10 +969,10 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
             MerchantPlaceCabinetBindDTO bindDTO = new MerchantPlaceCabinetBindDTO();
             BeanUtils.copyProperties(bind, bindDTO);
             bindDTO.setIsNeedMonthSettle(Boolean.FALSE);
-//            String placeMonthSettlementDetail = bindDTO.getPlaceMonthSettlementDetail();
+            //            String placeMonthSettlementDetail = bindDTO.getPlaceMonthSettlementDetail();
             Long bindTime = bindDTO.getBindTime();
             SimpleDateFormat fmt = new SimpleDateFormat("yyyy-MM");
-//            String settlementDate = fmt.format(new Date(bindTime));
+            //            String settlementDate = fmt.format(new Date(bindTime));
             // 绑定时间都是从本月出开始计算
             if (bindDTO.getBindTime() < dayOfMonthStartTime) {
                 bindDTO.setBindTime(dayOfMonthStartTime);
