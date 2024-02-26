@@ -29,7 +29,7 @@ public interface ChannelEmployeeMapper extends BaseMapper<ChannelEmployee> {
     
     Integer updateOne(ChannelEmployee channelEmployee);
     
-    Integer removeById(@Param("id") Long id);
+    Integer removeById(@Param("id") Long id, @Param("updateTime") Long updateTime);
     
     Integer existsByAreaId(Long id);
 }
