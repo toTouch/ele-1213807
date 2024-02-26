@@ -195,7 +195,7 @@
             tce.uid,
             tu.name,
             tu.phone,
-            tu.lock_flag as status
+            tu.lock_flag as status,
             tce.franchisee_id,
             tce.area_id,
             tce.tenant_id,
