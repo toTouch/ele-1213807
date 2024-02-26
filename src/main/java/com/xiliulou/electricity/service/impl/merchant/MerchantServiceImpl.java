@@ -58,6 +58,7 @@ import com.xiliulou.electricity.vo.merchant.ChannelEmployeeVO;
 import com.xiliulou.electricity.vo.merchant.MerchantJoinRecordVO;
 import com.xiliulou.electricity.vo.merchant.MerchantPlaceMapVO;
 import com.xiliulou.electricity.vo.merchant.MerchantPlaceUserVO;
+import com.xiliulou.electricity.vo.merchant.MerchantQrCodeVO;
 import com.xiliulou.electricity.vo.merchant.MerchantUpdateVO;
 import com.xiliulou.electricity.vo.merchant.MerchantVO;
 import com.xiliulou.security.bean.TokenUser;
@@ -996,5 +997,16 @@ public class MerchantServiceImpl implements MerchantService {
     @Override
     public Integer countMerchantNumByTime(MerchantPromotionFeeMerchantNumQueryModel queryModel) {
         return merchantMapper.countMerchantNumByTime(queryModel);
+    }
+    
+    @Slave
+    @Override
+    public MerchantQrCodeVO getMerchantQrCode(Long uid, Long merchantId) {
+        MerchantQrCodeVO vo = new MerchantQrCodeVO();
+        vo.setMerchantId(merchantId);
+        vo.setMerchantUid(uid);
+        vo.setType(1);
+        vo.setCode("");
+        return vo;
     }
 }

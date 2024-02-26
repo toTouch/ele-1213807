@@ -26,4 +26,6 @@ public class MerchantPlaceCabinetFeeDetailVO {
      */
     private BigDecimal monthFeeSum;
     
+    private Long time;
+    
 }

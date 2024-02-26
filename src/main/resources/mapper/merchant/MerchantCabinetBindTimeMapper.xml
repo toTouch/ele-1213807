@@ -13,17 +13,27 @@
     </insert>
     
     <update id="updateById">
-        update t_merchant_cabinet_bind_time set bind_time = #{bindTime},update_time = #{updateTime} where id = #{id}
+        update t_merchant_cabinet_bind_time
+        set bind_time   = #{bindTime},
+            update_time = #{updateTime}
+        where id = #{id}
     </update>
     <sql id="column">
-        merchant_id, cabinet_id, place_id,bind_time
+        merchant_id
+        , cabinet_id, place_id,bind_time
         ,tenant_id,create_time ,update_time
     </sql>
     <select id="queryListByMerchantId"
-            resultType="com.xiliulou.electricity.entity.merchant.MerchantCabinetBindTime">
+        resultType="com.xiliulou.electricity.entity.merchant.MerchantCabinetBindTime">
         select
-            <include refid="column"/>
-            from t_merchant_cabinet_bind_time
+        <include refid="column"/>
+        from t_merchant_cabinet_bind_time
         where merchant_id = #{merchantId}
+        <if test="cabinetId != null">
+            and cabinet_id = #{cabinet_id}
+        </if>
+        <if test="placeId != null">
+            and place_id = #{placeId}
+        </if>
     </select>
 </mapper>
