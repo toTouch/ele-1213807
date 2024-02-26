@@ -17,4 +17,6 @@ public interface MerchantCabinetBindTimeMapper {
     Integer updateById(MerchantCabinetBindTime merchantCabinetBindTime);
     
     List<MerchantCabinetBindTime> queryListByMerchantId(@Param("merchantId") Long merchantId);
+    
+    List<MerchantCabinetBindTime> queryListByMerchantId(@Param("merchantId") Long merchantId,@Param("cabinetId") Long cabinetId,@Param("placeId") Long placeId);
 }
