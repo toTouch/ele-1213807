@@ -3,8 +3,8 @@ package com.xiliulou.electricity.controller.admin.merchant;
 import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.User;
-import com.xiliulou.electricity.request.merchant.MerchantPowerRequest;
-import com.xiliulou.electricity.service.merchant.MerchantCabinetPowerMonthRecordService;
+import com.xiliulou.electricity.request.merchant.MerchantPromotionRequest;
+import com.xiliulou.electricity.service.merchant.MerchantPromotionMonthRecordService;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
@@ -18,17 +18,17 @@ import java.util.Objects;
 
 /**
  * @author HeYafeng
- * @description 场地电费统计
- * @date 2024/2/24 18:07:05
+ * @description 商户场地推广费
+ * @date 2024/2/24 10:55:14
  */
 @Slf4j
 @RestController
-public class JsonAdminMerchantCabinetPowerRecordController extends BaseController {
+public class JsonMerchantPromotionController extends BaseController {
     
     @Resource
-    private MerchantCabinetPowerMonthRecordService merchantCabinetPowerMonthRecordService;
+    private MerchantPromotionMonthRecordService merchantPromotionMonthRecordService;
     
-    @GetMapping("/admin/merchant/power/record/page")
+    @GetMapping("/admin/merchant/promotion/record/page")
     public R page(@RequestParam("size") long size, @RequestParam("offset") long offset, @RequestParam(value = "date", required = false) String date) {
         if (size < 0 || size > 50) {
             size = 10L;
@@ -47,12 +47,12 @@ public class JsonAdminMerchantCabinetPowerRecordController extends BaseControlle
             return R.ok();
         }
         
-        MerchantPowerRequest request = MerchantPowerRequest.builder().size(size).offset(offset).monthDate(date).build();
+        MerchantPromotionRequest request = MerchantPromotionRequest.builder().size(size).offset(offset).monthDate(date).build();
         
-        return R.ok(merchantCabinetPowerMonthRecordService.listByPage(request));
+        return R.ok(merchantPromotionMonthRecordService.listByPage(request));
     }
     
-    @GetMapping("/admin/merchant/power/record/pageCount")
+    @GetMapping("/admin/merchant/promotion/record/pageCount")
     public R pageCount(@RequestParam(value = "date", required = false) String date) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
@@ -63,15 +63,15 @@ public class JsonAdminMerchantCabinetPowerRecordController extends BaseControlle
             return R.ok();
         }
         
-        MerchantPowerRequest request = MerchantPowerRequest.builder().monthDate(date).build();
+        MerchantPromotionRequest request = MerchantPromotionRequest.builder().monthDate(date).build();
         
-        return R.ok(merchantCabinetPowerMonthRecordService.countTotal(request));
+        return R.ok(merchantPromotionMonthRecordService.countTotal(request));
     }
     
     /**
      * @param monthDate 格式要求：yyyy-MM 2024-02
      */
-    @GetMapping("/admin/merchant/power/record/exportExcel")
+    @GetMapping("/admin/merchant/promotion/record/exportExcel")
     public R exportExcel(@RequestParam(value = "monthDate") String monthDate, HttpServletResponse response) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
@@ -82,10 +82,12 @@ public class JsonAdminMerchantCabinetPowerRecordController extends BaseControlle
             return R.ok();
         }
         
-        MerchantPowerRequest request = MerchantPowerRequest.builder().monthDate(monthDate).build();
+        MerchantPromotionRequest request = MerchantPromotionRequest.builder().monthDate(monthDate).build();
         
-        merchantCabinetPowerMonthRecordService.exportExcel(request, response);
+        merchantPromotionMonthRecordService.exportExcel(request, response);
         
         return R.ok();
     }
+    
+    
 }

@@ -21,6 +21,8 @@ public class MerchantCabinetPowerRequest {
     
     private Long merchantId;
     
+    private Long uid;
+    
     private Long placeId;
     
     private Long cabinetId;

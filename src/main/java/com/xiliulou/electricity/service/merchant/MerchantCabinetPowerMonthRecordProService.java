@@ -1,6 +1,6 @@
 package com.xiliulou.electricity.service.merchant;
 
-import com.xiliulou.electricity.vo.merchant.MerchantPowerVO;
+import com.xiliulou.electricity.vo.merchant.MerchantPowerDetailVO;
 
 import java.util.List;
 
@@ -11,5 +11,5 @@ import java.util.List;
  */
 public interface MerchantCabinetPowerMonthRecordProService {
     
-    MerchantPowerVO sumMonthPower(List<Long> cabinetIds, String monthDate);
+    MerchantPowerDetailVO sumMonthPower(List<Long> cabinetIds, List<String> monthDateList);
 }

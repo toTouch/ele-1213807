@@ -1,6 +1,6 @@
 package com.xiliulou.electricity.mapper.merchant;
 
-import com.xiliulou.electricity.vo.merchant.MerchantPowerVO;
+import com.xiliulou.electricity.vo.merchant.MerchantPowerDetailVO;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
@@ -12,5 +12,5 @@ import java.util.List;
  */
 public interface MerchantCabinetPowerMonthRecordProMapper {
     
-    MerchantPowerVO sumMonthPower(@Param("cabinetIds") List<Long> cabinetIds, @Param("monthDate") String monthDate);
+    MerchantPowerDetailVO sumMonthPower(@Param("cabinetIds") List<Long> cabinetIds, @Param("monthDateList") List<String> monthDateList);
 }
