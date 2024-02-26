@@ -28,6 +28,7 @@ import org.springframework.http.client.ClientHttpRequestFactory;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 
@@ -85,7 +86,7 @@ public class JsonOuterInnerTestWxController {
      * @throws Exception
      */
     @GetMapping("/transferOrderQueryV3")
-    public WechatTransferBatchOrderQueryResult transferOrderQueryV3(String batchNo, String detailNo) throws Exception {
+    public WechatTransferBatchOrderQueryResult transferOrderQueryV3(@RequestParam("batchNo") String batchNo, @RequestParam("detailNo") String detailNo) throws Exception {
         
         String url = String.format(WechatV3Constant.WE_TRANSFER_ORDER_QUERY_V3, batchNo, detailNo);
         
@@ -95,10 +96,10 @@ public class JsonOuterInnerTestWxController {
         headers.put("Accept", "application/json");
         
         // {"status":200,"headers":{"Server":["nginx"],"Date":["Sat, 24 Feb 2024 06:50:54 GMT"],"Content-Type":["application/json; charset\u003dutf-8"],"Connection":["keep-alive"],"Keep-Alive":["timeout\u003d8"],"Cache-Control":["no-cache, must-revalidate"],"X-Content-Type-Options":["nosniff"],"Request-ID":["08CEA3E6AE0610C20418E0ABB1A80120A75E28CCA505-0"],"Content-Language":["zh-CN"],"Wechatpay-Nonce":["47f77f0a6ce0e9587ad5fb53ee5044d7"],"Wechatpay-Signature":["NnRrU7zsGv091Zqx8b5sDBMNQzf7oFnMEevRvNXHiYIZ+MVxefcFNeJEGB9wHm/aDwFgWwZ2n6l4xpk9+fd0XJebL6mWPOBMMql//Jksx0lZspyV0//4YVIZd6jus2KAGQVAA5UWcQ2QYsPRJs7WHHC4OAZgiB7RIRD0jEGleo7cHiZnePCPpLBu5cgyvIg8lKIsB7V0vABpw8HhWAjpMoO+io42PtC/cICIon1Y5yEQmkMFVSwQjU48sg3qpXyiuYMShKAOajRViljtPmbXYE2NADlXEjYvKIECLzEwJmEJUgTdNcHn2Vs6SeNLpfFWBYVyyT/s3Yi3LxrYaoNMTA\u003d\u003d"],"Wechatpay-Timestamp":["1708757454"],"Wechatpay-Serial":["22C4CE98FA3157B828B4BBF448DCC5986BB4EF3F"],"Wechatpay-Signature-Type":["WECHATPAY2-SHA256-RSA2048"]},"body":"{\"batch_id\":\"131000501099000111125732024022419471051882\",\"batch_status\":\"ACCEPTED\",\"create_time\":\"2024-02-24T14:50:54+08:00\",\"out_batch_no\":\"1234567890TestOutBatchNo\"}"}
-        String response = restTemplateService.getForString(url, null, headers);
-        log.info("transferBatchOrderQueryV3 response is {}", response);
+        ResponseEntity<String> responseEntity = restTemplateService.getForResponseEntity(url, null, headers);
+        log.info("transferBatchOrderQueryV3 responseEntity is {}", JsonUtil.toJson(responseEntity));
         
-        return JsonUtil.fromJson(response, WechatTransferBatchOrderQueryResult.class);
+        return JsonUtil.fromJson(responseEntity.getBody(), WechatTransferBatchOrderQueryResult.class);
     }
     
     /**
@@ -119,7 +120,7 @@ public class JsonOuterInnerTestWxController {
         
         // {\"transfer_batch\":{\"appid\":\"wx76159ea6aa7a64bc\",\"batch_id\":\"131000101061400111125732024022480844853247\",\"batch_name\":\"测试商家转账到零钱\",\"batch_remark\":\"测试商家转账到零钱\",\"batch_status\":\"FINISHED\",\"batch_type\":\"API\",\"create_time\":\"2024-02-24T15:36:44+08:00\",\"fail_amount\":0,\"fail_num\":0,\"mchid\":\"1300358101\",\"out_batch_no\":\"Test20240224001\",\"success_amount\":20,\"success_num\":2,\"total_amount\":20,\"total_num\":2,\"transfer_scene_id\":\"1001\",\"update_time\":\"2024-02-24T15:38:18+08:00\"},\"transfer_detail_list\":[]}
         ResponseEntity<String> responseEntity = restTemplateService.getForResponseEntity(url,null, headers);
-        log.info("transferBatchOrderQueryV3 responseEntity is {}", responseEntity);
+        log.info("transferBatchOrderQueryV3 responseEntity is {}", JsonUtil.toJson(responseEntity));
         
         return JsonUtil.fromJson(responseEntity.getBody(), WechatTransferBatchOrderQueryResult.class);
     }
