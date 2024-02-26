@@ -290,7 +290,7 @@ public class MerchantServiceImpl implements MerchantService {
         enterpriseInfo.setStatus(merchantSaveRequest.getEnterprisePackageAuth());
         enterpriseInfo.setUid(user1.getUid());
         EnterpriseInfoQuery enterpriseInfoQuery = EnterpriseInfoQuery.builder().uid(user1.getUid()).name(merchantSaveRequest.getName())
-                .franchiseeId(merchantSaveRequest.getFranchiseeId()).status(merchantSaveRequest.getEnterprisePackageAuth())
+                .franchiseeId(merchantSaveRequest.getFranchiseeId()).status(merchantSaveRequest.getEnterprisePackageAuth()).packageType(BatteryMemberCard.BUSINESS_TYPE_ENTERPRISE)
                 .purchaseAuthority(merchantSaveRequest.getPurchaseAuthority()).build();
         
         if (ObjectUtils.isNotEmpty(merchantSaveRequest.getEnterprisePackageIdList())) {
@@ -313,7 +313,9 @@ public class MerchantServiceImpl implements MerchantService {
         merchant.setEnterpriseId(enterpriseInfoQuery.getId());
         merchant.setUid(user1.getUid());
         merchant.setCreateTime(timeMillis);
+        merchant.setDelFlag(MerchantConstant.DEL_NORMAL);
         merchant.setUpdateTime(timeMillis);
+        merchant.setTenantId(tenantId);
         
         // 保存商户信息
         int i = merchantMapper.insert(merchant);
@@ -516,7 +518,7 @@ public class MerchantServiceImpl implements MerchantService {
         enterpriseInfo.setStatus(merchantSaveRequest.getEnterprisePackageAuth());
         enterpriseInfo.setUid(merchant.getUid());
         EnterpriseInfoQuery enterpriseInfoQuery = EnterpriseInfoQuery.builder().uid(merchant.getUid()).name(merchantSaveRequest.getName())
-                .franchiseeId(merchantSaveRequest.getFranchiseeId()).status(merchantSaveRequest.getEnterprisePackageAuth())
+                .franchiseeId(merchantSaveRequest.getFranchiseeId()).status(merchantSaveRequest.getEnterprisePackageAuth()).packageType(BatteryMemberCard.BUSINESS_TYPE_ENTERPRISE)
                 .purchaseAuthority(merchantSaveRequest.getPurchaseAuthority()).build();
         
         if (ObjectUtils.isNotEmpty(merchantSaveRequest.getEnterprisePackageIdList())) {
