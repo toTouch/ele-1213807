@@ -36,7 +36,6 @@ import javax.annotation.Resource;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 /**
  * @author BaoYu
@@ -113,34 +112,31 @@ public class ChannelEmployeeServiceImpl implements ChannelEmployeeService {
     @Override
     public List<ChannelEmployeeVO> listChannelEmployee(ChannelEmployeeRequest channelEmployeeRequest) {
         
-        List<ChannelEmployee> channelEmployees = channelEmployeeMapper.selectListByCondition(channelEmployeeRequest);
+        List<ChannelEmployeeVO> channelEmployees = channelEmployeeMapper.selectListByCondition(channelEmployeeRequest);
         
-        List<ChannelEmployeeVO> channelEmployeeVOList = channelEmployees.parallelStream().map(item -> {
-            ChannelEmployeeVO channelEmployeeVO = new ChannelEmployeeVO();
-            BeanUtils.copyProperties(item, channelEmployeeVO);
+        channelEmployees.parallelStream().forEach(item -> {
             
             //设置加盟商名称
             Franchisee franchisee = franchiseeService.queryByIdFromCache(item.getFranchiseeId());
             if(Objects.nonNull(franchisee)){
-                channelEmployeeVO.setFranchiseeName(franchisee.getName());
+                item.setFranchiseeName(franchisee.getName());
             }
             
             //设置区域名称
             MerchantArea merchantArea = merchantAreaService.queryById(item.getAreaId());
             if(Objects.nonNull(merchantArea)){
-                channelEmployeeVO.setAreaName(merchantArea.getName());
+                item.setAreaName(merchantArea.getName());
             }
             
             //设置商户数
             MerchantPageRequest merchantPageRequest = new MerchantPageRequest();
             merchantPageRequest.setChannelEmployeeUid(item.getUid());
             Integer countTotal = merchantService.countTotal(merchantPageRequest);
-            channelEmployeeVO.setMerchantTotal(countTotal != null ? countTotal : 0);
+            item.setMerchantTotal(countTotal != null ? countTotal : 0);
             
-            return channelEmployeeVO;
-        }).collect(Collectors.toList());
+        });
         
-        return channelEmployeeVOList;
+        return channelEmployees;
     }
     
     @Slave
