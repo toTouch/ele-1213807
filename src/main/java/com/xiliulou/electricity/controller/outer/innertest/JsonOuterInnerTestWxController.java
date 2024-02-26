@@ -121,16 +121,16 @@ public class JsonOuterInnerTestWxController {
         String paramsJson = JsonUtil.toJson(params);
         
         String token = WechatCredentialsUtils.getToken(HttpMethod.GET.toString(), Objects.requireNonNull(HttpUrl.parse(url)), null, MCH_ID, MCH_SERIAL_NO, getPrivateKey());
-        HashMap<String, String> headers = Maps.newHashMap();
+        HashMap<String, Object> headers = Maps.newHashMap();
         headers.put("Authorization", WechatCredentialsUtils.getSchema() + " " + token);
         headers.put("Accept", "application/json");
         
         // {"status":200,"headers":{"Server":["nginx"],"Date":["Sat, 24 Feb 2024 06:50:54 GMT"],"Content-Type":["application/json; charset\u003dutf-8"],"Connection":["keep-alive"],"Keep-Alive":["timeout\u003d8"],"Cache-Control":["no-cache, must-revalidate"],"X-Content-Type-Options":["nosniff"],"Request-ID":["08CEA3E6AE0610C20418E0ABB1A80120A75E28CCA505-0"],"Content-Language":["zh-CN"],"Wechatpay-Nonce":["47f77f0a6ce0e9587ad5fb53ee5044d7"],"Wechatpay-Signature":["NnRrU7zsGv091Zqx8b5sDBMNQzf7oFnMEevRvNXHiYIZ+MVxefcFNeJEGB9wHm/aDwFgWwZ2n6l4xpk9+fd0XJebL6mWPOBMMql//Jksx0lZspyV0//4YVIZd6jus2KAGQVAA5UWcQ2QYsPRJs7WHHC4OAZgiB7RIRD0jEGleo7cHiZnePCPpLBu5cgyvIg8lKIsB7V0vABpw8HhWAjpMoO+io42PtC/cICIon1Y5yEQmkMFVSwQjU48sg3qpXyiuYMShKAOajRViljtPmbXYE2NADlXEjYvKIECLzEwJmEJUgTdNcHn2Vs6SeNLpfFWBYVyyT/s3Yi3LxrYaoNMTA\u003d\u003d"],"Wechatpay-Timestamp":["1708757454"],"Wechatpay-Serial":["22C4CE98FA3157B828B4BBF448DCC5986BB4EF3F"],"Wechatpay-Signature-Type":["WECHATPAY2-SHA256-RSA2048"]},"body":"{\"batch_id\":\"131000501099000111125732024022419471051882\",\"batch_status\":\"ACCEPTED\",\"create_time\":\"2024-02-24T14:50:54+08:00\",\"out_batch_no\":\"1234567890TestOutBatchNo\"}"}
         String sendUrl = url + "?need_query_detail=false&offset=0&limit=100";
-        ResponseEntity<String> responseEntity = restTemplateService.getForResponseEntity(sendUrl, null, headers);
-        log.info("transferBatchOrderQueryV3 responseEntity is {}", JsonUtil.toJson(responseEntity));
+        String s = restTemplateService.getForString(sendUrl, headers);
+        log.info("transferBatchOrderQueryV3 responseEntity is {}", JsonUtil.toJson(s));
         
-        return JsonUtil.fromJson(responseEntity.getBody(), WechatTransferBatchOrderQueryResult.class);
+        return JsonUtil.fromJson(s, WechatTransferBatchOrderQueryResult.class);
     }
     
     @GetMapping("/transferBatchesV3")
