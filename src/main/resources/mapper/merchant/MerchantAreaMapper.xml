@@ -22,7 +22,7 @@
     </delete>
     
     <select id="existsByAreaName" resultType="java.lang.Integer">
-        select count(1) from t_merchant_area where tenant_id = #{tenantId} and name = #{areaName}
+        select 1 from t_merchant_area where tenant_id = #{tenantId} and name = #{areaName}
     </select>
     
     <update id="updateById">

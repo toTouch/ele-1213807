@@ -32,7 +32,7 @@ import java.util.Objects;
  */
 @Slf4j
 @RestController
-public class JsonAdminRebateConfigController extends BaseController {
+public class JsonMerchantRebateConfigController extends BaseController {
     
     @Autowired
     private RebateConfigService rebateConfigService;

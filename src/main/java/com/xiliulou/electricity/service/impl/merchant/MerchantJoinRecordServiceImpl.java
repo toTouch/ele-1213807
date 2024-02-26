@@ -2,6 +2,7 @@ package com.xiliulou.electricity.service.impl.merchant;
 
 import cn.hutool.core.util.StrUtil;
 import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.core.utils.PhoneUtils;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
@@ -437,9 +438,9 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
         }
 
         merchantJoinUserVOS.forEach(merchantJoinUserVO -> {
-            //TODO 对电话号码中见四位做脱敏处理
+            //对电话号码中见四位做脱敏处理
             String phone = merchantJoinUserVO.getPhone();
-            merchantJoinUserVO.setPhone(phone);
+            merchantJoinUserVO.setPhone(PhoneUtils.mobileEncrypt(phone));
 
             Long packageId = merchantJoinUserVO.getPackageId();
             if (Objects.nonNull(packageId) && packageId != 0) {

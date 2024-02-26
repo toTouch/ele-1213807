@@ -181,8 +181,8 @@
         left join t_electricity_cabinet b on b.id = t.cabinet_id
         <include refid="pageFilter"/>
         order by create_time desc
-        <if test="offset != null and limit != null">
-            limit #{offset}, #{limit}
+        <if test="offset != null and size != null">
+            limit #{offset}, #{size}
         </if>
     </select>
     
@@ -263,5 +263,23 @@
         and status = 0
         and cabinet_id = #{cabinetId}
         and place_id = #{placeId}
+    </select>
+    
+    <select id="selectListDayBindRecord" resultType="com.xiliulou.electricity.entity.merchant.MerchantPlaceCabinetBind">
+        select
+        <include refid="basic_field"/>
+        from t_merchant_place_cabinet_bind
+        <where>
+            del_flag = 0
+            and create_time &gt;= #{todayStartTime}
+            and create_time &lt;= #{nowTime}
+            <if test="cabinetIds != null and cabinetIds.size() > 0">
+                and cabinet_id in
+                <foreach collection="cabinetIds" separator="," open="(" close=")" item="cabinetId">
+                    #{cabinetId}
+                </foreach>
+            </if>
+        </where>
+        order by id desc
     </select>
 </mapper>
