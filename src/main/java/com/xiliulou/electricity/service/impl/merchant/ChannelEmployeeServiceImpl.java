@@ -247,6 +247,7 @@ public class ChannelEmployeeServiceImpl implements ChannelEmployeeService {
         }
         
         updateUser.setUid(channelEmployee.getUid());
+        updateUser.setName(channelEmployeeRequest.getName());
         updateUser.setPhone(channelEmployeeRequest.getPhone());
         updateUser.setUserType(User.TYPE_USER_CHANNEL);
         updateUser.setTenantId(TenantContextHolder.getTenantId());
@@ -255,7 +256,7 @@ public class ChannelEmployeeServiceImpl implements ChannelEmployeeService {
     
         ChannelEmployee channelEmployeeUpdate = new ChannelEmployee();
         channelEmployeeUpdate.setId(channelEmployeeRequest.getId());
-        channelEmployeeUpdate.setUid(channelEmployee.getUid());
+        //channelEmployeeUpdate.setUid(channelEmployee.getUid());
         //channelEmployeeUpdate.setTenantId(tenantId);
         channelEmployeeUpdate.setAreaId(channelEmployeeRequest.getAreaId());
     
@@ -278,7 +279,6 @@ public class ChannelEmployeeServiceImpl implements ChannelEmployeeService {
     
         Integer result = 0;
         if(Objects.nonNull(user)){
-            //userService.deleteInnerUser(merchantEmployee.getUid());
             result = userService.removeById(channelEmployee.getUid(), System.currentTimeMillis());
             redisService.delete(CacheConstant.CACHE_USER_UID + channelEmployee.getUid());
             redisService.delete(CacheConstant.CACHE_USER_PHONE + user.getTenantId() + ":" + user.getPhone() + ":" + user.getUserType());
