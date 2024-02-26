@@ -72,12 +72,22 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
     @Slave
     @Override
     public MerchantPowerVO todayPower(MerchantCabinetPowerRequest request) {
-        // 判断柜机和场地绑定时间，今天有没有往前拉？是否跨天
+        //获取要查询的柜机
+        List<Long> cabinetIds = getStaticsCabinetIds(request);
         
+        // 判断柜机和场地绑定时间，今天有没有往前拉？是否跨天
         // 今日0点
         Long todayStartTime = DateUtils.getTimeAgoStartTime(NumberConstant.ZERO);
         
-        List<MerchantPlaceCabinetBind> cabinetBindList = merchantPlaceCabinetBindService.listDayBindRecord(todayStartTime, System.currentTimeMillis());
+        List<MerchantPlaceCabinetBind> cabinetBindList = merchantPlaceCabinetBindService.listDayBindRecord(todayStartTime, System.currentTimeMillis(), cabinetIds);
+        if (CollectionUtils.isNotEmpty(cabinetBindList)) {
+            return null;
+        }
+    
+        // 遍历场地柜机绑定记录
+        cabinetBindList.forEach(cabinetBind -> {
+        
+        });
         
         return null;
     }
