@@ -83,4 +83,9 @@ public class EleHardwareFailureWarnMsgPageRequest {
      * 不限制故障告警设置
      */
     private Integer noLimitSignalId;
+    
+    /**
+     * 柜机Id
+     */
+    private Integer cabinetId;
 }

@@ -27,7 +27,7 @@ import java.util.Objects;
 
 @Slf4j
 @RestController
-public class JsonAdminMerchantWithdrawController {
+public class JsonMerchantWithdrawController {
     
     @Resource
     UserDataScopeService userDataScopeService;

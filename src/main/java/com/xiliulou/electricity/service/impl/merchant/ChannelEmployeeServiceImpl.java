@@ -12,6 +12,7 @@ import com.xiliulou.electricity.entity.UserRole;
 import com.xiliulou.electricity.entity.merchant.ChannelEmployee;
 import com.xiliulou.electricity.entity.merchant.ChannelEmployeeAmount;
 import com.xiliulou.electricity.entity.merchant.MerchantArea;
+import com.xiliulou.electricity.entity.merchant.MerchantEmployee;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.merchant.ChannelEmployeeAmountMapper;
 import com.xiliulou.electricity.mapper.merchant.ChannelEmployeeMapper;
@@ -243,8 +244,6 @@ public class ChannelEmployeeServiceImpl implements ChannelEmployeeService {
         userService.updateMerchantUser(updateUser);
     
         ChannelEmployee channelEmployeeUpdate = new ChannelEmployee();
-        //BeanUtils.copyProperties(channelEmployeeRequest, channelEmployeeUpdate);
-    
         channelEmployeeUpdate.setId(channelEmployeeRequest.getId());
         channelEmployeeUpdate.setUid(channelEmployee.getUid());
         //channelEmployeeUpdate.setTenantId(tenantId);
@@ -259,8 +258,22 @@ public class ChannelEmployeeServiceImpl implements ChannelEmployeeService {
     
     @Override
     public Integer removeById(Long id) {
+        ChannelEmployee channelEmployee = channelEmployeeMapper.selectById(id);
         
-        return channelEmployeeMapper.removeById(id);
+        if(Objects.isNull(channelEmployee)) {
+            log.error("not found channel employee by id, id = {}", id);
+            throw new BizException("120008", "渠道员工不存在");
+        }
+        User user = userService.queryByUidFromCache(channelEmployee.getUid());
+    
+        Integer result = 0;
+        if(Objects.nonNull(user)){
+            //userService.deleteInnerUser(merchantEmployee.getUid());
+            result = userService.removeById(channelEmployee.getUid(), System.currentTimeMillis());
+            redisService.delete(CacheConstant.CACHE_USER_UID + channelEmployee.getUid());
+            redisService.delete(CacheConstant.CACHE_USER_PHONE + user.getTenantId() + ":" + user.getPhone() + ":" + user.getUserType());
+        }
+        return result;
     }
     
     @Slave
