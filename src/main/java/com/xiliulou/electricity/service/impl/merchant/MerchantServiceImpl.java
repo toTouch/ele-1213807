@@ -313,6 +313,7 @@ public class MerchantServiceImpl implements MerchantService {
         merchant.setEnterpriseId(enterpriseInfoQuery.getId());
         merchant.setUid(user1.getUid());
         merchant.setCreateTime(timeMillis);
+        merchant.setDelFlag(MerchantConstant.DEL_NORMAL);
         merchant.setUpdateTime(timeMillis);
         merchant.setTenantId(tenantId);
         
