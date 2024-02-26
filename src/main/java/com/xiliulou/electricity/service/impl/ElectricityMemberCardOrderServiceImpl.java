@@ -4117,15 +4117,14 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             return Triple.of(false, "ELECTRICITY.0042", "未缴纳押金");
         }
     
-        if (Objects.nonNull(userBatteryDeposit.getBatteryDeposit()) && batteryMemberCard.getDeposit().compareTo(userBatteryDeposit.getBatteryDeposit()) != 0) {
-            log.warn("ELE DEPOSIT WARN! batteryMemberCard not equals user deposit,uid={},mid={}", userInfo.getUid(), query.getMembercardId());
-            return Triple.of(false, "100484", "用户押金与电池套餐押金不一致");
-        }
+//        if (Objects.nonNull(userBatteryDeposit.getBatteryDeposit()) &&  Objects.equals( userBatteryDeposit.getDepositModifyFlag(), UserBatteryDeposit.DEPOSIT_MODIFY_NO) && batteryMemberCard.getDeposit().compareTo(userBatteryDeposit.getBatteryDeposit()) != 0) {
+//            log.warn("ELE DEPOSIT WARN! batteryMemberCard not equals user deposit,uid={},mid={}", userInfo.getUid(), query.getMembercardId());
+//            return Triple.of(false, "100484", "用户押金与电池套餐押金不一致");
+//        }
 //
-//        //判断套餐是否为非免押套餐
-//        if (!Objects.equals(userBatteryDeposit.getDepositType(), UserBatteryDeposit.DEPOSIT_TYPE_FREE) && Objects.equals(batteryMemberCard.getFreeDeposite(), BatteryMemberCard.YES)) {
-//            log.warn("ELE DEPOSIT WARN! batteryMemberCard is illegal,uid={},mid={}", userInfo.getUid(), query.getMembercardId());
-//            return Triple.of(false, "100483", "电池套餐免押类型不合法");
+//        if (Objects.nonNull(userBatteryDeposit.getBatteryDeposit()) && Objects.equals( userBatteryDeposit.getDepositModifyFlag(),UserBatteryDeposit.DEPOSIT_MODIFY_YES ) && batteryMemberCard.getDeposit().compareTo(userBatteryDeposit.getBeforeModifyDeposit()) != 0) {
+//            log.warn("ELE DEPOSIT WARN! batteryMemberCard not equals user deposit,uid={},mid={}", userInfo.getUid(), query.getMembercardId());
+//            return Triple.of(false, "100484", "用户押金与电池套餐押金不一致");
 //        }
     
         //判断套餐是否为免押套餐
