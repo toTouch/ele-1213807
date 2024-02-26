@@ -34,7 +34,7 @@ import java.util.Objects;
  */
 @Slf4j
 @RestController
-public class JsonAdminMerchantPlaceController extends BaseController {
+public class JsonMerchantPlaceController extends BaseController {
     
     @Resource
     private MerchantPlaceService merchantPlaceService;
