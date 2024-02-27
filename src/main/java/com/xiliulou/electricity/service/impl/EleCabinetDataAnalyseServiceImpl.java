@@ -105,6 +105,7 @@ public class EleCabinetDataAnalyseServiceImpl implements EleCabinetDataAnalyseSe
     @Resource
     private ElectricityConfigService electricityConfigService;
     
+    @Resource
     private MerchantAreaService merchantAreaService;
     
     

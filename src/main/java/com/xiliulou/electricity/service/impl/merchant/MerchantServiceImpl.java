@@ -923,7 +923,7 @@ public class MerchantServiceImpl implements MerchantService {
     @Slave
     @Override
     public Merchant queryByUid(Long uid) {
-        Merchant merchant = merchantMapper.selectByUid(uid);
+        Merchant merchant = queryFromCacheById(uid);
         User user = userService.queryByUidFromCache(merchant.getUid());
         if (ObjectUtils.isNotEmpty(user)) {
             merchant.setPhone(user.getPhone());

@@ -5,6 +5,7 @@ import com.xiliulou.electricity.entity.merchant.ChannelEmployeePromotionMonthRec
 import com.xiliulou.electricity.request.merchant.ChannelEmployeePromotionRequest;
 import com.xiliulou.electricity.vo.merchant.ChannelEmployeePromotionVO;
 
+import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 
 /**
@@ -19,4 +20,6 @@ public interface ChannelEmployeePromotionMonthRecordService {
     List<ChannelEmployeePromotionVO> listByPage(ChannelEmployeePromotionRequest channelEmployeeRequest);
     
     Integer countTotal(ChannelEmployeePromotionRequest channelEmployeeRequest);
+    
+    void export(String monthDate, HttpServletResponse response);
 }
