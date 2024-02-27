@@ -87,9 +87,9 @@ public class MerchantTokenServiceImpl implements MerchantTokenService {
         }
         
         try {
-            String codeUrl = String.format(CacheConstant.WX_MIN_PRO_AUTHORIZATION_CODE_URL, electricityPayParams.getMerchantMinProAppId(),
-                    electricityPayParams.getMerchantMinProAppSecert(), merchantLoginRequest.getCode());
-            
+            String codeUrl = String.format(CacheConstant.WX_MIN_PRO_AUTHORIZATION_CODE_URL, "wxc2dd558f2ee2ab8a",
+                    "b029fdccc213ae48c81e4243d4f2e1ef", merchantLoginRequest.getCode());
+
             String bodyStr = restTemplateService.getForString(codeUrl, null);
             log.info("TOKEN INFO! call wxpro get openId message={}", bodyStr);
             
