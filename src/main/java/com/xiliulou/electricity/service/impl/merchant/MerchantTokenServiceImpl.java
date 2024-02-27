@@ -130,7 +130,12 @@ public class MerchantTokenServiceImpl implements MerchantTokenService {
                 return Triple.of(false, null, "未找到绑定账号，请检查");
             }
 
+            log.info("userBindBusinessDTOS:{} notLockerUser:{}", userBindBusinessDTOS, notLockUsers);
             List<MerchantLoginVO> loginVOS = notLockUsers.parallelStream().map(e -> {
+                if (Objects.isNull(userBindBusinessDTOS.get(e.getUid()))) {
+                    return null;
+                }
+
                 // 查看是否有绑定的第三方信息,如果没有绑定创建一个
                 if (!wxProThirdAuthenticationService.checkOpenIdExists(result.getOpenid(), tenantId).getLeft()) {
                     UserOauthBind oauthBind = UserOauthBind.builder().createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis())
