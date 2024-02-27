@@ -82,7 +82,10 @@ public enum BusinessType {
     MERCHANT_WITHDRAW(81),
     
     //商户申请提现批次号
-    MERCHANT_WITHDRAW_BATCH(82);
+    MERCHANT_WITHDRAW_BATCH(82),
+    
+    //商户申请提现批次单号下明细项唯一标识号
+    MERCHANT_WITHDRAW_BATCH_DETAIL(83);
 
     private final Integer business;
 
