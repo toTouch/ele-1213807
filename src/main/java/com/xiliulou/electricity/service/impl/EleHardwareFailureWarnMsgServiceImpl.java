@@ -159,7 +159,7 @@ public class EleHardwareFailureWarnMsgServiceImpl implements EleHardwareFailureW
             Map<String, Map<String, String>> map = new HashMap<>();
     
             // 上报的记录没有
-            FailureAlarm failureAlarm = failureAlarmService.queryFromCacheBySignalId(vo.getSignalId());
+            FailureAlarm failureAlarm = failureAlarmService.queryBySignalIdFromCache(vo.getSignalId());
             if (Objects.nonNull(failureAlarm) && Objects.equals(failureAlarm.getType(), finalType)) {
                 String signalName = failureAlarm.getSignalName();
                 Map<String, String> descMap = map.get(failureAlarm.getSignalId());
@@ -441,7 +441,7 @@ public class EleHardwareFailureWarnMsgServiceImpl implements EleHardwareFailureW
                     vo.setSn(electricityCabinet1.getSn());
                 });
                 
-                FailureAlarm failureAlarm = failureAlarmService.queryFromCacheBySignalId(vo.getSignalId());
+                FailureAlarm failureAlarm = failureAlarmService.queryBySignalIdFromCache(vo.getSignalId());
                 
                 if (Objects.nonNull(failureAlarm) && Objects.equals(failureAlarm.getType(), type)) {
                     String signalName = failureAlarm.getSignalName();
@@ -628,7 +628,7 @@ public class EleHardwareFailureWarnMsgServiceImpl implements EleHardwareFailureW
                 vo.setSerialNumber(i++);
                 
                 // 查询故障告警设置
-                FailureAlarm failureAlarm = failureAlarmService.queryFromCacheBySignalId(item.getSignalId());
+                FailureAlarm failureAlarm = failureAlarmService.queryBySignalIdFromCache(item.getSignalId());
                 Optional.ofNullable(failureAlarm).ifPresent(failureAlarm1 -> {
                     // 设备分类
                     FailureAlarmDeviceTypeEnum deviceTypeEnum = BasicEnum.getEnum(Integer.valueOf(failureAlarm1.getDeviceType()), FailureAlarmDeviceTypeEnum.class);
