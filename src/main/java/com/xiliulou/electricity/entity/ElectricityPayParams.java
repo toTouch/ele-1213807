@@ -74,5 +74,15 @@ public class ElectricityPayParams {
     private String paternerKey;
 
     public static final Integer TYPE_MERCHANT_PATH = 1;
+    
+    /**
+     * 商家版小程序 appid
+     */
+    private String merchantAppletId;
+    
+    /**
+     * 商家版小程序 appSecret
+     */
+    private String merchantAppletSecret;
 
 }

@@ -31,4 +31,10 @@ public class ChannelEmployeePromotionDayRecordServiceImpl implements ChannelEmpl
     public List<ChannelEmployeePromotionDayRecord> queryList(long startTime, long endTime, Long offset, Long size) {
         return channelEmployeePromotionDayRecordMapper.queryList(startTime, endTime, offset, size);
     }
+    
+    @Slave
+    @Override
+    public List<ChannelEmployeePromotionDayRecord> queryListByFeeDate(long startTime, long endTime, Integer tenantId) {
+        return channelEmployeePromotionDayRecordMapper.selectListByFeeDate(startTime, endTime, tenantId);
+    }
 }

@@ -23,7 +23,11 @@ public class BatchReviewWithdrawApplicationRequest {
     
     private Integer status;
     
+    private String transactionNo;
+    
     private String remark;
+    
+    private String withdrawResult;
     
     private Long checkTime;
     

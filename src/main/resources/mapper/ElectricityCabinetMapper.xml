@@ -113,7 +113,7 @@
         <if test="query.modelId != null">
             and model_id = #{query.modelId}
         </if>
-        <if test="areaId != null">
+        <if test="query.areaId != null">
             and area_id = #{areaId}
         </if>
         <if test="query.idList != null and query.idList.size() > 0">

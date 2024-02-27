@@ -52,4 +52,18 @@
             limit #{offset}, #{size}
         )
     </select>
+    <sql id="column">
+        channel_employees_id  , tenant_id  , month_first_money  , month_renew_money
+         , month_total_money  ,fee_date   ,create_time ,update_time
+    </sql>
+    <select id="selectByFeeDate"
+            resultType="com.xiliulou.electricity.entity.merchant.ChannelEmployeePromotionMonthRecord">
+        select
+            <include refid="column"/>
+        from t_channel_employee_promotion_month_record
+        where
+            tenant_id = #{tenantId}
+            and fee_date <![CDATA[ >=  ]]>  #{startTime}
+            and fee_date <![CDATA[ <=  ]]>  #{endTime}
+    </select>
 </mapper>

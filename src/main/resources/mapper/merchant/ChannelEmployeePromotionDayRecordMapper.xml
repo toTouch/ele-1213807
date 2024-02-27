@@ -24,5 +24,20 @@
         </where>
         limit #{offset},#{size}
     </select>
+    
+    <select id="selectListByFeeDate"
+            resultType="com.xiliulou.electricity.entity.merchant.ChannelEmployeePromotionDayRecord">
+        select
+        channel_employees_id , tenant_id , day_first_money , day_renew_money , day_total_money ,day_balance_money,
+        fee_date ,del_flag ,create_time ,update_time
+        from t_channel_employee_promotion_day_record
+        <where>
+            del_flag = 0
+            and fee_date <![CDATA[ >=  ]]>  #{startTime}
+            and fee_date <![CDATA[ <=  ]]>  #{endTime}
+            and tenant_id = #{tenantId}
+        </where>
+        
+    </select>
 
 </mapper>

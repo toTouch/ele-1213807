@@ -213,7 +213,7 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
         if (Objects.isNull(userBatteryMemberCard) && userInfo.getPayCount() <= 0) {
             //新租
             query.setRentTypes(Arrays.asList(BatteryMemberCard.RENT_TYPE_NEW, BatteryMemberCard.RENT_TYPE_UNLIMIT));
-            query.setFreeDeposite(Objects.nonNull(userBatteryDeposit) && Objects.equals(userBatteryDeposit.getDepositType(), UserBatteryDeposit.DEPOSIT_TYPE_FREE) ? BatteryMemberCard.YES: null);
+            query.setFreeDeposite(Objects.nonNull(userBatteryDeposit) && Objects.equals( userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES) && Objects.equals(userBatteryDeposit.getDepositType(), UserBatteryDeposit.DEPOSIT_TYPE_FREE) ? BatteryMemberCard.YES: null);
             //为了兼容免押后购买套餐
             if (Objects.nonNull(userBatteryDeposit) && Objects.equals(userBatteryDeposit.getDepositType(), UserBatteryDeposit.DEPOSIT_TYPE_FREE) && UserInfo.BATTERY_DEPOSIT_STATUS_YES.equals(userInfo.getBatteryDepositStatus())) {
                 if (Objects.equals(userBatteryDeposit.getDepositModifyFlag(), UserBatteryDeposit.DEPOSIT_MODIFY_YES)) {
@@ -226,7 +226,7 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
         } else if (Objects.isNull(userBatteryMemberCard) || Objects.equals(userBatteryMemberCard.getMemberCardId(), NumberConstant.ZERO_L)) {
             //非新租 购买押金套餐
             query.setRentTypes(Arrays.asList(BatteryMemberCard.RENT_TYPE_OLD, BatteryMemberCard.RENT_TYPE_UNLIMIT));
-            query.setFreeDeposite(Objects.nonNull(userBatteryDeposit) && Objects.equals(userBatteryDeposit.getDepositType(), UserBatteryDeposit.DEPOSIT_TYPE_FREE) ? BatteryMemberCard.YES: null);
+            query.setFreeDeposite(Objects.nonNull(userBatteryDeposit) && Objects.equals( userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES) && Objects.equals(userBatteryDeposit.getDepositType(), UserBatteryDeposit.DEPOSIT_TYPE_FREE) ? BatteryMemberCard.YES: null);
             
             if (Objects.nonNull(userBatteryDeposit) && UserInfo.BATTERY_DEPOSIT_STATUS_YES.equals(userInfo.getBatteryDepositStatus())) {
                 if (Objects.equals(userBatteryDeposit.getDepositModifyFlag(), UserBatteryDeposit.DEPOSIT_MODIFY_YES)) {
@@ -245,10 +245,9 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
             }
 
             query.setDeposit(batteryMemberCard.getDeposit());
-          //  query.setLimitCount(batteryMemberCard.getLimitCount());
             query.setRentTypes(Arrays.asList(BatteryMemberCard.RENT_TYPE_OLD, BatteryMemberCard.RENT_TYPE_UNLIMIT));
             query.setBatteryV(Objects.equals(franchisee.getModelType(), Franchisee.NEW_MODEL_TYPE) ? userBatteryTypeService.selectUserSimpleBatteryType(userInfo.getUid()) : null);
-            query.setFreeDeposite(Objects.nonNull(userBatteryDeposit) && Objects.equals(userBatteryDeposit.getDepositType(), UserBatteryDeposit.DEPOSIT_TYPE_FREE) ? BatteryMemberCard.YES: null);
+            query.setFreeDeposite(Objects.nonNull(userBatteryDeposit) && Objects.equals( userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES) && Objects.equals(userBatteryDeposit.getDepositType(), UserBatteryDeposit.DEPOSIT_TYPE_FREE) ? BatteryMemberCard.YES: null);
         }
 
         List<BatteryMemberCardAndTypeVO> list = this.batteryMemberCardMapper.selectByPageForUser(query);
@@ -414,7 +413,7 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
         if (Objects.isNull(userBatteryMemberCard) && userInfo.getPayCount() <= 0) {
             //新租
             query.setRentTypes(Arrays.asList(BatteryMemberCard.RENT_TYPE_NEW, BatteryMemberCard.RENT_TYPE_UNLIMIT));
-            query.setFreeDeposite(Objects.nonNull(userBatteryDeposit) && Objects.equals(userBatteryDeposit.getDepositType(), UserBatteryDeposit.DEPOSIT_TYPE_FREE) ? BatteryMemberCard.YES: null);
+            query.setFreeDeposite(Objects.nonNull(userBatteryDeposit)&& Objects.equals( userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES) && Objects.equals(userBatteryDeposit.getDepositType(), UserBatteryDeposit.DEPOSIT_TYPE_FREE) ? BatteryMemberCard.YES: null);
     
             //为了兼容免押后购买套餐
             if (Objects.nonNull(userBatteryDeposit) && Objects.equals(userBatteryDeposit.getDepositType(), UserBatteryDeposit.DEPOSIT_TYPE_FREE) && UserInfo.BATTERY_DEPOSIT_STATUS_YES.equals(userInfo.getBatteryDepositStatus())) {
@@ -427,7 +426,7 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
         } else if (Objects.isNull(userBatteryMemberCard) || Objects.equals(userBatteryMemberCard.getMemberCardId(), NumberConstant.ZERO_L)) {
             //非新租 购买押金套餐
             query.setRentTypes(Arrays.asList(BatteryMemberCard.RENT_TYPE_OLD, BatteryMemberCard.RENT_TYPE_UNLIMIT));
-            query.setFreeDeposite(Objects.nonNull(userBatteryDeposit) && Objects.equals(userBatteryDeposit.getDepositType(), UserBatteryDeposit.DEPOSIT_TYPE_FREE) ? BatteryMemberCard.YES: null);
+            query.setFreeDeposite(Objects.nonNull(userBatteryDeposit) && Objects.equals( userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES) && Objects.equals(userBatteryDeposit.getDepositType(), UserBatteryDeposit.DEPOSIT_TYPE_FREE) ? BatteryMemberCard.YES: null);
     
             //增加判断用户退押后，无法选择其他伏数套餐的问题。如果押金已缴纳，则需要根据押金金额过滤套餐
             if (Objects.nonNull(userBatteryDeposit) && UserInfo.BATTERY_DEPOSIT_STATUS_YES.equals(userInfo.getBatteryDepositStatus())) {
@@ -447,10 +446,9 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
             }
 
             query.setDeposit(batteryMemberCard.getDeposit());
-           // query.setLimitCount(batteryMemberCard.getLimitCount());
             query.setRentTypes(Arrays.asList(BatteryMemberCard.RENT_TYPE_OLD, BatteryMemberCard.RENT_TYPE_UNLIMIT));
             query.setBatteryV(Objects.equals(franchisee.getModelType(), Franchisee.NEW_MODEL_TYPE) ? userBatteryTypeService.selectUserSimpleBatteryType(SecurityUtils.getUid()) : null);
-            query.setFreeDeposite(Objects.nonNull(userBatteryDeposit) && Objects.equals(userBatteryDeposit.getDepositType(), UserBatteryDeposit.DEPOSIT_TYPE_FREE) ? BatteryMemberCard.YES: null);
+            query.setFreeDeposite(Objects.nonNull(userBatteryDeposit) && Objects.equals( userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES) && Objects.equals(userBatteryDeposit.getDepositType(), UserBatteryDeposit.DEPOSIT_TYPE_FREE) ? BatteryMemberCard.YES: null);
         }
 
         List<BatteryMemberCardAndTypeVO> list = this.batteryMemberCardMapper.selectByPageForUser(query);

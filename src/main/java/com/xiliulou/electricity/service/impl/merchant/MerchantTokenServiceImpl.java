@@ -87,9 +87,9 @@ public class MerchantTokenServiceImpl implements MerchantTokenService {
         }
         
         try {
-            String codeUrl = String.format(CacheConstant.WX_MIN_PRO_AUTHORIZATION_CODE_URL, electricityPayParams.getMerchantMinProAppId(),
-                    electricityPayParams.getMerchantMinProAppSecert(), merchantLoginRequest.getCode());
-            
+            String codeUrl = String.format(CacheConstant.WX_MIN_PRO_AUTHORIZATION_CODE_URL, "wxc2dd558f2ee2ab8a",
+                    "b029fdccc213ae48c81e4243d4f2e1ef", merchantLoginRequest.getCode());
+
             String bodyStr = restTemplateService.getForString(codeUrl, null);
             log.info("TOKEN INFO! call wxpro get openId message={}", bodyStr);
             
@@ -115,7 +115,7 @@ public class MerchantTokenServiceImpl implements MerchantTokenService {
             log.info("TOKEN INFO! 解析微信手机号:{}", purePhoneNumber);
 
             List<User> users = userService.listUserByPhone(purePhoneNumber, tenantId);
-            if (Collections.isEmpty(users) || users.stream().filter(user -> User.TYPE_USER_MERCHANT.equals(user.getUserType()) || User.TYPE_USER_CHANNEL.equals(user.getUserType())).count() > 1) {
+            if (Collections.isEmpty(users) || !(users.stream().filter(user -> User.TYPE_USER_MERCHANT.equals(user.getUserType()) || User.TYPE_USER_CHANNEL.equals(user.getUserType())).count() > 1)) {
                 return Triple.of(false, null, "用户不存在");
             }
 
@@ -125,12 +125,17 @@ public class MerchantTokenServiceImpl implements MerchantTokenService {
             }
 
             // 用户是否绑定了业务信息
-            Map<Long, UserBindBusinessDTO> userBindBusinessDTOS = users.stream().map(this::checkUserBindingBusiness).filter(e -> !e.isBinding()).collect(Collectors.toMap(UserBindBusinessDTO::getUid, e -> e));
+            Map<Long, UserBindBusinessDTO> userBindBusinessDTOS = users.stream().map(this::checkUserBindingBusiness).filter(UserBindBusinessDTO::isBinding).collect(Collectors.toMap(UserBindBusinessDTO::getUid, e -> e));
             if (userBindBusinessDTOS.isEmpty()) {
                 return Triple.of(false, null, "未找到绑定账号，请检查");
             }
 
+            log.info("userBindBusinessDTOS:{} notLockerUser:{}", userBindBusinessDTOS, notLockUsers);
             List<MerchantLoginVO> loginVOS = notLockUsers.parallelStream().map(e -> {
+                if (Objects.isNull(userBindBusinessDTOS.get(e.getUid()))) {
+                    return null;
+                }
+
                 // 查看是否有绑定的第三方信息,如果没有绑定创建一个
                 if (!wxProThirdAuthenticationService.checkOpenIdExists(result.getOpenid(), tenantId).getLeft()) {
                     UserOauthBind oauthBind = UserOauthBind.builder().createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis())
@@ -182,7 +187,7 @@ public class MerchantTokenServiceImpl implements MerchantTokenService {
                 userBindBusinessDTO.setPurchaseAuthority(UserBindBusinessDTO.AUTHORITY_DISABLE);
                 userBindBusinessDTO.setEnterprisePackageAuth(UserBindBusinessDTO.AUTHORITY_DISABLE);
             }
-            
+
         } else {
             userBindBusinessDTO.setBinding(false);
         }

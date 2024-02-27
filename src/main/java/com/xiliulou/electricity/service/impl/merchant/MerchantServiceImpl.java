@@ -7,6 +7,7 @@ import com.xiliulou.core.thread.XllThreadPoolExecutorService;
 import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
+import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.constant.merchant.MerchantConstant;
 import com.xiliulou.electricity.constant.merchant.MerchantPlaceConstant;
 import com.xiliulou.electricity.dto.merchant.MerchantDeleteCacheDTO;
@@ -298,7 +299,7 @@ public class MerchantServiceImpl implements MerchantService {
             Set<Long> collect = merchantSaveRequest.getEnterprisePackageIdList().stream().collect(Collectors.toSet());
             enterpriseInfoQuery.setPackageIds(collect);
         }
-        Triple<Boolean, String, Object> enterpriseSaveRes = enterpriseInfoService.save(enterpriseInfoQuery);
+        Triple<Boolean, String, Object> enterpriseSaveRes = enterpriseInfoService.saveNew(enterpriseInfoQuery);
         if (!enterpriseSaveRes.getLeft()) {
             String msg = "保存企业信息出错";
             if (ObjectUtils.isNotEmpty(enterpriseSaveRes.getRight())) {
@@ -372,7 +373,7 @@ public class MerchantServiceImpl implements MerchantService {
         
         Integer tenantId = TenantContextHolder.getTenantId();
         
-        Merchant merchant = this.merchantMapper.select(merchantSaveRequest.getId());
+        Merchant merchant = this.merchantMapper.selectById(merchantSaveRequest.getId());
         if (Objects.isNull(merchant) || !Objects.equals(merchant.getTenantId(), tenantId)) {
             log.error("merchant update error, merchant is not exit id={}, tenantId", merchantSaveRequest.getId(), tenantId);
             return Triple.of(false, "", "商户不存在");
@@ -518,7 +519,7 @@ public class MerchantServiceImpl implements MerchantService {
         enterpriseInfo.setFranchiseeId(merchantSaveRequest.getFranchiseeId());
         enterpriseInfo.setStatus(merchantSaveRequest.getEnterprisePackageAuth());
         enterpriseInfo.setUid(merchant.getUid());
-        EnterpriseInfoQuery enterpriseInfoQuery = EnterpriseInfoQuery.builder().uid(merchant.getUid()).name(merchantSaveRequest.getName())
+        EnterpriseInfoQuery enterpriseInfoQuery = EnterpriseInfoQuery.builder().uid(merchant.getUid()).name(merchantSaveRequest.getName()).id(merchant.getEnterpriseId())
                 .franchiseeId(merchantSaveRequest.getFranchiseeId()).status(merchantSaveRequest.getEnterprisePackageAuth()).packageType(BatteryMemberCard.BUSINESS_TYPE_ENTERPRISE)
                 .purchaseAuthority(merchantSaveRequest.getPurchaseAuthority()).build();
         
@@ -613,7 +614,7 @@ public class MerchantServiceImpl implements MerchantService {
     public Triple<Boolean, String, Object> remove(Long id) {
         // 检测商户是否存在
         Integer tenantId = TenantContextHolder.getTenantId();
-        Merchant merchant = this.merchantMapper.select(id);
+        Merchant merchant = this.merchantMapper.selectById(id);
         if (Objects.isNull(merchant) || !Objects.equals(merchant.getTenantId(), tenantId)) {
             log.error("merchant delete error, merchant is not exit id={}, tenantId", id, tenantId);
             return Triple.of(false, "", "商户不存在");
@@ -726,7 +727,7 @@ public class MerchantServiceImpl implements MerchantService {
             // 渠道员
             User user = userService.queryByUidFromCache(merchant.getChannelEmployeeUid());
             if (ObjectUtils.isNotEmpty(user)) {
-                merchantVO.setChannelName(user.getName());
+                merchantVO.setChannelUserName(user.getName());
             }
             
             // 查询用户的手机号
@@ -763,16 +764,19 @@ public class MerchantServiceImpl implements MerchantService {
             MerchantPlaceMapQueryModel placeMapQueryModel = MerchantPlaceMapQueryModel.builder().merchantIdList(merchantIdList).build();
             List<MerchantPlaceMapVO> merchantPlaceMaps = merchantPlaceMapService.countByMerchantIdList(placeMapQueryModel);
             //  改为用商户id统计数量
+            Map<Long, Integer> placeMap = new HashMap<>();
             if (ObjectUtils.isNotEmpty(merchantPlaceMaps)) {
-                Map<Long, Integer> placeMap = merchantPlaceMaps.stream()
+                placeMap = merchantPlaceMaps.stream()
                         .collect(Collectors.toMap(MerchantPlaceMapVO::getMerchantId, MerchantPlaceMapVO::getCount, (key, key1) -> key1));
-                
-                resList.forEach(item -> {
-                    if (ObjectUtils.isNotEmpty(placeMap.get(item.getId()))) {
-                        item.setPlaceCount(placeMap.get(item.getId()));
-                    }
-                });
             }
+            Map<Long, Integer> finalPlaceMap = placeMap;
+            resList.forEach(item -> {
+                if (ObjectUtils.isNotEmpty(finalPlaceMap.get(item.getId()))) {
+                    item.setPlaceCount(finalPlaceMap.get(item.getId()));
+                } else {
+                    item.setPlaceCount(NumberConstant.ZERO);
+                }
+            });
         }, threadPool).exceptionally(e -> {
             log.error("MERCHANT QUERY ERROR! query place error!", e);
             return null;
@@ -785,16 +789,19 @@ public class MerchantServiceImpl implements MerchantService {
             MerchantJoinRecordQueryMode joinRecordQueryMode = MerchantJoinRecordQueryMode.builder().tenantId(merchantPageRequest.getTenantId()).merchantIdList(collect)
                     .status(MerchantJoinRecord.STATUS_SUCCESS).build();
             List<MerchantJoinRecordVO> merchantJoinRecordList = merchantJoinRecordService.countByMerchantIdList(joinRecordQueryMode);
+            Map<Long, Integer> userMap = new HashMap<>();
             if (ObjectUtils.isNotEmpty(merchantJoinRecordList)) {
-                Map<Long, Integer> userMap = merchantJoinRecordList.stream()
+                userMap = merchantJoinRecordList.stream()
                         .collect(Collectors.toMap(MerchantJoinRecordVO::getMerchantId, MerchantJoinRecordVO::getMerchantUserNum, (key, key1) -> key1));
-                
-                resList.forEach(item -> {
-                    if (ObjectUtils.isNotEmpty(userMap.get(item.getId()))) {
-                        item.setUserCount(userMap.get(item.getId()));
-                    }
-                });
             }
+            Map<Long, Integer> finalUserMap = userMap;
+            resList.forEach(item -> {
+                if (ObjectUtils.isNotEmpty(finalUserMap.get(item.getId()))) {
+                    item.setUserCount(finalUserMap.get(item.getId()));
+                } else {
+                    item.setUserCount(NumberConstant.ZERO);
+                }
+            });
         }, threadPool).exceptionally(e -> {
             log.error("MERCHANT QUERY ERROR! query user error!", e);
             return null;
@@ -805,18 +812,22 @@ public class MerchantServiceImpl implements MerchantService {
             List<Long> collect = new ArrayList<>(uidList);
             MerchantUserAmountQueryMode joinRecordQueryMode = MerchantUserAmountQueryMode.builder().uidList(collect).tenantId(merchantPageRequest.getTenantId()).build();
             List<MerchantUserAmount> merchantJoinRecordList = merchantUserAmountService.queryList(joinRecordQueryMode);
+            Map<Long, MerchantUserAmount> userAmountMap = new HashMap<>();
             if (ObjectUtils.isNotEmpty(merchantJoinRecordList)) {
-                Map<Long, MerchantUserAmount> userAmountMap = merchantJoinRecordList.stream()
+                userAmountMap = merchantJoinRecordList.stream()
                         .collect(Collectors.toMap(MerchantUserAmount::getUid, Function.identity(), (key1, key2) -> key2));
-                
-                resList.forEach(item -> {
-                    MerchantUserAmount merchantUserAmount = userAmountMap.get(item.getId());
-                    if (ObjectUtils.isNotEmpty(merchantUserAmount)) {
-                        item.setWithdrawAmount(merchantUserAmount.getWithdrawAmount());
-                        item.setBalance(merchantUserAmount.getBalance());
-                    }
-                });
             }
+            Map<Long, MerchantUserAmount> finalUserAmountMap = userAmountMap;
+            resList.forEach(item -> {
+                MerchantUserAmount merchantUserAmount = finalUserAmountMap.get(item.getId());
+                if (ObjectUtils.isNotEmpty(merchantUserAmount)) {
+                    item.setWithdrawAmount(merchantUserAmount.getWithdrawAmount());
+                    item.setBalance(merchantUserAmount.getBalance());
+                } else {
+                    item.setWithdrawAmount(BigDecimal.ZERO);
+                    item.setBalance(BigDecimal.ZERO);
+                }
+            });
         }, threadPool).exceptionally(e -> {
             log.error("MERCHANT QUERY ERROR! query user amount error!", e);
             return null;
@@ -837,7 +848,7 @@ public class MerchantServiceImpl implements MerchantService {
     public Triple<Boolean, String, Object> queryById(Long id) {
         Integer tenantId = TenantContextHolder.getTenantId();
         
-        Merchant merchant = merchantMapper.select(id);
+        Merchant merchant = merchantMapper.selectById(id);
         if (Objects.isNull(merchant) || !Objects.equals(merchant.getTenantId(), tenantId)) {
             return Triple.of(false, "", "商户不存在");
         }
@@ -867,19 +878,18 @@ public class MerchantServiceImpl implements MerchantService {
     }
     
     @Override
-    public Merchant queryFromCacheById(Long id) {
-        Merchant merchant = null;
-        merchant = redisService.getWithHash(CacheConstant.CACHE_MERCHANT + id, Merchant.class);
-        if (Objects.isNull(merchant)) {
-            merchant = merchantMapper.select(id);
-            if (Objects.nonNull(merchant)) {
-                User user = userService.queryByUidFromCache(merchant.getUid());
-                if (ObjectUtils.isNotEmpty(user)) {
-                    merchant.setPhone(user.getPhone());
-                }
-                redisService.saveWithHash(CacheConstant.CACHE_MERCHANT + id, merchant);
-            }
+    public Merchant queryByIdFromCache(Long id) {
+        Merchant merchant  = redisService.getWithHash(CacheConstant.CACHE_MERCHANT + id, Merchant.class);
+        if (Objects.nonNull(merchant)) {
+            return merchant;
         }
+    
+        merchant = merchantMapper.selectById(id);
+        if (Objects.isNull(merchant)) {
+            return null;
+        }
+    
+        redisService.saveWithHash(CacheConstant.CACHE_MERCHANT + id, merchant);
         
         return merchant;
     }
@@ -919,14 +929,16 @@ public class MerchantServiceImpl implements MerchantService {
         return resList;
     }
     
+    /**
+     * 根据uid查询商户
+     * @param uid
+     * @return
+     */
     @Slave
     @Override
     public Merchant queryByUid(Long uid) {
         Merchant merchant = merchantMapper.selectByUid(uid);
-        User user = userService.queryByUidFromCache(merchant.getUid());
-        if (ObjectUtils.isNotEmpty(user)) {
-            merchant.setPhone(user.getPhone());
-        }
+        
         return merchant;
     }
     
@@ -1005,8 +1017,9 @@ public class MerchantServiceImpl implements MerchantService {
         MerchantQrCodeVO vo = new MerchantQrCodeVO();
         vo.setMerchantId(merchantId);
         vo.setMerchantUid(uid);
-        vo.setType(1);
-        vo.setCode("");
+        vo.setType(MerchantConstant.MERCHANT_QR_CODE_TYPE);
+        vo.setCode(MerchantJoinRecordServiceImpl.codeEnCoder(merchantId, uid, 1));
+//        vo.setTenantCode(tenant.getCode());
         return vo;
     }
 }

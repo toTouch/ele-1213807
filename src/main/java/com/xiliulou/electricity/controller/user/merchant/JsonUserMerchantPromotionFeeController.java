@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.controller.user.merchant;
 
+import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.query.merchant.MerchantPromotionDataDetailQueryModel;
 import com.xiliulou.electricity.query.merchant.MerchantPromotionEmployeeDetailQueryModel;
@@ -25,7 +26,7 @@ import java.util.Objects;
  */
 @RestController
 @Slf4j
-public class JsonUserMerchantPromotionFeeController {
+public class JsonUserMerchantPromotionFeeController extends BaseController {
     
     @Resource
     private MerchantPromotionFeeService merchantPromotionFeeService;
@@ -33,6 +34,7 @@ public class JsonUserMerchantPromotionFeeController {
     
     /**
      * 获取商户下的场地员工(商户首页筛选条件)
+     *
      * @return 可提现金额
      */
     @GetMapping("/user/merchant/promotionFee/merchantEmployee")
@@ -44,11 +46,13 @@ public class JsonUserMerchantPromotionFeeController {
             log.error("ELECTRICITY  ERROR! not found user ");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
+        
         return merchantPromotionFeeService.queryMerchantEmployees(merchantUid);
     }
     
     /**
      * 可提现金额
+     *
      * @return 可提现金额
      */
     @GetMapping("/user/merchant/promotionFee/availableWithdrawAmount")
@@ -65,8 +69,9 @@ public class JsonUserMerchantPromotionFeeController {
     
     /**
      * 商户首页 推广费收入统计
+     *
      * @param type 用户类型
-     * @param uid 用户uid
+     * @param uid  用户uid
      * @return 推广费收入统计
      */
     @GetMapping("/user/merchant/promotionFee/income")
@@ -84,8 +89,9 @@ public class JsonUserMerchantPromotionFeeController {
     
     /**
      * 商户首页 推广费扫码统计
+     *
      * @param type 用户类型
-     * @param uid 用户uid
+     * @param uid  用户uid
      * @return 推广费扫码统计
      */
     @GetMapping("/user/merchant/promotionFee/scanCodeCount")
@@ -102,8 +108,9 @@ public class JsonUserMerchantPromotionFeeController {
     
     /**
      * 商户首页 推广费续费情况
+     *
      * @param type 用户类型
-     * @param uid 用户uid
+     * @param uid  用户uid
      * @return 推广费续费情况
      */
     @GetMapping("/user/merchant/promotionFee/renewal")
@@ -119,12 +126,12 @@ public class JsonUserMerchantPromotionFeeController {
     }
     
     /**
-     *
      * 收入分析
-     * @param type 用户类型
-     * @param uid 用户uid
+     *
+     * @param type      用户类型
+     * @param uid       用户uid
      * @param beginTime 开始时间
-     * @param endTime 结束时间
+     * @param endTime   结束时间
      * @return 收入分析
      */
     @GetMapping("/user/merchant/promotionFee/statistic/merchantIncome")
@@ -142,12 +149,12 @@ public class JsonUserMerchantPromotionFeeController {
     }
     
     /**
+     * 用户分析
      *
-     * 渠道员商户分析
-     * @param type 用户类型
-     * @param uid 用户uid
+     * @param type      用户类型
+     * @param uid       用户uid
      * @param beginTime 开始时间
-     * @param endTime 结束时间
+     * @param endTime   结束时间
      * @return 用户分析
      */
     @GetMapping("/user/merchant/promotionFee/statistic/user")
@@ -165,12 +172,12 @@ public class JsonUserMerchantPromotionFeeController {
     }
     
     /**
-     *
      * 渠道员商户分析
-     * @param type 用户类型
-     * @param uid 用户uid
+     *
+     * @param type      用户类型
+     * @param uid       用户uid
      * @param beginTime 开始时间
-     * @param endTime 结束时间
+     * @param endTime   结束时间
      * @return 渠道员商户分析
      */
     @GetMapping("/user/merchant/promotionFee/statistic/channelEmployeeMerchant")
@@ -189,8 +196,9 @@ public class JsonUserMerchantPromotionFeeController {
     
     /**
      * 商户首页 商户下的推广详情概览
-     * @param size 页面显示条数
-     * @param offset 偏移量
+     *
+     * @param size       页面显示条数
+     * @param offset     偏移量
      * @param merchantId 商户id
      * @return 推广详情概览
      */
@@ -212,16 +220,18 @@ public class JsonUserMerchantPromotionFeeController {
     
     
     /**
-     *  推广详情
-     * @param size 页面显示条数
-     * @param offset 偏移量
-     * @param uid 用户uid
-     * @param status 状态
+     * 推广详情
+     *
+     * @param size      页面显示条数
+     * @param offset    偏移量
+     * @param uid       用户uid
+     * @param status    状态
      * @param queryTime 查询时间
      * @return 推广详情
      */
     @GetMapping("/user/merchant/promotion/employee/details/specifics")
-    public R promotionEmployeeDetailList(@RequestParam("size") long size, @RequestParam("offset") Long offset, @RequestParam("uid") Long uid,@RequestParam("status") Integer status,@RequestParam("queryTime") Long queryTime) {
+    public R promotionEmployeeDetailList(@RequestParam("size") long size, @RequestParam("offset") Long offset, @RequestParam("uid") Long uid,
+            @RequestParam("status") Integer status, @RequestParam("queryTime") Long queryTime) {
         if (size < 0 || size > 10) {
             size = 10L;
         }
@@ -229,17 +239,17 @@ public class JsonUserMerchantPromotionFeeController {
         if (offset < 0) {
             offset = 10L;
         }
-    
-        MerchantPromotionEmployeeDetailSpecificsQueryModel queryModel = MerchantPromotionEmployeeDetailSpecificsQueryModel.builder().size(size).offset(offset).uid(uid).status(status).startTime(queryTime).endTime(DateUtils.getMonthEndTimeStampByDate(queryTime))
-                .tenantId(TenantContextHolder.getTenantId()).build();
+        
+        MerchantPromotionEmployeeDetailSpecificsQueryModel queryModel = MerchantPromotionEmployeeDetailSpecificsQueryModel.builder().size(size).offset(offset).uid(uid)
+                .status(status).startTime(queryTime).endTime(DateUtils.getMonthEndTimeStampByDate(queryTime)).tenantId(TenantContextHolder.getTenantId()).build();
         
         return merchantPromotionFeeService.selectPromotionEmployeeDetailList(queryModel);
     }
     
     
     /**
+     * 推广数据概览展示
      *
-     *  推广数据概览展示
      * @param size
      * @param offset
      * @param uid
@@ -248,8 +258,8 @@ public class JsonUserMerchantPromotionFeeController {
      * @return
      */
     @GetMapping("/user/merchant/promotion/data")
-    public R promotionDataPage(@RequestParam("size") long size, @RequestParam("offset") Long offset, @RequestParam(value = "uid",required = false) Long uid, @RequestParam(value = "type",required = false) Integer type,
-            @RequestParam(value = "queryTime",required = false) Long queryTime) {
+    public R promotionDataPage(@RequestParam("size") long size, @RequestParam("offset") Long offset, @RequestParam(value = "uid", required = false) Long uid,
+            @RequestParam(value = "type", required = false) Integer type, @RequestParam(value = "queryTime", required = false) Long queryTime) {
         if (size < 0 || size > 10) {
             size = 10L;
         }
@@ -265,19 +275,20 @@ public class JsonUserMerchantPromotionFeeController {
     
     
     /**
+     * 推广数据列表展示
      *
-     *  推广数据列表展示
-     * @param size 页码大小
-     * @param offset 页码
-     * @param uid uid
-     * @param type 类型
+     * @param size      页码大小
+     * @param offset    页码
+     * @param uid       uid
+     * @param type      类型
      * @param queryTime 查询时间
-     * @param status 状态
+     * @param status    状态
      * @return 推广数据列表
      */
     @GetMapping("/user/merchant/promotion/data/detail/page")
-    public R promotionDataPage(@RequestParam("size") long size, @RequestParam("offset") Long offset, @RequestParam(value = "uid",required = false) Long uid, @RequestParam(value = "type",required = false) Integer type,
-            @RequestParam(value = "queryTime",required = false) Long queryTime,@RequestParam(value = "status",required = false) Integer status) {
+    public R promotionDataPage(@RequestParam("size") long size, @RequestParam("offset") Long offset, @RequestParam(value = "uid", required = false) Long uid,
+            @RequestParam(value = "type", required = false) Integer type, @RequestParam(value = "queryTime", required = false) Long queryTime,
+            @RequestParam(value = "status", required = false) Integer status) {
         if (size < 0 || size > 10) {
             size = 10L;
         }
@@ -290,8 +301,6 @@ public class JsonUserMerchantPromotionFeeController {
                 .tenantId(TenantContextHolder.getTenantId()).startTime(queryTime).endTime(DateUtils.getMonthEndTimeStampByDate(queryTime)).status(status).build();
         return merchantPromotionFeeService.selectPromotionDataDetail(queryModel);
     }
-    
-    
     
     
 }
