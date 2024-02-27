@@ -38,6 +38,7 @@ public interface MerchantLevelService {
      * @return
      */
     MerchantLevel queryNextByMerchantLevel(String level, Integer tenantId);
+    MerchantLevel queryLastByMerchantLevel(String level, Integer tenantId);
     
     List<MerchantLevel> queryListByIdList(List<Long> levelIdList);
 }
