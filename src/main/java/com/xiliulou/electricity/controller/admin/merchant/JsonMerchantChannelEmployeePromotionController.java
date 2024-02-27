@@ -90,8 +90,8 @@ public class JsonMerchantChannelEmployeePromotionController extends BaseControll
      * @param monthDate
      * @param response
      */
-    @GetMapping("/admin/merchant/placeFee/settlement/exportExcel")
-    public void export(@RequestParam("monthDate") String monthDate, HttpServletResponse response) {
+    @GetMapping("/admin/channelEmployeePromotion/exportExcel")
+    public void exportExcel(@RequestParam("monthDate") String monthDate, HttpServletResponse response) {
         channelEmployeePromotionMonthRecordService.export(monthDate, response);
     }
 }
