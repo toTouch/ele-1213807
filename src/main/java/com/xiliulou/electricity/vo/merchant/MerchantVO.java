@@ -1,6 +1,9 @@
 package com.xiliulou.electricity.vo.merchant;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -11,6 +14,9 @@ import java.util.List;
  * @desc
  */
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class MerchantVO {
     
     private Long id;
