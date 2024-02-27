@@ -171,13 +171,17 @@ public class ChannelEmployeeServiceImpl implements ChannelEmployeeService {
     @Transactional(rollbackFor = Exception.class)
     @Override
     public Triple<Boolean, String, Object> saveChannelEmployee(ChannelEmployeeRequest channelEmployeeRequest) {
-    
-        if (!redisService.setNx(CacheConstant.CACHE_CHANNEL_EMPLOYEE_SAVE_LOCK + channelEmployeeRequest.getPhone(), "1", 5000L, false)) {
+        if (!redisService.setNx(CacheConstant.CACHE_CHANNEL_EMPLOYEE_SAVE_LOCK + channelEmployeeRequest.getPhone(), "1", 3000L, false)) {
             return Triple.of(false, null, "操作频繁,请稍后再试");
         }
         
         //租户
         Integer tenantId = TenantContextHolder.getTenantId();
+    
+        User phoneUserExists = userService.queryByUserPhone(channelEmployeeRequest.getPhone(), User.TYPE_USER_CHANNEL, tenantId);
+        if (Objects.nonNull(phoneUserExists)) {
+            return Triple.of(false, null, "手机号已存在");
+        }
         
         //创建渠道员工账户
         User user = User.builder().updateTime(System.currentTimeMillis()).createTime(System.currentTimeMillis()).phone(channelEmployeeRequest.getPhone())
@@ -230,6 +234,17 @@ public class ChannelEmployeeServiceImpl implements ChannelEmployeeService {
     
     @Override
     public Triple<Boolean, String, Object> updateChannelEmployee(ChannelEmployeeRequest channelEmployeeRequest) {
+        if (!redisService.setNx(CacheConstant.CACHE_CHANNEL_EMPLOYEE_UPDATE_LOCK + channelEmployeeRequest.getPhone(), "1", 3000L, false)) {
+            return Triple.of(false, null, "操作频繁,请稍后再试");
+        }
+    
+        //租户
+        Integer tenantId = TenantContextHolder.getTenantId();
+    
+        User phoneUserExists = userService.queryByUserPhone(channelEmployeeRequest.getPhone(), User.TYPE_USER_CHANNEL, tenantId);
+        if (Objects.nonNull(phoneUserExists)) {
+            return Triple.of(false, null, "手机号已存在");
+        }
         
         ChannelEmployee channelEmployee = channelEmployeeMapper.selectById(channelEmployeeRequest.getId());
         if (Objects.isNull(channelEmployee)) {
