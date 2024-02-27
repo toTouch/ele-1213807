@@ -29,7 +29,7 @@ public class JsonMerchantPromotionController extends BaseController {
     private MerchantPromotionMonthRecordService merchantPromotionMonthRecordService;
     
     @GetMapping("/admin/merchant/promotion/record/page")
-    public R page(@RequestParam("size") long size, @RequestParam("offset") long offset, @RequestParam(value = "date", required = false) String date) {
+    public R page(@RequestParam("size") long size, @RequestParam("offset") long offset, @RequestParam(value = "monthDate", required = false) String monthDate) {
         if (size < 0 || size > 50) {
             size = 10L;
         }
@@ -47,13 +47,13 @@ public class JsonMerchantPromotionController extends BaseController {
             return R.ok();
         }
         
-        MerchantPromotionRequest request = MerchantPromotionRequest.builder().size(size).offset(offset).monthDate(date).build();
+        MerchantPromotionRequest request = MerchantPromotionRequest.builder().size(size).offset(offset).monthDate(monthDate).build();
         
         return R.ok(merchantPromotionMonthRecordService.listByPage(request));
     }
     
     @GetMapping("/admin/merchant/promotion/record/pageCount")
-    public R pageCount(@RequestParam(value = "date", required = false) String date) {
+    public R pageCount(@RequestParam(value = "monthDate", required = false) String monthDate) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
@@ -63,7 +63,7 @@ public class JsonMerchantPromotionController extends BaseController {
             return R.ok();
         }
         
-        MerchantPromotionRequest request = MerchantPromotionRequest.builder().monthDate(date).build();
+        MerchantPromotionRequest request = MerchantPromotionRequest.builder().monthDate(monthDate).build();
         
         return R.ok(merchantPromotionMonthRecordService.countTotal(request));
     }
