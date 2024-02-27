@@ -29,7 +29,7 @@ import java.util.List;
 @RestController
 @AllArgsConstructor
 @Validated
-public class JsonAdminFaqController {
+public class JsonAdminV1FaqController {
     
     private final FaqService faqService;
     
@@ -39,7 +39,7 @@ public class JsonAdminFaqController {
      * @author kuz
      * @date 2024/2/23 16:11
      */
-    @GetMapping("/admin/faq/detail")
+    @GetMapping("/admin/v1/v1/faq/detail")
     public R detail(@RequestParam Long id) {
         return R.ok(faqService.detail(id));
     }
@@ -50,7 +50,7 @@ public class JsonAdminFaqController {
      * @author kuz
      * @date 2024/2/23 16:11
      */
-    @PostMapping("/admin/faq/page")
+    @PostMapping("/admin/v1/faq/page")
     public R query(@RequestBody AdminFaqQuery faqQuery) {
         return R.ok(faqService.page(faqQuery));
     }
@@ -61,7 +61,7 @@ public class JsonAdminFaqController {
      * @author kuz
      * @date 2024/2/23 16:11
      */
-    @PostMapping("/admin/faq/add")
+    @PostMapping("/admin/v1/faq/add")
     public R add(@RequestBody @Validated(value = CreateGroup.class) AdminFaqReq faqReq) {
         faqService.add(faqReq);
         return R.ok();
@@ -74,7 +74,7 @@ public class JsonAdminFaqController {
      * @author kuz
      * @date 2024/2/23 16:11
      */
-    @PostMapping("/admin/faq/edit")
+    @PostMapping("/admin/v1/faq/edit")
     public R edit(@RequestBody @Validated(value = UpdateGroup.class) AdminFaqReq faqReq) {
         faqService.edit(faqReq);
         return R.ok();
@@ -86,7 +86,7 @@ public class JsonAdminFaqController {
      * @author kuz
      * @date 2024/2/23 16:11
      */
-    @PostMapping("/admin/faq/detele")
+    @PostMapping("/admin/v1/faq/detele")
     public R deleteBatch(@RequestBody @Valid @NotEmpty(message = "集合不能为空") List<Long> ids) {
         faqService.removeByIds(ids);
         return R.ok();
@@ -99,7 +99,7 @@ public class JsonAdminFaqController {
      * @author kuz
      * @date 2024/2/23 16:11
      */
-    @PostMapping("/admin/faq/upDown")
+    @PostMapping("/admin/v1/faq/upDown")
     public R upDownBatch(@RequestBody @Valid AdminFaqUpDownReq faqUpDownReq) {
         faqService.upDownBatch(faqUpDownReq);
         return R.ok();
@@ -111,7 +111,7 @@ public class JsonAdminFaqController {
      * @author kuz
      * @date 2024/2/23 16:11
      */
-    @PostMapping("/admin/faq/change/type")
+    @PostMapping("/admin/v1/faq/change/type")
     public R changeTypeBatch(@RequestBody @Valid AdminFaqChangeTypeReq faqChangeTypeReq) {
         faqService.changeTypeBatch(faqChangeTypeReq);
         return R.ok();
