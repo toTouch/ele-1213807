@@ -61,14 +61,14 @@ public class JsonUserMerchantController extends BaseController {
      */
     @GetMapping("/user/merchant/getMerchantInfo")
     public R getMerchantInfo() {
-        TokenUser user = SecurityUtils.getUserInfo();
-        if (Objects.isNull(user)) {
+        Long uid = SecurityUtils.getUid();
+        if (Objects.isNull(uid)) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         
-        Merchant merchant = merchantService.queryByUid(user.getUid());
+        Merchant merchant = merchantService.queryByUid(uid);
         if (Objects.isNull(merchant)) {
-            log.error("merchant get merchant qr code merchant is null, uid={}", user.getUid());
+            log.error("merchant get merchant qr code merchant is null, uid={}", uid);
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
     
