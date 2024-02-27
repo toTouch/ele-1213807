@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @AllArgsConstructor
 @Validated
-public class JsonUserFaqController {
+public class JsonUserV1FaqController {
 
     private final FaqService faqService;
     
@@ -29,7 +29,7 @@ public class JsonUserFaqController {
      * @author kuz
      * @date 2024/2/23 16:11
      */
-    @PostMapping("/user/faq/page")
+    @PostMapping("/user/v1/faq/page")
     public R page(@RequestBody AdminFaqQuery faqQuery) {
         return R.ok(faqService.page(faqQuery));
     }
