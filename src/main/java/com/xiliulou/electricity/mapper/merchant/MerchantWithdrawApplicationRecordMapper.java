@@ -30,4 +30,8 @@ public interface MerchantWithdrawApplicationRecordMapper {
     
     Integer removeById(@Param("id") Long id);
     
+    Integer updateApplicationRecordStatusByBatchNo(@Param("status") Integer status, @Param("updateTime") Long updateTime, @Param("batchNo") String batchNo, @Param("tenantId") Integer tenantId);
+    
+    List<MerchantWithdrawApplicationRecord> selectListByBatchNo(@Param("batchNo") String batchNo, @Param("tenantId") Integer tenantId);
+    
 }

@@ -52,4 +52,12 @@ public class MerchantWithdrawConstant {
      */
     public static final Integer WITHDRAW_MAX_AMOUNT = 500;
     
+    public static final String WECHAT_BATCH_STATUS_FINISHED = "FINISHED";
+    
+    public static final String WECHAT_BATCH_STATUS_CLOSED = "CLOSED";
+    
+    public static final String WECHAT_BATCH_DETAIL_STATUS_SUCCESS = "SUCCESS";
+    
+    public static final String WECHAT_BATCH_DETAIL_STATUS_FAIL = "FAIL";
+    
 }
