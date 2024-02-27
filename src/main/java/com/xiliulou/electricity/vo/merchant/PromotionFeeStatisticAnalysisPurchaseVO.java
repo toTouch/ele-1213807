@@ -14,5 +14,5 @@ import java.math.BigDecimal;
 public class PromotionFeeStatisticAnalysisPurchaseVO {
     private Integer purchaseNum;
     
-    private String statisticIncomeTime;
+    private String statisticTime;
 }

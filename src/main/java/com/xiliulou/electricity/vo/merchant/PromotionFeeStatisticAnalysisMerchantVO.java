@@ -12,5 +12,5 @@ import lombok.Data;
 public class PromotionFeeStatisticAnalysisMerchantVO {
     private Integer merchantNum;
     
-    private String statisticIncomeTime;
+    private String statisticTime;
 }
