@@ -36,4 +36,6 @@ public interface MerchantPromotionFeeService {
     R selectPromotionEmployeeDetailList(MerchantPromotionEmployeeDetailSpecificsQueryModel queryModel);
     
     R queryMerchantEmployees(Long merchantUid);
+    
+    R selectPromotionMerchantDetail(MerchantPromotionEmployeeDetailQueryModel queryModel);
 }
