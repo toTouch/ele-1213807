@@ -48,4 +48,6 @@ public interface MerchantWithdrawApplicationService {
     
     BigDecimal sumByStatus(Integer tenantId, Integer status, Long uid);
     
+    void updateMerchantWithdrawStatus();
+    
 }
