@@ -1,0 +1,240 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.faq.FaqMapper">
+    
+    <resultMap id="BaseResultMap" type="com.xiliulou.electricity.entity.faq.Faq">
+        <id property="id" column="id" jdbcType="BIGINT"/>
+        <result property="typeId" column="type_id" jdbcType="BIGINT"/>
+        <result property="title" column="title" jdbcType="VARCHAR"/>
+        <result property="answer" column="answer" jdbcType="VARCHAR"/>
+        <result property="onShelf" column="on_shelf" jdbcType="SMALLINT"/>
+        <result property="sort" column="sort" jdbcType="DECIMAL"/>
+        <result property="tenantId" column="tenant_id" jdbcType="INTEGER"/>
+        <result property="opUser" column="op_user" jdbcType="BIGINT"/>
+        <result property="createTime" column="create_time" jdbcType="BIGINT"/>
+        <result property="updateTime" column="update_time" jdbcType="BIGINT"/>
+    </resultMap>
+    
+    <resultMap id="BaseResultMapResp" type="com.xiliulou.electricity.vo.faq.FaqVo">
+        <id property="id" column="id" jdbcType="BIGINT"/>
+        <result property="typeId" column="type_id" jdbcType="BIGINT"/>
+        <result property="title" column="title" jdbcType="VARCHAR"/>
+        <result property="answer" column="answer" jdbcType="VARCHAR"/>
+        <result property="onShelf" column="on_shelf" jdbcType="SMALLINT"/>
+        <result property="sort" column="sort" jdbcType="DECIMAL"/>
+        <result property="tenantId" column="tenant_id" jdbcType="INTEGER"/>
+        <result property="opUser" column="op_user" jdbcType="BIGINT"/>
+        <result property="createTime" column="create_time" jdbcType="BIGINT"/>
+        <result property="updateTime" column="update_time" jdbcType="BIGINT"/>
+        <result property="type" column="type" jdbcType="VARCHAR"/>
+        <result property="typeSort" column="type_sort" jdbcType="DECIMAL"/>
+    </resultMap>
+    
+    <sql id="Base_Column_List">
+        id
+        ,type_id,title,
+        answer,on_shelf,sort,
+        tenant_id,op_user,create_time,
+        update_time
+    </sql>
+    <sql id="Base_Column_No_Answer_List">
+        id
+        ,type_id,title,
+        on_shelf,sort,
+        tenant_id,op_user,create_time,
+        update_time
+    </sql>
+    
+    
+    <select id="selectByPrimaryKey" parameterType="java.lang.Long" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from t_faq
+        where id = #{id,jdbcType=BIGINT}
+    </select>
+    
+    <select id="selectByPrimaryKeyNoAnswer" parameterType="java.lang.Long" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_No_Answer_List"/>
+        from t_faq
+        where id = #{id,jdbcType=BIGINT}
+    </select>
+    <select id="selectLeftJoinByParams" resultMap="BaseResultMapResp" resultType="list">
+        select c.id,f.type_id,c.type as type,c.sort as type_sort
+        FROM t_faq_category c left join t_faq f ON f.type_id = c.id
+        where 1 = 1
+        <if test="params.title != null">
+            and title like concat('%',#{params.title},'%')
+        </if>
+        <if test="params.tenantId != null">
+            and c.tenant_id = #{params.tenantId}
+        </if>
+    </select>
+    <select id="selectListByParams" resultType="com.xiliulou.electricity.entity.faq.Faq">
+        select
+        <include refid="Base_Column_No_Answer_List"/>
+        FROM t_faq
+        <include refid="Example_Where_Clause"/>
+    </select>
+    <select id="selectListByParamsPage" resultType="com.xiliulou.electricity.entity.faq.Faq">
+        select
+        <include refid="Base_Column_No_Answer_List"/>
+        FROM t_faq
+        
+        <include refid="Example_Where_Clause"/>
+        
+        <if test="orderParam != null">
+            order by sort
+        </if>
+        <include refid="Pagination_Limit"/>
+    </select>
+    
+    <!-- 通用查询结果列 -->
+    <sql id="Example_Where_Clause_List">
+        <trim prefix="where" prefixOverrides="and|or">
+            <if test="params.title != null">
+                and title like concat('%',#{params.title},'%')
+            </if>
+            <if test="params.tenantId != null">
+                and tenant_id = #{params.tenantId}
+            </if>
+        </trim>
+    </sql>
+    
+    <!-- 通用查询结果列 -->
+    <sql id="Example_Where_Clause">
+        <trim prefix="where" prefixOverrides="and|or">
+            <if test="params.id != null">
+                and id = #{params.id}
+            </if>
+            <if test="params.typeId != null">
+                and type_id = #{params.typeId}
+            </if>
+            <if test="params.title != null">
+                and title like concat('%',#{params.title},'%')
+            </if>
+            <if test="params.tenantId != null">
+                and tenant_id = #{params.tenantId}
+            </if>
+            <if test="params.opUser != null">
+                and op_user = #{params.opUser}
+            </if>
+            
+            <if test="params.idList !=null and params.idList.size>0">
+                and id in
+                <foreach collection="params.idList" item="id" index="i" open="(" close=")" separator=",">
+                    #{id}
+                </foreach>
+            </if>
+        
+        </trim>
+    </sql>
+    
+    <sql id="Pagination_Limit">
+        <if test="pageOffset != null and pageSize != null">
+            <!--  mysql分页方式 <![CDATA[ limit #{pageOffset} , #{pageSize} ]]>   postgresql 分页方式如下 limit #{pageSize}
+            OFFSET #{pageOffset} -->
+            <![CDATA[ limit #{pageOffset} , #{pageSize} ]]>
+        </if>
+    </sql>
+    
+    <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+        delete
+        from t_faq
+        where id = #{id,jdbcType=BIGINT}
+    </delete>
+    <delete id="removeByIds">
+        delete
+        from t_faq
+        where id in
+        <foreach collection="list" item="id" index="i" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </delete>
+    <insert id="insert" keyColumn="id" keyProperty="id" parameterType="com.xiliulou.electricity.entity.faq.Faq" useGeneratedKeys="true">
+        insert into t_faq
+        ( id, type_id, title
+        , answer, on_shelf, sort
+        , tenant_id, op_user, create_time
+        , update_time)
+        values ( #{id,jdbcType=BIGINT}, #{typeId,jdbcType=BIGINT}, #{title,jdbcType=VARCHAR}
+               , #{answer,jdbcType=VARCHAR}, #{onShelf,jdbcType=SMALLINT}, #{sort,jdbcType=DECIMAL}
+               , #{tenantId,jdbcType=INTEGER}, #{opUser,jdbcType=BIGINT}, #{createTime,jdbcType=BIGINT}
+               , #{updateTime,jdbcType=BIGINT})
+    </insert>
+    <insert id="insertSelective" keyColumn="id" keyProperty="id" parameterType="com.xiliulou.electricity.entity.faq.Faq" useGeneratedKeys="true">
+        insert into t_faq
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="id != null">id,</if>
+            <if test="typeId != null">typeId,</if>
+            <if test="title != null">title,</if>
+            <if test="answer != null">answer,</if>
+            <if test="onShelf != null">onShelf,</if>
+            <if test="sort != null">sort,</if>
+            <if test="tenantId != null">tenantId,</if>
+            <if test="opUser != null">opUser,</if>
+            <if test="createTime != null">createTime,</if>
+            <if test="updateTime != null">updateTime,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="id != null">id = #{id,jdbcType=BIGINT},</if>
+            <if test="typeId != null">type_id = #{typeId,jdbcType=BIGINT},</if>
+            <if test="title != null">title = #{title,jdbcType=VARCHAR},</if>
+            <if test="answer != null">answer = #{answer,jdbcType=VARCHAR},</if>
+            <if test="onShelf != null">on_shelf = #{onShelf,jdbcType=SMALLINT},</if>
+            <if test="sort != null">sort = #{sort,jdbcType=DECIMAL},</if>
+            <if test="tenantId != null">tenant_id = #{tenantId,jdbcType=INTEGER},</if>
+            <if test="opUser != null">op_user = #{opUser,jdbcType=BIGINT},</if>
+            <if test="createTime != null">create_time = #{createTime,jdbcType=BIGINT},</if>
+            <if test="updateTime != null">update_time = #{updateTime,jdbcType=BIGINT},</if>
+        </trim>
+    </insert>
+    <update id="updateByPrimaryKeySelective" parameterType="com.xiliulou.electricity.entity.faq.Faq">
+        update t_faq
+        <set>
+            <if test="typeId != null">
+                type_id = #{typeId,jdbcType=BIGINT},
+            </if>
+            <if test="title != null">
+                title = #{title,jdbcType=VARCHAR},
+            </if>
+            <if test="answer != null">
+                answer = #{answer,jdbcType=VARCHAR},
+            </if>
+            <if test="onShelf != null">
+                on_shelf = #{onShelf,jdbcType=SMALLINT},
+            </if>
+            <if test="sort != null">
+                sort = #{sort,jdbcType=DECIMAL},
+            </if>
+            <if test="tenantId != null">
+                tenant_id = #{tenantId,jdbcType=INTEGER},
+            </if>
+            <if test="opUser != null">
+                op_user = #{opUser,jdbcType=BIGINT},
+            </if>
+            <if test="createTime != null">
+                create_time = #{createTime,jdbcType=BIGINT},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime,jdbcType=BIGINT},
+            </if>
+        </set>
+        where id = #{id,jdbcType=BIGINT}
+    </update>
+    <update id="updateByPrimaryKey" parameterType="com.xiliulou.electricity.entity.faq.Faq">
+        update t_faq
+        set type_id     = #{typeId,jdbcType=BIGINT},
+            title       = #{title,jdbcType=VARCHAR},
+            answer      = #{answer,jdbcType=VARCHAR},
+            on_shelf    = #{onShelf,jdbcType=SMALLINT},
+            sort        = #{sort,jdbcType=DECIMAL},
+            tenant_id   = #{tenantId,jdbcType=INTEGER},
+            op_user     = #{opUser,jdbcType=BIGINT},
+            create_time = #{createTime,jdbcType=BIGINT},
+            update_time = #{updateTime,jdbcType=BIGINT}
+        where id = #{id,jdbcType=BIGINT}
+    </update>
+</mapper>

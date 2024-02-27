@@ -1,30 +1,43 @@
-package com.xiliulou.electricity.entity.fqa;
+package com.xiliulou.electricity.entity.faq;
 
 import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Builder;
 import lombok.Data;
+import lombok.experimental.Accessors;
 
 import java.math.BigDecimal;
 
 @Data
-@TableName("t_fqa_category")
-@Builder
-public class FqaCategory {
+@Accessors(chain = true)
+public class Faq {
     
     /**
      * id
      */
-    @TableId(type = IdType.AUTO)
     private Long id;
     
     /**
-     * 分类
+     * 分类id
      */
-    private String type;
+    private Long typeId;
+    
+    /**
+     * 标题
+     */
+    private String title;
+    
+    /**
+     * 答案
+     */
+    private String answer;
+    
+    /**
+     * 上下架 1表示上架  0表示下架
+     */
+    private Integer onShelf;
     
     /**
      * 排序
@@ -34,25 +47,21 @@ public class FqaCategory {
     /**
      * 操作人
      */
-    @TableField(fill = FieldFill.INSERT_UPDATE)
     private Long opUser;
     
     /**
      * 创建时间
      */
-    @TableField(fill = FieldFill.INSERT)
     private Long createTime;
     
     /**
      * 修改时间
      */
-    @TableField(fill = FieldFill.INSERT_UPDATE)
     private Long updateTime;
     
     /**
      * 租户id
      */
-    @TableField(fill = FieldFill.INSERT)
     private Integer tenantId;
     
     
