@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.mapper.enterprise;
 
+import com.xiliulou.electricity.bo.merchant.MerchantEnterprisePackageBO;
 import com.xiliulou.electricity.entity.enterprise.EnterprisePackage;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
@@ -47,4 +48,6 @@ public interface EnterprisePackageMapper extends BaseMapper<EnterprisePackage> {
     
     int deleteByEnterpriseId(Long id);
     List<EnterprisePackage> listByIdList(@Param("idList") List<Long> enterprisePackageIdList);
+    
+    List<MerchantEnterprisePackageBO> selectListByEnterpriseId(@Param("id") Long id);
 }

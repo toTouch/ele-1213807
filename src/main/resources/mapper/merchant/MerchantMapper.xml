@@ -84,7 +84,7 @@
     </delete>
     <sql id="column">
         id, name , franchisee_id , phone , merchant_grade_id , channel_employee_uid , tenant_id , auto_up_grade , status , enterprise_package_auth ,
-                               purchase_authority ,uid ,enterprise_id , del_flag, create_time, update_time
+                               purchase_authority ,uid ,enterprise_id , del_flag, create_time, update_time,invite_auth
     </sql>
     <select id="selectById" resultType="com.xiliulou.electricity.entity.merchant.Merchant">
         select

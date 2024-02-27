@@ -34,7 +34,7 @@ import com.xiliulou.electricity.vo.merchant.MerchantCabinetPowerVO;
 import com.xiliulou.electricity.vo.merchant.MerchantLivePowerVO;
 import com.xiliulou.electricity.vo.merchant.MerchantPlaceAndCabinetUserVO;
 import com.xiliulou.electricity.vo.merchant.MerchantPlaceCabinetVO;
-import com.xiliulou.electricity.vo.merchant.MerchantPlaceUserVO;
+import com.xiliulou.electricity.vo.merchant.MerchantPlaceSelectVO;
 import com.xiliulou.electricity.vo.merchant.MerchantPowerDetailVO;
 import com.xiliulou.electricity.vo.merchant.MerchantPowerRspVO;
 import com.xiliulou.electricity.vo.merchant.MerchantPowerVO;
@@ -604,8 +604,8 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
         
         // 获取场地列表
         Set<Long> placeIdSet = bindList.parallelStream().map(MerchantPlaceBind::getPlaceId).collect(Collectors.toSet());
-        List<MerchantPlaceUserVO> placeList = placeIdSet.parallelStream().map(placeId -> {
-            MerchantPlaceUserVO merchantPlaceUserVO = new MerchantPlaceUserVO();
+        List<MerchantPlaceSelectVO> placeList = placeIdSet.parallelStream().map(placeId -> {
+            MerchantPlaceSelectVO merchantPlaceUserVO = new MerchantPlaceSelectVO();
             merchantPlaceUserVO.setPlaceId(placeId);
             merchantPlaceUserVO.setPlaceName(Optional.ofNullable(merchantPlaceService.queryFromCacheById(placeId)).orElse(new MerchantPlace()).getName());
             

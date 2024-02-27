@@ -467,6 +467,15 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
 
         return merchantJoinUserVOS;
     }
-
-
+    
+    @Slave
+    @Override
+    public boolean existInviterData(Integer inviterType, Long inviterUid, Integer tenantId) {
+        Integer existInviterData = merchantJoinRecordMapper.existInviterData(inviterType, inviterUid, tenantId);
+        if(Objects.nonNull(existInviterData)){
+            return true;
+        }else{
+            return false;
+        }
+    }
 }

@@ -115,6 +115,7 @@ public class MerchantLevelServiceImpl implements MerchantLevelService {
         }
         
         MerchantLevel merchantLevelUpdate = new MerchantLevel();
+        merchantLevelUpdate.setId(merchantLevel.getId());
         merchantLevelUpdate.setName(request.getName());
         merchantLevelUpdate.setUpdateTime(System.currentTimeMillis());
         
