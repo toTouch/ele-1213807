@@ -10,10 +10,10 @@
         select month_date , place_num , month_place_fee ,tenant_id, del_flag, create_time, update_time
         from t_merchant_place_fee_month_summary_record
         where del_flag!=0
-        <if test="month_date != null and month_date != ''">
+        <if test="monthDate != null and monthDate != ''">
             and month_date = #{monthDate}
         </if>
-        <if test="tenant_id != null and tenant_id != ''">
+        <if test="tenantId != null and tenantId != ''">
             and tenant_id = #{tenantId}
         </if>
 
@@ -24,10 +24,10 @@
         select count(1)
         from t_merchant_place_fee_month_summary_record
         where del_flag!=0
-        <if test="month_date != null and month_date != ''">
+        <if test="monthDate != null and monthDate != ''">
             and month_date = #{monthDate}
         </if>
-        <if test="tenant_id != null and tenant_id != ''">
+        <if test="tenantId != null and tenantId != ''">
             and tenant_id = #{tenantId}
         </if>
     
