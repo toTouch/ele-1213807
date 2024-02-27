@@ -143,7 +143,7 @@ public class JsonUserMerchantPromotionFeeController {
     
     /**
      *
-     * 渠道员商户分析
+     * 用户分析
      * @param type 用户类型
      * @param uid 用户uid
      * @param beginTime 开始时间
