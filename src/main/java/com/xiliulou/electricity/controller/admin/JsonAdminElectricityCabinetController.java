@@ -184,7 +184,6 @@ public class JsonAdminElectricityCabinetController extends BasicController {
                 .onlineStatus(onlineStatus)
                 .stockStatus(stockStatus)
                 .warehouseId(warehouseId)
-                .areaId(areaId)
                 .beginTime(beginTime)
                 .endTime(endTime)
                 .eleIdList(eleIdList)

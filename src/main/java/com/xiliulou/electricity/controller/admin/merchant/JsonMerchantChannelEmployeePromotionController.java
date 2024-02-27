@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletResponse;
 import java.util.Objects;
 
 /**
@@ -82,5 +83,15 @@ public class JsonMerchantChannelEmployeePromotionController extends BaseControll
         
         return R.ok(channelEmployeePromotionMonthRecordService.countTotal(channelEmployeeRequest));
         
+    }
+    
+    /**
+     * 导出
+     * @param monthDate
+     * @param response
+     */
+    @GetMapping("/admin/merchant/placeFee/settlement/exportExcel")
+    public void export(@RequestParam("monthDate") String monthDate, HttpServletResponse response) {
+        channelEmployeePromotionMonthRecordService.export(monthDate, response);
     }
 }

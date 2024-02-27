@@ -20,4 +20,6 @@ public interface ChannelEmployeePromotionMonthRecordMapper {
     List<ChannelEmployeePromotionVO> selectListByPage(ChannelEmployeePromotionRequest channelEmployeeRequest);
     
     Integer countTotal(ChannelEmployeePromotionQueryModel channelEmployeePromotionQueryModel);
+    
+    List<ChannelEmployeePromotionMonthRecord> selectByFeeDate(@Param("startTime") long startTime,@Param("endTime") long endTime,@Param("tenantId") Integer tenantId);
 }
