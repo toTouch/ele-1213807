@@ -33,7 +33,7 @@ public class AuthorizationServiceImpl implements AuthorizationService {
 
 	@Override
 	public Collection<? extends GrantedAuthority> acquireAllAuthorities(long uid, int type) {
-		if (type == User.TYPE_USER_NORMAL_WX_PRO) {
+		if (type == User.TYPE_USER_NORMAL_WX_PRO || type == User.TYPE_USER_CHANNEL || type == User.TYPE_USER_CHANNEL) {
 			return Lists.newArrayList();
 		}
 
