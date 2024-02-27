@@ -125,7 +125,7 @@ public class MerchantTokenServiceImpl implements MerchantTokenService {
             }
 
             // 用户是否绑定了业务信息
-            Map<Long, UserBindBusinessDTO> userBindBusinessDTOS = users.stream().map(this::checkUserBindingBusiness).filter(e -> !e.isBinding()).collect(Collectors.toMap(UserBindBusinessDTO::getUid, e -> e));
+            Map<Long, UserBindBusinessDTO> userBindBusinessDTOS = users.stream().map(this::checkUserBindingBusiness).filter(UserBindBusinessDTO::isBinding).collect(Collectors.toMap(UserBindBusinessDTO::getUid, e -> e));
             if (userBindBusinessDTOS.isEmpty()) {
                 return Triple.of(false, null, "未找到绑定账号，请检查");
             }
