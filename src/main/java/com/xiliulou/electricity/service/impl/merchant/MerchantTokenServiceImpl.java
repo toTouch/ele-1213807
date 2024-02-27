@@ -115,7 +115,7 @@ public class MerchantTokenServiceImpl implements MerchantTokenService {
             log.info("TOKEN INFO! 解析微信手机号:{}", purePhoneNumber);
 
             List<User> users = userService.listUserByPhone(purePhoneNumber, tenantId);
-            if (Collections.isEmpty(users) || !(users.stream().filter(user -> User.TYPE_USER_MERCHANT.equals(user.getUserType()) || User.TYPE_USER_CHANNEL.equals(user.getUserType())).count() >= 1)) {
+            if (Collections.isEmpty(users) || users.stream().noneMatch(user -> User.TYPE_USER_MERCHANT.equals(user.getUserType()) || User.TYPE_USER_CHANNEL.equals(user.getUserType()))) {
                 return Triple.of(false, null, "用户不存在");
             }
 
