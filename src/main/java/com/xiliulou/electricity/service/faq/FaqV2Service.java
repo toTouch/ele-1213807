@@ -15,7 +15,7 @@ import java.util.List;
  * @author kuz
  * @date 2024/2/23 16:11
  */
-public interface FaqService {
+public interface FaqV2Service {
     
     /**
      * 添加常见问题

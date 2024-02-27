@@ -2,9 +2,9 @@
 <!DOCTYPE mapper
     PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.xiliulou.electricity.mapper.faq.FaqMapper">
+<mapper namespace="com.xiliulou.electricity.mapper.faq.FaqV2Mapper">
     
-    <resultMap id="BaseResultMap" type="com.xiliulou.electricity.entity.faq.Faq">
+    <resultMap id="BaseResultMap" type="com.xiliulou.electricity.entity.faq.FaqV2">
         <id property="id" column="id" jdbcType="BIGINT"/>
         <result property="typeId" column="type_id" jdbcType="BIGINT"/>
         <result property="title" column="title" jdbcType="VARCHAR"/>
@@ -72,13 +72,13 @@
             and c.tenant_id = #{params.tenantId}
         </if>
     </select>
-    <select id="selectListByParams" resultType="com.xiliulou.electricity.entity.faq.Faq">
+    <select id="selectListByParams" resultType="com.xiliulou.electricity.entity.faq.FaqV2">
         select
         <include refid="Base_Column_No_Answer_List"/>
         FROM t_faq
         <include refid="Example_Where_Clause"/>
     </select>
-    <select id="selectListByParamsPage" resultType="com.xiliulou.electricity.entity.faq.Faq">
+    <select id="selectListByParamsPage" resultType="com.xiliulou.electricity.entity.faq.FaqV2">
         select
         <include refid="Base_Column_No_Answer_List"/>
         FROM t_faq
@@ -150,7 +150,7 @@
             #{id}
         </foreach>
     </delete>
-    <insert id="insert" keyColumn="id" keyProperty="id" parameterType="com.xiliulou.electricity.entity.faq.Faq" useGeneratedKeys="true">
+    <insert id="insert" keyColumn="id" keyProperty="id" parameterType="com.xiliulou.electricity.entity.faq.FaqV2" useGeneratedKeys="true">
         insert into t_faq
         ( id, type_id, title
         , answer, on_shelf, sort
@@ -161,7 +161,7 @@
                , #{tenantId,jdbcType=INTEGER}, #{opUser,jdbcType=BIGINT}, #{createTime,jdbcType=BIGINT}
                , #{updateTime,jdbcType=BIGINT})
     </insert>
-    <insert id="insertSelective" keyColumn="id" keyProperty="id" parameterType="com.xiliulou.electricity.entity.faq.Faq" useGeneratedKeys="true">
+    <insert id="insertSelective" keyColumn="id" keyProperty="id" parameterType="com.xiliulou.electricity.entity.faq.FaqV2" useGeneratedKeys="true">
         insert into t_faq
         <trim prefix="(" suffix=")" suffixOverrides=",">
             <if test="id != null">id,</if>
@@ -188,7 +188,7 @@
             <if test="updateTime != null">update_time = #{updateTime,jdbcType=BIGINT},</if>
         </trim>
     </insert>
-    <update id="updateByPrimaryKeySelective" parameterType="com.xiliulou.electricity.entity.faq.Faq">
+    <update id="updateByPrimaryKeySelective" parameterType="com.xiliulou.electricity.entity.faq.FaqV2">
         update t_faq
         <set>
             <if test="typeId != null">
@@ -221,7 +221,7 @@
         </set>
         where id = #{id,jdbcType=BIGINT}
     </update>
-    <update id="updateByPrimaryKey" parameterType="com.xiliulou.electricity.entity.faq.Faq">
+    <update id="updateByPrimaryKey" parameterType="com.xiliulou.electricity.entity.faq.FaqV2">
         update t_faq
         set type_id     = #{typeId,jdbcType=BIGINT},
             title       = #{title,jdbcType=VARCHAR},

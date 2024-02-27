@@ -1,7 +1,7 @@
 package com.xiliulou.electricity.mapper.faq;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.xiliulou.electricity.entity.faq.Faq;
+import com.xiliulou.electricity.entity.faq.FaqV2;
 import com.xiliulou.electricity.vo.faq.FaqVo;
 import org.apache.ibatis.annotations.Param;
 
@@ -14,25 +14,25 @@ import java.util.Map;
  * @author kuz
  * @date 2024/2/23 16:11
  */
-public interface FaqMapper extends BaseMapper<Faq> {
+public interface FaqV2Mapper extends BaseMapper<FaqV2> {
 
     int deleteByPrimaryKey(Long id);
 
-    int insert(Faq record);
+    int insert(FaqV2 record);
 
-    int insertSelective(Faq record);
+    int insertSelective(FaqV2 record);
     
-    Faq selectByPrimaryKey(Long id);
+    FaqV2 selectByPrimaryKey(Long id);
 
-    int updateByPrimaryKeySelective(Faq record);
+    int updateByPrimaryKeySelective(FaqV2 record);
 
-    int updateByPrimaryKey(Faq record);
+    int updateByPrimaryKey(FaqV2 record);
     
     List<FaqVo> selectLeftJoinByParams(@Param(value = "params") Map<String, Object> params);
     
-    List<Faq> selectListByParams(@Param(value = "params") Map<String, Object> params);
+    List<FaqV2> selectListByParams(@Param(value = "params") Map<String, Object> params);
     
-    List<Faq> selectListByParamsPage(@Param(value = "params") Map<String, Object> params,
+    List<FaqV2> selectListByParamsPage(@Param(value = "params") Map<String, Object> params,
             @Param(value = "pageOffset") Object pageOffset,
             @Param(value = "pageSize") Object pageSize);
     

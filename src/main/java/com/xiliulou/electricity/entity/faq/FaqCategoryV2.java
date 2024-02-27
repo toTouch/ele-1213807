@@ -1,10 +1,5 @@
 package com.xiliulou.electricity.entity.faq;
 
-import com.baomidou.mybatisplus.annotation.FieldFill;
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableField;
-import com.baomidou.mybatisplus.annotation.TableId;
-import lombok.Builder;
 import lombok.Data;
 import lombok.experimental.Accessors;
 
@@ -12,7 +7,7 @@ import java.math.BigDecimal;
 
 @Data
 @Accessors(chain = true)
-public class Faq {
+public class FaqCategoryV2 {
     
     /**
      * id
@@ -20,24 +15,9 @@ public class Faq {
     private Long id;
     
     /**
-     * 分类id
+     * 分类
      */
-    private Long typeId;
-    
-    /**
-     * 标题
-     */
-    private String title;
-    
-    /**
-     * 答案
-     */
-    private String answer;
-    
-    /**
-     * 上下架 1表示上架  0表示下架
-     */
-    private Integer onShelf;
+    private String type;
     
     /**
      * 排序

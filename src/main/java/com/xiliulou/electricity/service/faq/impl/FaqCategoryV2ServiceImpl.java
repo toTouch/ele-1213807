@@ -1,11 +1,11 @@
 package com.xiliulou.electricity.service.faq.impl;
 
 import cn.hutool.core.bean.BeanUtil;
-import com.xiliulou.electricity.entity.faq.FaqCategory;
+import com.xiliulou.electricity.entity.faq.FaqCategoryV2;
 import com.xiliulou.electricity.exception.BizException;
-import com.xiliulou.electricity.mapper.faq.FaqCategoryMapper;
+import com.xiliulou.electricity.mapper.faq.FaqCategoryV2Mapper;
 import com.xiliulou.electricity.reqparam.faq.AdminFaqCategoryReq;
-import com.xiliulou.electricity.service.faq.FaqCategoryService;
+import com.xiliulou.electricity.service.faq.FaqCategoryV2Service;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.faq.FaqCategoryVo;
@@ -22,13 +22,13 @@ import java.util.List;
  */
 @Service
 @AllArgsConstructor
-public class FaqCategoryServiceImpl implements FaqCategoryService {
+public class FaqCategoryV2ServiceImpl implements FaqCategoryV2Service {
     
-    private final FaqCategoryMapper faqCategoryMapper;
+    private final FaqCategoryV2Mapper faqCategoryMapper;
     
     @Override
     public void add(AdminFaqCategoryReq faqCategoryReq) {
-        FaqCategory faqCategory = BeanUtil.toBean(faqCategoryReq, FaqCategory.class);
+        FaqCategoryV2 faqCategory = BeanUtil.toBean(faqCategoryReq, FaqCategoryV2.class);
         faqCategory.setTenantId(TenantContextHolder.getTenantId()).setOpUser(SecurityUtils.getUid()).setCreateTime(System.currentTimeMillis())
                 .setUpdateTime(System.currentTimeMillis());
         faqCategoryMapper.insert(faqCategory);
@@ -36,7 +36,7 @@ public class FaqCategoryServiceImpl implements FaqCategoryService {
     
     @Override
     public void edit(AdminFaqCategoryReq faqCategoryReq) {
-        FaqCategory faqCategory = this.queryEntity(faqCategoryReq.getId());
+        FaqCategoryV2 faqCategory = this.queryEntity(faqCategoryReq.getId());
         BeanUtil.copyProperties(faqCategoryReq, faqCategory);
         faqCategory.setOpUser(SecurityUtils.getUid()).setUpdateTime(System.currentTimeMillis());
         faqCategoryMapper.updateByPrimaryKeySelective(faqCategory);
@@ -47,8 +47,8 @@ public class FaqCategoryServiceImpl implements FaqCategoryService {
         return faqCategoryMapper.selectListByTenantId(TenantContextHolder.getTenantId());
     }
     
-    public FaqCategory queryEntity(Long id) {
-        FaqCategory faqCategory = faqCategoryMapper.selectByPrimaryKey(id);
+    public FaqCategoryV2 queryEntity(Long id) {
+        FaqCategoryV2 faqCategory = faqCategoryMapper.selectByPrimaryKey(id);
         if (null == faqCategory) {
             throw new BizException("300000", "数据有误");
         }

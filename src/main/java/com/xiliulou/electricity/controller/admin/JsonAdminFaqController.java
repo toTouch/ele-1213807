@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
  * @date : 2021/9/26 4:45 下午
  */
 @RestController
+@Deprecated
 public class JsonAdminFaqController extends BaseController {
     @Autowired
     FaqService faqService;

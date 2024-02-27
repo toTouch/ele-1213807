@@ -2,8 +2,8 @@ package com.xiliulou.electricity.controller.admin.faq;
 
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.reqparam.faq.AdminFaqCategoryReq;
-import com.xiliulou.electricity.service.faq.FaqCategoryService;
-import com.xiliulou.electricity.service.faq.FaqService;
+import com.xiliulou.electricity.service.faq.FaqCategoryV2Service;
+import com.xiliulou.electricity.service.faq.FaqV2Service;
 import com.xiliulou.electricity.validator.CreateGroup;
 import com.xiliulou.electricity.validator.UpdateGroup;
 import lombok.AllArgsConstructor;
@@ -23,11 +23,11 @@ import org.springframework.web.bind.annotation.RestController;
  */
 @RestController
 @AllArgsConstructor
-public class JsonAdminFaqCategoryController {
+public class JsonAdminV2FaqCategoryController {
     
-    private final FaqCategoryService faqCategoryService;
+    private final FaqCategoryV2Service faqCategoryV2Service;
     
-    private final FaqService faqService;
+    private final FaqV2Service faqV2Service;
     
     /**
      * 查看常见问题分类
@@ -35,9 +35,9 @@ public class JsonAdminFaqCategoryController {
      * @author kuz
      * @date 2024/2/23 16:11
      */
-    @GetMapping("/admin/faq/category/page")
+    @GetMapping("/admin/v2/faq/category/page")
     public R query() {
-        return R.ok(faqCategoryService.page());
+        return R.ok(faqCategoryV2Service.page());
     }
     
     /**
@@ -46,9 +46,9 @@ public class JsonAdminFaqCategoryController {
      * @author kuz
      * @date 2024/2/23 16:11
      */
-    @PostMapping("/admin/faq/category/add")
+    @PostMapping("/admin/v2/faq/category/add")
     public R add(@RequestBody @Validated(value = CreateGroup.class) AdminFaqCategoryReq faqCategoryReq) {
-        faqCategoryService.add(faqCategoryReq);
+        faqCategoryV2Service.add(faqCategoryReq);
         return R.ok();
     }
     
@@ -59,9 +59,9 @@ public class JsonAdminFaqCategoryController {
      * @author kuz
      * @date 2024/2/23 16:11
      */
-    @PostMapping("/admin/faq/category/edit")
+    @PostMapping("/admin/v2/faq/category/edit")
     public R edit(@RequestBody @Validated(value = UpdateGroup.class) AdminFaqCategoryReq faqCategoryReq) {
-        faqCategoryService.edit(faqCategoryReq);
+        faqCategoryV2Service.edit(faqCategoryReq);
         return R.ok();
     }
     
@@ -71,9 +71,9 @@ public class JsonAdminFaqCategoryController {
      * @author kuz
      * @date 2024/2/23 16:11
      */
-    @DeleteMapping("/admin/faq/category/detele/{id}")
+    @DeleteMapping("/admin/v2/faq/category/detele/{id}")
     public R delete(@PathVariable Long id) {
-        faqService.removeByCategoryId(id);
+        faqV2Service.removeByCategoryId(id);
         return R.ok();
     }
     

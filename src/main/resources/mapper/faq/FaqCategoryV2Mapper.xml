@@ -2,9 +2,9 @@
 <!DOCTYPE mapper
     PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.xiliulou.electricity.mapper.faq.FaqCategoryMapper">
+<mapper namespace="com.xiliulou.electricity.mapper.faq.FaqCategoryV2Mapper">
     
-    <resultMap id="BaseResultMap" type="com.xiliulou.electricity.entity.faq.FaqCategory">
+    <resultMap id="BaseResultMap" type="com.xiliulou.electricity.entity.faq.FaqCategoryV2">
         <id property="id" column="id" jdbcType="BIGINT"/>
         <result property="type" column="type" jdbcType="VARCHAR"/>
         <result property="sort" column="sort" jdbcType="DECIMAL"/>
@@ -31,6 +31,7 @@
         select id, type, sort
         from t_faq_category
         where tenant_id = #{tenantId,jdbcType=INTEGER}
+        ordeyr by sort
     </select>
     
     <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
@@ -38,7 +39,7 @@
         from t_faq_category
         where id = #{id,jdbcType=BIGINT}
     </delete>
-    <insert id="insert" keyColumn="id" keyProperty="id" parameterType="com.xiliulou.electricity.entity.faq.FaqCategory" useGeneratedKeys="true">
+    <insert id="insert" keyColumn="id" keyProperty="id" parameterType="com.xiliulou.electricity.entity.faq.FaqCategoryV2" useGeneratedKeys="true">
         insert into t_faq_category
         ( id, type, sort
         , tenant_id, op_user, create_time
@@ -47,7 +48,7 @@
                , #{tenantId,jdbcType=INTEGER}, #{opUser,jdbcType=BIGINT}, #{createTime,jdbcType=BIGINT}
                , #{updateTime,jdbcType=BIGINT})
     </insert>
-    <insert id="insertSelective" keyColumn="id" keyProperty="id" parameterType="com.xiliulou.electricity.entity.faq.FaqCategory" useGeneratedKeys="true">
+    <insert id="insertSelective" keyColumn="id" keyProperty="id" parameterType="com.xiliulou.electricity.entity.faq.FaqCategoryV2" useGeneratedKeys="true">
         insert into t_faq_category
         <trim prefix="(" suffix=")" suffixOverrides=",">
             <if test="id != null">id,</if>
@@ -68,7 +69,7 @@
             <if test="updateTime != null">update_time = #{updateTime,jdbcType=BIGINT},</if>
         </trim>
     </insert>
-    <update id="updateByPrimaryKeySelective" parameterType="com.xiliulou.electricity.entity.faq.FaqCategory">
+    <update id="updateByPrimaryKeySelective" parameterType="com.xiliulou.electricity.entity.faq.FaqCategoryV2">
         update t_faq_category
         <set>
             <if test="type != null">
@@ -92,7 +93,7 @@
         </set>
         where id = #{id,jdbcType=BIGINT}
     </update>
-    <update id="updateByPrimaryKey" parameterType="com.xiliulou.electricity.entity.faq.FaqCategory">
+    <update id="updateByPrimaryKey" parameterType="com.xiliulou.electricity.entity.faq.FaqCategoryV2">
         update t_faq_category
         set type        = #{type,jdbcType=VARCHAR},
             sort        = #{sort,jdbcType=DECIMAL},

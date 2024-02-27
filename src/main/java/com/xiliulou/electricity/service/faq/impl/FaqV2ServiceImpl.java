@@ -3,16 +3,16 @@ package com.xiliulou.electricity.service.faq.impl;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import com.google.common.collect.Maps;
-import com.xiliulou.electricity.entity.faq.Faq;
+import com.xiliulou.electricity.entity.faq.FaqV2;
 import com.xiliulou.electricity.enums.UpDownEnum;
 import com.xiliulou.electricity.exception.BizException;
-import com.xiliulou.electricity.mapper.faq.FaqCategoryMapper;
-import com.xiliulou.electricity.mapper.faq.FaqMapper;
+import com.xiliulou.electricity.mapper.faq.FaqCategoryV2Mapper;
+import com.xiliulou.electricity.mapper.faq.FaqV2Mapper;
 import com.xiliulou.electricity.query.faq.AdminFaqQuery;
 import com.xiliulou.electricity.reqparam.faq.AdminFaqChangeTypeReq;
 import com.xiliulou.electricity.reqparam.faq.AdminFaqReq;
 import com.xiliulou.electricity.reqparam.faq.AdminFaqUpDownReq;
-import com.xiliulou.electricity.service.faq.FaqService;
+import com.xiliulou.electricity.service.faq.FaqV2Service;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.faq.FaqListVos;
@@ -37,15 +37,15 @@ import java.util.stream.Collectors;
  */
 @Service
 @AllArgsConstructor
-public class FaqServiceImpl implements FaqService {
+public class FaqV2ServiceImpl implements FaqV2Service {
     
-    private final FaqMapper faqMapper;
+    private final FaqV2Mapper faqMapper;
     
-    private final FaqCategoryMapper faqCategoryMapper;
+    private final FaqCategoryV2Mapper faqCategoryMapper;
     
     @Override
     public void add(AdminFaqReq faqReq) {
-        Faq faq = BeanUtil.toBean(faqReq, Faq.class);
+        FaqV2 faq = BeanUtil.toBean(faqReq, FaqV2.class);
         faq.setTenantId(TenantContextHolder.getTenantId())
                 .setOpUser(SecurityUtils.getUid())
                 .setOnShelf(UpDownEnum.DOWN.getCode())
@@ -56,7 +56,7 @@ public class FaqServiceImpl implements FaqService {
     
     @Override
     public void edit(AdminFaqReq faqReq) {
-        Faq faq = this.queryEntity(faqReq.getId());
+        FaqV2 faq = this.queryEntity(faqReq.getId());
         BeanUtil.copyProperties(faqReq, faq);
         faq.setOpUser(SecurityUtils.getUid()).setUpdateTime(System.currentTimeMillis());
         faqMapper.updateByPrimaryKeySelective(faq);
@@ -67,9 +67,9 @@ public class FaqServiceImpl implements FaqService {
         
         Map<String, Object> map = new HashMap<>();
         map.put("typeId", id);
-        List<Faq> faqs = faqMapper.selectListByParams(map);
+        List<FaqV2> faqs = faqMapper.selectListByParams(map);
         if (CollectionUtil.isNotEmpty(faqs)) {
-            faqMapper.removeByIds(faqs.stream().map(Faq::getId).collect(Collectors.toList()));
+            faqMapper.removeByIds(faqs.stream().map(FaqV2::getId).collect(Collectors.toList()));
         }
         faqCategoryMapper.deleteByPrimaryKey(id);
     }
@@ -78,7 +78,7 @@ public class FaqServiceImpl implements FaqService {
     public void upDownBatch(AdminFaqUpDownReq faqUpDownReq) {
         Map<String, Object> map = new HashMap<>();
         map.put("idList", faqUpDownReq.getIds());
-        List<Faq> faqs = faqMapper.selectListByParams(map);
+        List<FaqV2> faqs = faqMapper.selectListByParams(map);
         if (CollectionUtil.isEmpty(faqs)) {
             return;
         }
@@ -94,7 +94,7 @@ public class FaqServiceImpl implements FaqService {
     public void changeTypeBatch(AdminFaqChangeTypeReq faqChangeTypeReq) {
         Map<String, Object> map = new HashMap<>();
         map.put("idList", faqChangeTypeReq.getIds());
-        List<Faq> faqs = faqMapper.selectListByParams(map);
+        List<FaqV2> faqs = faqMapper.selectListByParams(map);
         if (CollectionUtil.isEmpty(faqs)) {
             return;
         }
@@ -139,7 +139,7 @@ public class FaqServiceImpl implements FaqService {
             }
             
             //通过typeId和其他参数来进行分页查询，然后赋值给对应typeId的集合
-            List<Faq> faqs = faqMapper.selectListByParamsPage(map, faqQuery.getOffset(), faqQuery.getSize());
+            List<FaqV2> faqs = faqMapper.selectListByParamsPage(map, faqQuery.getOffset(), faqQuery.getSize());
             if (CollectionUtil.isNotEmpty(faqs)) {
                 List<FaqVo> faqVoLists = faqs.stream().map(e -> {
                     FaqVo faqVo = new FaqVo();
@@ -159,14 +159,14 @@ public class FaqServiceImpl implements FaqService {
     @Override
     public FaqVo detail(Long id) {
         FaqVo faqVo = new FaqVo();
-        Faq faq = queryEntity(id);
+        FaqV2 faq = queryEntity(id);
         BeanUtil.copyProperties(faq, faqVo, "onShelf");
         faqVo.setOnShelf(UpDownEnum.getUpDownEnum(faq.getOnShelf()));
         return faqVo;
     }
     
-    public Faq queryEntity(Long id) {
-        Faq faq = faqMapper.selectByPrimaryKey(id);
+    public FaqV2 queryEntity(Long id) {
+        FaqV2 faq = faqMapper.selectByPrimaryKey(id);
         if (null == faq) {
             throw new BizException("300000", "数据有误");
         }
