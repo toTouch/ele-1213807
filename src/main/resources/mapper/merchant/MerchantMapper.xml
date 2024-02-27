@@ -3,7 +3,7 @@
 <mapper namespace="com.xiliulou.electricity.mapper.merchant.MerchantMapper">
     
     <select id="existsByAreaId" resultType="java.lang.Integer">
-        select count(1) from t_merchant_place where del_flag = 0 and merchant_area_id = #{areaId}
+        select 1 from t_merchant_place where del_flag = 0 and merchant_area_id = #{areaId}
     </select>
     <insert id="insert" keyProperty="id" useGeneratedKeys="true">
         insert into t_merchant(id, name , franchisee_id , phone , merchant_grade_id , channel_employee_uid , tenant_id , auto_up_grade , status , enterprise_package_auth ,

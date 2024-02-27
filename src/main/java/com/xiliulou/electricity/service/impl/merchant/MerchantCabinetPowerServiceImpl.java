@@ -411,7 +411,6 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
             return Collections.emptyList();
         }
         
-        Long cabinetId = request.getCabinetId();
         String monthDate = null;
         List<String> monthList = request.getMonthList();
         if (CollectionUtils.isNotEmpty(monthList)) {
@@ -421,14 +420,21 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
             }
         }
         
+        Long cabinetId = request.getCabinetId();
+        ElectricityCabinet electricityCabinet = electricityCabinetService.queryByIdFromCache(Math.toIntExact(cabinetId));
+        if (Objects.isNull(electricityCabinet)) {
+            log.warn("Merchant power for pro cabinetPowerDetail, cabinet not exist, cabinetId={}", cabinetId);
+            return null;
+        }
+        
         String thisMonthDate = DateUtils.getMonthDate(NumberConstant.ZERO_L);
         String lastMonthDate = DateUtils.getMonthDate(NumberConstant.ONE_L);
         
+        // 近2个月数据实时查
         // 如果是本月
         if (Objects.equals(thisMonthDate, monthDate)) {
             // 本月第一天0点
             Long thisMonthStartTime = DateUtils.getBeforeMonthFirstDayTimestamp(NumberConstant.ZERO);
-            // 本月电量/电费
             
             MerchantPowerVO thisMonthPower = getLivePowerData(List.of(cabinetId), thisMonthStartTime, System.currentTimeMillis(), "cabinetPowerDetail-thisMonth");
         }
@@ -440,8 +446,7 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
             // 上月最后一天23:59:59
             long lastMonthEndTime = DateUtils.getBeforeMonthLastDayTimestamp(NumberConstant.ONE);
             
-            // 本月电量/电费
-            MerchantPowerVO thisMonthPower = getLivePowerData(List.of(cabinetId), lastMonthStartTime, lastMonthEndTime, "cabinetPowerDetail-lastMonth");
+            MerchantPowerVO lastMonthPower = getLivePowerData(List.of(cabinetId), lastMonthStartTime, lastMonthEndTime, "cabinetPowerDetail-lastMonth");
         }
         
         // 如果是2个月前,通过历史数据查询
@@ -449,6 +454,24 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
         
         //todo
         return null;
+    }
+    
+    private List<MerchantCabinetPowerDetailVO> assembleCabinetDetailPower(ElectricityCabinet cabinet, MerchantPowerVO monthPower, String monthDate) {
+        if (Objects.isNull(monthPower)) {
+            return Collections.emptyList();
+        }
+        
+        List<MerchantPowerDetailVO> detailVOList = monthPower.getDetailVOList();
+        if (CollectionUtils.isEmpty(detailVOList)) {
+            return Collections.emptyList();
+        }
+        
+        return detailVOList.stream().map(detail -> {
+            MerchantCabinetPowerDetailVO vo = MerchantCabinetPowerDetailVO.builder().monthDate(monthDate).cabinetId(detail.getEid()).sn(cabinet.getSn())
+                    .cabinetName(cabinet.getName()).power(detail.getPower()).charge(detail.getCharge()).startTime(detail.getStartTime()).endTime(detail.getEndTime()).build();
+            //todo
+            return vo;
+        }).collect(Collectors.toList());
     }
     
     /**
@@ -463,7 +486,7 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
         // 绑定状态记录
         List<MerchantPlaceCabinetBind> cabinetBindList = merchantPlaceCabinetBindService.listBindRecord(cabinetBindRequest);
         
-        // 2.今日解绑的场地柜机绑定记录（解绑状态）：unbindTime>=startTime或bindTime<=endTime
+        // 2.解绑的场地柜机绑定记录（解绑状态）：unbindTime>=startTime或bindTime<=endTime
         MerchantPlaceCabinetConditionRequest cabinetUnbindRequest = new MerchantPlaceCabinetConditionRequest();
         cabinetUnbindRequest.setStartTime(startTime);
         cabinetUnbindRequest.setEndTime(endTime);
@@ -476,13 +499,13 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
             return null;
         }
         
-        // 3.商户场地绑定记录（绑定状态）：bindTime可能是昨日也可能是昨日前或昨日后
+        // 3.商户场地绑定记录（绑定状态）：bindTime<=endTime
         MerchantPlaceConditionRequest placeBindRequest = new MerchantPlaceConditionRequest();
         placeBindRequest.setMerchantId(placeBindRequest.getMerchantId());
         placeBindRequest.setStatus(MerchantPlaceBindConstant.BIND);
         List<MerchantPlaceBind> placeBindList = merchantPlaceBindService.listBindRecord(placeBindRequest);
         
-        // 4.昨日解绑的商户场地绑定记录（解绑状态）：unbindTime是昨日或今日,bindTime可能是昨日也可能是昨日前
+        // 4.解绑的商户场地绑定记录（解绑状态）：unbindTime>=startTime或bindTime<=endTime
         MerchantPlaceConditionRequest placeUnbindRequest = new MerchantPlaceConditionRequest();
         placeUnbindRequest.setMerchantId(placeUnbindRequest.getMerchantId());
         placeUnbindRequest.setStartTime(startTime);
