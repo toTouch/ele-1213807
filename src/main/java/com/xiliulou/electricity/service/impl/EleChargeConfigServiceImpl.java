@@ -360,7 +360,7 @@ public class EleChargeConfigServiceImpl implements EleChargeConfigService {
     
             executorService.execute(() -> {
                 EleChargeConfigRecord record = new EleChargeConfigRecord();
-                BeanUtil.copyProperties(config, record);
+                BeanUtil.copyProperties(updateConfig, record);
                 record.setCreateTime(System.currentTimeMillis());
         
                 eleChargeConfigRecordService.insertOne(record);
