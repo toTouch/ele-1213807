@@ -84,10 +84,7 @@
         FROM t_faq
         
         <include refid="Example_Where_Clause"/>
-        
-        <if test="orderParam != null">
-            order by sort
-        </if>
+        order by sort
         <include refid="Pagination_Limit"/>
     </select>
     
