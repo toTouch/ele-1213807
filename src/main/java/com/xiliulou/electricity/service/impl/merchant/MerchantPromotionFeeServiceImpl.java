@@ -102,11 +102,13 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
         
         List<MerchantPromotionFeeEmployeeVO> promotionFeeEmployeeVOList = new ArrayList<>();
         
-        MerchantPromotionFeeEmployeeVO merchantVO = new MerchantPromotionFeeEmployeeVO();
-        merchantVO.setType(PromotionFeeQueryTypeEnum.MERCHANT.getCode());
-        merchantVO.setUserName(merchant.getName());
-        merchantVO.setUid(merchant.getUid());
-        promotionFeeEmployeeVOList.add(merchantVO);
+        if (merchantJoinRecordService.existInviterData(MerchantJoinRecord.INVITER_TYPE_MERCHANT_SELF, merchant.getUid(), TenantContextHolder.getTenantId())) {
+            MerchantPromotionFeeEmployeeVO merchantVO = new MerchantPromotionFeeEmployeeVO();
+            merchantVO.setType(PromotionFeeQueryTypeEnum.MERCHANT.getCode());
+            merchantVO.setUserName(merchant.getName());
+            merchantVO.setUid(merchant.getUid());
+            promotionFeeEmployeeVOList.add(merchantVO);
+        }
         
         if (CollectionUtils.isNotEmpty(merchantEmployees)) {
             List<MerchantPromotionFeeEmployeeVO> employeeVOList = merchantEmployees.parallelStream().map(merchantEmployee -> {
@@ -337,6 +339,42 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
     }
     
     @Override
+    public R selectPromotionMerchantDetail(MerchantPromotionEmployeeDetailQueryModel queryModel) {
+        //校验用户是否是商户
+        Merchant merchant = merchantService.queryByUid(queryModel.getMerchantUid());
+        if (Objects.isNull(merchant)) {
+            log.error("find merchant user error, not found merchant user, uid = {}", queryModel.getMerchantUid());
+            return R.fail("120007", "未找到商户");
+        }
+        
+        MerchantPromotionEmployeeDetailVO employeeDetailVO = new MerchantPromotionEmployeeDetailVO();
+        User user = userService.queryByUidFromCache(merchant.getUid());
+        if (Objects.nonNull(user)) {
+            return R.ok();
+        }
+        employeeDetailVO.setEmployeeName(user.getName());
+        employeeDetailVO.setUid(user.getUid());
+        
+        // 今日预估收入：“返现日期” = 今日，“结算状态” = 未结算；
+        MerchantPromotionFeeQueryModel incomeQueryModel = MerchantPromotionFeeQueryModel.builder().status(MerchantConstant.MERCHANT_REBATE_STATUS_NOT_SETTLE)
+                .type(PromotionFeeQueryTypeEnum.MERCHANT.getCode()).uid(user.getUid()).tenantId(TenantContextHolder.getTenantId())
+                .rebateStartTime(DateUtils.getTodayStartTimeStamp()).rebateEndTime(System.currentTimeMillis()).build();
+        BigDecimal todayInCome = rebateRecordService.sumByStatus(incomeQueryModel);
+        employeeDetailVO.setTodayIncome(todayInCome);
+        
+        // 本月预估收入：“结算日期” = 本月，“结算状态” = 未结算；
+        incomeQueryModel.setRebateStartTime(DateUtils.getDayOfMonthStartTime(1));
+        BigDecimal currentMonthInCome = rebateRecordService.sumByStatus(incomeQueryModel);
+        employeeDetailVO.setCurrentMonthIncome(currentMonthInCome);
+        
+        // 累计收入：“结算日期” = 当前时间，“结算状态” = 未结算；
+        incomeQueryModel.setRebateStartTime(null);
+        BigDecimal totalInCome = rebateRecordService.sumByStatus(incomeQueryModel);
+        employeeDetailVO.setTotalIncome(totalInCome);
+        return R.ok(employeeDetailVO);
+    }
+    
+    @Override
     public R selectMerchantEmployeeDetailList(MerchantPromotionEmployeeDetailQueryModel queryModel) {
         List<MerchantEmployee> merchantEmployees = merchantEmployeeService.selectByMerchantUid(queryModel);
         
@@ -359,7 +397,7 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
                 BigDecimal currentMonthInCome = rebateRecordService.sumByStatus(incomeQueryModel);
                 employeeDetailVO.setCurrentMonthIncome(currentMonthInCome);
                 
-                // 本月预估收入：“结算日期” = 本月，“结算状态” = 未结算；
+                // 累计收入：“结算日期” = 当前时间，“结算状态” = 未结算；
                 incomeQueryModel.setRebateStartTime(null);
                 BigDecimal totalInCome = rebateRecordService.sumByStatus(incomeQueryModel);
                 employeeDetailVO.setTotalIncome(totalInCome);
@@ -410,6 +448,13 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
     
     @Override
     public R selectPromotionEmployeeDetailList(MerchantPromotionEmployeeDetailSpecificsQueryModel queryModel) {
+        //校验用户是否是商户
+        Merchant merchant = merchantService.queryByUid(queryModel.getUid());
+        if (Objects.isNull(merchant)) {
+            log.error("find merchant user error, not found merchant user, uid = {}", queryModel.getUid());
+            return R.fail("120007", "未找到商户");
+        }
+        
         return R.ok(rebateRecordService.selectListPromotionDetail(queryModel));
     }
     
