@@ -16,6 +16,8 @@ public class MerchantPromotionEmployeeDetailSpecificsVO {
     
     private String userName;
     
+    private String phone;
+    
     /**
      * 套餐id
      */

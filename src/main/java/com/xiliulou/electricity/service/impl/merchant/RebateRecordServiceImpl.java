@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.service.impl.merchant;
 
+import com.xiliulou.core.utils.PhoneUtils;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.merchant.MerchantConstant;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
@@ -225,13 +226,19 @@ public class RebateRecordServiceImpl implements RebateRecordService {
         if (CollectionUtils.isEmpty(recordList)) {
             return Collections.emptyList();
         }
-    
+        
         return recordList.parallelStream().map(item -> {
-             MerchantPromotionEmployeeDetailSpecificsVO specificsVO = new MerchantPromotionEmployeeDetailSpecificsVO();
-             BeanUtils.copyProperties(item,specificsVO);
-             BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(item.getMemberCardId());
-             specificsVO.setBatteryMemberCardName(Objects.nonNull(batteryMemberCard) ? batteryMemberCard.getName() : "");
-             
+            MerchantPromotionEmployeeDetailSpecificsVO specificsVO = new MerchantPromotionEmployeeDetailSpecificsVO();
+            BeanUtils.copyProperties(item, specificsVO);
+            
+            // 对手机号中间四位脱敏
+            if (Objects.nonNull(specificsVO.getPhone())) {
+                specificsVO.setPhone(PhoneUtils.mobileEncrypt(specificsVO.getPhone()));
+            }
+            
+            BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(item.getMemberCardId());
+            specificsVO.setBatteryMemberCardName(Objects.nonNull(batteryMemberCard) ? batteryMemberCard.getName() : "");
+            
             return specificsVO;
         }).collect(Collectors.toList());
     }
