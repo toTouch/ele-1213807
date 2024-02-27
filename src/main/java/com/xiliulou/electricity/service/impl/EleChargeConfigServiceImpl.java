@@ -7,6 +7,7 @@ import com.xiliulou.core.thread.XllThreadPoolExecutorService;
 import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.electricity.constant.CacheConstant;
+import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.dto.EleChargeConfigCalcDetailDto;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.entity.merchant.EleChargeConfigRecord;
@@ -266,6 +267,7 @@ public class EleChargeConfigServiceImpl implements EleChargeConfigService {
             executorService.execute(() -> {
                 EleChargeConfigRecord record = new EleChargeConfigRecord();
                 BeanUtil.copyProperties(config, record);
+                record.setDelFlag(NumberConstant.ZERO);
         
                 eleChargeConfigRecordService.insertOne(record);
             });
@@ -362,6 +364,7 @@ public class EleChargeConfigServiceImpl implements EleChargeConfigService {
                 EleChargeConfigRecord record = new EleChargeConfigRecord();
                 BeanUtil.copyProperties(updateConfig, record);
                 record.setCreateTime(System.currentTimeMillis());
+                record.setDelFlag(NumberConstant.ZERO);
         
                 eleChargeConfigRecordService.insertOne(record);
             });
@@ -379,6 +382,15 @@ public class EleChargeConfigServiceImpl implements EleChargeConfigService {
         }
 
         deleteById(id, config);
+    
+        executorService.execute(() -> {
+            EleChargeConfigRecord record = new EleChargeConfigRecord();
+            BeanUtil.copyProperties(config, record);
+            record.setCreateTime(System.currentTimeMillis());
+            record.setDelFlag(NumberConstant.ONE);
+    
+            eleChargeConfigRecordService.insertOne(record);
+        });
 
         return Pair.of(true, null);
     }
