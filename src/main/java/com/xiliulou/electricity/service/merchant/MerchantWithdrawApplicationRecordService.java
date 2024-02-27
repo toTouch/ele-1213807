@@ -31,4 +31,6 @@ public interface MerchantWithdrawApplicationRecordService {
     
     List<MerchantWithdrawApplicationRecord> selectListByBatchNo(String batchNo, Integer tenantId);
     
+    Integer updateMerchantWithdrawStatus(MerchantWithdrawApplicationRecord merchantWithdrawApplicationRecord);
+    
 }

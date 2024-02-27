@@ -367,12 +367,32 @@
           and tmwa.tenant_id = #{tenantId}
     </select>
     
-    <update id="updateMerchantWithdrawStatusByBatchNo">
-        update t_merchant_withdraw_application
+    <update id="updateApplicationRecordStatusByBatchNo">
+        update t_merchant_withdraw_application_record
         set status = #{status},
             update_time = #{updateTime}
         where batch_no = #{batchNo}
           and tenant_id = #{tenantId}
+    </update>
+    
+    <update id="updateMerchantWithdrawStatus">
+        update t_merchant_withdraw_application
+        set status = #{status},
+            update_time = #{updateTime}
+        <where>
+            <if test="batchNo != null and batchNo != ''">
+                and batch_no = #{batchNo}
+            </if>
+          
+            <if test="orderNo != null and orderNo != ''">
+                and order_no = orderNo
+            </if>
+    
+            <if test="tenantId != null">
+                and tenant_id = #{tenantId}
+            </if>
+        </where>
+
     </update>
     
     
