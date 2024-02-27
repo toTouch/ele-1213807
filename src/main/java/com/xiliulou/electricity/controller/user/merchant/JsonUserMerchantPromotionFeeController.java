@@ -35,10 +35,10 @@ public class JsonUserMerchantPromotionFeeController extends BaseController {
     /**
      * 获取商户下的场地员工(商户首页筛选条件)
      *
-     * @return 可提现金额
+     * @return 可提现金额/user/merchant/promotion/employee/details/page
      */
     @GetMapping("/user/merchant/promotionFee/merchantEmployee")
-    public R queryMerchantEmployees(@RequestParam("merchantId") Long merchantUid) {
+    public R queryMerchantEmployees(@RequestParam("merchantUid") Long merchantUid) {
         
         //用户区分
         TokenUser user = SecurityUtils.getUserInfo();
@@ -193,6 +193,22 @@ public class JsonUserMerchantPromotionFeeController extends BaseController {
         
         return merchantPromotionFeeService.statisticChannelEmployeeMerchant(type, uid, beginTime, endTime);
     }
+    
+    /**
+     * 商户首页 商户下的推广详情概览-商户数据(单独处理)
+     *
+     * @param merchantUid 商户id
+     * @return 推广详情概览
+     */
+    @GetMapping("/user/merchant/promotion/merchant/detail")
+    public R promotionMerchantDetail(@RequestParam("merchantUid") Long merchantUid) {
+        
+        MerchantPromotionEmployeeDetailQueryModel queryModel = MerchantPromotionEmployeeDetailQueryModel.builder().merchantUid(merchantUid)
+                .tenantId(TenantContextHolder.getTenantId()).build();
+        
+        return merchantPromotionFeeService.selectPromotionMerchantDetail(queryModel);
+    }
+    
     
     /**
      * 商户首页 商户下的推广详情概览
