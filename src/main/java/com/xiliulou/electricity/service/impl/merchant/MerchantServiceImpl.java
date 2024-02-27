@@ -878,7 +878,7 @@ public class MerchantServiceImpl implements MerchantService {
     }
     
     @Override
-    public Merchant queryFromCacheById(Long id) {
+    public Merchant queryByIdFromCache(Long id) {
         Merchant merchant  = redisService.getWithHash(CacheConstant.CACHE_MERCHANT + id, Merchant.class);
         if (Objects.nonNull(merchant)) {
             return merchant;

@@ -68,7 +68,7 @@ public class MerchantModifyConsumer implements RocketMQListener<String> {
             return;
         }
         
-        Merchant merchant = merchantService.queryFromCacheById(merchantModify.getMerchantId());
+        Merchant merchant = merchantService.queryByIdFromCache(merchantModify.getMerchantId());
         if (Objects.isNull(merchant)) {
             log.warn("MERCHANT MODIFY CONSUMER WARN!merchant is null,merchantId={}", merchantModify.getMerchantId());
             return;
