@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.service.merchant;
 
 import com.xiliulou.electricity.entity.merchant.MerchantPlaceBind;
+import com.xiliulou.electricity.request.merchant.MerchantPlaceConditionRequest;
 
 import java.util.List;
 import java.util.Set;
@@ -25,4 +26,8 @@ public interface MerchantPlaceBindService {
     Integer existPlaceFeeByMerchantId(Long merchantId);
     
     List<MerchantPlaceBind> queryNoSettleByMerchantId(Long merchantId);
+    
+    List<MerchantPlaceBind> listBindRecord(MerchantPlaceConditionRequest request);
+    
+    List<MerchantPlaceBind> listUnbindRecord(MerchantPlaceConditionRequest request);
 }

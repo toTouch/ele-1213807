@@ -1290,7 +1290,7 @@
     </select>
     
     <select id="existsByAreaId" resultType="java.lang.Integer">
-        select count(1) from t_electricity_cabinet where del_flag=0 and area_id = #{areaId}
+        select 1 from t_electricity_cabinet where del_flag=0 and area_id = #{areaId}
     </select>
     
     <select id="countByAreaGroup" resultType="com.xiliulou.electricity.bo.merchant.AreaCabinetNumBO">

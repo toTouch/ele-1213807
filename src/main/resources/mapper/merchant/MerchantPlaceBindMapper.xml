@@ -67,5 +67,42 @@
                    and merchant_month_settlement = 1
                    and merchant_id = #{merchantId}
     </select>
+    
+    <select id="selectListBindRecord" resultType="com.xiliulou.electricity.entity.merchant.MerchantPlaceBind">
+        select
+        <include refid="basic_field"/>
+        from t_merchant_place_bind
+        <where>
+            del_flag = 0
+            <if test="merchantId != null">
+                and merchant_id = #{merchantId}
+            </if>
+            <if test="status != null">
+                and status = #{status}
+            </if>
+            <if test="endTime != null">
+                and bind_time &lt;= #{endTime}
+            </if>
+        </where>
+        order by id desc
+    </select>
+    
+    <select id="selectListUnbindRecord" resultType="com.xiliulou.electricity.entity.merchant.MerchantPlaceBind">
+        select
+        <include refid="basic_field"/>
+        from t_merchant_place_bind
+        <where>
+            del_flag = 0
+            <if test="merchantId != null">
+                and merchant_id = #{merchantId}
+            </if>
+            <if test="status != null">
+                and status = #{status}
+            </if>
+            <if test="startTime != null and endTime != null">
+                and un_bind_time &gt;= #{startTime} or bind_time &lt;= #{endTime}
+            </if>
+        </where>
+    </select>
 
 </mapper>

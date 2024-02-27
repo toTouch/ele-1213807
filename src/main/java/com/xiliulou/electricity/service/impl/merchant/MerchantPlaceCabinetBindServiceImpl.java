@@ -9,7 +9,6 @@ import com.xiliulou.electricity.entity.merchant.MerchantPlace;
 import com.xiliulou.electricity.entity.merchant.MerchantPlaceCabinetBind;
 import com.xiliulou.electricity.mapper.merchant.MerchantPlaceCabinetBindMapper;
 import com.xiliulou.electricity.query.merchant.MerchantPlaceCabinetBindQueryModel;
-import com.xiliulou.electricity.query.merchant.MerchantPlaceCabinetConditionQueryModel;
 import com.xiliulou.electricity.request.merchant.MerchantPlaceCabinetBindSaveRequest;
 import com.xiliulou.electricity.request.merchant.MerchantPlaceCabinetConditionRequest;
 import com.xiliulou.electricity.request.merchant.MerchantPlaceCabinetPageRequest;
@@ -33,6 +32,7 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -307,17 +307,9 @@ public class MerchantPlaceCabinetBindServiceImpl implements MerchantPlaceCabinet
         return calendar.getTimeInMillis();
     }
     
-    @Slave
-    @Override
-    public List<MerchantPlaceCabinetBind> listByConditions(MerchantPlaceCabinetConditionRequest request) {
-        MerchantPlaceCabinetConditionQueryModel queryModel = new MerchantPlaceCabinetConditionQueryModel();
-        BeanUtils.copyProperties(request, queryModel);
-        
-        return merchantPlaceCabinetBindMapper.selectListByConditions(queryModel);
-    }
-    
     /**
      * 检测绑定时间是否存在交叉
+     *
      * @param placeId
      * @param time
      * @return
@@ -327,8 +319,8 @@ public class MerchantPlaceCabinetBindServiceImpl implements MerchantPlaceCabinet
         // 判断绑定的时间是否与解绑的历史数据存在重叠
         List<Long> placeIdList = new ArrayList<>();
         placeIdList.add(placeId);
-        MerchantPlaceCabinetBindQueryModel queryModel = MerchantPlaceCabinetBindQueryModel.builder().overlapTime(time)
-                .placeIdList(placeIdList).status(MerchantPlaceConstant.UN_BIND).build();
+        MerchantPlaceCabinetBindQueryModel queryModel = MerchantPlaceCabinetBindQueryModel.builder().overlapTime(time).placeIdList(placeIdList)
+                .status(MerchantPlaceConstant.UN_BIND).build();
         List<MerchantPlaceCabinetBind> unBindList = this.queryList(queryModel);
         if (ObjectUtils.isNotEmpty(unBindList)) {
             List<Long> ids = unBindList.stream().map(MerchantPlaceCabinetBind::getId).collect(Collectors.toList());
@@ -353,10 +345,21 @@ public class MerchantPlaceCabinetBindServiceImpl implements MerchantPlaceCabinet
     
     @Slave
     @Override
-    public List<MerchantPlaceCabinetBind> listDayBindRecord(Long todayStartTime, Long nowTime, List<Long> cabinetIds) {
-        return merchantPlaceCabinetBindMapper.selectListDayBindRecord(todayStartTime, nowTime, cabinetIds);
+    public List<MerchantPlaceCabinetBind> listByPlaceIds(Set<Long> placeIds) {
+        return merchantPlaceCabinetBindMapper.selectListByPlaceIds(placeIds);
     }
     
+    @Slave
+    @Override
+    public List<MerchantPlaceCabinetBind> listBindRecord(MerchantPlaceCabinetConditionRequest request) {
+        return merchantPlaceCabinetBindMapper.selectListBindRecord(request);
+    }
+    
+    @Slave
+    @Override
+    public List<MerchantPlaceCabinetBind> listUnbindRecord(MerchantPlaceCabinetConditionRequest request) {
+        return merchantPlaceCabinetBindMapper.selectListUnbindRecord(request);
+    }
     
     @Override
     public Integer removeByPlaceId(Long placeId, long updateTime, Integer delFlag) {

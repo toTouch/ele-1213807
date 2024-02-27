@@ -3,11 +3,9 @@
 <mapper namespace="com.xiliulou.electricity.mapper.merchant.MerchantCabinetPowerMonthRecordProMapper">
     <!-- 基础字段 -->
     <sql id="basic_field">
-        id
-        , merchant_id, place_id, eid, sn, date, month_sum_power, month_sum_charge, tenant_id, del_flag, create_time, update_time
+        id, merchant_id, place_id, eid, sn, date, month_sum_power, month_sum_charge, tenant_id, del_flag, create_time, update_time
     </sql>
-    
-    <select id="sumMonthPower" resultType="com.xiliulou.electricity.vo.merchant.MerchantPowerVO">
+    <select id="sumMonthPower" resultType="com.xiliulou.electricity.vo.merchant.MerchantPowerDetailVO">
         select sum(month_sum_power) as power, sum(month_sum_charge) as charge
         from t_merchant_cabinet_power_month_record_pro
         <where>
@@ -18,8 +16,11 @@
                     #{item}
                 </foreach>
             </if>
-            <if test="monthDate != null and monthDate != ''">
-                and date = #{monthDate}
+            <if test="monthDateList != null and monthDateList.size() > 0">
+                and date in
+                <foreach collection="monthDateList" item="date" open="(" close=")" separator=",">
+                    #{date}
+                </foreach>
             </if>
         </where>
     </select>
