@@ -1,6 +1,6 @@
 package com.xiliulou.electricity.mapper.merchant;
 
-import com.xiliulou.electricity.entity.merchant.MerchantCabinetPowerMonthDetail;
+import com.xiliulou.electricity.entity.merchant.MerchantCabinetPowerMonthDetailPro;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
@@ -14,5 +14,5 @@ public interface MerchantCabinetPowerMonthDetailProMapper {
     
     Long selectLatestReportTime(@Param("cabinetId") Long cabinetId, @Param("monthList") List<String> monthList);
     
-    List<MerchantCabinetPowerMonthDetail> selectListByMonth(@Param("cabinetId") Long cabinetId, @Param("monthList") List<String> monthList);
+    List<MerchantCabinetPowerMonthDetailPro> selectListByMonth(@Param("cabinetId") Long cabinetId, @Param("monthList") List<String> monthList);
 }

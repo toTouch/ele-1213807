@@ -1,7 +1,7 @@
 package com.xiliulou.electricity.service.impl.merchant;
 
 import com.xiliulou.db.dynamic.annotation.Slave;
-import com.xiliulou.electricity.entity.merchant.MerchantCabinetPowerMonthDetail;
+import com.xiliulou.electricity.entity.merchant.MerchantCabinetPowerMonthDetailPro;
 import com.xiliulou.electricity.mapper.merchant.MerchantCabinetPowerMonthDetailProMapper;
 import com.xiliulou.electricity.service.merchant.MerchantCabinetPowerMonthDetailProService;
 import org.springframework.stereotype.Service;
@@ -28,7 +28,7 @@ public class MerchantCabinetPowerMonthDetailProServiceImpl implements MerchantCa
     
     @Slave
     @Override
-    public List<MerchantCabinetPowerMonthDetail> listByMonth(Long cabinetId, List<String> monthList) {
+    public List<MerchantCabinetPowerMonthDetailPro> listByMonth(Long cabinetId, List<String> monthList) {
         return merchantCabinetPowerMonthDetailProMapper.selectListByMonth(cabinetId, monthList);
     }
 }

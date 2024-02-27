@@ -240,7 +240,7 @@
     </select>
     
     <select id="existsByAreaId" resultType="java.lang.Integer">
-        select 1 from t_channel_employee where area_id = #{id} and del_flag = 0
+        select 1 from t_channel_employee where area_id = #{id} and del_flag = 0 limit 1
     </select>
     
     <!--通过主键逻辑删除渠道员工-->
