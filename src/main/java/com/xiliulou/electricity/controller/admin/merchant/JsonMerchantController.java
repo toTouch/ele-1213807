@@ -260,7 +260,7 @@ public class JsonMerchantController extends BaseController {
      * @author maxiaodong
      */
     @GetMapping("/admin/merchant/queryList")
-    public R getDict(@RequestParam("size") long size, @RequestParam("offset") long offset, @RequestParam(value = "name", required = false) String name) {
+    public R queryList(@RequestParam("size") long size, @RequestParam("offset") long offset, @RequestParam(value = "name", required = false) String name) {
         if (size < 0 || size > 50) {
             size = 10L;
         }
@@ -280,6 +280,6 @@ public class JsonMerchantController extends BaseController {
         
         MerchantPageRequest merchantPageRequest = MerchantPageRequest.builder().name(name).size(size).offset(offset).build();
         
-        return R.ok(merchantService.getDict(merchantPageRequest));
+        return R.ok(merchantService.queryList(merchantPageRequest));
     }
 }

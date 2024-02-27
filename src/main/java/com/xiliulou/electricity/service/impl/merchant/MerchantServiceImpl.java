@@ -948,7 +948,7 @@ public class MerchantServiceImpl implements MerchantService {
     
     @Slave
     @Override
-    public List<MerchantVO> getDict(MerchantPageRequest merchantPageRequest) {
+    public List<MerchantVO> queryList(MerchantPageRequest merchantPageRequest) {
         List<MerchantVO> resList = new ArrayList<>();
         MerchantQueryModel queryModel = new MerchantQueryModel();
         BeanUtils.copyProperties(merchantPageRequest, queryModel);

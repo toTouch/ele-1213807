@@ -37,7 +37,7 @@ public interface MerchantService {
     
     Triple<Boolean, String, Object> queryByIdList(List<Long> idList);
     
-    List<MerchantVO> getDict(MerchantPageRequest merchantPageRequest);
+    List<MerchantVO> queryList(MerchantPageRequest merchantPageRequest);
     
     Merchant queryByUid(Long uid);
     
