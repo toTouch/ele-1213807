@@ -46,6 +46,23 @@ public class JsonMerchantController extends BaseController {
     private MerchantService merchantService;
     
     /**
+     * 查询商户审计条件
+     */
+    @PutMapping("/admin/merchantAttr/upgradeConditionInfo")
+    public R upgradeConditionInfo(@RequestParam("merchantId") Long merchantId) {
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+    
+        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
+            return R.ok();
+        }
+    
+        return R.ok(merchantAttrService.queryUpgradeCondition(merchantId));
+    }
+    
+    /**
      * 修改商户升级条件
      */
     @PutMapping("/admin/merchantAttr/upgradeCondition")
