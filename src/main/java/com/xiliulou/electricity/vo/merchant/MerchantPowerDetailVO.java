@@ -16,12 +16,16 @@ public class MerchantPowerDetailVO {
     
     private Double charge;
     
+    private Long startTime;
+    
+    private Long endTime;
+    
+    private Long merchantId;
+    
+    private Long placeId;
+    
     /**
      * 最新上报数据的时间，用于排序
      */
     private Long latestTime;
-    
-    private Long startTime;
-    
-    private Long endTime;
 }
