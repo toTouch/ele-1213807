@@ -49,5 +49,6 @@ public interface MerchantJoinRecordMapper {
     List<MerchantJoinRecord> selectListPromotionDataDetail(MerchantPromotionDataDetailQueryModel queryModel);
 
     List<MerchantJoinUserVO> selectJoinUserList(MerchantJoinUserQueryMode merchantJoinUserQueryMode);
-
+    
+    Integer existInviterData(@Param("inviterType") Integer inviterType,@Param("inviterUid") Long inviterUid,@Param("tenantId") Integer tenantId);
 }
