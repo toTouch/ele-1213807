@@ -234,7 +234,7 @@ public class JsonMerchantController extends BaseController {
      * @author maxiaodong
      */
     @GetMapping("/admin/merchant/getById")
-    public R getById(@RequestParam(value = "Long", required = true) Long id) {
+    public R getById(@RequestParam(value = "id") Long id) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
