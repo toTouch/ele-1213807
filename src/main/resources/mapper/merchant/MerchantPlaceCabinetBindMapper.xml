@@ -3,7 +3,7 @@
 <mapper namespace="com.xiliulou.electricity.mapper.merchant.MerchantPlaceCabinetBindMapper">
     <!-- 基础字段 -->
     <sql id="basic_field">
-        id, place_id, cabinet_id, bind_time, un_bind_time, status, place_daily_settlement, month_settlement, month_settlement_detail, place_month_settlement, place_month_settlement_detail, tenant_id, del_flag, create_time, update_time
+        id, place_id, cabinet_id, bind_time, un_bind_time, status, place_daily_settlement, month_settlement, place_month_settlement, place_month_settlement_detail, tenant_id, del_flag, create_time, update_time
     </sql>
     
     <insert id="insert">
@@ -39,7 +39,6 @@
         status,
         place_daily_settlement,
         month_settlement,
-        month_settlement_detail ,
         place_month_settlement,
         place_month_settlement_detail,
         tenant_id,
@@ -115,7 +114,6 @@
                status,
                place_daily_settlement,
                month_settlement,
-               month_settlement_detail,
                place_month_settlement,
                place_month_settlement_detail,
                tenant_id,
@@ -167,7 +165,6 @@
         t.status,
         t.place_daily_settlement,
         t.month_settlement,
-        t.month_settlement_detail ,
         t.place_month_settlement,
         t.place_month_settlement_detail,
         t.tenant_id,
@@ -184,41 +181,6 @@
         <if test="offset != null and size != null">
             limit #{offset}, #{size}
         </if>
-    </select>
-    
-    <select id="selectListByConditions" resultType="com.xiliulou.electricity.entity.merchant.MerchantPlaceCabinetBind">
-        select <include refid="basic_field"/>
-            from t_merchant_place_cabinet_bind
-            <where>
-                del_flag = 0
-                <if test="status != null">
-                    and status = #{status}
-                </if>
-                <if test="startTime != null">
-                    and create_time &gt;= #{startTime}
-                </if>
-                <if test="endTime != null">
-                    and create_time &lt;= #{endTime}
-                </if>
-                <if test="placeIds != null and placeIds.size() > 0">
-                    and place_id in
-                    <foreach collection="placeIds" separator="," open="(" close=")" item="placeId">
-                        #{placeId}
-                    </foreach>
-                </if>
-                <if test="placeFeeSettleStatus != null">
-                    and place_month_settlement = #{placeFeeSettleStatus}
-                </if>
-                <if test="powerSettleStatus != null">
-                    and month_settlement = #{placeFeeSettleStatus}
-                </if>
-                <if test="cabinetIds != null and cabinetIds.size() > 0">
-                    and cabinet_id in
-                    <foreach collection="cabinetIds" separator="," open="(" close=")" item="cabinetId">
-                        #{cabinetId}
-                    </foreach>
-                </if>
-            </where>
     </select>
     
     <select id="countCabinetBindCount" resultType="java.lang.Integer">
@@ -265,14 +227,31 @@
         and place_id = #{placeId}
     </select>
     
-    <select id="selectListDayBindRecord" resultType="com.xiliulou.electricity.entity.merchant.MerchantPlaceCabinetBind">
-        select
-        <include refid="basic_field"/>
+    <select id="selectListByPlaceIds" resultType="com.xiliulou.electricity.entity.merchant.MerchantPlaceCabinetBind">
+        select <include refid="basic_field"/>
         from t_merchant_place_cabinet_bind
         <where>
             del_flag = 0
-            and create_time &gt;= #{todayStartTime}
-            and create_time &lt;= #{nowTime}
+            <if test="placeIds != null and placeIds.size() > 0">
+                and place_id in
+                <foreach collection="placeIds" separator="," open="(" close=")" item="placeId">
+                    #{placeId}
+                </foreach>
+            </if>
+        </where>
+    </select>
+    
+    <select id="selectListBindRecord" resultType="com.xiliulou.electricity.entity.merchant.MerchantPlaceCabinetBind">
+        select <include refid="basic_field"/>
+        from t_merchant_place_cabinet_bind
+        <where>
+            del_flag = 0
+            <if test="status != null">
+                and status = #{status}
+            </if>
+            <if test="endTime != null">
+                and bind_time &lt;= #{endTime}
+            </if>
             <if test="cabinetIds != null and cabinetIds.size() > 0">
                 and cabinet_id in
                 <foreach collection="cabinetIds" separator="," open="(" close=")" item="cabinetId">
@@ -280,6 +259,26 @@
                 </foreach>
             </if>
         </where>
-        order by id desc
     </select>
+    
+    <select id="selectListUnbindRecord" resultType="com.xiliulou.electricity.entity.merchant.MerchantPlaceCabinetBind">
+        select <include refid="basic_field"/>
+        from t_merchant_place_cabinet_bind
+        <where>
+            del_flag = 0
+            <if test="status != null">
+                and status = #{status}
+            </if>
+            <if test="startTime != null and endTime != null">
+                and un_bind_time &gt;= #{startTime} or bind_time &lt;= #{endTime}
+            </if>
+            <if test="cabinetIds != null and cabinetIds.size() > 0">
+                and cabinet_id in
+                <foreach collection="cabinetIds" separator="," open="(" close=")" item="cabinetId">
+                    #{cabinetId}
+                </foreach>
+            </if>
+        </where>
+    </select>
+
 </mapper>

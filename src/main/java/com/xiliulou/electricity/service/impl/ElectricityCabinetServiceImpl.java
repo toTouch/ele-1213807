@@ -4876,11 +4876,6 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     
     @Override
     public R acquireIdcardFileSign(String key) {
-
-        String bucketName = "exchange-xll";
-        String objectKey = "test.png";
-        PostSignatureResponse postSignature = storageService.getObsClient().createPostSignature(3600, bucketName, objectKey);
-        log.info("postSignature:{}", postSignature);
         return R.ok(storageService.getOssUploadSign(key));
     }
     

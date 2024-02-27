@@ -116,6 +116,7 @@ public class MerchantAreaServiceImpl implements MerchantAreaService {
         MerchantAreaQueryModel queryModel = new MerchantAreaQueryModel();
         BeanUtils.copyProperties(request, queryModel);
         queryModel.setTenantId(TenantContextHolder.getTenantId());
+        
         List<MerchantArea> merchantAreaList = merchantAreaMapper.selectPage(queryModel);
         if (CollectionUtils.isEmpty(merchantAreaList)) {
             return Collections.emptyList();

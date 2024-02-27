@@ -3,6 +3,7 @@ package com.xiliulou.electricity.service.impl.merchant;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.entity.merchant.MerchantPlaceBind;
 import com.xiliulou.electricity.mapper.merchant.MerchantPlaceBindMapper;
+import com.xiliulou.electricity.request.merchant.MerchantPlaceConditionRequest;
 import com.xiliulou.electricity.service.merchant.MerchantPlaceBindService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -49,6 +50,18 @@ public class MerchantPlaceBindServiceImpl implements MerchantPlaceBindService {
     @Override
     public List<MerchantPlaceBind> queryNoSettleByMerchantId(Long merchantId) {
         return placeBindMapper.queryNoSettleByMerchantId(merchantId);
+    }
+    
+    @Slave
+    @Override
+    public List<MerchantPlaceBind> listBindRecord(MerchantPlaceConditionRequest request) {
+        return placeBindMapper.selectListBindRecord(request);
+    }
+    
+    @Slave
+    @Override
+    public List<MerchantPlaceBind> listUnbindRecord(MerchantPlaceConditionRequest request) {
+        return placeBindMapper.selectListUnbindRecord(request);
     }
     
 }

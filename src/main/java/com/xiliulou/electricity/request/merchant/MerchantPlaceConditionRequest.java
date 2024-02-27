@@ -9,18 +9,18 @@ import java.util.Set;
 
 /**
  * @author HeYafeng
- * @description
- * @date 2024/2/22 19:24:56
+ * @description 商户场地绑定请求
+ * @date 2024/2/26 14:03:46
  */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class MerchantPlaceCabinetConditionRequest {
+public class MerchantPlaceConditionRequest {
+    
+    private Long merchantId;
     
     private Set<Long> placeIds;
-    
-    private Set<Long> cabinetIds;
     
     private Integer status;
     
@@ -28,5 +28,4 @@ public class MerchantPlaceCabinetConditionRequest {
     
     private Long endTime;
     
-    private Integer powerSettleStatus;
 }
