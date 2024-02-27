@@ -81,8 +81,8 @@ public class ElectricityPayParams {
     private String merchantAppletId;
     
     /**
-     * 商家版小程序 appSecert
+     * 商家版小程序 appSecret
      */
-    private String merchantAppletSecert;
+    private String merchantAppletSecret;
 
 }
