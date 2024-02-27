@@ -132,7 +132,7 @@ public class RebateRecordServiceImpl implements RebateRecordService {
             BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(item.getMemberCardId());
             rebateRecord.setBatteryMemberCardName(Objects.nonNull(batteryMemberCard) ? batteryMemberCard.getName() : "");
             
-            Merchant merchant = merchantService.queryFromCacheById(item.getMerchantId());
+            Merchant merchant = merchantService.queryByIdFromCache(item.getMerchantId());
             rebateRecord.setMerchantName(Objects.nonNull(merchant) ? merchant.getName() : "");
             
             MerchantPlace merchantPlace = merchantPlaceService.queryFromCacheById(item.getPlaceId());

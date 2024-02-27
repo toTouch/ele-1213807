@@ -19,7 +19,7 @@ public interface MerchantMapper {
     
     int insert(Merchant merchant);
     
-    Merchant select(@Param("id") Long id);
+    Merchant selectById(@Param("id") Long id);
     
     int update(Merchant merchantUpdate);
     

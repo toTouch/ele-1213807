@@ -126,7 +126,7 @@ public class MerchantPromotionMonthRecordServiceImpl implements MerchantPromotio
         
         detailList = detailList.stream().peek(item -> {
             item.setMonthDate(monthDate);
-            item.setMerchantName(Optional.ofNullable(merchantService.queryFromCacheById(item.getMerchantId())).orElse(new Merchant()).getName());
+            item.setMerchantName(Optional.ofNullable(merchantService.queryByIdFromCache(item.getMerchantId())).orElse(new Merchant()).getName());
             item.setInviterName(Optional.ofNullable(userService.queryByUidFromCache(item.getInviterUid())).orElse(new User()).getName());
             
             switch (item.getType()) {

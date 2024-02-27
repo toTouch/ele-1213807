@@ -136,7 +136,7 @@ public class BatteryMemberCardMerchantRebateConsumer implements RocketMQListener
             return;
         }
         
-        Merchant merchant = merchantService.queryFromCacheById(userInfoExtra.getMerchantId());
+        Merchant merchant = merchantService.queryByIdFromCache(userInfoExtra.getMerchantId());
         if (Objects.isNull(merchant)) {
             log.warn("REBATE CONSUMER WARN!not found merchant,uid={}", electricityMemberCardOrder.getUid());
             return;

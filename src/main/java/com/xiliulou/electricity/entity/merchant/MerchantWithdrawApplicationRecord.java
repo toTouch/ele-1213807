@@ -32,6 +32,8 @@ public class MerchantWithdrawApplicationRecord {
     
     private String batchNo;
     
+    private String batchDetailNo;
+    
     private String transaction_no;
     
     private BigDecimal amount;

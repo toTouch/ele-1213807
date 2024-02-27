@@ -74,5 +74,13 @@ public interface MerchantJoinRecordService {
      * @return
      */
     List<MerchantJoinUserVO> selectJoinUserList(MerchantJoinUserQueryMode merchantJoinUserQueryMode);
-
+    
+    /**
+     *  是否存在邀请数据
+     * @param inviterType 邀请人类型
+     * @param inviterUid 邀请人uid
+     * @param tenantId 租户id
+     * @return 是否存在邀请数据
+     */
+    boolean existInviterData(Integer inviterType,Long inviterUid,Integer tenantId);
 }

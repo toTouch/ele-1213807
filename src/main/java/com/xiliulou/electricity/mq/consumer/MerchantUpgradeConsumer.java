@@ -81,7 +81,7 @@ public class MerchantUpgradeConsumer implements RocketMQListener<String> {
             return;
         }
         
-        Merchant merchant = merchantService.queryFromCacheById(userInfoExtra.getMerchantId());
+        Merchant merchant = merchantService.queryByIdFromCache(userInfoExtra.getMerchantId());
         if (Objects.isNull(merchant)) {
             return;
         }

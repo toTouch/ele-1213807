@@ -1,6 +1,9 @@
 package com.xiliulou.electricity.vo.merchant;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -11,6 +14,9 @@ import java.util.List;
  * @desc
  */
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class MerchantVO {
     
     private Long id;
@@ -31,14 +37,19 @@ public class MerchantVO {
     private String franchiseeName;
     
     /**
-     * 等级
+     * 等级名称
      */
     private String gradeName;
     
     /**
+     * 商户等级
+     */
+    private String merchantLevel;
+    
+    /**
      * 渠道员
      */
-    private String channelName;
+    private String channelUserName;
     /**
      * 场地数
      */
@@ -72,7 +83,7 @@ public class MerchantVO {
     /**
      * 0-启用，1-禁用
      */
-    private String status;
+    private Integer status;
     
     private List<Long> placeIdList;
     

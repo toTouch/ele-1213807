@@ -137,7 +137,7 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
             return;
         }
         
-        Merchant merchant = merchantService.queryFromCacheById(merchantJoinRecord.getMerchantId());
+        Merchant merchant = merchantService.queryByIdFromCache(merchantJoinRecord.getMerchantId());
         if (Objects.isNull(merchant)) {
             log.warn("BIND MERCHANT WARN!merchant is null,merchantId={},uid={}", merchantJoinRecord.getMerchantId(), uid);
             return;

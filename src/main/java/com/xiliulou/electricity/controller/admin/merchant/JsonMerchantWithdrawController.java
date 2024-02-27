@@ -39,7 +39,7 @@ public class JsonMerchantWithdrawController {
     @GetMapping(value = "/admin/merchant/withdraw/page")
     public R queryMerchantWithdrawList(@RequestParam(value = "size") Long size,
             @RequestParam(value = "offset") Long offset,
-            @RequestParam(value = "uid", required = false) Long uid,
+            @RequestParam(value = "merchantUid", required = false) Long merchantUid,
             @RequestParam(value = "beginTime", required = false) Long beginTime,
             @RequestParam(value = "endTime", required = false) Long endTime,
             @RequestParam(value = "status", required = false) Integer status) {
@@ -78,7 +78,7 @@ public class JsonMerchantWithdrawController {
                 .franchiseeIds(franchiseeIds)
                 .size(size)
                 .offset(offset)
-                .uid(uid)
+                .uid(merchantUid)
                 .status(status)
                 .beginTime(beginTime)
                 .endTime(endTime)
@@ -89,7 +89,7 @@ public class JsonMerchantWithdrawController {
     }
     
     @GetMapping(value = "/admin/merchant/withdraw/pageCount")
-    public R queryMerchantWithdrawCount(@RequestParam(value = "uid", required = false) Long uid,
+    public R queryMerchantWithdrawCount(@RequestParam(value = "merchantUid", required = false) Long merchantUid,
             @RequestParam(value = "beginTime", required = false) Long beginTime,
             @RequestParam(value = "endTime", required = false) Long endTime,
             @RequestParam(value = "status", required = false) Integer status) {
@@ -118,7 +118,7 @@ public class JsonMerchantWithdrawController {
         MerchantWithdrawApplicationRequest merchantWithdrawApplicationRequest = MerchantWithdrawApplicationRequest.builder()
                 .tenantId(user.getTenantId())
                 .franchiseeIds(franchiseeIds)
-                .uid(uid)
+                .uid(merchantUid)
                 .status(status)
                 .beginTime(beginTime)
                 .endTime(endTime)

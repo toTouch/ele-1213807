@@ -313,6 +313,49 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
         return enterpriseInfoMapper.updatePhoneByUid(tenantId, uid, newPhone);
     }
     
+    @Override
+    public Triple<Boolean, String, Object> saveNew(EnterpriseInfoQuery enterpriseInfoQuery) {
+        EnterpriseInfo enterpriseInfoOld = this.selectByUid(enterpriseInfoQuery.getUid());
+        if (Objects.nonNull(enterpriseInfoOld)) {
+            return Triple.of(false, "", "用户已存在");
+        }
+    
+        EnterpriseInfo enterpriseInfoExit = this.selectByName(enterpriseInfoQuery.getName());
+        if (Objects.nonNull(enterpriseInfoExit)) {
+            return Triple.of(false, "", "企业已存在");
+        }
+    
+        EnterpriseInfo enterpriseInfo = new EnterpriseInfo();
+        BeanUtils.copyProperties(enterpriseInfoQuery, enterpriseInfo);
+        enterpriseInfo.setBusinessId(Long.valueOf(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyMMdd")) + RandomUtil.randomInt(1000, 9999)));
+        enterpriseInfo.setRecoveryMode(EnterpriseInfo.RECOVERY_MODE_RETURN);
+        enterpriseInfo.setTotalBeanAmount(BigDecimal.ZERO);
+        enterpriseInfo.setDelFlag(EnterpriseInfo.DEL_NORMAL);
+        enterpriseInfo.setTenantId(TenantContextHolder.getTenantId());
+        enterpriseInfo.setCreateTime(System.currentTimeMillis());
+        enterpriseInfo.setUpdateTime(System.currentTimeMillis());
+        this.enterpriseInfoMapper.insert(enterpriseInfo);
+    
+        enterpriseInfoQuery.setId(enterpriseInfo.getId());
+    
+        if (ObjectUtils.isNotEmpty(enterpriseInfoQuery.getPackageIds())) {
+            List<EnterprisePackage> packageList = enterpriseInfoQuery.getPackageIds().stream().map(item -> {
+                EnterprisePackage enterprisePackage = new EnterprisePackage();
+                enterprisePackage.setEnterpriseId(enterpriseInfo.getId());
+                enterprisePackage.setPackageId(item);
+                enterprisePackage.setPackageType(enterpriseInfoQuery.getPackageType());
+                enterprisePackage.setTenantId(enterpriseInfo.getTenantId());
+                enterprisePackage.setCreateTime(System.currentTimeMillis());
+                enterprisePackage.setUpdateTime(System.currentTimeMillis());
+                return enterprisePackage;
+            }).collect(Collectors.toList());
+        
+            enterprisePackageService.batchInsert(packageList);
+        }
+    
+        return Triple.of(true, null, null);
+    }
+    
     /**
      * 通过主键删除数据
      *

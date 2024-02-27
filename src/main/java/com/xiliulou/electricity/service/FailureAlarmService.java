@@ -41,5 +41,5 @@ public interface FailureAlarmService {
     List<FailureAlarm> listByParams(FailureAlarmQueryModel failureAlarmQueryModel);
     
     @Slave
-    FailureAlarm queryFromCacheBySignalId(String signalId);
+    FailureAlarm queryBySignalIdFromCache(String signalId);
 }

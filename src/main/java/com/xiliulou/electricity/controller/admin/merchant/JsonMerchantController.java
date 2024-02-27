@@ -183,9 +183,11 @@ public class JsonMerchantController extends BaseController {
         }
     
         Integer tenantId = null;
+        
         if (!SecurityUtils.isAdmin()) {
             tenantId = TenantContextHolder.getTenantId();
         }
+        
         MerchantPageRequest merchantPageRequest = MerchantPageRequest.builder().name(name).tenantId(tenantId)
                 .merchantGradeId(merchantGradeId).channelEmployeeUid(channelUserId).franchiseeId(franchiseeId).build();
         return R.ok(merchantService.countTotal(merchantPageRequest));
@@ -218,9 +220,11 @@ public class JsonMerchantController extends BaseController {
         }
     
         Integer tenantId = null;
+        
         if (!SecurityUtils.isAdmin()) {
             tenantId = TenantContextHolder.getTenantId();
         }
+        
         MerchantPageRequest merchantPageRequest = MerchantPageRequest.builder().name(name).size(size).offset(offset).tenantId(tenantId)
                 .merchantGradeId(merchantGradeId).channelEmployeeUid(channelUserId).franchiseeId(franchiseeId).build();
         
@@ -234,7 +238,7 @@ public class JsonMerchantController extends BaseController {
      * @author maxiaodong
      */
     @GetMapping("/admin/merchant/getById")
-    public R getById(@RequestParam(value = "Long", required = true) Long id) {
+    public R getById(@RequestParam(value = "id") Long id) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
@@ -256,7 +260,7 @@ public class JsonMerchantController extends BaseController {
      * @author maxiaodong
      */
     @GetMapping("/admin/merchant/queryList")
-    public R getDict(@RequestParam("size") long size, @RequestParam("offset") long offset, @RequestParam(value = "name", required = false) String name) {
+    public R queryList(@RequestParam("size") long size, @RequestParam("offset") long offset, @RequestParam(value = "name", required = false) String name) {
         if (size < 0 || size > 50) {
             size = 10L;
         }
@@ -276,6 +280,6 @@ public class JsonMerchantController extends BaseController {
         
         MerchantPageRequest merchantPageRequest = MerchantPageRequest.builder().name(name).size(size).offset(offset).build();
         
-        return R.ok(merchantService.getDict(merchantPageRequest));
+        return R.ok(merchantService.queryList(merchantPageRequest));
     }
 }
