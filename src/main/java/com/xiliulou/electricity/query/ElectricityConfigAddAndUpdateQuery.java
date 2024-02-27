@@ -4,9 +4,9 @@ import com.xiliulou.electricity.entity.FranchiseeMoveInfo;
 import com.xiliulou.electricity.validator.CreateGroup;
 import com.xiliulou.electricity.validator.UpdateGroup;
 import lombok.Data;
+import org.hibernate.validator.constraints.Range;
 
 import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
 import java.util.List;
 
 /**
@@ -136,6 +136,24 @@ public class ElectricityConfigAddAndUpdateQuery {
      *  冻结是否强制退资产 0--是 1--否
      */
     private Integer allowFreezeWithAssets;
+    
+    /**
+     *  柜机少电比例
+     */
+    @Range(min = 0, max = 100, message = "请输入0-100的整数", groups = {CreateGroup.class, UpdateGroup.class})
+    private Integer lowChargeRate;
+    
+    /**
+     *  柜机多电比例
+     */
+    @Range(min = 0, max = 100, message = "请输入0-100的整数", groups = {CreateGroup.class, UpdateGroup.class})
+    private Integer fullChargeRate;
+    
+    /**
+     * 渠道时限
+     */
+    private Integer channelTimeLimit;
+
 }
 
 

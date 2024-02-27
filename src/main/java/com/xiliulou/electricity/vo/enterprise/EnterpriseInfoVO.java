@@ -76,4 +76,11 @@ public class EnterpriseInfoVO {
     private List<String> memcardName;
     
     private List<Long> packageIds;
+    
+    private Integer channelUserCount;
+    
+    /**
+     * 会员代付权限 0：关，1：开
+     */
+    private Integer purchaseAuthority;
 }

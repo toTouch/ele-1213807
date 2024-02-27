@@ -515,5 +515,22 @@
             </if>
         </where>
     </select>
+    <select id="listByIdList" resultType="com.xiliulou.electricity.entity.BatteryMemberCard">
+        SELECT
+            id,
+            `name`
+        FROM
+            t_battery_member_card
+        WHERE
+        del_flag = 0
+        and tenant_id = #{tenantId}
+        and franchisee_id = #{franchiseeId}
+        and business_type =  #{businessType}
+        AND id IN
+            <foreach collection="idList" item="id" close=")" open="(" separator="," >
+                #{id}
+            </foreach>
+        
+    </select>
 
 </mapper>

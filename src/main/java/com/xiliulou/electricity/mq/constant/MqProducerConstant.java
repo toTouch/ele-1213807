@@ -67,4 +67,18 @@ public interface MqProducerConstant {
     
     String ENTERPRISE_USER_COST_RECORD_TOPIC = "ENTERPRISE_USER_COST_RECORD_TOPIC";
     
+    /**
+     * 商户升级topic
+     */
+    String MERCHANT_UPGRADE_TOPIC = "merchant_upgrade_topic";
+    /**
+     * 商户升级后重新计算返利
+     */
+    String MERCHANT_MODIFY_TOPIC = "merchant_modify_topic";
+    
+    /**
+     * 商户返利
+     */
+    String BATTERY_MEMBER_CARD_MERCHANT_REBATE_TOPIC = "battery_member_card_merchant_rebate_topic";
+    
 }

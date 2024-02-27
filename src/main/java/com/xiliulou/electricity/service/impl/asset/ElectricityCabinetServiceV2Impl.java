@@ -14,6 +14,7 @@ import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.ElectricityCabinetModel;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.Store;
+import com.xiliulou.electricity.entity.merchant.MerchantPlaceFeeRecord;
 import com.xiliulou.electricity.enums.asset.AssetTypeEnum;
 import com.xiliulou.electricity.enums.asset.StockStatusEnum;
 import com.xiliulou.electricity.enums.asset.WarehouseOperateTypeEnum;
@@ -39,10 +40,12 @@ import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.StoreService;
 import com.xiliulou.electricity.service.asset.AssetWarehouseRecordService;
 import com.xiliulou.electricity.service.asset.ElectricityCabinetV2Service;
+import com.xiliulou.electricity.service.merchant.MerchantPlaceFeeRecordService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.ElectricityCabinetVO;
+import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -52,9 +55,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -94,6 +99,9 @@ public class ElectricityCabinetServiceV2Impl implements ElectricityCabinetV2Serv
     
     @Resource
     private AssetWarehouseRecordService assetWarehouseRecordService;
+    
+    @Resource
+    private MerchantPlaceFeeRecordService merchantPlaceFeeRecordService;
     
     
     @Override
@@ -213,11 +221,14 @@ public class ElectricityCabinetServiceV2Impl implements ElectricityCabinetV2Serv
                 return Triple.of(false, "ELECTRICITY.0007", "不合法的参数");
             }
         }
+    
+        // 获取场地费变更记录
+        MerchantPlaceFeeRecord finalMerchantPlaceFeeRecord = getPlaceFeeRecord(electricityCabinet, outWarehouseRequest, SecurityUtils.getUserInfo());
         
         BeanUtil.copyProperties(outWarehouseRequest, electricityCabinet);
         electricityCabinet.setStockStatus(StockStatusEnum.UN_STOCK.getCode());
         electricityCabinet.setUpdateTime(System.currentTimeMillis());
-        
+    
         DbUtils.dbOperateSuccessThenHandleCache(electricityCabinetMapper.updateEleById(electricityCabinet), i -> {
             //更新缓存
             redisService.delete(CacheConstant.CACHE_ELECTRICITY_CABINET + electricityCabinet.getId());
@@ -240,9 +251,56 @@ public class ElectricityCabinetServiceV2Impl implements ElectricityCabinetV2Serv
                             WarehouseOperateTypeEnum.WAREHOUSE_OPERATE_TYPE_OUT.getCode());
                 }
             }
+            
+            // 增加场地费变更记录
+            if (Objects.nonNull(finalMerchantPlaceFeeRecord)) {
+                merchantPlaceFeeRecordService.save(finalMerchantPlaceFeeRecord);
+            }
+    
         });
         
         return Triple.of(true, null, null);
+    }
+    
+    private MerchantPlaceFeeRecord getPlaceFeeRecord(ElectricityCabinet electricityCabinet, ElectricityCabinetOutWarehouseRequest outWarehouseRequest, TokenUser user) {
+        BigDecimal oldFee = BigDecimal.ZERO;
+        BigDecimal newFee = BigDecimal.ZERO;
+        // 判断新的场地费用和就的场地费用是否存在变化如果存在变化则将变换存入到历史表
+        if (Objects.nonNull(electricityCabinet.getPlaceFee())) {
+            oldFee = electricityCabinet.getPlaceFee();
+        } else {
+            oldFee = new BigDecimal(NumberConstant.MINUS_ONE);
+        }
+    
+        if (Objects.nonNull(outWarehouseRequest.getPlaceFee())) {
+            newFee = outWarehouseRequest.getPlaceFee();
+        } else {
+            newFee = new BigDecimal(NumberConstant.MINUS_ONE);
+        }
+    
+    
+        MerchantPlaceFeeRecord merchantPlaceFeeRecord = null;
+        // 场地费有变化则进行记录
+        if (!Objects.equals(newFee.compareTo(oldFee), NumberConstant.ZERO)) {
+            merchantPlaceFeeRecord = new MerchantPlaceFeeRecord();
+            merchantPlaceFeeRecord.setCabinetId(outWarehouseRequest.getId());
+            if (!Objects.equals(newFee.compareTo(BigDecimal.ZERO), NumberConstant.MINUS_ONE)) {
+                merchantPlaceFeeRecord.setNewPlaceFee(newFee);
+            }
+            if (!Objects.equals(oldFee.compareTo(BigDecimal.ZERO), NumberConstant.MINUS_ONE)) {
+                merchantPlaceFeeRecord.setOldPlaceFee(oldFee);
+            }
+            
+            if (Objects.nonNull(user)) {
+                merchantPlaceFeeRecord.setModifyUserId(user.getUid());
+                merchantPlaceFeeRecord.setTenantId(electricityCabinet.getTenantId());
+                long currentTimeMillis = System.currentTimeMillis();
+                merchantPlaceFeeRecord.setCreateTime(currentTimeMillis);
+                merchantPlaceFeeRecord.setUpdateTime(currentTimeMillis);
+            }
+        }
+        
+        return merchantPlaceFeeRecord;
     }
     
     @Override
@@ -324,6 +382,9 @@ public class ElectricityCabinetServiceV2Impl implements ElectricityCabinetV2Serv
         
             assetWarehouseRecordService.asyncRecords(TenantContextHolder.getTenantId(), uid, snWarehouseList, AssetTypeEnum.ASSET_TYPE_CABINET.getCode(),
                     WarehouseOperateTypeEnum.WAREHOUSE_OPERATE_TYPE_BATCH_OUT.getCode());
+            
+            // 保存场地费变更记录
+            merchantPlaceFeeRecordService.asyncRecords(electricityCabinetList, batchOutWarehouseRequest, SecurityUtils.getUserInfo());
         }
         
         return Triple.of(true, null, null);

@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.merchant.MerchantPlaceMapMapper">
+    <insert id="batchInsert">
+        insert into t_merchant_place_map(merchant_id , place_id , tenant_id , del_flag, create_time, update_time)
+        values
+        <foreach item="item" index="index" collection="list" separator=",">
+            (#{item.merchantId}, #{item.placeId}, #{item.tenantId}, #{item.delFlag}, #{item.createTime}, #{item.updateTime})
+        </foreach>
+    </insert>
+    <delete id="batchDeleteByMerchantId">
+        delete from t_merchant_place_map
+       <where>
+           merchant_id = #{merchantId}
+           <if test="placeIdList != null and placeIdList.size() > 0">
+               and place_id in
+               <foreach collection="placeIdList" separator="," open="(" close=")" item="placeId">
+                   #{placeId}
+               </foreach>
+           </if>
+       </where>
+       
+    </delete>
+    
+    <select id="list" resultType="com.xiliulou.electricity.entity.merchant.MerchantPlaceMap">
+        SELECT
+        place_id,
+        merchant_id
+        FROM
+        t_merchant_place_map
+        where del_flag = 0
+        <if test="placeIdList != null and placeIdList.size() > 0">
+            and place_id in
+            <foreach collection="placeIdList" item="placeId" close=")" open="(" separator=",">
+                #{placeId}
+            </foreach>
+        </if>
+       
+        <if test="merchantId != null">
+            <if test="eqFlag != null and  eqFlag == 0">
+                and merchant_id != #{merchantId}
+            </if>
+            
+            <if test="eqFlag != null and  eqFlag == 1">
+                and merchant_id = #{merchantId}
+            </if>
+        </if>
+        
+        <if test="merchantIdList != null and merchantIdList.size() > 0">
+            and merchant_id in
+            <foreach collection="merchantIdList" item="merchantId" close=")" open="(" separator=",">
+                #{merchantId}
+            </foreach>
+        </if>
+
+        
+    </select>
+    <select id="selectListByMerchant" resultType="com.xiliulou.electricity.vo.merchant.MerchantPlaceUserVO">
+        SELECT
+            place_id,
+            merchant_id,
+            p.`name` as 'placeName'
+        FROM
+            t_merchant_place_map m
+                left join t_merchant_place p on p.id = m.place_id
+        WHERE
+            del_flag = 0
+          and m.merchant_id = #{merchantId}
+    </select>
+    
+    <select id="selectBindList" resultType="com.xiliulou.electricity.entity.merchant.MerchantPlaceMap">
+        SELECT
+            place_id,
+            merchant_id
+        FROM
+            t_merchant_place_map m
+                LEFT JOIN t_merchant_place p ON p.id = m.place_id
+        <where>
+            m.del_flag = 0
+            <if test="franchiseeId != null">
+                and p.franchisee_id = #{franchiseeId}
+            </if>
+            <if test="notMerchantId != null">
+                and m.merchant_id != #{notMerchantId}
+            </if>
+            
+        </where>
+        
+    </select>
+    
+    <select id="selectBindMerchantName" resultType="com.xiliulou.electricity.vo.merchant.MerchantPlaceMapVO">
+        SELECT
+            m.place_id,
+            m.merchant_id,
+            t.`name` as 'merchantName'
+        FROM
+            t_merchant_place_map m
+                left join t_merchant t on t.id = m.merchant_id
+    
+        where
+            del_flag = 0
+          <if test="placeIdList != null">
+              and place_id in
+              <foreach collection="placeIdList" separator="," open="(" close=")" item="placeId">
+                  #{placeId}
+              </foreach>
+          </if>
+    </select>
+    
+    <select id="countByMerchantIdList" resultType="com.xiliulou.electricity.vo.merchant.MerchantPlaceMapVO">
+        SELECT
+            merchant_id,
+            count( 1 )
+        FROM
+            t_merchant_place_map
+        WHERE
+            del_flag = 0
+          AND merchant_id IN
+        <foreach collection="merchantIdList" separator="," open="(" close=")" item="merchantId">
+            #{merchantId}
+        </foreach>
+        GROUP BY
+            merchant_id
+    </select>
+    
+    <select id="selectCabinetIdsByMerchantId" resultType="java.lang.Long">
+        SELECT
+            DISTINCT b.cabinet_id
+        FROM
+            t_merchant_place_map a
+                left join t_merchant_place_cabinet_bind b on b.place_id = a.place_id
+        where
+            a.merchant_id = #{merchantId}
+          and b.`status` = 1
+          and b.del_flag = 0;
+    </select>
+</mapper>

@@ -1,0 +1,270 @@
+package com.xiliulou.electricity.service.impl.merchant;
+
+import cn.hutool.core.date.DateUtil;
+import com.alibaba.excel.EasyExcel;
+import com.xiliulou.db.dynamic.annotation.Slave;
+import com.xiliulou.electricity.entity.User;
+import com.xiliulou.electricity.entity.merchant.ChannelEmployee;
+import com.xiliulou.electricity.entity.merchant.ChannelEmployeePromotionDayRecord;
+import com.xiliulou.electricity.entity.merchant.ChannelEmployeePromotionMonthRecord;
+import com.xiliulou.electricity.entity.merchant.MerchantPlace;
+import com.xiliulou.electricity.enums.basic.BasicEnum;
+import com.xiliulou.electricity.enums.failureAlarm.FailureAlarmDeviceTypeEnum;
+import com.xiliulou.electricity.enums.failureAlarm.RebateTypeEnum;
+import com.xiliulou.electricity.mapper.merchant.ChannelEmployeePromotionMonthRecordMapper;
+import com.xiliulou.electricity.query.merchant.ChannelEmployeePromotionQueryModel;
+import com.xiliulou.electricity.request.merchant.ChannelEmployeePromotionRequest;
+import com.xiliulou.electricity.service.UserService;
+import com.xiliulou.electricity.service.excel.AutoHeadColumnWidthStyleStrategy;
+import com.xiliulou.electricity.service.excel.CommentWriteHandler;
+import com.xiliulou.electricity.service.excel.HeadContentCellStyle;
+import com.xiliulou.electricity.service.excel.MergeSameRowsStrategy;
+import com.xiliulou.electricity.service.merchant.ChannelEmployeePromotionDayRecordService;
+import com.xiliulou.electricity.service.merchant.ChannelEmployeePromotionMonthRecordService;
+import com.xiliulou.electricity.service.merchant.ChannelEmployeeService;
+import com.xiliulou.electricity.tenant.TenantContextHolder;
+import com.xiliulou.electricity.vo.merchant.ChannelEmployeePromotionMonthExportVO;
+import com.xiliulou.electricity.vo.merchant.ChannelEmployeePromotionVO;
+import com.xiliulou.electricity.vo.merchant.MerchantPlaceFeeMonthRecordExportVO;
+import com.xiliulou.electricity.vo.merchant.MerchantPlaceFeeMonthRecordVO;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.ObjectUtils;
+import org.springframework.beans.BeanUtils;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import javax.annotation.Resource;
+import javax.servlet.http.HttpServletResponse;
+import java.math.BigDecimal;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
+
+/**
+ * @author maxiaodong
+ * @date 2024/2/21 14:03
+ * @desc
+ */
+@Service("channelEmployeePromotionMonthRecordService")
+@Slf4j
+public class ChannelEmployeePromotionMonthRecordServiceImpl implements ChannelEmployeePromotionMonthRecordService {
+    
+    @Resource
+    private ChannelEmployeePromotionMonthRecordMapper channelEmployeePromotionMonthRecordMapper;
+    
+    @Resource
+    private ChannelEmployeePromotionDayRecordService channelEmployeePromotionDayRecordService;
+    
+    @Resource
+    private ChannelEmployeeService channelEmployeeService;
+    
+    @Resource
+    private UserService userService;
+    
+    @Transactional
+    @Override
+    public void batchInsert(List<ChannelEmployeePromotionMonthRecord> list) {
+        channelEmployeePromotionMonthRecordMapper.batchInsert(list);
+    }
+    
+    @Slave
+    @Override
+    public List<ChannelEmployeePromotionVO> listByPage(ChannelEmployeePromotionRequest channelEmployeeRequest) {
+        ChannelEmployeePromotionQueryModel channelEmployeePromotionQueryModel = new ChannelEmployeePromotionQueryModel();
+        BeanUtils.copyProperties(channelEmployeeRequest, channelEmployeePromotionQueryModel);
+        
+        // 处理时间
+        initParam(channelEmployeePromotionQueryModel);
+        List<ChannelEmployeePromotionVO> list = channelEmployeePromotionMonthRecordMapper.selectListByPage(channelEmployeeRequest);
+        if (ObjectUtils.isEmpty(list)) {
+            return Collections.EMPTY_LIST;
+        }
+        
+        // 处理出账日期
+        list.stream().forEach(item -> {
+            if (Objects.nonNull(item.getFeeDate())) {
+                String billingDate = DateUtil.format(new Date(item.getFeeDate()), "yyyy-MM");
+                item.setBillingDate(billingDate);
+            }
+        });
+        
+        return list;
+    }
+    
+    private void initParam(ChannelEmployeePromotionQueryModel channelEmployeePromotionQueryModel) {
+        if (ObjectUtils.isNotEmpty(channelEmployeePromotionQueryModel.getTime())) {
+            // 将出账日期转换为具体的日期
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTimeInMillis(channelEmployeePromotionQueryModel.getTime());
+            calendar.set(Calendar.DAY_OF_MONTH, 1);
+            calendar.set(Calendar.HOUR_OF_DAY, 0);
+            calendar.set(Calendar.MINUTE, 0);
+            calendar.set(Calendar.SECOND, 0);
+            
+            long startTime = calendar.getTimeInMillis();
+            
+            Calendar calendarLast = Calendar.getInstance();
+            calendarLast.set(Calendar.DAY_OF_MONTH, calendar.getActualMaximum(Calendar.DAY_OF_MONTH));
+            
+            calendarLast.set(Calendar.HOUR_OF_DAY, 23);
+            calendarLast.set(Calendar.MINUTE, 59);
+            calendarLast.set(Calendar.SECOND, 59);
+            
+            long endTime = calendar.getTimeInMillis();
+            
+            channelEmployeePromotionQueryModel.setStartTime(startTime);
+            channelEmployeePromotionQueryModel.setEndTime(endTime);
+        }
+    }
+    
+    @Slave
+    @Override
+    public Integer countTotal(ChannelEmployeePromotionRequest channelEmployeeRequest) {
+        ChannelEmployeePromotionQueryModel channelEmployeePromotionQueryModel = new ChannelEmployeePromotionQueryModel();
+        BeanUtils.copyProperties(channelEmployeeRequest, channelEmployeePromotionQueryModel);
+        // 处理时间
+        initParam(channelEmployeePromotionQueryModel);
+        
+        return channelEmployeePromotionMonthRecordMapper.countTotal(channelEmployeePromotionQueryModel);
+    }
+    
+    /**
+     * 创建表头
+     */
+    private static List<List<String>> getHeader() {
+        List<List<String>> headers = new ArrayList<>();
+        headers.add(Arrays.asList("出账年月", "出账年月"));
+        headers.add(Arrays.asList("渠道员汇总", "渠道员"));
+        headers.add(Arrays.asList("渠道员汇总", "月拉新返现汇总(元)"));
+        headers.add(Arrays.asList("渠道员汇总", "月续费返现汇总(元)"));
+        headers.add(Arrays.asList("返利明细", "类型"));
+        headers.add(Arrays.asList("返利明细", "返现(元)"));
+        headers.add(Arrays.asList("返利明细", "结算时间"));
+        return headers;
+    }
+    
+    private static List<Map<String, String>> getComments() {
+        List<Map<String, String>> commentList = new ArrayList<>();
+        commentList.add(CommentWriteHandler.createCommentMap("渠道员提成出账记录", 1, 4,
+                "拉新收益：本月新增用户返利； \n" + "续费收益：本月续费用户返利； \n" + "差额：本月商户升级后额外返利补贴。"));
+        return commentList;
+    }
+    
+    /**
+     * 获取某个月的数据的详情
+     *
+     * @param monthDate
+     * @return
+     */
+    @Slave
+    private List<ChannelEmployeePromotionMonthExportVO> getData(String monthDate) throws ParseException {
+        List<ChannelEmployeePromotionMonthExportVO> resList = new ArrayList<>();
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM");
+        Date date = format.parse(monthDate);
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(date);
+        calendar.set(Calendar.HOUR, 0);
+        calendar.set(Calendar.MINUTE, 0);
+        calendar.set(Calendar.SECOND, 0);
+        long startTime = calendar.getTimeInMillis();
+        calendar.set(Calendar.DAY_OF_MONTH, calendar.getActualMaximum(Calendar.DAY_OF_MONTH));
+        long endTime = calendar.getTimeInMillis();
+        
+        List<ChannelEmployeePromotionMonthRecord> channelEmployeePromotionMonthRecords = channelEmployeePromotionMonthRecordMapper.selectByFeeDate(startTime, endTime,
+                TenantContextHolder.getTenantId());
+        List<ChannelEmployeePromotionDayRecord> channelEmployeePromotionDayRecords = channelEmployeePromotionDayRecordService.queryListByFeeDate(startTime, endTime,
+                TenantContextHolder.getTenantId());
+        if (ObjectUtils.isEmpty(channelEmployeePromotionMonthRecords) || ObjectUtils.isEmpty(channelEmployeePromotionDayRecords)) {
+            return resList;
+        }
+        Map<Long, List<ChannelEmployeePromotionDayRecord>> detailMap = channelEmployeePromotionDayRecords.stream()
+                .collect(Collectors.groupingBy(ChannelEmployeePromotionDayRecord::getChannelEmployeesId));
+        
+        channelEmployeePromotionMonthRecords.stream().forEach(item -> {
+            
+            detailMap.forEach((channelUserId, dayList) -> {
+                dayList.forEach(channelEmployeePromotionDayRecord -> {
+                    // 拉新
+                    if (ObjectUtils.isNotEmpty(channelEmployeePromotionDayRecord.getDayFirstMoney()) && channelEmployeePromotionDayRecord.getDayFirstMoney().compareTo(BigDecimal.ZERO) != 0) {
+                        ChannelEmployeePromotionMonthExportVO vo = new ChannelEmployeePromotionMonthExportVO();
+                        vo.setMonth(monthDate);
+                        User user = userService.queryByUidFromCache(item.getChannelEmployeesId());
+                        if (ObjectUtils.isNotEmpty(user)) {
+                            vo.setChannelEmployeeName(user.getName());
+                        }
+                        vo.setMonthFirstSumFee(item.getMonthFirstMoney());
+                        vo.setMonthRenewSumFee(item.getMonthRenewMoney());
+                        vo.setType(RebateTypeEnum.FIRST.getDesc());
+                        vo.setSettleDate(DateUtil.format(new Date(item.getFeeDate()), "yyyy-MM-dd"));
+                        vo.setReturnMoney(channelEmployeePromotionDayRecord.getDayFirstMoney());
+                        resList.add(vo);
+                    }
+                    
+                    // 续费
+                    if (ObjectUtils.isNotEmpty(channelEmployeePromotionDayRecord.getDayRenewMoney()) && channelEmployeePromotionDayRecord.getDayRenewMoney().compareTo(BigDecimal.ZERO) != 0) {
+                        ChannelEmployeePromotionMonthExportVO vo = new ChannelEmployeePromotionMonthExportVO();
+                        vo.setMonth(monthDate);
+                        User user = userService.queryByUidFromCache(item.getChannelEmployeesId());
+                        if (ObjectUtils.isNotEmpty(user)) {
+                            vo.setChannelEmployeeName(user.getName());
+                        }
+                        vo.setMonthFirstSumFee(item.getMonthFirstMoney());
+                        vo.setMonthRenewSumFee(item.getMonthRenewMoney());
+                        vo.setType(RebateTypeEnum.RENEW.getDesc());
+                        vo.setSettleDate(DateUtil.format(new Date(item.getFeeDate()), "yyyy-MM-dd"));
+    
+                        vo.setReturnMoney(channelEmployeePromotionDayRecord.getDayRenewMoney());
+                    }
+                    // 差额
+                    if (ObjectUtils.isNotEmpty(channelEmployeePromotionDayRecord.getDayBalanceMoney()) && channelEmployeePromotionDayRecord.getDayBalanceMoney().compareTo(BigDecimal.ZERO) != 0) {
+                        ChannelEmployeePromotionMonthExportVO vo = new ChannelEmployeePromotionMonthExportVO();
+                        vo.setMonth(monthDate);
+                        User user = userService.queryByUidFromCache(item.getChannelEmployeesId());
+                        if (ObjectUtils.isNotEmpty(user)) {
+                            vo.setChannelEmployeeName(user.getName());
+                        }
+                        vo.setMonthFirstSumFee(item.getMonthFirstMoney());
+                        vo.setMonthRenewSumFee(item.getMonthRenewMoney());
+                        vo.setType(RebateTypeEnum.BALANCE.getDesc());
+                        vo.setReturnMoney(channelEmployeePromotionDayRecord.getDayBalanceMoney());
+                        vo.setSettleDate(DateUtil.format(new Date(item.getFeeDate()), "yyyy-MM-dd"));
+                    }
+                });
+               
+                
+            });
+            
+        });
+        return resList;
+    }
+    
+    @Override
+    public void export(String monthDate, HttpServletResponse response) {
+        String fileName = "渠道员提成出账记录.xlsx";
+        try {
+            // 告诉浏览器用什么软件可以打开此文件
+            response.setHeader("content-Type", "application/vnd.ms-excel");
+            // 下载文件的默认名称
+            response.setHeader("Content-Disposition", "attachment;filename=" + URLEncoder.encode(fileName, StandardCharsets.UTF_8));
+            EasyExcel.write(fileName).head(getHeader())
+                    // 合并策略：合并相同数据的行。第一个参数表示从哪一行开始进行合并，由于表头占了两行，因此从第2行开始（索引从0开始）
+                    // 第二个参数是指定哪些列要进行合并
+                    .registerWriteHandler(new MergeSameRowsStrategy(2, new int[] {0, 1, 2, 3})).registerWriteHandler(HeadContentCellStyle.myHorizontalCellStyleStrategy())
+                    .registerWriteHandler(new CommentWriteHandler(getComments(), "xlsx")).registerWriteHandler(new AutoHeadColumnWidthStyleStrategy())
+                    // 注意：需要先调用registerWriteHandler()再调用sheet()方法才能使合并策略生效！！！
+                    .sheet("渠道员提成出账记录").doWrite(getData(monthDate));
+        } catch (Exception e) {
+            log.error("channel employee promotion export error！", e);
+        }
+    }
+}

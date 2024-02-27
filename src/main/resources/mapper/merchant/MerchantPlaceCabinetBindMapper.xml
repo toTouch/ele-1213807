@@ -1,0 +1,284 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.merchant.MerchantPlaceCabinetBindMapper">
+    <!-- 基础字段 -->
+    <sql id="basic_field">
+        id, place_id, cabinet_id, bind_time, un_bind_time, status, place_daily_settlement, month_settlement, place_month_settlement, place_month_settlement_detail, tenant_id, del_flag, create_time, update_time
+    </sql>
+    
+    <insert id="insert">
+        insert into t_merchant_place_cabinet_bind (place_id, cabinet_id, bind_time, un_bind_time, status, tenant_id, create_time, update_time)
+        values (#{placeId}, #{cabinetId}, #{bindTime},
+                #{unBindTime}, #{status}, #{tenantId}, #{createTime}, #{updateTime})
+    </insert>
+    <update id="unBind">
+        update t_merchant_place_cabinet_bind
+        set un_bind_time = #{unBindTime},
+            status       = #{status},
+            update_time  = #{updateTime}
+        where id = #{id}
+    </update>
+    <update id="remove">
+        update t_merchant_place_cabinet_bind
+        set del_flag    = #{delFlag},
+            update_time = #{updateTime}
+        where id = #{id}
+    </update>
+    <update id="removeByPlaceId">
+        update t_merchant_place_cabinet_bind
+        set del_flag  = #{delFlag},
+            update_time = #{updateTime}
+        where place_id = #{placeId} and del_flag = 0
+    </update>
+    
+    <select id="list" resultType="com.xiliulou.electricity.entity.merchant.MerchantPlaceCabinetBind">
+        select place_id,
+        cabinet_id,
+        bind_time,
+        un_bind_time,
+        status,
+        place_daily_settlement,
+        month_settlement,
+        place_month_settlement,
+        place_month_settlement_detail,
+        tenant_id,
+        del_flag,
+        create_time,
+        update_time
+        from t_merchant_place_cabinet_bind
+        <where>
+            del_flag = 0
+            <if test="status != null">
+                and status = #{status}
+            </if>
+            <if test="placeIdList != null">
+                and place_id in
+                <foreach collection="placeIdList" item="placeId" close=")" open="(" separator=",">
+                    #{placeId}
+                </foreach>
+            </if>
+            <if test="cabinetId != null">
+                and cabinet_id = #{cabinetId}
+            </if>
+            <if test="overlapTime != null">
+                and un_bind_time <![CDATA[ >=  ]]> #{overlapTime}
+                and bind_time <![CDATA[ <=  ]]> #{overlapTime}
+            </if>
+        </where>
+    </select>
+    
+    <select id="listByMerchantId" resultType="com.xiliulou.electricity.vo.merchant.MerchantPlaceCabinetBindVO">
+        SELECT
+        b.merchant_id,
+        a.cabinet_id
+        FROM
+        t_merchant_place_map b
+        inner join t_merchant_place_cabinet_bind a on b.place_id = a.place_id
+        <where>
+            a.del_flag = 0
+            AND a.`status` = #{status}
+            and b.merchant_id in
+            <foreach collection="merchantIdList" separator="," open="(" close=")" item="merchantId">
+                #{merchantId}
+            </foreach>
+        </where>
+    
+    </select>
+    
+    <select id="queryBindCabinetName"
+        resultType="com.xiliulou.electricity.vo.merchant.MerchantPlaceCabinetBindVO">
+        select t.place_id,
+        t.cabinet_id,
+        b.`name` as 'cabinetName'
+        from t_merchant_place_cabinet_bind t
+        left join t_electricity_cabinet b on b.id = t.cabinet_id
+        <where>
+            t.del_flag = 0
+            <if test="status != null">
+                and t.status = #{status}
+            </if>
+            <if test="placeIdList != null">
+                and t.place_id in
+                <foreach collection="placeIdList" item="placeId" close=")" open="(" separator=",">
+                    #{placeId}
+                </foreach>
+            </if>
+        </where>
+    </select>
+    
+    <select id="selectById" resultType="com.xiliulou.electricity.entity.merchant.MerchantPlaceCabinetBind">
+        select place_id,
+               cabinet_id,
+               bind_time,
+               un_bind_time,
+               status,
+               place_daily_settlement,
+               month_settlement,
+               place_month_settlement,
+               place_month_settlement_detail,
+               tenant_id,
+               del_flag,
+               create_time,
+               update_time
+        from t_merchant_place_cabinet_bind
+        where del_flag = 0
+          and id = #{id}
+    </select>
+    
+    <sql id="pageFilter">
+        <where>
+            del_flag = 0
+            <if test="sn != null and sn != ''">
+                and b.sn like concat('%', concat(#{sn}, '%'))
+            </if>
+            
+            <if test="status != null">
+                and t.status = #{status}
+            </if>
+            <if test="tenantId != null">
+                t.tenant_id = #{tenantId}
+            </if>
+            <if test="placeId != null">
+                and t.place_id = #{placeId}
+            </if>
+            
+        </where>
+    </sql>
+    
+    <select id="countTotal" resultType="java.lang.Integer">
+        SELECT
+        count(1)
+        FROM
+        t_merchant_place_cabinet_bind t
+        left join t_electricity_cabinet b on b.id = t.cabinet_id
+        <include refid="pageFilter"/>
+    </select>
+    <sql id="column">
+    
+    </sql>
+    <select id="selectListByPage" resultType="com.xiliulou.electricity.entity.merchant.MerchantPlaceCabinetBind">
+        SELECT
+        t.place_id,
+        t.cabinet_id,
+        t.bind_time,
+        t.un_bind_time,
+        t.status,
+        t.place_daily_settlement,
+        t.month_settlement,
+        t.place_month_settlement,
+        t.place_month_settlement_detail,
+        t.tenant_id,
+        t.del_flag,
+        t.create_time,
+        t.update_time,
+        b.sn as 'cabinetSn',
+        b.name as 'cabinetName'
+        FROM
+        t_merchant_place_cabinet_bind t
+        left join t_electricity_cabinet b on b.id = t.cabinet_id
+        <include refid="pageFilter"/>
+        order by create_time desc
+        <if test="offset != null and size != null">
+            limit #{offset}, #{size}
+        </if>
+    </select>
+    
+    <select id="countCabinetBindCount" resultType="java.lang.Integer">
+        select
+           count(1)
+        from t_merchant_place_cabinet_bind
+        <where>
+            del_flag = 0
+            <if test="status != null">
+                and status = #{status}
+            </if>
+        
+            <if test="placeIdList != null">
+                and place_id in
+                <foreach collection="placeIdList" item="placeId" close=")" open="(" separator=",">
+                    #{placeId}
+                </foreach>
+            </if>
+        </where>
+    </select>
+    
+    <select id="selectListByPlaceId"
+            resultType="com.xiliulou.electricity.entity.merchant.MerchantPlaceCabinetBind">
+        select
+            <include refid="basic_field"/>
+        from t_merchant_place_cabinet_bind
+        where
+         del_flag = 0
+        and place_month_settlement =#{monthSettlementFlag}
+        and place_id in
+         <foreach collection="placeIdList" separator="," open="(" close=")" item="placeId">
+             #{placeId}
+         </foreach>
+    </select>
+    
+    <select id="checkIsBindByPlaceId" resultType="java.lang.Integer">
+        select
+         count(1)
+        from t_merchant_place_cabinet_bind
+        where
+        del_flag = 0
+        and status = 0
+        and cabinet_id = #{cabinetId}
+        and place_id = #{placeId}
+    </select>
+    
+    <select id="selectListByPlaceIds" resultType="com.xiliulou.electricity.entity.merchant.MerchantPlaceCabinetBind">
+        select <include refid="basic_field"/>
+        from t_merchant_place_cabinet_bind
+        <where>
+            del_flag = 0
+            <if test="placeIds != null and placeIds.size() > 0">
+                and place_id in
+                <foreach collection="placeIds" separator="," open="(" close=")" item="placeId">
+                    #{placeId}
+                </foreach>
+            </if>
+        </where>
+    </select>
+    
+    <select id="selectListBindRecord" resultType="com.xiliulou.electricity.entity.merchant.MerchantPlaceCabinetBind">
+        select <include refid="basic_field"/>
+        from t_merchant_place_cabinet_bind
+        <where>
+            del_flag = 0
+            <if test="status != null">
+                and status = #{status}
+            </if>
+            <if test="endTime != null">
+                and bind_time &lt;= #{endTime}
+            </if>
+            <if test="cabinetIds != null and cabinetIds.size() > 0">
+                and cabinet_id in
+                <foreach collection="cabinetIds" separator="," open="(" close=")" item="cabinetId">
+                    #{cabinetId}
+                </foreach>
+            </if>
+        </where>
+    </select>
+    
+    <select id="selectListUnbindRecord" resultType="com.xiliulou.electricity.entity.merchant.MerchantPlaceCabinetBind">
+        select <include refid="basic_field"/>
+        from t_merchant_place_cabinet_bind
+        <where>
+            del_flag = 0
+            <if test="status != null">
+                and status = #{status}
+            </if>
+            <if test="startTime != null and endTime != null">
+                and un_bind_time &gt;= #{startTime} or bind_time &lt;= #{endTime}
+            </if>
+            <if test="cabinetIds != null and cabinetIds.size() > 0">
+                and cabinet_id in
+                <foreach collection="cabinetIds" separator="," open="(" close=")" item="cabinetId">
+                    #{cabinetId}
+                </foreach>
+            </if>
+        </where>
+    </select>
+
+</mapper>

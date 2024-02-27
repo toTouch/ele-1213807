@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.merchant.MerchantPlaceFeeMonthMapper">
+    
+    <insert id="batchInsert">
+        insert into t_merchant_place_fee_month (merchant_id ,cabinet_id ,place_id ,calculate_date ,place_fee ,
+        tenant_id ,create_time, calculate_month  ,update_time)
+        values
+        <foreach item="item" index="index" collection="list" separator=",">
+            (#{item.merchantId}, #{item.cabinetId}, #{item.placeId}, #{item.calculateDate},
+            #{item.placeFee},#{item.tenantId},#{item.createTime},#{calculateMonth}, #{item.updateTime})
+        </foreach>
+    </insert>
+    
+    <select id="existPlaceFeeByMerchantId" resultType="Integer">
+        select count(1) from t_merchant_place_fee_month where merchant_id = #{merchantId} and place_fee > 0
+    </select>
+    
+    <select id="selectCabinetIdByMerchantId" resultType="java.lang.Long">
+        select cabinet_id from t_merchant_place_fee_month  where merchant_id = #{merchantId}
+    </select>
+    <sql id="column">
+        merchant_id ,cabinet_id ,place_id ,calculate_date ,place_fee ,
+        tenant_id ,create_time, calculate_month  ,update_time
+    </sql>
+    <select id="selectListByMonth" resultType="com.xiliulou.electricity.entity.merchant.MerchantPlaceFeeMonth">
+        select <include refid="column"/>
+            from t_merchant_place_fee_month
+            where calculate_month in
+            <foreach collection="monthList" item="month" close=")" open="(" separator=",">
+                #{month}
+            </foreach>
+            <if test="placeId != null">
+                and place_id = #{placeId}
+            </if>
+            <if test="cabinetId != null">
+                and cabinet_id = #{cabinetId}
+            </if>
+    </select>
+    
+    <select id="selectListByMerchantId"
+            resultType="com.xiliulou.electricity.entity.merchant.MerchantPlaceFeeMonth">
+        select <include refid="column"/>
+        from t_merchant_place_fee_month
+        <where>
+            merchant_id = #{merchantId}
+            <if test="placeId != null">
+                and place_id = #{placeId}
+            </if>
+            <if test="cabinetId != null">
+                and cabinet_id = #{cabinetId}
+            </if>
+        </where>
+        
+    </select>
+    
+    <select id="sumFeeByTime" resultType="java.math.BigDecimal">
+        select sum(place_fee)
+        from t_merchant_place_fee_month
+        <where>
+            merchant_id = #{merchantId}
+            <if test="placeId != null">
+                and place_id = #{placeId}
+            </if>
+            <if test="cabinetId != null">
+                and cabinet_id = #{cabinetId}
+            </if>
+            and calculate_date &lt; #{time}
+        </where>
+    </select>
+</mapper>
