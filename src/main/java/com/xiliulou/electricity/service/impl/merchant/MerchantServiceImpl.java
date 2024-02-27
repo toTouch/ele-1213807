@@ -883,7 +883,7 @@ public class MerchantServiceImpl implements MerchantService {
         }
         
         // 查询企业套餐
-        List<EnterprisePackageVO> enterprisePackageList = enterprisePackageService.queryListByEnterpriseId(id);
+        List<EnterprisePackageVO> enterprisePackageList = enterprisePackageService.queryListByEnterpriseId(merchant.getEnterpriseId());
         if (ObjectUtils.isNotEmpty(enterprisePackageList)) {
             vo.setEnterprisePackageList(enterprisePackageList);
         }

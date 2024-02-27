@@ -59,7 +59,7 @@ public class JsonUserMerchantController extends BaseController {
      * 获取商户详情
      * @return
      */
-    @GetMapping("/user/merchant/getMerchantInfo")
+    @GetMapping("/merchant/getMerchantInfo")
     public R getMerchantInfo() {
         Long uid = SecurityUtils.getUid();
         if (Objects.isNull(uid)) {
