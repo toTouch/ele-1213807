@@ -113,7 +113,7 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
                 MerchantPromotionFeeEmployeeVO employeeVO = new MerchantPromotionFeeEmployeeVO();
                 employeeVO.setType(PromotionFeeQueryTypeEnum.MERCHANT_EMPLOYEE.getCode());
                 User user = userService.queryByUidFromCache(merchantEmployee.getUid());
-                if(Objects.nonNull(user)){
+                if (Objects.nonNull(user)) {
                     employeeVO.setUserName(user.getName());
                 }
                 employeeVO.setUid(merchantEmployee.getUid());
