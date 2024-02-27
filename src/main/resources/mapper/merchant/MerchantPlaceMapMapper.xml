@@ -97,7 +97,7 @@
                 left join t_merchant t on t.id = m.merchant_id
     
         where
-            del_flag = 0
+          m.del_flag = 0
           <if test="placeIdList != null">
               and place_id in
               <foreach collection="placeIdList" separator="," open="(" close=")" item="placeId">
