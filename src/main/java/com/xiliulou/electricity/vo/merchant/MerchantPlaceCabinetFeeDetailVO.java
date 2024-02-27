@@ -3,7 +3,6 @@ package com.xiliulou.electricity.vo.merchant;
 import lombok.Data;
 
 import java.math.BigDecimal;
-import java.util.List;
 
 /**
  * @author maxiaodong
@@ -26,5 +25,7 @@ public class MerchantPlaceCabinetFeeDetailVO {
      * 累计场地费
      */
     private BigDecimal monthFeeSum;
+    
+    private Long time;
     
 }

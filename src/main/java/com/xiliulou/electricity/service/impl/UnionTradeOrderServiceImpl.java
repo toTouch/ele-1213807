@@ -1588,18 +1588,25 @@ public class UnionTradeOrderServiceImpl extends
             Long memberCardExpireTime;
             Long orderExpireTime;
             Long cardDays = 0L;
-
+    
             //用户套餐是否启用，若已启用  停卡时间取停卡记录中的停卡时间；未启用 取userBatteryMemberCard中的停卡时间。因为系统启用时会清除用户的停卡时间
-            if(Objects.equals(userBatteryMemberCard.getMemberCardStatus(),UserBatteryMemberCard.MEMBER_CARD_DISABLE)){
-                // 申请冻结的天数
-                Long chooseTime = eleDisableMemberCardRecord.getChooseDays() * TimeConstant.DAY_MILLISECOND;
-                // 实际的冻结时间
-                Long realTime = System.currentTimeMillis() - userBatteryMemberCard.getDisableMemberCardTime();
+            if (Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE)) {
+                // 兼容2.0冻结不限制天数 冻结天数为空的场景
+                if (Objects.isNull(eleDisableMemberCardRecord.getChooseDays())) {
+                    memberCardExpireTime = System.currentTimeMillis() + (userBatteryMemberCard.getMemberCardExpireTime() - userBatteryMemberCard.getDisableMemberCardTime());
+                    //orderExpireTime = System.currentTimeMillis() + (userBatteryMemberCard.getOrderExpireTime() - userBatteryMemberCard.getDisableMemberCardTime());
+                    orderExpireTime = System.currentTimeMillis() + (userBatteryMemberCard.getOrderExpireTime() - userBatteryMemberCard.getDisableMemberCardTime());
+                } else {
+                    // 申请冻结的天数
+                    Long chooseTime = eleDisableMemberCardRecord.getChooseDays() * TimeConstant.DAY_MILLISECOND;
+                    // 实际的冻结时间
+                    Long realTime = System.currentTimeMillis() - userBatteryMemberCard.getDisableMemberCardTime();
+                    //memberCardExpireTime = System.currentTimeMillis() + (userBatteryMemberCard.getMemberCardExpireTime() - userBatteryMemberCard.getDisableMemberCardTime());
+                    memberCardExpireTime = userBatteryMemberCard.getMemberCardExpireTime() - (chooseTime - realTime);
+                    //orderExpireTime = System.currentTimeMillis() + (userBatteryMemberCard.getOrderExpireTime() - userBatteryMemberCard.getDisableMemberCardTime());
+                    orderExpireTime = userBatteryMemberCard.getOrderExpireTime() - (chooseTime - realTime);
+                }
                 
-                //memberCardExpireTime = System.currentTimeMillis() + (userBatteryMemberCard.getMemberCardExpireTime() - userBatteryMemberCard.getDisableMemberCardTime());
-                memberCardExpireTime= userBatteryMemberCard.getMemberCardExpireTime() - (chooseTime-realTime);
-                //orderExpireTime = System.currentTimeMillis() + (userBatteryMemberCard.getOrderExpireTime() - userBatteryMemberCard.getDisableMemberCardTime());
-                orderExpireTime = userBatteryMemberCard.getOrderExpireTime() - (chooseTime-realTime);
                 cardDays = (System.currentTimeMillis() - userBatteryMemberCard.getDisableMemberCardTime()) / 1000L / 60 / 60 / 24;
 
                 //更新用户套餐到期时间，启用用户套餐

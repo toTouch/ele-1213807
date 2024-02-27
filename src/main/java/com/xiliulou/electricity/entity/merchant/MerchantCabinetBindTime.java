@@ -6,32 +6,37 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.math.BigDecimal;
-
 /**
- * @author BaoYu
- * @description:
- * @date 2024/1/31 20:04
+ * @author maxiaodong
+ * @date 2024/2/26 15:37
+ * @desc
  */
-
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@TableName("t_channel_employee_amount")
-public class ChannelEmployeeAmount {
-    
+@TableName("t_merchant_cabinet_bind_time")
+public class MerchantCabinetBindTime {
     private Long id;
+    /**
+     * 商户id
+     */
+    private Long merchantId;
     
-    private Long uid;
+    /**
+     * 柜机Id
+     */
+    private Long cabinetId;
     
-    private BigDecimal totalIncome;
+    /**
+     * 场地id
+     */
+    private Long placeId;
     
-    private BigDecimal balance;
-    
-    private BigDecimal withdrawAmount;
-    
-    private Long franchiseeId;
+    /**
+     * 绑定时间
+     */
+    private Long bindTime;
     
     private Integer tenantId;
     
@@ -40,5 +45,4 @@ public class ChannelEmployeeAmount {
     private Long createTime;
     
     private Long updateTime;
-    
 }

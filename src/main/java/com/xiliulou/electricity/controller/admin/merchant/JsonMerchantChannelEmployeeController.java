@@ -10,6 +10,7 @@ import com.xiliulou.electricity.validator.UpdateGroup;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -27,7 +28,7 @@ import java.util.Objects;
 
 @Slf4j
 @RestController
-public class JsonAdminChannelEmployeeController {
+public class JsonMerchantChannelEmployeeController {
     
     @Resource
     private ChannelEmployeeService channelEmployeeService;
@@ -35,7 +36,8 @@ public class JsonAdminChannelEmployeeController {
     @GetMapping("/admin/merchant/channelEmployeeList")
     public R channelEmployeeList(@RequestParam("size") Integer size,
                                  @RequestParam("offset") Integer offset,
-                                 @RequestParam(value = "uid", required = false) Long name,
+                                 @RequestParam(value = "uid", required = false) Long uid,
+                                 @RequestParam(value = "name", required = false) String name,
                                  @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
                                  @RequestParam(value = "areaId", required = false) Long areaId) {
     
@@ -46,13 +48,16 @@ public class JsonAdminChannelEmployeeController {
         if (offset < 0) {
             offset = 0;
         }
-    
+        
+        Integer tenantId = TenantContextHolder.getTenantId();
         ChannelEmployeeRequest channelEmployeeRequest = ChannelEmployeeRequest.builder()
                 .size(size)
                 .offset(offset)
-                .uid(name)
+                .uid(uid)
+                .name(name)
                 .franchiseeId(franchiseeId)
                 .areaId(areaId)
+                .tenantId(tenantId)
                 .build();
         //
         
@@ -63,14 +68,18 @@ public class JsonAdminChannelEmployeeController {
     
     @GetMapping("/admin/merchant/channelEmployeeCount")
     public R channelEmployeeCount(
-                                @RequestParam(value = "uid", required = false) Long name,
+                                @RequestParam(value = "uid", required = false) Long uid,
+                                @RequestParam(value = "name", required = false) String name,
                                 @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
                                 @RequestParam(value = "areaId", required = false) Long areaId) {
     
+        Integer tenantId = TenantContextHolder.getTenantId();
         ChannelEmployeeRequest channelEmployeeRequest = ChannelEmployeeRequest.builder()
-                .uid(name)
+                .uid(uid)
+                .name(name)
                 .franchiseeId(franchiseeId)
                 .areaId(areaId)
+                .tenantId(tenantId)
                 .build();
         
         return R.ok(channelEmployeeService.countChannelEmployee(channelEmployeeRequest));
@@ -110,7 +119,7 @@ public class JsonAdminChannelEmployeeController {
         return R.ok(channelEmployeeService.queryById(id));
     }
     
-    @GetMapping("/admin/merchant/removeChannelEmployee")
+    @DeleteMapping("/admin/merchant/removeChannelEmployee")
     public R removeChannelEmployee(@RequestParam("id") Long id) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
@@ -142,11 +151,13 @@ public class JsonAdminChannelEmployeeController {
             offset = 0;
         }
         
+        Integer tenantId = TenantContextHolder.getTenantId();
         ChannelEmployeeRequest channelEmployeeRequest = ChannelEmployeeRequest.builder()
                 .size(size)
                 .offset(offset)
                 .name(name)
                 .franchiseeId(franchiseeId)
+                .tenantId(tenantId)
                 .build();
         
         return R.ok(channelEmployeeService.queryChannelEmployees(channelEmployeeRequest));

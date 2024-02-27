@@ -19,7 +19,7 @@ public interface ChannelEmployeeMapper extends BaseMapper<ChannelEmployee> {
     
     ChannelEmployee selectByUid(@Param("uid") Long uid);
     
-    List<ChannelEmployee> selectListByCondition(ChannelEmployeeRequest channelEmployeeRequest);
+    List<ChannelEmployeeVO> selectListByCondition(ChannelEmployeeRequest channelEmployeeRequest);
     
     Integer countByCondition(ChannelEmployeeRequest channelEmployeeRequest);
     
@@ -29,7 +29,7 @@ public interface ChannelEmployeeMapper extends BaseMapper<ChannelEmployee> {
     
     Integer updateOne(ChannelEmployee channelEmployee);
     
-    Integer removeById(@Param("id") Long id);
+    Integer removeById(@Param("id") Long id, @Param("updateTime") Long updateTime);
     
     Integer existsByAreaId(Long id);
 }

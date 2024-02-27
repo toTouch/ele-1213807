@@ -53,4 +53,19 @@
         </where>
         
     </select>
+    
+    <select id="sumFeeByTime" resultType="java.math.BigDecimal">
+        select sum(place_fee)
+        from t_merchant_place_fee_month
+        <where>
+            merchant_id = #{merchantId}
+            <if test="placeId != null">
+                and place_id = #{placeId}
+            </if>
+            <if test="cabinetId != null">
+                and cabinet_id = #{cabinetId}
+            </if>
+            and calculate_date &lt; #{time}
+        </where>
+    </select>
 </mapper>

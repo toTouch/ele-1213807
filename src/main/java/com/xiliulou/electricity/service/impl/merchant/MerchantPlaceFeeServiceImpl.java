@@ -9,6 +9,8 @@ import com.xiliulou.electricity.constant.merchant.MerchantPlaceCabinetBindConsta
 import com.xiliulou.electricity.constant.merchant.MerchantPlaceConstant;
 import com.xiliulou.electricity.dto.merchant.MerchantPlaceCabinetBindDTO;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
+import com.xiliulou.electricity.entity.merchant.MerchantCabinetBindHistory;
+import com.xiliulou.electricity.entity.merchant.MerchantCabinetBindTime;
 import com.xiliulou.electricity.entity.merchant.MerchantPlace;
 import com.xiliulou.electricity.entity.merchant.MerchantPlaceBind;
 import com.xiliulou.electricity.entity.merchant.MerchantPlaceCabinetBind;
@@ -18,6 +20,8 @@ import com.xiliulou.electricity.entity.merchant.MerchantPlaceFeeMonthRecord;
 import com.xiliulou.electricity.mapper.merchant.MerchantPlaceFeeDailyRecordMapper;
 import com.xiliulou.electricity.request.merchant.MerchantPlaceFeeRequest;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
+import com.xiliulou.electricity.service.merchant.MerchantCabinetBindHistoryService;
+import com.xiliulou.electricity.service.merchant.MerchantCabinetBindTimeService;
 import com.xiliulou.electricity.service.merchant.MerchantPlaceBindService;
 import com.xiliulou.electricity.service.merchant.MerchantPlaceCabinetBindService;
 import com.xiliulou.electricity.service.merchant.MerchantPlaceFeeMonthDetailService;
@@ -71,6 +75,9 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
     private MerchantPlaceFeeMonthService merchantPlaceFeeMonthService;
     
     @Resource
+    private MerchantCabinetBindHistoryService merchantCabinetBindHistoryService;
+    
+    @Resource
     private ElectricityCabinetService electricityCabinetService;
     
     @Resource
@@ -89,7 +96,9 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
     
     @Resource
     private MerchantPlaceFeeMonthDetailService merchantPlaceFeeMonthDetailService;
-   
+    
+    @Resource
+    private MerchantCabinetBindTimeService merchantCabinetBindTimeService;
     
     
     /**
@@ -148,6 +157,16 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
         // 获取商户当前绑定的设备数
         Integer cabinetCount = merchantPlaceMapService.countCabinetNumByMerchantId(request.getMerchantId());
         merchantPlaceFeeCurMonthVO.setCabinetCount(cabinetCount);
+        
+        // 计算累计场地费 上月之前的月份+上月+本月
+        // 上月的第一天
+        long time = DateUtils.getBeforeMonthFirstDayTimestamp(1);
+        BigDecimal sumFeeHistory = merchantPlaceFeeMonthService.sumFeeByTime(request.getMerchantId(), request.getPlaceId(), request.getCabinetId(), time);
+        if (ObjectUtils.isEmpty(sumFeeHistory)) {
+            sumFeeHistory = BigDecimal.ZERO;
+        }
+        BigDecimal sumFee = sumFeeHistory.add(curMothFee).add(lastMothFee);
+        merchantPlaceFeeCurMonthVO.setMonthFee(sumFee);
         
         return merchantPlaceFeeCurMonthVO;
     }
@@ -241,19 +260,45 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
             curMothFeeRecords = curMothFeeRecords.stream().filter(item -> Objects.equals(item.getCabinetId(), request.getCabinetId())).collect(Collectors.toList());
         }
         Map<Long, BigDecimal> curMonthCabinetFeeMap = new HashMap<>();
-        
+        Map<Long, Long> cabinetTimeMap = new HashMap<>();
         if (ObjectUtils.isNotEmpty(curMothFeeRecords)) {
-            List<Long> curMonthCabinetIdList = curMothFeeRecords.stream().map(MerchantPlaceFeeMonthDetail::getCabinetId).collect(Collectors.toList());
+            List<Long> curMonthCabinetIdList = curMothFeeRecords.stream().map(MerchantPlaceFeeMonthDetail::getCabinetId).distinct().collect(Collectors.toList());
             if (ObjectUtils.isNotEmpty(curMonthCabinetIdList)) {
                 cabinetIdList.addAll(curMonthCabinetIdList);
             }
             curMonthCabinetFeeMap = curMothFeeRecords.stream()
                     .collect(Collectors.groupingBy(MerchantPlaceFeeMonthDetail::getCabinetId, Collectors.collectingAndThen(Collectors.toList(), e -> this.sumFee(e))));
+            Map<Long, Long> curCabinetTimeMap = curMothFeeRecords.stream().collect(Collectors.groupingBy(MerchantPlaceFeeMonthDetail::getCabinetId, Collectors.collectingAndThen(Collectors.toList(),
+                    e -> e.stream().sorted(Comparator.comparing(MerchantPlaceFeeMonthDetail::getStartTime).reversed()).findFirst().get().getStartTime())));
+            if (ObjectUtils.isNotEmpty(curCabinetTimeMap)) {
+                cabinetTimeMap.putAll(curCabinetTimeMap);
+            }
         }
         
         if (ObjectUtils.isEmpty(cabinetIdList)) {
             return Collections.emptyList();
         }
+        
+        // 查询柜机的绑定时间
+        List<MerchantCabinetBindTime> cabinetBindTimes = merchantCabinetBindTimeService.queryListByMerchantId(request.getMerchantId(), request.getCabinetId(),
+                request.getPlaceId());
+        if (ObjectUtils.isNotEmpty(cabinetBindTimes)) {
+            Map<Long, Long> bindTimeMap = cabinetBindTimes.stream().collect(Collectors.groupingBy(MerchantCabinetBindTime::getCabinetId, Collectors.collectingAndThen(Collectors.toList(),
+                    e -> e.stream().sorted(Comparator.comparing(MerchantCabinetBindTime::getBindTime).reversed()).findFirst().get().getBindTime())));
+            if (ObjectUtils.isNotEmpty(bindTimeMap) && ObjectUtils.isNotEmpty(cabinetTimeMap)) {
+                bindTimeMap.forEach((cabinetId, time) -> {
+                    if (ObjectUtils.isNotEmpty(cabinetTimeMap.get(cabinetId))) {
+                        if (time > cabinetTimeMap.get(cabinetId)) {
+                            cabinetTimeMap.put(cabinetId, time);
+                        }
+                    } else {
+                        cabinetTimeMap.put(cabinetId, time);
+                    }
+                });
+            }
+            
+        }
+        
         
         // 去重
         List<Long> cabinetIds = cabinetIdList.stream().distinct().collect(Collectors.toList());
@@ -280,10 +325,17 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
             if (ObjectUtils.isNotEmpty(finalLastMonthCabinetFeeMap.get(cabinetId))) {
                 historyFee = historyFee.add(finalLastMonthCabinetFeeMap.get(cabinetId));
             }
+            if (ObjectUtils.isNotEmpty(cabinetTimeMap.get(cabinetId))) {
+                vo.setTime(cabinetTimeMap.get(cabinetId));
+            } else {
+                vo.setTime(0L);
+            }
             historyFee = historyFee.add(vo.getCurrentMonthFee());
             vo.setMonthFeeSum(historyFee);
             resList.add(vo);
         });
+    
+        resList.stream().sorted(Comparator.comparing(MerchantPlaceCabinetFeeDetailVO::getTime).reversed());
         
         return resList;
     }
@@ -330,60 +382,32 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
             }
             return resList;
         }
-        // 判断是否为上个月
-        long lastMonthDay = DateUtils.getBeforeMonthFirstDayTimestamp(MerchantPlaceBindConstant.LAST_MONTH);
-        String lastMonth = DateUtil.format(new Date(lastMonthDay), "yyyy-MM");
-    
-        if (Objects.equals(lastMonth, request.getMonth())) {
-            List<MerchantPlaceFeeMonthDetail> lastMothFeeRecords = getLastMonthFeeRecords(request);
-            if (ObjectUtils.isEmpty(lastMothFeeRecords)) {
-                return Collections.emptyList();
-            }
-            
-            if (ObjectUtils.isNotEmpty(lastMothFeeRecords)) {
-                for (MerchantPlaceFeeMonthDetail placeFeeMonthDetail : lastMothFeeRecords) {
-                    MerchantCabinetFeeDetailVO vo = new MerchantCabinetFeeDetailVO();
-                    vo.setPlaceFee(placeFeeMonthDetail.getPlaceFee());
-                    MerchantPlace merchantPlace = merchantPlaceService.queryFromCacheById(placeFeeMonthDetail.getPlaceId());
-                    if (Objects.nonNull(merchantPlace)) {
-                        vo.setPlaceName(merchantPlace.getName());
-                    }
-                    ElectricityCabinet cabinet = electricityCabinetService.queryByIdFromCache(placeFeeMonthDetail.getCabinetId().intValue());
-                    if (Objects.nonNull(cabinet)) {
-                        vo.setCabinetName(cabinet.getName());
-                    }
-                    vo.setStartTime(placeFeeMonthDetail.getStartTime());
-                    vo.setEndTime(placeFeeMonthDetail.getEndTime());
-                    vo.setStatus(MerchantPlaceCabinetBindConstant.STATUS_UNBIND);
-                    resList.add(vo);
-                }
-            }
-            return resList;
-        }
         
         // 查询历史月份的账单数据
         List<String> monthList = new ArrayList<>();
         monthList.add(request.getMonth());
-        List<MerchantPlaceFeeMonthDetail> placeFeeMonths = merchantPlaceFeeMonthDetailService.queryListByMonth(request.getCabinetId(), null, monthList);
+        List<MerchantCabinetBindHistory> placeFeeMonths = merchantCabinetBindHistoryService.queryListByMonth(request.getCabinetId(), null, monthList);
         if (ObjectUtils.isEmpty(placeFeeMonths)) {
             return Collections.emptyList();
         }
-    
+        
         if (ObjectUtils.isNotEmpty(placeFeeMonths)) {
-            for (MerchantPlaceFeeMonthDetail placeFeeMonthDetail : placeFeeMonths) {
+            for (MerchantCabinetBindHistory placeFeeMonthDetail : placeFeeMonths) {
                 MerchantCabinetFeeDetailVO vo = new MerchantCabinetFeeDetailVO();
                 vo.setPlaceFee(placeFeeMonthDetail.getPlaceFee());
                 MerchantPlace merchantPlace = merchantPlaceService.queryFromCacheById(placeFeeMonthDetail.getPlaceId());
                 if (Objects.nonNull(merchantPlace)) {
                     vo.setPlaceName(merchantPlace.getName());
                 }
+                
                 ElectricityCabinet cabinet = electricityCabinetService.queryByIdFromCache(placeFeeMonthDetail.getCabinetId().intValue());
                 if (Objects.nonNull(cabinet)) {
                     vo.setCabinetName(cabinet.getName());
                 }
+                
                 vo.setStartTime(placeFeeMonthDetail.getStartTime());
                 vo.setEndTime(placeFeeMonthDetail.getEndTime());
-                vo.setStatus(MerchantPlaceCabinetBindConstant.STATUS_UNBIND);
+                vo.setStatus(placeFeeMonthDetail.getStatus());
                 resList.add(vo);
             }
         }
@@ -945,15 +969,21 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
             MerchantPlaceCabinetBindDTO bindDTO = new MerchantPlaceCabinetBindDTO();
             BeanUtils.copyProperties(bind, bindDTO);
             bindDTO.setIsNeedMonthSettle(Boolean.FALSE);
-            String placeMonthSettlementDetail = bindDTO.getPlaceMonthSettlementDetail();
+            //            String placeMonthSettlementDetail = bindDTO.getPlaceMonthSettlementDetail();
             Long bindTime = bindDTO.getBindTime();
             SimpleDateFormat fmt = new SimpleDateFormat("yyyy-MM");
-            String settlementDate = fmt.format(new Date(bindTime));
-            
-            //判断绑定时间是否是上月 并且上月未出账
-            if (bindDTO.getBindTime() < dayOfMonthStartTime && (Objects.nonNull(placeMonthSettlementDetail) && placeMonthSettlementDetail.contains(settlementDate))) {
+            //            String settlementDate = fmt.format(new Date(bindTime));
+            // 绑定时间都是从本月出开始计算
+            if (bindDTO.getBindTime() < dayOfMonthStartTime) {
                 bindDTO.setBindTime(dayOfMonthStartTime);
             }
+    
+           /* //判断绑定时间是否是上月 并且上月未出账
+            if (bindDTO.getBindTime() < dayOfMonthStartTime && (Objects.nonNull(placeMonthSettlementDetail) && placeMonthSettlementDetail.contains(settlementDate))) {
+                bindDTO.setBindTime(dayOfMonthStartTime);
+            } else {
+            
+            }*/
             
             if (DataUtil.collectionIsUsable(unbindList)) {
                 

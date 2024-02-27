@@ -58,6 +58,7 @@ import com.xiliulou.electricity.vo.merchant.ChannelEmployeeVO;
 import com.xiliulou.electricity.vo.merchant.MerchantJoinRecordVO;
 import com.xiliulou.electricity.vo.merchant.MerchantPlaceMapVO;
 import com.xiliulou.electricity.vo.merchant.MerchantPlaceUserVO;
+import com.xiliulou.electricity.vo.merchant.MerchantQrCodeVO;
 import com.xiliulou.electricity.vo.merchant.MerchantUpdateVO;
 import com.xiliulou.electricity.vo.merchant.MerchantVO;
 import com.xiliulou.security.bean.TokenUser;
@@ -200,7 +201,7 @@ public class MerchantServiceImpl implements MerchantService {
         
         // 检测商户等级是否存在
         MerchantLevel merchantLevel = merchantLevelService.queryById(merchantSaveRequest.getMerchantGradeId());
-        if (Objects.nonNull(merchantLevel) || Objects.equals(merchantLevel.getTenantId(), tenantId)) {
+        if (Objects.isNull(merchantLevel) || !Objects.equals(merchantLevel.getTenantId(), tenantId)) {
             log.error("merchant save error, merchant level is null name={}, merchantLevelId={}", merchantSaveRequest.getName(), merchantSaveRequest.getMerchantGradeId());
             return Triple.of(false, "", "商户等级不存在");
         }
@@ -290,7 +291,7 @@ public class MerchantServiceImpl implements MerchantService {
         enterpriseInfo.setStatus(merchantSaveRequest.getEnterprisePackageAuth());
         enterpriseInfo.setUid(user1.getUid());
         EnterpriseInfoQuery enterpriseInfoQuery = EnterpriseInfoQuery.builder().uid(user1.getUid()).name(merchantSaveRequest.getName())
-                .franchiseeId(merchantSaveRequest.getFranchiseeId()).status(merchantSaveRequest.getEnterprisePackageAuth())
+                .franchiseeId(merchantSaveRequest.getFranchiseeId()).status(merchantSaveRequest.getEnterprisePackageAuth()).packageType(BatteryMemberCard.BUSINESS_TYPE_ENTERPRISE)
                 .purchaseAuthority(merchantSaveRequest.getPurchaseAuthority()).build();
         
         if (ObjectUtils.isNotEmpty(merchantSaveRequest.getEnterprisePackageIdList())) {
@@ -313,7 +314,9 @@ public class MerchantServiceImpl implements MerchantService {
         merchant.setEnterpriseId(enterpriseInfoQuery.getId());
         merchant.setUid(user1.getUid());
         merchant.setCreateTime(timeMillis);
+        merchant.setDelFlag(MerchantConstant.DEL_NORMAL);
         merchant.setUpdateTime(timeMillis);
+        merchant.setTenantId(tenantId);
         
         // 保存商户信息
         int i = merchantMapper.insert(merchant);
@@ -406,7 +409,7 @@ public class MerchantServiceImpl implements MerchantService {
         
         // 检测商户等级是否存在
         MerchantLevel merchantLevel = merchantLevelService.queryById(merchantSaveRequest.getMerchantGradeId());
-        if (Objects.nonNull(merchantLevel) || Objects.equals(merchantLevel.getTenantId(), tenantId)) {
+        if (Objects.isNull(merchantLevel) || !Objects.equals(merchantLevel.getTenantId(), tenantId)) {
             log.error("merchant update error, merchant level is null id={}, merchantLevelId={}", merchantSaveRequest.getId(), merchantSaveRequest.getMerchantGradeId());
             return Triple.of(false, "", "商户等级不存在");
         }
@@ -516,7 +519,7 @@ public class MerchantServiceImpl implements MerchantService {
         enterpriseInfo.setStatus(merchantSaveRequest.getEnterprisePackageAuth());
         enterpriseInfo.setUid(merchant.getUid());
         EnterpriseInfoQuery enterpriseInfoQuery = EnterpriseInfoQuery.builder().uid(merchant.getUid()).name(merchantSaveRequest.getName())
-                .franchiseeId(merchantSaveRequest.getFranchiseeId()).status(merchantSaveRequest.getEnterprisePackageAuth())
+                .franchiseeId(merchantSaveRequest.getFranchiseeId()).status(merchantSaveRequest.getEnterprisePackageAuth()).packageType(BatteryMemberCard.BUSINESS_TYPE_ENTERPRISE)
                 .purchaseAuthority(merchantSaveRequest.getPurchaseAuthority()).build();
         
         if (ObjectUtils.isNotEmpty(merchantSaveRequest.getEnterprisePackageIdList())) {
@@ -994,5 +997,16 @@ public class MerchantServiceImpl implements MerchantService {
     @Override
     public Integer countMerchantNumByTime(MerchantPromotionFeeMerchantNumQueryModel queryModel) {
         return merchantMapper.countMerchantNumByTime(queryModel);
+    }
+    
+    @Slave
+    @Override
+    public MerchantQrCodeVO getMerchantQrCode(Long uid, Long merchantId) {
+        MerchantQrCodeVO vo = new MerchantQrCodeVO();
+        vo.setMerchantId(merchantId);
+        vo.setMerchantUid(uid);
+        vo.setType(1);
+        vo.setCode("");
+        return vo;
     }
 }
