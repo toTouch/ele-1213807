@@ -27,4 +27,9 @@ public class MerchantCabinetPowerVO {
     private Double thisYearPower;
     
     private Double thisYearCharge;
+    
+    /**
+     * 最新上报数据的时间，用于对柜机进行排序
+     */
+    private Long latestTime;
 }

@@ -89,5 +89,6 @@ public interface ElePowerMapper extends BaseMapper<ElePower> {
                                                           @Param("endTime") Long endTime, @Param("tenantId") Integer tenantId);
     
     EleSumPowerVO selectListByCondition(@Param("startTime") Long startTime, @Param("endTime") Long endTime, @Param("eidList") List<Long> eidList, @Param("tenantId") Integer tenantId);
-
+    
+    Long selectLatestReportTime(@Param("startTime") Long startTime, @Param("endTime") Long endTime, @Param("eidList") List<Long> eidList, @Param("tenantId") Integer tenantId);
 }

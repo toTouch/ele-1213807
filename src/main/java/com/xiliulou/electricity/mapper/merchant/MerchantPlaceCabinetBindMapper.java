@@ -2,7 +2,7 @@ package com.xiliulou.electricity.mapper.merchant;
 
 import com.xiliulou.electricity.entity.merchant.MerchantPlaceCabinetBind;
 import com.xiliulou.electricity.query.merchant.MerchantPlaceCabinetBindQueryModel;
-import com.xiliulou.electricity.query.merchant.MerchantPlaceCabinetConditionQueryModel;
+import com.xiliulou.electricity.request.merchant.MerchantPlaceCabinetConditionRequest;
 import com.xiliulou.electricity.vo.merchant.MerchantPlaceCabinetBindVO;
 import org.apache.ibatis.annotations.Param;
 
@@ -34,15 +34,17 @@ public interface MerchantPlaceCabinetBindMapper {
     
     List<MerchantPlaceCabinetBind> selectListByPage(MerchantPlaceCabinetBindQueryModel merchantQueryModel);
     
-    List<MerchantPlaceCabinetBind> selectListByConditions(MerchantPlaceCabinetConditionQueryModel queryModel);
-    
     Integer countCabinetBindCount(MerchantPlaceCabinetBindQueryModel queryModel);
     
-    Integer removeByPlaceId(@Param("placeId") Long placeId,@Param("updateTime") long updateTime,@Param("delFlag") Integer delFlag);
+    Integer removeByPlaceId(@Param("placeId") Long placeId, @Param("updateTime") long updateTime, @Param("delFlag") Integer delFlag);
     
-    List<MerchantPlaceCabinetBind> selectListByPlaceId(@Param("placeIdList") List<Long> placeIdList,@Param("placeMonthNotSettlement") Integer placeMonthNotSettlement);
+    List<MerchantPlaceCabinetBind> selectListByPlaceId(@Param("placeIdList") List<Long> placeIdList, @Param("placeMonthNotSettlement") Integer placeMonthNotSettlement);
     
-    Integer checkIsBindByPlaceId(@Param("placeId") Long placeId,@Param("cabinetId") Long cabinetId);
+    Integer checkIsBindByPlaceId(@Param("placeId") Long placeId, @Param("cabinetId") Long cabinetId);
     
-    List<MerchantPlaceCabinetBind> selectListDayBindRecord(@Param("todayStartTime") Long todayStartTime, @Param("nowTime") Long nowTime, @Param("cabinetIds") List<Long> cabinetIds);
+    List<MerchantPlaceCabinetBind> selectListByPlaceIds(@Param("placeIds") Set<Long> placeIds);
+    
+    List<MerchantPlaceCabinetBind> selectListBindRecord(MerchantPlaceCabinetConditionRequest request);
+    
+    List<MerchantPlaceCabinetBind> selectListUnbindRecord(MerchantPlaceCabinetConditionRequest request);
 }

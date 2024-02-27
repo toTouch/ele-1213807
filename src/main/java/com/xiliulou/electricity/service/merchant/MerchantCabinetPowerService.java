@@ -5,8 +5,8 @@ import com.xiliulou.electricity.vo.merchant.MerchantCabinetPowerDetailVO;
 import com.xiliulou.electricity.vo.merchant.MerchantCabinetPowerVO;
 import com.xiliulou.electricity.vo.merchant.MerchantPlaceAndCabinetUserVO;
 import com.xiliulou.electricity.vo.merchant.MerchantPlaceCabinetVO;
-import com.xiliulou.electricity.vo.merchant.MerchantPowerVO;
-import com.xiliulou.electricity.vo.merchant.MerchantTotalPowerVO;
+import com.xiliulou.electricity.vo.merchant.MerchantPowerDetailVO;
+import com.xiliulou.electricity.vo.merchant.MerchantPowerRspVO;
 
 import java.util.List;
 
@@ -20,34 +20,37 @@ public interface MerchantCabinetPowerService {
     /**
      * 是否显示电费页面：0-不显示，1-显示
      */
-    Integer isShowPowerPage(Long merchantId);
+    Integer isShowPowerPage(Long uid);
     
     /**
      * 从绑定记录表中获取商户关联所有场地下的柜机
      */
-    MerchantPlaceAndCabinetUserVO listPlaceAndCabinetByMerchantId(Long merchantId);
+    MerchantPlaceAndCabinetUserVO listPlaceAndCabinetByMerchantId(Long uid);
     
     /**
      * 从绑定记录表中获取商户关联某个场地下的柜机
      */
-    List<MerchantPlaceCabinetVO> listCabinetByPlaceId(Long merchantId, Long placeId);
+    List<MerchantPlaceCabinetVO> listCabinetByPlaceId(Long uid, Long placeId);
     
     /**
      * 电费/场地费 筛选条件-获取要统计的柜机id
      */
     List<Long> getStaticsCabinetIds(MerchantCabinetPowerRequest request);
     
-    MerchantPowerVO todayPower(MerchantCabinetPowerRequest request);
+    MerchantPowerRspVO todayPower(MerchantCabinetPowerRequest request);
     
-    MerchantPowerVO yesterdayPower(MerchantCabinetPowerRequest request);
+    MerchantPowerRspVO yesterdayPower(MerchantCabinetPowerRequest request);
     
-    MerchantPowerVO lastMonthPower(MerchantCabinetPowerRequest request);
+    MerchantPowerRspVO thisMonthPower(MerchantCabinetPowerRequest request);
     
-    MerchantTotalPowerVO totalPower(MerchantCabinetPowerRequest request);
+    MerchantPowerRspVO lastMonthPower(MerchantCabinetPowerRequest request);
     
-    List<MerchantPowerVO> lineData(MerchantCabinetPowerRequest request);
+    MerchantPowerRspVO totalPower(MerchantCabinetPowerRequest request);
+    
+    List<MerchantPowerDetailVO> lineData(MerchantCabinetPowerRequest request);
     
     List<MerchantCabinetPowerVO> cabinetPowerList(MerchantCabinetPowerRequest request);
     
     List<MerchantCabinetPowerDetailVO> cabinetPowerDetail(MerchantCabinetPowerRequest request);
+    
 }

@@ -201,5 +201,11 @@ public class ElePowerServiceImpl implements ElePowerService {
     public EleSumPowerVO listByCondition(Long startTime, Long endTime, List<Long> eidList, Integer tenantId) {
         return elePowerMapper.selectListByCondition(startTime, endTime, eidList, tenantId);
     }
-
+    
+    @Slave
+    @Override
+    public Long queryLatestReportTime(Long startTime, Long endTime, List<Long> eid, Integer tenantId) {
+        return elePowerMapper.selectLatestReportTime(startTime, endTime, eid, tenantId);
+    }
+    
 }

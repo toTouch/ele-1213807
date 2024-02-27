@@ -19,6 +19,8 @@ public class NumberConstant {
     
     public static final Integer THREE = 3;
     
+    public static final Integer TWELVE = 12;
+    
     public static final Integer TWENTY_FIVE = 25;
     
     public static final Integer SEVENTY_FIVE = 75;

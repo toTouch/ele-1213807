@@ -81,4 +81,7 @@ public interface ElePowerService {
     void exportList(ElePowerListQuery query, HttpServletResponse response);
     
     EleSumPowerVO listByCondition(Long startTime, Long endTime, List<Long> eidList, Integer tenantId);
+    
+    Long queryLatestReportTime(Long startTime, Long endTime, List<Long> eid, Integer tenantId);
+    
 }
