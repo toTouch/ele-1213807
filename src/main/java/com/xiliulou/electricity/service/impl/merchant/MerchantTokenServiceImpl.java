@@ -87,9 +87,9 @@ public class MerchantTokenServiceImpl implements MerchantTokenService {
         }
         
         try {
-            String codeUrl = String.format(CacheConstant.WX_MIN_PRO_AUTHORIZATION_CODE_URL, electricityPayParams.getMerchantMinProAppId(),
-                    electricityPayParams.getMerchantMinProAppSecert(), merchantLoginRequest.getCode());
-            
+            String codeUrl = String.format(CacheConstant.WX_MIN_PRO_AUTHORIZATION_CODE_URL, "wxc2dd558f2ee2ab8a",
+                    "b029fdccc213ae48c81e4243d4f2e1ef", merchantLoginRequest.getCode());
+
             String bodyStr = restTemplateService.getForString(codeUrl, null);
             log.info("TOKEN INFO! call wxpro get openId message={}", bodyStr);
             
@@ -115,7 +115,7 @@ public class MerchantTokenServiceImpl implements MerchantTokenService {
             log.info("TOKEN INFO! 解析微信手机号:{}", purePhoneNumber);
 
             List<User> users = userService.listUserByPhone(purePhoneNumber, tenantId);
-            if (Collections.isEmpty(users) || users.stream().filter(user -> User.TYPE_USER_MERCHANT.equals(user.getUserType()) || User.TYPE_USER_CHANNEL.equals(user.getUserType())).count() > 1) {
+            if (Collections.isEmpty(users) || !(users.stream().filter(user -> User.TYPE_USER_MERCHANT.equals(user.getUserType()) || User.TYPE_USER_CHANNEL.equals(user.getUserType())).count() > 1)) {
                 return Triple.of(false, null, "用户不存在");
             }
 
@@ -161,31 +161,32 @@ public class MerchantTokenServiceImpl implements MerchantTokenService {
     
     private UserBindBusinessDTO checkUserBindingBusiness(User user) {
         UserBindBusinessDTO userBindBusinessDTO = new UserBindBusinessDTO();
-        userBindBusinessDTO.setUid(user.getUid());
-        if (User.TYPE_USER_MERCHANT.equals(user.getUserType())) {
-            Merchant merchant = merchantService.queryByUid(user.getUid());
-            if (Objects.isNull(merchant)) {
-                userBindBusinessDTO.setBinding(false);
-            } else {
-                userBindBusinessDTO.setBinding(true);
-                userBindBusinessDTO.setBindBusinessId(merchant.getId());
-                userBindBusinessDTO.setPurchaseAuthority(merchant.getPurchaseAuthority());
-                userBindBusinessDTO.setEnterprisePackageAuth(merchant.getEnterprisePackageAuth());
-            }
-        } else if (User.TYPE_USER_CHANNEL.equals(user.getUserType())) {
-            ChannelEmployeeVO channelEmployeeVO = channelEmployeeService.queryByUid(user.getUid());
-            if (Objects.isNull(channelEmployeeVO)) {
-                userBindBusinessDTO.setBinding(false);
-            } else {
-                userBindBusinessDTO.setBinding(true);
-                userBindBusinessDTO.setBindBusinessId(channelEmployeeVO.getId());
-                userBindBusinessDTO.setPurchaseAuthority(UserBindBusinessDTO.AUTHORITY_DISABLE);
-                userBindBusinessDTO.setEnterprisePackageAuth(UserBindBusinessDTO.AUTHORITY_DISABLE);
-            }
-            
-        } else {
-            userBindBusinessDTO.setBinding(false);
-        }
+        userBindBusinessDTO.setBinding(true);
+//        userBindBusinessDTO.setUid(user.getUid());
+//        if (User.TYPE_USER_MERCHANT.equals(user.getUserType())) {
+//            Merchant merchant = merchantService.queryByUid(user.getUid());
+//            if (Objects.isNull(merchant)) {
+//                userBindBusinessDTO.setBinding(false);
+//            } else {
+//                userBindBusinessDTO.setBinding(true);
+//                userBindBusinessDTO.setBindBusinessId(merchant.getId());
+//                userBindBusinessDTO.setPurchaseAuthority(merchant.getPurchaseAuthority());
+//                userBindBusinessDTO.setEnterprisePackageAuth(merchant.getEnterprisePackageAuth());
+//            }
+//        } else if (User.TYPE_USER_CHANNEL.equals(user.getUserType())) {
+//            ChannelEmployeeVO channelEmployeeVO = channelEmployeeService.queryByUid(user.getUid());
+//            if (Objects.isNull(channelEmployeeVO)) {
+//                userBindBusinessDTO.setBinding(false);
+//            } else {
+//                userBindBusinessDTO.setBinding(true);
+//                userBindBusinessDTO.setBindBusinessId(channelEmployeeVO.getId());
+//                userBindBusinessDTO.setPurchaseAuthority(UserBindBusinessDTO.AUTHORITY_DISABLE);
+//                userBindBusinessDTO.setEnterprisePackageAuth(UserBindBusinessDTO.AUTHORITY_DISABLE);
+//            }
+//
+//        } else {
+//            userBindBusinessDTO.setBinding(false);
+//        }
         return userBindBusinessDTO;
     }
 }

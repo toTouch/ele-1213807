@@ -38,7 +38,7 @@ public class MerchantVO {
     /**
      * 渠道员
      */
-    private String channelName;
+    private String channelUserName;
     /**
      * 场地数
      */
@@ -72,7 +72,7 @@ public class MerchantVO {
     /**
      * 0-启用，1-禁用
      */
-    private String status;
+    private Integer status;
     
     private List<Long> placeIdList;
     

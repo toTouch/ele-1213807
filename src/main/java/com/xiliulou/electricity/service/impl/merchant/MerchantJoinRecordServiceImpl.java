@@ -165,7 +165,7 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
             }
             
             // 判断商户是否存在或被禁用
-            Merchant merchant = merchantService.queryFromCacheById(merchantId);
+            Merchant merchant = merchantService.queryByIdFromCache(merchantId);
             if (Objects.isNull(merchant)) {
                 log.error("MERCHANT JOIN ERROR! not found merchant, merchantId={}", merchantId);
                 return R.fail("100463", "二维码已失效");
@@ -379,7 +379,7 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
             }
             
             // 查询商户名称
-            Merchant merchant = merchantService.queryFromCacheById(merchantJoinRecord.getMerchantId());
+            Merchant merchant = merchantService.queryByIdFromCache(merchantJoinRecord.getMerchantId());
             if (Objects.nonNull(merchant)) {
                 vo.setMerchantName(merchant.getName());
             }

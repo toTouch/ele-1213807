@@ -33,7 +33,7 @@ public interface MerchantService {
     
     Triple<Boolean, String, Object> queryById(Long id);
     
-    Merchant queryFromCacheById(Long id);
+    Merchant queryByIdFromCache(Long id);
     
     Triple<Boolean, String, Object> queryByIdList(List<Long> idList);
     

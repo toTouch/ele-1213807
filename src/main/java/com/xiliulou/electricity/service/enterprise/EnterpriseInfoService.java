@@ -106,4 +106,6 @@ public interface EnterpriseInfoService {
      * @return 影响行数
      */
     Integer updatePhoneByUid(Integer tenantId, Long uid, String newPhone);
+    
+    Triple<Boolean, String, Object> saveNew(EnterpriseInfoQuery enterpriseInfoQuery);
 }
