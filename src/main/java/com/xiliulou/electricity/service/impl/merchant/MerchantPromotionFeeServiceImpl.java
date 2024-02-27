@@ -35,6 +35,7 @@ import com.xiliulou.electricity.vo.merchant.MerchantPromotionFeeEmployeeVO;
 import com.xiliulou.electricity.vo.merchant.MerchantPromotionFeeIncomeVO;
 import com.xiliulou.electricity.vo.merchant.MerchantPromotionFeeRenewalVO;
 import com.xiliulou.electricity.vo.merchant.MerchantPromotionFeeScanCodeVO;
+import com.xiliulou.electricity.vo.merchant.MerchantPromotionMerchantDetailVO;
 import com.xiliulou.electricity.vo.merchant.PromotionFeeStatisticAnalysisIncomeVO;
 import com.xiliulou.electricity.vo.merchant.PromotionFeeStatisticAnalysisMerchantVO;
 import com.xiliulou.electricity.vo.merchant.PromotionFeeStatisticAnalysisPurchaseVO;
@@ -346,32 +347,28 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
             log.error("find merchant user error, not found merchant user, uid = {}", queryModel.getMerchantUid());
             return R.fail("120007", "未找到商户");
         }
-        
-        MerchantPromotionEmployeeDetailVO employeeDetailVO = new MerchantPromotionEmployeeDetailVO();
-        User user = userService.queryByUidFromCache(merchant.getUid());
-        if (Objects.nonNull(user)) {
-            return R.ok();
-        }
-        employeeDetailVO.setEmployeeName(user.getName());
-        employeeDetailVO.setUid(user.getUid());
+    
+        MerchantPromotionMerchantDetailVO merchantDetailVO = new MerchantPromotionMerchantDetailVO();
+        merchantDetailVO.setMerchantName(merchant.getName());
+        merchantDetailVO.setUid(merchant.getUid());
         
         // 今日预估收入：“返现日期” = 今日，“结算状态” = 未结算；
         MerchantPromotionFeeQueryModel incomeQueryModel = MerchantPromotionFeeQueryModel.builder().status(MerchantConstant.MERCHANT_REBATE_STATUS_NOT_SETTLE)
-                .type(PromotionFeeQueryTypeEnum.MERCHANT.getCode()).uid(user.getUid()).tenantId(TenantContextHolder.getTenantId())
+                .type(PromotionFeeQueryTypeEnum.MERCHANT.getCode()).uid(merchant.getUid()).tenantId(TenantContextHolder.getTenantId())
                 .rebateStartTime(DateUtils.getTodayStartTimeStamp()).rebateEndTime(System.currentTimeMillis()).build();
         BigDecimal todayInCome = rebateRecordService.sumByStatus(incomeQueryModel);
-        employeeDetailVO.setTodayIncome(todayInCome);
+        merchantDetailVO.setTodayIncome(todayInCome);
         
         // 本月预估收入：“结算日期” = 本月，“结算状态” = 未结算；
         incomeQueryModel.setRebateStartTime(DateUtils.getDayOfMonthStartTime(1));
         BigDecimal currentMonthInCome = rebateRecordService.sumByStatus(incomeQueryModel);
-        employeeDetailVO.setCurrentMonthIncome(currentMonthInCome);
+        merchantDetailVO.setCurrentMonthIncome(currentMonthInCome);
         
         // 累计收入：“结算日期” = 当前时间，“结算状态” = 未结算；
         incomeQueryModel.setRebateStartTime(null);
         BigDecimal totalInCome = rebateRecordService.sumByStatus(incomeQueryModel);
-        employeeDetailVO.setTotalIncome(totalInCome);
-        return R.ok(employeeDetailVO);
+        merchantDetailVO.setTotalIncome(totalInCome);
+        return R.ok(merchantDetailVO);
     }
     
     @Override

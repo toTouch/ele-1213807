@@ -15,6 +15,7 @@ import com.xiliulou.electricity.mq.constant.MqConsumerConstant;
 import com.xiliulou.electricity.mq.constant.MqProducerConstant;
 import com.xiliulou.electricity.mq.model.BatteryMemberCardMerchantRebate;
 import com.xiliulou.electricity.service.BatteryMembercardRefundOrderService;
+import com.xiliulou.electricity.service.EleRefundOrderService;
 import com.xiliulou.electricity.service.ElectricityMemberCardOrderService;
 import com.xiliulou.electricity.service.UserInfoExtraService;
 import com.xiliulou.electricity.service.UserInfoService;
@@ -71,6 +72,9 @@ public class BatteryMemberCardMerchantRebateConsumer implements RocketMQListener
     private UserInfoService userInfoService;
     
     @Autowired
+    private EleRefundOrderService eleRefundOrderService;
+    
+    @Autowired
     private ChannelEmployeeAmountService channelEmployeeAmountService;
     
     @Autowired
@@ -106,6 +110,12 @@ public class BatteryMemberCardMerchantRebateConsumer implements RocketMQListener
         ElectricityMemberCardOrder electricityMemberCardOrder = electricityMemberCardOrderService.selectByOrderNo(batteryMemberCardMerchantRebate.getOrderId());
         if (Objects.isNull(electricityMemberCardOrder)) {
             log.warn("REBATE CONSUMER WARN!not found electricityMemberCardOrder,orderId={}", batteryMemberCardMerchantRebate.getOrderId());
+            return;
+        }
+        
+        //若用户退过押金，再次缴纳押金后，不返利
+        if(Objects.nonNull(eleRefundOrderService.existsRefundOrderByUid(electricityMemberCardOrder.getUid()))){
+            log.warn("REBATE CONSUMER WARN!user exists refund order,uid={}", batteryMemberCardMerchantRebate.getUid());
             return;
         }
         
@@ -200,6 +210,7 @@ public class BatteryMemberCardMerchantRebateConsumer implements RocketMQListener
         if (Objects.equals(MerchantConstant.DISABLE, merchant.getStatus())) {
             rebateRecord.setMerchantRebate(BigDecimal.ZERO);
         }
+        
         rebateRecordService.insert(rebateRecord);
     }
     
