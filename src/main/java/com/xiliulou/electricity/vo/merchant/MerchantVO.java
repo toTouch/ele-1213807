@@ -31,9 +31,14 @@ public class MerchantVO {
     private String franchiseeName;
     
     /**
-     * 等级
+     * 等级名称
      */
     private String gradeName;
+    
+    /**
+     * 商户等级
+     */
+    private String merchantLevel;
     
     /**
      * 渠道员

@@ -8,7 +8,7 @@ import lombok.Data;
  * @desc 小程序场地员工下拉框返回vo
  */
 @Data
-public class MerchantPlaceUserVO {
+public class MerchantPlaceSelectVO {
     /**
      * 场地id
      */

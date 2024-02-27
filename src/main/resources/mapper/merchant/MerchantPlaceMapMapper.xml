@@ -55,7 +55,7 @@
 
         
     </select>
-    <select id="selectListByMerchant" resultType="com.xiliulou.electricity.vo.merchant.MerchantPlaceUserVO">
+    <select id="selectListByMerchantId" resultType="com.xiliulou.electricity.vo.merchant.MerchantPlaceSelectVO">
         SELECT
             place_id,
             merchant_id,
