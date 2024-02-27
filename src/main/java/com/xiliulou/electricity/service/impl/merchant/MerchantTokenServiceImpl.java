@@ -115,7 +115,7 @@ public class MerchantTokenServiceImpl implements MerchantTokenService {
             log.info("TOKEN INFO! 解析微信手机号:{}", purePhoneNumber);
 
             List<User> users = userService.listUserByPhone(purePhoneNumber, tenantId);
-            if (Collections.isEmpty(users) || !(users.stream().filter(user -> User.TYPE_USER_MERCHANT.equals(user.getUserType()) || User.TYPE_USER_CHANNEL.equals(user.getUserType())).count() > 1)) {
+            if (Collections.isEmpty(users) || users.stream().noneMatch(user -> User.TYPE_USER_MERCHANT.equals(user.getUserType()) || User.TYPE_USER_CHANNEL.equals(user.getUserType()))) {
                 return Triple.of(false, null, "用户不存在");
             }
 
@@ -125,12 +125,17 @@ public class MerchantTokenServiceImpl implements MerchantTokenService {
             }
 
             // 用户是否绑定了业务信息
-            Map<Long, UserBindBusinessDTO> userBindBusinessDTOS = users.stream().map(this::checkUserBindingBusiness).filter(e -> !e.isBinding()).collect(Collectors.toMap(UserBindBusinessDTO::getUid, e -> e));
+            Map<Long, UserBindBusinessDTO> userBindBusinessDTOS = users.stream().map(this::checkUserBindingBusiness).filter(UserBindBusinessDTO::isBinding).collect(Collectors.toMap(UserBindBusinessDTO::getUid, e -> e));
             if (userBindBusinessDTOS.isEmpty()) {
                 return Triple.of(false, null, "未找到绑定账号，请检查");
             }
 
+            log.info("userBindBusinessDTOS:{} notLockerUser:{}", userBindBusinessDTOS, notLockUsers);
             List<MerchantLoginVO> loginVOS = notLockUsers.parallelStream().map(e -> {
+                if (Objects.isNull(userBindBusinessDTOS.get(e.getUid()))) {
+                    return null;
+                }
+
                 // 查看是否有绑定的第三方信息,如果没有绑定创建一个
                 if (!wxProThirdAuthenticationService.checkOpenIdExists(result.getOpenid(), tenantId).getLeft()) {
                     UserOauthBind oauthBind = UserOauthBind.builder().createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis())
@@ -150,7 +155,7 @@ public class MerchantTokenServiceImpl implements MerchantTokenService {
                 merchantLoginVO.setUserType(e.getUserType());
                 merchantLoginVO.setBusinessInfo(userBindBusinessDTOS.get(e.getUid()).getEnterprisePackageAuth(), userBindBusinessDTOS.get(e.getUid()).getEnterprisePackageAuth());
                 return merchantLoginVO;
-            }).collect(Collectors.toList());
+            }).filter(Objects::nonNull).collect(Collectors.toList());
             return Triple.of(true, null, loginVOS);
             
         } finally {
@@ -161,32 +166,31 @@ public class MerchantTokenServiceImpl implements MerchantTokenService {
     
     private UserBindBusinessDTO checkUserBindingBusiness(User user) {
         UserBindBusinessDTO userBindBusinessDTO = new UserBindBusinessDTO();
-        userBindBusinessDTO.setBinding(true);
-//        userBindBusinessDTO.setUid(user.getUid());
-//        if (User.TYPE_USER_MERCHANT.equals(user.getUserType())) {
-//            Merchant merchant = merchantService.queryByUid(user.getUid());
-//            if (Objects.isNull(merchant)) {
-//                userBindBusinessDTO.setBinding(false);
-//            } else {
-//                userBindBusinessDTO.setBinding(true);
-//                userBindBusinessDTO.setBindBusinessId(merchant.getId());
-//                userBindBusinessDTO.setPurchaseAuthority(merchant.getPurchaseAuthority());
-//                userBindBusinessDTO.setEnterprisePackageAuth(merchant.getEnterprisePackageAuth());
-//            }
-//        } else if (User.TYPE_USER_CHANNEL.equals(user.getUserType())) {
-//            ChannelEmployeeVO channelEmployeeVO = channelEmployeeService.queryByUid(user.getUid());
-//            if (Objects.isNull(channelEmployeeVO)) {
-//                userBindBusinessDTO.setBinding(false);
-//            } else {
-//                userBindBusinessDTO.setBinding(true);
-//                userBindBusinessDTO.setBindBusinessId(channelEmployeeVO.getId());
-//                userBindBusinessDTO.setPurchaseAuthority(UserBindBusinessDTO.AUTHORITY_DISABLE);
-//                userBindBusinessDTO.setEnterprisePackageAuth(UserBindBusinessDTO.AUTHORITY_DISABLE);
-//            }
-//
-//        } else {
-//            userBindBusinessDTO.setBinding(false);
-//        }
+        userBindBusinessDTO.setUid(user.getUid());
+        if (User.TYPE_USER_MERCHANT.equals(user.getUserType())) {
+            Merchant merchant = merchantService.queryByUid(user.getUid());
+            if (Objects.isNull(merchant)) {
+                userBindBusinessDTO.setBinding(false);
+            } else {
+                userBindBusinessDTO.setBinding(true);
+                userBindBusinessDTO.setBindBusinessId(merchant.getId());
+                userBindBusinessDTO.setPurchaseAuthority(merchant.getPurchaseAuthority());
+                userBindBusinessDTO.setEnterprisePackageAuth(merchant.getEnterprisePackageAuth());
+            }
+        } else if (User.TYPE_USER_CHANNEL.equals(user.getUserType())) {
+            ChannelEmployeeVO channelEmployeeVO = channelEmployeeService.queryByUid(user.getUid());
+            if (Objects.isNull(channelEmployeeVO)) {
+                userBindBusinessDTO.setBinding(false);
+            } else {
+                userBindBusinessDTO.setBinding(true);
+                userBindBusinessDTO.setBindBusinessId(channelEmployeeVO.getId());
+                userBindBusinessDTO.setPurchaseAuthority(UserBindBusinessDTO.AUTHORITY_DISABLE);
+                userBindBusinessDTO.setEnterprisePackageAuth(UserBindBusinessDTO.AUTHORITY_DISABLE);
+            }
+
+        } else {
+            userBindBusinessDTO.setBinding(false);
+        }
         return userBindBusinessDTO;
     }
 }

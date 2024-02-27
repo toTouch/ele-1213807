@@ -1,6 +1,6 @@
 package com.xiliulou.electricity.service.merchant;
 
-import com.xiliulou.electricity.entity.merchant.MerchantCabinetPowerMonthDetail;
+import com.xiliulou.electricity.entity.merchant.MerchantCabinetPowerMonthDetailPro;
 
 import java.util.List;
 
@@ -13,5 +13,5 @@ public interface MerchantCabinetPowerMonthDetailProService {
     
     Long queryLatestReportTime(Long cabinetId, List<String> monthList);
     
-    List<MerchantCabinetPowerMonthDetail> listByMonth(Long cabinetId, List<String> monthList);
+    List<MerchantCabinetPowerMonthDetailPro> listByMonth(Long cabinetId, List<String> monthList);
 }

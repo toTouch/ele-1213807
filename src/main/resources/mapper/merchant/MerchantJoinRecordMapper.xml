@@ -93,7 +93,7 @@
     </update>
     
     <select id="existsInProtectionTimeByJoinUid" resultType="java.lang.Integer">
-        select 1 from t_merchant_join_record where del_flag = 0 and protection_status = 0 and join_uid = #{joinUid}
+        select 1 from t_merchant_join_record where del_flag = 0 and protection_status = 0 and join_uid = #{joinUid} limit 1
     </select>
     
      <select id="selectByMerchantIdAndJoinUid" resultType="com.xiliulou.electricity.entity.merchant.MerchantJoinRecord">
