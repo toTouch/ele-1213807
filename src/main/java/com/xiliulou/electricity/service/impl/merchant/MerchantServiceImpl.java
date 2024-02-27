@@ -53,7 +53,6 @@ import com.xiliulou.electricity.service.merchant.MerchantPlaceService;
 import com.xiliulou.electricity.service.merchant.MerchantService;
 import com.xiliulou.electricity.service.merchant.MerchantUserAmountService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
-import com.xiliulou.electricity.utils.AESUtils;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.merchant.ChannelEmployeeVO;
@@ -374,7 +373,7 @@ public class MerchantServiceImpl implements MerchantService {
         
         Integer tenantId = TenantContextHolder.getTenantId();
         
-        Merchant merchant = this.merchantMapper.select(merchantSaveRequest.getId());
+        Merchant merchant = this.merchantMapper.selectById(merchantSaveRequest.getId());
         if (Objects.isNull(merchant) || !Objects.equals(merchant.getTenantId(), tenantId)) {
             log.error("merchant update error, merchant is not exit id={}, tenantId", merchantSaveRequest.getId(), tenantId);
             return Triple.of(false, "", "商户不存在");
@@ -615,7 +614,7 @@ public class MerchantServiceImpl implements MerchantService {
     public Triple<Boolean, String, Object> remove(Long id) {
         // 检测商户是否存在
         Integer tenantId = TenantContextHolder.getTenantId();
-        Merchant merchant = this.merchantMapper.select(id);
+        Merchant merchant = this.merchantMapper.selectById(id);
         if (Objects.isNull(merchant) || !Objects.equals(merchant.getTenantId(), tenantId)) {
             log.error("merchant delete error, merchant is not exit id={}, tenantId", id, tenantId);
             return Triple.of(false, "", "商户不存在");
@@ -849,7 +848,7 @@ public class MerchantServiceImpl implements MerchantService {
     public Triple<Boolean, String, Object> queryById(Long id) {
         Integer tenantId = TenantContextHolder.getTenantId();
         
-        Merchant merchant = merchantMapper.select(id);
+        Merchant merchant = merchantMapper.selectById(id);
         if (Objects.isNull(merchant) || !Objects.equals(merchant.getTenantId(), tenantId)) {
             return Triple.of(false, "", "商户不存在");
         }
@@ -880,18 +879,17 @@ public class MerchantServiceImpl implements MerchantService {
     
     @Override
     public Merchant queryFromCacheById(Long id) {
-        Merchant merchant = null;
-        merchant = redisService.getWithHash(CacheConstant.CACHE_MERCHANT + id, Merchant.class);
-        if (Objects.isNull(merchant)) {
-            merchant = merchantMapper.select(id);
-            if (Objects.nonNull(merchant)) {
-                User user = userService.queryByUidFromCache(merchant.getUid());
-                if (ObjectUtils.isNotEmpty(user)) {
-                    merchant.setPhone(user.getPhone());
-                }
-                redisService.saveWithHash(CacheConstant.CACHE_MERCHANT + id, merchant);
-            }
+        Merchant merchant  = redisService.getWithHash(CacheConstant.CACHE_MERCHANT + id, Merchant.class);
+        if (Objects.nonNull(merchant)) {
+            return merchant;
         }
+    
+        merchant = merchantMapper.selectById(id);
+        if (Objects.isNull(merchant)) {
+            return null;
+        }
+    
+        redisService.saveWithHash(CacheConstant.CACHE_MERCHANT + id, merchant);
         
         return merchant;
     }
@@ -931,14 +929,16 @@ public class MerchantServiceImpl implements MerchantService {
         return resList;
     }
     
+    /**
+     * 根据uid查询商户
+     * @param uid
+     * @return
+     */
     @Slave
     @Override
     public Merchant queryByUid(Long uid) {
-        Merchant merchant = queryFromCacheById(uid);
-        User user = userService.queryByUidFromCache(merchant.getUid());
-        if (ObjectUtils.isNotEmpty(user)) {
-            merchant.setPhone(user.getPhone());
-        }
+        Merchant merchant = merchantMapper.selectByUid(uid);
+        
         return merchant;
     }
     
