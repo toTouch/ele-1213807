@@ -307,13 +307,12 @@ public class EleUserAuthServiceImpl implements EleUserAuthService {
         List<EleUserAuth> collect = eleUserAuths.stream().map(e -> {
             if (e.getEntryId().equals(EleAuthEntry.ID_CARD_BACK_PHOTO) || e.getEntryId().equals(EleAuthEntry.ID_CARD_FRONT_PHOTO) || e.getEntryId().equals(EleAuthEntry.ID_SELF_PHOTO)) {
                 if (StringUtils.isNotEmpty(e.getValue())) {
-                    e.setValue("https://" + storageConfig.getUrlPrefix() + "/" + e.getValue());
+                    e.setValue(storageConfig.getUrlPrefix() +  e.getValue());
                 }
 
             }
             return e;
         }).collect(Collectors.toList());
-        log.info("collect is -->{}", collect);
         return R.ok(collect);
     }
 

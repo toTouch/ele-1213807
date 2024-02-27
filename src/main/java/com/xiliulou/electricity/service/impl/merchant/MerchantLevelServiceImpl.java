@@ -70,6 +70,11 @@ public class MerchantLevelServiceImpl implements MerchantLevelService {
         return this.merchantLevelMapper.selectNextByMerchantLevel(level, tenantId);
     }
     
+    @Override
+    public MerchantLevel queryLastByMerchantLevel(String level, Integer tenantId) {
+        return this.merchantLevelMapper.selectLastByMerchantLevel(level, tenantId);
+    }
+    
     @Slave
     @Override
     public List<MerchantLevel> queryListByIdList(List<Long> levelIdList) {
@@ -104,6 +109,17 @@ public class MerchantLevelServiceImpl implements MerchantLevelService {
         }
         
         MerchantLevel nextMerchantLevel = this.queryNextByMerchantLevel(merchantLevel.getLevel(), merchantLevel.getTenantId());
+        if (Objects.nonNull(nextMerchantLevel) && StringUtils.isNotBlank(nextMerchantLevel.getRule())) {
+            MerchantLevelDTO merchantLevelDTO = JsonUtil.fromJson(nextMerchantLevel.getRule(), MerchantLevelDTO.class);
+            if (Objects.nonNull(merchantLevelDTO)) {
+                if ((Objects.nonNull(merchantLevelDTO.getInvitationUserCount()) && merchantLevelDTO.getInvitationUserCount() <= request.getInvitationUserCount()) || (
+                        Objects.nonNull(merchantLevelDTO.getRenewalUserCount()) && merchantLevelDTO.getRenewalUserCount() <= request.getRenewalUserCount())) {
+                    return Triple.of(false, "100320", "当前等级设置的人数需于小下一级别，请进行调整");
+                }
+            }
+        }
+    
+        MerchantLevel lastMerchantLevel = this.queryLastByMerchantLevel(merchantLevel.getLevel(), merchantLevel.getTenantId());
         if (Objects.nonNull(nextMerchantLevel) && StringUtils.isNotBlank(nextMerchantLevel.getRule())) {
             MerchantLevelDTO merchantLevelDTO = JsonUtil.fromJson(nextMerchantLevel.getRule(), MerchantLevelDTO.class);
             if (Objects.nonNull(merchantLevelDTO)) {

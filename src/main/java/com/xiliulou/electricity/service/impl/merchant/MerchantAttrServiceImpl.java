@@ -84,6 +84,16 @@ public class MerchantAttrServiceImpl implements MerchantAttrService {
     }
     
     @Override
+    public MerchantAttr queryUpgradeCondition(Long merchantId) {
+        MerchantAttr merchantAttr = this.queryByMerchantIdFromCache(merchantId);
+        if (Objects.isNull(merchantAttr) || !Objects.equals(TenantContextHolder.getTenantId(), merchantAttr.getTenantId())) {
+            return null;
+        }
+    
+        return merchantAttr;
+    }
+    
+    @Override
     public Triple<Boolean, String, Object> updateUpgradeCondition(Long merchantId, Integer condition) {
         MerchantAttr merchantAttr = this.queryByMerchantIdFromCache(merchantId);
         if (Objects.isNull(merchantAttr) || !Objects.equals(merchantAttr.getTenantId(), TenantContextHolder.getTenantId())) {
