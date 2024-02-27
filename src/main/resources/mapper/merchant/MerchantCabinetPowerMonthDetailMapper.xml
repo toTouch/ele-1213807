@@ -4,7 +4,7 @@
     
     <select id="selectListByTenantId" resultType="com.xiliulou.electricity.vo.merchant.MerchantCabinetPowerMonthDetailVO">
         select tenant_id,
-               any_value(placeId)     as placeId,
+               any_value(place_id)     as placeId,
                sum(sum_power)         as month_sum_power,
                sum(sum_charge)        as month_sum_charge,
                any_value(eid)         as eid,
@@ -21,6 +21,6 @@
         where tenant_id = #{tenantId}
           and del_flag = 0
           and date = #{monthDate}
-        group by tenant_id, placeId
+        group by tenant_id, place_id
     </select>
 </mapper>
