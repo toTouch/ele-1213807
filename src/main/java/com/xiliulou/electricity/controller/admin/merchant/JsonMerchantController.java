@@ -172,7 +172,7 @@ public class JsonMerchantController extends BaseController {
      */
     @GetMapping("/admin/merchant/pageCount")
     public R pageCount(@RequestParam(value = "name", required = false) String name, @RequestParam(value = "franchiseeId") Long franchiseeId,@RequestParam(value = "merchantGradeId") Long merchantGradeId,
-            @RequestParam("channelUserId") Long channelUserId) {
+            @RequestParam(value = "channelUserId", required = false) Long channelUserId) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
@@ -201,7 +201,7 @@ public class JsonMerchantController extends BaseController {
      */
     @GetMapping("/admin/merchant/page")
     public R page(@RequestParam("size") long size, @RequestParam("offset") long offset, @RequestParam(value = "name", required = false) String name, @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,@RequestParam(value = "merchantGradeId", required = false) Long merchantGradeId,
-            @RequestParam("channelUserId") Long channelUserId) {
+            @RequestParam(value = "channelUserId", required = false) Long channelUserId) {
         if (size < 0 || size > 50) {
             size = 10L;
         }
