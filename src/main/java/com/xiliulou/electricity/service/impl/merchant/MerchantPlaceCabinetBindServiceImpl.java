@@ -138,6 +138,7 @@ public class MerchantPlaceCabinetBindServiceImpl implements MerchantPlaceCabinet
         queryModel.setPlaceIdList(placeIdList);
         queryModel.setCabinetId(null);
         Integer count = merchantPlaceCabinetBindMapper.countCabinetBindCount(queryModel);
+        
         if (ObjectUtils.isNotEmpty(count) && (count + 1) > MerchantPlaceConstant.BIND_CABINET_COUNT_LIMIT) {
             return Triple.of(false, "120226", String.format("场地绑定柜机数量不能大于%s", MerchantPlaceConstant.BIND_CABINET_COUNT_LIMIT));
         }
@@ -215,6 +216,7 @@ public class MerchantPlaceCabinetBindServiceImpl implements MerchantPlaceCabinet
         placeIdList.add(cabinetBind.getPlaceId());
         MerchantPlaceCabinetBindQueryModel queryModel = MerchantPlaceCabinetBindQueryModel.builder().overlapTime(placeCabinetBindSaveRequest.getUnBindTime())
                 .placeIdList(placeIdList).status(MerchantPlaceConstant.UN_BIND).build();
+        
         List<MerchantPlaceCabinetBind> unBindList = this.queryList(queryModel);
         if (ObjectUtils.isNotEmpty(unBindList)) {
             List<Long> ids = unBindList.stream().map(MerchantPlaceCabinetBind::getId).collect(Collectors.toList());
@@ -227,6 +229,7 @@ public class MerchantPlaceCabinetBindServiceImpl implements MerchantPlaceCabinet
         BeanUtils.copyProperties(placeCabinetBindSaveRequest, unBind);
         unBind.setStatus(MerchantPlaceConstant.UN_BIND);
         unBind.setUpdateTime(currentTimeMillis);
+        
         merchantPlaceCabinetBindMapper.unBind(unBind);
         
         return Triple.of(true, null, null);
@@ -253,6 +256,7 @@ public class MerchantPlaceCabinetBindServiceImpl implements MerchantPlaceCabinet
         update.setId(id);
         update.setDelFlag(MerchantPlaceConstant.DEL_DEL);
         update.setUpdateTime(System.currentTimeMillis());
+        
         merchantPlaceCabinetBindMapper.remove(update);
         
         return Triple.of(true, null, null);

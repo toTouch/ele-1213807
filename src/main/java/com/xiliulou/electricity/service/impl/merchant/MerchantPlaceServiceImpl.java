@@ -359,7 +359,7 @@ public class MerchantPlaceServiceImpl implements MerchantPlaceService {
         merchantPlacePageRequest.setFranchiseeId(merchantPlace.getFranchiseeId());
         
         MerchantPlaceQueryModel queryModel = new MerchantPlaceQueryModel();
-        BeanUtils.copyProperties(merchantPlace, queryModel);
+        BeanUtils.copyProperties(merchantPlacePageRequest, queryModel);
         
         // 查询加盟上下的柜机的信息
         List<MerchantPlaceCabinetVO> merchantPlaceCabinetVOS = merchantPlaceMapper.selectCabinetList(queryModel);
