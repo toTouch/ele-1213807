@@ -9,7 +9,7 @@
     <select id="selectListByPage" resultType="com.xiliulou.electricity.entity.merchant.MerchantPromotionMonthRecord">
         select
         <include refid="basic_field"/>
-        from t_merchant_promotion_day_record
+        from t_merchant_promotion_month_record
         <where>
             del_flag = 0
             <if test="date != null and date != ''">
@@ -27,7 +27,7 @@
     
     <select id="countTotal" resultType="java.lang.Integer">
         select count(1)
-        from t_merchant_promotion_day_record
+        from t_merchant_promotion_month_record
         <where>
             del_flag = 0
             <if test="date != null and date != ''">
