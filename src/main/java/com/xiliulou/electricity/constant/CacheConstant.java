@@ -556,4 +556,6 @@ public interface CacheConstant {
     String CACHE_TENANT_NOTE = "cache_tenant_note:";
     
     
+
+    String CACHE_BATCH_SEND_COUPON = "cache_batch_send_coupon:";
 }
