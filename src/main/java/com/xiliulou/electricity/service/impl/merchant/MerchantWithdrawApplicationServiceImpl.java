@@ -555,7 +555,7 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
                         //若为关闭状态，则代表等待商户管理员确认付款超过时间限制，或锁订商户资金失败。
                         log.info("batch wechat transfer closed by wechat, batchNo = {}, tenant id = {}", batchNo, tenantId);
                         //更新当前批次提现申请表状态为提现失败
-                        merchantWithdrawApplicationMapper.updateApplicationRecordStatusByBatchNo(MerchantWithdrawConstant.WITHDRAW_FAIL, System.currentTimeMillis(), batchNo, tenantId);
+                        merchantWithdrawApplicationMapper.updateApplicationStatusByBatchNo(MerchantWithdrawConstant.WITHDRAW_FAIL, System.currentTimeMillis(), batchNo, tenantId);
 
                         //更新当前批次提现申请详细中的记状态为提现失败
                         merchantWithdrawApplicationRecordService.updateApplicationRecordStatusByBatchNo(MerchantWithdrawConstant.WITHDRAW_FAIL, batchNo, tenantId);
@@ -638,6 +638,7 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
                 if(MerchantWithdrawConstant.WECHAT_BATCH_DETAIL_STATUS_SUCCESS.equals(detailStatus)){
                     //更新单条提现申请和单条详细记录为提现成功状态
                     merchantWithdrawApplicationUpdate.setStatus(MerchantWithdrawConstant.WITHDRAW_SUCCESS);
+                    merchantWithdrawApplicationUpdate.setReceiptTime(System.currentTimeMillis());
                     withdrawApplicationRecordUpdate.setStatus(MerchantWithdrawConstant.WITHDRAW_SUCCESS);
 
                 } else if(MerchantWithdrawConstant.WECHAT_BATCH_DETAIL_STATUS_FAIL.equals(detailStatus)){

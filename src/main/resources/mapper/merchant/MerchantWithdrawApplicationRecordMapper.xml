@@ -230,17 +230,37 @@
     
     <update id="updateApplicationRecordStatusByBatchNo">
         update t_merchant_withdraw_application_record
-        set status = #{status},
-            update_time = #{updateTime}
+        <set>
+            <if test="remark != null and remark != ''">
+                remark = #{remark},
+            </if>
+            <if test="status != null">
+                status = #{status},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+        </set>
         where batch_no = #{batchNo}
           and tenant_id = #{tenantId}
     </update>
     
     <update id="updateMerchantWithdrawStatus">
         update t_merchant_withdraw_application_record
-        set response = #{response},
-            status = #{status},
-            update_time = #{updateTime}
+        <set>
+            <if test="response != null and response != ''">
+                response = #{response},
+            </if>
+            <if test="remark != null and remark != ''">
+                remark = #{remark},
+            </if>
+            <if test="status != null">
+                status = #{status},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+        </set>
         <where>
             <if test="batchNo != null and batchNo != ''">
                 and batch_no = #{batchNo}

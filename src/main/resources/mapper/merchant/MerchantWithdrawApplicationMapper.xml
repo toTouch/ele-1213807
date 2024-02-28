@@ -450,8 +450,8 @@
           and tmwa.tenant_id = #{tenantId}
     </select>
     
-    <update id="updateApplicationRecordStatusByBatchNo">
-        update t_merchant_withdraw_application_record
+    <update id="updateApplicationStatusByBatchNo">
+        update t_merchant_withdraw_application
         set status = #{status},
             update_time = #{updateTime}
         where batch_no = #{batchNo}
@@ -461,6 +461,7 @@
     <update id="updateMerchantWithdrawStatus">
         update t_merchant_withdraw_application
         set status = #{status},
+            receipt_time = #{receiptTime},
             update_time = #{updateTime}
         <where>
             <if test="batchNo != null and batchNo != ''">
