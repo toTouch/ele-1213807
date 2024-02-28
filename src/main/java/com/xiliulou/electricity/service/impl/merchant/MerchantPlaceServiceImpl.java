@@ -367,7 +367,7 @@ public class MerchantPlaceServiceImpl implements MerchantPlaceService {
         
         if (ObjectUtils.isNotEmpty(merchantPlaceCabinetVOS)) {
             merchantPlaceCabinetVOS.forEach(item -> {
-                if (Objects.nonNull(item.getPlaceId())) {
+                if (Objects.nonNull(item) && Objects.nonNull(item.getPlaceId())) {
                     item.setDisable(MerchantPlaceCabinetVO.YES);
                 } else {
                     item.setDisable(MerchantPlaceCabinetVO.NO);
