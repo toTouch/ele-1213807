@@ -326,11 +326,12 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
     @Override
     public void handelProtectionAndStartExpired() {
         MerchantJoinRecord protectionJoinRecord = new MerchantJoinRecord();
+        protectionJoinRecord.setProtectionStatus(MerchantJoinRecord.PROTECTION_STATUS_EXPIRED);
         protectionJoinRecord.setUpdateTime(System.currentTimeMillis());
         merchantJoinRecordMapper.updateProtectionExpired(protectionJoinRecord);
         
         MerchantJoinRecord merchantJoinRecord = new MerchantJoinRecord();
-        merchantJoinRecord.setStatus(MerchantJoinRecord.STATUS_INIT);
+        merchantJoinRecord.setStatus(MerchantJoinRecord.STATUS_EXPIRED);
         merchantJoinRecord.setUpdateTime(System.currentTimeMillis());
         merchantJoinRecordMapper.updateExpired(merchantJoinRecord);
     }
