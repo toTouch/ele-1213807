@@ -92,12 +92,13 @@
                mwar.create_time,
                mwar.update_time,
                mwar.tenant_id,
-               mwar.remark,
+               mw.remark,
                mwar.uid,
                mwar.order_no,
                mwar.transaction_no,
                mwar.status
         from t_merchant_withdraw_application_record mwar
+        left join t_merchant_withdraw_application mw on mwar.order_no = mw.order_no
         <where>
             mwar.tenant_id = #{tenantId}
             <if test="id != null and id != ''">

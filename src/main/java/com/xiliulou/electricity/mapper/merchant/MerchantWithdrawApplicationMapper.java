@@ -34,6 +34,10 @@ public interface MerchantWithdrawApplicationMapper {
     
     MerchantWithdrawApplication selectById(@Param("id") Long id);
     
+    List<MerchantWithdrawApplicationVO> selectRecordList(MerchantWithdrawApplicationRequest merchantWithdrawApplicationRequest);
+    
+    Integer selectRecordListCount(MerchantWithdrawApplicationRequest merchantWithdrawApplicationRequest);
+    
     BigDecimal sumByStatus(@Param("tenantId") Integer tenantId,@Param("status") Integer status,@Param("uid") Long uid);
     
     List<MerchantWithdrawApplication> selectListForWithdrawInProgress(@Param("checkTime") Long checkTime, @Param("offset") int offset, @Param("size") int size);
