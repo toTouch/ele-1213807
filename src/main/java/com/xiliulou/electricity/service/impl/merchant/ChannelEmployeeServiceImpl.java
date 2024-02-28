@@ -18,6 +18,7 @@ import com.xiliulou.electricity.mapper.merchant.ChannelEmployeeMapper;
 import com.xiliulou.electricity.request.merchant.ChannelEmployeeRequest;
 import com.xiliulou.electricity.request.merchant.MerchantPageRequest;
 import com.xiliulou.electricity.service.FranchiseeService;
+import com.xiliulou.electricity.service.UserOauthBindService;
 import com.xiliulou.electricity.service.UserRoleService;
 import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.service.merchant.ChannelEmployeeService;
@@ -52,6 +53,9 @@ public class ChannelEmployeeServiceImpl implements ChannelEmployeeService {
     
     @Resource
     UserService userService;
+    
+    @Resource
+    private UserOauthBindService userOauthBindService;
     
     @Resource
     UserRoleService userRoleService;
@@ -300,6 +304,7 @@ public class ChannelEmployeeServiceImpl implements ChannelEmployeeService {
         User user = userService.queryByUidFromCache(channelEmployee.getUid());
         Integer result = 0;
         if(Objects.nonNull(user)){
+            userOauthBindService.deleteByUid(channelEmployee.getUid(), channelEmployee.getTenantId().intValue());
             result = userService.removeById(channelEmployee.getUid(), System.currentTimeMillis());
             redisService.delete(CacheConstant.CACHE_USER_UID + channelEmployee.getUid());
             redisService.delete(CacheConstant.CACHE_USER_PHONE + user.getTenantId() + ":" + user.getPhone() + ":" + user.getUserType());
