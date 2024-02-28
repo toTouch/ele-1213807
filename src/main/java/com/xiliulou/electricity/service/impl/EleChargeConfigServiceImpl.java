@@ -6,6 +6,7 @@ import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.thread.XllThreadPoolExecutorService;
 import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.core.utils.DataUtil;
+import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.dto.EleChargeConfigCalcDetailDto;
@@ -21,7 +22,9 @@ import com.xiliulou.electricity.service.StoreService;
 import com.xiliulou.electricity.service.merchant.EleChargeConfigRecordService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
+import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.ChargeConfigVo;
+import com.xiliulou.security.bean.TokenUser;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -267,7 +270,9 @@ public class EleChargeConfigServiceImpl implements EleChargeConfigService {
             executorService.execute(() -> {
                 EleChargeConfigRecord record = new EleChargeConfigRecord();
                 BeanUtil.copyProperties(config, record);
-                record.setDelFlag(NumberConstant.ZERO);
+                record.setOperationType(EleChargeConfigRecord.OPERATION_TYPE_NEW);
+                record.setOperationTime(System.currentTimeMillis());
+                record.setOperator(Optional.ofNullable(SecurityUtils.getUserInfo()).map(TokenUser::getUid).orElse(NumberConstant.ZERO_L));
         
                 eleChargeConfigRecordService.insertOne(record);
             });
@@ -363,9 +368,10 @@ public class EleChargeConfigServiceImpl implements EleChargeConfigService {
             executorService.execute(() -> {
                 EleChargeConfigRecord record = new EleChargeConfigRecord();
                 BeanUtil.copyProperties(updateConfig, record);
-                record.setCreateTime(System.currentTimeMillis());
-                record.setDelFlag(NumberConstant.ZERO);
-        
+                record.setOperationType(EleChargeConfigRecord.OPERATION_TYPE_UPDATE);
+                record.setOperationTime(System.currentTimeMillis());
+                record.setOperator(Optional.ofNullable(SecurityUtils.getUserInfo()).map(TokenUser::getUid).orElse(NumberConstant.ZERO_L));
+    
                 eleChargeConfigRecordService.insertOne(record);
             });
         } finally {
@@ -386,8 +392,9 @@ public class EleChargeConfigServiceImpl implements EleChargeConfigService {
         executorService.execute(() -> {
             EleChargeConfigRecord record = new EleChargeConfigRecord();
             BeanUtil.copyProperties(config, record);
-            record.setCreateTime(System.currentTimeMillis());
-            record.setDelFlag(NumberConstant.ONE);
+            record.setOperationType(EleChargeConfigRecord.OPERATION_TYPE_DELETE);
+            record.setOperationTime(System.currentTimeMillis());
+            record.setOperator(Optional.ofNullable(SecurityUtils.getUserInfo()).map(TokenUser::getUid).orElse(NumberConstant.ZERO_L));
     
             eleChargeConfigRecordService.insertOne(record);
         });

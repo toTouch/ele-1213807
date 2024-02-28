@@ -101,33 +101,35 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
     @Transactional(rollbackFor = Exception.class)
     @Override
     public Triple<Boolean, String, Object> saveMerchantWithdrawApplication(MerchantWithdrawApplicationRequest merchantWithdrawApplicationRequest) {
-        
         //限频
         Boolean getLockSuccess = redisService.setNx(CacheConstant.CACHE_MERCHANT_WITHDRAW_APPLICATION + merchantWithdrawApplicationRequest.getUid(), "1", 3L, false);
         if (!getLockSuccess) {
-            return Triple.of(false, null, "操作频繁,请稍后再试");
+            return Triple.of(false, "000000", "操作频繁,请稍后再试");
         }
 
         //检查商户是否存在
         Merchant queryMerchant = merchantService.queryByUid(merchantWithdrawApplicationRequest.getUid());
         if(Objects.isNull(queryMerchant)){
-            return Triple.of(false, "", "商户不存在");
+            log.error("merchant user not found, uid = {}", merchantWithdrawApplicationRequest.getUid());
+            return Triple.of(false, "120003", "商户不存在");
         }
     
         //查询商户余额表，是否存在商户账户
         MerchantUserAmount merchantUserAmount = merchantUserAmountService.queryByUid(merchantWithdrawApplicationRequest.getUid());
         if(Objects.isNull(merchantUserAmount)){
-            return Triple.of(false, "", "商户余额账户不存在");
+            log.error("merchant user balance account not found, uid = {}", merchantWithdrawApplicationRequest.getUid());
+            return Triple.of(false, "120010", "商户余额账户不存在");
         }
         
         //单词提现金额限制：大于0， 小于等于500
         if(merchantWithdrawApplicationRequest.getAmount().compareTo(BigDecimal.ZERO) < 0 || merchantWithdrawApplicationRequest.getAmount().compareTo(new BigDecimal(MerchantWithdrawConstant.WITHDRAW_MAX_AMOUNT)) > 0){
-            return Triple.of(false, "", "单次提现金额范围（0-500）");
+            return Triple.of(false, "120011", "单次提现金额范围（0-500）");
         }
         
         //检查余额表中的余额是否满足提现金额
         if(merchantUserAmount.getBalance().compareTo(merchantWithdrawApplicationRequest.getAmount()) < 0){
-            return Triple.of(false, "", "提现金额不足");
+            log.error("merchant user balance amount not enough, amount = {}, uid = {}", merchantWithdrawApplicationRequest.getAmount(), merchantWithdrawApplicationRequest.getUid());
+            return Triple.of(false, "120012", "提现金额不足");
         }
 
         //查询银行卡信息，检查银行卡是否存在，并且检查该银行卡是否支持转账，若为微信转账，则不需要银行卡信息
@@ -158,43 +160,43 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
     public Triple<Boolean, String, Object> reviewMerchantWithdrawApplication(ReviewWithdrawApplicationRequest reviewWithdrawApplicationRequest) {
     
         if (!redisService.setNx(CacheConstant.CACHE_MERCHANT_WITHDRAW_APPLICATION_REVIEW + reviewWithdrawApplicationRequest.getId(), "1", 3 * 1000L, false)) {
-            return Triple.of(false, "", "操作频繁");
+            return Triple.of(false, "000000", "操作频繁");
         }
     
         Integer tenantId = TenantContextHolder.getTenantId();
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
-            return  Triple.of(false, "", "未找到用户");
+            return  Triple.of(false, "120013", "未找到用户");
         }
         
         //检查入参中的状态是否为同意或者拒绝状态，若为其他状态，则提示错误。
         if(!MerchantWithdrawConstant.REVIEW_REFUSED.equals(reviewWithdrawApplicationRequest.getStatus()) || !MerchantWithdrawConstant.REVIEW_SUCCESS.equals(reviewWithdrawApplicationRequest.getStatus())){
             log.error("Illegal parameter error for approve withdraw application,  status = {}", reviewWithdrawApplicationRequest.getStatus());
-            return Triple.of(false, "", "参数不合法");
+            return Triple.of(false, "120014", "参数不合法");
         }
 
         //检查提现审核参数状态，是否为待审核状态
         MerchantWithdrawApplication merchantWithdrawApplication = merchantWithdrawApplicationMapper.selectById(reviewWithdrawApplicationRequest.getId());
         if(Objects.isNull(merchantWithdrawApplication)){
-            return Triple.of(false, "", "提现申请不存在");
+            return Triple.of(false, "120015", "提现申请不存在");
         }
 
         //检查提现状态是否为审核中的状态
         if (!MerchantWithdrawConstant.REVIEW_IN_PROGRESS.equals(merchantWithdrawApplication.getStatus())) {
-            return Triple.of(false, "", "不能重复审核");
+            return Triple.of(false, "120016", "不能重复审核");
         }
     
         //支付相关
         ElectricityPayParams electricityPayParams = electricityPayParamsService.queryFromCache(tenantId);
         if (Objects.isNull(electricityPayParams)) {
             log.error("review Merchant withdraw application error, not found pay params for tenant. tenantId = {}", tenantId);
-            return Triple.of(false, "", "未配置支付参数");
+            return Triple.of(false, "120017", "未配置支付参数");
         }
     
         UserOauthBind userOauthBind = userOauthBindService.queryUserOauthBySysId(user.getUid(), tenantId);
         if (Objects.isNull(userOauthBind) || Objects.isNull(userOauthBind.getThirdId())) {
             log.error("review Merchant withdraw application error, not found user auth bind info for merchant user. uid = {}", merchantWithdrawApplication.getUid());
-            return Triple.of(false, "", "未找到用户的第三方授权信息");
+            return Triple.of(false, "120018", "未找到用户的第三方授权信息");
         }
         
         //生成提现批次单号
@@ -285,7 +287,7 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
             //回滚商户余额表中的提现金额
             merchantUserAmountService.rollBackWithdrawAmount(merchantWithdrawApplication.getAmount(), merchantWithdrawApplication.getUid(), merchantWithdrawApplication.getTenantId().longValue());
             
-            return Triple.of(false, "", "提现失败");
+            return Triple.of(false, "120019", "提现失败");
         }
     
         merchantWithdrawApplicationRecordService.insertOne(merchantWithdrawApplicationRecord);
@@ -300,31 +302,31 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
         Integer tenantId = TenantContextHolder.getTenantId();
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
-            return  Triple.of(false, "", "未找到用户");
+            return  Triple.of(false, "120013", "未找到用户");
         }
     
         if (!redisService.setNx(CacheConstant.CACHE_MERCHANT_WITHDRAW_APPLICATION_REVIEW + user.getUid(), "1", 3 * 1000L, false)) {
-            return Triple.of(false, "", "操作频繁");
+            return Triple.of(false, "000000", "操作频繁");
         }
     
         //检查入参中的状态是否为同意或者拒绝状态，若为其他状态，则提示错误。
         if(!MerchantWithdrawConstant.REVIEW_REFUSED.equals(batchReviewWithdrawApplicationRequest.getStatus()) || !MerchantWithdrawConstant.REVIEW_SUCCESS.equals(batchReviewWithdrawApplicationRequest.getStatus())){
             log.error("Illegal parameter error for approve withdraw application,  status = {}", batchReviewWithdrawApplicationRequest.getStatus());
-            return Triple.of(false, "", "参数不合法");
+            return Triple.of(false, "120014", "参数不合法");
         }
     
         List<MerchantWithdrawApplication> merchantWithdrawApplications = merchantWithdrawApplicationMapper.selectListByIds(batchReviewWithdrawApplicationRequest.getIds(), tenantId.longValue());
     
         if (CollectionUtils.isEmpty(merchantWithdrawApplications) || !Objects.equals(merchantWithdrawApplications.size(), batchReviewWithdrawApplicationRequest.getIds().size())) {
             log.error("batch handle withdraw record is not exists, ids = {}", batchReviewWithdrawApplicationRequest.getIds());
-            return Triple.of(false, "", "提现记录不存在");
+            return Triple.of(false, "120015", "提现申请不存在");
         }
     
         //支付相关
         ElectricityPayParams electricityPayParams = electricityPayParamsService.queryFromCache(tenantId);
         if (Objects.isNull(electricityPayParams)) {
             log.error("review Merchant withdraw application error, not found pay params for tenant. tenantId = {}", tenantId);
-            return Triple.of(false, "", "未配置支付参数");
+            return Triple.of(false, "120017", "未配置支付参数");
         }
     
         // 过滤已经审核的提现订单
@@ -339,7 +341,7 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
         });
     
         if (!CollectionUtils.isEmpty(alreadyReviewList)) {
-            return Triple.of(false, "", "只可选择审核中状态的数据项，请重新选择后操作");
+            return Triple.of(false, "120020", "只可选择审核中状态的数据项，请重新选择后操作");
         }
     
         batchReviewWithdrawApplicationRequest.setCheckTime(System.currentTimeMillis());
@@ -359,7 +361,7 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
             List<Long> uidList = uids.stream().collect(Collectors.toList());
             List<MerchantUserAmount> merchantUserAmountList = merchantUserAmountService.queryUserAmountList(uidList, tenantId.longValue());
             if(CollectionUtils.isEmpty(merchantUserAmountList)){
-                return Triple.of(false, "", "所选商户账户不存在");
+                return Triple.of(false, "120021", "所选商户账户不存在");
             }
     
             Map<Long, MerchantUserAmount> merchantUserAmountMap = merchantUserAmountList.stream().collect(Collectors.toMap(MerchantUserAmount::getUid, Function.identity()));
@@ -465,14 +467,14 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
             merchantWithdrawApplicationRecordService.batchInsert(merchantWithdrawApplicationRecords);
             int result = merchantWithdrawApplicationMapper.updateByIds(batchReviewWithdrawApplicationRequest);
             
-            return Triple.of(true, "", "批量提现失败");
+            return Triple.of(true, "120022", "批量提现失败");
         }
     
         //批量创建批次记录
         merchantWithdrawApplicationRecordService.batchInsert(merchantWithdrawApplicationRecords);
         int result = merchantWithdrawApplicationMapper.updateByIds(batchReviewWithdrawApplicationRequest);
         
-        return Triple.of(true, "", result);
+        return Triple.of(true, null, result);
     }
     
     @Override
@@ -508,7 +510,7 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
         return merchantWithdrawApplicationMapper.sumByStatus(tenantId, status, uid);
     }
     
-    @Slave
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public void updateMerchantWithdrawStatus() {
         //获取审核状态为提现中且审核时间为30分钟前的提现申请记录
@@ -553,7 +555,7 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
                         //若为关闭状态，则代表等待商户管理员确认付款超过时间限制，或锁订商户资金失败。
                         log.info("batch wechat transfer closed by wechat, batchNo = {}, tenant id = {}", batchNo, tenantId);
                         //更新当前批次提现申请表状态为提现失败
-                        merchantWithdrawApplicationMapper.updateApplicationRecordStatusByBatchNo(MerchantWithdrawConstant.WITHDRAW_FAIL, System.currentTimeMillis(), batchNo, tenantId);
+                        merchantWithdrawApplicationMapper.updateApplicationStatusByBatchNo(MerchantWithdrawConstant.WITHDRAW_FAIL, System.currentTimeMillis(), batchNo, tenantId);
 
                         //更新当前批次提现申请详细中的记状态为提现失败
                         merchantWithdrawApplicationRecordService.updateApplicationRecordStatusByBatchNo(MerchantWithdrawConstant.WITHDRAW_FAIL, batchNo, tenantId);
@@ -581,7 +583,19 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
 
 
     }
-
+    
+    @Override
+    public List<MerchantWithdrawApplicationVO> selectRecordList(MerchantWithdrawApplicationRequest merchantWithdrawApplicationRequest) {
+        
+        return merchantWithdrawApplicationMapper.selectRecordList(merchantWithdrawApplicationRequest);
+    }
+    
+    @Override
+    public Integer selectRecordListCount(MerchantWithdrawApplicationRequest merchantWithdrawApplicationRequest) {
+        return merchantWithdrawApplicationMapper.selectRecordListCount(merchantWithdrawApplicationRequest);
+    }
+    
+    @Transactional(rollbackFor = Exception.class)
     public void handleBatchDetailsInfo(String batchNo, Integer tenantId){
         //查询当前批次的明细记录，并查询每条明细的处理结果是否为成功状态，若失败，则记录失败原因。
         List<MerchantWithdrawApplicationRecord> merchantWithdrawApplicationRecords = merchantWithdrawApplicationRecordService.selectListByBatchNo(batchNo, tenantId);
@@ -624,6 +638,7 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
                 if(MerchantWithdrawConstant.WECHAT_BATCH_DETAIL_STATUS_SUCCESS.equals(detailStatus)){
                     //更新单条提现申请和单条详细记录为提现成功状态
                     merchantWithdrawApplicationUpdate.setStatus(MerchantWithdrawConstant.WITHDRAW_SUCCESS);
+                    merchantWithdrawApplicationUpdate.setReceiptTime(System.currentTimeMillis());
                     withdrawApplicationRecordUpdate.setStatus(MerchantWithdrawConstant.WITHDRAW_SUCCESS);
 
                 } else if(MerchantWithdrawConstant.WECHAT_BATCH_DETAIL_STATUS_FAIL.equals(detailStatus)){

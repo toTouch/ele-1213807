@@ -50,4 +50,8 @@ public interface MerchantWithdrawApplicationService {
     
     void updateMerchantWithdrawStatus();
     
+    List<MerchantWithdrawApplicationVO> selectRecordList(MerchantWithdrawApplicationRequest merchantWithdrawApplicationRequest);
+    
+    Integer selectRecordListCount(MerchantWithdrawApplicationRequest merchantWithdrawApplicationRequest);
+    
 }

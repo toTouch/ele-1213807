@@ -65,7 +65,7 @@ public class ReportManagementServiceImpl implements ReportManagementService {
         
         reportManagements.parallelStream().forEach(item->{
             if(StringUtils.isNotBlank(item.getUrl())){
-                item.setUrl(StorageConfig.HTTPS + storageConfig.getBucketName() + "." + storageConfig.getOssEndpoint() + "/" + item.getUrl());
+                item.setUrl(storageConfig.getUrlPrefix()+ item.getUrl());
             }
         });
         

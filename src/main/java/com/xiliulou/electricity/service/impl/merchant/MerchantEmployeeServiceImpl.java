@@ -15,6 +15,7 @@ import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.merchant.MerchantEmployeeMapper;
 import com.xiliulou.electricity.query.merchant.MerchantPromotionEmployeeDetailQueryModel;
 import com.xiliulou.electricity.request.merchant.MerchantEmployeeRequest;
+import com.xiliulou.electricity.service.UserOauthBindService;
 import com.xiliulou.electricity.service.UserRoleService;
 import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.service.merchant.MerchantEmployeeService;
@@ -49,6 +50,9 @@ public class MerchantEmployeeServiceImpl implements MerchantEmployeeService {
     private UserService userService;
     
     @Resource
+    private UserOauthBindService userOauthBindService;
+    
+    @Resource
     private CustomPasswordEncoder customPasswordEncoder;
     
     @Resource
@@ -66,6 +70,9 @@ public class MerchantEmployeeServiceImpl implements MerchantEmployeeService {
     @Transactional(rollbackFor = Exception.class)
     @Override
     public Integer saveMerchantEmployee(MerchantEmployeeRequest merchantEmployeeRequest) {
+        if (!redisService.setNx(CacheConstant.CACHE_MERCHANT_EMPLOYEE_SAVE_LOCK + merchantEmployeeRequest.getMerchantUid(), "1", 3000L, false)) {
+            throw new BizException("000000", "操作频繁,请稍后再试");
+        }
     
         // 检查当前手机号是否已经注册
         String name = merchantEmployeeRequest.getName();
@@ -74,7 +81,7 @@ public class MerchantEmployeeServiceImpl implements MerchantEmployeeService {
         //userService.queryByUserName(name);
         
         User existUser = userService.queryByUserPhone(phone, User.TYPE_USER_MERCHANT_EMPLOYEE, merchantEmployeeRequest.getTenantId());
-        if(Objects.isNull(existUser)){
+        if(Objects.nonNull(existUser)){
             throw new BizException("120001", "当前手机号已注册");
         }
         
@@ -120,16 +127,19 @@ public class MerchantEmployeeServiceImpl implements MerchantEmployeeService {
         return result;
     }
     
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public Integer updateMerchantEmployee(MerchantEmployeeRequest merchantEmployeeRequest) {
-    
+        if (!redisService.setNx(CacheConstant.CACHE_MERCHANT_EMPLOYEE_UPDATE_LOCK + merchantEmployeeRequest.getMerchantUid(), "1", 3000L, false)) {
+            throw new BizException("000000", "操作频繁,请稍后再试");
+        }
         //检查当前手机号是否已经注册
         String phone = merchantEmployeeRequest.getPhone();
     
         //userService.queryByUserName(name);
     
         User existUser = userService.queryByUserPhone(phone, User.TYPE_USER_MERCHANT_EMPLOYEE, merchantEmployeeRequest.getTenantId());
-        if(Objects.isNull(existUser)){
+        if(Objects.nonNull(existUser)){
             throw new BizException("120002", "当前手机号已注册");
         }
     
@@ -139,8 +149,8 @@ public class MerchantEmployeeServiceImpl implements MerchantEmployeeService {
             throw new BizException("120003", "当前商户不可用");
         }
         
-        MerchantEmployee merchantEmployee = merchantEmployeeMapper.selectById(merchantEmployeeRequest.getId());
-        if(Objects.isNull(merchantEmployee)){
+        MerchantEmployeeVO merchantEmployeeVO = merchantEmployeeMapper.selectById(merchantEmployeeRequest.getId());
+        if(Objects.isNull(merchantEmployeeVO)){
             log.error("not found merchant employee by id, id = {}", merchantEmployeeRequest.getId());
             throw new BizException("120004", "商户员工不存在");
         }
@@ -154,7 +164,7 @@ public class MerchantEmployeeServiceImpl implements MerchantEmployeeService {
             updateUser.setLockFlag(User.USER_UN_LOCK);
         }
     
-        updateUser.setUid(merchantEmployee.getUid());
+        updateUser.setUid(merchantEmployeeVO.getUid());
         updateUser.setPhone(merchantEmployeeRequest.getPhone());
         updateUser.setUserType(User.TYPE_USER_MERCHANT_EMPLOYEE);
         updateUser.setTenantId(TenantContextHolder.getTenantId());
@@ -168,20 +178,22 @@ public class MerchantEmployeeServiceImpl implements MerchantEmployeeService {
         return merchantEmployeeMapper.updateOne(merchantEmployeeUpdate);
     }
     
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public Integer removeMerchantEmployee(Long id) {
-        MerchantEmployee merchantEmployee = merchantEmployeeMapper.selectById(id);
-        if(Objects.isNull(merchantEmployee)) {
+        MerchantEmployeeVO merchantEmployeeVO = merchantEmployeeMapper.selectById(id);
+        if(Objects.isNull(merchantEmployeeVO)) {
             log.error("not found merchant employee by id, id = {}", id);
             throw new BizException("120004", "商户员工不存在");
         }
-        User user = userService.queryByUidFromCache(merchantEmployee.getUid());
+        merchantEmployeeMapper.removeById(id, System.currentTimeMillis());
         
+        User user = userService.queryByUidFromCache(merchantEmployeeVO.getUid());
         Integer result = 0;
         if(Objects.nonNull(user)){
             //userService.deleteInnerUser(merchantEmployee.getUid());
-            result = userService.removeById(merchantEmployee.getUid(), System.currentTimeMillis());
-            redisService.delete(CacheConstant.CACHE_USER_UID + merchantEmployee.getUid());
+            result = userService.removeById(merchantEmployeeVO.getUid(), System.currentTimeMillis());
+            redisService.delete(CacheConstant.CACHE_USER_UID + merchantEmployeeVO.getUid());
             redisService.delete(CacheConstant.CACHE_USER_PHONE + user.getTenantId() + ":" + user.getPhone() + ":" + user.getUserType());
         }
         return result;
@@ -190,11 +202,7 @@ public class MerchantEmployeeServiceImpl implements MerchantEmployeeService {
     @Slave
     @Override
     public MerchantEmployeeVO queryMerchantEmployeeById(Long id) {
-        MerchantEmployee merchantEmployee = merchantEmployeeMapper.selectById(id);
-        MerchantEmployeeVO merchantEmployeeVO = new MerchantEmployeeVO();
-        if(Objects.nonNull(merchantEmployee)){
-            BeanUtils.copyProperties(merchantEmployee, merchantEmployeeVO);
-        }
+        MerchantEmployeeVO merchantEmployeeVO = merchantEmployeeMapper.selectById(id);
         
         return merchantEmployeeVO;
     }
@@ -202,11 +210,7 @@ public class MerchantEmployeeServiceImpl implements MerchantEmployeeService {
     @Slave
     @Override
     public MerchantEmployeeVO queryMerchantEmployeeByUid(Long uid) {
-        MerchantEmployee merchantEmployee = merchantEmployeeMapper.selectByUid(uid);
-        MerchantEmployeeVO merchantEmployeeVO = new MerchantEmployeeVO();
-        if(Objects.nonNull(merchantEmployee)){
-            BeanUtils.copyProperties(merchantEmployee, merchantEmployeeVO);
-        }
+        MerchantEmployeeVO merchantEmployeeVO = merchantEmployeeMapper.selectByUid(uid);
         
         return merchantEmployeeVO;
     }
@@ -222,6 +226,7 @@ public class MerchantEmployeeServiceImpl implements MerchantEmployeeService {
             if(Objects.nonNull(user)){
                 merchantEmployeeVO.setName(user.getName());
                 merchantEmployeeVO.setPhone(user.getPhone());
+                merchantEmployeeVO.setStatus(user.getLockFlag());
             }
             MerchantPlace merchantPlace = merchantPlaceService.queryFromCacheById(merchantEmployeeVO.getPlaceId());
             if(Objects.nonNull(merchantPlace)){

@@ -49,8 +49,6 @@ public class MerchantAttr {
     
     private Integer delFlag;
     
-    private Long merchantId;
-    
     private Integer tenantId;
     
     private Long createTime;

@@ -34,6 +34,10 @@ public interface MerchantWithdrawApplicationMapper {
     
     MerchantWithdrawApplication selectById(@Param("id") Long id);
     
+    List<MerchantWithdrawApplicationVO> selectRecordList(MerchantWithdrawApplicationRequest merchantWithdrawApplicationRequest);
+    
+    Integer selectRecordListCount(MerchantWithdrawApplicationRequest merchantWithdrawApplicationRequest);
+    
     BigDecimal sumByStatus(@Param("tenantId") Integer tenantId,@Param("status") Integer status,@Param("uid") Long uid);
     
     List<MerchantWithdrawApplication> selectListForWithdrawInProgress(@Param("checkTime") Long checkTime, @Param("offset") int offset, @Param("size") int size);
@@ -48,7 +52,7 @@ public interface MerchantWithdrawApplicationMapper {
      * @param tenantId
      * @return
      */
-    Integer updateApplicationRecordStatusByBatchNo(@Param("status") Integer status, @Param("updateTime") Long updateTime, @Param("batchNo") String batchNo, @Param("tenantId") Integer tenantId);
+    Integer updateApplicationStatusByBatchNo(@Param("status") Integer status, @Param("updateTime") Long updateTime, @Param("batchNo") String batchNo, @Param("tenantId") Integer tenantId);
     
     /**
      * 按照batchNo, orderNo, tenantId等条件更新提现状态

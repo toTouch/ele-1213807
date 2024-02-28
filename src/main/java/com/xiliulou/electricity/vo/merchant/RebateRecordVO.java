@@ -72,6 +72,7 @@ public class RebateRecordVO {
      * 渠道员
      */
     private Long channeler;
+    private String channelerName;
     
     /**
      * 渠道员返现

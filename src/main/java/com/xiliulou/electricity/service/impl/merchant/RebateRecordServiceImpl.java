@@ -140,7 +140,10 @@ public class RebateRecordServiceImpl implements RebateRecordService {
             
             User placeUser = userService.queryByUidFromCache(item.getPlaceUid());
             rebateRecord.setPlaceUserName(Objects.nonNull(placeUser) ? placeUser.getName() : "");
-            
+    
+            User channel = userService.queryByUidFromCache(item.getChanneler());
+            rebateRecord.setChannelerName(Objects.nonNull(channel) ? channel.getName() : "");
+    
             return rebateRecord;
             
         }).collect(Collectors.toList());

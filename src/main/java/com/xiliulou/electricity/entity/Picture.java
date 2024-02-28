@@ -39,7 +39,7 @@ public class Picture {
     private Integer seq;
     /**
      * 图片类型 0:小程序
-     * 1-门店 3-车辆
+     * 1-门店 3-车辆型号 4-场地
      */
     private Integer imgType;
     /**

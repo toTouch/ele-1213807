@@ -323,6 +323,89 @@
         and tmwa.del_flag = 0
     </select>
     
+    <select id="selectRecordList" resultType="com.xiliulou.electricity.vo.merchant.MerchantWithdrawApplicationVO">
+        select tmwa.id,
+            tmwa.uid,
+            tu.name,
+            tu.phone,
+            tmwa.order_no,
+            tmwa.amount,
+            tmwa.remark,
+            tmwa.status,
+            tmwa.receipt_time,
+            tmwa.tenant_id,
+            tmwa.del_flag,
+            tmwa.create_time,
+            tmwa.update_time
+        from t_merchant_withdraw_application tmwa
+        left join t_user tu on tu.uid = tmwa.uid
+        left join t_merchant tm om on tm.uid = tmwa.uid
+        <where>
+            tmwa.del_flag = 0
+            and tmwa.tenant_id = #{tenantId}
+            <if test="uid != null and uid != ''">
+                and tmwa.uid = #{uid}
+            </if>
+            
+            <if test="status != null and status != ''">
+                and tmwa.status = #{status}
+            </if>
+            
+            <if test="beginTime != null ">
+                and tmwa.receipt_time <![CDATA[ >=  ]]> #{beginTime}
+            </if>
+            <if test="endTime != null ">
+                and tmwa.receipt_time <![CDATA[ <=  ]]> #{endTime}
+            </if>
+            
+            <if test="franchiseeIds != null">
+                and tm.franchisee_id in
+                <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
+                    #{id}
+                </foreach>
+            </if>
+        
+        </where>
+        order by tmwa.receipt_time desc
+        <if test="offset != null and size != null">
+            limit #{offset}, #{size}
+        </if>
+    
+    </select>
+    
+    <select id="selectRecordListCount" resultType="Integer">
+        select count(1)
+        from t_merchant_withdraw_application tmwa
+        left join t_user tu on tu.uid = tmwa.uid
+        left join t_merchant tm om on tm.uid = tmwa.uid
+        <where>
+            tmwa.del_flag = 0
+            and tmwa.tenant_id = #{tenantId}
+            <if test="uid != null and uid != ''">
+                and tmwa.uid = #{uid}
+            </if>
+            
+            <if test="status != null and status != ''">
+                and tmwa.status = #{status}
+            </if>
+            
+            <if test="beginTime != null ">
+                and tmwa.receipt_time <![CDATA[ >=  ]]> #{beginTime}
+            </if>
+            <if test="endTime != null ">
+                and tmwa.receipt_time <![CDATA[ <=  ]]> #{endTime}
+            </if>
+    
+            <if test="franchiseeIds != null">
+                and tm.franchisee_id in
+                <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
+                    #{id}
+                </foreach>
+            </if>
+
+        </where>
+    </select>
+    
     <!--通过主键物理删除渠道员工-->
     <delete id="deleteById">
         delete from t_merchant_withdraw_application
@@ -367,8 +450,8 @@
           and tmwa.tenant_id = #{tenantId}
     </select>
     
-    <update id="updateApplicationRecordStatusByBatchNo">
-        update t_merchant_withdraw_application_record
+    <update id="updateApplicationStatusByBatchNo">
+        update t_merchant_withdraw_application
         set status = #{status},
             update_time = #{updateTime}
         where batch_no = #{batchNo}
@@ -378,6 +461,7 @@
     <update id="updateMerchantWithdrawStatus">
         update t_merchant_withdraw_application
         set status = #{status},
+            receipt_time = #{receiptTime},
             update_time = #{updateTime}
         <where>
             <if test="batchNo != null and batchNo != ''">

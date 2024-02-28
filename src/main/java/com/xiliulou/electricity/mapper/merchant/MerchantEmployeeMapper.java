@@ -14,17 +14,19 @@ import java.util.List;
  * @date 2024/2/18 21:24
  */
 public interface MerchantEmployeeMapper {
-    MerchantEmployee selectById(@Param("id") Long id);
+    MerchantEmployeeVO selectById(@Param("id") Long id);
     
-    MerchantEmployee selectByUid(@Param("id") Long id);
+    MerchantEmployeeVO selectByUid(@Param("id") Long id);
+    
     List<MerchantEmployeeVO> selectListByCondition(MerchantEmployeeRequest merchantEmployeeRequest);
+    
     Integer countByCondition(MerchantEmployeeRequest merchantEmployeeRequest);
   
     Integer insertOne(MerchantEmployee merchantEmployee);
     
     Integer updateOne(MerchantEmployee merchantEmployee);
     
-    Integer removeById(@Param("id") Long id);
+    Integer removeById(@Param("id") Long id, @Param("updateTime") Long updateTime);
     
     List<MerchantEmployee> selectListByPlaceId(@Param("placeIdList") List<Long> placeIdList);
     
