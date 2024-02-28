@@ -16,6 +16,8 @@ public class MerchantEmployeeQrCodeVO {
     
     private String name;
     
+    private String phone;
+    
     private Integer type;
     
     private String code;
