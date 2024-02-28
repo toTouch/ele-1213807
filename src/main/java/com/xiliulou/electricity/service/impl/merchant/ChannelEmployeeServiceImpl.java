@@ -178,11 +178,13 @@ public class ChannelEmployeeServiceImpl implements ChannelEmployeeService {
     
         User phoneUserExists = userService.queryByUserPhone(channelEmployeeRequest.getPhone(), User.TYPE_USER_CHANNEL, tenantId);
         if (Objects.nonNull(phoneUserExists)) {
+            log.error("current phone has been used by other one, phone = {}, tenant id = {}", channelEmployeeRequest.getPhone(), tenantId);
             return Triple.of(false, "120001", "当前手机号已注册");
         }
     
         User existUser = userService.queryByUserName(channelEmployeeRequest.getName());
         if(Objects.nonNull(existUser)){
+            log.error("The user name has been used by other one, name = {}, tenant id = {}", channelEmployeeRequest.getName(), tenantId);
             return Triple.of(false, "120009", "用户姓名已存在");
         }
         
@@ -247,11 +249,13 @@ public class ChannelEmployeeServiceImpl implements ChannelEmployeeService {
     
         User phoneUserExists = userService.queryByUserPhone(channelEmployeeRequest.getPhone(), User.TYPE_USER_CHANNEL, tenantId);
         if (Objects.nonNull(phoneUserExists)) {
+            log.error("current phone has been used by other one for update channel employee, phone = {}, tenant id = {}", channelEmployeeRequest.getPhone(), tenantId);
             return Triple.of(false, "120001", "当前手机号已注册");
         }
     
         User existUser = userService.queryByUserName(channelEmployeeRequest.getName());
         if(Objects.nonNull(existUser)){
+            log.error("The user name has been used by other one for update channel employee, name = {}, tenant id = {}", channelEmployeeRequest.getName(), tenantId);
             return Triple.of(false, "120009", "用户姓名已存在");
         }
         
