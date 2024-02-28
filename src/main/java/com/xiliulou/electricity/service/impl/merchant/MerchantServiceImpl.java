@@ -39,6 +39,7 @@ import com.xiliulou.electricity.request.merchant.MerchantPageRequest;
 import com.xiliulou.electricity.request.merchant.MerchantSaveRequest;
 import com.xiliulou.electricity.service.BatteryMemberCardService;
 import com.xiliulou.electricity.service.FranchiseeService;
+import com.xiliulou.electricity.service.UserOauthBindService;
 import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseInfoService;
 import com.xiliulou.electricity.service.enterprise.EnterprisePackageService;
@@ -150,6 +151,9 @@ public class MerchantServiceImpl implements MerchantService {
     
     @Resource
     private MerchantLevelService merchantLevelService;
+    
+    @Resource
+    private UserOauthBindService userOauthBindService;
     
     
     /**
@@ -700,6 +704,9 @@ public class MerchantServiceImpl implements MerchantService {
         
         // 删除商户与场地的绑定关系
         merchantPlaceBindService.batchUnBind(null, id, timeMillis);
+        
+        // 删除商户认证关系
+        userOauthBindService.deleteByUid(merchant.getUid(), tenantId);
         
         merchantDeleteCacheDTO.setMerchantId(id);
         merchantDeleteCacheDTO.setEnterpriseInfoId(merchant.getEnterpriseId());
