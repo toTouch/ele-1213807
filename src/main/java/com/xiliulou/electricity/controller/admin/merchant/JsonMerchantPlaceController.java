@@ -218,7 +218,7 @@ public class JsonMerchantPlaceController extends BaseController {
         MerchantPlacePageRequest merchantPlacePageRequest = MerchantPlacePageRequest.builder().size(size).offset(offset).tenantId(tenantId).placeId(placeId)
                 .cabinetName(cabinetName).build();
         
-        return R.ok(merchantPlaceService.getCabinetList(merchantPlacePageRequest));
+        return returnTripleResult(merchantPlaceService.getCabinetList(merchantPlacePageRequest));
     }
     
     /**

@@ -13,6 +13,7 @@ import com.xiliulou.electricity.entity.merchant.Merchant;
 import com.xiliulou.electricity.entity.merchant.MerchantAttr;
 import com.xiliulou.electricity.entity.merchant.MerchantJoinRecord;
 import com.xiliulou.electricity.mapper.merchant.MerchantJoinRecordMapper;
+import com.xiliulou.electricity.query.merchant.MerchantAllPromotionDataDetailQueryModel;
 import com.xiliulou.electricity.query.merchant.MerchantJoinRecordQueryMode;
 import com.xiliulou.electricity.query.merchant.MerchantJoinUserQueryMode;
 import com.xiliulou.electricity.query.merchant.MerchantPromotionDataDetailQueryModel;
@@ -77,10 +78,10 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
     
     @Resource
     private MerchantEmployeeService merchantEmployeeService;
-
+    
     @Resource
     BatteryMemberCardService batteryMemberCardService;
-
+    
     @Resource
     ElectricityMemberCardOrderService electricityMemberCardOrderService;
     
@@ -407,16 +408,16 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
     public List<MerchantJoinRecord> selectPromotionDataDetail(MerchantPromotionDataDetailQueryModel queryModel) {
         return merchantJoinRecordMapper.selectListPromotionDataDetail(queryModel);
     }
-
+    
     @Override
     public List<MerchantJoinUserVO> selectJoinUserList(MerchantJoinUserQueryMode merchantJoinUserQueryMode) {
         //获取商户uid, 并检查当前商户是否存在且可用
         Merchant merchant = merchantService.queryByUid(merchantJoinUserQueryMode.getMerchantUid());
-        if(Objects.isNull(merchant)){
+        if (Objects.isNull(merchant)) {
             return Collections.emptyList();
         }
         merchantJoinUserQueryMode.setMerchantId(merchant.getId());
-
+        
         //计算当前日期后三天的时间毫秒数
         Long currentTime = System.currentTimeMillis();
         Long expiredTime = currentTime + MerchantConstant.MERCHANT_JOIN_USER_PACKAGE_EXPIRE_DAY * 24 * 60 * 60 * 1000L;
@@ -429,42 +430,42 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
         }*/
         merchantJoinUserQueryMode.setCurrentTime(currentTime);
         merchantJoinUserQueryMode.setExpireTime(expiredTime);
-
+        
         //获取当前商户下的用户列表信息
         List<MerchantJoinUserVO> merchantJoinUserVOS = merchantJoinRecordMapper.selectJoinUserList(merchantJoinUserQueryMode);
-
-        if(CollectionUtils.isEmpty(merchantJoinUserVOS)) {
+        
+        if (CollectionUtils.isEmpty(merchantJoinUserVOS)) {
             return Collections.emptyList();
         }
-
+        
         merchantJoinUserVOS.forEach(merchantJoinUserVO -> {
             //对电话号码中见四位做脱敏处理
             String phone = merchantJoinUserVO.getPhone();
             merchantJoinUserVO.setPhone(PhoneUtils.mobileEncrypt(phone));
-
+            
             Long packageId = merchantJoinUserVO.getPackageId();
             if (Objects.nonNull(packageId) && packageId != 0) {
                 BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(packageId);
-                if(Objects.nonNull(batteryMemberCard)){
+                if (Objects.nonNull(batteryMemberCard)) {
                     merchantJoinUserVO.setPackageName(batteryMemberCard.getName());
                 }
             }
-
+            
             String orderId = merchantJoinUserVO.getOrderId();
-            if(Objects.nonNull(orderId)){
+            if (Objects.nonNull(orderId)) {
                 ElectricityMemberCardOrder electricityMemberCardOrder = electricityMemberCardOrderService.selectByOrderNo(orderId);
-                if(Objects.nonNull(electricityMemberCardOrder)){
+                if (Objects.nonNull(electricityMemberCardOrder)) {
                     merchantJoinUserVO.setPurchasedTime(electricityMemberCardOrder.getCreateTime());
                 }
             }
-
+            
             ElectricityMemberCardOrder firstMemberCardOrder = electricityMemberCardOrderService.selectFirstMemberCardOrder(merchantJoinUserVO.getJoinUid());
-            if(Objects.nonNull(firstMemberCardOrder)){
+            if (Objects.nonNull(firstMemberCardOrder)) {
                 merchantJoinUserVO.setFirstPurchasedTime(firstMemberCardOrder.getCreateTime());
             }
-
+            
         });
-
+        
         return merchantJoinUserVOS;
     }
     
@@ -472,10 +473,22 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
     @Override
     public boolean existInviterData(Integer inviterType, Long inviterUid, Integer tenantId) {
         Integer existInviterData = merchantJoinRecordMapper.existInviterData(inviterType, inviterUid, tenantId);
-        if(Objects.nonNull(existInviterData)){
+        if (Objects.nonNull(existInviterData)) {
             return true;
-        }else{
+        } else {
             return false;
         }
+    }
+    
+    @Override
+    @Slave
+    public Integer countEmployeeScanCodeNum(List<Long> uidList, Long startTime, Long endTime, Integer status, Integer tenantId) {
+        return merchantJoinRecordMapper.countEmployeeScanCodeNum(uidList, startTime, endTime, status, tenantId);
+    }
+    
+    @Slave
+    @Override
+    public List<MerchantJoinRecord> selectListAllPromotionDataDetail(MerchantAllPromotionDataDetailQueryModel queryModel){
+        return merchantJoinRecordMapper.selectListAllPromotionDataDetail(queryModel);
     }
 }
