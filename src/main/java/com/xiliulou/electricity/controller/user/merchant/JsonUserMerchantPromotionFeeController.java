@@ -215,11 +215,11 @@ public class JsonUserMerchantPromotionFeeController extends BaseController {
      *
      * @param size       页面显示条数
      * @param offset     偏移量
-     * @param merchantId 商户id
+     * @param merchantUid 商户uid
      * @return 推广详情概览
      */
     @GetMapping("/merchant/promotion/employee/details/page")
-    public R promotionEmployeeDetails(@RequestParam("size") long size, @RequestParam("offset") Long offset, @RequestParam("merchantId") Long merchantId) {
+    public R promotionEmployeeDetails(@RequestParam("size") long size, @RequestParam("offset") Long offset, @RequestParam("merchantUid") Long merchantUid) {
         if (size < 0 || size > 5) {
             size = 5L;
         }
@@ -228,7 +228,7 @@ public class JsonUserMerchantPromotionFeeController extends BaseController {
             offset = 0L;
         }
         
-        MerchantPromotionEmployeeDetailQueryModel queryModel = MerchantPromotionEmployeeDetailQueryModel.builder().size(size).offset(offset).merchantUid(merchantId)
+        MerchantPromotionEmployeeDetailQueryModel queryModel = MerchantPromotionEmployeeDetailQueryModel.builder().size(size).offset(offset).merchantUid(merchantUid)
                 .tenantId(TenantContextHolder.getTenantId()).build();
         
         return merchantPromotionFeeService.selectMerchantEmployeeDetailList(queryModel);
