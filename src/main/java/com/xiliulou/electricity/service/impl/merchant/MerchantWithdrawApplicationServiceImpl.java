@@ -513,119 +513,138 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
     public void updateMerchantWithdrawStatus() {
         //获取审核状态为提现中且审核时间为30分钟前的提现申请记录
         Long checkTime = System.currentTimeMillis() - 30 * 60 * 1000L;
-        List<MerchantWithdrawApplication> merchantWithdrawApplications = merchantWithdrawApplicationMapper.selectListForWithdrawInProgress(checkTime);
-    
-        //根据批次号循环调用第三方接口查询提现结果状态
-        merchantWithdrawApplications.forEach(merchantWithdrawApplication -> {
-            String batchNo = merchantWithdrawApplication.getBatchNo();
-            Integer tenantId = merchantWithdrawApplication.getTenantId();
-            if(Objects.nonNull(batchNo)) {
+
+        int offset = 0;
+        int size = 200;
+
+        while(true) {
+            List<MerchantWithdrawApplication> merchantWithdrawApplications = merchantWithdrawApplicationMapper.selectListForWithdrawInProgress(checkTime, offset, size);
+
+            //根据批次号循环调用第三方接口查询提现结果状态
+            merchantWithdrawApplications.forEach(merchantWithdrawApplication -> {
+                String batchNo = merchantWithdrawApplication.getBatchNo();
+                Integer tenantId = merchantWithdrawApplication.getTenantId();
+
+                if(Objects.isNull(batchNo)) {
+                    return;
+                }
+
                 //调用第三方接口查询提现结果状态
                 WechatTransferBatchOrderRecordQuery wechatTransferBatchOrderRecordQuery = new WechatTransferBatchOrderRecordQuery();
                 wechatTransferBatchOrderRecordQuery.setBatchId(batchNo);
                 wechatTransferBatchOrderRecordQuery.setTenantId(tenantId);
-    
+
                 try {
                     WechatTransferBatchOrderQueryResult wechatTransferBatchOrderQueryResult = wechatV3TransferService.queryTransferBatchOrder(wechatTransferBatchOrderRecordQuery);
-                    if(Objects.nonNull(wechatTransferBatchOrderQueryResult) || Objects.nonNull(wechatTransferBatchOrderQueryResult.getTransferBatch())){
-                        //获取该批次记录状态结果
-                        WechatTransferBatchOrderQueryCommonResult wechatTransferBatchOrderQueryCommonResult = wechatTransferBatchOrderQueryResult.getTransferBatch();
-                        String batchStatus = wechatTransferBatchOrderQueryCommonResult.getBatchStatus();
-    
-                        //如果当前批次结果为已完成，则将提现申请状态修改为提现成功，如果当前批次结果为已关闭，则将提现申请状态修改为提现失败。
-                        if(MerchantWithdrawConstant.WECHAT_BATCH_STATUS_FINISHED.equals(batchStatus)){
-                            
-                            //查询当前批次的明细记录，并查询每条明细的处理结果是否为成功状态，若失败，则记录失败原因。
-                            List<MerchantWithdrawApplicationRecord> merchantWithdrawApplicationRecords = merchantWithdrawApplicationRecordService.selectListByBatchNo(batchNo, tenantId);
-                            if(!CollectionUtils.isEmpty(merchantWithdrawApplicationRecords)){
-                                merchantWithdrawApplicationRecords.forEach(merchantWithdrawApplicationRecord -> {
-                                    WechatTransferOrderRecordQuery wechatTransferOrderRecordQuery = new WechatTransferOrderRecordQuery();
-                                    wechatTransferOrderRecordQuery.setOutBatchNo(merchantWithdrawApplicationRecord.getBatchNo());
-                                    wechatTransferOrderRecordQuery.setOutDetailNo(merchantWithdrawApplicationRecord.getBatchDetailNo());
-                                    wechatTransferOrderRecordQuery.setTenantId(merchantWithdrawApplicationRecord.getTenantId());
-            
-                                    try {
-                                        WechatTransferOrderQueryResult wechatTransferOrderQueryResult = wechatV3TransferService.queryTransferOrder(wechatTransferOrderRecordQuery);
-                
-                                        //并将失败原因更新至提现详细表中
-                                        if(Objects.nonNull(wechatTransferOrderQueryResult)) {
-                                            String detailStatus = wechatTransferOrderQueryResult.getDetailStatus();
-                                            String failReason  = wechatTransferOrderQueryResult.getFailReason();
-    
-                                            MerchantWithdrawApplication merchantWithdrawApplicationUpdate = new MerchantWithdrawApplication();
-                                            merchantWithdrawApplicationUpdate.setBatchNo(batchNo);
-                                            merchantWithdrawApplicationUpdate.setTenantId(tenantId);
-                                            merchantWithdrawApplicationUpdate.setOrderNo(merchantWithdrawApplicationRecord.getOrderNo());
-                                            merchantWithdrawApplicationUpdate.setUpdateTime(System.currentTimeMillis());
-                                            
-                                            MerchantWithdrawApplicationRecord withdrawApplicationRecordUpdate = new MerchantWithdrawApplicationRecord();
-                                            withdrawApplicationRecordUpdate.setBatchNo(batchNo);
-                                            withdrawApplicationRecordUpdate.setBatchDetailNo(merchantWithdrawApplicationRecord.getBatchDetailNo());
-                                            withdrawApplicationRecordUpdate.setTenantId(tenantId);
-                                            withdrawApplicationRecordUpdate.setUpdateTime(System.currentTimeMillis());
-                                            
-                                            if(MerchantWithdrawConstant.WECHAT_BATCH_DETAIL_STATUS_SUCCESS.equals(detailStatus)){
-                                                //更新单条提现申请和单条详细记录为提现成功状态
-                                                merchantWithdrawApplicationUpdate.setStatus(MerchantWithdrawConstant.WITHDRAW_SUCCESS);
-                                                withdrawApplicationRecordUpdate.setStatus(MerchantWithdrawConstant.WITHDRAW_SUCCESS);
-                                                
-                                            } else if(MerchantWithdrawConstant.WECHAT_BATCH_DETAIL_STATUS_FAIL.equals(detailStatus)){
-                                                //更新单条提现申请和单条详细记录为提现失败状态
-                                                merchantWithdrawApplicationUpdate.setStatus(MerchantWithdrawConstant.WITHDRAW_FAIL);
-                                                withdrawApplicationRecordUpdate.setStatus(MerchantWithdrawConstant.WITHDRAW_FAIL);
-                                                withdrawApplicationRecordUpdate.setResponse(JsonUtil.toJson(wechatTransferOrderQueryResult));
-                                                //失败则需回滚提现金额至提现余额表
-                                                
-                                            }
-                    
-                                        }
-                                    } catch (WechatPayException e) {
-                                        log.error("query wechat transfer order detail info error, e = {}", e);
-                                    }
-            
-                                });
-        
-                            }
-                            
-                            //更新当前批次提现申请记录状态为提现成功
-                            //merchantWithdrawApplicationMapper.updateMerchantWithdrawStatusByBatchNo(MerchantWithdrawConstant.WITHDRAW_SUCCESS, System.currentTimeMillis(), batchNo, tenantId);
-                            
-                            //更新当前批次提现申请详细中的记状态为提现成功
-                            //merchantWithdrawApplicationRecordService.updateApplicationRecordStatusByBatchNo(MerchantWithdrawConstant.WITHDRAW_SUCCESS, batchNo, tenantId);
-                            
-                        } else if (MerchantWithdrawConstant.WECHAT_BATCH_STATUS_CLOSED.equals(batchStatus)){
-                            //若为关闭状态，则代表等待商户管理员确认付款超过时间限制，或锁订商户资金失败。
-                            log.info("batch wechat transfer closed by wechat, batchNo = {}, tenant id = {}", batchNo, tenantId);
-                            //更新当前批次提现申请表状态为提现失败
-                            merchantWithdrawApplicationMapper.updateApplicationRecordStatusByBatchNo(MerchantWithdrawConstant.WITHDRAW_FAIL, System.currentTimeMillis(), batchNo, tenantId);
-    
-                            //更新当前批次提现申请详细中的记状态为提现失败
-                            merchantWithdrawApplicationRecordService.updateApplicationRecordStatusByBatchNo(MerchantWithdrawConstant.WITHDRAW_FAIL, batchNo, tenantId);
-                            
-                            //TODO 该处可以考虑记录建议关闭失败原因
-                            
-                            //回滚提现金额至提现余额表
-                            List<MerchantWithdrawApplication> merchantWithdrawApplicationList = merchantWithdrawApplicationMapper.selectListByBatchNo(batchNo, tenantId);
-                            if(!CollectionUtils.isEmpty(merchantWithdrawApplicationList)){
-                                merchantWithdrawApplicationList.forEach(withdrawApplication -> {
-                                    merchantUserAmountService.rollBackWithdrawAmount(withdrawApplication.getAmount(), withdrawApplication.getUid(), withdrawApplication.getTenantId().longValue());
-                                });
-                            }
-    
-                        }
-                       
-                    } else {
+                    if(Objects.isNull(wechatTransferBatchOrderQueryResult) && Objects.isNull(wechatTransferBatchOrderQueryResult.getTransferBatch())){
                         log.info("query batch wechat transfer order info, response is null, batchNo = {}, tenant id = {}, response = {}", merchantWithdrawApplication.getBatchNo(), merchantWithdrawApplication.getTenantId(), wechatTransferBatchOrderQueryResult);
+                        return;
                     }
-                    
-                    
+                    //获取该批次记录状态结果
+                    WechatTransferBatchOrderQueryCommonResult wechatTransferBatchOrderQueryCommonResult = wechatTransferBatchOrderQueryResult.getTransferBatch();
+                    String batchStatus = wechatTransferBatchOrderQueryCommonResult.getBatchStatus();
+
+                    //如果当前批次结果为已完成，则将提现申请状态修改为提现成功，如果当前批次结果为已关闭，则将提现申请状态修改为提现失败。
+                    if(MerchantWithdrawConstant.WECHAT_BATCH_STATUS_FINISHED.equals(batchStatus)){
+
+                        handleBatchDetailsInfo(batchNo,tenantId);
+
+                    } else if (MerchantWithdrawConstant.WECHAT_BATCH_STATUS_CLOSED.equals(batchStatus)){
+                        //若为关闭状态，则代表等待商户管理员确认付款超过时间限制，或锁订商户资金失败。
+                        log.info("batch wechat transfer closed by wechat, batchNo = {}, tenant id = {}", batchNo, tenantId);
+                        //更新当前批次提现申请表状态为提现失败
+                        merchantWithdrawApplicationMapper.updateApplicationRecordStatusByBatchNo(MerchantWithdrawConstant.WITHDRAW_FAIL, System.currentTimeMillis(), batchNo, tenantId);
+
+                        //更新当前批次提现申请详细中的记状态为提现失败
+                        merchantWithdrawApplicationRecordService.updateApplicationRecordStatusByBatchNo(MerchantWithdrawConstant.WITHDRAW_FAIL, batchNo, tenantId);
+
+                        //TODO 该处可以考虑记录建议关闭失败原因
+
+                        //回滚提现金额至提现余额表
+                        List<MerchantWithdrawApplication> merchantWithdrawApplicationList = merchantWithdrawApplicationMapper.selectListByBatchNo(batchNo, tenantId);
+                        if(!CollectionUtils.isEmpty(merchantWithdrawApplicationList)){
+                            merchantWithdrawApplicationList.forEach(withdrawApplication -> {
+                                merchantUserAmountService.rollBackWithdrawAmount(withdrawApplication.getAmount(), withdrawApplication.getUid(), withdrawApplication.getTenantId().longValue());
+                            });
+                        }
+
+                    }
+
                 } catch (WechatPayException e) {
                     log.error("query batch wechat transfer order info error, e = {}", e);
-                    
+
                 }
+
+            });
+            offset += size;
+        }
+
+
+    }
+
+    public void handleBatchDetailsInfo(String batchNo, Integer tenantId){
+        //查询当前批次的明细记录，并查询每条明细的处理结果是否为成功状态，若失败，则记录失败原因。
+        List<MerchantWithdrawApplicationRecord> merchantWithdrawApplicationRecords = merchantWithdrawApplicationRecordService.selectListByBatchNo(batchNo, tenantId);
+        if (CollectionUtils.isEmpty(merchantWithdrawApplicationRecords)) {
+            log.info("query batch wechat transfer order detail info, merchant withdraw application record is null, batchNo = {}, tenant id = {}", batchNo, tenantId);
+            return;
+        }
+
+        merchantWithdrawApplicationRecords.forEach(merchantWithdrawApplicationRecord -> {
+            WechatTransferOrderRecordQuery wechatTransferOrderRecordQuery = new WechatTransferOrderRecordQuery();
+            wechatTransferOrderRecordQuery.setOutBatchNo(merchantWithdrawApplicationRecord.getBatchNo());
+            wechatTransferOrderRecordQuery.setOutDetailNo(merchantWithdrawApplicationRecord.getBatchDetailNo());
+            wechatTransferOrderRecordQuery.setTenantId(merchantWithdrawApplicationRecord.getTenantId());
+
+            try {
+                //第三方查询提现结果详细信息
+                WechatTransferOrderQueryResult wechatTransferOrderQueryResult = wechatV3TransferService.queryTransferOrder(wechatTransferOrderRecordQuery);
+
+                //并将失败原因更新至提现详细表中
+                if(Objects.isNull(wechatTransferOrderQueryResult)){
+                    log.info("query batch wechat transfer order detail info, response is null, batchNo = {}, tenant id = {}", batchNo, tenantId);
+                    return;
+                }
+
+                String detailStatus = wechatTransferOrderQueryResult.getDetailStatus();
+                String failReason  = wechatTransferOrderQueryResult.getFailReason();
+
+                MerchantWithdrawApplication merchantWithdrawApplicationUpdate = new MerchantWithdrawApplication();
+                merchantWithdrawApplicationUpdate.setBatchNo(batchNo);
+                merchantWithdrawApplicationUpdate.setTenantId(tenantId);
+                merchantWithdrawApplicationUpdate.setOrderNo(merchantWithdrawApplicationRecord.getOrderNo());
+                merchantWithdrawApplicationUpdate.setUpdateTime(System.currentTimeMillis());
+
+                MerchantWithdrawApplicationRecord withdrawApplicationRecordUpdate = new MerchantWithdrawApplicationRecord();
+                withdrawApplicationRecordUpdate.setBatchNo(batchNo);
+                withdrawApplicationRecordUpdate.setBatchDetailNo(merchantWithdrawApplicationRecord.getBatchDetailNo());
+                withdrawApplicationRecordUpdate.setTenantId(tenantId);
+                withdrawApplicationRecordUpdate.setUpdateTime(System.currentTimeMillis());
+
+                if(MerchantWithdrawConstant.WECHAT_BATCH_DETAIL_STATUS_SUCCESS.equals(detailStatus)){
+                    //更新单条提现申请和单条详细记录为提现成功状态
+                    merchantWithdrawApplicationUpdate.setStatus(MerchantWithdrawConstant.WITHDRAW_SUCCESS);
+                    withdrawApplicationRecordUpdate.setStatus(MerchantWithdrawConstant.WITHDRAW_SUCCESS);
+
+                } else if(MerchantWithdrawConstant.WECHAT_BATCH_DETAIL_STATUS_FAIL.equals(detailStatus)){
+                    //更新单条提现申请和单条详细记录为提现失败状态
+                    merchantWithdrawApplicationUpdate.setStatus(MerchantWithdrawConstant.WITHDRAW_FAIL);
+                    withdrawApplicationRecordUpdate.setStatus(MerchantWithdrawConstant.WITHDRAW_FAIL);
+                    withdrawApplicationRecordUpdate.setRemark(failReason);
+                    withdrawApplicationRecordUpdate.setResponse(JsonUtil.toJson(wechatTransferOrderQueryResult));
+                    //失败则需回滚提现金额至提现余额表
+                    merchantUserAmountService.rollBackWithdrawAmount(merchantWithdrawApplicationRecord.getAmount(), merchantWithdrawApplicationRecord.getUid(), merchantWithdrawApplicationRecord.getTenantId().longValue());
+                }
+
+                //更新提现记录表以及详细表
+                merchantWithdrawApplicationMapper.updateMerchantWithdrawStatus(merchantWithdrawApplicationUpdate);
+                merchantWithdrawApplicationRecordService.updateMerchantWithdrawStatus(withdrawApplicationRecordUpdate);
+
+            } catch (WechatPayException e) {
+                log.error("query wechat transfer order detail info error, e = {}", e);
             }
+
         });
-       
-    
+
     }
 }

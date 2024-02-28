@@ -36,7 +36,7 @@ public interface MerchantWithdrawApplicationMapper {
     
     BigDecimal sumByStatus(@Param("tenantId") Integer tenantId,@Param("status") Integer status,@Param("uid") Long uid);
     
-    List<MerchantWithdrawApplication> selectListForWithdrawInProgress(@Param("checkTime") Long checkTime);
+    List<MerchantWithdrawApplication> selectListForWithdrawInProgress(@Param("checkTime") Long checkTime, @Param("offset") int offset, @Param("size") int size);
     
     List<MerchantWithdrawApplication> selectListByBatchNo(@Param("batchNo") String batchNo, @Param("tenantId") Integer tenantId);
     

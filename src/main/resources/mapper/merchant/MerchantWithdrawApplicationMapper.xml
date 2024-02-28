@@ -339,13 +339,13 @@
     </select>
     
     <select id="selectListForWithdrawInProgress" resultType="com.xiliulou.electricity.entity.merchant.MerchantWithdrawApplication">
-        select distinct tmwa.order_no,
+        select distinct tmwa.batch_no,
                tmwa.tenat_id,
         from t_merchant_withdraw_application tmwa
         where del_flag = 0
           and tmwa.status = 4
           and tmwa.check_time <![CDATA[ <=  ]]> #{checkTime}
-       
+        limit #{offset},#{size}
     </select>
     
     <select id="selectListByBatchNo" resultType="com.xiliulou.electricity.entity.merchant.MerchantWithdrawApplication">

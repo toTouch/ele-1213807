@@ -37,7 +37,7 @@ public class JsonUserMerchantPromotionFeeController extends BaseController {
      *
      * @return 可提现金额/user/merchant/promotion/employee/details/page
      */
-    @GetMapping("/user/merchant/promotionFee/merchantEmployee")
+    @GetMapping("/merchant/promotionFee/merchantEmployee")
     public R queryMerchantEmployees(@RequestParam("merchantUid") Long merchantUid) {
         
         //用户区分
@@ -55,7 +55,7 @@ public class JsonUserMerchantPromotionFeeController extends BaseController {
      *
      * @return 可提现金额
      */
-    @GetMapping("/user/merchant/promotionFee/availableWithdrawAmount")
+    @GetMapping("/merchant/promotionFee/availableWithdrawAmount")
     public R queryMerchantAvailableWithdrawAmount() {
         
         //用户区分
@@ -74,7 +74,7 @@ public class JsonUserMerchantPromotionFeeController extends BaseController {
      * @param uid  用户uid
      * @return 推广费收入统计
      */
-    @GetMapping("/user/merchant/promotionFee/income")
+    @GetMapping("/merchant/promotionFee/income")
     public R queryMerchantPromotionFeeIncome(@RequestParam("type") Integer type, @RequestParam("uid") Long uid) {
         
         //用户区分
@@ -94,7 +94,7 @@ public class JsonUserMerchantPromotionFeeController extends BaseController {
      * @param uid  用户uid
      * @return 推广费扫码统计
      */
-    @GetMapping("/user/merchant/promotionFee/scanCodeCount")
+    @GetMapping("/merchant/promotionFee/scanCodeCount")
     public R queryMerchantPromotionScanCode(@RequestParam("type") Integer type, @RequestParam("uid") Long uid) {
         
         //用户区分
@@ -113,7 +113,7 @@ public class JsonUserMerchantPromotionFeeController extends BaseController {
      * @param uid  用户uid
      * @return 推广费续费情况
      */
-    @GetMapping("/user/merchant/promotionFee/renewal")
+    @GetMapping("/merchant/promotionFee/renewal")
     public R queryMerchantPromotionRenewal(@RequestParam("type") Integer type, @RequestParam("uid") Long uid) {
         
         //用户区分
@@ -134,7 +134,7 @@ public class JsonUserMerchantPromotionFeeController extends BaseController {
      * @param endTime   结束时间
      * @return 收入分析
      */
-    @GetMapping("/user/merchant/promotionFee/statistic/merchantIncome")
+    @GetMapping("/merchant/promotionFee/statistic/merchantIncome")
     public R promotionFeeStatisticAnalysisIncome(@RequestParam("type") Integer type, @RequestParam("uid") Long uid,
             @RequestParam(value = "beginTime", required = false) Long beginTime, @RequestParam(value = "endTime", required = false) Long endTime) {
         
@@ -157,7 +157,7 @@ public class JsonUserMerchantPromotionFeeController extends BaseController {
      * @param endTime   结束时间
      * @return 用户分析
      */
-    @GetMapping("/user/merchant/promotionFee/statistic/user")
+    @GetMapping("/merchant/promotionFee/statistic/user")
     public R promotionFeeStatisticAnalysisUser(@RequestParam("type") Integer type, @RequestParam("uid") Long uid,
             @RequestParam(value = "beginTime", required = false) Long beginTime, @RequestParam(value = "endTime", required = false) Long endTime) {
         
@@ -180,7 +180,7 @@ public class JsonUserMerchantPromotionFeeController extends BaseController {
      * @param endTime   结束时间
      * @return 渠道员商户分析
      */
-    @GetMapping("/user/merchant/promotionFee/statistic/channelEmployeeMerchant")
+    @GetMapping("/merchant/promotionFee/statistic/channelEmployeeMerchant")
     public R promotionFeeStatisticAnalysisChannelEmployeeMerchant(@RequestParam("type") Integer type, @RequestParam("uid") Long uid,
             @RequestParam(value = "beginTime", required = false) Long beginTime, @RequestParam(value = "endTime", required = false) Long endTime) {
         
@@ -200,7 +200,7 @@ public class JsonUserMerchantPromotionFeeController extends BaseController {
      * @param merchantUid 商户id
      * @return 推广详情概览
      */
-    @GetMapping("/user/merchant/promotion/merchant/detail")
+    @GetMapping("/merchant/promotion/merchant/detail")
     public R promotionMerchantDetail(@RequestParam("merchantUid") Long merchantUid) {
         
         MerchantPromotionEmployeeDetailQueryModel queryModel = MerchantPromotionEmployeeDetailQueryModel.builder().merchantUid(merchantUid)
@@ -218,7 +218,7 @@ public class JsonUserMerchantPromotionFeeController extends BaseController {
      * @param merchantId 商户id
      * @return 推广详情概览
      */
-    @GetMapping("/user/merchant/promotion/employee/details/page")
+    @GetMapping("/merchant/promotion/employee/details/page")
     public R promotionEmployeeDetails(@RequestParam("size") long size, @RequestParam("offset") Long offset, @RequestParam("merchantId") Long merchantId) {
         if (size < 0 || size > 5) {
             size = 5L;
@@ -245,7 +245,7 @@ public class JsonUserMerchantPromotionFeeController extends BaseController {
      * @param queryTime 查询时间
      * @return 推广详情
      */
-    @GetMapping("/user/merchant/promotion/employee/details/specifics")
+    @GetMapping("/merchant/promotion/employee/details/specifics")
     public R promotionEmployeeDetailList(@RequestParam("size") long size, @RequestParam("offset") Long offset, @RequestParam("uid") Long uid,
             @RequestParam("status") Integer status, @RequestParam("queryTime") Long queryTime) {
         if (size < 0 || size > 10) {
@@ -273,7 +273,7 @@ public class JsonUserMerchantPromotionFeeController extends BaseController {
      * @param queryTime
      * @return
      */
-    @GetMapping("/user/merchant/promotion/data")
+    @GetMapping("/merchant/promotion/data")
     public R promotionDataPage(@RequestParam("size") long size, @RequestParam("offset") Long offset, @RequestParam(value = "uid", required = false) Long uid,
             @RequestParam(value = "type", required = false) Integer type, @RequestParam(value = "queryTime", required = false) Long queryTime) {
         if (size < 0 || size > 10) {
@@ -301,7 +301,7 @@ public class JsonUserMerchantPromotionFeeController extends BaseController {
      * @param status    状态
      * @return 推广数据列表
      */
-    @GetMapping("/user/merchant/promotion/data/detail/page")
+    @GetMapping("/merchant/promotion/data/detail/page")
     public R promotionDataPage(@RequestParam("size") long size, @RequestParam("offset") Long offset, @RequestParam(value = "uid", required = false) Long uid,
             @RequestParam(value = "type", required = false) Integer type, @RequestParam(value = "queryTime", required = false) Long queryTime,
             @RequestParam(value = "status", required = false) Integer status) {
