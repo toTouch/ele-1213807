@@ -12,7 +12,6 @@ import com.xiliulou.electricity.entity.UserRole;
 import com.xiliulou.electricity.entity.merchant.ChannelEmployee;
 import com.xiliulou.electricity.entity.merchant.ChannelEmployeeAmount;
 import com.xiliulou.electricity.entity.merchant.MerchantArea;
-import com.xiliulou.electricity.entity.merchant.MerchantEmployee;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.merchant.ChannelEmployeeAmountMapper;
 import com.xiliulou.electricity.mapper.merchant.ChannelEmployeeMapper;
@@ -88,6 +87,7 @@ public class ChannelEmployeeServiceImpl implements ChannelEmployeeService {
             User user = userService.queryByUidFromCache(channelEmployeeVO.getUid());
             channelEmployeeVO.setName(user.getName());
             channelEmployeeVO.setPhone(user.getPhone());
+            channelEmployeeVO.setStatus(user.getLockFlag());
         }
         return channelEmployeeVO;
     }
@@ -105,6 +105,7 @@ public class ChannelEmployeeServiceImpl implements ChannelEmployeeService {
             User user = userService.queryByUidFromCache(channelEmployeeVO.getUid());
             channelEmployeeVO.setName(user.getName());
             channelEmployeeVO.setPhone(user.getPhone());
+            channelEmployeeVO.setStatus(user.getLockFlag());
         }
         return channelEmployeeVO;
     }
@@ -157,13 +158,6 @@ public class ChannelEmployeeServiceImpl implements ChannelEmployeeService {
                 Franchisee franchisee = franchiseeService.queryByIdFromCache(item.getFranchiseeId());
                 item.setFranchiseeName(franchisee.getName());
             }
-    
-            User user = userService.queryByUidFromCache(item.getUid());
-            if (Objects.nonNull(user)) {
-                item.setName(user.getName());
-                item.setPhone(user.getPhone());
-            }
-            
         });
         return channelEmployeeVOList;
     }
@@ -172,7 +166,7 @@ public class ChannelEmployeeServiceImpl implements ChannelEmployeeService {
     @Override
     public Triple<Boolean, String, Object> saveChannelEmployee(ChannelEmployeeRequest channelEmployeeRequest) {
         if (!redisService.setNx(CacheConstant.CACHE_CHANNEL_EMPLOYEE_SAVE_LOCK + channelEmployeeRequest.getPhone(), "1", 3000L, false)) {
-            return Triple.of(false, null, "操作频繁,请稍后再试");
+            return Triple.of(false, "000000", "操作频繁,请稍后再试");
         }
         
         //租户
@@ -180,8 +174,14 @@ public class ChannelEmployeeServiceImpl implements ChannelEmployeeService {
     
         User phoneUserExists = userService.queryByUserPhone(channelEmployeeRequest.getPhone(), User.TYPE_USER_CHANNEL, tenantId);
         if (Objects.nonNull(phoneUserExists)) {
-            return Triple.of(false, null, "手机号已存在");
+            return Triple.of(false, "120001", "当前手机号已注册");
         }
+    
+        User existUser = userService.queryByUserName(channelEmployeeRequest.getName());
+        if(Objects.nonNull(existUser)){
+            return Triple.of(false, "120009", "用户姓名已存在");
+        }
+        
         
         //创建渠道员工账户
         User user = User.builder().updateTime(System.currentTimeMillis()).createTime(System.currentTimeMillis()).phone(channelEmployeeRequest.getPhone())
@@ -235,7 +235,7 @@ public class ChannelEmployeeServiceImpl implements ChannelEmployeeService {
     @Override
     public Triple<Boolean, String, Object> updateChannelEmployee(ChannelEmployeeRequest channelEmployeeRequest) {
         if (!redisService.setNx(CacheConstant.CACHE_CHANNEL_EMPLOYEE_UPDATE_LOCK + channelEmployeeRequest.getPhone(), "1", 3000L, false)) {
-            return Triple.of(false, null, "操作频繁,请稍后再试");
+            return Triple.of(false, "000000", "操作频繁,请稍后再试");
         }
     
         //租户
@@ -243,13 +243,18 @@ public class ChannelEmployeeServiceImpl implements ChannelEmployeeService {
     
         User phoneUserExists = userService.queryByUserPhone(channelEmployeeRequest.getPhone(), User.TYPE_USER_CHANNEL, tenantId);
         if (Objects.nonNull(phoneUserExists)) {
-            return Triple.of(false, null, "手机号已存在");
+            return Triple.of(false, "120001", "当前手机号已注册");
+        }
+    
+        User existUser = userService.queryByUserName(channelEmployeeRequest.getName());
+        if(Objects.nonNull(existUser)){
+            return Triple.of(false, "120009", "用户姓名已存在");
         }
         
         ChannelEmployee channelEmployee = channelEmployeeMapper.selectById(channelEmployeeRequest.getId());
         if (Objects.isNull(channelEmployee)) {
             log.error("not found channel employee by id, id = {}", channelEmployeeRequest.getId());
-            throw new BizException("120001", "当前渠道员工不存在");
+            return Triple.of(false, "120008", "当前渠道员工不存在");
         }
         
         User updateUser = new User();
