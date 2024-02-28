@@ -4,7 +4,7 @@ import com.xiliulou.electricity.entity.merchant.MerchantWithdrawApplication;
 import com.xiliulou.electricity.request.merchant.BatchReviewWithdrawApplicationRequest;
 import com.xiliulou.electricity.request.merchant.MerchantWithdrawApplicationRequest;
 import com.xiliulou.electricity.vo.merchant.MerchantWithdrawApplicationVO;
-import feign.Param;
+import org.apache.ibatis.annotations.Param;
 
 import java.math.BigDecimal;
 import java.util.List;

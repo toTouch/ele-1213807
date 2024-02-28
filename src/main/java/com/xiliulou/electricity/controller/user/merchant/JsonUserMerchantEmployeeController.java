@@ -32,7 +32,7 @@ public class JsonUserMerchantEmployeeController {
     @Resource
     private MerchantService merchantService;
     
-    @GetMapping("/user/merchant/queryMerchantEmployees")
+    @GetMapping("/merchant/queryMerchantEmployees")
     public R merchantEmployeeList(@RequestParam("size") long size,
                   @RequestParam("offset") Long offset,
                   @RequestParam(value = "merchantId", required = false) Long merchantUid,
@@ -65,7 +65,7 @@ public class JsonUserMerchantEmployeeController {
         return R.ok(merchantEmployeeService.listMerchantEmployee(merchantEmployeeRequest));
     }
     
-    @GetMapping("/user/merchant/queryMerchantEmployeesCount")
+    @GetMapping("/merchant/queryMerchantEmployeesCount")
     public R listCount(@RequestParam(value = "merchantId", required = false) Long merchantUid,
                    @RequestParam(value = "channelUserId", required = false) Long channelUserId) {
         
@@ -86,7 +86,7 @@ public class JsonUserMerchantEmployeeController {
         return R.ok(merchantEmployeeService.countMerchantEmployee(merchantEmployeeRequest));
     }
     
-    @GetMapping("/user/merchant/addMerchantEmployee")
+    @GetMapping("/merchant/addMerchantEmployee")
     public R save(@RequestParam(value = "name", required = true) String name,
                @RequestParam(value = "phone", required = true) String phone,
                @RequestParam(value = "status", required = true) Integer status,
@@ -114,7 +114,7 @@ public class JsonUserMerchantEmployeeController {
         
     }
     
-    @GetMapping("/user/merchant/editMerchantEmployee")
+    @GetMapping("/merchant/editMerchantEmployee")
     public R update(@RequestParam(value = "id", required = true) Long id,
                @RequestParam(value = "name", required = true) String name,
                @RequestParam(value = "phone", required = true) String phone,
@@ -143,7 +143,7 @@ public class JsonUserMerchantEmployeeController {
         return R.ok(merchantEmployeeService.updateMerchantEmployee(merchantEmployeeRequest));
     }
     
-    @DeleteMapping(value = "/admin/merchant/removeMerchantEmployee")
+    @DeleteMapping(value = "/merchant/removeMerchantEmployee")
     public R remove(@RequestParam("id") Long id) {
         //租户
         Integer tenantId = TenantContextHolder.getTenantId();
