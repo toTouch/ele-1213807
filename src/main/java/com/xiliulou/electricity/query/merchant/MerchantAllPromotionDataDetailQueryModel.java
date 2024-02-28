@@ -8,27 +8,27 @@ import lombok.NoArgsConstructor;
 import java.util.List;
 
 /**
- * @ClassName : MerchantPromotionScanCodeQueryModel
+ * @ClassName : MerchantPromotionDataQueryModel
  * @Description :
  * @Author : zhangyongbo
- * @since: 2024-02-22
+ * @since: 2024-02-24
  */
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
-public class MerchantPromotionScanCodeQueryModel {
-    private Integer type;
+public class MerchantAllPromotionDataDetailQueryModel {
+    private Long size;
     
-    private Long inviterUid;
-    
-    private Integer status;
+    private Long offset;
     
     private Integer tenantId;
+    
+    private Long merchantId;
     
     private Long startTime;
     
     private Long endTime;
     
-    
+    private Integer status;
 }

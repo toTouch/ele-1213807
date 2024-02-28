@@ -7,9 +7,14 @@ import com.xiliulou.electricity.service.merchant.MerchantEmployeeService;
 import com.xiliulou.electricity.service.merchant.MerchantService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
+import com.xiliulou.electricity.validator.CreateGroup;
+import com.xiliulou.electricity.validator.UpdateGroup;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -32,7 +37,7 @@ public class JsonUserMerchantEmployeeController {
     @Resource
     private MerchantService merchantService;
     
-    @GetMapping("/user/merchant/queryMerchantEmployees")
+    @GetMapping("/merchant/queryMerchantEmployees")
     public R merchantEmployeeList(@RequestParam("size") long size,
                   @RequestParam("offset") Long offset,
                   @RequestParam(value = "merchantId", required = false) Long merchantUid,
@@ -65,7 +70,7 @@ public class JsonUserMerchantEmployeeController {
         return R.ok(merchantEmployeeService.listMerchantEmployee(merchantEmployeeRequest));
     }
     
-    @GetMapping("/user/merchant/queryMerchantEmployeesCount")
+    @GetMapping("/merchant/queryMerchantEmployeesCount")
     public R listCount(@RequestParam(value = "merchantId", required = false) Long merchantUid,
                    @RequestParam(value = "channelUserId", required = false) Long channelUserId) {
         
@@ -86,11 +91,8 @@ public class JsonUserMerchantEmployeeController {
         return R.ok(merchantEmployeeService.countMerchantEmployee(merchantEmployeeRequest));
     }
     
-    @GetMapping("/user/merchant/addMerchantEmployee")
-    public R save(@RequestParam(value = "name", required = true) String name,
-               @RequestParam(value = "phone", required = true) String phone,
-               @RequestParam(value = "status", required = true) Integer status,
-               @RequestParam(value = "placeId", required = false) Long placeId) {
+    @PostMapping("/merchant/addMerchantEmployee")
+    public R save(@RequestBody @Validated(value = CreateGroup.class) MerchantEmployeeRequest merchantEmployeeRequest) {
     
         Long uid = SecurityUtils.getUid();
         Integer tenantId = TenantContextHolder.getTenantId();
@@ -101,25 +103,15 @@ public class JsonUserMerchantEmployeeController {
             return R.fail("120007", "未找到商户");
         }
     
-        MerchantEmployeeRequest merchantEmployeeRequest = MerchantEmployeeRequest.builder()
-                .name(name)
-                .phone(phone)
-                .status(status)
-                .placeId(placeId)
-                .merchantUid(merchant.getUid())
-                .tenantId(tenantId)
-                .build();
+        merchantEmployeeRequest.setMerchantUid(merchant.getUid());
+        merchantEmployeeRequest.setTenantId(tenantId);
     
         return R.ok(merchantEmployeeService.saveMerchantEmployee(merchantEmployeeRequest));
         
     }
     
-    @GetMapping("/user/merchant/editMerchantEmployee")
-    public R update(@RequestParam(value = "id", required = true) Long id,
-               @RequestParam(value = "name", required = true) String name,
-               @RequestParam(value = "phone", required = true) String phone,
-               @RequestParam(value = "status", required = true) Integer status,
-               @RequestParam(value = "placeId", required = false) Long placeId) {
+    @PostMapping("/merchant/editMerchantEmployee")
+    public R update(@RequestBody @Validated(value = UpdateGroup.class) MerchantEmployeeRequest merchantEmployeeRequest) {
     
         Long uid = SecurityUtils.getUid();
         Integer tenantId = TenantContextHolder.getTenantId();
@@ -130,20 +122,13 @@ public class JsonUserMerchantEmployeeController {
             return R.fail("120007", "未找到商户");
         }
     
-        MerchantEmployeeRequest merchantEmployeeRequest = MerchantEmployeeRequest.builder()
-                .id(id)
-                .name(name)
-                .phone(phone)
-                .status(status)
-                .placeId(placeId)
-                .merchantUid(merchant.getUid())
-                .tenantId(tenantId)
-                .build();
+        merchantEmployeeRequest.setMerchantUid(merchant.getUid());
+        merchantEmployeeRequest.setTenantId(tenantId);
     
         return R.ok(merchantEmployeeService.updateMerchantEmployee(merchantEmployeeRequest));
     }
     
-    @DeleteMapping(value = "/admin/merchant/removeMerchantEmployee")
+    @DeleteMapping(value = "/merchant/removeMerchantEmployee")
     public R remove(@RequestParam("id") Long id) {
         //租户
         Integer tenantId = TenantContextHolder.getTenantId();

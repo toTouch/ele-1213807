@@ -17,6 +17,7 @@ import com.xiliulou.electricity.entity.merchant.Merchant;
 import com.xiliulou.electricity.entity.merchant.MerchantAttr;
 import com.xiliulou.electricity.entity.merchant.MerchantJoinRecord;
 import com.xiliulou.electricity.mapper.merchant.MerchantJoinRecordMapper;
+import com.xiliulou.electricity.query.merchant.MerchantAllPromotionDataDetailQueryModel;
 import com.xiliulou.electricity.query.merchant.MerchantJoinRecordQueryMode;
 import com.xiliulou.electricity.query.merchant.MerchantJoinUserQueryMode;
 import com.xiliulou.electricity.query.merchant.MerchantPromotionDataDetailQueryModel;
@@ -217,7 +218,7 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
             }
             
             // 获取商户保护期和有效期
-            MerchantAttr merchantAttr = merchantAttrService.queryByMerchantIdFromCache(merchantId);
+            MerchantAttr merchantAttr = merchantAttrService.queryByTenantIdFromCache(merchant.getTenantId());
             if (Objects.isNull(merchantAttr)) {
                 log.error("MERCHANT JOIN ERROR! not found merchantAttr, merchantId={}", merchantId);
                 return R.fail("100463", "二维码已失效");
@@ -488,5 +489,17 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
         } else {
             return false;
         }
+    }
+    
+    @Override
+    @Slave
+    public Integer countEmployeeScanCodeNum(List<Long> uidList, Long startTime, Long endTime, Integer status, Integer tenantId) {
+        return merchantJoinRecordMapper.countEmployeeScanCodeNum(uidList, startTime, endTime, status, tenantId);
+    }
+    
+    @Slave
+    @Override
+    public List<MerchantJoinRecord> selectListAllPromotionDataDetail(MerchantAllPromotionDataDetailQueryModel queryModel){
+        return merchantJoinRecordMapper.selectListAllPromotionDataDetail(queryModel);
     }
 }

@@ -108,8 +108,8 @@ public class UserOauthBindServiceImpl implements UserOauthBindService {
     }
     
     @Override
-    public UserOauthBind queryByUserPhone(String phone, int source, Integer tenantId) {
-        return this.userOauthBindMapper.selectOne(new LambdaQueryWrapper<UserOauthBind>().eq(UserOauthBind::getPhone, phone).eq(UserOauthBind::getSource, source)
+    public UserOauthBind queryByUserPhone(Long uid, String phone, int source, Integer tenantId) {
+        return this.userOauthBindMapper.selectOne(new LambdaQueryWrapper<UserOauthBind>().eq(UserOauthBind::getUid, uid).eq(UserOauthBind::getPhone, phone).eq(UserOauthBind::getSource, source)
                 .eq(UserOauthBind::getStatus, UserOauthBind.STATUS_BIND).eq(UserOauthBind::getTenantId, tenantId));
     }
     
@@ -172,6 +172,30 @@ public class UserOauthBindServiceImpl implements UserOauthBindService {
         return userOauthBindMapper.selectByUidAndPhone(phone, uid, tenantId);
     }
     
+    /**
+     * 根据手机号、类型、租户查询用户
+     *
+     * @param phone    手机号
+     * @param source   类型
+     * @param tenantId 租户ID
+     * @return 绑定集
+     */
+    @Slave
+    @Override
+    public List<UserOauthBind> listUserByPhone(String phone, Integer source, Integer tenantId) {
+        return userOauthBindMapper.selectListUserByPhone(phone, source, tenantId);
+    }
+    
+    /**
+     *
+     * @param phone
+     * @param source
+     * @param tenantId
+     * @return
+     *
+     * @see UserOauthBindServiceImpl#listUserByPhone(String, Integer, Integer)
+     */
+    @Deprecated
     @Override
     @Slave
     public UserOauthBind selectUserByPhone(String phone, Integer source, Integer tenantId) {
@@ -189,6 +213,12 @@ public class UserOauthBindServiceImpl implements UserOauthBindService {
     @Override
     public Integer updatePhoneByUid(Integer tenantId, Long uid, String newPhone) {
         return userOauthBindMapper.updatePhoneByUid(tenantId, uid, newPhone, System.currentTimeMillis());
+    }
+    
+    @Transactional(rollbackFor = Exception.class)
+    @Override
+    public Integer deleteByUid(Long uid, Integer tenantId) {
+        return userOauthBindMapper.deleteByUid(uid, tenantId);
     }
     
     @Override

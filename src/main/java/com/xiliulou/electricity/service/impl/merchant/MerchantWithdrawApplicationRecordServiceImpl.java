@@ -1,14 +1,19 @@
 package com.xiliulou.electricity.service.impl.merchant;
 
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.entity.merchant.MerchantWithdrawApplicationRecord;
 import com.xiliulou.electricity.mapper.merchant.MerchantWithdrawApplicationRecordMapper;
 import com.xiliulou.electricity.request.merchant.MerchantWithdrawApplicationRecordRequest;
 import com.xiliulou.electricity.service.merchant.MerchantWithdrawApplicationRecordService;
+import com.xiliulou.electricity.vo.merchant.MerchantWithdrawApplicationRecordVO;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections.CollectionUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * @author BaoYu
@@ -35,7 +40,7 @@ public class MerchantWithdrawApplicationRecordServiceImpl implements MerchantWit
     
     @Override
     public Integer updateOne(MerchantWithdrawApplicationRecord merchantWithdrawApplicationRecord) {
-        return null;
+        return merchantWithdrawApplicationRecordMapper.updateOne(merchantWithdrawApplicationRecord);
     }
     
     @Override
@@ -43,18 +48,54 @@ public class MerchantWithdrawApplicationRecordServiceImpl implements MerchantWit
         return null;
     }
     
+    @Slave
     @Override
     public Integer countByCondition(MerchantWithdrawApplicationRecordRequest merchantWithdrawApplicationRecordRequest) {
+        return merchantWithdrawApplicationRecordMapper.countByCondition(merchantWithdrawApplicationRecordRequest);
+    }
+    
+    @Slave
+    @Override
+    public List<MerchantWithdrawApplicationRecordVO> selectListByCondition(MerchantWithdrawApplicationRecordRequest merchantWithdrawApplicationRecordRequest) {
+       
+        return merchantWithdrawApplicationRecordMapper.selectListByCondition(merchantWithdrawApplicationRecordRequest);
+    }
+    
+    @Slave
+    @Override
+    public MerchantWithdrawApplicationRecordVO selectById(Long id) {
+        return merchantWithdrawApplicationRecordMapper.selectById(id);
+    }
+    
+    @Override
+    public Integer updateApplicationRecordStatusByBatchNo(Integer status, String batchNo, Integer tenantId) {
+        Long updateTime = System.currentTimeMillis();
+        return merchantWithdrawApplicationRecordMapper.updateApplicationRecordStatusByBatchNo(status, updateTime, batchNo, tenantId);
+    }
+    
+    @Slave
+    @Override
+    public List<MerchantWithdrawApplicationRecord> selectListByBatchNo(String batchNo, Integer tenantId) {
+        if(Objects.isNull(batchNo) || Objects.isNull(tenantId)){
+            return Collections.EMPTY_LIST;
+        }
+        return merchantWithdrawApplicationRecordMapper.selectListByBatchNo(batchNo, tenantId);
+    }
+    
+    @Override
+    public Integer updateMerchantWithdrawStatus(MerchantWithdrawApplicationRecord merchantWithdrawApplicationRecord) {
+        return merchantWithdrawApplicationRecordMapper.updateMerchantWithdrawStatus(merchantWithdrawApplicationRecord);
+    }
+    
+    @Override
+    public List<MerchantWithdrawApplicationRecordVO> selectWithdrawRecordList(MerchantWithdrawApplicationRecordRequest merchantWithdrawApplicationRecordRequest) {
         return null;
     }
     
     @Override
-    public List<MerchantWithdrawApplicationRecordRequest> selectListByCondition(MerchantWithdrawApplicationRecordRequest merchantWithdrawApplicationRecordRequest) {
+    public Integer selectWithdrawRecordListCount(MerchantWithdrawApplicationRecordRequest merchantWithdrawApplicationRecordRequest) {
         return null;
     }
     
-    @Override
-    public MerchantWithdrawApplicationRecordRequest selectById(Long id) {
-        return null;
-    }
+    
 }

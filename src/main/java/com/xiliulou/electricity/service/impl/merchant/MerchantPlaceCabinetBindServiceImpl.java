@@ -90,7 +90,7 @@ public class MerchantPlaceCabinetBindServiceImpl implements MerchantPlaceCabinet
         MerchantPlace merchantPlace = merchantPlaceService.queryFromCacheById(placeCabinetBindSaveRequest.getPlaceId());
         if (Objects.isNull(merchantPlace) || !Objects.equals(merchantPlace.getTenantId(), tenantId)) {
             log.error("place bind error, place not exists, placeId ={}, tenantId={}", placeCabinetBindSaveRequest.getPlaceId(), tenantId);
-            return Triple.of(false, "", "场地不存在");
+            return Triple.of(false, "120209", "场地不存在");
         }
         
         // 检测开始时间是否小于上个月的月初
@@ -99,26 +99,26 @@ public class MerchantPlaceCabinetBindServiceImpl implements MerchantPlaceCabinet
             log.error("place bind error, bind time less than last month day time, placeId ={}, bindTime={}, lastMonthDaytime={}", placeCabinetBindSaveRequest.getPlaceId(),
                     placeCabinetBindSaveRequest.getBindTime(), lastMonthDaytime);
             // todo
-            return Triple.of(false, "", "开始时间只可选择当月（包含当前时间，不得晚于当前时间），及上月时间");
+            return Triple.of(false, "120221", "开始时间只可选择当月（包含当前时间，不得晚于当前时间），及上月时间");
         }
         
         long currentTimeMillis = System.currentTimeMillis();
         if (placeCabinetBindSaveRequest.getBindTime() > currentTimeMillis) {
             log.error("place bind error, bind time is after current time, placeId ={}, bindTime={}, currentTimeMillis={}", placeCabinetBindSaveRequest.getPlaceId(),
                     placeCabinetBindSaveRequest.getBindTime(), currentTimeMillis);
-            return Triple.of(false, "", "开始时间不得晚于当前时间");
+            return Triple.of(false, "120222", "开始时间不得晚于当前时间");
         }
         
         // 检测绑定柜机是否存在
         ElectricityCabinet electricityCabinet = cabinetService.queryByIdFromCache(placeCabinetBindSaveRequest.getCabinetId());
         if (Objects.isNull(electricityCabinet) || !Objects.equals(merchantPlace.getTenantId(), tenantId)) {
-            return Triple.of(false, "", "柜机不存在");
+            return Triple.of(false, "120223", "柜机不存在");
         }
         
         if (!Objects.equals(electricityCabinet.getFranchiseeId(), merchantPlace.getFranchiseeId())) {
             log.error("place bind error, franchisee is diff, placeId ={}, merchantFranchiseeId={}, cabinetFranchiseeId={}", placeCabinetBindSaveRequest.getPlaceId(),
                     electricityCabinet.getFranchiseeId(), merchantPlace.getFranchiseeId());
-            return Triple.of(false, "", "柜机不存在");
+            return Triple.of(false, "120224", "柜机所属加盟上和当前选中的加盟上不一致");
         }
         
         // 检测柜机是否被绑定
@@ -129,7 +129,7 @@ public class MerchantPlaceCabinetBindServiceImpl implements MerchantPlaceCabinet
         if (ObjectUtils.isNotEmpty(merchantPlaceCabinetBinds)) {
             log.error("place bind error, cabinet is bind, placeId ={}, cabinetId={}, bindPlaceId={}", placeCabinetBindSaveRequest.getPlaceId(), electricityCabinet.getId(),
                     merchantPlaceCabinetBinds.get(0).getPlaceId());
-            return Triple.of(false, "", "柜机已经被其他场地绑定");
+            return Triple.of(false, "120225", "柜机已经被其他场地绑定");
         }
         
         // 检测场地绑定的柜的数量是否已经大于20
@@ -138,8 +138,9 @@ public class MerchantPlaceCabinetBindServiceImpl implements MerchantPlaceCabinet
         queryModel.setPlaceIdList(placeIdList);
         queryModel.setCabinetId(null);
         Integer count = merchantPlaceCabinetBindMapper.countCabinetBindCount(queryModel);
+        
         if (ObjectUtils.isNotEmpty(count) && (count + 1) > MerchantPlaceConstant.BIND_CABINET_COUNT_LIMIT) {
-            return Triple.of(false, "", String.format("场地绑定柜机数量不能大于%s", MerchantPlaceConstant.BIND_CABINET_COUNT_LIMIT));
+            return Triple.of(false, "120226", String.format("场地绑定柜机数量不能大于%s", MerchantPlaceConstant.BIND_CABINET_COUNT_LIMIT));
         }
         
         // 判断绑定的时间是否与解绑的历史数据存在重叠
@@ -149,7 +150,7 @@ public class MerchantPlaceCabinetBindServiceImpl implements MerchantPlaceCabinet
         if (ObjectUtils.isNotEmpty(unBindList)) {
             List<Long> ids = unBindList.stream().map(MerchantPlaceCabinetBind::getId).collect(Collectors.toList());
             log.error("place bind error, bind time is overlap, placeId ={}, ids={}", placeCabinetBindSaveRequest.getPlaceId(), ids);
-            return Triple.of(false, "", "您选择的开始时间与已有区间存在冲突，请重新选择");
+            return Triple.of(false, "120227", "您选择的开始时间与已有区间存在冲突，请重新选择");
         }
         
         // 新增绑定数据
@@ -179,12 +180,12 @@ public class MerchantPlaceCabinetBindServiceImpl implements MerchantPlaceCabinet
         MerchantPlaceCabinetBind cabinetBind = this.queryById(placeCabinetBindSaveRequest.getId());
         if (Objects.isNull(cabinetBind) || !Objects.equals(cabinetBind.getTenantId(), tenantId)) {
             log.error("place un bind error, data not find, id ={}", placeCabinetBindSaveRequest.getId());
-            return Triple.of(false, "", "绑定记录不存在");
+            return Triple.of(false, "120228", "绑定记录不存在");
         }
         
         if (Objects.equals(cabinetBind.getStatus(), MerchantPlaceConstant.UN_BIND)) {
             log.error("place un bind error, cabinet already un bind, id ={}", placeCabinetBindSaveRequest.getId());
-            return Triple.of(false, "", "柜机已经解绑了，不能重复解绑");
+            return Triple.of(false, "120229", "柜机已经解绑了，不能重复解绑");
         }
         
         long currentTimeMillis = System.currentTimeMillis();
@@ -192,14 +193,14 @@ public class MerchantPlaceCabinetBindServiceImpl implements MerchantPlaceCabinet
         if (placeCabinetBindSaveRequest.getUnBindTime() > currentTimeMillis) {
             log.error("place un bind error, cabinet already un bind, id ={}, unBindTime={},curTime={}", placeCabinetBindSaveRequest.getId(),
                     placeCabinetBindSaveRequest.getUnBindTime(), currentTimeMillis);
-            return Triple.of(false, "", "结束时间不能晚于当前时间");
+            return Triple.of(false, "120230", "结束时间不能晚于当前时间");
         }
         
         // 检测结束时间是否小于绑定时间
         if (placeCabinetBindSaveRequest.getUnBindTime() > cabinetBind.getBindTime()) {
             log.error("place un bind error, cabinet already un bind, id ={}, unBindTime={},bindTime={}", placeCabinetBindSaveRequest.getId(),
                     placeCabinetBindSaveRequest.getUnBindTime(), cabinetBind.getBindTime());
-            return Triple.of(false, "", "结束时间不能早于绑定时间");
+            return Triple.of(false, "120231", "结束时间不能早于绑定时间");
         }
         
         // 检测开始时间是否小于上个月的月初
@@ -207,7 +208,7 @@ public class MerchantPlaceCabinetBindServiceImpl implements MerchantPlaceCabinet
         if (placeCabinetBindSaveRequest.getUnBindTime() < lastMonthDaytime) {
             log.error("place bind error, bind time less than last month day time, placeId ={}, unBindTime={}, lastMonthDaytime={}", placeCabinetBindSaveRequest.getPlaceId(),
                     placeCabinetBindSaveRequest.getUnBindTime(), lastMonthDaytime);
-            return Triple.of(false, "", "开始时间只可选择当月（包含当前时间，不得晚于当前时间），及上月时间");
+            return Triple.of(false, "120221", "开始时间只可选择当月（包含当前时间，不得晚于当前时间），及上月时间");
         }
         
         // 判断绑定的时间是否与解绑的历史数据存在重叠
@@ -215,11 +216,12 @@ public class MerchantPlaceCabinetBindServiceImpl implements MerchantPlaceCabinet
         placeIdList.add(cabinetBind.getPlaceId());
         MerchantPlaceCabinetBindQueryModel queryModel = MerchantPlaceCabinetBindQueryModel.builder().overlapTime(placeCabinetBindSaveRequest.getUnBindTime())
                 .placeIdList(placeIdList).status(MerchantPlaceConstant.UN_BIND).build();
+        
         List<MerchantPlaceCabinetBind> unBindList = this.queryList(queryModel);
         if (ObjectUtils.isNotEmpty(unBindList)) {
             List<Long> ids = unBindList.stream().map(MerchantPlaceCabinetBind::getId).collect(Collectors.toList());
             log.error("place un bind error, un bind time is overlap, id ={}, ids={}", placeCabinetBindSaveRequest.getId(), ids);
-            return Triple.of(false, "", "您选择的开始时间与已有区间存在冲突，请重新选择");
+            return Triple.of(false, "120232", "您选择的开始时间与已有区间存在冲突，请重新选择");
         }
         
         // 修改记录的状态为解绑，维护解绑时间
@@ -227,6 +229,7 @@ public class MerchantPlaceCabinetBindServiceImpl implements MerchantPlaceCabinet
         BeanUtils.copyProperties(placeCabinetBindSaveRequest, unBind);
         unBind.setStatus(MerchantPlaceConstant.UN_BIND);
         unBind.setUpdateTime(currentTimeMillis);
+        
         merchantPlaceCabinetBindMapper.unBind(unBind);
         
         return Triple.of(true, null, null);
@@ -246,13 +249,14 @@ public class MerchantPlaceCabinetBindServiceImpl implements MerchantPlaceCabinet
         MerchantPlaceCabinetBind cabinetBind = this.queryById(id);
         if (Objects.isNull(cabinetBind) || !Objects.equals(cabinetBind.getTenantId(), tenantId)) {
             log.error("place bind delete error, data not find, id ={}", id);
-            return Triple.of(false, "", "绑定记录不存在");
+            return Triple.of(false, "120228", "绑定记录不存在");
         }
         
         MerchantPlaceCabinetBind update = new MerchantPlaceCabinetBind();
         update.setId(id);
         update.setDelFlag(MerchantPlaceConstant.DEL_DEL);
         update.setUpdateTime(System.currentTimeMillis());
+        
         merchantPlaceCabinetBindMapper.remove(update);
         
         return Triple.of(true, null, null);
@@ -325,7 +329,7 @@ public class MerchantPlaceCabinetBindServiceImpl implements MerchantPlaceCabinet
         if (ObjectUtils.isNotEmpty(unBindList)) {
             List<Long> ids = unBindList.stream().map(MerchantPlaceCabinetBind::getId).collect(Collectors.toList());
             log.error("place un bind error, un bind time is overlap, id ={}, ids={}", placeId, ids);
-            return Triple.of(false, "", "您选择的开始时间与已有区间存在冲突，请重新选择");
+            return Triple.of(false, "120232", "您选择的开始时间与已有区间存在冲突，请重新选择");
         }
         
         return Triple.of(true, null, null);

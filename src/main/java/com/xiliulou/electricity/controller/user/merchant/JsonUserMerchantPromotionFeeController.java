@@ -37,7 +37,7 @@ public class JsonUserMerchantPromotionFeeController extends BaseController {
      *
      * @return 可提现金额/user/merchant/promotion/employee/details/page
      */
-    @GetMapping("/user/merchant/promotionFee/merchantEmployee")
+    @GetMapping("/merchant/promotionFee/merchantEmployee")
     public R queryMerchantEmployees(@RequestParam("merchantUid") Long merchantUid) {
         
         //用户区分
@@ -55,7 +55,7 @@ public class JsonUserMerchantPromotionFeeController extends BaseController {
      *
      * @return 可提现金额
      */
-    @GetMapping("/user/merchant/promotionFee/availableWithdrawAmount")
+    @GetMapping("/merchant/promotionFee/availableWithdrawAmount")
     public R queryMerchantAvailableWithdrawAmount() {
         
         //用户区分
@@ -74,7 +74,7 @@ public class JsonUserMerchantPromotionFeeController extends BaseController {
      * @param uid  用户uid
      * @return 推广费收入统计
      */
-    @GetMapping("/user/merchant/promotionFee/income")
+    @GetMapping("/merchant/promotionFee/income")
     public R queryMerchantPromotionFeeIncome(@RequestParam("type") Integer type, @RequestParam("uid") Long uid) {
         
         //用户区分
@@ -94,7 +94,7 @@ public class JsonUserMerchantPromotionFeeController extends BaseController {
      * @param uid  用户uid
      * @return 推广费扫码统计
      */
-    @GetMapping("/user/merchant/promotionFee/scanCodeCount")
+    @GetMapping("/merchant/promotionFee/scanCodeCount")
     public R queryMerchantPromotionScanCode(@RequestParam("type") Integer type, @RequestParam("uid") Long uid) {
         
         //用户区分
@@ -113,7 +113,7 @@ public class JsonUserMerchantPromotionFeeController extends BaseController {
      * @param uid  用户uid
      * @return 推广费续费情况
      */
-    @GetMapping("/user/merchant/promotionFee/renewal")
+    @GetMapping("/merchant/promotionFee/renewal")
     public R queryMerchantPromotionRenewal(@RequestParam("type") Integer type, @RequestParam("uid") Long uid) {
         
         //用户区分
@@ -134,7 +134,7 @@ public class JsonUserMerchantPromotionFeeController extends BaseController {
      * @param endTime   结束时间
      * @return 收入分析
      */
-    @GetMapping("/user/merchant/promotionFee/statistic/merchantIncome")
+    @GetMapping("/merchant/promotionFee/statistic/merchantIncome")
     public R promotionFeeStatisticAnalysisIncome(@RequestParam("type") Integer type, @RequestParam("uid") Long uid,
             @RequestParam(value = "beginTime", required = false) Long beginTime, @RequestParam(value = "endTime", required = false) Long endTime) {
         
@@ -157,7 +157,7 @@ public class JsonUserMerchantPromotionFeeController extends BaseController {
      * @param endTime   结束时间
      * @return 用户分析
      */
-    @GetMapping("/user/merchant/promotionFee/statistic/user")
+    @GetMapping("/merchant/promotionFee/statistic/user")
     public R promotionFeeStatisticAnalysisUser(@RequestParam("type") Integer type, @RequestParam("uid") Long uid,
             @RequestParam(value = "beginTime", required = false) Long beginTime, @RequestParam(value = "endTime", required = false) Long endTime) {
         
@@ -180,7 +180,7 @@ public class JsonUserMerchantPromotionFeeController extends BaseController {
      * @param endTime   结束时间
      * @return 渠道员商户分析
      */
-    @GetMapping("/user/merchant/promotionFee/statistic/channelEmployeeMerchant")
+    @GetMapping("/merchant/promotionFee/statistic/channelEmployeeMerchant")
     public R promotionFeeStatisticAnalysisChannelEmployeeMerchant(@RequestParam("type") Integer type, @RequestParam("uid") Long uid,
             @RequestParam(value = "beginTime", required = false) Long beginTime, @RequestParam(value = "endTime", required = false) Long endTime) {
         
@@ -200,7 +200,7 @@ public class JsonUserMerchantPromotionFeeController extends BaseController {
      * @param merchantUid 商户id
      * @return 推广详情概览
      */
-    @GetMapping("/user/merchant/promotion/merchant/detail")
+    @GetMapping("/merchant/promotion/merchant/detail")
     public R promotionMerchantDetail(@RequestParam("merchantUid") Long merchantUid) {
         
         MerchantPromotionEmployeeDetailQueryModel queryModel = MerchantPromotionEmployeeDetailQueryModel.builder().merchantUid(merchantUid)
@@ -213,13 +213,13 @@ public class JsonUserMerchantPromotionFeeController extends BaseController {
     /**
      * 商户首页 商户下的推广详情概览
      *
-     * @param size       页面显示条数
-     * @param offset     偏移量
-     * @param merchantId 商户id
+     * @param size        页面显示条数
+     * @param offset      偏移量
+     * @param merchantUid 商户uid
      * @return 推广详情概览
      */
-    @GetMapping("/user/merchant/promotion/employee/details/page")
-    public R promotionEmployeeDetails(@RequestParam("size") long size, @RequestParam("offset") Long offset, @RequestParam("merchantId") Long merchantId) {
+    @GetMapping("/merchant/promotion/employee/details/page")
+    public R promotionEmployeeDetails(@RequestParam("size") long size, @RequestParam("offset") Long offset, @RequestParam("merchantUid") Long merchantUid) {
         if (size < 0 || size > 5) {
             size = 5L;
         }
@@ -228,7 +228,7 @@ public class JsonUserMerchantPromotionFeeController extends BaseController {
             offset = 0L;
         }
         
-        MerchantPromotionEmployeeDetailQueryModel queryModel = MerchantPromotionEmployeeDetailQueryModel.builder().size(size).offset(offset).merchantUid(merchantId)
+        MerchantPromotionEmployeeDetailQueryModel queryModel = MerchantPromotionEmployeeDetailQueryModel.builder().size(size).offset(offset).merchantUid(merchantUid)
                 .tenantId(TenantContextHolder.getTenantId()).build();
         
         return merchantPromotionFeeService.selectMerchantEmployeeDetailList(queryModel);
@@ -245,8 +245,8 @@ public class JsonUserMerchantPromotionFeeController extends BaseController {
      * @param queryTime 查询时间
      * @return 推广详情
      */
-    @GetMapping("/user/merchant/promotion/employee/details/specifics")
-    public R promotionEmployeeDetailList(@RequestParam("size") long size, @RequestParam("offset") Long offset, @RequestParam("uid") Long uid,
+    @GetMapping("/merchant/promotion/employee/details/specifics")
+    public R promotionEmployeeDetailList(@RequestParam("size") long size, @RequestParam("offset") Long offset, @RequestParam("uid") Long uid, @RequestParam("type") Integer type,
             @RequestParam("status") Integer status, @RequestParam("queryTime") Long queryTime) {
         if (size < 0 || size > 10) {
             size = 10L;
@@ -256,7 +256,7 @@ public class JsonUserMerchantPromotionFeeController extends BaseController {
             offset = 10L;
         }
         
-        MerchantPromotionEmployeeDetailSpecificsQueryModel queryModel = MerchantPromotionEmployeeDetailSpecificsQueryModel.builder().size(size).offset(offset).uid(uid)
+        MerchantPromotionEmployeeDetailSpecificsQueryModel queryModel = MerchantPromotionEmployeeDetailSpecificsQueryModel.builder().size(size).offset(offset).type(type).uid(uid)
                 .status(status).startTime(queryTime).endTime(DateUtils.getMonthEndTimeStampByDate(queryTime)).tenantId(TenantContextHolder.getTenantId()).build();
         
         return merchantPromotionFeeService.selectPromotionEmployeeDetailList(queryModel);
@@ -266,26 +266,17 @@ public class JsonUserMerchantPromotionFeeController extends BaseController {
     /**
      * 推广数据概览展示
      *
-     * @param size
-     * @param offset
-     * @param uid
-     * @param type
-     * @param queryTime
-     * @return
+     * @param uid            uid
+     * @param type           类型
+     * @param queryStartTime 查询开始时间
+     * @param queryEndTime   查询结束时间
+     * @return 推广数据概览展示
      */
-    @GetMapping("/user/merchant/promotion/data")
-    public R promotionDataPage(@RequestParam("size") long size, @RequestParam("offset") Long offset, @RequestParam(value = "uid", required = false) Long uid,
-            @RequestParam(value = "type", required = false) Integer type, @RequestParam(value = "queryTime", required = false) Long queryTime) {
-        if (size < 0 || size > 10) {
-            size = 10L;
-        }
-        
-        if (offset < 0) {
-            offset = 0L;
-        }
-        
-        MerchantPromotionDataDetailQueryModel queryModel = MerchantPromotionDataDetailQueryModel.builder().size(size).offset(offset).uid(uid).type(type)
-                .tenantId(TenantContextHolder.getTenantId()).startTime(queryTime).endTime(DateUtils.getMonthEndTimeStampByDate(queryTime)).build();
+    @GetMapping("/merchant/promotion/data")
+    public R promotionDataPage(@RequestParam(value = "uid", required = false) Long uid, @RequestParam(value = "type", required = false) Integer type,
+            @RequestParam(value = "queryStartTime", required = false) Long queryStartTime, @RequestParam(value = "queryEndTime", required = false) Long queryEndTime) {
+        MerchantPromotionDataDetailQueryModel queryModel = MerchantPromotionDataDetailQueryModel.builder().uid(uid).type(type).tenantId(TenantContextHolder.getTenantId())
+                .startTime(queryStartTime).endTime(queryEndTime).build();
         return merchantPromotionFeeService.selectPromotionData(queryModel);
     }
     
@@ -293,18 +284,19 @@ public class JsonUserMerchantPromotionFeeController extends BaseController {
     /**
      * 推广数据列表展示
      *
-     * @param size      页码大小
-     * @param offset    页码
-     * @param uid       uid
-     * @param type      类型
-     * @param queryTime 查询时间
-     * @param status    状态
+     * @param size           页码大小
+     * @param offset         页码
+     * @param uid            uid
+     * @param type           类型
+     * @param queryStartTime 查询开始时间
+     * @param queryEndTime   查询结束时间
+     * @param status         状态
      * @return 推广数据列表
      */
-    @GetMapping("/user/merchant/promotion/data/detail/page")
+    @GetMapping("/merchant/promotion/data/detail/page")
     public R promotionDataPage(@RequestParam("size") long size, @RequestParam("offset") Long offset, @RequestParam(value = "uid", required = false) Long uid,
-            @RequestParam(value = "type", required = false) Integer type, @RequestParam(value = "queryTime", required = false) Long queryTime,
-            @RequestParam(value = "status", required = false) Integer status) {
+            @RequestParam(value = "type", required = false) Integer type, @RequestParam(value = "queryStartTime", required = false) Long queryStartTime,
+            @RequestParam(value = "queryEndTime", required = false) Long queryEndTime, @RequestParam(value = "status", required = false) Integer status) {
         if (size < 0 || size > 10) {
             size = 10L;
         }
@@ -314,7 +306,7 @@ public class JsonUserMerchantPromotionFeeController extends BaseController {
         }
         
         MerchantPromotionDataDetailQueryModel queryModel = MerchantPromotionDataDetailQueryModel.builder().size(size).offset(offset).uid(uid).type(type)
-                .tenantId(TenantContextHolder.getTenantId()).startTime(queryTime).endTime(DateUtils.getMonthEndTimeStampByDate(queryTime)).status(status).build();
+                .tenantId(TenantContextHolder.getTenantId()).startTime(queryStartTime).endTime(queryEndTime).status(status).build();
         return merchantPromotionFeeService.selectPromotionDataDetail(queryModel);
     }
     

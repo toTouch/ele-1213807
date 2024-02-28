@@ -2,8 +2,6 @@ package com.xiliulou.electricity.mapper.merchant;
 
 import com.xiliulou.electricity.entity.merchant.MerchantAttr;
 
-import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-
 /**
  * 商户升级配置(MerchantAttr)表数据库访问层
  *
@@ -14,12 +12,12 @@ public interface MerchantAttrMapper {
 
     MerchantAttr selectById(Long id);
     
-    MerchantAttr selectByMerchantId(Long merchantId);
+    MerchantAttr selectByTenantId(Integer tenantId);
 
-    int updateByMerchantId(MerchantAttr merchantAttr);
+    int updateByTenantId(MerchantAttr merchantAttr);
     
     int insert(MerchantAttr merchantAttr);
 
-    int deleteByMerchantId(Long id);
+    int deleteByTenantId(Integer tenantId);
 
 }

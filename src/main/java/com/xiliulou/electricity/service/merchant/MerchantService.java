@@ -7,6 +7,7 @@ import com.xiliulou.electricity.request.merchant.MerchantPageRequest;
 import com.xiliulou.electricity.request.merchant.MerchantSaveRequest;
 import com.xiliulou.electricity.vo.merchant.MerchantPlaceSelectVO;
 import com.xiliulou.electricity.vo.merchant.MerchantQrCodeVO;
+import com.xiliulou.electricity.vo.merchant.MerchantUserVO;
 import com.xiliulou.electricity.vo.merchant.MerchantVO;
 import org.apache.commons.lang3.tuple.Triple;
 
@@ -45,7 +46,7 @@ public interface MerchantService {
     
     Integer updateById(Merchant merchant);
     
-    MerchantVO queryMerchantDetail();
+    MerchantUserVO queryMerchantUserDetail();
     
     Integer countMerchantNumByTime(MerchantPromotionFeeMerchantNumQueryModel todayQueryModel);
     

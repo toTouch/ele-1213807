@@ -12,6 +12,11 @@ import java.math.BigDecimal;
 @Data
 public class MerchantPlaceCabinetFeeDetailVO {
     /**
+     * 柜机Id
+     */
+    private Long cabinetId;
+    
+    /**
      * 柜机名称
      */
     private String cabinetName;

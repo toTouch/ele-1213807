@@ -92,12 +92,13 @@
                mwar.create_time,
                mwar.update_time,
                mwar.tenant_id,
-               mwar.remark,
+               mw.remark,
                mwar.uid,
                mwar.order_no,
                mwar.transaction_no,
                mwar.status
         from t_merchant_withdraw_application_record mwar
+        left join t_merchant_withdraw_application mw on mwar.order_no = mw.order_no
         <where>
             mwar.tenant_id = #{tenantId}
             <if test="id != null and id != ''">
@@ -173,8 +174,8 @@
                mwar.transaction_no,
                mwar.status
         from t_merchant_withdraw_application_record mwar
-        where id = #{id}
-        and del_flag = 0
+        where mwar.id = #{id}
+        and mwar.del_flag = 0
     </select>
     
     <select id="queryList" resultType="com.xiliulou.electricity.vo.merchant.MerchantWithdrawApplicationRecordVO">
@@ -226,5 +227,72 @@
         set del_flag = 1
         where id = #{id}
     </delete>
+    
+    <update id="updateApplicationRecordStatusByBatchNo">
+        update t_merchant_withdraw_application_record
+        <set>
+            <if test="remark != null and remark != ''">
+                remark = #{remark},
+            </if>
+            <if test="status != null">
+                status = #{status},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+        </set>
+        where batch_no = #{batchNo}
+          and tenant_id = #{tenantId}
+    </update>
+    
+    <update id="updateMerchantWithdrawStatus">
+        update t_merchant_withdraw_application_record
+        <set>
+            <if test="response != null and response != ''">
+                response = #{response},
+            </if>
+            <if test="remark != null and remark != ''">
+                remark = #{remark},
+            </if>
+            <if test="status != null">
+                status = #{status},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+        </set>
+        <where>
+            <if test="batchNo != null and batchNo != ''">
+                and batch_no = #{batchNo}
+            </if>
+
+            <if test="batchDetailNo != null and batchDetailNo != ''">
+                and batch_detail_no = #{batchDetailNo}
+            </if>
+    
+            <if test="tenantId != null">
+                and tenant_id = #{tenantId}
+            </if>
+
+        </where>
+    </update>
+    
+    <select id="selectListByBatchNo" resultType="com.xiliulou.electricity.entity.merchant.MerchantWithdrawApplicationRecord">
+        select mwar.id,
+               mwar.response,
+               mwar.create_time,
+               mwar.update_time,
+               mwar.tenant_id,
+               mwar.remark,
+               mwar.uid,
+               mwar.order_no,
+               mwar.batch_no,
+               mwar.batch_detail_no,
+               mwar.transaction_no,
+               mwar.status
+        from t_merchant_withdraw_application_record mwar
+        where mwar.batch_no = #{batchNo}
+          and mwar.tenant_id = #{tenantId}
+    </select>
     
 </mapper>

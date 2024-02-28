@@ -52,9 +52,9 @@ public class ShippingManagerServiceImpl implements ShippingManagerService {
             return;
         }
 
-        UserOauthBind userOauthBind = userOauthBindService.queryByUserPhone(phone, UserOauthBind.SOURCE_WX_PRO, tenantId);
+        UserOauthBind userOauthBind = userOauthBindService.queryByUserPhone(uid, phone, UserOauthBind.SOURCE_WX_PRO, tenantId);
         if (Objects.isNull(userOauthBind)) {
-            log.error("SHIPPING ERROR! userOauthBind is illegal,tenantId={},phone={}", tenantId, phone);
+            log.error("SHIPPING ERROR! userOauthBind is illegal,uid = {}, tenantId={},phone={}", uid, tenantId, phone);
             return;
         }
 
