@@ -25,7 +25,6 @@ import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.vo.merchant.MerchantEmployeeVO;
 import com.xiliulou.security.authentication.console.CustomPasswordEncoder;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -149,8 +148,8 @@ public class MerchantEmployeeServiceImpl implements MerchantEmployeeService {
             throw new BizException("120003", "当前商户不可用");
         }
         
-        MerchantEmployee merchantEmployee = merchantEmployeeMapper.selectById(merchantEmployeeRequest.getId());
-        if(Objects.isNull(merchantEmployee)){
+        MerchantEmployeeVO merchantEmployeeVO = merchantEmployeeMapper.selectById(merchantEmployeeRequest.getId());
+        if(Objects.isNull(merchantEmployeeVO)){
             log.error("not found merchant employee by id, id = {}", merchantEmployeeRequest.getId());
             throw new BizException("120004", "商户员工不存在");
         }
@@ -164,7 +163,7 @@ public class MerchantEmployeeServiceImpl implements MerchantEmployeeService {
             updateUser.setLockFlag(User.USER_UN_LOCK);
         }
     
-        updateUser.setUid(merchantEmployee.getUid());
+        updateUser.setUid(merchantEmployeeVO.getUid());
         updateUser.setPhone(merchantEmployeeRequest.getPhone());
         updateUser.setUserType(User.TYPE_USER_MERCHANT_EMPLOYEE);
         updateUser.setTenantId(TenantContextHolder.getTenantId());
@@ -180,18 +179,18 @@ public class MerchantEmployeeServiceImpl implements MerchantEmployeeService {
     
     @Override
     public Integer removeMerchantEmployee(Long id) {
-        MerchantEmployee merchantEmployee = merchantEmployeeMapper.selectById(id);
-        if(Objects.isNull(merchantEmployee)) {
+        MerchantEmployeeVO merchantEmployeeVO = merchantEmployeeMapper.selectById(id);
+        if(Objects.isNull(merchantEmployeeVO)) {
             log.error("not found merchant employee by id, id = {}", id);
             throw new BizException("120004", "商户员工不存在");
         }
-        User user = userService.queryByUidFromCache(merchantEmployee.getUid());
+        User user = userService.queryByUidFromCache(merchantEmployeeVO.getUid());
         
         Integer result = 0;
         if(Objects.nonNull(user)){
             //userService.deleteInnerUser(merchantEmployee.getUid());
-            result = userService.removeById(merchantEmployee.getUid(), System.currentTimeMillis());
-            redisService.delete(CacheConstant.CACHE_USER_UID + merchantEmployee.getUid());
+            result = userService.removeById(merchantEmployeeVO.getUid(), System.currentTimeMillis());
+            redisService.delete(CacheConstant.CACHE_USER_UID + merchantEmployeeVO.getUid());
             redisService.delete(CacheConstant.CACHE_USER_PHONE + user.getTenantId() + ":" + user.getPhone() + ":" + user.getUserType());
         }
         return result;
@@ -200,11 +199,7 @@ public class MerchantEmployeeServiceImpl implements MerchantEmployeeService {
     @Slave
     @Override
     public MerchantEmployeeVO queryMerchantEmployeeById(Long id) {
-        MerchantEmployee merchantEmployee = merchantEmployeeMapper.selectById(id);
-        MerchantEmployeeVO merchantEmployeeVO = new MerchantEmployeeVO();
-        if(Objects.nonNull(merchantEmployee)){
-            BeanUtils.copyProperties(merchantEmployee, merchantEmployeeVO);
-        }
+        MerchantEmployeeVO merchantEmployeeVO = merchantEmployeeMapper.selectById(id);
         
         return merchantEmployeeVO;
     }
@@ -212,11 +207,7 @@ public class MerchantEmployeeServiceImpl implements MerchantEmployeeService {
     @Slave
     @Override
     public MerchantEmployeeVO queryMerchantEmployeeByUid(Long uid) {
-        MerchantEmployee merchantEmployee = merchantEmployeeMapper.selectByUid(uid);
-        MerchantEmployeeVO merchantEmployeeVO = new MerchantEmployeeVO();
-        if(Objects.nonNull(merchantEmployee)){
-            BeanUtils.copyProperties(merchantEmployee, merchantEmployeeVO);
-        }
+        MerchantEmployeeVO merchantEmployeeVO = merchantEmployeeMapper.selectByUid(uid);
         
         return merchantEmployeeVO;
     }
