@@ -8,7 +8,11 @@ import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.constant.merchant.MerchantConstant;
-import com.xiliulou.electricity.entity.*;
+import com.xiliulou.electricity.entity.BatteryMemberCard;
+import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
+import com.xiliulou.electricity.entity.Tenant;
+import com.xiliulou.electricity.entity.User;
+import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.merchant.Merchant;
 import com.xiliulou.electricity.entity.merchant.MerchantAttr;
 import com.xiliulou.electricity.entity.merchant.MerchantJoinRecord;
@@ -18,7 +22,11 @@ import com.xiliulou.electricity.query.merchant.MerchantJoinUserQueryMode;
 import com.xiliulou.electricity.query.merchant.MerchantPromotionDataDetailQueryModel;
 import com.xiliulou.electricity.query.merchant.MerchantPromotionScanCodeQueryModel;
 import com.xiliulou.electricity.request.merchant.MerchantJoinRecordPageRequest;
-import com.xiliulou.electricity.service.*;
+import com.xiliulou.electricity.service.BatteryMemberCardService;
+import com.xiliulou.electricity.service.ElectricityMemberCardOrderService;
+import com.xiliulou.electricity.service.TenantService;
+import com.xiliulou.electricity.service.UserInfoService;
+import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.service.merchant.MerchantAttrService;
 import com.xiliulou.electricity.service.merchant.MerchantEmployeeService;
 import com.xiliulou.electricity.service.merchant.MerchantJoinRecordService;
@@ -77,10 +85,10 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
     
     @Resource
     private MerchantEmployeeService merchantEmployeeService;
-
+    
     @Resource
     BatteryMemberCardService batteryMemberCardService;
-
+    
     @Resource
     ElectricityMemberCardOrderService electricityMemberCardOrderService;
     
@@ -263,7 +271,8 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
      * @param inviterUid  邀请人uid
      * @param inviterType 邀请人类型
      */
-    public static String codeEnCoder(Long merchantId, Long inviterUid, Integer inviterType) {
+    @Override
+    public String codeEnCoder(Long merchantId, Long inviterUid, Integer inviterType) {
         String encrypt = AESUtils.encrypt(String.valueOf(merchantId + StrUtil.C_COLON + inviterUid + StrUtil.C_COLON + inviterType));
         
         if (StringUtils.isNotBlank(encrypt)) {
@@ -277,7 +286,8 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
     /**
      * 二维码解密
      */
-    private static String codeDeCoder(String code) {
+    @Resource
+    public String codeDeCoder(String code) {
         if (StringUtils.isBlank(code)) {
             return null;
         }
@@ -408,16 +418,16 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
     public List<MerchantJoinRecord> selectPromotionDataDetail(MerchantPromotionDataDetailQueryModel queryModel) {
         return merchantJoinRecordMapper.selectListPromotionDataDetail(queryModel);
     }
-
+    
     @Override
     public List<MerchantJoinUserVO> selectJoinUserList(MerchantJoinUserQueryMode merchantJoinUserQueryMode) {
         //获取商户uid, 并检查当前商户是否存在且可用
         Merchant merchant = merchantService.queryByUid(merchantJoinUserQueryMode.getMerchantUid());
-        if(Objects.isNull(merchant)){
+        if (Objects.isNull(merchant)) {
             return Collections.emptyList();
         }
         merchantJoinUserQueryMode.setMerchantId(merchant.getId());
-
+        
         //计算当前日期后三天的时间毫秒数
         Long currentTime = System.currentTimeMillis();
         Long expiredTime = currentTime + MerchantConstant.MERCHANT_JOIN_USER_PACKAGE_EXPIRE_DAY * 24 * 60 * 60 * 1000L;
@@ -430,42 +440,42 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
         }*/
         merchantJoinUserQueryMode.setCurrentTime(currentTime);
         merchantJoinUserQueryMode.setExpireTime(expiredTime);
-
+        
         //获取当前商户下的用户列表信息
         List<MerchantJoinUserVO> merchantJoinUserVOS = merchantJoinRecordMapper.selectJoinUserList(merchantJoinUserQueryMode);
-
-        if(CollectionUtils.isEmpty(merchantJoinUserVOS)) {
+        
+        if (CollectionUtils.isEmpty(merchantJoinUserVOS)) {
             return Collections.emptyList();
         }
-
+        
         merchantJoinUserVOS.forEach(merchantJoinUserVO -> {
             //对电话号码中见四位做脱敏处理
             String phone = merchantJoinUserVO.getPhone();
             merchantJoinUserVO.setPhone(PhoneUtils.mobileEncrypt(phone));
-
+            
             Long packageId = merchantJoinUserVO.getPackageId();
             if (Objects.nonNull(packageId) && packageId != 0) {
                 BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(packageId);
-                if(Objects.nonNull(batteryMemberCard)){
+                if (Objects.nonNull(batteryMemberCard)) {
                     merchantJoinUserVO.setPackageName(batteryMemberCard.getName());
                 }
             }
-
+            
             String orderId = merchantJoinUserVO.getOrderId();
-            if(Objects.nonNull(orderId)){
+            if (Objects.nonNull(orderId)) {
                 ElectricityMemberCardOrder electricityMemberCardOrder = electricityMemberCardOrderService.selectByOrderNo(orderId);
-                if(Objects.nonNull(electricityMemberCardOrder)){
+                if (Objects.nonNull(electricityMemberCardOrder)) {
                     merchantJoinUserVO.setPurchasedTime(electricityMemberCardOrder.getCreateTime());
                 }
             }
-
+            
             ElectricityMemberCardOrder firstMemberCardOrder = electricityMemberCardOrderService.selectFirstMemberCardOrder(merchantJoinUserVO.getJoinUid());
-            if(Objects.nonNull(firstMemberCardOrder)){
+            if (Objects.nonNull(firstMemberCardOrder)) {
                 merchantJoinUserVO.setFirstPurchasedTime(firstMemberCardOrder.getCreateTime());
             }
-
+            
         });
-
+        
         return merchantJoinUserVOS;
     }
     
@@ -473,9 +483,9 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
     @Override
     public boolean existInviterData(Integer inviterType, Long inviterUid, Integer tenantId) {
         Integer existInviterData = merchantJoinRecordMapper.existInviterData(inviterType, inviterUid, tenantId);
-        if(Objects.nonNull(existInviterData)){
+        if (Objects.nonNull(existInviterData)) {
             return true;
-        }else{
+        } else {
             return false;
         }
     }

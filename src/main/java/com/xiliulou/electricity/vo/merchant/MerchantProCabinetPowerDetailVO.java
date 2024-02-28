@@ -14,7 +14,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class MerchantCabinetPowerDetailVO {
+public class MerchantProCabinetPowerDetailVO {
     
     private String monthDate;
     

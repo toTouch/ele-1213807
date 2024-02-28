@@ -149,6 +149,9 @@ public class MerchantServiceImpl implements MerchantService {
     @Resource
     private MerchantLevelService merchantLevelService;
     
+    @Resource
+    MerchantJoinRecordService merchantJoinRecService;
+    
     
     /**
      * 商户保存
@@ -1056,7 +1059,7 @@ public class MerchantServiceImpl implements MerchantService {
         vo.setMerchantId(merchantId);
         vo.setMerchantUid(uid);
         vo.setType(MerchantConstant.MERCHANT_QR_CODE_TYPE);
-        vo.setCode(MerchantJoinRecordServiceImpl.codeEnCoder(merchantId, uid, 1));
+        vo.setCode(merchantJoinRecService.codeEnCoder(merchantId, uid, 1));
 //        vo.setTenantCode(tenant.getCode());
         return vo;
     }

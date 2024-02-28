@@ -83,4 +83,8 @@ public interface MerchantJoinRecordService {
      * @return 是否存在邀请数据
      */
     boolean existInviterData(Integer inviterType,Long inviterUid,Integer tenantId);
+    
+    String codeEnCoder(Long merchantId, Long inviterUid, Integer inviterType);
+    
+    String codeDeCoder(String code);
 }

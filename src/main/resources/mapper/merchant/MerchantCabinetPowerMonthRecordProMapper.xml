@@ -5,7 +5,7 @@
     <sql id="basic_field">
         id, merchant_id, place_id, eid, sn, date, month_sum_power, month_sum_charge, tenant_id, del_flag, create_time, update_time
     </sql>
-    <select id="sumMonthPower" resultType="com.xiliulou.electricity.vo.merchant.MerchantPowerDetailVO">
+    <select id="sumMonthPower" resultType="com.xiliulou.electricity.vo.merchant.MerchantPowerPeriodVO">
         select sum(month_sum_power) as power, sum(month_sum_charge) as charge
         from t_merchant_cabinet_power_month_record_pro
         <where>

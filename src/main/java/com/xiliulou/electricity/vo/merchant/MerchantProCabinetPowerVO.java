@@ -8,13 +8,11 @@ import lombok.Data;
  * @date 2024/2/26 03:20:07
  */
 @Data
-public class MerchantCabinetPowerVO {
+public class MerchantProCabinetPowerVO {
     
     private Long cabinetId;
     
     private String cabinetName;
-    
-    private String sn;
     
     private Double todayPower;
     
