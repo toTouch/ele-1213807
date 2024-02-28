@@ -170,11 +170,9 @@
             b.place_id
         FROM
             t_electricity_cabinet c
-            LEFT JOIN t_merchant_place_cabinet_bind b on b.cabinet_id = c.id
-        <where>
+        LEFT JOIN t_merchant_place_cabinet_bind b ON b.cabinet_id = c.id  AND b.del_flag = 0 AND b.`status` = 0
+       <where>
             c.del_flag = 0
-            and b.del_flag = 0
-            and b.`status` = 0
             and c.franchisee_id = #{franchiseeId}
             and c.tenant_id = #{tenantId}
             <if test="cabinetName != null">

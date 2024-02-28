@@ -351,6 +351,7 @@ public class MerchantPlaceServiceImpl implements MerchantPlaceService {
     public Triple<Boolean, String, Object> getCabinetList(MerchantPlacePageRequest merchantPlacePageRequest) {
         // 判断场地id是否存在
         MerchantPlace merchantPlace = this.queryFromCacheById(merchantPlacePageRequest.getPlaceId());
+        
         if (Objects.isNull(merchantPlace) || !Objects.equals(merchantPlace.getTenantId(), merchantPlacePageRequest.getTenantId())) {
             log.error("place cabinet error, place is not exists, placeId={}, tenantId={}, curTenantId={}", merchantPlace.getTenantId(), merchantPlacePageRequest.getTenantId());
             return Triple.of(false, "120209", "场地不存在");
