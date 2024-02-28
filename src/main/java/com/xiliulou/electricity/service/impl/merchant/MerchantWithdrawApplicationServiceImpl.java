@@ -110,12 +110,14 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
         //检查商户是否存在
         Merchant queryMerchant = merchantService.queryByUid(merchantWithdrawApplicationRequest.getUid());
         if(Objects.isNull(queryMerchant)){
+            log.error("merchant user not found, uid = {}", merchantWithdrawApplicationRequest.getUid());
             return Triple.of(false, "120003", "商户不存在");
         }
     
         //查询商户余额表，是否存在商户账户
         MerchantUserAmount merchantUserAmount = merchantUserAmountService.queryByUid(merchantWithdrawApplicationRequest.getUid());
         if(Objects.isNull(merchantUserAmount)){
+            log.error("merchant user balance account not found, uid = {}", merchantWithdrawApplicationRequest.getUid());
             return Triple.of(false, "120010", "商户余额账户不存在");
         }
         
@@ -126,6 +128,7 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
         
         //检查余额表中的余额是否满足提现金额
         if(merchantUserAmount.getBalance().compareTo(merchantWithdrawApplicationRequest.getAmount()) < 0){
+            log.error("merchant user balance amount not enough, amount = {}, uid = {}", merchantWithdrawApplicationRequest.getAmount(), merchantWithdrawApplicationRequest.getUid());
             return Triple.of(false, "120012", "提现金额不足");
         }
 
