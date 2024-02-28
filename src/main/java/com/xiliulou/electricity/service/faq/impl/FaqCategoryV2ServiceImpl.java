@@ -24,14 +24,14 @@ import java.util.List;
 @AllArgsConstructor
 public class FaqCategoryV2ServiceImpl implements FaqCategoryV2Service {
     
-    private final FaqCategoryV2Mapper faqCategoryMapper;
+    private final FaqCategoryV2Mapper faqCategoryV2Mapper;
     
     @Override
     public void add(AdminFaqCategoryReq faqCategoryReq) {
         FaqCategoryV2 faqCategory = BeanUtil.toBean(faqCategoryReq, FaqCategoryV2.class);
         faqCategory.setTenantId(TenantContextHolder.getTenantId()).setOpUser(SecurityUtils.getUid()).setCreateTime(System.currentTimeMillis())
                 .setUpdateTime(System.currentTimeMillis());
-        faqCategoryMapper.insert(faqCategory);
+        faqCategoryV2Mapper.insert(faqCategory);
     }
     
     @Override
@@ -39,16 +39,16 @@ public class FaqCategoryV2ServiceImpl implements FaqCategoryV2Service {
         FaqCategoryV2 faqCategory = this.queryEntity(faqCategoryReq.getId());
         BeanUtil.copyProperties(faqCategoryReq, faqCategory);
         faqCategory.setOpUser(SecurityUtils.getUid()).setUpdateTime(System.currentTimeMillis());
-        faqCategoryMapper.updateByPrimaryKeySelective(faqCategory);
+        faqCategoryV2Mapper.updateByPrimaryKeySelective(faqCategory);
     }
     
     @Override
     public List<FaqCategoryVo> page() {
-        return faqCategoryMapper.selectListByTenantId(TenantContextHolder.getTenantId());
+        return faqCategoryV2Mapper.selectListByTenantId(TenantContextHolder.getTenantId());
     }
     
     public FaqCategoryV2 queryEntity(Long id) {
-        FaqCategoryV2 faqCategory = faqCategoryMapper.selectByPrimaryKey(id);
+        FaqCategoryV2 faqCategory = faqCategoryV2Mapper.selectByPrimaryKey(id);
         if (null == faqCategory) {
             throw new BizException("300000", "数据有误");
         }

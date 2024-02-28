@@ -39,9 +39,9 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 public class FaqV2ServiceImpl implements FaqV2Service {
     
-    private final FaqV2Mapper faqMapper;
+    private final FaqV2Mapper faqV2Mapper;
     
-    private final FaqCategoryV2Mapper faqCategoryMapper;
+    private final FaqCategoryV2Mapper faqCategoryV2Mapper;
     
     @Override
     public void add(AdminFaqReq faqReq) {
@@ -51,7 +51,7 @@ public class FaqV2ServiceImpl implements FaqV2Service {
                 .setOnShelf(UpDownEnum.DOWN.getCode())
                 .setCreateTime(System.currentTimeMillis())
                 .setUpdateTime(System.currentTimeMillis());
-        faqMapper.insert(faq);
+        faqV2Mapper.insert(faq);
     }
     
     @Override
@@ -59,7 +59,7 @@ public class FaqV2ServiceImpl implements FaqV2Service {
         FaqV2 faq = this.queryEntity(faqReq.getId());
         BeanUtil.copyProperties(faqReq, faq);
         faq.setOpUser(SecurityUtils.getUid()).setUpdateTime(System.currentTimeMillis());
-        faqMapper.updateByPrimaryKeySelective(faq);
+        faqV2Mapper.updateByPrimaryKeySelective(faq);
     }
     
     @Override
@@ -67,25 +67,25 @@ public class FaqV2ServiceImpl implements FaqV2Service {
         
         Map<String, Object> map = new HashMap<>();
         map.put("typeId", id);
-        List<FaqV2> faqs = faqMapper.selectListByParams(map);
+        List<FaqV2> faqs = faqV2Mapper.selectListByParams(map);
         if (CollectionUtil.isNotEmpty(faqs)) {
-            faqMapper.removeByIds(faqs.stream().map(FaqV2::getId).collect(Collectors.toList()));
+            faqV2Mapper.removeByIds(faqs.stream().map(FaqV2::getId).collect(Collectors.toList()));
         }
-        faqCategoryMapper.deleteByPrimaryKey(id);
+        faqCategoryV2Mapper.deleteByPrimaryKey(id);
     }
     
     @Override
     public void upDownBatch(AdminFaqUpDownReq faqUpDownReq) {
         Map<String, Object> map = new HashMap<>();
         map.put("idList", faqUpDownReq.getIds());
-        List<FaqV2> faqs = faqMapper.selectListByParams(map);
+        List<FaqV2> faqs = faqV2Mapper.selectListByParams(map);
         if (CollectionUtil.isEmpty(faqs)) {
             return;
         }
         faqs.stream().forEach(e -> {
             e.setOnShelf(faqUpDownReq.getOnShelf().getCode());
             e.setUpdateTime(System.currentTimeMillis());
-            faqMapper.updateByPrimaryKeySelective(e);
+            faqV2Mapper.updateByPrimaryKeySelective(e);
         });
         
     }
@@ -94,20 +94,20 @@ public class FaqV2ServiceImpl implements FaqV2Service {
     public void changeTypeBatch(AdminFaqChangeTypeReq faqChangeTypeReq) {
         Map<String, Object> map = new HashMap<>();
         map.put("idList", faqChangeTypeReq.getIds());
-        List<FaqV2> faqs = faqMapper.selectListByParams(map);
+        List<FaqV2> faqs = faqV2Mapper.selectListByParams(map);
         if (CollectionUtil.isEmpty(faqs)) {
             return;
         }
         faqs.stream().forEach(e -> {
             e.setTypeId(faqChangeTypeReq.getTypeId());
             e.setUpdateTime(System.currentTimeMillis());
-            faqMapper.updateByPrimaryKeySelective(e);
+            faqV2Mapper.updateByPrimaryKeySelective(e);
         });
     }
     
     @Override
     public void removeByIds(List<Long> ids) {
-        faqMapper.removeByIds(ids);
+        faqV2Mapper.removeByIds(ids);
     }
     
     @Override
@@ -117,7 +117,7 @@ public class FaqV2ServiceImpl implements FaqV2Service {
         }
         
         Map<String, Object> map = beanToMap(faqQuery);
-        List<FaqVo> faqVos = faqMapper.selectLeftJoinByParams(map);
+        List<FaqVo> faqVos = faqV2Mapper.selectLeftJoinByParams(map);
         
         if (CollectionUtil.isNotEmpty(faqVos)) {
             Map<Long, List<FaqVo>> listMap = faqVos.stream().collect(Collectors.groupingBy(FaqVo::getId));
@@ -139,7 +139,7 @@ public class FaqV2ServiceImpl implements FaqV2Service {
             }
             
             //通过typeId和其他参数来进行分页查询，然后赋值给对应typeId的集合
-            List<FaqV2> faqs = faqMapper.selectListByParamsPage(map, faqQuery.getOffset(), faqQuery.getSize());
+            List<FaqV2> faqs = faqV2Mapper.selectListByParamsPage(map, faqQuery.getOffset(), faqQuery.getSize());
             if (CollectionUtil.isNotEmpty(faqs)) {
                 List<FaqVo> faqVoLists = faqs.stream().map(e -> {
                     FaqVo faqVo = new FaqVo();
@@ -166,7 +166,7 @@ public class FaqV2ServiceImpl implements FaqV2Service {
     }
     
     public FaqV2 queryEntity(Long id) {
-        FaqV2 faq = faqMapper.selectByPrimaryKey(id);
+        FaqV2 faq = faqV2Mapper.selectByPrimaryKey(id);
         if (null == faq) {
             throw new BizException("300000", "数据有误");
         }
