@@ -148,14 +148,14 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
             return;
         }
         
-        MerchantAttr merchantAttr = merchantAttrService.queryByMerchantId(merchantJoinRecord.getMerchantId());
+        MerchantAttr merchantAttr = merchantAttrService.queryByTenantId(merchant.getTenantId());
         if (Objects.isNull(merchantAttr)) {
             log.warn("BIND MERCHANT WARN!merchantAttr is null,merchantId={},uid={}", merchantJoinRecord.getMerchantId(), uid);
             return;
         }
         
         //判断邀请是否过期
-        if (!merchantAttrService.checkInvitationTime(merchantJoinRecord.getMerchantId(), merchantJoinRecord.getStartTime())) {
+        if (!merchantAttrService.checkInvitationTime(merchant.getTenantId(), merchantJoinRecord.getStartTime())) {
             log.warn("BIND MERCHANT WARN!invitation is expired,merchantId={},uid={}", merchantJoinRecord.getMerchantId(), uid);
             return;
         }

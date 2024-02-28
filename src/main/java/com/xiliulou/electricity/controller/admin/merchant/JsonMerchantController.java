@@ -46,10 +46,10 @@ public class JsonMerchantController extends BaseController {
     private MerchantService merchantService;
     
     /**
-     * 查询商户审计条件
+     * 查询商户升级条件
      */
     @PutMapping("/admin/merchantAttr/upgradeConditionInfo")
-    public R upgradeConditionInfo(@RequestParam("merchantId") Long merchantId) {
+    public R upgradeConditionInfo() {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
@@ -59,7 +59,7 @@ public class JsonMerchantController extends BaseController {
             return R.ok();
         }
     
-        return R.ok(merchantAttrService.queryUpgradeCondition(merchantId));
+        return R.ok(merchantAttrService.queryUpgradeCondition(TenantContextHolder.getTenantId()));
     }
     
     /**
@@ -67,7 +67,7 @@ public class JsonMerchantController extends BaseController {
      */
     @PutMapping("/admin/merchantAttr/upgradeCondition")
     @Log(title = "修改商户升级条件")
-    public R updateUpgradeCondition(@RequestParam("merchantId") Long merchantId, @RequestParam("condition") Integer condition) {
+    public R updateUpgradeCondition(@RequestParam("condition") Integer condition) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
@@ -77,7 +77,7 @@ public class JsonMerchantController extends BaseController {
             return R.ok();
         }
         
-        return returnTripleResult(merchantAttrService.updateUpgradeCondition(merchantId, condition));
+        return returnTripleResult(merchantAttrService.updateUpgradeCondition(TenantContextHolder.getTenantId(), condition));
     }
     
     /**

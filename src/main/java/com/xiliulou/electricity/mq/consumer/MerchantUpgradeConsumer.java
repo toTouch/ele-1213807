@@ -96,7 +96,7 @@ public class MerchantUpgradeConsumer implements RocketMQListener<String> {
             return;
         }
         
-        MerchantAttr merchantAttr = merchantAttrService.queryByMerchantId(userInfoExtra.getMerchantId());
+        MerchantAttr merchantAttr = merchantAttrService.queryByTenantId(merchant.getTenantId());
         if (Objects.isNull(merchantAttr)) {
             log.warn("MERCHANT UPGRADE CONSUMER WARN!merchantAttr is null,merchantId={}", userInfoExtra.getMerchantId());
             return;
