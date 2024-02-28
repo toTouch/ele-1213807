@@ -312,6 +312,9 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
             if (Objects.nonNull(cabinet)) {
                 vo.setCabinetName(cabinet.getName());
             }
+            
+            vo.setCabinetId(cabinetId);
+            
             // 设置本月的场地费
             if (ObjectUtils.isNotEmpty(finalCurMonthCabinetFeeMap.get(cabinetId))) {
                 vo.setCurrentMonthFee(finalCurMonthCabinetFeeMap.get(cabinetId));

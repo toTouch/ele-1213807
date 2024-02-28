@@ -146,7 +146,7 @@ public class JsonUserMerchantCabinetPlaceController extends BaseController {
      */
     @GetMapping("/merchant/place/getPlaceDetailByCabinetId")
     public R getPlaceDetailByCabinetId(@RequestParam("month") String month,
-            @RequestParam(value = "cabinetId", required = false) Long cabinetId) {
+            @RequestParam(value = "cabinetId") Long cabinetId) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
@@ -165,7 +165,7 @@ public class JsonUserMerchantCabinetPlaceController extends BaseController {
     }
     
     /**
-     * 柜机电费详情
+     * 柜机场地费详情
      */
     @GetMapping("/merchant/place/getCabinetPlaceDetail")
     public R getCabinetPlaceDetail(@RequestParam(value = "placeId", required = false) Long placeId,
