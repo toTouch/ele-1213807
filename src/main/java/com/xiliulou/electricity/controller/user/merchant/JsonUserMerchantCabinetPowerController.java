@@ -68,10 +68,10 @@ public class JsonUserMerchantCabinetPowerController extends BaseController {
     }
     
     /**
-     * 今日电量/电费
+     * 电量/电费：今日、昨日、本月、上月、累计、柜机列表
      */
-    @GetMapping("/user/merchant/power/todayPower")
-    public R todayPower(@RequestParam(value = "placeId", required = false) Long placeId, @RequestParam(value = "cabinetId", required = false) Long cabinetId) {
+    @GetMapping("/user/merchant/power/powerData")
+    public R powerData(@RequestParam(value = "placeId", required = false) Long placeId, @RequestParam(value = "cabinetId", required = false) Long cabinetId) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
@@ -79,67 +79,7 @@ public class JsonUserMerchantCabinetPowerController extends BaseController {
         
         MerchantCabinetPowerRequest request = MerchantCabinetPowerRequest.builder().uid(user.getUid()).placeId(placeId).cabinetId(cabinetId).build();
         
-        return R.ok(merchantCabinetPowerService.todayPower(request));
-    }
-    
-    /**
-     * 昨日电量/电费
-     */
-    @GetMapping("/user/merchant/power/yesterdayPower")
-    public R yesterdayPower(@RequestParam(value = "placeId", required = false) Long placeId, @RequestParam(value = "cabinetId", required = false) Long cabinetId) {
-        TokenUser user = SecurityUtils.getUserInfo();
-        if (Objects.isNull(user)) {
-            return R.fail("ELECTRICITY.0001", "未找到用户");
-        }
-        
-        MerchantCabinetPowerRequest request = MerchantCabinetPowerRequest.builder().uid(user.getUid()).placeId(placeId).cabinetId(cabinetId).build();
-        
-        return R.ok(merchantCabinetPowerService.yesterdayPower(request));
-    }
-    
-    /**
-     * 本月电量/电费
-     */
-    @GetMapping("/user/merchant/power/thisMonthPower")
-    public R thisMonthPower(@RequestParam(value = "placeId", required = false) Long placeId, @RequestParam(value = "cabinetId", required = false) Long cabinetId) {
-        TokenUser user = SecurityUtils.getUserInfo();
-        if (Objects.isNull(user)) {
-            return R.fail("ELECTRICITY.0001", "未找到用户");
-        }
-        
-        MerchantCabinetPowerRequest request = MerchantCabinetPowerRequest.builder().uid(user.getUid()).placeId(placeId).cabinetId(cabinetId).build();
-        
-        return R.ok(merchantCabinetPowerService.thisMonthPower(request));
-    }
-    
-    /**
-     * 上月电量/电费
-     */
-    @GetMapping("/user/merchant/power/lastMonthPower")
-    public R lastMonthPower(@RequestParam(value = "placeId", required = false) Long placeId, @RequestParam(value = "cabinetId", required = false) Long cabinetId) {
-        TokenUser user = SecurityUtils.getUserInfo();
-        if (Objects.isNull(user)) {
-            return R.fail("ELECTRICITY.0001", "未找到用户");
-        }
-        
-        MerchantCabinetPowerRequest request = MerchantCabinetPowerRequest.builder().uid(user.getUid()).placeId(placeId).cabinetId(cabinetId).build();
-        
-        return R.ok(merchantCabinetPowerService.lastMonthPower(request));
-    }
-    
-    /**
-     * 累计电量/电费
-     */
-    @GetMapping("/user/merchant/power/totalPower")
-    public R totalPower(@RequestParam(value = "placeId", required = false) Long placeId, @RequestParam(value = "cabinetId", required = false) Long cabinetId) {
-        TokenUser user = SecurityUtils.getUserInfo();
-        if (Objects.isNull(user)) {
-            return R.fail("ELECTRICITY.0001", "未找到用户");
-        }
-        
-        MerchantCabinetPowerRequest request = MerchantCabinetPowerRequest.builder().uid(user.getUid()).placeId(placeId).cabinetId(cabinetId).build();
-        
-        return R.ok(merchantCabinetPowerService.totalPower(request));
+        return R.ok(merchantCabinetPowerService.powerData(request));
     }
     
     /**
@@ -156,22 +96,6 @@ public class JsonUserMerchantCabinetPowerController extends BaseController {
         MerchantCabinetPowerRequest request = MerchantCabinetPowerRequest.builder().uid(user.getUid()).placeId(placeId).cabinetId(cabinetId).monthList(monthList).build();
         
         return R.ok(merchantCabinetPowerService.lineData(request));
-    }
-    
-    /**
-     * 柜机电费列表
-     */
-    @GetMapping("/user/merchant/power/cabinetPowerList")
-    public R cabinetPowerList(@RequestParam(value = "placeId", required = false) Long placeId, @RequestParam(value = "cabinetId", required = false) Long cabinetId) {
-        TokenUser user = SecurityUtils.getUserInfo();
-        if (Objects.isNull(user)) {
-            return R.fail("ELECTRICITY.0001", "未找到用户");
-        }
-        
-        MerchantCabinetPowerRequest request = MerchantCabinetPowerRequest.builder().uid(user.getUid()).placeId(placeId).cabinetId(cabinetId).build();
-        
-        return R.ok(merchantCabinetPowerService.cabinetPowerList(request));
-        
     }
     
     /**

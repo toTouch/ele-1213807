@@ -3,8 +3,7 @@ package com.xiliulou.electricity.service.merchant;
 import com.xiliulou.electricity.entity.merchant.MerchantPlaceMap;
 import com.xiliulou.electricity.query.merchant.MerchantPlaceMapQueryModel;
 import com.xiliulou.electricity.vo.merchant.MerchantPlaceMapVO;
-import com.xiliulou.electricity.vo.merchant.MerchantPlaceUserVO;
-import com.xiliulou.electricity.vo.merchant.MerchantPlaceVO;
+import com.xiliulou.electricity.vo.merchant.MerchantPlaceSelectVO;
 
 import java.util.List;
 import java.util.Set;
@@ -21,7 +20,7 @@ public interface MerchantPlaceMapService {
     
     int batchDeleteByMerchantId(Long id, Set<Long> placeIdList);
     
-    List<MerchantPlaceUserVO> queryListByMerchantId(Long merchantId);
+    List<MerchantPlaceSelectVO> queryListByMerchantId(Long merchantId);
     
     List<MerchantPlaceMap> queryBindList(Long notMerchantId, Long franchiseeId);
     

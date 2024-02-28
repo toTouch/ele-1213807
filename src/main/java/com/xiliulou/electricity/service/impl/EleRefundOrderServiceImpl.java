@@ -1047,7 +1047,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
         EnterpriseChannelUserVO enterpriseChannelUserVO = enterpriseChannelUserService.queryUserRelatedEnterprise(userInfo.getUid());
         if (Objects.nonNull(enterpriseChannelUserVO) && Objects.equals(enterpriseChannelUserVO.getRenewalStatus(), EnterpriseChannelUser.RENEWAL_CLOSE)) {
             log.warn("ELE DEPOSIT WARN! battery free deposit refund channel user is disable! uid={}", userInfo.getUid());
-            return Triple.of(false,"300833", "企业渠道用户，暂不支持退押操作");
+            return Triple.of(false,"120303", "企业渠道用户，暂不支持退押操作");
         }
 
         PxzConfig pxzConfig = pxzConfigService.queryByTenantIdFromCache(TenantContextHolder.getTenantId());
@@ -1804,7 +1804,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
         EnterpriseChannelUserVO enterpriseChannelUserVO = enterpriseChannelUserService.queryUserRelatedEnterprise(userInfo.getUid());
         if (Objects.nonNull(enterpriseChannelUserVO) && Objects.equals(enterpriseChannelUserVO.getRenewalStatus(), EnterpriseChannelUser.RENEWAL_CLOSE)) {
             log.warn("ELE DEPOSIT WARN! battery offline refund channel user is disable! uid={}", user.getUid());
-            return R.fail("300833", "企业渠道用户，暂不支持退押操作");
+            return R.fail("120303", "企业渠道用户，暂不支持退押操作");
         }
 
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
@@ -2283,5 +2283,11 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
     @Override
     public EleRefundOrder queryLastByUid(Long uid) {
         return eleRefundOrderMapper.queryLastByUid(uid);
+    }
+    
+    @Slave
+    @Override
+    public Integer existsRefundOrderByUid(Long uid) {
+        return eleRefundOrderMapper.existsRefundOrderByUid(uid);
     }
 }

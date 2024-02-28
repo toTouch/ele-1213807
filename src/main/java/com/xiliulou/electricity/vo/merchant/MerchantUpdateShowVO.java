@@ -1,17 +1,18 @@
 package com.xiliulou.electricity.vo.merchant;
 
+import com.xiliulou.electricity.bo.merchant.MerchantEnterprisePackageBO;
+import com.xiliulou.electricity.vo.enterprise.EnterprisePackageVO;
 import lombok.Data;
 
-import java.math.BigDecimal;
 import java.util.List;
 
 /**
  * @author maxiaodong
  * @date 2024/2/11 22:36
- * @desc
+ * @desc 商户编辑显示Vo
  */
 @Data
-public class MerchantUpdateVO {
+public class MerchantUpdateShowVO {
     
     /**
      * id
@@ -29,6 +30,11 @@ public class MerchantUpdateVO {
     private Long franchiseeId;
     
     /**
+     * 加盟商名称
+     */
+    private String franchiseeName;
+    
+    /**
      * 手机号
      */
     private String phone;
@@ -44,9 +50,14 @@ public class MerchantUpdateVO {
     private Long channelEmployeeUid;
     
     /**
+     * 渠道员名称
+     */
+    private String channelUserName;
+    
+    /**
      * 绑定场地集合
      */
-    private List<Long> placeIdList;
+    private List<MerchantPlaceSelectVO> placeList;
     
     /**
      * 租户Id
@@ -96,7 +107,7 @@ public class MerchantUpdateVO {
     /**
      * 企业套餐id集合
      */
-    private List<Long> enterprisePackageIdList;
+    private List<EnterprisePackageVO> enterprisePackageList;
     
     /**
      * 创建时间

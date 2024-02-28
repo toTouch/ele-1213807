@@ -6,22 +6,21 @@ import java.util.List;
 
 /**
  * @author HeYafeng
- * @description 电量/电费
+ * @description 小程序-商户 电量/电费
  * @date 2024/2/26 03:02:06
  */
 @Data
 public class MerchantPowerVO {
     
-    private Long eid;
+    private MerchantPowerRspVO todayPower;
     
-    private Double power;
+    private MerchantPowerRspVO yesterdayPower;
     
-    private Double charge;
+    private MerchantPowerRspVO thisMonthPower;
     
-    List<MerchantPowerDetailVO> detailVOList;
+    private MerchantPowerRspVO lastMonthPower;
     
-    /**
-     * 最新上报数据的时间，用于排序
-     */
-    private Long latestTime;
+    private MerchantPowerRspVO totalPower;
+    
+    private List<MerchantCabinetPowerVO> cabinetPowerList;
 }

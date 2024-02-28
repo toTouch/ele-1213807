@@ -87,4 +87,9 @@ public class MerchantCabinetPowerMonthDetailPro {
      */
     private Long updateTime;
     
+    /**
+     * 柜机和商户的绑定状态：0-绑定，1-解绑
+     */
+    private Integer cabinetMerchantBindStatus;
+    
 }

@@ -14,7 +14,7 @@ public class MerchantPlaceAndCabinetUserVO {
     
     private Long merchantId;
     
-    List<MerchantPlaceUserVO> placeList;
+    List<MerchantPlaceSelectVO> placeList;
     
     List<MerchantPlaceCabinetVO> cabinetList;
 }

@@ -122,7 +122,8 @@ public class MerchantUpgradeConsumer implements RocketMQListener<String> {
             MerchantLevelVO merchantLevel = null;
             
             for (MerchantLevelVO merchantLevelVO : merchantLevelList) {
-                if (Objects.nonNull(merchantLevelVO.getInvitationUserCount()) && invitationNumber >= merchantLevelVO.getInvitationUserCount()) {
+                if (Objects.nonNull(merchantLevelVO.getInvitationUserCount()) && merchantLevelVO.getInvitationUserCount() > 0
+                        && invitationNumber >= merchantLevelVO.getInvitationUserCount()) {
                     merchantLevel = merchantLevelVO;
                     break;
                 }
@@ -139,7 +140,7 @@ public class MerchantUpgradeConsumer implements RocketMQListener<String> {
             MerchantLevelVO merchantLevel = null;
             
             for (MerchantLevelVO merchantLevelVO : merchantLevelList) {
-                if (Objects.nonNull(merchantLevelVO.getRenewalUserCount()) && renewalNumber >= merchantLevelVO.getRenewalUserCount()) {
+                if (Objects.nonNull(merchantLevelVO.getRenewalUserCount()) && merchantLevelVO.getRenewalUserCount() > 0 && renewalNumber >= merchantLevelVO.getRenewalUserCount()) {
                     merchantLevel = merchantLevelVO;
                     break;
                 }
@@ -165,8 +166,9 @@ public class MerchantUpgradeConsumer implements RocketMQListener<String> {
             MerchantLevelVO merchantLevel = null;
             
             for (MerchantLevelVO merchantLevelVO : merchantLevelList) {
-                if (Objects.nonNull(merchantLevelVO.getInvitationUserCount()) && invitationNumber >= merchantLevelVO.getInvitationUserCount() && Objects.nonNull(
-                        merchantLevelVO.getRenewalUserCount()) && renewalNumber >= merchantLevelVO.getRenewalUserCount()) {
+                if (Objects.nonNull(merchantLevelVO.getInvitationUserCount()) && merchantLevelVO.getInvitationUserCount() > 0
+                        && invitationNumber >= merchantLevelVO.getInvitationUserCount() && Objects.nonNull(merchantLevelVO.getRenewalUserCount())
+                        && merchantLevelVO.getRenewalUserCount() > 0 && renewalNumber >= merchantLevelVO.getRenewalUserCount()) {
                     merchantLevel = merchantLevelVO;
                     break;
                 }

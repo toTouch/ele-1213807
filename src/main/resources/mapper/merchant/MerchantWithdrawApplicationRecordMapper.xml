@@ -173,8 +173,8 @@
                mwar.transaction_no,
                mwar.status
         from t_merchant_withdraw_application_record mwar
-        where id = #{id}
-        and del_flag = 0
+        where mwar.id = #{id}
+        and mwar.del_flag = 0
     </select>
     
     <select id="queryList" resultType="com.xiliulou.electricity.vo.merchant.MerchantWithdrawApplicationRecordVO">
@@ -226,5 +226,52 @@
         set del_flag = 1
         where id = #{id}
     </delete>
+    
+    <update id="updateApplicationRecordStatusByBatchNo">
+        update t_merchant_withdraw_application_record
+        set status = #{status},
+            update_time = #{updateTime}
+        where batch_no = #{batchNo}
+          and tenant_id = #{tenantId}
+    </update>
+    
+    <update id="updateMerchantWithdrawStatus">
+        update t_merchant_withdraw_application_record
+        set response = #{response},
+            status = #{status},
+            update_time = #{updateTime}
+        <where>
+            <if test="batchNo != null and batchNo != ''">
+                and batch_no = #{batchNo}
+            </if>
+
+            <if test="batchDetailNo != null and batchDetailNo != ''">
+                and batch_detail_no = #{batchDetailNo}
+            </if>
+    
+            <if test="tenantId != null">
+                and tenant_id = #{tenantId}
+            </if>
+
+        </where>
+    </update>
+    
+    <select id="selectListByBatchNo" resultType="com.xiliulou.electricity.entity.merchant.MerchantWithdrawApplicationRecord">
+        select mwar.id,
+               mwar.response,
+               mwar.create_time,
+               mwar.update_time,
+               mwar.tenant_id,
+               mwar.remark,
+               mwar.uid,
+               mwar.order_no,
+               mwar.batch_no,
+               mwar.batch_detail_no,
+               mwar.transaction_no,
+               mwar.status
+        from t_merchant_withdraw_application_record mwar
+        where mwar.batch_no = #{batchNo}
+          and mwar.tenant_id = #{tenantId}
+    </select>
     
 </mapper>

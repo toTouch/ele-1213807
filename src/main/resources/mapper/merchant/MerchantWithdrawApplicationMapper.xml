@@ -319,8 +319,8 @@
                tmwa.create_time,
                tmwa.update_time
         from t_merchant_withdraw_application tmwa
-        where id = #{id}
-        and del_flag = 0
+        where tmwa.id = #{id}
+        and tmwa.del_flag = 0
     </select>
     
     <!--通过主键物理删除渠道员工-->
@@ -337,5 +337,63 @@
     <select id="sumByStatus" resultType="java.math.BigDecimal">
         select sum(amount) from t_merchant_withdraw_application where del_flag=0 and tenant_id =#{tenantId} and status =#{status} and uid =#{uid}
     </select>
+    
+    <select id="selectListForWithdrawInProgress" resultType="com.xiliulou.electricity.entity.merchant.MerchantWithdrawApplication">
+        select distinct tmwa.batch_no,
+               tmwa.tenat_id,
+        from t_merchant_withdraw_application tmwa
+        where del_flag = 0
+          and tmwa.status = 4
+          and tmwa.check_time <![CDATA[ <=  ]]> #{checkTime}
+        limit #{offset},#{size}
+    </select>
+    
+    <select id="selectListByBatchNo" resultType="com.xiliulou.electricity.entity.merchant.MerchantWithdrawApplication">
+        select tmwa.id,
+               tmwa.uid,
+               tmwa.order_no,
+               tmwa.batch_no,
+               tmwa.amount,
+               tmwa.remark,
+               tmwa.status,
+               tmwa.receipt_time,
+               tmwa.tenant_id,
+               tmwa.del_flag,
+               tmwa.create_time,
+               tmwa.update_time
+        from t_merchant_withdraw_application tmwa
+        where del_flag = 0
+          and tmwa.batch_no = #{batchNo}
+          and tmwa.tenant_id = #{tenantId}
+    </select>
+    
+    <update id="updateApplicationRecordStatusByBatchNo">
+        update t_merchant_withdraw_application_record
+        set status = #{status},
+            update_time = #{updateTime}
+        where batch_no = #{batchNo}
+          and tenant_id = #{tenantId}
+    </update>
+    
+    <update id="updateMerchantWithdrawStatus">
+        update t_merchant_withdraw_application
+        set status = #{status},
+            update_time = #{updateTime}
+        <where>
+            <if test="batchNo != null and batchNo != ''">
+                and batch_no = #{batchNo}
+            </if>
+          
+            <if test="orderNo != null and orderNo != ''">
+                and order_no = orderNo
+            </if>
+    
+            <if test="tenantId != null">
+                and tenant_id = #{tenantId}
+            </if>
+        </where>
+
+    </update>
+    
     
 </mapper>

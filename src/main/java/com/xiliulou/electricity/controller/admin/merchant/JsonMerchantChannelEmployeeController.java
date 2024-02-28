@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.controller.admin.merchant;
 
+import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.request.merchant.ChannelEmployeeRequest;
 import com.xiliulou.electricity.service.merchant.ChannelEmployeeService;
@@ -28,7 +29,7 @@ import java.util.Objects;
 
 @Slf4j
 @RestController
-public class JsonMerchantChannelEmployeeController {
+public class JsonMerchantChannelEmployeeController extends BaseController {
     
     @Resource
     private ChannelEmployeeService channelEmployeeService;
@@ -94,7 +95,7 @@ public class JsonMerchantChannelEmployeeController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         
-        return R.ok(channelEmployeeService.saveChannelEmployee(channelEmployeeRequest));
+        return returnTripleResult(channelEmployeeService.saveChannelEmployee(channelEmployeeRequest));
     }
     
     
@@ -105,7 +106,7 @@ public class JsonMerchantChannelEmployeeController {
             log.error("not found user.");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-        return R.ok(channelEmployeeService.updateChannelEmployee(channelEmployeeRequest));
+        return returnTripleResult(channelEmployeeService.updateChannelEmployee(channelEmployeeRequest));
     }
     
     @GetMapping("/admin/merchant/queryChannelEmployeeById")

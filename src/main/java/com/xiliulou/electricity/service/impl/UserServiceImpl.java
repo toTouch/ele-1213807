@@ -336,11 +336,13 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Slave
     public List<User> queryByTenantIdAndType(Integer tenantId, Integer userType) {
         return this.userMapper.selectList(new QueryWrapper<User>().eq("tenant_id", tenantId).eq("user_type", userType));
     }
 
     @Override
+    @Slave
     public List<User> listUserByPhone(String phone, Integer tenantId) {
         return this.userMapper.selectList(new QueryWrapper<User>().eq("phone", phone).eq("tenant_id", tenantId).eq("del_flag", User.DEL_NORMAL));
     }
