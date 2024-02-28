@@ -678,7 +678,11 @@ public class MerchantServiceImpl implements MerchantService {
         updateUser.setUid(merchant.getUid());
         updateUser.setUpdateTime(timeMillis);
         updateUser.setLockFlag(User.USER_LOCK);
+        updateUser.setDelFlag(User.DEL_DEL);
         userService.updateMerchantUser(updateUser);
+        
+        // 删除用户
+        userService.removeById(merchant.getUid(), timeMillis);
         
         // 删除用户缓存
         merchantDeleteCacheDTO.setDeleteUserFlag(true);
