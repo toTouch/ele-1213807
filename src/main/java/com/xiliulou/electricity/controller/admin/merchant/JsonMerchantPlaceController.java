@@ -192,7 +192,7 @@ public class JsonMerchantPlaceController extends BaseController {
      */
     @GetMapping("/admin/merchant/place/getCabinetList")
     public R getCabinetList(@RequestParam("size") long size, @RequestParam("offset") long offset, @RequestParam(value = "cabinetName", required = false) String cabinetName,
-            @RequestParam(value = "placeId", required = false) Long placeId) {
+            @RequestParam(value = "placeId") Long placeId) {
         if (size < 0 || size > 50) {
             size = 50L;
         }
