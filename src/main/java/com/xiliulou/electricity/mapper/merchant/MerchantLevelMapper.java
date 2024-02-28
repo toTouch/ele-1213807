@@ -30,4 +30,6 @@ public interface MerchantLevelMapper {
     List<MerchantLevel> queryListByIdList(@Param("idList") List<Long> levelIdList);
     
     MerchantLevel selectLastByMerchantLevel(@Param("level") String level, @Param("tenantId") Integer tenantId);
+    
+    MerchantLevel selectByMerchantLevelAndTenantId(@Param("level") String level, @Param("tenantId") Integer tenantId);
 }

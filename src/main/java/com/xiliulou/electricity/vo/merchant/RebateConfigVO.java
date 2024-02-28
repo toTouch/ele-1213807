@@ -18,6 +18,7 @@ public class RebateConfigVO {
      * 商户等级
      */
     private String level;
+    private String levelName;
     
     /**
      * 套餐Id

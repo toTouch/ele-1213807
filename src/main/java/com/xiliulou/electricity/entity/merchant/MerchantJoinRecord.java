@@ -105,22 +105,22 @@ public class MerchantJoinRecord {
     private String remark;
     
     /**
-     * 已参与
+     * 已参与:扫码成功
      */
     public static Integer STATUS_INIT = 1;
     
     /**
-     * 邀请成功
+     * 邀请成功:购买套餐成功
      */
     public static Integer STATUS_SUCCESS = 2;
     
     /**
-     * 已过期
+     * 已过期:活动已过期
      */
     public static Integer STATUS_EXPIRED = 3;
     
     /**
-     * 已失效
+     * 已失效:退套餐后
      */
     public static Integer STATUS_INVALID = 4;
     

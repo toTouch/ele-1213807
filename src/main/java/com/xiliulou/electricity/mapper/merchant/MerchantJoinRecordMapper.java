@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.mapper.merchant;
 
 import com.xiliulou.electricity.entity.merchant.MerchantJoinRecord;
+import com.xiliulou.electricity.query.merchant.MerchantAllPromotionDataDetailQueryModel;
 import com.xiliulou.electricity.query.merchant.MerchantJoinRecordQueryMode;
 import com.xiliulou.electricity.query.merchant.MerchantJoinUserQueryMode;
 import com.xiliulou.electricity.query.merchant.MerchantPromotionDataDetailQueryModel;
@@ -26,9 +27,9 @@ public interface MerchantJoinRecordMapper {
     
     Integer updateStatus(@Param("merchantId") Long merchantId, @Param("joinUid") Long joinUid, @Param("status") Integer status);
     
-    Integer updateProtectionExpired(@Param("protectionJoinRecord") MerchantJoinRecord protectionJoinRecord);
+    Integer updateProtectionExpired(MerchantJoinRecord protectionJoinRecord);
     
-    Integer updateExpired(@Param("merchantJoinRecord")MerchantJoinRecord merchantJoinRecord);
+    Integer updateExpired(MerchantJoinRecord merchantJoinRecord);
     
     List<MerchantJoinRecord> selectList(MerchantJoinRecordQueryMode joinRecordQueryMode);
     
@@ -51,4 +52,8 @@ public interface MerchantJoinRecordMapper {
     List<MerchantJoinUserVO> selectJoinUserList(MerchantJoinUserQueryMode merchantJoinUserQueryMode);
     
     Integer existInviterData(@Param("inviterType") Integer inviterType,@Param("inviterUid") Long inviterUid,@Param("tenantId") Integer tenantId);
+    
+    Integer countEmployeeScanCodeNum(@Param("uidList") List<Long> employeeIdList ,@Param("startTime") Long startTime,@Param("endTime")Long endTime,@Param("status")Integer status,@Param("tenantId") Integer tenantId);
+    
+    List<MerchantJoinRecord> selectListAllPromotionDataDetail(MerchantAllPromotionDataDetailQueryModel query);
 }

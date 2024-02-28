@@ -351,6 +351,7 @@ public class MerchantPlaceServiceImpl implements MerchantPlaceService {
     public Triple<Boolean, String, Object> getCabinetList(MerchantPlacePageRequest merchantPlacePageRequest) {
         // 判断场地id是否存在
         MerchantPlace merchantPlace = this.queryFromCacheById(merchantPlacePageRequest.getPlaceId());
+        
         if (Objects.isNull(merchantPlace) || !Objects.equals(merchantPlace.getTenantId(), merchantPlacePageRequest.getTenantId())) {
             log.error("place cabinet error, place is not exists, placeId={}, tenantId={}, curTenantId={}", merchantPlace.getTenantId(), merchantPlacePageRequest.getTenantId());
             return Triple.of(false, "120209", "场地不存在");
@@ -359,14 +360,14 @@ public class MerchantPlaceServiceImpl implements MerchantPlaceService {
         merchantPlacePageRequest.setFranchiseeId(merchantPlace.getFranchiseeId());
         
         MerchantPlaceQueryModel queryModel = new MerchantPlaceQueryModel();
-        BeanUtils.copyProperties(merchantPlace, queryModel);
+        BeanUtils.copyProperties(merchantPlacePageRequest, queryModel);
         
         // 查询加盟上下的柜机的信息
         List<MerchantPlaceCabinetVO> merchantPlaceCabinetVOS = merchantPlaceMapper.selectCabinetList(queryModel);
         
         if (ObjectUtils.isNotEmpty(merchantPlaceCabinetVOS)) {
             merchantPlaceCabinetVOS.forEach(item -> {
-                if (Objects.nonNull(item.getPlaceId())) {
+                if (Objects.nonNull(item) && Objects.nonNull(item.getPlaceId())) {
                     item.setDisable(MerchantPlaceCabinetVO.YES);
                 } else {
                     item.setDisable(MerchantPlaceCabinetVO.NO);

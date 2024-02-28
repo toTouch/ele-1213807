@@ -192,11 +192,11 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
                 }
                 
                 UserOauthBind userOauthBind = fitUserOauthBinds.get(0);
-                if (Objects.nonNull(userOauthBind) && Objects.equals(userOauthBind.getStatus(),UserOauthBind.STATUS_BIND)) {
+               /* if (Objects.nonNull(userOauthBind) && Objects.equals(userOauthBind.getStatus(),UserOauthBind.STATUS_BIND)) {
                     log.error("TOKEN ERROR! thirdId not equals user login thirdId={}! openId={},thirdId={},userId={}", result.getOpenid(),
                             userOauthBind.getThirdId(),existsOpenId.getRight().get(0).getThirdId(), existPhone.getRight().getUid());
                     throw new UserLoginException("100567", "该账户已绑定其他微信，请联系客服处理");
-                }
+                }*/
                 
                 List<UserOauthBind> oauthBindList = existsOpenId.getRight();
                 List<Long> uidList = oauthBindList.stream().map(UserOauthBind::getUid).collect(Collectors.toList());

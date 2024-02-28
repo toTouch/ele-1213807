@@ -70,9 +70,16 @@ public class MerchantLevelServiceImpl implements MerchantLevelService {
         return this.merchantLevelMapper.selectNextByMerchantLevel(level, tenantId);
     }
     
+    @Slave
     @Override
     public MerchantLevel queryLastByMerchantLevel(String level, Integer tenantId) {
         return this.merchantLevelMapper.selectLastByMerchantLevel(level, tenantId);
+    }
+    
+    @Slave
+    @Override
+    public MerchantLevel queryByMerchantLevelAndTenantId(String level, Integer tenantId) {
+        return this.merchantLevelMapper.selectByMerchantLevelAndTenantId(level, tenantId);
     }
     
     @Slave
