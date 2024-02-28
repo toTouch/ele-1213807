@@ -60,6 +60,25 @@ public interface UserOauthBindService {
     
     UserOauthBind selectByUidAndPhone(String phone,Long uid,Integer tenantId);
     
+    /**
+     * 根据手机号、类型、租户查询用户
+     * @param phone 手机号
+     * @param source 类型
+     * @param tenantId 租户ID
+     * @return 绑定集
+     */
+    List<UserOauthBind> listUserByPhone(String phone,Integer source,Integer tenantId);
+    
+    /**
+     *
+     * @param phone
+     * @param source
+     * @param tenantId
+     * @return
+     *
+     * @see UserOauthBindService#listUserByPhone(String, Integer, Integer)
+     */
+    @Deprecated
     UserOauthBind selectUserByPhone(String phone,Integer source,Integer tenantId);
     
     Integer updateOpenIdByUid(String openId, Integer status, Long uid, Integer tenantId);

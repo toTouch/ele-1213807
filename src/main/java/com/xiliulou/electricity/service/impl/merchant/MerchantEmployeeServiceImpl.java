@@ -78,7 +78,7 @@ public class MerchantEmployeeServiceImpl implements MerchantEmployeeService {
         //userService.queryByUserName(name);
         
         User existUser = userService.queryByUserPhone(phone, User.TYPE_USER_MERCHANT_EMPLOYEE, merchantEmployeeRequest.getTenantId());
-        if(Objects.isNull(existUser)){
+        if(Objects.nonNull(existUser)){
             throw new BizException("120001", "当前手机号已注册");
         }
         
@@ -133,7 +133,7 @@ public class MerchantEmployeeServiceImpl implements MerchantEmployeeService {
         //userService.queryByUserName(name);
     
         User existUser = userService.queryByUserPhone(phone, User.TYPE_USER_MERCHANT_EMPLOYEE, merchantEmployeeRequest.getTenantId());
-        if(Objects.isNull(existUser)){
+        if(Objects.nonNull(existUser)){
             throw new BizException("120002", "当前手机号已注册");
         }
     
