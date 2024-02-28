@@ -365,6 +365,7 @@ public class MerchantServiceImpl implements MerchantService {
         merchantUserAmount.setWithdrawAmount(BigDecimal.ZERO);
         merchantUserAmount.setCreateTime(timeMillis);
         merchantUserAmount.setUpdateTime(timeMillis);
+        merchantUserAmount.setDelFlag(MerchantConstant.DEL_NORMAL);
         merchantUserAmountService.save(merchantUserAmount);
         
         // 调用开户账号
