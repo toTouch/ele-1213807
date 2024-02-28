@@ -210,7 +210,8 @@ public class MerchantPlaceServiceImpl implements MerchantPlaceService {
         placeIdList.add(id);
         MerchantPlaceMapQueryModel placeMapQueryModel = MerchantPlaceMapQueryModel.builder().placeIdList(placeIdList).build();
         List<MerchantPlaceMap> merchantPlaceMaps = merchantPlaceMapService.queryList(placeMapQueryModel);
-        if (ObjectUtils.isEmpty(merchantPlaceMaps)) {
+        
+        if (ObjectUtils.isNotEmpty(merchantPlaceMaps)) {
             List<Long> merchantIdList = merchantPlaceMaps.stream().map(MerchantPlaceMap::getMerchantId).collect(Collectors.toList());
             log.error("merchant place remove is bind, placeId={}, merchantIdList={}", id, merchantIdList);
             return Triple.of(false, "120219", "场地被商户绑定，请解绑后操作");
@@ -232,6 +233,7 @@ public class MerchantPlaceServiceImpl implements MerchantPlaceService {
         
         // 删除场地
         long currentTimeMillis = System.currentTimeMillis();
+        
         MerchantPlace merchantPlaceDel = MerchantPlace.builder().id(id).updateTime(currentTimeMillis).delFlag(MerchantPlaceConstant.DEL_DEL).build();
         merchantPlaceMapper.remove(merchantPlaceDel);
         
