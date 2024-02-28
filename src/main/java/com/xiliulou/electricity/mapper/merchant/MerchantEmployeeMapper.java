@@ -31,4 +31,6 @@ public interface MerchantEmployeeMapper {
     List<MerchantEmployee> selectListByPlaceId(@Param("placeIdList") List<Long> placeIdList);
     
     List<MerchantEmployee> selectListByMerchantUid(MerchantPromotionEmployeeDetailQueryModel queryModel);
+    
+    List<MerchantEmployeeVO> selectMerchantUsers(MerchantEmployeeRequest merchantEmployeeRequest);
 }
