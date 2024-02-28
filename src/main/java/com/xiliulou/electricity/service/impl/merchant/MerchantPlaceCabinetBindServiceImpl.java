@@ -3,6 +3,7 @@ package com.xiliulou.electricity.service.impl.merchant;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
+import com.xiliulou.electricity.constant.merchant.MerchantPlaceBindConstant;
 import com.xiliulou.electricity.constant.merchant.MerchantPlaceConstant;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.merchant.MerchantPlace;
@@ -17,6 +18,7 @@ import com.xiliulou.electricity.service.merchant.MerchantPlaceCabinetBindService
 import com.xiliulou.electricity.service.merchant.MerchantPlaceService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
+import com.xiliulou.electricity.vo.merchant.MerchantPlaceCabinetBindTimeCheckVo;
 import com.xiliulou.electricity.vo.merchant.MerchantPlaceCabinetBindVO;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
@@ -320,20 +322,25 @@ public class MerchantPlaceCabinetBindServiceImpl implements MerchantPlaceCabinet
      * @return
      */
     @Override
-    public Triple<Boolean, String, Object> checkBindTime(Long placeId, Long time) {
+    public MerchantPlaceCabinetBindTimeCheckVo checkBindTime(Long placeId, Long time) {
         // 判断绑定的时间是否与解绑的历史数据存在重叠
         List<Long> placeIdList = new ArrayList<>();
         placeIdList.add(placeId);
         MerchantPlaceCabinetBindQueryModel queryModel = MerchantPlaceCabinetBindQueryModel.builder().overlapTime(time).placeIdList(placeIdList)
                 .status(MerchantPlaceConstant.UN_BIND).build();
-        List<MerchantPlaceCabinetBind> unBindList = this.queryList(queryModel);
-        if (ObjectUtils.isNotEmpty(unBindList)) {
-            List<Long> ids = unBindList.stream().map(MerchantPlaceCabinetBind::getId).collect(Collectors.toList());
-            log.error("place un bind error, un bind time is overlap, id ={}, ids={}", placeId, ids);
-            return Triple.of(false, "120232", "您选择的开始时间与已有区间存在冲突，请重新选择");
-        }
         
-        return Triple.of(true, null, null);
+        List<MerchantPlaceCabinetBind> unBindList = this.queryList(queryModel);
+        
+        MerchantPlaceCabinetBindTimeCheckVo vo = new MerchantPlaceCabinetBindTimeCheckVo();
+        
+        // 不存在重叠
+        if (ObjectUtils.isEmpty(unBindList)) {
+            vo.setStatus(MerchantPlaceBindConstant.BIND_TIME_OVERLAP_NO);
+            return vo;
+        }
+    
+        vo.setStatus(MerchantPlaceBindConstant.BIND_TIME_OVERLAP_YES);
+        return vo;
     }
     
     @Slave

@@ -11,6 +11,7 @@ import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.validator.CreateGroup;
 import com.xiliulou.electricity.validator.UpdateGroup;
+import com.xiliulou.electricity.vo.merchant.MerchantPlaceCabinetBindTimeCheckVo;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Triple;
@@ -188,12 +189,9 @@ public class JsonMerchantPlaceCabinetBindController extends BaseController {
         if (Objects.isNull(user)) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
+    
+        MerchantPlaceCabinetBindTimeCheckVo vo = merchantPlaceCabinetBindService.checkBindTime(placeId, time);
         
-        Triple<Boolean, String, Object> r = merchantPlaceCabinetBindService.checkBindTime(placeId, time);
-        if (!r.getLeft()) {
-            return R.fail(r.getMiddle(), (String) r.getRight());
-        }
-        
-        return R.ok();
+        return R.ok(vo);
     }
 }

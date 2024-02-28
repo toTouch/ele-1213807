@@ -31,6 +31,7 @@ import com.xiliulou.electricity.service.merchant.MerchantPlaceFeeService;
 import com.xiliulou.electricity.service.merchant.MerchantPlaceMapService;
 import com.xiliulou.electricity.service.merchant.MerchantPlaceService;
 import com.xiliulou.electricity.utils.DateUtils;
+import com.xiliulou.electricity.vo.merchant.MerchantCabinetFeeDetailShowVO;
 import com.xiliulou.electricity.vo.merchant.MerchantCabinetFeeDetailVO;
 import com.xiliulou.electricity.vo.merchant.MerchantPlaceCabinetFeeDetailVO;
 import com.xiliulou.electricity.vo.merchant.MerchantPlaceFeeCurMonthVO;
@@ -222,25 +223,33 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
      * @return
      */
     @Override
-    public List<MerchantPlaceCabinetFeeDetailVO> getCabinetPlaceDetail(MerchantPlaceFeeRequest request) {
+    public MerchantCabinetFeeDetailShowVO getCabinetPlaceDetail(MerchantPlaceFeeRequest request) {
+        MerchantCabinetFeeDetailShowVO resVo = new MerchantCabinetFeeDetailShowVO();
+        
         // 根据商户id查询所有的柜机的id
         List<Long> cabinetIdList = merchantPlaceFeeMonthService.selectCabinetIdByMerchantId(request.getMerchantId());
         List<MerchantPlaceFeeMonth> feeMonthsHistory = merchantPlaceFeeMonthService.queryListByMerchantId(request.getMerchantId(), request.getCabinetId(), request.getPlaceId());
+        
         Map<Long, BigDecimal> feeMonthsHistoryMap = new HashMap<>();
+        
         if (ObjectUtils.isNotEmpty(feeMonthsHistory)) {
             feeMonthsHistoryMap = feeMonthsHistory.stream()
                     .collect(Collectors.groupingBy(MerchantPlaceFeeMonth::getCabinetId, Collectors.collectingAndThen(Collectors.toList(), e -> this.sumHistoryFee(e))));
         }
+        
         // 查询上月
         List<MerchantPlaceFeeMonthDetail> lastMonthFeeRecords = getLastMonthFeeRecords(request);
+        
         // 添加场地过滤条件
         if (Objects.nonNull(request.getPlaceId())) {
             lastMonthFeeRecords = lastMonthFeeRecords.stream().filter(item -> Objects.equals(item.getPlaceId(), request.getPlaceId())).collect(Collectors.toList());
         }
+        
         // 添加柜机过滤条件
         if (Objects.nonNull(request.getCabinetId())) {
             lastMonthFeeRecords = lastMonthFeeRecords.stream().filter(item -> Objects.equals(item.getCabinetId(), request.getCabinetId())).collect(Collectors.toList());
         }
+        
         Map<Long, BigDecimal> lastMonthCabinetFeeMap = new HashMap<>();
         if (ObjectUtils.isNotEmpty(lastMonthFeeRecords)) {
             List<Long> lastMonthCabinetIdList = lastMonthFeeRecords.stream().map(MerchantPlaceFeeMonthDetail::getCabinetId).collect(Collectors.toList());
@@ -253,38 +262,49 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
         
         // 查询本月的
         List<MerchantPlaceFeeMonthDetail> curMothFeeRecords = getCurMothFeeRecords(request);
+        
         if (Objects.nonNull(request.getPlaceId())) {
             curMothFeeRecords = curMothFeeRecords.stream().filter(item -> Objects.equals(item.getPlaceId(), request.getPlaceId())).collect(Collectors.toList());
         }
+        
         if (Objects.nonNull(request.getCabinetId())) {
             curMothFeeRecords = curMothFeeRecords.stream().filter(item -> Objects.equals(item.getCabinetId(), request.getCabinetId())).collect(Collectors.toList());
         }
+        
         Map<Long, BigDecimal> curMonthCabinetFeeMap = new HashMap<>();
         Map<Long, Long> cabinetTimeMap = new HashMap<>();
+        
         if (ObjectUtils.isNotEmpty(curMothFeeRecords)) {
             List<Long> curMonthCabinetIdList = curMothFeeRecords.stream().map(MerchantPlaceFeeMonthDetail::getCabinetId).distinct().collect(Collectors.toList());
             if (ObjectUtils.isNotEmpty(curMonthCabinetIdList)) {
                 cabinetIdList.addAll(curMonthCabinetIdList);
             }
+            
             curMonthCabinetFeeMap = curMothFeeRecords.stream()
                     .collect(Collectors.groupingBy(MerchantPlaceFeeMonthDetail::getCabinetId, Collectors.collectingAndThen(Collectors.toList(), e -> this.sumFee(e))));
             Map<Long, Long> curCabinetTimeMap = curMothFeeRecords.stream().collect(Collectors.groupingBy(MerchantPlaceFeeMonthDetail::getCabinetId, Collectors.collectingAndThen(Collectors.toList(),
                     e -> e.stream().sorted(Comparator.comparing(MerchantPlaceFeeMonthDetail::getStartTime).reversed()).findFirst().get().getStartTime())));
+            
             if (ObjectUtils.isNotEmpty(curCabinetTimeMap)) {
                 cabinetTimeMap.putAll(curCabinetTimeMap);
             }
         }
         
         if (ObjectUtils.isEmpty(cabinetIdList)) {
-            return Collections.emptyList();
+            resVo.setCabinetCount(NumberConstant.ZERO);
+            resVo.setCabinetFeeDetailList(Collections.emptyList());
+            
+            return resVo;
         }
         
         // 查询柜机的绑定时间
         List<MerchantCabinetBindTime> cabinetBindTimes = merchantCabinetBindTimeService.queryListByMerchantId(request.getMerchantId(), request.getCabinetId(),
                 request.getPlaceId());
+        
         if (ObjectUtils.isNotEmpty(cabinetBindTimes)) {
             Map<Long, Long> bindTimeMap = cabinetBindTimes.stream().collect(Collectors.groupingBy(MerchantCabinetBindTime::getCabinetId, Collectors.collectingAndThen(Collectors.toList(),
                     e -> e.stream().sorted(Comparator.comparing(MerchantCabinetBindTime::getBindTime).reversed()).findFirst().get().getBindTime())));
+            
             if (ObjectUtils.isNotEmpty(bindTimeMap) && ObjectUtils.isNotEmpty(cabinetTimeMap)) {
                 bindTimeMap.forEach((cabinetId, time) -> {
                     if (ObjectUtils.isNotEmpty(cabinetTimeMap.get(cabinetId))) {
@@ -302,10 +322,12 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
         
         // 去重
         List<Long> cabinetIds = cabinetIdList.stream().distinct().collect(Collectors.toList());
+        
         List<MerchantPlaceCabinetFeeDetailVO> resList = new ArrayList<>();
         Map<Long, BigDecimal> finalCurMonthCabinetFeeMap = curMonthCabinetFeeMap;
         Map<Long, BigDecimal> finalFeeMonthsHistoryMap = feeMonthsHistoryMap;
         Map<Long, BigDecimal> finalLastMonthCabinetFeeMap = lastMonthCabinetFeeMap;
+        
         cabinetIds.forEach(cabinetId -> {
             MerchantPlaceCabinetFeeDetailVO vo = new MerchantPlaceCabinetFeeDetailVO();
             ElectricityCabinet cabinet = electricityCabinetService.queryByIdFromCache(cabinetId.intValue());
@@ -339,8 +361,11 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
         });
     
         resList.stream().sorted(Comparator.comparing(MerchantPlaceCabinetFeeDetailVO::getTime).reversed());
+    
+        resVo.setCabinetFeeDetailList(resList);
+        resVo.setCabinetCount(resList.size());
         
-        return resList;
+        return resVo;
     }
     
     @Override

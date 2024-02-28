@@ -441,6 +441,20 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         if (electricityCabinetAddAndUpdate.getName().length() > 30) {
             return R.fail("100377", "参数校验错误");
         }
+    
+        //  如果场地费不为空则需要判断 不能小于零 小数最多两位  整数不能大于8位
+        if (Objects.nonNull(electricityCabinetAddAndUpdate.getPlaceFee())) {
+            // 场地费必须大于零
+            if (Objects.equals(electricityCabinetAddAndUpdate.getPlaceFee().compareTo(BigDecimal.ZERO), NumberConstant.MINUS_ONE)) {
+                return R.fail("120235", "场地费必须大于等于零");
+            }
+        
+            // 场地费不能是负数
+            String placeFeeStr = electricityCabinetAddAndUpdate.getPlaceFee().toString();
+            if (!RegularConstant.PLACE_PATTERN.matcher(placeFeeStr).matches()) {
+                return R.fail("120234", "场地费保留两位小数且整数部分不能超过8位");
+            }
+        }
         
         //操作频繁
         boolean result = redisService.setNx(CacheConstant.ELE_EDIT_UID + user.getUid(), "1", 3 * 1000L, false);
