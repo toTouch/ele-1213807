@@ -188,7 +188,7 @@
     
     <!--通过主键逻辑删除商户员工-->
     <delete id="removeById">
-        update t_merchant_employee set del_flag = 1 where id = #{id}
+        update t_merchant_employee set del_flag = 1, update_time = #{updateTime} where id = #{id}
     </delete>
     
     <!--通过主键物理删除商户员工-->
