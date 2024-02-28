@@ -238,6 +238,7 @@ public class ChannelEmployeeServiceImpl implements ChannelEmployeeService {
         return Triple.of(true, null, result);
     }
     
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public Triple<Boolean, String, Object> updateChannelEmployee(ChannelEmployeeRequest channelEmployeeRequest) {
         if (!redisService.setNx(CacheConstant.CACHE_CHANNEL_EMPLOYEE_UPDATE_LOCK + channelEmployeeRequest.getPhone(), "1", 3000L, false)) {
@@ -295,6 +296,7 @@ public class ChannelEmployeeServiceImpl implements ChannelEmployeeService {
         return Triple.of(true, null, result);
     }
     
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public Integer removeById(Long id) {
         ChannelEmployee channelEmployee = channelEmployeeMapper.selectById(id);
