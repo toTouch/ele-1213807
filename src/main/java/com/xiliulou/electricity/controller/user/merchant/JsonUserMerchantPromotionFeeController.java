@@ -246,7 +246,7 @@ public class JsonUserMerchantPromotionFeeController extends BaseController {
      * @return 推广详情
      */
     @GetMapping("/merchant/promotion/employee/details/specifics")
-    public R promotionEmployeeDetailList(@RequestParam("size") long size, @RequestParam("offset") Long offset, @RequestParam("uid") Long uid,
+    public R promotionEmployeeDetailList(@RequestParam("size") long size, @RequestParam("offset") Long offset, @RequestParam("uid") Long uid,@RequestParam("type") Integer type,
             @RequestParam("status") Integer status, @RequestParam("queryTime") Long queryTime) {
         if (size < 0 || size > 10) {
             size = 10L;
@@ -256,7 +256,7 @@ public class JsonUserMerchantPromotionFeeController extends BaseController {
             offset = 10L;
         }
         
-        MerchantPromotionEmployeeDetailSpecificsQueryModel queryModel = MerchantPromotionEmployeeDetailSpecificsQueryModel.builder().size(size).offset(offset).uid(uid)
+        MerchantPromotionEmployeeDetailSpecificsQueryModel queryModel = MerchantPromotionEmployeeDetailSpecificsQueryModel.builder().size(size).offset(offset).type(type).uid(uid)
                 .status(status).startTime(queryTime).endTime(DateUtils.getMonthEndTimeStampByDate(queryTime)).tenantId(TenantContextHolder.getTenantId()).build();
         
         return merchantPromotionFeeService.selectPromotionEmployeeDetailList(queryModel);

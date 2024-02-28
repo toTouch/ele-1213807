@@ -284,28 +284,22 @@
         id, uid, name, phone, member_card_id, merchant_id, merchant_uid, status, merchant_rebate, rebate_time
         from t_rebate_record
         <where>
-            <if test="channeler != null">
-                and channeler = #{channeler}
+            <if test="uid != null and type == 1">
+                and merchant_uid = #{uid}
             </if>
-            <if test="merchantId != null">
-                and merchant_id = #{merchantId}
+            <if test="uid != null and type == 2">
+                and place_uid = #{uid}
             </if>
-            <if test="franchiseeId != null">
-                and franchisee_id = #{franchiseeId}
+            <if test="uid != null and type == 3">
+                and channeler = #{uid}
             </if>
-            <if test="orderId != null and orderId != ''">
-                and order_id =#{orderId}
-            </if>
-            <if test="type != null">
-                and type = #{type}
-            </if>
-            <if test="uid != null">
-                and uid = #{uid}
+            <if test="status != null">
+                and status = #{status}
             </if>
             <if test="tenantId != null">
                 and tenant_id = #{tenantId}
             </if>
-            <if test="beginTime != null">
+            <if test="startTime != null">
                 and create_time &gt;= #{startTime}
             </if>
             <if test="endTime != null">
