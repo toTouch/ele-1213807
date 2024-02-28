@@ -103,7 +103,7 @@ public class JsonAdminElectricityCabinetFileController {
 						.updateTime(System.currentTimeMillis())
 						.otherId(callBackQuery.getOtherId())
 						.type(callBackQuery.getFileType())
-						.url(StorageConfig.HTTPS + storageConfig.getBucketName() + "." + storageConfig.getOssEndpoint() + "/" + fileName)
+						.url(storageConfig.getUrlPrefix() + fileName)
 						.name(fileName)
 						.sequence(index)
 						.isOss(StorageConfig.IS_USE_OSS)
