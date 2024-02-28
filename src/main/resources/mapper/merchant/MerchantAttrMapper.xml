@@ -25,7 +25,7 @@
     
     <select id="selectByTenantId" resultMap="MerchantAttrMap">
         select
-          id, upgrade_condition, invitation_valid_time, valid_time_unit, invitation_protection_time, protection_time_unit, del_flag, create_time, update_time
+          id, upgrade_condition, invitation_valid_time, valid_time_unit, invitation_protection_time, protection_time_unit, tenant_id, del_flag, create_time, update_time
         from t_merchant_attr
         where tenant_id = #{tenantId}
     </select>
