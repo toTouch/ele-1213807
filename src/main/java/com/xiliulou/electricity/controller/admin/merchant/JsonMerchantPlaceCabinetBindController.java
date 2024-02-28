@@ -119,7 +119,7 @@ public class JsonMerchantPlaceCabinetBindController extends BaseController {
      * @author maxiaodong
      */
     @GetMapping("/admin/merchant/place/cabinet/pageCount")
-    public R pageCount(@RequestParam("placeId") Long placeId, @RequestParam(value = "sn", required = false) String sn, @RequestParam(value = "status") Integer status) {
+    public R pageCount(@RequestParam("placeId") Long placeId, @RequestParam(value = "sn", required = false) String sn, @RequestParam(value = "status", required = false) Integer status) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
@@ -146,7 +146,8 @@ public class JsonMerchantPlaceCabinetBindController extends BaseController {
      * @author maxiaodong
      */
     @GetMapping("/admin/merchant/place/cabinet/page")
-    public R page(@RequestParam("size") long size, @RequestParam("offset") long offset, @RequestParam("placeId") Long placeId, @RequestParam(value = "sn", required = false) String sn, @RequestParam(value = "status") Integer status) {
+    public R page(@RequestParam("size") long size, @RequestParam("offset") long offset, @RequestParam("placeId") Long placeId, @RequestParam(value = "sn", required = false) String sn,
+            @RequestParam(value = "status", required = false) Integer status) {
         if (size < 0 || size > 50) {
             size = 10L;
         }
