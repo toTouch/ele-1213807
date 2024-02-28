@@ -288,7 +288,7 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
         List<PromotionFeeStatisticAnalysisRenewalVO> renewalVOList = new ArrayList<>();
         
         Long startTime = beginTime;
-        while (startTime > endTime) {
+        while (startTime < endTime) {
             // 扫码人数
             PromotionFeeStatisticAnalysisUserScanCodeVO scanCodeVO = new PromotionFeeStatisticAnalysisUserScanCodeVO();
             Integer scanCodeNum = buildScanCodeCount(type, uid, startTime, DateUtils.getDayEndTimeStampByDate(startTime), null);
@@ -329,7 +329,7 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
         List<PromotionFeeStatisticAnalysisMerchantVO> incomeVOList = new ArrayList<>();
         
         Long startTime = beginTime;
-        while (startTime > endTime) {
+        while (startTime < endTime) {
             PromotionFeeStatisticAnalysisMerchantVO merchantVO = new PromotionFeeStatisticAnalysisMerchantVO();
             merchantVO.setMerchantNum(buildMerchantNumCount(uid, startTime, DateUtils.getDayEndTimeStampByDate(startTime)));
             merchantVO.setStatisticTime(DateUtils.getYearAndMonthAndDayByTimeStamps(startTime));
