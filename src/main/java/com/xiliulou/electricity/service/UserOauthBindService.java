@@ -44,7 +44,7 @@ public interface UserOauthBindService {
     
     List<UserOauthBind> selectListOauthByOpenIdAndSource(String openid, int source, Integer tenantId);
 
-    UserOauthBind queryByUserPhone(String phone, int source,Integer tenantId);
+    UserOauthBind queryByUserPhone(Long uid, String phone, int source,Integer tenantId);
 
     Pair<Boolean, Object> queryListByCondition(Integer size, Integer offset, Long uid, String thirdId, String phone,Integer tenantId);
 
