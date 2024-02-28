@@ -257,4 +257,27 @@ public class JsonMerchantPlaceController extends BaseController {
         
         return R.ok(merchantPlaceService.queryPlaceList(merchantPlacePageRequest));
     }
+    
+    /**
+     * @param
+     * @description 根据id查询商户信息
+     * @date 2023/11/21 13:15:54
+     * @author maxiaodong
+     */
+    @GetMapping("/admin/merchant/place/getById")
+    public R getById(@RequestParam(value = "id") Long id) {
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        
+        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        
+        Triple<Boolean, String, Object> triple = merchantPlaceService.queryById(id);
+        
+        return returnTripleResult(triple);
+    }
+    
 }

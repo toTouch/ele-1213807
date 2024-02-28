@@ -28,12 +28,15 @@ import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.merchant.MerchantPlaceCabinetBindVO;
 import com.xiliulou.electricity.vo.merchant.MerchantPlaceCabinetVO;
 import com.xiliulou.electricity.vo.merchant.MerchantPlaceMapVO;
+import com.xiliulou.electricity.vo.merchant.MerchantPlaceUpdateShowVO;
 import com.xiliulou.electricity.vo.merchant.MerchantPlaceVO;
+import com.xiliulou.electricity.vo.merchant.MerchantVO;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.BeanUtils;
+import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -44,6 +47,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -403,6 +407,38 @@ public class MerchantPlaceServiceImpl implements MerchantPlaceService {
         }
         
         return list;
+    }
+    
+    /**
+     * 根据id 获取编辑信息
+     *
+     * @param id
+     * @return
+     */
+    @Override
+    public Triple<Boolean, String, Object> queryById(Long id) {
+        MerchantPlace merchantPlace = merchantPlaceMapper.selectById(id);
+        if (Objects.isNull(merchantPlace)) {
+            return Triple.of(false, "", "场地不存在");
+        }
+        
+        MerchantPlaceUpdateShowVO merchantPlaceUpdateShowVO = new MerchantPlaceUpdateShowVO();
+        BeanUtils.copyProperties(merchantPlace, merchantPlaceUpdateShowVO);
+        
+        Franchisee franchisee = franchiseeService.queryByIdFromCache(merchantPlaceUpdateShowVO.getFranchiseeId());
+        if (Objects.nonNull(franchisee)) {
+            merchantPlaceUpdateShowVO.setFranchiseeName(franchisee.getName());
+        }
+        
+        if (Objects.nonNull(merchantPlace.getMerchantAreaId())) {
+            MerchantArea merchantArea = merchantAreaService.queryById(merchantPlace.getMerchantAreaId());
+            
+            Optional.ofNullable(merchantArea).ifPresent(i -> {
+                merchantPlaceUpdateShowVO.setMerchantAreaName(merchantArea.getName());
+            });
+        }
+        
+        return Triple.of(true, "", merchantPlaceUpdateShowVO);
     }
     
 }

@@ -36,4 +36,6 @@ public interface MerchantPlaceService {
     Triple<Boolean, String, Object> getCabinetList(MerchantPlacePageRequest merchantPlacePageRequest);
     
     List<MerchantPlaceVO> queryPlaceList(MerchantPlacePageRequest merchantPlacePageRequest);
+    
+    Triple<Boolean, String, Object> queryById(Long id);
 }
