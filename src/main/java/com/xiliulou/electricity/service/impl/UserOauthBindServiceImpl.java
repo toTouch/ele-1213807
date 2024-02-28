@@ -108,8 +108,8 @@ public class UserOauthBindServiceImpl implements UserOauthBindService {
     }
     
     @Override
-    public UserOauthBind queryByUserPhone(String phone, int source, Integer tenantId) {
-        return this.userOauthBindMapper.selectOne(new LambdaQueryWrapper<UserOauthBind>().eq(UserOauthBind::getPhone, phone).eq(UserOauthBind::getSource, source)
+    public UserOauthBind queryByUserPhone(Long uid, String phone, int source, Integer tenantId) {
+        return this.userOauthBindMapper.selectOne(new LambdaQueryWrapper<UserOauthBind>().eq(UserOauthBind::getUid, uid).eq(UserOauthBind::getPhone, phone).eq(UserOauthBind::getSource, source)
                 .eq(UserOauthBind::getStatus, UserOauthBind.STATUS_BIND).eq(UserOauthBind::getTenantId, tenantId));
     }
     
