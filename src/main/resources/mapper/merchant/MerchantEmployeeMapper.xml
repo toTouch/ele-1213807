@@ -5,7 +5,7 @@
     <resultMap type="com.xiliulou.electricity.vo.merchant.MerchantEmployeeVO" id="MerchantEmployeeMap">
         <result property="id" column="id" jdbcType="INTEGER"/>
         <result property="uid" column="uid" jdbcType="INTEGER"/>
-        <result property="status" column="lockFlag" jdbcType="INTEGER"/>
+        <result property="status" column="lock_flag" jdbcType="INTEGER"/>
         <result property="merchantUid" column="merchant_uid" jdbcType="INTEGER"/>
         <result property="merchantName" column="merchant_name" jdbcType="VARCHAR"/>
         <result property="placeId" column="place_id" jdbcType="INTEGER"/>
@@ -21,7 +21,7 @@
         select
             tme.id,
             tme.uid,
-            tu.lockFlag,
+            tu.lock_flag,
             tme.merchant_uid,
             tme.place_id,
             tme.tenant_id,
@@ -38,7 +38,7 @@
         select
             tme.id,
             tme.uid,
-            tu.lockFlag,
+            tu.lock_flag,
             tme.merchant_uid,
             tme.place_id,
             tme.tenant_id,
