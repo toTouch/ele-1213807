@@ -220,7 +220,7 @@
     </delete>
     
     <select id="sumByStatus"  resultType="java.math.BigDecimal">
-        select sum(merchant_rebate) from t_rebate_record
+        select IFNULL(sum(merchant_rebate), 0) from t_rebate_record
         <where>
             <if test="tenantId != null">
                 and tenant_id = #{tenantId}
