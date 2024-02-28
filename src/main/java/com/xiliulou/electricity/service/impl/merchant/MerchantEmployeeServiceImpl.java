@@ -68,6 +68,9 @@ public class MerchantEmployeeServiceImpl implements MerchantEmployeeService {
     private MerchantPlaceService merchantPlaceService;
     
     @Resource
+    MerchantJoinRecordService merchantJoinRecordService;
+    
+    @Resource
     RedisService redisService;
     
     @Transactional(rollbackFor = Exception.class)
@@ -272,8 +275,9 @@ public class MerchantEmployeeServiceImpl implements MerchantEmployeeService {
             merchantEmployeeQrCodeVO.setUid(merchantEmployeeVO.getUid());
             merchantEmployeeQrCodeVO.setName(merchantEmployeeVO.getName());
             merchantEmployeeQrCodeVO.setType(MerchantConstant.MERCHANT_EMPLOYEE_QR_CODE_TYPE);
-           // merchantEmployeeQrCodeVO.setCode(MerchantJoinRecordService);
-            
+            merchantEmployeeQrCodeVO.setCode(merchantJoinRecordService.codeEnCoder(merchant.getId(), merchantEmployeeVO.getUid(), MerchantConstant.MERCHANT_EMPLOYEE_QR_CODE_TYPE));
+    
+            merchantEmployeeQrCodeVOList.add(merchantEmployeeQrCodeVO);
         });
         
         return merchantEmployeeQrCodeVOList;

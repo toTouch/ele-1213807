@@ -143,6 +143,27 @@ public class JsonUserMerchantEmployeeController {
         return R.ok(merchantEmployeeService.removeMerchantEmployee(id));
     }
     
+    @GetMapping("/merchant/employees/qrCodeList")
+    public R merchantEmployeeList() {
     
+        //租户
+        Integer tenantId = TenantContextHolder.getTenantId();
+        Long uid = SecurityUtils.getUid();
+    
+        Merchant merchant = merchantService.queryByUid(uid);
+        if(Objects.isNull(merchant)){
+            log.error("find merchant user error, not found merchant user, uid = {}", uid);
+            return R.fail("120007", "未找到商户");
+        
+        }
+    
+        MerchantEmployeeRequest merchantEmployeeRequest = MerchantEmployeeRequest.builder()
+                .merchantUid(merchant.getUid())
+                .tenantId(tenantId)
+                .build();
+        
+        return R.ok(merchantEmployeeService.selectMerchantEmployeeQrCodes(merchantEmployeeRequest));
+    
+    }
 
 }
