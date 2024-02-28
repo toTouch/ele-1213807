@@ -7,8 +7,10 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import javax.annotation.RegEx;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
 
 /**
@@ -40,6 +42,7 @@ public class MerchantEmployeeRequest {
      * 商户员工电话
      */
     @Size(min = 11, max = 15, message = "员工手机号不合法", groups = {CreateGroup.class, UpdateGroup.class})
+    @Pattern(regexp = "^((13[0-9])|(14[0-9])|(15[0-9])|(16[0-9])|(17[0-9])|(18[0-9])|(19[0-9]))\\d{8}$", message="手机号格式不合法", groups = {CreateGroup.class})
     @NotBlank(message = "员工手机号不能为空", groups = {CreateGroup.class, UpdateGroup.class})
     private String phone;
     
