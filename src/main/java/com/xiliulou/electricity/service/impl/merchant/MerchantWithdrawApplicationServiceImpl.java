@@ -101,7 +101,6 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
     @Transactional(rollbackFor = Exception.class)
     @Override
     public Triple<Boolean, String, Object> saveMerchantWithdrawApplication(MerchantWithdrawApplicationRequest merchantWithdrawApplicationRequest) {
-        
         //限频
         Boolean getLockSuccess = redisService.setNx(CacheConstant.CACHE_MERCHANT_WITHDRAW_APPLICATION + merchantWithdrawApplicationRequest.getUid(), "1", 3L, false);
         if (!getLockSuccess) {
