@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
+import java.math.BigDecimal;
 
 /**
  * @author zzlong
@@ -40,22 +41,22 @@ public class RebateConfigRequest {
     /**
      * 渠道员拉新返现
      */
-    private Double channelerInvitation;
+    private BigDecimal channelerInvitation;
     
     /**
      * 渠道员续费返现
      */
-    private Double channelerRenewal;
+    private BigDecimal channelerRenewal;
     
     /**
      * 商户拉新返现
      */
-    private Double merchantInvitation;
+    private BigDecimal merchantInvitation;
     
     /**
      * 商户续费返现
      */
-    private Double merchantRenewal;
+    private BigDecimal merchantRenewal;
     
     /**
      * 状态 0:关闭,1:开启
