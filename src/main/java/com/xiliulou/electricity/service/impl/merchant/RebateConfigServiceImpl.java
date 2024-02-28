@@ -6,11 +6,13 @@ import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.Franchisee;
+import com.xiliulou.electricity.entity.merchant.MerchantLevel;
 import com.xiliulou.electricity.entity.merchant.RebateConfig;
 import com.xiliulou.electricity.mapper.merchant.RebateConfigMapper;
 import com.xiliulou.electricity.request.merchant.RebateConfigRequest;
 import com.xiliulou.electricity.service.BatteryMemberCardService;
 import com.xiliulou.electricity.service.FranchiseeService;
+import com.xiliulou.electricity.service.merchant.MerchantLevelService;
 import com.xiliulou.electricity.service.merchant.RebateConfigService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
@@ -52,6 +54,9 @@ public class RebateConfigServiceImpl implements RebateConfigService {
     private FranchiseeService franchiseeService;
     
     @Autowired
+    private MerchantLevelService merchantLevelService;
+    
+    @Autowired
     private RedisService redisService;
     
     @Override
@@ -86,6 +91,9 @@ public class RebateConfigServiceImpl implements RebateConfigService {
         return rebateConfigs.stream().map(item -> {
             RebateConfigVO rebateConfigVO = new RebateConfigVO();
             BeanUtils.copyProperties(item, rebateConfigVO);
+    
+            MerchantLevel merchantLevel = merchantLevelService.queryByMerchantLevelAndTenantId(item.getLevel(), item.getTenantId());
+            rebateConfigVO.setLevelName(Objects.nonNull(merchantLevel) ? merchantLevel.getName() : "");
             
             BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(item.getMid());
             if (Objects.nonNull(batteryMemberCard)) {

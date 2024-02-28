@@ -127,6 +127,7 @@ public class MerchantEmployeeServiceImpl implements MerchantEmployeeService {
         return result;
     }
     
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public Integer updateMerchantEmployee(MerchantEmployeeRequest merchantEmployeeRequest) {
         if (!redisService.setNx(CacheConstant.CACHE_MERCHANT_EMPLOYEE_UPDATE_LOCK + merchantEmployeeRequest.getMerchantUid(), "1", 3000L, false)) {
@@ -177,6 +178,7 @@ public class MerchantEmployeeServiceImpl implements MerchantEmployeeService {
         return merchantEmployeeMapper.updateOne(merchantEmployeeUpdate);
     }
     
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public Integer removeMerchantEmployee(Long id) {
         MerchantEmployeeVO merchantEmployeeVO = merchantEmployeeMapper.selectById(id);
@@ -184,8 +186,9 @@ public class MerchantEmployeeServiceImpl implements MerchantEmployeeService {
             log.error("not found merchant employee by id, id = {}", id);
             throw new BizException("120004", "商户员工不存在");
         }
-        User user = userService.queryByUidFromCache(merchantEmployeeVO.getUid());
+        merchantEmployeeMapper.removeById(id, System.currentTimeMillis());
         
+        User user = userService.queryByUidFromCache(merchantEmployeeVO.getUid());
         Integer result = 0;
         if(Objects.nonNull(user)){
             //userService.deleteInnerUser(merchantEmployee.getUid());
