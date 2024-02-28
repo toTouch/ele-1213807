@@ -4,11 +4,11 @@ import lombok.Data;
 
 /**
  * @author HeYafeng
- * @description 电量/电费
+ * @description 时间段的 电量/电费
  * @date 2024/2/26 03:02:06
  */
 @Data
-public class MerchantPowerRspVO {
+public class MerchantPowerPeriodVO {
     
     private Double power;
     
