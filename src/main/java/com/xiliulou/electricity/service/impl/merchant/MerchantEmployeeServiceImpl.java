@@ -25,6 +25,7 @@ import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.vo.merchant.MerchantEmployeeVO;
 import com.xiliulou.security.authentication.console.CustomPasswordEncoder;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -70,6 +71,9 @@ public class MerchantEmployeeServiceImpl implements MerchantEmployeeService {
     @Transactional(rollbackFor = Exception.class)
     @Override
     public Integer saveMerchantEmployee(MerchantEmployeeRequest merchantEmployeeRequest) {
+        if (!redisService.setNx(CacheConstant.CACHE_MERCHANT_EMPLOYEE_SAVE_LOCK + merchantEmployeeRequest.getMerchantUid(), "1", 3000L, false)) {
+            throw new BizException("000000", "操作频繁,请稍后再试");
+        }
     
         // 检查当前手机号是否已经注册
         String name = merchantEmployeeRequest.getName();
@@ -126,7 +130,9 @@ public class MerchantEmployeeServiceImpl implements MerchantEmployeeService {
     
     @Override
     public Integer updateMerchantEmployee(MerchantEmployeeRequest merchantEmployeeRequest) {
-    
+        if (!redisService.setNx(CacheConstant.CACHE_MERCHANT_EMPLOYEE_UPDATE_LOCK + merchantEmployeeRequest.getMerchantUid(), "1", 3000L, false)) {
+            throw new BizException("000000", "操作频繁,请稍后再试");
+        }
         //检查当前手机号是否已经注册
         String phone = merchantEmployeeRequest.getPhone();
     
@@ -226,6 +232,7 @@ public class MerchantEmployeeServiceImpl implements MerchantEmployeeService {
             if(Objects.nonNull(user)){
                 merchantEmployeeVO.setName(user.getName());
                 merchantEmployeeVO.setPhone(user.getPhone());
+                merchantEmployeeVO.setStatus(user.getLockFlag());
             }
             MerchantPlace merchantPlace = merchantPlaceService.queryFromCacheById(merchantEmployeeVO.getPlaceId());
             if(Objects.nonNull(merchantPlace)){

@@ -17,7 +17,9 @@ public interface MerchantEmployeeMapper {
     MerchantEmployee selectById(@Param("id") Long id);
     
     MerchantEmployee selectByUid(@Param("id") Long id);
+    
     List<MerchantEmployeeVO> selectListByCondition(MerchantEmployeeRequest merchantEmployeeRequest);
+    
     Integer countByCondition(MerchantEmployeeRequest merchantEmployeeRequest);
   
     Integer insertOne(MerchantEmployee merchantEmployee);
