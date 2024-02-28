@@ -172,6 +172,7 @@ public class MerchantEmployeeServiceImpl implements MerchantEmployeeService {
         }
     
         updateUser.setUid(merchantEmployeeVO.getUid());
+        updateUser.setName(merchantEmployeeRequest.getName());
         updateUser.setPhone(merchantEmployeeRequest.getPhone());
         updateUser.setUserType(User.TYPE_USER_MERCHANT_EMPLOYEE);
         updateUser.setTenantId(TenantContextHolder.getTenantId());

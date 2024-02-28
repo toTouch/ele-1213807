@@ -210,7 +210,7 @@
             tme.uid,
             tu.name,
             tu.phone,
-            tu.lock_flag,
+            tu.lock_flag as status,
             tme.merchant_uid,
             tme.place_id,
             tme.tenant_id,

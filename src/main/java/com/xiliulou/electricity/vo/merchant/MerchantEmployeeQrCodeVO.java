@@ -22,4 +22,9 @@ public class MerchantEmployeeQrCodeVO {
     
     private String code;
     
+    /**
+     * 状态 0--正常 1--禁用
+     */
+    private Integer status;
+    
 }
