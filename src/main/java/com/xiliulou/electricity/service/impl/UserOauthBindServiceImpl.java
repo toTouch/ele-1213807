@@ -192,6 +192,11 @@ public class UserOauthBindServiceImpl implements UserOauthBindService {
     }
     
     @Override
+    public Integer deleteByUid(Long uid, Integer tenantId) {
+        return userOauthBindMapper.deleteByUid(uid, tenantId);
+    }
+    
+    @Override
     @Transactional(rollbackFor = Exception.class)
     public Boolean checkOpenIdByJsCode(String jsCode) {
         Long uid = SecurityUtils.getUid();

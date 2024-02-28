@@ -73,4 +73,11 @@ public interface UserOauthBindService {
      * @return 影响行数
      */
     Integer updatePhoneByUid(Integer tenantId, Long uid, String newPhone);
+    
+    /**
+     * 根据uid 删除用户绑定信息
+     * @param uid
+     * @return
+     */
+    Integer deleteByUid(Long uid, Integer tenantId);
 }
