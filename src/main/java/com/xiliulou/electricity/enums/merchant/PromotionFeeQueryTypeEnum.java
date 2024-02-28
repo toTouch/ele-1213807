@@ -18,6 +18,8 @@ public enum PromotionFeeQueryTypeEnum {
     MERCHANT(1, "商户"),
     MERCHANT_EMPLOYEE(2, "场地员工"),
     CHANNEL_EMPLOYEE(3, "渠道员"),
+    
+    MERCHANT_AND_MERCHANT_EMPLOYEE(4, "全部(包括商户和场地员工)"),
     ;
     
     private final Integer code;
