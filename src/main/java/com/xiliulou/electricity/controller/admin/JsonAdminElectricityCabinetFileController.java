@@ -165,7 +165,7 @@ public class JsonAdminElectricityCabinetFileController {
 		List<ElectricityCabinetFile> electricityCabinetFiles = new ArrayList<>();
 		for (ElectricityCabinetFile electricityCabinetFile : electricityCabinetFileList) {
 			if (Objects.equals(StorageConfig.IS_USE_OSS, storageConfig.getIsUseOSS())) {
-				electricityCabinetFile.setUrl(storageService.getOssFileUrl(storageConfig.getBucketName(), electricityCabinetFile.getName(), System.currentTimeMillis() + 10 * 60 * 1000L));
+				electricityCabinetFile.setUrl(storageConfig.getUrlPrefix() + electricityCabinetFile.getName());
 			}
 			electricityCabinetFiles.add(electricityCabinetFile);
 		}
