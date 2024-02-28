@@ -15,6 +15,7 @@ import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.merchant.MerchantEmployeeMapper;
 import com.xiliulou.electricity.query.merchant.MerchantPromotionEmployeeDetailQueryModel;
 import com.xiliulou.electricity.request.merchant.MerchantEmployeeRequest;
+import com.xiliulou.electricity.service.UserOauthBindService;
 import com.xiliulou.electricity.service.UserRoleService;
 import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.service.merchant.MerchantEmployeeService;
@@ -47,6 +48,9 @@ public class MerchantEmployeeServiceImpl implements MerchantEmployeeService {
     
     @Resource
     private UserService userService;
+    
+    @Resource
+    private UserOauthBindService userOauthBindService;
     
     @Resource
     private CustomPasswordEncoder customPasswordEncoder;
