@@ -9,5 +9,6 @@ import java.util.regex.Pattern;
  */
 public class RegularConstant {
     public static final Pattern PLACE_PATTERN = Pattern.compile("^(([1-9]{1}\\d*)|(0{1}))(\\.\\d{1,2})?$");
+    public static final Pattern PLACE_PATTERN_NEW = Pattern.compile("^[1-9]\\d{0,7}(\\.\\d{1,3})?$|^0(\\.\\d{1,2})?$");
     
 }

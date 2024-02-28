@@ -7,7 +7,8 @@
     </sql>
     
     <insert id="insert">
-        insert into t_merchant_place_cabinet_bind (place_id, cabinet_id, bind_time, un_bind_time, status, tenant_id, create_time, update_time)
+        insert into t_merchant_place_cabinet_bind (place_id, cabinet_id, bind_time, un_bind_time, status, tenant_id,
+                                                   create_time, update_time)
         values (#{placeId}, #{cabinetId}, #{bindTime},
                 #{unBindTime}, #{status}, #{tenantId}, #{createTime}, #{updateTime})
     </insert>

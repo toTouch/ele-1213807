@@ -160,6 +160,7 @@ public class MerchantPlaceCabinetBindServiceImpl implements MerchantPlaceCabinet
         placeCabinetBind.setCreateTime(System.currentTimeMillis());
         placeCabinetBind.setUpdateTime(System.currentTimeMillis());
         placeCabinetBind.setTenantId(tenantId);
+        placeCabinetBind.setCabinetId(Long.valueOf(placeCabinetBindSaveRequest.getCabinetId()));
         merchantPlaceCabinetBindMapper.insert(placeCabinetBind);
         
         return Triple.of(true, null, null);

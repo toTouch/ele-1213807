@@ -218,6 +218,8 @@ public class ElectricityCabinetServiceV2Impl implements ElectricityCabinetV2Serv
             if (!RegularConstant.PLACE_PATTERN.matcher(placeFeeStr).matches()) {
                 return Triple.of(false, "120234", "场地费保留两位小数");
             }
+            
+            
         }
         
         //判断参数
