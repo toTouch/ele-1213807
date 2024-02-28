@@ -365,15 +365,19 @@ public class MerchantPlaceServiceImpl implements MerchantPlaceService {
         // 查询加盟上下的柜机的信息
         List<MerchantPlaceCabinetVO> merchantPlaceCabinetVOS = merchantPlaceMapper.selectCabinetList(queryModel);
         
-        if (ObjectUtils.isNotEmpty(merchantPlaceCabinetVOS)) {
-            merchantPlaceCabinetVOS.forEach(item -> {
-                if (Objects.nonNull(item) && Objects.nonNull(item.getPlaceId())) {
-                    item.setDisable(MerchantPlaceCabinetVO.YES);
-                } else {
-                    item.setDisable(MerchantPlaceCabinetVO.NO);
-                }
-            });
+        merchantPlaceCabinetVOS = merchantPlaceCabinetVOS.stream().filter(item -> Objects.nonNull(item)).collect(Collectors.toList());
+        
+        if (ObjectUtils.isEmpty(merchantPlaceCabinetVOS)) {
+            return Triple.of(true, null, merchantPlaceCabinetVOS);
         }
+    
+        merchantPlaceCabinetVOS.forEach(item -> {
+            if (Objects.nonNull(item.getPlaceId())) {
+                item.setDisable(MerchantPlaceCabinetVO.YES);
+            } else {
+                item.setDisable(MerchantPlaceCabinetVO.NO);
+            }
+        });
         
         return Triple.of(true, null, merchantPlaceCabinetVOS);
     }
