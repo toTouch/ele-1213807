@@ -207,6 +207,7 @@ public class JsonMerchantController extends BaseController {
         
         MerchantPageRequest merchantPageRequest = MerchantPageRequest.builder().name(name).tenantId(tenantId)
                 .merchantGradeId(merchantGradeId).channelEmployeeUid(channelEmployeeUid).franchiseeId(franchiseeId).build();
+        
         return R.ok(merchantService.countTotal(merchantPageRequest));
     }
     

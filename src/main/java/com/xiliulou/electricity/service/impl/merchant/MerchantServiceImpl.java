@@ -231,6 +231,7 @@ public class MerchantServiceImpl implements MerchantService {
             BatteryMemberCardQuery query = BatteryMemberCardQuery.builder().tenantId(TenantContextHolder.getTenantId()).franchiseeId(merchantSaveRequest.getFranchiseeId())
                     .status(BatteryMemberCard.STATUS_UP).idList(merchantSaveRequest.getEnterprisePackageIdList()).businessType(BatteryMemberCard.BUSINESS_TYPE_ENTERPRISE)
                     .delFlag(BatteryMemberCard.DEL_NORMAL).build();
+            
             List<BatteryMemberCard> packageList = batteryMemberCardService.queryListByIdList(query);
             if (ObjectUtils.isEmpty(packageList)) {
                 log.error("merchant save error, package is not exist name={}, packageId={}", merchantSaveRequest.getName(), merchantSaveRequest.getEnterprisePackageIdList());
@@ -272,6 +273,7 @@ public class MerchantServiceImpl implements MerchantService {
                     .eqFlag(MerchantPlaceMapQueryModel.NO_EQ).build();
             // 检测场地是否已经被绑定
             List<MerchantPlaceMap> placeMapList = merchantPlaceMapService.queryList(queryModel);
+            
             if (ObjectUtils.isNotEmpty(placeMapList)) {
                 Set<Long> collect = placeMapList.stream().map(MerchantPlaceMap::getPlaceId).collect(Collectors.toSet());
                 log.error("merchant save error,merchant name={}, place is bind placeId={}", merchantSaveRequest.getName(), collect);
@@ -349,11 +351,9 @@ public class MerchantServiceImpl implements MerchantService {
             
             // 批量保存商户场地映射
             merchantPlaceMapService.batchInsert(merchantPlaceMapList);
+            // 批量保存商户场地绑定
             merchantPlaceBindService.batchInsert(merchantPlaceBindList);
         }
-        
-        // 初始化商户升级配置
-        merchantAttrService.initMerchantAttr(merchant.getId(), tenantId);
         
         // 创建商户余额
         MerchantUserAmount merchantUserAmount = new MerchantUserAmount();
@@ -694,8 +694,6 @@ public class MerchantServiceImpl implements MerchantService {
         
         // 删除商户与场地的绑定关系
         merchantPlaceBindService.batchUnBind(null, id, timeMillis);
-        
-        merchantAttrService.deleteByMerchantId(id);
         
         merchantDeleteCacheDTO.setMerchantId(id);
         merchantDeleteCacheDTO.setEnterpriseInfoId(merchant.getEnterpriseId());

@@ -9,6 +9,7 @@ import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.bo.asset.ElectricityCabinetBO;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
+import com.xiliulou.electricity.constant.RegularConstant;
 import com.xiliulou.electricity.dto.asset.CabinetBatchOutWarehouseDTO;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.ElectricityCabinetModel;
@@ -203,6 +204,20 @@ public class ElectricityCabinetServiceV2Impl implements ElectricityCabinetV2Serv
         
         if (Objects.equals(StockStatusEnum.UN_STOCK.getCode(), electricityCabinet.getStockStatus())) {
             return Triple.of(false, "100559", "已选择项中有已出库电柜，请重新选择后操作");
+        }
+        
+        // todo 如果场地费不为空则需要判断 不能小于零 小数最多两位  整体不能大于8位
+        if (Objects.nonNull(outWarehouseRequest.getPlaceFee())) {
+            // 场地费必须大于零
+            if (Objects.equals(outWarehouseRequest.getPlaceFee().compareTo(BigDecimal.ZERO), NumberConstant.MINUS_ONE)) {
+                return Triple.of(false, "120233", "场地费必须大于等于零");
+            }
+            
+            // 场地费不能是负数
+            String placeFeeStr = outWarehouseRequest.getPlaceFee().toString();
+            if (!RegularConstant.PLACE_PATTERN.matcher(placeFeeStr).matches()) {
+                return Triple.of(false, "120234", "场地费保留两位小数");
+            }
         }
         
         //判断参数
