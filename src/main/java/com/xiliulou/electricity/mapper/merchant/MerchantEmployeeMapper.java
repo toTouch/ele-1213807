@@ -26,7 +26,7 @@ public interface MerchantEmployeeMapper {
     
     Integer updateOne(MerchantEmployee merchantEmployee);
     
-    Integer removeById(@Param("id") Long id);
+    Integer removeById(@Param("id") Long id, @Param("updateTime") Long updateTime);
     
     List<MerchantEmployee> selectListByPlaceId(@Param("placeIdList") List<Long> placeIdList);
     
