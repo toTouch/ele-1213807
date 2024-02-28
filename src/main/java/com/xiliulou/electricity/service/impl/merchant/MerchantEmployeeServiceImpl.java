@@ -19,9 +19,11 @@ import com.xiliulou.electricity.service.UserOauthBindService;
 import com.xiliulou.electricity.service.UserRoleService;
 import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.service.merchant.MerchantEmployeeService;
+import com.xiliulou.electricity.service.merchant.MerchantJoinRecordService;
 import com.xiliulou.electricity.service.merchant.MerchantPlaceService;
 import com.xiliulou.electricity.service.merchant.MerchantService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
+import com.xiliulou.electricity.vo.merchant.MerchantEmployeeQrCodeVO;
 import com.xiliulou.electricity.vo.merchant.MerchantEmployeeVO;
 import com.xiliulou.security.authentication.console.CustomPasswordEncoder;
 import lombok.extern.slf4j.Slf4j;
@@ -30,6 +32,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -254,6 +257,26 @@ public class MerchantEmployeeServiceImpl implements MerchantEmployeeService {
     @Override
     public List<MerchantEmployee> selectByMerchantUid(MerchantPromotionEmployeeDetailQueryModel queryModel) {
         return merchantEmployeeMapper.selectListByMerchantUid(queryModel);
+    }
+    
+    @Override
+    public List<MerchantEmployeeQrCodeVO> selectMerchantEmployeeQrCodes(MerchantEmployeeRequest merchantEmployeeRequest) {
+        List<MerchantEmployeeQrCodeVO> merchantEmployeeQrCodeVOList = new ArrayList<>();
+        
+        List<MerchantEmployeeVO> merchantEmployeeVOS = merchantEmployeeMapper.selectMerchantUsers(merchantEmployeeRequest);
+        merchantEmployeeVOS.forEach(merchantEmployeeVO -> {
+            MerchantEmployeeQrCodeVO merchantEmployeeQrCodeVO = new MerchantEmployeeQrCodeVO();
+    
+            Merchant merchant = merchantService.queryByUid(merchantEmployeeVO.getUid());
+            merchantEmployeeQrCodeVO.setMerchantId(merchant.getId());
+            merchantEmployeeQrCodeVO.setUid(merchantEmployeeVO.getUid());
+            merchantEmployeeQrCodeVO.setName(merchantEmployeeVO.getName());
+            merchantEmployeeQrCodeVO.setType(MerchantConstant.MERCHANT_EMPLOYEE_QR_CODE_TYPE);
+           // merchantEmployeeQrCodeVO.setCode(MerchantJoinRecordService);
+            
+        });
+        
+        return merchantEmployeeQrCodeVOList;
     }
     
 }
