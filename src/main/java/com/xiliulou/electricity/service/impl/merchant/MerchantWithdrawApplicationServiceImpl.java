@@ -110,12 +110,14 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
         //检查商户是否存在
         Merchant queryMerchant = merchantService.queryByUid(merchantWithdrawApplicationRequest.getUid());
         if(Objects.isNull(queryMerchant)){
+            log.error("merchant user not found, uid = {}", merchantWithdrawApplicationRequest.getUid());
             return Triple.of(false, "120003", "商户不存在");
         }
     
         //查询商户余额表，是否存在商户账户
         MerchantUserAmount merchantUserAmount = merchantUserAmountService.queryByUid(merchantWithdrawApplicationRequest.getUid());
         if(Objects.isNull(merchantUserAmount)){
+            log.error("merchant user balance account not found, uid = {}", merchantWithdrawApplicationRequest.getUid());
             return Triple.of(false, "120010", "商户余额账户不存在");
         }
         
@@ -126,6 +128,7 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
         
         //检查余额表中的余额是否满足提现金额
         if(merchantUserAmount.getBalance().compareTo(merchantWithdrawApplicationRequest.getAmount()) < 0){
+            log.error("merchant user balance amount not enough, amount = {}, uid = {}", merchantWithdrawApplicationRequest.getAmount(), merchantWithdrawApplicationRequest.getUid());
             return Triple.of(false, "120012", "提现金额不足");
         }
 
@@ -507,7 +510,7 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
         return merchantWithdrawApplicationMapper.sumByStatus(tenantId, status, uid);
     }
     
-    @Slave
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public void updateMerchantWithdrawStatus() {
         //获取审核状态为提现中且审核时间为30分钟前的提现申请记录
@@ -552,7 +555,7 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
                         //若为关闭状态，则代表等待商户管理员确认付款超过时间限制，或锁订商户资金失败。
                         log.info("batch wechat transfer closed by wechat, batchNo = {}, tenant id = {}", batchNo, tenantId);
                         //更新当前批次提现申请表状态为提现失败
-                        merchantWithdrawApplicationMapper.updateApplicationRecordStatusByBatchNo(MerchantWithdrawConstant.WITHDRAW_FAIL, System.currentTimeMillis(), batchNo, tenantId);
+                        merchantWithdrawApplicationMapper.updateApplicationStatusByBatchNo(MerchantWithdrawConstant.WITHDRAW_FAIL, System.currentTimeMillis(), batchNo, tenantId);
 
                         //更新当前批次提现申请详细中的记状态为提现失败
                         merchantWithdrawApplicationRecordService.updateApplicationRecordStatusByBatchNo(MerchantWithdrawConstant.WITHDRAW_FAIL, batchNo, tenantId);
@@ -592,6 +595,7 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
         return merchantWithdrawApplicationMapper.selectRecordListCount(merchantWithdrawApplicationRequest);
     }
     
+    @Transactional(rollbackFor = Exception.class)
     public void handleBatchDetailsInfo(String batchNo, Integer tenantId){
         //查询当前批次的明细记录，并查询每条明细的处理结果是否为成功状态，若失败，则记录失败原因。
         List<MerchantWithdrawApplicationRecord> merchantWithdrawApplicationRecords = merchantWithdrawApplicationRecordService.selectListByBatchNo(batchNo, tenantId);
@@ -634,6 +638,7 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
                 if(MerchantWithdrawConstant.WECHAT_BATCH_DETAIL_STATUS_SUCCESS.equals(detailStatus)){
                     //更新单条提现申请和单条详细记录为提现成功状态
                     merchantWithdrawApplicationUpdate.setStatus(MerchantWithdrawConstant.WITHDRAW_SUCCESS);
+                    merchantWithdrawApplicationUpdate.setReceiptTime(System.currentTimeMillis());
                     withdrawApplicationRecordUpdate.setStatus(MerchantWithdrawConstant.WITHDRAW_SUCCESS);
 
                 } else if(MerchantWithdrawConstant.WECHAT_BATCH_DETAIL_STATUS_FAIL.equals(detailStatus)){
