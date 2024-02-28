@@ -165,8 +165,8 @@
     
     <select id="selectCabinetList" resultType="com.xiliulou.electricity.vo.merchant.MerchantPlaceCabinetVO">
         SELECT
-            c.id,
-            c.`name`,
+            c.id as 'cabinetId',
+            c.`name` as 'cabinetName',
             b.place_id
         FROM
             t_electricity_cabinet c

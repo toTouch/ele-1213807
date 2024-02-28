@@ -691,12 +691,15 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
             if (Objects.equals(startDate, endDate)) {
                 return false;
             }
+            
             // 将结束的时间戳回退一天
             Calendar calendar = Calendar.getInstance();
             calendar.setTimeInMillis(item.getUnBindTime());
             calendar.set(Calendar.DAY_OF_MONTH, -1);
             item.setUnBindTime(calendar.getTimeInMillis());
+            
             placeIdList.add(item.getPlaceId());
+            
             return true;
         });
         
@@ -711,11 +714,13 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
         String lastMonth = DateUtil.format(startDate, "yyyy-MM");
         // 计算当前月份
         String curMonth = DateUtil.format(new Date(), "yyyy-MM");
+        
         // 修改标记id集合
         List<Long> updateIdList = new ArrayList<>();
         List<String> monthList = new ArrayList<>();
         monthList.add(lastMonth);
         List<MerchantPlaceFeeMonthDetail> list = new ArrayList<>();
+        
         // 查询场地下的月度账单信息
         List<MerchantPlaceFeeMonthRecord> placeFeeMonthRecords = merchantPlaceFeeMonthRecordService.queryList(placeIdList, monthList);
         
@@ -724,6 +729,7 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
         if (ObjectUtils.isNotEmpty(curPlaceFeeMonthRecords)) {
             placeFeeMonthRecords.addAll(curPlaceFeeMonthRecords);
         }
+        
         for (MerchantPlaceBind bind : merchantPlaceBinds) {
             
             Long merchantId = request.getMerchantId();
@@ -1054,88 +1060,120 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
      * 处理月度账单然后获取每一个柜机的有效的时间段
      *
      * @param placeFeeMonthRecords
+     * @param oneBeforeMonth
      * @param twoBeforeMonth
-     * @param threeBeforeMonth
      * @return
      */
-    private Map<Long, List<MerchantPlaceFeeMonthRecord>> getPlaceCabinetMonthRecord(List<MerchantPlaceFeeMonthRecord> placeFeeMonthRecords, String twoBeforeMonth,
-            String threeBeforeMonth) {
+    private Map<Long, List<MerchantPlaceFeeMonthRecord>> getPlaceCabinetMonthRecord(List<MerchantPlaceFeeMonthRecord> placeFeeMonthRecords, String oneBeforeMonth,
+            String twoBeforeMonth) {
+        
         Map<String, List<MerchantPlaceFeeMonthRecord>> map = placeFeeMonthRecords.stream().collect(Collectors.groupingBy(MerchantPlaceFeeMonthRecord::getMonthDate));
+        long twoLastBeforeMonthTime = DateUtils.getBeforeMonthLastDayTimestamp(MerchantPlaceBindConstant.TOW_MONTH_BEFORE);
         
         // 获取前两个月的时间段
-        if (ObjectUtils.isNotEmpty(map.get(threeBeforeMonth))) {
-            List<MerchantPlaceFeeMonthRecord> placeFeeMonthRecords1 = map.get(threeBeforeMonth);
-            if (ObjectUtils.isEmpty(ObjectUtils.isEmpty(map.get(twoBeforeMonth)))) {
+        if (ObjectUtils.isNotEmpty(map.get(twoBeforeMonth))) {
+            List<MerchantPlaceFeeMonthRecord> placeFeeMonthRecords1 = map.get(twoBeforeMonth);
+            if (ObjectUtils.isEmpty(ObjectUtils.isEmpty(map.get(oneBeforeMonth)))) {
                 Map<Long, List<MerchantPlaceFeeMonthRecord>> resMap = placeFeeMonthRecords1.stream().collect(Collectors.groupingBy(MerchantPlaceFeeMonthRecord::getEid));
                 return resMap;
             }
             
-            // 过滤掉两个月前的账单的开时间小于两个月前的所在月份的月初时间
-            long twoBeforeMonthTime = DateUtils.getBeforeMonthFirstDayTimestamp(2);
-            List<MerchantPlaceFeeMonthRecord> twoBeforeList = map.get(twoBeforeMonth).stream()
-                    .filter(twoBeforeMonthRecord -> twoBeforeMonthRecord.getRentStartTime() < twoBeforeMonthTime).collect(Collectors.toList());
-            if (ObjectUtils.isEmpty(twoBeforeList)) {
-                // 如果不存在补的情况则直接返回三个月前的数据
-                Map<Long, List<MerchantPlaceFeeMonthRecord>> resMap = placeFeeMonthRecords1.stream().collect(Collectors.groupingBy(MerchantPlaceFeeMonthRecord::getEid));
-                return resMap;
-            }
-            
-            // 将三个月前的时间段进行排序
-            placeFeeMonthRecords1.sort(Comparator.comparing(MerchantPlaceFeeMonthRecord::getRentStartTime));
-            MerchantPlaceFeeMonthRecord merchantPlaceFeeMonthRecord = twoBeforeList.get(0);
-            long threeLastBeforeMonthTime = DateUtils.getBeforeMonthLastDayTimestamp(MerchantPlaceConstant.TOW_MONTH_BEFORE);
-            // 如果结束时间大于两个月前的月末则将结束时间设置为月末
-            if (merchantPlaceFeeMonthRecord.getRentEndTime() > threeLastBeforeMonthTime) {
-                merchantPlaceFeeMonthRecord.setRentEndTime(threeLastBeforeMonthTime);
-            }
-            // 合并新的日期
-            AtomicReference<Boolean> booleanAtomicReference = new AtomicReference<>();
-            booleanAtomicReference.set(false);
-            List<MerchantPlaceFeeMonthRecord> merchantPlaceFeeMonthRecords = new ArrayList<>();
-            placeFeeMonthRecords1.stream().forEach(merchantPlaceFeeMonthRecord1 -> {
-                if (merchantPlaceFeeMonthRecord1.getRentEndTime() < merchantPlaceFeeMonthRecord.getRentStartTime()) {
-                    merchantPlaceFeeMonthRecords.add(merchantPlaceFeeMonthRecord1);
+            // 过滤掉一个月前的账单的开时间小于两个月前的所在月份的月初时间
+            long oneBeforeMonthTime = DateUtils.getBeforeMonthFirstDayTimestamp(MerchantPlaceBindConstant.LAST_MONTH);
+            List<MerchantPlaceFeeMonthRecord> oneBeforeList = new ArrayList<>();
+            map.get(oneBeforeMonth).stream().forEach(item -> {
+                if (item.getRentStartTime() < oneBeforeMonthTime) {
+                    oneBeforeList.add(item);
+                } else {
                     return;
                 }
                 
-                if (merchantPlaceFeeMonthRecord.getRentStartTime() < merchantPlaceFeeMonthRecord1.getRentStartTime()
-                        && merchantPlaceFeeMonthRecord.getRentEndTime() > merchantPlaceFeeMonthRecord1.getRentEndTime()) {
-                    booleanAtomicReference.set(true);
-                    return;
-                }
-                if (merchantPlaceFeeMonthRecord.getRentStartTime() > merchantPlaceFeeMonthRecord1.getRentEndTime()) {
-                    merchantPlaceFeeMonthRecords.add(merchantPlaceFeeMonthRecord1);
+                // 如果结束时间大于两个月前的月末则将结束时间设置为月末
+                if (item.getRentEndTime() > twoLastBeforeMonthTime) {
+                    item.setRentEndTime(twoLastBeforeMonthTime);
                 }
             });
             
-            if (booleanAtomicReference.get()) {
-                merchantPlaceFeeMonthRecords.add(merchantPlaceFeeMonthRecord);
+            if (ObjectUtils.isEmpty(oneBeforeList)) {
+                // 如果不存在补的情况则直接返回两个月前的数据
+                Map<Long, List<MerchantPlaceFeeMonthRecord>> resMap = placeFeeMonthRecords1.stream().collect(Collectors.groupingBy(MerchantPlaceFeeMonthRecord::getEid));
+                return resMap;
             }
-            Map<Long, List<MerchantPlaceFeeMonthRecord>> resMap = merchantPlaceFeeMonthRecords.stream().collect(Collectors.groupingBy(MerchantPlaceFeeMonthRecord::getEid));
+            
+            // 两个月的记录合并
+            placeFeeMonthRecords1.addAll(oneBeforeList);
+            placeFeeMonthRecords1.stream().sorted(Comparator.comparing(MerchantPlaceFeeMonthRecord::getRentStartTime));
+            Map<Long, List<MerchantPlaceFeeMonthRecord>> finalRecordsMap = placeFeeMonthRecords1.stream().collect(Collectors.groupingBy(MerchantPlaceFeeMonthRecord::getEid));
+            
+            List<Long> existsList = new ArrayList<>();
+            
+            Map<Long, List<MerchantPlaceFeeMonthRecord>> resMap = new HashMap<>();
+            
+            for (Map.Entry<Long, List<MerchantPlaceFeeMonthRecord>> entryOne : finalRecordsMap.entrySet()) {
+                Long cabinetId = entryOne.getKey();
+                List<MerchantPlaceFeeMonthRecord> resList = new ArrayList<>();
+                List<MerchantPlaceFeeMonthRecord> value = entryOne.getValue();
+                
+                for (int i = 0; i < value.size(); i++) {
+                    boolean flag = false;
+                    
+                    // 如果已经标记了则直接跳出
+                    MerchantPlaceFeeMonthRecord oneRecord = value.get(i);
+                    if (existsList.contains(oneRecord.getId())) {
+                        continue;
+                    }
+                    
+                    for (int j = i + 1; j < value.size(); j++) {
+                        MerchantPlaceFeeMonthRecord twoRecord = value.get(j);
+                        if (oneRecord.getRentEndTime() < twoRecord.getRentStartTime()) {
+                            flag = true;
+                            break;
+                        }
+                        
+                        if (oneRecord.getRentEndTime() >= twoRecord.getRentEndTime()) {
+                            existsList.add(twoRecord.getId());
+                        }
+                    }
+                    
+                    // 加入
+                    if (flag) {
+                        resList.add(oneRecord);
+                    }
+                }
+                
+                resMap.put(cabinetId, resList);
+            }
+            
             return resMap;
         }
         
-        if (ObjectUtils.isEmpty(map.get(threeBeforeMonth)) && ObjectUtils.isNotEmpty(twoBeforeMonth)) {
-            // 过滤掉两个月前的账单的开时间小于两个月前的所在月份的月初时间
-            long twoBeforeMonthTime = DateUtils.getBeforeMonthFirstDayTimestamp(2);
-            List<MerchantPlaceFeeMonthRecord> twoBeforeList = map.get(twoBeforeMonth).stream()
-                    .filter(twoBeforeMonthRecord -> twoBeforeMonthRecord.getRentStartTime() < twoBeforeMonthTime).collect(Collectors.toList());
-            if (ObjectUtils.isEmpty(twoBeforeList)) {
+        // 两月前不存在  一月前账单存在
+        if (ObjectUtils.isEmpty(map.get(twoBeforeMonth)) && ObjectUtils.isNotEmpty(map.get(oneBeforeMonth))) {
+            // 过滤掉一个月前的账单的开时间小于两个月前的所在月份的月初时间
+            long oneBeforeMonthTime = DateUtils.getBeforeMonthFirstDayTimestamp(MerchantPlaceBindConstant.LAST_MONTH);
+            
+            List<MerchantPlaceFeeMonthRecord> oneBeforeList = new ArrayList<>();
+            
+            map.get(oneBeforeMonth).stream().forEach(item -> {
+                if (item.getRentStartTime() < oneBeforeMonthTime) {
+                    oneBeforeList.add(item);
+                } else {
+                    return;
+                }
+                
+                // 如果结束时间大于两个月前的月末则将结束时间设置为月末
+                if (item.getRentEndTime() > twoLastBeforeMonthTime) {
+                    item.setRentEndTime(twoLastBeforeMonthTime);
+                }
+            });
+            
+            if (ObjectUtils.isEmpty(oneBeforeList)) {
                 // 如果不存在补的情况则直接返回三个月前的数据
                 return null;
             }
             
-            MerchantPlaceFeeMonthRecord merchantPlaceFeeMonthRecord = twoBeforeList.get(0);
-            long threeLastBeforeMonthTime = DateUtils.getBeforeMonthLastDayTimestamp(MerchantPlaceConstant.TOW_MONTH_BEFORE);
-            // 如果结束时间大于两个月前的月末则将结束时间设置为月末
-            if (merchantPlaceFeeMonthRecord.getRentEndTime() > threeLastBeforeMonthTime) {
-                merchantPlaceFeeMonthRecord.setRentEndTime(threeLastBeforeMonthTime);
-            }
+            Map<Long, List<MerchantPlaceFeeMonthRecord>> resMap = oneBeforeList.stream().collect(Collectors.groupingBy(MerchantPlaceFeeMonthRecord::getEid));
             
-            Map<Long, List<MerchantPlaceFeeMonthRecord>> resMap = new HashMap<>();
-            List<MerchantPlaceFeeMonthRecord> resList = new ArrayList<>();
-            resList.add(merchantPlaceFeeMonthRecord);
-            resMap.put(merchantPlaceFeeMonthRecord.getEid(), resList);
             return resMap;
         }
         
