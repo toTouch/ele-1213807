@@ -31,11 +31,11 @@
     </update>
     
     <update id="updateProtectionExpired">
-        update t_merchant_join_record set protection_status = #{protectionStatus}, update_time=#{updateTime} where protection_time &lt;= #{updateTime}
+        update t_merchant_join_record set protection_status = #{protectionStatus}, update_time = #{updateTime} where protection_time &lt;= #{updateTime} and = 0
     </update>
     
     <update id="updateExpired">
-        update t_merchant_join_record set status = #{status}, update_time=#{updateTime} where expired_time &lt;= #{updateTime} and status =1
+        update t_merchant_join_record set status = #{status}, update_time = #{updateTime} where expired_time &lt;= #{updateTime} and status =1
     </update>
     
     <update id="updateById">
