@@ -27,12 +27,12 @@ public class JsonUserMerchantController extends BaseController {
     private MerchantService merchantService;
     
     /**
-     * 获取商户详情
+     * 获取商户/渠道员详情
      * @return
      */
     @GetMapping("/merchant/queryMerchantDetail")
     public R queryMerchantDetail() {
-        return R.ok(merchantService.queryMerchantDetail());
+        return R.ok(merchantService.queryMerchantUserDetail());
     }
     
     /**
