@@ -1063,7 +1063,8 @@ public class MerchantServiceImpl implements MerchantService {
             merchantUserVO.setCode(MerchantJoinRecordServiceImpl.codeEnCoder(merchant.getId(), merchant.getUid(), 1));
         
             MerchantLevel merchantLevel = merchantLevelService.queryById(merchant.getMerchantGradeId());
-            merchantUserVO.setMerchantLevel(Objects.nonNull(merchantLevel) ? merchantLevel.getName() : "");
+            merchantUserVO.setMerchantLevelName(Objects.nonNull(merchantLevel) ? merchantLevel.getName() : "");
+            merchantUserVO.setMerchantLevel(Objects.nonNull(merchantLevel) ? merchantLevel.getLevel() : "");
             return merchantUserVO;
         }
     

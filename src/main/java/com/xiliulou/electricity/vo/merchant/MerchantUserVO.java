@@ -24,6 +24,7 @@ public class MerchantUserVO {
      * 商户等级
      */
     private String merchantLevel;
+    private String merchantLevelName;
     
     private Long merchantId;
     private Long merchantUid;
