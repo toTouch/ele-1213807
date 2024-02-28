@@ -4,6 +4,7 @@ import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.constant.merchant.MerchantConstant;
 import com.xiliulou.electricity.entity.BatteryMembercardRefundOrder;
 import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
+import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.UserInfoExtra;
 import com.xiliulou.electricity.entity.merchant.Merchant;
@@ -19,6 +20,7 @@ import com.xiliulou.electricity.service.EleRefundOrderService;
 import com.xiliulou.electricity.service.ElectricityMemberCardOrderService;
 import com.xiliulou.electricity.service.UserInfoExtraService;
 import com.xiliulou.electricity.service.UserInfoService;
+import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.service.merchant.ChannelEmployeeAmountService;
 import com.xiliulou.electricity.service.merchant.MerchantLevelService;
 import com.xiliulou.electricity.service.merchant.MerchantService;
@@ -72,6 +74,9 @@ public class BatteryMemberCardMerchantRebateConsumer implements RocketMQListener
     private UserInfoService userInfoService;
     
     @Autowired
+    private UserService userService;
+    
+    @Autowired
     private EleRefundOrderService eleRefundOrderService;
     
     @Autowired
@@ -114,7 +119,7 @@ public class BatteryMemberCardMerchantRebateConsumer implements RocketMQListener
         }
         
         //若用户退过押金，再次缴纳押金后，不返利
-        if(Objects.nonNull(eleRefundOrderService.existsRefundOrderByUid(electricityMemberCardOrder.getUid()))){
+        if (Objects.nonNull(eleRefundOrderService.existsRefundOrderByUid(electricityMemberCardOrder.getUid()))) {
             log.warn("REBATE CONSUMER WARN!user exists refund order,uid={}", batteryMemberCardMerchantRebate.getUid());
             return;
         }
@@ -156,7 +161,7 @@ public class BatteryMemberCardMerchantRebateConsumer implements RocketMQListener
             return;
         }
         
-        if(Objects.equals( rebateConfig.getStatus(), MerchantConstant.REBATE_DISABLE)){
+        if (Objects.equals(rebateConfig.getStatus(), MerchantConstant.REBATE_DISABLE)) {
             log.warn("REBATE CONSUMER WARN!rebateConfig is disable,uid={},mid={}", electricityMemberCardOrder.getUid(), electricityMemberCardOrder.getMemberCardId());
             return;
         }
@@ -206,9 +211,14 @@ public class BatteryMemberCardMerchantRebateConsumer implements RocketMQListener
         rebateRecord.setCreateTime(System.currentTimeMillis());
         rebateRecord.setUpdateTime(System.currentTimeMillis());
         
-        //产品需求：商户禁用后，不给商户返利；不影响渠道员返利
+        //产品需求：商户禁用后，不给商户返利；渠道员禁用，不返利
         if (Objects.equals(MerchantConstant.DISABLE, merchant.getStatus())) {
             rebateRecord.setMerchantRebate(BigDecimal.ZERO);
+        }
+        
+        User channel = userService.queryByUidFromCache(userInfoExtra.getChannelEmployeeUid());
+        if (Objects.isNull(channel) || Objects.equals(channel.getLockFlag(), User.USER_LOCK)) {
+            rebateRecord.setChannelerRebate(BigDecimal.ZERO);
         }
         
         rebateRecordService.insert(rebateRecord);
