@@ -510,7 +510,7 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
         return merchantWithdrawApplicationMapper.sumByStatus(tenantId, status, uid);
     }
     
-    @Slave
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public void updateMerchantWithdrawStatus() {
         //获取审核状态为提现中且审核时间为30分钟前的提现申请记录
@@ -595,6 +595,7 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
         return merchantWithdrawApplicationMapper.selectRecordListCount(merchantWithdrawApplicationRequest);
     }
     
+    @Transactional(rollbackFor = Exception.class)
     public void handleBatchDetailsInfo(String batchNo, Integer tenantId){
         //查询当前批次的明细记录，并查询每条明细的处理结果是否为成功状态，若失败，则记录失败原因。
         List<MerchantWithdrawApplicationRecord> merchantWithdrawApplicationRecords = merchantWithdrawApplicationRecordService.selectListByBatchNo(batchNo, tenantId);
