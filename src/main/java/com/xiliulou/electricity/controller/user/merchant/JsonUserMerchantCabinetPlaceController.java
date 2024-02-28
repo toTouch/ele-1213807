@@ -41,7 +41,7 @@ public class JsonUserMerchantCabinetPlaceController extends BaseController {
     /**
      * 是否显示场地费页面：0-不显示，1-显示
      */
-    @GetMapping("/user/merchant/place/isShowPlacePage")
+    @GetMapping("/merchant/place/isShowPlacePage")
     public R isShowPlacePage() {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
@@ -60,7 +60,7 @@ public class JsonUserMerchantCabinetPlaceController extends BaseController {
     /**
      * 筛选条件：场地列表/柜机列表
      */
-    @GetMapping("/user/merchant/cabinetPower/placeAndCabinetList")
+    @GetMapping("/merchant/place/placeAndCabinetList")
     public R placeAndCabinetList(@RequestParam Long merchantId) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
@@ -79,7 +79,7 @@ public class JsonUserMerchantCabinetPlaceController extends BaseController {
     /**
      * 筛选条件：根据场地id查询柜机列表
      */
-    @GetMapping("/user/merchant/cabinetPower/cabinetListByPlace")
+    @GetMapping("/merchant/place/cabinetListByPlace")
     public R cabinetListByPlace(@RequestParam Long merchantId, @RequestParam Long placeId) {
         return R.ok(merchantCabinetPowerService.listCabinetByPlaceId(merchantId, placeId));
     }
@@ -88,7 +88,7 @@ public class JsonUserMerchantCabinetPlaceController extends BaseController {
      * 统计上月，本月，累计场地费
      * 统计设备数量
      */
-    @GetMapping("/user/merchant/place/getFeeData")
+    @GetMapping("/merchant/place/getFeeData")
     public R getFeeData(@RequestParam Long merchantId, @RequestParam(value = "placeId", required = false) Long placeId,
             @RequestParam(value = "cabinetId", required = false) Long cabinetId) {
     
@@ -100,7 +100,7 @@ public class JsonUserMerchantCabinetPlaceController extends BaseController {
     /**
      * 统计分析-折线图
      */
-    @GetMapping("/user/merchant/place/getLineData")
+    @GetMapping("/merchant/place/getLineData")
     public R lineData(@RequestParam Long merchantId, @RequestParam(value = "placeId", required = false) Long placeId,
             @RequestParam(value = "cabinetId", required = false) Long cabinetId, Long startTime, Long endTime) {
          MerchantPlaceFeeRequest request = MerchantPlaceFeeRequest.builder().merchantId(merchantId).placeId(placeId)
@@ -112,7 +112,7 @@ public class JsonUserMerchantCabinetPlaceController extends BaseController {
     /**
      * 根据柜机id获取场地费
      */
-    @GetMapping("/user/merchant/place/getPlaceDetailByCabinetId")
+    @GetMapping("/merchant/place/getPlaceDetailByCabinetId")
     public R getPlaceDetailByCabinetId(@RequestParam Long merchantId,@RequestParam("month") String month,
             @RequestParam(value = "cabinetId", required = false) Long cabinetId) {
         MerchantPlaceFeeRequest request = MerchantPlaceFeeRequest.builder().merchantId(merchantId).month(month)
@@ -123,7 +123,7 @@ public class JsonUserMerchantCabinetPlaceController extends BaseController {
     /**
      * 柜机电费详情
      */
-    @GetMapping("/user/merchant/place/getCabinetPlaceDetail")
+    @GetMapping("/merchant/place/getCabinetPlaceDetail")
     public R getCabinetPlaceDetail(@RequestParam Long merchantId, @RequestParam(value = "placeId", required = false) Long placeId,
             @RequestParam(value = "cabinetId", required = false) Long cabinetId) {
         MerchantPlaceFeeRequest request = MerchantPlaceFeeRequest.builder().merchantId(merchantId).placeId(placeId)

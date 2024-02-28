@@ -30,7 +30,7 @@ public class JsonUserMerchantController extends BaseController {
      * 获取商户详情
      * @return
      */
-    @GetMapping("/user/merchant/queryMerchantDetail")
+    @GetMapping("/merchant/queryMerchantDetail")
     public R queryMerchantDetail() {
         return R.ok(merchantService.queryMerchantDetail());
     }
@@ -39,7 +39,7 @@ public class JsonUserMerchantController extends BaseController {
      * 获取商户详情
      * @return
      */
-    @GetMapping("/user/merchant/getMerchantQrCode")
+    @GetMapping("/merchant/getMerchantQrCode")
     public R getMerchantQrCode() {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
