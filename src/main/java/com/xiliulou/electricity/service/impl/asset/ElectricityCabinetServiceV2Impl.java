@@ -210,7 +210,7 @@ public class ElectricityCabinetServiceV2Impl implements ElectricityCabinetV2Serv
         if (Objects.nonNull(outWarehouseRequest.getPlaceFee())) {
             // 场地费必须大于零
             if (Objects.equals(outWarehouseRequest.getPlaceFee().compareTo(BigDecimal.ZERO), NumberConstant.MINUS_ONE)) {
-                return Triple.of(false, "120233", "场地费必须大于等于零");
+                return Triple.of(false, "120235", "场地费必须大于等于零");
             }
             
             // 场地费不能是负数

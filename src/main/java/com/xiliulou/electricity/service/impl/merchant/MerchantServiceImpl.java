@@ -173,14 +173,14 @@ public class MerchantServiceImpl implements MerchantService {
         User user = userService.queryByUserName(merchantSaveRequest.getName());
         if (Objects.nonNull(user)) {
             log.error("merchant save error, name is exit user name={}", merchantSaveRequest.getName());
-            return Triple.of(false, "120233", "商户名称已经存在");
+            return Triple.of(false, "120233", "商户名称重复，请修改");
         }
         
         // 检测商户名称是否存在
         Integer nameCount = merchantMapper.existsByName(merchantSaveRequest.getName(), tenantId, null);
         if (nameCount > 0) {
             log.error("merchant save error, name is exit merchant name={}", merchantSaveRequest.getName());
-            return Triple.of(false, "120233", "商户名称已经存在");
+            return Triple.of(false, "120233", "商户名称重复，请修改");
         }
         
         // 检测手机号
@@ -400,7 +400,7 @@ public class MerchantServiceImpl implements MerchantService {
         Integer nameCount = merchantMapper.existsByName(merchantSaveRequest.getName(), tenantId, merchantSaveRequest.getId());
         if (nameCount > 0) {
             log.error("merchant update error, name is exit id={}, name={}", merchantSaveRequest.getId(), merchantSaveRequest.getName());
-            return Triple.of(false, "120233", "商户名称已经存在");
+            return Triple.of(false, "120233", "商户名称重复，请修改");
         }
         
         // 检测手机号
