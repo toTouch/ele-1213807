@@ -287,7 +287,7 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
     /**
      * 二维码解密
      */
-    @Resource
+    @Override
     public String codeDeCoder(String code) {
         if (StringUtils.isBlank(code)) {
             return null;
