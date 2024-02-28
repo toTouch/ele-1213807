@@ -209,7 +209,7 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
             }
             
             // 获取商户保护期和有效期
-            MerchantAttr merchantAttr = merchantAttrService.queryByMerchantIdFromCache(merchantId);
+            MerchantAttr merchantAttr = merchantAttrService.queryByTenantIdFromCache(merchant.getTenantId());
             if (Objects.isNull(merchantAttr)) {
                 log.error("MERCHANT JOIN ERROR! not found merchantAttr, merchantId={}", merchantId);
                 return R.fail("100463", "二维码已失效");

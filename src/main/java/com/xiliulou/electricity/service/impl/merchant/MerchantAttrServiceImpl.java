@@ -40,31 +40,32 @@ public class MerchantAttrServiceImpl implements MerchantAttrService {
     }
     
     @Override
-    public MerchantAttr queryByMerchantId(Long merchantId) {
-        return this.merchantAttrMapper.selectByMerchantId(merchantId);
+    public MerchantAttr queryByTenantId(Integer tenantId) {
+        return this.merchantAttrMapper.selectByTenantId(tenantId);
     }
     
     @Override
-    public MerchantAttr queryByMerchantIdFromCache(Long merchantId) {
-        MerchantAttr cacheMerchantAttr = redisService.getWithHash(CacheConstant.CACHE_MERCHANT_ATTR + merchantId, MerchantAttr.class);
+    public MerchantAttr queryByTenantIdFromCache(Integer tenantId) {
+        MerchantAttr cacheMerchantAttr = redisService.getWithHash(CacheConstant.CACHE_MERCHANT_ATTR + tenantId, MerchantAttr.class);
         if (Objects.nonNull(cacheMerchantAttr)) {
             return cacheMerchantAttr;
         }
         
-        MerchantAttr merchantAttr = this.queryByMerchantId(merchantId);
+        MerchantAttr merchantAttr = this.queryByTenantId(tenantId);
         if (Objects.isNull(merchantAttr)) {
             return null;
         }
         
-        redisService.saveWithHash(CacheConstant.CACHE_MERCHANT_ATTR + merchantId, merchantAttr);
+        redisService.saveWithHash(CacheConstant.CACHE_MERCHANT_ATTR + tenantId, merchantAttr);
         return merchantAttr;
     }
     
     @Override
-    public Integer updateByMerchantId(MerchantAttr merchantAttr) {
-        int update = this.merchantAttrMapper.updateByMerchantId(merchantAttr);
+    public Integer updateByTenantId(MerchantAttr merchantAttr, Integer tenantId) {
+        merchantAttr.setTenantId(tenantId);
+        int update = this.merchantAttrMapper.updateByTenantId(merchantAttr);
         
-        DbUtils.dbOperateSuccessThenHandleCache(update, i -> redisService.delete(CacheConstant.CACHE_MERCHANT_ATTR + merchantAttr.getMerchantId()));
+        DbUtils.dbOperateSuccessThenHandleCache(update, i -> redisService.delete(CacheConstant.CACHE_MERCHANT_ATTR + tenantId));
         
         return update;
     }
@@ -75,67 +76,66 @@ public class MerchantAttrServiceImpl implements MerchantAttrService {
     }
     
     @Override
-    public Integer deleteByMerchantId(Long merchantId) {
-        int delete = this.merchantAttrMapper.deleteByMerchantId(merchantId);
+    public Integer deleteByTenantId(Integer tenantId) {
+        int delete = this.merchantAttrMapper.deleteByTenantId(tenantId);
         
-        DbUtils.dbOperateSuccessThenHandleCache(delete, i -> redisService.delete(CacheConstant.CACHE_MERCHANT_ATTR + merchantId));
+        DbUtils.dbOperateSuccessThenHandleCache(delete, i -> redisService.delete(CacheConstant.CACHE_MERCHANT_ATTR + tenantId));
         
         return delete;
     }
     
     @Override
-    public MerchantAttr queryUpgradeCondition(Long merchantId) {
-        MerchantAttr merchantAttr = this.queryByMerchantIdFromCache(merchantId);
+    public MerchantAttr queryUpgradeCondition(Integer tenantId) {
+        MerchantAttr merchantAttr = this.queryByTenantIdFromCache(tenantId);
         if (Objects.isNull(merchantAttr) || !Objects.equals(TenantContextHolder.getTenantId(), merchantAttr.getTenantId())) {
             return null;
         }
-    
+        
         return merchantAttr;
     }
     
     @Override
-    public Triple<Boolean, String, Object> updateUpgradeCondition(Long merchantId, Integer condition) {
-        MerchantAttr merchantAttr = this.queryByMerchantIdFromCache(merchantId);
+    public Triple<Boolean, String, Object> updateUpgradeCondition(Integer tenantId, Integer condition) {
+        MerchantAttr merchantAttr = this.queryByTenantIdFromCache(tenantId);
         if (Objects.isNull(merchantAttr) || !Objects.equals(merchantAttr.getTenantId(), TenantContextHolder.getTenantId())) {
             return Triple.of(true, null, null);
         }
         
         MerchantAttr merchantAttrUpdate = new MerchantAttr();
-        merchantAttrUpdate.setMerchantId(merchantAttr.getMerchantId());
         merchantAttrUpdate.setUpgradeCondition(condition);
         merchantAttrUpdate.setUpdateTime(System.currentTimeMillis());
-        this.updateByMerchantId(merchantAttrUpdate);
+        this.updateByTenantId(merchantAttrUpdate, tenantId);
         return Triple.of(true, null, null);
     }
     
     @Override
     public Triple<Boolean, String, Object> updateInvitationCondition(MerchantAttrRequest request) {
-        MerchantAttr merchantAttr = this.queryByMerchantIdFromCache(request.getMerchantId());
+        MerchantAttr merchantAttr = this.queryByTenantIdFromCache(TenantContextHolder.getTenantId());
         if (Objects.isNull(merchantAttr) || !Objects.equals(merchantAttr.getTenantId(), TenantContextHolder.getTenantId())) {
             return Triple.of(true, null, null);
         }
         
         MerchantAttr merchantAttrUpdate = new MerchantAttr();
-        merchantAttrUpdate.setMerchantId(merchantAttr.getMerchantId());
+        merchantAttrUpdate.setTenantId(TenantContextHolder.getTenantId());
         merchantAttrUpdate.setInvitationValidTime(request.getInvitationValidTime());
         merchantAttrUpdate.setValidTimeUnit(request.getValidTimeUnit());
         merchantAttrUpdate.setInvitationProtectionTime(request.getInvitationProtectionTime());
         merchantAttrUpdate.setProtectionTimeUnit(request.getProtectionTimeUnit());
         merchantAttrUpdate.setUpdateTime(System.currentTimeMillis());
-        this.updateByMerchantId(merchantAttrUpdate);
+        this.updateByTenantId(merchantAttrUpdate, TenantContextHolder.getTenantId());
         return Triple.of(true, null, null);
     }
     
     @Override
-    public Boolean checkInvitationTime(Long merchantId, Long invitationTime) {
-        MerchantAttr merchantAttr = this.queryByMerchantIdFromCache(merchantId);
+    public Boolean checkInvitationTime(Integer tenantId, Long invitationTime) {
+        MerchantAttr merchantAttr = this.queryByTenantIdFromCache(tenantId);
         if (Objects.isNull(merchantAttr)) {
-            log.error("ELE ERROR!not found merchantAttr,merchantId={}", merchantId);
+            log.error("ELE ERROR!not found merchantAttr,tenantId={}", tenantId);
             return Boolean.FALSE;
         }
         
         if (Objects.isNull(merchantAttr.getInvitationValidTime()) || Objects.isNull(merchantAttr.getValidTimeUnit())) {
-            log.error("ELE ERROR!merchantAttr is illegal,merchantId={}", merchantId);
+            log.error("ELE ERROR!merchantAttr is illegal,tenantId={}", tenantId);
             return Boolean.FALSE;
         }
         
@@ -143,7 +143,7 @@ public class MerchantAttrServiceImpl implements MerchantAttrService {
                 : 1000 * 60 * 60L);
         
         if (System.currentTimeMillis() > (invitationTime + validTime)) {
-            log.error("ELE ERROR!invitation is expired,merchantId={}", merchantId);
+            log.error("ELE ERROR!invitation is expired,tenantId={}", tenantId);
             return Boolean.FALSE;
         }
         
@@ -151,7 +151,7 @@ public class MerchantAttrServiceImpl implements MerchantAttrService {
     }
     
     @Override
-    public Integer initMerchantAttr(Long merchantId, Integer tenantId) {
+    public Integer initMerchantAttr(Integer tenantId) {
         MerchantAttr merchantAttr = new MerchantAttr();
         merchantAttr.setUpgradeCondition(null);
         merchantAttr.setInvitationValidTime(24);
@@ -159,7 +159,6 @@ public class MerchantAttrServiceImpl implements MerchantAttrService {
         merchantAttr.setInvitationProtectionTime(1);
         merchantAttr.setProtectionTimeUnit(CommonConstant.TIME_UNIT_HOURS);
         merchantAttr.setDelFlag(CommonConstant.DEL_N);
-        merchantAttr.setMerchantId(merchantId);
         merchantAttr.setTenantId(tenantId);
         merchantAttr.setCreateTime(System.currentTimeMillis());
         merchantAttr.setUpdateTime(System.currentTimeMillis());
