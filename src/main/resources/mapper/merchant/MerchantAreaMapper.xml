@@ -18,7 +18,7 @@
     </insert>
     
     <delete id="deleteById">
-        delete from t_merchant_area where id = #{id} and tenant_id = #{tenantId}
+        update t_merchant_area set del_flag = 1 where id = #{id} and tenant_id = #{tenantId}
     </delete>
     
     <select id="existsByAreaName" resultType="java.lang.Integer">

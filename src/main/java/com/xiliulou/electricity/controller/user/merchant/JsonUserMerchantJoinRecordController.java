@@ -34,7 +34,7 @@ public class JsonUserMerchantJoinRecordController extends BaseController {
      * code规则：merchantId:inviterUid:inviterType
      * inviterType：1-商户本人 2-场地员工
      */
-    @PostMapping("/user/merchant/joinRecord/joinScanCode")
+    @PostMapping("/merchant/joinRecord/joinScanCode")
     public R joinScanCode(@RequestParam String code) {
         return merchantJoinRecordService.joinScanCode(code);
     }
@@ -48,7 +48,7 @@ public class JsonUserMerchantJoinRecordController extends BaseController {
      * @param type
      * @return
      */
-    @GetMapping("/user/merchant/joinUserList")
+    @GetMapping("/merchant/joinUserList")
     public R queryJoinUserList(@RequestParam(value = "size", required = false) Long size,
                                @RequestParam(value = "offset", required = false) Long offset,
                                @RequestParam(value = "uid", required = false) Long uid,

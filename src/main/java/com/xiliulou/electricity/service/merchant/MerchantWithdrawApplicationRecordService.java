@@ -3,6 +3,7 @@ package com.xiliulou.electricity.service.merchant;
 import com.xiliulou.electricity.entity.merchant.MerchantWithdrawApplicationRecord;
 import com.xiliulou.electricity.request.merchant.MerchantWithdrawApplicationRecordRequest;
 import com.xiliulou.electricity.request.merchant.MerchantWithdrawApplicationRequest;
+import com.xiliulou.electricity.vo.merchant.MerchantWithdrawApplicationRecordVO;
 
 import java.util.List;
 
@@ -23,14 +24,18 @@ public interface MerchantWithdrawApplicationRecordService {
     
     Integer countByCondition(MerchantWithdrawApplicationRecordRequest merchantWithdrawApplicationRecordRequest);
     
-    List<MerchantWithdrawApplicationRecordRequest> selectListByCondition(MerchantWithdrawApplicationRecordRequest merchantWithdrawApplicationRecordRequest);
+    List<MerchantWithdrawApplicationRecordVO> selectListByCondition(MerchantWithdrawApplicationRecordRequest merchantWithdrawApplicationRecordRequest);
     
-    MerchantWithdrawApplicationRecordRequest selectById(Long id);
+    MerchantWithdrawApplicationRecordVO selectById(Long id);
     
     Integer updateApplicationRecordStatusByBatchNo(Integer status, String batchNo, Integer tenantId);
     
     List<MerchantWithdrawApplicationRecord> selectListByBatchNo(String batchNo, Integer tenantId);
     
     Integer updateMerchantWithdrawStatus(MerchantWithdrawApplicationRecord merchantWithdrawApplicationRecord);
+    
+    List<MerchantWithdrawApplicationRecordVO> selectWithdrawRecordList(MerchantWithdrawApplicationRecordRequest merchantWithdrawApplicationRecordRequest);
+    
+    Integer selectWithdrawRecordListCount(MerchantWithdrawApplicationRecordRequest merchantWithdrawApplicationRecordRequest);
     
 }

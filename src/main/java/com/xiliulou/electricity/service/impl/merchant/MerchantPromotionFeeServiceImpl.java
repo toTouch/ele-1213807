@@ -262,14 +262,13 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
         List<PromotionFeeStatisticAnalysisIncomeVO> incomeVOList = new ArrayList<>();
         
         Long startTime = beginTime;
-        while (startTime > endTime) {
+        while (startTime < endTime) {
             PromotionFeeStatisticAnalysisIncomeVO incomeVO = new PromotionFeeStatisticAnalysisIncomeVO();
             BigDecimal totalIncome = buildPromotionFeeTotalIncomeVO(type, uid, startTime);
             incomeVO.setTotalIncome(totalIncome);
             incomeVO.setStatisticTime(DateUtils.getYearAndMonthAndDayByTimeStamps(startTime));
             incomeVOList.add(incomeVO);
-            startTime = startTime + (60 * 60 * 1000 * 24);
-            ;
+            startTime = startTime + (60 * 60 * 1000 * 24);;
         }
         
         return R.ok(incomeVOList);
@@ -289,7 +288,7 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
         List<PromotionFeeStatisticAnalysisRenewalVO> renewalVOList = new ArrayList<>();
         
         Long startTime = beginTime;
-        while (startTime > endTime) {
+        while (startTime < endTime) {
             // 扫码人数
             PromotionFeeStatisticAnalysisUserScanCodeVO scanCodeVO = new PromotionFeeStatisticAnalysisUserScanCodeVO();
             Integer scanCodeNum = buildScanCodeCount(type, uid, startTime, DateUtils.getDayEndTimeStampByDate(startTime), null);
@@ -330,7 +329,7 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
         List<PromotionFeeStatisticAnalysisMerchantVO> incomeVOList = new ArrayList<>();
         
         Long startTime = beginTime;
-        while (startTime > endTime) {
+        while (startTime < endTime) {
             PromotionFeeStatisticAnalysisMerchantVO merchantVO = new PromotionFeeStatisticAnalysisMerchantVO();
             merchantVO.setMerchantNum(buildMerchantNumCount(uid, startTime, DateUtils.getDayEndTimeStampByDate(startTime)));
             merchantVO.setStatisticTime(DateUtils.getYearAndMonthAndDayByTimeStamps(startTime));
@@ -673,7 +672,7 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
                 .uid(uid).tenantId(TenantContextHolder.getTenantId()).settleEndTime(DateUtils.getTodayEndTimeStamp()).build();
         BigDecimal allReturnIncome = rebateRecordService.sumByStatus(allReturnIncomeQueryModel);
         merchantPromotionFeeIncomeVO.setLastMonthIncome(allSettleIncome.subtract(allReturnIncome));*/
-        merchantPromotionFeeIncomeVO.setLastMonthIncome(buildPromotionFeeTotalIncomeVO(type, uid, dayOfMonthEndTime));
+        merchantPromotionFeeIncomeVO.setTotalIncome(buildPromotionFeeTotalIncomeVO(type, uid, dayOfMonthEndTime));
         
     }
 }

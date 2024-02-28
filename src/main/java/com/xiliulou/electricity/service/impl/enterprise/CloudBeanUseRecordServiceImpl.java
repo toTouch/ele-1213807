@@ -680,7 +680,7 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
 
             storageService.uploadFile(storageConfig.getBucketName(), excelPath, new ByteArrayInputStream(out.toByteArray()));
             
-            return Triple.of(true, null, StorageConfig.HTTPS + storageConfig.getBucketName() + "." + storageConfig.getOssEndpoint() + "/" +excelPath);
+            return Triple.of(true, null, storageConfig.getUrlPrefix()+excelPath);
         } catch (Exception e) {
             log.error("导出云豆账单失败！", e);
         }

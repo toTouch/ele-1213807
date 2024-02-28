@@ -31,7 +31,7 @@ public class JsonUserMerchantCabinetPowerController extends BaseController {
     /**
      * 是否显示电费页面：0-不显示，1-显示
      */
-    @GetMapping("/user/merchant/power/isShowPowerPage")
+    @GetMapping("/merchant/power/isShowPowerPage")
     public R isShowPowerPage() {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
@@ -44,7 +44,7 @@ public class JsonUserMerchantCabinetPowerController extends BaseController {
     /**
      * 筛选条件：场地列表/柜机列表
      */
-    @GetMapping("/user/merchant/power/placeAndCabinetList")
+    @GetMapping("/merchant/power/placeAndCabinetList")
     public R placeAndCabinetList() {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
@@ -57,7 +57,7 @@ public class JsonUserMerchantCabinetPowerController extends BaseController {
     /**
      * 筛选条件：根据场地id查询柜机列表
      */
-    @GetMapping("/user/merchant/power/cabinetListByPlace")
+    @GetMapping("/merchant/power/cabinetListByPlace")
     public R cabinetListByPlace(@RequestParam Long placeId) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
@@ -70,7 +70,7 @@ public class JsonUserMerchantCabinetPowerController extends BaseController {
     /**
      * 电量/电费：今日、昨日、本月、上月、累计、柜机列表
      */
-    @GetMapping("/user/merchant/power/powerData")
+    @GetMapping("/merchant/power/powerData")
     public R powerData(@RequestParam(value = "placeId", required = false) Long placeId, @RequestParam(value = "cabinetId", required = false) Long cabinetId) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
@@ -85,7 +85,7 @@ public class JsonUserMerchantCabinetPowerController extends BaseController {
     /**
      * 统计分析-折线图 近N个自然月（不包含本月）
      */
-    @GetMapping("/user/merchant/power/lineData")
+    @GetMapping("/merchant/power/lineData")
     public R lineData(@RequestParam(value = "placeId", required = false) Long placeId, @RequestParam(value = "cabinetId", required = false) Long cabinetId,
             @RequestParam(value = "monthList") List<String> monthList) {
         TokenUser user = SecurityUtils.getUserInfo();
@@ -101,7 +101,7 @@ public class JsonUserMerchantCabinetPowerController extends BaseController {
     /**
      * 柜机电费详情
      */
-    @GetMapping("/user/merchant/power/cabinetPowerDetail")
+    @GetMapping("/merchant/power/cabinetPowerDetail")
     public R cabinetPowerDetail(@RequestParam(value = "cabinetId") Long cabinetId, @RequestParam(value = "monthDate") String monthDate) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {

@@ -26,7 +26,7 @@ public interface MerchantWithdrawApplicationRecordMapper {
     
     List<MerchantWithdrawApplicationRecordVO> selectListByCondition(MerchantWithdrawApplicationRecordRequest merchantWithdrawApplicationRecordRequest);
     
-    Integer countByCondition(MerchantWithdrawApplicationRecord merchantWithdrawApplicationRecord);
+    Integer countByCondition(MerchantWithdrawApplicationRecordRequest merchantWithdrawApplicationRecordRequest);
     
     Integer removeById(@Param("id") Long id);
     

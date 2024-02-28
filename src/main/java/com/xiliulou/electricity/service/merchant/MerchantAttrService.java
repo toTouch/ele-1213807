@@ -14,17 +14,17 @@ public interface MerchantAttrService {
 
     MerchantAttr queryById(Long id);
     
-    MerchantAttr queryByMerchantId(Long merchantId);
+    MerchantAttr queryByTenantId(Integer tenantId);
 
-    MerchantAttr queryByMerchantIdFromCache(Long merchantId);
+    MerchantAttr queryByTenantIdFromCache(Integer tenantId);
 
-    Integer updateByMerchantId(MerchantAttr merchantAttr);
+    Integer updateByTenantId(MerchantAttr merchantAttr, Integer tenantId);
     
     Integer insert(MerchantAttr merchantAttr);
 
-    Integer deleteByMerchantId(Long merchantId);
+    Integer deleteByTenantId(Integer tenantId);
     
-    Triple<Boolean, String, Object> updateUpgradeCondition(Long merchantId, Integer condition);
+    Triple<Boolean, String, Object> updateUpgradeCondition(Integer tenantId, Integer condition);
     
     Triple<Boolean, String, Object> updateInvitationCondition(MerchantAttrRequest request);
     
@@ -33,12 +33,12 @@ public interface MerchantAttrService {
      * @param tenantId
      * @return
      */
-    Integer initMerchantAttr(Long merchantId, Integer tenantId);
+    Integer initMerchantAttr(Integer tenantId);
     
     /**
      * 校验邀请时间是否在有效期内
      */
-    Boolean checkInvitationTime(Long merchantId, Long invitationTime);
+    Boolean checkInvitationTime(Integer tenantId, Long invitationTime);
     
-    MerchantAttr queryUpgradeCondition(Long merchantId);
+    MerchantAttr queryUpgradeCondition(Integer tenantId);
 }

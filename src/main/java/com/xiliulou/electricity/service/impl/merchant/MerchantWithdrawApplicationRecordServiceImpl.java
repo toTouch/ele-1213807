@@ -5,6 +5,7 @@ import com.xiliulou.electricity.entity.merchant.MerchantWithdrawApplicationRecor
 import com.xiliulou.electricity.mapper.merchant.MerchantWithdrawApplicationRecordMapper;
 import com.xiliulou.electricity.request.merchant.MerchantWithdrawApplicationRecordRequest;
 import com.xiliulou.electricity.service.merchant.MerchantWithdrawApplicationRecordService;
+import com.xiliulou.electricity.vo.merchant.MerchantWithdrawApplicationRecordVO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.stereotype.Service;
@@ -47,19 +48,23 @@ public class MerchantWithdrawApplicationRecordServiceImpl implements MerchantWit
         return null;
     }
     
+    @Slave
     @Override
     public Integer countByCondition(MerchantWithdrawApplicationRecordRequest merchantWithdrawApplicationRecordRequest) {
-        return null;
+        return merchantWithdrawApplicationRecordMapper.countByCondition(merchantWithdrawApplicationRecordRequest);
     }
     
+    @Slave
     @Override
-    public List<MerchantWithdrawApplicationRecordRequest> selectListByCondition(MerchantWithdrawApplicationRecordRequest merchantWithdrawApplicationRecordRequest) {
-        return null;
+    public List<MerchantWithdrawApplicationRecordVO> selectListByCondition(MerchantWithdrawApplicationRecordRequest merchantWithdrawApplicationRecordRequest) {
+       
+        return merchantWithdrawApplicationRecordMapper.selectListByCondition(merchantWithdrawApplicationRecordRequest);
     }
     
+    @Slave
     @Override
-    public MerchantWithdrawApplicationRecordRequest selectById(Long id) {
-        return null;
+    public MerchantWithdrawApplicationRecordVO selectById(Long id) {
+        return merchantWithdrawApplicationRecordMapper.selectById(id);
     }
     
     @Override
@@ -80,6 +85,16 @@ public class MerchantWithdrawApplicationRecordServiceImpl implements MerchantWit
     @Override
     public Integer updateMerchantWithdrawStatus(MerchantWithdrawApplicationRecord merchantWithdrawApplicationRecord) {
         return merchantWithdrawApplicationRecordMapper.updateMerchantWithdrawStatus(merchantWithdrawApplicationRecord);
+    }
+    
+    @Override
+    public List<MerchantWithdrawApplicationRecordVO> selectWithdrawRecordList(MerchantWithdrawApplicationRecordRequest merchantWithdrawApplicationRecordRequest) {
+        return null;
+    }
+    
+    @Override
+    public Integer selectWithdrawRecordListCount(MerchantWithdrawApplicationRecordRequest merchantWithdrawApplicationRecordRequest) {
+        return null;
     }
     
     

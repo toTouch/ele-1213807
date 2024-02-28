@@ -30,19 +30,19 @@ public class EleChargeConfigRecord {
     private String name;
     
     /**
-     * 电柜ID
+     * 所属加盟商id
+     */
+    private Long franchiseeId;
+    
+    /**
+     * 所属门店id
+     */
+    private Long storeId;
+    
+    /**
+     * 所属换电柜Id
      */
     private Long eid;
-    
-    /**
-     * 数据类型 0--加盟商全部（运营商） 1--门店全部（加盟商）2--柜机
-     */
-    private Integer type;
-    
-    /**
-     * 规则
-     */
-    private String jsonRule;
     
     /**
      * 租户ID
@@ -50,19 +50,9 @@ public class EleChargeConfigRecord {
     private Integer tenantId;
     
     /**
-     * 加盟商ID
+     * 数据类型 0--加盟商全部（运营商） 1--门店全部（加盟商）2--柜机
      */
-    private Long franchiseeId;
-    
-    /**
-     * 门店ID
-     */
-    private Long storeId;
-    
-    /**
-     * 0--正常 1--删除
-     */
-    private Integer delFlag;
+    private Integer type;
     
     /**
      * 创建时间
@@ -73,4 +63,31 @@ public class EleChargeConfigRecord {
      * 更新时间
      */
     private Long updateTime;
+    
+    /**
+     * 规则
+     */
+    private String jsonRule;
+    
+    /**
+     * 操作类型：1-新增 2-修改 3-删除
+     */
+    private Integer operationType;
+    
+    /**
+     * 操作时间
+     */
+    private Long operationTime;
+    
+    /**
+     * 操作人
+     */
+    private Long operator;
+    
+    public static final Integer OPERATION_TYPE_NEW = 1;
+    
+    public static final Integer OPERATION_TYPE_UPDATE = 2;
+    
+    public static final Integer OPERATION_TYPE_DELETE = 3;
+    
 }

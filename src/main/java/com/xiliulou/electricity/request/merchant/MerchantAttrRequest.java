@@ -18,9 +18,6 @@ import javax.validation.constraints.NotNull;
 @Builder
 public class MerchantAttrRequest {
     
-    @NotNull(message = "id不能为空")
-    private Long merchantId;
-    
     /**
      * 邀请时效
      */

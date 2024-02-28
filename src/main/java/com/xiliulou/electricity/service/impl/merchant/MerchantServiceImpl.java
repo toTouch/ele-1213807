@@ -63,6 +63,7 @@ import com.xiliulou.electricity.vo.merchant.MerchantPlaceMapVO;
 import com.xiliulou.electricity.vo.merchant.MerchantPlaceSelectVO;
 import com.xiliulou.electricity.vo.merchant.MerchantQrCodeVO;
 import com.xiliulou.electricity.vo.merchant.MerchantUpdateShowVO;
+import com.xiliulou.electricity.vo.merchant.MerchantUserVO;
 import com.xiliulou.electricity.vo.merchant.MerchantVO;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
@@ -1041,15 +1042,32 @@ public class MerchantServiceImpl implements MerchantService {
     }
     
     @Override
-    public MerchantVO queryMerchantDetail() {
-        Merchant merchant = merchantMapper.selectByUid(SecurityUtils.getUid());
-        if (Objects.isNull(merchant)) {
+    public MerchantUserVO queryMerchantUserDetail() {
+        User user = userService.queryByUidFromCache(SecurityUtils.getUid());
+        if (Objects.isNull(user)) {
             return null;
         }
+    
+        MerchantUserVO merchantUserVO = new MerchantUserVO();
+        BeanUtils.copyProperties(user, merchantUserVO);
+    
+        if (Objects.equals(user.getUserType(), User.TYPE_USER_MERCHANT)) {
+            Merchant merchant = merchantMapper.selectByUid(SecurityUtils.getUid());
+            if (Objects.isNull(merchant) || Objects.isNull(merchant.getMerchantGradeId())) {
+                return merchantUserVO;
+            }
         
-        MerchantVO merchantVO = new MerchantVO();
-        BeanUtils.copyProperties(merchant, merchantVO);
-        return merchantVO;
+            merchantUserVO.setMerchantId(merchant.getId());
+            merchantUserVO.setMerchantUid(merchant.getUid());
+            merchantUserVO.setType(MerchantConstant.MERCHANT_QR_CODE_TYPE);
+            merchantUserVO.setCode(MerchantJoinRecordServiceImpl.codeEnCoder(merchant.getId(), merchant.getUid(), 1));
+        
+            MerchantLevel merchantLevel = merchantLevelService.queryById(merchant.getMerchantGradeId());
+            merchantUserVO.setMerchantLevel(Objects.nonNull(merchantLevel) ? merchantLevel.getName() : "");
+            return merchantUserVO;
+        }
+    
+        return merchantUserVO;
     }
     
     @Slave
