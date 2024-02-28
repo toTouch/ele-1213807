@@ -172,6 +172,30 @@ public class UserOauthBindServiceImpl implements UserOauthBindService {
         return userOauthBindMapper.selectByUidAndPhone(phone, uid, tenantId);
     }
     
+    /**
+     * 根据手机号、类型、租户查询用户
+     *
+     * @param phone    手机号
+     * @param source   类型
+     * @param tenantId 租户ID
+     * @return 绑定集
+     */
+    @Slave
+    @Override
+    public List<UserOauthBind> listUserByPhone(String phone, Integer source, Integer tenantId) {
+        return userOauthBindMapper.selectListUserByPhone(phone, source, tenantId);
+    }
+    
+    /**
+     *
+     * @param phone
+     * @param source
+     * @param tenantId
+     * @return
+     *
+     * @see UserOauthBindServiceImpl#listUserByPhone(String, Integer, Integer)
+     */
+    @Deprecated
     @Override
     @Slave
     public UserOauthBind selectUserByPhone(String phone, Integer source, Integer tenantId) {
