@@ -136,7 +136,7 @@
                 and t.status = #{status}
             </if>
             <if test="tenantId != null">
-                t.tenant_id = #{tenantId}
+                and t.tenant_id = #{tenantId}
             </if>
             <if test="placeId != null">
                 and t.place_id = #{placeId}
