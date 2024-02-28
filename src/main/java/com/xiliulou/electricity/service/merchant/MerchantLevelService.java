@@ -31,6 +31,8 @@ public interface MerchantLevelService {
     
     List<MerchantLevelVO> list(Integer tenantId);
     
+    MerchantLevel queryByMerchantLevelAndTenantId(String level, Integer tenantId);
+    
     /**
      * 获取下一级商户等级
      * @param level
@@ -38,6 +40,7 @@ public interface MerchantLevelService {
      * @return
      */
     MerchantLevel queryNextByMerchantLevel(String level, Integer tenantId);
+    
     MerchantLevel queryLastByMerchantLevel(String level, Integer tenantId);
     
     List<MerchantLevel> queryListByIdList(List<Long> levelIdList);
