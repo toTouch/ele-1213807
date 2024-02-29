@@ -3,7 +3,9 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.ElectricityConfig;
 import com.xiliulou.electricity.query.ElectricityConfigAddAndUpdateQuery;
+import com.xiliulou.electricity.query.ElectricityConfigWxCustomerQuery;
 import com.xiliulou.electricity.vo.TenantConfigVO;
+import org.apache.commons.lang3.tuple.Triple;
 
 
 /**
@@ -21,4 +23,7 @@ public interface ElectricityConfigService extends IService<ElectricityConfig> {
     void insertElectricityConfig(ElectricityConfig electricityConfig);
 
     TenantConfigVO getTenantConfig(String appId);
+
+    Triple<Boolean, String, Object> editWxCustomer(ElectricityConfigWxCustomerQuery electricityConfigAddAndUpdateQuery);
+
 }

@@ -15,6 +15,7 @@ import java.util.List;
  * @author makejava
  * @since 2021-09-26 14:06:23
  */
+@Deprecated
 public interface FaqMapper extends BaseMapper<Faq> {
 
 

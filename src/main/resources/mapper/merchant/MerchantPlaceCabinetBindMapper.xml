@@ -7,7 +7,8 @@
     </sql>
     
     <insert id="insert">
-        insert into t_merchant_place_cabinet_bind (place_id, cabinet_id, bind_time, un_bind_time, status, tenant_id, create_time, update_time)
+        insert into t_merchant_place_cabinet_bind (place_id, cabinet_id, bind_time, un_bind_time, status, tenant_id,
+                                                   create_time, update_time)
         values (#{placeId}, #{cabinetId}, #{bindTime},
                 #{unBindTime}, #{status}, #{tenantId}, #{createTime}, #{updateTime})
     </insert>
@@ -159,6 +160,7 @@
     <select id="selectListByPage" resultType="com.xiliulou.electricity.entity.merchant.MerchantPlaceCabinetBind">
         SELECT
         t.place_id,
+        t.id,
         t.cabinet_id,
         t.bind_time,
         t.un_bind_time,
@@ -209,11 +211,14 @@
         from t_merchant_place_cabinet_bind
         where
          del_flag = 0
-        and place_month_settlement =#{monthSettlementFlag}
-        and place_id in
-         <foreach collection="placeIdList" separator="," open="(" close=")" item="placeId">
-             #{placeId}
-         </foreach>
+        and place_month_settlement = #{placeMonthNotSettlement}
+        
+        <if test="placeIdList != null and placeIdList.size() > 0">
+            and place_id in
+            <foreach collection="placeIdList" separator="," open="(" close=")" item="placeId">
+                #{placeId}
+            </foreach>
+        </if>
     </select>
     
     <select id="checkIsBindByPlaceId" resultType="java.lang.Integer">

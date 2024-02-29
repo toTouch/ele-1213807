@@ -15,6 +15,8 @@ public class MerchantEmployeeVO {
     
     private Long uid;
     
+    private String code;
+    
     private String name;
     
     private String phone;

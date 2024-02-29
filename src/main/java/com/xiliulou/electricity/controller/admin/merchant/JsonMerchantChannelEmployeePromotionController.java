@@ -30,7 +30,7 @@ public class JsonMerchantChannelEmployeePromotionController extends BaseControll
     private ChannelEmployeePromotionMonthRecordService channelEmployeePromotionMonthRecordService;
     
     @GetMapping("/admin/channelEmployeePromotion/page")
-    public R page(@RequestParam("size") Integer size, @RequestParam("offset") Integer offset, @RequestParam(value = "time", required = false) Long time) {
+    public R page(@RequestParam("size") Integer size, @RequestParam("offset") Integer offset, @RequestParam(value = "monthDate", required = false) String monthDate) {
         TokenUser user = SecurityUtils.getUserInfo();
         
         if (Objects.isNull(user)) {
@@ -53,7 +53,7 @@ public class JsonMerchantChannelEmployeePromotionController extends BaseControll
             tenantId = TenantContextHolder.getTenantId();
         }
         
-        ChannelEmployeePromotionRequest channelEmployeeRequest = ChannelEmployeePromotionRequest.builder().tenantId(tenantId).size(size).offset(offset).time(time).build();
+        ChannelEmployeePromotionRequest channelEmployeeRequest = ChannelEmployeePromotionRequest.builder().tenantId(tenantId).size(size).offset(offset).monthDate(monthDate).build();
         
         
         
@@ -63,7 +63,7 @@ public class JsonMerchantChannelEmployeePromotionController extends BaseControll
     
     
     @GetMapping("/admin/channelEmployeePromotion/pageCount")
-    public R channelEmployeeCount(@RequestParam(value = "time", required = false) Long time) {
+    public R channelEmployeeCount(@RequestParam(value = "monthDate", required = false) String monthDate) {
         TokenUser user = SecurityUtils.getUserInfo();
     
         if (Objects.isNull(user)) {
@@ -79,7 +79,7 @@ public class JsonMerchantChannelEmployeePromotionController extends BaseControll
             tenantId = TenantContextHolder.getTenantId();
         }
         
-        ChannelEmployeePromotionRequest channelEmployeeRequest = ChannelEmployeePromotionRequest.builder().tenantId(tenantId).time(time).build();
+        ChannelEmployeePromotionRequest channelEmployeeRequest = ChannelEmployeePromotionRequest.builder().tenantId(tenantId).monthDate(monthDate).build();
         
         return R.ok(channelEmployeePromotionMonthRecordService.countTotal(channelEmployeeRequest));
         

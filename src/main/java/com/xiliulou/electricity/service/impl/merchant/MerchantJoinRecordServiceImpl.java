@@ -8,7 +8,11 @@ import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.constant.merchant.MerchantConstant;
-import com.xiliulou.electricity.entity.*;
+import com.xiliulou.electricity.entity.BatteryMemberCard;
+import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
+import com.xiliulou.electricity.entity.Tenant;
+import com.xiliulou.electricity.entity.User;
+import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.merchant.Merchant;
 import com.xiliulou.electricity.entity.merchant.MerchantAttr;
 import com.xiliulou.electricity.entity.merchant.MerchantJoinRecord;
@@ -19,7 +23,11 @@ import com.xiliulou.electricity.query.merchant.MerchantJoinUserQueryMode;
 import com.xiliulou.electricity.query.merchant.MerchantPromotionDataDetailQueryModel;
 import com.xiliulou.electricity.query.merchant.MerchantPromotionScanCodeQueryModel;
 import com.xiliulou.electricity.request.merchant.MerchantJoinRecordPageRequest;
-import com.xiliulou.electricity.service.*;
+import com.xiliulou.electricity.service.BatteryMemberCardService;
+import com.xiliulou.electricity.service.ElectricityMemberCardOrderService;
+import com.xiliulou.electricity.service.TenantService;
+import com.xiliulou.electricity.service.UserInfoService;
+import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.service.merchant.MerchantAttrService;
 import com.xiliulou.electricity.service.merchant.MerchantEmployeeService;
 import com.xiliulou.electricity.service.merchant.MerchantJoinRecordService;
@@ -264,7 +272,8 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
      * @param inviterUid  邀请人uid
      * @param inviterType 邀请人类型
      */
-    public static String codeEnCoder(Long merchantId, Long inviterUid, Integer inviterType) {
+    @Override
+    public String codeEnCoder(Long merchantId, Long inviterUid, Integer inviterType) {
         String encrypt = AESUtils.encrypt(String.valueOf(merchantId + StrUtil.C_COLON + inviterUid + StrUtil.C_COLON + inviterType));
         
         if (StringUtils.isNotBlank(encrypt)) {
@@ -278,7 +287,8 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
     /**
      * 二维码解密
      */
-    private static String codeDeCoder(String code) {
+    @Override
+    public String codeDeCoder(String code) {
         if (StringUtils.isBlank(code)) {
             return null;
         }
@@ -327,11 +337,12 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
     @Override
     public void handelProtectionAndStartExpired() {
         MerchantJoinRecord protectionJoinRecord = new MerchantJoinRecord();
+        protectionJoinRecord.setProtectionStatus(MerchantJoinRecord.PROTECTION_STATUS_EXPIRED);
         protectionJoinRecord.setUpdateTime(System.currentTimeMillis());
         merchantJoinRecordMapper.updateProtectionExpired(protectionJoinRecord);
         
         MerchantJoinRecord merchantJoinRecord = new MerchantJoinRecord();
-        merchantJoinRecord.setStatus(MerchantJoinRecord.STATUS_INIT);
+        merchantJoinRecord.setStatus(MerchantJoinRecord.STATUS_EXPIRED);
         merchantJoinRecord.setUpdateTime(System.currentTimeMillis());
         merchantJoinRecordMapper.updateExpired(merchantJoinRecord);
     }

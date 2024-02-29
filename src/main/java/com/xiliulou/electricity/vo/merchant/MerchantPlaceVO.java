@@ -37,6 +37,8 @@ public class MerchantPlaceVO {
     
     private List<Long> cabinetIdList;
     
+    private List<MerchantPlaceCabinetBindVO> cabinetList;
+    
     private Long createTime;
     
     /**

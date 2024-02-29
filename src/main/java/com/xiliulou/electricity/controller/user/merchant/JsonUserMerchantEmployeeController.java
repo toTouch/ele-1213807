@@ -143,6 +143,34 @@ public class JsonUserMerchantEmployeeController {
         return R.ok(merchantEmployeeService.removeMerchantEmployee(id));
     }
     
+    @GetMapping("/merchant/employees/qrCodeList")
+    public R merchantEmployeeList() {
+        //租户
+        Integer tenantId = TenantContextHolder.getTenantId();
+        Long uid = SecurityUtils.getUid();
     
+        MerchantEmployeeRequest merchantEmployeeRequest = MerchantEmployeeRequest.builder()
+                .merchantUid(uid)
+                .tenantId(tenantId)
+                .build();
+        
+        return R.ok(merchantEmployeeService.selectMerchantEmployeeQrCodes(merchantEmployeeRequest));
+    
+    }
+    
+    @GetMapping("/merchant/employees/queryAll")
+    public R allMerchantEmployeeList() {
+        //租户
+        Integer tenantId = TenantContextHolder.getTenantId();
+        Long uid = SecurityUtils.getUid();
+    
+        MerchantEmployeeRequest merchantEmployeeRequest = MerchantEmployeeRequest.builder()
+                .merchantUid(uid)
+                .tenantId(tenantId)
+                .build();
+        
+        return R.ok(merchantEmployeeService.selectAllMerchantEmployees(merchantEmployeeRequest));
+        
+    }
 
 }

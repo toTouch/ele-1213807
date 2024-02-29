@@ -1,11 +1,13 @@
 package com.xiliulou.electricity.service.merchant;
 
 import com.xiliulou.electricity.request.merchant.MerchantCabinetPowerRequest;
-import com.xiliulou.electricity.vo.merchant.MerchantCabinetPowerDetailVO;
+import com.xiliulou.electricity.vo.merchant.MerchantProCabinetPowerDetailVO;
 import com.xiliulou.electricity.vo.merchant.MerchantPlaceAndCabinetUserVO;
 import com.xiliulou.electricity.vo.merchant.MerchantPlaceCabinetVO;
-import com.xiliulou.electricity.vo.merchant.MerchantPowerDetailVO;
-import com.xiliulou.electricity.vo.merchant.MerchantPowerVO;
+import com.xiliulou.electricity.vo.merchant.MerchantProCabinetPowerVO;
+import com.xiliulou.electricity.vo.merchant.MerchantProPowerDetailVO;
+import com.xiliulou.electricity.vo.merchant.MerchantProPowerLineVO;
+import com.xiliulou.electricity.vo.merchant.MerchantProPowerVO;
 
 import java.util.List;
 
@@ -36,9 +38,11 @@ public interface MerchantCabinetPowerService {
      */
     List<Long> getStaticsCabinetIds(MerchantCabinetPowerRequest request);
     
-    List<MerchantPowerDetailVO> lineData(MerchantCabinetPowerRequest request);
+    MerchantProPowerLineVO lineData(MerchantCabinetPowerRequest request);
     
-    List<MerchantCabinetPowerDetailVO> cabinetPowerDetail(MerchantCabinetPowerRequest request);
+    List<MerchantProCabinetPowerDetailVO> cabinetPowerDetail(MerchantCabinetPowerRequest request);
     
-    MerchantPowerVO powerData(MerchantCabinetPowerRequest request);
+    MerchantProPowerVO powerData(MerchantCabinetPowerRequest request);
+    
+    List<MerchantProCabinetPowerVO> cabinetPowerList(MerchantCabinetPowerRequest request);
 }

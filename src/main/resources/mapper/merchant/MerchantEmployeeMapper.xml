@@ -204,4 +204,25 @@
         </if>
     </select>
     
+    <select id="selectMerchantUsers" resultType="com.xiliulou.electricity.vo.merchant.MerchantEmployeeVO">
+        select
+            tme.id,
+            tme.uid,
+            tu.name,
+            tu.phone,
+            tu.lock_flag as status,
+            tme.merchant_uid,
+            tme.place_id,
+            tme.tenant_id,
+            tme.del_flag,
+            tme.remark,
+            tme.create_time,
+            tme.update_time
+        from t_merchant_employee tme
+        left join t_user tu on tu.uid = tme.uid
+        where tme.merchant_uid = #{merchantUid}
+          and tme.tenant_id = #{tenantId}
+          and tme.del_flag = 0
+    </select>
+    
 </mapper>

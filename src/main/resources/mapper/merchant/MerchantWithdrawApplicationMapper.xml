@@ -195,6 +195,7 @@
         select count(1)
         from t_merchant_withdraw_application tmwa
         left join t_user tu on tu.uid = tmwa.uid
+        left join t_merchant tm on tm.uid = tmwa.uid
         <where>
             tmwa.del_flag = 0
             and tmwa.tenant_id = #{tenantId}
@@ -217,7 +218,7 @@
             </if>
     
             <if test="franchiseeIds != null">
-                and bmro.franchisee_id in
+                and tm.franchisee_id in
                 <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
                     #{id}
                 </foreach>
@@ -241,7 +242,7 @@
         tmwa.update_time
         from t_merchant_withdraw_application tmwa
         left join t_user tu on tu.uid = tmwa.uid
-        left join t_merchant tm om on tm.uid = tmwa.merchant_uid
+        left join t_merchant tm on tm.uid = tmwa.uid
         <where>
             tmwa.del_flag = 0
             and tmwa.tenant_id = #{tenantId}
@@ -265,7 +266,7 @@
             </if>
     
             <if test="franchiseeIds != null">
-                and bmro.franchisee_id in
+                and tm.franchisee_id in
                 <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
                     #{id}
                 </foreach>
@@ -339,7 +340,7 @@
             tmwa.update_time
         from t_merchant_withdraw_application tmwa
         left join t_user tu on tu.uid = tmwa.uid
-        left join t_merchant tm om on tm.uid = tmwa.uid
+        left join t_merchant tm on tm.uid = tmwa.uid
         <where>
             tmwa.del_flag = 0
             and tmwa.tenant_id = #{tenantId}
@@ -377,7 +378,7 @@
         select count(1)
         from t_merchant_withdraw_application tmwa
         left join t_user tu on tu.uid = tmwa.uid
-        left join t_merchant tm om on tm.uid = tmwa.uid
+        left join t_merchant tm on tm.uid = tmwa.uid
         <where>
             tmwa.del_flag = 0
             and tmwa.tenant_id = #{tenantId}
@@ -418,7 +419,7 @@
     </delete>
     
     <select id="sumByStatus" resultType="java.math.BigDecimal">
-        select IFNULL(sum(amount)),0) from t_merchant_withdraw_application where del_flag=0 and tenant_id =#{tenantId} and status =#{status} and uid =#{uid}
+        select IFNULL(sum(amount),0) from t_merchant_withdraw_application where del_flag=0 and tenant_id =#{tenantId} and status =#{status} and uid =#{uid}
     </select>
     
     <select id="selectListForWithdrawInProgress" resultType="com.xiliulou.electricity.entity.merchant.MerchantWithdrawApplication">

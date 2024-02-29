@@ -32,4 +32,15 @@ public class MerchantPlaceBindConstant {
      */
     public final static Integer LAST_MONTH = 1;
     
+    /**
+     * 绑定时间是否存在重叠：是
+     */
+    public final static Integer BIND_TIME_OVERLAP_YES = 1;
+    
+    /**
+     * 绑定时间是否存在重叠：否
+     */
+    public final static Integer BIND_TIME_OVERLAP_NO = 0;
+    
+    
 }
