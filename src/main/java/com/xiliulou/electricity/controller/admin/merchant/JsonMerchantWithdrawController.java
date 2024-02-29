@@ -47,8 +47,8 @@ public class JsonMerchantWithdrawController {
      * @return
      */
     @GetMapping(value = "/admin/merchant/withdraw/page")
-    public R queryMerchantWithdrawList(@RequestParam(value = "size") Long size,
-            @RequestParam(value = "offset") Long offset,
+    public R queryMerchantWithdrawList(@RequestParam(value = "size", required = true) Long size,
+            @RequestParam(value = "offset", required = true) Long offset,
             @RequestParam(value = "merchantUid", required = false) Long merchantUid,
             @RequestParam(value = "beginTime", required = false) Long beginTime,
             @RequestParam(value = "endTime", required = false) Long endTime,

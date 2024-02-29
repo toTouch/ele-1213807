@@ -34,4 +34,6 @@ public interface MerchantEmployeeService {
     List<MerchantEmployee> selectByMerchantUid(MerchantPromotionEmployeeDetailQueryModel queryModel);
     
     List<MerchantEmployeeQrCodeVO> selectMerchantEmployeeQrCodes(MerchantEmployeeRequest merchantEmployeeRequest);
+    
+    List<MerchantEmployeeVO> selectAllMerchantEmployees(MerchantEmployeeRequest merchantEmployeeRequest);
 }

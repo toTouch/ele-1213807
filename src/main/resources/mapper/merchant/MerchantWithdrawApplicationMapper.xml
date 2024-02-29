@@ -195,6 +195,7 @@
         select count(1)
         from t_merchant_withdraw_application tmwa
         left join t_user tu on tu.uid = tmwa.uid
+        left join t_merchant tm om on tm.uid = tmwa.uid
         <where>
             tmwa.del_flag = 0
             and tmwa.tenant_id = #{tenantId}
@@ -217,7 +218,7 @@
             </if>
     
             <if test="franchiseeIds != null">
-                and bmro.franchisee_id in
+                and tm.franchisee_id in
                 <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
                     #{id}
                 </foreach>
@@ -241,7 +242,7 @@
         tmwa.update_time
         from t_merchant_withdraw_application tmwa
         left join t_user tu on tu.uid = tmwa.uid
-        left join t_merchant tm om on tm.uid = tmwa.merchant_uid
+        left join t_merchant tm om on tm.uid = tmwa.uid
         <where>
             tmwa.del_flag = 0
             and tmwa.tenant_id = #{tenantId}
@@ -265,7 +266,7 @@
             </if>
     
             <if test="franchiseeIds != null">
-                and bmro.franchisee_id in
+                and tm.franchisee_id in
                 <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
                     #{id}
                 </foreach>
