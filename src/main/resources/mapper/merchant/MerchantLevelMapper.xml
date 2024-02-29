@@ -42,6 +42,11 @@
         where level = #{level} and tenant_id = #{tenantId} order by id limit 1
     </select>
     
+    <select id="existsLevelName" resultType="integer">
+        select 1 from t_merchant_level
+        where name = #{name} and tenant_id = #{tenantId} limit 1
+    </select>
+    
     <select id="selectByTenantId" resultMap="MerchantLevelMap">
         select
             id, level, name, rule

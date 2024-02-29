@@ -88,6 +88,12 @@ public class MerchantLevelServiceImpl implements MerchantLevelService {
         return merchantLevelMapper.queryListByIdList(levelIdList);
     }
     
+    @Slave
+    @Override
+    public Integer existsLevelName(String name, Integer tenantId) {
+        return merchantLevelMapper.existsLevelName(name, tenantId);
+    }
+    
     @Override
     public List<MerchantLevelVO> list(Integer tenantId) {
         List<MerchantLevel> merchantLevels = this.listByTenantId(tenantId);
@@ -115,6 +121,10 @@ public class MerchantLevelServiceImpl implements MerchantLevelService {
             return Triple.of(true, null, null);
         }
         
+        if (!Objects.equals(merchantLevel.getName(), request.getName()) && Objects.nonNull(existsLevelName(request.getName(), merchantLevel.getTenantId()))) {
+            return Triple.of(false, "100322", "等级名称已存在");
+        }
+        
         MerchantLevel nextMerchantLevel = this.queryNextByMerchantLevel(merchantLevel.getLevel(), merchantLevel.getTenantId());
         if (Objects.nonNull(nextMerchantLevel) && StringUtils.isNotBlank(nextMerchantLevel.getRule())) {
             MerchantLevelDTO merchantLevelDTO = JsonUtil.fromJson(nextMerchantLevel.getRule(), MerchantLevelDTO.class);
@@ -125,14 +135,14 @@ public class MerchantLevelServiceImpl implements MerchantLevelService {
                 }
             }
         }
-    
+        
         MerchantLevel lastMerchantLevel = this.queryLastByMerchantLevel(merchantLevel.getLevel(), merchantLevel.getTenantId());
-        if (Objects.nonNull(nextMerchantLevel) && StringUtils.isNotBlank(nextMerchantLevel.getRule())) {
-            MerchantLevelDTO merchantLevelDTO = JsonUtil.fromJson(nextMerchantLevel.getRule(), MerchantLevelDTO.class);
+        if (Objects.nonNull(lastMerchantLevel) && StringUtils.isNotBlank(lastMerchantLevel.getRule())) {
+            MerchantLevelDTO merchantLevelDTO = JsonUtil.fromJson(lastMerchantLevel.getRule(), MerchantLevelDTO.class);
             if (Objects.nonNull(merchantLevelDTO)) {
                 if ((Objects.nonNull(merchantLevelDTO.getInvitationUserCount()) && merchantLevelDTO.getInvitationUserCount() >= request.getInvitationUserCount()) || (
                         Objects.nonNull(merchantLevelDTO.getRenewalUserCount()) && merchantLevelDTO.getRenewalUserCount() >= request.getRenewalUserCount())) {
-                    return Triple.of(false, "100320", "当前等级设置的人数需大于下一级别，请进行调整");
+                    return Triple.of(false, "100321", "当前等级设置的人数需大于下一级别，请进行调整");
                 }
             }
         }

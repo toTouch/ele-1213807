@@ -29,12 +29,16 @@ import com.xiliulou.electricity.service.merchant.RebateConfigService;
 import com.xiliulou.electricity.service.merchant.RebateRecordService;
 import com.xiliulou.electricity.utils.OrderIdUtil;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.rocketmq.spring.annotation.RocketMQMessageListener;
 import org.apache.rocketmq.spring.core.RocketMQListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -147,6 +151,15 @@ public class BatteryMemberCardMerchantRebateConsumer implements RocketMQListener
             return;
         }
         
+        //渠道员
+        User channel = userService.queryByUidFromCache(merchant.getChannelEmployeeUid());
+        
+        //若商户及渠道员均禁用，不返利
+        if (Objects.equals(MerchantConstant.DISABLE, merchant.getStatus()) && Objects.nonNull(channel) && Objects.equals(channel.getLockFlag(), User.USER_LOCK)) {
+            log.warn("REBATE CONSUMER WARN!merchant disable,channel disable,uid={},merchantId={}", electricityMemberCardOrder.getUid(), userInfoExtra.getMerchantId());
+            return;
+        }
+        
         //获取商户等级
         MerchantLevel merchantLevel = merchantLevelService.queryById(merchant.getMerchantGradeId());
         if (Objects.isNull(merchantLevel)) {
@@ -211,12 +224,11 @@ public class BatteryMemberCardMerchantRebateConsumer implements RocketMQListener
         rebateRecord.setCreateTime(System.currentTimeMillis());
         rebateRecord.setUpdateTime(System.currentTimeMillis());
         
-        //产品需求：商户禁用后，不给商户返利；渠道员禁用，不返利
+        //商户禁用后，不给商户返利；渠道员禁用，不返利
         if (Objects.equals(MerchantConstant.DISABLE, merchant.getStatus())) {
             rebateRecord.setMerchantRebate(BigDecimal.ZERO);
         }
         
-        User channel = userService.queryByUidFromCache(userInfoExtra.getChannelEmployeeUid());
         if (Objects.isNull(channel) || Objects.equals(channel.getLockFlag(), User.USER_LOCK)) {
             rebateRecord.setChannelerRebate(BigDecimal.ZERO);
         }
@@ -224,7 +236,8 @@ public class BatteryMemberCardMerchantRebateConsumer implements RocketMQListener
         rebateRecordService.insert(rebateRecord);
     }
     
-    private void handleMemberCardRentRefund(BatteryMemberCardMerchantRebate batteryMemberCardMerchantRebate) {
+    @Transactional(rollbackFor = Exception.class)
+    public void handleMemberCardRentRefund(BatteryMemberCardMerchantRebate batteryMemberCardMerchantRebate) {
         
         BatteryMembercardRefundOrder batteryMembercardRefundOrder = batteryMembercardRefundOrderService.selectByRefundOrderNo(batteryMemberCardMerchantRebate.getOrderId());
         if (Objects.isNull(batteryMembercardRefundOrder)) {
@@ -246,6 +259,7 @@ public class BatteryMemberCardMerchantRebateConsumer implements RocketMQListener
         rebateRecordInsert.setOrderId(OrderIdUtil.generateBusinessOrderId(BusinessType.BATTERY_REBATE, rebateRecord.getUid()));
         rebateRecordInsert.setOriginalOrderId(batteryMembercardRefundOrder.getRefundOrderNo());
         rebateRecordInsert.setMemberCardId(rebateRecord.getMemberCardId());
+        rebateRecordInsert.setMemberCardName(rebateRecord.getMemberCardName());
         rebateRecordInsert.setType(rebateRecord.getType());
         rebateRecordInsert.setFranchiseeId(rebateRecord.getFranchiseeId());
         rebateRecordInsert.setLevel(rebateRecord.getLevel());
@@ -276,5 +290,58 @@ public class BatteryMemberCardMerchantRebateConsumer implements RocketMQListener
         }
         
         rebateRecordService.insert(rebateRecord);
+        
+        handleExcessRebateRecord(rebateRecord);
+    }
+    
+    @Transactional(rollbackFor = Exception.class)
+    public void handleExcessRebateRecord(RebateRecord rebateRecord) {
+        //获取差额记录
+        List<RebateRecord> excessList = new ArrayList<>();
+        String originalOrderId = rebateRecord.getOrderId();
+        while (true) {
+            RebateRecord excessRecord = rebateRecordService.queryByOriginalOrderId(originalOrderId);
+            if (Objects.isNull(excessRecord)) {
+                break;
+            }
+            originalOrderId = excessRecord.getOrderId();
+            excessList.add(excessRecord);
+        }
+        
+        if (CollectionUtils.isEmpty(excessList)) {
+            return;
+        }
+        
+        for (RebateRecord record : excessList) {
+            RebateRecord rebateRecordInsert = new RebateRecord();
+            rebateRecordInsert.setUid(record.getUid());
+            rebateRecordInsert.setName(record.getName());
+            rebateRecordInsert.setPhone(record.getPhone());
+            rebateRecordInsert.setOrderId(OrderIdUtil.generateBusinessOrderId(BusinessType.BATTERY_REBATE, rebateRecord.getUid()));
+            rebateRecordInsert.setOriginalOrderId(record.getOrderId());
+            rebateRecordInsert.setMemberCardId(record.getMemberCardId());
+            rebateRecordInsert.setMemberCardName(record.getMemberCardName());
+            rebateRecordInsert.setType(record.getType());
+            rebateRecordInsert.setFranchiseeId(record.getFranchiseeId());
+            rebateRecordInsert.setLevel(record.getLevel());
+            rebateRecordInsert.setMerchantId(record.getMerchantId());
+            rebateRecordInsert.setMerchantUid(record.getMerchantUid());
+            rebateRecordInsert.setChanneler(record.getChanneler());
+            rebateRecordInsert.setChannelerRebate(record.getChannelerRebate());
+            rebateRecordInsert.setMerchantRebate(record.getMerchantRebate());
+            rebateRecordInsert.setPlaceId(record.getPlaceId());
+            rebateRecordInsert.setPlaceUid(record.getPlaceUid());
+            rebateRecordInsert.setRebateTime(record.getCreateTime());
+            rebateRecordInsert.setTenantId(record.getTenantId());
+            rebateRecordInsert.setCreateTime(System.currentTimeMillis());
+            rebateRecordInsert.setUpdateTime(System.currentTimeMillis());
+            rebateRecordInsert.setStatus(MerchantConstant.MERCHANT_REBATE_STATUS_RETURNED);
+            
+            //扣减商户、渠道商返利金额
+            merchantUserAmountService.reduceAmount(rebateRecord.getMerchantRebate(), rebateRecord.getMerchantUid(), rebateRecord.getTenantId().longValue());
+            channelEmployeeAmountService.reduceAmount(rebateRecord.getChannelerRebate(), rebateRecord.getChanneler(), rebateRecord.getTenantId().longValue());
+            
+            rebateRecordService.insert(rebateRecord);
+        }
     }
 }
