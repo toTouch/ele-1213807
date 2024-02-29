@@ -21,6 +21,8 @@
         select
             tme.id,
             tme.uid,
+            tu.name,
+            tu.phone,
             tu.lock_flag,
             tme.merchant_uid,
             tme.place_id,
@@ -38,6 +40,8 @@
         select
             tme.id,
             tme.uid,
+            tu.name,
+            tu.phone,
             tu.lock_flag,
             tme.merchant_uid,
             tme.place_id,
