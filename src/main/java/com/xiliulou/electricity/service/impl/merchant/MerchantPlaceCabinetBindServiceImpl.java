@@ -194,7 +194,7 @@ public class MerchantPlaceCabinetBindServiceImpl implements MerchantPlaceCabinet
         
         merchantMapper.updateById(merchantUpdate);
         
-        return Triple.of(true, null, null);
+        return Triple.of(true, null, merchantUpdate);
     }
     
     @Transactional(rollbackFor = Exception.class)

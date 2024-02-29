@@ -134,15 +134,25 @@
           and b.del_flag = 0;
     </select>
     
-    <select id="existsPlaceFee" resultType="java.lang.Integer">
-        select
-            count(1)
-        from t_merchant_place_map p
-                 left join t_merchant_place_cabinet_bind d on d.place_id = p.place_id
-        where
-            p.merchant_id = #{merchantId}
-          and d.`status` = 0
-          and exists (select 1 from t_electricity_cabinet c where c.id = d.cabinet_id and c.place_fee is not NULL)
+    <select id="existsPlaceFeeByPlaceIdList" resultType="java.lang.Integer">
+        SELECT
+            count( 1 )
+        FROM
+            t_merchant_place_cabinet_bind d
+        WHERE
+            d.place_id in
+            <foreach collection="placeIdList" separator="," open="(" close=")" item="placeId">
+                #{placeId}
+            </foreach>
+          AND d.`status` = 0
+          AND EXISTS (
+            SELECT
+                1
+            FROM
+                t_electricity_cabinet c
+            WHERE
+                c.id = d.cabinet_id
+              AND c.place_fee IS NOT NULL)
     </select>
     
     <select id="queryListNoExistsPlaceFeeMerchant" resultType="java.lang.Long">
@@ -154,5 +164,21 @@
         where
             p.place_id = #{placeId}
           and m.exist_place_fee = 1
+    </select>
+    
+    <select id="selectListNoExistsPlaceFeeMerchantByCabinetId" resultType="java.lang.Long">
+        SELECT
+            p.id
+        FROM
+            t_merchant_place_cabinet_bind a
+                INNER JOIN  t_merchant_place_map m on m.place_id = a.place_id
+                INNER JOIN  t_merchant p on p.id = m.merchant_id
+        where
+            a.`status` = 0
+          and p.exist_place_fee = 1
+          and a.cabinet_id in
+          <foreach collection="cabinetIdList" separator="," open="(" close=")" item="cabinetId">
+              #{cabinetId}
+          </foreach>
     </select>
 </mapper>

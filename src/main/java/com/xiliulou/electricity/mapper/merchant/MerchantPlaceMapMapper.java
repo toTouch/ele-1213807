@@ -32,7 +32,9 @@ public interface MerchantPlaceMapMapper {
     
     List<Long> selectCabinetIdsByMerchantId(@Param("merchantId") Long merchantId);
     
-    Integer existsPlaceFee(@Param("merchantId") Long merchantId);
+    Integer existsPlaceFeeByPlaceIdList(@Param("placeIdList") List<Long> placeIdList);
     
     List<Long> queryListNoExistsPlaceFeeMerchant(@Param("placeId") Long placeId);
+    
+    List<Long> selectListNoExistsPlaceFeeMerchantByCabinetId(@Param("cabinetIdList") List<Integer> cabinetIdList);
 }

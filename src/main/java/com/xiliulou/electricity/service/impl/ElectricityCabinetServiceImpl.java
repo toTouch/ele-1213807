@@ -14,7 +14,6 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.google.api.client.util.Lists;
 import com.google.common.collect.Maps;
-import com.obs.services.model.PostSignatureResponse;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.json.JsonUtil;
@@ -544,8 +543,9 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             
             // 增加场地费变更记录
             if (Objects.nonNull(finalMerchantPlaceFeeRecord)) {
-                merchantPlaceFeeRecordService.save(finalMerchantPlaceFeeRecord);
+                merchantPlaceFeeRecordService.asyncInsertOne(finalMerchantPlaceFeeRecord);
             }
+           
             
             //云端下发命令修改换电标准
             if (!Objects.equals(oldElectricityCabinet.getFullyCharged(), electricityCabinet.getFullyCharged())) {

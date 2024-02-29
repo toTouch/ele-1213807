@@ -121,12 +121,6 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
             return MerchantConstant.EXISTS_PLACE_FEE_YES;
         }
         
-        // 检测当商户绑定的柜机是否存在场地费
-        Integer placeCount = merchantPlaceMapService.existsPlaceFee(merchantId);
-        if (Objects.nonNull(placeCount) && placeCount > 0) {
-            return MerchantConstant.EXISTS_PLACE_FEE_YES;
-        }
-        
         return MerchantConstant.EXISTS_PLACE_FEE_NO;
     }
     

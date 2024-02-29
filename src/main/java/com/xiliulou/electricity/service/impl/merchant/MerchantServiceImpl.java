@@ -355,8 +355,12 @@ public class MerchantServiceImpl implements MerchantService {
             
             // 批量保存商户场地映射
             merchantPlaceMapService.batchInsert(merchantPlaceMapList);
+            
             // 批量保存商户场地绑定
             merchantPlaceBindService.batchInsert(merchantPlaceBindList);
+            
+            // 判断绑定的场地是否存在柜机 且修改修改存在场地费标识
+            dealPlaceFee(merchant.getId(), merchantSaveRequest.getPlaceIdList());
         }
         
         // 创建商户余额
@@ -371,8 +375,34 @@ public class MerchantServiceImpl implements MerchantService {
         merchantUserAmount.setDelFlag(MerchantConstant.DEL_NORMAL);
         merchantUserAmountService.save(merchantUserAmount);
         
+        
         // 调用开户账号
         return Triple.of(true, "", "");
+    }
+    
+    /**
+     * 处理场地所在柜机是否设置场地费
+     * @param id
+     * @param placeIdList
+     */
+    private void dealPlaceFee(Long id, List<Long> placeIdList) {
+        if (ObjectUtils.isEmpty(placeIdList)) {
+            return;
+        }
+    
+        Integer count = merchantPlaceMapService.existsPlaceFeeByPlaceIdList(placeIdList);
+        if (Objects.isNull(count) || Objects.equals(count, NumberConstant.ZERO)) {
+            return;
+        }
+        
+        // 修改商户存在场地费
+        Merchant updateMerchant = Merchant.builder()
+                .id(id)
+                .existPlaceFee(MerchantConstant.EXISTS_PLACE_FEE_YES)
+                .updateTime(System.currentTimeMillis()).build();
+        
+        merchantMapper.updateById(updateMerchant);
+        
     }
     
     @Transactional(rollbackFor = Exception.class)
@@ -540,6 +570,7 @@ public class MerchantServiceImpl implements MerchantService {
             Set<Long> collect = merchantSaveRequest.getEnterprisePackageIdList().stream().collect(Collectors.toSet());
             enterpriseInfoQuery.setPackageIds(collect);
         }
+        
         // 同步企业信息数据
         Triple<Boolean, String, Object> enterpriseSaveRes = enterpriseInfoService.modify(enterpriseInfoQuery);
         if (!enterpriseSaveRes.getLeft()) {
@@ -605,6 +636,12 @@ public class MerchantServiceImpl implements MerchantService {
             // 批量保存场地映射
             if (ObjectUtils.isNotEmpty(merchantPlaceMapList)) {
                 merchantPlaceMapService.batchInsert(merchantPlaceMapList);
+                
+                // 不存在场地费，处理场地费
+                if (Objects.equals(merchant.getExistPlaceFee(), MerchantConstant.EXISTS_PLACE_FEE_NO)) {
+                    // 判断绑定的场地是否存在柜机 且修改修改存在场地费标识
+                    dealPlaceFee(merchant.getId(), addPlaceIdList);
+                }
             }
             
             // 批量保存绑定历史
@@ -1125,5 +1162,15 @@ public class MerchantServiceImpl implements MerchantService {
         vo.setCode(merchantJoinRecService.codeEnCoder(merchantId, uid, 1));
         //        vo.setTenantCode(tenant.getCode());
         return vo;
+    }
+    
+    @Override
+    public void deleteCacheById(Long id) {
+        redisService.delete(CacheConstant.CACHE_MERCHANT + id);
+    }
+    
+    @Override
+    public Integer batchUpdateExistPlaceFee(List<Long> merchantIdList, Integer existsPlaceFee, Long updateTime) {
+        return merchantMapper.batchUpdateExistPlaceFee(merchantIdList, existsPlaceFee, updateTime);
     }
 }
