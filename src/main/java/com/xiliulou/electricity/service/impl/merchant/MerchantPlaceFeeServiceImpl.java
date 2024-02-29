@@ -434,11 +434,17 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
     }
     
     private BigDecimal sumFee(List<MerchantPlaceFeeMonthDetail> list) {
+        if(ObjectUtils.isEmpty(list)) {
+            return BigDecimal.ZERO;
+        }
+        
         AtomicReference<BigDecimal> atomicReference = new AtomicReference<>();
         atomicReference.set(BigDecimal.ZERO);
+        
         list.stream().forEach(item -> {
             atomicReference.set(atomicReference.get().add(item.getPlaceFee()));
         });
+        
         return atomicReference.get();
     }
     

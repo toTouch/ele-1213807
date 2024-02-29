@@ -160,6 +160,7 @@
     <select id="selectListByPage" resultType="com.xiliulou.electricity.entity.merchant.MerchantPlaceCabinetBind">
         SELECT
         t.place_id,
+        t.id,
         t.cabinet_id,
         t.bind_time,
         t.un_bind_time,
