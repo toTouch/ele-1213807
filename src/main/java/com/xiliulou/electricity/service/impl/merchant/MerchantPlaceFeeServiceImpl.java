@@ -172,9 +172,17 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
     @Override
     public MerchantPlaceFeeLineDataVO lineData(MerchantPlaceFeeRequest request) {
         MerchantPlaceFeeLineDataVO vo = new MerchantPlaceFeeLineDataVO();
+        
         // 计算月份
         List<String> xDataList = getMonthList(request.getStartTime(), request.getEndTime());
         vo.setXDataList(xDataList);
+        
+        // 为空提前返回
+        if (ObjectUtils.isEmpty(xDataList)) {
+            vo.setYDataList(Collections.emptyList());
+            return vo;
+        }
+        
         
         // 计算上个月的月份
         long lastMonthFistDay = DateUtils.getBeforeMonthFirstDayTimestamp(MerchantPlaceBindConstant.LAST_MONTH);
@@ -186,14 +194,16 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
         // 从历史月结账单中统计出对应月份的数据
         List<MerchantPlaceFeeMonth> placeFeeMonths = merchantPlaceFeeMonthService.queryListByMonth(request.getPlaceId(), request.getCabinetId(), xDataList);
         Map<String, BigDecimal> placeMap = new HashMap<>();
+        
         if (ObjectUtils.isNotEmpty(placeFeeMonths)) {
             placeMap = placeFeeMonths.stream().collect(Collectors.toMap(MerchantPlaceFeeMonth::getCalculateMonth, MerchantPlaceFeeMonth::getPlaceFee, (key, key1) -> key1));
-            
         }
+        
         placeMap.put(lastMoth, lastMothFee);
         
         List<BigDecimal> yDataList = new ArrayList<>();
         Map<String, BigDecimal> finalPlaceMap = placeMap;
+        
         xDataList.forEach(item -> {
             if (ObjectUtils.isNotEmpty(finalPlaceMap.get(item))) {
                 yDataList.add(finalPlaceMap.get(item));
@@ -433,8 +443,12 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
     }
     
     private List<String> getMonthList(Long startTime, Long endTime) {
+        if (Objects.isNull(startTime) || Objects.isNull(endTime)) {
+            return Collections.emptyList();
+        }
         List<String> list = new ArrayList<>();
         Calendar calendar = Calendar.getInstance();
+        
         calendar.setTimeInMillis(startTime);
         while (true) {
             String month = DateUtil.format(calendar.getTime(), "yyyy-MM");
