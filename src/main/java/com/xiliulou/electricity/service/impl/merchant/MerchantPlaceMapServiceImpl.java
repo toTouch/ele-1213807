@@ -99,4 +99,15 @@ public class MerchantPlaceMapServiceImpl implements MerchantPlaceMapService {
         
         return NumberConstant.ZERO;
     }
+    
+    /**
+     * 判断商户下绑定的柜机是否存在场地费
+     * @param merchantId
+     * @return
+     */
+    @Slave
+    @Override
+    public Integer existsPlaceFee(Long merchantId) {
+        return merchantPlaceMapMapper.existsPlaceFee(merchantId);
+    }
 }

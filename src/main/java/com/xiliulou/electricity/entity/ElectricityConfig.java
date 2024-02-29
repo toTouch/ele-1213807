@@ -154,6 +154,11 @@ public class ElectricityConfig {
     private Integer allowFreezeWithAssets;
     
     /**
+     * 打开微信客服 0-是 1-否
+     */
+    private Integer wxCustomer;
+
+    /**
      *  柜机少电比例
      */
     private BigDecimal lowChargeRate;
@@ -270,4 +275,11 @@ public class ElectricityConfig {
      */
     public static Integer ALLOW_FREEZE_ASSETS = 0;
     public static Integer NOT_ALLOW_FREEZE_ASSETS = 1;
+
+    /**
+     * 打开微信客服 0-是 1-否
+     */
+    public static Integer OPEN_WX_CUSTOMER = 0;
+    public static Integer CLOSE_WX_CUSTOMER = 1;
+
 }

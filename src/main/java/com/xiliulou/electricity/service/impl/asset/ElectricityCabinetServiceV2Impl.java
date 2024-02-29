@@ -206,7 +206,7 @@ public class ElectricityCabinetServiceV2Impl implements ElectricityCabinetV2Serv
             return Triple.of(false, "100559", "已选择项中有已出库电柜，请重新选择后操作");
         }
         
-        // todo 如果场地费不为空则需要判断 不能小于零 小数最多两位  整体不能大于8位
+        //  如果场地费不为空则需要判断 不能小于零 小数最多两位  整数不能大于8位
         if (Objects.nonNull(outWarehouseRequest.getPlaceFee())) {
             // 场地费必须大于零
             if (Objects.equals(outWarehouseRequest.getPlaceFee().compareTo(BigDecimal.ZERO), NumberConstant.MINUS_ONE)) {
@@ -216,7 +216,7 @@ public class ElectricityCabinetServiceV2Impl implements ElectricityCabinetV2Serv
             // 场地费不能是负数
             String placeFeeStr = outWarehouseRequest.getPlaceFee().toString();
             if (!RegularConstant.PLACE_PATTERN.matcher(placeFeeStr).matches()) {
-                return Triple.of(false, "120234", "场地费保留两位小数");
+                return Triple.of(false, "120234", "场地费保留两位小数且整数部分不能超过8位");
             }
         }
         
@@ -322,6 +322,20 @@ public class ElectricityCabinetServiceV2Impl implements ElectricityCabinetV2Serv
     public Triple<Boolean, String, Object> batchOutWarehouse(ElectricityCabinetBatchOutWarehouseRequest batchOutWarehouseRequest) {
         if (!redisService.setNx(CacheConstant.ELE_BATCH_OUT_WAREHOUSE + SecurityUtils.getUid(), "1", 5 * 1000L, false)) {
             return Triple.of(false, "ELECTRICITY.0034", "操作频繁");
+        }
+    
+        //  如果场地费不为空则需要判断 不能小于零 小数最多两位  整数不能大于8位
+        if (Objects.nonNull(batchOutWarehouseRequest.getPlaceFee())) {
+            // 场地费必须大于零
+            if (Objects.equals(batchOutWarehouseRequest.getPlaceFee().compareTo(BigDecimal.ZERO), NumberConstant.MINUS_ONE)) {
+                return Triple.of(false, "120235", "场地费必须大于等于零");
+            }
+        
+            // 小数最多两位  整数不能大于8位
+            String placeFeeStr = batchOutWarehouseRequest.getPlaceFee().toString();
+            if (!RegularConstant.PLACE_PATTERN.matcher(placeFeeStr).matches()) {
+                return Triple.of(false, "120234", "场地费保留两位小数且整数部分不能超过8位");
+            }
         }
         
         List<Integer> eleIdList = batchOutWarehouseRequest.getIdList();

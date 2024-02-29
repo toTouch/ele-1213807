@@ -8,13 +8,11 @@ import lombok.Data;
  * @date 2024/2/26 03:20:07
  */
 @Data
-public class MerchantCabinetPowerVO {
+public class MerchantProCabinetPowerVO {
     
     private Long cabinetId;
     
     private String cabinetName;
-    
-    private String sn;
     
     private Double todayPower;
     
@@ -29,7 +27,7 @@ public class MerchantCabinetPowerVO {
     private Double thisYearCharge;
     
     /**
-     * 最新上报数据的时间，用于对柜机进行排序
+     * 柜机创建时间，用于列表排序
      */
-    private Long latestTime;
+    private Long time;
 }

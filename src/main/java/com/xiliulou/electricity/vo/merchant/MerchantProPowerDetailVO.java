@@ -14,7 +14,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class MerchantPowerDetailVO {
+public class MerchantProPowerDetailVO {
     
     private Long eid;
     
