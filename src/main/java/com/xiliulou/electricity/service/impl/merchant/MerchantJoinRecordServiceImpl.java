@@ -34,7 +34,7 @@ import com.xiliulou.electricity.service.merchant.MerchantEmployeeService;
 import com.xiliulou.electricity.service.merchant.MerchantJoinRecordService;
 import com.xiliulou.electricity.service.merchant.MerchantService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
-import com.xiliulou.electricity.utils.AESUtils;
+import com.xiliulou.electricity.utils.QrCodeUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.merchant.MerchantEmployeeVO;
 import com.xiliulou.electricity.vo.merchant.MerchantJoinRecordVO;
@@ -49,7 +49,6 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
-import java.util.Base64;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -136,7 +135,7 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
             String code = request.getCode();
             String decrypt = null;
             try {
-                decrypt = codeDeCoder(code);
+                decrypt = QrCodeUtils.codeDeCoder(code);
             } catch (Exception e) {
                 log.error("MERCHANT JOIN ERROR! decode fail, joinUid={}, code={}", joinUid, code);
             }
@@ -265,44 +264,6 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
         return MerchantJoinRecord.builder().merchantId(merchantId).channelEmployeeUid(channelEmployeeUid).placeId(placeId).inviterUid(inviterUid).inviterType(inviterType)
                 .joinUid(joinUid).startTime(nowTime).expiredTime(expiredTime).status(MerchantJoinRecord.STATUS_INIT).protectionTime(protectionExpireTime)
                 .protectionStatus(MerchantJoinRecord.PROTECTION_STATUS_NORMAL).delFlag(NumberConstant.ZERO).createTime(nowTime).updateTime(nowTime).tenantId(tenantId).build();
-    }
-    
-    /**
-     * 二维码加密
-     *
-     * @param merchantId  商户id
-     * @param inviterUid  邀请人uid
-     * @param inviterType 邀请人类型
-     */
-    @Override
-    public String codeEnCoder(Long merchantId, Long inviterUid, Integer inviterType) {
-        String encrypt = AESUtils.encrypt(String.valueOf(merchantId + StrUtil.C_COLON + inviterUid + StrUtil.C_COLON + inviterType));
-        
-        if (StringUtils.isNotBlank(encrypt)) {
-            Base64.Encoder encoder = Base64.getUrlEncoder();
-            byte[] base64Result = encoder.encode(encrypt.getBytes());
-            return new String(base64Result);
-        }
-        return null;
-    }
-    
-    /**
-     * 二维码解密
-     */
-    @Override
-    public String codeDeCoder(String code) {
-        if (StringUtils.isBlank(code)) {
-            return null;
-        }
-        
-        Base64.Decoder decoder = Base64.getUrlDecoder();
-        byte[] decode = decoder.decode(code.getBytes());
-        String base64Result = new String(decode);
-        
-        if (StringUtils.isNotBlank(base64Result)) {
-            return AESUtils.decrypt(base64Result);
-        }
-        return null;
     }
     
     @Slave
@@ -501,7 +462,7 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
     
     @Slave
     @Override
-    public List<MerchantJoinRecord> selectListAllPromotionDataDetail(MerchantAllPromotionDataDetailQueryModel queryModel){
+    public List<MerchantJoinRecord> selectListAllPromotionDataDetail(MerchantAllPromotionDataDetailQueryModel queryModel) {
         return merchantJoinRecordMapper.selectListAllPromotionDataDetail(queryModel);
     }
 }
