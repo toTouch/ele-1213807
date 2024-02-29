@@ -140,7 +140,7 @@ public class MerchantLevelServiceImpl implements MerchantLevelService {
         
         if (!(Objects.equals(merchantAttr.getUpgradeCondition(), MerchantConstant.UPGRADE_CONDITION_ALL) || Objects.equals(merchantAttr.getUpgradeCondition(),
                 MerchantConstant.UPGRADE_CONDITION_INVITATION) || Objects.equals(merchantAttr.getUpgradeCondition(), MerchantConstant.UPGRADE_CONDITION_RENEWAL))) {
-            return Triple.of(true, null, null);
+            return Triple.of(false, "100323", "商户升级条件不合法");
         }
         
         MerchantLevel nextMerchantLevel = this.queryNextByMerchantLevel(merchantLevel.getLevel(), merchantLevel.getTenantId());
