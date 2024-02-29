@@ -346,7 +346,7 @@ public class MerchantPlaceServiceImpl implements MerchantPlaceService {
      */
     @Slave
     @Override
-    public Triple<Boolean, String, Object> getCabinetList(MerchantPlacePageRequest merchantPlacePageRequest) {
+    public Triple<Boolean, String, Object> queryListCabinet(MerchantPlacePageRequest merchantPlacePageRequest) {
         // 判断场地id是否存在
         MerchantPlace merchantPlace = this.queryFromCacheById(merchantPlacePageRequest.getPlaceId());
         
@@ -382,9 +382,10 @@ public class MerchantPlaceServiceImpl implements MerchantPlaceService {
     
     @Slave
     @Override
-    public List<MerchantPlaceVO> queryPlaceList(MerchantPlacePageRequest merchantPlacePageRequest) {
+    public List<MerchantPlaceVO> queryListPlace(MerchantPlacePageRequest merchantPlacePageRequest) {
         MerchantPlaceQueryModel merchantQueryModel = new MerchantPlaceQueryModel();
         BeanUtils.copyProperties(merchantPlacePageRequest, merchantQueryModel);
+        
         List<MerchantPlace> merchantPlaceList = merchantPlaceMapper.selectListByPage(merchantQueryModel);
         if (ObjectUtils.isEmpty(merchantPlaceList)) {
             return Collections.EMPTY_LIST;
@@ -392,6 +393,7 @@ public class MerchantPlaceServiceImpl implements MerchantPlaceService {
         
         // 查询场地是否已经被其他商户给绑定了
         List<MerchantPlaceMap> merchantPlaceMaps = merchantPlaceMapService.queryBindList(merchantPlacePageRequest.getMerchantId(), merchantPlacePageRequest.getFranchiseeId());
+        
         List<Long> placeIdList = new ArrayList<>();
         if (ObjectUtils.isNotEmpty(merchantPlaceMaps)) {
             placeIdList = merchantPlaceMaps.stream().map(MerchantPlaceMap::getPlaceId).distinct().collect(Collectors.toList());
@@ -399,15 +401,17 @@ public class MerchantPlaceServiceImpl implements MerchantPlaceService {
         
         List<MerchantPlaceVO> list = new ArrayList<>();
         
-        for (MerchantPlaceMap item : merchantPlaceMaps) {
+        for (MerchantPlace item : merchantPlaceList) {
             MerchantPlaceVO vo = new MerchantPlaceVO();
             BeanUtils.copyProperties(item, vo);
+            
             // 如果是存在绑定关系的则禁用不能选择
-            if (placeIdList.contains(item.getPlaceId())) {
+            if (placeIdList.contains(item.getId())) {
                 vo.setDisable(MerchantPlaceConstant.DISABLE);
             } else {
                 vo.setDisable(MerchantPlaceConstant.ENABLE);
             }
+            
             list.add(vo);
         }
         
