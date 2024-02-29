@@ -301,12 +301,7 @@ public class MerchantServiceImpl implements MerchantService {
         // 保存用户
         userService.insert(user1);
         
-        // 生产企业信息
-        EnterpriseInfo enterpriseInfo = new EnterpriseInfo();
-        enterpriseInfo.setName(merchantSaveRequest.getName());
-        enterpriseInfo.setFranchiseeId(merchantSaveRequest.getFranchiseeId());
-        enterpriseInfo.setStatus(merchantSaveRequest.getEnterprisePackageAuth());
-        enterpriseInfo.setUid(user1.getUid());
+        // 保存企业信息
         EnterpriseInfoQuery enterpriseInfoQuery = EnterpriseInfoQuery.builder().uid(user1.getUid()).name(merchantSaveRequest.getName())
                 .franchiseeId(merchantSaveRequest.getFranchiseeId()).status(merchantSaveRequest.getEnterprisePackageAuth()).packageType(BatteryMemberCard.BUSINESS_TYPE_ENTERPRISE)
                 .purchaseAuthority(merchantSaveRequest.getPurchaseAuthority()).build();
@@ -333,6 +328,7 @@ public class MerchantServiceImpl implements MerchantService {
         merchant.setUid(user1.getUid());
         merchant.setCreateTime(timeMillis);
         merchant.setDelFlag(MerchantConstant.DEL_NORMAL);
+        merchant.setExistPlaceFee(MerchantConstant.EXISTS_PLACE_FEE_NO);
         merchant.setUpdateTime(timeMillis);
         merchant.setTenantId(tenantId);
         
@@ -532,12 +528,7 @@ public class MerchantServiceImpl implements MerchantService {
             merchantDeleteCacheDTO.setUser(updateUser);
         }
         
-        // 生产企业信息
-        EnterpriseInfo enterpriseInfo = new EnterpriseInfo();
-        enterpriseInfo.setName(merchantSaveRequest.getName());
-        enterpriseInfo.setFranchiseeId(merchantSaveRequest.getFranchiseeId());
-        enterpriseInfo.setStatus(merchantSaveRequest.getEnterprisePackageAuth());
-        enterpriseInfo.setUid(merchant.getUid());
+        // 修改企业信息
         EnterpriseInfoQuery enterpriseInfoQuery = EnterpriseInfoQuery.builder().uid(merchant.getUid()).name(merchantSaveRequest.getName()).id(merchant.getEnterpriseId())
                 .franchiseeId(merchantSaveRequest.getFranchiseeId()).status(merchantSaveRequest.getEnterprisePackageAuth()).packageType(BatteryMemberCard.BUSINESS_TYPE_ENTERPRISE)
                 .purchaseAuthority(merchantSaveRequest.getPurchaseAuthority()).build();
@@ -1034,9 +1025,9 @@ public class MerchantServiceImpl implements MerchantService {
         merchantPlaceUserVOList.stream().forEach(item -> {
             if (ObjectUtils.isNotEmpty(finalUserMap.get(item.getPlaceId()))) {
                 // 被绑定设置为禁用
-                item.setStatus(MerchantPlaceSelectVO.disable);
+                item.setStatus(MerchantPlaceConstant.DISABLE);
             } else {
-                item.setStatus(MerchantPlaceSelectVO.enable);
+                item.setStatus(MerchantPlaceConstant.ENABLE);
             }
         });
         return merchantPlaceUserVOList;

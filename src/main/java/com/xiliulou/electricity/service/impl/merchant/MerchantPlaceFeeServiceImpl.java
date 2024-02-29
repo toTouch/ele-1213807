@@ -4,11 +4,13 @@ import cn.hutool.core.date.DateUtil;
 import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.NumberConstant;
+import com.xiliulou.electricity.constant.merchant.MerchantConstant;
 import com.xiliulou.electricity.constant.merchant.MerchantPlaceBindConstant;
 import com.xiliulou.electricity.constant.merchant.MerchantPlaceCabinetBindConstant;
 import com.xiliulou.electricity.constant.merchant.MerchantPlaceConstant;
 import com.xiliulou.electricity.dto.merchant.MerchantPlaceCabinetBindDTO;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
+import com.xiliulou.electricity.entity.merchant.Merchant;
 import com.xiliulou.electricity.entity.merchant.MerchantCabinetBindHistory;
 import com.xiliulou.electricity.entity.merchant.MerchantCabinetBindTime;
 import com.xiliulou.electricity.entity.merchant.MerchantPlace;
@@ -30,6 +32,7 @@ import com.xiliulou.electricity.service.merchant.MerchantPlaceFeeMonthService;
 import com.xiliulou.electricity.service.merchant.MerchantPlaceFeeService;
 import com.xiliulou.electricity.service.merchant.MerchantPlaceMapService;
 import com.xiliulou.electricity.service.merchant.MerchantPlaceService;
+import com.xiliulou.electricity.service.merchant.MerchantService;
 import com.xiliulou.electricity.utils.DateUtils;
 import com.xiliulou.electricity.vo.merchant.MerchantCabinetFeeDetailShowVO;
 import com.xiliulou.electricity.vo.merchant.MerchantCabinetFeeDetailVO;
@@ -84,6 +87,9 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
     @Resource
     private MerchantPlaceService merchantPlaceService;
     
+    @Resource
+    private MerchantService merchantService;
+    
     private String dateFormat = "yyyy-MM-dd";
     
     @Resource
@@ -111,35 +117,22 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
     @Slave
     @Override
     public Integer isShowPlacePage(Long merchantId) {
-        // 判断当前绑定的柜机是否设置过设置过
-        Integer count = merchantPlaceBindService.existPlaceFeeByMerchantId(merchantId);
-        if (count > 0) {
-            return NumberConstant.ONE;
+        // 判断商户表的标志是否存在场地费
+        Merchant merchant = merchantService.queryByIdFromCache(merchantId);
+        if (Objects.equals(merchant.getExistPlaceFee(), MerchantConstant.EXISTS_PLACE_FEE_YES)) {
+            return MerchantConstant.EXISTS_PLACE_FEE_YES;
         }
         
-       /* // 判断商户是否绑定过柜机
-        List<MerchantPlaceBind> merchantPlaceBinds = merchantPlaceBindService.listByMerchantId(merchantId, null);
-        if (ObjectUtils.isEmpty(merchantPlaceBinds)) {
-            return NumberConstant.ZERO;
-        }*/
-        
-        
-        
-        /*// 查询历史的账单中商户存在场地费大于零的情况
-        Integer count = merchantPlaceFeeMonthService.existPlaceFeeByMerchantId(merchantId);
-        if (count > 0) {
-            return NumberConstant.ONE;
+        // 检测当商户绑定的柜机是否存在场地费
+        Integer placeCount = merchantPlaceMapService.existsPlaceFee(merchantId);
+        if (Objects.nonNull(placeCount) && placeCount > 0) {
+            return MerchantConstant.EXISTS_PLACE_FEE_YES;
         }
         
-        // 查询出历史绑定的柜机的数据
-        List<Long> cabinetIdList = merchantPlaceFeeMonthService.selectCabinetIdByMerchantId(merchantId);
-        Integer cabinetCount = merchantPlaceFeeRecordService.existPlaceFeeByCabinetId(cabinetIdList);
-        if (cabinetCount > 0) {
-            return NumberConstant.ONE;
-        }*/
+        // 不存在检测本月商户绑定的柜机的日结表中设置过场地费
         
-        // 判断商户绑定的柜机是否设置过场地费
-        return NumberConstant.ZERO;
+        
+        return MerchantConstant.EXISTS_PLACE_FEE_NO;
     }
     
     @Slave
@@ -282,6 +275,7 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
             
             curMonthCabinetFeeMap = curMothFeeRecords.stream()
                     .collect(Collectors.groupingBy(MerchantPlaceFeeMonthDetail::getCabinetId, Collectors.collectingAndThen(Collectors.toList(), e -> this.sumFee(e))));
+            
             Map<Long, Long> curCabinetTimeMap = curMothFeeRecords.stream().collect(Collectors.groupingBy(MerchantPlaceFeeMonthDetail::getCabinetId, Collectors.collectingAndThen(Collectors.toList(),
                     e -> e.stream().sorted(Comparator.comparing(MerchantPlaceFeeMonthDetail::getStartTime).reversed()).findFirst().get().getStartTime())));
             
@@ -297,28 +291,6 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
             return resVo;
         }
         
-        // 查询柜机的绑定时间
-        List<MerchantCabinetBindTime> cabinetBindTimes = merchantCabinetBindTimeService.queryListByMerchantId(request.getMerchantId(), request.getCabinetId(),
-                request.getPlaceId());
-        
-        if (ObjectUtils.isNotEmpty(cabinetBindTimes)) {
-            Map<Long, Long> bindTimeMap = cabinetBindTimes.stream().collect(Collectors.groupingBy(MerchantCabinetBindTime::getCabinetId, Collectors.collectingAndThen(Collectors.toList(),
-                    e -> e.stream().sorted(Comparator.comparing(MerchantCabinetBindTime::getBindTime).reversed()).findFirst().get().getBindTime())));
-            
-            if (ObjectUtils.isNotEmpty(bindTimeMap) && ObjectUtils.isNotEmpty(cabinetTimeMap)) {
-                bindTimeMap.forEach((cabinetId, time) -> {
-                    if (ObjectUtils.isNotEmpty(cabinetTimeMap.get(cabinetId))) {
-                        if (time > cabinetTimeMap.get(cabinetId)) {
-                            cabinetTimeMap.put(cabinetId, time);
-                        }
-                    } else {
-                        cabinetTimeMap.put(cabinetId, time);
-                    }
-                });
-            }
-            
-        }
-        
         
         // 去重
         List<Long> cabinetIds = cabinetIdList.stream().distinct().collect(Collectors.toList());
@@ -331,8 +303,11 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
         cabinetIds.forEach(cabinetId -> {
             MerchantPlaceCabinetFeeDetailVO vo = new MerchantPlaceCabinetFeeDetailVO();
             ElectricityCabinet cabinet = electricityCabinetService.queryByIdFromCache(cabinetId.intValue());
+            
+            // 柜机名称和柜机的创建时间
             if (Objects.nonNull(cabinet)) {
                 vo.setCabinetName(cabinet.getName());
+                vo.setTime(cabinet.getCreateTime());
             }
             
             vo.setCabinetId(cabinetId);
@@ -347,16 +322,14 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
             if (ObjectUtils.isNotEmpty(finalFeeMonthsHistoryMap.get(cabinetId))) {
                 historyFee = historyFee.add(finalFeeMonthsHistoryMap.get(cabinetId));
             }
+            
             if (ObjectUtils.isNotEmpty(finalLastMonthCabinetFeeMap.get(cabinetId))) {
                 historyFee = historyFee.add(finalLastMonthCabinetFeeMap.get(cabinetId));
             }
-            if (ObjectUtils.isNotEmpty(cabinetTimeMap.get(cabinetId))) {
-                vo.setTime(cabinetTimeMap.get(cabinetId));
-            } else {
-                vo.setTime(0L);
-            }
+           
             historyFee = historyFee.add(vo.getCurrentMonthFee());
             vo.setMonthFeeSum(historyFee);
+            
             resList.add(vo);
         });
     

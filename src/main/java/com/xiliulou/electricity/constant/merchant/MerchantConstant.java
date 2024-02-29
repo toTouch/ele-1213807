@@ -87,11 +87,17 @@ public interface MerchantConstant {
     Integer REBATE_DISABLE = 0;
     Integer REBATE_ENABLE = 1;
     
-    public static final Integer DEL_NORMAL = 0;
-    public static final Integer DEL_DEL = 1;
+    /**
+     *  是否存在场地费 0：是，1：否
+     */
+    Integer EXISTS_PLACE_FEE_YES = 0;
+    Integer EXISTS_PLACE_FEE_NO = 1;
     
-    public static final Integer MERCHANT_QR_CODE_TYPE = 1;
+    Integer DEL_NORMAL = 0;
+    Integer DEL_DEL = 1;
     
-    public static final Integer MERCHANT_EMPLOYEE_QR_CODE_TYPE = 2;
+    Integer MERCHANT_QR_CODE_TYPE = 1;
+    
+    Integer MERCHANT_EMPLOYEE_QR_CODE_TYPE = 2;
 
 }
