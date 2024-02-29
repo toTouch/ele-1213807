@@ -129,9 +129,6 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
             return MerchantConstant.EXISTS_PLACE_FEE_YES;
         }
         
-        // 不存在检测本月商户绑定的柜机的日结表中设置过场地费
-        
-        
         return MerchantConstant.EXISTS_PLACE_FEE_NO;
     }
     

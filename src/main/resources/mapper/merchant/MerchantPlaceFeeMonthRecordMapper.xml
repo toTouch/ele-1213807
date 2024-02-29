@@ -33,7 +33,7 @@
         tenant_id, del_flag, create_time, update_time
         from t_merchant_place_fee_month_record
         where
-        and del_flag = 0
+        del_flag = 0
         and eid != 0
         and place_id in
         <foreach collection="placeIdList" item="placeId" close=")" open="(" separator=",">
@@ -42,7 +42,7 @@
         
         and month_date in
         <foreach collection="monthList" item="month" close=")" open="(" separator=",">
-            #{monthDate}
+            #{month}
         </foreach>
     </select>
 </mapper>
