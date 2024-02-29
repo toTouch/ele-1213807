@@ -83,9 +83,8 @@ public class ChannelEmployeePromotionMonthRecordServiceImpl implements ChannelEm
         ChannelEmployeePromotionQueryModel channelEmployeePromotionQueryModel = new ChannelEmployeePromotionQueryModel();
         BeanUtils.copyProperties(channelEmployeeRequest, channelEmployeePromotionQueryModel);
         
-        // 处理时间
-        initParam(channelEmployeePromotionQueryModel);
-        List<ChannelEmployeePromotionVO> list = channelEmployeePromotionMonthRecordMapper.selectListByPage(channelEmployeeRequest);
+        List<ChannelEmployeePromotionVO> list = channelEmployeePromotionMonthRecordMapper.selectListByPage(channelEmployeePromotionQueryModel);
+        
         if (ObjectUtils.isEmpty(list)) {
             return Collections.EMPTY_LIST;
         }
@@ -93,39 +92,11 @@ public class ChannelEmployeePromotionMonthRecordServiceImpl implements ChannelEm
         return list;
     }
     
-    private void initParam(ChannelEmployeePromotionQueryModel channelEmployeePromotionQueryModel) {
-        if (ObjectUtils.isNotEmpty(channelEmployeePromotionQueryModel.getTime())) {
-            // 将出账日期转换为具体的日期
-            Calendar calendar = Calendar.getInstance();
-            calendar.setTimeInMillis(channelEmployeePromotionQueryModel.getTime());
-            calendar.set(Calendar.DAY_OF_MONTH, 1);
-            calendar.set(Calendar.HOUR_OF_DAY, 0);
-            calendar.set(Calendar.MINUTE, 0);
-            calendar.set(Calendar.SECOND, 0);
-            
-            long startTime = calendar.getTimeInMillis();
-            
-            Calendar calendarLast = Calendar.getInstance();
-            calendarLast.set(Calendar.DAY_OF_MONTH, calendar.getActualMaximum(Calendar.DAY_OF_MONTH));
-            
-            calendarLast.set(Calendar.HOUR_OF_DAY, 23);
-            calendarLast.set(Calendar.MINUTE, 59);
-            calendarLast.set(Calendar.SECOND, 59);
-            
-            long endTime = calendar.getTimeInMillis();
-            
-            channelEmployeePromotionQueryModel.setStartTime(startTime);
-            channelEmployeePromotionQueryModel.setEndTime(endTime);
-        }
-    }
-    
     @Slave
     @Override
     public Integer countTotal(ChannelEmployeePromotionRequest channelEmployeeRequest) {
         ChannelEmployeePromotionQueryModel channelEmployeePromotionQueryModel = new ChannelEmployeePromotionQueryModel();
         BeanUtils.copyProperties(channelEmployeeRequest, channelEmployeePromotionQueryModel);
-        // 处理时间
-        initParam(channelEmployeePromotionQueryModel);
         
         return channelEmployeePromotionMonthRecordMapper.countTotal(channelEmployeePromotionQueryModel);
     }

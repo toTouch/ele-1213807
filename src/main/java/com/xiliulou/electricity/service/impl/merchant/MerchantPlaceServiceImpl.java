@@ -274,8 +274,9 @@ public class MerchantPlaceServiceImpl implements MerchantPlaceService {
         // 查询场地绑定的商户
         MerchantPlaceMapQueryModel placeMapQueryModel = MerchantPlaceMapQueryModel.builder().placeIdList(idList).build();
         List<MerchantPlaceMapVO> merchantPlaceMaps = merchantPlaceMapService.queryBindMerchantName(placeMapQueryModel);
+        
         Map<Long, String> merchantNameMap = new HashMap<>();
-        if (ObjectUtils.isEmpty(merchantPlaceMaps)) {
+        if (ObjectUtils.isNotEmpty(merchantPlaceMaps)) {
             merchantNameMap = merchantPlaceMaps.stream().collect(Collectors.toMap(MerchantPlaceMapVO::getPlaceId, MerchantPlaceMapVO::getMerchantName, (key, key1) -> key1));
         }
         
@@ -283,6 +284,7 @@ public class MerchantPlaceServiceImpl implements MerchantPlaceService {
         if (ObjectUtils.isNotEmpty(areaIdList)) {
             MerchantAreaRequest areaQuery = MerchantAreaRequest.builder().idList(areaIdList).build();
             List<MerchantArea> merchantAreaList = merchantAreaService.queryList(areaQuery);
+            
             if (ObjectUtils.isNotEmpty(merchantAreaList)) {
                 areaNameMap = merchantAreaList.stream().collect(Collectors.toMap(MerchantArea::getId, MerchantArea::getName, (key, key1) -> key1));
             }
@@ -291,6 +293,7 @@ public class MerchantPlaceServiceImpl implements MerchantPlaceService {
         // 查询场地绑定的柜机
         MerchantPlaceCabinetBindQueryModel placeCabinetBindQueryModel = MerchantPlaceCabinetBindQueryModel.builder().placeIdList(idList).status(MerchantPlaceConstant.BIND).build();
         List<MerchantPlaceCabinetBindVO> merchantPlaceCabinetBinds = merchantPlaceCabinetBindService.queryBindCabinetName(placeCabinetBindQueryModel);
+        
         Map<Long, List<MerchantPlaceCabinetBindVO>> bindCabinetMap = new HashMap<>();
         if (ObjectUtils.isNotEmpty(merchantPlaceCabinetBinds)) {
             bindCabinetMap = merchantPlaceCabinetBinds.stream().collect(Collectors.groupingBy(MerchantPlaceCabinetBindVO::getPlaceId));

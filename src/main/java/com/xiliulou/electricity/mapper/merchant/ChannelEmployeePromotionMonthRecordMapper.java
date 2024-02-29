@@ -17,7 +17,7 @@ public interface ChannelEmployeePromotionMonthRecordMapper {
     
     void batchInsert(@Param("list") List<ChannelEmployeePromotionMonthRecord> list);
     
-    List<ChannelEmployeePromotionVO> selectListByPage(ChannelEmployeePromotionRequest channelEmployeeRequest);
+    List<ChannelEmployeePromotionVO> selectListByPage(ChannelEmployeePromotionQueryModel queryModel);
     
     Integer countTotal(ChannelEmployeePromotionQueryModel channelEmployeePromotionQueryModel);
     

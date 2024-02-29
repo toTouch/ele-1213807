@@ -21,12 +21,6 @@
             <if test="monthDate != null">
                 and month_date = #{monthDate}
             </if>
-            <if test="startTime != null">
-                and fee_date <![CDATA[ >=  ]]>  #{startTime}
-            </if>
-            <if test="endTime != null">
-                and fee_date <![CDATA[ <=  ]]>  #{endTime}
-            </if>
         </where>
     </sql>
     <select id="selectListByPage" resultType="com.xiliulou.electricity.vo.merchant.ChannelEmployeePromotionVO">
