@@ -39,7 +39,7 @@
         t_merchant_place_fee_record
         <include refid="pageFilter"/>
         order by create_time desc
-        <if test="offset != null and limit != null">
+        <if test="offset != null and size != null">
             limit #{offset}, #{limit}
         </if>
     </select>

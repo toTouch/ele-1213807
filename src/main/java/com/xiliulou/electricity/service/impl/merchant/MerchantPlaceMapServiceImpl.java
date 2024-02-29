@@ -110,4 +110,15 @@ public class MerchantPlaceMapServiceImpl implements MerchantPlaceMapService {
     public Integer existsPlaceFee(Long merchantId) {
         return merchantPlaceMapMapper.existsPlaceFee(merchantId);
     }
+    
+    /**
+     * 查询场地关联的商户是否存在场地费
+     * @param placeId
+     * @return
+     */
+    @Slave
+    @Override
+    public List<Long> queryListNoExistsPlaceFeeMerchant(Long placeId) {
+        return merchantPlaceMapMapper.queryListNoExistsPlaceFeeMerchant(placeId);
+    }
 }
