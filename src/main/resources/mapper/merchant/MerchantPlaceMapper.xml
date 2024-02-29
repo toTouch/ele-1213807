@@ -160,8 +160,8 @@
         FROM
         t_merchant_place t
         <include refid="pageFilter"/>
-        limit #{offset}, #{size}
         order by t.id desc
+        limit #{offset}, #{size}
     </select>
     
     <select id="selectCabinetList" resultType="com.xiliulou.electricity.vo.merchant.MerchantPlaceCabinetVO">
