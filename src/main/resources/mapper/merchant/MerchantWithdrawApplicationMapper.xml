@@ -195,7 +195,7 @@
         select count(1)
         from t_merchant_withdraw_application tmwa
         left join t_user tu on tu.uid = tmwa.uid
-        left join t_merchant tm om on tm.uid = tmwa.uid
+        left join t_merchant tm on tm.uid = tmwa.uid
         <where>
             tmwa.del_flag = 0
             and tmwa.tenant_id = #{tenantId}
@@ -242,7 +242,7 @@
         tmwa.update_time
         from t_merchant_withdraw_application tmwa
         left join t_user tu on tu.uid = tmwa.uid
-        left join t_merchant tm om on tm.uid = tmwa.uid
+        left join t_merchant tm on tm.uid = tmwa.uid
         <where>
             tmwa.del_flag = 0
             and tmwa.tenant_id = #{tenantId}
@@ -378,7 +378,7 @@
         select count(1)
         from t_merchant_withdraw_application tmwa
         left join t_user tu on tu.uid = tmwa.uid
-        left join t_merchant tm om on tm.uid = tmwa.uid
+        left join t_merchant tm on tm.uid = tmwa.uid
         <where>
             tmwa.del_flag = 0
             and tmwa.tenant_id = #{tenantId}
