@@ -23,6 +23,7 @@ import com.xiliulou.electricity.query.merchant.MerchantJoinUserQueryMode;
 import com.xiliulou.electricity.query.merchant.MerchantPromotionDataDetailQueryModel;
 import com.xiliulou.electricity.query.merchant.MerchantPromotionScanCodeQueryModel;
 import com.xiliulou.electricity.request.merchant.MerchantJoinRecordPageRequest;
+import com.xiliulou.electricity.request.merchant.MerchantJoinScanRequest;
 import com.xiliulou.electricity.service.BatteryMemberCardService;
 import com.xiliulou.electricity.service.ElectricityMemberCardOrderService;
 import com.xiliulou.electricity.service.TenantService;
@@ -94,7 +95,7 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
     ElectricityMemberCardOrderService electricityMemberCardOrderService;
     
     @Override
-    public R joinScanCode(String code) {
+    public R joinScanCode(MerchantJoinScanRequest request) {
         Long joinUid = SecurityUtils.getUid();
         
         if (!redisService.setNx(CacheConstant.CACHE_MERCHANT_SCAN_INTO_ACTIVITY_LOCK + joinUid, "1", 2000L, false)) {
@@ -132,6 +133,7 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
             }
             
             // 解析code
+            String code = request.getCode();
             String decrypt = null;
             try {
                 decrypt = codeDeCoder(code);
