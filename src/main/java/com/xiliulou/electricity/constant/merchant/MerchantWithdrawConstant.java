@@ -13,12 +13,12 @@ public class MerchantWithdrawConstant {
     public static final Integer REVIEW_IN_PROGRESS = 1;
     
     /**
-     * 审核通过
+     * 审核拒绝
      */
     public static final Integer REVIEW_REFUSED = 2;
     
     /**
-     * 审核拒绝
+     * 审核通过
      */
     public static final Integer REVIEW_SUCCESS = 3;
     

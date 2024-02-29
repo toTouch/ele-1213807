@@ -83,6 +83,11 @@ public class Merchant {
     private Integer inviteAuth;
     
     /**
+     * 是否存在场地费 0：是，1：否
+     */
+    private Integer existPlaceFee;
+    
+    /**
      * 管理员id
      */
     private Long uid;

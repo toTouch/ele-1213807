@@ -114,7 +114,7 @@
                 and t.merchant_area_id = #{merchantAreaId}
             </if>
             <if test="franchiseeId != null">
-                and t.franchisee_id = #{franchiseeId},
+                and t.franchisee_id = #{franchiseeId}
             </if>
             <if test="idList != null and idList.size() > 0">
                 and t.id in
@@ -160,13 +160,14 @@
         FROM
         t_merchant_place t
         <include refid="pageFilter"/>
+        order by t.id desc
         limit #{offset}, #{size}
     </select>
     
     <select id="selectCabinetList" resultType="com.xiliulou.electricity.vo.merchant.MerchantPlaceCabinetVO">
         SELECT
-            c.id,
-            c.`name`,
+            c.id as 'cabinetId',
+            c.`name` as 'cabinetName',
             b.place_id
         FROM
             t_electricity_cabinet c

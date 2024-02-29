@@ -19,9 +19,11 @@ import com.xiliulou.electricity.service.UserOauthBindService;
 import com.xiliulou.electricity.service.UserRoleService;
 import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.service.merchant.MerchantEmployeeService;
+import com.xiliulou.electricity.service.merchant.MerchantJoinRecordService;
 import com.xiliulou.electricity.service.merchant.MerchantPlaceService;
 import com.xiliulou.electricity.service.merchant.MerchantService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
+import com.xiliulou.electricity.vo.merchant.MerchantEmployeeQrCodeVO;
 import com.xiliulou.electricity.vo.merchant.MerchantEmployeeVO;
 import com.xiliulou.security.authentication.console.CustomPasswordEncoder;
 import lombok.extern.slf4j.Slf4j;
@@ -30,6 +32,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -63,6 +67,9 @@ public class MerchantEmployeeServiceImpl implements MerchantEmployeeService {
     
     @Resource
     private MerchantPlaceService merchantPlaceService;
+    
+    @Resource
+    MerchantJoinRecordService merchantJoinRecordService;
     
     @Resource
     RedisService redisService;
@@ -165,6 +172,7 @@ public class MerchantEmployeeServiceImpl implements MerchantEmployeeService {
         }
     
         updateUser.setUid(merchantEmployeeVO.getUid());
+        updateUser.setName(merchantEmployeeRequest.getName());
         updateUser.setPhone(merchantEmployeeRequest.getPhone());
         updateUser.setUserType(User.TYPE_USER_MERCHANT_EMPLOYEE);
         updateUser.setTenantId(TenantContextHolder.getTenantId());
@@ -215,6 +223,36 @@ public class MerchantEmployeeServiceImpl implements MerchantEmployeeService {
         return merchantEmployeeVO;
     }
     
+    @Override
+    public MerchantEmployeeQrCodeVO queryEmployeeQrCodeByUid(Long uid) {
+        MerchantEmployeeQrCodeVO merchantEmployeeQrCodeVO = new MerchantEmployeeQrCodeVO();
+        
+        MerchantEmployeeVO merchantEmployeeVO = merchantEmployeeMapper.selectByUid(uid);
+        Integer tenantId = TenantContextHolder.getTenantId();
+        if(Objects.nonNull(merchantEmployeeVO)){
+            if(!Objects.equals(tenantId.longValue(), merchantEmployeeVO.getTenantId())){
+                log.info("tenant id mismatch for query employee QR code, current tenant id = {},  employee tenant id = {}", tenantId, merchantEmployeeVO.getTenantId());
+                return null;
+            }
+            
+            Merchant merchant = merchantService.queryByUid(merchantEmployeeVO.getMerchantUid());
+            if (Objects.isNull(merchant)){
+                log.info("merchant is null for query employee QR code, merchant uid = {}", merchant.getUid());
+                return null;
+            }
+            merchantEmployeeQrCodeVO.setUid(merchantEmployeeVO.getUid());
+            merchantEmployeeQrCodeVO.setMerchantId(merchantEmployeeVO.getMerchantUid());
+            merchantEmployeeQrCodeVO.setName(merchantEmployeeVO.getName());
+            merchantEmployeeQrCodeVO.setPhone(merchantEmployeeVO.getPhone());
+            merchantEmployeeQrCodeVO.setType(MerchantConstant.MERCHANT_EMPLOYEE_QR_CODE_TYPE);
+            merchantEmployeeQrCodeVO.setStatus(merchantEmployeeVO.getStatus());
+            merchantEmployeeQrCodeVO.setCode(merchantJoinRecordService.codeEnCoder(merchant.getId(), merchantEmployeeVO.getUid(), MerchantConstant.MERCHANT_EMPLOYEE_QR_CODE_TYPE));
+    
+        }
+        
+        return merchantEmployeeQrCodeVO;
+    }
+    
     @Slave
     @Override
     public List<MerchantEmployeeVO> listMerchantEmployee(MerchantEmployeeRequest merchantEmployeeRequest) {
@@ -228,7 +266,7 @@ public class MerchantEmployeeServiceImpl implements MerchantEmployeeService {
                 merchantEmployeeVO.setPhone(user.getPhone());
                 merchantEmployeeVO.setStatus(user.getLockFlag());
             }
-            MerchantPlace merchantPlace = merchantPlaceService.queryFromCacheById(merchantEmployeeVO.getPlaceId());
+            MerchantPlace merchantPlace = merchantPlaceService.queryByIdFromCache(merchantEmployeeVO.getPlaceId());
             if(Objects.nonNull(merchantPlace)){
                 merchantEmployeeVO.setPlaceName(merchantPlace.getName());
             }
@@ -254,6 +292,47 @@ public class MerchantEmployeeServiceImpl implements MerchantEmployeeService {
     @Override
     public List<MerchantEmployee> selectByMerchantUid(MerchantPromotionEmployeeDetailQueryModel queryModel) {
         return merchantEmployeeMapper.selectListByMerchantUid(queryModel);
+    }
+    
+    @Override
+    public List<MerchantEmployeeQrCodeVO> selectMerchantEmployeeQrCodes(MerchantEmployeeRequest merchantEmployeeRequest) {
+        Merchant merchant = merchantService.queryByUid(merchantEmployeeRequest.getMerchantUid());
+        if(Objects.isNull(merchant)){
+            log.error("not found merchant by uid, uid = {}", merchantEmployeeRequest.getMerchantUid());
+            return Collections.EMPTY_LIST;
+        }
+    
+        List<MerchantEmployeeQrCodeVO> merchantEmployeeQrCodeVOList = new ArrayList<>();
+        List<MerchantEmployeeVO> merchantEmployeeVOS = merchantEmployeeMapper.selectMerchantUsers(merchantEmployeeRequest);
+        merchantEmployeeVOS.forEach(merchantEmployeeVO -> {
+            MerchantEmployeeQrCodeVO merchantEmployeeQrCodeVO = new MerchantEmployeeQrCodeVO();
+    
+            merchantEmployeeQrCodeVO.setMerchantId(merchant.getId());
+            merchantEmployeeQrCodeVO.setUid(merchantEmployeeVO.getUid());
+            merchantEmployeeQrCodeVO.setName(merchantEmployeeVO.getName());
+            merchantEmployeeQrCodeVO.setPhone(merchantEmployeeVO.getPhone());
+            merchantEmployeeQrCodeVO.setType(MerchantConstant.MERCHANT_EMPLOYEE_QR_CODE_TYPE);
+            merchantEmployeeQrCodeVO.setStatus(merchantEmployeeVO.getStatus());
+            merchantEmployeeQrCodeVO.setCode(merchantJoinRecordService.codeEnCoder(merchant.getId(), merchantEmployeeVO.getUid(), MerchantConstant.MERCHANT_EMPLOYEE_QR_CODE_TYPE));
+    
+            merchantEmployeeQrCodeVOList.add(merchantEmployeeQrCodeVO);
+        });
+        
+        return merchantEmployeeQrCodeVOList;
+    }
+    
+    @Override
+    public List<MerchantEmployeeVO> selectAllMerchantEmployees(MerchantEmployeeRequest merchantEmployeeRequest) {
+    
+        Merchant merchant = merchantService.queryByUid(merchantEmployeeRequest.getMerchantUid());
+        if(Objects.isNull(merchant)){
+            log.error("not found merchant by uid, uid = {}", merchantEmployeeRequest.getMerchantUid());
+            return Collections.EMPTY_LIST;
+        }
+        
+        List<MerchantEmployeeVO> merchantEmployeeVOS = merchantEmployeeMapper.selectMerchantUsers(merchantEmployeeRequest);
+        
+        return merchantEmployeeVOS;
     }
     
 }

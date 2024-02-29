@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.controller.admin.merchant;
 
+import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.request.merchant.BatchReviewWithdrawApplicationRequest;
@@ -10,7 +11,10 @@ import com.xiliulou.electricity.service.merchant.MerchantWithdrawApplicationServ
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -27,7 +31,7 @@ import java.util.Objects;
 
 @Slf4j
 @RestController
-public class JsonMerchantWithdrawController {
+public class JsonMerchantWithdrawController extends BaseController {
     
     @Resource
     UserDataScopeService userDataScopeService;
@@ -47,8 +51,8 @@ public class JsonMerchantWithdrawController {
      * @return
      */
     @GetMapping(value = "/admin/merchant/withdraw/page")
-    public R queryMerchantWithdrawList(@RequestParam(value = "size") Long size,
-            @RequestParam(value = "offset") Long offset,
+    public R queryMerchantWithdrawList(@RequestParam(value = "size", required = true) Long size,
+            @RequestParam(value = "offset", required = true) Long offset,
             @RequestParam(value = "merchantUid", required = false) Long merchantUid,
             @RequestParam(value = "beginTime", required = false) Long beginTime,
             @RequestParam(value = "endTime", required = false) Long endTime,
@@ -137,32 +141,14 @@ public class JsonMerchantWithdrawController {
         return R.ok(merchantWithdrawApplicationService.countMerchantWithdrawApplication(merchantWithdrawApplicationRequest));
     }
     
-    @GetMapping(value = "/admin/merchant/withdraw/review")
-    public R reviewMerchantWithdrawApplication(@RequestParam(value = "id") Long id,
-            @RequestParam(value = "remark", required = false) String remark,
-            @RequestParam(value = "status") Integer status) {
-        
-        ReviewWithdrawApplicationRequest reviewWithdrawApplicationRequest = ReviewWithdrawApplicationRequest.builder()
-                .remark(remark)
-                .status(status)
-                .id(id)
-                .build();
-        
-        return R.ok(merchantWithdrawApplicationService.reviewMerchantWithdrawApplication(reviewWithdrawApplicationRequest));
+    @PostMapping(value = "/admin/merchant/withdraw/review")
+    public R reviewMerchantWithdrawApplication(@Validated @RequestBody ReviewWithdrawApplicationRequest reviewWithdrawApplicationRequest) {
+        return returnTripleResult(merchantWithdrawApplicationService.reviewMerchantWithdrawApplication(reviewWithdrawApplicationRequest));
     }
     
-    @GetMapping(value = "/admin/merchant/withdraw/batchReview")
-    public R batchReviewMerchantWithdrawApplication(@RequestParam(value = "ids") List<Long> ids,
-            @RequestParam(value = "remark", required = false) String remark,
-            @RequestParam(value = "status") Integer status) {
-        
-        BatchReviewWithdrawApplicationRequest batchReviewWithdrawApplicationRequest = BatchReviewWithdrawApplicationRequest.builder()
-                .remark(remark)
-                .status(status)
-                .ids(ids)
-                .build();
-        
-        return R.ok(merchantWithdrawApplicationService.batchReviewMerchantWithdrawApplication(batchReviewWithdrawApplicationRequest));
+    @PostMapping(value = "/admin/merchant/withdraw/batchReview")
+    public R batchReviewMerchantWithdrawApplication(@Validated @RequestBody BatchReviewWithdrawApplicationRequest batchReviewWithdrawApplicationRequest) {
+        return returnTripleResult(merchantWithdrawApplicationService.batchReviewMerchantWithdrawApplication(batchReviewWithdrawApplicationRequest));
     }
     
     /**

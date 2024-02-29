@@ -22,11 +22,15 @@ public interface MerchantPlaceMapService {
     
     List<MerchantPlaceSelectVO> queryListByMerchantId(Long merchantId);
     
-    List<MerchantPlaceMap> queryBindList(Long notMerchantId, Long franchiseeId);
+    List<MerchantPlaceMap> queryListForBind(Long notMerchantId, Long franchiseeId);
     
     List<MerchantPlaceMapVO> queryBindMerchantName(MerchantPlaceMapQueryModel placeMapQueryModel);
     
     List<MerchantPlaceMapVO> countByMerchantIdList(MerchantPlaceMapQueryModel placeMapQueryModel);
     
     Integer countCabinetNumByMerchantId(Long merchantId);
+    
+    Integer existsPlaceFee(Long merchantId);
+    
+    List<Long> queryListNoExistsPlaceFeeMerchant(Long placeId);
 }

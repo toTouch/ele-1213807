@@ -22,7 +22,7 @@ public class MerchantPromotionEmployeeDetailQueryModel {
     
     private Integer tenantId;
     
-    private Long merchantUid;
+    private Long uid;
     
     private Integer type;
 }

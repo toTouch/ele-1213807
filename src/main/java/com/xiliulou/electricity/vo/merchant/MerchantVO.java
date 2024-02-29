@@ -22,6 +22,11 @@ public class MerchantVO {
     private Long id;
     
     /**
+     * 商户UID
+     */
+    private Long uid;
+    
+    /**
      * 商户名称
      */
     private String name;

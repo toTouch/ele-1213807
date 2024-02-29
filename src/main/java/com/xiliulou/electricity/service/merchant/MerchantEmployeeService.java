@@ -3,6 +3,7 @@ package com.xiliulou.electricity.service.merchant;
 import com.xiliulou.electricity.entity.merchant.MerchantEmployee;
 import com.xiliulou.electricity.query.merchant.MerchantPromotionEmployeeDetailQueryModel;
 import com.xiliulou.electricity.request.merchant.MerchantEmployeeRequest;
+import com.xiliulou.electricity.vo.merchant.MerchantEmployeeQrCodeVO;
 import com.xiliulou.electricity.vo.merchant.MerchantEmployeeVO;
 
 import java.util.List;
@@ -24,6 +25,8 @@ public interface MerchantEmployeeService {
     
     MerchantEmployeeVO queryMerchantEmployeeByUid(Long uid);
     
+    MerchantEmployeeQrCodeVO queryEmployeeQrCodeByUid(Long uid);
+    
     List<MerchantEmployeeVO> listMerchantEmployee(MerchantEmployeeRequest merchantEmployeeRequest);
     
     Integer countMerchantEmployee(MerchantEmployeeRequest merchantEmployeeRequest);
@@ -31,4 +34,8 @@ public interface MerchantEmployeeService {
     List<MerchantEmployee> queryListByPlaceId(List<Long> placeIdList);
     
     List<MerchantEmployee> selectByMerchantUid(MerchantPromotionEmployeeDetailQueryModel queryModel);
+    
+    List<MerchantEmployeeQrCodeVO> selectMerchantEmployeeQrCodes(MerchantEmployeeRequest merchantEmployeeRequest);
+    
+    List<MerchantEmployeeVO> selectAllMerchantEmployees(MerchantEmployeeRequest merchantEmployeeRequest);
 }

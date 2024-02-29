@@ -54,12 +54,12 @@ public class JsonUserMerchantJoinRecordController extends BaseController {
     public R queryJoinUserList(@RequestParam(value = "size", required = false) Long size, @RequestParam(value = "offset", required = false) Long offset,
             @RequestParam(value = "uid", required = false) Long uid, @RequestParam(value = "name", required = false) String name,
             @RequestParam(value = "type", required = true) Integer type) {
-        
-        if (size == null || size <= 0) {
+        if (size < 0 || size > 50) {
             size = 10L;
         }
         
-        if (offset == null || offset <= 0) {
+        if (offset < 0) {
+            
             offset = 0L;
         }
         

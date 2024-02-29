@@ -258,6 +258,10 @@
                 <if test="tenantId != null">
                     and tmjr.tenant_id = #{tenantId}
                 </if>
+    
+                <if test="name != null and name != ''">
+                    and tui.name like concat('%', #{name}, '%')
+                </if>
 
                 <if test="expireTime != null">
                     and tubmc.member_card_expire_time &lt;= #{expireTime}

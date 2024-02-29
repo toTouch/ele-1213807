@@ -123,7 +123,8 @@ public class JsonUserMerchantCabinetPlaceController extends BaseController {
      */
     @GetMapping("/merchant/place/getLineData")
     public R lineData(@RequestParam(value = "placeId", required = false) Long placeId,
-            @RequestParam(value = "cabinetId", required = false) Long cabinetId, Long startTime, Long endTime) {
+            @RequestParam(value = "cabinetId", required = false) Long cabinetId,@RequestParam(value = "startTime") Long startTime
+            ,@RequestParam(value = "endTime") Long endTime) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             return R.fail("ELECTRICITY.0001", "未找到用户");

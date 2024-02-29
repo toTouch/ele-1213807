@@ -44,4 +44,9 @@ public class ChannelEmployeePromotionQueryModel {
      * 结束时间
      */
     private Long endTime;
+    
+    /**
+     * 出账年月日
+     */
+    private String monthDate;
 }

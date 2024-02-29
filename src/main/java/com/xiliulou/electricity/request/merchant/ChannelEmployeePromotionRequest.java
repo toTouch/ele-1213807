@@ -28,7 +28,7 @@ public class ChannelEmployeePromotionRequest {
     /**
      * 出账年月日
      */
-    private Long time;
+    private String monthDate;
     
     /**
      * 租户Id

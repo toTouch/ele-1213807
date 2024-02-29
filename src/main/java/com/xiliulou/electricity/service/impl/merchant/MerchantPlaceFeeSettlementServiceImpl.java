@@ -4,9 +4,7 @@ import com.alibaba.excel.EasyExcel;
 import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.merchant.MerchantPlace;
-import com.xiliulou.electricity.entity.merchant.MerchantPlaceFeeMonthRecord;
 import com.xiliulou.electricity.entity.merchant.MerchantPlaceFeeMonthSummaryRecord;
-import com.xiliulou.electricity.mapper.merchant.MerchantPlaceFeeMonthRecordMapper;
 import com.xiliulou.electricity.query.merchant.MerchantPlaceFeeMonthSummaryRecordQueryModel;
 import com.xiliulou.electricity.service.excel.AutoHeadColumnWidthStyleStrategy;
 import com.xiliulou.electricity.service.excel.CommentWriteHandler;
@@ -19,16 +17,13 @@ import com.xiliulou.electricity.service.merchant.MerchantPlaceService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.vo.merchant.MerchantPlaceFeeMonthRecordExportVO;
 import com.xiliulou.electricity.vo.merchant.MerchantPlaceFeeMonthRecordVO;
+import com.xiliulou.electricity.vo.merchant.MerchantPlaceFeeMonthSummaryRecordVO;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.math.BigDecimal;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -64,7 +59,7 @@ public class MerchantPlaceFeeSettlementServiceImpl implements MerchantPlaceFeeSe
             MerchantPlaceFeeMonthRecordExportVO exportVO = new MerchantPlaceFeeMonthRecordExportVO();
             BeanUtils.copyProperties(merchantPlaceFeeMonthRecord,exportVO);
             Long placeId = merchantPlaceFeeMonthRecord.getPlaceId();
-            MerchantPlace merchantPlace = merchantPlaceService.queryFromCacheById(placeId);
+            MerchantPlace merchantPlace = merchantPlaceService.queryByIdFromCache(placeId);
             if (Objects.nonNull(merchantPlace)) {
                 exportVO.setPlaceName(merchantPlace.getName());
             }
@@ -95,7 +90,7 @@ public class MerchantPlaceFeeSettlementServiceImpl implements MerchantPlaceFeeSe
     
     @Override
     public R page(MerchantPlaceFeeMonthSummaryRecordQueryModel queryModel) {
-        List<MerchantPlaceFeeMonthSummaryRecord> merchantPlaceFeeMonthSummaryRecords = merchantPlaceFeeMonthSummaryRecordService.selectByCondition(queryModel);
+        List<MerchantPlaceFeeMonthSummaryRecordVO> merchantPlaceFeeMonthSummaryRecords = merchantPlaceFeeMonthSummaryRecordService.selectByCondition(queryModel);
         if (DataUtil.collectionIsUsable(merchantPlaceFeeMonthSummaryRecords)) {
             return R.ok(merchantPlaceFeeMonthSummaryRecords);
         } else {

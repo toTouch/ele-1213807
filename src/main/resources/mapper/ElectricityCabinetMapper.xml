@@ -114,7 +114,7 @@
             and model_id = #{query.modelId}
         </if>
         <if test="query.areaId != null">
-            and area_id = #{areaId}
+            and area_id = #{query.areaId}
         </if>
         <if test="query.idList != null and query.idList.size() > 0">
             and id in
@@ -537,7 +537,7 @@
             and tec.store_id = #{storeId}
         </if>
         <if test="areaId != null">
-            tec.area_id = #{areaId}
+            and tec.area_id = #{areaId}
         </if>
         <if test="eleIdList!=null and eleIdList!=''">
             and tec.id in
@@ -991,7 +991,7 @@
             and tec.store_id = #{storeId}
         </if>
         <if test="areaId != null">
-            tec.area_id = #{areaId}
+            and tec.area_id = #{areaId}
         </if>
         <if test="eleIdList!=null and eleIdList!=''">
             and tec.id in
