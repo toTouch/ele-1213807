@@ -98,6 +98,7 @@ public class JsonAdminBatteryMemberCardController extends BaseController {
     @GetMapping("/admin/battery/memberCard/page")
     public R page(@RequestParam("size") long size, @RequestParam("offset") long offset,
                   @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
+                  @RequestParam(value = "mid", required = false) Long mid,
                   @RequestParam(value = "status", required = false) Integer status,
                   @RequestParam(value = "rentType", required = false) Integer rentType,
                   @RequestParam(value = "rentUnit", required = false) Integer rentUnit,
@@ -124,6 +125,7 @@ public class JsonAdminBatteryMemberCardController extends BaseController {
                 .size(size)
                 .offset(offset)
                 .tenantId(TenantContextHolder.getTenantId())
+                .id(mid)
                 .franchiseeId(franchiseeId)
                 .status(status)
                 .businessType(businessType == null ?  0 : businessType)
@@ -141,6 +143,7 @@ public class JsonAdminBatteryMemberCardController extends BaseController {
      */
     @GetMapping("/admin/battery/memberCard/queryCount")
     public R pageCount(@RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
+                        @RequestParam(value = "mid", required = false) Long mid,
                        @RequestParam(value = "status", required = false) Integer status,
                        @RequestParam(value = "rentType", required = false) Integer rentType,
                        @RequestParam(value = "rentUnit", required = false) Integer rentUnit,
@@ -157,6 +160,7 @@ public class JsonAdminBatteryMemberCardController extends BaseController {
         }
 
         BatteryMemberCardQuery query = BatteryMemberCardQuery.builder()
+                .id(mid)
                 .franchiseeId(franchiseeId)
                 .status(status)
                 .businessType(businessType == null ?  0 : businessType)
