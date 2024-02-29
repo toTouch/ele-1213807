@@ -603,9 +603,15 @@ public class MerchantServiceImpl implements MerchantService {
             });
             
             // 批量保存场地映射
-            merchantPlaceMapService.batchInsert(merchantPlaceMapList);
+            if (ObjectUtils.isNotEmpty(merchantPlaceMapList)) {
+                merchantPlaceMapService.batchInsert(merchantPlaceMapList);
+            }
             
-            merchantPlaceBindService.batchInsert(merchantPlaceBindList);
+            // 批量保存绑定历史
+            if (ObjectUtils.isNotEmpty(merchantPlaceBindList)) {
+                merchantPlaceBindService.batchInsert(merchantPlaceBindList);
+            }
+            
         } else if (ObjectUtils.isNotEmpty(existsPlaceList)) {
             unBindList = bindPlaceSet;
         }
