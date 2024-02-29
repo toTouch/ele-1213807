@@ -464,13 +464,6 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
     
     @Override
     public R selectPromotionEmployeeDetailList(MerchantPromotionEmployeeDetailSpecificsQueryModel queryModel) {
-        //校验用户是否是商户
-        Merchant merchant = merchantService.queryByUid(queryModel.getUid());
-        if (Objects.isNull(merchant)) {
-            log.error("find merchant user error, not found merchant user, uid = {}", queryModel.getUid());
-            return R.fail("120007", "未找到商户");
-        }
-        
         return R.ok(rebateRecordService.selectListPromotionDetail(queryModel));
     }
     
