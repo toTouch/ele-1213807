@@ -231,11 +231,13 @@ public class MerchantEmployeeServiceImpl implements MerchantEmployeeService {
         Integer tenantId = TenantContextHolder.getTenantId();
         if(Objects.nonNull(merchantEmployeeVO)){
             if(!Objects.equals(tenantId, merchantEmployeeVO.getTenantId())){
+                log.info("tenant id mismatch for query employee QR code, current tenant id = {},  employee tenant id = {}", tenantId, merchantEmployeeVO.getTenantId());
                 return null;
             }
             
             Merchant merchant = merchantService.queryByUid(merchantEmployeeVO.getMerchantUid());
             if (Objects.isNull(merchant)){
+                log.info("merchant is null for query employee QR code, merchant uid = {}", merchant.getUid());
                 return null;
             }
             merchantEmployeeQrCodeVO.setUid(merchantEmployeeVO.getUid());
