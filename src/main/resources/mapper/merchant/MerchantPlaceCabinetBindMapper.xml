@@ -210,7 +210,7 @@
         from t_merchant_place_cabinet_bind
         where
          del_flag = 0
-        and place_month_settlement =#{monthSettlementFlag}
+        and place_month_settlement = #{placeMonthNotSettlement}
         and place_id in
          <foreach collection="placeIdList" separator="," open="(" close=")" item="placeId">
              #{placeId}
