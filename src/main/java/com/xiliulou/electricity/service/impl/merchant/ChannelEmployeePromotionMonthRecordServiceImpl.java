@@ -49,6 +49,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -161,62 +162,66 @@ public class ChannelEmployeePromotionMonthRecordServiceImpl implements ChannelEm
                 .collect(Collectors.groupingBy(ChannelEmployeePromotionDayRecord::getChannelEmployeesId));
         
         channelEmployeePromotionMonthRecords.stream().forEach(item -> {
+            // 渠道员名称
+            String userName = "";
             
-            detailMap.forEach((channelUserId, dayList) -> {
-                // 每一个渠道员按照时间进行排序
-                dayList.stream().sorted(Comparator.comparing(ChannelEmployeePromotionDayRecord::getFeeDate));
+            User user = userService.queryByUidFromCache(item.getChannelEmployeesId());
+            if (Objects.nonNull(user)) {
+                userName = user.getName();
+            }
+            
+            // 判断详情数据是否为空
+            List<ChannelEmployeePromotionDayRecord> detailList = detailMap.get(item.getChannelEmployeesId());
+            
+            if (ObjectUtils.isEmpty(detailList)) {
+                ChannelEmployeePromotionMonthExportVO vo = new ChannelEmployeePromotionMonthExportVO();
+                vo.setChannelEmployeeName(userName);
+                vo.setMonth(monthDate);
+                resList.add(vo);
                 
-                dayList.forEach(channelEmployeePromotionDayRecord -> {
-                    // 拉新
-                    if (ObjectUtils.isNotEmpty(channelEmployeePromotionDayRecord.getDayFirstMoney()) && channelEmployeePromotionDayRecord.getDayFirstMoney().compareTo(BigDecimal.ZERO) != 0) {
-                        ChannelEmployeePromotionMonthExportVO vo = new ChannelEmployeePromotionMonthExportVO();
-                        vo.setMonth(monthDate);
-                        User user = userService.queryByUidFromCache(item.getChannelEmployeesId());
-                        if (ObjectUtils.isNotEmpty(user)) {
-                            vo.setChannelEmployeeName(user.getName());
-                        }
-                        vo.setMonthFirstSumFee(item.getMonthFirstMoney());
-                        vo.setMonthRenewSumFee(item.getMonthRenewMoney());
-                        vo.setType(RebateTypeEnum.FIRST.getDesc());
-                        vo.setSettleDate(DateUtil.format(new Date(item.getFeeDate()), "yyyy-MM-dd"));
-                        vo.setReturnMoney(channelEmployeePromotionDayRecord.getDayFirstMoney());
-                        resList.add(vo);
-                    }
-                    
-                    // 续费
-                    if (ObjectUtils.isNotEmpty(channelEmployeePromotionDayRecord.getDayRenewMoney()) && channelEmployeePromotionDayRecord.getDayRenewMoney().compareTo(BigDecimal.ZERO) != 0) {
-                        ChannelEmployeePromotionMonthExportVO vo = new ChannelEmployeePromotionMonthExportVO();
-                        vo.setMonth(monthDate);
-                        User user = userService.queryByUidFromCache(item.getChannelEmployeesId());
-                        if (ObjectUtils.isNotEmpty(user)) {
-                            vo.setChannelEmployeeName(user.getName());
-                        }
-                        vo.setMonthFirstSumFee(item.getMonthFirstMoney());
-                        vo.setMonthRenewSumFee(item.getMonthRenewMoney());
-                        vo.setType(RebateTypeEnum.RENEW.getDesc());
-                        vo.setSettleDate(DateUtil.format(new Date(item.getFeeDate()), "yyyy-MM-dd"));
+                return;
+            }
+            
+            // 按照时间进行排序
+            detailList.stream().sorted(Comparator.comparing(ChannelEmployeePromotionDayRecord::getFeeDate));
+            
+            for (ChannelEmployeePromotionDayRecord promotionDayRecord : detailList) {
+                // 拉新
+                ChannelEmployeePromotionMonthExportVO vo = new ChannelEmployeePromotionMonthExportVO();
+                vo.setMonth(monthDate);
+                vo.setChannelEmployeeName(userName);
+                vo.setMonthFirstSumFee(item.getMonthFirstMoney());
+                vo.setMonthRenewSumFee(item.getMonthRenewMoney());
+                vo.setType(RebateTypeEnum.FIRST.getDesc());
+                vo.setSettleDate(DateUtil.format(new Date(item.getFeeDate()), "yyyy-MM-dd"));
+                vo.setReturnMoney(promotionDayRecord.getDayFirstMoney());
+                
+                resList.add(vo);
     
-                        vo.setReturnMoney(channelEmployeePromotionDayRecord.getDayRenewMoney());
-                    }
-                    
-                    // 差额
-                    if (ObjectUtils.isNotEmpty(channelEmployeePromotionDayRecord.getDayBalanceMoney()) && channelEmployeePromotionDayRecord.getDayBalanceMoney().compareTo(BigDecimal.ZERO) != 0) {
-                        ChannelEmployeePromotionMonthExportVO vo = new ChannelEmployeePromotionMonthExportVO();
-                        vo.setMonth(monthDate);
-                        User user = userService.queryByUidFromCache(item.getChannelEmployeesId());
-                        if (ObjectUtils.isNotEmpty(user)) {
-                            vo.setChannelEmployeeName(user.getName());
-                        }
-                        vo.setMonthFirstSumFee(item.getMonthFirstMoney());
-                        vo.setMonthRenewSumFee(item.getMonthRenewMoney());
-                        vo.setType(RebateTypeEnum.BALANCE.getDesc());
-                        vo.setReturnMoney(channelEmployeePromotionDayRecord.getDayBalanceMoney());
-                        vo.setSettleDate(DateUtil.format(new Date(item.getFeeDate()), "yyyy-MM-dd"));
-                    }
-                });
-               
+                // 续费
+                ChannelEmployeePromotionMonthExportVO vo1 = new ChannelEmployeePromotionMonthExportVO();
+                vo.setMonth(monthDate);
+                vo.setChannelEmployeeName(userName);
+                vo.setMonthFirstSumFee(item.getMonthFirstMoney());
+                vo.setMonthRenewSumFee(item.getMonthRenewMoney());
+                vo.setType(RebateTypeEnum.RENEW.getDesc());
+                vo.setSettleDate(DateUtil.format(new Date(item.getFeeDate()), "yyyy-MM-dd"));
+                vo.setReturnMoney(promotionDayRecord.getDayRenewMoney());
                 
-            });
+                resList.add(vo1);
+    
+                ChannelEmployeePromotionMonthExportVO vo2 = new ChannelEmployeePromotionMonthExportVO();
+                vo.setMonth(monthDate);
+                vo.setChannelEmployeeName(userName);
+                vo.setMonthFirstSumFee(item.getMonthFirstMoney());
+                vo.setMonthRenewSumFee(item.getMonthRenewMoney());
+                vo.setType(RebateTypeEnum.BALANCE.getDesc());
+                vo.setReturnMoney(promotionDayRecord.getDayBalanceMoney());
+                vo.setSettleDate(DateUtil.format(new Date(item.getFeeDate()), "yyyy-MM-dd"));
+    
+                resList.add(vo2);
+    
+            }
             
         });
         return resList;

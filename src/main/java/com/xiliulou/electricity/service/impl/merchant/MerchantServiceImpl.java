@@ -448,7 +448,9 @@ public class MerchantServiceImpl implements MerchantService {
             BatteryMemberCardQuery query = BatteryMemberCardQuery.builder().tenantId(TenantContextHolder.getTenantId()).franchiseeId(merchantSaveRequest.getFranchiseeId())
                     .status(BatteryMemberCard.STATUS_UP).idList(merchantSaveRequest.getEnterprisePackageIdList()).businessType(BatteryMemberCard.BUSINESS_TYPE_ENTERPRISE)
                     .delFlag(BatteryMemberCard.DEL_NORMAL).build();
+            
             List<BatteryMemberCard> packageList = batteryMemberCardService.queryListByIdList(query);
+            
             if (ObjectUtils.isEmpty(packageList)) {
                 log.error("merchant update error, package is not exist id={}, packageId={}", merchantSaveRequest.getId(), merchantSaveRequest.getEnterprisePackageIdList());
                 return Triple.of(false, "120207", "企业套餐不存在");
@@ -567,12 +569,17 @@ public class MerchantServiceImpl implements MerchantService {
         // 查询商户已经绑定的场地
         MerchantPlaceMapQueryModel queryModel = MerchantPlaceMapQueryModel.builder().merchantId(merchantSaveRequest.getId()).eqFlag(MerchantPlaceMapQueryModel.EQ).build();
         List<MerchantPlaceMap> existsPlaceList = merchantPlaceMapService.queryList(queryModel);
-        Map<Long, Long> bindMap = existsPlaceList.stream().collect(Collectors.toMap(MerchantPlaceMap::getPlaceId, MerchantPlaceMap::getId, (key, key1) -> key1));
+    
+        Map<Long, Long> bindMap = new HashMap<>();
+        if (ObjectUtils.isNotEmpty(existsPlaceList)) {
+            bindMap = existsPlaceList.stream().collect(Collectors.toMap(MerchantPlaceMap::getPlaceId, MerchantPlaceMap::getId, (key, key1) -> key1));
+        }
         
         Set<Long> unBindList = new HashSet<>();
         if (ObjectUtils.isNotEmpty(merchantSaveRequest.getPlaceIdList())) {
             // 新增场地
-            List<Long> addPlaceIdList = merchantSaveRequest.getPlaceIdList().stream().filter(placeId -> !bindMap.containsKey(placeId)).collect(Collectors.toList());
+            Map<Long, Long> finalBindMap = bindMap;
+            List<Long> addPlaceIdList = merchantSaveRequest.getPlaceIdList().stream().filter(placeId -> !finalBindMap.containsKey(placeId)).collect(Collectors.toList());
             // 解绑场地
             unBindList = bindMap.keySet().stream().filter(item -> !merchantSaveRequest.getPlaceIdList().contains(item)).collect(Collectors.toSet());
             
@@ -593,6 +600,7 @@ public class MerchantServiceImpl implements MerchantService {
             
             // 批量保存场地映射
             merchantPlaceMapService.batchInsert(merchantPlaceMapList);
+            
             merchantPlaceBindService.batchInsert(merchantPlaceBindList);
         } else if (ObjectUtils.isNotEmpty(existsPlaceList)) {
             unBindList = bindMap.keySet();
