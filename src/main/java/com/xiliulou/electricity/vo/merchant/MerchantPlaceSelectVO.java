@@ -30,6 +30,4 @@ public class MerchantPlaceSelectVO {
     
     private boolean isSelected;
     
-    public final static Integer enable = 0;
-    public final static Integer disable = 1;
 }

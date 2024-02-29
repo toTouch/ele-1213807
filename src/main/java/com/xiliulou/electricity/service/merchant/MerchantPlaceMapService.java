@@ -29,4 +29,6 @@ public interface MerchantPlaceMapService {
     List<MerchantPlaceMapVO> countByMerchantIdList(MerchantPlaceMapQueryModel placeMapQueryModel);
     
     Integer countCabinetNumByMerchantId(Long merchantId);
+    
+    Integer existsPlaceFee(Long merchantId);
 }

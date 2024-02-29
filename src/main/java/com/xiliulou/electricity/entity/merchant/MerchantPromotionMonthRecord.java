@@ -23,11 +23,6 @@ public class MerchantPromotionMonthRecord {
     private Long id;
     
     /**
-     * 商户数量
-     */
-    private Integer merchantCount;
-    
-    /**
      * 月拉新返现汇总(元)
      */
     private BigDecimal monthFirstTotalMoney;
