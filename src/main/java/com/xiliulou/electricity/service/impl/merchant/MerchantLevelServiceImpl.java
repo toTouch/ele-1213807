@@ -240,10 +240,11 @@ public class MerchantLevelServiceImpl implements MerchantLevelService {
         var merchantLevelList = new ArrayList<MerchantLevel>();
         
         for (int i = 1; i < 6; i++) {
+            MerchantLevelDTO merchantLevelDTO = new MerchantLevelDTO(0L, 0L);
             MerchantLevel merchantLevel = new MerchantLevel();
             merchantLevel.setLevel(String.valueOf(i));
             merchantLevel.setName("");
-            merchantLevel.setRule(null);
+            merchantLevel.setRule(JsonUtil.toJson(merchantLevelDTO));
             merchantLevel.setDelFlag(CommonConstant.DEL_N);
             merchantLevel.setTenantId(tenantId);
             merchantLevel.setCreateTime(System.currentTimeMillis());
