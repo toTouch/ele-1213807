@@ -179,8 +179,6 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
         // 6.柜机电量列表
         CompletableFuture<Void> cabinetListPowerFuture = CompletableFuture.runAsync(() -> {
             List<MerchantProCabinetPowerVO> cabinetPowerList = getCabinetPowerList(cabinetIds);
-            // 根据latestTime倒叙排序 todo 该月柜机绑定时间记录最新一条记录的创建时间
-            cabinetPowerList.sort(Comparator.comparing(MerchantProCabinetPowerVO::getLatestTime).reversed());
             vo.setCabinetPowerList(cabinetPowerList);
             
         }, executorService).exceptionally(e -> {
@@ -353,7 +351,9 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
             merchantProCabinetPowerVO.setThisMonthCharge(Objects.isNull(thisMonthPower) ? NumberConstant.ZERO_D : thisMonthPower.getCharge());
             merchantProCabinetPowerVO.setThisYearPower(thisYearPower);
             merchantProCabinetPowerVO.setThisYearCharge(thisYearCharge);
-            merchantProCabinetPowerVO.setLatestTime(latestTime);
+            //merchantProCabinetPowerVO.setLatestTime(latestTime);
+            merchantProCabinetPowerVO.setTime(
+                    Optional.ofNullable(electricityCabinetService.queryByIdFromCache(cabinetId.intValue()).getCreateTime()).orElse(NumberConstant.ZERO_L));
             
             cabinetPowerList.add(merchantProCabinetPowerVO);
         });
@@ -362,8 +362,8 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
             return Collections.emptyList();
         }
         
-        // latestTime倒叙排序
-        cabinetPowerList.sort((o1, o2) -> o2.getLatestTime().compareTo(o1.getLatestTime()));
+        // cabinetPowerList 根据time进行倒叙排序
+        cabinetPowerList.sort((o1, o2) -> o2.getTime().compareTo(o1.getTime()));
         
         return cabinetPowerList;
     }
@@ -669,7 +669,6 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
             return merchantPlaceUserVO;
         }).collect(Collectors.toList());
         
-        // 获取柜机列表 todo 需要与商户和场地绑定时间段取交集
         List<MerchantPlaceCabinetVO> cabinetList = new ArrayList<>();
         List<MerchantPlaceCabinetBind> merchantPlaceCabinetBindList = merchantPlaceCabinetBindService.listByPlaceIds(placeIdSet);
         if (CollectionUtils.isNotEmpty(merchantPlaceCabinetBindList)) {
@@ -715,7 +714,6 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
             return null;
         }
         
-        // 获取柜机列表 todo 场地与商户绑定记录取交集
         List<MerchantPlaceCabinetVO> cabinetList = new ArrayList<>();
         List<MerchantPlaceCabinetBind> merchantPlaceCabinetBindList = merchantPlaceCabinetBindService.listByPlaceIds(Set.of(placeId));
         if (CollectionUtils.isNotEmpty(merchantPlaceCabinetBindList)) {
