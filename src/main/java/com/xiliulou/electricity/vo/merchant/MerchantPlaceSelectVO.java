@@ -27,4 +27,7 @@ public class MerchantPlaceSelectVO {
      * 是否禁用：0 否，1 是
      */
     private Integer status;
+    
+    private boolean isSelected;
+    
 }

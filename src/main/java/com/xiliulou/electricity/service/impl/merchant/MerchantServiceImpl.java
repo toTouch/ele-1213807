@@ -13,7 +13,6 @@ import com.xiliulou.electricity.dto.merchant.MerchantDeleteCacheDTO;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.User;
-import com.xiliulou.electricity.entity.enterprise.EnterpriseInfo;
 import com.xiliulou.electricity.entity.merchant.Merchant;
 import com.xiliulou.electricity.entity.merchant.MerchantEmployee;
 import com.xiliulou.electricity.entity.merchant.MerchantJoinRecord;
@@ -58,6 +57,7 @@ import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.enterprise.EnterprisePackageVO;
 import com.xiliulou.electricity.vo.merchant.ChannelEmployeeVO;
+import com.xiliulou.electricity.vo.merchant.MerchantEmployeeVO;
 import com.xiliulou.electricity.vo.merchant.MerchantJoinRecordVO;
 import com.xiliulou.electricity.vo.merchant.MerchantPlaceMapVO;
 import com.xiliulou.electricity.vo.merchant.MerchantPlaceSelectVO;
@@ -997,16 +997,17 @@ public class MerchantServiceImpl implements MerchantService {
     /**
      * 小程序：员工添加下拉框场地选择
      *
-     * @param uid
+     * @param merchantUid
+     * @param employeeUid
      * @return
      */
     @Slave
     @Override
-    public List<MerchantPlaceSelectVO> queryPlaceListByUid(Long uid, Long merchantEmployeeUid) {
-        Merchant merchant = merchantMapper.selectByUid(uid);
+    public List<MerchantPlaceSelectVO> queryPlaceListByUid(Long merchantUid, Long employeeUid) {
+        Merchant merchant = merchantMapper.selectByUid(merchantUid);
         
         if (Objects.isNull(merchant)) {
-            log.error("merchant query place list error, merchant is not find, uid={}", uid);
+            log.error("merchant query place list error, merchant is not find, uid={}", merchantUid);
             return Collections.EMPTY_LIST;
         }
         
@@ -1021,15 +1022,27 @@ public class MerchantServiceImpl implements MerchantService {
             }
         }
         
-        Map<Long, Long> finalUserMap = userMap;
-        merchantPlaceUserVOList.stream().forEach(item -> {
-            if (ObjectUtils.isNotEmpty(finalUserMap.get(item.getPlaceId()))) {
+        //如果商户员工UID不为空，则查询渠道员信息，获取当前渠道员绑定的场地ID
+        Long placeId = null;
+        if(Objects.nonNull(employeeUid)){
+            MerchantEmployeeVO merchantEmployeeVO = merchantEmployeeService.queryMerchantEmployeeByUid(employeeUid);
+            placeId = merchantEmployeeVO.getPlaceId();
+        }
+        
+        for(MerchantPlaceSelectVO merchantPlaceSelectVO : merchantPlaceUserVOList){
+            if (ObjectUtils.isNotEmpty(userMap.get(merchantPlaceSelectVO.getPlaceId()))) {
                 // 被绑定设置为禁用
-                item.setStatus(MerchantPlaceConstant.DISABLE);
+                merchantPlaceSelectVO.setStatus(MerchantPlaceConstant.DISABLE);
             } else {
-                item.setStatus(MerchantPlaceConstant.ENABLE);
+                merchantPlaceSelectVO.setStatus(MerchantPlaceConstant.ENABLE);
             }
-        });
+    
+            if(Objects.equals(merchantPlaceSelectVO.getPlaceId(), placeId)){
+                merchantPlaceSelectVO.setSelected(true);
+            }
+            
+        }
+        
         return merchantPlaceUserVOList;
     }
     
