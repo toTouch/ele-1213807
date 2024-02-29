@@ -170,7 +170,8 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
         }
         
         //检查入参中的状态是否为同意或者拒绝状态，若为其他状态，则提示错误。
-        if(!MerchantWithdrawConstant.REVIEW_REFUSED.equals(reviewWithdrawApplicationRequest.getStatus()) || !MerchantWithdrawConstant.REVIEW_SUCCESS.equals(reviewWithdrawApplicationRequest.getStatus())){
+        if(!MerchantWithdrawConstant.REVIEW_REFUSED.equals(reviewWithdrawApplicationRequest.getStatus())
+                && !MerchantWithdrawConstant.REVIEW_SUCCESS.equals(reviewWithdrawApplicationRequest.getStatus())){
             log.error("Illegal parameter error for approve withdraw application,  status = {}", reviewWithdrawApplicationRequest.getStatus());
             return Triple.of(false, "120014", "参数不合法");
         }
@@ -310,7 +311,8 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
         }
     
         //检查入参中的状态是否为同意或者拒绝状态，若为其他状态，则提示错误。
-        if(!MerchantWithdrawConstant.REVIEW_REFUSED.equals(batchReviewWithdrawApplicationRequest.getStatus()) || !MerchantWithdrawConstant.REVIEW_SUCCESS.equals(batchReviewWithdrawApplicationRequest.getStatus())){
+        if(!MerchantWithdrawConstant.REVIEW_REFUSED.equals(batchReviewWithdrawApplicationRequest.getStatus())
+                && !MerchantWithdrawConstant.REVIEW_SUCCESS.equals(batchReviewWithdrawApplicationRequest.getStatus())){
             log.error("Illegal parameter error for approve withdraw application,  status = {}", batchReviewWithdrawApplicationRequest.getStatus());
             return Triple.of(false, "120014", "参数不合法");
         }
