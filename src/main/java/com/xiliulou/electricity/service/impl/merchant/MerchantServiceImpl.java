@@ -54,6 +54,7 @@ import com.xiliulou.electricity.service.merchant.MerchantService;
 import com.xiliulou.electricity.service.merchant.MerchantUserAmountService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
+import com.xiliulou.electricity.utils.QrCodeUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.enterprise.EnterprisePackageVO;
 import com.xiliulou.electricity.vo.merchant.ChannelEmployeeVO;
@@ -600,7 +601,7 @@ public class MerchantServiceImpl implements MerchantService {
         // 查询商户已经绑定的场地
         MerchantPlaceMapQueryModel queryModel = MerchantPlaceMapQueryModel.builder().merchantId(merchantSaveRequest.getId()).eqFlag(MerchantPlaceMapQueryModel.EQ).build();
         List<MerchantPlaceMap> existsPlaceList = merchantPlaceMapService.queryList(queryModel);
-    
+        
         Set<Long> bindPlaceSet = new HashSet<>();
         if (ObjectUtils.isNotEmpty(existsPlaceList)) {
             bindPlaceSet = existsPlaceList.stream().map(MerchantPlaceMap::getPlaceId).collect(Collectors.toSet());
@@ -1082,20 +1083,20 @@ public class MerchantServiceImpl implements MerchantService {
         
         //如果商户员工UID不为空，则查询渠道员信息，获取当前渠道员绑定的场地ID
         Long placeId = null;
-        if(Objects.nonNull(employeeUid)){
+        if (Objects.nonNull(employeeUid)) {
             MerchantEmployeeVO merchantEmployeeVO = merchantEmployeeService.queryMerchantEmployeeByUid(employeeUid);
             placeId = merchantEmployeeVO.getPlaceId();
         }
         
-        for(MerchantPlaceSelectVO merchantPlaceSelectVO : merchantPlaceUserVOList){
+        for (MerchantPlaceSelectVO merchantPlaceSelectVO : merchantPlaceUserVOList) {
             if (ObjectUtils.isNotEmpty(userMap.get(merchantPlaceSelectVO.getPlaceId()))) {
                 // 被绑定设置为禁用
                 merchantPlaceSelectVO.setStatus(MerchantPlaceConstant.DISABLE);
             } else {
                 merchantPlaceSelectVO.setStatus(MerchantPlaceConstant.ENABLE);
             }
-    
-            if(Objects.equals(merchantPlaceSelectVO.getPlaceId(), placeId)){
+            
+            if (Objects.equals(merchantPlaceSelectVO.getPlaceId(), placeId)) {
                 merchantPlaceSelectVO.setSelected(true);
             }
             
@@ -1135,7 +1136,8 @@ public class MerchantServiceImpl implements MerchantService {
             merchantUserVO.setMerchantId(merchant.getId());
             merchantUserVO.setMerchantUid(merchant.getUid());
             merchantUserVO.setType(MerchantConstant.MERCHANT_QR_CODE_TYPE);
-            merchantUserVO.setCode(merchantJoinRecordService.codeEnCoder(merchant.getId(), merchant.getUid(), 1));
+            String code = merchant.getId() + ":" + merchant.getUid() + ":" + MerchantConstant.MERCHANT_QR_CODE_TYPE;
+            merchantUserVO.setCode(QrCodeUtils.codeEnCoder(code));
             
             MerchantLevel merchantLevel = merchantLevelService.queryById(merchant.getMerchantGradeId());
             merchantUserVO.setMerchantLevelName(Objects.nonNull(merchantLevel) ? merchantLevel.getName() : "");
@@ -1159,7 +1161,8 @@ public class MerchantServiceImpl implements MerchantService {
         vo.setMerchantId(merchantId);
         vo.setMerchantUid(uid);
         vo.setType(MerchantConstant.MERCHANT_QR_CODE_TYPE);
-        vo.setCode(merchantJoinRecService.codeEnCoder(merchantId, uid, 1));
+        String code = merchantId + ":" + uid + ":" + MerchantConstant.MERCHANT_QR_CODE_TYPE;
+        vo.setCode(QrCodeUtils.codeEnCoder(code));
         //        vo.setTenantCode(tenant.getCode());
         return vo;
     }

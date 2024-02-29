@@ -88,10 +88,6 @@ public interface MerchantJoinRecordService {
      */
     boolean existInviterData(Integer inviterType, Long inviterUid, Integer tenantId);
     
-    String codeEnCoder(Long merchantId, Long inviterUid, Integer inviterType);
-    
-    String codeDeCoder(String code);
-    
     Integer countEmployeeScanCodeNum(List<Long> uidList, Long startTime, Long endTime, Integer status, Integer tenantId);
     
     List<MerchantJoinRecord> selectListAllPromotionDataDetail(MerchantAllPromotionDataDetailQueryModel queryModel);
