@@ -3,6 +3,7 @@ package com.xiliulou.electricity.service.merchant;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.merchant.MerchantPlaceFeeMonthSummaryRecord;
 import com.xiliulou.electricity.query.merchant.MerchantPlaceFeeMonthSummaryRecordQueryModel;
+import com.xiliulou.electricity.vo.merchant.MerchantPlaceFeeMonthSummaryRecordVO;
 
 import java.util.List;
 
@@ -13,7 +14,7 @@ import java.util.List;
  * @since: 2024-02-20
  */
 public interface MerchantPlaceFeeMonthSummaryRecordService {
-    List<MerchantPlaceFeeMonthSummaryRecord> selectByCondition(MerchantPlaceFeeMonthSummaryRecordQueryModel queryModel);
+    List<MerchantPlaceFeeMonthSummaryRecordVO> selectByCondition(MerchantPlaceFeeMonthSummaryRecordQueryModel queryModel);
     
     Integer pageCountByCondition(MerchantPlaceFeeMonthSummaryRecordQueryModel queryModel);
 }

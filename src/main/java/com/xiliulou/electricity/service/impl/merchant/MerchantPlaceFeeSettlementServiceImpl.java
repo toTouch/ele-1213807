@@ -19,6 +19,7 @@ import com.xiliulou.electricity.service.merchant.MerchantPlaceService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.vo.merchant.MerchantPlaceFeeMonthRecordExportVO;
 import com.xiliulou.electricity.vo.merchant.MerchantPlaceFeeMonthRecordVO;
+import com.xiliulou.electricity.vo.merchant.MerchantPlaceFeeMonthSummaryRecordVO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.BeanUtils;
@@ -95,7 +96,7 @@ public class MerchantPlaceFeeSettlementServiceImpl implements MerchantPlaceFeeSe
     
     @Override
     public R page(MerchantPlaceFeeMonthSummaryRecordQueryModel queryModel) {
-        List<MerchantPlaceFeeMonthSummaryRecord> merchantPlaceFeeMonthSummaryRecords = merchantPlaceFeeMonthSummaryRecordService.selectByCondition(queryModel);
+        List<MerchantPlaceFeeMonthSummaryRecordVO> merchantPlaceFeeMonthSummaryRecords = merchantPlaceFeeMonthSummaryRecordService.selectByCondition(queryModel);
         if (DataUtil.collectionIsUsable(merchantPlaceFeeMonthSummaryRecords)) {
             return R.ok(merchantPlaceFeeMonthSummaryRecords);
         } else {
