@@ -132,6 +132,9 @@
             <if test="rentUnit != null">
                 and rent_unit = #{rentUnit}
             </if>
+            <if test="id != null">
+                and id = #{id}
+            </if>
             <if test="tenantId != null">
                 and tenant_id = #{tenantId}
             </if>
@@ -312,6 +315,9 @@
             </if>
             <if test="rentUnit != null">
                 and rent_unit = #{rentUnit}
+            </if>
+            <if test="id != null">
+                and id = #{id}
             </if>
             <if test="tenantId != null">
                 and tenant_id = #{tenantId}
