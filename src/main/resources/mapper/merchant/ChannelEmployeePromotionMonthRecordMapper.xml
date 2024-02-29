@@ -47,8 +47,7 @@
             <include refid="pageFilter"/>
             GROUP BY
             month_date
-            limit #{offset}, #{size}
-        )
+        ) s
     </select>
     <sql id="column">
         channel_employees_id  , tenant_id  , month_first_money  , month_renew_money,month_date
