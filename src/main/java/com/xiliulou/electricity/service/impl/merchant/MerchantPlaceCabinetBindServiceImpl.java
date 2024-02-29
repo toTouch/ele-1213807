@@ -3,11 +3,14 @@ package com.xiliulou.electricity.service.impl.merchant;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
+import com.xiliulou.electricity.constant.merchant.MerchantConstant;
 import com.xiliulou.electricity.constant.merchant.MerchantPlaceBindConstant;
 import com.xiliulou.electricity.constant.merchant.MerchantPlaceConstant;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
+import com.xiliulou.electricity.entity.merchant.Merchant;
 import com.xiliulou.electricity.entity.merchant.MerchantPlace;
 import com.xiliulou.electricity.entity.merchant.MerchantPlaceCabinetBind;
+import com.xiliulou.electricity.mapper.merchant.MerchantMapper;
 import com.xiliulou.electricity.mapper.merchant.MerchantPlaceCabinetBindMapper;
 import com.xiliulou.electricity.query.merchant.MerchantPlaceCabinetBindQueryModel;
 import com.xiliulou.electricity.request.merchant.MerchantPlaceCabinetBindSaveRequest;
@@ -61,6 +64,9 @@ public class MerchantPlaceCabinetBindServiceImpl implements MerchantPlaceCabinet
     
     @Resource
     private MerchantPlaceMapService merchantPlaceMapService;
+    
+    @Resource
+    private MerchantMapper merchantMapper;
     
     @Slave
     @Override
@@ -176,6 +182,17 @@ public class MerchantPlaceCabinetBindServiceImpl implements MerchantPlaceCabinet
         
         // 检测场地当前关联的商户且未设置存在场地费的数据
         List<Long> noExistsPlaceFeeMerchantIdList = merchantPlaceMapService.queryListNoExistsPlaceFeeMerchant(placeCabinetBindSaveRequest.getPlaceId());
+        if (ObjectUtils.isEmpty(noExistsPlaceFeeMerchantIdList)) {
+            return Triple.of(true, null, null);
+        }
+        
+        // 修改商户对应的场地费为存在
+        Merchant merchantUpdate = new Merchant();
+        merchantUpdate.setUpdateTime(currentTimeMillis);
+        merchantUpdate.setId(noExistsPlaceFeeMerchantIdList.get(0));
+        merchantUpdate.setExistPlaceFee(MerchantConstant.EXISTS_PLACE_FEE_YES);
+        
+        merchantMapper.updateById(merchantUpdate);
         
         return Triple.of(true, null, null);
     }

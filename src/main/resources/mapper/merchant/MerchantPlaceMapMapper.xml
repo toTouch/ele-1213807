@@ -146,8 +146,13 @@
     </select>
     
     <select id="queryListNoExistsPlaceFeeMerchant" resultType="java.lang.Long">
-        select
-            merchant_id
-        from t_merchant_place_map p
+        SELECT
+            p.id
+        FROM
+            t_merchant_place_map p
+                left join t_merchant m on m.id = p.merchant_id
+        where
+            p.place_id = #{placeId}
+          and m.exist_place_fee = 1
     </select>
 </mapper>
