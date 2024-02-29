@@ -290,4 +290,18 @@ public class MerchantEmployeeServiceImpl implements MerchantEmployeeService {
         return merchantEmployeeQrCodeVOList;
     }
     
+    @Override
+    public List<MerchantEmployeeVO> selectAllMerchantEmployees(MerchantEmployeeRequest merchantEmployeeRequest) {
+    
+        Merchant merchant = merchantService.queryByUid(merchantEmployeeRequest.getMerchantUid());
+        if(Objects.isNull(merchant)){
+            log.error("not found merchant by uid, uid = {}", merchantEmployeeRequest.getMerchantUid());
+            return Collections.EMPTY_LIST;
+        }
+        
+        List<MerchantEmployeeVO> merchantEmployeeVOS = merchantEmployeeMapper.selectMerchantUsers(merchantEmployeeRequest);
+        
+        return merchantEmployeeVOS;
+    }
+    
 }
