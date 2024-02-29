@@ -12,9 +12,7 @@ import java.util.List;
 @Data
 public class MerchantPlaceAndCabinetUserVO {
     
-    private Long merchantId;
+    private List<MerchantPlaceSelectVO> placeList;
     
-    List<MerchantPlaceSelectVO> placeList;
-    
-    List<MerchantPlaceCabinetVO> cabinetList;
+    private List<MerchantPlaceCabinetVO> cabinetList;
 }
