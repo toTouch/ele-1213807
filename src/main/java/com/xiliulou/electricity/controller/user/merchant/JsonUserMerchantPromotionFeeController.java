@@ -203,7 +203,7 @@ public class JsonUserMerchantPromotionFeeController extends BaseController {
     @GetMapping("/merchant/promotion/merchant/detail")
     public R promotionMerchantDetail(@RequestParam("merchantUid") Long merchantUid) {
         
-        MerchantPromotionEmployeeDetailQueryModel queryModel = MerchantPromotionEmployeeDetailQueryModel.builder().merchantUid(merchantUid)
+        MerchantPromotionEmployeeDetailQueryModel queryModel = MerchantPromotionEmployeeDetailQueryModel.builder().uid(merchantUid)
                 .tenantId(TenantContextHolder.getTenantId()).build();
         
         return merchantPromotionFeeService.selectPromotionMerchantDetail(queryModel);
@@ -215,11 +215,12 @@ public class JsonUserMerchantPromotionFeeController extends BaseController {
      *
      * @param size        页面显示条数
      * @param offset      偏移量
-     * @param merchantUid 商户uid
+     * @param uid uid
+     * @param type 类型
      * @return 推广详情概览
      */
     @GetMapping("/merchant/promotion/employee/details/page")
-    public R promotionEmployeeDetails(@RequestParam("size") long size, @RequestParam("offset") Long offset, @RequestParam("merchantUid") Long merchantUid) {
+    public R promotionEmployeeDetails(@RequestParam("size") long size, @RequestParam("offset") Long offset,@RequestParam("type") Integer type, @RequestParam("uid") Long uid) {
         if (size < 0 || size > 5) {
             size = 5L;
         }
@@ -228,7 +229,7 @@ public class JsonUserMerchantPromotionFeeController extends BaseController {
             offset = 0L;
         }
         
-        MerchantPromotionEmployeeDetailQueryModel queryModel = MerchantPromotionEmployeeDetailQueryModel.builder().size(size).offset(offset).merchantUid(merchantUid)
+        MerchantPromotionEmployeeDetailQueryModel queryModel = MerchantPromotionEmployeeDetailQueryModel.builder().size(size).offset(offset).uid(uid).type(type)
                 .tenantId(TenantContextHolder.getTenantId()).build();
         
         return merchantPromotionFeeService.selectMerchantEmployeeDetailList(queryModel);

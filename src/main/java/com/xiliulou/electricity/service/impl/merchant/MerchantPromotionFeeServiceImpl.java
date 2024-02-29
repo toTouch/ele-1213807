@@ -29,6 +29,7 @@ import com.xiliulou.electricity.service.merchant.MerchantWithdrawApplicationServ
 import com.xiliulou.electricity.service.merchant.RebateRecordService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DateUtils;
+import com.xiliulou.electricity.vo.merchant.MerchantEmployeeVO;
 import com.xiliulou.electricity.vo.merchant.MerchantPromotionDataDetailVO;
 import com.xiliulou.electricity.vo.merchant.MerchantPromotionDataVO;
 import com.xiliulou.electricity.vo.merchant.MerchantPromotionEmployeeDetailVO;
@@ -97,7 +98,7 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
             return R.fail("120007", "未找到商户");
         }
         
-        MerchantPromotionEmployeeDetailQueryModel employeeDetailQueryModel = MerchantPromotionEmployeeDetailQueryModel.builder().merchantUid(merchantUid)
+        MerchantPromotionEmployeeDetailQueryModel employeeDetailQueryModel = MerchantPromotionEmployeeDetailQueryModel.builder().uid(merchantUid)
                 .tenantId(TenantContextHolder.getTenantId()).build();
         
         List<MerchantEmployee> merchantEmployees = merchantEmployeeService.selectByMerchantUid(employeeDetailQueryModel);
@@ -177,6 +178,11 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
         if (!PromotionFeeQueryTypeEnum.contains(type)) {
             return R.fail("300850", "该类型用户不存在");
         }
+    
+        // 如果是默认首页，则type为4  因为员工的收入也包含在商户中 因此如果查全部，也就是查询的商户的
+        if(Objects.equals(PromotionFeeQueryTypeEnum.MERCHANT_AND_MERCHANT_EMPLOYEE.getCode(), type)){
+            type = PromotionFeeQueryTypeEnum.MERCHANT.getCode();
+        }
         
         MerchantPromotionFeeIncomeVO merchantPromotionFeeIncomeVO = new MerchantPromotionFeeIncomeVO();
         
@@ -234,6 +240,12 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
     
     @Override
     public R queryMerchantPromotionRenewal(Integer type, Long uid) {
+    
+        // 如果是默认首页，则type为4  因为员工的收入也包含在商户中 因此如果查全部，也就是查询的商户的
+        if(Objects.equals(PromotionFeeQueryTypeEnum.MERCHANT_AND_MERCHANT_EMPLOYEE.getCode(), type)){
+            type = PromotionFeeQueryTypeEnum.MERCHANT.getCode();
+        }
+        
         MerchantPromotionFeeRenewalVO merchantPromotionFeeRenewalVO = new MerchantPromotionFeeRenewalVO();
         
         LocalDate lastMonthFirstDay = LocalDate.now().minusMonths(1).withDayOfMonth(1);
@@ -260,6 +272,11 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
             return R.fail("300850", "该类型用户不存在");
         }
         
+        // 如果是默认首页，则type为4  因为员工的收入也包含在商户中 因此如果查全部，也就是查询的商户的
+        if(Objects.equals(PromotionFeeQueryTypeEnum.MERCHANT_AND_MERCHANT_EMPLOYEE.getCode(), type)){
+            type = PromotionFeeQueryTypeEnum.MERCHANT.getCode();
+        }
+        
         List<PromotionFeeStatisticAnalysisIncomeVO> incomeVOList = new ArrayList<>();
         
         Long startTime = beginTime;
@@ -270,7 +287,6 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
             incomeVO.setStatisticTime(DateUtils.getYearAndMonthAndDayByTimeStamps(startTime));
             incomeVOList.add(incomeVO);
             startTime = startTime + (60 * 60 * 1000 * 24);
-            ;
         }
         
         return R.ok(incomeVOList);
@@ -344,9 +360,9 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
     @Override
     public R selectPromotionMerchantDetail(MerchantPromotionEmployeeDetailQueryModel queryModel) {
         //校验用户是否是商户
-        Merchant merchant = merchantService.queryByUid(queryModel.getMerchantUid());
+        Merchant merchant = merchantService.queryByUid(queryModel.getUid());
         if (Objects.isNull(merchant)) {
-            log.error("find merchant user error, not found merchant user, uid = {}", queryModel.getMerchantUid());
+            log.error("find merchant user error, not found merchant user, uid = {}", queryModel.getUid());
             return R.fail("120007", "未找到商户");
         }
         
@@ -375,41 +391,53 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
     
     @Override
     public R selectMerchantEmployeeDetailList(MerchantPromotionEmployeeDetailQueryModel queryModel) {
-        List<MerchantEmployee> merchantEmployees = merchantEmployeeService.selectByMerchantUid(queryModel);
+        List<MerchantPromotionEmployeeDetailVO> result = new ArrayList<>();
         
-        List<MerchantPromotionEmployeeDetailVO> merchantEmployeeDetailVOList = merchantEmployees.stream().map(merchantEmployee -> {
-            MerchantPromotionEmployeeDetailVO employeeDetailVO = new MerchantPromotionEmployeeDetailVO();
-            User user = userService.queryByUidFromCache(merchantEmployee.getUid());
-            if (Objects.nonNull(user)) {
-                employeeDetailVO.setEmployeeName(user.getName());
-                employeeDetailVO.setUid(user.getUid());
-                
-                // 今日预估收入：“返现日期” = 今日，“结算状态” = 未结算；
-                MerchantPromotionFeeQueryModel incomeQueryModel = MerchantPromotionFeeQueryModel.builder().status(MerchantConstant.MERCHANT_REBATE_STATUS_NOT_SETTLE)
-                        .type(PromotionFeeQueryTypeEnum.MERCHANT_EMPLOYEE.getCode()).uid(user.getUid()).tenantId(TenantContextHolder.getTenantId())
-                        .rebateStartTime(DateUtils.getTodayStartTimeStamp()).rebateEndTime(System.currentTimeMillis()).build();
-                BigDecimal todayInCome = rebateRecordService.sumByStatus(incomeQueryModel);
-                employeeDetailVO.setTodayIncome(todayInCome);
-                
-                // 本月预估收入：“结算日期” = 本月，“结算状态” = 未结算；
-                incomeQueryModel.setRebateStartTime(DateUtils.getDayOfMonthStartTime(1));
-                BigDecimal currentMonthInCome = rebateRecordService.sumByStatus(incomeQueryModel);
-                employeeDetailVO.setCurrentMonthIncome(currentMonthInCome);
-                
-                // 累计收入：“结算日期” = 当前时间，“结算状态” = 未结算；
-                incomeQueryModel.setRebateStartTime(null);
-                BigDecimal totalInCome = rebateRecordService.sumByStatus(incomeQueryModel);
-                employeeDetailVO.setTotalIncome(totalInCome);
-                
-                if (Objects.nonNull(merchantEmployee.getPlaceId())) {
-                    MerchantPlace place = merchantPlaceService.queryFromCacheById(merchantEmployee.getPlaceId());
-                    employeeDetailVO.setPlaceName(place.getName());
-                }
-            }
-            return employeeDetailVO;
-        }).collect(Collectors.toList());
-        return R.ok(merchantEmployeeDetailVOList);
+        if (Objects.equals(PromotionFeeQueryTypeEnum.MERCHANT.getCode(), queryModel.getType())) {
+            List<MerchantEmployee> merchantEmployees = merchantEmployeeService.selectByMerchantUid(queryModel);
+            result = merchantEmployees.stream().map(merchantEmployee -> buildMerchantPromotionEmployeeDetailVO(merchantEmployee.getUid(), merchantEmployee.getPlaceId())).collect(Collectors.toList());
+        }
+        
+        if(Objects.equals(PromotionFeeQueryTypeEnum.MERCHANT_EMPLOYEE.getCode(), queryModel.getType())){
+            MerchantEmployeeVO merchantEmployeeVO = merchantEmployeeService.queryMerchantEmployeeByUid(queryModel.getUid());
+            result.add(buildMerchantPromotionEmployeeDetailVO(merchantEmployeeVO.getUid(), merchantEmployeeVO.getPlaceId()));
+        }
+        
+        return R.ok(result);
     }
+    
+    private MerchantPromotionEmployeeDetailVO buildMerchantPromotionEmployeeDetailVO(Long uid,Long placeId) {
+        MerchantPromotionEmployeeDetailVO employeeDetailVO = new MerchantPromotionEmployeeDetailVO();
+        User user = userService.queryByUidFromCache(uid);
+        if (Objects.nonNull(user)) {
+            employeeDetailVO.setEmployeeName(user.getName());
+            employeeDetailVO.setUid(user.getUid());
+        
+            // 今日预估收入：“返现日期” = 今日，“结算状态” = 未结算；
+            MerchantPromotionFeeQueryModel incomeQueryModel = MerchantPromotionFeeQueryModel.builder().status(MerchantConstant.MERCHANT_REBATE_STATUS_NOT_SETTLE)
+                    .type(PromotionFeeQueryTypeEnum.MERCHANT_EMPLOYEE.getCode()).uid(user.getUid()).tenantId(TenantContextHolder.getTenantId())
+                    .rebateStartTime(DateUtils.getTodayStartTimeStamp()).rebateEndTime(System.currentTimeMillis()).build();
+            BigDecimal todayInCome = rebateRecordService.sumByStatus(incomeQueryModel);
+            employeeDetailVO.setTodayIncome(todayInCome);
+        
+            // 本月预估收入：“结算日期” = 本月，“结算状态” = 未结算；
+            incomeQueryModel.setRebateStartTime(DateUtils.getDayOfMonthStartTime(1));
+            BigDecimal currentMonthInCome = rebateRecordService.sumByStatus(incomeQueryModel);
+            employeeDetailVO.setCurrentMonthIncome(currentMonthInCome);
+        
+            // 累计收入：“结算日期” = 当前时间，“结算状态” = 未结算；
+            incomeQueryModel.setRebateStartTime(null);
+            BigDecimal totalInCome = rebateRecordService.sumByStatus(incomeQueryModel);
+            employeeDetailVO.setTotalIncome(totalInCome);
+        
+            if (Objects.nonNull(placeId)) {
+                MerchantPlace place = merchantPlaceService.queryFromCacheById(placeId);
+                employeeDetailVO.setPlaceName(place.getName());
+            }
+        }
+        return employeeDetailVO;
+    }
+
     
     @Override
     public R selectPromotionDataDetail(MerchantPromotionDataDetailQueryModel queryModel) {
@@ -497,7 +525,7 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
                     .inviterUid(uid).startTime(startTime).status(status).endTime(endTime).build();
             Integer scanCodeByMerchant = merchantJoinRecordService.countByCondition(scanCodeQueryModel);
             
-            MerchantPromotionEmployeeDetailQueryModel employeeDetailQueryModel = MerchantPromotionEmployeeDetailQueryModel.builder().merchantUid(uid)
+            MerchantPromotionEmployeeDetailQueryModel employeeDetailQueryModel = MerchantPromotionEmployeeDetailQueryModel.builder().uid(uid)
                     .tenantId(TenantContextHolder.getTenantId()).build();
             
             // 员工扫码人数
@@ -527,30 +555,6 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
     
     private void buildPromotionFeePromotionRenewal(Integer type, Long uid, MerchantPromotionFeeRenewalVO merchantPromotionFeeRenewalVO, long dayOfMonthStartTime,
             long dayOfMonthEndTime) {
-        
-       /* //今日续费次数：购买指定套餐时间=今日0点～当前时间，且套餐购买次数>1的购买成功次数
-        MerchantPromotionRenewalQueryModel todayRenewalQueryModel = MerchantPromotionRenewalQueryModel.builder().tenantId(TenantContextHolder.getTenantId()).type(type).uid(uid)
-                .startTime(DateUtils.getTodayStartTime()).endTime(DateUtils.getTodayEndTimeStamp()).status(MerchantConstant.MERCHANT_REBATE_TYPE_RENEWAL).build();
-        Integer todayRenewalCount = rebateRecordService.countByTime(todayRenewalQueryModel);
-        merchantPromotionFeeRenewalVO.setTodayRenewalCount(todayRenewalCount);
-        
-        //昨日续费次数：购买指定套餐时间=昨日0点～今日0点，且套餐购买次数>1的购买成功次数
-        MerchantPromotionRenewalQueryModel yesterdayRenewalQueryModel = MerchantPromotionRenewalQueryModel.builder().tenantId(TenantContextHolder.getTenantId()).type(type).uid(uid)
-                .startTime(DateUtils.getTimeAgoStartTime(1)).endTime(DateUtils.getTimeAgoEndTime(1)).status(MerchantConstant.MERCHANT_REBATE_TYPE_RENEWAL).build();
-        Integer yesterdayRenewalCount = rebateRecordService.countByTime(yesterdayRenewalQueryModel);
-        merchantPromotionFeeRenewalVO.setYesterdayRenewalCount(yesterdayRenewalCount);
-        
-        //本月续费次数：购买指定套餐时间=本月1号0点～当前时间，且套餐购买次数>1的购买成功次数
-        MerchantPromotionRenewalQueryModel currentMonthRenewalQueryModel = MerchantPromotionRenewalQueryModel.builder().tenantId(TenantContextHolder.getTenantId()).type(type)
-                .uid(uid).startTime(DateUtils.getDayOfMonthStartTime(1)).endTime(System.currentTimeMillis()).status(MerchantConstant.MERCHANT_REBATE_TYPE_RENEWAL).build();
-        Integer currentMonthRenewalCount = rebateRecordService.countByTime(currentMonthRenewalQueryModel);
-        merchantPromotionFeeRenewalVO.setCurrentMonthRenewalCount(currentMonthRenewalCount);
-        
-        //上月续费次数：购买指定套餐时间=上月1号0点～本月1号0点，且套餐购买次数>1的购买成功次数
-        MerchantPromotionRenewalQueryModel lastMonthRenewalQueryModel = MerchantPromotionRenewalQueryModel.builder().tenantId(TenantContextHolder.getTenantId()).type(type).uid(uid)
-                .startTime(dayOfMonthStartTime).endTime(dayOfMonthEndTime).status(MerchantConstant.MERCHANT_REBATE_TYPE_RENEWAL).build();
-        Integer lastMonthRenewalCount = rebateRecordService.countByTime(lastMonthRenewalQueryModel);
-        merchantPromotionFeeRenewalVO.setLastMonthRenewalCount(lastMonthRenewalCount);*/
         
         //今日续费次数：购买指定套餐时间=今日0点～当前时间，且套餐购买次数>1的购买成功次数
         merchantPromotionFeeRenewalVO.setTodayRenewalCount(buildRenewalNum(type, uid, DateUtils.getTodayStartTime(), System.currentTimeMillis()));
