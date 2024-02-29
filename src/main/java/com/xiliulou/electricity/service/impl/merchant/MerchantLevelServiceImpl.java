@@ -165,8 +165,7 @@ public class MerchantLevelServiceImpl implements MerchantLevelService {
                 }
                 
                 //拉新人数+续费人数
-                if (Objects.equals(merchantAttr.getUpgradeCondition(), MerchantConstant.UPGRADE_CONDITION_INVITATION) && Objects.equals(merchantAttr.getUpgradeCondition(),
-                        MerchantConstant.UPGRADE_CONDITION_RENEWAL)) {
+                if (Objects.equals(merchantAttr.getUpgradeCondition(), MerchantConstant.UPGRADE_CONDITION_ALL)) {
                     if ((Objects.nonNull(merchantLevelDTO.getInvitationUserCount()) && merchantLevelDTO.getInvitationUserCount() <= request.getInvitationUserCount()) || (
                             Objects.nonNull(merchantLevelDTO.getRenewalUserCount()) && merchantLevelDTO.getRenewalUserCount() <= request.getRenewalUserCount())) {
                         log.error("next===============111==========,getInvitationUserCount={},requestInvitationUserCount={}",merchantLevelDTO.getInvitationUserCount(),request.getInvitationUserCount());
@@ -199,8 +198,7 @@ public class MerchantLevelServiceImpl implements MerchantLevelService {
                 }
                 
                 //拉新人数+续费人数
-                if (Objects.equals(merchantAttr.getUpgradeCondition(), MerchantConstant.UPGRADE_CONDITION_INVITATION) && Objects.equals(merchantAttr.getUpgradeCondition(),
-                        MerchantConstant.UPGRADE_CONDITION_RENEWAL)) {
+                if (Objects.equals(merchantAttr.getUpgradeCondition(), MerchantConstant.UPGRADE_CONDITION_ALL)) {
                     if ((Objects.nonNull(merchantLevelDTO.getInvitationUserCount()) && merchantLevelDTO.getInvitationUserCount() >= request.getInvitationUserCount()) || (
                             Objects.nonNull(merchantLevelDTO.getRenewalUserCount()) && merchantLevelDTO.getRenewalUserCount() >= request.getRenewalUserCount())) {
                         log.error("last========123=================,getInvitationUserCount={},requestInvitationUserCount={}",merchantLevelDTO.getInvitationUserCount(),request.getInvitationUserCount());
