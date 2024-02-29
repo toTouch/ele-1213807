@@ -46,17 +46,17 @@ public class JsonUserMerchantWithdrawController extends BaseController {
     }
     
     @GetMapping("/merchant/withdrawList")
-    public R queryMerchantWithdrawApplicationList(@RequestParam(value = "size", required = false) Long size,
-            @RequestParam(value = "offset", required = false) Long offset,
+    public R queryMerchantWithdrawApplicationList(@RequestParam(value = "size", required = true) Long size,
+            @RequestParam(value = "offset", required = true) Long offset,
             @RequestParam(value = "beginTime", required = false) Long beginTime,
             @RequestParam(value = "endTime", required = false) Long endTime,
             @RequestParam(value = "status", required = false) Integer status) {
-        
-        if (size == null || size <= 0) {
+    
+        if (size < 0 || size > 50) {
             size = 10L;
         }
-        
-        if (offset == null || offset <= 0) {
+    
+        if (offset < 0) {
             offset = 0L;
         }
     

@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.controller.admin.merchant;
 
+import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.request.merchant.BatchReviewWithdrawApplicationRequest;
@@ -30,7 +31,7 @@ import java.util.Objects;
 
 @Slf4j
 @RestController
-public class JsonMerchantWithdrawController {
+public class JsonMerchantWithdrawController extends BaseController {
     
     @Resource
     UserDataScopeService userDataScopeService;
@@ -142,12 +143,12 @@ public class JsonMerchantWithdrawController {
     
     @PostMapping(value = "/admin/merchant/withdraw/review")
     public R reviewMerchantWithdrawApplication(@Validated @RequestBody ReviewWithdrawApplicationRequest reviewWithdrawApplicationRequest) {
-        return R.ok(merchantWithdrawApplicationService.reviewMerchantWithdrawApplication(reviewWithdrawApplicationRequest));
+        return returnTripleResult(merchantWithdrawApplicationService.reviewMerchantWithdrawApplication(reviewWithdrawApplicationRequest));
     }
     
     @PostMapping(value = "/admin/merchant/withdraw/batchReview")
     public R batchReviewMerchantWithdrawApplication(@Validated @RequestBody BatchReviewWithdrawApplicationRequest batchReviewWithdrawApplicationRequest) {
-        return R.ok(merchantWithdrawApplicationService.batchReviewMerchantWithdrawApplication(batchReviewWithdrawApplicationRequest));
+        return returnTripleResult(merchantWithdrawApplicationService.batchReviewMerchantWithdrawApplication(batchReviewWithdrawApplicationRequest));
     }
     
     /**
