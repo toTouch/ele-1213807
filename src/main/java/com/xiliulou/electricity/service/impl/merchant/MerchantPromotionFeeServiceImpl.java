@@ -178,9 +178,9 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
         if (!PromotionFeeQueryTypeEnum.contains(type)) {
             return R.fail("300850", "该类型用户不存在");
         }
-    
+        
         // 如果是默认首页，则type为4  因为员工的收入也包含在商户中 因此如果查全部，也就是查询的商户的
-        if(Objects.equals(PromotionFeeQueryTypeEnum.MERCHANT_AND_MERCHANT_EMPLOYEE.getCode(), type)){
+        if (Objects.equals(PromotionFeeQueryTypeEnum.MERCHANT_AND_MERCHANT_EMPLOYEE.getCode(), type)) {
             type = PromotionFeeQueryTypeEnum.MERCHANT.getCode();
         }
         
@@ -240,9 +240,9 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
     
     @Override
     public R queryMerchantPromotionRenewal(Integer type, Long uid) {
-    
+        
         // 如果是默认首页，则type为4  因为员工的收入也包含在商户中 因此如果查全部，也就是查询的商户的
-        if(Objects.equals(PromotionFeeQueryTypeEnum.MERCHANT_AND_MERCHANT_EMPLOYEE.getCode(), type)){
+        if (Objects.equals(PromotionFeeQueryTypeEnum.MERCHANT_AND_MERCHANT_EMPLOYEE.getCode(), type)) {
             type = PromotionFeeQueryTypeEnum.MERCHANT.getCode();
         }
         
@@ -273,7 +273,7 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
         }
         
         // 如果是默认首页，则type为4  因为员工的收入也包含在商户中 因此如果查全部，也就是查询的商户的
-        if(Objects.equals(PromotionFeeQueryTypeEnum.MERCHANT_AND_MERCHANT_EMPLOYEE.getCode(), type)){
+        if (Objects.equals(PromotionFeeQueryTypeEnum.MERCHANT_AND_MERCHANT_EMPLOYEE.getCode(), type)) {
             type = PromotionFeeQueryTypeEnum.MERCHANT.getCode();
         }
         
@@ -393,12 +393,15 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
     public R selectMerchantEmployeeDetailList(MerchantPromotionEmployeeDetailQueryModel queryModel) {
         List<MerchantPromotionEmployeeDetailVO> result = new ArrayList<>();
         
-        if (Objects.equals(PromotionFeeQueryTypeEnum.MERCHANT.getCode(), queryModel.getType())) {
+        // 如果是默认首页，则type为4  因为员工的收入也包含在商户中 因此如果查全部，也就是查询的商户的
+        if (Objects.equals(PromotionFeeQueryTypeEnum.MERCHANT.getCode(), queryModel.getType()) || Objects.equals(PromotionFeeQueryTypeEnum.MERCHANT_AND_MERCHANT_EMPLOYEE.getCode(),
+                queryModel.getType())) {
             List<MerchantEmployee> merchantEmployees = merchantEmployeeService.selectByMerchantUid(queryModel);
-            result = merchantEmployees.stream().map(merchantEmployee -> buildMerchantPromotionEmployeeDetailVO(merchantEmployee.getUid(), merchantEmployee.getPlaceId())).collect(Collectors.toList());
+            result = merchantEmployees.stream().map(merchantEmployee -> buildMerchantPromotionEmployeeDetailVO(merchantEmployee.getUid(), merchantEmployee.getPlaceId()))
+                    .collect(Collectors.toList());
         }
         
-        if(Objects.equals(PromotionFeeQueryTypeEnum.MERCHANT_EMPLOYEE.getCode(), queryModel.getType())){
+        if (Objects.equals(PromotionFeeQueryTypeEnum.MERCHANT_EMPLOYEE.getCode(), queryModel.getType())) {
             MerchantEmployeeVO merchantEmployeeVO = merchantEmployeeService.queryMerchantEmployeeByUid(queryModel.getUid());
             result.add(buildMerchantPromotionEmployeeDetailVO(merchantEmployeeVO.getUid(), merchantEmployeeVO.getPlaceId()));
         }
@@ -406,30 +409,30 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
         return R.ok(result);
     }
     
-    private MerchantPromotionEmployeeDetailVO buildMerchantPromotionEmployeeDetailVO(Long uid,Long placeId) {
+    private MerchantPromotionEmployeeDetailVO buildMerchantPromotionEmployeeDetailVO(Long uid, Long placeId) {
         MerchantPromotionEmployeeDetailVO employeeDetailVO = new MerchantPromotionEmployeeDetailVO();
         User user = userService.queryByUidFromCache(uid);
         if (Objects.nonNull(user)) {
             employeeDetailVO.setEmployeeName(user.getName());
             employeeDetailVO.setUid(user.getUid());
-        
+            
             // 今日预估收入：“返现日期” = 今日，“结算状态” = 未结算；
             MerchantPromotionFeeQueryModel incomeQueryModel = MerchantPromotionFeeQueryModel.builder().status(MerchantConstant.MERCHANT_REBATE_STATUS_NOT_SETTLE)
                     .type(PromotionFeeQueryTypeEnum.MERCHANT_EMPLOYEE.getCode()).uid(user.getUid()).tenantId(TenantContextHolder.getTenantId())
                     .rebateStartTime(DateUtils.getTodayStartTimeStamp()).rebateEndTime(System.currentTimeMillis()).build();
             BigDecimal todayInCome = rebateRecordService.sumByStatus(incomeQueryModel);
             employeeDetailVO.setTodayIncome(todayInCome);
-        
+            
             // 本月预估收入：“结算日期” = 本月，“结算状态” = 未结算；
             incomeQueryModel.setRebateStartTime(DateUtils.getDayOfMonthStartTime(1));
             BigDecimal currentMonthInCome = rebateRecordService.sumByStatus(incomeQueryModel);
             employeeDetailVO.setCurrentMonthIncome(currentMonthInCome);
-        
+            
             // 累计收入：“结算日期” = 当前时间，“结算状态” = 未结算；
             incomeQueryModel.setRebateStartTime(null);
             BigDecimal totalInCome = rebateRecordService.sumByStatus(incomeQueryModel);
             employeeDetailVO.setTotalIncome(totalInCome);
-        
+            
             if (Objects.nonNull(placeId)) {
                 MerchantPlace place = merchantPlaceService.queryFromCacheById(placeId);
                 employeeDetailVO.setPlaceName(place.getName());
@@ -437,7 +440,7 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
         }
         return employeeDetailVO;
     }
-
+    
     
     @Override
     public R selectPromotionDataDetail(MerchantPromotionDataDetailQueryModel queryModel) {
