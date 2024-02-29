@@ -282,6 +282,7 @@ public class MerchantEmployeeServiceImpl implements MerchantEmployeeService {
             merchantEmployeeQrCodeVO.setName(merchantEmployeeVO.getName());
             merchantEmployeeQrCodeVO.setPhone(merchantEmployeeVO.getPhone());
             merchantEmployeeQrCodeVO.setType(MerchantConstant.MERCHANT_EMPLOYEE_QR_CODE_TYPE);
+            merchantEmployeeQrCodeVO.setStatus(merchantEmployeeVO.getStatus());
             merchantEmployeeQrCodeVO.setCode(merchantJoinRecordService.codeEnCoder(merchant.getId(), merchantEmployeeVO.getUid(), MerchantConstant.MERCHANT_EMPLOYEE_QR_CODE_TYPE));
     
             merchantEmployeeQrCodeVOList.add(merchantEmployeeQrCodeVO);
