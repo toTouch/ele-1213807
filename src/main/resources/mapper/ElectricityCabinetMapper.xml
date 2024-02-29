@@ -537,7 +537,7 @@
             and tec.store_id = #{storeId}
         </if>
         <if test="areaId != null">
-            tec.area_id = #{areaId}
+            and tec.area_id = #{areaId}
         </if>
         <if test="eleIdList!=null and eleIdList!=''">
             and tec.id in
@@ -991,7 +991,7 @@
             and tec.store_id = #{storeId}
         </if>
         <if test="areaId != null">
-            tec.area_id = #{areaId}
+            and tec.area_id = #{areaId}
         </if>
         <if test="eleIdList!=null and eleIdList!=''">
             and tec.id in
