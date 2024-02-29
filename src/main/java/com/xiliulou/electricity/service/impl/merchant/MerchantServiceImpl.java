@@ -341,7 +341,7 @@ public class MerchantServiceImpl implements MerchantService {
             
             merchantSaveRequest.getPlaceIdList().stream().forEach(placeId -> {
                 // 商户场地映射
-                MerchantPlaceMap merchantPlaceMap = MerchantPlaceMap.builder().merchantId(merchant.getId()).placeId(placeId).tenantId(tenantId).delFlag(MerchantPlaceMap.DEL_NORMAL)
+                MerchantPlaceMap merchantPlaceMap = MerchantPlaceMap.builder().merchantId(merchant.getId()).placeId(placeId).tenantId(tenantId).delFlag(MerchantPlaceMap.DEL_NORMAL).updateTime(timeMillis)
                         .createTime(timeMillis).build();
                 merchantPlaceMapList.add(merchantPlaceMap);
                 
