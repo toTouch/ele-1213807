@@ -795,6 +795,7 @@ public class MerchantServiceImpl implements MerchantService {
             if (ObjectUtils.isNotEmpty(merchantPlaceMaps)) {
                 placeMap = merchantPlaceMaps.stream().collect(Collectors.toMap(MerchantPlaceMapVO::getMerchantId, MerchantPlaceMapVO::getCount, (key, key1) -> key1));
             }
+            
             Map<Long, Integer> finalPlaceMap = placeMap;
             resList.stream().forEach(item -> {
                 if (ObjectUtils.isNotEmpty(finalPlaceMap.get(item.getId()))) {
