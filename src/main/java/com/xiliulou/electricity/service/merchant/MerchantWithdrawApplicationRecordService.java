@@ -1,0 +1,41 @@
+package com.xiliulou.electricity.service.merchant;
+
+import com.xiliulou.electricity.entity.merchant.MerchantWithdrawApplicationRecord;
+import com.xiliulou.electricity.request.merchant.MerchantWithdrawApplicationRecordRequest;
+import com.xiliulou.electricity.request.merchant.MerchantWithdrawApplicationRequest;
+import com.xiliulou.electricity.vo.merchant.MerchantWithdrawApplicationRecordVO;
+
+import java.util.List;
+
+/**
+ * @author BaoYu
+ * @description:
+ * @date 2024/2/24 14:34
+ */
+public interface MerchantWithdrawApplicationRecordService {
+    
+    Integer insertOne(MerchantWithdrawApplicationRecord merchantWithdrawApplicationRecord);
+    
+    Integer batchInsert(List<MerchantWithdrawApplicationRecord> merchantWithdrawApplicationRecords);
+    
+    Integer updateOne(MerchantWithdrawApplicationRecord merchantWithdrawApplicationRecord);
+    
+    Integer removeById(Long id);
+    
+    Integer countByCondition(MerchantWithdrawApplicationRecordRequest merchantWithdrawApplicationRecordRequest);
+    
+    List<MerchantWithdrawApplicationRecordVO> selectListByCondition(MerchantWithdrawApplicationRecordRequest merchantWithdrawApplicationRecordRequest);
+    
+    MerchantWithdrawApplicationRecordVO selectById(Long id);
+    
+    Integer updateApplicationRecordStatusByBatchNo(Integer status, String batchNo, Integer tenantId);
+    
+    List<MerchantWithdrawApplicationRecord> selectListByBatchNo(String batchNo, Integer tenantId);
+    
+    Integer updateMerchantWithdrawStatus(MerchantWithdrawApplicationRecord merchantWithdrawApplicationRecord);
+    
+    List<MerchantWithdrawApplicationRecordVO> selectWithdrawRecordList(MerchantWithdrawApplicationRecordRequest merchantWithdrawApplicationRecordRequest);
+    
+    Integer selectWithdrawRecordListCount(MerchantWithdrawApplicationRecordRequest merchantWithdrawApplicationRecordRequest);
+    
+}

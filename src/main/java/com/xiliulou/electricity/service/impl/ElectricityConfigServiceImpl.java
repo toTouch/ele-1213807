@@ -7,6 +7,7 @@ import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.EleEsignConstant;
+import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.dto.FranchiseeBatteryModelDTO;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mapper.ElectricityConfigMapper;
@@ -27,6 +28,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Objects;
 
@@ -147,7 +149,16 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
                 return R.fail("100500", "电子签名功能未配置相关信息,请检查");
             }
         }
-
+    
+        // 处理柜机 少电比例和多电比例参数
+        Integer lowChargeRate = electricityConfigAddAndUpdateQuery.getLowChargeRate();
+        Integer fullChargeRate = electricityConfigAddAndUpdateQuery.getFullChargeRate();
+    
+        if (Objects.isNull(lowChargeRate) || Objects.isNull(fullChargeRate) || lowChargeRate < NumberConstant.ZERO || fullChargeRate < NumberConstant.ZERO
+                || fullChargeRate <= lowChargeRate) {
+            return R.fail("100317", "请输入0-100的整数;多电比例需大于少电比例");
+        }
+    
         ElectricityConfig electricityConfig = electricityConfigMapper.selectOne(new LambdaQueryWrapper<ElectricityConfig>().eq(ElectricityConfig::getTenantId, TenantContextHolder.getTenantId()));
         if (Objects.isNull(electricityConfig)) {
             electricityConfig = new ElectricityConfig();
@@ -177,6 +188,10 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
             electricityConfig.setAllowReturnEle(electricityConfigAddAndUpdateQuery.getAllowReturnEle());
             electricityConfig.setAllowFreezeWithAssets(electricityConfigAddAndUpdateQuery.getAllowFreezeWithAssets());
             electricityConfig.setWxCustomer(ElectricityConfig.CLOSE_WX_CUSTOMER);
+            electricityConfig.setLowChargeRate(BigDecimal.valueOf(lowChargeRate));
+            electricityConfig.setFullChargeRate(BigDecimal.valueOf(fullChargeRate));
+            electricityConfig.setChannelTimeLimit(electricityConfigAddAndUpdateQuery.getChannelTimeLimit());
+
             electricityConfigMapper.insert(electricityConfig);
             return R.ok();
         }
@@ -213,6 +228,10 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
         electricityConfig.setAllowRentEle(electricityConfigAddAndUpdateQuery.getAllowRentEle());
         electricityConfig.setAllowReturnEle(electricityConfigAddAndUpdateQuery.getAllowReturnEle());
         electricityConfig.setAllowFreezeWithAssets(electricityConfigAddAndUpdateQuery.getAllowFreezeWithAssets());
+        electricityConfig.setLowChargeRate(BigDecimal.valueOf(lowChargeRate));
+        electricityConfig.setFullChargeRate(BigDecimal.valueOf(fullChargeRate));
+        electricityConfig.setChannelTimeLimit(electricityConfigAddAndUpdateQuery.getChannelTimeLimit());
+        
         int updateResult = electricityConfigMapper.update(electricityConfig);
         if (updateResult > 0) {
             redisService.delete(CacheConstant.CACHE_ELE_SET_CONFIG + TenantContextHolder.getTenantId());
@@ -220,7 +239,7 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
 
         return R.ok();
     }
-
+    
     private Triple<Boolean, String, Object> verifyFranchisee(Franchisee oldFranchisee, Franchisee newFranchisee, FranchiseeMoveInfo franchiseeMoveInfoQuery) {
         //旧加盟商校验
         if (Objects.isNull(oldFranchisee)) {

@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.merchant.MerchantAreaMapper">
+    <!-- 基础字段 -->
+    <sql id="basic_field">
+        id, name, del_flag, create_time, update_time, tenant_id, remark
+    </sql>
+    
+    <!--新增所有列-->
+    <insert id="insertOne" keyProperty="id" useGeneratedKeys="true">
+        insert into t_merchant_area
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            name, del_flag, create_time, update_time, tenant_id, remark
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            #{name}, #{delFlag}, #{createTime}, #{updateTime}, #{tenantId}, #{remark}
+        </trim>
+    </insert>
+    
+    <delete id="deleteById">
+        update t_merchant_area set del_flag = 1 where id = #{id} and tenant_id = #{tenantId}
+    </delete>
+    
+    <select id="existsByAreaName" resultType="java.lang.Integer">
+        select 1 from t_merchant_area where tenant_id = #{tenantId} and name = #{areaName} limit 1
+    </select>
+    
+    <update id="updateById">
+        update t_merchant_area
+        <set>
+            <if test="name != null and name != ''">
+                name = #{name},
+            </if>
+            <if test="delFlag != null">
+                del_flag = #{delFlag},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+            <if test="remark != null and remark != ''">
+                remark = #{remark}
+            </if>
+        </set>
+        <where>
+            id = #{id} and tenant_id = #{tenantId}
+        </where>
+    </update>
+    
+    <select id="selectPage" resultType="com.xiliulou.electricity.entity.merchant.MerchantArea">
+        select
+        <include refid="basic_field"/>
+        from t_merchant_area
+        <where>
+            del_flag = 0 and tenant_id = #{tenantId}
+            <if test="name != null and name != ''">
+                and name like concat('%',#{name,jdbcType=VARCHAR},'%')
+            </if>
+        </where>
+        order by id desc
+        <if test="offset != null and size != null">
+            limit #{offset}, #{size}
+        </if>
+    </select>
+    
+    <select id="countTotal" resultType="java.lang.Integer">
+        select count(1)
+        from t_merchant_area
+        <where>
+            del_flag = 0 and tenant_id = #{tenantId}
+            <if test="name != null and name != ''">
+                and name like concat('%',#{name,jdbcType=VARCHAR},'%')
+            </if>
+        </where>
+    </select>
+    
+    <select id="queryList" resultType="com.xiliulou.electricity.entity.merchant.MerchantArea">
+        select
+        <include refid="basic_field"/>
+        from t_merchant_area
+        <where>
+            del_flag = 0
+            <if test="idList != null and idList.size() > 0">
+                and id in
+                <foreach collection="idList" item="id" close=")" open="(" separator=",">
+                    #{id}
+                </foreach>
+            </if>
+            <if test="tenantId != null">
+                and tenant_id = #{tenantId}
+            </if>
+            <if test="name != null and name != ''">
+                and name like concat('%', concat(#{name}, '%'))
+            </if>
+        </where>
+        order by id desc
+        <if test="offset != null and size != null">
+            limit #{offset}, #{size}
+        </if>
+    </select>
+    
+    <select id="selectById" resultType="com.xiliulou.electricity.entity.merchant.MerchantArea">
+        select
+        <include refid="basic_field"/>
+        from t_merchant_area
+        where del_flag = 0 and id= #{id}
+    </select>
+
+</mapper>
+
+
+
+

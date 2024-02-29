@@ -2,7 +2,7 @@ package com.xiliulou.electricity.service;
 
 import com.xiliulou.electricity.entity.ElePower;
 import com.xiliulou.electricity.query.ElePowerListQuery;
-import com.xiliulou.electricity.query.PowerMonthStatisticsQuery;
+import com.xiliulou.electricity.vo.EleSumPowerVO;
 import org.apache.commons.lang3.tuple.Pair;
 
 import javax.servlet.http.HttpServletResponse;
@@ -79,4 +79,9 @@ public interface ElePowerService {
     Pair<Boolean, Object> queryMonthDetail(Long eid, Long startTime, Long endTime, Integer tenantId);
 
     void exportList(ElePowerListQuery query, HttpServletResponse response);
+    
+    EleSumPowerVO listByCondition(Long startTime, Long endTime, List<Long> eidList, Integer tenantId);
+    
+    Long queryLatestReportTime(Long startTime, Long endTime, List<Long> eid, Integer tenantId);
+    
 }

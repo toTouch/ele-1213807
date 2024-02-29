@@ -1,11 +1,17 @@
 package com.xiliulou.electricity.service.impl;
 
+import cn.hutool.core.bean.BeanUtil;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
+import com.xiliulou.core.thread.XllThreadPoolExecutorService;
+import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.core.utils.DataUtil;
+import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.CacheConstant;
+import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.dto.EleChargeConfigCalcDetailDto;
 import com.xiliulou.electricity.entity.*;
+import com.xiliulou.electricity.entity.merchant.EleChargeConfigRecord;
 import com.xiliulou.electricity.mapper.EleChargeConfigMapper;
 import com.xiliulou.electricity.query.ChargeConfigListQuery;
 import com.xiliulou.electricity.query.ChargeConfigQuery;
@@ -13,9 +19,12 @@ import com.xiliulou.electricity.service.EleChargeConfigService;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
 import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.StoreService;
+import com.xiliulou.electricity.service.merchant.EleChargeConfigRecordService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
+import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.ChargeConfigVo;
+import com.xiliulou.security.bean.TokenUser;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -45,6 +54,9 @@ import lombok.extern.slf4j.Slf4j;
 @Service("eleChargeConfigService")
 @Slf4j
 public class EleChargeConfigServiceImpl implements EleChargeConfigService {
+    
+    protected XllThreadPoolExecutorService executorService = XllThreadPoolExecutors.newFixedThreadPool("CHARGE_CONFIG_RECORD_HANDLE_THREAD_POOL", 3, "charge_config_record_handle_thread");
+    
     @Resource
     private EleChargeConfigMapper eleChargeConfigMapper;
 
@@ -58,6 +70,9 @@ public class EleChargeConfigServiceImpl implements EleChargeConfigService {
 
     @Autowired
     RedisService redisService;
+    
+    @Resource
+    private EleChargeConfigRecordService eleChargeConfigRecordService;
 
     static DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("H");
 
@@ -251,6 +266,16 @@ public class EleChargeConfigServiceImpl implements EleChargeConfigService {
             config.setUpdateTime(System.currentTimeMillis());
             config.setJsonRule(chargeConfigQuery.getJsonRule());
             insert(config);
+    
+            executorService.execute(() -> {
+                EleChargeConfigRecord record = new EleChargeConfigRecord();
+                BeanUtil.copyProperties(config, record);
+                record.setOperationType(EleChargeConfigRecord.OPERATION_TYPE_NEW);
+                record.setOperationTime(System.currentTimeMillis());
+                record.setOperator(Optional.ofNullable(SecurityUtils.getUserInfo()).map(TokenUser::getUid).orElse(NumberConstant.ZERO_L));
+        
+                eleChargeConfigRecordService.insertOne(record);
+            });
         } finally {
             redisService.delete(CacheConstant.CACHE_CHARGE_CONFIG_OPERATE_LIMIT + TenantContextHolder.getTenantId());
         }
@@ -339,6 +364,16 @@ public class EleChargeConfigServiceImpl implements EleChargeConfigService {
             updateConfig.setTenantId(TenantContextHolder.getTenantId());
 
             update(updateConfig, config);
+    
+            executorService.execute(() -> {
+                EleChargeConfigRecord record = new EleChargeConfigRecord();
+                BeanUtil.copyProperties(updateConfig, record);
+                record.setOperationType(EleChargeConfigRecord.OPERATION_TYPE_UPDATE);
+                record.setOperationTime(System.currentTimeMillis());
+                record.setOperator(Optional.ofNullable(SecurityUtils.getUserInfo()).map(TokenUser::getUid).orElse(NumberConstant.ZERO_L));
+    
+                eleChargeConfigRecordService.insertOne(record);
+            });
         } finally {
             redisService.delete(CacheConstant.CACHE_CHARGE_CONFIG_OPERATE_LIMIT + TenantContextHolder.getTenantId());
         }
@@ -353,6 +388,16 @@ public class EleChargeConfigServiceImpl implements EleChargeConfigService {
         }
 
         deleteById(id, config);
+    
+        executorService.execute(() -> {
+            EleChargeConfigRecord record = new EleChargeConfigRecord();
+            BeanUtil.copyProperties(config, record);
+            record.setOperationType(EleChargeConfigRecord.OPERATION_TYPE_DELETE);
+            record.setOperationTime(System.currentTimeMillis());
+            record.setOperator(Optional.ofNullable(SecurityUtils.getUserInfo()).map(TokenUser::getUid).orElse(NumberConstant.ZERO_L));
+    
+            eleChargeConfigRecordService.insertOne(record);
+        });
 
         return Pair.of(true, null);
     }

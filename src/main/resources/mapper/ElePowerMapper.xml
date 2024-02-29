@@ -166,7 +166,31 @@
           and eid = #{eid}
         group by type;
     </select>
-
+    
+    <select id="selectListByCondition" resultType="com.xiliulou.electricity.vo.EleSumPowerVO">
+        select sum(hour_power) sumPower, sum(electric_charge) sumCharge
+        from t_ele_power
+        where tenant_id = #{tenantId}
+          and eid in
+          <foreach collection="eidList" item="item" open="(" separator="," close=")">
+            #{item}
+          </foreach>
+          and report_time &gt;= #{startTime}
+          and report_time &lt;= #{endTime}
+    </select>
+    
+    <select id="selectLatestReportTime" resultType="java.lang.Long">
+        select max(report_time)
+        from t_ele_power
+        where tenant_id = #{tenantId}
+        and eid in
+        <foreach collection="eidList" item="item" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+        and report_time &gt;= #{startTime}
+        and report_time &lt;= #{endTime}
+    </select>
+    
     <!--新增所有列-->
     <insert id="insertOne" keyProperty="id" useGeneratedKeys="true">
         insert into t_ele_power(sn, e_name, eid, store_id, franchisee_id, tenant_id, report_time, create_time, type,

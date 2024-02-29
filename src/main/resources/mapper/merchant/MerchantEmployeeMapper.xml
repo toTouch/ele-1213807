@@ -1,0 +1,228 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.merchant.MerchantEmployeeMapper">
+    
+    <resultMap type="com.xiliulou.electricity.vo.merchant.MerchantEmployeeVO" id="MerchantEmployeeMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="uid" column="uid" jdbcType="INTEGER"/>
+        <result property="status" column="lock_flag" jdbcType="INTEGER"/>
+        <result property="merchantUid" column="merchant_uid" jdbcType="INTEGER"/>
+        <result property="merchantName" column="merchant_name" jdbcType="VARCHAR"/>
+        <result property="placeId" column="place_id" jdbcType="INTEGER"/>
+        <result property="tenantId" column="tenant_id" jdbcType="INTEGER"/>
+        
+        <result property="delFlag" column="del_flag" jdbcType="INTEGER"/>
+        <result property="remark" column="remark" jdbcType="VARCHAR"/>
+        <result property="createTime" column="create_time" jdbcType="INTEGER"/>
+        <result property="updateTime" column="update_time" jdbcType="INTEGER"/>
+    </resultMap>
+    
+    <select id="selectById" resultMap="MerchantEmployeeMap">
+        select
+            tme.id,
+            tme.uid,
+            tu.lock_flag,
+            tme.merchant_uid,
+            tme.place_id,
+            tme.tenant_id,
+            tme.del_flag,
+            tme.remark,
+            tme.create_time,
+            tme.update_time
+        from t_merchant_employee tme
+        left join t_user tu on tu.uid = tme.uid
+        where tme.id = #{id}
+    </select>
+    
+    <select id="selectByUid" resultMap="MerchantEmployeeMap">
+        select
+            tme.id,
+            tme.uid,
+            tu.lock_flag,
+            tme.merchant_uid,
+            tme.place_id,
+            tme.tenant_id,
+            tme.del_flag,
+            tme.remark,
+            tme.create_time,
+            tme.update_time
+        from t_merchant_employee tme
+        left join t_user tu on tu.uid = tme.uid
+        where tme.uid = #{uid}
+    </select>
+    
+    <select id="selectListByCondition" resultMap="MerchantEmployeeMap">
+        select
+          tme.id,
+          tme.uid,
+          tme.merchant_uid,
+          tm.name as merchant_name,
+          tme.place_id,
+          tme.tenant_id,
+          tme.del_flag,
+          tme.remark,
+          tme.create_time,
+          tme.update_time
+        from t_merchant_employee tme
+        left join t_merchant tm on tm.uid = tme.merchant_uid
+        <where>
+            tme.del_flag = 0
+            <if test="id != null">
+                and tme.id = #{id}
+            </if>
+            
+            <if test="uid != null">
+                and tme.uid = #{uid}
+            </if>
+            
+            <if test="merchantUid != null">
+                and tme.merchant_uid = #{merchantUid}
+            </if>
+            
+            <if test="placeId != null">
+                and tme.place_id = #{placeId}
+            </if>
+            
+    
+        </where>
+        order by tme.id desc
+        <if test="offset != null and size != null">
+            limit #{offset}, #{size}
+        </if>
+        
+    </select>
+    
+    <select id="countByCondition" resultType="int">
+        select count(1)
+        from t_merchant_employee tme
+        left join t_merchant tm on tm.uid = tme.merchant_uid
+        <where>
+            tme.del_flag = 0
+            <if test="id != null">
+                and tme.id = #{id}
+            </if>
+        
+            <if test="uid != null">
+                and tme.uid = #{uid}
+            </if>
+        
+            <if test="merchantUid != null">
+                and tme.merchant_uid = #{merchantUid}
+            </if>
+        
+            <if test="placeId != null">
+                and tme.place_id = #{placeId}
+            </if>
+    
+    
+        </where>
+    </select>
+    
+    <select id="selectListByPlaceId" resultType="com.xiliulou.electricity.entity.merchant.MerchantEmployee">
+        SELECT
+            place_id,
+            uid
+        FROM
+            t_merchant_employee
+        where
+            del_flag = 0
+          and place_id in
+          <foreach collection="placeIdList" separator="," open="(" close=")" item="placeId">
+              #{placeId}
+          </foreach>
+
+    </select>
+    
+    <!--新增商户员工信息-->
+    <insert id="insertOne" keyProperty="id" useGeneratedKeys="true">
+        insert into t_merchant_employee
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            uid,
+            merchant_uid,
+            place_id,
+            tenant_id,
+            del_flag,
+            remark,
+            create_time,
+            update_time
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            #{uid},
+            #{merchantUid},
+            #{placeId},
+            #{tenantId},
+            #{delFlag},
+            #{remark},
+            #{createTime},
+            #{updateTime}
+        </trim>
+    </insert>
+    
+    <!--修改商户员工信息-->
+    <update id="updateOne">
+        update t_merchant_employee
+        <set>
+    
+            <if test="merchantUid != null">
+                merchant_uid = #{merchantUid},
+            </if>
+            <if test="placeId != null">
+                place_id = #{placeId},
+            </if>
+            <if test="tenantId != null">
+            tenant_id = #{tenantId},
+            </if>
+            <if test="delFlag != null">
+                del_flag = #{delFlag},
+            </if>
+            <if test="remark != null">
+                remark = #{remark},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+        </set>
+        
+        where id = #{id}
+    </update>
+    
+    <!--通过主键逻辑删除商户员工-->
+    <delete id="removeById">
+        update t_merchant_employee set del_flag = 1, update_time = #{updateTime} where id = #{id}
+    </delete>
+    
+    <!--通过主键物理删除商户员工-->
+    <delete id="deleteById">
+        delete from t_merchant_employee where id = #{id}
+    </delete>
+    
+    <select id="selectListByMerchantUid" resultType="com.xiliulou.electricity.entity.merchant.MerchantEmployee">
+        select uid,  place_id from t_merchant_employee where merchant_uid = #{merchantUid} and tenant_id = #{tenantId} and del_flag = 0
+        order by id desc
+        <if test="offset != null and size != null">
+            limit #{offset}, #{size}
+        </if>
+    </select>
+    
+    <select id="selectMerchantUsers" resultType="com.xiliulou.electricity.vo.merchant.MerchantEmployeeVO">
+        select
+            tme.id,
+            tme.uid,
+            tu.name,
+            tu.phone,
+            tu.lock_flag as status,
+            tme.merchant_uid,
+            tme.place_id,
+            tme.tenant_id,
+            tme.del_flag,
+            tme.remark,
+            tme.create_time,
+            tme.update_time
+        from t_merchant_employee tme
+        left join t_user tu on tu.uid = tme.uid
+        where tme.merchant_uid = #{merchantUid}
+          and tme.tenant_id = #{tenantId}
+          and tme.del_flag = 0
+    </select>
+    
+</mapper>

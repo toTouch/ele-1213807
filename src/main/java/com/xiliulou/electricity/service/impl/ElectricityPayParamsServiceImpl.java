@@ -13,7 +13,9 @@ import com.xiliulou.electricity.service.ElectricityPayParamsService;
 import com.xiliulou.electricity.service.WechatPaymentCertificateService;
 import com.xiliulou.electricity.service.WechatWithdrawalCertificateService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
+import com.xiliulou.electricity.vo.merchant.ElectricityMerchantProConfigVO;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -158,7 +160,19 @@ public class ElectricityPayParamsServiceImpl extends ServiceImpl<ElectricityPayP
 	public ElectricityPayParams queryByTenantId(Integer tenantId) {
 		return baseMapper.queryByTenantId(tenantId);
 	}
-	
+
+	@Override
+	public Triple<Boolean, String, Object> queryByMerchantAppId(String appId) {
+		ElectricityPayParams electricityPayParams = baseMapper.selectOne(new LambdaQueryWrapper<ElectricityPayParams>().eq(ElectricityPayParams::getMerchantAppletId, appId));
+		if (Objects.isNull(electricityPayParams)) {
+			return Triple.of(false, null, "未能发现相关的商户小程序配置");
+		}
+
+		ElectricityMerchantProConfigVO vo = new ElectricityMerchantProConfigVO();
+		vo.setTenantId(electricityPayParams.getTenantId());
+		return Triple.of(true, null, vo);
+	}
+
 	/**
 	 * 更新支付参数
 	 * @param electricityPayParams electricityPayParams

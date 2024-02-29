@@ -651,19 +651,28 @@ public class ElectricityTradeOrderServiceImpl extends
             }
 
             if (Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE)) {
-                // 申请冻结的天数
-                Long chooseTime = eleDisableMemberCardRecord.getChooseDays() * TimeConstant.DAY_MILLISECOND;
-                // 实际的冻结时间
-                Long realTime = System.currentTimeMillis() - userBatteryMemberCard.getDisableMemberCardTime();
-               // Long memberCardExpireTime = System.currentTimeMillis() + (userBatteryMemberCard.getMemberCardExpireTime() - userBatteryMemberCard.getDisableMemberCardTime());
-              //  userBatteryMemberCardUpdate.setMemberCardExpireTime(memberCardExpireTime);
-               // userBatteryMemberCardUpdate.setOrderExpireTime(System.currentTimeMillis() + (userBatteryMemberCard.getOrderExpireTime() - userBatteryMemberCard.getDisableMemberCardTime()));
-    
-                Long memberCardExpireTime= userBatteryMemberCard.getMemberCardExpireTime() - (chooseTime-realTime);
-    
-                Long orderExpireTime = userBatteryMemberCard.getOrderExpireTime() - (chooseTime-realTime);
-                userBatteryMemberCardUpdate.setMemberCardExpireTime(memberCardExpireTime);
-                userBatteryMemberCardUpdate.setOrderExpireTime(orderExpireTime);
+                // 兼容2.0冻结不限制天数 冻结天数为空的场景
+                if (Objects.isNull(eleDisableMemberCardRecord.getChooseDays())) {
+                    Long memberCardExpireTime = System.currentTimeMillis() + (userBatteryMemberCard.getMemberCardExpireTime() - userBatteryMemberCard.getDisableMemberCardTime());
+                    Long orderExpireTime = System.currentTimeMillis() + (userBatteryMemberCard.getOrderExpireTime() - userBatteryMemberCard.getDisableMemberCardTime());
+                    userBatteryMemberCardUpdate.setMemberCardExpireTime(memberCardExpireTime);
+                    userBatteryMemberCardUpdate.setOrderExpireTime(orderExpireTime);
+                } else {
+                    // 申请冻结的天数
+                    Long chooseTime = eleDisableMemberCardRecord.getChooseDays() * TimeConstant.DAY_MILLISECOND;
+                    // 实际的冻结时间
+                    Long realTime = System.currentTimeMillis() - userBatteryMemberCard.getDisableMemberCardTime();
+                    // Long memberCardExpireTime = System.currentTimeMillis() + (userBatteryMemberCard.getMemberCardExpireTime() - userBatteryMemberCard.getDisableMemberCardTime());
+                    //  userBatteryMemberCardUpdate.setMemberCardExpireTime(memberCardExpireTime);
+                    // userBatteryMemberCardUpdate.setOrderExpireTime(System.currentTimeMillis() + (userBatteryMemberCard.getOrderExpireTime() - userBatteryMemberCard.getDisableMemberCardTime()));
+        
+                    Long memberCardExpireTime = userBatteryMemberCard.getMemberCardExpireTime() - (chooseTime - realTime);
+        
+                    Long orderExpireTime = userBatteryMemberCard.getOrderExpireTime() - (chooseTime - realTime);
+                    userBatteryMemberCardUpdate.setMemberCardExpireTime(memberCardExpireTime);
+                    userBatteryMemberCardUpdate.setOrderExpireTime(orderExpireTime);
+                }
+               
 
                 eleBatteryServiceFeeOrderUpdate.setBatteryServiceFeeGenerateTime(userBatteryMemberCard.getDisableMemberCardTime());
                 if (Objects.equals(eleDisableMemberCardRecord.getDisableCardTimeType(), EleDisableMemberCardRecord.DISABLE_CARD_LIMIT_TIME)) {
@@ -725,12 +734,18 @@ public class ElectricityTradeOrderServiceImpl extends
             if (Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE)) {
                // Long memberCardExpireTime = System.currentTimeMillis() + (userBatteryMemberCard.getMemberCardExpireTime() - userBatteryMemberCard.getDisableMemberCardTime());
                // serviceFeeUserInfoUpdate.setServiceFeeGenerateTime(memberCardExpireTime);
-                // 申请冻结的天数
-                Long chooseTime = eleDisableMemberCardRecord.getChooseDays() * TimeConstant.DAY_MILLISECOND;
-                // 实际的冻结时间
-                Long realTime = System.currentTimeMillis() - userBatteryMemberCard.getDisableMemberCardTime();
-                Long memberCardExpireTime= userBatteryMemberCard.getMemberCardExpireTime() - (chooseTime-realTime);
-                serviceFeeUserInfoUpdate.setServiceFeeGenerateTime(memberCardExpireTime);
+                // 兼容2.0冻结不限制天数 冻结天数为空的场景
+                if(Objects.isNull(eleDisableMemberCardRecord.getChooseDays())){
+                    Long memberCardExpireTime = System.currentTimeMillis() + (userBatteryMemberCard.getMemberCardExpireTime() - userBatteryMemberCard.getDisableMemberCardTime());
+                    serviceFeeUserInfoUpdate.setServiceFeeGenerateTime(memberCardExpireTime);
+                }else {
+                    // 申请冻结的天数
+                    Long chooseTime = eleDisableMemberCardRecord.getChooseDays() * TimeConstant.DAY_MILLISECOND;
+                    // 实际的冻结时间
+                    Long realTime = System.currentTimeMillis() - userBatteryMemberCard.getDisableMemberCardTime();
+                    Long memberCardExpireTime= userBatteryMemberCard.getMemberCardExpireTime() - (chooseTime-realTime);
+                    serviceFeeUserInfoUpdate.setServiceFeeGenerateTime(memberCardExpireTime);
+                }
             } else {
                 if (userBatteryMemberCard.getMemberCardExpireTime() < System.currentTimeMillis()) {
                     serviceFeeUserInfoUpdate.setServiceFeeGenerateTime(System.currentTimeMillis());

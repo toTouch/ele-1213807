@@ -46,8 +46,8 @@ public interface EleUserAuthService {
 
     EleUserAuth queryByUidAndEntryId(Long uid, Integer idIdCard);
 
-    R acquireIdcardFileSign();
+    R acquireIdcardFileSign(String key);
 
-    R acquireselfieFileSign();
+    R acquireselfieFileSign(String key);
 
 }

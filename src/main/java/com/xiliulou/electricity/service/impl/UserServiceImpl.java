@@ -17,20 +17,7 @@ import com.xiliulou.db.dynamic.annotation.DS;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
-import com.xiliulou.electricity.entity.City;
-import com.xiliulou.electricity.entity.ElectricityCabinet;
-import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
-import com.xiliulou.electricity.entity.Franchisee;
-import com.xiliulou.electricity.entity.Province;
-import com.xiliulou.electricity.entity.Store;
-import com.xiliulou.electricity.entity.User;
-import com.xiliulou.electricity.entity.UserBatteryMemberCard;
-import com.xiliulou.electricity.entity.UserCar;
-import com.xiliulou.electricity.entity.UserCarMemberCard;
-import com.xiliulou.electricity.entity.UserDataScope;
-import com.xiliulou.electricity.entity.UserInfo;
-import com.xiliulou.electricity.entity.UserOauthBind;
-import com.xiliulou.electricity.entity.UserRole;
+import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.entity.enterprise.EnterpriseChannelUser;
 import com.xiliulou.electricity.entity.enterprise.EnterpriseInfo;
 import com.xiliulou.electricity.enums.enterprise.CloudBeanStatusEnum;
@@ -38,34 +25,13 @@ import com.xiliulou.electricity.mapper.UserMapper;
 import com.xiliulou.electricity.query.UserInfoQuery;
 import com.xiliulou.electricity.query.UserSourceQuery;
 import com.xiliulou.electricity.query.UserSourceUpdateQuery;
-import com.xiliulou.electricity.service.CityService;
-import com.xiliulou.electricity.service.ElectricityBatteryService;
-import com.xiliulou.electricity.service.ElectricityCabinetService;
-import com.xiliulou.electricity.service.ElectricityCarService;
-import com.xiliulou.electricity.service.ElectricityMemberCardOrderService;
-import com.xiliulou.electricity.service.FranchiseeService;
-import com.xiliulou.electricity.service.ProvinceService;
-import com.xiliulou.electricity.service.RoleService;
-import com.xiliulou.electricity.service.StoreService;
-import com.xiliulou.electricity.service.UserBatteryDepositService;
-import com.xiliulou.electricity.service.UserBatteryMemberCardService;
-import com.xiliulou.electricity.service.UserCarMemberCardService;
-import com.xiliulou.electricity.service.UserCarService;
-import com.xiliulou.electricity.service.UserDataScopeService;
-import com.xiliulou.electricity.service.UserInfoService;
-import com.xiliulou.electricity.service.UserOauthBindService;
-import com.xiliulou.electricity.service.UserRoleService;
-import com.xiliulou.electricity.service.UserService;
+import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.service.enterprise.EnterpriseChannelUserService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseInfoService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
-import com.xiliulou.electricity.vo.UserBatteryMemberCardDetailVO;
-import com.xiliulou.electricity.vo.UserCarMemberCardDetailVO;
-import com.xiliulou.electricity.vo.UserSearchVO;
-import com.xiliulou.electricity.vo.UserSourceVO;
-import com.xiliulou.electricity.vo.UserVo;
+import com.xiliulou.electricity.vo.*;
 import com.xiliulou.electricity.web.query.AdminUserQuery;
 import com.xiliulou.electricity.web.query.PasswordQuery;
 import com.xiliulou.security.authentication.console.CustomPasswordEncoder;
@@ -86,11 +52,7 @@ import javax.annotation.Resource;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -374,8 +336,15 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Slave
     public List<User> queryByTenantIdAndType(Integer tenantId, Integer userType) {
         return this.userMapper.selectList(new QueryWrapper<User>().eq("tenant_id", tenantId).eq("user_type", userType));
+    }
+
+    @Override
+    @Slave
+    public List<User> listUserByPhone(String phone, Integer tenantId) {
+        return this.userMapper.selectList(new QueryWrapper<User>().eq("phone", phone).eq("tenant_id", tenantId).eq("del_flag", User.DEL_NORMAL));
     }
 
     @Override
@@ -441,6 +410,27 @@ public class UserServiceImpl implements UserService {
         return userMapper.updatePhoneByUid(tenantId, uid, newPhone, System.currentTimeMillis());
     }
     
+    @Slave
+    @Override
+    public User checkMerchantExist(String name, String phone, Integer userType, Integer tenantId, Long uid) {
+        return userMapper.checkMerchantExist(name, phone, userType, tenantId, uid);
+    }
+    
+    @Override
+    public Integer updateMerchantUser(User updateUser) {
+        Integer update = userMapper.updateMerchantUser(updateUser);
+        if (update > 0) {
+            redisService.delete(CacheConstant.CACHE_USER_UID + updateUser.getUid());
+            redisService.delete(CacheConstant.CACHE_USER_PHONE + updateUser.getTenantId() + ":" + updateUser.getPhone() + ":" + updateUser.getUserType());
+        }
+        return update;
+    }
+    
+    @Override
+    public Integer removeById(Long uid, Long updateTime) {
+        return userMapper.removeById(uid, updateTime);
+    }
+    
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Pair<Boolean, Object> updateAdminUser(AdminUserQuery adminUserQuery) {
@@ -470,6 +460,7 @@ public class UserServiceImpl implements UserService {
                 return Pair.of(false, "用户名已经存在！无法修改！");
             }
         }
+        
 
         String decryptPassword = null;
         if (StrUtil.isNotEmpty(adminUserQuery.getPassword())) {
@@ -509,7 +500,15 @@ public class UserServiceImpl implements UserService {
                 }
             }
         }
-
+        
+        // 判断用户的数据类型是否为商户或者是渠道员
+        if (Objects.equals(user.getUserType(), User.TYPE_USER_MERCHANT) || Objects.equals(user.getUserType(), User.TYPE_USER_CHANNEL)) {
+            // 判断用户的手机号是否有变更 然后修改为禁用
+            if (!Objects.equals(user.getPhone(), adminUserQuery.getPhone())) {
+                updateUser.setLockFlag(User.USER_LOCK);
+            }
+        }
+        
         int i = updateUser(updateUser, user);
         //更新userInfo
         if (i > 0) {

@@ -1,0 +1,313 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.merchant.RebateRecordMapper">
+
+    <resultMap type="com.xiliulou.electricity.entity.merchant.RebateRecord" id="RebateRecordMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="uid" column="uid" jdbcType="INTEGER"/>
+        <result property="name" column="name" jdbcType="VARCHAR"/>
+        <result property="phone" column="phone" jdbcType="VARCHAR"/>
+        <result property="orderId" column="order_id" jdbcType="VARCHAR"/>
+        <result property="originalOrderId" column="original_order_id" jdbcType="VARCHAR"/>
+        <result property="memberCardId" column="member_card_id" jdbcType="INTEGER"/>
+        <result property="type" column="type" jdbcType="INTEGER"/>
+        <result property="franchiseeId" column="franchisee_id" jdbcType="INTEGER"/>
+        <result property="level" column="level" jdbcType="VARCHAR"/>
+        <result property="merchantId" column="merchant_id" jdbcType="INTEGER"/>
+        <result property="merchantUid" column="merchant_uid" jdbcType="INTEGER"/>
+        <result property="status" column="status" jdbcType="INTEGER"/>
+        <result property="channeler" column="channeler" jdbcType="INTEGER"/>
+        <result property="channelerRebate" column="channeler_rebate" jdbcType="NUMERIC"/>
+        <result property="merchantRebate" column="merchant_rebate" jdbcType="NUMERIC"/>
+        <result property="placeId" column="place_id" jdbcType="INTEGER"/>
+        <result property="placeUid" column="place_uid" jdbcType="INTEGER"/>
+        <result property="rebateTime" column="rebate_time" jdbcType="INTEGER"/>
+        <result property="settleTime" column="settle_time" jdbcType="INTEGER"/>
+        <result property="tenantId" column="tenant_id" jdbcType="INTEGER"/>
+        <result property="createTime" column="create_time" jdbcType="INTEGER"/>
+        <result property="updateTime" column="update_time" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <!--查询单个-->
+    <select id="selectById" resultMap="RebateRecordMap">
+        select
+          id, uid, name, phone, order_id, original_order_id, member_card_id, type, franchisee_id, level, merchant_id, merchant_uid, status, channeler, channeler_rebate, merchant_rebate, place_id, place_uid, rebate_time, settle_time, tenant_id, create_time, update_time
+        from t_rebate_record
+        where id = #{id}
+    </select>
+    
+    <select id="selectByOrderId" resultMap="RebateRecordMap">
+        select
+            id, uid, name, phone, order_id, original_order_id, member_card_id, type, franchisee_id, level, merchant_id, merchant_uid, status, channeler, channeler_rebate, merchant_rebate, place_id, place_uid, rebate_time, settle_time, tenant_id, create_time, update_time
+        from t_rebate_record
+        where order_id = #{orderId}
+    </select>
+    
+    <select id="selectByOriginalOrderId" resultMap="RebateRecordMap">
+        select
+            id, uid, name, phone, order_id, original_order_id, member_card_id, type, franchisee_id, level, merchant_id, merchant_uid, status, channeler, channeler_rebate, merchant_rebate, place_id, place_uid, rebate_time, settle_time, tenant_id, create_time, update_time
+        from t_rebate_record
+        where original_order_id = #{originalOrderId}
+    </select>
+    
+    <select id="selectNotSettleListByLimit" resultMap="RebateRecordMap">
+        select
+            id, uid, name, phone, order_id, original_order_id, member_card_id, type, franchisee_id, level, merchant_id, merchant_uid, status, channeler, channeler_rebate, merchant_rebate, place_id, place_uid, rebate_time, settle_time, tenant_id, create_time, update_time
+        from t_rebate_record
+        where  status =0 and create_time &gt;= #{startTime} and create_time &lt; #{endTime} limit #{offset}, #{size}
+    </select>
+    
+    <select id="selectCurrentMonthRebateRecord" resultMap="RebateRecordMap">
+        select
+            id, uid, name, phone, order_id, original_order_id, member_card_id, type, franchisee_id, level, merchant_id, merchant_uid, status, channeler, channeler_rebate, merchant_rebate, place_id, place_uid, rebate_time, settle_time, tenant_id, create_time, update_time
+        from t_rebate_record
+        where  status =1 and type in (0,1) and create_time &gt;= #{startTime} and create_time &lt; #{endTime} limit #{offset}, #{size}
+    </select>
+    
+    <select id="selectByPage" resultMap="RebateRecordMap">
+        select
+        id, uid, name, phone, order_id, original_order_id, member_card_id, type, franchisee_id, level, merchant_id, merchant_uid, status, channeler, channeler_rebate, merchant_rebate, place_id, place_uid, rebate_time, settle_time, tenant_id, create_time, update_time
+        from t_rebate_record
+        <where>
+            <if test="channeler != null">
+                and channeler = #{channeler}
+            </if>
+            <if test="merchantId != null">
+                and merchant_id = #{merchantId}
+            </if>
+            <if test="franchiseeId != null">
+                and franchisee_id = #{franchiseeId}
+            </if>
+            <if test="orderId != null and orderId != ''">
+                and order_id =#{orderId}
+            </if>
+            <if test="type != null">
+                and type = #{type}
+            </if>
+            <if test="uid != null">
+                and uid = #{uid}
+            </if>
+            <if test="tenantId != null">
+                and tenant_id = #{tenantId}
+            </if>
+            <if test="beginTime != null">
+                and create_time &gt;= #{beginTime}
+            </if>
+            <if test="endTime != null">
+                and create_time &lt;= #{endTime}
+            </if>
+        </where>
+        order by id desc
+        limit #{offset}, #{size}
+    </select>
+    
+    <select id="selectByPageCount" resultType="int">
+        select   count(1) from t_rebate_record
+        <where>
+            <if test="channeler != null">
+                and channeler = #{channeler}
+            </if>
+            <if test="merchantId != null">
+                and merchant_id = #{merchantId}
+            </if>
+            <if test="franchiseeId != null">
+                and franchisee_id = #{franchiseeId}
+            </if>
+            <if test="orderId != null and orderId != ''">
+                and order_id =#{orderId}
+            </if>
+            <if test="type != null">
+                and type = #{type}
+            </if>
+            <if test="uid != null">
+                and uid = #{uid}
+            </if>
+            <if test="tenantId != null">
+                and tenant_id = #{tenantId}
+            </if>
+            <if test="beginTime != null">
+                and create_time &gt;= #{beginTime}
+            </if>
+            <if test="endTime != null">
+                and create_time &lt;= #{endTime}
+            </if>
+        </where>
+    </select>
+    
+    <!--新增所有列-->
+    <insert id="insertOne" keyProperty="id" useGeneratedKeys="true">
+        insert into t_rebate_record(uid, name, phone, order_id, original_order_id, member_card_id, type, franchisee_id, level, merchant_id, merchant_uid, status, channeler, channeler_rebate, merchant_rebate, place_id, place_uid, rebate_time, settle_time, tenant_id, create_time, update_time)
+        values (#{uid}, #{name}, #{phone}, #{orderId}, #{originalOrderId}, #{memberCardId}, #{type}, #{franchiseeId}, #{level}, #{merchantId}, #{merchantUid}, #{status}, #{channeler}, #{channelerRebate}, #{merchantRebate}, #{placeId}, #{placeUid}, #{rebateTime}, #{settleTime}, #{tenantId}, #{createTime}, #{updateTime})
+    </insert>
+
+    <!--通过主键修改数据-->
+    <update id="update">
+        update t_rebate_record
+        <set>
+            <if test="uid != null">
+                uid = #{uid},
+            </if>
+            <if test="name != null and name != ''">
+                name = #{name},
+            </if>
+            <if test="phone != null and phone != ''">
+                phone = #{phone},
+            </if>
+            <if test="orderId != null and orderId != ''">
+                order_id = #{orderId},
+            </if>
+            <if test="originalOrderId != null and originalOrderId != ''">
+                original_order_id = #{originalOrderId},
+            </if>
+            <if test="memberCardId != null">
+                member_card_id = #{memberCardId},
+            </if>
+            <if test="type != null">
+                type = #{type},
+            </if>
+            <if test="franchiseeId != null">
+                franchisee_id = #{franchiseeId},
+            </if>
+            <if test="level != null and level != ''">
+                level = #{level},
+            </if>
+            <if test="merchantId != null">
+                merchant_id = #{merchantId},
+            </if>
+            <if test="merchantUid != null">
+                merchant_uid = #{merchantUid},
+            </if>
+            <if test="status != null">
+                status = #{status},
+            </if>
+            <if test="channeler != null">
+                channeler = #{channeler},
+            </if>
+            <if test="channelerRebate != null">
+                channeler_rebate = #{channelerRebate},
+            </if>
+            <if test="merchantRebate != null">
+                merchant_rebate = #{merchantRebate},
+            </if>
+            <if test="placeId != null">
+                place_id = #{placeId},
+            </if>
+            <if test="placeUid != null">
+                place_uid = #{placeUid},
+            </if>
+            <if test="rebateTime != null">
+                rebate_time = #{rebateTime},
+            </if>
+            <if test="settleTime != null">
+                settle_time = #{settleTime},
+            </if>
+            <if test="tenantId != null">
+                tenant_id = #{tenantId},
+            </if>
+            <if test="createTime != null">
+                create_time = #{createTime},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+
+    <!--通过主键删除-->
+    <delete id="deleteById">
+        delete from t_rebate_record where id = #{id}
+    </delete>
+    
+    <select id="sumByStatus"  resultType="java.math.BigDecimal">
+        select IFNULL(sum(merchant_rebate), 0) from t_rebate_record
+        <where>
+            <if test="tenantId != null">
+                and tenant_id = #{tenantId}
+            </if>
+            <if test="uid != null and type == 1">
+                and merchant_uid = #{uid}
+            </if>
+            <if test="uid != null and type == 2">
+                and place_uid = #{uid}
+            </if>
+            <if test="uid != null and type == 3">
+                and channeler = #{uid}
+            </if>
+            <if test="status != null">
+                and status = #{status}
+            </if>
+            <if test="rebateStartTime != null">
+                and rebate_time >= #{rebateStartTime}
+            </if>
+            <if test="rebateEndTime!=null">
+               and rebate_time &lt;= #{rebateEndTime}
+            </if>
+            <if test="settleStartTime != null">
+                and settle_time >= #{settleStartTime}
+            </if>
+            <if test="settleEndTime != null">
+                and settle_time &lt;= #{settleEndTime}
+            </if>
+        </where>
+    </select>
+    
+    <select id="countByTime" resultType="java.lang.Integer">
+        select IFNULL(count(1), 0) from t_rebate_record
+        <where>
+            <if test="tenantId != null">
+                and tenant_id = #{tenantId}
+            </if>
+            <if test="uid != null and type == 1">
+                and merchant_uid = #{uid}
+            </if>
+            <if test="uid != null and type == 2">
+                and place_uid = #{uid}
+            </if>
+            <if test="uid != null and type == 3">
+                and channeler = #{uid}
+            </if>
+            <if test="status != null">
+                and status = #{status}
+            </if>
+            <if test="startTime != null">
+                and create_time >= #{startTime}
+            </if>
+            <if test="endTime != null">
+                and create_time &lt;= #{endTime}
+            </if>
+        </where>
+    </select>
+    
+    <select id="selectListPromotionDetail" resultMap="RebateRecordMap">
+        select
+        id, uid, name, phone, member_card_id, merchant_id, merchant_uid, status, merchant_rebate, rebate_time
+        from t_rebate_record
+        <where>
+            <if test="uid != null and type == 1">
+                and merchant_uid = #{uid}
+            </if>
+            <if test="uid != null and type == 2">
+                and place_uid = #{uid}
+            </if>
+            <if test="uid != null and type == 3">
+                and channeler = #{uid}
+            </if>
+            <if test="status != null">
+                and status = #{status}
+            </if>
+            <if test="tenantId != null">
+                and tenant_id = #{tenantId}
+            </if>
+            <if test="startTime != null">
+                and create_time &gt;= #{startTime}
+            </if>
+            <if test="endTime != null">
+                and create_time &lt;= #{endTime}
+            </if>
+        </where>
+        order by id desc
+        limit #{offset}, #{size}
+    </select>
+
+</mapper>

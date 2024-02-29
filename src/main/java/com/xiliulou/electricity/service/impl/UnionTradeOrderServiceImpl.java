@@ -8,6 +8,7 @@ import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.config.WechatConfig;
 import com.xiliulou.electricity.constant.CacheConstant;
+import com.xiliulou.electricity.constant.merchant.MerchantConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.constant.TimeConstant;
 import com.xiliulou.electricity.dto.ActivityProcessDTO;
@@ -41,6 +42,7 @@ import com.xiliulou.electricity.entity.UserCarDeposit;
 import com.xiliulou.electricity.entity.UserCarMemberCard;
 import com.xiliulou.electricity.entity.UserCoupon;
 import com.xiliulou.electricity.entity.UserInfo;
+import com.xiliulou.electricity.entity.UserInfoExtra;
 import com.xiliulou.electricity.entity.car.CarRentalPackageMemberTermPo;
 import com.xiliulou.electricity.entity.car.CarRentalPackageOrderFreezePo;
 import com.xiliulou.electricity.entity.car.CarRentalPackageOrderSlippagePo;
@@ -48,6 +50,9 @@ import com.xiliulou.electricity.entity.enterprise.EnterpriseChannelUser;
 import com.xiliulou.electricity.enums.enterprise.CloudBeanStatusEnum;
 import com.xiliulou.electricity.enums.enterprise.EnterprisePaymentStatusEnum;
 import com.xiliulou.electricity.mapper.UnionTradeOrderMapper;
+import com.xiliulou.electricity.mq.constant.MqProducerConstant;
+import com.xiliulou.electricity.mq.model.BatteryMemberCardMerchantRebate;
+import com.xiliulou.electricity.mq.model.MerchantUpgrade;
 import com.xiliulou.electricity.mq.producer.ActivityProducer;
 import com.xiliulou.electricity.mq.producer.DivisionAccountProducer;
 import com.xiliulou.electricity.query.enterprise.EnterpriseChannelUserQuery;
@@ -103,6 +108,7 @@ import com.xiliulou.electricity.service.UserCarDepositService;
 import com.xiliulou.electricity.service.UserCarMemberCardService;
 import com.xiliulou.electricity.service.UserCarService;
 import com.xiliulou.electricity.service.UserCouponService;
+import com.xiliulou.electricity.service.UserInfoExtraService;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.car.CarRentalPackageMemberTermService;
 import com.xiliulou.electricity.service.car.CarRentalPackageOrderFreezeService;
@@ -112,6 +118,7 @@ import com.xiliulou.electricity.service.enterprise.AnotherPayMembercardRecordSer
 import com.xiliulou.electricity.service.enterprise.EnterpriseChannelUserService;
 import com.xiliulou.electricity.service.retrofit.Jt808RetrofitService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
+import com.xiliulou.mq.service.RocketMqService;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiOrderCallBackResource;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiOrderResultDTO;
 import com.xiliulou.pay.weixinv3.exception.WechatPayException;
@@ -313,6 +320,12 @@ public class UnionTradeOrderServiceImpl extends
     
     @Resource
     EnterpriseChannelUserService enterpriseChannelUserService;
+    
+    @Autowired
+    UserInfoExtraService userInfoExtraService;
+    
+    @Autowired
+    RocketMqService rocketMqService;
 
     @Override
     public WechatJsapiOrderResultDTO unionCreateTradeOrderAndGetPayParams(UnionPayOrder unionPayOrder, ElectricityPayParams electricityPayParams, String openId, HttpServletRequest request) throws WechatPayException {
@@ -774,6 +787,12 @@ public class UnionTradeOrderServiceImpl extends
                     activityService.asyncProcessActivity(activityProcessDTO);
 
                     electricityMemberCardOrderService.sendUserCoupon(batteryMemberCard, electricityMemberCardOrder);
+    
+                    //用户绑定商户
+                    userInfoExtraService.bindMerchant(electricityMemberCardOrder.getUid(), electricityMemberCardOrder.getOrderId());
+                    
+                    //商户返利
+                    sendMerchantRebateMQ(electricityMemberCardOrder.getUid(), electricityMemberCardOrder.getOrderId());
                 }
             });
         }else{
@@ -902,12 +921,6 @@ public class UnionTradeOrderServiceImpl extends
                         electricityMemberCardOrderService.updateStatusByOrderNo(electricityMemberCardOrderUpdateUseStatus);
                     }
     
-                    //保存用户押金对应的电池型号
-//                    List<String> batteryTypeList = memberCardBatteryTypeService.selectBatteryTypeByMid(batteryMemberCard.getId());
-//                    if (CollectionUtils.isNotEmpty(batteryTypeList)) {
-//                        userBatteryTypeService.batchInsert(userBatteryTypeService.buildUserBatteryType(batteryTypeList, userInfo));
-//                    }
-    
                     userBatteryTypeService.updateUserBatteryType(electricityMemberCardOrder, userInfo);
                 } else {
 
@@ -992,6 +1005,15 @@ public class UnionTradeOrderServiceImpl extends
                     activityService.asyncProcessActivity(activityProcessDTO);
 
                     electricityMemberCardOrderService.sendUserCoupon(batteryMemberCard, electricityMemberCardOrder);
+    
+                    //用户绑定商户
+                    userInfoExtraService.bindMerchant(electricityMemberCardOrder.getUid(), electricityMemberCardOrder.getOrderId());
+                    
+                    //续费成功，发送商户升级MQ
+                    sendMerchantUpgradeMQ(electricityMemberCardOrder.getUid(), electricityMemberCardOrder.getOrderId());
+                    
+                    //商户返利
+                    sendMerchantRebateMQ(electricityMemberCardOrder.getUid(), electricityMemberCardOrder.getOrderId());
                 }
             });
         }else{
@@ -1457,7 +1479,46 @@ public class UnionTradeOrderServiceImpl extends
         }
 
     }
-
+    
+    private void sendMerchantUpgradeMQ(Long uid, String orderId) {
+        UserInfoExtra userInfoExtra = userInfoExtraService.queryByUidFromCache(uid);
+        if(Objects.isNull(userInfoExtra)){
+            log.warn("BATTERY RENEWAL WARN!userInfoExtra is null,uid={}",uid);
+            return;
+        }
+        
+        if(Objects.isNull(userInfoExtra.getMerchantId())){
+            log.warn("BATTERY RENEWAL WARN!merchantId is null,uid={}",uid);
+            return;
+        }
+    
+        MerchantUpgrade merchantUpgrade = new MerchantUpgrade();
+        merchantUpgrade.setUid(uid);
+        merchantUpgrade.setOrderId(orderId);
+        merchantUpgrade.setMerchantId(userInfoExtra.getMerchantId());
+        //续费成功  发送商户升级MQ
+        rocketMqService.sendAsyncMsg(MqProducerConstant.MERCHANT_UPGRADE_TOPIC, JsonUtil.toJson(merchantUpgrade));
+    }
+    
+    private void sendMerchantRebateMQ(Long uid, String orderId) {
+        UserInfoExtra userInfoExtra = userInfoExtraService.queryByUidFromCache(uid);
+        if(Objects.isNull(userInfoExtra)){
+            log.warn("BATTERY MERCHANT REBATE WARN!userInfoExtra is null,uid={}",uid);
+            return;
+        }
+        
+        if(Objects.isNull(userInfoExtra.getMerchantId())){
+            log.warn("BATTERY MERCHANT REBATE WARN!merchantId is null,uid={}",uid);
+            return;
+        }
+    
+        BatteryMemberCardMerchantRebate merchantRebate = new BatteryMemberCardMerchantRebate();
+        merchantRebate.setUid(uid);
+        merchantRebate.setOrderId(orderId);
+        merchantRebate.setType(MerchantConstant.TYPE_PURCHASE);
+        //续费成功  发送返利MQ
+        rocketMqService.sendAsyncMsg(MqProducerConstant.BATTERY_MEMBER_CARD_MERCHANT_REBATE_TOPIC, JsonUtil.toJson(merchantRebate));
+    }
 
     /**
      * 构建JT808
@@ -1527,18 +1588,25 @@ public class UnionTradeOrderServiceImpl extends
             Long memberCardExpireTime;
             Long orderExpireTime;
             Long cardDays = 0L;
-
+    
             //用户套餐是否启用，若已启用  停卡时间取停卡记录中的停卡时间；未启用 取userBatteryMemberCard中的停卡时间。因为系统启用时会清除用户的停卡时间
-            if(Objects.equals(userBatteryMemberCard.getMemberCardStatus(),UserBatteryMemberCard.MEMBER_CARD_DISABLE)){
-                // 申请冻结的天数
-                Long chooseTime = eleDisableMemberCardRecord.getChooseDays() * TimeConstant.DAY_MILLISECOND;
-                // 实际的冻结时间
-                Long realTime = System.currentTimeMillis() - userBatteryMemberCard.getDisableMemberCardTime();
+            if (Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE)) {
+                // 兼容2.0冻结不限制天数 冻结天数为空的场景
+                if (Objects.isNull(eleDisableMemberCardRecord.getChooseDays())) {
+                    memberCardExpireTime = System.currentTimeMillis() + (userBatteryMemberCard.getMemberCardExpireTime() - userBatteryMemberCard.getDisableMemberCardTime());
+                    //orderExpireTime = System.currentTimeMillis() + (userBatteryMemberCard.getOrderExpireTime() - userBatteryMemberCard.getDisableMemberCardTime());
+                    orderExpireTime = System.currentTimeMillis() + (userBatteryMemberCard.getOrderExpireTime() - userBatteryMemberCard.getDisableMemberCardTime());
+                } else {
+                    // 申请冻结的天数
+                    Long chooseTime = eleDisableMemberCardRecord.getChooseDays() * TimeConstant.DAY_MILLISECOND;
+                    // 实际的冻结时间
+                    Long realTime = System.currentTimeMillis() - userBatteryMemberCard.getDisableMemberCardTime();
+                    //memberCardExpireTime = System.currentTimeMillis() + (userBatteryMemberCard.getMemberCardExpireTime() - userBatteryMemberCard.getDisableMemberCardTime());
+                    memberCardExpireTime = userBatteryMemberCard.getMemberCardExpireTime() - (chooseTime - realTime);
+                    //orderExpireTime = System.currentTimeMillis() + (userBatteryMemberCard.getOrderExpireTime() - userBatteryMemberCard.getDisableMemberCardTime());
+                    orderExpireTime = userBatteryMemberCard.getOrderExpireTime() - (chooseTime - realTime);
+                }
                 
-                //memberCardExpireTime = System.currentTimeMillis() + (userBatteryMemberCard.getMemberCardExpireTime() - userBatteryMemberCard.getDisableMemberCardTime());
-                memberCardExpireTime= userBatteryMemberCard.getMemberCardExpireTime() - (chooseTime-realTime);
-                //orderExpireTime = System.currentTimeMillis() + (userBatteryMemberCard.getOrderExpireTime() - userBatteryMemberCard.getDisableMemberCardTime());
-                orderExpireTime = userBatteryMemberCard.getOrderExpireTime() - (chooseTime-realTime);
                 cardDays = (System.currentTimeMillis() - userBatteryMemberCard.getDisableMemberCardTime()) / 1000L / 60 / 60 / 24;
 
                 //更新用户套餐到期时间，启用用户套餐

@@ -101,6 +101,7 @@ public class JsonOuterElectricityCabinetController {
 
     //上传日志
     @PostMapping(value = "/outer/electricityCabinet/log")
+    @Deprecated
     public R receiverAppLog(@RequestParam("productKey") String productKey,
                             @RequestParam("deviceName") String deviceName,
                             @RequestParam("file") MultipartFile file) {

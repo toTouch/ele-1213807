@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.merchant.ChannelEmployeeAmountMapper">
+    
+    <resultMap type="com.xiliulou.electricity.entity.merchant.ChannelEmployeeAmount" id="ChannelEmployeeAmountMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="uid" column="uid" jdbcType="INTEGER"/>
+        <result property="franchiseeId" column="franchisee_id" jdbcType="INTEGER"/>
+        <result property="tenantId" column="tenant_id" jdbcType="INTEGER"/>
+        <result property="delFlag" column="del_flag" jdbcType="INTEGER"/>
+        <result property="createTime" column="create_time" jdbcType="INTEGER"/>
+        <result property="updateTime" column="update_time" jdbcType="INTEGER"/>
+        <result property="balance" column="balance" jdbcType="DECIMAL"/>
+        <result property="withdrawAmount" column="withdraw_amount" jdbcType="DECIMAL"/>
+        <result property="totalIncome" column="total_income" jdbcType="DECIMAL"/>
+    </resultMap>
+    
+    <!-- 基础字段 -->
+    <sql id="selectChannelEmployeeAmount">
+        select id, uid, total_income, withdraw_amount, balance, franchisee_id,tenant_id, del_flag, create_time, update_time from t_channel_employee_amount
+    </sql>
+    
+    <!--根据id查询渠道员工账户余额信息-->
+    <select id="selectById" resultMap="ChannelEmployeeAmountMap">
+        <include refid="selectChannelEmployeeAmount"/>
+    
+        where id = #{id} and del_flag=0
+    </select>
+    
+    <!--根据uid查询渠道员工账户余额信息-->
+    <select id="selectByUid" resultMap="ChannelEmployeeAmountMap">
+        <include refid="selectChannelEmployeeAmount"/>
+        
+        where uid = #{uid}
+        and tenant_id = #{tenantId}
+        and del_flag=0
+    </select>
+    
+    <select id="selectListByCondition" resultMap="ChannelEmployeeAmountMap">
+        <include refid="selectChannelEmployeeAmount"/>
+        
+        where del_flag = 0
+        <if test="uid != null">
+            and uid = #{uid}
+        </if>
+        
+        <if test="tenantId != null">
+            and tenant_id = #{tenantId}
+        </if>
+        
+        order by id desc
+        <if test="offset != null and size != null">
+            limit #{offset}, #{size}
+        </if>
+    </select>
+    
+    <!--新增渠道员工账户余额信息-->
+    <insert id="insertOne" keyProperty="id" useGeneratedKeys="true">
+        insert into t_channel_employee_amount
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            uid,
+            total_income,
+            withdraw_amount,
+            balance,
+            franchisee_id,
+            tenant_id,
+            del_flag,
+            create_time,
+            update_time
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            #{uid},
+            #{totalIncome},
+            #{withdrawAmount},
+            #{balance},
+            #{franchiseeId},
+            #{tenantId},
+            #{delFlag},
+            #{createTime},
+            #{updateTime}
+        </trim>
+    </insert>
+    
+    <!--修改渠道员工账户余额信息-->
+    <update id="updateOne">
+        update t_channel_employee_amount
+        <set>
+            <if test="uid != null">
+                uid = #{uid},
+            </if>
+            <if test="totalIncome != null">
+                total_income = #{totalIncome},
+            </if>
+            <if test="withdrawAmount != null">
+                withdraw_amount = #{withdrawAmount},
+            </if>
+            <if test="balance != null">
+                balance = #{balance},
+            </if>
+            <if test="franchiseeId != null">
+                franchisee_id = #{franchiseeId},
+            </if>
+            <if test="tenantId != null">
+                tenant_id = #{tenantId},
+            </if>
+            <if test="delFlag != null">
+                del_flag = #{delFlag},
+            </if>
+            <if test="createTime != null">
+                create_time = #{createTime},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+    
+    <update id="addAmountByUid">
+        update t_channel_employee_amount
+        set balance = balance + #{income}
+        where uid = #{uid}
+          and tenat_id = #{tenantId}
+          and del_flg = 0
+    </update>
+    
+    <update id="reduceAmountByUid">
+        update t_channel_employee_amount
+        set balance = balance - #{income},
+        where uid = #{uid}
+          and tenat_id = #{tenantId}
+          and del_flg = 0
+    </update>
+    
+    
+</mapper>

@@ -15,6 +15,8 @@ import com.xiliulou.electricity.mapper.TenantMapper;
 import com.xiliulou.electricity.query.TenantAddAndUpdateQuery;
 import com.xiliulou.electricity.query.TenantQuery;
 import com.xiliulou.electricity.service.*;
+import com.xiliulou.electricity.service.merchant.MerchantAttrService;
+import com.xiliulou.electricity.service.merchant.MerchantLevelService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.vo.TenantVO;
 import com.xiliulou.electricity.web.query.AdminUserQuery;
@@ -65,8 +67,15 @@ public class TenantServiceImpl implements TenantService {
     @Autowired
     private ChannelActivityService channelActivityService;
     
+    @Autowired
+    private MerchantLevelService merchantLevelService;
+    
+    @Autowired
+    private MerchantAttrService merchantAttrService;
+
     @Resource
     private TenantNoteService noteService;
+
 
     /**
      * 新增数据
@@ -104,7 +113,7 @@ public class TenantServiceImpl implements TenantService {
         //保存租户默认电池型号
         batteryModelService.batchInsertDefaultBatteryModel(BatteryModelServiceImpl.generateDefaultBatteryModel(tenant.getId()));
 
-        //3.构建三大角色，运营商，代理商，门店
+        //3.构建三大角色，运营商，代理商，门店，商户角色，渠道角色，商户员工
         Role operateRole = new Role();
         operateRole.setName(CommonConstant.OPERATE_NAME);
         operateRole.setCode(CommonConstant.OPERATE_CODE);
@@ -116,7 +125,20 @@ public class TenantServiceImpl implements TenantService {
         Role storeRole = new Role();
         storeRole.setName(CommonConstant.STORE_NAME);
         storeRole.setCode(CommonConstant.STORE_CODE);
-
+        
+        // 商户角色，渠道角色，商户员工
+        Role merchantRole = new Role();
+        merchantRole.setName(CommonConstant.MERCHANT_NAME);
+        merchantRole.setCode(CommonConstant.MERCHANTL_CODE);
+        
+        Role channelRole = new Role();
+        channelRole.setName(CommonConstant.CHANNEL_NAME);
+        channelRole.setCode(CommonConstant.CHANNEL_CODE);
+        
+        Role merchantEmployeeRole = new Role();
+        merchantEmployeeRole.setName(CommonConstant.MERCHANT_EMPLOYEE_NAME);
+        merchantEmployeeRole.setCode(CommonConstant.MERCHANT_EMPLOYEE_CODE);
+        
         //运维
         Role maintainRole = new Role();
         maintainRole.setName(CommonConstant.MAINTAIN_NAME);
@@ -126,6 +148,9 @@ public class TenantServiceImpl implements TenantService {
         roleList.add(operateRole);
         roleList.add(franchiseeRole);
         roleList.add(storeRole);
+        roleList.add(merchantRole);
+        roleList.add(channelRole);
+        roleList.add(merchantEmployeeRole);
         roleList.add(maintainRole);
 
         roleList.forEach(item -> {
@@ -188,6 +213,11 @@ public class TenantServiceImpl implements TenantService {
         channelActivity.setCreateTime(System.currentTimeMillis());
         channelActivity.setUpdateTime(System.currentTimeMillis());
         channelActivityService.insert(channelActivity);
+    
+        //初始化商户等级
+        merchantLevelService.initMerchantLevel(tenant.getId());
+        //初始化商户升级条件
+        merchantAttrService.initMerchantAttr(tenant.getId());
 
         return R.ok();
     }

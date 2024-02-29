@@ -6,49 +6,23 @@ import com.alibaba.excel.EasyExcel;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.NumberConstant;
-import com.xiliulou.electricity.entity.BatteryMemberCard;
-import com.xiliulou.electricity.entity.EleDepositOrder;
-import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
-import com.xiliulou.electricity.entity.User;
-import com.xiliulou.electricity.entity.UserBatteryDeposit;
-import com.xiliulou.electricity.entity.UserBatteryMemberCard;
-import com.xiliulou.electricity.entity.UserInfo;
-import com.xiliulou.electricity.entity.enterprise.AnotherPayMembercardRecord;
-import com.xiliulou.electricity.entity.enterprise.CloudBeanUseRecord;
-import com.xiliulou.electricity.entity.enterprise.EnterpriseChannelUser;
-import com.xiliulou.electricity.entity.enterprise.EnterpriseCloudBeanOrder;
-import com.xiliulou.electricity.entity.enterprise.EnterpriseInfo;
-import com.xiliulou.electricity.entity.enterprise.EnterpriseRentRecord;
+import com.xiliulou.electricity.entity.*;
+import com.xiliulou.electricity.entity.enterprise.*;
 import com.xiliulou.electricity.enums.enterprise.PackageOrderTypeEnum;
 import com.xiliulou.electricity.mapper.enterprise.CloudBeanUseRecordMapper;
+import com.xiliulou.electricity.mapper.enterprise.EnterpriseChannelUserExitMapper;
 import com.xiliulou.electricity.query.enterprise.CloudBeanUseRecordQuery;
-import com.xiliulou.electricity.service.BatteryMemberCardService;
-import com.xiliulou.electricity.service.BatteryMembercardRefundOrderService;
-import com.xiliulou.electricity.service.EleDepositOrderService;
-import com.xiliulou.electricity.service.ElectricityMemberCardOrderService;
-import com.xiliulou.electricity.service.InsuranceOrderService;
-import com.xiliulou.electricity.service.InsuranceUserInfoService;
-import com.xiliulou.electricity.service.ServiceFeeUserInfoService;
-import com.xiliulou.electricity.service.UserBatteryDepositService;
-import com.xiliulou.electricity.service.UserBatteryMemberCardPackageService;
-import com.xiliulou.electricity.service.UserBatteryMemberCardService;
-import com.xiliulou.electricity.service.UserBatteryTypeService;
-import com.xiliulou.electricity.service.UserInfoService;
-import com.xiliulou.electricity.service.UserService;
-import com.xiliulou.electricity.service.enterprise.AnotherPayMembercardRecordService;
-import com.xiliulou.electricity.service.enterprise.CloudBeanUseRecordService;
-import com.xiliulou.electricity.service.enterprise.EnterpriseChannelUserService;
-import com.xiliulou.electricity.service.enterprise.EnterpriseCloudBeanOrderService;
-import com.xiliulou.electricity.service.enterprise.EnterpriseInfoService;
-import com.xiliulou.electricity.service.enterprise.EnterpriseRentRecordService;
+import com.xiliulou.electricity.query.enterprise.EnterpriseChannelUserQuery;
+import com.xiliulou.electricity.service.*;
+import com.xiliulou.electricity.service.enterprise.*;
 import com.xiliulou.electricity.service.excel.AutoHeadColumnWidthStyleStrategy;
 import com.xiliulou.electricity.utils.DateUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
+import com.xiliulou.electricity.vo.UserBatteryMemberCardChannelExitVo;
 import com.xiliulou.electricity.vo.enterprise.CloudBeanOrderExcelVO;
 import com.xiliulou.electricity.vo.enterprise.CloudBeanUseRecordVO;
 import com.xiliulou.storage.config.StorageConfig;
 import com.xiliulou.storage.service.StorageService;
-import com.xiliulou.storage.service.impl.AliyunOssService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -68,12 +42,7 @@ import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -90,13 +59,10 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
     
     @Autowired
     StorageConfig storageConfig;
-    
-    @Qualifier("aliyunOssService")
+
+    @Qualifier("hwOssService")
     @Autowired
     StorageService storageService;
-    
-    @Autowired
-    AliyunOssService aliyunOssService;
     
     @Resource
     private CloudBeanUseRecordMapper cloudBeanUseRecordMapper;
@@ -154,6 +120,9 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
     
     @Autowired
     private EnterpriseRentRecordService enterpriseRentRecordService;
+    
+    @Resource
+    private EnterpriseChannelUserExitMapper userExitMapper;
     
     @Override
     public CloudBeanUseRecord queryByIdFromDB(Long id) {
@@ -521,6 +490,115 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
         return BigDecimal.valueOf(useDays).multiply(rentPrice);
     }
     
+    @Override
+    public void recycleCloudBeanExitTask() {
+        int offset = 0;
+        int size = 200;
+    
+        while (true) {
+            List<UserBatteryMemberCardChannelExitVo> userBatteryMemberCardList = userBatteryMemberCardService.selectExpireExitList(offset, size);
+            if (CollectionUtils.isEmpty(userBatteryMemberCardList)) {
+                return;
+            }
+        
+            userBatteryMemberCardList.forEach(memberCardChannelExitVo -> {
+                UserBatteryMemberCard item = new UserBatteryMemberCard();
+                BeanUtils.copyProperties(memberCardChannelExitVo, item);
+                
+                String errorMsg = "";
+                UserInfo userInfo = userInfoService.queryByUidFromCache(item.getUid());
+                if (Objects.isNull(userInfo)) {
+                    errorMsg = "user Info is null";
+                    userExitMapper.updateById(errorMsg, EnterpriseChannelUserExit.TYPE_FAIL, memberCardChannelExitVo.getChannelUserExitId(), System.currentTimeMillis());
+                    return;
+                }
+            
+                if (Objects.equals(userInfo.getBatteryRentStatus(), UserInfo.BATTERY_RENT_STATUS_YES)) {
+                    errorMsg = "user battery is not return";
+                    userExitMapper.updateById(errorMsg, EnterpriseChannelUserExit.TYPE_FAIL, memberCardChannelExitVo.getChannelUserExitId(), System.currentTimeMillis());
+                    return;
+                }
+            
+                if (Objects.equals(item.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE)) {
+                    log.warn("RECYCLE TASK WARN! user's member card is stop,uid={}", item.getUid());
+                    errorMsg = "RECYCLE TASK WARN! user's member card is stop";
+                    userExitMapper.updateById(errorMsg, EnterpriseChannelUserExit.TYPE_FAIL, memberCardChannelExitVo.getChannelUserExitId(), System.currentTimeMillis());
+                    return;
+                }
+            
+                if (Objects.equals(item.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE_REVIEW)) {
+                    log.warn("RECYCLE TASK WARN! user stop member card review,uid={}", item.getUid());
+                    errorMsg = "RECYCLE TASK WARN! user stop member card review";
+                    userExitMapper.updateById(errorMsg, EnterpriseChannelUserExit.TYPE_FAIL, memberCardChannelExitVo.getChannelUserExitId(), System.currentTimeMillis());
+                    return;
+                }
+            
+                BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(item.getMemberCardId());
+                if (Objects.isNull(batteryMemberCard)) {
+                    log.warn("RECYCLE TASK WARN! not found batteryMemberCard,uid={},mid={}", userInfo.getUid(), item.getMemberCardId());
+                    errorMsg = "RECYCLE TASK WARN! not found batteryMemberCard";
+                    userExitMapper.updateById(errorMsg, EnterpriseChannelUserExit.TYPE_FAIL, memberCardChannelExitVo.getChannelUserExitId(), System.currentTimeMillis());
+                    return;
+                }
+            
+                Triple<Boolean, Integer, BigDecimal> acquireUserBatteryServiceFeeResult = serviceFeeUserInfoService
+                        .acquireUserBatteryServiceFee(userInfo, item, batteryMemberCard, serviceFeeUserInfoService.queryByUidFromCache(userInfo.getUid()));
+                if (Boolean.TRUE.equals(acquireUserBatteryServiceFeeResult.getLeft())) {
+                    log.warn("RECYCLE TASK WARN! user exist battery service fee,uid={}", userInfo.getUid());
+                    errorMsg = "RECYCLE TASK WARN! user exist battery service fee";
+                    userExitMapper.updateById(errorMsg, EnterpriseChannelUserExit.TYPE_FAIL, memberCardChannelExitVo.getChannelUserExitId(), System.currentTimeMillis());
+                    return;
+                }
+            
+                EnterpriseChannelUser enterpriseChannelUser = enterpriseChannelUserService.selectByUid(userInfo.getUid());
+                if (Objects.isNull(enterpriseChannelUser)) {
+                    return;
+                }
+            
+                EnterpriseInfo enterpriseInfo = enterpriseInfoService.queryByIdFromCache(enterpriseChannelUser.getEnterpriseId());
+                if (Objects.isNull(enterpriseInfo)) {
+                    log.error("RECYCLE CLOUD BEAN TASK ERROR! not found enterpriseInfo,enterpriseId={}", enterpriseChannelUser.getEnterpriseId());
+                    errorMsg = "RECYCLE CLOUD BEAN TASK ERROR! not found enterpriseInfo";
+                    userExitMapper.updateById(errorMsg, EnterpriseChannelUserExit.TYPE_FAIL, memberCardChannelExitVo.getChannelUserExitId(), System.currentTimeMillis());
+                    return;
+                }
+                
+                //回收套餐
+                Triple<Boolean, String, Object> recycleBatteryMembercard = enterpriseInfoService.recycleBatteryMembercard(userInfo, enterpriseInfo, item);
+                if (Boolean.FALSE.equals(recycleBatteryMembercard.getLeft())) {
+                    errorMsg = (String) recycleBatteryMembercard.getRight();
+                    userExitMapper.updateById(errorMsg, EnterpriseChannelUserExit.TYPE_FAIL, memberCardChannelExitVo.getChannelUserExitId(), System.currentTimeMillis());
+                    return;
+                }
+            
+                //回收押金
+                Triple<Boolean, String, Object> triple = enterpriseInfoService.recycleBatteryDeposit(userInfo, enterpriseInfo);
+                if (!triple.getLeft()) {
+                    errorMsg = (String) triple.getRight();
+                    userExitMapper.updateById(errorMsg, EnterpriseChannelUserExit.TYPE_FAIL, memberCardChannelExitVo.getChannelUserExitId(), System.currentTimeMillis());
+                }
+                try {
+                    //解绑用户数据
+                    enterpriseInfoService.unbindUserData(userInfo, enterpriseChannelUser);
+    
+                    // 修改历史退出为成功
+                    userExitMapper.updateById(null, EnterpriseChannelUserExit.TYPE_SUCCESS, memberCardChannelExitVo.getChannelUserExitId(), System.currentTimeMillis());
+    
+                    // 修改企业用户为自主续费为退出
+                    EnterpriseChannelUserQuery query = EnterpriseChannelUserQuery.builder().uid(userInfo.getUid()).renewalStatus(EnterpriseChannelUser.RENEWAL_OPEN).build();
+                    enterpriseChannelUserService.updateRenewStatus(query);
+                } catch (Exception e) {
+                    log.error("recycle cloud bean exit error msg={}", e.getMessage());
+                    errorMsg = "recycle cloud bean exit error msg";
+                    userExitMapper.updateById(errorMsg, EnterpriseChannelUserExit.TYPE_FAIL, memberCardChannelExitVo.getChannelUserExitId(), System.currentTimeMillis());
+                }
+                
+            });
+        
+            offset += size;
+        }
+    }
+    
     private BigDecimal getContainMembercardUsedCloudBeanV2(EnterpriseRentRecord enterpriseRentRecord, List<AnotherPayMembercardRecord> anotherPayMembercardRecords,
             Long currentTime) {
         
@@ -599,10 +677,10 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
             EasyExcel.write(out, CloudBeanOrderExcelVO.class).sheet("sheet").registerWriteHandler(new AutoHeadColumnWidthStyleStrategy()).doWrite(cloudBeanOrderExcelVOList);
             
             String excelPath = CLOUD_BEAN_BILL_PATH + IdUtil.simpleUUID() + ".xlsx";
+
+            storageService.uploadFile(storageConfig.getBucketName(), excelPath, new ByteArrayInputStream(out.toByteArray()));
             
-            aliyunOssService.uploadFile(storageConfig.getBucketName(), excelPath, new ByteArrayInputStream(out.toByteArray()));
-            
-            return Triple.of(true, null, StorageConfig.HTTPS + storageConfig.getBucketName() + "." + storageConfig.getOssEndpoint() + "/" +excelPath);
+            return Triple.of(true, null, storageConfig.getUrlPrefix()+excelPath);
         } catch (Exception e) {
             log.error("导出云豆账单失败！", e);
         }

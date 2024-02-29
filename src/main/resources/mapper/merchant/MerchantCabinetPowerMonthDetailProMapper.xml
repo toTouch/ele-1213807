@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.merchant.MerchantCabinetPowerMonthDetailProMapper">
+    <!-- 基础字段 -->
+    <sql id="basic_field">
+        id, merchant_id, place_id, eid, date, sum_power, sum_charge, begin_time, end_time, cabinet_merchant_bind_status, tenant_id, del_flag, create_time, update_time
+    </sql>
+    
+    <select id="selectLatestReportTime" resultType="java.lang.Long">
+        select max(end_time)
+        from t_merchant_cabinet_power_month_detail_pro
+        where eid = #{cabinetId}
+        and date in
+        <foreach collection="monthList" item="date" open="(" separator="," close=")">
+            #{date}
+        </foreach>
+    </select>
+    
+    <select id="selectListByMonth" resultType="com.xiliulou.electricity.entity.merchant.MerchantCabinetPowerMonthDetailPro">
+        select <include refid="basic_field"/>
+        from t_merchant_cabinet_power_month_detail_pro
+        where eid = #{cabinetId}
+        and date in
+        <foreach collection="monthList" item="date" open="(" separator="," close=")">
+            #{date}
+        </foreach>
+    </select>
+</mapper>

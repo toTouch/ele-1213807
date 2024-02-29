@@ -5,6 +5,7 @@ server:
   undertow:
     threads:
       worker: 200
+
 spring:
   application:
     name: @artifactId@

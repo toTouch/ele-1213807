@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.collection.ListUtil;
 import cn.hutool.core.date.DatePattern;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.NumberUtil;
@@ -9,11 +10,11 @@ import cn.hutool.core.util.StrUtil;
 import com.alibaba.excel.EasyExcel;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import com.aliyuncs.iot.model.v20180120.GetDeviceStatusResponse;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.google.api.client.util.Lists;
 import com.google.common.collect.Maps;
+import com.obs.services.model.PostSignatureResponse;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.json.JsonUtil;
@@ -21,159 +22,51 @@ import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
+import com.xiliulou.electricity.bo.merchant.AreaCabinetNumBO;
 import com.xiliulou.electricity.config.EleCommonConfig;
 import com.xiliulou.electricity.config.EleIotOtaPathConfig;
-import com.xiliulou.electricity.constant.BatteryConstant;
-import com.xiliulou.electricity.constant.CacheConstant;
-import com.xiliulou.electricity.constant.ElectricityIotConstant;
-import com.xiliulou.electricity.constant.NumberConstant;
-import com.xiliulou.electricity.constant.OtaConstant;
-import com.xiliulou.electricity.constant.StringConstant;
-import com.xiliulou.electricity.entity.BatteryGeo;
-import com.xiliulou.electricity.entity.BatteryMemberCard;
-import com.xiliulou.electricity.entity.BatteryMembercardRefundOrder;
-import com.xiliulou.electricity.entity.BatteryModel;
-import com.xiliulou.electricity.entity.CabinetMoveHistory;
-import com.xiliulou.electricity.entity.CarDepositOrder;
-import com.xiliulou.electricity.entity.EleCabinetCoreData;
-import com.xiliulou.electricity.entity.EleDepositOrder;
-import com.xiliulou.electricity.entity.EleOtaFile;
-import com.xiliulou.electricity.entity.EleRefundOrder;
-import com.xiliulou.electricity.entity.ElectricityAbnormalMessageNotify;
-import com.xiliulou.electricity.entity.ElectricityBattery;
-import com.xiliulou.electricity.entity.ElectricityCabinet;
-import com.xiliulou.electricity.entity.ElectricityCabinetBox;
-import com.xiliulou.electricity.entity.ElectricityCabinetFile;
-import com.xiliulou.electricity.entity.ElectricityCabinetModel;
-import com.xiliulou.electricity.entity.ElectricityCabinetOrder;
-import com.xiliulou.electricity.entity.ElectricityCabinetServer;
-import com.xiliulou.electricity.entity.ElectricityConfig;
-import com.xiliulou.electricity.entity.ElectricityMemberCard;
-import com.xiliulou.electricity.entity.Franchisee;
-import com.xiliulou.electricity.entity.FranchiseeUserInfo;
-import com.xiliulou.electricity.entity.MaintenanceUserNotifyConfig;
-import com.xiliulou.electricity.entity.Message;
-import com.xiliulou.electricity.entity.MqNotifyCommon;
-import com.xiliulou.electricity.entity.OtaFileConfig;
-import com.xiliulou.electricity.entity.RentBatteryOrder;
-import com.xiliulou.electricity.entity.Store;
-import com.xiliulou.electricity.entity.Tenant;
-import com.xiliulou.electricity.entity.User;
-import com.xiliulou.electricity.entity.UserBattery;
-import com.xiliulou.electricity.entity.UserBatteryMemberCard;
-import com.xiliulou.electricity.entity.UserInfo;
+import com.xiliulou.electricity.constant.*;
+import com.xiliulou.electricity.entity.*;
+import com.xiliulou.electricity.entity.merchant.MerchantArea;
+import com.xiliulou.electricity.entity.merchant.MerchantPlaceFeeRecord;
 import com.xiliulou.electricity.enums.YesNoEnum;
 import com.xiliulou.electricity.enums.asset.StockStatusEnum;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.ElectricityCabinetMapper;
 import com.xiliulou.electricity.mns.EleHardwareHandlerManager;
 import com.xiliulou.electricity.mq.constant.MqProducerConstant;
-import com.xiliulou.electricity.query.BatteryReportQuery;
-import com.xiliulou.electricity.query.EleOuterCommandQuery;
-import com.xiliulou.electricity.query.ElectricityCabinetAddAndUpdate;
-import com.xiliulou.electricity.query.ElectricityCabinetAddressQuery;
-import com.xiliulou.electricity.query.ElectricityCabinetImportQuery;
-import com.xiliulou.electricity.query.ElectricityCabinetQuery;
-import com.xiliulou.electricity.query.ElectricityCabinetTransferQuery;
-import com.xiliulou.electricity.query.FreeCellNoQuery;
-import com.xiliulou.electricity.query.HomePageDepositQuery;
-import com.xiliulou.electricity.query.HomepageBatteryFrequencyQuery;
-import com.xiliulou.electricity.query.HomepageElectricityExchangeFrequencyQuery;
-import com.xiliulou.electricity.query.LowBatteryExchangeModel;
-import com.xiliulou.electricity.query.StoreQuery;
+import com.xiliulou.electricity.query.*;
 import com.xiliulou.electricity.query.api.ApiRequestQuery;
 import com.xiliulou.electricity.request.asset.TransferCabinetModelRequest;
-import com.xiliulou.electricity.service.BatteryGeoService;
-import com.xiliulou.electricity.service.BatteryMemberCardService;
-import com.xiliulou.electricity.service.BatteryMembercardRefundOrderService;
-import com.xiliulou.electricity.service.BatteryModelService;
-import com.xiliulou.electricity.service.BatteryOtherPropertiesService;
-import com.xiliulou.electricity.service.CabinetMoveHistoryService;
-import com.xiliulou.electricity.service.CarDepositOrderService;
-import com.xiliulou.electricity.service.CarMemberCardOrderService;
-import com.xiliulou.electricity.service.EleBatteryServiceFeeOrderService;
-import com.xiliulou.electricity.service.EleCabinetCoreDataService;
-import com.xiliulou.electricity.service.EleDepositOrderService;
-import com.xiliulou.electricity.service.EleOtaFileService;
-import com.xiliulou.electricity.service.EleOtaUpgradeService;
-import com.xiliulou.electricity.service.EleOtherConfigService;
-import com.xiliulou.electricity.service.EleRefundOrderService;
-import com.xiliulou.electricity.service.ElectricityBatteryService;
-import com.xiliulou.electricity.service.ElectricityCabinetBoxService;
-import com.xiliulou.electricity.service.ElectricityCabinetFileService;
-import com.xiliulou.electricity.service.ElectricityCabinetModelService;
-import com.xiliulou.electricity.service.ElectricityCabinetOrderService;
-import com.xiliulou.electricity.service.ElectricityCabinetServerService;
-import com.xiliulou.electricity.service.ElectricityCabinetService;
-import com.xiliulou.electricity.service.ElectricityCarService;
-import com.xiliulou.electricity.service.ElectricityConfigService;
-import com.xiliulou.electricity.service.ElectricityMemberCardOrderService;
-import com.xiliulou.electricity.service.ElectricityMemberCardService;
-import com.xiliulou.electricity.service.FranchiseeService;
-import com.xiliulou.electricity.service.FranchiseeUserInfoService;
-import com.xiliulou.electricity.service.MaintenanceUserNotifyConfigService;
-import com.xiliulou.electricity.service.OtaFileConfigService;
-import com.xiliulou.electricity.service.RentBatteryOrderService;
-import com.xiliulou.electricity.service.ServiceFeeUserInfoService;
-import com.xiliulou.electricity.service.StoreService;
-import com.xiliulou.electricity.service.TenantService;
-import com.xiliulou.electricity.service.UserBatteryMemberCardService;
-import com.xiliulou.electricity.service.UserBatteryService;
-import com.xiliulou.electricity.service.UserBatteryTypeService;
-import com.xiliulou.electricity.service.UserDataScopeService;
-import com.xiliulou.electricity.service.UserInfoService;
-import com.xiliulou.electricity.service.UserService;
-import com.xiliulou.electricity.service.UserTypeFactory;
-import com.xiliulou.electricity.service.UserTypeService;
+import com.xiliulou.electricity.request.merchant.MerchantAreaRequest;
+import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.service.asset.AssetWarehouseService;
 import com.xiliulou.electricity.service.car.biz.CarRenalPackageSlippageBizService;
 import com.xiliulou.electricity.service.car.biz.CarRentalPackageMemberTermBizService;
 import com.xiliulou.electricity.service.excel.AutoHeadColumnWidthStyleStrategy;
+import com.xiliulou.electricity.service.merchant.MerchantAreaService;
+import com.xiliulou.electricity.service.merchant.MerchantPlaceFeeRecordService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DateUtils;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
-import com.xiliulou.electricity.vo.CabinetBatteryVO;
-import com.xiliulou.electricity.vo.EleCabinetDataAnalyseVO;
-import com.xiliulou.electricity.vo.ElectricityCabinetBatchOperateVo;
-import com.xiliulou.electricity.vo.ElectricityCabinetBoxVO;
-import com.xiliulou.electricity.vo.ElectricityCabinetCountVO;
-import com.xiliulou.electricity.vo.ElectricityCabinetExcelVO;
-import com.xiliulou.electricity.vo.ElectricityCabinetVO;
-import com.xiliulou.electricity.vo.HomePageDepositVo;
-import com.xiliulou.electricity.vo.HomePageElectricityOrderVo;
-import com.xiliulou.electricity.vo.HomePageTurnOverAnalysisVo;
-import com.xiliulou.electricity.vo.HomePageTurnOverGroupByWeekDayVo;
-import com.xiliulou.electricity.vo.HomePageTurnOverVo;
-import com.xiliulou.electricity.vo.HomePageUserAnalysisVo;
-import com.xiliulou.electricity.vo.HomePageUserByWeekDayVo;
-import com.xiliulou.electricity.vo.HomepageBatteryFrequencyVo;
-import com.xiliulou.electricity.vo.HomepageBatteryVo;
-import com.xiliulou.electricity.vo.HomepageElectricityExchangeFrequencyVo;
-import com.xiliulou.electricity.vo.HomepageElectricityExchangeVo;
-import com.xiliulou.electricity.vo.HomepageOverviewDetailVo;
-import com.xiliulou.electricity.vo.SearchVo;
+import com.xiliulou.electricity.vo.*;
 import com.xiliulou.electricity.vo.asset.AssetWarehouseNameVO;
+import com.xiliulou.hwiiot.service.HwIotService;
 import com.xiliulou.iot.entity.HardwareCommandQuery;
-import com.xiliulou.iot.service.IotAcsService;
-import com.xiliulou.iot.service.PubHardwareService;
 import com.xiliulou.mq.service.RocketMqService;
 import com.xiliulou.security.bean.TokenUser;
 import com.xiliulou.storage.config.StorageConfig;
-import com.xiliulou.storage.service.StorageService;
+import com.xiliulou.storage.service.impl.HwOssService;
 import jodd.util.StringUtil;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.data.geo.Circle;
-import org.springframework.data.geo.Distance;
-import org.springframework.data.geo.GeoResults;
-import org.springframework.data.geo.Metrics;
-import org.springframework.data.geo.Point;
+import org.springframework.data.geo.*;
 import org.springframework.data.redis.connection.RedisGeoCommands;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -185,23 +78,14 @@ import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.net.URLEncoder;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ThreadLocalRandom;
@@ -260,7 +144,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     StoreService storeService;
     
     @Autowired
-    PubHardwareService pubHardwareService;
+    HwIotService hwIotService;
     
     @Autowired
     EleHardwareHandlerManager eleHardwareHandlerManager;
@@ -293,9 +177,6 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     
     @Autowired
     TenantService tenantService;
-    
-    @Autowired
-    private IotAcsService iotAcsService;
     
     @Autowired
     EleBatteryServiceFeeOrderService eleBatteryServiceFeeOrderService;
@@ -339,9 +220,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     @Autowired
     MaintenanceUserNotifyConfigService maintenanceUserNotifyConfigService;
     
-    @Qualifier("aliyunOssService")
     @Autowired
-    StorageService storageService;
+    HwOssService storageService;
     
     @Autowired
     UserDataScopeService userDataScopeService;
@@ -397,6 +277,12 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     
     @Autowired
     AssetWarehouseService assetWarehouseService;
+    
+    @Resource
+    private MerchantPlaceFeeRecordService merchantPlaceFeeRecordService;
+    
+    @Resource
+    private MerchantAreaService merchantAreaService;
     
     /**
      * 根据主键ID集获取柜机基本信息
@@ -556,6 +442,20 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             return R.fail("100377", "参数校验错误");
         }
     
+        //  如果场地费不为空则需要判断 不能小于零 小数最多两位  整数不能大于8位
+        if (Objects.nonNull(electricityCabinetAddAndUpdate.getPlaceFee())) {
+            // 场地费必须大于零
+            if (Objects.equals(electricityCabinetAddAndUpdate.getPlaceFee().compareTo(BigDecimal.ZERO), NumberConstant.MINUS_ONE)) {
+                return R.fail("120235", "场地费必须大于等于零");
+            }
+        
+            // 场地费不能是负数
+            String placeFeeStr = electricityCabinetAddAndUpdate.getPlaceFee().toString();
+            if (!RegularConstant.PLACE_PATTERN.matcher(placeFeeStr).matches()) {
+                return R.fail("120234", "场地费保留两位小数且整数部分不能超过8位");
+            }
+        }
+        
         //操作频繁
         boolean result = redisService.setNx(CacheConstant.ELE_EDIT_UID + user.getUid(), "1", 3 * 1000L, false);
         if (!result) {
@@ -569,6 +469,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         if (Objects.isNull(oldElectricityCabinet)) {
             return R.fail("ELECTRICITY.0005", "未找到换电柜");
         }
+        
+        MerchantPlaceFeeRecord finalMerchantPlaceFeeRecord = getPlaceFeeRecord(oldElectricityCabinet, electricityCabinetAddAndUpdate, user);
         
         //判断参数
         if (Objects.nonNull(electricityCabinetAddAndUpdate.getBusinessTimeType())) {
@@ -640,6 +542,11 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             //修改柜机服务时间信息
             electricityCabinetServerService.insertOrUpdateByElectricityCabinet(electricityCabinet, oldElectricityCabinet);
             
+            // 增加场地费变更记录
+            if (Objects.nonNull(finalMerchantPlaceFeeRecord)) {
+                merchantPlaceFeeRecordService.save(finalMerchantPlaceFeeRecord);
+            }
+            
             //云端下发命令修改换电标准
             if (!Objects.equals(oldElectricityCabinet.getFullyCharged(), electricityCabinet.getFullyCharged())) {
                 this.updateFullyChargedByCloud(electricityCabinet);
@@ -648,6 +555,45 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             return null;
         });
         return R.ok();
+    }
+    
+    private MerchantPlaceFeeRecord getPlaceFeeRecord(ElectricityCabinet oldElectricityCabinet, ElectricityCabinetAddAndUpdate electricityCabinetAddAndUpdate, TokenUser user) {
+        BigDecimal oldFee = BigDecimal.ZERO;
+        BigDecimal newFee = BigDecimal.ZERO;
+        // 判断新的场地费用和就的场地费用是否存在变化如果存在变化则将变换存入到历史表
+        if (Objects.nonNull(oldElectricityCabinet.getPlaceFee())) {
+            oldFee = oldElectricityCabinet.getPlaceFee();
+        } else {
+            oldFee = new BigDecimal(NumberConstant.MINUS_ONE);
+        }
+        
+        if (Objects.nonNull(electricityCabinetAddAndUpdate.getPlaceFee())) {
+            newFee = electricityCabinetAddAndUpdate.getPlaceFee();
+        } else {
+            newFee = new BigDecimal(NumberConstant.MINUS_ONE);
+        }
+        
+        MerchantPlaceFeeRecord merchantPlaceFeeRecord = null;
+        // 场地费有变化则进行记录
+        if (!Objects.equals(newFee.compareTo(oldFee), NumberConstant.ZERO)) {
+            merchantPlaceFeeRecord = new MerchantPlaceFeeRecord();
+            merchantPlaceFeeRecord.setCabinetId(electricityCabinetAddAndUpdate.getId());
+            if (!Objects.equals(newFee.compareTo(BigDecimal.ZERO), NumberConstant.MINUS_ONE)) {
+                merchantPlaceFeeRecord.setNewPlaceFee(newFee);
+            }
+            if (!Objects.equals(oldFee.compareTo(BigDecimal.ZERO), NumberConstant.MINUS_ONE)) {
+                merchantPlaceFeeRecord.setOldPlaceFee(oldFee);
+            }
+            if (Objects.nonNull(user)) {
+                merchantPlaceFeeRecord.setModifyUserId(user.getUid());
+                merchantPlaceFeeRecord.setTenantId(oldElectricityCabinet.getTenantId());
+                long currentTimeMillis = System.currentTimeMillis();
+                merchantPlaceFeeRecord.setCreateTime(currentTimeMillis);
+                merchantPlaceFeeRecord.setUpdateTime(currentTimeMillis);
+            }
+        }
+        
+        return merchantPlaceFeeRecord;
     }
     
     @Override
@@ -675,7 +621,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             
             //删除柜机GEO信息
             redisService.removeGeoMember(CacheConstant.CACHE_ELECTRICITY_CABINET_GEO + electricityCabinet.getTenantId(), electricityCabinet.getId().toString());
-    
+            
             //删除格挡
             electricityCabinetBoxService.batchDeleteBoxByElectricityCabinetId(id);
             
@@ -717,7 +663,17 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 warehouseNameVOMap = assetWarehouseNameVOS.stream().collect(Collectors.toMap(AssetWarehouseNameVO::getId, AssetWarehouseNameVO::getName, (item1, item2) -> item2));
             }
             
+            // 查询区域
+            List<Long> areaIdList = electricityCabinetList.stream().map(ElectricityCabinetVO::getAreaId).filter(Objects::nonNull).distinct().collect(Collectors.toList());
+            MerchantAreaRequest areaQuery = MerchantAreaRequest.builder().idList(areaIdList).build();
+            List<MerchantArea> merchantAreaList = merchantAreaService.queryList(areaQuery);
+            Map<Long, String> areaNameMap = Maps.newHashMap();
+            if (!CollectionUtils.isEmpty(merchantAreaList)) {
+                areaNameMap = merchantAreaList.stream().collect(Collectors.toMap(MerchantArea::getId, MerchantArea::getName, (item1, item2) -> item2));
+            }
+            
             Map<Long, String> finalWarehouseNameVOMap = warehouseNameVOMap;
+            Map<Long, String> finalAreaNameMap = areaNameMap;
             electricityCabinetList.parallelStream().forEach(e -> {
                 
                 if (Objects.nonNull(e.getStoreId())) {
@@ -846,6 +802,11 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 if (finalWarehouseNameVOMap.containsKey(e.getWarehouseId())) {
                     e.setWarehouseName(finalWarehouseNameVOMap.get(e.getWarehouseId()));
                 }
+                
+                // 设置区域名称
+                if (finalAreaNameMap.containsKey(e.getAreaId())) {
+                    e.setAreaName(finalAreaNameMap.get(e.getAreaId()));
+                }
             });
         }
         electricityCabinetList.stream().sorted(Comparator.comparing(ElectricityCabinetVO::getCreateTime).reversed()).collect(Collectors.toList());
@@ -886,7 +847,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         electricityCabinetUpdate.setLongitude(eleCabinetAddressQuery.getLongitude());
         this.electricityCabinetMapper.updateById(electricityCabinetUpdate);
         //更新柜机GEO缓存信息
-        redisService.addGeo(CacheConstant.CACHE_ELECTRICITY_CABINET_GEO + electricityCabinet.getTenantId(), electricityCabinet.getId().toString(), new Point(eleCabinetAddressQuery.getLongitude(), eleCabinetAddressQuery.getLatitude()));
+        redisService.addGeo(CacheConstant.CACHE_ELECTRICITY_CABINET_GEO + electricityCabinet.getTenantId(), electricityCabinet.getId().toString(),
+                new Point(eleCabinetAddressQuery.getLongitude(), eleCabinetAddressQuery.getLatitude()));
         return Triple.of(true, null, null);
     }
     
@@ -993,7 +955,6 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     }
     
     /**
-     *
      * @param electricityCabinetQuery
      * @return
      */
@@ -1003,33 +964,32 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         if (Objects.isNull(electricityCabinetQuery.getDistance()) || electricityCabinetQuery.getDistance() > distanceMax) {
             electricityCabinetQuery.setDistance(distanceMax);
         }
-    
+        
         List<ElectricityCabinetVO> resultVo;
         //若enableGeo为true，则从redis中获取位置信息。反之从数据库中查询柜机位置信息
         if (eleCommonConfig.isEnableGeo()) {
             log.info("Get location distance from redis geo start,tenant id = {}, query params = {}", TenantContextHolder.getTenantId(), electricityCabinetQuery);
-            RedisGeoCommands.GeoRadiusCommandArgs geoRadiusCommandArgs = RedisGeoCommands
-                    .GeoRadiusCommandArgs
-                    .newGeoRadiusArgs()
-                    .includeDistance()
-                    .includeCoordinates()
+            RedisGeoCommands.GeoRadiusCommandArgs geoRadiusCommandArgs = RedisGeoCommands.GeoRadiusCommandArgs.newGeoRadiusArgs().includeDistance().includeCoordinates()
                     .sortAscending();
-            GeoResults<RedisGeoCommands.GeoLocation<String>> geoRadius = redisService.getGeoRadius(CacheConstant.CACHE_ELECTRICITY_CABINET_GEO + electricityCabinetQuery.getTenantId(), new Circle(new Point(electricityCabinetQuery.getLon(), electricityCabinetQuery.getLat()), new Distance(electricityCabinetQuery.getDistance() / 1000, Metrics.KILOMETERS)), geoRadiusCommandArgs);
+            GeoResults<RedisGeoCommands.GeoLocation<String>> geoRadius = redisService.getGeoRadius(
+                    CacheConstant.CACHE_ELECTRICITY_CABINET_GEO + electricityCabinetQuery.getTenantId(),
+                    new Circle(new Point(electricityCabinetQuery.getLon(), electricityCabinetQuery.getLat()),
+                            new Distance(electricityCabinetQuery.getDistance() / 1000, Metrics.KILOMETERS)), geoRadiusCommandArgs);
             if (Objects.isNull(geoRadius) || !DataUtil.collectionIsUsable(geoRadius.getContent())) {
                 log.info("GEO results is null, query info = {}", electricityCabinetQuery);
                 return null;
             }
-    
+            
             resultVo = geoRadius.getContent().parallelStream().map(e -> {
                 ElectricityCabinetVO electricityCabinetVO = new ElectricityCabinetVO();
-    
+                
                 Integer eid = Integer.valueOf(e.getContent().getName());
                 ElectricityCabinet electricityCabinet = queryByIdFromCache(eid);
-                if(Objects.isNull(electricityCabinet)){
+                if (Objects.isNull(electricityCabinet)) {
                     log.error("query cabinet error! eid = {}", eid);
                     return null;
                 }
-    
+                
                 electricityCabinetVO.setId(electricityCabinet.getId());
                 electricityCabinetVO.setName(electricityCabinet.getName());
                 electricityCabinetVO.setSn(electricityCabinet.getSn());
@@ -1051,7 +1011,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 electricityCabinetVO.setLongitude(e.getContent().getPoint().getX());
                 //将公里数转化为米，返回给前端
                 electricityCabinetVO.setDistance(e.getDistance().getValue() * 1000);
-    
+                
                 return assignAttribute(electricityCabinetVO);
                 
             }).filter(Objects::nonNull).collect(Collectors.toList());
@@ -1062,7 +1022,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             if (CollectionUtils.isEmpty(electricityCabinetList)) {
                 return R.ok(Collections.emptyList());
             }
-    
+            
             resultVo = electricityCabinetList.parallelStream().map(e -> {
                 return assignAttribute(e);
                 
@@ -1101,17 +1061,17 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 }
             }
         }
-    
+        
         List<ElectricityCabinetBox> cabinetBoxList = electricityCabinetBoxService.selectEleBoxAttrByEid(e.getId());
         if (CollectionUtils.isEmpty(cabinetBoxList)) {
             return null;
         }
-    
+        
         //空仓
         long emptyCellNumber = cabinetBoxList.stream().filter(this::isNoElectricityBattery).count();
         //有电池仓门
         long haveBatteryNumber = cabinetBoxList.stream().filter(this::isBatteryInElectricity).count();
-    
+        
         //可换电数量
         List<ElectricityCabinetBox> exchangeableList = cabinetBoxList.stream().filter(item -> isExchangeable(item, e.getFullyCharged())).collect(Collectors.toList());
         if (!CollectionUtils.isEmpty(exchangeableList)) {
@@ -1119,18 +1079,18 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             // assignExchangeableVoltageAndCapacity(exchangeableList, e);
         }
         long exchangeableNumber = exchangeableList.size();
-    
+        
         //满电电池数量
         long fullyElectricityBattery = cabinetBoxList.stream().filter(this::isFullBattery).count();
-    
+        
         e.setElectricityBatteryTotal((int) haveBatteryNumber);
         e.setNoElectricityBattery((int) emptyCellNumber);
         e.setFullyElectricityBattery((int) exchangeableNumber);//兼容2.0小程序首页显示问题
         e.setFullyBatteryNumber((int) fullyElectricityBattery);
         e.setExchangeBattery((int) exchangeableNumber);
-    
+        
         assignBatteryTypes(cabinetBoxList, e);
-    
+        
         //电柜不在线也返回，可离线换电
         if (Objects.equals(e.getUsableStatus(), ElectricityCabinet.ELECTRICITY_CABINET_USABLE_STATUS)) {
             return e;
@@ -1358,17 +1318,12 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     
     @Override
     public boolean deviceIsOnline(String productKey, String deviceName) {
-        GetDeviceStatusResponse getDeviceStatusResponse = pubHardwareService.queryDeviceStatusFromIot(productKey, deviceName);
-        if (Objects.isNull(getDeviceStatusResponse)) {
-            return false;
+        Pair<Boolean, Object> result = hwIotService.queryDeviceStatus(deviceName);
+        if (!result.getLeft()) {
+            log.error("QUERY DEVICE ERROR! productKey:{},deviceName:{} msg={}", productKey, deviceName, result.getRight());
         }
         
-        GetDeviceStatusResponse.Data data = getDeviceStatusResponse.getData();
-        if (Objects.isNull(data)) {
-            return false;
-        }
-        
-        String status = Optional.ofNullable(data.getStatus()).orElse("UNKNOW").toLowerCase();
+        String status = result.getRight().toString();
         if ("ONLINE".equalsIgnoreCase(status)) {
             return true;
         }
@@ -1674,11 +1629,13 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     @Override
     public void addElectricityCabinetLocToGeo(ElectricityCabinet electricityCabinet) {
         if (Objects.isNull(electricityCabinet.getLatitude()) || Objects.isNull(electricityCabinet.getLongitude())) {
-            log.error("Add electricity cabinet to geo error, device's location not found! sn={}, lat={}, lon={}", electricityCabinet.getSn(), electricityCabinet.getLatitude(), electricityCabinet.getLongitude());
+            log.error("Add electricity cabinet to geo error, device's location not found! sn={}, lat={}, lon={}", electricityCabinet.getSn(), electricityCabinet.getLatitude(),
+                    electricityCabinet.getLongitude());
             return;
         }
         //缓存柜机GEO信息
-        redisService.addGeo(CacheConstant.CACHE_ELECTRICITY_CABINET_GEO + TenantContextHolder.getTenantId(), electricityCabinet.getId().toString(), new Point(electricityCabinet.getLongitude(), electricityCabinet.getLatitude()));
+        redisService.addGeo(CacheConstant.CACHE_ELECTRICITY_CABINET_GEO + TenantContextHolder.getTenantId(), electricityCabinet.getId().toString(),
+                new Point(electricityCabinet.getLongitude(), electricityCabinet.getLatitude()));
     }
     
     @Override
@@ -3355,9 +3312,9 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             return R.fail("SYSTEM.0003", "参数不合法");
         }
         
-        Pair<Boolean, Object> result = iotAcsService.queryDeviceStatus(productKey, deviceName);
+        Pair<Boolean, Object> result = hwIotService.queryDeviceStatus(deviceName);
         if (!result.getLeft()) {
-            log.error("acsClient link error! errorMsg={}", result.getLeft());
+            log.error("acsClient link error! errorMsg={}", result.getRight());
             return R.fail("CUPBOARD.10035", "iot链接失败，请联系管理员");
         }
         
@@ -4613,7 +4570,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             log.error("ELECTRICITY  ERROR!  ota  operate type illegal！electricityCabinet={},operateType={}", electricityCabinet, operateType);
             return R.fail("100302", "ota操作类型不合法");
         }
-    
+        
         Set<Integer> versionTypeSet = Set.of(NumberConstant.ZERO, NumberConstant.ONE, NumberConstant.TWO, NumberConstant.THREE);
         if (!versionTypeSet.contains(versionType)) {
             log.error("ELECTRICITY  ERROR!  ota  operate type illegal！electricityCabinet={},versionType={}", electricityCabinet, versionType);
@@ -4810,7 +4767,114 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             return R.ok(Collections.EMPTY_LIST);
         }
         
-        return R.ok(electricityCabinets);
+        List<Integer> cabinetIds = electricityCabinets.stream().map(ElectricityCabinet::getId).collect(Collectors.toList());
+        
+        //分批次查询柜机格挡
+        List<ElectricityCabinetBox> electricityCabinetBoxList = new ArrayList<>();
+        List<List<Integer>> partitions = ListUtil.partition(cabinetIds, NumberConstant.TWO_HUNDRED);
+        partitions.forEach(item -> {
+            List<ElectricityCabinetBox> boxes = electricityCabinetBoxService.listByElectricityCabinetIdS(item, TenantContextHolder.getTenantId());
+            electricityCabinetBoxList.addAll(boxes);
+        });
+        
+        Map<Integer, List<ElectricityCabinetBox>> boxesByIdMap = new HashMap<>();
+        if (!CollectionUtils.isEmpty(electricityCabinetBoxList)) {
+            for (ElectricityCabinetBox box : electricityCabinetBoxList) {
+                boxesByIdMap.computeIfAbsent(box.getElectricityCabinetId(), k -> new ArrayList<>()).add(box);
+            }
+        }
+        
+        // 获取系统配置
+        ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(TenantContextHolder.getTenantId());
+        
+        List<ElectricityCabinetListMapVO> assembleCabinetList = new ArrayList<>();
+        electricityCabinets.forEach(cabinet -> {
+            ElectricityCabinetListMapVO electricityCabinetListMapVO = new ElectricityCabinetListMapVO();
+            BeanUtils.copyProperties(cabinet, electricityCabinetListMapVO);
+            
+            List<ElectricityCabinetBox> electricityCabinetBoxes = boxesByIdMap.getOrDefault(cabinet.getId(), Collections.emptyList());
+            int boxNum = NumberConstant.ZERO;
+            int batteryNum = NumberConstant.ZERO;
+            int unusableBoxNum = NumberConstant.ZERO;
+            if (!CollectionUtils.isEmpty(electricityCabinetBoxes)) {
+                //柜机格口数量
+                boxNum = electricityCabinetBoxes.size();
+                
+                // 电池在仓数量统计
+                batteryNum = (int) electricityCabinetBoxes.stream().filter(box -> Objects.equals(box.getStatus(), ElectricityCabinetBox.STATUS_ELECTRICITY_BATTERY)).count();
+                
+                // 电池锁仓数量统计
+                unusableBoxNum = (int) electricityCabinetBoxes.stream()
+                        .filter(box -> Objects.equals(box.getUsableStatus(), ElectricityCabinetBox.ELECTRICITY_CABINET_BOX_UN_USABLE)).count();
+                
+                //判断少/多电柜机
+                int chargeRate = BigDecimal.valueOf(batteryNum).multiply(NumberConstant.ONE_HUNDRED_BD).divide(BigDecimal.valueOf(boxNum), NumberConstant.ZERO, RoundingMode.DOWN)
+                        .intValue();
+                if (Objects.nonNull(electricityConfig)) {
+                    BigDecimal lowChargeRateBd = electricityConfig.getLowChargeRate();
+                    BigDecimal fullChargeRateBd = electricityConfig.getFullChargeRate();
+                    
+                    //默认低电比例25% 多电比例75%
+                    int lowChargeRate = Objects.isNull(lowChargeRateBd) ? NumberConstant.TWENTY_FIVE : lowChargeRateBd.intValue();
+                    int fullChargeRate = Objects.isNull(fullChargeRateBd) ? NumberConstant.SEVENTY_FIVE : fullChargeRateBd.intValue();
+                    
+                    if (chargeRate <= lowChargeRate) {
+                        electricityCabinetListMapVO.setIsLowCharge(NumberConstant.ONE);
+                    } else if (chargeRate >= fullChargeRate) {
+                        electricityCabinetListMapVO.setIsFulCharge(NumberConstant.ONE);
+                    } else {
+                        electricityCabinetListMapVO.setIsLowCharge(NumberConstant.ZERO);
+                        electricityCabinetListMapVO.setIsFulCharge(NumberConstant.ZERO);
+                    }
+                }
+                
+                // 是否锁仓柜机
+                electricityCabinetListMapVO.setIsUnusable(unusableBoxNum > NumberConstant.ZERO);
+            }
+            
+            electricityCabinetListMapVO.setBoxNum(boxNum);
+            electricityCabinetListMapVO.setBatteryNum(batteryNum);
+            electricityCabinetListMapVO.setUnusableBoxNum(unusableBoxNum);
+            
+            assembleCabinetList.add(electricityCabinetListMapVO);
+        });
+        
+        // 设置统计值
+        Integer totalCount = assembleCabinetList.size();
+        Integer lowChargeCount = (int) assembleCabinetList.stream().filter(cabinet -> Objects.equals(cabinet.getIsLowCharge(), NumberConstant.ONE)).count();
+        Integer fullChargeCount = (int) assembleCabinetList.stream().filter(cabinet -> Objects.equals(cabinet.getIsFulCharge(), NumberConstant.ONE)).count();
+        Integer unusableCount = (int) assembleCabinetList.stream().filter(cabinet -> BooleanUtils.isTrue(cabinet.getIsUnusable())).count();
+        Integer offLineCount = (int) assembleCabinetList.stream().filter(cabinet -> Objects.equals(cabinet.getOnlineStatus(), NumberConstant.ONE)).count();
+        
+        // 0-全部、1-少电、2-多电、3-锁仓、4-离线
+        List<ElectricityCabinetListMapVO> rspList = new ArrayList<>();
+        switch (cabinetQuery.getStatus()) {
+            default:
+                // 默认少电
+                rspList = assembleCabinetList.stream().filter(cabinet -> Objects.equals(cabinet.getIsLowCharge(), NumberConstant.ONE)).collect(Collectors.toList());
+                break;
+            case 0:
+                rspList = assembleCabinetList;
+                break;
+            case 2:
+                rspList = assembleCabinetList.stream().filter(cabinet -> Objects.equals(cabinet.getIsFulCharge(), NumberConstant.ONE)).collect(Collectors.toList());
+                break;
+            case 3:
+                rspList = assembleCabinetList.stream().filter(cabinet -> BooleanUtils.isTrue(cabinet.getIsUnusable())).collect(Collectors.toList());
+                break;
+            case 4:
+                rspList = assembleCabinetList.stream().filter(cabinet -> Objects.equals(cabinet.getOnlineStatus(), NumberConstant.ONE)).collect(Collectors.toList());
+                break;
+        }
+        
+        if (CollectionUtils.isEmpty(rspList)) {
+            rspList = Collections.emptyList();
+        }
+        
+        ElectricityCabinetMapVO rsp = ElectricityCabinetMapVO.builder().totalCount(totalCount).lowChargeCount(lowChargeCount).fullChargeCount(fullChargeCount)
+                .unusableCount(unusableCount).offLineCount(offLineCount).electricityCabinetListMapVOList(rspList).build();
+        
+        return R.ok(rsp);
     }
     
     @Slave
@@ -4825,8 +4889,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     }
     
     @Override
-    public R acquireIdcardFileSign() {
-        return R.ok(storageService.getOssUploadSign("saas/cabinet/"));
+    public R acquireIdcardFileSign(String key) {
+        return R.ok(storageService.getOssUploadSign(key));
     }
     
     @Slave
@@ -4930,7 +4994,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 List<ElectricityCabinetBox> exchangeableList = cabinetBoxList.stream().filter(e -> isExchangeable(e, fullyCharged)).collect(Collectors.toList());
                 if (!CollectionUtils.isEmpty(exchangeableList)) {
                     assignExchangeableBatteryType(exchangeableList, item);
-                   // assignExchangeableVoltageAndCapacity(exchangeableList, item);
+                    // assignExchangeableVoltageAndCapacity(exchangeableList, item);
                 }
                 long exchangeableNumber = exchangeableList.size();
                 
@@ -5093,7 +5157,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             }
             
             List<ElectricityCabinetFile> cabinetFiles = electricityCabinetFileList.parallelStream().peek(item -> {
-                item.setUrl(storageService.getOssFileUrl(storageConfig.getBucketName(), item.getName(), System.currentTimeMillis() + 10 * 60 * 1000L));
+                item.setUrl(storageConfig.getUrlPrefix() + item.getName());
             }).collect(Collectors.toList());
             
             return cabinetFiles.parallelStream().map(ElectricityCabinetFile::getUrl).collect(Collectors.toList());
@@ -5147,7 +5211,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 
                 //删除格挡
                 electricityCabinetBoxService.batchDeleteBoxByElectricityCabinetId(id);
-    
+                
                 //删除柜机GEO信息
                 redisService.removeGeoMember(CacheConstant.CACHE_ELECTRICITY_CABINET_GEO + electricityCabinetUpdate.getTenantId(), electricityCabinetUpdate.getId().toString());
             });
@@ -5189,7 +5253,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 electricityCabinetBoxService.batchInsertBoxByModelIdV2(electricityCabinetModelService.queryByIdFromCache(query.getModelId()), electricityCabinet.getId());
                 //添加服务时间记录
                 electricityCabinetServerService.insertOrUpdateByElectricityCabinet(electricityCabinet, electricityCabinet);
-    
+                
                 //缓存柜机GEO信息
                 addElectricityCabinetLocToGeo(electricityCabinet);
             });
@@ -5563,5 +5627,17 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         List<ElectricityCabinetBox> exchangeableList = cabinetBoxList.stream().filter(item -> isExchangeable(item, electricityCabinet.getFullyCharged()))
                 .collect(Collectors.toList());
         return R.ok(assignExchangeableVoltageAndCapacityV2(exchangeableList));
+    }
+    
+    @Slave
+    @Override
+    public Integer existsByAreaId(Long areaId) {
+        return electricityCabinetMapper.existsByAreaId(areaId);
+    }
+    
+    @Slave
+    @Override
+    public List<AreaCabinetNumBO> countByAreaGroup(List<Long> areaIdList) {
+        return electricityCabinetMapper.countByAreaGroup(areaIdList);
     }
 }
