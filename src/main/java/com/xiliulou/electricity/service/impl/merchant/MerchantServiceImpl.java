@@ -1011,7 +1011,7 @@ public class MerchantServiceImpl implements MerchantService {
      */
     @Slave
     @Override
-    public List<MerchantPlaceSelectVO> queryPlaceListByUid(Long uid, Long merchantEmployeeUid) {
+    public List<MerchantPlaceSelectVO> queryPlaceListByUid(Long uid) {
         Merchant merchant = merchantMapper.selectByUid(uid);
         
         if (Objects.isNull(merchant)) {
