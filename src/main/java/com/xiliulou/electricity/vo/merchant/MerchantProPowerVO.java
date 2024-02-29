@@ -2,8 +2,6 @@ package com.xiliulou.electricity.vo.merchant;
 
 import lombok.Data;
 
-import java.util.List;
-
 /**
  * @author HeYafeng
  * @description 小程序-商户 电量/电费
@@ -32,5 +30,4 @@ public class MerchantProPowerVO {
     
     private Double totalCharge;
     
-    private List<MerchantProCabinetPowerVO> cabinetPowerList;
 }

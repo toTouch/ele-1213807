@@ -176,19 +176,8 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
             return null;
         });
         
-        // 6.柜机电量列表
-        CompletableFuture<Void> cabinetListPowerFuture = CompletableFuture.runAsync(() -> {
-            List<MerchantProCabinetPowerVO> cabinetPowerList = getCabinetPowerList(cabinetIds);
-            vo.setCabinetPowerList(cabinetPowerList);
-            
-        }, executorService).exceptionally(e -> {
-            log.error("Query merchant cabinetList power data error! uid={}", request.getUid(), e);
-            return null;
-        });
-        
         // 等待所有线程执行完毕
-        CompletableFuture<Void> resultComplete = CompletableFuture.allOf(todayPowerFuture, yesterdayPowerFuture, thisMonthPowerFuture, lastMonthPowerFuture, totalPowerFuture,
-                cabinetListPowerFuture);
+        CompletableFuture<Void> resultComplete = CompletableFuture.allOf(todayPowerFuture, yesterdayPowerFuture, thisMonthPowerFuture, lastMonthPowerFuture, totalPowerFuture);
         
         try {
             resultComplete.get(10, TimeUnit.SECONDS);
@@ -285,87 +274,6 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
         }
         
         return totalPowerVO;
-    }
-    
-    private List<MerchantProCabinetPowerVO> getCabinetPowerList(List<Long> cabinetIds) {
-        List<MerchantProCabinetPowerVO> cabinetPowerList = new ArrayList<>();
-        
-        // 遍历柜机
-        cabinetIds.forEach(cabinetId -> {
-            // 今日0点
-            Long todayStartTime = DateUtils.getTimeAgoStartTime(NumberConstant.ZERO);
-            // 当前时间
-            long todayEndTime = System.currentTimeMillis();
-            // 今日电量/电费
-            MerchantProLivePowerVO todayPower = getLivePowerData(List.of(cabinetId), todayStartTime, todayEndTime, "cabinetPowerList-today");
-            
-            // 本月第一天0点
-            Long thisMonthStartTime = DateUtils.getBeforeMonthFirstDayTimestamp(NumberConstant.ZERO);
-            // 本月电量/电费
-            MerchantProLivePowerVO thisMonthPower = getLivePowerData(List.of(cabinetId), thisMonthStartTime, System.currentTimeMillis(), "cabinetPowerList-thisMonth");
-            
-            //上月第一天0点
-            Long lastMonthStartTime = DateUtils.getBeforeMonthFirstDayTimestamp(NumberConstant.ONE);
-            // 上月最后一天23:59:59
-            long lastMonthEndTime = DateUtils.getBeforeMonthLastDayTimestamp(NumberConstant.ONE);
-            MerchantProLivePowerVO lastMonthPower = getLivePowerData(List.of(cabinetId), lastMonthStartTime, lastMonthEndTime, "cabinetPowerList-lastMonth");
-            
-            // 获取历史数据查询的月份，比如：当前月份2024-02，要查的月份为2023-12、2023-11、2023-10、2023-09、2023-08、2023-07、2023-06、2023-05、2023-04、2023-03
-            List<String> monthList = new ArrayList<>(10);
-            for (int i = NumberConstant.TWO; i <= NumberConstant.TWELVE; i++) {
-                monthList.add(DateUtils.getMonthDate((long) i));
-            }
-            MerchantPowerPeriodVO merchantPowerPeriodVO = merchantCabinetPowerMonthRecordProService.sumMonthPower(List.of(cabinetId), monthList);
-            Long historyLatestReportTime = merchantCabinetPowerMonthDetailProService.queryLatestReportTime(cabinetId, monthList);
-            
-            // 最新上报时间
-            Long latestTime = NumberConstant.ZERO_L;
-            // 本年电量、本年电费
-            Double thisYearPower = NumberConstant.ZERO_D;
-            Double thisYearCharge = NumberConstant.ZERO_D;
-            if (Objects.nonNull(merchantPowerPeriodVO)) {
-                thisYearPower += merchantPowerPeriodVO.getPower();
-                thisYearCharge += merchantPowerPeriodVO.getCharge();
-                latestTime = historyLatestReportTime;
-            }
-            if (Objects.nonNull(lastMonthPower)) {
-                thisYearPower += lastMonthPower.getPower();
-                thisYearCharge += lastMonthPower.getCharge();
-                latestTime = lastMonthPower.getLatestTime();
-            }
-            if (Objects.nonNull(thisMonthPower)) {
-                thisYearPower += thisMonthPower.getPower();
-                thisYearCharge += thisMonthPower.getCharge();
-                latestTime = thisMonthPower.getLatestTime();
-            }
-            
-            if (Objects.nonNull(todayPower)) {
-                latestTime = todayPower.getLatestTime();
-            }
-            
-            //封装结果
-            MerchantProCabinetPowerVO merchantProCabinetPowerVO = new MerchantProCabinetPowerVO();
-            merchantProCabinetPowerVO.setTodayPower(Objects.isNull(todayPower) ? NumberConstant.ZERO_D : todayPower.getPower());
-            merchantProCabinetPowerVO.setTodayCharge(Objects.isNull(todayPower) ? NumberConstant.ZERO_D : todayPower.getCharge());
-            merchantProCabinetPowerVO.setThisMonthPower(Objects.isNull(thisMonthPower) ? NumberConstant.ZERO_D : thisMonthPower.getPower());
-            merchantProCabinetPowerVO.setThisMonthCharge(Objects.isNull(thisMonthPower) ? NumberConstant.ZERO_D : thisMonthPower.getCharge());
-            merchantProCabinetPowerVO.setThisYearPower(thisYearPower);
-            merchantProCabinetPowerVO.setThisYearCharge(thisYearCharge);
-            //merchantProCabinetPowerVO.setLatestTime(latestTime);
-            merchantProCabinetPowerVO.setTime(
-                    Optional.ofNullable(electricityCabinetService.queryByIdFromCache(cabinetId.intValue()).getCreateTime()).orElse(NumberConstant.ZERO_L));
-            
-            cabinetPowerList.add(merchantProCabinetPowerVO);
-        });
-        
-        if (CollectionUtils.isEmpty(cabinetPowerList)) {
-            return Collections.emptyList();
-        }
-        
-        // cabinetPowerList 根据time进行倒叙排序
-        cabinetPowerList.sort((o1, o2) -> o2.getTime().compareTo(o1.getTime()));
-        
-        return cabinetPowerList;
     }
     
     @Slave
@@ -507,6 +415,104 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
         }
         
         return rspList;
+    }
+    
+    @Slave
+    @Override
+    public List<MerchantProCabinetPowerVO> cabinetPowerList(MerchantCabinetPowerRequest request) {
+        Merchant merchant = merchantService.queryByUid(request.getUid());
+        if (Objects.isNull(merchant)) {
+            log.warn("Merchant power for pro cabinetPowerList, merchant not exist, uid={}", request.getUid());
+            return null;
+        }
+        
+        request.setMerchantId(merchant.getId());
+        
+        //获取要查询的柜机
+        List<Long> cabinetIds = getStaticsCabinetIds(request);
+        if (CollectionUtils.isEmpty(cabinetIds)) {
+            log.warn("Merchant power for pro lineData, cabinetIds is empty, uid={}", request.getUid());
+            return null;
+        }
+        
+        List<MerchantProCabinetPowerVO> cabinetPowerList = new ArrayList<>();
+        
+        // 遍历柜机
+        cabinetIds.forEach(cabinetId -> {
+            // 今日0点
+            Long todayStartTime = DateUtils.getTimeAgoStartTime(NumberConstant.ZERO);
+            // 当前时间
+            long todayEndTime = System.currentTimeMillis();
+            // 今日电量/电费
+            MerchantProLivePowerVO todayPower = getLivePowerData(List.of(cabinetId), todayStartTime, todayEndTime, "cabinetPowerList-today");
+            
+            // 本月第一天0点
+            Long thisMonthStartTime = DateUtils.getBeforeMonthFirstDayTimestamp(NumberConstant.ZERO);
+            // 本月电量/电费
+            MerchantProLivePowerVO thisMonthPower = getLivePowerData(List.of(cabinetId), thisMonthStartTime, System.currentTimeMillis(), "cabinetPowerList-thisMonth");
+            
+            //上月第一天0点
+            Long lastMonthStartTime = DateUtils.getBeforeMonthFirstDayTimestamp(NumberConstant.ONE);
+            // 上月最后一天23:59:59
+            long lastMonthEndTime = DateUtils.getBeforeMonthLastDayTimestamp(NumberConstant.ONE);
+            MerchantProLivePowerVO lastMonthPower = getLivePowerData(List.of(cabinetId), lastMonthStartTime, lastMonthEndTime, "cabinetPowerList-lastMonth");
+            
+            // 获取历史数据查询的月份，比如：当前月份2024-02，要查的月份为2023-12、2023-11、2023-10、2023-09、2023-08、2023-07、2023-06、2023-05、2023-04、2023-03
+            List<String> monthList = new ArrayList<>(10);
+            for (int i = NumberConstant.TWO; i <= NumberConstant.TWELVE; i++) {
+                monthList.add(DateUtils.getMonthDate((long) i));
+            }
+            MerchantPowerPeriodVO merchantPowerPeriodVO = merchantCabinetPowerMonthRecordProService.sumMonthPower(List.of(cabinetId), monthList);
+            Long historyLatestReportTime = merchantCabinetPowerMonthDetailProService.queryLatestReportTime(cabinetId, monthList);
+            
+            // 最新上报时间
+            Long latestTime = NumberConstant.ZERO_L;
+            // 本年电量、本年电费
+            Double thisYearPower = NumberConstant.ZERO_D;
+            Double thisYearCharge = NumberConstant.ZERO_D;
+            if (Objects.nonNull(merchantPowerPeriodVO)) {
+                thisYearPower += merchantPowerPeriodVO.getPower();
+                thisYearCharge += merchantPowerPeriodVO.getCharge();
+                latestTime = historyLatestReportTime;
+            }
+            if (Objects.nonNull(lastMonthPower)) {
+                thisYearPower += lastMonthPower.getPower();
+                thisYearCharge += lastMonthPower.getCharge();
+                latestTime = lastMonthPower.getLatestTime();
+            }
+            if (Objects.nonNull(thisMonthPower)) {
+                thisYearPower += thisMonthPower.getPower();
+                thisYearCharge += thisMonthPower.getCharge();
+                latestTime = thisMonthPower.getLatestTime();
+            }
+            
+            if (Objects.nonNull(todayPower)) {
+                latestTime = todayPower.getLatestTime();
+            }
+            
+            //封装结果
+            MerchantProCabinetPowerVO merchantProCabinetPowerVO = new MerchantProCabinetPowerVO();
+            merchantProCabinetPowerVO.setTodayPower(Objects.isNull(todayPower) ? NumberConstant.ZERO_D : todayPower.getPower());
+            merchantProCabinetPowerVO.setTodayCharge(Objects.isNull(todayPower) ? NumberConstant.ZERO_D : todayPower.getCharge());
+            merchantProCabinetPowerVO.setThisMonthPower(Objects.isNull(thisMonthPower) ? NumberConstant.ZERO_D : thisMonthPower.getPower());
+            merchantProCabinetPowerVO.setThisMonthCharge(Objects.isNull(thisMonthPower) ? NumberConstant.ZERO_D : thisMonthPower.getCharge());
+            merchantProCabinetPowerVO.setThisYearPower(thisYearPower);
+            merchantProCabinetPowerVO.setThisYearCharge(thisYearCharge);
+            //merchantProCabinetPowerVO.setLatestTime(latestTime);
+            merchantProCabinetPowerVO.setTime(
+                    Optional.ofNullable(electricityCabinetService.queryByIdFromCache(cabinetId.intValue()).getCreateTime()).orElse(NumberConstant.ZERO_L));
+            
+            cabinetPowerList.add(merchantProCabinetPowerVO);
+        });
+        
+        if (CollectionUtils.isEmpty(cabinetPowerList)) {
+            return Collections.emptyList();
+        }
+        
+        // cabinetPowerList 根据time进行倒叙排序
+        cabinetPowerList.sort((o1, o2) -> o2.getTime().compareTo(o1.getTime()));
+        
+        return cabinetPowerList;
     }
     
     private List<MerchantProCabinetPowerDetailVO> assembleHistoryDetailPower(ElectricityCabinet cabinet, List<MerchantCabinetPowerMonthDetailPro> historyDetailList,
