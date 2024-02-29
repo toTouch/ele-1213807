@@ -8,6 +8,7 @@ import com.xiliulou.electricity.query.merchant.MerchantJoinUserQueryMode;
 import com.xiliulou.electricity.query.merchant.MerchantPromotionDataDetailQueryModel;
 import com.xiliulou.electricity.query.merchant.MerchantPromotionScanCodeQueryModel;
 import com.xiliulou.electricity.request.merchant.MerchantJoinRecordPageRequest;
+import com.xiliulou.electricity.request.merchant.MerchantJoinScanRequest;
 import com.xiliulou.electricity.vo.merchant.MerchantJoinRecordVO;
 import com.xiliulou.electricity.vo.merchant.MerchantJoinUserVO;
 
@@ -23,7 +24,7 @@ public interface MerchantJoinRecordService {
     /**
      * 扫码参与
      */
-    R joinScanCode(String code);
+    R joinScanCode(MerchantJoinScanRequest request);
     
     /**
      * 根据参与人uid查询记录
