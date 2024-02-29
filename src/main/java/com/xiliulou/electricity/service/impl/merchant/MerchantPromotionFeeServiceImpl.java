@@ -149,7 +149,6 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
         // 获取已退回的收益（数据来源：返利记录）
         BigDecimal returnIncome = rebateRecordService.sumByStatus(settleQueryModel);
         
-        log.info("mericahtn tenantId={}", TenantContextHolder.getTenantId());
         //审核中
         BigDecimal reviewInProgress = merchantWithdrawApplicationService.sumByStatus(TenantContextHolder.getTenantId(), MerchantWithdrawConstant.REVIEW_IN_PROGRESS, uid);
         
