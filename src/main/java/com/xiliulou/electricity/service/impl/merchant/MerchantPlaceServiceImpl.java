@@ -300,12 +300,10 @@ public class MerchantPlaceServiceImpl implements MerchantPlaceService {
             MerchantPlaceVO merchantPlaceVO = new MerchantPlaceVO();
             BeanUtils.copyProperties(merchantPlace, merchantPlaceVO);
             List<MerchantPlaceCabinetBindVO> merchantPlaceCabinetBindVos = bindCabinetMap.get(merchantPlace.getId());
-            // 柜机名称
+            
+            // 柜机
             if (ObjectUtils.isNotEmpty(merchantPlaceCabinetBindVos)) {
-                String cabinetName = merchantPlaceCabinetBindVos.stream().map(MerchantPlaceCabinetBindVO::getCabinetName).collect(Collectors.joining(StringConstant.COMMA_EN));
-                List<Long> cabinetIdList = merchantPlaceCabinetBindVos.stream().map(MerchantPlaceCabinetBindVO::getCabinetId).distinct().collect(Collectors.toList());
-                merchantPlaceVO.setCabinetName(cabinetName);
-                merchantPlaceVO.setCabinetIdList(cabinetIdList);
+                merchantPlaceVO.setCabinetList(merchantPlaceCabinetBindVos);
             }
             
             // 区域名称

@@ -15,6 +15,7 @@ import com.xiliulou.electricity.request.merchant.MerchantPlaceCabinetConditionRe
 import com.xiliulou.electricity.request.merchant.MerchantPlaceCabinetPageRequest;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
 import com.xiliulou.electricity.service.merchant.MerchantPlaceCabinetBindService;
+import com.xiliulou.electricity.service.merchant.MerchantPlaceMapService;
 import com.xiliulou.electricity.service.merchant.MerchantPlaceService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
@@ -58,6 +59,9 @@ public class MerchantPlaceCabinetBindServiceImpl implements MerchantPlaceCabinet
     @Resource
     private RedisService redisService;
     
+    @Resource
+    private MerchantPlaceMapService merchantPlaceMapService;
+    
     @Slave
     @Override
     public List<MerchantPlaceCabinetBind> queryList(MerchantPlaceCabinetBindQueryModel placeCabinetBindQueryModel) {
@@ -100,7 +104,7 @@ public class MerchantPlaceCabinetBindServiceImpl implements MerchantPlaceCabinet
         if (placeCabinetBindSaveRequest.getBindTime() < lastMonthDaytime) {
             log.error("place bind error, bind time less than last month day time, placeId ={}, bindTime={}, lastMonthDaytime={}", placeCabinetBindSaveRequest.getPlaceId(),
                     placeCabinetBindSaveRequest.getBindTime(), lastMonthDaytime);
-            // todo
+            
             return Triple.of(false, "120221", "开始时间只可选择当月（包含当前时间，不得晚于当前时间），及上月时间");
         }
         
@@ -164,6 +168,14 @@ public class MerchantPlaceCabinetBindServiceImpl implements MerchantPlaceCabinet
         placeCabinetBind.setTenantId(tenantId);
         placeCabinetBind.setCabinetId(Long.valueOf(placeCabinetBindSaveRequest.getCabinetId()));
         merchantPlaceCabinetBindMapper.insert(placeCabinetBind);
+        
+        // 检测柜机否存在场地费
+        if (Objects.isNull(electricityCabinet.getPlaceFee())) {
+            return Triple.of(true, null, null);
+        }
+        
+        // 检测场地当前关联的商户且未设置存在场地费的数据
+//        merchantPlaceMapService.queryListForBindMerchant(placeCabinetBindSaveRequest.getPlaceId(), );
         
         return Triple.of(true, null, null);
     }
