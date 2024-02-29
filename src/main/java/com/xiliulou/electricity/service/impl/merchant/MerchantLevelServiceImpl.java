@@ -123,11 +123,14 @@ public class MerchantLevelServiceImpl implements MerchantLevelService {
     
     @Override
     public Triple<Boolean, String, Object> modify(MerchantLevelRequest request) {
+        log.error("=============1232");
         MerchantLevel merchantLevel = this.queryById(request.getId());
         if (Objects.isNull(merchantLevel) || !Objects.equals(merchantLevel.getTenantId(), TenantContextHolder.getTenantId())) {
             return Triple.of(true, null, null);
         }
-        
+    
+        log.error("=============4655");
+    
         if (!Objects.equals(merchantLevel.getName(), request.getName()) && Objects.nonNull(existsLevelName(request.getName(), merchantLevel.getTenantId()))) {
             return Triple.of(false, "100322", "等级名称已存在");
         }
