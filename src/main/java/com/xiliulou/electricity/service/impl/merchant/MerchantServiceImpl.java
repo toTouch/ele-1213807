@@ -570,18 +570,20 @@ public class MerchantServiceImpl implements MerchantService {
         MerchantPlaceMapQueryModel queryModel = MerchantPlaceMapQueryModel.builder().merchantId(merchantSaveRequest.getId()).eqFlag(MerchantPlaceMapQueryModel.EQ).build();
         List<MerchantPlaceMap> existsPlaceList = merchantPlaceMapService.queryList(queryModel);
     
-        Map<Long, Long> bindMap = new HashMap<>();
+        Set<Long> bindPlaceSet = new HashSet<>();
         if (ObjectUtils.isNotEmpty(existsPlaceList)) {
-            bindMap = existsPlaceList.stream().collect(Collectors.toMap(MerchantPlaceMap::getPlaceId, MerchantPlaceMap::getId, (key, key1) -> key1));
+            bindPlaceSet = existsPlaceList.stream().map(MerchantPlaceMap::getPlaceId).collect(Collectors.toSet());
         }
         
         Set<Long> unBindList = new HashSet<>();
         if (ObjectUtils.isNotEmpty(merchantSaveRequest.getPlaceIdList())) {
             // 新增场地
-            Map<Long, Long> finalBindMap = bindMap;
-            List<Long> addPlaceIdList = merchantSaveRequest.getPlaceIdList().stream().filter(placeId -> !finalBindMap.containsKey(placeId)).collect(Collectors.toList());
+            Set<Long> finalBindPlaceSet = bindPlaceSet;
+            
+            List<Long> addPlaceIdList = merchantSaveRequest.getPlaceIdList().stream().filter(placeId -> !finalBindPlaceSet.contains(placeId)).collect(Collectors.toList());
+            
             // 解绑场地
-            unBindList = bindMap.keySet().stream().filter(item -> !merchantSaveRequest.getPlaceIdList().contains(item)).collect(Collectors.toSet());
+            unBindList = finalBindPlaceSet.stream().filter(item -> !merchantSaveRequest.getPlaceIdList().contains(item)).collect(Collectors.toSet());
             
             List<MerchantPlaceMap> merchantPlaceMapList = new ArrayList<>();
             List<MerchantPlaceBind> merchantPlaceBindList = new ArrayList<>();
@@ -589,26 +591,35 @@ public class MerchantServiceImpl implements MerchantService {
                 // 场地映射
                 MerchantPlaceMap merchantPlaceMap = MerchantPlaceMap.builder().merchantId(merchant.getId()).placeId(placeId).tenantId(tenantId).delFlag(MerchantPlaceMap.DEL_NORMAL)
                         .createTime(timeMillis).updateTime(timeMillis).build();
+                
                 merchantPlaceMapList.add(merchantPlaceMap);
                 
                 // 场地绑定历史
                 MerchantPlaceBind merchantPlaceBind = MerchantPlaceBind.builder().merchantId(merchant.getId()).placeId(placeId).bindTime(timeMillis)
                         .delFlag(MerchantPlaceMap.DEL_NORMAL).type(MerchantPlaceConstant.BIND).merchantMonthSettlement(MerchantPlaceConstant.MONTH_SETTLEMENT_NO)
                         .merchantMonthSettlementPower(MerchantPlaceConstant.MONTH_SETTLEMENT_POWER_NO).tenantId(tenantId).createTime(timeMillis).updateTime(timeMillis).build();
+                
                 merchantPlaceBindList.add(merchantPlaceBind);
             });
             
             // 批量保存场地映射
-            merchantPlaceMapService.batchInsert(merchantPlaceMapList);
+            if (ObjectUtils.isNotEmpty(merchantPlaceMapList)) {
+                merchantPlaceMapService.batchInsert(merchantPlaceMapList);
+            }
             
-            merchantPlaceBindService.batchInsert(merchantPlaceBindList);
+            // 批量保存绑定历史
+            if (ObjectUtils.isNotEmpty(merchantPlaceBindList)) {
+                merchantPlaceBindService.batchInsert(merchantPlaceBindList);
+            }
+            
         } else if (ObjectUtils.isNotEmpty(existsPlaceList)) {
-            unBindList = bindMap.keySet();
+            unBindList = bindPlaceSet;
         }
         
         if (ObjectUtils.isNotEmpty(unBindList)) {
             // 批量解绑场地
             merchantPlaceBindService.batchUnBind(unBindList, merchant.getId(), System.currentTimeMillis());
+            
             // 删除解绑的场地映射
             merchantPlaceMapService.batchDeleteByMerchantId(merchantSaveRequest.getId(), unBindList);
         }
