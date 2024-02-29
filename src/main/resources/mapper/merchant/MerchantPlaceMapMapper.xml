@@ -144,4 +144,10 @@
           and d.`status` = 0
           and exists (select 1 from t_electricity_cabinet c where c.id = d.cabinet_id and c.place_fee is not NULL)
     </select>
+    
+    <select id="queryListNoExistsPlaceFeeMerchant" resultType="java.lang.Long">
+        select
+            merchant_id
+        from t_merchant_place_map p
+    </select>
 </mapper>

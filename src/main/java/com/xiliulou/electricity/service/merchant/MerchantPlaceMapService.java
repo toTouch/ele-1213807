@@ -31,4 +31,6 @@ public interface MerchantPlaceMapService {
     Integer countCabinetNumByMerchantId(Long merchantId);
     
     Integer existsPlaceFee(Long merchantId);
+    
+    List<Long> queryListNoExistsPlaceFeeMerchant(Long placeId);
 }
