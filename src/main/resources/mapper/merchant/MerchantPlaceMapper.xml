@@ -114,7 +114,7 @@
                 and t.merchant_area_id = #{merchantAreaId}
             </if>
             <if test="franchiseeId != null">
-                and t.franchisee_id = #{franchiseeId},
+                and t.franchisee_id = #{franchiseeId}
             </if>
             <if test="idList != null and idList.size() > 0">
                 and t.id in

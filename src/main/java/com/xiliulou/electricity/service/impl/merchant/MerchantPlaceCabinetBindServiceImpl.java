@@ -175,7 +175,7 @@ public class MerchantPlaceCabinetBindServiceImpl implements MerchantPlaceCabinet
         }
         
         // 检测场地当前关联的商户且未设置存在场地费的数据
-//        merchantPlaceMapService.queryListForBindMerchant(placeCabinetBindSaveRequest.getPlaceId(), );
+//        List<Long> noExistsPlaceFeeMerchantIdList = merchantPlaceMapService.queryListNoExistsPlaceFeeMerchant(placeCabinetBindSaveRequest.getPlaceId(), );
         
         return Triple.of(true, null, null);
     }
