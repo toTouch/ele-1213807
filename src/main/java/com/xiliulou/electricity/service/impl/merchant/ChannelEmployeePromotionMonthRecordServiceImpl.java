@@ -90,14 +90,6 @@ public class ChannelEmployeePromotionMonthRecordServiceImpl implements ChannelEm
             return Collections.EMPTY_LIST;
         }
         
-        // 处理出账日期
-        list.stream().forEach(item -> {
-            if (Objects.nonNull(item.getFeeDate())) {
-                String billingDate = DateUtil.format(new Date(item.getFeeDate()), "yyyy-MM");
-                item.setBillingDate(billingDate);
-            }
-        });
-        
         return list;
     }
     
@@ -180,8 +172,7 @@ public class ChannelEmployeePromotionMonthRecordServiceImpl implements ChannelEm
         calendar.set(Calendar.DAY_OF_MONTH, calendar.getActualMaximum(Calendar.DAY_OF_MONTH));
         long endTime = calendar.getTimeInMillis();
         
-        List<ChannelEmployeePromotionMonthRecord> channelEmployeePromotionMonthRecords = channelEmployeePromotionMonthRecordMapper.selectByFeeDate(startTime, endTime,
-                TenantContextHolder.getTenantId());
+        List<ChannelEmployeePromotionMonthRecord> channelEmployeePromotionMonthRecords = channelEmployeePromotionMonthRecordMapper.selectByFeeDate(TenantContextHolder.getTenantId(), monthDate);
         List<ChannelEmployeePromotionDayRecord> channelEmployeePromotionDayRecords = channelEmployeePromotionDayRecordService.queryListByFeeDate(startTime, endTime,
                 TenantContextHolder.getTenantId());
         if (ObjectUtils.isEmpty(channelEmployeePromotionMonthRecords) || ObjectUtils.isEmpty(channelEmployeePromotionDayRecords)) {

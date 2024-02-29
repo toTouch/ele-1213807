@@ -341,14 +341,14 @@ public class MerchantServiceImpl implements MerchantService {
             
             merchantSaveRequest.getPlaceIdList().stream().forEach(placeId -> {
                 // 商户场地映射
-                MerchantPlaceMap merchantPlaceMap = MerchantPlaceMap.builder().merchantId(merchant.getId()).placeId(placeId).tenantId(tenantId).delFlag(MerchantPlaceMap.DEL_NORMAL)
+                MerchantPlaceMap merchantPlaceMap = MerchantPlaceMap.builder().merchantId(merchant.getId()).placeId(placeId).tenantId(tenantId).delFlag(MerchantPlaceMap.DEL_NORMAL).updateTime(timeMillis)
                         .createTime(timeMillis).build();
                 merchantPlaceMapList.add(merchantPlaceMap);
                 
                 // 商户场地绑定历史
                 MerchantPlaceBind merchantPlaceBind = MerchantPlaceBind.builder().merchantId(merchant.getId()).placeId(placeId).bindTime(timeMillis)
                         .delFlag(MerchantPlaceMap.DEL_NORMAL).type(MerchantPlaceConstant.BIND).merchantMonthSettlement(MerchantPlaceConstant.MONTH_SETTLEMENT_NO)
-                        .merchantMonthSettlementPower(MerchantPlaceConstant.MONTH_SETTLEMENT_POWER_NO).tenantId(tenantId).createTime(timeMillis).build();
+                        .merchantMonthSettlementPower(MerchantPlaceConstant.MONTH_SETTLEMENT_POWER_NO).tenantId(tenantId).createTime(timeMillis).unBindTime(timeMillis).build();
                 merchantPlaceBindList.add(merchantPlaceBind);
             });
             

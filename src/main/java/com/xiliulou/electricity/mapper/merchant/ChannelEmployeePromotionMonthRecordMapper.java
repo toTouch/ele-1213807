@@ -21,5 +21,5 @@ public interface ChannelEmployeePromotionMonthRecordMapper {
     
     Integer countTotal(ChannelEmployeePromotionQueryModel channelEmployeePromotionQueryModel);
     
-    List<ChannelEmployeePromotionMonthRecord> selectByFeeDate(@Param("startTime") long startTime,@Param("endTime") long endTime,@Param("tenantId") Integer tenantId);
+    List<ChannelEmployeePromotionMonthRecord> selectByFeeDate(@Param("tenantId") Integer tenantId, @Param("monthDate") String monthDate);
 }

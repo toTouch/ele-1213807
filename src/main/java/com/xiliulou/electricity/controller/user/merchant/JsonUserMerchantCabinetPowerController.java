@@ -99,6 +99,21 @@ public class JsonUserMerchantCabinetPowerController extends BaseController {
     }
     
     /**
+     * 柜机电费列表
+     */
+    @GetMapping("/merchant/power/cabinetPowerList")
+    public R cabinetPowerList(@RequestParam(value = "placeId", required = false) Long placeId, @RequestParam(value = "cabinetId", required = false) Long cabinetId) {
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        
+        MerchantCabinetPowerRequest request = MerchantCabinetPowerRequest.builder().uid(user.getUid()).placeId(placeId).cabinetId(cabinetId).build();
+        
+        return R.ok(merchantCabinetPowerService.cabinetPowerList(request));
+    }
+    
+    /**
      * 柜机电费详情
      */
     @GetMapping("/merchant/power/cabinetPowerDetail")
