@@ -127,7 +127,7 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
             
             // 是否在保护期内(保护期内不能扫商户码)
             Integer isInProtectionTime = this.existsInProtectionTimeByJoinUid(joinUid);
-            if (Objects.isNull(isInProtectionTime)) {
+            if (Objects.nonNull(isInProtectionTime)) {
                 log.error("MERCHANT JOIN ERROR! in protectionTime, joinUid={}", joinUid);
                 return R.fail(false, "120104", "商户保护期内，请稍后再试");
             }
