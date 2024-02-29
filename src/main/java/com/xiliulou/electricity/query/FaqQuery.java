@@ -11,6 +11,7 @@ import javax.validation.constraints.NotNull;
  * @date : 2021/9/26 5:02 下午
  */
 @Data
+@Deprecated
 public class FaqQuery {
     @NotNull(message = "id不能为空", groups = UpdateGroup.class)
     private Integer id;

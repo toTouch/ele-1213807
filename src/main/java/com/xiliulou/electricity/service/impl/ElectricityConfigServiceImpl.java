@@ -12,6 +12,7 @@ import com.xiliulou.electricity.dto.FranchiseeBatteryModelDTO;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mapper.ElectricityConfigMapper;
 import com.xiliulou.electricity.query.ElectricityConfigAddAndUpdateQuery;
+import com.xiliulou.electricity.query.ElectricityConfigWxCustomerQuery;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
@@ -186,6 +187,7 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
             electricityConfig.setAllowRentEle(electricityConfigAddAndUpdateQuery.getAllowRentEle());
             electricityConfig.setAllowReturnEle(electricityConfigAddAndUpdateQuery.getAllowReturnEle());
             electricityConfig.setAllowFreezeWithAssets(electricityConfigAddAndUpdateQuery.getAllowFreezeWithAssets());
+            electricityConfig.setWxCustomer(ElectricityConfig.CLOSE_WX_CUSTOMER);
             electricityConfig.setLowChargeRate(BigDecimal.valueOf(lowChargeRate));
             electricityConfig.setFullChargeRate(BigDecimal.valueOf(fullChargeRate));
             electricityConfig.setChannelTimeLimit(electricityConfigAddAndUpdateQuery.getChannelTimeLimit());
@@ -342,5 +344,24 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
         tenantConfigVO.setServicePhone(servicePhone);
 
         return tenantConfigVO;
+    }
+
+    @Override
+    public Triple<Boolean, String, Object> editWxCustomer(ElectricityConfigWxCustomerQuery electricityConfigAddAndUpdateQuery) {
+        ElectricityConfig electricityConfig = queryFromCacheByTenantId(TenantContextHolder.getTenantId());
+        if (Objects.isNull(electricityConfig)) {
+            return Triple.of(false, null, "未找到租户配置信息");
+        }
+
+        ElectricityConfig updateElectricityConfig = new ElectricityConfig();
+        updateElectricityConfig.setId(electricityConfig.getId());
+        updateElectricityConfig.setTenantId(TenantContextHolder.getTenantId());
+        updateElectricityConfig.setWxCustomer(electricityConfigAddAndUpdateQuery.getEnableWxCustomer());
+        updateElectricityConfig.setUpdateTime(System.currentTimeMillis());
+        int updateResult = electricityConfigMapper.update(updateElectricityConfig);
+        if (updateResult > 0) {
+            redisService.delete(CacheConstant.CACHE_ELE_SET_CONFIG + TenantContextHolder.getTenantId());
+        }
+        return Triple.of(true, null, null);
     }
 }

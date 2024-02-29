@@ -34,6 +34,6 @@ public class MerchantPlaceFeeMonthSummaryRecordServiceImpl implements MerchantPl
         if(Objects.nonNull(count)){
             return count;
         }
-        return null;
+        return 0;
     }
 }
