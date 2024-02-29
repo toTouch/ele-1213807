@@ -32,4 +32,6 @@ public interface MerchantLevelMapper {
     MerchantLevel selectLastByMerchantLevel(@Param("level") String level, @Param("tenantId") Integer tenantId);
     
     MerchantLevel selectByMerchantLevelAndTenantId(@Param("level") String level, @Param("tenantId") Integer tenantId);
+    
+    Integer existsLevelName(@Param("name") String name, @Param("tenantId") Integer tenantId);
 }

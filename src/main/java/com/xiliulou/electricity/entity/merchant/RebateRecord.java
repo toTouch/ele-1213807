@@ -54,6 +54,8 @@ public class RebateRecord {
      */
     private Long memberCardId;
     
+    private String memberCardName;
+    
     /**
      * 返利类型
      */
