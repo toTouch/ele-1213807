@@ -200,7 +200,7 @@ public class MerchantPlaceCabinetBindServiceImpl implements MerchantPlaceCabinet
         }
         
         // 检测结束时间是否小于绑定时间
-        if (placeCabinetBindSaveRequest.getUnBindTime() > cabinetBind.getBindTime()) {
+        if (placeCabinetBindSaveRequest.getUnBindTime() < cabinetBind.getBindTime()) {
             log.error("place un bind error, cabinet already un bind, id ={}, unBindTime={},bindTime={}", placeCabinetBindSaveRequest.getId(),
                     placeCabinetBindSaveRequest.getUnBindTime(), cabinetBind.getBindTime());
             return Triple.of(false, "120231", "结束时间不能早于绑定时间");
