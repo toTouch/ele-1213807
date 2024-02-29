@@ -93,7 +93,7 @@ public class MerchantPlaceCabinetBindServiceImpl implements MerchantPlaceCabinet
         Integer tenantId = TenantContextHolder.getTenantId();
         
         // 检测场地是否存在
-        MerchantPlace merchantPlace = merchantPlaceService.queryFromCacheById(placeCabinetBindSaveRequest.getPlaceId());
+        MerchantPlace merchantPlace = merchantPlaceService.queryByIdFromCache(placeCabinetBindSaveRequest.getPlaceId());
         if (Objects.isNull(merchantPlace) || !Objects.equals(merchantPlace.getTenantId(), tenantId)) {
             log.error("place bind error, place not exists, placeId ={}, tenantId={}", placeCabinetBindSaveRequest.getPlaceId(), tenantId);
             return Triple.of(false, "120209", "场地不存在");

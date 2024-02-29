@@ -264,7 +264,7 @@ public class MerchantEmployeeServiceImpl implements MerchantEmployeeService {
                 merchantEmployeeVO.setPhone(user.getPhone());
                 merchantEmployeeVO.setStatus(user.getLockFlag());
             }
-            MerchantPlace merchantPlace = merchantPlaceService.queryFromCacheById(merchantEmployeeVO.getPlaceId());
+            MerchantPlace merchantPlace = merchantPlaceService.queryByIdFromCache(merchantEmployeeVO.getPlaceId());
             if(Objects.nonNull(merchantPlace)){
                 merchantEmployeeVO.setPlaceName(merchantPlace.getName());
             }
