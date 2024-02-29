@@ -276,7 +276,7 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
      */
     @Override
     public String codeEnCoder(Long merchantId, Long inviterUid, Integer inviterType) {
-        String encrypt = AESUtils.encrypt(String.valueOf(merchantId + StrUtil.C_COLON + inviterUid + StrUtil.C_COLON + inviterType));
+        String encrypt = AESUtils.encrypt(merchantId + ":" + inviterUid + ":" + inviterType);
         
         if (StringUtils.isNotBlank(encrypt)) {
             Base64.Encoder encoder = Base64.getUrlEncoder();
@@ -501,7 +501,7 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
     
     @Slave
     @Override
-    public List<MerchantJoinRecord> selectListAllPromotionDataDetail(MerchantAllPromotionDataDetailQueryModel queryModel){
+    public List<MerchantJoinRecord> selectListAllPromotionDataDetail(MerchantAllPromotionDataDetailQueryModel queryModel) {
         return merchantJoinRecordMapper.selectListAllPromotionDataDetail(queryModel);
     }
 }
