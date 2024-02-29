@@ -45,6 +45,7 @@ import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.ObjectUtils;
 import org.springframework.web.util.UriUtils;
 
 import javax.annotation.Resource;
@@ -388,6 +389,15 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
             log.info("saveFreeDepositRefundHandlerTx, delete from battery member info. depositPayOrderNo is {}", depositRefundEntity.getOrderNo());
             userBatteryTypeService.deleteByUid(depositRefundEntity.getUid());
             userBatteryDepositService.deleteByUid(depositRefundEntity.getUid());
+        }
+        // 修改免押记录的数据
+        FreeDepositOrder freeDepositOrder = freeDepositOrderService.selectByOrderId(depositRefundEntity.getDepositPayOrderNo());
+        if (!ObjectUtils.isEmpty(freeDepositOrder)) {
+            FreeDepositOrder freeDepositOrderUpdate = new FreeDepositOrder();
+            freeDepositOrderUpdate.setId(freeDepositOrder.getId());
+            freeDepositOrderUpdate.setAuthStatus(FreeDepositOrder.AUTH_UN_FREEZING);
+            freeDepositOrderUpdate.setUpdateTime(System.currentTimeMillis());
+            freeDepositOrderService.update(freeDepositOrderUpdate);
         }
     }
 
