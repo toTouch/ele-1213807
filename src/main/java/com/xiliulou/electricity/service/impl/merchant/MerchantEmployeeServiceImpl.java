@@ -230,7 +230,7 @@ public class MerchantEmployeeServiceImpl implements MerchantEmployeeService {
         MerchantEmployeeVO merchantEmployeeVO = merchantEmployeeMapper.selectByUid(uid);
         Integer tenantId = TenantContextHolder.getTenantId();
         if(Objects.nonNull(merchantEmployeeVO)){
-            if(!Objects.equals(tenantId, merchantEmployeeVO.getTenantId())){
+            if(!Objects.equals(tenantId.longValue(), merchantEmployeeVO.getTenantId())){
                 log.info("tenant id mismatch for query employee QR code, current tenant id = {},  employee tenant id = {}", tenantId, merchantEmployeeVO.getTenantId());
                 return null;
             }
