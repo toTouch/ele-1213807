@@ -685,7 +685,6 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
         
         // 封装VO
         MerchantPlaceAndCabinetUserVO merchantPlaceAndCabinetUserVO = new MerchantPlaceAndCabinetUserVO();
-        merchantPlaceAndCabinetUserVO.setMerchantId(merchant.getId());
         merchantPlaceAndCabinetUserVO.setPlaceList(CollectionUtils.isEmpty(placeList) ? Collections.emptyList() : placeList);
         merchantPlaceAndCabinetUserVO.setCabinetList(CollectionUtils.isEmpty(cabinetList) ? Collections.emptyList() : cabinetList);
         
@@ -698,20 +697,20 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
         Merchant merchant = merchantService.queryByUid(uid);
         if (Objects.isNull(merchant)) {
             log.warn("Merchant power for pro listCabinetByPlaceId, merchant not exist, uid={}", uid);
-            return null;
+            return Collections.emptyList();
         }
         
         List<MerchantPlaceBind> bindList = merchantPlaceBindService.listByMerchantId(merchant.getId(), null);
         if (CollectionUtils.isEmpty(bindList)) {
             log.warn("Merchant power for pro listCabinetByPlaceId, bindList is empty, uid={}, placeId={}", uid, placeId);
-            return null;
+            return Collections.emptyList();
         }
         
         // 判断所选场地是否存在
         Set<Long> placeIdSet = bindList.stream().map(MerchantPlaceBind::getPlaceId).collect(Collectors.toSet());
         if (CollectionUtils.isNotEmpty(placeIdSet) && !placeIdSet.contains(placeId)) {
             log.warn("Merchant power for pro listCabinetByPlaceId, place not exist, uid={}, placeId={}", uid, placeId);
-            return null;
+            return Collections.emptyList();
         }
         
         List<MerchantPlaceCabinetVO> cabinetList = new ArrayList<>();
