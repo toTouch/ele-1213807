@@ -146,13 +146,14 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
         merchantPlaceFeeCurMonthVO.setCurrentMonthFee(curMothFee);
         
         // 获取商户当前绑定的设备数
-        Integer cabinetCount = merchantPlaceMapService.countCabinetNumByMerchantId(request.getMerchantId());
-        merchantPlaceFeeCurMonthVO.setCabinetCount(cabinetCount);
+//        Integer cabinetCount = merchantPlaceMapService.countCabinetNumByMerchantId(request.getMerchantId());
+//        merchantPlaceFeeCurMonthVO.setCabinetCount(cabinetCount);
         
         // 计算累计场地费 上月之前的月份+上月+本月
         // 上月的第一天
         long time = DateUtils.getBeforeMonthFirstDayTimestamp(1);
         BigDecimal sumFeeHistory = merchantPlaceFeeMonthService.sumFeeByTime(request.getMerchantId(), request.getPlaceId(), request.getCabinetId(), time);
+        
         if (ObjectUtils.isEmpty(sumFeeHistory)) {
             sumFeeHistory = BigDecimal.ZERO;
         }
@@ -478,6 +479,9 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
     
     private List<MerchantPlaceFeeMonthDetail> getCurMothFeeRecords(MerchantPlaceFeeRequest request) {
         List<MerchantPlaceBind> merchantPlaceBinds = merchantPlaceBindService.queryNoSettleByMerchantId(request.getMerchantId());
+        if (ObjectUtils.isEmpty(merchantPlaceBinds)) {
+            return Collections.emptyList();
+        }
         
         List<Long> placeIdList = new ArrayList<>();
         // 排除掉开始时间和结束时间在一天的数据
@@ -677,6 +681,10 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
     
     private List<MerchantPlaceFeeMonthDetail> getLastMonthFeeRecords(MerchantPlaceFeeRequest request) {
         List<MerchantPlaceBind> merchantPlaceBinds = merchantPlaceBindService.queryNoSettleByMerchantId(request.getMerchantId());
+        
+        if (ObjectUtils.isEmpty(merchantPlaceBinds)) {
+            return Collections.emptyList();
+        }
         
         List<Long> placeIdList = new ArrayList<>();
         // 排除掉开始时间和结束时间在一天的数据
