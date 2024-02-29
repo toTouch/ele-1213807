@@ -5,6 +5,7 @@ import com.xiliulou.electricity.entity.merchant.MerchantPlaceFeeMonthSummaryReco
 import com.xiliulou.electricity.mapper.merchant.MerchantPlaceFeeMonthSummaryRecordMapper;
 import com.xiliulou.electricity.query.merchant.MerchantPlaceFeeMonthSummaryRecordQueryModel;
 import com.xiliulou.electricity.service.merchant.MerchantPlaceFeeMonthSummaryRecordService;
+import com.xiliulou.electricity.vo.merchant.MerchantPlaceFeeMonthSummaryRecordVO;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -24,7 +25,7 @@ public class MerchantPlaceFeeMonthSummaryRecordServiceImpl implements MerchantPl
     private MerchantPlaceFeeMonthSummaryRecordMapper merchantPlaceFeeMonthSummaryRecordMapper;
     
     @Override
-    public List<MerchantPlaceFeeMonthSummaryRecord> selectByCondition(MerchantPlaceFeeMonthSummaryRecordQueryModel queryModel) {
+    public List<MerchantPlaceFeeMonthSummaryRecordVO> selectByCondition(MerchantPlaceFeeMonthSummaryRecordQueryModel queryModel) {
         return merchantPlaceFeeMonthSummaryRecordMapper.selectListByCondition(queryModel);
     }
     

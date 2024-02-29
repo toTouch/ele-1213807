@@ -153,7 +153,7 @@ public class MerchantAttrServiceImpl implements MerchantAttrService {
     @Override
     public Integer initMerchantAttr(Integer tenantId) {
         MerchantAttr merchantAttr = new MerchantAttr();
-        merchantAttr.setUpgradeCondition(null);
+        merchantAttr.setUpgradeCondition(MerchantConstant.UPGRADE_CONDITION_ALL);
         merchantAttr.setInvitationValidTime(24);
         merchantAttr.setValidTimeUnit(CommonConstant.TIME_UNIT_HOURS);
         merchantAttr.setInvitationProtectionTime(1);
