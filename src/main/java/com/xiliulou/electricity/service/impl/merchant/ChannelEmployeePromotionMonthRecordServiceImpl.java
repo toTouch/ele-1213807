@@ -44,6 +44,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -83,9 +84,8 @@ public class ChannelEmployeePromotionMonthRecordServiceImpl implements ChannelEm
         ChannelEmployeePromotionQueryModel channelEmployeePromotionQueryModel = new ChannelEmployeePromotionQueryModel();
         BeanUtils.copyProperties(channelEmployeeRequest, channelEmployeePromotionQueryModel);
         
-        // 处理时间
-        initParam(channelEmployeePromotionQueryModel);
-        List<ChannelEmployeePromotionVO> list = channelEmployeePromotionMonthRecordMapper.selectListByPage(channelEmployeeRequest);
+        List<ChannelEmployeePromotionVO> list = channelEmployeePromotionMonthRecordMapper.selectListByPage(channelEmployeePromotionQueryModel);
+        
         if (ObjectUtils.isEmpty(list)) {
             return Collections.EMPTY_LIST;
         }
@@ -93,39 +93,11 @@ public class ChannelEmployeePromotionMonthRecordServiceImpl implements ChannelEm
         return list;
     }
     
-    private void initParam(ChannelEmployeePromotionQueryModel channelEmployeePromotionQueryModel) {
-        if (ObjectUtils.isNotEmpty(channelEmployeePromotionQueryModel.getTime())) {
-            // 将出账日期转换为具体的日期
-            Calendar calendar = Calendar.getInstance();
-            calendar.setTimeInMillis(channelEmployeePromotionQueryModel.getTime());
-            calendar.set(Calendar.DAY_OF_MONTH, 1);
-            calendar.set(Calendar.HOUR_OF_DAY, 0);
-            calendar.set(Calendar.MINUTE, 0);
-            calendar.set(Calendar.SECOND, 0);
-            
-            long startTime = calendar.getTimeInMillis();
-            
-            Calendar calendarLast = Calendar.getInstance();
-            calendarLast.set(Calendar.DAY_OF_MONTH, calendar.getActualMaximum(Calendar.DAY_OF_MONTH));
-            
-            calendarLast.set(Calendar.HOUR_OF_DAY, 23);
-            calendarLast.set(Calendar.MINUTE, 59);
-            calendarLast.set(Calendar.SECOND, 59);
-            
-            long endTime = calendar.getTimeInMillis();
-            
-            channelEmployeePromotionQueryModel.setStartTime(startTime);
-            channelEmployeePromotionQueryModel.setEndTime(endTime);
-        }
-    }
-    
     @Slave
     @Override
     public Integer countTotal(ChannelEmployeePromotionRequest channelEmployeeRequest) {
         ChannelEmployeePromotionQueryModel channelEmployeePromotionQueryModel = new ChannelEmployeePromotionQueryModel();
         BeanUtils.copyProperties(channelEmployeeRequest, channelEmployeePromotionQueryModel);
-        // 处理时间
-        initParam(channelEmployeePromotionQueryModel);
         
         return channelEmployeePromotionMonthRecordMapper.countTotal(channelEmployeePromotionQueryModel);
     }
@@ -169,21 +141,31 @@ public class ChannelEmployeePromotionMonthRecordServiceImpl implements ChannelEm
         calendar.set(Calendar.MINUTE, 0);
         calendar.set(Calendar.SECOND, 0);
         long startTime = calendar.getTimeInMillis();
+        
         calendar.set(Calendar.DAY_OF_MONTH, calendar.getActualMaximum(Calendar.DAY_OF_MONTH));
+        
         long endTime = calendar.getTimeInMillis();
         
+        // 查询月度账单
         List<ChannelEmployeePromotionMonthRecord> channelEmployeePromotionMonthRecords = channelEmployeePromotionMonthRecordMapper.selectByFeeDate(TenantContextHolder.getTenantId(), monthDate);
+        
+        // 查询日结账单
         List<ChannelEmployeePromotionDayRecord> channelEmployeePromotionDayRecords = channelEmployeePromotionDayRecordService.queryListByFeeDate(startTime, endTime,
                 TenantContextHolder.getTenantId());
+        
         if (ObjectUtils.isEmpty(channelEmployeePromotionMonthRecords) || ObjectUtils.isEmpty(channelEmployeePromotionDayRecords)) {
             return resList;
         }
+        
         Map<Long, List<ChannelEmployeePromotionDayRecord>> detailMap = channelEmployeePromotionDayRecords.stream()
                 .collect(Collectors.groupingBy(ChannelEmployeePromotionDayRecord::getChannelEmployeesId));
         
         channelEmployeePromotionMonthRecords.stream().forEach(item -> {
             
             detailMap.forEach((channelUserId, dayList) -> {
+                // 每一个渠道员按照时间进行排序
+                dayList.stream().sorted(Comparator.comparing(ChannelEmployeePromotionDayRecord::getFeeDate));
+                
                 dayList.forEach(channelEmployeePromotionDayRecord -> {
                     // 拉新
                     if (ObjectUtils.isNotEmpty(channelEmployeePromotionDayRecord.getDayFirstMoney()) && channelEmployeePromotionDayRecord.getDayFirstMoney().compareTo(BigDecimal.ZERO) != 0) {
@@ -216,6 +198,7 @@ public class ChannelEmployeePromotionMonthRecordServiceImpl implements ChannelEm
     
                         vo.setReturnMoney(channelEmployeePromotionDayRecord.getDayRenewMoney());
                     }
+                    
                     // 差额
                     if (ObjectUtils.isNotEmpty(channelEmployeePromotionDayRecord.getDayBalanceMoney()) && channelEmployeePromotionDayRecord.getDayBalanceMoney().compareTo(BigDecimal.ZERO) != 0) {
                         ChannelEmployeePromotionMonthExportVO vo = new ChannelEmployeePromotionMonthExportVO();

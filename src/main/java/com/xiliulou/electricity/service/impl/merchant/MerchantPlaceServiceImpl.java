@@ -3,7 +3,6 @@ package com.xiliulou.electricity.service.impl.merchant;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
-import com.xiliulou.electricity.constant.StringConstant;
 import com.xiliulou.electricity.constant.merchant.MerchantPlaceConstant;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.merchant.MerchantArea;
@@ -30,13 +29,11 @@ import com.xiliulou.electricity.vo.merchant.MerchantPlaceCabinetVO;
 import com.xiliulou.electricity.vo.merchant.MerchantPlaceMapVO;
 import com.xiliulou.electricity.vo.merchant.MerchantPlaceUpdateShowVO;
 import com.xiliulou.electricity.vo.merchant.MerchantPlaceVO;
-import com.xiliulou.electricity.vo.merchant.MerchantVO;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.BeanUtils;
-import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -274,8 +271,9 @@ public class MerchantPlaceServiceImpl implements MerchantPlaceService {
         // 查询场地绑定的商户
         MerchantPlaceMapQueryModel placeMapQueryModel = MerchantPlaceMapQueryModel.builder().placeIdList(idList).build();
         List<MerchantPlaceMapVO> merchantPlaceMaps = merchantPlaceMapService.queryBindMerchantName(placeMapQueryModel);
+        
         Map<Long, String> merchantNameMap = new HashMap<>();
-        if (ObjectUtils.isEmpty(merchantPlaceMaps)) {
+        if (ObjectUtils.isNotEmpty(merchantPlaceMaps)) {
             merchantNameMap = merchantPlaceMaps.stream().collect(Collectors.toMap(MerchantPlaceMapVO::getPlaceId, MerchantPlaceMapVO::getMerchantName, (key, key1) -> key1));
         }
         
@@ -283,6 +281,7 @@ public class MerchantPlaceServiceImpl implements MerchantPlaceService {
         if (ObjectUtils.isNotEmpty(areaIdList)) {
             MerchantAreaRequest areaQuery = MerchantAreaRequest.builder().idList(areaIdList).build();
             List<MerchantArea> merchantAreaList = merchantAreaService.queryList(areaQuery);
+            
             if (ObjectUtils.isNotEmpty(merchantAreaList)) {
                 areaNameMap = merchantAreaList.stream().collect(Collectors.toMap(MerchantArea::getId, MerchantArea::getName, (key, key1) -> key1));
             }
@@ -291,6 +290,7 @@ public class MerchantPlaceServiceImpl implements MerchantPlaceService {
         // 查询场地绑定的柜机
         MerchantPlaceCabinetBindQueryModel placeCabinetBindQueryModel = MerchantPlaceCabinetBindQueryModel.builder().placeIdList(idList).status(MerchantPlaceConstant.BIND).build();
         List<MerchantPlaceCabinetBindVO> merchantPlaceCabinetBinds = merchantPlaceCabinetBindService.queryBindCabinetName(placeCabinetBindQueryModel);
+        
         Map<Long, List<MerchantPlaceCabinetBindVO>> bindCabinetMap = new HashMap<>();
         if (ObjectUtils.isNotEmpty(merchantPlaceCabinetBinds)) {
             bindCabinetMap = merchantPlaceCabinetBinds.stream().collect(Collectors.groupingBy(MerchantPlaceCabinetBindVO::getPlaceId));
@@ -325,7 +325,7 @@ public class MerchantPlaceServiceImpl implements MerchantPlaceService {
     
     @Slave
     @Override
-    public MerchantPlace queryFromCacheById(Long placeId) {
+    public MerchantPlace queryByIdFromCache(Long placeId) {
         MerchantPlace merchantPlace = null;
         merchantPlace = redisService.getWithHash(CacheConstant.CACHE_MERCHANT_PLACE + placeId, MerchantPlace.class);
         if (Objects.isNull(merchantPlace)) {
@@ -348,7 +348,7 @@ public class MerchantPlaceServiceImpl implements MerchantPlaceService {
     @Override
     public Triple<Boolean, String, Object> queryListCabinet(MerchantPlacePageRequest merchantPlacePageRequest) {
         // 判断场地id是否存在
-        MerchantPlace merchantPlace = this.queryFromCacheById(merchantPlacePageRequest.getPlaceId());
+        MerchantPlace merchantPlace = this.queryByIdFromCache(merchantPlacePageRequest.getPlaceId());
         
         if (Objects.isNull(merchantPlace) || !Objects.equals(merchantPlace.getTenantId(), merchantPlacePageRequest.getTenantId())) {
             log.error("place cabinet error, place is not exists, placeId={}, tenantId={}, curTenantId={}", merchantPlace.getTenantId(), merchantPlacePageRequest.getTenantId());
@@ -392,7 +392,7 @@ public class MerchantPlaceServiceImpl implements MerchantPlaceService {
         }
         
         // 查询场地是否已经被其他商户给绑定了
-        List<MerchantPlaceMap> merchantPlaceMaps = merchantPlaceMapService.queryBindList(merchantPlacePageRequest.getMerchantId(), merchantPlacePageRequest.getFranchiseeId());
+        List<MerchantPlaceMap> merchantPlaceMaps = merchantPlaceMapService.queryListForBind(merchantPlacePageRequest.getMerchantId(), merchantPlacePageRequest.getFranchiseeId());
         
         List<Long> placeIdList = new ArrayList<>();
         if (ObjectUtils.isNotEmpty(merchantPlaceMaps)) {

@@ -109,7 +109,7 @@
     <select id="countByMerchantIdList" resultType="com.xiliulou.electricity.vo.merchant.MerchantPlaceMapVO">
         SELECT
             merchant_id,
-            count( 1 )
+            count( 1 ) as 'count'
         FROM
             t_merchant_place_map
         WHERE

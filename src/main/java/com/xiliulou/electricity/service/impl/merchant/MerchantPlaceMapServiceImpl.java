@@ -65,7 +65,7 @@ public class MerchantPlaceMapServiceImpl implements MerchantPlaceMapService {
      */
     @Slave
     @Override
-    public List<MerchantPlaceMap> queryBindList(Long notMerchantId, Long franchiseeId) {
+    public List<MerchantPlaceMap> queryListForBind(Long notMerchantId, Long franchiseeId) {
         
         return merchantPlaceMapMapper.selectBindList(notMerchantId, franchiseeId);
     }

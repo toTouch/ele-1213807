@@ -525,7 +525,7 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
             MerchantProCabinetPowerDetailVO vo = MerchantProCabinetPowerDetailVO.builder().monthDate(monthDate).cabinetId(detail.getEid()).sn(cabinet.getSn())
                     .cabinetName(cabinet.getName()).power(detail.getSumPower().doubleValue()).charge(detail.getSumCharge().doubleValue()).startTime(detail.getBeginTime())
                     .placeId(detail.getPlaceId())
-                    .placeName(Optional.ofNullable(merchantPlaceService.queryFromCacheById(detail.getPlaceId())).map(MerchantPlace::getName).orElse(""))
+                    .placeName(Optional.ofNullable(merchantPlaceService.queryByIdFromCache(detail.getPlaceId())).map(MerchantPlace::getName).orElse(""))
                     .bindStatus(detail.getCabinetMerchantBindStatus()).build();
             
             // 解绑状态设置解绑时间,绑定状态没有解绑时间
@@ -551,7 +551,7 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
         return detailVOList.stream()
                 .map(detail -> MerchantProCabinetPowerDetailVO.builder().monthDate(monthDate).cabinetId(detail.getEid()).sn(cabinet.getSn()).cabinetName(cabinet.getName())
                         .power(detail.getPower()).charge(detail.getCharge()).startTime(detail.getStartTime()).endTime(detail.getEndTime()).placeId(detail.getPlaceId())
-                        .placeName(Optional.ofNullable(merchantPlaceService.queryFromCacheById(detail.getPlaceId())).map(MerchantPlace::getName).orElse(""))
+                        .placeName(Optional.ofNullable(merchantPlaceService.queryByIdFromCache(detail.getPlaceId())).map(MerchantPlace::getName).orElse(""))
                         .bindStatus(detail.getCabinetMerchantBindStatus()).build()).collect(Collectors.toList());
     }
     
@@ -670,7 +670,7 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
         List<MerchantPlaceSelectVO> placeList = placeIdSet.parallelStream().map(placeId -> {
             MerchantPlaceSelectVO merchantPlaceUserVO = new MerchantPlaceSelectVO();
             merchantPlaceUserVO.setPlaceId(placeId);
-            merchantPlaceUserVO.setPlaceName(Optional.ofNullable(merchantPlaceService.queryFromCacheById(placeId)).orElse(new MerchantPlace()).getName());
+            merchantPlaceUserVO.setPlaceName(Optional.ofNullable(merchantPlaceService.queryByIdFromCache(placeId)).orElse(new MerchantPlace()).getName());
             
             return merchantPlaceUserVO;
         }).collect(Collectors.toList());

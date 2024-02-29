@@ -22,7 +22,7 @@ public interface MerchantPlaceMapService {
     
     List<MerchantPlaceSelectVO> queryListByMerchantId(Long merchantId);
     
-    List<MerchantPlaceMap> queryBindList(Long notMerchantId, Long franchiseeId);
+    List<MerchantPlaceMap> queryListForBind(Long notMerchantId, Long franchiseeId);
     
     List<MerchantPlaceMapVO> queryBindMerchantName(MerchantPlaceMapQueryModel placeMapQueryModel);
     
