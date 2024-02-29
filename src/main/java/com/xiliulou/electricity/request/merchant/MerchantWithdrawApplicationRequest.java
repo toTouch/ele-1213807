@@ -27,6 +27,8 @@ public class MerchantWithdrawApplicationRequest {
     
     private Integer status;
     
+    private String orderNo;
+    
     private String remark;
     
     private Long beginTime;
