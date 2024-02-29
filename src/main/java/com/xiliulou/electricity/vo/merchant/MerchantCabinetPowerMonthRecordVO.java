@@ -10,6 +10,8 @@ import lombok.Data;
 @Data
 public class MerchantCabinetPowerMonthRecordVO {
     
+    private Long id;
+    
     /**
      * 出账年月 yyyy-MM
      */
