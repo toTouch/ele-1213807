@@ -11,23 +11,19 @@ import lombok.Data;
 public class MerchantCabinetPowerMonthDetailVO {
     
     /**
-     * 出账年月 yyyy-MM
+     * 主键ID
      */
-    private String date;
+    private Long id;
     
+    /**
+     * 商户ID
+     */
+    private Long merchantId;
+    
+    /**
+     * 场地ID
+     */
     private Long placeId;
-    
-    private String placeName;
-    
-    /**
-     * 月用电量
-     */
-    private Double monthSumPower;
-    
-    /**
-     * 月电费
-     */
-    private Double monthSumCharge;
     
     /**
      * 电柜ID
@@ -38,6 +34,11 @@ public class MerchantCabinetPowerMonthDetailVO {
      * 电柜编号
      */
     private String sn;
+    
+    /**
+     * 出账年月 yyyy-MM-01
+     */
+    private String date;
     
     /**
      * 开始度数
@@ -78,5 +79,30 @@ public class MerchantCabinetPowerMonthDetailVO {
      * 租户ID
      */
     private Integer tenantId;
+    
+    /**
+     * 加盟商ID
+     */
+    private Long franchiseeId;
+    
+    /**
+     * 门店ID
+     */
+    private Long storeId;
+    
+    /**
+     * 0--正常 1--删除
+     */
+    private Integer delFlag;
+    
+    /**
+     * 创建时间
+     */
+    private Long createTime;
+    
+    /**
+     * 更新时间
+     */
+    private Long updateTime;
     
 }
