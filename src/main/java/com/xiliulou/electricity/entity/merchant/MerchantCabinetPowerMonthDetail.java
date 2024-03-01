@@ -44,7 +44,7 @@ public class MerchantCabinetPowerMonthDetail {
     private String sn;
     
     /**
-     * 出账年月 yyyy-MM
+     * 出账年月 yyyy-MM-01
      */
     private String date;
     

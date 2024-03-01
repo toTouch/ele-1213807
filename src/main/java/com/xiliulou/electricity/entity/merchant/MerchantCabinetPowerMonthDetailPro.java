@@ -43,7 +43,7 @@ public class MerchantCabinetPowerMonthDetailPro {
     private String sn;
     
     /**
-     * 计算月份 yyyy-MM
+     * 计算月份 yyyy-MM-01
      */
     private String date;
     

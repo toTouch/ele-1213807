@@ -37,7 +37,7 @@ public interface MerchantPlaceCabinetBindService {
     
     Integer removeByPlaceId(Long placeId, long updateTime, Integer delFlag);
     
-    MerchantPlaceCabinetBindTimeCheckVo checkBindTime(Long placeId, Long time);
+    MerchantPlaceCabinetBindTimeCheckVo checkBindTime(Long placeId, Long time, Integer cabinetId);
     
     List<MerchantPlaceCabinetBind> queryListByPlaceId(List<Long> placeIdList, Integer placeMonthNotSettlement);
     
