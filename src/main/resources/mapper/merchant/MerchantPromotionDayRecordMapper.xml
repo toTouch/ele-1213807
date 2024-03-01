@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.xiliulou.electricity.mapper.merchant.MerchantPromotionDayRecordMapper">
     <sql id="basics_field">
-        id, merchant_id, inviter_uid, day_first_money, day_renew_money, day_balance_money, type, date, tenant_id, del_flag, create_time, update_time, remark
+        id, merchant_id, inviter_uid, day_first_money, day_renew_money, day_balance_money, balance_detail, type, date, tenant_id, del_flag, create_time, update_time, remark
     </sql>
     
     <select id="selectListByTenantId" resultType="com.xiliulou.electricity.vo.merchant.MerchantPromotionMonthDetailVO">

@@ -3,8 +3,6 @@ package com.xiliulou.electricity.service.impl.merchant;
 import com.alibaba.excel.EasyExcel;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.NumberConstant;
-import com.xiliulou.electricity.entity.User;
-import com.xiliulou.electricity.entity.merchant.Merchant;
 import com.xiliulou.electricity.entity.merchant.MerchantPromotionDayRecord;
 import com.xiliulou.electricity.entity.merchant.MerchantPromotionMonthRecord;
 import com.xiliulou.electricity.mapper.merchant.MerchantPromotionMonthRecordMapper;
@@ -70,9 +68,9 @@ public class MerchantPromotionMonthRecordServiceImpl implements MerchantPromotio
         if (StringUtils.isBlank(monthDate) || !monthDate.matches(DateUtils.GREP_YEAR_MONTH)) {
             return Collections.emptyList();
         }
-    
+        
         // 数据库存的是yyyy-MM-01
-        request.setMonthDate(monthDate+"-01");
+        request.setMonthDate(monthDate + "-01");
         
         MerchantPromotionMonthRecordQueryModel queryModel = new MerchantPromotionMonthRecordQueryModel();
         BeanUtils.copyProperties(request, queryModel);
@@ -99,9 +97,9 @@ public class MerchantPromotionMonthRecordServiceImpl implements MerchantPromotio
         if (StringUtils.isBlank(monthDate) || !monthDate.matches(DateUtils.GREP_YEAR_MONTH)) {
             return NumberConstant.ZERO;
         }
-    
+        
         // 数据库存的是yyyy-MM-01
-        request.setMonthDate(monthDate+"-01");
+        request.setMonthDate(monthDate + "-01");
         
         MerchantPromotionMonthRecordQueryModel queryModel = new MerchantPromotionMonthRecordQueryModel();
         BeanUtils.copyProperties(request, queryModel);
@@ -120,7 +118,6 @@ public class MerchantPromotionMonthRecordServiceImpl implements MerchantPromotio
             return;
         }
         
-        
         MerchantPromotionDayRecordQueryModel queryModel = new MerchantPromotionDayRecordQueryModel();
         queryModel.setTenantId(TenantContextHolder.getTenantId());
         queryModel.setStartDate(DateUtils.getFirstDayByMonth(monthDate));
@@ -133,8 +130,8 @@ public class MerchantPromotionMonthRecordServiceImpl implements MerchantPromotio
         
         detailList = detailList.stream().peek(item -> {
             item.setMonthDate(monthDate);
-            item.setMerchantName(Optional.ofNullable(merchantService.queryByIdFromCache(item.getMerchantId())).orElse(new Merchant()).getName());
-            item.setInviterName(Optional.ofNullable(userService.queryByUidFromCache(item.getInviterUid())).orElse(new User()).getName());
+            item.setMerchantName(Optional.ofNullable(merchantService.queryByIdFromCache(item.getMerchantId()).getName()).orElse(""));
+            item.setInviterName(Optional.ofNullable(userService.queryByUidFromCache(item.getInviterUid()).getName()).orElse(""));
             
             switch (item.getType()) {
                 case MerchantPromotionDayRecord.LASHIN:
