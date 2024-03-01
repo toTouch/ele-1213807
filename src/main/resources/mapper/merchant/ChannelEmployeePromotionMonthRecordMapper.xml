@@ -18,7 +18,7 @@
             <if test="tenantId != null">
                 and tenant_id = #{tenantId}
             </if>
-            <if test="monthDate != null">
+            <if test="monthDate != null and monthDate != ''">
                 and month_date = #{monthDate}
             </if>
         </where>

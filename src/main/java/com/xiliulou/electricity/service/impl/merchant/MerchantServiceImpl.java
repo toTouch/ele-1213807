@@ -377,13 +377,13 @@ public class MerchantServiceImpl implements MerchantService {
         merchantUserAmount.setDelFlag(MerchantConstant.DEL_NORMAL);
         merchantUserAmountService.save(merchantUserAmount);
         
-        
         // 调用开户账号
         return Triple.of(true, "", "");
     }
     
     /**
      * 处理场地所在柜机是否设置场地费
+     *
      * @param id
      * @param placeIdList
      */
@@ -391,17 +391,14 @@ public class MerchantServiceImpl implements MerchantService {
         if (ObjectUtils.isEmpty(placeIdList)) {
             return;
         }
-    
+        
         Integer count = merchantPlaceMapService.existsPlaceFeeByPlaceIdList(placeIdList);
         if (Objects.isNull(count) || Objects.equals(count, NumberConstant.ZERO)) {
             return;
         }
         
         // 修改商户存在场地费
-        Merchant updateMerchant = Merchant.builder()
-                .id(id)
-                .existPlaceFee(MerchantConstant.EXISTS_PLACE_FEE_YES)
-                .updateTime(System.currentTimeMillis()).build();
+        Merchant updateMerchant = Merchant.builder().id(id).existPlaceFee(MerchantConstant.EXISTS_PLACE_FEE_YES).updateTime(System.currentTimeMillis()).build();
         
         merchantMapper.updateById(updateMerchant);
         
@@ -553,14 +550,19 @@ public class MerchantServiceImpl implements MerchantService {
         }
         
         if (flag) {
-            // 修改用户的手机号或者名称
+            // 查询用户是否存在
             User oldUser = userService.queryByUidFromCache(merchant.getUid());
-            updateUser.setUid(oldUser.getUid());
-            updateUser.setUpdateTime(timeMillis);
-            userService.updateMerchantUser(updateUser);
-            // 删除用户缓存
-            merchantDeleteCacheDTO.setDeleteUserFlag(true);
-            merchantDeleteCacheDTO.setUser(updateUser);
+            
+            if (Objects.nonNull(oldUser)) {
+                // 修改用户的手机号或者名称
+                updateUser.setUid(oldUser.getUid());
+                updateUser.setUpdateTime(timeMillis);
+                userService.updateMerchantUser(updateUser);
+                
+                // 删除用户缓存
+                merchantDeleteCacheDTO.setDeleteUserFlag(true);
+                merchantDeleteCacheDTO.setUser(updateUser);
+            }
         }
         
         // 修改企业信息
@@ -728,29 +730,32 @@ public class MerchantServiceImpl implements MerchantService {
         MerchantDeleteCacheDTO merchantDeleteCacheDTO = new MerchantDeleteCacheDTO();
         long timeMillis = System.currentTimeMillis();
         
-        // 让商户登录状态失效
         User oldUser = userService.queryByUidFromCache(merchant.getUid());
-        User updateUser = new User();
-        updateUser.setUid(merchant.getUid());
-        updateUser.setUpdateTime(timeMillis);
-        updateUser.setLockFlag(User.USER_LOCK);
-        updateUser.setDelFlag(User.DEL_DEL);
-        userService.updateMerchantUser(updateUser);
         
-        // 删除用户
-        userService.removeById(merchant.getUid(), timeMillis);
-        
-        // 删除用户缓存
-        merchantDeleteCacheDTO.setDeleteUserFlag(true);
-        merchantDeleteCacheDTO.setUser(oldUser);
-        
-        // 删除商户
-        Merchant deleteMerchant = new Merchant();
-        deleteMerchant.setUpdateTime(timeMillis);
-        deleteMerchant.setId(id);
-        deleteMerchant.setDelFlag(MerchantConstant.DEL_DEL);
-        merchantMapper.removeById(deleteMerchant);
-        
+        // 判断用户是否被删除
+        if (ObjectUtils.isNotEmpty(oldUser)) {
+            // 让商户登录状态失效
+            User updateUser = new User();
+            updateUser.setUid(merchant.getUid());
+            updateUser.setUpdateTime(timeMillis);
+            updateUser.setLockFlag(User.USER_LOCK);
+            updateUser.setDelFlag(User.DEL_DEL);
+            userService.updateMerchantUser(updateUser);
+            
+            // 删除用户
+            userService.removeById(merchant.getUid(), timeMillis);
+            
+            // 删除用户缓存
+            merchantDeleteCacheDTO.setDeleteUserFlag(true);
+            merchantDeleteCacheDTO.setUser(oldUser);
+            
+            // 删除商户
+            Merchant deleteMerchant = new Merchant();
+            deleteMerchant.setUpdateTime(timeMillis);
+            deleteMerchant.setId(id);
+            deleteMerchant.setDelFlag(MerchantConstant.DEL_DEL);
+            merchantMapper.removeById(deleteMerchant);
+        }
         // 删除商户和场地的关联表
         merchantPlaceMapService.batchDeleteByMerchantId(id, null);
         
@@ -928,17 +933,17 @@ public class MerchantServiceImpl implements MerchantService {
             log.error("MERCHANT QUERY ERROR! query user amount error!", e);
             return null;
         });
-    
+        
         // 查询商户的企业云豆
         CompletableFuture<Void> enterpriseInfo = CompletableFuture.runAsync(() -> {
             List<EnterpriseInfo> enterpriseInfoList = enterpriseInfoService.queryListByIdList(enterpriseIdList);
-        
+            
             Map<Long, EnterpriseInfo> enterpriseInfoMap = new HashMap<>();
-        
+            
             if (ObjectUtils.isNotEmpty(enterpriseInfoList)) {
                 enterpriseInfoMap = enterpriseInfoList.stream().collect(Collectors.toMap(EnterpriseInfo::getId, Function.identity(), (key1, key2) -> key2));
             }
-    
+            
             Map<Long, EnterpriseInfo> finalEnterpriseInfoMap = enterpriseInfoMap;
             
             resList.forEach(item -> {
@@ -948,7 +953,7 @@ public class MerchantServiceImpl implements MerchantService {
                     item.setTotalCloudBeanAmount(BigDecimal.ZERO);
                     return;
                 }
-    
+                
                 item.setTotalCloudBeanAmount(enterprise.getTotalBeanAmount());
             });
             
