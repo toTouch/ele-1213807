@@ -105,7 +105,7 @@
                 </foreach>
             </if>
         </where>
-        ORDER BY tuc.update_time DESC
+        ORDER BY tuc.update_time DESC, tuc.id ASC
         <if test="query.offset != null and query.size != null">
             limit #{query.offset}, #{query.size}
         </if>
