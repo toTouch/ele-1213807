@@ -6,6 +6,7 @@ import com.xiliulou.core.utils.PhoneUtils;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
+import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.constant.merchant.MerchantConstant;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
@@ -251,13 +252,28 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
         // 保护期过期时间
         long protectionExpireTime = NumberConstant.ZERO_L;
         if (Objects.nonNull(protectionTime) && Objects.nonNull(protectionTimeUnit)) {
-            protectionExpireTime = (long) protectionTime * protectionTimeUnit;
+            //分钟转毫秒
+            if (Objects.equals(protectionTimeUnit, CommonConstant.TIME_UNIT_MINUTES)) {
+                protectionExpireTime = protectionTime * protectionTimeUnit * 60 * 1000L;
+            }
+            //小时转毫秒
+            if (Objects.equals(protectionTimeUnit, CommonConstant.TIME_UNIT_HOURS)) {
+                protectionExpireTime = protectionTime * protectionTimeUnit * 60 * 60 * 1000L;
+            }
         }
         
         // 参与有效期过期时间
         long expiredTime = NumberConstant.ZERO_L;
         if (Objects.nonNull(validTime) && Objects.nonNull(validTimeUnit)) {
-            expiredTime = ((long) validTime * validTimeUnit);
+            //分钟转毫秒
+            if (Objects.equals(validTimeUnit, CommonConstant.TIME_UNIT_MINUTES)) {
+                expiredTime = validTime * validTimeUnit * 60 * 1000L;
+            }
+            //小时转毫秒
+            if (Objects.equals(validTimeUnit, CommonConstant.TIME_UNIT_HOURS)) {
+                expiredTime = validTime * validTimeUnit * 60 * 60 * 1000L;
+            }
+            
         }
         
         // 生成参与记录

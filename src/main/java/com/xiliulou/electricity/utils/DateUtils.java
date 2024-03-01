@@ -206,7 +206,7 @@ public class DateUtils {
     }
     
     /**
-     * 根据年月获取当月月第一天 年月：2024-01 返回: 2024-01-01
+     * 根据年月获取当月第一天 年月：2024-01 返回: 2024-01-01
      */
     public static String getFirstDayByMonth(String yearMonth) {
         // 分割年月字符串并转换为整数
@@ -220,7 +220,7 @@ public class DateUtils {
     }
     
     /**
-     * 根据年月获取当月月最后一天 年月：2024-01 返回: 2024-01-31
+     * 根据年月获取当月最后一天 年月：2024-01 返回: 2024-01-31
      */
     public static String getLastDayByMonth(String yearMonth) {
         // 分割年月字符串并转换为整数
