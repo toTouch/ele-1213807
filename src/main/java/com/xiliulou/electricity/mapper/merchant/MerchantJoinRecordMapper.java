@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.mapper.merchant;
 
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.xiliulou.electricity.entity.merchant.MerchantJoinRecord;
 import com.xiliulou.electricity.query.merchant.MerchantJoinRecordQueryMode;
 import com.xiliulou.electricity.query.merchant.MerchantJoinUserQueryMode;
@@ -16,7 +17,7 @@ import java.util.List;
  * @description 参与记录
  * @date 2024/2/6 18:25:02
  */
-public interface MerchantJoinRecordMapper {
+public interface MerchantJoinRecordMapper extends BaseMapper<MerchantJoinRecord> {
     
     Integer insertOne(MerchantJoinRecord record);
     
@@ -40,7 +41,7 @@ public interface MerchantJoinRecordMapper {
     
     MerchantJoinRecord selectByJoinUid(Long joinUid);
     
-    Integer updateById(MerchantJoinRecord record);
+//    Integer updateById(MerchantJoinRecord record);
     
     Integer countByCondition(MerchantPromotionScanCodeQueryModel queryModel);
     
