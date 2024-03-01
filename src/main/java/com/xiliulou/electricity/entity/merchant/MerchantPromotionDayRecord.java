@@ -33,6 +33,11 @@ public class MerchantPromotionDayRecord {
     private BigDecimal dayBalanceMoney;
     
     /**
+     * 差额来源：拉新金额,续费金额  举例：23.0,35.0
+     */
+    private String balanceDetail;
+    
+    /**
      * 返利类型: 0: 拉新,1：续费,2：差额,3：无费用
      */
     private Integer type;
