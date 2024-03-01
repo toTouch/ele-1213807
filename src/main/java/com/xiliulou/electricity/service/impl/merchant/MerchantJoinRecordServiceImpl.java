@@ -254,11 +254,11 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
         if (Objects.nonNull(protectionTime) && Objects.nonNull(protectionTimeUnit)) {
             //分钟转毫秒
             if (Objects.equals(protectionTimeUnit, CommonConstant.TIME_UNIT_MINUTES)) {
-                protectionExpireTime = protectionTime * protectionTimeUnit * 60 * 1000L;
+                protectionExpireTime = nowTime + protectionTime * protectionTimeUnit * 60 * 1000L;
             }
             //小时转毫秒
             if (Objects.equals(protectionTimeUnit, CommonConstant.TIME_UNIT_HOURS)) {
-                protectionExpireTime = protectionTime * protectionTimeUnit * 60 * 60 * 1000L;
+                protectionExpireTime = nowTime + protectionTime * protectionTimeUnit * 60 * 60 * 1000L;
             }
         }
         
@@ -267,11 +267,11 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
         if (Objects.nonNull(validTime) && Objects.nonNull(validTimeUnit)) {
             //分钟转毫秒
             if (Objects.equals(validTimeUnit, CommonConstant.TIME_UNIT_MINUTES)) {
-                expiredTime = validTime * validTimeUnit * 60 * 1000L;
+                expiredTime = nowTime + validTime * validTimeUnit * 60 * 1000L;
             }
             //小时转毫秒
             if (Objects.equals(validTimeUnit, CommonConstant.TIME_UNIT_HOURS)) {
-                expiredTime = validTime * validTimeUnit * 60 * 60 * 1000L;
+                expiredTime = nowTime + validTime * validTimeUnit * 60 * 60 * 1000L;
             }
             
         }
