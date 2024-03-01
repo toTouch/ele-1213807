@@ -42,7 +42,7 @@ public class RebateRecordVO {
      * 套餐id
      */
     private Long memberCardId;
-    private String batteryMemberCardName;
+    private String memberCardName;
     
     /**
      * 返利类型

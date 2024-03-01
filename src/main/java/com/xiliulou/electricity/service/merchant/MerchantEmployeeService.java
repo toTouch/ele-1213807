@@ -25,6 +25,8 @@ public interface MerchantEmployeeService {
     
     MerchantEmployeeVO queryMerchantEmployeeByUid(Long uid);
     
+    MerchantEmployeeQrCodeVO queryEmployeeQrCodeByUid(Long uid);
+    
     List<MerchantEmployeeVO> listMerchantEmployee(MerchantEmployeeRequest merchantEmployeeRequest);
     
     Integer countMerchantEmployee(MerchantEmployeeRequest merchantEmployeeRequest);

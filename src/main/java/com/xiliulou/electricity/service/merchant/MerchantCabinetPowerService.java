@@ -4,6 +4,7 @@ import com.xiliulou.electricity.request.merchant.MerchantCabinetPowerRequest;
 import com.xiliulou.electricity.vo.merchant.MerchantProCabinetPowerDetailVO;
 import com.xiliulou.electricity.vo.merchant.MerchantPlaceAndCabinetUserVO;
 import com.xiliulou.electricity.vo.merchant.MerchantPlaceCabinetVO;
+import com.xiliulou.electricity.vo.merchant.MerchantProCabinetPowerVO;
 import com.xiliulou.electricity.vo.merchant.MerchantProPowerDetailVO;
 import com.xiliulou.electricity.vo.merchant.MerchantProPowerLineVO;
 import com.xiliulou.electricity.vo.merchant.MerchantProPowerVO;
@@ -42,4 +43,6 @@ public interface MerchantCabinetPowerService {
     List<MerchantProCabinetPowerDetailVO> cabinetPowerDetail(MerchantCabinetPowerRequest request);
     
     MerchantProPowerVO powerData(MerchantCabinetPowerRequest request);
+    
+    List<MerchantProCabinetPowerVO> cabinetPowerList(MerchantCabinetPowerRequest request);
 }

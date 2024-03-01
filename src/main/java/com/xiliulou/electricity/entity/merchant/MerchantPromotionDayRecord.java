@@ -33,7 +33,7 @@ public class MerchantPromotionDayRecord {
     private BigDecimal dayBalanceMoney;
     
     /**
-     * 返利类型: 0: 拉新,1：续费,2：差额
+     * 返利类型: 0: 拉新,1：续费,2：差额,3：无费用
      */
     private Integer type;
     
@@ -63,5 +63,10 @@ public class MerchantPromotionDayRecord {
      * 返利类型 差额
      */
     public static final int BALANCE = 2;
+    
+    /**
+     * 返利类型 无数据
+     */
+    public static final int NO_DATA = 3;
     
 }

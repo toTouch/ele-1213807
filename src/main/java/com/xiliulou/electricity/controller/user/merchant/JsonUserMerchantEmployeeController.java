@@ -158,6 +158,11 @@ public class JsonUserMerchantEmployeeController {
     
     }
     
+    @GetMapping("/merchant/employees/queryQrByUid")
+    public R merchantEmployeeList(@RequestParam(value = "uid", required = true) Long uid) {
+        return R.ok(merchantEmployeeService.queryEmployeeQrCodeByUid(uid));
+    }
+    
     @GetMapping("/merchant/employees/queryAll")
     public R allMerchantEmployeeList() {
         //租户

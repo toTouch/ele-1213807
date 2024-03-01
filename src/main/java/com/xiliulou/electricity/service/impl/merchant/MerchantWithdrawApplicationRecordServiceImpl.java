@@ -83,8 +83,8 @@ public class MerchantWithdrawApplicationRecordServiceImpl implements MerchantWit
     }
     
     @Override
-    public Integer updateMerchantWithdrawStatus(MerchantWithdrawApplicationRecord merchantWithdrawApplicationRecord) {
-        return merchantWithdrawApplicationRecordMapper.updateMerchantWithdrawStatus(merchantWithdrawApplicationRecord);
+    public Integer updateMerchantWithdrawRecordStatus(MerchantWithdrawApplicationRecord merchantWithdrawApplicationRecord) {
+        return merchantWithdrawApplicationRecordMapper.updateApplicationRecordStatus(merchantWithdrawApplicationRecord);
     }
     
     @Override

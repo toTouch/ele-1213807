@@ -8,7 +8,6 @@
             uid,
             order_no,
             batch_no,
-            transaction_no,
             amount,
             status,
             tenant_id,
@@ -21,7 +20,6 @@
             #{uid},
             #{orderNo},
             #{batchNo},
-            #{transaction_no},
             #{amount},
             #{status},
             #{tenantId},
@@ -38,7 +36,6 @@
             uid,
             order_no,
             batch_no,
-            transaction_no,
             amount,
             status,
             tenant_id,
@@ -52,7 +49,6 @@
                 #{item.uid},
                 #{item.orderNo},
                 #{item.batchNo},
-                #{item.transaction_no},
                 #{item.amount},
                 #{item.status},
                 #{item.tenantId},
@@ -73,6 +69,14 @@
             
             <if test="remark != null">
                 remark = #{remark},
+            </if>
+            
+            <if test="transactionBatchId != null and transactionBatchId != ''">
+                transaction_batch_id = #{transactionBatchId},
+            </if>
+    
+            <if test="transactionBatchDetailId != null and transactionBatchDetailId != ''">
+                transaction_detail_id = #{transactionBatchDetailId},
             </if>
             
             <if test="response != null">
@@ -245,7 +249,7 @@
           and tenant_id = #{tenantId}
     </update>
     
-    <update id="updateMerchantWithdrawStatus">
+    <update id="updateApplicationRecordStatus">
         update t_merchant_withdraw_application_record
         <set>
             <if test="response != null and response != ''">
@@ -253,6 +257,13 @@
             </if>
             <if test="remark != null and remark != ''">
                 remark = #{remark},
+            </if>
+            <if test="transactionBatchId != null and transactionBatchId != ''">
+                transaction_batch_id = #{transactionBatchId},
+            </if>
+    
+            <if test="transactionBatchDetailId != null and transactionBatchDetailId != ''">
+                transaction_detail_id = #{transactionBatchDetailId},
             </if>
             <if test="status != null">
                 status = #{status},

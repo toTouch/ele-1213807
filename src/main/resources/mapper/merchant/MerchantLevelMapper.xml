@@ -25,7 +25,7 @@
         select
             id, level, name, rule, del_flag, tenant_id, create_time, update_time
         from t_merchant_level
-        where level &lt; #{level} and tenant_id = #{tenantId} order by level limit 1
+        where level &lt; #{level} and tenant_id = #{tenantId} order by level desc limit 1
     </select>
     
     <select id="selectLastByMerchantLevel" resultMap="MerchantLevelMap">
@@ -40,6 +40,11 @@
             id, level, name, rule, del_flag, tenant_id, create_time, update_time
         from t_merchant_level
         where level = #{level} and tenant_id = #{tenantId} order by id limit 1
+    </select>
+    
+    <select id="existsLevelName" resultType="integer">
+        select 1 from t_merchant_level
+        where name = #{name} and tenant_id = #{tenantId} limit 1
     </select>
     
     <select id="selectByTenantId" resultMap="MerchantLevelMap">

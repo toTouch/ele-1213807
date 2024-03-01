@@ -7,6 +7,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import javax.validation.constraints.DecimalMax;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
@@ -41,21 +42,25 @@ public class RebateConfigRequest {
     /**
      * 渠道员拉新返现
      */
+    @DecimalMax(value = "99999999", message = "渠道员拉新返现金额不合法", groups = {CreateGroup.class, UpdateGroup.class})
     private BigDecimal channelerInvitation;
     
     /**
      * 渠道员续费返现
      */
+    @DecimalMax(value = "99999999", message = "渠道员续费返现金额不合法", groups = {CreateGroup.class, UpdateGroup.class})
     private BigDecimal channelerRenewal;
     
     /**
      * 商户拉新返现
      */
+    @DecimalMax(value = "99999999", message = "商户拉新返现金额不合法", groups = {CreateGroup.class, UpdateGroup.class})
     private BigDecimal merchantInvitation;
     
     /**
      * 商户续费返现
      */
+    @DecimalMax(value = "99999999", message = "商户续费返现金额不合法", groups = {CreateGroup.class, UpdateGroup.class})
     private BigDecimal merchantRenewal;
     
     /**

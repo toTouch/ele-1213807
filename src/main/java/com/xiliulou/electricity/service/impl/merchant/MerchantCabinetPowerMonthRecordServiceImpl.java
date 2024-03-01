@@ -106,7 +106,7 @@ public class MerchantCabinetPowerMonthRecordServiceImpl implements MerchantCabin
         }
         
         detailList = detailList.stream().peek(item -> {
-            item.setPlaceName(Optional.ofNullable(merchantPlaceService.queryFromCacheById(item.getPlaceId())).orElse(new MerchantPlace()).getName());
+            item.setPlaceName(Optional.ofNullable(merchantPlaceService.queryByIdFromCache(item.getPlaceId())).orElse(new MerchantPlace()).getName());
             
         }).collect(Collectors.toList());
         

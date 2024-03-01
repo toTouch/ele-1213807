@@ -15,7 +15,7 @@
         <result property="status" column="status" jdbcType="INTEGER"/>
         <result property="handlingFee" column="handling_fee" jdbcType="DECIMAL"/>
         <result property="checkTime" column="check_time" jdbcType="INTEGER"/>
-        <result property="withdrawResult" column="withdraw_result" jdbcType="VARCHAR"/>
+        <result property="response" column="response" jdbcType="VARCHAR"/>
         <result property="receiptTime" column="receipt_time" jdbcType="INTEGER"/>
         <result property="tenantId" column="tenant_id" jdbcType="INTEGER"/>
         
@@ -97,6 +97,14 @@
                 receipt_time = #{receiptTime},
             </if>
             
+            <if test="transactionBatchId != null and transactionBatchId != ''">
+                transaction_batch_id  = #{transactionBatchId},
+            </if>
+            
+            <if test="response != null and response != ''">
+                response = #{response},
+            </if>
+            
             <if test="delFlag != null">
                 del_flag = #{delFlag},
             </if>
@@ -164,7 +172,7 @@
         <where>
             tmwa.del_flag = 0
             and tmwa.tenant_id = #{tenantId}
-            <if test="uid != null and uid != ''">
+            <if test="uid != null">
                 and tmwa.uid = #{uid}
             </if>
             
@@ -172,7 +180,7 @@
                 and tmwa.order_no = #{orderNo}
             </if>
 
-            <if test="status != null and status != ''">
+            <if test="status != null">
                 and tmwa.status = #{status}
             </if>
     
@@ -199,7 +207,7 @@
         <where>
             tmwa.del_flag = 0
             and tmwa.tenant_id = #{tenantId}
-            <if test="uid != null and uid != ''">
+            <if test="uid != null">
                 and tmwa.uid = #{uid}
             </if>
             
@@ -207,7 +215,7 @@
                 and tmwa.order_no = #{orderNo}
             </if>
 
-            <if test="status != null and status != ''">
+            <if test="status != null">
                 and tmwa.status = #{status}
             </if>
             <if test="beginTime != null ">
@@ -246,7 +254,7 @@
         <where>
             tmwa.del_flag = 0
             and tmwa.tenant_id = #{tenantId}
-            <if test="uid != null and uid != ''">
+            <if test="uid != null">
                 and tmwa.uid = #{uid}
             </if>
             
@@ -254,7 +262,7 @@
                 and tmwa.order_no = #{orderNo}
             </if>
             
-            <if test="status != null and status != ''">
+            <if test="status != null">
                 and tmwa.status = #{status}
             </if>
             
@@ -344,11 +352,11 @@
         <where>
             tmwa.del_flag = 0
             and tmwa.tenant_id = #{tenantId}
-            <if test="uid != null and uid != ''">
+            <if test="uid != null">
                 and tmwa.uid = #{uid}
             </if>
             
-            <if test="status != null and status != ''">
+            <if test="status != null">
                 and tmwa.status = #{status}
             </if>
             
@@ -382,11 +390,11 @@
         <where>
             tmwa.del_flag = 0
             and tmwa.tenant_id = #{tenantId}
-            <if test="uid != null and uid != ''">
+            <if test="uid != null">
                 and tmwa.uid = #{uid}
             </if>
             
-            <if test="status != null and status != ''">
+            <if test="status != null">
                 and tmwa.status = #{status}
             </if>
             
@@ -461,16 +469,36 @@
     
     <update id="updateMerchantWithdrawStatus">
         update t_merchant_withdraw_application
-        set status = #{status},
-            receipt_time = #{receiptTime},
-            update_time = #{updateTime}
+        <set>
+            <if test="status != null">
+                status = #{status},
+            </if>
+            <if test="transactionBatchId != null and transactionBatchId != ''">
+                transaction_batch_id = #{transactionBatchId},
+            </if>
+            <if test="response != null and response != ''">
+                response = #{response},
+            </if>
+            <if test="remark != null and remark != ''">
+                remark = #{remark},
+            </if>
+    
+            <if test="receiptTime != null">
+                receipt_time = #{receiptTime},
+            </if>
+            
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+        </set>
+        
         <where>
             <if test="batchNo != null and batchNo != ''">
                 and batch_no = #{batchNo}
             </if>
           
             <if test="orderNo != null and orderNo != ''">
-                and order_no = orderNo
+                and order_no = #{orderNo}
             </if>
     
             <if test="tenantId != null">

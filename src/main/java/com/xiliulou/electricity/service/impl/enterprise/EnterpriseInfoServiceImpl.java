@@ -356,6 +356,12 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
         return Triple.of(true, null, null);
     }
     
+    @Slave
+    @Override
+    public List<EnterpriseInfo> queryListByIdList(List<Long> enterpriseIdList) {
+        return enterpriseInfoMapper.queryListByIdList(enterpriseIdList);
+    }
+    
     /**
      * 通过主键删除数据
      *

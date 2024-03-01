@@ -16,7 +16,7 @@ import java.util.List;
 public interface MerchantEmployeeMapper {
     MerchantEmployeeVO selectById(@Param("id") Long id);
     
-    MerchantEmployeeVO selectByUid(@Param("id") Long id);
+    MerchantEmployeeVO selectByUid(@Param("uid") Long uid);
     
     List<MerchantEmployeeVO> selectListByCondition(MerchantEmployeeRequest merchantEmployeeRequest);
     

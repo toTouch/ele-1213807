@@ -437,7 +437,7 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
             employeeDetailVO.setTotalIncome(totalInCome);
             
             if (Objects.nonNull(placeId)) {
-                MerchantPlace place = merchantPlaceService.queryFromCacheById(placeId);
+                MerchantPlace place = merchantPlaceService.queryByIdFromCache(placeId);
                 employeeDetailVO.setPlaceName(place.getName());
             }
         }

@@ -44,4 +44,6 @@ public interface MerchantLevelService {
     MerchantLevel queryLastByMerchantLevel(String level, Integer tenantId);
     
     List<MerchantLevel> queryListByIdList(List<Long> levelIdList);
+    
+    Integer existsLevelName(String name, Integer tenantId);
 }

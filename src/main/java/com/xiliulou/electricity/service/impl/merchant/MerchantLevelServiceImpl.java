@@ -3,10 +3,13 @@ package com.xiliulou.electricity.service.impl.merchant;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CommonConstant;
+import com.xiliulou.electricity.constant.merchant.MerchantConstant;
 import com.xiliulou.electricity.dto.MerchantLevelDTO;
+import com.xiliulou.electricity.entity.merchant.MerchantAttr;
 import com.xiliulou.electricity.entity.merchant.MerchantLevel;
 import com.xiliulou.electricity.mapper.merchant.MerchantLevelMapper;
 import com.xiliulou.electricity.request.merchant.MerchantLevelRequest;
+import com.xiliulou.electricity.service.merchant.MerchantAttrService;
 import com.xiliulou.electricity.service.merchant.MerchantLevelService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.vo.merchant.MerchantLevelVO;
@@ -15,6 +18,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -36,6 +40,9 @@ public class MerchantLevelServiceImpl implements MerchantLevelService {
     
     @Resource
     private MerchantLevelMapper merchantLevelMapper;
+    
+    @Autowired
+    private MerchantAttrService merchantAttrService;
     
     @Override
     public MerchantLevel queryById(Long id) {
@@ -88,6 +95,12 @@ public class MerchantLevelServiceImpl implements MerchantLevelService {
         return merchantLevelMapper.queryListByIdList(levelIdList);
     }
     
+    @Slave
+    @Override
+    public Integer existsLevelName(String name, Integer tenantId) {
+        return merchantLevelMapper.existsLevelName(name, tenantId);
+    }
+    
     @Override
     public List<MerchantLevelVO> list(Integer tenantId) {
         List<MerchantLevel> merchantLevels = this.listByTenantId(tenantId);
@@ -110,29 +123,101 @@ public class MerchantLevelServiceImpl implements MerchantLevelService {
     
     @Override
     public Triple<Boolean, String, Object> modify(MerchantLevelRequest request) {
+        log.error("=============1232");
         MerchantLevel merchantLevel = this.queryById(request.getId());
         if (Objects.isNull(merchantLevel) || !Objects.equals(merchantLevel.getTenantId(), TenantContextHolder.getTenantId())) {
             return Triple.of(true, null, null);
         }
+    
+        log.error("=============4655");
+    
+        if (!Objects.equals(merchantLevel.getName(), request.getName()) && Objects.nonNull(existsLevelName(request.getName(), merchantLevel.getTenantId()))) {
+            return Triple.of(false, "100322", "等级名称已存在");
+        }
+        
+        //商户升级条件
+        MerchantAttr merchantAttr = merchantAttrService.queryByTenantId(merchantLevel.getTenantId());
+        if (Objects.isNull(merchantAttr)) {
+            return Triple.of(false, "100323", "商户升级条件不存在");
+        }
+        
+        if (!(Objects.equals(merchantAttr.getUpgradeCondition(), MerchantConstant.UPGRADE_CONDITION_ALL) || Objects.equals(merchantAttr.getUpgradeCondition(),
+                MerchantConstant.UPGRADE_CONDITION_INVITATION) || Objects.equals(merchantAttr.getUpgradeCondition(), MerchantConstant.UPGRADE_CONDITION_RENEWAL))) {
+            return Triple.of(false, "100323", "商户升级条件不合法");
+        }
         
         MerchantLevel nextMerchantLevel = this.queryNextByMerchantLevel(merchantLevel.getLevel(), merchantLevel.getTenantId());
         if (Objects.nonNull(nextMerchantLevel) && StringUtils.isNotBlank(nextMerchantLevel.getRule())) {
+            log.error("next================================={}", JsonUtil.toJson(nextMerchantLevel));
             MerchantLevelDTO merchantLevelDTO = JsonUtil.fromJson(nextMerchantLevel.getRule(), MerchantLevelDTO.class);
             if (Objects.nonNull(merchantLevelDTO)) {
-                if ((Objects.nonNull(merchantLevelDTO.getInvitationUserCount()) && merchantLevelDTO.getInvitationUserCount() <= request.getInvitationUserCount()) || (
-                        Objects.nonNull(merchantLevelDTO.getRenewalUserCount()) && merchantLevelDTO.getRenewalUserCount() <= request.getRenewalUserCount())) {
-                    return Triple.of(false, "100320", "当前等级设置的人数需于小下一级别，请进行调整");
+                //拉新人数
+                if (Objects.equals(merchantAttr.getUpgradeCondition(), MerchantConstant.UPGRADE_CONDITION_INVITATION)) {
+                    log.error("next=============2============,getInvitationUserCount={},requestInvitationUserCount={}",merchantLevelDTO.getInvitationUserCount(),request.getInvitationUserCount());
+    
+                    if (Objects.nonNull(merchantLevelDTO.getInvitationUserCount()) && merchantLevelDTO.getInvitationUserCount() <= request.getInvitationUserCount()) {
+                        log.error("next=========================,getInvitationUserCount={},requestInvitationUserCount={}",merchantLevelDTO.getInvitationUserCount(),request.getInvitationUserCount());
+                        return Triple.of(false, "100320", "当前等级设置的人数需小于上一级别，请进行调整");
+                    }
+                }
+                
+                //续费人数
+                if (Objects.equals(merchantAttr.getUpgradeCondition(), MerchantConstant.UPGRADE_CONDITION_RENEWAL)) {
+                    log.error("next=============4============,getRenewalUserCount={},requestRenewalUserCount={}",merchantLevelDTO.getRenewalUserCount(),request.getRenewalUserCount());
+    
+                    if (Objects.nonNull(merchantLevelDTO.getRenewalUserCount()) && merchantLevelDTO.getRenewalUserCount() <= request.getRenewalUserCount()) {
+                        log.error("next=========================,getRenewalUserCount={},requestRenewalUserCount={}",merchantLevelDTO.getRenewalUserCount(),request.getRenewalUserCount());
+                        return Triple.of(false, "100320", "当前等级设置的人数需小于上一级别，请进行调整");
+                    }
+                }
+                
+                //拉新人数+续费人数
+                if (Objects.equals(merchantAttr.getUpgradeCondition(), MerchantConstant.UPGRADE_CONDITION_ALL)) {
+                    log.error("next==============8==========,getInvitationUserCount={},requestInvitationUserCount={}",merchantLevelDTO.getInvitationUserCount(),request.getInvitationUserCount());
+                    log.error("next==============9==========,getRenewalUserCount={},requestRenewalUserCount={}",merchantLevelDTO.getRenewalUserCount(),request.getRenewalUserCount());
+                    if ((Objects.nonNull(merchantLevelDTO.getInvitationUserCount()) && merchantLevelDTO.getInvitationUserCount() <= request.getInvitationUserCount()) || (
+                            Objects.nonNull(merchantLevelDTO.getRenewalUserCount()) && merchantLevelDTO.getRenewalUserCount() <= request.getRenewalUserCount())) {
+                        log.error("next===============111==========,getInvitationUserCount={},requestInvitationUserCount={}",merchantLevelDTO.getInvitationUserCount(),request.getInvitationUserCount());
+                        log.error("next===============111==========,getRenewalUserCount={},requestRenewalUserCount={}",merchantLevelDTO.getRenewalUserCount(),request.getRenewalUserCount());
+                        return Triple.of(false, "100320", "当前等级设置的人数需小于上一级别，请进行调整");
+                    }
                 }
             }
         }
-    
+        
         MerchantLevel lastMerchantLevel = this.queryLastByMerchantLevel(merchantLevel.getLevel(), merchantLevel.getTenantId());
-        if (Objects.nonNull(nextMerchantLevel) && StringUtils.isNotBlank(nextMerchantLevel.getRule())) {
-            MerchantLevelDTO merchantLevelDTO = JsonUtil.fromJson(nextMerchantLevel.getRule(), MerchantLevelDTO.class);
+        if (Objects.nonNull(lastMerchantLevel) && StringUtils.isNotBlank(lastMerchantLevel.getRule())) {
+            log.error("last================================={}", JsonUtil.toJson(lastMerchantLevel));
+            MerchantLevelDTO merchantLevelDTO = JsonUtil.fromJson(lastMerchantLevel.getRule(), MerchantLevelDTO.class);
             if (Objects.nonNull(merchantLevelDTO)) {
-                if ((Objects.nonNull(merchantLevelDTO.getInvitationUserCount()) && merchantLevelDTO.getInvitationUserCount() >= request.getInvitationUserCount()) || (
-                        Objects.nonNull(merchantLevelDTO.getRenewalUserCount()) && merchantLevelDTO.getRenewalUserCount() >= request.getRenewalUserCount())) {
-                    return Triple.of(false, "100320", "当前等级设置的人数需大于下一级别，请进行调整");
+                //拉新人数
+                if (Objects.equals(merchantAttr.getUpgradeCondition(), MerchantConstant.UPGRADE_CONDITION_INVITATION)) {
+                    log.error("last===============1==========,getInvitationUserCount={},requestInvitationUserCount={}",merchantLevelDTO.getInvitationUserCount(),request.getInvitationUserCount());
+                    if (Objects.nonNull(merchantLevelDTO.getInvitationUserCount()) && merchantLevelDTO.getInvitationUserCount() >= request.getInvitationUserCount()) {
+                        log.error("last=========================,getInvitationUserCount={},requestInvitationUserCount={}",merchantLevelDTO.getInvitationUserCount(),request.getInvitationUserCount());
+                        return Triple.of(false, "100321", "当前等级设置的人数需大于下一级别，请进行调整");
+                    }
+                }
+                
+                //续费人数
+                if (Objects.equals(merchantAttr.getUpgradeCondition(), MerchantConstant.UPGRADE_CONDITION_RENEWAL)) {
+                    log.error("last============2=============,getRenewalUserCount={},requestRenewalUserCount={}",merchantLevelDTO.getRenewalUserCount(),request.getRenewalUserCount());
+                    if (Objects.nonNull(merchantLevelDTO.getRenewalUserCount()) && merchantLevelDTO.getRenewalUserCount() >= request.getRenewalUserCount()) {
+                        log.error("last=========================,getRenewalUserCount={},requestRenewalUserCount={}",merchantLevelDTO.getRenewalUserCount(),request.getRenewalUserCount());
+                        return Triple.of(false, "100321", "当前等级设置的人数需大于下一级别，请进行调整");
+                    }
+                }
+                
+                //拉新人数+续费人数
+                if (Objects.equals(merchantAttr.getUpgradeCondition(), MerchantConstant.UPGRADE_CONDITION_ALL)) {
+                    log.error("last========6=================,getInvitationUserCount={},requestInvitationUserCount={}",merchantLevelDTO.getInvitationUserCount(),request.getInvitationUserCount());
+                    log.error("last========7=================,getRenewalUserCount={},requestRenewalUserCount={}",merchantLevelDTO.getRenewalUserCount(),request.getRenewalUserCount());
+                    if ((Objects.nonNull(merchantLevelDTO.getInvitationUserCount()) && merchantLevelDTO.getInvitationUserCount() >= request.getInvitationUserCount()) || (
+                            Objects.nonNull(merchantLevelDTO.getRenewalUserCount()) && merchantLevelDTO.getRenewalUserCount() >= request.getRenewalUserCount())) {
+                        log.error("last========123=================,getInvitationUserCount={},requestInvitationUserCount={}",merchantLevelDTO.getInvitationUserCount(),request.getInvitationUserCount());
+                        log.error("last========123=================,getRenewalUserCount={},requestRenewalUserCount={}",merchantLevelDTO.getRenewalUserCount(),request.getRenewalUserCount());
+                        return Triple.of(false, "100321", "当前等级设置的人数需大于下一级别，请进行调整");
+                    }
                 }
             }
         }
@@ -155,10 +240,11 @@ public class MerchantLevelServiceImpl implements MerchantLevelService {
         var merchantLevelList = new ArrayList<MerchantLevel>();
         
         for (int i = 1; i < 6; i++) {
+            MerchantLevelDTO merchantLevelDTO = new MerchantLevelDTO(0L, 0L);
             MerchantLevel merchantLevel = new MerchantLevel();
             merchantLevel.setLevel(String.valueOf(i));
             merchantLevel.setName("");
-            merchantLevel.setRule(null);
+            merchantLevel.setRule(JsonUtil.toJson(merchantLevelDTO));
             merchantLevel.setDelFlag(CommonConstant.DEL_N);
             merchantLevel.setTenantId(tenantId);
             merchantLevel.setCreateTime(System.currentTimeMillis());
