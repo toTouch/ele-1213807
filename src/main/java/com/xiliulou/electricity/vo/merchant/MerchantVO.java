@@ -127,6 +127,6 @@ public class MerchantVO {
     /**
      * 企业云豆总数
      */
-    private BigDecimal totalBeanAmount;
+    private BigDecimal totalCloudBeanAmount;
     
 }
