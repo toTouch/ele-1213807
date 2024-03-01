@@ -1,7 +1,7 @@
 package com.xiliulou.electricity.service.merchant;
 
 import com.xiliulou.electricity.query.merchant.MerchantPromotionDayRecordQueryModel;
-import com.xiliulou.electricity.vo.merchant.MerchantPromotionMonthDetailVO;
+import com.xiliulou.electricity.vo.merchant.MerchantPromotionDayRecordVO;
 
 import java.util.List;
 
@@ -12,6 +12,6 @@ import java.util.List;
  */
 public interface MerchantPromotionDayRecordService {
     
-    List<MerchantPromotionMonthDetailVO> listByTenantId(MerchantPromotionDayRecordQueryModel queryModel);
+    List<MerchantPromotionDayRecordVO> listByTenantId(MerchantPromotionDayRecordQueryModel queryModel);
     
 }
