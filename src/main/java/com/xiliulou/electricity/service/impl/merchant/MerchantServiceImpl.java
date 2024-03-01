@@ -940,14 +940,16 @@ public class MerchantServiceImpl implements MerchantService {
             }
     
             Map<Long, EnterpriseInfo> finalEnterpriseInfoMap = enterpriseInfoMap;
+            
             resList.forEach(item -> {
                 EnterpriseInfo enterprise = finalEnterpriseInfoMap.get(item.getEnterpriseId());
                 
-                if (ObjectUtils.isNotEmpty(enterprise)) {
-                    item.setTotalCloudBeanAmount(enterprise.getTotalBeanAmount());
-                } else {
+                if (Objects.isNull(enterprise) || Objects.isNull(enterprise.getTotalBeanAmount())) {
                     item.setTotalCloudBeanAmount(BigDecimal.ZERO);
+                    return;
                 }
+    
+                item.setTotalCloudBeanAmount(enterprise.getTotalBeanAmount());
             });
             
         }, threadPool).exceptionally(e -> {
