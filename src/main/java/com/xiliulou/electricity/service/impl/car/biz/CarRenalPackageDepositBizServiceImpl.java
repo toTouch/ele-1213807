@@ -394,7 +394,7 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
         if (!ObjectUtils.isEmpty(freeDepositOrder)) {
             FreeDepositOrder freeDepositOrderUpdate = new FreeDepositOrder();
             freeDepositOrderUpdate.setId(freeDepositOrder.getId());
-            freeDepositOrderUpdate.setAuthStatus(FreeDepositOrder.AUTH_UN_FREEZING);
+            freeDepositOrderUpdate.setAuthStatus(FreeDepositOrder.AUTH_UN_FROZEN);
             freeDepositOrderUpdate.setUpdateTime(System.currentTimeMillis());
             freeDepositOrderService.update(freeDepositOrderUpdate);
         }
