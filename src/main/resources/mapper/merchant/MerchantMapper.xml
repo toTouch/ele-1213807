@@ -42,7 +42,7 @@
                 <if test="enterprisePackageAuth != null">
                     enterprise_package_auth = #{enterprisePackageAuth},
                 </if>
-                <if test="purchaseAuthority != null and purchaseAuthority != ''">
+                <if test="purchaseAuthority != null">
                     purchase_authority = #{purchaseAuthority},
                 </if>
                 <if test="updateTime != null">
