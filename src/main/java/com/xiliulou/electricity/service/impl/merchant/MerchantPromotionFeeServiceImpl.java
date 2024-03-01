@@ -488,11 +488,11 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
     public R selectPromotionData(MerchantPromotionDataDetailQueryModel queryModel) {
         MerchantPromotionDataVO dataVO = new MerchantPromotionDataVO();
         dataVO.setScanCodeCount(
-                buildScanCodeCount(queryModel.getType(), queryModel.getUid(), queryModel.getStartTime(), DateUtils.getMonthEndTimeStampByDate(queryModel.getStartTime()), null));
+                buildScanCodeCount(queryModel.getType(), queryModel.getUid(), queryModel.getStartTime(), queryModel.getEndTime(), null));
         dataVO.setPurchaseCount(
-                buildScanCodeCount(queryModel.getType(), queryModel.getUid(), queryModel.getStartTime(), DateUtils.getMonthEndTimeStampByDate(queryModel.getStartTime()),
+                buildScanCodeCount(queryModel.getType(), queryModel.getUid(), queryModel.getStartTime(), queryModel.getEndTime(),
                         MerchantJoinRecord.STATUS_SUCCESS));
-        dataVO.setTotalIncome(buildPromotionFeeTotalIncomeVO(queryModel.getType(), queryModel.getUid(), DateUtils.getMonthEndTimeStampByDate(queryModel.getStartTime())));
+        dataVO.setTotalIncome(buildPromotionFeeTotalIncomeVO(queryModel.getType(), queryModel.getUid(), queryModel.getEndTime()));
         return R.ok(dataVO);
     }
     
