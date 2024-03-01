@@ -494,6 +494,7 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
         dataVO.setPurchaseCount(
                 buildScanCodeCount(queryModel.getType(), queryModel.getUid(), queryModel.getStartTime(), queryModel.getEndTime(),
                         MerchantJoinRecord.STATUS_SUCCESS));
+        dataVO.setRenewalCount(buildRenewalNum(queryModel.getType(), queryModel.getUid(), queryModel.getStartTime(), queryModel.getEndTime()));
         dataVO.setTotalIncome(buildPromotionFeeTotalIncomeVO(queryModel.getType(), queryModel.getUid(), queryModel.getEndTime()));
         return R.ok(dataVO);
     }
@@ -552,7 +553,7 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
         }
     }
     
-    private Integer buildRenewalNum(Integer type, Long uid, long startTime, long endTime) {
+    private Integer buildRenewalNum(Integer type, Long uid, Long startTime, Long endTime) {
         //昨日续费次数：购买指定套餐时间=昨日0点～今日0点，且套餐购买次数>1的购买成功次数
         MerchantPromotionRenewalQueryModel renewalQueryModel = MerchantPromotionRenewalQueryModel.builder().tenantId(TenantContextHolder.getTenantId()).type(type).uid(uid)
                 .startTime(startTime).endTime(endTime).status(MerchantConstant.MERCHANT_REBATE_TYPE_RENEWAL).build();
