@@ -3,7 +3,7 @@
 <mapper namespace="com.xiliulou.electricity.mapper.merchant.MerchantCabinetPowerMonthDetailMapper">
     <!-- 基础字段 -->
     <sql id="basic_field">
-        id, place_id, eid, sn, date, record_no, start_power, end_power, sum_power, sum_charge, json_rule, begin_time, end_time, tenant_id, franchisee_id, store_id, del_flag, create_time, update_time
+        id, place_id, eid, sn, date, start_power, end_power, sum_power, sum_charge, json_rule, begin_time, end_time, tenant_id, franchisee_id, store_id, del_flag, create_time, update_time
     </sql>
     
     <select id="selectListByTenantId" resultType="com.xiliulou.electricity.vo.merchant.MerchantCabinetPowerMonthDetailVO">
