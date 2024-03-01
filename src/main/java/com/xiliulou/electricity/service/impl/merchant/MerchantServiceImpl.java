@@ -944,9 +944,9 @@ public class MerchantServiceImpl implements MerchantService {
                 EnterpriseInfo enterprise = finalEnterpriseInfoMap.get(item.getEnterpriseId());
                 
                 if (ObjectUtils.isNotEmpty(enterprise)) {
-                    item.setTotalBeanAmount(enterprise.getTotalBeanAmount());
+                    item.setTotalCloudBeanAmount(enterprise.getTotalBeanAmount());
                 } else {
-                    item.setTotalBeanAmount(BigDecimal.ZERO);
+                    item.setTotalCloudBeanAmount(BigDecimal.ZERO);
                 }
             });
             
