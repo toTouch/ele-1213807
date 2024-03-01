@@ -19,7 +19,7 @@ import com.xiliulou.electricity.service.merchant.MerchantPromotionMonthRecordSer
 import com.xiliulou.electricity.service.merchant.MerchantService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DateUtils;
-import com.xiliulou.electricity.vo.merchant.MerchantPromotionMonthDetailVO;
+import com.xiliulou.electricity.vo.merchant.MerchantPromotionDayRecordVO;
 import com.xiliulou.electricity.vo.merchant.MerchantPromotionMonthExcelVO;
 import com.xiliulou.electricity.vo.merchant.MerchantPromotionMonthRecordVO;
 import lombok.extern.slf4j.Slf4j;
@@ -126,43 +126,57 @@ public class MerchantPromotionMonthRecordServiceImpl implements MerchantPromotio
         queryModel.setStartDate(DateUtils.getFirstDayByMonth(monthDate));
         queryModel.setEndDate(DateUtils.getLastDayByMonth(monthDate));
         
-        List<MerchantPromotionMonthDetailVO> detailList = merchantPromotionDayRecordService.listByTenantId(queryModel);
+        List<MerchantPromotionDayRecordVO> detailList = merchantPromotionDayRecordService.listByTenantId(queryModel);
         if (CollectionUtils.isEmpty(detailList)) {
             return;
         }
         
-        List<MerchantPromotionMonthExcelVO> excelVOList = detailList.stream().map(item -> {
+        List<MerchantPromotionMonthExcelVO> excelVOList = new ArrayList<>();
+        
+        // excelVOList 按merchantId进行分组
+        Map<Long, List<MerchantPromotionDayRecordVO>> detailMap = detailList.stream().collect(Collectors.groupingBy(MerchantPromotionDayRecordVO::getMerchantId));
+        
+        detailMap.forEach((merchantId, merchantDayRecordVoList) -> {
             
-            MerchantPromotionMonthExcelVO excelVO = MerchantPromotionMonthExcelVO.builder().monthDate(monthDate)
-                    .merchantName(Optional.ofNullable(merchantService.queryByIdFromCache(item.getMerchantId()).getName()).orElse("")).monthFirstMoney(item.getMonthFirstMoney())
-                    .monthRenewMoney(item.getMonthRenewMoney()).inviterName(Optional.ofNullable(userService.queryByUidFromCache(item.getInviterUid()).getName()).orElse(""))
-                    .date(item.getDate()).build();
-            
-            String typeName = "";
-            BigDecimal dayMoney = BigDecimal.ONE;
-            switch (item.getType()) {
-                case MerchantPromotionDayRecord.LASHIN:
-                    typeName = "拉新";
-                    dayMoney = item.getDayFirstMoney();
-                    break;
-                case MerchantPromotionDayRecord.RENEW:
-                    typeName = "续费";
-                    dayMoney = item.getDayRenewMoney();
-                    break;
-                case MerchantPromotionDayRecord.BALANCE:
-                    typeName = "差额";
-                    dayMoney = item.getDayBalanceMoney();
-                    break;
-                default:
-                    break;
+            if (CollectionUtils.isNotEmpty(merchantDayRecordVoList)) {
+                merchantDayRecordVoList.forEach(item -> {
+                    
+                    String typeName = "";
+                    BigDecimal dayMoney = BigDecimal.ZERO;
+                    BigDecimal monthFirstMoney = BigDecimal.ZERO;
+                    BigDecimal monthRenewMoney = BigDecimal.ZERO;
+                    
+                    switch (item.getType()) {
+                        case MerchantPromotionDayRecord.LASHIN:
+                            typeName = "拉新";
+                            monthFirstMoney = item.getDayFirstMoney();
+                            dayMoney = item.getDayFirstMoney();
+                            break;
+                        case MerchantPromotionDayRecord.RENEW:
+                            typeName = "续费";
+                            monthRenewMoney = item.getDayRenewMoney();
+                            dayMoney = item.getDayRenewMoney();
+                            break;
+                        case MerchantPromotionDayRecord.BALANCE:
+                            typeName = "差额";
+                            monthFirstMoney = item.getBalanceFromFirst();
+                            monthRenewMoney = item.getBalanceFromRenew();
+                            dayMoney = item.getDayBalanceMoney();
+                            break;
+                        default:
+                            break;
+                    }
+                    
+                    MerchantPromotionMonthExcelVO excelVO = MerchantPromotionMonthExcelVO.builder().monthDate(monthDate)
+                            .merchantName(Optional.ofNullable(merchantService.queryByIdFromCache(item.getMerchantId()).getName()).orElse("")).monthFirstMoney(monthFirstMoney)
+                            .monthRenewMoney(monthRenewMoney).inviterName(Optional.ofNullable(userService.queryByUidFromCache(item.getInviterUid()).getName()).orElse(""))
+                            .typeName(typeName).dayMoney(dayMoney).date(item.getDate()).build();
+                    
+                    excelVOList.add(excelVO);
+                });
             }
             
-            excelVO.setTypeName(typeName);
-            excelVO.setDayMoney(dayMoney);
-            
-            return excelVO;
-            
-        }).collect(Collectors.toList());
+        });
         
         String fileName = "商户推广费出账记录.xlsx";
         try {
