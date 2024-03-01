@@ -510,8 +510,7 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
         return merchantService.countMerchantNumByTime(todayQueryModel);
     }
     
-    private BigDecimal buildPromotionFeeTotalIncomeVO(Integer type, Long uid, long endTime) {
-        PromotionFeeStatisticAnalysisIncomeVO incomeVO = new PromotionFeeStatisticAnalysisIncomeVO();
+    private BigDecimal buildPromotionFeeTotalIncomeVO(Integer type, Long uid, Long endTime) {
         //累计收入：“结算日期” <= 今日，“结算状态” = 已结算 - 已退回；
         MerchantPromotionFeeQueryModel allSettleIncomeQueryModel = MerchantPromotionFeeQueryModel.builder().status(MerchantConstant.MERCHANT_REBATE_STATUS_SETTLED).type(type)
                 .uid(uid).tenantId(TenantContextHolder.getTenantId()).settleEndTime(endTime).build();
