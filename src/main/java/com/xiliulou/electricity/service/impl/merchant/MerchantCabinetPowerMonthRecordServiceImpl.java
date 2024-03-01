@@ -26,6 +26,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -63,9 +64,9 @@ public class MerchantCabinetPowerMonthRecordServiceImpl implements MerchantCabin
         if (StringUtils.isBlank(monthDate) || !monthDate.matches(DateUtils.GREP_YEAR_MONTH)) {
             return Collections.emptyList();
         }
-    
+        
         // 数据库存的是yyyy-MM-01
-        request.setMonthDate(monthDate+"-01");
+        request.setMonthDate(monthDate + "-01");
         
         MerchantPowerQueryModel queryModel = new MerchantPowerQueryModel();
         BeanUtils.copyProperties(request, queryModel);
@@ -82,9 +83,9 @@ public class MerchantCabinetPowerMonthRecordServiceImpl implements MerchantCabin
         if (StringUtils.isBlank(monthDate) || !monthDate.matches(DateUtils.GREP_YEAR_MONTH)) {
             return NumberConstant.ZERO;
         }
-    
+        
         // 数据库存的是yyyy-MM-01
-        request.setMonthDate(monthDate+"-01");
+        request.setMonthDate(monthDate + "-01");
         
         MerchantPowerQueryModel queryModel = new MerchantPowerQueryModel();
         BeanUtils.copyProperties(request, queryModel);
@@ -107,7 +108,7 @@ public class MerchantCabinetPowerMonthRecordServiceImpl implements MerchantCabin
         queryModel.setTenantId(TenantContextHolder.getTenantId());
         
         // 数据库存的是yyyy-MM-01
-        queryModel.setMonthDate(monthDate+"-01");
+        queryModel.setMonthDate(monthDate + "-01");
         
         List<MerchantCabinetPowerMonthDetailVO> detailList = merchantCabinetPowerMonthDetailService.listByTenantId(queryModel);
         if (CollectionUtils.isEmpty(detailList)) {
@@ -121,11 +122,12 @@ public class MerchantCabinetPowerMonthRecordServiceImpl implements MerchantCabin
         
         String fileName = "场地电费出账记录.xlsx";
         try {
+            ServletOutputStream outputStream = response.getOutputStream();
             // 告诉浏览器用什么软件可以打开此文件
             response.setHeader("content-Type", "application/vnd.ms-excel");
             // 下载文件的默认名称
             response.setHeader("Content-Disposition", "attachment;filename=" + URLEncoder.encode(fileName, StandardCharsets.UTF_8));
-            EasyExcel.write(fileName).head(getHeader())
+            EasyExcel.write(outputStream, MerchantCabinetPowerMonthDetailVO.class).head(getHeader())
                     // 合并策略：合并相同数据的行。第一个参数表示从哪一行开始进行合并，由于表头占了两行，因此从第2行开始（索引从0开始）
                     // 第二个参数是指定哪些列要进行合并
                     .registerWriteHandler(new MergeSameRowsStrategy(2, new int[] {0, 1, 2, 3})).registerWriteHandler(HeadContentCellStyle.myHorizontalCellStyleStrategy())
