@@ -6,14 +6,14 @@
         values (#{item.monthDate}, #{item.placeNum}, #{item.monthPlaceFee}, #{item.tenantId}), #{item.delFlag}, #{item.createTime}, #{item.updateTime})
     </insert>
     
-    <select id="selectListByCondition" resultType="com.xiliulou.electricity.vo.merchant.MerchantPlaceFeeMonthSummaryRecordVO">
+    <select id="selectListByCondition" resultType="com.xiliulou.electricity.entity.merchant.MerchantPlaceFeeMonthSummaryRecord">
         select month_date , place_num , month_place_fee
         from t_merchant_place_fee_month_summary_record
         where del_flag=0
         <if test="monthDate != null and monthDate != ''">
             and month_date = #{monthDate}
         </if>
-        <if test="tenantId != null and tenantId != ''">
+        <if test="tenantId != null">
             and tenant_id = #{tenantId}
         </if>
 
