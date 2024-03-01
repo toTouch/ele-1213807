@@ -70,6 +70,9 @@ public class MerchantPromotionMonthRecordServiceImpl implements MerchantPromotio
         if (StringUtils.isBlank(monthDate) || !monthDate.matches(DateUtils.GREP_YEAR_MONTH)) {
             return Collections.emptyList();
         }
+    
+        // 数据库存的是yyyy-MM-01
+        request.setMonthDate(monthDate+"-01");
         
         MerchantPromotionMonthRecordQueryModel queryModel = new MerchantPromotionMonthRecordQueryModel();
         BeanUtils.copyProperties(request, queryModel);
@@ -96,6 +99,9 @@ public class MerchantPromotionMonthRecordServiceImpl implements MerchantPromotio
         if (StringUtils.isBlank(monthDate) || !monthDate.matches(DateUtils.GREP_YEAR_MONTH)) {
             return NumberConstant.ZERO;
         }
+    
+        // 数据库存的是yyyy-MM-01
+        request.setMonthDate(monthDate+"-01");
         
         MerchantPromotionMonthRecordQueryModel queryModel = new MerchantPromotionMonthRecordQueryModel();
         BeanUtils.copyProperties(request, queryModel);
@@ -113,6 +119,7 @@ public class MerchantPromotionMonthRecordServiceImpl implements MerchantPromotio
         if (StringUtils.isBlank(monthDate) || !monthDate.matches(DateUtils.GREP_YEAR_MONTH)) {
             return;
         }
+        
         
         MerchantPromotionDayRecordQueryModel queryModel = new MerchantPromotionDayRecordQueryModel();
         queryModel.setTenantId(TenantContextHolder.getTenantId());

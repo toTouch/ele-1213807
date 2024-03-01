@@ -42,6 +42,9 @@ public class MerchantPromotionMonthRecord {
      */
     private BigDecimal monthTotalMoney;
     
+    /**
+     * 出账年月 yyyy-MM-dd 如：2024-02存的是2024-02-01
+     */
     private String date;
     
     private Integer tenantId;
