@@ -9,7 +9,7 @@
     <select id="selectListByCondition" resultType="com.xiliulou.electricity.vo.merchant.MerchantPlaceFeeMonthSummaryRecordVO">
         select month_date , place_num , month_place_fee
         from t_merchant_place_fee_month_summary_record
-        where del_flag!=0
+        where del_flag=0
         <if test="monthDate != null and monthDate != ''">
             and month_date = #{monthDate}
         </if>
