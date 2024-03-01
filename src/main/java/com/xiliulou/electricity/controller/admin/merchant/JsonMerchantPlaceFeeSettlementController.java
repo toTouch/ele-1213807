@@ -45,7 +45,7 @@ public class JsonMerchantPlaceFeeSettlementController extends BaseController {
     @GetMapping("/admin/merchant/placeFee/settlement/page")
     public R page(@RequestParam("size") long size, @RequestParam("offset") long offset, @RequestParam(value = "monthDate", required = false) String monthDate) {
         if (size < 0 || size > 50) {
-            size = 10L;
+            size = 50L;
         }
     
         if (offset < 0) {
