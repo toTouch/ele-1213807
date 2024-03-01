@@ -1,26 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.xiliulou.electricity.mapper.merchant.MerchantCabinetPowerMonthDetailMapper">
+    <!-- 基础字段 -->
+    <sql id="basic_field">
+        id, place_id, eid, sn, date, record_no, start_power, end_power, sum_power, sum_charge, json_rule, begin_time, end_time, tenant_id, franchisee_id, store_id, del_flag, create_time, update_time
+    </sql>
     
     <select id="selectListByTenantId" resultType="com.xiliulou.electricity.vo.merchant.MerchantCabinetPowerMonthDetailVO">
-        select tenant_id,
-               any_value(place_id)     as placeId,
-               sum(sum_power)         as month_sum_power,
-               sum(sum_charge)        as month_sum_charge,
-               any_value(eid)         as eid,
-               any_value(sn)          as sn,
-               any_value(start_power) as start_power,
-               any_value(end_power)   as end_power,
-               any_value(sum_power)   as sum_power,
-               any_value(sum_charge)  as sum_charge,
-               any_value(json_rule)   as json_rule,
-               any_value(begin_time)  as begin_time,
-               any_value(end_time)    as end_time,
-               any_value(date) as date
+        select
+        <include refid="basic_field"/>
         from t_merchant_cabinet_power_month_detail
         where tenant_id = #{tenantId}
-          and del_flag = 0
-          and date = #{monthDate}
-        group by tenant_id, place_id
+        and del_flag = 0
+        and date = #{monthDate}
     </select>
 </mapper>
