@@ -31,6 +31,7 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
+import java.math.BigDecimal;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -131,26 +132,35 @@ public class MerchantPromotionMonthRecordServiceImpl implements MerchantPromotio
         }
         
         List<MerchantPromotionMonthExcelVO> excelVOList = detailList.stream().map(item -> {
+            
+            MerchantPromotionMonthExcelVO excelVO = MerchantPromotionMonthExcelVO.builder().monthDate(monthDate)
+                    .merchantName(Optional.ofNullable(merchantService.queryByIdFromCache(item.getMerchantId()).getName()).orElse("")).monthFirstMoney(item.getMonthFirstMoney())
+                    .monthRenewMoney(item.getMonthRenewMoney()).inviterName(Optional.ofNullable(userService.queryByUidFromCache(item.getInviterUid()).getName()).orElse(""))
+                    .date(item.getDate()).build();
+            
             String typeName = "";
+            BigDecimal dayMoney = BigDecimal.ONE;
             switch (item.getType()) {
                 case MerchantPromotionDayRecord.LASHIN:
                     typeName = "拉新";
+                    dayMoney = item.getDayFirstMoney();
                     break;
                 case MerchantPromotionDayRecord.RENEW:
                     typeName = "续费";
+                    dayMoney = item.getDayRenewMoney();
                     break;
                 case MerchantPromotionDayRecord.BALANCE:
                     typeName = "差额";
+                    dayMoney = item.getDayBalanceMoney();
                     break;
                 default:
                     break;
             }
             
-            return MerchantPromotionMonthExcelVO.builder().monthDate(monthDate)
-                    .merchantName(Optional.ofNullable(merchantService.queryByIdFromCache(item.getMerchantId()).getName()).orElse("")).monthFirstMoney(item.getMonthFirstMoney())
-                    .monthRenewMoney(item.getMonthRenewMoney()).inviterName(Optional.ofNullable(userService.queryByUidFromCache(item.getInviterUid()).getName()).orElse(""))
-                    .typeName(typeName).dayFirstMoney(item.getDayFirstMoney()).dayRenewMoney(item.getDayRenewMoney()).dayBalanceMoney(item.getDayBalanceMoney())
-                    .date(item.getDate()).build();
+            excelVO.setTypeName(typeName);
+            excelVO.setDayMoney(dayMoney);
+            
+            return excelVO;
             
         }).collect(Collectors.toList());
         

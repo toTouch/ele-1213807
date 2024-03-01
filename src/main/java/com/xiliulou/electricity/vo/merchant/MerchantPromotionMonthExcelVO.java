@@ -30,11 +30,7 @@ public class MerchantPromotionMonthExcelVO {
     
     private String typeName;
     
-    private BigDecimal dayFirstMoney;
-    
-    private BigDecimal dayRenewMoney;
-    
-    private BigDecimal dayBalanceMoney;
+    private BigDecimal dayMoney;
     
     private String date;
 }

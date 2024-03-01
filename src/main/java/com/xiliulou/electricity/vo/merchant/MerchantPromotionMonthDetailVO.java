@@ -28,6 +28,10 @@ public class MerchantPromotionMonthDetailVO {
     
     private BigDecimal dayBalanceMoney;
     
+    private BigDecimal balanceFromFirst;
+    
+    private BigDecimal balanceFromRenew;
+    
     private Integer type;
     
     
