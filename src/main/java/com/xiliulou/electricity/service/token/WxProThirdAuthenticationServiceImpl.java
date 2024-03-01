@@ -191,8 +191,8 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
                             .authStatus(UserInfo.AUTH_STATUS_STATUS_INIT).delFlag(User.DEL_NORMAL)
                             .usableStatus(UserInfo.USER_USABLE_STATUS).tenantId(tenantId).build();
                     UserInfo userInfo = userInfoService.insert(insertUserInfo);
-                    
-                    userInfoExtraService.insert(buildUserInfoExtra(userInfo));
+    
+                    userInfoExtraService.insert(buildUserInfoExtra(uid, tenantId));
                 }
                 
                 if(StringUtils.isBlank(userOauthBind.getThirdId())){
@@ -319,7 +319,7 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
                             .build();
                     UserInfo userInfo = userInfoService.insert(insertUserInfo);
     
-                    userInfoExtraService.insert(buildUserInfoExtra(userInfo));
+                    userInfoExtraService.insert(buildUserInfoExtra(uid, tenantId));
                 }
                 return createSecurityUser(existPhone.getRight(), userOauthBind);
 
@@ -376,7 +376,7 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
                 .usableStatus(UserInfo.USER_USABLE_STATUS).build();
         UserInfo userInfo = userInfoService.insert(insertUserInfo);
     
-        userInfoExtraService.insert(buildUserInfoExtra(userInfo));
+        userInfoExtraService.insert(buildUserInfoExtra(insert.getUid(), tenantId));
 
         //参加新用户活动
         NewUserActivity newUserActivity = newUserActivityService.queryActivity();
@@ -437,13 +437,13 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
         }
     }
     
-    private UserInfoExtra buildUserInfoExtra(UserInfo userInfo) {
+    private UserInfoExtra buildUserInfoExtra(Long uid, Integer tenantId) {
         UserInfoExtra userInfoExtra = new UserInfoExtra();
-        userInfoExtra.setUid(userInfo.getUid());
-        userInfoExtra.setDelFlag(userInfo.getDelFlag());
-        userInfoExtra.setTenantId(userInfo.getTenantId());
-        userInfoExtra.setCreateTime(userInfo.getCreateTime());
-        userInfoExtra.setUpdateTime(userInfo.getUpdateTime());
+        userInfoExtra.setUid(uid);
+        userInfoExtra.setDelFlag(User.DEL_NORMAL);
+        userInfoExtra.setTenantId(tenantId);
+        userInfoExtra.setCreateTime(System.currentTimeMillis());
+        userInfoExtra.setUpdateTime(System.currentTimeMillis());
         return userInfoExtra;
     }
 }
