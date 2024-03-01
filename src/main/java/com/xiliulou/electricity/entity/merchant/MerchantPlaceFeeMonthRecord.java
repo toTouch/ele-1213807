@@ -19,6 +19,10 @@ public class MerchantPlaceFeeMonthRecord {
     
     private String monthDate;
     
+    private String monthRentDays;
+    
+    private BigDecimal monthTotalPlaceFee;
+    
     private Long placeId;
     
     private Long eid;
