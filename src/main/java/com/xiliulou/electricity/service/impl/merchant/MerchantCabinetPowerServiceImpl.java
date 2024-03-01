@@ -311,11 +311,31 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
             return null;
         }
         
+        // 上个月的数据需要实时获取，历史记录只统计到上上个月
+        String lastMonthDate = DateUtils.getMonthDate(1L);
+        monthList.remove(lastMonthDate);
+        
+        // 1.实时统计上个月的数据
+        MerchantPowerPeriodVO lastMonthPower = this.getLastMonthPower(cabinetIds);
+        //电量
+        MerchantProPowerLineDataVO lastMonthPowerVO = new MerchantProPowerLineDataVO();
+        lastMonthPowerVO.setMonthDate(lastMonthDate);
+        lastMonthPowerVO.setPower(Optional.ofNullable(lastMonthPower.getCharge()).orElse(NumberConstant.ZERO_D));
+        powerList.add(lastMonthPowerVO);
+        
+        MerchantProPowerChargeLineDataVO lastMonthChargeVO = new MerchantProPowerChargeLineDataVO();
+        lastMonthChargeVO.setMonthDate(lastMonthDate);
+        lastMonthChargeVO.setCharge(Optional.ofNullable(lastMonthPower.getCharge()).orElse(NumberConstant.ZERO_D));
+        chargeList.add(lastMonthChargeVO);
+        
+        // 2.统计2个月前的历史数据
         for (String monthDate : monthList) {
             if (!monthDate.matches(DateUtils.GREP_YEAR_MONTH)) {
                 log.warn("Merchant power for pro lineData, monthDate not correct, monthDate={}", monthDate);
                 break;
             }
+            
+            monthDate = monthDate + "-01";
             
             MerchantPowerPeriodVO merchantPowerPeriodVO = merchantCabinetPowerMonthRecordProService.sumMonthPower(cabinetIds, List.of(monthDate));
             
@@ -407,7 +427,7 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
         } else {
             // 如果是2个月前,通过历史数据查询
             List<MerchantCabinetPowerMonthDetailPro> historyDetailList = merchantCabinetPowerMonthDetailProService.listByMonth(cabinetId, monthList);
-            rspList = assembleHistoryDetailPower(electricityCabinet, historyDetailList, monthDate);
+            rspList = assembleHistoryDetailPower(electricityCabinet, historyDetailList, monthDate + "-01");
         }
         
         if (CollectionUtils.isEmpty(rspList)) {
@@ -460,7 +480,7 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
             // 获取历史数据查询的月份，比如：当前月份2024-02，要查的月份为2023-12、2023-11、2023-10、2023-09、2023-08、2023-07、2023-06、2023-05、2023-04、2023-03
             List<String> monthList = new ArrayList<>(10);
             for (int i = NumberConstant.TWO; i <= NumberConstant.TWELVE; i++) {
-                monthList.add(DateUtils.getMonthDate((long) i));
+                monthList.add(DateUtils.getMonthDate((long) i) + "-01");
             }
             MerchantPowerPeriodVO merchantPowerPeriodVO = merchantCabinetPowerMonthRecordProService.sumMonthPower(List.of(cabinetId), monthList);
             Long historyLatestReportTime = merchantCabinetPowerMonthDetailProService.queryLatestReportTime(cabinetId, monthList);
