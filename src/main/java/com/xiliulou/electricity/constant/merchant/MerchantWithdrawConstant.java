@@ -60,4 +60,8 @@ public class MerchantWithdrawConstant {
     
     public static final String WECHAT_BATCH_DETAIL_STATUS_FAIL = "FAIL";
     
+    public static final String WECHAT_TRANSFER_BATCH_NAME_SUFFIX = "商户转账";
+    
+    public static final String WECHAT_TRANSFER_BATCH_REMARK_SUFFIX = "推广费";
+    
 }
