@@ -23,11 +23,11 @@ public class MerchantPlaceFeeMonthRecordExportVO {
     
     private String sn;
     
+    private String rentDays;
+    
     private String rentStartTime;
     
     private String rentEndTime;
-    
-    private String rentDays;
     
     private BigDecimal placeFee;
     

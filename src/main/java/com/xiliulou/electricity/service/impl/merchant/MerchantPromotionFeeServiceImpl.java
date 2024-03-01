@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.service.impl.merchant;
 
 import com.google.api.client.util.Lists;
+import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.utils.PhoneUtils;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.merchant.MerchantConstant;
@@ -487,6 +488,7 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
     @Override
     public R selectPromotionData(MerchantPromotionDataDetailQueryModel queryModel) {
         MerchantPromotionDataVO dataVO = new MerchantPromotionDataVO();
+        log.info("selectPromotionData queryModel={}", JsonUtil.toJson(queryModel));
         dataVO.setScanCodeCount(
                 buildScanCodeCount(queryModel.getType(), queryModel.getUid(), queryModel.getStartTime(), queryModel.getEndTime(), null));
         dataVO.setPurchaseCount(
