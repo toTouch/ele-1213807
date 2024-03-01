@@ -146,7 +146,7 @@
         where
             del_flag = 0
           and id in
-        <foreach collection="idList" separator="," open=")" close="(" item="id">
+        <foreach collection="idList" separator="," open="(" close=")" item="id">
             #{id}
         </foreach>
     </select>
