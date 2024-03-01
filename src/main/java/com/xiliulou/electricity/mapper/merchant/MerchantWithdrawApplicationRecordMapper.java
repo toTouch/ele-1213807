@@ -40,7 +40,7 @@ public interface MerchantWithdrawApplicationRecordMapper {
      */
     Integer updateApplicationRecordStatusByBatchNo(@Param("status") Integer status, @Param("updateTime") Long updateTime, @Param("batchNo") String batchNo, @Param("tenantId") Integer tenantId);
     
-    Integer updateMerchantWithdrawStatus(MerchantWithdrawApplicationRecord merchantWithdrawApplicationRecord);
+    Integer updateApplicationRecordStatus(MerchantWithdrawApplicationRecord merchantWithdrawApplicationRecord);
     
     List<MerchantWithdrawApplicationRecord> selectListByBatchNo(@Param("batchNo") String batchNo, @Param("tenantId") Integer tenantId);
     
