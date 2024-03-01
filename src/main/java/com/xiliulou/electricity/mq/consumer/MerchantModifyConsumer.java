@@ -132,6 +132,7 @@ public class MerchantModifyConsumer implements RocketMQListener<String> {
                 rebateRecord.setOrderId(OrderIdUtil.generateBusinessOrderId(BusinessType.BATTERY_REBATE, rebateRecord.getUid()));
                 rebateRecord.setOriginalOrderId(item.getOrderId());
                 rebateRecord.setMemberCardId(item.getMemberCardId());
+                rebateRecord.setMemberCardName(item.getMemberCardName());
                 rebateRecord.setType(MerchantConstant.MERCHANT_REBATE_TYPE_DISCREPANCY);
                 rebateRecord.setFranchiseeId(item.getFranchiseeId());
                 rebateRecord.setLevel(currentLevel);
