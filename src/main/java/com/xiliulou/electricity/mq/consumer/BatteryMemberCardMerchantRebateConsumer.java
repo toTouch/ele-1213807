@@ -208,6 +208,7 @@ public class BatteryMemberCardMerchantRebateConsumer implements RocketMQListener
         rebateRecord.setOrderId(OrderIdUtil.generateBusinessOrderId(BusinessType.BATTERY_REBATE, userInfo.getUid()));
         rebateRecord.setOriginalOrderId(electricityMemberCardOrder.getOrderId());
         rebateRecord.setMemberCardId(electricityMemberCardOrder.getMemberCardId());
+        rebateRecord.setMemberCardName(electricityMemberCardOrder.getCardName());
         rebateRecord.setType(type);
         rebateRecord.setFranchiseeId(electricityMemberCardOrder.getFranchiseeId());
         rebateRecord.setLevel(merchantLevel.getLevel());
