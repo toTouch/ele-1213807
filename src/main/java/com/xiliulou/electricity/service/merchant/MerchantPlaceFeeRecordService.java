@@ -5,7 +5,6 @@ import com.xiliulou.electricity.entity.merchant.MerchantPlaceFeeRecord;
 import com.xiliulou.electricity.request.asset.ElectricityCabinetBatchOutWarehouseRequest;
 import com.xiliulou.electricity.request.merchant.MerchantPlaceFeeRecordPageRequest;
 import com.xiliulou.electricity.vo.merchant.MerchantPlaceFeeRecordVO;
-import com.xiliulou.electricity.vo.merchant.MerchantPlaceVO;
 import com.xiliulou.security.bean.TokenUser;
 
 import java.util.List;
@@ -21,7 +20,7 @@ public interface MerchantPlaceFeeRecordService {
     
     List<MerchantPlaceFeeRecordVO> listByPage(MerchantPlaceFeeRecordPageRequest merchantPlacePageRequest);
     
-    Integer save(MerchantPlaceFeeRecord merchantPlaceFeeRecord);
+    void asyncInsertOne(MerchantPlaceFeeRecord merchantPlaceFeeRecord);
     
     void asyncRecords(List<ElectricityCabinet> electricityCabinetList, ElectricityCabinetBatchOutWarehouseRequest batchOutWarehouseRequest, TokenUser userInfo);
     

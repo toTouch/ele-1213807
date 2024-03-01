@@ -187,43 +187,47 @@ public class ChannelEmployeePromotionMonthRecordServiceImpl implements ChannelEm
             
             for (ChannelEmployeePromotionDayRecord promotionDayRecord : detailList) {
                 // 拉新
-                ChannelEmployeePromotionMonthExportVO vo = new ChannelEmployeePromotionMonthExportVO();
-                vo.setMonth(monthDate);
-                vo.setChannelEmployeeName(userName);
-                vo.setMonthFirstSumFee(item.getMonthFirstMoney());
-                vo.setMonthRenewSumFee(item.getMonthRenewMoney());
-                vo.setType(RebateTypeEnum.FIRST.getDesc());
-                vo.setSettleDate(DateUtil.format(new Date(item.getFeeDate()), "yyyy-MM-dd"));
-                vo.setReturnMoney(promotionDayRecord.getDayFirstMoney());
+                ChannelEmployeePromotionMonthExportVO first = new ChannelEmployeePromotionMonthExportVO();
+                first.setMonth(monthDate);
+                first.setChannelEmployeeName(userName);
+                first.setMonthFirstSumFee(item.getMonthFirstMoney());
+                first.setMonthRenewSumFee(item.getMonthRenewMoney());
+                first.setType(RebateTypeEnum.FIRST.getDesc());
+                first.setSettleDate(DateUtil.format(new Date(item.getFeeDate()), "yyyy-MM-dd"));
+                first.setReturnMoney(promotionDayRecord.getDayFirstMoney());
                 
-                resList.add(vo);
+                resList.add(first);
     
                 // 续费
-                ChannelEmployeePromotionMonthExportVO vo1 = new ChannelEmployeePromotionMonthExportVO();
-                vo.setMonth(monthDate);
-                vo.setChannelEmployeeName(userName);
-                vo.setMonthFirstSumFee(item.getMonthFirstMoney());
-                vo.setMonthRenewSumFee(item.getMonthRenewMoney());
-                vo.setType(RebateTypeEnum.RENEW.getDesc());
-                vo.setSettleDate(DateUtil.format(new Date(item.getFeeDate()), "yyyy-MM-dd"));
-                vo.setReturnMoney(promotionDayRecord.getDayRenewMoney());
+                ChannelEmployeePromotionMonthExportVO renewVo = new ChannelEmployeePromotionMonthExportVO();
+                renewVo.setMonth(monthDate);
+                renewVo.setChannelEmployeeName(userName);
+                renewVo.setMonthFirstSumFee(item.getMonthFirstMoney());
+                renewVo.setMonthRenewSumFee(item.getMonthRenewMoney());
+                renewVo.setType(RebateTypeEnum.RENEW.getDesc());
+                renewVo.setSettleDate(DateUtil.format(new Date(item.getFeeDate()), "yyyy-MM-dd"));
+                renewVo.setReturnMoney(promotionDayRecord.getDayRenewMoney());
                 
-                resList.add(vo1);
+                resList.add(renewVo);
+                
+                // 差额
+                ChannelEmployeePromotionMonthExportVO balanceVo = new ChannelEmployeePromotionMonthExportVO();
+                balanceVo.setMonth(monthDate);
+                balanceVo.setChannelEmployeeName(userName);
+                balanceVo.setMonthFirstSumFee(item.getMonthFirstMoney());
+                balanceVo.setMonthRenewSumFee(item.getMonthRenewMoney());
+                balanceVo.setType(RebateTypeEnum.BALANCE.getDesc());
+                balanceVo.setReturnMoney(promotionDayRecord.getDayBalanceMoney());
+                balanceVo.setSettleDate(DateUtil.format(new Date(item.getFeeDate()), "yyyy-MM-dd"));
     
-                ChannelEmployeePromotionMonthExportVO vo2 = new ChannelEmployeePromotionMonthExportVO();
-                vo.setMonth(monthDate);
-                vo.setChannelEmployeeName(userName);
-                vo.setMonthFirstSumFee(item.getMonthFirstMoney());
-                vo.setMonthRenewSumFee(item.getMonthRenewMoney());
-                vo.setType(RebateTypeEnum.BALANCE.getDesc());
-                vo.setReturnMoney(promotionDayRecord.getDayBalanceMoney());
-                vo.setSettleDate(DateUtil.format(new Date(item.getFeeDate()), "yyyy-MM-dd"));
-    
-                resList.add(vo2);
+                resList.add(balanceVo);
     
             }
             
         });
+        
+        log.info("channelEmployeePromotionMonthRecords={}", resList);
+        
         return resList;
     }
     

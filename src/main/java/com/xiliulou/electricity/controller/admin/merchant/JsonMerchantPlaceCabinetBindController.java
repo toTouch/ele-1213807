@@ -4,9 +4,11 @@ import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.annotation.Log;
 import com.xiliulou.electricity.entity.User;
+import com.xiliulou.electricity.entity.merchant.Merchant;
 import com.xiliulou.electricity.request.merchant.MerchantPlaceCabinetBindSaveRequest;
 import com.xiliulou.electricity.request.merchant.MerchantPlaceCabinetPageRequest;
 import com.xiliulou.electricity.service.merchant.MerchantPlaceCabinetBindService;
+import com.xiliulou.electricity.service.merchant.MerchantService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.validator.CreateGroup;
@@ -37,6 +39,9 @@ public class JsonMerchantPlaceCabinetBindController extends BaseController {
     @Resource
     private MerchantPlaceCabinetBindService merchantPlaceCabinetBindService;
     
+    @Resource
+    private MerchantService merchantService;
+    
     /**
      * 绑定换电柜
      *
@@ -55,9 +60,18 @@ public class JsonMerchantPlaceCabinetBindController extends BaseController {
         }
         
         Triple<Boolean, String, Object> r = merchantPlaceCabinetBindService.bind(placeCabinetBindSaveRequest);
+        
         if (!r.getLeft()) {
             return R.fail(r.getMiddle(), (String) r.getRight());
         }
+    
+        if (Objects.isNull(r.getRight())) {
+            return R.ok();
+        }
+        
+        // 删除商户缓存
+        Merchant merchant = (Merchant) r.getRight();
+        merchantService.deleteCacheById(merchant.getId());
         
         return R.ok();
     }

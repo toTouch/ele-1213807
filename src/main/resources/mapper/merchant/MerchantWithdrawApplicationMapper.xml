@@ -164,7 +164,7 @@
         <where>
             tmwa.del_flag = 0
             and tmwa.tenant_id = #{tenantId}
-            <if test="uid != null and uid != ''">
+            <if test="uid != null">
                 and tmwa.uid = #{uid}
             </if>
             
@@ -172,7 +172,7 @@
                 and tmwa.order_no = #{orderNo}
             </if>
 
-            <if test="status != null and status != ''">
+            <if test="status != null">
                 and tmwa.status = #{status}
             </if>
     
@@ -199,7 +199,7 @@
         <where>
             tmwa.del_flag = 0
             and tmwa.tenant_id = #{tenantId}
-            <if test="uid != null and uid != ''">
+            <if test="uid != null">
                 and tmwa.uid = #{uid}
             </if>
             
@@ -207,7 +207,7 @@
                 and tmwa.order_no = #{orderNo}
             </if>
 
-            <if test="status != null and status != ''">
+            <if test="status != null">
                 and tmwa.status = #{status}
             </if>
             <if test="beginTime != null ">
@@ -246,7 +246,7 @@
         <where>
             tmwa.del_flag = 0
             and tmwa.tenant_id = #{tenantId}
-            <if test="uid != null and uid != ''">
+            <if test="uid != null">
                 and tmwa.uid = #{uid}
             </if>
             
@@ -254,7 +254,7 @@
                 and tmwa.order_no = #{orderNo}
             </if>
             
-            <if test="status != null and status != ''">
+            <if test="status != null">
                 and tmwa.status = #{status}
             </if>
             
@@ -344,11 +344,11 @@
         <where>
             tmwa.del_flag = 0
             and tmwa.tenant_id = #{tenantId}
-            <if test="uid != null and uid != ''">
+            <if test="uid != null">
                 and tmwa.uid = #{uid}
             </if>
             
-            <if test="status != null and status != ''">
+            <if test="status != null">
                 and tmwa.status = #{status}
             </if>
             
@@ -382,11 +382,11 @@
         <where>
             tmwa.del_flag = 0
             and tmwa.tenant_id = #{tenantId}
-            <if test="uid != null and uid != ''">
+            <if test="uid != null">
                 and tmwa.uid = #{uid}
             </if>
             
-            <if test="status != null and status != ''">
+            <if test="status != null">
                 and tmwa.status = #{status}
             </if>
             

@@ -537,7 +537,7 @@
             and tec.store_id = #{storeId}
         </if>
         <if test="areaId != null">
-            tec.area_id = #{areaId}
+            and tec.area_id = #{areaId}
         </if>
         <if test="eleIdList!=null and eleIdList!=''">
             and tec.id in
@@ -655,7 +655,7 @@
             and tec.store_id = #{storeId}
         </if>
         <if test="areaId != null">
-            tec.area_id = #{areaId}
+            and tec.area_id = #{areaId}
         </if>
         <if test="eleIdList!=null and eleIdList!=''">
             and tec.id in
@@ -775,7 +775,7 @@
             and tec.store_id = #{storeId}
         </if>
         <if test="areaId != null">
-            tec.area_id = #{areaId}
+            and tec.area_id = #{areaId}
         </if>
         <if test="eleIdList!=null and eleIdList!=''">
             and tec.id in
@@ -883,7 +883,7 @@
             and tec.store_id = #{storeId}
         </if>
         <if test="areaId != null">
-            tec.area_id = #{areaId}
+            and tec.area_id = #{areaId}
         </if>
         <if test="eleIdList!=null and eleIdList!=''">
             and tec.id in
@@ -938,6 +938,9 @@
         <if test="tenantId != null ">
             and tec.tenant_id = #{tenantId}
         </if>
+        <if test="areaId != null ">
+            and tec.area_id = #{areaId}
+        </if>
         <if test="franchiseeId != null ">
             and ts.franchisee_id = #{franchiseeId}
         </if>
@@ -991,7 +994,7 @@
             and tec.store_id = #{storeId}
         </if>
         <if test="areaId != null">
-            tec.area_id = #{areaId}
+            and tec.area_id = #{areaId}
         </if>
         <if test="eleIdList!=null and eleIdList!=''">
             and tec.id in

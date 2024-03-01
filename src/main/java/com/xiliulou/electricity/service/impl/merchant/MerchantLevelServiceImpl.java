@@ -123,11 +123,14 @@ public class MerchantLevelServiceImpl implements MerchantLevelService {
     
     @Override
     public Triple<Boolean, String, Object> modify(MerchantLevelRequest request) {
+        log.error("=============1232");
         MerchantLevel merchantLevel = this.queryById(request.getId());
         if (Objects.isNull(merchantLevel) || !Objects.equals(merchantLevel.getTenantId(), TenantContextHolder.getTenantId())) {
             return Triple.of(true, null, null);
         }
-        
+    
+        log.error("=============4655");
+    
         if (!Objects.equals(merchantLevel.getName(), request.getName()) && Objects.nonNull(existsLevelName(request.getName(), merchantLevel.getTenantId()))) {
             return Triple.of(false, "100322", "等级名称已存在");
         }
@@ -140,7 +143,7 @@ public class MerchantLevelServiceImpl implements MerchantLevelService {
         
         if (!(Objects.equals(merchantAttr.getUpgradeCondition(), MerchantConstant.UPGRADE_CONDITION_ALL) || Objects.equals(merchantAttr.getUpgradeCondition(),
                 MerchantConstant.UPGRADE_CONDITION_INVITATION) || Objects.equals(merchantAttr.getUpgradeCondition(), MerchantConstant.UPGRADE_CONDITION_RENEWAL))) {
-            return Triple.of(true, null, null);
+            return Triple.of(false, "100323", "商户升级条件不合法");
         }
         
         MerchantLevel nextMerchantLevel = this.queryNextByMerchantLevel(merchantLevel.getLevel(), merchantLevel.getTenantId());
@@ -150,6 +153,8 @@ public class MerchantLevelServiceImpl implements MerchantLevelService {
             if (Objects.nonNull(merchantLevelDTO)) {
                 //拉新人数
                 if (Objects.equals(merchantAttr.getUpgradeCondition(), MerchantConstant.UPGRADE_CONDITION_INVITATION)) {
+                    log.error("next=============2============,getInvitationUserCount={},requestInvitationUserCount={}",merchantLevelDTO.getInvitationUserCount(),request.getInvitationUserCount());
+    
                     if (Objects.nonNull(merchantLevelDTO.getInvitationUserCount()) && merchantLevelDTO.getInvitationUserCount() <= request.getInvitationUserCount()) {
                         log.error("next=========================,getInvitationUserCount={},requestInvitationUserCount={}",merchantLevelDTO.getInvitationUserCount(),request.getInvitationUserCount());
                         return Triple.of(false, "100320", "当前等级设置的人数需小于上一级别，请进行调整");
@@ -158,6 +163,8 @@ public class MerchantLevelServiceImpl implements MerchantLevelService {
                 
                 //续费人数
                 if (Objects.equals(merchantAttr.getUpgradeCondition(), MerchantConstant.UPGRADE_CONDITION_RENEWAL)) {
+                    log.error("next=============4============,getRenewalUserCount={},requestRenewalUserCount={}",merchantLevelDTO.getRenewalUserCount(),request.getRenewalUserCount());
+    
                     if (Objects.nonNull(merchantLevelDTO.getRenewalUserCount()) && merchantLevelDTO.getRenewalUserCount() <= request.getRenewalUserCount()) {
                         log.error("next=========================,getRenewalUserCount={},requestRenewalUserCount={}",merchantLevelDTO.getRenewalUserCount(),request.getRenewalUserCount());
                         return Triple.of(false, "100320", "当前等级设置的人数需小于上一级别，请进行调整");
@@ -166,6 +173,8 @@ public class MerchantLevelServiceImpl implements MerchantLevelService {
                 
                 //拉新人数+续费人数
                 if (Objects.equals(merchantAttr.getUpgradeCondition(), MerchantConstant.UPGRADE_CONDITION_ALL)) {
+                    log.error("next==============8==========,getInvitationUserCount={},requestInvitationUserCount={}",merchantLevelDTO.getInvitationUserCount(),request.getInvitationUserCount());
+                    log.error("next==============9==========,getRenewalUserCount={},requestRenewalUserCount={}",merchantLevelDTO.getRenewalUserCount(),request.getRenewalUserCount());
                     if ((Objects.nonNull(merchantLevelDTO.getInvitationUserCount()) && merchantLevelDTO.getInvitationUserCount() <= request.getInvitationUserCount()) || (
                             Objects.nonNull(merchantLevelDTO.getRenewalUserCount()) && merchantLevelDTO.getRenewalUserCount() <= request.getRenewalUserCount())) {
                         log.error("next===============111==========,getInvitationUserCount={},requestInvitationUserCount={}",merchantLevelDTO.getInvitationUserCount(),request.getInvitationUserCount());
@@ -183,6 +192,7 @@ public class MerchantLevelServiceImpl implements MerchantLevelService {
             if (Objects.nonNull(merchantLevelDTO)) {
                 //拉新人数
                 if (Objects.equals(merchantAttr.getUpgradeCondition(), MerchantConstant.UPGRADE_CONDITION_INVITATION)) {
+                    log.error("last===============1==========,getInvitationUserCount={},requestInvitationUserCount={}",merchantLevelDTO.getInvitationUserCount(),request.getInvitationUserCount());
                     if (Objects.nonNull(merchantLevelDTO.getInvitationUserCount()) && merchantLevelDTO.getInvitationUserCount() >= request.getInvitationUserCount()) {
                         log.error("last=========================,getInvitationUserCount={},requestInvitationUserCount={}",merchantLevelDTO.getInvitationUserCount(),request.getInvitationUserCount());
                         return Triple.of(false, "100321", "当前等级设置的人数需大于下一级别，请进行调整");
@@ -191,6 +201,7 @@ public class MerchantLevelServiceImpl implements MerchantLevelService {
                 
                 //续费人数
                 if (Objects.equals(merchantAttr.getUpgradeCondition(), MerchantConstant.UPGRADE_CONDITION_RENEWAL)) {
+                    log.error("last============2=============,getRenewalUserCount={},requestRenewalUserCount={}",merchantLevelDTO.getRenewalUserCount(),request.getRenewalUserCount());
                     if (Objects.nonNull(merchantLevelDTO.getRenewalUserCount()) && merchantLevelDTO.getRenewalUserCount() >= request.getRenewalUserCount()) {
                         log.error("last=========================,getRenewalUserCount={},requestRenewalUserCount={}",merchantLevelDTO.getRenewalUserCount(),request.getRenewalUserCount());
                         return Triple.of(false, "100321", "当前等级设置的人数需大于下一级别，请进行调整");
@@ -199,6 +210,8 @@ public class MerchantLevelServiceImpl implements MerchantLevelService {
                 
                 //拉新人数+续费人数
                 if (Objects.equals(merchantAttr.getUpgradeCondition(), MerchantConstant.UPGRADE_CONDITION_ALL)) {
+                    log.error("last========6=================,getInvitationUserCount={},requestInvitationUserCount={}",merchantLevelDTO.getInvitationUserCount(),request.getInvitationUserCount());
+                    log.error("last========7=================,getRenewalUserCount={},requestRenewalUserCount={}",merchantLevelDTO.getRenewalUserCount(),request.getRenewalUserCount());
                     if ((Objects.nonNull(merchantLevelDTO.getInvitationUserCount()) && merchantLevelDTO.getInvitationUserCount() >= request.getInvitationUserCount()) || (
                             Objects.nonNull(merchantLevelDTO.getRenewalUserCount()) && merchantLevelDTO.getRenewalUserCount() >= request.getRenewalUserCount())) {
                         log.error("last========123=================,getInvitationUserCount={},requestInvitationUserCount={}",merchantLevelDTO.getInvitationUserCount(),request.getInvitationUserCount());
@@ -227,10 +240,11 @@ public class MerchantLevelServiceImpl implements MerchantLevelService {
         var merchantLevelList = new ArrayList<MerchantLevel>();
         
         for (int i = 1; i < 6; i++) {
+            MerchantLevelDTO merchantLevelDTO = new MerchantLevelDTO(0L, 0L);
             MerchantLevel merchantLevel = new MerchantLevel();
             merchantLevel.setLevel(String.valueOf(i));
             merchantLevel.setName("");
-            merchantLevel.setRule(null);
+            merchantLevel.setRule(JsonUtil.toJson(merchantLevelDTO));
             merchantLevel.setDelFlag(CommonConstant.DEL_N);
             merchantLevel.setTenantId(tenantId);
             merchantLevel.setCreateTime(System.currentTimeMillis());

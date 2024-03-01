@@ -54,6 +54,7 @@ import com.xiliulou.electricity.service.merchant.MerchantService;
 import com.xiliulou.electricity.service.merchant.MerchantUserAmountService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
+import com.xiliulou.electricity.utils.QrCodeUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.enterprise.EnterprisePackageVO;
 import com.xiliulou.electricity.vo.merchant.ChannelEmployeeVO;
@@ -355,8 +356,12 @@ public class MerchantServiceImpl implements MerchantService {
             
             // 批量保存商户场地映射
             merchantPlaceMapService.batchInsert(merchantPlaceMapList);
+            
             // 批量保存商户场地绑定
             merchantPlaceBindService.batchInsert(merchantPlaceBindList);
+            
+            // 判断绑定的场地是否存在柜机 且修改修改存在场地费标识
+            dealPlaceFee(merchant.getId(), merchantSaveRequest.getPlaceIdList());
         }
         
         // 创建商户余额
@@ -371,8 +376,34 @@ public class MerchantServiceImpl implements MerchantService {
         merchantUserAmount.setDelFlag(MerchantConstant.DEL_NORMAL);
         merchantUserAmountService.save(merchantUserAmount);
         
+        
         // 调用开户账号
         return Triple.of(true, "", "");
+    }
+    
+    /**
+     * 处理场地所在柜机是否设置场地费
+     * @param id
+     * @param placeIdList
+     */
+    private void dealPlaceFee(Long id, List<Long> placeIdList) {
+        if (ObjectUtils.isEmpty(placeIdList)) {
+            return;
+        }
+    
+        Integer count = merchantPlaceMapService.existsPlaceFeeByPlaceIdList(placeIdList);
+        if (Objects.isNull(count) || Objects.equals(count, NumberConstant.ZERO)) {
+            return;
+        }
+        
+        // 修改商户存在场地费
+        Merchant updateMerchant = Merchant.builder()
+                .id(id)
+                .existPlaceFee(MerchantConstant.EXISTS_PLACE_FEE_YES)
+                .updateTime(System.currentTimeMillis()).build();
+        
+        merchantMapper.updateById(updateMerchant);
+        
     }
     
     @Transactional(rollbackFor = Exception.class)
@@ -540,6 +571,7 @@ public class MerchantServiceImpl implements MerchantService {
             Set<Long> collect = merchantSaveRequest.getEnterprisePackageIdList().stream().collect(Collectors.toSet());
             enterpriseInfoQuery.setPackageIds(collect);
         }
+        
         // 同步企业信息数据
         Triple<Boolean, String, Object> enterpriseSaveRes = enterpriseInfoService.modify(enterpriseInfoQuery);
         if (!enterpriseSaveRes.getLeft()) {
@@ -569,7 +601,7 @@ public class MerchantServiceImpl implements MerchantService {
         // 查询商户已经绑定的场地
         MerchantPlaceMapQueryModel queryModel = MerchantPlaceMapQueryModel.builder().merchantId(merchantSaveRequest.getId()).eqFlag(MerchantPlaceMapQueryModel.EQ).build();
         List<MerchantPlaceMap> existsPlaceList = merchantPlaceMapService.queryList(queryModel);
-    
+        
         Set<Long> bindPlaceSet = new HashSet<>();
         if (ObjectUtils.isNotEmpty(existsPlaceList)) {
             bindPlaceSet = existsPlaceList.stream().map(MerchantPlaceMap::getPlaceId).collect(Collectors.toSet());
@@ -605,6 +637,12 @@ public class MerchantServiceImpl implements MerchantService {
             // 批量保存场地映射
             if (ObjectUtils.isNotEmpty(merchantPlaceMapList)) {
                 merchantPlaceMapService.batchInsert(merchantPlaceMapList);
+                
+                // 不存在场地费，处理场地费
+                if (Objects.equals(merchant.getExistPlaceFee(), MerchantConstant.EXISTS_PLACE_FEE_NO)) {
+                    // 判断绑定的场地是否存在柜机 且修改修改存在场地费标识
+                    dealPlaceFee(merchant.getId(), addPlaceIdList);
+                }
             }
             
             // 批量保存绑定历史
@@ -1045,20 +1083,20 @@ public class MerchantServiceImpl implements MerchantService {
         
         //如果商户员工UID不为空，则查询渠道员信息，获取当前渠道员绑定的场地ID
         Long placeId = null;
-        if(Objects.nonNull(employeeUid)){
+        if (Objects.nonNull(employeeUid)) {
             MerchantEmployeeVO merchantEmployeeVO = merchantEmployeeService.queryMerchantEmployeeByUid(employeeUid);
             placeId = merchantEmployeeVO.getPlaceId();
         }
         
-        for(MerchantPlaceSelectVO merchantPlaceSelectVO : merchantPlaceUserVOList){
+        for (MerchantPlaceSelectVO merchantPlaceSelectVO : merchantPlaceUserVOList) {
             if (ObjectUtils.isNotEmpty(userMap.get(merchantPlaceSelectVO.getPlaceId()))) {
                 // 被绑定设置为禁用
                 merchantPlaceSelectVO.setStatus(MerchantPlaceConstant.DISABLE);
             } else {
                 merchantPlaceSelectVO.setStatus(MerchantPlaceConstant.ENABLE);
             }
-    
-            if(Objects.equals(merchantPlaceSelectVO.getPlaceId(), placeId)){
+            
+            if (Objects.equals(merchantPlaceSelectVO.getPlaceId(), placeId)) {
                 merchantPlaceSelectVO.setSelected(true);
             }
             
@@ -1098,7 +1136,8 @@ public class MerchantServiceImpl implements MerchantService {
             merchantUserVO.setMerchantId(merchant.getId());
             merchantUserVO.setMerchantUid(merchant.getUid());
             merchantUserVO.setType(MerchantConstant.MERCHANT_QR_CODE_TYPE);
-            merchantUserVO.setCode(merchantJoinRecordService.codeEnCoder(merchant.getId(), merchant.getUid(), 1));
+            String code = merchant.getId() + ":" + merchant.getUid() + ":" + MerchantConstant.MERCHANT_QR_CODE_TYPE;
+            merchantUserVO.setCode(QrCodeUtils.codeEnCoder(code));
             
             MerchantLevel merchantLevel = merchantLevelService.queryById(merchant.getMerchantGradeId());
             merchantUserVO.setMerchantLevelName(Objects.nonNull(merchantLevel) ? merchantLevel.getName() : "");
@@ -1122,8 +1161,19 @@ public class MerchantServiceImpl implements MerchantService {
         vo.setMerchantId(merchantId);
         vo.setMerchantUid(uid);
         vo.setType(MerchantConstant.MERCHANT_QR_CODE_TYPE);
-        vo.setCode(merchantJoinRecService.codeEnCoder(merchantId, uid, 1));
+        String code = merchantId + ":" + uid + ":" + MerchantConstant.MERCHANT_QR_CODE_TYPE;
+        vo.setCode(QrCodeUtils.codeEnCoder(code));
         //        vo.setTenantCode(tenant.getCode());
         return vo;
+    }
+    
+    @Override
+    public void deleteCacheById(Long id) {
+        redisService.delete(CacheConstant.CACHE_MERCHANT + id);
+    }
+    
+    @Override
+    public Integer batchUpdateExistPlaceFee(List<Long> merchantIdList, Integer existsPlaceFee, Long updateTime) {
+        return merchantMapper.batchUpdateExistPlaceFee(merchantIdList, existsPlaceFee, updateTime);
     }
 }

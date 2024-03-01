@@ -30,7 +30,7 @@
         <include refid="pageFilter"/>
     </select>
     <sql id="column">
-    
+        cabinet_id, old_place_fee, new_place_fee, modify_user_id, tenant_id, create_time, update_time
     </sql>
     <select id="selectListByPage" resultType="com.xiliulou.electricity.entity.merchant.MerchantPlaceFeeRecord">
         SELECT
@@ -39,8 +39,8 @@
         t_merchant_place_fee_record
         <include refid="pageFilter"/>
         order by create_time desc
-        <if test="offset != null and limit != null">
-            limit #{offset}, #{limit}
+        <if test="offset != null and size != null">
+            limit #{offset}, #{size}
         </if>
     </select>
     
