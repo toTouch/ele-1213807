@@ -115,7 +115,7 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
             return;
         }
         
-        if (Objects.nonNull(userInfo.getPayCount()) && userInfo.getPayCount() > 0) {
+        if (Objects.nonNull(userInfo.getPayCount()) && userInfo.getPayCount() < 0) {
             log.info("BIND MERCHANT WARN!payCount is illegal,payCount={},uid={},orderId={}", userInfo.getPayCount(), uid, orderId);
             return;
         }
