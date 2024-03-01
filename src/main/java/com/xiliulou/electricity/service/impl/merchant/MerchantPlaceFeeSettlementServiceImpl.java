@@ -23,6 +23,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -57,7 +58,7 @@ public class MerchantPlaceFeeSettlementServiceImpl implements MerchantPlaceFeeSe
         List<MerchantPlaceFeeMonthRecordVO> merchantPlaceFeeMonthRecords = merchantPlaceFeeMonthRecordService.selectByMonthDate(monthDate, TenantContextHolder.getTenantId());
         return merchantPlaceFeeMonthRecords.parallelStream().map(merchantPlaceFeeMonthRecord -> {
             MerchantPlaceFeeMonthRecordExportVO exportVO = new MerchantPlaceFeeMonthRecordExportVO();
-            BeanUtils.copyProperties(merchantPlaceFeeMonthRecord,exportVO);
+            BeanUtils.copyProperties(merchantPlaceFeeMonthRecord, exportVO);
             Long placeId = merchantPlaceFeeMonthRecord.getPlaceId();
             MerchantPlace merchantPlace = merchantPlaceService.queryByIdFromCache(placeId);
             if (Objects.nonNull(merchantPlace)) {
@@ -72,11 +73,12 @@ public class MerchantPlaceFeeSettlementServiceImpl implements MerchantPlaceFeeSe
         
         String fileName = "场地费出账记录.xlsx";
         try {
+            ServletOutputStream outputStream = response.getOutputStream();
             // 告诉浏览器用什么软件可以打开此文件
             response.setHeader("content-Type", "application/vnd.ms-excel");
             // 下载文件的默认名称
             response.setHeader("Content-Disposition", "attachment;filename=" + URLEncoder.encode(fileName, StandardCharsets.UTF_8));
-            EasyExcel.write(fileName).head(getHeader())
+            EasyExcel.write(outputStream, MerchantPlaceFeeMonthRecordExportVO.class).head(getHeader())
                     // 合并策略：合并相同数据的行。第一个参数表示从哪一行开始进行合并，由于表头占了两行，因此从第2行开始（索引从0开始）
                     // 第二个参数是指定哪些列要进行合并
                     .registerWriteHandler(new MergeSameRowsStrategy(2, new int[] {0, 1, 2, 3})).registerWriteHandler(HeadContentCellStyle.myHorizontalCellStyleStrategy())
@@ -92,11 +94,11 @@ public class MerchantPlaceFeeSettlementServiceImpl implements MerchantPlaceFeeSe
     public R page(MerchantPlaceFeeMonthSummaryRecordQueryModel queryModel) {
         List<MerchantPlaceFeeMonthSummaryRecord> merchantPlaceFeeMonthSummaryRecords = merchantPlaceFeeMonthSummaryRecordService.selectByCondition(queryModel);
         if (DataUtil.collectionIsUsable(merchantPlaceFeeMonthSummaryRecords)) {
-          return R.ok(merchantPlaceFeeMonthSummaryRecords.parallelStream().map(item->{
-              MerchantPlaceFeeMonthSummaryRecordVO vo = new MerchantPlaceFeeMonthSummaryRecordVO();
-              BeanUtils.copyProperties(item,vo);
-              return vo;
-          }).collect(Collectors.toList()));
+            return R.ok(merchantPlaceFeeMonthSummaryRecords.parallelStream().map(item -> {
+                MerchantPlaceFeeMonthSummaryRecordVO vo = new MerchantPlaceFeeMonthSummaryRecordVO();
+                BeanUtils.copyProperties(item, vo);
+                return vo;
+            }).collect(Collectors.toList()));
         } else {
             return R.ok();
         }
