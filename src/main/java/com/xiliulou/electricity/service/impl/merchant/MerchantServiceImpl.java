@@ -13,6 +13,7 @@ import com.xiliulou.electricity.dto.merchant.MerchantDeleteCacheDTO;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.User;
+import com.xiliulou.electricity.entity.enterprise.EnterpriseInfo;
 import com.xiliulou.electricity.entity.merchant.Merchant;
 import com.xiliulou.electricity.entity.merchant.MerchantEmployee;
 import com.xiliulou.electricity.entity.merchant.MerchantJoinRecord;
@@ -790,6 +791,7 @@ public class MerchantServiceImpl implements MerchantService {
         
         Set<Long> merchantIdList = new HashSet<>();
         List<Long> uidList = new ArrayList<>();
+        List<Long> enterpriseIdList = new ArrayList<>();
         List<Long> levelIdList = new ArrayList<>();
         
         for (Merchant merchant : merchantList) {
@@ -816,6 +818,7 @@ public class MerchantServiceImpl implements MerchantService {
             merchantIdList.add(merchant.getId());
             uidList.add(merchant.getUid());
             levelIdList.add(merchant.getMerchantGradeId());
+            enterpriseIdList.add(merchant.getEnterpriseId());
             resList.add(merchantVO);
         }
         
@@ -925,8 +928,34 @@ public class MerchantServiceImpl implements MerchantService {
             log.error("MERCHANT QUERY ERROR! query user amount error!", e);
             return null;
         });
+    
+        // 查询商户的企业云豆
+        CompletableFuture<Void> enterpriseInfo = CompletableFuture.runAsync(() -> {
+            List<EnterpriseInfo> enterpriseInfoList = enterpriseInfoService.queryListByIdList(enterpriseIdList);
         
-        CompletableFuture<Void> resultFuture = CompletableFuture.allOf(placeInfo, channelUserInfo, merchantUserAmountInfo, merchantLevelInfo);
+            Map<Long, EnterpriseInfo> enterpriseInfoMap = new HashMap<>();
+        
+            if (ObjectUtils.isNotEmpty(enterpriseInfoList)) {
+                enterpriseInfoMap = enterpriseInfoList.stream().collect(Collectors.toMap(EnterpriseInfo::getId, Function.identity(), (key1, key2) -> key2));
+            }
+    
+            Map<Long, EnterpriseInfo> finalEnterpriseInfoMap = enterpriseInfoMap;
+            resList.forEach(item -> {
+                EnterpriseInfo enterprise = finalEnterpriseInfoMap.get(item.getEnterpriseId());
+                
+                if (ObjectUtils.isNotEmpty(enterprise)) {
+                    item.setTotalBeanAmount(enterprise.getTotalBeanAmount());
+                } else {
+                    item.setTotalBeanAmount(BigDecimal.ZERO);
+                }
+            });
+            
+        }, threadPool).exceptionally(e -> {
+            log.error("MERCHANT QUERY ERROR! query enterprise error!", e);
+            return null;
+        });
+        
+        CompletableFuture<Void> resultFuture = CompletableFuture.allOf(placeInfo, channelUserInfo, merchantUserAmountInfo, merchantLevelInfo, enterpriseInfo);
         try {
             resultFuture.get(10, TimeUnit.SECONDS);
         } catch (Exception e) {
