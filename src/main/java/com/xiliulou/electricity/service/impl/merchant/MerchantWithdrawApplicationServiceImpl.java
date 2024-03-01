@@ -249,15 +249,16 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
         wechatTransferBatchOrderQuery.setTotalAmount(merchantWithdrawApplication.getAmount().multiply(new BigDecimal(100)).intValue());
         wechatTransferBatchOrderQuery.setTotalNum(BigDecimal.ONE.intValue());
         wechatTransferBatchOrderQuery.setTenantId(merchantWithdrawApplication.getTenantId());
-        wechatTransferBatchOrderQuery.setBatchName(DateUtils.getYearAndMonthAndDayByTimeStamps(System.currentTimeMillis()) + "商户转账");
-        wechatTransferBatchOrderQuery.setBatchRemark(DateUtils.getYearAndMonthAndDayByTimeStamps(System.currentTimeMillis()) + "商户转账");
+        wechatTransferBatchOrderQuery.setBatchName(DateUtils.getYearAndMonthAndDayByTimeStamps(System.currentTimeMillis()) + MerchantWithdrawConstant.WECHAT_TRANSFER_BATCH_NAME_SUFFIX);
+        wechatTransferBatchOrderQuery.setBatchRemark(DateUtils.getYearAndMonthAndDayByTimeStamps(System.currentTimeMillis()) + MerchantWithdrawConstant.WECHAT_TRANSFER_BATCH_NAME_SUFFIX);
         
         WechatTransferBatchOrderDetailQuery wechatTransferBatchOrderDetailQuery = new WechatTransferBatchOrderDetailQuery();
         wechatTransferBatchOrderDetailQuery.setOpenId(userOauthBind.getThirdId());
         //转账批次单下不同转账明细单的唯一标识
         wechatTransferBatchOrderDetailQuery.setOutDetailNo(batchDetailNo);
+        //设置转账金额，单位为分
         wechatTransferBatchOrderDetailQuery.setTransferAmount(merchantWithdrawApplication.getAmount().multiply(new BigDecimal(100)).intValue());
-        wechatTransferBatchOrderDetailQuery.setTransferRemark("推广费");
+        wechatTransferBatchOrderDetailQuery.setTransferRemark(MerchantWithdrawConstant.WECHAT_TRANSFER_BATCH_REMARK_SUFFIX);
         
         List<WechatTransferBatchOrderDetailQuery> wechatTransferBatchOrderDetailQueryList = new ArrayList<>();
         wechatTransferBatchOrderDetailQueryList.add(wechatTransferBatchOrderDetailQuery);
@@ -426,7 +427,7 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
             //转账批次单下不同转账明细单的唯一标识
             wechatTransferBatchOrderDetailQuery.setOutDetailNo(batchDetailNo);
             wechatTransferBatchOrderDetailQuery.setTransferAmount(merchantWithdrawApplication.getAmount().multiply(new BigDecimal(100)).intValue());
-            wechatTransferBatchOrderDetailQuery.setTransferRemark("推广费");
+            wechatTransferBatchOrderDetailQuery.setTransferRemark(MerchantWithdrawConstant.WECHAT_TRANSFER_BATCH_REMARK_SUFFIX);
             wechatTransferBatchOrderDetailQueryList.add(wechatTransferBatchOrderDetailQuery);
             
         });
@@ -440,8 +441,8 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
         wechatTransferBatchOrderQuery.setTotalAmount(totalAmount.multiply(new BigDecimal(100)).intValue());
         wechatTransferBatchOrderQuery.setTotalNum(BigDecimal.ONE.intValue());
         wechatTransferBatchOrderQuery.setTenantId(tenantId);
-        wechatTransferBatchOrderQuery.setBatchName(DateUtils.getYearAndMonthAndDayByTimeStamps(System.currentTimeMillis()) + "商户转账");
-        wechatTransferBatchOrderQuery.setBatchRemark(DateUtils.getYearAndMonthAndDayByTimeStamps(System.currentTimeMillis()) + "商户转账");
+        wechatTransferBatchOrderQuery.setBatchName(DateUtils.getYearAndMonthAndDayByTimeStamps(System.currentTimeMillis()) + MerchantWithdrawConstant.WECHAT_TRANSFER_BATCH_NAME_SUFFIX);
+        wechatTransferBatchOrderQuery.setBatchRemark(DateUtils.getYearAndMonthAndDayByTimeStamps(System.currentTimeMillis()) + MerchantWithdrawConstant.WECHAT_TRANSFER_BATCH_NAME_SUFFIX);
      
         wechatTransferBatchOrderQuery.setTransferDetailList(wechatTransferBatchOrderDetailQueryList);
         
