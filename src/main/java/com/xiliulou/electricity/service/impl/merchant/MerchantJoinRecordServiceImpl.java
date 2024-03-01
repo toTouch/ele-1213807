@@ -8,6 +8,7 @@ import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
+import com.xiliulou.electricity.constant.TimeConstant;
 import com.xiliulou.electricity.constant.merchant.MerchantConstant;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
@@ -254,11 +255,11 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
         if (Objects.nonNull(protectionTime) && Objects.nonNull(protectionTimeUnit)) {
             //分钟转毫秒
             if (Objects.equals(protectionTimeUnit, CommonConstant.TIME_UNIT_MINUTES)) {
-                protectionExpireTime = nowTime + protectionTime * protectionTimeUnit * 60 * 1000L;
+                protectionExpireTime = nowTime + protectionTime * protectionTimeUnit * TimeConstant.MINUTE_MILLISECOND;
             }
             //小时转毫秒
             if (Objects.equals(protectionTimeUnit, CommonConstant.TIME_UNIT_HOURS)) {
-                protectionExpireTime = nowTime + protectionTime * protectionTimeUnit * 60 * 60 * 1000L;
+                protectionExpireTime = nowTime + protectionTime * protectionTimeUnit * TimeConstant.HOURS_MILLISECOND;
             }
         }
         
@@ -267,11 +268,11 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
         if (Objects.nonNull(validTime) && Objects.nonNull(validTimeUnit)) {
             //分钟转毫秒
             if (Objects.equals(validTimeUnit, CommonConstant.TIME_UNIT_MINUTES)) {
-                expiredTime = nowTime + validTime * validTimeUnit * 60 * 1000L;
+                expiredTime = nowTime + validTime * validTimeUnit * TimeConstant.MINUTE_MILLISECOND;
             }
             //小时转毫秒
             if (Objects.equals(validTimeUnit, CommonConstant.TIME_UNIT_HOURS)) {
-                expiredTime = nowTime + validTime * validTimeUnit * 60 * 60 * 1000L;
+                expiredTime = nowTime + validTime * validTimeUnit * TimeConstant.HOURS_MILLISECOND;
             }
             
         }

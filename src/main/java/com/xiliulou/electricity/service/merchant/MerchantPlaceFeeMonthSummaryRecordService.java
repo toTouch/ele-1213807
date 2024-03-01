@@ -14,7 +14,7 @@ import java.util.List;
  * @since: 2024-02-20
  */
 public interface MerchantPlaceFeeMonthSummaryRecordService {
-    List<MerchantPlaceFeeMonthSummaryRecordVO> selectByCondition(MerchantPlaceFeeMonthSummaryRecordQueryModel queryModel);
+    List<MerchantPlaceFeeMonthSummaryRecord> selectByCondition(MerchantPlaceFeeMonthSummaryRecordQueryModel queryModel);
     
     Integer pageCountByCondition(MerchantPlaceFeeMonthSummaryRecordQueryModel queryModel);
 }

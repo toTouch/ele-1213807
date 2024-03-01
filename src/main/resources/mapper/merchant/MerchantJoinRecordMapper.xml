@@ -38,7 +38,7 @@
         update t_merchant_join_record set status = #{status}, update_time = #{updateTime} where expired_time &lt;= #{updateTime} and status =1
     </update>
     
-    <update id="updateById">
+<!--    <update id="updateById">
         update t_merchant_join_record
         <set>
             <if test="merchant_id != null">
@@ -90,7 +90,7 @@
         <where>
             id = #{id}
         </where>
-    </update>
+    </update>-->
     
     <select id="existsInProtectionTimeByJoinUid" resultType="java.lang.Integer">
         select 1 from t_merchant_join_record where del_flag = 0 and protection_status = 0 and join_uid = #{joinUid} limit 1

@@ -24,8 +24,8 @@
     
     <!--新增所有列-->
     <insert id="insert" keyProperty="uid" useGeneratedKeys="true">
-        insert into t_user_info_extra(merchant_id, channel_employee_uid, place_uid, place_id, del_flag, tenant_id, create_time, update_time)
-        values (#{merchantId}, #{channelEmployeeUid}, #{placeUid}, #{placeId}, #{delFlag}, #{tenantId}, #{createTime}, #{updateTime})
+        insert into t_user_info_extra(uid, merchant_id, channel_employee_uid, place_uid, place_id, del_flag, tenant_id, create_time, update_time)
+        values (#{uid}, #{merchantId}, #{channelEmployeeUid}, #{placeUid}, #{placeId}, #{delFlag}, #{tenantId}, #{createTime}, #{updateTime})
     </insert>
     
     <!--通过主键修改数据-->

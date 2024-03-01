@@ -90,9 +90,13 @@ public class MerchantPlaceFeeSettlementServiceImpl implements MerchantPlaceFeeSe
     
     @Override
     public R page(MerchantPlaceFeeMonthSummaryRecordQueryModel queryModel) {
-        List<MerchantPlaceFeeMonthSummaryRecordVO> merchantPlaceFeeMonthSummaryRecords = merchantPlaceFeeMonthSummaryRecordService.selectByCondition(queryModel);
+        List<MerchantPlaceFeeMonthSummaryRecord> merchantPlaceFeeMonthSummaryRecords = merchantPlaceFeeMonthSummaryRecordService.selectByCondition(queryModel);
         if (DataUtil.collectionIsUsable(merchantPlaceFeeMonthSummaryRecords)) {
-            return R.ok(merchantPlaceFeeMonthSummaryRecords);
+          return R.ok(merchantPlaceFeeMonthSummaryRecords.parallelStream().map(item->{
+              MerchantPlaceFeeMonthSummaryRecordVO vo = new MerchantPlaceFeeMonthSummaryRecordVO();
+              BeanUtils.copyProperties(item,vo);
+              return vo;
+          }).collect(Collectors.toList()));
         } else {
             return R.ok();
         }
