@@ -336,6 +336,7 @@
     </select>
     
     <select id="existsRefundOrderByUid" resultType="java.lang.Integer">
-        select 1 from t_ele_refund_order where uid = #{uid} and status = 4 limit 1
+        select  1 from t_ele_refund_order  ero  left join t_ele_deposit_order edo on ero.order_id=edo.order_id
+        WHERE edo.uid = #{uid} and ero.status=4 limit 1
     </select>
 </mapper>
