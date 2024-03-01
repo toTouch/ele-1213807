@@ -301,7 +301,7 @@
             <if test="endTime != null">
                 and start_time &lt;= #{endTime}
             </if>
-            <if test="employeeIdList != null">
+            <if test="uidList != null">
                 and inviter_uid in
                 <foreach collection="uidList" separator="," open="(" close=")" item="inviterUid">
                     #{inviterUid}
