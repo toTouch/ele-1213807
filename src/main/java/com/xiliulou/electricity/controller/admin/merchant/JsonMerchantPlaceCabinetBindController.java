@@ -198,13 +198,13 @@ public class JsonMerchantPlaceCabinetBindController extends BaseController {
      * @return
      */
     @GetMapping("/admin/merchant/place/cabinet/checkBindTime")
-    public R checkBindTime(@RequestParam("placeId") Long placeId, @RequestParam("time") Long time) {
+    public R checkBindTime(@RequestParam("placeId") Long placeId,@RequestParam("cabinetId") Integer cabinetId, @RequestParam("time") Long time) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
     
-        MerchantPlaceCabinetBindTimeCheckVo vo = merchantPlaceCabinetBindService.checkBindTime(placeId, time);
+        MerchantPlaceCabinetBindTimeCheckVo vo = merchantPlaceCabinetBindService.checkBindTime(placeId, time, cabinetId);
         
         return R.ok(vo);
     }

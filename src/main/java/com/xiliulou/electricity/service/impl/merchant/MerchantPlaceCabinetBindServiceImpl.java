@@ -247,6 +247,7 @@ public class MerchantPlaceCabinetBindServiceImpl implements MerchantPlaceCabinet
         List<Long> placeIdList = new ArrayList<>();
         placeIdList.add(cabinetBind.getPlaceId());
         MerchantPlaceCabinetBindQueryModel queryModel = MerchantPlaceCabinetBindQueryModel.builder().overlapTime(placeCabinetBindSaveRequest.getUnBindTime())
+                .cabinetId(cabinetBind.getCabinetId().intValue())
                 .placeIdList(placeIdList).status(MerchantPlaceConstant.UN_BIND).build();
         
         List<MerchantPlaceCabinetBind> unBindList = this.queryList(queryModel);
@@ -351,11 +352,11 @@ public class MerchantPlaceCabinetBindServiceImpl implements MerchantPlaceCabinet
      * @return
      */
     @Override
-    public MerchantPlaceCabinetBindTimeCheckVo checkBindTime(Long placeId, Long time) {
+    public MerchantPlaceCabinetBindTimeCheckVo checkBindTime(Long placeId, Long time, Integer cabinetId) {
         // 判断绑定的时间是否与解绑的历史数据存在重叠
         List<Long> placeIdList = new ArrayList<>();
         placeIdList.add(placeId);
-        MerchantPlaceCabinetBindQueryModel queryModel = MerchantPlaceCabinetBindQueryModel.builder().overlapTime(time).placeIdList(placeIdList)
+        MerchantPlaceCabinetBindQueryModel queryModel = MerchantPlaceCabinetBindQueryModel.builder().overlapTime(time).placeIdList(placeIdList).cabinetId(cabinetId)
                 .status(MerchantPlaceConstant.UN_BIND).build();
         
         List<MerchantPlaceCabinetBind> unBindList = this.queryList(queryModel);

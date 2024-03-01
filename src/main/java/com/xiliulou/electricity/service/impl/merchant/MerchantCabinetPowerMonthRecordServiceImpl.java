@@ -63,6 +63,9 @@ public class MerchantCabinetPowerMonthRecordServiceImpl implements MerchantCabin
         if (StringUtils.isBlank(monthDate) || !monthDate.matches(DateUtils.GREP_YEAR_MONTH)) {
             return Collections.emptyList();
         }
+    
+        // 数据库存的是yyyy-MM-01
+        request.setMonthDate(monthDate+"-01");
         
         MerchantPowerQueryModel queryModel = new MerchantPowerQueryModel();
         BeanUtils.copyProperties(request, queryModel);
@@ -79,6 +82,9 @@ public class MerchantCabinetPowerMonthRecordServiceImpl implements MerchantCabin
         if (StringUtils.isBlank(monthDate) || !monthDate.matches(DateUtils.GREP_YEAR_MONTH)) {
             return NumberConstant.ZERO;
         }
+    
+        // 数据库存的是yyyy-MM-01
+        request.setMonthDate(monthDate+"-01");
         
         MerchantPowerQueryModel queryModel = new MerchantPowerQueryModel();
         BeanUtils.copyProperties(request, queryModel);
@@ -99,6 +105,9 @@ public class MerchantCabinetPowerMonthRecordServiceImpl implements MerchantCabin
         MerchantPowerDetailQueryModel queryModel = new MerchantPowerDetailQueryModel();
         BeanUtils.copyProperties(request, queryModel);
         queryModel.setTenantId(TenantContextHolder.getTenantId());
+        
+        // 数据库存的是yyyy-MM-01
+        queryModel.setMonthDate(monthDate+"-01");
         
         List<MerchantCabinetPowerMonthDetailVO> detailList = merchantCabinetPowerMonthDetailService.listByTenantId(queryModel);
         if (CollectionUtils.isEmpty(detailList)) {
