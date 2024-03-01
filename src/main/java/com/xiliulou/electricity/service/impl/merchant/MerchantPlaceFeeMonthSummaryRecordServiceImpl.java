@@ -25,7 +25,7 @@ public class MerchantPlaceFeeMonthSummaryRecordServiceImpl implements MerchantPl
     private MerchantPlaceFeeMonthSummaryRecordMapper merchantPlaceFeeMonthSummaryRecordMapper;
     
     @Override
-    public List<MerchantPlaceFeeMonthSummaryRecordVO> selectByCondition(MerchantPlaceFeeMonthSummaryRecordQueryModel queryModel) {
+    public List<MerchantPlaceFeeMonthSummaryRecord> selectByCondition(MerchantPlaceFeeMonthSummaryRecordQueryModel queryModel) {
         return merchantPlaceFeeMonthSummaryRecordMapper.selectListByCondition(queryModel);
     }
     

@@ -18,7 +18,7 @@ import java.util.List;
 public interface MerchantPlaceFeeMonthSummaryRecordMapper {
     Integer save(MerchantPlaceFeeMonthSummaryRecord record);
     
-    List<MerchantPlaceFeeMonthSummaryRecordVO> selectListByCondition(MerchantPlaceFeeMonthSummaryRecordQueryModel queryModel);
+    List<MerchantPlaceFeeMonthSummaryRecord> selectListByCondition(MerchantPlaceFeeMonthSummaryRecordQueryModel queryModel);
     
     Integer pageCountByCondition(MerchantPlaceFeeMonthSummaryRecordQueryModel queryModel);
 }
