@@ -303,7 +303,7 @@
             </if>
             <if test="employeeIdList != null">
                 and inviter_uid in
-                <foreach collection="employeeIdList" separator="," open="(" close=")" item="inviterUid">
+                <foreach collection="uidList" separator="," open="(" close=")" item="inviterUid">
                     #{inviterUid}
                 </foreach>
             </if>
