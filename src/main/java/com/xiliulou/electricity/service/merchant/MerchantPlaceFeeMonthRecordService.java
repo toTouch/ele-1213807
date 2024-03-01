@@ -12,7 +12,7 @@ import java.util.List;
  * @since: 2024-02-20
  */
 public interface MerchantPlaceFeeMonthRecordService {
-    List<MerchantPlaceFeeMonthRecordVO> selectByMonthDate(String monthDate, Integer tenantId);
+    List<MerchantPlaceFeeMonthRecord> selectByMonthDate(String monthDate, Integer tenantId);
     
     List<MerchantPlaceFeeMonthRecord> queryList(List<Long> placeIdList, List<String> monthList);
 }
