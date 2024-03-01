@@ -594,6 +594,13 @@ public class UserServiceImpl implements UserService {
 
             //删除用户数据可见范围
             userDataScopeService.deleteByUid(user.getUid());
+    
+            // 判断用户的数据类型是否为商户或者是渠道员
+            if (Objects.equals(user.getUserType(), User.TYPE_USER_MERCHANT) || Objects.equals(user.getUserType(), User.TYPE_USER_CHANNEL)) {
+                // 删除用户对应的认证信息
+                userOauthBindService.deleteByUid(uid, tenantId);
+            }
+            
         }
         return Pair.of(true, null);
     }
