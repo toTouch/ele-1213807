@@ -78,7 +78,7 @@ public class MerchantPlaceFeeSettlementServiceImpl implements MerchantPlaceFeeSe
             response.setHeader("content-Type", "application/vnd.ms-excel");
             // 下载文件的默认名称
             response.setHeader("Content-Disposition", "attachment;filename=" + URLEncoder.encode(fileName, StandardCharsets.UTF_8));
-            EasyExcel.write(outputStream, MerchantPlaceFeeMonthRecordExportVO.class).head(getHeader())
+            EasyExcel.write(outputStream).head(getHeader())
                     // 合并策略：合并相同数据的行。第一个参数表示从哪一行开始进行合并，由于表头占了两行，因此从第2行开始（索引从0开始）
                     // 第二个参数是指定哪些列要进行合并
                     .registerWriteHandler(new MergeSameRowsStrategy(2, new int[] {0, 1, 2, 3})).registerWriteHandler(HeadContentCellStyle.myHorizontalCellStyleStrategy())
