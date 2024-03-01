@@ -158,6 +158,7 @@ public class MerchantPlaceCabinetBindServiceImpl implements MerchantPlaceCabinet
         // 判断绑定的时间是否与解绑的历史数据存在重叠
         queryModel.setStatus(MerchantPlaceConstant.UN_BIND);
         queryModel.setOverlapTime(placeCabinetBindSaveRequest.getBindTime());
+        queryModel.setCabinetId(placeCabinetBindSaveRequest.getCabinetId());
         List<MerchantPlaceCabinetBind> unBindList = this.queryList(queryModel);
         if (ObjectUtils.isNotEmpty(unBindList)) {
             List<Long> ids = unBindList.stream().map(MerchantPlaceCabinetBind::getId).collect(Collectors.toList());
