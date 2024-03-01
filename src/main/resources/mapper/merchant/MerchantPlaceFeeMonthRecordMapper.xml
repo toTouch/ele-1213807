@@ -19,7 +19,7 @@
                any_value(rent_end_time) AS rent_end_time,
                any_value(rent_days) AS rent_days,
                any_value(place_fee) AS place_fee,
-               any_value(month_place_fee) AS month_place_fee,
+               any_value(month_place_fee) AS month_place_fee
         from t_merchant_place_fee_month_record
         where month_date = #{date}
           and tenant_id = #{tenantId}
