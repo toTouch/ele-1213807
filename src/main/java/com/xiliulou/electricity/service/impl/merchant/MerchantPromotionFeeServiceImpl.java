@@ -524,7 +524,7 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
     }
     
     
-    private Integer buildScanCodeCount(Integer type, Long uid, long startTime, long endTime, Integer status) {
+    private Integer buildScanCodeCount(Integer type, Long uid, Long startTime, Long endTime, Integer status) {
         //昨日扫码人数：扫码绑定时间=昨日0点～今日0点；
         if (Objects.equals(PromotionFeeQueryTypeEnum.MERCHANT_AND_MERCHANT_EMPLOYEE.getCode(), type)) {
             
