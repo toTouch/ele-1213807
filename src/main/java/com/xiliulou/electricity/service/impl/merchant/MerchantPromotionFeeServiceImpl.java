@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.service.impl.merchant;
 
 import com.google.api.client.util.Lists;
+import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.utils.PhoneUtils;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.merchant.MerchantConstant;
@@ -487,12 +488,14 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
     @Override
     public R selectPromotionData(MerchantPromotionDataDetailQueryModel queryModel) {
         MerchantPromotionDataVO dataVO = new MerchantPromotionDataVO();
+        log.info("selectPromotionData queryModel={}", JsonUtil.toJson(queryModel));
         dataVO.setScanCodeCount(
-                buildScanCodeCount(queryModel.getType(), queryModel.getUid(), queryModel.getStartTime(), DateUtils.getMonthEndTimeStampByDate(queryModel.getStartTime()), null));
+                buildScanCodeCount(queryModel.getType(), queryModel.getUid(), queryModel.getStartTime(), queryModel.getEndTime(), null));
         dataVO.setPurchaseCount(
-                buildScanCodeCount(queryModel.getType(), queryModel.getUid(), queryModel.getStartTime(), DateUtils.getMonthEndTimeStampByDate(queryModel.getStartTime()),
+                buildScanCodeCount(queryModel.getType(), queryModel.getUid(), queryModel.getStartTime(), queryModel.getEndTime(),
                         MerchantJoinRecord.STATUS_SUCCESS));
-        dataVO.setTotalIncome(buildPromotionFeeTotalIncomeVO(queryModel.getType(), queryModel.getUid(), DateUtils.getMonthEndTimeStampByDate(queryModel.getStartTime())));
+        dataVO.setRenewalCount(buildRenewalNum(queryModel.getType(), queryModel.getUid(), queryModel.getStartTime(), queryModel.getEndTime()));
+        dataVO.setTotalIncome(buildPromotionFeeTotalIncomeVO(queryModel.getType(), queryModel.getUid(), queryModel.getEndTime()));
         return R.ok(dataVO);
     }
     
@@ -508,8 +511,7 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
         return merchantService.countMerchantNumByTime(todayQueryModel);
     }
     
-    private BigDecimal buildPromotionFeeTotalIncomeVO(Integer type, Long uid, long endTime) {
-        PromotionFeeStatisticAnalysisIncomeVO incomeVO = new PromotionFeeStatisticAnalysisIncomeVO();
+    private BigDecimal buildPromotionFeeTotalIncomeVO(Integer type, Long uid, Long endTime) {
         //累计收入：“结算日期” <= 今日，“结算状态” = 已结算 - 已退回；
         MerchantPromotionFeeQueryModel allSettleIncomeQueryModel = MerchantPromotionFeeQueryModel.builder().status(MerchantConstant.MERCHANT_REBATE_STATUS_SETTLED).type(type)
                 .uid(uid).tenantId(TenantContextHolder.getTenantId()).settleEndTime(endTime).build();
@@ -522,7 +524,7 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
     }
     
     
-    private Integer buildScanCodeCount(Integer type, Long uid, long startTime, long endTime, Integer status) {
+    private Integer buildScanCodeCount(Integer type, Long uid, Long startTime, Long endTime, Integer status) {
         //昨日扫码人数：扫码绑定时间=昨日0点～今日0点；
         if (Objects.equals(PromotionFeeQueryTypeEnum.MERCHANT_AND_MERCHANT_EMPLOYEE.getCode(), type)) {
             
@@ -551,7 +553,7 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
         }
     }
     
-    private Integer buildRenewalNum(Integer type, Long uid, long startTime, long endTime) {
+    private Integer buildRenewalNum(Integer type, Long uid, Long startTime, Long endTime) {
         //昨日续费次数：购买指定套餐时间=昨日0点～今日0点，且套餐购买次数>1的购买成功次数
         MerchantPromotionRenewalQueryModel renewalQueryModel = MerchantPromotionRenewalQueryModel.builder().tenantId(TenantContextHolder.getTenantId()).type(type).uid(uid)
                 .startTime(startTime).endTime(endTime).status(MerchantConstant.MERCHANT_REBATE_TYPE_RENEWAL).build();
