@@ -139,28 +139,31 @@ public class MerchantPromotionMonthRecordServiceImpl implements MerchantPromotio
         detailMap.forEach((merchantId, merchantDayRecordVoList) -> {
             
             if (CollectionUtils.isNotEmpty(merchantDayRecordVoList)) {
+                
+                BigDecimal firstAmount = merchantDayRecordVoList.stream().map(MerchantPromotionDayRecordVO::getDayFirstMoney).reduce(BigDecimal.ZERO, BigDecimal::add);
+                BigDecimal renewAmount = merchantDayRecordVoList.stream().map(MerchantPromotionDayRecordVO::getDayRenewMoney).reduce(BigDecimal.ZERO, BigDecimal::add);
+                BigDecimal balanceFirstAmount = merchantDayRecordVoList.stream().map(MerchantPromotionDayRecordVO::getBalanceFromFirst).reduce(BigDecimal.ZERO, BigDecimal::add);
+                BigDecimal balanceRenewAmount = merchantDayRecordVoList.stream().map(MerchantPromotionDayRecordVO::getBalanceFromRenew).reduce(BigDecimal.ZERO, BigDecimal::add);
+                
+                BigDecimal monthFirstMoney = firstAmount.add(balanceFirstAmount);
+                BigDecimal monthRenewMoney = renewAmount.add(balanceRenewAmount);
+                
                 merchantDayRecordVoList.forEach(item -> {
                     
                     String typeName = "";
                     BigDecimal dayMoney = BigDecimal.ZERO;
-                    BigDecimal monthFirstMoney = BigDecimal.ZERO;
-                    BigDecimal monthRenewMoney = BigDecimal.ZERO;
                     
                     switch (item.getType()) {
                         case MerchantPromotionDayRecord.LASHIN:
                             typeName = "拉新";
-                            monthFirstMoney = item.getDayFirstMoney();
                             dayMoney = item.getDayFirstMoney();
                             break;
                         case MerchantPromotionDayRecord.RENEW:
                             typeName = "续费";
-                            monthRenewMoney = item.getDayRenewMoney();
                             dayMoney = item.getDayRenewMoney();
                             break;
                         case MerchantPromotionDayRecord.BALANCE:
                             typeName = "差额";
-                            monthFirstMoney = item.getBalanceFromFirst();
-                            monthRenewMoney = item.getBalanceFromRenew();
                             dayMoney = item.getDayBalanceMoney();
                             break;
                         default:
