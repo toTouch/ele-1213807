@@ -198,8 +198,12 @@
             t_merchant_join_record
         WHERE
             del_flag = 0
-          and `status` = 1
-          AND merchant_id IN ( 0 )
+          and `status` = #{status}
+          and tenant_id = #{tenantId}
+          AND merchant_id IN
+          <foreach collection="merchantIdList" item="merchantId" close=")" open="(" separator=",">
+              #{merchantId}
+          </foreach>
         GROUP BY
             merchant_id
     </select>
