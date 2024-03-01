@@ -8,7 +8,7 @@
                 #{item.monthPlaceFee}, #{item.tenantId}), #{item.delFlag}, #{item.createTime}, #{item.updateTime})
     </insert>
     
-    <select id="selectListBySettlementTime" resultType="com.xiliulou.electricity.vo.merchant.MerchantPlaceFeeMonthRecordVO">
+    <select id="selectListBySettlementTime" resultType="com.xiliulou.electricity.entity.merchant.MerchantPlaceFeeMonthRecord">
         select tenant_id,
                sum(month_place_fee)           as month_total_place_fee,
                sum(rent_days)                 as month_rent_days,
