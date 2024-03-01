@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.utils;
 
+import com.xiliulou.electricity.constant.merchant.MerchantConstant;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.Base64;
@@ -10,6 +11,15 @@ import java.util.Base64;
  * @date 2024/2/29 22:12:44
  */
 public class QrCodeUtils {
+    
+    public static void main(String[] args) {
+        Long merchantId = 38L;
+        Long uid = 152083L;
+        Integer type =1;
+        String code = merchantId + ":" + uid + ":" + type;
+        System.out.println(codeEnCoder(code));
+        System.out.println(codeDeCoder("NlFoVldzOGppU1k0bXV5MU5SbjNrdz09"));
+    }
     
     /**
      * 二维码加密
