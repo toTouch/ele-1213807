@@ -7,12 +7,10 @@ import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.constant.merchant.MerchantConstant;
 import com.xiliulou.electricity.constant.merchant.MerchantPlaceBindConstant;
 import com.xiliulou.electricity.constant.merchant.MerchantPlaceCabinetBindConstant;
-import com.xiliulou.electricity.constant.merchant.MerchantPlaceConstant;
 import com.xiliulou.electricity.dto.merchant.MerchantPlaceCabinetBindDTO;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.merchant.Merchant;
 import com.xiliulou.electricity.entity.merchant.MerchantCabinetBindHistory;
-import com.xiliulou.electricity.entity.merchant.MerchantCabinetBindTime;
 import com.xiliulou.electricity.entity.merchant.MerchantPlace;
 import com.xiliulou.electricity.entity.merchant.MerchantPlaceBind;
 import com.xiliulou.electricity.entity.merchant.MerchantPlaceCabinetBind;
@@ -120,12 +118,6 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
         // 判断商户表的标志是否存在场地费
         Merchant merchant = merchantService.queryByIdFromCache(merchantId);
         if (Objects.equals(merchant.getExistPlaceFee(), MerchantConstant.EXISTS_PLACE_FEE_YES)) {
-            return MerchantConstant.EXISTS_PLACE_FEE_YES;
-        }
-        
-        // 检测当商户绑定的柜机是否存在场地费
-        Integer placeCount = merchantPlaceMapService.existsPlaceFee(merchantId);
-        if (Objects.nonNull(placeCount) && placeCount > 0) {
             return MerchantConstant.EXISTS_PLACE_FEE_YES;
         }
         
@@ -366,7 +358,7 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
                 for (MerchantPlaceFeeMonthDetail placeFeeMonthDetail : curMothFeeRecords) {
                     MerchantCabinetFeeDetailVO vo = new MerchantCabinetFeeDetailVO();
                     vo.setPlaceFee(placeFeeMonthDetail.getPlaceFee());
-                    MerchantPlace merchantPlace = merchantPlaceService.queryFromCacheById(placeFeeMonthDetail.getPlaceId());
+                    MerchantPlace merchantPlace = merchantPlaceService.queryByIdFromCache(placeFeeMonthDetail.getPlaceId());
                     if (Objects.nonNull(merchantPlace)) {
                         vo.setPlaceName(merchantPlace.getName());
                     }
@@ -404,7 +396,7 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
             for (MerchantCabinetBindHistory placeFeeMonthDetail : placeFeeMonths) {
                 MerchantCabinetFeeDetailVO vo = new MerchantCabinetFeeDetailVO();
                 vo.setPlaceFee(placeFeeMonthDetail.getPlaceFee());
-                MerchantPlace merchantPlace = merchantPlaceService.queryFromCacheById(placeFeeMonthDetail.getPlaceId());
+                MerchantPlace merchantPlace = merchantPlaceService.queryByIdFromCache(placeFeeMonthDetail.getPlaceId());
                 if (Objects.nonNull(merchantPlace)) {
                     vo.setPlaceName(merchantPlace.getName());
                 }

@@ -70,13 +70,25 @@
                 auto_up_grade = #{autoUpGrade},
             </if>
             <if test="updateTime != null">
-                update_time = #{updateTime}
+                update_time = #{updateTime},
+            </if>
+            <if test="existPlaceFee != null">
+                exist_place_fee  = #{existPlaceFee}
             </if>
         </set>
         
         <where>
             id = #{id}
         </where>
+    </update>
+    
+    <update id="batchUpdateExistPlaceFee">
+        update t_merchant
+        set exist_place_fee = #{existsPlaceFee}, update_time = #{updateTime}
+          where id in
+          <foreach collection="merchantIdList" item="id" close=")" open="(" separator=",">
+              #{id}
+          </foreach>
     </update>
     
     <delete id="removeById">

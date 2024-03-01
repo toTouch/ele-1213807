@@ -17,9 +17,9 @@ public interface ChannelEmployeePromotionMonthRecordMapper {
     
     void batchInsert(@Param("list") List<ChannelEmployeePromotionMonthRecord> list);
     
-    List<ChannelEmployeePromotionVO> selectListByPage(ChannelEmployeePromotionRequest channelEmployeeRequest);
+    List<ChannelEmployeePromotionVO> selectListByPage(ChannelEmployeePromotionQueryModel queryModel);
     
     Integer countTotal(ChannelEmployeePromotionQueryModel channelEmployeePromotionQueryModel);
     
-    List<ChannelEmployeePromotionMonthRecord> selectByFeeDate(@Param("startTime") long startTime,@Param("endTime") long endTime,@Param("tenantId") Integer tenantId);
+    List<ChannelEmployeePromotionMonthRecord> selectByFeeDate(@Param("tenantId") Integer tenantId, @Param("monthDate") String monthDate);
 }

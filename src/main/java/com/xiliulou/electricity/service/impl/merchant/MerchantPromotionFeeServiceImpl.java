@@ -149,7 +149,6 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
         // 获取已退回的收益（数据来源：返利记录）
         BigDecimal returnIncome = rebateRecordService.sumByStatus(settleQueryModel);
         
-        log.info("mericahtn tenantId={}", TenantContextHolder.getTenantId());
         //审核中
         BigDecimal reviewInProgress = merchantWithdrawApplicationService.sumByStatus(TenantContextHolder.getTenantId(), MerchantWithdrawConstant.REVIEW_IN_PROGRESS, uid);
         
@@ -397,13 +396,17 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
         if (Objects.equals(PromotionFeeQueryTypeEnum.MERCHANT.getCode(), queryModel.getType()) || Objects.equals(PromotionFeeQueryTypeEnum.MERCHANT_AND_MERCHANT_EMPLOYEE.getCode(),
                 queryModel.getType())) {
             List<MerchantEmployee> merchantEmployees = merchantEmployeeService.selectByMerchantUid(queryModel);
-            result = merchantEmployees.stream().map(merchantEmployee -> buildMerchantPromotionEmployeeDetailVO(merchantEmployee.getUid(), merchantEmployee.getPlaceId()))
-                    .collect(Collectors.toList());
+            if(CollectionUtils.isNotEmpty(merchantEmployees)){
+                result = merchantEmployees.stream().map(merchantEmployee -> buildMerchantPromotionEmployeeDetailVO(merchantEmployee.getUid(), merchantEmployee.getPlaceId()))
+                        .collect(Collectors.toList());
+            }
         }
         
         if (Objects.equals(PromotionFeeQueryTypeEnum.MERCHANT_EMPLOYEE.getCode(), queryModel.getType())) {
             MerchantEmployeeVO merchantEmployeeVO = merchantEmployeeService.queryMerchantEmployeeByUid(queryModel.getUid());
-            result.add(buildMerchantPromotionEmployeeDetailVO(merchantEmployeeVO.getUid(), merchantEmployeeVO.getPlaceId()));
+            if (Objects.nonNull(merchantEmployeeVO)) {
+                result.add(buildMerchantPromotionEmployeeDetailVO(merchantEmployeeVO.getUid(), merchantEmployeeVO.getPlaceId()));
+            }
         }
         
         return R.ok(result);
@@ -434,7 +437,7 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
             employeeDetailVO.setTotalIncome(totalInCome);
             
             if (Objects.nonNull(placeId)) {
-                MerchantPlace place = merchantPlaceService.queryFromCacheById(placeId);
+                MerchantPlace place = merchantPlaceService.queryByIdFromCache(placeId);
                 employeeDetailVO.setPlaceName(place.getName());
             }
         }

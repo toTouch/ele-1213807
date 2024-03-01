@@ -44,7 +44,7 @@ public class MerchantPlaceCabinetBind {
     private Long unBindTime;
     
     /**
-     * 状态(0-解绑，1-绑定)
+     * 状态(1-解绑，0-绑定)
      */
     private Integer status;
     

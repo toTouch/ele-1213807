@@ -160,6 +160,7 @@
         FROM
         t_merchant_place t
         <include refid="pageFilter"/>
+        order by t.id desc
         limit #{offset}, #{size}
     </select>
     

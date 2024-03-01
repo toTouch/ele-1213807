@@ -1,7 +1,12 @@
 package com.xiliulou.electricity.request.merchant;
 
+import com.xiliulou.electricity.validator.CreateGroup;
+import com.xiliulou.electricity.validator.UpdateGroup;
 import lombok.Data;
+import org.hibernate.validator.constraints.Length;
 
+import javax.validation.constraints.Max;
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
 /**
@@ -17,15 +22,19 @@ public class MerchantLevelRequest {
     /**
      * 商户等级名称
      */
+    @NotBlank(message = "商户等级名称不能为空")
+    @Length(min = 1, max = 10, message = "商户等级名称不合法")
     private String name;
     
     /**
      * 拉新人数
      */
+    @Max(value = 99999999, message = "拉新人数不合法")
     private Long invitationUserCount;
     
     /**
      * 续费人数
      */
+    @Max(value = 99999999, message = "续费人数不合法")
     private Long renewalUserCount;
 }

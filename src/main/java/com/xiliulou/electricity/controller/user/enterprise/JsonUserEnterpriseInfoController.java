@@ -55,7 +55,7 @@ public class JsonUserEnterpriseInfoController extends BaseController {
      *
      * @return
      */
-    @GetMapping("/user/enterpriseInfo/detail")
+    @GetMapping({"/user/enterpriseInfo/detail", "/merchant/enterpriseInfo/detail"})
     public R queryEnterpriseInfo() {
         return R.ok(enterpriseInfoService.selectDetailByUid(SecurityUtils.getUid()));
     }

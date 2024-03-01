@@ -218,7 +218,7 @@ public class JsonMerchantPlaceController extends BaseController {
         MerchantPlacePageRequest merchantPlacePageRequest = MerchantPlacePageRequest.builder().size(size).offset(offset).tenantId(tenantId).placeId(placeId)
                 .cabinetName(cabinetName).build();
         
-        return returnTripleResult(merchantPlaceService.getCabinetList(merchantPlacePageRequest));
+        return returnTripleResult(merchantPlaceService.queryListCabinet(merchantPlacePageRequest));
     }
     
     /**
@@ -255,7 +255,7 @@ public class JsonMerchantPlaceController extends BaseController {
         MerchantPlacePageRequest merchantPlacePageRequest = MerchantPlacePageRequest.builder().size(size).offset(offset).tenantId(tenantId).name(name).franchiseeId(franchiseeId)
                 .merchantId(merchantId).franchiseeId(franchiseeId).build();
         
-        return R.ok(merchantPlaceService.queryPlaceList(merchantPlacePageRequest));
+        return R.ok(merchantPlaceService.queryListPlace(merchantPlacePageRequest));
     }
     
     /**

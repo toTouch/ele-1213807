@@ -51,4 +51,8 @@ public interface MerchantService {
     Integer countMerchantNumByTime(MerchantPromotionFeeMerchantNumQueryModel todayQueryModel);
     
     MerchantQrCodeVO getMerchantQrCode(Long uid, Long id);
+    
+    void deleteCacheById(Long id);
+    
+    Integer batchUpdateExistPlaceFee(List<Long> merchantIdList, Integer existsPlaceFeeYes, Long currentTimeMillis);
 }

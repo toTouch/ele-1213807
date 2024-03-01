@@ -123,4 +123,10 @@ public class MerchantVO {
      * 商户等级Id
      */
     private Long merchantGradeId;
+    
+    /**
+     * 企业云豆总数
+     */
+    private BigDecimal totalBeanAmount;
+    
 }

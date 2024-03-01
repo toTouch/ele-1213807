@@ -128,14 +128,11 @@ public class RebateRecordServiceImpl implements RebateRecordService {
             RebateRecordVO rebateRecord = new RebateRecordVO();
             Franchisee franchisee = franchiseeService.queryByIdFromCache(item.getFranchiseeId());
             rebateRecord.setFranchiseeName(Objects.nonNull(franchisee) ? franchisee.getName() : "");
-            
-            BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(item.getMemberCardId());
-            rebateRecord.setBatteryMemberCardName(Objects.nonNull(batteryMemberCard) ? batteryMemberCard.getName() : "");
-            
+
             Merchant merchant = merchantService.queryByIdFromCache(item.getMerchantId());
             rebateRecord.setMerchantName(Objects.nonNull(merchant) ? merchant.getName() : "");
             
-            MerchantPlace merchantPlace = merchantPlaceService.queryFromCacheById(item.getPlaceId());
+            MerchantPlace merchantPlace = merchantPlaceService.queryByIdFromCache(item.getPlaceId());
             rebateRecord.setPlaceName(Objects.nonNull(merchantPlace) ? merchantPlace.getName() : "");
             
             User placeUser = userService.queryByUidFromCache(item.getPlaceUid());

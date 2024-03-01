@@ -13,6 +13,7 @@ import com.xiliulou.electricity.dto.merchant.MerchantDeleteCacheDTO;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.User;
+import com.xiliulou.electricity.entity.enterprise.EnterpriseInfo;
 import com.xiliulou.electricity.entity.merchant.Merchant;
 import com.xiliulou.electricity.entity.merchant.MerchantEmployee;
 import com.xiliulou.electricity.entity.merchant.MerchantJoinRecord;
@@ -54,6 +55,7 @@ import com.xiliulou.electricity.service.merchant.MerchantService;
 import com.xiliulou.electricity.service.merchant.MerchantUserAmountService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
+import com.xiliulou.electricity.utils.QrCodeUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.enterprise.EnterprisePackageVO;
 import com.xiliulou.electricity.vo.merchant.ChannelEmployeeVO;
@@ -342,20 +344,25 @@ public class MerchantServiceImpl implements MerchantService {
             merchantSaveRequest.getPlaceIdList().stream().forEach(placeId -> {
                 // 商户场地映射
                 MerchantPlaceMap merchantPlaceMap = MerchantPlaceMap.builder().merchantId(merchant.getId()).placeId(placeId).tenantId(tenantId).delFlag(MerchantPlaceMap.DEL_NORMAL)
-                        .createTime(timeMillis).build();
+                        .updateTime(timeMillis).createTime(timeMillis).build();
+                
                 merchantPlaceMapList.add(merchantPlaceMap);
                 
                 // 商户场地绑定历史
                 MerchantPlaceBind merchantPlaceBind = MerchantPlaceBind.builder().merchantId(merchant.getId()).placeId(placeId).bindTime(timeMillis)
                         .delFlag(MerchantPlaceMap.DEL_NORMAL).type(MerchantPlaceConstant.BIND).merchantMonthSettlement(MerchantPlaceConstant.MONTH_SETTLEMENT_NO)
-                        .merchantMonthSettlementPower(MerchantPlaceConstant.MONTH_SETTLEMENT_POWER_NO).tenantId(tenantId).createTime(timeMillis).build();
+                        .merchantMonthSettlementPower(MerchantPlaceConstant.MONTH_SETTLEMENT_POWER_NO).tenantId(tenantId).createTime(timeMillis).updateTime(timeMillis).build();
                 merchantPlaceBindList.add(merchantPlaceBind);
             });
             
             // 批量保存商户场地映射
             merchantPlaceMapService.batchInsert(merchantPlaceMapList);
+            
             // 批量保存商户场地绑定
             merchantPlaceBindService.batchInsert(merchantPlaceBindList);
+            
+            // 判断绑定的场地是否存在柜机 且修改修改存在场地费标识
+            dealPlaceFee(merchant.getId(), merchantSaveRequest.getPlaceIdList());
         }
         
         // 创建商户余额
@@ -370,8 +377,34 @@ public class MerchantServiceImpl implements MerchantService {
         merchantUserAmount.setDelFlag(MerchantConstant.DEL_NORMAL);
         merchantUserAmountService.save(merchantUserAmount);
         
+        
         // 调用开户账号
         return Triple.of(true, "", "");
+    }
+    
+    /**
+     * 处理场地所在柜机是否设置场地费
+     * @param id
+     * @param placeIdList
+     */
+    private void dealPlaceFee(Long id, List<Long> placeIdList) {
+        if (ObjectUtils.isEmpty(placeIdList)) {
+            return;
+        }
+    
+        Integer count = merchantPlaceMapService.existsPlaceFeeByPlaceIdList(placeIdList);
+        if (Objects.isNull(count) || Objects.equals(count, NumberConstant.ZERO)) {
+            return;
+        }
+        
+        // 修改商户存在场地费
+        Merchant updateMerchant = Merchant.builder()
+                .id(id)
+                .existPlaceFee(MerchantConstant.EXISTS_PLACE_FEE_YES)
+                .updateTime(System.currentTimeMillis()).build();
+        
+        merchantMapper.updateById(updateMerchant);
+        
     }
     
     @Transactional(rollbackFor = Exception.class)
@@ -429,7 +462,7 @@ public class MerchantServiceImpl implements MerchantService {
         
         // 检测渠道员是否存在
         if (Objects.nonNull(merchantSaveRequest.getChannelEmployeeUid())) {
-            ChannelEmployeeVO channelEmployeeVO = channelEmployeeService.queryById(merchantSaveRequest.getChannelEmployeeUid());
+            ChannelEmployeeVO channelEmployeeVO = channelEmployeeService.queryByUid(merchantSaveRequest.getChannelEmployeeUid());
             if (Objects.isNull(channelEmployeeVO)) {
                 log.error("merchant update error, channel us is not find id={}, channelUserId={}", merchantSaveRequest.getId(), merchantSaveRequest.getChannelEmployeeUid());
                 return Triple.of(false, "120205", "渠道员不存在");
@@ -447,7 +480,9 @@ public class MerchantServiceImpl implements MerchantService {
             BatteryMemberCardQuery query = BatteryMemberCardQuery.builder().tenantId(TenantContextHolder.getTenantId()).franchiseeId(merchantSaveRequest.getFranchiseeId())
                     .status(BatteryMemberCard.STATUS_UP).idList(merchantSaveRequest.getEnterprisePackageIdList()).businessType(BatteryMemberCard.BUSINESS_TYPE_ENTERPRISE)
                     .delFlag(BatteryMemberCard.DEL_NORMAL).build();
+            
             List<BatteryMemberCard> packageList = batteryMemberCardService.queryListByIdList(query);
+            
             if (ObjectUtils.isEmpty(packageList)) {
                 log.error("merchant update error, package is not exist id={}, packageId={}", merchantSaveRequest.getId(), merchantSaveRequest.getEnterprisePackageIdList());
                 return Triple.of(false, "120207", "企业套餐不存在");
@@ -537,6 +572,7 @@ public class MerchantServiceImpl implements MerchantService {
             Set<Long> collect = merchantSaveRequest.getEnterprisePackageIdList().stream().collect(Collectors.toSet());
             enterpriseInfoQuery.setPackageIds(collect);
         }
+        
         // 同步企业信息数据
         Triple<Boolean, String, Object> enterpriseSaveRes = enterpriseInfoService.modify(enterpriseInfoQuery);
         if (!enterpriseSaveRes.getLeft()) {
@@ -566,14 +602,21 @@ public class MerchantServiceImpl implements MerchantService {
         // 查询商户已经绑定的场地
         MerchantPlaceMapQueryModel queryModel = MerchantPlaceMapQueryModel.builder().merchantId(merchantSaveRequest.getId()).eqFlag(MerchantPlaceMapQueryModel.EQ).build();
         List<MerchantPlaceMap> existsPlaceList = merchantPlaceMapService.queryList(queryModel);
-        Map<Long, Long> bindMap = existsPlaceList.stream().collect(Collectors.toMap(MerchantPlaceMap::getPlaceId, MerchantPlaceMap::getId, (key, key1) -> key1));
+        
+        Set<Long> bindPlaceSet = new HashSet<>();
+        if (ObjectUtils.isNotEmpty(existsPlaceList)) {
+            bindPlaceSet = existsPlaceList.stream().map(MerchantPlaceMap::getPlaceId).collect(Collectors.toSet());
+        }
         
         Set<Long> unBindList = new HashSet<>();
         if (ObjectUtils.isNotEmpty(merchantSaveRequest.getPlaceIdList())) {
             // 新增场地
-            List<Long> addPlaceIdList = merchantSaveRequest.getPlaceIdList().stream().filter(placeId -> !bindMap.containsKey(placeId)).collect(Collectors.toList());
+            Set<Long> finalBindPlaceSet = bindPlaceSet;
+            
+            List<Long> addPlaceIdList = merchantSaveRequest.getPlaceIdList().stream().filter(placeId -> !finalBindPlaceSet.contains(placeId)).collect(Collectors.toList());
+            
             // 解绑场地
-            unBindList = bindMap.keySet().stream().filter(item -> !merchantSaveRequest.getPlaceIdList().contains(item)).collect(Collectors.toSet());
+            unBindList = finalBindPlaceSet.stream().filter(item -> !merchantSaveRequest.getPlaceIdList().contains(item)).collect(Collectors.toSet());
             
             List<MerchantPlaceMap> merchantPlaceMapList = new ArrayList<>();
             List<MerchantPlaceBind> merchantPlaceBindList = new ArrayList<>();
@@ -581,25 +624,41 @@ public class MerchantServiceImpl implements MerchantService {
                 // 场地映射
                 MerchantPlaceMap merchantPlaceMap = MerchantPlaceMap.builder().merchantId(merchant.getId()).placeId(placeId).tenantId(tenantId).delFlag(MerchantPlaceMap.DEL_NORMAL)
                         .createTime(timeMillis).updateTime(timeMillis).build();
+                
                 merchantPlaceMapList.add(merchantPlaceMap);
                 
                 // 场地绑定历史
                 MerchantPlaceBind merchantPlaceBind = MerchantPlaceBind.builder().merchantId(merchant.getId()).placeId(placeId).bindTime(timeMillis)
                         .delFlag(MerchantPlaceMap.DEL_NORMAL).type(MerchantPlaceConstant.BIND).merchantMonthSettlement(MerchantPlaceConstant.MONTH_SETTLEMENT_NO)
                         .merchantMonthSettlementPower(MerchantPlaceConstant.MONTH_SETTLEMENT_POWER_NO).tenantId(tenantId).createTime(timeMillis).updateTime(timeMillis).build();
+                
                 merchantPlaceBindList.add(merchantPlaceBind);
             });
             
             // 批量保存场地映射
-            merchantPlaceMapService.batchInsert(merchantPlaceMapList);
-            merchantPlaceBindService.batchInsert(merchantPlaceBindList);
+            if (ObjectUtils.isNotEmpty(merchantPlaceMapList)) {
+                merchantPlaceMapService.batchInsert(merchantPlaceMapList);
+                
+                // 不存在场地费，处理场地费
+                if (Objects.equals(merchant.getExistPlaceFee(), MerchantConstant.EXISTS_PLACE_FEE_NO)) {
+                    // 判断绑定的场地是否存在柜机 且修改修改存在场地费标识
+                    dealPlaceFee(merchant.getId(), addPlaceIdList);
+                }
+            }
+            
+            // 批量保存绑定历史
+            if (ObjectUtils.isNotEmpty(merchantPlaceBindList)) {
+                merchantPlaceBindService.batchInsert(merchantPlaceBindList);
+            }
+            
         } else if (ObjectUtils.isNotEmpty(existsPlaceList)) {
-            unBindList = bindMap.keySet();
+            unBindList = bindPlaceSet;
         }
         
         if (ObjectUtils.isNotEmpty(unBindList)) {
             // 批量解绑场地
             merchantPlaceBindService.batchUnBind(unBindList, merchant.getId(), System.currentTimeMillis());
+            
             // 删除解绑的场地映射
             merchantPlaceMapService.batchDeleteByMerchantId(merchantSaveRequest.getId(), unBindList);
         }
@@ -732,6 +791,7 @@ public class MerchantServiceImpl implements MerchantService {
         
         Set<Long> merchantIdList = new HashSet<>();
         List<Long> uidList = new ArrayList<>();
+        List<Long> enterpriseIdList = new ArrayList<>();
         List<Long> levelIdList = new ArrayList<>();
         
         for (Merchant merchant : merchantList) {
@@ -758,6 +818,7 @@ public class MerchantServiceImpl implements MerchantService {
             merchantIdList.add(merchant.getId());
             uidList.add(merchant.getUid());
             levelIdList.add(merchant.getMerchantGradeId());
+            enterpriseIdList.add(merchant.getEnterpriseId());
             resList.add(merchantVO);
         }
         
@@ -794,6 +855,7 @@ public class MerchantServiceImpl implements MerchantService {
             if (ObjectUtils.isNotEmpty(merchantPlaceMaps)) {
                 placeMap = merchantPlaceMaps.stream().collect(Collectors.toMap(MerchantPlaceMapVO::getMerchantId, MerchantPlaceMapVO::getCount, (key, key1) -> key1));
             }
+            
             Map<Long, Integer> finalPlaceMap = placeMap;
             resList.stream().forEach(item -> {
                 if (ObjectUtils.isNotEmpty(finalPlaceMap.get(item.getId()))) {
@@ -866,8 +928,34 @@ public class MerchantServiceImpl implements MerchantService {
             log.error("MERCHANT QUERY ERROR! query user amount error!", e);
             return null;
         });
+    
+        // 查询商户的企业云豆
+        CompletableFuture<Void> enterpriseInfo = CompletableFuture.runAsync(() -> {
+            List<EnterpriseInfo> enterpriseInfoList = enterpriseInfoService.queryListByIdList(enterpriseIdList);
         
-        CompletableFuture<Void> resultFuture = CompletableFuture.allOf(placeInfo, channelUserInfo, merchantUserAmountInfo, merchantLevelInfo);
+            Map<Long, EnterpriseInfo> enterpriseInfoMap = new HashMap<>();
+        
+            if (ObjectUtils.isNotEmpty(enterpriseInfoList)) {
+                enterpriseInfoMap = enterpriseInfoList.stream().collect(Collectors.toMap(EnterpriseInfo::getId, Function.identity(), (key1, key2) -> key2));
+            }
+    
+            Map<Long, EnterpriseInfo> finalEnterpriseInfoMap = enterpriseInfoMap;
+            resList.forEach(item -> {
+                EnterpriseInfo enterprise = finalEnterpriseInfoMap.get(item.getEnterpriseId());
+                
+                if (ObjectUtils.isNotEmpty(enterprise)) {
+                    item.setTotalBeanAmount(enterprise.getTotalBeanAmount());
+                } else {
+                    item.setTotalBeanAmount(BigDecimal.ZERO);
+                }
+            });
+            
+        }, threadPool).exceptionally(e -> {
+            log.error("MERCHANT QUERY ERROR! query enterprise error!", e);
+            return null;
+        });
+        
+        CompletableFuture<Void> resultFuture = CompletableFuture.allOf(placeInfo, channelUserInfo, merchantUserAmountInfo, merchantLevelInfo, enterpriseInfo);
         try {
             resultFuture.get(10, TimeUnit.SECONDS);
         } catch (Exception e) {
@@ -1024,20 +1112,20 @@ public class MerchantServiceImpl implements MerchantService {
         
         //如果商户员工UID不为空，则查询渠道员信息，获取当前渠道员绑定的场地ID
         Long placeId = null;
-        if(Objects.nonNull(employeeUid)){
+        if (Objects.nonNull(employeeUid)) {
             MerchantEmployeeVO merchantEmployeeVO = merchantEmployeeService.queryMerchantEmployeeByUid(employeeUid);
             placeId = merchantEmployeeVO.getPlaceId();
         }
         
-        for(MerchantPlaceSelectVO merchantPlaceSelectVO : merchantPlaceUserVOList){
+        for (MerchantPlaceSelectVO merchantPlaceSelectVO : merchantPlaceUserVOList) {
             if (ObjectUtils.isNotEmpty(userMap.get(merchantPlaceSelectVO.getPlaceId()))) {
                 // 被绑定设置为禁用
                 merchantPlaceSelectVO.setStatus(MerchantPlaceConstant.DISABLE);
             } else {
                 merchantPlaceSelectVO.setStatus(MerchantPlaceConstant.ENABLE);
             }
-    
-            if(Objects.equals(merchantPlaceSelectVO.getPlaceId(), placeId)){
+            
+            if (Objects.equals(merchantPlaceSelectVO.getPlaceId(), placeId)) {
                 merchantPlaceSelectVO.setSelected(true);
             }
             
@@ -1077,7 +1165,8 @@ public class MerchantServiceImpl implements MerchantService {
             merchantUserVO.setMerchantId(merchant.getId());
             merchantUserVO.setMerchantUid(merchant.getUid());
             merchantUserVO.setType(MerchantConstant.MERCHANT_QR_CODE_TYPE);
-            merchantUserVO.setCode(merchantJoinRecordService.codeEnCoder(merchant.getId(), merchant.getUid(), 1));
+            String code = merchant.getId() + ":" + merchant.getUid() + ":" + MerchantConstant.MERCHANT_QR_CODE_TYPE;
+            merchantUserVO.setCode(QrCodeUtils.codeEnCoder(code));
             
             MerchantLevel merchantLevel = merchantLevelService.queryById(merchant.getMerchantGradeId());
             merchantUserVO.setMerchantLevelName(Objects.nonNull(merchantLevel) ? merchantLevel.getName() : "");
@@ -1101,8 +1190,19 @@ public class MerchantServiceImpl implements MerchantService {
         vo.setMerchantId(merchantId);
         vo.setMerchantUid(uid);
         vo.setType(MerchantConstant.MERCHANT_QR_CODE_TYPE);
-        vo.setCode(merchantJoinRecService.codeEnCoder(merchantId, uid, 1));
+        String code = merchantId + ":" + uid + ":" + MerchantConstant.MERCHANT_QR_CODE_TYPE;
+        vo.setCode(QrCodeUtils.codeEnCoder(code));
         //        vo.setTenantCode(tenant.getCode());
         return vo;
+    }
+    
+    @Override
+    public void deleteCacheById(Long id) {
+        redisService.delete(CacheConstant.CACHE_MERCHANT + id);
+    }
+    
+    @Override
+    public Integer batchUpdateExistPlaceFee(List<Long> merchantIdList, Integer existsPlaceFee, Long updateTime) {
+        return merchantMapper.batchUpdateExistPlaceFee(merchantIdList, existsPlaceFee, updateTime);
     }
 }

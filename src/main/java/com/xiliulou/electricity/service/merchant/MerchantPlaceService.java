@@ -31,11 +31,11 @@ public interface MerchantPlaceService {
     
     List<MerchantPlaceVO> listByPage(MerchantPlacePageRequest merchantPlacePageRequest);
     
-    MerchantPlace queryFromCacheById(Long placeId);
+    MerchantPlace queryByIdFromCache(Long placeId);
     
-    Triple<Boolean, String, Object> getCabinetList(MerchantPlacePageRequest merchantPlacePageRequest);
+    Triple<Boolean, String, Object> queryListCabinet(MerchantPlacePageRequest merchantPlacePageRequest);
     
-    List<MerchantPlaceVO> queryPlaceList(MerchantPlacePageRequest merchantPlacePageRequest);
+    List<MerchantPlaceVO> queryListPlace(MerchantPlacePageRequest merchantPlacePageRequest);
     
     Triple<Boolean, String, Object> queryById(Long id);
 }
