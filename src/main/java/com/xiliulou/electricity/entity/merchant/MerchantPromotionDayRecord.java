@@ -62,7 +62,7 @@ public class MerchantPromotionDayRecord {
     /**
      * 返利类型 拉新
      */
-    public static final int LASHIN = 0;
+    public static final int LASH = 0;
     
     /**
      * 返利类型 续费
@@ -78,5 +78,11 @@ public class MerchantPromotionDayRecord {
      * 返利类型 无数据
      */
     public static final int NO_DATA = 3;
+    
+    public static final String LASH_NAME = "拉新";
+    
+    public static final String RENEW_NAME = "续费";
+    
+    public static final String BALANCE_NAME = "差额";
     
 }

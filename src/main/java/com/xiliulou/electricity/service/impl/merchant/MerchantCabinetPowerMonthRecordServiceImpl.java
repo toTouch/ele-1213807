@@ -1,8 +1,11 @@
 package com.xiliulou.electricity.service.impl.merchant;
 
 import com.alibaba.excel.EasyExcel;
+import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.NumberConstant;
+import com.xiliulou.electricity.dto.EleChargeConfigCalcDetailDto;
+import com.xiliulou.electricity.entity.ElePower;
 import com.xiliulou.electricity.mapper.merchant.MerchantCabinetPowerMonthRecordMapper;
 import com.xiliulou.electricity.query.merchant.MerchantPowerDetailQueryModel;
 import com.xiliulou.electricity.query.merchant.MerchantPowerQueryModel;
@@ -35,7 +38,9 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 /**
@@ -126,15 +131,42 @@ public class MerchantCabinetPowerMonthRecordServiceImpl implements MerchantCabin
             Double monthSumPower = placeDetailList.stream().mapToDouble(MerchantCabinetPowerMonthDetailVO::getSumPower).sum();
             Double monthSumCharge = placeDetailList.stream().mapToDouble(MerchantCabinetPowerMonthDetailVO::getSumCharge).sum();
             
-            // TODO {"type":2,"startHour":0,"endHour":8,"price":"0.80"}]
             if (CollectionUtils.isNotEmpty(placeDetailList)) {
                 
                 placeDetailList.forEach(item -> {
                     
+                    String beginDate = DateUtils.getYearAndMonthAndDayByTimeStamps(item.getBeginTime());
+                    String endDate = DateUtils.getYearAndMonthAndDayByTimeStamps(item.getEndTime());
+                    AtomicReference<String> elePrice = new AtomicReference<>("");
+                    
+                    List<EleChargeConfigCalcDetailDto> chargeConfigList = JsonUtil.fromJsonArray(item.getJsonRule(), EleChargeConfigCalcDetailDto.class);
+                    if (CollectionUtils.isNotEmpty(chargeConfigList)) {
+                        if (Objects.equals(chargeConfigList.size(), NumberConstant.ONE)) {
+                            EleChargeConfigCalcDetailDto detail = chargeConfigList.get(NumberConstant.ZERO);
+                            elePrice.set(String.valueOf(detail.getPrice()));
+                        } else {
+                            chargeConfigList.forEach(detail -> {
+                                switch (detail.getType()) {
+                                    case ElePower.ORDINARY_TYPE:
+                                        elePrice.set(detail.getPrice() + "(平)");
+                                        break;
+                                    case ElePower.PEEK_TYPE:
+                                        elePrice.set(detail.getPrice() + "(峰)");
+                                        break;
+                                    case ElePower.VALLEY_TYPE:
+                                        elePrice.set(detail.getPrice() + "(谷)");
+                                        break;
+                                    default:
+                                        break;
+                                }
+                            });
+                        }
+                    }
+                    
                     MerchantCabinetPowerMonthExcelVO excelVO = MerchantCabinetPowerMonthExcelVO.builder().monthDate(monthDate)
                             .placeName(Optional.ofNullable(merchantPlaceService.queryByIdFromCache(item.getPlaceId()).getName()).orElse("")).monthSumPower(monthSumPower)
-                            .monthSumCharge(monthSumCharge).endPower(item.getEndPower()).sumCharge(item.getSumCharge()).endTime(item.getEndTime()).beginTime(item.getBeginTime())
-                            .startPower(item.getStartPower()).sumPower(item.getSumPower()).jsonRule(item.getJsonRule()).sn(item.getSn()).build();
+                            .monthSumCharge(monthSumCharge).endPower(item.getEndPower()).sumCharge(item.getSumCharge()).endTime(endDate).beginTime(beginDate)
+                            .startPower(item.getStartPower()).sumPower(item.getSumPower()).jsonRule(String.valueOf(elePrice)).sn(item.getSn()).build();
                     
                     excelVOList.add(excelVO);
                 });
