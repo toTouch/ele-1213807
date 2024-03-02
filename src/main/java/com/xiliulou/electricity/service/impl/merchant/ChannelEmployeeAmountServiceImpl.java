@@ -50,7 +50,7 @@ public class ChannelEmployeeAmountServiceImpl implements ChannelEmployeeAmountSe
             throw new BizException("120008", "渠道员不存在");
         }
         
-        Integer result = channelEmployeeAmountMapper.addAmountByUid(amount, uid, tenantId);
+        Integer result = channelEmployeeAmountMapper.addAmountByUid(amount, uid, tenantId, System.currentTimeMillis());
         return result;
     }
     
@@ -81,7 +81,7 @@ public class ChannelEmployeeAmountServiceImpl implements ChannelEmployeeAmountSe
             throw new BizException("120008", "渠道员不存在");
         }
     
-        Integer result = channelEmployeeAmountMapper.reduceAmountByUid(amount, uid, tenantId);
+        Integer result = channelEmployeeAmountMapper.reduceAmountByUid(amount, uid, tenantId, System.currentTimeMillis());
         return result;
     }
 }
