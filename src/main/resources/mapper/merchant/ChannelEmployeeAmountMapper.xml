@@ -120,14 +120,14 @@
         update t_channel_employee_amount
         set balance = balance + #{income}
         where uid = #{uid}
-          and tenat_id = #{tenantId}
+          and tenant_id = #{tenantId}
     </update>
     
     <update id="reduceAmountByUid">
         update t_channel_employee_amount
         set balance = balance - #{income},
         where uid = #{uid}
-          and tenat_id = #{tenantId}
+          and tenant_id = #{tenantId}
     </update>
     
     
