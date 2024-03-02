@@ -1,24 +1,16 @@
-package com.xiliulou.electricity.entity.merchant;
+package com.xiliulou.electricity.vo.merchant;
 
-import com.baomidou.mybatisplus.annotation.TableName;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 
 /**
  * @author HeYafeng
- * @description saas端商户推广费日度统计表
- * @date 2024/2/23 20:47:44
+ * @description 商户推广费详情
+ * @date 2024/2/24 13:02:50
  */
-@AllArgsConstructor
-@NoArgsConstructor
-@Builder
 @Data
-@TableName("t_merchant_promotion_day_record")
-public class MerchantPromotionDayRecord {
+public class MerchantPromotionDayRecordVO {
     
     private Long id;
     
@@ -62,7 +54,7 @@ public class MerchantPromotionDayRecord {
     /**
      * 返利类型 拉新
      */
-    public static final int LASH = 0;
+    public static final int LASHIN = 0;
     
     /**
      * 返利类型 续费
@@ -78,11 +70,5 @@ public class MerchantPromotionDayRecord {
      * 返利类型 无数据
      */
     public static final int NO_DATA = 3;
-    
-    public static final String LASH_NAME = "拉新";
-    
-    public static final String RENEW_NAME = "续费";
-    
-    public static final String BALANCE_NAME = "差额";
     
 }

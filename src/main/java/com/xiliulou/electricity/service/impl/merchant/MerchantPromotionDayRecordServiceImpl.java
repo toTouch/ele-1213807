@@ -4,7 +4,7 @@ import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.mapper.merchant.MerchantPromotionDayRecordMapper;
 import com.xiliulou.electricity.query.merchant.MerchantPromotionDayRecordQueryModel;
 import com.xiliulou.electricity.service.merchant.MerchantPromotionDayRecordService;
-import com.xiliulou.electricity.vo.merchant.MerchantPromotionMonthDetailVO;
+import com.xiliulou.electricity.vo.merchant.MerchantPromotionDayRecordVO;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -23,7 +23,7 @@ public class MerchantPromotionDayRecordServiceImpl implements MerchantPromotionD
     
     @Slave
     @Override
-    public List<MerchantPromotionMonthDetailVO> listByTenantId(MerchantPromotionDayRecordQueryModel queryModel) {
+    public List<MerchantPromotionDayRecordVO> listByTenantId(MerchantPromotionDayRecordQueryModel queryModel) {
         return merchantPromotionDayRecordMapper.selectListByTenantId(queryModel);
     }
     

@@ -19,7 +19,8 @@ import com.xiliulou.electricity.service.merchant.MerchantPromotionMonthRecordSer
 import com.xiliulou.electricity.service.merchant.MerchantService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DateUtils;
-import com.xiliulou.electricity.vo.merchant.MerchantPromotionMonthDetailVO;
+import com.xiliulou.electricity.vo.merchant.MerchantPromotionDayRecordVO;
+import com.xiliulou.electricity.vo.merchant.MerchantPromotionMonthExcelVO;
 import com.xiliulou.electricity.vo.merchant.MerchantPromotionMonthRecordVO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
@@ -30,6 +31,7 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
+import java.math.BigDecimal;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -124,31 +126,60 @@ public class MerchantPromotionMonthRecordServiceImpl implements MerchantPromotio
         queryModel.setStartDate(DateUtils.getFirstDayByMonth(monthDate));
         queryModel.setEndDate(DateUtils.getLastDayByMonth(monthDate));
         
-        List<MerchantPromotionMonthDetailVO> detailList = merchantPromotionDayRecordService.listByTenantId(queryModel);
+        List<MerchantPromotionDayRecordVO> detailList = merchantPromotionDayRecordService.listByTenantId(queryModel);
         if (CollectionUtils.isEmpty(detailList)) {
             return;
         }
         
-        detailList = detailList.stream().peek(item -> {
-            item.setMonthDate(monthDate);
-            item.setMerchantName(Optional.ofNullable(merchantService.queryByIdFromCache(item.getMerchantId()).getName()).orElse(""));
-            item.setInviterName(Optional.ofNullable(userService.queryByUidFromCache(item.getInviterUid()).getName()).orElse(""));
+        List<MerchantPromotionMonthExcelVO> excelVOList = new ArrayList<>();
+        
+        // excelVOList 按merchantId进行分组
+        Map<Long, List<MerchantPromotionDayRecordVO>> detailMap = detailList.stream().collect(Collectors.groupingBy(MerchantPromotionDayRecordVO::getMerchantId));
+        
+        detailMap.forEach((merchantId, merchantDayRecordVoList) -> {
             
-            switch (item.getType()) {
-                case MerchantPromotionDayRecord.LASHIN:
-                    item.setTypeName("拉新");
-                    break;
-                case MerchantPromotionDayRecord.RENEW:
-                    item.setTypeName("续费");
-                    break;
-                case MerchantPromotionDayRecord.BALANCE:
-                    item.setTypeName("差额");
-                    break;
-                default:
-                    break;
+            if (CollectionUtils.isNotEmpty(merchantDayRecordVoList)) {
+                
+                BigDecimal firstAmount = merchantDayRecordVoList.stream().map(MerchantPromotionDayRecordVO::getDayFirstMoney).reduce(BigDecimal.ZERO, BigDecimal::add);
+                BigDecimal renewAmount = merchantDayRecordVoList.stream().map(MerchantPromotionDayRecordVO::getDayRenewMoney).reduce(BigDecimal.ZERO, BigDecimal::add);
+                BigDecimal balanceFirstAmount = merchantDayRecordVoList.stream().map(MerchantPromotionDayRecordVO::getBalanceFromFirst).reduce(BigDecimal.ZERO, BigDecimal::add);
+                BigDecimal balanceRenewAmount = merchantDayRecordVoList.stream().map(MerchantPromotionDayRecordVO::getBalanceFromRenew).reduce(BigDecimal.ZERO, BigDecimal::add);
+                
+                BigDecimal monthFirstMoney = firstAmount.add(balanceFirstAmount);
+                BigDecimal monthRenewMoney = renewAmount.add(balanceRenewAmount);
+                
+                merchantDayRecordVoList.forEach(item -> {
+                    
+                    String typeName = "";
+                    BigDecimal dayMoney = BigDecimal.ZERO;
+                    
+                    switch (item.getType()) {
+                        case MerchantPromotionDayRecord.LASH:
+                            typeName = MerchantPromotionDayRecord.LASH_NAME;
+                            dayMoney = item.getDayFirstMoney();
+                            break;
+                        case MerchantPromotionDayRecord.RENEW:
+                            typeName = MerchantPromotionDayRecord.RENEW_NAME;
+                            dayMoney = item.getDayRenewMoney();
+                            break;
+                        case MerchantPromotionDayRecord.BALANCE:
+                            typeName = MerchantPromotionDayRecord.BALANCE_NAME;
+                            dayMoney = item.getDayBalanceMoney();
+                            break;
+                        default:
+                            break;
+                    }
+                    
+                    MerchantPromotionMonthExcelVO excelVO = MerchantPromotionMonthExcelVO.builder().monthDate(monthDate)
+                            .merchantName(Optional.ofNullable(merchantService.queryByIdFromCache(item.getMerchantId()).getName()).orElse("")).monthFirstMoney(monthFirstMoney)
+                            .monthRenewMoney(monthRenewMoney).inviterName(Optional.ofNullable(userService.queryByUidFromCache(item.getInviterUid()).getName()).orElse(""))
+                            .typeName(typeName).dayMoney(dayMoney).date(item.getDate()).build();
+                    
+                    excelVOList.add(excelVO);
+                });
             }
             
-        }).collect(Collectors.toList());
+        });
         
         String fileName = "商户推广费出账记录.xlsx";
         try {
@@ -157,13 +188,13 @@ public class MerchantPromotionMonthRecordServiceImpl implements MerchantPromotio
             response.setHeader("content-Type", "application/vnd.ms-excel");
             // 下载文件的默认名称
             response.setHeader("Content-Disposition", "attachment;filename=" + URLEncoder.encode(fileName, StandardCharsets.UTF_8));
-            EasyExcel.write(outputStream, MerchantPromotionMonthDetailVO.class).head(getHeader())
+            EasyExcel.write(outputStream, MerchantPromotionMonthExcelVO.class).head(getHeader())
                     // 合并策略：合并相同数据的行。第一个参数表示从哪一行开始进行合并，由于表头占了两行，因此从第2行开始（索引从0开始）
                     // 第二个参数是指定哪些列要进行合并
                     .registerWriteHandler(new MergeSameRowsStrategy(2, new int[] {0, 1, 2, 3})).registerWriteHandler(HeadContentCellStyle.myHorizontalCellStyleStrategy())
                     .registerWriteHandler(new CommentWriteHandler(getComments(), "xlsx")).registerWriteHandler(new AutoHeadColumnWidthStyleStrategy())
                     // 注意：需要先调用registerWriteHandler()再调用sheet()方法才能使合并策略生效！！！
-                    .sheet("商户推广费出账记录").doWrite(detailList);
+                    .sheet("商户推广费出账记录").doWrite(excelVOList);
         } catch (Exception e) {
             log.error("导出报表失败！", e);
         }

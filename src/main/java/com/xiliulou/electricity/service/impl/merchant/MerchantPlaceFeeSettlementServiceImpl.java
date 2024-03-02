@@ -1,6 +1,8 @@
 package com.xiliulou.electricity.service.impl.merchant;
 
+import cn.hutool.json.JSONUtil;
 import com.alibaba.excel.EasyExcel;
+import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.merchant.MerchantPlace;
@@ -21,6 +23,7 @@ import com.xiliulou.electricity.vo.merchant.MerchantPlaceFeeMonthRecordExportVO;
 import com.xiliulou.electricity.vo.merchant.MerchantPlaceFeeMonthRecordVO;
 import com.xiliulou.electricity.vo.merchant.MerchantPlaceFeeMonthSummaryRecordVO;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
@@ -57,8 +60,14 @@ public class MerchantPlaceFeeSettlementServiceImpl implements MerchantPlaceFeeSe
     
     private List<MerchantPlaceFeeMonthRecordExportVO> getData(String monthDate) {
         
+        List<MerchantPlaceFeeMonthRecordExportVO> resultVOs = new ArrayList<>();
         List<MerchantPlaceFeeMonthRecord> merchantPlaceFeeMonthRecords = merchantPlaceFeeMonthRecordService.selectByMonthDate(monthDate, TenantContextHolder.getTenantId());
-        return merchantPlaceFeeMonthRecords.parallelStream().map(merchantPlaceFeeMonthRecord -> {
+        if (CollectionUtils.isEmpty(merchantPlaceFeeMonthRecords)) {
+            return resultVOs;
+        }
+        log.info("merchantPlaceFeeMonthRecords = {}", JsonUtil.toJson(merchantPlaceFeeMonthRecords));
+        
+        resultVOs = merchantPlaceFeeMonthRecords.parallelStream().map(merchantPlaceFeeMonthRecord -> {
             MerchantPlaceFeeMonthRecordExportVO exportVO = new MerchantPlaceFeeMonthRecordExportVO();
             BeanUtils.copyProperties(merchantPlaceFeeMonthRecord, exportVO);
             exportVO.setRentStartTime(
@@ -74,6 +83,8 @@ public class MerchantPlaceFeeSettlementServiceImpl implements MerchantPlaceFeeSe
             }
             return exportVO;
         }).collect(Collectors.toList());
+        log.info("resultVOs = {}", JsonUtil.toJson(merchantPlaceFeeMonthRecords));
+        return resultVOs;
     }
     
     @Override

@@ -266,6 +266,7 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
         wechatTransferBatchOrderQuery.setTransferDetailList(wechatTransferBatchOrderDetailQueryList);
     
         try {
+            log.info("wechat transfer for single review start. request = {}", wechatTransferBatchOrderQuery);
             WechatTransferOrderResult wechatTransferOrderResult = wechatV3TransferService.transferBatch(wechatTransferBatchOrderQuery);
             log.info("wechat response data for single review, result = {}", wechatTransferOrderResult);
             if(Objects.nonNull(wechatTransferOrderResult)){
@@ -297,6 +298,7 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
     
         merchantWithdrawApplicationRecordService.insertOne(merchantWithdrawApplicationRecord);
         Integer result = merchantWithdrawApplicationMapper.updateOne(merchantWithdrawApplicationUpdate);
+        log.info("wechat transfer for single review end. batch no = {}", batchNo);
         
         return Triple.of(true, null, result);
     }
@@ -439,7 +441,7 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
         //转账批次号
         wechatTransferBatchOrderQuery.setOutBatchNo(batchNo);
         wechatTransferBatchOrderQuery.setTotalAmount(totalAmount.multiply(new BigDecimal(100)).intValue());
-        wechatTransferBatchOrderQuery.setTotalNum(BigDecimal.ONE.intValue());
+        wechatTransferBatchOrderQuery.setTotalNum(wechatTransferBatchOrderDetailQueryList.size());
         wechatTransferBatchOrderQuery.setTenantId(tenantId);
         wechatTransferBatchOrderQuery.setBatchName(DateUtils.getYearAndMonthAndDayByTimeStamps(System.currentTimeMillis()) + MerchantWithdrawConstant.WECHAT_TRANSFER_BATCH_NAME_SUFFIX);
         wechatTransferBatchOrderQuery.setBatchRemark(DateUtils.getYearAndMonthAndDayByTimeStamps(System.currentTimeMillis()) + MerchantWithdrawConstant.WECHAT_TRANSFER_BATCH_NAME_SUFFIX);
@@ -447,6 +449,7 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
         wechatTransferBatchOrderQuery.setTransferDetailList(wechatTransferBatchOrderDetailQueryList);
         
         try {
+            log.info("wechat transfer for batch review start. request = {}", wechatTransferBatchOrderQuery);
             WechatTransferOrderResult wechatTransferOrderResult = wechatV3TransferService.transferBatch(wechatTransferBatchOrderQuery);
             log.info("wechat response data for batch review, result = {}", wechatTransferOrderResult);
             if(Objects.nonNull(wechatTransferOrderResult)){
@@ -473,12 +476,13 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
             merchantWithdrawApplicationRecordService.batchInsert(merchantWithdrawApplicationRecords);
             int result = merchantWithdrawApplicationMapper.updateByIds(batchReviewWithdrawApplicationRequest);
             
-            return Triple.of(true, "120022", "批量提现失败");
+            return Triple.of(false, "120022", "批量提现失败");
         }
     
         //批量创建批次记录
         merchantWithdrawApplicationRecordService.batchInsert(merchantWithdrawApplicationRecords);
         int result = merchantWithdrawApplicationMapper.updateByIds(batchReviewWithdrawApplicationRequest);
+        log.info("wechat transfer for batch review end. batch no = {}", batchNo);
         
         return Triple.of(true, null, result);
     }
