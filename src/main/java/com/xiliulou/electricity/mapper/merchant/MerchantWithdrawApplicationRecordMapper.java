@@ -18,7 +18,7 @@ public interface MerchantWithdrawApplicationRecordMapper {
     
     Integer updateOne(MerchantWithdrawApplicationRecord merchantWithdrawApplicationRecord);
     
-    Integer batchInsert(@Param("merchantWithdrawApplicationRecordList") List<MerchantWithdrawApplicationRecord> merchantWithdrawApplicationRecordList);
+    Integer batchInsert(List<MerchantWithdrawApplicationRecord> merchantWithdrawApplicationRecordList);
     
     MerchantWithdrawApplicationRecordVO selectById(@Param("id") Long id);
     
