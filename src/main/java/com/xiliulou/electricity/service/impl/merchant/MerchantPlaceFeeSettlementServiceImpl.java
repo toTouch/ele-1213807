@@ -72,7 +72,7 @@ public class MerchantPlaceFeeSettlementServiceImpl implements MerchantPlaceFeeSe
         // 根据场地id分组 并monthPlaceFee求和
         Map<Long, List<MerchantPlaceFeeMonthRecord>> placeIdListMap = merchantPlaceFeeMonthRecords.stream().filter(item -> Objects.nonNull(item.getPlaceId()))
                 .collect(Collectors.groupingBy(MerchantPlaceFeeMonthRecord::getPlaceId));
-    
+        
         List<MerchantPlaceFeeMonthRecordDTO> recordDTOList = Lists.newArrayList();
         
         placeIdListMap.forEach((placeId, merchantPlaceFeeMonthRecordList) -> {
@@ -111,8 +111,10 @@ public class MerchantPlaceFeeSettlementServiceImpl implements MerchantPlaceFeeSe
             
             if (Objects.nonNull(merchantPlaceFeeMonthRecord.getPlaceId())) {
                 MerchantPlaceFeeMonthRecordDTO merchantPlaceFeeMonthRecordDTO = recordMap.get(merchantPlaceFeeMonthRecord.getPlaceId());
-                exportVO.setMonthTotalPlaceFee(merchantPlaceFeeMonthRecordDTO.getMonthPlaceFee());
-                exportVO.setMonthRentDays(merchantPlaceFeeMonthRecordDTO.getMonthRentDays());
+                if (Objects.nonNull(merchantPlaceFeeMonthRecordDTO) && Objects.equals(merchantPlaceFeeMonthRecord.getPlaceId(), merchantPlaceFeeMonthRecordDTO.getPlaceId())) {
+                    exportVO.setMonthTotalPlaceFee(merchantPlaceFeeMonthRecordDTO.getMonthPlaceFee());
+                    exportVO.setMonthRentDays(merchantPlaceFeeMonthRecordDTO.getMonthRentDays());
+                }
             }
             return exportVO;
         }).collect(Collectors.toList());
