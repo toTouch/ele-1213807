@@ -15,7 +15,7 @@
         <result property="status" column="status" jdbcType="INTEGER"/>
         <result property="handlingFee" column="handling_fee" jdbcType="DECIMAL"/>
         <result property="checkTime" column="check_time" jdbcType="INTEGER"/>
-        <result property="withdrawResult" column="withdraw_result" jdbcType="VARCHAR"/>
+        <result property="response" column="response" jdbcType="VARCHAR"/>
         <result property="receiptTime" column="receipt_time" jdbcType="INTEGER"/>
         <result property="tenantId" column="tenant_id" jdbcType="INTEGER"/>
         
@@ -92,9 +92,24 @@
             <if test="operator != null">
                 operator = #{operator},
             </if>
+            <if test="batchNo != null">
+                batch_no = #{batchNo},
+            </if>
+            
+            <if test="checkTime != null">
+                check_time = #{checkTime},
+            </if>
     
             <if test="receiptTime != null">
                 receipt_time = #{receiptTime},
+            </if>
+            
+            <if test="transactionBatchId != null and transactionBatchId != ''">
+                transaction_batch_id  = #{transactionBatchId},
+            </if>
+            
+            <if test="response != null and response != ''">
+                response = #{response},
             </if>
             
             <if test="delFlag != null">
@@ -113,27 +128,36 @@
     <update id="updateByIds">
         update t_merchant_withdraw_application
         <set>
-            <if test="status != null">
-                status = #{status},
+            <if test="merchantWithdrawApplication.status != null">
+                status = #{merchantWithdrawApplication.status},
             </if>
-            <if test="operator != null">
-                operator = #{operator},
+            <if test="merchantWithdrawApplication.operator != null">
+                operator = #{merchantWithdrawApplication.operator},
             </if>
-            <if test="updateTime != null">
-                update_time = #{updateTime},
+            <if test="merchantWithdrawApplication.batchNo != null">
+                batch_no = #{merchantWithdrawApplication.batchNo},
             </if>
-            <if test="checkTime != null">
-                check_time = #{checkTime},
+            <if test="merchantWithdrawApplication.transactionBatchId != null and merchantWithdrawApplication.transactionBatchId != ''">
+                transaction_batch_id = #{merchantWithdrawApplication.transactionBatchId},
             </if>
-            <if test="remark != null and remark != ''">
-                remark = #{remark},
+            <if test="merchantWithdrawApplication.response != null and merchantWithdrawApplication.response != ''">
+                response = #{merchantWithdrawApplication.response},
+            </if>
+            <if test="merchantWithdrawApplication.updateTime != null">
+                update_time = #{merchantWithdrawApplication.updateTime},
+            </if>
+            <if test="merchantWithdrawApplication.checkTime != null">
+                check_time = #{merchantWithdrawApplication.checkTime},
+            </if>
+            <if test="merchantWithdrawApplication.remark != null and merchantWithdrawApplication.remark != ''">
+                remark = #{merchantWithdrawApplication.remark},
             </if>
            
         </set>
         
         <where>
-            <if test="tenantId != null">
-                tenant_id = #{tenantId}
+            <if test="merchantWithdrawApplication.tenantId != null">
+                tenant_id = #{merchantWithdrawApplication.tenantId}
             </if>
             
             <if test="ids != null and !ids.isEmpty()">
@@ -164,7 +188,7 @@
         <where>
             tmwa.del_flag = 0
             and tmwa.tenant_id = #{tenantId}
-            <if test="uid != null and uid != ''">
+            <if test="uid != null">
                 and tmwa.uid = #{uid}
             </if>
             
@@ -172,7 +196,7 @@
                 and tmwa.order_no = #{orderNo}
             </if>
 
-            <if test="status != null and status != ''">
+            <if test="status != null">
                 and tmwa.status = #{status}
             </if>
     
@@ -195,10 +219,11 @@
         select count(1)
         from t_merchant_withdraw_application tmwa
         left join t_user tu on tu.uid = tmwa.uid
+        left join t_merchant tm on tm.uid = tmwa.uid
         <where>
             tmwa.del_flag = 0
             and tmwa.tenant_id = #{tenantId}
-            <if test="uid != null and uid != ''">
+            <if test="uid != null">
                 and tmwa.uid = #{uid}
             </if>
             
@@ -206,7 +231,7 @@
                 and tmwa.order_no = #{orderNo}
             </if>
 
-            <if test="status != null and status != ''">
+            <if test="status != null">
                 and tmwa.status = #{status}
             </if>
             <if test="beginTime != null ">
@@ -217,7 +242,7 @@
             </if>
     
             <if test="franchiseeIds != null">
-                and bmro.franchisee_id in
+                and tm.franchisee_id in
                 <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
                     #{id}
                 </foreach>
@@ -241,11 +266,11 @@
         tmwa.update_time
         from t_merchant_withdraw_application tmwa
         left join t_user tu on tu.uid = tmwa.uid
-        left join t_merchant tm om on tm.uid = tmwa.merchant_uid
+        left join t_merchant tm on tm.uid = tmwa.uid
         <where>
             tmwa.del_flag = 0
             and tmwa.tenant_id = #{tenantId}
-            <if test="uid != null and uid != ''">
+            <if test="uid != null">
                 and tmwa.uid = #{uid}
             </if>
             
@@ -253,7 +278,7 @@
                 and tmwa.order_no = #{orderNo}
             </if>
             
-            <if test="status != null and status != ''">
+            <if test="status != null">
                 and tmwa.status = #{status}
             </if>
             
@@ -265,7 +290,7 @@
             </if>
     
             <if test="franchiseeIds != null">
-                and bmro.franchisee_id in
+                and tm.franchisee_id in
                 <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
                     #{id}
                 </foreach>
@@ -323,6 +348,89 @@
         and tmwa.del_flag = 0
     </select>
     
+    <select id="selectRecordList" resultType="com.xiliulou.electricity.vo.merchant.MerchantWithdrawApplicationVO">
+        select tmwa.id,
+            tmwa.uid,
+            tu.name,
+            tu.phone,
+            tmwa.order_no,
+            tmwa.amount,
+            tmwa.remark,
+            tmwa.status,
+            tmwa.receipt_time,
+            tmwa.tenant_id,
+            tmwa.del_flag,
+            tmwa.create_time,
+            tmwa.update_time
+        from t_merchant_withdraw_application tmwa
+        left join t_user tu on tu.uid = tmwa.uid
+        left join t_merchant tm on tm.uid = tmwa.uid
+        <where>
+            tmwa.del_flag = 0
+            and tmwa.tenant_id = #{tenantId}
+            <if test="uid != null">
+                and tmwa.uid = #{uid}
+            </if>
+            
+            <if test="status != null">
+                and tmwa.status = #{status}
+            </if>
+            
+            <if test="beginTime != null ">
+                and tmwa.receipt_time <![CDATA[ >=  ]]> #{beginTime}
+            </if>
+            <if test="endTime != null ">
+                and tmwa.receipt_time <![CDATA[ <=  ]]> #{endTime}
+            </if>
+            
+            <if test="franchiseeIds != null">
+                and tm.franchisee_id in
+                <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
+                    #{id}
+                </foreach>
+            </if>
+        
+        </where>
+        order by tmwa.receipt_time desc
+        <if test="offset != null and size != null">
+            limit #{offset}, #{size}
+        </if>
+    
+    </select>
+    
+    <select id="selectRecordListCount" resultType="Integer">
+        select count(1)
+        from t_merchant_withdraw_application tmwa
+        left join t_user tu on tu.uid = tmwa.uid
+        left join t_merchant tm on tm.uid = tmwa.uid
+        <where>
+            tmwa.del_flag = 0
+            and tmwa.tenant_id = #{tenantId}
+            <if test="uid != null">
+                and tmwa.uid = #{uid}
+            </if>
+            
+            <if test="status != null">
+                and tmwa.status = #{status}
+            </if>
+            
+            <if test="beginTime != null ">
+                and tmwa.receipt_time <![CDATA[ >=  ]]> #{beginTime}
+            </if>
+            <if test="endTime != null ">
+                and tmwa.receipt_time <![CDATA[ <=  ]]> #{endTime}
+            </if>
+    
+            <if test="franchiseeIds != null">
+                and tm.franchisee_id in
+                <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
+                    #{id}
+                </foreach>
+            </if>
+
+        </where>
+    </select>
+    
     <!--通过主键物理删除渠道员工-->
     <delete id="deleteById">
         delete from t_merchant_withdraw_application
@@ -335,7 +443,7 @@
     </delete>
     
     <select id="sumByStatus" resultType="java.math.BigDecimal">
-        select sum(amount) from t_merchant_withdraw_application where del_flag=0 and tenant_id =#{tenantId} and status =#{status} and uid =#{uid}
+        select IFNULL(sum(amount),0) from t_merchant_withdraw_application where del_flag=0 and tenant_id =#{tenantId} and status =#{status} and uid =#{uid}
     </select>
     
     <select id="selectListForWithdrawInProgress" resultType="com.xiliulou.electricity.entity.merchant.MerchantWithdrawApplication">
@@ -367,8 +475,8 @@
           and tmwa.tenant_id = #{tenantId}
     </select>
     
-    <update id="updateApplicationRecordStatusByBatchNo">
-        update t_merchant_withdraw_application_record
+    <update id="updateApplicationStatusByBatchNo">
+        update t_merchant_withdraw_application
         set status = #{status},
             update_time = #{updateTime}
         where batch_no = #{batchNo}
@@ -377,15 +485,36 @@
     
     <update id="updateMerchantWithdrawStatus">
         update t_merchant_withdraw_application
-        set status = #{status},
-            update_time = #{updateTime}
+        <set>
+            <if test="status != null">
+                status = #{status},
+            </if>
+            <if test="transactionBatchId != null and transactionBatchId != ''">
+                transaction_batch_id = #{transactionBatchId},
+            </if>
+            <if test="response != null and response != ''">
+                response = #{response},
+            </if>
+            <if test="remark != null and remark != ''">
+                remark = #{remark},
+            </if>
+    
+            <if test="receiptTime != null">
+                receipt_time = #{receiptTime},
+            </if>
+            
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+        </set>
+        
         <where>
             <if test="batchNo != null and batchNo != ''">
                 and batch_no = #{batchNo}
             </if>
           
             <if test="orderNo != null and orderNo != ''">
-                and order_no = orderNo
+                and order_no = #{orderNo}
             </if>
     
             <if test="tenantId != null">

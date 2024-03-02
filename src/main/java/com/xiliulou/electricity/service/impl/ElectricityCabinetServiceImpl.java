@@ -14,7 +14,6 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.google.api.client.util.Lists;
 import com.google.common.collect.Maps;
-import com.obs.services.model.PostSignatureResponse;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.json.JsonUtil;
@@ -441,6 +440,20 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         if (electricityCabinetAddAndUpdate.getName().length() > 30) {
             return R.fail("100377", "参数校验错误");
         }
+    
+        //  如果场地费不为空则需要判断 不能小于零 小数最多两位  整数不能大于8位
+        if (Objects.nonNull(electricityCabinetAddAndUpdate.getPlaceFee())) {
+            // 场地费必须大于零
+            if (Objects.equals(electricityCabinetAddAndUpdate.getPlaceFee().compareTo(BigDecimal.ZERO), NumberConstant.MINUS_ONE)) {
+                return R.fail("120235", "场地费必须大于等于零");
+            }
+        
+            // 场地费不能是负数
+            String placeFeeStr = electricityCabinetAddAndUpdate.getPlaceFee().toString();
+            if (!RegularConstant.PLACE_PATTERN.matcher(placeFeeStr).matches()) {
+                return R.fail("120234", "场地费保留两位小数且整数部分不能超过8位");
+            }
+        }
         
         //操作频繁
         boolean result = redisService.setNx(CacheConstant.ELE_EDIT_UID + user.getUid(), "1", 3 * 1000L, false);
@@ -530,8 +543,9 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             
             // 增加场地费变更记录
             if (Objects.nonNull(finalMerchantPlaceFeeRecord)) {
-                merchantPlaceFeeRecordService.save(finalMerchantPlaceFeeRecord);
+                merchantPlaceFeeRecordService.asyncInsertOne(finalMerchantPlaceFeeRecord);
             }
+           
             
             //云端下发命令修改换电标准
             if (!Objects.equals(oldElectricityCabinet.getFullyCharged(), electricityCabinet.getFullyCharged())) {
@@ -5143,7 +5157,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             }
             
             List<ElectricityCabinetFile> cabinetFiles = electricityCabinetFileList.parallelStream().peek(item -> {
-                item.setUrl(storageService.getOssFileUrl(storageConfig.getBucketName(), item.getName(), System.currentTimeMillis() + 10 * 60 * 1000L));
+                item.setUrl(storageConfig.getUrlPrefix() + item.getName());
             }).collect(Collectors.toList());
             
             return cabinetFiles.parallelStream().map(ElectricityCabinetFile::getUrl).collect(Collectors.toList());

@@ -22,6 +22,11 @@ public class MerchantVO {
     private Long id;
     
     /**
+     * 商户UID
+     */
+    private Long uid;
+    
+    /**
      * 商户名称
      */
     private String name;
@@ -118,4 +123,10 @@ public class MerchantVO {
      * 商户等级Id
      */
     private Long merchantGradeId;
+    
+    /**
+     * 企业云豆总数
+     */
+    private BigDecimal totalCloudBeanAmount;
+    
 }

@@ -1,9 +1,7 @@
 package com.xiliulou.electricity.service.impl;
 
-import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.config.EleIotOtaPathConfig;
-import com.xiliulou.electricity.entity.EleCabinetCoreData;
 import com.xiliulou.electricity.entity.OtaFileConfig;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.mapper.OtaFileConfigMapper;
@@ -11,30 +9,22 @@ import com.xiliulou.electricity.service.OtaFileConfigService;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.storage.config.StorageConfig;
 import com.xiliulou.storage.service.StorageService;
-
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.digest.DigestUtils;
-import org.apache.commons.fileupload.disk.DiskFileItem;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
-
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
-
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.multipart.commons.CommonsMultipartFile;
 
 /**
  * (OtaFileConfig)表服务实现类
@@ -194,7 +184,7 @@ public class OtaFileConfigServiceImpl implements OtaFileConfigService {
         InputStream sha256HexInputStream = null;
         try {
             String ossPath = eleIotOtaPathConfig.getOtaPath() + name;
-            String downloadLink = "https://" + storageConfig.getBucketName() + "." + storageConfig.getOssEndpoint() + "/" + ossPath;
+            String downloadLink = storageConfig.getUrlPrefix() + ossPath;
         
             byte[] fileByte = file.getBytes();
             ossInputStream = new ByteArrayInputStream(fileByte);

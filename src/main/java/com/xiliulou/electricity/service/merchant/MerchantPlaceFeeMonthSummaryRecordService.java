@@ -3,6 +3,7 @@ package com.xiliulou.electricity.service.merchant;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.merchant.MerchantPlaceFeeMonthSummaryRecord;
 import com.xiliulou.electricity.query.merchant.MerchantPlaceFeeMonthSummaryRecordQueryModel;
+import com.xiliulou.electricity.vo.merchant.MerchantPlaceFeeMonthSummaryRecordVO;
 
 import java.util.List;
 

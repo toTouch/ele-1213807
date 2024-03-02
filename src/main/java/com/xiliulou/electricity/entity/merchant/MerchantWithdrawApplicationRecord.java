@@ -40,6 +40,10 @@ public class MerchantWithdrawApplicationRecord {
     
     private Integer status;
     
+    private String transactionBatchId;
+    
+    private String transactionBatchDetailId;
+    
     private Integer tenantId;
     
     private String remark;

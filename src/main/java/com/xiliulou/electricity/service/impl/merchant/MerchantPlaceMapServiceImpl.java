@@ -65,7 +65,7 @@ public class MerchantPlaceMapServiceImpl implements MerchantPlaceMapService {
      */
     @Slave
     @Override
-    public List<MerchantPlaceMap> queryBindList(Long notMerchantId, Long franchiseeId) {
+    public List<MerchantPlaceMap> queryListForBind(Long notMerchantId, Long franchiseeId) {
         
         return merchantPlaceMapMapper.selectBindList(notMerchantId, franchiseeId);
     }
@@ -98,5 +98,33 @@ public class MerchantPlaceMapServiceImpl implements MerchantPlaceMapService {
         }
         
         return NumberConstant.ZERO;
+    }
+    
+    /**
+     * 判断场地下绑定的柜机是否存在场地费
+     * @param placeIdList
+     * @return
+     */
+    @Slave
+    @Override
+    public Integer existsPlaceFeeByPlaceIdList(List<Long> placeIdList) {
+        return merchantPlaceMapMapper.existsPlaceFeeByPlaceIdList(placeIdList);
+    }
+    
+    /**
+     * 查询场地关联的商户是否存在场地费
+     * @param placeId
+     * @return
+     */
+    @Slave
+    @Override
+    public List<Long> queryListNoExistsPlaceFeeMerchant(Long placeId) {
+        return merchantPlaceMapMapper.queryListNoExistsPlaceFeeMerchant(placeId);
+    }
+    
+    @Slave
+    @Override
+    public List<Long> listNoExistsPlaceFeeMerchantByCabinetId(List<Integer> cabinetIdList) {
+        return merchantPlaceMapMapper.selectListNoExistsPlaceFeeMerchantByCabinetId(cabinetIdList);
     }
 }

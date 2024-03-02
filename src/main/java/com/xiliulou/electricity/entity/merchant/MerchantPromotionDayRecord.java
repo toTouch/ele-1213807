@@ -26,14 +26,20 @@ public class MerchantPromotionDayRecord {
     
     private Long inviterUid;
     
-    private BigDecimal dayFirstMoney;
-    
-    private BigDecimal dayRenewMoney;
-    
-    private BigDecimal dayBalanceMoney;
+    private BigDecimal money;
     
     /**
-     * 返利类型: 0: 拉新,1：续费,2：差额
+     * 拉新产生的差额
+     */
+    private BigDecimal balanceFromFirst;
+    
+    /**
+     * 续费产生的差额
+     */
+    private BigDecimal balanceFromRenew;
+    
+    /**
+     * 返利类型: 0: 拉新,1：续费,2：差额,3：无费用
      */
     private Integer type;
     
@@ -52,7 +58,7 @@ public class MerchantPromotionDayRecord {
     /**
      * 返利类型 拉新
      */
-    public static final int LASHIN = 0;
+    public static final int LASH = 0;
     
     /**
      * 返利类型 续费
@@ -63,5 +69,16 @@ public class MerchantPromotionDayRecord {
      * 返利类型 差额
      */
     public static final int BALANCE = 2;
+    
+    /**
+     * 返利类型 无数据
+     */
+    public static final int NO_DATA = 3;
+    
+    public static final String LASH_NAME = "拉新";
+    
+    public static final String RENEW_NAME = "续费";
+    
+    public static final String BALANCE_NAME = "差额";
     
 }

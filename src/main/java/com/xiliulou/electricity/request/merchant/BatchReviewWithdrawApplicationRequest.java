@@ -23,17 +23,9 @@ public class BatchReviewWithdrawApplicationRequest {
     
     private Integer status;
     
-    private String transactionNo;
-    
     private String remark;
     
-    private String withdrawResult;
-    
-    private Long checkTime;
-    
-    private Long updateTime;
-    
-    private Long operator;
+    private String batchNo;
     
     private Integer tenantId;
     

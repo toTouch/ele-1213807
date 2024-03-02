@@ -2,11 +2,14 @@ package com.xiliulou.electricity.service.merchant;
 
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.merchant.MerchantJoinRecord;
+import com.xiliulou.electricity.query.merchant.MerchantAllPromotionDataDetailQueryModel;
 import com.xiliulou.electricity.query.merchant.MerchantJoinRecordQueryMode;
+import com.xiliulou.electricity.query.merchant.MerchantJoinRecordQueryModel;
 import com.xiliulou.electricity.query.merchant.MerchantJoinUserQueryMode;
 import com.xiliulou.electricity.query.merchant.MerchantPromotionDataDetailQueryModel;
 import com.xiliulou.electricity.query.merchant.MerchantPromotionScanCodeQueryModel;
 import com.xiliulou.electricity.request.merchant.MerchantJoinRecordPageRequest;
+import com.xiliulou.electricity.request.merchant.MerchantJoinScanRequest;
 import com.xiliulou.electricity.vo.merchant.MerchantJoinRecordVO;
 import com.xiliulou.electricity.vo.merchant.MerchantJoinUserVO;
 
@@ -22,7 +25,7 @@ public interface MerchantJoinRecordService {
     /**
      * 扫码参与
      */
-    R joinScanCode(String code);
+    R joinScanCode(MerchantJoinScanRequest request);
     
     /**
      * 根据参与人uid查询记录
@@ -32,7 +35,7 @@ public interface MerchantJoinRecordService {
     /**
      * 修改参与状态
      */
-    Integer updateStatus(Long merchantId, Long joinUid, Integer status);
+    Integer updateStatus(MerchantJoinRecordQueryModel queryModel);
     
     /**
      * 参与人是否存在保护期内的记录
@@ -67,20 +70,26 @@ public interface MerchantJoinRecordService {
     List<MerchantJoinRecordVO> countByMerchantIdList(MerchantJoinRecordQueryMode joinRecordQueryMode);
     
     List<MerchantJoinRecord> selectPromotionDataDetail(MerchantPromotionDataDetailQueryModel queryModel);
-
+    
     /**
      * 商户端，用户管理，会员套餐详情信息查询
+     *
      * @param merchantJoinUserQueryMode
      * @return
      */
     List<MerchantJoinUserVO> selectJoinUserList(MerchantJoinUserQueryMode merchantJoinUserQueryMode);
     
     /**
-     *  是否存在邀请数据
+     * 是否存在邀请数据
+     *
      * @param inviterType 邀请人类型
-     * @param inviterUid 邀请人uid
-     * @param tenantId 租户id
+     * @param inviterUid  邀请人uid
+     * @param tenantId    租户id
      * @return 是否存在邀请数据
      */
-    boolean existInviterData(Integer inviterType,Long inviterUid,Integer tenantId);
+    boolean existInviterData(Integer inviterType, Long inviterUid, Integer tenantId);
+    
+    Integer countEmployeeScanCodeNum(List<Long> uidList, Long startTime, Long endTime, Integer status, Integer tenantId);
+    
+    List<MerchantJoinRecord> selectListAllPromotionDataDetail(MerchantAllPromotionDataDetailQueryModel queryModel);
 }

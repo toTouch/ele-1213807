@@ -76,6 +76,9 @@ public class MerchantAreaServiceImpl implements MerchantAreaService {
         }
     }
     
+    /**
+     * 逻辑删
+     */
     @Override
     public R deleteById(Long id) {
         Integer cabinetExist = electricityCabinetService.existsByAreaId(id);

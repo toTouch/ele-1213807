@@ -5,6 +5,7 @@ import com.xiliulou.electricity.query.merchant.MerchantPlaceCabinetBindQueryMode
 import com.xiliulou.electricity.request.merchant.MerchantPlaceCabinetBindSaveRequest;
 import com.xiliulou.electricity.request.merchant.MerchantPlaceCabinetConditionRequest;
 import com.xiliulou.electricity.request.merchant.MerchantPlaceCabinetPageRequest;
+import com.xiliulou.electricity.vo.merchant.MerchantPlaceCabinetBindTimeCheckVo;
 import com.xiliulou.electricity.vo.merchant.MerchantPlaceCabinetBindVO;
 import org.apache.commons.lang3.tuple.Triple;
 
@@ -36,7 +37,7 @@ public interface MerchantPlaceCabinetBindService {
     
     Integer removeByPlaceId(Long placeId, long updateTime, Integer delFlag);
     
-    Triple<Boolean, String, Object> checkBindTime(Long placeId, Long time);
+    MerchantPlaceCabinetBindTimeCheckVo checkBindTime(Long placeId, Long time, Integer cabinetId);
     
     List<MerchantPlaceCabinetBind> queryListByPlaceId(List<Long> placeIdList, Integer placeMonthNotSettlement);
     

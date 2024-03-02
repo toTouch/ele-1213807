@@ -1,8 +1,9 @@
 package com.xiliulou.electricity.service.impl.merchant;
 
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.mapper.merchant.MerchantCabinetPowerMonthRecordProMapper;
 import com.xiliulou.electricity.service.merchant.MerchantCabinetPowerMonthRecordProService;
-import com.xiliulou.electricity.vo.merchant.MerchantPowerDetailVO;
+import com.xiliulou.electricity.vo.merchant.MerchantPowerPeriodVO;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -19,8 +20,9 @@ public class MerchantCabinetPowerMonthRecordProServiceImpl implements MerchantCa
     @Resource
     private MerchantCabinetPowerMonthRecordProMapper merchantCabinetPowerMonthRecordProMapper;
     
+    @Slave
     @Override
-    public MerchantPowerDetailVO sumMonthPower(List<Long> cabinetIds, List<String> monthDateList) {
+    public MerchantPowerPeriodVO sumMonthPower(List<Long> cabinetIds, List<String> monthDateList) {
         return merchantCabinetPowerMonthRecordProMapper.sumMonthPower(cabinetIds, monthDateList);
     }
 }

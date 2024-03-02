@@ -118,7 +118,8 @@
     
     <update id="addAmountByUid">
         update t_channel_employee_amount
-        set balance = balance + #{income}
+        set balance = balance + #{income},
+            update_time = #{updateTime}
         where uid = #{uid}
           and tenant_id = #{tenantId}
     </update>
@@ -126,6 +127,7 @@
     <update id="reduceAmountByUid">
         update t_channel_employee_amount
         set balance = balance - #{income},
+            update_time = #{updateTime}
         where uid = #{uid}
           and tenant_id = #{tenantId}
     </update>

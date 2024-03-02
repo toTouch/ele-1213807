@@ -2,6 +2,7 @@ package com.xiliulou.electricity.mapper.merchant;
 
 import com.xiliulou.electricity.entity.merchant.MerchantPlaceFeeMonthSummaryRecord;
 import com.xiliulou.electricity.query.merchant.MerchantPlaceFeeMonthSummaryRecordQueryModel;
+import com.xiliulou.electricity.vo.merchant.MerchantPlaceFeeMonthSummaryRecordVO;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
 

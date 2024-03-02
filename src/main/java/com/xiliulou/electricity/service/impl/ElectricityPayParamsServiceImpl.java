@@ -8,18 +8,22 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.config.WechatConfig;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.ElectricityPayParams;
+import com.xiliulou.electricity.entity.Tenant;
 import com.xiliulou.electricity.mapper.ElectricityPayParamsMapper;
 import com.xiliulou.electricity.service.ElectricityPayParamsService;
+import com.xiliulou.electricity.service.TenantService;
 import com.xiliulou.electricity.service.WechatPaymentCertificateService;
 import com.xiliulou.electricity.service.WechatWithdrawalCertificateService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.vo.merchant.ElectricityMerchantProConfigVO;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.annotation.Resource;
 import java.util.Objects;
 
 /**
@@ -32,6 +36,9 @@ import java.util.Objects;
 @Slf4j
 public class ElectricityPayParamsServiceImpl extends ServiceImpl<ElectricityPayParamsMapper, ElectricityPayParams> implements ElectricityPayParamsService {
 
+	@Resource
+	private TenantService tenantService;
+	
 	@Autowired
 	RedisService redisService;
 
@@ -167,9 +174,19 @@ public class ElectricityPayParamsServiceImpl extends ServiceImpl<ElectricityPayP
 		if (Objects.isNull(electricityPayParams)) {
 			return Triple.of(false, null, "未能发现相关的商户小程序配置");
 		}
-
+		
+		Integer tenantId = electricityPayParams.getTenantId();
 		ElectricityMerchantProConfigVO vo = new ElectricityMerchantProConfigVO();
-		vo.setTenantId(electricityPayParams.getTenantId());
+		vo.setTenantId(tenantId);
+		
+		// 获取租户编码
+		Tenant tenant = tenantService.queryByIdFromCache(tenantId);
+		vo.setTenantCode(ObjectUtils.isNotEmpty(tenant) ? tenant.getCode() : null);
+		
+		// 获取客服电话
+		String servicePhone = redisService.get(CacheConstant.CACHE_SERVICE_PHONE + tenantId);
+		vo.setServicePhone(servicePhone);
+		
 		return Triple.of(true, null, vo);
 	}
 

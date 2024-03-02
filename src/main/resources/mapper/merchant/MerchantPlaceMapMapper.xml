@@ -109,7 +109,7 @@
     <select id="countByMerchantIdList" resultType="com.xiliulou.electricity.vo.merchant.MerchantPlaceMapVO">
         SELECT
             merchant_id,
-            count( 1 )
+            count( 1 ) as 'count'
         FROM
             t_merchant_place_map
         WHERE
@@ -132,5 +132,53 @@
             a.merchant_id = #{merchantId}
           and b.`status` = 1
           and b.del_flag = 0;
+    </select>
+    
+    <select id="existsPlaceFeeByPlaceIdList" resultType="java.lang.Integer">
+        SELECT
+            count( 1 )
+        FROM
+            t_merchant_place_cabinet_bind d
+        WHERE
+            d.place_id in
+            <foreach collection="placeIdList" separator="," open="(" close=")" item="placeId">
+                #{placeId}
+            </foreach>
+          AND d.`status` = 0
+          AND EXISTS (
+            SELECT
+                1
+            FROM
+                t_electricity_cabinet c
+            WHERE
+                c.id = d.cabinet_id
+              AND c.place_fee IS NOT NULL)
+    </select>
+    
+    <select id="queryListNoExistsPlaceFeeMerchant" resultType="java.lang.Long">
+        SELECT
+            p.id
+        FROM
+            t_merchant_place_map p
+                left join t_merchant m on m.id = p.merchant_id
+        where
+            p.place_id = #{placeId}
+          and m.exist_place_fee = 1
+    </select>
+    
+    <select id="selectListNoExistsPlaceFeeMerchantByCabinetId" resultType="java.lang.Long">
+        SELECT
+            p.id
+        FROM
+            t_merchant_place_cabinet_bind a
+                INNER JOIN  t_merchant_place_map m on m.place_id = a.place_id
+                INNER JOIN  t_merchant p on p.id = m.merchant_id
+        where
+            a.`status` = 0
+          and p.exist_place_fee = 1
+          and a.cabinet_id in
+          <foreach collection="cabinetIdList" separator="," open="(" close=")" item="cabinetId">
+              #{cabinetId}
+          </foreach>
     </select>
 </mapper>

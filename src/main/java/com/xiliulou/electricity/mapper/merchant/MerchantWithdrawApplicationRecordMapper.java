@@ -26,7 +26,7 @@ public interface MerchantWithdrawApplicationRecordMapper {
     
     List<MerchantWithdrawApplicationRecordVO> selectListByCondition(MerchantWithdrawApplicationRecordRequest merchantWithdrawApplicationRecordRequest);
     
-    Integer countByCondition(MerchantWithdrawApplicationRecord merchantWithdrawApplicationRecord);
+    Integer countByCondition(MerchantWithdrawApplicationRecordRequest merchantWithdrawApplicationRecordRequest);
     
     Integer removeById(@Param("id") Long id);
     
@@ -40,7 +40,7 @@ public interface MerchantWithdrawApplicationRecordMapper {
      */
     Integer updateApplicationRecordStatusByBatchNo(@Param("status") Integer status, @Param("updateTime") Long updateTime, @Param("batchNo") String batchNo, @Param("tenantId") Integer tenantId);
     
-    Integer updateMerchantWithdrawStatus(MerchantWithdrawApplicationRecord merchantWithdrawApplicationRecord);
+    Integer updateApplicationRecordStatus(MerchantWithdrawApplicationRecord merchantWithdrawApplicationRecord);
     
     List<MerchantWithdrawApplicationRecord> selectListByBatchNo(@Param("batchNo") String batchNo, @Param("tenantId") Integer tenantId);
     

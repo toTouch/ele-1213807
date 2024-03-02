@@ -8,7 +8,6 @@
             uid,
             order_no,
             batch_no,
-            transaction_no,
             amount,
             status,
             tenant_id,
@@ -21,7 +20,6 @@
             #{uid},
             #{orderNo},
             #{batchNo},
-            #{transaction_no},
             #{amount},
             #{status},
             #{tenantId},
@@ -38,7 +36,6 @@
             uid,
             order_no,
             batch_no,
-            transaction_no,
             amount,
             status,
             tenant_id,
@@ -47,21 +44,22 @@
             create_time,
             update_time,
         </trim>
-        <trim prefix="values (" suffix=")" suffixOverrides=",">
-            <foreach collection="list" item="item" index="index" separator=",">
-                #{item.uid},
-                #{item.orderNo},
-                #{item.batchNo},
-                #{item.transaction_no},
-                #{item.amount},
-                #{item.status},
-                #{item.tenantId},
-                #{item.remark},
-                #{item.response},
-                #{item.createTime},
-                #{item.updateTime},
-            </foreach>
-        </trim>
+        values
+        <foreach collection="list" item="item" index="index" separator=",">
+            (
+            #{item.uid},
+            #{item.orderNo},
+            #{item.batchNo},
+            #{item.amount},
+            #{item.status},
+            #{item.tenantId},
+            #{item.remark},
+            #{item.response},
+            #{item.createTime},
+            #{item.updateTime}
+            )
+        </foreach>
+    
     </insert>
     
     <update id="updateOne">
@@ -73,6 +71,14 @@
             
             <if test="remark != null">
                 remark = #{remark},
+            </if>
+            
+            <if test="transactionBatchId != null and transactionBatchId != ''">
+                transaction_batch_id = #{transactionBatchId},
+            </if>
+    
+            <if test="transactionBatchDetailId != null and transactionBatchDetailId != ''">
+                transaction_detail_id = #{transactionBatchDetailId},
             </if>
             
             <if test="response != null">
@@ -92,12 +98,13 @@
                mwar.create_time,
                mwar.update_time,
                mwar.tenant_id,
-               mwar.remark,
+               mw.remark,
                mwar.uid,
                mwar.order_no,
                mwar.transaction_no,
                mwar.status
         from t_merchant_withdraw_application_record mwar
+        left join t_merchant_withdraw_application mw on mwar.order_no = mw.order_no
         <where>
             mwar.tenant_id = #{tenantId}
             <if test="id != null and id != ''">
@@ -229,17 +236,44 @@
     
     <update id="updateApplicationRecordStatusByBatchNo">
         update t_merchant_withdraw_application_record
-        set status = #{status},
-            update_time = #{updateTime}
+        <set>
+            <if test="remark != null and remark != ''">
+                remark = #{remark},
+            </if>
+            <if test="status != null">
+                status = #{status},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+        </set>
         where batch_no = #{batchNo}
           and tenant_id = #{tenantId}
     </update>
     
-    <update id="updateMerchantWithdrawStatus">
+    <update id="updateApplicationRecordStatus">
         update t_merchant_withdraw_application_record
-        set response = #{response},
-            status = #{status},
-            update_time = #{updateTime}
+        <set>
+            <if test="response != null and response != ''">
+                response = #{response},
+            </if>
+            <if test="remark != null and remark != ''">
+                remark = #{remark},
+            </if>
+            <if test="transactionBatchId != null and transactionBatchId != ''">
+                transaction_batch_id = #{transactionBatchId},
+            </if>
+    
+            <if test="transactionBatchDetailId != null and transactionBatchDetailId != ''">
+                transaction_detail_id = #{transactionBatchDetailId},
+            </if>
+            <if test="status != null">
+                status = #{status},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+        </set>
         <where>
             <if test="batchNo != null and batchNo != ''">
                 and batch_no = #{batchNo}

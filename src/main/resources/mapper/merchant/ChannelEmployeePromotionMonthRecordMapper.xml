@@ -18,42 +18,39 @@
             <if test="tenantId != null">
                 and tenant_id = #{tenantId}
             </if>
-            <if test="startTime != null">
-                and fee_date <![CDATA[ >=  ]]>  #{startTime}
-            </if>
-            <if test="endTime != null">
-                and fee_date <![CDATA[ <=  ]]>  #{endTime}
+            <if test="monthDate != null and monthDate != ''">
+                and month_date = #{monthDate}
             </if>
         </where>
     </sql>
     <select id="selectListByPage" resultType="com.xiliulou.electricity.vo.merchant.ChannelEmployeePromotionVO">
         SELECT
-            count( 1 ),
-            SUM( month_first_money ),
-            SUM( month_renew_money ),
-            SUM( month_total_money )
+            count( 1 ) as 'channelEmployeeCount',
+            SUM( month_first_money ) as 'monthFirstMoney',
+            SUM( month_renew_money ) as 'monthRenewMoney',
+            SUM( month_total_money ) as 'monthTotalMoney',
+            any_value(month_date) as 'month_date'
         FROM
         t_channel_employee_promotion_month_record t
         <include refid="pageFilter"/>
         GROUP BY
-        fee_date
+        month_date
         limit #{offset}, #{size}
     </select>
     
     <select id="countTotal" resultType="java.lang.Integer">
         select count(1) from (
             SELECT
-                fee_date
+            month_date
             FROM
             t_channel_employee_promotion_month_record t
             <include refid="pageFilter"/>
             GROUP BY
-            fee_date
-            limit #{offset}, #{size}
-        )
+            month_date
+        ) s
     </select>
     <sql id="column">
-        channel_employees_id  , tenant_id  , month_first_money  , month_renew_money
+        channel_employees_id  , tenant_id  , month_first_money  , month_renew_money,month_date
          , month_total_money  ,fee_date   ,create_time ,update_time
     </sql>
     <select id="selectByFeeDate"
@@ -63,7 +60,6 @@
         from t_channel_employee_promotion_month_record
         where
             tenant_id = #{tenantId}
-            and fee_date <![CDATA[ >=  ]]>  #{startTime}
-            and fee_date <![CDATA[ <=  ]]>  #{endTime}
+             and month_date = #{monthDate}
     </select>
 </mapper>

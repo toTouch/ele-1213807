@@ -5,7 +5,7 @@
     <resultMap type="com.xiliulou.electricity.vo.merchant.MerchantEmployeeVO" id="MerchantEmployeeMap">
         <result property="id" column="id" jdbcType="INTEGER"/>
         <result property="uid" column="uid" jdbcType="INTEGER"/>
-        <result property="status" column="lockFlag" jdbcType="INTEGER"/>
+        <result property="status" column="lock_flag" jdbcType="INTEGER"/>
         <result property="merchantUid" column="merchant_uid" jdbcType="INTEGER"/>
         <result property="merchantName" column="merchant_name" jdbcType="VARCHAR"/>
         <result property="placeId" column="place_id" jdbcType="INTEGER"/>
@@ -21,7 +21,9 @@
         select
             tme.id,
             tme.uid,
-            tu.lockFlag,
+            tu.name,
+            tu.phone,
+            tu.lock_flag,
             tme.merchant_uid,
             tme.place_id,
             tme.tenant_id,
@@ -38,7 +40,9 @@
         select
             tme.id,
             tme.uid,
-            tu.lockFlag,
+            tu.name,
+            tu.phone,
+            tu.lock_flag,
             tme.merchant_uid,
             tme.place_id,
             tme.tenant_id,
@@ -188,7 +192,7 @@
     
     <!--通过主键逻辑删除商户员工-->
     <delete id="removeById">
-        update t_merchant_employee set del_flag = 1 where id = #{id}
+        update t_merchant_employee set del_flag = 1, update_time = #{updateTime} where id = #{id}
     </delete>
     
     <!--通过主键物理删除商户员工-->
@@ -197,11 +201,32 @@
     </delete>
     
     <select id="selectListByMerchantUid" resultType="com.xiliulou.electricity.entity.merchant.MerchantEmployee">
-        select uid,  place_id from t_merchant_employee where merchant_uid = #{merchantUid} and tenant_id = #{tenantId} and del_flag = 0
+        select uid,  place_id from t_merchant_employee where merchant_uid = #{uid} and tenant_id = #{tenantId} and del_flag = 0
         order by id desc
         <if test="offset != null and size != null">
             limit #{offset}, #{size}
         </if>
+    </select>
+    
+    <select id="selectMerchantUsers" resultType="com.xiliulou.electricity.vo.merchant.MerchantEmployeeVO">
+        select
+            tme.id,
+            tme.uid,
+            tu.name,
+            tu.phone,
+            tu.lock_flag as status,
+            tme.merchant_uid,
+            tme.place_id,
+            tme.tenant_id,
+            tme.del_flag,
+            tme.remark,
+            tme.create_time,
+            tme.update_time
+        from t_merchant_employee tme
+        left join t_user tu on tu.uid = tme.uid
+        where tme.merchant_uid = #{merchantUid}
+          and tme.tenant_id = #{tenantId}
+          and tme.del_flag = 0
     </select>
     
 </mapper>

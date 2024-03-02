@@ -31,4 +31,10 @@ public interface MerchantPlaceMapMapper {
     List<MerchantPlaceMapVO> countByMerchantIdList(MerchantPlaceMapQueryModel placeMapQueryModel);
     
     List<Long> selectCabinetIdsByMerchantId(@Param("merchantId") Long merchantId);
+    
+    Integer existsPlaceFeeByPlaceIdList(@Param("placeIdList") List<Long> placeIdList);
+    
+    List<Long> queryListNoExistsPlaceFeeMerchant(@Param("placeId") Long placeId);
+    
+    List<Long> selectListNoExistsPlaceFeeMerchantByCabinetId(@Param("cabinetIdList") List<Integer> cabinetIdList);
 }

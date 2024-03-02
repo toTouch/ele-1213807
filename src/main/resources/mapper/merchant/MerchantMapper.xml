@@ -7,9 +7,9 @@
     </select>
     <insert id="insert" keyProperty="id" useGeneratedKeys="true">
         insert into t_merchant(id, name , franchisee_id , phone , merchant_grade_id , channel_employee_uid , tenant_id , auto_up_grade , status , enterprise_package_auth ,
-                               purchase_authority ,uid ,enterprise_id ,invite_auth , del_flag, create_time, update_time)
+                               purchase_authority ,uid ,enterprise_id ,invite_auth,exist_place_fee , del_flag, create_time, update_time)
         values (#{id}, #{name}, #{franchiseeId}, #{phone}, #{merchantGradeId}, #{channelEmployeeUid}, #{tenantId},#{autoUpGrade}, #{status}, #{enterprisePackageAuth},
-                #{purchaseAuthority},#{uid},#{enterpriseId},#{inviteAuth}, #{delFlag},
+                #{purchaseAuthority},#{uid},#{enterpriseId},#{inviteAuth},#{existPlaceFee}, #{delFlag},
                 #{createTime}, #{updateTime})
     </insert>
     <update id="update">
@@ -42,7 +42,7 @@
                 <if test="enterprisePackageAuth != null">
                     enterprise_package_auth = #{enterprisePackageAuth},
                 </if>
-                <if test="purchaseAuthority != null and purchaseAuthority != ''">
+                <if test="purchaseAuthority != null">
                     purchase_authority = #{purchaseAuthority},
                 </if>
                 <if test="updateTime != null">
@@ -70,7 +70,10 @@
                 auto_up_grade = #{autoUpGrade},
             </if>
             <if test="updateTime != null">
-                update_time = #{updateTime}
+                update_time = #{updateTime},
+            </if>
+            <if test="existPlaceFee != null">
+                exist_place_fee  = #{existPlaceFee}
             </if>
         </set>
         
@@ -79,11 +82,20 @@
         </where>
     </update>
     
+    <update id="batchUpdateExistPlaceFee">
+        update t_merchant
+        set exist_place_fee = #{existsPlaceFee}, update_time = #{updateTime}
+          where id in
+          <foreach collection="merchantIdList" item="id" close=")" open="(" separator=",">
+              #{id}
+          </foreach>
+    </update>
+    
     <delete id="removeById">
         update t_merchant set del_flag = #{delFlag}, update_time = #{updateTime} where id = #{id}
     </delete>
     <sql id="column">
-        id, name , franchisee_id , phone , merchant_grade_id , channel_employee_uid , tenant_id , auto_up_grade , status , enterprise_package_auth ,
+        id, name , franchisee_id , phone , merchant_grade_id , channel_employee_uid , tenant_id , auto_up_grade , status , enterprise_package_auth ,exist_place_fee,
                                purchase_authority ,uid ,enterprise_id , del_flag, create_time, update_time,invite_auth
     </sql>
     <select id="selectById" resultType="com.xiliulou.electricity.entity.merchant.Merchant">
@@ -172,8 +184,8 @@
             <if test="tenantId != null">
                 and tenant_id = #{tenantId}
             </if>
-            <if test="beginTime != null">
-                and create_time &gt;= #{beginTime}
+            <if test="startTime != null">
+                and create_time &gt;= #{startTime}
             </if>
             <if test="endTime != null">
                 and create_time &lt; #{endTime}

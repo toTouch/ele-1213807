@@ -4,13 +4,16 @@ import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.annotation.Log;
 import com.xiliulou.electricity.entity.User;
+import com.xiliulou.electricity.entity.merchant.Merchant;
 import com.xiliulou.electricity.request.merchant.MerchantPlaceCabinetBindSaveRequest;
 import com.xiliulou.electricity.request.merchant.MerchantPlaceCabinetPageRequest;
 import com.xiliulou.electricity.service.merchant.MerchantPlaceCabinetBindService;
+import com.xiliulou.electricity.service.merchant.MerchantService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.validator.CreateGroup;
 import com.xiliulou.electricity.validator.UpdateGroup;
+import com.xiliulou.electricity.vo.merchant.MerchantPlaceCabinetBindTimeCheckVo;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Triple;
@@ -36,6 +39,9 @@ public class JsonMerchantPlaceCabinetBindController extends BaseController {
     @Resource
     private MerchantPlaceCabinetBindService merchantPlaceCabinetBindService;
     
+    @Resource
+    private MerchantService merchantService;
+    
     /**
      * 绑定换电柜
      *
@@ -54,9 +60,18 @@ public class JsonMerchantPlaceCabinetBindController extends BaseController {
         }
         
         Triple<Boolean, String, Object> r = merchantPlaceCabinetBindService.bind(placeCabinetBindSaveRequest);
+        
         if (!r.getLeft()) {
             return R.fail(r.getMiddle(), (String) r.getRight());
         }
+    
+        if (Objects.isNull(r.getRight())) {
+            return R.ok();
+        }
+        
+        // 删除商户缓存
+        Merchant merchant = (Merchant) r.getRight();
+        merchantService.deleteCacheById(merchant.getId());
         
         return R.ok();
     }
@@ -119,7 +134,7 @@ public class JsonMerchantPlaceCabinetBindController extends BaseController {
      * @author maxiaodong
      */
     @GetMapping("/admin/merchant/place/cabinet/pageCount")
-    public R pageCount(@RequestParam("placeId") Long placeId, @RequestParam(value = "sn", required = false) String sn, @RequestParam(value = "status") Integer status) {
+    public R pageCount(@RequestParam("placeId") Long placeId, @RequestParam(value = "cabinetSn", required = false) String cabinetSn, @RequestParam(value = "status", required = false) Integer status) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
@@ -134,7 +149,7 @@ public class JsonMerchantPlaceCabinetBindController extends BaseController {
             tenantId = TenantContextHolder.getTenantId();
         }
     
-        MerchantPlaceCabinetPageRequest placeCabinetPageRequest = MerchantPlaceCabinetPageRequest.builder().sn(sn).status(status).tenantId(tenantId).build();
+        MerchantPlaceCabinetPageRequest placeCabinetPageRequest = MerchantPlaceCabinetPageRequest.builder().sn(cabinetSn).status(status).tenantId(tenantId).build();
         
         return R.ok(merchantPlaceCabinetBindService.countTotal(placeCabinetPageRequest));
     }
@@ -146,7 +161,8 @@ public class JsonMerchantPlaceCabinetBindController extends BaseController {
      * @author maxiaodong
      */
     @GetMapping("/admin/merchant/place/cabinet/page")
-    public R page(@RequestParam("size") long size, @RequestParam("offset") long offset, @RequestParam("placeId") Long placeId, @RequestParam(value = "sn", required = false) String sn, @RequestParam(value = "status") Integer status) {
+    public R page(@RequestParam("size") long size, @RequestParam("offset") long offset, @RequestParam("placeId") Long placeId, @RequestParam(value = "cabinetSn", required = false) String cabinetSn,
+            @RequestParam(value = "status", required = false) Integer status) {
         if (size < 0 || size > 50) {
             size = 10L;
         }
@@ -169,7 +185,7 @@ public class JsonMerchantPlaceCabinetBindController extends BaseController {
             tenantId = TenantContextHolder.getTenantId();
         }
         
-        MerchantPlaceCabinetPageRequest placeCabinetPageRequest = MerchantPlaceCabinetPageRequest.builder().placeId(placeId).sn(sn).size(size).offset(offset).tenantId(tenantId)
+        MerchantPlaceCabinetPageRequest placeCabinetPageRequest = MerchantPlaceCabinetPageRequest.builder().placeId(placeId).sn(cabinetSn).size(size).offset(offset).tenantId(tenantId)
                 .status(status).build();
         
         return R.ok(merchantPlaceCabinetBindService.listByPage(placeCabinetPageRequest));
@@ -182,17 +198,14 @@ public class JsonMerchantPlaceCabinetBindController extends BaseController {
      * @return
      */
     @GetMapping("/admin/merchant/place/cabinet/checkBindTime")
-    public R checkBindTime(@RequestParam("placeId") Long placeId, @RequestParam("time") Long time) {
+    public R checkBindTime(@RequestParam("placeId") Long placeId,@RequestParam("cabinetId") Integer cabinetId, @RequestParam("time") Long time) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
+    
+        MerchantPlaceCabinetBindTimeCheckVo vo = merchantPlaceCabinetBindService.checkBindTime(placeId, time, cabinetId);
         
-        Triple<Boolean, String, Object> r = merchantPlaceCabinetBindService.checkBindTime(placeId, time);
-        if (!r.getLeft()) {
-            return R.fail(r.getMiddle(), (String) r.getRight());
-        }
-        
-        return R.ok();
+        return R.ok(vo);
     }
 }

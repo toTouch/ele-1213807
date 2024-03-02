@@ -1,6 +1,9 @@
 package com.xiliulou.electricity.vo.merchant;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 
@@ -10,33 +13,24 @@ import java.math.BigDecimal;
  * @date 2024/2/24 13:02:50
  */
 @Data
-public class MerchantPromotionMonthDetailVO {
-    
-    private Integer tenantId;
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
+public class MerchantPromotionMonthExcelVO {
     
     private String monthDate;
     
-    private Long merchantId;
-    
     private String merchantName;
-    
-    private Long inviterUid;
-    
-    private String inviterName;
     
     private BigDecimal monthFirstMoney;
     
     private BigDecimal monthRenewMoney;
     
-    private BigDecimal dayFirstMoney;
-    
-    private BigDecimal dayRenewMoney;
-    
-    private BigDecimal dayBalanceMoney;
-    
-    private Integer type;
+    private String inviterName;
     
     private String typeName;
+    
+    private BigDecimal dayMoney;
     
     private String date;
 }

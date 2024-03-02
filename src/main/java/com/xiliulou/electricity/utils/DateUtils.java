@@ -3,7 +3,6 @@ package com.xiliulou.electricity.utils;
 import cn.hutool.core.date.DateUtil;
 import lombok.extern.slf4j.Slf4j;
 
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -11,11 +10,11 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.TemporalAdjusters;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -207,7 +206,7 @@ public class DateUtils {
     }
     
     /**
-     * 根据年月获取当月月第一天 年月：2024-01 返回: 2024-01-01
+     * 根据年月获取当月第一天 年月：2024-01 返回: 2024-01-01
      */
     public static String getFirstDayByMonth(String yearMonth) {
         // 分割年月字符串并转换为整数
@@ -221,7 +220,7 @@ public class DateUtils {
     }
     
     /**
-     * 根据年月获取当月月最后一天 年月：2024-01 返回: 2024-01-31
+     * 根据年月获取当月最后一天 年月：2024-01 返回: 2024-01-31
      */
     public static String getLastDayByMonth(String yearMonth) {
         // 分割年月字符串并转换为整数
@@ -274,8 +273,20 @@ public class DateUtils {
         return lastMonthLastDay.atTime(23, 59, 59).atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
     }
     
-    public static boolean isSameDay(long time1, long time2 ) {
+    public static boolean isSameDay(long time1, long time2) {
         SimpleDateFormat fmt = new SimpleDateFormat("yyyyMMdd");
         return fmt.format(new Date(time1)).equals(fmt.format(new Date(time2)));
+    }
+    
+    /**
+     * 根据时间戳获取当天0点的时间戳
+     */
+    public static long getStartTimeByTimeStamp(long timestamp) {
+        // 将输入的时间戳转换为指定时区的ZonedDateTime对象，默认使用系统默认时区
+        ZonedDateTime zonedDateTime = Instant.ofEpochMilli(timestamp).atZone(ZoneId.systemDefault());
+        
+        // 获取当天零点的ZonedDateTime对象
+        ZonedDateTime startOfDay = zonedDateTime.toLocalDate().atStartOfDay(zonedDateTime.getZone());
+        return startOfDay.toInstant().toEpochMilli();
     }
 }

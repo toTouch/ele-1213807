@@ -42,7 +42,7 @@ public class JsonUserEnterprisePackageController extends BaseController {
     @Resource
     private EnterpriseInfoService enterpriseInfoService;
     
-    @GetMapping("/user/enterprise/queryBatteryV")
+    @GetMapping({"/user/enterprise/queryBatteryV", "/merchant/enterprise/queryBatteryV"})
     public R queryBatteryV(@RequestParam(value = "enterpriseId") Long enterpriseId, @RequestParam(value = "uid", required = true) Long uid) {
         
         EnterpriseChannelUserQuery enterpriseChannelUserQuery = EnterpriseChannelUserQuery.builder().enterpriseId(enterpriseId).uid(uid).build();
@@ -58,7 +58,7 @@ public class JsonUserEnterprisePackageController extends BaseController {
      * @param batteryV
      * @return
      */
-    @GetMapping("/user/enterprise/queryPackagesByBatteryV")
+    @GetMapping({"/user/enterprise/queryPackagesByBatteryV", "/merchant/enterprise/queryPackagesByBatteryV"})
     public R queryPackagesByBatteryV(@RequestParam(value = "enterpriseId", required = true) Long enterpriseId, @RequestParam(value = "uid", required = true) Long uid,
             @RequestParam(value = "batteryV", required = false) String batteryV) {
         
@@ -77,7 +77,7 @@ public class JsonUserEnterprisePackageController extends BaseController {
      * @param simpleBatteryType
      * @return
      */
-    @GetMapping(value = "/user/enterprise/queryInsuranceByType")
+    @GetMapping(value = {"/user/enterprise/queryInsuranceByType", "/merchant/enterprise/queryInsuranceByType"})
     public R queryInsuranceByType(@RequestParam("franchiseeId") Long franchiseeId, @RequestParam("insuranceType") Integer insuranceType,
             @RequestParam(value = "simpleBatteryType", required = false) String simpleBatteryType) {
         
@@ -93,7 +93,7 @@ public class JsonUserEnterprisePackageController extends BaseController {
      * @param uid
      * @return
      */
-    @GetMapping(value = "/user/enterprise/queryRiderPackageInfo")
+    @GetMapping(value = {"/user/enterprise/queryRiderPackageInfo", "/merchant/enterprise/queryRiderPackageInfo"})
     public R queryRiderPackageInfo(@RequestParam(value = "uid", required = true) Long uid) {
         
         return returnTripleResult(enterpriseBatteryPackageService.queryRiderDepositAndPackage(uid));
@@ -106,7 +106,7 @@ public class JsonUserEnterprisePackageController extends BaseController {
      * @param uid
      * @return
      */
-    @GetMapping(value = "/user/enterprise/queryBatteryDeposit")
+    @GetMapping(value = {"/user/enterprise/queryBatteryDeposit", "/merchant/enterprise/queryBatteryDeposit"})
     public R queryBatteryDeposit(@RequestParam(value = "uid", required = true) Long uid) {
         
         return returnTripleResult(enterpriseBatteryPackageService.queryUserBatteryDeposit(uid));
@@ -118,7 +118,7 @@ public class JsonUserEnterprisePackageController extends BaseController {
      * @param uid
      * @return
      */
-    @GetMapping(value = "/user/enterprise/freeBatteryDeposit")
+    @GetMapping({"/user/enterprise/freeBatteryDeposit", "/merchant/enterprise/freeBatteryDeposit"})
     public R freeBatteryDeposit(@RequestParam(value = "uid", required = true) Long uid, @RequestParam(value = "realName", required = true) String realName,
             @RequestParam(value = "idCard", required = true) String idCard, @RequestParam(value = "phone", required = true) String phone,
             @RequestParam(value = "packageId", required = true) Long packageId) {
@@ -133,7 +133,7 @@ public class JsonUserEnterprisePackageController extends BaseController {
      *
      * @return
      */
-    @GetMapping("/user/enterprise/freeDeposit/status")
+    @GetMapping({"/user/enterprise/freeDeposit/status", "/merchant/enterprise/freeDeposit/status"})
     public R freeBatteryDepositOrderStatus(@RequestParam(value = "uid", required = true) Long uid) {
         
         return returnTripleResult(enterpriseBatteryPackageService.checkUserFreeBatteryDepositStatus(uid));
@@ -145,7 +145,7 @@ public class JsonUserEnterprisePackageController extends BaseController {
      * @param enterpriseId
      * @return
      */
-    @GetMapping("/user/enterprise/franchisee/status")
+    @GetMapping({"/user/enterprise/franchisee/status", "/merchant/enterprise/franchisee/status"})
     public R franchiseeStatus(@RequestParam(value = "enterpriseId", required = true) Long enterpriseId) {
         return returnTripleResult(enterpriseBatteryPackageService.selectFranchiseeByEnterpriseId(enterpriseId));
     }
@@ -157,7 +157,7 @@ public class JsonUserEnterprisePackageController extends BaseController {
      * @param uid
      * @return
      */
-    @GetMapping("/user/enterprise/queryUserDeposit")
+    @GetMapping({"/user/enterprise/queryUserDeposit", "/merchant/enterprise/queryUserDeposit"})
     public R queryUserDeposit(@RequestParam(value = "enterpriseId", required = true) Long enterpriseId, @RequestParam(value = "uid", required = true) Long uid) {
         
         EnterpriseMemberCardQuery query = EnterpriseMemberCardQuery.builder().enterpriseId(enterpriseId).uid(uid).build();
@@ -172,7 +172,7 @@ public class JsonUserEnterprisePackageController extends BaseController {
      * @param
      * @return
      */
-    @PostMapping("/user/enterprise/purchaseRenewalPackage")
+    @PostMapping({"/user/enterprise/purchaseRenewalPackage", "/merchant/enterprise/purchaseRenewalPackage"})
     public R purchaseRenewalPackage(@RequestBody @Validated(CreateGroup.class) EnterprisePackageOrderQuery query) {
         
         return returnTripleResult(enterpriseBatteryPackageService.purchasePackageByEnterpriseUser(query));
@@ -186,7 +186,7 @@ public class JsonUserEnterprisePackageController extends BaseController {
      * @param
      * @return
      */
-    @PostMapping("/user/enterprise/purchasePackageWithDeposit")
+    @PostMapping({"/user/enterprise/purchasePackageWithDeposit", "/merchant/enterprise/purchasePackageWithDeposit"})
     public R purchasePackageWithDeposit(@RequestBody @Validated(CreateGroup.class) EnterprisePackageOrderQuery query) {
         
         return returnTripleResult(enterpriseBatteryPackageService.purchasePackageWithDepositByEnterpriseUser(query));
@@ -200,7 +200,7 @@ public class JsonUserEnterprisePackageController extends BaseController {
      * @param
      * @return
      */
-    @PostMapping("/user/enterprise/purchasePackageWithFreeDeposit")
+    @PostMapping({"/user/enterprise/purchasePackageWithFreeDeposit", "/merchant/enterprise/purchasePackageWithFreeDeposit"})
     public R purchasePackageWithFreeDeposit(@RequestBody @Validated(CreateGroup.class) EnterprisePackageOrderQuery query) {
         
         return returnTripleResult(enterpriseBatteryPackageService.purchasePackageWithFreeDeposit(query));

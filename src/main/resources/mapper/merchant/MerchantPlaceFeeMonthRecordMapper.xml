@@ -8,23 +8,13 @@
                 #{item.monthPlaceFee}, #{item.tenantId}), #{item.delFlag}, #{item.createTime}, #{item.updateTime})
     </insert>
     
-    <select id="selectListBySettlementTime" resultType="com.xiliulou.electricity.vo.merchant.MerchantPlaceFeeMonthRecordVO">
-        select tenant_id,
-               sum(month_place_fee)           as month_total_place_fee,
-               sum(rent_days)                 as month_rent_days,
-               any_value(place_id) AS place_id,
-               any_value(month_date) AS month_date,
-               any_value(sn) AS sn,
-               any_value(rent_start_time) AS rent_start_time,
-               any_value(rent_end_time) AS rent_end_time,
-               any_value(rent_days) AS rent_days,
-               any_value(place_fee) AS place_fee,
-               any_value(month_place_fee) AS month_place_fee,
+    <select id="selectListBySettlementTime" resultType="com.xiliulou.electricity.entity.merchant.MerchantPlaceFeeMonthRecord">
+        select month_date , place_id, eid, sn, rent_start_time ,rent_end_time,rent_days,place_fee,month_place_fee,
+            tenant_id, del_flag, create_time, update_time
         from t_merchant_place_fee_month_record
         where month_date = #{date}
           and tenant_id = #{tenantId}
-          and del_flag = 0
-        group by tenant_id, place_id
+          and del_flag = 0 order by place_id desc
     </select>
     
     <select id="selectList" resultType="com.xiliulou.electricity.entity.merchant.MerchantPlaceFeeMonthRecord">
@@ -33,15 +23,21 @@
         tenant_id, del_flag, create_time, update_time
         from t_merchant_place_fee_month_record
         where
-        and del_flag = 0
-        and place_id in
-        <foreach collection="placeIdList" item="placeId" close=")" open="(" separator=",">
-            #{placeId}
-        </foreach>
+        del_flag = 0
+        and eid != 0
         
-        and month_date in
-        <foreach collection="monthList" item="month" close=")" open="(" separator=",">
-            #{monthDate}
-        </foreach>
+        <if test="placeIdList != null and placeIdList.size() > 0">
+            and place_id in
+            <foreach collection="placeIdList" item="placeId" close=")" open="(" separator=",">
+                #{placeId}
+            </foreach>
+        </if>
+        
+        <if test="monthList != null and monthList.size() > 0">
+            and month_date in
+            <foreach collection="monthList" item="month" close=")" open="(" separator=",">
+                #{month}
+            </foreach>
+        </if>
     </select>
 </mapper>

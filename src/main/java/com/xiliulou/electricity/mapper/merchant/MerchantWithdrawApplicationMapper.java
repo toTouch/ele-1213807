@@ -20,7 +20,7 @@ public interface MerchantWithdrawApplicationMapper {
     
     Integer updateOne(MerchantWithdrawApplication merchantWithdrawApplication);
     
-    Integer updateByIds(BatchReviewWithdrawApplicationRequest batchReviewWithdrawApplicationRequest);
+    Integer updateByIds(@Param("merchantWithdrawApplication") MerchantWithdrawApplication merchantWithdrawApplication, @Param("ids") List<Long> ids);
     
     List<MerchantWithdrawApplicationVO> queryList(MerchantWithdrawApplicationRequest merchantWithdrawApplicationRequest);
     
@@ -33,6 +33,10 @@ public interface MerchantWithdrawApplicationMapper {
     Integer removeById(@Param("id") Long id);
     
     MerchantWithdrawApplication selectById(@Param("id") Long id);
+    
+    List<MerchantWithdrawApplicationVO> selectRecordList(MerchantWithdrawApplicationRequest merchantWithdrawApplicationRequest);
+    
+    Integer selectRecordListCount(MerchantWithdrawApplicationRequest merchantWithdrawApplicationRequest);
     
     BigDecimal sumByStatus(@Param("tenantId") Integer tenantId,@Param("status") Integer status,@Param("uid") Long uid);
     
@@ -48,7 +52,7 @@ public interface MerchantWithdrawApplicationMapper {
      * @param tenantId
      * @return
      */
-    Integer updateApplicationRecordStatusByBatchNo(@Param("status") Integer status, @Param("updateTime") Long updateTime, @Param("batchNo") String batchNo, @Param("tenantId") Integer tenantId);
+    Integer updateApplicationStatusByBatchNo(@Param("status") Integer status, @Param("updateTime") Long updateTime, @Param("batchNo") String batchNo, @Param("tenantId") Integer tenantId);
     
     /**
      * 按照batchNo, orderNo, tenantId等条件更新提现状态

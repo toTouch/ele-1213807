@@ -1,12 +1,14 @@
 package com.xiliulou.electricity.service.impl.merchant;
 
 import com.alibaba.excel.EasyExcel;
+import com.google.api.client.util.Lists;
+import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.dto.merchant.MerchantPlaceFeeMonthRecordDTO;
 import com.xiliulou.electricity.entity.merchant.MerchantPlace;
 import com.xiliulou.electricity.entity.merchant.MerchantPlaceFeeMonthRecord;
 import com.xiliulou.electricity.entity.merchant.MerchantPlaceFeeMonthSummaryRecord;
-import com.xiliulou.electricity.mapper.merchant.MerchantPlaceFeeMonthRecordMapper;
 import com.xiliulou.electricity.query.merchant.MerchantPlaceFeeMonthSummaryRecordQueryModel;
 import com.xiliulou.electricity.service.excel.AutoHeadColumnWidthStyleStrategy;
 import com.xiliulou.electricity.service.excel.CommentWriteHandler;
@@ -17,8 +19,9 @@ import com.xiliulou.electricity.service.merchant.MerchantPlaceFeeMonthSummaryRec
 import com.xiliulou.electricity.service.merchant.MerchantPlaceFeeSettlementService;
 import com.xiliulou.electricity.service.merchant.MerchantPlaceService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
+import com.xiliulou.electricity.utils.DateUtils;
 import com.xiliulou.electricity.vo.merchant.MerchantPlaceFeeMonthRecordExportVO;
-import com.xiliulou.electricity.vo.merchant.MerchantPlaceFeeMonthRecordVO;
+import com.xiliulou.electricity.vo.merchant.MerchantPlaceFeeMonthSummaryRecordVO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.BeanUtils;
@@ -27,7 +30,6 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
 import java.math.BigDecimal;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -37,6 +39,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
+
+import static java.util.stream.Collectors.toMap;
 
 /**
  * @ClassName : MerchantPlaceFeeSettlementServiceImpl
@@ -59,17 +63,69 @@ public class MerchantPlaceFeeSettlementServiceImpl implements MerchantPlaceFeeSe
     
     private List<MerchantPlaceFeeMonthRecordExportVO> getData(String monthDate) {
         
-        List<MerchantPlaceFeeMonthRecordVO> merchantPlaceFeeMonthRecords = merchantPlaceFeeMonthRecordService.selectByMonthDate(monthDate, TenantContextHolder.getTenantId());
-        return merchantPlaceFeeMonthRecords.parallelStream().map(merchantPlaceFeeMonthRecord -> {
+        List<MerchantPlaceFeeMonthRecordExportVO> resultVOs = new ArrayList<>();
+        List<MerchantPlaceFeeMonthRecord> merchantPlaceFeeMonthRecords = merchantPlaceFeeMonthRecordService.selectByMonthDate(monthDate, TenantContextHolder.getTenantId());
+        if (CollectionUtils.isEmpty(merchantPlaceFeeMonthRecords)) {
+            return resultVOs;
+        }
+        
+        // 根据场地id分组 并monthPlaceFee求和
+        Map<Long, List<MerchantPlaceFeeMonthRecord>> placeIdListMap = merchantPlaceFeeMonthRecords.stream().filter(item -> Objects.nonNull(item.getPlaceId()))
+                .collect(Collectors.groupingBy(MerchantPlaceFeeMonthRecord::getPlaceId));
+        
+        List<MerchantPlaceFeeMonthRecordDTO> recordDTOList = Lists.newArrayList();
+        
+        placeIdListMap.forEach((placeId, merchantPlaceFeeMonthRecordList) -> {
+            
+            // 租赁天数求和
+            Integer rentDays = merchantPlaceFeeMonthRecords.stream()
+                    .filter(item -> Objects.nonNull(item.getRentDays()) && Objects.nonNull(item.getPlaceId()) && Objects.equals(item.getPlaceId(), placeId))
+                    .map(MerchantPlaceFeeMonthRecord::getRentDays).reduce(0, Integer::sum);
+            
+            //月场地费求和
+            BigDecimal monthPlaceFee = merchantPlaceFeeMonthRecords.stream()
+                    .filter(item -> Objects.nonNull(item.getMonthPlaceFee()) && Objects.nonNull(item.getPlaceId()) && Objects.equals(item.getPlaceId(), placeId))
+                    .map(MerchantPlaceFeeMonthRecord::getMonthPlaceFee).reduce(BigDecimal.ZERO, BigDecimal::add);
+            
+            MerchantPlaceFeeMonthRecordDTO dto = new MerchantPlaceFeeMonthRecordDTO();
+            
+            dto.setMonthDate(merchantPlaceFeeMonthRecordList.get(0).getMonthDate());
+            dto.setPlaceId(placeId);
+            dto.setTenantId(merchantPlaceFeeMonthRecordList.get(0).getTenantId());
+            dto.setMonthPlaceFee(monthPlaceFee.compareTo(BigDecimal.ZERO) == 0 ? null : monthPlaceFee);
+            dto.setMonthRentDays(Objects.equals(rentDays, 0) ? null : rentDays);
+            recordDTOList.add(dto);
+        });
+        
+        // recordDTOList转map
+        Map<Long, MerchantPlaceFeeMonthRecordDTO> recordMap = recordDTOList.stream().collect(toMap(MerchantPlaceFeeMonthRecordDTO::getPlaceId, item -> item));
+        
+        resultVOs = merchantPlaceFeeMonthRecords.parallelStream().map(merchantPlaceFeeMonthRecord -> {
             MerchantPlaceFeeMonthRecordExportVO exportVO = new MerchantPlaceFeeMonthRecordExportVO();
-            BeanUtils.copyProperties(merchantPlaceFeeMonthRecord,exportVO);
-            Long placeId = merchantPlaceFeeMonthRecord.getPlaceId();
-            MerchantPlace merchantPlace = merchantPlaceService.queryFromCacheById(placeId);
+            BeanUtils.copyProperties(merchantPlaceFeeMonthRecord, exportVO);
+            exportVO.setRentStartTime(
+                    Objects.nonNull(merchantPlaceFeeMonthRecord.getRentStartTime()) ? DateUtils.getYearAndMonthAndDayByTimeStamps(merchantPlaceFeeMonthRecord.getRentStartTime())
+                            : null);
+            exportVO.setRentEndTime(
+                    Objects.nonNull(merchantPlaceFeeMonthRecord.getRentEndTime()) ? DateUtils.getYearAndMonthAndDayByTimeStamps(merchantPlaceFeeMonthRecord.getRentEndTime())
+                            : null);
+            Long recordPlaceId = merchantPlaceFeeMonthRecord.getPlaceId();
+            MerchantPlace merchantPlace = merchantPlaceService.queryByIdFromCache(recordPlaceId);
             if (Objects.nonNull(merchantPlace)) {
                 exportVO.setPlaceName(merchantPlace.getName());
             }
+            
+            if (Objects.nonNull(merchantPlaceFeeMonthRecord.getPlaceId())) {
+                MerchantPlaceFeeMonthRecordDTO merchantPlaceFeeMonthRecordDTO = recordMap.get(merchantPlaceFeeMonthRecord.getPlaceId());
+                if (Objects.nonNull(merchantPlaceFeeMonthRecordDTO) && Objects.equals(merchantPlaceFeeMonthRecord.getPlaceId(), merchantPlaceFeeMonthRecordDTO.getPlaceId())) {
+                    exportVO.setMonthTotalPlaceFee(merchantPlaceFeeMonthRecordDTO.getMonthPlaceFee());
+                    exportVO.setMonthRentDays(merchantPlaceFeeMonthRecordDTO.getMonthRentDays());
+                }
+            }
             return exportVO;
         }).collect(Collectors.toList());
+        
+        return resultVOs;
     }
     
     @Override
@@ -77,11 +133,12 @@ public class MerchantPlaceFeeSettlementServiceImpl implements MerchantPlaceFeeSe
         
         String fileName = "场地费出账记录.xlsx";
         try {
+            ServletOutputStream outputStream = response.getOutputStream();
             // 告诉浏览器用什么软件可以打开此文件
             response.setHeader("content-Type", "application/vnd.ms-excel");
             // 下载文件的默认名称
             response.setHeader("Content-Disposition", "attachment;filename=" + URLEncoder.encode(fileName, StandardCharsets.UTF_8));
-            EasyExcel.write(fileName).head(getHeader())
+            EasyExcel.write(outputStream, MerchantPlaceFeeMonthRecordExportVO.class).head(getHeader())
                     // 合并策略：合并相同数据的行。第一个参数表示从哪一行开始进行合并，由于表头占了两行，因此从第2行开始（索引从0开始）
                     // 第二个参数是指定哪些列要进行合并
                     .registerWriteHandler(new MergeSameRowsStrategy(2, new int[] {0, 1, 2, 3})).registerWriteHandler(HeadContentCellStyle.myHorizontalCellStyleStrategy())
@@ -97,7 +154,11 @@ public class MerchantPlaceFeeSettlementServiceImpl implements MerchantPlaceFeeSe
     public R page(MerchantPlaceFeeMonthSummaryRecordQueryModel queryModel) {
         List<MerchantPlaceFeeMonthSummaryRecord> merchantPlaceFeeMonthSummaryRecords = merchantPlaceFeeMonthSummaryRecordService.selectByCondition(queryModel);
         if (DataUtil.collectionIsUsable(merchantPlaceFeeMonthSummaryRecords)) {
-            return R.ok(merchantPlaceFeeMonthSummaryRecords);
+            return R.ok(merchantPlaceFeeMonthSummaryRecords.parallelStream().map(item -> {
+                MerchantPlaceFeeMonthSummaryRecordVO vo = new MerchantPlaceFeeMonthSummaryRecordVO();
+                BeanUtils.copyProperties(item, vo);
+                return vo;
+            }).collect(Collectors.toList()));
         } else {
             return R.ok();
         }

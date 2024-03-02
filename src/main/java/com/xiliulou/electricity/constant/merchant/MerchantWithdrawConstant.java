@@ -13,12 +13,12 @@ public class MerchantWithdrawConstant {
     public static final Integer REVIEW_IN_PROGRESS = 1;
     
     /**
-     * 审核通过
+     * 审核拒绝
      */
     public static final Integer REVIEW_REFUSED = 2;
     
     /**
-     * 审核拒绝
+     * 审核通过
      */
     public static final Integer REVIEW_SUCCESS = 3;
     
@@ -59,5 +59,9 @@ public class MerchantWithdrawConstant {
     public static final String WECHAT_BATCH_DETAIL_STATUS_SUCCESS = "SUCCESS";
     
     public static final String WECHAT_BATCH_DETAIL_STATUS_FAIL = "FAIL";
+    
+    public static final String WECHAT_TRANSFER_BATCH_NAME_SUFFIX = "商户转账";
+    
+    public static final String WECHAT_TRANSFER_BATCH_REMARK_SUFFIX = "推广费";
     
 }

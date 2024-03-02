@@ -90,24 +90,24 @@ public class MerchantWithdrawApplication {
     private Integer status;
     
     /**
-     * 支付机构返回结果
-     */
-    private String withdrawResult;
-    
-    /**
      * 提现发起的批次号
      */
     private String batchNo;
     
     /**
-     * 支付机构返回的流水号
+     * 支付机构返回的交易批次编号
      */
-    private String transactionNo;
+    private String transactionBatchId;
     
     /**
      * 提现类型 1--微信 2--宝付
      */
     private Integer withdrawType;
+    
+    /**
+     * 第三方提现返回结果
+     */
+    private String response;
     
     /**
      * 删除标记 (0-未删除，1-已删除)

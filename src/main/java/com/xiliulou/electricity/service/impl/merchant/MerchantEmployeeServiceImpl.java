@@ -15,12 +15,15 @@ import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.merchant.MerchantEmployeeMapper;
 import com.xiliulou.electricity.query.merchant.MerchantPromotionEmployeeDetailQueryModel;
 import com.xiliulou.electricity.request.merchant.MerchantEmployeeRequest;
+import com.xiliulou.electricity.service.UserOauthBindService;
 import com.xiliulou.electricity.service.UserRoleService;
 import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.service.merchant.MerchantEmployeeService;
+import com.xiliulou.electricity.service.merchant.MerchantJoinRecordService;
 import com.xiliulou.electricity.service.merchant.MerchantPlaceService;
 import com.xiliulou.electricity.service.merchant.MerchantService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
+import com.xiliulou.electricity.vo.merchant.MerchantEmployeeQrCodeVO;
 import com.xiliulou.electricity.vo.merchant.MerchantEmployeeVO;
 import com.xiliulou.security.authentication.console.CustomPasswordEncoder;
 import lombok.extern.slf4j.Slf4j;
@@ -29,6 +32,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -49,6 +54,9 @@ public class MerchantEmployeeServiceImpl implements MerchantEmployeeService {
     private UserService userService;
     
     @Resource
+    private UserOauthBindService userOauthBindService;
+    
+    @Resource
     private CustomPasswordEncoder customPasswordEncoder;
     
     @Resource
@@ -61,20 +69,26 @@ public class MerchantEmployeeServiceImpl implements MerchantEmployeeService {
     private MerchantPlaceService merchantPlaceService;
     
     @Resource
+    MerchantJoinRecordService merchantJoinRecordService;
+    
+    @Resource
     RedisService redisService;
     
     @Transactional(rollbackFor = Exception.class)
     @Override
     public Integer saveMerchantEmployee(MerchantEmployeeRequest merchantEmployeeRequest) {
-    
+        if (!redisService.setNx(CacheConstant.CACHE_MERCHANT_EMPLOYEE_SAVE_LOCK + merchantEmployeeRequest.getMerchantUid(), "1", 3000L, false)) {
+            throw new BizException("000000", "操作频繁,请稍后再试");
+        }
+        
         // 检查当前手机号是否已经注册
         String name = merchantEmployeeRequest.getName();
         String phone = merchantEmployeeRequest.getPhone();
-    
+        
         //userService.queryByUserName(name);
         
         User existUser = userService.queryByUserPhone(phone, User.TYPE_USER_MERCHANT_EMPLOYEE, merchantEmployeeRequest.getTenantId());
-        if(Objects.isNull(existUser)){
+        if (Objects.nonNull(existUser)) {
             throw new BizException("120001", "当前手机号已注册");
         }
         
@@ -85,20 +99,20 @@ public class MerchantEmployeeServiceImpl implements MerchantEmployeeService {
         }
         
         // 创建商户员工账户
-        User user = User.builder().updateTime(System.currentTimeMillis()).createTime(System.currentTimeMillis()).phone(phone)
-                .lockFlag(User.USER_UN_LOCK).gender(User.GENDER_MALE).lang(MessageUtils.LOCALE_ZH_CN).userType(User.TYPE_USER_CHANNEL).name(name).salt("").avatar("")
-                .tenantId(merchantEmployeeRequest.getTenantId()).loginPwd(customPasswordEncoder.encode("123456")).delFlag(User.DEL_NORMAL).build();
-    
+        User user = User.builder().updateTime(System.currentTimeMillis()).createTime(System.currentTimeMillis()).phone(phone).lockFlag(User.USER_UN_LOCK).gender(User.GENDER_MALE)
+                .lang(MessageUtils.LOCALE_ZH_CN).userType(User.TYPE_USER_CHANNEL).name(name).salt("").avatar("").tenantId(merchantEmployeeRequest.getTenantId())
+                .loginPwd(customPasswordEncoder.encode("123456")).delFlag(User.DEL_NORMAL).build();
+        
         // 如果是禁用则用户默认锁定
         if (Objects.equals(merchantEmployeeRequest.getStatus(), MerchantConstant.DISABLE)) {
             user.setLockFlag(User.USER_LOCK);
         }
         
         User userResult = userService.insert(user);
-    
+        
         //TODO 设置角色, 商户员工角色值待定
         Long roleId = 0L;
-    
+        
         UserRole userRole = new UserRole();
         userRole.setRoleId(roleId);
         userRole.setUid(userResult.getUid());
@@ -120,41 +134,45 @@ public class MerchantEmployeeServiceImpl implements MerchantEmployeeService {
         return result;
     }
     
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public Integer updateMerchantEmployee(MerchantEmployeeRequest merchantEmployeeRequest) {
-    
+        if (!redisService.setNx(CacheConstant.CACHE_MERCHANT_EMPLOYEE_UPDATE_LOCK + merchantEmployeeRequest.getMerchantUid(), "1", 3000L, false)) {
+            throw new BizException("000000", "操作频繁,请稍后再试");
+        }
         //检查当前手机号是否已经注册
         String phone = merchantEmployeeRequest.getPhone();
-    
+        
         //userService.queryByUserName(name);
-    
+        
         User existUser = userService.queryByUserPhone(phone, User.TYPE_USER_MERCHANT_EMPLOYEE, merchantEmployeeRequest.getTenantId());
-        if(Objects.isNull(existUser)){
+        if (Objects.nonNull(existUser)) {
             throw new BizException("120002", "当前手机号已注册");
         }
-    
+        
         //检查商户是否正常，状态为非禁用
         Merchant merchant = merchantService.queryByUid(merchantEmployeeRequest.getMerchantUid());
         if (Objects.isNull(merchant) || MerchantConstant.DISABLE.equals(merchant.getStatus())) {
             throw new BizException("120003", "当前商户不可用");
         }
         
-        MerchantEmployee merchantEmployee = merchantEmployeeMapper.selectById(merchantEmployeeRequest.getId());
-        if(Objects.isNull(merchantEmployee)){
+        MerchantEmployeeVO merchantEmployeeVO = merchantEmployeeMapper.selectById(merchantEmployeeRequest.getId());
+        if (Objects.isNull(merchantEmployeeVO)) {
             log.error("not found merchant employee by id, id = {}", merchantEmployeeRequest.getId());
             throw new BizException("120004", "商户员工不存在");
         }
-    
+        
         User updateUser = new User();
-    
+        
         // 如果是禁用，则将用户置为锁定
         if (Objects.equals(merchantEmployeeRequest.getStatus(), MerchantConstant.DISABLE)) {
             updateUser.setLockFlag(User.USER_LOCK);
-        } else  {
+        } else {
             updateUser.setLockFlag(User.USER_UN_LOCK);
         }
-    
-        updateUser.setUid(merchantEmployee.getUid());
+        
+        updateUser.setUid(merchantEmployeeVO.getUid());
+        updateUser.setName(merchantEmployeeRequest.getName());
         updateUser.setPhone(merchantEmployeeRequest.getPhone());
         updateUser.setUserType(User.TYPE_USER_MERCHANT_EMPLOYEE);
         updateUser.setTenantId(TenantContextHolder.getTenantId());
@@ -168,20 +186,22 @@ public class MerchantEmployeeServiceImpl implements MerchantEmployeeService {
         return merchantEmployeeMapper.updateOne(merchantEmployeeUpdate);
     }
     
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public Integer removeMerchantEmployee(Long id) {
-        MerchantEmployee merchantEmployee = merchantEmployeeMapper.selectById(id);
-        if(Objects.isNull(merchantEmployee)) {
+        MerchantEmployeeVO merchantEmployeeVO = merchantEmployeeMapper.selectById(id);
+        if (Objects.isNull(merchantEmployeeVO)) {
             log.error("not found merchant employee by id, id = {}", id);
             throw new BizException("120004", "商户员工不存在");
         }
-        User user = userService.queryByUidFromCache(merchantEmployee.getUid());
+        merchantEmployeeMapper.removeById(id, System.currentTimeMillis());
         
+        User user = userService.queryByUidFromCache(merchantEmployeeVO.getUid());
         Integer result = 0;
-        if(Objects.nonNull(user)){
+        if (Objects.nonNull(user)) {
             //userService.deleteInnerUser(merchantEmployee.getUid());
-            result = userService.removeById(merchantEmployee.getUid(), System.currentTimeMillis());
-            redisService.delete(CacheConstant.CACHE_USER_UID + merchantEmployee.getUid());
+            result = userService.removeById(merchantEmployeeVO.getUid(), System.currentTimeMillis());
+            redisService.delete(CacheConstant.CACHE_USER_UID + merchantEmployeeVO.getUid());
             redisService.delete(CacheConstant.CACHE_USER_PHONE + user.getTenantId() + ":" + user.getPhone() + ":" + user.getUserType());
         }
         return result;
@@ -190,11 +210,7 @@ public class MerchantEmployeeServiceImpl implements MerchantEmployeeService {
     @Slave
     @Override
     public MerchantEmployeeVO queryMerchantEmployeeById(Long id) {
-        MerchantEmployee merchantEmployee = merchantEmployeeMapper.selectById(id);
-        MerchantEmployeeVO merchantEmployeeVO = new MerchantEmployeeVO();
-        if(Objects.nonNull(merchantEmployee)){
-            BeanUtils.copyProperties(merchantEmployee, merchantEmployeeVO);
-        }
+        MerchantEmployeeVO merchantEmployeeVO = merchantEmployeeMapper.selectById(id);
         
         return merchantEmployeeVO;
     }
@@ -202,32 +218,59 @@ public class MerchantEmployeeServiceImpl implements MerchantEmployeeService {
     @Slave
     @Override
     public MerchantEmployeeVO queryMerchantEmployeeByUid(Long uid) {
-        MerchantEmployee merchantEmployee = merchantEmployeeMapper.selectByUid(uid);
-        MerchantEmployeeVO merchantEmployeeVO = new MerchantEmployeeVO();
-        if(Objects.nonNull(merchantEmployee)){
-            BeanUtils.copyProperties(merchantEmployee, merchantEmployeeVO);
-        }
+        MerchantEmployeeVO merchantEmployeeVO = merchantEmployeeMapper.selectByUid(uid);
         
         return merchantEmployeeVO;
+    }
+    
+    @Override
+    public MerchantEmployeeQrCodeVO queryEmployeeQrCodeByUid(Long uid) {
+        MerchantEmployeeQrCodeVO merchantEmployeeQrCodeVO = new MerchantEmployeeQrCodeVO();
+        
+        MerchantEmployeeVO merchantEmployeeVO = merchantEmployeeMapper.selectByUid(uid);
+        Integer tenantId = TenantContextHolder.getTenantId();
+        if (Objects.nonNull(merchantEmployeeVO)) {
+            if (!Objects.equals(tenantId.longValue(), merchantEmployeeVO.getTenantId())) {
+                log.info("tenant id mismatch for query employee QR code, current tenant id = {},  employee tenant id = {}", tenantId, merchantEmployeeVO.getTenantId());
+                return null;
+            }
+            
+            Merchant merchant = merchantService.queryByUid(merchantEmployeeVO.getMerchantUid());
+            if (Objects.isNull(merchant)) {
+                log.info("merchant is null for query employee QR code, merchant uid = {}", merchant.getUid());
+                return null;
+            }
+            merchantEmployeeQrCodeVO.setUid(merchantEmployeeVO.getUid());
+            merchantEmployeeQrCodeVO.setMerchantId(merchantEmployeeVO.getMerchantUid());
+            merchantEmployeeQrCodeVO.setName(merchantEmployeeVO.getName());
+            merchantEmployeeQrCodeVO.setPhone(merchantEmployeeVO.getPhone());
+            merchantEmployeeQrCodeVO.setType(MerchantConstant.MERCHANT_EMPLOYEE_QR_CODE_TYPE);
+            merchantEmployeeQrCodeVO.setStatus(merchantEmployeeVO.getStatus());
+            String code = merchant.getId() + ":" + merchantEmployeeVO.getUid() + ":" + MerchantConstant.MERCHANT_EMPLOYEE_QR_CODE_TYPE;
+            merchantEmployeeQrCodeVO.setCode(code);
+        }
+        
+        return merchantEmployeeQrCodeVO;
     }
     
     @Slave
     @Override
     public List<MerchantEmployeeVO> listMerchantEmployee(MerchantEmployeeRequest merchantEmployeeRequest) {
-    
+        
         List<MerchantEmployeeVO> merchantEmployeeVOList = merchantEmployeeMapper.selectListByCondition(merchantEmployeeRequest);
         
         merchantEmployeeVOList.forEach(merchantEmployeeVO -> {
             User user = userService.queryByUidFromCache(merchantEmployeeVO.getUid());
-            if(Objects.nonNull(user)){
+            if (Objects.nonNull(user)) {
                 merchantEmployeeVO.setName(user.getName());
                 merchantEmployeeVO.setPhone(user.getPhone());
+                merchantEmployeeVO.setStatus(user.getLockFlag());
             }
-            MerchantPlace merchantPlace = merchantPlaceService.queryFromCacheById(merchantEmployeeVO.getPlaceId());
-            if(Objects.nonNull(merchantPlace)){
+            MerchantPlace merchantPlace = merchantPlaceService.queryByIdFromCache(merchantEmployeeVO.getPlaceId());
+            if (Objects.nonNull(merchantPlace)) {
                 merchantEmployeeVO.setPlaceName(merchantPlace.getName());
             }
-           
+            
         });
         
         return merchantEmployeeVOList;
@@ -249,6 +292,48 @@ public class MerchantEmployeeServiceImpl implements MerchantEmployeeService {
     @Override
     public List<MerchantEmployee> selectByMerchantUid(MerchantPromotionEmployeeDetailQueryModel queryModel) {
         return merchantEmployeeMapper.selectListByMerchantUid(queryModel);
+    }
+    
+    @Override
+    public List<MerchantEmployeeQrCodeVO> selectMerchantEmployeeQrCodes(MerchantEmployeeRequest merchantEmployeeRequest) {
+        Merchant merchant = merchantService.queryByUid(merchantEmployeeRequest.getMerchantUid());
+        if (Objects.isNull(merchant)) {
+            log.error("not found merchant by uid, uid = {}", merchantEmployeeRequest.getMerchantUid());
+            return Collections.EMPTY_LIST;
+        }
+        
+        List<MerchantEmployeeQrCodeVO> merchantEmployeeQrCodeVOList = new ArrayList<>();
+        List<MerchantEmployeeVO> merchantEmployeeVOS = merchantEmployeeMapper.selectMerchantUsers(merchantEmployeeRequest);
+        merchantEmployeeVOS.forEach(merchantEmployeeVO -> {
+            MerchantEmployeeQrCodeVO merchantEmployeeQrCodeVO = new MerchantEmployeeQrCodeVO();
+            
+            merchantEmployeeQrCodeVO.setMerchantId(merchant.getId());
+            merchantEmployeeQrCodeVO.setUid(merchantEmployeeVO.getUid());
+            merchantEmployeeQrCodeVO.setName(merchantEmployeeVO.getName());
+            merchantEmployeeQrCodeVO.setPhone(merchantEmployeeVO.getPhone());
+            merchantEmployeeQrCodeVO.setType(MerchantConstant.MERCHANT_EMPLOYEE_QR_CODE_TYPE);
+            merchantEmployeeQrCodeVO.setStatus(merchantEmployeeVO.getStatus());
+            String code = merchant.getId() + ":" + merchantEmployeeVO.getUid() + ":" + MerchantConstant.MERCHANT_EMPLOYEE_QR_CODE_TYPE;
+            merchantEmployeeQrCodeVO.setCode(code);
+            
+            merchantEmployeeQrCodeVOList.add(merchantEmployeeQrCodeVO);
+        });
+        
+        return merchantEmployeeQrCodeVOList;
+    }
+    
+    @Override
+    public List<MerchantEmployeeVO> selectAllMerchantEmployees(MerchantEmployeeRequest merchantEmployeeRequest) {
+        
+        Merchant merchant = merchantService.queryByUid(merchantEmployeeRequest.getMerchantUid());
+        if (Objects.isNull(merchant)) {
+            log.error("not found merchant by uid, uid = {}", merchantEmployeeRequest.getMerchantUid());
+            return Collections.EMPTY_LIST;
+        }
+        
+        List<MerchantEmployeeVO> merchantEmployeeVOS = merchantEmployeeMapper.selectMerchantUsers(merchantEmployeeRequest);
+        
+        return merchantEmployeeVOS;
     }
     
 }

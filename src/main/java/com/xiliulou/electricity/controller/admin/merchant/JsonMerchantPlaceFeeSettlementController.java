@@ -45,7 +45,7 @@ public class JsonMerchantPlaceFeeSettlementController extends BaseController {
     @GetMapping("/admin/merchant/placeFee/settlement/page")
     public R page(@RequestParam("size") long size, @RequestParam("offset") long offset, @RequestParam(value = "monthDate", required = false) String monthDate) {
         if (size < 0 || size > 50) {
-            size = 10L;
+            size = 50L;
         }
     
         if (offset < 0) {
@@ -69,20 +69,11 @@ public class JsonMerchantPlaceFeeSettlementController extends BaseController {
     
     /**
      *
-     * @param size 条数
-     * @param offset 偏移量
      * @param monthDate 月份
      * @return 查询到的记录条数
      */
     @GetMapping("/admin/merchant/placeFee/settlement/pageCount")
-    public R pageCount(@RequestParam("size") long size, @RequestParam("offset") long offset, @RequestParam(value = "monthDate", required = false) String monthDate) {
-        if (size < 0 || size > 50) {
-            size = 10L;
-        }
-        
-        if (offset < 0) {
-            offset = 0L;
-        }
+    public R pageCount(@RequestParam(value = "monthDate", required = false) String monthDate) {
         
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
@@ -93,7 +84,7 @@ public class JsonMerchantPlaceFeeSettlementController extends BaseController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         
-        MerchantPlaceFeeMonthSummaryRecordQueryModel queryModel = MerchantPlaceFeeMonthSummaryRecordQueryModel.builder().size(size).offset(offset).monthDate(monthDate).tenantId(
+        MerchantPlaceFeeMonthSummaryRecordQueryModel queryModel = MerchantPlaceFeeMonthSummaryRecordQueryModel.builder().monthDate(monthDate).tenantId(
                 TenantContextHolder.getTenantId()).build();
         
         return merchantPlaceFeeSettlementService.pageCount(queryModel);

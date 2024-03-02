@@ -114,7 +114,7 @@
                 and t.merchant_area_id = #{merchantAreaId}
             </if>
             <if test="franchiseeId != null">
-                and t.franchisee_id = #{franchiseeId},
+                and t.franchisee_id = #{franchiseeId}
             </if>
             <if test="idList != null and idList.size() > 0">
                 and t.id in
@@ -131,6 +131,7 @@
                 WHERE
                 m.place_id = t.id
                 and m.merchant_id = #{merchantId}
+                )
             </if>
         </where>
     </sql>
@@ -160,21 +161,20 @@
         FROM
         t_merchant_place t
         <include refid="pageFilter"/>
+        order by t.id desc
         limit #{offset}, #{size}
     </select>
     
     <select id="selectCabinetList" resultType="com.xiliulou.electricity.vo.merchant.MerchantPlaceCabinetVO">
         SELECT
-            c.id,
-            c.`name`,
+            c.id as 'cabinetId',
+            c.`name` as 'cabinetName',
             b.place_id
         FROM
             t_electricity_cabinet c
-            LEFT JOIN t_merchant_place_cabinet_bind b on b.cabinet_id = c.id
-        <where>
+        LEFT JOIN t_merchant_place_cabinet_bind b ON b.cabinet_id = c.id  AND b.del_flag = 0 AND b.`status` = 0
+       <where>
             c.del_flag = 0
-            and b.del_flag = 0
-            and b.`status` = 0
             and c.franchisee_id = #{franchiseeId}
             and c.tenant_id = #{tenantId}
             <if test="cabinetName != null">

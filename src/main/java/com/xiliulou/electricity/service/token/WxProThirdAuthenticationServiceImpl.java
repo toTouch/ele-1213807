@@ -8,20 +8,35 @@ import com.xiliulou.core.http.resttemplate.service.RestTemplateService;
 import com.xiliulou.core.i18n.MessageUtils;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.constant.CacheConstant;
-import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.dto.WXMinProAuth2SessionResult;
 import com.xiliulou.electricity.dto.WXMinProPhoneResultDTO;
-import com.xiliulou.electricity.entity.*;
+import com.xiliulou.electricity.entity.ElectricityPayParams;
+import com.xiliulou.electricity.entity.NewUserActivity;
+import com.xiliulou.electricity.entity.User;
+import com.xiliulou.electricity.entity.UserInfo;
+import com.xiliulou.electricity.entity.UserInfoExtra;
+import com.xiliulou.electricity.entity.UserOauthBind;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.exception.UserLoginException;
-import com.xiliulou.electricity.service.*;
+import com.xiliulou.electricity.service.EleUserAuthOldService;
+import com.xiliulou.electricity.service.EleUserAuthService;
+import com.xiliulou.electricity.service.ElectricityPayParamsService;
+import com.xiliulou.electricity.service.NewUserActivityService;
+import com.xiliulou.electricity.service.OldCardService;
+import com.xiliulou.electricity.service.UserBatteryMemberCardService;
+import com.xiliulou.electricity.service.UserCouponService;
+import com.xiliulou.electricity.service.UserInfoExtraService;
+import com.xiliulou.electricity.service.UserInfoOldService;
+import com.xiliulou.electricity.service.UserInfoService;
+import com.xiliulou.electricity.service.UserOauthBindService;
+import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.security.authentication.console.CustomPasswordEncoder;
 import com.xiliulou.security.authentication.thirdauth.ThirdAuthenticationService;
 import com.xiliulou.security.bean.SecurityUser;
 import lombok.extern.slf4j.Slf4j;
-
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -164,12 +179,24 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
             //两个都存在，
             if (existPhone.getLeft() && existsOpenId.getLeft()) {
                 // 如果openId不一致，则报错
-                UserOauthBind userOauthBind = userOauthBindService.selectUserByPhone(existPhone.getRight().getPhone(), UserOauthBind.SOURCE_WX_PRO, tenantId);
-                if (Objects.nonNull(userOauthBind) && Objects.equals(userOauthBind.getStatus(),UserOauthBind.STATUS_BIND) && !StringUtils.equals(result.getOpenid(), userOauthBind.getThirdId())) {
+                List<UserOauthBind> userOauthBinds = userOauthBindService.listUserByPhone(existPhone.getRight().getPhone(), UserOauthBind.SOURCE_WX_PRO, tenantId);
+                if (CollectionUtils.isEmpty(userOauthBinds)) {
+                    log.error("TOKEN ERROR! not find user auth bind info! openId={},userId={}", result.getOpenid(),  existPhone.getRight().getUid());
+                    throw new UserLoginException("100567", "该账户尚未绑定");
+                }
+                
+                List<UserOauthBind> fitUserOauthBinds = userOauthBinds.stream().filter(userOauthBind -> userOauthBind.getThirdId().equals(result.getOpenid())).collect(Collectors.toList());
+                if (CollectionUtils.isEmpty(fitUserOauthBinds) || fitUserOauthBinds.size() > 1) {
+                    log.error("TOKEN ERROR! find user auth bind many ! openId={}, userId={}", result.getOpenid(),  existPhone.getRight().getUid());
+                    throw new UserLoginException("ELECTRICITY.0001", "用户登录异常");
+                }
+                
+                UserOauthBind userOauthBind = fitUserOauthBinds.get(0);
+               /* if (Objects.nonNull(userOauthBind) && Objects.equals(userOauthBind.getStatus(),UserOauthBind.STATUS_BIND)) {
                     log.error("TOKEN ERROR! thirdId not equals user login thirdId={}! openId={},thirdId={},userId={}", result.getOpenid(),
                             userOauthBind.getThirdId(),existsOpenId.getRight().get(0).getThirdId(), existPhone.getRight().getUid());
                     throw new UserLoginException("100567", "该账户已绑定其他微信，请联系客服处理");
-                }
+                }*/
                 
                 List<UserOauthBind> oauthBindList = existsOpenId.getRight();
                 List<Long> uidList = oauthBindList.stream().map(UserOauthBind::getUid).collect(Collectors.toList());
@@ -275,26 +302,27 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
 
             //openid不存在的时候,手机号存在
             if (!existsOpenId.getLeft() && existPhone.getLeft()) {
-
-                UserOauthBind userOauthBind = userOauthBindService.selectUserByPhone(existPhone.getRight().getPhone(),
+                UserOauthBind userOauthBind = null;
+                List<UserOauthBind> userOauthBinds = userOauthBindService.listUserByPhone(existPhone.getRight().getPhone(),
                         UserOauthBind.SOURCE_WX_PRO, tenantId);
-                if (Objects.nonNull(userOauthBind)) {
+                if (CollectionUtils.isNotEmpty(userOauthBinds)) {
                     // 如果openid不存在,手机号存在,并且传入手机号的openid已经绑定过,则直接拦截
-                    if (StringUtils.isNotBlank(userOauthBind.getThirdId())) {
-                        log.error("TOKEN ERROR! openId not exists,phone exists and phone third id exist! thirdUid={},userId={}", userOauthBind.getUid(),
-                                existPhone.getRight().getUid());
+                    List<UserOauthBind> emptyUserList = userOauthBinds.stream().filter(userOauthBindTemp -> StringUtils.isBlank(userOauthBindTemp.getThirdId())).collect(Collectors.toList());
+                    if (CollectionUtils.isEmpty(emptyUserList)) {
+                        log.error("TOKEN ERROR! openId not exists,phone exists and phone third id exist! userId={}", existPhone.getRight().getUid());
                         //  throw new AuthenticationServiceException("登录信息异常，请联系客服处理");
                         throw new UserLoginException("100567", "该账户已绑定其他微信，请联系客服处理");
                     }
                     
                     //这里uid必须相同
-                    if (!Objects.equals(userOauthBind.getUid(), existPhone.getRight().getUid())) {
+                    userOauthBind = emptyUserList.stream().filter(emptyUser -> !emptyUser.getUid().equals(existPhone.getRight().getUid())).findAny().orElse(null);
+                    if (ObjectUtils.isNotEmpty(userOauthBind)) {
                         log.error(
                                 "TOKEN ERROR! openId not exists,phone exists! third account uid not equals user account uid! thirdUid={},userId={}",
                                 userOauthBind.getUid(), existPhone.getRight().getUid());
                         throw new AuthenticationServiceException("登录信息异常，请联系客服处理");
                     }
-
+                    
                     //这里更改openId
                     userOauthBind.setThirdId(result.getOpenid());
                     userOauthBind.setUpdateTime(System.currentTimeMillis());
@@ -308,6 +336,7 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
                             .accessToken("").refreshToken("").thirdNick("").build();
                     userOauthBindService.insert(userOauthBind);
                 }
+                
                 //添加到user_info表中
                 Long uid = existPhone.getRight().getUid();
                 Pair<Boolean, UserInfo> existUserInfo = checkUserInfoExists(uid);

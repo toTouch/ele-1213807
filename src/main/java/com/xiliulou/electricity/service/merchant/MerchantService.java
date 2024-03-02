@@ -42,7 +42,7 @@ public interface MerchantService {
     
     Merchant queryByUid(Long uid);
     
-    List<MerchantPlaceSelectVO> queryPlaceListByUid(Long uid, Long merchantEmployeeUid);
+    List<MerchantPlaceSelectVO> queryPlaceListByUid(Long merchantUid, Long employeeUid);
     
     Integer updateById(Merchant merchant);
     
@@ -51,4 +51,8 @@ public interface MerchantService {
     Integer countMerchantNumByTime(MerchantPromotionFeeMerchantNumQueryModel todayQueryModel);
     
     MerchantQrCodeVO getMerchantQrCode(Long uid, Long id);
+    
+    void deleteCacheById(Long id);
+    
+    Integer batchUpdateExistPlaceFee(List<Long> merchantIdList, Integer existsPlaceFeeYes, Long currentTimeMillis);
 }

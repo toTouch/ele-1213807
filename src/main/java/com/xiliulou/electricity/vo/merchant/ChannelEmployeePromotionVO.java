@@ -38,5 +38,5 @@ public class ChannelEmployeePromotionVO {
     /**
      * 出账日期：yyyy-MM
      */
-    private String billingDate;
+    private String monthDate;
 }

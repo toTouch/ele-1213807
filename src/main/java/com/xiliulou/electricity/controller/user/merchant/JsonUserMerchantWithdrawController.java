@@ -6,7 +6,9 @@ import com.xiliulou.electricity.request.merchant.MerchantWithdrawApplicationRequ
 import com.xiliulou.electricity.service.merchant.MerchantWithdrawApplicationService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
+import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -32,22 +34,29 @@ public class JsonUserMerchantWithdrawController extends BaseController {
     
     @PostMapping("/merchant/withdraw/application")
     public R withdrawApplication(@Validated @RequestBody MerchantWithdrawApplicationRequest merchantWithdrawApplicationRequest) {
+        Integer tenantId = TenantContextHolder.getTenantId();
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            return  R.fail("120013", "未找到用户");
+        }
+        merchantWithdrawApplicationRequest.setUid(user.getUid());
+        merchantWithdrawApplicationRequest.setTenantId(tenantId);
         
         return returnTripleResult(merchantWithdrawApplicationService.saveMerchantWithdrawApplication(merchantWithdrawApplicationRequest));
     }
     
     @GetMapping("/merchant/withdrawList")
-    public R queryMerchantWithdrawApplicationList(@RequestParam(value = "size", required = false) Long size,
-            @RequestParam(value = "offset", required = false) Long offset,
+    public R queryMerchantWithdrawApplicationList(@RequestParam(value = "size", required = true) Long size,
+            @RequestParam(value = "offset", required = true) Long offset,
             @RequestParam(value = "beginTime", required = false) Long beginTime,
             @RequestParam(value = "endTime", required = false) Long endTime,
             @RequestParam(value = "status", required = false) Integer status) {
-        
-        if (size == null || size <= 0) {
+    
+        if (size < 0 || size > 50) {
             size = 10L;
         }
-        
-        if (offset == null || offset <= 0) {
+    
+        if (offset < 0) {
             offset = 0L;
         }
     

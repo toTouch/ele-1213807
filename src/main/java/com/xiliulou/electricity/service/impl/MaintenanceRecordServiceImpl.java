@@ -6,7 +6,6 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.MaintenanceRecord;
-import com.xiliulou.electricity.entity.OldCard;
 import com.xiliulou.electricity.mapper.MaintenanceRecordMapper;
 import com.xiliulou.electricity.query.MaintenanceRecordHandleQuery;
 import com.xiliulou.electricity.query.MaintenanceRecordListQuery;
@@ -147,7 +146,7 @@ public class MaintenanceRecordServiceImpl implements MaintenanceRecordService {
 
         for (MaintenanceRecord maintenanceRecord:returnList) {
             if(StringUtil.isNotEmpty(maintenanceRecord.getPic())){
-                maintenanceRecord.setPic(storageService.getOssFileUrl(storageConfig.getBucketName(), maintenanceRecord.getPic(), System.currentTimeMillis() + 10 * 60 * 1000L));
+                maintenanceRecord.setPic(storageConfig.getUrlPrefix() + maintenanceRecord.getPic());
             }
         }
 
@@ -164,7 +163,7 @@ public class MaintenanceRecordServiceImpl implements MaintenanceRecordService {
 
         for (MaintenanceRecord maintenanceRecord:returnList) {
             if(StringUtil.isNotEmpty(maintenanceRecord.getPic())){
-                maintenanceRecord.setPic(storageService.getOssFileUrl(storageConfig.getBucketName(), maintenanceRecord.getPic(), System.currentTimeMillis() + 10 * 60 * 1000L));
+                maintenanceRecord.setPic(storageConfig.getUrlPrefix() + maintenanceRecord.getPic());
             }
         }
 
