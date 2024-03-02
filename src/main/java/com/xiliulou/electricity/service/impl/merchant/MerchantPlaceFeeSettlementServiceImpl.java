@@ -69,22 +69,18 @@ public class MerchantPlaceFeeSettlementServiceImpl implements MerchantPlaceFeeSe
             return resultVOs;
         }
         
-        log.info("merchantPlaceFeeMonthRecords = {}", JsonUtil.toJson(merchantPlaceFeeMonthRecords));
-        
         // 根据场地id分组 并monthPlaceFee求和
         Map<Long, List<MerchantPlaceFeeMonthRecord>> placeIdListMap = merchantPlaceFeeMonthRecords.stream().filter(item -> Objects.nonNull(item.getPlaceId()))
                 .collect(Collectors.groupingBy(MerchantPlaceFeeMonthRecord::getPlaceId));
-        log.info("placeIdListMap = {}", JsonUtil.toJson(placeIdListMap));
-        List<MerchantPlaceFeeMonthRecord> collect = merchantPlaceFeeMonthRecords.stream().filter(item -> Objects.nonNull(item.getPlaceId())).collect(Collectors.toList());
-        log.info("collect = {}", JsonUtil.toJson(collect));
     
         List<MerchantPlaceFeeMonthRecordDTO> recordDTOList = Lists.newArrayList();
         
         placeIdListMap.forEach((placeId, merchantPlaceFeeMonthRecordList) -> {
             // 租赁天数求和
-            Integer rentDays = merchantPlaceFeeMonthRecords.stream().map(MerchantPlaceFeeMonthRecord::getRentDays).reduce(0, Integer::sum);
+            Integer rentDays = merchantPlaceFeeMonthRecords.stream().map(MerchantPlaceFeeMonthRecord::getRentDays).filter(Objects::nonNull).reduce(0, Integer::sum);
             //月场地费求和
-            BigDecimal monthPlaceFee = merchantPlaceFeeMonthRecords.stream().map(MerchantPlaceFeeMonthRecord::getMonthPlaceFee).reduce(BigDecimal.ZERO, BigDecimal::add);
+            BigDecimal monthPlaceFee = merchantPlaceFeeMonthRecords.stream().map(MerchantPlaceFeeMonthRecord::getMonthPlaceFee).filter(Objects::nonNull)
+                    .reduce(BigDecimal.ZERO, BigDecimal::add);
             
             MerchantPlaceFeeMonthRecordDTO dto = new MerchantPlaceFeeMonthRecordDTO();
             
