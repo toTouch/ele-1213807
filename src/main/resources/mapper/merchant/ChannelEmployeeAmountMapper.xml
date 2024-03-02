@@ -121,7 +121,6 @@
         set balance = balance + #{income}
         where uid = #{uid}
           and tenat_id = #{tenantId}
-          and del_flg = 0
     </update>
     
     <update id="reduceAmountByUid">
@@ -129,7 +128,6 @@
         set balance = balance - #{income},
         where uid = #{uid}
           and tenat_id = #{tenantId}
-          and del_flg = 0
     </update>
     
     
