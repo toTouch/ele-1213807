@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.xiliulou.electricity.entity.merchant.MerchantJoinRecord;
 import com.xiliulou.electricity.query.merchant.MerchantAllPromotionDataDetailQueryModel;
 import com.xiliulou.electricity.query.merchant.MerchantJoinRecordQueryMode;
+import com.xiliulou.electricity.query.merchant.MerchantJoinRecordQueryModel;
 import com.xiliulou.electricity.query.merchant.MerchantJoinUserQueryMode;
 import com.xiliulou.electricity.query.merchant.MerchantPromotionDataDetailQueryModel;
 import com.xiliulou.electricity.query.merchant.MerchantPromotionScanCodeQueryModel;
@@ -26,7 +27,7 @@ public interface MerchantJoinRecordMapper extends BaseMapper<MerchantJoinRecord>
     
     MerchantJoinRecord selectByMerchantIdAndJoinUid(@Param("merchantId") Long merchantId, @Param("joinUid") Long joinUid);
     
-    Integer updateStatus(@Param("merchantId") Long merchantId, @Param("joinUid") Long joinUid, @Param("status") Integer status);
+    Integer updateStatus(MerchantJoinRecordQueryModel queryModel);
     
     Integer updateProtectionExpired(MerchantJoinRecord protectionJoinRecord);
     
