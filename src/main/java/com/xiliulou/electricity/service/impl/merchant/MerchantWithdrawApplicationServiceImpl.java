@@ -266,7 +266,7 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
         wechatTransferBatchOrderQuery.setTransferDetailList(wechatTransferBatchOrderDetailQueryList);
     
         try {
-            log.info("wechat transfer for single review start.");
+            log.info("wechat transfer for single review start. request = {}", wechatTransferBatchOrderQuery);
             WechatTransferOrderResult wechatTransferOrderResult = wechatV3TransferService.transferBatch(wechatTransferBatchOrderQuery);
             log.info("wechat response data for single review, result = {}", wechatTransferOrderResult);
             if(Objects.nonNull(wechatTransferOrderResult)){
@@ -441,7 +441,7 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
         //转账批次号
         wechatTransferBatchOrderQuery.setOutBatchNo(batchNo);
         wechatTransferBatchOrderQuery.setTotalAmount(totalAmount.multiply(new BigDecimal(100)).intValue());
-        wechatTransferBatchOrderQuery.setTotalNum(BigDecimal.ONE.intValue());
+        wechatTransferBatchOrderQuery.setTotalNum(wechatTransferBatchOrderDetailQueryList.size());
         wechatTransferBatchOrderQuery.setTenantId(tenantId);
         wechatTransferBatchOrderQuery.setBatchName(DateUtils.getYearAndMonthAndDayByTimeStamps(System.currentTimeMillis()) + MerchantWithdrawConstant.WECHAT_TRANSFER_BATCH_NAME_SUFFIX);
         wechatTransferBatchOrderQuery.setBatchRemark(DateUtils.getYearAndMonthAndDayByTimeStamps(System.currentTimeMillis()) + MerchantWithdrawConstant.WECHAT_TRANSFER_BATCH_NAME_SUFFIX);
@@ -449,7 +449,7 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
         wechatTransferBatchOrderQuery.setTransferDetailList(wechatTransferBatchOrderDetailQueryList);
         
         try {
-            log.info("wechat transfer for batch review start.");
+            log.info("wechat transfer for batch review start. request = {}", wechatTransferBatchOrderQuery);
             WechatTransferOrderResult wechatTransferOrderResult = wechatV3TransferService.transferBatch(wechatTransferBatchOrderQuery);
             log.info("wechat response data for batch review, result = {}", wechatTransferOrderResult);
             if(Objects.nonNull(wechatTransferOrderResult)){
