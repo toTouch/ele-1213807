@@ -92,22 +92,17 @@ public class MerchantPlaceFeeSettlementServiceImpl implements MerchantPlaceFeeSe
             dto.setMonthDate(merchantPlaceFeeMonthRecordList.get(0).getMonthDate());
             dto.setPlaceId(placeId);
             dto.setTenantId(merchantPlaceFeeMonthRecordList.get(0).getTenantId());
-            dto.setMonthPlaceFee(monthPlaceFee);
-            dto.setMonthRentDays(rentDays);
+            dto.setMonthPlaceFee(monthPlaceFee.compareTo(BigDecimal.ZERO) == 0 ? monthPlaceFee : null);
+            dto.setMonthRentDays(Objects.equals(rentDays, 0) ? rentDays : null);
             recordDTOList.add(dto);
         });
-        
-        log.info("recordDTOList = {}", JsonUtil.toJson(recordDTOList));
         
         // recordDTOList转map
         Map<Long, MerchantPlaceFeeMonthRecordDTO> recordMap = recordDTOList.stream().collect(toMap(MerchantPlaceFeeMonthRecordDTO::getPlaceId, item -> item));
         
-        log.info("recordMap = {}", JsonUtil.toJson(recordMap));
-        
         resultVOs = merchantPlaceFeeMonthRecords.parallelStream().map(merchantPlaceFeeMonthRecord -> {
             MerchantPlaceFeeMonthRecordExportVO exportVO = new MerchantPlaceFeeMonthRecordExportVO();
             BeanUtils.copyProperties(merchantPlaceFeeMonthRecord, exportVO);
-            log.info("start exportVO={}", JsonUtil.toJson(exportVO));
             exportVO.setRentStartTime(
                     Objects.nonNull(merchantPlaceFeeMonthRecord.getRentStartTime()) ? DateUtils.getYearAndMonthAndDayByTimeStamps(merchantPlaceFeeMonthRecord.getRentStartTime())
                             : null);
@@ -125,8 +120,8 @@ public class MerchantPlaceFeeSettlementServiceImpl implements MerchantPlaceFeeSe
                 log.info("start merchantPlaceFeeMonthRecordDTO={}", JsonUtil.toJson(merchantPlaceFeeMonthRecordDTO));
                 if (Objects.nonNull(merchantPlaceFeeMonthRecordDTO) && Objects.equals(merchantPlaceFeeMonthRecord.getPlaceId(), merchantPlaceFeeMonthRecordDTO.getPlaceId())) {
                     log.info("start getMonthPlaceFee={},getMonthRentDays={}", merchantPlaceFeeMonthRecordDTO.getMonthPlaceFee(), merchantPlaceFeeMonthRecordDTO.getMonthRentDays());
-                    exportVO.setMonthTotalPlaceFee(Objects.nonNull(merchantPlaceFeeMonthRecordDTO.getMonthPlaceFee()) ? merchantPlaceFeeMonthRecordDTO.getMonthPlaceFee() : null);
-                    exportVO.setMonthRentDays(Objects.nonNull(merchantPlaceFeeMonthRecordDTO.getMonthRentDays()) ? merchantPlaceFeeMonthRecordDTO.getMonthRentDays() : null);
+                    exportVO.setMonthTotalPlaceFee(merchantPlaceFeeMonthRecordDTO.getMonthPlaceFee());
+                    exportVO.setMonthRentDays(merchantPlaceFeeMonthRecordDTO.getMonthRentDays());
                 }
             }
             log.info("end exportVO={}", JsonUtil.toJson(exportVO));
