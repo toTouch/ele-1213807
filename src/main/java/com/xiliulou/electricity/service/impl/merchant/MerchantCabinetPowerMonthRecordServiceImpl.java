@@ -6,6 +6,7 @@ import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.dto.EleChargeConfigCalcDetailDto;
 import com.xiliulou.electricity.entity.ElePower;
+import com.xiliulou.electricity.entity.merchant.MerchantPlace;
 import com.xiliulou.electricity.mapper.merchant.MerchantCabinetPowerMonthRecordMapper;
 import com.xiliulou.electricity.query.merchant.MerchantPowerDetailQueryModel;
 import com.xiliulou.electricity.query.merchant.MerchantPowerQueryModel;
@@ -164,15 +165,15 @@ public class MerchantCabinetPowerMonthRecordServiceImpl implements MerchantCabin
                                         break;
                                 }
                             }
-    
+                            
                             elePrice = elPeekPrice + elOrdinaryPrice + elValleyPrice;
                         }
                     }
                     
                     MerchantCabinetPowerMonthExcelVO excelVO = MerchantCabinetPowerMonthExcelVO.builder().monthDate(monthDate)
-                            .placeName(Optional.ofNullable(merchantPlaceService.queryByIdFromCache(item.getPlaceId()).getName()).orElse("")).monthSumPower(monthSumPower)
-                            .monthSumCharge(monthSumCharge).endPower(item.getEndPower()).sumCharge(item.getSumCharge()).endTime(endDate).beginTime(beginDate)
-                            .startPower(item.getStartPower()).sumPower(item.getSumPower()).jsonRule(elePrice).sn(item.getSn()).build();
+                            .placeName(Optional.ofNullable(merchantPlaceService.queryByIdFromCache(item.getPlaceId())).orElse(new MerchantPlace()).getName())
+                            .monthSumPower(monthSumPower).monthSumCharge(monthSumCharge).endPower(item.getEndPower()).sumCharge(item.getSumCharge()).endTime(endDate)
+                            .beginTime(beginDate).startPower(item.getStartPower()).sumPower(item.getSumPower()).jsonRule(elePrice).sn(item.getSn()).build();
                     
                     excelVOList.add(excelVO);
                 });
