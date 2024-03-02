@@ -12,7 +12,7 @@
         from t_merchant_promotion_month_record
         <where>
             del_flag = 0
-            <if test="date != null and date != ''">
+            <if test="monthDate != null and monthDate != ''">
                 and date = #{monthDate}
             </if>
             <if test="tenantId != null">
@@ -30,7 +30,7 @@
         from t_merchant_promotion_month_record
         <where>
             del_flag = 0
-            <if test="date != null and date != ''">
+            <if test="monthDate != null and monthDate != ''">
                 and date = #{monthDate}
             </if>
             <if test="tenantId != null">
