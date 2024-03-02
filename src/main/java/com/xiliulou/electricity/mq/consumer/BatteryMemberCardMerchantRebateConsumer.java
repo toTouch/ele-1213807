@@ -8,6 +8,7 @@ import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.UserInfoExtra;
 import com.xiliulou.electricity.entity.merchant.Merchant;
+import com.xiliulou.electricity.entity.merchant.MerchantJoinRecord;
 import com.xiliulou.electricity.entity.merchant.MerchantLevel;
 import com.xiliulou.electricity.entity.merchant.RebateConfig;
 import com.xiliulou.electricity.entity.merchant.RebateRecord;
@@ -15,6 +16,7 @@ import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.mq.constant.MqConsumerConstant;
 import com.xiliulou.electricity.mq.constant.MqProducerConstant;
 import com.xiliulou.electricity.mq.model.BatteryMemberCardMerchantRebate;
+import com.xiliulou.electricity.query.merchant.MerchantJoinRecordQueryModel;
 import com.xiliulou.electricity.service.BatteryMembercardRefundOrderService;
 import com.xiliulou.electricity.service.EleRefundOrderService;
 import com.xiliulou.electricity.service.ElectricityMemberCardOrderService;
@@ -22,6 +24,7 @@ import com.xiliulou.electricity.service.UserInfoExtraService;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.service.merchant.ChannelEmployeeAmountService;
+import com.xiliulou.electricity.service.merchant.MerchantJoinRecordService;
 import com.xiliulou.electricity.service.merchant.MerchantLevelService;
 import com.xiliulou.electricity.service.merchant.MerchantService;
 import com.xiliulou.electricity.service.merchant.MerchantUserAmountService;
@@ -88,6 +91,9 @@ public class BatteryMemberCardMerchantRebateConsumer implements RocketMQListener
     
     @Autowired
     private MerchantUserAmountService merchantUserAmountService;
+    
+    @Autowired
+    private MerchantJoinRecordService merchantJoinRecordService;
     
     @Override
     public void onMessage(String message) {
@@ -253,7 +259,11 @@ public class BatteryMemberCardMerchantRebateConsumer implements RocketMQListener
         }
         
         if(Objects.equals( electricityMemberCardOrder.getPayCount(),1)){
-        
+            MerchantJoinRecordQueryModel merchantJoinRecordQueryModel = new MerchantJoinRecordQueryModel();
+            merchantJoinRecordQueryModel.setJoinUid(electricityMemberCardOrder.getUid());
+            merchantJoinRecordQueryModel.setStatus(MerchantJoinRecord.STATUS_INVALID);
+            merchantJoinRecordQueryModel.setUpdateTime(System.currentTimeMillis());
+            merchantJoinRecordService.updateStatus(merchantJoinRecordQueryModel);
         }
         
         //获取返利记录
