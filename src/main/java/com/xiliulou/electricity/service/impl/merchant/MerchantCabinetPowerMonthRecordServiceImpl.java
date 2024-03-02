@@ -40,7 +40,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 /**
@@ -137,36 +136,43 @@ public class MerchantCabinetPowerMonthRecordServiceImpl implements MerchantCabin
                     
                     String beginDate = DateUtils.getYearAndMonthAndDayByTimeStamps(item.getBeginTime());
                     String endDate = DateUtils.getYearAndMonthAndDayByTimeStamps(item.getEndTime());
-                    AtomicReference<String> elePrice = new AtomicReference<>("");
+                    String elePrice = "";
                     
                     List<EleChargeConfigCalcDetailDto> chargeConfigList = JsonUtil.fromJsonArray(item.getJsonRule(), EleChargeConfigCalcDetailDto.class);
                     if (CollectionUtils.isNotEmpty(chargeConfigList)) {
+                        String elPeekPrice = "";
+                        String elOrdinaryPrice = "";
+                        String elValleyPrice = "";
+                        
                         if (Objects.equals(chargeConfigList.size(), NumberConstant.ONE)) {
                             EleChargeConfigCalcDetailDto detail = chargeConfigList.get(NumberConstant.ZERO);
-                            elePrice.set(String.valueOf(detail.getPrice()));
+                            elePrice = String.valueOf(detail.getPrice());
+                            
                         } else {
-                            chargeConfigList.forEach(detail -> {
+                            for (EleChargeConfigCalcDetailDto detail : chargeConfigList) {
                                 switch (detail.getType()) {
                                     case ElePower.ORDINARY_TYPE:
-                                        elePrice.set(detail.getPrice() + "(平)");
+                                        elOrdinaryPrice = detail.getPrice() + "(平)";
                                         break;
                                     case ElePower.PEEK_TYPE:
-                                        elePrice.set(detail.getPrice() + "(峰)");
+                                        elPeekPrice = detail.getPrice() + "(峰)";
                                         break;
                                     case ElePower.VALLEY_TYPE:
-                                        elePrice.set(detail.getPrice() + "(谷)");
+                                        elValleyPrice = detail.getPrice() + "(谷)";
                                         break;
                                     default:
                                         break;
                                 }
-                            });
+                            }
                         }
+                        
+                        elePrice = elPeekPrice + elOrdinaryPrice + elValleyPrice;
                     }
                     
                     MerchantCabinetPowerMonthExcelVO excelVO = MerchantCabinetPowerMonthExcelVO.builder().monthDate(monthDate)
                             .placeName(Optional.ofNullable(merchantPlaceService.queryByIdFromCache(item.getPlaceId()).getName()).orElse("")).monthSumPower(monthSumPower)
                             .monthSumCharge(monthSumCharge).endPower(item.getEndPower()).sumCharge(item.getSumCharge()).endTime(endDate).beginTime(beginDate)
-                            .startPower(item.getStartPower()).sumPower(item.getSumPower()).jsonRule(String.valueOf(elePrice)).sn(item.getSn()).build();
+                            .startPower(item.getStartPower()).sumPower(item.getSumPower()).jsonRule(elePrice).sn(item.getSn()).build();
                     
                     excelVOList.add(excelVO);
                 });
