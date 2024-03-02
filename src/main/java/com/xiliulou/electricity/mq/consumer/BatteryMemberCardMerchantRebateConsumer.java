@@ -252,7 +252,7 @@ public class BatteryMemberCardMerchantRebateConsumer implements RocketMQListener
             return;
         }
     
-        ElectricityMemberCardOrder electricityMemberCardOrder = electricityMemberCardOrderService.selectByOrderNo(batteryMemberCardMerchantRebate.getOrderId());
+        ElectricityMemberCardOrder electricityMemberCardOrder = electricityMemberCardOrderService.selectByOrderNo(batteryMembercardRefundOrder.getMemberCardOrderNo());
         if (Objects.isNull(electricityMemberCardOrder)) {
             log.warn("REBATE CONSUMER WARN!not found electricityMemberCardOrder,orderId={}", batteryMemberCardMerchantRebate.getOrderId());
             return;
