@@ -544,8 +544,7 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
         return historyDetailList.stream().map(detail -> {
             MerchantProCabinetPowerDetailVO vo = MerchantProCabinetPowerDetailVO.builder().monthDate(monthDate).cabinetId(detail.getEid()).sn(cabinet.getSn())
                     .cabinetName(cabinet.getName()).power(detail.getSumPower().doubleValue()).charge(detail.getSumCharge().doubleValue()).startTime(detail.getBeginTime())
-                    .placeId(detail.getPlaceId())
-                    .placeName(Optional.ofNullable(merchantPlaceService.queryByIdFromCache(detail.getPlaceId())).map(MerchantPlace::getName).orElse(""))
+                    .placeId(detail.getPlaceId()).placeName(Optional.ofNullable(merchantPlaceService.queryByIdFromCache(detail.getPlaceId())).orElse(new MerchantPlace()).getName())
                     .bindStatus(detail.getCabinetMerchantBindStatus()).build();
             
             // 解绑状态设置解绑时间,绑定状态没有解绑时间
@@ -571,7 +570,7 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
         return detailVOList.stream()
                 .map(detail -> MerchantProCabinetPowerDetailVO.builder().monthDate(monthDate).cabinetId(detail.getEid()).sn(cabinet.getSn()).cabinetName(cabinet.getName())
                         .power(detail.getPower()).charge(detail.getCharge()).startTime(detail.getStartTime()).endTime(detail.getEndTime()).placeId(detail.getPlaceId())
-                        .placeName(Optional.ofNullable(merchantPlaceService.queryByIdFromCache(detail.getPlaceId())).map(MerchantPlace::getName).orElse(""))
+                        .placeName(Optional.ofNullable(merchantPlaceService.queryByIdFromCache(detail.getPlaceId())).orElse(new MerchantPlace()).getName())
                         .bindStatus(detail.getCabinetMerchantBindStatus()).build()).collect(Collectors.toList());
     }
     
