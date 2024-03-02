@@ -421,6 +421,7 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
         merchantJoinUserQueryMode.setCurrentTime(currentTime);
         merchantJoinUserQueryMode.setExpireTime(expiredTime);
         
+        log.info("query join user list for current merchant, request = {}", merchantJoinUserQueryMode);
         //获取当前商户下的用户列表信息
         List<MerchantJoinUserVO> merchantJoinUserVOS = merchantJoinRecordMapper.selectJoinUserList(merchantJoinUserQueryMode);
         
