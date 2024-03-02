@@ -102,18 +102,18 @@ public class MerchantModifyConsumer implements RocketMQListener<String> {
             
             list.forEach(item -> {
                 //获取最新返利规则
-                RebateConfig rebateConfig = rebateConfigService.queryByMidAndMerchantLevel(item.getMemberCardId(), item.getLevel());
+                RebateConfig rebateConfig = rebateConfigService.queryByMidAndMerchantLevel(item.getMemberCardId(), currentLevel);
                 if (Objects.isNull(rebateConfig)) {
-                    log.warn("MERCHANT MODIFY CONSUMER WARN!rebateConfig is null,id={},memberCardId={},level={}", item.getId(), item.getMemberCardId(), item.getLevel());
+                    log.warn("MERCHANT MODIFY CONSUMER WARN!rebateConfig is null,id={},memberCardId={},level={}", item.getId(), item.getMemberCardId(), currentLevel);
                     return;
                 }
     
                 if(Objects.equals( rebateConfig.getStatus(), MerchantConstant.REBATE_DISABLE)){
-                    log.warn("MERCHANT MODIFY CONSUMER WARN!rebateConfig is disable,id={},memberCardId={},level={}", item.getId(), item.getMemberCardId(), item.getLevel());
+                    log.warn("MERCHANT MODIFY CONSUMER WARN!rebateConfig is disable,id={},memberCardId={},level={}", item.getId(), item.getMemberCardId(), currentLevel);
                     return;
                 }
-                
-                if (Objects.equals(currentLevel, item.getLevel())) {
+    
+                if (Integer.parseInt(item.getLevel()) <= Integer.parseInt(currentLevel)) {
                     return;
                 }
                 

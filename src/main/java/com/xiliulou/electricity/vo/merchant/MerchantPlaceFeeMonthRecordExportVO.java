@@ -17,7 +17,7 @@ public class MerchantPlaceFeeMonthRecordExportVO {
     
     private String placeName;
     
-    private String monthRentDays;
+    private Integer monthRentDays;
     
     private BigDecimal monthTotalPlaceFee;
     
