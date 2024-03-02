@@ -21,7 +21,14 @@ import java.util.List;
  * @since 2020-11-27 11:19:51
  */
 public interface UserService {
-
+    
+    /**
+     * 启用锁定用户
+     * @param tenantId 租户ID
+     * @param uid 用户UID
+     * @return true、false
+     */
+    boolean enableLockUser(Integer tenantId, Long uid);
 
     /**
      * 通过ID查询单条数据从缓存

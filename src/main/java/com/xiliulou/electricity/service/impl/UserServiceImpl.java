@@ -21,6 +21,7 @@ import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.entity.enterprise.EnterpriseChannelUser;
 import com.xiliulou.electricity.entity.enterprise.EnterpriseInfo;
 import com.xiliulou.electricity.enums.enterprise.CloudBeanStatusEnum;
+import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.UserMapper;
 import com.xiliulou.electricity.query.UserInfoQuery;
 import com.xiliulou.electricity.query.UserSourceQuery;
@@ -39,6 +40,7 @@ import com.xiliulou.security.bean.TokenUser;
 import com.xiliulou.security.constant.TokenConstant;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
@@ -130,7 +132,43 @@ public class UserServiceImpl implements UserService {
     
     @Autowired
     EnterpriseChannelUserService enterpriseChannelUserService;
-
+    
+    /**
+     * 启用锁定用户
+     *
+     * @param tenantId 租户ID
+     * @param uid      用户UID
+     * @return true、false
+     */
+    @Override
+    public boolean enableLockUser(Integer tenantId, Long uid) {
+        if (!ObjectUtils.allNotNull(tenantId, uid)) {
+            throw new BizException("ELECTRICITY.0007", "非法参数");
+        }
+        
+        // 缓存读取用户
+        User cacheUser = redisService.getWithHash(CacheConstant.CACHE_USER_UID + uid, User.class);
+        if (ObjectUtils.isEmpty(cacheUser) || !cacheUser.getTenantId().equals(tenantId)) {
+            log.warn("enableLockUser failed. The user not found. uid is {}", uid);
+            return false;
+        }
+        
+        // 更新数据
+        User userUpdate = new User();
+        userUpdate.setUid(uid);
+        userUpdate.setUpdateTime(System.currentTimeMillis());
+        userUpdate.setLockFlag(User.USER_UN_LOCK);
+        int num = userMapper.updateUserByUid(userUpdate);
+        
+        // 删除缓存
+        if (num > 0) {
+            redisService.delete(CacheConstant.CACHE_USER_UID + uid);
+            redisService.delete(CacheConstant.CACHE_USER_PHONE + cacheUser.getTenantId() + ":" + cacheUser.getPhone() + ":" + cacheUser.getUserType());
+        }
+        
+        return num >= 0;
+    }
+    
     /**
      * 通过ID查询单条数据从缓存
      *
