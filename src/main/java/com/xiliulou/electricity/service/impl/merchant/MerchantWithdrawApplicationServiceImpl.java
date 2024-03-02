@@ -266,6 +266,7 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
         wechatTransferBatchOrderQuery.setTransferDetailList(wechatTransferBatchOrderDetailQueryList);
     
         try {
+            log.info("wechat transfer for single review start.");
             WechatTransferOrderResult wechatTransferOrderResult = wechatV3TransferService.transferBatch(wechatTransferBatchOrderQuery);
             log.info("wechat response data for single review, result = {}", wechatTransferOrderResult);
             if(Objects.nonNull(wechatTransferOrderResult)){
@@ -297,6 +298,7 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
     
         merchantWithdrawApplicationRecordService.insertOne(merchantWithdrawApplicationRecord);
         Integer result = merchantWithdrawApplicationMapper.updateOne(merchantWithdrawApplicationUpdate);
+        log.info("wechat transfer for single review end. batch no = {}", batchNo);
         
         return Triple.of(true, null, result);
     }
@@ -447,6 +449,7 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
         wechatTransferBatchOrderQuery.setTransferDetailList(wechatTransferBatchOrderDetailQueryList);
         
         try {
+            log.info("wechat transfer for batch review start.");
             WechatTransferOrderResult wechatTransferOrderResult = wechatV3TransferService.transferBatch(wechatTransferBatchOrderQuery);
             log.info("wechat response data for batch review, result = {}", wechatTransferOrderResult);
             if(Objects.nonNull(wechatTransferOrderResult)){
@@ -479,6 +482,7 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
         //批量创建批次记录
         merchantWithdrawApplicationRecordService.batchInsert(merchantWithdrawApplicationRecords);
         int result = merchantWithdrawApplicationMapper.updateByIds(batchReviewWithdrawApplicationRequest);
+        log.info("wechat transfer for batch review end. batch no = {}", batchNo);
         
         return Triple.of(true, null, result);
     }
