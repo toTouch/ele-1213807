@@ -245,6 +245,16 @@ public class BatteryMemberCardMerchantRebateConsumer implements RocketMQListener
             log.warn("REBATE REFUND CONSUMER WARN!not found batteryMemberCardRefundOrder,orderId={}", batteryMemberCardMerchantRebate.getOrderId());
             return;
         }
+    
+        ElectricityMemberCardOrder electricityMemberCardOrder = electricityMemberCardOrderService.selectByOrderNo(batteryMemberCardMerchantRebate.getOrderId());
+        if (Objects.isNull(electricityMemberCardOrder)) {
+            log.warn("REBATE CONSUMER WARN!not found electricityMemberCardOrder,orderId={}", batteryMemberCardMerchantRebate.getOrderId());
+            return;
+        }
+        
+        if(Objects.equals( electricityMemberCardOrder.getPayCount(),1)){
+        
+        }
         
         //获取返利记录
         RebateRecord rebateRecord = rebateRecordService.queryByOriginalOrderId(batteryMembercardRefundOrder.getMemberCardOrderNo());
