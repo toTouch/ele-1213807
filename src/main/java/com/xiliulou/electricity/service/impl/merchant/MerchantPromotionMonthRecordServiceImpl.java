@@ -152,8 +152,8 @@ public class MerchantPromotionMonthRecordServiceImpl implements MerchantPromotio
                 merchantDayRecordVoList.stream().filter(record -> Objects.equals(record.getType(), RebateRecordConstant.RENEW))
                         .forEach(record -> renewAmount.set(renewAmount.get().add(record.getMoney())));
                 merchantDayRecordVoList.stream().filter(record -> Objects.equals(record.getType(), RebateRecordConstant.BALANCE)).forEach(record -> {
-                    balanceFirstAmount.set(balanceFirstAmount.get().add(record.getBalanceFromFirst()));
-                    balanceRenewAmount.set(balanceRenewAmount.get().add(record.getBalanceFromRenew()));
+                    balanceFirstAmount.set(balanceFirstAmount.get().add(Objects.isNull(record.getBalanceFromFirst()) ? BigDecimal.ZERO : record.getBalanceFromFirst()));
+                    balanceRenewAmount.set(balanceRenewAmount.get().add(Objects.isNull(record.getBalanceFromRenew()) ? BigDecimal.ZERO : record.getBalanceFromRenew()));
                 });
                 
                 BigDecimal monthFirstMoney = firstAmount.get().add(balanceFirstAmount.get());
