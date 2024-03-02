@@ -126,6 +126,7 @@ public class RebateRecordServiceImpl implements RebateRecordService {
         
         return list.stream().map(item -> {
             RebateRecordVO rebateRecord = new RebateRecordVO();
+            BeanUtils.copyProperties(item, rebateRecord);
             Franchisee franchisee = franchiseeService.queryByIdFromCache(item.getFranchiseeId());
             rebateRecord.setFranchiseeName(Objects.nonNull(franchisee) ? franchisee.getName() : "");
 
