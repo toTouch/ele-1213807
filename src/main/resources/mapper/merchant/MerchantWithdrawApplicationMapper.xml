@@ -92,6 +92,9 @@
             <if test="operator != null">
                 operator = #{operator},
             </if>
+            <if test="batchNo != null">
+                batch_no = #{batchNo},
+            </if>
     
             <if test="receiptTime != null">
                 receipt_time = #{receiptTime},
@@ -126,6 +129,9 @@
             </if>
             <if test="merchantWithdrawApplication.operator != null">
                 operator = #{merchantWithdrawApplication.operator},
+            </if>
+            <if test="merchantWithdrawApplication.batchNo != null">
+                batch_no = #{merchantWithdrawApplication.batchNo},
             </if>
             <if test="merchantWithdrawApplication.transactionBatchId != null and merchantWithdrawApplication.transactionBatchId != ''">
                 transaction_batch_id = #{merchantWithdrawApplication.transactionBatchId},
