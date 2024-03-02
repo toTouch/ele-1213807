@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.service.impl.merchant;
 
 import cn.hutool.core.util.StrUtil;
+import com.google.common.collect.Lists;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.http.resttemplate.service.RestTemplateService;
 import com.xiliulou.core.json.JsonUtil;
@@ -35,6 +36,7 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -114,8 +116,9 @@ public class MerchantTokenServiceImpl implements MerchantTokenService {
             String purePhoneNumber = wxMinProPhoneResultDTO.getPurePhoneNumber();
             log.info("TOKEN INFO! 解析微信手机号:{}", purePhoneNumber);
 
-            List<User> users = userService.listUserByPhone(purePhoneNumber, tenantId);
-            if (Collections.isEmpty(users) || users.stream().noneMatch(user -> User.TYPE_USER_MERCHANT.equals(user.getUserType()) || User.TYPE_USER_CHANNEL.equals(user.getUserType()))) {
+            List<User> users = Optional.ofNullable(userService.listUserByPhone(purePhoneNumber, tenantId))
+                    .orElse(Lists.newArrayList()).stream().filter(e->(e.getUserType().equals(User.TYPE_USER_MERCHANT) || e.getUserType().equals(User.TYPE_USER_CHANNEL))).collect(Collectors.toList());;
+            if (Collections.isEmpty(users)) {
                 return Triple.of(false, null, "用户不存在");
             }
 
@@ -123,7 +126,7 @@ public class MerchantTokenServiceImpl implements MerchantTokenService {
             if (notLockUsers.isEmpty()) {
                 return Triple.of(false, null, "当前登录账号已禁用，请联系客服处理");
             }
-
+            
             // 用户是否绑定了业务信息
             Map<Long, UserBindBusinessDTO> userBindBusinessDTOS = users.stream().map(this::checkUserBindingBusiness).filter(UserBindBusinessDTO::isBinding).collect(Collectors.toMap(UserBindBusinessDTO::getUid, e -> e));
             if (userBindBusinessDTOS.isEmpty()) {
