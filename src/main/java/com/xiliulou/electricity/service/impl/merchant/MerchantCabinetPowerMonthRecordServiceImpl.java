@@ -66,12 +66,10 @@ public class MerchantCabinetPowerMonthRecordServiceImpl implements MerchantCabin
     public List<MerchantCabinetPowerMonthRecordVO> listByPage(MerchantPowerRequest request) {
         String monthDate = request.getMonthDate();
         //年月格式校验，判断date是否yyyy-MM格式
-        if (StringUtils.isBlank(monthDate) || !monthDate.matches(DateUtils.GREP_YEAR_MONTH)) {
-            return Collections.emptyList();
+        if (StringUtils.isNotBlank(monthDate) && monthDate.matches(DateUtils.GREP_YEAR_MONTH)) {
+            // 数据库存的是yyyy-MM-01
+            request.setMonthDate(monthDate + "-01");
         }
-        
-        // 数据库存的是yyyy-MM-01
-        request.setMonthDate(monthDate + "-01");
         
         MerchantPowerQueryModel queryModel = new MerchantPowerQueryModel();
         BeanUtils.copyProperties(request, queryModel);
@@ -85,12 +83,10 @@ public class MerchantCabinetPowerMonthRecordServiceImpl implements MerchantCabin
     public Integer countTotal(MerchantPowerRequest request) {
         String monthDate = request.getMonthDate();
         //年月格式校验，判断date是否yyyy-MM格式
-        if (StringUtils.isBlank(monthDate) || !monthDate.matches(DateUtils.GREP_YEAR_MONTH)) {
-            return NumberConstant.ZERO;
+        if (StringUtils.isNotBlank(monthDate) && monthDate.matches(DateUtils.GREP_YEAR_MONTH)) {
+            // 数据库存的是yyyy-MM-01
+            request.setMonthDate(monthDate + "-01");
         }
-        
-        // 数据库存的是yyyy-MM-01
-        request.setMonthDate(monthDate + "-01");
         
         MerchantPowerQueryModel queryModel = new MerchantPowerQueryModel();
         BeanUtils.copyProperties(request, queryModel);

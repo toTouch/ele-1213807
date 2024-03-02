@@ -20,7 +20,7 @@ public class MerchantPowerQueryModel {
     
     private long offset;
     
-    private String date;
+    private String monthDate;
     
     private Integer tenantId;
 }

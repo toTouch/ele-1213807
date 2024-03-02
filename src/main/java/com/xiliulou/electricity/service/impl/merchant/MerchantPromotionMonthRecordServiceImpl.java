@@ -2,7 +2,6 @@ package com.xiliulou.electricity.service.impl.merchant;
 
 import com.alibaba.excel.EasyExcel;
 import com.xiliulou.db.dynamic.annotation.Slave;
-import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.constant.merchant.RebateRecordConstant;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.merchant.Merchant;
@@ -40,6 +39,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -73,12 +74,10 @@ public class MerchantPromotionMonthRecordServiceImpl implements MerchantPromotio
     public List<MerchantPromotionMonthRecordVO> listByPage(MerchantPromotionRequest request) {
         String monthDate = request.getMonthDate();
         //年月格式校验，判断date是否yyyy-MM格式
-        if (StringUtils.isBlank(monthDate) || !monthDate.matches(DateUtils.GREP_YEAR_MONTH)) {
-            return Collections.emptyList();
+        if (StringUtils.isNotBlank(monthDate) && monthDate.matches(DateUtils.GREP_YEAR_MONTH)) {
+            // 数据库存的是yyyy-MM-01
+            request.setMonthDate(monthDate + "-01");
         }
-        
-        // 数据库存的是yyyy-MM-01
-        request.setMonthDate(monthDate + "-01");
         
         MerchantPromotionMonthRecordQueryModel queryModel = new MerchantPromotionMonthRecordQueryModel();
         BeanUtils.copyProperties(request, queryModel);
@@ -102,12 +101,10 @@ public class MerchantPromotionMonthRecordServiceImpl implements MerchantPromotio
     public Integer countTotal(MerchantPromotionRequest request) {
         String monthDate = request.getMonthDate();
         //年月格式校验，判断date是否yyyy-MM格式
-        if (StringUtils.isBlank(monthDate) || !monthDate.matches(DateUtils.GREP_YEAR_MONTH)) {
-            return NumberConstant.ZERO;
+        if (StringUtils.isNotBlank(monthDate) && monthDate.matches(DateUtils.GREP_YEAR_MONTH)) {
+            // 数据库存的是yyyy-MM-01
+            request.setMonthDate(monthDate + "-01");
         }
-        
-        // 数据库存的是yyyy-MM-01
-        request.setMonthDate(monthDate + "-01");
         
         MerchantPromotionMonthRecordQueryModel queryModel = new MerchantPromotionMonthRecordQueryModel();
         BeanUtils.copyProperties(request, queryModel);
@@ -140,8 +137,12 @@ public class MerchantPromotionMonthRecordServiceImpl implements MerchantPromotio
         
         // excelVOList 按merchantId进行分组
         Map<Long, List<MerchantPromotionDayRecordVO>> detailMap = detailList.stream().collect(Collectors.groupingBy(MerchantPromotionDayRecordVO::getMerchantId));
+        // 先对该map排序
+        Map<Long, List<MerchantPromotionDayRecordVO>> detailMap2 = detailMap.entrySet().stream().filter(entry -> entry.getValue().size() > 1).sorted(Comparator.comparing(
+                entry -> entry.getValue().stream().max(Comparator.comparing(MerchantPromotionDayRecordVO::getDate)).orElseThrow(() -> new IllegalStateException("List is empty"))
+                        .getDate())).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (oldValue, newValue) -> oldValue, LinkedHashMap::new));
         
-        detailMap.forEach((merchantId, merchantDayRecordVoList) -> {
+        detailMap2.forEach((merchantId, merchantDayRecordVoList) -> {
             
             if (CollectionUtils.isNotEmpty(merchantDayRecordVoList)) {
                 AtomicReference<BigDecimal> firstAmount = new AtomicReference<>(BigDecimal.ZERO);

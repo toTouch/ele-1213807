@@ -13,7 +13,7 @@
         <where>
             del_flag = 0
             <if test="date != null and date != ''">
-                and date = #{date}
+                and date = #{monthDate}
             </if>
             <if test="tenantId != null">
                 and tenant_id = #{tenantId}
@@ -31,7 +31,7 @@
         <where>
             del_flag = 0
             <if test="date != null and date != ''">
-                and date = #{date}
+                and date = #{monthDate}
             </if>
             <if test="tenantId != null">
                 and tenant_id = #{tenantId}
