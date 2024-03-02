@@ -476,7 +476,7 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
             merchantWithdrawApplicationRecordService.batchInsert(merchantWithdrawApplicationRecords);
             int result = merchantWithdrawApplicationMapper.updateByIds(batchReviewWithdrawApplicationRequest);
             
-            return Triple.of(true, "120022", "批量提现失败");
+            return Triple.of(false, "120022", "批量提现失败");
         }
     
         //批量创建批次记录
