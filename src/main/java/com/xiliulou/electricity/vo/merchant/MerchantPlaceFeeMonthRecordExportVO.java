@@ -23,7 +23,7 @@ public class MerchantPlaceFeeMonthRecordExportVO {
     
     private String sn;
     
-    private String rentDays;
+    private Integer rentDays;
     
     private String rentStartTime;
     

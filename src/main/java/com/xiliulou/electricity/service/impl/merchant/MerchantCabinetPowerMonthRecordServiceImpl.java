@@ -6,6 +6,7 @@ import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.dto.EleChargeConfigCalcDetailDto;
 import com.xiliulou.electricity.entity.ElePower;
+import com.xiliulou.electricity.entity.merchant.MerchantPlace;
 import com.xiliulou.electricity.mapper.merchant.MerchantCabinetPowerMonthRecordMapper;
 import com.xiliulou.electricity.query.merchant.MerchantPowerDetailQueryModel;
 import com.xiliulou.electricity.query.merchant.MerchantPowerQueryModel;
@@ -65,12 +66,10 @@ public class MerchantCabinetPowerMonthRecordServiceImpl implements MerchantCabin
     public List<MerchantCabinetPowerMonthRecordVO> listByPage(MerchantPowerRequest request) {
         String monthDate = request.getMonthDate();
         //年月格式校验，判断date是否yyyy-MM格式
-        if (StringUtils.isBlank(monthDate) || !monthDate.matches(DateUtils.GREP_YEAR_MONTH)) {
-            return Collections.emptyList();
+        if (StringUtils.isNotBlank(monthDate) && monthDate.matches(DateUtils.GREP_YEAR_MONTH)) {
+            // 数据库存的是yyyy-MM-01
+            request.setMonthDate(monthDate + "-01");
         }
-        
-        // 数据库存的是yyyy-MM-01
-        request.setMonthDate(monthDate + "-01");
         
         MerchantPowerQueryModel queryModel = new MerchantPowerQueryModel();
         BeanUtils.copyProperties(request, queryModel);
@@ -84,12 +83,10 @@ public class MerchantCabinetPowerMonthRecordServiceImpl implements MerchantCabin
     public Integer countTotal(MerchantPowerRequest request) {
         String monthDate = request.getMonthDate();
         //年月格式校验，判断date是否yyyy-MM格式
-        if (StringUtils.isBlank(monthDate) || !monthDate.matches(DateUtils.GREP_YEAR_MONTH)) {
-            return NumberConstant.ZERO;
+        if (StringUtils.isNotBlank(monthDate) && monthDate.matches(DateUtils.GREP_YEAR_MONTH)) {
+            // 数据库存的是yyyy-MM-01
+            request.setMonthDate(monthDate + "-01");
         }
-        
-        // 数据库存的是yyyy-MM-01
-        request.setMonthDate(monthDate + "-01");
         
         MerchantPowerQueryModel queryModel = new MerchantPowerQueryModel();
         BeanUtils.copyProperties(request, queryModel);
@@ -164,15 +161,15 @@ public class MerchantCabinetPowerMonthRecordServiceImpl implements MerchantCabin
                                         break;
                                 }
                             }
-    
+                            
                             elePrice = elPeekPrice + elOrdinaryPrice + elValleyPrice;
                         }
                     }
                     
                     MerchantCabinetPowerMonthExcelVO excelVO = MerchantCabinetPowerMonthExcelVO.builder().monthDate(monthDate)
-                            .placeName(Optional.ofNullable(merchantPlaceService.queryByIdFromCache(item.getPlaceId()).getName()).orElse("")).monthSumPower(monthSumPower)
-                            .monthSumCharge(monthSumCharge).endPower(item.getEndPower()).sumCharge(item.getSumCharge()).endTime(endDate).beginTime(beginDate)
-                            .startPower(item.getStartPower()).sumPower(item.getSumPower()).jsonRule(elePrice).sn(item.getSn()).build();
+                            .placeName(Optional.ofNullable(merchantPlaceService.queryByIdFromCache(item.getPlaceId())).orElse(new MerchantPlace()).getName())
+                            .monthSumPower(monthSumPower).monthSumCharge(monthSumCharge).endPower(item.getEndPower()).sumCharge(item.getSumCharge()).endTime(endDate)
+                            .beginTime(beginDate).startPower(item.getStartPower()).sumPower(item.getSumPower()).jsonRule(elePrice).sn(item.getSn()).build();
                     
                     excelVOList.add(excelVO);
                 });

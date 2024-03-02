@@ -44,20 +44,22 @@
             create_time,
             update_time,
         </trim>
-        <trim prefix="values (" suffix=")" suffixOverrides=",">
-            <foreach collection="list" item="item" index="index" separator=",">
-                #{item.uid},
-                #{item.orderNo},
-                #{item.batchNo},
-                #{item.amount},
-                #{item.status},
-                #{item.tenantId},
-                #{item.remark},
-                #{item.response},
-                #{item.createTime},
-                #{item.updateTime},
-            </foreach>
-        </trim>
+        values
+        <foreach collection="list" item="item" index="index" separator=",">
+            (
+            #{item.uid},
+            #{item.orderNo},
+            #{item.batchNo},
+            #{item.amount},
+            #{item.status},
+            #{item.tenantId},
+            #{item.remark},
+            #{item.response},
+            #{item.createTime},
+            #{item.updateTime}
+            )
+        </foreach>
+    
     </insert>
     
     <update id="updateOne">

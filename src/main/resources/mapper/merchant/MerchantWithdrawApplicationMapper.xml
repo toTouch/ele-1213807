@@ -92,6 +92,13 @@
             <if test="operator != null">
                 operator = #{operator},
             </if>
+            <if test="batchNo != null">
+                batch_no = #{batchNo},
+            </if>
+            
+            <if test="checkTime != null">
+                check_time = #{checkTime},
+            </if>
     
             <if test="receiptTime != null">
                 receipt_time = #{receiptTime},
@@ -121,30 +128,36 @@
     <update id="updateByIds">
         update t_merchant_withdraw_application
         <set>
-            <if test="status != null">
-                status = #{status},
+            <if test="merchantWithdrawApplication.status != null">
+                status = #{merchantWithdrawApplication.status},
             </if>
-            <if test="operator != null">
-                operator = #{operator},
+            <if test="merchantWithdrawApplication.operator != null">
+                operator = #{merchantWithdrawApplication.operator},
             </if>
-            <if test="response != null and response != ''">
-                response = #{response},
+            <if test="merchantWithdrawApplication.batchNo != null">
+                batch_no = #{merchantWithdrawApplication.batchNo},
             </if>
-            <if test="updateTime != null">
-                update_time = #{updateTime},
+            <if test="merchantWithdrawApplication.transactionBatchId != null and merchantWithdrawApplication.transactionBatchId != ''">
+                transaction_batch_id = #{merchantWithdrawApplication.transactionBatchId},
             </if>
-            <if test="checkTime != null">
-                check_time = #{checkTime},
+            <if test="merchantWithdrawApplication.response != null and merchantWithdrawApplication.response != ''">
+                response = #{merchantWithdrawApplication.response},
             </if>
-            <if test="remark != null and remark != ''">
-                remark = #{remark},
+            <if test="merchantWithdrawApplication.updateTime != null">
+                update_time = #{merchantWithdrawApplication.updateTime},
+            </if>
+            <if test="merchantWithdrawApplication.checkTime != null">
+                check_time = #{merchantWithdrawApplication.checkTime},
+            </if>
+            <if test="merchantWithdrawApplication.remark != null and merchantWithdrawApplication.remark != ''">
+                remark = #{merchantWithdrawApplication.remark},
             </if>
            
         </set>
         
         <where>
-            <if test="tenantId != null">
-                tenant_id = #{tenantId}
+            <if test="merchantWithdrawApplication.tenantId != null">
+                tenant_id = #{merchantWithdrawApplication.tenantId}
             </if>
             
             <if test="ids != null and !ids.isEmpty()">

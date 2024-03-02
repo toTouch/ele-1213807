@@ -2,8 +2,9 @@ package com.xiliulou.electricity.service.impl.merchant;
 
 import com.alibaba.excel.EasyExcel;
 import com.xiliulou.db.dynamic.annotation.Slave;
-import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.constant.merchant.RebateRecordConstant;
+import com.xiliulou.electricity.entity.User;
+import com.xiliulou.electricity.entity.merchant.Merchant;
 import com.xiliulou.electricity.entity.merchant.MerchantPromotionDayRecord;
 import com.xiliulou.electricity.entity.merchant.MerchantPromotionMonthRecord;
 import com.xiliulou.electricity.mapper.merchant.MerchantPromotionMonthRecordMapper;
@@ -38,6 +39,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -71,12 +74,10 @@ public class MerchantPromotionMonthRecordServiceImpl implements MerchantPromotio
     public List<MerchantPromotionMonthRecordVO> listByPage(MerchantPromotionRequest request) {
         String monthDate = request.getMonthDate();
         //年月格式校验，判断date是否yyyy-MM格式
-        if (StringUtils.isBlank(monthDate) || !monthDate.matches(DateUtils.GREP_YEAR_MONTH)) {
-            return Collections.emptyList();
+        if (StringUtils.isNotBlank(monthDate) && monthDate.matches(DateUtils.GREP_YEAR_MONTH)) {
+            // 数据库存的是yyyy-MM-01
+            request.setMonthDate(monthDate + "-01");
         }
-        
-        // 数据库存的是yyyy-MM-01
-        request.setMonthDate(monthDate + "-01");
         
         MerchantPromotionMonthRecordQueryModel queryModel = new MerchantPromotionMonthRecordQueryModel();
         BeanUtils.copyProperties(request, queryModel);
@@ -100,12 +101,10 @@ public class MerchantPromotionMonthRecordServiceImpl implements MerchantPromotio
     public Integer countTotal(MerchantPromotionRequest request) {
         String monthDate = request.getMonthDate();
         //年月格式校验，判断date是否yyyy-MM格式
-        if (StringUtils.isBlank(monthDate) || !monthDate.matches(DateUtils.GREP_YEAR_MONTH)) {
-            return NumberConstant.ZERO;
+        if (StringUtils.isNotBlank(monthDate) && monthDate.matches(DateUtils.GREP_YEAR_MONTH)) {
+            // 数据库存的是yyyy-MM-01
+            request.setMonthDate(monthDate + "-01");
         }
-        
-        // 数据库存的是yyyy-MM-01
-        request.setMonthDate(monthDate + "-01");
         
         MerchantPromotionMonthRecordQueryModel queryModel = new MerchantPromotionMonthRecordQueryModel();
         BeanUtils.copyProperties(request, queryModel);
@@ -138,7 +137,8 @@ public class MerchantPromotionMonthRecordServiceImpl implements MerchantPromotio
         
         // excelVOList 按merchantId进行分组
         Map<Long, List<MerchantPromotionDayRecordVO>> detailMap = detailList.stream().collect(Collectors.groupingBy(MerchantPromotionDayRecordVO::getMerchantId));
-        
+        // todo 排序
+    
         detailMap.forEach((merchantId, merchantDayRecordVoList) -> {
             
             if (CollectionUtils.isNotEmpty(merchantDayRecordVoList)) {
@@ -152,8 +152,8 @@ public class MerchantPromotionMonthRecordServiceImpl implements MerchantPromotio
                 merchantDayRecordVoList.stream().filter(record -> Objects.equals(record.getType(), RebateRecordConstant.RENEW))
                         .forEach(record -> renewAmount.set(renewAmount.get().add(record.getMoney())));
                 merchantDayRecordVoList.stream().filter(record -> Objects.equals(record.getType(), RebateRecordConstant.BALANCE)).forEach(record -> {
-                    balanceFirstAmount.set(balanceFirstAmount.get().add(record.getBalanceFromFirst()));
-                    balanceRenewAmount.set(balanceRenewAmount.get().add(record.getBalanceFromRenew()));
+                    balanceFirstAmount.set(balanceFirstAmount.get().add(Objects.isNull(record.getBalanceFromFirst()) ? BigDecimal.ZERO : record.getBalanceFromFirst()));
+                    balanceRenewAmount.set(balanceRenewAmount.get().add(Objects.isNull(record.getBalanceFromRenew()) ? BigDecimal.ZERO : record.getBalanceFromRenew()));
                 });
                 
                 BigDecimal monthFirstMoney = firstAmount.get().add(balanceFirstAmount.get());
@@ -182,9 +182,10 @@ public class MerchantPromotionMonthRecordServiceImpl implements MerchantPromotio
                     }
                     
                     MerchantPromotionMonthExcelVO excelVO = MerchantPromotionMonthExcelVO.builder().monthDate(monthDate)
-                            .merchantName(Optional.ofNullable(merchantService.queryByIdFromCache(item.getMerchantId()).getName()).orElse("")).monthFirstMoney(monthFirstMoney)
-                            .monthRenewMoney(monthRenewMoney).inviterName(Optional.ofNullable(userService.queryByUidFromCache(item.getInviterUid()).getName()).orElse(""))
-                            .typeName(typeName).dayMoney(dayMoney).date(item.getDate()).build();
+                            .merchantName(Optional.ofNullable(merchantService.queryByIdFromCache(item.getMerchantId())).orElse(new Merchant()).getName())
+                            .monthFirstMoney(monthFirstMoney).monthRenewMoney(monthRenewMoney)
+                            .inviterName(Optional.ofNullable(userService.queryByUidFromCache(item.getInviterUid())).orElse(new User()).getName()).typeName(typeName)
+                            .dayMoney(dayMoney).date(item.getDate()).build();
                     
                     excelVOList.add(excelVO);
                 });
