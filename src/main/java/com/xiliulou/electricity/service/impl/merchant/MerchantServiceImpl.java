@@ -908,13 +908,13 @@ public class MerchantServiceImpl implements MerchantService {
         CompletableFuture<Void> merchantUserAmountInfo = CompletableFuture.runAsync(() -> {
             List<Long> collect = new ArrayList<>(uidList);
             
-            MerchantUserAmountQueryMode joinRecordQueryMode = MerchantUserAmountQueryMode.builder().uidList(collect).tenantId(merchantPageRequest.getTenantId()).build();
-            List<MerchantUserAmount> merchantJoinRecordList = merchantUserAmountService.queryList(joinRecordQueryMode);
+            MerchantUserAmountQueryMode userAmountQueryMode = MerchantUserAmountQueryMode.builder().uidList(collect).tenantId(merchantPageRequest.getTenantId()).build();
+            List<MerchantUserAmount> merchantUserAmounts = merchantUserAmountService.queryList(userAmountQueryMode);
             
             Map<Long, MerchantUserAmount> userAmountMap = new HashMap<>();
             
-            if (ObjectUtils.isNotEmpty(merchantJoinRecordList)) {
-                userAmountMap = merchantJoinRecordList.stream().collect(Collectors.toMap(MerchantUserAmount::getUid, Function.identity(), (key1, key2) -> key2));
+            if (ObjectUtils.isNotEmpty(merchantUserAmounts)) {
+                userAmountMap = merchantUserAmounts.stream().collect(Collectors.toMap(MerchantUserAmount::getUid, Function.identity(), (key1, key2) -> key2));
             }
             
             Map<Long, MerchantUserAmount> finalUserAmountMap = userAmountMap;
