@@ -91,12 +91,18 @@ public class MerchantPlaceFeeSettlementServiceImpl implements MerchantPlaceFeeSe
             dto.setMonthRentDays(rentDays);
             recordDTOList.add(dto);
         });
+    
+        log.info("recordDTOList = {}", JsonUtil.toJson(recordDTOList));
         
         // recordDTOList转map
         Map<Long, MerchantPlaceFeeMonthRecordDTO> recordMap = recordDTOList.stream().collect(toMap(MerchantPlaceFeeMonthRecordDTO::getPlaceId, item -> item));
+    
+        log.info("recordMap = {}", JsonUtil.toJson(recordMap));
+        
         resultVOs = merchantPlaceFeeMonthRecords.parallelStream().map(merchantPlaceFeeMonthRecord -> {
             MerchantPlaceFeeMonthRecordExportVO exportVO = new MerchantPlaceFeeMonthRecordExportVO();
             BeanUtils.copyProperties(merchantPlaceFeeMonthRecord, exportVO);
+            log.info("start exportVO={}",JsonUtil.toJson(exportVO));
             exportVO.setRentStartTime(
                     Objects.nonNull(merchantPlaceFeeMonthRecord.getRentStartTime()) ? DateUtils.getYearAndMonthAndDayByTimeStamps(merchantPlaceFeeMonthRecord.getRentStartTime())
                             : null);
@@ -111,11 +117,14 @@ public class MerchantPlaceFeeSettlementServiceImpl implements MerchantPlaceFeeSe
             
             if (Objects.nonNull(merchantPlaceFeeMonthRecord.getPlaceId())) {
                 MerchantPlaceFeeMonthRecordDTO merchantPlaceFeeMonthRecordDTO = recordMap.get(merchantPlaceFeeMonthRecord.getPlaceId());
+                log.info("start merchantPlaceFeeMonthRecordDTO={}",JsonUtil.toJson(merchantPlaceFeeMonthRecordDTO));
                 if (Objects.nonNull(merchantPlaceFeeMonthRecordDTO) && Objects.equals(merchantPlaceFeeMonthRecord.getPlaceId(), merchantPlaceFeeMonthRecordDTO.getPlaceId())) {
+                    log.info("start getMonthPlaceFee={},getMonthRentDays={}",merchantPlaceFeeMonthRecordDTO.getMonthPlaceFee(),merchantPlaceFeeMonthRecordDTO.getMonthRentDays());
                     exportVO.setMonthTotalPlaceFee(merchantPlaceFeeMonthRecordDTO.getMonthPlaceFee());
                     exportVO.setMonthRentDays(merchantPlaceFeeMonthRecordDTO.getMonthRentDays());
                 }
             }
+            log.info("end exportVO={}",JsonUtil.toJson(exportVO));
             return exportVO;
         }).collect(Collectors.toList());
         
