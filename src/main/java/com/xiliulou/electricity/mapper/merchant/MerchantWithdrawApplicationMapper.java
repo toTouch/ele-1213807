@@ -20,7 +20,7 @@ public interface MerchantWithdrawApplicationMapper {
     
     Integer updateOne(MerchantWithdrawApplication merchantWithdrawApplication);
     
-    Integer updateByIds(BatchReviewWithdrawApplicationRequest batchReviewWithdrawApplicationRequest);
+    Integer updateByIds(@Param("merchantWithdrawApplication") MerchantWithdrawApplication merchantWithdrawApplication, @Param("ids") List<Long> ids);
     
     List<MerchantWithdrawApplicationVO> queryList(MerchantWithdrawApplicationRequest merchantWithdrawApplicationRequest);
     
