@@ -63,11 +63,11 @@ public class MerchantCabinetPowerMonthExcelVO {
     /**
      * 开始时间
      */
-    private Long beginTime;
+    private String beginTime;
     
     /**
      * 结束时间
      */
-    private Long endTime;
+    private String endTime;
     
 }

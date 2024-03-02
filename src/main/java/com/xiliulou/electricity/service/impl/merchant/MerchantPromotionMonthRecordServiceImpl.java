@@ -154,16 +154,16 @@ public class MerchantPromotionMonthRecordServiceImpl implements MerchantPromotio
                     BigDecimal dayMoney = BigDecimal.ZERO;
                     
                     switch (item.getType()) {
-                        case MerchantPromotionDayRecord.LASHIN:
-                            typeName = "拉新";
+                        case MerchantPromotionDayRecord.LASH:
+                            typeName = MerchantPromotionDayRecord.LASH_NAME;
                             dayMoney = item.getDayFirstMoney();
                             break;
                         case MerchantPromotionDayRecord.RENEW:
-                            typeName = "续费";
+                            typeName = MerchantPromotionDayRecord.RENEW_NAME;
                             dayMoney = item.getDayRenewMoney();
                             break;
                         case MerchantPromotionDayRecord.BALANCE:
-                            typeName = "差额";
+                            typeName = MerchantPromotionDayRecord.BALANCE_NAME;
                             dayMoney = item.getDayBalanceMoney();
                             break;
                         default:
