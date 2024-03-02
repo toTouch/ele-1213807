@@ -164,9 +164,9 @@ public class MerchantCabinetPowerMonthRecordServiceImpl implements MerchantCabin
                                         break;
                                 }
                             }
+    
+                            elePrice = elPeekPrice + elOrdinaryPrice + elValleyPrice;
                         }
-                        
-                        elePrice = elPeekPrice + elOrdinaryPrice + elValleyPrice;
                     }
                     
                     MerchantCabinetPowerMonthExcelVO excelVO = MerchantCabinetPowerMonthExcelVO.builder().monthDate(monthDate)
