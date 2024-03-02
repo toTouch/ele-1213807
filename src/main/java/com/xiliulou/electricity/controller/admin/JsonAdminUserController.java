@@ -52,7 +52,16 @@ public class JsonAdminUserController extends BaseController {
     RoleService roleService;
     @Autowired
     UserDataScopeService userDataScopeService;
-
+    
+    /**
+     * 启用锁定用户
+     * @param uid 用户UID
+     * @return true、false
+     */
+    @GetMapping("/user/enableLockUser")
+    public R<Boolean> enableLockUser(Long uid) {
+        return R.ok(userService.enableLockUser(TenantContextHolder.getTenantId(), uid));
+    }
 
     @PostMapping("/user/register")
     public R createUser(@Validated(value = CreateGroup.class) @RequestBody AdminUserQuery adminUserQuery, BindingResult result) {

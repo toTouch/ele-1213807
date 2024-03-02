@@ -49,7 +49,7 @@ public class JsonUserEnterpriseChannelUserController extends BaseController {
      * @param uid
      * @return
      */
-    @GetMapping("/user/enterprise/queryEnterpriseChannelUser")
+    @GetMapping({"/user/enterprise/queryEnterpriseChannelUser", "/user/enterprise/queryEnterpriseChannelUser"})
     public R queryEnterpriseChannelUser(@RequestParam(value = "uid", required = true) Long uid) {
         
         return R.ok(enterpriseChannelUserService.queryEnterpriseChannelUser(uid));
@@ -60,7 +60,7 @@ public class JsonUserEnterpriseChannelUserController extends BaseController {
      * @param enterpriseChannelUserQuery
      * @return
      */
-    @PutMapping("/user/enterprise/updateRenewalStatus")
+    @PutMapping({"/user/enterprise/updateRenewalStatus", "/merchant/enterprise/updateRenewalStatus"})
     public R updateRenewalStatus(@RequestBody EnterpriseChannelUserQuery enterpriseChannelUserQuery) {
         if (!ObjectUtils.allNotNull(enterpriseChannelUserQuery, enterpriseChannelUserQuery.getUid(), enterpriseChannelUserQuery.getRenewalStatus())) {
             return R.fail("ELECTRICITY.0007", "不合法的参数");
@@ -69,14 +69,14 @@ public class JsonUserEnterpriseChannelUserController extends BaseController {
         return R.ok(enterpriseChannelUserService.updateRenewStatus(enterpriseChannelUserQuery));
     }
     
-    @PostMapping("/user/enterprise/addUser")
+    @PostMapping({"/user/enterprise/addUser", "/merchant/enterprise/addUser"})
     public R addUser(@RequestBody @Validated(CreateGroup.class) EnterpriseChannelUserQuery query) {
         
         return returnTripleResult(enterpriseChannelUserService.save(query));
         
     }
     
-    @PostMapping("/user/enterprise/addUserNew")
+    @PostMapping({"/user/enterprise/addUserNew", "/merchant/enterprise/addUserNew"})
     public R addUserNew(@RequestBody @Validated(CreateGroup.class) EnterpriseChannelUserQuery query) {
         return returnTripleResult(enterpriseChannelUserService.addUserNew(query));
     }
@@ -86,7 +86,7 @@ public class JsonUserEnterpriseChannelUserController extends BaseController {
      * @param request
      * @return
      */
-    @PostMapping("/user/enterprise/channelUserExitCheck")
+    @PostMapping({"/user/enterprise/channelUserExitCheck", "/merchant/enterprise/channelUserExitCheck"})
     public R channelUserExitCheck(@RequestBody @Validated(UpdateGroup.class) EnterpriseUserExitCheckRequest request) {
         
         return returnTripleResult(enterpriseChannelUserService.channelUserExitCheck(request));
@@ -97,7 +97,7 @@ public class JsonUserEnterpriseChannelUserController extends BaseController {
      * @param request
      * @return
      */
-    @PostMapping("/user/enterprise/channelUserExitCheckAll")
+    @PostMapping({"/user/enterprise/channelUserExitCheckAll", "/merchant/enterprise/channelUserExitCheckAll"})
     public R channelUserExitCheckAll(@RequestBody @Validated(CreateGroup.class) EnterpriseUserExitCheckRequest request) {
         
         return returnTripleResult(enterpriseChannelUserService.channelUserExitCheckAll(request));
@@ -108,7 +108,7 @@ public class JsonUserEnterpriseChannelUserController extends BaseController {
      * @param request
      * @return
      */
-    @PostMapping("/user/enterprise/channelUserExit")
+    @PostMapping({"/user/enterprise/channelUserExit", "/merchant/enterprise/channelUserExit"})
     public R channelUserExit(@RequestBody @Validated(UpdateGroup.class) EnterpriseUserExitCheckRequest request) {
         
         return returnTripleResult(enterpriseChannelUserService.channelUserExit(request));
@@ -119,7 +119,7 @@ public class JsonUserEnterpriseChannelUserController extends BaseController {
      * @param request
      * @return
      */
-    @PostMapping("/user/enterprise/channelUserExitAll")
+    @PostMapping({"/user/enterprise/channelUserExitAll", "/merchant/enterprise/channelUserExitAll"})
     public R channelUserExitAll(@RequestBody @Validated(CreateGroup.class) EnterpriseUserExitCheckRequest request) {
         
         return returnTripleResult(enterpriseChannelUserService.channelUserExitAll(request));
@@ -130,7 +130,7 @@ public class JsonUserEnterpriseChannelUserController extends BaseController {
      * @param request
      * @return
      */
-    @PostMapping("/user/enterprise/channelUserClose")
+    @PostMapping({"/user/enterprise/channelUserClose", "/merchant/enterprise/channelUserClose"})
     public R channelUserClose(@RequestBody @Validated(CreateGroup.class) EnterpriseUserExitCheckRequest request) {
         
         return returnTripleResult(enterpriseChannelUserService.channelUserClose(request));
@@ -142,7 +142,7 @@ public class JsonUserEnterpriseChannelUserController extends BaseController {
      *
      * @return
      */
-    @GetMapping("/user/enterprise/user/queryEnterpriseChannelUserList")
+    @GetMapping({"/user/enterprise/user/queryEnterpriseChannelUserList", "/merchant/enterprise/user/queryEnterpriseChannelUserList"})
     public R queryEnterpriseChannelUserList() {
         
         return returnTripleResult(enterpriseChannelUserService.queryEnterpriseChannelUserList());
@@ -157,7 +157,7 @@ public class JsonUserEnterpriseChannelUserController extends BaseController {
      * @param
      * @return
      */
-    @GetMapping("/user/enterprise/queryUser")
+    @GetMapping({"/user/enterprise/queryUser", "/merchant/enterprise/queryUser"})
     public R queryUser(@RequestParam(value = "phone", required = true) String phone) {
         Integer tenantId = TenantContextHolder.getTenantId();
         EnterpriseChannelUserQuery enterpriseChannelUserQuery = EnterpriseChannelUserQuery.builder()
@@ -175,7 +175,7 @@ public class JsonUserEnterpriseChannelUserController extends BaseController {
      * @param
      * @return
      */
-    @GetMapping("/user/enterprise/generateEnterpriseUser")
+    @GetMapping({"/user/enterprise/generateEnterpriseUser", "/merchant/enterprise/generateEnterpriseUser"})
     public R generateUserRecord(@RequestParam(value = "enterpriseId", required = true) Long enterpriseId) {
         
         EnterpriseChannelUserQuery enterpriseChannelUserQuery = EnterpriseChannelUserQuery.builder()
@@ -233,7 +233,7 @@ public class JsonUserEnterpriseChannelUserController extends BaseController {
         return returnTripleResult(enterpriseChannelUserService.addUserByScanNewCheck(enterpriseChannelUserQuery));
     }
     
-    @GetMapping("/user/enterprise/checkChannelUser")
+    @GetMapping({"/user/enterprise/checkChannelUser", "/merchant/enterprise/checkChannelUser"})
     public R checkChannelUser(@RequestParam(value = "id", required = true) Long id, @RequestParam(value = "uid", required = false) Long uid) {
         
         return returnTripleResult(enterpriseChannelUserService.checkUserExist(id, uid));
@@ -246,7 +246,7 @@ public class JsonUserEnterpriseChannelUserController extends BaseController {
      * @param uid
      * @return
      */
-    @GetMapping("/user/enterprise/queryRiderDetails")
+    @GetMapping({"/user/enterprise/queryRiderDetails", "/merchant/enterprise/queryRiderDetails"})
     public R queryRiderDetails(@RequestParam(value = "enterpriseId", required = true) Long enterpriseId,
                                @RequestParam(value = "uid", required = true) Long uid,
                                @RequestParam(value = "orderNo", required = false) String orderNo) {
@@ -268,7 +268,7 @@ public class JsonUserEnterpriseChannelUserController extends BaseController {
      * @param uid
      * @return
      */
-    @GetMapping("/user/enterprise/queryRiderCostDetails")
+    @GetMapping({"/user/enterprise/queryRiderCostDetails", "/merchant/enterprise/queryRiderCostDetails"})
     public R queryRiderCostDetails(@RequestParam(value = "enterpriseId", required = true) Long enterpriseId,
                                    @RequestParam(value = "uid", required = true) Long uid,
                                    @RequestParam(value = "beginTime", required = false) Long beginTime,
@@ -300,7 +300,7 @@ public class JsonUserEnterpriseChannelUserController extends BaseController {
      * @param phone
      * @return
      */
-    @GetMapping("/user/enterprise/queryPurchaseOrder")
+    @GetMapping({"/user/enterprise/queryPurchaseOrder", "/merchant/enterprise/queryPurchaseOrder"})
     public R queryPurchaseOrder(@RequestParam("offset") long offset,
                                 @RequestParam("size") long size,
                                 @RequestParam(value = "enterpriseId", required = true) Long enterpriseId,
@@ -337,7 +337,7 @@ public class JsonUserEnterpriseChannelUserController extends BaseController {
      * @param uid
      * @return
      */
-    @GetMapping("/user/enterprise/queryBattery")
+    @GetMapping({"/user/enterprise/queryBattery", "/merchant/enterprise/queryBattery"})
     public R queryBattery(@RequestParam(value = "uid", required = true) Long uid) {
         return R.ok(enterpriseChannelUserService.queryBatteryByUid(uid));
     }

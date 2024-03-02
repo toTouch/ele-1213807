@@ -1,7 +1,6 @@
 package com.xiliulou.electricity.service.impl.merchant;
 
 import com.xiliulou.electricity.entity.User;
-import com.xiliulou.electricity.entity.merchant.ChannelEmployeeAmount;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.merchant.ChannelEmployeeAmountMapper;
 import com.xiliulou.electricity.service.UserService;
@@ -50,7 +49,7 @@ public class ChannelEmployeeAmountServiceImpl implements ChannelEmployeeAmountSe
             throw new BizException("120008", "渠道员不存在");
         }
         
-        Integer result = channelEmployeeAmountMapper.addAmountByUid(amount, uid, tenantId);
+        Integer result = channelEmployeeAmountMapper.addAmountByUid(amount, uid, tenantId, System.currentTimeMillis());
         return result;
     }
     
@@ -81,7 +80,7 @@ public class ChannelEmployeeAmountServiceImpl implements ChannelEmployeeAmountSe
             throw new BizException("120008", "渠道员不存在");
         }
     
-        Integer result = channelEmployeeAmountMapper.reduceAmountByUid(amount, uid, tenantId);
+        Integer result = channelEmployeeAmountMapper.reduceAmountByUid(amount, uid, tenantId, System.currentTimeMillis());
         return result;
     }
 }

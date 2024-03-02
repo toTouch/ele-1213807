@@ -199,7 +199,9 @@
         WHERE
             del_flag = 0
           and `status` = #{status}
-          and tenant_id = #{tenantId}
+          <if test="tenantId != null">
+              and tenant_id = #{tenantId}
+          </if>
           AND merchant_id IN
           <foreach collection="merchantIdList" item="merchantId" close=")" open="(" separator=",">
               #{merchantId}
@@ -265,10 +267,6 @@
     
                 <if test="name != null and name != ''">
                     and tui.name like concat('%', #{name}, '%')
-                </if>
-
-                <if test="expireTime != null">
-                    and tubmc.member_card_expire_time &lt;= #{expireTime}
                 </if>
 
                 <if test="type != null">

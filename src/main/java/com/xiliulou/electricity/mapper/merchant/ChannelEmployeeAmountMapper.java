@@ -20,8 +20,8 @@ public interface ChannelEmployeeAmountMapper {
     
     Integer insertOne(ChannelEmployeeAmount channelEmployeeAmount);
     
-    Integer addAmountByUid(@Param("income") BigDecimal income, @Param("uid") Long uid, @Param("tenantId") Long tenantId);
+    Integer addAmountByUid(@Param("income") BigDecimal income, @Param("uid") Long uid, @Param("tenantId") Long tenantId, @Param("updateTime") Long updateTime);
     
-    Integer reduceAmountByUid(@Param("income") BigDecimal income, @Param("uid") Long uid, @Param("tenantId") Long tenantId);
+    Integer reduceAmountByUid(@Param("income") BigDecimal income, @Param("uid") Long uid, @Param("tenantId") Long tenantId, @Param("updateTime") Long updateTime);
 
 }

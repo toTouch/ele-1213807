@@ -32,7 +32,7 @@ public class JsonUserCloudBeanUseRecordController extends BaseController {
     /**
      * 云豆流水
      */
-    @GetMapping("/user/cloudBeanUse/page")
+    @GetMapping({"/user/cloudBeanUse/page", "/merchant/cloudBeanUse/page"})
     public R cloudBeanUsePage(@RequestParam("offset") long offset, @RequestParam("size") long size, @RequestParam(value = "type", required = false) Integer type,
             @RequestParam(value = "startTime", required = false) Long startTime, @RequestParam(value = "endTime", required = false) Long endTime) {
         
@@ -53,7 +53,7 @@ public class JsonUserCloudBeanUseRecordController extends BaseController {
     /**
      * 云豆流水统计
      */
-    @GetMapping("/user/cloudBeanUse/statistics")
+    @GetMapping({"/user/cloudBeanUse/statistics", "/merchant/cloudBeanUse/statistics"})
     public R cloudBeanUseStatistics(@RequestParam(value = "type", required = false) Integer type, @RequestParam(value = "startTime", required = false) Long startTime,
             @RequestParam(value = "endTime", required = false) Long endTime) {
         
@@ -68,7 +68,7 @@ public class JsonUserCloudBeanUseRecordController extends BaseController {
      *
      * @return
      */
-    @GetMapping("/user/cloudBeanUse/recyclable/{uid}")
+    @GetMapping({"/user/cloudBeanUse/recyclable/{uid}", "/merchant/cloudBeanUse/recyclable/{uid}"})
     public R cloudBeanUseRecyclable(@PathVariable("uid") Long uid) {
         return R.ok(cloudBeanUseRecordService.acquireUserCanRecycleCloudBean(uid));
     }
@@ -78,7 +78,7 @@ public class JsonUserCloudBeanUseRecordController extends BaseController {
      *
      * @return
      */
-    @GetMapping("/user/cloudBeanUse/recyclabed/{uid}")
+    @GetMapping({"/user/cloudBeanUse/recyclabed/{uid}", "/merchant/cloudBeanUse/recyclabed/{uid}"})
     public R cloudBeanUseRecyclabed(@PathVariable("uid") Long uid) {
         return R.ok(cloudBeanUseRecordService.acquireUserRecycledCloudBean(uid));
     }
@@ -86,7 +86,7 @@ public class JsonUserCloudBeanUseRecordController extends BaseController {
     /**
      * 云豆账单下载
      */
-    @GetMapping("/user/cloudBeanOrder/download")
+    @GetMapping({"/user/cloudBeanOrder/download", "/merchant/cloudBeanOrder/download"})
     public R cloudBeanOrderDownload(@RequestParam(value = "beginTime") Long beginTime, @RequestParam(value = "endTime") Long endTime) {
         return returnTripleResult(cloudBeanUseRecordService.cloudBeanOrderDownload(beginTime, endTime));
     }

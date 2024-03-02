@@ -131,6 +131,7 @@
                 WHERE
                 m.place_id = t.id
                 and m.merchant_id = #{merchantId}
+                )
             </if>
         </where>
     </sql>

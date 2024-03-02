@@ -52,6 +52,9 @@
 			<if test="updateTime != null">
 				update_time = #{updateTime},
 			</if>
+			<if test="lockFlag != null">
+				`lock_flag` = #{lockFlag},
+			</if>
 		</set>
 		where uid = #{uid}
 	</update>
