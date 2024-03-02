@@ -920,7 +920,7 @@ public class MerchantServiceImpl implements MerchantService {
             Map<Long, MerchantUserAmount> finalUserAmountMap = userAmountMap;
             
             resList.forEach(item -> {
-                MerchantUserAmount merchantUserAmount = finalUserAmountMap.get(item.getId());
+                MerchantUserAmount merchantUserAmount = finalUserAmountMap.get(item.getUid());
                 if (ObjectUtils.isNotEmpty(merchantUserAmount)) {
                     item.setWithdrawAmount(merchantUserAmount.getWithdrawAmount());
                     item.setBalance(merchantUserAmount.getBalance());
