@@ -127,6 +127,9 @@
             <if test="operator != null">
                 operator = #{operator},
             </if>
+            <if test="response != null and response != ''">
+                response = #{response},
+            </if>
             <if test="updateTime != null">
                 update_time = #{updateTime},
             </if>
