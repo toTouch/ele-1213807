@@ -140,7 +140,7 @@ public class MerchantModifyConsumer implements RocketMQListener<String> {
                 rebateRecord.setMerchantUid(item.getMerchantUid());
                 rebateRecord.setStatus(MerchantConstant.MERCHANT_REBATE_STATUS_NOT_SETTLE);
                 rebateRecord.setChanneler(item.getChanneler());
-                rebateRecord.setChannelerRebate(oldChannelerRebate.subtract(newChannelerRebate));
+                rebateRecord.setChannelerRebate(newChannelerRebate.subtract(oldChannelerRebate));
                 rebateRecord.setMerchantRebate(newMerchantRebate.subtract(oldMerchantRebate));
                 rebateRecord.setPlaceId(item.getPlaceId());
                 rebateRecord.setPlaceUid(item.getPlaceUid());
