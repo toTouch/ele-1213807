@@ -26,11 +26,7 @@ public class MerchantPromotionDayRecord {
     
     private Long inviterUid;
     
-    private BigDecimal dayFirstMoney;
-    
-    private BigDecimal dayRenewMoney;
-    
-    private BigDecimal dayBalanceMoney;
+    private BigDecimal money;
     
     /**
      * 拉新产生的差额
