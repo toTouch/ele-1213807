@@ -74,7 +74,10 @@ public class MerchantPlaceFeeSettlementServiceImpl implements MerchantPlaceFeeSe
         // 根据场地id分组 并monthPlaceFee求和
         Map<Long, List<MerchantPlaceFeeMonthRecord>> placeIdListMap = merchantPlaceFeeMonthRecords.stream().filter(item -> Objects.nonNull(item.getPlaceId()))
                 .collect(Collectors.groupingBy(MerchantPlaceFeeMonthRecord::getPlaceId));
-        
+        log.info("placeIdListMap = {}", JsonUtil.toJson(placeIdListMap));
+        List<MerchantPlaceFeeMonthRecord> collect = merchantPlaceFeeMonthRecords.stream().filter(item -> Objects.nonNull(item.getPlaceId())).collect(Collectors.toList());
+        log.info("collect = {}", JsonUtil.toJson(collect));
+    
         List<MerchantPlaceFeeMonthRecordDTO> recordDTOList = Lists.newArrayList();
         
         placeIdListMap.forEach((placeId, merchantPlaceFeeMonthRecordList) -> {
