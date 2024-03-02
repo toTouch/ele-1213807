@@ -92,8 +92,8 @@ public class MerchantPlaceFeeSettlementServiceImpl implements MerchantPlaceFeeSe
             dto.setMonthDate(merchantPlaceFeeMonthRecordList.get(0).getMonthDate());
             dto.setPlaceId(placeId);
             dto.setTenantId(merchantPlaceFeeMonthRecordList.get(0).getTenantId());
-            dto.setMonthPlaceFee(monthPlaceFee.compareTo(BigDecimal.ZERO) == 0 ? monthPlaceFee : null);
-            dto.setMonthRentDays(Objects.equals(rentDays, 0) ? rentDays : null);
+            dto.setMonthPlaceFee(monthPlaceFee.compareTo(BigDecimal.ZERO) == 0 ? null : monthPlaceFee);
+            dto.setMonthRentDays(Objects.equals(rentDays, 0) ? null : rentDays);
             recordDTOList.add(dto);
         });
         
@@ -117,18 +117,14 @@ public class MerchantPlaceFeeSettlementServiceImpl implements MerchantPlaceFeeSe
             
             if (Objects.nonNull(merchantPlaceFeeMonthRecord.getPlaceId())) {
                 MerchantPlaceFeeMonthRecordDTO merchantPlaceFeeMonthRecordDTO = recordMap.get(merchantPlaceFeeMonthRecord.getPlaceId());
-                log.info("start merchantPlaceFeeMonthRecordDTO={}", JsonUtil.toJson(merchantPlaceFeeMonthRecordDTO));
                 if (Objects.nonNull(merchantPlaceFeeMonthRecordDTO) && Objects.equals(merchantPlaceFeeMonthRecord.getPlaceId(), merchantPlaceFeeMonthRecordDTO.getPlaceId())) {
-                    log.info("start getMonthPlaceFee={},getMonthRentDays={}", merchantPlaceFeeMonthRecordDTO.getMonthPlaceFee(), merchantPlaceFeeMonthRecordDTO.getMonthRentDays());
                     exportVO.setMonthTotalPlaceFee(merchantPlaceFeeMonthRecordDTO.getMonthPlaceFee());
                     exportVO.setMonthRentDays(merchantPlaceFeeMonthRecordDTO.getMonthRentDays());
                 }
             }
-            log.info("end exportVO={}", JsonUtil.toJson(exportVO));
             return exportVO;
         }).collect(Collectors.toList());
         
-        log.info("finalResultVOs = {}", JsonUtil.toJson(resultVOs));
         return resultVOs;
     }
     
