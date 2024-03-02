@@ -111,8 +111,8 @@ public class MerchantPlaceFeeSettlementServiceImpl implements MerchantPlaceFeeSe
             
             if (Objects.nonNull(merchantPlaceFeeMonthRecord.getPlaceId())) {
                 MerchantPlaceFeeMonthRecordDTO merchantPlaceFeeMonthRecordDTO = recordMap.get(merchantPlaceFeeMonthRecord.getPlaceId());
-                exportVO.setMonthPlaceFee(merchantPlaceFeeMonthRecordDTO.getMonthPlaceFee());
-                exportVO.setRentDays(merchantPlaceFeeMonthRecordDTO.getMonthRentDays());
+                exportVO.setMonthTotalPlaceFee(merchantPlaceFeeMonthRecordDTO.getMonthPlaceFee());
+                exportVO.setMonthRentDays(merchantPlaceFeeMonthRecordDTO.getMonthRentDays());
             }
             return exportVO;
         }).collect(Collectors.toList());
