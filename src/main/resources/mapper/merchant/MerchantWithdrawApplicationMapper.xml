@@ -95,6 +95,10 @@
             <if test="batchNo != null">
                 batch_no = #{batchNo},
             </if>
+            
+            <if test="checkTime != null">
+                check_time = #{checkTime},
+            </if>
     
             <if test="receiptTime != null">
                 receipt_time = #{receiptTime},

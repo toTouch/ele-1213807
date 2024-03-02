@@ -210,6 +210,8 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
         MerchantWithdrawApplication merchantWithdrawApplicationUpdate = new MerchantWithdrawApplication();
         merchantWithdrawApplicationUpdate.setId(reviewWithdrawApplicationRequest.getId());
         merchantWithdrawApplicationUpdate.setBatchNo(batchNo);
+        merchantWithdrawApplicationUpdate.setRemark(reviewWithdrawApplicationRequest.getRemark());
+        merchantWithdrawApplicationUpdate.setCheckTime(System.currentTimeMillis());
         merchantWithdrawApplicationUpdate.setUpdateTime(System.currentTimeMillis());
         merchantWithdrawApplicationUpdate.setOperator(user.getUid());
         
