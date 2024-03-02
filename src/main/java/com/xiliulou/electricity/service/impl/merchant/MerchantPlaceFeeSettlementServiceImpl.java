@@ -76,11 +76,16 @@ public class MerchantPlaceFeeSettlementServiceImpl implements MerchantPlaceFeeSe
         List<MerchantPlaceFeeMonthRecordDTO> recordDTOList = Lists.newArrayList();
         
         placeIdListMap.forEach((placeId, merchantPlaceFeeMonthRecordList) -> {
+            
             // 租赁天数求和
-            Integer rentDays = merchantPlaceFeeMonthRecords.stream().map(MerchantPlaceFeeMonthRecord::getRentDays).filter(Objects::nonNull).reduce(0, Integer::sum);
+            Integer rentDays = merchantPlaceFeeMonthRecords.stream()
+                    .filter(item -> Objects.nonNull(item.getRentDays()) && Objects.nonNull(item.getPlaceId()) && Objects.equals(item.getPlaceId(), placeId))
+                    .map(MerchantPlaceFeeMonthRecord::getRentDays).reduce(0, Integer::sum);
+            
             //月场地费求和
-            BigDecimal monthPlaceFee = merchantPlaceFeeMonthRecords.stream().map(MerchantPlaceFeeMonthRecord::getMonthPlaceFee).filter(Objects::nonNull)
-                    .reduce(BigDecimal.ZERO, BigDecimal::add);
+            BigDecimal monthPlaceFee = merchantPlaceFeeMonthRecords.stream()
+                    .filter(item -> Objects.nonNull(item.getMonthPlaceFee()) && Objects.nonNull(item.getPlaceId()) && Objects.equals(item.getPlaceId(), placeId))
+                    .map(MerchantPlaceFeeMonthRecord::getMonthPlaceFee).reduce(BigDecimal.ZERO, BigDecimal::add);
             
             MerchantPlaceFeeMonthRecordDTO dto = new MerchantPlaceFeeMonthRecordDTO();
             
@@ -91,18 +96,18 @@ public class MerchantPlaceFeeSettlementServiceImpl implements MerchantPlaceFeeSe
             dto.setMonthRentDays(rentDays);
             recordDTOList.add(dto);
         });
-    
+        
         log.info("recordDTOList = {}", JsonUtil.toJson(recordDTOList));
         
         // recordDTOList转map
         Map<Long, MerchantPlaceFeeMonthRecordDTO> recordMap = recordDTOList.stream().collect(toMap(MerchantPlaceFeeMonthRecordDTO::getPlaceId, item -> item));
-    
+        
         log.info("recordMap = {}", JsonUtil.toJson(recordMap));
         
         resultVOs = merchantPlaceFeeMonthRecords.parallelStream().map(merchantPlaceFeeMonthRecord -> {
             MerchantPlaceFeeMonthRecordExportVO exportVO = new MerchantPlaceFeeMonthRecordExportVO();
             BeanUtils.copyProperties(merchantPlaceFeeMonthRecord, exportVO);
-            log.info("start exportVO={}",JsonUtil.toJson(exportVO));
+            log.info("start exportVO={}", JsonUtil.toJson(exportVO));
             exportVO.setRentStartTime(
                     Objects.nonNull(merchantPlaceFeeMonthRecord.getRentStartTime()) ? DateUtils.getYearAndMonthAndDayByTimeStamps(merchantPlaceFeeMonthRecord.getRentStartTime())
                             : null);
@@ -117,14 +122,14 @@ public class MerchantPlaceFeeSettlementServiceImpl implements MerchantPlaceFeeSe
             
             if (Objects.nonNull(merchantPlaceFeeMonthRecord.getPlaceId())) {
                 MerchantPlaceFeeMonthRecordDTO merchantPlaceFeeMonthRecordDTO = recordMap.get(merchantPlaceFeeMonthRecord.getPlaceId());
-                log.info("start merchantPlaceFeeMonthRecordDTO={}",JsonUtil.toJson(merchantPlaceFeeMonthRecordDTO));
+                log.info("start merchantPlaceFeeMonthRecordDTO={}", JsonUtil.toJson(merchantPlaceFeeMonthRecordDTO));
                 if (Objects.nonNull(merchantPlaceFeeMonthRecordDTO) && Objects.equals(merchantPlaceFeeMonthRecord.getPlaceId(), merchantPlaceFeeMonthRecordDTO.getPlaceId())) {
-                    log.info("start getMonthPlaceFee={},getMonthRentDays={}",merchantPlaceFeeMonthRecordDTO.getMonthPlaceFee(),merchantPlaceFeeMonthRecordDTO.getMonthRentDays());
+                    log.info("start getMonthPlaceFee={},getMonthRentDays={}", merchantPlaceFeeMonthRecordDTO.getMonthPlaceFee(), merchantPlaceFeeMonthRecordDTO.getMonthRentDays());
                     exportVO.setMonthTotalPlaceFee(merchantPlaceFeeMonthRecordDTO.getMonthPlaceFee());
                     exportVO.setMonthRentDays(merchantPlaceFeeMonthRecordDTO.getMonthRentDays());
                 }
             }
-            log.info("end exportVO={}",JsonUtil.toJson(exportVO));
+            log.info("end exportVO={}", JsonUtil.toJson(exportVO));
             return exportVO;
         }).collect(Collectors.toList());
         
