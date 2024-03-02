@@ -137,12 +137,10 @@ public class MerchantPromotionMonthRecordServiceImpl implements MerchantPromotio
         
         // excelVOList 按merchantId进行分组
         Map<Long, List<MerchantPromotionDayRecordVO>> detailMap = detailList.stream().collect(Collectors.groupingBy(MerchantPromotionDayRecordVO::getMerchantId));
-        // 先对该map排序
-        Map<Long, List<MerchantPromotionDayRecordVO>> detailMap2 = detailMap.entrySet().stream().filter(entry -> entry.getValue().size() > 1).sorted(Comparator.comparing(
-                entry -> entry.getValue().stream().max(Comparator.comparing(MerchantPromotionDayRecordVO::getDate)).orElseThrow(() -> new IllegalStateException("List is empty"))
-                        .getDate())).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (oldValue, newValue) -> oldValue, LinkedHashMap::new));
-        
-        detailMap2.forEach((merchantId, merchantDayRecordVoList) -> {
+        // 将detailMap中value的size大于1的放前面
+        detailMap = detailMap.entrySet().stream().sorted(Comparator.comparingLong(Map.Entry::getKey)).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (oldValue, newValue) -> newValue, LinkedHashMap::new));
+    
+        detailMap.forEach((merchantId, merchantDayRecordVoList) -> {
             
             if (CollectionUtils.isNotEmpty(merchantDayRecordVoList)) {
                 AtomicReference<BigDecimal> firstAmount = new AtomicReference<>(BigDecimal.ZERO);
