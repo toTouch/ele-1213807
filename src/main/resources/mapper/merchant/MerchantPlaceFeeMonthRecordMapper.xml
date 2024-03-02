@@ -9,22 +9,12 @@
     </insert>
     
     <select id="selectListBySettlementTime" resultType="com.xiliulou.electricity.entity.merchant.MerchantPlaceFeeMonthRecord">
-        select tenant_id,
-               sum(month_place_fee)           as month_total_place_fee,
-               sum(rent_days)                 as month_rent_days,
-               any_value(place_id) AS place_id,
-               any_value(month_date) AS month_date,
-               any_value(sn) AS sn,
-               any_value(rent_start_time) AS rent_start_time,
-               any_value(rent_end_time) AS rent_end_time,
-               any_value(rent_days) AS rent_days,
-               any_value(place_fee) AS place_fee,
-               any_value(month_place_fee) AS month_place_fee
+        select month_date , place_id, eid, sn, rent_start_time ,rent_end_time,rent_days,place_fee,month_place_fee,
+            tenant_id, del_flag, create_time, update_time
         from t_merchant_place_fee_month_record
         where month_date = #{date}
           and tenant_id = #{tenantId}
-          and del_flag = 0
-        group by tenant_id, place_id order by place_id desc
+          and del_flag = 0 order by place_id desc
     </select>
     
     <select id="selectList" resultType="com.xiliulou.electricity.entity.merchant.MerchantPlaceFeeMonthRecord">
