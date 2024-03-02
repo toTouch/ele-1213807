@@ -456,7 +456,7 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
                 //更新提现申请状态为已审核，并且修改提现批次明细记录表中的提现状态为提现中。
                 batchReviewWithdrawApplicationRequest.setStatus(MerchantWithdrawConstant.WITHDRAW_IN_PROGRESS);
                 batchReviewWithdrawApplicationRequest.setTransactionNo(wechatTransferOrderResult.getBatchId());
-                batchReviewWithdrawApplicationRequest.setWithdrawResult(JsonUtil.toJson(wechatTransferOrderResult));
+                batchReviewWithdrawApplicationRequest.setResponse(JsonUtil.toJson(wechatTransferOrderResult));
                 
             } else {
                 //TODO 若返回为空，该处需要如何设置提现状态？
@@ -467,7 +467,7 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
             log.error("batch review merchant withdraw application error, wechat pay exception. e = {}", e);
             //将提现申请状态为提现失败，并且修改提现批次明细记录表中的提现状态为提现失败。
             batchReviewWithdrawApplicationRequest.setStatus(MerchantWithdrawConstant.WITHDRAW_FAIL);
-            batchReviewWithdrawApplicationRequest.setWithdrawResult(e.getMessage());
+            batchReviewWithdrawApplicationRequest.setResponse(e.getMessage());
             
             merchantWithdrawApplicationRecords.forEach(withdrawApplicationRecord -> {
                 withdrawApplicationRecord.setStatus(MerchantWithdrawConstant.WITHDRAW_FAIL);

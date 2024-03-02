@@ -3,6 +3,7 @@ package com.xiliulou.electricity.service.impl.merchant;
 import com.alibaba.excel.EasyExcel;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.NumberConstant;
+import com.xiliulou.electricity.constant.merchant.RebateRecordConstant;
 import com.xiliulou.electricity.entity.merchant.MerchantPromotionDayRecord;
 import com.xiliulou.electricity.entity.merchant.MerchantPromotionMonthRecord;
 import com.xiliulou.electricity.mapper.merchant.MerchantPromotionMonthRecordMapper;
@@ -39,7 +40,9 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 /**
@@ -139,14 +142,22 @@ public class MerchantPromotionMonthRecordServiceImpl implements MerchantPromotio
         detailMap.forEach((merchantId, merchantDayRecordVoList) -> {
             
             if (CollectionUtils.isNotEmpty(merchantDayRecordVoList)) {
+                AtomicReference<BigDecimal> firstAmount = new AtomicReference<>(BigDecimal.ZERO);
+                AtomicReference<BigDecimal> renewAmount = new AtomicReference<>(BigDecimal.ZERO);
+                AtomicReference<BigDecimal> balanceFirstAmount = new AtomicReference<>(BigDecimal.ZERO);
+                AtomicReference<BigDecimal> balanceRenewAmount = new AtomicReference<>(BigDecimal.ZERO);
                 
-                BigDecimal firstAmount = merchantDayRecordVoList.stream().map(MerchantPromotionDayRecordVO::getDayFirstMoney).reduce(BigDecimal.ZERO, BigDecimal::add);
-                BigDecimal renewAmount = merchantDayRecordVoList.stream().map(MerchantPromotionDayRecordVO::getDayRenewMoney).reduce(BigDecimal.ZERO, BigDecimal::add);
-                BigDecimal balanceFirstAmount = merchantDayRecordVoList.stream().map(MerchantPromotionDayRecordVO::getBalanceFromFirst).reduce(BigDecimal.ZERO, BigDecimal::add);
-                BigDecimal balanceRenewAmount = merchantDayRecordVoList.stream().map(MerchantPromotionDayRecordVO::getBalanceFromRenew).reduce(BigDecimal.ZERO, BigDecimal::add);
+                merchantDayRecordVoList.stream().filter(record -> Objects.equals(record.getType(), RebateRecordConstant.LASHIN))
+                        .forEach(record -> firstAmount.set(firstAmount.get().add(record.getMoney())));
+                merchantDayRecordVoList.stream().filter(record -> Objects.equals(record.getType(), RebateRecordConstant.RENEW))
+                        .forEach(record -> renewAmount.set(renewAmount.get().add(record.getMoney())));
+                merchantDayRecordVoList.stream().filter(record -> Objects.equals(record.getType(), RebateRecordConstant.BALANCE)).forEach(record -> {
+                    balanceFirstAmount.set(balanceFirstAmount.get().add(record.getBalanceFromFirst()));
+                    balanceRenewAmount.set(balanceRenewAmount.get().add(record.getBalanceFromRenew()));
+                });
                 
-                BigDecimal monthFirstMoney = firstAmount.add(balanceFirstAmount);
-                BigDecimal monthRenewMoney = renewAmount.add(balanceRenewAmount);
+                BigDecimal monthFirstMoney = firstAmount.get().add(balanceFirstAmount.get());
+                BigDecimal monthRenewMoney = renewAmount.get().add(balanceRenewAmount.get());
                 
                 merchantDayRecordVoList.forEach(item -> {
                     
@@ -156,15 +167,15 @@ public class MerchantPromotionMonthRecordServiceImpl implements MerchantPromotio
                     switch (item.getType()) {
                         case MerchantPromotionDayRecord.LASH:
                             typeName = MerchantPromotionDayRecord.LASH_NAME;
-                            dayMoney = item.getDayFirstMoney();
+                            dayMoney = item.getMoney();
                             break;
                         case MerchantPromotionDayRecord.RENEW:
                             typeName = MerchantPromotionDayRecord.RENEW_NAME;
-                            dayMoney = item.getDayRenewMoney();
+                            dayMoney = item.getMoney();
                             break;
                         case MerchantPromotionDayRecord.BALANCE:
                             typeName = MerchantPromotionDayRecord.BALANCE_NAME;
-                            dayMoney = item.getDayBalanceMoney();
+                            dayMoney = item.getMoney();
                             break;
                         default:
                             break;

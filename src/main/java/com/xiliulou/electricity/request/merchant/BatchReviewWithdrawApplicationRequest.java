@@ -27,7 +27,7 @@ public class BatchReviewWithdrawApplicationRequest {
     
     private String remark;
     
-    private String withdrawResult;
+    private String response;
     
     private Long checkTime;
     
