@@ -45,7 +45,7 @@
             update_time,
         </trim>
         <trim prefix="values (" suffix=")" suffixOverrides=",">
-            <foreach collection="list" item="item" index="index" separator=",">
+            <foreach collection="merchantWithdrawApplicationRecordList" item="item" index="index" separator=",">
                 #{item.uid},
                 #{item.orderNo},
                 #{item.batchNo},
