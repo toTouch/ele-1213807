@@ -3,17 +3,20 @@
 <mapper namespace="com.xiliulou.electricity.mapper.merchant.MerchantJoinRecordMapper">
     <!-- 基础字段 -->
     <sql id="basic_field">
-        id, merchant_id, channel_employee_uid, place_id, inviter_uid, inviter_type, join_uid, start_time, expired_time, status, protection_time, protection_status, del_flag, create_time, update_time, tenant_id, remark
+        id
+        , merchant_id, channel_employee_uid, place_id, inviter_uid, inviter_type, join_uid, start_time, expired_time, status, protection_time, protection_status, del_flag, create_time, update_time, tenant_id, remark
     </sql>
     
     <!--新增所有列-->
     <insert id="insertOne" keyProperty="id" useGeneratedKeys="true">
         insert into t_merchant_join_record
         <trim prefix="(" suffix=")" suffixOverrides=",">
-            merchant_id, channel_employee_uid, place_id, inviter_uid, inviter_type, join_uid, start_time, expired_time, status, protection_time, protection_status, del_flag, create_time, update_time, tenant_id, remark
+            merchant_id, channel_employee_uid, place_id, inviter_uid, inviter_type, join_uid, start_time, expired_time, status, protection_time, protection_status, del_flag,
+            create_time, update_time, tenant_id, remark
         </trim>
         <trim prefix="values (" suffix=")" suffixOverrides=",">
-            #{merchantId}, #{channelEmployeeUid}, #{placeId}, #{inviterUid}, #{inviterType}, #{joinUid}, #{startTime}, #{expiredTime}, #{status}, #{protectionTime}, #{protectionStatus}, #{delFlag}, #{createTime}, #{updateTime}, #{tenantId}, #{remark}
+            #{merchantId}, #{channelEmployeeUid}, #{placeId}, #{inviterUid}, #{inviterType}, #{joinUid}, #{startTime}, #{expiredTime}, #{status}, #{protectionTime},
+            #{protectionStatus}, #{delFlag}, #{createTime}, #{updateTime}, #{tenantId}, #{remark}
         </trim>
     </insert>
     
@@ -26,83 +29,96 @@
             <if test="updateTime != null">
                 update_time = #{updateTime},
             </if>
-            where merchant_id = #{merchantId} and join_uid = #{joinUid}
+            where join_uid = #{joinUid}
         </set>
     </update>
     
     <update id="updateProtectionExpired">
-        update t_merchant_join_record set protection_status = #{protectionStatus}, update_time = #{updateTime} where protection_time &lt;= #{updateTime} and = 0
+        update t_merchant_join_record
+        set protection_status = #{protectionStatus},
+            update_time       = #{updateTime}
+        where protection_time &lt;= #{updateTime} and = 0
     </update>
     
     <update id="updateExpired">
-        update t_merchant_join_record set status = #{status}, update_time = #{updateTime} where expired_time &lt;= #{updateTime} and status =1
+        update t_merchant_join_record
+        set status      = #{status},
+            update_time = #{updateTime}
+        where expired_time &lt;= #{updateTime}
+          and status = 1
     </update>
     
-<!--    <update id="updateById">
-        update t_merchant_join_record
-        <set>
-            <if test="merchant_id != null">
-                status = #{merchantId},
-            </if>
-            <if test="channelEmployeeUid != null">
-                channel_employee_uid = #{channelEmployeeUid},
-            </if>
-            <if test="placeId != null">
-                place_id = #{placeId},
-            </if>
-            <if test="inviterUid != null">
-                inviter_uid = #{inviterUid},
-            </if>
-            <if test="inviterType != null">
-                inviter_type = #{inviterType},
-            </if>
-            <if test="joinUid != null">
-                join_uid = #{joinUid},
-            </if>
-            <if test="startTime != null">
-                start_time = #{startTime},
-            </if>
-            <if test="expiredTime != null">
-                expired_time = #{expiredTime},
-            </if>
-            <if test="status != null">
-                status = #{status},
-            </if>
-            <if test="protectionTime != null">
-                protection_time = #{protectionTime},
-            </if>
-            <if test="protectionStatus != null">
-                protection_status = #{protectionStatus},
-            </if>
-            <if test="delFlag != null">
-                del_flag = #{delFlag},
-            </if>
-            <if test="updateTime  != null">
-                update_time = #{updateTime},
-            </if>
-            <if test="tenantId != null">
-                tenant_id = #{tenantId},
-            </if>
-            <if test="remark != null and remark != ''">
-            remark = #{remark},
-            </if>
-        </set>
-        <where>
-            id = #{id}
-        </where>
-    </update>-->
+    <!--    <update id="updateById">
+            update t_merchant_join_record
+            <set>
+                <if test="merchant_id != null">
+                    status = #{merchantId},
+                </if>
+                <if test="channelEmployeeUid != null">
+                    channel_employee_uid = #{channelEmployeeUid},
+                </if>
+                <if test="placeId != null">
+                    place_id = #{placeId},
+                </if>
+                <if test="inviterUid != null">
+                    inviter_uid = #{inviterUid},
+                </if>
+                <if test="inviterType != null">
+                    inviter_type = #{inviterType},
+                </if>
+                <if test="joinUid != null">
+                    join_uid = #{joinUid},
+                </if>
+                <if test="startTime != null">
+                    start_time = #{startTime},
+                </if>
+                <if test="expiredTime != null">
+                    expired_time = #{expiredTime},
+                </if>
+                <if test="status != null">
+                    status = #{status},
+                </if>
+                <if test="protectionTime != null">
+                    protection_time = #{protectionTime},
+                </if>
+                <if test="protectionStatus != null">
+                    protection_status = #{protectionStatus},
+                </if>
+                <if test="delFlag != null">
+                    del_flag = #{delFlag},
+                </if>
+                <if test="updateTime  != null">
+                    update_time = #{updateTime},
+                </if>
+                <if test="tenantId != null">
+                    tenant_id = #{tenantId},
+                </if>
+                <if test="remark != null and remark != ''">
+                remark = #{remark},
+                </if>
+            </set>
+            <where>
+                id = #{id}
+            </where>
+        </update>-->
     
     <select id="existsInProtectionTimeByJoinUid" resultType="java.lang.Integer">
-        select 1 from t_merchant_join_record where del_flag = 0 and protection_status = 0 and join_uid = #{joinUid} limit 1
+        select 1
+        from t_merchant_join_record
+        where del_flag = 0
+          and protection_status = 0
+          and join_uid = #{joinUid} limit 1
     </select>
     
-     <select id="selectByMerchantIdAndJoinUid" resultType="com.xiliulou.electricity.entity.merchant.MerchantJoinRecord">
-         select <include refid="basic_field"/>
-         from t_merchant_join_record where del_flag = 0 and merchant_id = #{merchantId} and join_uid = #{joinUid}
-     </select>
+    <select id="selectByMerchantIdAndJoinUid" resultType="com.xiliulou.electricity.entity.merchant.MerchantJoinRecord">
+        select
+        <include refid="basic_field"/>
+        from t_merchant_join_record where del_flag = 0 and merchant_id = #{merchantId} and join_uid = #{joinUid}
+    </select>
     
     <select id="selectList" resultType="com.xiliulou.electricity.entity.merchant.MerchantJoinRecord">
-        select <include refid="basic_field"/>
+        select
+        <include refid="basic_field"/>
         from t_merchant_join_record
         <where>
             del_flag = 0
@@ -121,7 +137,8 @@
     </select>
     
     <select id="selectListByMerchantIdAndStatus" resultType="com.xiliulou.electricity.entity.merchant.MerchantJoinRecord">
-        select <include refid="basic_field"/>
+        select
+        <include refid="basic_field"/>
         from t_merchant_join_record where del_flag = 0 and merchant_id = #{merchantId} and status = #{status}
     </select>
     
@@ -156,9 +173,10 @@
         <include refid="pageFilter"/>
         limit #{offset}, #{size}
     </select>
-
+    
     <select id="selectByJoinUid" resultType="com.xiliulou.electricity.entity.merchant.MerchantJoinRecord">
-        select <include refid="basic_field"/>
+        select
+        <include refid="basic_field"/>
         from t_merchant_join_record where del_flag = 0 and join_uid = #{joinUid} order by id desc limit 1
     </select>
     
@@ -185,29 +203,29 @@
             <if test="tenantId != null">
                 and tenant_id = #{tenantId}
             </if>
-    
+        
         </where>
         ) a
     </select>
     
     <select id="countByMerchantIdList" resultType="com.xiliulou.electricity.vo.merchant.MerchantJoinRecordVO">
         SELECT
-            merchant_id,
-            count( 1 ) as 'merchantUserNum'
+        merchant_id,
+        count( 1 ) as 'merchantUserNum'
         FROM
-            t_merchant_join_record
+        t_merchant_join_record
         WHERE
-            del_flag = 0
-          and `status` = #{status}
-          <if test="tenantId != null">
-              and tenant_id = #{tenantId}
-          </if>
-          AND merchant_id IN
-          <foreach collection="merchantIdList" item="merchantId" close=")" open="(" separator=",">
-              #{merchantId}
-          </foreach>
+        del_flag = 0
+        and `status` = #{status}
+        <if test="tenantId != null">
+            and tenant_id = #{tenantId}
+        </if>
+        AND merchant_id IN
+        <foreach collection="merchantIdList" item="merchantId" close=")" open="(" separator=",">
+            #{merchantId}
+        </foreach>
         GROUP BY
-            merchant_id
+        merchant_id
     </select>
     
     <select id="selectListPromotionDataDetail" resultType="com.xiliulou.electricity.entity.merchant.MerchantJoinRecord">
@@ -235,65 +253,70 @@
             limit #{offset}, #{size}
         </where>
     </select>
-
-    <select id="selectJoinUserList" resultType="com.xiliulou.electricity.vo.merchant.MerchantJoinUserVO">
-            select tmjr.id,
-                tmjr.merchant_id,
-                tmjr.join_uid,
-                tui.name,
-                tui.phone,
-                tubmc.member_card_id as packageId,
-                tubmc.member_card_expire_time as expireTime,
-                tubmc.order_id,
-                tmjr.inviter_uid,
-                tmjr.inviter_type,
-                tmjr.status,
-                tmjr.tenant_id,
-                tmjr.protection_status,
-                tmjr.protection_time
-            from t_merchant_join_record tmjr
-            left join t_user_info tui on tui.uid = tmjr.join_uid
-            left join t_user_battery_member_card tubmc on tmjr.join_uid = tubmc.uid
-            <where>
-                tmjr.del_flag = 0
-                and tmjr.status = 2
-                <if test="merchantId != null">
-                    and tmjr.merchant_id = #{merchantId}
-                </if>
-
-                <if test="tenantId != null">
-                    and tmjr.tenant_id = #{tenantId}
-                </if>
     
-                <if test="name != null and name != ''">
-                    and tui.name like concat('%', #{name}, '%')
-                </if>
-
-                <if test="type != null">
-                    <choose>
-                        <when test="type == 2">
-                            and tubmc.member_card_expire_time &gt;= #{expireTime}
-                        </when>
-
-                        <when test="type == 3">
-                            and tubmc.member_card_expire_time &lt;= #{expireTime}
-                            and tubmc.member_card_expire_time &gt;= #{currentTime}
-                        </when>
-
-                        <when test="type == 4">
-                            and tubmc.member_card_expire_time &lt;= #{currentTime}
-                        </when>
-                    </choose>
-
-                </if>
-
-            </where>
-            order by tubmc.member_card_expire_time desc
-            limit #{offset}, #{size}
+    <select id="selectJoinUserList" resultType="com.xiliulou.electricity.vo.merchant.MerchantJoinUserVO">
+        select tmjr.id,
+        tmjr.merchant_id,
+        tmjr.join_uid,
+        tui.name,
+        tui.phone,
+        tubmc.member_card_id as packageId,
+        tubmc.member_card_expire_time as expireTime,
+        tubmc.order_id,
+        tmjr.inviter_uid,
+        tmjr.inviter_type,
+        tmjr.status,
+        tmjr.tenant_id,
+        tmjr.protection_status,
+        tmjr.protection_time
+        from t_merchant_join_record tmjr
+        left join t_user_info tui on tui.uid = tmjr.join_uid
+        left join t_user_battery_member_card tubmc on tmjr.join_uid = tubmc.uid
+        <where>
+            tmjr.del_flag = 0
+            and tmjr.status = 2
+            <if test="merchantId != null">
+                and tmjr.merchant_id = #{merchantId}
+            </if>
+            
+            <if test="tenantId != null">
+                and tmjr.tenant_id = #{tenantId}
+            </if>
+            
+            <if test="name != null and name != ''">
+                and tui.name like concat('%', #{name}, '%')
+            </if>
+            
+            <if test="type != null">
+                <choose>
+                    <when test="type == 2">
+                        and tubmc.member_card_expire_time &gt;= #{expireTime}
+                    </when>
+                    
+                    <when test="type == 3">
+                        and tubmc.member_card_expire_time &lt;= #{expireTime}
+                        and tubmc.member_card_expire_time &gt;= #{currentTime}
+                    </when>
+                    
+                    <when test="type == 4">
+                        and tubmc.member_card_expire_time &lt;= #{currentTime}
+                    </when>
+                </choose>
+            
+            </if>
+        
+        </where>
+        order by tubmc.member_card_expire_time desc
+        limit #{offset}, #{size}
     </select>
     
     <select id="existInviterData" resultType="java.lang.Integer">
-        select 1 from t_merchant_join_record where del_flag = 0 and inviter_type = #{inviterType} and inviter_uid = #{inviterUid} and tenant_id=#{tenantId} limit 1
+        select 1
+        from t_merchant_join_record
+        where del_flag = 0
+          and inviter_type = #{inviterType}
+          and inviter_uid = #{inviterUid}
+          and tenant_id = #{tenantId} limit 1
     </select>
     
     <select id="countEmployeeScanCodeNum" resultType="java.lang.Integer">
@@ -319,7 +342,7 @@
             <if test="tenantId != null">
                 and tenant_id = #{tenantId}
             </if>
-    
+        
         </where>
         ) a
     </select>
