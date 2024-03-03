@@ -3,7 +3,7 @@
 <mapper namespace="com.xiliulou.electricity.mapper.merchant.MerchantCabinetPowerMonthDetailProMapper">
     <!-- 基础字段 -->
     <sql id="basic_field">
-        id, merchant_id, place_id, eid, date, sum_power, sum_charge, begin_time, end_time, cabinet_merchant_bind_status, tenant_id, del_flag, create_time, update_time
+        id, merchant_id, place_id, eid, sn, date, sum_power, sum_charge, begin_time, end_time, cabinet_merchant_bind_status, tenant_id, del_flag, create_time, update_time
     </sql>
     
     <select id="selectLatestReportTime" resultType="java.lang.Long">
