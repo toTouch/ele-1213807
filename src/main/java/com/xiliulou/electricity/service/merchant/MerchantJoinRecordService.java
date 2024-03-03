@@ -4,6 +4,7 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.merchant.MerchantJoinRecord;
 import com.xiliulou.electricity.query.merchant.MerchantAllPromotionDataDetailQueryModel;
 import com.xiliulou.electricity.query.merchant.MerchantJoinRecordQueryMode;
+import com.xiliulou.electricity.query.merchant.MerchantJoinRecordQueryModel;
 import com.xiliulou.electricity.query.merchant.MerchantJoinUserQueryMode;
 import com.xiliulou.electricity.query.merchant.MerchantPromotionDataDetailQueryModel;
 import com.xiliulou.electricity.query.merchant.MerchantPromotionScanCodeQueryModel;
@@ -34,7 +35,7 @@ public interface MerchantJoinRecordService {
     /**
      * 修改参与状态
      */
-    Integer updateStatus(Long merchantId, Long joinUid, Integer status);
+    Integer updateStatus(MerchantJoinRecordQueryModel queryModel);
     
     /**
      * 参与人是否存在保护期内的记录

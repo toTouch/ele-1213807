@@ -21,6 +21,7 @@ import com.xiliulou.electricity.entity.merchant.MerchantJoinRecord;
 import com.xiliulou.electricity.mapper.merchant.MerchantJoinRecordMapper;
 import com.xiliulou.electricity.query.merchant.MerchantAllPromotionDataDetailQueryModel;
 import com.xiliulou.electricity.query.merchant.MerchantJoinRecordQueryMode;
+import com.xiliulou.electricity.query.merchant.MerchantJoinRecordQueryModel;
 import com.xiliulou.electricity.query.merchant.MerchantJoinUserQueryMode;
 import com.xiliulou.electricity.query.merchant.MerchantPromotionDataDetailQueryModel;
 import com.xiliulou.electricity.query.merchant.MerchantPromotionScanCodeQueryModel;
@@ -303,8 +304,8 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
     }
     
     @Override
-    public Integer updateStatus(Long merchantId, Long joinUid, Integer status) {
-        return merchantJoinRecordMapper.updateStatus(merchantId, joinUid, status);
+    public Integer updateStatus(MerchantJoinRecordQueryModel queryModel) {
+        return merchantJoinRecordMapper.updateStatus(queryModel);
     }
     
     
