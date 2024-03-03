@@ -366,16 +366,20 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
                     MerchantCabinetFeeDetailVO vo = new MerchantCabinetFeeDetailVO();
                     vo.setPlaceFee(placeFeeMonthDetail.getPlaceFee());
                     MerchantPlace merchantPlace = merchantPlaceService.queryByIdFromCache(placeFeeMonthDetail.getPlaceId());
+                    
                     if (Objects.nonNull(merchantPlace)) {
                         vo.setPlaceName(merchantPlace.getName());
                     }
+                    
                     ElectricityCabinet cabinet = electricityCabinetService.queryByIdFromCache(placeFeeMonthDetail.getCabinetId().intValue());
                     if (Objects.nonNull(cabinet)) {
                         vo.setCabinetName(cabinet.getName());
                     }
+                    
                     vo.setStartTime(placeFeeMonthDetail.getStartTime());
                     vo.setEndTime(placeFeeMonthDetail.getEndTime());
                     String endDay = DateUtil.format(new Date(placeFeeMonthDetail.getEndTime()), "yyyy-MM-dd");
+                    
                     if (!Objects.equals(today, endDay)) {
                         vo.setStatus(MerchantPlaceCabinetBindConstant.STATUS_UNBIND);
                     } else {
@@ -403,6 +407,7 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
             for (MerchantCabinetBindHistory placeFeeMonthDetail : placeFeeMonths) {
                 MerchantCabinetFeeDetailVO vo = new MerchantCabinetFeeDetailVO();
                 vo.setPlaceFee(placeFeeMonthDetail.getPlaceFee());
+                
                 MerchantPlace merchantPlace = merchantPlaceService.queryByIdFromCache(placeFeeMonthDetail.getPlaceId());
                 if (Objects.nonNull(merchantPlace)) {
                     vo.setPlaceName(merchantPlace.getName());

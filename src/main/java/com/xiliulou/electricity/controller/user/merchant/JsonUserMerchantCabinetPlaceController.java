@@ -148,20 +148,21 @@ public class JsonUserMerchantCabinetPlaceController extends BaseController {
     /**
      * 根据柜机id获取场地费
      */
-    @GetMapping("/merchant/place/getPlaceDetailByCabinetId")
+    @GetMapping("/admin/merchant/place/getPlaceDetailByCabinetId")
     public R getPlaceDetailByCabinetId(@RequestParam("month") String month,
             @RequestParam(value = "cabinetId") Long cabinetId) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
-            return R.fail("ELECTRICITY.0001", "未找到用户");
+//            return R.fail("ELECTRICITY.0001", "未找到用户");
         }
     
         Merchant merchant = merchantService.queryByUid(user.getUid());
         if (Objects.isNull(merchant)) {
             log.error("merchant place is Show Place Page merchant is null, uid={}", user.getUid());
-            return R.fail("ELECTRICITY.0001", "未找到用户");
+//            return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-        
+    
+        merchant = new Merchant();
         MerchantPlaceFeeRequest request = MerchantPlaceFeeRequest.builder().merchantId(merchant.getId()).month(month)
                 .cabinetId(cabinetId).build();
         
