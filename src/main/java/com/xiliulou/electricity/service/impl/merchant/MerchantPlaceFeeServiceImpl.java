@@ -350,6 +350,7 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
     
     @Override
     public List<MerchantCabinetFeeDetailVO> getPlaceDetailByCabinetId(MerchantPlaceFeeRequest request) {
+        request.setMerchantId(42L);
         List<MerchantCabinetFeeDetailVO> resList = new ArrayList<>();
         // 获取当前月份
         String currentMonth = DateUtil.format(new Date(), "yyyy-MM");
@@ -357,6 +358,7 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
         String today = DateUtil.format(new Date(), "yyyy-MM-dd");
         if (Objects.equals(currentMonth, request.getMonth())) {
             List<MerchantPlaceFeeMonthDetail> curMothFeeRecords = getCurMonthFeeRecords(request);
+            log.info("getPlaceDetailByCabinetId={}", curMothFeeRecords);
             if (ObjectUtils.isEmpty(curMothFeeRecords)) {
                 return Collections.emptyList();
             }
@@ -399,6 +401,8 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
         List<String> monthList = new ArrayList<>();
         monthList.add(request.getMonth());
         List<MerchantCabinetBindHistory> placeFeeMonths = merchantCabinetBindHistoryService.queryListByMonth(request.getCabinetId(), null, monthList);
+        log.info("getPlaceDetailByCabinetId1={}", placeFeeMonths);
+    
         if (ObjectUtils.isEmpty(placeFeeMonths)) {
             return Collections.emptyList();
         }
