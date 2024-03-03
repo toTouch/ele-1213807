@@ -585,7 +585,7 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
                     log.info("merchant place fee month detail handler time is invalid id={}", bind.getId());
                     continue;
                 }
-                
+                log.info("getCurMonthFeeRecords5, bindStartTime={}, bindEndTime={}", bindStartTime, bindEndTime);
                 // 判断场地的时间是否与柜机的时间存在重叠
                 for (Map.Entry<Long, List<MerchantPlaceFeeMonthRecord>> cabinetEntry : cabinetMap.entrySet()) {
                     Long cabinetId = cabinetEntry.getKey();
