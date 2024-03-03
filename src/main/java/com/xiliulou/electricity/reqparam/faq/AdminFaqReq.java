@@ -6,6 +6,7 @@ import lombok.Data;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 import java.math.BigDecimal;
 
 /**
@@ -31,12 +32,14 @@ public class AdminFaqReq {
     /**
      * 标题
      */
-    @NotBlank(message = "title不能为空", groups = {CreateGroup.class, UpdateGroup.class})
+    @NotBlank(message = "title不能为空",groups = {CreateGroup.class, UpdateGroup.class})
+    @Size(min = 1, max = 100, message = "title长度在1-100之间", groups = {CreateGroup.class, UpdateGroup.class})
     private String title;
     
     /**
      * 答案
      */
+    @NotBlank(message = "answer不能为空", groups = {CreateGroup.class, UpdateGroup.class})
     private String answer;
     
     /**

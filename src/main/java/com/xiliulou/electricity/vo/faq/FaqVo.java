@@ -16,7 +16,7 @@ public class FaqVo {
     
     private Long typeId;
     
-    private UpDownEnum onShelf;
+    private Integer onShelf;
     
     private BigDecimal sort;
     
