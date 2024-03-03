@@ -542,6 +542,7 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
             value = dealSameRecord(value);
             
             List<MerchantPlaceFeeMonthRecord> cabinetRecordList = placeFeeMonthRecordMap.get(placeId);
+            log.info("getCurMonthFeeRecords3={}", cabinetRecordList);
             if (ObjectUtils.isEmpty(cabinetRecordList)) {
                 log.info("current month Fee records cabinet map is empty, merchantId={},placeId={}, curMonth={}", merchantId, placeId, curMonth);
                 continue;
@@ -549,7 +550,7 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
             
             // 根据柜机id进行分组统计
             Map<Long, List<MerchantPlaceFeeMonthRecord>> cabinetMap = cabinetRecordList.stream().collect(Collectors.groupingBy(MerchantPlaceFeeMonthRecord::getEid));
-    
+            log.info("getCurMonthFeeRecords4={}", cabinetMap);
             for (MerchantPlaceBind bind : value) {
                 Long bindStartTime = null;
                 Long bindEndTime = null;
