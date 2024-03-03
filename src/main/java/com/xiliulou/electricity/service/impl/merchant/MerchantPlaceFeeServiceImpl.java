@@ -662,11 +662,15 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
                 List<MerchantPlaceCabinetBindDTO> placeCabinetBindList = buildBindStatusRecordFirst(bindList, dayOfMonthStartTime, dayOfMonthEndTime);
                 log.info("getCurMonthRecordFirst2={}", placeCabinetBindList);
                 if (ObjectUtils.isNotEmpty(placeCabinetBindList)) {
+                    AtomicReference<Long> atomicReference = new AtomicReference();
+                    atomicReference.set(0L);
                     placeCabinetBindList.forEach(cabinetBind -> {
                         MerchantPlaceFeeMonthRecord record = new MerchantPlaceFeeMonthRecord();
+                        atomicReference.set(atomicReference.get() + 1L);
+                        record.setId(System.currentTimeMillis() + atomicReference.get());
                         record.setMonthDate(settleDate);
                         record.setPlaceId(cabinetBind.getPlaceId());
-                        record.setEid(cabinetBind.getId());
+                        record.setEid(cabinetBind.getCabinetId());
                         record.setRentStartTime(cabinetBind.getBindTime());
                         record.setRentEndTime(cabinetBind.getUnBindTime());
                         if (Objects.nonNull(cabinetBind.getUnBindTime())) {
