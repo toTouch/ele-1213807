@@ -640,6 +640,7 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
         // 获取场地的柜机绑定记录
         List<MerchantPlaceCabinetBind> cabinetBindList = merchantPlaceCabinetBindService.queryListByPlaceId(placeIdList,
                 MerchantPlaceCabinetBindConstant.PLACE_MONTH_NOT_SETTLEMENT);
+        log.info("getCurMonthRecordFirst1={}", cabinetBindList);
         if (ObjectUtils.isEmpty(cabinetBindList)) {
             return list;
         }
@@ -650,6 +651,7 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
             if (ObjectUtils.isNotEmpty(bindList)) {
                 // 获取场地的费用记录
                 List<MerchantPlaceCabinetBindDTO> placeCabinetBindList = buildBindStatusRecordFirst(bindList, dayOfMonthStartTime, dayOfMonthEndTime);
+                log.info("getCurMonthRecordFirst2={}", placeCabinetBindList);
                 if (ObjectUtils.isNotEmpty(placeCabinetBindList)) {
                     placeCabinetBindList.forEach(cabinetBind -> {
                         MerchantPlaceFeeMonthRecord record = new MerchantPlaceFeeMonthRecord();
