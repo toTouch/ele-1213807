@@ -99,7 +99,7 @@ public class JsonUserMerchantCabinetPlaceController extends BaseController {
      * 统计上月，本月，累计场地费
      * 统计设备数量
      */
-    @GetMapping("/merchant/place/getFeeData")
+    @GetMapping("/admin/merchant/place/getFeeData")
     public R getFeeData(@RequestParam(value = "placeId", required = false) Long placeId,
             @RequestParam(value = "cabinetId", required = false) Long cabinetId) {
         TokenUser user = SecurityUtils.getUserInfo();
