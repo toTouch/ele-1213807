@@ -289,4 +289,20 @@ public class DateUtils {
         ZonedDateTime startOfDay = zonedDateTime.toLocalDate().atStartOfDay(zonedDateTime.getZone());
         return startOfDay.toInstant().toEpochMilli();
     }
+    
+    /**
+     * 根据时间戳获取当天开始时间
+     *
+     * @return 今天的开始时间
+     */
+    public static long getTimeByTimeStamp(long timestamp) {
+        // 将时间戳转换为UTC的Instant对象
+        Instant instant = Instant.ofEpochMilli(timestamp);
+        // 转换为指定时区的ZonedDateTime
+        ZonedDateTime zonedDateTime = instant.atZone(CHINA_ZONE_ID);
+        // 获取当天的开始时间（即00:00:00）
+        ZonedDateTime startOfDay = zonedDateTime.toLocalDate().atStartOfDay(CHINA_ZONE_ID);
+        // 如果需要再次转换回时间戳
+        return startOfDay.toInstant().toEpochMilli();
+    }
 }
