@@ -10,6 +10,7 @@ import com.xiliulou.electricity.validator.CreateGroup;
 import com.xiliulou.electricity.validator.UpdateGroup;
 import lombok.AllArgsConstructor;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -39,9 +40,9 @@ public class JsonAdminV2FaqController {
      * @author kuz
      * @date 2024/2/23 16:11
      */
-    @GetMapping("/admin/v2/faq/detail")
+    @GetMapping("/admin/faq/detail/v2")
     public R detail(@RequestParam Long id) {
-        return R.ok(faqV2Service.detail(id));
+        return faqV2Service.queryDetail(id);
     }
     
     /**
@@ -50,9 +51,9 @@ public class JsonAdminV2FaqController {
      * @author kuz
      * @date 2024/2/23 16:11
      */
-    @PostMapping("/admin/v2/faq/page")
+    @PostMapping("/admin/faq/page/v2")
     public R query(@RequestBody AdminFaqQuery faqQuery) {
-        return R.ok(faqV2Service.page(faqQuery));
+        return R.ok(faqV2Service.listFaqQueryForBackstage(faqQuery));
     }
     
     /**
@@ -61,10 +62,9 @@ public class JsonAdminV2FaqController {
      * @author kuz
      * @date 2024/2/23 16:11
      */
-    @PostMapping("/admin/v2/faq/add")
+    @PostMapping("/admin/faq/add/v2")
     public R add(@RequestBody @Validated(value = CreateGroup.class) AdminFaqReq faqReq) {
-        faqV2Service.add(faqReq);
-        return R.ok();
+        return faqV2Service.saveFaqQuery(faqReq);
     }
     
     
@@ -74,10 +74,9 @@ public class JsonAdminV2FaqController {
      * @author kuz
      * @date 2024/2/23 16:11
      */
-    @PostMapping("/admin/v2/faq/edit")
+    @PostMapping("/admin/faq/edit/v2")
     public R edit(@RequestBody @Validated(value = UpdateGroup.class) AdminFaqReq faqReq) {
-        faqV2Service.edit(faqReq);
-        return R.ok();
+        return faqV2Service.updateFaqReq(faqReq);
     }
     
     /**
@@ -86,7 +85,7 @@ public class JsonAdminV2FaqController {
      * @author kuz
      * @date 2024/2/23 16:11
      */
-    @PostMapping("/admin/v2/faq/detele")
+    @DeleteMapping("/admin/faq/v2")
     public R deleteBatch(@RequestBody @Valid @NotEmpty(message = "集合不能为空") List<Long> ids) {
         faqV2Service.removeByIds(ids);
         return R.ok();
@@ -99,7 +98,7 @@ public class JsonAdminV2FaqController {
      * @author kuz
      * @date 2024/2/23 16:11
      */
-    @PostMapping("/admin/v2/faq/upDown")
+    @PostMapping("/admin/faq/upDown/v2")
     public R upDownBatch(@RequestBody @Valid AdminFaqUpDownReq faqUpDownReq) {
         faqV2Service.upDownBatch(faqUpDownReq);
         return R.ok();
@@ -111,10 +110,9 @@ public class JsonAdminV2FaqController {
      * @author kuz
      * @date 2024/2/23 16:11
      */
-    @PostMapping("/admin/v2/faq/change/type")
+    @PostMapping("/admin/faq/change/type/v2")
     public R changeTypeBatch(@RequestBody @Valid AdminFaqChangeTypeReq faqChangeTypeReq) {
-        faqV2Service.changeTypeBatch(faqChangeTypeReq);
-        return R.ok();
+        return faqV2Service.changeTypeBatch(faqChangeTypeReq);
     }
     
     
