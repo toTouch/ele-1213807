@@ -217,6 +217,7 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
      */
     @Override
     public MerchantCabinetFeeDetailShowVO getCabinetPlaceDetail(MerchantPlaceFeeRequest request) {
+        request.setMerchantId(42L);
         MerchantCabinetFeeDetailShowVO resVo = new MerchantCabinetFeeDetailShowVO();
         
         // 根据商户id查询所有的柜机的id
@@ -246,9 +247,11 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
         Map<Long, BigDecimal> lastMonthCabinetFeeMap = new HashMap<>();
         if (ObjectUtils.isNotEmpty(lastMonthFeeRecords)) {
             List<Long> lastMonthCabinetIdList = lastMonthFeeRecords.stream().map(MerchantPlaceFeeMonthDetail::getCabinetId).collect(Collectors.toList());
+            
             if (ObjectUtils.isNotEmpty(lastMonthCabinetIdList)) {
                 cabinetIdList.addAll(lastMonthCabinetIdList);
             }
+            
             lastMonthCabinetFeeMap = lastMonthFeeRecords.stream()
                     .collect(Collectors.groupingBy(MerchantPlaceFeeMonthDetail::getCabinetId, Collectors.collectingAndThen(Collectors.toList(), e -> this.sumFee(e))));
         }
@@ -265,26 +268,21 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
         }
         
         Map<Long, BigDecimal> curMonthCabinetFeeMap = new HashMap<>();
-        Map<Long, Long> cabinetTimeMap = new HashMap<>();
         
+        // 本月数据处理
         if (ObjectUtils.isNotEmpty(curMothFeeRecords)) {
             List<Long> curMonthCabinetIdList = curMothFeeRecords.stream().map(MerchantPlaceFeeMonthDetail::getCabinetId).distinct().collect(Collectors.toList());
+            
             if (ObjectUtils.isNotEmpty(curMonthCabinetIdList)) {
                 cabinetIdList.addAll(curMonthCabinetIdList);
             }
             
+            // 根据柜机分组 然后统计每个柜机的场地费的总共和
             curMonthCabinetFeeMap = curMothFeeRecords.stream()
                     .collect(Collectors.groupingBy(MerchantPlaceFeeMonthDetail::getCabinetId, Collectors.collectingAndThen(Collectors.toList(), e -> this.sumFee(e))));
-            
-            Map<Long, Long> curCabinetTimeMap = curMothFeeRecords.stream().collect(Collectors.groupingBy(MerchantPlaceFeeMonthDetail::getCabinetId,
-                    Collectors.collectingAndThen(Collectors.toList(),
-                            e -> e.stream().sorted(Comparator.comparing(MerchantPlaceFeeMonthDetail::getStartTime).reversed()).findFirst().get().getStartTime())));
-            
-            if (ObjectUtils.isNotEmpty(curCabinetTimeMap)) {
-                cabinetTimeMap.putAll(curCabinetTimeMap);
-            }
         }
         
+        // 历史账单，本月，上月都没有数据则返回空
         if (ObjectUtils.isEmpty(cabinetIdList)) {
             resVo.setCabinetCount(NumberConstant.ZERO);
             resVo.setCabinetFeeDetailList(Collections.emptyList());
@@ -419,9 +417,11 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
     private BigDecimal sumHistoryFee(List<MerchantPlaceFeeMonth> list) {
         AtomicReference<BigDecimal> atomicReference = new AtomicReference<>();
         atomicReference.set(BigDecimal.ZERO);
+        
         list.stream().forEach(item -> {
             atomicReference.set(atomicReference.get().add(item.getPlaceFee()));
         });
+        
         return atomicReference.get();
     }
     
