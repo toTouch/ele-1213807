@@ -547,7 +547,7 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
                 log.info("current month Fee records cabinet map is empty, merchantId={},placeId={}, curMonth={}", merchantId, placeId, curMonth);
                 continue;
             }
-            
+            log.info("getCurMonthFeeRecords33={}", value);
             // 根据柜机id进行分组统计
             Map<Long, List<MerchantPlaceFeeMonthRecord>> cabinetMap = cabinetRecordList.stream().collect(Collectors.groupingBy(MerchantPlaceFeeMonthRecord::getEid));
             log.info("getCurMonthFeeRecords4={}", cabinetMap);
@@ -592,6 +592,7 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
                     List<MerchantPlaceFeeMonthRecord> cabinetDetail = cabinetEntry.getValue();
                     for (MerchantPlaceFeeMonthRecord cabinetRecord : cabinetDetail) {
                         if (bindStartTime > cabinetRecord.getRentEndTime() || bindEndTime < cabinetRecord.getRentStartTime()) {
+                            log.info("getCurMonthFeeRecords56, bindStartTime={}, bindEndTime={}, placeId={}, cabinetId={}, cabinetRecord={}", bindStartTime, bindEndTime, placeId, cabinetId, cabinetRecord);
                             continue;
                         }
                         Long cabinetStartTime = null;
@@ -609,6 +610,8 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
                         } else {
                             cabinetEndTime = cabinetRecord.getRentEndTime();
                         }
+                        
+                        log.info("getCurMonthFeeRecords56, bindStartTime={}, bindEndTime={}, placeId={}, cabinetId={}", cabinetStartTime, cabinetEndTime, placeId, cabinetId);
                         if (Objects.isNull(cabinetStartTime) || Objects.isNull(cabinetEndTime)) {
                             continue;
                         }
@@ -618,13 +621,17 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
                         
                         // 计算开始和结束时间的场地费的总和
                         BigDecimal feeSum = merchantPlaceFeeDailyRecordMapper.selectList(cabinetStartTime, cabinetEndTime, cabinetId);
+                        
+                        if (Objects.isNull(feeSum)) {
+                            feeSum = BigDecimal.ZERO;
+                        }
                         merchantPlaceFeeMonthDetail.setPlaceFee(feeSum);
                         list.add(merchantPlaceFeeMonthDetail);
                     }
                 }
             }
         }
-        
+        log.info("getCurMonthFeeRecords55={}", list);
         return list;
     }
     
