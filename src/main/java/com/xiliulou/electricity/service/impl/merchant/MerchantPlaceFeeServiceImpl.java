@@ -311,8 +311,10 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
             vo.setCabinetId(cabinetId);
             
             // 设置本月的场地费
+            BigDecimal currentMonthFee = BigDecimal.ZERO;
+            
             if (ObjectUtils.isNotEmpty(finalCurMonthCabinetFeeMap.get(cabinetId))) {
-                vo.setCurrentMonthFee(finalCurMonthCabinetFeeMap.get(cabinetId));
+                currentMonthFee = finalCurMonthCabinetFeeMap.get(cabinetId);
             }
             
             BigDecimal historyFee = BigDecimal.ZERO;
@@ -324,8 +326,10 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
             if (ObjectUtils.isNotEmpty(finalLastMonthCabinetFeeMap.get(cabinetId))) {
                 historyFee = historyFee.add(finalLastMonthCabinetFeeMap.get(cabinetId));
             }
-            
-            historyFee = historyFee.add(vo.getCurrentMonthFee());
+    
+            vo.setCurrentMonthFee(currentMonthFee);
+    
+            historyFee = historyFee.add(currentMonthFee);
             vo.setMonthFeeSum(historyFee);
             
             resList.add(vo);
