@@ -128,6 +128,7 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
     @Slave
     @Override
     public MerchantPlaceFeeCurMonthVO getFeeData(MerchantPlaceFeeRequest request) {
+        request.setMerchantId(42L);
         MerchantPlaceFeeCurMonthVO merchantPlaceFeeCurMonthVO = new MerchantPlaceFeeCurMonthVO();
         // 计算上个月一号到当前场地费的总和
         // 获取上个月的场地费
