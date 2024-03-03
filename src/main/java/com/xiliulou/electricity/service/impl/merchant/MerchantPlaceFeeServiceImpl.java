@@ -355,7 +355,7 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
         // 获取当前月份
         String currentMonth = DateUtil.format(new Date(), "yyyy-MM");
         
-        String today = DateUtil.format(new Date(), "yyyy-MM-dd");
+        String today = DateUtil.format(new Date(), "yyyy-MM-dd hh:mm");
         if (Objects.equals(currentMonth, request.getMonth())) {
             List<MerchantPlaceFeeMonthDetail> curMothFeeRecords = getCurMonthFeeRecords(request);
             log.info("getPlaceDetailByCabinetId={}", curMothFeeRecords);
@@ -380,7 +380,7 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
                     
                     vo.setStartTime(placeFeeMonthDetail.getStartTime());
                     vo.setEndTime(placeFeeMonthDetail.getEndTime());
-                    String endDay = DateUtil.format(new Date(placeFeeMonthDetail.getEndTime()), "yyyy-MM-dd");
+                    String endDay = DateUtil.format(new Date(placeFeeMonthDetail.getEndTime()), "yyyy-MM-dd hh:mm");
                     
                     if (!Objects.equals(today, endDay)) {
                         vo.setStatus(MerchantPlaceCabinetBindConstant.STATUS_UNBIND);
@@ -389,6 +389,8 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
                         Integer count = merchantPlaceCabinetBindService.checkIsBindByPlaceId(placeFeeMonthDetail.getPlaceId(), placeFeeMonthDetail.getCabinetId());
                         if (count >= 0) {
                             vo.setStatus(MerchantPlaceCabinetBindConstant.STATUS_BIND);
+                        } else {
+                            vo.setEndTime(null);
                         }
                     }
                     resList.add(vo);
