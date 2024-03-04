@@ -22,8 +22,8 @@ public class MerchantLevelRequest {
     /**
      * 商户等级名称
      */
-    @NotBlank(message = "商户等级名称不能为空")
-    @Length(min = 1, max = 10, message = "商户等级名称不合法")
+//    @NotBlank(message = "商户等级名称不能为空")
+//    @Length(min = 1, max = 10, message = "商户等级名称不合法")
     private String name;
     
     /**
