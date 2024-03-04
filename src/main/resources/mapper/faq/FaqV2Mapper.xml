@@ -257,7 +257,7 @@
             </if>
         </set>
         where id in
-        <foreach collection="list" item="id" index="i" open="(" close=")" separator=",">
+        <foreach collection="faqV2s" item="id" index="i" open="(" close=")" separator=",">
             #{id,jdbcType=BIGINT}
         </foreach>
     </update>

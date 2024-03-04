@@ -47,4 +47,9 @@ public class AdminFaqReq {
      */
     @NotNull(message = "sort不能为空", groups = {CreateGroup.class, UpdateGroup.class})
     private BigDecimal sort;
+    
+    /**
+     * 上下架 1表示上架  0表示下架
+     */
+    private Integer onShelf;
 }

@@ -103,4 +103,8 @@
             update_time = #{updateTime,jdbcType=BIGINT}
         where id = #{id,jdbcType=BIGINT}
     </update>
+    
+    <delete id="countFaqCategoryByTenantId">
+        select count(1) from t_faq_category where tenant_id = #{tenantId,jdbcType=INTEGER}
+    </delete>
 </mapper>

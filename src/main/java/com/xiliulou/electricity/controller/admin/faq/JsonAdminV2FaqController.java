@@ -53,7 +53,7 @@ public class JsonAdminV2FaqController {
      */
     @PostMapping("/admin/faq/page/v2")
     public R query(@RequestBody AdminFaqQuery faqQuery) {
-        return R.ok(faqV2Service.listFaqQueryForBackstage(faqQuery));
+        return R.ok(faqV2Service.listFaqQueryResult(faqQuery));
     }
     
     /**

@@ -1,13 +1,19 @@
 package com.xiliulou.electricity.controller.user.faq;
 
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.entity.ElectricityConfig;
+import com.xiliulou.electricity.mapper.ElectricityConfigMapper;
 import com.xiliulou.electricity.query.faq.AdminFaqQuery;
 import com.xiliulou.electricity.service.faq.FaqV2Service;
+import com.xiliulou.electricity.tenant.TenantContextHolder;
 import lombok.AllArgsConstructor;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.Collections;
+import java.util.Objects;
 
 
 /**
@@ -22,7 +28,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class JsonUserV2FaqController {
 
     private final FaqV2Service faqV2Service;
-    
+    private final ElectricityConfigMapper electricityConfigMapper;
     
     /**
      * 查询常见问题
@@ -32,8 +38,12 @@ public class JsonUserV2FaqController {
      */
     @PostMapping("/user/faq/page/v2")
     public R page(@RequestBody AdminFaqQuery faqQuery) {
+        ElectricityConfig electricityConfig = electricityConfigMapper.selectElectricityConfigByTenantId(TenantContextHolder.getTenantId());
         
-        return R.ok(faqV2Service.listFaqQueryForApp(faqQuery));
+        if (Objects.isNull(electricityConfig) || electricityConfig.getWxCustomer() == 0) {
+            return R.ok(Collections.emptyList());
+        }
+        return R.ok(faqV2Service.listFaqQueryResult(faqQuery));
     }
     
     

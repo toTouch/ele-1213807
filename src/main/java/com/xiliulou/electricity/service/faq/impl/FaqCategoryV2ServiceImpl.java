@@ -2,7 +2,6 @@ package com.xiliulou.electricity.service.faq.impl;
 
 import cn.hutool.core.bean.BeanUtil;
 import com.xiliulou.electricity.entity.faq.FaqCategoryV2;
-import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.faq.FaqCategoryV2Mapper;
 import com.xiliulou.electricity.reqparam.faq.AdminFaqCategoryReq;
 import com.xiliulou.electricity.service.faq.FaqCategoryV2Service;
@@ -12,6 +11,7 @@ import com.xiliulou.electricity.vo.faq.FaqCategoryVo;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -31,6 +31,10 @@ public class FaqCategoryV2ServiceImpl implements FaqCategoryV2Service {
     @Override
     public void saveFaqCategory(AdminFaqCategoryReq faqCategoryReq) {
         FaqCategoryV2 faqCategory = BeanUtil.toBean(faqCategoryReq, FaqCategoryV2.class);
+        Integer count = faqCategoryV2Mapper.countFaqCategoryByTenantId(faqCategory);
+        count = count == null ? 0 : count;
+        
+        faqCategory.setSort(BigDecimal.valueOf(count + 1));
         faqCategory.setTenantId(TenantContextHolder.getTenantId());
         faqCategory.setOpUser(SecurityUtils.getUid());
         faqCategory.setCreateTime(System.currentTimeMillis());
