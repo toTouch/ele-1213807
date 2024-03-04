@@ -31,6 +31,8 @@ public interface MerchantMapper {
     
     Merchant selectByUid(@Param("uid") Long uid);
     
+    List<Merchant> selectByChannelEmployeeUid(@Param("channelEmployeeUid") Long channelEmployeeUid);
+    
     Integer updateById(Merchant merchant);
     
     Integer existsByName(@Param("name") String name, @Param("tenantId") Integer tenantId, @Param("id") Long id);
