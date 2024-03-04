@@ -69,4 +69,9 @@ public class MerchantPlaceBind {
      * 商户电费结算标记(0-是，1-否)
      */
     private Integer merchantMonthSettlementPower;
+    
+    /**
+     * 是否大于出账月份的月末 0-是，1-否
+     */
+    private Integer isBigMonthEndFlag;
 }

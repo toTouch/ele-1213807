@@ -1,6 +1,9 @@
 package com.xiliulou.electricity.vo.merchant;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 
@@ -11,6 +14,9 @@ import java.math.BigDecimal;
  */
 
 @Data
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
 public class MerchantCabinetFeeDetailVO {
     /**
      * 柜机名称
@@ -38,4 +44,12 @@ public class MerchantCabinetFeeDetailVO {
      * 场地名称
      */
     private String placeName;
+    
+    private Long placeId;
+    
+    private Long merchantId;
+    
+    private Long cabinetId;
+    
+    private String calculateMonth;
 }
