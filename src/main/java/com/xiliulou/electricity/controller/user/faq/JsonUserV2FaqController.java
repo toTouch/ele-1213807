@@ -35,8 +35,7 @@ public class JsonUserV2FaqController {
 
     private final FaqV2Service faqV2Service;
     private final ElectricityConfigMapper electricityConfigMapper;
-    @Autowired
-    private FaqCategoryV2Service faqCategoryV2Service;
+    private final FaqCategoryV2Service faqCategoryV2Service;
     
     /**
      * 查询常见问题
