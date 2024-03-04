@@ -48,7 +48,7 @@ public class DeviceScript {
             System.err.println("sessionId is : " + sessionId + ", status is : " + execute.getStatus());
             System.err.println("sessionId is : " + sessionId + ", body is : " + execute.body());
             try {
-                Thread.sleep(3000L);
+                Thread.sleep(500L);
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
