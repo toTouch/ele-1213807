@@ -2,6 +2,7 @@ package com.xiliulou.electricity.service.faq.impl;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollectionUtil;
+import com.xiliulou.electricity.annotation.Log;
 import com.xiliulou.electricity.bo.faq.FaqV2BO;
 import com.xiliulou.electricity.entity.faq.FaqCategoryV2;
 import com.xiliulou.electricity.entity.faq.FaqV2;
@@ -14,9 +15,11 @@ import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.faq.FaqCategoryVo;
 import com.xiliulou.electricity.vo.faq.FaqListVos;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.validation.constraints.Size;
 import java.math.BigDecimal;
 import java.util.Comparator;
 import java.util.List;
@@ -32,6 +35,7 @@ import java.util.stream.Collectors;
  */
 @Service
 @AllArgsConstructor
+@Slf4j
 public class FaqCategoryV2ServiceImpl implements FaqCategoryV2Service {
     
     private final FaqCategoryV2Mapper faqCategoryV2Mapper;
@@ -75,11 +79,13 @@ public class FaqCategoryV2ServiceImpl implements FaqCategoryV2Service {
         Map<Long, List<FaqV2BO>> collect = faqBos.parallelStream().collect(Collectors.groupingBy(FaqV2BO::getTypeId));
         
         return collect.entrySet().parallelStream().map(faqCategory -> {
+            log.info("faqCategory.getValue().size():{}", faqCategory.getValue().size());
             FaqCategoryVo faqCategoryVo = new FaqCategoryVo();
             faqCategoryVo.setId(faqCategory.getKey());
             faqCategoryVo.setType(faqCategory.getValue().get(0).getType());
             faqCategoryVo.setSort(faqCategory.getValue().get(0).getTypeSort());
-            faqCategoryVo.setCount(faqCategory.getValue().size());
+            int count = faqCategory.getValue().get(0).getId() == null ? 0 : faqCategory.getValue().size();
+            faqCategoryVo.setCount(count);
             BeanUtil.copyProperties(faqCategory, faqCategoryVo);
             return faqCategoryVo;
         }).sorted(Comparator.comparing(FaqCategoryVo::getSort)).collect(Collectors.toList());
