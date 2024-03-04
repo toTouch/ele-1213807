@@ -449,10 +449,10 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
     @Override
     public R selectPromotionDataDetail(MerchantPromotionDataDetailQueryModel queryModel) {
         
-        List<MerchantPromotionDataDetailVO> dataDetailVOList = Lists.newArrayList();
+        List<MerchantPromotionDataDetailVO> dataDetailVOList;
         List<MerchantJoinRecord> merchantJoinRecords = Lists.newArrayList();
         if (Objects.equals(PromotionFeeQueryTypeEnum.MERCHANT_AND_MERCHANT_EMPLOYEE.getCode(), queryModel.getType())) {
-            Merchant merchant = merchantService.queryByIdFromCache(queryModel.getUid());
+            Merchant merchant = merchantService.queryByUid(queryModel.getUid());
             if (Objects.nonNull(merchant)) {
                 MerchantAllPromotionDataDetailQueryModel allPromotionDataDetailQueryModel = MerchantAllPromotionDataDetailQueryModel.builder().merchantId(merchant.getId())
                         .size(queryModel.getSize()).offset(queryModel.getOffset()).tenantId(TenantContextHolder.getTenantId()).startTime(queryModel.getStartTime())
@@ -557,6 +557,9 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
     
     private Integer buildRenewalNum(Integer type, Long uid, Long startTime, Long endTime) {
         //昨日续费次数：购买指定套餐时间=昨日0点～今日0点，且套餐购买次数>1的购买成功次数
+        if (Objects.equals(PromotionFeeQueryTypeEnum.MERCHANT_AND_MERCHANT_EMPLOYEE.getCode(), type)){
+            type = PromotionFeeQueryTypeEnum.MERCHANT.getCode();
+        }
         MerchantPromotionRenewalQueryModel renewalQueryModel = MerchantPromotionRenewalQueryModel.builder().tenantId(TenantContextHolder.getTenantId()).type(type).uid(uid)
                 .startTime(startTime).endTime(endTime).status(MerchantConstant.MERCHANT_REBATE_TYPE_RENEWAL).build();
         return rebateRecordService.countByTime(renewalQueryModel);
