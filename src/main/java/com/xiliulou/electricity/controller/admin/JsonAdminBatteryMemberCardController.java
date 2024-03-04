@@ -128,13 +128,56 @@ public class JsonAdminBatteryMemberCardController extends BaseController {
                 .id(mid)
                 .franchiseeId(franchiseeId)
                 .status(status)
-                .businessType(businessType == null ?  0 : businessType)
+                .businessType(businessType == null ?  BatteryMemberCard.BUSINESS_TYPE_BATTERY : businessType)
                 .rentType(rentType)
                 .rentUnit(rentUnit)
                 .name(name)
                 .delFlag(BatteryMemberCard.DEL_NORMAL)
                 .build();
 
+        return R.ok(batteryMemberCardService.selectByPage(query));
+    }
+    
+    @GetMapping("/admin/battery/memberCard/pageForMerchant")
+    public R pageForMerchant(@RequestParam("size") long size, @RequestParam("offset") long offset,
+            @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
+            @RequestParam(value = "mid", required = false) Long mid,
+            @RequestParam(value = "status", required = false) Integer status,
+            @RequestParam(value = "rentType", required = false) Integer rentType,
+            @RequestParam(value = "rentUnit", required = false) Integer rentUnit,
+            @RequestParam(value = "businessType", required = false) Integer businessType,
+            @RequestParam(value = "name", required = false) String name) {
+        if (size < 0 || size > 50) {
+            size = 10L;
+        }
+        
+        if (offset < 0) {
+            offset = 0L;
+        }
+        
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        
+        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
+            return R.ok(Collections.emptyList());
+        }
+        
+        BatteryMemberCardQuery query = BatteryMemberCardQuery.builder()
+                .size(size)
+                .offset(offset)
+                .tenantId(TenantContextHolder.getTenantId())
+                .id(mid)
+                .franchiseeId(franchiseeId)
+                .status(status)
+                .businessType(businessType == null ?  BatteryMemberCard.BUSINESS_TYPE_BATTERY : businessType)
+                .rentType(rentType)
+                .rentUnit(rentUnit)
+                .name(name)
+                .delFlag(BatteryMemberCard.DEL_NORMAL)
+                .build();
+        
         return R.ok(batteryMemberCardService.selectByPage(query));
     }
 
