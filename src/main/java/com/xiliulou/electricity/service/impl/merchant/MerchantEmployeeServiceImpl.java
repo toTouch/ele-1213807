@@ -198,7 +198,7 @@ public class MerchantEmployeeServiceImpl implements MerchantEmployeeService {
             public void afterCommit() {
                 //清理缓存，避免缓存操作和数据库提交在同一个事务中失效的问题
                 redisService.delete(CacheConstant.CACHE_USER_UID + updateUser.getUid());
-                redisService.delete(CacheConstant.CACHE_USER_PHONE + updateUser.getTenantId() + ":" + updateUser.getPhone() + ":" + updateUser.getUserType());
+                redisService.delete(CacheConstant.CACHE_USER_PHONE + updateUser.getTenantId() + ":" + merchantEmployeeRequest.getPhone() + ":" + updateUser.getUserType());
             }
         });
         
