@@ -362,6 +362,7 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
         // 获取当前月份
         String currentMonth = DateUtil.format(new Date(), "yyyy-MM");
         if (Objects.equals(currentMonth, request.getMonth())) {
+            log.info("getCurrentMonthDetail start");
             return getCurrentMonthDetail(request);
         }
         
@@ -1380,6 +1381,10 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
         
         // 排除掉开始时间和结束时间在一天的数据
         unBindList = unBindList.stream().filter(item -> {
+            if (DateUtils.isSameDay(item.getUnBindTime(), item.getBindTime())) {
+                return false;
+            }
+            
             // 结束时间跨了统计月份的数据
             if (Objects.nonNull(endTime) && item.getUnBindTime() > endTime) {
                 item.setIsBigMonthEndFlag(MerchantPlaceBindConstant.SETTLE_YES);
