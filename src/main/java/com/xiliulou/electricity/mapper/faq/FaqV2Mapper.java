@@ -43,7 +43,8 @@ public interface FaqV2Mapper extends BaseMapper<FaqV2> {
     
     Integer countFaqReqByTypeId(Long typeId);
     
-    Integer batchUpdateByIds(ArrayList<FaqV2> faqV2s);
+    Integer batchUpdateByIds(FaqV2 faqV2, List<Long> ids);
+    
 }
 
 

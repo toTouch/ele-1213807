@@ -228,36 +228,36 @@
     <update id="batchUpdateByIds">
         update t_new_faq
         <set>
-            <if test="typeId != null">
-                type_id = #{typeId,jdbcType=BIGINT},
+            <if test="faqV2.typeId != null">
+                type_id = #{faqV2.typeId,jdbcType=BIGINT},
             </if>
-            <if test="title != null and title != ''">
-                title = #{title,jdbcType=VARCHAR},
+            <if test="faqV2.title != null and title != ''">
+                title = #{faqV2.title,jdbcType=VARCHAR},
             </if>
-            <if test="answer != null">
-                answer = #{answer,jdbcType=VARCHAR},
+            <if test="faqV2.answer != null">
+                answer = #{faqV2.answer,jdbcType=VARCHAR},
             </if>
-            <if test="onShelf != null">
-                on_shelf = #{onShelf,jdbcType=SMALLINT},
+            <if test="faqV2.onShelf != null">
+                on_shelf = #{faqV2.onShelf,jdbcType=SMALLINT},
             </if>
-            <if test="sort != null">
-                sort = #{sort,jdbcType=DECIMAL},
+            <if test="faqV2.sort != null">
+                sort = #{faqV2.sort,jdbcType=DECIMAL},
             </if>
-            <if test="tenantId != null">
-                tenant_id = #{tenantId,jdbcType=INTEGER},
+            <if test="faqV2.tenantId != null">
+                tenant_id = #{faqV2.tenantId,jdbcType=INTEGER},
             </if>
-            <if test="opUser != null">
-                op_user = #{opUser,jdbcType=BIGINT},
+            <if test="faqV2.opUser != null">
+                op_user = #{faqV2.opUser,jdbcType=BIGINT},
             </if>
-            <if test="createTime != null">
-                create_time = #{createTime,jdbcType=BIGINT},
+            <if test="faqV2.createTime != null">
+                create_time = #{faqV2.createTime,jdbcType=BIGINT},
             </if>
-            <if test="updateTime != null">
-                update_time = #{updateTime,jdbcType=BIGINT},
+            <if test="faqV2.updateTime != null">
+                update_time = #{faqV2.updateTime,jdbcType=BIGINT},
             </if>
         </set>
         where id in
-        <foreach collection="faqV2s" item="id" index="i" open="(" close=")" separator=",">
+        <foreach collection="ids" item="id" index="i" open="(" close=")" separator=",">
             #{id,jdbcType=BIGINT}
         </foreach>
     </update>
