@@ -162,6 +162,34 @@
         </where>
     </select>
     
+    <select id="selectByChannelEmployeeUid" resultType="com.xiliulou.electricity.entity.merchant.Merchant">
+        SELECT
+            id,
+            name,
+            franchisee_id,
+            phone,
+            merchant_grade_id,
+            channel_employee_uid,
+            tenant_id,
+            auto_up_grade,
+            status,
+            enterprise_package_auth,
+            exist_place_fee,
+            purchase_authority,
+            uid,
+            enterprise_id,
+            del_flag,
+            create_time,
+            update_time,
+            invite_auth
+        FROM
+        t_merchant
+        <where>
+            del_flag = 0
+            and channel_employee_uid = #{channelEmployeeUid}
+        </where>
+    </select>
+    
     <select id="existsByName" resultType="java.lang.Integer">
         SELECT
             count(1)

@@ -1089,6 +1089,11 @@ public class MerchantServiceImpl implements MerchantService {
         return merchant;
     }
     
+    @Override
+    public List<Merchant> queryByChannelEmployeeUid(Long channelEmployeeId) {
+        return merchantMapper.selectByChannelEmployeeUid(channelEmployeeId);
+    }
+    
     /**
      * 小程序：员工添加下拉框场地选择
      *

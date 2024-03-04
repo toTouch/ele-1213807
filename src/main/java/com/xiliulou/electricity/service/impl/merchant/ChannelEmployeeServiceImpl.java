@@ -12,6 +12,7 @@ import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.UserRole;
 import com.xiliulou.electricity.entity.merchant.ChannelEmployee;
 import com.xiliulou.electricity.entity.merchant.ChannelEmployeeAmount;
+import com.xiliulou.electricity.entity.merchant.Merchant;
 import com.xiliulou.electricity.entity.merchant.MerchantArea;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.merchant.ChannelEmployeeAmountMapper;
@@ -29,6 +30,7 @@ import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.vo.merchant.ChannelEmployeeVO;
 import com.xiliulou.security.authentication.console.CustomPasswordEncoder;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
@@ -329,6 +331,13 @@ public class ChannelEmployeeServiceImpl implements ChannelEmployeeService {
             log.error("not found channel employee by id, id = {}", id);
             throw new BizException("120008", "渠道员工不存在");
         }
+        
+        List<Merchant> merchants = merchantService.queryByChannelEmployeeUid(channelEmployee.getUid());
+        if(CollectionUtils.isNotEmpty(merchants)){
+            log.error("channel employee was already bind merchant, can't remove, channel employee uid = {}", channelEmployee.getUid());
+            throw new BizException("120023", "该渠道员下还有绑定的商户，请先解绑后操作");
+        }
+        
         channelEmployeeMapper.removeById(id, System.currentTimeMillis());
         
         User user = userService.queryByUidFromCache(channelEmployee.getUid());
