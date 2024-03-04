@@ -261,4 +261,8 @@
             #{id,jdbcType=BIGINT}
         </foreach>
     </update>
+    
+    <select id="selectMinimumSort" resultType="java.lang.Integer">
+        select min(sort) from t_new_faq where tenant_id = #{tenantId,jdbcType=INTEGER}
+    </select>
 </mapper>

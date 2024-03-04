@@ -38,13 +38,14 @@ public interface FaqV2Mapper extends BaseMapper<FaqV2> {
             @Param(value = "pageOffset") Object pageOffset,
             @Param(value = "pageSize") Object pageSize);
     
-    int removeByIds(List<Long> ids);
+    int removeByIds(@Param(value = "ids") List<Long> ids);
     List<FaqV2> selectListByIds(List<Long> ids);
     
     Integer countFaqReqByTypeId(Long typeId);
     
-    Integer batchUpdateByIds(FaqV2 faqV2, List<Long> ids);
+    Integer batchUpdateByIds(@Param(value ="faqV2") FaqV2 faqV2, @Param(value ="ids")List<Long> ids);
     
+    Integer selectMinimumSort(@Param(value = "tenantId") Integer tenantId);
 }
 
 
