@@ -181,7 +181,22 @@
                mwar.status
         from t_merchant_withdraw_application_record mwar
         where mwar.id = #{id}
-        and mwar.del_flag = 0
+    </select>
+    
+    <select id="selectByOrderNo" resultType="com.xiliulou.electricity.entity.merchant.MerchantWithdrawApplicationRecord">
+        select mwar.id,
+               mwar.response,
+               mwar.create_time,
+               mwar.update_time,
+               mwar.tenant_id,
+               mwar.remark,
+               mwar.uid,
+               mwar.order_no,
+               mwar.transaction_no,
+               mwar.status
+        from t_merchant_withdraw_application_record mwar
+        where mwar.order_no = #{orderNo}
+          and mwar.tenant_id = #{tenantId}
     </select>
     
     <select id="queryList" resultType="com.xiliulou.electricity.vo.merchant.MerchantWithdrawApplicationRecordVO">
