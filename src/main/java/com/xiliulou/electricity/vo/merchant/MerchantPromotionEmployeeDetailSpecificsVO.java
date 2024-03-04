@@ -14,7 +14,7 @@ import java.math.BigDecimal;
 public class MerchantPromotionEmployeeDetailSpecificsVO {
     private Long uid;
     
-    private String userName;
+    private String name;
     
     private String phone;
     
