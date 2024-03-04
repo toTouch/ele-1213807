@@ -45,6 +45,7 @@ public interface FaqV2Mapper extends BaseMapper<FaqV2> {
     
     Integer batchUpdateByIds(@Param(value ="faqV2") FaqV2 faqV2, @Param(value ="ids")List<Long> ids);
     
+    Integer selectMinimumSort(@Param(value = "tenantId") Integer tenantId);
 }
 
 
