@@ -853,7 +853,7 @@ public class EleOperateQueueHandler {
         dataMap.put("orderId", orderId);
         
         HardwareCommandQuery comm = HardwareCommandQuery.builder().sessionId(CacheConstant.ELE_OPERATOR_SESSION_PREFIX + orderId).data(dataMap)
-                .productKey(electricityCabinet.getProductKey()).deviceName(electricityCabinet.getDeviceName()).command(ElectricityIotConstant.EXCHANGE_ORDER_MANAGE_SUCCESS)
+                .productKey(electricityCabinet.getProductKey()).deviceName(electricityCabinet.getDeviceName()).command(command)
                 .build();
         Pair<Boolean, String> sendResult = eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
         if (Boolean.FALSE.equals(sendResult.getLeft())) {
