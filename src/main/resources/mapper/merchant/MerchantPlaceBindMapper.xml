@@ -80,10 +80,10 @@
                 and merchant_id = #{merchantId}
             </if>
             <if test="status != null">
-                and status = #{status}
+                and type = #{status}
             </if>
             <if test="endTime != null">
-                and bind_time &lt;= #{endTime}
+                and bind_time &lt;= #{startTime}
             </if>
         </where>
         order by id desc
@@ -99,7 +99,7 @@
                 and merchant_id = #{merchantId}
             </if>
             <if test="status != null">
-                and status = #{status}
+                and type = #{status}
             </if>
             <if test="startTime != null and endTime != null">
                 and un_bind_time &gt;= #{startTime} or bind_time &lt;= #{endTime}

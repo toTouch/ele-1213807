@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.service.impl.merchant;
 
+import cn.hutool.core.date.DateUtil;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.thread.XllThreadPoolExecutorService;
@@ -48,8 +49,9 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
-import java.util.Comparator;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
@@ -145,7 +147,7 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
         
         // 3.本月电量
         CompletableFuture<Void> thisMonthPowerFuture = CompletableFuture.runAsync(() -> {
-            MerchantPowerPeriodVO thisMonthPower = getThisMonthPower(cabinetIds);
+            MerchantPowerPeriodVO thisMonthPower = getThisMonthPower(merchant.getTenantId(), merchant.getId(), cabinetIds);
             vo.setThisMonthPower(thisMonthPower.getPower());
             vo.setThisMonthCharge(thisMonthPower.getCharge());
             
@@ -156,9 +158,10 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
         
         // 4.上月电量
         CompletableFuture<Void> lastMonthPowerFuture = CompletableFuture.runAsync(() -> {
-            MerchantPowerPeriodVO lastMonthPower = getLastMonthPower(cabinetIds);
-            vo.setLastMonthPower(lastMonthPower.getPower());
-            vo.setLastMonthPower(lastMonthPower.getPower());
+            MerchantPowerPeriodVO lastMonthPower = getLastMonthPower(merchant.getTenantId(), merchant.getId(), cabinetIds);
+            
+            vo.setLastMonthPower(Objects.isNull(lastMonthPower) ? NumberConstant.ZERO_D : lastMonthPower.getPower());
+            vo.setLastMonthCharge(Objects.isNull(lastMonthPower) ? NumberConstant.ZERO_D : lastMonthPower.getCharge());
             
         }, executorService).exceptionally(e -> {
             log.error("Query merchant last month power data error! uid={}", request.getUid(), e);
@@ -221,9 +224,48 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
         return yesterdayVO;
     }
     
-    private MerchantPowerPeriodVO getThisMonthPower(List<Long> cabinetIds) {
+    private MerchantPowerPeriodVO getThisMonthPower(Integer tenantId, Long merchantId, List<Long> cabinetIds) {
         // 本月第一天0点
         Long thisMonthStartTime = DateUtils.getBeforeMonthFirstDayTimestamp(NumberConstant.ZERO);
+        long nowTime = System.currentTimeMillis();
+        
+        // 获取商户场地绑定记录
+        List<MerchantPlaceBind> merchantPlaceBindList = getThisMonthMerchantPlaceBindList(merchantId, thisMonthStartTime, nowTime);
+        if (CollectionUtils.isEmpty(merchantPlaceBindList)) {
+            return null;
+        }
+        
+        // 封装结果集
+        List<MerchantPowerPeriodVO> resultList = new ArrayList<>();
+        
+        // 遍历场地
+        for (MerchantPlaceBind merchantPlaceBind : merchantPlaceBindList) {
+            Long placeId = merchantPlaceBind.getPlaceId();
+            Long bindTime = merchantPlaceBind.getBindTime();
+            Long unBindTime = merchantPlaceBind.getUnBindTime();
+            
+            // 获取场地柜机绑定记录
+            List<MerchantPlaceCabinetBind> placeCabinetBindList = getThisMonthPlaceCabinetBindList(placeId, bindTime, unBindTime);
+            if (CollectionUtils.isEmpty(placeCabinetBindList)) {
+                continue;
+            }
+            
+            // 遍历柜机
+            List<CabinetPowerProRunnable> collect = cabinetIds.parallelStream().map(eid -> new CabinetPowerProRunnable(eid, elePowerService, placeCabinetBindList, tenantId))
+                    .collect(Collectors.toList());
+            
+            try {
+                List<Future<MerchantPowerPeriodVO>> futureList = executorService.invokeAll(collect);
+                if (CollectionUtils.isNotEmpty(futureList)) {
+                    for (Future<MerchantPowerPeriodVO> future : futureList) {
+                        MerchantPowerPeriodVO result = future.get();
+                        resultList.add(result);
+                    }
+                }
+            } catch (InterruptedException | ExecutionException e) {
+                log.error("Merchant get lastMonth power for pro Exception occur!", e);
+            }
+        }
         
         // 执行查询
         MerchantProLivePowerVO livePowerVO = getLivePowerData(cabinetIds, thisMonthStartTime, System.currentTimeMillis(), "thisMonth");
@@ -235,20 +277,282 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
         return thisMonthVO;
     }
     
-    private MerchantPowerPeriodVO getLastMonthPower(List<Long> cabinetIds) {
+    private MerchantPowerPeriodVO getLastMonthPower(Integer tenantId, Long merchantId, List<Long> cabinetIds) {
         //上月第一天0点
         Long lastMonthStartTime = DateUtils.getBeforeMonthFirstDayTimestamp(NumberConstant.ONE);
         // 上月最后一天23:59:59
         long lastMonthEndTime = DateUtils.getBeforeMonthLastDayTimestamp(NumberConstant.ONE);
         
-        // 执行查询
-        MerchantProLivePowerVO livePowerVO = getLivePowerData(cabinetIds, lastMonthStartTime, lastMonthEndTime, "lastMonthVO");
+        // 获取商户场地绑定记录
+        List<MerchantPlaceBind> merchantPlaceBindList = getLastMonthMerchantPlaceBindList(merchantId, lastMonthStartTime, lastMonthEndTime);
+        if (CollectionUtils.isEmpty(merchantPlaceBindList)) {
+            return null;
+        }
         
-        MerchantPowerPeriodVO lastMonthVO = new MerchantPowerPeriodVO();
-        lastMonthVO.setPower(Objects.isNull(livePowerVO) ? NumberConstant.ZERO_D : livePowerVO.getPower());
-        lastMonthVO.setCharge(Objects.isNull(livePowerVO) ? NumberConstant.ZERO_D : livePowerVO.getCharge());
+        // 封装结果集
+        List<MerchantPowerPeriodVO> resultList = new ArrayList<>();
         
-        return lastMonthVO;
+        // 遍历场地
+        for (MerchantPlaceBind merchantPlaceBind : merchantPlaceBindList) {
+            Long placeId = merchantPlaceBind.getPlaceId();
+            Long bindTime = merchantPlaceBind.getBindTime();
+            Long unBindTime = merchantPlaceBind.getUnBindTime();
+            
+            // 获取场地柜机绑定记录
+            List<MerchantPlaceCabinetBind> placeCabinetBindList = getLastMonthPlaceCabinetBindList(placeId, bindTime, unBindTime);
+            if (CollectionUtils.isEmpty(placeCabinetBindList)) {
+                continue;
+            }
+            
+            // 遍历柜机
+            List<CabinetPowerProRunnable> collect = cabinetIds.parallelStream().map(eid -> new CabinetPowerProRunnable(eid, elePowerService, placeCabinetBindList, tenantId))
+                    .collect(Collectors.toList());
+            
+            try {
+                List<Future<MerchantPowerPeriodVO>> futureList = executorService.invokeAll(collect);
+                if (CollectionUtils.isNotEmpty(futureList)) {
+                    for (Future<MerchantPowerPeriodVO> future : futureList) {
+                        MerchantPowerPeriodVO result = future.get();
+                        resultList.add(result);
+                    }
+                }
+            } catch (InterruptedException | ExecutionException e) {
+                log.error("Merchant get lastMonth power for pro Exception occur!", e);
+            }
+        }
+        
+        if (CollectionUtils.isEmpty(resultList)) {
+            return null;
+        }
+        
+        // 封装数据
+        MerchantPowerPeriodVO powerVO = new MerchantPowerPeriodVO();
+        powerVO.setPower(resultList.stream().mapToDouble(MerchantPowerPeriodVO::getPower).sum());
+        powerVO.setCharge(resultList.stream().mapToDouble(MerchantPowerPeriodVO::getCharge).sum());
+        
+        return powerVO;
+    }
+    
+    private List<MerchantPlaceCabinetBind> getThisMonthPlaceCabinetBindList(Long placeId, Long merchantPlaceBindTime, Long merchantPlaceUnbindTime) {
+        List<MerchantPlaceCabinetBind> allPlaceCabinetBindList = new ArrayList<>();
+        List<MerchantPlaceCabinetBind> beforeHandleAllPlaceCabinetBindList = new ArrayList<>();
+        
+        // 绑定状态记录((bindTime<=merchantPlaceUnbindTime))
+        MerchantPlaceCabinetConditionRequest placeCabinetBindRequest = MerchantPlaceCabinetConditionRequest.builder().placeId(placeId)
+                .status(MerchantPlaceCabinetBindConstant.STATUS_BIND).startTime(merchantPlaceUnbindTime).build();
+        List<MerchantPlaceCabinetBind> cabinetBindList = merchantPlaceCabinetBindService.listBindRecord(placeCabinetBindRequest);
+        
+        if (CollectionUtils.isNotEmpty(cabinetBindList)) {
+            MerchantPlaceCabinetBind placeCabinetBind = cabinetBindList.get(NumberConstant.ZERO);
+            Long bindTime = placeCabinetBind.getBindTime();
+            
+            if (bindTime < merchantPlaceBindTime) {
+                placeCabinetBind.setBindTime(merchantPlaceBindTime);
+            }
+            
+            // 给绑定状态记录赋值解绑时间：endTime
+            placeCabinetBind.setUnBindTime(merchantPlaceUnbindTime);
+            
+            beforeHandleAllPlaceCabinetBindList.add(placeCabinetBind);
+        }
+        
+        // 解绑状态记录
+        MerchantPlaceCabinetConditionRequest placeCabinetUnbindRequest = MerchantPlaceCabinetConditionRequest.builder().placeId(placeId)
+                .status(MerchantPlaceCabinetBindConstant.STATUS_UNBIND).build();
+        List<MerchantPlaceCabinetBind> cabinetUnbindList = merchantPlaceCabinetBindService.listUnbindRecord(placeCabinetUnbindRequest);
+        
+        if (CollectionUtils.isNotEmpty(cabinetUnbindList)) {
+            beforeHandleAllPlaceCabinetBindList.addAll(cabinetUnbindList);
+            
+            // 先掐头去尾
+            List<MerchantPlaceCabinetBind> stepOneList = new ArrayList<>();
+            beforeHandleAllPlaceCabinetBindList.forEach(placeCabinetBind -> {
+                Long bindTime = placeCabinetBind.getBindTime();
+                Long unBindTime = placeCabinetBind.getUnBindTime();
+                
+                if (bindTime < merchantPlaceBindTime) {
+                    placeCabinetBind.setBindTime(merchantPlaceBindTime);
+                }
+                
+                if (unBindTime > merchantPlaceUnbindTime) {
+                    placeCabinetBind.setUnBindTime(merchantPlaceUnbindTime);
+                }
+                
+                stepOneList.add(placeCabinetBind);
+            });
+            
+            // 再去除时间段子集
+            for (MerchantPlaceCabinetBind current : cabinetUnbindList) {
+                boolean isSubset = false;
+                
+                for (MerchantPlaceCabinetBind previous : stepOneList) {
+                    if (current.getBindTime() >= (previous.getBindTime()) && current.getUnBindTime() <= (previous.getUnBindTime())) {
+                        isSubset = true;
+                        break;
+                    }
+                }
+                
+                if (!isSubset) {
+                    allPlaceCabinetBindList.add(current);
+                }
+            }
+        }
+        
+        return allPlaceCabinetBindList;
+    }
+    
+    private List<MerchantPlaceCabinetBind> getLastMonthPlaceCabinetBindList(Long placeId, Long merchantPlaceBindTime, Long merchantPlaceUnbindTime) {
+        List<MerchantPlaceCabinetBind> allPlaceCabinetBindList = new ArrayList<>();
+        List<MerchantPlaceCabinetBind> beforeHandleAllPlaceCabinetBindList = new ArrayList<>();
+        
+        // 绑定状态记录((bindTime<=merchantPlaceUnbindTime))
+        MerchantPlaceCabinetConditionRequest placeCabinetBindRequest = MerchantPlaceCabinetConditionRequest.builder().placeId(placeId)
+                .status(MerchantPlaceCabinetBindConstant.STATUS_BIND).startTime(merchantPlaceUnbindTime).build();
+        List<MerchantPlaceCabinetBind> cabinetBindList = merchantPlaceCabinetBindService.listBindRecord(placeCabinetBindRequest);
+        
+        if (CollectionUtils.isNotEmpty(cabinetBindList)) {
+            MerchantPlaceCabinetBind placeCabinetBind = cabinetBindList.get(NumberConstant.ZERO);
+            Long bindTime = placeCabinetBind.getBindTime();
+            
+            if (bindTime < merchantPlaceBindTime) {
+                placeCabinetBind.setBindTime(merchantPlaceBindTime);
+            }
+            
+            // 给绑定状态记录赋值解绑时间：endTime
+            placeCabinetBind.setUnBindTime(merchantPlaceUnbindTime);
+            
+            beforeHandleAllPlaceCabinetBindList.add(placeCabinetBind);
+        }
+        
+        // 解绑状态记录
+        MerchantPlaceCabinetConditionRequest placeCabinetUnbindRequest = MerchantPlaceCabinetConditionRequest.builder().placeId(placeId)
+                .status(MerchantPlaceCabinetBindConstant.STATUS_UNBIND).build();
+        List<MerchantPlaceCabinetBind> cabinetUnbindList = merchantPlaceCabinetBindService.listUnbindRecord(placeCabinetUnbindRequest);
+        
+        if (CollectionUtils.isNotEmpty(cabinetUnbindList)) {
+            beforeHandleAllPlaceCabinetBindList.addAll(cabinetUnbindList);
+            
+            // 先掐头去尾
+            List<MerchantPlaceCabinetBind> stepOneList = new ArrayList<>();
+            beforeHandleAllPlaceCabinetBindList.forEach(placeCabinetBind -> {
+                Long bindTime = placeCabinetBind.getBindTime();
+                Long unBindTime = placeCabinetBind.getUnBindTime();
+                
+                if (bindTime < merchantPlaceBindTime) {
+                    placeCabinetBind.setBindTime(merchantPlaceBindTime);
+                }
+                
+                if (unBindTime > merchantPlaceUnbindTime) {
+                    placeCabinetBind.setUnBindTime(merchantPlaceUnbindTime);
+                }
+                
+                stepOneList.add(placeCabinetBind);
+            });
+            
+            // 再去除时间段子集
+            for (MerchantPlaceCabinetBind current : cabinetUnbindList) {
+                boolean isSubset = false;
+                
+                for (MerchantPlaceCabinetBind previous : stepOneList) {
+                    if (current.getBindTime() >= (previous.getBindTime()) && current.getUnBindTime() <= (previous.getUnBindTime())) {
+                        isSubset = true;
+                        break;
+                    }
+                }
+                
+                if (!isSubset) {
+                    allPlaceCabinetBindList.add(current);
+                }
+            }
+        }
+        
+        return allPlaceCabinetBindList;
+    }
+    
+    private List<MerchantPlaceBind> getThisMonthMerchantPlaceBindList(Long merchantId, Long thisMonthStartTime, Long nowTime) {
+        List<MerchantPlaceBind> allMerchantPlaceBindList = new ArrayList<>();
+        
+        // 绑定状态记录
+        MerchantPlaceConditionRequest merchantPlaceBindRequest = MerchantPlaceConditionRequest.builder().merchantId(merchantId).status(MerchantPlaceBindConstant.BIND).build();
+        List<MerchantPlaceBind> merchantPlaceBindList = merchantPlaceBindService.listBindRecord(merchantPlaceBindRequest);
+        
+        if (CollectionUtils.isNotEmpty(merchantPlaceBindList)) {
+            MerchantPlaceBind merchantPlaceBind = merchantPlaceBindList.get(NumberConstant.ZERO);
+            Long bindTime = merchantPlaceBind.getBindTime();
+            
+            if (bindTime < thisMonthStartTime) {
+                merchantPlaceBind.setBindTime(thisMonthStartTime);
+            }
+            
+            // 给绑定状态记录赋值解绑时间：nowTime
+            merchantPlaceBind.setUnBindTime(nowTime);
+            
+            allMerchantPlaceBindList.add(merchantPlaceBind);
+        }
+        
+        // 解绑状态记录
+        MerchantPlaceConditionRequest merchantPlaceUnbindRequest = MerchantPlaceConditionRequest.builder().merchantId(merchantId).status(MerchantPlaceBindConstant.UN_BIND).build();
+        List<MerchantPlaceBind> merchantPlaceUnbindList = merchantPlaceBindService.listUnbindRecord(merchantPlaceUnbindRequest);
+        
+        if (CollectionUtils.isNotEmpty(merchantPlaceUnbindList)) {
+            merchantPlaceUnbindList.forEach(merchantPlaceUnbind -> {
+                Long bindTime = merchantPlaceUnbind.getBindTime();
+                
+                if (bindTime < thisMonthStartTime) {
+                    merchantPlaceUnbind.setBindTime(thisMonthStartTime);
+                }
+                
+                allMerchantPlaceBindList.add(merchantPlaceUnbind);
+            });
+        }
+        
+        return allMerchantPlaceBindList;
+    }
+    
+    private List<MerchantPlaceBind> getLastMonthMerchantPlaceBindList(Long merchantId, Long lastMonthStartTime, Long lastMonthEndTime) {
+        List<MerchantPlaceBind> allMerchantPlaceBindList = new ArrayList<>();
+        
+        // 绑定状态记录(bindTime<=lastMonthStartTime)
+        MerchantPlaceConditionRequest merchantPlaceBindRequest = MerchantPlaceConditionRequest.builder().merchantId(merchantId).status(MerchantPlaceBindConstant.BIND)
+                .startTime(lastMonthStartTime).build();
+        List<MerchantPlaceBind> merchantPlaceBindList = merchantPlaceBindService.listBindRecord(merchantPlaceBindRequest);
+        
+        if (CollectionUtils.isNotEmpty(merchantPlaceBindList)) {
+            MerchantPlaceBind merchantPlaceBind = merchantPlaceBindList.get(NumberConstant.ZERO);
+            Long bindTime = merchantPlaceBind.getBindTime();
+            
+            if (bindTime < lastMonthStartTime) {
+                merchantPlaceBind.setBindTime(lastMonthStartTime);
+            }
+            
+            // 给绑定状态记录赋值解绑时间：endTime
+            merchantPlaceBind.setUnBindTime(lastMonthEndTime);
+            
+            allMerchantPlaceBindList.add(merchantPlaceBind);
+        }
+        
+        // 解绑状态记录
+        MerchantPlaceConditionRequest merchantPlaceUnbindRequest = MerchantPlaceConditionRequest.builder().merchantId(merchantId).status(MerchantPlaceBindConstant.UN_BIND).build();
+        List<MerchantPlaceBind> merchantPlaceUnbindList = merchantPlaceBindService.listUnbindRecord(merchantPlaceUnbindRequest);
+        
+        if (CollectionUtils.isNotEmpty(merchantPlaceUnbindList)) {
+            merchantPlaceUnbindList.forEach(merchantPlaceUnbind -> {
+                Long bindTime = merchantPlaceUnbind.getBindTime();
+                Long unBindTime = merchantPlaceUnbind.getUnBindTime();
+                
+                if (bindTime < lastMonthStartTime) {
+                    merchantPlaceUnbind.setBindTime(lastMonthStartTime);
+                }
+                
+                if (unBindTime > lastMonthEndTime) {
+                    merchantPlaceUnbind.setUnBindTime(lastMonthEndTime);
+                }
+                
+                allMerchantPlaceBindList.add(merchantPlaceUnbind);
+            });
+        }
+        
+        return allMerchantPlaceBindList;
     }
     
     private MerchantPowerPeriodVO getTotalPower(List<Long> cabinetIds) {
@@ -297,17 +601,10 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
         // 查询的月份
         List<MerchantProPowerLineDataVO> powerList = new ArrayList<>();
         List<MerchantProPowerChargeLineDataVO> chargeList = new ArrayList<>();
-        List<String> monthList = request.getMonthList();
         
+        List<String> monthList = getMonthList(request.getStartTime(), request.getEndTime());
         if (CollectionUtils.isEmpty(monthList)) {
             log.warn("Merchant power for pro lineData, monthList is empty, uid={}", request.getUid());
-            return null;
-        }
-        
-        //近三个月/六个月/半年
-        List<Integer> monthNum = List.of(NumberConstant.THREE, NumberConstant.SIX, NumberConstant.TWELVE);
-        if (!monthNum.contains(monthList.size())) {
-            log.warn("Merchant power for pro lineData, monthList size not correct, monthList={}", monthList);
             return null;
         }
         
@@ -315,8 +612,9 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
         String lastMonthDate = DateUtils.getMonthDate(1L);
         monthList.remove(lastMonthDate);
         
-        // 1.实时统计上个月的数据
-        MerchantPowerPeriodVO lastMonthPower = this.getLastMonthPower(cabinetIds);
+        // 1.实时统计上个月的数据 todo
+        //MerchantPowerPeriodVO lastMonthPower = this.getLastMonthPower(cabinetIds);
+        MerchantPowerPeriodVO lastMonthPower = null;
         //电量
         MerchantProPowerLineDataVO lastMonthPowerVO = new MerchantProPowerLineDataVO();
         lastMonthPowerVO.setMonthDate(lastMonthDate);
@@ -374,7 +672,7 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
             log.warn("Merchant power for pro cabinetPowerDetail, merchant not exist, uid={}", request.getUid());
             return null;
         }
-    
+        
         request.setMerchantId(merchant.getId());
         
         //获取要查询的柜机
@@ -383,10 +681,8 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
             return Collections.emptyList();
         }
         
-        String monthDate = null;
-        List<String> monthList = request.getMonthList();
-        if (CollectionUtils.isNotEmpty(monthList)) {
-            monthDate = monthList.get(NumberConstant.ZERO);
+        String monthDate = request.getMonthDate();
+        if (Objects.nonNull(monthDate)) {
             if (!monthDate.matches(DateUtils.GREP_YEAR_MONTH)) {
                 return Collections.emptyList();
             }
@@ -426,7 +722,7 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
             rspList = this.assembleLiveDetailPower(electricityCabinet, lastMonthPower, monthDate);
         } else {
             // 如果是2个月前,通过历史数据查询
-            List<MerchantCabinetPowerMonthDetailPro> historyDetailList = merchantCabinetPowerMonthDetailProService.listByMonth(cabinetId, monthList);
+            List<MerchantCabinetPowerMonthDetailPro> historyDetailList = merchantCabinetPowerMonthDetailProService.listByMonth(cabinetId, List.of(monthDate));
             rspList = assembleHistoryDetailPower(electricityCabinet, historyDetailList, monthDate + "-01");
         }
         
@@ -435,6 +731,26 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
         }
         
         return rspList;
+    }
+    
+    private List<String> getMonthList(Long startTime, Long endTime) {
+        if (Objects.isNull(startTime) || Objects.isNull(endTime)) {
+            return Collections.emptyList();
+        }
+        List<String> list = new ArrayList<>();
+        Calendar calendar = Calendar.getInstance();
+        
+        calendar.setTimeInMillis(startTime);
+        do {
+            String month = DateUtil.format(calendar.getTime(), "yyyy-MM");
+            list.add(month);
+            calendar.add(Calendar.MONTH, 1);
+        } while (calendar.getTimeInMillis() <= endTime);
+        String endMonth = DateUtil.format(new Date(endTime), "yyyy-MM");
+        if (!list.contains(endMonth)) {
+            list.add(endMonth);
+        }
+        return list;
     }
     
     @Slave
@@ -622,22 +938,22 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
         
         // 5.根据柜机进行统计
         List<MerchantProPowerDetailVO> powerVOList = new ArrayList<>();
-        List<CabinetPowerProRunnable> collect = cabinetIds.parallelStream()
-                .map(eid -> new CabinetPowerProRunnable(eid, electricityCabinetService, merchantPlaceBindService, elePowerService, startTime, endTime, cabinetBindList,
-                        cabinetUnbindList, placeMergeBindList)).collect(Collectors.toList());
-        try {
-            List<Future<List<MerchantProPowerDetailVO>>> futureList = executorService.invokeAll(collect);
-            if (CollectionUtils.isNotEmpty(futureList)) {
-                for (Future<List<MerchantProPowerDetailVO>> future : futureList) {
-                    List<MerchantProPowerDetailVO> result = future.get();
-                    if (CollectionUtils.isNotEmpty(result)) {
-                        powerVOList.addAll(result);
-                    }
-                }
-            }
-        } catch (InterruptedException | ExecutionException e) {
-            log.error("merchant " + date + " power for pro Exception occur! ", e);
-        }
+        //        List<CabinetPowerProRunnable> collect = cabinetIds.parallelStream()
+        //                .map(eid -> new CabinetPowerProRunnable(eid, electricityCabinetService, merchantPlaceBindService, elePowerService, startTime, endTime, cabinetBindList,
+        //                        cabinetUnbindList, placeMergeBindList)).collect(Collectors.toList());
+        //        try {
+        //            List<Future<List<MerchantProPowerDetailVO>>> futureList = executorService.invokeAll(collect);
+        //            if (CollectionUtils.isNotEmpty(futureList)) {
+        //                for (Future<List<MerchantProPowerDetailVO>> future : futureList) {
+        //                    List<MerchantProPowerDetailVO> result = future.get();
+        //                    if (CollectionUtils.isNotEmpty(result)) {
+        //                        powerVOList.addAll(result);
+        //                    }
+        //                }
+        //            }
+        //        } catch (InterruptedException | ExecutionException e) {
+        //            log.error("merchant " + date + " power for pro Exception occur! ", e);
+        //        }
         
         MerchantProLivePowerVO vo = null;
         if (CollectionUtils.isNotEmpty(powerVOList)) {
@@ -823,257 +1139,73 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
 }
 
 @Slf4j
-class CabinetPowerProRunnable implements Callable<List<MerchantProPowerDetailVO>> {
+class CabinetPowerProRunnable implements Callable<MerchantPowerPeriodVO> {
     
     Long eid;
     
-    ElectricityCabinetService electricityCabinetService;
-    
-    MerchantPlaceBindService merchantPlaceBindService;
-    
     ElePowerService elePowerService;
-    
-    Long startTime;
-    
-    Long endTime;
     
     List<MerchantPlaceCabinetBind> bindList;
     
-    List<MerchantPlaceCabinetBind> unbindList;
+    Integer tenantId;
     
-    List<MerchantPlaceBind> placeBindList;
-    
-    public CabinetPowerProRunnable(Long eid, ElectricityCabinetService electricityCabinetService, MerchantPlaceBindService merchantPlaceBindService,
-            ElePowerService elePowerService, Long startTime, Long endTime, List<MerchantPlaceCabinetBind> bindList, List<MerchantPlaceCabinetBind> unbindList,
-            List<MerchantPlaceBind> placeBindList) {
+    public CabinetPowerProRunnable(Long eid, ElePowerService elePowerService, List<MerchantPlaceCabinetBind> bindList, Integer tenantId) {
         this.eid = eid;
-        this.electricityCabinetService = electricityCabinetService;
-        this.merchantPlaceBindService = merchantPlaceBindService;
         this.elePowerService = elePowerService;
-        this.startTime = startTime;
-        this.endTime = endTime;
         this.bindList = bindList;
-        this.unbindList = unbindList;
-        this.placeBindList = placeBindList;
+        this.tenantId = tenantId;
     }
     
     @Override
-    public List<MerchantProPowerDetailVO> call() throws Exception {
-        List<MerchantProPowerDetailVO> powerVOList = new ArrayList<>();
-        
-        // 1.只有绑定状态记录
-        if (CollectionUtils.isNotEmpty(bindList) && CollectionUtils.isEmpty(unbindList)) {
-            MerchantPlaceCabinetBind bindRecord = bindList.get(NumberConstant.ZERO);
-            Long placeId = bindRecord.getPlaceId();
-            Long bindTime = bindRecord.getBindTime();
-            
-            if (bindTime > startTime) {
-                startTime = bindTime;
-            }
-            
-            Integer placeMerchantBindStatus = MerchantPlaceBindConstant.UN_BIND;
-            // 需要统计场地和柜机的时间段为：startTime-endTime，判断该时间段的数据都是在哪些商户下产生的
-            for (MerchantPlaceBind placeBind : placeBindList) {
-                Long placeBindTime = placeBind.getBindTime();
-                Long placeUnbindTime = placeBind.getUnBindTime();
-                
-                Long merchantId = placeBind.getMerchantId();
-                
-                // 绑定状态没有解绑时间，设置解绑时间endTime
-                if (Objects.equals(placeBind.getType(), MerchantPlaceBindConstant.BIND)) {
-                    placeUnbindTime = endTime;
-                    placeMerchantBindStatus = MerchantPlaceBindConstant.BIND;
-                }
-                
-                // 查询并处理数据
-                MerchantProPowerDetailVO eleSumPowerVO = handleTimeInterval(startTime, endTime, placeBindTime, placeUnbindTime, placeId, merchantId, placeMerchantBindStatus);
-                if (Objects.nonNull(eleSumPowerVO)) {
-                    powerVOList.add(eleSumPowerVO);
-                }
-            }
+    public MerchantPowerPeriodVO call() throws Exception {
+        // 过滤出该柜机的绑定记录
+        List<MerchantPlaceCabinetBind> cabinetBindList = bindList.stream().filter(bind -> Objects.equals(bind.getCabinetId(), eid)).collect(Collectors.toList());
+        if (CollectionUtils.isEmpty(cabinetBindList)) {
+            return null;
         }
         
-        // 2. 只有解绑状态记录
-        if (CollectionUtils.isEmpty(bindList) && CollectionUtils.isNotEmpty(unbindList)) {
-            
-            // 排序-去除子集
-            List<MerchantPlaceCabinetBind> resultList = removeSubSetTime(unbindList);
-            
-            resultList.forEach(unbind -> {
-                Integer placeMerchantBindStatus = MerchantPlaceBindConstant.UN_BIND;
-                
-                // 需要统计场地和柜机的时间段为：current.getBindTime()-current.getUnBindTime()，判断该时间段的数据都是在哪些商户下产生的
-                for (MerchantPlaceBind placeBind : placeBindList) {
-                    Long placeBindTime = placeBind.getBindTime();
-                    Long placeUnbindTime = placeBind.getUnBindTime();
-                    
-                    // 绑定状态没有解绑时间，设置解绑时间endTime
-                    if (Objects.equals(placeBind.getType(), MerchantPlaceBindConstant.BIND)) {
-                        placeUnbindTime = endTime;
-                        placeMerchantBindStatus = MerchantPlaceBindConstant.BIND;
-                    }
-                    
-                    // 查询并处理数据
-                    MerchantProPowerDetailVO eleSumPowerVO = handleTimeInterval(unbind.getBindTime(), unbind.getUnBindTime(), placeBindTime, placeUnbindTime, unbind.getPlaceId(),
-                            placeBind.getMerchantId(), placeMerchantBindStatus);
-                    if (Objects.nonNull(eleSumPowerVO)) {
-                        powerVOList.add(eleSumPowerVO);
-                    }
-                }
-            });
-        }
+        List<EleSumPowerVO> elePowerList = new ArrayList<>();
         
-        // 3. 既有绑定状态记录，又有解绑状态记录
-        if (CollectionUtils.isNotEmpty(bindList) && CollectionUtils.isNotEmpty(unbindList)) {
-            MerchantPlaceCabinetBind bindRecord = bindList.get(NumberConstant.ZERO);
-            // 由于绑定状态的记录没有解绑时间，此处设置个虚拟的解绑时间方便进行时间段排序及去除子集处理
-            bindRecord.setUnBindTime(endTime);
+        // 遍历绑定时间段
+        cabinetBindList.forEach(cabinetBind -> {
+            Long bindTime = cabinetBind.getBindTime();
+            Long unBindTime = cabinetBind.getUnBindTime();
             
-            // 如果绑定状态记录的createTime在startTime前，设置bindTime为startTime
-            if (bindRecord.getCreateTime() <= startTime) {
-                bindRecord.setBindTime(startTime);
+            // 查询电量
+            EleSumPowerVO eleSumPowerVO = elePowerService.listByCondition(bindTime, unBindTime, List.of(eid), tenantId);
+            if (Objects.nonNull(eleSumPowerVO)) {
+                elePowerList.add(eleSumPowerVO);
             }
-            
-            List<MerchantPlaceCabinetBind> allBindList = new ArrayList<>();
-            allBindList.add(bindRecord);
-            allBindList.addAll(unbindList);
-            
-            // 排序-去除子集
-            List<MerchantPlaceCabinetBind> resultList = removeSubSetTime(allBindList);
-            
-            resultList.forEach(bind -> {
-                Integer placeMerchantBindStatus = MerchantPlaceBindConstant.UN_BIND;
-                
-                // 需要统计场地和柜机的时间段为：current.getBindTime()-current.getUnBindTime()，判断该时间段的数据都是在哪些商户下产生的
-                for (MerchantPlaceBind placeBind : placeBindList) {
-                    Long placeBindTime = placeBind.getBindTime();
-                    Long placeUnbindTime = placeBind.getUnBindTime();
-                    
-                    // 绑定状态没有解绑时间，设置解绑时间endTime
-                    if (Objects.equals(placeBind.getType(), MerchantPlaceBindConstant.BIND)) {
-                        placeUnbindTime = endTime;
-                        placeMerchantBindStatus = MerchantPlaceBindConstant.BIND;
-                    }
-                    
-                    // 查询并处理数据
-                    MerchantProPowerDetailVO eleSumPowerVO = handleTimeInterval(bind.getBindTime(), bind.getUnBindTime(), placeBindTime, placeUnbindTime, bind.getPlaceId(),
-                            placeBind.getMerchantId(), placeMerchantBindStatus);
-                    if (Objects.nonNull(eleSumPowerVO)) {
-                        powerVOList.add(eleSumPowerVO);
-                    }
-                }
-            });
-            
+        });
+        
+        if (CollectionUtils.isEmpty(elePowerList)) {
+            return null;
         }
         
-        // 4.合并连续时间段的记录
-        mergeSerialTimeDetail(powerVOList);
+        // 封装数据
+        MerchantPowerPeriodVO powerVO = new MerchantPowerPeriodVO();
+        powerVO.setPower(elePowerList.stream().mapToDouble(EleSumPowerVO::getSumPower).sum());
+        powerVO.setCharge(elePowerList.stream().mapToDouble(EleSumPowerVO::getSumCharge).sum());
         
-        return powerVOList;
+        return powerVO;
     }
     
-    /**
-     * 合并连续时间段的记录
-     */
-    private void mergeSerialTimeDetail(List<MerchantProPowerDetailVO> detailList) {
-        // 排序
-        detailList.sort(Comparator.comparing(MerchantProPowerDetailVO::getEndTime));
-        
-        // 合并时间段
-        for (int i = 0; i < detailList.size() - 1; i++) {
-            MerchantProPowerDetailVO current = detailList.get(i);
-            MerchantProPowerDetailVO next = detailList.get(i + 1);
-            
-            if (Objects.equals(DateUtils.getStartTimeByTimeStamp(current.getEndTime()), DateUtils.getStartTimeByTimeStamp(next.getStartTime()))) {
-                current.setEndTime(next.getEndTime());
-                
-                Double currentPower = Objects.isNull(current.getPower()) ? NumberConstant.ZERO_D : current.getPower();
-                Double currentCharge = Objects.isNull(current.getCharge()) ? NumberConstant.ZERO_D : current.getCharge();
-                Double nextPower = Objects.isNull(next.getPower()) ? NumberConstant.ZERO_D : next.getPower();
-                Double nextCharge = Objects.isNull(next.getCharge()) ? NumberConstant.ZERO_D : next.getCharge();
-                
-                current.setPower(currentPower + nextPower);
-                current.setCharge(currentCharge + nextCharge);
-                
-                detailList.remove(next);
-            }
-        }
-        
-    }
-    
-    /**
-     * 1.时间段根据bindTime从小到达排序 2.去时间段子集
-     */
-    private List<MerchantPlaceCabinetBind> removeSubSetTime(List<MerchantPlaceCabinetBind> list) {
-        // 根据bindTime进行从小到大排序
-        list.sort(Comparator.comparing(MerchantPlaceCabinetBind::getBindTime));
-        
-        // 去除时间段子集
-        List<MerchantPlaceCabinetBind> resultList = new ArrayList<>();
-        for (MerchantPlaceCabinetBind current : list) {
-            boolean isSubset = false;
-            
-            for (MerchantPlaceCabinetBind previous : resultList) {
-                if (current.getBindTime() >= (previous.getBindTime()) && current.getUnBindTime() <= (previous.getUnBindTime())) {
-                    isSubset = true;
-                    break;
-                }
-            }
-            
-            if (!isSubset) {
-                resultList.add(current);
-            }
-        }
-        
-        return resultList;
-    }
-    
-    /**
-     * 处理场地-柜机和商户-场地 的时间交集
-     */
-    private MerchantProPowerDetailVO handleTimeInterval(Long startTime, Long endTime, Long placeBindTime, Long placeUnbindTime, Long placeId, Long merchantId,
-            Integer placeMerchantBindStatus) {
-        MerchantProPowerDetailVO eleSumPowerVO = null;
-        
-        Integer cabinetMerchantBindStatus = MerchantPlaceBindConstant.UN_BIND;
-        if (Objects.equals(placeMerchantBindStatus, MerchantPlaceBindConstant.BIND)) {
-            cabinetMerchantBindStatus = MerchantPlaceBindConstant.BIND;
-        }
-        
-        if (placeBindTime <= startTime && placeUnbindTime >= endTime) {
-            eleSumPowerVO = handlePowerDetail(startTime, endTime, eid, placeId, merchantId, cabinetMerchantBindStatus);
-        }
-        
-        if (placeBindTime <= startTime && placeUnbindTime < endTime) {
-            eleSumPowerVO = handlePowerDetail(startTime, placeUnbindTime, eid, placeId, merchantId, cabinetMerchantBindStatus);
-        }
-        
-        if (placeBindTime > startTime && placeUnbindTime >= endTime) {
-            eleSumPowerVO = handlePowerDetail(placeBindTime, endTime, eid, placeId, merchantId, cabinetMerchantBindStatus);
-        }
-        
-        if (placeBindTime > startTime && placeUnbindTime < endTime) {
-            eleSumPowerVO = handlePowerDetail(placeBindTime, placeUnbindTime, eid, placeId, merchantId, cabinetMerchantBindStatus);
-        }
-        
-        return eleSumPowerVO;
-    }
     
     /**
      * 查询并处理数据
      */
     private MerchantProPowerDetailVO handlePowerDetail(Long startTime, Long endTime, Long eid, Long placeId, Long merchantId, Integer cabinetMerchantBindStatus) {
         //查询柜机
-        ElectricityCabinet cabinet = electricityCabinetService.queryByIdFromCache(eid.intValue());
-        
-        // 查询电量
-        EleSumPowerVO eleSumPowerVO = elePowerService.listByCondition(startTime, endTime, List.of(eid), cabinet.getTenantId());
-        
-        // 查询最新一条记录的reportTime，用于排序
-        Long latestTime = elePowerService.queryLatestReportTime(startTime, endTime, List.of(eid), cabinet.getTenantId());
-        
-        return MerchantProPowerDetailVO.builder().eid(eid).power(eleSumPowerVO.getSumPower()).charge(eleSumPowerVO.getSumCharge()).latestTime(latestTime).startTime(startTime)
-                .endTime(endTime).placeId(placeId).merchantId(merchantId).cabinetMerchantBindStatus(cabinetMerchantBindStatus).build();
-        
+        //        ElectricityCabinet cabinet = electricityCabinetService.queryByIdFromCache(eid.intValue());
+        //
+        //        // 查询电量
+        //        EleSumPowerVO eleSumPowerVO = elePowerService.listByCondition(startTime, endTime, List.of(eid), cabinet.getTenantId());
+        //
+        //        // 查询最新一条记录的reportTime，用于排序
+        //        Long latestTime = elePowerService.queryLatestReportTime(startTime, endTime, List.of(eid), cabinet.getTenantId());
+        //
+        //        return MerchantProPowerDetailVO.builder().eid(eid).power(eleSumPowerVO.getSumPower()).charge(eleSumPowerVO.getSumCharge()).latestTime(latestTime).startTime(startTime)
+        //                .endTime(endTime).placeId(placeId).merchantId(merchantId).cabinetMerchantBindStatus(cabinetMerchantBindStatus).build();
+        return null;
     }
 }

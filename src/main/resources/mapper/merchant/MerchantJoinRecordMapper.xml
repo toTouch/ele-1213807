@@ -37,7 +37,8 @@
         update t_merchant_join_record
         set protection_status = #{protectionStatus},
             update_time       = #{updateTime}
-        where protection_time &lt;= #{updateTime} and = 0
+        where protection_time &lt;= #{updateTime}
+          and protection_status = 0
     </update>
     
     <update id="updateExpired">
@@ -367,6 +368,22 @@
                 and tenant_id = #{tenantId}
             </if>
             limit #{offset}, #{size}
+        </where>
+    </select>
+    
+    <select id="selectListByJoinUidAndStatus" resultType="com.xiliulou.electricity.entity.merchant.MerchantJoinRecord">
+        SELECT
+        <include refid="basic_field"/>
+        FROM
+        t_merchant_join_record
+        <where>
+            del_flag = 0 and join_uid = #{joinUid}
+            <if test="statusList != null">
+                and status in
+                <foreach collection="statusList" separator="," open="(" close=")" item="status">
+                    #{status}
+                </foreach>
+            </if>
         </where>
     </select>
 
