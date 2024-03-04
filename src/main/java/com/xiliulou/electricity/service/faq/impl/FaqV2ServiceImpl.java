@@ -5,8 +5,10 @@ import cn.hutool.core.collection.CollectionUtil;
 import com.google.common.collect.Maps;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.bo.faq.FaqV2BO;
+import com.xiliulou.electricity.entity.ElectricityConfig;
 import com.xiliulou.electricity.entity.faq.FaqV2;
 import com.xiliulou.electricity.enums.UpDownEnum;
+import com.xiliulou.electricity.mapper.ElectricityConfigMapper;
 import com.xiliulou.electricity.mapper.faq.FaqCategoryV2Mapper;
 import com.xiliulou.electricity.mapper.faq.FaqV2Mapper;
 import com.xiliulou.electricity.query.faq.AdminFaqQuery;
@@ -44,6 +46,8 @@ public class FaqV2ServiceImpl implements FaqV2Service {
     private final FaqV2Mapper faqV2Mapper;
     
     private final FaqCategoryV2Mapper faqCategoryV2Mapper;
+    
+    private final ElectricityConfigMapper electricityConfigMapper;
     
     @Override
     public R saveFaqQuery(AdminFaqReq faqReq) {
@@ -201,6 +205,11 @@ public class FaqV2ServiceImpl implements FaqV2Service {
             return Collections.emptyList();
         }
         
+        ElectricityConfig electricityConfig = electricityConfigMapper.selectElectricityConfigByTenantId(TenantContextHolder.getTenantId());
+        
+        if (Objects.isNull(electricityConfig) || electricityConfig.getWxCustomer() == 0) {
+            return Collections.emptyList();
+        }
         // 1. 未指定问题分类时 小程序端首页展示全部
         Long queryTypeId = faqQuery.getTypeId();
         if (Objects.isNull(queryTypeId)) {
