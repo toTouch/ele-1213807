@@ -7,6 +7,7 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.merchant.MerchantConstant;
 import com.xiliulou.electricity.constant.merchant.MerchantWithdrawConstant;
 import com.xiliulou.electricity.entity.User;
+import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.merchant.Merchant;
 import com.xiliulou.electricity.entity.merchant.MerchantEmployee;
 import com.xiliulou.electricity.entity.merchant.MerchantJoinRecord;
@@ -20,6 +21,7 @@ import com.xiliulou.electricity.query.merchant.MerchantPromotionFeeMerchantNumQu
 import com.xiliulou.electricity.query.merchant.MerchantPromotionFeeQueryModel;
 import com.xiliulou.electricity.query.merchant.MerchantPromotionRenewalQueryModel;
 import com.xiliulou.electricity.query.merchant.MerchantPromotionScanCodeQueryModel;
+import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.service.merchant.MerchantEmployeeService;
 import com.xiliulou.electricity.service.merchant.MerchantJoinRecordService;
@@ -82,7 +84,7 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
     private MerchantEmployeeService merchantEmployeeService;
     
     @Resource
-    private UserService userService;
+    private UserInfoService userInfoService;
     
     @Resource
     private MerchantPlaceService merchantPlaceService;
@@ -118,9 +120,9 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
             List<MerchantPromotionFeeEmployeeVO> employeeVOList = merchantEmployees.parallelStream().map(merchantEmployee -> {
                 MerchantPromotionFeeEmployeeVO employeeVO = new MerchantPromotionFeeEmployeeVO();
                 employeeVO.setType(PromotionFeeQueryTypeEnum.MERCHANT_EMPLOYEE.getCode());
-                User user = userService.queryByUidFromCache(merchantEmployee.getUid());
-                if (Objects.nonNull(user)) {
-                    employeeVO.setUserName(user.getName());
+                UserInfo userInfo = userInfoService.queryByUidFromCache(merchantEmployee.getUid());
+                if (Objects.nonNull(userInfo)) {
+                    employeeVO.setUserName(userInfo.getName());
                 }
                 employeeVO.setUid(merchantEmployee.getUid());
                 return employeeVO;
@@ -415,14 +417,14 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
     
     private MerchantPromotionEmployeeDetailVO buildMerchantPromotionEmployeeDetailVO(Long uid, Long placeId) {
         MerchantPromotionEmployeeDetailVO employeeDetailVO = new MerchantPromotionEmployeeDetailVO();
-        User user = userService.queryByUidFromCache(uid);
-        if (Objects.nonNull(user)) {
-            employeeDetailVO.setEmployeeName(user.getName());
-            employeeDetailVO.setUid(user.getUid());
+        UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
+        if (Objects.nonNull(userInfo)) {
+            employeeDetailVO.setEmployeeName(userInfo.getName());
+            employeeDetailVO.setUid(userInfo.getUid());
             
             // 今日预估收入：“返现日期” = 今日，“结算状态” = 未结算；
             MerchantPromotionFeeQueryModel incomeQueryModel = MerchantPromotionFeeQueryModel.builder().status(MerchantConstant.MERCHANT_REBATE_STATUS_NOT_SETTLE)
-                    .type(PromotionFeeQueryTypeEnum.MERCHANT_EMPLOYEE.getCode()).uid(user.getUid()).tenantId(TenantContextHolder.getTenantId())
+                    .type(PromotionFeeQueryTypeEnum.MERCHANT_EMPLOYEE.getCode()).uid(userInfo.getUid()).tenantId(TenantContextHolder.getTenantId())
                     .rebateStartTime(DateUtils.getTodayStartTimeStamp()).rebateEndTime(System.currentTimeMillis()).build();
             BigDecimal todayInCome = rebateRecordService.sumByStatus(incomeQueryModel);
             employeeDetailVO.setTodayIncome(todayInCome);
@@ -470,13 +472,13 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
         
         dataDetailVOList = merchantJoinRecords.parallelStream().map(merchantJoinRecord -> {
             MerchantPromotionDataDetailVO vo = new MerchantPromotionDataDetailVO();
-            User user = userService.queryByUidFromCache(merchantJoinRecord.getJoinUid());
-            log.info("dataDetailVO user={}",JsonUtil.toJson(user));
-            if (Objects.nonNull(user)) {
-                vo.setUid(user.getUid());
+            UserInfo userInfo = userInfoService.queryByUidFromCache(merchantJoinRecord.getJoinUid());
+            log.info("dataDetailVO user={}",JsonUtil.toJson(userInfo));
+            if (Objects.nonNull(userInfo)) {
+                vo.setUid(userInfo.getUid());
                 // 对手机号中间四位脱敏
-                vo.setPhone(PhoneUtils.mobileEncrypt(user.getPhone()));
-                vo.setUserName(user.getName());
+                vo.setPhone(PhoneUtils.mobileEncrypt(userInfo.getPhone()));
+                vo.setUserName(userInfo.getName());
             }
             vo.setScanCodeTime(merchantJoinRecord.getStartTime());
             vo.setStatus(merchantJoinRecord.getStatus());
