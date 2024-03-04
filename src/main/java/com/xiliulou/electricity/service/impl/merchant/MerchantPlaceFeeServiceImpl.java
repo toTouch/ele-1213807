@@ -228,33 +228,41 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
         MerchantCabinetFeeDetailShowVO resVo = new MerchantCabinetFeeDetailShowVO();
         
         // 根据商户id查询所有的柜机的id
-        List<Long> cabinetIdList = merchantPlaceFeeMonthService.selectCabinetIdByMerchantId(request.getMerchantId());
         List<MerchantPlaceFeeMonth> feeMonthsHistory = merchantPlaceFeeMonthService.queryListByMerchantId(request.getMerchantId(), request.getCabinetId(), request.getPlaceId());
         log.info("getCabinetPlaceDetail={}", feeMonthsHistory);
+    
+        List<Long> cabinetIdList = new ArrayList<>();
         
         Map<Long, BigDecimal> feeMonthsHistoryMap = new HashMap<>();
         
         if (ObjectUtils.isNotEmpty(feeMonthsHistory)) {
             feeMonthsHistoryMap = feeMonthsHistory.stream()
                     .collect(Collectors.groupingBy(MerchantPlaceFeeMonth::getCabinetId, Collectors.collectingAndThen(Collectors.toList(), e -> this.sumHistoryFee(e))));
+    
+            List<Long> lastMonthCabinetIdList = feeMonthsHistory.parallelStream().map(MerchantPlaceFeeMonth::getCabinetId).collect(Collectors.toList());
+    
+            if (ObjectUtils.isNotEmpty(lastMonthCabinetIdList)) {
+                cabinetIdList.addAll(lastMonthCabinetIdList);
+            }
         }
         
         // 查询上月
         List<MerchantPlaceFeeMonthDetail> lastMonthFeeRecords = getLastMonthFeeRecords(request);
         log.info("getCabinetPlaceDetail1={}", lastMonthFeeRecords);
         
-        // 添加场地过滤条件
-        if (Objects.nonNull(request.getPlaceId())) {
-            lastMonthFeeRecords = lastMonthFeeRecords.stream().filter(item -> Objects.equals(item.getPlaceId(), request.getPlaceId())).collect(Collectors.toList());
-        }
-        
-        // 添加柜机过滤条件
-        if (Objects.nonNull(request.getCabinetId())) {
-            lastMonthFeeRecords = lastMonthFeeRecords.stream().filter(item -> Objects.equals(item.getCabinetId(), request.getCabinetId())).collect(Collectors.toList());
-        }
         
         Map<Long, BigDecimal> lastMonthCabinetFeeMap = new HashMap<>();
         if (ObjectUtils.isNotEmpty(lastMonthFeeRecords)) {
+            // 添加场地过滤条件
+            if (Objects.nonNull(request.getPlaceId())) {
+                lastMonthFeeRecords = lastMonthFeeRecords.stream().filter(item -> Objects.equals(item.getPlaceId(), request.getPlaceId())).collect(Collectors.toList());
+            }
+    
+            // 添加柜机过滤条件
+            if (Objects.nonNull(request.getCabinetId())) {
+                lastMonthFeeRecords = lastMonthFeeRecords.stream().filter(item -> Objects.equals(item.getCabinetId(), request.getCabinetId())).collect(Collectors.toList());
+            }
+            
             List<Long> lastMonthCabinetIdList = lastMonthFeeRecords.stream().map(MerchantPlaceFeeMonthDetail::getCabinetId).collect(Collectors.toList());
             
             if (ObjectUtils.isNotEmpty(lastMonthCabinetIdList)) {
@@ -269,18 +277,18 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
         List<MerchantPlaceFeeMonthDetail> curMothFeeRecords = getCurMonthFeeRecords(request);
         log.info("getCabinetPlaceDetail2={}", curMothFeeRecords);
         
-        if (Objects.nonNull(request.getPlaceId())) {
-            curMothFeeRecords = curMothFeeRecords.stream().filter(item -> Objects.equals(item.getPlaceId(), request.getPlaceId())).collect(Collectors.toList());
-        }
-        
-        if (Objects.nonNull(request.getCabinetId())) {
-            curMothFeeRecords = curMothFeeRecords.stream().filter(item -> Objects.equals(item.getCabinetId(), request.getCabinetId())).collect(Collectors.toList());
-        }
-        
         Map<Long, BigDecimal> curMonthCabinetFeeMap = new HashMap<>();
         
         // 本月数据处理
         if (ObjectUtils.isNotEmpty(curMothFeeRecords)) {
+            if (Objects.nonNull(request.getPlaceId())) {
+                curMothFeeRecords = curMothFeeRecords.stream().filter(item -> Objects.equals(item.getPlaceId(), request.getPlaceId())).collect(Collectors.toList());
+            }
+    
+            if (Objects.nonNull(request.getCabinetId())) {
+                curMothFeeRecords = curMothFeeRecords.stream().filter(item -> Objects.equals(item.getCabinetId(), request.getCabinetId())).collect(Collectors.toList());
+            }
+            
             List<Long> curMonthCabinetIdList = curMothFeeRecords.stream().map(MerchantPlaceFeeMonthDetail::getCabinetId).distinct().collect(Collectors.toList());
             
             if (ObjectUtils.isNotEmpty(curMonthCabinetIdList)) {
@@ -293,6 +301,7 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
         }
         
         log.info("getCabinetPlaceDetail3={}", cabinetIdList);
+        
         // 历史账单，本月，上月都没有数据则返回空
         if (ObjectUtils.isEmpty(cabinetIdList)) {
             resVo.setCabinetCount(NumberConstant.ZERO);
@@ -310,6 +319,7 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
         Map<Long, BigDecimal> finalLastMonthCabinetFeeMap = lastMonthCabinetFeeMap;
         
         log.info("getCabinetPlaceDetail4,a={},b={},c={}", finalCurMonthCabinetFeeMap, finalFeeMonthsHistoryMap, finalLastMonthCabinetFeeMap);
+        
         cabinetIds.forEach(cabinetId -> {
             MerchantPlaceCabinetFeeDetailVO vo = new MerchantPlaceCabinetFeeDetailVO();
             ElectricityCabinet cabinet = electricityCabinetService.queryByIdFromCache(cabinetId.intValue());
@@ -348,6 +358,8 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
         });
         
         resList.stream().sorted(Comparator.comparing(MerchantPlaceCabinetFeeDetailVO::getTime).reversed());
+    
+//        List<Integer> subList = resList.subList((request.getOffset() - 1) * request.getSize(), request.getOffset() * request.getSize());
         
         resVo.setCabinetFeeDetailList(resList);
         resVo.setCabinetCount(resList.size());
@@ -946,6 +958,10 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
         if (Objects.nonNull(request.getCabinetId())) {
             list = list.stream().filter(item -> Objects.equals(item.getCabinetId(), request.getCabinetId())).collect(Collectors.toList());
         }
+    
+        if (ObjectUtils.isEmpty(list)) {
+            return BigDecimal.ZERO;
+        }
         
         AtomicReference<BigDecimal> fee = new AtomicReference<>();
         fee.set(BigDecimal.ZERO);
@@ -1191,6 +1207,10 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
         // 根据柜机id进行过滤
         if (Objects.nonNull(request.getCabinetId())) {
             list = list.stream().filter(item -> Objects.equals(item.getCabinetId(), request.getCabinetId())).collect(Collectors.toList());
+        }
+    
+        if (ObjectUtils.isEmpty(list)) {
+            return BigDecimal.ZERO;
         }
         
         AtomicReference<BigDecimal> fee = new AtomicReference<>();

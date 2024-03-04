@@ -21,4 +21,7 @@ public class MerchantCabinetFeeDetailShowVO {
      */
     private Integer cabinetCount;
     
+    private Integer total;
+    
+    
 }

@@ -26,4 +26,9 @@ public class MerchantPlaceFeeRequest {
     private Long endTime;
     
     private String month;
+    
+    private Integer size;
+    
+    private Integer offset;
+    
 }
