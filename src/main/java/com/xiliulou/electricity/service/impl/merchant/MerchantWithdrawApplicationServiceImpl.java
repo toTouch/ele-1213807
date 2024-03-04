@@ -512,6 +512,7 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
         List<MerchantWithdrawApplicationVO> merchantWithdrawApplicationVOList = merchantWithdrawApplicationMapper.selectListByCondition(merchantWithdrawApplicationRequest);
         
         merchantWithdrawApplicationVOList.forEach(merchantWithdrawApplicationVO -> {
+            log.info("query merchant withdraw application, result = {}", merchantWithdrawApplicationVO);
             MerchantWithdrawApplicationRecord merchantWithdrawApplicationRecord = merchantWithdrawApplicationRecordService.selectByOrderNo(merchantWithdrawApplicationVO.getOrderNo(), merchantWithdrawApplicationVO.getTenantId());
             if(Objects.nonNull(merchantWithdrawApplicationRecord)){
                 merchantWithdrawApplicationVO.setFailReason(merchantWithdrawApplicationRecord.getRemark());
