@@ -1,18 +1,26 @@
 package com.xiliulou.electricity.service.faq.impl;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.collection.CollectionUtil;
+import com.xiliulou.electricity.bo.faq.FaqV2BO;
 import com.xiliulou.electricity.entity.faq.FaqCategoryV2;
+import com.xiliulou.electricity.entity.faq.FaqV2;
 import com.xiliulou.electricity.mapper.faq.FaqCategoryV2Mapper;
+import com.xiliulou.electricity.mapper.faq.FaqV2Mapper;
 import com.xiliulou.electricity.reqparam.faq.AdminFaqCategoryReq;
 import com.xiliulou.electricity.service.faq.FaqCategoryV2Service;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.faq.FaqCategoryVo;
+import com.xiliulou.electricity.vo.faq.FaqListVos;
 import lombok.AllArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -27,6 +35,9 @@ import java.util.stream.Collectors;
 public class FaqCategoryV2ServiceImpl implements FaqCategoryV2Service {
     
     private final FaqCategoryV2Mapper faqCategoryV2Mapper;
+    
+    @Autowired
+    private FaqV2Mapper faqV2Mapper;
     
     @Override
     public void saveFaqCategory(AdminFaqCategoryReq faqCategoryReq) {
@@ -55,15 +66,22 @@ public class FaqCategoryV2ServiceImpl implements FaqCategoryV2Service {
     
     @Override
     public List<FaqCategoryVo> listFaqCategory() {
-        List<FaqCategoryV2> faqCategories = faqCategoryV2Mapper.selectListByTenantId(TenantContextHolder.getTenantId());
-        if (Objects.isNull(faqCategories)) {
+        List<FaqV2BO> faqBos = faqCategoryV2Mapper.selectLeftJoinByParams(TenantContextHolder.getTenantId());
+        
+        if (CollectionUtil.isEmpty(faqBos)) {
             return null;
         }
         
-        return faqCategories.stream().map(faqCategory -> {
+        Map<Long, List<FaqV2BO>> collect = faqBos.parallelStream().collect(Collectors.groupingBy(FaqV2BO::getTypeId));
+        
+        return collect.entrySet().parallelStream().map(faqCategory -> {
             FaqCategoryVo faqCategoryVo = new FaqCategoryVo();
+            faqCategoryVo.setId(faqCategory.getKey());
+            faqCategoryVo.setType(faqCategory.getValue().get(0).getType());
+            faqCategoryVo.setSort(faqCategory.getValue().get(0).getTypeSort());
+            faqCategoryVo.setCount(faqCategory.getValue().size());
             BeanUtil.copyProperties(faqCategory, faqCategoryVo);
             return faqCategoryVo;
-        }).collect(Collectors.toList());
+        }).sorted(Comparator.comparing(FaqCategoryVo::getSort)).collect(Collectors.toList());
     }
 }

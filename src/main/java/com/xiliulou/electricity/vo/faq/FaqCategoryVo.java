@@ -13,4 +13,7 @@ public class FaqCategoryVo {
     private String type;
     
     private BigDecimal sort;
+    
+    private Integer count;
+    
 }

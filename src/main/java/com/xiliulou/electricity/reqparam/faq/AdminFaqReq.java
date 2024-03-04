@@ -45,7 +45,7 @@ public class AdminFaqReq {
     /**
      * 排序
      */
-    @NotNull(message = "sort不能为空", groups = {CreateGroup.class, UpdateGroup.class})
+    @NotNull(message = "sort不能为空", groups = {UpdateGroup.class})
     private BigDecimal sort;
     
     /**
