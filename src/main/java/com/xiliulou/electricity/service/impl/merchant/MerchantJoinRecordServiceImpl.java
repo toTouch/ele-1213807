@@ -252,17 +252,14 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
             
             // 保存参与记录
             MerchantJoinRecord record = this.assembleRecord(merchantId, inviterUid, inviterType, joinUid, channelEmployeeUid, placeId, merchantAttr, tenant.getId());
-            
+            Integer result = merchantJoinRecordMapper.insertOne(record);
+    
             // 将旧的已参与记录改为已失效
-            if (Objects.nonNull(needUpdatedToInvalidRecord)) {
+            if (Objects.nonNull(needUpdatedToInvalidRecord) && Objects.nonNull(result)) {
                 MerchantJoinRecordQueryModel queryModel = MerchantJoinRecordQueryModel.builder().joinUid(needUpdatedToInvalidRecord.getJoinUid())
                         .status(MerchantJoinRecord.STATUS_INVALID).updateTime(System.currentTimeMillis()).build();
-                
-                Integer result = this.updateStatus(queryModel);
-                if (Objects.nonNull(result)) {
-                    // 保存新的参与记录
-                    merchantJoinRecordMapper.insertOne(record);
-                }
+        
+                this.updateStatus(queryModel);
             }
             
             return R.ok();
