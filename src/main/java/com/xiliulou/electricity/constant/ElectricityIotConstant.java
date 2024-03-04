@@ -153,8 +153,10 @@ public class ElectricityIotConstant {
     public static final String ELE_COMMAND_COMPLETE_EXCHANGE_ORDER_RSP = "complete_exchange_order_rsp";
     //租电池
     public static final String ELE_COMMAND_RENT_ORDER_RSP = "rent_order_rsp";
+    public static final String ELE_COMMAND_RENT_ORDER_RSP_ACK = "rent_order_rsp_ack";
     //还电池
     public static final String ELE_COMMAND_RETURN_ORDER_RSP = "return_order_rsp";
+    public static final String ELE_COMMAND_RETURN_ORDER_RSP_ACK = "return_order_rsp_ack";
 
     public static final String ELE_COMMAND_SELF_OPEN_CELL_RSP = "self_open_cell_rsp";
     /**
