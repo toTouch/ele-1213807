@@ -358,6 +358,8 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
         });
         
         resList.stream().sorted(Comparator.comparing(MerchantPlaceCabinetFeeDetailVO::getTime).reversed());
+    
+//        List<Integer> subList = resList.subList((request.getOffset() - 1) * request.getSize(), request.getOffset() * request.getSize());
         
         resVo.setCabinetFeeDetailList(resList);
         resVo.setCabinetCount(resList.size());
@@ -956,6 +958,10 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
         if (Objects.nonNull(request.getCabinetId())) {
             list = list.stream().filter(item -> Objects.equals(item.getCabinetId(), request.getCabinetId())).collect(Collectors.toList());
         }
+    
+        if (ObjectUtils.isEmpty(list)) {
+            return BigDecimal.ZERO;
+        }
         
         AtomicReference<BigDecimal> fee = new AtomicReference<>();
         fee.set(BigDecimal.ZERO);
@@ -1201,6 +1207,10 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
         // 根据柜机id进行过滤
         if (Objects.nonNull(request.getCabinetId())) {
             list = list.stream().filter(item -> Objects.equals(item.getCabinetId(), request.getCabinetId())).collect(Collectors.toList());
+        }
+    
+        if (ObjectUtils.isEmpty(list)) {
+            return BigDecimal.ZERO;
         }
         
         AtomicReference<BigDecimal> fee = new AtomicReference<>();

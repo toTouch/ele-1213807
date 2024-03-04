@@ -102,7 +102,7 @@ public class JsonUserMerchantCabinetPlaceController extends BaseController {
     @GetMapping({"/merchant/place/getFeeData", "/admin/merchant/place/getFeeData"})
     public R getFeeData(@RequestParam(value = "placeId", required = false) Long placeId,
             @RequestParam(value = "cabinetId", required = false) Long cabinetId) {
-        TokenUser user = SecurityUtils.getUserInfo();
+        /*TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
 //            return R.fail("ELECTRICITY.0001", "未找到用户");
         }
@@ -111,8 +111,8 @@ public class JsonUserMerchantCabinetPlaceController extends BaseController {
         if (Objects.isNull(merchant)) {
             log.error("merchant place is Show Place Page merchant is null, uid={}", user.getUid());
 //            return R.fail("ELECTRICITY.0001", "未找到用户");
-        }
-        merchant = new Merchant();
+        }*/
+        Merchant merchant = new Merchant();
     
         MerchantPlaceFeeRequest request = MerchantPlaceFeeRequest.builder().merchantId(merchant.getId()).placeId(placeId).cabinetId(cabinetId).build();
         
