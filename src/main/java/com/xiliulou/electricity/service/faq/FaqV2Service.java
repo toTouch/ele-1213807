@@ -54,7 +54,7 @@ public interface FaqV2Service {
     
     R queryDetail(Long id);
     
-    List<FaqListVos> listFaqQueryForBackstage(AdminFaqQuery faqQuery);
+    List<FaqListVos> listFaqQueryResult(AdminFaqQuery faqQuery);
     
     List<FaqListVos> listFaqQueryForApp(AdminFaqQuery faqQuery);
 }
