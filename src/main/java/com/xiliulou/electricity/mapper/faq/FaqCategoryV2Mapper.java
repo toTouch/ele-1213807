@@ -30,6 +30,7 @@ public interface FaqCategoryV2Mapper extends BaseMapper<FaqCategoryV2> {
     
     List<FaqCategoryV2> selectListByTenantId(@Param(value = "tenantId") Integer tenantId);
     
+    Integer countFaqCategoryByTenantId(FaqCategoryV2 faqCategory);
 }
 
 
