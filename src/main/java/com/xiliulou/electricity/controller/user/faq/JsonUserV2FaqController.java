@@ -66,14 +66,13 @@ public class JsonUserV2FaqController {
     }
     
     /**
-     * 添加常见问题分类
+     * 查看常见问题分类
      *
      * @author kuz
      * @date 2024/2/23 16:11
      */
-    @PostMapping("/admin/faq/category/add/v2")
-    public R add(@RequestBody @Validated(value = CreateGroup.class) AdminFaqCategoryReq faqCategoryReq) {
-        faqCategoryV2Service.saveFaqCategory(faqCategoryReq);
-        return R.ok();
+    @GetMapping("/user/faq/category/page/v2")
+    public R query() {
+        return R.ok(faqCategoryV2Service.listFaqCategory());
     }
 }
