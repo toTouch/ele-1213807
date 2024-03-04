@@ -3,7 +3,7 @@ package com.xiliulou.electricity.mapper.merchant;
 import com.xiliulou.electricity.entity.merchant.MerchantWithdrawApplicationRecord;
 import com.xiliulou.electricity.request.merchant.MerchantWithdrawApplicationRecordRequest;
 import com.xiliulou.electricity.vo.merchant.MerchantWithdrawApplicationRecordVO;
-import feign.Param;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
