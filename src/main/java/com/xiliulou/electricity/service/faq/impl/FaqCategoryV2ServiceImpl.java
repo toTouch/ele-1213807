@@ -42,7 +42,7 @@ public class FaqCategoryV2ServiceImpl implements FaqCategoryV2Service {
     @Override
     public void saveFaqCategory(AdminFaqCategoryReq faqCategoryReq) {
         FaqCategoryV2 faqCategory = BeanUtil.toBean(faqCategoryReq, FaqCategoryV2.class);
-        Integer count = faqCategoryV2Mapper.countFaqCategoryByTenantId(faqCategory);
+        Integer count = faqCategoryV2Mapper.countFaqCategoryByTenantId(TenantContextHolder.getTenantId());
         count = count == null ? 0 : count;
         
         faqCategory.setSort(BigDecimal.valueOf(count + 1));

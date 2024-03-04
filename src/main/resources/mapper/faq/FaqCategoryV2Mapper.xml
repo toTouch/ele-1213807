@@ -110,7 +110,7 @@
     </delete>
     
     <select id="selectLeftJoinByParams" resultType="com.xiliulou.electricity.bo.faq.FaqV2BO">
-        select f.id as id,f.type_id as type_id,c.type as type,c.sort as type_sort
+        select f.id as id,c.id as type_id,c.type as type,c.sort as type_sort
         FROM t_faq_category c left join t_new_faq f ON f.type_id = c.id
         <where>
             <if test="tenantId != null">
