@@ -28,6 +28,7 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -83,17 +84,21 @@ public class RebateConfigServiceImpl implements RebateConfigService {
     @Slave
     @Override
     public List<RebateConfigVO> listByPage(RebateConfigRequest rebateConfigRequest) {
+        List<MerchantLevel> merchantLevels = merchantLevelService.listByTenantId(TenantContextHolder.getTenantId());
+        
         List<RebateConfig> rebateConfigs = this.rebateConfigMapper.selectByPage(rebateConfigRequest);
-        if (CollectionUtils.isEmpty(rebateConfigs)) {
+        if (CollectionUtils.isEmpty(rebateConfigs) || CollectionUtils.isEmpty(merchantLevels)) {
             return Collections.emptyList();
         }
-        
+    
+        Map<String, String> merchantLevelMap = merchantLevels.stream().collect(Collectors.toMap(MerchantLevel::getLevel, MerchantLevel::getName, (k1, k2) -> k1));
+    
         return rebateConfigs.stream().map(item -> {
             RebateConfigVO rebateConfigVO = new RebateConfigVO();
             BeanUtils.copyProperties(item, rebateConfigVO);
     
-            MerchantLevel merchantLevel = merchantLevelService.queryByMerchantLevelAndTenantId(item.getLevel(), item.getTenantId());
-            rebateConfigVO.setLevelName(Objects.nonNull(merchantLevel) ? merchantLevel.getName() : "");
+//            MerchantLevel merchantLevel = merchantLevelService.queryByMerchantLevelAndTenantId(item.getLevel(), item.getTenantId());
+            rebateConfigVO.setLevelName(merchantLevelMap.getOrDefault(item.getLevel(), ""));
             
             BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(item.getMid());
             if (Objects.nonNull(batteryMemberCard)) {
