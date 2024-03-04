@@ -583,10 +583,37 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
     @Slave
     @Override
     public MerchantProPowerLineVO lineData(MerchantCabinetPowerRequest request) {
+        // 查询月份
+        List<String> monthList = getMonthList(request.getStartTime(), request.getEndTime());
+        if (CollectionUtils.isEmpty(monthList)) {
+            log.warn("Merchant power for pro lineData, monthList is empty, uid={}, startTime={}, endTime={}", request.getUid(), request.getStartTime(), request.getEndTime());
+            return null;
+        }
+    
+        // 初始化
+        MerchantProPowerLineVO vo = new MerchantProPowerLineVO();
+        List<MerchantProPowerLineDataVO> powerList = new ArrayList<>();
+        List<MerchantProPowerChargeLineDataVO> chargeList = new ArrayList<>();
+
+        for (String monthDate : monthList) {
+            MerchantProPowerLineDataVO powerData = new MerchantProPowerLineDataVO();
+            powerData.setMonthDate(monthDate);
+            powerData.setPower(NumberConstant.ZERO_D);
+            powerList.add(powerData);
+    
+            MerchantProPowerChargeLineDataVO chargeData = new MerchantProPowerChargeLineDataVO();
+            chargeData.setMonthDate(monthDate);
+            chargeData.setCharge(NumberConstant.ZERO_D);
+            chargeList.add(chargeData);
+        }
+    
+        vo.setPowerList(powerList);
+        vo.setChargeList(chargeList);
+        
         Merchant merchant = merchantService.queryByUid(request.getUid());
         if (Objects.isNull(merchant)) {
             log.warn("Merchant power for pro lineData, merchant not exist, uid={}", request.getUid());
-            return null;
+            return vo;
         }
         
         request.setMerchantId(merchant.getId());
@@ -595,17 +622,7 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
         List<Long> cabinetIds = getStaticsCabinetIds(request);
         if (CollectionUtils.isEmpty(cabinetIds)) {
             log.warn("Merchant power for pro lineData, cabinetIds is empty, uid={}", request.getUid());
-            return null;
-        }
-        
-        // 查询的月份
-        List<MerchantProPowerLineDataVO> powerList = new ArrayList<>();
-        List<MerchantProPowerChargeLineDataVO> chargeList = new ArrayList<>();
-        
-        List<String> monthList = getMonthList(request.getStartTime(), request.getEndTime());
-        if (CollectionUtils.isEmpty(monthList)) {
-            log.warn("Merchant power for pro lineData, monthList is empty, uid={}", request.getUid());
-            return null;
+            return vo;
         }
         
         // 上个月的数据需要实时获取，历史记录只统计到上上个月
@@ -618,12 +635,12 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
         //电量
         MerchantProPowerLineDataVO lastMonthPowerVO = new MerchantProPowerLineDataVO();
         lastMonthPowerVO.setMonthDate(lastMonthDate);
-        lastMonthPowerVO.setPower(Optional.ofNullable(lastMonthPower.getCharge()).orElse(NumberConstant.ZERO_D));
+        lastMonthPowerVO.setPower(Objects.isNull(lastMonthPower) ? NumberConstant.ZERO_D : lastMonthPower.getPower());
         powerList.add(lastMonthPowerVO);
         
         MerchantProPowerChargeLineDataVO lastMonthChargeVO = new MerchantProPowerChargeLineDataVO();
         lastMonthChargeVO.setMonthDate(lastMonthDate);
-        lastMonthChargeVO.setCharge(Optional.ofNullable(lastMonthPower.getCharge()).orElse(NumberConstant.ZERO_D));
+        lastMonthChargeVO.setCharge(Objects.isNull(lastMonthPower) ? NumberConstant.ZERO_D : lastMonthPower.getCharge());
         chargeList.add(lastMonthChargeVO);
         
         // 2.统计2个月前的历史数据
@@ -649,15 +666,6 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
             chargeList.add(charge);
         }
         
-        if (CollectionUtils.isEmpty(powerList)) {
-            powerList = Collections.emptyList();
-        }
-        
-        if (CollectionUtils.isEmpty(chargeList)) {
-            chargeList = Collections.emptyList();
-        }
-        
-        MerchantProPowerLineVO vo = new MerchantProPowerLineVO();
         vo.setPowerList(powerList);
         vo.setChargeList(chargeList);
         
