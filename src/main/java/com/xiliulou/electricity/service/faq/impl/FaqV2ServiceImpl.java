@@ -24,6 +24,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.beans.BeanUtils;
 import org.springframework.cglib.beans.BeanMap;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import java.math.BigDecimal;
 import java.util.Collections;
@@ -161,13 +162,17 @@ public class FaqV2ServiceImpl implements FaqV2Service {
         BeanUtils.copyProperties(faqQuery, faqV2);
         List<FaqV2BO> faqVos = faqV2Mapper.selectLeftJoinByParams(faqV2);
         
-        // 模糊返回全部
         if (CollectionUtil.isEmpty(faqVos)) {
+            return null;
+        }
+        
+        // 模糊返回全部
+        if (!StringUtils.isEmpty(faqQuery.getTitle())) {
             return faqVos.stream().map(e -> {
-                FaqVo faqVo = new FaqVo();
-                BeanUtils.copyProperties(e, faqVo);
-                return faqVo;
-            }).sorted(Comparator.comparing(FaqVo::getTypeSort).thenComparing(FaqVo::getSort))
+                        FaqVo faqVo = new FaqVo();
+                        BeanUtils.copyProperties(e, faqVo);
+                        return faqVo;
+                    }).sorted(Comparator.comparing(FaqVo::getTypeSort).thenComparing(FaqVo::getSort))
                     .collect(Collectors.toList());
         }
         

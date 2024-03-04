@@ -32,7 +32,7 @@ public interface FaqV2Mapper extends BaseMapper<FaqV2> {
     
     List<FaqV2BO> selectLeftJoinByParams(@Param(value = "params") FaqV2 params);
     
-    List<FaqV2> selectListByParams(FaqV2 params);
+    List<FaqV2> selectListByParams(@Param(value = "params") FaqV2 params);
     
     List<FaqV2> selectListByParamsPage(@Param(value = "params") FaqV2 params,
             @Param(value = "pageOffset") Object pageOffset,

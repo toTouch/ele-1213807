@@ -8,8 +8,10 @@ import com.xiliulou.electricity.service.faq.FaqV2Service;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import lombok.AllArgsConstructor;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Collections;
@@ -44,6 +46,17 @@ public class JsonUserV2FaqController {
             return R.ok(Collections.emptyList());
         }
         return R.ok(faqV2Service.listFaqQueryResult(faqQuery));
+    }
+    
+    /**
+     * 获取常见问题详情
+     *
+     * @author kuz
+     * @date 2024/2/23 16:11
+     */
+    @GetMapping("/user/faq/detail/v2")
+    public R detail(@RequestParam Long id) {
+        return faqV2Service.queryDetail(id);
     }
     
     
