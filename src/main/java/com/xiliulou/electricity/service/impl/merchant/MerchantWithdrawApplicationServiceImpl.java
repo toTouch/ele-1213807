@@ -512,6 +512,7 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
         List<MerchantWithdrawApplicationVO> merchantWithdrawApplicationVOList = merchantWithdrawApplicationMapper.selectListByCondition(merchantWithdrawApplicationRequest);
         
         merchantWithdrawApplicationVOList.forEach(merchantWithdrawApplicationVO -> {
+            log.info("query merchant withdraw application, result = {}", merchantWithdrawApplicationVO);
             MerchantWithdrawApplicationRecord merchantWithdrawApplicationRecord = merchantWithdrawApplicationRecordService.selectByOrderNo(merchantWithdrawApplicationVO.getOrderNo(), merchantWithdrawApplicationVO.getTenantId());
             if(Objects.nonNull(merchantWithdrawApplicationRecord)){
                 merchantWithdrawApplicationVO.setFailReason(merchantWithdrawApplicationRecord.getRemark());
@@ -545,6 +546,9 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
 
         while(true) {
             List<MerchantWithdrawApplication> merchantWithdrawApplications = merchantWithdrawApplicationMapper.selectListForWithdrawInProgress(checkTime, offset, size);
+            if(CollectionUtils.isEmpty(merchantWithdrawApplications)){
+                return;
+            }
 
             //根据批次号循环调用第三方接口查询提现结果状态
             merchantWithdrawApplications.forEach(merchantWithdrawApplication -> {
