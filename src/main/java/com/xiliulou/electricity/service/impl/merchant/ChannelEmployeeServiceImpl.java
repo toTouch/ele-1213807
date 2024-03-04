@@ -5,6 +5,7 @@ import com.xiliulou.core.i18n.MessageUtils;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.CommonConstant;
+import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.constant.merchant.MerchantConstant;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.User;
@@ -279,7 +280,7 @@ public class ChannelEmployeeServiceImpl implements ChannelEmployeeService {
         User updateUser = new User();
     
         // 如果是禁用，则将用户置为锁定
-        if (Objects.equals(channelEmployeeRequest.getStatus(), MerchantConstant.DISABLE)) {
+        if (Objects.equals(channelEmployeeRequest.getStatus(), MerchantConstant.DISABLE) || !Objects.equals(user.getPhone(), channelEmployeeRequest.getPhone())) {
             updateUser.setLockFlag(User.USER_LOCK);
         } else  {
             updateUser.setLockFlag(User.USER_UN_LOCK);
@@ -297,7 +298,11 @@ public class ChannelEmployeeServiceImpl implements ChannelEmployeeService {
         channelEmployeeUpdate.setId(channelEmployeeRequest.getId());
         //channelEmployeeUpdate.setUid(channelEmployee.getUid());
         //channelEmployeeUpdate.setTenantId(tenantId);
-        channelEmployeeUpdate.setAreaId(channelEmployeeRequest.getAreaId());
+        if(channelEmployeeRequest.getAreaId() != null){
+            channelEmployeeUpdate.setAreaId(channelEmployeeRequest.getAreaId());
+        } else {
+            channelEmployeeUpdate.setAreaId(NumberConstant.ZERO_L);
+        }
     
         channelEmployeeUpdate.setUpdateTime(System.currentTimeMillis());
     
