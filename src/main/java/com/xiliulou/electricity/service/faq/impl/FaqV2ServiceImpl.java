@@ -102,16 +102,11 @@ public class FaqV2ServiceImpl implements FaqV2Service {
             return;
         }
         
-        ArrayList<FaqV2> faqV2s = new ArrayList<>();
-        long updateTime = System.currentTimeMillis();
-        faqUpDownReq.getIds().forEach(id -> {
-            FaqV2 faqV2 = new FaqV2();
-            faqV2.setId(id);
-            faqV2.setOnShelf(faqUpDownReq.getOnShelf());
-            faqV2.setUpdateTime(updateTime);
-            faqV2s.add(faqV2);
-        });
-        faqV2Mapper.batchUpdateByIds(faqV2s);
+        FaqV2 faqV2 = new FaqV2();
+        faqV2.setOnShelf(faqUpDownReq.getOnShelf());
+        faqV2.setUpdateTime(System.currentTimeMillis());
+        
+        faqV2Mapper.batchUpdateByIds(faqV2,faqUpDownReq.getIds());
         
     }
     
@@ -127,16 +122,10 @@ public class FaqV2ServiceImpl implements FaqV2Service {
             return R.fail("该类型下的常见问题不能超过" + FaqV2.SIMILAR_FAQ_LIMIT + "个");
         }
         
-        ArrayList<FaqV2> faqV2s = new ArrayList<>();
-        long updateTime = System.currentTimeMillis();
-        ids.forEach(id -> {
-            FaqV2 faqV2 = new FaqV2();
-            faqV2.setId(id);
-            faqV2.setTypeId(faqChangeTypeReq.getTypeId());
-            faqV2.setUpdateTime(updateTime);
-            faqV2s.add(faqV2);
-        });
-        faqV2Mapper.batchUpdateByIds(faqV2s);
+        FaqV2 faqV2 = new FaqV2();
+        faqV2.setTypeId(faqChangeTypeReq.getTypeId());
+        faqV2.setUpdateTime(System.currentTimeMillis());
+        faqV2Mapper.batchUpdateByIds(faqV2,faqChangeTypeReq.getIds());
         return R.ok();
     }
     
