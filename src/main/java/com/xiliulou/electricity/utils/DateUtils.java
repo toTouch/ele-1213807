@@ -278,6 +278,11 @@ public class DateUtils {
         return fmt.format(new Date(time1)).equals(fmt.format(new Date(time2)));
     }
     
+    public static boolean isSameMonth(long time1, long time2) {
+        SimpleDateFormat fmt = new SimpleDateFormat("yyyyMM");
+        return fmt.format(new Date(time1)).equals(fmt.format(new Date(time2)));
+    }
+    
     /**
      * 根据时间戳获取当天0点的时间戳
      */

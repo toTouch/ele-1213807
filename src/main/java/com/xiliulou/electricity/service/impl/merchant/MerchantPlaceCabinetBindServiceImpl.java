@@ -21,6 +21,7 @@ import com.xiliulou.electricity.service.merchant.MerchantPlaceCabinetBindService
 import com.xiliulou.electricity.service.merchant.MerchantPlaceMapService;
 import com.xiliulou.electricity.service.merchant.MerchantPlaceService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
+import com.xiliulou.electricity.utils.DateUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.merchant.MerchantPlaceCabinetBindTimeCheckVo;
 import com.xiliulou.electricity.vo.merchant.MerchantPlaceCabinetBindVO;
@@ -285,11 +286,19 @@ public class MerchantPlaceCabinetBindServiceImpl implements MerchantPlaceCabinet
             log.error("place bind delete error, data not find, id ={}", id);
             return Triple.of(false, "120228", "绑定记录不存在");
         }
+    
+        long currentTimeMillis = System.currentTimeMillis();
+    
+        // 检测创建时间是否在当前本月 如果是本月则不允许进行删除
+        if (!DateUtils.isSameMonth(cabinetBind.getCreateTime(), currentTimeMillis)) {
+            log.error("place bind delete error, data not find, id ={}", id);
+            return Triple.of(false, "120228", "仅可删除本月内创建的记录");
+        }
         
         MerchantPlaceCabinetBind update = new MerchantPlaceCabinetBind();
         update.setId(id);
         update.setDelFlag(MerchantPlaceConstant.DEL_DEL);
-        update.setUpdateTime(System.currentTimeMillis());
+        update.setUpdateTime(currentTimeMillis);
         
         merchantPlaceCabinetBindMapper.remove(update);
         
