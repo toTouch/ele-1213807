@@ -543,6 +543,8 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
 
         int offset = 0;
         int size = 200;
+        
+        log.info("Merchant withdraw application update status task start.");
 
         while(true) {
             List<MerchantWithdrawApplication> merchantWithdrawApplications = merchantWithdrawApplicationMapper.selectListForWithdrawInProgress(checkTime, offset, size);
