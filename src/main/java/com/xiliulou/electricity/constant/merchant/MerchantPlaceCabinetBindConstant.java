@@ -64,4 +64,9 @@ public class MerchantPlaceCabinetBindConstant {
      * 商户场地绑定记录：小程序端结算类型
      */
     public static final Integer MERCHANT_PLACE_SETTLE_TYPE_POWER_PRO = 2;
+    
+    /**
+     * 场地柜机在最后一天是否解绑了:0 :否 1:是
+     */
+    public static final Integer CABINET_END_UN_BIND = 0;
 }

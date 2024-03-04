@@ -78,4 +78,9 @@ public class MerchantPlaceFeeMonthDetail {
      * 计算所在的月份
      */
     private String calculateMonth;
+    
+    /**
+     * 柜机与场地是否绑定：0:绑定，1：解绑
+     */
+    private Integer cabinetPlaceBindStatus;
 }

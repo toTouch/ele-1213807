@@ -90,7 +90,8 @@
         resultType="com.xiliulou.electricity.vo.merchant.MerchantPlaceCabinetBindVO">
         select t.place_id,
         t.cabinet_id,
-        b.`name` as 'cabinetName'
+        b.`name` as 'cabinetName',
+        b.sn as 'cabinetSn'
         from t_merchant_place_cabinet_bind t
         left join t_electricity_cabinet b on b.id = t.cabinet_id
         <where>

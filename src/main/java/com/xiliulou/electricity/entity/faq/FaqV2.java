@@ -1,12 +1,13 @@
 package com.xiliulou.electricity.entity.faq;
 
+import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 import lombok.experimental.Accessors;
 
 import java.math.BigDecimal;
 
 @Data
-@Accessors(chain = true)
+@TableName("t_new_faq")
 public class FaqV2 {
     
     /**
@@ -58,6 +59,11 @@ public class FaqV2 {
      * 租户id
      */
     private Integer tenantId;
+    
+    /**
+     * 同类问题上限
+     */
+    public static final Integer SIMILAR_FAQ_LIMIT = 100;
     
     
 }

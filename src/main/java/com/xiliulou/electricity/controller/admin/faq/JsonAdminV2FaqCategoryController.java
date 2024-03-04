@@ -35,9 +35,9 @@ public class JsonAdminV2FaqCategoryController {
      * @author kuz
      * @date 2024/2/23 16:11
      */
-    @GetMapping("/admin/v2/faq/category/page")
+    @GetMapping("/admin/faq/category/page/v2")
     public R query() {
-        return R.ok(faqCategoryV2Service.page());
+        return R.ok(faqCategoryV2Service.listFaqCategory());
     }
     
     /**
@@ -46,9 +46,9 @@ public class JsonAdminV2FaqCategoryController {
      * @author kuz
      * @date 2024/2/23 16:11
      */
-    @PostMapping("/admin/v2/faq/category/add")
+    @PostMapping("/admin/faq/category/add/v2")
     public R add(@RequestBody @Validated(value = CreateGroup.class) AdminFaqCategoryReq faqCategoryReq) {
-        faqCategoryV2Service.add(faqCategoryReq);
+        faqCategoryV2Service.saveFaqCategory(faqCategoryReq);
         return R.ok();
     }
     
@@ -59,9 +59,9 @@ public class JsonAdminV2FaqCategoryController {
      * @author kuz
      * @date 2024/2/23 16:11
      */
-    @PostMapping("/admin/v2/faq/category/edit")
+    @PostMapping("/admin/faq/category/edit/v2")
     public R edit(@RequestBody @Validated(value = UpdateGroup.class) AdminFaqCategoryReq faqCategoryReq) {
-        faqCategoryV2Service.edit(faqCategoryReq);
+        faqCategoryV2Service.editFaqCategory(faqCategoryReq);
         return R.ok();
     }
     
@@ -71,7 +71,7 @@ public class JsonAdminV2FaqCategoryController {
      * @author kuz
      * @date 2024/2/23 16:11
      */
-    @DeleteMapping("/admin/v2/faq/category/detele/{id}")
+    @DeleteMapping("/admin/faq/category/v2/{id}")
     public R delete(@PathVariable Long id) {
         faqV2Service.removeByCategoryId(id);
         return R.ok();

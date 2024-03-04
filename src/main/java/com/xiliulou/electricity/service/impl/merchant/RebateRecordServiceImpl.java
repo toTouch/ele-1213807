@@ -179,6 +179,7 @@ public class RebateRecordServiceImpl implements RebateRecordService {
         RebateRecord rebateRecordUpdate = new RebateRecord();
         rebateRecordUpdate.setId(rebateRecord.getId());
         rebateRecordUpdate.setStatus(MerchantConstant.MERCHANT_REBATE_STATUS_SETTLED);
+        rebateRecordUpdate.setSettleTime(System.currentTimeMillis());
         rebateRecordUpdate.setUpdateTime(System.currentTimeMillis());
         applicationContext.getBean(RebateRecordService.class).updateById(rebateRecordUpdate);
     }

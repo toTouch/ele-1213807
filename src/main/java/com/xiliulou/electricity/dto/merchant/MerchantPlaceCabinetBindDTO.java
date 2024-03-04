@@ -91,4 +91,9 @@ public class MerchantPlaceCabinetBindDTO {
      */
     private Long updateTime;
     
+    /**
+     * 场地柜机在最后一天是否解绑了:0 :否 1:是
+     */
+    private Integer cabinetEndBind;
+    
 }

@@ -374,7 +374,7 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
             log.warn("Merchant power for pro cabinetPowerDetail, merchant not exist, uid={}", request.getUid());
             return null;
         }
-        
+    
         request.setMerchantId(merchant.getId());
         
         //获取要查询的柜机
@@ -664,6 +664,7 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
             return null;
         }
         List<MerchantPlaceBind> bindList = merchantPlaceBindService.listByMerchantId(merchant.getId(), null);
+        
         if (CollectionUtils.isNotEmpty(bindList)) {
             return NumberConstant.ONE;
         }
@@ -983,8 +984,17 @@ class CabinetPowerProRunnable implements Callable<List<MerchantProPowerDetailVO>
             MerchantProPowerDetailVO current = detailList.get(i);
             MerchantProPowerDetailVO next = detailList.get(i + 1);
             
-            if (Objects.equals(DateUtils.getStartTimeByTimeStamp(current.getStartTime()), DateUtils.getStartTimeByTimeStamp(next.getEndTime()))) {
+            if (Objects.equals(DateUtils.getStartTimeByTimeStamp(current.getEndTime()), DateUtils.getStartTimeByTimeStamp(next.getStartTime()))) {
                 current.setEndTime(next.getEndTime());
+                
+                Double currentPower = Objects.isNull(current.getPower()) ? NumberConstant.ZERO_D : current.getPower();
+                Double currentCharge = Objects.isNull(current.getCharge()) ? NumberConstant.ZERO_D : current.getCharge();
+                Double nextPower = Objects.isNull(next.getPower()) ? NumberConstant.ZERO_D : next.getPower();
+                Double nextCharge = Objects.isNull(next.getCharge()) ? NumberConstant.ZERO_D : next.getCharge();
+                
+                current.setPower(currentPower + nextPower);
+                current.setCharge(currentCharge + nextCharge);
+                
                 detailList.remove(next);
             }
         }

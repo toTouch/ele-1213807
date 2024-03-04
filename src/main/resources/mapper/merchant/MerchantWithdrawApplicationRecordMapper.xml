@@ -45,7 +45,7 @@
             update_time,
         </trim>
         values
-        <foreach collection="merchantWithdrawApplicationRecordList" item="item" index="index" separator=",">
+        <foreach collection="list" item="item" index="index" separator=",">
             (
             #{item.uid},
             #{item.orderNo},

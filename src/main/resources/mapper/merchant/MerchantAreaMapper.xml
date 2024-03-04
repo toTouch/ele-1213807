@@ -22,7 +22,7 @@
     </delete>
     
     <select id="existsByAreaName" resultType="java.lang.Integer">
-        select 1 from t_merchant_area where tenant_id = #{tenantId} and name = #{areaName} limit 1
+        select 1 from t_merchant_area where del_flag = 0 and tenant_id = #{tenantId} and name = #{areaName} limit 1
     </select>
     
     <update id="updateById">
