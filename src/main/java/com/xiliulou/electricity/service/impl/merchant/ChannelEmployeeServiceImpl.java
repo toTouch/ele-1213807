@@ -281,6 +281,7 @@ public class ChannelEmployeeServiceImpl implements ChannelEmployeeService {
             }
         }
     
+        String oldPhone = user.getPhone();
         User updateUser = new User();
     
         // 如果是禁用，则将用户置为锁定
@@ -317,7 +318,7 @@ public class ChannelEmployeeServiceImpl implements ChannelEmployeeService {
             public void afterCommit() {
                 //清理缓存，避免缓存操作和数据库提交在同一个事务中失效的问题
                 redisService.delete(CacheConstant.CACHE_USER_UID + updateUser.getUid());
-                redisService.delete(CacheConstant.CACHE_USER_PHONE + updateUser.getTenantId() + ":" + channelEmployeeRequest.getPhone() + ":" + updateUser.getUserType());
+                redisService.delete(CacheConstant.CACHE_USER_PHONE + updateUser.getTenantId() + ":" + oldPhone + ":" + updateUser.getUserType());
             }
         });
         return Triple.of(true, null, result);
