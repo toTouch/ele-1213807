@@ -27,26 +27,37 @@
     
     <select id="selectByPage" resultMap="RebateConfigMap">
         select
-            id, level, mid, channeler_invitation, channeler_renewal, merchant_invitation, merchant_renewal, status, del_flag, tenant_id, create_time, update_time
-        from t_rebate_config
+            trc.id,
+            trc.level,
+            trc.mid,
+            trc.channeler_invitation,
+            trc.channeler_renewal,
+            trc.merchant_invitation,
+            trc.merchant_renewal,
+            trc.status,
+            trc.del_flag,
+            trc.tenant_id,
+            trc.create_time,
+            trc.update_time
+        from t_rebate_config trc left join t_battery_member_card bmc on trc.mid = bmc.id
         <where>
             <if test="mid != null">
-                and mid = #{mid}
+                and trc.mid = #{mid}
             </if>
             <if test="status != null">
-                and status = #{status}
+                and trc.status = #{status}
             </if>
             <if test="level != null and level != ''">
-                and level = #{level}
+                and trc.level = #{level}
             </if>
             <if test="tenantId != null">
-                and tenant_id = #{tenantId}
+                and trc.tenant_id = #{tenantId}
             </if>
             <if test="delFlag != null">
-                and del_flag = #{delFlag}
+                and trc.del_flag = #{delFlag}
             </if>
         </where>
-        order by id desc
+        order by bmc.franchisee_id,bmc.id desc
     </select>
     
     <select id="existsRebateConfigByMidAndLevel" resultType="Integer">
