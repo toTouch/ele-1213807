@@ -87,6 +87,9 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
     private UserInfoService userInfoService;
     
     @Resource
+    private UserService userService;
+    
+    @Resource
     private MerchantPlaceService merchantPlaceService;
     
     @Resource
@@ -120,9 +123,9 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
             List<MerchantPromotionFeeEmployeeVO> employeeVOList = merchantEmployees.parallelStream().map(merchantEmployee -> {
                 MerchantPromotionFeeEmployeeVO employeeVO = new MerchantPromotionFeeEmployeeVO();
                 employeeVO.setType(PromotionFeeQueryTypeEnum.MERCHANT_EMPLOYEE.getCode());
-                UserInfo userInfo = userInfoService.queryByUidFromCache(merchantEmployee.getUid());
-                if (Objects.nonNull(userInfo)) {
-                    employeeVO.setUserName(userInfo.getName());
+                User user = userService.queryByUidFromCache(merchantEmployee.getUid());
+                if (Objects.nonNull(user)) {
+                    employeeVO.setUserName(user.getName());
                 }
                 employeeVO.setUid(merchantEmployee.getUid());
                 return employeeVO;
