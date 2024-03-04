@@ -390,7 +390,7 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
     public List<BatteryMemberCardVO> selectByPageForMerchant(BatteryMemberCardQuery query) {
         List<BatteryMemberCard> list = this.batteryMemberCardMapper.selectByPage(query);
         
-        return list.parallelStream().map(item -> {
+        return list.stream().map(item -> {
             BatteryMemberCardVO batteryMemberCardVO = new BatteryMemberCardVO();
             BeanUtils.copyProperties(item, batteryMemberCardVO);
             
