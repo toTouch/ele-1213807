@@ -363,12 +363,12 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
         String currentMonth = DateUtil.format(new Date(), "yyyy-MM");
         if (Objects.equals(currentMonth, request.getMonth())) {
             return getCurrentMonthDetail(request);
-            
         }
         
         // 获取上月历史
         long lastMonthStartTime = DateUtils.getBeforeMonthFirstDayTimestamp(MerchantPlaceBindConstant.LAST_MONTH);
         String lastMonth = DateUtil.format(new Date(lastMonthStartTime), "yyyy-MM");
+        
         if (Objects.equals(lastMonth, request.getMonth())) {
             return getLastMonthDetail(request);
         }
@@ -832,7 +832,7 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
         
         List<MerchantPlaceFeeMonthDetail> curMothFeeRecords = getCurMonthFeeRecords(request);
         
-        log.info("getPlaceDetailByCabinetId={}", curMothFeeRecords);
+        log.info("getCurrentMonthDetail111={}", curMothFeeRecords);
         
         if (ObjectUtils.isEmpty(curMothFeeRecords)) {
             return Collections.emptyList();
@@ -866,6 +866,7 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
                 resList.add(vo);
             }
         }
+        
         return resList;
     }
     
@@ -954,7 +955,7 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
     private List<MerchantPlaceFeeMonthDetail> getCurMonthFeeRecords(MerchantPlaceFeeRequest request) {
         List<MerchantPlaceBind> merchantPlaceBinds = merchantPlaceBindService.queryNoSettleByMerchantId(request.getMerchantId());
         
-        log.info("getCurMonthFeeRecords1={}", merchantPlaceBinds);
+        log.info("getCurMonthFeeRecords1 merchantPlaceBinds={}", merchantPlaceBinds);
         
         if (ObjectUtils.isEmpty(merchantPlaceBinds)) {
             return Collections.emptyList();
@@ -981,10 +982,11 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
         
         if (ObjectUtils.isEmpty(curPlaceFeeMonthRecords)) {
             log.info("get current moth place fee records is empty,merchantId={},placeIdList={}", request.getMerchantId(), placeIdList);
-            return null;
+            return Collections.emptyList();
         }
         
         Map<Long, List<MerchantPlaceFeeMonthRecord>> placeFeeMonthRecordMap = new HashMap<>();
+        
         if (ObjectUtils.isNotEmpty(curPlaceFeeMonthRecords)) {
             placeFeeMonthRecordMap = curPlaceFeeMonthRecords.stream().collect(Collectors.groupingBy(MerchantPlaceFeeMonthRecord::getPlaceId));
         }
@@ -1093,13 +1095,17 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
                         if (Objects.isNull(feeSum)) {
                             feeSum = BigDecimal.ZERO;
                         }
+                        
                         merchantPlaceFeeMonthDetail.setPlaceFee(feeSum);
+                        
                         list.add(merchantPlaceFeeMonthDetail);
                     }
                 }
             }
         }
-        log.info("getCurMonthFeeRecords55={}", list);
+        
+        log.info("getCurMonthFeeRecords555={}", list);
+        
         return list;
     }
     
