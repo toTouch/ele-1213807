@@ -388,7 +388,7 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
     @Slave
     @Override
     public List<BatteryMemberCardVO> selectByPageForMerchant(BatteryMemberCardQuery query) {
-        List<BatteryMemberCard> list = this.batteryMemberCardMapper.selectByPage(query);
+        List<BatteryMemberCard> list = this.batteryMemberCardMapper.selectByPageForMerchant(query);
         
         return list.stream().map(item -> {
             BatteryMemberCardVO batteryMemberCardVO = new BatteryMemberCardVO();
