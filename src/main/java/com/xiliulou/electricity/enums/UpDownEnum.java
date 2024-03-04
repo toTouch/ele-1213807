@@ -20,13 +20,4 @@ public enum UpDownEnum implements BasicEnum<Integer, String> {
     private final Integer code;
 
     private final String desc;
-    
-    public static UpDownEnum getUpDownEnum(Integer code) {
-        for (UpDownEnum upDownEnum : UpDownEnum.values()) {
-            if (upDownEnum.getCode().equals(code)) {
-                return upDownEnum;
-            }
-        }
-        return null;
-    }
 }

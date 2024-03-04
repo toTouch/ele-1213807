@@ -1,13 +1,15 @@
 package com.xiliulou.electricity.service.faq;
 
+import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.bo.faq.FaqV2BO;
 import com.xiliulou.electricity.query.faq.AdminFaqQuery;
 import com.xiliulou.electricity.reqparam.faq.AdminFaqChangeTypeReq;
 import com.xiliulou.electricity.reqparam.faq.AdminFaqReq;
 import com.xiliulou.electricity.reqparam.faq.AdminFaqUpDownReq;
 import com.xiliulou.electricity.vo.faq.FaqListVos;
-import com.xiliulou.electricity.vo.faq.FaqVo;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * 常见问题Service接口
@@ -20,18 +22,20 @@ public interface FaqV2Service {
     /**
      * 添加常见问题
      *
+     * @return
      * @author kuz
      * @date 2024/2/23 16:11
      */
-    void add(AdminFaqReq faqReq);
+    R saveFaqQuery(AdminFaqReq faqReq);
     
     /**
      * 更改常见问题分类
      *
+     * @return
      * @author kuz
      * @date 2024/2/23 16:11
      */
-    void edit(AdminFaqReq faqReq);
+    R updateFaqReq(AdminFaqReq faqReq);
     /**
      * 删除常见问题分类，并且删除下面的所有问题
      *
@@ -42,11 +46,15 @@ public interface FaqV2Service {
     
     void upDownBatch(AdminFaqUpDownReq faqUpDownReq);
     
-    void changeTypeBatch(AdminFaqChangeTypeReq faqChangeTypeReq);
+    R changeTypeBatch(AdminFaqChangeTypeReq faqChangeTypeReq);
     
     void removeByIds(List<Long> ids);
     
-    List<FaqListVos> page(AdminFaqQuery faqQuery);
+    Map<Long, List<FaqV2BO>> listFaqQuery(AdminFaqQuery faqQuery);
     
-    FaqVo detail(Long id);
+    R queryDetail(Long id);
+    
+    List<FaqListVos> listFaqQueryForBackstage(AdminFaqQuery faqQuery);
+    
+    List<FaqListVos> listFaqQueryForApp(AdminFaqQuery faqQuery);
 }
