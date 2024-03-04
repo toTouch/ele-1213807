@@ -240,6 +240,7 @@ public class RebateRecordServiceImpl implements RebateRecordService {
             if (StringUtils.isNotBlank(specificsVO.getPhone())) {
                 specificsVO.setPhone(PhoneUtils.mobileEncrypt(specificsVO.getPhone()));
             }
+            specificsVO.setUserName(item.getName());
             return specificsVO;
         }).collect(Collectors.toList());
     }
