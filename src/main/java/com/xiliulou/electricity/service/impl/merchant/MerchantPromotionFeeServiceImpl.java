@@ -471,6 +471,7 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
         dataDetailVOList = merchantJoinRecords.parallelStream().map(merchantJoinRecord -> {
             MerchantPromotionDataDetailVO vo = new MerchantPromotionDataDetailVO();
             User user = userService.queryByUidFromCache(merchantJoinRecord.getJoinUid());
+            log.info("dataDetailVO user={}",JsonUtil.toJson(user));
             if (Objects.nonNull(user)) {
                 vo.setUid(user.getUid());
                 // 对手机号中间四位脱敏
@@ -479,8 +480,11 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
             }
             vo.setScanCodeTime(merchantJoinRecord.getStartTime());
             vo.setStatus(merchantJoinRecord.getStatus());
+            log.info("dataDetailVO dataDetailVO={}",JsonUtil.toJson(vo));
             return vo;
         }).collect(Collectors.toList());
+        
+        log.info("dataDetailVOList={}",JsonUtil.toJson(dataDetailVOList));
         
         return R.ok(dataDetailVOList);
     }
