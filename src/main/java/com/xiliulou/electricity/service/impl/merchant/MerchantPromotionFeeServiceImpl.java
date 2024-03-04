@@ -516,6 +516,9 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
     }
     
     private BigDecimal buildPromotionFeeTotalIncomeVO(Integer type, Long uid, Long endTime) {
+        if(Objects.equals(PromotionFeeQueryTypeEnum.MERCHANT_AND_MERCHANT_EMPLOYEE.getCode(),type)){
+            type = PromotionFeeQueryTypeEnum.MERCHANT.getCode();
+        }
         //累计收入：“结算日期” <= 今日，“结算状态” = 已结算 - 已退回；
         MerchantPromotionFeeQueryModel allSettleIncomeQueryModel = MerchantPromotionFeeQueryModel.builder().status(MerchantConstant.MERCHANT_REBATE_STATUS_SETTLED).type(type)
                 .uid(uid).tenantId(TenantContextHolder.getTenantId()).settleEndTime(endTime).build();
@@ -563,7 +566,7 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
             type = PromotionFeeQueryTypeEnum.MERCHANT.getCode();
         }
         MerchantPromotionRenewalQueryModel renewalQueryModel = MerchantPromotionRenewalQueryModel.builder().tenantId(TenantContextHolder.getTenantId()).type(type).uid(uid)
-                .startTime(startTime).endTime(endTime).status(MerchantConstant.MERCHANT_REBATE_TYPE_RENEWAL).build();
+                .startTime(startTime).endTime(endTime).type(MerchantConstant.MERCHANT_REBATE_TYPE_RENEWAL).build();
         return rebateRecordService.countByTime(renewalQueryModel);
     }
     
