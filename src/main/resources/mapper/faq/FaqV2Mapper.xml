@@ -45,9 +45,9 @@
         <include refid="Base_Column_List"/>
         from t_new_faq
         where
-        <if test="params.idList !=null and params.idList.size>0">
+        <if test="ids !=null and ids.size>0">
             and id in
-            <foreach collection="params.idList" item="id" index="i" open="(" close=")" separator=",">
+            <foreach collection="ids" item="id" index="i" open="(" close=")" separator=",">
                 #{id}
             </foreach>
         </if>
@@ -132,7 +132,7 @@
         delete
         from t_new_faq
         where id in
-        <foreach collection="list" item="id" index="i" open="(" close=")" separator=",">
+        <foreach collection="ids" item="id" index="i" open="(" close=")" separator=",">
             #{id}
         </foreach>
     </delete>
