@@ -89,4 +89,6 @@ public interface MerchantJoinRecordService {
     List<MerchantJoinRecord> selectListAllPromotionDataDetail(MerchantAllPromotionDataDetailQueryModel queryModel);
     
     List<MerchantJoinRecord> listByJoinUidAndStatus(Long joinUid, List<Integer> statusList);
+    
+    Integer updateStatusById(Long id, Integer status, long updateTime);
 }

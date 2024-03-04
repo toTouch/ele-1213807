@@ -49,6 +49,13 @@
           and status = 1
     </update>
     
+    <update id="updateStatusById">
+        update t_merchant_join_record
+        set status      = #{status},
+            update_time = #{updateTime}
+        where id = #{id}
+    </update>
+    
     <!--    <update id="updateById">
             update t_merchant_join_record
             <set>
