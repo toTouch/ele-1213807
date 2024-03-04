@@ -151,6 +151,51 @@
         order by id desc
         limit #{offset}, #{size}
     </select>
+    
+    <select id="selectByPageForMerchant" resultMap="BatteryMemberCardMap">
+        select
+        id, name, deposit, rent_price, rent_price_unit, valid_days, rent_unit, franchisee_id, rent_type, send_coupon,
+        status, limit_count, use_count, coupon_id, is_refund, refund_limit, free_deposite,
+        service_charge, remark, business_type, del_flag, tenant_id, create_time, update_time
+        from t_battery_member_card
+        <where>
+            <if test="businessType != null">
+                and business_type = #{businessType}
+            </if>
+            <if test="franchiseeId != null">
+                and franchisee_id = #{franchiseeId}
+            </if>
+            <if test="status != null">
+                and status = #{status}
+            </if>
+            <if test="name != null and name != ''">
+                and name like concat('%',#{name,jdbcType=VARCHAR},'%')
+            </if>
+            <if test="rentType != null">
+                and rent_type = #{rentType}
+            </if>
+            <if test="rentUnit != null">
+                and rent_unit = #{rentUnit}
+            </if>
+            <if test="id != null">
+                and id = #{id}
+            </if>
+            <if test="tenantId != null">
+                and tenant_id = #{tenantId}
+            </if>
+            <if test="delFlag != null">
+                and del_flag = #{delFlag}
+            </if>
+            <if test="franchiseeIds != null">
+                and franchisee_id in
+                <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
+                    #{id}
+                </foreach>
+            </if>
+        </where>
+        order by franchisee_id,id desc
+        limit #{offset}, #{size}
+    </select>
 
     <select id="selectByQuery" resultMap="BatteryMemberCardMap">
         select

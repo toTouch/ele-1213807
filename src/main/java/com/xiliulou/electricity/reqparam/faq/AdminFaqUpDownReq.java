@@ -18,10 +18,10 @@ public class AdminFaqUpDownReq {
     
     
     /**
-     * 上下架状态 'UP表示上架  DOWN表示下架'
+     * 上下架 1表示上架 0表示下架
      */
     @NotNull(message = "上下架状态不能为空")
-    private UpDownEnum onShelf;
+    private Integer onShelf;
     
     /**
      * 问题集合

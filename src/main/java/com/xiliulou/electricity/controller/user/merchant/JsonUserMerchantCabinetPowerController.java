@@ -31,54 +31,53 @@ public class JsonUserMerchantCabinetPowerController extends BaseController {
     /**
      * 是否显示电费页面：0-不显示，1-显示
      */
-    // todo /merchant/power/isShowPowerPage
-    @GetMapping("admin/merchant/power/isShowPowerPage")
+    @GetMapping("/merchant/power/isShowPowerPage")
     public R isShowPowerPage() {
-        /*TokenUser user = SecurityUtils.getUserInfo();
+        TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
-        }*/
+        }
         
-        return R.ok(merchantCabinetPowerService.isShowPowerPage(1L));
+        return R.ok(merchantCabinetPowerService.isShowPowerPage(user.getUid()));
     }
     
     /**
      * 筛选条件：场地列表/柜机列表
      */
-    @GetMapping("admin/merchant/power/placeAndCabinetList")
+    @GetMapping("/merchant/power/placeAndCabinetList")
     public R placeAndCabinetList() {
-        /*TokenUser user = SecurityUtils.getUserInfo();
+        TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
-        }*/
+        }
         
-        return R.ok(merchantCabinetPowerService.listPlaceAndCabinetByMerchantId(1L));
+        return R.ok(merchantCabinetPowerService.listPlaceAndCabinetByMerchantId(user.getUid()));
     }
     
     /**
      * 筛选条件：根据场地id查询柜机列表
      */
-    @GetMapping("admin/merchant/power/cabinetListByPlace")
+    @GetMapping("/merchant/power/cabinetListByPlace")
     public R cabinetListByPlace(@RequestParam Long placeId) {
-        /*TokenUser user = SecurityUtils.getUserInfo();
+        TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
-        }*/
+        }
         
-        return R.ok(merchantCabinetPowerService.listCabinetByPlaceId(1L, placeId));
+        return R.ok(merchantCabinetPowerService.listCabinetByPlaceId(user.getUid(), placeId));
     }
     
     /**
      * 电量/电费：今日、昨日、本月、上月、累计、柜机列表
      */
-    @GetMapping("admin/merchant/power/powerData")
+    @GetMapping("/merchant/power/powerData")
     public R powerData(@RequestParam(value = "placeId", required = false) Long placeId, @RequestParam(value = "cabinetId", required = false) Long cabinetId) {
-        /*TokenUser user = SecurityUtils.getUserInfo();
+        TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
-        }*/
+        }
         
-        MerchantCabinetPowerRequest request = MerchantCabinetPowerRequest.builder().uid(1L).placeId(placeId).cabinetId(cabinetId).build();
+        MerchantCabinetPowerRequest request = MerchantCabinetPowerRequest.builder().uid(user.getUid()).placeId(placeId).cabinetId(cabinetId).build();
         
         return R.ok(merchantCabinetPowerService.powerData(request));
     }
@@ -86,15 +85,15 @@ public class JsonUserMerchantCabinetPowerController extends BaseController {
     /**
      * 统计分析-折线图 近N个自然月（不包含本月）
      */
-    @GetMapping("admin/merchant/power/lineData")
+    @GetMapping("/merchant/power/lineData")
     public R lineData(@RequestParam(value = "placeId", required = false) Long placeId, @RequestParam(value = "cabinetId", required = false) Long cabinetId,
             @RequestParam(value = "monthList") List<String> monthList) {
-        /*TokenUser user = SecurityUtils.getUserInfo();
+        TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
-        }*/
+        }
         
-        MerchantCabinetPowerRequest request = MerchantCabinetPowerRequest.builder().uid(1L).placeId(placeId).cabinetId(cabinetId).monthList(monthList).build();
+        MerchantCabinetPowerRequest request = MerchantCabinetPowerRequest.builder().uid(user.getUid()).placeId(placeId).cabinetId(cabinetId).monthList(monthList).build();
         
         return R.ok(merchantCabinetPowerService.lineData(request));
     }
@@ -102,14 +101,14 @@ public class JsonUserMerchantCabinetPowerController extends BaseController {
     /**
      * 柜机电费列表
      */
-    @GetMapping("admin/merchant/power/cabinetPowerList")
+    @GetMapping("/merchant/power/cabinetPowerList")
     public R cabinetPowerList(@RequestParam(value = "placeId", required = false) Long placeId, @RequestParam(value = "cabinetId", required = false) Long cabinetId) {
-        /*TokenUser user = SecurityUtils.getUserInfo();
+        TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
-        }*/
+        }
         
-        MerchantCabinetPowerRequest request = MerchantCabinetPowerRequest.builder().uid(1L).placeId(placeId).cabinetId(cabinetId).build();
+        MerchantCabinetPowerRequest request = MerchantCabinetPowerRequest.builder().uid(user.getUid()).placeId(placeId).cabinetId(cabinetId).build();
         
         return R.ok(merchantCabinetPowerService.cabinetPowerList(request));
     }
@@ -117,14 +116,14 @@ public class JsonUserMerchantCabinetPowerController extends BaseController {
     /**
      * 柜机电费详情
      */
-    @GetMapping("admin/merchant/power/cabinetPowerDetail")
+    @GetMapping("/merchant/power/cabinetPowerDetail")
     public R cabinetPowerDetail(@RequestParam(value = "cabinetId") Long cabinetId, @RequestParam(value = "monthDate") String monthDate) {
-        /*TokenUser user = SecurityUtils.getUserInfo();
+        TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
-        }*/
+        }
         
-        MerchantCabinetPowerRequest request = MerchantCabinetPowerRequest.builder().uid(1L).cabinetId(cabinetId).monthList(List.of(monthDate)).build();
+        MerchantCabinetPowerRequest request = MerchantCabinetPowerRequest.builder().uid(user.getUid()).cabinetId(cabinetId).monthList(List.of(monthDate)).build();
         
         return R.ok(merchantCabinetPowerService.cabinetPowerDetail(request));
     }

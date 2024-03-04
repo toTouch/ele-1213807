@@ -28,7 +28,7 @@ public interface FaqCategoryV2Mapper extends BaseMapper<FaqCategoryV2> {
     
     int updateByPrimaryKey(FaqCategoryV2 record);
     
-    List<FaqCategoryVo> selectListByTenantId(@Param(value = "tenantId") Integer tenantId);
+    List<FaqCategoryV2> selectListByTenantId(@Param(value = "tenantId") Integer tenantId);
     
 }
 

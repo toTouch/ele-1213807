@@ -23,15 +23,17 @@ public class JsonUserV2FaqController {
 
     private final FaqV2Service faqV2Service;
     
+    
     /**
      * 查询常见问题
      *
      * @author kuz
      * @date 2024/2/23 16:11
      */
-    @PostMapping("/user/v2/faq/page")
+    @PostMapping("/user/faq/page/v2")
     public R page(@RequestBody AdminFaqQuery faqQuery) {
-        return R.ok(faqV2Service.page(faqQuery));
+        
+        return R.ok(faqV2Service.listFaqQueryForApp(faqQuery));
     }
     
     
