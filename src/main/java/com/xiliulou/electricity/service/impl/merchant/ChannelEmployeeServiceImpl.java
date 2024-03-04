@@ -33,6 +33,8 @@ import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronizationAdapter;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
@@ -307,11 +309,18 @@ public class ChannelEmployeeServiceImpl implements ChannelEmployeeService {
         channelEmployeeUpdate.setUpdateTime(System.currentTimeMillis());
     
         Integer result = channelEmployeeMapper.updateOne(channelEmployeeUpdate);
-        
+    
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
+            @Override
+            public void afterCommit() {
+                //清理缓存，避免缓存操作和数据库提交在同一个事务中失效的问题
+                redisService.delete(CacheConstant.CACHE_USER_UID + updateUser.getUid());
+                redisService.delete(CacheConstant.CACHE_USER_PHONE + updateUser.getTenantId() + ":" + updateUser.getPhone() + ":" + updateUser.getUserType());
+            }
+        });
         return Triple.of(true, null, result);
     }
     
-    @Transactional(rollbackFor = Exception.class)
     @Override
     public Integer removeById(Long id) {
         ChannelEmployee channelEmployee = channelEmployeeMapper.selectById(id);
