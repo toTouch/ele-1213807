@@ -30,6 +30,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronizationAdapter;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
@@ -190,11 +192,19 @@ public class MerchantEmployeeServiceImpl implements MerchantEmployeeService {
         MerchantEmployee merchantEmployeeUpdate = new MerchantEmployee();
         BeanUtils.copyProperties(merchantEmployeeRequest, merchantEmployeeUpdate);
         merchantEmployeeUpdate.setUpdateTime(System.currentTimeMillis());
+    
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
+            @Override
+            public void afterCommit() {
+                //清理缓存，避免缓存操作和数据库提交在同一个事务中失效的问题
+                redisService.delete(CacheConstant.CACHE_USER_UID + updateUser.getUid());
+                redisService.delete(CacheConstant.CACHE_USER_PHONE + updateUser.getTenantId() + ":" + updateUser.getPhone() + ":" + updateUser.getUserType());
+            }
+        });
         
         return merchantEmployeeMapper.updateOne(merchantEmployeeUpdate);
     }
     
-    @Transactional(rollbackFor = Exception.class)
     @Override
     public Integer removeMerchantEmployee(Long id) {
         MerchantEmployeeVO merchantEmployeeVO = merchantEmployeeMapper.selectById(id);
