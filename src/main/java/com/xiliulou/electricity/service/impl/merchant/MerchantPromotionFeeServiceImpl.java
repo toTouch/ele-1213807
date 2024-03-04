@@ -420,14 +420,14 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
     
     private MerchantPromotionEmployeeDetailVO buildMerchantPromotionEmployeeDetailVO(Long uid, Long placeId) {
         MerchantPromotionEmployeeDetailVO employeeDetailVO = new MerchantPromotionEmployeeDetailVO();
-        UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
-        if (Objects.nonNull(userInfo)) {
-            employeeDetailVO.setEmployeeName(userInfo.getName());
-            employeeDetailVO.setUid(userInfo.getUid());
+        User user = userService.queryByUidFromCache(uid);
+        if (Objects.nonNull(user)) {
+            employeeDetailVO.setEmployeeName(user.getName());
+            employeeDetailVO.setUid(user.getUid());
             
             // 今日预估收入：“返现日期” = 今日，“结算状态” = 未结算；
             MerchantPromotionFeeQueryModel incomeQueryModel = MerchantPromotionFeeQueryModel.builder().status(MerchantConstant.MERCHANT_REBATE_STATUS_NOT_SETTLE)
-                    .type(PromotionFeeQueryTypeEnum.MERCHANT_EMPLOYEE.getCode()).uid(userInfo.getUid()).tenantId(TenantContextHolder.getTenantId())
+                    .type(PromotionFeeQueryTypeEnum.MERCHANT_EMPLOYEE.getCode()).uid(user.getUid()).tenantId(TenantContextHolder.getTenantId())
                     .rebateStartTime(DateUtils.getTodayStartTimeStamp()).rebateEndTime(System.currentTimeMillis()).build();
             BigDecimal todayInCome = rebateRecordService.sumByStatus(incomeQueryModel);
             employeeDetailVO.setTodayIncome(todayInCome);
