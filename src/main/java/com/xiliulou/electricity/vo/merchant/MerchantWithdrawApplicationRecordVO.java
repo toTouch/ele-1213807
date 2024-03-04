@@ -27,7 +27,7 @@ public class MerchantWithdrawApplicationRecordVO {
     
     private Integer status;
     
-    private String transaction_no;
+    private String transactionBatchId;
     
     private String orderNo;
     
