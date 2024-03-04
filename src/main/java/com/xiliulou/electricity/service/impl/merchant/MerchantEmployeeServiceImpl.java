@@ -102,7 +102,7 @@ public class MerchantEmployeeServiceImpl implements MerchantEmployeeService {
         
         // 创建商户员工账户
         User user = User.builder().updateTime(System.currentTimeMillis()).createTime(System.currentTimeMillis()).phone(phone).lockFlag(User.USER_UN_LOCK).gender(User.GENDER_MALE)
-                .lang(MessageUtils.LOCALE_ZH_CN).userType(User.TYPE_USER_CHANNEL).name(name).salt("").avatar("").tenantId(merchantEmployeeRequest.getTenantId())
+                .lang(MessageUtils.LOCALE_ZH_CN).userType(User.TYPE_USER_MERCHANT_EMPLOYEE).name(name).salt("").avatar("").tenantId(merchantEmployeeRequest.getTenantId())
                 .loginPwd(customPasswordEncoder.encode("123456")).delFlag(User.DEL_NORMAL).build();
         
         // 如果是禁用则用户默认锁定
@@ -171,7 +171,8 @@ public class MerchantEmployeeServiceImpl implements MerchantEmployeeService {
                 throw new BizException("120002", "当前手机号已注册");
             }
         }
-        
+    
+        String oldPhone = user.getPhone();
         User updateUser = new User();
         
         // 如果是禁用，则将用户置为锁定
@@ -193,16 +194,18 @@ public class MerchantEmployeeServiceImpl implements MerchantEmployeeService {
         BeanUtils.copyProperties(merchantEmployeeRequest, merchantEmployeeUpdate);
         merchantEmployeeUpdate.setUpdateTime(System.currentTimeMillis());
     
+        Integer result = merchantEmployeeMapper.updateOne(merchantEmployeeUpdate);
+    
         TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
             @Override
             public void afterCommit() {
                 //清理缓存，避免缓存操作和数据库提交在同一个事务中失效的问题
                 redisService.delete(CacheConstant.CACHE_USER_UID + updateUser.getUid());
-                redisService.delete(CacheConstant.CACHE_USER_PHONE + updateUser.getTenantId() + ":" + merchantEmployeeRequest.getPhone() + ":" + updateUser.getUserType());
+                redisService.delete(CacheConstant.CACHE_USER_PHONE + updateUser.getTenantId() + ":" + oldPhone + ":" + updateUser.getUserType());
             }
         });
         
-        return merchantEmployeeMapper.updateOne(merchantEmployeeUpdate);
+        return result;
     }
     
     @Override
