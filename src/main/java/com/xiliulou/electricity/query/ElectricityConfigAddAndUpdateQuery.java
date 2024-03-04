@@ -153,6 +153,11 @@ public class ElectricityConfigAddAndUpdateQuery {
      * 渠道时限
      */
     private Integer channelTimeLimit;
+    
+    /**
+     * 打开微信客服 0-是 1-否
+     */
+    private Integer wxCustomer;
 
 }
 

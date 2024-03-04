@@ -259,6 +259,7 @@
         tmwa.amount,
         tmwa.remark,
         tmwa.status,
+        tmwa.check_time,
         tmwa.receipt_time,
         tmwa.tenant_id,
         tmwa.del_flag,

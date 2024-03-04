@@ -65,7 +65,7 @@ public class MerchantJoinRecord {
     private Long expiredTime;
     
     /**
-     * 参与状态 1-已参与，2-邀请成功，3-已过期，4-已失效
+     * 参与状态 1-已参与，2-邀请成功，3-已过期，4-已失效(场景1：退租后 场景2：过了保护期，重新扫码后，需要将旧的记录改为已失效)
      */
     private Integer status;
     
@@ -120,7 +120,7 @@ public class MerchantJoinRecord {
     public static Integer STATUS_EXPIRED = 3;
     
     /**
-     * 已失效:退套餐后
+     * 已失效:(场景1：退租后 场景2：过了保护期，重新扫码后，需要将旧的记录改为已失效)
      */
     public static Integer STATUS_INVALID = 4;
     

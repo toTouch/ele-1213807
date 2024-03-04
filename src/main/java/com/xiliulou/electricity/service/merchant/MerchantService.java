@@ -42,6 +42,8 @@ public interface MerchantService {
     
     Merchant queryByUid(Long uid);
     
+    List<Merchant> queryByChannelEmployeeUid(Long channelEmployeeId);
+    
     List<MerchantPlaceSelectVO> queryPlaceListByUid(Long merchantUid, Long employeeUid);
     
     Integer updateById(Merchant merchant);

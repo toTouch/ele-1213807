@@ -274,6 +274,9 @@
             <if test="status != null">
                 and status = #{status}
             </if>
+            <if test="type != null">
+                and type = #{type}
+            </if>
             <if test="startTime != null">
                 and create_time >= #{startTime}
             </if>

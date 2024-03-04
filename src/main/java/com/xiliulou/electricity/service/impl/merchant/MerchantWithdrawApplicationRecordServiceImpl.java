@@ -68,6 +68,11 @@ public class MerchantWithdrawApplicationRecordServiceImpl implements MerchantWit
     }
     
     @Override
+    public MerchantWithdrawApplicationRecord selectByOrderNo(String orderNo, Integer tenantId) {
+        return merchantWithdrawApplicationRecordMapper.selectByOrderNo(orderNo, tenantId);
+    }
+    
+    @Override
     public Integer updateApplicationRecordStatusByBatchNo(Integer status, String batchNo, Integer tenantId) {
         Long updateTime = System.currentTimeMillis();
         return merchantWithdrawApplicationRecordMapper.updateApplicationRecordStatusByBatchNo(status, updateTime, batchNo, tenantId);

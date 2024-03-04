@@ -18,7 +18,7 @@ import java.util.Set;
 @Builder
 public class MerchantPlaceCabinetConditionRequest {
     
-    private Set<Long> placeIds;
+    private Long placeId;
     
     private Set<Long> cabinetIds;
     
