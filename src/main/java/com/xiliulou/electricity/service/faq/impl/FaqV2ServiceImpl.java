@@ -26,7 +26,6 @@ import org.springframework.cglib.beans.BeanMap;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -138,6 +137,7 @@ public class FaqV2ServiceImpl implements FaqV2Service {
      * 根据问题标题、租户查询常见问题
      */
     @Override
+    @Deprecated
     public Map<Long, List<FaqV2BO>> listFaqQuery(AdminFaqQuery faqQuery) {
         faqQuery.setTenantId(TenantContextHolder.getTenantId());
         FaqV2 faqV2 = new FaqV2();
@@ -155,33 +155,23 @@ public class FaqV2ServiceImpl implements FaqV2Service {
      * 查看常见问题
      */
     @Override
-    public List<FaqListVos> listFaqQueryResult(AdminFaqQuery faqQuery) {
-        Map<Long, List<FaqV2BO>> listMap = listFaqQuery(faqQuery);
-        if (CollectionUtil.isEmpty(listMap)) {
-            return Collections.emptyList();
+    public List<FaqVo> listFaqQueryResult(AdminFaqQuery faqQuery) {
+        faqQuery.setTenantId(TenantContextHolder.getTenantId());
+        FaqV2 faqV2 = new FaqV2();
+        BeanUtils.copyProperties(faqQuery, faqV2);
+        List<FaqV2BO> faqVos = faqV2Mapper.selectLeftJoinByParams(faqV2);
+        if (CollectionUtil.isEmpty(faqVos)) {
+            return null;
         }
         
-        // 1. 未指定问题分类时 后台首页展示分类一
-        Long queryTypeId = faqQuery.getTypeId();
-        if (Objects.isNull(queryTypeId)) {
-            // 结果集填充
-            List<FaqListVos> faqListVosList = listMap.entrySet().stream().map(e -> {
-                FaqListVos faqListVos = new FaqListVos();
-                faqListVos.setId(e.getKey());
-                faqListVos.setTypeId(e.getKey());
-                faqListVos.setType(e.getValue().stream().findAny().get().getType());
-                faqListVos.setSort(e.getValue().stream().findAny().get().getTypeSort());
-                long count = e.getValue().size();
-                faqListVos.setCount((int) count);
-                return faqListVos;
-            }).sorted(Comparator.comparing(FaqListVos::getTypeId)).collect(Collectors.toList());
-            
-            faqListVosList.get(0).setFaqBOList(listMap.get(faqListVosList.get(0).getTypeId()));
-            return faqListVosList;
-        }
+        long l = faqQuery.getTypeId() == null ? 1 : faqQuery.getTypeId();
+        List<FaqVo> collect = faqVos.stream().filter(e -> Objects.equals(e.getTypeId(), l)).map(e -> {
+            FaqVo faqVo = new FaqVo();
+            BeanUtils.copyProperties(e, faqVo);
+            return faqVo;
+        }).collect(Collectors.toList());
         
-        // 2. 指定了问题分类时
-        return getFaqListVosByTypeId(listMap, queryTypeId);
+        return collect;
     }
     
     
