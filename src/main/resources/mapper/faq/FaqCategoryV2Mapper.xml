@@ -27,6 +27,7 @@
         from t_faq_category
         where id = #{id,jdbcType=BIGINT}
     </select>
+    
     <select id="selectListByTenantId" resultMap="BaseResultMap">
         select id, type, sort
         from t_faq_category
@@ -107,4 +108,14 @@
     <delete id="countFaqCategoryByTenantId">
         select count(1) from t_faq_category where tenant_id = #{tenantId,jdbcType=INTEGER}
     </delete>
+    
+    <select id="selectLeftJoinByParams" resultType="com.xiliulou.electricity.bo.faq.FaqV2BO">
+        select f.id as id,f.type_id as type_id,c.type as type,c.sort as type_sort
+        FROM t_faq_category c left join t_new_faq f ON f.type_id = c.id
+        <where>
+            <if test="tenantId != null">
+                and c.tenant_id = #{tenantId}
+            </if>
+        </where>
+    </select>
 </mapper>

@@ -31,7 +31,7 @@ public class FaqV2 {
     private String answer;
     
     /**
-     * 上下架 1表示上架  0表示下架
+     * 上下架 '0表示上架  1表示下架'
      */
     private Integer onShelf;
     

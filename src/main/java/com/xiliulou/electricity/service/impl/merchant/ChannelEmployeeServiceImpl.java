@@ -301,6 +301,7 @@ public class ChannelEmployeeServiceImpl implements ChannelEmployeeService {
     
         ChannelEmployee channelEmployeeUpdate = new ChannelEmployee();
         channelEmployeeUpdate.setId(channelEmployeeRequest.getId());
+        channelEmployeeUpdate.setFranchiseeId(channelEmployeeRequest.getFranchiseeId());
         //channelEmployeeUpdate.setUid(channelEmployee.getUid());
         //channelEmployeeUpdate.setTenantId(tenantId);
         if(channelEmployeeRequest.getAreaId() != null){
