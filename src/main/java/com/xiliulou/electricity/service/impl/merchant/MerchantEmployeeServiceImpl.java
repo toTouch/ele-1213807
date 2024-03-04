@@ -140,26 +140,34 @@ public class MerchantEmployeeServiceImpl implements MerchantEmployeeService {
         if (!redisService.setNx(CacheConstant.CACHE_MERCHANT_EMPLOYEE_UPDATE_LOCK + merchantEmployeeRequest.getMerchantUid(), "1", 3000L, false)) {
             throw new BizException("000000", "操作频繁,请稍后再试");
         }
-        //检查当前手机号是否已经注册
-        String phone = merchantEmployeeRequest.getPhone();
-        
-        //userService.queryByUserName(name);
-        
-        User existUser = userService.queryByUserPhone(phone, User.TYPE_USER_MERCHANT_EMPLOYEE, merchantEmployeeRequest.getTenantId());
-        if (Objects.nonNull(existUser)) {
-            throw new BizException("120002", "当前手机号已注册");
-        }
-        
+    
         //检查商户是否正常，状态为非禁用
         Merchant merchant = merchantService.queryByUid(merchantEmployeeRequest.getMerchantUid());
         if (Objects.isNull(merchant) || MerchantConstant.DISABLE.equals(merchant.getStatus())) {
             throw new BizException("120003", "当前商户不可用");
         }
-        
+    
         MerchantEmployeeVO merchantEmployeeVO = merchantEmployeeMapper.selectById(merchantEmployeeRequest.getId());
         if (Objects.isNull(merchantEmployeeVO)) {
             log.error("not found merchant employee by id, id = {}", merchantEmployeeRequest.getId());
             throw new BizException("120004", "商户员工不存在");
+        }
+        
+        User user = userService.queryByUidFromCache(merchantEmployeeVO.getUid());
+        if (Objects.isNull(user)) {
+            log.error("not found merchant employee by uid, uid = {}", merchantEmployeeVO.getUid());
+            throw new BizException("120004", "商户员工不存在");
+        }
+    
+        //用户名为做限制，暂时不进行校验
+        //userService.queryByUserName(name);
+        
+        //检查当前手机号是否已经注册
+        if(!Objects.equals(user.getPhone(), merchantEmployeeRequest.getPhone())){
+            User existUser = userService.queryByUserPhone(merchantEmployeeRequest.getPhone(), User.TYPE_USER_MERCHANT_EMPLOYEE, merchantEmployeeRequest.getTenantId());
+            if (Objects.nonNull(existUser)) {
+                throw new BizException("120002", "当前手机号已注册");
+            }
         }
         
         User updateUser = new User();
