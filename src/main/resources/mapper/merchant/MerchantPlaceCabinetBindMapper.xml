@@ -255,7 +255,10 @@
                 and status = #{status}
             </if>
             <if test="endTime != null">
-                and bind_time &lt;= #{endTime}
+                and bind_time &lt;= #{startTime}
+            </if>
+            <if test="placeId != null">
+                and place_id = #{placeId}
             </if>
             <if test="cabinetIds != null and cabinetIds.size() > 0">
                 and cabinet_id in

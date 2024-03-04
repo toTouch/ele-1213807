@@ -127,11 +127,34 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
                 return R.fail(false, "120105", "该二维码暂时无法使用,请稍后再试");
             }
             
-            // 是否在保护期内(保护期内不能扫商户码)
-            Integer isInProtectionTime = this.existsInProtectionTimeByJoinUid(joinUid);
-            if (Objects.nonNull(isInProtectionTime)) {
-                log.error("MERCHANT JOIN ERROR! in protectionTime, joinUid={}", joinUid);
-                return R.fail(false, "120104", "商户保护期内，请稍后再试");
+            // 已过保护期+已参与状态 的记录，需要更新为已失效，才能再扫码
+            MerchantJoinRecord needUpdatedToInvalidRecord = null;
+            // 是否存在已邀请成功的记录及是否过保护期
+            List<MerchantJoinRecord> joinRecordList = this.listByJoinUidAndStatus(joinUid, List.of(MerchantJoinRecord.STATUS_SUCCESS, MerchantJoinRecord.STATUS_INIT));
+            if (CollectionUtils.isNotEmpty(joinRecordList)) {
+                for (MerchantJoinRecord joinRecord : joinRecordList) {
+                    // 有邀请成功记录，则返回
+                    if (Objects.equals(joinRecord.getStatus(), MerchantJoinRecord.STATUS_SUCCESS)) {
+                        log.info("MERCHANT JOIN ERROR! user already join merchant, merchantId={}, inviterUid={}, joinUid={}", joinRecord.getMerchantId(),
+                                joinRecord.getInviterUid(), joinUid);
+                        
+                        return R.fail("120106", "您已是会员用户,无法参加商户活动");
+                    }
+                    
+                    // 有已参与记录
+                    if (Objects.equals(joinRecord.getStatus(), MerchantJoinRecord.STATUS_INIT)) {
+                        
+                        //未过有效期
+                        if (Objects.equals(joinRecord.getProtectionStatus(), MerchantJoinRecord.PROTECTION_STATUS_NORMAL)) {
+                            log.error("MERCHANT JOIN ERROR! in protectionTime, merchantId={}, inviterUid={}, joinUid={}", joinRecord.getMerchantId(), joinRecord.getInviterUid(),
+                                    joinUid);
+                            
+                            return R.fail(false, "120104", "商户保护期内，请稍后再试");
+                        } else {
+                            needUpdatedToInvalidRecord = joinRecord;
+                        }
+                    }
+                }
             }
             
             // 解析code
@@ -214,13 +237,6 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
                 return R.fail("100463", "二维码已失效");
             }
             
-            // 是否存在已邀请成功的记录
-            MerchantJoinRecord existsRecord = this.queryByMerchantIdAndJoinUid(merchantId, joinUid);
-            if (Objects.nonNull(existsRecord) && Objects.equals(existsRecord.getStatus(), MerchantJoinRecord.STATUS_SUCCESS)) {
-                log.info("MERCHANT JOIN ERROR! user already join merchant, merchantId={}, inviterUid={}, joinUid={}", merchantId, inviterUid, joinUid);
-                return R.fail("120106", "您已是会员用户,无法参加商户活动");
-            }
-            
             // 获取商户保护期和有效期
             MerchantAttr merchantAttr = merchantAttrService.queryByTenantIdFromCache(merchant.getTenantId());
             if (Objects.isNull(merchantAttr)) {
@@ -237,7 +253,19 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
             // 保存参与记录
             MerchantJoinRecord record = this.assembleRecord(merchantId, inviterUid, inviterType, joinUid, channelEmployeeUid, placeId, merchantAttr, tenant.getId());
             
-            return R.ok(merchantJoinRecordMapper.insertOne(record));
+            // 将旧的已参与记录改为已失效
+            if (Objects.nonNull(needUpdatedToInvalidRecord)) {
+                MerchantJoinRecordQueryModel queryModel = MerchantJoinRecordQueryModel.builder().joinUid(needUpdatedToInvalidRecord.getJoinUid())
+                        .status(MerchantJoinRecord.STATUS_INVALID).updateTime(System.currentTimeMillis()).build();
+                
+                Integer result = this.updateStatus(queryModel);
+                if (Objects.nonNull(result)) {
+                    // 保存新的参与记录
+                    merchantJoinRecordMapper.insertOne(record);
+                }
+            }
+            
+            return R.ok();
         } finally {
             redisService.delete(CacheConstant.CACHE_MERCHANT_SCAN_INTO_ACTIVITY_LOCK + joinUid);
         }
@@ -286,13 +314,6 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
     
     @Slave
     @Override
-    public Integer existsInProtectionTimeByJoinUid(Long joinUid) {
-        return merchantJoinRecordMapper.existsInProtectionTimeByJoinUid(joinUid);
-    }
-    
-    
-    @Slave
-    @Override
     public MerchantJoinRecord queryByMerchantIdAndJoinUid(Long merchantId, Long joinUid) {
         return merchantJoinRecordMapper.selectByMerchantIdAndJoinUid(merchantId, joinUid);
     }
@@ -307,7 +328,6 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
     public Integer updateStatus(MerchantJoinRecordQueryModel queryModel) {
         return merchantJoinRecordMapper.updateStatus(queryModel);
     }
-    
     
     @Slave
     @Override
@@ -393,7 +413,6 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
     public List<MerchantJoinRecordVO> countByMerchantIdList(MerchantJoinRecordQueryMode joinRecordQueryMode) {
         return merchantJoinRecordMapper.countByMerchantIdList(joinRecordQueryMode);
     }
-    
     
     @Slave
     @Override
@@ -483,5 +502,11 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
     @Override
     public List<MerchantJoinRecord> selectListAllPromotionDataDetail(MerchantAllPromotionDataDetailQueryModel queryModel) {
         return merchantJoinRecordMapper.selectListAllPromotionDataDetail(queryModel);
+    }
+    
+    @Slave
+    @Override
+    public List<MerchantJoinRecord> listByJoinUidAndStatus(Long joinUid, List<Integer> statusList) {
+        return merchantJoinRecordMapper.selectListByJoinUidAndStatus(joinUid, statusList);
     }
 }
