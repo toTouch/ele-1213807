@@ -130,11 +130,12 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
             // 已过保护期+已参与状态 的记录，需要更新为已失效，才能再扫码
             MerchantJoinRecord needUpdatedToInvalidRecord = null;
             // 是否存在已邀请成功的记录及是否过保护期
-            List<MerchantJoinRecord> joinRecordList = this.listByJoinUidAndStatus(joinUid, List.of(MerchantJoinRecord.STATUS_SUCCESS, MerchantJoinRecord.STATUS_INIT));
+            List<MerchantJoinRecord> joinRecordList = this.listByJoinUidAndStatus(joinUid,
+                    List.of(MerchantJoinRecord.STATUS_SUCCESS, MerchantJoinRecord.STATUS_INIT, MerchantJoinRecord.STATUS_EXPIRED));
             if (CollectionUtils.isNotEmpty(joinRecordList)) {
                 for (MerchantJoinRecord joinRecord : joinRecordList) {
-                    // 有邀请成功记录，则返回
-                    if (Objects.equals(joinRecord.getStatus(), MerchantJoinRecord.STATUS_SUCCESS)) {
+                    // 有邀请成功记录或参与过期记录，则返回
+                    if (Objects.equals(joinRecord.getStatus(), MerchantJoinRecord.STATUS_SUCCESS) || Objects.equals(joinRecord.getStatus(), MerchantJoinRecord.STATUS_EXPIRED)) {
                         log.info("MERCHANT JOIN ERROR! user already join merchant, merchantId={}, inviterUid={}, joinUid={}", joinRecord.getMerchantId(),
                                 joinRecord.getInviterUid(), joinUid);
                         
@@ -253,13 +254,10 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
             // 保存参与记录
             MerchantJoinRecord record = this.assembleRecord(merchantId, inviterUid, inviterType, joinUid, channelEmployeeUid, placeId, merchantAttr, tenant.getId());
             Integer result = merchantJoinRecordMapper.insertOne(record);
-    
+            
             // 将旧的已参与记录改为已失效
             if (Objects.nonNull(needUpdatedToInvalidRecord) && Objects.nonNull(result)) {
-                MerchantJoinRecordQueryModel queryModel = MerchantJoinRecordQueryModel.builder().joinUid(needUpdatedToInvalidRecord.getJoinUid())
-                        .status(MerchantJoinRecord.STATUS_INVALID).updateTime(System.currentTimeMillis()).build();
-        
-                this.updateStatus(queryModel);
+                this.updateStatusById(needUpdatedToInvalidRecord.getId(), MerchantJoinRecord.STATUS_INVALID, System.currentTimeMillis());
             }
             
             return R.ok();
@@ -505,5 +503,10 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
     @Override
     public List<MerchantJoinRecord> listByJoinUidAndStatus(Long joinUid, List<Integer> statusList) {
         return merchantJoinRecordMapper.selectListByJoinUidAndStatus(joinUid, statusList);
+    }
+    
+    @Override
+    public Integer updateStatusById(Long id, Integer status, long updateTime) {
+        return merchantJoinRecordMapper.updateStatusById(id, status, updateTime);
     }
 }
