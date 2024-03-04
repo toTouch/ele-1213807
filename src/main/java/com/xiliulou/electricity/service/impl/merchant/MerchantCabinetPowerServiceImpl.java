@@ -105,14 +105,13 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
     @Slave
     @Override
     public MerchantProPowerVO powerData(MerchantCabinetPowerRequest request) {
-//        Merchant merchant = merchantService.queryByUid(request.getUid());
-//        if (Objects.isNull(merchant)) {
-//            log.warn("Merchant power for pro todayPower, merchant not exist, uid={}", request.getUid());
-//            return null;
-//        }
-//
-//        request.setMerchantId(merchant.getId());
-        request.setMerchantId(36L);
+        Merchant merchant = merchantService.queryByUid(request.getUid());
+        if (Objects.isNull(merchant)) {
+            log.warn("Merchant power for pro todayPower, merchant not exist, uid={}", request.getUid());
+            return null;
+        }
+        
+        request.setMerchantId(merchant.getId());
         
         //获取要查询的柜机
         List<Long> cabinetIds = getStaticsCabinetIds(request);
@@ -280,14 +279,13 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
     @Slave
     @Override
     public MerchantProPowerLineVO lineData(MerchantCabinetPowerRequest request) {
-//        Merchant merchant = merchantService.queryByUid(request.getUid());
-//        if (Objects.isNull(merchant)) {
-//            log.warn("Merchant power for pro lineData, merchant not exist, uid={}", request.getUid());
-//            return null;
-//        }
-//
-//        request.setMerchantId(merchant.getId());
-        request.setMerchantId(36L);
+        Merchant merchant = merchantService.queryByUid(request.getUid());
+        if (Objects.isNull(merchant)) {
+            log.warn("Merchant power for pro lineData, merchant not exist, uid={}", request.getUid());
+            return null;
+        }
+        
+        request.setMerchantId(merchant.getId());
         
         //获取要查询的柜机
         List<Long> cabinetIds = getStaticsCabinetIds(request);
@@ -371,14 +369,13 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
     @Slave
     @Override
     public List<MerchantProCabinetPowerDetailVO> cabinetPowerDetail(MerchantCabinetPowerRequest request) {
-//        Merchant merchant = merchantService.queryByUid(request.getUid());
-//        if (Objects.isNull(merchant)) {
-//            log.warn("Merchant power for pro cabinetPowerDetail, merchant not exist, uid={}", request.getUid());
-//            return null;
-//        }
-//
-//        request.setMerchantId(merchant.getId());
-        request.setMerchantId(36L);
+        Merchant merchant = merchantService.queryByUid(request.getUid());
+        if (Objects.isNull(merchant)) {
+            log.warn("Merchant power for pro cabinetPowerDetail, merchant not exist, uid={}", request.getUid());
+            return null;
+        }
+    
+        request.setMerchantId(merchant.getId());
         
         //获取要查询的柜机
         List<Long> cabinetIds = getStaticsCabinetIds(request);
@@ -443,14 +440,13 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
     @Slave
     @Override
     public List<MerchantProCabinetPowerVO> cabinetPowerList(MerchantCabinetPowerRequest request) {
-//        Merchant merchant = merchantService.queryByUid(request.getUid());
-//        if (Objects.isNull(merchant)) {
-//            log.warn("Merchant power for pro cabinetPowerList, merchant not exist, uid={}", request.getUid());
-//            return null;
-//        }
-//
-//        request.setMerchantId(merchant.getId());
-        request.setMerchantId(36L);
+        Merchant merchant = merchantService.queryByUid(request.getUid());
+        if (Objects.isNull(merchant)) {
+            log.warn("Merchant power for pro cabinetPowerList, merchant not exist, uid={}", request.getUid());
+            return null;
+        }
+        
+        request.setMerchantId(merchant.getId());
         
         //获取要查询的柜机
         List<Long> cabinetIds = getStaticsCabinetIds(request);
@@ -662,14 +658,13 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
     @Slave
     @Override
     public Integer isShowPowerPage(Long uid) {
-//        Merchant merchant = merchantService.queryByUid(uid);
-//        if (Objects.isNull(merchant)) {
-//            log.warn("Merchant power for pro isShowPowerPage, merchant not exist, uid={}", uid);
-//            return null;
-//        }
-//        List<MerchantPlaceBind> bindList = merchantPlaceBindService.listByMerchantId(merchant.getId(), null);
-    
-        List<MerchantPlaceBind> bindList = merchantPlaceBindService.listByMerchantId(36L, null);
+        Merchant merchant = merchantService.queryByUid(uid);
+        if (Objects.isNull(merchant)) {
+            log.warn("Merchant power for pro isShowPowerPage, merchant not exist, uid={}", uid);
+            return null;
+        }
+        List<MerchantPlaceBind> bindList = merchantPlaceBindService.listByMerchantId(merchant.getId(), null);
+        
         if (CollectionUtils.isNotEmpty(bindList)) {
             return NumberConstant.ONE;
         }
@@ -679,14 +674,13 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
     @Slave
     @Override
     public MerchantPlaceAndCabinetUserVO listPlaceAndCabinetByMerchantId(Long uid) {
-//        Merchant merchant = merchantService.queryByUid(uid);
-//        if (Objects.isNull(merchant)) {
-//            log.warn("Merchant power for pro listPlaceAndCabinetByMerchantId, merchant not exist, uid={}", uid);
-//            return null;
-//        }
-//
-//        List<MerchantPlaceBind> bindList = merchantPlaceBindService.listByMerchantId(merchant.getId(), null);
-        List<MerchantPlaceBind> bindList = merchantPlaceBindService.listByMerchantId(36L, null);
+        Merchant merchant = merchantService.queryByUid(uid);
+        if (Objects.isNull(merchant)) {
+            log.warn("Merchant power for pro listPlaceAndCabinetByMerchantId, merchant not exist, uid={}", uid);
+            return null;
+        }
+        
+        List<MerchantPlaceBind> bindList = merchantPlaceBindService.listByMerchantId(merchant.getId(), null);
         if (CollectionUtils.isEmpty(bindList)) {
             return null;
         }
@@ -726,14 +720,13 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
     @Slave
     @Override
     public List<MerchantPlaceCabinetVO> listCabinetByPlaceId(Long uid, Long placeId) {
-//        Merchant merchant = merchantService.queryByUid(uid);
-//        if (Objects.isNull(merchant)) {
-//            log.warn("Merchant power for pro listCabinetByPlaceId, merchant not exist, uid={}", uid);
-//            return Collections.emptyList();
-//        }
-//
-//        List<MerchantPlaceBind> bindList = merchantPlaceBindService.listByMerchantId(merchant.getId(), null);
-        List<MerchantPlaceBind> bindList = merchantPlaceBindService.listByMerchantId(36L, null);
+        Merchant merchant = merchantService.queryByUid(uid);
+        if (Objects.isNull(merchant)) {
+            log.warn("Merchant power for pro listCabinetByPlaceId, merchant not exist, uid={}", uid);
+            return Collections.emptyList();
+        }
+        
+        List<MerchantPlaceBind> bindList = merchantPlaceBindService.listByMerchantId(merchant.getId(), null);
         if (CollectionUtils.isEmpty(bindList)) {
             log.warn("Merchant power for pro listCabinetByPlaceId, bindList is empty, uid={}, placeId={}", uid, placeId);
             return Collections.emptyList();
