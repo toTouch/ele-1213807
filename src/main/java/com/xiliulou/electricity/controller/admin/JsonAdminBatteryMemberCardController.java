@@ -178,7 +178,7 @@ public class JsonAdminBatteryMemberCardController extends BaseController {
                 .delFlag(BatteryMemberCard.DEL_NORMAL)
                 .build();
         
-        return R.ok(batteryMemberCardService.selectByPage(query));
+        return R.ok(batteryMemberCardService.selectByPageForMerchant(query));
     }
 
     /**
