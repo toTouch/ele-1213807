@@ -17,21 +17,6 @@
         <result property="updateTime" column="update_time" jdbcType="BIGINT"/>
     </resultMap>
     
-    <resultMap id="BaseResultMapResp" type="com.xiliulou.electricity.vo.faq.FaqVo">
-        <id property="id" column="id" jdbcType="BIGINT"/>
-        <result property="typeId" column="type_id" jdbcType="BIGINT"/>
-        <result property="title" column="title" jdbcType="VARCHAR"/>
-        <result property="answer" column="answer" jdbcType="VARCHAR"/>
-        <result property="onShelf" column="on_shelf" jdbcType="SMALLINT"/>
-        <result property="sort" column="sort" jdbcType="DECIMAL"/>
-        <result property="tenantId" column="tenant_id" jdbcType="INTEGER"/>
-        <result property="opUser" column="op_user" jdbcType="BIGINT"/>
-        <result property="createTime" column="create_time" jdbcType="BIGINT"/>
-        <result property="updateTime" column="update_time" jdbcType="BIGINT"/>
-        <result property="type" column="type" jdbcType="VARCHAR"/>
-        <result property="typeSort" column="type_sort" jdbcType="DECIMAL"/>
-    </resultMap>
-    
     <sql id="Base_Column_List">
         id
         ,type_id,title,
@@ -51,37 +36,46 @@
     <select id="selectByPrimaryKey" parameterType="java.lang.Long" resultMap="BaseResultMap">
         select
         <include refid="Base_Column_List"/>
-        from t_faq
+        from t_new_faq
         where id = #{id,jdbcType=BIGINT}
     </select>
     
-    <select id="selectByPrimaryKeyNoAnswer" parameterType="java.lang.Long" resultMap="BaseResultMap">
+    <select id="selectListByIds" resultMap="BaseResultMap">
         select
-        <include refid="Base_Column_No_Answer_List"/>
-        from t_faq
-        where id = #{id,jdbcType=BIGINT}
+        <include refid="Base_Column_List"/>
+        from t_new_faq
+        where
+        <if test="params.idList !=null and params.idList.size>0">
+            and id in
+            <foreach collection="params.idList" item="id" index="i" open="(" close=")" separator=",">
+                #{id}
+            </foreach>
+        </if>
     </select>
-    <select id="selectLeftJoinByParams" resultMap="BaseResultMapResp" resultType="list">
-        select c.id,f.type_id,c.type as type,c.sort as type_sort
-        FROM t_faq_category c left join t_faq f ON f.type_id = c.id
-        where 1 = 1
-        <if test="params.title != null">
-            and title like concat('%',#{params.title},'%')
-        </if>
-        <if test="params.tenantId != null">
-            and c.tenant_id = #{params.tenantId}
-        </if>
+    
+    <select id="selectLeftJoinByParams" resultType="com.xiliulou.electricity.bo.faq.FaqV2BO">
+        select f.id as id,f.type_id as type_id,c.type as type,c.sort as type_sort, title, f.sort as sort
+        FROM t_faq_category c left join t_new_faq f ON f.type_id = c.id
+        <where>
+            <if test="params.title != null and params.title != ''">
+                and title like concat('%',#{params.title},'%')
+            </if>
+            <if test="params.tenantId != null">
+                and c.tenant_id = #{params.tenantId}
+            </if>
+        </where>
     </select>
     <select id="selectListByParams" resultType="com.xiliulou.electricity.entity.faq.FaqV2">
         select
         <include refid="Base_Column_No_Answer_List"/>
-        FROM t_faq
+        FROM t_new_faq
         <include refid="Example_Where_Clause"/>
     </select>
+    
     <select id="selectListByParamsPage" resultType="com.xiliulou.electricity.entity.faq.FaqV2">
         select
         <include refid="Base_Column_No_Answer_List"/>
-        FROM t_faq
+        FROM t_new_faq
         
         <include refid="Example_Where_Clause"/>
         order by sort
@@ -91,7 +85,7 @@
     <!-- 通用查询结果列 -->
     <sql id="Example_Where_Clause_List">
         <trim prefix="where" prefixOverrides="and|or">
-            <if test="params.title != null">
+            <if test="params.title != null and params.title != ''">
                 and title like concat('%',#{params.title},'%')
             </if>
             <if test="params.tenantId != null">
@@ -109,7 +103,7 @@
             <if test="params.typeId != null">
                 and type_id = #{params.typeId}
             </if>
-            <if test="params.title != null">
+            <if test="params.title != null and params.title != ''">
                 and title like concat('%',#{params.title},'%')
             </if>
             <if test="params.tenantId != null">
@@ -118,14 +112,6 @@
             <if test="params.opUser != null">
                 and op_user = #{params.opUser}
             </if>
-            
-            <if test="params.idList !=null and params.idList.size>0">
-                and id in
-                <foreach collection="params.idList" item="id" index="i" open="(" close=")" separator=",">
-                    #{id}
-                </foreach>
-            </if>
-        
         </trim>
     </sql>
     
@@ -139,19 +125,19 @@
     
     <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
         delete
-        from t_faq
+        from t_new_faq
         where id = #{id,jdbcType=BIGINT}
     </delete>
     <delete id="removeByIds">
         delete
-        from t_faq
+        from t_new_faq
         where id in
         <foreach collection="list" item="id" index="i" open="(" close=")" separator=",">
             #{id}
         </foreach>
     </delete>
     <insert id="insert" keyColumn="id" keyProperty="id" parameterType="com.xiliulou.electricity.entity.faq.FaqV2" useGeneratedKeys="true">
-        insert into t_faq
+        insert into t_new_faq
         ( id, type_id, title
         , answer, on_shelf, sort
         , tenant_id, op_user, create_time
@@ -162,7 +148,7 @@
                , #{updateTime,jdbcType=BIGINT})
     </insert>
     <insert id="insertSelective" keyColumn="id" keyProperty="id" parameterType="com.xiliulou.electricity.entity.faq.FaqV2" useGeneratedKeys="true">
-        insert into t_faq
+        insert into t_new_faq
         <trim prefix="(" suffix=")" suffixOverrides=",">
             <if test="id != null">id,</if>
             <if test="typeId != null">typeId,</if>
@@ -189,15 +175,15 @@
         </trim>
     </insert>
     <update id="updateByPrimaryKeySelective" parameterType="com.xiliulou.electricity.entity.faq.FaqV2">
-        update t_faq
+        update t_new_faq
         <set>
             <if test="typeId != null">
                 type_id = #{typeId,jdbcType=BIGINT},
             </if>
-            <if test="title != null">
+            <if test="title != null and title != ''">
                 title = #{title,jdbcType=VARCHAR},
             </if>
-            <if test="answer != null">
+            <if test="answer != null and answer != ''">
                 answer = #{answer,jdbcType=VARCHAR},
             </if>
             <if test="onShelf != null">
@@ -222,7 +208,7 @@
         where id = #{id,jdbcType=BIGINT}
     </update>
     <update id="updateByPrimaryKey" parameterType="com.xiliulou.electricity.entity.faq.FaqV2">
-        update t_faq
+        update t_new_faq
         set type_id     = #{typeId,jdbcType=BIGINT},
             title       = #{title,jdbcType=VARCHAR},
             answer      = #{answer,jdbcType=VARCHAR},
@@ -233,5 +219,46 @@
             create_time = #{createTime,jdbcType=BIGINT},
             update_time = #{updateTime,jdbcType=BIGINT}
         where id = #{id,jdbcType=BIGINT}
+    </update>
+    
+    <select id="countFaqReqByTypeId" resultType="java.lang.Integer">
+        select count(1) from t_new_faq where type_id = #{typeId,jdbcType=BIGINT}
+    </select>
+    
+    <update id="batchUpdateByIds">
+        update t_new_faq
+        <set>
+            <if test="typeId != null">
+                type_id = #{typeId,jdbcType=BIGINT},
+            </if>
+            <if test="title != null and title != ''">
+                title = #{title,jdbcType=VARCHAR},
+            </if>
+            <if test="answer != null">
+                answer = #{answer,jdbcType=VARCHAR},
+            </if>
+            <if test="onShelf != null">
+                on_shelf = #{onShelf,jdbcType=SMALLINT},
+            </if>
+            <if test="sort != null">
+                sort = #{sort,jdbcType=DECIMAL},
+            </if>
+            <if test="tenantId != null">
+                tenant_id = #{tenantId,jdbcType=INTEGER},
+            </if>
+            <if test="opUser != null">
+                op_user = #{opUser,jdbcType=BIGINT},
+            </if>
+            <if test="createTime != null">
+                create_time = #{createTime,jdbcType=BIGINT},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime,jdbcType=BIGINT},
+            </if>
+        </set>
+        where id in
+        <foreach collection="list" item="id" index="i" open="(" close=")" separator=",">
+            #{id,jdbcType=BIGINT}
+        </foreach>
     </update>
 </mapper>

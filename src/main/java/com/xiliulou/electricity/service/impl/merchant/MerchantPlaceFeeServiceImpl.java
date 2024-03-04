@@ -355,7 +355,7 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
         // 获取当前月份
         String currentMonth = DateUtil.format(new Date(), "yyyy-MM");
         
-        String today = DateUtil.format(new Date(), "yyyy-MM-dd");
+        String today = DateUtil.format(new Date(), "yyyy-MM-dd hh:mm");
         if (Objects.equals(currentMonth, request.getMonth())) {
             List<MerchantPlaceFeeMonthDetail> curMothFeeRecords = getCurMonthFeeRecords(request);
             log.info("getPlaceDetailByCabinetId={}", curMothFeeRecords);
@@ -380,17 +380,14 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
                     
                     vo.setStartTime(placeFeeMonthDetail.getStartTime());
                     vo.setEndTime(placeFeeMonthDetail.getEndTime());
-                    String endDay = DateUtil.format(new Date(placeFeeMonthDetail.getEndTime()), "yyyy-MM-dd");
                     
-                    if (!Objects.equals(today, endDay)) {
-                        vo.setStatus(MerchantPlaceCabinetBindConstant.STATUS_UNBIND);
-                    } else {
-                        // 根据场地和柜判断当前是否绑定
-                        Integer count = merchantPlaceCabinetBindService.checkIsBindByPlaceId(placeFeeMonthDetail.getPlaceId(), placeFeeMonthDetail.getCabinetId());
-                        if (count >= 0) {
-                            vo.setStatus(MerchantPlaceCabinetBindConstant.STATUS_BIND);
-                        }
+                    vo.setStatus(placeFeeMonthDetail.getCabinetPlaceBindStatus());
+                    
+                    // 如果当前状态为绑定状态则将结束时间改为空
+                    if (Objects.equals(placeFeeMonthDetail.getCabinetPlaceBindStatus(), MerchantPlaceBindConstant.BIND)) {
+                        vo.setEndTime(null);
                     }
+                    
                     resList.add(vo);
                 }
             }
@@ -634,6 +631,13 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
                         
                         MerchantPlaceFeeMonthDetail merchantPlaceFeeMonthDetail = MerchantPlaceFeeMonthDetail.builder().merchantId(merchantId).placeId(placeId).cabinetId(cabinetId)
                                 .tenantId(cabinetRecord.getTenantId()).startTime(cabinetStartTime).endTime(cabinetEndTime).build();
+    
+                        merchantPlaceFeeMonthDetail.setCabinetPlaceBindStatus(MerchantPlaceBindConstant.UN_BIND);
+                        
+                        // 商户和场地处于绑定，场地和柜机处于绑定则意味着当前记录为绑定
+                        if (Objects.equals(bind.getType(), MerchantPlaceBindConstant.BIND) && Objects.equals(cabinetRecord.getCabinetPlaceBindStatus(), MerchantPlaceBindConstant.BIND)) {
+                            merchantPlaceFeeMonthDetail.setCabinetPlaceBindStatus(MerchantPlaceBindConstant.BIND);
+                        }
                         
                         // 计算开始和结束时间的场地费的总和
                         BigDecimal feeSum = merchantPlaceFeeDailyRecordMapper.selectList(cabinetStartTime, cabinetEndTime, cabinetId);
@@ -686,6 +690,7 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
                         record.setId(System.currentTimeMillis() + atomicReference.get());
                         record.setMonthDate(settleDate);
                         record.setPlaceId(cabinetBind.getPlaceId());
+                        record.setCabinetPlaceBindStatus(cabinetBind.getStatus());
                         record.setEid(cabinetBind.getCabinetId());
                         record.setRentStartTime(cabinetBind.getBindTime());
                         record.setRentEndTime(cabinetBind.getUnBindTime());
