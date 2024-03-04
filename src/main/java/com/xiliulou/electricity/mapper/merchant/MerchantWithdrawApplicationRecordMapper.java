@@ -22,6 +22,8 @@ public interface MerchantWithdrawApplicationRecordMapper {
     
     MerchantWithdrawApplicationRecordVO selectById(@Param("id") Long id);
     
+    MerchantWithdrawApplicationRecord selectByOrderNo(@Param("orderNo") String orderNo, @Param("tenantId") Integer tenantId);
+    
     List<MerchantWithdrawApplicationRecordVO> queryList(MerchantWithdrawApplicationRecordRequest merchantWithdrawApplicationRecordRequest);
     
     List<MerchantWithdrawApplicationRecordVO> selectListByCondition(MerchantWithdrawApplicationRecordRequest merchantWithdrawApplicationRecordRequest);

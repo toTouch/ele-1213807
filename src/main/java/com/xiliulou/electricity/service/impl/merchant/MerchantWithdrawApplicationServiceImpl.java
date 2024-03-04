@@ -509,8 +509,15 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
     @Slave
     @Override
     public List<MerchantWithdrawApplicationVO> queryMerchantWithdrawApplicationList(MerchantWithdrawApplicationRequest merchantWithdrawApplicationRequest) {
-        
         List<MerchantWithdrawApplicationVO> merchantWithdrawApplicationVOList = merchantWithdrawApplicationMapper.selectListByCondition(merchantWithdrawApplicationRequest);
+        
+        merchantWithdrawApplicationVOList.forEach(merchantWithdrawApplicationVO -> {
+            MerchantWithdrawApplicationRecord merchantWithdrawApplicationRecord = merchantWithdrawApplicationRecordService.selectByOrderNo(merchantWithdrawApplicationVO.getOrderNo(), merchantWithdrawApplicationVO.getTenantId());
+            if(Objects.nonNull(merchantWithdrawApplicationRecord)){
+                merchantWithdrawApplicationVO.setFailReason(merchantWithdrawApplicationRecord.getRemark());
+            }
+           
+        });
         
         return merchantWithdrawApplicationVOList;
     }
