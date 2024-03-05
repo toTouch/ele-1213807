@@ -202,7 +202,7 @@ public class RebateRecordServiceImpl implements RebateRecordService {
             list.forEach(item -> {
                 try {
                     applicationContext.getBean(RebateRecordService.class).handleRebate(item);
-                } catch (BeansException e) {
+                } catch (Exception e) {
                     log.error("HANDLE REBATE ERROR!orderId={}", item.getOrderId(), e);
                 }
             });

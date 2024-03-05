@@ -87,8 +87,8 @@ public class FaqCategoryV2ServiceImpl implements FaqCategoryV2Service {
     }
     
     @Override
-    public Integer listFaqCategoryCount(String title) {
+    public long listFaqCategoryCount(String title) {
         List<FaqV2BO> faqBos = faqCategoryV2Mapper.selectLeftJoinByParams(TenantContextHolder.getTenantId(), title, null);
-        return CollectionUtil.isEmpty(faqBos) ? 0 : faqBos.size();
+        return CollectionUtil.isEmpty(faqBos) ? 0 : faqBos.stream().filter(f -> f.getId() != null).count();
     }
 }

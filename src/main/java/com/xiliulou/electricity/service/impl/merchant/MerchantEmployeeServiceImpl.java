@@ -27,6 +27,7 @@ import com.xiliulou.electricity.vo.merchant.MerchantEmployeeQrCodeVO;
 import com.xiliulou.electricity.vo.merchant.MerchantEmployeeVO;
 import com.xiliulou.security.authentication.console.CustomPasswordEncoder;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -88,6 +89,12 @@ public class MerchantEmployeeServiceImpl implements MerchantEmployeeService {
         String phone = merchantEmployeeRequest.getPhone();
         
         //userService.queryByUserName(name);
+    
+        User existNameUser = userService.queryByUserName(name);
+        if(Objects.nonNull(existNameUser)){
+            log.error("The user name has been used by other one for add merchant employee, name = {}, tenant id = {}", name, merchantEmployeeRequest.getTenantId());
+            throw new BizException("120009", "用户姓名已存在");
+        }
         
         User existUser = userService.queryByUserPhone(phone, User.TYPE_USER_MERCHANT_EMPLOYEE, merchantEmployeeRequest.getTenantId());
         if (Objects.nonNull(existUser)) {
@@ -113,11 +120,11 @@ public class MerchantEmployeeServiceImpl implements MerchantEmployeeService {
         User userResult = userService.insert(user);
         
         //TODO 设置角色, 商户员工角色值待定
-        Long roleId = 0L;
+       /* Long roleId = 0L;
         
         UserRole userRole = new UserRole();
         userRole.setRoleId(roleId);
-        userRole.setUid(userResult.getUid());
+        userRole.setUid(userResult.getUid());*/
         //userRoleService.insert(userRole);
         
         MerchantEmployee merchantEmployee = new MerchantEmployee();
@@ -161,8 +168,13 @@ public class MerchantEmployeeServiceImpl implements MerchantEmployeeService {
             throw new BizException("120004", "商户员工不存在");
         }
     
-        //用户名为做限制，暂时不进行校验
+        //用户名需要限制，否则会导致
         //userService.queryByUserName(name);
+        User existNameUser = userService.queryByUserName(merchantEmployeeRequest.getName());
+        if(Objects.nonNull(existNameUser)){
+            log.error("The user name has been used by other one for update merchant employee, name = {}, tenant id = {}", merchantEmployeeRequest.getName(), merchantEmployeeRequest.getTenantId());
+            throw new BizException("120009", "用户姓名已存在");
+        }
         
         //检查当前手机号是否已经注册
         if(!Objects.equals(user.getPhone(), merchantEmployeeRequest.getPhone())){
