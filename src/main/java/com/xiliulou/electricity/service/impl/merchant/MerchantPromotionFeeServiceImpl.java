@@ -605,10 +605,7 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
         merchantPromotionFeeScanCodeVO.setLastMonthScanCodeNum(buildScanCodeCount(type, uid, dayOfMonthStartTime, dayOfMonthEndTime, null));
         
         //累计扫码人数：扫码绑定时间<=当前时间
-        MerchantPromotionScanCodeQueryModel totalScanCodeCountQueryModel = MerchantPromotionScanCodeQueryModel.builder().tenantId(TenantContextHolder.getTenantId()).type(type)
-                .inviterUid(uid).endTime(System.currentTimeMillis()).build();
-        Integer totalScanCodeCount = merchantJoinRecordService.countByCondition(totalScanCodeCountQueryModel);
-        merchantPromotionFeeScanCodeVO.setTotalScanCodeNum(totalScanCodeCount);
+        merchantPromotionFeeScanCodeVO.setTotalScanCodeNum(buildScanCodeCount(type, uid, null, System.currentTimeMillis(), null));
         
         //今日成功人数：首次成功购买指定套餐时间=今日0点～当前时间，邀请状态=邀请成功
         merchantPromotionFeeScanCodeVO.setTodayPurchaseNum(
@@ -623,10 +620,8 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
         merchantPromotionFeeScanCodeVO.setLastMonthPurchaseNum(buildScanCodeCount(type, uid, dayOfMonthStartTime, dayOfMonthEndTime, MerchantJoinRecord.STATUS_SUCCESS));
         
         //累计成功人数：首次成功购买指定套餐时间<=当前时间，邀请状态=邀请成功
-        MerchantPromotionScanCodeQueryModel totalPurchaseQueryModel = MerchantPromotionScanCodeQueryModel.builder().tenantId(TenantContextHolder.getTenantId()).type(type)
-                .inviterUid(uid).endTime(System.currentTimeMillis()).status(MerchantJoinRecord.STATUS_SUCCESS).build();
-        Integer totalPurchase = merchantJoinRecordService.countByCondition(totalPurchaseQueryModel);
-        merchantPromotionFeeScanCodeVO.setTotalPurchaseNum(totalPurchase);
+        merchantPromotionFeeScanCodeVO.setTotalPurchaseNum(buildScanCodeCount(type, uid, dayOfMonthStartTime, dayOfMonthEndTime, MerchantJoinRecord.STATUS_SUCCESS));
+    
     }
     
     private void buildPromotionFeeIncomeVO(Integer type, Long uid, MerchantPromotionFeeIncomeVO merchantPromotionFeeIncomeVO, long dayOfMonthStartTime, long dayOfMonthEndTime) {
