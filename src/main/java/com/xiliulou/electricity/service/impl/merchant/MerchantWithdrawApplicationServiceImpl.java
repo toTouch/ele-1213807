@@ -574,11 +574,12 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
                         log.info("query batch wechat transfer order info, response is null, batchNo = {}, tenant id = {}, response = {}", merchantWithdrawApplication.getBatchNo(), merchantWithdrawApplication.getTenantId(), wechatTransferBatchOrderQueryResult);
                         return;
                     }
+    
+                    log.info("query batch wechat transfer order result, result = {}", wechatTransferBatchOrderQueryResult);
                     //获取该批次记录状态结果
                     WechatTransferBatchOrderQueryCommonResult wechatTransferBatchOrderQueryCommonResult = wechatTransferBatchOrderQueryResult.getTransferBatch();
                     String batchStatus = wechatTransferBatchOrderQueryCommonResult.getBatchStatus();
-                    
-                    log.info("query batch wechat transfer order result, result = {}", wechatTransferBatchOrderQueryCommonResult);
+                   
                     //如果当前批次结果为已完成，则将提现申请状态修改为提现成功，如果当前批次结果为已关闭，则将提现申请状态修改为提现失败。
                     if(MerchantWithdrawConstant.WECHAT_BATCH_STATUS_FINISHED.equals(batchStatus)){
 
