@@ -4,8 +4,6 @@ package com.xiliulou.electricity.mapper.faq;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.xiliulou.electricity.bo.faq.FaqV2BO;
 import com.xiliulou.electricity.entity.faq.FaqCategoryV2;
-import com.xiliulou.electricity.entity.faq.FaqV2;
-import com.xiliulou.electricity.vo.faq.FaqCategoryVo;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
@@ -34,7 +32,7 @@ public interface FaqCategoryV2Mapper extends BaseMapper<FaqCategoryV2> {
     
     Integer countFaqCategoryByTenantId(@Param(value = "tenantId") Integer tenantId);
     
-    List<FaqV2BO> selectLeftJoinByParams(@Param(value = "tenantId") Integer tenantId);
+    List<FaqV2BO> selectLeftJoinByParams(@Param(value = "tenantId") Integer tenantId, @Param("title") String title, @Param("typeId") Integer typeId);
 }
 
 

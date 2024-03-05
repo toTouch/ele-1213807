@@ -447,13 +447,13 @@
         select IFNULL(sum(amount),0) from t_merchant_withdraw_application where del_flag=0 and tenant_id =#{tenantId} and status =#{status} and uid =#{uid}
     </select>
     
+    <!--查询已审批的申请记录-->
     <select id="selectListForWithdrawInProgress" resultType="com.xiliulou.electricity.entity.merchant.MerchantWithdrawApplication">
         select distinct tmwa.batch_no,
                tmwa.tenant_id
         from t_merchant_withdraw_application tmwa
         where tmwa.del_flag = 0
           and tmwa.status = 4
-          and tmwa.check_time <![CDATA[ <=  ]]> #{checkTime}
         limit #{offset},#{size}
     </select>
     

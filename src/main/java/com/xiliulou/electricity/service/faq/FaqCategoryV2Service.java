@@ -29,5 +29,7 @@ public interface FaqCategoryV2Service {
      */
     void editFaqCategory(AdminFaqCategoryReq faqCategoryReq);
     
-    List<FaqCategoryVo> listFaqCategory();
+    List<FaqCategoryVo> listFaqCategory(String title, Integer typeId);
+    
+    Integer listFaqCategoryCount(String title);
 }
