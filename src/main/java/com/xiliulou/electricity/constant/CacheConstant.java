@@ -603,6 +603,4 @@ public interface CacheConstant {
     
     String CACHE_TENANT_NOTE = "cache_tenant_note:";
     
-    String MERCHANT_PLACE_CABINET_SEARCH_LOCK = "merchant_place_cabinet_search_lock:";
-    
 }
