@@ -68,113 +68,115 @@ public class MerchantUpgradeConsumer implements RocketMQListener<String> {
         
         try {
             merchantUpgrade = JsonUtil.fromJson(message, MerchantUpgrade.class);
+            
+            if (Objects.isNull(merchantUpgrade) || Objects.isNull(merchantUpgrade.getUid())) {
+                return;
+            }
+            
+            UserInfoExtra userInfoExtra = userInfoExtraService.queryByUidFromCache(merchantUpgrade.getUid());
+            if (Objects.isNull(userInfoExtra) || Objects.isNull(userInfoExtra.getMerchantId())) {
+                return;
+            }
+            
+            Merchant merchant = merchantService.queryByIdFromCache(userInfoExtra.getMerchantId());
+            if (Objects.isNull(merchant)) {
+                return;
+            }
+            
+            if (Objects.equals(MerchantConstant.DISABLE, merchant.getStatus())) {
+                log.warn("MERCHANT UPGRADE CONSUMER WARN!merchant is disable,merchantId={}", userInfoExtra.getMerchantId());
+                return;
+            }
+            
+            if (!Objects.equals(MerchantConstant.open, merchant.getAutoUpGrade())) {
+                log.info("MERCHANT UPGRADE CONSUMER INFO!merchant is not auto upgrade,merchantId={}", userInfoExtra.getMerchantId());
+                return;
+            }
+            
+            MerchantAttr merchantAttr = merchantAttrService.queryByTenantId(merchant.getTenantId());
+            if (Objects.isNull(merchantAttr)) {
+                log.warn("MERCHANT UPGRADE CONSUMER WARN!merchantAttr is null,merchantId={}", userInfoExtra.getMerchantId());
+                return;
+            }
+            
+            List<MerchantLevelVO> merchantLevelList = merchantLevelService.list(merchantAttr.getTenantId());
+            if (CollectionUtils.isEmpty(merchantLevelList)) {
+                log.warn("MERCHANT UPGRADE CONSUMER WARN!merchantLevelList is null,merchantId={}", userInfoExtra.getMerchantId());
+                return;
+            }
+            
+            //升级条件：拉新人数
+            if (Objects.equals(MerchantConstant.UPGRADE_CONDITION_INVITATION, merchantAttr.getUpgradeCondition())) {
+                List<MerchantJoinRecord> merchantJoinRecords = merchantJoinRecordService.listByMerchantIdAndStatus(merchant.getId(), MerchantJoinRecord.STATUS_SUCCESS);
+                if (CollectionUtils.isEmpty(merchantJoinRecords)) {
+                    log.warn("MERCHANT UPGRADE CONSUMER WARN!merchantJoinRecords is null,merchantId={}", userInfoExtra.getMerchantId());
+                    return;
+                }
+                
+                //拉新人数
+                int invitationNumber = merchantJoinRecords.size();
+                
+                MerchantLevelVO merchantLevel = null;
+                
+                for (MerchantLevelVO merchantLevelVO : merchantLevelList) {
+                    if (Objects.nonNull(merchantLevelVO.getInvitationUserCount()) && merchantLevelVO.getInvitationUserCount() > 0
+                            && invitationNumber >= merchantLevelVO.getInvitationUserCount()) {
+                        merchantLevel = merchantLevelVO;
+                        break;
+                    }
+                }
+                
+                modifyMerchantLevel(userInfoExtra, merchant, merchantLevel);
+            }
+            
+            //升级条件：续费人数
+            if (Objects.equals(MerchantConstant.UPGRADE_CONDITION_RENEWAL, merchantAttr.getUpgradeCondition())) {
+                //续费人数
+                int renewalNumber = userBatteryMemberCardService.queryRenewalNumberByMerchantId(merchant.getId(), merchantAttr.getTenantId());
+                
+                MerchantLevelVO merchantLevel = null;
+                
+                for (MerchantLevelVO merchantLevelVO : merchantLevelList) {
+                    if (Objects.nonNull(merchantLevelVO.getRenewalUserCount()) && merchantLevelVO.getRenewalUserCount() > 0
+                            && renewalNumber >= merchantLevelVO.getRenewalUserCount()) {
+                        merchantLevel = merchantLevelVO;
+                        break;
+                    }
+                }
+                
+                modifyMerchantLevel(userInfoExtra, merchant, merchantLevel);
+            }
+            
+            //升级条件：全部
+            if (Objects.equals(MerchantConstant.UPGRADE_CONDITION_ALL, merchantAttr.getUpgradeCondition())) {
+                List<MerchantJoinRecord> merchantJoinRecords = merchantJoinRecordService.listByMerchantIdAndStatus(merchant.getId(), MerchantJoinRecord.STATUS_SUCCESS);
+                if (CollectionUtils.isEmpty(merchantJoinRecords)) {
+                    log.warn("MERCHANT UPGRADE CONSUMER WARN!merchantJoinRecords is null,merchantId={}", userInfoExtra.getMerchantId());
+                    return;
+                }
+                
+                //拉新人数
+                int invitationNumber = merchantJoinRecords.size();
+                
+                //续费人数
+                int renewalNumber = userBatteryMemberCardService.queryRenewalNumberByMerchantId(merchant.getId(), merchantAttr.getTenantId());
+                
+                MerchantLevelVO merchantLevel = null;
+                
+                for (MerchantLevelVO merchantLevelVO : merchantLevelList) {
+                    if (Objects.nonNull(merchantLevelVO.getInvitationUserCount()) && merchantLevelVO.getInvitationUserCount() > 0
+                            && invitationNumber >= merchantLevelVO.getInvitationUserCount() && Objects.nonNull(merchantLevelVO.getRenewalUserCount())
+                            && merchantLevelVO.getRenewalUserCount() > 0 && renewalNumber >= merchantLevelVO.getRenewalUserCount()) {
+                        merchantLevel = merchantLevelVO;
+                        break;
+                    }
+                }
+                
+                modifyMerchantLevel(userInfoExtra, merchant, merchantLevel);
+            }
+            
         } catch (Exception e) {
-            log.error("MERCHANT UPGRADE CONSUMER ERROR!parse fail,msg={}", message, e);
-        }
-        
-        if (Objects.isNull(merchantUpgrade) || Objects.isNull(merchantUpgrade.getUid())) {
-            return;
-        }
-        
-        UserInfoExtra userInfoExtra = userInfoExtraService.queryByUidFromCache(merchantUpgrade.getUid());
-        if (Objects.isNull(userInfoExtra) || Objects.isNull(userInfoExtra.getMerchantId())) {
-            return;
-        }
-        
-        Merchant merchant = merchantService.queryByIdFromCache(userInfoExtra.getMerchantId());
-        if (Objects.isNull(merchant)) {
-            return;
-        }
-        
-        if (Objects.equals(MerchantConstant.DISABLE, merchant.getStatus())) {
-            log.warn("MERCHANT UPGRADE CONSUMER WARN!merchant is disable,merchantId={}", userInfoExtra.getMerchantId());
-            return;
-        }
-        
-        if (!Objects.equals(MerchantConstant.open, merchant.getAutoUpGrade())) {
-            log.info("MERCHANT UPGRADE CONSUMER INFO!merchant is not auto upgrade,merchantId={}", userInfoExtra.getMerchantId());
-            return;
-        }
-        
-        MerchantAttr merchantAttr = merchantAttrService.queryByTenantId(merchant.getTenantId());
-        if (Objects.isNull(merchantAttr)) {
-            log.warn("MERCHANT UPGRADE CONSUMER WARN!merchantAttr is null,merchantId={}", userInfoExtra.getMerchantId());
-            return;
-        }
-        
-        List<MerchantLevelVO> merchantLevelList = merchantLevelService.list(merchantAttr.getTenantId());
-        if (CollectionUtils.isEmpty(merchantLevelList)) {
-            log.warn("MERCHANT UPGRADE CONSUMER WARN!merchantLevelList is null,merchantId={}", userInfoExtra.getMerchantId());
-            return;
-        }
-        
-        //升级条件：拉新人数
-        if (Objects.equals(MerchantConstant.UPGRADE_CONDITION_INVITATION, merchantAttr.getUpgradeCondition())) {
-            List<MerchantJoinRecord> merchantJoinRecords = merchantJoinRecordService.listByMerchantIdAndStatus(merchant.getId(), MerchantJoinRecord.STATUS_SUCCESS);
-            if (CollectionUtils.isEmpty(merchantJoinRecords)) {
-                log.warn("MERCHANT UPGRADE CONSUMER WARN!merchantJoinRecords is null,merchantId={}", userInfoExtra.getMerchantId());
-                return;
-            }
-            
-            //拉新人数
-            int invitationNumber = merchantJoinRecords.size();
-            
-            MerchantLevelVO merchantLevel = null;
-            
-            for (MerchantLevelVO merchantLevelVO : merchantLevelList) {
-                if (Objects.nonNull(merchantLevelVO.getInvitationUserCount()) && merchantLevelVO.getInvitationUserCount() > 0
-                        && invitationNumber >= merchantLevelVO.getInvitationUserCount()) {
-                    merchantLevel = merchantLevelVO;
-                    break;
-                }
-            }
-            
-            modifyMerchantLevel(userInfoExtra, merchant, merchantLevel);
-        }
-        
-        //升级条件：续费人数
-        if (Objects.equals(MerchantConstant.UPGRADE_CONDITION_RENEWAL, merchantAttr.getUpgradeCondition())) {
-            //续费人数
-            int renewalNumber = userBatteryMemberCardService.queryRenewalNumberByMerchantId(merchant.getId(), merchantAttr.getTenantId());
-            
-            MerchantLevelVO merchantLevel = null;
-            
-            for (MerchantLevelVO merchantLevelVO : merchantLevelList) {
-                if (Objects.nonNull(merchantLevelVO.getRenewalUserCount()) && merchantLevelVO.getRenewalUserCount() > 0 && renewalNumber >= merchantLevelVO.getRenewalUserCount()) {
-                    merchantLevel = merchantLevelVO;
-                    break;
-                }
-            }
-            
-            modifyMerchantLevel(userInfoExtra, merchant, merchantLevel);
-        }
-        
-        //升级条件：全部
-        if (Objects.equals(MerchantConstant.UPGRADE_CONDITION_ALL, merchantAttr.getUpgradeCondition())) {
-            List<MerchantJoinRecord> merchantJoinRecords = merchantJoinRecordService.listByMerchantIdAndStatus(merchant.getId(), MerchantJoinRecord.STATUS_SUCCESS);
-            if (CollectionUtils.isEmpty(merchantJoinRecords)) {
-                log.warn("MERCHANT UPGRADE CONSUMER WARN!merchantJoinRecords is null,merchantId={}", userInfoExtra.getMerchantId());
-                return;
-            }
-            
-            //拉新人数
-            int invitationNumber = merchantJoinRecords.size();
-            
-            //续费人数
-            int renewalNumber = userBatteryMemberCardService.queryRenewalNumberByMerchantId(merchant.getId(), merchantAttr.getTenantId());
-            
-            MerchantLevelVO merchantLevel = null;
-            
-            for (MerchantLevelVO merchantLevelVO : merchantLevelList) {
-                if (Objects.nonNull(merchantLevelVO.getInvitationUserCount()) && merchantLevelVO.getInvitationUserCount() > 0
-                        && invitationNumber >= merchantLevelVO.getInvitationUserCount() && Objects.nonNull(merchantLevelVO.getRenewalUserCount())
-                        && merchantLevelVO.getRenewalUserCount() > 0 && renewalNumber >= merchantLevelVO.getRenewalUserCount()) {
-                    merchantLevel = merchantLevelVO;
-                    break;
-                }
-            }
-            
-            modifyMerchantLevel(userInfoExtra, merchant, merchantLevel);
+            log.error("MERCHANT UPGRADE CONSUMER ERROR!msg={}", message, e);
         }
     }
     

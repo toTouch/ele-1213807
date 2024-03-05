@@ -103,20 +103,20 @@ public class BatteryMemberCardMerchantRebateConsumer implements RocketMQListener
         
         try {
             batteryMemberCardMerchantRebate = JsonUtil.fromJson(message, BatteryMemberCardMerchantRebate.class);
+    
+            if (Objects.isNull(batteryMemberCardMerchantRebate) || Objects.isNull(batteryMemberCardMerchantRebate.getType())) {
+                return;
+            }
+    
+            if (Objects.equals(MerchantConstant.TYPE_PURCHASE, batteryMemberCardMerchantRebate.getType())) {
+                //返利
+                handleRebate(batteryMemberCardMerchantRebate);
+            } else {
+                //退租
+                handleMemberCardRentRefund(batteryMemberCardMerchantRebate);
+            }
         } catch (Exception e) {
-            log.error("REBATE CONSUMER ERROR!parse fail,msg={}", message, e);
-        }
-        
-        if (Objects.isNull(batteryMemberCardMerchantRebate) || Objects.isNull(batteryMemberCardMerchantRebate.getType())) {
-            return;
-        }
-        
-        if (Objects.equals(MerchantConstant.TYPE_PURCHASE, batteryMemberCardMerchantRebate.getType())) {
-            //返利
-            handleRebate(batteryMemberCardMerchantRebate);
-        } else {
-            //退租
-            handleMemberCardRentRefund(batteryMemberCardMerchantRebate);
+            log.error("REBATE CONSUMER ERROR!msg={}", message, e);
         }
     }
     
