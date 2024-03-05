@@ -325,6 +325,7 @@ public class ChannelEmployeeServiceImpl implements ChannelEmployeeService {
         return Triple.of(true, null, result);
     }
     
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public Integer removeById(Long id) {
         ChannelEmployee channelEmployee = channelEmployeeMapper.selectById(id);
@@ -345,10 +346,25 @@ public class ChannelEmployeeServiceImpl implements ChannelEmployeeService {
         User user = userService.queryByUidFromCache(channelEmployee.getUid());
         Integer result = 0;
         if(Objects.nonNull(user)){
+            User updateUser = new User();
+            updateUser.setUid(user.getUid());
+            updateUser.setUpdateTime(System.currentTimeMillis());
+            updateUser.setLockFlag(User.USER_LOCK);
+            updateUser.setDelFlag(User.DEL_DEL);
+            userService.updateMerchantUser(updateUser);
+    
             userOauthBindService.deleteByUid(channelEmployee.getUid(), channelEmployee.getTenantId().intValue());
+    
             result = userService.removeById(channelEmployee.getUid(), System.currentTimeMillis());
-            redisService.delete(CacheConstant.CACHE_USER_UID + channelEmployee.getUid());
-            redisService.delete(CacheConstant.CACHE_USER_PHONE + user.getTenantId() + ":" + user.getPhone() + ":" + user.getUserType());
+          
+            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
+                @Override
+                public void afterCommit() {
+                    //清理缓存，避免缓存操作和数据库提交在同一个事务中失效的问题
+                    redisService.delete(CacheConstant.CACHE_USER_UID + channelEmployee.getUid());
+                    redisService.delete(CacheConstant.CACHE_USER_PHONE + user.getTenantId() + ":" + user.getPhone() + ":" + user.getUserType());
+                }
+            });
         }
         return result;
     }
