@@ -39,8 +39,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Comparator;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -138,7 +136,7 @@ public class MerchantPromotionMonthRecordServiceImpl implements MerchantPromotio
         // excelVOList 按merchantId进行分组
         Map<Long, List<MerchantPromotionDayRecordVO>> detailMap = detailList.stream().collect(Collectors.groupingBy(MerchantPromotionDayRecordVO::getMerchantId));
         // todo 排序
-    
+        
         detailMap.forEach((merchantId, merchantDayRecordVoList) -> {
             
             if (CollectionUtils.isNotEmpty(merchantDayRecordVoList)) {
@@ -166,15 +164,15 @@ public class MerchantPromotionMonthRecordServiceImpl implements MerchantPromotio
                     
                     switch (item.getType()) {
                         case MerchantPromotionDayRecord.LASH:
-                            typeName = MerchantPromotionDayRecord.LASH_NAME;
+                            typeName = RebateRecordConstant.LASH_NAME;
                             dayMoney = item.getMoney();
                             break;
                         case MerchantPromotionDayRecord.RENEW:
-                            typeName = MerchantPromotionDayRecord.RENEW_NAME;
+                            typeName = RebateRecordConstant.RENEW_NAME;
                             dayMoney = item.getMoney();
                             break;
                         case MerchantPromotionDayRecord.BALANCE:
-                            typeName = MerchantPromotionDayRecord.BALANCE_NAME;
+                            typeName = RebateRecordConstant.BALANCE_NAME;
                             dayMoney = item.getMoney();
                             break;
                         default:

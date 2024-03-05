@@ -4,6 +4,7 @@ import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.merchant.MerchantConstant;
+import com.xiliulou.electricity.constant.merchant.MerchantJoinRecordConstant;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.UserInfoExtra;
 import com.xiliulou.electricity.entity.merchant.Merchant;
@@ -165,7 +166,7 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
         userInfoExtraUpdate.setMerchantId(merchantJoinRecord.getMerchantId());
         userInfoExtraUpdate.setChannelEmployeeUid(merchantJoinRecord.getChannelEmployeeUid());
         userInfoExtraUpdate.setUpdateTime(System.currentTimeMillis());
-        if (Objects.equals(MerchantJoinRecord.INVITER_TYPE_MERCHANT_PLACE_EMPLOYEE, merchantJoinRecord.getInviterType())) {
+        if (Objects.equals(MerchantJoinRecordConstant.INVITER_TYPE_MERCHANT_PLACE_EMPLOYEE, merchantJoinRecord.getInviterType())) {
             userInfoExtraUpdate.setPlaceUid(merchantJoinRecord.getInviterUid());
             userInfoExtraUpdate.setPlaceId(merchantJoinRecord.getPlaceId());
         }
@@ -174,7 +175,7 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
         
         MerchantJoinRecord merchantJoinRecordUpdate = new MerchantJoinRecord();
         merchantJoinRecordUpdate.setId(merchantJoinRecord.getId());
-        merchantJoinRecordUpdate.setStatus(MerchantJoinRecord.STATUS_SUCCESS);
+        merchantJoinRecordUpdate.setStatus(MerchantJoinRecordConstant.STATUS_SUCCESS);
         merchantJoinRecordUpdate.setUpdateTime(System.currentTimeMillis());
         merchantJoinRecordService.updateById(merchantJoinRecordUpdate);
         

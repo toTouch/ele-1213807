@@ -12,6 +12,7 @@ import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -331,5 +332,19 @@ public class DateUtils {
         ZonedDateTime startOfDay = zonedDateTime.toLocalDate().atStartOfDay(CHINA_ZONE_ID);
         // 如果需要再次转换回时间戳
         return startOfDay.toInstant().toEpochMilli();
+    }
+    
+    public static long getEndOfDayTimestamp(long timestamp){
+        // 将时间戳转换为Instant对象
+        Instant instant = Instant.ofEpochMilli(timestamp);
+    
+        // 转换为LocalDateTime并设置为当天的开始时间
+        LocalDateTime localDateTime = instant.atZone(ZoneId.systemDefault()).toLocalDate().atStartOfDay();
+    
+        // 计算当天的最后一刻（即23:59:59.999）
+        LocalDateTime endOfDay = localDateTime.plus(1, ChronoUnit.DAYS).minus(1, ChronoUnit.MILLIS);
+    
+        // 再次转换回时间戳
+        return endOfDay.atZone(CHINA_ZONE_ID).toInstant().toEpochMilli();
     }
 }

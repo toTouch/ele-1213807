@@ -84,10 +84,4 @@ public class EleChargeConfigRecord {
      */
     private Long operator;
     
-    public static final Integer OPERATION_TYPE_NEW = 1;
-    
-    public static final Integer OPERATION_TYPE_UPDATE = 2;
-    
-    public static final Integer OPERATION_TYPE_DELETE = 3;
-    
 }

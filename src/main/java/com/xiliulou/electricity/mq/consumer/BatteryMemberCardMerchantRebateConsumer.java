@@ -2,13 +2,13 @@ package com.xiliulou.electricity.mq.consumer;
 
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.constant.merchant.MerchantConstant;
+import com.xiliulou.electricity.constant.merchant.MerchantJoinRecordConstant;
 import com.xiliulou.electricity.entity.BatteryMembercardRefundOrder;
 import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.UserInfoExtra;
 import com.xiliulou.electricity.entity.merchant.Merchant;
-import com.xiliulou.electricity.entity.merchant.MerchantJoinRecord;
 import com.xiliulou.electricity.entity.merchant.MerchantLevel;
 import com.xiliulou.electricity.entity.merchant.RebateConfig;
 import com.xiliulou.electricity.entity.merchant.RebateRecord;
@@ -261,7 +261,7 @@ public class BatteryMemberCardMerchantRebateConsumer implements RocketMQListener
         if(Objects.equals( electricityMemberCardOrder.getPayCount(),1)){
             MerchantJoinRecordQueryModel merchantJoinRecordQueryModel = new MerchantJoinRecordQueryModel();
             merchantJoinRecordQueryModel.setJoinUid(electricityMemberCardOrder.getUid());
-            merchantJoinRecordQueryModel.setStatus(MerchantJoinRecord.STATUS_INVALID);
+            merchantJoinRecordQueryModel.setStatus(MerchantJoinRecordConstant.STATUS_INVALID);
             merchantJoinRecordQueryModel.setUpdateTime(System.currentTimeMillis());
             merchantJoinRecordService.updateStatus(merchantJoinRecordQueryModel);
         }
