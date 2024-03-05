@@ -4,13 +4,10 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.ElectricityConfig;
 import com.xiliulou.electricity.mapper.ElectricityConfigMapper;
 import com.xiliulou.electricity.query.faq.AdminFaqQuery;
-import com.xiliulou.electricity.reqparam.faq.AdminFaqCategoryReq;
 import com.xiliulou.electricity.service.faq.FaqCategoryV2Service;
 import com.xiliulou.electricity.service.faq.FaqV2Service;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
-import com.xiliulou.electricity.validator.CreateGroup;
 import lombok.AllArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -32,9 +29,11 @@ import java.util.Objects;
 @AllArgsConstructor
 @Validated
 public class JsonUserV2FaqController {
-
+    
     private final FaqV2Service faqV2Service;
+    
     private final ElectricityConfigMapper electricityConfigMapper;
+    
     private final FaqCategoryV2Service faqCategoryV2Service;
     
     /**
@@ -71,7 +70,8 @@ public class JsonUserV2FaqController {
      * @date 2024/2/23 16:11
      */
     @GetMapping("/user/faq/category/page/v2")
-    public R query() {
-        return R.ok(faqCategoryV2Service.listFaqCategory());
+    public R query(@RequestParam(value = "title", required = false) String title,
+            @RequestParam(value = "typeId", required = false) Integer typeId) {
+        return R.ok(faqCategoryV2Service.listFaqCategory(title,typeId));
     }
 }

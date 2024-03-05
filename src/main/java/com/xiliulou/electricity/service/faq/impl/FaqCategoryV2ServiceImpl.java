@@ -2,10 +2,8 @@ package com.xiliulou.electricity.service.faq.impl;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollectionUtil;
-import com.xiliulou.electricity.annotation.Log;
 import com.xiliulou.electricity.bo.faq.FaqV2BO;
 import com.xiliulou.electricity.entity.faq.FaqCategoryV2;
-import com.xiliulou.electricity.entity.faq.FaqV2;
 import com.xiliulou.electricity.mapper.faq.FaqCategoryV2Mapper;
 import com.xiliulou.electricity.mapper.faq.FaqV2Mapper;
 import com.xiliulou.electricity.reqparam.faq.AdminFaqCategoryReq;
@@ -13,18 +11,15 @@ import com.xiliulou.electricity.service.faq.FaqCategoryV2Service;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.faq.FaqCategoryVo;
-import com.xiliulou.electricity.vo.faq.FaqListVos;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import javax.validation.constraints.Size;
 import java.math.BigDecimal;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -69,8 +64,8 @@ public class FaqCategoryV2ServiceImpl implements FaqCategoryV2Service {
     }
     
     @Override
-    public List<FaqCategoryVo> listFaqCategory() {
-        List<FaqV2BO> faqBos = faqCategoryV2Mapper.selectLeftJoinByParams(TenantContextHolder.getTenantId());
+    public List<FaqCategoryVo> listFaqCategory(String title, Integer typeId) {
+        List<FaqV2BO> faqBos = faqCategoryV2Mapper.selectLeftJoinByParams(TenantContextHolder.getTenantId(), title,typeId);
         
         if (CollectionUtil.isEmpty(faqBos)) {
             return null;
@@ -89,5 +84,11 @@ public class FaqCategoryV2ServiceImpl implements FaqCategoryV2Service {
             BeanUtil.copyProperties(faqCategory, faqCategoryVo);
             return faqCategoryVo;
         }).sorted(Comparator.comparing(FaqCategoryVo::getSort)).collect(Collectors.toList());
+    }
+    
+    @Override
+    public Integer listFaqCategoryCount(String title) {
+        List<FaqV2BO> faqBos = faqCategoryV2Mapper.selectLeftJoinByParams(TenantContextHolder.getTenantId(), title, null);
+        return CollectionUtil.isEmpty(faqBos) ? 0 : faqBos.size();
     }
 }
