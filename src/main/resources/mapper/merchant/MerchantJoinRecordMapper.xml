@@ -199,10 +199,13 @@
             <if test="endTime != null">
                 and start_time &lt;= #{endTime}
             </if>
-            <if test="type != null">
+            <if test="type != null and type==3">
+                and channel_employee_uid = #{type}
+            </if>
+            <if test="type != null and type!=3">
                 and inviter_type = #{type}
             </if>
-            <if test="inviterUid != null">
+            <if test="inviterUid != null and type!=3">
                 and inviter_uid = #{inviterUid}
             </if>
             <if test="status != null">
@@ -211,7 +214,7 @@
             <if test="tenantId != null">
                 and tenant_id = #{tenantId}
             </if>
-        
+    
         </where>
         ) a
     </select>
