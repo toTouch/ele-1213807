@@ -132,7 +132,7 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
             MerchantJoinRecord needUpdatedToInvalidRecord = null;
             // 是否存在已邀请成功的记录及是否过保护期
             List<MerchantJoinRecord> joinRecordList = this.listByJoinUidAndStatus(joinUid,
-                    List.of(MerchantJoinRecordConstant.STATUS_SUCCESS, MerchantJoinRecordConstant.STATUS_INIT, MerchantJoinRecordConstant.STATUS_EXPIRED));
+                    List.of(MerchantJoinRecordConstant.STATUS_SUCCESS, MerchantJoinRecordConstant.STATUS_EXPIRED));
             if (CollectionUtils.isNotEmpty(joinRecordList)) {
                 for (MerchantJoinRecord joinRecord : joinRecordList) {
                     // 有邀请成功记录或参与过期记录，则返回
@@ -281,11 +281,11 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
         if (Objects.nonNull(protectionTime) && Objects.nonNull(protectionTimeUnit)) {
             //分钟转毫秒
             if (Objects.equals(protectionTimeUnit, CommonConstant.TIME_UNIT_MINUTES)) {
-                protectionExpireTime = nowTime + protectionTime * protectionTimeUnit * TimeConstant.MINUTE_MILLISECOND;
+                protectionExpireTime = nowTime + protectionTime * TimeConstant.MINUTE_MILLISECOND;
             }
             //小时转毫秒
             if (Objects.equals(protectionTimeUnit, CommonConstant.TIME_UNIT_HOURS)) {
-                protectionExpireTime = nowTime + protectionTime * protectionTimeUnit * TimeConstant.HOURS_MILLISECOND;
+                protectionExpireTime = nowTime + protectionTime * TimeConstant.HOURS_MILLISECOND;
             }
         }
         
@@ -294,11 +294,11 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
         if (Objects.nonNull(validTime) && Objects.nonNull(validTimeUnit)) {
             //分钟转毫秒
             if (Objects.equals(validTimeUnit, CommonConstant.TIME_UNIT_MINUTES)) {
-                expiredTime = nowTime + validTime * validTimeUnit * TimeConstant.MINUTE_MILLISECOND;
+                expiredTime = nowTime + validTime * TimeConstant.MINUTE_MILLISECOND;
             }
             //小时转毫秒
             if (Objects.equals(validTimeUnit, CommonConstant.TIME_UNIT_HOURS)) {
-                expiredTime = nowTime + validTime * validTimeUnit * TimeConstant.HOURS_MILLISECOND;
+                expiredTime = nowTime + validTime * TimeConstant.HOURS_MILLISECOND;
             }
             
         }
@@ -306,7 +306,8 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
         // 生成参与记录
         return MerchantJoinRecord.builder().merchantId(merchantId).channelEmployeeUid(channelEmployeeUid).placeId(placeId).inviterUid(inviterUid).inviterType(inviterType)
                 .joinUid(joinUid).startTime(nowTime).expiredTime(expiredTime).status(MerchantJoinRecordConstant.STATUS_INIT).protectionTime(protectionExpireTime)
-                .protectionStatus(MerchantJoinRecordConstant.PROTECTION_STATUS_NORMAL).delFlag(NumberConstant.ZERO).createTime(nowTime).updateTime(nowTime).tenantId(tenantId).build();
+                .protectionStatus(MerchantJoinRecordConstant.PROTECTION_STATUS_NORMAL).delFlag(NumberConstant.ZERO).createTime(nowTime).updateTime(nowTime).tenantId(tenantId)
+                .build();
     }
     
     @Slave
