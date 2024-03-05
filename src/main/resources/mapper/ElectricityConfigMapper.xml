@@ -144,8 +144,8 @@
             <if test="updateTime != null">
                 update_time = #{updateTime},
             </if>
-            <if test="wx_customer != null">
-                wx_customer = #{status}
+            <if test="wxCustomer != null">
+                wx_customer = #{wxCustomer}
             </if>
         </set>
         where tenant_id = #{tenantId}
