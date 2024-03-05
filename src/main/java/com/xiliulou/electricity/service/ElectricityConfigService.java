@@ -25,5 +25,8 @@ public interface ElectricityConfigService extends IService<ElectricityConfig> {
     TenantConfigVO getTenantConfig(String appId);
 
     Triple<Boolean, String, Object> editWxCustomer(ElectricityConfigWxCustomerQuery electricityConfigAddAndUpdateQuery);
-
+    
+    void updateTenantConfigWxCustomer(Integer status);
+    
+    ElectricityConfig queryTenantConfigWxCustomer();
 }
