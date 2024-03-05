@@ -122,7 +122,7 @@ public class JsonUserMerchantCabinetPlaceController extends BaseController {
     /**
      * 统计分析-折线图
      */
-    @GetMapping({"/merchant/place/getLineData", "/admin/merchant/place/getLineData"})
+    @GetMapping("/merchant/place/getLineData")
     public R lineData(@RequestParam(value = "placeId", required = false) Long placeId,
             @RequestParam(value = "cabinetId", required = false) Long cabinetId,@RequestParam(value = "startTime") Long startTime
             ,@RequestParam(value = "endTime") Long endTime) {
