@@ -223,7 +223,7 @@
         delete from t_rebate_record where id = #{id}
     </delete>
     
-    <select id="sumByStatus"  resultType="java.math.BigDecimal">
+    <select id="sumMerchantIncomeByStatus"  resultType="java.math.BigDecimal">
         select IFNULL(sum(merchant_rebate), 0) from t_rebate_record
         <where>
             <if test="tenantId != null">
@@ -246,6 +246,33 @@
             </if>
             <if test="rebateEndTime!=null">
                and rebate_time &lt;= #{rebateEndTime}
+            </if>
+            <if test="settleStartTime != null">
+                and settle_time >= #{settleStartTime}
+            </if>
+            <if test="settleEndTime != null">
+                and settle_time &lt;= #{settleEndTime}
+            </if>
+        </where>
+    </select>
+    
+    <select id="sumEmployeeIncomeByStatus"  resultType="java.math.BigDecimal">
+        select IFNULL(sum(channeler_rebate), 0) from t_rebate_record
+        <where>
+            <if test="tenantId != null">
+                and tenant_id = #{tenantId}
+            </if>
+            <if test="uid != null and type == 3">
+                and channeler = #{uid}
+            </if>
+            <if test="status != null">
+                and status = #{status}
+            </if>
+            <if test="rebateStartTime != null">
+                and rebate_time >= #{rebateStartTime}
+            </if>
+            <if test="rebateEndTime!=null">
+                and rebate_time &lt;= #{rebateEndTime}
             </if>
             <if test="settleStartTime != null">
                 and settle_time >= #{settleStartTime}

@@ -287,7 +287,7 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
         Long startTime = beginTime;
         while (startTime < endTime) {
             PromotionFeeStatisticAnalysisIncomeVO incomeVO = new PromotionFeeStatisticAnalysisIncomeVO();
-            BigDecimal totalIncome = buildPromotionFeeTotalIncomeVO(type, uid, startTime);
+            BigDecimal totalIncome = buildPromotionFeeTotalIncomeVO(type, uid, DateUtils.getEndOfDayTimestamp(startTime));
             incomeVO.setTotalIncome(totalIncome);
             incomeVO.setStatisticTime(DateUtils.getYearAndMonthAndDayByTimeStamps(startTime));
             incomeVOList.add(incomeVO);
