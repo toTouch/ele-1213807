@@ -126,10 +126,10 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
         // 判断商户表的标志是否存在场地费
         Merchant merchant = merchantService.queryByIdFromCache(merchantId);
         if (Objects.equals(merchant.getExistPlaceFee(), MerchantConstant.EXISTS_PLACE_FEE_YES)) {
-            return MerchantConstant.EXISTS_PLACE_FEE_YES;
+            return NumberConstant.ONE;
         }
-        
-        return MerchantConstant.EXISTS_PLACE_FEE_NO;
+    
+        return NumberConstant.ZERO;
     }
     
     @Slave
