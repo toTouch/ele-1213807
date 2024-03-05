@@ -537,7 +537,7 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
     
     private Integer buildScanCodeCount(Integer type, Long uid, Long startTime, Long endTime, Integer status) {
         //昨日扫码人数：扫码绑定时间=昨日0点～今日0点；
-        if (Objects.equals(PromotionFeeQueryTypeEnum.MERCHANT_AND_MERCHANT_EMPLOYEE.getCode(), type) || Objects.equals(PromotionFeeQueryTypeEnum.CHANNEL_EMPLOYEE.getCode(), type)) {
+        if (Objects.equals(PromotionFeeQueryTypeEnum.MERCHANT_AND_MERCHANT_EMPLOYEE.getCode(), type)) {
             
             // 商户扫码人数
             MerchantPromotionScanCodeQueryModel scanCodeQueryModel = MerchantPromotionScanCodeQueryModel.builder().tenantId(TenantContextHolder.getTenantId())
@@ -556,6 +556,11 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
             } else {
                 return scanCodeByMerchant;
             }
+        } else if (Objects.equals(PromotionFeeQueryTypeEnum.CHANNEL_EMPLOYEE.getCode(), type)) {
+            // 商户扫码人数
+            MerchantPromotionScanCodeQueryModel scanCodeQueryModel = MerchantPromotionScanCodeQueryModel.builder().tenantId(TenantContextHolder.getTenantId())
+                    .type(PromotionFeeQueryTypeEnum.MERCHANT.getCode()).inviterUid(uid).startTime(startTime).status(status).endTime(endTime).build();
+            return merchantJoinRecordService.countByCondition(scanCodeQueryModel);
         } else {
             //昨日扫码人数：扫码绑定时间=昨日0点～今日0点；
             MerchantPromotionScanCodeQueryModel scanCodeQueryModel = MerchantPromotionScanCodeQueryModel.builder().tenantId(TenantContextHolder.getTenantId()).type(type)
@@ -589,7 +594,7 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
         
         //累计续费次数：购买指定套餐时间<=当前时间，且套餐购买次数>1的购买成功次数
         merchantPromotionFeeRenewalVO.setTotalRenewalCount(buildRenewalNum(type, uid, null, System.currentTimeMillis()));
-    
+        
     }
     
     private void buildPromotionFeePromotionScanCode(Integer type, Long uid, MerchantPromotionFeeScanCodeVO merchantPromotionFeeScanCodeVO, long dayOfMonthStartTime,
