@@ -217,6 +217,9 @@ public class RebateRecordServiceImpl implements RebateRecordService {
         if (Objects.equals(PromotionFeeQueryTypeEnum.CHANNEL_EMPLOYEE.getCode(), merchantPromotionFeeQueryModel.getType())) {
             return this.rebateRecordMapper.sumEmployeeIncomeByStatus(merchantPromotionFeeQueryModel);
         } else {
+            if (Objects.equals(PromotionFeeQueryTypeEnum.MERCHANT_AND_MERCHANT_EMPLOYEE.getCode(), merchantPromotionFeeQueryModel.getType())) {
+                merchantPromotionFeeQueryModel.setType(PromotionFeeQueryTypeEnum.MERCHANT.getCode());
+            }
             return this.rebateRecordMapper.sumMerchantIncomeByStatus(merchantPromotionFeeQueryModel);
         }
     }
