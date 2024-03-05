@@ -69,7 +69,7 @@ public class JsonOuterElectricityConfigController extends BaseController {
      * @return  R.ok()
      */
     @PutMapping(value = "/outer/tenantConfig/wxCustomer")
-    public R updateTenantConfigWxCustomer(@RequestParam("appId") Integer status ) {
+    public R updateTenantConfigWxCustomer(@RequestParam("status") Integer status ) {
         electricityConfigService.updateTenantConfigWxCustomer(status);
         return R.ok();
     }
