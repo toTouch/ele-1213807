@@ -871,6 +871,9 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
                 vo.setEndTime(placeFeeMonthDetail.getEndTime());
                 
                 vo.setStatus(placeFeeMonthDetail.getCabinetPlaceBindStatus());
+                vo.setCabinetId(placeFeeMonthDetail.getCabinetId());
+                vo.setPlaceId(placeFeeMonthDetail.getPlaceId());
+                vo.setMerchantId(placeFeeMonthDetail.getMerchantId());
                 
                 // 如果当前状态为绑定状态则将结束时间改为空
                 if (Objects.equals(placeFeeMonthDetail.getCabinetPlaceBindStatus(), MerchantPlaceBindConstant.BIND)) {
