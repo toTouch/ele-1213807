@@ -2,6 +2,7 @@ package com.xiliulou.electricity.service.impl.merchant;
 
 import cn.hutool.core.bean.BeanUtil;
 import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.thread.XllThreadPoolExecutorService;
 import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.db.dynamic.annotation.Slave;
@@ -335,9 +336,11 @@ public class MerchantServiceImpl implements MerchantService {
         merchant.setTenantId(tenantId);
         
         // 如果有绑定渠道员 设置商户渠道员绑定时间 小程序商户首页需要使用该字段统计
+        log.info("save merchantSaveRequest={}", JsonUtil.toJson(merchantSaveRequest));
         if (Objects.nonNull(merchantSaveRequest.getChannelEmployeeUid())) {
             merchant.setChannelEmployeeBindTime(timeMillis);
         }
+        log.info("merchant={}", JsonUtil.toJson(merchant));
         
         // 保存商户信息
         int i = merchantMapper.insert(merchant);
@@ -601,10 +604,12 @@ public class MerchantServiceImpl implements MerchantService {
         merchantUpdate.setUpdateTime(timeMillis);
         
         // 如果有绑定渠道员 设置商户渠道员绑定时间 小程序商户首页需要使用该字段统计
+        log.info("update merchantSaveRequest={}", JsonUtil.toJson(merchantSaveRequest));
         if (Objects.nonNull(merchantSaveRequest.getChannelEmployeeUid())) {
             merchant.setChannelEmployeeBindTime(timeMillis);
         }
-        
+        log.info("update merchant={}", JsonUtil.toJson(merchant));
+    
         // 修改商户信息
         merchantMapper.update(merchantUpdate);
         
