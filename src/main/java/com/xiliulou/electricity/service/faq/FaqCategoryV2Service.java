@@ -31,5 +31,5 @@ public interface FaqCategoryV2Service {
     
     List<FaqCategoryVo> listFaqCategory(String title, Integer typeId);
     
-    Integer listFaqCategoryCount(String title);
+    long listFaqCategoryCount(String title);
 }

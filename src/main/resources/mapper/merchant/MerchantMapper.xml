@@ -15,41 +15,39 @@
     <update id="update">
         update t_merchant
             <set>
+                channel_employee_uid = #{channelEmployeeUid}
                 <if test="name != null and name != ''">
-                    name = #{name},
+                    ,name = #{name}
                 </if>
                 <if test="franchiseeId != null">
-                    franchisee_id = #{franchiseeId},
+                    ,franchisee_id = #{franchiseeId}
                 </if>
                 <if test="phone != null and phone != ''">
-                    phone = #{phone},
+                    ,phone = #{phone}
                 </if>
                 <if test="inviteAuth != null">
-                    invite_auth = #{inviteAuth},
+                    ,invite_auth = #{inviteAuth}
                 </if>
                 <if test="merchantGradeId != null">
-                    merchant_grade_id = #{merchantGradeId},
-                </if>
-                <if test="channelEmployeeUid != null">
-                    channel_employee_uid = #{channelEmployeeUid},
+                    ,merchant_grade_id = #{merchantGradeId}
                 </if>
                 <if test="channelEmployeeBindTime != null">
-                    channel_employee_bind_time = #{channelEmployeeBindTime},
+                    ,channel_employee_bind_time = #{channelEmployeeBindTime}
                 </if>
                 <if test="autoUpGrade != null">
-                    auto_up_grade = #{autoUpGrade},
+                    ,auto_up_grade = #{autoUpGrade}
                 </if>
                 <if test="status != null">
-                    status = #{status},
+                    ,status = #{status}
                 </if>
                 <if test="enterprisePackageAuth != null">
-                    enterprise_package_auth = #{enterprisePackageAuth},
+                    ,enterprise_package_auth = #{enterprisePackageAuth}
                 </if>
                 <if test="purchaseAuthority != null">
-                    purchase_authority = #{purchaseAuthority},
+                    ,purchase_authority = #{purchaseAuthority}
                 </if>
                 <if test="updateTime != null">
-                    update_time = #{updateTime}
+                    ,update_time = #{updateTime}
                 </if>
             </set>
         <where>

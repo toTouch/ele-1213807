@@ -207,11 +207,11 @@ public class ChannelEmployeeServiceImpl implements ChannelEmployeeService {
         User userResult = userService.insert(user);
        
         //TODO 设置角色, 渠道员工角色值待定
-        Long roleId = 0L;
+       /* Long roleId = 0L;
         
         UserRole userRole = new UserRole();
         userRole.setRoleId(roleId);
-        userRole.setUid(userResult.getUid());
+        userRole.setUid(userResult.getUid());*/
         //userRoleService.insert(userRole);
         
         //创建渠道员工账户

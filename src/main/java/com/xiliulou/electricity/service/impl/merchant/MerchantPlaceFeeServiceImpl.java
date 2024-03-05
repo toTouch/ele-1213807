@@ -135,7 +135,6 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
     @Slave
     @Override
     public MerchantPlaceFeeCurMonthVO getFeeData(MerchantPlaceFeeRequest request) {
-        request.setMerchantId(42L);
         MerchantPlaceFeeCurMonthVO merchantPlaceFeeCurMonthVO = new MerchantPlaceFeeCurMonthVO();
         // 计算上个月一号到当前场地费的总和
         // 获取上个月的场地费
@@ -169,7 +168,6 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
      */
     @Override
     public MerchantPlaceFeeLineDataVO lineData(MerchantPlaceFeeRequest request) {
-        request.setMerchantId(42L);
         
         MerchantPlaceFeeLineDataVO vo = new MerchantPlaceFeeLineDataVO();
         
@@ -224,7 +222,7 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
      */
     @Override
     public MerchantCabinetFeeDetailShowVO getCabinetPlaceDetail(MerchantPlaceFeeRequest request) {
-        request.setMerchantId(42L);
+//        request.setMerchantId(42L);
         MerchantCabinetFeeDetailShowVO resVo = new MerchantCabinetFeeDetailShowVO();
         
         // 根据商户id查询所有的柜机的id
@@ -369,7 +367,6 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
     
     @Override
     public List<MerchantCabinetFeeDetailVO> getPlaceDetailByCabinetId(MerchantPlaceFeeRequest request) {
-        request.setMerchantId(42L);
         
         // 获取当前月份
         String currentMonth = DateUtil.format(new Date(), "yyyy-MM");
@@ -1256,15 +1253,23 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
         List<MerchantPlaceFeeMonthDetail> list = new ArrayList<>();
         
         // 查询场地下的月度账单信息
-        List<MerchantPlaceFeeMonthRecord> placeFeeMonthRecords = merchantPlaceFeeMonthRecordService.queryList(placeIdList, monthList);
+        List<MerchantPlaceFeeMonthRecord> placeFeeMonthRecords = new ArrayList<>();
+        
+        List<MerchantPlaceFeeMonthRecord> lastMonthFeeMonthRecords = merchantPlaceFeeMonthRecordService.queryList(placeIdList, monthList);
+        
+        if (ObjectUtils.isNotEmpty(lastMonthFeeMonthRecords)) {
+            placeFeeMonthRecords.addAll(lastMonthFeeMonthRecords);
+        }
         
         // 计算当前月份的账单
         List<MerchantPlaceFeeMonthRecord> curPlaceFeeMonthRecords = getCurMonthRecordFirst(placeIdList);
+        
         if (ObjectUtils.isNotEmpty(curPlaceFeeMonthRecords)) {
             placeFeeMonthRecords.addAll(curPlaceFeeMonthRecords);
         }
         
         Map<Long, List<MerchantPlaceFeeMonthRecord>> placeFeeMonthRecordMap = new HashMap<>();
+        
         if (ObjectUtils.isNotEmpty(placeFeeMonthRecords)) {
             placeFeeMonthRecordMap = placeFeeMonthRecords.stream().collect(Collectors.groupingBy(MerchantPlaceFeeMonthRecord::getPlaceId));
         }
@@ -1736,6 +1741,9 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
      */
     private Map<Long, List<MerchantPlaceFeeMonthRecord>> getPlaceCabinetMonthRecord(List<MerchantPlaceFeeMonthRecord> placeFeeMonthRecords, String oneBeforeMonth,
             String twoBeforeMonth) {
+        if (ObjectUtils.isEmpty(placeFeeMonthRecords)) {
+            return null;
+        }
         
         Map<String, List<MerchantPlaceFeeMonthRecord>> map = placeFeeMonthRecords.stream().collect(Collectors.groupingBy(MerchantPlaceFeeMonthRecord::getMonthDate));
         long twoLastBeforeMonthTime = DateUtils.getBeforeMonthLastDayTimestamp(MerchantPlaceBindConstant.TOW_MONTH_BEFORE);

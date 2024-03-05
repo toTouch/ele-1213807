@@ -135,6 +135,19 @@
     <select id="selectElectricityConfigByTenantId" resultMap="ElectricityConfigMap">
         select <include refid="all"/>
         from t_electricity_config
-        where tenant_id = #{tenantId};
+        where tenant_id = #{tenantId} limit 1;
     </select>
+    
+    <update id="updateWxCuStatusByTenantId">
+        update t_electricity_config
+        <set>
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+            <if test="wxCustomer != null">
+                wx_customer = #{wxCustomer}
+            </if>
+        </set>
+        where tenant_id = #{tenantId}
+    </update>
 </mapper>

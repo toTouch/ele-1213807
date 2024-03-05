@@ -1,12 +1,9 @@
 package com.xiliulou.electricity.service.impl.merchant;
 
 import cn.hutool.core.date.DateUtil;
-import com.xiliulou.cache.redis.RedisService;
-import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.thread.XllThreadPoolExecutorService;
 import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.db.dynamic.annotation.Slave;
-import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.constant.merchant.MerchantPlaceBindConstant;
 import com.xiliulou.electricity.constant.merchant.MerchantPlaceCabinetBindConstant;
@@ -46,7 +43,6 @@ import com.xiliulou.electricity.vo.merchant.MerchantProPowerVO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -93,9 +89,6 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
     
     @Resource
     private ElePowerService elePowerService;
-    
-    @Resource
-    private RedisService redisService;
     
     @Resource
     private MerchantCabinetPowerMonthRecordProService merchantCabinetPowerMonthRecordProService;

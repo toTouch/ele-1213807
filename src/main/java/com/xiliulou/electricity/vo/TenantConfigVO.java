@@ -109,4 +109,9 @@ public class TenantConfigVO {
      * 冻结是否强制退资产 0--是 1--否
      */
     private Integer allowFreezeWithAssets;
+    
+    /**
+     * 打开微信客服 0-是 1-否
+     */
+    private Integer wxCustomer;
 }

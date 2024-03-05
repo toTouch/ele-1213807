@@ -42,7 +42,6 @@ public class FaqCategoryV2ServiceImpl implements FaqCategoryV2Service {
     public void saveFaqCategory(AdminFaqCategoryReq faqCategoryReq) {
         FaqCategoryV2 faqCategory = BeanUtil.toBean(faqCategoryReq, FaqCategoryV2.class);
         Integer count = faqCategoryV2Mapper.countFaqCategoryByTenantId(TenantContextHolder.getTenantId());
-        count = count == null ? 0 : count;
         
         faqCategory.setSort(BigDecimal.valueOf(count + 1));
         faqCategory.setTenantId(TenantContextHolder.getTenantId());
@@ -87,8 +86,8 @@ public class FaqCategoryV2ServiceImpl implements FaqCategoryV2Service {
     }
     
     @Override
-    public Integer listFaqCategoryCount(String title) {
+    public long listFaqCategoryCount(String title) {
         List<FaqV2BO> faqBos = faqCategoryV2Mapper.selectLeftJoinByParams(TenantContextHolder.getTenantId(), title, null);
-        return CollectionUtil.isEmpty(faqBos) ? 0 : faqBos.size();
+        return CollectionUtil.isEmpty(faqBos) ? 0 : faqBos.stream().filter(f -> f.getId() != null).count();
     }
 }
