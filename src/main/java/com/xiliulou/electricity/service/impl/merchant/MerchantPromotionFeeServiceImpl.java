@@ -569,8 +569,8 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
         if (Objects.equals(PromotionFeeQueryTypeEnum.MERCHANT_AND_MERCHANT_EMPLOYEE.getCode(), type)) {
             type = PromotionFeeQueryTypeEnum.MERCHANT.getCode();
         }
-        MerchantPromotionRenewalQueryModel renewalQueryModel = MerchantPromotionRenewalQueryModel.builder().tenantId(TenantContextHolder.getTenantId()).type(type).uid(uid)
-                .startTime(startTime).endTime(endTime).type(MerchantConstant.MERCHANT_REBATE_TYPE_RENEWAL).build();
+        MerchantPromotionRenewalQueryModel renewalQueryModel = MerchantPromotionRenewalQueryModel.builder().tenantId(TenantContextHolder.getTenantId()).userType(type).uid(uid)
+                .startTime(startTime).endTime(endTime).rebateType(MerchantConstant.MERCHANT_REBATE_TYPE_RENEWAL).build();
         return rebateRecordService.countByTime(renewalQueryModel);
     }
     

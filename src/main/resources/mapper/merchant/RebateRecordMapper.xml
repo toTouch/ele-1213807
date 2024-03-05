@@ -289,20 +289,20 @@
             <if test="tenantId != null">
                 and tenant_id = #{tenantId}
             </if>
-            <if test="uid != null and type == 1">
+            <if test="uid != null and userType == 1">
                 and merchant_uid = #{uid}
             </if>
-            <if test="uid != null and type == 2">
+            <if test="uid != null and userType == 2">
                 and place_uid = #{uid}
             </if>
-            <if test="uid != null and type == 3">
+            <if test="uid != null and userType == 3">
                 and channeler = #{uid}
             </if>
             <if test="status != null">
                 and status = #{status}
             </if>
             <if test="type != null">
-                and type = #{type}
+                and type = #{rebateType}
             </if>
             <if test="startTime != null">
                 and create_time >= #{startTime}
