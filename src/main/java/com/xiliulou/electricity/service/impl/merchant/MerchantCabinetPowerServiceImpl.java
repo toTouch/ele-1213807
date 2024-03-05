@@ -1703,11 +1703,7 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
     @Slave
     @Override
     public List<Long> getStaticsCabinetIds(MerchantCabinetPowerRequest request) {
-        Long merchantId = request.getMerchantId();
-        if (Objects.isNull(merchantId)) {
-            return Collections.emptyList();
-        }
-        
+        Long uid = request.getUid();
         Long placeId = request.getPlaceId();
         Long cabinetId = request.getCabinetId();
         
@@ -1716,7 +1712,7 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
         
         // 1.场地和柜机为null，查全量
         if (Objects.isNull(placeId) && Objects.isNull(cabinetId)) {
-            MerchantPlaceAndCabinetUserVO merchantPlaceAndCabinetUserVO = this.listPlaceAndCabinetByMerchantId(merchantId);
+            MerchantPlaceAndCabinetUserVO merchantPlaceAndCabinetUserVO = this.listPlaceAndCabinetByMerchantId(uid);
             if (Objects.isNull(merchantPlaceAndCabinetUserVO) || CollectionUtils.isEmpty(merchantPlaceAndCabinetUserVO.getCabinetList())) {
                 return Collections.emptyList();
             }
@@ -1727,13 +1723,13 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
         
         // 2.场地不为null，柜机为null
         if (Objects.nonNull(placeId) && Objects.isNull(cabinetId)) {
-            List<MerchantPlaceCabinetVO> placeCabinetVOList = this.listCabinetByPlaceId(merchantId, placeId);
+            List<MerchantPlaceCabinetVO> placeCabinetVOList = this.listCabinetByPlaceId(uid, placeId);
             cabinetIdList = placeCabinetVOList.stream().map(MerchantPlaceCabinetVO::getCabinetId).distinct().collect(Collectors.toList());
         }
         
         // 3. 场地不为null,柜机不为null
         if (Objects.nonNull(placeId) && Objects.nonNull(cabinetId)) {
-            List<MerchantPlaceCabinetVO> placeCabinetVOList = this.listCabinetByPlaceId(merchantId, merchantId);
+            List<MerchantPlaceCabinetVO> placeCabinetVOList = this.listCabinetByPlaceId(uid, placeId);
             cabinetIdList = placeCabinetVOList.stream().map(MerchantPlaceCabinetVO::getCabinetId).distinct().collect(Collectors.toList());
             
             if (CollectionUtils.isNotEmpty(cabinetIdList) && cabinetIdList.contains(cabinetId)) {

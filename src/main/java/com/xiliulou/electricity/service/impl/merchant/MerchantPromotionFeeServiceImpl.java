@@ -541,7 +541,7 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
             
             // 商户扫码人数
             MerchantPromotionScanCodeQueryModel scanCodeQueryModel = MerchantPromotionScanCodeQueryModel.builder().tenantId(TenantContextHolder.getTenantId())
-                    .type(PromotionFeeQueryTypeEnum.MERCHANT.getCode()).inviterUid(uid).startTime(startTime).status(status).endTime(endTime).build();
+                    .type(PromotionFeeQueryTypeEnum.MERCHANT.getCode()).uid(uid).startTime(startTime).status(status).endTime(endTime).build();
             Integer scanCodeByMerchant = merchantJoinRecordService.countByCondition(scanCodeQueryModel);
             
             MerchantPromotionEmployeeDetailQueryModel employeeDetailQueryModel = MerchantPromotionEmployeeDetailQueryModel.builder().uid(uid)
@@ -559,12 +559,12 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
         } else if (Objects.equals(PromotionFeeQueryTypeEnum.CHANNEL_EMPLOYEE.getCode(), type)) {
             // 商户扫码人数
             MerchantPromotionScanCodeQueryModel scanCodeQueryModel = MerchantPromotionScanCodeQueryModel.builder().tenantId(TenantContextHolder.getTenantId())
-                    .type(PromotionFeeQueryTypeEnum.CHANNEL_EMPLOYEE.getCode()).inviterUid(uid).startTime(startTime).status(status).endTime(endTime).build();
+                    .type(PromotionFeeQueryTypeEnum.CHANNEL_EMPLOYEE.getCode()).uid(uid).startTime(startTime).status(status).endTime(endTime).build();
             return merchantJoinRecordService.countByCondition(scanCodeQueryModel);
         } else {
             //昨日扫码人数：扫码绑定时间=昨日0点～今日0点；
             MerchantPromotionScanCodeQueryModel scanCodeQueryModel = MerchantPromotionScanCodeQueryModel.builder().tenantId(TenantContextHolder.getTenantId()).type(type)
-                    .inviterUid(uid).startTime(startTime).status(status).endTime(endTime).build();
+                    .uid(uid).startTime(startTime).status(status).endTime(endTime).build();
             return merchantJoinRecordService.countByCondition(scanCodeQueryModel);
         }
     }
