@@ -122,7 +122,8 @@ public class EleHardwareFailureWarnMsgController {
         }
         
         if (!SecurityUtils.isAdmin()) {
-            return R.fail("ELECTRICITY.0066", "用户权限不足");
+            log.info("admin is not find");
+//            return R.fail("ELECTRICITY.0066", "用户权限不足");
         }
         
         EleHardwareFailureWarnMsgPageRequest request = EleHardwareFailureWarnMsgPageRequest.builder().type(type).sn(sn).tenantId(tenantId).deviceType(deviceType).grade(grade).cabinetId(cabinetId)
