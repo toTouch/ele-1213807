@@ -190,6 +190,9 @@
             <if test="endTime != null">
                 and create_time &lt; #{endTime}
             </if>
+            <if test="uid != null">
+                and channel_employee_uid = #{uid}
+            </if>
         </where>
     </select>
 </mapper>
