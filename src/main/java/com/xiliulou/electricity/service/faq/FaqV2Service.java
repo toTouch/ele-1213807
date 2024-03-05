@@ -51,11 +51,9 @@ public interface FaqV2Service {
     
     void removeByIds(List<Long> ids);
     
-    Map<Long, List<FaqV2BO>> listFaqQuery(AdminFaqQuery faqQuery);
-    
     R queryDetail(Long id);
     
     List<FaqVo> listFaqQueryResult(AdminFaqQuery faqQuery);
     
-    List<FaqListVos> listFaqQueryForApp(AdminFaqQuery faqQuery);
+    R updateFaqReqSort(AdminFaqReq faqReq);
 }

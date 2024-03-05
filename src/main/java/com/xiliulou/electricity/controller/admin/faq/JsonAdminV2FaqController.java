@@ -79,6 +79,18 @@ public class JsonAdminV2FaqController {
         return faqV2Service.updateFaqReq(faqReq);
     }
     
+    
+    /**
+     * 更改常见问题顺序
+     *
+     * @author kuz
+     * @date 2024/2/23 16:11
+     */
+    @PostMapping("/admin/faq/move/v2")
+    public R move(@RequestBody AdminFaqReq faqReq) {
+        return faqV2Service.updateFaqReqSort(faqReq);
+    }
+    
     /**
      * 批量删除常见问题
      *
