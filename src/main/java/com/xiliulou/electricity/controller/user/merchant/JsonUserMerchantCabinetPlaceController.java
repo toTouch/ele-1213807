@@ -60,7 +60,7 @@ public class JsonUserMerchantCabinetPlaceController extends BaseController {
     /**
      * 筛选条件：场地列表/柜机列表
      */
-    @GetMapping({"/merchant/place/placeAndCabinetList", "/admin/merchant/place/placeAndCabinetList"})
+    @GetMapping("/merchant/place/placeAndCabinetList")
     public R placeAndCabinetList() {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
@@ -79,7 +79,7 @@ public class JsonUserMerchantCabinetPlaceController extends BaseController {
     /**
      * 筛选条件：根据场地id查询柜机列表
      */
-    @GetMapping({"/merchant/place/cabinetListByPlace", "/merchant/place/cabinetListByPlace"})
+    @GetMapping("/merchant/place/cabinetListByPlace")
     public R cabinetListByPlace(@RequestParam Long placeId) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
@@ -99,7 +99,7 @@ public class JsonUserMerchantCabinetPlaceController extends BaseController {
      * 统计上月，本月，累计场地费
      * 统计设备数量
      */
-    @GetMapping({"/merchant/place/getFeeData", "/admin/merchant/place/getFeeData"})
+    @GetMapping("/merchant/place/getFeeData")
     public R getFeeData(@RequestParam(value = "placeId", required = false) Long placeId,
             @RequestParam(value = "cabinetId", required = false) Long cabinetId) {
         TokenUser user = SecurityUtils.getUserInfo();
@@ -146,7 +146,7 @@ public class JsonUserMerchantCabinetPlaceController extends BaseController {
     /**
      * 根据柜机id获取场地费
      */
-    @GetMapping({"/merchant/place/getPlaceDetailByCabinetId", "/admin/merchant/place/getPlaceDetailByCabinetId"})
+    @GetMapping("/merchant/place/getPlaceDetailByCabinetId")
     public R getPlaceDetailByCabinetId(@RequestParam("month") String month,
             @RequestParam(value = "cabinetId") Long cabinetId) {
         TokenUser user = SecurityUtils.getUserInfo();
@@ -169,7 +169,7 @@ public class JsonUserMerchantCabinetPlaceController extends BaseController {
     /**
      * 柜机场地费详情
      */
-    @GetMapping({"/merchant/place/getCabinetPlaceDetail", "/admin/merchant/place/getCabinetPlaceDetail"})
+    @GetMapping("/merchant/place/getCabinetPlaceDetail")
     public R getCabinetPlaceDetail(@RequestParam(value = "placeId", required = false) Long placeId,
             @RequestParam(value = "cabinetId", required = false) Long cabinetId) {
         TokenUser user = SecurityUtils.getUserInfo();
