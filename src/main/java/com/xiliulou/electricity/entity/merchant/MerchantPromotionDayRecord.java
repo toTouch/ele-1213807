@@ -75,10 +75,5 @@ public class MerchantPromotionDayRecord {
      */
     public static final int NO_DATA = 3;
     
-    public static final String LASH_NAME = "拉新";
-    
-    public static final String RENEW_NAME = "续费";
-    
-    public static final String BALANCE_NAME = "差额";
     
 }

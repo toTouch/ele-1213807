@@ -43,4 +43,10 @@ public class RebateRecordConstant {
     
     public static final String MONTH_DAY_DATE_FORMAT = "yyyy-MM-dd";
     
+    public static final String LASH_NAME = "拉新";
+    
+    public static final String RENEW_NAME = "续费";
+    
+    public static final String BALANCE_NAME = "差额";
+    
 }

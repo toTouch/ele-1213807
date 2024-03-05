@@ -19,6 +19,7 @@ import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.constant.EleUserOperateHistoryConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.constant.UserOperateRecordConstant;
+import com.xiliulou.electricity.constant.merchant.MerchantJoinRecordConstant;
 import com.xiliulou.electricity.domain.car.UserCarRentalPackageDO;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.entity.car.CarRentalPackageMemberTermPo;
@@ -48,6 +49,7 @@ import com.xiliulou.electricity.service.enterprise.EnterpriseChannelUserService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseRentRecordService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseUserCostRecordService;
 import com.xiliulou.electricity.service.excel.AutoHeadColumnWidthStyleStrategy;
+import com.xiliulou.electricity.service.merchant.MerchantJoinRecordService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.OrderIdUtil;
@@ -264,6 +266,9 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     
     @Autowired
     EleUserOperateHistoryService eleUserOperateHistoryService;
+    
+    @Resource
+    private MerchantJoinRecordService merchantJoinRecordService;
     
     /**
      * 分页查询
@@ -2838,7 +2843,13 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             UserInfo userInfo = this.queryByUidFromCache(invitationActivityJoinHistory.getUid());
             return Objects.isNull(userInfo) ? "" : userInfo.getName();
         }
-        
+    
+        // 商户活动
+        String merchantName = merchantJoinRecordService.queryMerchantNameByJoinUid(uid, MerchantJoinRecordConstant.STATUS_SUCCESS);
+        if (Objects.nonNull(merchantName)) {
+            return merchantName;
+        }
+    
         return null;
     }
     
@@ -2883,6 +2894,11 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                 EnterpriseChannelUserVO enterpriseChannelUserVO = enterpriseChannelUserService.queryUserRelatedEnterprise(item.getUid());
                 if(Objects.nonNull(enterpriseChannelUserVO) && Objects.equals(enterpriseChannelUserVO.getRenewalStatus(), EnterpriseChannelUser.RENEWAL_CLOSE)) {
                     item.setEnterpriseName(enterpriseChannelUserVO.getEnterpriseName());
+                }
+                // 企业名称设为商户名称
+                String merchantName = merchantJoinRecordService.queryMerchantNameByJoinUid(item.getUid(), MerchantJoinRecordConstant.STATUS_SUCCESS);
+                if (Objects.nonNull(merchantName)) {
+                    item.setEnterpriseName(merchantName);
                 }
                 
                 threadPool.execute(() -> userBatteryMemberCardPackageService.batteryMembercardTransform(item.getUid()));

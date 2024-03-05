@@ -393,6 +393,15 @@
             </if>
         </where>
     </select>
+    
+    <select id="selectMerchantNameByJoinUid" resultType="java.lang.String">
+        select tm.name
+        from t_merchant_join_record tmjr
+                 left join t_merchant tm on tmjr.merchant_id = tm.id
+        where tmjr.del_flag = 0
+          and tmjr.join_uid = #{joinUid}
+          and tmjr.status = #{status}
+    </select>
 
 </mapper>
 
