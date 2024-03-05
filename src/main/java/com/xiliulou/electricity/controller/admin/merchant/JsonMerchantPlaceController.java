@@ -209,13 +209,8 @@ public class JsonMerchantPlaceController extends BaseController {
         if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-    
-        Integer tenantId = null;
-        if (!SecurityUtils.isAdmin()) {
-            tenantId = TenantContextHolder.getTenantId();
-        }
         
-        MerchantPlacePageRequest merchantPlacePageRequest = MerchantPlacePageRequest.builder().size(size).offset(offset).tenantId(tenantId).placeId(placeId)
+        MerchantPlacePageRequest merchantPlacePageRequest = MerchantPlacePageRequest.builder().size(size).offset(offset).tenantId(TenantContextHolder.getTenantId()).placeId(placeId)
                 .cabinetName(cabinetName).build();
         
         return returnTripleResult(merchantPlaceService.queryListCabinet(merchantPlacePageRequest));
@@ -247,12 +242,7 @@ public class JsonMerchantPlaceController extends BaseController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         
-        Integer tenantId = null;
-        if (!SecurityUtils.isAdmin()) {
-            tenantId = TenantContextHolder.getTenantId();
-        }
-        
-        MerchantPlacePageRequest merchantPlacePageRequest = MerchantPlacePageRequest.builder().size(size).offset(offset).tenantId(tenantId).name(name).franchiseeId(franchiseeId)
+        MerchantPlacePageRequest merchantPlacePageRequest = MerchantPlacePageRequest.builder().size(size).offset(offset).tenantId(TenantContextHolder.getTenantId()).name(name).franchiseeId(franchiseeId)
                 .merchantId(merchantId).franchiseeId(franchiseeId).build();
         
         return R.ok(merchantPlaceService.queryListPlace(merchantPlacePageRequest));

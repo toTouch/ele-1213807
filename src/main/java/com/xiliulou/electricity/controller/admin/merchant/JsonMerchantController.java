@@ -198,14 +198,8 @@ public class JsonMerchantController extends BaseController {
         if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-    
-        Integer tenantId = null;
         
-        if (!SecurityUtils.isAdmin()) {
-            tenantId = TenantContextHolder.getTenantId();
-        }
-        
-        MerchantPageRequest merchantPageRequest = MerchantPageRequest.builder().name(name).tenantId(tenantId)
+        MerchantPageRequest merchantPageRequest = MerchantPageRequest.builder().name(name).tenantId(TenantContextHolder.getTenantId())
                 .merchantGradeId(merchantGradeId).channelEmployeeUid(channelEmployeeUid).franchiseeId(franchiseeId).build();
         
         return R.ok(merchantService.countTotal(merchantPageRequest));
@@ -236,14 +230,8 @@ public class JsonMerchantController extends BaseController {
         if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-    
-        Integer tenantId = null;
         
-        if (!SecurityUtils.isAdmin()) {
-            tenantId = TenantContextHolder.getTenantId();
-        }
-        
-        MerchantPageRequest merchantPageRequest = MerchantPageRequest.builder().name(name).size(size).offset(offset).tenantId(tenantId)
+        MerchantPageRequest merchantPageRequest = MerchantPageRequest.builder().name(name).size(size).offset(offset).tenantId(TenantContextHolder.getTenantId())
                 .merchantGradeId(merchantGradeId).channelEmployeeUid(channelEmployeeUid).franchiseeId(franchiseeId).build();
         
         return R.ok(merchantService.listByPage(merchantPageRequest));

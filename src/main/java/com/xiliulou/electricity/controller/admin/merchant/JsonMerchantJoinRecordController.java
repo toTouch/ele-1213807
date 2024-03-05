@@ -44,12 +44,7 @@ public class JsonMerchantJoinRecordController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
     
-        Integer tenantId = null;
-        if (!SecurityUtils.isAdmin()) {
-            tenantId = TenantContextHolder.getTenantId();
-        }
-    
-        MerchantJoinRecordPageRequest merchantJoinRecordPageRequest = MerchantJoinRecordPageRequest.builder().merchantId(merchantId).status(status).tenantId(tenantId).build();
+        MerchantJoinRecordPageRequest merchantJoinRecordPageRequest = MerchantJoinRecordPageRequest.builder().merchantId(merchantId).status(status).tenantId(TenantContextHolder.getTenantId()).build();
         return R.ok(merchantJoinRecordService.countTotal(merchantJoinRecordPageRequest));
     }
     
@@ -79,14 +74,9 @@ public class JsonMerchantJoinRecordController {
         if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-    
-        Integer tenantId = null;
-        if (!SecurityUtils.isAdmin()) {
-            tenantId = TenantContextHolder.getTenantId();
-        }
         
         MerchantJoinRecordPageRequest merchantJoinRecordPageRequest = MerchantJoinRecordPageRequest.builder().offset(offset).size(size)
-                .merchantId(merchantId).status(status).tenantId(tenantId).build();
+                .merchantId(merchantId).status(status).tenantId(TenantContextHolder.getTenantId()).build();
         
         return R.ok(merchantJoinRecordService.listByPage(merchantJoinRecordPageRequest));
     }
