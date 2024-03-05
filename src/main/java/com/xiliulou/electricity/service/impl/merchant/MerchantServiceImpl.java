@@ -543,6 +543,7 @@ public class MerchantServiceImpl implements MerchantService {
         // 判断是否为禁用
         if (!Objects.equals(merchant.getStatus(), merchantSaveRequest.getStatus())) {
             flag = true;
+            
             if (Objects.equals(merchantSaveRequest.getStatus(), MerchantConstant.ENABLE)) {
                 updateUser.setLockFlag(User.USER_UN_LOCK);
             } else {
