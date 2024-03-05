@@ -89,7 +89,7 @@ public class MerchantEmployeeServiceImpl implements MerchantEmployeeService {
         String phone = merchantEmployeeRequest.getPhone();
         
         //userService.queryByUserName(name);
-    
+        //检查用户名是否存在
         User existNameUser = userService.queryByUserName(name);
         if(Objects.nonNull(existNameUser)){
             log.error("The user name has been used by other one for add merchant employee, name = {}, tenant id = {}", name, merchantEmployeeRequest.getTenantId());
@@ -168,12 +168,14 @@ public class MerchantEmployeeServiceImpl implements MerchantEmployeeService {
             throw new BizException("120004", "商户员工不存在");
         }
     
-        //用户名需要限制，否则会导致
+        //用户名需要限制，否则会导致后台编辑其他类型用户报错
         //userService.queryByUserName(name);
-        User existNameUser = userService.queryByUserName(merchantEmployeeRequest.getName());
-        if(Objects.nonNull(existNameUser)){
-            log.error("The user name has been used by other one for update merchant employee, name = {}, tenant id = {}", merchantEmployeeRequest.getName(), merchantEmployeeRequest.getTenantId());
-            throw new BizException("120009", "用户姓名已存在");
+        if (!Objects.equals(user.getName(), merchantEmployeeRequest.getName())){
+            User existNameUser = userService.queryByUserName(merchantEmployeeRequest.getName());
+            if(Objects.nonNull(existNameUser)){
+                log.error("The user name has been used by other one for update merchant employee, name = {}, tenant id = {}", merchantEmployeeRequest.getName(), merchantEmployeeRequest.getTenantId());
+                throw new BizException("120009", "用户姓名已存在");
+            }
         }
         
         //检查当前手机号是否已经注册
