@@ -307,7 +307,7 @@ public class BatteryMemberCardMerchantRebateConsumer implements RocketMQListener
             rebateRecordInsert.setCreateTime(System.currentTimeMillis());
             rebateRecordInsert.setUpdateTime(System.currentTimeMillis());
             rebateRecordInsert.setStatus(MerchantConstant.MERCHANT_REBATE_STATUS_RETURNED);
-            rebateRecordService.insert(rebateRecord);
+            rebateRecordService.insert(rebateRecordInsert);
             
             //扣减商户、渠道商返利金额
             merchantUserAmountService.reduceAmount(rebateRecord.getMerchantRebate(), rebateRecord.getMerchantUid(), rebateRecord.getTenantId().longValue());
