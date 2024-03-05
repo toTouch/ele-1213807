@@ -10,6 +10,7 @@ import com.xiliulou.electricity.tenant.TenantContextHolder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -60,6 +61,25 @@ public class JsonOuterElectricityConfigController extends BaseController {
     @GetMapping(value = "/outer/tenantConfig")
     public R tenantConfig(@RequestParam("appId") String appId) {
         return R.ok(electricityConfigService.getTenantConfig(appId));
+    }
+    
+    /**
+     * 更新小程序客服配置
+     * @param status  打开微信客服 0-是 1-否
+     * @return  R.ok()
+     */
+    @PutMapping(value = "/outer/tenantConfig/wxCustomer")
+    public R updateTenantConfigWxCustomer(@RequestParam("appId") Integer status ) {
+        electricityConfigService.updateTenantConfigWxCustomer(status);
+        return R.ok();
+    }
+    
+    /**
+     * 获取 微信客服配置
+     */
+    @GetMapping(value = "/outer/tenantConfig/wxCustomer")
+    public R queryTenantConfigWxCustomer() {
+        return R.ok(electricityConfigService.queryTenantConfigWxCustomer());
     }
 
     @GetMapping(value = "/outer/merchant/minPro/config")

@@ -61,7 +61,7 @@
                 and title like concat('%',#{params.title},'%')
             </if>
             <if test="params.typeId != null">
-                and c.type_id = #{params.typeId}
+                and f.type_id = #{params.typeId}
             </if>
             <if test="params.tenantId != null">
                 and c.tenant_id = #{params.tenantId}
