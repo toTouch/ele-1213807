@@ -54,7 +54,7 @@ public class JsonUserMerchantCabinetPlaceController extends BaseController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         
-        return R.ok(merchant.getExistPlaceFee());
+        return R.ok(merchantPlaceFeeService.isShowPlacePage(merchant.getId()));
     }
     
     /**
