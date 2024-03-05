@@ -42,8 +42,8 @@ public class FaqCategoryV2ServiceImpl implements FaqCategoryV2Service {
     public void saveFaqCategory(AdminFaqCategoryReq faqCategoryReq) {
         FaqCategoryV2 faqCategory = BeanUtil.toBean(faqCategoryReq, FaqCategoryV2.class);
         Integer count = faqCategoryV2Mapper.countFaqCategoryByTenantId(TenantContextHolder.getTenantId());
-        
         faqCategory.setSort(BigDecimal.valueOf(count + 1));
+        log.info("count={}, sort={}", count, faqCategory.getSort());
         faqCategory.setTenantId(TenantContextHolder.getTenantId());
         faqCategory.setOpUser(SecurityUtils.getUid());
         faqCategory.setCreateTime(System.currentTimeMillis());
