@@ -41,7 +41,7 @@ public interface FaqV2Mapper extends BaseMapper<FaqV2> {
     int removeByIds(@Param(value = "ids") List<Long> ids);
     List<FaqV2> selectListByIds(List<Long> ids);
     
-    Integer countFaqReqByTypeId(Long typeId);
+    Integer countFaqReqByTypeId(@Param("typeId") Long typeId);
     
     Integer batchUpdateByIds(@Param(value ="faqV2") FaqV2 faqV2, @Param(value ="ids")List<Long> ids);
     
