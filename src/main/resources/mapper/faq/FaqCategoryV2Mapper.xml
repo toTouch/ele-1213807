@@ -105,9 +105,9 @@
         where id = #{id,jdbcType=BIGINT}
     </update>
     
-    <delete id="countFaqCategoryByTenantId">
+    <select id="countFaqCategoryByTenantId" resultType="Integer">
         select count(1) from t_faq_category where tenant_id = #{tenantId,jdbcType=INTEGER}
-    </delete>
+    </select>
     
     <select id="selectLeftJoinByParams" resultType="com.xiliulou.electricity.bo.faq.FaqV2BO">
         select f.id as id,c.id as type_id,c.type as type,c.sort as type_sort
