@@ -102,9 +102,14 @@ public class MerchantAreaServiceImpl implements MerchantAreaService {
     @Override
     public R updateById(MerchantAreaSaveOrUpdateRequest updateRequest) {
         String areaName = updateRequest.getName();
-        Integer areaExist = merchantAreaMapper.existsByAreaName(areaName, TenantContextHolder.getTenantId());
-        if (Objects.nonNull(areaExist)) {
-            return R.fail("300904", "区域名称不能重复，请修改后操作");
+        MerchantArea oldMerchantArea = this.queryById(updateRequest.getId());
+        if (Objects.nonNull(oldMerchantArea)) {
+            if (!Objects.equals(oldMerchantArea.getName(), areaName)) {
+                Integer areaExist = merchantAreaMapper.existsByAreaName(areaName, TenantContextHolder.getTenantId());
+                if (Objects.nonNull(areaExist)) {
+                    return R.fail("300904", "区域名称不能重复，请修改后操作");
+                }
+            }
         }
         
         MerchantArea merchantArea = MerchantArea.builder().id(updateRequest.getId()).name(areaName).remark(updateRequest.getRemark()).updateTime(System.currentTimeMillis())
