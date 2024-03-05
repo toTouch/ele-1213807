@@ -334,6 +334,11 @@ public class MerchantServiceImpl implements MerchantService {
         merchant.setUpdateTime(timeMillis);
         merchant.setTenantId(tenantId);
         
+        // 如果有绑定渠道员 设置商户渠道员绑定时间 小程序商户首页需要使用该字段统计
+        if (ObjectUtils.isNotEmpty(merchantSaveRequest.getChannelEmployeeUid())) {
+            merchant.setChannelEmployeeBindTime(timeMillis);
+        }
+        
         // 保存商户信息
         int i = merchantMapper.insert(merchant);
         
@@ -594,6 +599,11 @@ public class MerchantServiceImpl implements MerchantService {
         Merchant merchantUpdate = new Merchant();
         BeanUtils.copyProperties(merchantSaveRequest, merchantUpdate);
         merchantUpdate.setUpdateTime(timeMillis);
+    
+        // 如果有绑定渠道员 设置商户渠道员绑定时间 小程序商户首页需要使用该字段统计
+        if (ObjectUtils.isNotEmpty(merchantSaveRequest.getChannelEmployeeUid())) {
+            merchant.setChannelEmployeeBindTime(timeMillis);
+        }
         
         // 修改商户信息
         merchantMapper.update(merchantUpdate);

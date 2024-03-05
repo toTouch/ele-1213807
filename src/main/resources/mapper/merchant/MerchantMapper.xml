@@ -6,9 +6,9 @@
         select 1 from t_merchant_place where del_flag = 0 and merchant_area_id = #{areaId} limit 1
     </select>
     <insert id="insert" keyProperty="id" useGeneratedKeys="true">
-        insert into t_merchant(id, name , franchisee_id , phone , merchant_grade_id , channel_employee_uid , tenant_id , auto_up_grade , status , enterprise_package_auth ,
+        insert into t_merchant(id, name , franchisee_id , phone , merchant_grade_id , channel_employee_uid ,channel_employee_bind_time, tenant_id , auto_up_grade , status , enterprise_package_auth ,
                                purchase_authority ,uid ,enterprise_id ,invite_auth,exist_place_fee , del_flag, create_time, update_time)
-        values (#{id}, #{name}, #{franchiseeId}, #{phone}, #{merchantGradeId}, #{channelEmployeeUid}, #{tenantId},#{autoUpGrade}, #{status}, #{enterprisePackageAuth},
+        values (#{id}, #{name}, #{franchiseeId}, #{phone}, #{merchantGradeId}, #{channelEmployeeUid},#{channelEmployeeBindTime}, #{tenantId},#{autoUpGrade}, #{status}, #{enterprisePackageAuth},
                 #{purchaseAuthority},#{uid},#{enterpriseId},#{inviteAuth},#{existPlaceFee}, #{delFlag},
                 #{createTime}, #{updateTime})
     </insert>
@@ -32,6 +32,9 @@
                 </if>
                 <if test="channelEmployeeUid != null">
                     channel_employee_uid = #{channelEmployeeUid},
+                </if>
+                <if test="channelEmployeeBindTime != null">
+                    channel_employee_bind_time = #{channelEmployeeBindTime},
                 </if>
                 <if test="autoUpGrade != null">
                     auto_up_grade = #{autoUpGrade},
@@ -185,10 +188,10 @@
                 and tenant_id = #{tenantId}
             </if>
             <if test="startTime != null">
-                and create_time &gt;= #{startTime}
+                and channel_employee_bind_time &gt;= #{startTime}
             </if>
             <if test="endTime != null">
-                and create_time &lt; #{endTime}
+                and channel_employee_bind_time &lt; #{endTime}
             </if>
             <if test="uid != null">
                 and channel_employee_uid = #{uid}
