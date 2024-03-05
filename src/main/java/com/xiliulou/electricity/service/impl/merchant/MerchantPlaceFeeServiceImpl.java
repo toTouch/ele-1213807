@@ -135,7 +135,6 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
     @Slave
     @Override
     public MerchantPlaceFeeCurMonthVO getFeeData(MerchantPlaceFeeRequest request) {
-        request.setMerchantId(42L);
         MerchantPlaceFeeCurMonthVO merchantPlaceFeeCurMonthVO = new MerchantPlaceFeeCurMonthVO();
         // 计算上个月一号到当前场地费的总和
         // 获取上个月的场地费
@@ -169,7 +168,6 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
      */
     @Override
     public MerchantPlaceFeeLineDataVO lineData(MerchantPlaceFeeRequest request) {
-        request.setMerchantId(42L);
         
         MerchantPlaceFeeLineDataVO vo = new MerchantPlaceFeeLineDataVO();
         
@@ -224,7 +222,7 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
      */
     @Override
     public MerchantCabinetFeeDetailShowVO getCabinetPlaceDetail(MerchantPlaceFeeRequest request) {
-        request.setMerchantId(42L);
+//        request.setMerchantId(42L);
         MerchantCabinetFeeDetailShowVO resVo = new MerchantCabinetFeeDetailShowVO();
         
         // 根据商户id查询所有的柜机的id
@@ -369,7 +367,6 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
     
     @Override
     public List<MerchantCabinetFeeDetailVO> getPlaceDetailByCabinetId(MerchantPlaceFeeRequest request) {
-        request.setMerchantId(42L);
         
         // 获取当前月份
         String currentMonth = DateUtil.format(new Date(), "yyyy-MM");

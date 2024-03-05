@@ -277,30 +277,25 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
         Integer validTimeUnit = merchantAttr.getValidTimeUnit();
         
         // 保护期过期时间
-        long protectionExpireTime = NumberConstant.ZERO_L;
-        if (Objects.nonNull(protectionTime) && Objects.nonNull(protectionTimeUnit)) {
-            //分钟转毫秒
-            if (Objects.equals(protectionTimeUnit, CommonConstant.TIME_UNIT_MINUTES)) {
-                protectionExpireTime = nowTime + protectionTime * TimeConstant.MINUTE_MILLISECOND;
-            }
-            //小时转毫秒
-            if (Objects.equals(protectionTimeUnit, CommonConstant.TIME_UNIT_HOURS)) {
-                protectionExpireTime = nowTime + protectionTime * TimeConstant.HOURS_MILLISECOND;
-            }
+        long protectionExpireTime = nowTime;
+        //分钟转毫秒
+        if (Objects.equals(protectionTimeUnit, CommonConstant.TIME_UNIT_MINUTES)) {
+            protectionExpireTime += protectionTime * TimeConstant.MINUTE_MILLISECOND;
+        }
+        //小时转毫秒
+        if (Objects.equals(protectionTimeUnit, CommonConstant.TIME_UNIT_HOURS)) {
+            protectionExpireTime += protectionTime * TimeConstant.HOURS_MILLISECOND;
         }
         
         // 参与有效期过期时间
-        long expiredTime = NumberConstant.ZERO_L;
-        if (Objects.nonNull(validTime) && Objects.nonNull(validTimeUnit)) {
-            //分钟转毫秒
-            if (Objects.equals(validTimeUnit, CommonConstant.TIME_UNIT_MINUTES)) {
-                expiredTime = nowTime + validTime * TimeConstant.MINUTE_MILLISECOND;
-            }
-            //小时转毫秒
-            if (Objects.equals(validTimeUnit, CommonConstant.TIME_UNIT_HOURS)) {
-                expiredTime = nowTime + validTime * TimeConstant.HOURS_MILLISECOND;
-            }
-            
+        long expiredTime = nowTime;
+        //分钟转毫秒
+        if (Objects.equals(validTimeUnit, CommonConstant.TIME_UNIT_MINUTES)) {
+            expiredTime += validTime * TimeConstant.MINUTE_MILLISECOND;
+        }
+        //小时转毫秒
+        if (Objects.equals(validTimeUnit, CommonConstant.TIME_UNIT_HOURS)) {
+            expiredTime += validTime * TimeConstant.HOURS_MILLISECOND;
         }
         
         // 生成参与记录
