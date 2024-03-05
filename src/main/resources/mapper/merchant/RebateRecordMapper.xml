@@ -301,7 +301,7 @@
             <if test="status != null">
                 and status = #{status}
             </if>
-            <if test="type != null">
+            <if test="rebateType != null">
                 and type = #{rebateType}
             </if>
             <if test="startTime != null">
