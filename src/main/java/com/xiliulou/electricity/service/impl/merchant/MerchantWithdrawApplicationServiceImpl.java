@@ -565,6 +565,8 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
                 WechatTransferBatchOrderRecordQuery wechatTransferBatchOrderRecordQuery = new WechatTransferBatchOrderRecordQuery();
                 wechatTransferBatchOrderRecordQuery.setBatchId(batchNo);
                 wechatTransferBatchOrderRecordQuery.setTenantId(tenantId);
+                wechatTransferBatchOrderRecordQuery.setNeedQueryDetail(true);
+                wechatTransferBatchOrderRecordQuery.setDetailStatus("ALL");
 
                 try {
                     WechatTransferBatchOrderQueryResult wechatTransferBatchOrderQueryResult = wechatV3TransferService.queryTransferBatchOrder(wechatTransferBatchOrderRecordQuery);
