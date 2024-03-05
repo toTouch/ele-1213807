@@ -205,17 +205,17 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
         
         if (Objects.equals(type, PromotionFeeQueryTypeEnum.CHANNEL_EMPLOYEE.getCode())) {
             // 新增商戶數
-            buildMerchantNumVCountVO(uid, merchantPromotionFeeIncomeVO, dayOfMonthStartTime, dayOfMonthEndTime);
+            buildMerchantNumVCountVO(uid, merchantPromotionFeeIncomeVO);
         }
         
         return R.ok(merchantPromotionFeeIncomeVO);
     }
     
-    private void buildMerchantNumVCountVO(Long uid, MerchantPromotionFeeIncomeVO merchantPromotionFeeIncomeVO, long dayOfMonthStartTime, long dayOfMonthEndTime) {
+    private void buildMerchantNumVCountVO(Long uid, MerchantPromotionFeeIncomeVO merchantPromotionFeeIncomeVO) {
         //今日新增商户数：渠道与商户绑定时间在今日0点～当前时间内
         merchantPromotionFeeIncomeVO.setTodayMerchantNum(buildMerchantNumCount(uid, DateUtils.getTodayStartTimeStamp(), System.currentTimeMillis()));
         //本月新增商户数：渠道与商户绑定时间在本月1号0点～当前时间内
-        merchantPromotionFeeIncomeVO.setCurrentMonthMerchantNum(buildMerchantNumCount(uid, dayOfMonthStartTime, System.currentTimeMillis()));
+        merchantPromotionFeeIncomeVO.setCurrentMonthMerchantNum(buildMerchantNumCount(uid, DateUtils.getDayOfMonthStartTime(1), System.currentTimeMillis()));
         //累计商户数：渠道与商户绑定时间<=当前时间
         merchantPromotionFeeIncomeVO.setTotalMerchantNum(buildMerchantNumCount(uid, null, System.currentTimeMillis()));
     }
