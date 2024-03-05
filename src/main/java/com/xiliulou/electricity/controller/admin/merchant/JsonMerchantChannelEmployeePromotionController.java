@@ -47,13 +47,8 @@ public class JsonMerchantChannelEmployeePromotionController extends BaseControll
         if (offset < 0) {
             offset = 0;
         }
-    
-        Integer tenantId = null;
-        if (!SecurityUtils.isAdmin()) {
-            tenantId = TenantContextHolder.getTenantId();
-        }
         
-        ChannelEmployeePromotionRequest channelEmployeeRequest = ChannelEmployeePromotionRequest.builder().tenantId(tenantId).size(size).offset(offset).monthDate(monthDate).build();
+        ChannelEmployeePromotionRequest channelEmployeeRequest = ChannelEmployeePromotionRequest.builder().tenantId(TenantContextHolder.getTenantId()).size(size).offset(offset).monthDate(monthDate).build();
         
         
         
@@ -73,13 +68,8 @@ public class JsonMerchantChannelEmployeePromotionController extends BaseControll
         if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-    
-        Integer tenantId = null;
-        if (!SecurityUtils.isAdmin()) {
-            tenantId = TenantContextHolder.getTenantId();
-        }
         
-        ChannelEmployeePromotionRequest channelEmployeeRequest = ChannelEmployeePromotionRequest.builder().tenantId(tenantId).monthDate(monthDate).build();
+        ChannelEmployeePromotionRequest channelEmployeeRequest = ChannelEmployeePromotionRequest.builder().tenantId(TenantContextHolder.getTenantId()).monthDate(monthDate).build();
         
         return R.ok(channelEmployeePromotionMonthRecordService.countTotal(channelEmployeeRequest));
         
