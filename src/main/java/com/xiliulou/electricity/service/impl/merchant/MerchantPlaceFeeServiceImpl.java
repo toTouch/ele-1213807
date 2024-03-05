@@ -126,6 +126,12 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
     public Integer isShowPlacePage(Long merchantId) {
         // 判断商户表的标志是否存在场地费
         Merchant merchant = merchantService.queryByIdFromCache(merchantId);
+        
+        if (Objects.isNull(merchant)) {
+            log.error("show place page merchant is null, merchantId={}", merchantId);
+            return NumberConstant.ZERO;
+        }
+        
         if (Objects.equals(merchant.getExistPlaceFee(), MerchantConstant.EXISTS_PLACE_FEE_YES)) {
             return NumberConstant.ONE;
         }
@@ -137,6 +143,7 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
     @Override
     public MerchantPlaceFeeCurMonthVO getFeeData(MerchantPlaceFeeRequest request) {
         MerchantPlaceFeeCurMonthVO merchantPlaceFeeCurMonthVO = new MerchantPlaceFeeCurMonthVO();
+        
         // 计算上个月一号到当前场地费的总和
         // 获取上个月的场地费
         BigDecimal lastMothFee = getLastMothFee(request);
@@ -927,6 +934,7 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
         while (true) {
             String month = DateUtil.format(calendar.getTime(), DateFormatConstant.MONTH_DATE_FORMAT);
             list.add(month);
+            
             calendar.add(Calendar.MONTH, 1);
             if (calendar.getTimeInMillis() > endTime) {
                 break;
@@ -1025,6 +1033,10 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
             // 处理连续的时间段
             value = dealSameRecord(value, endTime);
             
+            if (ObjectUtils.isEmpty(value)) {
+                continue;
+            }
+            
             List<MerchantPlaceFeeMonthRecord> cabinetRecordList = placeFeeMonthRecordMap.get(placeId);
             log.info("getCurMonthFeeRecords3={}", cabinetRecordList);
             if (ObjectUtils.isEmpty(cabinetRecordList)) {
@@ -1039,6 +1051,7 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
             for (MerchantPlaceBind bind : value) {
                 Long bindStartTime = null;
                 Long bindEndTime = null;
+                
                 // 绑定 开始时间必须小于等于本月的最后一天
                 if (Objects.equals(bind.getType(), MerchantPlaceBindConstant.BIND) && Objects.nonNull(bind.getBindTime()) && bind.getBindTime() <= endTime) {
                     if (bind.getBindTime() <= startTime) {
@@ -1082,6 +1095,7 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
                         }
                         Long cabinetStartTime = null;
                         Long cabinetEndTime = null;
+                        
                         // 场地的绑定的开始时间
                         if (bindStartTime <= cabinetRecord.getRentStartTime()) {
                             cabinetStartTime = cabinetRecord.getRentStartTime();
@@ -1147,6 +1161,7 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
         List<MerchantPlaceCabinetBind> cabinetBindList = merchantPlaceCabinetBindService.queryListByPlaceId(placeIdList,
                 MerchantPlaceCabinetBindConstant.PLACE_MONTH_NOT_SETTLEMENT);
         log.info("getCurMonthRecordFirst1={}", cabinetBindList);
+        
         if (ObjectUtils.isEmpty(cabinetBindList)) {
             return list;
         }
@@ -1172,6 +1187,7 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
                         record.setEid(cabinetBind.getCabinetId());
                         record.setRentStartTime(cabinetBind.getBindTime());
                         record.setRentEndTime(cabinetBind.getUnBindTime());
+                        
                         if (Objects.nonNull(cabinetBind.getUnBindTime())) {
                             Integer days = (int) ((cabinetBind.getUnBindTime() - cabinetBind.getBindTime()) / (24 * 60 * 60 * 1000));
                             record.setRentDays(days);
@@ -1179,6 +1195,7 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
                             Integer days = (int) ((dayOfMonthEndTime - cabinetBind.getBindTime()) / (24 * 60 * 60 * 1000));
                             record.setRentDays(days);
                         }
+                        
                         record.setRentDays(cabinetBind.getMonthSettlement());
                         record.setCreateTime(System.currentTimeMillis());
                         record.setUpdateTime(System.currentTimeMillis());
@@ -1196,6 +1213,7 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
     private BigDecimal getLastMothFee(MerchantPlaceFeeRequest request) {
         List<MerchantPlaceFeeMonthDetail> list = getLastMonthFeeRecords(request);
         log.info("get Last Moth Fee list={}", list);
+        
         if (ObjectUtils.isEmpty(list)) {
             return BigDecimal.ZERO;
         }
@@ -1286,6 +1304,10 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
             // 处理连续的时间段
             value = dealSameRecord(value, endTime);
             
+            if (ObjectUtils.isEmpty(value)) {
+                continue;
+            }
+            
             // 获取柜机再三个月前的有效的时间段
             Map<Long, List<MerchantPlaceFeeMonthRecord>> cabinetMap = getPlaceCabinetMonthRecord(placeFeeMonthRecordMap.get(placeId), curMonth, lastMonth);
             if (ObjectUtils.isEmpty(cabinetMap)) {
@@ -1297,6 +1319,7 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
             for (MerchantPlaceBind bind : value) {
                 Long bindStartTime = null;
                 Long bindEndTime = null;
+                
                 // 绑定 开始时间必须小于等于本月的最后一天
                 if (Objects.equals(bind.getType(), MerchantPlaceBindConstant.BIND) && Objects.nonNull(bind.getBindTime()) && bind.getBindTime() <= endTime) {
                     if (bind.getBindTime() <= startTime) {
@@ -1338,6 +1361,7 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
                         }
                         Long cabinetStartTime = null;
                         Long cabinetEndTime = null;
+                        
                         // 场地的绑定的开始时间
                         if (bindStartTime <= cabinetRecord.getRentStartTime()) {
                             cabinetStartTime = cabinetRecord.getRentStartTime();
