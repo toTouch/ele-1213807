@@ -53,6 +53,11 @@ public class Merchant {
     private Long channelEmployeeUid;
     
     /**
+     * 渠道员与商户绑定时间
+     */
+    private Long channelEmployeeBindTime;
+    
+    /**
      * 租户Id
      */
     private Integer tenantId;
