@@ -42,6 +42,7 @@ import com.xiliulou.electricity.service.car.CarRentalPackageMemberTermService;
 import com.xiliulou.electricity.service.car.CarRentalPackageOrderSlippageService;
 import com.xiliulou.electricity.service.car.CarRentalPackageService;
 import com.xiliulou.electricity.service.car.biz.CarRenalPackageSlippageBizService;
+import com.xiliulou.electricity.service.car.biz.CarRentalPackageMemberTermBizService;
 import com.xiliulou.electricity.service.car.biz.CarRentalPackageOrderBizService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseChannelUserService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseRentRecordService;
@@ -96,6 +97,9 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     
     @Resource
     private CarRentalPackageOrderBizService carRentalPackageOrderBizService;
+    
+    @Autowired
+    private CarRentalPackageMemberTermBizService carRentalPackageMemberTermBizService;
     
     @Value("${switch.version:v2}")
     private String switchVersion;
@@ -1085,11 +1089,13 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                 return R.fail("ELECTRICITY.0023", "套餐已过期");
             }
         } else {
-            //判断车电一体滞纳金
-            if (Boolean.TRUE.equals(carRenalPackageSlippageBizService.isExitUnpaid(oldUserInfo.getTenantId(), oldUserInfo.getUid()))) {
-                log.warn("ORDER WARN! user exist battery service fee,uid={}", oldUserInfo.getUid());
-                return R.fail("300001", "存在滞纳金，请先缴纳");
-            }
+            //判断车电一体套餐
+            carRentalPackageMemberTermBizService.verifyMemberSwapBattery(oldUserInfo.getTenantId(), oldUserInfo.getUid());
+            //            //判断车电一体滞纳金
+//            if (Boolean.TRUE.equals(carRenalPackageSlippageBizService.isExitUnpaid(oldUserInfo.getTenantId(), oldUserInfo.getUid()))) {
+//                log.warn("ORDER WARN! user exist battery service fee,uid={}", oldUserInfo.getUid());
+//                return R.fail("300001", "存在滞纳金，请先缴纳");
+//            }
         }
         
         //判断电池是否存在，或者已经被绑定

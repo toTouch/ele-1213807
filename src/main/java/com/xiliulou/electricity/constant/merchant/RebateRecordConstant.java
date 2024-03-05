@@ -39,4 +39,8 @@ public class RebateRecordConstant {
      */
     public static final Integer BALANCE = 2;
     
+    public static final String MONTH_DATE_FORMAT = "yyyy-MM";
+    
+    public static final String MONTH_DAY_DATE_FORMAT = "yyyy-MM-dd";
+    
 }

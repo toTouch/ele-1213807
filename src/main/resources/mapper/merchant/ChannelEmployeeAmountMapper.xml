@@ -122,7 +122,6 @@
             update_time = #{updateTime}
         where uid = #{uid}
           and tenant_id = #{tenantId}
-          and del_flag = 0
     </update>
     
     <update id="reduceAmountByUid">
@@ -131,7 +130,6 @@
             update_time = #{updateTime}
         where uid = #{uid}
           and tenant_id = #{tenantId}
-          and del_flag = 0
     </update>
     
     

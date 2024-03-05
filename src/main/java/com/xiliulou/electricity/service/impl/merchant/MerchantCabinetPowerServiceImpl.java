@@ -1626,7 +1626,8 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
             log.warn("Merchant power for pro listPlaceAndCabinetByMerchantId, merchant not exist, uid={}", uid);
             return null;
         }
-        
+    
+        merchant.setId(18L);
         List<MerchantPlaceBind> bindList = merchantPlaceBindService.listByMerchantId(merchant.getId(), null);
         if (CollectionUtils.isEmpty(bindList)) {
             return null;

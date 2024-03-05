@@ -23,7 +23,7 @@ public class MerchantWithdrawApplicationRecordRequest {
     
     private String orderNo;
     
-    private String transactionNo;
+    private String transactionBatchId;
     
     private Integer status;
     

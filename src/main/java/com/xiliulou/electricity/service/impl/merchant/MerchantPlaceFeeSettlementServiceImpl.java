@@ -1,10 +1,11 @@
 package com.xiliulou.electricity.service.impl.merchant;
 
-import cn.hutool.json.JSONUtil;
 import com.alibaba.excel.EasyExcel;
+import com.google.api.client.util.Lists;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.dto.merchant.MerchantPlaceFeeMonthRecordDTO;
 import com.xiliulou.electricity.entity.merchant.MerchantPlace;
 import com.xiliulou.electricity.entity.merchant.MerchantPlaceFeeMonthRecord;
 import com.xiliulou.electricity.entity.merchant.MerchantPlaceFeeMonthSummaryRecord;
@@ -20,7 +21,6 @@ import com.xiliulou.electricity.service.merchant.MerchantPlaceService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DateUtils;
 import com.xiliulou.electricity.vo.merchant.MerchantPlaceFeeMonthRecordExportVO;
-import com.xiliulou.electricity.vo.merchant.MerchantPlaceFeeMonthRecordVO;
 import com.xiliulou.electricity.vo.merchant.MerchantPlaceFeeMonthSummaryRecordVO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
@@ -30,6 +30,7 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
+import java.math.BigDecimal;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -38,6 +39,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
+
+import static java.util.stream.Collectors.toMap;
 
 /**
  * @ClassName : MerchantPlaceFeeSettlementServiceImpl
@@ -65,7 +68,37 @@ public class MerchantPlaceFeeSettlementServiceImpl implements MerchantPlaceFeeSe
         if (CollectionUtils.isEmpty(merchantPlaceFeeMonthRecords)) {
             return resultVOs;
         }
-        log.info("merchantPlaceFeeMonthRecords = {}", JsonUtil.toJson(merchantPlaceFeeMonthRecords));
+        
+        // 根据场地id分组 并monthPlaceFee求和
+        Map<Long, List<MerchantPlaceFeeMonthRecord>> placeIdListMap = merchantPlaceFeeMonthRecords.stream().filter(item -> Objects.nonNull(item.getPlaceId()))
+                .collect(Collectors.groupingBy(MerchantPlaceFeeMonthRecord::getPlaceId));
+        
+        List<MerchantPlaceFeeMonthRecordDTO> recordDTOList = Lists.newArrayList();
+        
+        placeIdListMap.forEach((placeId, merchantPlaceFeeMonthRecordList) -> {
+            
+            // 租赁天数求和
+            Integer rentDays = merchantPlaceFeeMonthRecords.stream()
+                    .filter(item -> Objects.nonNull(item.getRentDays()) && Objects.nonNull(item.getPlaceId()) && Objects.equals(item.getPlaceId(), placeId))
+                    .map(MerchantPlaceFeeMonthRecord::getRentDays).reduce(0, Integer::sum);
+            
+            //月场地费求和
+            BigDecimal monthPlaceFee = merchantPlaceFeeMonthRecords.stream()
+                    .filter(item -> Objects.nonNull(item.getMonthPlaceFee()) && Objects.nonNull(item.getPlaceId()) && Objects.equals(item.getPlaceId(), placeId))
+                    .map(MerchantPlaceFeeMonthRecord::getMonthPlaceFee).reduce(BigDecimal.ZERO, BigDecimal::add);
+            
+            MerchantPlaceFeeMonthRecordDTO dto = new MerchantPlaceFeeMonthRecordDTO();
+            
+            dto.setMonthDate(merchantPlaceFeeMonthRecordList.get(0).getMonthDate());
+            dto.setPlaceId(placeId);
+            dto.setTenantId(merchantPlaceFeeMonthRecordList.get(0).getTenantId());
+            dto.setMonthPlaceFee(monthPlaceFee.compareTo(BigDecimal.ZERO) == 0 ? null : monthPlaceFee);
+            dto.setMonthRentDays(Objects.equals(rentDays, 0) ? null : rentDays);
+            recordDTOList.add(dto);
+        });
+        
+        // recordDTOList转map
+        Map<Long, MerchantPlaceFeeMonthRecordDTO> recordMap = recordDTOList.stream().collect(toMap(MerchantPlaceFeeMonthRecordDTO::getPlaceId, item -> item));
         
         resultVOs = merchantPlaceFeeMonthRecords.parallelStream().map(merchantPlaceFeeMonthRecord -> {
             MerchantPlaceFeeMonthRecordExportVO exportVO = new MerchantPlaceFeeMonthRecordExportVO();
@@ -76,14 +109,22 @@ public class MerchantPlaceFeeSettlementServiceImpl implements MerchantPlaceFeeSe
             exportVO.setRentEndTime(
                     Objects.nonNull(merchantPlaceFeeMonthRecord.getRentEndTime()) ? DateUtils.getYearAndMonthAndDayByTimeStamps(merchantPlaceFeeMonthRecord.getRentEndTime())
                             : null);
-            Long placeId = merchantPlaceFeeMonthRecord.getPlaceId();
-            MerchantPlace merchantPlace = merchantPlaceService.queryByIdFromCache(placeId);
+            Long recordPlaceId = merchantPlaceFeeMonthRecord.getPlaceId();
+            MerchantPlace merchantPlace = merchantPlaceService.queryByIdFromCache(recordPlaceId);
             if (Objects.nonNull(merchantPlace)) {
                 exportVO.setPlaceName(merchantPlace.getName());
             }
+            
+            if (Objects.nonNull(merchantPlaceFeeMonthRecord.getPlaceId())) {
+                MerchantPlaceFeeMonthRecordDTO merchantPlaceFeeMonthRecordDTO = recordMap.get(merchantPlaceFeeMonthRecord.getPlaceId());
+                if (Objects.nonNull(merchantPlaceFeeMonthRecordDTO) && Objects.equals(merchantPlaceFeeMonthRecord.getPlaceId(), merchantPlaceFeeMonthRecordDTO.getPlaceId())) {
+                    exportVO.setMonthTotalPlaceFee(merchantPlaceFeeMonthRecordDTO.getMonthPlaceFee());
+                    exportVO.setMonthRentDays(merchantPlaceFeeMonthRecordDTO.getMonthRentDays());
+                }
+            }
             return exportVO;
         }).collect(Collectors.toList());
-        log.info("resultVOs = {}", JsonUtil.toJson(merchantPlaceFeeMonthRecords));
+        
         return resultVOs;
     }
     

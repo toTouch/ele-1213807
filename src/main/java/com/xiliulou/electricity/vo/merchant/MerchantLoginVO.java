@@ -51,6 +51,11 @@ public class MerchantLoginVO {
      */
     private BusinessInfo businessInfo;
     
+    /**
+     * 0--正常 1--锁住
+     */
+    private Integer lockFlag;
+    
     public void setBusinessInfo(Integer enterprisePackageAuth, Integer purchaseAuthority){
         this.businessInfo = new BusinessInfo(enterprisePackageAuth, purchaseAuthority);
     }

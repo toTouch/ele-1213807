@@ -134,7 +134,7 @@ public class JsonMerchantPlaceCabinetBindController extends BaseController {
      * @author maxiaodong
      */
     @GetMapping("/admin/merchant/place/cabinet/pageCount")
-    public R pageCount(@RequestParam("placeId") Long placeId, @RequestParam(value = "sn", required = false) String sn, @RequestParam(value = "status", required = false) Integer status) {
+    public R pageCount(@RequestParam("placeId") Long placeId, @RequestParam(value = "cabinetSn", required = false) String cabinetSn, @RequestParam(value = "status", required = false) Integer status) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
@@ -149,7 +149,7 @@ public class JsonMerchantPlaceCabinetBindController extends BaseController {
             tenantId = TenantContextHolder.getTenantId();
         }
     
-        MerchantPlaceCabinetPageRequest placeCabinetPageRequest = MerchantPlaceCabinetPageRequest.builder().sn(sn).status(status).tenantId(tenantId).build();
+        MerchantPlaceCabinetPageRequest placeCabinetPageRequest = MerchantPlaceCabinetPageRequest.builder().sn(cabinetSn).status(status).tenantId(tenantId).build();
         
         return R.ok(merchantPlaceCabinetBindService.countTotal(placeCabinetPageRequest));
     }
@@ -161,7 +161,7 @@ public class JsonMerchantPlaceCabinetBindController extends BaseController {
      * @author maxiaodong
      */
     @GetMapping("/admin/merchant/place/cabinet/page")
-    public R page(@RequestParam("size") long size, @RequestParam("offset") long offset, @RequestParam("placeId") Long placeId, @RequestParam(value = "sn", required = false) String sn,
+    public R page(@RequestParam("size") long size, @RequestParam("offset") long offset, @RequestParam("placeId") Long placeId, @RequestParam(value = "cabinetSn", required = false) String cabinetSn,
             @RequestParam(value = "status", required = false) Integer status) {
         if (size < 0 || size > 50) {
             size = 10L;
@@ -185,7 +185,7 @@ public class JsonMerchantPlaceCabinetBindController extends BaseController {
             tenantId = TenantContextHolder.getTenantId();
         }
         
-        MerchantPlaceCabinetPageRequest placeCabinetPageRequest = MerchantPlaceCabinetPageRequest.builder().placeId(placeId).sn(sn).size(size).offset(offset).tenantId(tenantId)
+        MerchantPlaceCabinetPageRequest placeCabinetPageRequest = MerchantPlaceCabinetPageRequest.builder().placeId(placeId).sn(cabinetSn).size(size).offset(offset).tenantId(tenantId)
                 .status(status).build();
         
         return R.ok(merchantPlaceCabinetBindService.listByPage(placeCabinetPageRequest));

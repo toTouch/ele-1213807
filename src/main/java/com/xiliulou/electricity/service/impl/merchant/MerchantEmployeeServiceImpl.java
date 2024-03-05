@@ -30,6 +30,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronizationAdapter;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
@@ -100,7 +102,7 @@ public class MerchantEmployeeServiceImpl implements MerchantEmployeeService {
         
         // 创建商户员工账户
         User user = User.builder().updateTime(System.currentTimeMillis()).createTime(System.currentTimeMillis()).phone(phone).lockFlag(User.USER_UN_LOCK).gender(User.GENDER_MALE)
-                .lang(MessageUtils.LOCALE_ZH_CN).userType(User.TYPE_USER_CHANNEL).name(name).salt("").avatar("").tenantId(merchantEmployeeRequest.getTenantId())
+                .lang(MessageUtils.LOCALE_ZH_CN).userType(User.TYPE_USER_MERCHANT_EMPLOYEE).name(name).salt("").avatar("").tenantId(merchantEmployeeRequest.getTenantId())
                 .loginPwd(customPasswordEncoder.encode("123456")).delFlag(User.DEL_NORMAL).build();
         
         // 如果是禁用则用户默认锁定
@@ -140,28 +142,37 @@ public class MerchantEmployeeServiceImpl implements MerchantEmployeeService {
         if (!redisService.setNx(CacheConstant.CACHE_MERCHANT_EMPLOYEE_UPDATE_LOCK + merchantEmployeeRequest.getMerchantUid(), "1", 3000L, false)) {
             throw new BizException("000000", "操作频繁,请稍后再试");
         }
-        //检查当前手机号是否已经注册
-        String phone = merchantEmployeeRequest.getPhone();
-        
-        //userService.queryByUserName(name);
-        
-        User existUser = userService.queryByUserPhone(phone, User.TYPE_USER_MERCHANT_EMPLOYEE, merchantEmployeeRequest.getTenantId());
-        if (Objects.nonNull(existUser)) {
-            throw new BizException("120002", "当前手机号已注册");
-        }
-        
+    
         //检查商户是否正常，状态为非禁用
         Merchant merchant = merchantService.queryByUid(merchantEmployeeRequest.getMerchantUid());
         if (Objects.isNull(merchant) || MerchantConstant.DISABLE.equals(merchant.getStatus())) {
             throw new BizException("120003", "当前商户不可用");
         }
-        
+    
         MerchantEmployeeVO merchantEmployeeVO = merchantEmployeeMapper.selectById(merchantEmployeeRequest.getId());
         if (Objects.isNull(merchantEmployeeVO)) {
             log.error("not found merchant employee by id, id = {}", merchantEmployeeRequest.getId());
             throw new BizException("120004", "商户员工不存在");
         }
         
+        User user = userService.queryByUidFromCache(merchantEmployeeVO.getUid());
+        if (Objects.isNull(user)) {
+            log.error("not found merchant employee by uid, uid = {}", merchantEmployeeVO.getUid());
+            throw new BizException("120004", "商户员工不存在");
+        }
+    
+        //用户名为做限制，暂时不进行校验
+        //userService.queryByUserName(name);
+        
+        //检查当前手机号是否已经注册
+        if(!Objects.equals(user.getPhone(), merchantEmployeeRequest.getPhone())){
+            User existUser = userService.queryByUserPhone(merchantEmployeeRequest.getPhone(), User.TYPE_USER_MERCHANT_EMPLOYEE, merchantEmployeeRequest.getTenantId());
+            if (Objects.nonNull(existUser)) {
+                throw new BizException("120002", "当前手机号已注册");
+            }
+        }
+    
+        String oldPhone = user.getPhone();
         User updateUser = new User();
         
         // 如果是禁用，则将用户置为锁定
@@ -182,11 +193,21 @@ public class MerchantEmployeeServiceImpl implements MerchantEmployeeService {
         MerchantEmployee merchantEmployeeUpdate = new MerchantEmployee();
         BeanUtils.copyProperties(merchantEmployeeRequest, merchantEmployeeUpdate);
         merchantEmployeeUpdate.setUpdateTime(System.currentTimeMillis());
+    
+        Integer result = merchantEmployeeMapper.updateOne(merchantEmployeeUpdate);
+    
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
+            @Override
+            public void afterCommit() {
+                //清理缓存，避免缓存操作和数据库提交在同一个事务中失效的问题
+                redisService.delete(CacheConstant.CACHE_USER_UID + updateUser.getUid());
+                redisService.delete(CacheConstant.CACHE_USER_PHONE + updateUser.getTenantId() + ":" + oldPhone + ":" + updateUser.getUserType());
+            }
+        });
         
-        return merchantEmployeeMapper.updateOne(merchantEmployeeUpdate);
+        return result;
     }
     
-    @Transactional(rollbackFor = Exception.class)
     @Override
     public Integer removeMerchantEmployee(Long id) {
         MerchantEmployeeVO merchantEmployeeVO = merchantEmployeeMapper.selectById(id);

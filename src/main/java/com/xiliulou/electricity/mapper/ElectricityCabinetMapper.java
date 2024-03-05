@@ -120,5 +120,6 @@ public interface ElectricityCabinetMapper extends BaseMapper<ElectricityCabinet>
     List<AreaCabinetNumBO> countByAreaGroup(@Param("areaIdList") List<Long> areaIdList);
     
     List<ElectricityCabinetCountVO> selectCabinetCount(ElectricityCabinetQuery cabinetQuery);
-
+    
+    Integer updateCabinetById(ElectricityCabinet electricityCabinet);
 }

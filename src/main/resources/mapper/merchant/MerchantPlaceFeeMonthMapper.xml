@@ -65,6 +65,7 @@
             <if test="cabinetId != null">
                 and cabinet_id = #{cabinetId}
             </if>
+        
             and calculate_date &lt; #{time}
         </where>
     </select>

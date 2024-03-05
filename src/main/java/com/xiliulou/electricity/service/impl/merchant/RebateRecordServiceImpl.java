@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.service.impl.merchant;
 
+import com.xiliulou.core.utils.PhoneUtils;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.merchant.MerchantConstant;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
@@ -25,6 +26,7 @@ import com.xiliulou.electricity.utils.DateUtils;
 import com.xiliulou.electricity.vo.merchant.MerchantPromotionEmployeeDetailSpecificsVO;
 import com.xiliulou.electricity.vo.merchant.RebateRecordVO;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -177,6 +179,7 @@ public class RebateRecordServiceImpl implements RebateRecordService {
         RebateRecord rebateRecordUpdate = new RebateRecord();
         rebateRecordUpdate.setId(rebateRecord.getId());
         rebateRecordUpdate.setStatus(MerchantConstant.MERCHANT_REBATE_STATUS_SETTLED);
+        rebateRecordUpdate.setSettleTime(System.currentTimeMillis());
         rebateRecordUpdate.setUpdateTime(System.currentTimeMillis());
         applicationContext.getBean(RebateRecordService.class).updateById(rebateRecordUpdate);
     }
@@ -233,6 +236,11 @@ public class RebateRecordServiceImpl implements RebateRecordService {
              BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(item.getMemberCardId());
              specificsVO.setBatteryMemberCardName(Objects.nonNull(batteryMemberCard) ? batteryMemberCard.getName() : "");
              
+             //手机号掩码
+            if (StringUtils.isNotBlank(specificsVO.getPhone())) {
+                specificsVO.setPhone(PhoneUtils.mobileEncrypt(specificsVO.getPhone()));
+            }
+            specificsVO.setUserName(item.getName());
             return specificsVO;
         }).collect(Collectors.toList());
     }

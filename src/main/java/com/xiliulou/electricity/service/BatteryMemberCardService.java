@@ -50,6 +50,8 @@ public interface BatteryMemberCardService {
     Integer deleteById(Long id);
 
     List<BatteryMemberCardVO> selectByPage(BatteryMemberCardQuery query);
+    
+    List<BatteryMemberCardVO> selectByPageForMerchant(BatteryMemberCardQuery query);
 
     Integer selectByPageCount(BatteryMemberCardQuery query);
 

@@ -521,7 +521,9 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         electricityCabinet.setUpdateTime(System.currentTimeMillis());
         electricityCabinet.setTenantId(TenantContextHolder.getTenantId());
         
-        int update = electricityCabinetMapper.updateEleById(electricityCabinet);
+        // 扩展新的修改方法  场地费和区域不为空也可修改
+        int update = electricityCabinetMapper.updateCabinetById(electricityCabinet);
+        
         DbUtils.dbOperateSuccessThen(update, () -> {
             
             //更新缓存

@@ -27,7 +27,7 @@
                 status = #{status},
             </if>
             <if test="updateTime != null">
-                update_time = #{updateTime},
+                update_time = #{updateTime}
             </if>
             where join_uid = #{joinUid}
         </set>

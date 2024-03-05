@@ -60,7 +60,7 @@ public class JsonUserMerchantCabinetPlaceController extends BaseController {
     /**
      * 筛选条件：场地列表/柜机列表
      */
-    @GetMapping("/merchant/place/placeAndCabinetList")
+    @GetMapping({"/merchant/place/placeAndCabinetList", "/admin/merchant/place/placeAndCabinetList"})
     public R placeAndCabinetList() {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
@@ -73,13 +73,13 @@ public class JsonUserMerchantCabinetPlaceController extends BaseController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         
-        return R.ok(merchantCabinetPowerService.listPlaceAndCabinetByMerchantId(merchant.getId()));
+        return R.ok(merchantCabinetPowerService.listPlaceAndCabinetByMerchantId(merchant.getUid()));
     }
     
     /**
      * 筛选条件：根据场地id查询柜机列表
      */
-    @GetMapping("/merchant/place/cabinetListByPlace")
+    @GetMapping({"/merchant/place/cabinetListByPlace", "/merchant/place/cabinetListByPlace"})
     public R cabinetListByPlace(@RequestParam Long placeId) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
@@ -92,26 +92,27 @@ public class JsonUserMerchantCabinetPlaceController extends BaseController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         
-        return R.ok(merchantCabinetPowerService.listCabinetByPlaceId(merchant.getId(), placeId));
+        return R.ok(merchantCabinetPowerService.listCabinetByPlaceId(merchant.getUid(), placeId));
     }
     
     /**
      * 统计上月，本月，累计场地费
      * 统计设备数量
      */
-    @GetMapping("/merchant/place/getFeeData")
+    @GetMapping({"/merchant/place/getFeeData", "/admin/merchant/place/getFeeData"})
     public R getFeeData(@RequestParam(value = "placeId", required = false) Long placeId,
             @RequestParam(value = "cabinetId", required = false) Long cabinetId) {
-        TokenUser user = SecurityUtils.getUserInfo();
+        /*TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
-            return R.fail("ELECTRICITY.0001", "未找到用户");
+//            return R.fail("ELECTRICITY.0001", "未找到用户");
         }
     
         Merchant merchant = merchantService.queryByUid(user.getUid());
         if (Objects.isNull(merchant)) {
             log.error("merchant place is Show Place Page merchant is null, uid={}", user.getUid());
-            return R.fail("ELECTRICITY.0001", "未找到用户");
-        }
+//            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }*/
+        Merchant merchant = new Merchant();
     
         MerchantPlaceFeeRequest request = MerchantPlaceFeeRequest.builder().merchantId(merchant.getId()).placeId(placeId).cabinetId(cabinetId).build();
         
@@ -127,14 +128,16 @@ public class JsonUserMerchantCabinetPlaceController extends BaseController {
             ,@RequestParam(value = "endTime") Long endTime) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
-            return R.fail("ELECTRICITY.0001", "未找到用户");
+//            return R.fail("ELECTRICITY.0001", "未找到用户");
         }
     
         Merchant merchant = merchantService.queryByUid(user.getUid());
         if (Objects.isNull(merchant)) {
             log.error("merchant place is Show Place Page merchant is null, uid={}", user.getUid());
-            return R.fail("ELECTRICITY.0001", "未找到用户");
+//            return R.fail("ELECTRICITY.0001", "未找到用户");
         }
+    
+        merchant = new Merchant();
         
          MerchantPlaceFeeRequest request = MerchantPlaceFeeRequest.builder().merchantId(merchant.getId()).placeId(placeId)
                 .cabinetId(cabinetId).startTime(startTime).endTime(endTime).build();
@@ -145,20 +148,21 @@ public class JsonUserMerchantCabinetPlaceController extends BaseController {
     /**
      * 根据柜机id获取场地费
      */
-    @GetMapping("/merchant/place/getPlaceDetailByCabinetId")
+    @GetMapping({"/merchant/place/getPlaceDetailByCabinetId", "/admin/merchant/place/getPlaceDetailByCabinetId"})
     public R getPlaceDetailByCabinetId(@RequestParam("month") String month,
             @RequestParam(value = "cabinetId") Long cabinetId) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
-            return R.fail("ELECTRICITY.0001", "未找到用户");
+//            return R.fail("ELECTRICITY.0001", "未找到用户");
         }
     
         Merchant merchant = merchantService.queryByUid(user.getUid());
         if (Objects.isNull(merchant)) {
             log.error("merchant place is Show Place Page merchant is null, uid={}", user.getUid());
-            return R.fail("ELECTRICITY.0001", "未找到用户");
+//            return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-        
+    
+        merchant = new Merchant();
         MerchantPlaceFeeRequest request = MerchantPlaceFeeRequest.builder().merchantId(merchant.getId()).month(month)
                 .cabinetId(cabinetId).build();
         
@@ -168,24 +172,29 @@ public class JsonUserMerchantCabinetPlaceController extends BaseController {
     /**
      * 柜机场地费详情
      */
-    @GetMapping("/merchant/place/getCabinetPlaceDetail")
+    @GetMapping({"/merchant/place/getCabinetPlaceDetail", "/admin/merchant/place/getCabinetPlaceDetail"})
     public R getCabinetPlaceDetail(@RequestParam(value = "placeId", required = false) Long placeId,
             @RequestParam(value = "cabinetId", required = false) Long cabinetId) {
         TokenUser user = SecurityUtils.getUserInfo();
+        
         if (Objects.isNull(user)) {
-            return R.fail("ELECTRICITY.0001", "未找到用户");
+//            return R.fail("ELECTRICITY.0001", "未找到用户");
         }
     
         Merchant merchant = merchantService.queryByUid(user.getUid());
         if (Objects.isNull(merchant)) {
             log.error("merchant place is Show Place Page merchant is null, uid={}", user.getUid());
-            return R.fail("ELECTRICITY.0001", "未找到用户");
+//            return R.fail("ELECTRICITY.0001", "未找到用户");
         }
+    
+        merchant = new Merchant();
         
         MerchantPlaceFeeRequest request = MerchantPlaceFeeRequest.builder().merchantId(merchant.getId()).placeId(placeId)
                 .cabinetId(cabinetId).build();
         
         return R.ok(merchantPlaceFeeService.getCabinetPlaceDetail(request));
     }
+    
+    
     
 }
