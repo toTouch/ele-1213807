@@ -40,7 +40,9 @@ public interface RebateRecordMapper extends BaseMapper<RebateRecord> {
     
     List<RebateRecord> selectCurrentMonthRebateRecord(@Param("startTime") long startTime, @Param("endTime") long endTime, @Param("offset") int offset, @Param("size") int size);
     
-    BigDecimal sumByStatus(MerchantPromotionFeeQueryModel merchantPromotionFeeQueryModel);
+    BigDecimal sumMerchantIncomeByStatus(MerchantPromotionFeeQueryModel merchantPromotionFeeQueryModel);
+    
+    BigDecimal sumEmployeeIncomeByStatus(MerchantPromotionFeeQueryModel merchantPromotionFeeQueryModel);
     
     Integer countByTime(MerchantPromotionRenewalQueryModel queryModel);
     
