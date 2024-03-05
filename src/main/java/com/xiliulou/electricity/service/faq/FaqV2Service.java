@@ -7,6 +7,7 @@ import com.xiliulou.electricity.reqparam.faq.AdminFaqChangeTypeReq;
 import com.xiliulou.electricity.reqparam.faq.AdminFaqReq;
 import com.xiliulou.electricity.reqparam.faq.AdminFaqUpDownReq;
 import com.xiliulou.electricity.vo.faq.FaqListVos;
+import com.xiliulou.electricity.vo.faq.FaqVo;
 
 import java.util.List;
 import java.util.Map;
@@ -54,7 +55,7 @@ public interface FaqV2Service {
     
     R queryDetail(Long id);
     
-    List<FaqListVos> listFaqQueryForBackstage(AdminFaqQuery faqQuery);
+    List<FaqVo> listFaqQueryResult(AdminFaqQuery faqQuery);
     
     List<FaqListVos> listFaqQueryForApp(AdminFaqQuery faqQuery);
 }

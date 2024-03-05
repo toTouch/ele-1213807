@@ -45,20 +45,23 @@
         <include refid="Base_Column_List"/>
         from t_new_faq
         where
-        <if test="params.idList !=null and params.idList.size>0">
+        <if test="ids !=null and ids.size>0">
             and id in
-            <foreach collection="params.idList" item="id" index="i" open="(" close=")" separator=",">
+            <foreach collection="ids" item="id" index="i" open="(" close=")" separator=",">
                 #{id}
             </foreach>
         </if>
     </select>
     
     <select id="selectLeftJoinByParams" resultType="com.xiliulou.electricity.bo.faq.FaqV2BO">
-        select f.id as id,f.type_id as type_id,c.type as type,c.sort as type_sort, title, f.sort as sort
+        select f.id as id,f.type_id as type_id,c.type as type,c.sort as type_sort, title, f.sort as sort,f.on_shelf as on_shelf
         FROM t_faq_category c left join t_new_faq f ON f.type_id = c.id
         <where>
             <if test="params.title != null and params.title != ''">
                 and title like concat('%',#{params.title},'%')
+            </if>
+            <if test="params.typeId != null">
+                and f.type_id = #{params.typeId}
             </if>
             <if test="params.tenantId != null">
                 and c.tenant_id = #{params.tenantId}
@@ -132,7 +135,7 @@
         delete
         from t_new_faq
         where id in
-        <foreach collection="list" item="id" index="i" open="(" close=")" separator=",">
+        <foreach collection="ids" item="id" index="i" open="(" close=")" separator=",">
             #{id}
         </foreach>
     </delete>
@@ -228,37 +231,41 @@
     <update id="batchUpdateByIds">
         update t_new_faq
         <set>
-            <if test="typeId != null">
-                type_id = #{typeId,jdbcType=BIGINT},
+            <if test="faqV2.typeId != null">
+                type_id = #{faqV2.typeId,jdbcType=BIGINT},
             </if>
-            <if test="title != null and title != ''">
-                title = #{title,jdbcType=VARCHAR},
+            <if test="faqV2.title != null and title != ''">
+                title = #{faqV2.title,jdbcType=VARCHAR},
             </if>
-            <if test="answer != null">
-                answer = #{answer,jdbcType=VARCHAR},
+            <if test="faqV2.answer != null">
+                answer = #{faqV2.answer,jdbcType=VARCHAR},
             </if>
-            <if test="onShelf != null">
-                on_shelf = #{onShelf,jdbcType=SMALLINT},
+            <if test="faqV2.onShelf != null">
+                on_shelf = #{faqV2.onShelf,jdbcType=SMALLINT},
             </if>
-            <if test="sort != null">
-                sort = #{sort,jdbcType=DECIMAL},
+            <if test="faqV2.sort != null">
+                sort = #{faqV2.sort,jdbcType=DECIMAL},
             </if>
-            <if test="tenantId != null">
-                tenant_id = #{tenantId,jdbcType=INTEGER},
+            <if test="faqV2.tenantId != null">
+                tenant_id = #{faqV2.tenantId,jdbcType=INTEGER},
             </if>
-            <if test="opUser != null">
-                op_user = #{opUser,jdbcType=BIGINT},
+            <if test="faqV2.opUser != null">
+                op_user = #{faqV2.opUser,jdbcType=BIGINT},
             </if>
-            <if test="createTime != null">
-                create_time = #{createTime,jdbcType=BIGINT},
+            <if test="faqV2.createTime != null">
+                create_time = #{faqV2.createTime,jdbcType=BIGINT},
             </if>
-            <if test="updateTime != null">
-                update_time = #{updateTime,jdbcType=BIGINT},
+            <if test="faqV2.updateTime != null">
+                update_time = #{faqV2.updateTime,jdbcType=BIGINT},
             </if>
         </set>
         where id in
-        <foreach collection="list" item="id" index="i" open="(" close=")" separator=",">
+        <foreach collection="ids" item="id" index="i" open="(" close=")" separator=",">
             #{id,jdbcType=BIGINT}
         </foreach>
     </update>
+    
+    <select id="selectMinimumSort" resultType="java.lang.Integer">
+        select min(sort) from t_new_faq where tenant_id = #{tenantId,jdbcType=INTEGER}
+    </select>
 </mapper>

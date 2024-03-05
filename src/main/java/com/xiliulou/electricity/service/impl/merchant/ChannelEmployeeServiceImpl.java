@@ -12,6 +12,7 @@ import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.UserRole;
 import com.xiliulou.electricity.entity.merchant.ChannelEmployee;
 import com.xiliulou.electricity.entity.merchant.ChannelEmployeeAmount;
+import com.xiliulou.electricity.entity.merchant.Merchant;
 import com.xiliulou.electricity.entity.merchant.MerchantArea;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.merchant.ChannelEmployeeAmountMapper;
@@ -29,10 +30,13 @@ import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.vo.merchant.ChannelEmployeeVO;
 import com.xiliulou.security.authentication.console.CustomPasswordEncoder;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronizationAdapter;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
@@ -277,6 +281,7 @@ public class ChannelEmployeeServiceImpl implements ChannelEmployeeService {
             }
         }
     
+        String oldPhone = user.getPhone();
         User updateUser = new User();
     
         // 如果是禁用，则将用户置为锁定
@@ -296,6 +301,7 @@ public class ChannelEmployeeServiceImpl implements ChannelEmployeeService {
     
         ChannelEmployee channelEmployeeUpdate = new ChannelEmployee();
         channelEmployeeUpdate.setId(channelEmployeeRequest.getId());
+        channelEmployeeUpdate.setFranchiseeId(channelEmployeeRequest.getFranchiseeId());
         //channelEmployeeUpdate.setUid(channelEmployee.getUid());
         //channelEmployeeUpdate.setTenantId(tenantId);
         if(channelEmployeeRequest.getAreaId() != null){
@@ -307,7 +313,15 @@ public class ChannelEmployeeServiceImpl implements ChannelEmployeeService {
         channelEmployeeUpdate.setUpdateTime(System.currentTimeMillis());
     
         Integer result = channelEmployeeMapper.updateOne(channelEmployeeUpdate);
-        
+    
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
+            @Override
+            public void afterCommit() {
+                //清理缓存，避免缓存操作和数据库提交在同一个事务中失效的问题
+                redisService.delete(CacheConstant.CACHE_USER_UID + updateUser.getUid());
+                redisService.delete(CacheConstant.CACHE_USER_PHONE + updateUser.getTenantId() + ":" + oldPhone + ":" + updateUser.getUserType());
+            }
+        });
         return Triple.of(true, null, result);
     }
     
@@ -320,15 +334,37 @@ public class ChannelEmployeeServiceImpl implements ChannelEmployeeService {
             log.error("not found channel employee by id, id = {}", id);
             throw new BizException("120008", "渠道员工不存在");
         }
+        
+        List<Merchant> merchants = merchantService.queryByChannelEmployeeUid(channelEmployee.getUid());
+        if(CollectionUtils.isNotEmpty(merchants)){
+            log.error("channel employee was already bind merchant, can't remove, channel employee uid = {}", channelEmployee.getUid());
+            throw new BizException("120023", "该渠道员下还有绑定的商户，请先解绑后操作");
+        }
+        
         channelEmployeeMapper.removeById(id, System.currentTimeMillis());
         
         User user = userService.queryByUidFromCache(channelEmployee.getUid());
         Integer result = 0;
         if(Objects.nonNull(user)){
+            User updateUser = new User();
+            updateUser.setUid(user.getUid());
+            updateUser.setUpdateTime(System.currentTimeMillis());
+            updateUser.setLockFlag(User.USER_LOCK);
+            updateUser.setDelFlag(User.DEL_DEL);
+            userService.updateMerchantUser(updateUser);
+    
             userOauthBindService.deleteByUid(channelEmployee.getUid(), channelEmployee.getTenantId().intValue());
+    
             result = userService.removeById(channelEmployee.getUid(), System.currentTimeMillis());
-            redisService.delete(CacheConstant.CACHE_USER_UID + channelEmployee.getUid());
-            redisService.delete(CacheConstant.CACHE_USER_PHONE + user.getTenantId() + ":" + user.getPhone() + ":" + user.getUserType());
+          
+            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
+                @Override
+                public void afterCommit() {
+                    //清理缓存，避免缓存操作和数据库提交在同一个事务中失效的问题
+                    redisService.delete(CacheConstant.CACHE_USER_UID + channelEmployee.getUid());
+                    redisService.delete(CacheConstant.CACHE_USER_PHONE + user.getTenantId() + ":" + user.getPhone() + ":" + user.getUserType());
+                }
+            });
         }
         return result;
     }

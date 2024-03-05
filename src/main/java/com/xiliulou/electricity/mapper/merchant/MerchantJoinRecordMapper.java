@@ -23,8 +23,6 @@ public interface MerchantJoinRecordMapper extends BaseMapper<MerchantJoinRecord>
     
     Integer insertOne(MerchantJoinRecord record);
     
-    Integer existsInProtectionTimeByJoinUid(Long joinUid);
-    
     MerchantJoinRecord selectByMerchantIdAndJoinUid(@Param("merchantId") Long merchantId, @Param("joinUid") Long joinUid);
     
     Integer updateStatus(MerchantJoinRecordQueryModel queryModel);
@@ -35,7 +33,7 @@ public interface MerchantJoinRecordMapper extends BaseMapper<MerchantJoinRecord>
     
     List<MerchantJoinRecord> selectList(MerchantJoinRecordQueryMode joinRecordQueryMode);
     
-    List<MerchantJoinRecord> selectListByMerchantIdAndStatus(@Param("merchantId")Long merchantId, @Param("status")Integer status);
+    List<MerchantJoinRecord> selectListByMerchantIdAndStatus(@Param("merchantId") Long merchantId, @Param("status") Integer status);
     
     Integer countTotal(MerchantJoinRecordQueryMode queryMode);
     
@@ -43,19 +41,26 @@ public interface MerchantJoinRecordMapper extends BaseMapper<MerchantJoinRecord>
     
     MerchantJoinRecord selectByJoinUid(Long joinUid);
     
-//    Integer updateById(MerchantJoinRecord record);
+    //    Integer updateById(MerchantJoinRecord record);
     
     Integer countByCondition(MerchantPromotionScanCodeQueryModel queryModel);
     
     List<MerchantJoinRecordVO> countByMerchantIdList(MerchantJoinRecordQueryMode joinRecordQueryMode);
     
     List<MerchantJoinRecord> selectListPromotionDataDetail(MerchantPromotionDataDetailQueryModel queryModel);
-
+    
     List<MerchantJoinUserVO> selectJoinUserList(MerchantJoinUserQueryMode merchantJoinUserQueryMode);
     
-    Integer existInviterData(@Param("inviterType") Integer inviterType,@Param("inviterUid") Long inviterUid,@Param("tenantId") Integer tenantId);
+    Integer existInviterData(@Param("inviterType") Integer inviterType, @Param("inviterUid") Long inviterUid, @Param("tenantId") Integer tenantId);
     
-    Integer countEmployeeScanCodeNum(@Param("uidList") List<Long> employeeIdList ,@Param("startTime") Long startTime,@Param("endTime")Long endTime,@Param("status")Integer status,@Param("tenantId") Integer tenantId);
+    Integer countEmployeeScanCodeNum(@Param("uidList") List<Long> employeeIdList, @Param("startTime") Long startTime, @Param("endTime") Long endTime,
+            @Param("status") Integer status, @Param("tenantId") Integer tenantId);
     
     List<MerchantJoinRecord> selectListAllPromotionDataDetail(MerchantAllPromotionDataDetailQueryModel query);
+    
+    List<MerchantJoinRecord> selectListByJoinUidAndStatus(@Param("joinUid") Long joinUid, @Param("statusList") List<Integer> statusList);
+    
+    Integer updateStatusById(@Param("id") Long id, @Param("status") Integer status, @Param("updateTime") long updateTime);
+    
+    String selectMerchantNameByJoinUid(@Param("joinUid")Long joinUid, @Param("status")Integer status);
 }

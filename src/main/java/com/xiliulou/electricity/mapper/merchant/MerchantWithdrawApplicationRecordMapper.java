@@ -3,7 +3,7 @@ package com.xiliulou.electricity.mapper.merchant;
 import com.xiliulou.electricity.entity.merchant.MerchantWithdrawApplicationRecord;
 import com.xiliulou.electricity.request.merchant.MerchantWithdrawApplicationRecordRequest;
 import com.xiliulou.electricity.vo.merchant.MerchantWithdrawApplicationRecordVO;
-import feign.Param;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
@@ -21,6 +21,8 @@ public interface MerchantWithdrawApplicationRecordMapper {
     Integer batchInsert(List<MerchantWithdrawApplicationRecord> merchantWithdrawApplicationRecordList);
     
     MerchantWithdrawApplicationRecordVO selectById(@Param("id") Long id);
+    
+    MerchantWithdrawApplicationRecord selectByOrderNo(@Param("orderNo") String orderNo, @Param("tenantId") Integer tenantId);
     
     List<MerchantWithdrawApplicationRecordVO> queryList(MerchantWithdrawApplicationRecordRequest merchantWithdrawApplicationRecordRequest);
     

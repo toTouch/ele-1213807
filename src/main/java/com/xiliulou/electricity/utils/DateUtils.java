@@ -14,8 +14,10 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.time.temporal.TemporalAdjusters;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -294,6 +296,26 @@ public class DateUtils {
         // 获取当天零点的ZonedDateTime对象
         ZonedDateTime startOfDay = zonedDateTime.toLocalDate().atStartOfDay(zonedDateTime.getZone());
         return startOfDay.toInstant().toEpochMilli();
+    }
+    
+    /**
+     * @description 获取本年截至本月(minusMonth = 0)的月份
+     * @date 2024/3/4 22:07:49
+     * @author HeYafeng
+     */
+    public static List<String> getMonthsUntilCurrent(int minusMonth) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM");
+        List<String> yearList = new ArrayList<>();
+        LocalDate now = LocalDate.now();
+        int currentYear = now.getYear();
+        int currentMonth = now.getMonthValue() - minusMonth;
+        
+        for (int month = 1; month <= currentMonth; month++) {
+            String monthStr = LocalDate.of(currentYear, month, 1).format(formatter);
+            yearList.add(monthStr);
+        }
+        
+        return yearList;
     }
     
     /**

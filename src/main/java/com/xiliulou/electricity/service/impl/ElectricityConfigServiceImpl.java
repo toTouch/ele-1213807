@@ -364,4 +364,21 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
         }
         return Triple.of(true, null, null);
     }
+    
+    @Override
+    public void updateTenantConfigWxCustomer(Integer status) {
+        if (Objects.isNull(TenantContextHolder.getTenantId())) {
+            return;
+        }
+        ElectricityConfig electricityConfig = new ElectricityConfig();
+        electricityConfig.setTenantId(TenantContextHolder.getTenantId());
+        electricityConfig.setWxCustomer(status);
+        electricityConfig.setUpdateTime(System.currentTimeMillis());
+        electricityConfigMapper.updateWxCuStatusByTenantId(electricityConfig);
+    }
+    
+    @Override
+    public ElectricityConfig queryTenantConfigWxCustomer() {
+        return electricityConfigMapper.selectElectricityConfigByTenantId(TenantContextHolder.getTenantId());
+    }
 }

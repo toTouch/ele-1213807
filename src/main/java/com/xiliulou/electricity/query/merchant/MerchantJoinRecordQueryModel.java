@@ -23,5 +23,7 @@ public class MerchantJoinRecordQueryModel {
      */
     private Integer status;
     
+    private Integer originalStatus;
+    
     private Long updateTime;
 }

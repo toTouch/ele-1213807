@@ -10,6 +10,7 @@ import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.constant.merchant.MerchantConstant;
 import com.xiliulou.electricity.constant.merchant.MerchantPlaceConstant;
+import com.xiliulou.electricity.constant.merchant.MerchantJoinRecordConstant;
 import com.xiliulou.electricity.dto.merchant.MerchantDeleteCacheDTO;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.Franchisee;
@@ -17,7 +18,6 @@ import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.enterprise.EnterpriseInfo;
 import com.xiliulou.electricity.entity.merchant.Merchant;
 import com.xiliulou.electricity.entity.merchant.MerchantEmployee;
-import com.xiliulou.electricity.entity.merchant.MerchantJoinRecord;
 import com.xiliulou.electricity.entity.merchant.MerchantLevel;
 import com.xiliulou.electricity.entity.merchant.MerchantPlace;
 import com.xiliulou.electricity.entity.merchant.MerchantPlaceBind;
@@ -550,6 +550,8 @@ public class MerchantServiceImpl implements MerchantService {
         
         // 判断是否为禁用
         if (!Objects.equals(merchant.getStatus(), merchantSaveRequest.getStatus())) {
+            flag = true;
+            
             if (Objects.equals(merchantSaveRequest.getStatus(), MerchantConstant.ENABLE)) {
                 updateUser.setLockFlag(User.USER_UN_LOCK);
             } else {
@@ -895,7 +897,7 @@ public class MerchantServiceImpl implements MerchantService {
             
             //  改为用商户id统计数量
             MerchantJoinRecordQueryMode joinRecordQueryMode = MerchantJoinRecordQueryMode.builder().tenantId(merchantPageRequest.getTenantId()).merchantIdList(collect)
-                    .status(MerchantJoinRecord.STATUS_SUCCESS).build();
+                    .status(MerchantJoinRecordConstant.STATUS_SUCCESS).build();
             List<MerchantJoinRecordVO> merchantJoinRecordList = merchantJoinRecordService.countByMerchantIdList(joinRecordQueryMode);
             
             Map<Long, Integer> userMap = new HashMap<>();
@@ -1102,6 +1104,11 @@ public class MerchantServiceImpl implements MerchantService {
         Merchant merchant = merchantMapper.selectByUid(uid);
         
         return merchant;
+    }
+    
+    @Override
+    public List<Merchant> queryByChannelEmployeeUid(Long channelEmployeeId) {
+        return merchantMapper.selectByChannelEmployeeUid(channelEmployeeId);
     }
     
     /**

@@ -24,8 +24,9 @@ import lombok.AllArgsConstructor;
 import org.springframework.beans.BeanUtils;
 import org.springframework.cglib.beans.BeanMap;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
-import java.util.ArrayList;
+import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -56,10 +57,10 @@ public class FaqV2ServiceImpl implements FaqV2Service {
         if (FaqV2.SIMILAR_FAQ_LIMIT < countFaqReqByTypeId) {
             return R.fail("该类型下的常见问题不能超过" + FaqV2.SIMILAR_FAQ_LIMIT + "个");
         }
-        
+        faq.setSort(BigDecimal.valueOf(countFaqReqByTypeId + 1));
         faq.setTenantId(TenantContextHolder.getTenantId());
         faq.setOpUser(SecurityUtils.getUid());
-        faq.setOnShelf(UpDownEnum.DOWN.getCode());
+        faq.setOnShelf(faqReq.getOnShelf() == null ? UpDownEnum.DOWN.getCode() : faqReq.getOnShelf());
         faq.setCreateTime(System.currentTimeMillis());
         faq.setUpdateTime(System.currentTimeMillis());
         faqV2Mapper.insert(faq);
@@ -70,7 +71,7 @@ public class FaqV2ServiceImpl implements FaqV2Service {
     public R updateFaqReq(AdminFaqReq faqReq) {
         FaqV2 faq = this.queryEntity(faqReq.getId());
         if (Objects.isNull(faq)) {
-            return null;
+            return R.ok();
         }
         Integer countFaqReqByTypeId = faqV2Mapper.countFaqReqByTypeId(faqReq.getTypeId());
         
@@ -81,7 +82,7 @@ public class FaqV2ServiceImpl implements FaqV2Service {
         faq.setOpUser(SecurityUtils.getUid());
         faq.setUpdateTime(System.currentTimeMillis());
         faqV2Mapper.updateByPrimaryKeySelective(faq);
-        return null;
+        return R.ok();
     }
     
     @Override
@@ -101,16 +102,11 @@ public class FaqV2ServiceImpl implements FaqV2Service {
             return;
         }
         
-        ArrayList<FaqV2> faqV2s = new ArrayList<>();
-        long updateTime = System.currentTimeMillis();
-        faqUpDownReq.getIds().forEach(id -> {
-            FaqV2 faqV2 = new FaqV2();
-            faqV2.setId(id);
-            faqV2.setOnShelf(faqUpDownReq.getOnShelf());
-            faqV2.setUpdateTime(updateTime);
-            faqV2s.add(faqV2);
-        });
-        faqV2Mapper.batchUpdateByIds(faqV2s);
+        FaqV2 faqV2 = new FaqV2();
+        faqV2.setOnShelf(faqUpDownReq.getOnShelf());
+        faqV2.setUpdateTime(System.currentTimeMillis());
+        
+        faqV2Mapper.batchUpdateByIds(faqV2, faqUpDownReq.getIds());
         
     }
     
@@ -126,16 +122,10 @@ public class FaqV2ServiceImpl implements FaqV2Service {
             return R.fail("该类型下的常见问题不能超过" + FaqV2.SIMILAR_FAQ_LIMIT + "个");
         }
         
-        ArrayList<FaqV2> faqV2s = new ArrayList<>();
-        long updateTime = System.currentTimeMillis();
-        ids.forEach(id -> {
-            FaqV2 faqV2 = new FaqV2();
-            faqV2.setId(id);
-            faqV2.setTypeId(faqChangeTypeReq.getTypeId());
-            faqV2.setUpdateTime(updateTime);
-            faqV2s.add(faqV2);
-        });
-        faqV2Mapper.batchUpdateByIds(faqV2s);
+        FaqV2 faqV2 = new FaqV2();
+        faqV2.setTypeId(faqChangeTypeReq.getTypeId());
+        faqV2.setUpdateTime(System.currentTimeMillis());
+        faqV2Mapper.batchUpdateByIds(faqV2, faqChangeTypeReq.getIds());
         return R.ok();
     }
     
@@ -148,6 +138,7 @@ public class FaqV2ServiceImpl implements FaqV2Service {
      * 根据问题标题、租户查询常见问题
      */
     @Override
+    @Deprecated
     public Map<Long, List<FaqV2BO>> listFaqQuery(AdminFaqQuery faqQuery) {
         faqQuery.setTenantId(TenantContextHolder.getTenantId());
         FaqV2 faqV2 = new FaqV2();
@@ -162,36 +153,39 @@ public class FaqV2ServiceImpl implements FaqV2Service {
     }
     
     /**
-     * 后台查看常见问题
+     * 查看常见问题
      */
     @Override
-    public List<FaqListVos> listFaqQueryForBackstage(AdminFaqQuery faqQuery) {
-        Map<Long, List<FaqV2BO>> listMap = listFaqQuery(faqQuery);
-        if (CollectionUtil.isEmpty(listMap)) {
-            return Collections.emptyList();
+    public List<FaqVo> listFaqQueryResult(AdminFaqQuery faqQuery) {
+        faqQuery.setTenantId(TenantContextHolder.getTenantId());
+        FaqV2 faqV2 = new FaqV2();
+        BeanUtils.copyProperties(faqQuery, faqV2);
+        List<FaqV2BO> faqVos = faqV2Mapper.selectLeftJoinByParams(faqV2);
+        
+        if (CollectionUtil.isEmpty(faqVos)) {
+            return null;
         }
         
-        // 1. 未指定问题分类时 后台首页展示分类一
-        Long queryTypeId = faqQuery.getTypeId();
-        if (Objects.isNull(queryTypeId)) {
-            // 结果集填充
-            List<FaqListVos> faqListVosList = listMap.entrySet().stream().map(e -> {
-                FaqListVos faqListVos = new FaqListVos();
-                faqListVos.setId(e.getKey());
-                faqListVos.setTypeId(e.getKey());
-                faqListVos.setType(e.getValue().stream().findAny().get().getType());
-                faqListVos.setSort(e.getValue().stream().findAny().get().getTypeSort());
-                long count = e.getValue().size();
-                faqListVos.setCount((int) count);
-                return faqListVos;
-            }).sorted(Comparator.comparing(FaqListVos::getTypeId)).collect(Collectors.toList());
-            
-            faqListVosList.get(0).setFaqBOList(listMap.get(faqListVosList.get(0).getTypeId()));
-            return faqListVosList;
+        // 模糊返回全部
+        if (!StringUtils.isEmpty(faqQuery.getTitle())) {
+            return faqVos.stream().map(e -> {
+                        FaqVo faqVo = new FaqVo();
+                        BeanUtils.copyProperties(e, faqVo);
+                        return faqVo;
+                    }).sorted(Comparator.comparing(FaqVo::getTypeSort).thenComparing(FaqVo::getSort))
+                    .collect(Collectors.toList());
         }
         
-        // 2. 指定了问题分类时
-        return getFaqListVosByTypeId(listMap, queryTypeId);
+        // 默认获取第一个分类
+        Integer minSort = faqV2Mapper.selectMinimumSort(TenantContextHolder.getTenantId());
+        long firstCategory = faqQuery.getTypeId() == null ? minSort : faqQuery.getTypeId();
+        
+        return faqVos.stream().filter(e -> Objects.equals(e.getTypeId(), firstCategory)).map(e -> {
+            FaqVo faqVo = new FaqVo();
+            BeanUtils.copyProperties(e, faqVo);
+            return faqVo;
+        }).sorted(Comparator.comparing(FaqVo::getTypeSort).thenComparing(FaqVo::getSort))
+                .collect(Collectors.toList());
     }
     
     
@@ -199,6 +193,7 @@ public class FaqV2ServiceImpl implements FaqV2Service {
      * 小程序查看常见问题
      */
     @Override
+    @Deprecated
     public List<FaqListVos> listFaqQueryForApp(AdminFaqQuery faqQuery) {
         Map<Long, List<FaqV2BO>> listMap = listFaqQuery(faqQuery);
         if (CollectionUtil.isEmpty(listMap)) {
@@ -210,6 +205,7 @@ public class FaqV2ServiceImpl implements FaqV2Service {
         if (Objects.isNull(electricityConfig) || electricityConfig.getWxCustomer() == 0) {
             return Collections.emptyList();
         }
+        
         // 1. 未指定问题分类时 小程序端首页展示全部
         Long queryTypeId = faqQuery.getTypeId();
         if (Objects.isNull(queryTypeId)) {

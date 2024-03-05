@@ -32,18 +32,20 @@ public interface FaqV2Mapper extends BaseMapper<FaqV2> {
     
     List<FaqV2BO> selectLeftJoinByParams(@Param(value = "params") FaqV2 params);
     
-    List<FaqV2> selectListByParams(FaqV2 params);
+    List<FaqV2> selectListByParams(@Param(value = "params") FaqV2 params);
     
     List<FaqV2> selectListByParamsPage(@Param(value = "params") FaqV2 params,
             @Param(value = "pageOffset") Object pageOffset,
             @Param(value = "pageSize") Object pageSize);
     
-    int removeByIds(List<Long> ids);
+    int removeByIds(@Param(value = "ids") List<Long> ids);
     List<FaqV2> selectListByIds(List<Long> ids);
     
     Integer countFaqReqByTypeId(Long typeId);
     
-    Integer batchUpdateByIds(ArrayList<FaqV2> faqV2s);
+    Integer batchUpdateByIds(@Param(value ="faqV2") FaqV2 faqV2, @Param(value ="ids")List<Long> ids);
+    
+    Integer selectMinimumSort(@Param(value = "tenantId") Integer tenantId);
 }
 
 

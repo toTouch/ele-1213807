@@ -2,6 +2,7 @@ package com.xiliulou.electricity.mq.consumer;
 
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.constant.merchant.MerchantConstant;
+import com.xiliulou.electricity.constant.merchant.MerchantJoinRecordConstant;
 import com.xiliulou.electricity.entity.UserInfoExtra;
 import com.xiliulou.electricity.entity.merchant.Merchant;
 import com.xiliulou.electricity.entity.merchant.MerchantAttr;
@@ -110,7 +111,7 @@ public class MerchantUpgradeConsumer implements RocketMQListener<String> {
         
         //升级条件：拉新人数
         if (Objects.equals(MerchantConstant.UPGRADE_CONDITION_INVITATION, merchantAttr.getUpgradeCondition())) {
-            List<MerchantJoinRecord> merchantJoinRecords = merchantJoinRecordService.listByMerchantIdAndStatus(merchant.getId(), MerchantJoinRecord.STATUS_SUCCESS);
+            List<MerchantJoinRecord> merchantJoinRecords = merchantJoinRecordService.listByMerchantIdAndStatus(merchant.getId(), MerchantJoinRecordConstant.STATUS_SUCCESS);
             if (CollectionUtils.isEmpty(merchantJoinRecords)) {
                 log.warn("MERCHANT UPGRADE CONSUMER WARN!merchantJoinRecords is null,merchantId={}", userInfoExtra.getMerchantId());
                 return;
@@ -151,7 +152,7 @@ public class MerchantUpgradeConsumer implements RocketMQListener<String> {
         
         //升级条件：全部
         if (Objects.equals(MerchantConstant.UPGRADE_CONDITION_ALL, merchantAttr.getUpgradeCondition())) {
-            List<MerchantJoinRecord> merchantJoinRecords = merchantJoinRecordService.listByMerchantIdAndStatus(merchant.getId(), MerchantJoinRecord.STATUS_SUCCESS);
+            List<MerchantJoinRecord> merchantJoinRecords = merchantJoinRecordService.listByMerchantIdAndStatus(merchant.getId(), MerchantJoinRecordConstant.STATUS_SUCCESS);
             if (CollectionUtils.isEmpty(merchantJoinRecords)) {
                 log.warn("MERCHANT UPGRADE CONSUMER WARN!merchantJoinRecords is null,merchantId={}", userInfoExtra.getMerchantId());
                 return;

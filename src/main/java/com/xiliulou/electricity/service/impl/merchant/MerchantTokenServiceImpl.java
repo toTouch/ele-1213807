@@ -134,7 +134,12 @@ public class MerchantTokenServiceImpl implements MerchantTokenService {
             }
 
             log.info("userBindBusinessDTOS:{} notLockerUser:{}", userBindBusinessDTOS, notLockUsers);
-            List<MerchantLoginVO> loginVOS = notLockUsers.parallelStream().map(e -> {
+            
+            
+            List<User> merchantUser = users.stream().filter((user -> User.TYPE_USER_MERCHANT.equals(user.getUserType()) || User.TYPE_USER_CHANNEL.equals(user.getUserType())))
+                    .collect(Collectors.toList());
+            
+            List<MerchantLoginVO> loginVOS = merchantUser.parallelStream().map(e -> {
                 if (Objects.isNull(userBindBusinessDTOS.get(e.getUid()))) {
                     return null;
                 }
@@ -157,6 +162,7 @@ public class MerchantTokenServiceImpl implements MerchantTokenService {
                 merchantLoginVO.setUid(e.getUid());
                 merchantLoginVO.setUserType(e.getUserType());
                 merchantLoginVO.setBusinessInfo(userBindBusinessDTOS.get(e.getUid()).getEnterprisePackageAuth(), userBindBusinessDTOS.get(e.getUid()).getEnterprisePackageAuth());
+                merchantLoginVO.setLockFlag(e.getLockFlag());
                 return merchantLoginVO;
             }).filter(Objects::nonNull).collect(Collectors.toList());
             return Triple.of(true, null, loginVOS);

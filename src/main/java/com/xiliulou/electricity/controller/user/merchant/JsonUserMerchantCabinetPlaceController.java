@@ -54,13 +54,13 @@ public class JsonUserMerchantCabinetPlaceController extends BaseController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         
-        return R.ok(merchant.getExistPlaceFee());
+        return R.ok(merchantPlaceFeeService.isShowPlacePage(merchant.getId()));
     }
     
     /**
      * 筛选条件：场地列表/柜机列表
      */
-    @GetMapping("/merchant/place/placeAndCabinetList")
+    @GetMapping({"/merchant/place/placeAndCabinetList", "/admin/merchant/place/placeAndCabinetList"})
     public R placeAndCabinetList() {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
@@ -73,13 +73,13 @@ public class JsonUserMerchantCabinetPlaceController extends BaseController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         
-        return R.ok(merchantCabinetPowerService.listPlaceAndCabinetByMerchantId(merchant.getId()));
+        return R.ok(merchantCabinetPowerService.listPlaceAndCabinetByMerchantId(merchant.getUid()));
     }
     
     /**
      * 筛选条件：根据场地id查询柜机列表
      */
-    @GetMapping("/merchant/place/cabinetListByPlace")
+    @GetMapping({"/merchant/place/cabinetListByPlace", "/merchant/place/cabinetListByPlace"})
     public R cabinetListByPlace(@RequestParam Long placeId) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
@@ -92,7 +92,7 @@ public class JsonUserMerchantCabinetPlaceController extends BaseController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         
-        return R.ok(merchantCabinetPowerService.listCabinetByPlaceId(merchant.getId(), placeId));
+        return R.ok(merchantCabinetPowerService.listCabinetByPlaceId(merchant.getUid(), placeId));
     }
     
     /**
@@ -102,7 +102,7 @@ public class JsonUserMerchantCabinetPlaceController extends BaseController {
     @GetMapping({"/merchant/place/getFeeData", "/admin/merchant/place/getFeeData"})
     public R getFeeData(@RequestParam(value = "placeId", required = false) Long placeId,
             @RequestParam(value = "cabinetId", required = false) Long cabinetId) {
-        TokenUser user = SecurityUtils.getUserInfo();
+        /*TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
 //            return R.fail("ELECTRICITY.0001", "未找到用户");
         }
@@ -111,8 +111,8 @@ public class JsonUserMerchantCabinetPlaceController extends BaseController {
         if (Objects.isNull(merchant)) {
             log.error("merchant place is Show Place Page merchant is null, uid={}", user.getUid());
 //            return R.fail("ELECTRICITY.0001", "未找到用户");
-        }
-        merchant = new Merchant();
+        }*/
+        Merchant merchant = new Merchant();
     
         MerchantPlaceFeeRequest request = MerchantPlaceFeeRequest.builder().merchantId(merchant.getId()).placeId(placeId).cabinetId(cabinetId).build();
         
@@ -122,7 +122,7 @@ public class JsonUserMerchantCabinetPlaceController extends BaseController {
     /**
      * 统计分析-折线图
      */
-    @GetMapping({"/merchant/place/getLineData", "/admin/merchant/place/getLineData"})
+    @GetMapping("/merchant/place/getLineData")
     public R lineData(@RequestParam(value = "placeId", required = false) Long placeId,
             @RequestParam(value = "cabinetId", required = false) Long cabinetId,@RequestParam(value = "startTime") Long startTime
             ,@RequestParam(value = "endTime") Long endTime) {

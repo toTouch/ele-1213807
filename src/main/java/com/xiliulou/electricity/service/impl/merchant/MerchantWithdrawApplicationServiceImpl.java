@@ -509,8 +509,16 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
     @Slave
     @Override
     public List<MerchantWithdrawApplicationVO> queryMerchantWithdrawApplicationList(MerchantWithdrawApplicationRequest merchantWithdrawApplicationRequest) {
-        
         List<MerchantWithdrawApplicationVO> merchantWithdrawApplicationVOList = merchantWithdrawApplicationMapper.selectListByCondition(merchantWithdrawApplicationRequest);
+        
+        merchantWithdrawApplicationVOList.forEach(merchantWithdrawApplicationVO -> {
+            log.info("query merchant withdraw application, result = {}", merchantWithdrawApplicationVO);
+            MerchantWithdrawApplicationRecord merchantWithdrawApplicationRecord = merchantWithdrawApplicationRecordService.selectByOrderNo(merchantWithdrawApplicationVO.getOrderNo(), merchantWithdrawApplicationVO.getTenantId());
+            if(Objects.nonNull(merchantWithdrawApplicationRecord)){
+                merchantWithdrawApplicationVO.setFailReason(merchantWithdrawApplicationRecord.getRemark());
+            }
+           
+        });
         
         return merchantWithdrawApplicationVOList;
     }
@@ -535,9 +543,14 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
 
         int offset = 0;
         int size = 200;
+        
+        log.info("Merchant withdraw application update status task start.");
 
         while(true) {
             List<MerchantWithdrawApplication> merchantWithdrawApplications = merchantWithdrawApplicationMapper.selectListForWithdrawInProgress(checkTime, offset, size);
+            if(CollectionUtils.isEmpty(merchantWithdrawApplications)){
+                return;
+            }
 
             //根据批次号循环调用第三方接口查询提现结果状态
             merchantWithdrawApplications.forEach(merchantWithdrawApplication -> {
@@ -552,6 +565,8 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
                 WechatTransferBatchOrderRecordQuery wechatTransferBatchOrderRecordQuery = new WechatTransferBatchOrderRecordQuery();
                 wechatTransferBatchOrderRecordQuery.setBatchId(batchNo);
                 wechatTransferBatchOrderRecordQuery.setTenantId(tenantId);
+                wechatTransferBatchOrderRecordQuery.setNeedQueryDetail(true);
+                wechatTransferBatchOrderRecordQuery.setDetailStatus("ALL");
 
                 try {
                     WechatTransferBatchOrderQueryResult wechatTransferBatchOrderQueryResult = wechatV3TransferService.queryTransferBatchOrder(wechatTransferBatchOrderRecordQuery);
@@ -559,10 +574,12 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
                         log.info("query batch wechat transfer order info, response is null, batchNo = {}, tenant id = {}, response = {}", merchantWithdrawApplication.getBatchNo(), merchantWithdrawApplication.getTenantId(), wechatTransferBatchOrderQueryResult);
                         return;
                     }
+    
+                    log.info("query batch wechat transfer order result, result = {}", wechatTransferBatchOrderQueryResult);
                     //获取该批次记录状态结果
                     WechatTransferBatchOrderQueryCommonResult wechatTransferBatchOrderQueryCommonResult = wechatTransferBatchOrderQueryResult.getTransferBatch();
                     String batchStatus = wechatTransferBatchOrderQueryCommonResult.getBatchStatus();
-                    
+                   
                     //如果当前批次结果为已完成，则将提现申请状态修改为提现成功，如果当前批次结果为已关闭，则将提现申请状态修改为提现失败。
                     if(MerchantWithdrawConstant.WECHAT_BATCH_STATUS_FINISHED.equals(batchStatus)){
 
@@ -637,6 +654,7 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
                     return;
                 }
     
+                log.info("query transfer order detail info, result = {}", wechatTransferOrderQueryResult);
                 WechatTransferBatchOrderQueryCommonResult wechatTransferBatchOrderQueryCommonResult = wechatTransferBatchOrderQueryResult.getTransferBatch();
 
                 String detailStatus = wechatTransferOrderQueryResult.getDetailStatus();
