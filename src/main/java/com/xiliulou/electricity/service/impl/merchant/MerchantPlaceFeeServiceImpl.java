@@ -6,6 +6,7 @@ import com.xiliulou.core.thread.XllThreadPoolExecutorService;
 import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.db.dynamic.annotation.Slave;
+import com.xiliulou.electricity.constant.DateFormatConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.constant.StringConstant;
 import com.xiliulou.electricity.constant.merchant.MerchantConstant;
@@ -147,7 +148,7 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
         
         // 计算累计场地费 上月之前的月份+上月+本月
         // 上月的第一天
-        long time = DateUtils.getBeforeMonthFirstDayTimestamp(MerchantPlaceBindConstant.LAST_MONTH);
+        long time = DateUtils.getBeforeMonthFirstDayTimestamp(DateFormatConstant.LAST_MONTH);
         BigDecimal sumFeeHistory = merchantPlaceFeeMonthService.sumFeeByTime(request.getMerchantId(), request.getPlaceId(), request.getCabinetId(), time);
         
         if (ObjectUtils.isEmpty(sumFeeHistory)) {
@@ -182,8 +183,8 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
         }
         
         // 计算上个月的月份
-        long lastMonthFistDay = DateUtils.getBeforeMonthFirstDayTimestamp(MerchantPlaceBindConstant.LAST_MONTH);
-        String lastMoth = DateUtil.format(new Date(lastMonthFistDay), RebateRecordConstant.MONTH_DATE_FORMAT);
+        long lastMonthFistDay = DateUtils.getBeforeMonthFirstDayTimestamp(DateFormatConstant.LAST_MONTH);
+        String lastMoth = DateUtil.format(new Date(lastMonthFistDay), DateFormatConstant.MONTH_DATE_FORMAT);
         
         // 计算上个月的数据
         BigDecimal lastMothFee = getLastMothFee(request);
@@ -376,7 +377,7 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
         }
         
         // 获取上月历史
-        long lastMonthStartTime = DateUtils.getBeforeMonthFirstDayTimestamp(MerchantPlaceBindConstant.LAST_MONTH);
+        long lastMonthStartTime = DateUtils.getBeforeMonthFirstDayTimestamp(DateFormatConstant.LAST_MONTH);
         String lastMonth = DateUtil.format(new Date(lastMonthStartTime), "yyyy-MM");
         
         if (Objects.equals(lastMonth, request.getMonth())) {
@@ -446,13 +447,13 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
         List<Long> placeIdList = merchantPlaceBinds.stream().map(MerchantPlaceBind::getPlaceId).collect(Collectors.toList());
         
         // 上月的第一天
-        long startTime = DateUtils.getBeforeMonthFirstDayTimestamp(MerchantPlaceBindConstant.LAST_MONTH);
+        long startTime = DateUtils.getBeforeMonthFirstDayTimestamp(DateFormatConstant.LAST_MONTH);
         
         // 上月的最后一天
-        long endTime = DateUtils.getBeforeMonthLastDayTimestamp(MerchantPlaceBindConstant.LAST_MONTH);
+        long endTime = DateUtils.getBeforeMonthLastDayTimestamp(DateFormatConstant.LAST_MONTH);
         
         // 上月月份
-        String lastMonth = DateUtil.format(new Date(startTime), RebateRecordConstant.MONTH_DATE_FORMAT);
+        String lastMonth = DateUtil.format(new Date(startTime), DateFormatConstant.MONTH_DATE_FORMAT);
         
         List<String> monthList = new ArrayList<>();
         monthList.add(lastMonth);
@@ -924,7 +925,7 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
         calendar.setTimeInMillis(startTime);
         
         while (true) {
-            String month = DateUtil.format(calendar.getTime(), RebateRecordConstant.MONTH_DATE_FORMAT);
+            String month = DateUtil.format(calendar.getTime(), DateFormatConstant.MONTH_DATE_FORMAT);
             list.add(month);
             calendar.add(Calendar.MONTH, 1);
             if (calendar.getTimeInMillis() > endTime) {
@@ -932,7 +933,7 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
             }
         }
         
-        String endMonth = DateUtil.format(new Date(endTime), RebateRecordConstant.MONTH_DATE_FORMAT);
+        String endMonth = DateUtil.format(new Date(endTime), DateFormatConstant.MONTH_DATE_FORMAT);
         
         if (!list.contains(endMonth)) {
             list.add(endMonth);
@@ -1234,18 +1235,18 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
         // 排除掉开始时间和结束时间在一天的数据
         List<Long> placeIdList = merchantPlaceBinds.stream().map(MerchantPlaceBind::getPlaceId).collect(Collectors.toList());
         
-        // 三个月前的第一天
-        long startTime = DateUtils.getBeforeMonthFirstDayTimestamp(MerchantPlaceBindConstant.LAST_MONTH);
-        // 三个月的最后一天
-        long endTime = DateUtils.getBeforeMonthLastDayTimestamp(MerchantPlaceBindConstant.LAST_MONTH);
+        // 上个月前的第一天
+        long startTime = DateUtils.getBeforeMonthFirstDayTimestamp(DateFormatConstant.LAST_MONTH);
+        // 上个月的最后一天
+        long endTime = DateUtils.getBeforeMonthLastDayTimestamp(DateFormatConstant.LAST_MONTH);
         
         Date startDate = new Date(startTime);
         
         // 计算上的月份
-        String lastMonth = DateUtil.format(startDate, RebateRecordConstant.MONTH_DATE_FORMAT);
+        String lastMonth = DateUtil.format(startDate, DateFormatConstant.MONTH_DATE_FORMAT);
         
         // 计算当前月份
-        String curMonth = DateUtil.format(new Date(), RebateRecordConstant.MONTH_DATE_FORMAT);
+        String curMonth = DateUtil.format(new Date(), DateFormatConstant.MONTH_DATE_FORMAT);
         
         // 修改标记id集合
         List<String> monthList = new ArrayList<>();
@@ -1385,8 +1386,8 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
             }
             
             if (Objects.equals(item.getType(), MerchantPlaceBindConstant.UN_BIND) && Objects.nonNull(item.getBindTime()) && Objects.nonNull(item.getUnBindTime())) {
-                String startDate = DateUtil.format(new Date(item.getBindTime()), RebateRecordConstant.MONTH_DAY_DATE_FORMAT);
-                String endDate = DateUtil.format(new Date(item.getUnBindTime()), RebateRecordConstant.MONTH_DAY_DATE_FORMAT);
+                String startDate = DateUtil.format(new Date(item.getBindTime()), DateFormatConstant.MONTH_DAY_DATE_FORMAT);
+                String endDate = DateUtil.format(new Date(item.getUnBindTime()), DateFormatConstant.MONTH_DAY_DATE_FORMAT);
                 if (!Objects.equals(startDate, endDate)) {
                     unBindList.add(item);
                 }
@@ -1461,7 +1462,7 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
         // 获取本月最后一天的时间戳
         long dayOfMonthEndTime = System.currentTimeMillis();
         
-        String settleDate = new SimpleDateFormat(RebateRecordConstant.MONTH_DATE_FORMAT).format(new Date(dayOfMonthStartTime));
+        String settleDate = new SimpleDateFormat(DateFormatConstant.MONTH_DATE_FORMAT).format(new Date(dayOfMonthStartTime));
         
         // 获取场地的柜机绑定记录
         List<MerchantPlaceCabinetBind> cabinetBindList = merchantPlaceCabinetBindService.queryListByPlaceId(placeIdList,
@@ -1746,7 +1747,7 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
         }
         
         Map<String, List<MerchantPlaceFeeMonthRecord>> map = placeFeeMonthRecords.stream().collect(Collectors.groupingBy(MerchantPlaceFeeMonthRecord::getMonthDate));
-        long twoLastBeforeMonthTime = DateUtils.getBeforeMonthLastDayTimestamp(MerchantPlaceBindConstant.TOW_MONTH_BEFORE);
+        long twoLastBeforeMonthTime = DateUtils.getBeforeMonthLastDayTimestamp(DateFormatConstant.TOW_MONTH_BEFORE);
         
         // 获取前两个月的时间段
         if (ObjectUtils.isNotEmpty(map.get(twoBeforeMonth))) {
@@ -1757,7 +1758,7 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
             }
             
             // 过滤掉一个月前的账单的开时间小于两个月前的所在月份的月初时间
-            long oneBeforeMonthTime = DateUtils.getBeforeMonthFirstDayTimestamp(MerchantPlaceBindConstant.LAST_MONTH);
+            long oneBeforeMonthTime = DateUtils.getBeforeMonthFirstDayTimestamp(DateFormatConstant.LAST_MONTH);
             List<MerchantPlaceFeeMonthRecord> oneBeforeList = new ArrayList<>();
             map.get(oneBeforeMonth).stream().forEach(item -> {
                 if (item.getRentStartTime() < oneBeforeMonthTime) {
@@ -1831,7 +1832,7 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
         // 两月前不存在  一月前账单存在
         if (ObjectUtils.isEmpty(map.get(twoBeforeMonth)) && ObjectUtils.isNotEmpty(map.get(oneBeforeMonth))) {
             // 过滤掉一个月前的账单的开时间小于两个月前的所在月份的月初时间
-            long oneBeforeMonthTime = DateUtils.getBeforeMonthFirstDayTimestamp(MerchantPlaceBindConstant.LAST_MONTH);
+            long oneBeforeMonthTime = DateUtils.getBeforeMonthFirstDayTimestamp(DateFormatConstant.LAST_MONTH);
             
             List<MerchantPlaceFeeMonthRecord> oneBeforeList = new ArrayList<>();
             
