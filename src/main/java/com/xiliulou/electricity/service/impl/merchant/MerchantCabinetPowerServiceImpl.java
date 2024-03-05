@@ -1,9 +1,12 @@
 package com.xiliulou.electricity.service.impl.merchant;
 
 import cn.hutool.core.date.DateUtil;
+import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.thread.XllThreadPoolExecutorService;
 import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.db.dynamic.annotation.Slave;
+import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.constant.merchant.MerchantPlaceBindConstant;
 import com.xiliulou.electricity.constant.merchant.MerchantPlaceCabinetBindConstant;
@@ -43,6 +46,7 @@ import com.xiliulou.electricity.vo.merchant.MerchantProPowerVO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -99,6 +103,9 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
     @Resource
     private MerchantService merchantService;
     
+    @Resource
+    private RedisService redisService;
+    
     @Slave
     @Override
     public MerchantProPowerVO powerData(MerchantCabinetPowerRequest request) {
@@ -128,12 +135,12 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
         
         // 1.今日电量
         CompletableFuture<Void> todayPowerFuture = CompletableFuture.runAsync(() -> {
-            log.info("执行powerData=======>");
+            log.info("执行今日电量开始=======>");
             MerchantPowerPeriodVO todayPower = getTodayPower(tenantId, merchant.getId(), cabinetIds);
             
             vo.setTodayPower(Objects.isNull(todayPower) ? NumberConstant.ZERO_D : todayPower.getPower());
             vo.setTodayCharge(Objects.isNull(todayPower) ? NumberConstant.ZERO_D : todayPower.getCharge());
-            log.info("执行powerData=======>{}", todayPower);
+            log.info("执行今日电量结束=======>{}", todayPower);
         }, executorService).exceptionally(e -> {
             log.error("Query merchant today power data error! uid={}", request.getUid(), e);
             return null;
@@ -226,7 +233,7 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
             Long bindTime = merchantPlaceBind.getBindTime();
             Long unBindTime = merchantPlaceBind.getUnBindTime();
             
-            log.info("执行getTodayPower...placeId={}, bindTime={}, unBindTime={}", cabinetIds, bindTime, unBindTime);
+            log.info("执行getTodayPower...placeId={}, bindTime={}, unBindTime={}", placeId, bindTime, unBindTime);
             
             // 获取场地柜机绑定记录
             List<MerchantPlaceCabinetBind> placeCabinetBindList = getTodayPlaceCabinetBindList(placeId, bindTime, unBindTime);
@@ -240,6 +247,8 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
             // 遍历柜机
             List<CabinetPowerProRunnable> collect = cabinetIds.parallelStream().map(eid -> new CabinetPowerProRunnable(eid, elePowerService, placeCabinetBindList, tenantId))
                     .collect(Collectors.toList());
+    
+            log.info("执行getTodayPower...cabinetIds={}, collect={}", cabinetIds, collect);
             
             try {
                 List<Future<MerchantProEidPowerListVO>> futureList = executorService.invokeAll(collect);
@@ -1722,9 +1731,22 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
         Long uid = request.getUid();
         Long placeId = request.getPlaceId();
         Long cabinetId = request.getCabinetId();
-        
+    
+        // 设置key
+        String key = CacheConstant.MERCHANT_PLACE_CABINET_SEARCH_LOCK + uid;
+        if (Objects.nonNull(placeId)) {
+            key = key + placeId;
+            if (Objects.nonNull(cabinetId)) {
+                key = key + cabinetId;
+            }
+        }
+    
         // 先从缓存获取，如果未获取到再从数据库获取
         List<Long> cabinetIdList = null;
+        String cabinetIdStr = redisService.get(key);
+        if (StringUtils.isNotBlank(cabinetIdStr)) {
+            return JsonUtil.fromJsonArray(cabinetIdStr, Long.class);
+        }
         
         // 1.场地和柜机为null，查全量
         if (Objects.isNull(placeId) && Objects.isNull(cabinetId)) {
@@ -1752,6 +1774,9 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
                 cabinetIdList = List.of(cabinetId);
             }
         }
+    
+        // 存入缓存
+        redisService.saveWithString(key, cabinetIdList, 3L, TimeUnit.SECONDS);
         
         return cabinetIdList;
     }
