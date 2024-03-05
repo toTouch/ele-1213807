@@ -2,23 +2,17 @@ package com.xiliulou.electricity.vo.merchant;
 
 import lombok.Data;
 
+import java.util.List;
+
 /**
  * @author HeYafeng
  * @description 电量/电费
  * @date 2024/2/26 03:02:06
  */
 @Data
-public class MerchantProLivePowerVO {
-    
-    private Long placeId;
+public class MerchantProEidPowerListVO {
     
     private Long eid;
     
-    private Double power;
-    
-    private Double charge;
-    
-    private Long startTime;
-    
-    private Long endTime;
+    private List<MerchantProLivePowerVO> powerList;
 }
