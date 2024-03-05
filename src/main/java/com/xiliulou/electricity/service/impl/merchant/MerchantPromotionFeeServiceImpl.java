@@ -588,10 +588,8 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
         merchantPromotionFeeRenewalVO.setLastMonthRenewalCount(buildRenewalNum(type, uid, dayOfMonthStartTime, dayOfMonthEndTime));
         
         //累计续费次数：购买指定套餐时间<=当前时间，且套餐购买次数>1的购买成功次数
-        MerchantPromotionRenewalQueryModel totalRenewalQueryModel = MerchantPromotionRenewalQueryModel.builder().tenantId(TenantContextHolder.getTenantId()).type(type).uid(uid)
-                .endTime(System.currentTimeMillis()).status(MerchantConstant.MERCHANT_REBATE_TYPE_RENEWAL).build();
-        Integer totalRenewalCount = rebateRecordService.countByTime(totalRenewalQueryModel);
-        merchantPromotionFeeRenewalVO.setTotalRenewalCount(totalRenewalCount);
+        merchantPromotionFeeRenewalVO.setTotalRenewalCount(buildRenewalNum(type, uid, null, System.currentTimeMillis()));
+    
     }
     
     private void buildPromotionFeePromotionScanCode(Integer type, Long uid, MerchantPromotionFeeScanCodeVO merchantPromotionFeeScanCodeVO, long dayOfMonthStartTime,
