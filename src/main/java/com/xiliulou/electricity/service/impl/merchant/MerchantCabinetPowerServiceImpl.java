@@ -242,10 +242,10 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
                 continue;
             }
             
-            log.info("执行getTodayPower...placeId={}, placeCabinetBindList={}", placeId, placeCabinetBindList);
+            log.info("执行getTodayPower...placeId={}, placeCabinetBindList={}, cabinetIds={}", placeId, placeCabinetBindList, cabinetIds);
             
             // 遍历柜机
-            List<CabinetPowerProRunnable> collect = cabinetIds.parallelStream().map(eid -> new CabinetPowerProRunnable(eid, elePowerService, placeCabinetBindList, tenantId))
+            List<CabinetPowerProRunnable> collect = cabinetIds.stream().map(eid -> new CabinetPowerProRunnable(eid, elePowerService, placeCabinetBindList, tenantId))
                     .collect(Collectors.toList());
             
             log.info("执行getTodayPower...cabinetIds={}, collect={}", cabinetIds, collect);
@@ -302,7 +302,7 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
             }
             
             // 遍历柜机
-            List<CabinetPowerProRunnable> collect = cabinetIds.parallelStream().map(eid -> new CabinetPowerProRunnable(eid, elePowerService, placeCabinetBindList, tenantId))
+            List<CabinetPowerProRunnable> collect = cabinetIds.stream().map(eid -> new CabinetPowerProRunnable(eid, elePowerService, placeCabinetBindList, tenantId))
                     .collect(Collectors.toList());
             
             try {
@@ -374,7 +374,7 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
             }
             
             // 遍历柜机
-            List<CabinetPowerProRunnable> collect = cabinetIds.parallelStream().map(eid -> new CabinetPowerProRunnable(eid, elePowerService, placeCabinetBindList, tenantId))
+            List<CabinetPowerProRunnable> collect = cabinetIds.stream().map(eid -> new CabinetPowerProRunnable(eid, elePowerService, placeCabinetBindList, tenantId))
                     .collect(Collectors.toList());
             
             try {
@@ -426,7 +426,7 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
             }
             
             // 遍历柜机
-            List<CabinetPowerProRunnable> collect = cabinetIds.parallelStream().map(eid -> new CabinetPowerProRunnable(eid, elePowerService, placeCabinetBindList, tenantId))
+            List<CabinetPowerProRunnable> collect = cabinetIds.stream().map(eid -> new CabinetPowerProRunnable(eid, elePowerService, placeCabinetBindList, tenantId))
                     .collect(Collectors.toList());
             
             try {
@@ -575,7 +575,7 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
             }
             
             // 遍历柜机
-            List<CabinetPowerProRunnable> collect = cabinetIds.parallelStream().map(eid -> new CabinetPowerProRunnable(eid, elePowerService, placeCabinetBindList, tenantId))
+            List<CabinetPowerProRunnable> collect = cabinetIds.stream().map(eid -> new CabinetPowerProRunnable(eid, elePowerService, placeCabinetBindList, tenantId))
                     .collect(Collectors.toList());
             
             try {
@@ -647,7 +647,7 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
             }
             
             // 遍历柜机
-            List<CabinetPowerProRunnable> collect = cabinetIds.parallelStream().map(eid -> new CabinetPowerProRunnable(eid, elePowerService, placeCabinetBindList, tenantId))
+            List<CabinetPowerProRunnable> collect = cabinetIds.stream().map(eid -> new CabinetPowerProRunnable(eid, elePowerService, placeCabinetBindList, tenantId))
                     .collect(Collectors.toList());
             
             try {
@@ -704,7 +704,7 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
             }
             
             // 遍历柜机
-            List<CabinetPowerProRunnable> collect = cabinetIds.parallelStream().map(eid -> new CabinetPowerProRunnable(eid, elePowerService, placeCabinetBindList, tenantId))
+            List<CabinetPowerProRunnable> collect = cabinetIds.stream().map(eid -> new CabinetPowerProRunnable(eid, elePowerService, placeCabinetBindList, tenantId))
                     .collect(Collectors.toList());
             
             try {
@@ -760,14 +760,14 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
         if (CollectionUtils.isNotEmpty(cabinetBindList)) {
             for (MerchantPlaceCabinetBind placeCabinetBind : cabinetBindList) {
                 Long bindTime = placeCabinetBind.getBindTime();
-    
+                
                 if (bindTime < merchantPlaceBindTime) {
                     placeCabinetBind.setBindTime(merchantPlaceBindTime);
                 }
-    
+                
                 // 给绑定状态记录赋值解绑时间：merchantPlaceUnbindTime
                 placeCabinetBind.setUnBindTime(merchantPlaceUnbindTime);
-    
+                
                 allPlaceCabinetBindList.add(placeCabinetBind);
             }
         }
@@ -829,14 +829,14 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
         if (CollectionUtils.isNotEmpty(cabinetBindList)) {
             for (MerchantPlaceCabinetBind placeCabinetBind : cabinetBindList) {
                 Long bindTime = placeCabinetBind.getBindTime();
-    
+                
                 if (bindTime < merchantPlaceBindTime) {
                     placeCabinetBind.setBindTime(merchantPlaceBindTime);
                 }
-    
+                
                 // 给绑定状态记录赋值解绑时间：merchantPlaceUnbindTime
                 placeCabinetBind.setUnBindTime(merchantPlaceUnbindTime);
-    
+                
                 allPlaceCabinetBindList.add(placeCabinetBind);
             }
         }
@@ -902,14 +902,14 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
         if (CollectionUtils.isNotEmpty(cabinetBindList)) {
             for (MerchantPlaceCabinetBind placeCabinetBind : cabinetBindList) {
                 Long bindTime = placeCabinetBind.getBindTime();
-    
+                
                 if (bindTime < merchantPlaceBindTime) {
                     placeCabinetBind.setBindTime(merchantPlaceBindTime);
                 }
-    
+                
                 // 给绑定状态记录赋值解绑时间：endTime
                 placeCabinetBind.setUnBindTime(merchantPlaceUnbindTime);
-    
+                
                 allPlaceCabinetBindList.add(placeCabinetBind);
             }
         }
@@ -971,14 +971,14 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
         if (CollectionUtils.isNotEmpty(cabinetBindList)) {
             for (MerchantPlaceCabinetBind placeCabinetBind : cabinetBindList) {
                 Long bindTime = placeCabinetBind.getBindTime();
-    
+                
                 if (bindTime < todayStartTime) {
                     placeCabinetBind.setBindTime(todayStartTime);
                 }
-    
+                
                 // 给绑定状态记录赋值解绑时间：nowTime
                 placeCabinetBind.setUnBindTime(nowTime);
-    
+                
                 allPlaceCabinetBindList.add(placeCabinetBind);
             }
         }
