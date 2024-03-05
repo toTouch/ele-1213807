@@ -9,6 +9,7 @@ import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
+import com.xiliulou.electricity.constant.merchant.MerchantEleChargeConfigRecordConstant;
 import com.xiliulou.electricity.dto.EleChargeConfigCalcDetailDto;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.entity.merchant.EleChargeConfigRecord;
@@ -270,7 +271,7 @@ public class EleChargeConfigServiceImpl implements EleChargeConfigService {
             executorService.execute(() -> {
                 EleChargeConfigRecord record = new EleChargeConfigRecord();
                 BeanUtil.copyProperties(config, record);
-                record.setOperationType(EleChargeConfigRecord.OPERATION_TYPE_NEW);
+                record.setOperationType(MerchantEleChargeConfigRecordConstant.OPERATION_TYPE_NEW);
                 record.setOperationTime(System.currentTimeMillis());
                 record.setOperator(Optional.ofNullable(SecurityUtils.getUserInfo()).map(TokenUser::getUid).orElse(NumberConstant.ZERO_L));
         
@@ -368,7 +369,7 @@ public class EleChargeConfigServiceImpl implements EleChargeConfigService {
             executorService.execute(() -> {
                 EleChargeConfigRecord record = new EleChargeConfigRecord();
                 BeanUtil.copyProperties(updateConfig, record);
-                record.setOperationType(EleChargeConfigRecord.OPERATION_TYPE_UPDATE);
+                record.setOperationType(MerchantEleChargeConfigRecordConstant.OPERATION_TYPE_UPDATE);
                 record.setOperationTime(System.currentTimeMillis());
                 record.setOperator(Optional.ofNullable(SecurityUtils.getUserInfo()).map(TokenUser::getUid).orElse(NumberConstant.ZERO_L));
     
@@ -392,7 +393,7 @@ public class EleChargeConfigServiceImpl implements EleChargeConfigService {
         executorService.execute(() -> {
             EleChargeConfigRecord record = new EleChargeConfigRecord();
             BeanUtil.copyProperties(config, record);
-            record.setOperationType(EleChargeConfigRecord.OPERATION_TYPE_DELETE);
+            record.setOperationType(MerchantEleChargeConfigRecordConstant.OPERATION_TYPE_DELETE);
             record.setOperationTime(System.currentTimeMillis());
             record.setOperator(Optional.ofNullable(SecurityUtils.getUserInfo()).map(TokenUser::getUid).orElse(NumberConstant.ZERO_L));
     

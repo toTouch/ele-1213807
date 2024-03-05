@@ -61,4 +61,6 @@ public interface MerchantJoinRecordMapper extends BaseMapper<MerchantJoinRecord>
     List<MerchantJoinRecord> selectListByJoinUidAndStatus(@Param("joinUid") Long joinUid, @Param("statusList") List<Integer> statusList);
     
     Integer updateStatusById(@Param("id") Long id, @Param("status") Integer status, @Param("updateTime") long updateTime);
+    
+    String selectMerchantNameByJoinUid(@Param("joinUid")Long joinUid, @Param("status")Integer status);
 }

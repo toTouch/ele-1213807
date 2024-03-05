@@ -10,6 +10,7 @@ import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.constant.TimeConstant;
 import com.xiliulou.electricity.constant.merchant.MerchantConstant;
+import com.xiliulou.electricity.constant.merchant.MerchantJoinRecordConstant;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
 import com.xiliulou.electricity.entity.Tenant;
@@ -131,11 +132,12 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
             MerchantJoinRecord needUpdatedToInvalidRecord = null;
             // 是否存在已邀请成功的记录及是否过保护期
             List<MerchantJoinRecord> joinRecordList = this.listByJoinUidAndStatus(joinUid,
-                    List.of(MerchantJoinRecord.STATUS_SUCCESS, MerchantJoinRecord.STATUS_INIT, MerchantJoinRecord.STATUS_EXPIRED));
+                    List.of(MerchantJoinRecordConstant.STATUS_SUCCESS, MerchantJoinRecordConstant.STATUS_INIT, MerchantJoinRecordConstant.STATUS_EXPIRED));
             if (CollectionUtils.isNotEmpty(joinRecordList)) {
                 for (MerchantJoinRecord joinRecord : joinRecordList) {
                     // 有邀请成功记录或参与过期记录，则返回
-                    if (Objects.equals(joinRecord.getStatus(), MerchantJoinRecord.STATUS_SUCCESS) || Objects.equals(joinRecord.getStatus(), MerchantJoinRecord.STATUS_EXPIRED)) {
+                    if (Objects.equals(joinRecord.getStatus(), MerchantJoinRecordConstant.STATUS_SUCCESS) || Objects.equals(joinRecord.getStatus(),
+                            MerchantJoinRecordConstant.STATUS_EXPIRED)) {
                         log.info("MERCHANT JOIN ERROR! user already join merchant, merchantId={}, inviterUid={}, joinUid={}", joinRecord.getMerchantId(),
                                 joinRecord.getInviterUid(), joinUid);
                         
@@ -143,10 +145,10 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
                     }
                     
                     // 有已参与记录
-                    if (Objects.equals(joinRecord.getStatus(), MerchantJoinRecord.STATUS_INIT)) {
+                    if (Objects.equals(joinRecord.getStatus(), MerchantJoinRecordConstant.STATUS_INIT)) {
                         
                         //未过有效期
-                        if (Objects.equals(joinRecord.getProtectionStatus(), MerchantJoinRecord.PROTECTION_STATUS_NORMAL)) {
+                        if (Objects.equals(joinRecord.getProtectionStatus(), MerchantJoinRecordConstant.PROTECTION_STATUS_NORMAL)) {
                             log.error("MERCHANT JOIN ERROR! in protectionTime, merchantId={}, inviterUid={}, joinUid={}", joinRecord.getMerchantId(), joinRecord.getInviterUid(),
                                     joinUid);
                             
@@ -232,8 +234,8 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
             }
             
             // 邀请人类型
-            if (!Objects.equals(inviterType, MerchantJoinRecord.INVITER_TYPE_MERCHANT_SELF) && !Objects.equals(inviterType,
-                    MerchantJoinRecord.INVITER_TYPE_MERCHANT_PLACE_EMPLOYEE)) {
+            if (!Objects.equals(inviterType, MerchantJoinRecordConstant.INVITER_TYPE_MERCHANT_SELF) && !Objects.equals(inviterType,
+                    MerchantJoinRecordConstant.INVITER_TYPE_MERCHANT_PLACE_EMPLOYEE)) {
                 log.info("MERCHANT JOIN ERROR! illegal operate! inviterUid={}, inviterType={}, joinUid={}", inviterUid, inviterType, joinUid);
                 return R.fail("100463", "二维码已失效");
             }
@@ -257,7 +259,7 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
             
             // 将旧的已参与记录改为已失效
             if (Objects.nonNull(needUpdatedToInvalidRecord) && Objects.nonNull(result)) {
-                this.updateStatusById(needUpdatedToInvalidRecord.getId(), MerchantJoinRecord.STATUS_INVALID, System.currentTimeMillis());
+                this.updateStatusById(needUpdatedToInvalidRecord.getId(), MerchantJoinRecordConstant.STATUS_INVALID, System.currentTimeMillis());
             }
             
             return R.ok();
@@ -303,8 +305,8 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
         
         // 生成参与记录
         return MerchantJoinRecord.builder().merchantId(merchantId).channelEmployeeUid(channelEmployeeUid).placeId(placeId).inviterUid(inviterUid).inviterType(inviterType)
-                .joinUid(joinUid).startTime(nowTime).expiredTime(expiredTime).status(MerchantJoinRecord.STATUS_INIT).protectionTime(protectionExpireTime)
-                .protectionStatus(MerchantJoinRecord.PROTECTION_STATUS_NORMAL).delFlag(NumberConstant.ZERO).createTime(nowTime).updateTime(nowTime).tenantId(tenantId).build();
+                .joinUid(joinUid).startTime(nowTime).expiredTime(expiredTime).status(MerchantJoinRecordConstant.STATUS_INIT).protectionTime(protectionExpireTime)
+                .protectionStatus(MerchantJoinRecordConstant.PROTECTION_STATUS_NORMAL).delFlag(NumberConstant.ZERO).createTime(nowTime).updateTime(nowTime).tenantId(tenantId).build();
     }
     
     @Slave
@@ -333,12 +335,12 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
     @Override
     public void handelProtectionAndStartExpired() {
         MerchantJoinRecord protectionJoinRecord = new MerchantJoinRecord();
-        protectionJoinRecord.setProtectionStatus(MerchantJoinRecord.PROTECTION_STATUS_EXPIRED);
+        protectionJoinRecord.setProtectionStatus(MerchantJoinRecordConstant.PROTECTION_STATUS_EXPIRED);
         protectionJoinRecord.setUpdateTime(System.currentTimeMillis());
         merchantJoinRecordMapper.updateProtectionExpired(protectionJoinRecord);
         
         MerchantJoinRecord merchantJoinRecord = new MerchantJoinRecord();
-        merchantJoinRecord.setStatus(MerchantJoinRecord.STATUS_EXPIRED);
+        merchantJoinRecord.setStatus(MerchantJoinRecordConstant.STATUS_EXPIRED);
         merchantJoinRecord.setUpdateTime(System.currentTimeMillis());
         merchantJoinRecordMapper.updateExpired(merchantJoinRecord);
     }
@@ -508,5 +510,11 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
     @Override
     public Integer updateStatusById(Long id, Integer status, long updateTime) {
         return merchantJoinRecordMapper.updateStatusById(id, status, updateTime);
+    }
+    
+    @Slave
+    @Override
+    public String queryMerchantNameByJoinUid(Long joinUid, Integer status) {
+        return merchantJoinRecordMapper.selectMerchantNameByJoinUid(joinUid, status);
     }
 }
