@@ -2,10 +2,8 @@ package com.xiliulou.electricity.service.faq.impl;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollectionUtil;
-import com.google.common.collect.Maps;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.bo.faq.FaqV2BO;
-import com.xiliulou.electricity.entity.ElectricityConfig;
 import com.xiliulou.electricity.entity.faq.FaqV2;
 import com.xiliulou.electricity.enums.UpDownEnum;
 import com.xiliulou.electricity.mapper.ElectricityConfigMapper;
@@ -18,19 +16,15 @@ import com.xiliulou.electricity.reqparam.faq.AdminFaqUpDownReq;
 import com.xiliulou.electricity.service.faq.FaqV2Service;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
-import com.xiliulou.electricity.vo.faq.FaqListVos;
 import com.xiliulou.electricity.vo.faq.FaqVo;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.BeanUtils;
-import org.springframework.cglib.beans.BeanMap;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import java.math.BigDecimal;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -171,6 +165,14 @@ public class FaqV2ServiceImpl implements FaqV2Service {
                 .collect(Collectors.toList());
     }
     
+    @Override
+    public List<FaqVo> listFaqQueryToUser(AdminFaqQuery faqQuery) {
+        List<FaqVo> faqVos = listFaqQueryResult(faqQuery);
+        if (CollectionUtil.isEmpty(faqVos)) {
+            return null;
+        }
+        return faqVos.stream().filter(e -> Objects.equals(e.getOnShelf(), FaqV2.SHELF_TYPE )).collect(Collectors.toList());
+    }
     @Override
     public R updateFaqReqSort(AdminFaqReq faqReq) {
         FaqV2 faq = this.queryEntity(faqReq.getId());
