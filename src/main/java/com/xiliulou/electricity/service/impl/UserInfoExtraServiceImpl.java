@@ -178,12 +178,5 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
         merchantJoinRecordUpdate.setStatus(MerchantJoinRecordConstant.STATUS_SUCCESS);
         merchantJoinRecordUpdate.setUpdateTime(System.currentTimeMillis());
         merchantJoinRecordService.updateById(merchantJoinRecordUpdate);
-        
-        MerchantUpgrade merchantUpgrade = new MerchantUpgrade();
-        merchantUpgrade.setUid(uid);
-        merchantUpgrade.setOrderId(orderId);
-        merchantUpgrade.setMerchantId(merchant.getId());
-        //拉新成功  发送商户升级MQ
-        rocketMqService.sendAsyncMsg(MqProducerConstant.MERCHANT_UPGRADE_TOPIC, JsonUtil.toJson(merchantUpgrade));
     }
 }

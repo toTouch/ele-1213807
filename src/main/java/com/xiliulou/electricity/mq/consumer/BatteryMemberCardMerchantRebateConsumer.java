@@ -18,6 +18,7 @@ import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.mq.constant.MqConsumerConstant;
 import com.xiliulou.electricity.mq.constant.MqProducerConstant;
 import com.xiliulou.electricity.mq.model.BatteryMemberCardMerchantRebate;
+import com.xiliulou.electricity.mq.model.MerchantUpgrade;
 import com.xiliulou.electricity.query.merchant.MerchantJoinRecordQueryModel;
 import com.xiliulou.electricity.service.BatteryMembercardRefundOrderService;
 import com.xiliulou.electricity.service.EleRefundOrderService;
@@ -33,6 +34,7 @@ import com.xiliulou.electricity.service.merchant.MerchantUserAmountService;
 import com.xiliulou.electricity.service.merchant.RebateConfigService;
 import com.xiliulou.electricity.service.merchant.RebateRecordService;
 import com.xiliulou.electricity.utils.OrderIdUtil;
+import com.xiliulou.mq.service.RocketMqService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.rocketmq.spring.annotation.RocketMQMessageListener;
@@ -88,6 +90,9 @@ public class BatteryMemberCardMerchantRebateConsumer implements RocketMQListener
     private UserService userService;
     
     @Autowired
+    private RocketMqService rocketMqService;
+    
+    @Autowired
     private EleRefundOrderService eleRefundOrderService;
     
     @Autowired
@@ -116,6 +121,13 @@ public class BatteryMemberCardMerchantRebateConsumer implements RocketMQListener
             if (Objects.equals(MerchantConstant.TYPE_PURCHASE, batteryMemberCardMerchantRebate.getType())) {
                 //返利
                 handleRebate(batteryMemberCardMerchantRebate);
+                
+                //续费成功  发送商户升级MQ
+                MerchantUpgrade merchantUpgrade = new MerchantUpgrade();
+                merchantUpgrade.setUid(batteryMemberCardMerchantRebate.getUid());
+                merchantUpgrade.setOrderId(batteryMemberCardMerchantRebate.getOrderId());
+                merchantUpgrade.setMerchantId(batteryMemberCardMerchantRebate.getMerchantId());
+                rocketMqService.sendAsyncMsg(MqProducerConstant.MERCHANT_UPGRADE_TOPIC, JsonUtil.toJson(merchantUpgrade));
             } else {
                 //退租
                 handleMemberCardRentRefund(batteryMemberCardMerchantRebate);
