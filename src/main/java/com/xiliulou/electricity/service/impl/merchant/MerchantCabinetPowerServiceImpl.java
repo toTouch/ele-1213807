@@ -253,6 +253,8 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
             resultList.addAll(periodPowerList);
         }
         
+        log.info("执行getTodayPower...resultList={}", resultList);
+        
         // 封装数据
         MerchantPowerPeriodVO powerVO = new MerchantPowerPeriodVO();
         powerVO.setPower(resultList.stream().filter(Objects::nonNull).mapToDouble(MerchantProLivePowerVO::getPower).sum());
@@ -294,9 +296,9 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
                 
                 resultList.add(powerVO);
             });
-            
-            log.info("Merchant 执行遍历柜机结束......eid={}", eid);
         }
+    
+        log.info("Merchant 执行遍历柜机结束......cabinetIds={}, resultList={}", cabinetIds, resultList);
         
         return resultList;
     }
