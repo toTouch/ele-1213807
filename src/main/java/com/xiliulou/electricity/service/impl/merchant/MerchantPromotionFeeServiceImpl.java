@@ -415,7 +415,9 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
             
             if (Objects.nonNull(placeId)) {
                 MerchantPlace place = merchantPlaceService.queryByIdFromCache(placeId);
-                employeeDetailVO.setPlaceName(place.getName());
+                if(Objects.nonNull(place)){
+                    employeeDetailVO.setPlaceName(place.getName());
+                }
             }
         }
         return employeeDetailVO;
