@@ -128,6 +128,7 @@ public class BatteryMemberCardMerchantRebateConsumer implements RocketMQListener
                 merchantUpgrade.setOrderId(batteryMemberCardMerchantRebate.getOrderId());
                 merchantUpgrade.setMerchantId(batteryMemberCardMerchantRebate.getMerchantId());
                 rocketMqService.sendAsyncMsg(MqProducerConstant.MERCHANT_UPGRADE_TOPIC, JsonUtil.toJson(merchantUpgrade));
+                log.error("===========================================");
             } else {
                 //退租
                 handleMemberCardRentRefund(batteryMemberCardMerchantRebate);
