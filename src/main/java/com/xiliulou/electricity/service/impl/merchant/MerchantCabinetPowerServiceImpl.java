@@ -128,9 +128,23 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
         }
         
         MerchantProPowerVO vo = new MerchantProPowerVO();
+    
+        MerchantPowerPeriodVO todayPower = getTodayPower(tenantId, merchant.getId(), cabinetIds);
+        vo.setTodayPower(Objects.isNull(todayPower) ? NumberConstant.ZERO_D : todayPower.getPower());
+        vo.setTodayCharge(Objects.isNull(todayPower) ? NumberConstant.ZERO_D : todayPower.getCharge());
+        log.info("执行今日电量结束......{}", todayPower);
+    
+        vo.setYesterdayPower(NumberConstant.ZERO_D);
+        vo.setYesterdayCharge(NumberConstant.ZERO_D);
+        vo.setThisMonthPower(NumberConstant.ZERO_D);
+        vo.setThisMonthCharge(NumberConstant.ZERO_D);
+        vo.setLastMonthPower(NumberConstant.ZERO_D);
+        vo.setLastMonthCharge(NumberConstant.ZERO_D);
+        vo.setTotalPower(NumberConstant.ZERO_D);
+        vo.setTotalCharge(NumberConstant.ZERO_D);
         
         // 1.今日电量
-        CompletableFuture<Void> todayPowerFuture = CompletableFuture.runAsync(() -> {
+        /*CompletableFuture<Void> todayPowerFuture = CompletableFuture.runAsync(() -> {
             log.info("执行今日电量开始......");
             MerchantPowerPeriodVO todayPower = getTodayPower(tenantId, merchant.getId(), cabinetIds);
             
@@ -202,7 +216,7 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
         } catch (Exception e) {
             log.error("Query merchant power data ERROR! uid={}", request.getUid(), e);
             return null;
-        }
+        }*/
         
         return vo;
     }
