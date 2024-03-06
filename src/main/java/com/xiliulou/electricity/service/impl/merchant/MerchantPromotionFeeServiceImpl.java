@@ -387,7 +387,7 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
         merchantDetailVO.setCurrentMonthIncome(getCurrentMonthIncome(queryModel.getUid(),PromotionFeeQueryTypeEnum.MERCHANT.getCode()));
         
         // 累计收入：“结算日期” = 当前时间，“结算状态” = 未结算；
-        merchantDetailVO.setTotalIncome(buildPromotionFeeTotalIncomeVO(queryModel.getType(),queryModel.getUid(),System.currentTimeMillis()));
+        merchantDetailVO.setTotalIncome(buildPromotionFeeTotalIncomeVO(PromotionFeeQueryTypeEnum.MERCHANT.getCode(),queryModel.getUid(),System.currentTimeMillis()));
         return R.ok(merchantDetailVO);
     }
     

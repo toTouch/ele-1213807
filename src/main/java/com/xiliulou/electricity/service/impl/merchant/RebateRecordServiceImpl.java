@@ -24,6 +24,7 @@ import com.xiliulou.electricity.service.merchant.MerchantService;
 import com.xiliulou.electricity.service.merchant.MerchantUserAmountService;
 import com.xiliulou.electricity.service.merchant.RebateRecordService;
 import com.xiliulou.electricity.utils.DateUtils;
+import com.xiliulou.electricity.vo.faq.FaqCategoryVo;
 import com.xiliulou.electricity.vo.merchant.MerchantPromotionEmployeeDetailSpecificsVO;
 import com.xiliulou.electricity.vo.merchant.RebateRecordVO;
 import lombok.extern.slf4j.Slf4j;
@@ -40,6 +41,7 @@ import javax.annotation.Resource;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -251,7 +253,7 @@ public class RebateRecordServiceImpl implements RebateRecordService {
             }
             specificsVO.setUserName(item.getName());
             return specificsVO;
-        }).collect(Collectors.toList());
+        }).sorted(Comparator.comparing(MerchantPromotionEmployeeDetailSpecificsVO::getRebateTime).reversed()).collect(Collectors.toList());
     }
     
 }
