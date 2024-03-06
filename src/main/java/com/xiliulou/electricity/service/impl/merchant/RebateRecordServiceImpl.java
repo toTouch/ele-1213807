@@ -164,6 +164,12 @@ public class RebateRecordServiceImpl implements RebateRecordService {
         return this.rebateRecordMapper.selectCurrentMonthRebateRecord(merchantId, startTime, endTime, offset, size);
     }
     
+    @Slave
+    @Override
+    public List<RebateRecord> listRebatedByUid(Long uid, Long memberCardId, Long merchantId, String currentLevel) {
+        return this.rebateRecordMapper.selectRebatedByUid(uid, memberCardId, merchantId, currentLevel);
+    }
+    
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void handleRebate(RebateRecord rebateRecord) {
