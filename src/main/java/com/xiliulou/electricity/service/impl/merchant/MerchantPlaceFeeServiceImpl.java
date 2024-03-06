@@ -703,6 +703,9 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
         return voList;
     }
     
+    public static void main(String[] args) {
+        List<MerchantPlaceBind> merchantPlaceBinds
+    }
     private List<MerchantCabinetFeeDetailVO> calculateLastMonth(Map<String, List<MerchantPlaceBind>> merchantPlaceMap1, long startTime, long endTime, String lastMonth,
             List<Long> placeIdList1, List<String> monthList, Long merchantId) {
         List<MerchantPlaceBind> merchantPlaceBinds = merchantPlaceBindService.queryNoSettleByMerchantId(merchantId);
@@ -711,12 +714,14 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
             return Collections.emptyList();
         }
     
-        log.info("calculateLastMonth1={}", merchantPlaceBinds);
+        log.info("calculateLastMonth1={}",  JsonUtil.toJson(merchantPlaceBinds));
+        
         Map<String, List<MerchantPlaceBind>> merchantPlaceMap = merchantPlaceBinds.stream()
                 .collect(Collectors.groupingBy(r -> r.getMerchantId() + StringConstant.COMMA_EN + r.getPlaceId()));
     
         List<Long> placeIdList = merchantPlaceBinds.stream().map(MerchantPlaceBind::getPlaceId).collect(Collectors.toList());
         
+        log.info("calculateLastMonth2={}", merchantPlaceMap);
         
         // 查询上的月度账单信息
         List<MerchantPlaceFeeMonthRecord> lastMonthRecords = merchantPlaceFeeMonthRecordService.queryList(placeIdList, monthList);
