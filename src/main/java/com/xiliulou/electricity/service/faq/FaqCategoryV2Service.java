@@ -19,7 +19,7 @@ public interface FaqCategoryV2Service {
      * @author kuz
      * @date 2024/2/23 16:11
      */
-    void add(AdminFaqCategoryReq faqCategoryAddParam);
+    void saveFaqCategory(AdminFaqCategoryReq faqCategoryAddParam);
     
     /**
      * 更新常见问题分类
@@ -27,7 +27,9 @@ public interface FaqCategoryV2Service {
      * @author kuz
      * @date 2024/2/23 16:11
      */
-    void edit(AdminFaqCategoryReq faqCategoryReq);
+    void editFaqCategory(AdminFaqCategoryReq faqCategoryReq);
     
-    List<FaqCategoryVo> page();
+    List<FaqCategoryVo> listFaqCategory(String title, Integer typeId);
+    
+    long listFaqCategoryCount(String title);
 }

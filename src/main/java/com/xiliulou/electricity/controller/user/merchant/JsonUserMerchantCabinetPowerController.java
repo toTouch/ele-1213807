@@ -12,7 +12,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
-import java.util.List;
 import java.util.Objects;
 
 /**
@@ -87,13 +86,14 @@ public class JsonUserMerchantCabinetPowerController extends BaseController {
      */
     @GetMapping("/merchant/power/lineData")
     public R lineData(@RequestParam(value = "placeId", required = false) Long placeId, @RequestParam(value = "cabinetId", required = false) Long cabinetId,
-            @RequestParam(value = "monthList") List<String> monthList) {
+            @RequestParam(value = "startTime", required = false) Long startTime, @RequestParam(value = "endTime", required = false) Long endTime) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         
-        MerchantCabinetPowerRequest request = MerchantCabinetPowerRequest.builder().uid(user.getUid()).placeId(placeId).cabinetId(cabinetId).monthList(monthList).build();
+        MerchantCabinetPowerRequest request = MerchantCabinetPowerRequest.builder().uid(user.getUid()).placeId(placeId).cabinetId(cabinetId).startTime(startTime).endTime(endTime)
+                .build();
         
         return R.ok(merchantCabinetPowerService.lineData(request));
     }
@@ -123,7 +123,7 @@ public class JsonUserMerchantCabinetPowerController extends BaseController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         
-        MerchantCabinetPowerRequest request = MerchantCabinetPowerRequest.builder().uid(user.getUid()).cabinetId(cabinetId).monthList(List.of(monthDate)).build();
+        MerchantCabinetPowerRequest request = MerchantCabinetPowerRequest.builder().uid(user.getUid()).cabinetId(cabinetId).monthDate(monthDate).build();
         
         return R.ok(merchantCabinetPowerService.cabinetPowerDetail(request));
     }

@@ -2,6 +2,7 @@ package com.xiliulou.electricity.service.impl.merchant;
 
 import cn.hutool.core.bean.BeanUtil;
 import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.thread.XllThreadPoolExecutorService;
 import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.db.dynamic.annotation.Slave;
@@ -9,6 +10,7 @@ import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.constant.merchant.MerchantConstant;
 import com.xiliulou.electricity.constant.merchant.MerchantPlaceConstant;
+import com.xiliulou.electricity.constant.merchant.MerchantJoinRecordConstant;
 import com.xiliulou.electricity.dto.merchant.MerchantDeleteCacheDTO;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.Franchisee;
@@ -16,7 +18,6 @@ import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.enterprise.EnterpriseInfo;
 import com.xiliulou.electricity.entity.merchant.Merchant;
 import com.xiliulou.electricity.entity.merchant.MerchantEmployee;
-import com.xiliulou.electricity.entity.merchant.MerchantJoinRecord;
 import com.xiliulou.electricity.entity.merchant.MerchantLevel;
 import com.xiliulou.electricity.entity.merchant.MerchantPlace;
 import com.xiliulou.electricity.entity.merchant.MerchantPlaceBind;
@@ -334,6 +335,11 @@ public class MerchantServiceImpl implements MerchantService {
         merchant.setUpdateTime(timeMillis);
         merchant.setTenantId(tenantId);
         
+        // 如果有绑定渠道员 设置商户渠道员绑定时间 小程序商户首页需要使用该字段统计
+        if (Objects.nonNull(merchantSaveRequest.getChannelEmployeeUid())) {
+            merchant.setChannelEmployeeBindTime(timeMillis);
+        }
+        
         // 保存商户信息
         int i = merchantMapper.insert(merchant);
         
@@ -542,6 +548,8 @@ public class MerchantServiceImpl implements MerchantService {
         
         // 判断是否为禁用
         if (!Objects.equals(merchant.getStatus(), merchantSaveRequest.getStatus())) {
+            flag = true;
+            
             if (Objects.equals(merchantSaveRequest.getStatus(), MerchantConstant.ENABLE)) {
                 updateUser.setLockFlag(User.USER_UN_LOCK);
             } else {
@@ -595,6 +603,11 @@ public class MerchantServiceImpl implements MerchantService {
         BeanUtils.copyProperties(merchantSaveRequest, merchantUpdate);
         merchantUpdate.setUpdateTime(timeMillis);
         
+        // 如果有绑定渠道员 设置商户渠道员绑定时间 小程序商户首页需要使用该字段统计
+        if (Objects.nonNull(merchantSaveRequest.getChannelEmployeeUid())) {
+            merchantUpdate.setChannelEmployeeBindTime(timeMillis);
+        }
+    
         // 修改商户信息
         merchantMapper.update(merchantUpdate);
         
@@ -880,7 +893,7 @@ public class MerchantServiceImpl implements MerchantService {
             
             //  改为用商户id统计数量
             MerchantJoinRecordQueryMode joinRecordQueryMode = MerchantJoinRecordQueryMode.builder().tenantId(merchantPageRequest.getTenantId()).merchantIdList(collect)
-                    .status(MerchantJoinRecord.STATUS_SUCCESS).build();
+                    .status(MerchantJoinRecordConstant.STATUS_SUCCESS).build();
             List<MerchantJoinRecordVO> merchantJoinRecordList = merchantJoinRecordService.countByMerchantIdList(joinRecordQueryMode);
             
             Map<Long, Integer> userMap = new HashMap<>();
@@ -1087,6 +1100,11 @@ public class MerchantServiceImpl implements MerchantService {
         Merchant merchant = merchantMapper.selectByUid(uid);
         
         return merchant;
+    }
+    
+    @Override
+    public List<Merchant> queryByChannelEmployeeUid(Long channelEmployeeId) {
+        return merchantMapper.selectByChannelEmployeeUid(channelEmployeeId);
     }
     
     /**

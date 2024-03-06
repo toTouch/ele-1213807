@@ -10,30 +10,30 @@
     <update id="update">
         update t_merchant_place
         <set>
+            merchant_area_id = #{merchantAreaId}
             <if test="name != null and name != ''">
-                name = #{name},
+                ,name = #{name}
             </if>
             <if test="franchiseeId != null">
-                franchisee_id = #{franchiseeId},
+                ,franchisee_id = #{franchiseeId}
             </if>
             <if test="phone != null and phone != ''">
-                phone = #{phone},
+                ,phone = #{phone}
             </if>
-            <if test="merchantAreaId != null">
-                merchant_area_id = #{merchantAreaId},
-            </if>
+            
             <if test="longitude != null">
-                longitude = #{longitude},
+                ,longitude = #{longitude}
             </if>
             <if test="latitude != null">
-                latitude = #{latitude},
+                ,latitude = #{latitude}
             </if>
            
             <if test="address != null">
-                address = #{address},
+                ,address = #{address}
             </if>
+            
             <if test="updateTime != null">
-                update_time = #{updateTime},
+                ,update_time = #{updateTime}
             </if>
         </set>
         <where>

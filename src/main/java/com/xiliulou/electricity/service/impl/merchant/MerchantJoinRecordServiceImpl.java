@@ -10,6 +10,7 @@ import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.constant.TimeConstant;
 import com.xiliulou.electricity.constant.merchant.MerchantConstant;
+import com.xiliulou.electricity.constant.merchant.MerchantJoinRecordConstant;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
 import com.xiliulou.electricity.entity.Tenant;
@@ -127,11 +128,36 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
                 return R.fail(false, "120105", "该二维码暂时无法使用,请稍后再试");
             }
             
-            // 是否在保护期内(保护期内不能扫商户码)
-            Integer isInProtectionTime = this.existsInProtectionTimeByJoinUid(joinUid);
-            if (Objects.nonNull(isInProtectionTime)) {
-                log.error("MERCHANT JOIN ERROR! in protectionTime, joinUid={}", joinUid);
-                return R.fail(false, "120104", "商户保护期内，请稍后再试");
+            // 已过保护期+已参与状态 的记录，需要更新为已失效，才能再扫码
+            MerchantJoinRecord needUpdatedToInvalidRecord = null;
+            // 是否存在已邀请成功的记录及是否过保护期
+            List<MerchantJoinRecord> joinRecordList = this.listByJoinUidAndStatus(joinUid,
+                    List.of(MerchantJoinRecordConstant.STATUS_SUCCESS, MerchantJoinRecordConstant.STATUS_INIT, MerchantJoinRecordConstant.STATUS_EXPIRED));
+            if (CollectionUtils.isNotEmpty(joinRecordList)) {
+                for (MerchantJoinRecord joinRecord : joinRecordList) {
+                    // 有邀请成功记录或参与过期记录，则返回
+                    if (Objects.equals(joinRecord.getStatus(), MerchantJoinRecordConstant.STATUS_SUCCESS) || Objects.equals(joinRecord.getStatus(),
+                            MerchantJoinRecordConstant.STATUS_EXPIRED)) {
+                        log.info("MERCHANT JOIN ERROR! user already join merchant, merchantId={}, inviterUid={}, joinUid={}", joinRecord.getMerchantId(),
+                                joinRecord.getInviterUid(), joinUid);
+                        
+                        return R.fail("120106", "您已是会员用户,无法参加商户活动");
+                    }
+                    
+                    // 有已参与记录
+                    if (Objects.equals(joinRecord.getStatus(), MerchantJoinRecordConstant.STATUS_INIT)) {
+                        
+                        //未过有效期
+                        if (Objects.equals(joinRecord.getProtectionStatus(), MerchantJoinRecordConstant.PROTECTION_STATUS_NORMAL)) {
+                            log.error("MERCHANT JOIN ERROR! in protectionTime, merchantId={}, inviterUid={}, joinUid={}", joinRecord.getMerchantId(), joinRecord.getInviterUid(),
+                                    joinUid);
+                            
+                            return R.fail(false, "120104", "商户保护期内，请稍后再试");
+                        } else {
+                            needUpdatedToInvalidRecord = joinRecord;
+                        }
+                    }
+                }
             }
             
             // 解析code
@@ -203,22 +229,15 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
             
             // 扫自己码
             if (Objects.equals(userInfo.getUid(), inviterUid)) {
-                log.info("MERCHANT JOIN ERROR! illegal operate! inviterUid={}, joinUid={}", inviterUid, joinUid);
+                log.info("MERCHANT JOIN ERROR! illegal operate! Can not scan own QR, inviterUid={}, joinUid={}", inviterUid, joinUid);
                 return R.fail("100463", "二维码已失效");
             }
             
             // 邀请人类型
-            if (!Objects.equals(inviterType, MerchantJoinRecord.INVITER_TYPE_MERCHANT_SELF) && !Objects.equals(inviterType,
-                    MerchantJoinRecord.INVITER_TYPE_MERCHANT_PLACE_EMPLOYEE)) {
-                log.info("MERCHANT JOIN ERROR! illegal operate! inviterUid={}, inviterType={}, joinUid={}", inviterUid, inviterType, joinUid);
+            if (!Objects.equals(inviterType, MerchantJoinRecordConstant.INVITER_TYPE_MERCHANT_SELF) && !Objects.equals(inviterType,
+                    MerchantJoinRecordConstant.INVITER_TYPE_MERCHANT_PLACE_EMPLOYEE)) {
+                log.info("MERCHANT JOIN ERROR! illegal operate! Inviter is illegal, inviterUid={}, inviterType={}, joinUid={}", inviterUid, inviterType, joinUid);
                 return R.fail("100463", "二维码已失效");
-            }
-            
-            // 是否存在已邀请成功的记录
-            MerchantJoinRecord existsRecord = this.queryByMerchantIdAndJoinUid(merchantId, joinUid);
-            if (Objects.nonNull(existsRecord) && Objects.equals(existsRecord.getStatus(), MerchantJoinRecord.STATUS_SUCCESS)) {
-                log.info("MERCHANT JOIN ERROR! user already join merchant, merchantId={}, inviterUid={}, joinUid={}", merchantId, inviterUid, joinUid);
-                return R.fail("120106", "您已是会员用户,无法参加商户活动");
             }
             
             // 获取商户保护期和有效期
@@ -236,8 +255,14 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
             
             // 保存参与记录
             MerchantJoinRecord record = this.assembleRecord(merchantId, inviterUid, inviterType, joinUid, channelEmployeeUid, placeId, merchantAttr, tenant.getId());
+            Integer result = merchantJoinRecordMapper.insertOne(record);
             
-            return R.ok(merchantJoinRecordMapper.insertOne(record));
+            // 将旧的已参与记录改为已失效
+            if (Objects.nonNull(needUpdatedToInvalidRecord) && Objects.nonNull(result)) {
+                this.updateStatusById(needUpdatedToInvalidRecord.getId(), MerchantJoinRecordConstant.STATUS_INVALID, System.currentTimeMillis());
+            }
+            
+            return R.ok();
         } finally {
             redisService.delete(CacheConstant.CACHE_MERCHANT_SCAN_INTO_ACTIVITY_LOCK + joinUid);
         }
@@ -252,44 +277,33 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
         Integer validTimeUnit = merchantAttr.getValidTimeUnit();
         
         // 保护期过期时间
-        long protectionExpireTime = NumberConstant.ZERO_L;
-        if (Objects.nonNull(protectionTime) && Objects.nonNull(protectionTimeUnit)) {
-            //分钟转毫秒
-            if (Objects.equals(protectionTimeUnit, CommonConstant.TIME_UNIT_MINUTES)) {
-                protectionExpireTime = nowTime + protectionTime * protectionTimeUnit * TimeConstant.MINUTE_MILLISECOND;
-            }
-            //小时转毫秒
-            if (Objects.equals(protectionTimeUnit, CommonConstant.TIME_UNIT_HOURS)) {
-                protectionExpireTime = nowTime + protectionTime * protectionTimeUnit * TimeConstant.HOURS_MILLISECOND;
-            }
+        long protectionExpireTime = nowTime;
+        //分钟转毫秒
+        if (Objects.equals(protectionTimeUnit, CommonConstant.TIME_UNIT_MINUTES)) {
+            protectionExpireTime += protectionTime * TimeConstant.MINUTE_MILLISECOND;
+        }
+        //小时转毫秒
+        if (Objects.equals(protectionTimeUnit, CommonConstant.TIME_UNIT_HOURS)) {
+            protectionExpireTime += protectionTime * TimeConstant.HOURS_MILLISECOND;
         }
         
         // 参与有效期过期时间
-        long expiredTime = NumberConstant.ZERO_L;
-        if (Objects.nonNull(validTime) && Objects.nonNull(validTimeUnit)) {
-            //分钟转毫秒
-            if (Objects.equals(validTimeUnit, CommonConstant.TIME_UNIT_MINUTES)) {
-                expiredTime = nowTime + validTime * validTimeUnit * TimeConstant.MINUTE_MILLISECOND;
-            }
-            //小时转毫秒
-            if (Objects.equals(validTimeUnit, CommonConstant.TIME_UNIT_HOURS)) {
-                expiredTime = nowTime + validTime * validTimeUnit * TimeConstant.HOURS_MILLISECOND;
-            }
-            
+        long expiredTime = nowTime;
+        //分钟转毫秒
+        if (Objects.equals(validTimeUnit, CommonConstant.TIME_UNIT_MINUTES)) {
+            expiredTime += validTime * TimeConstant.MINUTE_MILLISECOND;
+        }
+        //小时转毫秒
+        if (Objects.equals(validTimeUnit, CommonConstant.TIME_UNIT_HOURS)) {
+            expiredTime += validTime * TimeConstant.HOURS_MILLISECOND;
         }
         
         // 生成参与记录
         return MerchantJoinRecord.builder().merchantId(merchantId).channelEmployeeUid(channelEmployeeUid).placeId(placeId).inviterUid(inviterUid).inviterType(inviterType)
-                .joinUid(joinUid).startTime(nowTime).expiredTime(expiredTime).status(MerchantJoinRecord.STATUS_INIT).protectionTime(protectionExpireTime)
-                .protectionStatus(MerchantJoinRecord.PROTECTION_STATUS_NORMAL).delFlag(NumberConstant.ZERO).createTime(nowTime).updateTime(nowTime).tenantId(tenantId).build();
+                .joinUid(joinUid).startTime(nowTime).expiredTime(expiredTime).status(MerchantJoinRecordConstant.STATUS_INIT).protectionTime(protectionExpireTime)
+                .protectionStatus(MerchantJoinRecordConstant.PROTECTION_STATUS_NORMAL).delFlag(NumberConstant.ZERO).createTime(nowTime).updateTime(nowTime).tenantId(tenantId)
+                .build();
     }
-    
-    @Slave
-    @Override
-    public Integer existsInProtectionTimeByJoinUid(Long joinUid) {
-        return merchantJoinRecordMapper.existsInProtectionTimeByJoinUid(joinUid);
-    }
-    
     
     @Slave
     @Override
@@ -308,7 +322,6 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
         return merchantJoinRecordMapper.updateStatus(queryModel);
     }
     
-    
     @Slave
     @Override
     public List<MerchantJoinRecord> listByMerchantIdAndStatus(Long merchantId, Integer status) {
@@ -318,12 +331,12 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
     @Override
     public void handelProtectionAndStartExpired() {
         MerchantJoinRecord protectionJoinRecord = new MerchantJoinRecord();
-        protectionJoinRecord.setProtectionStatus(MerchantJoinRecord.PROTECTION_STATUS_EXPIRED);
+        protectionJoinRecord.setProtectionStatus(MerchantJoinRecordConstant.PROTECTION_STATUS_EXPIRED);
         protectionJoinRecord.setUpdateTime(System.currentTimeMillis());
         merchantJoinRecordMapper.updateProtectionExpired(protectionJoinRecord);
         
         MerchantJoinRecord merchantJoinRecord = new MerchantJoinRecord();
-        merchantJoinRecord.setStatus(MerchantJoinRecord.STATUS_EXPIRED);
+        merchantJoinRecord.setStatus(MerchantJoinRecordConstant.STATUS_EXPIRED);
         merchantJoinRecord.setUpdateTime(System.currentTimeMillis());
         merchantJoinRecordMapper.updateExpired(merchantJoinRecord);
     }
@@ -393,7 +406,6 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
     public List<MerchantJoinRecordVO> countByMerchantIdList(MerchantJoinRecordQueryMode joinRecordQueryMode) {
         return merchantJoinRecordMapper.countByMerchantIdList(joinRecordQueryMode);
     }
-    
     
     @Slave
     @Override
@@ -483,5 +495,22 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
     @Override
     public List<MerchantJoinRecord> selectListAllPromotionDataDetail(MerchantAllPromotionDataDetailQueryModel queryModel) {
         return merchantJoinRecordMapper.selectListAllPromotionDataDetail(queryModel);
+    }
+    
+    @Slave
+    @Override
+    public List<MerchantJoinRecord> listByJoinUidAndStatus(Long joinUid, List<Integer> statusList) {
+        return merchantJoinRecordMapper.selectListByJoinUidAndStatus(joinUid, statusList);
+    }
+    
+    @Override
+    public Integer updateStatusById(Long id, Integer status, long updateTime) {
+        return merchantJoinRecordMapper.updateStatusById(id, status, updateTime);
+    }
+    
+    @Slave
+    @Override
+    public String queryMerchantNameByJoinUid(Long joinUid, Integer status) {
+        return merchantJoinRecordMapper.selectMerchantNameByJoinUid(joinUid, status);
     }
 }

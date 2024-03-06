@@ -13,9 +13,4 @@ public class EleSumPowerVO {
     private Double sumPower;
     
     private Double sumCharge;
-    
-    /**
-     * 产生的最新时间，用于排序
-     */
-    private Long latestTime;
 }

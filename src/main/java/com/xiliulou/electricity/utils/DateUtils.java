@@ -12,9 +12,12 @@ import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.time.temporal.TemporalAdjusters;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -278,6 +281,11 @@ public class DateUtils {
         return fmt.format(new Date(time1)).equals(fmt.format(new Date(time2)));
     }
     
+    public static boolean isSameMonth(long time1, long time2) {
+        SimpleDateFormat fmt = new SimpleDateFormat("yyyyMM");
+        return fmt.format(new Date(time1)).equals(fmt.format(new Date(time2)));
+    }
+    
     /**
      * 根据时间戳获取当天0点的时间戳
      */
@@ -288,5 +296,55 @@ public class DateUtils {
         // 获取当天零点的ZonedDateTime对象
         ZonedDateTime startOfDay = zonedDateTime.toLocalDate().atStartOfDay(zonedDateTime.getZone());
         return startOfDay.toInstant().toEpochMilli();
+    }
+    
+    /**
+     * @description 获取本年截至本月(minusMonth = 0)的月份
+     * @date 2024/3/4 22:07:49
+     * @author HeYafeng
+     */
+    public static List<String> getMonthsUntilCurrent(int minusMonth) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM");
+        List<String> yearList = new ArrayList<>();
+        LocalDate now = LocalDate.now();
+        int currentYear = now.getYear();
+        int currentMonth = now.getMonthValue() - minusMonth;
+        
+        for (int month = 1; month <= currentMonth; month++) {
+            String monthStr = LocalDate.of(currentYear, month, 1).format(formatter);
+            yearList.add(monthStr);
+        }
+        
+        return yearList;
+    }
+    
+    /**
+     * 根据时间戳获取当天开始时间
+     *
+     * @return 今天的开始时间
+     */
+    public static long getTimeByTimeStamp(long timestamp) {
+        // 将时间戳转换为UTC的Instant对象
+        Instant instant = Instant.ofEpochMilli(timestamp);
+        // 转换为指定时区的ZonedDateTime
+        ZonedDateTime zonedDateTime = instant.atZone(CHINA_ZONE_ID);
+        // 获取当天的开始时间（即00:00:00）
+        ZonedDateTime startOfDay = zonedDateTime.toLocalDate().atStartOfDay(CHINA_ZONE_ID);
+        // 如果需要再次转换回时间戳
+        return startOfDay.toInstant().toEpochMilli();
+    }
+    
+    public static long getEndOfDayTimestamp(long timestamp){
+        // 将时间戳转换为Instant对象
+        Instant instant = Instant.ofEpochMilli(timestamp);
+    
+        // 转换为LocalDateTime并设置为当天的开始时间
+        LocalDateTime localDateTime = instant.atZone(ZoneId.systemDefault()).toLocalDate().atStartOfDay();
+    
+        // 计算当天的最后一刻（即23:59:59.999）
+        LocalDateTime endOfDay = localDateTime.plus(1, ChronoUnit.DAYS).minus(1, ChronoUnit.MILLIS);
+    
+        // 再次转换回时间戳
+        return endOfDay.atZone(CHINA_ZONE_ID).toInstant().toEpochMilli();
     }
 }

@@ -3,12 +3,12 @@
 <mapper namespace="com.xiliulou.electricity.mapper.merchant.MerchantPlaceFeeDailyRecordMapper">
     <select id="selectList" resultType="java.math.BigDecimal">
         select
-            sum(day_place_fee)
+            sum(IFNULL(day_place_fee,0))
         from t_merchant_place_fee_daily_record
         where del_flag = 0
         and eid = #{cabinetId}
-        and statement_date <![CDATA[ >=  ]]>  #{startTime}
-        and statement_date <![CDATA[ <=  ]]>  #{endTime}
+        and statement_end_time <![CDATA[ >=  ]]>  #{cabinetStartTime}
+        and statement_end_time <![CDATA[ <=  ]]>  #{cabinetEndTime}
    group by eid
     </select>
 

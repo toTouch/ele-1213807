@@ -1,12 +1,13 @@
 package com.xiliulou.electricity.entity.faq;
 
+import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 import lombok.experimental.Accessors;
 
 import java.math.BigDecimal;
 
 @Data
-@Accessors(chain = true)
+@TableName("t_new_faq")
 public class FaqV2 {
     
     /**
@@ -30,7 +31,7 @@ public class FaqV2 {
     private String answer;
     
     /**
-     * 上下架 1表示上架  0表示下架
+     * 上下架 '0表示上架  1表示下架'
      */
     private Integer onShelf;
     
@@ -58,6 +59,11 @@ public class FaqV2 {
      * 租户id
      */
     private Integer tenantId;
+    
+    /**
+     * 同类问题上限
+     */
+    public static final Integer SIMILAR_FAQ_LIMIT = 100;
     
     
 }

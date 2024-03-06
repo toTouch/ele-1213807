@@ -83,14 +83,15 @@ public class MerchantTokenServiceImpl implements MerchantTokenService {
         }
         
         ElectricityPayParams electricityPayParams = electricityPayParamsService.queryFromCache(tenantId);
-        if (Objects.isNull(electricityPayParams) || StrUtil.isEmpty(electricityPayParams.getMerchantMinProAppId()) || StrUtil.isEmpty(
-                electricityPayParams.getMerchantMinProAppSecert())) {
+        if (Objects.isNull(electricityPayParams)
+                || StrUtil.isEmpty(electricityPayParams.getMerchantMinProAppId()) || StrUtil.isEmpty(electricityPayParams.getMerchantMinProAppSecert())
+                ||StrUtil.isEmpty(electricityPayParams.getMerchantAppletId()) || StrUtil.isEmpty(electricityPayParams.getMerchantAppletSecret())) {
             return Triple.of(false, "100002", "网络不佳，请重试");
         }
         
         try {
-            String codeUrl = String.format(CacheConstant.WX_MIN_PRO_AUTHORIZATION_CODE_URL, "wxc2dd558f2ee2ab8a",
-                    "b029fdccc213ae48c81e4243d4f2e1ef", merchantLoginRequest.getCode());
+            String codeUrl = String.format(CacheConstant.WX_MIN_PRO_AUTHORIZATION_CODE_URL, electricityPayParams.getMerchantAppletId(),
+                    electricityPayParams.getMerchantAppletSecret(), merchantLoginRequest.getCode());
 
             String bodyStr = restTemplateService.getForString(codeUrl, null);
             log.info("TOKEN INFO! call wxpro get openId message={}", bodyStr);
@@ -119,7 +120,7 @@ public class MerchantTokenServiceImpl implements MerchantTokenService {
             List<User> users = Optional.ofNullable(userService.listUserByPhone(purePhoneNumber, tenantId))
                     .orElse(Lists.newArrayList()).stream().filter(e->(e.getUserType().equals(User.TYPE_USER_MERCHANT) || e.getUserType().equals(User.TYPE_USER_CHANNEL))).collect(Collectors.toList());;
             if (Collections.isEmpty(users)) {
-                return Triple.of(false, null, "用户不存在");
+                return Triple.of(false, null, "未找到绑定账号，请检查");
             }
 
             List<User> notLockUsers = users.stream().filter(user -> !user.isLock()).collect(Collectors.toList());
@@ -134,7 +135,12 @@ public class MerchantTokenServiceImpl implements MerchantTokenService {
             }
 
             log.info("userBindBusinessDTOS:{} notLockerUser:{}", userBindBusinessDTOS, notLockUsers);
-            List<MerchantLoginVO> loginVOS = notLockUsers.parallelStream().map(e -> {
+            
+            
+            List<User> merchantUser = users.stream().filter((user -> User.TYPE_USER_MERCHANT.equals(user.getUserType()) || User.TYPE_USER_CHANNEL.equals(user.getUserType())))
+                    .collect(Collectors.toList());
+            
+            List<MerchantLoginVO> loginVOS = merchantUser.parallelStream().map(e -> {
                 if (Objects.isNull(userBindBusinessDTOS.get(e.getUid()))) {
                     return null;
                 }
@@ -157,6 +163,7 @@ public class MerchantTokenServiceImpl implements MerchantTokenService {
                 merchantLoginVO.setUid(e.getUid());
                 merchantLoginVO.setUserType(e.getUserType());
                 merchantLoginVO.setBusinessInfo(userBindBusinessDTOS.get(e.getUid()).getEnterprisePackageAuth(), userBindBusinessDTOS.get(e.getUid()).getEnterprisePackageAuth());
+                merchantLoginVO.setLockFlag(e.getLockFlag());
                 return merchantLoginVO;
             }).filter(Objects::nonNull).collect(Collectors.toList());
             return Triple.of(true, null, loginVOS);

@@ -37,7 +37,8 @@
         update t_merchant_join_record
         set protection_status = #{protectionStatus},
             update_time       = #{updateTime}
-        where protection_time &lt;= #{updateTime} and = 0
+        where protection_time &lt;= #{updateTime}
+          and protection_status = 0
     </update>
     
     <update id="updateExpired">
@@ -46,6 +47,13 @@
             update_time = #{updateTime}
         where expired_time &lt;= #{updateTime}
           and status = 1
+    </update>
+    
+    <update id="updateStatusById">
+        update t_merchant_join_record
+        set status      = #{status},
+            update_time = #{updateTime}
+        where id = #{id}
     </update>
     
     <!--    <update id="updateById">
@@ -191,11 +199,14 @@
             <if test="endTime != null">
                 and start_time &lt;= #{endTime}
             </if>
-            <if test="type != null">
+            <if test="type != null and type==3">
+                and channel_employee_uid = #{uid}
+            </if>
+            <if test="type != null and type!=3">
                 and inviter_type = #{type}
             </if>
-            <if test="inviterUid != null">
-                and inviter_uid = #{inviterUid}
+            <if test="uid != null and type!=3">
+                and inviter_uid = #{uid}
             </if>
             <if test="status != null">
                 and status = #{status}
@@ -203,7 +214,7 @@
             <if test="tenantId != null">
                 and tenant_id = #{tenantId}
             </if>
-        
+    
         </where>
         ) a
     </select>
@@ -323,7 +334,7 @@
         select IFNULL(count(1), 0) from (
         select distinct(join_uid) from t_merchant_join_record
         <where>
-            del_flag = 0 and inviter_type = 1
+            del_flag = 0 and inviter_type = 2
             <if test="startTime != null">
                 and start_time >= #{startTime}
             </if>
@@ -368,6 +379,31 @@
             </if>
             limit #{offset}, #{size}
         </where>
+    </select>
+    
+    <select id="selectListByJoinUidAndStatus" resultType="com.xiliulou.electricity.entity.merchant.MerchantJoinRecord">
+        SELECT
+        <include refid="basic_field"/>
+        FROM
+        t_merchant_join_record
+        <where>
+            del_flag = 0 and join_uid = #{joinUid}
+            <if test="statusList != null">
+                and status in
+                <foreach collection="statusList" separator="," open="(" close=")" item="status">
+                    #{status}
+                </foreach>
+            </if>
+        </where>
+    </select>
+    
+    <select id="selectMerchantNameByJoinUid" resultType="java.lang.String">
+        select tm.name
+        from t_merchant_join_record tmjr
+                 left join t_merchant tm on tmjr.merchant_id = tm.id
+        where tmjr.del_flag = 0
+          and tmjr.join_uid = #{joinUid}
+          and tmjr.status = #{status}
     </select>
 
 </mapper>

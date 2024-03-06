@@ -17,7 +17,7 @@
     
     <update id="reduceAmountByUid">
         update t_merchant_user_amount
-        set balance = balance - #{income},
+        set balance = balance - #{income}
             where uid = #{uid}
                 and tenant_id = #{tenantId}
                 and del_flag = 0

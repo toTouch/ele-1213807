@@ -13,12 +13,9 @@ import java.util.Base64;
 public class QrCodeUtils {
     
     public static void main(String[] args) {
-        Long merchantId = 38L;
-        Long uid = 152083L;
-        Integer type =1;
-        String code = merchantId + ":" + uid + ":" + type;
+        String code = 45 + ":" + 152161 + ":" + 2;
         System.out.println(codeEnCoder(code));
-        System.out.println(codeDeCoder("NlFoVldzOGppU1k0bXV5MU5SbjNrdz09"));
+        System.out.println(codeDeCoder("aTJWZWErKzZwMmFXNFhoYjE4MHQxUT09"));
     }
     
     /**

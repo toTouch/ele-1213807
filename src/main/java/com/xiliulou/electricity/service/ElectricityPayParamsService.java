@@ -26,4 +26,7 @@ public interface ElectricityPayParamsService extends IService<ElectricityPayPara
     ElectricityPayParams queryByTenantId(Integer tenantId);
 
     Triple<Boolean, String, Object> queryByMerchantAppId(String appId);
+
+    R refreshMerchant();
+
 }

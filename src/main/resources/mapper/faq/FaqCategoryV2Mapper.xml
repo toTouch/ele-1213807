@@ -27,11 +27,12 @@
         from t_faq_category
         where id = #{id,jdbcType=BIGINT}
     </select>
-    <select id="selectListByTenantId" resultType="com.xiliulou.electricity.vo.faq.FaqCategoryVo">
+    
+    <select id="selectListByTenantId" resultMap="BaseResultMap">
         select id, type, sort
         from t_faq_category
         where tenant_id = #{tenantId,jdbcType=INTEGER}
-        ordeyr by sort
+        order by sort
     </select>
     
     <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
@@ -103,4 +104,24 @@
             update_time = #{updateTime,jdbcType=BIGINT}
         where id = #{id,jdbcType=BIGINT}
     </update>
+    
+    <select id="countFaqCategoryByTenantId" resultType="Integer">
+        select count(1) from t_faq_category where tenant_id = #{tenantId,jdbcType=INTEGER}
+    </select>
+    
+    <select id="selectLeftJoinByParams" resultType="com.xiliulou.electricity.bo.faq.FaqV2BO">
+        select f.id as id,c.id as type_id,c.type as type,c.sort as type_sort
+        FROM t_faq_category c left join t_new_faq f ON f.type_id = c.id
+        <where>
+            <if test="tenantId != null">
+                and c.tenant_id = #{tenantId}
+            </if>
+            <if test="typeId != null">
+                and c.type_id = #{typeId}
+            </if>
+            <if test="title != null and title != ''">
+                and title like concat('%',#{title},'%')
+            </if>
+        </where>
+    </select>
 </mapper>

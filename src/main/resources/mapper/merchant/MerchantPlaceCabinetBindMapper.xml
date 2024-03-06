@@ -256,7 +256,10 @@
                 and status = #{status}
             </if>
             <if test="endTime != null">
-                and bind_time &lt;= #{endTime}
+                and bind_time &lt;= #{startTime}
+            </if>
+            <if test="placeId != null">
+                and place_id = #{placeId}
             </if>
             <if test="cabinetIds != null and cabinetIds.size() > 0">
                 and cabinet_id in
@@ -277,6 +280,9 @@
             </if>
             <if test="startTime != null and endTime != null">
                 and un_bind_time &gt;= #{startTime} or bind_time &lt;= #{endTime}
+            </if>
+            <if test="placeId != null">
+                and place_id = #{placeId}
             </if>
             <if test="cabinetIds != null and cabinetIds.size() > 0">
                 and cabinet_id in

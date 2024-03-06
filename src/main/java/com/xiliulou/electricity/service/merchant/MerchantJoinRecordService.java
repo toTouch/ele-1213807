@@ -38,11 +38,6 @@ public interface MerchantJoinRecordService {
     Integer updateStatus(MerchantJoinRecordQueryModel queryModel);
     
     /**
-     * 参与人是否存在保护期内的记录
-     */
-    Integer existsInProtectionTimeByJoinUid(Long joinUid);
-    
-    /**
      * 根据商户id和参与人uid查询记录
      */
     MerchantJoinRecord queryByMerchantIdAndJoinUid(Long merchantId, Long joinUid);
@@ -92,4 +87,10 @@ public interface MerchantJoinRecordService {
     Integer countEmployeeScanCodeNum(List<Long> uidList, Long startTime, Long endTime, Integer status, Integer tenantId);
     
     List<MerchantJoinRecord> selectListAllPromotionDataDetail(MerchantAllPromotionDataDetailQueryModel queryModel);
+    
+    List<MerchantJoinRecord> listByJoinUidAndStatus(Long joinUid, List<Integer> statusList);
+    
+    Integer updateStatusById(Long id, Integer status, long updateTime);
+    
+    String queryMerchantNameByJoinUid(Long joinUid, Integer status);
 }

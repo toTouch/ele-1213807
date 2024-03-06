@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.vo.faq;
 
+import com.xiliulou.electricity.bo.faq.FaqV2BO;
 import lombok.Data;
 
 import java.math.BigDecimal;
@@ -12,7 +13,7 @@ public class FaqListVos {
     
     private Long typeId;
     
-    private List<FaqVo> faqVoList;
+    private List<FaqV2BO> faqBOList;
     /**
      * 分类
      */

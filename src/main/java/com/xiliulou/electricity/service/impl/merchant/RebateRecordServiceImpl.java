@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.service.impl.merchant;
 
+import com.xiliulou.core.utils.PhoneUtils;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.merchant.MerchantConstant;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
@@ -8,6 +9,7 @@ import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.merchant.Merchant;
 import com.xiliulou.electricity.entity.merchant.MerchantPlace;
 import com.xiliulou.electricity.entity.merchant.RebateRecord;
+import com.xiliulou.electricity.enums.merchant.PromotionFeeQueryTypeEnum;
 import com.xiliulou.electricity.mapper.merchant.RebateRecordMapper;
 import com.xiliulou.electricity.query.merchant.MerchantPromotionEmployeeDetailSpecificsQueryModel;
 import com.xiliulou.electricity.query.merchant.MerchantPromotionFeeQueryModel;
@@ -22,9 +24,11 @@ import com.xiliulou.electricity.service.merchant.MerchantService;
 import com.xiliulou.electricity.service.merchant.MerchantUserAmountService;
 import com.xiliulou.electricity.service.merchant.RebateRecordService;
 import com.xiliulou.electricity.utils.DateUtils;
+import com.xiliulou.electricity.vo.faq.FaqCategoryVo;
 import com.xiliulou.electricity.vo.merchant.MerchantPromotionEmployeeDetailSpecificsVO;
 import com.xiliulou.electricity.vo.merchant.RebateRecordVO;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,6 +41,7 @@ import javax.annotation.Resource;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -129,7 +134,7 @@ public class RebateRecordServiceImpl implements RebateRecordService {
             BeanUtils.copyProperties(item, rebateRecord);
             Franchisee franchisee = franchiseeService.queryByIdFromCache(item.getFranchiseeId());
             rebateRecord.setFranchiseeName(Objects.nonNull(franchisee) ? franchisee.getName() : "");
-
+            
             Merchant merchant = merchantService.queryByIdFromCache(item.getMerchantId());
             rebateRecord.setMerchantName(Objects.nonNull(merchant) ? merchant.getName() : "");
             
@@ -138,10 +143,10 @@ public class RebateRecordServiceImpl implements RebateRecordService {
             
             User placeUser = userService.queryByUidFromCache(item.getPlaceUid());
             rebateRecord.setPlaceUserName(Objects.nonNull(placeUser) ? placeUser.getName() : "");
-    
+            
             User channel = userService.queryByUidFromCache(item.getChanneler());
             rebateRecord.setChannelerName(Objects.nonNull(channel) ? channel.getName() : "");
-    
+            
             return rebateRecord;
             
         }).collect(Collectors.toList());
@@ -211,8 +216,16 @@ public class RebateRecordServiceImpl implements RebateRecordService {
     @Slave
     @Override
     public BigDecimal sumByStatus(MerchantPromotionFeeQueryModel merchantPromotionFeeQueryModel) {
-        return this.rebateRecordMapper.sumByStatus(merchantPromotionFeeQueryModel);
+        if (Objects.equals(PromotionFeeQueryTypeEnum.CHANNEL_EMPLOYEE.getCode(), merchantPromotionFeeQueryModel.getType())) {
+            return this.rebateRecordMapper.sumEmployeeIncomeByStatus(merchantPromotionFeeQueryModel);
+        } else {
+            if (Objects.equals(PromotionFeeQueryTypeEnum.MERCHANT_AND_MERCHANT_EMPLOYEE.getCode(), merchantPromotionFeeQueryModel.getType())) {
+                merchantPromotionFeeQueryModel.setType(PromotionFeeQueryTypeEnum.MERCHANT.getCode());
+            }
+            return this.rebateRecordMapper.sumMerchantIncomeByStatus(merchantPromotionFeeQueryModel);
+        }
     }
+    
     
     @Slave
     @Override
@@ -227,15 +240,20 @@ public class RebateRecordServiceImpl implements RebateRecordService {
         if (CollectionUtils.isEmpty(recordList)) {
             return Collections.emptyList();
         }
-    
+        
         return recordList.parallelStream().map(item -> {
-             MerchantPromotionEmployeeDetailSpecificsVO specificsVO = new MerchantPromotionEmployeeDetailSpecificsVO();
-             BeanUtils.copyProperties(item,specificsVO);
-             BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(item.getMemberCardId());
-             specificsVO.setBatteryMemberCardName(Objects.nonNull(batteryMemberCard) ? batteryMemberCard.getName() : "");
-             
+            MerchantPromotionEmployeeDetailSpecificsVO specificsVO = new MerchantPromotionEmployeeDetailSpecificsVO();
+            BeanUtils.copyProperties(item, specificsVO);
+            BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(item.getMemberCardId());
+            specificsVO.setBatteryMemberCardName(Objects.nonNull(batteryMemberCard) ? batteryMemberCard.getName() : "");
+            
+            //手机号掩码
+            if (StringUtils.isNotBlank(specificsVO.getPhone())) {
+                specificsVO.setPhone(PhoneUtils.mobileEncrypt(specificsVO.getPhone()));
+            }
+            specificsVO.setUserName(item.getName());
             return specificsVO;
-        }).collect(Collectors.toList());
+        }).sorted(Comparator.comparing(MerchantPromotionEmployeeDetailSpecificsVO::getRebateTime).reversed()).collect(Collectors.toList());
     }
     
 }

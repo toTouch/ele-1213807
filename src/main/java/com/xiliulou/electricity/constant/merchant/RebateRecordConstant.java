@@ -39,4 +39,10 @@ public class RebateRecordConstant {
      */
     public static final Integer BALANCE = 2;
     
+    public static final String LASH_NAME = "拉新";
+    
+    public static final String RENEW_NAME = "续费";
+    
+    public static final String BALANCE_NAME = "差额";
+    
 }

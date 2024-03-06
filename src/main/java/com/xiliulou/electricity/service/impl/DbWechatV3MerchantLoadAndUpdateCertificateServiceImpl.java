@@ -132,4 +132,9 @@ public class DbWechatV3MerchantLoadAndUpdateCertificateServiceImpl implements We
             throw new RuntimeException("获取商户apiV3密钥失败！tenantId=" + tenantId, e);
         }
     }
+
+    @Override
+    public void refreshMerchantInfo(Integer tenantId) {
+        wechatCertificateCache.invalidate(tenantId);
+    }
 }

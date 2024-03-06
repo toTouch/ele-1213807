@@ -60,6 +60,11 @@ public class MerchantWithdrawApplicationVO {
     private Integer status;
     
     /**
+     * 租户ID
+     */
+    private Integer tenantId;
+    
+    /**
      * 提交时间
      */
     private Long createTime;
@@ -70,10 +75,18 @@ public class MerchantWithdrawApplicationVO {
     private Long updateTime;
     
     /**
+     * 审核时间
+     */
+    private Long checkTime;
+    
+    /**
      * 到账时间
      */
     private Long receiptTime;
     
-    
+    /**
+     * 失败原因
+     */
+    private String failReason;
     
 }

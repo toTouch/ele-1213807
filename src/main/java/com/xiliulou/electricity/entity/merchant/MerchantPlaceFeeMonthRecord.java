@@ -46,5 +46,15 @@ public class MerchantPlaceFeeMonthRecord {
     private Long createTime;
     
     private Long updateTime;
+    
+    /**
+     * 柜机与场地是否绑定：0:绑定，1：解绑
+     */
+    private Integer cabinetPlaceBindStatus;
+    
+    /**
+     * 场地柜机在最后一天是否绑定：0：否，1：是
+     */
+    private Integer cabinetEndBind;
 }
 
