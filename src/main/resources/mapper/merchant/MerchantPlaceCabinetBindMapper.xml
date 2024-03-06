@@ -58,6 +58,9 @@
                     #{placeId}
                 </foreach>
             </if>
+            <if test="tenantId != null">
+                and tenant_id = #{tenantId}
+            </if>
             <if test="cabinetId != null">
                 and cabinet_id = #{cabinetId}
             </if>

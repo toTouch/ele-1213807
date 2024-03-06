@@ -707,7 +707,7 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
         }
     
         List<MerchantCabinetFeeDetailVO> voList = new ArrayList<>();
-    
+        log.info("handlerCabinetBindHistory3={}", merchantPlaceMap);
         for (Map.Entry<String, List<MerchantPlaceBind>> entry : merchantPlaceMap.entrySet()) {
         
             String key = entry.getKey();
