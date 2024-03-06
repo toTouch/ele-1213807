@@ -92,7 +92,7 @@ public class MerchantEmployeeServiceImpl implements MerchantEmployeeService {
         //检查用户名是否存在
         User existNameUser = userService.queryByUserName(name);
         if(Objects.nonNull(existNameUser)){
-            log.error("The user name has been used by other one for add merchant employee, name = {}, tenant id = {}", name, merchantEmployeeRequest.getTenantId());
+            log.info("The user name has been used by other one for add merchant employee, name = {}, tenant id = {}", name, merchantEmployeeRequest.getTenantId());
             throw new BizException("120009", "用户姓名已存在");
         }
         
@@ -158,13 +158,13 @@ public class MerchantEmployeeServiceImpl implements MerchantEmployeeService {
     
         MerchantEmployeeVO merchantEmployeeVO = merchantEmployeeMapper.selectById(merchantEmployeeRequest.getId());
         if (Objects.isNull(merchantEmployeeVO)) {
-            log.error("not found merchant employee by id, id = {}", merchantEmployeeRequest.getId());
+            log.info("not found merchant employee by id, id = {}", merchantEmployeeRequest.getId());
             throw new BizException("120004", "商户员工不存在");
         }
         
         User user = userService.queryByUidFromCache(merchantEmployeeVO.getUid());
         if (Objects.isNull(user)) {
-            log.error("not found merchant employee by uid, uid = {}", merchantEmployeeVO.getUid());
+            log.info("not found merchant employee by uid, uid = {}", merchantEmployeeVO.getUid());
             throw new BizException("120004", "商户员工不存在");
         }
     
@@ -173,7 +173,7 @@ public class MerchantEmployeeServiceImpl implements MerchantEmployeeService {
         if (!Objects.equals(user.getName(), merchantEmployeeRequest.getName())){
             User existNameUser = userService.queryByUserName(merchantEmployeeRequest.getName());
             if(Objects.nonNull(existNameUser)){
-                log.error("The user name has been used by other one for update merchant employee, name = {}, tenant id = {}", merchantEmployeeRequest.getName(), merchantEmployeeRequest.getTenantId());
+                log.info("The user name has been used by other one for update merchant employee, name = {}, tenant id = {}", merchantEmployeeRequest.getName(), merchantEmployeeRequest.getTenantId());
                 throw new BizException("120009", "用户姓名已存在");
             }
         }
@@ -375,7 +375,7 @@ public class MerchantEmployeeServiceImpl implements MerchantEmployeeService {
         
         Merchant merchant = merchantService.queryByUid(merchantEmployeeRequest.getMerchantUid());
         if (Objects.isNull(merchant)) {
-            log.error("not found merchant by uid, uid = {}", merchantEmployeeRequest.getMerchantUid());
+            log.info("not found merchant by uid, uid = {}", merchantEmployeeRequest.getMerchantUid());
             return Collections.EMPTY_LIST;
         }
         
