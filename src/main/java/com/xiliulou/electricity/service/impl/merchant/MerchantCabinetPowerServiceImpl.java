@@ -1628,6 +1628,8 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
                 merchantProCabinetPowerVO.setTime(Objects.isNull(electricityCabinet) ? NumberConstant.ZERO : electricityCabinet.getCreateTime());
                 
                 cabinetPowerList.add(merchantProCabinetPowerVO);
+    
+                log.info("柜机列表===>，electricityCabinet={}, merchantProCabinetPowerVO={}", electricityCabinet, merchantProCabinetPowerVO);
             }
         }
         
@@ -1637,6 +1639,8 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
         
         // cabinetPowerList 根据time进行倒叙排序
         cabinetPowerList.sort((o1, o2) -> o2.getTime().compareTo(o1.getTime()));
+    
+        log.info("柜机列表===>，merchantId={}, cabinetPowerList={}", merchant.getId(), cabinetPowerList);
         
         return cabinetPowerList;
     }
