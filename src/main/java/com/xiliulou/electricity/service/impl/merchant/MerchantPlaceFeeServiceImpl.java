@@ -401,7 +401,7 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
         List<String> monthList = new ArrayList<>();
         monthList.add(request.getMonth());
         
-        List<MerchantCabinetBindHistory> placeFeeMonths = merchantCabinetBindHistoryService.queryListByMonth(request.getCabinetId(), null, monthList);
+        List<MerchantCabinetBindHistory> placeFeeMonths = merchantCabinetBindHistoryService.queryListByMonth(request.getCabinetId(), null, monthList, request.getMerchantId());
         log.info("getPlaceDetailByCabinetId1={}", placeFeeMonths);
         
         if (ObjectUtils.isEmpty(placeFeeMonths)) {
@@ -489,7 +489,7 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
                         () -> calculateLastMonth(merchantPlaceMap, startTime, endTime, lastMonth, placeIdList, monthList, request.getMerchantId()), threadPool)
                 .whenComplete((result, e) -> {
                     if (ObjectUtils.isNotEmpty(result)) {
-                        currentList.addAll(result);
+                        lastList.addAll(result);
                     }
                     
                     if (e != null) {
