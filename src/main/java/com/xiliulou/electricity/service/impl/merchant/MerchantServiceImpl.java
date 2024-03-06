@@ -558,19 +558,14 @@ public class MerchantServiceImpl implements MerchantService {
         }
         
         if (flag) {
-            // 查询用户是否存在
-            User oldUser = userService.queryByUidFromCache(merchant.getUid());
+            // 修改用户的手机号或者名称
+            updateUser.setUid(merchant.getUid());
+            updateUser.setUpdateTime(timeMillis);
+            userService.updateMerchantUser(updateUser);
             
-            if (Objects.nonNull(oldUser)) {
-                // 修改用户的手机号或者名称
-                updateUser.setUid(oldUser.getUid());
-                updateUser.setUpdateTime(timeMillis);
-                userService.updateMerchantUser(updateUser);
-                
-                // 删除用户缓存
-                merchantDeleteCacheDTO.setDeleteUserFlag(true);
-                merchantDeleteCacheDTO.setUser(updateUser);
-            }
+            // 删除用户缓存
+            merchantDeleteCacheDTO.setDeleteUserFlag(true);
+            merchantDeleteCacheDTO.setUser(updateUser);
         }
         
         // 修改企业信息

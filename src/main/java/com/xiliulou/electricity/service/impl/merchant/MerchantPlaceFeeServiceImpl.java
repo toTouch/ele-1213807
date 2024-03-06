@@ -444,145 +444,133 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
     
     private List<MerchantCabinetFeeDetailVO> getLastMonthDetail(MerchantPlaceFeeRequest request) {
         List<MerchantPlaceBind> merchantPlaceBinds = merchantPlaceBindService.queryNoSettleByMerchantId(request.getMerchantId());
-        
+    
         log.info("getCurMonthFeeRecords1={}", merchantPlaceBinds);
-        
+    
         if (ObjectUtils.isEmpty(merchantPlaceBinds)) {
             return Collections.emptyList();
         }
-        
+    
         List<Long> placeIdList = merchantPlaceBinds.stream().map(MerchantPlaceBind::getPlaceId).collect(Collectors.toList());
-        
+    
         // 上月的第一天
         long startTime = DateUtils.getBeforeMonthFirstDayTimestamp(DateFormatConstant.LAST_MONTH);
-        
+    
         // 上月的最后一天
         long endTime = DateUtils.getBeforeMonthLastDayTimestamp(DateFormatConstant.LAST_MONTH);
-        
+    
         // 上月月份
         String lastMonth = DateUtil.format(new Date(startTime), DateFormatConstant.MONTH_DATE_FORMAT);
-        
+    
         List<String> monthList = new ArrayList<>();
         monthList.add(lastMonth);
-        
+    
         List<MerchantCabinetFeeDetailVO> resultList = Collections.synchronizedList(new ArrayList<>(50));
-        
+    
         Map<String, List<MerchantPlaceBind>> merchantPlaceMap = merchantPlaceBinds.stream()
                 .collect(Collectors.groupingBy(r -> r.getMerchantId() + StringConstant.COMMA_EN + r.getPlaceId()));
-        
+    
         // 本月数据
-        List<MerchantCabinetFeeDetailVO> currentList = calculateCurrentMonth(new HashMap<>(merchantPlaceMap), startTime, endTime, lastMonth, placeIdList, request.getMerchantId());
-       /* CompletableFuture<List<MerchantCabinetFeeDetailVO>> currentMonthInfo = CompletableFuture.supplyAsync(
+        List<MerchantCabinetFeeDetailVO> currentList = new ArrayList<>();
+        CompletableFuture<List<MerchantCabinetFeeDetailVO>> currentMonthInfo = CompletableFuture.supplyAsync(
                 () -> calculateCurrentMonth(new HashMap<>(merchantPlaceMap), startTime, endTime, lastMonth, placeIdList, request.getMerchantId()), threadPool).whenComplete((result, e) -> {
             if (ObjectUtils.isNotEmpty(result)) {
                 currentList.addAll(result);
             }
-            
+        
             if (e != null) {
                 log.error("LAST MONTH DETAIL QUERY ERROR!, last month error", e);
             }
-        });*/
-        
+        });
+    
         // 上月数据
-        List<MerchantCabinetFeeDetailVO> lastList = calculateLastMonth(new HashMap<>(merchantPlaceMap), startTime, endTime, lastMonth, placeIdList, monthList, request.getMerchantId());
-        /*CompletableFuture<List<MerchantCabinetFeeDetailVO>> lastMonthInfo = CompletableFuture.supplyAsync(
+        List<MerchantCabinetFeeDetailVO> lastList = new ArrayList<>();
+        CompletableFuture<List<MerchantCabinetFeeDetailVO>> lastMonthInfo = CompletableFuture.supplyAsync(
                         () -> calculateLastMonth(new HashMap<>(merchantPlaceMap), startTime, endTime, lastMonth, placeIdList, monthList, request.getMerchantId()), threadPool)
                 .whenComplete((result, e) -> {
                     if (ObjectUtils.isNotEmpty(result)) {
                         lastList.addAll(result);
                     }
-                    
+                
                     if (e != null) {
                         log.error("LAST MONTH DETAIL QUERY ERROR!, current month error", e);
                     }
-                    
+                
                 });
-        
+    
         CompletableFuture<Void> resultFuture = CompletableFuture.allOf(currentMonthInfo, lastMonthInfo);
-        
+    
         try {
             resultFuture.get(10, TimeUnit.SECONDS);
         } catch (Exception e) {
             log.error("last month detail query summary browsing error for merchant query", e);
-        }*/
-        
+        }
+    
         log.info("getLastMonthDetail currentList={},lastList={}", currentList, lastList);
-        
+    
         if (ObjectUtils.isNotEmpty(currentList)) {
             resultList.addAll(currentList);
         }
-        
+    
         if (ObjectUtils.isNotEmpty(lastList)) {
             resultList.addAll(lastList);
         }
-        
+    
         // 根据柜机id 过滤数据
         if (Objects.nonNull(request.getCabinetId()) && ObjectUtils.isNotEmpty(resultList)) {
             resultList = resultList.stream().filter(item -> Objects.equals(item.getCabinetId(), request.getCabinetId())).collect(Collectors.toList());
         }
-        
+    
         return resultList;
     }
     
-    private List<MerchantCabinetFeeDetailVO> calculateCurrentMonth(Map<String, List<MerchantPlaceBind>> merchantPlaceMap1, long startTime, long endTime, String lastMonth,
-            List<Long> placeIdList1, Long merchantId) {
-        List<MerchantPlaceBind> merchantPlaceBinds = merchantPlaceBindService.queryNoSettleByMerchantId(merchantId);
-        
-        if (ObjectUtils.isEmpty(merchantPlaceBinds)) {
-            return Collections.emptyList();
-        }
-    
-        Map<String, List<MerchantPlaceBind>> merchantPlaceMap = merchantPlaceBinds.stream()
-                .collect(Collectors.groupingBy(r -> r.getMerchantId() + StringConstant.COMMA_EN + r.getPlaceId()));
-        
-        List<Long> placeIdList = merchantPlaceBinds.stream().map(MerchantPlaceBind::getPlaceId).collect(Collectors.toList());
-    
-        log.info("getCurMonthFeeRecords1={}", merchantPlaceBinds);
+    private List<MerchantCabinetFeeDetailVO> calculateCurrentMonth(Map<String, List<MerchantPlaceBind>> merchantPlaceMap, long startTime, long endTime, String lastMonth,
+            List<Long> placeIdList, Long merchantId) {
         // 获取本月的数据
         List<MerchantPlaceFeeMonthRecord> curPlaceFeeMonthRecords = getCurMonthRecordFirst(placeIdList);
         log.info("calculate current month, records={}, merchant={}, month={}", curPlaceFeeMonthRecords, merchantId, lastMonth);
         if (ObjectUtils.isEmpty(curPlaceFeeMonthRecords)) {
             return Collections.emptyList();
         }
-        
+    
         // 过滤掉本月的开始时间小于上月月末的数据
         if (ObjectUtils.isNotEmpty(curPlaceFeeMonthRecords)) {
             curPlaceFeeMonthRecords = curPlaceFeeMonthRecords.stream().filter(item -> item.getRentStartTime() < endTime).collect(Collectors.toList());
         }
         log.info("calculate current month, records={}, merchant={}, month={}", curPlaceFeeMonthRecords, merchantId, lastMonth);
-        
+    
         if (ObjectUtils.isEmpty(curPlaceFeeMonthRecords)) {
             log.info("calculate current month, records is empty, merchant={}, month={}", merchantId, lastMonth);
             return Collections.emptyList();
         }
-        
+    
         List<MerchantCabinetFeeDetailVO> voList = new ArrayList<>();
-        
+    
         for (Map.Entry<String, List<MerchantPlaceBind>> entry : merchantPlaceMap.entrySet()) {
-            
+        
             String key = entry.getKey();
             String[] split = key.split(StringConstant.COMMA_EN);
-            
+        
             // 场地id
             Long placeId = Long.valueOf(split[1]);
-            
+        
             List<MerchantPlaceBind> value = entry.getValue();
             log.info("handlerCabinetBindHistory2={}", value);
-            
+        
             // 处理连续的时间段
             value = dealSameRecord(value, endTime);
-            
+        
             log.info("calculate current month cabinet bind history is data ={}", value);
-            
+        
             if (ObjectUtils.isEmpty(value)) {
                 log.info("calculate current month merchant place bind is empty, merchantId={}, placeId={}", value, placeId);
                 continue;
             }
-            
+        
             // 处理上月的数据
             return dealCurrentMonthData(curPlaceFeeMonthRecords, value, startTime, endTime, lastMonth, merchantId, placeId);
         }
-        
+    
         return voList;
     }
     
@@ -703,58 +691,43 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
         return voList;
     }
     
-    private List<MerchantCabinetFeeDetailVO> calculateLastMonth(Map<String, List<MerchantPlaceBind>> merchantPlaceMap1, long startTime, long endTime, String lastMonth,
-            List<Long> placeIdList1, List<String> monthList, Long merchantId) {
-        List<MerchantPlaceBind> merchantPlaceBinds = merchantPlaceBindService.queryNoSettleByMerchantId(merchantId);
-    
-        if (ObjectUtils.isEmpty(merchantPlaceBinds)) {
-            return Collections.emptyList();
-        }
-    
-        log.info("calculateLastMonth1={}",  JsonUtil.toJson(merchantPlaceBinds));
-        
-        Map<String, List<MerchantPlaceBind>> merchantPlaceMap = merchantPlaceBinds.stream()
-                .collect(Collectors.groupingBy(r -> r.getMerchantId() + StringConstant.COMMA_EN + r.getPlaceId()));
-    
-        List<Long> placeIdList = merchantPlaceBinds.stream().map(MerchantPlaceBind::getPlaceId).collect(Collectors.toList());
-        
-        log.info("calculateLastMonth2={}", merchantPlaceMap);
-        
+    private List<MerchantCabinetFeeDetailVO> calculateLastMonth(Map<String, List<MerchantPlaceBind>> merchantPlaceMap, long startTime, long endTime, String lastMonth,
+            List<Long> placeIdList, List<String> monthList, Long merchantId) {
         // 查询上的月度账单信息
         List<MerchantPlaceFeeMonthRecord> lastMonthRecords = merchantPlaceFeeMonthRecordService.queryList(placeIdList, monthList);
         log.info("calculate Last Month, records={}, merchant={}, month={}", lastMonthRecords, merchantId, lastMonth);
-        
+    
         if (ObjectUtils.isEmpty(lastMonthRecords)) {
             log.info("calculate Last Month, records is empty, merchantId={}, month={}", merchantId, lastMonth);
             return Collections.emptyList();
         }
-        
+    
         List<MerchantCabinetFeeDetailVO> voList = new ArrayList<>();
-        
+    
         for (Map.Entry<String, List<MerchantPlaceBind>> entry : merchantPlaceMap.entrySet()) {
-            
+        
             String key = entry.getKey();
             String[] split = key.split(StringConstant.COMMA_EN);
             // 场地id
             Long placeId = Long.valueOf(split[1]);
-            
+        
             List<MerchantPlaceBind> value = entry.getValue();
             log.info("handlerCabinetBindHistory2={}", value);
-            
+        
             // 处理连续的时间段
             value = dealSameRecord(value, endTime);
-            
+        
             log.info("cabinet bind history is empty ={}", value);
-            
+        
             if (ObjectUtils.isEmpty(value)) {
                 log.info("cabinet bind history is empty ={}", value);
                 continue;
             }
-            
+        
             // 处理两个月之前的数据
             return dealLastMonthData(lastMonthRecords, value, startTime, endTime, lastMonth, merchantId, placeId);
         }
-        
+    
         return voList;
     }
     
