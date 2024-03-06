@@ -128,28 +128,15 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
         }
         
         MerchantProPowerVO vo = new MerchantProPowerVO();
-    
-        MerchantPowerPeriodVO todayPower = getTodayPower(tenantId, merchant.getId(), cabinetIds);
-        vo.setTodayPower(Objects.isNull(todayPower) ? NumberConstant.ZERO_D : todayPower.getPower());
-        vo.setTodayCharge(Objects.isNull(todayPower) ? NumberConstant.ZERO_D : todayPower.getCharge());
-        log.info("执行今日电量结束......{}", todayPower);
-    
-        vo.setYesterdayPower(NumberConstant.ZERO_D);
-        vo.setYesterdayCharge(NumberConstant.ZERO_D);
-        vo.setThisMonthPower(NumberConstant.ZERO_D);
-        vo.setThisMonthCharge(NumberConstant.ZERO_D);
-        vo.setLastMonthPower(NumberConstant.ZERO_D);
-        vo.setLastMonthCharge(NumberConstant.ZERO_D);
-        vo.setTotalPower(NumberConstant.ZERO_D);
-        vo.setTotalCharge(NumberConstant.ZERO_D);
         
         // 1.今日电量
-        /*CompletableFuture<Void> todayPowerFuture = CompletableFuture.runAsync(() -> {
+        CompletableFuture<Void> todayPowerFuture = CompletableFuture.runAsync(() -> {
             log.info("执行今日电量开始......");
             MerchantPowerPeriodVO todayPower = getTodayPower(tenantId, merchant.getId(), cabinetIds);
             
             vo.setTodayPower(Objects.isNull(todayPower) ? NumberConstant.ZERO_D : todayPower.getPower());
             vo.setTodayCharge(Objects.isNull(todayPower) ? NumberConstant.ZERO_D : todayPower.getCharge());
+            
             log.info("执行今日电量结束......{}", todayPower);
         }, executorService).exceptionally(e -> {
             log.error("Query merchant today power data error! uid={}", request.getUid(), e);
@@ -158,12 +145,13 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
         
         // 2.昨日电量
         CompletableFuture<Void> yesterdayPowerFuture = CompletableFuture.runAsync(() -> {
-            MerchantPowerPeriodVO yesterdayPower = null;
-            //MerchantPowerPeriodVO yesterdayPower = getYesterdayPower(tenantId, merchant.getId(), cabinetIds);
+            log.info("执行昨日电量开始......");
+            MerchantPowerPeriodVO yesterdayPower = getYesterdayPower(tenantId, merchant.getId(), cabinetIds);
             
             vo.setYesterdayPower(Objects.isNull(yesterdayPower) ? NumberConstant.ZERO_D : yesterdayPower.getPower());
             vo.setYesterdayCharge(Objects.isNull(yesterdayPower) ? NumberConstant.ZERO_D : yesterdayPower.getCharge());
             
+            log.info("执行昨日电量结束......{}", yesterdayPower);
         }, executorService).exceptionally(e -> {
             log.error("Query merchant yesterday power data error! uid={}", request.getUid(), e);
             return null;
@@ -171,12 +159,14 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
         
         // 3.本月电量
         CompletableFuture<Void> thisMonthPowerFuture = CompletableFuture.runAsync(() -> {
-            MerchantPowerPeriodVO thisMonthPower = null;
-            //MerchantPowerPeriodVO thisMonthPower = getThisMonthPower(tenantId, merchant.getId(), cabinetIds);
+            log.info("执行本月电量开始......");
+            
+            MerchantPowerPeriodVO thisMonthPower = getThisMonthPower(tenantId, merchant.getId(), cabinetIds);
             
             vo.setThisMonthPower(Objects.isNull(thisMonthPower) ? NumberConstant.ZERO_D : thisMonthPower.getPower());
             vo.setThisMonthCharge(Objects.isNull(thisMonthPower) ? NumberConstant.ZERO_D : thisMonthPower.getCharge());
             
+            log.info("执行本月电量结束......{}", thisMonthPower);
         }, executorService).exceptionally(e -> {
             log.error("Query merchant this month power data error! uid={}", request.getUid(), e);
             return null;
@@ -184,12 +174,13 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
         
         // 4.上月电量
         CompletableFuture<Void> lastMonthPowerFuture = CompletableFuture.runAsync(() -> {
-            MerchantPowerPeriodVO lastMonthPower = null;
-            //MerchantPowerPeriodVO lastMonthPower = getLastMonthPower(tenantId, merchant.getId(), cabinetIds);
+            log.info("执行上月电量开始......");
+            MerchantPowerPeriodVO lastMonthPower = getLastMonthPower(tenantId, merchant.getId(), cabinetIds);
             
             vo.setLastMonthPower(Objects.isNull(lastMonthPower) ? NumberConstant.ZERO_D : lastMonthPower.getPower());
             vo.setLastMonthCharge(Objects.isNull(lastMonthPower) ? NumberConstant.ZERO_D : lastMonthPower.getCharge());
             
+            log.info("执行上月电量结束......{}", lastMonthPower);
         }, executorService).exceptionally(e -> {
             log.error("Query merchant last month power data error! uid={}", request.getUid(), e);
             return null;
@@ -197,12 +188,13 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
         
         // 5.累计电量
         CompletableFuture<Void> totalPowerFuture = CompletableFuture.runAsync(() -> {
-            MerchantPowerPeriodVO totalPower = null;
-            // MerchantPowerPeriodVO totalPower = getTotalPower(tenantId, merchant.getId(), cabinetIds);
+            log.info("执行累计电量开始......");
+            MerchantPowerPeriodVO totalPower = getTotalPower(tenantId, merchant.getId(), cabinetIds);
             
-            vo.setTotalPower(Objects.isNull(totalPower) ? NumberConstant.ZERO_D : totalPower.getPower());
-            vo.setTotalCharge(Objects.isNull(totalPower) ? NumberConstant.ZERO_D : totalPower.getCharge());
+            vo.setTotalPower(totalPower.getPower());
+            vo.setTotalCharge(totalPower.getCharge());
             
+            log.info("执行累计电量结束......{}", totalPower);
         }, executorService).exceptionally(e -> {
             log.error("Query merchant total power data error! uid={}", request.getUid(), e);
             return null;
@@ -216,14 +208,13 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
         } catch (Exception e) {
             log.error("Query merchant power data ERROR! uid={}", request.getUid(), e);
             return null;
-        }*/
+        }
         
         return vo;
     }
     
     private MerchantPowerPeriodVO getTodayPower(Integer tenantId, Long merchantId, List<Long> cabinetIds) {
-        
-        log.info("执行getTodayPower开始......cabinetIds={}", cabinetIds);
+        log.info("开始执行今日,merchantId={}, cabinetIds={}", merchantId, cabinetIds);
         
         // 今日0点
         Long todayStartTime = DateUtils.getTimeAgoStartTime(NumberConstant.ZERO);
@@ -237,7 +228,7 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
             return null;
         }
         
-        log.info("执行getTodayPower......商户场地绑定记录, merchantId={}, merchantPlaceBindList={}", merchantId, merchantPlaceBindList);
+        log.info("执行今日===商户场地绑定记录===>,merchantId={}, merchantPlaceBindList={}", merchantId, merchantPlaceBindList);
         
         // 封装结果集
         List<MerchantProLivePowerVO> resultList = new ArrayList<>();
@@ -248,8 +239,6 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
             Long bindTime = merchantPlaceBind.getBindTime();
             Long unBindTime = merchantPlaceBind.getUnBindTime();
             
-            log.info("执行getTodayPower...遍历场地，placeId={}, bindTime={}, unBindTime={}", placeId, bindTime, unBindTime);
-            
             // 获取场地柜机绑定记录
             List<MerchantPlaceCabinetBind> placeCabinetBindList = getTodayPlaceCabinetBindList(placeId, bindTime, unBindTime);
             if (CollectionUtils.isEmpty(placeCabinetBindList)) {
@@ -257,24 +246,24 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
                 continue;
             }
             
-            log.info("执行getTodayPower...场地柜机绑定记录，placeId={}, placeCabinetBindList={}", placeId, placeCabinetBindList);
+            log.info("执行今日===场地柜机绑定记录===>,placeId={}, placeCabinetBindList={}", placeId, placeCabinetBindList);
             
             // 遍历柜机
             List<MerchantProLivePowerVO> periodPowerList = getPeriodPower(tenantId, placeId, cabinetIds, placeCabinetBindList);
             
-            log.info("执行getTodayPower...遍历柜机，placeId={}, cabinetIds={}, periodPowerList={}", placeId, cabinetIds, periodPowerList);
+            log.info("执行今日===遍历柜机===>，placeId={}, cabinetIds={}, periodPowerList={}", placeId, cabinetIds, periodPowerList);
             
             resultList.addAll(periodPowerList);
         }
         
-        log.info("执行getTodayPower...resultList={}", resultList);
+        log.info("执行今日===resultList===>，merchantId={}, resultList={}", merchantId, resultList);
         
         // 封装数据
         MerchantPowerPeriodVO powerVO = new MerchantPowerPeriodVO();
         powerVO.setPower(resultList.stream().filter(Objects::nonNull).mapToDouble(MerchantProLivePowerVO::getPower).sum());
         powerVO.setCharge(resultList.stream().filter(Objects::nonNull).mapToDouble(MerchantProLivePowerVO::getCharge).sum());
         
-        log.info("执行getTodayPower结束...cabinetIds={}, powerVO={}", cabinetIds, powerVO);
+        log.info("执行今日结束===>，merchantId={}, powerVO={}", merchantId, powerVO);
         
         return powerVO;
     }
@@ -311,7 +300,7 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
                 resultList.add(powerVO);
             });
         }
-    
+        
         log.info("Merchant 执行遍历柜机结束......cabinetIds={}, resultList={}", cabinetIds, resultList);
         
         return resultList;
@@ -380,6 +369,8 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
     }
     
     private MerchantPowerPeriodVO getYesterdayPower(Integer tenantId, Long merchantId, List<Long> cabinetIds) {
+        log.info("开始执行昨日,merchantId={}, cabinetIds={}", merchantId, cabinetIds);
+        
         // 昨日0点
         Long yesterdayStartTime = DateUtils.getTimeAgoStartTime(NumberConstant.ONE);
         // 昨日23:59:59
@@ -390,6 +381,8 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
         if (CollectionUtils.isEmpty(merchantPlaceBindList)) {
             return null;
         }
+        
+        log.info("执行昨日===商户场地绑定记录===>,merchantId={}, merchantPlaceBindList={}", merchantId, merchantPlaceBindList);
         
         // 封装结果集
         List<MerchantProLivePowerVO> resultList = new ArrayList<>();
@@ -406,23 +399,30 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
                 continue;
             }
             
+            log.info("执行昨日===场地柜机绑定记录===>,placeId={}, placeCabinetBindList={}", placeId, placeCabinetBindList);
+            
             // 遍历柜机
             List<MerchantProLivePowerVO> periodPowerList = getPeriodPower(tenantId, placeId, cabinetIds, placeCabinetBindList);
             
-            log.info("执行getYesterdayPower...遍历柜机，placeId={}, cabinetIds={}, periodPowerList={}", placeId, cabinetIds, periodPowerList);
+            log.info("执行昨日===遍历柜机===>，placeId={}, cabinetIds={}, periodPowerList={}", placeId, cabinetIds, periodPowerList);
             
             resultList.addAll(periodPowerList);
         }
+        
+        log.info("执行昨日===resultList===>，merchantId={}, resultList={}", merchantId, resultList);
         
         // 封装数据
         MerchantPowerPeriodVO powerVO = new MerchantPowerPeriodVO();
         powerVO.setPower(resultList.stream().filter(Objects::nonNull).mapToDouble(MerchantProLivePowerVO::getPower).sum());
         powerVO.setCharge(resultList.stream().filter(Objects::nonNull).mapToDouble(MerchantProLivePowerVO::getCharge).sum());
         
+        log.info("执行昨日结束===>，merchantId={}, powerVO={}", merchantId, powerVO);
         return powerVO;
     }
     
     private MerchantPowerPeriodVO getThisMonthPower(Integer tenantId, Long merchantId, List<Long> cabinetIds) {
+        log.info("开始执行本月,merchantId={}, cabinetIds={}", merchantId, cabinetIds);
+        
         // 本月第一天0点
         Long thisMonthStartTime = DateUtils.getBeforeMonthFirstDayTimestamp(NumberConstant.ZERO);
         long nowTime = System.currentTimeMillis();
@@ -432,6 +432,8 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
         if (CollectionUtils.isEmpty(merchantPlaceBindList)) {
             return null;
         }
+        
+        log.info("执行本月===商户场地绑定记录===>,merchantId={}, merchantPlaceBindList={}", merchantId, merchantPlaceBindList);
         
         // 封装结果集
         List<MerchantProLivePowerVO> resultList = new ArrayList<>();
@@ -448,18 +450,24 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
                 continue;
             }
             
+            log.info("执行本月===场地柜机绑定记录===>,placeId={}, placeCabinetBindList={}", placeId, placeCabinetBindList);
+            
             // 遍历柜机
             List<MerchantProLivePowerVO> periodPowerList = getPeriodPower(tenantId, placeId, cabinetIds, placeCabinetBindList);
             
-            log.info("执行getThisMonthPower...遍历柜机，placeId={}, cabinetIds={}, periodPowerList={}", placeId, cabinetIds, periodPowerList);
+            log.info("执行本月===遍历柜机===>，placeId={}, cabinetIds={}, periodPowerList={}", placeId, cabinetIds, periodPowerList);
             
             resultList.addAll(periodPowerList);
         }
+        
+        log.info("执行本月===resultList===>，merchantId={}, resultList={}", merchantId, resultList);
         
         // 封装数据
         MerchantPowerPeriodVO powerVO = new MerchantPowerPeriodVO();
         powerVO.setPower(resultList.stream().filter(Objects::nonNull).mapToDouble(MerchantProLivePowerVO::getPower).sum());
         powerVO.setCharge(resultList.stream().filter(Objects::nonNull).mapToDouble(MerchantProLivePowerVO::getCharge).sum());
+        
+        log.info("执行本月结束===>，merchantId={}, powerVO={}", merchantId, powerVO);
         
         return powerVO;
     }
@@ -623,6 +631,8 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
     }
     
     private MerchantPowerPeriodVO getLastMonthPower(Integer tenantId, Long merchantId, List<Long> cabinetIds) {
+        log.info("开始执行上月,merchantId={}, cabinetIds={}", merchantId, cabinetIds);
+        
         //上月第一天0点
         Long lastMonthStartTime = DateUtils.getBeforeMonthFirstDayTimestamp(NumberConstant.ONE);
         // 上月最后一天23:59:59
@@ -633,6 +643,8 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
         if (CollectionUtils.isEmpty(merchantPlaceBindList)) {
             return null;
         }
+        
+        log.info("执行上月===商户场地绑定记录===>,merchantId={}, merchantPlaceBindList={}", merchantId, merchantPlaceBindList);
         
         // 封装结果集
         List<MerchantProLivePowerVO> resultList = new ArrayList<>();
@@ -649,22 +661,24 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
                 continue;
             }
             
+            log.info("执行上月===场地柜机绑定记录===>,placeId={}, placeCabinetBindList={}", placeId, placeCabinetBindList);
+            
             // 遍历柜机
             List<MerchantProLivePowerVO> periodPowerList = getPeriodPower(tenantId, placeId, cabinetIds, placeCabinetBindList);
             
-            log.info("执行getLastMonthPower...遍历柜机，placeId={}, cabinetIds={}, periodPowerList={}", placeId, cabinetIds, periodPowerList);
+            log.info("执行上月===遍历柜机===>，placeId={}, cabinetIds={}, periodPowerList={}", placeId, cabinetIds, periodPowerList);
             
             resultList.addAll(periodPowerList);
         }
         
-        if (CollectionUtils.isEmpty(resultList)) {
-            return null;
-        }
+        log.info("执行上月===resultList===>，merchantId={}, resultList={}", merchantId, resultList);
         
         // 封装数据
         MerchantPowerPeriodVO powerVO = new MerchantPowerPeriodVO();
         powerVO.setPower(resultList.stream().filter(Objects::nonNull).mapToDouble(MerchantProLivePowerVO::getPower).sum());
         powerVO.setCharge(resultList.stream().filter(Objects::nonNull).mapToDouble(MerchantProLivePowerVO::getCharge).sum());
+        
+        log.info("执行上月结束===>，merchantId={}, powerVO={}", merchantId, powerVO);
         
         return powerVO;
     }
@@ -1292,14 +1306,22 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
     }
     
     private MerchantPowerPeriodVO getTotalPower(Integer tenantId, Long merchantId, List<Long> cabinetIds) {
+        log.info("开始执行累计,merchantId={}, cabinetIds={}", merchantId, cabinetIds);
+        
         //两个月前的数据（来源于历史表，定时任务）
         MerchantPowerPeriodVO preTwoMonthPower = merchantCabinetPowerMonthRecordProService.sumMonthPower(cabinetIds, null);
+        
+        log.info("执行累计,2月前===>,merchantId={}, cabinetIds={}, preTwoMonthPower={}", merchantId, cabinetIds, preTwoMonthPower);
         
         // 上月数据
         MerchantPowerPeriodVO lastMonthPower = getLastMonthPower(tenantId, merchantId, cabinetIds);
         
+        log.info("执行累计,上月===>,merchantId={}, cabinetIds={}, lastMonthPower={}", merchantId, cabinetIds, lastMonthPower);
+        
         // 本月数据
         MerchantPowerPeriodVO thisMonthPower = getThisMonthPower(tenantId, merchantId, cabinetIds);
+        
+        log.info("执行累计,本月===>,merchantId={}, cabinetIds={}, thisMonthPower={}", merchantId, cabinetIds, thisMonthPower);
         
         MerchantPowerPeriodVO powerVO = new MerchantPowerPeriodVO();
         if (Objects.nonNull(preTwoMonthPower)) {
@@ -1314,6 +1336,8 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
             powerVO.setPower(Objects.isNull(thisMonthPower.getPower()) ? NumberConstant.ZERO_D : thisMonthPower.getPower());
             powerVO.setCharge(Objects.isNull(thisMonthPower.getCharge()) ? NumberConstant.ZERO_D : thisMonthPower.getCharge());
         }
+        
+        log.info("执行累计结束===>，merchantId={}, powerVO={}", merchantId, powerVO);
         
         return powerVO;
     }
