@@ -158,11 +158,12 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
     @Transactional(rollbackFor = Exception.class)
     @Override
     public Triple<Boolean, String, Object> reviewMerchantWithdrawApplication(ReviewWithdrawApplicationRequest reviewWithdrawApplicationRequest) {
-    
         if (!redisService.setNx(CacheConstant.CACHE_MERCHANT_WITHDRAW_APPLICATION_REVIEW + reviewWithdrawApplicationRequest.getId(), "1", 3 * 1000L, false)) {
             return Triple.of(false, "000000", "操作频繁");
         }
-    
+        
+        log.info("review withdraw application, request = {}", reviewWithdrawApplicationRequest);
+        
         Integer tenantId = TenantContextHolder.getTenantId();
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
@@ -316,6 +317,8 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
         if (!redisService.setNx(CacheConstant.CACHE_MERCHANT_WITHDRAW_APPLICATION_REVIEW + user.getUid(), "1", 3 * 1000L, false)) {
             return Triple.of(false, "000000", "操作频繁");
         }
+    
+        log.info("batch review withdraw application, request = {}", batchReviewWithdrawApplicationRequest);
     
         //检查入参中的状态是否为同意或者拒绝状态，若为其他状态，则提示错误。
         if(!MerchantWithdrawConstant.REVIEW_REFUSED.equals(batchReviewWithdrawApplicationRequest.getStatus())
