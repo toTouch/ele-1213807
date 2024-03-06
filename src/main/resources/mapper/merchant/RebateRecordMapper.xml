@@ -62,7 +62,7 @@
         select
             id, uid, name, phone, order_id, original_order_id, member_card_id, member_card_name, type, franchisee_id, level, merchant_id, merchant_uid, status, channeler, channeler_rebate, merchant_rebate, place_id, place_uid, rebate_time, settle_time, tenant_id, create_time, update_time
         from t_rebate_record
-        where  status =1 and type in (0,1) and create_time &gt;= #{startTime} and create_time &lt; #{endTime} limit #{offset}, #{size}
+        where type in (0,1) and create_time &gt;= #{startTime} and create_time &lt; #{endTime} limit #{offset}, #{size}
     </select>
     
     <select id="selectByPage" resultMap="RebateRecordMap">
