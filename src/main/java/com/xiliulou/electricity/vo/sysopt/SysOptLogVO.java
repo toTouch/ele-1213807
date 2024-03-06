@@ -1,6 +1,5 @@
-package com.xiliulou.electricity.entity.sysopt;
+package com.xiliulou.electricity.vo.sysopt;
 
-import com.baomidou.mybatisplus.annotation.TableName;
 import com.xiliulou.electricity.enums.SysOptLogTypeEnum;
 import lombok.Data;
 
@@ -9,23 +8,12 @@ import java.io.Serializable;
 /**
  * @author: Ant
  * @Date 2024/3/6
- * @Description: 系统操作日志
+ * @Description: 系统操作日志 VO
  **/
 @Data
-@TableName("t_sys_opt_log")
-public class SysOptLog implements Serializable {
+public class SysOptLogVO implements Serializable {
     
-    private static final long serialVersionUID = -8004318052077087997L;
-    
-    /**
-     * 主键ID
-     */
-    private Long id;
-    
-    /**
-     * 租户id
-     */
-    private Integer tenantId;
+    private static final long serialVersionUID = 1222121523213066132L;
     
     /**
      * 创建人
@@ -53,4 +41,9 @@ public class SysOptLog implements Serializable {
      * 内容
      */
     private String content;
+    
+    /**
+     * 创建人姓名
+     */
+    private String creatorName;
 }

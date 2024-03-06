@@ -12,6 +12,7 @@ import java.util.List;
  * @author zzlong
  * @since 2022-10-11 19:47:27
  */
+@Deprecated
 public interface SysOperLogService {
     
     /**
