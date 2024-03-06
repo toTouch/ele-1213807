@@ -65,5 +65,15 @@ public class FaqV2 {
      */
     public static final Integer SIMILAR_FAQ_LIMIT = 100;
     
+    /**
+     * 下架类型
+     */
+    public static final Integer LOWER_SHELF_TYPE = 1;
+    
+    /**
+     * 上架类型
+     */
+    public static final Integer SHELF_TYPE=1;
+    
     
 }
