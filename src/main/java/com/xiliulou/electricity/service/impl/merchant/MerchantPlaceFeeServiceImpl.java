@@ -703,9 +703,6 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
         return voList;
     }
     
-    public static void main(String[] args) {
-        List<MerchantPlaceBind> merchantPlaceBinds
-    }
     private List<MerchantCabinetFeeDetailVO> calculateLastMonth(Map<String, List<MerchantPlaceBind>> merchantPlaceMap1, long startTime, long endTime, String lastMonth,
             List<Long> placeIdList1, List<String> monthList, Long merchantId) {
         List<MerchantPlaceBind> merchantPlaceBinds = merchantPlaceBindService.queryNoSettleByMerchantId(merchantId);
