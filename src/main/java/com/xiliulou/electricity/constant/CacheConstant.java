@@ -565,10 +565,8 @@ public interface CacheConstant {
     String MERCHANT_PLACE_SAVE_UID = "merchant_place_save_uid:";
     
     String MERCHANT_PLACE_UPDATE_UID = "merchant_place_update_uid:";
-    
 
     String MERCHANT_PLACE_DELETE_UID = "merchant_place_delete_uid:";
-
 
     String CACHE_MERCHANT_PLACE = "cache_merchant_place:";
 
@@ -602,5 +600,7 @@ public interface CacheConstant {
     String CACHE_FAILURE_ALARM = "cache_failure_alarm:";
     
     String CACHE_TENANT_NOTE = "cache_tenant_note:";
+    
+    String MERCHANT_PLACE_CABINET_SEARCH_LOCK = "merchant_place_cabinet_search_lock:";
     
 }

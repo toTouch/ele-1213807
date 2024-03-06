@@ -389,6 +389,15 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
             userBatteryTypeService.deleteByUid(depositRefundEntity.getUid());
             userBatteryDepositService.deleteByUid(depositRefundEntity.getUid());
         }
+        // 修改免押记录的数据
+        FreeDepositOrder freeDepositOrder = freeDepositOrderService.selectByOrderId(depositRefundEntity.getDepositPayOrderNo());
+        if (!ObjectUtils.isEmpty(freeDepositOrder)) {
+            FreeDepositOrder freeDepositOrderUpdate = new FreeDepositOrder();
+            freeDepositOrderUpdate.setId(freeDepositOrder.getId());
+            freeDepositOrderUpdate.setAuthStatus(FreeDepositOrder.AUTH_UN_FROZEN);
+            freeDepositOrderUpdate.setUpdateTime(System.currentTimeMillis());
+            freeDepositOrderService.update(freeDepositOrderUpdate);
+        }
     }
 
     /**
