@@ -2,7 +2,6 @@ package com.xiliulou.electricity.service.impl.merchant;
 
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.User;
-import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.merchant.ChannelEmployeeAmountMapper;
 import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.service.merchant.ChannelEmployeeAmountService;
