@@ -120,21 +120,6 @@ public class MerchantModifyConsumer implements RocketMQListener<String> {
                         return;
                     }
                     
-                    BigDecimal newMerchantRebate = Objects.equals(item.getType(), MerchantConstant.MERCHANT_REBATE_TYPE_INVITATION) ? rebateConfig.getMerchantInvitation()
-                            : rebateConfig.getMerchantRenewal();
-                    BigDecimal newChannelerRebate = Objects.equals(item.getType(), MerchantConstant.MERCHANT_REBATE_TYPE_INVITATION) ? rebateConfig.getChannelerInvitation()
-                            : rebateConfig.getChannelerRenewal();
-    
-                    BigDecimal oldMerchantRebate = item.getMerchantRebate();
-                    BigDecimal oldChannelerRebate = item.getChannelerRebate();
-                    
-                    //获取已经返利的记录
-                    List<RebateRecord> rebateRecords = rebateRecordService.listRebatedByUid(item.getUid(), item.getMemberCardId(), item.getMerchantId(), currentLevel);
-                    if (CollectionUtils.isEmpty(rebateRecords)) {
-                        oldMerchantRebate = rebateRecords.stream().map(RebateRecord::getMerchantRebate).reduce(BigDecimal::add).orElse(BigDecimal.ZERO);
-                        oldChannelerRebate = rebateRecords.stream().map(RebateRecord::getChannelerRebate).reduce(BigDecimal::add).orElse(BigDecimal.ZERO);
-                    }
-                    
                     RebateRecord rebateRecord = new RebateRecord();
                     rebateRecord.setUid(item.getUid());
                     rebateRecord.setName(item.getName());
@@ -150,14 +135,50 @@ public class MerchantModifyConsumer implements RocketMQListener<String> {
                     rebateRecord.setMerchantUid(item.getMerchantUid());
                     rebateRecord.setStatus(MerchantConstant.MERCHANT_REBATE_STATUS_NOT_SETTLE);
                     rebateRecord.setChanneler(item.getChanneler());
-                    rebateRecord.setChannelerRebate(newChannelerRebate.subtract(oldChannelerRebate));
-                    rebateRecord.setMerchantRebate(newMerchantRebate.subtract(oldMerchantRebate));
                     rebateRecord.setPlaceId(item.getPlaceId());
                     rebateRecord.setPlaceUid(item.getPlaceUid());
                     rebateRecord.setRebateTime(System.currentTimeMillis());
                     rebateRecord.setTenantId(item.getTenantId());
                     rebateRecord.setCreateTime(System.currentTimeMillis());
                     rebateRecord.setUpdateTime(System.currentTimeMillis());
+                    
+                    BigDecimal merchantRebate = null;
+                    BigDecimal channelerRebate = null;
+                    if (Objects.equals(item.getType(), MerchantConstant.MERCHANT_REBATE_TYPE_INVITATION)) {
+                        BigDecimal newMerchantRebate = rebateConfig.getMerchantInvitation();
+                        BigDecimal newChannelerRebate = rebateConfig.getChannelerInvitation();
+                        BigDecimal oldMerchantRebate = BigDecimal.ZERO;
+                        BigDecimal oldChannelerRebate = BigDecimal.ZERO;
+                        
+                        //获取已经返利的记录
+                        List<RebateRecord> rebateRecords = rebateRecordService.listRebatedByUid(item.getUid(), item.getMemberCardId(), item.getMerchantId(), currentLevel);
+                        if (!CollectionUtils.isEmpty(rebateRecords)) {
+                            oldMerchantRebate = rebateRecords.stream().map(RebateRecord::getMerchantRebate).reduce(BigDecimal::add).orElse(BigDecimal.ZERO);
+                            oldChannelerRebate = rebateRecords.stream().map(RebateRecord::getChannelerRebate).reduce(BigDecimal::add).orElse(BigDecimal.ZERO);
+                        }
+                        
+                        merchantRebate = newChannelerRebate.subtract(oldChannelerRebate);
+                        channelerRebate = newMerchantRebate.subtract(oldMerchantRebate);
+                    } else {
+                        BigDecimal newMerchantRebate = rebateConfig.getMerchantRenewal();
+                        BigDecimal newChannelerRebate = rebateConfig.getChannelerRenewal();
+                        BigDecimal oldMerchantRebate = BigDecimal.ZERO;
+                        BigDecimal oldChannelerRebate = BigDecimal.ZERO;
+                        
+                        //获取已经返利的记录
+                        List<RebateRecord> rebateRecords = rebateRecordService.listRebatedByUid(item.getUid(), item.getMemberCardId(), item.getMerchantId(), currentLevel);
+                        if (!CollectionUtils.isEmpty(rebateRecords)) {
+                            oldMerchantRebate = rebateRecords.stream().map(RebateRecord::getMerchantRebate).reduce(BigDecimal::add).orElse(BigDecimal.ZERO);
+                            oldChannelerRebate = rebateRecords.stream().map(RebateRecord::getChannelerRebate).reduce(BigDecimal::add).orElse(BigDecimal.ZERO);
+                        }
+                        
+                        merchantRebate = newChannelerRebate.subtract(oldChannelerRebate);
+                        channelerRebate = newMerchantRebate.subtract(oldMerchantRebate);
+                    }
+                    
+                    rebateRecord.setChannelerRebate(merchantRebate);
+                    rebateRecord.setMerchantRebate(channelerRebate);
+                    
                     rebateRecordService.insert(rebateRecord);
                 });
                 

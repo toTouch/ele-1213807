@@ -133,6 +133,9 @@ public class UserServiceImpl implements UserService {
     @Autowired
     EnterpriseChannelUserService enterpriseChannelUserService;
     
+    @Autowired
+    UserInfoExtraService userInfoExtraService;
+    
     /**
      * 启用锁定用户
      *
@@ -934,6 +937,8 @@ public class UserServiceImpl implements UserService {
         userBatteryMemberCardService.deleteByUid(uid);
 
         userCarService.deleteByUid(uid);
+        
+        userInfoExtraService.deleteByUid(uid);
 
         return Triple.of(true, null, null);
     }
