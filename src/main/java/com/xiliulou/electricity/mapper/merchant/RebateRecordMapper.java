@@ -47,4 +47,6 @@ public interface RebateRecordMapper extends BaseMapper<RebateRecord> {
     Integer countByTime(MerchantPromotionRenewalQueryModel queryModel);
     
     List<RebateRecord> selectListPromotionDetail(MerchantPromotionEmployeeDetailSpecificsQueryModel queryModel);
+    
+    List<RebateRecord> selectRebatedByUid(@Param("uid") Long uid, @Param("memberCardId") Long memberCardId, @Param("merchantId") Long merchantId, @Param("currentLevel") String currentLevel);
 }
