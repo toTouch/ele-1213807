@@ -1009,9 +1009,6 @@ public class UnionTradeOrderServiceImpl extends
                     //用户绑定商户
                     userInfoExtraService.bindMerchant(electricityMemberCardOrder.getUid(), electricityMemberCardOrder.getOrderId());
                     
-                    //续费成功，发送商户升级MQ
-                    sendMerchantUpgradeMQ(electricityMemberCardOrder.getUid(), electricityMemberCardOrder.getOrderId());
-                    
                     //商户返利
                     sendMerchantRebateMQ(electricityMemberCardOrder.getUid(), electricityMemberCardOrder.getOrderId());
                 }
@@ -1480,25 +1477,6 @@ public class UnionTradeOrderServiceImpl extends
 
     }
     
-    private void sendMerchantUpgradeMQ(Long uid, String orderId) {
-        UserInfoExtra userInfoExtra = userInfoExtraService.queryByUidFromCache(uid);
-        if(Objects.isNull(userInfoExtra)){
-            log.warn("BATTERY RENEWAL WARN!userInfoExtra is null,uid={}",uid);
-            return;
-        }
-        
-        if(Objects.isNull(userInfoExtra.getMerchantId())){
-            log.warn("BATTERY RENEWAL WARN!merchantId is null,uid={}",uid);
-            return;
-        }
-    
-        MerchantUpgrade merchantUpgrade = new MerchantUpgrade();
-        merchantUpgrade.setUid(uid);
-        merchantUpgrade.setOrderId(orderId);
-        merchantUpgrade.setMerchantId(userInfoExtra.getMerchantId());
-        //续费成功  发送商户升级MQ
-        rocketMqService.sendAsyncMsg(MqProducerConstant.MERCHANT_UPGRADE_TOPIC, JsonUtil.toJson(merchantUpgrade));
-    }
     
     private void sendMerchantRebateMQ(Long uid, String orderId) {
         UserInfoExtra userInfoExtra = userInfoExtraService.queryByUidFromCache(uid);
@@ -1516,6 +1494,7 @@ public class UnionTradeOrderServiceImpl extends
         merchantRebate.setUid(uid);
         merchantRebate.setOrderId(orderId);
         merchantRebate.setType(MerchantConstant.TYPE_PURCHASE);
+        merchantRebate.setMerchantId(userInfoExtra.getMerchantId());
         //续费成功  发送返利MQ
         rocketMqService.sendAsyncMsg(MqProducerConstant.BATTERY_MEMBER_CARD_MERCHANT_REBATE_TOPIC, JsonUtil.toJson(merchantRebate));
     }
