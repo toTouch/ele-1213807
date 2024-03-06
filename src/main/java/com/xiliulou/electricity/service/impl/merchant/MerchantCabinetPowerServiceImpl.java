@@ -135,12 +135,12 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
         
         // 1.今日电量
         CompletableFuture<Void> todayPowerFuture = CompletableFuture.runAsync(() -> {
-            log.info("执行今日电量开始=======>");
+            log.info("执行今日电量开始......");
             MerchantPowerPeriodVO todayPower = getTodayPower(tenantId, merchant.getId(), cabinetIds);
             
             vo.setTodayPower(Objects.isNull(todayPower) ? NumberConstant.ZERO_D : todayPower.getPower());
             vo.setTodayCharge(Objects.isNull(todayPower) ? NumberConstant.ZERO_D : todayPower.getCharge());
-            log.info("执行今日电量结束=======>{}", todayPower);
+            log.info("执行今日电量结束......{}", todayPower);
         }, executorService).exceptionally(e -> {
             log.error("Query merchant today power data error! uid={}", request.getUid(), e);
             return null;
@@ -208,7 +208,7 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
     
     private MerchantPowerPeriodVO getTodayPower(Integer tenantId, Long merchantId, List<Long> cabinetIds) {
         
-        log.info("执行getTodayPower...cabinetIds={}", cabinetIds);
+        log.info("执行getTodayPower开始......cabinetIds={}", cabinetIds);
         
         // 今日0点
         Long todayStartTime = DateUtils.getTimeAgoStartTime(NumberConstant.ZERO);
@@ -222,7 +222,7 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
             return null;
         }
         
-        log.info("执行getTodayPower...cabinetIds={}, merchantPlaceBindList={}", cabinetIds, merchantPlaceBindList);
+        log.info("执行getTodayPower......商户场地绑定记录, merchantId={}, merchantPlaceBindList={}", merchantId, merchantPlaceBindList);
         
         // 封装结果集
         List<MerchantProLivePowerVO> resultList = new ArrayList<>();
@@ -233,7 +233,7 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
             Long bindTime = merchantPlaceBind.getBindTime();
             Long unBindTime = merchantPlaceBind.getUnBindTime();
             
-            log.info("执行getTodayPower...placeId={}, bindTime={}, unBindTime={}", placeId, bindTime, unBindTime);
+            log.info("执行getTodayPower...遍历场地，placeId={}, bindTime={}, unBindTime={}", placeId, bindTime, unBindTime);
             
             // 获取场地柜机绑定记录
             List<MerchantPlaceCabinetBind> placeCabinetBindList = getTodayPlaceCabinetBindList(placeId, bindTime, unBindTime);
@@ -242,25 +242,30 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
                 continue;
             }
             
-            log.info("执行getTodayPower...placeId={}, placeCabinetBindList={}, cabinetIds={}", placeId, placeCabinetBindList, cabinetIds);
+            log.info("执行getTodayPower...场地柜机绑定记录，placeId={}, placeCabinetBindList={}", placeId, placeCabinetBindList);
             
             // 遍历柜机
-            List<CabinetPowerProRunnable> collect = cabinetIds.stream().map(eid -> new CabinetPowerProRunnable(eid, elePowerService, placeCabinetBindList, tenantId))
-                    .collect(Collectors.toList());
-            
-            log.info("执行getTodayPower...cabinetIds={}, collect={}", cabinetIds, collect);
-            
-            try {
-                List<Future<MerchantProEidPowerListVO>> futureList = executorService.invokeAll(collect);
-                if (CollectionUtils.isNotEmpty(futureList)) {
-                    for (Future<MerchantProEidPowerListVO> future : futureList) {
-                        MerchantProEidPowerListVO result = future.get();
-                        List<MerchantProLivePowerVO> powerList = result.getPowerList();
-                        resultList.addAll(powerList);
-                    }
+            for (Long eid : cabinetIds) {
+                // 过滤出该柜机的绑定记录
+                List<MerchantPlaceCabinetBind> cabinetBindList = placeCabinetBindList.stream().filter(bind -> Objects.equals(bind.getCabinetId(), eid))
+                        .collect(Collectors.toList());
+                log.info("Merchant 执行遍历柜机开始......eid={}, cabinetBindList={}", eid, cabinetBindList);
+                
+                if (CollectionUtils.isEmpty(cabinetBindList)) {
+                    log.warn("Merchant Power for pro cabinetBindList is empty, eid={}, cabinetBindList={}", eid, cabinetBindList);
+                    continue;
                 }
-            } catch (InterruptedException | ExecutionException e) {
-                log.error("Merchant get lastMonth power for pro Exception occur!", e);
+                
+                // 遍历绑定时间段
+                cabinetBindList.forEach(cabinetBind -> {
+                    Long cabinetBindTime = cabinetBind.getBindTime();
+                    Long cabinetUnbindTime = cabinetBind.getUnBindTime();
+                    
+                    MerchantProLivePowerVO periodPower = getPeriodPower(tenantId, placeId, eid, cabinetBindTime, cabinetUnbindTime);
+                    resultList.add(periodPower);
+                });
+                
+                log.info("Merchant 执行遍历柜机结束......eid={}", eid);
             }
         }
         
@@ -269,7 +274,22 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
         powerVO.setPower(resultList.stream().filter(Objects::nonNull).mapToDouble(MerchantProLivePowerVO::getPower).sum());
         powerVO.setCharge(resultList.stream().filter(Objects::nonNull).mapToDouble(MerchantProLivePowerVO::getCharge).sum());
         
-        log.info("执行getTodayPower...cabinetIds={}, powerVO={}", cabinetIds, powerVO);
+        log.info("执行getTodayPower结束...cabinetIds={}, powerVO={}", cabinetIds, powerVO);
+        
+        return powerVO;
+    }
+    
+    private MerchantProLivePowerVO getPeriodPower(Integer tenantId, Long placeId, Long eid, Long startTime, Long endTime) {
+        // 查询电量
+        EleSumPowerVO eleSumPowerVO = elePowerService.listByCondition(startTime, endTime, List.of(eid), tenantId);
+        // 封装数据
+        MerchantProLivePowerVO powerVO = new MerchantProLivePowerVO();
+        powerVO.setEid(eid);
+        powerVO.setPlaceId(placeId);
+        powerVO.setStartTime(startTime);
+        powerVO.setEndTime(endTime);
+        powerVO.setPower(Objects.isNull(eleSumPowerVO) ? NumberConstant.ZERO_D : eleSumPowerVO.getSumPower());
+        powerVO.setCharge(Objects.isNull(eleSumPowerVO) ? NumberConstant.ZERO_D : eleSumPowerVO.getSumCharge());
         
         return powerVO;
     }
