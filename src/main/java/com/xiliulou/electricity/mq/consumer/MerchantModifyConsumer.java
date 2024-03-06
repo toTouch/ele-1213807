@@ -124,9 +124,16 @@ public class MerchantModifyConsumer implements RocketMQListener<String> {
                             : rebateConfig.getMerchantRenewal();
                     BigDecimal newChannelerRebate = Objects.equals(item.getType(), MerchantConstant.MERCHANT_REBATE_TYPE_INVITATION) ? rebateConfig.getChannelerInvitation()
                             : rebateConfig.getChannelerRenewal();
-                    
+    
                     BigDecimal oldMerchantRebate = item.getMerchantRebate();
                     BigDecimal oldChannelerRebate = item.getChannelerRebate();
+                    
+                    //获取已经返利的记录
+                    List<RebateRecord> rebateRecords = rebateRecordService.listRebatedByUid(item.getUid(), item.getMemberCardId(), item.getMerchantId(), currentLevel);
+                    if (CollectionUtils.isEmpty(rebateRecords)) {
+                        oldMerchantRebate = rebateRecords.stream().map(RebateRecord::getMerchantRebate).reduce(BigDecimal::add).orElse(BigDecimal.ZERO);
+                        oldChannelerRebate = rebateRecords.stream().map(RebateRecord::getChannelerRebate).reduce(BigDecimal::add).orElse(BigDecimal.ZERO);
+                    }
                     
                     RebateRecord rebateRecord = new RebateRecord();
                     rebateRecord.setUid(item.getUid());
