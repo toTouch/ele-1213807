@@ -964,10 +964,12 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
         }
         
         // 根据柜机id进行过滤
+        log.info("getCurMothFee2={}, placeId={}, cabinetId={}", list, request.getPlaceId(), request.getCabinetId());
         if (Objects.nonNull(request.getCabinetId())) {
             list = list.stream().filter(item -> Objects.equals(item.getCabinetId(), request.getCabinetId())).collect(Collectors.toList());
+            log.info("getCurMothFee3={}, placeId={}, cabinetId={}", list, request.getPlaceId(), request.getCabinetId());
         }
-    
+        log.info("getCurMothFee3={}, placeId={}, cabinetId={}", list, request.getPlaceId(), request.getCabinetId());
         if (ObjectUtils.isEmpty(list)) {
             return BigDecimal.ZERO;
         }
