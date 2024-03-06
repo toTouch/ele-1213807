@@ -147,7 +147,7 @@ public class UserServiceImpl implements UserService {
         }
         
         // 缓存读取用户
-        User cacheUser = redisService.getWithHash(CacheConstant.CACHE_USER_UID + uid, User.class);
+        User cacheUser = queryByUidFromCache(uid);
         if (ObjectUtils.isEmpty(cacheUser) || !cacheUser.getTenantId().equals(tenantId)) {
             log.warn("enableLockUser failed. The user not found. uid is {}", uid);
             return false;
