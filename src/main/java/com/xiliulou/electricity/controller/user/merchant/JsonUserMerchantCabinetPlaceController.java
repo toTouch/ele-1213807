@@ -109,7 +109,7 @@ public class JsonUserMerchantCabinetPlaceController extends BaseController {
     
         Merchant merchant = merchantService.queryByUid(user.getUid());
         if (Objects.isNull(merchant)) {
-            log.error("merchant place is Show Place Page merchant is null, uid={}", user.getUid());
+            log.error("merchant place get fee data merchant is null, uid={}", user.getUid());
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
     
