@@ -40,8 +40,8 @@ public class MerchantPlaceFeeMonthServiceImpl implements MerchantPlaceFeeMonthSe
     
     @Slave
     @Override
-    public List<MerchantPlaceFeeMonth> queryListByMonth(Long placeId, Long cabinetId, List<String> xDataList) {
-        return merchantPlaceFeeMonthMapper.selectListByMonth(placeId, cabinetId, xDataList);
+    public List<MerchantPlaceFeeMonth> queryListByMonth(Long placeId, Long cabinetId, List<String> xDataList, Long merchantId) {
+        return merchantPlaceFeeMonthMapper.selectListByMonth(placeId, cabinetId, xDataList, merchantId);
     }
     
     /**

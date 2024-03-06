@@ -197,7 +197,7 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
         BigDecimal lastMothFee = getLastMothFee(request);
         
         // 从历史月结账单中统计出对应月份的数据
-        List<MerchantPlaceFeeMonth> placeFeeMonths = merchantPlaceFeeMonthService.queryListByMonth(request.getPlaceId(), request.getCabinetId(), xDataList);
+        List<MerchantPlaceFeeMonth> placeFeeMonths = merchantPlaceFeeMonthService.queryListByMonth(request.getPlaceId(), request.getCabinetId(), xDataList, request.getMerchantId());
         Map<String, BigDecimal> placeMap = new HashMap<>();
         
         if (ObjectUtils.isNotEmpty(placeFeeMonths)) {

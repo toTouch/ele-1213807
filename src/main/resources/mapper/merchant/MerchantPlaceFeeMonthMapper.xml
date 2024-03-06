@@ -36,6 +36,9 @@
             <if test="cabinetId != null">
                 and cabinet_id = #{cabinetId}
             </if>
+            <if test="merchantId != null">
+                and merchant_id = #{merchantId}
+            </if>
     </select>
     
     <select id="selectListByMerchantId"
