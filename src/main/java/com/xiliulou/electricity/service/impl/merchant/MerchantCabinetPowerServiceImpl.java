@@ -1613,16 +1613,19 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
                     thisYearCharge = thisYearCharge + (Objects.isNull(preTwoMonthPowerPeriod) ? NumberConstant.ZERO_D : preTwoMonthPowerPeriod.getCharge());
                 }
                 
+                ElectricityCabinet electricityCabinet = electricityCabinetService.queryByIdFromCache(cabinetId.intValue());
+                
                 //封装结果
                 MerchantProCabinetPowerVO merchantProCabinetPowerVO = new MerchantProCabinetPowerVO();
+                merchantProCabinetPowerVO.setCabinetId(cabinetId);
+                merchantProCabinetPowerVO.setCabinetName(Objects.isNull(electricityCabinet) ? "" : electricityCabinet.getName());
                 merchantProCabinetPowerVO.setTodayPower(todayPowerSum);
                 merchantProCabinetPowerVO.setTodayCharge(todayChargeSum);
                 merchantProCabinetPowerVO.setThisMonthPower(thisMonthPowerSum);
                 merchantProCabinetPowerVO.setThisMonthCharge(thisMonthChargeSum);
                 merchantProCabinetPowerVO.setThisYearPower(thisYearPower);
                 merchantProCabinetPowerVO.setThisYearCharge(thisYearCharge);
-                merchantProCabinetPowerVO.setTime(
-                        Optional.ofNullable(electricityCabinetService.queryByIdFromCache(cabinetId.intValue()).getCreateTime()).orElse(NumberConstant.ZERO_L));
+                merchantProCabinetPowerVO.setTime(Objects.isNull(electricityCabinet) ? NumberConstant.ZERO : electricityCabinet.getCreateTime());
                 
                 cabinetPowerList.add(merchantProCabinetPowerVO);
             }
