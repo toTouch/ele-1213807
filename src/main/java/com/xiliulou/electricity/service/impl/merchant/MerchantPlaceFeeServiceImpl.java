@@ -471,8 +471,8 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
                 .collect(Collectors.groupingBy(r -> r.getMerchantId() + StringConstant.COMMA_EN + r.getPlaceId()));
         
         // 本月数据
-        List<MerchantCabinetFeeDetailVO> currentList = new ArrayList<>();
-        CompletableFuture<List<MerchantCabinetFeeDetailVO>> currentMonthInfo = CompletableFuture.supplyAsync(
+        List<MerchantCabinetFeeDetailVO> currentList = calculateCurrentMonth(new HashMap<>(merchantPlaceMap), startTime, endTime, lastMonth, placeIdList, request.getMerchantId());
+       /* CompletableFuture<List<MerchantCabinetFeeDetailVO>> currentMonthInfo = CompletableFuture.supplyAsync(
                 () -> calculateCurrentMonth(new HashMap<>(merchantPlaceMap), startTime, endTime, lastMonth, placeIdList, request.getMerchantId()), threadPool).whenComplete((result, e) -> {
             if (ObjectUtils.isNotEmpty(result)) {
                 currentList.addAll(result);
@@ -481,11 +481,11 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
             if (e != null) {
                 log.error("LAST MONTH DETAIL QUERY ERROR!, last month error", e);
             }
-        });
+        });*/
         
         // 上月数据
-        List<MerchantCabinetFeeDetailVO> lastList = new ArrayList<>();
-        CompletableFuture<List<MerchantCabinetFeeDetailVO>> lastMonthInfo = CompletableFuture.supplyAsync(
+        List<MerchantCabinetFeeDetailVO> lastList = calculateLastMonth(new HashMap<>(merchantPlaceMap), startTime, endTime, lastMonth, placeIdList, monthList, request.getMerchantId());
+        /*CompletableFuture<List<MerchantCabinetFeeDetailVO>> lastMonthInfo = CompletableFuture.supplyAsync(
                         () -> calculateLastMonth(new HashMap<>(merchantPlaceMap), startTime, endTime, lastMonth, placeIdList, monthList, request.getMerchantId()), threadPool)
                 .whenComplete((result, e) -> {
                     if (ObjectUtils.isNotEmpty(result)) {
@@ -504,7 +504,7 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
             resultFuture.get(10, TimeUnit.SECONDS);
         } catch (Exception e) {
             log.error("last month detail query summary browsing error for merchant query", e);
-        }
+        }*/
         
         log.info("getLastMonthDetail currentList={},lastList={}", currentList, lastList);
         
@@ -524,8 +524,20 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
         return resultList;
     }
     
-    private List<MerchantCabinetFeeDetailVO> calculateCurrentMonth(Map<String, List<MerchantPlaceBind>> merchantPlaceMap, long startTime, long endTime, String lastMonth,
-            List<Long> placeIdList, Long merchantId) {
+    private List<MerchantCabinetFeeDetailVO> calculateCurrentMonth(Map<String, List<MerchantPlaceBind>> merchantPlaceMap1, long startTime, long endTime, String lastMonth,
+            List<Long> placeIdList1, Long merchantId) {
+        List<MerchantPlaceBind> merchantPlaceBinds = merchantPlaceBindService.queryNoSettleByMerchantId(merchantId);
+        
+        if (ObjectUtils.isEmpty(merchantPlaceBinds)) {
+            return Collections.emptyList();
+        }
+    
+        Map<String, List<MerchantPlaceBind>> merchantPlaceMap = merchantPlaceBinds.stream()
+                .collect(Collectors.groupingBy(r -> r.getMerchantId() + StringConstant.COMMA_EN + r.getPlaceId()));
+        
+        List<Long> placeIdList = merchantPlaceBinds.stream().map(MerchantPlaceBind::getPlaceId).collect(Collectors.toList());
+    
+        log.info("getCurMonthFeeRecords1={}", merchantPlaceBinds);
         // 获取本月的数据
         List<MerchantPlaceFeeMonthRecord> curPlaceFeeMonthRecords = getCurMonthRecordFirst(placeIdList);
         log.info("calculate current month, records={}, merchant={}, month={}", curPlaceFeeMonthRecords, merchantId, lastMonth);
@@ -691,8 +703,21 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
         return voList;
     }
     
-    private List<MerchantCabinetFeeDetailVO> calculateLastMonth(Map<String, List<MerchantPlaceBind>> merchantPlaceMap, long startTime, long endTime, String lastMonth,
-            List<Long> placeIdList, List<String> monthList, Long merchantId) {
+    private List<MerchantCabinetFeeDetailVO> calculateLastMonth(Map<String, List<MerchantPlaceBind>> merchantPlaceMap1, long startTime, long endTime, String lastMonth,
+            List<Long> placeIdList1, List<String> monthList, Long merchantId) {
+        List<MerchantPlaceBind> merchantPlaceBinds = merchantPlaceBindService.queryNoSettleByMerchantId(merchantId);
+    
+        if (ObjectUtils.isEmpty(merchantPlaceBinds)) {
+            return Collections.emptyList();
+        }
+    
+        log.info("calculateLastMonth1={}", merchantPlaceBinds);
+        Map<String, List<MerchantPlaceBind>> merchantPlaceMap = merchantPlaceBinds.stream()
+                .collect(Collectors.groupingBy(r -> r.getMerchantId() + StringConstant.COMMA_EN + r.getPlaceId()));
+    
+        List<Long> placeIdList = merchantPlaceBinds.stream().map(MerchantPlaceBind::getPlaceId).collect(Collectors.toList());
+        
+        
         // 查询上的月度账单信息
         List<MerchantPlaceFeeMonthRecord> lastMonthRecords = merchantPlaceFeeMonthRecordService.queryList(placeIdList, monthList);
         log.info("calculate Last Month, records={}, merchant={}, month={}", lastMonthRecords, merchantId, lastMonth);
