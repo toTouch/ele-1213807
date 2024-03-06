@@ -73,7 +73,7 @@ public class ElectricityBatteryDataServiceImpl extends ServiceImpl<ElectricityBa
         List<String> snList = electricityBatteries.parallelStream().map(ElectricityBatteryDataVO::getSn).collect(Collectors.toList());
         List<BatteryOtherProperties> otherPropertiesList = null;
         Map<String, Double> otherPropertiesMap = null;
-        if (!CollectionUtils.isNotEmpty(snList)) {
+        if (CollectionUtils.isNotEmpty(snList)) {
             //根据获取的sn列表查询
             otherPropertiesList = batteryOtherPropertiesService.listBatteryOtherPropertiesBySn(snList);
             if (CollectionUtils.isNotEmpty(otherPropertiesList)) {
