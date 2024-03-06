@@ -377,21 +377,29 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
         merchantDetailVO.setUid(merchant.getUid());
         
         // 今日预估收入：“返现日期” = 今日，“结算状态” = 未结算；
-        MerchantPromotionFeeQueryModel incomeQueryModel = MerchantPromotionFeeQueryModel.builder().status(MerchantConstant.MERCHANT_REBATE_STATUS_NOT_SETTLE)
+        MerchantPromotionFeeQueryModel todayIncomeQueryModel = MerchantPromotionFeeQueryModel.builder().status(MerchantConstant.MERCHANT_REBATE_STATUS_NOT_SETTLE)
                 .type(PromotionFeeQueryTypeEnum.MERCHANT.getCode()).uid(merchant.getUid()).tenantId(TenantContextHolder.getTenantId())
                 .rebateStartTime(DateUtils.getTodayStartTimeStamp()).rebateEndTime(System.currentTimeMillis()).build();
-        BigDecimal todayInCome = rebateRecordService.sumByStatus(incomeQueryModel);
+        BigDecimal todayInCome = rebateRecordService.sumByStatus(todayIncomeQueryModel);
         merchantDetailVO.setTodayIncome(todayInCome);
         
-        // 本月预估收入：“结算日期” = 本月，“结算状态” = 未结算；
-        incomeQueryModel.setRebateStartTime(DateUtils.getDayOfMonthStartTime(1));
-        BigDecimal currentMonthInCome = rebateRecordService.sumByStatus(incomeQueryModel);
-        merchantDetailVO.setCurrentMonthIncome(currentMonthInCome);
+        // 本月预估收入：本月1号0点～当前时间，“结算状态” = 未结算+已结算-已退回；
+        MerchantPromotionFeeQueryModel monthIncomeQueryModel = MerchantPromotionFeeQueryModel.builder().status(MerchantConstant.MERCHANT_REBATE_STATUS_NOT_SETTLE)
+                .type(PromotionFeeQueryTypeEnum.MERCHANT.getCode()).uid(merchant.getUid()).tenantId(TenantContextHolder.getTenantId())
+                .rebateStartTime(DateUtils.getDayOfMonthStartTime(1)).rebateEndTime(System.currentTimeMillis()).build();
+        BigDecimal currentMonthNoSettleInCome = rebateRecordService.sumByStatus(monthIncomeQueryModel);
+    
+    
+        monthIncomeQueryModel.setStatus(MerchantConstant.MERCHANT_REBATE_STATUS_SETTLED);
+        BigDecimal currentMonthSettleInCome = rebateRecordService.sumByStatus(monthIncomeQueryModel);
+    
+        monthIncomeQueryModel.setStatus(MerchantConstant.MERCHANT_REBATE_STATUS_RETURNED);
+        BigDecimal currentMonthReturnInCome = rebateRecordService.sumByStatus(monthIncomeQueryModel);
+        
+        merchantDetailVO.setCurrentMonthIncome(currentMonthNoSettleInCome.add(currentMonthSettleInCome).subtract(currentMonthReturnInCome));
         
         // 累计收入：“结算日期” = 当前时间，“结算状态” = 未结算；
-        incomeQueryModel.setRebateStartTime(null);
-        BigDecimal totalInCome = rebateRecordService.sumByStatus(incomeQueryModel);
-        merchantDetailVO.setTotalIncome(totalInCome);
+        merchantDetailVO.setTotalIncome(buildPromotionFeeTotalIncomeVO(queryModel.getType(),queryModel.getUid(),System.currentTimeMillis()));
         return R.ok(merchantDetailVO);
     }
     
