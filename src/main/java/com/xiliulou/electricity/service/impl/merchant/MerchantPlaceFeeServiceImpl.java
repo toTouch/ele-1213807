@@ -473,7 +473,7 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
         // 本月数据
         List<MerchantCabinetFeeDetailVO> currentList = new ArrayList<>();
         CompletableFuture<List<MerchantCabinetFeeDetailVO>> currentMonthInfo = CompletableFuture.supplyAsync(
-                () -> calculateCurrentMonth(merchantPlaceMap, startTime, endTime, lastMonth, placeIdList, request.getMerchantId()), threadPool).whenComplete((result, e) -> {
+                () -> calculateCurrentMonth(new HashMap<>(merchantPlaceMap), startTime, endTime, lastMonth, placeIdList, request.getMerchantId()), threadPool).whenComplete((result, e) -> {
             if (ObjectUtils.isNotEmpty(result)) {
                 currentList.addAll(result);
             }
@@ -486,7 +486,7 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
         // 上月数据
         List<MerchantCabinetFeeDetailVO> lastList = new ArrayList<>();
         CompletableFuture<List<MerchantCabinetFeeDetailVO>> lastMonthInfo = CompletableFuture.supplyAsync(
-                        () -> calculateLastMonth(merchantPlaceMap, startTime, endTime, lastMonth, placeIdList, monthList, request.getMerchantId()), threadPool)
+                        () -> calculateLastMonth(new HashMap<>(merchantPlaceMap), startTime, endTime, lastMonth, placeIdList, monthList, request.getMerchantId()), threadPool)
                 .whenComplete((result, e) -> {
                     if (ObjectUtils.isNotEmpty(result)) {
                         lastList.addAll(result);
