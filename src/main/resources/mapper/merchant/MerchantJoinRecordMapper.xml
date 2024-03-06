@@ -334,7 +334,7 @@
         select IFNULL(count(1), 0) from (
         select distinct(join_uid) from t_merchant_join_record
         <where>
-            del_flag = 0 and inviter_type = 1
+            del_flag = 0 and inviter_type = 2
             <if test="startTime != null">
                 and start_time >= #{startTime}
             </if>
