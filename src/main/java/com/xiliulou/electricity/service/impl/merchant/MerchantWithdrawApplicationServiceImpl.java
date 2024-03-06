@@ -4,7 +4,6 @@ import cn.hutool.core.util.IdUtil;
 import com.huaweicloud.sdk.core.utils.JsonUtils;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
-import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.CommonConstant;
@@ -31,7 +30,6 @@ import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DateUtils;
 import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
-import com.xiliulou.electricity.vo.merchant.MerchantWithdrawApplicationRecordVO;
 import com.xiliulou.electricity.vo.merchant.MerchantWithdrawApplicationVO;
 import com.xiliulou.pay.weixinv3.dto.WechatTransferBatchOrderQueryCommonResult;
 import com.xiliulou.pay.weixinv3.dto.WechatTransferBatchOrderQueryResult;
@@ -44,7 +42,6 @@ import com.xiliulou.pay.weixinv3.query.WechatTransferBatchOrderRecordQuery;
 import com.xiliulou.pay.weixinv3.query.WechatTransferOrderRecordQuery;
 import com.xiliulou.pay.weixinv3.service.WechatV3TransferService;
 import com.xiliulou.security.bean.TokenUser;
-import feign.Param;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Triple;
 import org.slf4j.MDC;
@@ -161,11 +158,12 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
     @Transactional(rollbackFor = Exception.class)
     @Override
     public Triple<Boolean, String, Object> reviewMerchantWithdrawApplication(ReviewWithdrawApplicationRequest reviewWithdrawApplicationRequest) {
-    
         if (!redisService.setNx(CacheConstant.CACHE_MERCHANT_WITHDRAW_APPLICATION_REVIEW + reviewWithdrawApplicationRequest.getId(), "1", 3 * 1000L, false)) {
             return Triple.of(false, "000000", "操作频繁");
         }
-    
+        
+        log.info("review withdraw application, request = {}", reviewWithdrawApplicationRequest);
+        
         Integer tenantId = TenantContextHolder.getTenantId();
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
@@ -319,6 +317,8 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
         if (!redisService.setNx(CacheConstant.CACHE_MERCHANT_WITHDRAW_APPLICATION_REVIEW + user.getUid(), "1", 3 * 1000L, false)) {
             return Triple.of(false, "000000", "操作频繁");
         }
+    
+        log.info("batch review withdraw application, request = {}", batchReviewWithdrawApplicationRequest);
     
         //检查入参中的状态是否为同意或者拒绝状态，若为其他状态，则提示错误。
         if(!MerchantWithdrawConstant.REVIEW_REFUSED.equals(batchReviewWithdrawApplicationRequest.getStatus())

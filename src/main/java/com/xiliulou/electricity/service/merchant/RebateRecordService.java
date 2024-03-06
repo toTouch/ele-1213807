@@ -42,7 +42,7 @@ public interface RebateRecordService {
     
     void handleRebate(RebateRecord rebateRecord);
     
-    List<RebateRecord> listCurrentMonthRebateRecord(long startTime, long endTime, int offset, int size);
+    List<RebateRecord> listCurrentMonthRebateRecord(Long merchantId, long startTime, long endTime, int offset, int size);
     
     BigDecimal sumByStatus(MerchantPromotionFeeQueryModel merchantPromotionFeeQueryModel);
     

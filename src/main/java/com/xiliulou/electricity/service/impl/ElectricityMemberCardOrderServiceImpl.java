@@ -4470,6 +4470,18 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         return this.baseMapper.batchUpdateChannelOrderStatusByOrderNo(orderIds, useStatus);
     }
     
+    @Slave
+    @Override
+    public Integer countRefundOrderByUid(Long uid) {
+        return baseMapper.countRefundOrderByUid(uid);
+    }
+    
+    @Slave
+    @Override
+    public Integer countSuccessOrderByUid(Long uid) {
+        return baseMapper.countSuccessOrderByUid(uid);
+    }
+    
     @Override
     public Triple<Boolean, String, Object> userBatteryMembercardInfo(Long uid) {
         UserInfo userInfo = userInfoService.queryByUidFromCache(uid);

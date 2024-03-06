@@ -1,10 +1,6 @@
 package com.xiliulou.electricity.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.xiliulou.electricity.entity.EleDepositOrder;
-import com.xiliulou.electricity.entity.ElectricityCabinetOrder;
 import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
 import com.xiliulou.electricity.query.ElectricityMemberCardOrderQuery;
 import com.xiliulou.electricity.query.MemberCardOrderQuery;
@@ -73,4 +69,8 @@ public interface ElectricityMemberCardOrderMapper extends BaseMapper<Electricity
     Integer batchUpdateStatusByOrderNo(@Param("orderIds") List<String> orderIds, @Param("useStatus") Integer useStatus);
     
     Integer batchUpdateChannelOrderStatusByOrderNo(@Param("orderIds") List<String> orderIds,@Param("useStatus") Integer useStatus);
+    
+    Integer countRefundOrderByUid(Long uid);
+    
+    Integer countSuccessOrderByUid(Long uid);
 }
