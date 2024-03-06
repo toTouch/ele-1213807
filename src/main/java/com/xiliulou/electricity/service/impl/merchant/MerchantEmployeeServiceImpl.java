@@ -239,9 +239,10 @@ public class MerchantEmployeeServiceImpl implements MerchantEmployeeService {
             updateUser.setUid(user.getUid());
             updateUser.setUpdateTime(System.currentTimeMillis());
             updateUser.setLockFlag(User.USER_LOCK);
-            updateUser.setDelFlag(User.DEL_DEL);
             userService.updateMerchantUser(updateUser);
-    
+            
+            userService.removeById(user.getUid(), System.currentTimeMillis());
+            
             TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
                 @Override
                 public void afterCommit() {
