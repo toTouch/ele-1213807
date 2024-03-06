@@ -39,7 +39,7 @@ import java.util.stream.Collectors;
 @Slf4j
 @RestController
 @RequestMapping("/admin/sysOptLog")
-public class SysOptLogController {
+public class JsonAdminSysOptLogController {
     
     @Resource
     private UserService userService;
