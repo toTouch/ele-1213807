@@ -281,6 +281,9 @@
             <if test="startTime != null and endTime != null">
                 and un_bind_time &gt;= #{startTime} or bind_time &lt;= #{endTime}
             </if>
+            <if test="placeId != null">
+                and place_id = #{placeId}
+            </if>
             <if test="cabinetIds != null and cabinetIds.size() > 0">
                 and cabinet_id in
                 <foreach collection="cabinetIds" separator="," open="(" close=")" item="cabinetId">
