@@ -1,6 +1,8 @@
 package com.xiliulou.electricity.mq.consumer;
 
+import cn.hutool.core.util.IdUtil;
 import com.xiliulou.core.json.JsonUtil;
+import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.constant.merchant.MerchantConstant;
 import com.xiliulou.electricity.constant.merchant.MerchantJoinRecordConstant;
 import com.xiliulou.electricity.entity.BatteryMembercardRefundOrder;
@@ -35,6 +37,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.rocketmq.spring.annotation.RocketMQMessageListener;
 import org.apache.rocketmq.spring.core.RocketMQListener;
+import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -43,6 +46,7 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
 
 /**
  * 购买套餐返利
@@ -97,6 +101,7 @@ public class BatteryMemberCardMerchantRebateConsumer implements RocketMQListener
     
     @Override
     public void onMessage(String message) {
+        MDC.put(CommonConstant.TRACE_ID, IdUtil.fastSimpleUUID());
         
         log.info("REBATE CONSUMER INFO!received msg={}", message);
         BatteryMemberCardMerchantRebate batteryMemberCardMerchantRebate = null;
@@ -257,8 +262,14 @@ public class BatteryMemberCardMerchantRebateConsumer implements RocketMQListener
             log.warn("REBATE CONSUMER WARN!not found electricityMemberCardOrder,orderId={}", batteryMemberCardMerchantRebate.getOrderId());
             return;
         }
-        
-        if(Objects.equals( electricityMemberCardOrder.getPayCount(),1)){
+    
+        //退租订单数量
+        Integer refundOrderNumber = electricityMemberCardOrderService.countRefundOrderByUid(electricityMemberCardOrder.getUid());
+        //购买成功订单数量
+        Integer successOrderNumber = electricityMemberCardOrderService.countSuccessOrderByUid(electricityMemberCardOrder.getUid());
+    
+        //若用户购买的套餐全部退租，更新邀请记录为已失效
+        if (Objects.equals(refundOrderNumber, successOrderNumber)) {
             MerchantJoinRecordQueryModel merchantJoinRecordQueryModel = new MerchantJoinRecordQueryModel();
             merchantJoinRecordQueryModel.setJoinUid(electricityMemberCardOrder.getUid());
             merchantJoinRecordQueryModel.setStatus(MerchantJoinRecordConstant.STATUS_INVALID);

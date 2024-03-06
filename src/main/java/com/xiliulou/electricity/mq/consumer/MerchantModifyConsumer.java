@@ -1,6 +1,8 @@
 package com.xiliulou.electricity.mq.consumer;
 
+import cn.hutool.core.util.IdUtil;
 import com.xiliulou.core.json.JsonUtil;
+import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.constant.merchant.MerchantConstant;
 import com.xiliulou.electricity.entity.merchant.Merchant;
 import com.xiliulou.electricity.entity.merchant.MerchantLevel;
@@ -19,6 +21,7 @@ import com.xiliulou.electricity.utils.OrderIdUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.rocketmq.spring.annotation.RocketMQMessageListener;
 import org.apache.rocketmq.spring.core.RocketMQListener;
+import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
@@ -55,6 +58,8 @@ public class MerchantModifyConsumer implements RocketMQListener<String> {
     
     @Override
     public void onMessage(String message) {
+        MDC.put(CommonConstant.TRACE_ID, IdUtil.fastSimpleUUID());
+        
         log.info("MERCHANT MODIFY CONSUMER INFO!received msg={}", message);
         MerchantModify merchantModify = null;
         
