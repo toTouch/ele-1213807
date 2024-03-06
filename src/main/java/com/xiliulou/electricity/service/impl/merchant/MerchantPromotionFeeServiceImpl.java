@@ -525,8 +525,9 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
                 .uid(uid).tenantId(TenantContextHolder.getTenantId()).settleEndTime(endTime).build();
         BigDecimal allSettleIncome = rebateRecordService.sumByStatus(allSettleIncomeQueryModel);
         
+        // 已退回需要用返现日期计算
         MerchantPromotionFeeQueryModel allReturnIncomeQueryModel = MerchantPromotionFeeQueryModel.builder().status(MerchantConstant.MERCHANT_REBATE_STATUS_RETURNED).type(type)
-                .uid(uid).tenantId(TenantContextHolder.getTenantId()).settleEndTime(endTime).build();
+                .uid(uid).tenantId(TenantContextHolder.getTenantId()).rebateEndTime(endTime).build();
         BigDecimal allReturnIncome = rebateRecordService.sumByStatus(allReturnIncomeQueryModel);
         return allSettleIncome.subtract(allReturnIncome);
     }
