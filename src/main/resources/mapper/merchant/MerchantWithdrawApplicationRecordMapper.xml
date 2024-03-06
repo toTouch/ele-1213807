@@ -314,6 +314,7 @@
                mwar.response,
                mwar.create_time,
                mwar.update_time,
+               mwar.amount,
                mwar.tenant_id,
                mwar.remark,
                mwar.uid,
