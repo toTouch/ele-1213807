@@ -58,6 +58,7 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -486,7 +487,6 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
         dataDetailVOList = merchantJoinRecords.parallelStream().map(merchantJoinRecord -> {
             MerchantPromotionDataDetailVO vo = new MerchantPromotionDataDetailVO();
             UserInfo userInfo = userInfoService.queryByUidFromCache(merchantJoinRecord.getJoinUid());
-            log.info("dataDetailVO user={}", JsonUtil.toJson(userInfo));
             if (Objects.nonNull(userInfo)) {
                 vo.setUid(userInfo.getUid());
                 // 对手机号中间四位脱敏
@@ -495,11 +495,8 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
             }
             vo.setScanCodeTime(merchantJoinRecord.getStartTime());
             vo.setStatus(merchantJoinRecord.getStatus());
-            log.info("dataDetailVO dataDetailVO={}", JsonUtil.toJson(vo));
             return vo;
-        }).collect(Collectors.toList());
-        
-        log.info("dataDetailVOList={}", JsonUtil.toJson(dataDetailVOList));
+        }).sorted(Comparator.comparing(MerchantPromotionDataDetailVO::getScanCodeTime).reversed()).collect(Collectors.toList());
         
         return R.ok(dataDetailVOList);
     }
@@ -507,7 +504,6 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
     @Override
     public R selectPromotionData(MerchantPromotionDataDetailQueryModel queryModel) {
         MerchantPromotionDataVO dataVO = new MerchantPromotionDataVO();
-        log.info("selectPromotionData queryModel={}", JsonUtil.toJson(queryModel));
         dataVO.setScanCodeCount(buildScanCodeCount(queryModel.getType(), queryModel.getUid(), queryModel.getStartTime(), queryModel.getEndTime(), null));
         dataVO.setPurchaseCount(
                 buildScanCodeCount(queryModel.getType(), queryModel.getUid(), queryModel.getStartTime(), queryModel.getEndTime(), MerchantJoinRecordConstant.STATUS_SUCCESS));
