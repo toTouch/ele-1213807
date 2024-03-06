@@ -186,8 +186,8 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
             MerchantPowerPeriodVO totalPower = null;
             // MerchantPowerPeriodVO totalPower = getTotalPower(tenantId, merchant.getId(), cabinetIds);
             
-            vo.setTotalPower(totalPower.getPower());
-            vo.setTotalCharge(totalPower.getCharge());
+            vo.setTotalPower(Objects.isNull(totalPower) ? NumberConstant.ZERO_D : totalPower.getPower());
+            vo.setTotalCharge(Objects.isNull(totalPower) ? NumberConstant.ZERO_D : totalPower.getCharge());
             
         }, executorService).exceptionally(e -> {
             log.error("Query merchant total power data error! uid={}", request.getUid(), e);
@@ -744,40 +744,42 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
                 .status(MerchantPlaceCabinetBindConstant.STATUS_UNBIND).build();
         List<MerchantPlaceCabinetBind> cabinetUnbindList = merchantPlaceCabinetBindService.listUnbindRecord(placeCabinetUnbindRequest);
         
-        if (CollectionUtils.isNotEmpty(cabinetUnbindList)) {
-            allPlaceCabinetBindList.addAll(cabinetUnbindList);
+        if (CollectionUtils.isEmpty(cabinetUnbindList)) {
+            return allPlaceCabinetBindList;
+        }
+        
+        allPlaceCabinetBindList.addAll(cabinetUnbindList);
+        
+        // 先掐头去尾
+        List<MerchantPlaceCabinetBind> stepOneList = new ArrayList<>();
+        for (MerchantPlaceCabinetBind placeCabinetBind : allPlaceCabinetBindList) {
+            Long bindTime = placeCabinetBind.getBindTime();
+            Long unBindTime = placeCabinetBind.getUnBindTime();
             
-            // 先掐头去尾
-            List<MerchantPlaceCabinetBind> stepOneList = new ArrayList<>();
-            for (MerchantPlaceCabinetBind placeCabinetBind : allPlaceCabinetBindList) {
-                Long bindTime = placeCabinetBind.getBindTime();
-                Long unBindTime = placeCabinetBind.getUnBindTime();
-                
-                if (unBindTime < merchantPlaceBindTime) {
-                    continue;
-                }
-                
-                if (bindTime < merchantPlaceBindTime) {
-                    placeCabinetBind.setBindTime(merchantPlaceBindTime);
-                }
-                
-                stepOneList.add(placeCabinetBind);
+            if (unBindTime < merchantPlaceBindTime) {
+                continue;
             }
             
-            // 再去除时间段子集
-            for (MerchantPlaceCabinetBind current : stepOneList) {
-                boolean isSubset = false;
-                
-                for (MerchantPlaceCabinetBind previous : resultList) {
-                    if (current.getBindTime() >= (previous.getBindTime()) && current.getUnBindTime() <= (previous.getUnBindTime())) {
-                        isSubset = true;
-                        break;
-                    }
+            if (bindTime < merchantPlaceBindTime) {
+                placeCabinetBind.setBindTime(merchantPlaceBindTime);
+            }
+            
+            stepOneList.add(placeCabinetBind);
+        }
+        
+        // 再去除时间段子集
+        for (MerchantPlaceCabinetBind current : stepOneList) {
+            boolean isSubset = false;
+            
+            for (MerchantPlaceCabinetBind previous : resultList) {
+                if (current.getBindTime() >= (previous.getBindTime()) && current.getUnBindTime() <= (previous.getUnBindTime())) {
+                    isSubset = true;
+                    break;
                 }
-                
-                if (!isSubset) {
-                    resultList.add(current);
-                }
+            }
+            
+            if (!isSubset) {
+                resultList.add(current);
             }
         }
         
@@ -813,44 +815,46 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
                 .status(MerchantPlaceCabinetBindConstant.STATUS_UNBIND).build();
         List<MerchantPlaceCabinetBind> cabinetUnbindList = merchantPlaceCabinetBindService.listUnbindRecord(placeCabinetUnbindRequest);
         
-        if (CollectionUtils.isNotEmpty(cabinetUnbindList)) {
-            allPlaceCabinetBindList.addAll(cabinetUnbindList);
+        if (CollectionUtils.isEmpty(cabinetUnbindList)) {
+            return allPlaceCabinetBindList;
+        }
+        
+        allPlaceCabinetBindList.addAll(cabinetUnbindList);
+        
+        // 先掐头去尾
+        List<MerchantPlaceCabinetBind> stepOneList = new ArrayList<>();
+        for (MerchantPlaceCabinetBind placeCabinetBind : allPlaceCabinetBindList) {
+            Long bindTime = placeCabinetBind.getBindTime();
+            Long unBindTime = placeCabinetBind.getUnBindTime();
             
-            // 先掐头去尾
-            List<MerchantPlaceCabinetBind> stepOneList = new ArrayList<>();
-            for (MerchantPlaceCabinetBind placeCabinetBind : allPlaceCabinetBindList) {
-                Long bindTime = placeCabinetBind.getBindTime();
-                Long unBindTime = placeCabinetBind.getUnBindTime();
-                
-                if (unBindTime < merchantPlaceBindTime) {
-                    continue;
-                }
-                
-                if (bindTime < merchantPlaceBindTime) {
-                    placeCabinetBind.setBindTime(merchantPlaceBindTime);
-                }
-                
-                if (unBindTime > merchantPlaceUnbindTime) {
-                    placeCabinetBind.setUnBindTime(merchantPlaceUnbindTime);
-                }
-                
-                stepOneList.add(placeCabinetBind);
+            if (unBindTime < merchantPlaceBindTime) {
+                continue;
             }
             
-            // 再去除时间段子集
-            for (MerchantPlaceCabinetBind current : stepOneList) {
-                boolean isSubset = false;
-                
-                for (MerchantPlaceCabinetBind previous : resultList) {
-                    if (current.getBindTime() >= (previous.getBindTime()) && current.getUnBindTime() <= (previous.getUnBindTime())) {
-                        isSubset = true;
-                        break;
-                    }
+            if (bindTime < merchantPlaceBindTime) {
+                placeCabinetBind.setBindTime(merchantPlaceBindTime);
+            }
+            
+            if (unBindTime > merchantPlaceUnbindTime) {
+                placeCabinetBind.setUnBindTime(merchantPlaceUnbindTime);
+            }
+            
+            stepOneList.add(placeCabinetBind);
+        }
+        
+        // 再去除时间段子集
+        for (MerchantPlaceCabinetBind current : stepOneList) {
+            boolean isSubset = false;
+            
+            for (MerchantPlaceCabinetBind previous : resultList) {
+                if (current.getBindTime() >= (previous.getBindTime()) && current.getUnBindTime() <= (previous.getUnBindTime())) {
+                    isSubset = true;
+                    break;
                 }
-                
-                if (!isSubset) {
-                    resultList.add(current);
-                }
+            }
+            
+            if (!isSubset) {
+                resultList.add(current);
             }
         }
         
@@ -886,40 +890,42 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
                 .status(MerchantPlaceCabinetBindConstant.STATUS_UNBIND).build();
         List<MerchantPlaceCabinetBind> cabinetUnbindList = merchantPlaceCabinetBindService.listUnbindRecord(placeCabinetUnbindRequest);
         
-        if (CollectionUtils.isNotEmpty(cabinetUnbindList)) {
-            allPlaceCabinetBindList.addAll(cabinetUnbindList);
+        if (CollectionUtils.isEmpty(cabinetUnbindList)) {
+            return allPlaceCabinetBindList;
+        }
+        
+        allPlaceCabinetBindList.addAll(cabinetUnbindList);
+        
+        // 先掐头去尾
+        List<MerchantPlaceCabinetBind> stepOneList = new ArrayList<>();
+        for (MerchantPlaceCabinetBind placeCabinetBind : allPlaceCabinetBindList) {
+            Long bindTime = placeCabinetBind.getBindTime();
+            Long unBindTime = placeCabinetBind.getUnBindTime();
             
-            // 先掐头去尾
-            List<MerchantPlaceCabinetBind> stepOneList = new ArrayList<>();
-            for (MerchantPlaceCabinetBind placeCabinetBind : allPlaceCabinetBindList) {
-                Long bindTime = placeCabinetBind.getBindTime();
-                Long unBindTime = placeCabinetBind.getUnBindTime();
-                
-                if (unBindTime < merchantPlaceBindTime) {
-                    continue;
-                }
-                
-                if (bindTime < merchantPlaceBindTime) {
-                    placeCabinetBind.setBindTime(merchantPlaceBindTime);
-                }
-                
-                stepOneList.add(placeCabinetBind);
+            if (unBindTime < merchantPlaceBindTime) {
+                continue;
             }
             
-            // 再去除时间段子集
-            for (MerchantPlaceCabinetBind current : stepOneList) {
-                boolean isSubset = false;
-                
-                for (MerchantPlaceCabinetBind previous : resultList) {
-                    if (current.getBindTime() >= (previous.getBindTime()) && current.getUnBindTime() <= (previous.getUnBindTime())) {
-                        isSubset = true;
-                        break;
-                    }
+            if (bindTime < merchantPlaceBindTime) {
+                placeCabinetBind.setBindTime(merchantPlaceBindTime);
+            }
+            
+            stepOneList.add(placeCabinetBind);
+        }
+        
+        // 再去除时间段子集
+        for (MerchantPlaceCabinetBind current : stepOneList) {
+            boolean isSubset = false;
+            
+            for (MerchantPlaceCabinetBind previous : resultList) {
+                if (current.getBindTime() >= (previous.getBindTime()) && current.getUnBindTime() <= (previous.getUnBindTime())) {
+                    isSubset = true;
+                    break;
                 }
-                
-                if (!isSubset) {
-                    resultList.add(current);
-                }
+            }
+            
+            if (!isSubset) {
+                resultList.add(current);
             }
         }
         
@@ -955,40 +961,42 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
                 .status(MerchantPlaceCabinetBindConstant.STATUS_UNBIND).build();
         List<MerchantPlaceCabinetBind> cabinetUnbindList = merchantPlaceCabinetBindService.listUnbindRecord(placeCabinetUnbindRequest);
         
-        if (CollectionUtils.isNotEmpty(cabinetUnbindList)) {
-            allPlaceCabinetBindList.addAll(cabinetUnbindList);
+        if (CollectionUtils.isEmpty(cabinetUnbindList)) {
+            return allPlaceCabinetBindList;
+        }
+        
+        allPlaceCabinetBindList.addAll(cabinetUnbindList);
+        
+        // 先掐头去尾
+        List<MerchantPlaceCabinetBind> stepOneList = new ArrayList<>();
+        for (MerchantPlaceCabinetBind placeCabinetBind : allPlaceCabinetBindList) {
+            Long bindTime = placeCabinetBind.getBindTime();
+            Long unBindTime = placeCabinetBind.getUnBindTime();
             
-            // 先掐头去尾
-            List<MerchantPlaceCabinetBind> stepOneList = new ArrayList<>();
-            for (MerchantPlaceCabinetBind placeCabinetBind : allPlaceCabinetBindList) {
-                Long bindTime = placeCabinetBind.getBindTime();
-                Long unBindTime = placeCabinetBind.getUnBindTime();
-                
-                if (unBindTime < todayStartTime) {
-                    continue;
-                }
-                
-                if (bindTime < todayStartTime) {
-                    placeCabinetBind.setBindTime(todayStartTime);
-                }
-                
-                stepOneList.add(placeCabinetBind);
+            if (unBindTime < todayStartTime) {
+                continue;
             }
             
-            // 再去除时间段子集
-            for (MerchantPlaceCabinetBind current : stepOneList) {
-                boolean isSubset = false;
-                
-                for (MerchantPlaceCabinetBind previous : resultList) {
-                    if (current.getBindTime() >= (previous.getBindTime()) && current.getUnBindTime() <= (previous.getUnBindTime())) {
-                        isSubset = true;
-                        break;
-                    }
+            if (bindTime < todayStartTime) {
+                placeCabinetBind.setBindTime(todayStartTime);
+            }
+            
+            stepOneList.add(placeCabinetBind);
+        }
+        
+        // 再去除时间段子集
+        for (MerchantPlaceCabinetBind current : stepOneList) {
+            boolean isSubset = false;
+            
+            for (MerchantPlaceCabinetBind previous : resultList) {
+                if (current.getBindTime() >= (previous.getBindTime()) && current.getUnBindTime() <= (previous.getUnBindTime())) {
+                    isSubset = true;
+                    break;
                 }
-                
-                if (!isSubset) {
-                    resultList.add(current);
-                }
+            }
+            
+            if (!isSubset) {
+                resultList.add(current);
             }
         }
         
@@ -1024,44 +1032,46 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
                 .status(MerchantPlaceCabinetBindConstant.STATUS_UNBIND).build();
         List<MerchantPlaceCabinetBind> cabinetUnbindList = merchantPlaceCabinetBindService.listUnbindRecord(placeCabinetUnbindRequest);
         
-        if (CollectionUtils.isNotEmpty(cabinetUnbindList)) {
-            allPlaceCabinetBindList.addAll(cabinetUnbindList);
+        if (CollectionUtils.isEmpty(cabinetUnbindList)) {
+            return allPlaceCabinetBindList;
+        }
+        
+        allPlaceCabinetBindList.addAll(cabinetUnbindList);
+        
+        // 先掐头去尾
+        List<MerchantPlaceCabinetBind> stepOneList = new ArrayList<>();
+        for (MerchantPlaceCabinetBind placeCabinetBind : allPlaceCabinetBindList) {
+            Long bindTime = placeCabinetBind.getBindTime();
+            Long unBindTime = placeCabinetBind.getUnBindTime();
             
-            // 先掐头去尾
-            List<MerchantPlaceCabinetBind> stepOneList = new ArrayList<>();
-            for (MerchantPlaceCabinetBind placeCabinetBind : allPlaceCabinetBindList) {
-                Long bindTime = placeCabinetBind.getBindTime();
-                Long unBindTime = placeCabinetBind.getUnBindTime();
-                
-                if (unBindTime < merchantPlaceBindTime) {
-                    continue;
-                }
-                
-                if (bindTime < merchantPlaceBindTime) {
-                    placeCabinetBind.setBindTime(merchantPlaceBindTime);
-                }
-                
-                if (unBindTime > merchantPlaceUnbindTime) {
-                    placeCabinetBind.setUnBindTime(merchantPlaceUnbindTime);
-                }
-                
-                stepOneList.add(placeCabinetBind);
+            if (unBindTime < merchantPlaceBindTime) {
+                continue;
             }
             
-            // 再去除时间段子集
-            for (MerchantPlaceCabinetBind current : stepOneList) {
-                boolean isSubset = false;
-                
-                for (MerchantPlaceCabinetBind previous : resultList) {
-                    if (current.getBindTime() >= (previous.getBindTime()) && current.getUnBindTime() <= (previous.getUnBindTime())) {
-                        isSubset = true;
-                        break;
-                    }
+            if (bindTime < merchantPlaceBindTime) {
+                placeCabinetBind.setBindTime(merchantPlaceBindTime);
+            }
+            
+            if (unBindTime > merchantPlaceUnbindTime) {
+                placeCabinetBind.setUnBindTime(merchantPlaceUnbindTime);
+            }
+            
+            stepOneList.add(placeCabinetBind);
+        }
+        
+        // 再去除时间段子集
+        for (MerchantPlaceCabinetBind current : stepOneList) {
+            boolean isSubset = false;
+            
+            for (MerchantPlaceCabinetBind previous : resultList) {
+                if (current.getBindTime() >= (previous.getBindTime()) && current.getUnBindTime() <= (previous.getUnBindTime())) {
+                    isSubset = true;
+                    break;
                 }
-                
-                if (!isSubset) {
-                    resultList.add(current);
-                }
+            }
+            
+            if (!isSubset) {
+                resultList.add(current);
             }
         }
         
