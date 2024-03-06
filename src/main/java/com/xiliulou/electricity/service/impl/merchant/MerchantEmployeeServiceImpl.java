@@ -23,6 +23,7 @@ import com.xiliulou.electricity.service.merchant.MerchantJoinRecordService;
 import com.xiliulou.electricity.service.merchant.MerchantPlaceService;
 import com.xiliulou.electricity.service.merchant.MerchantService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
+import com.xiliulou.electricity.utils.QrCodeUtils;
 import com.xiliulou.electricity.vo.merchant.MerchantEmployeeQrCodeVO;
 import com.xiliulou.electricity.vo.merchant.MerchantEmployeeVO;
 import com.xiliulou.security.authentication.console.CustomPasswordEncoder;
@@ -280,7 +281,7 @@ public class MerchantEmployeeServiceImpl implements MerchantEmployeeService {
             merchantEmployeeQrCodeVO.setType(MerchantConstant.MERCHANT_EMPLOYEE_QR_CODE_TYPE);
             merchantEmployeeQrCodeVO.setStatus(merchantEmployeeVO.getStatus());
             String code = merchant.getId() + ":" + merchantEmployeeVO.getUid() + ":" + MerchantConstant.MERCHANT_EMPLOYEE_QR_CODE_TYPE;
-            merchantEmployeeQrCodeVO.setCode(code);
+            merchantEmployeeQrCodeVO.setCode(QrCodeUtils.codeEnCoder(code));
         }
         
         return merchantEmployeeQrCodeVO;
@@ -347,7 +348,7 @@ public class MerchantEmployeeServiceImpl implements MerchantEmployeeService {
             merchantEmployeeQrCodeVO.setType(MerchantConstant.MERCHANT_EMPLOYEE_QR_CODE_TYPE);
             merchantEmployeeQrCodeVO.setStatus(merchantEmployeeVO.getStatus());
             String code = merchant.getId() + ":" + merchantEmployeeVO.getUid() + ":" + MerchantConstant.MERCHANT_EMPLOYEE_QR_CODE_TYPE;
-            merchantEmployeeQrCodeVO.setCode(code);
+            merchantEmployeeQrCodeVO.setCode(QrCodeUtils.codeEnCoder(code));
             
             merchantEmployeeQrCodeVOList.add(merchantEmployeeQrCodeVO);
         });
