@@ -97,7 +97,7 @@ public class MerchantModifyConsumer implements RocketMQListener<String> {
             long endTime = DateUtils.getDayStartTimeByLocalDate(LocalDate.now().with(TemporalAdjusters.lastDayOfMonth())) + 24 * 60 * 60 * 1000L;
             
             while (true) {
-                List<RebateRecord> list = rebateRecordService.listCurrentMonthRebateRecord(startTime, endTime, offset, size);
+                List<RebateRecord> list = rebateRecordService.listCurrentMonthRebateRecord(merchant.getId(), startTime, endTime, offset, size);
                 if (CollectionUtils.isEmpty(list)) {
                     return;
                 }
