@@ -568,7 +568,11 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
             }
         
             // 处理上月的数据
-            return dealCurrentMonthData(curPlaceFeeMonthRecords, value, startTime, endTime, lastMonth, merchantId, placeId);
+            List<MerchantCabinetFeeDetailVO> cabinetFeeDetailVOS = dealCurrentMonthData(curPlaceFeeMonthRecords, value, startTime, endTime, lastMonth, merchantId, placeId);
+            
+            if (ObjectUtils.isNotEmpty(cabinetFeeDetailVOS)) {
+                voList.addAll(cabinetFeeDetailVOS);
+            }
         }
     
         return voList;
@@ -725,7 +729,11 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
             }
         
             // 处理两个月之前的数据
-            return dealLastMonthData(lastMonthRecords, value, startTime, endTime, lastMonth, merchantId, placeId);
+            List<MerchantCabinetFeeDetailVO> cabinetFeeDetailVOS = dealLastMonthData(lastMonthRecords, value, startTime, endTime, lastMonth, merchantId, placeId);
+            
+            if (ObjectUtils.isNotEmpty(cabinetFeeDetailVOS)) {
+                voList.addAll(cabinetFeeDetailVOS);
+            }
         }
     
         return voList;
