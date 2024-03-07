@@ -32,4 +32,6 @@ public interface RebateConfigService {
     Triple<Boolean, String, Object> save(RebateConfigRequest request);
     
     RebateConfig queryByMidAndMerchantLevel(Long memberCardId, String level);
+    
+    RebateConfig queryLatestByMidAndMerchantLevel(Long memberCardId, String level);
 }

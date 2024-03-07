@@ -90,14 +90,14 @@ public class RebateConfigServiceImpl implements RebateConfigService {
         if (CollectionUtils.isEmpty(rebateConfigs) || CollectionUtils.isEmpty(merchantLevels)) {
             return Collections.emptyList();
         }
-    
+        
         Map<String, String> merchantLevelMap = merchantLevels.stream().collect(Collectors.toMap(MerchantLevel::getLevel, MerchantLevel::getName, (k1, k2) -> k1));
-    
+        
         return rebateConfigs.stream().map(item -> {
             RebateConfigVO rebateConfigVO = new RebateConfigVO();
             BeanUtils.copyProperties(item, rebateConfigVO);
-    
-//            MerchantLevel merchantLevel = merchantLevelService.queryByMerchantLevelAndTenantId(item.getLevel(), item.getTenantId());
+            
+            //            MerchantLevel merchantLevel = merchantLevelService.queryByMerchantLevelAndTenantId(item.getLevel(), item.getTenantId());
             rebateConfigVO.setLevelName(merchantLevelMap.getOrDefault(item.getLevel(), ""));
             
             BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(item.getMid());
@@ -168,5 +168,10 @@ public class RebateConfigServiceImpl implements RebateConfigService {
     @Override
     public RebateConfig queryByMidAndMerchantLevel(Long memberCardId, String level) {
         return this.rebateConfigMapper.selectByMidAndMerchantLevel(memberCardId, level);
+    }
+    
+    @Override
+    public RebateConfig queryLatestByMidAndMerchantLevel(Long memberCardId, String level) {
+        return this.rebateConfigMapper.selectLatestByMidAndMerchantLevel(memberCardId, level);
     }
 }
