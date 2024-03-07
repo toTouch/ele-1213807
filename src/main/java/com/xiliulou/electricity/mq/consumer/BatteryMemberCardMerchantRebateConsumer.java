@@ -214,6 +214,9 @@ public class BatteryMemberCardMerchantRebateConsumer implements RocketMQListener
         
         //返现类型
         Integer type = null;
+    
+        //返现类型
+        Integer orderType = null;
         
         Integer payCount = electricityMemberCardOrder.getPayCount();
         if (payCount <= 1) {
@@ -221,11 +224,15 @@ public class BatteryMemberCardMerchantRebateConsumer implements RocketMQListener
             //拉新返现
             merchantRebate = rebateConfig.getMerchantInvitation();
             channelerRebate = rebateConfig.getChannelerInvitation();
+    
+            orderType=MerchantConstant.MERCHANT_REBATE_ORDER_TYPE_NEW;
         } else {
             type = MerchantConstant.MERCHANT_REBATE_TYPE_RENEWAL;
             //续费返现
             merchantRebate = rebateConfig.getMerchantRenewal();
             channelerRebate = rebateConfig.getChannelerRenewal();
+    
+            orderType=MerchantConstant.MERCHANT_REBATE_ORDER_TYPE_OLD;
         }
         
         RebateRecord rebateRecord = new RebateRecord();
@@ -237,6 +244,7 @@ public class BatteryMemberCardMerchantRebateConsumer implements RocketMQListener
         rebateRecord.setMemberCardId(electricityMemberCardOrder.getMemberCardId());
         rebateRecord.setMemberCardName(electricityMemberCardOrder.getCardName());
         rebateRecord.setType(type);
+        rebateRecord.setOrderType(orderType);
         rebateRecord.setFranchiseeId(electricityMemberCardOrder.getFranchiseeId());
         rebateRecord.setLevel(merchantLevel.getLevel());
         rebateRecord.setMerchantId(merchant.getId());
@@ -320,6 +328,7 @@ public class BatteryMemberCardMerchantRebateConsumer implements RocketMQListener
             rebateRecordInsert.setMemberCardId(rebateRecord.getMemberCardId());
             rebateRecordInsert.setMemberCardName(rebateRecord.getMemberCardName());
             rebateRecordInsert.setType(rebateRecord.getType());
+            rebateRecordInsert.setOrderType(rebateRecord.getOrderType());
             rebateRecordInsert.setFranchiseeId(rebateRecord.getFranchiseeId());
             rebateRecordInsert.setLevel(rebateRecord.getLevel());
             rebateRecordInsert.setMerchantId(rebateRecord.getMerchantId());
@@ -382,6 +391,7 @@ public class BatteryMemberCardMerchantRebateConsumer implements RocketMQListener
                 rebateRecordInsert.setMemberCardId(rebateRecord.getMemberCardId());
                 rebateRecordInsert.setMemberCardName(rebateRecord.getMemberCardName());
                 rebateRecordInsert.setType(rebateRecord.getType());
+                rebateRecordInsert.setOrderType(rebateRecord.getOrderType());
                 rebateRecordInsert.setFranchiseeId(rebateRecord.getFranchiseeId());
                 rebateRecordInsert.setLevel(rebateRecord.getLevel());
                 rebateRecordInsert.setMerchantId(rebateRecord.getMerchantId());
