@@ -147,13 +147,13 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
             log.error("find merchant user error, not found merchant user, uid = {}", uid);
             return R.fail("120007", "未找到商户");
         }
-    
+        
         BigDecimal result = new BigDecimal(0);
         MerchantUserAmount merchantUserAmount = merchantUserAmountService.queryByUid(uid);
-        if(Objects.nonNull(merchantUserAmount)){
+        if (Objects.nonNull(merchantUserAmount)) {
             result = merchantUserAmount.getBalance();
         }
-    
+        
         return R.ok(result);
     }
     
@@ -415,7 +415,7 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
             
             if (Objects.nonNull(placeId)) {
                 MerchantPlace place = merchantPlaceService.queryByIdFromCache(placeId);
-                if(Objects.nonNull(place)){
+                if (Objects.nonNull(place)) {
                     employeeDetailVO.setPlaceName(place.getName());
                 }
             }
@@ -553,9 +553,26 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
         if (Objects.equals(PromotionFeeQueryTypeEnum.MERCHANT_AND_MERCHANT_EMPLOYEE.getCode(), type)) {
             type = PromotionFeeQueryTypeEnum.MERCHANT.getCode();
         }
+        
         MerchantPromotionRenewalQueryModel renewalQueryModel = MerchantPromotionRenewalQueryModel.builder().tenantId(TenantContextHolder.getTenantId()).userType(type).uid(uid)
-                .startTime(startTime).endTime(endTime).rebateType(MerchantConstant.MERCHANT_REBATE_TYPE_RENEWAL).build();
-        return rebateRecordService.countByTime(renewalQueryModel);
+                .startTime(startTime).endTime(endTime).rebateType(MerchantConstant.MERCHANT_REBATE_TYPE_RENEWAL).status(MerchantConstant.MERCHANT_REBATE_STATUS_NOT_SETTLE).build();
+        
+        // 未结算
+        Integer nonSettleRenewal = rebateRecordService.countByTime(renewalQueryModel);
+        // 已结算
+        renewalQueryModel.setStatus(MerchantConstant.MERCHANT_REBATE_STATUS_SETTLED);
+        Integer settleRenewal = rebateRecordService.countByTime(renewalQueryModel);
+        // 已退回
+        renewalQueryModel.setStatus(MerchantConstant.MERCHANT_REBATE_STATUS_RETURNED);
+        Integer returnwal = rebateRecordService.countByTime(renewalQueryModel);
+        
+        int result = nonSettleRenewal + settleRenewal - returnwal;
+        
+        if (result < 0) {
+            result = 0;
+        }
+        
+        return result;
     }
     
     
