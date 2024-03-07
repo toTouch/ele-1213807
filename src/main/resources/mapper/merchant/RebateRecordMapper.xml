@@ -101,38 +101,40 @@
     </select>
     
     <select id="selectCurrentMonthRebateRecord" resultMap="RebateRecordMap">
-        SELECT
-            original_order_id,
-            MAX( id ) as id	,
-            any_value ( uid ) uid,
-            any_value ( NAME ) NAME,
-            any_value ( phone ) phone,
-            any_value ( order_id ) order_id,
-            any_value ( member_card_id ) member_card_id,
-            any_value ( member_card_name ) member_card_name,
-            any_value ( type ) type,
-            any_value ( order_type ) order_type,
-            any_value ( franchisee_id ) franchisee_id,
-            any_value ( level ) level,
-            any_value ( merchant_id ) merchant_id,
-            any_value ( merchant_uid ) merchant_uid,
-            any_value ( status ) status,
-            any_value ( channeler ) channeler,
-            any_value ( channeler_rebate ) channeler_rebate,
-            any_value ( merchant_rebate ) merchant_rebate,
-            any_value ( place_id ) place_id,
-            any_value ( place_uid ) place_uid,
-            any_value ( rebate_time ) rebate_time,
-            any_value ( settle_time ) settle_time,
-            any_value ( tenant_id ) tenant_id,
-            any_value ( create_time ) create_time,
-            any_value ( update_time ) update_time
-        FROM
-            t_rebate_record
-        WHERE
-            level &gt; #{level} AND merchant_id = #{merchantId} and create_time &gt;= #{startTime} and create_time &lt; #{endTime}
-        GROUP BY
-            original_order_id limit #{offset}, #{size};
+        select id,
+               uid,
+               name,
+               phone,
+               order_id,
+               original_order_id,
+               member_card_id,
+               member_card_name,
+               type,
+               order_type,
+               franchisee_id,
+               level,
+               merchant_id,
+               merchant_uid,
+               status,
+               channeler,
+               channeler_rebate,
+               merchant_rebate,
+               place_id,
+               place_uid,
+               rebate_time,
+               settle_time,
+               tenant_id,
+               create_time,
+               update_time
+        from t_rebate_record
+        where id in (SELECT MAX(id) as id
+                     FROM t_rebate_record
+                     WHERE level &gt; #{level}
+                       AND merchant_id = #{merchantId}
+                       and create_time &gt;= #{startTime}
+                       and create_time &lt; #{endTime}
+                     GROUP BY original_order_id)
+            limit #{offset} , #{size}
     </select>
     
     <select id="selectByPage" resultMap="RebateRecordMap">
