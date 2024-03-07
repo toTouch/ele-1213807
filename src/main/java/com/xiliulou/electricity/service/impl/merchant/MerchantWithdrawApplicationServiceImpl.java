@@ -121,8 +121,8 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
             return Triple.of(false, "120010", "商户余额账户不存在");
         }
         
-        //单词提现金额限制：大于0， 小于等于500
-        if(merchantWithdrawApplicationRequest.getAmount().compareTo(BigDecimal.ZERO) < 0 || merchantWithdrawApplicationRequest.getAmount().compareTo(new BigDecimal(MerchantWithdrawConstant.WITHDRAW_MAX_AMOUNT)) > 0){
+        //单词提现金额限制：大于1， 小于等于500
+        if(merchantWithdrawApplicationRequest.getAmount().compareTo(BigDecimal.ONE) < 0 || merchantWithdrawApplicationRequest.getAmount().compareTo(new BigDecimal(MerchantWithdrawConstant.WITHDRAW_MAX_AMOUNT)) > 0){
             return Triple.of(false, "120011", "单次提现金额范围（0-500）");
         }
         
@@ -580,7 +580,7 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
                             return;
                         }
                 
-                        log.info("query batch wechat transfer order result, result = {}", wechatTransferBatchOrderQueryResult);
+                        log.info("query batch wechat transfer order result, result = {}, tenant id = {}", wechatTransferBatchOrderQueryResult, merchantWithdrawApplication.getTenantId());
                         //获取该批次记录状态结果
                         WechatTransferBatchOrderQueryCommonResult wechatTransferBatchOrderQueryCommonResult = wechatTransferBatchOrderQueryResult.getTransferBatch();
                         String batchStatus = wechatTransferBatchOrderQueryCommonResult.getBatchStatus();
@@ -609,6 +609,16 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
                                 });
                             }
                     
+                        } else {
+                            //更新查询结果到提现记录表中, 也可以不更新，方便查看转账暂时未成功原因
+                            MerchantWithdrawApplication withdrawApplication = new MerchantWithdrawApplication();
+                            withdrawApplication.setBatchNo(batchNo);
+                            withdrawApplication.setTenantId(tenantId);
+                            withdrawApplication.setStatus(MerchantWithdrawConstant.WITHDRAW_IN_PROGRESS);
+                            withdrawApplication.setUpdateTime(System.currentTimeMillis());
+                            withdrawApplication.setResponse(JsonUtil.toJson(wechatTransferBatchOrderQueryResult));
+                            
+                            merchantWithdrawApplicationMapper.updateMerchantWithdrawStatus(withdrawApplication);
                         }
                 
                     } catch (WechatPayException e) {
