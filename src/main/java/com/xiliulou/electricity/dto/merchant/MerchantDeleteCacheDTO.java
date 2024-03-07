@@ -3,6 +3,8 @@ package com.xiliulou.electricity.dto.merchant;
 import com.xiliulou.electricity.entity.User;
 import lombok.Data;
 
+import java.util.List;
+
 /**
  * @author maxiaodong
  * @date 2024/2/11 9:11
@@ -18,4 +20,9 @@ public class MerchantDeleteCacheDTO {
     private Long enterpriseInfoId;
     
     private User user;
+    
+    /**
+     * 批量删除渠道员工对应的uid集合
+     */
+    private List<User> uidList;
 }

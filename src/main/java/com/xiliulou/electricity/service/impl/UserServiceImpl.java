@@ -473,6 +473,17 @@ public class UserServiceImpl implements UserService {
     }
     
     @Override
+    public Integer batchRemoveByUidList(List<Long> uidList, long updateTime) {
+        return userMapper.batchRemoveByUidList(uidList, updateTime);
+    }
+    
+    @Slave
+    @Override
+    public List<User> queryListByUidList(List<Long> employeeUidList, Integer tenantId) {
+        return userMapper.queryListByUidList(employeeUidList, tenantId);
+    }
+    
+    @Override
     @Transactional(rollbackFor = Exception.class)
     public Pair<Boolean, Object> updateAdminUser(AdminUserQuery adminUserQuery) {
 

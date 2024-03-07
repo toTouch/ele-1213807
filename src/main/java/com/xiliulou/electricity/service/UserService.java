@@ -138,4 +138,8 @@ public interface UserService {
     Integer updateMerchantUser(User updateUser);
     
     Integer removeById(Long uid, Long updateTime);
+    
+    Integer batchRemoveByUidList(List<Long> employeeUidList, long timeMillis);
+    
+    List<User> queryListByUidList(List<Long> employeeUidList, Integer tenantId);
 }

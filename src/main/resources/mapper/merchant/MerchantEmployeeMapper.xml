@@ -190,6 +190,16 @@
         where id = #{id}
     </update>
     
+    <update id="batchRemoveByUidList">
+        update t_merchant_employee set del_flag = 1, update_time = #{updateTime}
+        where
+         del_flag = 0
+        and uid in
+        <foreach collection="uidList" separator="," open="(" close=")" item="uid">
+            #{uid}
+        </foreach>
+    </update>
+    
     <!--通过主键逻辑删除商户员工-->
     <delete id="removeById">
         update t_merchant_employee set del_flag = 1, update_time = #{updateTime} where id = #{id}
@@ -229,4 +239,21 @@
           and tme.del_flag = 0
     </select>
     
+    <select id="selectListByMerchantUid" resultType="com.xiliulou.electricity.entity.merchant.MerchantEmployee">
+        select tme.id,
+               tme.uid,
+               tme.merchant_uid,
+               tme.place_id,
+               tme.tenant_id,
+               tme.del_flag,
+               tme.remark,
+               tme.create_time,
+               tme.update_time
+        from t_merchant_employee tme
+                 where
+                     merchant_uid = #{merchantUid}
+                   and del_flag = 0
+                   and tenant_id = #{tenantId}
+    </select>
+
 </mapper>

@@ -38,4 +38,8 @@ public interface MerchantEmployeeService {
     List<MerchantEmployeeQrCodeVO> selectMerchantEmployeeQrCodes(MerchantEmployeeRequest merchantEmployeeRequest);
     
     List<MerchantEmployeeVO> selectAllMerchantEmployees(MerchantEmployeeRequest merchantEmployeeRequest);
+    
+    Integer batchRemoveByUidList(List<Long> employeeUidList, Long timeMillis);
+    
+    List<MerchantEmployee> queryListByMerchantUid(Long merchantUid, Integer tenantId);
 }
