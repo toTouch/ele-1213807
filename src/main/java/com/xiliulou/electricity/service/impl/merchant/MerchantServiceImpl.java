@@ -690,9 +690,10 @@ public class MerchantServiceImpl implements MerchantService {
         if (ObjectUtils.isEmpty(merchantEmployeeList)) {
             return;
         }
-        
+    
+        List<Long> uidList = merchantEmployeeList.stream().map(MerchantEmployee::getUid).collect(Collectors.toList());
         // 批量解绑场地员工
-        merchantEmployeeService.batchUnbindPlaceId(placeIdList);
+        merchantEmployeeService.batchUnbindPlaceId(uidList);
     }
     
     @Override
