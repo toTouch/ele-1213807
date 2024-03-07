@@ -554,23 +554,33 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
         // 结果集
         List<MerchantProCabinetPowerDetailVO> resultList = new ArrayList<>();
         
-        // 遍历场地
-        for (MerchantPlaceBind merchantPlaceBind : merchantPlaceBindList) {
-            Long placeId = merchantPlaceBind.getPlaceId();
-            Long bindTime = merchantPlaceBind.getBindTime();
-            Long unBindTime = merchantPlaceBind.getUnBindTime();
-            Integer status = merchantPlaceBind.getType();
+        // 根据场地进行分组
+        Map<Long, List<MerchantPlaceBind>> placeCabinetBindMap = merchantPlaceBindList.stream().collect(Collectors.groupingBy(MerchantPlaceBind::getPlaceId));
+        
+        for (Map.Entry<Long, List<MerchantPlaceBind>> entry : placeCabinetBindMap.entrySet()) {
+            Long placeId = entry.getKey();
+            List<MerchantPlaceBind> placeBindList = entry.getValue();
             
-            // 获取场地柜机绑定记录
-            List<MerchantPlaceCabinetBind> placeCabinetBindList = getThisMonthPlaceCabinetBindList(placeId, bindTime, unBindTime, Set.of(cabinetId));
-            if (CollectionUtils.isEmpty(placeCabinetBindList)) {
+            if (CollectionUtils.isEmpty(placeBindList)) {
                 continue;
             }
             
-            // 遍历柜机
-            List<MerchantProCabinetPowerDetailVO> periodPowerList = getPeriodPowerForDetail(tenantId, placeId, cabinetId, placeCabinetBindList, monthDate, status);
-            
-            resultList.addAll(periodPowerList);
+            for (MerchantPlaceBind placeBind : placeBindList) {
+                Integer status = placeBind.getType();
+                Long bindTime = placeBind.getBindTime();
+                Long unBindTime = placeBind.getUnBindTime();
+                
+                // 获取场地柜机绑定记录
+                List<MerchantPlaceCabinetBind> placeCabinetBindList = getThisMonthPlaceCabinetBindList(placeId, bindTime, unBindTime, Set.of(cabinetId));
+                if (CollectionUtils.isEmpty(placeCabinetBindList)) {
+                    continue;
+                }
+                
+                // 遍历柜机
+                List<MerchantProCabinetPowerDetailVO> periodPowerList = getPeriodPowerForDetail(tenantId, placeId, cabinetId, placeCabinetBindList, monthDate, status);
+                
+                resultList.addAll(periodPowerList);
+            }
         }
         
         // 合并连续时间段的记录（前一个时间段的endTime和后一个时间段的startTime是同一天）
@@ -1484,8 +1494,11 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
             chargeList1.add(charge);
         }
         
-        vo.setPowerList(powerList);
-        vo.setChargeList(chargeList);
+        powerList1.addAll(powerList);
+        chargeList1.addAll(chargeList);
+        
+        vo.setPowerList(powerList1);
+        vo.setChargeList(chargeList1);
         
         return vo;
     }
@@ -1517,12 +1530,8 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
         
         //查询的月份
         String monthDate = request.getMonthDate();
-        if (Objects.isNull(monthDate) || StringUtils.isBlank(monthDate)) {
-            monthDate = DateUtils.getMonthDate(NumberConstant.ZERO_L);
-        } else {
-            if (!monthDate.matches(DateUtils.GREP_YEAR_MONTH)) {
-                return Collections.emptyList();
-            }
+        if (!monthDate.matches(DateUtils.GREP_YEAR_MONTH)) {
+            return Collections.emptyList();
         }
         
         String thisMonthDate = DateUtils.getMonthDate(NumberConstant.ZERO_L);
@@ -1554,7 +1563,6 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
                 return Collections.emptyList();
             }
             
-            String finalMonthDate = monthDate;
             return preTwoMonthPowerDetailList.parallelStream().map(detailPro -> {
                 Long startTime = detailPro.getBeginTime();
                 Long endTime = detailPro.getEndTime();
@@ -1562,7 +1570,7 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
                 Long placeId = detailPro.getPlaceId();
                 Integer cabinetMerchantBindStatus = detailPro.getCabinetMerchantBindStatus();
                 
-                return getCabinetPowerDetail(startTime, endTime, eid, placeId, tenantId, finalMonthDate, cabinetMerchantBindStatus);
+                return getCabinetPowerDetail(startTime, endTime, eid, placeId, tenantId, monthDate, cabinetMerchantBindStatus);
                 
             }).collect(Collectors.toList());
         }
