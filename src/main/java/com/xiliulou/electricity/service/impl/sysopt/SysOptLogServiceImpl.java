@@ -65,7 +65,7 @@ public class SysOptLogServiceImpl implements SysOptLogService {
      */
     @Override
     public Long insert(SysOptLog entity) {
-        if (ObjectUtils.anyNotNull(entity, entity.getTenantId(), entity.getType(), entity.getCreateUid(), entity.getOptIp(), entity.getContent())) {
+        if (!ObjectUtils.allNotNull(entity, entity.getTenantId(), entity.getType(), entity.getCreateUid(), entity.getOptIp(), entity.getContent())) {
             throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
         
