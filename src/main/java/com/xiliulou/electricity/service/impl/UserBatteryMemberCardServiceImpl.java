@@ -300,7 +300,7 @@ public class UserBatteryMemberCardServiceImpl implements UserBatteryMemberCardSe
     
     @Slave
     @Override
-    public int queryRenewalNumberByMerchantId(Long merchantId, Integer tenantId) {
+    public Integer queryRenewalNumberByMerchantId(Long merchantId, Integer tenantId) {
         return userBatteryMemberCardMapper.selectRenewalNumberByMerchantId(merchantId, tenantId);
     }
     
