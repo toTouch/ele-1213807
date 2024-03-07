@@ -593,6 +593,11 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
                 log.error("FREE DEPOSIT ERROR! not found eleDepositOrder! uid={},orderId={}", freeDepositOrder.getUid(), userBatteryDeposit.getOrderId());
                 return Triple.of(false, "ELECTRICITY.0015", "未找到订单");
             }
+            
+            if (EleDepositOrder.STATUS_SUCCESS.equals(eleDepositOrder.getStatus())) {
+                log.warn("synchronizFreeDepositOrderStatus failed.  t_ele_deposit_order status is success. orderId is {}", orderId);
+                return Triple.of(true, "", "");
+            }
 
             PxzCommonRequest<PxzFreeDepositOrderQueryRequest> query = new PxzCommonRequest<>();
             query.setAesSecret(pxzConfig.getAesKey());
