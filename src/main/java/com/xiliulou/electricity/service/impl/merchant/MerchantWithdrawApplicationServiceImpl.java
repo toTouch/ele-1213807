@@ -245,7 +245,7 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
         
         //TODO 发起微信第三方提现申请
         WechatTransferBatchOrderQuery wechatTransferBatchOrderQuery = new WechatTransferBatchOrderQuery();
-        wechatTransferBatchOrderQuery.setAppid(electricityPayParams.getMerchantMinProAppId());
+        wechatTransferBatchOrderQuery.setAppid(electricityPayParams.getMerchantAppletId());
         //转账批次号
         wechatTransferBatchOrderQuery.setOutBatchNo(batchNo);
         wechatTransferBatchOrderQuery.setTotalAmount(merchantWithdrawApplication.getAmount().multiply(new BigDecimal(100)).intValue());
