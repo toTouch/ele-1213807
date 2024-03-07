@@ -49,6 +49,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
@@ -135,8 +137,19 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
             log.info("执行今日电量开始......");
             MerchantPowerPeriodVO todayPower = getTodayPower(tenantId, merchant.getId(), cabinetIds);
             
-            vo.setTodayPower(Objects.isNull(todayPower) ? NumberConstant.ZERO_D : todayPower.getPower());
-            vo.setTodayCharge(Objects.isNull(todayPower) ? NumberConstant.ZERO_D : todayPower.getCharge());
+            Double power = NumberConstant.ZERO_D;
+            Double charge = NumberConstant.ZERO_D;
+            if (Objects.nonNull(todayPower)) {
+                if (Objects.nonNull(todayPower.getPower())) {
+                    power = BigDecimal.valueOf(todayPower.getPower()).setScale(2, RoundingMode.HALF_UP).doubleValue();
+                }
+                if (Objects.nonNull(todayPower.getCharge())) {
+                    charge = BigDecimal.valueOf(todayPower.getCharge()).setScale(2, RoundingMode.HALF_UP).doubleValue();
+                }
+            }
+            
+            vo.setTodayPower(power);
+            vo.setTodayCharge(charge);
             
             log.info("执行今日电量结束......{}", todayPower);
         }, executorService).exceptionally(e -> {
@@ -149,8 +162,19 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
             log.info("执行昨日电量开始......");
             MerchantPowerPeriodVO yesterdayPower = getYesterdayPower(tenantId, merchant.getId(), cabinetIds);
             
-            vo.setYesterdayPower(Objects.isNull(yesterdayPower) ? NumberConstant.ZERO_D : yesterdayPower.getPower());
-            vo.setYesterdayCharge(Objects.isNull(yesterdayPower) ? NumberConstant.ZERO_D : yesterdayPower.getCharge());
+            Double power = NumberConstant.ZERO_D;
+            Double charge = NumberConstant.ZERO_D;
+            if (Objects.nonNull(yesterdayPower)) {
+                if (Objects.nonNull(yesterdayPower.getPower())) {
+                    power = BigDecimal.valueOf(yesterdayPower.getPower()).setScale(2, RoundingMode.HALF_UP).doubleValue();
+                }
+                if (Objects.nonNull(yesterdayPower.getCharge())) {
+                    charge = BigDecimal.valueOf(yesterdayPower.getCharge()).setScale(2, RoundingMode.HALF_UP).doubleValue();
+                }
+            }
+            
+            vo.setYesterdayPower(power);
+            vo.setYesterdayCharge(charge);
             
             log.info("执行昨日电量结束......{}", yesterdayPower);
         }, executorService).exceptionally(e -> {
@@ -164,8 +188,19 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
             
             MerchantPowerPeriodVO thisMonthPower = getThisMonthPower(tenantId, merchant.getId(), cabinetIds);
             
-            vo.setThisMonthPower(Objects.isNull(thisMonthPower) ? NumberConstant.ZERO_D : thisMonthPower.getPower());
-            vo.setThisMonthCharge(Objects.isNull(thisMonthPower) ? NumberConstant.ZERO_D : thisMonthPower.getCharge());
+            Double power = NumberConstant.ZERO_D;
+            Double charge = NumberConstant.ZERO_D;
+            if (Objects.nonNull(thisMonthPower)) {
+                if (Objects.nonNull(thisMonthPower.getPower())) {
+                    power = BigDecimal.valueOf(thisMonthPower.getPower()).setScale(2, RoundingMode.HALF_UP).doubleValue();
+                }
+                if (Objects.nonNull(thisMonthPower.getCharge())) {
+                    charge = BigDecimal.valueOf(thisMonthPower.getCharge()).setScale(2, RoundingMode.HALF_UP).doubleValue();
+                }
+            }
+            
+            vo.setThisMonthPower(power);
+            vo.setThisMonthCharge(charge);
             
             log.info("执行本月电量结束......{}", thisMonthPower);
         }, executorService).exceptionally(e -> {
@@ -178,8 +213,19 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
             log.info("执行上月电量开始......");
             MerchantPowerPeriodVO lastMonthPower = getLastMonthPower(tenantId, merchant.getId(), cabinetIds);
             
-            vo.setLastMonthPower(Objects.isNull(lastMonthPower) ? NumberConstant.ZERO_D : lastMonthPower.getPower());
-            vo.setLastMonthCharge(Objects.isNull(lastMonthPower) ? NumberConstant.ZERO_D : lastMonthPower.getCharge());
+            Double power = NumberConstant.ZERO_D;
+            Double charge = NumberConstant.ZERO_D;
+            if (Objects.nonNull(lastMonthPower)) {
+                if (Objects.nonNull(lastMonthPower.getPower())) {
+                    power = BigDecimal.valueOf(lastMonthPower.getPower()).setScale(2, RoundingMode.HALF_UP).doubleValue();
+                }
+                if (Objects.nonNull(lastMonthPower.getCharge())) {
+                    charge = BigDecimal.valueOf(lastMonthPower.getCharge()).setScale(2, RoundingMode.HALF_UP).doubleValue();
+                }
+            }
+            
+            vo.setLastMonthPower(power);
+            vo.setLastMonthCharge(charge);
             
             log.info("执行上月电量结束......{}", lastMonthPower);
         }, executorService).exceptionally(e -> {
@@ -192,8 +238,19 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
             log.info("执行累计电量开始......");
             MerchantPowerPeriodVO totalPower = getTotalPower(tenantId, merchant.getId(), cabinetIds);
             
-            vo.setTotalPower(totalPower.getPower());
-            vo.setTotalCharge(totalPower.getCharge());
+            Double power = NumberConstant.ZERO_D;
+            Double charge = NumberConstant.ZERO_D;
+            if (Objects.nonNull(totalPower)) {
+                if (Objects.nonNull(totalPower.getPower())) {
+                    power = BigDecimal.valueOf(totalPower.getPower()).setScale(2, RoundingMode.HALF_UP).doubleValue();
+                }
+                if (Objects.nonNull(totalPower.getCharge())) {
+                    charge = BigDecimal.valueOf(totalPower.getCharge()).setScale(2, RoundingMode.HALF_UP).doubleValue();
+                }
+            }
+            
+            vo.setTotalPower(power);
+            vo.setTotalCharge(charge);
             
             log.info("执行累计电量结束......{}", totalPower);
         }, executorService).exceptionally(e -> {
@@ -545,6 +602,8 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
      * 合并连续时间段的记录
      */
     private void mergeSerialTimeDetail(List<MerchantProCabinetPowerDetailVO> detailList) {
+        //去重
+        detailList = detailList.stream().distinct().collect(Collectors.toList());
         // 排序
         detailList.sort(Comparator.comparing(MerchantProCabinetPowerDetailVO::getEndTime));
         
@@ -1220,17 +1279,18 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
                 .startTime(thisMonthStartTime).build();
         List<MerchantPlaceBind> merchantPlaceUnbindList = merchantPlaceBindService.listUnbindRecord(merchantPlaceUnbindRequest);
         
-        if (CollectionUtils.isNotEmpty(merchantPlaceUnbindList)) {
+        if (CollectionUtils.isEmpty(merchantPlaceUnbindList)) {
+            return resultList;
+        }
+        
+        for (MerchantPlaceBind merchantPlaceUnbind : merchantPlaceUnbindList) {
+            Long bindTime = merchantPlaceUnbind.getBindTime();
             
-            for (MerchantPlaceBind merchantPlaceUnbind : merchantPlaceUnbindList) {
-                Long bindTime = merchantPlaceUnbind.getBindTime();
-                
-                if (bindTime < thisMonthStartTime) {
-                    merchantPlaceUnbind.setBindTime(thisMonthStartTime);
-                }
-                
-                resultList.add(merchantPlaceUnbind);
+            if (bindTime < thisMonthStartTime) {
+                merchantPlaceUnbind.setBindTime(thisMonthStartTime);
             }
+            
+            resultList.add(merchantPlaceUnbind);
         }
         
         return resultList;
@@ -1392,30 +1452,52 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
             
             MerchantPowerPeriodVO merchantPowerPeriodVO = merchantCabinetPowerMonthRecordProService.sumMonthPower(cabinetIds, List.of(monthDate));
             
+            Double powerD = NumberConstant.ZERO_D;
+            Double chargeD = NumberConstant.ZERO_D;
+            if (Objects.nonNull(merchantPowerPeriodVO)) {
+                if (Objects.nonNull(merchantPowerPeriodVO.getPower())) {
+                    powerD = BigDecimal.valueOf(merchantPowerPeriodVO.getPower()).setScale(2, RoundingMode.HALF_UP).doubleValue();
+                }
+                if (Objects.nonNull(merchantPowerPeriodVO.getCharge())) {
+                    chargeD = BigDecimal.valueOf(merchantPowerPeriodVO.getCharge()).setScale(2, RoundingMode.HALF_UP).doubleValue();
+                }
+            }
+            
             // 电量
             MerchantProPowerLineDataVO power = new MerchantProPowerLineDataVO();
             power.setMonthDate(monthDate);
-            power.setPower(Objects.isNull(merchantPowerPeriodVO) ? NumberConstant.ZERO_D : merchantPowerPeriodVO.getPower());
+            power.setPower(powerD);
             powerList1.add(power);
             
             // 电费
             MerchantProPowerChargeLineDataVO charge = new MerchantProPowerChargeLineDataVO();
             charge.setMonthDate(monthDate);
-            charge.setCharge(Objects.isNull(merchantPowerPeriodVO) ? NumberConstant.ZERO_D : merchantPowerPeriodVO.getCharge());
+            charge.setCharge(chargeD);
             chargeList1.add(charge);
         }
         
         if (hasLastMonth) {
+            Double powerD = NumberConstant.ZERO_D;
+            Double chargeD = NumberConstant.ZERO_D;
+            if (Objects.nonNull(lastMonthPower)) {
+                if (Objects.nonNull(lastMonthPower.getPower())) {
+                    powerD = BigDecimal.valueOf(lastMonthPower.getPower()).setScale(2, RoundingMode.HALF_UP).doubleValue();
+                }
+                if (Objects.nonNull(lastMonthPower.getCharge())) {
+                    chargeD = BigDecimal.valueOf(lastMonthPower.getCharge()).setScale(2, RoundingMode.HALF_UP).doubleValue();
+                }
+            }
+            
             // 电量
             MerchantProPowerLineDataVO power = new MerchantProPowerLineDataVO();
             power.setMonthDate(lastMonthDate);
-            power.setPower(Objects.isNull(lastMonthPower) ? NumberConstant.ZERO_D : lastMonthPower.getPower());
+            power.setPower(powerD);
             powerList1.add(power);
             
             // 电费
             MerchantProPowerChargeLineDataVO charge = new MerchantProPowerChargeLineDataVO();
             charge.setMonthDate(lastMonthDate);
-            charge.setCharge(Objects.isNull(lastMonthPower) ? NumberConstant.ZERO_D : lastMonthPower.getCharge());
+            charge.setCharge(chargeD);
             chargeList1.add(charge);
         }
         
@@ -1568,18 +1650,27 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
             for (Long cabinetId : cabinetIds) {
                 // 今日电量
                 List<MerchantProLivePowerVO> todayPower = todayPowerForCabinetList.parallelStream().filter(e -> Objects.equals(e.getEid(), cabinetId)).collect(Collectors.toList());
-                Double todayPowerSum = todayPower.stream().filter(Objects::nonNull).mapToDouble(MerchantProLivePowerVO::getPower).sum();
-                Double todayChargeSum = todayPower.stream().filter(Objects::nonNull).mapToDouble(MerchantProLivePowerVO::getCharge).sum();
+                double todayPowerSum = todayPower.stream().filter(Objects::nonNull).mapToDouble(MerchantProLivePowerVO::getPower).sum();
+                todayPowerSum = BigDecimal.valueOf(todayPowerSum).setScale(2, RoundingMode.HALF_UP).doubleValue();
+                
+                double todayChargeSum = todayPower.stream().filter(Objects::nonNull).mapToDouble(MerchantProLivePowerVO::getCharge).sum();
+                todayChargeSum = BigDecimal.valueOf(todayChargeSum).setScale(2, RoundingMode.HALF_UP).doubleValue();
                 
                 // 本月电量
                 List<MerchantProLivePowerVO> thisMonthPower = thisMonthPowerList.parallelStream().filter(e -> Objects.equals(e.getEid(), cabinetId)).collect(Collectors.toList());
-                Double thisMonthPowerSum = thisMonthPower.stream().filter(Objects::nonNull).mapToDouble(MerchantProLivePowerVO::getPower).sum();
-                Double thisMonthChargeSum = thisMonthPower.stream().filter(Objects::nonNull).mapToDouble(MerchantProLivePowerVO::getCharge).sum();
+                double thisMonthPowerSum = thisMonthPower.stream().filter(Objects::nonNull).mapToDouble(MerchantProLivePowerVO::getPower).sum();
+                thisMonthPowerSum = BigDecimal.valueOf(thisMonthPowerSum).setScale(2, RoundingMode.HALF_UP).doubleValue();
+                
+                double thisMonthChargeSum = thisMonthPower.stream().filter(Objects::nonNull).mapToDouble(MerchantProLivePowerVO::getCharge).sum();
+                thisMonthChargeSum = BigDecimal.valueOf(thisMonthChargeSum).setScale(2, RoundingMode.HALF_UP).doubleValue();
                 
                 // 上月电量
                 List<MerchantProLivePowerVO> lastMonthPower = lastMonthPowerList.parallelStream().filter(e -> Objects.equals(e.getEid(), cabinetId)).collect(Collectors.toList());
-                Double lastMonthPowerSum = lastMonthPower.stream().filter(Objects::nonNull).mapToDouble(MerchantProLivePowerVO::getPower).sum();
-                Double lastMonthChargeSum = lastMonthPower.stream().filter(Objects::nonNull).mapToDouble(MerchantProLivePowerVO::getCharge).sum();
+                double lastMonthPowerSum = lastMonthPower.stream().filter(Objects::nonNull).mapToDouble(MerchantProLivePowerVO::getPower).sum();
+                lastMonthPowerSum = BigDecimal.valueOf(lastMonthPowerSum).setScale(2, RoundingMode.HALF_UP).doubleValue();
+                
+                double lastMonthChargeSum = lastMonthPower.stream().filter(Objects::nonNull).mapToDouble(MerchantProLivePowerVO::getCharge).sum();
+                lastMonthChargeSum = BigDecimal.valueOf(lastMonthChargeSum).setScale(2, RoundingMode.HALF_UP).doubleValue();
                 
                 // 本年电量
                 double thisYearPower = thisMonthPowerSum + lastMonthPowerSum;
@@ -1591,8 +1682,17 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
                     preTwoMonthList = getPreTwoMonthList(subMonthList);
                     
                     MerchantPowerPeriodVO preTwoMonthPowerPeriod = merchantCabinetPowerMonthRecordProService.sumMonthPower(List.of(cabinetId), preTwoMonthList);
-                    thisYearPower = thisYearPower + (Objects.isNull(preTwoMonthPowerPeriod) ? NumberConstant.ZERO_D : preTwoMonthPowerPeriod.getPower());
-                    thisYearCharge = thisYearCharge + (Objects.isNull(preTwoMonthPowerPeriod) ? NumberConstant.ZERO_D : preTwoMonthPowerPeriod.getCharge());
+                    if (Objects.nonNull(preTwoMonthPowerPeriod)) {
+                        if (Objects.nonNull(preTwoMonthPowerPeriod.getPower())) {
+                            double preTwoMonthPower = BigDecimal.valueOf(preTwoMonthPowerPeriod.getPower()).setScale(2, RoundingMode.HALF_UP).doubleValue();
+                            thisYearCharge += preTwoMonthPower;
+                        }
+                        
+                        if (Objects.nonNull(preTwoMonthPowerPeriod.getCharge())) {
+                            double preTwoMonthCharge = BigDecimal.valueOf(preTwoMonthPowerPeriod.getCharge()).setScale(2, RoundingMode.HALF_UP).doubleValue();
+                            thisYearCharge += preTwoMonthCharge;
+                        }
+                    }
                 }
                 
                 ElectricityCabinet electricityCabinet = electricityCabinetService.queryByIdFromCache(cabinetId.intValue());
