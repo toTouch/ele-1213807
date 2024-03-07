@@ -1,6 +1,8 @@
 package com.xiliulou.electricity.mq.consumer;
 
+import cn.hutool.core.util.IdUtil;
 import com.xiliulou.core.json.JsonUtil;
+import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.constant.merchant.MerchantConstant;
 import com.xiliulou.electricity.constant.merchant.MerchantJoinRecordConstant;
 import com.xiliulou.electricity.entity.BatteryMembercardRefundOrder;
@@ -16,6 +18,7 @@ import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.mq.constant.MqConsumerConstant;
 import com.xiliulou.electricity.mq.constant.MqProducerConstant;
 import com.xiliulou.electricity.mq.model.BatteryMemberCardMerchantRebate;
+import com.xiliulou.electricity.mq.model.MerchantUpgrade;
 import com.xiliulou.electricity.query.merchant.MerchantJoinRecordQueryModel;
 import com.xiliulou.electricity.service.BatteryMembercardRefundOrderService;
 import com.xiliulou.electricity.service.EleRefundOrderService;
@@ -31,10 +34,12 @@ import com.xiliulou.electricity.service.merchant.MerchantUserAmountService;
 import com.xiliulou.electricity.service.merchant.RebateConfigService;
 import com.xiliulou.electricity.service.merchant.RebateRecordService;
 import com.xiliulou.electricity.utils.OrderIdUtil;
+import com.xiliulou.mq.service.RocketMqService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.rocketmq.spring.annotation.RocketMQMessageListener;
 import org.apache.rocketmq.spring.core.RocketMQListener;
+import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -43,6 +48,7 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
 
 /**
  * 购买套餐返利
@@ -84,6 +90,9 @@ public class BatteryMemberCardMerchantRebateConsumer implements RocketMQListener
     private UserService userService;
     
     @Autowired
+    private RocketMqService rocketMqService;
+    
+    @Autowired
     private EleRefundOrderService eleRefundOrderService;
     
     @Autowired
@@ -97,6 +106,7 @@ public class BatteryMemberCardMerchantRebateConsumer implements RocketMQListener
     
     @Override
     public void onMessage(String message) {
+        MDC.put(CommonConstant.TRACE_ID, IdUtil.fastSimpleUUID());
         
         log.info("REBATE CONSUMER INFO!received msg={}", message);
         BatteryMemberCardMerchantRebate batteryMemberCardMerchantRebate = null;
@@ -111,6 +121,14 @@ public class BatteryMemberCardMerchantRebateConsumer implements RocketMQListener
             if (Objects.equals(MerchantConstant.TYPE_PURCHASE, batteryMemberCardMerchantRebate.getType())) {
                 //返利
                 handleRebate(batteryMemberCardMerchantRebate);
+                
+                //续费成功  发送商户升级MQ
+                MerchantUpgrade merchantUpgrade = new MerchantUpgrade();
+                merchantUpgrade.setUid(batteryMemberCardMerchantRebate.getUid());
+                merchantUpgrade.setOrderId(batteryMemberCardMerchantRebate.getOrderId());
+                merchantUpgrade.setMerchantId(batteryMemberCardMerchantRebate.getMerchantId());
+                rocketMqService.sendAsyncMsg(MqProducerConstant.MERCHANT_UPGRADE_TOPIC, JsonUtil.toJson(merchantUpgrade));
+                log.error("===========================================");
             } else {
                 //退租
                 handleMemberCardRentRefund(batteryMemberCardMerchantRebate);
@@ -156,6 +174,7 @@ public class BatteryMemberCardMerchantRebateConsumer implements RocketMQListener
             log.warn("REBATE CONSUMER WARN!not found merchant,uid={}", batteryMemberCardMerchantRebate.getUid());
             return;
         }
+        log.error("===================================merchant={}",JsonUtil.toJson(merchant));
         
         //渠道员
         User channel = userService.queryByUidFromCache(merchant.getChannelEmployeeUid());
@@ -172,6 +191,7 @@ public class BatteryMemberCardMerchantRebateConsumer implements RocketMQListener
             log.warn("REBATE CONSUMER WARN!not found merchantLevel,uid={},merchantId={}", batteryMemberCardMerchantRebate.getUid(), userInfoExtra.getMerchantId());
             return;
         }
+        log.error("===================================merchantLevel={}",JsonUtil.toJson(merchantLevel));
         
         //获取返利配置
         RebateConfig rebateConfig = rebateConfigService.queryByMidAndMerchantLevel(electricityMemberCardOrder.getMemberCardId(), merchantLevel.getLevel());
@@ -179,6 +199,7 @@ public class BatteryMemberCardMerchantRebateConsumer implements RocketMQListener
             log.warn("REBATE CONSUMER WARN!not found rebateConfig,uid={},mid={}", batteryMemberCardMerchantRebate.getUid(), electricityMemberCardOrder.getMemberCardId());
             return;
         }
+        log.error("===================================rebateConfig={}",JsonUtil.toJson(rebateConfig));
         
         if (Objects.equals(rebateConfig.getStatus(), MerchantConstant.REBATE_DISABLE)) {
             log.warn("REBATE CONSUMER WARN!rebateConfig is disable,uid={},mid={}", batteryMemberCardMerchantRebate.getUid(), electricityMemberCardOrder.getMemberCardId());
@@ -257,8 +278,14 @@ public class BatteryMemberCardMerchantRebateConsumer implements RocketMQListener
             log.warn("REBATE CONSUMER WARN!not found electricityMemberCardOrder,orderId={}", batteryMemberCardMerchantRebate.getOrderId());
             return;
         }
-        
-        if(Objects.equals( electricityMemberCardOrder.getPayCount(),1)){
+    
+        //退租订单数量
+        Integer refundOrderNumber = electricityMemberCardOrderService.countRefundOrderByUid(electricityMemberCardOrder.getUid());
+        //购买成功订单数量
+        Integer successOrderNumber = electricityMemberCardOrderService.countSuccessOrderByUid(electricityMemberCardOrder.getUid());
+    
+        //若用户购买的套餐全部退租，更新邀请记录为已失效
+        if (Objects.equals(refundOrderNumber, successOrderNumber)) {
             MerchantJoinRecordQueryModel merchantJoinRecordQueryModel = new MerchantJoinRecordQueryModel();
             merchantJoinRecordQueryModel.setJoinUid(electricityMemberCardOrder.getUid());
             merchantJoinRecordQueryModel.setStatus(MerchantJoinRecordConstant.STATUS_INVALID);
@@ -268,6 +295,7 @@ public class BatteryMemberCardMerchantRebateConsumer implements RocketMQListener
         
         //获取返利记录
         RebateRecord rebateRecord = rebateRecordService.queryByOriginalOrderId(batteryMembercardRefundOrder.getMemberCardOrderNo());
+        // TODO  12345//存在多个订单号相同的
         if (Objects.isNull(rebateRecord)) {
             log.warn("REBATE REFUND CONSUMER WARN!not found rebateRecord,memberCardOrderId={}", batteryMembercardRefundOrder.getMemberCardOrderNo());
             return;
@@ -317,6 +345,10 @@ public class BatteryMemberCardMerchantRebateConsumer implements RocketMQListener
         handleExcessRebateRecord(rebateRecord);
     }
     
+    /**
+     * 处理差额返利记录
+     * @param rebateRecord
+     */
     @Transactional(rollbackFor = Exception.class)
     public void handleExcessRebateRecord(RebateRecord rebateRecord) {
         //获取差额记录

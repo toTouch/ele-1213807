@@ -42,11 +42,16 @@ public interface RebateRecordService {
     
     void handleRebate(RebateRecord rebateRecord);
     
-    List<RebateRecord> listCurrentMonthRebateRecord(long startTime, long endTime, int offset, int size);
+    List<RebateRecord> listCurrentMonthRebateRecord(Long merchantId, long startTime, long endTime, int offset, int size);
     
     BigDecimal sumByStatus(MerchantPromotionFeeQueryModel merchantPromotionFeeQueryModel);
     
     Integer countByTime(MerchantPromotionRenewalQueryModel merchantPromotionRenewalQueryModel);
     
     List<MerchantPromotionEmployeeDetailSpecificsVO> selectListPromotionDetail(MerchantPromotionEmployeeDetailSpecificsQueryModel queryModel);
+    
+    /**
+     * 获取比当前商户等级小的返利记录
+     */
+    List<RebateRecord> listRebatedByUid(Long uid, Long memberCardId, Long merchantId, String currentLevel);
 }

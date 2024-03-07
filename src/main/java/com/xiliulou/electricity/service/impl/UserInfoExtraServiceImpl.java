@@ -5,6 +5,7 @@ import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.merchant.MerchantConstant;
 import com.xiliulou.electricity.constant.merchant.MerchantJoinRecordConstant;
+import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.UserInfoExtra;
 import com.xiliulou.electricity.entity.merchant.Merchant;
@@ -99,13 +100,12 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
     
     @Override
     public Integer deleteByUid(Long uid) {
-        int delete = this.userInfoExtraMapper.deleteByUid(uid);
-        
-        DbUtils.dbOperateSuccessThenHandleCache(delete, i -> {
-            redisService.delete(CacheConstant.CACHE_USER_INFO_EXTRA + uid);
-        });
-        
-        return delete;
+//        int delete = this.userInfoExtraMapper.deleteByUid(uid);
+        UserInfoExtra userInfoExtra=new UserInfoExtra();
+        userInfoExtra.setUid(uid);
+        userInfoExtra.setDelFlag(User.DEL_DEL);
+        userInfoExtra.setUpdateTime(System.currentTimeMillis());
+        return this.updateByUid(userInfoExtra);
     }
     
     @Override
@@ -178,12 +178,5 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
         merchantJoinRecordUpdate.setStatus(MerchantJoinRecordConstant.STATUS_SUCCESS);
         merchantJoinRecordUpdate.setUpdateTime(System.currentTimeMillis());
         merchantJoinRecordService.updateById(merchantJoinRecordUpdate);
-        
-        MerchantUpgrade merchantUpgrade = new MerchantUpgrade();
-        merchantUpgrade.setUid(uid);
-        merchantUpgrade.setOrderId(orderId);
-        merchantUpgrade.setMerchantId(merchant.getId());
-        //拉新成功  发送商户升级MQ
-        rocketMqService.sendAsyncMsg(MqProducerConstant.MERCHANT_UPGRADE_TOPIC, JsonUtil.toJson(merchantUpgrade));
     }
 }

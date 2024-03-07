@@ -28,6 +28,7 @@ import com.xiliulou.security.bean.TokenUser;
 import io.jsonwebtoken.lang.Collections;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -83,14 +84,15 @@ public class MerchantTokenServiceImpl implements MerchantTokenService {
         }
         
         ElectricityPayParams electricityPayParams = electricityPayParamsService.queryFromCache(tenantId);
-        if (Objects.isNull(electricityPayParams) || StrUtil.isEmpty(electricityPayParams.getMerchantMinProAppId()) || StrUtil.isEmpty(
-                electricityPayParams.getMerchantMinProAppSecert())) {
+        if (Objects.isNull(electricityPayParams)
+                || StrUtil.isEmpty(electricityPayParams.getMerchantMinProAppId()) || StrUtil.isEmpty(electricityPayParams.getMerchantMinProAppSecert())
+                ||StrUtil.isEmpty(electricityPayParams.getMerchantAppletId()) || StrUtil.isEmpty(electricityPayParams.getMerchantAppletSecret())) {
             return Triple.of(false, "100002", "网络不佳，请重试");
         }
         
         try {
-            String codeUrl = String.format(CacheConstant.WX_MIN_PRO_AUTHORIZATION_CODE_URL, "wxc2dd558f2ee2ab8a",
-                    "b029fdccc213ae48c81e4243d4f2e1ef", merchantLoginRequest.getCode());
+            String codeUrl = String.format(CacheConstant.WX_MIN_PRO_AUTHORIZATION_CODE_URL, electricityPayParams.getMerchantAppletId(),
+                    electricityPayParams.getMerchantAppletSecret(), merchantLoginRequest.getCode());
 
             String bodyStr = restTemplateService.getForString(codeUrl, null);
             log.info("TOKEN INFO! call wxpro get openId message={}", bodyStr);
@@ -119,7 +121,7 @@ public class MerchantTokenServiceImpl implements MerchantTokenService {
             List<User> users = Optional.ofNullable(userService.listUserByPhone(purePhoneNumber, tenantId))
                     .orElse(Lists.newArrayList()).stream().filter(e->(e.getUserType().equals(User.TYPE_USER_MERCHANT) || e.getUserType().equals(User.TYPE_USER_CHANNEL))).collect(Collectors.toList());;
             if (Collections.isEmpty(users)) {
-                return Triple.of(false, null, "用户不存在");
+                return Triple.of(false, null, "未找到绑定账号，请检查");
             }
 
             List<User> notLockUsers = users.stream().filter(user -> !user.isLock()).collect(Collectors.toList());
@@ -145,11 +147,21 @@ public class MerchantTokenServiceImpl implements MerchantTokenService {
                 }
 
                 // 查看是否有绑定的第三方信息,如果没有绑定创建一个
-                if (!wxProThirdAuthenticationService.checkOpenIdExists(result.getOpenid(), tenantId).getLeft()) {
+                Pair<Boolean, List<UserOauthBind>> openIdExistsResult = wxProThirdAuthenticationService.checkOpenIdExists(result.getOpenid(), tenantId);
+                if (!openIdExistsResult.getLeft()) {
                     UserOauthBind oauthBind = UserOauthBind.builder().createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis())
                             .phone(wxMinProPhoneResultDTO.getPurePhoneNumber()).uid(e.getUid()).accessToken("").refreshToken("").thirdNick("").tenantId(tenantId)
                             .thirdId(result.getOpenid()).source(UserOauthBind.SOURCE_WX_PRO).status(UserOauthBind.STATUS_BIND).build();
                     userOauthBindService.insert(oauthBind);
+                } else {
+                    List<UserOauthBind> existsOauthBinds = openIdExistsResult.getRight();
+                    //如果查出来的绑定信息中没有当前用户的绑定信息,则创建一个
+                    if (existsOauthBinds.stream().noneMatch(userOauthBind -> userOauthBind.getUid().equals(e.getUid()))) {
+                        UserOauthBind oauthBind = UserOauthBind.builder().createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis())
+                                .phone(wxMinProPhoneResultDTO.getPurePhoneNumber()).uid(e.getUid()).accessToken("").refreshToken("").thirdNick("").tenantId(tenantId)
+                                .thirdId(result.getOpenid()).source(UserOauthBind.SOURCE_WX_PRO).status(UserOauthBind.STATUS_BIND).build();
+                        userOauthBindService.insert(oauthBind);
+                    }
                 }
                 String token = jwtTokenManager.createTokenV2(e.getUserType(),
                         new TokenUser(e.getUid(), e.getPhone(), e.getName(), e.getUserType(), e.getDataType(), e.getTenantId()), System.currentTimeMillis());

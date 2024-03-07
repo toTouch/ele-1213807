@@ -280,7 +280,7 @@
     
     <select id="selectRenewalNumberByMerchantId" resultType="int">
         select count(1) from t_user_info_extra uie left join t_user_battery_member_card  ubmc on uie.uid=ubmc.uid
-                        where uie.merchant_id=#{merchantId}  and  uie.tenant_id =#{tenantId}  and ubmc.card_pay_count &gt; 1
+                        where uie.del_flag=0 and uie.merchant_id=#{merchantId}  and  uie.tenant_id =#{tenantId}  and ubmc.card_pay_count &gt; 1
     </select>
 
     <select id="selectUseableListByTenantIds" resultMap="UserBatteryMemberCardMap">

@@ -133,6 +133,9 @@ public class UserServiceImpl implements UserService {
     @Autowired
     EnterpriseChannelUserService enterpriseChannelUserService;
     
+    @Autowired
+    UserInfoExtraService userInfoExtraService;
+    
     /**
      * 启用锁定用户
      *
@@ -147,7 +150,7 @@ public class UserServiceImpl implements UserService {
         }
         
         // 缓存读取用户
-        User cacheUser = redisService.getWithHash(CacheConstant.CACHE_USER_UID + uid, User.class);
+        User cacheUser = queryByUidFromCache(uid);
         if (ObjectUtils.isEmpty(cacheUser) || !cacheUser.getTenantId().equals(tenantId)) {
             log.warn("enableLockUser failed. The user not found. uid is {}", uid);
             return false;
@@ -934,6 +937,8 @@ public class UserServiceImpl implements UserService {
         userBatteryMemberCardService.deleteByUid(uid);
 
         userCarService.deleteByUid(uid);
+        
+        userInfoExtraService.deleteByUid(uid);
 
         return Triple.of(true, null, null);
     }

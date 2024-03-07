@@ -284,7 +284,7 @@ public class JsonMerchantController extends BaseController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         
-        MerchantPageRequest merchantPageRequest = MerchantPageRequest.builder().name(name).size(size).offset(offset).build();
+        MerchantPageRequest merchantPageRequest = MerchantPageRequest.builder().name(name).size(size).offset(offset).tenantId(TenantContextHolder.getTenantId()).build();
         
         return R.ok(merchantService.queryList(merchantPageRequest));
     }

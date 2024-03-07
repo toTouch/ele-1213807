@@ -144,7 +144,7 @@ public class JsonMerchantPlaceCabinetBindController extends BaseController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
     
-        MerchantPlaceCabinetPageRequest placeCabinetPageRequest = MerchantPlaceCabinetPageRequest.builder().sn(cabinetSn).status(status).tenantId(TenantContextHolder.getTenantId()).build();
+        MerchantPlaceCabinetPageRequest placeCabinetPageRequest = MerchantPlaceCabinetPageRequest.builder().placeId(placeId).sn(cabinetSn).status(status).tenantId(TenantContextHolder.getTenantId()).build();
         
         return R.ok(merchantPlaceCabinetBindService.countTotal(placeCabinetPageRequest));
     }
