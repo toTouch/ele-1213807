@@ -392,7 +392,7 @@
             </if>
         
         </where>
-        order by tmwa.receipt_time desc
+        order by tmwa.create_time desc
         <if test="offset != null and size != null">
             limit #{offset}, #{size}
         </if>
@@ -524,6 +524,5 @@
         </where>
 
     </update>
-    
     
 </mapper>
