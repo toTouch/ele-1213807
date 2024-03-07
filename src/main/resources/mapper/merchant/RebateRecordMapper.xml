@@ -12,6 +12,7 @@
         <result property="memberCardId" column="member_card_id" jdbcType="INTEGER"/>
         <result property="memberCardName" column="member_card_name" jdbcType="VARCHAR"/>
         <result property="type" column="type" jdbcType="INTEGER"/>
+        <result property="orderType" column="order_type" jdbcType="INTEGER"/>
         <result property="franchiseeId" column="franchisee_id" jdbcType="INTEGER"/>
         <result property="level" column="level" jdbcType="VARCHAR"/>
         <result property="merchantId" column="merchant_id" jdbcType="INTEGER"/>
@@ -32,28 +33,28 @@
     <!--查询单个-->
     <select id="selectById" resultMap="RebateRecordMap">
         select
-          id, uid, name, phone, order_id, original_order_id, member_card_id, type, franchisee_id, level, merchant_id, member_card_name, merchant_uid, status, channeler, channeler_rebate, merchant_rebate, place_id, place_uid, rebate_time, settle_time, tenant_id, create_time, update_time
+          id, uid, name, phone, order_id, original_order_id, member_card_id, type, order_type, franchisee_id, level, merchant_id, member_card_name, merchant_uid, status, channeler, channeler_rebate, merchant_rebate, place_id, place_uid, rebate_time, settle_time, tenant_id, create_time, update_time
         from t_rebate_record
         where id = #{id}
     </select>
     
     <select id="selectByOrderId" resultMap="RebateRecordMap">
         select
-            id, uid, name, phone, order_id, original_order_id, member_card_id, member_card_name, type, franchisee_id, level, merchant_id, merchant_uid, status, channeler, channeler_rebate, merchant_rebate, place_id, place_uid, rebate_time, settle_time, tenant_id, create_time, update_time
+            id, uid, name, phone, order_id, original_order_id, member_card_id, member_card_name, type, order_type, franchisee_id, level, merchant_id, merchant_uid, status, channeler, channeler_rebate, merchant_rebate, place_id, place_uid, rebate_time, settle_time, tenant_id, create_time, update_time
         from t_rebate_record
         where order_id = #{orderId}
     </select>
     
     <select id="selectByOriginalOrderId" resultMap="RebateRecordMap">
         select
-            id, uid, name, phone, order_id, original_order_id, member_card_id, member_card_name, type, franchisee_id, level, merchant_id, merchant_uid, status, channeler, channeler_rebate, merchant_rebate, place_id, place_uid, rebate_time, settle_time, tenant_id, create_time, update_time
+            id, uid, name, phone, order_id, original_order_id, member_card_id, member_card_name, type, order_type, franchisee_id, level, merchant_id, merchant_uid, status, channeler, channeler_rebate, merchant_rebate, place_id, place_uid, rebate_time, settle_time, tenant_id, create_time, update_time
         from t_rebate_record
         where original_order_id = #{originalOrderId}
     </select>
     
     <select id="selectNotSettleListByLimit" resultMap="RebateRecordMap">
         select
-            id, uid, name, phone, order_id, original_order_id, member_card_id, member_card_name, type, franchisee_id, level, merchant_id, merchant_uid, status, channeler, channeler_rebate, merchant_rebate, place_id, place_uid, rebate_time, settle_time, tenant_id, create_time, update_time
+            id, uid, name, phone, order_id, original_order_id, member_card_id, member_card_name, type, order_type, franchisee_id, level, merchant_id, merchant_uid, status, channeler, channeler_rebate, merchant_rebate, place_id, place_uid, rebate_time, settle_time, tenant_id, create_time, update_time
         from t_rebate_record
         where  status =0 and create_time &gt;= #{startTime} and create_time &lt; #{endTime} limit #{offset}, #{size}
     </select>
@@ -68,6 +69,7 @@
                member_card_id,
                member_card_name,
                type,
+               order_type,
                franchisee_id,
                level,
                merchant_id,
@@ -92,15 +94,43 @@
     </select>
     
     <select id="selectCurrentMonthRebateRecord" resultMap="RebateRecordMap">
-        select
-            id, uid, name, phone, order_id, original_order_id, member_card_id, member_card_name, type, franchisee_id, level, merchant_id, merchant_uid, status, channeler, channeler_rebate, merchant_rebate, place_id, place_uid, rebate_time, settle_time, tenant_id, create_time, update_time
-        from t_rebate_record
-        where  merchant_id =#{merchantId} and type in (0,1) and create_time &gt;= #{startTime} and create_time &lt; #{endTime} limit #{offset}, #{size}
+        SELECT
+            original_order_id,
+            MAX( id ) as id	,
+            any_value ( uid ) uid,
+            any_value ( NAME ) NAME,
+            any_value ( phone ) phone,
+            any_value ( order_id ) order_id,
+            any_value ( member_card_id ) member_card_id,
+            any_value ( member_card_name ) member_card_name,
+            any_value ( type ) type,
+            any_value ( order_type ) order_type,
+            any_value ( franchisee_id ) franchisee_id,
+            any_value ( level ) level,
+            any_value ( merchant_id ) merchant_id,
+            any_value ( merchant_uid ) merchant_uid,
+            any_value ( status ) status,
+            any_value ( channeler ) channeler,
+            any_value ( channeler_rebate ) channeler_rebate,
+            any_value ( merchant_rebate ) merchant_rebate,
+            any_value ( place_id ) place_id,
+            any_value ( place_uid ) place_uid,
+            any_value ( rebate_time ) rebate_time,
+            any_value ( settle_time ) settle_time,
+            any_value ( tenant_id ) tenant_id,
+            any_value ( create_time ) create_time,
+            any_value ( update_time ) update_time
+        FROM
+            t_rebate_record
+        WHERE
+            level &gt; #{level} AND merchant_id = #{merchantId} and create_time &gt;= #{startTime} and create_time &lt; #{endTime}
+        GROUP BY
+            original_order_id limit #{offset}, #{size};
     </select>
     
     <select id="selectByPage" resultMap="RebateRecordMap">
         select
-        id, uid, name, phone, order_id, original_order_id, member_card_id, member_card_name, type, franchisee_id, level, merchant_id, merchant_uid, status, channeler, channeler_rebate, merchant_rebate, place_id, place_uid, rebate_time, settle_time, tenant_id, create_time, update_time
+        id, uid, name, phone, order_id, original_order_id, member_card_id, member_card_name, type, order_type, franchisee_id, level, merchant_id, merchant_uid, status, channeler, channeler_rebate, merchant_rebate, place_id, place_uid, rebate_time, settle_time, tenant_id, create_time, update_time
         from t_rebate_record
         <where>
             <if test="channeler != null">
@@ -170,8 +200,8 @@
     
     <!--新增所有列-->
     <insert id="insertOne" keyProperty="id" useGeneratedKeys="true">
-        insert into t_rebate_record(uid, name, phone, order_id, original_order_id, member_card_id, member_card_name, type, franchisee_id, level, merchant_id, merchant_uid, status, channeler, channeler_rebate, merchant_rebate, place_id, place_uid, rebate_time, settle_time, tenant_id, create_time, update_time)
-        values (#{uid}, #{name}, #{phone}, #{orderId}, #{originalOrderId}, #{memberCardId}, #{memberCardName} ,#{type}, #{franchiseeId}, #{level}, #{merchantId}, #{merchantUid}, #{status}, #{channeler}, #{channelerRebate}, #{merchantRebate}, #{placeId}, #{placeUid}, #{rebateTime}, #{settleTime}, #{tenantId}, #{createTime}, #{updateTime})
+        insert into t_rebate_record(uid, name, phone, order_id, original_order_id, member_card_id, member_card_name, type, order_type, franchisee_id, level, merchant_id, merchant_uid, status, channeler, channeler_rebate, merchant_rebate, place_id, place_uid, rebate_time, settle_time, tenant_id, create_time, update_time)
+        values (#{uid}, #{name}, #{phone}, #{orderId}, #{originalOrderId}, #{memberCardId}, #{memberCardName} ,#{type}, #{orderType}, #{franchiseeId}, #{level}, #{merchantId}, #{merchantUid}, #{status}, #{channeler}, #{channelerRebate}, #{merchantRebate}, #{placeId}, #{placeUid}, #{rebateTime}, #{settleTime}, #{tenantId}, #{createTime}, #{updateTime})
     </insert>
 
     <!--通过主键修改数据-->
@@ -201,6 +231,9 @@
             </if>
             <if test="type != null">
                 type = #{type},
+            </if>
+            <if test="orderType != null">
+                order_type = #{orderType},
             </if>
             <if test="franchiseeId != null">
                 franchisee_id = #{franchiseeId},
