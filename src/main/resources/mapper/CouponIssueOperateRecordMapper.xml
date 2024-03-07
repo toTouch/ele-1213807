@@ -86,9 +86,6 @@
             <if test="query.uid != null">
                 and tcior.uid = #{query.uid}
             </if>
-            <if test="query.issuedUid != null">
-                and tcior.issued_uid = #{query.issuedUid}
-            </if>
             <if test="query.phone!=null and query.phone!='' ">
                 and tui.phone =#{query.phone}
             </if>

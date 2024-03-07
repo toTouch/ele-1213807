@@ -33,8 +33,7 @@ public class JsonAdminCouponIssueOperateRecordController {
                        @RequestParam(value = "name", required = false) String name,
                        @RequestParam(value = "status", required = false) Integer status,
                        @RequestParam(value = "beginTime", required = false) Long beginTime,
-                       @RequestParam(value = "endTime", required = false) Long endTime,
-                       @RequestParam(value = "endTime", required = false) Long issuedUid) {
+                       @RequestParam(value = "endTime", required = false) Long endTime) {
         if (size < 0 || size > 50) {
             size = 10L;
         }
@@ -56,7 +55,6 @@ public class JsonAdminCouponIssueOperateRecordController {
                 .endTime(endTime)
                 .offset(offset)
                 .size(size)
-                .issuedUid(issuedUid)
                 .tenantId(tenantId).build();
 
         return couponIssueOperateRecordService.queryRecordList(couponIssueOperateRecordQuery);

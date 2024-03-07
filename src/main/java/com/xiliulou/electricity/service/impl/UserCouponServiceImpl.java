@@ -3,7 +3,6 @@ package com.xiliulou.electricity.service.impl;
 import cn.hutool.core.collection.ConcurrentHashSet;
 import cn.hutool.core.lang.UUID;
 import cn.hutool.core.util.ObjectUtil;
-import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.google.api.client.util.Lists;
 import com.xiliulou.cache.redis.RedisService;
@@ -196,17 +195,11 @@ public class UserCouponServiceImpl implements UserCouponService {
             return R.ok(userCouponList);
         }
         //******************************查询核销人************************************/
-        for (UserCouponVO userCouponVO : userCouponList) {
-            Long verifiedUid = userCouponVO.getVerifiedUid();
-            if (Objects.isNull(verifiedUid) || Objects.equals(verifiedUid,UserCoupon.INITIALIZE_THE_VERIFIER)){
-                continue;
-            }
+        userCouponList.forEach(u->{
+            Long verifiedUid = u.getVerifiedUid();
             User user = userService.queryByUidFromCache(verifiedUid);
-            if (Objects.isNull(user) || StrUtil.isBlank(user.getName())){
-                continue;
-            }
-            userCouponVO.setVerifiedName(user.getName());
-        }
+            u.setVerifiedName(Objects.isNull(user)?null:user.getName());
+        });
         //******************************查询核销人结束************************************/
         return R.ok(userCouponList);
     }

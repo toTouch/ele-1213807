@@ -1,11 +1,10 @@
 package com.xiliulou.electricity.service.impl;
 
-import cn.hutool.core.util.StrUtil;
+import cn.hutool.core.util.ObjectUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.entity.CouponIssueOperateRecord;
 import com.xiliulou.electricity.entity.User;
-import com.xiliulou.electricity.entity.UserCoupon;
 import com.xiliulou.electricity.mapper.CouponIssueOperateRecordMapper;
 import com.xiliulou.electricity.query.CouponIssueOperateRecordQuery;
 import com.xiliulou.electricity.service.CouponIssueOperateRecordService;
@@ -59,21 +58,16 @@ public class CouponIssueOperateRecordServiceImpl implements CouponIssueOperateRe
     public R queryRecordList(CouponIssueOperateRecordQuery couponIssueOperateRecordQuery) {
         List<CouponIssueOperateRecordVO> operateRecordVOS = couponIssueOperateRecordMapper.queryRecordList(couponIssueOperateRecordQuery);
         if (Objects.isNull(operateRecordVOS) || operateRecordVOS.isEmpty()) {
-            R.ok(couponIssueOperateRecordMapper.queryRecordList(couponIssueOperateRecordQuery));
+            return R.ok(operateRecordVOS);
         }
         //*********************************查询优惠劵发放人*************************/
-        for (CouponIssueOperateRecordVO operateRecordVO : operateRecordVOS) {
-            if (Objects.isNull(operateRecordVO.getIssuedUid()) || Objects.equals(UserCoupon.INITIALIZE_THE_VERIFIER,operateRecordVO.getIssuedUid())){
-                continue;
-            }
-            User user = userService.queryByUidFromCache(operateRecordVO.getIssuedUid());
-            if (Objects.isNull(user) || StrUtil.isBlank(user.getName())){
-                continue;
-            }
-            operateRecordVO.setIssuedName(user.getName());
-        }
+        operateRecordVOS.forEach(n->{
+            Long issuedUid = n.getIssuedUid();
+            User user = userService.queryByUidFromCache(issuedUid);
+            n.setIssuedName(ObjectUtil.isNull(user)?null:user.getName());
+        });
         //******************************优惠劵发放人查询完毕*************************/
-        return R.ok(couponIssueOperateRecordMapper.queryRecordList(couponIssueOperateRecordQuery));
+        return R.ok(operateRecordVOS);
     }
     @Slave
     @Override

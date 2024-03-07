@@ -50,9 +50,6 @@
             <if test="query.uid != null">
                 and tuc.uid = #{query.uid}
             </if>
-            <if test="query.verifiedUid != null">
-                and tuc.verified_uid = #{query.verifiedUid}
-            </if>
             <if test="query.phone != null and query.phone != ''">
                 and tuc.phone = #{query.phone}
             </if>
