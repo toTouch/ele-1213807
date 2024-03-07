@@ -11,5 +11,5 @@ import java.util.List;
  */
 public interface MerchantCabinetBindHistoryService {
     
-    List<MerchantCabinetBindHistory> queryListByMonth(Long cabinetId, Long placeId, List<String> monthList, Long merchantId);
+    List<MerchantCabinetBindHistory> queryListByMonth(Long cabinetId, Long placeId, List<String> monthList, Long merchantId, Integer tenantId);
 }

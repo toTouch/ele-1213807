@@ -190,6 +190,18 @@
         where id = #{id}
     </update>
     
+    <!--批量取消商户员工关联场地-->
+    <update id="batchUnbindPlaceId">
+        update t_merchant_employee
+        set place_id = 0,
+            update_time = #{updateTime}
+        where uid in
+        <foreach collection="employeeUidList" item="uid" open="(" close=")" separator=",">
+            #{uid}
+        </foreach>
+    </update>
+    
+    
     <!--通过主键逻辑删除商户员工-->
     <delete id="removeById">
         update t_merchant_employee set del_flag = 1, update_time = #{updateTime} where id = #{id}

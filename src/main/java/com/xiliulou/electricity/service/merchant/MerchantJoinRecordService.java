@@ -43,9 +43,9 @@ public interface MerchantJoinRecordService {
     MerchantJoinRecord queryByMerchantIdAndJoinUid(Long merchantId, Long joinUid);
     
     /**
-     * 根据商户id和参与状态查询记录
+     * 根据商户id和参与状态统计人数
      */
-    List<MerchantJoinRecord> listByMerchantIdAndStatus(Long merchantId, Integer status);
+    int countByMerchantIdAndStatus(Long merchantId, Integer status);
     
     /**
      * 定时任务：保护期状态和有效期状态

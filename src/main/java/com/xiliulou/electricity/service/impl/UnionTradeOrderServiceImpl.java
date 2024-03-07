@@ -789,7 +789,7 @@ public class UnionTradeOrderServiceImpl extends
                     electricityMemberCardOrderService.sendUserCoupon(batteryMemberCard, electricityMemberCardOrder);
     
                     //用户绑定商户
-                    userInfoExtraService.bindMerchant(electricityMemberCardOrder.getUid(), electricityMemberCardOrder.getOrderId());
+                    userInfoExtraService.bindMerchant(electricityMemberCardOrder.getUid(), electricityMemberCardOrder.getOrderId(), electricityMemberCardOrder.getMemberCardId());
                     
                     //商户返利
                     sendMerchantRebateMQ(electricityMemberCardOrder.getUid(), electricityMemberCardOrder.getOrderId());
@@ -1007,7 +1007,7 @@ public class UnionTradeOrderServiceImpl extends
                     electricityMemberCardOrderService.sendUserCoupon(batteryMemberCard, electricityMemberCardOrder);
     
                     //用户绑定商户
-                    userInfoExtraService.bindMerchant(electricityMemberCardOrder.getUid(), electricityMemberCardOrder.getOrderId());
+                    userInfoExtraService.bindMerchant(electricityMemberCardOrder.getUid(), electricityMemberCardOrder.getOrderId(),electricityMemberCardOrder.getMemberCardId());
                     
                     //商户返利
                     sendMerchantRebateMQ(electricityMemberCardOrder.getUid(), electricityMemberCardOrder.getOrderId());

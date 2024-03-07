@@ -87,6 +87,8 @@ public class MerchantModifyConsumer implements RocketMQListener<String> {
                 return;
             }
             
+            log.error("=============MerchantModify=============merchantLevel={}", JsonUtil.toJson(merchantLevel));
+            
             //当前商户等级
             String currentLevel = merchantLevel.getLevel();
             
@@ -119,22 +121,21 @@ public class MerchantModifyConsumer implements RocketMQListener<String> {
                         log.info("MERCHANT MODIFY CONSUMER INFO!illegal level,id={},itemLevel={},currentLevel={}", item.getId(), item.getLevel(), currentLevel);
                         return;
                     }
-                    
+    
                     BigDecimal newMerchantRebate = Objects.equals(item.getType(), MerchantConstant.MERCHANT_REBATE_TYPE_INVITATION) ? rebateConfig.getMerchantInvitation()
                             : rebateConfig.getMerchantRenewal();
                     BigDecimal newChannelerRebate = Objects.equals(item.getType(), MerchantConstant.MERCHANT_REBATE_TYPE_INVITATION) ? rebateConfig.getChannelerInvitation()
                             : rebateConfig.getChannelerRenewal();
     
-                    BigDecimal oldMerchantRebate = item.getMerchantRebate();
-                    BigDecimal oldChannelerRebate = item.getChannelerRebate();
-                    
-                    //获取已经返利的记录
-                    List<RebateRecord> rebateRecords = rebateRecordService.listRebatedByUid(item.getUid(), item.getMemberCardId(), item.getMerchantId(), currentLevel);
-                    if (CollectionUtils.isEmpty(rebateRecords)) {
-                        oldMerchantRebate = rebateRecords.stream().map(RebateRecord::getMerchantRebate).reduce(BigDecimal::add).orElse(BigDecimal.ZERO);
-                        oldChannelerRebate = rebateRecords.stream().map(RebateRecord::getChannelerRebate).reduce(BigDecimal::add).orElse(BigDecimal.ZERO);
-                    }
-                    
+                    //上一级返利配置
+                    RebateConfig latestRebateConfig = rebateConfigService.queryLatestByMidAndMerchantLevel(item.getMemberCardId(), currentLevel);
+    
+                    //返利差额=当前返利配置金额-上一级返利配置金额
+                    BigDecimal oldMerchantRebate = Objects.equals(item.getType(), MerchantConstant.MERCHANT_REBATE_TYPE_INVITATION) ? latestRebateConfig.getMerchantInvitation()
+                            : latestRebateConfig.getMerchantRenewal();
+                    BigDecimal oldChannelerRebate = Objects.equals(item.getType(), MerchantConstant.MERCHANT_REBATE_TYPE_INVITATION) ? latestRebateConfig.getChannelerInvitation()
+                            : latestRebateConfig.getChannelerRenewal();
+    
                     RebateRecord rebateRecord = new RebateRecord();
                     rebateRecord.setUid(item.getUid());
                     rebateRecord.setName(item.getName());

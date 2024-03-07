@@ -278,9 +278,19 @@
         limit #{offset},#{size}
     </select>
     
-    <select id="selectRenewalNumberByMerchantId" resultType="int">
-        select count(1) from t_user_info_extra uie left join t_user_battery_member_card  ubmc on uie.uid=ubmc.uid
-                        where uie.merchant_id=#{merchantId}  and  uie.tenant_id =#{tenantId}  and ubmc.card_pay_count &gt; 1
+    <select id="selectRenewalNumberByMerchantId" resultType="integer">
+        SELECT
+            count( 1 )
+        FROM
+            t_user_info_extra uie
+                LEFT JOIN t_electricity_member_card_order emco ON uie.uid = emco.uid
+                LEFT JOIN t_battery_membercard_refund_order bmro ON (emco.order_id collate utf8mb4_0900_ai_ci)=(bmro.member_card_order_no collate utf8mb4_0900_ai_ci)
+        WHERE
+            uie.merchant_id = #{merchantId}  and  uie.tenant_id =#{tenantId} and
+            emco.pay_count > 1
+          AND emco.STATUS = 1
+          AND bmro.STATUS != 4
+        GROUP BY	uie.uid
     </select>
 
     <select id="selectUseableListByTenantIds" resultMap="UserBatteryMemberCardMap">

@@ -120,5 +120,5 @@ public interface UserBatteryMemberCardService {
     
     List<UserBatteryMemberCardChannelExitVo> selectExpireExitList(int offset, int size);
     
-    int queryRenewalNumberByMerchantId(Long id, Integer tenantId);
+    Integer queryRenewalNumberByMerchantId(Long id, Integer tenantId);
 }

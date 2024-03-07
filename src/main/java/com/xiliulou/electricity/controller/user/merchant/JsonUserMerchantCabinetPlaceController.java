@@ -7,6 +7,7 @@ import com.xiliulou.electricity.request.merchant.MerchantPlaceFeeRequest;
 import com.xiliulou.electricity.service.merchant.MerchantCabinetPowerService;
 import com.xiliulou.electricity.service.merchant.MerchantPlaceFeeService;
 import com.xiliulou.electricity.service.merchant.MerchantService;
+import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
@@ -111,7 +112,7 @@ public class JsonUserMerchantCabinetPlaceController extends BaseController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
     
-        MerchantPlaceFeeRequest request = MerchantPlaceFeeRequest.builder().merchantId(merchant.getId()).placeId(placeId).cabinetId(cabinetId).build();
+        MerchantPlaceFeeRequest request = MerchantPlaceFeeRequest.builder().merchantId(merchant.getId()).tenantId(TenantContextHolder.getTenantId()).placeId(placeId).cabinetId(cabinetId).build();
         
         return R.ok(merchantPlaceFeeService.getFeeData(request));
     }
@@ -135,7 +136,7 @@ public class JsonUserMerchantCabinetPlaceController extends BaseController {
         }
     
         
-         MerchantPlaceFeeRequest request = MerchantPlaceFeeRequest.builder().merchantId(merchant.getId()).placeId(placeId)
+         MerchantPlaceFeeRequest request = MerchantPlaceFeeRequest.builder().tenantId(TenantContextHolder.getTenantId()).merchantId(merchant.getId()).placeId(placeId)
                 .cabinetId(cabinetId).startTime(startTime).endTime(endTime).build();
         
         return R.ok(merchantPlaceFeeService.lineData(request));
@@ -158,7 +159,7 @@ public class JsonUserMerchantCabinetPlaceController extends BaseController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
     
-        MerchantPlaceFeeRequest request = MerchantPlaceFeeRequest.builder().merchantId(merchant.getId()).month(month)
+        MerchantPlaceFeeRequest request = MerchantPlaceFeeRequest.builder().merchantId(merchant.getId()).month(month).tenantId(TenantContextHolder.getTenantId())
                 .cabinetId(cabinetId).build();
         
         return R.ok(merchantPlaceFeeService.getPlaceDetailByCabinetId(request));
@@ -182,7 +183,7 @@ public class JsonUserMerchantCabinetPlaceController extends BaseController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
     
-        MerchantPlaceFeeRequest request = MerchantPlaceFeeRequest.builder().merchantId(merchant.getId()).placeId(placeId)
+        MerchantPlaceFeeRequest request = MerchantPlaceFeeRequest.builder().merchantId(merchant.getId()).placeId(placeId).tenantId(TenantContextHolder.getTenantId())
                 .cabinetId(cabinetId).build();
         
         return R.ok(merchantPlaceFeeService.getCabinetPlaceDetail(request));

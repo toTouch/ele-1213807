@@ -22,7 +22,7 @@ public interface MerchantPlaceBindMapper {
     
     Integer existPlaceFeeByMerchantId(@Param("merchantId") Long merchantId);
     
-    List<MerchantPlaceBind> queryNoSettleByMerchantId(@Param("merchantId") Long merchantId);
+    List<MerchantPlaceBind> queryNoSettleByMerchantId(@Param("merchantId") Long merchantId,@Param("tenantId") Integer tenantId);
     
     List<MerchantPlaceBind> selectListBindRecord(MerchantPlaceConditionRequest request);
     

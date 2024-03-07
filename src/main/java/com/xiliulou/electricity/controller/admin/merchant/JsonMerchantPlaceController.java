@@ -101,7 +101,7 @@ public class JsonMerchantPlaceController extends BaseController {
      * @return
      */
     @DeleteMapping(value = "/admin/merchant/place/delete")
-    @Log(title = "删除商户")
+    @Log(title = "删除场地")
     public R delete(@RequestParam(value = "id", required = true) Long id) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {

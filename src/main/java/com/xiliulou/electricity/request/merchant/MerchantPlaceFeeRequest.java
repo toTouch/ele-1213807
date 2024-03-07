@@ -21,6 +21,8 @@ public class MerchantPlaceFeeRequest {
     
     private Long cabinetId;
     
+    private Integer tenantId;
+    
     private Long startTime;
     
     private Long endTime;

@@ -14,5 +14,6 @@ public interface MerchantCabinetBindHistoryMapper {
     
     Integer batchInsert(@Param("list") List<List<MerchantCabinetBindHistory>> list);
     
-    List<MerchantCabinetBindHistory> queryListByMonth(@Param("cabinetId") Long cabinetId,@Param("placeId") Long placeId,@Param("monthList") List<String> monthList,@Param("merchantId") Long merchantId);
+    List<MerchantCabinetBindHistory> queryListByMonth(@Param("cabinetId") Long cabinetId,@Param("placeId") Long placeId,@Param("monthList") List<String> monthList,
+            @Param("merchantId") Long merchantId,@Param("tenantId") Integer tenantId);
 }

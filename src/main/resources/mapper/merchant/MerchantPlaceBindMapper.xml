@@ -68,6 +68,7 @@
                  where del_flag = 0
                    and merchant_month_settlement = 1
                    and merchant_id = #{merchantId}
+                   and tenant_id = #{tenantId}
     </select>
     
     <select id="selectListBindRecord" resultType="com.xiliulou.electricity.entity.merchant.MerchantPlaceBind">
@@ -83,7 +84,7 @@
                 and type = #{status}
             </if>
             <if test="endTime != null">
-                and bind_time &lt;= #{startTime}
+                and bind_time &lt;= #{endTime}
             </if>
         </where>
         order by id desc
@@ -101,8 +102,11 @@
             <if test="status != null">
                 and type = #{status}
             </if>
-            <if test="startTime != null and endTime != null">
-                and un_bind_time &gt;= #{startTime} or bind_time &lt;= #{endTime}
+            <if test="startTime != null">
+                and un_bind_time &gt;= #{startTime}
+            </if>
+            <if test="endTime != null">
+                and bind_time &lt;= #{endTime}
             </if>
         </where>
     </select>

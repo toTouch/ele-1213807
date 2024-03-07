@@ -28,6 +28,7 @@ import com.xiliulou.electricity.vo.merchant.MerchantEmployeeQrCodeVO;
 import com.xiliulou.electricity.vo.merchant.MerchantEmployeeVO;
 import com.xiliulou.security.authentication.console.CustomPasswordEncoder;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
@@ -107,8 +108,13 @@ public class MerchantEmployeeServiceImpl implements MerchantEmployeeService {
         if (Objects.isNull(merchant) || MerchantConstant.DISABLE.equals(merchant.getStatus())) {
             throw new BizException("120002", "当前商户不可用");
         }
+    
+        List<MerchantEmployeeVO> merchantEmployeeVOS = merchantEmployeeMapper.selectMerchantUsers(merchantEmployeeRequest);
+        if(CollectionUtils.isNotEmpty(merchantEmployeeVOS) && merchantEmployeeVOS.size() >= MerchantConstant.MERCHANT_EMPLOYEE_MAX_SIZE){
+            throw new BizException("120024", "员工数量已达上限，请删除后再添加");
+        }
         
-        // 创建商户员工账户
+        // 创建商户员工账号
         User user = User.builder().updateTime(System.currentTimeMillis()).createTime(System.currentTimeMillis()).phone(phone).lockFlag(User.USER_UN_LOCK).gender(User.GENDER_MALE)
                 .lang(MessageUtils.LOCALE_ZH_CN).userType(User.TYPE_USER_MERCHANT_EMPLOYEE).name(name).salt("").avatar("").tenantId(merchantEmployeeRequest.getTenantId())
                 .loginPwd(customPasswordEncoder.encode("123456")).delFlag(User.DEL_NORMAL).build();
@@ -221,6 +227,14 @@ public class MerchantEmployeeServiceImpl implements MerchantEmployeeService {
         });
         
         return result;
+    }
+    
+    @Transactional(rollbackFor = Exception.class)
+    @Override
+    public Integer batchUnbindPlaceId(List<Long> employeeUidList) {
+        Long updateTime = System.currentTimeMillis();
+        
+        return merchantEmployeeMapper.batchUnbindPlaceId(employeeUidList, updateTime);
     }
     
     @Transactional(rollbackFor = Exception.class)
