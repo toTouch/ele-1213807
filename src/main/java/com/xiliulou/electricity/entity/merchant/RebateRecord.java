@@ -62,6 +62,11 @@ public class RebateRecord {
     private Integer type;
     
     /**
+     * 订单类型 0:新租，1:续费
+     */
+    private Integer orderType;
+    
+    /**
      * 加盟商id
      */
     private Long franchiseeId;
