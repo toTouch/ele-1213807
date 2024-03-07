@@ -280,7 +280,8 @@
     
     <select id="selectRenewalNumberByMerchantId" resultType="integer">
         SELECT
-            count( 1 )
+            count( 1 ) from
+        (SELECT 1
         FROM
             t_user_info_extra uie
                 LEFT JOIN t_electricity_member_card_order emco ON uie.uid = emco.uid
@@ -290,7 +291,7 @@
             emco.pay_count > 1
           AND emco.STATUS = 1
           AND (bmro.status is null or bmro.status != 4)
-        GROUP BY	uie.uid
+        GROUP BY	uie.uid) a
     </select>
 
     <select id="selectUseableListByTenantIds" resultMap="UserBatteryMemberCardMap">
