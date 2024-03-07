@@ -256,7 +256,7 @@
                 and status = #{status}
             </if>
             <if test="endTime != null">
-                and bind_time &lt;= #{startTime}
+                and bind_time &lt;= #{endTime}
             </if>
             <if test="placeId != null">
                 and place_id = #{placeId}
@@ -278,8 +278,11 @@
             <if test="status != null">
                 and status = #{status}
             </if>
-            <if test="startTime != null and endTime != null">
-                and un_bind_time &gt;= #{startTime} or bind_time &lt;= #{endTime}
+            <if test="startTime != null">
+                and un_bind_time &gt;= #{startTime}
+            </if>
+            <if test="endTime != null">
+                and bind_time &lt;= #{endTime}
             </if>
             <if test="placeId != null">
                 and place_id = #{placeId}
