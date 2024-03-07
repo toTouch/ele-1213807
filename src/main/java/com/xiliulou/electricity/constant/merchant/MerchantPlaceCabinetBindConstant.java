@@ -69,4 +69,9 @@ public class MerchantPlaceCabinetBindConstant {
      * 场地柜机在最后一天是否解绑了:0 :否 1:是
      */
     public static final Integer CABINET_END_UN_BIND = 0;
+    
+    /**
+     * 场地柜机在最后一天是否解绑了:0 :是 1:否
+     */
+    public static final Integer CABINET_END_BIND = 1;
 }
