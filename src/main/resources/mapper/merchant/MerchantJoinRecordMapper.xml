@@ -144,7 +144,7 @@
         </where>
     </select>
     
-    <select id="countListByMerchantIdAndStatus" resultType="int">
+    <select id="countListByMerchantIdAndStatus" resultType="integer">
         select
         count(1)
         from t_merchant_join_record where del_flag = 0 and merchant_id = #{merchantId} and status = #{status}
