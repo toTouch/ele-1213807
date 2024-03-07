@@ -23,4 +23,9 @@ public interface DateFormatConstant {
      * 上个月
      */
     Integer LAST_MONTH = 1;
+    
+    /**
+     * 上个月
+     */
+    Integer CURRENT_MONTH = 0;
 }

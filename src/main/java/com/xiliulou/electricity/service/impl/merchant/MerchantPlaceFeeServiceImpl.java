@@ -367,10 +367,10 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
         
         resList.stream().sorted(Comparator.comparing(MerchantPlaceCabinetFeeDetailVO::getTime).reversed());
     
-//        List<Integer> subList = resList.subList((request.getOffset() - 1) * request.getSize(), request.getOffset() * request.getSize());
+        List<MerchantPlaceCabinetFeeDetailVO> subList = resList.subList((request.getOffset() - 1) * request.getSize(), request.getOffset() * request.getSize());
         
-        resVo.setCabinetFeeDetailList(resList);
-        resVo.setCabinetCount(resList.size());
+        resVo.setCabinetFeeDetailList(subList);
+        resVo.setCabinetCount(subList.size());
         
         return resVo;
     }
@@ -568,6 +568,8 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
             return Collections.emptyList();
         }
     
+        Map<Long, List<MerchantPlaceFeeMonthRecord>> placeFeeMap = curPlaceFeeMonthRecords.stream().collect(Collectors.groupingBy(MerchantPlaceFeeMonthRecord::getPlaceId));
+    
         List<MerchantCabinetFeeDetailVO> voList = new ArrayList<>();
     
         for (Map.Entry<String, List<MerchantPlaceBind>> entry : merchantPlaceMap.entrySet()) {
@@ -592,7 +594,7 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
             }
         
             // 处理上月的数据
-            List<MerchantCabinetFeeDetailVO> cabinetFeeDetailVOS = dealCurrentMonthData(curPlaceFeeMonthRecords, value, startTime, endTime, lastMonth, merchantId, placeId);
+            List<MerchantCabinetFeeDetailVO> cabinetFeeDetailVOS = dealCurrentMonthData(placeFeeMap.get(placeId), value, startTime, endTime, lastMonth, merchantId, placeId);
             
             if (ObjectUtils.isNotEmpty(cabinetFeeDetailVOS)) {
                 voList.addAll(cabinetFeeDetailVOS);
@@ -604,6 +606,10 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
     
     private List<MerchantCabinetFeeDetailVO> dealCurrentMonthData(List<MerchantPlaceFeeMonthRecord> curPlaceFeeMonthRecords, List<MerchantPlaceBind> value, long startTime,
             long endTime, String lastMonth, Long merchantId, Long placeId) {
+        if (ObjectUtils.isEmpty(curPlaceFeeMonthRecords)) {
+            return Collections.emptyList();
+        }
+        
         List<MerchantCabinetFeeDetailVO> voList = new ArrayList<>();
         
         // 根据柜机id进行分组
@@ -730,6 +736,8 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
             return Collections.emptyList();
         }
     
+        Map<Long, List<MerchantPlaceFeeMonthRecord>> placeFeeMap = lastMonthRecords.stream().collect(Collectors.groupingBy(MerchantPlaceFeeMonthRecord::getPlaceId));
+    
         List<MerchantCabinetFeeDetailVO> voList = new ArrayList<>();
         log.info("handlerCabinetBindHistory3={}", merchantPlaceMap);
         for (Map.Entry<String, List<MerchantPlaceBind>> entry : merchantPlaceMap.entrySet()) {
@@ -753,7 +761,7 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
             }
         
             // 处理两个月之前的数据
-            List<MerchantCabinetFeeDetailVO> cabinetFeeDetailVOS = dealLastMonthData(lastMonthRecords, value, startTime, endTime, lastMonth, merchantId, placeId);
+            List<MerchantCabinetFeeDetailVO> cabinetFeeDetailVOS = dealLastMonthData(placeFeeMap.get(placeId), value, startTime, endTime, lastMonth, merchantId, placeId);
             
             if (ObjectUtils.isNotEmpty(cabinetFeeDetailVOS)) {
                 voList.addAll(cabinetFeeDetailVOS);
@@ -1030,7 +1038,7 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
         List<Long> placeIdList = merchantPlaceBinds.stream().map(MerchantPlaceBind::getPlaceId).collect(Collectors.toList());
         
         // 本月的第一天
-        long startTime = DateUtils.getBeforeMonthFirstDayTimestamp(0);
+        long startTime = DateUtils.getBeforeMonthFirstDayTimestamp(DateFormatConstant.CURRENT_MONTH);
         
         // 当前时间
         long endTime = System.currentTimeMillis();
@@ -1202,7 +1210,7 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
         }
         
         // 根据柜机的场地进行分组
-        final Map<String, List<MerchantPlaceCabinetBind>> map = cabinetBindList.stream()
+        Map<String, List<MerchantPlaceCabinetBind>> map = cabinetBindList.stream()
                 .collect(Collectors.groupingBy(item -> item.getPlaceId() + StringConstant.COMMA_EN + item.getCabinetId()));
         for (Map.Entry<String, List<MerchantPlaceCabinetBind>> entry : map.entrySet()) {
             String key = entry.getKey();
@@ -1223,6 +1231,7 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
                     record.setId(System.currentTimeMillis() + atomicReference.get());
                     record.setMonthDate(settleDate);
                     record.setPlaceId(cabinetBind.getPlaceId());
+                    record.setCabinetEndBind(cabinetBind.getCabinetEndBind());
                     record.setCabinetPlaceBindStatus(cabinetBind.getStatus());
                     record.setEid(cabinetBind.getCabinetId());
                     record.setRentStartTime(cabinetBind.getBindTime());
@@ -1707,7 +1716,7 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
             MerchantPlaceCabinetBind bind = bindList.get(0);
             MerchantPlaceCabinetBindDTO bindDTO = new MerchantPlaceCabinetBindDTO();
             BeanUtils.copyProperties(bind, bindDTO);
-            bindDTO.setCabinetEndBind(MerchantPlaceCabinetBindConstant.CABINET_END_UN_BIND);
+            bindDTO.setCabinetEndBind(MerchantPlaceCabinetBindConstant.CABINET_END_BIND);
             bindDTO.setUnBindTime(dayOfMonthEndTime);
             String placeMonthSettlementDetail = bindDTO.getPlaceMonthSettlementDetail();
             
