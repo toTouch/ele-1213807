@@ -169,7 +169,7 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
         }
         
         //根据商户等级&套餐id获取返利套餐
-        RebateConfig rebateConfig = rebateConfigService.queryByMidAndMerchantLevel(merchantJoinRecord.getMerchantId(), merchantLevel.getLevel());
+        RebateConfig rebateConfig = rebateConfigService.queryByMidAndMerchantLevel(memberCardId, merchantLevel.getLevel());
         if (Objects.isNull(rebateConfig)) {
             log.warn("BIND MERCHANT WARN!rebateConfig is null,merchantId={},uid={},level={}", merchantJoinRecord.getMerchantId(), uid, merchantLevel.getLevel());
             return;
