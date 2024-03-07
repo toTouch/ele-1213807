@@ -426,8 +426,11 @@ public class MerchantPlaceServiceImpl implements MerchantPlaceService {
      */
     @Override
     public Triple<Boolean, String, Object> queryById(Long id) {
+        Integer tenantId = TenantContextHolder.getTenantId();
+        
         MerchantPlace merchantPlace = merchantPlaceMapper.selectById(id);
-        if (Objects.isNull(merchantPlace)) {
+        if (Objects.isNull(merchantPlace) || !Objects.equals(merchantPlace.getTenantId(), tenantId)) {
+            log.error("merchant place error, query by id error, placeId={}", id);
             return Triple.of(false, "", "场地不存在");
         }
         

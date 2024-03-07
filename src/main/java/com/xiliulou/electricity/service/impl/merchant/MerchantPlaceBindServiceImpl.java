@@ -48,8 +48,8 @@ public class MerchantPlaceBindServiceImpl implements MerchantPlaceBindService {
     
     @Slave
     @Override
-    public List<MerchantPlaceBind> queryNoSettleByMerchantId(Long merchantId) {
-        return placeBindMapper.queryNoSettleByMerchantId(merchantId);
+    public List<MerchantPlaceBind> queryNoSettleByMerchantId(Long merchantId, Integer tenantId) {
+        return placeBindMapper.queryNoSettleByMerchantId(merchantId, tenantId);
     }
     
     @Slave

@@ -12,7 +12,6 @@ import com.xiliulou.electricity.constant.StringConstant;
 import com.xiliulou.electricity.constant.merchant.MerchantConstant;
 import com.xiliulou.electricity.constant.merchant.MerchantPlaceBindConstant;
 import com.xiliulou.electricity.constant.merchant.MerchantPlaceCabinetBindConstant;
-import com.xiliulou.electricity.constant.merchant.RebateRecordConstant;
 import com.xiliulou.electricity.dto.merchant.MerchantPlaceCabinetBindDTO;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.merchant.Merchant;
@@ -37,6 +36,7 @@ import com.xiliulou.electricity.service.merchant.MerchantPlaceFeeService;
 import com.xiliulou.electricity.service.merchant.MerchantPlaceMapService;
 import com.xiliulou.electricity.service.merchant.MerchantPlaceService;
 import com.xiliulou.electricity.service.merchant.MerchantService;
+import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DateUtils;
 import com.xiliulou.electricity.vo.merchant.MerchantCabinetFeeDetailShowVO;
 import com.xiliulou.electricity.vo.merchant.MerchantCabinetFeeDetailVO;
@@ -124,10 +124,12 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
     @Slave
     @Override
     public Integer isShowPlacePage(Long merchantId) {
+        Integer tenantId = TenantContextHolder.getTenantId();
+        
         // 判断商户表的标志是否存在场地费
         Merchant merchant = merchantService.queryByIdFromCache(merchantId);
         
-        if (Objects.isNull(merchant)) {
+        if (Objects.isNull(merchant) || !Objects.equals(merchant.getTenantId(), tenantId)) {
             log.error("show place page merchant is null, merchantId={}", merchantId);
             return NumberConstant.ZERO;
         }
@@ -197,7 +199,7 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
         BigDecimal lastMothFee = getLastMothFee(request);
         
         // 从历史月结账单中统计出对应月份的数据
-        List<MerchantPlaceFeeMonth> placeFeeMonths = merchantPlaceFeeMonthService.queryListByMonth(request.getPlaceId(), request.getCabinetId(), xDataList, request.getMerchantId());
+        List<MerchantPlaceFeeMonth> placeFeeMonths = merchantPlaceFeeMonthService.queryListByMonth(request.getPlaceId(), request.getCabinetId(), xDataList, request.getMerchantId(), request.getTenantId());
         Map<String, BigDecimal> placeMap = new HashMap<>();
         
         if (ObjectUtils.isNotEmpty(placeFeeMonths)) {
@@ -379,7 +381,7 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
         // 获取当前月份
         String currentMonth = DateUtil.format(new Date(), "yyyy-MM");
         if (Objects.equals(currentMonth, request.getMonth())) {
-            log.info("getCurrentMonthDetail start");
+            
             return getCurrentMonthDetail(request);
         }
         
@@ -401,7 +403,7 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
         List<String> monthList = new ArrayList<>();
         monthList.add(request.getMonth());
         
-        List<MerchantCabinetBindHistory> placeFeeMonths = merchantCabinetBindHistoryService.queryListByMonth(request.getCabinetId(), null, monthList, request.getMerchantId());
+        List<MerchantCabinetBindHistory> placeFeeMonths = merchantCabinetBindHistoryService.queryListByMonth(request.getCabinetId(), null, monthList, request.getMerchantId(), request.getTenantId());
         log.info("getPlaceDetailByCabinetId1={}", placeFeeMonths);
         
         if (ObjectUtils.isEmpty(placeFeeMonths)) {
@@ -443,7 +445,7 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
     }
     
     private List<MerchantCabinetFeeDetailVO> getLastMonthDetail(MerchantPlaceFeeRequest request) {
-        List<MerchantPlaceBind> merchantPlaceBinds = merchantPlaceBindService.queryNoSettleByMerchantId(request.getMerchantId());
+        List<MerchantPlaceBind> merchantPlaceBinds = merchantPlaceBindService.queryNoSettleByMerchantId(request.getMerchantId(), request.getTenantId());
     
         log.info("getCurMonthFeeRecords1={}", merchantPlaceBinds);
     
@@ -994,7 +996,7 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
     }
     
     private List<MerchantPlaceFeeMonthDetail> getCurMonthFeeRecords(MerchantPlaceFeeRequest request) {
-        List<MerchantPlaceBind> merchantPlaceBinds = merchantPlaceBindService.queryNoSettleByMerchantId(request.getMerchantId());
+        List<MerchantPlaceBind> merchantPlaceBinds = merchantPlaceBindService.queryNoSettleByMerchantId(request.getMerchantId(), request.getTenantId());
         
         log.info("getCurMonthFeeRecords1 merchantPlaceBinds={}", merchantPlaceBinds);
         
@@ -1255,7 +1257,7 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
     }
     
     private List<MerchantPlaceFeeMonthDetail> getLastMonthFeeRecords(MerchantPlaceFeeRequest request) {
-        List<MerchantPlaceBind> merchantPlaceBinds = merchantPlaceBindService.queryNoSettleByMerchantId(request.getMerchantId());
+        List<MerchantPlaceBind> merchantPlaceBinds = merchantPlaceBindService.queryNoSettleByMerchantId(request.getMerchantId(), request.getTenantId());
         
         if (ObjectUtils.isEmpty(merchantPlaceBinds)) {
             return Collections.emptyList();
