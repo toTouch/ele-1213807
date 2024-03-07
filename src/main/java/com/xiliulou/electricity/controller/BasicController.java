@@ -69,6 +69,9 @@ public class BasicController extends BaseController {
 
     @Resource
     private UserDataScopeService userDataScopeService;
+    
+    @Resource
+    private UserService userService;
 
 
     /**
@@ -282,6 +285,28 @@ public class BasicController extends BaseController {
         Map<Long, UserInfo> userInfoMap = userInfos.stream().collect(Collectors.toMap(UserInfo::getUid, Function.identity(), (k1, k2) -> k1));
 
         return userInfoMap;
+    }
+    
+    /**
+     * 根据UID集获取B及C端用户信息
+     * @param uids
+     * @return
+     */
+    protected Map<Long, User> getUserByUidsForMap(Set<Long> uids) {
+        if (CollectionUtils.isEmpty(uids)) {
+            return Collections.emptyMap();
+        }
+        
+        LambdaQueryWrapper<User> userQueryWrapper = new LambdaQueryWrapper();
+        userQueryWrapper.in(User::getUid, uids);
+        List<User> users = userService.list(userQueryWrapper);
+        if(users.isEmpty()) {
+            return Collections.emptyMap();
+        }
+        
+        Map<Long, User> userMap = users.stream().collect(Collectors.toMap(User::getUid, Function.identity(), (k1, k2) -> k1));
+        
+        return userMap;
     }
 
     /**

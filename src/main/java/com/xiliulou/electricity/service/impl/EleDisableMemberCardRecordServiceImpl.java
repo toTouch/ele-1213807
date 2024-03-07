@@ -32,10 +32,13 @@ import com.xiliulou.electricity.service.ServiceFeeUserInfoService;
 import com.xiliulou.electricity.service.UserBatteryMemberCardService;
 import com.xiliulou.electricity.service.UserBatteryTypeService;
 import com.xiliulou.electricity.service.UserInfoService;
+import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseUserCostRecordService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.OrderIdUtil;
+import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.EleDisableMemberCardRecordVO;
+import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -86,6 +89,9 @@ public class EleDisableMemberCardRecordServiceImpl extends ServiceImpl<Electrici
     @Autowired
     ServiceFeeUserInfoService serviceFeeUserInfoService;
     
+    @Autowired
+    UserService userService;
+    
     @Resource
     EnterpriseUserCostRecordService enterpriseUserCostRecordService;
 
@@ -112,6 +118,9 @@ public class EleDisableMemberCardRecordServiceImpl extends ServiceImpl<Electrici
             item.setRentUnit(Objects.isNull(batteryMemberCard)?null:batteryMemberCard.getRentUnit());
             item.setBusinessType(Objects.isNull(batteryMemberCard) ? BatteryMemberCardBusinessTypeEnum.BUSINESS_TYPE_BATTERY.getCode() : batteryMemberCard.getBusinessType());
             
+            // 设置审核员名称
+            item.setAuditorName(userService.queryByUidFromCache(item.getAuditorId()).getName());
+            
         });
 
         return R.ok(eleDisableMemberCardRecordVOS);
@@ -127,7 +136,11 @@ public class EleDisableMemberCardRecordServiceImpl extends ServiceImpl<Electrici
     public R reviewDisableMemberCard(String disableMemberCardNo, String errMsg, Integer status) {
 
         Integer tenantId = TenantContextHolder.getTenantId();
-
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+    
         EleDisableMemberCardRecord eleDisableMemberCardRecord = eleDisableMemberCardRecordMapper.selectOne(new LambdaQueryWrapper<EleDisableMemberCardRecord>().eq(EleDisableMemberCardRecord::getDisableMemberCardNo, disableMemberCardNo).eq(EleDisableMemberCardRecord::getTenantId, tenantId));
         if (Objects.isNull(eleDisableMemberCardRecord)) {
             log.error("REVIEW_DISABLE_MEMBER_CARD ERROR ,NOT FOUND DISABLE_MEMBER_CARD ORDER_NO={}", disableMemberCardNo);
@@ -184,6 +197,7 @@ public class EleDisableMemberCardRecordServiceImpl extends ServiceImpl<Electrici
         updateEleDisableMemberCardRecord.setErrMsg(errMsg);
         updateEleDisableMemberCardRecord.setDisableMemberCardTime(System.currentTimeMillis());
         updateEleDisableMemberCardRecord.setUpdateTime(System.currentTimeMillis());
+        updateEleDisableMemberCardRecord.setAuditorId(user.getUid());
         if (Objects.equals(eleDisableMemberCardRecord.getDisableCardTimeType(), EleDisableMemberCardRecord.DISABLE_CARD_LIMIT_TIME) && Objects.equals(status, EleDisableMemberCardRecord.MEMBER_CARD_DISABLE)) {
             updateEleDisableMemberCardRecord.setDisableDeadline(System.currentTimeMillis() + eleDisableMemberCardRecord.getChooseDays() * (24 * 60 * 60 * 1000L));
         }

@@ -111,4 +111,9 @@ public class WithdrawRecordVO {
      * 平台税率
      */
     private BigDecimal serviceTaxRate;
+    
+    /**
+     * 审核员名称
+     */
+    private String auditorName;
 }

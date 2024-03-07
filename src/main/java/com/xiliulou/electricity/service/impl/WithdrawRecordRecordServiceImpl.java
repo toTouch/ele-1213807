@@ -213,15 +213,17 @@ public class WithdrawRecordRecordServiceImpl implements WithdrawRecordService {
 
 	@Override
 	public R queryList(WithdrawRecordQuery withdrawRecordQuery) {
+		
+		// 查询提现订单
 		List<WithdrawRecord> withdrawRecordList = withdrawRecordMapper.queryList(withdrawRecordQuery);
 		List<WithdrawRecordVO> withdrawRecordVOs = new ArrayList<>();
-		//脱敏
+		
+		// 脱敏
 		for (WithdrawRecord withdrawRecord : withdrawRecordList) {
-
 			WithdrawRecordVO withdrawRecordVO = new WithdrawRecordVO();
 			BeanUtil.copyProperties(withdrawRecord, withdrawRecordVO);
 
-			//查询身份证号
+			// 查询身份证号
 			BankCard bankCard = bankCardService.queryByUid(withdrawRecordVO.getUid());
 			if (Objects.nonNull(bankCard)) {
 //				withdrawRecordVO.setIdNumber(DesensitizationUtil.idCard(bankCard.getEncBindIdNumber()));
@@ -230,18 +232,22 @@ public class WithdrawRecordRecordServiceImpl implements WithdrawRecordService {
 //			withdrawRecordVO.setBankNumber(DesensitizationUtil.bankCard(withdrawRecordVO.getBankNumber()));
 			withdrawRecordVO.setBankNumber(withdrawRecordVO.getBankNumber());
 
-			//设置请求提现金额
+			// 设置请求提现金额
 			BigDecimal amount = BigDecimal.valueOf(withdrawRecord.getAmount());
 			BigDecimal handlingFee = BigDecimal.valueOf(withdrawRecord.getHandlingFee());
 			BigDecimal requestAmount = amount.add(handlingFee).setScale(2, BigDecimal.ROUND_HALF_UP);
 			withdrawRecordVO.setRequestAmount(requestAmount.doubleValue());
 
-			//查询用户名称
+			// 查询前台用户信息
 			User user = userService.queryByUidFromCache(withdrawRecordVO.getUid());
 			if (Objects.nonNull(user)) {
 				withdrawRecordVO.setPhone(user.getPhone());
 			}
-
+			
+			// 查询审核员信息
+			User auditor = userService.queryByUidFromCache(withdrawRecord.getAuditorId());
+			withdrawRecordVO.setAuditorName(auditor.getName());
+			
 			withdrawRecordVOs.add(withdrawRecordVO);
 
 		}
@@ -258,6 +264,10 @@ public class WithdrawRecordRecordServiceImpl implements WithdrawRecordService {
 	public R handleWithdraw(HandleWithdrawQuery handleWithdrawQuery) {
 
 		Integer tenantId = TenantContextHolder.getTenantId();
+		TokenUser user = SecurityUtils.getUserInfo();
+		if (Objects.isNull(user)) {
+			return R.fail("ELECTRICITY.0001", "未找到用户");
+		}
 
 		//提现密码确认
 		WithdrawPassword withdrawPassword = withdrawPasswordService.queryFromCache(tenantId);
@@ -294,6 +304,7 @@ public class WithdrawRecordRecordServiceImpl implements WithdrawRecordService {
 		withdrawRecord.setStatus(handleWithdrawQuery.getStatus());
 		withdrawRecord.setUpdateTime(System.currentTimeMillis());
 		withdrawRecord.setCheckTime(System.currentTimeMillis());
+		withdrawRecord.setAuditorId(user.getUid());
 
 		//提现审核拒绝
 		if (Objects.equals(handleWithdrawQuery.getStatus(), WithdrawRecord.CHECK_REFUSE)) {
@@ -514,6 +525,7 @@ public class WithdrawRecordRecordServiceImpl implements WithdrawRecordService {
         // 设置状态
         withdrawRecord.setUpdateTime(System.currentTimeMillis());
         withdrawRecord.setCheckTime(System.currentTimeMillis());
+		withdrawRecord.setAuditorId(user.getUid());
         
         // 提现审核拒绝
         if (Objects.equals(batchHandleWithdrawRequest.getStatus(), WithdrawRecord.CHECK_REFUSE)) {

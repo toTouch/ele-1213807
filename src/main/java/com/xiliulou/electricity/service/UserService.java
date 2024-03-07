@@ -1,7 +1,10 @@
 package com.xiliulou.electricity.service;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.extension.service.IService;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.User;
+import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.query.UserInfoQuery;
 import com.xiliulou.electricity.query.UserSourceQuery;
 import com.xiliulou.electricity.query.UserSourceUpdateQuery;
@@ -20,7 +23,7 @@ import java.util.List;
  * @author makejava
  * @since 2020-11-27 11:19:51
  */
-public interface UserService {
+public interface UserService extends IService<User> {
     
     /**
      * 启用锁定用户

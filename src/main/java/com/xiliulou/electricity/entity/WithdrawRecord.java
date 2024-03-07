@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.entity;
 
+import com.alibaba.fastjson2.function.impl.ToInteger;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
@@ -83,8 +84,11 @@ public class WithdrawRecord {
 
     //银行编号
     private String bankCode;
-
+    
     private Integer tenantId;
+    
+    // 审核员ID
+    private Long auditorId;
 
 
     //状态
