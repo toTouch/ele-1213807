@@ -278,7 +278,7 @@
         limit #{offset},#{size}
     </select>
     
-    <select id="selectRenewalNumberByMerchantId" resultType="int">
+    <select id="selectRenewalNumberByMerchantId" resultType="integer">
         SELECT
             count( 1 )
         FROM
