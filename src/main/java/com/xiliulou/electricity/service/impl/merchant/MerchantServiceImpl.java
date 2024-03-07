@@ -723,7 +723,7 @@ public class MerchantServiceImpl implements MerchantService {
         }
         
         // 删除企业
-        Triple<Boolean, String, Object> triple = enterpriseInfoService.delete(merchant.getEnterpriseId());
+        Triple<Boolean, String, Object> triple = enterpriseInfoService.deleteMerchantEnterprise(merchant.getEnterpriseId());
         if (!triple.getLeft()) {
             String msg = "删除企业信息出错";
             

@@ -292,7 +292,7 @@ public class MerchantPlaceCabinetBindServiceImpl implements MerchantPlaceCabinet
         // 检测创建时间是否在当前本月 如果是本月则不允许进行删除
         if (!DateUtils.isSameMonth(cabinetBind.getCreateTime(), currentTimeMillis)) {
             log.error("place bind delete error, data not find, id ={}", id);
-            return Triple.of(false, "120228", "仅可删除本月内创建的记录");
+            return Triple.of(false, "120236", "仅可删除本月内创建的记录");
         }
         
         MerchantPlaceCabinetBind update = new MerchantPlaceCabinetBind();
