@@ -24,10 +24,10 @@ import java.util.Objects;
 public class ChannelEmployeeAmountServiceImpl implements ChannelEmployeeAmountService {
     
     @Resource
-    private ChannelEmployeeAmountMapper channelEmployeeAmountMapper;
+    UserService userService;
     
     @Resource
-    UserService userService;
+    private ChannelEmployeeAmountMapper channelEmployeeAmountMapper;
     
     @Transactional
     @Override
@@ -35,7 +35,7 @@ public class ChannelEmployeeAmountServiceImpl implements ChannelEmployeeAmountSe
         log.info("add amount for channel employee, amount = {}, uid = {}", amount, uid);
         User user = userService.queryByUidFromCache(uid);
         
-        if(Objects.isNull(user)){
+        if (Objects.isNull(user)) {
             log.error("add amount by uid error, not found channel employee user, uid = {}", uid);
             //throw new BizException("120008", "渠道员不存在");
             return NumberConstant.ZERO;
@@ -51,11 +51,11 @@ public class ChannelEmployeeAmountServiceImpl implements ChannelEmployeeAmountSe
         log.info("reduce amount for channel employee, amount = {}, uid = {}", amount, uid);
         User user = userService.queryByUidFromCache(uid);
         
-        if(Objects.isNull(user)){
+        if (Objects.isNull(user)) {
             log.error("reduce amount by uid error, not found channel employee user, uid = {}", uid);
             return NumberConstant.ZERO;
         }
-    
+        
         Integer result = channelEmployeeAmountMapper.reduceAmountByUid(amount, uid, tenantId, System.currentTimeMillis());
         return result;
     }
