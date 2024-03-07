@@ -99,5 +99,7 @@ public interface MerchantConstant {
     Integer MERCHANT_QR_CODE_TYPE = 1;
     
     Integer MERCHANT_EMPLOYEE_QR_CODE_TYPE = 2;
+    
+    Integer MERCHANT_EMPLOYEE_MAX_SIZE = 20;
 
 }
