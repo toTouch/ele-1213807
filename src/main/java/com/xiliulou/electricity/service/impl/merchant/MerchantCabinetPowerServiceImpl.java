@@ -1388,24 +1388,7 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
         }
         
         // 初始化
-        MerchantProPowerLineVO vo = new MerchantProPowerLineVO();
-        List<MerchantProPowerLineDataVO> powerList = new ArrayList<>();
-        List<MerchantProPowerChargeLineDataVO> chargeList = new ArrayList<>();
-        
-        for (String monthDate : monthList) {
-            MerchantProPowerLineDataVO powerData = new MerchantProPowerLineDataVO();
-            powerData.setMonthDate(monthDate);
-            powerData.setPower(NumberConstant.ZERO_D);
-            powerList.add(powerData);
-            
-            MerchantProPowerChargeLineDataVO chargeData = new MerchantProPowerChargeLineDataVO();
-            chargeData.setMonthDate(monthDate);
-            chargeData.setCharge(NumberConstant.ZERO_D);
-            chargeList.add(chargeData);
-        }
-        
-        vo.setPowerList(powerList);
-        vo.setChargeList(chargeList);
+        MerchantProPowerLineVO vo = initLineData(monthList);
         
         Merchant merchant = merchantService.queryByUid(request.getUid());
         if (Objects.isNull(merchant)) {
@@ -1434,8 +1417,8 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
             monthList.remove(lastMonthDate);
         }
         
-        List<MerchantProPowerLineDataVO> powerList1 = vo.getPowerList();
-        List<MerchantProPowerChargeLineDataVO> chargeList1 = vo.getChargeList();
+        List<MerchantProPowerLineDataVO> powerList = new ArrayList<>();
+        List<MerchantProPowerChargeLineDataVO> chargeList = new ArrayList<>();
         
         // 2.统计2个月前的历史数据
         for (String monthDate : monthList) {
@@ -1463,13 +1446,13 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
             MerchantProPowerLineDataVO power = new MerchantProPowerLineDataVO();
             power.setMonthDate(monthDate);
             power.setPower(powerD);
-            powerList1.add(power);
+            powerList.add(power);
             
             // 电费
             MerchantProPowerChargeLineDataVO charge = new MerchantProPowerChargeLineDataVO();
             charge.setMonthDate(monthDate);
             charge.setCharge(chargeD);
-            chargeList1.add(charge);
+            chargeList.add(charge);
         }
         
         if (hasLastMonth) {
@@ -1488,22 +1471,42 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
             MerchantProPowerLineDataVO power = new MerchantProPowerLineDataVO();
             power.setMonthDate(lastMonthDate);
             power.setPower(powerD);
-            powerList1.add(power);
+            powerList.add(power);
             
             // 电费
             MerchantProPowerChargeLineDataVO charge = new MerchantProPowerChargeLineDataVO();
             charge.setMonthDate(lastMonthDate);
             charge.setCharge(chargeD);
-            chargeList1.add(charge);
+            chargeList.add(charge);
         }
         
-        powerList1.addAll(powerList);
-        chargeList1.addAll(chargeList);
-        
-        vo.setPowerList(powerList1);
-        vo.setChargeList(chargeList1);
+        vo.setPowerList(powerList);
+        vo.setChargeList(chargeList);
         
         log.info("商户电费-折线图, vo={}", vo);
+        
+        return vo;
+    }
+    
+    private MerchantProPowerLineVO initLineData(List<String> monthList) {
+        MerchantProPowerLineVO vo = new MerchantProPowerLineVO();
+        List<MerchantProPowerLineDataVO> powerList = new ArrayList<>();
+        List<MerchantProPowerChargeLineDataVO> chargeList = new ArrayList<>();
+    
+        for (String monthDate : monthList) {
+            MerchantProPowerLineDataVO powerData = new MerchantProPowerLineDataVO();
+            powerData.setMonthDate(monthDate);
+            powerData.setPower(NumberConstant.ZERO_D);
+            powerList.add(powerData);
+        
+            MerchantProPowerChargeLineDataVO chargeData = new MerchantProPowerChargeLineDataVO();
+            chargeData.setMonthDate(monthDate);
+            chargeData.setCharge(NumberConstant.ZERO_D);
+            chargeList.add(chargeData);
+        }
+    
+        vo.setPowerList(powerList);
+        vo.setChargeList(chargeList);
         
         return vo;
     }
