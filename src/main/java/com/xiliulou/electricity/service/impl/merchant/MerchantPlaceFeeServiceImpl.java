@@ -1195,7 +1195,7 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
         // 获取场地的柜机绑定记录
         List<MerchantPlaceCabinetBind> cabinetBindList = merchantPlaceCabinetBindService.queryListByPlaceId(placeIdList,
                 MerchantPlaceCabinetBindConstant.PLACE_MONTH_NOT_SETTLEMENT);
-        log.info("getCurMonthRecordFirst1={}", cabinetBindList);
+        log.info("getCurMonthRecordFirst1={}", JsonUtil.toJson(cabinetBindList));
         
         if (ObjectUtils.isEmpty(cabinetBindList)) {
             return list;
@@ -1744,6 +1744,13 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
                     if (DateUtils.isSameDay(unbind1.getUnBindTime(), unbind2.getBindTime())) {
                         unbind1.setUnBindTime(unbind2.getUnBindTime());
                         unbindList.remove(unbind2);
+                        i--;
+                    }
+    
+                    // 如果解绑记录有包含，则需要过滤掉被包含的记录
+                    if (unbind1.getUnBindTime() > unbind2.getBindTime()) {
+                        unbindList.remove(unbind2);
+                        updatePlaceCabinetBindList.add(unbind2);
                         i--;
                     }
                 }
