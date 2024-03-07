@@ -23,7 +23,8 @@ public interface RebateRecordService {
     
     RebateRecord queryByOrderId(String orderId);
     
-    RebateRecord queryByOriginalOrderId(String originalOrderId);
+    List<RebateRecord> queryByOriginalOrderId(String originalOrderId);
+    RebateRecord queryLatestByOriginalOrderId(String originalOrderId);
     
     RebateRecord insert(RebateRecord rebateRecord);
     
@@ -42,7 +43,7 @@ public interface RebateRecordService {
     
     void handleRebate(RebateRecord rebateRecord);
     
-    List<RebateRecord> listCurrentMonthRebateRecord(Long merchantId, long startTime, long endTime, int offset, int size);
+    List<RebateRecord> listCurrentMonthRebateRecord(String currentLevel, Long merchantId, long startTime, long endTime, int offset, int size);
     
     BigDecimal sumByStatus(MerchantPromotionFeeQueryModel merchantPromotionFeeQueryModel);
     

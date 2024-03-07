@@ -294,8 +294,7 @@ public class BatteryMemberCardMerchantRebateConsumer implements RocketMQListener
         }
         
         //获取返利记录
-        RebateRecord rebateRecord = rebateRecordService.queryByOriginalOrderId(batteryMembercardRefundOrder.getMemberCardOrderNo());
-        // TODO  12345//存在多个订单号相同的
+        RebateRecord rebateRecord = rebateRecordService.queryLatestByOriginalOrderId(batteryMembercardRefundOrder.getMemberCardOrderNo());
         if (Objects.isNull(rebateRecord)) {
             log.warn("REBATE REFUND CONSUMER WARN!not found rebateRecord,memberCardOrderId={}", batteryMembercardRefundOrder.getMemberCardOrderNo());
             return;
@@ -352,51 +351,57 @@ public class BatteryMemberCardMerchantRebateConsumer implements RocketMQListener
     @Transactional(rollbackFor = Exception.class)
     public void handleExcessRebateRecord(RebateRecord rebateRecord) {
         //获取差额记录
-        List<RebateRecord> excessList = new ArrayList<>();
-        String originalOrderId = rebateRecord.getOrderId();
-        while (true) {
-            RebateRecord excessRecord = rebateRecordService.queryByOriginalOrderId(originalOrderId);
-            if (Objects.isNull(excessRecord)) {
-                break;
-            }
-            originalOrderId = excessRecord.getOrderId();
-            excessList.add(excessRecord);
-        }
-        
+        List<RebateRecord> excessList = rebateRecordService.queryByOriginalOrderId(rebateRecord.getOrderId());
         if (CollectionUtils.isEmpty(excessList)) {
+            log.warn("REBATE REFUND CONSUMER WARN!excessList is empty,orderId={}", rebateRecord.getOrderId());
             return;
         }
         
         for (RebateRecord record : excessList) {
-            RebateRecord rebateRecordInsert = new RebateRecord();
-            rebateRecordInsert.setUid(record.getUid());
-            rebateRecordInsert.setName(record.getName());
-            rebateRecordInsert.setPhone(record.getPhone());
-            rebateRecordInsert.setOrderId(OrderIdUtil.generateBusinessOrderId(BusinessType.BATTERY_REBATE, rebateRecord.getUid()));
-            rebateRecordInsert.setOriginalOrderId(record.getOrderId());
-            rebateRecordInsert.setMemberCardId(record.getMemberCardId());
-            rebateRecordInsert.setMemberCardName(record.getMemberCardName());
-            rebateRecordInsert.setType(record.getType());
-            rebateRecordInsert.setFranchiseeId(record.getFranchiseeId());
-            rebateRecordInsert.setLevel(record.getLevel());
-            rebateRecordInsert.setMerchantId(record.getMerchantId());
-            rebateRecordInsert.setMerchantUid(record.getMerchantUid());
-            rebateRecordInsert.setChanneler(record.getChanneler());
-            rebateRecordInsert.setChannelerRebate(record.getChannelerRebate());
-            rebateRecordInsert.setMerchantRebate(record.getMerchantRebate());
-            rebateRecordInsert.setPlaceId(record.getPlaceId());
-            rebateRecordInsert.setPlaceUid(record.getPlaceUid());
-            rebateRecordInsert.setRebateTime(record.getCreateTime());
-            rebateRecordInsert.setTenantId(record.getTenantId());
-            rebateRecordInsert.setCreateTime(System.currentTimeMillis());
-            rebateRecordInsert.setUpdateTime(System.currentTimeMillis());
-            rebateRecordInsert.setStatus(MerchantConstant.MERCHANT_REBATE_STATUS_RETURNED);
+            if(!Objects.equals(record.getType(),MerchantConstant.MERCHANT_REBATE_TYPE_DISCREPANCY)){
+                continue;
+            }
+    
+            //未结算
+            if (Objects.equals(MerchantConstant.MERCHANT_REBATE_STATUS_NOT_SETTLE, rebateRecord.getStatus())) {
+                RebateRecord rebateRecordUpdate =new RebateRecord();
+                rebateRecordUpdate.setId(rebateRecord.getId());
+                rebateRecordUpdate.setStatus(MerchantConstant.MERCHANT_REBATE_STATUS_EXPIRED);
+                rebateRecordUpdate.setUpdateTime(System.currentTimeMillis());
+                rebateRecordService.updateById(rebateRecordUpdate);
+            }
             
-            //扣减商户、渠道商返利金额
-            merchantUserAmountService.reduceAmount(rebateRecord.getMerchantRebate(), rebateRecord.getMerchantUid(), rebateRecord.getTenantId().longValue());
-            channelEmployeeAmountService.reduceAmount(rebateRecord.getChannelerRebate(), rebateRecord.getChanneler(), rebateRecord.getTenantId().longValue());
-            
-            rebateRecordService.insert(rebateRecord);
+            //已结算
+            if (Objects.equals(MerchantConstant.MERCHANT_REBATE_STATUS_SETTLED, rebateRecord.getStatus())) {
+                RebateRecord rebateRecordInsert = new RebateRecord();
+                rebateRecordInsert.setUid(rebateRecord.getUid());
+                rebateRecordInsert.setName(rebateRecord.getName());
+                rebateRecordInsert.setPhone(rebateRecord.getPhone());
+                rebateRecordInsert.setOrderId(OrderIdUtil.generateBusinessOrderId(BusinessType.BATTERY_REBATE, rebateRecord.getUid()));
+                rebateRecordInsert.setOriginalOrderId(rebateRecord.getOriginalOrderId());
+                rebateRecordInsert.setMemberCardId(rebateRecord.getMemberCardId());
+                rebateRecordInsert.setMemberCardName(rebateRecord.getMemberCardName());
+                rebateRecordInsert.setType(rebateRecord.getType());
+                rebateRecordInsert.setFranchiseeId(rebateRecord.getFranchiseeId());
+                rebateRecordInsert.setLevel(rebateRecord.getLevel());
+                rebateRecordInsert.setMerchantId(rebateRecord.getMerchantId());
+                rebateRecordInsert.setMerchantUid(rebateRecord.getMerchantUid());
+                rebateRecordInsert.setChanneler(rebateRecord.getChanneler());
+                rebateRecordInsert.setChannelerRebate(rebateRecord.getChannelerRebate());
+                rebateRecordInsert.setMerchantRebate(rebateRecord.getMerchantRebate());
+                rebateRecordInsert.setPlaceId(rebateRecord.getPlaceId());
+                rebateRecordInsert.setPlaceUid(rebateRecord.getPlaceUid());
+                rebateRecordInsert.setRebateTime(rebateRecord.getRebateTime());
+                rebateRecordInsert.setTenantId(rebateRecord.getTenantId());
+                rebateRecordInsert.setCreateTime(System.currentTimeMillis());
+                rebateRecordInsert.setUpdateTime(System.currentTimeMillis());
+                rebateRecordInsert.setStatus(MerchantConstant.MERCHANT_REBATE_STATUS_RETURNED);
+                rebateRecordService.insert(rebateRecordInsert);
+    
+                //扣减商户、渠道商返利金额
+                merchantUserAmountService.reduceAmount(rebateRecord.getMerchantRebate(), rebateRecord.getMerchantUid(), rebateRecord.getTenantId().longValue());
+                channelEmployeeAmountService.reduceAmount(rebateRecord.getChannelerRebate(), rebateRecord.getChanneler(), rebateRecord.getTenantId().longValue());
+            }
         }
     }
 }
