@@ -3,6 +3,7 @@ package com.xiliulou.electricity.service.impl;
 import cn.hutool.core.collection.ConcurrentHashSet;
 import cn.hutool.core.lang.UUID;
 import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.google.api.client.util.Lists;
 import com.xiliulou.cache.redis.RedisService;
@@ -17,7 +18,16 @@ import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.dto.UserCouponDTO;
-import com.xiliulou.electricity.entity.*;
+import com.xiliulou.electricity.entity.BatteryMemberCard;
+import com.xiliulou.electricity.entity.Coupon;
+import com.xiliulou.electricity.entity.CouponActivityPackage;
+import com.xiliulou.electricity.entity.CouponIssueOperateRecord;
+import com.xiliulou.electricity.entity.ShareActivity;
+import com.xiliulou.electricity.entity.ShareActivityRecord;
+import com.xiliulou.electricity.entity.ShareActivityRule;
+import com.xiliulou.electricity.entity.User;
+import com.xiliulou.electricity.entity.UserCoupon;
+import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.car.CarRentalPackagePo;
 import com.xiliulou.electricity.enums.PackageTypeEnum;
 import com.xiliulou.electricity.enums.SpecificPackagesEnum;
@@ -25,7 +35,17 @@ import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.UserCouponMapper;
 import com.xiliulou.electricity.query.CouponBatchSendWithPhonesRequest;
 import com.xiliulou.electricity.query.UserCouponQuery;
-import com.xiliulou.electricity.service.*;
+import com.xiliulou.electricity.service.BatteryMemberCardService;
+import com.xiliulou.electricity.service.CouponActivityPackageService;
+import com.xiliulou.electricity.service.CouponIssueOperateRecordService;
+import com.xiliulou.electricity.service.CouponService;
+import com.xiliulou.electricity.service.FranchiseeService;
+import com.xiliulou.electricity.service.ShareActivityRecordService;
+import com.xiliulou.electricity.service.ShareActivityRuleService;
+import com.xiliulou.electricity.service.ShareActivityService;
+import com.xiliulou.electricity.service.UserCouponService;
+import com.xiliulou.electricity.service.UserInfoService;
+import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.service.car.CarRentalPackageService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
@@ -44,7 +64,13 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -166,6 +192,22 @@ public class UserCouponServiceImpl implements UserCouponService {
     @Override
     public R queryList(UserCouponQuery userCouponQuery) {
         List<UserCouponVO> userCouponList = userCouponMapper.queryList(userCouponQuery);
+        if (Objects.isNull(userCouponList) || userCouponList.isEmpty()){
+            return R.ok(userCouponList);
+        }
+        //******************************查询核销人************************************/
+        for (UserCouponVO userCouponVO : userCouponList) {
+            Long verifiedUid = userCouponVO.getVerifiedUid();
+            if (Objects.isNull(verifiedUid) || Objects.equals(verifiedUid,UserCoupon.INITIALIZE_THE_VERIFIER)){
+                continue;
+            }
+            User user = userService.queryByUidFromCache(verifiedUid);
+            if (Objects.isNull(user) || StrUtil.isBlank(user.getName())){
+                continue;
+            }
+            userCouponVO.setVerifiedName(user.getName());
+        }
+        //******************************查询核销人结束************************************/
         return R.ok(userCouponList);
     }
 
@@ -299,7 +341,7 @@ public class UserCouponServiceImpl implements UserCouponService {
 
         //用户区分
         TokenUser operateUser = SecurityUtils.getUserInfo();
-        if (Objects.isNull(operateUser)) {
+        if (Objects.isNull(operateUser) || Objects.isNull(operateUser.getUid())) {
             log.error("ELECTRICITY  ERROR! not found user ");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
@@ -315,6 +357,7 @@ public class UserCouponServiceImpl implements UserCouponService {
             UserCoupon couponBuild = UserCoupon.builder()
                     .id(couponId)
                     .status(UserCoupon.STATUS_DESTRUCTION)
+                    .verifiedUid(operateUser.getUid())
                     .updateTime(System.currentTimeMillis())
                     .tenantId(tenantId).build();
 
@@ -702,8 +745,13 @@ public class UserCouponServiceImpl implements UserCouponService {
         if (CollectionUtils.isEmpty(phones)) {
             return R.fail("ELECTRICITY.0007", "手机号不可以为空");
         }
-
-        User operateUser = userService.queryByUidFromCache(SecurityUtils.getUid());
+        //增加优惠劵发放人Id
+        Long operateUid = SecurityUtils.getUid();
+        if (Objects.isNull(operateUid)){
+            log.error("ELECTRICITY  ERROR! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        User operateUser = userService.queryByUidFromCache(operateUid);
         if (Objects.isNull(operateUser)) {
             log.error("ELECTRICITY  ERROR! not found user ");
             return R.fail("ELECTRICITY.0001", "未找到用户");
@@ -742,7 +790,7 @@ public class UserCouponServiceImpl implements UserCouponService {
 
         batchSendCouponVO.setIsSend(true);
         executorService.execute(() -> {
-            handleBatchSaveCoupon(existsPhone, coupon, sessionId, operateUser.getName());
+            handleBatchSaveCoupon(existsPhone, coupon, sessionId, operateUser.getName(),operateUid);
         });
 
         return R.ok(batchSendCouponVO);
@@ -756,7 +804,7 @@ public class UserCouponServiceImpl implements UserCouponService {
         return R.ok();
     }
 
-    private void handleBatchSaveCoupon(ConcurrentHashSet<User> existsPhone, Coupon coupon, String sessionId, String name) {
+    private void handleBatchSaveCoupon(ConcurrentHashSet<User> existsPhone, Coupon coupon, String sessionId, String name,Long operateUid) {
         Iterator<User> iterator = existsPhone.iterator();
         List<UserCoupon> userCouponList = new ArrayList<>();
         List<CouponIssueOperateRecord> couponIssueOperateRecords = new ArrayList<>();
@@ -765,7 +813,7 @@ public class UserCouponServiceImpl implements UserCouponService {
         LocalDateTime now = LocalDateTime.now().plusDays(coupon.getDays());
 
         while (iterator.hasNext()) {
-            if (size >= 300) {
+            if (size >= maxSize) {
                 userCouponMapper.batchInsert(userCouponList);
                 couponIssueOperateRecordService.batchInsert(couponIssueOperateRecords);
                 userCouponList.clear();
@@ -787,6 +835,7 @@ public class UserCouponServiceImpl implements UserCouponService {
             saveCoupon.setUpdateTime(System.currentTimeMillis());
             saveCoupon.setStatus(UserCoupon.STATUS_UNUSED);
             saveCoupon.setDelFlag(UserCoupon.DEL_NORMAL);
+            saveCoupon.setVerifiedUid(UserCoupon.INITIALIZE_THE_VERIFIER);
             saveCoupon.setTenantId(user.getTenantId());
             userCouponList.add(saveCoupon);
 
@@ -798,6 +847,7 @@ public class UserCouponServiceImpl implements UserCouponService {
                     .uid(user.getUid())
                     .name(user.getName())
                     .operateName(name)
+                    .issuedUid(operateUid)
                     .phone(user.getPhone()).build();
             couponIssueOperateRecords.add(record);
             size++;

@@ -26,6 +26,13 @@ public class CouponIssueOperateRecordQuery {
     private String name;
 
     private Integer tenantId;
+    
+    /**
+     * <p>
+     *    Description: 发放人uid
+     * </p>
+    */
+    private Long issuedUid;
 
     /**
      * 优惠券使用状态 1--未使用， 2--已使用 ，3--已过期，

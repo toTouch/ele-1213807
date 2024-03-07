@@ -1,18 +1,10 @@
 package com.xiliulou.electricity.entity;
 
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import com.xiliulou.electricity.validator.CreateGroup;
-import com.xiliulou.electricity.validator.UpdateGroup;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
-import java.math.BigDecimal;
 
 /**
  * 优惠券规则表(t_coupon_issue_operate_record)实体类
@@ -45,6 +37,13 @@ public class CouponIssueOperateRecord {
     private String name;
 
     private String operateName;
+    
+    /**
+     * <p>
+     *    Description: 优惠劵发放人Id
+     * </p>
+    */
+    private Long issuedUid;
 
     /**
      * 手机号

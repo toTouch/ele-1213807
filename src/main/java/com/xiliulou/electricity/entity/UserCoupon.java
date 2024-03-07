@@ -64,6 +64,10 @@ public class UserCoupon {
      */
     private String orderId;
     /**
+     * 核销时核销人的Id
+     */
+    private Long verifiedUid;
+    /**
      * 优惠券来源的订单id
      */
     private String sourceOrderId;
@@ -126,5 +130,8 @@ public class UserCoupon {
 
     //体验劵
     public static final Integer DAYS = 3;
+    
+    //核销人
+    public static final Long INITIALIZE_THE_VERIFIER=-1L;
 
 }

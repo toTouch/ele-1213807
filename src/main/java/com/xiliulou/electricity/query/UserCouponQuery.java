@@ -31,6 +31,13 @@ public class UserCouponQuery {
      * 用户手机号
      */
     private  String phone;
+    
+    /**
+     * <p>
+     *    Description: 核销人Uid
+     * </p>
+    */
+    private Long verifiedUid;
 
     private  String orderId;
 

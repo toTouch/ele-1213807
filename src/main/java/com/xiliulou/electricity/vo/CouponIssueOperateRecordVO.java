@@ -20,6 +20,11 @@ public class CouponIssueOperateRecordVO {
     private String name;
 
     private String operateName;
+    
+    
+    private Long issuedUid;
+    
+    private String issuedName;
 
     private String phone;
 

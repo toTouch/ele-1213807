@@ -1,25 +1,14 @@
 package com.xiliulou.electricity.controller.admin;
 
 import com.xiliulou.core.web.R;
-import com.xiliulou.electricity.entity.Coupon;
-import com.xiliulou.electricity.entity.Franchisee;
-import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.query.CouponIssueOperateRecordQuery;
-import com.xiliulou.electricity.query.CouponQuery;
 import com.xiliulou.electricity.service.CouponIssueOperateRecordService;
-import com.xiliulou.electricity.service.CouponService;
-import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
-import com.xiliulou.electricity.utils.SecurityUtils;
-import com.xiliulou.electricity.validator.CreateGroup;
-import com.xiliulou.electricity.validator.UpdateGroup;
-import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.Objects;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 /**
  * 优惠券发放操作记录表(t_coupon_issue_operate_record)表控制层
@@ -44,7 +33,8 @@ public class JsonAdminCouponIssueOperateRecordController {
                        @RequestParam(value = "name", required = false) String name,
                        @RequestParam(value = "status", required = false) Integer status,
                        @RequestParam(value = "beginTime", required = false) Long beginTime,
-                       @RequestParam(value = "endTime", required = false) Long endTime) {
+                       @RequestParam(value = "endTime", required = false) Long endTime,
+                       @RequestParam(value = "endTime", required = false) Long issuedUid) {
         if (size < 0 || size > 50) {
             size = 10L;
         }
@@ -66,6 +56,7 @@ public class JsonAdminCouponIssueOperateRecordController {
                 .endTime(endTime)
                 .offset(offset)
                 .size(size)
+                .issuedUid(issuedUid)
                 .tenantId(tenantId).build();
 
         return couponIssueOperateRecordService.queryRecordList(couponIssueOperateRecordQuery);

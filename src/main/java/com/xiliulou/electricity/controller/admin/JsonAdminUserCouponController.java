@@ -50,7 +50,8 @@ public class JsonAdminUserCouponController {
                        @RequestParam(value = "status", required = false) Integer status,
                        @RequestParam(value = "discountType", required = false) Integer discountType,
                        @RequestParam(value = "phone", required = false) String phone,
-                       @RequestParam(value = "superposition", required = false) Integer superposition) {
+                       @RequestParam(value = "superposition", required = false) Integer superposition,
+                       @RequestParam(value = "verifiedUid", required = false) Long verifiedUid) {
         if (size < 0 || size > 50) {
             size = 10L;
         }
@@ -95,6 +96,7 @@ public class JsonAdminUserCouponController {
                 .discountType(discountType)
                 .storeIds(storeIds)
                 .franchiseeIds(franchiseeIds)
+                .verifiedUid(verifiedUid)
                 .tenantId(TenantContextHolder.getTenantId()).build();
         return userCouponService.queryList(userCouponQuery);
     }

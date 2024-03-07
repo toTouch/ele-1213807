@@ -73,6 +73,7 @@
             tcior.uid,
             tui.name,
             tcior.operate_name,
+            tcior.issued_uid,
             tui.phone,
             tcior.create_time,
             tcior.update_time
@@ -84,6 +85,9 @@
             </if>
             <if test="query.uid != null">
                 and tcior.uid = #{query.uid}
+            </if>
+            <if test="query.issuedUid != null">
+                and tcior.issued_uid = #{query.issuedUid}
             </if>
             <if test="query.phone!=null and query.phone!='' ">
                 and tui.phone =#{query.phone}
@@ -144,10 +148,10 @@
 
     <insert id="batchInsert"  keyProperty="id" useGeneratedKeys="true">
         insert into t_coupon_issue_operate_record
-        (coupon_id,uid,operate_name,phone,create_time,update_time,tenant_id)
+        (coupon_id,uid,operate_name,issued_uid,phone,create_time,update_time,tenant_id)
         values
         <foreach collection="list" item="item" index="index" separator=",">
-            (#{item.couponId},#{item.uid},#{item.operateName},#{item.phone},#{item.createTime},#{item.updateTime},#{item.tenantId})
+            (#{item.couponId},#{item.uid},#{item.operateName},#{item.issuedUid},#{item.phone},#{item.createTime},#{item.updateTime},#{item.tenantId})
         </foreach>
     </insert>
 

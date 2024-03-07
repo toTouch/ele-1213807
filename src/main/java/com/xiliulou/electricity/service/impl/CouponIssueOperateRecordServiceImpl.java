@@ -1,16 +1,23 @@
 package com.xiliulou.electricity.service.impl;
 
+import cn.hutool.core.util.StrUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.entity.CouponIssueOperateRecord;
+import com.xiliulou.electricity.entity.User;
+import com.xiliulou.electricity.entity.UserCoupon;
 import com.xiliulou.electricity.mapper.CouponIssueOperateRecordMapper;
 import com.xiliulou.electricity.query.CouponIssueOperateRecordQuery;
 import com.xiliulou.electricity.service.CouponIssueOperateRecordService;
+import com.xiliulou.electricity.service.UserService;
+import com.xiliulou.electricity.vo.CouponIssueOperateRecordVO;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * 优惠券规则表(t_coupon_issue_operate_record)表服务接口
@@ -25,6 +32,9 @@ public class CouponIssueOperateRecordServiceImpl implements CouponIssueOperateRe
 
     @Resource
     CouponIssueOperateRecordMapper couponIssueOperateRecordMapper;
+    
+    @Autowired
+    private UserService userService;
 
     @Override
     public void insert(CouponIssueOperateRecord couponIssueOperateRecord) {
@@ -47,6 +57,22 @@ public class CouponIssueOperateRecordServiceImpl implements CouponIssueOperateRe
     @Slave
     @Override
     public R queryRecordList(CouponIssueOperateRecordQuery couponIssueOperateRecordQuery) {
+        List<CouponIssueOperateRecordVO> operateRecordVOS = couponIssueOperateRecordMapper.queryRecordList(couponIssueOperateRecordQuery);
+        if (Objects.isNull(operateRecordVOS) || operateRecordVOS.isEmpty()) {
+            R.ok(couponIssueOperateRecordMapper.queryRecordList(couponIssueOperateRecordQuery));
+        }
+        //*********************************查询优惠劵发放人*************************/
+        for (CouponIssueOperateRecordVO operateRecordVO : operateRecordVOS) {
+            if (Objects.isNull(operateRecordVO.getIssuedUid()) || Objects.equals(UserCoupon.INITIALIZE_THE_VERIFIER,operateRecordVO.getIssuedUid())){
+                continue;
+            }
+            User user = userService.queryByUidFromCache(operateRecordVO.getIssuedUid());
+            if (Objects.isNull(user) || StrUtil.isBlank(user.getName())){
+                continue;
+            }
+            operateRecordVO.setIssuedName(user.getName());
+        }
+        //******************************优惠劵发放人查询完毕*************************/
         return R.ok(couponIssueOperateRecordMapper.queryRecordList(couponIssueOperateRecordQuery));
     }
     @Slave
