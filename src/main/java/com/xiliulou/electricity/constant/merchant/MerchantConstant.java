@@ -61,6 +61,12 @@ public interface MerchantConstant {
     Integer MERCHANT_REBATE_TYPE_DISCREPANCY = 2;
     
     /**
+     * 返利订单类型 0:新租，1:续费
+     */
+    Integer MERCHANT_REBATE_ORDER_TYPE_NEW = 0;
+    Integer MERCHANT_REBATE_ORDER_TYPE_OLD = 1;
+    
+    /**
      * 返利状态 0-未结算,1-已结算,2-已退回,3-已失效
      */
     Integer MERCHANT_REBATE_STATUS_NOT_SETTLE = 0;
