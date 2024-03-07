@@ -670,9 +670,29 @@ public class MerchantServiceImpl implements MerchantService {
             
             // 删除解绑的场地映射
             merchantPlaceMapService.batchDeleteByMerchantId(merchantSaveRequest.getId(), unBindList);
+            
+            // 处理解绑场地下关联的员工
+            dealPlaceEmployee(unBindList);
         }
         
         return Triple.of(true, "", merchantDeleteCacheDTO);
+    }
+    
+    private void dealPlaceEmployee(Set<Long> unBindList) {
+        if (ObjectUtils.isEmpty(unBindList)) {
+            return;
+        }
+        
+        List<Long> placeIdList = new ArrayList<>(unBindList);
+        // 根据场地id查询员工
+        List<MerchantEmployee> merchantEmployeeList = merchantEmployeeService.queryListByPlaceId(placeIdList);
+        
+        if (ObjectUtils.isEmpty(merchantEmployeeList)) {
+            return;
+        }
+        
+        // 批量解绑场地员工
+        merchantEmployeeService.batchUnbindPlaceId(placeIdList);
     }
     
     @Override
