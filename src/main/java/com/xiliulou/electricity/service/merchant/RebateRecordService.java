@@ -23,7 +23,8 @@ public interface RebateRecordService {
     
     RebateRecord queryByOrderId(String orderId);
     
-    RebateRecord queryByOriginalOrderId(String originalOrderId);
+    List<RebateRecord> queryByOriginalOrderId(String originalOrderId);
+    RebateRecord queryLatestByOriginalOrderId(String originalOrderId);
     
     RebateRecord insert(RebateRecord rebateRecord);
     

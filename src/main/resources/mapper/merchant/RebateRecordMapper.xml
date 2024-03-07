@@ -49,7 +49,14 @@
         select
             id, uid, name, phone, order_id, original_order_id, member_card_id, member_card_name, type, order_type, franchisee_id, level, merchant_id, merchant_uid, status, channeler, channeler_rebate, merchant_rebate, place_id, place_uid, rebate_time, settle_time, tenant_id, create_time, update_time
         from t_rebate_record
-        where original_order_id = #{originalOrderId}
+        where original_order_id = #{originalOrderId} and status in (0,1)
+    </select>
+    
+    <select id="selectLatestByOriginalOrderId" resultMap="RebateRecordMap">
+        select
+            id, uid, name, phone, order_id, original_order_id, member_card_id, member_card_name, type, order_type, franchisee_id, level, merchant_id, merchant_uid, status, channeler, channeler_rebate, merchant_rebate, place_id, place_uid, rebate_time, settle_time, tenant_id, create_time, update_time
+        from t_rebate_record
+        where original_order_id = #{originalOrderId} order by id limit 1
     </select>
     
     <select id="selectNotSettleListByLimit" resultMap="RebateRecordMap">

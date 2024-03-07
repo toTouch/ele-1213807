@@ -34,7 +34,9 @@ public interface RebateRecordMapper extends BaseMapper<RebateRecord> {
     
     List<RebateRecord> selectByPage(RebateRecordRequest query);
     
-    RebateRecord selectByOriginalOrderId(String originalOrderId);
+    List<RebateRecord> selectByOriginalOrderId(String originalOrderId);
+    
+    RebateRecord selectLatestByOriginalOrderId(String originalOrderId);
     
     List<RebateRecord> selectNotSettleListByLimit(@Param("startTime") long startTime, @Param("endTime") long endTime, @Param("offset") int offset, @Param("size") int size);
     
