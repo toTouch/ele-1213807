@@ -26,6 +26,11 @@ public class SysOptLogQryModel implements Serializable {
     private Integer size = 10;
     
     /**
+     * 租户ID
+     */
+    private Integer tenantId;
+    
+    /**
      * 类型
      *
      * @see SysOptLogTypeEnum
