@@ -60,6 +60,7 @@ public class JsonAdminEleRefundOrderController extends BaseController {
                        @RequestParam(value = "franchiseeName", required = false) String franchiseeName,
                        @RequestParam(value = "status", required = false) Integer status,
                        @RequestParam(value = "payType", required = false) Integer payType,
+                       @RequestParam(value = "orderType", required = false) Integer orderType,
                        @RequestParam(value = "refundOrderType", required = false) Integer refundOrderType,
                        @RequestParam(value = "name", required = false) String name,
                        @RequestParam(value = "phone", required = false) String phone,
