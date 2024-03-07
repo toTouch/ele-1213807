@@ -56,6 +56,7 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -562,16 +563,28 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
         List<MerchantPlaceCabinetBind> resultList = new ArrayList<>();
         
         for (MerchantPlaceCabinetBind current : cabinetBindList) {
-            boolean isSubset = false;
+            // 标记是否找到包含当前元素的时间段
+            boolean contained = false;
             
-            for (MerchantPlaceCabinetBind previous : resultList) {
-                if (current.getBindTime() >= (previous.getBindTime()) && current.getUnBindTime() <= (previous.getUnBindTime())) {
-                    isSubset = true;
+            // 遍历结果集中的每个元素，查找与当前元素有时间交集的情况
+            for (Iterator<MerchantPlaceCabinetBind> iterator = resultList.iterator(); iterator.hasNext(); ) {
+                MerchantPlaceCabinetBind previous = iterator.next();
+                
+                // 如果当前元素被之前元素的时间段完全包含，则移除之前的元素，并标记找到包含关系
+                if (previous.getBindTime() <= current.getBindTime() && current.getUnBindTime() <= previous.getUnBindTime()) {
+                    contained = true;
+                    iterator.remove();
                     break;
+                }
+                
+                // 如果当前元素包含之前元素的时间段，则移除之前的元素
+                if (current.getBindTime() <= previous.getBindTime() && current.getUnBindTime() >= previous.getUnBindTime()) {
+                    iterator.remove();
                 }
             }
             
-            if (!isSubset) {
+            // 如果当前元素没有被任何已存在的时间段包含，则将其添加到结果集中
+            if (!contained) {
                 resultList.add(current);
             }
         }
@@ -583,16 +596,28 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
         List<MerchantProCabinetPowerDetailVO> resultList = new ArrayList<>();
         
         for (MerchantProCabinetPowerDetailVO current : cabinetBindList) {
-            boolean isSubset = false;
+            // 标记是否找到包含当前元素的时间段
+            boolean contained = false;
             
-            for (MerchantProCabinetPowerDetailVO previous : resultList) {
-                if (current.getStartTime() >= (previous.getStartTime()) && current.getEndTime() <= (previous.getEndTime())) {
-                    isSubset = true;
+            // 遍历结果集中的每个元素，查找与当前元素有时间交集的情况
+            for (Iterator<MerchantProCabinetPowerDetailVO> iterator = resultList.iterator(); iterator.hasNext(); ) {
+                MerchantProCabinetPowerDetailVO previous = iterator.next();
+                
+                // 如果当前元素被之前元素的时间段完全包含，则移除之前的元素，并标记找到包含关系
+                if (previous.getStartTime() <= current.getStartTime() && current.getEndTime() <= previous.getEndTime()) {
+                    contained = true;
+                    iterator.remove();
                     break;
+                }
+                
+                // 如果当前元素包含之前元素的时间段，则移除之前的元素
+                if (current.getStartTime() <= previous.getStartTime() && current.getEndTime() >= previous.getEndTime()) {
+                    iterator.remove();
                 }
             }
             
-            if (!isSubset) {
+            // 如果当前元素没有被任何已存在的时间段包含，则将其添加到结果集中
+            if (!contained) {
                 resultList.add(current);
             }
         }
@@ -642,13 +667,13 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
             }
             
             //去除子集，合并连续时间段
-            removeSubSetForDetail(merchantDetailList);
+            List<MerchantProCabinetPowerDetailVO> removeSubSetDetailList = removeSubSetForDetail(merchantDetailList);
             
             // 合并连续时间段的记录（前一个时间段的endTime和后一个时间段的startTime是同一天）
-            mergeSerialTimeDetail(resultList);
+            List<MerchantProCabinetPowerDetailVO> afterMergeDetailResultList = mergeSerialTimeDetail(removeSubSetDetailList);
             
-            if (CollectionUtils.isNotEmpty(merchantDetailList)) {
-                resultList.addAll(merchantDetailList);
+            if (CollectionUtils.isNotEmpty(afterMergeDetailResultList)) {
+                resultList.addAll(afterMergeDetailResultList);
             }
         }
         
@@ -673,13 +698,15 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
     /**
      * 合并连续时间段的记录
      */
-    private void mergeSerialTimeDetail(List<MerchantProCabinetPowerDetailVO> detailList) {
+    private List<MerchantProCabinetPowerDetailVO> mergeSerialTimeDetail(List<MerchantProCabinetPowerDetailVO> detailList) {
         //去重
         detailList = detailList.stream().distinct().collect(Collectors.toList());
         // 排序
         detailList.sort(Comparator.comparing(MerchantProCabinetPowerDetailVO::getEndTime));
         
         // 合并时间段
+        
+        List<MerchantProCabinetPowerDetailVO> resultList = new ArrayList<>();
         for (int i = 0; i < detailList.size() - 1; i++) {
             MerchantProCabinetPowerDetailVO current = detailList.get(i);
             MerchantProCabinetPowerDetailVO next = detailList.get(i + 1);
@@ -698,6 +725,8 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
                 detailList.remove(next);
             }
         }
+        
+        return detailList;
         
     }
     
