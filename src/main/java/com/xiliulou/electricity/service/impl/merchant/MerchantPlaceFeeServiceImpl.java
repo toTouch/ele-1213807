@@ -1202,44 +1202,47 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
         }
         
         // 根据柜机的场地进行分组
-        Map<Long, List<MerchantPlaceCabinetBind>> placeCabinetBindMap = cabinetBindList.stream().collect(Collectors.groupingBy(MerchantPlaceCabinetBind::getPlaceId));
-        placeCabinetBindMap.forEach((placeId, bindList) -> {
-            if (ObjectUtils.isNotEmpty(bindList)) {
-                // 获取场地的费用记录
-                List<MerchantPlaceCabinetBindDTO> placeCabinetBindList = buildBindStatusRecordFirst(bindList, dayOfMonthStartTime, dayOfMonthEndTime);
-                log.info("getCurMonthRecordFirst2={}", placeCabinetBindList);
+        final Map<String, List<MerchantPlaceCabinetBind>> map = cabinetBindList.stream()
+                .collect(Collectors.groupingBy(item -> item.getPlaceId() + StringConstant.COMMA_EN + item.getCabinetId()));
+        for (Map.Entry<String, List<MerchantPlaceCabinetBind>> entry : map.entrySet()) {
+            String key = entry.getKey();
+            String[] split = key.split(StringConstant.COMMA_EN);
+            Long placeId = Long.valueOf(split[0]);
+            Long cabinetId = Long.valueOf(split[1]);
+        
+            List<MerchantPlaceCabinetBind> value = entry.getValue();
+            List<MerchantPlaceCabinetBindDTO> placeCabinetBindList = buildBindStatusRecordFirst(value, dayOfMonthStartTime, dayOfMonthEndTime);
+            log.info("getCurMonthRecordFirst2={}", placeCabinetBindList);
+        
+            if (ObjectUtils.isNotEmpty(placeCabinetBindList)) {
+                AtomicReference<Long> atomicReference = new AtomicReference();
+                atomicReference.set(0L);
+                placeCabinetBindList.forEach(cabinetBind -> {
+                    MerchantPlaceFeeMonthRecord record = new MerchantPlaceFeeMonthRecord();
+                    atomicReference.set(atomicReference.get() + 1L);
+                    record.setId(System.currentTimeMillis() + atomicReference.get());
+                    record.setMonthDate(settleDate);
+                    record.setPlaceId(cabinetBind.getPlaceId());
+                    record.setCabinetPlaceBindStatus(cabinetBind.getStatus());
+                    record.setEid(cabinetBind.getCabinetId());
+                    record.setRentStartTime(cabinetBind.getBindTime());
+                    record.setRentEndTime(cabinetBind.getUnBindTime());
                 
-                if (ObjectUtils.isNotEmpty(placeCabinetBindList)) {
-                    AtomicReference<Long> atomicReference = new AtomicReference();
-                    atomicReference.set(0L);
-                    placeCabinetBindList.forEach(cabinetBind -> {
-                        MerchantPlaceFeeMonthRecord record = new MerchantPlaceFeeMonthRecord();
-                        atomicReference.set(atomicReference.get() + 1L);
-                        record.setId(System.currentTimeMillis() + atomicReference.get());
-                        record.setMonthDate(settleDate);
-                        record.setPlaceId(cabinetBind.getPlaceId());
-                        record.setCabinetPlaceBindStatus(cabinetBind.getStatus());
-                        record.setEid(cabinetBind.getCabinetId());
-                        record.setRentStartTime(cabinetBind.getBindTime());
-                        record.setRentEndTime(cabinetBind.getUnBindTime());
-                        
-                        if (Objects.nonNull(cabinetBind.getUnBindTime())) {
-                            Integer days = (int) ((cabinetBind.getUnBindTime() - cabinetBind.getBindTime()) / (24 * 60 * 60 * 1000));
-                            record.setRentDays(days);
-                        } else {
-                            Integer days = (int) ((dayOfMonthEndTime - cabinetBind.getBindTime()) / (24 * 60 * 60 * 1000));
-                            record.setRentDays(days);
-                        }
-                        
-                        record.setRentDays(cabinetBind.getMonthSettlement());
-                        record.setCreateTime(System.currentTimeMillis());
-                        record.setUpdateTime(System.currentTimeMillis());
-                        list.add(record);
-                    });
-                }
+                    if (Objects.nonNull(cabinetBind.getUnBindTime())) {
+                        Integer days = (int) ((cabinetBind.getUnBindTime() - cabinetBind.getBindTime()) / (24 * 60 * 60 * 1000));
+                        record.setRentDays(days);
+                    } else {
+                        Integer days = (int) ((dayOfMonthEndTime - cabinetBind.getBindTime()) / (24 * 60 * 60 * 1000));
+                        record.setRentDays(days);
+                    }
+                
+                    record.setRentDays(cabinetBind.getMonthSettlement());
+                    record.setCreateTime(System.currentTimeMillis());
+                    record.setUpdateTime(System.currentTimeMillis());
+                    list.add(record);
+                });
             }
-            
-        });
+        }
         
         return list;
     }
