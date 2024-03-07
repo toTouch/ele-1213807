@@ -33,6 +33,7 @@ import java.util.concurrent.ExecutorService;
  * @email zhaozhilong@xiliulou.com
  * @date 2022-10-11-17:42
  */
+@Deprecated
 @Aspect
 @Component
 public class LogAspect {
@@ -110,7 +111,7 @@ public class LogAspect {
                     JsonUtil.toJson(jsonResult));
             
             // 保存到数据库
-            executorService.execute(() -> saveSysOperLog(operLog));
+            // executorService.execute(() -> saveSysOperLog(operLog));
         } catch (Exception exp) {
             log.error("操作日志前置通知异常:{}", exp.getMessage());
         }

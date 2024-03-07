@@ -19,6 +19,8 @@ public interface MerchantEmployeeService {
     
     Integer updateMerchantEmployee(MerchantEmployeeRequest merchantEmployeeRequest);
     
+    Integer batchUnbindPlaceId(List<Long> employeeUidList);
+    
     Integer removeMerchantEmployee(Long id);
     
     MerchantEmployeeVO queryMerchantEmployeeById(Long id);
