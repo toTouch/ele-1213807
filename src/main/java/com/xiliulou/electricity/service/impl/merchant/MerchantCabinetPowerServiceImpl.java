@@ -503,44 +503,30 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
                 continue;
             }
             
-            // 商户和柜机的绑定状态
-            int merchantCabinetBindStatus = MerchantPlaceBindConstant.UN_BIND;
-            
             for (MerchantPlaceBind merchantPlaceBind : merchantThePlaceBindList) {
                 Integer status = merchantPlaceBind.getType();
                 Long placeBindTime = merchantPlaceBind.getBindTime();
+                Long placeUnbindTime = merchantPlaceBind.getUnBindTime();
                 
-                // 绑定状态
-                if (Objects.equals(status, MerchantPlaceBindConstant.BIND)) {
-                    if (placeBindTime <= cabinetBindTime) {
-                        merchantCabinetBindStatus = MerchantPlaceBindConstant.BIND;
-                        
-                        MerchantProCabinetPowerDetailVO detail = getCabinetPowerDetail(cabinetBindTime, cabinetUnbindTime, eid, placeId, tenantId, monthDate,
-                                merchantCabinetBindStatus);
-                        
-                        list.add(detail);
-                    }
-                    
-                    if (placeBindTime > cabinetBindTime && placeBindTime < cabinetUnbindTime) {
-                        //商户未绑定柜机
-                        MerchantProCabinetPowerDetailVO detail1 = getCabinetPowerDetail(cabinetBindTime, placeBindTime, eid, placeId, tenantId, monthDate,
-                                merchantCabinetBindStatus);
-                        
-                        //商户绑定柜机
-                        merchantCabinetBindStatus = MerchantPlaceBindConstant.BIND;
-                        MerchantProCabinetPowerDetailVO detail2 = getCabinetPowerDetail(placeBindTime, cabinetUnbindTime, eid, placeId, tenantId, monthDate,
-                                merchantCabinetBindStatus);
-                        
-                        list.add(detail1);
-                        list.add(detail2);
-                    }
-                    
-                    if (placeBindTime >= cabinetUnbindTime) {
-                        MerchantProCabinetPowerDetailVO detail = getCabinetPowerDetail(cabinetBindTime, cabinetUnbindTime, eid, placeId, tenantId, monthDate,
-                                merchantCabinetBindStatus);
-                        
-                        list.add(detail);
-                    }
+                MerchantProCabinetPowerDetailVO detail = null;
+                if (placeBindTime < cabinetBindTime && placeUnbindTime > cabinetUnbindTime) {
+                    detail = getCabinetPowerDetail(cabinetBindTime, cabinetUnbindTime, eid, placeId, tenantId, monthDate, status);
+                }
+                
+                if (placeBindTime >= cabinetBindTime && placeUnbindTime <= cabinetUnbindTime) {
+                    detail = getCabinetPowerDetail(placeBindTime, placeUnbindTime, eid, placeId, tenantId, monthDate, status);
+                }
+                
+                if (placeBindTime <= cabinetBindTime && placeUnbindTime > cabinetBindTime) {
+                    detail = getCabinetPowerDetail(cabinetBindTime, placeUnbindTime, eid, placeId, tenantId, monthDate, status);
+                }
+                
+                if (placeBindTime < cabinetUnbindTime && placeUnbindTime >= cabinetUnbindTime) {
+                    detail = getCabinetPowerDetail(placeBindTime, cabinetUnbindTime, eid, placeId, tenantId, monthDate, status);
+                }
+                
+                if (Objects.nonNull(detail)) {
+                    list.add(detail);
                 }
             }
         }
@@ -548,7 +534,7 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
         if (CollectionUtils.isEmpty(list)) {
             return Collections.emptyList();
         }
-    
+        
         // 合并连续时间段的记录（前一个时间段的endTime和后一个时间段的startTime是同一天）
         mergeSerialTimeDetail(list);
         
@@ -569,7 +555,7 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
             
             if (Objects.equals(DateUtils.getTimeByTimeStamp(current.getEndTime()), DateUtils.getTimeByTimeStamp(next.getStartTime()))) {
                 current.setEndTime(next.getEndTime());
-    
+                
                 double currentPower = Objects.isNull(current.getPower()) ? NumberConstant.ZERO_D : current.getPower();
                 double currentCharge = Objects.isNull(current.getCharge()) ? NumberConstant.ZERO : current.getCharge();
                 double nextPower = Objects.isNull(next.getPower()) ? NumberConstant.ZERO : next.getPower();
