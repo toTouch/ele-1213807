@@ -467,7 +467,7 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
         List<String> monthList = new ArrayList<>();
         monthList.add(lastMonth);
     
-        List<MerchantCabinetFeeDetailVO> resultList = Collections.synchronizedList(new ArrayList<>(50));
+        List<MerchantCabinetFeeDetailVO> resultList = new ArrayList<>();
     
         Map<String, List<MerchantPlaceBind>> merchantPlaceMap = merchantPlaceBinds.stream()
                 .collect(Collectors.groupingBy(r -> r.getMerchantId() + StringConstant.COMMA_EN + r.getPlaceId()));
@@ -517,10 +517,32 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
         if (ObjectUtils.isNotEmpty(lastList)) {
             resultList.addAll(lastList);
         }
+        
+        if (ObjectUtils.isEmpty(resultList)) {
+            return Collections.emptyList();
+        }
     
         // 根据柜机id 过滤数据
-        if (Objects.nonNull(request.getCabinetId()) && ObjectUtils.isNotEmpty(resultList)) {
+        if (Objects.nonNull(request.getCabinetId())) {
             resultList = resultList.stream().filter(item -> Objects.equals(item.getCabinetId(), request.getCabinetId())).collect(Collectors.toList());
+        }
+        
+        if (ObjectUtils.isEmpty(resultList)) {
+            return Collections.emptyList();
+        }
+    
+        for (MerchantCabinetFeeDetailVO vo : resultList) {
+            MerchantPlace merchantPlace = merchantPlaceService.queryByIdFromCache(vo.getPlaceId());
+            // 场地名称
+            if (Objects.nonNull(merchantPlace)) {
+                vo.setPlaceName(merchantPlace.getName());
+            }
+        
+            // 柜机名称
+            ElectricityCabinet cabinet = electricityCabinetService.queryByIdFromCache(vo.getCabinetId().intValue());
+            if (Objects.nonNull(cabinet)) {
+                vo.setCabinetName(cabinet.getName());
+            }
         }
     
         return resultList;
