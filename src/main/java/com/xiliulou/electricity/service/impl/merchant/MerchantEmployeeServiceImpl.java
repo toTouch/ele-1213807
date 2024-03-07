@@ -111,7 +111,7 @@ public class MerchantEmployeeServiceImpl implements MerchantEmployeeService {
     
         List<MerchantEmployeeVO> merchantEmployeeVOS = merchantEmployeeMapper.selectMerchantUsers(merchantEmployeeRequest);
         if(CollectionUtils.isNotEmpty(merchantEmployeeVOS) && merchantEmployeeVOS.size() >= MerchantConstant.MERCHANT_EMPLOYEE_MAX_SIZE){
-            throw new BizException("120024", "渠道员数量不能超过20个");
+            throw new BizException("120024", "员工数量已达上限，请删除后再添加");
         }
         
         // 创建商户员工账号
