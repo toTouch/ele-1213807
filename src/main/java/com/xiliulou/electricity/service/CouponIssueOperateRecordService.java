@@ -1,9 +1,8 @@
 package com.xiliulou.electricity.service;
+
 import com.xiliulou.core.web.R;
-import com.xiliulou.electricity.entity.Coupon;
 import com.xiliulou.electricity.entity.CouponIssueOperateRecord;
 import com.xiliulou.electricity.query.CouponIssueOperateRecordQuery;
-import com.xiliulou.electricity.query.CouponQuery;
 
 import java.util.List;
 
@@ -14,25 +13,26 @@ import java.util.List;
  * @since 2022-08-19 09:28:22
  */
 public interface CouponIssueOperateRecordService {
-
+    
     void insert(CouponIssueOperateRecord couponIssueOperateRecord);
-
+    
     R queryList(CouponIssueOperateRecordQuery couponIssueOperateRecordQuery);
-
+    
     R queryCount(CouponIssueOperateRecordQuery couponIssueOperateRecordQuery);
-
+    
     R queryRecordList(CouponIssueOperateRecordQuery couponIssueOperateRecordQuery);
-
+    
     R queryRecordCount(CouponIssueOperateRecordQuery couponIssueOperateRecordQuery);
     
     /**
      * 根据更换手机号
+     *
      * @param tenantId 租户ID
-     * @param uid 用户ID
+     * @param uid      用户ID
      * @param newPhone 新号码
      * @return 影响行数
      */
-    Integer updatePhoneByUid(Integer tenantId, Long uid,String newPhone);
-
+    Integer updatePhoneByUid(Integer tenantId, Long uid, String newPhone);
+    
     Integer batchInsert(List<CouponIssueOperateRecord> couponIssueOperateRecords);
 }
