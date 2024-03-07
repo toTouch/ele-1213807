@@ -45,7 +45,7 @@
     <sql id="insert_field">
         <trim prefix="(" suffix=")" suffixOverrides=",">
             <if test=" tenantId != null "> `tenant_id`, </if>
-            <if test=" createUid != null "> #{create_uid}, </if>
+            <if test=" createUid != null "> `create_uid`, </if>
             <if test=" createTime != null "> `create_time`, </if>
             <if test=" optIp != null and optIp != '' "> `opt_ip`, </if>
             <if test=" type != null "> `type`, </if>
@@ -58,7 +58,7 @@
             <if test=" tenantId != null "> #{tenantId}, </if>
             <if test=" createUid != null "> #{createUid}, </if>
             <if test=" createTime != null "> #{createTime}, </if>
-            <if test=" optIp != null and optIp != '' "> #{opt_ip}, </if>
+            <if test=" optIp != null and optIp != '' "> #{optIp}, </if>
             <if test=" type != null "> #{type}, </if>
             <if test=" content != null and content != '' "> #{content}, </if>
         </trim>
