@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.xiliulou.electricity.mapper.UserCouponMapper">
-
+    
     <!-- 根据来源订单编码作废掉未使用的优惠券 -->
     <update id="cancelBySourceOrderIdAndUnUse">
         UPDATE `t_user_coupon`
@@ -12,19 +12,19 @@
             `source_order_id` = #{sourceOrderId} AND `del_flag` = 0
         </where>
     </update>
-
+    
     <!-- 根据订单编码更新优惠券状态 -->
     <update id="updateStatusByOrderId">
         UPDATE `t_user_coupon`
         <set>
             `status` = #{status}, `update_time` = #{optTime}
-            <if test=" status == '1'.toString() "> , `order_id` = '' </if>
+            <if test=" status == '1'.toString() ">, `order_id` = ''</if>
         </set>
         <where>
             `order_id` = #{orderId} AND `del_flag` = 0
         </where>
     </update>
-
+    
     <!-- 查询用户名下有效的优惠券 -->
     <select id="selectEffectiveByUid" resultType="com.xiliulou.electricity.entity.UserCoupon">
         SELECT * FROM `t_user_coupon`
@@ -35,11 +35,11 @@
             </foreach>
         </where>
     </select>
-
+    
     <!--查询指定行数据-->
     <select id="queryList" resultType="com.xiliulou.electricity.vo.UserCouponVO">
         select
-        tuc.id as id, tuc.name as name,tuc.verified_uid as  verifiedUid, tuc.uid as uid, tuc.phone as phone, tuc.coupon_id as couponId,
+        tuc.id as id, tuc.name as name,tuc.verified_uid as verifiedUid, tuc.uid as uid, tuc.phone as phone, tuc.coupon_id as couponId,
         tuc.deadline as deadline, tuc.order_id as orderId,tuc.create_time as createTime,tc.superposition as superposition,
         tuc.update_time as updateTime, tuc.status as status, tuc.source as source, tuc.del_flag as delFlag,
         tuc.discount_type as discountType,tc.amount AS amount,tc.discount AS discount,tui.name as userName, tc.description, tc.specific_packages
@@ -110,8 +110,8 @@
             limit #{query.offset}, #{query.size}
         </if>
     </select>
-
-
+    
+    
     <select id="queryCount" resultType="java.lang.Integer">
         select count(1)
         from t_user_coupon as tuc left join t_user_info tui on tuc.uid=tui.uid
@@ -176,7 +176,7 @@
             </if>
         </where>
     </select>
-
+    
     <update id="update">
         update t_user_coupon
         <set>
@@ -195,15 +195,16 @@
         </set>
         where id = #{id} and tenant_id = #{tenantId}
     </update>
-
+    
     <update id="updateStatus">
-        update t_user_coupon set
-        status = #{status},
-        order_id=#{orderId},
-        update_time = #{updateTime}
-        where id = #{id} and tenant_id = #{tenantId}
+        update t_user_coupon
+        set status      = #{status},
+            order_id=#{orderId},
+            update_time = #{updateTime}
+        where id = #{id}
+          and tenant_id = #{tenantId}
     </update>
-
+    
     <update id="batchUpdateUserCoupon">
         <foreach collection="list" item="item" open="" separator=";" close="">
             update t_user_coupon set
@@ -213,23 +214,30 @@
             where id = #{item.id}
         </foreach>
     </update>
-
+    
     <update id="updateUserCouponStatus">
-            update t_user_coupon set  status = #{status}, order_id=#{orderId}, update_time = #{updateTime}  where id = #{id}
+        update t_user_coupon
+        set status      = #{status},
+            order_id=#{orderId},
+            update_time = #{updateTime}
+        where id = #{id}
     </update>
     
     <update id="updatePhoneByUid">
-        update t_user_coupon set phone=#{newPhone} where uid=#{uid} and tenant_id = #{tenantId}
+        update t_user_coupon
+        set phone=#{newPhone}
+        where uid = #{uid}
+          and tenant_id = #{tenantId}
     </update>
-
-    <insert id="batchInsert"  keyProperty="id" useGeneratedKeys="true">
+    
+    <insert id="batchInsert" keyProperty="id" useGeneratedKeys="true">
         insert into t_user_coupon(uid, phone, coupon_id, deadline, create_time, update_time, status, source, del_flag,
-        discount_type, tenant_id,name)
+        discount_type, tenant_id,name,verified_uid)
         values
         <foreach collection="list" item="item" separator=",">
             (#{item.uid}, #{item.phone}, #{item.couponId}, #{item.deadline}, #{item.createTime}, #{item.updateTime},
-            #{item.status}, #{item.source}, #{item.delFlag}, #{item.discountType}, #{item.tenantId},#{item.name})
+            #{item.status}, #{item.source}, #{item.delFlag}, #{item.discountType}, #{item.tenantId},#{item.name},#{item.verifiedUid})
         </foreach>
-
+    
     </insert>
 </mapper>
