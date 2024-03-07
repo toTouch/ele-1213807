@@ -7,7 +7,6 @@ import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.constant.merchant.MerchantConstant;
 import com.xiliulou.electricity.entity.User;
-import com.xiliulou.electricity.entity.UserRole;
 import com.xiliulou.electricity.entity.merchant.Merchant;
 import com.xiliulou.electricity.entity.merchant.MerchantEmployee;
 import com.xiliulou.electricity.entity.merchant.MerchantPlace;
@@ -397,6 +396,23 @@ public class MerchantEmployeeServiceImpl implements MerchantEmployeeService {
         List<MerchantEmployeeVO> merchantEmployeeVOS = merchantEmployeeMapper.selectMerchantUsers(merchantEmployeeRequest);
         
         return merchantEmployeeVOS;
+    }
+    
+    /**
+     * 根据uid批量删除场地员工
+     * @param uidList
+     * @param updateTime
+     * @return
+     */
+    @Override
+    public Integer batchRemoveByUidList(List<Long> uidList, Long updateTime) {
+        return merchantEmployeeMapper.batchRemoveByUidList(uidList, updateTime);
+    }
+    
+    @Slave
+    @Override
+    public List<MerchantEmployee> queryListByMerchantUid(Long merchantUid, Integer tenantId) {
+        return merchantEmployeeMapper.selectListByMerchantUid(merchantUid, tenantId);
     }
     
 }

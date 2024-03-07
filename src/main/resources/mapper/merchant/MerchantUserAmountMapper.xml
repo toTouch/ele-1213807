@@ -18,7 +18,7 @@
     
     <update id="reduceAmountByUid">
         update t_merchant_user_amount
-        set balance = balance - #{income}
+        set balance = balance - #{income},
             total_income = total_income - #{income},
             update_time = #{updateTime}
             where uid = #{uid}
