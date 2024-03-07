@@ -191,7 +191,7 @@ public class UserCouponServiceImpl implements UserCouponService {
     @Override
     public R queryList(UserCouponQuery userCouponQuery) {
         List<UserCouponVO> userCouponList = userCouponMapper.queryList(userCouponQuery);
-        if (Objects.isNull(userCouponList) || userCouponList.isEmpty()){
+        if (CollectionUtils.isEmpty(userCouponList)){
             return R.ok(userCouponList);
         }
         //******************************查询核销人************************************/

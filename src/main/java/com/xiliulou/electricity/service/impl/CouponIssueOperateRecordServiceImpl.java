@@ -11,12 +11,12 @@ import com.xiliulou.electricity.service.CouponIssueOperateRecordService;
 import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.vo.CouponIssueOperateRecordVO;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.util.List;
-import java.util.Objects;
 
 /**
  * 优惠券规则表(t_coupon_issue_operate_record)表服务接口
@@ -57,7 +57,7 @@ public class CouponIssueOperateRecordServiceImpl implements CouponIssueOperateRe
     @Override
     public R queryRecordList(CouponIssueOperateRecordQuery couponIssueOperateRecordQuery) {
         List<CouponIssueOperateRecordVO> operateRecordVOS = couponIssueOperateRecordMapper.queryRecordList(couponIssueOperateRecordQuery);
-        if (Objects.isNull(operateRecordVOS) || operateRecordVOS.isEmpty()) {
+        if (CollectionUtils.isEmpty(operateRecordVOS)) {
             return R.ok(operateRecordVOS);
         }
         //*********************************查询优惠劵发放人*************************/
