@@ -117,7 +117,7 @@ public class JsonUserMerchantCabinetPowerController extends BaseController {
      * 柜机电费详情
      */
     @GetMapping("/merchant/power/cabinetPowerDetail")
-    public R cabinetPowerDetail(@RequestParam(value = "cabinetId") Long cabinetId, @RequestParam(value = "monthDate", required = false) String monthDate) {
+    public R cabinetPowerDetail(@RequestParam(value = "cabinetId") Long cabinetId, @RequestParam(value = "monthDate") String monthDate) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
