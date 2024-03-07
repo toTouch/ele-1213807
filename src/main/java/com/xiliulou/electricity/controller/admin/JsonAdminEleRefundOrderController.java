@@ -108,6 +108,7 @@ public class JsonAdminEleRefundOrderController extends BaseController {
                 .franchiseeIds(franchiseeIds)
                 .phone(phone)
                 .uid(uid)
+                .orderType(orderType)
                 .payType(payType)
                 .refundOrderType(refundOrderType)
                 .name(name).build();
