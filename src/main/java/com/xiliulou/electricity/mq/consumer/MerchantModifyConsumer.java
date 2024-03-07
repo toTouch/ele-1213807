@@ -87,6 +87,8 @@ public class MerchantModifyConsumer implements RocketMQListener<String> {
                 return;
             }
             
+            log.error("=============MerchantModify=============merchantLevel={}", JsonUtil.toJson(merchantLevel));
+            
             //当前商户等级
             String currentLevel = merchantLevel.getLevel();
             
