@@ -45,7 +45,7 @@ public interface MerchantJoinRecordService {
     /**
      * 根据商户id和参与状态统计人数
      */
-    int countByMerchantIdAndStatus(Long merchantId, Integer status);
+    Integer countByMerchantIdAndStatus(Long merchantId, Integer status);
     
     /**
      * 定时任务：保护期状态和有效期状态

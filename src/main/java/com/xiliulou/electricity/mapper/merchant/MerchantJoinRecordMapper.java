@@ -33,7 +33,7 @@ public interface MerchantJoinRecordMapper extends BaseMapper<MerchantJoinRecord>
     
     List<MerchantJoinRecord> selectList(MerchantJoinRecordQueryMode joinRecordQueryMode);
     
-    int countListByMerchantIdAndStatus(@Param("merchantId") Long merchantId, @Param("status") Integer status);
+    Integer countListByMerchantIdAndStatus(@Param("merchantId") Long merchantId, @Param("status") Integer status);
     
     Integer countTotal(MerchantJoinRecordQueryMode queryMode);
     
