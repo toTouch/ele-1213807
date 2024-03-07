@@ -412,7 +412,8 @@ public class MerchantEmployeeServiceImpl implements MerchantEmployeeService {
     @Slave
     @Override
     public List<MerchantEmployee> queryListByMerchantUid(Long merchantUid, Integer tenantId) {
-        return merchantEmployeeMapper.selectListByMerchantUid(merchantUid, tenantId);
+        MerchantPromotionEmployeeDetailQueryModel queryModel = MerchantPromotionEmployeeDetailQueryModel.builder().tenantId(tenantId).uid(merchantUid).build();
+        return merchantEmployeeMapper.selectListByMerchantUid(queryModel);
     }
     
 }

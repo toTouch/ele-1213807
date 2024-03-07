@@ -250,22 +250,5 @@
           and tme.tenant_id = #{tenantId}
           and tme.del_flag = 0
     </select>
-    
-    <select id="selectListByMerchantUid" resultType="com.xiliulou.electricity.entity.merchant.MerchantEmployee">
-        select tme.id,
-               tme.uid,
-               tme.merchant_uid,
-               tme.place_id,
-               tme.tenant_id,
-               tme.del_flag,
-               tme.remark,
-               tme.create_time,
-               tme.update_time
-        from t_merchant_employee tme
-                 where
-                     merchant_uid = #{merchantUid}
-                   and del_flag = 0
-                   and tenant_id = #{tenantId}
-    </select>
 
 </mapper>
