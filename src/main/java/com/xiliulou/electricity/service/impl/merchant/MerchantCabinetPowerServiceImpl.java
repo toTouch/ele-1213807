@@ -52,6 +52,7 @@ import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -547,8 +548,40 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
         if (CollectionUtils.isEmpty(list)) {
             return Collections.emptyList();
         }
+    
+        // 合并连续时间段的记录（前一个时间段的endTime和后一个时间段的startTime是同一天）
+        mergeSerialTimeDetail(list);
         
         return list;
+    }
+    
+    /**
+     * 合并连续时间段的记录
+     */
+    private void mergeSerialTimeDetail(List<MerchantProCabinetPowerDetailVO> detailList) {
+        // 排序
+        detailList.sort(Comparator.comparing(MerchantProCabinetPowerDetailVO::getEndTime));
+        
+        // 合并时间段
+        for (int i = 0; i < detailList.size() - 1; i++) {
+            MerchantProCabinetPowerDetailVO current = detailList.get(i);
+            MerchantProCabinetPowerDetailVO next = detailList.get(i + 1);
+            
+            if (Objects.equals(DateUtils.getTimeByTimeStamp(current.getEndTime()), DateUtils.getTimeByTimeStamp(next.getStartTime()))) {
+                current.setEndTime(next.getEndTime());
+    
+                double currentPower = Objects.isNull(current.getPower()) ? NumberConstant.ZERO_D : current.getPower();
+                double currentCharge = Objects.isNull(current.getCharge()) ? NumberConstant.ZERO : current.getCharge();
+                double nextPower = Objects.isNull(next.getPower()) ? NumberConstant.ZERO : next.getPower();
+                double nextCharge = Objects.isNull(next.getCharge()) ? NumberConstant.ZERO : next.getCharge();
+                
+                current.setPower(currentPower + nextPower);
+                current.setCharge(currentCharge + nextCharge);
+                
+                detailList.remove(next);
+            }
+        }
+        
     }
     
     private MerchantProCabinetPowerDetailVO getCabinetPowerDetail(Long startTime, Long endTime, Long eid, Long placeId, Integer tenantId, String monthDate,
