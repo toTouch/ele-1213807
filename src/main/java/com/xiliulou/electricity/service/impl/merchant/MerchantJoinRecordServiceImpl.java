@@ -324,8 +324,8 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
     
     @Slave
     @Override
-    public List<MerchantJoinRecord> listByMerchantIdAndStatus(Long merchantId, Integer status) {
-        return merchantJoinRecordMapper.selectListByMerchantIdAndStatus(merchantId, status);
+    public Integer countByMerchantIdAndStatus(Long merchantId, Integer status) {
+        return merchantJoinRecordMapper.countListByMerchantIdAndStatus(merchantId, status);
     }
     
     @Override

@@ -1,7 +1,6 @@
 package com.xiliulou.electricity.service.impl;
 
 import com.xiliulou.cache.redis.RedisService;
-import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.merchant.MerchantConstant;
 import com.xiliulou.electricity.constant.merchant.MerchantJoinRecordConstant;
@@ -11,14 +10,16 @@ import com.xiliulou.electricity.entity.UserInfoExtra;
 import com.xiliulou.electricity.entity.merchant.Merchant;
 import com.xiliulou.electricity.entity.merchant.MerchantAttr;
 import com.xiliulou.electricity.entity.merchant.MerchantJoinRecord;
+import com.xiliulou.electricity.entity.merchant.MerchantLevel;
+import com.xiliulou.electricity.entity.merchant.RebateConfig;
 import com.xiliulou.electricity.mapper.UserInfoExtraMapper;
-import com.xiliulou.electricity.mq.constant.MqProducerConstant;
-import com.xiliulou.electricity.mq.model.MerchantUpgrade;
 import com.xiliulou.electricity.service.UserInfoExtraService;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.merchant.MerchantAttrService;
 import com.xiliulou.electricity.service.merchant.MerchantJoinRecordService;
+import com.xiliulou.electricity.service.merchant.MerchantLevelService;
 import com.xiliulou.electricity.service.merchant.MerchantService;
+import com.xiliulou.electricity.service.merchant.RebateConfigService;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.mq.service.RocketMqService;
 import lombok.extern.slf4j.Slf4j;
@@ -58,6 +59,12 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
     
     @Autowired
     private RocketMqService rocketMqService;
+    
+    @Autowired
+    private MerchantLevelService merchantLevelService;
+    
+    @Autowired
+    private RebateConfigService rebateConfigService;
     
     @Override
     public UserInfoExtra queryByUidFromDB(Long uid) {
@@ -100,8 +107,8 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
     
     @Override
     public Integer deleteByUid(Long uid) {
-//        int delete = this.userInfoExtraMapper.deleteByUid(uid);
-        UserInfoExtra userInfoExtra=new UserInfoExtra();
+        //        int delete = this.userInfoExtraMapper.deleteByUid(uid);
+        UserInfoExtra userInfoExtra = new UserInfoExtra();
         userInfoExtra.setUid(uid);
         userInfoExtra.setDelFlag(User.DEL_DEL);
         userInfoExtra.setUpdateTime(System.currentTimeMillis());
@@ -109,7 +116,7 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
     }
     
     @Override
-    public void bindMerchant(Long uid, String orderId) {
+    public void bindMerchant(Long uid, String orderId, Long memberCardId) {
         UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
         if (Objects.isNull(userInfo)) {
             log.warn("BIND MERCHANT WARN!userInfo is null,uid={},orderId={}", uid, orderId);
@@ -152,6 +159,24 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
         MerchantAttr merchantAttr = merchantAttrService.queryByTenantId(merchant.getTenantId());
         if (Objects.isNull(merchantAttr)) {
             log.warn("BIND MERCHANT WARN!merchantAttr is null,merchantId={},uid={}", merchantJoinRecord.getMerchantId(), uid);
+            return;
+        }
+        
+        MerchantLevel merchantLevel = merchantLevelService.queryById(merchant.getMerchantGradeId());
+        if (Objects.isNull(merchantLevel)) {
+            log.warn("BIND MERCHANT WARN!merchantLevel is null,merchantId={},uid={}", merchantJoinRecord.getMerchantId(), uid);
+            return;
+        }
+        
+        //根据商户等级&套餐id获取返利套餐
+        RebateConfig rebateConfig = rebateConfigService.queryByMidAndMerchantLevel(memberCardId, merchantLevel.getLevel());
+        if (Objects.isNull(rebateConfig)) {
+            log.warn("BIND MERCHANT WARN!rebateConfig is null,merchantId={},uid={},level={}", merchantJoinRecord.getMerchantId(), uid, merchantLevel.getLevel());
+            return;
+        }
+        
+        if (Objects.isNull(rebateConfig.getStatus()) || Objects.equals(rebateConfig.getStatus(), MerchantConstant.REBATE_DISABLE)) {
+            log.warn("BIND MERCHANT WARN!rebateConfig status illegal,id={},uid={}", rebateConfig.getId(), uid);
             return;
         }
         

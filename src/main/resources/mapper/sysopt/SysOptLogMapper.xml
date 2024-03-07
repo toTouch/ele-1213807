@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.sysopt.SysOptLogMapper">
+    
+    <resultMap type="com.xiliulou.electricity.entity.sysopt.SysOptLog" id="entityMap">
+        <!--基础映射 -->
+        <result property="id" column="id" jdbcType="BIGINT" />
+        <result property="tenantId" column="tenant_id" jdbcType="INTEGER" />
+        <result property="createUid" column="create_uid" jdbcType="BIGINT" />
+        <result property="createTime" column="create_time" jdbcType="INTEGER" />
+        <!-- 私有映射 -->
+        <result property="optIp" column="opt_ip" jdbcType="VARCHAR" />
+        <result property="type" column="type" jdbcType="INTEGER" />
+        <result property="content" column="content" jdbcType="VARCHAR" />
+    </resultMap>
+    
+    <!-- 表名 -->
+    <sql id="table_name">`t_sys_opt_log`</sql>
+    
+    <!-- 基础字段 -->
+    <sql id="basic_field">
+        `id`, `tenant_id`, `create_uid`, `create_time`,
+    </sql>
+    
+    <!-- 私有字段 -->
+    <sql id="private_field">
+        `opt_ip`, `type`, `content`
+    </sql>
+    
+    <!-- 全部字段 -->
+    <sql id="all_field">
+        <include refid="basic_field" />
+        <include refid="private_field" />
+    </sql>
+    
+    <!-- where 查询条件 -->
+    <sql id="where_field">
+        <if test=" tenantId != null "> AND `tenant_id` = #{tenantId} </if>
+        <if test=" type != null "> AND `type` = #{type} </if>
+        <if test=" createUid != null "> AND `create_uid` = #{createUid} </if>
+        <if test=" beginCreateTime != null and endCreateTime != null "> AND `create_time` BETWEEN #{beginCreateTime} AND #{endCreateTime} </if>
+    </sql>
+    
+    <!-- 条件新增字段 -->
+    <sql id="insert_field">
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test=" tenantId != null "> `tenant_id`, </if>
+            <if test=" createUid != null "> #{create_uid}, </if>
+            <if test=" createTime != null "> `create_time`, </if>
+            <if test=" optIp != null and optIp != '' "> `opt_ip`, </if>
+            <if test=" type != null "> `type`, </if>
+            <if test=" content != null and content != '' "> `content`, </if>
+        </trim>
+    </sql>
+    <!-- 条件新增字段值 -->
+    <sql id="insert_value">
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test=" tenantId != null "> #{tenantId}, </if>
+            <if test=" createUid != null "> #{createUid}, </if>
+            <if test=" createTime != null "> #{createTime}, </if>
+            <if test=" optIp != null and optIp != '' "> #{opt_ip}, </if>
+            <if test=" type != null "> #{type}, </if>
+            <if test=" content != null and content != '' "> #{content}, </if>
+        </trim>
+    </sql>
+    
+    <!-- 条件查询分页 -->
+    <select id="selectPageByCondition" parameterType="com.xiliulou.electricity.model.sysopt.query.SysOptLogQryModel" resultMap="entityMap">
+        SELECT <include refid="all_field" /> FROM <include refid="table_name" />
+        <where>
+            <include refid="where_field" />
+        </where>
+        ORDER BY `create_time` DESC
+        LIMIT #{offset}, #{size}
+    </select>
+    
+    <!-- 条件查询总数 -->
+    <select id="countByCondition" parameterType="com.xiliulou.electricity.model.sysopt.query.SysOptLogQryModel" resultType="java.lang.Integer">
+        SELECT COUNT(1) FROM <include refid="table_name" />
+        <where>
+            <include refid="where_field" />
+        </where>
+    </select>
+    
+    <!-- 条件新增 -->
+    <insert id="insert" parameterType="com.xiliulou.electricity.entity.sysopt.SysOptLog" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO <include refid="table_name" /> <include refid="insert_field" /> VALUES <include refid="insert_value" />
+    </insert>
+
+</mapper>

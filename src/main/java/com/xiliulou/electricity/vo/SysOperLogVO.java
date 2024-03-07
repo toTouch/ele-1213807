@@ -7,6 +7,7 @@ import lombok.Data;
  * @email zhaozhilong@xiliulou.com
  * @date 2022-10-12-17:41
  */
+@Deprecated
 @Data
 public class SysOperLogVO {
 
