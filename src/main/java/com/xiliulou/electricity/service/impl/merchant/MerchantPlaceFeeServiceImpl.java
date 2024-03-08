@@ -1719,12 +1719,12 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
             bindDTO.setUnBindTime(dayOfMonthEndTime);
             String placeMonthSettlementDetail = bindDTO.getPlaceMonthSettlementDetail();
             
-            Long bindTime = bindDTO.getBindTime();
+//            Long bindTime = bindDTO.getBindTime();
             SimpleDateFormat fmt = new SimpleDateFormat("yyyy-MM");
-            String settlementDate = fmt.format(new Date(bindTime));
+            String lastMonth = fmt.format(new Date(dayOfMonthStartTime));
             
             //判断绑定时间月份是否出过账  出过帐，则开始日期为当前月份的日期
-            if (bindDTO.getBindTime() < dayOfMonthStartTime && (Objects.nonNull(placeMonthSettlementDetail) && placeMonthSettlementDetail.contains(settlementDate))) {
+            if (bindDTO.getBindTime() < dayOfMonthStartTime && (Objects.nonNull(placeMonthSettlementDetail) && placeMonthSettlementDetail.contains(lastMonth))) {
                 bindDTO.setBindTime(dayOfMonthStartTime);
             }
             
