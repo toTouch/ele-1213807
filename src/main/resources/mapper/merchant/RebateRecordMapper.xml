@@ -129,8 +129,7 @@
         from t_rebate_record
         where id in (SELECT MAX(id) as id
                      FROM t_rebate_record
-                     WHERE level &gt; #{level}
-                       and status in (0, 1)
+                     WHERE status in (0, 1)
                        AND merchant_id = #{merchantId}
                        and create_time &gt;= #{startTime}
                        and create_time &lt; #{endTime}
