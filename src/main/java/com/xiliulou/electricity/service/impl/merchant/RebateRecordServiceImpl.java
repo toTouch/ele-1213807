@@ -166,8 +166,8 @@ public class RebateRecordServiceImpl implements RebateRecordService {
     
     @Slave
     @Override
-    public List<RebateRecord> listCurrentMonthRebateRecord(String currentLevel, Long merchantId, long startTime, long endTime, int offset, int size) {
-        return this.rebateRecordMapper.selectCurrentMonthRebateRecord(currentLevel, merchantId, startTime, endTime, offset, size);
+    public List<RebateRecord> listCurrentMonthRebateRecord( Long merchantId, long startTime, long endTime, int offset, int size) {
+        return this.rebateRecordMapper.selectCurrentMonthRebateRecord( merchantId, startTime, endTime, offset, size);
     }
     
     @Slave
