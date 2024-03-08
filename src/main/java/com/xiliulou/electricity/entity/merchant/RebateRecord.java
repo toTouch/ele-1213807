@@ -1,11 +1,11 @@
 package com.xiliulou.electricity.entity.merchant;
 
 
+import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import com.baomidou.mybatisplus.annotation.TableName;
 
 import java.math.BigDecimal;
 
@@ -67,6 +67,11 @@ public class RebateRecord {
     private Integer orderType;
     
     /**
+     * 是否退租 0:否，1:是
+     */
+    private Integer refundFlag;
+    
+    /**
      * 加盟商id
      */
     private Long franchiseeId;
@@ -80,7 +85,7 @@ public class RebateRecord {
      * 商户id
      */
     private Long merchantId;
-
+    
     private Long merchantUid;
     
     /**

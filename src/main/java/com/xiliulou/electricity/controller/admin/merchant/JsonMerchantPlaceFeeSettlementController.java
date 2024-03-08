@@ -35,16 +35,6 @@ public class JsonMerchantPlaceFeeSettlementController extends BaseController {
     
     @GetMapping("/admin/merchant/placeFee/settlement/exportExcel")
     public void export(@RequestParam("monthDate") String monthDate,HttpServletResponse response) {
-    
-        TokenUser user = SecurityUtils.getUserInfo();
-        if (Objects.isNull(user)) {
-            throw new CustomBusinessException("未查询到用户");
-        }
-    
-        if (!SecurityUtils.isAdmin()  || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE)) {
-            throw new CustomBusinessException("用户权限不足");
-        }
-        
         merchantPlaceFeeSettlementService.export(monthDate, response);
     }
     

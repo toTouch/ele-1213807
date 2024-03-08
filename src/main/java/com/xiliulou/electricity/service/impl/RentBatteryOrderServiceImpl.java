@@ -431,7 +431,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
         dataMap.put("serialNumber", rentBatteryOrder.getElectricityBatterySn());
         
         HardwareCommandQuery comm = HardwareCommandQuery.builder()
-                .sessionId(CacheConstant.ELE_OPERATOR_SESSION_PREFIX + "-" + System.currentTimeMillis() + ":" + rentBatteryOrder.getId()).data(dataMap)
+                .sessionId(CacheConstant.ELE_OPERATOR_SESSION_PREFIX + "_" + System.currentTimeMillis() + "_" + rentBatteryOrder.getId()).data(dataMap)
                 .productKey(electricityCabinet.getProductKey()).deviceName(electricityCabinet.getDeviceName()).command(ElectricityIotConstant.ELE_COMMAND_RENT_OPEN_DOOR).build();
         eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
         
@@ -573,7 +573,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
         dataMap.put("serialNumber", rentBatteryOrder.getElectricityBatterySn());
         
         HardwareCommandQuery comm = HardwareCommandQuery.builder()
-                .sessionId(CacheConstant.ELE_OPERATOR_SESSION_PREFIX + "-" + System.currentTimeMillis() + ":" + rentBatteryOrder.getId()).data(dataMap)
+                .sessionId(CacheConstant.ELE_OPERATOR_SESSION_PREFIX + "_" + System.currentTimeMillis() + "_" + rentBatteryOrder.getId()).data(dataMap)
                 .productKey(electricityCabinet.getProductKey()).deviceName(electricityCabinet.getDeviceName()).command(ElectricityIotConstant.ELE_COMMAND_RENT_OPEN_DOOR).build();
         eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
         
@@ -816,7 +816,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
             }
             
             HardwareCommandQuery comm = HardwareCommandQuery.builder()
-                    .sessionId(CacheConstant.ELE_OPERATOR_SESSION_PREFIX + "-" + System.currentTimeMillis() + ":" + rentBatteryOrder.getId()).data(dataMap)
+                    .sessionId(CacheConstant.ELE_OPERATOR_SESSION_PREFIX + "_" + System.currentTimeMillis() + "_" + rentBatteryOrder.getId()).data(dataMap)
                     .productKey(electricityCabinet.getProductKey()).deviceName(electricityCabinet.getDeviceName()).command(ElectricityIotConstant.ELE_COMMAND_RETURN_OPEN_DOOR)
                     .build();
             eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
@@ -916,7 +916,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
             dataMap.put("serialNumber", rentBatteryOrder.getElectricityBatterySn());
             
             HardwareCommandQuery comm = HardwareCommandQuery.builder()
-                    .sessionId(CacheConstant.ELE_OPERATOR_SESSION_PREFIX + "-" + System.currentTimeMillis() + ":" + rentBatteryOrder.getId()).data(dataMap)
+                    .sessionId(CacheConstant.ELE_OPERATOR_SESSION_PREFIX + "_" + System.currentTimeMillis() + "_" + rentBatteryOrder.getId()).data(dataMap)
                     .productKey(electricityCabinet.getProductKey()).deviceName(electricityCabinet.getDeviceName()).command(ElectricityIotConstant.ELE_COMMAND_RENT_OPEN_DOOR)
                     .build();
             eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
@@ -941,7 +941,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
             }
             
             HardwareCommandQuery comm = HardwareCommandQuery.builder()
-                    .sessionId(CacheConstant.ELE_OPERATOR_SESSION_PREFIX + "-" + System.currentTimeMillis() + ":" + rentBatteryOrder.getId()).data(dataMap)
+                    .sessionId(CacheConstant.ELE_OPERATOR_SESSION_PREFIX + "_" + System.currentTimeMillis() + "_" + rentBatteryOrder.getId()).data(dataMap)
                     .productKey(electricityCabinet.getProductKey()).deviceName(electricityCabinet.getDeviceName()).command(ElectricityIotConstant.ELE_COMMAND_RETURN_OPEN_DOOR)
                     .build();
             eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
@@ -1520,7 +1520,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
             dataMap.put("cellNo", electricityExceptionOrderStatusRecord.getCellNo());
             dataMap.put("batteryName", rentBatteryOrder.getElectricityBatterySn());
             
-            String sessionId = CacheConstant.ELE_OPERATOR_SESSION_PREFIX + "-" + System.currentTimeMillis() + ":" + rentBatteryOrder.getId();
+            String sessionId = CacheConstant.ELE_OPERATOR_SESSION_PREFIX + "_" + System.currentTimeMillis() + "_" + rentBatteryOrder.getId();
             
             HardwareCommandQuery comm = HardwareCommandQuery.builder().sessionId(sessionId).data(dataMap).productKey(electricityCabinet.getProductKey())
                     .deviceName(electricityCabinet.getDeviceName()).command(ElectricityIotConstant.SELF_OPEN_CELL).build();

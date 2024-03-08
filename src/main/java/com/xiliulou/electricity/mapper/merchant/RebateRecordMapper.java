@@ -40,7 +40,7 @@ public interface RebateRecordMapper extends BaseMapper<RebateRecord> {
     
     List<RebateRecord> selectNotSettleListByLimit(@Param("startTime") long startTime, @Param("endTime") long endTime, @Param("offset") int offset, @Param("size") int size);
     
-    List<RebateRecord> selectCurrentMonthRebateRecord(@Param("level") String level, @Param("merchantId") Long merchantId, @Param("startTime") long startTime,
+    List<RebateRecord> selectCurrentMonthRebateRecord(@Param("merchantId") Long merchantId, @Param("startTime") long startTime,
             @Param("endTime") long endTime, @Param("offset") int offset, @Param("size") int size);
     
     BigDecimal sumMerchantIncomeByStatus(MerchantPromotionFeeQueryModel merchantPromotionFeeQueryModel);
@@ -52,4 +52,6 @@ public interface RebateRecordMapper extends BaseMapper<RebateRecord> {
     List<RebateRecord> selectListPromotionDetail(MerchantPromotionEmployeeDetailSpecificsQueryModel queryModel);
     
     List<RebateRecord> selectRebatedByUid(@Param("uid") Long uid, @Param("memberCardId") Long memberCardId, @Param("merchantId") Long merchantId, @Param("currentLevel") String currentLevel);
+    
+    Integer existsExpireRebateRecordByOriginalOrderId(String originalOrderId);
 }

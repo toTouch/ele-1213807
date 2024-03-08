@@ -166,14 +166,19 @@ public class RebateRecordServiceImpl implements RebateRecordService {
     
     @Slave
     @Override
-    public List<RebateRecord> listCurrentMonthRebateRecord(String currentLevel, Long merchantId, long startTime, long endTime, int offset, int size) {
-        return this.rebateRecordMapper.selectCurrentMonthRebateRecord(currentLevel, merchantId, startTime, endTime, offset, size);
+    public List<RebateRecord> listCurrentMonthRebateRecord( Long merchantId, long startTime, long endTime, int offset, int size) {
+        return this.rebateRecordMapper.selectCurrentMonthRebateRecord( merchantId, startTime, endTime, offset, size);
     }
     
     @Slave
     @Override
     public List<RebateRecord> listRebatedByUid(Long uid, Long memberCardId, Long merchantId, String currentLevel) {
         return this.rebateRecordMapper.selectRebatedByUid(uid, memberCardId, merchantId, currentLevel);
+    }
+    
+    @Override
+    public Integer existsExpireRebateRecordByOriginalOrderId(String originalOrderId) {
+        return this.rebateRecordMapper.existsExpireRebateRecordByOriginalOrderId(originalOrderId);
     }
     
     @Override

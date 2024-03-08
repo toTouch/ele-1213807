@@ -73,7 +73,7 @@ public class FaqV2 {
     /**
      * 上架类型
      */
-    public static final Integer SHELF_TYPE=1;
+    public static final Integer SHELF_TYPE=0;
     
     
 }
