@@ -561,7 +561,8 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
             MerchantWithdrawApplicationRecord merchantWithdrawApplicationRecord = merchantWithdrawApplicationRecordService.selectByOrderNo(
                     merchantWithdrawApplicationVO.getOrderNo(), merchantWithdrawApplicationVO.getTenantId());
             if (Objects.nonNull(merchantWithdrawApplicationRecord)) {
-                merchantWithdrawApplicationVO.setFailReason(merchantWithdrawApplicationRecord.getRemark());
+                merchantWithdrawApplicationVO.setFailReason(MerchantWithdrawConstant.WITHDRAW_FAILED_COMMON_REASON);
+                merchantWithdrawApplicationVO.setRealReason(merchantWithdrawApplicationRecord.getRemark());
             }
             
         });

@@ -64,4 +64,6 @@ public class MerchantWithdrawConstant {
     
     public static final String WECHAT_TRANSFER_BATCH_REMARK_SUFFIX = "推广费";
     
+    public static final String WITHDRAW_FAILED_COMMON_REASON = "提现失败，请联系客服处理";
+    
 }
