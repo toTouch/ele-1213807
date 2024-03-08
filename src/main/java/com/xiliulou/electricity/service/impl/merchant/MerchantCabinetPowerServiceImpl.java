@@ -785,23 +785,12 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
         
         ElectricityCabinet electricityCabinet = electricityCabinetService.queryByIdFromCache(eid.intValue());
         
-        if (Objects.equals(MerchantPlaceBindConstant.UN_BIND, merchantCabinetBindStatus)) {
-        
-        }
-        
-        MerchantProCabinetPowerDetailVO detailVo = MerchantProCabinetPowerDetailVO.builder().monthDate(monthDate)
-                .cabinetName(Optional.ofNullable(electricityCabinet).orElse(new ElectricityCabinet()).getName())
+        return MerchantProCabinetPowerDetailVO.builder().monthDate(monthDate).cabinetName(Optional.ofNullable(electricityCabinet).orElse(new ElectricityCabinet()).getName())
                 .sn(Optional.ofNullable(electricityCabinet).orElse(new ElectricityCabinet()).getSn())
                 .power(Objects.isNull(eleSumPowerVO) ? NumberConstant.ZERO_D : eleSumPowerVO.getSumPower())
-                .charge(Objects.isNull(eleSumPowerVO) ? NumberConstant.ZERO_D : eleSumPowerVO.getSumCharge()).startTime(startTime).placeId(placeId)
+                .charge(Objects.isNull(eleSumPowerVO) ? NumberConstant.ZERO_D : eleSumPowerVO.getSumCharge()).startTime(startTime).endTime(endTime).placeId(placeId)
                 .placeName(Optional.ofNullable(merchantPlaceService.queryByIdFromCache(placeId)).orElse(new MerchantPlace()).getName()).bindStatus(merchantCabinetBindStatus)
                 .build();
-        
-        if (Objects.equals(MerchantPlaceBindConstant.UN_BIND, merchantCabinetBindStatus)) {
-            detailVo.setEndTime(endTime);
-        }
-        
-        return detailVo;
     }
     
     /**
@@ -814,8 +803,6 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
         detailList.sort(Comparator.comparing(MerchantProCabinetPowerDetailVO::getEndTime));
         
         // 合并时间段
-        
-        List<MerchantProCabinetPowerDetailVO> resultList = new ArrayList<>();
         for (int i = 0; i < detailList.size() - 1; i++) {
             MerchantProCabinetPowerDetailVO current = detailList.get(i);
             MerchantProCabinetPowerDetailVO next = detailList.get(i + 1);
@@ -835,7 +822,12 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
             }
         }
         
-        return detailList;
+        //绑定状态没有结束时间
+        return detailList.stream().peek(detail -> {
+            if (Objects.equals(MerchantPlaceBindConstant.BIND, detail.getBindStatus())) {
+                detail.setEndTime(null);
+            }
+        }).collect(Collectors.toList());
         
     }
     
