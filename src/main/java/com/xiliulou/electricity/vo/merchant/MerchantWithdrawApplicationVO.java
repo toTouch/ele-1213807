@@ -85,8 +85,13 @@ public class MerchantWithdrawApplicationVO {
     private Long receiptTime;
     
     /**
-     * 失败原因
+     * 失败原因，用于页面友好提示
      */
     private String failReason;
+    
+    /**
+     * 真实原因，微信侧返回的错误原因
+     */
+    private String realReason;
     
 }
