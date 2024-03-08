@@ -366,11 +366,9 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
         });
         
         resList.stream().sorted(Comparator.comparing(MerchantPlaceCabinetFeeDetailVO::getTime).reversed());
-    
-        List<MerchantPlaceCabinetFeeDetailVO> subList = resList.subList((request.getOffset() - 1) * request.getSize(), request.getOffset() * request.getSize());
         
-        resVo.setCabinetFeeDetailList(subList);
-        resVo.setCabinetCount(subList.size());
+        resVo.setCabinetFeeDetailList(resList);
+        resVo.setCabinetCount(resList.size());
         
         return resVo;
     }
@@ -966,6 +964,7 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
         if (Objects.isNull(startTime) || Objects.isNull(endTime)) {
             return Collections.emptyList();
         }
+        
         List<String> list = new ArrayList<>();
         Calendar calendar = Calendar.getInstance();
         
