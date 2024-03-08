@@ -340,6 +340,12 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
             return Triple.of(false, "120014", "参数不合法");
         }
         
+        //检查审批条数是否超过100条，如果超过100条，则提示错误信息
+        if (batchReviewWithdrawApplicationRequest.getIds().size() > 100) {
+            log.error("batch handle withdraw record is more than 100, ids = {}", batchReviewWithdrawApplicationRequest.getIds());
+            return Triple.of(false, "120025", "提现申请数量不能超过100条");
+        }
+        
         List<MerchantWithdrawApplication> merchantWithdrawApplications = merchantWithdrawApplicationMapper.selectListByIds(batchReviewWithdrawApplicationRequest.getIds(),
                 tenantId.longValue());
         
