@@ -16,7 +16,7 @@ public enum RebateTypeEnum implements BasicEnum<Integer, String> {
     
     RENEW(1, "续费"),
     
-    BALANCE(2, "返现");
+    BALANCE(2, "差额");
     
     
     private final Integer code;
