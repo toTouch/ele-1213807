@@ -218,7 +218,16 @@ public class ChannelEmployeePromotionMonthRecordServiceImpl implements ChannelEm
                 balanceVo.setMonthFirstSumFee(item.getMonthFirstMoney());
                 balanceVo.setMonthRenewSumFee(item.getMonthRenewMoney());
                 balanceVo.setType(RebateTypeEnum.BALANCE.getDesc());
-                balanceVo.setReturnMoney(promotionDayRecord.getDayBalanceMoney().add(promotionDayRecord.getDayRenewBalanceMoney()));
+                BigDecimal returnMoney = BigDecimal.ZERO;
+                if (ObjectUtils.isNotEmpty(promotionDayRecord.getDayBalanceMoney())) {
+                    returnMoney = returnMoney.add(promotionDayRecord.getDayBalanceMoney());
+                }
+                
+                if (ObjectUtils.isNotEmpty(promotionDayRecord.getDayRenewBalanceMoney())) {
+                    returnMoney = returnMoney.add(promotionDayRecord.getDayRenewBalanceMoney());
+                }
+                
+                balanceVo.setReturnMoney(returnMoney);
                 balanceVo.setSettleDate(DateUtil.format(new Date(item.getFeeDate()), "yyyy-MM-dd"));
     
                 resList.add(balanceVo);
