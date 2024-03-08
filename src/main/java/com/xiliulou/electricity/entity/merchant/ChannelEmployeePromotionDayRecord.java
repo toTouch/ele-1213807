@@ -72,4 +72,9 @@ public class ChannelEmployeePromotionDayRecord {
      * 日费差额总额
      */
     private BigDecimal dayBalanceMoney;
+    
+    /**
+     * 日续费差额总额
+     */
+    private BigDecimal dayRenewBalanceMoney ;
 }

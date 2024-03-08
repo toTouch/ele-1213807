@@ -155,7 +155,7 @@ public class ChannelEmployeePromotionMonthRecordServiceImpl implements ChannelEm
         List<ChannelEmployeePromotionDayRecord> channelEmployeePromotionDayRecords = channelEmployeePromotionDayRecordService.queryListByFeeDate(startTime, endTime,
                 TenantContextHolder.getTenantId());
         
-        if (ObjectUtils.isEmpty(channelEmployeePromotionMonthRecords) || ObjectUtils.isEmpty(channelEmployeePromotionDayRecords)) {
+        if (ObjectUtils.isEmpty(channelEmployeePromotionMonthRecords)) {
             return resList;
         }
         
@@ -218,7 +218,7 @@ public class ChannelEmployeePromotionMonthRecordServiceImpl implements ChannelEm
                 balanceVo.setMonthFirstSumFee(item.getMonthFirstMoney());
                 balanceVo.setMonthRenewSumFee(item.getMonthRenewMoney());
                 balanceVo.setType(RebateTypeEnum.BALANCE.getDesc());
-                balanceVo.setReturnMoney(promotionDayRecord.getDayBalanceMoney());
+                balanceVo.setReturnMoney(promotionDayRecord.getDayBalanceMoney().add(promotionDayRecord.getDayRenewBalanceMoney()));
                 balanceVo.setSettleDate(DateUtil.format(new Date(item.getFeeDate()), "yyyy-MM-dd"));
     
                 resList.add(balanceVo);
