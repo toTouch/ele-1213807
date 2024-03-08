@@ -114,6 +114,11 @@ public class MerchantModifyConsumer implements RocketMQListener<String> {
                         return;
                     }
                     
+                    //检查该订单是否生成已失效或已退回返利记录
+                    if (Objects.nonNull(rebateRecordService.existsExpireRebateRecordByOriginalOrderId(item.getOriginalOrderId()))) {
+                        return;
+                    }
+                    
                     //获取最新返利规则
                     RebateConfig rebateConfig = rebateConfigService.queryByMidAndMerchantLevel(item.getMemberCardId(), currentLevel);
                     if (Objects.isNull(rebateConfig)) {
