@@ -15,14 +15,14 @@ import java.math.BigDecimal;
  **/
 @Data
 public class CarRentalPackageOrderFreezeVo implements Serializable {
-
+    
     private static final long serialVersionUID = -4712482555477714776L;
-
+    
     /**
      * 订单编码
      */
     private String orderNo;
-
+    
     /**
      * 套餐类型
      * <pre>
@@ -33,12 +33,12 @@ public class CarRentalPackageOrderFreezeVo implements Serializable {
      * @see RentalPackageTypeEnum
      */
     private Integer rentalPackageType;
-
+    
     /**
      * 余量
      */
     private Long residue;
-
+    
     /**
      * 余量单位
      * <pre>
@@ -50,7 +50,7 @@ public class CarRentalPackageOrderFreezeVo implements Serializable {
      * @see RentalUnitEnum
      */
     private Integer residueUnit;
-
+    
     /**
      * 状态
      * <pre>
@@ -66,72 +66,77 @@ public class CarRentalPackageOrderFreezeVo implements Serializable {
      * @see RentalPackageOrderFreezeStatusEnum
      */
     private Integer status;
-
+    
     /**
      * 备注
      */
     private String remark;
-
+    
     /**
      * 滞纳金(元/天)
      */
     private BigDecimal lateFee;
-
+    
     /**
      * 创建时间，时间戳
      */
     private Long createTime;
-
+    
     /**
      * 修改时间，时间戳
      */
     private Long updateTime;
-
+    
     /**
      * 申请期限(天)
      */
     private Integer applyTerm;
-
+    
     /**
      * 申请时间
      */
     private Long applyTime;
-
+    
     /**
      * 审核时间
      */
     private Long auditTime;
-
+    
     /**
      * 启用时间
      */
     private Long enableTime;
-
+    
     /**
      * 申请原因
      */
     private String applyReason;
-
+    
     // ++++++++++ 辅助业务数据 ++++++++++
-
+    
     /**
      * 用户UID
      */
     private Long uid;
-
+    
     /**
      * 用户真实姓名
      */
     private String userRelName;
-
+    
     /**
      * 用户手机号
      */
     private String userPhone;
-
+    
     /**
      * 租车套餐名称
      */
     private String carRentalPackageName;
-
+    
+    /**
+     * 审核员名称
+     */
+    private String auditorName;
+    
 }
