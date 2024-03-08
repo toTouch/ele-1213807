@@ -67,6 +67,11 @@ public class RebateRecord {
     private Integer orderType;
     
     /**
+     * 是否退租 0:否，1:是
+     */
+    private Integer refundFlag;
+    
+    /**
      * 加盟商id
      */
     private Long franchiseeId;
