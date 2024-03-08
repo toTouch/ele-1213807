@@ -1721,7 +1721,7 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
             
 //            Long bindTime = bindDTO.getBindTime();
             SimpleDateFormat fmt = new SimpleDateFormat("yyyy-MM");
-            String lastMonth = fmt.format(new Date(dayOfMonthStartTime));
+            String lastMonth = fmt.format(new Date(DateUtils.getBeforeMonthFirstDayTimestamp(DateFormatConstant.LAST_MONTH)));
             
             //判断绑定时间月份是否出过账  出过帐，则开始日期为当前月份的日期
             if (bindDTO.getBindTime() < dayOfMonthStartTime && (Objects.nonNull(placeMonthSettlementDetail) && placeMonthSettlementDetail.contains(lastMonth))) {
