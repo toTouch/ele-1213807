@@ -106,7 +106,7 @@ public class MerchantModifyConsumer implements RocketMQListener<String> {
                 if (CollectionUtils.isEmpty(list)) {
                     return;
                 }
-    
+                
                 list.forEach(item -> {
                     //获取最新返利规则
                     RebateConfig rebateConfig = rebateConfigService.queryByMidAndMerchantLevel(item.getMemberCardId(), currentLevel);
@@ -114,34 +114,36 @@ public class MerchantModifyConsumer implements RocketMQListener<String> {
                         log.warn("MERCHANT MODIFY CONSUMER WARN!rebateConfig is null,id={},memberCardId={},level={}", item.getId(), item.getMemberCardId(), currentLevel);
                         return;
                     }
-        
+                    
                     if (Objects.equals(rebateConfig.getStatus(), MerchantConstant.REBATE_DISABLE)) {
                         log.warn("MERCHANT MODIFY CONSUMER WARN!rebateConfig is disable,id={},memberCardId={},level={}", item.getId(), item.getMemberCardId(), currentLevel);
                         return;
                     }
-        
+                    
                     if (Integer.parseInt(item.getLevel()) <= Integer.parseInt(currentLevel)) {
                         log.info("MERCHANT MODIFY CONSUMER INFO!illegal level,id={},itemLevel={},currentLevel={}", item.getId(), item.getLevel(), currentLevel);
                         return;
                     }
-    
-                    BigDecimal newMerchantRebate = Objects.equals(item.getType(), MerchantConstant.MERCHANT_REBATE_TYPE_INVITATION) ? rebateConfig.getMerchantInvitation()
+                    
+                    BigDecimal newMerchantRebate = Objects.equals(item.getOrderType(), MerchantConstant.MERCHANT_REBATE_TYPE_INVITATION) ? rebateConfig.getMerchantInvitation()
                             : rebateConfig.getMerchantRenewal();
-                    BigDecimal newChannelerRebate = Objects.equals(item.getType(), MerchantConstant.MERCHANT_REBATE_TYPE_INVITATION) ? rebateConfig.getChannelerInvitation()
+                    BigDecimal newChannelerRebate = Objects.equals(item.getOrderType(), MerchantConstant.MERCHANT_REBATE_TYPE_INVITATION) ? rebateConfig.getChannelerInvitation()
                             : rebateConfig.getChannelerRenewal();
-    
-                    BigDecimal oldMerchantRebate = item.getMerchantRebate();
-                    BigDecimal oldChannelerRebate = item.getChannelerRebate();
-        
-//                    //上一级返利配置
-//                    RebateConfig latestRebateConfig = rebateConfigService.queryLatestByMidAndMerchantLevel(item.getMemberCardId(), currentLevel);
-//
-//                    //返利差额=当前返利配置金额-上一级返利配置金额
-//                    BigDecimal oldMerchantRebate = Objects.equals(item.getType(), MerchantConstant.MERCHANT_REBATE_TYPE_INVITATION) ? latestRebateConfig.getMerchantInvitation()
-//                            : latestRebateConfig.getMerchantRenewal();
-//                    BigDecimal oldChannelerRebate = Objects.equals(item.getType(), MerchantConstant.MERCHANT_REBATE_TYPE_INVITATION) ? latestRebateConfig.getChannelerInvitation()
-//                            : latestRebateConfig.getChannelerRenewal();
-        
+                    
+                    //上一级返利配置
+                    RebateConfig latestRebateConfig = rebateConfigService.queryByMidAndMerchantLevel(item.getMemberCardId(), item.getLevel());
+                    if (Objects.isNull(latestRebateConfig)) {
+                        log.warn("MERCHANT MODIFY CONSUMER WARN!latestRebateConfig is null,id={},memberCardId={},level={}", item.getId(), item.getMemberCardId(), currentLevel);
+                        return;
+                    }
+                    
+                    BigDecimal oldMerchantRebate = Objects.equals(item.getOrderType(), MerchantConstant.MERCHANT_REBATE_TYPE_INVITATION) ? latestRebateConfig.getMerchantInvitation()
+                            : latestRebateConfig.getMerchantRenewal();
+                    BigDecimal oldChannelerRebate = Objects.equals(item.getOrderType(), MerchantConstant.MERCHANT_REBATE_TYPE_INVITATION) ? latestRebateConfig.getChannelerInvitation()
+                            : latestRebateConfig.getChannelerRenewal();
+                    
+                    log.info("MERCHANT MODIFY CONSUMER INFO!orderId={}", item.getOrderId());
+                    
                     RebateRecord rebateRecord = new RebateRecord();
                     rebateRecord.setUid(item.getUid());
                     rebateRecord.setName(item.getName());
@@ -168,76 +170,8 @@ public class MerchantModifyConsumer implements RocketMQListener<String> {
                     rebateRecord.setUpdateTime(System.currentTimeMillis());
                     rebateRecordService.insert(rebateRecord);
                 });
-    
+                
                 offset += size;
-                
-                
-                
-                
-//                List<RebateRecord> list = rebateRecordService.listCurrentMonthRebateRecord(merchant.getId(), startTime, endTime, offset, size);
-//                if (CollectionUtils.isEmpty(list)) {
-//                    return;
-//                }
-//
-//                list.forEach(item -> {
-//                    //获取最新返利规则
-//                    RebateConfig rebateConfig = rebateConfigService.queryByMidAndMerchantLevel(item.getMemberCardId(), currentLevel);
-//                    if (Objects.isNull(rebateConfig)) {
-//                        log.warn("MERCHANT MODIFY CONSUMER WARN!rebateConfig is null,id={},memberCardId={},level={}", item.getId(), item.getMemberCardId(), currentLevel);
-//                        return;
-//                    }
-//
-//                    if (Objects.equals(rebateConfig.getStatus(), MerchantConstant.REBATE_DISABLE)) {
-//                        log.warn("MERCHANT MODIFY CONSUMER WARN!rebateConfig is disable,id={},memberCardId={},level={}", item.getId(), item.getMemberCardId(), currentLevel);
-//                        return;
-//                    }
-//
-//                    if (Integer.parseInt(item.getLevel()) <= Integer.parseInt(currentLevel)) {
-//                        log.info("MERCHANT MODIFY CONSUMER INFO!illegal level,id={},itemLevel={},currentLevel={}", item.getId(), item.getLevel(), currentLevel);
-//                        return;
-//                    }
-//
-//                    BigDecimal newMerchantRebate = Objects.equals(item.getType(), MerchantConstant.MERCHANT_REBATE_TYPE_INVITATION) ? rebateConfig.getMerchantInvitation()
-//                            : rebateConfig.getMerchantRenewal();
-//                    BigDecimal newChannelerRebate = Objects.equals(item.getType(), MerchantConstant.MERCHANT_REBATE_TYPE_INVITATION) ? rebateConfig.getChannelerInvitation()
-//                            : rebateConfig.getChannelerRenewal();
-//
-//                    //上一级返利配置
-//                    RebateConfig latestRebateConfig = rebateConfigService.queryLatestByMidAndMerchantLevel(item.getMemberCardId(), currentLevel);
-//
-//                    //返利差额=当前返利配置金额-上一级返利配置金额
-//                    BigDecimal oldMerchantRebate = Objects.equals(item.getType(), MerchantConstant.MERCHANT_REBATE_TYPE_INVITATION) ? latestRebateConfig.getMerchantInvitation()
-//                            : latestRebateConfig.getMerchantRenewal();
-//                    BigDecimal oldChannelerRebate = Objects.equals(item.getType(), MerchantConstant.MERCHANT_REBATE_TYPE_INVITATION) ? latestRebateConfig.getChannelerInvitation()
-//                            : latestRebateConfig.getChannelerRenewal();
-//
-//                    RebateRecord rebateRecord = new RebateRecord();
-//                    rebateRecord.setUid(item.getUid());
-//                    rebateRecord.setName(item.getName());
-//                    rebateRecord.setPhone(item.getPhone());
-//                    rebateRecord.setOrderId(OrderIdUtil.generateBusinessOrderId(BusinessType.BATTERY_REBATE, rebateRecord.getUid()));
-//                    rebateRecord.setOriginalOrderId(item.getOrderId());
-//                    rebateRecord.setMemberCardId(item.getMemberCardId());
-//                    rebateRecord.setMemberCardName(item.getMemberCardName());
-//                    rebateRecord.setType(MerchantConstant.MERCHANT_REBATE_TYPE_DISCREPANCY);
-//                    rebateRecord.setFranchiseeId(item.getFranchiseeId());
-//                    rebateRecord.setLevel(currentLevel);
-//                    rebateRecord.setMerchantId(item.getMerchantId());
-//                    rebateRecord.setMerchantUid(item.getMerchantUid());
-//                    rebateRecord.setStatus(MerchantConstant.MERCHANT_REBATE_STATUS_NOT_SETTLE);
-//                    rebateRecord.setChanneler(item.getChanneler());
-//                    rebateRecord.setChannelerRebate(newChannelerRebate.subtract(oldChannelerRebate));
-//                    rebateRecord.setMerchantRebate(newMerchantRebate.subtract(oldMerchantRebate));
-//                    rebateRecord.setPlaceId(item.getPlaceId());
-//                    rebateRecord.setPlaceUid(item.getPlaceUid());
-//                    rebateRecord.setRebateTime(System.currentTimeMillis());
-//                    rebateRecord.setTenantId(item.getTenantId());
-//                    rebateRecord.setCreateTime(System.currentTimeMillis());
-//                    rebateRecord.setUpdateTime(System.currentTimeMillis());
-//                    rebateRecordService.insert(rebateRecord);
-//                });
-//
-//                offset += size;
             }
         } catch (Exception e) {
             log.error("MERCHANT MODIFY CONSUMER ERROR!msg={}", message, e);

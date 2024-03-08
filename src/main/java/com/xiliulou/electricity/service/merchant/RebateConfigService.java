@@ -33,5 +33,4 @@ public interface RebateConfigService {
     
     RebateConfig queryByMidAndMerchantLevel(Long memberCardId, String level);
     
-    RebateConfig queryLatestByMidAndMerchantLevel(Long memberCardId, String level);
 }

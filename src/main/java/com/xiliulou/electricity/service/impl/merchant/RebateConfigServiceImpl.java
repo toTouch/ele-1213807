@@ -169,9 +169,5 @@ public class RebateConfigServiceImpl implements RebateConfigService {
     public RebateConfig queryByMidAndMerchantLevel(Long memberCardId, String level) {
         return this.rebateConfigMapper.selectByMidAndMerchantLevel(memberCardId, level);
     }
-    
-    @Override
-    public RebateConfig queryLatestByMidAndMerchantLevel(Long memberCardId, String level) {
-        return this.rebateConfigMapper.selectLatestByMidAndMerchantLevel(memberCardId, level);
-    }
+
 }

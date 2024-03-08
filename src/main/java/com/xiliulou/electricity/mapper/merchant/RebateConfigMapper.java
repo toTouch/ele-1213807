@@ -29,5 +29,4 @@ public interface RebateConfigMapper {
     
     RebateConfig selectByMidAndMerchantLevel(@Param("mid") Long mid, @Param("level") String level);
     
-    RebateConfig selectLatestByMidAndMerchantLevel(@Param("mid") Long mid, @Param("level") String level);
 }
