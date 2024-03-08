@@ -516,7 +516,7 @@ public class EleOperateQueueHandler {
                 dataMap.put("old_cell_no", electricityCabinetOrder.getOldCellNo());
                 
                 HardwareCommandQuery comm = HardwareCommandQuery.builder().sessionId(
-                                CacheConstant.ELE_OPERATOR_SESSION_PREFIX + ":" + System.currentTimeMillis() + ":" + electricityCabinetOrder.getUid() + ":"
+                                CacheConstant.ELE_OPERATOR_SESSION_PREFIX + "_" + System.currentTimeMillis() + "_" + electricityCabinetOrder.getUid() + "_"
                                         + electricityCabinetOrder.getOrderId()).data(dataMap).productKey(electricityCabinet.getProductKey()).deviceName(electricityCabinet.getDeviceName())
                         .command(ElectricityIotConstant.ELE_COMMAND_ORDER_OPEN_NEW_DOOR).build();
                 eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);

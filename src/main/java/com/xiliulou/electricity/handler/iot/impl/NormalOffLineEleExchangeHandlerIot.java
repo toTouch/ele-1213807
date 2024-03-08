@@ -457,7 +457,7 @@ public class NormalOffLineEleExchangeHandlerIot extends AbstractElectricityIotHa
         }
         
         HardwareCommandQuery comm = HardwareCommandQuery.builder()
-                .sessionId(CacheConstant.ELE_OPERATOR_SESSION_PREFIX + ":" + System.currentTimeMillis() + ":" + uid + ":" + offlineEleOrderVo.getOrderId()).data(dataMap)
+                .sessionId(CacheConstant.ELE_OPERATOR_SESSION_PREFIX + "_" + System.currentTimeMillis() + "_" + uid + "_" + offlineEleOrderVo.getOrderId()).data(dataMap)
                 .productKey(electricityCabinet.getProductKey()).deviceName(electricityCabinet.getDeviceName())
                 .command(ElectricityIotConstant.OFFLINE_ELE_EXCHANGE_ORDER_MANAGE_SUCCESS).build();
         Pair<Boolean, String> sendResult = eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
