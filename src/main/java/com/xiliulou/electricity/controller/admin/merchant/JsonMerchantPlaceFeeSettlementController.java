@@ -41,7 +41,7 @@ public class JsonMerchantPlaceFeeSettlementController extends BaseController {
             throw new CustomBusinessException("未查询到用户");
         }
     
-        if (!SecurityUtils.isAdmin()  || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE)) {
+        if (!SecurityUtils.isAdmin()  || !Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE)) {
             throw new CustomBusinessException("用户权限不足");
         }
         
