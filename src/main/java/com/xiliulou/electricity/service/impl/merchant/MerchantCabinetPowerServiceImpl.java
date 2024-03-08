@@ -655,6 +655,8 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
     }
     
     private List<MerchantPlaceCabinetBind> removeSubset(List<MerchantPlaceCabinetBind> cabinetBindList) {
+        log.info("Merchant removeSubset cabinetBindList={}", cabinetBindList);
+    
         List<MerchantPlaceCabinetBind> resultList = new ArrayList<>();
         
         for (MerchantPlaceCabinetBind current : cabinetBindList) {
@@ -683,7 +685,9 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
                 resultList.add(current);
             }
         }
-        
+    
+        log.info("Merchant removeSubset resultList={}", resultList);
+    
         return resultList;
     }
     
