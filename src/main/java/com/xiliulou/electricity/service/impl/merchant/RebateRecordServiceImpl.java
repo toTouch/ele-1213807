@@ -177,6 +177,11 @@ public class RebateRecordServiceImpl implements RebateRecordService {
     }
     
     @Override
+    public Integer existsExpireRebateRecordByOriginalOrderId(String originalOrderId) {
+        return this.rebateRecordMapper.existsExpireRebateRecordByOriginalOrderId(originalOrderId);
+    }
+    
+    @Override
     @Transactional(rollbackFor = Exception.class)
     public void handleRebate(RebateRecord rebateRecord) {
         BigDecimal merchantRebate = rebateRecord.getMerchantRebate();

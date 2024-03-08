@@ -55,4 +55,6 @@ public interface RebateRecordService {
      * 获取比当前商户等级小的返利记录
      */
     List<RebateRecord> listRebatedByUid(Long uid, Long memberCardId, Long merchantId, String currentLevel);
+    
+    Integer existsExpireRebateRecordByOriginalOrderId(String originalOrderId);
 }

@@ -66,6 +66,13 @@
         where  status =0 and create_time &gt;= #{startTime} and create_time &lt; #{endTime} limit #{offset}, #{size}
     </select>
     
+    <select id="existsExpireRebateRecordByOriginalOrderId" resultType="Integer">
+        SELECT 1
+        FROM t_rebate_record
+        WHERE original_order_id = #{originalOrderId}
+          AND status in (2, 3) LIMIT 1
+    </select>
+    
     <select id="selectRebatedByUid" resultMap="RebateRecordMap">
         select id,
                uid,
