@@ -234,11 +234,4 @@
         update t_channel_employee set del_flag = 1, update_time = #{updateTime}  where id = #{id}
     </delete>
     
-    <!--通过主键物理删除渠道员工-->
-    <delete id="deleteById">
-        delete from t_channel_employee where id = #{id}
-    </delete>
-    
-    
-    
 </mapper>
