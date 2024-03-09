@@ -217,6 +217,9 @@ public class BatteryMemberCardMerchantRebateConsumer implements RocketMQListener
         Integer orderType = null;
         
         Integer payCount = electricityMemberCardOrder.getPayCount();
+        
+        Integer refundType = null;
+        
         if (payCount <= 1) {
             type = MerchantConstant.MERCHANT_REBATE_TYPE_INVITATION;
             //拉新返现
@@ -231,6 +234,7 @@ public class BatteryMemberCardMerchantRebateConsumer implements RocketMQListener
             channelerRebate = rebateConfig.getChannelerRenewal();
             
             orderType = MerchantConstant.MERCHANT_REBATE_ORDER_TYPE_OLD;
+            refundType = MerchantConstant.REBATE_IS_NOT_REFUND;
         }
         
         RebateRecord rebateRecord = new RebateRecord();
@@ -251,6 +255,7 @@ public class BatteryMemberCardMerchantRebateConsumer implements RocketMQListener
         rebateRecord.setChanneler(userInfoExtra.getChannelEmployeeUid());
         rebateRecord.setChannelerRebate(channelerRebate);
         rebateRecord.setMerchantRebate(merchantRebate);
+        rebateRecord.setRefundFlag(refundType);
         rebateRecord.setPlaceId(userInfoExtra.getPlaceId());
         rebateRecord.setPlaceUid(userInfoExtra.getPlaceUid());
         rebateRecord.setRebateTime(electricityMemberCardOrder.getCreateTime());
@@ -306,14 +311,17 @@ public class BatteryMemberCardMerchantRebateConsumer implements RocketMQListener
             return;
         }
         
-        //未结算，修改成 已失效 返利记录
+  /*      //未结算，修改成 已失效 返利记录
         if (Objects.equals(MerchantConstant.MERCHANT_REBATE_STATUS_NOT_SETTLE, rebateRecord.getStatus())) {
             RebateRecord rebateRecordUpdate = new RebateRecord();
             rebateRecordUpdate.setId(rebateRecord.getId());
             rebateRecordUpdate.setStatus(MerchantConstant.MERCHANT_REBATE_STATUS_EXPIRED);
             rebateRecordUpdate.setUpdateTime(System.currentTimeMillis());
             rebateRecordService.updateById(rebateRecordUpdate);
-        }
+        }*/
+    
+        // 处理退租的返利记录
+        handleRebateRecord(rebateRecord);
         
         //返利记录已结算，重新生成 已退回 返利记录，同时扣减返利金额
         if (Objects.equals(MerchantConstant.MERCHANT_REBATE_STATUS_SETTLED, rebateRecord.getStatus())) {
@@ -349,6 +357,23 @@ public class BatteryMemberCardMerchantRebateConsumer implements RocketMQListener
         }
         
         handleExcessRebateRecord(rebateRecord, batteryMembercardRefundOrder);
+    }
+    
+    
+    /**
+     * 用户退租后需要更新返利记录中的是否退租字段，该字段用于小程序商户端统计续费次数
+     * @param rebateRecord
+     */
+    private void handleRebateRecord(RebateRecord rebateRecord) {
+        //未结算，修改成 已失效 返利记录
+        RebateRecord rebateRecordUpdate = new RebateRecord();
+        rebateRecordUpdate.setId(rebateRecord.getId());
+        if (Objects.equals(MerchantConstant.MERCHANT_REBATE_STATUS_NOT_SETTLE, rebateRecord.getStatus())) {
+            rebateRecordUpdate.setStatus(MerchantConstant.MERCHANT_REBATE_STATUS_EXPIRED);
+        }
+        rebateRecordUpdate.setRefundFlag(MerchantConstant.REBATE_IS_REFUND);
+        rebateRecordUpdate.setUpdateTime(System.currentTimeMillis());
+        rebateRecordService.updateById(rebateRecordUpdate);
     }
     
     /**
