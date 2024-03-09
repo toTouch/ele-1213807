@@ -38,7 +38,7 @@ public interface MerchantAttrService {
     /**
      * 校验邀请时间是否在有效期内
      */
-    Boolean checkInvitationTime(Integer tenantId, Long invitationTime);
+    Boolean checkInvitationTime(MerchantAttr merchantAttr, Long invitationTime);
     
     MerchantAttr queryUpgradeCondition(Integer tenantId);
 }
