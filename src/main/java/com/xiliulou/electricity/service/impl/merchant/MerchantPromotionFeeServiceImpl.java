@@ -515,6 +515,11 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
     
     @Override
     public R selectPromotionData(MerchantPromotionDataDetailQueryModel queryModel) {
+        // 如果没有传时间 则为查询截止当前的记录
+        if(Objects.isNull(queryModel.getStartTime())&&Objects.isNull(queryModel.getEndTime())){
+            queryModel.setEndTime(System.currentTimeMillis());
+        }
+        
         MerchantPromotionDataVO dataVO = new MerchantPromotionDataVO();
         dataVO.setScanCodeCount(buildScanCodeCount(queryModel.getType(), queryModel.getUid(), queryModel.getStartTime(), queryModel.getEndTime(), null));
         dataVO.setPurchaseCount(
