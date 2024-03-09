@@ -724,9 +724,9 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
         return resultList;
     }
     
-    private List<MerchantProCabinetPowerDetailVO> getLiveMonthPowerForCabinetDetail(Integer tenantId, Long merchantId, Long cabinetId, String monthDate, Long startTime,
+    private List<MerchantProCabinetPowerDetailVO> getThisMonthPowerForCabinetDetail(Integer tenantId, Long merchantId, Long cabinetId, String monthDate, Long startTime,
             Long endTime) {
-        log.info("Merchant getLiveMonthPowerForCabinetDetail merchantId={}, monthDate={}, cabinetId={}", merchantId, monthDate, cabinetId);
+        log.info("Merchant getThisMonthPowerForCabinetDetail merchantId={}, monthDate={}, cabinetId={}", merchantId, monthDate, cabinetId);
         
         // 获取商户场地绑定记录
         List<MerchantPlaceBind> merchantPlaceBindList = todayOrThisMonthMerchantPlaceBindList(merchantId, startTime, endTime);
@@ -734,7 +734,7 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
             return Collections.emptyList();
         }
         
-        log.info("Merchant getLiveMonthPowerForCabinetDetail merchantId={}, cabinetId={}, merchantPlaceBindList={}", merchantId, cabinetId, merchantPlaceBindList);
+        log.info("Merchant getThisMonthPowerForCabinetDetail merchantId={}, cabinetId={}, merchantPlaceBindList={}", merchantId, cabinetId, merchantPlaceBindList);
         
         // 结果集
         List<MerchantProCabinetPowerDetailVO> resultList = new ArrayList<>();
@@ -750,7 +750,7 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
                 continue;
             }
             
-            log.info("Merchant getLiveMonthPowerForCabinetDetail merchantId={}, placeId={}, placeBindList={}", merchantId, placeId, placeBindList);
+            log.info("Merchant getThisMonthPowerForCabinetDetail merchantId={}, placeId={}, placeBindList={}", merchantId, placeId, placeBindList);
             
             List<MerchantProCabinetPowerDetailVO> placeResultList = new ArrayList<>();
             
@@ -760,25 +760,22 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
                 Long bindTime = placeBind.getBindTime();
                 Long unBindTime = placeBind.getUnBindTime();
                 
-                log.info("Merchant getLiveMonthPowerForCabinetDetail cabinetId={}, bindTime={}, unBindTime={}", cabinetId, bindTime, unBindTime);
-                
                 // 获取场地柜机绑定记录
-                List<MerchantPlaceCabinetBind> placeCabinetBindList = getThisMonthPlaceCabinetBindListForCabinetDetail(placeId, bindTime, unBindTime, cabinetId);
+                List<MerchantPlaceCabinetBind> placeCabinetBindList = getCabinetBindListForCabinetDetail(placeId, bindTime, unBindTime, cabinetId);
+                
+                log.info("Merchant getThisMonthPowerForCabinetDetail merchantId={}, placeId={}, placeCabinetBindList={}", merchantId, placeId, placeCabinetBindList);
+                
                 if (CollectionUtils.isEmpty(placeCabinetBindList)) {
                     continue;
                 }
                 
-                log.info("Merchant getLiveMonthPowerForCabinetDetail merchantId={}, cabinetId={}, placeCabinetBindList={}", merchantId, cabinetId, placeCabinetBindList);
-                
                 // 遍历柜机
                 List<MerchantProCabinetPowerDetailVO> periodPowerList = getPeriodPowerForDetail(tenantId, placeId, cabinetId, placeCabinetBindList, monthDate, status);
-                
-                log.info("Merchant getLiveMonthPowerForCabinetDetail placeId={}, cabinetId={}, periodPowerList={}", placeId, cabinetId, periodPowerList);
                 
                 placeResultList.addAll(periodPowerList);
             }
             
-            log.info("Merchant getLiveMonthPowerForCabinetDetail merchantId={}, placeResultList={}", merchantId, placeResultList);
+            log.info("Merchant getThisMonthPowerForCabinetDetail merchantId={}, placeResultList={}", merchantId, placeResultList);
             
             // 合并连续时间段的记录（前一个时间段的endTime和后一个时间段的startTime是同一天）
             List<MerchantProCabinetPowerDetailVO> afterMergeDetailResultList = mergeSerialTimeDetail(placeResultList);
@@ -787,7 +784,70 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
                 resultList.addAll(afterMergeDetailResultList);
             }
             
-            log.info("Merchant getLiveMonthPowerForCabinetDetail merchantId={}, resultList={}", merchantId, resultList);
+            log.info("Merchant getThisMonthPowerForCabinetDetail merchantId={}, resultList={}", merchantId, resultList);
+        }
+        
+        return resultList;
+    }
+    
+    private List<MerchantProCabinetPowerDetailVO> getLastMonthPowerForCabinetDetail(Integer tenantId, Long merchantId, Long cabinetId, String monthDate, Long startTime,
+            Long endTime) {
+        log.info("Merchant getLastMonthPowerForCabinetDetail merchantId={}, monthDate={}, cabinetId={}", merchantId, monthDate, cabinetId);
+        
+        // 获取商户场地绑定记录
+        List<MerchantPlaceBind> merchantPlaceBindList = yesterdayOrLastMonthMerchantPlaceBindList(merchantId, startTime, endTime);
+        if (CollectionUtils.isEmpty(merchantPlaceBindList)) {
+            return Collections.emptyList();
+        }
+        
+        log.info("Merchant getLastMonthPowerForCabinetDetail merchantId={}, cabinetId={}, merchantPlaceBindList={}", merchantId, cabinetId, merchantPlaceBindList);
+        
+        // 结果集
+        List<MerchantProCabinetPowerDetailVO> resultList = new ArrayList<>();
+        
+        // 根据场地进行分组
+        Map<Long, List<MerchantPlaceBind>> placeCabinetBindMap = merchantPlaceBindList.stream().collect(Collectors.groupingBy(MerchantPlaceBind::getPlaceId));
+        
+        for (Map.Entry<Long, List<MerchantPlaceBind>> entry : placeCabinetBindMap.entrySet()) {
+            Long placeId = entry.getKey();
+            List<MerchantPlaceBind> placeBindList = entry.getValue();
+            
+            if (CollectionUtils.isEmpty(placeBindList)) {
+                continue;
+            }
+            
+            log.info("Merchant getLastMonthPowerForCabinetDetail merchantId={}, placeId={}, placeBindList={}", merchantId, placeId, placeBindList);
+            
+            List<MerchantProCabinetPowerDetailVO> placeResultList = new ArrayList<>();
+            
+            // 遍历场地
+            for (MerchantPlaceBind placeBind : placeBindList) {
+                Integer status = placeBind.getType();
+                Long bindTime = placeBind.getBindTime();
+                Long unBindTime = placeBind.getUnBindTime();
+                
+                // 获取场地柜机绑定记录
+                List<MerchantPlaceCabinetBind> placeCabinetBindList = getCabinetBindListForCabinetDetail(placeId, bindTime, unBindTime, cabinetId);
+                if (CollectionUtils.isEmpty(placeCabinetBindList)) {
+                    continue;
+                }
+                
+                // 遍历柜机
+                List<MerchantProCabinetPowerDetailVO> periodPowerList = getPeriodPowerForDetail(tenantId, placeId, cabinetId, placeCabinetBindList, monthDate, status);
+                
+                placeResultList.addAll(periodPowerList);
+            }
+            
+            log.info("Merchant getLastMonthPowerForCabinetDetail merchantId={}, placeResultList={}", merchantId, placeResultList);
+            
+            // 合并连续时间段的记录（前一个时间段的endTime和后一个时间段的startTime是同一天）
+            List<MerchantProCabinetPowerDetailVO> afterMergeDetailResultList = mergeSerialTimeDetail(placeResultList);
+            
+            if (CollectionUtils.isNotEmpty(afterMergeDetailResultList)) {
+                resultList.addAll(afterMergeDetailResultList);
+            }
+            
+            log.info("Merchant getLastMonthPowerForCabinetDetail merchantId={}, resultList={}", merchantId, resultList);
         }
         
         return resultList;
@@ -816,12 +876,8 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
      * 合并连续时间段的记录
      */
     private List<MerchantProCabinetPowerDetailVO> mergeSerialTimeDetail(List<MerchantProCabinetPowerDetailVO> detailList) {
-        log.info("============mergeSerialTimeDetail===================detailList{}", detailList);
-        
         // 去重
         detailList = detailList.stream().distinct().collect(Collectors.toList());
-        
-        log.info("============mergeSerialTimeDetail===================detailList2{}", detailList);
         
         // 按状态进行分组
         Map<Integer, List<MerchantProCabinetPowerDetailVO>> groupMap = detailList.stream().collect(Collectors.groupingBy(MerchantProCabinetPowerDetailVO::getBindStatus));
@@ -865,10 +921,8 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
             
         }
         
-        log.info("============mergeSerialTimeDetail===================resultList={}", resultList);
-        
         //绑定状态没有结束时间
-        return detailList.stream().peek(detail -> {
+        return resultList.stream().peek(detail -> {
             if (Objects.equals(MerchantPlaceBindConstant.BIND, detail.getBindStatus())) {
                 detail.setEndTime(null);
             }
@@ -1230,15 +1284,13 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
         return resultList;
     }
     
-    private List<MerchantPlaceCabinetBind> getThisMonthPlaceCabinetBindListForCabinetDetail(Long placeId, Long placeBindTime, Long placeUnbindTime, Long cabinetId) {
+    private List<MerchantPlaceCabinetBind> getCabinetBindListForCabinetDetail(Long placeId, Long placeBindTime, Long placeUnbindTime, Long cabinetId) {
         List<MerchantPlaceCabinetBind> stepOneList = new ArrayList<>();
         
         // 绑定状态记录
         MerchantPlaceCabinetConditionRequest placeCabinetBindRequest = MerchantPlaceCabinetConditionRequest.builder().placeId(placeId).cabinetIds(Set.of(cabinetId))
                 .status(MerchantPlaceCabinetBindConstant.STATUS_BIND).endTime(placeUnbindTime).build();
         List<MerchantPlaceCabinetBind> cabinetBindList = merchantPlaceCabinetBindService.listBindRecord(placeCabinetBindRequest);
-        
-        log.info("============placeId={},cabinetId={},cabinetBindList={}", placeId, cabinetId, cabinetBindList);
         
         if (CollectionUtils.isNotEmpty(cabinetBindList)) {
             for (MerchantPlaceCabinetBind placeCabinetBind : cabinetBindList) {
@@ -1255,20 +1307,14 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
             }
         }
         
-        log.info("============placeId={},cabinetId={},stepOneList={}", placeId, cabinetId, stepOneList);
-        
         // 解绑状态记录
         MerchantPlaceCabinetConditionRequest placeCabinetUnbindRequest = MerchantPlaceCabinetConditionRequest.builder().placeId(placeId).cabinetIds(Set.of(cabinetId))
                 .status(MerchantPlaceCabinetBindConstant.STATUS_UNBIND).startTime(placeBindTime).endTime(placeUnbindTime).build();
         List<MerchantPlaceCabinetBind> cabinetUnbindList = merchantPlaceCabinetBindService.listUnbindRecord(placeCabinetUnbindRequest);
         
-        log.info("============placeId={},cabinetId={},cabinetUnbindList={}", placeId, cabinetId, cabinetUnbindList);
-        
         if (CollectionUtils.isEmpty(cabinetUnbindList)) {
             return stepOneList;
         }
-        
-        log.info("============placeId={},cabinetId={},cabinetUnbindList2={}", placeId, cabinetId, cabinetUnbindList);
         
         // 先掐头去尾
         for (MerchantPlaceCabinetBind placeCabinetBind : cabinetUnbindList) {
@@ -1280,8 +1326,6 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
             
             stepOneList.add(placeCabinetBind);
         }
-        
-        log.info("============placeId={},cabinetId={},stepOneList2={}", placeId, cabinetId, stepOneList);
         
         List<MerchantPlaceCabinetBind> resultList = new ArrayList<>();
         
@@ -1300,8 +1344,6 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
                 resultList.add(current);
             }
         }
-        
-        log.info("============placeId={},cabinetId={},resultList={}", placeId, cabinetId, resultList);
         
         return resultList;
     }
@@ -1676,7 +1718,7 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
             Long thisMonthStartTime = DateUtils.getBeforeMonthFirstDayTimestamp(NumberConstant.ZERO);
             long nowTime = System.currentTimeMillis();
             
-            return getLiveMonthPowerForCabinetDetail(tenantId, merchant.getId(), cabinetId, monthDate, thisMonthStartTime, nowTime);
+            return getThisMonthPowerForCabinetDetail(tenantId, merchant.getId(), cabinetId, monthDate, thisMonthStartTime, nowTime);
             
         } else if (Objects.equals(lastMonthDate, monthDate)) {
             // 如果是上月
@@ -1685,7 +1727,7 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
             // 上月最后一天23:59:59
             long lastMonthEndTime = DateUtils.getBeforeMonthLastDayTimestamp(NumberConstant.ONE);
             
-            return getLiveMonthPowerForCabinetDetail(tenantId, merchant.getId(), cabinetId, monthDate, lastMonthStartTime, lastMonthEndTime);
+            return getLastMonthPowerForCabinetDetail(tenantId, merchant.getId(), cabinetId, monthDate, lastMonthStartTime, lastMonthEndTime);
             
         } else {
             // 如果是2个月前,通过历史数据查询
