@@ -178,7 +178,7 @@
                 and create_time &lt;= #{endTime}
             </if>
         </where>
-        order by rebate_time desc
+        order by rebate_time,id desc
         limit #{offset}, #{size}
     </select>
     
