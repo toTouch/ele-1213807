@@ -75,21 +75,23 @@ public class WxRefundPayBatteryRentServiceImpl implements WxRefundPayService {
         if (!redisService.setNx(WechatPayConstant.REFUND_ORDER_ID_CALL_BACK + refundOrderNo, String.valueOf(System.currentTimeMillis()), 10 * 1000L, false)) {
             return;
         }
-
+    
+        log.info("BATTERY MEMBER CARD REFUND INFO!not found batteryMemberCardRefundOrder,refundOrderNo={}", callBackResource.getOutRefundNo());
+    
         BatteryMembercardRefundOrder batteryMembercardRefundOrder = batteryMembercardRefundOrderService.selectByRefundOrderNo(callBackResource.getOutRefundNo());
         if (Objects.isNull(batteryMembercardRefundOrder)) {
-            log.error("BATTERY MEMBERCARD REFUND ERROR!not found batteryMembercardRefundOrder,refundOrderNo={}", callBackResource.getOutRefundNo());
+            log.error("BATTERY MEMBER CARD REFUND ERROR!not found batteryMemberCardRefundOrder,refundOrderNo={}", callBackResource.getOutRefundNo());
             return;
         }
 
         if (Objects.equals(batteryMembercardRefundOrder.getStatus(), BatteryMembercardRefundOrder.STATUS_SUCCESS)) {
-            log.error("BATTERY MEMBERCARD REFUND ERROR!order status illegal,refundOrderNo={}", callBackResource.getOutRefundNo());
+            log.error("BATTERY MEMBER CARD REFUND ERROR!order status illegal,refundOrderNo={}", callBackResource.getOutRefundNo());
             return;
         }
 
         BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(batteryMembercardRefundOrder.getMid());
         if(Objects.isNull(batteryMemberCard)){
-            log.error("BATTERY MEMBERCARD REFUND ERROR!not found batteryMemberCard,mid={},refundOrderNo={}",batteryMembercardRefundOrder.getMid(),batteryMembercardRefundOrder.getRefundOrderNo());
+            log.error("BATTERY MEMBER CARD REFUND ERROR!not found batteryMemberCard,mid={},refundOrderNo={}",batteryMembercardRefundOrder.getMid(),batteryMembercardRefundOrder.getRefundOrderNo());
             return ;
         }
 
@@ -97,19 +99,19 @@ public class WxRefundPayBatteryRentServiceImpl implements WxRefundPayService {
 
         ElectricityMemberCardOrder electricityMemberCardOrder = electricityMemberCardOrderService.selectByOrderNo(memberCardOrderNo);
         if (Objects.isNull(electricityMemberCardOrder)) {
-            log.error("BATTERY MEMBERCARD REFUND ERROR!not found electricityMemberCardOrder,memberCardOrderNo={}", memberCardOrderNo);
+            log.error("BATTERY MEMBER CARD REFUND ERROR!not found electricityMemberCardOrder,memberCardOrderNo={}", memberCardOrderNo);
             return;
         }
 
         UserInfo userInfo = userInfoService.queryByUidFromCache(electricityMemberCardOrder.getUid());
         if (Objects.isNull(userInfo)) {
-            log.error("BATTERY MEMBERCARD REFUND ERROR!not found userInfo,uid={},memberCardOrderNo={}", electricityMemberCardOrder.getUid(), memberCardOrderNo);
+            log.error("BATTERY MEMBER CARD REFUND ERROR!not found userInfo,uid={},memberCardOrderNo={}", electricityMemberCardOrder.getUid(), memberCardOrderNo);
             return;
         }
 
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
         if (Objects.isNull(userBatteryMemberCard)) {
-            log.error("BATTERY MEMBERCARD REFUND ERROR!not found userBatteryMemberCard,uid={},memberCardOrderNo={}", electricityMemberCardOrder.getUid(), memberCardOrderNo);
+            log.error("BATTERY MEMBER CARD REFUND ERROR!not found userBatteryMemberCard,uid={},memberCardOrderNo={}", electricityMemberCardOrder.getUid(), memberCardOrderNo);
             return;
         }
 

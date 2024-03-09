@@ -1,10 +1,14 @@
 package com.xiliulou.electricity.request.merchant;
 
+import com.xiliulou.electricity.validator.CreateGroup;
+import com.xiliulou.electricity.validator.UpdateGroup;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
 import java.util.List;
 
 /**
@@ -19,8 +23,10 @@ import java.util.List;
 @Data
 public class BatchReviewWithdrawApplicationRequest {
     
+    @NotEmpty(message = "请选择审批条目")
     private List<Long> ids;
     
+    @NotNull(message = "审批状态不能为空")
     private Integer status;
     
     private String remark;

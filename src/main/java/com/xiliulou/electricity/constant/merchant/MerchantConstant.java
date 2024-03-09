@@ -61,12 +61,24 @@ public interface MerchantConstant {
     Integer MERCHANT_REBATE_TYPE_DISCREPANCY = 2;
     
     /**
+     * 返利订单类型 0:新租，1:续费
+     */
+    Integer MERCHANT_REBATE_ORDER_TYPE_NEW = 0;
+    Integer MERCHANT_REBATE_ORDER_TYPE_OLD = 1;
+    
+    /**
      * 返利状态 0-未结算,1-已结算,2-已退回,3-已失效
      */
     Integer MERCHANT_REBATE_STATUS_NOT_SETTLE = 0;
     Integer MERCHANT_REBATE_STATUS_SETTLED = 1;
     Integer MERCHANT_REBATE_STATUS_RETURNED = 2;
     Integer MERCHANT_REBATE_STATUS_EXPIRED = 3;
+    
+    /**
+     * 续费返利记录中是否已退款 0:未退款，1:已退款
+     */
+    Integer REBATE_IS_NOT_REFUND = 0;
+    Integer REBATE_IS_REFUND = 1;
 
     /**
      * 用户查询条件类型 1:查询全部, 2:查询正常, 3:查询即将逾期, 4:查询已过期
@@ -99,5 +111,7 @@ public interface MerchantConstant {
     Integer MERCHANT_QR_CODE_TYPE = 1;
     
     Integer MERCHANT_EMPLOYEE_QR_CODE_TYPE = 2;
+    
+    Integer MERCHANT_EMPLOYEE_MAX_SIZE = 20;
 
 }

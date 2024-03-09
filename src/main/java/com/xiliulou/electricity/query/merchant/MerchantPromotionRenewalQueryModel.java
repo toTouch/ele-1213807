@@ -18,7 +18,15 @@ import lombok.NoArgsConstructor;
 public class MerchantPromotionRenewalQueryModel {
     private Integer status;
     
-    private Integer type;
+    /**
+     * 用户类型
+     */
+    private Integer userType;
+    
+    /**
+     * 返利类型
+     */
+    private Integer rebateType;
     
     private Integer tenantId;
     
@@ -28,4 +36,5 @@ public class MerchantPromotionRenewalQueryModel {
     
     private Long endTime;
     
+    private Integer refundFlag;
 }

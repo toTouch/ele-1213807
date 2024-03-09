@@ -42,13 +42,13 @@ public class MerchantUserAmountServiceImpl implements MerchantUserAmountService 
     @Transactional(rollbackFor = Exception.class)
     @Override
     public Integer addAmount(BigDecimal amount, Long uid, Long tenantId) {
-        return merchantUserAmountMapper.addAmountByUid(amount, uid, tenantId);
+        return merchantUserAmountMapper.addAmountByUid(amount, uid, tenantId, System.currentTimeMillis());
     }
     
     @Transactional(rollbackFor = Exception.class)
     @Override
     public Integer reduceAmount(BigDecimal amount, Long uid, Long tenantId) {
-        return merchantUserAmountMapper.reduceAmountByUid(amount, uid, tenantId);
+        return merchantUserAmountMapper.reduceAmountByUid(amount, uid, tenantId, System.currentTimeMillis());
     }
     
     @Transactional(rollbackFor = Exception.class)

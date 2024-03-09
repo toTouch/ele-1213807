@@ -1,25 +1,27 @@
 package com.xiliulou.electricity.service.impl;
 
 import com.xiliulou.cache.redis.RedisService;
-import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.merchant.MerchantConstant;
 import com.xiliulou.electricity.constant.merchant.MerchantJoinRecordConstant;
-import com.xiliulou.electricity.entity.UserInfo;
+import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
+import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.UserInfoExtra;
 import com.xiliulou.electricity.entity.merchant.Merchant;
 import com.xiliulou.electricity.entity.merchant.MerchantAttr;
 import com.xiliulou.electricity.entity.merchant.MerchantJoinRecord;
+import com.xiliulou.electricity.entity.merchant.MerchantLevel;
+import com.xiliulou.electricity.entity.merchant.RebateConfig;
 import com.xiliulou.electricity.mapper.UserInfoExtraMapper;
-import com.xiliulou.electricity.mq.constant.MqProducerConstant;
-import com.xiliulou.electricity.mq.model.MerchantUpgrade;
+import com.xiliulou.electricity.service.ElectricityMemberCardOrderService;
 import com.xiliulou.electricity.service.UserInfoExtraService;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.merchant.MerchantAttrService;
 import com.xiliulou.electricity.service.merchant.MerchantJoinRecordService;
+import com.xiliulou.electricity.service.merchant.MerchantLevelService;
 import com.xiliulou.electricity.service.merchant.MerchantService;
+import com.xiliulou.electricity.service.merchant.RebateConfigService;
 import com.xiliulou.electricity.utils.DbUtils;
-import com.xiliulou.mq.service.RocketMqService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -56,7 +58,13 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
     private MerchantService merchantService;
     
     @Autowired
-    private RocketMqService rocketMqService;
+    private ElectricityMemberCardOrderService electricityMemberCardOrderService;
+    
+    @Autowired
+    private MerchantLevelService merchantLevelService;
+    
+    @Autowired
+    private RebateConfigService rebateConfigService;
     
     @Override
     public UserInfoExtra queryByUidFromDB(Long uid) {
@@ -99,25 +107,24 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
     
     @Override
     public Integer deleteByUid(Long uid) {
-        int delete = this.userInfoExtraMapper.deleteByUid(uid);
-        
-        DbUtils.dbOperateSuccessThenHandleCache(delete, i -> {
-            redisService.delete(CacheConstant.CACHE_USER_INFO_EXTRA + uid);
-        });
-        
-        return delete;
+        //        int delete = this.userInfoExtraMapper.deleteByUid(uid);
+        UserInfoExtra userInfoExtra = new UserInfoExtra();
+        userInfoExtra.setUid(uid);
+        userInfoExtra.setDelFlag(User.DEL_DEL);
+        userInfoExtra.setUpdateTime(System.currentTimeMillis());
+        return this.updateByUid(userInfoExtra);
     }
     
     @Override
-    public void bindMerchant(Long uid, String orderId) {
-        UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
-        if (Objects.isNull(userInfo)) {
-            log.warn("BIND MERCHANT WARN!userInfo is null,uid={},orderId={}", uid, orderId);
+    public void bindMerchant(Long uid, String orderId, Long memberCardId) {
+        ElectricityMemberCardOrder electricityMemberCardOrder = electricityMemberCardOrderService.selectByOrderNo(orderId);
+        if (Objects.isNull(electricityMemberCardOrder)) {
+            log.warn("BIND MERCHANT WARN!electricityMemberCardOrder is null,uid={},orderId={}", uid, orderId);
             return;
         }
         
-        if (Objects.nonNull(userInfo.getPayCount()) && userInfo.getPayCount() < 0) {
-            log.info("BIND MERCHANT WARN!payCount is illegal,payCount={},uid={},orderId={}", userInfo.getPayCount(), uid, orderId);
+        if (Objects.isNull(electricityMemberCardOrder.getPayCount()) || electricityMemberCardOrder.getPayCount() > 1) {
+            log.info("BIND MERCHANT WARN!payCount is illegal,uid={},orderId={}", uid, orderId);
             return;
         }
         
@@ -155,35 +162,49 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
             return;
         }
         
-        //判断邀请是否过期
-        if (!merchantAttrService.checkInvitationTime(merchant.getTenantId(), merchantJoinRecord.getStartTime())) {
-            log.warn("BIND MERCHANT WARN!invitation is expired,merchantId={},uid={}", merchantJoinRecord.getMerchantId(), uid);
+        MerchantLevel merchantLevel = merchantLevelService.queryById(merchant.getMerchantGradeId());
+        if (Objects.isNull(merchantLevel)) {
+            log.warn("BIND MERCHANT WARN!merchantLevel is null,merchantId={},uid={}", merchantJoinRecord.getMerchantId(), uid);
             return;
         }
         
-        UserInfoExtra userInfoExtraUpdate = new UserInfoExtra();
-        userInfoExtraUpdate.setUid(uid);
-        userInfoExtraUpdate.setMerchantId(merchantJoinRecord.getMerchantId());
-        userInfoExtraUpdate.setChannelEmployeeUid(merchantJoinRecord.getChannelEmployeeUid());
-        userInfoExtraUpdate.setUpdateTime(System.currentTimeMillis());
-        if (Objects.equals(MerchantJoinRecordConstant.INVITER_TYPE_MERCHANT_PLACE_EMPLOYEE, merchantJoinRecord.getInviterType())) {
-            userInfoExtraUpdate.setPlaceUid(merchantJoinRecord.getInviterUid());
-            userInfoExtraUpdate.setPlaceId(merchantJoinRecord.getPlaceId());
+        //根据商户等级&套餐id获取返利套餐
+        RebateConfig rebateConfig = rebateConfigService.queryByMidAndMerchantLevel(memberCardId, merchantLevel.getLevel());
+        if (Objects.isNull(rebateConfig)) {
+            log.warn("BIND MERCHANT WARN!rebateConfig is null,merchantId={},uid={},level={}", merchantJoinRecord.getMerchantId(), uid, merchantLevel.getLevel());
+            return;
         }
         
-        this.updateByUid(userInfoExtraUpdate);
+        if (Objects.isNull(rebateConfig.getStatus()) || Objects.equals(rebateConfig.getStatus(), MerchantConstant.REBATE_DISABLE)) {
+            log.warn("BIND MERCHANT WARN!rebateConfig status illegal,id={},uid={}", rebateConfig.getId(), uid);
+            return;
+        }
         
-        MerchantJoinRecord merchantJoinRecordUpdate = new MerchantJoinRecord();
-        merchantJoinRecordUpdate.setId(merchantJoinRecord.getId());
-        merchantJoinRecordUpdate.setStatus(MerchantJoinRecordConstant.STATUS_SUCCESS);
-        merchantJoinRecordUpdate.setUpdateTime(System.currentTimeMillis());
-        merchantJoinRecordService.updateById(merchantJoinRecordUpdate);
-        
-        MerchantUpgrade merchantUpgrade = new MerchantUpgrade();
-        merchantUpgrade.setUid(uid);
-        merchantUpgrade.setOrderId(orderId);
-        merchantUpgrade.setMerchantId(merchant.getId());
-        //拉新成功  发送商户升级MQ
-        rocketMqService.sendAsyncMsg(MqProducerConstant.MERCHANT_UPGRADE_TOPIC, JsonUtil.toJson(merchantUpgrade));
+        //邀请有效期内
+        if (merchantAttrService.checkInvitationTime(merchantAttr, merchantJoinRecord.getStartTime())) {
+            UserInfoExtra userInfoExtraUpdate = new UserInfoExtra();
+            userInfoExtraUpdate.setUid(uid);
+            userInfoExtraUpdate.setMerchantId(merchantJoinRecord.getMerchantId());
+            userInfoExtraUpdate.setChannelEmployeeUid(merchantJoinRecord.getChannelEmployeeUid());
+            userInfoExtraUpdate.setUpdateTime(System.currentTimeMillis());
+            if (Objects.equals(MerchantJoinRecordConstant.INVITER_TYPE_MERCHANT_PLACE_EMPLOYEE, merchantJoinRecord.getInviterType())) {
+                userInfoExtraUpdate.setPlaceUid(merchantJoinRecord.getInviterUid());
+                userInfoExtraUpdate.setPlaceId(merchantJoinRecord.getPlaceId());
+            }
+            
+            this.updateByUid(userInfoExtraUpdate);
+            
+            MerchantJoinRecord merchantJoinRecordUpdate = new MerchantJoinRecord();
+            merchantJoinRecordUpdate.setId(merchantJoinRecord.getId());
+            merchantJoinRecordUpdate.setStatus(MerchantJoinRecordConstant.STATUS_SUCCESS);
+            merchantJoinRecordUpdate.setUpdateTime(System.currentTimeMillis());
+            merchantJoinRecordService.updateById(merchantJoinRecordUpdate);
+        } else {
+            MerchantJoinRecord merchantJoinRecordUpdate = new MerchantJoinRecord();
+            merchantJoinRecordUpdate.setId(merchantJoinRecord.getId());
+            merchantJoinRecordUpdate.setStatus(MerchantJoinRecordConstant.STATUS_EXPIRED);
+            merchantJoinRecordUpdate.setUpdateTime(System.currentTimeMillis());
+            merchantJoinRecordService.updateById(merchantJoinRecordUpdate);
+        }
     }
 }

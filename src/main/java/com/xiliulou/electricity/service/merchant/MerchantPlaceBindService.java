@@ -25,7 +25,7 @@ public interface MerchantPlaceBindService {
     
     Integer existPlaceFeeByMerchantId(Long merchantId);
     
-    List<MerchantPlaceBind> queryNoSettleByMerchantId(Long merchantId);
+    List<MerchantPlaceBind> queryNoSettleByMerchantId(Long merchantId, Integer tenantId);
     
     List<MerchantPlaceBind> listBindRecord(MerchantPlaceConditionRequest request);
     

@@ -20,7 +20,7 @@ public interface MerchantPlaceFeeMonthMapper {
     Integer existPlaceFeeByMerchantId(@Param("merchantId") Long merchantId);
     
     List<MerchantPlaceFeeMonth> selectListByMonth(@Param("placeId") Long placeId,@Param("cabinetId") Long cabinetId
-            ,@Param("monthList") List<String> monthList);
+            ,@Param("monthList") List<String> monthList,@Param("merchantId") Long merchantId,@Param("tenantId") Integer tenantId);
     
     List<MerchantPlaceFeeMonth> selectListByMerchantId(@Param("merchantId") Long merchantId,@Param("cabinetId") Long cabinetId,@Param("placeId") Long placeId);
     

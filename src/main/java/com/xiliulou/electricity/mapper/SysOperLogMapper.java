@@ -1,12 +1,10 @@
 package com.xiliulou.electricity.mapper;
 
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.xiliulou.electricity.entity.SysOperLog;
+import com.xiliulou.electricity.query.SysOperLogQuery;
 
 import java.util.List;
-
-import com.xiliulou.electricity.query.SysOperLogQuery;
-import org.apache.ibatis.annotations.Param;
-import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 
 /**
  * 操作日志记录(SysOperLog)表数据库访问层
@@ -14,6 +12,7 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
  * @author zzlong
  * @since 2022-10-11 19:47:27
  */
+@Deprecated
 public interface SysOperLogMapper extends BaseMapper<SysOperLog> {
 
     /**

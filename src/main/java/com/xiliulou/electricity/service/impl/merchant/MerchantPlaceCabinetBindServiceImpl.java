@@ -292,7 +292,7 @@ public class MerchantPlaceCabinetBindServiceImpl implements MerchantPlaceCabinet
         // 检测创建时间是否在当前本月 如果是本月则不允许进行删除
         if (!DateUtils.isSameMonth(cabinetBind.getCreateTime(), currentTimeMillis)) {
             log.error("place bind delete error, data not find, id ={}", id);
-            return Triple.of(false, "120228", "仅可删除本月内创建的记录");
+            return Triple.of(false, "120236", "仅可删除本月内创建的记录");
         }
         
         MerchantPlaceCabinetBind update = new MerchantPlaceCabinetBind();
@@ -366,7 +366,7 @@ public class MerchantPlaceCabinetBindServiceImpl implements MerchantPlaceCabinet
         // 判断绑定的时间是否与解绑的历史数据存在重叠
         List<Long> placeIdList = new ArrayList<>();
         placeIdList.add(placeId);
-        MerchantPlaceCabinetBindQueryModel queryModel = MerchantPlaceCabinetBindQueryModel.builder().overlapTime(time).placeIdList(placeIdList).cabinetId(cabinetId)
+        MerchantPlaceCabinetBindQueryModel queryModel = MerchantPlaceCabinetBindQueryModel.builder().tenantId(TenantContextHolder.getTenantId()).overlapTime(time).placeIdList(placeIdList).cabinetId(cabinetId)
                 .status(MerchantPlaceConstant.UN_BIND).build();
         
         List<MerchantPlaceCabinetBind> unBindList = this.queryList(queryModel);

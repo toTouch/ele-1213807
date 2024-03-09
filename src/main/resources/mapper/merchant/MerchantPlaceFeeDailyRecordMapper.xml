@@ -7,8 +7,8 @@
         from t_merchant_place_fee_daily_record
         where del_flag = 0
         and eid = #{cabinetId}
-        and statement_date <![CDATA[ >=  ]]>  #{cabinetStartTime}
-        and statement_date <![CDATA[ <=  ]]>  #{cabinetEndTime}
+        and statement_end_time <![CDATA[ >=  ]]>  #{cabinetStartTime}
+        and statement_end_time <![CDATA[ <=  ]]>  #{cabinetEndTime}
    group by eid
     </select>
 

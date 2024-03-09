@@ -9,7 +9,6 @@ import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.constant.merchant.MerchantConstant;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.User;
-import com.xiliulou.electricity.entity.UserRole;
 import com.xiliulou.electricity.entity.merchant.ChannelEmployee;
 import com.xiliulou.electricity.entity.merchant.ChannelEmployeeAmount;
 import com.xiliulou.electricity.entity.merchant.Merchant;
@@ -60,9 +59,6 @@ public class ChannelEmployeeServiceImpl implements ChannelEmployeeService {
     UserService userService;
     
     @Resource
-    private UserOauthBindService userOauthBindService;
-    
-    @Resource
     UserRoleService userRoleService;
     
     @Resource
@@ -82,6 +78,9 @@ public class ChannelEmployeeServiceImpl implements ChannelEmployeeService {
     
     @Resource
     MerchantAreaService merchantAreaService;
+    
+    @Resource
+    private UserOauthBindService userOauthBindService;
     
     @Slave
     @Override
@@ -129,13 +128,13 @@ public class ChannelEmployeeServiceImpl implements ChannelEmployeeService {
             
             //设置加盟商名称
             Franchisee franchisee = franchiseeService.queryByIdFromCache(item.getFranchiseeId());
-            if(Objects.nonNull(franchisee)){
+            if (Objects.nonNull(franchisee)) {
                 item.setFranchiseeName(franchisee.getName());
             }
             
             //设置区域名称
             MerchantArea merchantArea = merchantAreaService.queryById(item.getAreaId());
-            if(Objects.nonNull(merchantArea)){
+            if (Objects.nonNull(merchantArea)) {
                 item.setAreaName(merchantArea.getName());
             }
             
@@ -160,8 +159,8 @@ public class ChannelEmployeeServiceImpl implements ChannelEmployeeService {
     @Slave
     @Override
     public List<ChannelEmployeeVO> queryChannelEmployees(ChannelEmployeeRequest channelEmployeeRequest) {
-    
-        List<ChannelEmployeeVO> channelEmployeeVOList  = channelEmployeeMapper.selectChannelEmployees(channelEmployeeRequest);
+        
+        List<ChannelEmployeeVO> channelEmployeeVOList = channelEmployeeMapper.selectChannelEmployees(channelEmployeeRequest);
         channelEmployeeVOList.parallelStream().forEach(item -> {
             if (Objects.nonNull(item.getFranchiseeId())) {
                 Franchisee franchisee = franchiseeService.queryByIdFromCache(item.getFranchiseeId());
@@ -180,32 +179,31 @@ public class ChannelEmployeeServiceImpl implements ChannelEmployeeService {
         
         //租户
         Integer tenantId = TenantContextHolder.getTenantId();
-    
+        
         User phoneUserExists = userService.queryByUserPhone(channelEmployeeRequest.getPhone(), User.TYPE_USER_CHANNEL, tenantId);
         if (Objects.nonNull(phoneUserExists)) {
             log.error("current phone has been used by other one, phone = {}, tenant id = {}", channelEmployeeRequest.getPhone(), tenantId);
             return Triple.of(false, "120001", "当前手机号已注册");
         }
-    
+        
         User existUser = userService.queryByUserName(channelEmployeeRequest.getName());
-        if(Objects.nonNull(existUser)){
+        if (Objects.nonNull(existUser)) {
             log.error("The user name has been used by other one, name = {}, tenant id = {}", channelEmployeeRequest.getName(), tenantId);
             return Triple.of(false, "120009", "用户姓名已存在");
         }
         
-        
         //创建渠道员工账户
         User user = User.builder().updateTime(System.currentTimeMillis()).createTime(System.currentTimeMillis()).phone(channelEmployeeRequest.getPhone())
-                .lockFlag(User.USER_UN_LOCK).gender(User.GENDER_MALE).lang(MessageUtils.LOCALE_ZH_CN).userType(User.TYPE_USER_CHANNEL).name(channelEmployeeRequest.getName()).salt("").avatar("")
-                .tenantId(tenantId).loginPwd(customPasswordEncoder.encode("123456")).delFlag(User.DEL_NORMAL).build();
-    
+                .lockFlag(User.USER_UN_LOCK).gender(User.GENDER_MALE).lang(MessageUtils.LOCALE_ZH_CN).userType(User.TYPE_USER_CHANNEL).name(channelEmployeeRequest.getName())
+                .salt("").avatar("").tenantId(tenantId).loginPwd(customPasswordEncoder.encode("123456")).delFlag(User.DEL_NORMAL).build();
+        
         // 如果是禁用则用户默认锁定
         if (Objects.equals(channelEmployeeRequest.getStatus(), MerchantConstant.DISABLE)) {
             user.setLockFlag(User.USER_LOCK);
         }
         
         User userResult = userService.insert(user);
-       
+        
         //TODO 设置角色, 渠道员工角色值待定
        /* Long roleId = 0L;
         
@@ -250,7 +248,7 @@ public class ChannelEmployeeServiceImpl implements ChannelEmployeeService {
         if (!redisService.setNx(CacheConstant.CACHE_CHANNEL_EMPLOYEE_UPDATE_LOCK + channelEmployeeRequest.getPhone(), "1", 3000L, false)) {
             return Triple.of(false, "000000", "操作频繁,请稍后再试");
         }
-    
+        
         //租户
         Integer tenantId = TenantContextHolder.getTenantId();
         ChannelEmployee channelEmployee = channelEmployeeMapper.selectById(channelEmployeeRequest.getId());
@@ -260,34 +258,34 @@ public class ChannelEmployeeServiceImpl implements ChannelEmployeeService {
         }
         
         User user = userService.queryByUidFromCache(channelEmployee.getUid());
-        if(Objects.isNull(user)){
+        if (Objects.isNull(user)) {
             log.error("not found user for update channel employee by uid, uid = {}", channelEmployee.getUid());
             return Triple.of(false, "120008", "当前渠道员工不存在");
         }
         
-        if (!Objects.equals(user.getName(), channelEmployeeRequest.getName())){
+        if (!Objects.equals(user.getName(), channelEmployeeRequest.getName())) {
             User existUser = userService.queryByUserName(channelEmployeeRequest.getName());
-            if(Objects.nonNull(existUser)){
+            if (Objects.nonNull(existUser)) {
                 log.error("The user name has been used by other one for update channel employee, name = {}, tenant id = {}", channelEmployeeRequest.getName(), tenantId);
                 return Triple.of(false, "120009", "用户姓名已存在");
             }
         }
         
-        if(!Objects.equals(user.getPhone(), channelEmployeeRequest.getPhone())){
+        if (!Objects.equals(user.getPhone(), channelEmployeeRequest.getPhone())) {
             User phoneUserExists = userService.queryByUserPhone(channelEmployeeRequest.getPhone(), User.TYPE_USER_CHANNEL, tenantId);
             if (Objects.nonNull(phoneUserExists)) {
                 log.error("current phone has been used by other one for update channel employee, phone = {}, tenant id = {}", channelEmployeeRequest.getPhone(), tenantId);
                 return Triple.of(false, "120001", "当前手机号已注册");
             }
         }
-    
+        
         String oldPhone = user.getPhone();
         User updateUser = new User();
-    
+        
         // 如果是禁用，则将用户置为锁定
         if (Objects.equals(channelEmployeeRequest.getStatus(), MerchantConstant.DISABLE) || !Objects.equals(user.getPhone(), channelEmployeeRequest.getPhone())) {
             updateUser.setLockFlag(User.USER_LOCK);
-        } else  {
+        } else {
             updateUser.setLockFlag(User.USER_UN_LOCK);
         }
         
@@ -298,22 +296,22 @@ public class ChannelEmployeeServiceImpl implements ChannelEmployeeService {
         updateUser.setTenantId(TenantContextHolder.getTenantId());
         updateUser.setUpdateTime(System.currentTimeMillis());
         userService.updateMerchantUser(updateUser);
-    
+        
         ChannelEmployee channelEmployeeUpdate = new ChannelEmployee();
         channelEmployeeUpdate.setId(channelEmployeeRequest.getId());
         channelEmployeeUpdate.setFranchiseeId(channelEmployeeRequest.getFranchiseeId());
         //channelEmployeeUpdate.setUid(channelEmployee.getUid());
         //channelEmployeeUpdate.setTenantId(tenantId);
-        if(channelEmployeeRequest.getAreaId() != null){
+        if (channelEmployeeRequest.getAreaId() != null) {
             channelEmployeeUpdate.setAreaId(channelEmployeeRequest.getAreaId());
         } else {
             channelEmployeeUpdate.setAreaId(NumberConstant.ZERO_L);
         }
-    
+        
         channelEmployeeUpdate.setUpdateTime(System.currentTimeMillis());
-    
+        
         Integer result = channelEmployeeMapper.updateOne(channelEmployeeUpdate);
-    
+        
         TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
             @Override
             public void afterCommit() {
@@ -330,13 +328,13 @@ public class ChannelEmployeeServiceImpl implements ChannelEmployeeService {
     public Integer removeById(Long id) {
         ChannelEmployee channelEmployee = channelEmployeeMapper.selectById(id);
         
-        if(Objects.isNull(channelEmployee)) {
+        if (Objects.isNull(channelEmployee)) {
             log.error("not found channel employee by id, id = {}", id);
             throw new BizException("120008", "渠道员工不存在");
         }
         
         List<Merchant> merchants = merchantService.queryByChannelEmployeeUid(channelEmployee.getUid());
-        if(CollectionUtils.isNotEmpty(merchants)){
+        if (CollectionUtils.isNotEmpty(merchants)) {
             log.error("channel employee was already bind merchant, can't remove, channel employee uid = {}", channelEmployee.getUid());
             throw new BizException("120023", "该渠道员下还有绑定的商户，请先解绑后操作");
         }
@@ -345,18 +343,18 @@ public class ChannelEmployeeServiceImpl implements ChannelEmployeeService {
         
         User user = userService.queryByUidFromCache(channelEmployee.getUid());
         Integer result = 0;
-        if(Objects.nonNull(user)){
+        if (Objects.nonNull(user)) {
             User updateUser = new User();
             updateUser.setUid(user.getUid());
             updateUser.setUpdateTime(System.currentTimeMillis());
             updateUser.setLockFlag(User.USER_LOCK);
             updateUser.setDelFlag(User.DEL_DEL);
             userService.updateMerchantUser(updateUser);
-    
+            
             userOauthBindService.deleteByUid(channelEmployee.getUid(), channelEmployee.getTenantId().intValue());
-    
+            
             result = userService.removeById(channelEmployee.getUid(), System.currentTimeMillis());
-          
+            
             TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
                 @Override
                 public void afterCommit() {

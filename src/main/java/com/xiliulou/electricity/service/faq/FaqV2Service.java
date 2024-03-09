@@ -55,5 +55,7 @@ public interface FaqV2Service {
     
     List<FaqVo> listFaqQueryResult(AdminFaqQuery faqQuery);
     
+    List<FaqVo> listFaqQueryToUser(AdminFaqQuery faqQuery);
+    
     R updateFaqReqSort(AdminFaqReq faqReq);
 }

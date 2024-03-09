@@ -49,7 +49,7 @@ public class JsonUserV2FaqController {
         if (Objects.isNull(electricityConfig) || electricityConfig.getWxCustomer() == 0) {
             return R.ok(Collections.emptyList());
         }
-        return R.ok(faqV2Service.listFaqQueryResult(faqQuery));
+        return R.ok(faqV2Service.listFaqQueryToUser(faqQuery));
     }
     
     /**

@@ -19,7 +19,7 @@ public interface MerchantPlaceFeeMonthService {
     
     Integer existPlaceFeeByMerchantId(Long merchantId);
     
-    List<MerchantPlaceFeeMonth> queryListByMonth(Long placeId, Long cabinetId, List<String> xDataList);
+    List<MerchantPlaceFeeMonth> queryListByMonth(Long placeId, Long cabinetId, List<String> xDataList, Long merchantId, Integer tenantId);
     
     List<MerchantPlaceFeeMonth> queryListByMerchantId(Long merchantId, Long cabinetId, Long placeId);
     

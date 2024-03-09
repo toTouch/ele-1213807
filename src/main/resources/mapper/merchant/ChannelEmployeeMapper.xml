@@ -60,7 +60,7 @@
             </if>
     
             <if test="name != null and name != ''">
-                and tce.name like concat('%', #{name}, '%')
+                and tu.name like concat('%', #{name}, '%')
             </if>
             
             <if test="franchiseeId != null">
@@ -73,13 +73,6 @@
             
             <if test="areaId != null">
                 and tce.area_id = #{areaId}
-            </if>
-    
-            <if test="idList != null and idList.size() > 0">
-                and tce.id in
-                <foreach collection="idList" separator="," open="(" close=")" item="id">
-                    #{id}
-                </foreach>
             </if>
     
         </where>
@@ -106,7 +99,7 @@
             </if>
     
             <if test="name != null and name != ''">
-                and tce.name like concat('%', #{name}, '%')
+                and tu.name like concat('%', #{name}, '%')
             </if>
         
             <if test="franchiseeId != null">
@@ -121,13 +114,6 @@
                 and tce.area_id = #{areaId}
             </if>
         
-            <if test="idList != null and idList.size() > 0">
-                and tce.id in
-                <foreach collection="idList" separator="," open="(" close=")" item="id">
-                    #{id}
-                </foreach>
-            </if>
-    
         </where>
     </select>
     
@@ -247,12 +233,5 @@
     <delete id="removeById">
         update t_channel_employee set del_flag = 1, update_time = #{updateTime}  where id = #{id}
     </delete>
-    
-    <!--通过主键物理删除渠道员工-->
-    <delete id="deleteById">
-        delete from t_channel_employee where id = #{id}
-    </delete>
-    
-    
     
 </mapper>

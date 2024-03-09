@@ -12,6 +12,7 @@ import com.xiliulou.electricity.vo.enterprise.EnterpriseInfoVO;
 import com.xiliulou.electricity.vo.enterprise.EnterprisePurchasedPackageResultVO;
 import com.xiliulou.electricity.vo.enterprise.UserCloudBeanDetailVO;
 import org.apache.commons.lang3.tuple.Triple;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.servlet.http.HttpServletRequest;
 import java.math.BigDecimal;
@@ -60,7 +61,8 @@ public interface EnterpriseInfoService {
     Triple<Boolean, String, Object> save(EnterpriseInfoQuery enterpriseInfoQuery);
     
     
-
+    Triple<Boolean, String, Object> deleteMerchantEnterprise(Long id);
+    
     Triple<Boolean, String, Object> rechargeForAdmin(EnterpriseCloudBeanRechargeQuery enterpriseCloudBeanRechargeQuery);
 
     Boolean checkUserType();

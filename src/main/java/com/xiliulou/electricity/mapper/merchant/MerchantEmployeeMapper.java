@@ -26,6 +26,8 @@ public interface MerchantEmployeeMapper {
     
     Integer updateOne(MerchantEmployee merchantEmployee);
     
+    Integer batchUnbindPlaceId(@Param("employeeUidList") List<Long> employeeUidList, @Param("updateTime") Long updateTime);
+    
     Integer removeById(@Param("id") Long id, @Param("updateTime") Long updateTime);
     
     List<MerchantEmployee> selectListByPlaceId(@Param("placeIdList") List<Long> placeIdList);
@@ -33,4 +35,6 @@ public interface MerchantEmployeeMapper {
     List<MerchantEmployee> selectListByMerchantUid(MerchantPromotionEmployeeDetailQueryModel queryModel);
     
     List<MerchantEmployeeVO> selectMerchantUsers(MerchantEmployeeRequest merchantEmployeeRequest);
+    
+    Integer batchRemoveByUidList(@Param("uidList") List<Long> uidList,@Param("updateTime") Long timeMillis);
 }

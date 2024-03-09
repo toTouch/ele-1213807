@@ -620,6 +620,35 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
     
     @Override
     @Transactional(rollbackFor = Exception.class)
+    public Triple<Boolean, String, Object> deleteMerchantEnterprise(Long id) {
+        EnterpriseInfo enterpriseInfo = this.queryByIdFromCache(id);
+        if (Objects.isNull(enterpriseInfo) || !Objects.equals(TenantContextHolder.getTenantId(), enterpriseInfo.getTenantId())) {
+            return Triple.of(true, null, null);
+        }
+        
+        //校验企业用户云豆是否都已回收
+        if (enterpriseChannelUserService.queryNotRecycleUserCount(id) > 0) {
+            return Triple.of(false, "120237", "该商户下还有未回收的云豆，请先处理后操作");
+        }
+        
+        if (BigDecimal.ZERO.compareTo(enterpriseInfo.getTotalBeanAmount()) < 0) {
+            return Triple.of(false, "120237", "该商户下还有未回收的云豆，请先处理后操作");
+        }
+        
+        enterpriseChannelUserService.deleteByEnterpriseId(id);
+        
+        enterprisePackageService.deleteByEnterpriseId(id);
+        
+        EnterpriseInfo enterpriseInfoUpdate = new EnterpriseInfo();
+        enterpriseInfoUpdate.setId(enterpriseInfo.getId());
+        enterpriseInfoUpdate.setDelFlag(EnterpriseInfo.DEL_DEL);
+        enterpriseInfoUpdate.setUpdateTime(System.currentTimeMillis());
+        this.update(enterpriseInfoUpdate);
+        return Triple.of(true, null, null);
+    }
+    
+    @Override
+    @Transactional(rollbackFor = Exception.class)
     public Triple<Boolean, String, Object> rechargeForAdmin(EnterpriseCloudBeanRechargeQuery enterpriseCloudBeanRechargeQuery) {
         EnterpriseInfo enterpriseInfo = this.queryByIdFromCache(enterpriseCloudBeanRechargeQuery.getId());
         if (Objects.isNull(enterpriseInfo)) {

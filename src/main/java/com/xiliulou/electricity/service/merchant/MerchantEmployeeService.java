@@ -19,6 +19,8 @@ public interface MerchantEmployeeService {
     
     Integer updateMerchantEmployee(MerchantEmployeeRequest merchantEmployeeRequest);
     
+    Integer batchUnbindPlaceId(List<Long> employeeUidList);
+    
     Integer removeMerchantEmployee(Long id);
     
     MerchantEmployeeVO queryMerchantEmployeeById(Long id);
@@ -38,4 +40,8 @@ public interface MerchantEmployeeService {
     List<MerchantEmployeeQrCodeVO> selectMerchantEmployeeQrCodes(MerchantEmployeeRequest merchantEmployeeRequest);
     
     List<MerchantEmployeeVO> selectAllMerchantEmployees(MerchantEmployeeRequest merchantEmployeeRequest);
+    
+    Integer batchRemoveByUidList(List<Long> employeeUidList, Long timeMillis);
+    
+    List<MerchantEmployee> queryListByMerchantUid(Long merchantUid, Integer tenantId);
 }

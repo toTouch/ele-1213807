@@ -1,6 +1,8 @@
 package com.xiliulou.electricity.mq.consumer;
 
+import cn.hutool.core.util.IdUtil;
 import com.xiliulou.core.json.JsonUtil;
+import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.constant.merchant.MerchantConstant;
 import com.xiliulou.electricity.entity.merchant.Merchant;
 import com.xiliulou.electricity.entity.merchant.MerchantLevel;
@@ -19,6 +21,7 @@ import com.xiliulou.electricity.utils.OrderIdUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.rocketmq.spring.annotation.RocketMQMessageListener;
 import org.apache.rocketmq.spring.core.RocketMQListener;
+import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
@@ -55,6 +58,8 @@ public class MerchantModifyConsumer implements RocketMQListener<String> {
     
     @Override
     public void onMessage(String message) {
+        MDC.put(CommonConstant.TRACE_ID, IdUtil.fastSimpleUUID());
+        
         log.info("MERCHANT MODIFY CONSUMER INFO!received msg={}", message);
         MerchantModify merchantModify = null;
         
@@ -82,6 +87,8 @@ public class MerchantModifyConsumer implements RocketMQListener<String> {
                 return;
             }
             
+            log.error("=============MerchantModify=============merchantLevel={}", JsonUtil.toJson(merchantLevel));
+            
             //当前商户等级
             String currentLevel = merchantLevel.getLevel();
             
@@ -92,12 +99,26 @@ public class MerchantModifyConsumer implements RocketMQListener<String> {
             long endTime = DateUtils.getDayStartTimeByLocalDate(LocalDate.now().with(TemporalAdjusters.lastDayOfMonth())) + 24 * 60 * 60 * 1000L;
             
             while (true) {
-                List<RebateRecord> list = rebateRecordService.listCurrentMonthRebateRecord(startTime, endTime, offset, size);
+                /**
+                 * 获取商户本月上一级的返利记录，根据该条记录，生成差额
+                 */
+                List<RebateRecord> list = rebateRecordService.listCurrentMonthRebateRecord(merchant.getId(), startTime, endTime, offset, size);
                 if (CollectionUtils.isEmpty(list)) {
                     return;
                 }
                 
                 list.forEach(item -> {
+                    //后台将商户等级修改至低等级后，再次自动升级时，排除已经计算过差额的返利记录
+                    if (Integer.parseInt(item.getLevel()) <= Integer.parseInt(currentLevel)) {
+                        log.info("MERCHANT MODIFY CONSUMER INFO!illegal level,id={},currentLevel={}", item.getId(), currentLevel);
+                        return;
+                    }
+                    
+                    //检查该订单是否生成已失效或已退回返利记录
+                    if (Objects.nonNull(rebateRecordService.existsExpireRebateRecordByOriginalOrderId(item.getOriginalOrderId()))) {
+                        return;
+                    }
+                    
                     //获取最新返利规则
                     RebateConfig rebateConfig = rebateConfigService.queryByMidAndMerchantLevel(item.getMemberCardId(), currentLevel);
                     if (Objects.isNull(rebateConfig)) {
@@ -111,26 +132,41 @@ public class MerchantModifyConsumer implements RocketMQListener<String> {
                     }
                     
                     if (Integer.parseInt(item.getLevel()) <= Integer.parseInt(currentLevel)) {
+                        log.info("MERCHANT MODIFY CONSUMER INFO!illegal level,id={},itemLevel={},currentLevel={}", item.getId(), item.getLevel(), currentLevel);
                         return;
                     }
                     
-                    BigDecimal newMerchantRebate = Objects.equals(item.getType(), MerchantConstant.MERCHANT_REBATE_TYPE_INVITATION) ? rebateConfig.getMerchantInvitation()
+                    BigDecimal newMerchantRebate = Objects.equals(item.getOrderType(), MerchantConstant.MERCHANT_REBATE_TYPE_INVITATION) ? rebateConfig.getMerchantInvitation()
                             : rebateConfig.getMerchantRenewal();
-                    BigDecimal newChannelerRebate = Objects.equals(item.getType(), MerchantConstant.MERCHANT_REBATE_TYPE_INVITATION) ? rebateConfig.getChannelerInvitation()
+                    BigDecimal newChannelerRebate = Objects.equals(item.getOrderType(), MerchantConstant.MERCHANT_REBATE_TYPE_INVITATION) ? rebateConfig.getChannelerInvitation()
                             : rebateConfig.getChannelerRenewal();
                     
-                    BigDecimal oldMerchantRebate = item.getMerchantRebate();
-                    BigDecimal oldChannelerRebate = item.getChannelerRebate();
+                    //上一级返利配置（兼容手动将商户级别修改低后，自动升级到更高级别差额的计算）
+                    RebateConfig latestRebateConfig = rebateConfigService.queryLatestByMidAndMerchantLevel(item.getMemberCardId(), currentLevel);
+                    if (Objects.isNull(latestRebateConfig)) {
+                        log.warn("MERCHANT MODIFY CONSUMER WARN!latestRebateConfig is null,id={},memberCardId={},level={}", item.getId(), item.getMemberCardId(), currentLevel);
+                        return;
+                    }
+                    
+                    BigDecimal oldMerchantRebate =
+                            Objects.equals(item.getOrderType(), MerchantConstant.MERCHANT_REBATE_TYPE_INVITATION) ? latestRebateConfig.getMerchantInvitation()
+                                    : latestRebateConfig.getMerchantRenewal();
+                    BigDecimal oldChannelerRebate =
+                            Objects.equals(item.getOrderType(), MerchantConstant.MERCHANT_REBATE_TYPE_INVITATION) ? latestRebateConfig.getChannelerInvitation()
+                                    : latestRebateConfig.getChannelerRenewal();
+                    
+                    log.info("MERCHANT MODIFY CONSUMER INFO!orderId={}", item.getOrderId());
                     
                     RebateRecord rebateRecord = new RebateRecord();
                     rebateRecord.setUid(item.getUid());
                     rebateRecord.setName(item.getName());
                     rebateRecord.setPhone(item.getPhone());
                     rebateRecord.setOrderId(OrderIdUtil.generateBusinessOrderId(BusinessType.BATTERY_REBATE, rebateRecord.getUid()));
-                    rebateRecord.setOriginalOrderId(item.getOrderId());
+                    rebateRecord.setOriginalOrderId(item.getOriginalOrderId());
                     rebateRecord.setMemberCardId(item.getMemberCardId());
                     rebateRecord.setMemberCardName(item.getMemberCardName());
                     rebateRecord.setType(MerchantConstant.MERCHANT_REBATE_TYPE_DISCREPANCY);
+                    rebateRecord.setOrderType(item.getOrderType());
                     rebateRecord.setFranchiseeId(item.getFranchiseeId());
                     rebateRecord.setLevel(currentLevel);
                     rebateRecord.setMerchantId(item.getMerchantId());

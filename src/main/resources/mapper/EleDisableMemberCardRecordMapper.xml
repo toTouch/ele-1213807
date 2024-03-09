@@ -24,6 +24,7 @@
         dmcr.disable_card_time_type ,
         dmcr.apply_reason,
         dmcr.disable_member_card_time ,
+        dmcr.auditor_id,
         emcr.enable_time
         from  t_ele_disable_member_card_record  dmcr left join t_enable_member_card_record emcr on dmcr.disable_member_card_no=emcr.disable_member_card_no
         <where>
@@ -114,7 +115,8 @@
     </select>
 
     <select id="queryDisableCardExpireRecord" resultType="com.xiliulou.electricity.entity.EleDisableMemberCardRecord">
-        select id,uid,tenant_id,disable_member_card_no,choose_days,user_name,phone,update_time,charge_rate from t_ele_disable_member_card_record
+        select id,uid,tenant_id,disable_member_card_no,choose_days,user_name,phone,update_time,charge_rate
+        from t_ele_disable_member_card_record
         where status=1 and disable_card_time_type=1 and real_days is null and disable_deadline &lt;=#{nowTime}
         limit #{offset},#{size};
     </select>

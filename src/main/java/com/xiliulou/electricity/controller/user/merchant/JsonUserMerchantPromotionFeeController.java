@@ -7,7 +7,6 @@ import com.xiliulou.electricity.query.merchant.MerchantPromotionEmployeeDetailQu
 import com.xiliulou.electricity.query.merchant.MerchantPromotionEmployeeDetailSpecificsQueryModel;
 import com.xiliulou.electricity.service.merchant.MerchantPromotionFeeService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
-import com.xiliulou.electricity.utils.DateUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
@@ -49,6 +48,26 @@ public class JsonUserMerchantPromotionFeeController extends BaseController {
         
         return merchantPromotionFeeService.queryMerchantEmployees(merchantUid);
     }
+    
+    
+    /**
+     * 获取渠道员下的商户  筛选条件
+     *
+     * @return
+     */
+    @GetMapping("/merchant/promotionFee/channel/merchantPage")
+    public R queryMerchantByEmployee() {
+        
+        //用户区分
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELECTRICITY  ERROR! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        
+        return merchantPromotionFeeService.queryMerchantByChannelEmployeeUid(user.getUid());
+    }
+    
     
     /**
      * 可提现金额

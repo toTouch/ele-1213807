@@ -93,5 +93,5 @@ public interface UserBatteryMemberCardMapper extends BaseMapper<UserBatteryMembe
     
     List<UserBatteryMemberCardChannelExitVo> selectExpireExitList(@Param("offset") int offset, @Param("size") int size);
     
-    int selectRenewalNumberByMerchantId(@Param("merchantId") Long merchantId, @Param("tenantId") Integer tenantId);
+    Integer selectRenewalNumberByMerchantId(@Param("merchantId") Long merchantId, @Param("tenantId") Integer tenantId);
 }

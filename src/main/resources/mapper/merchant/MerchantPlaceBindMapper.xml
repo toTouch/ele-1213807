@@ -68,6 +68,7 @@
                  where del_flag = 0
                    and merchant_month_settlement = 1
                    and merchant_id = #{merchantId}
+                   and tenant_id = #{tenantId}
     </select>
     
     <select id="selectListBindRecord" resultType="com.xiliulou.electricity.entity.merchant.MerchantPlaceBind">

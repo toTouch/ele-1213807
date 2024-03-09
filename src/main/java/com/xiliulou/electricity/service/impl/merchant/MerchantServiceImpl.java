@@ -2,7 +2,6 @@ package com.xiliulou.electricity.service.impl.merchant;
 
 import cn.hutool.core.bean.BeanUtil;
 import com.xiliulou.cache.redis.RedisService;
-import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.thread.XllThreadPoolExecutorService;
 import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.db.dynamic.annotation.Slave;
@@ -558,19 +557,14 @@ public class MerchantServiceImpl implements MerchantService {
         }
         
         if (flag) {
-            // 查询用户是否存在
-            User oldUser = userService.queryByUidFromCache(merchant.getUid());
+            // 修改用户的手机号或者名称
+            updateUser.setUid(merchant.getUid());
+            updateUser.setUpdateTime(timeMillis);
+            userService.updateMerchantUser(updateUser);
             
-            if (Objects.nonNull(oldUser)) {
-                // 修改用户的手机号或者名称
-                updateUser.setUid(oldUser.getUid());
-                updateUser.setUpdateTime(timeMillis);
-                userService.updateMerchantUser(updateUser);
-                
-                // 删除用户缓存
-                merchantDeleteCacheDTO.setDeleteUserFlag(true);
-                merchantDeleteCacheDTO.setUser(updateUser);
-            }
+            // 删除用户缓存
+            merchantDeleteCacheDTO.setDeleteUserFlag(true);
+            merchantDeleteCacheDTO.setUser(updateUser);
         }
         
         // 修改企业信息
@@ -676,9 +670,30 @@ public class MerchantServiceImpl implements MerchantService {
             
             // 删除解绑的场地映射
             merchantPlaceMapService.batchDeleteByMerchantId(merchantSaveRequest.getId(), unBindList);
+            
+            // 处理解绑场地下关联的员工
+            dealPlaceEmployee(unBindList);
         }
         
         return Triple.of(true, "", merchantDeleteCacheDTO);
+    }
+    
+    private void dealPlaceEmployee(Set<Long> unBindList) {
+        if (ObjectUtils.isEmpty(unBindList)) {
+            return;
+        }
+        
+        List<Long> placeIdList = new ArrayList<>(unBindList);
+        // 根据场地id查询员工
+        List<MerchantEmployee> merchantEmployeeList = merchantEmployeeService.queryListByPlaceId(placeIdList);
+        
+        if (ObjectUtils.isEmpty(merchantEmployeeList)) {
+            return;
+        }
+    
+        List<Long> uidList = merchantEmployeeList.stream().map(MerchantEmployee::getUid).collect(Collectors.toList());
+        // 批量解绑场地员工
+        merchantEmployeeService.batchUnbindPlaceId(uidList);
     }
     
     @Override
@@ -686,11 +701,23 @@ public class MerchantServiceImpl implements MerchantService {
         // 删除商户缓存
         redisService.delete(CacheConstant.CACHE_MERCHANT + merchantDeleteCacheDTO.getMerchantId());
         redisService.delete(CacheConstant.CACHE_ENTERPRISE_INFO + merchantDeleteCacheDTO.getEnterpriseInfoId());
+        
         // 删除用户缓存
-        if (merchantDeleteCacheDTO.isDeleteUserFlag()) {
+        if (merchantDeleteCacheDTO.isDeleteUserFlag() && Objects.nonNull(merchantDeleteCacheDTO.getUser())) {
             User user = merchantDeleteCacheDTO.getUser();
+            
             redisService.delete(CacheConstant.CACHE_USER_UID + user.getUid());
             redisService.delete(CacheConstant.CACHE_USER_PHONE + TenantContextHolder.getTenantId() + ":" + user.getPhone() + ":" + user.getUserType());
+        }
+        
+        // 批量删除场地员工对应的管理员列表的缓存
+        if (ObjectUtils.isNotEmpty(merchantDeleteCacheDTO.getUidList())) {
+            merchantDeleteCacheDTO.getUidList().stream().forEach(user -> {
+                if(Objects.nonNull(user)) {
+                    redisService.delete(CacheConstant.CACHE_USER_UID + user.getUid());
+                    redisService.delete(CacheConstant.CACHE_USER_PHONE + TenantContextHolder.getTenantId() + ":" + user.getPhone() + ":" + user.getUserType());
+                }
+            });
         }
     }
     
@@ -728,7 +755,7 @@ public class MerchantServiceImpl implements MerchantService {
         }
         
         // 删除企业
-        Triple<Boolean, String, Object> triple = enterpriseInfoService.delete(merchant.getEnterpriseId());
+        Triple<Boolean, String, Object> triple = enterpriseInfoService.deleteMerchantEnterprise(merchant.getEnterpriseId());
         if (!triple.getLeft()) {
             String msg = "删除企业信息出错";
             
@@ -777,6 +804,28 @@ public class MerchantServiceImpl implements MerchantService {
         
         // 删除商户认证关系
         userOauthBindService.deleteByUid(merchant.getUid(), tenantId);
+        
+        // 检测商户和员工是否有绑定关系
+        List<MerchantEmployee> merchantEmployeeList = merchantEmployeeService.queryListByMerchantUid(merchant.getUid(), tenantId);
+        
+        if (ObjectUtils.isNotEmpty(merchantEmployeeList)) {
+            // 批量删除员工
+            List<Long> employeeUidList = merchantEmployeeList.stream().map(MerchantEmployee::getUid).collect(Collectors.toList());
+            merchantEmployeeService.batchRemoveByUidList(employeeUidList, timeMillis);
+            
+            // 批量查询admin数据
+            List<User> userList = userService.queryListByUidList(employeeUidList, tenantId);
+            
+            if (ObjectUtils.isNotEmpty(userList)) {
+                // 批量删除admin表的员工数据
+                List<Long> uidList = userList.stream().map(User::getUid).collect(Collectors.toList());
+                // 批量删除用户
+                userService.batchRemoveByUidList(uidList, timeMillis);
+                
+                // 批量删除缓存
+                merchantDeleteCacheDTO.setUidList(userList);
+            }
+        }
         
         merchantDeleteCacheDTO.setMerchantId(id);
         merchantDeleteCacheDTO.setEnterpriseInfoId(merchant.getEnterpriseId());

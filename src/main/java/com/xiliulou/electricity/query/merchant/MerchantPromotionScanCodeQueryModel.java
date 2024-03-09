@@ -20,7 +20,7 @@ import java.util.List;
 public class MerchantPromotionScanCodeQueryModel {
     private Integer type;
     
-    private Long inviterUid;
+    private Long uid;
     
     private Integer status;
     

@@ -144,9 +144,9 @@
         </where>
     </select>
     
-    <select id="selectListByMerchantIdAndStatus" resultType="com.xiliulou.electricity.entity.merchant.MerchantJoinRecord">
+    <select id="countListByMerchantIdAndStatus" resultType="integer">
         select
-        <include refid="basic_field"/>
+        count(1)
         from t_merchant_join_record where del_flag = 0 and merchant_id = #{merchantId} and status = #{status}
     </select>
     
@@ -199,11 +199,14 @@
             <if test="endTime != null">
                 and start_time &lt;= #{endTime}
             </if>
-            <if test="type != null">
+            <if test="type != null and type==3">
+                and channel_employee_uid = #{uid}
+            </if>
+            <if test="type != null and type!=3">
                 and inviter_type = #{type}
             </if>
-            <if test="inviterUid != null">
-                and inviter_uid = #{inviterUid}
+            <if test="uid != null and type!=3">
+                and inviter_uid = #{uid}
             </if>
             <if test="status != null">
                 and status = #{status}
@@ -211,7 +214,7 @@
             <if test="tenantId != null">
                 and tenant_id = #{tenantId}
             </if>
-        
+    
         </where>
         ) a
     </select>
@@ -331,7 +334,7 @@
         select IFNULL(count(1), 0) from (
         select distinct(join_uid) from t_merchant_join_record
         <where>
-            del_flag = 0 and inviter_type = 1
+            del_flag = 0 and inviter_type = 2
             <if test="startTime != null">
                 and start_time >= #{startTime}
             </if>

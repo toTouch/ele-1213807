@@ -66,6 +66,9 @@
             <if test="query.payType != null">
                 and tedo.pay_type = #{query.payType}
             </if>
+            <if test="query.orderType != null">
+                and tedo.order_type = #{query.orderType}
+            </if>
             <if test="query.uid != null">
                 and tedo.uid = #{query.uid}
             </if>

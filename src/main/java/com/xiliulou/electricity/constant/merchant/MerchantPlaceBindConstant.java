@@ -23,14 +23,6 @@ public class MerchantPlaceBindConstant {
      * 结算标记: 是
      */
     public final static Integer SETTLE_YES = 0;
-    /**
-     * 两个月
-     */
-    public final static Integer TOW_MONTH_BEFORE = 2;
-    /**
-     * 上个月
-     */
-    public final static Integer LAST_MONTH = 1;
     
     /**
      * 绑定时间是否存在重叠：是

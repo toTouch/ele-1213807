@@ -24,6 +24,7 @@ import com.xiliulou.electricity.service.merchant.MerchantService;
 import com.xiliulou.electricity.service.merchant.MerchantUserAmountService;
 import com.xiliulou.electricity.service.merchant.RebateRecordService;
 import com.xiliulou.electricity.utils.DateUtils;
+import com.xiliulou.electricity.vo.faq.FaqCategoryVo;
 import com.xiliulou.electricity.vo.merchant.MerchantPromotionEmployeeDetailSpecificsVO;
 import com.xiliulou.electricity.vo.merchant.RebateRecordVO;
 import lombok.extern.slf4j.Slf4j;
@@ -40,6 +41,7 @@ import javax.annotation.Resource;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -115,8 +117,14 @@ public class RebateRecordServiceImpl implements RebateRecordService {
     
     @Slave
     @Override
-    public RebateRecord queryByOriginalOrderId(String originalOrderId) {
+    public List<RebateRecord> queryByOriginalOrderId(String originalOrderId) {
         return this.rebateRecordMapper.selectByOriginalOrderId(originalOrderId);
+    }
+    
+    @Slave
+    @Override
+    public RebateRecord queryLatestByOriginalOrderId(String originalOrderId) {
+        return this.rebateRecordMapper.selectLatestByOriginalOrderId(originalOrderId);
     }
     
     @Slave
@@ -158,8 +166,19 @@ public class RebateRecordServiceImpl implements RebateRecordService {
     
     @Slave
     @Override
-    public List<RebateRecord> listCurrentMonthRebateRecord(long startTime, long endTime, int offset, int size) {
-        return this.rebateRecordMapper.selectCurrentMonthRebateRecord(startTime, endTime, offset, size);
+    public List<RebateRecord> listCurrentMonthRebateRecord( Long merchantId, long startTime, long endTime, int offset, int size) {
+        return this.rebateRecordMapper.selectCurrentMonthRebateRecord( merchantId, startTime, endTime, offset, size);
+    }
+    
+    @Slave
+    @Override
+    public List<RebateRecord> listRebatedByUid(Long uid, Long memberCardId, Long merchantId, String currentLevel) {
+        return this.rebateRecordMapper.selectRebatedByUid(uid, memberCardId, merchantId, currentLevel);
+    }
+    
+    @Override
+    public Integer existsExpireRebateRecordByOriginalOrderId(String originalOrderId) {
+        return this.rebateRecordMapper.existsExpireRebateRecordByOriginalOrderId(originalOrderId);
     }
     
     @Override
@@ -217,6 +236,9 @@ public class RebateRecordServiceImpl implements RebateRecordService {
         if (Objects.equals(PromotionFeeQueryTypeEnum.CHANNEL_EMPLOYEE.getCode(), merchantPromotionFeeQueryModel.getType())) {
             return this.rebateRecordMapper.sumEmployeeIncomeByStatus(merchantPromotionFeeQueryModel);
         } else {
+            if (Objects.equals(PromotionFeeQueryTypeEnum.MERCHANT_AND_MERCHANT_EMPLOYEE.getCode(), merchantPromotionFeeQueryModel.getType())) {
+                merchantPromotionFeeQueryModel.setType(PromotionFeeQueryTypeEnum.MERCHANT.getCode());
+            }
             return this.rebateRecordMapper.sumMerchantIncomeByStatus(merchantPromotionFeeQueryModel);
         }
     }
@@ -248,7 +270,7 @@ public class RebateRecordServiceImpl implements RebateRecordService {
             }
             specificsVO.setUserName(item.getName());
             return specificsVO;
-        }).collect(Collectors.toList());
+        }).sorted(Comparator.comparing(MerchantPromotionEmployeeDetailSpecificsVO::getRebateTime).reversed()).collect(Collectors.toList());
     }
     
 }

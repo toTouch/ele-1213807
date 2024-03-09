@@ -23,7 +23,7 @@ public class MerchantCabinetBindHistoryServiceImpl implements MerchantCabinetBin
     
     @Slave
     @Override
-    public List<MerchantCabinetBindHistory> queryListByMonth(Long cabinetId, Long placeId, List<String> monthList) {
-        return merchantCabinetBindHistoryMapper.queryListByMonth(cabinetId, placeId, monthList);
+    public List<MerchantCabinetBindHistory> queryListByMonth(Long cabinetId, Long placeId, List<String> monthList, Long merchantId, Integer tenantId) {
+        return merchantCabinetBindHistoryMapper.queryListByMonth(cabinetId, placeId, monthList, merchantId, tenantId);
     }
 }

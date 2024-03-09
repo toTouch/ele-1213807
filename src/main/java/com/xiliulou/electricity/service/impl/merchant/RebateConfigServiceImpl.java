@@ -30,6 +30,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -90,14 +91,14 @@ public class RebateConfigServiceImpl implements RebateConfigService {
         if (CollectionUtils.isEmpty(rebateConfigs) || CollectionUtils.isEmpty(merchantLevels)) {
             return Collections.emptyList();
         }
-    
+        
         Map<String, String> merchantLevelMap = merchantLevels.stream().collect(Collectors.toMap(MerchantLevel::getLevel, MerchantLevel::getName, (k1, k2) -> k1));
-    
+        
         return rebateConfigs.stream().map(item -> {
             RebateConfigVO rebateConfigVO = new RebateConfigVO();
             BeanUtils.copyProperties(item, rebateConfigVO);
-    
-//            MerchantLevel merchantLevel = merchantLevelService.queryByMerchantLevelAndTenantId(item.getLevel(), item.getTenantId());
+            
+            //            MerchantLevel merchantLevel = merchantLevelService.queryByMerchantLevelAndTenantId(item.getLevel(), item.getTenantId());
             rebateConfigVO.setLevelName(merchantLevelMap.getOrDefault(item.getLevel(), ""));
             
             BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(item.getMid());
@@ -135,11 +136,16 @@ public class RebateConfigServiceImpl implements RebateConfigService {
     @Override
     public Triple<Boolean, String, Object> save(RebateConfigRequest request) {
         //判断套餐是否存在
-        Integer result = applicationContext.getBean(RebateConfigService.class).existsRebateConfigByMidAndLevel(request.getMid(), request.getLevel());
+        Integer result = this.existsRebateConfigByMidAndLevel(request.getMid(), request.getLevel());
         if (Objects.nonNull(result)) {
             return Triple.of(false, "100318", "套餐返利配置已存在");
         }
-        
+    
+        Triple<Boolean, String, Object> verifyResult = verifyRebateConfigRequest(request);
+        if (!verifyResult.getLeft()) {
+            return verifyResult;
+        }
+    
         RebateConfig rebateConfig = new RebateConfig();
         BeanUtils.copyProperties(request, rebateConfig);
         rebateConfig.setDelFlag(CommonConstant.DEL_N);
@@ -156,6 +162,11 @@ public class RebateConfigServiceImpl implements RebateConfigService {
         if (Objects.isNull(rebateConfig) || !Objects.equals(rebateConfig.getTenantId(), TenantContextHolder.getTenantId())) {
             return Triple.of(false, "100319", "返利配置不存在");
         }
+    
+        Triple<Boolean, String, Object> verifyResult = verifyRebateConfigRequest(request);
+        if (!verifyResult.getLeft()) {
+            return verifyResult;
+        }
         
         RebateConfig rebateConfigUpdate = new RebateConfig();
         BeanUtils.copyProperties(request, rebateConfigUpdate);
@@ -165,8 +176,52 @@ public class RebateConfigServiceImpl implements RebateConfigService {
         return Triple.of(true, null, null);
     }
     
+    @Slave
     @Override
     public RebateConfig queryByMidAndMerchantLevel(Long memberCardId, String level) {
         return this.rebateConfigMapper.selectByMidAndMerchantLevel(memberCardId, level);
+    }
+    
+    @Slave
+    @Override
+    public List<RebateConfig> listRebateConfigByMid(Long memberCardId) {
+        return this.rebateConfigMapper.selectRebateConfigByMid(memberCardId);
+    }
+    
+    @Slave
+    @Override
+    public RebateConfig queryLatestByMidAndMerchantLevel(Long memberCardId, String level) {
+        return this.rebateConfigMapper.selectLatestByMidAndMerchantLevel(memberCardId, level);
+    }
+    
+    private Triple<Boolean, String, Object> verifyRebateConfigRequest(RebateConfigRequest request) {
+        List<RebateConfig> rebateConfigs = this.listRebateConfigByMid(request.getMid());
+        if(CollectionUtils.isEmpty(rebateConfigs)){
+            return Triple.of(false, "100319", "返利配置不存在");
+        }
+    
+        Map<String, RebateConfig> rebateConfigMap = rebateConfigs.stream().collect(Collectors.toMap(RebateConfig::getLevel, Function.identity(), (k1, k2) -> k1));
+        RebateConfig currentRebateConfig = rebateConfigMap.get(request.getLevel());
+        if(Objects.isNull(currentRebateConfig)){
+            return Triple.of(false, "100319", "返利配置不存在");
+        }
+    
+//        if(Objects.equals( request.getLevel(), "1")){
+//            //一级商户返利配置
+//            for (RebateConfig config : rebateConfigs) {
+//                if(Integer.parseInt(config.getLevel())<=Integer.parseInt(currentRebateConfig.getLevel())){
+//
+//                }
+//            }
+//
+//
+//        }else if(Objects.equals( request.getLevel(), "5")){
+//            //五级商户返利配置
+//
+//        }else{
+//
+//        }
+        
+        return Triple.of(true, null, null);
     }
 }

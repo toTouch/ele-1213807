@@ -324,8 +324,8 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
     
     @Slave
     @Override
-    public List<MerchantJoinRecord> listByMerchantIdAndStatus(Long merchantId, Integer status) {
-        return merchantJoinRecordMapper.selectListByMerchantIdAndStatus(merchantId, status);
+    public Integer countByMerchantIdAndStatus(Long merchantId, Integer status) {
+        return merchantJoinRecordMapper.countListByMerchantIdAndStatus(merchantId, status);
     }
     
     @Override
@@ -456,12 +456,9 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
                 }
             }
             
-            String orderId = merchantJoinUserVO.getOrderId();
-            if (Objects.nonNull(orderId)) {
-                ElectricityMemberCardOrder electricityMemberCardOrder = electricityMemberCardOrderService.selectByOrderNo(orderId);
-                if (Objects.nonNull(electricityMemberCardOrder)) {
-                    merchantJoinUserVO.setPurchasedTime(electricityMemberCardOrder.getCreateTime());
-                }
+            ElectricityMemberCardOrder electricityMemberCardOrder = electricityMemberCardOrderService.selectLatestByUid(merchantJoinUserVO.getJoinUid());
+            if (Objects.nonNull(electricityMemberCardOrder)) {
+                merchantJoinUserVO.setPurchasedTime(electricityMemberCardOrder.getCreateTime());
             }
             
             ElectricityMemberCardOrder firstMemberCardOrder = electricityMemberCardOrderService.selectFirstMemberCardOrder(merchantJoinUserVO.getJoinUid());

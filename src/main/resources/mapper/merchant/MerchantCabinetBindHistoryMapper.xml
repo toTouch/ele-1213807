@@ -27,6 +27,12 @@
                 <if test="cabinetId != null">
                     and cabinet_id = #{cabinetId}
                 </if>
+                <if test="merchantId != null">
+                    and merchant_id = #{merchantId}
+                </if>
+                <if test="tenantId != null">
+                    and tenant_id = #{tenantId}
+                </if>
                 <if test="monthList != null">
                     and calculate_month in
                     <foreach collection="monthList" item="month" close=")" open="(" separator=",">

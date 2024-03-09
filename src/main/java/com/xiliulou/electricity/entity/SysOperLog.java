@@ -16,7 +16,7 @@ import com.baomidou.mybatisplus.annotation.TableName;
  * @author zzlong
  * @since 2022-10-11 19:47:27
  */
-
+@Deprecated
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
