@@ -456,12 +456,9 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
                 }
             }
             
-            String orderId = merchantJoinUserVO.getOrderId();
-            if (Objects.nonNull(orderId)) {
-                ElectricityMemberCardOrder electricityMemberCardOrder = electricityMemberCardOrderService.selectByOrderNo(orderId);
-                if (Objects.nonNull(electricityMemberCardOrder)) {
-                    merchantJoinUserVO.setPurchasedTime(electricityMemberCardOrder.getCreateTime());
-                }
+            ElectricityMemberCardOrder electricityMemberCardOrder = electricityMemberCardOrderService.selectLatestByUid(merchantJoinUserVO.getJoinUid());
+            if (Objects.nonNull(electricityMemberCardOrder)) {
+                merchantJoinUserVO.setPurchasedTime(electricityMemberCardOrder.getCreateTime());
             }
             
             ElectricityMemberCardOrder firstMemberCardOrder = electricityMemberCardOrderService.selectFirstMemberCardOrder(merchantJoinUserVO.getJoinUid());

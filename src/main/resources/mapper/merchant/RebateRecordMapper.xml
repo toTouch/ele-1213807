@@ -390,6 +390,9 @@
             <if test="rebateType != null">
                 and type = #{rebateType}
             </if>
+            <if test="refundFlag != null">
+                and refund_flag = #{refundFlag}
+            </if>
             <if test="startTime != null">
                 and create_time >= #{startTime}
             </if>
