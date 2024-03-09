@@ -585,26 +585,9 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
         if (Objects.equals(PromotionFeeQueryTypeEnum.MERCHANT_AND_MERCHANT_EMPLOYEE.getCode(), type)) {
             type = PromotionFeeQueryTypeEnum.MERCHANT.getCode();
         }
-        
         MerchantPromotionRenewalQueryModel renewalQueryModel = MerchantPromotionRenewalQueryModel.builder().tenantId(TenantContextHolder.getTenantId()).userType(type).uid(uid)
-                .startTime(startTime).endTime(endTime).rebateType(MerchantConstant.MERCHANT_REBATE_TYPE_RENEWAL).status(MerchantConstant.MERCHANT_REBATE_STATUS_NOT_SETTLE).build();
-        
-        // 未结算
-        Integer nonSettleRenewal = rebateRecordService.countByTime(renewalQueryModel);
-        // 已结算
-        renewalQueryModel.setStatus(MerchantConstant.MERCHANT_REBATE_STATUS_SETTLED);
-        Integer settleRenewal = rebateRecordService.countByTime(renewalQueryModel);
-        // 已退回
-        renewalQueryModel.setStatus(MerchantConstant.MERCHANT_REBATE_STATUS_RETURNED);
-        Integer returnwal = rebateRecordService.countByTime(renewalQueryModel);
-        
-        int result = nonSettleRenewal + settleRenewal - returnwal;
-        
-        if (result < 0) {
-            result = 0;
-        }
-        
-        return result;
+                .startTime(startTime).endTime(endTime).rebateType(MerchantConstant.MERCHANT_REBATE_TYPE_RENEWAL).refundFlag(MerchantConstant.REBATE_IS_NOT_REFUND).build();
+        return rebateRecordService.countByTime(renewalQueryModel);
     }
     
     
