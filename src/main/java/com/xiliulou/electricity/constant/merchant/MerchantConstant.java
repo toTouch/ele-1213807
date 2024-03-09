@@ -73,6 +73,12 @@ public interface MerchantConstant {
     Integer MERCHANT_REBATE_STATUS_SETTLED = 1;
     Integer MERCHANT_REBATE_STATUS_RETURNED = 2;
     Integer MERCHANT_REBATE_STATUS_EXPIRED = 3;
+    
+    /**
+     * 续费返利记录中是否已退款 0:未退款，1:已退款
+     */
+    Integer REBATE_IS_NOT_REFUND = 0;
+    Integer REBATE_IS_REFUND = 1;
 
     /**
      * 用户查询条件类型 1:查询全部, 2:查询正常, 3:查询即将逾期, 4:查询已过期
