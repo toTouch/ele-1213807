@@ -49,6 +49,8 @@ public class RebateRecordVO {
      */
     private Integer type;
     
+    private Integer orderType;
+    
     /**
      * 加盟商id
      */
