@@ -1153,6 +1153,10 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
             for (MerchantPlaceCabinetBind placeCabinetBind : cabinetBindList) {
                 Long bindTime = placeCabinetBind.getBindTime();
                 
+                if(bindTime >= merchantPlaceUnbindTime) {
+                    continue;
+                }
+                
                 if (bindTime < merchantPlaceBindTime) {
                     placeCabinetBind.setBindTime(merchantPlaceBindTime);
                 }
@@ -1177,6 +1181,10 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
         // 先掐头去尾
         for (MerchantPlaceCabinetBind placeCabinetBind : stepOneList) {
             Long bindTime = placeCabinetBind.getBindTime();
+    
+            if(bindTime >= merchantPlaceUnbindTime) {
+                continue;
+            }
             
             if (bindTime < merchantPlaceBindTime) {
                 placeCabinetBind.setBindTime(merchantPlaceBindTime);
