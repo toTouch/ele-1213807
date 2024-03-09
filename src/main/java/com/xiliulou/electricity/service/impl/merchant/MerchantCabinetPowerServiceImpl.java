@@ -751,6 +751,8 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
             }
             
             log.info("Merchant getLiveMonthPowerForCabinetDetail merchantId={}, placeId={}, placeBindList={}", merchantId, placeId, placeBindList);
+    
+            List<MerchantProCabinetPowerDetailVO> placeResultList = new ArrayList<>();
             
             // 遍历场地
             for (MerchantPlaceBind placeBind : placeBindList) {
@@ -772,14 +774,14 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
                 List<MerchantProCabinetPowerDetailVO> periodPowerList = getPeriodPowerForDetail(tenantId, placeId, cabinetId, placeCabinetBindList, monthDate, status);
                 
                 log.info("Merchant getLiveMonthPowerForCabinetDetail placeId={}, cabinetId={}, periodPowerList={}", placeId, cabinetId, periodPowerList);
-                
-                resultList.addAll(periodPowerList);
+    
+                placeResultList.addAll(periodPowerList);
             }
             
-            log.info("Merchant getLiveMonthPowerForCabinetDetail merchantId={}, resultList={}", merchantId, resultList);
+            log.info("Merchant getLiveMonthPowerForCabinetDetail merchantId={}, placeResultList={}", merchantId, placeResultList);
             
             // 合并连续时间段的记录（前一个时间段的endTime和后一个时间段的startTime是同一天）
-            List<MerchantProCabinetPowerDetailVO> afterMergeDetailResultList = mergeSerialTimeDetail(resultList);
+            List<MerchantProCabinetPowerDetailVO> afterMergeDetailResultList = mergeSerialTimeDetail(placeResultList);
             
             if (CollectionUtils.isNotEmpty(afterMergeDetailResultList)) {
                 resultList.addAll(afterMergeDetailResultList);
@@ -834,6 +836,9 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
             
             if (Objects.equals(DateUtils.getTimeByTimeStamp(current.getEndTime()), DateUtils.getTimeByTimeStamp(next.getStartTime()))) {
                 current.setEndTime(next.getEndTime());
+                if (current.getStartTime() > next.getStartTime()) {
+                    current.setEndTime(next.getStartTime());
+                }
                 
                 double currentPower = Objects.isNull(current.getPower()) ? NumberConstant.ZERO_D : current.getPower();
                 double currentCharge = Objects.isNull(current.getCharge()) ? NumberConstant.ZERO : current.getCharge();
