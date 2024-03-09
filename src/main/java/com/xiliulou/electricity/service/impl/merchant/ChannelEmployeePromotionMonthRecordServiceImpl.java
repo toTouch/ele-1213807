@@ -219,6 +219,7 @@ public class ChannelEmployeePromotionMonthRecordServiceImpl implements ChannelEm
                 balanceVo.setMonthRenewSumFee(item.getMonthRenewMoney());
                 balanceVo.setType(RebateTypeEnum.BALANCE.getDesc());
                 BigDecimal returnMoney = BigDecimal.ZERO;
+                
                 if (ObjectUtils.isNotEmpty(promotionDayRecord.getDayBalanceMoney())) {
                     returnMoney = returnMoney.add(promotionDayRecord.getDayBalanceMoney());
                 }
@@ -246,10 +247,12 @@ public class ChannelEmployeePromotionMonthRecordServiceImpl implements ChannelEm
         String fileName = "渠道员提成出账记录.xlsx";
         try {
             ServletOutputStream outputStream = response.getOutputStream();
+            
             // 告诉浏览器用什么软件可以打开此文件
             response.setHeader("content-Type", "application/vnd.ms-excel");
             // 下载文件的默认名称
             response.setHeader("Content-Disposition", "attachment;filename=" + URLEncoder.encode(fileName, StandardCharsets.UTF_8));
+            
             EasyExcel.write(outputStream, ChannelEmployeePromotionMonthExportVO.class).head(getHeader())
                     // 合并策略：合并相同数据的行。第一个参数表示从哪一行开始进行合并，由于表头占了两行，因此从第2行开始（索引从0开始）
                     // 第二个参数是指定哪些列要进行合并
@@ -257,6 +260,7 @@ public class ChannelEmployeePromotionMonthRecordServiceImpl implements ChannelEm
                     .registerWriteHandler(new CommentWriteHandler(getComments(), "xlsx")).registerWriteHandler(new AutoHeadColumnWidthStyleStrategy())
                     // 注意：需要先调用registerWriteHandler()再调用sheet()方法才能使合并策略生效！！！
                     .sheet("渠道员提成出账记录").doWrite(getData(monthDate));
+            
         } catch (Exception e) {
             log.error("channel employee promotion export error！", e);
         }

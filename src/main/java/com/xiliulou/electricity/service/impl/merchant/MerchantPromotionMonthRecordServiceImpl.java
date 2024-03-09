@@ -135,7 +135,6 @@ public class MerchantPromotionMonthRecordServiceImpl implements MerchantPromotio
         
         // excelVOList 按merchantId进行分组
         Map<Long, List<MerchantPromotionDayRecordVO>> detailMap = detailList.stream().collect(Collectors.groupingBy(MerchantPromotionDayRecordVO::getMerchantId));
-        // todo 排序
         
         detailMap.forEach((merchantId, merchantDayRecordVoList) -> {
             

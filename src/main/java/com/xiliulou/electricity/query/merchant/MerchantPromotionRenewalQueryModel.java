@@ -36,4 +36,5 @@ public class MerchantPromotionRenewalQueryModel {
     
     private Long endTime;
     
+    private Integer refundFlag;
 }

@@ -25,6 +25,7 @@ import com.xiliulou.electricity.query.merchant.MerchantPromotionRenewalQueryMode
 import com.xiliulou.electricity.query.merchant.MerchantPromotionScanCodeQueryModel;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.UserService;
+import com.xiliulou.electricity.service.merchant.ChannelEmployeeService;
 import com.xiliulou.electricity.service.merchant.MerchantEmployeeService;
 import com.xiliulou.electricity.service.merchant.MerchantJoinRecordService;
 import com.xiliulou.electricity.service.merchant.MerchantPlaceService;
@@ -35,12 +36,14 @@ import com.xiliulou.electricity.service.merchant.MerchantWithdrawApplicationServ
 import com.xiliulou.electricity.service.merchant.RebateRecordService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DateUtils;
+import com.xiliulou.electricity.vo.merchant.ChannelEmployeeVO;
 import com.xiliulou.electricity.vo.merchant.MerchantEmployeeVO;
 import com.xiliulou.electricity.vo.merchant.MerchantPromotionDataDetailVO;
 import com.xiliulou.electricity.vo.merchant.MerchantPromotionDataVO;
 import com.xiliulou.electricity.vo.merchant.MerchantPromotionEmployeeDetailVO;
 import com.xiliulou.electricity.vo.merchant.MerchantPromotionFeeEmployeeVO;
 import com.xiliulou.electricity.vo.merchant.MerchantPromotionFeeIncomeVO;
+import com.xiliulou.electricity.vo.merchant.MerchantPromotionFeeMerchantVO;
 import com.xiliulou.electricity.vo.merchant.MerchantPromotionFeeRenewalVO;
 import com.xiliulou.electricity.vo.merchant.MerchantPromotionFeeScanCodeVO;
 import com.xiliulou.electricity.vo.merchant.MerchantPromotionMerchantDetailVO;
@@ -99,6 +102,9 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
     @Resource
     private MerchantUserAmountService merchantUserAmountService;
     
+    @Resource
+    private ChannelEmployeeService channelEmployeeService;
+    
     @Override
     public R queryMerchantEmployees(Long merchantUid) {
         //校验用户是否是商户
@@ -137,6 +143,32 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
             promotionFeeEmployeeVOList.addAll(employeeVOList);
         }
         return R.ok(promotionFeeEmployeeVOList);
+    }
+    
+    @Override
+    public R queryMerchantByChannelEmployeeUid(Long channelEmployeeUid) {
+        //校验用户是否是渠道员
+        ChannelEmployeeVO channelEmployeeVO = channelEmployeeService.queryByUid(channelEmployeeUid);
+        if (Objects.isNull(channelEmployeeVO)) {
+            log.error("find merchant user error, not found merchant user, uid = {}", channelEmployeeVO);
+            return R.fail("120007", "未找到渠道员");
+        }
+        
+        List<Merchant> merchants = merchantService.queryByChannelEmployeeUid(channelEmployeeVO.getUid());
+        
+        if (CollectionUtils.isEmpty(merchants)) {
+            return R.ok();
+        }
+        
+        List<MerchantPromotionFeeMerchantVO> merchantVOList = merchants.parallelStream().map(merchant -> {
+            MerchantPromotionFeeMerchantVO vo = new MerchantPromotionFeeMerchantVO();
+            vo.setUserName(merchant.getName());
+            vo.setUid(merchant.getUid());
+            vo.setType(PromotionFeeQueryTypeEnum.MERCHANT.getCode());
+            return vo;
+        }).collect(Collectors.toList());
+        
+        return R.ok(merchantVOList);
     }
     
     @Override
@@ -350,6 +382,10 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
             return R.fail("120007", "未找到商户");
         }
         
+        if (!merchantJoinRecordService.existInviterData(MerchantJoinRecordConstant.INVITER_TYPE_MERCHANT_SELF, merchant.getUid(), TenantContextHolder.getTenantId())) {
+            return R.ok();
+        }
+        
         MerchantPromotionMerchantDetailVO merchantDetailVO = new MerchantPromotionMerchantDetailVO();
         merchantDetailVO.setMerchantName(merchant.getName());
         merchantDetailVO.setUid(merchant.getUid());
@@ -553,26 +589,9 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
         if (Objects.equals(PromotionFeeQueryTypeEnum.MERCHANT_AND_MERCHANT_EMPLOYEE.getCode(), type)) {
             type = PromotionFeeQueryTypeEnum.MERCHANT.getCode();
         }
-        
         MerchantPromotionRenewalQueryModel renewalQueryModel = MerchantPromotionRenewalQueryModel.builder().tenantId(TenantContextHolder.getTenantId()).userType(type).uid(uid)
-                .startTime(startTime).endTime(endTime).rebateType(MerchantConstant.MERCHANT_REBATE_TYPE_RENEWAL).status(MerchantConstant.MERCHANT_REBATE_STATUS_NOT_SETTLE).build();
-        
-        // 未结算
-        Integer nonSettleRenewal = rebateRecordService.countByTime(renewalQueryModel);
-        // 已结算
-        renewalQueryModel.setStatus(MerchantConstant.MERCHANT_REBATE_STATUS_SETTLED);
-        Integer settleRenewal = rebateRecordService.countByTime(renewalQueryModel);
-        // 已退回
-        renewalQueryModel.setStatus(MerchantConstant.MERCHANT_REBATE_STATUS_RETURNED);
-        Integer returnwal = rebateRecordService.countByTime(renewalQueryModel);
-        
-        int result = nonSettleRenewal + settleRenewal - returnwal;
-        
-        if (result < 0) {
-            result = 0;
-        }
-        
-        return result;
+                .startTime(startTime).endTime(endTime).rebateType(MerchantConstant.MERCHANT_REBATE_TYPE_RENEWAL).refundFlag(MerchantConstant.REBATE_IS_NOT_REFUND).build();
+        return rebateRecordService.countByTime(renewalQueryModel);
     }
     
     
