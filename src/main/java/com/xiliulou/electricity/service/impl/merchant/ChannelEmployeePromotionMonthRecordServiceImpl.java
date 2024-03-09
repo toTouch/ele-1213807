@@ -194,7 +194,7 @@ public class ChannelEmployeePromotionMonthRecordServiceImpl implements ChannelEm
                 first.setMonthFirstSumFee(item.getMonthFirstMoney());
                 first.setMonthRenewSumFee(item.getMonthRenewMoney());
                 first.setType(RebateTypeEnum.FIRST.getDesc());
-                first.setSettleDate(DateUtil.format(new Date(item.getFeeDate()), "yyyy-MM-dd"));
+                first.setSettleDate(DateUtil.format(new Date(promotionDayRecord.getFeeDate()), "yyyy-MM-dd"));
                 first.setReturnMoney(promotionDayRecord.getDayFirstMoney());
                 
                 resList.add(first);
@@ -206,7 +206,7 @@ public class ChannelEmployeePromotionMonthRecordServiceImpl implements ChannelEm
                 renewVo.setMonthFirstSumFee(item.getMonthFirstMoney());
                 renewVo.setMonthRenewSumFee(item.getMonthRenewMoney());
                 renewVo.setType(RebateTypeEnum.RENEW.getDesc());
-                renewVo.setSettleDate(DateUtil.format(new Date(item.getFeeDate()), "yyyy-MM-dd"));
+                renewVo.setSettleDate(DateUtil.format(new Date(promotionDayRecord.getFeeDate()), "yyyy-MM-dd"));
                 renewVo.setReturnMoney(promotionDayRecord.getDayRenewMoney());
                 
                 resList.add(renewVo);
@@ -229,7 +229,7 @@ public class ChannelEmployeePromotionMonthRecordServiceImpl implements ChannelEm
                 }
                 
                 balanceVo.setReturnMoney(returnMoney);
-                balanceVo.setSettleDate(DateUtil.format(new Date(item.getFeeDate()), "yyyy-MM-dd"));
+                balanceVo.setSettleDate(DateUtil.format(new Date(promotionDayRecord.getFeeDate()), "yyyy-MM-dd"));
     
                 resList.add(balanceVo);
     
