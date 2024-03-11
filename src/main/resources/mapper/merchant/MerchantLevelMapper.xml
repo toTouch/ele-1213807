@@ -87,7 +87,7 @@
             <if test="level != null and level != ''">
                 level = #{level},
             </if>
-            <if test="name != null and name != ''">
+            <if test="name != null">
                 name = #{name},
             </if>
             <if test="rule != null and rule != ''">
