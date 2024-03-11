@@ -261,7 +261,7 @@
             <if test="tenantId != null">
                 and tenant_id = #{tenantId}
             </if>
-            limit #{offset}, #{size}
+            limit #{offset}, #{size} order by start_time desc
         </where>
     </select>
     
@@ -377,7 +377,7 @@
             <if test="tenantId != null">
                 and tenant_id = #{tenantId}
             </if>
-            limit #{offset}, #{size}
+            limit #{offset}, #{size} order by start_time desc
         </where>
     </select>
     

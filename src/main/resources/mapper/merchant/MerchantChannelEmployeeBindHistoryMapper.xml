@@ -27,7 +27,7 @@
     
     <select id="selectListByChannelEmployeeUid" resultType="com.xiliulou.electricity.entity.merchant.MerchantChannelEmployeeBindHistory">
         select
-            id, merchant_uid, channel_employee_uid, bind_time, un_bind_time, tenant_id, create_time, update_time
+            id, merchant_uid, channel_employee_uid, bind_status, bind_time, un_bind_time, tenant_id, create_time, update_time
         from t_merchant_channel_employee_bind_history
         where channel_employee_uid = #{channelEmployeeUid} and tenant_id = #{tenantId}
     </select>
@@ -55,18 +55,20 @@
     
     <select id="selectByMerchantUid"  resultType="com.xiliulou.electricity.entity.merchant.MerchantChannelEmployeeBindHistory">
         select
-        id, merchant_uid, channel_employee_uid, bind_time, un_bind_time, tenant_id, create_time, update_time
+        id, merchant_uid, channel_employee_uid, bind_status, bind_time, un_bind_time, tenant_id, create_time, update_time
         from t_merchant_channel_employee_bind_history
         <where>
             <if test="tenantId != null">
                 and tenant_id = #{tenantId}
             </if>
-            <if test="uid != null">
+            <if test="channelEmployeeUid != null">
                 and channel_employee_uid = #{channelEmployeeUid}
             </if>
-        
+            <if test="merchantUid != null">
+                and merchant_uid = #{merchantUid}
+            </if>
             <if test="bindStatus != null">
-                and merchant_uid = #{bindStatus}
+                and bind_status = #{bindStatus}
             </if>
             <if test="bindStatus != null">
                 and bind_time = #{bindTime}
