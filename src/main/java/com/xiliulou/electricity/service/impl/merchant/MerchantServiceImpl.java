@@ -542,7 +542,7 @@ public class MerchantServiceImpl implements MerchantService {
             flag = true;
             updateUser.setPhone(merchantSaveRequest.getPhone());
             // 手机号变更用户禁用
-            updateUser.setLockFlag(User.USER_LOCK);
+//            updateUser.setLockFlag(User.USER_LOCK);
         }
         
         // 判断是否为禁用
