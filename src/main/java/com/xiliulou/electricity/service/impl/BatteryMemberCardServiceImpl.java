@@ -3,6 +3,7 @@ package com.xiliulou.electricity.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.google.api.client.util.Lists;
 import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
@@ -690,6 +691,13 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
         Triple<Boolean, String, Object> verifyBatteryMemberCardResult = verifyBatteryMemberCardQuery(query, franchisee);
         if (Boolean.FALSE.equals(verifyBatteryMemberCardResult.getLeft())) {
             return verifyBatteryMemberCardResult;
+        }
+    
+        //套餐数量最多20个
+        BatteryMemberCardQuery queryCount = BatteryMemberCardQuery.builder().franchiseeId(query.getFranchiseeId()).businessType(query.getBusinessType())
+                .tenantId(TenantContextHolder.getTenantId()).delFlag(BatteryMemberCard.DEL_NORMAL).build();
+        if (selectByPageCount(queryCount) > 20) {
+            return Triple.of(false, "100106", "套餐数量超出限制");
         }
 
         BatteryMemberCard batteryMemberCard = new BatteryMemberCard();

@@ -194,7 +194,6 @@
             </if>
         </where>
         order by franchisee_id,id desc
-        limit #{offset}, #{size}
     </select>
 
     <select id="selectByQuery" resultMap="BatteryMemberCardMap">
