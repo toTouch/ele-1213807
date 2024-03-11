@@ -1915,7 +1915,7 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
                     if (Objects.nonNull(preTwoMonthPowerPeriod)) {
                         if (Objects.nonNull(preTwoMonthPowerPeriod.getPower())) {
                             double preTwoMonthPower = BigDecimal.valueOf(preTwoMonthPowerPeriod.getPower()).setScale(2, RoundingMode.HALF_UP).doubleValue();
-                            thisYearCharge += preTwoMonthPower;
+                            thisYearPower += preTwoMonthPower;
                         }
                         
                         if (Objects.nonNull(preTwoMonthPowerPeriod.getCharge())) {

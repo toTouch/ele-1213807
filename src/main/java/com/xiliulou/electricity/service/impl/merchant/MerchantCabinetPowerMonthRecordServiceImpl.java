@@ -116,6 +116,8 @@ public class MerchantCabinetPowerMonthRecordServiceImpl implements MerchantCabin
             return;
         }
         
+        // 对detailList进行排序 1.按placeId进行分组，组内元素按beginTime倒叙排序 2.每个组按第一条元素的beginTime倒叙
+        
         List<MerchantCabinetPowerMonthExcelVO> excelVOList = new ArrayList<>();
         
         // 按场地进行分组
