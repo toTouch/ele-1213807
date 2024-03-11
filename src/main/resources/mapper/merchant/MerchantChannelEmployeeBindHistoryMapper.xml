@@ -73,10 +73,10 @@
             <if test="bindStatus != null">
                 and bind_status = #{bindStatus}
             </if>
-            <if test="bindStatus != null">
+            <if test="bindTime != null">
                 and bind_time = #{bindTime}
             </if>
-            <if test="bindStatus != null">
+            <if test="unBindTime != null">
                 and un_bind_time = #{unBindTime}
             </if>
         </where>
