@@ -53,7 +53,9 @@ public interface EnterpriseInfoService {
     List<EnterpriseInfoVO> selectByPage(EnterpriseInfoQuery query);
 
     Integer selectByPageCount(EnterpriseInfoQuery query);
-
+    
+    Triple<Boolean, String, Object> updateMerchantEnterprise(EnterpriseInfoQuery enterpriseInfoQuery);
+    
     Triple<Boolean, String, Object> delete(Long id);
 
     Triple<Boolean, String, Object> modify(EnterpriseInfoQuery enterpriseInfoQuery);
@@ -109,7 +111,7 @@ public interface EnterpriseInfoService {
      */
     Integer updatePhoneByUid(Integer tenantId, Long uid, String newPhone);
     
-    Triple<Boolean, String, Object> saveNew(EnterpriseInfoQuery enterpriseInfoQuery);
+    Triple<Boolean, String, Object> saveMerchantEnterprise(EnterpriseInfoQuery enterpriseInfoQuery);
     
     List<EnterpriseInfo> queryListByIdList(List<Long> enterpriseIdList);
 }

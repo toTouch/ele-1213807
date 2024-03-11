@@ -314,15 +314,11 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
     }
     
     @Override
-    public Triple<Boolean, String, Object> saveNew(EnterpriseInfoQuery enterpriseInfoQuery) {
-        EnterpriseInfo enterpriseInfoOld = this.selectByUid(enterpriseInfoQuery.getUid());
-        if (Objects.nonNull(enterpriseInfoOld)) {
-            return Triple.of(false, "", "用户已存在");
-        }
-    
+    @Transactional
+    public Triple<Boolean, String, Object> saveMerchantEnterprise(EnterpriseInfoQuery enterpriseInfoQuery) {
         EnterpriseInfo enterpriseInfoExit = this.selectByName(enterpriseInfoQuery.getName());
         if (Objects.nonNull(enterpriseInfoExit)) {
-            return Triple.of(false, "", "企业已存在");
+            return Triple.of(false, "", "商户名称重复，请修改后操作");
         }
     
         EnterpriseInfo enterpriseInfo = new EnterpriseInfo();
@@ -591,6 +587,43 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
     
     @Override
     @Transactional(rollbackFor = Exception.class)
+    public Triple<Boolean, String, Object> updateMerchantEnterprise(EnterpriseInfoQuery enterpriseInfoQuery) {
+        EnterpriseInfo enterpriseInfo = this.queryByIdFromDB(enterpriseInfoQuery.getId());
+        if (Objects.isNull(enterpriseInfo)) {
+            return Triple.of(false, "120212", "商户不存在");
+        }
+        
+        EnterpriseInfo enterpriseInfoExit = this.selectByName(enterpriseInfoQuery.getName());
+        if (Objects.nonNull(enterpriseInfoExit) && !Objects.equals(enterpriseInfoExit.getId(), enterpriseInfo.getId())) {
+            return Triple.of(false, "120233", "商户名称重复，请修改后操作");
+        }
+        
+        enterprisePackageService.deleteByEnterpriseId(enterpriseInfo.getId());
+        if (!CollectionUtils.isEmpty(enterpriseInfoQuery.getPackageIds())) {
+            List<EnterprisePackage> packageList = enterpriseInfoQuery.getPackageIds().stream().map(item -> {
+                EnterprisePackage enterprisePackage = new EnterprisePackage();
+                enterprisePackage.setEnterpriseId(enterpriseInfo.getId());
+                enterprisePackage.setPackageId(item);
+                enterprisePackage.setPackageType(enterpriseInfoQuery.getPackageType());
+                enterprisePackage.setTenantId(enterpriseInfo.getTenantId());
+                enterprisePackage.setCreateTime(System.currentTimeMillis());
+                enterprisePackage.setUpdateTime(System.currentTimeMillis());
+                return enterprisePackage;
+            }).collect(Collectors.toList());
+            enterprisePackageService.batchInsert(packageList);
+        }
+        
+        EnterpriseInfo enterpriseInfoUpdate = new EnterpriseInfo();
+        BeanUtils.copyProperties(enterpriseInfoQuery, enterpriseInfoUpdate);
+        enterpriseInfoUpdate.setId(enterpriseInfo.getId());
+        enterpriseInfoUpdate.setUpdateTime(System.currentTimeMillis());
+        this.update(enterpriseInfoUpdate);
+        
+        return Triple.of(true, null, null);
+    }
+    
+    @Override
+    @Transactional(rollbackFor = Exception.class)
     public Triple<Boolean, String, Object> delete(Long id) {
         EnterpriseInfo enterpriseInfo = this.queryByIdFromCache(id);
         if (Objects.isNull(enterpriseInfo) || !Objects.equals(TenantContextHolder.getTenantId(), enterpriseInfo.getTenantId())) {
@@ -623,7 +656,7 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
     public Triple<Boolean, String, Object> deleteMerchantEnterprise(Long id) {
         EnterpriseInfo enterpriseInfo = this.queryByIdFromCache(id);
         if (Objects.isNull(enterpriseInfo) || !Objects.equals(TenantContextHolder.getTenantId(), enterpriseInfo.getTenantId())) {
-            return Triple.of(true, null, null);
+            return Triple.of(false, "120212", "商户不存在");
         }
         
         //校验企业用户云豆是否都已回收

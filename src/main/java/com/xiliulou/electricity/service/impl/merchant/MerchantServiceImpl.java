@@ -312,9 +312,10 @@ public class MerchantServiceImpl implements MerchantService {
             Set<Long> collect = merchantSaveRequest.getEnterprisePackageIdList().stream().collect(Collectors.toSet());
             enterpriseInfoQuery.setPackageIds(collect);
         }
-        Triple<Boolean, String, Object> enterpriseSaveRes = enterpriseInfoService.saveNew(enterpriseInfoQuery);
+        
+        Triple<Boolean, String, Object> enterpriseSaveRes = enterpriseInfoService.saveMerchantEnterprise(enterpriseInfoQuery);
         if (!enterpriseSaveRes.getLeft()) {
-            String msg = "保存企业信息出错";
+            String msg = "";
             
             if (ObjectUtils.isNotEmpty(enterpriseSaveRes.getRight())) {
                 msg = (String) enterpriseSaveRes.getRight();
@@ -380,6 +381,7 @@ public class MerchantServiceImpl implements MerchantService {
         merchantUserAmount.setCreateTime(timeMillis);
         merchantUserAmount.setUpdateTime(timeMillis);
         merchantUserAmount.setDelFlag(MerchantConstant.DEL_NORMAL);
+        
         merchantUserAmountService.save(merchantUserAmount);
         
         // 调用开户账号
@@ -578,9 +580,9 @@ public class MerchantServiceImpl implements MerchantService {
         }
         
         // 同步企业信息数据
-        Triple<Boolean, String, Object> enterpriseSaveRes = enterpriseInfoService.modify(enterpriseInfoQuery);
+        Triple<Boolean, String, Object> enterpriseSaveRes = enterpriseInfoService.updateMerchantEnterprise(enterpriseInfoQuery);
         if (!enterpriseSaveRes.getLeft()) {
-            String msg = "修改企业信息出错";
+            String msg = "";
             
             if (ObjectUtils.isNotEmpty(enterpriseSaveRes.getRight())) {
                 msg = (String) enterpriseSaveRes.getRight();
@@ -757,7 +759,7 @@ public class MerchantServiceImpl implements MerchantService {
         // 删除企业
         Triple<Boolean, String, Object> triple = enterpriseInfoService.deleteMerchantEnterprise(merchant.getEnterpriseId());
         if (!triple.getLeft()) {
-            String msg = "删除企业信息出错";
+            String msg = "";
             
             if (ObjectUtils.isNotEmpty(triple.getRight())) {
                 msg = (String) triple.getRight();
@@ -796,6 +798,7 @@ public class MerchantServiceImpl implements MerchantService {
             deleteMerchant.setDelFlag(MerchantConstant.DEL_DEL);
             merchantMapper.removeById(deleteMerchant);
         }
+        
         // 删除商户和场地的关联表
         merchantPlaceMapService.batchDeleteByMerchantId(id, null);
         
