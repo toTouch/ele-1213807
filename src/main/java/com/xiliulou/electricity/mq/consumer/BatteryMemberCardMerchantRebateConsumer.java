@@ -383,7 +383,7 @@ public class BatteryMemberCardMerchantRebateConsumer implements RocketMQListener
     @Transactional(rollbackFor = Exception.class)
     public void handleExcessRebateRecord(RebateRecord rebateRecord, BatteryMembercardRefundOrder batteryMembercardRefundOrder) {
         //获取差额记录
-        List<RebateRecord> excessList = rebateRecordService.queryByExcessOriginalOrderId(batteryMembercardRefundOrder.getMemberCardOrderNo());
+        List<RebateRecord> excessList = rebateRecordService.queryByOriginalOrderId(batteryMembercardRefundOrder.getMemberCardOrderNo());
         if (CollectionUtils.isEmpty(excessList)) {
             log.warn("REBATE REFUND CONSUMER WARN!excessList is empty,orderId={}", rebateRecord.getOrderId());
             return;
