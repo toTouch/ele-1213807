@@ -11,7 +11,7 @@
         <where>
             del_flag = 0
             <if test="cabinetIds != null and cabinetIds.size() > 0">
-                and sn in
+                and eid in
                 <foreach collection="cabinetIds" item="item" open="(" close=")" separator=",">
                     #{item}
                 </foreach>
