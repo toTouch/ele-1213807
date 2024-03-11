@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.service.merchant;
 
 import com.xiliulou.electricity.entity.merchant.MerchantChannelEmployeeBindHistory;
+import com.xiliulou.electricity.query.merchant.MerchantChannelEmployeeBindHistoryQueryModel;
 import com.xiliulou.electricity.query.merchant.MerchantPromotionFeeMerchantNumQueryModel;
 
 import java.util.List;
@@ -19,5 +20,5 @@ public interface MerchantChannelEmployeeBindHistoryService {
     
     Integer countMerchantNumByTime(MerchantPromotionFeeMerchantNumQueryModel todayQueryModel);
     
-    MerchantChannelEmployeeBindHistory queryByMerchantUid(Integer tenantId,Long merchantUid);
+    List<MerchantChannelEmployeeBindHistory> selectListByMerchantUid(MerchantChannelEmployeeBindHistoryQueryModel queryModel);
 }

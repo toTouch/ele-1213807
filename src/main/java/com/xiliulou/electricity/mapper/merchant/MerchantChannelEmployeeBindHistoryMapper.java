@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.mapper.merchant;
 
 import com.xiliulou.electricity.entity.merchant.MerchantChannelEmployeeBindHistory;
+import com.xiliulou.electricity.query.merchant.MerchantChannelEmployeeBindHistoryQueryModel;
 import com.xiliulou.electricity.query.merchant.MerchantPromotionFeeMerchantNumQueryModel;
 import org.apache.ibatis.annotations.Param;
 
@@ -22,6 +23,6 @@ public interface MerchantChannelEmployeeBindHistoryMapper {
     
     Integer countMerchantNumByTime(MerchantPromotionFeeMerchantNumQueryModel queryModel);
     
-    MerchantChannelEmployeeBindHistory selectByMerchantUid(@Param("tenantId")Integer tenantId, @Param("merchantUid")Long merchantUid);
+    List<MerchantChannelEmployeeBindHistory> selectByMerchantUid(MerchantChannelEmployeeBindHistoryQueryModel queryModel);
     
 }

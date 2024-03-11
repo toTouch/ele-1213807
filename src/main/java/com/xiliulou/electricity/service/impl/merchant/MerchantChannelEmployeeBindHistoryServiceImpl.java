@@ -3,6 +3,7 @@ package com.xiliulou.electricity.service.impl.merchant;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.entity.merchant.MerchantChannelEmployeeBindHistory;
 import com.xiliulou.electricity.mapper.merchant.MerchantChannelEmployeeBindHistoryMapper;
+import com.xiliulou.electricity.query.merchant.MerchantChannelEmployeeBindHistoryQueryModel;
 import com.xiliulou.electricity.query.merchant.MerchantPromotionFeeMerchantNumQueryModel;
 import com.xiliulou.electricity.service.merchant.MerchantChannelEmployeeBindHistoryService;
 import org.springframework.stereotype.Service;
@@ -45,7 +46,7 @@ public class MerchantChannelEmployeeBindHistoryServiceImpl implements MerchantCh
     }
     
     @Override
-    public MerchantChannelEmployeeBindHistory queryByMerchantUid(Integer tenantId, Long merchantUid) {
-        return merchantChannelEmployeeBindHistoryMapper.selectByMerchantUid(tenantId, merchantUid);
+    public List<MerchantChannelEmployeeBindHistory> selectListByMerchantUid(MerchantChannelEmployeeBindHistoryQueryModel queryModel) {
+        return merchantChannelEmployeeBindHistoryMapper.selectByMerchantUid(queryModel);
     }
 }

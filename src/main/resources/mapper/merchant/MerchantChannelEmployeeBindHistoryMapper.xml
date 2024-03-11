@@ -55,8 +55,25 @@
     
     <select id="selectByMerchantUid"  resultType="com.xiliulou.electricity.entity.merchant.MerchantChannelEmployeeBindHistory">
         select
-            id, merchant_uid, channel_employee_uid, bind_time, un_bind_time, tenant_id, create_time, update_time
+        id, merchant_uid, channel_employee_uid, bind_time, un_bind_time, tenant_id, create_time, update_time
         from t_merchant_channel_employee_bind_history
-        where merchant_uid = #{merchantUid} and tenant_id = #{tenantId} and bind_status = 0
+        <where>
+            <if test="tenantId != null">
+                and tenant_id = #{tenantId}
+            </if>
+            <if test="uid != null">
+                and channel_employee_uid = #{channelEmployeeUid}
+            </if>
+        
+            <if test="bindStatus != null">
+                and merchant_uid = #{bindStatus}
+            </if>
+            <if test="bindStatus != null">
+                and bind_time = #{bindTime}
+            </if>
+            <if test="bindStatus != null">
+                and un_bind_time = #{unBindTime}
+            </if>
+        </where>
     </select>
 </mapper>

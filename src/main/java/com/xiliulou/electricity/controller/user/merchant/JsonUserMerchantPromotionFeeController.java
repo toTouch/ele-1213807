@@ -103,7 +103,7 @@ public class JsonUserMerchantPromotionFeeController extends BaseController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         
-        return merchantPromotionFeeService.queryMerchantPromotionFeeIncome(type, uid);
+        return merchantPromotionFeeService.queryMerchantPromotionFeeIncome(type, uid, user.getType());
     }
     
     /**
@@ -122,7 +122,7 @@ public class JsonUserMerchantPromotionFeeController extends BaseController {
             log.error("ELECTRICITY  ERROR! not found user ");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-        return merchantPromotionFeeService.queryMerchantPromotionScanCode(type, uid);
+        return merchantPromotionFeeService.queryMerchantPromotionScanCode(type, uid,user.getType());
     }
     
     /**
@@ -141,7 +141,7 @@ public class JsonUserMerchantPromotionFeeController extends BaseController {
             log.error("ELECTRICITY  ERROR! not found user ");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-        return merchantPromotionFeeService.queryMerchantPromotionRenewal(type, uid);
+        return merchantPromotionFeeService.queryMerchantPromotionRenewal(type, uid, user.getType());
     }
     
     /**
@@ -164,7 +164,7 @@ public class JsonUserMerchantPromotionFeeController extends BaseController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         
-        return merchantPromotionFeeService.statisticMerchantIncome(type, uid, beginTime, endTime);
+        return merchantPromotionFeeService.statisticMerchantIncome(type, uid, beginTime, endTime, user.getType());
     }
     
     /**
@@ -187,7 +187,7 @@ public class JsonUserMerchantPromotionFeeController extends BaseController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         
-        return merchantPromotionFeeService.statisticUser(type, uid, beginTime, endTime);
+        return merchantPromotionFeeService.statisticUser(type, uid, beginTime, endTime,user.getType());
     }
     
     /**
@@ -222,8 +222,8 @@ public class JsonUserMerchantPromotionFeeController extends BaseController {
     @GetMapping("/merchant/promotion/merchant/detail")
     public R promotionMerchantDetail(@RequestParam("merchantUid") Long merchantUid) {
         
-        MerchantPromotionEmployeeDetailQueryModel queryModel = MerchantPromotionEmployeeDetailQueryModel.builder().uid(merchantUid)
-                .tenantId(TenantContextHolder.getTenantId()).build();
+        MerchantPromotionEmployeeDetailQueryModel queryModel = MerchantPromotionEmployeeDetailQueryModel.builder().uid(merchantUid).tenantId(TenantContextHolder.getTenantId())
+                .build();
         
         return merchantPromotionFeeService.selectPromotionMerchantDetail(queryModel);
     }
@@ -232,14 +232,14 @@ public class JsonUserMerchantPromotionFeeController extends BaseController {
     /**
      * 商户首页 商户下的推广详情概览
      *
-     * @param size        页面显示条数
-     * @param offset      偏移量
-     * @param uid uid
-     * @param type 类型
+     * @param size   页面显示条数
+     * @param offset 偏移量
+     * @param uid    uid
+     * @param type   类型
      * @return 推广详情概览
      */
     @GetMapping("/merchant/promotion/employee/details/page")
-    public R promotionEmployeeDetails(@RequestParam("size") long size, @RequestParam("offset") Long offset,@RequestParam("type") Integer type, @RequestParam("uid") Long uid) {
+    public R promotionEmployeeDetails(@RequestParam("size") long size, @RequestParam("offset") Long offset, @RequestParam("type") Integer type, @RequestParam("uid") Long uid) {
         if (size < 0 || size > 5) {
             size = 5L;
         }
@@ -258,12 +258,12 @@ public class JsonUserMerchantPromotionFeeController extends BaseController {
     /**
      * 推广详情
      *
-     * @param size      页面显示条数
-     * @param offset    偏移量
-     * @param uid       用户uid
-     * @param status    状态
+     * @param size           页面显示条数
+     * @param offset         偏移量
+     * @param uid            用户uid
+     * @param status         状态
      * @param queryStartTime 查询开始时间
-     * @param queryEndTime 查询结束时间
+     * @param queryEndTime   查询结束时间
      * @return 推广详情
      */
     @GetMapping("/merchant/promotion/employee/details/specifics")

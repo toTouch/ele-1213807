@@ -29,6 +29,7 @@ import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.merchant.MerchantMapper;
 import com.xiliulou.electricity.query.BatteryMemberCardQuery;
 import com.xiliulou.electricity.query.enterprise.EnterpriseInfoQuery;
+import com.xiliulou.electricity.query.merchant.MerchantChannelEmployeeBindHistoryQueryModel;
 import com.xiliulou.electricity.query.merchant.MerchantJoinRecordQueryMode;
 import com.xiliulou.electricity.query.merchant.MerchantPlaceCabinetBindQueryModel;
 import com.xiliulou.electricity.query.merchant.MerchantPlaceMapQueryModel;
@@ -72,6 +73,7 @@ import com.xiliulou.electricity.vo.merchant.MerchantUserVO;
 import com.xiliulou.electricity.vo.merchant.MerchantVO;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.tuple.Triple;
 import org.apache.poi.ss.formula.functions.T;
@@ -343,13 +345,13 @@ public class MerchantServiceImpl implements MerchantService {
         
         // 保存商户信息
         int i = merchantMapper.insert(merchant);
-    
+        
         // 如果有绑定渠道员 设置商户渠道员绑定时间 小程序商户首页需要使用该字段统计
         if (Objects.nonNull(merchantSaveRequest.getChannelEmployeeUid())) {
             MerchantChannelEmployeeBindHistory merchantChannelEmployeeBindHistory = MerchantChannelEmployeeBindHistory.builder().merchantUid(merchant.getUid())
                     .channelEmployeeUid(merchantSaveRequest.getChannelEmployeeUid()).bindTime(timeMillis).bindStatus(MerchantChannelEmployeeBindHistoryConstant.BIND)
                     .createTime(timeMillis).updateTime(timeMillis).tenantId(tenantId).build();
-        
+            
             merchantChannelEmployeeBindHistoryService.insertOne(merchantChannelEmployeeBindHistory);
         }
         
@@ -612,16 +614,22 @@ public class MerchantServiceImpl implements MerchantService {
         merchantMapper.update(merchantUpdate);
         
         // 如果有绑定渠道员并且要更新，则才需要更新商户渠道员绑定记录
-        MerchantChannelEmployeeBindHistory merchantChannelEmployeeBindHistory = merchantChannelEmployeeBindHistoryService.queryByMerchantUid(TenantContextHolder.getTenantId(),
-                merchantUpdate.getUid());
+        MerchantChannelEmployeeBindHistoryQueryModel bindHistoryQueryModel = MerchantChannelEmployeeBindHistoryQueryModel.builder().tenantId(TenantContextHolder.getTenantId())
+                .merchantUid(merchantUpdate.getUid()).bindStatus(MerchantChannelEmployeeBindHistoryConstant.BIND).build();
+        List<MerchantChannelEmployeeBindHistory> merchantChannelEmployeeBindHistoryList = merchantChannelEmployeeBindHistoryService.selectListByMerchantUid(bindHistoryQueryModel);
+        MerchantChannelEmployeeBindHistory merchantChannelEmployeeBindHistory = null;
+        if (CollectionUtils.isNotEmpty(merchantChannelEmployeeBindHistoryList)) {
+            merchantChannelEmployeeBindHistory = merchantChannelEmployeeBindHistoryList.get(0);
+        }
+        
         if (Objects.nonNull(merchantChannelEmployeeBindHistory) && !Objects.equals(merchantChannelEmployeeBindHistory.getChannelEmployeeUid(),
                 merchantSaveRequest.getChannelEmployeeUid())) {
-        
+            
             // 更新
             MerchantChannelEmployeeBindHistory updateBindHistory = MerchantChannelEmployeeBindHistory.builder().merchantUid(merchantUpdate.getUid()).unBindTime(timeMillis)
                     .bindStatus(MerchantChannelEmployeeBindHistoryConstant.UN_BIND).updateTime(timeMillis).tenantId(tenantId).build();
             merchantChannelEmployeeBindHistoryService.updateUnbindTimeByMerchantUid(updateBindHistory);
-        
+            
             // 如果有绑定渠道员 设置商户渠道员绑定时间 小程序商户首页需要使用该字段统计
             if (Objects.nonNull(merchantSaveRequest.getChannelEmployeeUid())) {
                 // 新增绑定记录
