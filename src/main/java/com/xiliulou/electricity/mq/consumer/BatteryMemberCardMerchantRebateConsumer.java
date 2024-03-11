@@ -257,7 +257,7 @@ public class BatteryMemberCardMerchantRebateConsumer implements RocketMQListener
         rebateRecord.setRefundFlag(refundType);
         rebateRecord.setPlaceId(userInfoExtra.getPlaceId());
         rebateRecord.setPlaceUid(userInfoExtra.getPlaceUid());
-        rebateRecord.setRebateTime(electricityMemberCardOrder.getCreateTime());
+        rebateRecord.setRebateTime(System.currentTimeMillis());
         rebateRecord.setTenantId(electricityMemberCardOrder.getTenantId());
         rebateRecord.setCreateTime(System.currentTimeMillis());
         rebateRecord.setUpdateTime(System.currentTimeMillis());
@@ -343,7 +343,7 @@ public class BatteryMemberCardMerchantRebateConsumer implements RocketMQListener
             rebateRecordInsert.setMerchantRebate(rebateRecord.getMerchantRebate());
             rebateRecordInsert.setPlaceId(rebateRecord.getPlaceId());
             rebateRecordInsert.setPlaceUid(rebateRecord.getPlaceUid());
-            rebateRecordInsert.setRebateTime(batteryMembercardRefundOrder.getCreateTime());
+            rebateRecordInsert.setRebateTime(System.currentTimeMillis());
             rebateRecordInsert.setTenantId(rebateRecord.getTenantId());
             rebateRecordInsert.setCreateTime(System.currentTimeMillis());
             rebateRecordInsert.setUpdateTime(System.currentTimeMillis());
@@ -424,7 +424,7 @@ public class BatteryMemberCardMerchantRebateConsumer implements RocketMQListener
                 rebateRecordInsert.setMerchantRebate(record.getMerchantRebate());
                 rebateRecordInsert.setPlaceId(record.getPlaceId());
                 rebateRecordInsert.setPlaceUid(record.getPlaceUid());
-                rebateRecordInsert.setRebateTime(record.getRebateTime());
+                rebateRecordInsert.setRebateTime(System.currentTimeMillis());
                 rebateRecordInsert.setTenantId(record.getTenantId());
                 rebateRecordInsert.setCreateTime(System.currentTimeMillis());
                 rebateRecordInsert.setUpdateTime(System.currentTimeMillis());
