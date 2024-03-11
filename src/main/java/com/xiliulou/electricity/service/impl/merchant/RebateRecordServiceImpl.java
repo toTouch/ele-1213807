@@ -115,8 +115,8 @@ public class RebateRecordServiceImpl implements RebateRecordService {
     
     @Slave
     @Override
-    public List<RebateRecord> queryByExcessOriginalOrderId(String originalOrderId) {
-        return this.rebateRecordMapper.selectByExcessOriginalOrderId(originalOrderId);
+    public List<RebateRecord> queryByOriginalOrderId(String originalOrderId) {
+        return this.rebateRecordMapper.selectByOriginalOrderId(originalOrderId);
     }
     
     @Slave
