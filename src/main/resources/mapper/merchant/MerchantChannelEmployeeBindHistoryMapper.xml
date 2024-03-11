@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.merchant.MerchantChannelEmployeeBindHistoryMapper">
+    
+    <insert id="insertOne">
+        insert into t_merchant_channel_employee_bind_history (merchant_uid, channel_employee_uid, bind_status, bind_time, un_bind_time, tenant_id, create_time, update_time)
+        values (#{merchantUid}, #{channelEmployeeUid}, #{bindStatus}, #{bindTime}, #{unBindTime}, #{tenantId}, #{createTime}, #{updateTime})
+    </insert>
+    
+    <update id="updateUnbindTimeByMerchantUid">
+        update t_merchant_channel_employee_bind_history
+        <set>
+            <if test="bindStatus != null">
+                bind_status = #{bindStatus},
+            </if>
+            <if test="unBindTime != null">
+                un_bind_time = #{unBindTime},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+        </set>
+        <where>
+            merchant_uid = #{merchantUid} and tenant_id = #{tenantId} and bind_status = 0
+        </where>
+    </update>
+    
+    <select id="selectListByChannelEmployeeUid" resultType="com.xiliulou.electricity.entity.merchant.MerchantChannelEmployeeBindHistory">
+        select
+            id, merchant_uid, channel_employee_uid, bind_status, bind_time, un_bind_time, tenant_id, create_time, update_time
+        from t_merchant_channel_employee_bind_history
+        where channel_employee_uid = #{channelEmployeeUid} and tenant_id = #{tenantId}
+    </select>
+    
+    <select id="countMerchantNumByTime" resultType="java.lang.Integer">
+        select IFNULL(count(1), 0) from t_merchant_channel_employee_bind_history
+        <where>
+            <if test="tenantId != null">
+                and tenant_id = #{tenantId}
+            </if>
+            <if test="startTime != null">
+                and bind_time &gt;= #{startTime}
+            </if>
+            <if test="endTime != null">
+                and bind_time &lt; #{endTime}
+            </if>
+            <if test="uid != null">
+                and channel_employee_uid = #{uid}
+            </if>
+            <if test="bindStatus != null">
+                and bind_status = #{bindStatus}
+            </if>
+        </where>
+    </select>
+    
+    <select id="selectByMerchantUid"  resultType="com.xiliulou.electricity.entity.merchant.MerchantChannelEmployeeBindHistory">
+        select
+        id, merchant_uid, channel_employee_uid, bind_status, bind_time, un_bind_time, tenant_id, create_time, update_time
+        from t_merchant_channel_employee_bind_history
+        <where>
+            <if test="tenantId != null">
+                and tenant_id = #{tenantId}
+            </if>
+            <if test="channelEmployeeUid != null">
+                and channel_employee_uid = #{channelEmployeeUid}
+            </if>
+            <if test="merchantUid != null">
+                and merchant_uid = #{merchantUid}
+            </if>
+            <if test="bindStatus != null">
+                and bind_status = #{bindStatus}
+            </if>
+            <if test="bindStatus != null">
+                and bind_time = #{bindTime}
+            </if>
+            <if test="bindStatus != null">
+                and un_bind_time = #{unBindTime}
+            </if>
+        </where>
+    </select>
+</mapper>

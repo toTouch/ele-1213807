@@ -15,15 +15,15 @@ public interface MerchantPromotionFeeService {
     
     R queryMerchantAvailableWithdrawAmount(Long uid);
     
-    R queryMerchantPromotionFeeIncome(Integer type, Long uid);
+    R queryMerchantPromotionFeeIncome(Integer type, Long uid, Integer userType);
     
-    R queryMerchantPromotionScanCode(Integer type, Long uid);
+    R queryMerchantPromotionScanCode(Integer type, Long uid,Integer userType);
     
-    R queryMerchantPromotionRenewal(Integer type, Long uid);
+    R queryMerchantPromotionRenewal(Integer type, Long uid, Integer userType);
     
-    R statisticMerchantIncome(Integer type, Long uid, Long beginTime, Long endTime);
+    R statisticMerchantIncome(Integer type, Long uid, Long beginTime, Long endTime,Integer userType);
     
-    R statisticUser(Integer type, Long uid, Long beginTime, Long endTime);
+    R statisticUser(Integer type, Long uid, Long beginTime, Long endTime, Integer userType);
     
     R statisticChannelEmployeeMerchant(Integer type, Long uid, Long beginTime, Long endTime);
     
