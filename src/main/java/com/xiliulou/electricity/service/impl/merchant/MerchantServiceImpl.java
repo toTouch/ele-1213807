@@ -1266,7 +1266,6 @@ public class MerchantServiceImpl implements MerchantService {
         vo.setType(MerchantConstant.MERCHANT_QR_CODE_TYPE);
         String code = merchantId + ":" + uid + ":" + MerchantConstant.MERCHANT_QR_CODE_TYPE;
         vo.setCode(QrCodeUtils.codeEnCoder(code));
-        //        vo.setTenantCode(tenant.getCode());
         return vo;
     }
     

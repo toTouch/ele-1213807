@@ -40,6 +40,7 @@ public class JsonMerchantChannelEmployeePromotionController extends BaseControll
         if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
+        
         if (size < 0 || size > 50) {
             size = 10;
         }
