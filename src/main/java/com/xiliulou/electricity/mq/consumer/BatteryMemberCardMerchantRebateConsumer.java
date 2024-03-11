@@ -171,7 +171,6 @@ public class BatteryMemberCardMerchantRebateConsumer implements RocketMQListener
             log.warn("REBATE CONSUMER WARN!not found merchant,uid={}", batteryMemberCardMerchantRebate.getUid());
             return;
         }
-        log.error("===================================merchant={}", JsonUtil.toJson(merchant));
         
         //渠道员
         User channel = userService.queryByUidFromCache(merchant.getChannelEmployeeUid());
@@ -188,7 +187,6 @@ public class BatteryMemberCardMerchantRebateConsumer implements RocketMQListener
             log.warn("REBATE CONSUMER WARN!not found merchantLevel,uid={},merchantId={}", batteryMemberCardMerchantRebate.getUid(), userInfoExtra.getMerchantId());
             return;
         }
-        log.error("===================================merchantLevel={}", JsonUtil.toJson(merchantLevel));
         
         //获取返利配置
         RebateConfig rebateConfig = rebateConfigService.queryByMidAndMerchantLevel(electricityMemberCardOrder.getMemberCardId(), merchantLevel.getLevel());
@@ -196,7 +194,6 @@ public class BatteryMemberCardMerchantRebateConsumer implements RocketMQListener
             log.warn("REBATE CONSUMER WARN!not found rebateConfig,uid={},mid={}", batteryMemberCardMerchantRebate.getUid(), electricityMemberCardOrder.getMemberCardId());
             return;
         }
-        log.error("===================================rebateConfig={}", JsonUtil.toJson(rebateConfig));
         
         if (Objects.equals(rebateConfig.getStatus(), MerchantConstant.REBATE_DISABLE)) {
             log.warn("REBATE CONSUMER WARN!rebateConfig is disable,uid={},mid={}", batteryMemberCardMerchantRebate.getUid(), electricityMemberCardOrder.getMemberCardId());
@@ -329,7 +326,7 @@ public class BatteryMemberCardMerchantRebateConsumer implements RocketMQListener
             rebateRecordInsert.setName(rebateRecord.getName());
             rebateRecordInsert.setPhone(rebateRecord.getPhone());
             rebateRecordInsert.setOrderId(OrderIdUtil.generateBusinessOrderId(BusinessType.BATTERY_REBATE, rebateRecord.getUid()));
-            rebateRecordInsert.setOriginalOrderId(batteryMembercardRefundOrder.getRefundOrderNo());
+            rebateRecordInsert.setOriginalOrderId(batteryMembercardRefundOrder.getMemberCardOrderNo());
             rebateRecordInsert.setMemberCardId(rebateRecord.getMemberCardId());
             rebateRecordInsert.setMemberCardName(rebateRecord.getMemberCardName());
             rebateRecordInsert.setType(rebateRecord.getType());
@@ -410,7 +407,7 @@ public class BatteryMemberCardMerchantRebateConsumer implements RocketMQListener
                 rebateRecordInsert.setName(record.getName());
                 rebateRecordInsert.setPhone(record.getPhone());
                 rebateRecordInsert.setOrderId(OrderIdUtil.generateBusinessOrderId(BusinessType.BATTERY_REBATE, record.getUid()));
-                rebateRecordInsert.setOriginalOrderId(batteryMembercardRefundOrder.getRefundOrderNo());
+                rebateRecordInsert.setOriginalOrderId(batteryMembercardRefundOrder.getMemberCardOrderNo());
                 rebateRecordInsert.setMemberCardId(record.getMemberCardId());
                 rebateRecordInsert.setMemberCardName(record.getMemberCardName());
                 rebateRecordInsert.setType(record.getType());
