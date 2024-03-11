@@ -51,7 +51,7 @@ public interface MerchantJoinRecordMapper extends BaseMapper<MerchantJoinRecord>
     
     List<MerchantJoinUserVO> selectJoinUserList(MerchantJoinUserQueryMode merchantJoinUserQueryMode);
     
-    Integer existInviterData(@Param("inviterType") Integer inviterType, @Param("inviterUid") Long inviterUid, @Param("tenantId") Integer tenantId);
+    Integer existMerchantInviterData(@Param("inviterType") Integer inviterType, @Param("inviterUid") Long inviterUid, @Param("tenantId") Integer tenantId);
     
     Integer countEmployeeScanCodeNum(@Param("uidList") List<Long> employeeIdList, @Param("startTime") Long startTime, @Param("endTime") Long endTime,
             @Param("status") Integer status, @Param("tenantId") Integer tenantId);
@@ -63,4 +63,6 @@ public interface MerchantJoinRecordMapper extends BaseMapper<MerchantJoinRecord>
     Integer updateStatusById(@Param("id") Long id, @Param("status") Integer status, @Param("updateTime") long updateTime);
     
     String selectMerchantNameByJoinUid(@Param("joinUid")Long joinUid, @Param("status")Integer status);
+    
+    Integer existMerchantAllInviterData(@Param("merchantId")Long merchantId, @Param("tenantId")Integer tenantId);
 }

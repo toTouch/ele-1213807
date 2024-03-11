@@ -132,7 +132,7 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
         
         List<MerchantPromotionFeeEmployeeVO> promotionFeeEmployeeVOList = new ArrayList<>();
         
-        if (merchantJoinRecordService.existInviterData(MerchantJoinRecordConstant.INVITER_TYPE_MERCHANT_SELF, merchant.getUid(), TenantContextHolder.getTenantId())) {
+        if (merchantJoinRecordService.existMerchantInviterData(MerchantJoinRecordConstant.INVITER_TYPE_MERCHANT_SELF, merchant.getUid(), TenantContextHolder.getTenantId())) {
             MerchantPromotionFeeEmployeeVO merchantVO = new MerchantPromotionFeeEmployeeVO();
             merchantVO.setType(PromotionFeeQueryTypeEnum.MERCHANT.getCode());
             merchantVO.setUserName(merchant.getName());
@@ -176,9 +176,9 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
         // 需要显示有邀请数据的商户
         List<MerchantPromotionFeeMerchantVO> merchantVOList = merchantChannelEmployeeBindHistories.parallelStream().map(bindHistory -> {
             Long merchantUid = bindHistory.getMerchantUid();
-            if (merchantJoinRecordService.existInviterData(MerchantJoinRecordConstant.INVITER_TYPE_MERCHANT_SELF, merchantUid, TenantContextHolder.getTenantId())) {
+            Merchant merchant = merchantService.queryByUid(merchantUid);
+            if (Objects.nonNull(merchant) && merchantJoinRecordService.existMerchantAllInviterData(merchant.getId(), TenantContextHolder.getTenantId())) {
                 MerchantPromotionFeeMerchantVO vo = new MerchantPromotionFeeMerchantVO();
-                Merchant merchant = merchantService.queryByUid(merchantUid);
                 vo.setUserName(merchant.getName());
                 vo.setUid(merchant.getUid());
                 vo.setType(PromotionFeeQueryTypeEnum.MERCHANT.getCode());
@@ -432,7 +432,7 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
             return R.fail("120007", "未找到商户");
         }
         
-        if (!merchantJoinRecordService.existInviterData(MerchantJoinRecordConstant.INVITER_TYPE_MERCHANT_SELF, merchant.getUid(), TenantContextHolder.getTenantId())) {
+        if (!merchantJoinRecordService.existMerchantInviterData(MerchantJoinRecordConstant.INVITER_TYPE_MERCHANT_SELF, merchant.getUid(), TenantContextHolder.getTenantId())) {
             return R.ok();
         }
         
@@ -884,7 +884,8 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
             merchantPromotionFeeScanCodeVO.setLastMonthPurchaseNum(
                     buildScanCodeCount(type, uid, dayOfMonthStartTime, dayOfMonthEndTime, MerchantJoinRecordConstant.STATUS_SUCCESS, lastMonthList));
             //累计成功人数：首次成功购买指定套餐时间<=当前时间，邀请状态=邀请成功
-            merchantPromotionFeeScanCodeVO.setTotalPurchaseNum(buildScanCodeCount(type, uid, null, System.currentTimeMillis(), MerchantJoinRecordConstant.STATUS_SUCCESS,totalList));
+            merchantPromotionFeeScanCodeVO.setTotalPurchaseNum(
+                    buildScanCodeCount(type, uid, null, System.currentTimeMillis(), MerchantJoinRecordConstant.STATUS_SUCCESS, totalList));
             
         } else {
             //今日扫码人数：扫码绑定时间=今日0点～当前时间；

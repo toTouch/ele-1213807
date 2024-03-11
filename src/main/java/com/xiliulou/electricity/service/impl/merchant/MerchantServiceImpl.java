@@ -628,7 +628,7 @@ public class MerchantServiceImpl implements MerchantService {
                 merchantSaveRequest.getChannelEmployeeUid())) {
             
             // 更新
-            MerchantChannelEmployeeBindHistory updateBindHistory = MerchantChannelEmployeeBindHistory.builder().merchantUid(merchantUpdate.getUid()).unBindTime(timeMillis)
+            MerchantChannelEmployeeBindHistory updateBindHistory = MerchantChannelEmployeeBindHistory.builder().merchantUid(merchantUpdate.getUid()).channelEmployeeUid(merchantSaveRequest.getChannelEmployeeUid()).unBindTime(timeMillis)
                     .bindStatus(MerchantChannelEmployeeBindHistoryConstant.UN_BIND).updateTime(timeMillis).tenantId(tenantId).build();
             merchantChannelEmployeeBindHistoryService.updateUnbindTimeByMerchantUid(updateBindHistory);
             
@@ -845,6 +845,16 @@ public class MerchantServiceImpl implements MerchantService {
         
         // 检测商户和员工是否有绑定关系
         List<MerchantEmployee> merchantEmployeeList = merchantEmployeeService.queryListByMerchantUid(merchant.getUid(), tenantId);
+        
+        // 解绑商户渠道员绑定记录表
+        MerchantChannelEmployeeBindHistory updateHistory = new MerchantChannelEmployeeBindHistory();
+        updateHistory.setMerchantUid(merchant.getUid());
+        updateHistory.setUnBindTime(System.currentTimeMillis());
+        updateHistory.setTenantId(TenantContextHolder.getTenantId());
+        updateHistory.setUpdateTime(System.currentTimeMillis());
+        updateHistory.setBindStatus(MerchantChannelEmployeeBindHistoryConstant.UN_BIND);
+        updateHistory.setChannelEmployeeUid(0L);
+        merchantChannelEmployeeBindHistoryService.updateUnbindTimeByMerchantUid(updateHistory);
         
         if (ObjectUtils.isNotEmpty(merchantEmployeeList)) {
             // 批量删除员工

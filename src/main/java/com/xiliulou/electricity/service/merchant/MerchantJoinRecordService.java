@@ -75,14 +75,23 @@ public interface MerchantJoinRecordService {
     List<MerchantJoinUserVO> selectJoinUserList(MerchantJoinUserQueryMode merchantJoinUserQueryMode);
     
     /**
-     * 是否存在邀请数据
+     * 是否存在邀请数据（仅商户）
      *
      * @param inviterType 邀请人类型
      * @param inviterUid  邀请人uid
      * @param tenantId    租户id
      * @return 是否存在邀请数据
      */
-    boolean existInviterData(Integer inviterType, Long inviterUid, Integer tenantId);
+    boolean existMerchantInviterData(Integer inviterType, Long inviterUid, Integer tenantId);
+    
+    /**
+     * 是否存在邀请数据
+     *
+     * @param merchantId  商户id
+     * @param tenantId    租户id
+     * @return 是否存在邀请数据
+     */
+    boolean existMerchantAllInviterData(Long merchantId, Integer tenantId);
     
     Integer countEmployeeScanCodeNum(List<Long> uidList, Long startTime, Long endTime, Integer status, Integer tenantId);
     
