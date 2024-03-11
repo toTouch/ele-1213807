@@ -4,20 +4,57 @@ import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.config.WechatConfig;
 import com.xiliulou.electricity.constant.CacheConstant;
+import com.xiliulou.electricity.constant.CarRenalCacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.dto.FreeDepositUserDTO;
-import com.xiliulou.electricity.entity.*;
+import com.xiliulou.electricity.entity.ElectricityBattery;
+import com.xiliulou.electricity.entity.ElectricityCar;
+import com.xiliulou.electricity.entity.ElectricityConfig;
+import com.xiliulou.electricity.entity.ElectricityTradeOrder;
+import com.xiliulou.electricity.entity.FreeDepositData;
+import com.xiliulou.electricity.entity.FreeDepositOrder;
+import com.xiliulou.electricity.entity.InsuranceOrder;
+import com.xiliulou.electricity.entity.InsuranceUserInfo;
+import com.xiliulou.electricity.entity.PxzConfig;
+import com.xiliulou.electricity.entity.RefundOrder;
+import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.car.CarRentalPackageDepositPayPo;
 import com.xiliulou.electricity.entity.car.CarRentalPackageDepositRefundPo;
 import com.xiliulou.electricity.entity.car.CarRentalPackageMemberTermPo;
 import com.xiliulou.electricity.entity.car.CarRentalPackagePo;
-import com.xiliulou.electricity.enums.*;
+import com.xiliulou.electricity.enums.BusinessType;
+import com.xiliulou.electricity.enums.DelFlagEnum;
+import com.xiliulou.electricity.enums.DepositTypeEnum;
+import com.xiliulou.electricity.enums.MemberTermStatusEnum;
+import com.xiliulou.electricity.enums.PackageTypeEnum;
+import com.xiliulou.electricity.enums.PayStateEnum;
+import com.xiliulou.electricity.enums.PayTypeEnum;
+import com.xiliulou.electricity.enums.RefundStateEnum;
+import com.xiliulou.electricity.enums.RentalPackageTypeEnum;
+import com.xiliulou.electricity.enums.SystemDefinitionEnum;
+import com.xiliulou.electricity.enums.UpDownEnum;
+import com.xiliulou.electricity.enums.YesNoEnum;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.model.car.opt.CarRentalPackageDepositRefundOptModel;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageDepositRefundQryModel;
 import com.xiliulou.electricity.reqparam.opt.deposit.FreeDepositOptReq;
-import com.xiliulou.electricity.service.*;
-import com.xiliulou.electricity.service.car.*;
+import com.xiliulou.electricity.service.ElectricityBatteryService;
+import com.xiliulou.electricity.service.ElectricityCarService;
+import com.xiliulou.electricity.service.ElectricityConfigService;
+import com.xiliulou.electricity.service.ElectricityTradeOrderService;
+import com.xiliulou.electricity.service.FreeDepositDataService;
+import com.xiliulou.electricity.service.FreeDepositOrderService;
+import com.xiliulou.electricity.service.InsuranceOrderService;
+import com.xiliulou.electricity.service.InsuranceUserInfoService;
+import com.xiliulou.electricity.service.PxzConfigService;
+import com.xiliulou.electricity.service.UserBatteryDepositService;
+import com.xiliulou.electricity.service.UserBatteryTypeService;
+import com.xiliulou.electricity.service.UserInfoService;
+import com.xiliulou.electricity.service.car.CarRentalPackageDepositPayService;
+import com.xiliulou.electricity.service.car.CarRentalPackageDepositRefundService;
+import com.xiliulou.electricity.service.car.CarRentalPackageMemberTermService;
+import com.xiliulou.electricity.service.car.CarRentalPackageOrderService;
+import com.xiliulou.electricity.service.car.CarRentalPackageService;
 import com.xiliulou.electricity.service.car.biz.CarRenalPackageDepositBizService;
 import com.xiliulou.electricity.service.car.biz.CarRenalPackageSlippageBizService;
 import com.xiliulou.electricity.service.user.biz.UserBizService;
@@ -620,13 +657,14 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
         if (!ObjectUtils.allNotNull(tenantId, uid, freeDepositOptReq, freeDepositOptReq.getRentalPackageId(), freeDepositOptReq.getPhoneNumber(), freeDepositOptReq.getRealName(), freeDepositOptReq.getIdCard())) {
             throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
-
-        //检测租户
-/*        ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(tenantId);
-        if (!(Objects.equals(electricityConfig.getFreeDepositType(), ElectricityConfig.FREE_DEPOSIT_TYPE_CAR) || Objects.equals(electricityConfig.getFreeDepositType(), ElectricityConfig.FREE_DEPOSIT_TYPE_ALL))) {
-            log.error("CarRenalPackageDepositBizService.createFreeDeposit failed. The deposit exemption function is not enabled. tenantId is {}", tenantId);
-            throw new BizException("100418", "押金免押功能未开启,请联系客服处理");
-        }*/
+        
+        // 获取加锁 KEY
+        String buyLockKey = String.format(CarRenalCacheConstant.CAR_RENAL_PACKAGE_CREATE_FREE_ORDER_UID_KEY, uid);
+        
+        // 加锁
+        if (!redisService.setNx(buyLockKey, uid.toString(), 3 * 1000L, false)) {
+            throw new BizException("ELECTRICITY.0034", "操作频繁");
+        }
 
         FreeDepositData freeDepositData = freeDepositDataService.selectByTenantId(tenantId);
         if (ObjectUtils.isEmpty(freeDepositData)) {
@@ -737,12 +775,12 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
         log.info("CarRenalPackageDepositBizService createFreeDeposit, pxzDepositService.freeDepositOrder result is {}", JsonUtil.toJson(callPxzRsp));
 
         if (ObjectUtils.isEmpty(callPxzRsp)) {
-            log.error("CarRenalPackageDepositBizService createFreeDeposit, pxzDepositService.freeDepositOrder", uid, freeDepositOrder.getOrderId());
+            log.error("CarRenalPackageDepositBizService createFreeDeposit failed, pxzDepositService.freeDepositOrder result is null. uid is {}, orderId is {}", uid, freeDepositOrder.getOrderId());
             throw new BizException("100401", "免押生成失败");
         }
 
         if (!callPxzRsp.isSuccess()) {
-            log.error("CarRenalPackageDepositBizService createFreeDeposit, pxzDepositService.freeDepositOrder", uid, freeDepositOrder.getOrderId());
+            log.error("CarRenalPackageDepositBizService createFreeDeposit, pxzDepositService.freeDepositOrder result is not success. uid is {}, orderId is {}", uid, freeDepositOrder.getOrderId());
             throw new BizException("100401", callPxzRsp.getRespDesc());
         }
 
