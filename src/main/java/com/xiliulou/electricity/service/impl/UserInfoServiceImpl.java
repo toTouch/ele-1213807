@@ -1141,7 +1141,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                 rentBatteryOrder.setUid(oldUserInfo.getUid());
                 rentBatteryOrder.setName(oldUserInfo.getName());
                 rentBatteryOrder.setPhone(oldUserInfo.getPhone());
-                rentBatteryOrder.setElectricityBatterySn(oldElectricityBattery.getSn());
+                rentBatteryOrder.setElectricityBatterySn(isBindElectricityBattery.getSn());
                 rentBatteryOrder.setBatteryDeposit(Objects.isNull(userBatteryDeposit) ? BigDecimal.ZERO : userBatteryDeposit.getBatteryDeposit());
                 rentBatteryOrder.setOrderId(OrderIdUtil.generateBusinessOrderId(BusinessType.RETURN_BATTERY, user.getUid()));
                 rentBatteryOrder.setStatus(RentBatteryOrder.RETURN_BATTERY_CHECK_SUCCESS);
