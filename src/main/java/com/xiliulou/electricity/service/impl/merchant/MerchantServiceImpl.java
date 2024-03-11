@@ -613,7 +613,7 @@ public class MerchantServiceImpl implements MerchantService {
         
         // 如果有绑定渠道员并且要更新，则才需要更新商户渠道员绑定记录
         MerchantChannelEmployeeBindHistoryQueryModel bindHistoryQueryModel = MerchantChannelEmployeeBindHistoryQueryModel.builder().tenantId(TenantContextHolder.getTenantId())
-                .merchantUid(merchantUpdate.getUid()).bindStatus(MerchantChannelEmployeeBindHistoryConstant.BIND).build();
+                .merchantUid(merchant.getUid()).bindStatus(MerchantChannelEmployeeBindHistoryConstant.BIND).build();
         List<MerchantChannelEmployeeBindHistory> merchantChannelEmployeeBindHistoryList = merchantChannelEmployeeBindHistoryService.selectListByMerchantUid(bindHistoryQueryModel);
         MerchantChannelEmployeeBindHistory merchantChannelEmployeeBindHistory = null;
         if (CollectionUtils.isNotEmpty(merchantChannelEmployeeBindHistoryList)) {
@@ -624,7 +624,7 @@ public class MerchantServiceImpl implements MerchantService {
                 merchantSaveRequest.getChannelEmployeeUid())) {
             
             // 更新
-            MerchantChannelEmployeeBindHistory updateBindHistory = MerchantChannelEmployeeBindHistory.builder().merchantUid(merchantUpdate.getUid())
+            MerchantChannelEmployeeBindHistory updateBindHistory = MerchantChannelEmployeeBindHistory.builder().merchantUid(merchant.getUid())
                     .channelEmployeeUid(merchantSaveRequest.getChannelEmployeeUid()).unBindTime(timeMillis).bindStatus(MerchantChannelEmployeeBindHistoryConstant.UN_BIND)
                     .updateTime(timeMillis).tenantId(tenantId).build();
             merchantChannelEmployeeBindHistoryService.updateUnbindTimeByMerchantUid(updateBindHistory);
