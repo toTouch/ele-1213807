@@ -26,10 +26,8 @@ import com.xiliulou.electricity.mapper.merchant.MerchantPlaceFeeDailyRecordMappe
 import com.xiliulou.electricity.request.merchant.MerchantPlaceFeeRequest;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
 import com.xiliulou.electricity.service.merchant.MerchantCabinetBindHistoryService;
-import com.xiliulou.electricity.service.merchant.MerchantCabinetBindTimeService;
 import com.xiliulou.electricity.service.merchant.MerchantPlaceBindService;
 import com.xiliulou.electricity.service.merchant.MerchantPlaceCabinetBindService;
-import com.xiliulou.electricity.service.merchant.MerchantPlaceFeeMonthDetailService;
 import com.xiliulou.electricity.service.merchant.MerchantPlaceFeeMonthRecordService;
 import com.xiliulou.electricity.service.merchant.MerchantPlaceFeeMonthService;
 import com.xiliulou.electricity.service.merchant.MerchantPlaceFeeService;
@@ -107,12 +105,6 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
     
     @Resource
     private MerchantPlaceCabinetBindService merchantPlaceCabinetBindService;
-    
-    @Resource
-    private MerchantPlaceFeeMonthDetailService merchantPlaceFeeMonthDetailService;
-    
-    @Resource
-    private MerchantCabinetBindTimeService merchantCabinetBindTimeService;
     
     
     /**
