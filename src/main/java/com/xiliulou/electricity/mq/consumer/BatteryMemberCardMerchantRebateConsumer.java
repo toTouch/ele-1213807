@@ -126,7 +126,6 @@ public class BatteryMemberCardMerchantRebateConsumer implements RocketMQListener
                 merchantUpgrade.setOrderId(batteryMemberCardMerchantRebate.getOrderId());
                 merchantUpgrade.setMerchantId(batteryMemberCardMerchantRebate.getMerchantId());
                 rocketMqService.sendAsyncMsg(MqProducerConstant.MERCHANT_UPGRADE_TOPIC, JsonUtil.toJson(merchantUpgrade));
-                log.error("===========================================");
             } else {
                 //退租
                 handleMemberCardRentRefund(batteryMemberCardMerchantRebate);
@@ -384,7 +383,7 @@ public class BatteryMemberCardMerchantRebateConsumer implements RocketMQListener
     @Transactional(rollbackFor = Exception.class)
     public void handleExcessRebateRecord(RebateRecord rebateRecord, BatteryMembercardRefundOrder batteryMembercardRefundOrder) {
         //获取差额记录
-        List<RebateRecord> excessList = rebateRecordService.queryByOriginalOrderId(batteryMembercardRefundOrder.getMemberCardOrderNo());
+        List<RebateRecord> excessList = rebateRecordService.queryByExcessOriginalOrderId(batteryMembercardRefundOrder.getMemberCardOrderNo());
         if (CollectionUtils.isEmpty(excessList)) {
             log.warn("REBATE REFUND CONSUMER WARN!excessList is empty,orderId={}", rebateRecord.getOrderId());
             return;

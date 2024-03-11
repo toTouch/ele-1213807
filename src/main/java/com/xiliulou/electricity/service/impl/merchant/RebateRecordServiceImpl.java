@@ -24,13 +24,11 @@ import com.xiliulou.electricity.service.merchant.MerchantService;
 import com.xiliulou.electricity.service.merchant.MerchantUserAmountService;
 import com.xiliulou.electricity.service.merchant.RebateRecordService;
 import com.xiliulou.electricity.utils.DateUtils;
-import com.xiliulou.electricity.vo.faq.FaqCategoryVo;
 import com.xiliulou.electricity.vo.merchant.MerchantPromotionEmployeeDetailSpecificsVO;
 import com.xiliulou.electricity.vo.merchant.RebateRecordVO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
-import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
@@ -117,8 +115,8 @@ public class RebateRecordServiceImpl implements RebateRecordService {
     
     @Slave
     @Override
-    public List<RebateRecord> queryByOriginalOrderId(String originalOrderId) {
-        return this.rebateRecordMapper.selectByOriginalOrderId(originalOrderId);
+    public List<RebateRecord> queryByExcessOriginalOrderId(String originalOrderId) {
+        return this.rebateRecordMapper.selectByExcessOriginalOrderId(originalOrderId);
     }
     
     @Slave

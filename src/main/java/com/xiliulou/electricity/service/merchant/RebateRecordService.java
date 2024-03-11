@@ -23,7 +23,12 @@ public interface RebateRecordService {
     
     RebateRecord queryByOrderId(String orderId);
     
-    List<RebateRecord> queryByOriginalOrderId(String originalOrderId);
+    /**
+     * 根据原始订单获取差额记录
+     * @param originalOrderId
+     * @return
+     */
+    List<RebateRecord> queryByExcessOriginalOrderId(String originalOrderId);
     RebateRecord queryLatestByOriginalOrderId(String originalOrderId);
     
     RebateRecord insert(RebateRecord rebateRecord);
