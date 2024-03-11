@@ -4,12 +4,14 @@ import com.google.api.client.util.Lists;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.utils.PhoneUtils;
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.constant.merchant.MerchantChannelEmployeeBindHistoryConstant;
 import com.xiliulou.electricity.constant.merchant.MerchantConstant;
 import com.xiliulou.electricity.constant.merchant.MerchantJoinRecordConstant;
 import com.xiliulou.electricity.constant.merchant.MerchantWithdrawConstant;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.merchant.Merchant;
+import com.xiliulou.electricity.entity.merchant.MerchantChannelEmployeeBindHistory;
 import com.xiliulou.electricity.entity.merchant.MerchantEmployee;
 import com.xiliulou.electricity.entity.merchant.MerchantJoinRecord;
 import com.xiliulou.electricity.entity.merchant.MerchantPlace;
@@ -26,6 +28,7 @@ import com.xiliulou.electricity.query.merchant.MerchantPromotionScanCodeQueryMod
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.service.merchant.ChannelEmployeeService;
+import com.xiliulou.electricity.service.merchant.MerchantChannelEmployeeBindHistoryService;
 import com.xiliulou.electricity.service.merchant.MerchantEmployeeService;
 import com.xiliulou.electricity.service.merchant.MerchantJoinRecordService;
 import com.xiliulou.electricity.service.merchant.MerchantPlaceService;
@@ -105,6 +108,9 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
     @Resource
     private ChannelEmployeeService channelEmployeeService;
     
+    @Resource
+    private MerchantChannelEmployeeBindHistoryService merchantChannelEmployeeBindHistoryService;
+    
     @Override
     public R queryMerchantEmployees(Long merchantUid) {
         //校验用户是否是商户
@@ -153,19 +159,27 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
             log.error("find merchant user error, not found merchant user, uid = {}", channelEmployeeVO);
             return R.fail("120007", "未找到渠道员");
         }
-        
-        List<Merchant> merchants = merchantService.queryByChannelEmployeeUid(channelEmployeeVO.getUid());
-        
-        if (CollectionUtils.isEmpty(merchants)) {
+    
+        // 获取渠道员绑定的商户id
+        List<MerchantChannelEmployeeBindHistory> merchantChannelEmployeeBindHistories = merchantChannelEmployeeBindHistoryService.selectListByChannelEmployeeUid(
+                TenantContextHolder.getTenantId(), channelEmployeeVO.getUid());
+    
+        if (CollectionUtils.isEmpty(merchantChannelEmployeeBindHistories)) {
             return R.ok();
         }
         
-        List<MerchantPromotionFeeMerchantVO> merchantVOList = merchants.parallelStream().map(merchant -> {
-            MerchantPromotionFeeMerchantVO vo = new MerchantPromotionFeeMerchantVO();
-            vo.setUserName(merchant.getName());
-            vo.setUid(merchant.getUid());
-            vo.setType(PromotionFeeQueryTypeEnum.MERCHANT.getCode());
-            return vo;
+        // 需要显示有邀请数据的商户
+        List<MerchantPromotionFeeMerchantVO> merchantVOList = merchantChannelEmployeeBindHistories.parallelStream().map(bindHistory -> {
+            Long merchantUid = bindHistory.getMerchantUid();
+            if (merchantJoinRecordService.existInviterData(MerchantJoinRecordConstant.INVITER_TYPE_MERCHANT_SELF, merchantUid, TenantContextHolder.getTenantId())) {
+                MerchantPromotionFeeMerchantVO vo = new MerchantPromotionFeeMerchantVO();
+                Merchant merchant = merchantService.queryByUid(merchantUid);
+                vo.setUserName(merchant.getName());
+                vo.setUid(merchant.getUid());
+                vo.setType(PromotionFeeQueryTypeEnum.MERCHANT.getCode());
+                return vo;
+            }
+            return null;
         }).collect(Collectors.toList());
         
         return R.ok(merchantVOList);
@@ -536,9 +550,9 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
     
     private Integer buildMerchantNumCount(Long uid, Long startTime, Long endTime) {
         MerchantPromotionFeeMerchantNumQueryModel todayQueryModel = MerchantPromotionFeeMerchantNumQueryModel.builder().uid(uid).tenantId(TenantContextHolder.getTenantId())
-                .startTime(startTime).endTime(endTime).build();
+                .startTime(startTime).endTime(endTime).bindStatus(MerchantChannelEmployeeBindHistoryConstant.BIND).build();
         //今日新增商户数：渠道与商户绑定时间在今日0点～当前时间内
-        return merchantService.countMerchantNumByTime(todayQueryModel);
+        return merchantChannelEmployeeBindHistoryService.countMerchantNumByTime(todayQueryModel);
     }
     
     private BigDecimal buildPromotionFeeTotalIncomeVO(Integer type, Long uid, Long endTime) {

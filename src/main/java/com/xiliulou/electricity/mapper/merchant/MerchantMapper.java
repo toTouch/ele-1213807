@@ -37,7 +37,5 @@ public interface MerchantMapper {
     
     Integer existsByName(@Param("name") String name, @Param("tenantId") Integer tenantId, @Param("id") Long id);
     
-    Integer countMerchantNumByTime(MerchantPromotionFeeMerchantNumQueryModel queryModel);
-    
     Integer batchUpdateExistPlaceFee(@Param("merchantIdList") List<Long> merchantIdList,@Param("existsPlaceFee") Integer existsPlaceFee,@Param("updateTime") Long updateTime);
 }

@@ -24,4 +24,6 @@ public class MerchantPromotionFeeMerchantNumQueryModel {
     private Long startTime;
     
     private Long endTime;
+    
+    private Integer bindStatus;
 }

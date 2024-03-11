@@ -50,8 +50,6 @@ public interface MerchantService {
     
     MerchantUserVO queryMerchantUserDetail();
     
-    Integer countMerchantNumByTime(MerchantPromotionFeeMerchantNumQueryModel todayQueryModel);
-    
     MerchantQrCodeVO getMerchantQrCode(Long uid, Long id);
     
     void deleteCacheById(Long id);
