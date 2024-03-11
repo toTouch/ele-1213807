@@ -348,13 +348,9 @@ public class MerchantServiceImpl implements MerchantService {
         int i = merchantMapper.insert(merchant);
         
         // 如果有绑定渠道员 设置商户渠道员绑定时间 小程序商户首页需要使用该字段统计
-        if (Objects.nonNull(merchantSaveRequest.getChannelEmployeeUid())) {
-            MerchantChannelEmployeeBindHistory merchantChannelEmployeeBindHistory = MerchantChannelEmployeeBindHistory.builder().merchantUid(merchant.getUid())
-                    .channelEmployeeUid(merchantSaveRequest.getChannelEmployeeUid()).bindTime(timeMillis).bindStatus(MerchantChannelEmployeeBindHistoryConstant.BIND)
-                    .createTime(timeMillis).updateTime(timeMillis).tenantId(tenantId).build();
-            
-            merchantChannelEmployeeBindHistoryService.insertOne(merchantChannelEmployeeBindHistory);
-        }
+        MerchantChannelEmployeeBindHistory merchantChannelEmployeeBindHistory = MerchantChannelEmployeeBindHistory.builder().merchantUid(merchant.getUid()).bindTime(timeMillis)
+                .channelEmployeeUid(Objects.nonNull(merchantSaveRequest.getChannelEmployeeUid())?merchantSaveRequest.getChannelEmployeeUid():0L).bindStatus(MerchantChannelEmployeeBindHistoryConstant.BIND).createTime(timeMillis).updateTime(timeMillis).tenantId(tenantId).build();
+        merchantChannelEmployeeBindHistoryService.insertOne(merchantChannelEmployeeBindHistory);
         
         if (ObjectUtils.isNotEmpty(merchantSaveRequest.getPlaceIdList())) {
             List<MerchantPlaceMap> merchantPlaceMapList = new ArrayList<>();
@@ -557,7 +553,7 @@ public class MerchantServiceImpl implements MerchantService {
             flag = true;
             updateUser.setPhone(merchantSaveRequest.getPhone());
             // 手机号变更用户禁用
-//            updateUser.setLockFlag(User.USER_LOCK);
+            //            updateUser.setLockFlag(User.USER_LOCK);
         }
         
         // 判断是否为禁用
@@ -628,8 +624,9 @@ public class MerchantServiceImpl implements MerchantService {
                 merchantSaveRequest.getChannelEmployeeUid())) {
             
             // 更新
-            MerchantChannelEmployeeBindHistory updateBindHistory = MerchantChannelEmployeeBindHistory.builder().merchantUid(merchantUpdate.getUid()).channelEmployeeUid(merchantSaveRequest.getChannelEmployeeUid()).unBindTime(timeMillis)
-                    .bindStatus(MerchantChannelEmployeeBindHistoryConstant.UN_BIND).updateTime(timeMillis).tenantId(tenantId).build();
+            MerchantChannelEmployeeBindHistory updateBindHistory = MerchantChannelEmployeeBindHistory.builder().merchantUid(merchantUpdate.getUid())
+                    .channelEmployeeUid(merchantSaveRequest.getChannelEmployeeUid()).unBindTime(timeMillis).bindStatus(MerchantChannelEmployeeBindHistoryConstant.UN_BIND)
+                    .updateTime(timeMillis).tenantId(tenantId).build();
             merchantChannelEmployeeBindHistoryService.updateUnbindTimeByMerchantUid(updateBindHistory);
             
             // 如果有绑定渠道员 设置商户渠道员绑定时间 小程序商户首页需要使用该字段统计
