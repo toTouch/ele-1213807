@@ -603,7 +603,7 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
             vo.setScanCodeTime(merchantJoinRecord.getStartTime());
             vo.setStatus(merchantJoinRecord.getStatus());
             return vo;
-        }).sorted(Comparator.comparing(MerchantPromotionDataDetailVO::getScanCodeTime).reversed()).collect(Collectors.toList());
+        }).collect(Collectors.toList());
         
         return R.ok(dataDetailVOList);
     }
