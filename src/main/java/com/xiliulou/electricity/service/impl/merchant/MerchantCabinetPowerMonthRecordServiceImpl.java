@@ -96,12 +96,13 @@ public class MerchantCabinetPowerMonthRecordServiceImpl implements MerchantCabin
     }
     
     @Slave
-    @Override
-    public void exportExcel(MerchantPowerRequest request, HttpServletResponse response) {
+    private List<MerchantCabinetPowerMonthExcelVO> getData(MerchantPowerRequest request) {
+        List<MerchantCabinetPowerMonthExcelVO> excelVOList = new ArrayList<>();
+        
         String monthDate = request.getMonthDate();
         //年月格式校验，判断date是否yyyy-MM格式
         if (StringUtils.isBlank(monthDate) || !monthDate.matches(DateUtils.GREP_YEAR_MONTH)) {
-            return;
+            return excelVOList;
         }
         
         MerchantPowerDetailQueryModel queryModel = new MerchantPowerDetailQueryModel();
@@ -113,21 +114,36 @@ public class MerchantCabinetPowerMonthRecordServiceImpl implements MerchantCabin
         
         List<MerchantCabinetPowerMonthDetailVO> detailList = merchantCabinetPowerMonthDetailService.listByTenantId(queryModel);
         if (CollectionUtils.isEmpty(detailList)) {
-            return;
+            return excelVOList;
+        }
+        
+        // sumPower为0的数据
+        List<MerchantCabinetPowerMonthDetailVO> emptyDetailList = detailList.stream().filter(item -> Objects.equals(item.getSumPower(), NumberConstant.ZERO_D))
+                .collect(Collectors.toList());
+        if (CollectionUtils.isNotEmpty(emptyDetailList)) {
+            emptyDetailList.forEach(item -> {
+                
+                String beginDate = DateUtils.getYearAndMonthAndDayByTimeStamps(item.getBeginTime());
+                String endDate = DateUtils.getYearAndMonthAndDayByTimeStamps(item.getEndTime());
+                
+                MerchantCabinetPowerMonthExcelVO excelVO = MerchantCabinetPowerMonthExcelVO.builder().monthDate(monthDate)
+                        .placeName(Optional.ofNullable(merchantPlaceService.queryByIdFromCache(item.getPlaceId())).orElse(new MerchantPlace()).getName()).endTime(endDate)
+                        .beginTime(beginDate).build();
+                
+                excelVOList.add(excelVO);
+            });
         }
         
         // sumPower不为0的数据
         detailList = detailList.stream().filter(item -> !Objects.equals(item.getSumPower(), NumberConstant.ZERO_D)).collect(Collectors.toList());
-        
-        List<MerchantCabinetPowerMonthExcelVO> excelVOList = new ArrayList<>();
         
         // 按场地进行分组
         Map<Long, List<MerchantCabinetPowerMonthDetailVO>> placeMap = detailList.stream().collect(Collectors.groupingBy(MerchantCabinetPowerMonthDetailVO::getPlaceId));
         
         placeMap.forEach((placeId, placeDetailList) -> {
             
-            // 按照时间进行倒叙
-            placeDetailList.sort(Comparator.comparing(MerchantCabinetPowerMonthDetailVO::getBeginTime).reversed());
+            // 排序
+            placeDetailList.sort(Comparator.comparing(MerchantCabinetPowerMonthDetailVO::getBeginTime));
             
             // 求和
             Double monthSumPower = placeDetailList.stream().mapToDouble(MerchantCabinetPowerMonthDetailVO::getSumPower).sum();
@@ -182,23 +198,11 @@ public class MerchantCabinetPowerMonthRecordServiceImpl implements MerchantCabin
             }
         });
         
-        // sumPower为0的数据
-        List<MerchantCabinetPowerMonthDetailVO> emptyDetailList = detailList.stream().filter(item -> Objects.equals(item.getSumPower(), NumberConstant.ZERO_D))
-                .collect(Collectors.toList());
-        if (CollectionUtils.isNotEmpty(emptyDetailList)) {
-            emptyDetailList.forEach(item -> {
-                
-                String beginDate = DateUtils.getYearAndMonthAndDayByTimeStamps(item.getBeginTime());
-                String endDate = DateUtils.getYearAndMonthAndDayByTimeStamps(item.getEndTime());
-                
-                MerchantCabinetPowerMonthExcelVO excelVO = MerchantCabinetPowerMonthExcelVO.builder().monthDate(monthDate)
-                        .placeName(Optional.ofNullable(merchantPlaceService.queryByIdFromCache(item.getPlaceId())).orElse(new MerchantPlace()).getName()).endTime(endDate)
-                        .beginTime(beginDate).build();
-                
-                excelVOList.add(excelVO);
-            });
-        }
-        
+        return excelVOList;
+    }
+    
+    @Override
+    public void exportExcel(MerchantPowerRequest request, HttpServletResponse response) {
         String fileName = "场地电费出账记录.xlsx";
         try {
             ServletOutputStream outputStream = response.getOutputStream();
@@ -212,7 +216,7 @@ public class MerchantCabinetPowerMonthRecordServiceImpl implements MerchantCabin
                     .registerWriteHandler(new MergeSameRowsStrategy(2, new int[] {0, 1, 2, 3})).registerWriteHandler(HeadContentCellStyle.myHorizontalCellStyleStrategy())
                     .registerWriteHandler(new CommentWriteHandler(getComments(), "xlsx")).registerWriteHandler(new AutoHeadColumnWidthStyleStrategy())
                     // 注意：需要先调用registerWriteHandler()再调用sheet()方法才能使合并策略生效！！！
-                    .sheet("场地电费出账记录").doWrite(excelVOList);
+                    .sheet("场地电费出账记录").doWrite(getData(request));
         } catch (Exception e) {
             log.error("导出报表失败！", e);
         }
