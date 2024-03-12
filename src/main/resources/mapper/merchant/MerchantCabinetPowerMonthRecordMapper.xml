@@ -19,7 +19,7 @@
                 and tenant_id = #{tenantId}
             </if>
         </where>
-        order by id desc
+        order by date desc
         <if test="offset != null and size != null">
             limit #{offset}, #{size}
         </if>

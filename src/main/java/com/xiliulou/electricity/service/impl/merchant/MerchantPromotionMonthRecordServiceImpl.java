@@ -39,6 +39,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -112,13 +113,14 @@ public class MerchantPromotionMonthRecordServiceImpl implements MerchantPromotio
     }
     
     @Slave
-    @Override
-    public void exportExcel(MerchantPromotionRequest request, HttpServletResponse response) {
+    private List<MerchantPromotionMonthExcelVO> getData(MerchantPromotionRequest request) {
+        List<MerchantPromotionMonthExcelVO> excelVOList = new ArrayList<>();
+        
         // 根据年月获取当月第一天和最后一天的日期
         String monthDate = request.getMonthDate();
         //年月格式校验，判断date是否yyyy-MM格式
         if (StringUtils.isBlank(monthDate) || !monthDate.matches(DateUtils.GREP_YEAR_MONTH)) {
-            return;
+            return excelVOList;
         }
         
         MerchantPromotionDayRecordQueryModel queryModel = new MerchantPromotionDayRecordQueryModel();
@@ -128,10 +130,23 @@ public class MerchantPromotionMonthRecordServiceImpl implements MerchantPromotio
         
         List<MerchantPromotionDayRecordVO> detailList = merchantPromotionDayRecordService.listByTenantId(queryModel);
         if (CollectionUtils.isEmpty(detailList)) {
-            return;
+            return excelVOList;
         }
         
-        List<MerchantPromotionMonthExcelVO> excelVOList = new ArrayList<>();
+        // 为0的数据
+        List<MerchantPromotionDayRecordVO> emptyDetailList = detailList.stream().filter(item -> !Objects.equals(item.getMoney(), BigDecimal.ZERO)).collect(Collectors.toList());
+        if (CollectionUtils.isNotEmpty(emptyDetailList)) {
+            emptyDetailList.forEach(item -> {
+                
+                MerchantPromotionMonthExcelVO excelVO = MerchantPromotionMonthExcelVO.builder().monthDate(monthDate)
+                        .merchantName(Optional.ofNullable(merchantService.queryByIdFromCache(item.getMerchantId())).orElse(new Merchant()).getName()).date(item.getDate()).build();
+                
+                excelVOList.add(excelVO);
+            });
+        }
+        
+        // 不为0的数据
+        detailList = detailList.stream().filter(item -> !Objects.equals(item.getMoney(), BigDecimal.ZERO)).collect(Collectors.toList());
         
         // excelVOList 按merchantId进行分组
         Map<Long, List<MerchantPromotionDayRecordVO>> detailMap = detailList.stream().collect(Collectors.groupingBy(MerchantPromotionDayRecordVO::getMerchantId));
@@ -139,6 +154,10 @@ public class MerchantPromotionMonthRecordServiceImpl implements MerchantPromotio
         detailMap.forEach((merchantId, merchantDayRecordVoList) -> {
             
             if (CollectionUtils.isNotEmpty(merchantDayRecordVoList)) {
+                
+                // 排序
+                merchantDayRecordVoList.sort(Comparator.comparing(MerchantPromotionDayRecordVO::getDate));
+                
                 AtomicReference<BigDecimal> firstAmount = new AtomicReference<>(BigDecimal.ZERO);
                 AtomicReference<BigDecimal> renewAmount = new AtomicReference<>(BigDecimal.ZERO);
                 AtomicReference<BigDecimal> balanceFirstAmount = new AtomicReference<>(BigDecimal.ZERO);
@@ -190,6 +209,11 @@ public class MerchantPromotionMonthRecordServiceImpl implements MerchantPromotio
             
         });
         
+        return excelVOList;
+    }
+    
+    @Override
+    public void exportExcel(MerchantPromotionRequest request, HttpServletResponse response) {
         String fileName = "商户推广费出账记录.xlsx";
         try {
             ServletOutputStream outputStream = response.getOutputStream();
@@ -203,7 +227,7 @@ public class MerchantPromotionMonthRecordServiceImpl implements MerchantPromotio
                     .registerWriteHandler(new MergeSameRowsStrategy(2, new int[] {0, 1, 2, 3})).registerWriteHandler(HeadContentCellStyle.myHorizontalCellStyleStrategy())
                     .registerWriteHandler(new CommentWriteHandler(getComments(), "xlsx")).registerWriteHandler(new AutoHeadColumnWidthStyleStrategy())
                     // 注意：需要先调用registerWriteHandler()再调用sheet()方法才能使合并策略生效！！！
-                    .sheet("商户推广费出账记录").doWrite(excelVOList);
+                    .sheet("商户推广费出账记录").doWrite(getData(request));
         } catch (Exception e) {
             log.error("导出报表失败！", e);
         }
