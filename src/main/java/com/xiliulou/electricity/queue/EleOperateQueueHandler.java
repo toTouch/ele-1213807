@@ -170,7 +170,6 @@ public class EleOperateQueueHandler {
     }
     
     private void initElectricityCabinetOperate() {
-        log.info("初始化换电柜操作响应处理器");
         startService.execute(() -> {
             while (!shutdown) {
                 EleOpenDTO eleOpenDTO = null;
@@ -634,6 +633,15 @@ public class EleOperateQueueHandler {
             return;
         }
         
+        //租电订单确认
+        if (Objects.equals(rentBatteryOrder.getType(), RentBatteryOrder.TYPE_USER_RENT)) {
+            rentOrderConfirm(electricityCabinet, finalOpenDTO);
+        }
+        //退电订单确认
+        if (Objects.equals(rentBatteryOrder.getType(), RentBatteryOrder.TYPE_USER_RETURN)) {
+            returnOrderConfirm(electricityCabinet, finalOpenDTO);
+        }
+        
         //订单状态
         rentBatteryOrder.setUpdateTime(System.currentTimeMillis());
         rentBatteryOrder.setOrderSeq(finalOpenDTO.getOrderSeq());
@@ -645,7 +653,6 @@ public class EleOperateQueueHandler {
         
         if (Objects.equals(rentBatteryOrder.getType(), RentBatteryOrder.TYPE_USER_RENT) && Objects.equals(rentBatteryOrder.getStatus(),
                 RentBatteryOrder.RENT_BATTERY_TAKE_SUCCESS)) {
-            orderConfirm(electricityCabinet, rentBatteryOrder.getOrderId(), ElectricityIotConstant.ELE_COMMAND_RENT_ORDER_RSP_ACK);
             
             checkRentBatteryDoor(rentBatteryOrder);
             
@@ -663,7 +670,7 @@ public class EleOperateQueueHandler {
         
         if (Objects.equals(rentBatteryOrder.getType(), RentBatteryOrder.TYPE_USER_RETURN) && Objects.equals(rentBatteryOrder.getStatus(),
                 RentBatteryOrder.RETURN_BATTERY_CHECK_SUCCESS)) {
-            orderConfirm(electricityCabinet, rentBatteryOrder.getOrderId(), ElectricityIotConstant.ELE_COMMAND_RETURN_ORDER_RSP_ACK);
+            
             checkReturnBatteryDoor(rentBatteryOrder);
 
             enterpriseRentRecordService.saveEnterpriseReturnRecord(rentBatteryOrder.getUid());
@@ -848,19 +855,47 @@ public class EleOperateQueueHandler {
         }
     }
     
-    private void orderConfirm(ElectricityCabinet electricityCabinet, String orderId, String command) {
-        HashMap<String, Object> dataMap = Maps.newHashMap();
-        dataMap.put("orderId", orderId);
+    private void rentOrderConfirm(ElectricityCabinet electricityCabinet, EleOpenDTO finalOpenDTO) {
+        if (!(Objects.equals(finalOpenDTO.getOrderStatus(), RentBatteryOrder.RENT_INIT_CHECK) || Objects
+                .equals(finalOpenDTO.getOrderStatus(), RentBatteryOrder.RENT_BATTERY_NOT_EXISTS) || Objects.equals(finalOpenDTO.getOrderStatus(), RentBatteryOrder.RENT_OPEN_FAIL)
+                || Objects.equals(finalOpenDTO.getOrderStatus(), RentBatteryOrder.RENT_BATTERY_TAKE_SUCCESS) || Objects
+                .equals(finalOpenDTO.getOrderStatus(), RentBatteryOrder.INIT_DEVICE_USING))) {
+            return;
+        }
         
-        HardwareCommandQuery comm = HardwareCommandQuery.builder().sessionId(CacheConstant.ELE_OPERATOR_SESSION_PREFIX + orderId).data(dataMap)
-                .productKey(electricityCabinet.getProductKey()).deviceName(electricityCabinet.getDeviceName()).command(command)
+        HashMap<String, Object> dataMap = Maps.newHashMap();
+        dataMap.put("orderId", finalOpenDTO.getOrderId());
+        
+        HardwareCommandQuery comm = HardwareCommandQuery.builder().sessionId(CacheConstant.ELE_OPERATOR_SESSION_PREFIX + finalOpenDTO.getOrderId()).data(dataMap)
+                .productKey(electricityCabinet.getProductKey()).deviceName(electricityCabinet.getDeviceName()).command(ElectricityIotConstant.ELE_COMMAND_RENT_ORDER_RSP_ACK)
                 .build();
         Pair<Boolean, String> sendResult = eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
         if (Boolean.FALSE.equals(sendResult.getLeft())) {
-            log.error("RENT ORDER HANDLER WARN! send ack command error,orderId={}", orderId);
+            log.error("RENT ORDER HANDLER WARN! send ack command error,orderId={}", finalOpenDTO.getOrderId());
         }
     }
     
+    private void returnOrderConfirm(ElectricityCabinet electricityCabinet, EleOpenDTO finalOpenDTO) {
+        if (!(Objects.equals(finalOpenDTO.getOrderStatus(), RentBatteryOrder.RETURN_INIT_CHECK) || Objects
+                .equals(finalOpenDTO.getOrderStatus(), RentBatteryOrder.RETURN_BATTERY_EXISTS) || Objects.equals(finalOpenDTO.getOrderStatus(), RentBatteryOrder.RETURN_OPEN_FAIL)
+                || Objects.equals(finalOpenDTO.getOrderStatus(), RentBatteryOrder.RETURN_BATTERY_CHECK_TIMEOUT) || Objects
+                .equals(finalOpenDTO.getOrderStatus(), RentBatteryOrder.RETURN_BATTERY_CHECK_FAIL) || Objects
+                .equals(finalOpenDTO.getOrderStatus(), RentBatteryOrder.RETURN_BATTERY_CHECK_SUCCESS) || Objects
+                .equals(finalOpenDTO.getOrderStatus(), RentBatteryOrder.INIT_DEVICE_USING))) {
+            return;
+        }
+        
+        HashMap<String, Object> dataMap = Maps.newHashMap();
+        dataMap.put("orderId", finalOpenDTO.getOrderId());
+        
+        HardwareCommandQuery comm = HardwareCommandQuery.builder().sessionId(CacheConstant.ELE_OPERATOR_SESSION_PREFIX + finalOpenDTO.getOrderId()).data(dataMap)
+                .productKey(electricityCabinet.getProductKey()).deviceName(electricityCabinet.getDeviceName()).command(ElectricityIotConstant.ELE_COMMAND_RETURN_ORDER_RSP_ACK)
+                .build();
+        Pair<Boolean, String> sendResult = eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
+        if (Boolean.FALSE.equals(sendResult.getLeft())) {
+            log.error("RETURN ORDER HANDLER WARN! send ack command error,orderId={}", finalOpenDTO.getOrderId());
+        }
+    }
     
     private void handleCallBatteryChangeSoc(ElectricityBattery electricityBattery) {
         //调用改变电池电量

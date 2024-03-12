@@ -144,19 +144,14 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
                 log.warn("EXCHANGE ORDER WARN! order not found !requestId={},orderId={}", receiverMessage.getSessionId(), exchangeOrderRsp.getOrderId());
                 return;
             }
-            
-            if (Objects.equals(exchangeOrderRsp.getOrderStatus(), ElectricityCabinetOrder.COMPLETE_BATTERY_TAKE_SUCCESS)) {
-                //确认订单结束
-                senOrderSuccessMsg(electricityCabinet, electricityCabinetOrder);
-                log.info("EXCHANGE ORDER INFO! send order success msg! requestId={},orderId={},uid={}", receiverMessage.getSessionId(), exchangeOrderRsp.getOrderId(),
-                        electricityCabinetOrder.getUid());
-            }
-            
+    
+            //确认订单结束
+            senOrderSuccessMsg(electricityCabinet, electricityCabinetOrder, exchangeOrderRsp);
+    
             // 处理失败回退电池套餐次数
             handlePackageNumber(exchangeOrderRsp, receiverMessage, electricityCabinetOrder);
             
             if (electricityCabinetOrder.getOrderSeq() > exchangeOrderRsp.getOrderSeq()) {
-                //确认订单结束
                 log.error("EXCHANGE ORDER ERROR! rsp order seq is lower order! requestId={},orderId={},uid={}", receiverMessage.getSessionId(), exchangeOrderRsp.getOrderId(),
                         electricityCabinetOrder.getUid());
                 return;
@@ -189,7 +184,7 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
             electricityCabinetOrderService.update(newElectricityCabinetOrder);
             
             //处理放入电池的相关信息
-            handlePlaceBatteryInfo(exchangeOrderRsp, electricityCabinetOrder, electricityCabinet);
+//            handlePlaceBatteryInfo(exchangeOrderRsp, electricityCabinetOrder, electricityCabinet);
             
             //处理取走电池的相关信息
             handleTakeBatteryInfo(exchangeOrderRsp, electricityCabinetOrder, electricityCabinet);
@@ -253,7 +248,16 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
         }
     }
     
-    private void senOrderSuccessMsg(ElectricityCabinet electricityCabinet, ElectricityCabinetOrder electricityCabinetOrder) {
+    private void senOrderSuccessMsg(ElectricityCabinet electricityCabinet, ElectricityCabinetOrder electricityCabinetOrder, ExchangeOrderRsp exchangeOrderRsp) {
+        if (!(Objects.equals(exchangeOrderRsp.getOrderStatus(), ElectricityCabinetOrder.INIT_CHECK_FAIL) || Objects
+                .equals(exchangeOrderRsp.getOrderStatus(), ElectricityCabinetOrder.INIT_BATTERY_CHECK_FAIL) || Objects
+                .equals(exchangeOrderRsp.getOrderStatus(), ElectricityCabinetOrder.INIT_BATTERY_CHECK_TIMEOUT) || Objects
+                .equals(exchangeOrderRsp.getOrderStatus(), ElectricityCabinetOrder.COMPLETE_OPEN_FAIL) || Objects
+                .equals(exchangeOrderRsp.getOrderStatus(), ElectricityCabinetOrder.COMPLETE_BATTERY_TAKE_SUCCESS) || Objects
+                .equals(exchangeOrderRsp.getOrderStatus(), ElectricityCabinetOrder.INIT_DEVICE_USING))) {
+            return;
+        }
+        
         HashMap<String, Object> dataMap = Maps.newHashMap();
         dataMap.put("orderId", electricityCabinetOrder.getOrderId());
         
@@ -261,8 +265,8 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
                 .productKey(electricityCabinet.getProductKey()).deviceName(electricityCabinet.getDeviceName()).command(ElectricityIotConstant.EXCHANGE_ORDER_MANAGE_SUCCESS)
                 .build();
         Pair<Boolean, String> sendResult = eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
-        if (!sendResult.getLeft()) {
-            log.error("EXCHANGE ERROR! send orderSuccessAck command error! orderId:{}", electricityCabinetOrder.getOrderId());
+        if (Boolean.FALSE.equals(sendResult.getLeft())) {
+            log.error("EXCHANGE ERROR! send orderSuccessAck command error! orderId={}", electricityCabinetOrder.getOrderId());
         }
     }
     
