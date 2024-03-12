@@ -1007,7 +1007,6 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         List<ElectricityCabinetVO> resultVo;
         //若enableGeo为true，则从redis中获取位置信息。反之从数据库中查询柜机位置信息
         if (eleCommonConfig.isEnableGeo()) {
-            log.info("Get location distance from redis geo start,tenant id = {}, query params = {}", TenantContextHolder.getTenantId(), electricityCabinetQuery);
             RedisGeoCommands.GeoRadiusCommandArgs geoRadiusCommandArgs = RedisGeoCommands
                     .GeoRadiusCommandArgs
                     .newGeoRadiusArgs()
