@@ -29,10 +29,7 @@
     </update>
     
     <select id="selectListByChannelEmployeeUid" resultType="com.xiliulou.electricity.entity.merchant.MerchantChannelEmployeeBindHistory">
-        select
-            id, merchant_uid, channel_employee_uid, bind_status, bind_time, un_bind_time, tenant_id, create_time, update_time
-        from t_merchant_channel_employee_bind_history
-        where channel_employee_uid = #{channelEmployeeUid} and tenant_id = #{tenantId}
+        select distinct(merchant_uid) from t_merchant_channel_employee_bind_history  where channel_employee_uid = #{channelEmployeeUid} and tenant_id = #{tenantId}
     </select>
     
     <select id="countMerchantNumByTime" resultType="java.lang.Integer">
