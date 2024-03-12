@@ -117,33 +117,16 @@ public class MerchantCabinetPowerMonthRecordServiceImpl implements MerchantCabin
             return excelVOList;
         }
         
-        // sumPower为0的数据
-        List<MerchantCabinetPowerMonthDetailVO> emptyDetailList = detailList.stream().filter(item -> Objects.equals(item.getSumPower(), NumberConstant.ZERO_D))
-                .collect(Collectors.toList());
-        if (CollectionUtils.isNotEmpty(emptyDetailList)) {
-            emptyDetailList.forEach(item -> {
-                
-                String beginDate = DateUtils.getYearAndMonthAndDayByTimeStamps(item.getBeginTime());
-                String endDate = DateUtils.getYearAndMonthAndDayByTimeStamps(item.getEndTime());
-                
-                MerchantCabinetPowerMonthExcelVO excelVO = MerchantCabinetPowerMonthExcelVO.builder().monthDate(monthDate)
-                        .placeName(Optional.ofNullable(merchantPlaceService.queryByIdFromCache(item.getPlaceId())).orElse(new MerchantPlace()).getName()).endTime(endDate)
-                        .beginTime(beginDate).build();
-                
-                excelVOList.add(excelVO);
-            });
-        }
-        
         // sumPower不为0的数据
-        detailList = detailList.stream().filter(item -> !Objects.equals(item.getSumPower(), NumberConstant.ZERO_D)).collect(Collectors.toList());
+        List<MerchantCabinetPowerMonthDetailVO> hasDataDetailList = detailList.stream().filter(item -> !Objects.equals(item.getSumPower(), NumberConstant.ZERO_D)).collect(Collectors.toList());
         
         // 按场地进行分组
-        Map<Long, List<MerchantCabinetPowerMonthDetailVO>> placeMap = detailList.stream().collect(Collectors.groupingBy(MerchantCabinetPowerMonthDetailVO::getPlaceId));
+        Map<Long, List<MerchantCabinetPowerMonthDetailVO>> placeMap = hasDataDetailList.stream().collect(Collectors.groupingBy(MerchantCabinetPowerMonthDetailVO::getPlaceId));
         
         placeMap.forEach((placeId, placeDetailList) -> {
             
             // 排序
-            placeDetailList.sort(Comparator.comparing(MerchantCabinetPowerMonthDetailVO::getBeginTime));
+            placeDetailList.sort(Comparator.comparing(MerchantCabinetPowerMonthDetailVO::getEid));
             
             // 求和
             Double monthSumPower = placeDetailList.stream().mapToDouble(MerchantCabinetPowerMonthDetailVO::getSumPower).sum();
@@ -197,6 +180,23 @@ public class MerchantCabinetPowerMonthRecordServiceImpl implements MerchantCabin
                 });
             }
         });
+    
+        // sumPower为0的数据
+        List<MerchantCabinetPowerMonthDetailVO> emptyDetailList = detailList.stream().filter(item -> Objects.equals(item.getSumPower(), NumberConstant.ZERO_D))
+                .collect(Collectors.toList());
+        if (CollectionUtils.isNotEmpty(emptyDetailList)) {
+            emptyDetailList.forEach(item -> {
+            
+                String beginDate = DateUtils.getYearAndMonthAndDayByTimeStamps(item.getBeginTime());
+                String endDate = DateUtils.getYearAndMonthAndDayByTimeStamps(item.getEndTime());
+            
+                MerchantCabinetPowerMonthExcelVO excelVO = MerchantCabinetPowerMonthExcelVO.builder().monthDate(monthDate)
+                        .placeName(Optional.ofNullable(merchantPlaceService.queryByIdFromCache(item.getPlaceId())).orElse(new MerchantPlace()).getName()).endTime(endDate)
+                        .beginTime(beginDate).build();
+            
+                excelVOList.add(excelVO);
+            });
+        }
         
         return excelVOList;
     }
