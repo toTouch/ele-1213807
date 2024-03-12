@@ -11,7 +11,5 @@ import java.util.List;
  */
 public interface MerchantCabinetPowerMonthDetailProService {
     
-    Long queryLatestReportTime(Long cabinetId, List<String> monthList);
-    
-    List<MerchantCabinetPowerMonthDetailPro> listByMonth(Long cabinetId, List<String> monthList);
+    List<MerchantCabinetPowerMonthDetailPro> listByMonth(Long cabinetId, List<String> monthList, Long merchantId);
 }

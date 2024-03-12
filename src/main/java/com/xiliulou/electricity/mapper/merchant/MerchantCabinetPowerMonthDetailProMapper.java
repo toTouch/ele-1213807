@@ -12,7 +12,6 @@ import java.util.List;
  */
 public interface MerchantCabinetPowerMonthDetailProMapper {
     
-    Long selectLatestReportTime(@Param("cabinetId") Long cabinetId, @Param("monthList") List<String> monthList);
-    
-    List<MerchantCabinetPowerMonthDetailPro> selectListByMonth(@Param("cabinetId") Long cabinetId, @Param("monthList") List<String> monthList);
+    List<MerchantCabinetPowerMonthDetailPro> selectListByMonth(@Param("cabinetId") Long cabinetId, @Param("monthList") List<String> monthList,
+            @Param("merchantId") Long merchantId);
 }

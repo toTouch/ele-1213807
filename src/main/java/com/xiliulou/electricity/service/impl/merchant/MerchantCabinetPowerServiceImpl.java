@@ -667,39 +667,31 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
         return voList;
     }
     
+    /**
+     * 1.时间段根据bindTime从小到大排序 2.去时间段子集
+     */
     private List<MerchantPlaceCabinetBind> removeSubset(List<MerchantPlaceCabinetBind> cabinetBindList) {
-        log.info("Merchant removeSubset cabinetBindList={}", cabinetBindList);
+        // 排序
+        cabinetBindList.sort(Comparator.comparing(bind -> bind.getBindTime() == null ? NumberConstant.ZERO_L : bind.getBindTime()));
         
         List<MerchantPlaceCabinetBind> resultList = new ArrayList<>();
         
         for (MerchantPlaceCabinetBind current : cabinetBindList) {
-            // 标记是否找到包含当前元素的时间段
-            boolean contained = false;
+            boolean isSubSet = false;
             
-            // 遍历结果集中的每个元素，查找与当前元素有时间交集的情况
-            for (Iterator<MerchantPlaceCabinetBind> iterator = resultList.iterator(); iterator.hasNext(); ) {
-                MerchantPlaceCabinetBind previous = iterator.next();
-                
-                // 如果当前元素被之前元素的时间段完全包含，则移除之前的元素，并标记找到包含关系
-                if (previous.getBindTime() <= current.getBindTime() && current.getUnBindTime() <= previous.getUnBindTime()) {
-                    contained = true;
-                    iterator.remove();
+            // 检查结果集中是否有元素包含了当前元素的时间段
+            for (MerchantPlaceCabinetBind existing : resultList) {
+                if (existing.getBindTime() <= current.getBindTime() && current.getUnBindTime() <= existing.getUnBindTime()) {
+                    isSubSet = true;
                     break;
-                }
-                
-                // 如果当前元素包含之前元素的时间段，则移除之前的元素
-                if (current.getBindTime() <= previous.getBindTime() && current.getUnBindTime() >= previous.getUnBindTime()) {
-                    iterator.remove();
                 }
             }
             
-            // 如果当前元素没有被任何已存在的时间段包含，则将其添加到结果集中
-            if (!contained) {
+            // 如果当前元素不是任何已有时间段的子集，则添加到结果集中
+            if (!isSubSet) {
                 resultList.add(current);
             }
         }
-        
-        log.info("Merchant removeSubset resultList={}", resultList);
         
         return resultList;
     }
@@ -1808,7 +1800,8 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
             
         } else {
             // 如果是2个月前,通过历史数据查询
-            List<MerchantCabinetPowerMonthDetailPro> preTwoMonthPowerDetailList = merchantCabinetPowerMonthDetailProService.listByMonth(cabinetId, List.of(monthDate + "-01"));
+            List<MerchantCabinetPowerMonthDetailPro> preTwoMonthPowerDetailList = merchantCabinetPowerMonthDetailProService.listByMonth(cabinetId, List.of(monthDate + "-01"),
+                    merchant.getId());
             
             if (CollectionUtils.isEmpty(preTwoMonthPowerDetailList)) {
                 return Collections.emptyList();
