@@ -621,6 +621,7 @@ public class MerchantServiceImpl implements MerchantService {
             merchantChannelEmployeeBindHistory = merchantChannelEmployeeBindHistoryList.get(0);
         }
         
+
         if (Objects.nonNull(merchantChannelEmployeeBindHistory) && !Objects.equals(merchantChannelEmployeeBindHistory.getChannelEmployeeUid(),
                 merchantSaveRequest.getChannelEmployeeUid())) {
             // 更新
@@ -633,16 +634,12 @@ public class MerchantServiceImpl implements MerchantService {
                         .bindStatus(MerchantChannelEmployeeBindHistoryConstant.UN_BIND).updateTime(timeMillis).tenantId(tenantId).build();
                 merchantChannelEmployeeBindHistoryService.updateUnbindTimeByMerchantUid(updateBindHistory);
                 
-                // 如果有绑定渠道员 设置商户渠道员绑定时间 小程序商户首页需要使用该字段统计
-                if (Objects.nonNull(merchantSaveRequest.getChannelEmployeeUid())) {
-                    // 新增绑定记录
-                    MerchantChannelEmployeeBindHistory insertBindHistory = MerchantChannelEmployeeBindHistory.builder().merchantUid(merchant.getUid())
-                            .channelEmployeeUid(merchantSaveRequest.getChannelEmployeeUid()).bindTime(timeMillis).bindStatus(MerchantChannelEmployeeBindHistoryConstant.BIND)
-                            .createTime(timeMillis).updateTime(timeMillis).tenantId(tenantId).build();
-                    merchantChannelEmployeeBindHistoryService.insertOne(insertBindHistory);
-                }
+                // 新增绑定记录
+                MerchantChannelEmployeeBindHistory insertBindHistory = MerchantChannelEmployeeBindHistory.builder().merchantUid(merchant.getUid())
+                        .channelEmployeeUid(Objects.nonNull(merchantSaveRequest.getChannelEmployeeUid())?merchantSaveRequest.getChannelEmployeeUid():0L).bindTime(timeMillis).bindStatus(MerchantChannelEmployeeBindHistoryConstant.BIND)
+                        .createTime(timeMillis).updateTime(timeMillis).tenantId(tenantId).build();
+                merchantChannelEmployeeBindHistoryService.insertOne(insertBindHistory);
             }
-            
         }
         
         // 删除商户缓存
