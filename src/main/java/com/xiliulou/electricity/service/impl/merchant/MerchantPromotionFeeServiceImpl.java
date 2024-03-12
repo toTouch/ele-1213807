@@ -927,16 +927,8 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
              //今日预估收入和昨日收入时间范围一样   今日预估收入=今日未结算 昨日收入= 今日已结算 -今日已退回
             List<MerchantChannelEmployeeBindHistoryDTO> todayList = buildMerchantChannelEmployeeBindHistoryDTO(bindHistoryList, DateUtils.getTodayStartTimeStamp(),
                     DateUtils.getTodayEndTimeStamp());
-            
-            
-          /*  List<MerchantChannelEmployeeBindHistoryDTO> yesterdayList = buildMerchantChannelEmployeeBindHistoryDTO(bindHistoryList, DateUtils.getTodayStartTimeStamp(),
-                    DateUtils.getTodayEndTimeStamp()); */
-            
             List<MerchantChannelEmployeeBindHistoryDTO> lastMonthList = buildMerchantChannelEmployeeBindHistoryDTO(bindHistoryList, dayOfMonthStartTime, dayOfMonthEndTime);
-            
             handleMerchantTodayIncomeByChannelEmployee(type, uid, merchantPromotionFeeIncomeVO, todayList, lastMonthList);
-            
-            
         } else {
             // 今日预估收入：“返现日期” = 今日，“结算状态” = 未结算；
             MerchantPromotionFeeQueryModel todayInComeQueryModel = MerchantPromotionFeeQueryModel.builder().status(MerchantConstant.MERCHANT_REBATE_STATUS_NOT_SETTLE).type(type)
@@ -952,7 +944,7 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
             BigDecimal todaySettleInCome = rebateRecordService.sumByStatus(yesterdaySettleQueryModel);
             
             MerchantPromotionFeeQueryModel yesterdayReturnQueryModel = MerchantPromotionFeeQueryModel.builder().status(MerchantConstant.MERCHANT_REBATE_STATUS_RETURNED).type(type)
-                    .uid(uid).tenantId(TenantContextHolder.getTenantId()).rebateStartTime(DateUtils.getTodayStartTimeStamp()).rebateEndTime(DateUtils.getTodayStartTimeStamp()).build();
+                    .uid(uid).tenantId(TenantContextHolder.getTenantId()).rebateStartTime(DateUtils.getTodayStartTimeStamp()).rebateEndTime(DateUtils.getTodayEndTimeStamp()).build();
             BigDecimal yesterdayReturnInCome = rebateRecordService.sumByStatus(yesterdayReturnQueryModel);
             merchantPromotionFeeIncomeVO.setYesterdayIncome(todaySettleInCome.subtract(yesterdayReturnInCome));
             
