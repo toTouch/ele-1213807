@@ -906,26 +906,26 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
                     // 排序
                     list.sort(Comparator.comparing(detail -> detail.getEndTime() == null ? NumberConstant.ZERO_L : detail.getEndTime()));
                     
-                    if(list.size() > NumberConstant.ONE) {
+                    if (list.size() > NumberConstant.ONE) {
                         // 合并时间段
                         for (int i = 0; i < list.size() - 1; i++) {
                             MerchantProCabinetPowerDetailVO current = list.get(i);
                             MerchantProCabinetPowerDetailVO next = list.get(i + 1);
-        
+                            
                             if (Objects.equals(DateUtils.getTimeByTimeStamp(current.getEndTime()), DateUtils.getTimeByTimeStamp(next.getStartTime()))) {
                                 current.setEndTime(next.getEndTime());
                                 if (current.getStartTime() > next.getStartTime()) {
                                     current.setEndTime(next.getStartTime());
                                 }
-            
+                                
                                 BigDecimal currentPower = Objects.isNull(current.getPower()) ? BigDecimal.ZERO : current.getPower();
                                 BigDecimal currentCharge = Objects.isNull(current.getCharge()) ? BigDecimal.ZERO : current.getCharge();
                                 BigDecimal nextPower = Objects.isNull(next.getPower()) ? BigDecimal.ZERO : next.getPower();
                                 BigDecimal nextCharge = Objects.isNull(next.getCharge()) ? BigDecimal.ZERO : next.getCharge();
-            
+                                
                                 current.setPower(currentPower.add(nextPower));
                                 current.setCharge(currentCharge.add(nextCharge));
-            
+                                
                                 list.remove(next);
                             }
                         }
@@ -1817,13 +1817,19 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
             }
             
             return preTwoMonthPowerDetailList.parallelStream().map(detailPro -> {
-                Long startTime = detailPro.getBeginTime();
-                Long endTime = detailPro.getEndTime();
-                Long eid = detailPro.getEid();
                 Long placeId = detailPro.getPlaceId();
-                Integer cabinetMerchantBindStatus = detailPro.getCabinetMerchantBindStatus();
+                Integer bindStatus = detailPro.getCabinetMerchantBindStatus();
                 
-                return getCabinetPowerDetail(startTime, endTime, eid, placeId, tenantId, monthDate, cabinetMerchantBindStatus);
+                MerchantProCabinetPowerDetailVO detailVO = MerchantProCabinetPowerDetailVO.builder().monthDate(monthDate).cabinetId(detailPro.getEid())
+                        .cabinetName(electricityCabinet.getName()).sn(electricityCabinet.getSn()).power(detailPro.getSumPower()).charge(detailPro.getSumCharge())
+                        .startTime(detailPro.getBeginTime()).placeId(placeId)
+                        .placeName(Optional.ofNullable(merchantPlaceService.queryByIdFromCache(placeId)).orElse(new MerchantPlace()).getName()).bindStatus(bindStatus).build();
+                
+                if (Objects.equals(bindStatus, MerchantPlaceBindConstant.UN_BIND)) {
+                    detailVO.setEndTime(detailPro.getEndTime());
+                }
+                
+                return detailVO;
                 
             }).collect(Collectors.toList());
         }
