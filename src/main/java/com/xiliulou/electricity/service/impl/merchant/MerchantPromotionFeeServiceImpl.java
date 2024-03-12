@@ -185,7 +185,7 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
                 return vo;
             }
             return null;
-        }).collect(Collectors.toList());
+        }).filter(Objects::nonNull).collect(Collectors.toList());
         
         return R.ok(merchantVOList);
     }
