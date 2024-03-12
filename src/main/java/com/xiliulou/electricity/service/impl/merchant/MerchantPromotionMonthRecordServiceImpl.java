@@ -198,7 +198,7 @@ public class MerchantPromotionMonthRecordServiceImpl implements MerchantPromotio
         });
     
         // 为0的数据
-        List<MerchantPromotionDayRecordVO> emptyDetailList = detailList.stream().filter(item -> !Objects.equals(item.getMoney(), BigDecimal.ZERO)).collect(Collectors.toList());
+        List<MerchantPromotionDayRecordVO> emptyDetailList = detailList.stream().filter(item -> Objects.equals(item.getMoney(), BigDecimal.ZERO)).collect(Collectors.toList());
         if (CollectionUtils.isNotEmpty(emptyDetailList)) {
             emptyDetailList.forEach(item -> {
             
