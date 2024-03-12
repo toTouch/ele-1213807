@@ -616,8 +616,8 @@ public class MerchantServiceImpl implements MerchantService {
         
         // 如果更新的渠道员和绑定的渠道员不一致才操作
         if(!Objects.equals(merchant.getChannelEmployeeUid(), merchantSaveRequest.getChannelEmployeeUid())) {
-            //如果解绑渠道员，则merchantSaveRequest.getChannelEmployeeUid为0
-            if (Objects.equals(merchantSaveRequest.getChannelEmployeeUid(), 0L)) {
+            //如果解绑渠道员，则merchantSaveRequest.getChannelEmployeeUid为null
+            if (Objects.isNull(merchantSaveRequest.getChannelEmployeeUid())) {
                 MerchantChannelEmployeeBindHistory updateBindHistory = MerchantChannelEmployeeBindHistory.builder().merchantUid(merchant.getUid()).unBindTime(timeMillis)
                         .bindStatus(MerchantChannelEmployeeBindHistoryConstant.UN_BIND).updateTime(timeMillis).tenantId(tenantId).build();
                 merchantChannelEmployeeBindHistoryService.updateUnbindTimeByMerchantUid(updateBindHistory);
@@ -633,7 +633,7 @@ public class MerchantServiceImpl implements MerchantService {
     
                 // 新增绑定记录
                 MerchantChannelEmployeeBindHistory insertBindHistory = MerchantChannelEmployeeBindHistory.builder().merchantUid(merchant.getUid())
-                        .channelEmployeeUid(Objects.nonNull(merchantSaveRequest.getChannelEmployeeUid()) ? merchantSaveRequest.getChannelEmployeeUid() : 0L).bindTime(timeMillis)
+                        .channelEmployeeUid(merchantSaveRequest.getChannelEmployeeUid()).bindTime(timeMillis)
                         .bindStatus(MerchantChannelEmployeeBindHistoryConstant.BIND).createTime(timeMillis).updateTime(timeMillis).tenantId(tenantId).build();
                 merchantChannelEmployeeBindHistoryService.insertOne(insertBindHistory);
             }
