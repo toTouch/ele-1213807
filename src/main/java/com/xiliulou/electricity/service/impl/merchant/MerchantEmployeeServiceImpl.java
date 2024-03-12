@@ -96,7 +96,7 @@ public class MerchantEmployeeServiceImpl implements MerchantEmployeeService {
             throw new BizException("120009", "用户姓名已存在");
         }
         
-        User existUser = userService.queryByUserPhone(phone, User.TYPE_USER_MERCHANT_EMPLOYEE, merchantEmployeeRequest.getTenantId());
+        User existUser = userService.queryByUserPhoneFromDB(phone, User.TYPE_USER_MERCHANT_EMPLOYEE, merchantEmployeeRequest.getTenantId());
         if (Objects.nonNull(existUser)) {
             throw new BizException("120001", "当前手机号已注册");
         }
@@ -135,7 +135,6 @@ public class MerchantEmployeeServiceImpl implements MerchantEmployeeService {
         MerchantEmployee merchantEmployee = new MerchantEmployee();
         
         merchantEmployee.setUid(userResult.getUid());
-        //merchantEmployee.setStatus(merchantEmployeeRequest.getStatus());
         merchantEmployee.setMerchantUid(merchantEmployeeRequest.getMerchantUid());
         merchantEmployee.setPlaceId(merchantEmployeeRequest.getPlaceId());
         merchantEmployee.setTenantId(merchantEmployeeRequest.getTenantId().longValue());
@@ -186,7 +185,7 @@ public class MerchantEmployeeServiceImpl implements MerchantEmployeeService {
         
         //检查当前手机号是否已经注册
         if (!Objects.equals(user.getPhone(), merchantEmployeeRequest.getPhone())) {
-            User existUser = userService.queryByUserPhone(merchantEmployeeRequest.getPhone(), User.TYPE_USER_MERCHANT_EMPLOYEE, merchantEmployeeRequest.getTenantId());
+            User existUser = userService.queryByUserPhoneFromDB(merchantEmployeeRequest.getPhone(), User.TYPE_USER_MERCHANT_EMPLOYEE, merchantEmployeeRequest.getTenantId());
             if (Objects.nonNull(existUser)) {
                 throw new BizException("120002", "当前手机号已注册");
             }
