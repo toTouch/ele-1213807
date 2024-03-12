@@ -19,6 +19,9 @@
             <if test="updateTime != null">
                 update_time = #{updateTime},
             </if>
+            <if test="channelEmployeeUid != null">
+                channel_employee_uid = #{channelEmployeeUid},
+            </if>
         </set>
         <where>
             merchant_uid = #{merchantUid} and tenant_id = #{tenantId} and bind_status = 0
@@ -70,10 +73,10 @@
             <if test="bindStatus != null">
                 and bind_status = #{bindStatus}
             </if>
-            <if test="bindStatus != null">
+            <if test="bindTime != null">
                 and bind_time = #{bindTime}
             </if>
-            <if test="bindStatus != null">
+            <if test="unBindTime != null">
                 and un_bind_time = #{unBindTime}
             </if>
         </where>

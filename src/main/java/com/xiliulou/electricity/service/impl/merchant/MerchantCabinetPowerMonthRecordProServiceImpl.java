@@ -22,7 +22,7 @@ public class MerchantCabinetPowerMonthRecordProServiceImpl implements MerchantCa
     
     @Slave
     @Override
-    public MerchantPowerPeriodVO sumMonthPower(List<Long> cabinetIds, List<String> monthDateList) {
-        return merchantCabinetPowerMonthRecordProMapper.sumMonthPower(cabinetIds, monthDateList);
+    public MerchantPowerPeriodVO sumMonthPower(List<Long> cabinetIds, List<String> monthDateList, Long merchantId) {
+        return merchantCabinetPowerMonthRecordProMapper.sumMonthPower(cabinetIds, monthDateList, merchantId);
     }
 }

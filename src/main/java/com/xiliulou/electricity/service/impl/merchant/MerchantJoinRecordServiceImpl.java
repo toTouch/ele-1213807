@@ -130,20 +130,9 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
             
             // 已过保护期+已参与状态 的记录，需要更新为已失效，才能再扫码
             MerchantJoinRecord needUpdatedToInvalidRecord = null;
-            // 是否存在已邀请成功的记录及是否过保护期
-            List<MerchantJoinRecord> joinRecordList = this.listByJoinUidAndStatus(joinUid,
-                    List.of(MerchantJoinRecordConstant.STATUS_SUCCESS, MerchantJoinRecordConstant.STATUS_INIT, MerchantJoinRecordConstant.STATUS_EXPIRED));
+            List<MerchantJoinRecord> joinRecordList = this.listByJoinUidAndStatus(joinUid, List.of(MerchantJoinRecordConstant.STATUS_INIT));
             if (CollectionUtils.isNotEmpty(joinRecordList)) {
                 for (MerchantJoinRecord joinRecord : joinRecordList) {
-                    // 有邀请成功记录或参与过期记录，则返回
-                    if (Objects.equals(joinRecord.getStatus(), MerchantJoinRecordConstant.STATUS_SUCCESS) || Objects.equals(joinRecord.getStatus(),
-                            MerchantJoinRecordConstant.STATUS_EXPIRED)) {
-                        log.info("MERCHANT JOIN ERROR! user already join merchant, merchantId={}, inviterUid={}, joinUid={}", joinRecord.getMerchantId(),
-                                joinRecord.getInviterUid(), joinUid);
-                        
-                        return R.fail("120106", "您已是会员用户,无法参加商户活动");
-                    }
-                    
                     // 有已参与记录
                     if (Objects.equals(joinRecord.getStatus(), MerchantJoinRecordConstant.STATUS_INIT)) {
                         
@@ -473,8 +462,19 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
     
     @Slave
     @Override
-    public boolean existInviterData(Integer inviterType, Long inviterUid, Integer tenantId) {
-        Integer existInviterData = merchantJoinRecordMapper.existInviterData(inviterType, inviterUid, tenantId);
+    public boolean existMerchantInviterData(Integer inviterType, Long inviterUid, Integer tenantId) {
+        Integer existInviterData = merchantJoinRecordMapper.existMerchantInviterData(inviterType, inviterUid, tenantId);
+        if (Objects.nonNull(existInviterData)) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+    
+    @Slave
+    @Override
+    public boolean existMerchantAllInviterData(Long merchantId, Integer tenantId) {
+        Integer existInviterData = merchantJoinRecordMapper.existMerchantAllInviterData(merchantId, tenantId);
         if (Objects.nonNull(existInviterData)) {
             return true;
         } else {

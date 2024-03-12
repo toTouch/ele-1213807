@@ -261,7 +261,8 @@
             <if test="tenantId != null">
                 and tenant_id = #{tenantId}
             </if>
-            limit #{offset}, #{size} order by start_time desc
+            order by start_time desc
+            limit #{offset}, #{size}
         </where>
     </select>
     
@@ -321,12 +322,20 @@
         limit #{offset}, #{size}
     </select>
     
-    <select id="existInviterData" resultType="java.lang.Integer">
+    <select id="existMerchantInviterData" resultType="java.lang.Integer">
         select 1
         from t_merchant_join_record
         where del_flag = 0
           and inviter_type = #{inviterType}
           and inviter_uid = #{inviterUid}
+          and tenant_id = #{tenantId} limit 1
+    </select>
+    
+    <select id="existMerchantAllInviterData" resultType="java.lang.Integer">
+        select 1
+        from t_merchant_join_record
+        where del_flag = 0
+          and merchant_id = #{merchantId}
           and tenant_id = #{tenantId} limit 1
     </select>
     
@@ -377,7 +386,8 @@
             <if test="tenantId != null">
                 and tenant_id = #{tenantId}
             </if>
-            limit #{offset}, #{size} order by start_time desc
+            order by start_time desc
+            limit #{offset}, #{size}
         </where>
     </select>
     

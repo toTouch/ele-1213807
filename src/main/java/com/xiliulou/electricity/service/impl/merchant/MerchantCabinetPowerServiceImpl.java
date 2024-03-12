@@ -138,14 +138,14 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
             log.info("Merchant powerData getTodayPower......");
             MerchantPowerPeriodVO todayPower = getTodayPower(tenantId, merchant.getId(), cabinetIds);
             
-            Double power = NumberConstant.ZERO_D;
-            Double charge = NumberConstant.ZERO_D;
+            BigDecimal power = BigDecimal.ZERO;
+            BigDecimal charge = BigDecimal.ZERO;
             if (Objects.nonNull(todayPower)) {
                 if (Objects.nonNull(todayPower.getPower())) {
-                    power = BigDecimal.valueOf(todayPower.getPower()).setScale(2, RoundingMode.HALF_UP).doubleValue();
+                    power = todayPower.getPower().setScale(2, RoundingMode.HALF_UP);
                 }
                 if (Objects.nonNull(todayPower.getCharge())) {
-                    charge = BigDecimal.valueOf(todayPower.getCharge()).setScale(2, RoundingMode.HALF_UP).doubleValue();
+                    charge = todayPower.getCharge().setScale(2, RoundingMode.HALF_UP);
                 }
             }
             
@@ -163,14 +163,14 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
             log.info("Merchant powerData getYesterdayPower......");
             MerchantPowerPeriodVO yesterdayPower = getYesterdayPower(tenantId, merchant.getId(), cabinetIds);
             
-            Double power = NumberConstant.ZERO_D;
-            Double charge = NumberConstant.ZERO_D;
+            BigDecimal power = BigDecimal.ZERO;
+            BigDecimal charge = BigDecimal.ZERO;
             if (Objects.nonNull(yesterdayPower)) {
                 if (Objects.nonNull(yesterdayPower.getPower())) {
-                    power = BigDecimal.valueOf(yesterdayPower.getPower()).setScale(2, RoundingMode.HALF_UP).doubleValue();
+                    power = yesterdayPower.getPower().setScale(2, RoundingMode.HALF_UP);
                 }
                 if (Objects.nonNull(yesterdayPower.getCharge())) {
-                    charge = BigDecimal.valueOf(yesterdayPower.getCharge()).setScale(2, RoundingMode.HALF_UP).doubleValue();
+                    charge = yesterdayPower.getCharge().setScale(2, RoundingMode.HALF_UP);
                 }
             }
             
@@ -189,14 +189,14 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
             
             MerchantPowerPeriodVO thisMonthPower = getThisMonthPower(tenantId, merchant.getId(), cabinetIds);
             
-            Double power = NumberConstant.ZERO_D;
-            Double charge = NumberConstant.ZERO_D;
+            BigDecimal power = BigDecimal.ZERO;
+            BigDecimal charge = BigDecimal.ZERO;
             if (Objects.nonNull(thisMonthPower)) {
                 if (Objects.nonNull(thisMonthPower.getPower())) {
-                    power = BigDecimal.valueOf(thisMonthPower.getPower()).setScale(2, RoundingMode.HALF_UP).doubleValue();
+                    power = thisMonthPower.getPower().setScale(2, RoundingMode.HALF_UP);
                 }
                 if (Objects.nonNull(thisMonthPower.getCharge())) {
-                    charge = BigDecimal.valueOf(thisMonthPower.getCharge()).setScale(2, RoundingMode.HALF_UP).doubleValue();
+                    charge = thisMonthPower.getCharge().setScale(2, RoundingMode.HALF_UP);
                 }
             }
             
@@ -214,14 +214,14 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
             log.info("Merchant powerData getLastMonthPower......");
             MerchantPowerPeriodVO lastMonthPower = getLastMonthPower(tenantId, merchant.getId(), cabinetIds);
             
-            Double power = NumberConstant.ZERO_D;
-            Double charge = NumberConstant.ZERO_D;
+            BigDecimal power = BigDecimal.ZERO;
+            BigDecimal charge = BigDecimal.ZERO;
             if (Objects.nonNull(lastMonthPower)) {
                 if (Objects.nonNull(lastMonthPower.getPower())) {
-                    power = BigDecimal.valueOf(lastMonthPower.getPower()).setScale(2, RoundingMode.HALF_UP).doubleValue();
+                    power = lastMonthPower.getPower().setScale(2, RoundingMode.HALF_UP);
                 }
                 if (Objects.nonNull(lastMonthPower.getCharge())) {
-                    charge = BigDecimal.valueOf(lastMonthPower.getCharge()).setScale(2, RoundingMode.HALF_UP).doubleValue();
+                    charge = lastMonthPower.getCharge().setScale(2, RoundingMode.HALF_UP);
                 }
             }
             
@@ -239,13 +239,13 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
             log.info("Merchant powerData getTotalPower......");
             MerchantPowerPeriodVO totalPower = getTotalPower(tenantId, merchant.getId(), cabinetIds);
             
-            Double power = NumberConstant.ZERO_D;
-            Double charge = NumberConstant.ZERO_D;
+            BigDecimal power = BigDecimal.ZERO;
+            BigDecimal charge = BigDecimal.ZERO;
             if (Objects.nonNull(totalPower.getPower())) {
-                power = BigDecimal.valueOf(totalPower.getPower()).setScale(2, RoundingMode.HALF_UP).doubleValue();
+                power = totalPower.getPower().setScale(2, RoundingMode.HALF_UP);
             }
             if (Objects.nonNull(totalPower.getCharge())) {
-                charge = BigDecimal.valueOf(totalPower.getCharge()).setScale(2, RoundingMode.HALF_UP).doubleValue();
+                charge = totalPower.getCharge().setScale(2, RoundingMode.HALF_UP);
             }
             
             vo.setTotalPower(power);
@@ -327,8 +327,11 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
         
         // 封装数据
         MerchantPowerPeriodVO powerVO = new MerchantPowerPeriodVO();
-        powerVO.setPower(resultList.stream().filter(Objects::nonNull).mapToDouble(MerchantProLivePowerVO::getPower).sum());
-        powerVO.setCharge(resultList.stream().filter(Objects::nonNull).mapToDouble(MerchantProLivePowerVO::getCharge).sum());
+        BigDecimal power = resultList.stream().filter(Objects::nonNull).map(MerchantProLivePowerVO::getPower).reduce(BigDecimal.ZERO, BigDecimal::add);
+        BigDecimal charge = resultList.stream().filter(Objects::nonNull).map(MerchantProLivePowerVO::getCharge).reduce(BigDecimal.ZERO, BigDecimal::add);
+        
+        powerVO.setPower(power.setScale(2, RoundingMode.HALF_UP));
+        powerVO.setCharge(charge.setScale(2, RoundingMode.HALF_UP));
         
         log.info("Merchant getTodayPower merchantId={}, powerVO={}", merchantId, powerVO);
         
@@ -390,8 +393,11 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
         
         // 封装数据
         MerchantPowerPeriodVO powerVO = new MerchantPowerPeriodVO();
-        powerVO.setPower(resultList.stream().filter(Objects::nonNull).mapToDouble(MerchantProLivePowerVO::getPower).sum());
-        powerVO.setCharge(resultList.stream().filter(Objects::nonNull).mapToDouble(MerchantProLivePowerVO::getCharge).sum());
+        BigDecimal power = resultList.stream().filter(Objects::nonNull).map(MerchantProLivePowerVO::getPower).reduce(BigDecimal.ZERO, BigDecimal::add);
+        BigDecimal charge = resultList.stream().filter(Objects::nonNull).map(MerchantProLivePowerVO::getCharge).reduce(BigDecimal.ZERO, BigDecimal::add);
+        
+        powerVO.setPower(power.setScale(2, RoundingMode.HALF_UP));
+        powerVO.setCharge(charge.setScale(2, RoundingMode.HALF_UP));
         
         log.info("Merchant getYesterdayPower merchantId={}, powerVO={}", merchantId, powerVO);
         return powerVO;
@@ -450,8 +456,11 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
         
         // 封装数据
         MerchantPowerPeriodVO powerVO = new MerchantPowerPeriodVO();
-        powerVO.setPower(resultList.stream().filter(Objects::nonNull).mapToDouble(MerchantProLivePowerVO::getPower).sum());
-        powerVO.setCharge(resultList.stream().filter(Objects::nonNull).mapToDouble(MerchantProLivePowerVO::getCharge).sum());
+        BigDecimal power = resultList.stream().filter(Objects::nonNull).map(MerchantProLivePowerVO::getPower).reduce(BigDecimal.ZERO, BigDecimal::add);
+        BigDecimal charge = resultList.stream().filter(Objects::nonNull).map(MerchantProLivePowerVO::getCharge).reduce(BigDecimal.ZERO, BigDecimal::add);
+        
+        powerVO.setPower(power.setScale(2, RoundingMode.HALF_UP));
+        powerVO.setCharge(charge.setScale(2, RoundingMode.HALF_UP));
         
         log.info("Merchant getThisMonthPower merchantId={}, powerVO={}", merchantId, powerVO);
         
@@ -513,8 +522,11 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
         
         // 封装数据
         MerchantPowerPeriodVO powerVO = new MerchantPowerPeriodVO();
-        powerVO.setPower(resultList.stream().filter(Objects::nonNull).mapToDouble(MerchantProLivePowerVO::getPower).sum());
-        powerVO.setCharge(resultList.stream().filter(Objects::nonNull).mapToDouble(MerchantProLivePowerVO::getCharge).sum());
+        BigDecimal power = resultList.stream().filter(Objects::nonNull).map(MerchantProLivePowerVO::getPower).reduce(BigDecimal.ZERO, BigDecimal::add);
+        BigDecimal charge = resultList.stream().filter(Objects::nonNull).map(MerchantProLivePowerVO::getCharge).reduce(BigDecimal.ZERO, BigDecimal::add);
+        
+        powerVO.setPower(power.setScale(2, RoundingMode.HALF_UP));
+        powerVO.setCharge(charge.setScale(2, RoundingMode.HALF_UP));
         
         log.info("Merchant getLastMonthPower merchantId={}, powerVO={}", merchantId, powerVO);
         
@@ -547,8 +559,9 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
                 powerVO.setPlaceId(placeId);
                 powerVO.setStartTime(cabinetBindTime);
                 powerVO.setEndTime(cabinetUnbindTime);
-                powerVO.setPower(Objects.isNull(eleSumPowerVO) ? NumberConstant.ZERO_D : eleSumPowerVO.getSumPower());
-                powerVO.setCharge(Objects.isNull(eleSumPowerVO) ? NumberConstant.ZERO_D : eleSumPowerVO.getSumCharge());
+                
+                powerVO.setPower(Objects.isNull(eleSumPowerVO) ? BigDecimal.ZERO : eleSumPowerVO.getSumPower());
+                powerVO.setCharge(Objects.isNull(eleSumPowerVO) ? BigDecimal.ZERO : eleSumPowerVO.getSumCharge());
                 
                 resultList.add(powerVO);
             });
@@ -634,8 +647,8 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
         List<MerchantProLivePowerVO> voList = new ArrayList<>();
         // 遍历groupByEidMap
         groupByEidMap.forEach((k, v) -> {
-            double sumPower = v.stream().filter(Objects::nonNull).mapToDouble(MerchantProLivePowerVO::getPower).sum();
-            double sumCharge = v.stream().filter(Objects::nonNull).mapToDouble(MerchantProLivePowerVO::getCharge).sum();
+            BigDecimal sumPower = v.stream().filter(Objects::nonNull).map(MerchantProLivePowerVO::getPower).reduce(BigDecimal.ZERO, BigDecimal::add);
+            BigDecimal sumCharge = v.stream().filter(Objects::nonNull).map(MerchantProLivePowerVO::getCharge).reduce(BigDecimal.ZERO, BigDecimal::add);
             
             MerchantProLivePowerVO powerVO = new MerchantProLivePowerVO();
             powerVO.setEid(k);
@@ -866,8 +879,8 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
         return MerchantProCabinetPowerDetailVO.builder().monthDate(monthDate).cabinetId(eid)
                 .cabinetName(Optional.ofNullable(electricityCabinet).orElse(new ElectricityCabinet()).getName())
                 .sn(Optional.ofNullable(electricityCabinet).orElse(new ElectricityCabinet()).getSn())
-                .power(Objects.isNull(eleSumPowerVO) ? NumberConstant.ZERO_D : eleSumPowerVO.getSumPower())
-                .charge(Objects.isNull(eleSumPowerVO) ? NumberConstant.ZERO_D : eleSumPowerVO.getSumCharge()).startTime(startTime).endTime(endTime).placeId(placeId)
+                .power(Objects.isNull(eleSumPowerVO) ? BigDecimal.ZERO : eleSumPowerVO.getSumPower())
+                .charge(Objects.isNull(eleSumPowerVO) ? BigDecimal.ZERO : eleSumPowerVO.getSumCharge()).startTime(startTime).endTime(endTime).placeId(placeId)
                 .placeName(Optional.ofNullable(merchantPlaceService.queryByIdFromCache(placeId)).orElse(new MerchantPlace()).getName()).bindStatus(merchantCabinetBindStatus)
                 .build();
     }
@@ -905,13 +918,13 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
                         current.setEndTime(next.getStartTime());
                     }
                     
-                    double currentPower = Objects.isNull(current.getPower()) ? NumberConstant.ZERO_D : current.getPower();
-                    double currentCharge = Objects.isNull(current.getCharge()) ? NumberConstant.ZERO : current.getCharge();
-                    double nextPower = Objects.isNull(next.getPower()) ? NumberConstant.ZERO : next.getPower();
-                    double nextCharge = Objects.isNull(next.getCharge()) ? NumberConstant.ZERO : next.getCharge();
+                    BigDecimal currentPower = Objects.isNull(current.getPower()) ? BigDecimal.ZERO : current.getPower();
+                    BigDecimal currentCharge = Objects.isNull(current.getCharge()) ? BigDecimal.ZERO : current.getCharge();
+                    BigDecimal nextPower = Objects.isNull(next.getPower()) ? BigDecimal.ZERO : next.getPower();
+                    BigDecimal nextCharge = Objects.isNull(next.getCharge()) ? BigDecimal.ZERO : next.getCharge();
                     
-                    current.setPower(currentPower + nextPower);
-                    current.setCharge(currentCharge + nextCharge);
+                    current.setPower(currentPower.add(nextPower));
+                    current.setCharge(currentCharge.add(nextCharge));
                     
                     list.remove(next);
                 }
@@ -991,8 +1004,8 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
         List<MerchantProLivePowerVO> voList = new ArrayList<>();
         // 遍历groupByEidMap
         groupByEidMap.forEach((k, v) -> {
-            double sumPower = v.stream().filter(Objects::nonNull).mapToDouble(MerchantProLivePowerVO::getPower).sum();
-            double sumCharge = v.stream().filter(Objects::nonNull).mapToDouble(MerchantProLivePowerVO::getCharge).sum();
+            BigDecimal sumPower = v.stream().filter(Objects::nonNull).map(MerchantProLivePowerVO::getPower).reduce(BigDecimal.ZERO, BigDecimal::add);
+            BigDecimal sumCharge = v.stream().filter(Objects::nonNull).map(MerchantProLivePowerVO::getCharge).reduce(BigDecimal.ZERO, BigDecimal::add);
             
             MerchantProLivePowerVO powerVO = new MerchantProLivePowerVO();
             powerVO.setEid(k);
@@ -1074,8 +1087,8 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
         List<MerchantProLivePowerVO> voList = new ArrayList<>();
         // 遍历groupByEidMap
         groupByEidMap.forEach((k, v) -> {
-            double sumPower = v.stream().filter(Objects::nonNull).mapToDouble(MerchantProLivePowerVO::getPower).sum();
-            double sumCharge = v.stream().filter(Objects::nonNull).mapToDouble(MerchantProLivePowerVO::getCharge).sum();
+            BigDecimal sumPower = v.stream().filter(Objects::nonNull).map(MerchantProLivePowerVO::getPower).reduce(BigDecimal.ZERO, BigDecimal::add);
+            BigDecimal sumCharge = v.stream().filter(Objects::nonNull).map(MerchantProLivePowerVO::getCharge).reduce(BigDecimal.ZERO, BigDecimal::add);
             
             MerchantProLivePowerVO powerVO = new MerchantProLivePowerVO();
             powerVO.setEid(k);
@@ -1580,7 +1593,7 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
         log.info("Merchant powerData getTotalPower merchantId={}, cabinetIds={}", merchantId, cabinetIds);
         
         //两个月前的数据（来源于历史表，定时任务）
-        MerchantPowerPeriodVO preTwoMonthPower = merchantCabinetPowerMonthRecordProService.sumMonthPower(cabinetIds, null);
+        MerchantPowerPeriodVO preTwoMonthPower = merchantCabinetPowerMonthRecordProService.sumMonthPower(cabinetIds, null, merchantId);
         
         log.info("Merchant powerData getTotalPower merchantId={}, cabinetIds={}, preTwoMonthPower={}", merchantId, cabinetIds, preTwoMonthPower);
         
@@ -1596,16 +1609,16 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
         
         MerchantPowerPeriodVO powerVO = new MerchantPowerPeriodVO();
         if (Objects.nonNull(preTwoMonthPower)) {
-            powerVO.setPower(Objects.isNull(preTwoMonthPower.getPower()) ? NumberConstant.ZERO_D : preTwoMonthPower.getPower());
-            powerVO.setCharge(Objects.isNull(preTwoMonthPower.getCharge()) ? NumberConstant.ZERO_D : preTwoMonthPower.getCharge());
+            powerVO.setPower(Objects.isNull(preTwoMonthPower.getPower()) ? BigDecimal.ZERO : preTwoMonthPower.getPower());
+            powerVO.setCharge(Objects.isNull(preTwoMonthPower.getCharge()) ? BigDecimal.ZERO : preTwoMonthPower.getCharge());
         }
         if (Objects.nonNull(lastMonthPower)) {
-            powerVO.setPower(Objects.isNull(lastMonthPower.getPower()) ? NumberConstant.ZERO_D : lastMonthPower.getPower());
-            powerVO.setCharge(Objects.isNull(lastMonthPower.getCharge()) ? NumberConstant.ZERO_D : lastMonthPower.getCharge());
+            powerVO.setPower(Objects.isNull(lastMonthPower.getPower()) ? BigDecimal.ZERO : lastMonthPower.getPower());
+            powerVO.setCharge(Objects.isNull(lastMonthPower.getCharge()) ? BigDecimal.ZERO : lastMonthPower.getCharge());
         }
         if (Objects.nonNull(thisMonthPower)) {
-            powerVO.setPower(Objects.isNull(thisMonthPower.getPower()) ? NumberConstant.ZERO_D : thisMonthPower.getPower());
-            powerVO.setCharge(Objects.isNull(thisMonthPower.getCharge()) ? NumberConstant.ZERO_D : thisMonthPower.getCharge());
+            powerVO.setPower(Objects.isNull(thisMonthPower.getPower()) ? BigDecimal.ZERO : thisMonthPower.getPower());
+            powerVO.setCharge(Objects.isNull(thisMonthPower.getCharge()) ? BigDecimal.ZERO : thisMonthPower.getCharge());
         }
         
         log.info("Merchant powerData getTotalPower merchantId={}, powerVO={}", merchantId, powerVO);
@@ -1659,16 +1672,16 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
             
             monthDate = monthDate + "-01";
             
-            MerchantPowerPeriodVO merchantPowerPeriodVO = merchantCabinetPowerMonthRecordProService.sumMonthPower(cabinetIds, List.of(monthDate));
+            MerchantPowerPeriodVO merchantPowerPeriodVO = merchantCabinetPowerMonthRecordProService.sumMonthPower(cabinetIds, List.of(monthDate), merchant.getId());
             
-            Double powerD = NumberConstant.ZERO_D;
-            Double chargeD = NumberConstant.ZERO_D;
+            BigDecimal powerD = BigDecimal.ZERO;
+            BigDecimal chargeD = BigDecimal.ZERO;
             if (Objects.nonNull(merchantPowerPeriodVO)) {
                 if (Objects.nonNull(merchantPowerPeriodVO.getPower())) {
-                    powerD = BigDecimal.valueOf(merchantPowerPeriodVO.getPower()).setScale(2, RoundingMode.HALF_UP).doubleValue();
+                    powerD = merchantPowerPeriodVO.getPower().setScale(2, RoundingMode.HALF_UP);
                 }
                 if (Objects.nonNull(merchantPowerPeriodVO.getCharge())) {
-                    chargeD = BigDecimal.valueOf(merchantPowerPeriodVO.getCharge()).setScale(2, RoundingMode.HALF_UP).doubleValue();
+                    chargeD = merchantPowerPeriodVO.getCharge().setScale(2, RoundingMode.HALF_UP);
                 }
             }
             
@@ -1688,14 +1701,14 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
         // 2.实时获取上个月的数据
         MerchantPowerPeriodVO lastMonthPower = getLastMonthPower(TenantContextHolder.getTenantId(), request.getMerchantId(), cabinetIds);
         
-        Double powerD = NumberConstant.ZERO_D;
-        Double chargeD = NumberConstant.ZERO_D;
+        BigDecimal powerD = BigDecimal.ZERO;
+        BigDecimal chargeD = BigDecimal.ZERO;
         if (Objects.nonNull(lastMonthPower)) {
             if (Objects.nonNull(lastMonthPower.getPower())) {
-                powerD = BigDecimal.valueOf(lastMonthPower.getPower()).setScale(2, RoundingMode.HALF_UP).doubleValue();
+                powerD = lastMonthPower.getPower().setScale(2, RoundingMode.HALF_UP);
             }
             if (Objects.nonNull(lastMonthPower.getCharge())) {
-                chargeD = BigDecimal.valueOf(lastMonthPower.getCharge()).setScale(2, RoundingMode.HALF_UP).doubleValue();
+                chargeD = lastMonthPower.getCharge().setScale(2, RoundingMode.HALF_UP);
             }
         }
         
@@ -1726,12 +1739,12 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
         for (String monthDate : monthList) {
             MerchantProPowerLineDataVO powerData = new MerchantProPowerLineDataVO();
             powerData.setMonthDate(monthDate);
-            powerData.setPower(NumberConstant.ZERO_D);
+            powerData.setPower(BigDecimal.ZERO);
             powerList.add(powerData);
             
             MerchantProPowerChargeLineDataVO chargeData = new MerchantProPowerChargeLineDataVO();
             chargeData.setMonthDate(monthDate);
-            chargeData.setCharge(NumberConstant.ZERO_D);
+            chargeData.setCharge(BigDecimal.ZERO);
             chargeList.add(chargeData);
         }
         
@@ -1880,47 +1893,46 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
             for (Long cabinetId : cabinetIds) {
                 // 今日电量
                 List<MerchantProLivePowerVO> todayPower = todayPowerForCabinetList.parallelStream().filter(e -> Objects.equals(e.getEid(), cabinetId)).collect(Collectors.toList());
-                double todayPowerSum = todayPower.stream().filter(Objects::nonNull).mapToDouble(MerchantProLivePowerVO::getPower).sum();
-                todayPowerSum = BigDecimal.valueOf(todayPowerSum).setScale(2, RoundingMode.HALF_UP).doubleValue();
+                BigDecimal todayPowerSum = todayPower.stream().filter(Objects::nonNull).map(MerchantProLivePowerVO::getPower).reduce(BigDecimal.ZERO, BigDecimal::add);
+                todayPowerSum = todayPowerSum.setScale(2, RoundingMode.HALF_UP);
                 
-                double todayChargeSum = todayPower.stream().filter(Objects::nonNull).mapToDouble(MerchantProLivePowerVO::getCharge).sum();
-                todayChargeSum = BigDecimal.valueOf(todayChargeSum).setScale(2, RoundingMode.HALF_UP).doubleValue();
+                BigDecimal todayChargeSum = todayPower.stream().filter(Objects::nonNull).map(MerchantProLivePowerVO::getCharge).reduce(BigDecimal.ZERO, BigDecimal::add);
+                todayChargeSum = todayChargeSum.setScale(2, RoundingMode.HALF_UP);
                 
                 // 本月电量
                 List<MerchantProLivePowerVO> thisMonthPower = thisMonthPowerList.parallelStream().filter(e -> Objects.equals(e.getEid(), cabinetId)).collect(Collectors.toList());
-                double thisMonthPowerSum = thisMonthPower.stream().filter(Objects::nonNull).mapToDouble(MerchantProLivePowerVO::getPower).sum();
-                thisMonthPowerSum = BigDecimal.valueOf(thisMonthPowerSum).setScale(2, RoundingMode.HALF_UP).doubleValue();
+                BigDecimal thisMonthPowerSum = thisMonthPower.stream().filter(Objects::nonNull).map(MerchantProLivePowerVO::getPower).reduce(BigDecimal.ZERO, BigDecimal::add);
+                thisMonthPowerSum = thisMonthPowerSum.setScale(2, RoundingMode.HALF_UP);
                 
-                double thisMonthChargeSum = thisMonthPower.stream().filter(Objects::nonNull).mapToDouble(MerchantProLivePowerVO::getCharge).sum();
-                thisMonthChargeSum = BigDecimal.valueOf(thisMonthChargeSum).setScale(2, RoundingMode.HALF_UP).doubleValue();
+                BigDecimal thisMonthChargeSum = thisMonthPower.stream().filter(Objects::nonNull).map(MerchantProLivePowerVO::getCharge).reduce(BigDecimal.ZERO, BigDecimal::add);
+                thisMonthChargeSum = thisMonthChargeSum.setScale(2, RoundingMode.HALF_UP);
                 
                 // 上月电量
                 List<MerchantProLivePowerVO> lastMonthPower = lastMonthPowerList.parallelStream().filter(e -> Objects.equals(e.getEid(), cabinetId)).collect(Collectors.toList());
-                double lastMonthPowerSum = lastMonthPower.stream().filter(Objects::nonNull).mapToDouble(MerchantProLivePowerVO::getPower).sum();
-                lastMonthPowerSum = BigDecimal.valueOf(lastMonthPowerSum).setScale(2, RoundingMode.HALF_UP).doubleValue();
+                BigDecimal lastMonthPowerSum = lastMonthPower.stream().filter(Objects::nonNull).map(MerchantProLivePowerVO::getPower).reduce(BigDecimal.ZERO, BigDecimal::add);
                 
-                double lastMonthChargeSum = lastMonthPower.stream().filter(Objects::nonNull).mapToDouble(MerchantProLivePowerVO::getCharge).sum();
-                lastMonthChargeSum = BigDecimal.valueOf(lastMonthChargeSum).setScale(2, RoundingMode.HALF_UP).doubleValue();
+                BigDecimal lastMonthChargeSum = lastMonthPower.stream().filter(Objects::nonNull).map(MerchantProLivePowerVO::getCharge).reduce(BigDecimal.ZERO, BigDecimal::add);
+                lastMonthChargeSum = lastMonthChargeSum.setScale(2, RoundingMode.HALF_UP);
                 
                 // 本年电量
-                double thisYearPower = thisMonthPowerSum + lastMonthPowerSum;
-                double thisYearCharge = thisMonthChargeSum + lastMonthChargeSum;
+                BigDecimal thisYearPower = thisMonthPowerSum.add(lastMonthPowerSum);
+                BigDecimal thisYearCharge = thisMonthChargeSum.add(lastMonthChargeSum);
                 
                 List<String> preTwoMonthList;
                 if (monthList.size() > NumberConstant.TWO) {
                     List<String> subMonthList = monthList.subList(0, monthList.size() - NumberConstant.TWO);
                     preTwoMonthList = getPreTwoMonthList(subMonthList);
                     
-                    MerchantPowerPeriodVO preTwoMonthPowerPeriod = merchantCabinetPowerMonthRecordProService.sumMonthPower(List.of(cabinetId), preTwoMonthList);
+                    MerchantPowerPeriodVO preTwoMonthPowerPeriod = merchantCabinetPowerMonthRecordProService.sumMonthPower(List.of(cabinetId), preTwoMonthList, merchant.getId());
                     if (Objects.nonNull(preTwoMonthPowerPeriod)) {
                         if (Objects.nonNull(preTwoMonthPowerPeriod.getPower())) {
-                            double preTwoMonthPower = BigDecimal.valueOf(preTwoMonthPowerPeriod.getPower()).setScale(2, RoundingMode.HALF_UP).doubleValue();
-                            thisYearCharge += preTwoMonthPower;
+                            BigDecimal preTwoMonthPower = preTwoMonthPowerPeriod.getPower().setScale(2, RoundingMode.HALF_UP);
+                            thisYearPower = thisYearPower.add(preTwoMonthPower);
                         }
                         
                         if (Objects.nonNull(preTwoMonthPowerPeriod.getCharge())) {
-                            double preTwoMonthCharge = BigDecimal.valueOf(preTwoMonthPowerPeriod.getCharge()).setScale(2, RoundingMode.HALF_UP).doubleValue();
-                            thisYearCharge += preTwoMonthCharge;
+                            BigDecimal preTwoMonthCharge = preTwoMonthPowerPeriod.getCharge().setScale(2, RoundingMode.HALF_UP);
+                            thisYearCharge = thisYearCharge.add(preTwoMonthCharge);
                         }
                     }
                 }

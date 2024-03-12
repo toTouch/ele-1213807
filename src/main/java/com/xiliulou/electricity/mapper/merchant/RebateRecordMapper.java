@@ -34,7 +34,7 @@ public interface RebateRecordMapper extends BaseMapper<RebateRecord> {
     
     List<RebateRecord> selectByPage(RebateRecordRequest query);
     
-    List<RebateRecord> selectByExcessOriginalOrderId(String originalOrderId);
+    List<RebateRecord> selectByOriginalOrderId(String originalOrderId);
     
     RebateRecord selectLatestByOriginalOrderId(String originalOrderId);
     

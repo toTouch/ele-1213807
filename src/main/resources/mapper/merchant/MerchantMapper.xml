@@ -8,7 +8,7 @@
     <insert id="insert" keyProperty="id" useGeneratedKeys="true">
         insert into t_merchant(id, name , franchisee_id , phone , merchant_grade_id , channel_employee_uid, tenant_id , auto_up_grade , status , enterprise_package_auth ,
                                purchase_authority ,uid ,enterprise_id ,invite_auth,exist_place_fee , del_flag, create_time, update_time)
-        values (#{id}, #{name}, #{franchiseeId}, #{phone}, #{merchantGradeId}, #{channelEmployeeUid},#{channelEmployeeBindTime}, #{tenantId},#{autoUpGrade}, #{status}, #{enterprisePackageAuth},
+        values (#{id}, #{name}, #{franchiseeId}, #{phone}, #{merchantGradeId}, #{channelEmployeeUid}, #{tenantId},#{autoUpGrade}, #{status}, #{enterprisePackageAuth},
                 #{purchaseAuthority},#{uid},#{enterpriseId},#{inviteAuth},#{existPlaceFee}, #{delFlag},
                 #{createTime}, #{updateTime})
     </insert>

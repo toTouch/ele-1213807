@@ -2,6 +2,8 @@ package com.xiliulou.electricity.vo.merchant;
 
 import lombok.Data;
 
+import java.math.BigDecimal;
+
 /**
  * @author HeYafeng
  * @description 小程序-商户 电量/电费
@@ -10,24 +12,24 @@ import lombok.Data;
 @Data
 public class MerchantProPowerVO {
     
-    private Double todayPower;
+    private BigDecimal todayPower;
     
-    private Double todayCharge;
+    private BigDecimal todayCharge;
     
-    private Double yesterdayPower;
+    private BigDecimal yesterdayPower;
     
-    private Double yesterdayCharge;
+    private BigDecimal yesterdayCharge;
     
-    private Double thisMonthPower;
+    private BigDecimal thisMonthPower;
     
-    private Double thisMonthCharge;
+    private BigDecimal thisMonthCharge;
     
-    private Double lastMonthPower;
+    private BigDecimal lastMonthPower;
     
-    private Double lastMonthCharge;
+    private BigDecimal lastMonthCharge;
     
-    private Double totalPower;
+    private BigDecimal totalPower;
     
-    private Double totalCharge;
+    private BigDecimal totalCharge;
     
 }

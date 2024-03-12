@@ -1,6 +1,9 @@
 package com.xiliulou.electricity.vo.merchant;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /**
  * @author HeYafeng
@@ -8,6 +11,9 @@ import lombok.Data;
  * @date 2024/2/25 15:55:45
  */
 @Data
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
 public class MerchantCabinetPowerMonthDetailVO {
     
     /**
