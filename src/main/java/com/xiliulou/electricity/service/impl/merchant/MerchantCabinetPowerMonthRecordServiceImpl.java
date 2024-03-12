@@ -36,7 +36,7 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -116,7 +116,8 @@ public class MerchantCabinetPowerMonthRecordServiceImpl implements MerchantCabin
             return;
         }
         
-        // 对detailList进行排序 1.按placeId进行分组，组内元素按beginTime倒叙排序 2.每个组按第一条元素的beginTime倒叙
+        // sumPower不为0的数据
+        detailList = detailList.stream().filter(item -> !Objects.equals(item.getSumPower(), NumberConstant.ZERO_D)).collect(Collectors.toList());
         
         List<MerchantCabinetPowerMonthExcelVO> excelVOList = new ArrayList<>();
         
@@ -124,6 +125,9 @@ public class MerchantCabinetPowerMonthRecordServiceImpl implements MerchantCabin
         Map<Long, List<MerchantCabinetPowerMonthDetailVO>> placeMap = detailList.stream().collect(Collectors.groupingBy(MerchantCabinetPowerMonthDetailVO::getPlaceId));
         
         placeMap.forEach((placeId, placeDetailList) -> {
+            
+            // 按照时间进行倒叙
+            placeDetailList.sort(Comparator.comparing(MerchantCabinetPowerMonthDetailVO::getBeginTime).reversed());
             
             // 求和
             Double monthSumPower = placeDetailList.stream().mapToDouble(MerchantCabinetPowerMonthDetailVO::getSumPower).sum();
@@ -177,6 +181,23 @@ public class MerchantCabinetPowerMonthRecordServiceImpl implements MerchantCabin
                 });
             }
         });
+        
+        // sumPower为0的数据
+        List<MerchantCabinetPowerMonthDetailVO> emptyDetailList = detailList.stream().filter(item -> Objects.equals(item.getSumPower(), NumberConstant.ZERO_D))
+                .collect(Collectors.toList());
+        if (CollectionUtils.isNotEmpty(emptyDetailList)) {
+            emptyDetailList.forEach(item -> {
+                
+                String beginDate = DateUtils.getYearAndMonthAndDayByTimeStamps(item.getBeginTime());
+                String endDate = DateUtils.getYearAndMonthAndDayByTimeStamps(item.getEndTime());
+                
+                MerchantCabinetPowerMonthExcelVO excelVO = MerchantCabinetPowerMonthExcelVO.builder().monthDate(monthDate)
+                        .placeName(Optional.ofNullable(merchantPlaceService.queryByIdFromCache(item.getPlaceId())).orElse(new MerchantPlace()).getName()).endTime(endDate)
+                        .beginTime(beginDate).build();
+                
+                excelVOList.add(excelVO);
+            });
+        }
         
         String fileName = "场地电费出账记录.xlsx";
         try {

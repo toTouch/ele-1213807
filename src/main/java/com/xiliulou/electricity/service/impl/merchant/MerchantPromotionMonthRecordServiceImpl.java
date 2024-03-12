@@ -39,6 +39,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -131,6 +132,9 @@ public class MerchantPromotionMonthRecordServiceImpl implements MerchantPromotio
             return;
         }
         
+        // 不为0的数据
+        detailList = detailList.stream().filter(item -> !Objects.equals(item.getMoney(), BigDecimal.ZERO)).collect(Collectors.toList());
+        
         List<MerchantPromotionMonthExcelVO> excelVOList = new ArrayList<>();
         
         // excelVOList 按merchantId进行分组
@@ -139,6 +143,10 @@ public class MerchantPromotionMonthRecordServiceImpl implements MerchantPromotio
         detailMap.forEach((merchantId, merchantDayRecordVoList) -> {
             
             if (CollectionUtils.isNotEmpty(merchantDayRecordVoList)) {
+                
+                // 按照时间进行倒叙
+                merchantDayRecordVoList.sort(Comparator.comparing(MerchantPromotionDayRecordVO::getDate).reversed());
+                
                 AtomicReference<BigDecimal> firstAmount = new AtomicReference<>(BigDecimal.ZERO);
                 AtomicReference<BigDecimal> renewAmount = new AtomicReference<>(BigDecimal.ZERO);
                 AtomicReference<BigDecimal> balanceFirstAmount = new AtomicReference<>(BigDecimal.ZERO);
@@ -189,6 +197,18 @@ public class MerchantPromotionMonthRecordServiceImpl implements MerchantPromotio
             }
             
         });
+        
+        // 为0的数据
+        List<MerchantPromotionDayRecordVO> emptyDetailList = detailList.stream().filter(item -> !Objects.equals(item.getMoney(), BigDecimal.ZERO)).collect(Collectors.toList());
+        if (CollectionUtils.isNotEmpty(emptyDetailList)) {
+            emptyDetailList.forEach(item -> {
+                
+                MerchantPromotionMonthExcelVO excelVO = MerchantPromotionMonthExcelVO.builder().monthDate(monthDate)
+                        .merchantName(Optional.ofNullable(merchantService.queryByIdFromCache(item.getMerchantId())).orElse(new Merchant()).getName()).date(item.getDate()).build();
+                
+                excelVOList.add(excelVO);
+            });
+        }
         
         String fileName = "商户推广费出账记录.xlsx";
         try {
