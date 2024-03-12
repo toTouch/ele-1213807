@@ -133,23 +133,11 @@ public class MerchantPromotionMonthRecordServiceImpl implements MerchantPromotio
             return excelVOList;
         }
         
-        // 为0的数据
-        List<MerchantPromotionDayRecordVO> emptyDetailList = detailList.stream().filter(item -> !Objects.equals(item.getMoney(), BigDecimal.ZERO)).collect(Collectors.toList());
-        if (CollectionUtils.isNotEmpty(emptyDetailList)) {
-            emptyDetailList.forEach(item -> {
-                
-                MerchantPromotionMonthExcelVO excelVO = MerchantPromotionMonthExcelVO.builder().monthDate(monthDate)
-                        .merchantName(Optional.ofNullable(merchantService.queryByIdFromCache(item.getMerchantId())).orElse(new Merchant()).getName()).date(item.getDate()).build();
-                
-                excelVOList.add(excelVO);
-            });
-        }
-        
         // 不为0的数据
-        detailList = detailList.stream().filter(item -> !Objects.equals(item.getMoney(), BigDecimal.ZERO)).collect(Collectors.toList());
+        List<MerchantPromotionDayRecordVO> hasDataDetailList = detailList.stream().filter(item -> !Objects.equals(item.getMoney(), BigDecimal.ZERO)).collect(Collectors.toList());
         
         // excelVOList 按merchantId进行分组
-        Map<Long, List<MerchantPromotionDayRecordVO>> detailMap = detailList.stream().collect(Collectors.groupingBy(MerchantPromotionDayRecordVO::getMerchantId));
+        Map<Long, List<MerchantPromotionDayRecordVO>> detailMap = hasDataDetailList.stream().collect(Collectors.groupingBy(MerchantPromotionDayRecordVO::getMerchantId));
         
         detailMap.forEach((merchantId, merchantDayRecordVoList) -> {
             
@@ -208,6 +196,18 @@ public class MerchantPromotionMonthRecordServiceImpl implements MerchantPromotio
             }
             
         });
+    
+        // 为0的数据
+        List<MerchantPromotionDayRecordVO> emptyDetailList = detailList.stream().filter(item -> !Objects.equals(item.getMoney(), BigDecimal.ZERO)).collect(Collectors.toList());
+        if (CollectionUtils.isNotEmpty(emptyDetailList)) {
+            emptyDetailList.forEach(item -> {
+            
+                MerchantPromotionMonthExcelVO excelVO = MerchantPromotionMonthExcelVO.builder().monthDate(monthDate)
+                        .merchantName(Optional.ofNullable(merchantService.queryByIdFromCache(item.getMerchantId())).orElse(new Merchant()).getName()).date(item.getDate()).build();
+            
+                excelVOList.add(excelVO);
+            });
+        }
         
         return excelVOList;
     }
