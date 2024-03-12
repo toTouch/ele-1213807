@@ -246,6 +246,15 @@ public class EleOperateQueueHandler {
                             rentBatteryOrder.getUid());
                 }
     
+                //租电订单确认
+                if (Objects.equals(rentBatteryOrder.getType(), RentBatteryOrder.TYPE_USER_RENT)) {
+                    rentOrderConfirm(electricityCabinet, finalOpenDTO);
+                }
+                //退电订单确认
+                if (Objects.equals(rentBatteryOrder.getType(), RentBatteryOrder.TYPE_USER_RETURN)) {
+                    returnOrderConfirm(electricityCabinet, finalOpenDTO);
+                }
+    
                 if (rentBatteryOrder.getOrderSeq() > finalOpenDTO.getOrderSeq()) {
                     log.warn("RENT ORDER WARN! rsp order seq is lower order! requestId={},orderId={},uid={}", finalOpenDTO.getSessionId(), finalOpenDTO.getOrderId(),
                             rentBatteryOrder.getUid());
@@ -631,15 +640,6 @@ public class EleOperateQueueHandler {
             newRentBatteryOrder.setStatus(finalOpenDTO.getOrderStatus());
             rentBatteryOrderService.update(newRentBatteryOrder);
             return;
-        }
-        
-        //租电订单确认
-        if (Objects.equals(rentBatteryOrder.getType(), RentBatteryOrder.TYPE_USER_RENT)) {
-            rentOrderConfirm(electricityCabinet, finalOpenDTO);
-        }
-        //退电订单确认
-        if (Objects.equals(rentBatteryOrder.getType(), RentBatteryOrder.TYPE_USER_RETURN)) {
-            returnOrderConfirm(electricityCabinet, finalOpenDTO);
         }
         
         //订单状态
