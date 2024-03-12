@@ -39,6 +39,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toMap;
 
@@ -92,8 +93,8 @@ public class MerchantPlaceFeeSettlementServiceImpl implements MerchantPlaceFeeSe
             dto.setMonthDate(merchantPlaceFeeMonthRecordList.get(0).getMonthDate());
             dto.setPlaceId(placeId);
             dto.setTenantId(merchantPlaceFeeMonthRecordList.get(0).getTenantId());
-            dto.setMonthPlaceFee(monthPlaceFee.compareTo(BigDecimal.ZERO) == 0 ? null : monthPlaceFee);
-            dto.setMonthRentDays(Objects.equals(rentDays, 0) ? null : rentDays);
+            dto.setMonthPlaceFee(monthPlaceFee);
+            dto.setMonthRentDays(rentDays);
             recordDTOList.add(dto);
         });
         
