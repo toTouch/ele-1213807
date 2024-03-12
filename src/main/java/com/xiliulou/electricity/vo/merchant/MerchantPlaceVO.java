@@ -45,4 +45,9 @@ public class MerchantPlaceVO {
      * 是否被禁用：1 是，0 否
      */
     private Integer disable;
+    
+    /**
+     * 区域id
+     */
+    private Long merchantAreaId;
 }

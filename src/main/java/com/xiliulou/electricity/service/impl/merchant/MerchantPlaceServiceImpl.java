@@ -1,6 +1,8 @@
 package com.xiliulou.electricity.service.impl.merchant;
 
 import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.core.thread.XllThreadPoolExecutorService;
+import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.merchant.MerchantPlaceConstant;
@@ -40,11 +42,12 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
@@ -73,6 +76,9 @@ public class MerchantPlaceServiceImpl implements MerchantPlaceService {
     
     @Resource
     private MerchantPlaceCabinetBindService merchantPlaceCabinetBindService;
+    
+    XllThreadPoolExecutorService threadPool = XllThreadPoolExecutors.newFixedThreadPool("MERCHANT-PLACE-DATA-SCREEN-THREAD-POOL", 3, "merchantPlaceDataScreenThread:");
+    
     
     @Resource
     private MerchantAreaService merchantAreaService;
@@ -268,56 +274,92 @@ public class MerchantPlaceServiceImpl implements MerchantPlaceService {
             idList.add(item.getId());
         });
         
-        // 查询场地绑定的商户
-        MerchantPlaceMapQueryModel placeMapQueryModel = MerchantPlaceMapQueryModel.builder().placeIdList(idList).build();
-        List<MerchantPlaceMapVO> merchantPlaceMaps = merchantPlaceMapService.queryBindMerchantName(placeMapQueryModel);
-        
-        Map<Long, String> merchantNameMap = new HashMap<>();
-        if (ObjectUtils.isNotEmpty(merchantPlaceMaps)) {
-            merchantNameMap = merchantPlaceMaps.stream().collect(Collectors.toMap(MerchantPlaceMapVO::getPlaceId, MerchantPlaceMapVO::getMerchantName, (key, key1) -> key1));
-        }
-        
-        Map<Long, String> areaNameMap = new HashMap<>();
-        if (ObjectUtils.isNotEmpty(areaIdList)) {
-            MerchantAreaRequest areaQuery = MerchantAreaRequest.builder().idList(areaIdList).build();
-            List<MerchantArea> merchantAreaList = merchantAreaService.queryList(areaQuery);
-            
-            if (ObjectUtils.isNotEmpty(merchantAreaList)) {
-                areaNameMap = merchantAreaList.stream().collect(Collectors.toMap(MerchantArea::getId, MerchantArea::getName, (key, key1) -> key1));
-            }
-        }
-        
-        // 查询场地绑定的柜机
-        MerchantPlaceCabinetBindQueryModel placeCabinetBindQueryModel = MerchantPlaceCabinetBindQueryModel.builder().placeIdList(idList).status(MerchantPlaceConstant.BIND).build();
-        List<MerchantPlaceCabinetBindVO> merchantPlaceCabinetBinds = merchantPlaceCabinetBindService.queryBindCabinetName(placeCabinetBindQueryModel);
-        
-        Map<Long, List<MerchantPlaceCabinetBindVO>> bindCabinetMap = new HashMap<>();
-        if (ObjectUtils.isNotEmpty(merchantPlaceCabinetBinds)) {
-            bindCabinetMap = merchantPlaceCabinetBinds.stream().collect(Collectors.groupingBy(MerchantPlaceCabinetBindVO::getPlaceId));
-        }
-        
         for (MerchantPlace merchantPlace : merchantPlaceList) {
             MerchantPlaceVO merchantPlaceVO = new MerchantPlaceVO();
             BeanUtils.copyProperties(merchantPlace, merchantPlaceVO);
-            List<MerchantPlaceCabinetBindVO> merchantPlaceCabinetBindVos = bindCabinetMap.get(merchantPlace.getId());
-            
-            // 柜机
-            if (ObjectUtils.isNotEmpty(merchantPlaceCabinetBindVos)) {
-                merchantPlaceVO.setCabinetList(merchantPlaceCabinetBindVos);
-            }
-            
-            // 区域名称
-            if (ObjectUtils.isNotEmpty(areaNameMap.get(merchantPlace.getMerchantAreaId()))) {
-                merchantPlaceVO.setMerchantAreaName(areaNameMap.get(merchantPlace.getMerchantAreaId()));
-            }
-            
-            // 商户名称
-            if (ObjectUtils.isNotEmpty(merchantNameMap.get(merchantPlace.getId()))) {
-                merchantPlaceVO.setMerchantName(merchantNameMap.get(merchantPlace.getId()));
-            }
             
             // 查询
             resList.add(merchantPlaceVO);
+        }
+        
+        // 区域名称
+        CompletableFuture<Void> areaInfo = CompletableFuture.runAsync(() -> {
+            if (ObjectUtils.isEmpty(areaIdList)) {
+                return;
+            }
+            
+            MerchantAreaRequest areaQuery = MerchantAreaRequest.builder().idList(areaIdList).build();
+            List<MerchantArea> merchantAreaList = merchantAreaService.queryList(areaQuery);
+            if (ObjectUtils.isEmpty(merchantAreaList)) {
+                return;
+            }
+            
+            Map<Long, String> areaNameMap = merchantAreaList.stream().collect(Collectors.toMap(MerchantArea::getId, MerchantArea::getName, (key, key1) -> key1));
+            
+            resList.stream().forEach(item -> {
+                if (ObjectUtils.isNotEmpty(areaNameMap.get(item.getMerchantAreaId()))) {
+                    item.setMerchantAreaName(areaNameMap.get(item.getMerchantAreaId()));
+                }
+            });
+        
+        }, threadPool).exceptionally(e -> {
+            log.error("MERCHANT PLACE QUERY ERROR! query area error!", e);
+            return null;
+        });
+    
+        // 查询商户对应的场地数
+        CompletableFuture<Void> merchantInfo = CompletableFuture.runAsync(() -> {
+            // 查询场地绑定的商户
+            MerchantPlaceMapQueryModel placeMapQueryModel = MerchantPlaceMapQueryModel.builder().placeIdList(idList).build();
+            List<MerchantPlaceMapVO> merchantPlaceMaps = merchantPlaceMapService.queryBindMerchantName(placeMapQueryModel);
+            
+            if (ObjectUtils.isEmpty(merchantPlaceMaps)) {
+                return;
+            }
+            
+            Map<Long, String> merchantNameMap = merchantPlaceMaps.stream().collect(Collectors.toMap(MerchantPlaceMapVO::getPlaceId, MerchantPlaceMapVO::getMerchantName, (key, key1) -> key1));
+            resList.stream().forEach(item -> {
+                // 商户名称
+                if (ObjectUtils.isNotEmpty(merchantNameMap.get(item.getId()))) {
+                    item.setMerchantName(merchantNameMap.get(item.getId()));
+                }
+            });
+            
+        }, threadPool).exceptionally(e -> {
+            log.error("MERCHANT PLACE QUERY ERROR! query merchant error!", e);
+            return null;
+        });
+    
+        // 查询柜机名称
+        CompletableFuture<Void> cabinetInfo = CompletableFuture.runAsync(() -> {
+            // 查询场地绑定的柜机
+            MerchantPlaceCabinetBindQueryModel placeCabinetBindQueryModel = MerchantPlaceCabinetBindQueryModel.builder().placeIdList(idList).status(MerchantPlaceConstant.BIND).build();
+            List<MerchantPlaceCabinetBindVO> merchantPlaceCabinetBinds = merchantPlaceCabinetBindService.queryBindCabinetName(placeCabinetBindQueryModel);
+            
+            if (ObjectUtils.isEmpty(merchantPlaceCabinetBinds)) {
+                return;
+            }
+            
+            Map<Long, List<MerchantPlaceCabinetBindVO>> bindCabinetMap = merchantPlaceCabinetBinds.stream().collect(Collectors.groupingBy(MerchantPlaceCabinetBindVO::getPlaceId));
+            resList.stream().forEach(item -> {
+                List<MerchantPlaceCabinetBindVO> merchantPlaceCabinetBindVos = bindCabinetMap.get(item.getId());
+    
+                // 柜机
+                if (ObjectUtils.isNotEmpty(merchantPlaceCabinetBindVos)) {
+                    item.setCabinetList(merchantPlaceCabinetBindVos);
+                }
+            });
+            
+        }, threadPool).exceptionally(e -> {
+            log.error("MERCHANT PLACE QUERY ERROR! query cabinet error!", e);
+            return null;
+        });
+    
+        CompletableFuture<Void> resultFuture = CompletableFuture.allOf(areaInfo, merchantInfo, cabinetInfo);
+        try {
+            resultFuture.get(10, TimeUnit.SECONDS);
+        } catch (Exception e) {
+            log.error("Data summary browsing error for merchant place query", e);
         }
         
         return resList;

@@ -142,7 +142,7 @@ public class MerchantServiceImpl implements MerchantService {
     @Resource
     private MerchantPlaceCabinetBindService merchantPlaceCabinetBindService;
     
-    XllThreadPoolExecutorService threadPool = XllThreadPoolExecutors.newFixedThreadPool("MERCHANT-DATA-SCREEN-THREAD-POOL", 3, "merchantDataScreenThread:");
+    XllThreadPoolExecutorService threadPool = XllThreadPoolExecutors.newFixedThreadPool("MERCHANT-DATA-SCREEN-THREAD-POOL", 5, "merchantDataScreenThread:");
     
     @Resource
     private EnterprisePackageService enterprisePackageService;

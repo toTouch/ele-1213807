@@ -60,7 +60,6 @@ public class JsonMerchantChannelEmployeeController extends BaseController {
                 .areaId(areaId)
                 .tenantId(tenantId)
                 .build();
-        //
         
         return R.ok(channelEmployeeService.listChannelEmployee(channelEmployeeRequest));
         
