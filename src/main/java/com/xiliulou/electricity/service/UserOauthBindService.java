@@ -44,7 +44,7 @@ public interface UserOauthBindService {
     
     List<UserOauthBind> selectListOauthByOpenIdAndSource(String openid, int source, Integer tenantId);
 
-    UserOauthBind queryByUserPhone(String phone, int source,Integer tenantId);
+    UserOauthBind queryByUserPhone(Long uid, String phone, int source,Integer tenantId);
 
     Pair<Boolean, Object> queryListByCondition(Integer size, Integer offset, Long uid, String thirdId, String phone,Integer tenantId);
 
@@ -60,6 +60,25 @@ public interface UserOauthBindService {
     
     UserOauthBind selectByUidAndPhone(String phone,Long uid,Integer tenantId);
     
+    /**
+     * 根据手机号、类型、租户查询用户
+     * @param phone 手机号
+     * @param source 类型
+     * @param tenantId 租户ID
+     * @return 绑定集
+     */
+    List<UserOauthBind> listUserByPhone(String phone,Integer source,Integer tenantId);
+    
+    /**
+     *
+     * @param phone
+     * @param source
+     * @param tenantId
+     * @return
+     *
+     * @see UserOauthBindService#listUserByPhone(String, Integer, Integer)
+     */
+    @Deprecated
     UserOauthBind selectUserByPhone(String phone,Integer source,Integer tenantId);
     
     Integer updateOpenIdByUid(String openId, Integer status, Long uid, Integer tenantId);
@@ -73,4 +92,11 @@ public interface UserOauthBindService {
      * @return 影响行数
      */
     Integer updatePhoneByUid(Integer tenantId, Long uid, String newPhone);
+    
+    /**
+     * 根据uid 删除用户绑定信息
+     * @param uid
+     * @return
+     */
+    Integer deleteByUid(Long uid, Integer tenantId);
 }

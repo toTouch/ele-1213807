@@ -25,6 +25,7 @@ import java.util.stream.Collectors;
  * @author zzlong
  * @since 2022-10-11 19:47:27
  */
+@Deprecated
 @Service("sysOperLogService")
 @Slf4j
 public class SysOperLogServiceImpl implements SysOperLogService {

@@ -63,6 +63,7 @@ public class EleRefundQuery {
     private List<Long> storeIds;
 
     private List<Long> franchiseeIds;
-
+    
+    private Integer orderType;
 
 }

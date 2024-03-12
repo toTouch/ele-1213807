@@ -47,7 +47,7 @@ public class StoreGoodsServiceImpl implements StoreGoodsService {
     @Autowired
     StorageConfig storageConfig;
 
-    @Qualifier("aliyunOssService")
+    @Qualifier("hwOssService")
     @Autowired
     StorageService storageService;
     @Autowired
@@ -145,7 +145,7 @@ public class StoreGoodsServiceImpl implements StoreGoodsService {
             List<ElectricityCabinetFile> electricityCabinetFiles = new ArrayList<>();
             electricityCabinetFileList.stream().forEach(auth -> {
                 if (Objects.equals(StorageConfig.IS_USE_OSS, storageConfig.getIsUseOSS())) {
-                    auth.setUrl(storageService.getOssFileUrl(storageConfig.getBucketName(), auth.getName(), System.currentTimeMillis() + 10 * 60 * 1000L));
+                    auth.setUrl(storageConfig.getUrlPrefix() + auth.getName());
                     electricityCabinetFiles.add(auth);
                 }
                 storeGoodsVO.setElectricityCabinetFiles(electricityCabinetFiles);

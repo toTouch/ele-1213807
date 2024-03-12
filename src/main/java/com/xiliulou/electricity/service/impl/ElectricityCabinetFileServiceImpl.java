@@ -6,7 +6,6 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.google.api.client.util.Lists;
 import com.xiliulou.core.web.R;
-import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.entity.ElectricityCabinetFile;
 import com.xiliulou.electricity.mapper.ElectricityCabinetFileMapper;
 import com.xiliulou.electricity.request.asset.ElectricityCabinetPictureBatchSaveRequest;
@@ -19,6 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
 import java.io.InputStream;
@@ -38,7 +38,7 @@ import java.util.Objects;
 public class ElectricityCabinetFileServiceImpl implements ElectricityCabinetFileService {
     @Resource
     private ElectricityCabinetFileMapper electricityCabinetFileMapper;
-    @Qualifier("aliyunOssService")
+    @Qualifier("hwOssService")
     @Autowired
     StorageService storageService;
     
@@ -91,6 +91,7 @@ public class ElectricityCabinetFileServiceImpl implements ElectricityCabinetFile
     }
 
     @Override
+    @Deprecated
     public void getMinioFile(String fileName, HttpServletResponse response) {
         int separator = fileName.lastIndexOf(StrUtil.DASHED);
         try (InputStream inputStream = storageService.getFile(fileName.substring(0, separator),
@@ -123,7 +124,7 @@ public class ElectricityCabinetFileServiceImpl implements ElectricityCabinetFile
             for (String fileName : batchSaveRequest.getFileNameList()) {
                 ElectricityCabinetFile electricityCabinetFile = ElectricityCabinetFile.builder().createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis())
                         .otherId(otherId).type(batchSaveRequest.getFileType())
-                        .url(StorageConfig.HTTPS + storageConfig.getBucketName() + "." + storageConfig.getOssEndpoint() + "/" + fileName).name(fileName).sequence(index)
+                        .url(storageConfig.getUrlPrefix() + fileName).name(fileName).sequence(index)
                         .isOss(StorageConfig.IS_USE_OSS).tenantId(tenantId).build();
                 saveList.add(electricityCabinetFile);
                 index = index + 1;

@@ -3,6 +3,7 @@ package com.xiliulou.electricity.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.google.api.client.util.Lists;
 import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
@@ -354,7 +355,12 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
     public Integer isMemberCardBindFranchinsee(Long id, Integer tenantId) {
         return this.batteryMemberCardMapper.isMemberCardBindFranchinsee(id,tenantId);
     }
-
+    @Slave
+    @Override
+    public List<BatteryMemberCard> queryListByIdList(BatteryMemberCardQuery query) {
+        return batteryMemberCardMapper.listByIdList(query);
+    }
+    
     @Slave
     @Override
     public List<BatteryMemberCardVO> selectByPage(BatteryMemberCardQuery query) {
@@ -376,6 +382,31 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
                 batteryMemberCardVO.setCouponName(Objects.isNull(coupon) ? "" : coupon.getName());
             }
 
+            return batteryMemberCardVO;
+        }).collect(Collectors.toList());
+    }
+    
+    @Slave
+    @Override
+    public List<BatteryMemberCardVO> selectByPageForMerchant(BatteryMemberCardQuery query) {
+        List<BatteryMemberCard> list = this.batteryMemberCardMapper.selectByPageForMerchant(query);
+        
+        return list.stream().map(item -> {
+            BatteryMemberCardVO batteryMemberCardVO = new BatteryMemberCardVO();
+            BeanUtils.copyProperties(item, batteryMemberCardVO);
+            
+            Franchisee franchisee = franchiseeService.queryByIdFromCache(item.getFranchiseeId());
+            batteryMemberCardVO.setFranchiseeName(Objects.nonNull(franchisee) ? franchisee.getName() : "");
+            
+            if (Objects.nonNull(franchisee) && Objects.equals(franchisee.getModelType(), Franchisee.NEW_MODEL_TYPE)) {
+                batteryMemberCardVO.setBatteryModels(batteryModelService.selectShortBatteryType(memberCardBatteryTypeService.selectBatteryTypeByMid(item.getId()), item.getTenantId()));
+            }
+            
+            if (Objects.nonNull(item.getCouponId())) {
+                Coupon coupon = couponService.queryByIdFromCache(item.getCouponId());
+                batteryMemberCardVO.setCouponName(Objects.isNull(coupon) ? "" : coupon.getName());
+            }
+            
             return batteryMemberCardVO;
         }).collect(Collectors.toList());
     }
@@ -660,6 +691,13 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
         Triple<Boolean, String, Object> verifyBatteryMemberCardResult = verifyBatteryMemberCardQuery(query, franchisee);
         if (Boolean.FALSE.equals(verifyBatteryMemberCardResult.getLeft())) {
             return verifyBatteryMemberCardResult;
+        }
+    
+        //套餐数量最多20个
+        BatteryMemberCardQuery queryCount = BatteryMemberCardQuery.builder().franchiseeId(query.getFranchiseeId()).businessType(query.getBusinessType())
+                .tenantId(TenantContextHolder.getTenantId()).delFlag(BatteryMemberCard.DEL_NORMAL).build();
+        if (selectByPageCount(queryCount) > 20) {
+            return Triple.of(false, "100106", "套餐数量超出限制");
         }
 
         BatteryMemberCard batteryMemberCard = new BatteryMemberCard();

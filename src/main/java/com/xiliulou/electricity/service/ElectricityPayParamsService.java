@@ -3,6 +3,7 @@ package com.xiliulou.electricity.service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.ElectricityPayParams;
+import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.web.multipart.MultipartFile;
 
 public interface ElectricityPayParamsService extends IService<ElectricityPayParams> {
@@ -23,4 +24,9 @@ public interface ElectricityPayParamsService extends IService<ElectricityPayPara
     ElectricityPayParams selectTenantId(String appId);
 
     ElectricityPayParams queryByTenantId(Integer tenantId);
+
+    Triple<Boolean, String, Object> queryByMerchantAppId(String appId);
+
+    R refreshMerchant();
+
 }

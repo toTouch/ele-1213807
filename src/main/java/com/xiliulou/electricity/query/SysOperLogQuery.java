@@ -3,13 +3,12 @@ package com.xiliulou.electricity.query;
 import lombok.Builder;
 import lombok.Data;
 
-import java.util.List;
-
 /**
  * @author zzlong
  * @email zhaozhilong@xiliulou.com
  * @date 2022-10-12-16:57
  */
+@Deprecated
 @Data
 @Builder
 public class SysOperLogQuery {

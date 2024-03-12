@@ -15,7 +15,6 @@ import org.springframework.web.multipart.MultipartFile;
  * @since 2022-10-12 09:24:49
  */
 @RestController
-@CrossOrigin
 public class JsonAdminOtaFileConfigController {
     
     /**

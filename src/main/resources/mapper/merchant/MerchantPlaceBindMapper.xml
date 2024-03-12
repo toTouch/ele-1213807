@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.merchant.MerchantPlaceBindMapper">
+    <!-- 基础字段 -->
+    <sql id="basic_field">
+        id, merchant_id, place_id, bind_time, un_bind_time, type, merchant_month_settlement, merchant_month_settlememt_power, tenant_id, del_flag, create_time, update_time
+    </sql>
+    
+    <insert id="batchInsert" >
+        insert into t_merchant_place_bind (merchant_id , place_id , bind_time ,un_bind_time ,type ,merchant_month_settlement ,merchant_month_settlememt_power, tenant_id ,
+                                           del_flag, create_time, update_time)
+        values
+        <foreach item="item" index="index" collection="list" separator=",">
+            (#{item.merchantId}, #{item.placeId}, #{item.bindTime},  #{item.unBindTime}, #{item.type}, #{item.merchantMonthSettlement},
+             #{item.merchantMonthSettlementPower}, #{item.tenantId}, #{item.delFlag}, #{item.createTime}, #{item.updateTime})
+        </foreach>
+    </insert>
+    <update id="batchUnBind">
+        update t_merchant_place_bind
+           set type = 1,
+            un_bind_time = #{updateTime}
+         <where>
+             merchant_id = #{merchantId}
+             and type = 0
+             <if test="placeIdList != null and placeIdList.size() > 0">
+                 and place_id in
+                 <foreach collection="placeIdList" separator="," open="(" close=")" item="placeId">
+                     #{placeId}
+                 </foreach>
+             </if>
+         </where>
+         
+    </update>
+    
+    <select id="selectListByMerchantId" resultType="com.xiliulou.electricity.entity.merchant.MerchantPlaceBind">
+        select <include refid="basic_field"/>
+        from t_merchant_place_bind
+        <if test="status != null">
+            and type = #{status}
+        </if>
+        where del_flag = 0 and merchant_id = #{merchantId}
+    </select>
+    
+    <select id="existPlaceFeeByMerchantId" resultType="java.lang.Integer">
+        SELECT
+            count(1)
+        FROM
+            t_merchant_place_bind a
+                left join t_merchant_place_cabinet_bind b on b.place_id = a.place_id
+        where
+            a.merchant_id = #{merchantId}
+            and b.del_flag = 0
+          and (
+                (exists (
+                    select 1 from t_electricity_cabinet c where c.id = b.cabinet_id and c.place_fee is not null)
+                    )
+                or (
+                    exists (select 1 from t_merchant_place_fee_record r where r.cabinet_id = b.cabinet_id and r.new_place_fee is not null)
+                    )
+            )
+    </select>
+    
+    <select id="queryNoSettleByMerchantId"
+            resultType="com.xiliulou.electricity.entity.merchant.MerchantPlaceBind">
+        select
+           <include refid="basic_field"/>
+        from t_merchant_place_bind
+                 where del_flag = 0
+                   and merchant_month_settlement = 1
+                   and merchant_id = #{merchantId}
+                   and tenant_id = #{tenantId}
+    </select>
+    
+    <select id="selectListBindRecord" resultType="com.xiliulou.electricity.entity.merchant.MerchantPlaceBind">
+        select
+        <include refid="basic_field"/>
+        from t_merchant_place_bind
+        <where>
+            del_flag = 0
+            <if test="merchantId != null">
+                and merchant_id = #{merchantId}
+            </if>
+            <if test="status != null">
+                and type = #{status}
+            </if>
+            <if test="endTime != null">
+                and bind_time &lt;= #{endTime}
+            </if>
+        </where>
+        order by id desc
+    </select>
+    
+    <select id="selectListUnbindRecord" resultType="com.xiliulou.electricity.entity.merchant.MerchantPlaceBind">
+        select
+        <include refid="basic_field"/>
+        from t_merchant_place_bind
+        <where>
+            del_flag = 0
+            <if test="merchantId != null">
+                and merchant_id = #{merchantId}
+            </if>
+            <if test="status != null">
+                and type = #{status}
+            </if>
+            <if test="startTime != null">
+                and un_bind_time &gt;= #{startTime}
+            </if>
+            <if test="endTime != null">
+                and bind_time &lt;= #{endTime}
+            </if>
+        </where>
+    </select>
+
+</mapper>

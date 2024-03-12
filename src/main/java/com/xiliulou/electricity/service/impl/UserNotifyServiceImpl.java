@@ -17,19 +17,17 @@ import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.NotifyPictureInfoVO;
 import com.xiliulou.electricity.vo.UserNotifyVo;
 import com.xiliulou.storage.config.StorageConfig;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-
-import lombok.extern.slf4j.Slf4j;
 
 /**
  * (UserNotify)表服务实现类
@@ -231,8 +229,10 @@ public class UserNotifyServiceImpl implements UserNotifyService {
             for (NotifyPictureInfo info : pictureInfoList) {
                 NotifyPictureInfoVO infoVo = new NotifyPictureInfoVO();
                 infoVo.setActivityType(info.getActivityType());
-                infoVo.setPictureUrl(info.getPictureUrl());
-                infoVo.setPictureOSSUrl(StorageConfig.HTTPS + storageConfig.getBucketName() + "." + storageConfig.getOssEndpoint() + "/" + info.getPictureUrl());
+                if (org.apache.commons.lang3.StringUtils.isNotBlank(info.getPictureUrl())) {
+                    infoVo.setPictureUrl(info.getPictureUrl());
+                    infoVo.setPictureOSSUrl(storageConfig.getUrlPrefix() + info.getPictureUrl());
+                }
                 pictureInfoVOList.add(infoVo);
             }
             vo.setPictureInfoList(pictureInfoVOList);
@@ -263,8 +263,10 @@ public class UserNotifyServiceImpl implements UserNotifyService {
             for (NotifyPictureInfo info : pictureInfoList) {
                 NotifyPictureInfoVO infoVo = new NotifyPictureInfoVO();
                 infoVo.setActivityType(info.getActivityType());
-                infoVo.setPictureUrl(info.getPictureUrl());
-                infoVo.setPictureOSSUrl(StorageConfig.HTTPS + storageConfig.getBucketName() + "." + storageConfig.getOssEndpoint() + "/" + info.getPictureUrl());
+                if (org.apache.commons.lang3.StringUtils.isNotBlank(info.getPictureUrl())) {
+                    infoVo.setPictureUrl(info.getPictureUrl());
+                    infoVo.setPictureOSSUrl(storageConfig.getUrlPrefix() + info.getPictureUrl());
+                }
                 pictureInfoVOList.add(infoVo);
             }
             vo.setPictureInfoList(pictureInfoVOList);

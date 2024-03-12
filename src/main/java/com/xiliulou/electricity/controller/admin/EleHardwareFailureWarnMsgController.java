@@ -122,6 +122,7 @@ public class EleHardwareFailureWarnMsgController {
         }
         
         if (!SecurityUtils.isAdmin()) {
+            log.info("admin is not find");
             return R.fail("ELECTRICITY.0066", "用户权限不足");
         }
         

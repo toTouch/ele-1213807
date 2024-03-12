@@ -19,6 +19,7 @@ import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.constant.EleUserOperateHistoryConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.constant.UserOperateRecordConstant;
+import com.xiliulou.electricity.constant.merchant.MerchantJoinRecordConstant;
 import com.xiliulou.electricity.domain.car.UserCarRentalPackageDO;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.CarDepositOrder;
@@ -56,6 +57,7 @@ import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.UserOauthBind;
 import com.xiliulou.electricity.entity.car.CarRentalPackageMemberTermPo;
 import com.xiliulou.electricity.entity.car.CarRentalPackagePo;
+import com.xiliulou.electricity.entity.enterprise.EnterpriseChannelUser;
 import com.xiliulou.electricity.enums.BatteryMemberCardBusinessTypeEnum;
 import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.enums.MemberTermStatusEnum;
@@ -125,6 +127,7 @@ import com.xiliulou.electricity.service.enterprise.EnterpriseChannelUserService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseRentRecordService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseUserCostRecordService;
 import com.xiliulou.electricity.service.excel.AutoHeadColumnWidthStyleStrategy;
+import com.xiliulou.electricity.service.merchant.MerchantJoinRecordService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.OrderIdUtil;
@@ -367,6 +370,9 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     
     @Autowired
     EleUserOperateHistoryService eleUserOperateHistoryService;
+    
+    @Resource
+    private MerchantJoinRecordService merchantJoinRecordService;
     
     /**
      * 分页查询
@@ -1227,16 +1233,36 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         //之前有电池，将原来的电池解绑
         ElectricityBattery isBindElectricityBattery = electricityBatteryService.queryByUid(userInfoBatteryAddAndUpdate.getUid());
         if (Objects.equals(userInfoBatteryAddAndUpdate.getEdiType(), UserInfoBatteryAddAndUpdate.EDIT_TYPE) && Objects.nonNull(isBindElectricityBattery)) {
-            ElectricityBattery notBindOldElectricityBattery = new ElectricityBattery();
-            notBindOldElectricityBattery.setId(isBindElectricityBattery.getId());
-            notBindOldElectricityBattery.setBusinessStatus(ElectricityBattery.BUSINESS_STATUS_EXCEPTION);
-            notBindOldElectricityBattery.setElectricityCabinetId(null);
-            notBindOldElectricityBattery.setElectricityCabinetName(null);
-            notBindOldElectricityBattery.setUid(null);
-            notBindOldElectricityBattery.setBorrowExpireTime(null);
-            notBindOldElectricityBattery.setUpdateTime(System.currentTimeMillis());
-            notBindOldElectricityBattery.setBindTime(System.currentTimeMillis());
-            electricityBatteryService.updateBatteryUser(notBindOldElectricityBattery);
+            if (!Objects.equals(isBindElectricityBattery.getSn(), userInfoBatteryAddAndUpdate.getInitElectricityBatterySn())) {
+                ElectricityBattery notBindOldElectricityBattery = new ElectricityBattery();
+                notBindOldElectricityBattery.setId(isBindElectricityBattery.getId());
+                notBindOldElectricityBattery.setBusinessStatus(ElectricityBattery.BUSINESS_STATUS_ADMIN_UNBIND);
+                notBindOldElectricityBattery.setElectricityCabinetId(null);
+                notBindOldElectricityBattery.setElectricityCabinetName(null);
+                notBindOldElectricityBattery.setUid(null);
+                notBindOldElectricityBattery.setBorrowExpireTime(null);
+                notBindOldElectricityBattery.setUpdateTime(System.currentTimeMillis());
+                notBindOldElectricityBattery.setBindTime(System.currentTimeMillis());
+                electricityBatteryService.updateBatteryUser(notBindOldElectricityBattery);
+            
+                // 添加退电记录
+                RentBatteryOrder rentBatteryOrder = new RentBatteryOrder();
+                rentBatteryOrder.setUid(oldUserInfo.getUid());
+                rentBatteryOrder.setName(oldUserInfo.getName());
+                rentBatteryOrder.setPhone(oldUserInfo.getPhone());
+                rentBatteryOrder.setElectricityBatterySn(isBindElectricityBattery.getSn());
+                rentBatteryOrder.setBatteryDeposit(Objects.isNull(userBatteryDeposit) ? BigDecimal.ZERO : userBatteryDeposit.getBatteryDeposit());
+                rentBatteryOrder.setOrderId(OrderIdUtil.generateBusinessOrderId(BusinessType.RETURN_BATTERY, user.getUid()));
+                rentBatteryOrder.setStatus(RentBatteryOrder.RETURN_BATTERY_CHECK_SUCCESS);
+                rentBatteryOrder.setFranchiseeId(oldUserInfo.getFranchiseeId());
+                rentBatteryOrder.setStoreId(oldUserInfo.getStoreId());
+                rentBatteryOrder.setTenantId(oldUserInfo.getTenantId());
+                rentBatteryOrder.setCreateTime(System.currentTimeMillis());
+                rentBatteryOrder.setUpdateTime(System.currentTimeMillis());
+                rentBatteryOrder.setType(RentBatteryOrder.TYPE_WEB_UNBIND);
+                rentBatteryOrder.setOrderType(orderType);
+                rentBatteryOrderService.insert(rentBatteryOrder);
+            }
         }
         
         Integer finalOrderType = orderType;
@@ -1414,7 +1440,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         //解绑电池
         ElectricityBattery electricityBattery = new ElectricityBattery();
         electricityBattery.setId(oldElectricityBattery.getId());
-        electricityBattery.setBusinessStatus(ElectricityBattery.BUSINESS_STATUS_EXCEPTION);
+        electricityBattery.setBusinessStatus(ElectricityBattery.BUSINESS_STATUS_ADMIN_UNBIND);
         electricityBattery.setElectricityCabinetId(null);
         electricityBattery.setElectricityCabinetName(null);
         electricityBattery.setUid(null);
@@ -1940,6 +1966,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     
     @Override
     public Integer updateByUid(UserInfo userInfo) {
+        redisService.delete(CacheConstant.CACHE_USER_INFO + userInfo.getUid());
         Integer result = this.userInfoMapper.updateByUid(userInfo);
         redisService.delete(CacheConstant.CACHE_USER_INFO + userInfo.getUid());
         return result;
@@ -2934,7 +2961,13 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             UserInfo userInfo = this.queryByUidFromCache(invitationActivityJoinHistory.getUid());
             return Objects.isNull(userInfo) ? "" : userInfo.getName();
         }
-        
+    
+        // 商户活动
+        String merchantName = merchantJoinRecordService.queryMerchantNameByJoinUid(uid, MerchantJoinRecordConstant.STATUS_SUCCESS);
+        if (Objects.nonNull(merchantName)) {
+            return merchantName;
+        }
+    
         return null;
     }
     
@@ -2977,8 +3010,13 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                 
                 // 设置企业信息
                 EnterpriseChannelUserVO enterpriseChannelUserVO = enterpriseChannelUserService.queryUserRelatedEnterprise(item.getUid());
-                if (Objects.nonNull(enterpriseChannelUserVO)) {
+                if(Objects.nonNull(enterpriseChannelUserVO) && Objects.equals(enterpriseChannelUserVO.getRenewalStatus(), EnterpriseChannelUser.RENEWAL_CLOSE)) {
                     item.setEnterpriseName(enterpriseChannelUserVO.getEnterpriseName());
+                }
+                // 企业名称设为商户名称
+                String merchantName = merchantJoinRecordService.queryMerchantNameByJoinUid(item.getUid(), MerchantJoinRecordConstant.STATUS_SUCCESS);
+                if (Objects.nonNull(merchantName)) {
+                    item.setEnterpriseName(merchantName);
                 }
                 
                 threadPool.execute(() -> userBatteryMemberCardPackageService.batteryMembercardTransform(item.getUid()));

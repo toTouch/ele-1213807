@@ -9,7 +9,10 @@ import lombok.Data;
  */
 @Data
 public class EnterprisePackageVO {
-
-
+    private String name;
+    /**
+     * 套餐id
+     */
+    private Long packageId;
 
 }

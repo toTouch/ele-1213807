@@ -69,4 +69,9 @@ public class EnterpriseInfoPackageVO {
     private String remark;
     
     private List<EnterprisePackage> enterprisePackage;
+    
+    /**
+     * 会员代付权限 0：关，1：开
+     */
+    private Integer purchaseAuthority;
 }

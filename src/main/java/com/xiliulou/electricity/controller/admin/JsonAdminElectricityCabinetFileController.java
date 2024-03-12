@@ -6,7 +6,6 @@ import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.xiliulou.core.web.R;
-import com.xiliulou.electricity.annotation.Log;
 import com.xiliulou.electricity.entity.ElectricityCabinetFile;
 import com.xiliulou.electricity.query.CallBackQuery;
 import com.xiliulou.electricity.request.asset.ElectricityCabinetPictureBatchSaveRequest;
@@ -23,11 +22,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * 换电柜文件表(TElectricityCabinetFile)表控制层
@@ -45,12 +40,13 @@ public class JsonAdminElectricityCabinetFileController {
 	@Autowired
 	StorageConfig storageConfig;
 
-	@Qualifier("aliyunOssService")
+	@Qualifier("hwOssService")
 	@Autowired
 	StorageService storageService;
 
 	//通知前端是aili还是oss
 	@GetMapping("/admin/electricityCabinetFileService/noticeIsOss")
+	@Deprecated
 	public R noticeIsOss() {
 		if (Objects.equals(StorageConfig.IS_USE_OSS, storageConfig.getIsUseOSS())) {
 			return R.ok(storageService.getOssUploadSign());
@@ -61,6 +57,7 @@ public class JsonAdminElectricityCabinetFileController {
 
 	//minio上传
 	@PostMapping("/admin/electricityCabinetFileService/minio/upload")
+	@Deprecated
 	public R minioUpload(@RequestParam("file") MultipartFile file) {
 		String fileName = IdUtil.simpleUUID() + StrUtil.DOT + FileUtil.extName(file.getOriginalFilename());
 		String bucketName = storageConfig.getBucketName();
@@ -106,7 +103,7 @@ public class JsonAdminElectricityCabinetFileController {
 						.updateTime(System.currentTimeMillis())
 						.otherId(callBackQuery.getOtherId())
 						.type(callBackQuery.getFileType())
-						.url(StorageConfig.HTTPS + storageConfig.getBucketName() + "." + storageConfig.getOssEndpoint() + "/" + fileName)
+						.url(storageConfig.getUrlPrefix() + fileName)
 						.name(fileName)
 						.sequence(index)
 						.isOss(StorageConfig.IS_USE_OSS)
@@ -168,7 +165,7 @@ public class JsonAdminElectricityCabinetFileController {
 		List<ElectricityCabinetFile> electricityCabinetFiles = new ArrayList<>();
 		for (ElectricityCabinetFile electricityCabinetFile : electricityCabinetFileList) {
 			if (Objects.equals(StorageConfig.IS_USE_OSS, storageConfig.getIsUseOSS())) {
-				electricityCabinetFile.setUrl(storageService.getOssFileUrl(storageConfig.getBucketName(), electricityCabinetFile.getName(), System.currentTimeMillis() + 10 * 60 * 1000L));
+				electricityCabinetFile.setUrl(storageConfig.getUrlPrefix() + electricityCabinetFile.getName());
 			}
 			electricityCabinetFiles.add(electricityCabinetFile);
 		}
@@ -180,6 +177,7 @@ public class JsonAdminElectricityCabinetFileController {
 	 */
 
 	@GetMapping("/admin/electricityCabinetFileService/getMinioFile/{fileName}")
+	@Deprecated
 	public void getMinioFile(@PathVariable String fileName, HttpServletResponse response) {
 		electricityCabinetFileService.getMinioFile(fileName, response);
 	}

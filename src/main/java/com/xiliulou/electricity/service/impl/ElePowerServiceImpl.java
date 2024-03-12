@@ -5,6 +5,7 @@ import com.alibaba.excel.EasyExcel;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.utils.DataUtil;
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.entity.ElePower;
 import com.xiliulou.electricity.mapper.ElePowerMapper;
 import com.xiliulou.electricity.query.ElePowerListQuery;
@@ -14,6 +15,7 @@ import com.xiliulou.electricity.service.excel.AutoHeadColumnWidthStyleStrategy;
 import com.xiliulou.electricity.utils.DateUtils;
 import com.xiliulou.electricity.vo.ElePowerExcelVo;
 import com.xiliulou.electricity.vo.ElePowerVo;
+import com.xiliulou.electricity.vo.EleSumPowerVO;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -191,6 +193,19 @@ public class ElePowerServiceImpl implements ElePowerService {
             log.error("导出报表失败！", e);
         }
     }
-
-
+    
+    /**
+     * 查询指定时间段内的电量和电费
+     */
+    @Slave
+    public EleSumPowerVO listByCondition(Long startTime, Long endTime, List<Long> eidList, Integer tenantId) {
+        return elePowerMapper.selectListByCondition(startTime, endTime, eidList, tenantId);
+    }
+    
+    @Slave
+    @Override
+    public Long queryLatestReportTime(Long startTime, Long endTime, List<Long> eid, Integer tenantId) {
+        return elePowerMapper.selectLatestReportTime(startTime, endTime, eid, tenantId);
+    }
+    
 }

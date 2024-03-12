@@ -66,6 +66,9 @@
             <if test="query.payType != null">
                 and tedo.pay_type = #{query.payType}
             </if>
+            <if test="query.orderType != null">
+                and tedo.order_type = #{query.orderType}
+            </if>
             <if test="query.uid != null">
                 and tedo.uid = #{query.uid}
             </if>
@@ -328,5 +331,15 @@
             </foreach>
         </where>
     </select>
-
+    <select id="queryLastByUid" resultType="com.xiliulou.electricity.entity.EleRefundOrder">
+        select * from t_ele_deposit_order
+        where
+            status=1 and uid= #{uid}
+        ORDER BY id DESC limit 1
+    </select>
+    
+    <select id="existsRefundOrderByUid" resultType="java.lang.Integer">
+        select  1 from t_ele_refund_order  ero  left join t_ele_deposit_order edo on ero.order_id=edo.order_id
+        WHERE edo.uid = #{uid} and ero.status=4 limit 1
+    </select>
 </mapper>

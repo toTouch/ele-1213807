@@ -1,24 +1,8 @@
 package com.xiliulou.electricity.service.impl;
 
-import java.time.LocalDateTime;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
-import java.util.stream.Collectors;
-
-import javax.annotation.Resource;
-
-import cn.hutool.core.util.IdUtil;
-import com.xiliulou.electricity.dto.ActivityProcessDTO;
-import com.xiliulou.electricity.enums.ActivityEnum;
-import com.xiliulou.electricity.vo.UserAuthMessageVO;
-import org.apache.commons.lang3.tuple.Triple;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.CollectionUtils;
-
+import cn.hutool.core.date.DatePattern;
+import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.util.ObjectUtil;
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.xiliulou.core.json.JsonUtil;
@@ -30,16 +14,26 @@ import com.xiliulou.electricity.mq.constant.MqProducerConstant;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
+import com.xiliulou.electricity.vo.UserAuthMessageVO;
 import com.xiliulou.mq.service.RocketMqService;
 import com.xiliulou.security.bean.TokenUser;
 import com.xiliulou.storage.config.StorageConfig;
 import com.xiliulou.storage.service.StorageService;
-
-import cn.hutool.core.date.DatePattern;
-import cn.hutool.core.date.DateUtil;
-import cn.hutool.core.util.ObjectUtil;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.tuple.Triple;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 import shaded.org.apache.commons.lang3.StringUtils;
+
+import javax.annotation.Resource;
+import java.time.LocalDateTime;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * 实名认证信息(TEleUserAuth)表服务实现类
@@ -59,7 +53,7 @@ public class EleUserAuthServiceImpl implements EleUserAuthService {
     @Autowired
     UserInfoService userInfoService;
 
-    @Qualifier("aliyunOssService")
+    @Qualifier("hwOssService")
     @Autowired
     StorageService storageService;
 
@@ -313,13 +307,12 @@ public class EleUserAuthServiceImpl implements EleUserAuthService {
         List<EleUserAuth> collect = eleUserAuths.stream().map(e -> {
             if (e.getEntryId().equals(EleAuthEntry.ID_CARD_BACK_PHOTO) || e.getEntryId().equals(EleAuthEntry.ID_CARD_FRONT_PHOTO) || e.getEntryId().equals(EleAuthEntry.ID_SELF_PHOTO)) {
                 if (StringUtils.isNotEmpty(e.getValue())) {
-                    e.setValue("https://" + storageConfig.getUrlPrefix() + "/" + e.getValue());
+                    e.setValue(storageConfig.getUrlPrefix() +  e.getValue());
                 }
 
             }
             return e;
         }).collect(Collectors.toList());
-        log.info("collect is -->{}", collect);
         return R.ok(collect);
     }
 
@@ -414,12 +407,12 @@ public class EleUserAuthServiceImpl implements EleUserAuthService {
     }
 
     @Override
-    public R acquireIdcardFileSign() {
-        return R.ok(storageService.getOssUploadSign("idcard/"));
+    public R acquireIdcardFileSign(String key) {
+        return R.ok(storageService.getOssUploadSign(key));
     }
 
     @Override
-    public R acquireselfieFileSign() {
-        return R.ok(storageService.getOssUploadSign("selfie/"));
+    public R acquireselfieFileSign(String key) {
+        return R.ok(storageService.getOssUploadSign(key));
     }
 }

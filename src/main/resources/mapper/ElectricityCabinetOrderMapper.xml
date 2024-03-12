@@ -60,6 +60,11 @@
             <if test="query.tenantId != null">
                 and teco.tenant_id = #{query.tenantId}
             </if>
+            
+            <if test="query.batterySn != null and query.batterySn != ''">
+                and (teco.old_electricity_battery_sn like concat('%',#{query.batterySn,jdbcType=VARCHAR},'%') or teco.new_electricity_battery_sn like concat('%',#{query.batterySn,jdbcType=VARCHAR},'%') )
+            </if>
+        
         </where>
         order by teco.create_time desc
         limit #{query.offset}, #{query.size}
@@ -117,6 +122,10 @@
             </if>
             <if test="query.tenantId != null">
                 and teco.tenant_id = #{query.tenantId}
+            </if>
+    
+            <if test="query.batterySn != null and query.batterySn != ''">
+                and (teco.old_electricity_battery_sn like concat('%',#{query.batterySn,jdbcType=VARCHAR},'%') or teco.new_electricity_battery_sn like concat('%',#{query.batterySn,jdbcType=VARCHAR},'%') )
             </if>
         </where>
     </select>

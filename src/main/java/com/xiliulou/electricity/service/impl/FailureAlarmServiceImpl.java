@@ -9,6 +9,7 @@ import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.FailureAlarm;
 import com.xiliulou.electricity.entity.FailureAlarmProtectMeasure;
+import com.xiliulou.electricity.entity.merchant.Merchant;
 import com.xiliulou.electricity.enums.basic.BasicEnum;
 import com.xiliulou.electricity.enums.failureAlarm.FailureAlarmDeviceTypeEnum;
 import com.xiliulou.electricity.enums.failureAlarm.FailureAlarmGradeEnum;
@@ -452,15 +453,19 @@ public class FailureAlarmServiceImpl implements FailureAlarmService {
     
     @Slave
     @Override
-    public FailureAlarm queryFromCacheBySignalId(String signalId) {
-        FailureAlarm failureAlarm = null;
-        failureAlarm = redisService.getWithHash(CacheConstant.CACHE_FAILURE_ALARM + signalId, FailureAlarm.class);
-        if (Objects.isNull(failureAlarm)) {
-            failureAlarm = failureAlarmMapper.selectBySignalId(signalId);
-            if (Objects.nonNull(failureAlarm)) {
-                redisService.saveWithHash(CacheConstant.CACHE_FAILURE_ALARM + signalId, failureAlarm);
-            }
+    public FailureAlarm queryBySignalIdFromCache(String signalId) {
+        FailureAlarm failureAlarm = redisService.getWithHash(CacheConstant.CACHE_FAILURE_ALARM + signalId, FailureAlarm.class);
+        if (Objects.nonNull(failureAlarm)) {
+            return failureAlarm;
         }
+    
+        failureAlarm = failureAlarmMapper.selectBySignalId(signalId);
+        if (Objects.isNull(failureAlarm)) {
+            return null;
+        }
+    
+        redisService.saveWithHash(CacheConstant.CACHE_FAILURE_ALARM + signalId, failureAlarm);
+    
         return failureAlarm;
     }
 }

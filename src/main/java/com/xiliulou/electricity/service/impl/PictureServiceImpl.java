@@ -2,23 +2,17 @@ package com.xiliulou.electricity.service.impl;
 
 import com.google.common.collect.Lists;
 import com.xiliulou.electricity.constant.NumberConstant;
-import com.xiliulou.electricity.entity.ElectricityCarModel;
 import com.xiliulou.electricity.entity.Picture;
 import com.xiliulou.electricity.mapper.PictureMapper;
 import com.xiliulou.electricity.query.CallBackQuery;
 import com.xiliulou.electricity.query.PictureQuery;
-import com.xiliulou.electricity.query.StorePictureQuery;
 import com.xiliulou.electricity.service.PictureService;
-import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.vo.PictureVO;
 import com.xiliulou.storage.config.StorageConfig;
-import com.xiliulou.storage.service.StorageService;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
@@ -41,9 +35,6 @@ public class PictureServiceImpl implements PictureService {
     private PictureMapper pictureMapper;
     @Autowired
     StorageConfig storageConfig;
-    @Qualifier("aliyunOssService")
-    @Autowired
-    StorageService storageService;
 
     /**
      * 通过ID查询单条数据从DB
@@ -94,7 +85,7 @@ public class PictureServiceImpl implements PictureService {
             return pictures.parallelStream().map(item -> {
                 PictureVO pictureVO = new PictureVO();
                 BeanUtils.copyProperties(item, pictureVO);
-                pictureVO.setPictureOSSUrl(StorageConfig.HTTPS + storageConfig.getBucketName() + "." + storageConfig.getOssEndpoint() + "/" + item.getPictureUrl());
+                pictureVO.setPictureOSSUrl(storageConfig.getUrlPrefix() + item.getPictureUrl());
                 return pictureVO;
             }).collect(Collectors.toList());
         } catch (Exception e) {

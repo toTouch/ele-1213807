@@ -1,0 +1,528 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.merchant.MerchantWithdrawApplicationMapper">
+    
+    <resultMap type="com.xiliulou.electricity.entity.merchant.MerchantWithdrawApplication" id="MerchantWithdrawApplicationMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="uid" column="uid" jdbcType="INTEGER"/>
+        <result property="orderNo" column="order_no" jdbcType="INTEGER"/>
+        <result property="bankName" column="bank_name" jdbcType="VARCHAR"/>
+        <result property="bankCode" column="bank_code" jdbcType="VARCHAR"/>
+        <result property="bankNumber" column="bank_number" jdbcType="VARCHAR"/>
+        <result property="accountName" column="account_name" jdbcType="VARCHAR"/>
+        <result property="amount" column="amount" jdbcType="DECIMAL"/>
+        <result property="remark" column="remark" jdbcType="VARCHAR"/>
+        <result property="status" column="status" jdbcType="INTEGER"/>
+        <result property="handlingFee" column="handling_fee" jdbcType="DECIMAL"/>
+        <result property="checkTime" column="check_time" jdbcType="INTEGER"/>
+        <result property="response" column="response" jdbcType="VARCHAR"/>
+        <result property="receiptTime" column="receipt_time" jdbcType="INTEGER"/>
+        <result property="tenantId" column="tenant_id" jdbcType="INTEGER"/>
+        
+        <result property="delFlag" column="del_flag" jdbcType="INTEGER"/>
+        <result property="createTime" column="create_time" jdbcType="INTEGER"/>
+        <result property="updateTime" column="update_time" jdbcType="INTEGER"/>
+       
+    </resultMap>
+    
+    <insert id="insertOne" keyProperty="id" useGeneratedKeys="true">
+        insert into t_merchant_withdraw_application
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            uid,
+            order_no,
+            bank_name,
+            bank_code,
+            bank_number,
+            account_name,
+            amount,
+            remark,
+            status,
+            del_flag,
+            create_time,
+            update_time,
+            tenant_id
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            #{uid},
+            #{orderNo},
+            #{bankName},
+            #{bankCode},
+            #{bankNumber},
+            #{accountName},
+            #{amount},
+            #{remark},
+            #{status},
+            #{delFlag},
+            #{createTime},
+            #{updateTime},
+            #{tenantId}
+        </trim>
+    </insert>
+    
+    <update id="updateOne">
+        update t_merchant_withdraw_application
+        <set>
+            <if test="uid != null">
+                uid = #{uid},
+            </if>
+            <if test="orderNo != null">
+                order_no = #{orderNo},
+            </if>
+            <if test="bankName != null">
+                bank_name = #{bankName},
+            </if>
+            <if test="bankCode != null">
+                bank_code = #{bankCode},
+            </if>
+            <if test="bankNumber != null">
+                bank_number = #{bankNumber},
+            </if>
+            <if test="accountName != null">
+                account_name = #{accountName},
+            </if>
+            <if test="amount != null">
+                amount = #{amount},
+            </if>
+            <if test="remark != null">
+                remark = #{remark},
+            </if>
+            <if test="status != null">
+                status = #{status},
+            </if>
+            <if test="operator != null">
+                operator = #{operator},
+            </if>
+            <if test="batchNo != null">
+                batch_no = #{batchNo},
+            </if>
+            
+            <if test="checkTime != null">
+                check_time = #{checkTime},
+            </if>
+    
+            <if test="receiptTime != null">
+                receipt_time = #{receiptTime},
+            </if>
+            
+            <if test="transactionBatchId != null and transactionBatchId != ''">
+                transaction_batch_id  = #{transactionBatchId},
+            </if>
+            
+            <if test="response != null and response != ''">
+                response = #{response},
+            </if>
+            
+            <if test="delFlag != null">
+                del_flag = #{delFlag},
+            </if>
+            <if test="createTime != null">
+                create_time = #{createTime},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+    
+    <update id="updateByIds">
+        update t_merchant_withdraw_application
+        <set>
+            <if test="merchantWithdrawApplication.status != null">
+                status = #{merchantWithdrawApplication.status},
+            </if>
+            <if test="merchantWithdrawApplication.operator != null">
+                operator = #{merchantWithdrawApplication.operator},
+            </if>
+            <if test="merchantWithdrawApplication.batchNo != null">
+                batch_no = #{merchantWithdrawApplication.batchNo},
+            </if>
+            <if test="merchantWithdrawApplication.transactionBatchId != null and merchantWithdrawApplication.transactionBatchId != ''">
+                transaction_batch_id = #{merchantWithdrawApplication.transactionBatchId},
+            </if>
+            <if test="merchantWithdrawApplication.response != null and merchantWithdrawApplication.response != ''">
+                response = #{merchantWithdrawApplication.response},
+            </if>
+            <if test="merchantWithdrawApplication.updateTime != null">
+                update_time = #{merchantWithdrawApplication.updateTime},
+            </if>
+            <if test="merchantWithdrawApplication.checkTime != null">
+                check_time = #{merchantWithdrawApplication.checkTime},
+            </if>
+            <if test="merchantWithdrawApplication.remark != null and merchantWithdrawApplication.remark != ''">
+                remark = #{merchantWithdrawApplication.remark},
+            </if>
+           
+        </set>
+        
+        <where>
+            <if test="merchantWithdrawApplication.tenantId != null">
+                tenant_id = #{merchantWithdrawApplication.tenantId}
+            </if>
+            
+            <if test="ids != null and !ids.isEmpty()">
+                and id in
+                <foreach collection="ids" item="id" close=")" open="(" separator=",">
+                    #{id}
+                </foreach>
+            </if>
+        
+        </where>
+    </update>
+    
+    <select id="queryList" resultType="com.xiliulou.electricity.vo.merchant.MerchantWithdrawApplicationVO">
+        select tmwa.id,
+               tmwa.uid,
+               tu.name,
+               tmwa.order_no,
+               tmwa.amount,
+               tmwa.remark,
+               tmwa.status,
+               tmwa.receipt_time,
+               tmwa.tenant_id,
+               tmwa.del_flag,
+               tmwa.create_time,
+               tmwa.update_time
+        from t_merchant_withdraw_application tmwa
+        left join t_user tu on tu.uid = tmwa.uid
+        <where>
+            tmwa.del_flag = 0
+            and tmwa.tenant_id = #{tenantId}
+            <if test="uid != null">
+                and tmwa.uid = #{uid}
+            </if>
+            
+            <if test="orderNo != null and orderNo != ''">
+                and tmwa.order_no = #{orderNo}
+            </if>
+
+            <if test="status != null">
+                and tmwa.status = #{status}
+            </if>
+    
+            <if test="beginTime != null ">
+                and tmwa.create_time <![CDATA[ >=  ]]> #{beginTime}
+            </if>
+            <if test="endTime != null ">
+                and tmwa.create_time <![CDATA[ <=  ]]> #{endTime}
+            </if>
+
+        </where>
+        order by tmwa.create_time desc
+        <if test="offset != null and size != null">
+            limit #{offset}, #{size}
+        </if>
+
+    </select>
+    
+    <select id="countByCondition" resultType="Integer">
+        select count(1)
+        from t_merchant_withdraw_application tmwa
+        left join t_user tu on tu.uid = tmwa.uid
+        left join t_merchant tm on tm.uid = tmwa.uid
+        <where>
+            tmwa.del_flag = 0
+            and tmwa.tenant_id = #{tenantId}
+            <if test="uid != null">
+                and tmwa.uid = #{uid}
+            </if>
+            
+            <if test="orderNo != null and orderNo != ''">
+                and tmwa.order_no = #{orderNo}
+            </if>
+
+            <if test="status != null">
+                and tmwa.status = #{status}
+            </if>
+            <if test="beginTime != null ">
+                and tmwa.create_time <![CDATA[ >=  ]]> #{beginTime}
+            </if>
+            <if test="endTime != null ">
+                and tmwa.create_time <![CDATA[ <=  ]]> #{endTime}
+            </if>
+    
+            <if test="franchiseeIds != null">
+                and tm.franchisee_id in
+                <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
+                    #{id}
+                </foreach>
+            </if>
+        </where>
+    </select>
+    
+    <select id="selectListByCondition" resultType="com.xiliulou.electricity.vo.merchant.MerchantWithdrawApplicationVO">
+        select tmwa.id,
+        tmwa.uid,
+        tu.name,
+        tu.phone,
+        tmwa.order_no,
+        tmwa.amount,
+        tmwa.remark,
+        tmwa.status,
+        tmwa.check_time,
+        tmwa.receipt_time,
+        tmwa.tenant_id,
+        tmwa.del_flag,
+        tmwa.create_time,
+        tmwa.update_time
+        from t_merchant_withdraw_application tmwa
+        left join t_user tu on tu.uid = tmwa.uid
+        left join t_merchant tm on tm.uid = tmwa.uid
+        <where>
+            tmwa.del_flag = 0
+            and tmwa.tenant_id = #{tenantId}
+            <if test="uid != null">
+                and tmwa.uid = #{uid}
+            </if>
+            
+            <if test="orderNo != null and orderNo != ''">
+                and tmwa.order_no = #{orderNo}
+            </if>
+            
+            <if test="status != null">
+                and tmwa.status = #{status}
+            </if>
+            
+            <if test="beginTime != null ">
+                and tmwa.create_time <![CDATA[ >=  ]]> #{beginTime}
+            </if>
+            <if test="endTime != null ">
+                and tmwa.create_time <![CDATA[ <=  ]]> #{endTime}
+            </if>
+    
+            <if test="franchiseeIds != null">
+                and tm.franchisee_id in
+                <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
+                    #{id}
+                </foreach>
+            </if>
+        
+        </where>
+        order by tmwa.create_time desc
+        <if test="offset != null and size != null">
+            limit #{offset}, #{size}
+        </if>
+    
+    </select>
+    
+    <select id="selectListByIds" resultType="com.xiliulou.electricity.entity.merchant.MerchantWithdrawApplication">
+        select tmwa.id,
+               tmwa.uid,
+               tmwa.order_no,
+               tmwa.amount,
+               tmwa.remark,
+               tmwa.status,
+               tmwa.receipt_time,
+               tmwa.tenant_id,
+               tmwa.del_flag,
+               tmwa.create_time,
+               tmwa.update_time
+        from t_merchant_withdraw_application tmwa
+        <where>
+            <if test="tenantId != null ">
+                and tmwa.tenant_id = #{tenantId}
+            </if>
+            <if test="ids != null and !ids.isEmpty()">
+                and tmwa.id in
+                <foreach collection="ids" item="id" close=")" open="(" separator=",">
+                    #{id}
+                </foreach>
+            </if>
+        </where>
+
+    </select>
+    
+    <select id="selectById" resultMap="MerchantWithdrawApplicationMap">
+        select tmwa.id,
+               tmwa.uid,
+               tmwa.order_no,
+               tmwa.amount,
+               tmwa.remark,
+               tmwa.status,
+               tmwa.receipt_time,
+               tmwa.tenant_id,
+               tmwa.del_flag,
+               tmwa.create_time,
+               tmwa.update_time
+        from t_merchant_withdraw_application tmwa
+        where tmwa.id = #{id}
+        and tmwa.del_flag = 0
+    </select>
+    
+    <select id="selectRecordList" resultType="com.xiliulou.electricity.vo.merchant.MerchantWithdrawApplicationVO">
+        select tmwa.id,
+            tmwa.uid,
+            tu.name,
+            tu.phone,
+            tmwa.order_no,
+            tmwa.amount,
+            tmwa.remark,
+            tmwa.status,
+            tmwa.receipt_time,
+            tmwa.tenant_id,
+            tmwa.del_flag,
+            tmwa.create_time,
+            tmwa.update_time
+        from t_merchant_withdraw_application tmwa
+        left join t_user tu on tu.uid = tmwa.uid
+        left join t_merchant tm on tm.uid = tmwa.uid
+        <where>
+            tmwa.del_flag = 0
+            and tmwa.tenant_id = #{tenantId}
+            <if test="uid != null">
+                and tmwa.uid = #{uid}
+            </if>
+            
+            <if test="status != null">
+                and tmwa.status = #{status}
+            </if>
+            
+            <if test="beginTime != null ">
+                and tmwa.receipt_time <![CDATA[ >=  ]]> #{beginTime}
+            </if>
+            <if test="endTime != null ">
+                and tmwa.receipt_time <![CDATA[ <=  ]]> #{endTime}
+            </if>
+            
+            <if test="franchiseeIds != null">
+                and tm.franchisee_id in
+                <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
+                    #{id}
+                </foreach>
+            </if>
+        
+        </where>
+        order by tmwa.create_time desc
+        <if test="offset != null and size != null">
+            limit #{offset}, #{size}
+        </if>
+    
+    </select>
+    
+    <select id="selectRecordListCount" resultType="Integer">
+        select count(1)
+        from t_merchant_withdraw_application tmwa
+        left join t_user tu on tu.uid = tmwa.uid
+        left join t_merchant tm on tm.uid = tmwa.uid
+        <where>
+            tmwa.del_flag = 0
+            and tmwa.tenant_id = #{tenantId}
+            <if test="uid != null">
+                and tmwa.uid = #{uid}
+            </if>
+            
+            <if test="status != null">
+                and tmwa.status = #{status}
+            </if>
+            
+            <if test="beginTime != null ">
+                and tmwa.receipt_time <![CDATA[ >=  ]]> #{beginTime}
+            </if>
+            <if test="endTime != null ">
+                and tmwa.receipt_time <![CDATA[ <=  ]]> #{endTime}
+            </if>
+    
+            <if test="franchiseeIds != null">
+                and tm.franchisee_id in
+                <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
+                    #{id}
+                </foreach>
+            </if>
+
+        </where>
+    </select>
+    
+    <!--通过主键物理删除渠道员工-->
+    <delete id="deleteById">
+        delete from t_merchant_withdraw_application
+        where id = #{id}
+    </delete>
+    
+    <!--通过主键逻辑删除渠道员工-->
+    <delete id="removeById">
+        update t_merchant_withdraw_application set del_flag = 1 where id = #{id}
+    </delete>
+    
+    <select id="sumByStatus" resultType="java.math.BigDecimal">
+        select IFNULL(sum(amount),0) from t_merchant_withdraw_application where del_flag=0 and tenant_id =#{tenantId} and status =#{status} and uid =#{uid}
+    </select>
+    
+    <!--查询已审批的申请记录-->
+    <select id="selectListForWithdrawInProgress" resultType="com.xiliulou.electricity.entity.merchant.MerchantWithdrawApplication">
+        select distinct tmwa.batch_no,
+               tmwa.tenant_id
+        from t_merchant_withdraw_application tmwa
+        where tmwa.del_flag = 0
+          and tmwa.status = 4
+        limit #{offset},#{size}
+    </select>
+    
+    <select id="selectListByBatchNo" resultType="com.xiliulou.electricity.entity.merchant.MerchantWithdrawApplication">
+        select tmwa.id,
+               tmwa.uid,
+               tmwa.order_no,
+               tmwa.batch_no,
+               tmwa.amount,
+               tmwa.remark,
+               tmwa.status,
+               tmwa.receipt_time,
+               tmwa.tenant_id,
+               tmwa.del_flag,
+               tmwa.create_time,
+               tmwa.update_time
+        from t_merchant_withdraw_application tmwa
+        where del_flag = 0
+          and tmwa.batch_no = #{batchNo}
+          and tmwa.tenant_id = #{tenantId}
+    </select>
+    
+    <update id="updateApplicationStatusByBatchNo">
+        update t_merchant_withdraw_application
+        set status = #{status},
+            update_time = #{updateTime}
+        where batch_no = #{batchNo}
+          and tenant_id = #{tenantId}
+    </update>
+    
+    <update id="updateMerchantWithdrawStatus">
+        update t_merchant_withdraw_application
+        <set>
+            <if test="status != null">
+                status = #{status},
+            </if>
+            <if test="transactionBatchId != null and transactionBatchId != ''">
+                transaction_batch_id = #{transactionBatchId},
+            </if>
+            <if test="response != null and response != ''">
+                response = #{response},
+            </if>
+            <if test="remark != null and remark != ''">
+                remark = #{remark},
+            </if>
+    
+            <if test="receiptTime != null">
+                receipt_time = #{receiptTime},
+            </if>
+            
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+        </set>
+        
+        <where>
+            <if test="batchNo != null and batchNo != ''">
+                and batch_no = #{batchNo}
+            </if>
+          
+            <if test="orderNo != null and orderNo != ''">
+                and order_no = #{orderNo}
+            </if>
+    
+            <if test="tenantId != null">
+                and tenant_id = #{tenantId}
+            </if>
+        </where>
+
+    </update>
+    
+</mapper>
