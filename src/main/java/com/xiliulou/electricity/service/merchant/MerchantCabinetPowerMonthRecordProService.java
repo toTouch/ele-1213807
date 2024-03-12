@@ -12,5 +12,5 @@ import java.util.List;
  */
 public interface MerchantCabinetPowerMonthRecordProService {
     
-    MerchantPowerPeriodVO sumMonthPower(List<Long> cabinetIds, List<String> monthDateList);
+    MerchantPowerPeriodVO sumMonthPower(List<Long> cabinetIds, List<String> monthDateList, Long merchantId);
 }
