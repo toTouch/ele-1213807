@@ -1,6 +1,5 @@
 package com.xiliulou.electricity.utils;
 
-import com.xiliulou.electricity.constant.merchant.MerchantConstant;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.Base64;
