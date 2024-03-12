@@ -1068,6 +1068,9 @@ public class UserServiceImpl implements UserService {
                     item.setFirstBuyMemberCardEleName(firstBuyMemberCardElectricityCabinet.getName());
                 }
             }
+            
+            // 设置用户的邀请人名称
+            item.setInviterUserName(userInfoService.queryFinalInviterUserName(item.getUid(), item.getTenantId()));
 
         }).collect(Collectors.toList());
     }

@@ -57,6 +57,16 @@ public class UserSourceVO {
     private String storeName;
 
     private Long createTime;
+    
+    /**
+     * 邀请人名称
+     */
+    private String inviterUserName;
+    
+    /**
+     * t_user表数据对应的租户id
+     */
+    private Integer tenantId;
 
 
 }

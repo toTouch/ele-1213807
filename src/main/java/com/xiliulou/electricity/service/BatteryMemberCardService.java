@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.service;
 
+import com.xiliulou.electricity.dto.BatteryMemberCardSortParamDTO;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageQryModel;
@@ -83,4 +84,6 @@ public interface BatteryMemberCardService {
     List<BatteryMemberCard>  selectListByCouponId(Long couponId);
 
     Integer isMemberCardBindFranchinsee(Long id, Integer tenantId);
+    
+    Integer batchUpdateSortParam(List<BatteryMemberCardSortParamDTO> sortParamDTOList);
 }

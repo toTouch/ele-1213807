@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.xiliulou.electricity.mapper.ElectricityCabinetOrderMapper">
-
+    
     <!--查询指定行数据-->
     <select id="queryList" resultType="com.xiliulou.electricity.vo.ElectricityCabinetOrderVO">
         select
@@ -10,7 +10,9 @@
         teco.new_electricity_battery_sn, teco.old_cell_no, teco.new_cell_no, teco.status, teco.payment_method,
         teco.source, teco.remark, teco.switch_begin_time,
         teco.switch_end_time, teco.create_time, teco.update_time
+        tf.name franchiseeName
         from t_electricity_cabinet_order teco
+        inner join t_franchisee tf on teco.franchisee_id = tf.id
         <where>
             <if test="query.orderId != null and query.orderId != ''">
                 and teco.order_id = #{query.orderId}
@@ -47,13 +49,13 @@
             </if>
             <if test="query.franchiseeIds != null">
                 and teco.franchisee_id in
-                <foreach collection="query.franchiseeIds" item="id" index="index" open="(" close=")"  separator=",">
+                <foreach collection="query.franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
                     #{id}
                 </foreach>
             </if>
             <if test="query.storeIds != null">
                 and teco.store_id in
-                <foreach collection="query.storeIds" item="id" index="index" open="(" close=")"  separator=",">
+                <foreach collection="query.storeIds" item="id" index="index" open="(" close=")" separator=",">
                     #{id}
                 </foreach>
             </if>
@@ -64,8 +66,8 @@
         order by teco.create_time desc
         limit #{query.offset}, #{query.size}
     </select>
-
-
+    
+    
     <select id="queryCount" resultType="java.lang.Integer">
         select count(1)
         from t_electricity_cabinet_order teco
@@ -105,13 +107,13 @@
             </if>
             <if test="query.franchiseeIds != null">
                 and teco.franchisee_id in
-                <foreach collection="query.franchiseeIds" item="id" index="index" open="(" close=")"  separator=",">
+                <foreach collection="query.franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
                     #{id}
                 </foreach>
             </if>
             <if test="query.storeIds != null">
                 and teco.store_id in
-                <foreach collection="query.storeIds" item="id" index="index" open="(" close=")"  separator=",">
+                <foreach collection="query.storeIds" item="id" index="index" open="(" close=")" separator=",">
                     #{id}
                 </foreach>
             </if>
@@ -120,8 +122,8 @@
             </if>
         </where>
     </select>
-
-
+    
+    
     <select id="homepageExchangeOrderSumCount" resultType="java.lang.Integer">
         select count(1)
         from t_electricity_cabinet_order teco left join t_electricity_cabinet tec on teco.electricity_cabinet_id=tec.id
@@ -147,7 +149,7 @@
             </if>
         </where>
     </select>
-
+    
     <select id="homepageExchangeFrequency" resultType="com.xiliulou.electricity.vo.HomepageElectricityExchangeFrequencyVo">
         select count(1) as exchangeFrequency, teco.electricity_cabinet_id as eleId,teco.store_id
         from t_electricity_cabinet_order teco left join t_electricity_cabinet tec on teco.electricity_cabinet_id=tec.id
@@ -172,10 +174,10 @@
                 </foreach>
             </if>
         </where>
-            group by teco.electricity_cabinet_id ,teco.store_id
+        group by teco.electricity_cabinet_id ,teco.store_id
         limit #{query.offset}, #{query.size}
     </select>
-
+    
     <select id="homepageExchangeFrequencyCount" resultType="com.xiliulou.electricity.vo.HomepageElectricityExchangeFrequencyVo">
         select count(1) as exchangeFrequency, teco.electricity_cabinet_id as eleId,teco.store_id
         from t_electricity_cabinet_order teco left join t_electricity_cabinet tec on teco.electricity_cabinet_id=tec.id
@@ -202,8 +204,8 @@
         </where>
         group by teco.electricity_cabinet_id ,teco.store_id
     </select>
-
-
+    
+    
     <select id="homeOneCount" resultType="java.lang.Integer">
         select count(1)
         from t_electricity_cabinet_order
@@ -225,8 +227,8 @@
             </if>
         </where>
     </select>
-
-
+    
+    
     <select id="homeOneSuccess" resultType="java.lang.Integer">
         select count(1)
         from t_electricity_cabinet_order
@@ -247,8 +249,8 @@
             and tenant_id = #{tenantId}
         </if>
     </select>
-
-
+    
+    
     <select id="homeThree" resultType="java.util.HashMap">
         select from_unixtime(create_time / 1000, '%Y-%m-%d') date, count(*) as count
         from t_electricity_cabinet_order where create_time &gt;= #{startTimeMilliDay} and create_time &lt;=#{endTimeMilliDay}
@@ -264,15 +266,23 @@
         group by date
         order by date desc
     </select>
-
+    
     <select id="selectLatestByUid" resultType="com.xiliulou.electricity.entity.ElectricityCabinetOrder">
-        select id,uid,new_electricity_battery_sn from t_electricity_cabinet_order where uid=#{uid} and tenant_id=#{tenantId} order by id desc limit 1
+        select id, uid, new_electricity_battery_sn
+        from t_electricity_cabinet_order
+        where uid = #{uid}
+          and tenant_id = #{tenantId}
+        order by id desc limit 1
     </select>
-
+    
     <select id="selectLatestByUidV2" resultType="com.xiliulou.electricity.entity.ElectricityCabinetOrder">
-        select id,uid,new_electricity_battery_sn from t_electricity_cabinet_order where uid=#{uid} and status='COMPLETE_BATTERY_TAKE_SUCCESS' order by id desc limit 1
+        select id, uid, new_electricity_battery_sn
+        from t_electricity_cabinet_order
+        where uid = #{uid}
+          and status = 'COMPLETE_BATTERY_TAKE_SUCCESS'
+        order by id desc limit 1
     </select>
-
+    
     <!--获取柜机今日订单-->
     <select id="selectTodayExchangeOrder" resultType="com.xiliulou.electricity.entity.ElectricityCabinetOrder">
         select
@@ -315,22 +325,24 @@
     </select>
     
     <select id="selectLatestOrderAndCabinetInfo" resultType="com.xiliulou.electricity.vo.ElectricityCabinetOrderVO">
-        select
-            teco.id,
-            teco.uid,
-            teco.new_electricity_battery_sn as newElectricityBatterySn,
-            teco.electricity_cabinet_id as electricityCabinetId,
-			tec.name as electricityCabinetName,
-            teco.create_time as createTime,
-            teco.update_time as updateTime
+        select teco.id,
+               teco.uid,
+               teco.new_electricity_battery_sn as newElectricityBatterySn,
+               teco.electricity_cabinet_id     as electricityCabinetId,
+               tec.name                        as electricityCabinetName,
+               teco.create_time                as createTime,
+               teco.update_time                as updateTime
         from t_electricity_cabinet_order teco
-		left join t_electricity_cabinet tec on tec.id = teco.electricity_cabinet_id
-        where teco.uid=#{uid}
-        and teco.status='COMPLETE_BATTERY_TAKE_SUCCESS'
+                 left join t_electricity_cabinet tec on tec.id = teco.electricity_cabinet_id
+        where teco.uid = #{uid}
+          and teco.status = 'COMPLETE_BATTERY_TAKE_SUCCESS'
         order by teco.id desc limit 1
     </select>
     
     <update id="updatePhoneByUid">
-        update t_electricity_cabinet_order set phone=#{newPhone} where uid=#{uid} and tenant_id = #{tenantId}
+        update t_electricity_cabinet_order
+        set phone=#{newPhone}
+        where uid = #{uid}
+          and tenant_id = #{tenantId}
     </update>
 </mapper>

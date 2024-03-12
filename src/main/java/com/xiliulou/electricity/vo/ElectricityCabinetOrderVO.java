@@ -95,6 +95,11 @@ public class ElectricityCabinetOrderVO {
     private Long updateTime;
 
     private Integer selfOpenCell;
+    
+    /**
+     * 加盟商名称
+     */
+    private String franchiseeName;
 
 
 }
