@@ -815,6 +815,9 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
         return bindHistoryList.stream().map(bindHistory -> {
             MerchantChannelEmployeeBindHistoryDTO bindHistoryDTO = new MerchantChannelEmployeeBindHistoryDTO();
             BeanUtils.copyProperties(bindHistory, bindHistoryDTO);
+            if (Objects.nonNull(bindHistory.getUnBindTime()) && bindHistory.getUnBindTime() <= startTime) {
+               return null;
+            }
             if (bindHistory.getBindTime() >= startTime) {
                 bindHistoryDTO.setQueryStartTime(bindHistory.getBindTime());
             } else {
@@ -826,7 +829,7 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
                 bindHistoryDTO.setQueryEndTime(endTime);
             }
             return bindHistoryDTO;
-        }).collect(Collectors.toList());
+        }).filter(Objects::nonNull).collect(Collectors.toList());
     }
     
     private void buildPromotionFeePromotionScanCode(Integer type, Long uid, MerchantPromotionFeeScanCodeVO merchantPromotionFeeScanCodeVO, long dayOfMonthStartTime,
