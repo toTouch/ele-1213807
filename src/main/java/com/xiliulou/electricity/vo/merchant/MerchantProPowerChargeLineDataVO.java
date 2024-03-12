@@ -2,6 +2,8 @@ package com.xiliulou.electricity.vo.merchant;
 
 import lombok.Data;
 
+import java.math.BigDecimal;
+
 /**
  * @author HeYafeng
  * @description 折线图电费
@@ -12,5 +14,5 @@ public class MerchantProPowerChargeLineDataVO {
     
     private String monthDate;
     
-    private Double charge;
+    private BigDecimal charge;
 }

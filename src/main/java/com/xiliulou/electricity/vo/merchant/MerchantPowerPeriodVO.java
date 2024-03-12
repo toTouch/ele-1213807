@@ -2,6 +2,8 @@ package com.xiliulou.electricity.vo.merchant;
 
 import lombok.Data;
 
+import java.math.BigDecimal;
+
 /**
  * @author HeYafeng
  * @description 时间段的 电量/电费
@@ -10,7 +12,7 @@ import lombok.Data;
 @Data
 public class MerchantPowerPeriodVO {
     
-    private Double power;
+    private BigDecimal power;
     
-    private Double charge;
+    private BigDecimal charge;
 }

@@ -2,6 +2,8 @@ package com.xiliulou.electricity.vo.merchant;
 
 import lombok.Data;
 
+import java.math.BigDecimal;
+
 /**
  * @author HeYafeng
  * @description 电量/电费
@@ -14,9 +16,9 @@ public class MerchantProLivePowerVO {
     
     private Long eid;
     
-    private Double power;
+    private BigDecimal power;
     
-    private Double charge;
+    private BigDecimal charge;
     
     private Long startTime;
     

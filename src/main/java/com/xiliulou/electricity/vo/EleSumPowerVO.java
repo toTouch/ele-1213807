@@ -2,6 +2,8 @@ package com.xiliulou.electricity.vo;
 
 import lombok.Data;
 
+import java.math.BigDecimal;
+
 /**
  * @author HeYafeng
  * @description 总电量/总电费
@@ -10,7 +12,7 @@ import lombok.Data;
 @Data
 public class EleSumPowerVO {
     
-    private Double sumPower;
+    private BigDecimal sumPower;
     
-    private Double sumCharge;
+    private BigDecimal sumCharge;
 }

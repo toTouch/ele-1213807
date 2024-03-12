@@ -5,6 +5,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
+
 /**
  * @author HeYafeng
  * @description 柜机电费详情
@@ -24,9 +26,9 @@ public class MerchantProCabinetPowerDetailVO {
     
     private String sn;
     
-    private Double power;
+    private BigDecimal power;
     
-    private Double charge;
+    private BigDecimal charge;
     
     private Long startTime;
     

@@ -2,6 +2,8 @@ package com.xiliulou.electricity.vo.merchant;
 
 import lombok.Data;
 
+import java.math.BigDecimal;
+
 /**
  * @author HeYafeng
  * @description 柜机电费
@@ -14,17 +16,17 @@ public class MerchantProCabinetPowerVO {
     
     private String cabinetName;
     
-    private Double todayPower;
+    private BigDecimal todayPower;
     
-    private Double todayCharge;
+    private BigDecimal todayCharge;
     
-    private Double thisMonthPower;
+    private BigDecimal thisMonthPower;
     
-    private Double thisMonthCharge;
+    private BigDecimal thisMonthCharge;
     
-    private Double thisYearPower;
+    private BigDecimal thisYearPower;
     
-    private Double thisYearCharge;
+    private BigDecimal thisYearCharge;
     
     /**
      * 柜机创建时间，用于列表排序
