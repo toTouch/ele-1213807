@@ -22,13 +22,7 @@ public class MerchantCabinetPowerMonthDetailProServiceImpl implements MerchantCa
     
     @Slave
     @Override
-    public Long queryLatestReportTime(Long cabinetId, List<String> monthList) {
-        return merchantCabinetPowerMonthDetailProMapper.selectLatestReportTime(cabinetId, monthList);
-    }
-    
-    @Slave
-    @Override
-    public List<MerchantCabinetPowerMonthDetailPro> listByMonth(Long cabinetId, List<String> monthList) {
-        return merchantCabinetPowerMonthDetailProMapper.selectListByMonth(cabinetId, monthList);
+    public List<MerchantCabinetPowerMonthDetailPro> listByMonth(Long cabinetId, List<String> monthList, Long merchantId) {
+        return merchantCabinetPowerMonthDetailProMapper.selectListByMonth(cabinetId, monthList, merchantId);
     }
 }
