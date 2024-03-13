@@ -307,6 +307,8 @@ public class FranchiseeInsuranceServiceImpl extends ServiceImpl<FranchiseeInsura
     @Slave
     @Override
     public List<FranchiseeInsuranceVo> selectByPage(FranchiseeInsuranceQuery query) {
+        log.info("FranchiseeInsuranceServiceImpl/selectByPage pararm {}",JsonUtil.toJson(query));
+        
         List<FranchiseeInsuranceVo> franchiseeInsuranceVoList = baseMapper.selectByPage(query);
         if(CollectionUtils.isEmpty(franchiseeInsuranceVoList)){
             return Collections.emptyList();

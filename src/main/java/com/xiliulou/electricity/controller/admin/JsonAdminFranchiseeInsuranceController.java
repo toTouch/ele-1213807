@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.controller.admin;
 
+import cn.hutool.core.collection.CollUtil;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.web.R;
@@ -12,17 +13,22 @@ import com.xiliulou.electricity.query.FranchiseeInsuranceAddAndUpdate;
 import com.xiliulou.electricity.query.FranchiseeInsuranceQuery;
 import com.xiliulou.electricity.service.FranchiseeInsuranceService;
 import com.xiliulou.electricity.service.FranchiseeService;
+import com.xiliulou.electricity.service.UserDataScopeService;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.validator.UpdateGroup;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.CollectionUtils;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import javax.annotation.Resource;
 import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -46,6 +52,9 @@ public class JsonAdminFranchiseeInsuranceController extends BaseController {
 
     @Autowired
     UserInfoService userInfoService;
+    
+    @Resource
+    UserDataScopeService userDataScopeService;
 
     /**
      * 新增保险配置
@@ -152,10 +161,31 @@ public class JsonAdminFranchiseeInsuranceController extends BaseController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
-            return R.ok(Collections.emptyList());
+        //if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
+        //    return R.ok(Collections.emptyList());
+        //}
+        
+        List<Long> franchiseeIds = null;
+        List<Long> storeIds = null;
+        // 保险类型 0--电池 1--车辆
+        if(Objects.equals(type,FranchiseeInsurance.INSURANCE_TYPE_BATTERY)){
+            // 电池保险
+            if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+                franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+                if(CollUtil.isEmpty(franchiseeIds)){
+                    return R.ok(Collections.emptyList());
+                }
+            }
+        } else if (Objects.equals(type,FranchiseeInsurance.INSURANCE_TYPE_CAR)) {
+            // 车辆保险
+            Triple<List<Long>, List<Long>, Boolean> triple = checkPermissionInteger(user);
+            if (!triple.getRight()) {
+                return R.ok(Collections.emptyList());
+            }
+            franchiseeIds=triple.getLeft();
+            storeIds=triple.getMiddle();
         }
-
+        
         FranchiseeInsuranceQuery query = FranchiseeInsuranceQuery.builder()
                 .offset(offset)
                 .size(size)
@@ -164,12 +194,32 @@ public class JsonAdminFranchiseeInsuranceController extends BaseController {
                 .insuranceType(insuranceType)
                 .name(name)
                 .status(status)
+                .franchiseeIds(franchiseeIds)
+                .storeIds(storeIds)
                 .tenantId(TenantContextHolder.getTenantId()).build();
-
-
-//        return franchiseeInsuranceService.queryList(offset, size, status, insuranceType, tenantId, franchiseeId);
+        
         return R.ok(franchiseeInsuranceService.selectByPage(query));
     }
+    protected Triple<List<Long>, List<Long>, Boolean> checkPermissionInteger(TokenUser user) {
+        // 加盟商数据权
+        List<Long> franchiseeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if (CollectionUtils.isEmpty(franchiseeIds)) {
+                return Triple.of(null, null, false);
+            }
+        }
+        // 门店数据
+        List<Long> storeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
+            storeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if (CollectionUtils.isEmpty(storeIds)) {
+                return Triple.of(null, null, false);
+            }
+        }
+        return Triple.of(franchiseeIds, storeIds, true);
+    }
+    
 
     /**
      * 分页数量
@@ -190,16 +240,40 @@ public class JsonAdminFranchiseeInsuranceController extends BaseController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
-            return R.ok(NumberConstant.ZERO);
+        //if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
+         //   return R.ok(NumberConstant.ZERO);
+        //}
+        
+        List<Long> franchiseeIds = null;
+        List<Long> storeIds = null;
+        // 保险类型 0--电池 1--车辆
+        if(Objects.equals(type,FranchiseeInsurance.INSURANCE_TYPE_BATTERY)){
+            // 电池保险
+            if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+                franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+                if(CollUtil.isEmpty(franchiseeIds)){
+                    return R.ok(NumberConstant.ZERO);
+                }
+            }
+        } else if (Objects.equals(type,FranchiseeInsurance.INSURANCE_TYPE_CAR)) {
+            // 车辆保险
+            Triple<List<Long>, List<Long>, Boolean> triple = checkPermissionInteger(user);
+            if (!triple.getRight()) {
+                return R.ok(NumberConstant.ZERO);
+            }
+            franchiseeIds=triple.getLeft();
+            storeIds=triple.getMiddle();
         }
-
+        
+        
         FranchiseeInsuranceQuery query = FranchiseeInsuranceQuery.builder()
                 .franchiseeId(franchiseeId)
                 .type(type)
                 .insuranceType(insuranceType)
                 .name(name)
                 .status(status)
+                .franchiseeIds(franchiseeIds)
+                .storeIds(storeIds)
                 .tenantId(TenantContextHolder.getTenantId()).build();
 //        return franchiseeInsuranceService.queryCount(status, insuranceType, tenantId, franchiseeId);
         return R.ok(franchiseeInsuranceService.selectPageCount(query));
