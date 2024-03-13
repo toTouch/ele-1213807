@@ -706,9 +706,9 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
                 } else {
                     result = result + scanCodeByMerchant;
                 }
-                log.error("dtoList={}",JsonUtil.toJson(dtoList));
-                log.error("result={}",result);
             }
+            log.error("dtoList={}",JsonUtil.toJson(dtoList));
+            log.error("result={}",result);
             return result;
         } else {
             //昨日扫码人数：扫码绑定时间=昨日0点～今日0点；
@@ -884,6 +884,12 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
                 }).collect(Collectors.toList());
             }
             
+            log.error("todayList={}",JsonUtil.toJson(todayList));
+            log.error("yesterdayList={}",JsonUtil.toJson(yesterdayList));
+            log.error("currentMonthList={}",JsonUtil.toJson(currentMonthList));
+            log.error("lastMonthList={}",JsonUtil.toJson(lastMonthList));
+            log.error("totalList={}",JsonUtil.toJson(totalList));
+    
             //今日扫码人数：扫码绑定时间=今日0点～当前时间；
             merchantPromotionFeeScanCodeVO.setTodayScanCodeNum(buildScanCodeCount(type, uid, DateUtils.getTodayStartTime(), System.currentTimeMillis(), null, todayList));
             //昨日扫码人数：扫码绑定时间=昨日0点～今日0点；
@@ -957,6 +963,8 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
             //今日预估收入和昨日收入时间范围一样   今日预估收入=今日未结算 昨日收入= 今日已结算 -今日已退回
             List<MerchantChannelEmployeeBindHistoryDTO> yesterdatList = buildMerchantChannelEmployeeBindHistoryDTO(bindHistoryList, DateUtils.getTimeAgoStartTime(1),
                     DateUtils.getTimeAgoEndTime(1));
+            
+            
             
             List<MerchantChannelEmployeeBindHistoryDTO> lastMonthList = buildMerchantChannelEmployeeBindHistoryDTO(bindHistoryList, dayOfMonthStartTime, dayOfMonthEndTime);
             handleMerchantTodayIncomeByChannelEmployee(type, uid, merchantPromotionFeeIncomeVO, todayList, yesterdatList, lastMonthList);
