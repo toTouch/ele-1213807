@@ -666,13 +666,13 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
         } else {
             //累计收入：“结算日期” <= 今日，“结算状态” = 已结算 - 已退回；
             MerchantPromotionFeeQueryModel allSettleIncomeQueryModel = MerchantPromotionFeeQueryModel.builder().status(MerchantConstant.MERCHANT_REBATE_STATUS_SETTLED)
-                    .type(PromotionFeeQueryTypeEnum.CHANNEL_EMPLOYEE.getCode()).merchantUid(uid).uid(SecurityUtils.getUid()).tenantId(TenantContextHolder.getTenantId())
+                    .type(type).uid(uid).tenantId(TenantContextHolder.getTenantId())
                     .settleStartTime(startTime).settleEndTime(endTime).build();
             BigDecimal allSettleIncome = rebateRecordService.sumByStatus(allSettleIncomeQueryModel);
             
             // 已退回需要用返现日期计算
             MerchantPromotionFeeQueryModel allReturnIncomeQueryModel = MerchantPromotionFeeQueryModel.builder().status(MerchantConstant.MERCHANT_REBATE_STATUS_RETURNED)
-                    .type(PromotionFeeQueryTypeEnum.CHANNEL_EMPLOYEE.getCode()).merchantUid(uid).uid(SecurityUtils.getUid()).tenantId(TenantContextHolder.getTenantId())
+                    .type(type).uid(uid).tenantId(TenantContextHolder.getTenantId())
                     .rebateStartTime(startTime).rebateEndTime(endTime).build();
             BigDecimal allReturnIncome = rebateRecordService.sumByStatus(allReturnIncomeQueryModel);
             return allSettleIncome.subtract(allReturnIncome);
