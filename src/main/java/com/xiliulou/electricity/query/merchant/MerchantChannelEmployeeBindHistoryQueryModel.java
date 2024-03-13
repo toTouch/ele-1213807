@@ -26,5 +26,7 @@ public class MerchantChannelEmployeeBindHistoryQueryModel {
     
     private Long unBindTime;
     
+    private Integer delFlag;
+    
     private Integer tenantId;
 }

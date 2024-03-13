@@ -132,19 +132,17 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
             MerchantJoinRecord needUpdatedToInvalidRecord = null;
             List<MerchantJoinRecord> joinRecordList = this.listByJoinUidAndStatus(joinUid, List.of(MerchantJoinRecordConstant.STATUS_INIT));
             if (CollectionUtils.isNotEmpty(joinRecordList)) {
-                for (MerchantJoinRecord joinRecord : joinRecordList) {
-                    // 有已参与记录
-                    if (Objects.equals(joinRecord.getStatus(), MerchantJoinRecordConstant.STATUS_INIT)) {
+                
+                MerchantJoinRecord joinRecord = joinRecordList.get(NumberConstant.ZERO);
+                if (Objects.nonNull(joinRecord)) {
+                    //未过有效期
+                    if (Objects.equals(joinRecord.getProtectionStatus(), MerchantJoinRecordConstant.PROTECTION_STATUS_NORMAL)) {
+                        log.error("MERCHANT JOIN ERROR! in protectionTime, merchantId={}, inviterUid={}, joinUid={}", joinRecord.getMerchantId(), joinRecord.getInviterUid(),
+                                joinUid);
                         
-                        //未过有效期
-                        if (Objects.equals(joinRecord.getProtectionStatus(), MerchantJoinRecordConstant.PROTECTION_STATUS_NORMAL)) {
-                            log.error("MERCHANT JOIN ERROR! in protectionTime, merchantId={}, inviterUid={}, joinUid={}", joinRecord.getMerchantId(), joinRecord.getInviterUid(),
-                                    joinUid);
-                            
-                            return R.fail(false, "120104", "商户保护期内，请稍后再试");
-                        } else {
-                            needUpdatedToInvalidRecord = joinRecord;
-                        }
+                        return R.fail(false, "120104", "商户保护期内，请稍后再试");
+                    } else {
+                        needUpdatedToInvalidRecord = joinRecord;
                     }
                 }
             }

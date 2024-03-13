@@ -405,6 +405,7 @@
                 </foreach>
             </if>
         </where>
+        order by id desc
     </select>
     
     <select id="selectMerchantNameByJoinUid" resultType="java.lang.String">
