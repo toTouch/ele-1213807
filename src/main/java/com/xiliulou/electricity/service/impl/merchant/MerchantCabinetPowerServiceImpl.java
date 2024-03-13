@@ -1614,12 +1614,12 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
             powerVO.setCharge(Objects.isNull(preTwoMonthPower.getCharge()) ? BigDecimal.ZERO : preTwoMonthPower.getCharge());
         }
         if (Objects.nonNull(lastMonthPower)) {
-            powerVO.setPower(Objects.isNull(lastMonthPower.getPower()) ? BigDecimal.ZERO : lastMonthPower.getPower());
-            powerVO.setCharge(Objects.isNull(lastMonthPower.getCharge()) ? BigDecimal.ZERO : lastMonthPower.getCharge());
+            powerVO.setPower(powerVO.getPower().add(Objects.isNull(lastMonthPower.getPower()) ? BigDecimal.ZERO : lastMonthPower.getPower()));
+            powerVO.setCharge(powerVO.getCharge().add(Objects.isNull(lastMonthPower.getCharge()) ? BigDecimal.ZERO : lastMonthPower.getCharge()));
         }
         if (Objects.nonNull(thisMonthPower)) {
-            powerVO.setPower(Objects.isNull(thisMonthPower.getPower()) ? BigDecimal.ZERO : thisMonthPower.getPower());
-            powerVO.setCharge(Objects.isNull(thisMonthPower.getCharge()) ? BigDecimal.ZERO : thisMonthPower.getCharge());
+            powerVO.setPower(powerVO.getPower().add(Objects.isNull(thisMonthPower.getPower()) ? BigDecimal.ZERO : thisMonthPower.getPower()));
+            powerVO.setCharge(powerVO.getCharge().add(Objects.isNull(thisMonthPower.getCharge()) ? BigDecimal.ZERO : thisMonthPower.getCharge()));
         }
         
         log.info("Merchant powerData getTotalPower merchantId={}, powerVO={}", merchantId, powerVO);
