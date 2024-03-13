@@ -374,7 +374,10 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
         electricityConfig.setTenantId(TenantContextHolder.getTenantId());
         electricityConfig.setWxCustomer(status);
         electricityConfig.setUpdateTime(System.currentTimeMillis());
-        electricityConfigMapper.updateWxCuStatusByTenantId(electricityConfig);
+        Integer updateResult = electricityConfigMapper.updateWxCuStatusByTenantId(electricityConfig);
+        if (updateResult > 0) {
+            redisService.delete(CacheConstant.CACHE_ELE_SET_CONFIG + TenantContextHolder.getTenantId());
+        }
     }
     
     @Override
