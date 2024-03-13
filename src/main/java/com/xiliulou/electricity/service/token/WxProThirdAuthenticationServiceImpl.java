@@ -178,40 +178,41 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
             
             //两个都存在，
             if (existPhone.getLeft() && existsOpenId.getLeft()) {
+                Long uidExist = existPhone.getRight().getUid();
                 // 通过手机号会查询出来多个（骑手端、商户端）
                 List<UserOauthBind> userOauthBinds = userOauthBindService.listUserByPhone(existPhone.getRight().getPhone(), UserOauthBind.SOURCE_WX_PRO, tenantId);
                 log.info("userOauthBinds is {}", JsonUtil.toJson(userOauthBinds));
                 if (CollectionUtils.isEmpty(userOauthBinds)) {
-                    log.error("TOKEN ERROR! not find user auth bind info! openId={},userId={}", result.getOpenid(),  existPhone.getRight().getUid());
+                    log.error("TOKEN ERROR! not find user auth bind info! openId={},userId={}", result.getOpenid(), uidExist);
                     throw new UserLoginException("100567", "该账户尚未绑定");
                 }
                 
-                List<UserOauthBind> fitUserOauthBinds = userOauthBinds.stream().filter(userOauthBind -> result.getOpenid().equals(userOauthBind.getThirdId())).collect(Collectors.toList());
-                log.info("fitUserOauthBinds is {}", JsonUtil.toJson(fitUserOauthBinds));
-                if (CollectionUtils.isEmpty(fitUserOauthBinds) || fitUserOauthBinds.size() > 1) {
-                    log.error("TOKEN ERROR! find user auth bind many ! openId is {}, userId is {}", result.getOpenid(),  existPhone.getRight().getUid());
-                    throw new UserLoginException("ELECTRICITY.0001", "用户登录异常");
+                UserOauthBind userOauthBindLogin = userOauthBinds.stream().filter(userOauthBindTemp -> result.getOpenid().equals(userOauthBindTemp.getThirdId())).findFirst()
+                        .orElse(null);
+                log.info("userOauthBindLogin is {}", JsonUtil.toJson(userOauthBindLogin));
+                if (ObjectUtils.isEmpty(userOauthBindLogin)) {
+                    // 匹配不到，通过UID匹配，查询是否解绑
+                    UserOauthBind userOauthUnBind = userOauthBinds.stream()
+                            .filter(userOauthBindTemp -> uidExist.equals(userOauthBindTemp.getUid()) && UserOauthBind.STATUS_UN_BIND.equals(userOauthBindTemp.getStatus())).findFirst()
+                            .orElse(null);
+                    if (ObjectUtils.isEmpty(userOauthUnBind)) {
+                        log.error("TOKEN ERROR! find user auth bind many ! openId is {}, userId is {}", result.getOpenid(), uidExist);
+                        throw new UserLoginException("ELECTRICITY.0001", "用户登录异常");
+                    }
+                    userOauthBindLogin = userOauthUnBind;
                 }
-                
-                UserOauthBind userOauthBind = fitUserOauthBinds.get(0);
-               /* if (Objects.nonNull(userOauthBind) && Objects.equals(userOauthBind.getStatus(),UserOauthBind.STATUS_BIND)) {
-                    log.error("TOKEN ERROR! thirdId not equals user login thirdId={}! openId={},thirdId={},userId={}", result.getOpenid(),
-                            userOauthBind.getThirdId(),existsOpenId.getRight().get(0).getThirdId(), existPhone.getRight().getUid());
-                    throw new UserLoginException("100567", "该账户已绑定其他微信，请联系客服处理");
-                }*/
                 
                 List<UserOauthBind> oauthBindList = existsOpenId.getRight();
                 List<Long> uidList = oauthBindList.stream().map(UserOauthBind::getUid).collect(Collectors.toList());
                 
                 //uid不同，异常处理
-                if (StringUtils.isNotBlank(userOauthBind.getThirdId()) && !uidList.contains(existPhone.getRight().getUid())) {
-                    log.error("TOKEN ERROR! two exists! third account uid not equals user account uid! uidList={},userId={}", JsonUtil.toJson(uidList),
-                            existPhone.getRight().getUid());
+                if (StringUtils.isNotBlank(userOauthBindLogin.getThirdId()) && !uidList.contains(uidExist)) {
+                    log.error("TOKEN ERROR! two exists! third account uid not equals user account uid! uidList={},userId={}", JsonUtil.toJson(uidList), uidExist);
                     throw new AuthenticationServiceException("登录信息异常，请联系客服处理");
                 }
                 
                 //添加到user_info表中
-                Long uid = existPhone.getRight().getUid();
+                Long uid = uidExist;
                 Pair<Boolean, UserInfo> existUserInfo = checkUserInfoExists(uid);
                 if (!existUserInfo.getLeft()) {
                     UserInfo insertUserInfo = UserInfo.builder().uid(uid).updateTime(System.currentTimeMillis())
@@ -224,18 +225,18 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
                     userInfoExtraService.insert(buildUserInfoExtra(uid, tenantId));
                 }
                 
-                if(StringUtils.isBlank(userOauthBind.getThirdId())){
+                if(StringUtils.isBlank(userOauthBindLogin.getThirdId())){
                     //这里更改openId
-                    userOauthBind.setThirdId(result.getOpenid());
-                    userOauthBind.setUpdateTime(System.currentTimeMillis());
-                    userOauthBind.setStatus(UserOauthBind.STATUS_BIND);
-                    userOauthBindService.update(userOauthBind);
+                    userOauthBindLogin.setThirdId(result.getOpenid());
+                    userOauthBindLogin.setUpdateTime(System.currentTimeMillis());
+                    userOauthBindLogin.setStatus(UserOauthBind.STATUS_BIND);
+                    userOauthBindService.update(userOauthBindLogin);
                 }
                 
                 //相同登录
                 return createSecurityUser(existPhone.getRight(), oauthBindList.get(0));
             }
-
+            
             //如果openId存在.手机号不存在,则新增账号
             if (existsOpenId.getLeft() && !existPhone.getLeft()) {
                 return createUserAndOauthBind(result, wxMinProPhoneResultDTO);
@@ -293,7 +294,7 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
                             .name(existPhone.getRight().getName())
                             .delFlag(User.DEL_NORMAL).usableStatus(UserInfo.USER_USABLE_STATUS).tenantId(tenantId)
                             .build();
-                    UserInfo userInfo = userInfoService.insert(insertUserInfo);
+                    userInfoService.insert(insertUserInfo);
                     
                     userInfoExtraService.insert(buildUserInfoExtra(uid, tenantId));
                 }
