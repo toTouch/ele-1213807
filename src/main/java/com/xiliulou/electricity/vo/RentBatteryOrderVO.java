@@ -94,6 +94,11 @@ public class RentBatteryOrderVO {
     private String remark;
     
     /**
+     * 租退电订单绑定的加盟商ID
+     */
+    private Long franchiseeId;
+    
+    /**
      * 加盟商名称
      */
     private String franchiseeName;

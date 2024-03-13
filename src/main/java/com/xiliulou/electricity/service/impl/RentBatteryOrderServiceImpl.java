@@ -191,6 +191,12 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
                 if (Objects.nonNull(electricityCabinet)) {
                     e.setElectricityCabinetName(electricityCabinet.getName());
                 }
+                
+                // 设置加盟商名称
+                Franchisee franchisee = franchiseeService.queryByIdFromCache(e.getFranchiseeId());
+                if (Objects.nonNull(franchisee)) {
+                    e.setFranchiseeName(franchisee.getName());
+                }
             });
         }
         

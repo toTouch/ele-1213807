@@ -64,7 +64,8 @@ public class JsonAdminElectricityMemberCardOrderController extends BaseControlle
 		                                  @RequestParam(value = "userName", required = false) String userName,
                                           @RequestParam(value = "uid", required = false) Long uid,
                                           @RequestParam(value = "queryEndTime", required = false) Long queryEndTime,
-                                          @RequestParam(value = "payType",required = false) Integer payType) {
+                                          @RequestParam(value = "payType",required = false) Integer payType,
+                                          @RequestParam(value = "memberCardName", required = false) String memberCardName) {
 
         if (Objects.isNull(size) || size < 0 || size > 50) {
             size = 10L;
@@ -118,6 +119,7 @@ public class JsonAdminElectricityMemberCardOrderController extends BaseControlle
                 .cardPayCount(payCount)
 		        .userName(userName)
                 .payType(payType)
+                .memberCardName(memberCardName)
 		        .build();
 
         return electricityMemberCardOrderService.queryList(memberCardOrderQuery);

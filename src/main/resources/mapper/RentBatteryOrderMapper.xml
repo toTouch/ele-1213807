@@ -6,52 +6,51 @@
     <!--查询指定行数据-->
     <select id="queryList" resultType="com.xiliulou.electricity.vo.RentBatteryOrderVO">
         select
-        trbo.id, trbo.order_id,trbo.uid,trbo.name, trbo.phone, trbo.electricity_battery_sn, trbo.battery_deposit, trbo.electricity_cabinet_id,
-        trbo.cell_no,trbo.type,trbo.status, trbo.create_time,trbo.update_time,trbo.remark,tf.name franchiseeName
-        from t_rent_battery_order trbo
-        inner join t_franchisee tf on trbo.franchisee_id = tf.id
+        id, order_id, uid, name, phone, electricity_battery_sn, battery_deposit, electricity_cabinet_id,
+        cell_no, type, status, create_time, update_time, remark, franchisee_id
+        from t_rent_battery_order
         <where>
             <if test="query.orderId != null and query.orderId != ''">
-                and trbo.order_id like concat('%',#{query.orderId,jdbcType=VARCHAR},'%')
+                and order_id like concat('%',#{query.orderId,jdbcType=VARCHAR},'%')
             </if>
             <if test="query.name != null and query.name != ''">
-                and trbo.name = #{query.name}
+                and name = #{query.name}
             </if>
             <if test="query.phone != null and query.phone != ''">
-                and trbo.phone = #{query.phone}
+                and phone = #{query.phone}
             </if>
             <if test="query.uid != null">
-                and trbo.uid = #{query.uid}
+                and uid = #{query.uid}
             </if>
             <if test="query.status != null and query.status != ''">
-                and trbo.status = #{query.status}
+                and status = #{query.status}
             </if>
             <if test="query.type != null">
-                and trbo.type = #{query.type}
+                and type = #{query.type}
             </if>
             <if test="query.beginTime != null">
-                and trbo.create_time &gt;=#{query.beginTime}
+                and create_time &gt;=#{query.beginTime}
             </if>
             <if test="query.endTime != null">
-                and trbo.create_time &lt;=#{query.endTime}
+                and create_time &lt;=#{query.endTime}
             </if>
             <if test="query.tenantId != null">
-                and trbo.tenant_id = #{query.tenantId}
+                and tenant_id = #{query.tenantId}
             </if>
             <if test="query.franchiseeIds != null">
-                and trbo.franchisee_id in
+                and franchisee_id in
                 <foreach collection="query.franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
                     #{id}
                 </foreach>
             </if>
             <if test="query.storeIds != null">
-                and trbo.store_id in
+                and store_id in
                 <foreach collection="query.storeIds" item="id" index="index" open="(" close=")" separator=",">
                     #{id}
                 </foreach>
             </if>
         </where>
-        order by trbo.create_time desc
+        order by create_time desc
         limit #{query.offset}, #{query.size}
     </select>
     

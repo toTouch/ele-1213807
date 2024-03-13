@@ -6,7 +6,7 @@ import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
-import com.xiliulou.electricity.dto.BatteryMemberCardSortParamDTO;
+import com.xiliulou.electricity.query.BatteryMemberCardSortParamQuery;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.Coupon;
 import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
@@ -364,7 +364,7 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
     }
     
     @Override
-    public Integer batchUpdateSortParam(List<BatteryMemberCardSortParamDTO> sortParamDTOList) {
+    public Integer batchUpdateSortParam(List<BatteryMemberCardSortParamQuery> sortParamDTOList) {
         
         if (Objects.isNull(sortParamDTOList)) {
             return null;
@@ -376,6 +376,15 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
     @Slave
     @Override
     public List<BatteryMemberCardVO> selectByPage(BatteryMemberCardQuery query) {
+        
+        // 若根据电池型号查询，需要将短型号转换为原型号
+        if (StringUtils.isNotEmpty(query.getBatteryModel())) {
+            String originalModel = batteryModelService.acquireOriginalModelByShortType(query.getBatteryModel(), TenantContextHolder.getTenantId());
+            if (StringUtils.isNotEmpty(originalModel)) {
+                query.setBatteryModel(originalModel);
+            }
+        }
+        
         List<BatteryMemberCard> list = this.batteryMemberCardMapper.selectByPage(query);
         
         return list.parallelStream().map(item -> {
@@ -385,11 +394,13 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
             Franchisee franchisee = franchiseeService.queryByIdFromCache(item.getFranchiseeId());
             batteryMemberCardVO.setFranchiseeName(Objects.nonNull(franchisee) ? franchisee.getName() : "");
             
+            // 设置电池型号
             if (Objects.nonNull(franchisee) && Objects.equals(franchisee.getModelType(), Franchisee.NEW_MODEL_TYPE)) {
                 batteryMemberCardVO.setBatteryModels(
                         batteryModelService.selectShortBatteryType(memberCardBatteryTypeService.selectBatteryTypeByMid(item.getId()), item.getTenantId()));
             }
             
+            // 设置优惠券名称
             if (Objects.nonNull(item.getCouponId())) {
                 Coupon coupon = couponService.queryByIdFromCache(item.getCouponId());
                 batteryMemberCardVO.setCouponName(Objects.isNull(coupon) ? "" : coupon.getName());

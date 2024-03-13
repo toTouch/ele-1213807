@@ -4,7 +4,7 @@ import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.annotation.Log;
 import com.xiliulou.electricity.constant.NumberConstant;
-import com.xiliulou.electricity.dto.BatteryMemberCardSortParamDTO;
+import com.xiliulou.electricity.query.BatteryMemberCardSortParamQuery;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.query.BatteryMemberCardQuery;
@@ -97,7 +97,7 @@ public class JsonAdminBatteryMemberCardController extends BaseController {
     public R page(@RequestParam("size") long size, @RequestParam("offset") long offset, @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
             @RequestParam(value = "status", required = false) Integer status, @RequestParam(value = "rentType", required = false) Integer rentType,
             @RequestParam(value = "rentUnit", required = false) Integer rentUnit, @RequestParam(value = "businessType", required = false) Integer businessType,
-            @RequestParam(value = "name", required = false) String name) {
+            @RequestParam(value = "name", required = false) String name, @RequestParam(value = "batteryModel", required = false) String batteryModel) {
         if (size < 0 || size > 50) {
             size = 10L;
         }
@@ -117,7 +117,7 @@ public class JsonAdminBatteryMemberCardController extends BaseController {
         
         BatteryMemberCardQuery query = BatteryMemberCardQuery.builder().size(size).offset(offset).tenantId(TenantContextHolder.getTenantId()).franchiseeId(franchiseeId)
                 .status(status).businessType(businessType == null ? 0 : businessType).rentType(rentType).rentUnit(rentUnit).name(name).delFlag(BatteryMemberCard.DEL_NORMAL)
-                .build();
+                .batteryModel(batteryModel).build();
         
         return R.ok(batteryMemberCardService.selectByPage(query));
     }
@@ -271,7 +271,7 @@ public class JsonAdminBatteryMemberCardController extends BaseController {
      * @return
      */
     @PutMapping("/admin/battery/memberCard/batchUpdateSortParam")
-    public R batchUpdateSortParam(@RequestBody @Validated List<BatteryMemberCardSortParamDTO> sortParamDTOList) {
+    public R batchUpdateSortParam(@RequestBody @Validated List<BatteryMemberCardSortParamQuery> sortParamDTOList) {
         
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {

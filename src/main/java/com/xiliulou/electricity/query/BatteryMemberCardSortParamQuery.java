@@ -1,4 +1,4 @@
-package com.xiliulou.electricity.dto;
+package com.xiliulou.electricity.query;
 
 import lombok.Data;
 
@@ -10,7 +10,7 @@ import javax.validation.constraints.NotNull;
  * @Date  2024/03/11 15:25
  */
 @Data
-public class BatteryMemberCardSortParamDTO {
+public class BatteryMemberCardSortParamQuery {
     
     /**
      * 套餐id
