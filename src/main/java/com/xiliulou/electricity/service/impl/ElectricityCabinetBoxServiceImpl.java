@@ -179,6 +179,7 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
             item.setChargeStatus(Objects.nonNull(electricityBatteryVO) ? electricityBatteryVO.getChargeStatus() : -1);
             item.setBatteryA(Objects.nonNull(electricityBatteryVO) ? electricityBatteryVO.getBatteryChargeA() : 0);
             item.setBatteryV(Objects.nonNull(electricityBatteryVO) ? electricityBatteryVO.getBatteryV() : 0);
+            item.setBatteryTemperature(Objects.nonNull(electricityBatteryVO) ? electricityBatteryVO.getBatteryTemperature() : "0.00");
 
             //设置电池短型号
             if (Objects.nonNull(electricityBatteryVO) && Objects.nonNull(electricityBatteryVO.getModel())) {
