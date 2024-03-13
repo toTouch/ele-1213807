@@ -527,17 +527,19 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
             
             //统计收入
             for (MerchantChannelEmployeeBindHistoryDTO bindHistoryDto : bindList) {
-                Long rebateStartTime = bindHistoryDto.getQueryStartTime();
-                Long rebateEndTime = bindHistoryDto.getQueryEndTime();
+                Long startTime = bindHistoryDto.getQueryStartTime();
+                Long endTime = bindHistoryDto.getQueryEndTime();
                 MerchantPromotionFeeQueryModel monthIncomeQueryModel = MerchantPromotionFeeQueryModel.builder().status(MerchantConstant.MERCHANT_REBATE_STATUS_NOT_SETTLE)
-                        .type(PromotionFeeQueryTypeEnum.CHANNEL_EMPLOYEE.getCode()).merchantUid(uid).uid(SecurityUtils.getUid()).tenantId(TenantContextHolder.getTenantId()).rebateStartTime(rebateStartTime).rebateEndTime(rebateEndTime).build();
+                        .type(PromotionFeeQueryTypeEnum.CHANNEL_EMPLOYEE.getCode()).merchantUid(uid).uid(SecurityUtils.getUid()).tenantId(TenantContextHolder.getTenantId()).rebateStartTime(startTime).rebateEndTime(endTime).build();
                 BigDecimal currentMonthNoSettleInCome = rebateRecordService.sumByStatus(monthIncomeQueryModel);
-                
-                monthIncomeQueryModel.setStatus(MerchantConstant.MERCHANT_REBATE_STATUS_SETTLED);
-                BigDecimal currentMonthSettleInCome = rebateRecordService.sumByStatus(monthIncomeQueryModel);
                 
                 monthIncomeQueryModel.setStatus(MerchantConstant.MERCHANT_REBATE_STATUS_RETURNED);
                 BigDecimal currentMonthReturnInCome = rebateRecordService.sumByStatus(monthIncomeQueryModel);
+                
+                MerchantPromotionFeeQueryModel monthSettleIncomeQueryModel = MerchantPromotionFeeQueryModel.builder().status(MerchantConstant.MERCHANT_REBATE_STATUS_SETTLED)
+                        .type(PromotionFeeQueryTypeEnum.CHANNEL_EMPLOYEE.getCode()).merchantUid(uid).uid(SecurityUtils.getUid()).tenantId(TenantContextHolder.getTenantId()).settleStartTime(startTime).settleEndTime(endTime).build();
+                BigDecimal currentMonthSettleInCome = rebateRecordService.sumByStatus(monthSettleIncomeQueryModel);
+                
                 resultAmount = resultAmount.add(currentMonthNoSettleInCome.add(currentMonthSettleInCome).subtract(currentMonthReturnInCome));
             }
             return resultAmount;
