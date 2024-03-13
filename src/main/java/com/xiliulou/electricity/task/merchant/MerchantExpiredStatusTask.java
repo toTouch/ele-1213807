@@ -10,12 +10,12 @@ import org.springframework.stereotype.Component;
 import javax.annotation.Resource;
 
 /**
- * 商户 保护期和有效期 状态任务
+ * 商户 有效期 状态任务
  */
 @Component
 @Slf4j
-@JobHandler(value = "merchantProtectionAndStartExpiredTask")
-public class MerchantProtectionAndStartExpiredTask extends IJobHandler {
+@JobHandler(value = "merchantExpiredStatusTask")
+public class MerchantExpiredStatusTask extends IJobHandler {
     
     @Resource
     MerchantJoinRecordService merchantJoinRecordService;
@@ -23,7 +23,7 @@ public class MerchantProtectionAndStartExpiredTask extends IJobHandler {
     @Override
     public ReturnT<String> execute(String s) {
         try {
-            merchantJoinRecordService.handelProtectionAndStartExpired();
+            merchantJoinRecordService.handelExpiredStatus();
         } catch (Exception e) {
             log.error("处理失败", e);
         }
