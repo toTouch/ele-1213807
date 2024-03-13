@@ -692,6 +692,7 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
                 Long queryEndTime = bindHistoryDto.getQueryEndTime();
                 scanCodeQueryModel.setStartTime(queryStartTime);
                 scanCodeQueryModel.setEndTime(queryEndTime);
+                log.error("scanCodeQueryModel={}",JsonUtil.toJson(scanCodeQueryModel));
                 Integer scanCodeByMerchant = merchantJoinRecordService.countByCondition(scanCodeQueryModel);
                 
                 MerchantPromotionEmployeeDetailQueryModel employeeDetailQueryModel = MerchantPromotionEmployeeDetailQueryModel.builder().uid(uid)
