@@ -62,4 +62,28 @@ public class InsuranceOrderVO {
      * 来源订单编码
      */
     private String sourceOrderNo;
+    
+    /**
+     * <p>
+     * Description: 保险ID
+     * <a herf="https://benyun.feishu.cn/wiki/GrNjwBNZkipB5wkiws2cmsEDnVU#QZIhddTgBoCWAXxcwAjch0MGnIg">14.11 保险购买记录（3条优化项）</a>
+     * </p>
+     */
+    private Long insuranceId;
+    
+    /**
+     * <p>
+     * Description: 汽车型号
+     * <a herf="https://benyun.feishu.cn/wiki/GrNjwBNZkipB5wkiws2cmsEDnVU#QZIhddTgBoCWAXxcwAjch0MGnIg">14.11 保险购买记录（3条优化项）</a>
+     * </p>
+     */
+    private String carModel;
+    
+    /**
+     * <p>
+     * Description: 电池型号
+     * <a herf="https://benyun.feishu.cn/wiki/GrNjwBNZkipB5wkiws2cmsEDnVU#QZIhddTgBoCWAXxcwAjch0MGnIg">14.11 保险购买记录（3条优化项）</a>
+     * </p>
+     */
+    private String batteryModel;
 }

@@ -62,6 +62,7 @@ import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.UserBattery;
 import com.xiliulou.electricity.entity.UserBatteryMemberCard;
 import com.xiliulou.electricity.entity.UserInfo;
+import com.xiliulou.electricity.enums.EleCabinetModelHeatingEnum;
 import com.xiliulou.electricity.enums.YesNoEnum;
 import com.xiliulou.electricity.enums.asset.StockStatusEnum;
 import com.xiliulou.electricity.exception.BizException;
@@ -5366,6 +5367,9 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         cabinetModelInsert.setCellSize(electricityCabinetModel.getCellSize());
         cabinetModelInsert.setScreenSize(electricityCabinetModel.getScreenSize());
         cabinetModelInsert.setWaterproofGrade(electricityCabinetModel.getWaterproofGrade());
+        /*****************************12.2 电柜厂家型号（3条优化点）添加默认值 start ************************/
+        cabinetModelInsert.setHeating(EleCabinetModelHeatingEnum.HEATING_NOT_SUPPORT.getCode());
+        /*****************************12.2 电柜厂家型号（3条优化点）end ************************/
         return cabinetModelInsert;
     }
     

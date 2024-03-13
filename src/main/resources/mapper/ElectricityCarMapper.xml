@@ -1,12 +1,30 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.xiliulou.electricity.mapper.ElectricityCarMapper">
-
+    
     <!-- 基础字段 -->
     <sql id="selectElectricityCar">
-       	select   id, sn, model, longitude, latitude, status, uid, phone, user_info_id, user_name, store_id, model_id, battery_sn, create_time, update_time, del_flag, tenant_id,lock_type         from t_electricity_car
+        select id,
+               sn,
+               model,
+               longitude,
+               latitude,
+               status,
+               uid,
+               phone,
+               user_info_id,
+               user_name,
+               store_id,
+               model_id,
+               battery_sn,
+               create_time,
+               update_time,
+               del_flag,
+               tenant_id,
+               lock_type
+        from t_electricity_car
     </sql>
-
+    
     <!-- 根据ID更新车辆绑定用户，包含绑定、解绑 -->
     <update id="updateCarBindStatusById">
         UPDATE `t_electricity_car`
@@ -17,24 +35,21 @@
             `id` = #{id}
         </where>
     </update>
-
+    
     <!-- 根据 uid 查询， 复合查询，车辆、门店-->
     <select id="queryByCarId" resultType="com.xiliulou.electricity.domain.car.CarInfoDO">
-        SELECT
-            ec.id AS carId,
-            ec.sn AS carSn,
-            ec.store_id AS storeId,
-            s.`name` AS storeName,
-            s.`longitude` AS longitude,
-            s.`latitude` AS latitude
-        FROM
-            t_electricity_car ec
-                JOIN t_store s ON ec.store_id = s.id
-        WHERE
-            ec.id = #{carId}
+        SELECT ec.id         AS carId,
+               ec.sn         AS carSn,
+               ec.store_id   AS storeId,
+               s.`name`      AS storeName,
+               s.`longitude` AS longitude,
+               s.`latitude`  AS latitude
+        FROM t_electricity_car ec
+                 JOIN t_store s ON ec.store_id = s.id
+        WHERE ec.id = #{carId}
           AND ec.tenant_id = #{tenantId}
     </select>
-
+    
     <!--查询指定行数据-->
     <select id="queryList" resultType="com.xiliulou.electricity.vo.ElectricityCarVO">
         select
@@ -69,13 +84,13 @@
         </if>
         <if test="query.storeIds != null ">
             and tec.store_id in
-            <foreach collection="query.storeIds" item="id" index="index" open="(" close=")"  separator=",">
+            <foreach collection="query.storeIds" item="id" index="index" open="(" close=")" separator=",">
                 #{id}
             </foreach>
         </if>
         <if test="query.franchiseeIds != null ">
             and tec.franchisee_id in
-            <foreach collection="query.franchiseeIds" item="id" index="index" open="(" close=")"  separator=",">
+            <foreach collection="query.franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
                 #{id}
             </foreach>
         </if>
@@ -91,7 +106,7 @@
         order by tec.id desc
         limit #{query.offset}, #{query.size}
     </select>
-
+    
     <select id="queryCount" resultType="integer">
         select
         count(1)
@@ -119,13 +134,13 @@
         </if>
         <if test="query.storeIds != null ">
             and tec.store_id in
-            <foreach collection="query.storeIds" item="id" index="index" open="(" close=")"  separator=",">
+            <foreach collection="query.storeIds" item="id" index="index" open="(" close=")" separator=",">
                 #{id}
             </foreach>
         </if>
         <if test="query.franchiseeIds != null ">
             and tec.franchisee_id in
-            <foreach collection="query.franchiseeIds" item="id" index="index" open="(" close=")"  separator=",">
+            <foreach collection="query.franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
                 #{id}
             </foreach>
         </if>
@@ -149,19 +164,19 @@
         </if>
         order by tec.create_time desc
     </select>
-
-
+    
+    
     <update id="updateBindUser">
-        update t_electricity_car set
-        status=#{status},
-        uid=#{uid},
-        phone=#{phone},
-        user_info_id=#{userInfoId},
-        user_name=#{userName},
-        update_time=#{updateTime}
-        where id=#{id}
+        update t_electricity_car
+        set status=#{status},
+            uid=#{uid},
+            phone=#{phone},
+            user_info_id=#{userInfoId},
+            user_name=#{userName},
+            update_time=#{updateTime}
+        where id = #{id}
     </update>
-
+    
     <select id="queryCountByStoreIds" resultType="integer">
         select count(1)
         from t_electricity_car
@@ -178,14 +193,14 @@
             </if>
         </where>
     </select>
-
+    
     <!--根据车辆SN查询单个-->
     <select id="selectById" resultType="com.xiliulou.electricity.entity.ElectricityCar">
         <include refid="selectElectricityCar"/>
         where id = #{id} and del_flag=0
     </select>
-
-
+    
+    
     <!--根据车辆SN查询单个-->
     <select id="selectBySn" resultType="com.xiliulou.electricity.entity.ElectricityCar">
         <include refid="selectElectricityCar"/>
@@ -248,15 +263,20 @@
             </if>
         </where>
     </select>
-
+    
     <select id="isUserBindCar" resultType="Integer">
-		SELECT 1 FROM t_electricity_car WHERE del_flag=0 and uid = #{uid} AND tenant_id = #{tenantId} LIMIT 1
-	</select>
-
+        SELECT 1
+        FROM t_electricity_car
+        WHERE del_flag = 0
+          and uid = #{uid}
+          AND tenant_id = #{tenantId}
+        LIMIT 1
+    </select>
+    
     
     <select id="queryEnableMoveCarByStoreId" resultType="com.xiliulou.electricity.vo.ElectricityCarMoveVo">
         select
-            id, sn
+        id, sn
         from t_electricity_car
         where tenant_id = #{tenantId} and del_flag = 0
         and store_id = #{storeId} and status = 0
@@ -292,18 +312,26 @@
             #{id}
         </foreach>
     </update>
-<!--  数据聚合专用，不可服用-->
-    <sql id="QUERY_CAR_DATA" >
-        select ec.sn AS carSn ,ec.model,f.name AS franchiseeName,s.name AS storeName,ui.uid AS uid,ui.user_name AS userName ,ui.phone as phone,
-               ec.status AS carStatus,ec.update_time AS updateTime ,ec.create_time AS creatTime
-               crpmt.due_time  AS dueTime,ec.latitude AS latitude , ec.longitude AS longitude
+    <!--  数据聚合专用，不可服用-->
+    <sql id="QUERY_CAR_DATA">
+        select ec.sn          AS carSn,
+               ec.model,
+               f.name         AS franchiseeName,
+               s.name         AS storeName,
+               ui.uid         AS uid,
+               ui.user_name   AS userName,
+               ui.phone       as phone,
+               ec.status      AS carStatus,
+               ec.update_time AS updateTime,
+               ec.create_time AS creatTime crpmt.due_time  AS dueTime,ec.latitude AS latitude,
+               ec.longitude   AS longitude
         from t_electricity_car ec
                  left join t_user_info ui on ec.uid = ui.uid
                  left join t_franchisee f on ec.id = f.id
                  left join t_store s on ec.id = s.id
                  left join t_car_rental_package_member_term crpmt on crpmt.uid = ec.uid
     </sql>
-    <sql id="QUERY_CAR_DATA_COUNT" >
+    <sql id="QUERY_CAR_DATA_COUNT">
         select count(*)
         from t_electricity_car ec
                  left join t_user_info ui on ec.uid = ui.uid
@@ -311,13 +339,13 @@
                  left join t_store s on ec.id = s.id
                  left join t_car_rental_package_member_term crpmt on crpmt.uid = ui.uid
     </sql>
-
-
+    
+    
     <select id="queryAllCarData" resultType="com.xiliulou.electricity.entity.car.CarDataEntity">
         <include refid="QUERY_CAR_DATA"/>
-
+        
         where ec.tenant_id = #{query.tenantId} and ec.del_flag = 0
-
+        
         <if test="query.carSn != null and query.carSn!=''">
             and ec.sn like concat('%',#{query.carSn, jdbcType=VARCHAR},'%')
         </if>
@@ -335,14 +363,14 @@
         </if>
         order by ec.create_time desc
         limit #{query.offset}, #{query.size}
-
-
+    
+    
     </select>
     <select id="queryAllCarDataCount" resultType="java.lang.Integer">
         <include refid="QUERY_CAR_DATA_COUNT"/>
-
+        
         where ec.tenant_id = #{query.tenantId} and ec.del_flag = 0
-
+        
         <if test="query.carSn != null and query.carSn!=''">
             and ec.sn like concat('%',#{query.carSn, jdbcType=VARCHAR},'%')
         </if>
@@ -360,13 +388,13 @@
         </if>
         order by ec.create_time desc
         limit #{query.offset}, #{query.size}
-
+    
     </select>
     <select id="queryRentCarData" resultType="com.xiliulou.electricity.entity.car.CarDataEntity">
         <include refid="QUERY_CAR_DATA"/>
-
+        
         where ec.tenant_id = #{query.tenantId} and ec.del_flag = 0 and ec.status = 1
-
+        
         <if test="query.carSn != null and query.carSn!=''">
             and ec.sn like concat('%',#{query.carSn, jdbcType=VARCHAR},'%')
         </if>
@@ -382,16 +410,16 @@
         <if test="query.userName != null and query.userName !=''">
             and ui.user_name like concat('%',#{query.userName, jdbcType=VARCHAR},'%')
         </if>
-
+        
         order by ec.create_time desc
         limit #{query.offset}, #{query.size}
     </select>
-
+    
     <select id="queryRentCarDataCount" resultType="java.lang.Integer">
         <include refid="QUERY_CAR_DATA_COUNT"/>
-
+        
         where ec.tenant_id = #{query.tenantId} and ec.del_flag = 0 and sec.tatus = 1
-
+        
         <if test="query.carSn != null and query.carSn!=''">
             and ec.sn like concat('%',#{query.carSn, jdbcType=VARCHAR},'%')
         </if>
@@ -407,22 +435,22 @@
         <if test="query.userName != null and query.userName !=''">
             and ui.user_name like concat('%',#{query.userName, jdbcType=VARCHAR},'%')
         </if>
-
+        
         order by ec.create_time desc
         limit #{query.offset}, #{query.size}
     </select>
     <select id="queryNotRentCarData" resultType="com.xiliulou.electricity.entity.car.CarDataEntity">
         <include refid="QUERY_CAR_DATA"/>
-
+        
         where ec.tenant_id = #{query.tenantId} and ec.del_flag = 0 and ec.status = 0
-
+        
         <if test="query.carSn != null and query.carSn!=''">
             and ec.sn like concat('%',#{query.carSn, jdbcType=VARCHAR},'%')
         </if>
         <if test="query.model != null and query.model !=''">
             and ec.model like concat('%',#{query.model, jdbcType=VARCHAR},'%')
         </if>
-       
+        
         <if test="query.franchiseeId != null ">
             and ec.franchisee_id = #{query.franchiseeId}
         </if>
@@ -433,24 +461,24 @@
         <if test="query.userName != null and query.userName !=''">
             and ui.user_name like concat('%',#{query.userName, jdbcType=VARCHAR},'%')
         </if>
-
+        
         order by ec.create_time desc
         limit #{query.offset}, #{query.size}
-
-
+    
+    
     </select>
     <select id="queryNotRentCarDataCount" resultType="java.lang.Integer">
         <include refid="QUERY_CAR_DATA_COUNT"/>
-
+        
         where ec.tenant_id = #{query.tenantId} and ec.del_flag = 0 and ec.status = 0
-
+        
         <if test="query.carSn != null and query.carSn!=''">
             and ec.sn like concat('%',#{query.carSn, jdbcType=VARCHAR},'%')
         </if>
         <if test="query.model != null and query.model !=''">
             and ec.model like concat('%',#{query.model, jdbcType=VARCHAR},'%')
         </if>
-       
+        
         <if test="query.franchiseeId != null ">
             and ec.franchisee_id = #{query.franchiseeId}
         </if>
@@ -463,19 +491,19 @@
         </if>
         order by ec.create_time desc
         limit #{query.offset}, #{query.size}
-
+    
     </select>
     <select id="queryOverdueCarData" resultType="com.xiliulou.electricity.entity.car.CarDataEntity">
         <include refid="QUERY_CAR_DATA"></include>
         where ec.tenant_id = #{query.tenantId} and ec.del_flag = 0 and UNIX_TIMESTAMP() > crpmt.due_time
-
+        
         <if test="query.carSn != null and query.carSn!=''">
             and ec.sn like concat('%',#{query.carSn, jdbcType=VARCHAR},'%')
         </if>
         <if test="query.model != null and query.model !=''">
             and ec.model like concat('%',#{query.model, jdbcType=VARCHAR},'%')
         </if>
-       
+        
         <if test="query.franchiseeId != null ">
             and ec.franchisee_id = #{query.franchiseeId}
         </if>
@@ -492,14 +520,14 @@
     <select id="queryOverdueCarDataCount" resultType="java.lang.Integer">
         <include refid="QUERY_CAR_DATA_COUNT"></include>
         where ec.tenant_id = #{query.tenantId} and ec.del_flag = 0 and UNIX_TIMESTAMP() > crpmt.due_time
-
+        
         <if test="query.carSn != null and query.carSn!=''">
             and ec.sn like concat('%',#{query.carSn, jdbcType=VARCHAR},'%')
         </if>
         <if test="query.model != null and query.model !=''">
             and ec.model like concat('%',#{query.model, jdbcType=VARCHAR},'%')
         </if>
-       
+        
         <if test="query.franchiseeId != null ">
             and ec.franchisee_id = #{query.franchiseeId}
         </if>
@@ -516,14 +544,14 @@
     <select id="queryOfflineCarData" resultType="com.xiliulou.electricity.entity.car.CarDataEntity">
         <include refid="QUERY_CAR_DATA"></include>
         where ec.tenant_id = #{query.tenantId} and ec.del_flag = 0 and (ec.longitude is null or ec.latitude id null)
-
+        
         <if test="query.carSn != null and query.carSn!=''">
             and ec.sn like concat('%',#{query.carSn, jdbcType=VARCHAR},'%')
         </if>
         <if test="query.model != null and query.model !=''">
             and ec.model like concat('%',#{query.model, jdbcType=VARCHAR},'%')
         </if>
-       
+        
         <if test="query.franchiseeId != null ">
             and ec.franchisee_id = #{query.franchiseeId}
         </if>
@@ -536,19 +564,19 @@
         </if>
         order by ec.create_time desc
         limit #{query.offset}, #{query.size}
-
+    
     </select>
     <select id="queryOfflineCarDataCount" resultType="java.lang.Integer">
         <include refid="QUERY_CAR_DATA_COUNT"></include>
         where ec.tenant_id = #{query.tenantId} and ec.del_flag = 0 and (ec.longitude is null or ec.latitude id null)
-
+        
         <if test="query.carSn != null and query.carSn!=''">
             and ec.sn like concat('%',#{query.carSn, jdbcType=VARCHAR},'%')
         </if>
         <if test="query.model != null and query.model !=''">
             and ec.model like concat('%',#{query.model, jdbcType=VARCHAR},'%')
         </if>
-       
+        
         <if test="query.franchiseeId != null ">
             and ec.franchisee_id = #{query.franchiseeId}
         </if>
@@ -561,10 +589,11 @@
         </if>
         order by ec.create_time desc
         limit #{query.offset}, #{query.size}
-
+    
     </select>
     <select id="queryCarPageByCondition" resultType="com.xiliulou.electricity.entity.car.CarDataVO">
-        select ec.*,tt.rental_package_id,tt.rental_package_type,tt.due_time_total from t_electricity_car ec LEFT JOIN   t_car_rental_package_member_term tt on ec.uid =tt.uid and tt.del_flag=0
+        select ec.*,tt.rental_package_id,tt.rental_package_type,tt.due_time_total from t_electricity_car ec LEFT JOIN t_car_rental_package_member_term tt on ec.uid =tt.uid and
+        tt.del_flag=0
         where ec.del_flag=0 and ec.tenant_id = #{query.tenantId}
         <if test="query.sn != null and query.sn!=''">
             and ec.sn like concat('%',#{query.sn, jdbcType=VARCHAR},'%')
@@ -595,21 +624,21 @@
         </if>
         <if test="query.storeIds != null ">
             and ec.store_id in
-            <foreach collection="query.storeIds" item="id" index="index" open="(" close=")"  separator=",">
+            <foreach collection="query.storeIds" item="id" index="index" open="(" close=")" separator=",">
                 #{id}
             </foreach>
         </if>
         <if test="query.franchiseeIds != null ">
             and ec.franchisee_id in
-            <foreach collection="query.franchiseeIds" item="id" index="index" open="(" close=")"  separator=",">
+            <foreach collection="query.franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
                 #{id}
             </foreach>
         </if>
         order by ec.create_time desc limit #{offset}, #{size}
     </select>
-
+    
     <select id="queryCarDataCountByCondition" resultType="java.lang.Integer">
-        select count(1) from t_electricity_car ec  LEFT JOIN   t_car_rental_package_member_term tt on ec.uid =tt.uid and tt.del_flag=0
+        select count(1) from t_electricity_car ec LEFT JOIN t_car_rental_package_member_term tt on ec.uid =tt.uid and tt.del_flag=0
         where ec.del_flag=0 and ec.tenant_id = #{query.tenantId}
         <if test="query.sn != null and query.sn!=''">
             and ec.sn like concat('%',#{query.sn, jdbcType=VARCHAR},'%')
@@ -640,13 +669,13 @@
         </if>
         <if test="query.storeIds != null ">
             and ec.store_id in
-            <foreach collection="query.storeIds" item="id" index="index" open="(" close=")"  separator=",">
+            <foreach collection="query.storeIds" item="id" index="index" open="(" close=")" separator=",">
                 #{id}
             </foreach>
         </if>
         <if test="query.franchiseeIds != null ">
             and ec.franchisee_id in
-            <foreach collection="query.franchiseeIds" item="id" index="index" open="(" close=")"  separator=",">
+            <foreach collection="query.franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
                 #{id}
             </foreach>
         </if>
@@ -670,7 +699,8 @@
     </select>
     
     <select id="selectListByFranchiseeIdAndStockStatus" resultType="com.xiliulou.electricity.bo.asset.ElectricityCarBO">
-        select id, sn, model, longitude, latitude, status, uid, phone, user_info_id, user_name, store_id, model_id, battery_sn, create_time, update_time, del_flag, tenant_id,lock_type, warehouse_id
+        select id, sn, model, longitude, latitude, status, uid, phone, user_info_id, user_name, store_id, model_id, battery_sn, create_time, update_time, del_flag,
+        tenant_id,lock_type, warehouse_id
         from t_electricity_car
         where del_flag=0 and tenant_id = #{tenantId}
         <if test="franchiseeId != null">
@@ -725,11 +755,17 @@
     </select>
     
     <select id="existsByWarehouseId" resultType="java.lang.Integer">
-        select 1 from t_electricity_car where warehouse_id = #{wareHouseId} and del_flag = 0 and stock_status=0 limit 1;
+        select 1
+        from t_electricity_car
+        where warehouse_id = #{wareHouseId}
+          and del_flag = 0
+          and stock_status = 0
+        limit 1;
     </select>
     
     <select id="selectListByIds" resultType="com.xiliulou.electricity.bo.asset.ElectricityCarBO">
-        select id, sn, model, longitude, latitude, status, uid, phone, user_info_id, user_name, store_id, model_id, battery_sn, create_time, update_time, del_flag, tenant_id,lock_type, warehouse_id
+        select id, sn, model, longitude, latitude, status, uid, phone, user_info_id, user_name, store_id, model_id, battery_sn, create_time, update_time, del_flag,
+        tenant_id,lock_type, warehouse_id
         from t_electricity_car
         where del_flag = 0 and id in
         <foreach collection="idSet" item="id" index="index" open="(" close=")" separator=",">
@@ -737,7 +773,8 @@
         </foreach>
     </select>
     <select id="selectListEnableExitWarehouseCar" resultType="com.xiliulou.electricity.bo.asset.ElectricityCarBO">
-        select id, sn, model, longitude, latitude, status, uid, phone, user_info_id, user_name, store_id, model_id, battery_sn, create_time, update_time, del_flag, tenant_id,lock_type, warehouse_id
+        select id, sn, model, longitude, latitude, status, uid, phone, user_info_id, user_name, store_id, model_id, battery_sn, create_time, update_time, del_flag,
+        tenant_id,lock_type, warehouse_id
         from t_electricity_car
         <where>
             del_flag=0 and tenant_id = #{tenantId} and stock_status = #{stockStatus}
@@ -777,13 +814,13 @@
         </if>
         <if test="query.storeIds != null ">
             and tec.store_id in
-            <foreach collection="query.storeIds" item="id" index="index" open="(" close=")"  separator=",">
+            <foreach collection="query.storeIds" item="id" index="index" open="(" close=")" separator=",">
                 #{id}
             </foreach>
         </if>
         <if test="query.franchiseeIds != null ">
             and tec.franchisee_id in
-            <foreach collection="query.franchiseeIds" item="id" index="index" open="(" close=")"  separator=",">
+            <foreach collection="query.franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
                 #{id}
             </foreach>
         </if>
@@ -806,7 +843,36 @@
             and tec.tenant_id = #{query.tenantId}
         </if>
     </select>
-    
+    <!--P0需求 15.1 实名用户列表（16条优化项）iv.4 模糊搜索车辆SN码 start -->
+    <select id="selectCarSnByLike" resultType="com.xiliulou.electricity.vo.UserCarLikeVo">
+        SELECT
+        id as id,
+        CONCAT(sn,'/',model) as label,
+        sn as sn
+        FROM
+        t_electricity_car
+        WHERE del_flag = 0
+        <if test="query.tenantId != null">
+            AND tenant_id = #{query.tenantId}
+        </if>
+        <if test="query.franchiseeId != null">
+            AND franchisee_id = #{query.franchiseeId}
+        </if>
+        <if test="query.storeId != null">
+            AND store_id = #{query.storeId}
+        </if>
+        <choose>
+            <when test="query.carSn != null and query.carSn.trim() != ''">
+                AND (sn like CONCAT('%',#{query.carSn},'%') OR model like CONCAT('%',#{query.carSn},'%'))
+            </when>
+            <otherwise>
+                AND id IS NULL
+            </otherwise>
+        </choose>
+        order by sn
+        limit #{query.offset} , #{query.size};
+    </select>
+    <!--P0需求 15.1 实名用户列表（16条优化项）iv.4 模糊搜索车辆SN码  end-->
     <update id="batchUpdateFranchiseeIdAndStoreByIdList">
         update t_electricity_car
         <set>
@@ -832,10 +898,9 @@
     <update id="updateFranchiseeIdAndStoreId">
         update t_electricity_car
         set franchisee_id = #{targetFranchiseeId},
-            store_id = #{targetStoreId},
-            update_time = #{updateTime}
-        where
-          tenant_id = #{tenantId}
+            store_id      = #{targetStoreId},
+            update_time   = #{updateTime}
+        where tenant_id = #{tenantId}
           and id = #{id}
     </update>
     
@@ -851,7 +916,10 @@
     </insert>
     
     <update id="updatePhoneByUid">
-        update t_electricity_car set phone=#{newPhone} where uid=#{uid} and tenant_id = #{tenantId}
+        update t_electricity_car
+        set phone=#{newPhone}
+        where uid = #{uid}
+          and tenant_id = #{tenantId}
     </update>
 
 </mapper>

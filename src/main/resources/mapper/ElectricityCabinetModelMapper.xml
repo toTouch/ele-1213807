@@ -1,17 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.xiliulou.electricity.mapper.ElectricityCabinetModelMapper">
-
+    
     <select id="selectByNum" resultType="com.xiliulou.electricity.entity.ElectricityCabinetModel">
-        select    id, name, num, voltage
+        select id, name, num, voltage
         from t_electricity_cabinet_model
-        where del_flag=0 and num= #{num} and tenant_id=#{tenantId}
+        where del_flag = 0
+          and num = #{num}
+          and tenant_id = #{tenantId}
     </select>
-
+    
     <!--查询指定行数据-->
     <select id="queryList" resultType="com.xiliulou.electricity.entity.ElectricityCabinetModel">
         select
-          id, name, num, voltage, del_flag, create_time, update_time,tenant_id,manufacturer_name,cabinet_size,cell_size,screen_size,waterproof_grade
+        id, name, num, voltage, del_flag, create_time, update_time,tenant_id,manufacturer_name,cabinet_size,cell_size,screen_size,waterproof_grade
         from t_electricity_cabinet_model
         where del_flag=0
         <if test="query.name != null and query.name != ''">
@@ -26,7 +28,7 @@
         order by update_time desc
         limit #{query.offset}, #{query.size}
     </select>
-	<select id="queryCount" resultType="java.lang.Integer">
+    <select id="queryCount" resultType="java.lang.Integer">
         select COUNT(1)
         from t_electricity_cabinet_model
         where del_flag=0
@@ -39,8 +41,13 @@
         <if test="query.tenantId != null">
             and tenant_id = #{query.tenantId}
         </if>
+        /***********12.2 电柜厂家型号（3条优化点）查询 start **********/
+        <if test="query.heating != null">
+            and heating = #{query.heating}
+        </if>
+        /***********12.2 电柜厂家型号（3条优化点）查询 start **********/
     </select>
-
+    
     <update id="update">
         update t_electricity_cabinet_model
         <set>
@@ -65,6 +72,11 @@
             <if test="waterproofGrade != null">
                 waterproof_grade = #{waterproofGrade},
             </if>
+            /***********12.2 电柜厂家型号（3条优化点）修改 start **********/
+            <if test="heating != null">
+                heating = #{heating},
+            </if>
+            /***********12.2 电柜厂家型号（3条优化点）修改 end **********/
             <if test="voltage != null and voltage != ''">
                 voltage = #{voltage},
             </if>
@@ -78,22 +90,34 @@
         where id = #{id} and tenant_id = #{tenantId}
     </update>
     
-    <select id="selectByModelName"  resultType="com.xiliulou.electricity.entity.ElectricityCabinetModel">
-        select id, name, num, manufacturer_name from t_electricity_cabinet_model where name = #{modelName}
+    <select id="selectByModelName" resultType="com.xiliulou.electricity.entity.ElectricityCabinetModel">
+        select id, name, num, manufacturer_name
+        from t_electricity_cabinet_model
+        where name = #{modelName}
     </select>
     
     <!--查询指定行数据-->
     <select id="selectListElectricityCabinetModel" resultType="com.xiliulou.electricity.entity.ElectricityCabinetModel">
-        select
-        id, name, num, voltage, del_flag, create_time, update_time,tenant_id,manufacturer_name
+        select id,
+               name,
+               num,
+               voltage,
+               del_flag,
+               create_time,
+               update_time,
+               tenant_id,
+               manufacturer_name
         from t_electricity_cabinet_model
-        where del_flag=0  and tenant_id = #{tenantId}
+        where del_flag = 0
+          and tenant_id = #{tenantId}
         order by update_time desc
     </select>
     
     <select id="selectListByNum" resultType="com.xiliulou.electricity.entity.ElectricityCabinetModel">
         select id, name, num, voltage, manufacturer_name
         from t_electricity_cabinet_model
-        where del_flag=0 and num= #{num} and tenant_id=#{tenantId}
+        where del_flag = 0
+          and num = #{num}
+          and tenant_id = #{tenantId}
     </select>
 </mapper>

@@ -27,7 +27,22 @@ public interface InsuranceOrderService {
      */
     InsuranceOrder selectBySourceOrderNoAndType(String sourceOrderNo, Integer insuranceType);
 
-    R queryList(InsuranceOrderQuery insuranceOrderQuery);
+    /**
+     * <p>
+     *    Description: queryList
+     *    20240311修改
+     *    <a herf="https://benyun.feishu.cn/wiki/GrNjwBNZkipB5wkiws2cmsEDnVU#QZIhddTgBoCWAXxcwAjch0MGnIg">14.11 保险购买记录（3条优化项）</a>
+     * </p>
+     * @param insuranceOrderQuery insuranceOrderQuery 原字段
+     * @param isType isType 增加参数,内部使用，区别保险订单与保险购买记录
+     * @return com.xiliulou.core.web.R
+     * <p>Project: InsuranceOrderService</p>
+     * <p>Copyright: Copyright (c) 2024</p>
+     * <p>Company: www.xiliulou.com</p>
+     * @author <a href="mailto:wxblifeng@163.com">PeakLee</a>
+     * @since V1.0 2024/3/11
+    */
+    R queryList(InsuranceOrderQuery insuranceOrderQuery,Boolean isType);
 
     R queryCount(InsuranceOrderQuery insuranceOrderQuery);
 
