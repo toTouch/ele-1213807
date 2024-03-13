@@ -28,6 +28,8 @@ public class MerchantPromotionRenewalQueryModel {
      */
     private Integer rebateType;
     
+    private Long channelEmployeeUid;
+    
     private Integer tenantId;
     
     private Long uid;
