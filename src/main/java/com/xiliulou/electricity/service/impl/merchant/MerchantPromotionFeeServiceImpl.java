@@ -826,7 +826,20 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
         }
     }
     
-    private List<MerchantChannelEmployeeBindHistoryDTO> buildMerchantChannelEmployeeBindHistoryDTO(List<MerchantChannelEmployeeBindHistory> bindHistoryList, Long startTime,
+/*    public static void main(String[] args) {
+        MerchantChannelEmployeeBindHistory build = MerchantChannelEmployeeBindHistory.builder().channelEmployeeUid(159805L).merchantUid(159804L).bindStatus(0)
+                .bindTime(1710314672927L).build();
+        List<MerchantChannelEmployeeBindHistory> bindHistoryList = Lists.newArrayList();
+        bindHistoryList.add(build);
+     List<MerchantChannelEmployeeBindHistoryDTO> currentMonthList = buildMerchantChannelEmployeeBindHistoryDTO(bindHistoryList, DateUtils.getDayOfMonthStartTime(1),
+                System.currentTimeMillis());
+        for(MerchantChannelEmployeeBindHistoryDTO dto:currentMonthList){
+            System.out.println(dto);
+        }
+
+    }*/
+    
+    private static List<MerchantChannelEmployeeBindHistoryDTO> buildMerchantChannelEmployeeBindHistoryDTO(List<MerchantChannelEmployeeBindHistory> bindHistoryList, Long startTime,
             Long endTime) {
         if (CollectionUtils.isEmpty(bindHistoryList)) {
             return Lists.newArrayList();
@@ -834,7 +847,8 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
         return bindHistoryList.stream().map(bindHistory -> {
             MerchantChannelEmployeeBindHistoryDTO bindHistoryDTO = new MerchantChannelEmployeeBindHistoryDTO();
             BeanUtils.copyProperties(bindHistory, bindHistoryDTO);
-            if (!(Objects.equals(bindHistory.getBindStatus(), MerchantChannelEmployeeBindHistoryConstant.UN_BIND) && Objects.nonNull(bindHistory.getUnBindTime())
+            
+            if (Objects.equals(bindHistory.getBindStatus(), MerchantChannelEmployeeBindHistoryConstant.UN_BIND) && !(Objects.nonNull(bindHistory.getUnBindTime())
                     && bindHistory.getBindTime() >= startTime && bindHistory.getUnBindTime() <= endTime)) {
                 return null;
             }
@@ -842,6 +856,7 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
             if (Objects.equals(bindHistory.getBindStatus(), MerchantChannelEmployeeBindHistoryConstant.BIND) && bindHistory.getBindTime() >= endTime) {
                 return null;
             }
+            
             if (bindHistory.getBindTime() >= startTime) {
                 bindHistoryDTO.setQueryStartTime(bindHistory.getBindTime());
             } else {
