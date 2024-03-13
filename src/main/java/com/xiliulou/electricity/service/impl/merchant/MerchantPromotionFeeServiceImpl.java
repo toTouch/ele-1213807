@@ -177,7 +177,7 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
         List<MerchantPromotionFeeMerchantVO> merchantVOList = merchantChannelEmployeeBindHistories.parallelStream().map(bindHistory -> {
             Long merchantUid = bindHistory.getMerchantUid();
             Merchant merchant = merchantService.queryByUid(merchantUid);
-            if (Objects.nonNull(merchant) && merchantJoinRecordService.existMerchantAllInviterData(merchant.getId(), TenantContextHolder.getTenantId())) {
+            if (Objects.nonNull(merchant)) {
                 MerchantPromotionFeeMerchantVO vo = new MerchantPromotionFeeMerchantVO();
                 vo.setUserName(merchant.getName());
                 vo.setUid(merchant.getUid());

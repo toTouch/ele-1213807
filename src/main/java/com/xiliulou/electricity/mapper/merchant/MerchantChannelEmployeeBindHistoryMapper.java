@@ -19,7 +19,7 @@ public interface MerchantChannelEmployeeBindHistoryMapper {
     
     Integer updateUnbindTimeByMerchantUid(MerchantChannelEmployeeBindHistory merchantChannelEmployeeBindHistory);
     
-    List<MerchantChannelEmployeeBindHistory> selectListByChannelEmployeeUid(@Param("tenantId") Integer tenantId,@Param("channelEmployeeUid") Long channelEmployeeuid);
+    List<MerchantChannelEmployeeBindHistory> selectListByChannelEmployeeUid(@Param("tenantId") Integer tenantId, @Param("channelEmployeeUid") Long channelEmployeeuid);
     
     Integer countMerchantNumByTime(MerchantPromotionFeeMerchantNumQueryModel queryModel);
     
