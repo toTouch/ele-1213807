@@ -12,7 +12,7 @@ import com.xiliulou.electricity.constant.merchant.MerchantPlaceBindConstant;
 import com.xiliulou.electricity.constant.merchant.MerchantPlaceCabinetBindConstant;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.merchant.Merchant;
-import com.xiliulou.electricity.entity.merchant.MerchantCabinetPowerMonthDetailPro;
+import com.xiliulou.electricity.entity.merchant.MerchantCabinetPowerMonthDetailProHistory;
 import com.xiliulou.electricity.entity.merchant.MerchantPlace;
 import com.xiliulou.electricity.entity.merchant.MerchantPlaceBind;
 import com.xiliulou.electricity.entity.merchant.MerchantPlaceCabinetBind;
@@ -21,6 +21,7 @@ import com.xiliulou.electricity.request.merchant.MerchantPlaceCabinetConditionRe
 import com.xiliulou.electricity.request.merchant.MerchantPlaceConditionRequest;
 import com.xiliulou.electricity.service.ElePowerService;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
+import com.xiliulou.electricity.service.merchant.MerchantCabinetPowerMonthDetailProHistoryService;
 import com.xiliulou.electricity.service.merchant.MerchantCabinetPowerMonthDetailProService;
 import com.xiliulou.electricity.service.merchant.MerchantCabinetPowerMonthRecordProService;
 import com.xiliulou.electricity.service.merchant.MerchantCabinetPowerService;
@@ -98,6 +99,9 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
     
     @Resource
     private MerchantCabinetPowerMonthDetailProService merchantCabinetPowerMonthDetailProService;
+    
+    @Resource
+    private MerchantCabinetPowerMonthDetailProHistoryService merchantCabinetPowerMonthDetailProHistoryService;
     
     @Resource
     private MerchantService merchantService;
@@ -771,7 +775,7 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
     }
     
     private List<MerchantProCabinetPowerDetailVO> getLastMonthPowerForCabinetDetail(Integer tenantId, Long merchantId, Long cabinetId, String monthDate, Long startTime,
-            Long endTime) {
+            Long endTime, Long thisMonthStartTime) {
         log.info("Merchant getLastMonthPowerForCabinetDetail merchantId={}, monthDate={}, cabinetId={}", merchantId, monthDate, cabinetId);
         
         // 获取商户场地绑定记录
@@ -810,7 +814,7 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
                         && (Objects.equals(unBindTime, endTime)));
                 
                 // 获取场地柜机绑定记录
-                List<MerchantPlaceCabinetBind> placeCabinetBindList = getLastMonthCabinetBindListForCabinetDetail(placeId, bindTime, unBindTime, cabinetId);
+                List<MerchantPlaceCabinetBind> placeCabinetBindList = getLastMonthCabinetBindListForCabinetDetail(placeId, bindTime, unBindTime, cabinetId, thisMonthStartTime);
                 if (CollectionUtils.isEmpty(placeCabinetBindList)) {
                     continue;
                 }
@@ -1362,7 +1366,8 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
         return resultList;
     }
     
-    private List<MerchantPlaceCabinetBind> getLastMonthCabinetBindListForCabinetDetail(Long placeId, Long placeBindTime, Long placeUnbindTime, Long cabinetId) {
+    private List<MerchantPlaceCabinetBind> getLastMonthCabinetBindListForCabinetDetail(Long placeId, Long placeBindTime, Long placeUnbindTime, Long cabinetId,
+            Long thisMonthStartTime) {
         List<MerchantPlaceCabinetBind> stepOneList = new ArrayList<>();
         
         // 绑定状态记录
@@ -1407,6 +1412,11 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
         
         List<MerchantPlaceCabinetBind> resultList = new ArrayList<>();
         
+        // 本月拉取到上月的时间段不参与合并
+        List<MerchantPlaceCabinetBind> fetchBindList = stepOneList.stream().filter(bind -> bind.getCreateTime() >= thisMonthStartTime).collect(Collectors.toList());
+        
+        stepOneList.removeAll(fetchBindList);
+        
         // 再去除时间段子集
         for (MerchantPlaceCabinetBind current : stepOneList) {
             boolean isSubset = false;
@@ -1422,6 +1432,8 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
                 resultList.add(current);
             }
         }
+        
+        resultList.addAll(fetchBindList);
         
         return resultList;
     }
@@ -1789,11 +1801,12 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
         String thisMonthDate = DateUtils.getMonthDate(NumberConstant.ZERO_L);
         String lastMonthDate = DateUtils.getMonthDate(NumberConstant.ONE_L);
         
+        // 本月第一天0点
+        Long thisMonthStartTime = DateUtils.getBeforeMonthFirstDayTimestamp(NumberConstant.ZERO);
+        
         // 近2个月数据实时查
         // 如果是本月
         if (Objects.equals(thisMonthDate, monthDate)) {
-            // 本月第一天0点
-            Long thisMonthStartTime = DateUtils.getBeforeMonthFirstDayTimestamp(NumberConstant.ZERO);
             long nowTime = System.currentTimeMillis();
             
             return getThisMonthPowerForCabinetDetail(tenantId, merchant.getId(), cabinetId, monthDate, thisMonthStartTime, nowTime);
@@ -1805,12 +1818,12 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
             // 上月最后一天23:59:59
             long lastMonthEndTime = DateUtils.getBeforeMonthLastDayTimestamp(NumberConstant.ONE);
             
-            return getLastMonthPowerForCabinetDetail(tenantId, merchant.getId(), cabinetId, monthDate, lastMonthStartTime, lastMonthEndTime);
+            return getLastMonthPowerForCabinetDetail(tenantId, merchant.getId(), cabinetId, monthDate, lastMonthStartTime, lastMonthEndTime, thisMonthStartTime);
             
         } else {
             // 如果是2个月前,通过历史数据查询
-            List<MerchantCabinetPowerMonthDetailPro> preTwoMonthPowerDetailList = merchantCabinetPowerMonthDetailProService.listByMonth(cabinetId, List.of(monthDate + "-01"),
-                    merchant.getId());
+            List<MerchantCabinetPowerMonthDetailProHistory> preTwoMonthPowerDetailList = merchantCabinetPowerMonthDetailProHistoryService.listByMonth(cabinetId,
+                    List.of(monthDate + "-01"), merchant.getId());
             
             if (CollectionUtils.isEmpty(preTwoMonthPowerDetailList)) {
                 return Collections.emptyList();
