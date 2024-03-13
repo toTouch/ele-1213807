@@ -659,10 +659,11 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
                         .settleStartTime(bindHistory.getBindTime())
                         .settleEndTime(Objects.nonNull(bindHistory.getUnBindTime()) ? bindHistory.getUnBindTime() : System.currentTimeMillis()).build();
                 BigDecimal totalSettleInCome = rebateRecordService.sumByStatus(totalIncomeQueryModel);
-                
-                MerchantPromotionFeeQueryModel totalReturnIncomeQueryModel = MerchantPromotionFeeQueryModel.builder().status(MerchantConstant.MERCHANT_REBATE_STATUS_SETTLED)
+    
+                // 已退回需要用返现日期计算
+                MerchantPromotionFeeQueryModel totalReturnIncomeQueryModel = MerchantPromotionFeeQueryModel.builder().status(MerchantConstant.MERCHANT_REBATE_STATUS_RETURNED)
                         .type(PromotionFeeQueryTypeEnum.CHANNEL_EMPLOYEE.getCode()).merchantUid(uid).uid(SecurityUtils.getUid()).tenantId(TenantContextHolder.getTenantId())
-                        .settleStartTime(bindHistory.getBindTime()).build();
+                        .rebateStartTime(bindHistory.getBindTime()).rebateEndTime(Objects.nonNull(bindHistory.getUnBindTime()) ? bindHistory.getUnBindTime() : System.currentTimeMillis()).build();
                 
                 BigDecimal totalReturnInCome = rebateRecordService.sumByStatus(totalReturnIncomeQueryModel);
                 resultAmount = resultAmount.add(totalSettleInCome.subtract(totalReturnInCome));
