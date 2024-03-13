@@ -248,7 +248,7 @@ public class BatteryMemberCardMerchantRebateConsumer implements RocketMQListener
         rebateRecord.setMerchantId(merchant.getId());
         rebateRecord.setMerchantUid(merchant.getUid());
         rebateRecord.setStatus(MerchantConstant.MERCHANT_REBATE_STATUS_NOT_SETTLE);
-        rebateRecord.setChanneler(userInfoExtra.getChannelEmployeeUid());
+        rebateRecord.setChanneler(merchant.getChannelEmployeeUid());
         rebateRecord.setChannelerRebate(channelerRebate);
         rebateRecord.setMerchantRebate(merchantRebate);
         rebateRecord.setRefundFlag(refundType);
