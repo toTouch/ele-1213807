@@ -24,6 +24,8 @@ public class MerchantPromotionFeeQueryModel {
     
     private Long uid;
     
+    private Long merchantUid;
+    
     private Long rebateStartTime;
     
     private Long rebateEndTime;

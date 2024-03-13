@@ -199,8 +199,8 @@
             <if test="endTime != null">
                 and start_time &lt;= #{endTime}
             </if>
-            <if test="type != null and type==3">
-                and channel_employee_uid = #{uid}
+            <if test="channelEmployeeUid != null">
+                and channel_employee_uid = #{channelEmployeeUid}
             </if>
             <if test="type != null and type!=3">
                 and inviter_type = #{type}
@@ -349,6 +349,9 @@
             </if>
             <if test="endTime != null">
                 and start_time &lt;= #{endTime}
+            </if>
+            <if test="channelEmployeeUid != null">
+                and channel_employee_uid = #{channelEmployeeUid}
             </if>
             <if test="uidList != null">
                 and inviter_uid in

@@ -315,13 +315,17 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
         return merchantJoinRecordMapper.countListByMerchantIdAndStatus(merchantId, status);
     }
     
+    
     @Override
-    public void handelProtectionAndStartExpired() {
+    public void handelProtectionStatus() {
         MerchantJoinRecord protectionJoinRecord = new MerchantJoinRecord();
         protectionJoinRecord.setProtectionStatus(MerchantJoinRecordConstant.PROTECTION_STATUS_EXPIRED);
         protectionJoinRecord.setUpdateTime(System.currentTimeMillis());
         merchantJoinRecordMapper.updateProtectionExpired(protectionJoinRecord);
-        
+    }
+    
+    @Override
+    public void handelExpiredStatus() {
         MerchantJoinRecord merchantJoinRecord = new MerchantJoinRecord();
         merchantJoinRecord.setStatus(MerchantJoinRecordConstant.STATUS_EXPIRED);
         merchantJoinRecord.setUpdateTime(System.currentTimeMillis());
@@ -482,8 +486,8 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
     
     @Override
     @Slave
-    public Integer countEmployeeScanCodeNum(List<Long> uidList, Long startTime, Long endTime, Integer status, Integer tenantId) {
-        return merchantJoinRecordMapper.countEmployeeScanCodeNum(uidList, startTime, endTime, status, tenantId);
+    public Integer countEmployeeScanCodeNum(List<Long> uidList, Long startTime, Long endTime, Integer status, Integer tenantId,Long channelEmployeeUid) {
+        return merchantJoinRecordMapper.countEmployeeScanCodeNum(uidList, startTime, endTime, status, tenantId,channelEmployeeUid);
     }
     
     @Slave

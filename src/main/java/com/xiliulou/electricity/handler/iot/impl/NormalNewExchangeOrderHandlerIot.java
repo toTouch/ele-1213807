@@ -251,6 +251,7 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
     private void senOrderSuccessMsg(ElectricityCabinet electricityCabinet, ElectricityCabinetOrder electricityCabinetOrder, ExchangeOrderRsp exchangeOrderRsp) {
         if (!(Objects.equals(exchangeOrderRsp.getOrderStatus(), ElectricityCabinetOrder.INIT_CHECK_FAIL) || Objects
                 .equals(exchangeOrderRsp.getOrderStatus(), ElectricityCabinetOrder.INIT_BATTERY_CHECK_FAIL) || Objects
+                .equals(exchangeOrderRsp.getOrderStatus(), ElectricityCabinetOrder.INIT_OPEN_FAIL) || Objects
                 .equals(exchangeOrderRsp.getOrderStatus(), ElectricityCabinetOrder.INIT_BATTERY_CHECK_TIMEOUT) || Objects
                 .equals(exchangeOrderRsp.getOrderStatus(), ElectricityCabinetOrder.COMPLETE_OPEN_FAIL) || Objects
                 .equals(exchangeOrderRsp.getOrderStatus(), ElectricityCabinetOrder.COMPLETE_BATTERY_TAKE_SUCCESS) || Objects
