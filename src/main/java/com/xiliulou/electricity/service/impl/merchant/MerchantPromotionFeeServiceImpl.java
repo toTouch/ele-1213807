@@ -522,28 +522,15 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
             }
             
             // 如果有多个绑定历史，并且都在当月合并时间段
-            List<MerchantChannelEmployeeBindHistoryDTO> bindList = bindHistoryList.stream().map(bindHistory -> {
-                MerchantChannelEmployeeBindHistoryDTO bindHistoryDto = new MerchantChannelEmployeeBindHistoryDTO();
-                BeanUtils.copyProperties(bindHistory, bindHistoryDto);
-                if (bindHistory.getBindTime() >= DateUtils.getDayOfMonthStartTime(1)) {
-                    bindHistoryDto.setQueryStartTime(bindHistory.getBindTime());
-                } else {
-                    bindHistoryDto.setQueryStartTime(DateUtils.getDayOfMonthStartTime(1));
-                }
-                if (Objects.nonNull(bindHistory.getUnBindTime()) && bindHistory.getUnBindTime() <= System.currentTimeMillis()) {
-                    bindHistoryDto.setQueryEndTime(bindHistory.getUnBindTime());
-                } else {
-                    bindHistoryDto.setQueryEndTime(System.currentTimeMillis());
-                }
-                return bindHistoryDto;
-            }).collect(Collectors.toList());
+            List<MerchantChannelEmployeeBindHistoryDTO> bindList = buildMerchantChannelEmployeeBindHistoryDTO(bindHistoryList, DateUtils.getDayOfMonthStartTime(1),
+                    System.currentTimeMillis());
             
             //统计收入
             for (MerchantChannelEmployeeBindHistoryDTO bindHistoryDto : bindList) {
                 Long rebateStartTime = bindHistoryDto.getQueryStartTime();
                 Long rebateEndTime = bindHistoryDto.getQueryEndTime();
                 MerchantPromotionFeeQueryModel monthIncomeQueryModel = MerchantPromotionFeeQueryModel.builder().status(MerchantConstant.MERCHANT_REBATE_STATUS_NOT_SETTLE)
-                        .type(type).uid(uid).tenantId(TenantContextHolder.getTenantId()).rebateStartTime(rebateStartTime).rebateEndTime(rebateEndTime).build();
+                        .type(PromotionFeeQueryTypeEnum.CHANNEL_EMPLOYEE.getCode()).merchantUid(uid).uid(SecurityUtils.getUid()).tenantId(TenantContextHolder.getTenantId()).rebateStartTime(rebateStartTime).rebateEndTime(rebateEndTime).build();
                 BigDecimal currentMonthNoSettleInCome = rebateRecordService.sumByStatus(monthIncomeQueryModel);
                 
                 monthIncomeQueryModel.setStatus(MerchantConstant.MERCHANT_REBATE_STATUS_SETTLED);
