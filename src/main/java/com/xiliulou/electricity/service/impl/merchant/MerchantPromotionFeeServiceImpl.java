@@ -949,7 +949,7 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
             BigDecimal todayInCome = rebateRecordService.sumByStatus(todayInComeQueryModel);
             
             // 今日预估收入：“返现日期” = 今日，“结算状态” = 未结算-已退回（今日发生的退款）；
-            todayInComeQueryModel.setStatus(MerchantConstant.MERCHANT_REBATE_STATUS_SETTLED);
+            todayInComeQueryModel.setStatus(MerchantConstant.MERCHANT_REBATE_STATUS_RETURNED);
             BigDecimal todayReturnInCome = rebateRecordService.sumByStatus(todayInComeQueryModel);
             merchantPromotionFeeIncomeVO.setTodayIncome(todayInCome.subtract(todayReturnInCome));
             
