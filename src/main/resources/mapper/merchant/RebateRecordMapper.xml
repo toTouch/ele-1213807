@@ -487,6 +487,9 @@
             <if test="status != null">
                 and status = #{status}
             </if>
+            <if test="merchantUid != null">
+                and merchant_uid = #{merchantUid}
+            </if>
             <if test="rebateStartTime != null">
                 and rebate_time >= #{rebateStartTime}
             </if>
