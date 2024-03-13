@@ -4,6 +4,7 @@ import cn.hutool.core.util.IdUtil;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.constant.merchant.MerchantConstant;
+import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.merchant.Merchant;
 import com.xiliulou.electricity.entity.merchant.MerchantLevel;
 import com.xiliulou.electricity.entity.merchant.RebateConfig;
@@ -12,6 +13,7 @@ import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.mq.constant.MqConsumerConstant;
 import com.xiliulou.electricity.mq.constant.MqProducerConstant;
 import com.xiliulou.electricity.mq.model.MerchantModify;
+import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.service.merchant.MerchantLevelService;
 import com.xiliulou.electricity.service.merchant.MerchantService;
 import com.xiliulou.electricity.service.merchant.RebateConfigService;
@@ -46,6 +48,9 @@ public class MerchantModifyConsumer implements RocketMQListener<String> {
     
     @Autowired
     private RebateConfigService rebateConfigService;
+    
+    @Autowired
+    private UserService userService;
     
     @Autowired
     private MerchantService merchantService;
@@ -116,6 +121,14 @@ public class MerchantModifyConsumer implements RocketMQListener<String> {
                     if (Objects.nonNull(rebateRecordService.existsExpireRebateRecordByOriginalOrderId(item.getOriginalOrderId()))) {
                         return;
                     }
+    
+                    //渠道员
+                    User channel = userService.queryByUidFromCache(merchant.getChannelEmployeeUid());
+                    //若商户及渠道员均禁用，不返利
+                    if (Objects.equals(MerchantConstant.DISABLE, merchant.getStatus()) && Objects.nonNull(channel) && Objects.equals(channel.getLockFlag(), User.USER_LOCK)) {
+                        log.warn("MERCHANT MODIFY CONSUMER WARN!merchant disable,channel disable,uid={},merchantId={}", item.getUid(), item.getMerchantId());
+                        return;
+                    }
                     
                     //获取最新返利规则
                     RebateConfig rebateConfig = rebateConfigService.queryByMidAndMerchantLevel(item.getMemberCardId(), currentLevel);
@@ -170,7 +183,8 @@ public class MerchantModifyConsumer implements RocketMQListener<String> {
                     rebateRecord.setMerchantId(item.getMerchantId());
                     rebateRecord.setMerchantUid(item.getMerchantUid());
                     rebateRecord.setStatus(MerchantConstant.MERCHANT_REBATE_STATUS_NOT_SETTLE);
-                    rebateRecord.setChanneler(item.getChanneler());
+                    //渠道员取实时的
+                    rebateRecord.setChanneler(merchant.getChannelEmployeeUid());
                     rebateRecord.setChannelerRebate(newChannelerRebate.subtract(oldChannelerRebate));
                     rebateRecord.setMerchantRebate(newMerchantRebate.subtract(oldMerchantRebate));
                     rebateRecord.setPlaceId(item.getPlaceId());
@@ -179,6 +193,16 @@ public class MerchantModifyConsumer implements RocketMQListener<String> {
                     rebateRecord.setTenantId(item.getTenantId());
                     rebateRecord.setCreateTime(System.currentTimeMillis());
                     rebateRecord.setUpdateTime(System.currentTimeMillis());
+    
+                    //商户禁用后，不给商户返利；渠道员禁用，不返利
+                    if (Objects.equals(MerchantConstant.DISABLE, merchant.getStatus())) {
+                        rebateRecord.setMerchantRebate(BigDecimal.ZERO);
+                    }
+    
+                    if (Objects.isNull(channel) || Objects.equals(channel.getLockFlag(), User.USER_LOCK)) {
+                        rebateRecord.setChannelerRebate(BigDecimal.ZERO);
+                    }
+                    
                     rebateRecordService.insert(rebateRecord);
                 });
                 
