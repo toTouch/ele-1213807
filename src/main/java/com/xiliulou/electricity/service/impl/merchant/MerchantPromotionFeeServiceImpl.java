@@ -685,7 +685,7 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
             int result = 0;
             //昨日扫码人数：扫码绑定时间=昨日0点～今日0点；
             MerchantPromotionScanCodeQueryModel scanCodeQueryModel = MerchantPromotionScanCodeQueryModel.builder().tenantId(TenantContextHolder.getTenantId()).channelEmployeeUid(SecurityUtils.getUid())
-                    .type(PromotionFeeQueryTypeEnum.MERCHANT.getCode()).uid(uid).build();
+                    .status(status).type(PromotionFeeQueryTypeEnum.MERCHANT.getCode()).uid(uid).build();
             //统计收入
             for (MerchantChannelEmployeeBindHistoryDTO bindHistoryDto : dtoList) {
                 Long queryStartTime = bindHistoryDto.getQueryStartTime();
