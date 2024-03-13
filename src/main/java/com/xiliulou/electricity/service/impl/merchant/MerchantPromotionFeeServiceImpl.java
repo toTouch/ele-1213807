@@ -665,15 +665,13 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
             return resultAmount;
         } else {
             //累计收入：“结算日期” <= 今日，“结算状态” = 已结算 - 已退回；
-            MerchantPromotionFeeQueryModel allSettleIncomeQueryModel = MerchantPromotionFeeQueryModel.builder().status(MerchantConstant.MERCHANT_REBATE_STATUS_SETTLED)
-                    .type(type).uid(uid).tenantId(TenantContextHolder.getTenantId())
-                    .settleStartTime(startTime).settleEndTime(endTime).build();
+            MerchantPromotionFeeQueryModel allSettleIncomeQueryModel = MerchantPromotionFeeQueryModel.builder().status(MerchantConstant.MERCHANT_REBATE_STATUS_SETTLED).type(type)
+                    .uid(uid).tenantId(TenantContextHolder.getTenantId()).settleStartTime(startTime).settleEndTime(endTime).build();
             BigDecimal allSettleIncome = rebateRecordService.sumByStatus(allSettleIncomeQueryModel);
             
             // 已退回需要用返现日期计算
-            MerchantPromotionFeeQueryModel allReturnIncomeQueryModel = MerchantPromotionFeeQueryModel.builder().status(MerchantConstant.MERCHANT_REBATE_STATUS_RETURNED)
-                    .type(type).uid(uid).tenantId(TenantContextHolder.getTenantId())
-                    .rebateStartTime(startTime).rebateEndTime(endTime).build();
+            MerchantPromotionFeeQueryModel allReturnIncomeQueryModel = MerchantPromotionFeeQueryModel.builder().status(MerchantConstant.MERCHANT_REBATE_STATUS_RETURNED).type(type)
+                    .uid(uid).tenantId(TenantContextHolder.getTenantId()).rebateStartTime(startTime).rebateEndTime(endTime).build();
             BigDecimal allReturnIncome = rebateRecordService.sumByStatus(allReturnIncomeQueryModel);
             return allSettleIncome.subtract(allReturnIncome);
         }
@@ -684,15 +682,15 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
         if (Objects.nonNull(dtoList)) {
             int result = 0;
             //昨日扫码人数：扫码绑定时间=昨日0点～今日0点；
-            MerchantPromotionScanCodeQueryModel scanCodeQueryModel = MerchantPromotionScanCodeQueryModel.builder().tenantId(TenantContextHolder.getTenantId()).channelEmployeeUid(SecurityUtils.getUid())
-                    .status(status).type(PromotionFeeQueryTypeEnum.MERCHANT.getCode()).uid(uid).build();
+            MerchantPromotionScanCodeQueryModel scanCodeQueryModel = MerchantPromotionScanCodeQueryModel.builder().tenantId(TenantContextHolder.getTenantId())
+                    .channelEmployeeUid(SecurityUtils.getUid()).status(status).type(PromotionFeeQueryTypeEnum.MERCHANT.getCode()).uid(uid).build();
             //统计收入
             for (MerchantChannelEmployeeBindHistoryDTO bindHistoryDto : dtoList) {
                 Long queryStartTime = bindHistoryDto.getQueryStartTime();
                 Long queryEndTime = bindHistoryDto.getQueryEndTime();
                 scanCodeQueryModel.setStartTime(queryStartTime);
                 scanCodeQueryModel.setEndTime(queryEndTime);
-                log.error("scanCodeQueryModel={}",JsonUtil.toJson(scanCodeQueryModel));
+                log.error("scanCodeQueryModel={}", JsonUtil.toJson(scanCodeQueryModel));
                 Integer scanCodeByMerchant = merchantJoinRecordService.countByCondition(scanCodeQueryModel);
                 
                 MerchantPromotionEmployeeDetailQueryModel employeeDetailQueryModel = MerchantPromotionEmployeeDetailQueryModel.builder().uid(uid)
@@ -701,14 +699,15 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
                 List<MerchantEmployee> merchantEmployees = merchantEmployeeService.selectByMerchantUid(employeeDetailQueryModel);
                 if (CollectionUtils.isNotEmpty(merchantEmployees)) {
                     List<Long> employeeIds = merchantEmployees.parallelStream().map(MerchantEmployee::getUid).collect(Collectors.toList());
-                    Integer scanCodeByEmployee = merchantJoinRecordService.countEmployeeScanCodeNum(employeeIds, queryStartTime, queryEndTime, status, TenantContextHolder.getTenantId(), SecurityUtils.getUid());
+                    Integer scanCodeByEmployee = merchantJoinRecordService.countEmployeeScanCodeNum(employeeIds, queryStartTime, queryEndTime, status,
+                            TenantContextHolder.getTenantId(), SecurityUtils.getUid());
                     result = result + scanCodeByMerchant + scanCodeByEmployee;
                 } else {
                     result = result + scanCodeByMerchant;
                 }
             }
-            log.error("dtoList={}",JsonUtil.toJson(dtoList));
-            log.error("result={}",result);
+            log.error("dtoList={}", JsonUtil.toJson(dtoList));
+            log.error("result={}", result);
             return result;
         } else {
             //昨日扫码人数：扫码绑定时间=昨日0点～今日0点；
@@ -726,7 +725,8 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
                 List<MerchantEmployee> merchantEmployees = merchantEmployeeService.selectByMerchantUid(employeeDetailQueryModel);
                 if (CollectionUtils.isNotEmpty(merchantEmployees)) {
                     List<Long> employeeIds = merchantEmployees.parallelStream().map(MerchantEmployee::getUid).collect(Collectors.toList());
-                    Integer scanCodeByEmployee = merchantJoinRecordService.countEmployeeScanCodeNum(employeeIds, startTime, endTime, status, TenantContextHolder.getTenantId(),null);
+                    Integer scanCodeByEmployee = merchantJoinRecordService.countEmployeeScanCodeNum(employeeIds, startTime, endTime, status, TenantContextHolder.getTenantId(),
+                            null);
                     return scanCodeByMerchant + scanCodeByEmployee;
                 } else {
                     return scanCodeByMerchant;
@@ -748,17 +748,14 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
     private Integer buildRenewalNum(Integer type, Long uid, Long startTime, Long endTime, List<MerchantChannelEmployeeBindHistoryDTO> dtoList) {
         if (Objects.nonNull(dtoList)) {
             //昨日续费次数：购买指定套餐时间=昨日0点～今日0点，且套餐购买次数>1的购买成功次数
-            if (Objects.equals(PromotionFeeQueryTypeEnum.MERCHANT_AND_MERCHANT_EMPLOYEE.getCode(), type)) {
-                type = PromotionFeeQueryTypeEnum.MERCHANT.getCode();
-            }
             int result = 0;
             //统计收入
             for (MerchantChannelEmployeeBindHistoryDTO bindHistoryDto : dtoList) {
                 Long queryStartTime = bindHistoryDto.getQueryStartTime();
                 Long queryEndTime = bindHistoryDto.getQueryEndTime();
-                MerchantPromotionRenewalQueryModel renewalQueryModel = MerchantPromotionRenewalQueryModel.builder().tenantId(TenantContextHolder.getTenantId()).userType(type)
-                        .uid(uid).startTime(queryStartTime).endTime(queryEndTime).rebateType(MerchantConstant.MERCHANT_REBATE_TYPE_RENEWAL)
-                        .channelEmployeeUid(SecurityUtils.getUid()).refundFlag(MerchantConstant.REBATE_IS_NOT_REFUND).build();
+                MerchantPromotionRenewalQueryModel renewalQueryModel = MerchantPromotionRenewalQueryModel.builder().tenantId(TenantContextHolder.getTenantId()).uid(uid)
+                        .startTime(queryStartTime).endTime(queryEndTime).rebateType(MerchantConstant.MERCHANT_REBATE_TYPE_RENEWAL).channelEmployeeUid(SecurityUtils.getUid())
+                        .refundFlag(MerchantConstant.REBATE_IS_NOT_REFUND).build();
                 result = result + rebateRecordService.countByTime(renewalQueryModel);
             }
             return result;
@@ -767,6 +764,13 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
             if (Objects.equals(PromotionFeeQueryTypeEnum.MERCHANT_AND_MERCHANT_EMPLOYEE.getCode(), type)) {
                 type = PromotionFeeQueryTypeEnum.MERCHANT.getCode();
             }
+            
+            if (Objects.equals(PromotionFeeQueryTypeEnum.CHANNEL_EMPLOYEE.getCode(), type)) {
+                MerchantPromotionRenewalQueryModel renewalQueryModel = MerchantPromotionRenewalQueryModel.builder().tenantId(TenantContextHolder.getTenantId()).channelEmployeeUid(uid).startTime(startTime).endTime(endTime).rebateType(MerchantConstant.MERCHANT_REBATE_TYPE_RENEWAL).refundFlag(MerchantConstant.REBATE_IS_NOT_REFUND)
+                        .build();
+                return rebateRecordService.countByTime(renewalQueryModel);
+            }
+            
             MerchantPromotionRenewalQueryModel renewalQueryModel = MerchantPromotionRenewalQueryModel.builder().tenantId(TenantContextHolder.getTenantId()).userType(type).uid(uid)
                     .startTime(startTime).endTime(endTime).rebateType(MerchantConstant.MERCHANT_REBATE_TYPE_RENEWAL).refundFlag(MerchantConstant.REBATE_IS_NOT_REFUND).build();
             return rebateRecordService.countByTime(renewalQueryModel);
@@ -899,12 +903,12 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
                 }).collect(Collectors.toList());
             }
             
-            log.error("todayList={}",JsonUtil.toJson(todayList));
-            log.error("yesterdayList={}",JsonUtil.toJson(yesterdayList));
-            log.error("currentMonthList={}",JsonUtil.toJson(currentMonthList));
-            log.error("lastMonthList={}",JsonUtil.toJson(lastMonthList));
-            log.error("totalList={}",JsonUtil.toJson(totalList));
-    
+            log.error("todayList={}", JsonUtil.toJson(todayList));
+            log.error("yesterdayList={}", JsonUtil.toJson(yesterdayList));
+            log.error("currentMonthList={}", JsonUtil.toJson(currentMonthList));
+            log.error("lastMonthList={}", JsonUtil.toJson(lastMonthList));
+            log.error("totalList={}", JsonUtil.toJson(totalList));
+            
             //今日扫码人数：扫码绑定时间=今日0点～当前时间；
             merchantPromotionFeeScanCodeVO.setTodayScanCodeNum(buildScanCodeCount(type, uid, DateUtils.getTodayStartTime(), System.currentTimeMillis(), null, todayList));
             //昨日扫码人数：扫码绑定时间=昨日0点～今日0点；
@@ -978,8 +982,6 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
             //今日预估收入和昨日收入时间范围一样   今日预估收入=今日未结算 昨日收入= 今日已结算 -今日已退回
             List<MerchantChannelEmployeeBindHistoryDTO> yesterdatList = buildMerchantChannelEmployeeBindHistoryDTO(bindHistoryList, DateUtils.getTimeAgoStartTime(1),
                     DateUtils.getTimeAgoEndTime(1));
-            
-            
             
             List<MerchantChannelEmployeeBindHistoryDTO> lastMonthList = buildMerchantChannelEmployeeBindHistoryDTO(bindHistoryList, dayOfMonthStartTime, dayOfMonthEndTime);
             handleMerchantTodayIncomeByChannelEmployee(type, uid, merchantPromotionFeeIncomeVO, todayList, yesterdatList, lastMonthList);

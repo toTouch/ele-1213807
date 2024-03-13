@@ -514,9 +514,6 @@
             <if test="uid != null and userType == 1">
                 and merchant_uid = #{uid}
             </if>
-            <if test="uid != null and userType == 3">
-                and merchant_uid = #{uid}
-            </if>
             <if test="uid != null and userType == 2">
                 and place_uid = #{uid}
             </if>
