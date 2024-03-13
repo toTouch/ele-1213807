@@ -681,7 +681,7 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
     
     
     private Integer buildScanCodeCount(Integer type, Long uid, Long startTime, Long endTime, Integer status, List<MerchantChannelEmployeeBindHistoryDTO> dtoList) {
-        if (CollectionUtils.isNotEmpty(dtoList)) {
+        if (Objects.nonNull(dtoList)) {
             int result = 0;
             //昨日扫码人数：扫码绑定时间=昨日0点～今日0点；
             MerchantPromotionScanCodeQueryModel scanCodeQueryModel = MerchantPromotionScanCodeQueryModel.builder().tenantId(TenantContextHolder.getTenantId()).channelEmployeeUid(SecurityUtils.getUid())
@@ -706,6 +706,8 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
                 } else {
                     result = result + scanCodeByMerchant;
                 }
+                log.error("dtoList={}",JsonUtil.toJson(dtoList));
+                log.error("result={}",result);
             }
             return result;
         } else {
