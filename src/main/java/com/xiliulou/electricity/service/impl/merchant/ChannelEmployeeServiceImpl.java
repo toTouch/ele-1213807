@@ -282,7 +282,7 @@ public class ChannelEmployeeServiceImpl implements ChannelEmployeeService {
         User updateUser = new User();
         
         // 如果是禁用，则将用户置为锁定
-        if (Objects.equals(channelEmployeeRequest.getStatus(), MerchantConstant.DISABLE) || !Objects.equals(user.getPhone(), channelEmployeeRequest.getPhone())) {
+        if (Objects.equals(channelEmployeeRequest.getStatus(), MerchantConstant.DISABLE)) {
             updateUser.setLockFlag(User.USER_LOCK);
         } else {
             updateUser.setLockFlag(User.USER_UN_LOCK);
