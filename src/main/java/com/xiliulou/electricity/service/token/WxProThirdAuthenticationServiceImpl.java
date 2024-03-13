@@ -178,16 +178,18 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
             
             //两个都存在，
             if (existPhone.getLeft() && existsOpenId.getLeft()) {
-                // 如果openId不一致，则报错
+                // 通过手机号会查询出来多个（骑手端、商户端）
                 List<UserOauthBind> userOauthBinds = userOauthBindService.listUserByPhone(existPhone.getRight().getPhone(), UserOauthBind.SOURCE_WX_PRO, tenantId);
+                log.info("userOauthBinds is {}", JsonUtil.toJson(userOauthBinds));
                 if (CollectionUtils.isEmpty(userOauthBinds)) {
                     log.error("TOKEN ERROR! not find user auth bind info! openId={},userId={}", result.getOpenid(),  existPhone.getRight().getUid());
                     throw new UserLoginException("100567", "该账户尚未绑定");
                 }
                 
-                List<UserOauthBind> fitUserOauthBinds = userOauthBinds.stream().filter(userOauthBind -> userOauthBind.getThirdId().equals(result.getOpenid())).collect(Collectors.toList());
+                List<UserOauthBind> fitUserOauthBinds = userOauthBinds.stream().filter(userOauthBind -> result.getOpenid().equals(userOauthBind.getThirdId())).collect(Collectors.toList());
+                log.info("fitUserOauthBinds is {}", JsonUtil.toJson(fitUserOauthBinds));
                 if (CollectionUtils.isEmpty(fitUserOauthBinds) || fitUserOauthBinds.size() > 1) {
-                    log.error("TOKEN ERROR! find user auth bind many ! openId={}, userId={}", result.getOpenid(),  existPhone.getRight().getUid());
+                    log.error("TOKEN ERROR! find user auth bind many ! openId is {}, userId is {}", result.getOpenid(),  existPhone.getRight().getUid());
                     throw new UserLoginException("ELECTRICITY.0001", "用户登录异常");
                 }
                 
@@ -299,11 +301,11 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
                 
             }
         } catch (Exception e) {
+            log.error("ELE AUTH ERROR: ", e);
             if (e instanceof UserLoginException) {
-                log.error("该账户已绑定其他微信，请联系客服处理");
+                log.error("该账户已绑定其他微信，请联系客服处理", e);
                 throw new UserLoginException("100567", "该账户已绑定其他微信，请联系客服处理");
             }
-            log.error("ELE AUTH ERROR!", e);
         } finally {
             redisService.delete(CacheConstant.CAHCE_THIRD_OAHTH_KEY + code);
         }
