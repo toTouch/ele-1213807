@@ -484,8 +484,8 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
     
     @Override
     @Slave
-    public Integer countEmployeeScanCodeNum(List<Long> uidList, Long startTime, Long endTime, Integer status, Integer tenantId) {
-        return merchantJoinRecordMapper.countEmployeeScanCodeNum(uidList, startTime, endTime, status, tenantId);
+    public Integer countEmployeeScanCodeNum(List<Long> uidList, Long startTime, Long endTime, Integer status, Integer tenantId,Long channelEmployeeUid) {
+        return merchantJoinRecordMapper.countEmployeeScanCodeNum(uidList, startTime, endTime, status, tenantId,channelEmployeeUid);
     }
     
     @Slave

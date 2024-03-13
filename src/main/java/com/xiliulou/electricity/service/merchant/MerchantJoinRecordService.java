@@ -93,7 +93,7 @@ public interface MerchantJoinRecordService {
      */
     boolean existMerchantAllInviterData(Long merchantId, Integer tenantId);
     
-    Integer countEmployeeScanCodeNum(List<Long> uidList, Long startTime, Long endTime, Integer status, Integer tenantId);
+    Integer countEmployeeScanCodeNum(List<Long> uidList, Long startTime, Long endTime, Integer status, Integer tenantId,Long channelEmployeeUid);
     
     List<MerchantJoinRecord> selectListAllPromotionDataDetail(MerchantAllPromotionDataDetailQueryModel queryModel);
     

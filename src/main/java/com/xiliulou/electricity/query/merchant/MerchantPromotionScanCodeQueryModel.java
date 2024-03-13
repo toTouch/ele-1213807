@@ -24,6 +24,8 @@ public class MerchantPromotionScanCodeQueryModel {
     
     private Integer status;
     
+    private Long channelEmployeeUid;
+    
     private Integer tenantId;
     
     private Long startTime;
