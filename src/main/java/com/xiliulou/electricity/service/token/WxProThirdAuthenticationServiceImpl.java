@@ -233,68 +233,7 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
                 //相同登录
                 return createSecurityUser(existPhone.getRight(), oauthBindList.get(0));
             }
-            
-            //如果openId存在.手机号不存在,替换掉以前的手机号
-           /* if (existsOpenId.getLeft() && !existPhone.getLeft()) {
-                //这里不能为空
-                User user = userService.queryByUidFromCache(existsOpenId.getRight().getUid());
-                if (Objects.isNull(user)) {
-                    log.error("TOKEN ERROR! can't found user!uid={}", existsOpenId.getRight().getUid());
-                    throw new AuthenticationServiceException("登录信息异常，请联系客服处理");
-                }
 
-                //这里的uid必须相同
-                if (!Objects.equals(user.getUid(), existsOpenId.getRight().getUid())) {
-                    log.error(
-                            "TOKEN ERROR! openId exists,phone not exists! third account uid not equals user account uid! thirdUid={},userId={}",
-                            existsOpenId.getRight().getUid(), user.getUid());
-                    throw new AuthenticationServiceException("登录信息异常，请联系客服处理");
-                }
-
-                User updateUser = User.builder().uid(user.getUid()).phone(purePhoneNumber)
-                        .updateTime(System.currentTimeMillis()).build();
-                userService.updateUser(updateUser, user);
-                user.setPhone(purePhoneNumber);
-                //如果第三方账号的手机号和现在的手机号不同，就让他同步
-                if (!existsOpenId.getRight().getPhone().equals(purePhoneNumber)) {
-                    UserOauthBind existOpenUser = existsOpenId.getRight();
-                    existOpenUser.setPhone(purePhoneNumber);
-                    userOauthBindService.update(existOpenUser);
-                }
-                //添加到user_info表中
-                Long uid = existsOpenId.getRight().getUid();
-                Pair<Boolean, UserInfo> existUserInfo = checkUserInfoExists(uid);
-                if (!existUserInfo.getLeft()) {
-                    UserInfo insertUserInfo = UserInfo.builder().uid(uid).updateTime(System.currentTimeMillis())
-                            .createTime(System.currentTimeMillis()).phone(purePhoneNumber).name(user.getName())
-                            .delFlag(User.DEL_NORMAL)
-                            .usableStatus(UserInfo.USER_USABLE_STATUS).tenantId(tenantId).build();
-                    UserInfo userInfo = userInfoService.insert(insertUserInfo);
-
-//                    Pair<Boolean, FranchiseeUserInfo> existFranchiseeUserInfo = checkFranchiseeUserInfoExists(
-//                            insertUserInfo.getId());
-//                    if (!existFranchiseeUserInfo.getLeft()) {
-//                        FranchiseeUserInfo insertFranchiseeUserInfo = FranchiseeUserInfo.builder()
-//                                .userInfoId(userInfo.getId()).updateTime(System.currentTimeMillis())
-//                                .createTime(System.currentTimeMillis()).serviceStatus(FranchiseeUserInfo.STATUS_IS_INIT)
-//                                .delFlag(User.DEL_NORMAL).tenantId(tenantId).build();
-//                        franchiseeUserInfoService.insert(insertFranchiseeUserInfo);
-//                    }
-
-                } else {
-                    UserInfo updateUserInfo = existUserInfo.getRight();
-                    if (!Objects.equals(purePhoneNumber, updateUserInfo.getPhone())) {
-                        updateUserInfo.setPhone(purePhoneNumber);
-                        updateUserInfo.setUid(uid);
-                        updateUserInfo.setTenantId(tenantId);
-                        updateUserInfo.setUpdateTime(System.currentTimeMillis());
-                        userInfoService.update(updateUserInfo);
-                    }
-                }
-                return createSecurityUser(user, existsOpenId.getRight());
-
-            }*/
-            
             //如果openId存在.手机号不存在,则新增账号
             if (existsOpenId.getLeft() && !existPhone.getLeft()) {
                 return createUserAndOauthBind(result, wxMinProPhoneResultDTO);
@@ -323,12 +262,13 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
                         throw new AuthenticationServiceException("登录信息异常，请联系客服处理");
                     }
                     
-                    //这里更改openId
                     userOauthBind = emptyUserList.stream().filter(emptyUser -> emptyUser.getUid().equals(existPhone.getRight().getUid())).findFirst().orElse(null);
                     if (ObjectUtils.isEmpty(userOauthBind)) {
-                        log.error("t_user_oauth_bind Data matching error. uid is {}", existPhone.getRight().getUid());
+                        log.error("t_user_oauth_bind data mismatch. uid is {}",existPhone.getRight().getUid());
                         throw new AuthenticationServiceException("登录信息异常，请联系客服处理");
                     }
+                    
+                    //这里更改openId
                     userOauthBind.setThirdId(result.getOpenid());
                     userOauthBind.setUpdateTime(System.currentTimeMillis());
                     userOauthBind.setStatus(UserOauthBind.STATUS_BIND);
