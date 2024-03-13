@@ -746,7 +746,7 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
     }
     
     private Integer buildRenewalNum(Integer type, Long uid, Long startTime, Long endTime, List<MerchantChannelEmployeeBindHistoryDTO> dtoList) {
-        if (CollectionUtils.isNotEmpty(dtoList)) {
+        if (Objects.nonNull(dtoList)) {
             //昨日续费次数：购买指定套餐时间=昨日0点～今日0点，且套餐购买次数>1的购买成功次数
             if (Objects.equals(PromotionFeeQueryTypeEnum.MERCHANT_AND_MERCHANT_EMPLOYEE.getCode(), type)) {
                 type = PromotionFeeQueryTypeEnum.MERCHANT.getCode();
