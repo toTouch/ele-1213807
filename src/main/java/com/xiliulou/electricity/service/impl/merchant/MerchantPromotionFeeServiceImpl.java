@@ -755,7 +755,7 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
                 Long queryEndTime = bindHistoryDto.getQueryEndTime();
                 MerchantPromotionRenewalQueryModel renewalQueryModel = MerchantPromotionRenewalQueryModel.builder().tenantId(TenantContextHolder.getTenantId()).userType(type)
                         .uid(uid).startTime(queryStartTime).endTime(queryEndTime).rebateType(MerchantConstant.MERCHANT_REBATE_TYPE_RENEWAL)
-                        .refundFlag(MerchantConstant.REBATE_IS_NOT_REFUND).build();
+                        .channelEmployeeUid(SecurityUtils.getUid()).refundFlag(MerchantConstant.REBATE_IS_NOT_REFUND).build();
                 result = result + rebateRecordService.countByTime(renewalQueryModel);
             }
             return result;

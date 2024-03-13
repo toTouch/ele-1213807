@@ -514,11 +514,14 @@
             <if test="uid != null and userType == 1">
                 and merchant_uid = #{uid}
             </if>
+            <if test="uid != null and userType == 3">
+                and merchant_uid = #{uid}
+            </if>
             <if test="uid != null and userType == 2">
                 and place_uid = #{uid}
             </if>
-            <if test="uid != null and userType == 3">
-                and channeler = #{uid}
+            <if test="channelEmployeeUid != null ">
+                and channeler = #{channelEmployeeUid}
             </if>
             <if test="status != null">
                 and status = #{status}
