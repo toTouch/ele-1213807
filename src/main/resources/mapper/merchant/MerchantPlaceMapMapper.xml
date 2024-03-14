@@ -157,7 +157,7 @@
     
     <select id="queryListNoExistsPlaceFeeMerchant" resultType="java.lang.Long">
         SELECT
-            p.id
+            p.merchant_id
         FROM
             t_merchant_place_map p
                 left join t_merchant m on m.id = p.merchant_id

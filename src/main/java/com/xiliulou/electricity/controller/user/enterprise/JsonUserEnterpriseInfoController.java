@@ -37,7 +37,7 @@ public class JsonUserEnterpriseInfoController extends BaseController {
     /**
      * 获取用户是否属于企业渠道
      */
-    @GetMapping({"/user/enterpriseInfo/check", "/merchant/enterpriseInfo/check"})
+    @GetMapping({"/user/enterpriseInfo/check"})
     public R enterpriseInfoCheck() {
         return R.ok(enterpriseInfoService.checkUserType());
     }
