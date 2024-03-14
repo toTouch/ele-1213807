@@ -1,12 +1,9 @@
 package com.xiliulou.electricity.service.impl.merchant;
 
 import cn.hutool.core.date.DateUtil;
-import com.xiliulou.cache.redis.RedisService;
-import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.thread.XllThreadPoolExecutorService;
 import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.db.dynamic.annotation.Slave;
-import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.constant.merchant.MerchantPlaceBindConstant;
 import com.xiliulou.electricity.constant.merchant.MerchantPlaceCabinetBindConstant;
@@ -46,7 +43,6 @@ import com.xiliulou.electricity.vo.merchant.MerchantProPowerVO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -106,9 +102,6 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
     
     @Resource
     private MerchantService merchantService;
-    
-    @Resource
-    private RedisService redisService;
     
     @Slave
     @Override
@@ -2055,15 +2048,7 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
         Long placeId = request.getPlaceId();
         Long cabinetId = request.getCabinetId();
         
-        // 设置key
-        String key = CacheConstant.MERCHANT_PLACE_CABINET_SEARCH_LOCK + uid;
-        
-        // 先从缓存获取，如果未获取到再从数据库获取
         List<Long> cabinetIdList = null;
-        String cabinetIdStr = redisService.get(key);
-        if (StringUtils.isNotBlank(cabinetIdStr)) {
-            return JsonUtil.fromJsonArray(cabinetIdStr, Long.class);
-        }
         
         // 1.场地和柜机为null，查全量
         if (Objects.isNull(placeId) && Objects.isNull(cabinetId)) {
@@ -2078,16 +2063,12 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
         
         // 2.场地不为null，柜机为null
         if (Objects.nonNull(placeId) && Objects.isNull(cabinetId)) {
-            key = key + placeId;
-            
             List<MerchantPlaceCabinetVO> placeCabinetVOList = this.listCabinetByPlaceId(uid, placeId);
             cabinetIdList = placeCabinetVOList.stream().map(MerchantPlaceCabinetVO::getCabinetId).distinct().collect(Collectors.toList());
         }
         
         // 3. 场地不为null,柜机不为null
         if (Objects.nonNull(placeId) && Objects.nonNull(cabinetId)) {
-            key = key + placeId + cabinetId;
-            
             List<MerchantPlaceCabinetVO> placeCabinetVOList = this.listCabinetByPlaceId(uid, placeId);
             cabinetIdList = placeCabinetVOList.stream().map(MerchantPlaceCabinetVO::getCabinetId).distinct().collect(Collectors.toList());
             
@@ -2099,12 +2080,7 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
         // 4. 场地为null, 柜机不为null
         if (Objects.isNull(placeId) && Objects.nonNull(cabinetId)) {
             cabinetIdList = List.of(cabinetId);
-            
-            key = key + cabinetId;
         }
-        
-        // 存入缓存
-        redisService.saveWithString(key, cabinetIdList, 3L, TimeUnit.SECONDS);
         
         return cabinetIdList;
     }
