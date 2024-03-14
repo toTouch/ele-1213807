@@ -150,11 +150,11 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
             log.warn("BIND MERCHANT WARN!merchant is null,merchantId={},uid={}", merchantJoinRecord.getMerchantId(), uid);
             return;
         }
-        
-        if (Objects.equals(MerchantConstant.DISABLE, merchant.getStatus())) {
-            log.warn("BIND MERCHANT WARN!merchant is disable,merchantId={},uid={}", merchantJoinRecord.getMerchantId(), uid);
-            return;
-        }
+//处理用户扫完码后商户被禁用
+//        if (Objects.equals(MerchantConstant.DISABLE, merchant.getStatus())) {
+//            log.warn("BIND MERCHANT WARN!merchant is disable,merchantId={},uid={}", merchantJoinRecord.getMerchantId(), uid);
+//            return;
+//        }
         
         MerchantAttr merchantAttr = merchantAttrService.queryByTenantId(merchant.getTenantId());
         if (Objects.isNull(merchantAttr)) {

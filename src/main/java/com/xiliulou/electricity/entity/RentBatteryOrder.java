@@ -194,5 +194,10 @@ public class RentBatteryOrder {
 
     //订单异常结束
     public static final String ORDER_EXCEPTION_CANCEL = "ORDER_EXCEPTION_CANCEL";
+    
+    /**
+     * 柜机使用中
+     */
+    public static final String INIT_DEVICE_USING="INIT_DEVICE_USING";
 
 }

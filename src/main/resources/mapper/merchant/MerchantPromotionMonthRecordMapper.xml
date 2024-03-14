@@ -3,7 +3,8 @@
 <mapper namespace="com.xiliulou.electricity.mapper.merchant.MerchantPromotionMonthRecordMapper">
     <!-- 基础字段 -->
     <sql id="basic_field">
-        id, merchant_count, month_first_total_money, month_renew_total_money, month_total_money, date, tenant_id, del_flag, create_time, update_time, remark
+        id
+        , merchant_count, month_first_total_money, month_renew_total_money, month_total_money, date, tenant_id, del_flag, create_time, update_time, remark
     </sql>
     
     <select id="selectListByPage" resultType="com.xiliulou.electricity.entity.merchant.MerchantPromotionMonthRecord">
@@ -19,7 +20,7 @@
                 and tenant_id = #{tenantId}
             </if>
         </where>
-        order by id desc
+        order by date desc
         <if test="offset != null and size != null">
             limit #{offset}, #{size}
         </if>
@@ -38,5 +39,5 @@
             </if>
         </where>
     </select>
-    
+
 </mapper>

@@ -34,6 +34,8 @@ public enum SysOptLogTypeEnum implements BasicEnum<Integer, String> {
     UNBIND_WECHAT(25, "解绑微信"),
     DELETE_USER(26, "删除用户"),
     PACKAGE_FREEZE_REVIEW(27, "套餐冻结审核"),
+    FREEZE_PACKAGE(28, "套餐冻结"),
+    EDIT_BATTERY_BACK(29, "'后台编辑电池"),
     ;
     
     private final Integer code;

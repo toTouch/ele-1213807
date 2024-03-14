@@ -44,11 +44,6 @@ public class JsonUserV2FaqController {
      */
     @PostMapping("/user/faq/page/v2")
     public R page(@RequestBody AdminFaqQuery faqQuery) {
-        ElectricityConfig electricityConfig = electricityConfigMapper.selectElectricityConfigByTenantId(TenantContextHolder.getTenantId());
-        
-        if (Objects.isNull(electricityConfig) || electricityConfig.getWxCustomer() == 0) {
-            return R.ok(Collections.emptyList());
-        }
         return R.ok(faqV2Service.listFaqQueryToUser(faqQuery));
     }
     
