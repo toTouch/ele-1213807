@@ -2358,6 +2358,8 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             carVO.setLongitude(carInfo.getLongitude());
             if (ObjectUtils.isNotEmpty(carAttr)) {
                 carVO.setPointUpdateTime(carAttr.getCreateTime().getTime());
+                carVO.setLatitude(carAttr.getLatitude());
+                carVO.setLongitude(carAttr.getLongitude());
             }
             carVO.setCarRentalState(carRentalState);
             carVO.setLockType(lockType);
