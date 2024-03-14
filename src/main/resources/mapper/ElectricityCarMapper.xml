@@ -861,14 +861,9 @@
         <if test="query.storeId != null">
             AND store_id = #{query.storeId}
         </if>
-        <choose>
-            <when test="query.carSn != null and query.carSn.trim() != ''">
-                AND (sn like CONCAT('%',#{query.carSn},'%') OR model like CONCAT('%',#{query.carSn},'%'))
-            </when>
-            <otherwise>
-                AND id IS NULL
-            </otherwise>
-        </choose>
+        <if test="query.carSn != null and query.carSn.trim() != ''">
+            AND (sn like CONCAT('%',#{query.carSn},'%') OR model like CONCAT('%',#{query.carSn},'%'))
+        </if>
         order by sn
         limit #{query.offset} , #{query.size};
     </select>

@@ -280,5 +280,21 @@
             `coupon_id` = #{couponId} and `del_flag` = 0
         </where>
     </select>
-
+    <!--P0需求 14.4 套餐购买记录（2条优化项）  start-->
+    <select id="queryToSearchByName" resultType="com.xiliulou.electricity.vo.car.CarRentalPackageSearchVo">
+        select
+            `id` as `value`,
+            `name` as label
+        from t_car_rental_package
+        where del_flag = 0
+        <if test="query.tenantId != null">
+            and tenant_id = #{query.tenantId}
+        </if>
+        <if test="query.packageName != null and query.packageName.trim()!=''">
+            and `name` like concat('%',#{query.packageName},'%')
+        </if>
+        order by create_time desc
+        limit #{query.offset} , #{query.size}
+    </select>
+    <!--P0需求 14.4 套餐购买记录（2条优化项）  end-->
 </mapper>

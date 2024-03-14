@@ -324,7 +324,7 @@ public class JsonAdminElectricityCarController {
     
     /**
      * <p>
-     * Description: queryCarSnByLike P0需求 15.1 实名用户列表（16条优化项）iv.4 模糊搜索车辆SN码
+     * Description: queryCarSnByLike P0需求 15.1 实名用户列表（16条优化项）iv.4 模糊搜索车辆SN码 14.1 套餐配置（12条优化项）车辆型号；带搜索下拉框（前端+后端）
      * </p>
      *
      * @param size         size
