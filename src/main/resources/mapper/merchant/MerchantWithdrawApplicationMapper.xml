@@ -173,7 +173,7 @@
     <select id="queryList" resultType="com.xiliulou.electricity.vo.merchant.MerchantWithdrawApplicationVO">
         select tmwa.id,
                tmwa.uid,
-               tu.name,
+               tm.name,
                tmwa.order_no,
                tmwa.amount,
                tmwa.remark,
@@ -185,6 +185,7 @@
                tmwa.update_time
         from t_merchant_withdraw_application tmwa
         left join t_user tu on tu.uid = tmwa.uid
+        left join t_merchant tm on tm.uid = tmwa.uid
         <where>
             tmwa.del_flag = 0
             and tmwa.tenant_id = #{tenantId}
@@ -253,7 +254,7 @@
     <select id="selectListByCondition" resultType="com.xiliulou.electricity.vo.merchant.MerchantWithdrawApplicationVO">
         select tmwa.id,
         tmwa.uid,
-        tu.name,
+        tm.name,
         tu.phone,
         tmwa.order_no,
         tmwa.amount,
@@ -352,7 +353,7 @@
     <select id="selectRecordList" resultType="com.xiliulou.electricity.vo.merchant.MerchantWithdrawApplicationVO">
         select tmwa.id,
             tmwa.uid,
-            tu.name,
+            tm.name,
             tu.phone,
             tmwa.order_no,
             tmwa.amount,
