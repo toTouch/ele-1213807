@@ -60,12 +60,6 @@ public class WxRefundPayBatteryRentServiceImpl implements WxRefundPayService {
 
     @Autowired
     private BatteryMemberCardService batteryMemberCardService;
-    
-    @Autowired
-    private UserInfoExtraService userInfoExtraService;
-    
-    @Autowired
-    private RocketMqService rocketMqService;
 
 
     @Override
@@ -183,10 +177,9 @@ public class WxRefundPayBatteryRentServiceImpl implements WxRefundPayService {
             divisionAccountOrderDTO.setDivisionAccountType(DivisionAccountEnum.DA_TYPE_REFUND.getCode());
             divisionAccountOrderDTO.setTraceId(IdUtil.simpleUUID());
             divisionAccountRecordService.asyncHandleDivisionAccount(divisionAccountOrderDTO);
-        
+    
             //退租 发送返利MQ
-            sendMerchantRebateRefundMQ(batteryMembercardRefundOrder.getUid(),batteryMembercardRefundOrder.getRefundOrderNo());
-        
+            batteryMembercardRefundOrderService.sendMerchantRebateRefundMQ(batteryMembercardRefundOrder.getUid(), batteryMembercardRefundOrder.getRefundOrderNo());
         } else {
             BatteryMembercardRefundOrder batteryMembercardRefundOrderUpdate = new BatteryMembercardRefundOrder();
             batteryMembercardRefundOrderUpdate.setId(batteryMembercardRefundOrder.getId());
@@ -200,26 +193,6 @@ public class WxRefundPayBatteryRentServiceImpl implements WxRefundPayService {
             electricityMemberCardOrderUpdate.setUpdateTime(System.currentTimeMillis());
             electricityMemberCardOrderService.updateByID(electricityMemberCardOrderUpdate);
         }
-    }
-    
-    private void sendMerchantRebateRefundMQ(Long uid, String orderId) {
-        UserInfoExtra userInfoExtra = userInfoExtraService.queryByUidFromCache(uid);
-        if(Objects.isNull(userInfoExtra)){
-            log.warn("BATTERY MERCHANT REBATE REFUND WARN!userInfoExtra is null,uid={}",uid);
-            return;
-        }
-        
-        if(Objects.isNull(userInfoExtra.getMerchantId())){
-            log.warn("BATTERY MERCHANT REBATE REFUND WARN!merchantId is null,uid={}",uid);
-            return;
-        }
-        
-        BatteryMemberCardMerchantRebate merchantRebate = new BatteryMemberCardMerchantRebate();
-        merchantRebate.setUid(uid);
-        merchantRebate.setOrderId(orderId);
-        merchantRebate.setType(MerchantConstant.TYPE_REFUND);
-        //续费成功  发送返利退费MQ
-        rocketMqService.sendAsyncMsg(MqProducerConstant.BATTERY_MEMBER_CARD_MERCHANT_REBATE_TOPIC, JsonUtil.toJson(merchantRebate));
     }
 
     @Override
