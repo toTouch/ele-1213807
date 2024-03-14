@@ -1,6 +1,9 @@
 package com.xiliulou.electricity.vo.merchant;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 
@@ -10,6 +13,9 @@ import java.math.BigDecimal;
  * @desc 商户小程序 场地费详情
  */
 @Data
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class MerchantPlaceCabinetFeeDetailVO {
     /**
      * 柜机Id

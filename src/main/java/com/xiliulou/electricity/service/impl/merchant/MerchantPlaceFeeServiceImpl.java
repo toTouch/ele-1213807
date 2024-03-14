@@ -357,11 +357,12 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
             
             resList.add(vo);
         });
-        
-        resList.stream().sorted(Comparator.comparing(MerchantPlaceCabinetFeeDetailVO::getTime).reversed());
-        
-        resVo.setCabinetFeeDetailList(resList);
-        resVo.setCabinetCount(resList.size());
+    
+        List<MerchantPlaceCabinetFeeDetailVO> resultList = resList.stream().sorted(Comparator.comparing(MerchantPlaceCabinetFeeDetailVO::getTime).reversed())
+                .collect(Collectors.toList());
+    
+        resVo.setCabinetFeeDetailList(resultList);
+        resVo.setCabinetCount(resultList.size());
         
         return resVo;
     }
@@ -1672,7 +1673,6 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
             
             // 两个月的记录合并
             placeFeeMonthRecords1.addAll(oneBeforeList);
-            placeFeeMonthRecords1.stream().sorted(Comparator.comparing(MerchantPlaceFeeMonthRecord::getRentStartTime));
             Map<Long, List<MerchantPlaceFeeMonthRecord>> finalRecordsMap = placeFeeMonthRecords1.stream().collect(Collectors.groupingBy(MerchantPlaceFeeMonthRecord::getEid));
             
             List<Long> existsList = new ArrayList<>();
