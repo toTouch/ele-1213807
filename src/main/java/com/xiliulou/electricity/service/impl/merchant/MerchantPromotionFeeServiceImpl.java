@@ -572,7 +572,10 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
             MerchantPromotionFeeQueryModel monthSettleIncomeQueryModel = MerchantPromotionFeeQueryModel.builder().status(MerchantConstant.MERCHANT_REBATE_STATUS_SETTLED).type(type)
                     .uid(uid).tenantId(TenantContextHolder.getTenantId()).settleStartTime(DateUtils.getDayOfMonthStartTime(2)).settleEndTime(System.currentTimeMillis()).build();
             BigDecimal currentMonthSettleInCome = rebateRecordService.sumByStatus(monthSettleIncomeQueryModel);
-            
+            log.error("monthSettleIncomeQueryModel={}",JsonUtil.toJson(monthSettleIncomeQueryModel));
+            log.error("currentMonthNoSettleInCome={}",currentMonthNoSettleInCome);
+            log.error("currentMonthReturnInCome={}",currentMonthReturnInCome);
+            log.error("currentMonthSettleInCome={}",currentMonthSettleInCome);
             return currentMonthNoSettleInCome.add(currentMonthSettleInCome).subtract(currentMonthReturnInCome);
         }
     }
