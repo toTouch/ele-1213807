@@ -660,7 +660,7 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
             
             // 如果是统计分析，则需要根据每天的时间去查询
             if (isAnalysis) {
-                List<MerchantChannelEmployeeBindHistoryDTO> historyDTOList = buildStatisticMerchantChannelEmployeeBindHistoryDTO(bindHistoryList, startTime, endTime);
+                List<MerchantChannelEmployeeBindHistoryDTO> historyDTOList = buildStatisticMerchantChannelEmployeeBindHistoryDTO(bindHistoryList, endTime);
                 //统计累计收入
                 for (MerchantChannelEmployeeBindHistoryDTO dto : historyDTOList) {
                     MerchantPromotionFeeQueryModel totalIncomeQueryModel = MerchantPromotionFeeQueryModel.builder().status(MerchantConstant.MERCHANT_REBATE_STATUS_SETTLED)
@@ -889,38 +889,27 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
         }).filter(Objects::nonNull).collect(Collectors.toList());
     }
     
-    public static void main(String[] args) {
+/*    public static void main(String[] args) {
         List<MerchantChannelEmployeeBindHistory> bindHistoryList = Lists.newArrayList();
         bindHistoryList.add(new MerchantChannelEmployeeBindHistory(1L, 1L, 1L, 1, 1704091426000L, 1710408670726L, 1, 1L, 1L));
         bindHistoryList.add(new MerchantChannelEmployeeBindHistory(1L, 1L, 1L, 0, 1710408771697L, null, 1, 1L, 1L));
-        
-        List<MerchantChannelEmployeeBindHistoryDTO> totalList = null;
-        if (CollectionUtils.isNotEmpty(bindHistoryList)) {
-            totalList = bindHistoryList.stream().map(bindHistory -> {
-                MerchantChannelEmployeeBindHistoryDTO bindHistoryDTO = new MerchantChannelEmployeeBindHistoryDTO();
-                BeanUtils.copyProperties(bindHistory, bindHistoryDTO);
-                bindHistoryDTO.setQueryStartTime(bindHistory.getBindTime());
-                bindHistoryDTO.setQueryEndTime(Objects.nonNull(bindHistory.getUnBindTime()) ? bindHistory.getUnBindTime() : System.currentTimeMillis());
-                return bindHistoryDTO;
-            }).collect(Collectors.toList());
-            
-            
-        }
-        
-        for (MerchantChannelEmployeeBindHistoryDTO dto : totalList) {
-            System.out.println(totalList);
-        }
-    }
     
-    private static List<MerchantChannelEmployeeBindHistoryDTO> buildStatisticMerchantChannelEmployeeBindHistoryDTO(List<MerchantChannelEmployeeBindHistory> bindHistoryList,
-            Long startTime, Long endTime) {
+        List<MerchantChannelEmployeeBindHistoryDTO> historyDTOList = buildStatisticMerchantChannelEmployeeBindHistoryDTO(bindHistoryList,  1710518399999L);
+        
+        
+        for (MerchantChannelEmployeeBindHistoryDTO dto : historyDTOList) {
+            System.out.println(dto);
+        }
+    }*/
+    
+    private static List<MerchantChannelEmployeeBindHistoryDTO> buildStatisticMerchantChannelEmployeeBindHistoryDTO(List<MerchantChannelEmployeeBindHistory> bindHistoryList, Long endTime) {
         if (CollectionUtils.isEmpty(bindHistoryList)) {
             return Lists.newArrayList();
         }
         return bindHistoryList.stream().map(bindHistory -> {
             MerchantChannelEmployeeBindHistoryDTO bindHistoryDTO = new MerchantChannelEmployeeBindHistoryDTO();
             BeanUtils.copyProperties(bindHistory, bindHistoryDTO);
-            bindHistoryDTO.setQueryStartTime(startTime);
+            bindHistoryDTO.setQueryStartTime(bindHistory.getBindTime());
             if (Objects.equals(bindHistory.getBindStatus(), MerchantChannelEmployeeBindHistoryConstant.BIND) && bindHistory.getBindTime() >= endTime) {
                 return null;
             }
