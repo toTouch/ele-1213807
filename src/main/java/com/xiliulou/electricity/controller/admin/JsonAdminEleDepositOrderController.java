@@ -64,8 +64,9 @@ public class JsonAdminEleDepositOrderController extends BaseController {
                        @RequestParam(value = "endTime", required = false) Long endTime,
                        @RequestParam(value = "depositType", required = false) Integer depositType,
                        @RequestParam(value = "carModel", required = false) String carModel,
-        @RequestParam(value = "payType", required = false) Integer payType,
-        @RequestParam(value = "storeName", required = false) String storeName) {
+                       @RequestParam(value = "payType", required = false) Integer payType,
+                       @RequestParam(value = "storeName", required = false) String storeName,
+            @RequestParam(value = "orderType", required = false) Integer orderType) {
         if (size < 0 || size > 50) {
             size = 10L;
         }
@@ -111,7 +112,8 @@ public class JsonAdminEleDepositOrderController extends BaseController {
                 .franchiseeName(franchiseeName)
                 .depositType(depositType)
                 .payType(payType).storeName(storeName)
-                .franchiseeIds(franchiseeIds).build();
+                .franchiseeIds(franchiseeIds)
+                .orderType(orderType).build();
         return eleDepositOrderService.queryList(eleDepositOrderQuery);
     }
 
@@ -128,7 +130,8 @@ public class JsonAdminEleDepositOrderController extends BaseController {
                         @RequestParam(value = "carModel", required = false) String carModel,
                         @RequestParam(value = "franchiseeName", required = false) String franchiseeName,
         @RequestParam(value = "payType", required = false) Integer payType,
-        @RequestParam(value = "storeName", required = false) String storeName) {
+        @RequestParam(value = "storeName", required = false) String storeName,
+            @RequestParam(value = "orderType", required = false) Integer orderType) {
 
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
@@ -166,7 +169,8 @@ public class JsonAdminEleDepositOrderController extends BaseController {
                 .storeName(storeName)
                 .tenantId(TenantContextHolder.getTenantId())
                 .franchiseeName(franchiseeName)
-                .franchiseeIds(franchiseeIds).build();
+                .franchiseeIds(franchiseeIds)
+                .orderType(orderType).build();
 
         return eleDepositOrderService.queryCount(eleDepositOrderQuery);
     }

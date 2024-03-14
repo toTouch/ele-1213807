@@ -54,10 +54,10 @@
                 and disable_member_card_no = #{disableMemberCardNo}
             </if>
             <if test="beginDisableTime != null and beginDisableTime != ''">
-                and disable_time > #{beginDisableTime}
+                and disable_time &gt; #{beginDisableTime}
             </if>
             <if test="endDisableTime != null and endDisableTime != ''">
-                and disable_time < #{endDisableTime}
+                and disable_time &lt; #{endDisableTime}
             </if>
         </where>
         order by create_time desc
