@@ -10,6 +10,7 @@ import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.config.RolePermissionConfig;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.CommonConstant;
+import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mapper.TenantMapper;
 import com.xiliulou.electricity.query.TenantAddAndUpdateQuery;
@@ -27,6 +28,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.math.BigDecimal;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -200,7 +202,9 @@ public class TenantServiceImpl implements TenantService {
                 .isWithdraw(ElectricityConfig.WITHDRAW)
                 .isOpenDoorLock(ElectricityConfig.NON_OPEN_DOOR_LOCK)
                 .disableMemberCard(ElectricityConfig.DISABLE_MEMBER_CARD)
-                .isBatteryReview(ElectricityConfig.NON_BATTERY_REVIEW).build();
+                .isBatteryReview(ElectricityConfig.NON_BATTERY_REVIEW)
+                .lowChargeRate(NumberConstant.TWENTY_FIVE_DB)
+                .fullChargeRate(NumberConstant.SEVENTY_FIVE_DB).build();
         electricityConfigService.insertElectricityConfig(electricityConfig);
 
         //新增租户给租户增加渠道活动（产品提的需求）
