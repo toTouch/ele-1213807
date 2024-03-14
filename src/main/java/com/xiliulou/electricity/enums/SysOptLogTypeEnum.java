@@ -36,6 +36,7 @@ public enum SysOptLogTypeEnum implements BasicEnum<Integer, String> {
     PACKAGE_FREEZE_REVIEW(27, "套餐冻结审核"),
     FREEZE_PACKAGE(28, "套餐冻结"),
     EDIT_BATTERY_BACK(29, "'后台编辑电池"),
+    EDIT_APPLET_ONLINE_SERVICE_BACK(30, "'编辑微信小程序在线客服"),
     ;
     
     private final Integer code;
