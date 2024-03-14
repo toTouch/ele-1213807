@@ -1,6 +1,5 @@
 package com.xiliulou.electricity.service.impl.car.biz;
 
-import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.Coupon;
@@ -424,7 +423,7 @@ public class CarRentalPackageBizServiceImpl implements CarRentalPackageBizServic
             return Triple.of(amount, null, true) ;
         }
 
-        List<Integer> couponIdList = userCoupons.stream().map(UserCoupon::getCouponId).distinct().collect(Collectors.toList());
+        List<Integer> couponIdList = userCoupons.stream().map(UserCoupon::getCouponId).collect(Collectors.toList());
         List<Long> couponIds = couponIdList.stream().map(Long::valueOf).collect(Collectors.toList());
 
         // 查询优惠券信息
@@ -435,8 +434,6 @@ public class CarRentalPackageBizServiceImpl implements CarRentalPackageBizServic
         }
 
         List<Coupon> couponQryList = (List<Coupon>) couponResult.getData();
-        log.info("calculatePaymentAmount couponQryList is {}", JsonUtil.toJson(couponQryList));
-        
         Map<Integer, Coupon> couponQryMap = couponQryList.stream().collect(Collectors.toMap(Coupon::getId, Function.identity(), (k1, k2) -> k2));
         // 定义一个本地的要使用的优惠券集合, 存在使用同一张优惠券
         List<Coupon> couponUseList = new ArrayList<>();
@@ -446,7 +443,6 @@ public class CarRentalPackageBizServiceImpl implements CarRentalPackageBizServic
                 couponUseList.add(couponQryMap.get(couponIdTmp));
             }
         });
-        log.info("calculatePaymentAmount couponUseList is {}", JsonUtil.toJson(couponUseList));
         
         // 按照优惠券是否可叠加分组
         Map<Integer, List<Coupon>> superpositionMap = couponUseList.stream().collect(Collectors.groupingBy(Coupon::getSuperposition));
