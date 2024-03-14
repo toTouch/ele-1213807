@@ -694,10 +694,10 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
         }
     
         //套餐数量最多20个
-        BatteryMemberCardQuery queryCount = BatteryMemberCardQuery.builder().franchiseeId(query.getFranchiseeId()).businessType(query.getBusinessType())
+        BatteryMemberCardQuery queryCount = BatteryMemberCardQuery.builder().businessType(query.getBusinessType())
                 .tenantId(TenantContextHolder.getTenantId()).delFlag(BatteryMemberCard.DEL_NORMAL).build();
-        if (selectByPageCount(queryCount) > 20) {
-            return Triple.of(false, "100106", "套餐数量超出限制");
+        if (selectByPageCount(queryCount) > 50) {
+            return Triple.of(false, "100378", "换电套餐新增已达最大上限，可删除多余套餐后操作");
         }
 
         BatteryMemberCard batteryMemberCard = new BatteryMemberCard();
