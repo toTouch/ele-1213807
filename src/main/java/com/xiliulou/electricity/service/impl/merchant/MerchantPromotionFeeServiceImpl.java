@@ -533,9 +533,6 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
             List<MerchantChannelEmployeeBindHistoryDTO> settleList = buildMerchantChannelEmployeeBindHistoryDTO(bindHistoryList, DateUtils.getDayOfMonthStartTime(2),
                     System.currentTimeMillis());
             
-            log.error("bindList={}",JsonUtil.toJson(bindList));
-            log.error("settleList={}",JsonUtil.toJson(settleList));
-            
             //统计收入未结算 已退回
             BigDecimal resultNoSettleAmount = new BigDecimal(0);
             for (MerchantChannelEmployeeBindHistoryDTO bindHistoryDto : bindList) {
@@ -550,9 +547,7 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
                 BigDecimal currentMonthReturnInCome = rebateRecordService.sumByStatus(monthIncomeQueryModel);
     
                 resultNoSettleAmount = resultNoSettleAmount.add(currentMonthNoSettleInCome.subtract(currentMonthReturnInCome));
-                log.error("startTime={},endTime={},currentMonthNoSettleInCome={},settleInCome={}",startTime,endTime,currentMonthNoSettleInCome,currentMonthReturnInCome);
             }
-            log.error("resultNoSettleAmount={}",resultNoSettleAmount);
             
             //统计已结算收入
             BigDecimal resultSettleAmount = new BigDecimal(0);
@@ -565,10 +560,7 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
                 BigDecimal settleInCome = rebateRecordService.sumByStatus(monthSettleIncomeQueryModel);
                 
                 resultSettleAmount = resultSettleAmount.add(settleInCome);
-                log.error("startTime={},endTime={},resultSettleAmount={},settleInCome={}",startTime,endTime,resultSettleAmount,settleInCome);
-                log.error("resultSettleAmount={}",resultSettleAmount.add(settleInCome));
             }
-            log.error("resultAmount={}",resultAmount.add(resultNoSettleAmount.add(resultSettleAmount)));
             return resultAmount.add(resultNoSettleAmount.add(resultSettleAmount));
             
         } else {
