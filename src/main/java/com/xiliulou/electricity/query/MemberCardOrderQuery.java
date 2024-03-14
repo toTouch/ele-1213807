@@ -54,4 +54,9 @@ public class MemberCardOrderQuery {
     private Integer cardPayCount;
 
     private Integer useStatus;
+    
+    /**
+     * 套餐名称
+     */
+    private String memberCardName;
 }

@@ -1,9 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.xiliulou.electricity.mapper.RentBatteryOrderMapper">
-
-
-
+    
+    
     <!--查询指定行数据-->
     <select id="queryList" resultType="com.xiliulou.electricity.vo.RentBatteryOrderVO">
         select
@@ -136,26 +135,26 @@
                temp.electricity_cabinet_id,
                temp.create_time
         from
-            ( select  uid, type, order_id,
-                case when type = 2 then electricity_battery_sn else null end as old_electricity_battery_sn,
-                case when type = 2 then cell_no else null end as old_cell_no,
-                case when type = 1 then electricity_battery_sn else null end as new_electricity_battery_sn,
-                case when type = 1 then cell_no else null end as new_cell_no,
-                electricity_cabinet_id,
-                create_time
-            from t_rent_battery_order
-            where electricity_cabinet_id = #{query.id}
-            and type in (1,2)
-            union all
-            select uid, 9 type, order_id,
-                old_electricity_battery_sn ,
-                old_cell_no ,
-                new_electricity_battery_sn,
-                new_cell_no,
-                electricity_cabinet_id,
-                create_time
-            from t_electricity_cabinet_order
-            where electricity_cabinet_id = #{query.id}) temp
+        ( select uid, type, order_id,
+        case when type = 1 then electricity_battery_sn else null end as old_electricity_battery_sn,
+        case when type = 1 then cell_no else null end as old_cell_no,
+        case when type = 2 then electricity_battery_sn else null end as new_electricity_battery_sn,
+        case when type = 2 then cell_no else null end as new_cell_no,
+        electricity_cabinet_id,
+        create_time
+        from t_rent_battery_order
+        where electricity_cabinet_id = #{query.id}
+        and type in (1,2)
+        union all
+        select uid, 9 type, order_id,
+        old_electricity_battery_sn ,
+        old_cell_no ,
+        new_electricity_battery_sn,
+        new_cell_no,
+        electricity_cabinet_id,
+        create_time
+        from t_electricity_cabinet_order
+        where electricity_cabinet_id = #{query.id}) temp
         <where>
 
             <if test="query.uid != null">
@@ -178,24 +177,24 @@
     <select id="selectUsedRecordsTotalCount" resultType="java.lang.Integer">
         select count(1)
         from
-            (select uid, type, order_id,
-                case when type = 2 then electricity_battery_sn else null end as old_electricity_battery_sn,
-                case when type = 2 then cell_no else null end as old_cell_no,
-                case when type = 1 then electricity_battery_sn else null end as new_electricity_battery_sn,
-                case when type = 1 then cell_no else null end as new_cell_no,
-                create_time
-            from t_rent_battery_order
-            where electricity_cabinet_id = #{query.id}
-            and type in (1,2)
-            union all
-            select uid, 9 type, teco.order_id,
-                teco.old_electricity_battery_sn,
-                teco.old_cell_no,
-                teco.new_electricity_battery_sn,
-                teco.new_cell_no,
-                teco.create_time
-            from t_electricity_cabinet_order teco
-            where electricity_cabinet_id = #{query.id}) temp
+        (select uid, type, order_id,
+        case when type = 1 then electricity_battery_sn else null end as old_electricity_battery_sn,
+        case when type = 1 then cell_no else null end as old_cell_no,
+        case when type = 2 then electricity_battery_sn else null end as new_electricity_battery_sn,
+        case when type = 2 then cell_no else null end as new_cell_no,
+        create_time
+        from t_rent_battery_order
+        where electricity_cabinet_id = #{query.id}
+        and type in (1,2)
+        union all
+        select uid, 9 type, teco.order_id,
+        teco.old_electricity_battery_sn,
+        teco.old_cell_no,
+        teco.new_electricity_battery_sn,
+        teco.new_cell_no,
+        teco.create_time
+        from t_electricity_cabinet_order teco
+        where electricity_cabinet_id = #{query.id}) temp
         <where>
             <if test="query.uid != null">
                 and temp.uid = #{query.uid}

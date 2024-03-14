@@ -63,7 +63,10 @@ public class JsonAdminEnableMemberCardRecordController extends BaseController {
             @RequestParam(value = "enableType", required = false) Integer enableType,
             @RequestParam(value = "beginTime", required = false) Long beginTime,
             @RequestParam(value = "endTime", required = false) Long endTime,
-            @RequestParam(value = "id", required = false) Integer id) {
+            @RequestParam(value = "id", required = false) Integer id,
+            @RequestParam(value = "disableMemberCardNo", required = false) String disableMemberCardNo,
+            @RequestParam(value = "beginDisableTime", required = false) Long beginDisableTime,
+            @RequestParam(value = "endDisableTime", required = false) Long endDisableTime) {
         if (size < 0 || size > 50) {
             size = 10L;
         }
@@ -109,7 +112,10 @@ public class JsonAdminEnableMemberCardRecordController extends BaseController {
                 .storeIds(storeIds)
                 .userName(userName)
                 .uid(uid)
-                .tenantId(tenantId).build();
+                .tenantId(tenantId)
+                .disableMemberCardNo(disableMemberCardNo)
+                .beginDisableTime(beginDisableTime)
+                .endDisableTime(endDisableTime).build();
 
         return enableMemberCardRecordService.queryList(enableMemberCardRecordQuery);
     }

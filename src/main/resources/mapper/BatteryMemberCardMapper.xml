@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.xiliulou.electricity.mapper.BatteryMemberCardMapper">
-
+    
     <resultMap type="com.xiliulou.electricity.entity.BatteryMemberCard" id="BatteryMemberCardMap">
         <result property="id" column="id" jdbcType="INTEGER"/>
         <result property="name" column="name" jdbcType="VARCHAR"/>
@@ -27,8 +27,9 @@
         <result property="tenantId" column="tenant_id" jdbcType="INTEGER"/>
         <result property="createTime" column="create_time" jdbcType="INTEGER"/>
         <result property="updateTime" column="update_time" jdbcType="INTEGER"/>
+        <result property="sortParam" column="sort_param" jdbcType="INTEGER"/>
     </resultMap>
-
+    
     <resultMap type="com.xiliulou.electricity.vo.BatteryMemberCardAndTypeVO" id="BatteryMemberCardTypeMap">
         <result property="id" column="id" jdbcType="INTEGER"/>
         <result property="name" column="name" jdbcType="VARCHAR"/>
@@ -59,15 +60,37 @@
             <result property="batteryType" column="battery_type" jdbcType="VARCHAR"/>
         </collection>
     </resultMap>
-
+    
     <!--查询单个-->
     <select id="queryById" resultMap="BatteryMemberCardMap">
-        select
-          id, name, deposit, rent_price, rent_price_unit, valid_days, rent_unit, franchisee_id, rent_type, send_coupon, status, limit_count, use_count, coupon_id, is_refund, refund_limit, free_deposite, service_charge, remark, business_type, del_flag, tenant_id, create_time, update_time
+        select id,
+               name,
+               deposit,
+               rent_price,
+               rent_price_unit,
+               valid_days,
+               rent_unit,
+               franchisee_id,
+               rent_type,
+               send_coupon,
+               status,
+               limit_count,
+               use_count,
+               coupon_id,
+               is_refund,
+               refund_limit,
+               free_deposite,
+               service_charge,
+               remark,
+               business_type,
+               del_flag,
+               tenant_id,
+               create_time,
+               update_time
         from t_battery_member_card
         where id = #{id}
     </select>
-
+    
     <select id="selectBySearch" resultMap="BatteryMemberCardMap">
         select
         id, name
@@ -105,50 +128,57 @@
         order by id desc
         limit #{offset}, #{size}
     </select>
-
+    
     <select id="selectByPage" resultMap="BatteryMemberCardMap">
         select
-        id, name, deposit, rent_price, rent_price_unit, valid_days, rent_unit, franchisee_id, rent_type, send_coupon,
-        status, limit_count, use_count, coupon_id, is_refund, refund_limit, free_deposite,
-        service_charge, remark, business_type, del_flag, tenant_id, create_time, update_time
-        from t_battery_member_card
+        tbmc.id, tbmc.name, tbmc.deposit, tbmc.rent_price, tbmc.rent_price_unit, tbmc.valid_days, tbmc.rent_unit, tbmc.franchisee_id, tbmc.rent_type, tbmc.send_coupon,
+        tbmc.status, tbmc.limit_count, tbmc.use_count, tbmc.coupon_id, tbmc.is_refund, tbmc.refund_limit, tbmc.free_deposite,
+        tbmc.service_charge, tbmc.remark, tbmc.business_type, tbmc.del_flag, tbmc.tenant_id, tbmc.create_time, tbmc.update_time, tbmc.sort_param
+        from t_battery_member_card tbmc
+        left join t_member_card_battery_type tmcbt on tbmc.id = tmcbt.mid
         <where>
             <if test="businessType != null">
-                and business_type = #{businessType}
+                and tbmc.business_type = #{businessType}
             </if>
-        
+            
             <if test="franchiseeId != null">
-                and franchisee_id = #{franchiseeId}
+                and tbmc.franchisee_id = #{franchiseeId}
             </if>
             <if test="status != null">
-                and status = #{status}
+                and tbmc.status = #{status}
             </if>
             <if test="name != null and name != ''">
-                and name like concat('%',#{name,jdbcType=VARCHAR},'%')
+                and tbmc.name like concat('%',#{name,jdbcType=VARCHAR},'%')
             </if>
             <if test="rentType != null">
-                and rent_type = #{rentType}
+                and tbmc.rent_type = #{rentType}
             </if>
             <if test="rentUnit != null">
-                and rent_unit = #{rentUnit}
+                and tbmc.rent_unit = #{rentUnit}
             </if>
             <if test="tenantId != null">
-                and tenant_id = #{tenantId}
+                and tbmc.tenant_id = #{tenantId}
             </if>
             <if test="delFlag != null">
-                and del_flag = #{delFlag}
+                and tbmc.del_flag = #{delFlag}
             </if>
             <if test="franchiseeIds != null">
-                and franchisee_id in
+                and tbmc.franchisee_id in
                 <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
                     #{id}
                 </foreach>
+            </if>
+            <if test="batteryModel != null and batteryModel != '' and batteryModel != '0'">
+                and tmcbt.battery_type = #{batteryModel}
+            </if>
+            <if test="batteryModel == '0'">
+                and tmcbt.mid is null
             </if>
         </where>
         order by id desc
         limit #{offset}, #{size}
     </select>
-
+    
     <select id="selectByQuery" resultMap="BatteryMemberCardMap">
         select
         id, name, deposit, rent_price, rent_price_unit, valid_days, rent_unit, franchisee_id, rent_type, send_coupon,
@@ -189,11 +219,15 @@
             limit #{offset}, #{size}
         </if>
     </select>
-
+    
     <select id="isMemberCardBindFranchinsee" resultType="Integer">
-        SELECT 1 FROM t_battery_member_card WHERE del_flag=0 and franchisee_id = #{franchiseeId} AND tenant_id = #{tenantId} LIMIT 1
+        SELECT 1
+        FROM t_battery_member_card
+        WHERE del_flag = 0
+          and franchisee_id = #{franchiseeId}
+          AND tenant_id = #{tenantId} LIMIT 1
     </select>
-
+    
     <select id="selectByPageForUser" resultMap="BatteryMemberCardTypeMap">
         select
         bmc.id,
@@ -255,7 +289,7 @@
         order by bmc.id desc
         limit #{offset}, #{size}
     </select>
-
+    
     <select id="selectMembercardBatteryV" resultType="com.xiliulou.electricity.vo.BatteryMemberCardVO">
         select
         bmc.id,
@@ -289,49 +323,61 @@
             </if>
         </where>
     </select>
-
+    
     <select id="selectByPageCount" resultType="int">
         select
         count(*)
-        from t_battery_member_card
+        from t_battery_member_card tbmc
+        left join t_member_card_battery_type tmcbt on tbmc.id = tmcbt.mid
         <where>
             <if test="businessType != null">
-                and business_type = #{businessType}
+                and tbmc.business_type = #{businessType}
             </if>
             <if test="franchiseeId != null">
-                and franchisee_id = #{franchiseeId}
+                and tbmc.franchisee_id = #{franchiseeId}
             </if>
             <if test="status != null">
-                and status = #{status}
+                and tbmc.status = #{status}
             </if>
             <if test="name != null and name != ''">
-                and name like concat('%',#{name,jdbcType=VARCHAR},'%')
+                and tbmc.name like concat('%',#{name,jdbcType=VARCHAR},'%')
             </if>
             <if test="rentType != null">
-                and rent_type = #{rentType}
+                and tbmc.rent_type = #{rentType}
             </if>
             <if test="rentUnit != null">
-                and rent_unit = #{rentUnit}
+                and tbmc.rent_unit = #{rentUnit}
             </if>
             <if test="tenantId != null">
-                and tenant_id = #{tenantId}
+                and tbmc.tenant_id = #{tenantId}
             </if>
             <if test="delFlag != null">
-                and del_flag = #{delFlag}
+                and tbmc.del_flag = #{delFlag}
             </if>
             <if test="franchiseeIds != null">
-                and franchisee_id in
+                and tbmc.franchisee_id in
                 <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
                     #{id}
                 </foreach>
             </if>
+            <if test="batteryModel != null and batteryModel != '' and batteryModel != '0'">
+                and tmcbt.battery_type = #{batteryModel}
+            </if>
+            <if test="batteryModel == '0'">
+                and tmcbt.mid is null
+            </if>
         </where>
     </select>
-
+    
     <select id="checkMembercardExist" resultType="Integer">
-        select 1 from t_battery_member_card where name=#{name} and del_flag = 0 and business_type in (0, 2) and tenant_id = #{tenantId} LIMIT 1
+        select 1
+        from t_battery_member_card
+        where name = #{name}
+          and del_flag = 0
+          and business_type in (0, 2)
+          and tenant_id = #{tenantId} LIMIT 1
     </select>
-
+    
     <!--通过主键修改数据-->
     <update id="update">
         update t_battery_member_card
@@ -403,36 +449,44 @@
         </set>
         where id = #{id}
     </update>
-
+    
+    <update id="batchUpdateSortParam">
+        <foreach collection="sortParamDTOList" item="item" separator=";">
+            update `t_battery_member_card` set sort_param = #{item.sortParam} where id = #{item.id}
+        </foreach>
+    </update>
+    
     <!--通过主键删除-->
     <delete id="deleteById">
-        delete from t_battery_member_card where id = #{id}
+        delete
+        from t_battery_member_card
+        where id = #{id}
     </delete>
-
+    
     <!--根据条件查询企业渠道套餐信息-->
     <select id="selectMemberCardsByEnterprise" resultMap="BatteryMemberCardTypeMap">
         select
-            bmc.id,
-            bmc.name,
-            bmc.deposit,
-            bmc.rent_price,
-            bmc.rent_price_unit,
-            bmc.valid_days,
-            bmc.remark,
-            bmc.rent_unit,
-            bmc.franchisee_id,
-            bmc.rent_type,
-            bmc.send_coupon,
-            bmc.status,
-            bmc.limit_count,
-            bmc.use_count,
-            bmc.coupon_id,
-            bmc.is_refund,
-            bmc.refund_limit,
-            bmc.free_deposite,
-            bmc.service_charge,
-            mcbt.id as mcbt_id,
-            mcbt.battery_type battery_type
+        bmc.id,
+        bmc.name,
+        bmc.deposit,
+        bmc.rent_price,
+        bmc.rent_price_unit,
+        bmc.valid_days,
+        bmc.remark,
+        bmc.rent_unit,
+        bmc.franchisee_id,
+        bmc.rent_type,
+        bmc.send_coupon,
+        bmc.status,
+        bmc.limit_count,
+        bmc.use_count,
+        bmc.coupon_id,
+        bmc.is_refund,
+        bmc.refund_limit,
+        bmc.free_deposite,
+        bmc.service_charge,
+        mcbt.id as mcbt_id,
+        mcbt.battery_type battery_type
         from t_battery_member_card bmc
         left join t_member_card_battery_type mcbt on bmc.id=mcbt.mid
         <where>
@@ -464,7 +518,7 @@
                     #{id}
                 </foreach>
             </if>
-
+            
             <if test="packageIds != null">
                 and bmc.id in
                 <foreach collection="packageIds" item="packageId" index="index" open="(" close=")" separator=",">
@@ -473,7 +527,7 @@
             </if>
         </where>
         order by bmc.id desc
-
+    
     </select>
     
     <select id="selectMembercardBatteryVByEnterprise" resultType="com.xiliulou.electricity.vo.BatteryMemberCardVO">
