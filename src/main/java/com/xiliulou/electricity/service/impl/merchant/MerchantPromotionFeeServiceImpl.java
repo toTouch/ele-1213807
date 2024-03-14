@@ -859,19 +859,6 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
         }
     }
     
-/*    public static void main(String[] args) {
-        MerchantChannelEmployeeBindHistory build = MerchantChannelEmployeeBindHistory.builder().channelEmployeeUid(159805L).merchantUid(159804L).bindStatus(0)
-                .bindTime(1710314672927L).build();
-        List<MerchantChannelEmployeeBindHistory> bindHistoryList = Lists.newArrayList();
-        bindHistoryList.add(build);
-     List<MerchantChannelEmployeeBindHistoryDTO> currentMonthList = buildMerchantChannelEmployeeBindHistoryDTO(bindHistoryList, DateUtils.getDayOfMonthStartTime(1),
-                System.currentTimeMillis());
-        for(MerchantChannelEmployeeBindHistoryDTO dto:currentMonthList){
-            System.out.println(dto);
-        }
-
-    }*/
-    
     private static List<MerchantChannelEmployeeBindHistoryDTO> buildMerchantChannelEmployeeBindHistoryDTO(List<MerchantChannelEmployeeBindHistory> bindHistoryList, Long startTime,
             Long endTime) {
         if (CollectionUtils.isEmpty(bindHistoryList)) {
