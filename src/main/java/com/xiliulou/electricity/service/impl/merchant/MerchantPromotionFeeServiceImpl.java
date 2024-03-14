@@ -926,7 +926,7 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
                     .tenantId(TenantContextHolder.getTenantId()).build();
             List<MerchantChannelEmployeeBindHistory> bindHistoryList = merchantChannelEmployeeBindHistoryService.selectListByMerchantUid(queryModel);
             
-            List<MerchantChannelEmployeeBindHistoryDTO> todayList = buildMerchantChannelEmployeeBindHistoryDTO(bindHistoryList, DateUtils.getTimeAgoEndTime(0),
+            List<MerchantChannelEmployeeBindHistoryDTO> todayList = buildMerchantChannelEmployeeBindHistoryDTO(bindHistoryList, DateUtils.getTimeAgoStartTime(0),
                     System.currentTimeMillis());
             List<MerchantChannelEmployeeBindHistoryDTO> yesterdayList = buildMerchantChannelEmployeeBindHistoryDTO(bindHistoryList, DateUtils.getTimeAgoStartTime(1),
                     DateUtils.getTimeAgoEndTime(1));
