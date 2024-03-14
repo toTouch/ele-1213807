@@ -136,7 +136,7 @@ public class JsonAdminCarRentalPackageOrderFreezeController extends BasicControl
         freezeEntityList.forEach(freezePO -> {
             uids.add(freezePO.getUid());
             rentalPackageIds.add(freezePO.getRentalPackageId());
-            userIds.add(freezePO.getUpdateUid());
+            userIds.add(freezePO.getAuditorId());
         });
         
         // 用户信息
@@ -165,7 +165,7 @@ public class JsonAdminCarRentalPackageOrderFreezeController extends BasicControl
             }
             
             if (!userMap.isEmpty()) {
-                User user = userMap.getOrDefault(freezeEntity.getUpdateUid(), new User());
+                User user = userMap.getOrDefault(freezeEntity.getAuditorId(), new User());
                 freezeVO.setAuditorName(user.getName());
             }
             
