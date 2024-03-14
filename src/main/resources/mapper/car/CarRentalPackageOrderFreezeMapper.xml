@@ -25,10 +25,12 @@
         <result property="applyTerm" column="apply_term" jdbcType="INTEGER" />
         <result property="applyTime" column="apply_time" jdbcType="BIGINT" />
         <result property="auditTime" column="audit_time" jdbcType="BIGINT" />
+        <result property="auditorId" column="auditor_id" jdbcType="BIGINT" />
         <result property="enableTime" column="enable_time" jdbcType="BIGINT" />
         <result property="status" column="status" jdbcType="INTEGER" />
         <result property="remark" column="remark" jdbcType="VARCHAR" />
         <result property="applyReason" column="apply_reason" jdbcType="VARCHAR" />
+        
     </resultMap>
 
     <!-- 表名 -->
@@ -42,7 +44,7 @@
     <!-- 私有字段 -->
     <sql id="private_field">
         `uid`, `order_no`, `rental_package_order_no`, `rental_package_id`, `rental_package_type`, `residue`, `residue_unit`, `late_fee`, `apply_term`, `apply_time`,
-        `audit_time`, `enable_time`, `status`, `remark`, `apply_reason`
+        `audit_time`, `enable_time`, `status`, `remark`, `apply_reason`, `auditor_id`
     </sql>
 
     <!-- 全部字段 -->
@@ -96,6 +98,7 @@
             <if test=" applyTerm != null "> `apply_term`, </if>
             <if test=" applyTime != null "> `apply_time`, </if>
             <if test=" auditTime != null "> `audit_time`, </if>
+            <if test=" auditorId != null "> `auditor_id`, </if>
             <if test=" enableTime != null "> `enable_time`, </if>
             <if test=" status != null "> `status`, </if>
             <if test=" remark != null and remark != '' "> `remark`, </if>
@@ -124,6 +127,7 @@
             <if test=" applyTerm != null "> #{applyTerm}, </if>
             <if test=" applyTime != null "> #{applyTime}, </if>
             <if test=" auditTime != null "> #{auditTime}, </if>
+            <if test=" auditorId != null "> #{auditorId}, </if>
             <if test=" enableTime != null "> #{enableTime}, </if>
             <if test=" status != null "> #{status}, </if>
             <if test=" remark != null and remark != '' "> #{remark}, </if>
@@ -154,6 +158,7 @@
         <set>
             `update_time` = #{updateTime}
             <if test=" auditTime != null "> , `audit_time` = #{auditTime} </if>
+            <if test=" auditorId != null "> , `auditor_id` = #{auditorId} </if>
             <if test=" enableTime != null "> , `enable_time` = #{enableTime} </if>
             <if test=" status != null "> , `status` = #{status} </if>
             <if test=" remark != null and remark != '' "> , `remark` = #{remark} </if>
