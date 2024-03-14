@@ -127,6 +127,7 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
         //获取要查询的柜机
         List<Long> cabinetIds = getStaticsCabinetIds(request);
         if (CollectionUtils.isEmpty(cabinetIds)) {
+            log.warn("Merchant power powerData, cabinetIds is empty, uid={}", request.getUid());
             return null;
         }
         
@@ -2099,12 +2100,6 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
         
         // 设置key
         String key = CacheConstant.MERCHANT_PLACE_CABINET_SEARCH_LOCK + uid;
-        if (Objects.nonNull(placeId)) {
-            key = key + placeId;
-            if (Objects.nonNull(cabinetId)) {
-                key = key + cabinetId;
-            }
-        }
         
         // 先从缓存获取，如果未获取到再从数据库获取
         List<Long> cabinetIdList = null;
@@ -2126,18 +2121,29 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
         
         // 2.场地不为null，柜机为null
         if (Objects.nonNull(placeId) && Objects.isNull(cabinetId)) {
+            key = key + placeId;
+            
             List<MerchantPlaceCabinetVO> placeCabinetVOList = this.listCabinetByPlaceId(uid, placeId);
             cabinetIdList = placeCabinetVOList.stream().map(MerchantPlaceCabinetVO::getCabinetId).distinct().collect(Collectors.toList());
         }
         
         // 3. 场地不为null,柜机不为null
         if (Objects.nonNull(placeId) && Objects.nonNull(cabinetId)) {
+            key = key + placeId + cabinetId;
+            
             List<MerchantPlaceCabinetVO> placeCabinetVOList = this.listCabinetByPlaceId(uid, placeId);
             cabinetIdList = placeCabinetVOList.stream().map(MerchantPlaceCabinetVO::getCabinetId).distinct().collect(Collectors.toList());
             
             if (CollectionUtils.isNotEmpty(cabinetIdList) && cabinetIdList.contains(cabinetId)) {
                 cabinetIdList = List.of(cabinetId);
             }
+        }
+        
+        // 4. 场地为null, 柜机不为null
+        if (Objects.isNull(placeId) && Objects.nonNull(cabinetId)) {
+            cabinetIdList = List.of(cabinetId);
+            
+            key = key + cabinetId;
         }
         
         // 存入缓存
