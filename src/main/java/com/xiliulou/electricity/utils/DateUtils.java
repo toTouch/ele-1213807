@@ -339,7 +339,7 @@ public class DateUtils {
         Instant instant = Instant.ofEpochMilli(timestamp);
     
         // 转换为LocalDateTime并设置为当天的开始时间
-        LocalDateTime localDateTime = instant.atZone(ZoneId.systemDefault()).toLocalDate().atStartOfDay();
+        LocalDateTime localDateTime = instant.atZone(CHINA_ZONE_ID).toLocalDate().atStartOfDay();
     
         // 计算当天的最后一刻（即23:59:59.999）
         LocalDateTime endOfDay = localDateTime.plus(1, ChronoUnit.DAYS).minus(1, ChronoUnit.MILLIS);
