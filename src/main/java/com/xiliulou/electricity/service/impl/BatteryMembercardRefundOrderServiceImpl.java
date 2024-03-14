@@ -110,9 +110,6 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
     WechatV3JsapiService wechatV3JsapiService;
     
     @Autowired
-    WxRefundPayService wxRefundPayService;
-    
-    @Autowired
     UserInfoExtraService userInfoExtraService;
 
     @Autowired
