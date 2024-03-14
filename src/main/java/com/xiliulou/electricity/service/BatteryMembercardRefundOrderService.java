@@ -88,4 +88,6 @@ public interface BatteryMembercardRefundOrderService {
     BigDecimal selectUserTotalRefund(Integer tenantId, Long uid);
 
     void sendAuditNotify(UserInfo userInfo);
+    
+    void sendMerchantRebateRefundMQ(Long uid, String orderId);
 }
