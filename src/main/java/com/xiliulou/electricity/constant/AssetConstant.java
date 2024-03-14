@@ -17,6 +17,11 @@ public class AssetConstant {
     public static final Integer ASSET_WAREHOUSE_STATUS_ENABLE = 0;
     
     /**
+     * 默认库房名称
+     */
+    public static final String ASSET_WAREHOUSE_DEFAULT_NAME = "默认库房";
+    
+    /**
      * 库房状态：1-禁用
      */
     public static final Integer ASSET_WAREHOUSE_STATUS_DISABLE = 1;
