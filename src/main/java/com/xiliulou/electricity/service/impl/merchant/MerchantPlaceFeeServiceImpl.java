@@ -192,10 +192,10 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
         
         // 从历史月结账单中统计出对应月份的数据
         List<MerchantPlaceFeeMonth> placeFeeMonths = merchantPlaceFeeMonthService.queryListByMonth(request.getPlaceId(), request.getCabinetId(), xDataList, request.getMerchantId(), request.getTenantId());
-        Map<String, BigDecimal> placeMap = new HashMap<>();
         
+        Map<String, BigDecimal> placeMap = new HashMap<>();
         if (ObjectUtils.isNotEmpty(placeFeeMonths)) {
-            placeMap = placeFeeMonths.stream().collect(Collectors.toMap(MerchantPlaceFeeMonth::getCalculateMonth, MerchantPlaceFeeMonth::getPlaceFee, (key, key1) -> key1));
+            placeMap = placeFeeMonths.stream().filter(item -> Objects.nonNull(item.getPlaceFee())).collect(Collectors.groupingBy(MerchantPlaceFeeMonth::getCalculateMonth, Collectors.collectingAndThen(Collectors.toList(), e -> e.stream().map(MerchantPlaceFeeMonth::getPlaceFee).reduce(BigDecimal.ZERO, BigDecimal::add))));
         }
         
         placeMap.put(lastMoth, lastMothFee);
@@ -215,6 +215,7 @@ public class MerchantPlaceFeeServiceImpl implements MerchantPlaceFeeService {
         
         return vo;
     }
+    
     
     /**
      * 场地费详情
