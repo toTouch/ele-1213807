@@ -50,6 +50,15 @@
             <if test="tenantId != null">
                 and tenant_id = #{tenantId}
             </if>
+            <if test="disableMemberCardNo != null and disableMemberCardNo != ''">
+                and disable_member_card_no = #{disableMemberCardNo}
+            </if>
+            <if test="beginDisableTime != null and beginDisableTime != ''">
+                and disable_time > #{beginDisableTime}
+            </if>
+            <if test="endDisableTime != null and endDisableTime != ''">
+                and disable_time < #{endDisableTime}
+            </if>
         </where>
         order by create_time desc
         limit #{offset}, #{size}

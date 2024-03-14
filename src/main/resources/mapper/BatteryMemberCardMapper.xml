@@ -168,8 +168,11 @@
                     #{id}
                 </foreach>
             </if>
-            <if test="batteryModel != null and batteryModel != ''">
+            <if test="batteryModel != null and batteryModel != '' and batteryModel != '0'">
                 and tmcbt.battery_type = #{batteryModel}
+            </if>
+            <if test="batteryModel == '0'">
+                and tmcbt.mid is null
             </if>
         </where>
         order by id desc
@@ -324,37 +327,44 @@
     <select id="selectByPageCount" resultType="int">
         select
         count(*)
-        from t_battery_member_card
+        from t_battery_member_card tbmc
+        left join t_member_card_battery_type tmcbt on tbmc.id = tmcbt.mid
         <where>
             <if test="businessType != null">
-                and business_type = #{businessType}
+                and tbmc.business_type = #{businessType}
             </if>
             <if test="franchiseeId != null">
-                and franchisee_id = #{franchiseeId}
+                and tbmc.franchisee_id = #{franchiseeId}
             </if>
             <if test="status != null">
-                and status = #{status}
+                and tbmc.status = #{status}
             </if>
             <if test="name != null and name != ''">
-                and name like concat('%',#{name,jdbcType=VARCHAR},'%')
+                and tbmc.name like concat('%',#{name,jdbcType=VARCHAR},'%')
             </if>
             <if test="rentType != null">
-                and rent_type = #{rentType}
+                and tbmc.rent_type = #{rentType}
             </if>
             <if test="rentUnit != null">
-                and rent_unit = #{rentUnit}
+                and tbmc.rent_unit = #{rentUnit}
             </if>
             <if test="tenantId != null">
-                and tenant_id = #{tenantId}
+                and tbmc.tenant_id = #{tenantId}
             </if>
             <if test="delFlag != null">
-                and del_flag = #{delFlag}
+                and tbmc.del_flag = #{delFlag}
             </if>
             <if test="franchiseeIds != null">
-                and franchisee_id in
+                and tbmc.franchisee_id in
                 <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
                     #{id}
                 </foreach>
+            </if>
+            <if test="batteryModel != null and batteryModel != '' and batteryModel != '0'">
+                and tmcbt.battery_type = #{batteryModel}
+            </if>
+            <if test="batteryModel == '0'">
+                and tmcbt.mid is null
             </if>
         </where>
     </select>

@@ -128,7 +128,8 @@ public class JsonAdminBatteryMemberCardController extends BaseController {
     @GetMapping("/admin/battery/memberCard/queryCount")
     public R pageCount(@RequestParam(value = "franchiseeId", required = false) Long franchiseeId, @RequestParam(value = "status", required = false) Integer status,
             @RequestParam(value = "rentType", required = false) Integer rentType, @RequestParam(value = "rentUnit", required = false) Integer rentUnit,
-            @RequestParam(value = "businessType", required = false) Integer businessType, @RequestParam(value = "name", required = false) String name) {
+            @RequestParam(value = "businessType", required = false) Integer businessType, @RequestParam(value = "name", required = false) String name,
+            @RequestParam(value = "batteryModel", required = false) String batteryModel) {
         
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
@@ -140,7 +141,8 @@ public class JsonAdminBatteryMemberCardController extends BaseController {
         }
         
         BatteryMemberCardQuery query = BatteryMemberCardQuery.builder().franchiseeId(franchiseeId).status(status).businessType(businessType == null ? 0 : businessType)
-                .rentType(rentType).rentUnit(rentUnit).name(name).tenantId(TenantContextHolder.getTenantId()).delFlag(BatteryMemberCard.DEL_NORMAL).build();
+                .rentType(rentType).rentUnit(rentUnit).name(name).tenantId(TenantContextHolder.getTenantId()).delFlag(BatteryMemberCard.DEL_NORMAL)
+                .batteryModel(batteryModel).build();
         
         return R.ok(batteryMemberCardService.selectByPageCount(query));
     }

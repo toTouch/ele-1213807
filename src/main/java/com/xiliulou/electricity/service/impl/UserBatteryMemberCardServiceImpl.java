@@ -379,8 +379,9 @@ public class UserBatteryMemberCardServiceImpl implements UserBatteryMemberCardSe
     public Long transforRemainingTime(UserBatteryMemberCard userBatteryMemberCard, BatteryMemberCard batteryMemberCard) {
     
         Long remainingTime = userBatteryMemberCard.getMemberCardExpireTime() - System.currentTimeMillis();
-
-        return Objects.equals(batteryMemberCard.getRentUnit(), BatteryMemberCard.RENT_UNIT_DAY) ? remainingTime / 24 / 60 / 60 / 1000 : remainingTime / 60 / 1000;
+        
+        // 向上取整
+        return Objects.equals(batteryMemberCard.getRentUnit(), BatteryMemberCard.RENT_UNIT_DAY) ? (remainingTime + (24*60*60*1000 - 1)) / 24 / 60 / 60 / 1000 : (remainingTime + (60*1000 - 1)) / 60 / 1000;
     }
     
     private void clearCache(Long uid){

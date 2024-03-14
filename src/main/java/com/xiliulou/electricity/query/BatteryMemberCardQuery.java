@@ -108,7 +108,7 @@ public class BatteryMemberCardQuery {
     private Integer businessType;
     
     /**
-     * 电池短型号
+     * 电池型号
      */
     private String batteryModel;
 

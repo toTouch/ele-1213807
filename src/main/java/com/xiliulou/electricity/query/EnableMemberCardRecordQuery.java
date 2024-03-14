@@ -40,5 +40,19 @@ public class EnableMemberCardRecordQuery {
     private List<Long> storeIds;
 
     private Long uid;
-
+    
+    /**
+     * 冻结的订单编号
+     */
+    private String disableMemberCardNo;
+    
+    /**
+     * 冻结时间范围起始时间
+     */
+    private Long beginDisableTime;
+    
+    /**
+     * 冻结时间范围结束时间
+     */
+    private Long endDisableTime;
 }

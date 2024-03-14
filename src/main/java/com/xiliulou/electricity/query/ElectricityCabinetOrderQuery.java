@@ -59,12 +59,17 @@ public class ElectricityCabinetOrderQuery {
     private List<Long> storeIds;
     
     /**
-     * 区分换电订单中的新老电池编号；0为新，1为旧，null为全部即不区分新旧
-     */
-    private Integer batterySnType;
-    
-    /**
-     * 电池编号
+     * 新旧一起查，电池编号
      */
     private String batterySn;
+    
+    /**
+     * 旧电池编号
+     */
+    private String oldElectricityBatterySn;
+    
+    /**
+     * 新电池编号
+     */
+    private String newElectricityBatterySn;
 }

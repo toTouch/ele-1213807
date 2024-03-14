@@ -75,7 +75,8 @@ public class JsonAdminElectricityCabinetOrderController {
             @RequestParam(value = "paymentMethod", required = false) Integer paymentMethod,
             @RequestParam(value = "electricityCabinetName", required = false) String electricityCabinetName, @RequestParam(value = "oldCellNo", required = false) Integer oldCellNo,
             @RequestParam(value = "uid", required = false) Long uid, @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
-            @RequestParam(value = "batterySnType", required = false) Integer batterySnType, @RequestParam(value = "batterySn", required = false) String batterySn) {
+            @RequestParam(value = "batterySn", required = false) String batterySn, @RequestParam(value = "oldElectricityBatterySn", required = false) String oldElectricityBatterySn,
+            @RequestParam(value = "newElectricityBatterySn", required = false) String newElectricityBatterySn) {
         
         if (size < 0 || size > 50) {
             size = 10L;
@@ -126,7 +127,7 @@ public class JsonAdminElectricityCabinetOrderController {
         ElectricityCabinetOrderQuery electricityCabinetOrderQuery = ElectricityCabinetOrderQuery.builder().offset(offset).size(size).orderId(orderId).phone(phone).status(status)
                 .eid(eid).beginTime(beginTime).endTime(endTime).paymentMethod(paymentMethod).franchiseeIds(franchiseeIds).storeIds(storeIds).source(source)
                 .electricityCabinetName(electricityCabinetName).oldCellNo(oldCellNo).uid(uid).tenantId(TenantContextHolder.getTenantId())
-                .batterySnType(batterySnType).batterySn(batterySn).build();
+                .batterySn(batterySn).oldElectricityBatterySn(oldElectricityBatterySn).newElectricityBatterySn(newElectricityBatterySn).build();
         return electricityCabinetOrderService.queryList(electricityCabinetOrderQuery);
     }
     
