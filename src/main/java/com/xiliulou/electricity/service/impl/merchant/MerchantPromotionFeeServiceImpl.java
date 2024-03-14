@@ -548,8 +548,8 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
                 
                 monthIncomeQueryModel.setStatus(MerchantConstant.MERCHANT_REBATE_STATUS_RETURNED);
                 BigDecimal currentMonthReturnInCome = rebateRecordService.sumByStatus(monthIncomeQueryModel);
-                
-                resultAmount = resultNoSettleAmount.add(currentMonthNoSettleInCome.subtract(currentMonthReturnInCome));
+    
+                resultNoSettleAmount = resultNoSettleAmount.add(currentMonthNoSettleInCome.subtract(currentMonthReturnInCome));
                 log.error("startTime={},endTime={},currentMonthNoSettleInCome={},settleInCome={}",startTime,endTime,currentMonthNoSettleInCome,currentMonthReturnInCome);
             }
             log.error("resultNoSettleAmount={}",resultNoSettleAmount);
