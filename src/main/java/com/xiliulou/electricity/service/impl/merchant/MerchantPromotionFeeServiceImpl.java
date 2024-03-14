@@ -868,11 +868,6 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
             MerchantChannelEmployeeBindHistoryDTO bindHistoryDTO = new MerchantChannelEmployeeBindHistoryDTO();
             BeanUtils.copyProperties(bindHistory, bindHistoryDTO);
             
-            if (Objects.equals(bindHistory.getBindStatus(), MerchantChannelEmployeeBindHistoryConstant.UN_BIND) && !(Objects.nonNull(bindHistory.getUnBindTime())
-                    && bindHistory.getBindTime() >= startTime && bindHistory.getUnBindTime() <= endTime)) {
-                return null;
-            }
-            
             if (Objects.equals(bindHistory.getBindStatus(), MerchantChannelEmployeeBindHistoryConstant.BIND) && bindHistory.getBindTime() >= endTime) {
                 return null;
             }
