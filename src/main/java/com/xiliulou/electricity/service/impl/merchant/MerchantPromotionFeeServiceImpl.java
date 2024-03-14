@@ -889,18 +889,23 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
         }).filter(Objects::nonNull).collect(Collectors.toList());
     }
     
-/*    public static void main(String[] args) {
+    public static void main(String[] args) {
         List<MerchantChannelEmployeeBindHistory> bindHistoryList = Lists.newArrayList();
         bindHistoryList.add(new MerchantChannelEmployeeBindHistory(1L, 1L, 1L, 1, 1704091426000L, 1710408670726L, 1, 1L, 1L));
         bindHistoryList.add(new MerchantChannelEmployeeBindHistory(1L, 1L, 1L, 0, 1710408771697L, null, 1, 1L, 1L));
     
-        List<MerchantChannelEmployeeBindHistoryDTO> historyDTOList = buildStatisticMerchantChannelEmployeeBindHistoryDTO(bindHistoryList,  1710518399999L);
+        List<MerchantChannelEmployeeBindHistoryDTO> todayList = buildMerchantChannelEmployeeBindHistoryDTO(bindHistoryList, DateUtils.getTodayStartTime(),
+                System.currentTimeMillis());
+        List<MerchantChannelEmployeeBindHistoryDTO> yesterdayList = buildMerchantChannelEmployeeBindHistoryDTO(bindHistoryList, DateUtils.getTimeAgoStartTime(1),
+                DateUtils.getTimeAgoEndTime(1));
+        List<MerchantChannelEmployeeBindHistoryDTO> currentMonthList = buildMerchantChannelEmployeeBindHistoryDTO(bindHistoryList, DateUtils.getDayOfMonthStartTime(1),
+                System.currentTimeMillis());
         
         
-        for (MerchantChannelEmployeeBindHistoryDTO dto : historyDTOList) {
+        for (MerchantChannelEmployeeBindHistoryDTO dto : currentMonthList) {
             System.out.println(dto);
         }
-    }*/
+    }
     
     private static List<MerchantChannelEmployeeBindHistoryDTO> buildStatisticMerchantChannelEmployeeBindHistoryDTO(List<MerchantChannelEmployeeBindHistory> bindHistoryList, Long endTime) {
         if (CollectionUtils.isEmpty(bindHistoryList)) {
@@ -960,6 +965,12 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
                     }
                 }
             }
+            
+            log.error("todayList={}",JsonUtil.toJson(todayList));
+            log.error("yesterdayList={}",JsonUtil.toJson(yesterdayList));
+            log.error("currentMonthList={}",JsonUtil.toJson(currentMonthList));
+            log.error("lastMonthList={}",JsonUtil.toJson(lastMonthList));
+            log.error("totalList={}",JsonUtil.toJson(totalList));
             
             //今日扫码人数：扫码绑定时间=今日0点～当前时间；
             merchantPromotionFeeScanCodeVO.setTodayScanCodeNum(buildScanCodeCount(type, uid, DateUtils.getTodayStartTime(), System.currentTimeMillis(), null, todayList));
