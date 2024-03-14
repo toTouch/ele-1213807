@@ -129,4 +129,9 @@ public class MerchantVO {
      */
     private BigDecimal totalCloudBeanAmount;
     
+    /**
+     * 创建时间
+     */
+    private Long createTime;
+    
 }
