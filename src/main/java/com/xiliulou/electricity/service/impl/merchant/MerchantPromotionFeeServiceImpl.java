@@ -565,12 +565,14 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
             MerchantPromotionFeeQueryModel monthIncomeQueryModel = MerchantPromotionFeeQueryModel.builder().status(MerchantConstant.MERCHANT_REBATE_STATUS_NOT_SETTLE).type(type)
                     .uid(uid).tenantId(TenantContextHolder.getTenantId()).rebateStartTime(DateUtils.getDayOfMonthStartTime(1)).rebateEndTime(System.currentTimeMillis()).build();
             BigDecimal currentMonthNoSettleInCome = rebateRecordService.sumByStatus(monthIncomeQueryModel);
-            
-            monthIncomeQueryModel.setStatus(MerchantConstant.MERCHANT_REBATE_STATUS_SETTLED);
-            BigDecimal currentMonthSettleInCome = rebateRecordService.sumByStatus(monthIncomeQueryModel);
-            
+    
             monthIncomeQueryModel.setStatus(MerchantConstant.MERCHANT_REBATE_STATUS_RETURNED);
             BigDecimal currentMonthReturnInCome = rebateRecordService.sumByStatus(monthIncomeQueryModel);
+            
+            MerchantPromotionFeeQueryModel monthSettleIncomeQueryModel = MerchantPromotionFeeQueryModel.builder().status(MerchantConstant.MERCHANT_REBATE_STATUS_SETTLED).type(type)
+                    .uid(uid).tenantId(TenantContextHolder.getTenantId()).settleStartTime(DateUtils.getDayOfMonthStartTime(2)).settleEndTime(System.currentTimeMillis()).build();
+            BigDecimal currentMonthSettleInCome = rebateRecordService.sumByStatus(monthSettleIncomeQueryModel);
+            
             return currentMonthNoSettleInCome.add(currentMonthSettleInCome).subtract(currentMonthReturnInCome);
         }
     }
@@ -720,7 +722,6 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
                 Long queryEndTime = bindHistoryDto.getQueryEndTime();
                 scanCodeQueryModel.setStartTime(queryStartTime);
                 scanCodeQueryModel.setEndTime(queryEndTime);
-                log.error("scanCodeQueryModel={}", JsonUtil.toJson(scanCodeQueryModel));
                 Integer scanCodeByMerchant = merchantJoinRecordService.countByCondition(scanCodeQueryModel);
                 
                 MerchantPromotionEmployeeDetailQueryModel employeeDetailQueryModel = MerchantPromotionEmployeeDetailQueryModel.builder().uid(uid)
@@ -939,12 +940,6 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
                     return bindHistoryDTO;
                 }).collect(Collectors.toList());
             }
-            
-            log.error("todayList={}", JsonUtil.toJson(todayList));
-            log.error("yesterdayList={}", JsonUtil.toJson(yesterdayList));
-            log.error("currentMonthList={}", JsonUtil.toJson(currentMonthList));
-            log.error("lastMonthList={}", JsonUtil.toJson(lastMonthList));
-            log.error("totalList={}", JsonUtil.toJson(totalList));
             
             //今日扫码人数：扫码绑定时间=今日0点～当前时间；
             merchantPromotionFeeScanCodeVO.setTodayScanCodeNum(buildScanCodeCount(type, uid, DateUtils.getTodayStartTime(), System.currentTimeMillis(), null, todayList));
