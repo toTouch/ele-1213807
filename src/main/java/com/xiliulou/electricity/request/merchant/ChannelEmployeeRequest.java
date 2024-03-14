@@ -47,7 +47,6 @@ public class ChannelEmployeeRequest {
      * 渠道员电话
      */
     @Size(min = 11, max = 15, message = "员工手机号不合法", groups = {CreateGroup.class, UpdateGroup.class})
-    @Pattern(regexp = "^((13[0-9])|(14[0-9])|(15[0-9])|(16[0-9])|(17[0-9])|(18[0-9])|(19[0-9]))\\d{8}$", message="手机号格式不合法", groups = {CreateGroup.class})
     @NotNull(message = "联系方式不能为空", groups = {CreateGroup.class, UpdateGroup.class})
     private String phone;
     
