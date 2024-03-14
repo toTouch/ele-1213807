@@ -151,15 +151,16 @@ public class MerchantTokenServiceImpl implements MerchantTokenService {
                 // 查看是否有绑定的第三方信息,如果没有绑定创建一个
                 Pair<Boolean, List<UserOauthBind>> thirdOauthBindList = wxProThirdAuthenticationService.checkOpenIdExists(result.getOpenid(), tenantId);
                 if (!thirdOauthBindList.getLeft()) {
+                    UserOauthBind oauthBind = UserOauthBind.builder().createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis())
+                            .phone(wxMinProPhoneResultDTO.getPurePhoneNumber()).uid(e.getUid()).accessToken("").refreshToken("").thirdNick("").tenantId(tenantId)
+                            .thirdId(result.getOpenid()).source(UserOauthBind.SOURCE_WX_PRO).status(UserOauthBind.STATUS_BIND).build();
+                    userOauthBindService.insert(oauthBind);
+                } else {
                     UserOauthBind userOauthBind = userOauthBindService.queryUserOauthBySysId(e.getUid(), tenantId);
                     if (ObjectUtils.isNotEmpty(userOauthBind) && !result.getOpenid().equals(userOauthBind.getThirdId())) {
                         log.warn("merchant token login warning. the uid is bind third id. uid is {}", e.getUid());
                         throw new CustomBusinessException("当前登录账号异常，请联系客服处理");
                     }
-                    UserOauthBind oauthBind = UserOauthBind.builder().createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis())
-                            .phone(wxMinProPhoneResultDTO.getPurePhoneNumber()).uid(e.getUid()).accessToken("").refreshToken("").thirdNick("").tenantId(tenantId)
-                            .thirdId(result.getOpenid()).source(UserOauthBind.SOURCE_WX_PRO).status(UserOauthBind.STATUS_BIND).build();
-                    userOauthBindService.insert(oauthBind);
                 }
                 
                 String token = jwtTokenManager.createTokenV2(e.getUserType(),
