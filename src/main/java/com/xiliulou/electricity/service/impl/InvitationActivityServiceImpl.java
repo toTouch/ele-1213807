@@ -4,17 +4,28 @@ import cn.hutool.core.util.ObjectUtil;
 import com.google.common.collect.Lists;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
+import com.xiliulou.core.thread.XllThreadPoolExecutors;
+import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.constant.TimeConstant;
-import com.xiliulou.electricity.entity.*;
+import com.xiliulou.electricity.entity.BatteryMemberCard;
+import com.xiliulou.electricity.entity.InvitationActivity;
+import com.xiliulou.electricity.entity.InvitationActivityJoinHistory;
+import com.xiliulou.electricity.entity.InvitationActivityMemberCard;
+import com.xiliulou.electricity.entity.InvitationActivityUser;
+import com.xiliulou.electricity.entity.ShareActivity;
 import com.xiliulou.electricity.entity.car.CarRentalPackagePo;
 import com.xiliulou.electricity.enums.PackageTypeEnum;
 import com.xiliulou.electricity.mapper.InvitationActivityMapper;
 import com.xiliulou.electricity.query.InvitationActivityQuery;
 import com.xiliulou.electricity.query.InvitationActivityStatusQuery;
-import com.xiliulou.electricity.service.*;
+import com.xiliulou.electricity.service.BatteryMemberCardService;
+import com.xiliulou.electricity.service.InvitationActivityJoinHistoryService;
+import com.xiliulou.electricity.service.InvitationActivityMemberCardService;
+import com.xiliulou.electricity.service.InvitationActivityService;
+import com.xiliulou.electricity.service.InvitationActivityUserService;
 import com.xiliulou.electricity.service.car.CarRentalPackageService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
@@ -38,6 +49,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
 import java.util.stream.Collectors;
 
 /**
@@ -69,6 +81,8 @@ public class InvitationActivityServiceImpl implements InvitationActivityService 
 
     @Autowired
     private CarRentalPackageService carRentalPackageService;
+    
+    ExecutorService executorService = XllThreadPoolExecutors.newFixedThreadPool("shareActivityHandlerExecutor", 1, "SHARE_ACTIVITY_HANDLER_EXECUTOR");
 
     @Override
     public List<InvitationActivity> selectBySearch(InvitationActivityQuery query) {
@@ -540,6 +554,41 @@ public class InvitationActivityServiceImpl implements InvitationActivityService 
         }).collect(Collectors.toList());
     
         return Triple.of(true, null, collect);
+    }
+    
+    /**
+     * <p>
+     *    Description: delete
+     *    9. 活动管理-套餐返现活动里面的套餐配置记录想能够手动删除
+     * </p>
+     * @param id id 主键id
+     * @return com.xiliulou.core.web.R<?>
+     * <p>Project: saas-electricity</p>
+     * <p>Copyright: Copyright (c) 2024</p>
+     * <p>Company: www.xiliulou.com</p>
+     * <a herf="https://benyun.feishu.cn/wiki/GrNjwBNZkipB5wkiws2cmsEDnVU#UH1YdEuCwojVzFxtiK6c3jltneb"></a>
+     * @author <a href="mailto:wxblifeng@163.com">PeakLee</a>
+     * @since V1.0 2024/3/14
+     */
+    @Override
+    public R<?> delete(Long id) {
+        InvitationActivity invitationActivity = this.queryByIdFromCache(id);
+        if (Objects.isNull(invitationActivity)) {
+            log.error("delete Activity  ERROR! not found Activity ! ActivityId:{} ", id);
+            return R.fail("ELECTRICITY.0069", "未找到活动");
+        }
+        int count = this.invitationActivityMapper.removeById(id,TenantContextHolder.getTenantId().longValue());
+        if (Objects.equals(invitationActivity.getStatus(),ShareActivity.STATUS_OFF)){
+            return R.ok(count);
+        }
+        DbUtils.dbOperateSuccessThenHandleCache(Math.toIntExact(id),(identifier)->{
+            redisService.delete(CacheConstant.CACHE_INVITATION_ACTIVITY+identifier);
+        });
+        executorService.submit(()->{
+            //修改邀请状态
+            invitationActivityJoinHistoryService.updateStatusByActivityId(id, InvitationActivityJoinHistory.STATUS_OFF);
+        });
+        return R.ok(count);
     }
     
     private List<BatteryMemberCardVO> getBatteryPackages(Long activityId) {

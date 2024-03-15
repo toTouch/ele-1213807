@@ -5,6 +5,7 @@ import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.google.common.collect.Lists;
 import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.CommonConstant;
@@ -41,6 +42,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.ExecutorService;
 
 /**
  * 活动表(TActivity)表服务实现类
@@ -89,7 +91,11 @@ public class ShareMoneyActivityServiceImpl implements ShareMoneyActivityService 
 
     @Autowired
     private JoinShareMoneyActivityHistoryService joinShareMoneyActivityHistoryService;
-
+    
+    
+    
+    ExecutorService executorService = XllThreadPoolExecutors.newFixedThreadPool("shareActivityHandlerExecutor", 1, "SHARE_ACTIVITY_HANDLER_EXECUTOR");
+    
     /**
      * 通过ID查询单条数据从缓存
      *
@@ -608,5 +614,52 @@ public class ShareMoneyActivityServiceImpl implements ShareMoneyActivityService 
         return shareMoneyActivityMapper.existShareMoneyActivity(tenantId);
     }
     
+    
+    /**
+     * <p>
+     *    Description: delete
+     *    9. 活动管理-套餐返现活动里面的套餐配置记录想能够手动删除
+     * </p>
+     * @param id id 主键id
+     * @return com.xiliulou.core.web.R<?>
+     * <p>Project: saas-electricity</p>
+     * <p>Copyright: Copyright (c) 2024</p>
+     * <p>Company: www.xiliulou.com</p>
+     * <a herf="https://benyun.feishu.cn/wiki/GrNjwBNZkipB5wkiws2cmsEDnVU#UH1YdEuCwojVzFxtiK6c3jltneb"></a>
+     * @author <a href="mailto:wxblifeng@163.com">PeakLee</a>
+     * @since V1.0 2024/3/14
+     */
+    @Override
+    public R<?> delete(Long id) {
+        ShareMoneyActivity shareMoneyActivity = this.queryByIdFromCache(Math.toIntExact(id));
+        if (Objects.isNull(shareMoneyActivity)) {
+            log.error("delete Activity  ERROR! not found Activity ! ActivityId:{} ", id);
+            return R.fail("ELECTRICITY.0069", "未找到活动");
+        }
+        int count = this.shareMoneyActivityMapper.removeById(id,TenantContextHolder.getTenantId().longValue());
+        
+        DbUtils.dbOperateSuccessThenHandleCache(Math.toIntExact(id),(identifier)->{
+            redisService.delete(CacheConstant.SHARE_MONEY_ACTIVITY_CACHE+identifier);
+        });
+        if (Objects.equals(shareMoneyActivity.getStatus(),ShareActivity.STATUS_OFF)){
+            return R.ok(count);
+        }
+        executorService.submit(()->{
+            //修改邀请状态
+            JoinShareMoneyActivityRecord joinShareMoneyActivityRecord = new JoinShareMoneyActivityRecord();
+            joinShareMoneyActivityRecord.setStatus(JoinShareMoneyActivityRecord.STATUS_OFF);
+            joinShareMoneyActivityRecord.setUpdateTime(System.currentTimeMillis());
+            joinShareMoneyActivityRecord.setActivityId(Math.toIntExact(id));
+            joinShareMoneyActivityRecordService.updateByActivityId(joinShareMoneyActivityRecord);
+    
+            //修改历史记录状态
+            JoinShareMoneyActivityHistory joinShareMoneyActivityHistory = new JoinShareMoneyActivityHistory();
+            joinShareMoneyActivityHistory.setStatus(JoinShareMoneyActivityHistory.STATUS_OFF);
+            joinShareMoneyActivityHistory.setUpdateTime(System.currentTimeMillis());
+            joinShareMoneyActivityHistory.setActivityId(Math.toIntExact(id));
+            joinShareMoneyActivityHistoryService.updateByActivityId(joinShareMoneyActivityHistory);
+        });
+        return R.ok(count);
+    }
 }
 

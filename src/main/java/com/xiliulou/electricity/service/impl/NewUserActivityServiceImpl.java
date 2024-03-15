@@ -306,5 +306,33 @@ public class NewUserActivityServiceImpl implements NewUserActivityService {
 	public NewUserActivity selectByCouponId(Long id) {
 		return newUserActivityMapper.selectByCouponId(id);
 	}
+	
+	/**
+	 * <p>
+	 *    Description: delete
+	 *    9. 活动管理-套餐返现活动里面的套餐配置记录想能够手动删除
+	 * </p>
+	 * @param id id 主键id
+	 * @return com.xiliulou.core.web.R<?>
+	 * <p>Project: saas-electricity</p>
+	 * <p>Copyright: Copyright (c) 2024</p>
+	 * <p>Company: www.xiliulou.com</p>
+	 * <a herf="https://benyun.feishu.cn/wiki/GrNjwBNZkipB5wkiws2cmsEDnVU#UH1YdEuCwojVzFxtiK6c3jltneb"></a>
+	 * @author <a href="mailto:wxblifeng@163.com">PeakLee</a>
+	 * @since V1.0 2024/3/14
+	 */
+    @Override
+    public R<?> delete(Long id) {
+	    NewUserActivity oldNewUserActivity = queryByIdFromCache(Math.toIntExact(id));
+	    if (Objects.isNull(oldNewUserActivity)) {
+		    log.error("update Activity  ERROR! not found Activity ! ActivityId={} ", id);
+		    return R.fail("ELECTRICITY.0069", "未找到活动");
+	    }
+		int count = this.newUserActivityMapper.removeById(id,TenantContextHolder.getTenantId().longValue());
+		DbUtils.dbOperateSuccessThenHandleCache(Math.toIntExact(id),(identification)->{
+			redisService.delete(CacheConstant.NEW_USER_ACTIVITY_CACHE + identification);
+		});
+        return R.ok(count);
+    }
 }
 

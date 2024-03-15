@@ -90,6 +90,11 @@
         </set>
         where id = #{id}
     </update>
+    <!--9. 活动管理-套餐返现活动里面的套餐配置记录想能够手动删除 start-->
+    <delete id="removeById">
+        update t_share_money_activity set `del_flg` = 1,`status`=2 where `del_flg` = 0 and `tenant_id` = #{tenantId} and `id` = #{id};
+    </delete>
+    <!--9. 活动管理-套餐返现活动里面的套餐配置记录想能够手动删除 end-->
     
     <select id="existShareMoneyActivity"  resultType="java.lang.Integer">
         select 1 from t_share_money_activity where del_flg=0 and tenant_id = #{tenantId} and status =1 limit 1

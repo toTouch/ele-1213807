@@ -2,6 +2,7 @@ package com.xiliulou.electricity.controller.admin;
 
 import cn.hutool.json.JSONUtil;
 import com.xiliulou.core.controller.BaseController;
+import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
@@ -256,5 +257,34 @@ public class JsonAdminShareActivityController extends BaseController {
         
         return shareActivityService.checkExistActivity();
     }
-
+    
+    /**
+     * <p>
+     *    Description: delete
+     *    9. 活动管理-套餐返现活动里面的套餐配置记录想能够手动删除
+     * </p>
+     * @param id id 主键id
+     * @return com.xiliulou.core.web.R<?>
+     * <p>Project: saas-electricity</p>
+     * <p>Copyright: Copyright (c) 2024</p>
+     * <p>Company: www.xiliulou.com</p>
+     * <a herf="https://benyun.feishu.cn/wiki/GrNjwBNZkipB5wkiws2cmsEDnVU#UH1YdEuCwojVzFxtiK6c3jltneb"></a>
+     * @author <a href="mailto:wxblifeng@163.com">PeakLee</a>
+     * @since V1.0 2024/3/14
+     */
+    @GetMapping("/admin/shareActivity/delete")
+    public R<?> delete(@RequestParam("id") Long id){
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELECTRICITY  ERROR! not found user ");
+            throw new CustomBusinessException("未找到用户!");
+        }
+        if (Objects.isNull(id)){
+            return R.fail("ELECTRICITY.0007", "不合法的参数");
+        }
+        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
+            return R.fail("ELECTRICITY.0066", "用户权限不足");
+        }
+        return shareActivityService.delete(id);
+    }
 }
