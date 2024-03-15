@@ -875,6 +875,15 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
                 return null;
             }
             
+            if (Objects.equals(bindHistory.getBindStatus(), MerchantChannelEmployeeBindHistoryConstant.UN_BIND)) {
+                if (Objects.nonNull(startTime) && bindHistory.getBindTime() > endTime) {
+                    return null;
+                }
+                if (Objects.nonNull(endTime) && bindHistory.getUnBindTime() < startTime) {
+                    return null;
+                }
+            }
+            
             if (bindHistory.getBindTime() >= startTime) {
                 bindHistoryDTO.setQueryStartTime(bindHistory.getBindTime());
             } else {
