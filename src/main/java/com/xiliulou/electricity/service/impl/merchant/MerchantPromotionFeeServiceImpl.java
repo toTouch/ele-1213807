@@ -601,7 +601,7 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
             return R.ok();
         }
         
-        dataDetailVOList = merchantJoinRecords.parallelStream().map(merchantJoinRecord -> {
+        dataDetailVOList = merchantJoinRecords.stream().map(merchantJoinRecord -> {
             MerchantPromotionDataDetailVO vo = new MerchantPromotionDataDetailVO();
             UserInfo userInfo = userInfoService.queryByUidFromCache(merchantJoinRecord.getJoinUid());
             if (Objects.nonNull(userInfo)) {

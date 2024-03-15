@@ -190,4 +190,24 @@
         ORDER BY c.id desc
         limit #{offset}, #{size}
     </select>
+    
+    <select id="selectByIdList" resultType="com.xiliulou.electricity.entity.merchant.MerchantPlace">
+        SELECT
+         id,
+        `name`
+        FROM
+        t_merchant_place
+        <where>
+            <if test="tenantId != null">
+                tenant_id = #{tenantId}
+            </if>
+        
+            <if test="idList != null and idList.size() > 0">
+                AND id IN
+                <foreach collection="idList" separator="," open="(" close=")" item="id">
+                    #{id}
+                </foreach>
+            </if>
+        </where>
+    </select>
 </mapper>

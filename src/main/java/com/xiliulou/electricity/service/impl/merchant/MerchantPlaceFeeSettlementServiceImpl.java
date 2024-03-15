@@ -24,6 +24,7 @@ import com.xiliulou.electricity.vo.merchant.MerchantPlaceFeeMonthRecordExportVO;
 import com.xiliulou.electricity.vo.merchant.MerchantPlaceFeeMonthSummaryRecordVO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
@@ -35,6 +36,7 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -73,6 +75,17 @@ public class MerchantPlaceFeeSettlementServiceImpl implements MerchantPlaceFeeSe
         // 根据场地id分组 并monthPlaceFee求和
         Map<Long, List<MerchantPlaceFeeMonthRecord>> placeIdListMap = merchantPlaceFeeMonthRecords.stream().filter(item -> Objects.nonNull(item.getPlaceId()))
                 .collect(Collectors.groupingBy(MerchantPlaceFeeMonthRecord::getPlaceId));
+    
+        Map<Long, String> placeNameMap = new HashMap<>();
+        
+        if (ObjectUtils.isNotEmpty(placeIdListMap)) {
+            List<Long> placeIdList = new ArrayList<>(placeIdListMap.keySet());
+            List<MerchantPlace> placeList = merchantPlaceService.queryByIdList(placeIdList, TenantContextHolder.getTenantId());
+            
+            if (ObjectUtils.isNotEmpty(placeList)) {
+                placeNameMap = placeList.stream().collect(toMap(MerchantPlace::getId, MerchantPlace::getName, (key, key1) -> key1));
+            }
+        }
         
         List<MerchantPlaceFeeMonthRecordDTO> recordDTOList = Lists.newArrayList();
         
@@ -100,6 +113,8 @@ public class MerchantPlaceFeeSettlementServiceImpl implements MerchantPlaceFeeSe
         
         // recordDTOList转map
         Map<Long, MerchantPlaceFeeMonthRecordDTO> recordMap = recordDTOList.stream().collect(toMap(MerchantPlaceFeeMonthRecordDTO::getPlaceId, item -> item));
+    
+        Map<Long, String> finalPlaceNameMap = placeNameMap;
         
         resultVOs = merchantPlaceFeeMonthRecords.parallelStream().map(merchantPlaceFeeMonthRecord -> {
             MerchantPlaceFeeMonthRecordExportVO exportVO = new MerchantPlaceFeeMonthRecordExportVO();
@@ -111,9 +126,9 @@ public class MerchantPlaceFeeSettlementServiceImpl implements MerchantPlaceFeeSe
                     Objects.nonNull(merchantPlaceFeeMonthRecord.getRentEndTime()) ? DateUtils.getYearAndMonthAndDayByTimeStamps(merchantPlaceFeeMonthRecord.getRentEndTime())
                             : null);
             Long recordPlaceId = merchantPlaceFeeMonthRecord.getPlaceId();
-            MerchantPlace merchantPlace = merchantPlaceService.queryByIdFromCache(recordPlaceId);
-            if (Objects.nonNull(merchantPlace)) {
-                exportVO.setPlaceName(merchantPlace.getName());
+            
+            if (ObjectUtils.isNotEmpty(finalPlaceNameMap.get(recordPlaceId))) {
+                exportVO.setPlaceName(finalPlaceNameMap.get(recordPlaceId));
             }
             
             if (Objects.nonNull(merchantPlaceFeeMonthRecord.getPlaceId())) {
