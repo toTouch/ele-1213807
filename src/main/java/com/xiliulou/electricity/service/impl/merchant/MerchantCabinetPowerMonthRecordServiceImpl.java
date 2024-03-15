@@ -171,8 +171,14 @@ public class MerchantCabinetPowerMonthRecordServiceImpl implements MerchantCabin
                         }
                     }
                     
+                    // 查询场地
+                    MerchantPlace merchantPlace = merchantPlaceService.queryByIdFromCache(item.getPlaceId());
+                    if(Objects.isNull(merchantPlace)) {
+                        merchantPlace = merchantPlaceService.queryHistoryById(item.getPlaceId());
+                    }
+    
                     MerchantCabinetPowerMonthExcelVO excelVO = MerchantCabinetPowerMonthExcelVO.builder().monthDate(monthDate)
-                            .placeName(Optional.ofNullable(merchantPlaceService.queryByIdFromCache(item.getPlaceId())).orElse(new MerchantPlace()).getName())
+                            .placeName(Optional.ofNullable(merchantPlace).orElse(new MerchantPlace()).getName())
                             .monthSumPower(monthSumPower).monthSumCharge(monthSumCharge).endPower(item.getEndPower()).sumCharge(item.getSumCharge()).endTime(endDate)
                             .beginTime(beginDate).startPower(item.getStartPower()).sumPower(item.getSumPower()).jsonRule(elePrice).sn(item.getSn()).build();
                     
@@ -189,9 +195,15 @@ public class MerchantCabinetPowerMonthRecordServiceImpl implements MerchantCabin
             
                 String beginDate = DateUtils.getYearAndMonthAndDayByTimeStamps(item.getBeginTime());
                 String endDate = DateUtils.getYearAndMonthAndDayByTimeStamps(item.getEndTime());
-            
+    
+                // 查询场地
+                MerchantPlace merchantPlace = merchantPlaceService.queryByIdFromCache(item.getPlaceId());
+                if(Objects.isNull(merchantPlace)) {
+                    merchantPlace = merchantPlaceService.queryHistoryById(item.getPlaceId());
+                }
+                
                 MerchantCabinetPowerMonthExcelVO excelVO = MerchantCabinetPowerMonthExcelVO.builder().monthDate(monthDate)
-                        .placeName(Optional.ofNullable(merchantPlaceService.queryByIdFromCache(item.getPlaceId())).orElse(new MerchantPlace()).getName()).endTime(endDate)
+                        .placeName(Optional.ofNullable(merchantPlace).orElse(new MerchantPlace()).getName()).endTime(endDate)
                         .beginTime(beginDate).build();
             
                 excelVOList.add(excelVO);

@@ -38,4 +38,9 @@ public interface MerchantPlaceService {
     List<MerchantPlaceVO> queryListPlace(MerchantPlacePageRequest merchantPlacePageRequest);
     
     Triple<Boolean, String, Object> queryById(Long id);
+    
+    /**
+     *  根据id查询场地（包含已逻辑删除的）
+     */
+    MerchantPlace queryHistoryById(Long id);
 }

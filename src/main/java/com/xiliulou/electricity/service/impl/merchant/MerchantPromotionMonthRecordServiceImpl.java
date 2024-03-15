@@ -184,9 +184,15 @@ public class MerchantPromotionMonthRecordServiceImpl implements MerchantPromotio
                         default:
                             break;
                     }
-                    
+    
+                    // 查询商户
+                    Merchant merchant = merchantService.queryByIdFromCache(item.getMerchantId());
+                    if (Objects.isNull(merchant)) {
+                        merchant = merchantService.queryHistoryById(item.getMerchantId());
+                    }
+    
                     MerchantPromotionMonthExcelVO excelVO = MerchantPromotionMonthExcelVO.builder().monthDate(monthDate)
-                            .merchantName(Optional.ofNullable(merchantService.queryByIdFromCache(item.getMerchantId())).orElse(new Merchant()).getName())
+                            .merchantName(Optional.ofNullable(merchant).orElse(new Merchant()).getName())
                             .monthFirstMoney(monthFirstMoney).monthRenewMoney(monthRenewMoney)
                             .inviterName(Optional.ofNullable(userService.queryByUidFromCache(item.getInviterUid())).orElse(new User()).getName()).typeName(typeName)
                             .dayMoney(dayMoney).date(item.getDate()).build();
@@ -201,9 +207,15 @@ public class MerchantPromotionMonthRecordServiceImpl implements MerchantPromotio
         List<MerchantPromotionDayRecordVO> emptyDetailList = detailList.stream().filter(item -> Objects.equals(item.getMoney(), BigDecimal.ZERO)).collect(Collectors.toList());
         if (CollectionUtils.isNotEmpty(emptyDetailList)) {
             emptyDetailList.forEach(item -> {
+    
+                // 查询商户
+                Merchant merchant = merchantService.queryByIdFromCache(item.getMerchantId());
+                if (Objects.isNull(merchant)) {
+                    merchant = merchantService.queryHistoryById(item.getMerchantId());
+                }
             
                 MerchantPromotionMonthExcelVO excelVO = MerchantPromotionMonthExcelVO.builder().monthDate(monthDate)
-                        .merchantName(Optional.ofNullable(merchantService.queryByIdFromCache(item.getMerchantId())).orElse(new Merchant()).getName()).date(item.getDate()).build();
+                        .merchantName(Optional.ofNullable(merchant).orElse(new Merchant()).getName()).date(item.getDate()).build();
             
                 excelVOList.add(excelVO);
             });
