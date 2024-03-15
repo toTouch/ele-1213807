@@ -166,7 +166,7 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
             String[] split = decrypt.split(String.valueOf(StrUtil.C_COLON));
             if (ArrayUtils.isEmpty(split) || split.length != NumberConstant.THREE) {
                 log.error("MERCHANT JOIN ERROR! illegal code! code={}, joinUid={}", code, joinUid);
-                return R.fail("100463", "二维码已失效");
+                return R.fail("120105", "该二维码暂时无法使用,请稍后再试");
             }
             
             String merchantIdStr = split[NumberConstant.ZERO];
@@ -206,12 +206,12 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
             User inviterUser = userService.queryByUidFromDB(inviterUid);
             if (Objects.isNull(inviterUser)) {
                 log.error("MERCHANT JOIN ERROR! not found inviterUser, inviterUid={}", inviterUid);
-                return R.fail(false, "ELECTRICITY.0024", "用户已被禁用");
+                return R.fail("120105", "该二维码暂时无法使用,请稍后再试");
             }
             
             if (inviterUser.isLock()) {
                 log.error("MERCHANT JOIN ERROR! inviterUser locked, inviterUid={}", inviterUid);
-                return R.fail(false, "120105", "该二维码暂时无法使用,请稍后再试");
+                return R.fail("120105", "该二维码暂时无法使用,请稍后再试");
             }
             
             // 扫自己码
