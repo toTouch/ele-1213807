@@ -2,7 +2,6 @@ package com.xiliulou.electricity.service.merchant;
 
 import com.xiliulou.electricity.dto.merchant.MerchantDeleteCacheDTO;
 import com.xiliulou.electricity.entity.merchant.Merchant;
-import com.xiliulou.electricity.query.merchant.MerchantPromotionFeeMerchantNumQueryModel;
 import com.xiliulou.electricity.request.merchant.MerchantPageRequest;
 import com.xiliulou.electricity.request.merchant.MerchantSaveRequest;
 import com.xiliulou.electricity.vo.merchant.MerchantPlaceSelectVO;
@@ -59,5 +58,5 @@ public interface MerchantService {
     /**
      * 根据id查询商户（包含已逻辑删除的）
      */
-    Merchant queryHistoryById(Long id);
+    Merchant queryByIdFromDB(Long id);
 }

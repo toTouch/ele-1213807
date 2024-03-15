@@ -47,4 +47,6 @@ public interface UserMapper extends BaseMapper<User> {
     Integer batchRemoveByUidList(@Param("uidList") List<Long> uidList,@Param("updateTime") long updateTime);
     
     List<User> queryListByUidList(@Param("uidList") List<Long> uidList,@Param("tenantId") Integer tenantId);
+    
+    User selectByUid(Long uid);
 }

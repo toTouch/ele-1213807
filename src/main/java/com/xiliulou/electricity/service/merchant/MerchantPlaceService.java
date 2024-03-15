@@ -42,5 +42,5 @@ public interface MerchantPlaceService {
     /**
      *  根据id查询场地（包含已逻辑删除的）
      */
-    MerchantPlace queryHistoryById(Long id);
+    MerchantPlace queryByIdFromDB(Long id);
 }
