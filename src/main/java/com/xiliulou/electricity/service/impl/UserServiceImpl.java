@@ -511,6 +511,12 @@ public class UserServiceImpl implements UserService {
         return userMapper.queryListByUidList(employeeUidList, tenantId);
     }
     
+    @Slave
+    @Override
+    public User queryByUidFromDB(Long uid) {
+        return userMapper.selectByUid(uid);
+    }
+    
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Pair<Boolean, Object> updateAdminUser(AdminUserQuery adminUserQuery) {

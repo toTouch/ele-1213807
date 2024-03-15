@@ -100,7 +100,13 @@
         select
             <include refid="column"/>
         from t_merchant
-        where id=#{id}
+        where id=#{id} and del_flag = 0
+    </select>
+    
+    <select id="selectHistoryById" resultType="com.xiliulou.electricity.entity.merchant.Merchant">
+        select <include refid="column"/>
+        from t_merchant
+        where id = #{id}
     </select>
     
     <sql id="pageFilter">

@@ -142,4 +142,6 @@ public interface UserService {
     Integer batchRemoveByUidList(List<Long> employeeUidList, long timeMillis);
     
     List<User> queryListByUidList(List<Long> employeeUidList, Integer tenantId);
+    
+    User queryByUidFromDB(Long uid);
 }
