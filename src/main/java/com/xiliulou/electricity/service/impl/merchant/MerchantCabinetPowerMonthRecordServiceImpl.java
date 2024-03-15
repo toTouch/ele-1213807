@@ -118,7 +118,8 @@ public class MerchantCabinetPowerMonthRecordServiceImpl implements MerchantCabin
         }
         
         // sumPower不为0的数据
-        List<MerchantCabinetPowerMonthDetailVO> hasDataDetailList = detailList.stream().filter(item -> !Objects.equals(item.getSumPower(), NumberConstant.ZERO_D)).collect(Collectors.toList());
+        List<MerchantCabinetPowerMonthDetailVO> hasDataDetailList = detailList.stream().filter(item -> !Objects.equals(item.getSumPower(), NumberConstant.ZERO_D))
+                .collect(Collectors.toList());
         
         // 按场地进行分组
         Map<Long, List<MerchantCabinetPowerMonthDetailVO>> placeMap = hasDataDetailList.stream().collect(Collectors.groupingBy(MerchantCabinetPowerMonthDetailVO::getPlaceId));
@@ -172,13 +173,8 @@ public class MerchantCabinetPowerMonthRecordServiceImpl implements MerchantCabin
                     }
                     
                     // 查询场地
-                    MerchantPlace merchantPlace = merchantPlaceService.queryByIdFromCache(item.getPlaceId());
-                    if(Objects.isNull(merchantPlace)) {
-                        merchantPlace = merchantPlaceService.queryHistoryById(item.getPlaceId());
-                    }
-    
                     MerchantCabinetPowerMonthExcelVO excelVO = MerchantCabinetPowerMonthExcelVO.builder().monthDate(monthDate)
-                            .placeName(Optional.ofNullable(merchantPlace).orElse(new MerchantPlace()).getName())
+                            .placeName(Optional.ofNullable(merchantPlaceService.queryByIdFromDB(item.getPlaceId())).orElse(new MerchantPlace()).getName())
                             .monthSumPower(monthSumPower).monthSumCharge(monthSumCharge).endPower(item.getEndPower()).sumCharge(item.getSumCharge()).endTime(endDate)
                             .beginTime(beginDate).startPower(item.getStartPower()).sumPower(item.getSumPower()).jsonRule(elePrice).sn(item.getSn()).build();
                     
@@ -186,26 +182,20 @@ public class MerchantCabinetPowerMonthRecordServiceImpl implements MerchantCabin
                 });
             }
         });
-    
+        
         // sumPower为0的数据
         List<MerchantCabinetPowerMonthDetailVO> emptyDetailList = detailList.stream().filter(item -> Objects.equals(item.getSumPower(), NumberConstant.ZERO_D))
                 .collect(Collectors.toList());
         if (CollectionUtils.isNotEmpty(emptyDetailList)) {
             emptyDetailList.forEach(item -> {
-            
+                
                 String beginDate = DateUtils.getYearAndMonthAndDayByTimeStamps(item.getBeginTime());
                 String endDate = DateUtils.getYearAndMonthAndDayByTimeStamps(item.getEndTime());
-    
-                // 查询场地
-                MerchantPlace merchantPlace = merchantPlaceService.queryByIdFromCache(item.getPlaceId());
-                if(Objects.isNull(merchantPlace)) {
-                    merchantPlace = merchantPlaceService.queryHistoryById(item.getPlaceId());
-                }
                 
                 MerchantCabinetPowerMonthExcelVO excelVO = MerchantCabinetPowerMonthExcelVO.builder().monthDate(monthDate)
-                        .placeName(Optional.ofNullable(merchantPlace).orElse(new MerchantPlace()).getName()).endTime(endDate)
+                        .placeName(Optional.ofNullable(merchantPlaceService.queryByIdFromDB(item.getPlaceId())).orElse(new MerchantPlace()).getName()).endTime(endDate)
                         .beginTime(beginDate).build();
-            
+                
                 excelVOList.add(excelVO);
             });
         }
@@ -230,7 +220,7 @@ public class MerchantCabinetPowerMonthRecordServiceImpl implements MerchantCabin
                     // 注意：需要先调用registerWriteHandler()再调用sheet()方法才能使合并策略生效！！！
                     .sheet("场地电费出账记录").doWrite(getData(request));
         } catch (Exception e) {
-            log.error("导出报表失败！", e);
+            log.error("Merchant power exportExcel error!", e);
         }
     }
     

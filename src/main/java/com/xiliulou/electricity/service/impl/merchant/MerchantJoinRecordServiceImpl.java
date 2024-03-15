@@ -203,7 +203,7 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
             }
             
             // 判断邀请人是否存在或被禁用
-            User inviterUser = userService.queryByUidFromCache(inviterUid);
+            User inviterUser = userService.queryByUidFromDB(inviterUid);
             if (Objects.isNull(inviterUser)) {
                 log.error("MERCHANT JOIN ERROR! not found inviterUser, inviterUid={}", inviterUid);
                 return R.fail(false, "ELECTRICITY.0024", "用户已被禁用");

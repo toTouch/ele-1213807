@@ -497,7 +497,7 @@ public class MerchantPlaceServiceImpl implements MerchantPlaceService {
     
     @Slave
     @Override
-    public MerchantPlace queryHistoryById(Long id) {
+    public MerchantPlace queryByIdFromDB(Long id) {
         return merchantPlaceMapper.selectHistoryById(id);
     }
     

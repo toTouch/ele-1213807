@@ -1319,7 +1319,7 @@ public class MerchantServiceImpl implements MerchantService {
     
     @Slave
     @Override
-    public Merchant queryHistoryById(Long id) {
+    public Merchant queryByIdFromDB(Long id) {
         return merchantMapper.selectHistoryById(id);
     }
 }
