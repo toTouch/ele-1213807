@@ -3,6 +3,7 @@ package com.xiliulou.electricity.service.impl.merchant;
 import cn.hutool.core.util.StrUtil;
 import com.google.common.collect.Lists;
 import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.http.resttemplate.service.RestTemplateService;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.constant.CacheConstant;
@@ -28,6 +29,8 @@ import com.xiliulou.security.bean.TokenUser;
 import io.jsonwebtoken.lang.Collections;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,6 +50,7 @@ import java.util.stream.Collectors;
 @Service
 @Slf4j
 public class MerchantTokenServiceImpl implements MerchantTokenService {
+    
     
     @Autowired
     private UserService userService;
@@ -137,7 +141,6 @@ public class MerchantTokenServiceImpl implements MerchantTokenService {
 
             log.info("userBindBusinessDTOS:{} notLockerUser:{}", userBindBusinessDTOS, notLockUsers);
             
-            
             List<User> merchantUser = users.stream().filter((user -> User.TYPE_USER_MERCHANT.equals(user.getUserType()) || User.TYPE_USER_CHANNEL.equals(user.getUserType())))
                     .collect(Collectors.toList());
             
@@ -147,22 +150,25 @@ public class MerchantTokenServiceImpl implements MerchantTokenService {
                 }
 
                 // 查看是否有绑定的第三方信息,如果没有绑定创建一个
-                Pair<Boolean, List<UserOauthBind>> openIdExistsResult = wxProThirdAuthenticationService.checkOpenIdExists(result.getOpenid(), tenantId);
-                if (!openIdExistsResult.getLeft()) {
+                Pair<Boolean, List<UserOauthBind>> thirdOauthBindList = wxProThirdAuthenticationService.checkOpenIdExists(result.getOpenid(), tenantId);
+                if (!thirdOauthBindList.getLeft()) {
+                    List<UserOauthBind> userOauthBindByUidList = userOauthBindService.queryListByUid(e.getUid());
+                    if (CollectionUtils.isNotEmpty(userOauthBindByUidList) && userOauthBindByUidList.stream().anyMatch(n -> !result.getOpenid().equals(n.getThirdId()))) {
+                        log.warn("merchant token login warning. the uid is bind other third id. uid is {}", e.getUid());
+                        throw new CustomBusinessException("当前登录账号异常，请联系客服处理");
+                    }
                     UserOauthBind oauthBind = UserOauthBind.builder().createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis())
                             .phone(wxMinProPhoneResultDTO.getPurePhoneNumber()).uid(e.getUid()).accessToken("").refreshToken("").thirdNick("").tenantId(tenantId)
                             .thirdId(result.getOpenid()).source(UserOauthBind.SOURCE_WX_PRO).status(UserOauthBind.STATUS_BIND).build();
                     userOauthBindService.insert(oauthBind);
                 } else {
-                    List<UserOauthBind> existsOauthBinds = openIdExistsResult.getRight();
-                    //如果查出来的绑定信息中没有当前用户的绑定信息,则创建一个
-                    if (existsOauthBinds.stream().noneMatch(userOauthBind -> userOauthBind.getUid().equals(e.getUid()))) {
-                        UserOauthBind oauthBind = UserOauthBind.builder().createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis())
-                                .phone(wxMinProPhoneResultDTO.getPurePhoneNumber()).uid(e.getUid()).accessToken("").refreshToken("").thirdNick("").tenantId(tenantId)
-                                .thirdId(result.getOpenid()).source(UserOauthBind.SOURCE_WX_PRO).status(UserOauthBind.STATUS_BIND).build();
-                        userOauthBindService.insert(oauthBind);
+                    UserOauthBind userOauthBind = userOauthBindService.queryUserOauthBySysId(e.getUid(), tenantId);
+                    if (ObjectUtils.isNotEmpty(userOauthBind) && !result.getOpenid().equals(userOauthBind.getThirdId())) {
+                        log.warn("merchant token login warning. the uid is bind other third id. uid is {}", e.getUid());
+                        throw new CustomBusinessException("当前登录账号异常，请联系客服处理");
                     }
                 }
+                
                 String token = jwtTokenManager.createTokenV2(e.getUserType(),
                         new TokenUser(e.getUid(), e.getPhone(), e.getName(), e.getUserType(), e.getDataType(), e.getTenantId()), System.currentTimeMillis());
 

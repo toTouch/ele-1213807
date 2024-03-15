@@ -54,7 +54,7 @@ public interface MerchantJoinRecordMapper extends BaseMapper<MerchantJoinRecord>
     Integer existMerchantInviterData(@Param("inviterType") Integer inviterType, @Param("inviterUid") Long inviterUid, @Param("tenantId") Integer tenantId);
     
     Integer countEmployeeScanCodeNum(@Param("uidList") List<Long> employeeIdList, @Param("startTime") Long startTime, @Param("endTime") Long endTime,
-            @Param("status") Integer status, @Param("tenantId") Integer tenantId);
+            @Param("status") Integer status, @Param("tenantId") Integer tenantId,@Param("channelEmployeeUid") Long channelEmployeeUid);
     
     List<MerchantJoinRecord> selectListAllPromotionDataDetail(MerchantAllPromotionDataDetailQueryModel query);
     

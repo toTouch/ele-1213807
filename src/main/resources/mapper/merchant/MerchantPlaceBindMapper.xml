@@ -18,7 +18,8 @@
     <update id="batchUnBind">
         update t_merchant_place_bind
            set type = 1,
-            un_bind_time = #{updateTime}
+            un_bind_time = #{updateTime},
+            update_time = #{updateTime}
          <where>
              merchant_id = #{merchantId}
              and type = 0

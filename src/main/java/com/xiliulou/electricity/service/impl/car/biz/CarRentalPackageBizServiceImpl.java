@@ -1,19 +1,33 @@
 package com.xiliulou.electricity.service.impl.car.biz;
 
 import com.xiliulou.core.web.R;
-import com.xiliulou.electricity.entity.*;
+import com.xiliulou.electricity.entity.BatteryMemberCard;
+import com.xiliulou.electricity.entity.Coupon;
+import com.xiliulou.electricity.entity.Franchisee;
+import com.xiliulou.electricity.entity.UserCoupon;
+import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.car.CarRentalPackageCarBatteryRelPo;
 import com.xiliulou.electricity.entity.car.CarRentalPackageDepositPayPo;
 import com.xiliulou.electricity.entity.car.CarRentalPackageMemberTermPo;
 import com.xiliulou.electricity.entity.car.CarRentalPackagePo;
-import com.xiliulou.electricity.enums.*;
+import com.xiliulou.electricity.enums.ApplicableTypeEnum;
+import com.xiliulou.electricity.enums.DelFlagEnum;
+import com.xiliulou.electricity.enums.MemberTermStatusEnum;
+import com.xiliulou.electricity.enums.RentalPackageTypeEnum;
+import com.xiliulou.electricity.enums.UpDownEnum;
+import com.xiliulou.electricity.enums.YesNoEnum;
 import com.xiliulou.electricity.enums.basic.BasicEnum;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.model.car.opt.CarRentalPackageOptModel;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageQryModel;
 import com.xiliulou.electricity.query.CouponQuery;
 import com.xiliulou.electricity.query.car.CarRentalPackageQryReq;
-import com.xiliulou.electricity.service.*;
+import com.xiliulou.electricity.service.BatteryMemberCardService;
+import com.xiliulou.electricity.service.CouponActivityPackageService;
+import com.xiliulou.electricity.service.CouponService;
+import com.xiliulou.electricity.service.FranchiseeService;
+import com.xiliulou.electricity.service.UserCouponService;
+import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.car.CarRentalPackageCarBatteryRelService;
 import com.xiliulou.electricity.service.car.CarRentalPackageDepositPayService;
 import com.xiliulou.electricity.service.car.CarRentalPackageMemberTermService;
@@ -31,7 +45,14 @@ import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.StringJoiner;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -402,7 +423,7 @@ public class CarRentalPackageBizServiceImpl implements CarRentalPackageBizServic
             return Triple.of(amount, null, true) ;
         }
 
-        List<Integer> couponIdList = userCoupons.stream().map(UserCoupon::getCouponId).distinct().collect(Collectors.toList());
+        List<Integer> couponIdList = userCoupons.stream().map(UserCoupon::getCouponId).collect(Collectors.toList());
         List<Long> couponIds = couponIdList.stream().map(Long::valueOf).collect(Collectors.toList());
 
         // 查询优惠券信息
@@ -412,17 +433,26 @@ public class CarRentalPackageBizServiceImpl implements CarRentalPackageBizServic
             throw new BizException(couponResult.getErrMsg());
         }
 
-        List<Coupon> couponList = (List<Coupon>) couponResult.getData();
-
+        List<Coupon> couponQryList = (List<Coupon>) couponResult.getData();
+        Map<Integer, Coupon> couponQryMap = couponQryList.stream().collect(Collectors.toMap(Coupon::getId, Function.identity(), (k1, k2) -> k2));
+        // 定义一个本地的要使用的优惠券集合, 存在使用同一张优惠券
+        List<Coupon> couponUseList = new ArrayList<>();
+        couponIds.forEach(couponId -> {
+            Integer couponIdTmp = Integer.valueOf(couponId.toString());
+            if (couponQryMap.containsKey(couponIdTmp)) {
+                couponUseList.add(couponQryMap.get(couponIdTmp));
+            }
+        });
+        
         // 按照优惠券是否可叠加分组
-        Map<Integer, List<Coupon>> superpositionMap = couponList.stream().collect(Collectors.groupingBy(Coupon::getSuperposition));
+        Map<Integer, List<Coupon>> superpositionMap = couponUseList.stream().collect(Collectors.groupingBy(Coupon::getSuperposition));
         if (superpositionMap.size() == 2 || (superpositionMap.size() == 1 && superpositionMap.containsKey(Coupon.SUPERPOSITION_NO) && superpositionMap.get(Coupon.SUPERPOSITION_NO).size() > 1)) {
             throw new BizException("300034", "使用优惠券有误");
         }
 
         // 校验优惠券的使用，是否指定这个套餐
         // 1-租电 2-租车 3-车电一体
-        Boolean valid = couponActivityPackageService.checkPackageIsValid(couponList, packageId, packageType);
+        Boolean valid = couponActivityPackageService.checkPackageIsValid(couponUseList, packageId, packageType);
         if (!valid) {
             throw new BizException("300034", "使用优惠券有误");
         }
@@ -431,7 +461,7 @@ public class CarRentalPackageBizServiceImpl implements CarRentalPackageBizServic
         List<Long> userCouponIdList = userCoupons.stream().map(UserCoupon::getId).distinct().collect(Collectors.toList());
 
         // 计算总共减免金额
-        BigDecimal discountAmount = couponList.stream().map(coupon -> ObjectUtils.isEmpty(coupon.getAmount()) ? new BigDecimal(0) : coupon.getAmount())
+        BigDecimal discountAmount = couponUseList.stream().map(coupon -> ObjectUtils.isEmpty(coupon.getAmount()) ? new BigDecimal(0) : coupon.getAmount())
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
         if (discountAmount.compareTo(amount) >= 0) {
             return Triple.of(BigDecimal.ZERO, userCouponIdList, true) ;

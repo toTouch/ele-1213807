@@ -48,9 +48,14 @@ public interface MerchantJoinRecordService {
     Integer countByMerchantIdAndStatus(Long merchantId, Integer status);
     
     /**
-     * 定时任务：保护期状态和有效期状态
+     * 定时任务：保护期状态
      */
-    void handelProtectionAndStartExpired();
+    void handelProtectionStatus();
+    
+    /**
+     * 定时任务：有效期状态
+     */
+    void handelExpiredStatus();
     
     Integer updateById(MerchantJoinRecord record);
     
@@ -93,7 +98,7 @@ public interface MerchantJoinRecordService {
      */
     boolean existMerchantAllInviterData(Long merchantId, Integer tenantId);
     
-    Integer countEmployeeScanCodeNum(List<Long> uidList, Long startTime, Long endTime, Integer status, Integer tenantId);
+    Integer countEmployeeScanCodeNum(List<Long> uidList, Long startTime, Long endTime, Integer status, Integer tenantId,Long channelEmployeeUid);
     
     List<MerchantJoinRecord> selectListAllPromotionDataDetail(MerchantAllPromotionDataDetailQueryModel queryModel);
     

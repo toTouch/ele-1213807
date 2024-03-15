@@ -107,13 +107,13 @@ public class MerchantPlaceCabinetBindServiceImpl implements MerchantPlaceCabinet
         }
         
         // 检测开始时间是否小于上个月的月初
-        /*Long lastMonthDaytime = getLastMonthDay();
+        Long lastMonthDaytime = getLastMonthDay();
         if (placeCabinetBindSaveRequest.getBindTime() < lastMonthDaytime) {
             log.error("place bind error, bind time less than last month day time, placeId ={}, bindTime={}, lastMonthDaytime={}", placeCabinetBindSaveRequest.getPlaceId(),
                     placeCabinetBindSaveRequest.getBindTime(), lastMonthDaytime);
             
             return Triple.of(false, "120221", "开始时间只可选择当月（包含当前时间，不得晚于当前时间），及上月时间");
-        }*/
+        }
         
         long currentTimeMillis = System.currentTimeMillis();
         if (placeCabinetBindSaveRequest.getBindTime() > currentTimeMillis) {
@@ -234,16 +234,16 @@ public class MerchantPlaceCabinetBindServiceImpl implements MerchantPlaceCabinet
         if (placeCabinetBindSaveRequest.getUnBindTime() < cabinetBind.getBindTime()) {
             log.error("place un bind error, cabinet already un bind, id ={}, unBindTime={},bindTime={}", placeCabinetBindSaveRequest.getId(),
                     placeCabinetBindSaveRequest.getUnBindTime(), cabinetBind.getBindTime());
-            return Triple.of(false, "120231", "结束时间不能早于绑定时间");
+            return Triple.of(false, "120231", "结束时间不能早于开始时间");
         }
         
         // 检测开始时间是否小于上个月的月初
-    /*    Long lastMonthDaytime = getLastMonthDay();
+        Long lastMonthDaytime = getLastMonthDay();
         if (placeCabinetBindSaveRequest.getUnBindTime() < lastMonthDaytime) {
             log.error("place bind error, bind time less than last month day time, placeId ={}, unBindTime={}, lastMonthDaytime={}", placeCabinetBindSaveRequest.getPlaceId(),
                     placeCabinetBindSaveRequest.getUnBindTime(), lastMonthDaytime);
             return Triple.of(false, "120221", "开始时间只可选择当月（包含当前时间，不得晚于当前时间），及上月时间");
-        }*/
+        }
         
         // 判断绑定的时间是否与解绑的历史数据存在重叠
         List<Long> placeIdList = new ArrayList<>();

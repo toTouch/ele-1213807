@@ -50,4 +50,8 @@ public class NumberConstant {
     public static final BigDecimal ZERO_BD = BigDecimal.valueOf(0);
     
     public static final BigDecimal ONE_HUNDRED_BD = BigDecimal.valueOf(100);
+    
+    public static final BigDecimal TWENTY_FIVE_DB = BigDecimal.valueOf(25);
+    
+    public static final BigDecimal SEVENTY_FIVE_DB = BigDecimal.valueOf(75);
 }
