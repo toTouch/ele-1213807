@@ -136,6 +136,8 @@ public class MerchantPromotionMonthRecordServiceImpl implements MerchantPromotio
         // 不为0的数据
         List<MerchantPromotionDayRecordVO> hasDataDetailList = detailList.stream().filter(item -> !Objects.equals(item.getMoney(), BigDecimal.ZERO)).collect(Collectors.toList());
         
+        log.info("商户推广费，有数据={}",hasDataDetailList);
+        
         // excelVOList 按merchantId进行分组
         Map<Long, List<MerchantPromotionDayRecordVO>> detailMap = hasDataDetailList.stream().collect(Collectors.groupingBy(MerchantPromotionDayRecordVO::getMerchantId));
         
@@ -205,6 +207,9 @@ public class MerchantPromotionMonthRecordServiceImpl implements MerchantPromotio
     
         // 为0的数据
         List<MerchantPromotionDayRecordVO> emptyDetailList = detailList.stream().filter(item -> Objects.equals(item.getMoney(), BigDecimal.ZERO)).collect(Collectors.toList());
+    
+        log.info("商户推广费，无数据={}",emptyDetailList);
+        
         if (CollectionUtils.isNotEmpty(emptyDetailList)) {
             emptyDetailList.forEach(item -> {
     
