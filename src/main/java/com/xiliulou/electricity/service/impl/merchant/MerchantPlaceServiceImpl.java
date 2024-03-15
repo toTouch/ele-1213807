@@ -497,6 +497,12 @@ public class MerchantPlaceServiceImpl implements MerchantPlaceService {
     
     @Slave
     @Override
+    public List<MerchantPlace> queryByIdList(List<Long> placeIdList, Integer tenantId) {
+        return merchantPlaceMapper.selectByIdList(placeIdList, tenantId);
+    }
+    
+    @Slave
+    @Override
     public MerchantPlace queryByIdFromDB(Long id) {
         return merchantPlaceMapper.selectHistoryById(id);
     }
