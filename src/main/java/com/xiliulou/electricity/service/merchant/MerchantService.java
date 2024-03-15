@@ -55,4 +55,9 @@ public interface MerchantService {
     void deleteCacheById(Long id);
     
     Integer batchUpdateExistPlaceFee(List<Long> merchantIdList, Integer existsPlaceFeeYes, Long currentTimeMillis);
+    
+    /**
+     * 根据id查询商户（包含已逻辑删除的）
+     */
+    Merchant queryHistoryById(Long id);
 }

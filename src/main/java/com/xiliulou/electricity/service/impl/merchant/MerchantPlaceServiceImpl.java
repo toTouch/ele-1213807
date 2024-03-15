@@ -495,4 +495,10 @@ public class MerchantPlaceServiceImpl implements MerchantPlaceService {
         return Triple.of(true, "", merchantPlaceUpdateShowVO);
     }
     
+    @Slave
+    @Override
+    public MerchantPlace queryHistoryById(Long id) {
+        return merchantPlaceMapper.selectHistoryById(id);
+    }
+    
 }
