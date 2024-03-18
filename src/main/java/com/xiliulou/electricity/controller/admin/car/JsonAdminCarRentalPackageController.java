@@ -409,7 +409,7 @@ public class JsonAdminCarRentalPackageController extends BasicController {
      * @param sortParamQueries
      * @return
      */
-    @PutMapping("/admin/battery/memberCard/batchUpdateSortParam")
+    @PostMapping("/batchUpdateSortParam")
     public R batchUpdateSortParam(@RequestBody @Validated List<MemberCardAndCarRentalPackageSortParamQuery> sortParamQueries) {
     
         TokenUser user = SecurityUtils.getUserInfo();
