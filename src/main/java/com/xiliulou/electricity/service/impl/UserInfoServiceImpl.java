@@ -29,6 +29,7 @@ import com.xiliulou.electricity.entity.EleAuthEntry;
 import com.xiliulou.electricity.entity.EleDepositOrder;
 import com.xiliulou.electricity.entity.EleDisableMemberCardRecord;
 import com.xiliulou.electricity.entity.EleUserAuth;
+import com.xiliulou.electricity.entity.EleUserEsignRecord;
 import com.xiliulou.electricity.entity.EleUserOperateHistory;
 import com.xiliulou.electricity.entity.EleUserOperateRecord;
 import com.xiliulou.electricity.entity.ElectricityBattery;
@@ -81,6 +82,7 @@ import com.xiliulou.electricity.service.EleBatteryServiceFeeOrderService;
 import com.xiliulou.electricity.service.EleDepositOrderService;
 import com.xiliulou.electricity.service.EleDisableMemberCardRecordService;
 import com.xiliulou.electricity.service.EleUserAuthService;
+import com.xiliulou.electricity.service.EleUserEsignRecordService;
 import com.xiliulou.electricity.service.EleUserOperateHistoryService;
 import com.xiliulou.electricity.service.EleUserOperateRecordService;
 import com.xiliulou.electricity.service.ElectricityBatteryService;
@@ -367,6 +369,9 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     
     @Autowired
     EleUserOperateHistoryService eleUserOperateHistoryService;
+    
+    @Autowired
+    EleUserEsignRecordService eleUserEsignRecordService;
     
     /**
      * 分页查询
@@ -2058,6 +2063,13 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         if (Objects.nonNull(enterpriseChannelUserVO)) {
             vo.setEnterpriseChannelUserInfo(enterpriseChannelUserVO);
         }
+        
+        // 设置电子签名信息
+        EleUserEsignRecord eleUserEsignRecord = eleUserEsignRecordService.queryUserEsignRecordFromDB(userInfo.getUid(), Long.valueOf(TenantContextHolder.getTenantId()));
+        vo.setSignFlowId(eleUserEsignRecord.getSignFlowId());
+        vo.setSignFinishStatus(Objects.isNull(eleUserEsignRecord) ? 2 :
+                (Objects.equals(1, eleUserEsignRecord.getSignFinishStatus()) ? 1 : 0));
+        
         
         // 根据openId判断是否可解绑微信
         UserOauthBind userOauthBind = userOauthBindService.selectByUidAndPhone(vo.getPhone(), uid, TenantContextHolder.getTenantId());

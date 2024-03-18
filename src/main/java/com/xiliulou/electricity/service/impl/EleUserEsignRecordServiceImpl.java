@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.service.impl;
 
+import com.xiliulou.electricity.entity.EleUserEsignRecord;
 import com.xiliulou.electricity.mapper.EleUserEsignRecordMapper;
 import com.xiliulou.electricity.query.EleUserEsignRecordQuery;
 import com.xiliulou.electricity.service.EleUserEsignRecordService;
@@ -9,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * @author: Kenneth
@@ -34,5 +36,14 @@ public class EleUserEsignRecordServiceImpl implements EleUserEsignRecordService 
     public Integer queryCount(EleUserEsignRecordQuery eleUserEsignRecordQuery) {
         return eleUserEsignRecordMapper.selectByPageCount(eleUserEsignRecordQuery);
     }
-
+    
+    @Override
+    public EleUserEsignRecord queryUserEsignRecordFromDB(Long uid, Long tenantId) {
+        
+        if (Objects.isNull(uid)) {
+            return null;
+        }
+        
+        return eleUserEsignRecordMapper.selectLatestEsignRecordByUser(uid, tenantId);
+    }
 }
