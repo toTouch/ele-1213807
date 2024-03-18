@@ -18,6 +18,7 @@ import com.xiliulou.electricity.entity.ElectricityCarModel;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.Picture;
 import com.xiliulou.electricity.entity.Store;
+import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.enums.asset.AssetTypeEnum;
 import com.xiliulou.electricity.mapper.asset.AssetAllocateRecordMapper;
@@ -40,15 +41,18 @@ import com.xiliulou.electricity.service.ElectricityCarService;
 import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.PictureService;
 import com.xiliulou.electricity.service.StoreService;
+import com.xiliulou.electricity.service.UserDataScopeService;
 import com.xiliulou.electricity.service.asset.AssetAllocateDetailService;
 import com.xiliulou.electricity.service.asset.AssetAllocateRecordService;
 import com.xiliulou.electricity.service.asset.AssetInventoryService;
 import com.xiliulou.electricity.service.asset.ElectricityCabinetV2Service;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.OrderIdUtil;
+import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.ElectricityBatteryVO;
 import com.xiliulou.electricity.vo.asset.AssetAllocateDetailVO;
 import com.xiliulou.electricity.vo.asset.AssetAllocateRecordVO;
+import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.BeanUtils;
@@ -114,6 +118,9 @@ public class AssetAllocateRecordServiceImpl implements AssetAllocateRecordServic
     
     @Autowired
     private PictureService pictureService;
+    
+    @Autowired
+    private UserDataScopeService userDataScopeService;
     
     @Override
     public R save(AssetAllocateRecordRequest assetAllocateRecordRequest, Long uid) {
@@ -437,6 +444,16 @@ public class AssetAllocateRecordServiceImpl implements AssetAllocateRecordServic
         BeanUtil.copyProperties(allocateRecordPageRequest, queryModel);
         queryModel.setTenantId(TenantContextHolder.getTenantId());
         
+        List<Long> franchiseeIds = null;
+        TokenUser userInfo = SecurityUtils.getUserInfo();
+        if (Objects.equals(userInfo.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            franchiseeIds = userDataScopeService.selectDataIdByUid(userInfo.getUid());
+            if (org.springframework.util.CollectionUtils.isEmpty(franchiseeIds)) {
+                return Collections.EMPTY_LIST;
+            }
+        }
+        queryModel.setFranchiseeIds(franchiseeIds);
+        
         List<AssetAllocateRecordBO> allocateRecordBOList = assetAllocateRecordMapper.selectListByPage(queryModel);
         if (CollectionUtils.isNotEmpty(allocateRecordBOList)) {
             rspList = allocateRecordBOList.stream().map(item -> {
@@ -485,6 +502,16 @@ public class AssetAllocateRecordServiceImpl implements AssetAllocateRecordServic
         AssetAllocateRecordPageQueryModel queryModel = new AssetAllocateRecordPageQueryModel();
         BeanUtil.copyProperties(allocateRecordPageRequest, queryModel);
         queryModel.setTenantId(TenantContextHolder.getTenantId());
+        
+        List<Long> franchiseeIds = null;
+        TokenUser userInfo = SecurityUtils.getUserInfo();
+        if (Objects.equals(userInfo.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            franchiseeIds = userDataScopeService.selectDataIdByUid(userInfo.getUid());
+            if (org.springframework.util.CollectionUtils.isEmpty(franchiseeIds)) {
+                return NumberConstant.ZERO;
+            }
+        }
+        queryModel.setFranchiseeIds(franchiseeIds);
         
         return assetAllocateRecordMapper.countTotal(queryModel);
     }
