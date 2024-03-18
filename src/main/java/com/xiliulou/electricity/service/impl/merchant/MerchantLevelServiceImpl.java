@@ -113,8 +113,13 @@ public class MerchantLevelServiceImpl implements MerchantLevelService {
             BeanUtils.copyProperties(item, merchantLevelVO);
             if (StringUtils.isNotBlank(item.getRule())) {
                 MerchantLevelDTO merchantLevelDTO = JsonUtil.fromJson(item.getRule(), MerchantLevelDTO.class);
-                merchantLevelVO.setRenewalUserCount(Objects.nonNull(merchantLevelDTO) ? merchantLevelDTO.getRenewalUserCount() : 0);
-                merchantLevelVO.setInvitationUserCount(Objects.nonNull(merchantLevelDTO) ? merchantLevelDTO.getInvitationUserCount() : 0);
+                if (Objects.nonNull(merchantLevelDTO)) {
+                    merchantLevelVO.setRenewalUserCount(merchantLevelDTO.getRenewalUserCount());
+                    merchantLevelVO.setInvitationUserCount(merchantLevelDTO.getInvitationUserCount());
+                } else {
+                    merchantLevelVO.setRenewalUserCount(0L);
+                    merchantLevelVO.setInvitationUserCount(0L);
+                }
             }
             
             return merchantLevelVO;
@@ -217,7 +222,19 @@ public class MerchantLevelServiceImpl implements MerchantLevelService {
             }
         
             if (Objects.nonNull(request.getInvitationUserCount()) || Objects.nonNull(request.getRenewalUserCount())) {
-                merchantLevelUpdate.setRule(JsonUtil.toJson(new MerchantLevelDTO(request.getInvitationUserCount(), request.getRenewalUserCount())));
+                MerchantLevelDTO merchantLevelDTO = new MerchantLevelDTO();
+                MerchantLevelDTO oldMerchantLevel = JsonUtil.fromJson(merchantLevel.getRule(), MerchantLevelDTO.class);
+                BeanUtils.copyProperties(oldMerchantLevel, merchantLevelDTO);
+                
+                if(Objects.nonNull(request.getInvitationUserCount())){
+                    merchantLevelDTO.setInvitationUserCount(request.getInvitationUserCount());
+                }
+    
+                if(Objects.nonNull(request.getRenewalUserCount())){
+                    merchantLevelDTO.setRenewalUserCount(request.getRenewalUserCount());
+                }
+                
+                merchantLevelUpdate.setRule(JsonUtil.toJson(merchantLevelDTO));
             }
         }
     
