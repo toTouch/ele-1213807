@@ -1,17 +1,13 @@
 package com.xiliulou.electricity.service.impl;
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
+import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
+import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.DepositProtocol;
-import com.xiliulou.electricity.entity.UserNotice;
 import com.xiliulou.electricity.mapper.DepositProtocolMapper;
-import com.xiliulou.electricity.mapper.UserNoticeMapper;
 import com.xiliulou.electricity.query.DepositProtocolQuery;
-import com.xiliulou.electricity.query.UserNoticeQuery;
 import com.xiliulou.electricity.service.DepositProtocolService;
-import com.xiliulou.electricity.service.UserNoticeService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.vo.DepositProtocolVO;
 import org.apache.commons.collections4.CollectionUtils;
@@ -31,53 +27,60 @@ import java.util.Objects;
 
 @Service
 public class DepositProtocolServiceImpl implements DepositProtocolService {
-
-	@Resource
-	DepositProtocolMapper depositProtocolMapper;
-
-	@Slave
-	@Override
-	public R queryDepositProtocol() {
-		//tenant
-		Integer tenantId = TenantContextHolder.getTenantId();
-
-		//3.0 中为了fix 查询时存在多条记录的bug
-		DepositProtocol query = new DepositProtocol();
-		query.setTenantId(tenantId);
-
-		List<DepositProtocol> protocolList = depositProtocolMapper.selectByQuery(query);
-		DepositProtocolVO depositProtocolVO = new DepositProtocolVO();
-		if(CollectionUtils.isNotEmpty(protocolList) && protocolList.size() > 0){
-			DepositProtocol depositProtocol = protocolList.get(0);
-			BeanUtils.copyProperties(depositProtocol, depositProtocolVO);
-			return R.ok(depositProtocolVO);
-		}
-
-		//DepositProtocol depositProtocol = depositProtocolMapper.selectOne(new LambdaQueryWrapper<DepositProtocol>().eq(DepositProtocol::getTenantId, tenantId));
-		return R.ok(depositProtocolVO);
-	}
-
-
-
-	@Override
-	public Triple<Boolean, String, Object> update(DepositProtocolQuery depositProtocolQuery) {
-		if (Objects.isNull(depositProtocolQuery.getId())) {
-	
-			DepositProtocol depositProtocol = new DepositProtocol();
-			depositProtocol.setContent(depositProtocolQuery.getContent());
-			depositProtocol.setCreateTime(System.currentTimeMillis());
-			depositProtocol.setUpdateTime(System.currentTimeMillis());
-			depositProtocol.setTenantId(TenantContextHolder.getTenantId());
-			depositProtocolMapper.insert(depositProtocol);
-		} else {
-
-			DepositProtocol depositProtocol = new DepositProtocol();
-			depositProtocol.setId(depositProtocolQuery.getId());
-			depositProtocol.setContent(depositProtocolQuery.getContent());
-			depositProtocol.setUpdateTime(System.currentTimeMillis());
-			depositProtocol.setTenantId(TenantContextHolder.getTenantId());
-			depositProtocolMapper.update(depositProtocol);
-		}
-		return Triple.of(true, null, null);
-	}
+    
+    @Resource
+    DepositProtocolMapper depositProtocolMapper;
+    
+    @Resource
+    private RedisService redisService;
+    
+    @Slave
+    @Override
+    public R queryDepositProtocol() {
+        //tenant
+        Integer tenantId = TenantContextHolder.getTenantId();
+        
+        //3.0 中为了fix 查询时存在多条记录的bug
+        DepositProtocol query = new DepositProtocol();
+        query.setTenantId(tenantId);
+        
+        List<DepositProtocol> protocolList = depositProtocolMapper.selectByQuery(query);
+        DepositProtocolVO depositProtocolVO = new DepositProtocolVO();
+        if (CollectionUtils.isNotEmpty(protocolList) && protocolList.size() > 0) {
+            DepositProtocol depositProtocol = protocolList.get(0);
+            BeanUtils.copyProperties(depositProtocol, depositProtocolVO);
+            return R.ok(depositProtocolVO);
+        }
+        
+        //DepositProtocol depositProtocol = depositProtocolMapper.selectOne(new LambdaQueryWrapper<DepositProtocol>().eq(DepositProtocol::getTenantId, tenantId));
+        return R.ok(depositProtocolVO);
+    }
+    
+    
+    @Override
+    public Triple<Boolean, String, Object> update(DepositProtocolQuery depositProtocolQuery, Long uid) {
+        boolean result = redisService.setNx(CacheConstant.CACHE_USER_DEPOSIT_PROTOCOL_UPDATE_LOCK + uid, "1", 2 * 1000L, false);
+        if (!result) {
+            return Triple.of(false, "ELECTRICITY.0034", "操作频繁");
+        }
+    
+        if (Objects.isNull(depositProtocolQuery.getId())) {
+        
+            DepositProtocol depositProtocol = new DepositProtocol();
+            depositProtocol.setContent(depositProtocolQuery.getContent());
+            depositProtocol.setCreateTime(System.currentTimeMillis());
+            depositProtocol.setUpdateTime(System.currentTimeMillis());
+            depositProtocol.setTenantId(TenantContextHolder.getTenantId());
+            depositProtocolMapper.insert(depositProtocol);
+        } else {
+        
+            DepositProtocol depositProtocol = new DepositProtocol();
+            depositProtocol.setId(depositProtocolQuery.getId());
+            depositProtocol.setContent(depositProtocolQuery.getContent());
+            depositProtocol.setUpdateTime(System.currentTimeMillis());
+            depositProtocol.setTenantId(TenantContextHolder.getTenantId());
+            depositProtocolMapper.update(depositProtocol);
+        }
+        return Triple.of(true, null, null);
+    }
 }

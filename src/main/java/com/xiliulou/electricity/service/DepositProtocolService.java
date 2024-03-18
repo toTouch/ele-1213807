@@ -15,6 +15,6 @@ public interface DepositProtocolService {
     R queryDepositProtocol();
 
 
-    Triple<Boolean, String, Object> update(DepositProtocolQuery depositProtocolQuery);
+    Triple<Boolean, String, Object> update(DepositProtocolQuery depositProtocolQuery, Long uid);
 
 }

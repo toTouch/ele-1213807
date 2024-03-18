@@ -555,7 +555,16 @@ public interface CacheConstant {
     
     String CACHE_TENANT_NOTE = "cache_tenant_note:";
     
-    
-
     String CACHE_BATCH_SEND_COUPON = "cache_batch_send_coupon:";
+    
+    String CACHE_USER_NOTICE_UPDATE_LOCK = "cache_user_notice_update_lock:";
+    String CACHE_USER_DEPOSIT_PROTOCOL_UPDATE_LOCK = "cache_user_deposit_protocol_update_lock:";
+    String CACHE_USER_ORDER_PROTOCOL_UPDATE_LOCK = "cache_user_order_protocol_update_lock:";
+    String CACHE_USER_CAR_RENTAL_REFUND_PROTOCOL_UPDATE_LOCK = "cache_user_car_rental_refund_protocol_update_lock:";
+    String CACHE_USER_MEMBER_CARD_DISABLE_LOCK = "cache_user_member_card_disable_lock:";
+    String CACHE_USER_MEMBER_CARD_ENABLE_LOCK = "cache_user_member_card_enable_lock:";
+    String CACHE_USER_CLEAN_BATTERY_SERVICE_FEE_LOCK = "cache_user_clean_battery_service_fee_lock:";
+    String CACHE_USER_ADD_USER_DEPOSIT_MEMBER_CARD_LOCK = "cache_user_add_user_deposit_member_card_lock:";
+    String CACHE_USER_MEMBER_CARD_EDIT_LOCK = "cache_user_member_card_edit_lock:";
+    String CACHE_USER_BATTERY_MEMBER_CARD_RENEWAL_LOCK = "cache_user_battery_member_card_renewal_lock:";
 }
