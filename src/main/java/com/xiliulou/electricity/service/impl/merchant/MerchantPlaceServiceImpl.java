@@ -368,14 +368,17 @@ public class MerchantPlaceServiceImpl implements MerchantPlaceService {
     @Slave
     @Override
     public MerchantPlace queryByIdFromCache(Long placeId) {
-        MerchantPlace merchantPlace = null;
-        merchantPlace = redisService.getWithHash(CacheConstant.CACHE_MERCHANT_PLACE + placeId, MerchantPlace.class);
-        if (Objects.isNull(merchantPlace)) {
-            merchantPlace = merchantPlaceMapper.selectById(placeId);
-            if (Objects.nonNull(merchantPlace)) {
-                redisService.saveWithHash(CacheConstant.CACHE_MERCHANT_PLACE + placeId, merchantPlace);
-            }
+        MerchantPlace merchantPlace = redisService.getWithHash(CacheConstant.CACHE_MERCHANT_PLACE + placeId, MerchantPlace.class);
+        if (Objects.nonNull(merchantPlace)) {
+            return merchantPlace;
         }
+    
+        merchantPlace = merchantPlaceMapper.selectById(placeId);
+        if (Objects.isNull(merchantPlace)) {
+            return null;
+        }
+    
+        redisService.saveWithHash(CacheConstant.CACHE_MERCHANT_PLACE + placeId, merchantPlace);
         
         return merchantPlace;
     }
