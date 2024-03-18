@@ -15,54 +15,61 @@ import java.util.List;
 @Data
 @Builder
 public class EleRefundQuery {
-
+    
     /**
      * 缴纳押金订单编号
      */
     private String orderId;
-
+    
     /**
      * 订单的状态
      */
     private Integer status;
-
+    
     private Long size;
+    
     private Long offset;
-
-
+    
+    
     private Long beginTime;
+    
     private Long endTime;
-
+    
     private Integer tenantId;
-
+    
     /**
      * 所属加盟商名字
      */
     private String franchiseeName;
-
+    
     private String phone;
-
+    
     /**
      * 用户名字
      */
     private String name;
-
+    
     private Long uid;
-
+    
     /**
      * 退押金类型
      */
     private Integer refundOrderType;
-
+    
     private Integer payType;
-
+    
     private Long storeId;
-
+    
     private Long franchiseeId;
-
+    
     private List<Long> storeIds;
-
+    
     private List<Long> franchiseeIds;
-
-
+    
+    /**
+     * 退款单号
+     */
+    private String refundOrderNo;
+    
+    
 }

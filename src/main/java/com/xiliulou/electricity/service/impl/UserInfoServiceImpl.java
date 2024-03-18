@@ -61,6 +61,7 @@ import com.xiliulou.electricity.enums.BatteryMemberCardBusinessTypeEnum;
 import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.enums.MemberTermStatusEnum;
 import com.xiliulou.electricity.enums.RentalPackageTypeEnum;
+import com.xiliulou.electricity.enums.SignStatusEnum;
 import com.xiliulou.electricity.enums.YesNoEnum;
 import com.xiliulou.electricity.enums.enterprise.RentBatteryOrderTypeEnum;
 import com.xiliulou.electricity.enums.enterprise.UserCostTypeEnum;
@@ -2066,9 +2067,11 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         
         // 设置电子签名信息
         EleUserEsignRecord eleUserEsignRecord = eleUserEsignRecordService.queryUserEsignRecordFromDB(userInfo.getUid(), Long.valueOf(TenantContextHolder.getTenantId()));
-        vo.setSignFlowId(eleUserEsignRecord.getSignFlowId());
-        vo.setSignFinishStatus(Objects.isNull(eleUserEsignRecord) ? 2 :
-                (Objects.equals(1, eleUserEsignRecord.getSignFinishStatus()) ? 1 : 0));
+        if (Objects.nonNull(eleUserEsignRecord)) {
+            vo.setSignFlowId(eleUserEsignRecord.getSignFlowId());
+            vo.setSignFinishStatus(Objects.isNull(eleUserEsignRecord) ? SignStatusEnum.UNSIGNED.getCode() :
+                    (Objects.equals(1, eleUserEsignRecord.getSignFinishStatus()) ? SignStatusEnum.SIGNED_COMPLETED.getCode() : SignStatusEnum.SIGNED_INCOMPLETE.getCode()));
+        }
         
         
         // 根据openId判断是否可解绑微信
