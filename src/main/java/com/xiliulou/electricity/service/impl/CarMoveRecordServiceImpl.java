@@ -1,7 +1,6 @@
 package com.xiliulou.electricity.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
-import cn.hutool.core.collection.CollUtil;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.NumberConstant;
@@ -9,9 +8,9 @@ import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mapper.CarMoveRecordMapper;
 import com.xiliulou.electricity.query.CarMoveRecordQuery;
 import com.xiliulou.electricity.service.*;
+import com.xiliulou.electricity.service.asset.AssertPermissionService;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.CarMoveRecordVO;
-import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -55,7 +54,7 @@ public class CarMoveRecordServiceImpl implements CarMoveRecordService {
     ElectricityCarModelService electricityCarModelService;
     
     @Resource
-    private UserDataScopeService userDataScopeService;
+    private AssertPermissionService assertPermissionService;
     
     /**
      * 获取车辆转移记录信息
@@ -66,7 +65,7 @@ public class CarMoveRecordServiceImpl implements CarMoveRecordService {
     @Slave
     @Override
     public List<CarMoveRecordVO> queryCarMoveRecords(CarMoveRecordQuery carMoveRecordQuery) {
-        Triple<List<Long>, List<Long>, Boolean> triple = assertPermission(SecurityUtils.getUserInfo());
+        Triple<List<Long>, List<Long>, Boolean> triple = assertPermissionService.assertPermissionByTriple(SecurityUtils.getUserInfo());
         if (!triple.getRight()) {
             return Collections.EMPTY_LIST;
         }
@@ -108,7 +107,7 @@ public class CarMoveRecordServiceImpl implements CarMoveRecordService {
     @Slave
     @Override
     public Integer queryCarMoveRecordsCount(CarMoveRecordQuery carMoveRecordQuery) {
-        Triple<List<Long>, List<Long>, Boolean> triple = assertPermission(SecurityUtils.getUserInfo());
+        Triple<List<Long>, List<Long>, Boolean> triple = assertPermissionService.assertPermissionByTriple(SecurityUtils.getUserInfo());
         if (!triple.getRight()) {
             return NumberConstant.ZERO;
         }
@@ -118,23 +117,5 @@ public class CarMoveRecordServiceImpl implements CarMoveRecordService {
         return carMoveRecordMapper.selectCount(carMoveRecordQuery);
     }
     
-    
-    private Triple<List<Long>, List<Long>, Boolean> assertPermission(TokenUser userInfo) {
-        List<Long> franchiseeIds = null;
-        if (Objects.equals(userInfo.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
-            franchiseeIds = userDataScopeService.selectDataIdByUid(userInfo.getUid());
-            if (CollUtil.isEmpty(franchiseeIds)) {
-                return Triple.of(null, null, false);
-            }
-        }
-        List<Long> storeIds = null;
-        if (Objects.equals(userInfo.getDataType(), User.DATA_TYPE_STORE)) {
-            storeIds = userDataScopeService.selectDataIdByUid(userInfo.getUid());
-            if (CollUtil.isEmpty(storeIds)) {
-                return Triple.of(null, null, false);
-            }
-        }
-        return Triple.of(franchiseeIds, storeIds, true);
-    }
     
 }

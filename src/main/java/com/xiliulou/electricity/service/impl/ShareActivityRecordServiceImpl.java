@@ -13,6 +13,7 @@ import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mapper.ShareActivityRecordMapper;
 import com.xiliulou.electricity.query.ShareActivityRecordQuery;
 import com.xiliulou.electricity.service.*;
+import com.xiliulou.electricity.service.asset.AssertPermissionService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.CouponVO;
@@ -80,7 +81,7 @@ public class ShareActivityRecordServiceImpl implements ShareActivityRecordServic
     UserCouponService userCouponService;
     
     @Autowired
-    private UserDataScopeService userDataScopeService;
+    private AssertPermissionService assertPermissionService;
 
 
     /**
@@ -299,7 +300,7 @@ public class ShareActivityRecordServiceImpl implements ShareActivityRecordServic
             throw new CustomBusinessException("日期不合法请重新选择");
         }
         
-        Triple<List<Long>, List<Long>, Boolean> triple = assertPermission(SecurityUtils.getUserInfo());
+        Triple<List<Long>, List<Long>, Boolean> triple = assertPermissionService.assertPermissionByTriple(SecurityUtils.getUserInfo());
         if(triple.getRight()){
             shareActivityRecordQuery.setFranchiseeIds(triple.getLeft());
             shareActivityRecordQuery.setStoreIds(triple.getMiddle());
@@ -342,24 +343,6 @@ public class ShareActivityRecordServiceImpl implements ShareActivityRecordServic
         }
     }
     
-    
-    private Triple<List<Long>, List<Long>, Boolean> assertPermission(TokenUser userInfo) {
-        List<Long> franchiseeIds = null;
-        if (Objects.equals(userInfo.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
-            franchiseeIds = userDataScopeService.selectDataIdByUid(userInfo.getUid());
-            if (CollUtil.isEmpty(franchiseeIds)) {
-                return Triple.of(null, null, false);
-            }
-        }
-        List<Long> storeIds = null;
-        if (Objects.equals(userInfo.getDataType(), User.DATA_TYPE_STORE)) {
-            storeIds = userDataScopeService.selectDataIdByUid(userInfo.getUid());
-            if (CollUtil.isEmpty(storeIds)) {
-                return Triple.of(null, null, false);
-            }
-        }
-        return Triple.of(franchiseeIds, storeIds, true);
-    }
     
     private String getStatusName(Integer status) {
         //1--初始化，2--已分享，3--分享失败

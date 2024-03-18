@@ -19,6 +19,7 @@ import com.xiliulou.electricity.service.CouponService;
 import com.xiliulou.electricity.service.NewUserActivityService;
 import com.xiliulou.electricity.service.UserDataScopeService;
 import com.xiliulou.electricity.service.UserService;
+import com.xiliulou.electricity.service.asset.AssertPermissionService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
@@ -58,7 +59,7 @@ public class NewUserActivityServiceImpl implements NewUserActivityService {
 	UserService userService;
 	
 	@Autowired
-	private UserDataScopeService userDataScopeService;
+	private AssertPermissionService assertPermissionService;
 
 	/**
 	 * 通过ID查询单条数据从缓存
@@ -187,8 +188,7 @@ public class NewUserActivityServiceImpl implements NewUserActivityService {
 	@Slave
 	@Override
 	public R queryList(NewUserActivityQuery newUserActivityQuery) {
-		
-		Pair<Boolean, List<Long>> pair = getFranchiseeIds(SecurityUtils.getUserInfo());
+		Pair<Boolean, List<Long>> pair = assertPermissionService.assertPermissionByPair(SecurityUtils.getUserInfo());
 		if (!pair.getLeft()){
 			return R.ok(new ArrayList<>());
 		}
@@ -216,7 +216,7 @@ public class NewUserActivityServiceImpl implements NewUserActivityService {
 	@Slave
 	@Override
 	public R queryCount(NewUserActivityQuery newUserActivityQuery) {
-		Pair<Boolean, List<Long>> pair = getFranchiseeIds(SecurityUtils.getUserInfo());
+		Pair<Boolean, List<Long>> pair = assertPermissionService.assertPermissionByPair(SecurityUtils.getUserInfo());
 		if (!pair.getLeft()){
 			return R.ok(NumberConstant.ZERO);
 		}
@@ -225,16 +225,6 @@ public class NewUserActivityServiceImpl implements NewUserActivityService {
 	}
 	
 	
-	private Pair<Boolean, List<Long>> getFranchiseeIds(TokenUser userInfo) {
-		List<Long> franchiseeIds = null;
-		if (Objects.equals(userInfo.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
-			franchiseeIds = userDataScopeService.selectDataIdByUid(userInfo.getUid());
-			if (CollUtil.isEmpty(franchiseeIds)) {
-				return Pair.of(false, null);
-			}
-		}
-		return Pair.of(true, franchiseeIds);
-	}
 
 	@Override
 	public R queryInfo(Integer id) {

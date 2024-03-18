@@ -14,6 +14,7 @@ import com.xiliulou.electricity.request.activity.InvitationActivityAnalysisReque
 import com.xiliulou.electricity.service.InvitationActivityJoinHistoryService;
 import com.xiliulou.electricity.service.UserDataScopeService;
 import com.xiliulou.electricity.service.UserInfoService;
+import com.xiliulou.electricity.service.asset.AssertPermissionService;
 import com.xiliulou.electricity.utils.DateUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.InvitationActivityJoinHistoryVO;
@@ -53,7 +54,7 @@ public class InvitationActivityJoinHistoryServiceImpl implements InvitationActiv
     @Autowired
     private UserInfoService userInfoService;
     @Autowired
-    private UserDataScopeService userDataScopeService;
+    private AssertPermissionService assertPermissionService;
     
     /**
      * 通过ID查询单条数据从DB
@@ -140,7 +141,7 @@ public class InvitationActivityJoinHistoryServiceImpl implements InvitationActiv
 
     @Override
     public List<InvitationActivityJoinHistoryVO> selectByPage(InvitationActivityJoinHistoryQuery query) {
-        Triple<List<Long>, List<Long>, Boolean> triple = assertPermission(SecurityUtils.getUserInfo());
+        Triple<List<Long>, List<Long>, Boolean> triple = assertPermissionService.assertPermissionByTriple(SecurityUtils.getUserInfo());
         if (!triple.getRight()){
             return new ArrayList<>();
         }
@@ -164,7 +165,7 @@ public class InvitationActivityJoinHistoryServiceImpl implements InvitationActiv
 
     @Override
     public Integer selectByPageCount(InvitationActivityJoinHistoryQuery query) {
-        Triple<List<Long>, List<Long>, Boolean> triple = assertPermission(SecurityUtils.getUserInfo());
+        Triple<List<Long>, List<Long>, Boolean> triple = assertPermissionService.assertPermissionByTriple(SecurityUtils.getUserInfo());
         if (!triple.getRight()){
             return NumberConstant.ZERO;
         }
@@ -172,24 +173,6 @@ public class InvitationActivityJoinHistoryServiceImpl implements InvitationActiv
         query.setStoreIds(triple.getMiddle());
         
         return invitationActivityJoinHistoryMapper.selectByPageCount(query);
-    }
-    
-    private Triple<List<Long>, List<Long>, Boolean> assertPermission(TokenUser userInfo) {
-        List<Long> franchiseeIds = null;
-        if (Objects.equals(userInfo.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
-            franchiseeIds = userDataScopeService.selectDataIdByUid(userInfo.getUid());
-            if (CollUtil.isEmpty(franchiseeIds)) {
-                return Triple.of(null, null, false);
-            }
-        }
-        List<Long> storeIds = null;
-        if (Objects.equals(userInfo.getDataType(), User.DATA_TYPE_STORE)) {
-            storeIds = userDataScopeService.selectDataIdByUid(userInfo.getUid());
-            if (CollUtil.isEmpty(storeIds)) {
-                return Triple.of(null, null, false);
-            }
-        }
-        return Triple.of(franchiseeIds, storeIds, true);
     }
     
     

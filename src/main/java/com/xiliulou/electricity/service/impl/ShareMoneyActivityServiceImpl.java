@@ -21,6 +21,7 @@ import com.xiliulou.electricity.query.BatteryMemberCardQuery;
 import com.xiliulou.electricity.query.ShareMoneyActivityAddAndUpdateQuery;
 import com.xiliulou.electricity.query.ShareMoneyActivityQuery;
 import com.xiliulou.electricity.service.*;
+import com.xiliulou.electricity.service.asset.AssertPermissionService;
 import com.xiliulou.electricity.service.car.CarRentalPackageService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
@@ -95,7 +96,7 @@ public class ShareMoneyActivityServiceImpl implements ShareMoneyActivityService 
     
     
     @Autowired
-    private UserDataScopeService userDataScopeService;
+    private AssertPermissionService assertPermissionService;
 
     /**
      * 通过ID查询单条数据从缓存
@@ -338,7 +339,7 @@ public class ShareMoneyActivityServiceImpl implements ShareMoneyActivityService 
 
     @Override
     public R queryList(ShareMoneyActivityQuery shareMoneyActivityQuery) {
-        Pair<Boolean, List<Long>> pair = getFranchiseeIds(SecurityUtils.getUserInfo());
+        Pair<Boolean, List<Long>> pair = assertPermissionService.assertPermissionByPair(SecurityUtils.getUserInfo());
         if (!pair.getLeft()){
             return R.ok(new ArrayList<>());
         }
@@ -381,16 +382,6 @@ public class ShareMoneyActivityServiceImpl implements ShareMoneyActivityService 
         return R.ok(shareMoneyActivityVOList);
     }
     
-    private Pair<Boolean, List<Long>> getFranchiseeIds(TokenUser userInfo) {
-        List<Long> franchiseeIds = null;
-        if (Objects.equals(userInfo.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
-            franchiseeIds = userDataScopeService.selectDataIdByUid(userInfo.getUid());
-            if (CollUtil.isEmpty(franchiseeIds)) {
-                return Pair.of(false, null);
-            }
-        }
-        return Pair.of(true, franchiseeIds);
-    }
     
     private List<BatteryMemberCardVO> getAllBatteryPackages(Integer tenantId){
         BatteryMemberCardQuery query = BatteryMemberCardQuery.builder()
@@ -406,7 +397,7 @@ public class ShareMoneyActivityServiceImpl implements ShareMoneyActivityService 
 
     @Override
     public R queryCount(ShareMoneyActivityQuery shareMoneyActivityQuery) {
-        Pair<Boolean, List<Long>> pair = getFranchiseeIds(SecurityUtils.getUserInfo());
+        Pair<Boolean, List<Long>> pair = assertPermissionService.assertPermissionByPair(SecurityUtils.getUserInfo());
         if (!pair.getLeft()){
             return R.ok(NumberConstant.ZERO);
         }

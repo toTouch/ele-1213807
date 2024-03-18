@@ -7,6 +7,7 @@ import com.xiliulou.electricity.mapper.EleUserEsignRecordMapper;
 import com.xiliulou.electricity.query.EleUserEsignRecordQuery;
 import com.xiliulou.electricity.service.EleUserEsignRecordService;
 import com.xiliulou.electricity.service.UserDataScopeService;
+import com.xiliulou.electricity.service.asset.AssertPermissionService;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.EleUserEsignRecordVO;
 import com.xiliulou.security.bean.TokenUser;
@@ -28,16 +29,17 @@ import java.util.Objects;
 @Service
 @Slf4j
 public class EleUserEsignRecordServiceImpl implements EleUserEsignRecordService {
-
+    
     @Resource
     private EleUserEsignRecordMapper eleUserEsignRecordMapper;
+    
     @Resource
-    private UserDataScopeService userDataScopeService;
-
+    private AssertPermissionService assertPermissionService;
+    
     @Override
     public List<EleUserEsignRecordVO> queryUserEsignRecords(EleUserEsignRecordQuery eleUserEsignRecordQuery) {
-        Triple<List<Long>, List<Long>, Boolean> triple = assertPermission(SecurityUtils.getUserInfo());
-        if (!triple.getRight()){
+        Triple<List<Long>, List<Long>, Boolean> triple = assertPermissionService.assertPermissionByTriple(SecurityUtils.getUserInfo());
+        if (!triple.getRight()) {
             return new ArrayList<>();
         }
         eleUserEsignRecordQuery.setFranchiseeIds(triple.getLeft());
@@ -47,11 +49,11 @@ public class EleUserEsignRecordServiceImpl implements EleUserEsignRecordService 
         log.info("get user esign record list: {}", eleUserEsignRecordVOList);
         return eleUserEsignRecordVOList;
     }
-
+    
     @Override
     public Integer queryCount(EleUserEsignRecordQuery eleUserEsignRecordQuery) {
-        Triple<List<Long>, List<Long>, Boolean> triple = assertPermission(SecurityUtils.getUserInfo());
-        if (!triple.getRight()){
+        Triple<List<Long>, List<Long>, Boolean> triple = assertPermissionService.assertPermissionByTriple(SecurityUtils.getUserInfo());
+        if (!triple.getRight()) {
             return NumberConstant.ZERO;
         }
         eleUserEsignRecordQuery.setFranchiseeIds(triple.getLeft());
@@ -59,22 +61,5 @@ public class EleUserEsignRecordServiceImpl implements EleUserEsignRecordService 
         return eleUserEsignRecordMapper.selectByPageCount(eleUserEsignRecordQuery);
     }
     
-    private Triple<List<Long>, List<Long>, Boolean> assertPermission(TokenUser userInfo) {
-        List<Long> franchiseeIds = null;
-        if (Objects.equals(userInfo.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
-            franchiseeIds = userDataScopeService.selectDataIdByUid(userInfo.getUid());
-            if (CollUtil.isEmpty(franchiseeIds)) {
-                return Triple.of(null, null, false);
-            }
-        }
-        List<Long> storeIds = null;
-        if (Objects.equals(userInfo.getDataType(), User.DATA_TYPE_STORE)) {
-            storeIds = userDataScopeService.selectDataIdByUid(userInfo.getUid());
-            if (CollUtil.isEmpty(storeIds)) {
-                return Triple.of(null, null, false);
-            }
-        }
-        return Triple.of(franchiseeIds, storeIds, true);
-    }
     
 }

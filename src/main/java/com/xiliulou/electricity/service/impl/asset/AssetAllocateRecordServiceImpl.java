@@ -1,7 +1,6 @@
 package com.xiliulou.electricity.service.impl.asset;
 
 import cn.hutool.core.bean.BeanUtil;
-import cn.hutool.core.collection.CollUtil;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.thread.XllThreadPoolExecutorService;
 import com.xiliulou.core.thread.XllThreadPoolExecutors;
@@ -19,7 +18,6 @@ import com.xiliulou.electricity.entity.ElectricityCarModel;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.Picture;
 import com.xiliulou.electricity.entity.Store;
-import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.enums.asset.AssetTypeEnum;
 import com.xiliulou.electricity.mapper.asset.AssetAllocateRecordMapper;
@@ -42,7 +40,7 @@ import com.xiliulou.electricity.service.ElectricityCarService;
 import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.PictureService;
 import com.xiliulou.electricity.service.StoreService;
-import com.xiliulou.electricity.service.UserDataScopeService;
+import com.xiliulou.electricity.service.asset.AssertPermissionService;
 import com.xiliulou.electricity.service.asset.AssetAllocateDetailService;
 import com.xiliulou.electricity.service.asset.AssetAllocateRecordService;
 import com.xiliulou.electricity.service.asset.AssetInventoryService;
@@ -53,7 +51,6 @@ import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.ElectricityBatteryVO;
 import com.xiliulou.electricity.vo.asset.AssetAllocateDetailVO;
 import com.xiliulou.electricity.vo.asset.AssetAllocateRecordVO;
-import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.tuple.Pair;
@@ -122,7 +119,7 @@ public class AssetAllocateRecordServiceImpl implements AssetAllocateRecordServic
     private PictureService pictureService;
     
     @Autowired
-    private UserDataScopeService userDataScopeService;
+    private AssertPermissionService assertPermissionService;
     
     @Override
     public R save(AssetAllocateRecordRequest assetAllocateRecordRequest, Long uid) {
@@ -445,8 +442,9 @@ public class AssetAllocateRecordServiceImpl implements AssetAllocateRecordServic
         AssetAllocateRecordPageQueryModel queryModel = new AssetAllocateRecordPageQueryModel();
         BeanUtil.copyProperties(allocateRecordPageRequest, queryModel);
         queryModel.setTenantId(TenantContextHolder.getTenantId());
+       
         
-        Pair<Boolean, List<Long>> pair = getFranchiseeIds(SecurityUtils.getUserInfo());
+        Pair<Boolean, List<Long>> pair = assertPermissionService.assertPermissionByPair(SecurityUtils.getUserInfo());
         if (!pair.getLeft()) {
             return new ArrayList<>();
         }
@@ -501,24 +499,12 @@ public class AssetAllocateRecordServiceImpl implements AssetAllocateRecordServic
         BeanUtil.copyProperties(allocateRecordPageRequest, queryModel);
         queryModel.setTenantId(TenantContextHolder.getTenantId());
         
-        Pair<Boolean, List<Long>> pair = getFranchiseeIds(SecurityUtils.getUserInfo());
+        Pair<Boolean, List<Long>> pair = assertPermissionService.assertPermissionByPair(SecurityUtils.getUserInfo());
         if (!pair.getLeft()) {
             return NumberConstant.ZERO;
         }
         queryModel.setFranchiseeIds(pair.getRight());
         
         return assetAllocateRecordMapper.countTotal(queryModel);
-    }
-    
-    
-    private Pair<Boolean, List<Long>> getFranchiseeIds(TokenUser userInfo) {
-        List<Long> franchiseeIds = null;
-        if (Objects.equals(userInfo.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
-            franchiseeIds = userDataScopeService.selectDataIdByUid(userInfo.getUid());
-            if (CollUtil.isEmpty(franchiseeIds)) {
-                return Pair.of(false, null);
-            }
-        }
-        return Pair.of(true, franchiseeIds);
     }
 }

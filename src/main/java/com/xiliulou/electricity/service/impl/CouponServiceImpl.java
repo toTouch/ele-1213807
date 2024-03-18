@@ -19,6 +19,7 @@ import com.xiliulou.electricity.model.car.query.CarRentalPackageQryModel;
 import com.xiliulou.electricity.query.BatteryMemberCardQuery;
 import com.xiliulou.electricity.query.CouponQuery;
 import com.xiliulou.electricity.service.*;
+import com.xiliulou.electricity.service.asset.AssertPermissionService;
 import com.xiliulou.electricity.service.car.CarRentalPackageService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
@@ -79,7 +80,7 @@ public class CouponServiceImpl implements CouponService {
     BatteryMemberCardService batteryMemberCardService;
     
     @Autowired
-    private UserDataScopeService userDataScopeService;
+    private AssertPermissionService assertPermissionService;
     
     
     /**
@@ -377,7 +378,7 @@ public class CouponServiceImpl implements CouponService {
     @Slave
     @Override
     public R queryCouponList(CouponQuery couponQuery) {
-        Pair<Boolean, List<Long>> pair = getFranchiseeIds(SecurityUtils.getUserInfo());
+        Pair<Boolean, List<Long>> pair = assertPermissionService.assertPermissionByPair(SecurityUtils.getUserInfo());
         if (!pair.getLeft()) {
             return R.ok(new ArrayList<>());
         }
@@ -398,7 +399,7 @@ public class CouponServiceImpl implements CouponService {
     @Slave
     @Override
     public R queryCount(CouponQuery couponQuery) {
-        Pair<Boolean, List<Long>> pair = getFranchiseeIds(SecurityUtils.getUserInfo());
+        Pair<Boolean, List<Long>> pair = assertPermissionService.assertPermissionByPair(SecurityUtils.getUserInfo());
         if (!pair.getLeft()) {
             return R.ok(NumberConstant.ZERO);
         }
@@ -407,17 +408,6 @@ public class CouponServiceImpl implements CouponService {
         return R.ok(couponMapper.queryCount(couponQuery));
     }
     
-    
-    private Pair<Boolean, List<Long>> getFranchiseeIds(TokenUser userInfo) {
-        List<Long> franchiseeIds = null;
-        if (Objects.equals(userInfo.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
-            franchiseeIds = userDataScopeService.selectDataIdByUid(userInfo.getUid());
-            if (CollUtil.isEmpty(franchiseeIds)) {
-                return Pair.of(false, null);
-            }
-        }
-        return Pair.of(true, franchiseeIds);
-    }
     
     @Override
     public List<SearchVo> search(CouponQuery query) {

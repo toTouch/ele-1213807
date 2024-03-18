@@ -21,6 +21,7 @@ import com.xiliulou.electricity.query.ShareActivityAddAndUpdateQuery;
 import com.xiliulou.electricity.query.ShareActivityQuery;
 import com.xiliulou.electricity.query.ShareActivityRuleQuery;
 import com.xiliulou.electricity.service.*;
+import com.xiliulou.electricity.service.asset.AssertPermissionService;
 import com.xiliulou.electricity.service.car.CarRentalPackageService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
@@ -119,7 +120,7 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 	private ShareMoneyActivityService shareMoneyActivityService;
 	
 	@Autowired
-	private UserDataScopeService userDataScopeService;
+	private AssertPermissionService assertPermissionService;
 
 
 	/**
@@ -393,8 +394,7 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 
 	@Override
 	public R queryList(ShareActivityQuery shareActivityQuery) {
-		
-		Pair<Boolean, List<Long>> pair = getFranchiseeIds(SecurityUtils.getUserInfo());
+		Pair<Boolean, List<Long>> pair = assertPermissionService.assertPermissionByPair(SecurityUtils.getUserInfo());
 		if (!pair.getLeft()){
 			return R.ok(new ArrayList<>());
 		}
@@ -426,17 +426,6 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 		}
 
 		return R.ok(shareActivityVOList);
-	}
-	
-	private Pair<Boolean, List<Long>> getFranchiseeIds(TokenUser userInfo) {
-		List<Long> franchiseeIds = null;
-		if (Objects.equals(userInfo.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
-			franchiseeIds = userDataScopeService.selectDataIdByUid(userInfo.getUid());
-			if (CollUtil.isEmpty(franchiseeIds)) {
-				return Pair.of(false, null);
-			}
-		}
-		return Pair.of(true, franchiseeIds);
 	}
 
 	@Override
@@ -541,7 +530,7 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 
 	@Override
 	public R queryCount(ShareActivityQuery shareActivityQuery) {
-		Pair<Boolean, List<Long>> pair = getFranchiseeIds(SecurityUtils.getUserInfo());
+		Pair<Boolean, List<Long>> pair = assertPermissionService.assertPermissionByPair(SecurityUtils.getUserInfo());
 		if (!pair.getLeft()){
 			return R.ok(NumberConstant.ZERO);
 		}

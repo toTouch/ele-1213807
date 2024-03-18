@@ -1,6 +1,5 @@
 package com.xiliulou.electricity.service.impl.asset;
 
-import cn.hutool.core.collection.CollUtil;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.thread.XllThreadPoolExecutorService;
 import com.xiliulou.core.thread.XllThreadPoolExecutors;
@@ -13,7 +12,6 @@ import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.Store;
-import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.enums.asset.AssetTypeEnum;
 import com.xiliulou.electricity.enums.asset.StockStatusEnum;
@@ -29,7 +27,7 @@ import com.xiliulou.electricity.service.ElectricityBatteryService;
 import com.xiliulou.electricity.service.ElectricityCarService;
 import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.StoreService;
-import com.xiliulou.electricity.service.UserDataScopeService;
+import com.xiliulou.electricity.service.asset.AssertPermissionService;
 import com.xiliulou.electricity.service.asset.AssetExitWarehouseDetailService;
 import com.xiliulou.electricity.service.asset.AssetExitWarehouseRecordService;
 import com.xiliulou.electricity.service.asset.AssetInventoryService;
@@ -42,7 +40,6 @@ import com.xiliulou.electricity.vo.ElectricityBatteryVO;
 import com.xiliulou.electricity.vo.ElectricityCabinetVO;
 import com.xiliulou.electricity.vo.ElectricityCarVO;
 import com.xiliulou.electricity.vo.asset.AssetExitWarehouseVO;
-import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.tuple.Pair;
@@ -101,9 +98,9 @@ public class AssetExitWarehouseRecordServiceImpl implements AssetExitWarehouseRe
     @Resource
     private AssetWarehouseRecordService assetWarehouseRecordService;
     
-    
     @Resource
-    private UserDataScopeService userDataScopeService;
+    private AssertPermissionService assertPermissionService;
+    
     
     @Override
     public R save(AssetExitWarehouseSaveRequest assetExitWarehouseSaveRequest, Long operator) {
@@ -345,7 +342,7 @@ public class AssetExitWarehouseRecordServiceImpl implements AssetExitWarehouseRe
         BeanUtils.copyProperties(assetExitWarehouseRecordRequest, assetExitWarehouseQueryModel);
         assetExitWarehouseQueryModel.setTenantId(TenantContextHolder.getTenantId());
         
-        Pair<Boolean, List<Long>> pair = assertFranchiseeIds(SecurityUtils.getUserInfo());
+        Pair<Boolean, List<Long>> pair = assertPermissionService.assertPermissionByPair(SecurityUtils.getUserInfo());
         if (!pair.getLeft()){
             return new ArrayList<>();
         }
@@ -385,7 +382,7 @@ public class AssetExitWarehouseRecordServiceImpl implements AssetExitWarehouseRe
         BeanUtils.copyProperties(assetExitWarehouseRecordRequest, assetExitWarehouseQueryModel);
         assetExitWarehouseQueryModel.setTenantId(TenantContextHolder.getTenantId());
         
-        Pair<Boolean, List<Long>> pair = assertFranchiseeIds(SecurityUtils.getUserInfo());
+        Pair<Boolean, List<Long>> pair = assertPermissionService.assertPermissionByPair(SecurityUtils.getUserInfo());
         if (!pair.getLeft()){
             return NumberConstant.ZERO;
         }
@@ -394,16 +391,6 @@ public class AssetExitWarehouseRecordServiceImpl implements AssetExitWarehouseRe
         return assetExitWarehouseRecordMapper.countTotal(assetExitWarehouseQueryModel);
     }
     
-    private Pair<Boolean, List<Long>> assertFranchiseeIds(TokenUser userInfo) {
-        List<Long> franchiseeIds = null;
-        if (Objects.equals(userInfo.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
-            franchiseeIds = userDataScopeService.selectDataIdByUid(userInfo.getUid());
-            if (CollUtil.isEmpty(franchiseeIds)) {
-                return Pair.of(false, null);
-            }
-        }
-        return Pair.of(true, franchiseeIds);
-    }
     
     
 }

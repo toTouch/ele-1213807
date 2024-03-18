@@ -15,6 +15,7 @@ import com.xiliulou.electricity.mapper.ElePowerMonthRecordMapper;
 import com.xiliulou.electricity.query.PowerMonthStatisticsQuery;
 import com.xiliulou.electricity.service.ElePowerMonthRecordService;
 import com.xiliulou.electricity.service.UserDataScopeService;
+import com.xiliulou.electricity.service.asset.AssertPermissionService;
 import com.xiliulou.electricity.service.excel.AutoHeadColumnWidthStyleStrategy;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.ElePowerMonthRecordExcelVo;
@@ -52,7 +53,7 @@ public class ElePowerMonthRecordServiceImpl implements ElePowerMonthRecordServic
     private ElePowerMonthRecordMapper elePowerMonthRecordMapper;
     
     @Resource
-    private UserDataScopeService userDataScopeService;
+    private AssertPermissionService assertPermissionService;
     
     /**
      * 通过ID查询单条数据从DB
@@ -129,7 +130,7 @@ public class ElePowerMonthRecordServiceImpl implements ElePowerMonthRecordServic
     
     @Override
     public Pair<Boolean, Object> queryMonthStatistics(PowerMonthStatisticsQuery query) {
-        Triple<List<Long>, List<Long>, Boolean> triple = assertPermission(SecurityUtils.getUserInfo());
+        Triple<List<Long>, List<Long>, Boolean> triple = assertPermissionService.assertPermissionByTriple(SecurityUtils.getUserInfo());
         if (!triple.getRight()) {
             return Pair.of(true, Collections.EMPTY_LIST);
         }
@@ -150,7 +151,7 @@ public class ElePowerMonthRecordServiceImpl implements ElePowerMonthRecordServic
     
     @Override
     public Pair<Boolean, Object> queryMonthStatisticsCount(PowerMonthStatisticsQuery query) {
-        Triple<List<Long>, List<Long>, Boolean> triple = assertPermission(SecurityUtils.getUserInfo());
+        Triple<List<Long>, List<Long>, Boolean> triple = assertPermissionService.assertPermissionByTriple(SecurityUtils.getUserInfo());
         if (!triple.getRight()) {
             return Pair.of(true, NumberConstant.ZERO);
         }
@@ -158,24 +159,6 @@ public class ElePowerMonthRecordServiceImpl implements ElePowerMonthRecordServic
         query.setStoreIds(triple.getMiddle());
         
         return Pair.of(true, this.elePowerMonthRecordMapper.queryCount(query));
-    }
-    
-    private Triple<List<Long>, List<Long>, Boolean> assertPermission(TokenUser userInfo) {
-        List<Long> franchiseeIds = null;
-        if (Objects.equals(userInfo.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
-            franchiseeIds = userDataScopeService.selectDataIdByUid(userInfo.getUid());
-            if (CollUtil.isEmpty(franchiseeIds)) {
-                return Triple.of(null, null, false);
-            }
-        }
-        List<Long> storeIds = null;
-        if (Objects.equals(userInfo.getDataType(), User.DATA_TYPE_STORE)) {
-            storeIds = userDataScopeService.selectDataIdByUid(userInfo.getUid());
-            if (CollUtil.isEmpty(storeIds)) {
-                return Triple.of(null, null, false);
-            }
-        }
-        return Triple.of(franchiseeIds, storeIds, true);
     }
     
     @Override

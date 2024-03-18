@@ -15,6 +15,7 @@ import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.UserDataScopeService;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.UserService;
+import com.xiliulou.electricity.service.asset.AssertPermissionService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseCloudBeanOrderService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseInfoService;
 import com.xiliulou.electricity.utils.SecurityUtils;
@@ -62,7 +63,7 @@ public class EnterpriseCloudBeanOrderServiceImpl implements EnterpriseCloudBeanO
     private EnterpriseInfoService enterpriseInfoService;
     
     @Autowired
-    private UserDataScopeService userDataScopeService;
+    private AssertPermissionService assertPermissionService;
     
     /**
      * 通过ID查询单条数据从DB
@@ -108,8 +109,7 @@ public class EnterpriseCloudBeanOrderServiceImpl implements EnterpriseCloudBeanO
     @Slave
     @Override
     public List<EnterpriseCloudBeanOrderVO> selectByPage(EnterpriseCloudBeanOrderQuery query) {
-        
-        Pair<Boolean, List<Long>> pair = getFranchiseeIds(SecurityUtils.getUserInfo());
+        Pair<Boolean, List<Long>> pair = assertPermissionService.assertPermissionByPair(SecurityUtils.getUserInfo());
         if (!pair.getLeft()){
             return new ArrayList<>();
         }
@@ -144,7 +144,7 @@ public class EnterpriseCloudBeanOrderServiceImpl implements EnterpriseCloudBeanO
     @Slave
     @Override
     public Integer selectByPageCount(EnterpriseCloudBeanOrderQuery query) {
-        Pair<Boolean, List<Long>> pair = getFranchiseeIds(SecurityUtils.getUserInfo());
+        Pair<Boolean, List<Long>> pair = assertPermissionService.assertPermissionByPair(SecurityUtils.getUserInfo());
         if (!pair.getLeft()){
             return NumberConstant.ZERO;
         }
@@ -153,16 +153,6 @@ public class EnterpriseCloudBeanOrderServiceImpl implements EnterpriseCloudBeanO
     }
     
     
-    private Pair<Boolean, List<Long>> getFranchiseeIds(TokenUser userInfo) {
-        List<Long> franchiseeIds = null;
-        if (Objects.equals(userInfo.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
-            franchiseeIds = userDataScopeService.selectDataIdByUid(userInfo.getUid());
-            if (CollUtil.isEmpty(franchiseeIds)) {
-                return Pair.of(false, null);
-            }
-        }
-        return Pair.of(true, franchiseeIds);
-    }
     @Slave
     @Override
     public BigDecimal selectTotalCloudBean(EnterpriseCloudBeanOrderQuery query) {
