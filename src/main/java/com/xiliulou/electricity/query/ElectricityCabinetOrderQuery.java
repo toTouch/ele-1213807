@@ -72,4 +72,9 @@ public class ElectricityCabinetOrderQuery {
      * 新电池编号
      */
     private String newElectricityBatterySn;
+    
+    /**
+     * 加盟商ID
+     */
+    private Long franchiseeId;
 }

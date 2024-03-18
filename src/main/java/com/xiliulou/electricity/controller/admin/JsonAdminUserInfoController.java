@@ -715,15 +715,10 @@ public class JsonAdminUserInfoController extends BaseController {
             }
         }
         
-        // 后台用户选择某加盟商查询
-        if (Objects.nonNull(franchiseeId)) {
-            franchiseeIds.add(franchiseeId);
-        }
-        
         UserInfoQuery userInfoQuery = UserInfoQuery.builder().offset(offset).size(size).memberCardExpireTimeBegin(memberCardExpireTimeBegin)
                 .memberCardExpireTimeEnd(memberCardExpireTimeEnd).uid(uid).memberCardExpireType(memberCardExpireType).batteryRentStatus(batteryRentStatus)
-                .franchiseeIds(franchiseeIds).storeIds(storeIds).sortBy(sortBy).sortType(sortType).name(name).phone(phone).tenantId(TenantContextHolder.getTenantId())
-                .memberCardStatus(memberCardStatus).batteryDepositStatus(batteryDepositStatus).build();
+                .franchiseeId(franchiseeId).franchiseeIds(franchiseeIds).storeIds(storeIds).sortBy(sortBy).sortType(sortType).name(name).phone(phone)
+                .tenantId(TenantContextHolder.getTenantId()).memberCardStatus(memberCardStatus).batteryDepositStatus(batteryDepositStatus).build();
         
         verifyMemberCardExpireTimeEnd(userInfoQuery);
         
@@ -736,7 +731,8 @@ public class JsonAdminUserInfoController extends BaseController {
             @RequestParam(value = "memberCardExpireType", required = false) Integer memberCardExpireType,
             @RequestParam(value = "memberCardExpireTimeBegin", required = false) Long memberCardExpireTimeBegin,
             @RequestParam(value = "memberCardExpireTimeEnd", required = false) Long memberCardExpireTimeEnd, @RequestParam(value = "name", required = false) String name,
-            @RequestParam(value = "phone", required = false) String phone) {
+            @RequestParam(value = "phone", required = false) String phone, @RequestParam(value = "batteryDepositStatus", required = false) Integer batteryDepositStatus,
+            @RequestParam(value = "MemberCardStatus", required = false) Integer memberCardStatus, @RequestParam(value = "franchiseeId", required = false) Long franchiseeId) {
         
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
@@ -762,7 +758,8 @@ public class JsonAdminUserInfoController extends BaseController {
         UserInfoQuery userInfoQuery = UserInfoQuery.builder()
                 
                 .memberCardExpireTimeBegin(memberCardExpireTimeBegin).memberCardExpireTimeEnd(memberCardExpireTimeEnd).uid(uid).memberCardExpireType(memberCardExpireType)
-                .batteryRentStatus(batteryRentStatus).franchiseeIds(franchiseeIds).storeIds(storeIds).name(name).phone(phone).tenantId(TenantContextHolder.getTenantId()).build();
+                .batteryRentStatus(batteryRentStatus).franchiseeIds(franchiseeIds).storeIds(storeIds).name(name).phone(phone).tenantId(TenantContextHolder.getTenantId())
+                .franchiseeId(franchiseeId).batteryDepositStatus(batteryDepositStatus).memberCardStatus(memberCardStatus).build();
         
         verifyMemberCardExpireTimeEnd(userInfoQuery);
         

@@ -52,4 +52,9 @@ public class RentBatteryOrderQuery {
      * 电柜名称
      */
     private String electricityCabinetName;
+    
+    /**
+     * 加盟商ID
+     */
+    private Long franchiseeId;
 }

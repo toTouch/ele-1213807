@@ -97,14 +97,9 @@ public class JsonAdminRentBatteryOrderController {
             }
         }
         
-        // 前端根据加盟商查询
-        if (Objects.nonNull(franchiseeId)) {
-            franchiseeIds.add(franchiseeId);
-        }
-        
         RentBatteryOrderQuery rentBatteryOrderQuery = RentBatteryOrderQuery.builder().offset(offset).size(size).name(name).phone(phone).uid(uid).beginTime(beginTime)
                 .endTime(endTime).status(status).orderId(orderId).type(type).franchiseeIds(franchiseeIds).storeIds(storeIds).tenantId(TenantContextHolder.getTenantId())
-                .electricityCabinetName(electricityCabinetName).build();
+                .electricityCabinetName(electricityCabinetName).franchiseeId(franchiseeId).build();
         
         return rentBatteryOrderService.queryList(rentBatteryOrderQuery);
     }
@@ -163,7 +158,8 @@ public class JsonAdminRentBatteryOrderController {
     public R queryCount(@RequestParam(value = "status", required = false) String status, @RequestParam(value = "type", required = false) Integer type,
             @RequestParam(value = "name", required = false) String name, @RequestParam(value = "phone", required = false) String phone,
             @RequestParam(value = "uid", required = false) Long uid, @RequestParam(value = "beginTime", required = false) Long beginTime,
-            @RequestParam(value = "endTime", required = false) Long endTime, @RequestParam(value = "orderId", required = false) String orderId) {
+            @RequestParam(value = "endTime", required = false) Long endTime, @RequestParam(value = "orderId", required = false) String orderId,
+            @RequestParam(value = "franchiseeId", required = false) Long franchiseeId) {
         
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
@@ -187,7 +183,8 @@ public class JsonAdminRentBatteryOrderController {
         }
         
         RentBatteryOrderQuery rentBatteryOrderQuery = RentBatteryOrderQuery.builder().name(name).phone(phone).uid(uid).beginTime(beginTime).endTime(endTime).status(status)
-                .orderId(orderId).type(type).franchiseeIds(franchiseeIds).storeIds(storeIds).tenantId(TenantContextHolder.getTenantId()).build();
+                .orderId(orderId).type(type).franchiseeIds(franchiseeIds).storeIds(storeIds).tenantId(TenantContextHolder.getTenantId())
+                .franchiseeId(franchiseeId).build();
         
         return rentBatteryOrderService.queryCount(rentBatteryOrderQuery);
     }

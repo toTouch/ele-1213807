@@ -119,15 +119,12 @@ public class JsonAdminElectricityCabinetOrderController {
             }
         }
         
-        // 根据加盟商查询
-        if (Objects.nonNull(franchiseeId)) {
-            franchiseeIds.add(franchiseeId);
-        }
         
         ElectricityCabinetOrderQuery electricityCabinetOrderQuery = ElectricityCabinetOrderQuery.builder().offset(offset).size(size).orderId(orderId).phone(phone).status(status)
                 .eid(eid).beginTime(beginTime).endTime(endTime).paymentMethod(paymentMethod).franchiseeIds(franchiseeIds).storeIds(storeIds).source(source)
                 .electricityCabinetName(electricityCabinetName).oldCellNo(oldCellNo).uid(uid).tenantId(TenantContextHolder.getTenantId())
-                .batterySn(batterySn).oldElectricityBatterySn(oldElectricityBatterySn).newElectricityBatterySn(newElectricityBatterySn).build();
+                .batterySn(batterySn).oldElectricityBatterySn(oldElectricityBatterySn).newElectricityBatterySn(newElectricityBatterySn)
+                .franchiseeId(franchiseeId).build();
         return electricityCabinetOrderService.queryList(electricityCabinetOrderQuery);
     }
     
@@ -199,7 +196,7 @@ public class JsonAdminElectricityCabinetOrderController {
             @RequestParam(value = "beginTime", required = false) Long beginTime, @RequestParam(value = "endTime", required = false) Long endTime,
             @RequestParam(value = "source", required = false) Integer source, @RequestParam(value = "paymentMethod", required = false) Integer paymentMethod,
             @RequestParam(value = "electricityCabinetName", required = false) String electricityCabinetName, @RequestParam(value = "oldCellNo", required = false) Integer oldCellNo,
-            @RequestParam(value = "uid", required = false) Long uid) {
+            @RequestParam(value = "uid", required = false) Long uid, @RequestParam(value = "franchisee_id", required = false) Long franchiseeId) {
         
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
@@ -225,7 +222,8 @@ public class JsonAdminElectricityCabinetOrderController {
         
         ElectricityCabinetOrderQuery electricityCabinetOrderQuery = ElectricityCabinetOrderQuery.builder().orderId(orderId).phone(phone).status(status).eid(eid)
                 .beginTime(beginTime).endTime(endTime).paymentMethod(paymentMethod).franchiseeIds(franchiseeIds).storeIds(storeIds).source(source)
-                .electricityCabinetName(electricityCabinetName).oldCellNo(oldCellNo).uid(uid).tenantId(TenantContextHolder.getTenantId()).build();
+                .electricityCabinetName(electricityCabinetName).oldCellNo(oldCellNo).uid(uid).tenantId(TenantContextHolder.getTenantId())
+                .franchiseeId(franchiseeId).build();
         return electricityCabinetOrderService.queryCount(electricityCabinetOrderQuery);
     }
     
