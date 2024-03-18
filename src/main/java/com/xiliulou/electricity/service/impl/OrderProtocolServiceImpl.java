@@ -41,32 +41,28 @@ public class OrderProtocolServiceImpl implements OrderProtocolService {
     
     @Override
     public Triple<Boolean, String, Object> update(OrderProtocolQuery orderProtocolQuery, Long uid) {
-        boolean result = redisService.setNx(CacheConstant.CACHE_USER_ORDER_PROTOCOL_UPDATE_LOCK + uid, "1", 3 * 1000L, false);
+        boolean result = redisService.setNx(CacheConstant.CACHE_USER_ORDER_PROTOCOL_UPDATE_LOCK + uid, "1", 2 * 1000L, false);
         if (!result) {
             return Triple.of(false, "ELECTRICITY.0034", "操作频繁");
         }
         
-        try {
-            if (Objects.isNull(orderProtocolQuery.getId())) {
-                
-                OrderProtocol orderProtocol = new OrderProtocol();
-                orderProtocol.setContent(orderProtocolQuery.getContent());
-                orderProtocol.setCreateTime(System.currentTimeMillis());
-                orderProtocol.setUpdateTime(System.currentTimeMillis());
-                orderProtocol.setTenantId(TenantContextHolder.getTenantId());
-                orderProtocolMapper.insert(orderProtocol);
-            } else {
-                
-                OrderProtocol orderProtocol = new OrderProtocol();
-                orderProtocol.setId(orderProtocolQuery.getId());
-                orderProtocol.setContent(orderProtocolQuery.getContent());
-                orderProtocol.setUpdateTime(System.currentTimeMillis());
-                orderProtocol.setTenantId(TenantContextHolder.getTenantId());
-                orderProtocolMapper.update(orderProtocol);
-            }
-            return Triple.of(true, null, null);
-        } finally {
-            redisService.delete(CacheConstant.CACHE_USER_ORDER_PROTOCOL_UPDATE_LOCK + uid);
+        if (Objects.isNull(orderProtocolQuery.getId())) {
+            
+            OrderProtocol orderProtocol = new OrderProtocol();
+            orderProtocol.setContent(orderProtocolQuery.getContent());
+            orderProtocol.setCreateTime(System.currentTimeMillis());
+            orderProtocol.setUpdateTime(System.currentTimeMillis());
+            orderProtocol.setTenantId(TenantContextHolder.getTenantId());
+            orderProtocolMapper.insert(orderProtocol);
+        } else {
+            
+            OrderProtocol orderProtocol = new OrderProtocol();
+            orderProtocol.setId(orderProtocolQuery.getId());
+            orderProtocol.setContent(orderProtocolQuery.getContent());
+            orderProtocol.setUpdateTime(System.currentTimeMillis());
+            orderProtocol.setTenantId(TenantContextHolder.getTenantId());
+            orderProtocolMapper.update(orderProtocol);
         }
+        return Triple.of(true, null, null);
     }
 }

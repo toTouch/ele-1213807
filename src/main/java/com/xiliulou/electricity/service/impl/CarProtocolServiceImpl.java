@@ -53,7 +53,7 @@ public class CarProtocolServiceImpl implements CarProtocolService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Triple<Boolean, String, Object> update(CarProtocolQuery carProtocolQuery, Long uid) {
-        boolean result = redisService.setNx(CacheConstant.CACHE_USER_CAR_RENTAL_REFUND_PROTOCOL_UPDATE_LOCK + uid, "1", 3 * 1000L, false);
+        boolean result = redisService.setNx(CacheConstant.CACHE_USER_CAR_RENTAL_REFUND_PROTOCOL_UPDATE_LOCK + uid, "1", 2 * 1000L, false);
         if (!result) {
             return Triple.of(false, "ELECTRICITY.0034", "操作频繁");
         }

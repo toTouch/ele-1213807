@@ -42,32 +42,28 @@ public class UserNoticeServiceImpl implements UserNoticeService {
 
 	@Override
 	public Triple<Boolean, String, Object> update(UserNoticeQuery userNoticeQuery, Long uid) {
-		boolean result = redisService.setNx(CacheConstant.CACHE_USER_NOTICE_UPDATE_LOCK + uid, "1", 3 * 1000L, false);
+		boolean result = redisService.setNx(CacheConstant.CACHE_USER_NOTICE_UPDATE_LOCK + uid, "1", 2 * 1000L, false);
 		if (!result) {
 			return Triple.of(false, "ELECTRICITY.0034", "操作频繁");
 		}
 		
-		try {
-			if (Objects.isNull(userNoticeQuery.getId())) {
-				UserNotice userNotice = new UserNotice();
-				userNotice.setContent(userNoticeQuery.getContent());
-				userNotice.setCreateTime(System.currentTimeMillis());
-				userNotice.setUpdateTime(System.currentTimeMillis());
-				userNotice.setTenantId(TenantContextHolder.getTenantId());
-				userNoticeMapper.insert(userNotice);
-			} else {
-				
-				UserNotice userNotice = new UserNotice();
-				userNotice.setId(userNoticeQuery.getId());
-				userNotice.setContent(userNoticeQuery.getContent());
-				userNotice.setUpdateTime(System.currentTimeMillis());
-				userNotice.setTenantId(TenantContextHolder.getTenantId());
-				userNoticeMapper.update(userNotice);
-			}
+		if (Objects.isNull(userNoticeQuery.getId())) {
+			UserNotice userNotice = new UserNotice();
+			userNotice.setContent(userNoticeQuery.getContent());
+			userNotice.setCreateTime(System.currentTimeMillis());
+			userNotice.setUpdateTime(System.currentTimeMillis());
+			userNotice.setTenantId(TenantContextHolder.getTenantId());
+			userNoticeMapper.insert(userNotice);
+		} else {
 			
-			return Triple.of(true, null, null);
-		} finally {
-			redisService.delete(CacheConstant.CACHE_USER_NOTICE_UPDATE_LOCK + uid);
+			UserNotice userNotice = new UserNotice();
+			userNotice.setId(userNoticeQuery.getId());
+			userNotice.setContent(userNoticeQuery.getContent());
+			userNotice.setUpdateTime(System.currentTimeMillis());
+			userNotice.setTenantId(TenantContextHolder.getTenantId());
+			userNoticeMapper.update(userNotice);
 		}
+		
+		return Triple.of(true, null, null);
 	}
 }

@@ -59,32 +59,28 @@ public class DepositProtocolServiceImpl implements DepositProtocolService {
     
     @Override
     public Triple<Boolean, String, Object> update(DepositProtocolQuery depositProtocolQuery, Long uid) {
-        boolean result = redisService.setNx(CacheConstant.CACHE_USER_DEPOSIT_PROTOCOL_UPDATE_LOCK + uid, "1", 3 * 1000L, false);
+        boolean result = redisService.setNx(CacheConstant.CACHE_USER_DEPOSIT_PROTOCOL_UPDATE_LOCK + uid, "1", 2 * 1000L, false);
         if (!result) {
             return Triple.of(false, "ELECTRICITY.0034", "操作频繁");
         }
+    
+        if (Objects.isNull(depositProtocolQuery.getId())) {
         
-        try {
-            if (Objects.isNull(depositProtocolQuery.getId())) {
-                
-                DepositProtocol depositProtocol = new DepositProtocol();
-                depositProtocol.setContent(depositProtocolQuery.getContent());
-                depositProtocol.setCreateTime(System.currentTimeMillis());
-                depositProtocol.setUpdateTime(System.currentTimeMillis());
-                depositProtocol.setTenantId(TenantContextHolder.getTenantId());
-                depositProtocolMapper.insert(depositProtocol);
-            } else {
-                
-                DepositProtocol depositProtocol = new DepositProtocol();
-                depositProtocol.setId(depositProtocolQuery.getId());
-                depositProtocol.setContent(depositProtocolQuery.getContent());
-                depositProtocol.setUpdateTime(System.currentTimeMillis());
-                depositProtocol.setTenantId(TenantContextHolder.getTenantId());
-                depositProtocolMapper.update(depositProtocol);
-            }
-            return Triple.of(true, null, null);
-        } finally {
-            redisService.delete(CacheConstant.CACHE_USER_DEPOSIT_PROTOCOL_UPDATE_LOCK + uid);
+            DepositProtocol depositProtocol = new DepositProtocol();
+            depositProtocol.setContent(depositProtocolQuery.getContent());
+            depositProtocol.setCreateTime(System.currentTimeMillis());
+            depositProtocol.setUpdateTime(System.currentTimeMillis());
+            depositProtocol.setTenantId(TenantContextHolder.getTenantId());
+            depositProtocolMapper.insert(depositProtocol);
+        } else {
+        
+            DepositProtocol depositProtocol = new DepositProtocol();
+            depositProtocol.setId(depositProtocolQuery.getId());
+            depositProtocol.setContent(depositProtocolQuery.getContent());
+            depositProtocol.setUpdateTime(System.currentTimeMillis());
+            depositProtocol.setTenantId(TenantContextHolder.getTenantId());
+            depositProtocolMapper.update(depositProtocol);
         }
+        return Triple.of(true, null, null);
     }
 }

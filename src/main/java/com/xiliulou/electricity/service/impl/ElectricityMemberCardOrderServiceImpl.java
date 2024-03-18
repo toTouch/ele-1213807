@@ -1772,6 +1772,10 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
     @Override
     @Transactional(rollbackFor = Exception.class)
     public R adminDisableMemberCard(Long uid, Integer days) {
+        boolean result = redisService.setNx(CacheConstant.CACHE_USER_MEMBER_CARD_DISABLE_LOCK + uid, "1", 2 * 1000L, false);
+        if (!result) {
+            return R.fail("ELECTRICITY.0034", "操作频繁");
+        }
         
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
@@ -2016,6 +2020,11 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
     @Override
     @Transactional(rollbackFor = Exception.class)
     public R adminEnableMemberCard(Long uid) {
+        boolean result = redisService.setNx(CacheConstant.CACHE_USER_MEMBER_CARD_ENABLE_LOCK + uid, "1", 2 * 1000L, false);
+        if (!result) {
+            return R.fail("ELECTRICITY.0034", "操作频繁");
+        }
+        
         UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
         if (Objects.isNull(userInfo) || !Objects.equals(userInfo.getTenantId(), TenantContextHolder.getTenantId())) {
             log.error("ADMIN ENABLE BATTERY MEMBERCARD ERROR! not found userInfo! uid={}", uid);
@@ -2130,6 +2139,11 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
     @Override
     @Transactional(rollbackFor = Exception.class)
     public R cleanBatteryServiceFee(Long uid) {
+        boolean result = redisService.setNx(CacheConstant.CACHE_USER_CLEAN_BATTERY_SERVICE_FEE_LOCK + uid, "1", 2 * 1000L, false);
+        if (!result) {
+            return R.fail("ELECTRICITY.0034", "操作频繁");
+        }
+        
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             log.error("admin saveUserMemberCard ERROR! not found user ");
@@ -2728,6 +2742,11 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
     @Override
     @Transactional(rollbackFor = Exception.class)
     public R renewalUserMemberCard(MemberCardOrderAddAndUpdate memberCardOrderAddAndUpdate) {
+        boolean result = redisService.setNx(CacheConstant.CACHE_USER_MEMBER_CARD_RENEWAL_LOCK + memberCardOrderAddAndUpdate.getUid(), "1", 2 * 1000L, false);
+        if (!result) {
+            return R.fail("ELECTRICITY.0034", "操作频繁");
+        }
+        
         //用户
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
@@ -3713,6 +3732,11 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
     
     @Override
     public Triple<Boolean, String, Object> addUserDepositAndMemberCard(UserBatteryDepositAndMembercardQuery query) {
+        boolean result = redisService.setNx(CacheConstant.CACHE_USER_ADD_USER_DEPOSIT_MEMBER_CARD_LOCK + query.getUid(), "1", 2 * 1000L, false);
+        if (!result) {
+            return Triple.of(false, "ELECTRICITY.0034", "操作频繁");
+        }
+        
         //参数不可为空
         if (Objects.isNull(query) || Objects.isNull(query.getBatteryDeposit()) || BigDecimalUtil.smallerThanZero(query.getBatteryDeposit())) {
             return Triple.of(false, "ELECTRICITY.0007", "不合法的参数");
@@ -3922,6 +3946,10 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Triple<Boolean, String, Object> editUserBatteryMemberCard(UserBatteryMembercardQuery query) {
+        boolean result = redisService.setNx(CacheConstant.CACHE_USER_MEMBER_CARD_EDIT_LOCK + query.getUid(), "1", 2 * 1000L, false);
+        if (!result) {
+            return Triple.of(false, "ELECTRICITY.0034", "操作频繁");
+        }
         
         User user = userService.queryByUidFromCache(SecurityUtils.getUid());
         if (Objects.isNull(user)) {
@@ -4073,6 +4101,11 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
     
     @Override
     public Triple<Boolean, String, Object> renewalUserBatteryMemberCard(UserBatteryMembercardQuery query) {
+        boolean result = redisService.setNx(CacheConstant.CACHE_USER_BATTERY_MEMBER_CARD_RENEWAL_LOCK + query.getUid(), "1", 2 * 1000L, false);
+        if (!result) {
+            return Triple.of(false, "ELECTRICITY.0034", "操作频繁");
+        }
+        
         User user = userService.queryByUidFromCache(SecurityUtils.getUid());
         if (Objects.isNull(user)) {
             return Triple.of(false, "ELECTRICITY.0001", "未找到用户");
