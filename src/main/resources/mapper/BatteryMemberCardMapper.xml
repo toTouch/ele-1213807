@@ -168,7 +168,7 @@
                     #{id}
                 </foreach>
             </if>
-            <if test="batteryModel != null and batteryModel != '' and batteryModel != '0'">
+            <if test="batteryModel != null and batteryModel != '0'">
                 and tmcbt.battery_type = #{batteryModel}
             </if>
             <if test="batteryModel == '0'">
@@ -360,7 +360,7 @@
                     #{id}
                 </foreach>
             </if>
-            <if test="batteryModel != null and batteryModel != '' and batteryModel != '0'">
+            <if test="batteryModel != null and batteryModel != '0'">
                 and tmcbt.battery_type = #{batteryModel}
             </if>
             <if test="batteryModel == '0'">
