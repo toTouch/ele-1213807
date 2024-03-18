@@ -15,6 +15,6 @@ public interface UserNoticeService {
     R queryUserNotice();
 
 
-    Triple<Boolean, String, Object> update(UserNoticeQuery userNoticeQuery);
+    Triple<Boolean, String, Object> update(UserNoticeQuery userNoticeQuery, Long uid);
 
 }

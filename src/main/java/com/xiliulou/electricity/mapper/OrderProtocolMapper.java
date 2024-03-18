@@ -13,4 +13,6 @@ import com.xiliulou.electricity.entity.OrderProtocol;
 public interface OrderProtocolMapper extends BaseMapper<OrderProtocol> {
     
     Integer update(OrderProtocol orderProtocol);
+    
+    OrderProtocol selectLatest(Integer tenantId);
 }
