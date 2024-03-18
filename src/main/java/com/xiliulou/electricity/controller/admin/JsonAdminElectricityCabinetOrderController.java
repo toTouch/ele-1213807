@@ -196,7 +196,7 @@ public class JsonAdminElectricityCabinetOrderController {
             @RequestParam(value = "beginTime", required = false) Long beginTime, @RequestParam(value = "endTime", required = false) Long endTime,
             @RequestParam(value = "source", required = false) Integer source, @RequestParam(value = "paymentMethod", required = false) Integer paymentMethod,
             @RequestParam(value = "electricityCabinetName", required = false) String electricityCabinetName, @RequestParam(value = "oldCellNo", required = false) Integer oldCellNo,
-            @RequestParam(value = "uid", required = false) Long uid, @RequestParam(value = "franchisee_id", required = false) Long franchiseeId,
+            @RequestParam(value = "uid", required = false) Long uid, @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
             @RequestParam(value = "batterySn", required = false) String batterySn, @RequestParam(value = "oldElectricityBatterySn", required = false) String oldElectricityBatterySn,
             @RequestParam(value = "newElectricityBatterySn", required = false) String newElectricityBatterySn) {
         

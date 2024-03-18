@@ -67,6 +67,11 @@ public class EleRefundQuery {
     private List<Long> franchiseeIds;
     
     /**
+     * 支付来源
+     */
+    private Integer orderType;
+    
+    /**
      * 退款单号
      */
     private String refundOrderNo;

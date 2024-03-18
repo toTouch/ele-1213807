@@ -49,6 +49,11 @@ public class RentBatteryOrderQuery {
     private List<Long> storeIds;
     
     /**
+     * 换电柜ID
+     */
+    private Integer electricityCabinetId;
+    
+    /**
      * 电柜名称
      */
     private String electricityCabinetName;

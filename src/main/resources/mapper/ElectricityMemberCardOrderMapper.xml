@@ -98,7 +98,7 @@
                 #{id}
             </foreach>
         </if>
-        <if test="query.memberCardName != null and query.memberCardName != ''">
+        <if test="query.cardName != null and query.cardName != ''">
             and card_name = #{query.memberCardName}
         </if>
         order by tel.id desc

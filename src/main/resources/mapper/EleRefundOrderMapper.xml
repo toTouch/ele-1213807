@@ -75,6 +75,9 @@
             <if test="query.phone != null and query.phone != ''">
                 and tedo.phone = #{query.phone}
             </if>
+            <if test="query.orderType != null and query.orderType != ''">
+                and tedo.order_type = #{query.orderType}
+            </if>
             <if test="query.refundOrderNo != null and query.refundOrderNo != ''">
                 and tedo.refund_order_no = #{query.refundOrderNo}
             </if>
@@ -181,6 +184,9 @@
             </if>
             <if test="query.refundOrderNo != null and query.refundOrderNo != ''">
                 and tedo.refund_order_no like concat('%', #{query.phone,jdbcType=VARCHAR}, '%')
+            </if>
+            <if test="query.orderType != null and query.orderType != ''">
+                and tedo.order_type = #{query.orderType}
             </if>
             <if test="query.storeIds != null">
                 and tedo.store_id in

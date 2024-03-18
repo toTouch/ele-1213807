@@ -44,6 +44,9 @@
             <if test="query.electricityBatterySn != null and query.electricityBatterySn != ''">
                 and electricity_battery_sn = #{query.electricityBatterySn}
             </if>
+            <if test="query.electricityCabinetId != null and query.electricityCabinetId != ''">
+                and electricity_cabinet_id = #{query.electricityCabinetId}
+            </if>
             <if test="query.franchiseeIds != null">
                 and franchisee_id in
                 <foreach collection="query.franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
@@ -98,6 +101,9 @@
             </if>
             <if test="query.electricityBatterySn != null and query.electricityBatterySn != ''">
                 and electricity_battery_sn = #{query.electricityBatterySn}
+            </if>
+            <if test="query.electricityCabinetId != null and query.electricityCabinetId != ''">
+                and electricity_cabinet_id = #{query.electricityCabinetId}
             </if>
             <if test="query.franchiseeIds != null">
                 and franchisee_id in
