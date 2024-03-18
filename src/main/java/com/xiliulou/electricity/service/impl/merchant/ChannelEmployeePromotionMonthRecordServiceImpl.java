@@ -184,7 +184,7 @@ public class ChannelEmployeePromotionMonthRecordServiceImpl implements ChannelEm
             }
             
             // 按照时间进行排序
-            detailList.stream().sorted(Comparator.comparing(ChannelEmployeePromotionDayRecord::getFeeDate));
+            detailList = detailList.stream().sorted(Comparator.comparing(ChannelEmployeePromotionDayRecord::getFeeDate)).collect(Collectors.toList());
             
             for (ChannelEmployeePromotionDayRecord promotionDayRecord : detailList) {
                 // 拉新

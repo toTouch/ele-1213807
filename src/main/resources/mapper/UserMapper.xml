@@ -290,13 +290,14 @@
 			t_user
 		WHERE
 		  del_flag = 0
-		  and 	(
-				`name` = #{name}
-				 or phone = #{phone}
-				)
+		  and phone = #{phone}
 		  
 		  AND user_type = #{userType}
-		  AND tenant_id = #{tenantId}
+		  
+		  <if test="tenantId != null">
+			  AND tenant_id = #{tenantId}
+		  </if>
+		  
 		  <if test="uid != null">
 			  and uid != #{uid}
 		  </if>

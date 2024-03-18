@@ -179,9 +179,10 @@ public class ChannelEmployeeServiceImpl implements ChannelEmployeeService {
         
         //租户
         Integer tenantId = TenantContextHolder.getTenantId();
-        
-        User phoneUserExists = userService.queryByUserPhoneFromDB(channelEmployeeRequest.getPhone(), User.TYPE_USER_CHANNEL, tenantId);
-        if (Objects.nonNull(phoneUserExists)) {
+    
+        // 检测手机号
+        User userPhone = userService.checkPhoneExist(null, channelEmployeeRequest.getPhone(), User.TYPE_USER_CHANNEL, null, null);
+        if (Objects.nonNull(userPhone)) {
             log.error("current phone has been used by other one, phone = {}, tenant id = {}", channelEmployeeRequest.getPhone(), tenantId);
             return Triple.of(false, "120001", "当前手机号已注册");
         }
@@ -271,8 +272,9 @@ public class ChannelEmployeeServiceImpl implements ChannelEmployeeService {
         }
         
         if (!Objects.equals(user.getPhone(), channelEmployeeRequest.getPhone())) {
-            User phoneUserExists = userService.queryByUserPhoneFromDB(channelEmployeeRequest.getPhone(), User.TYPE_USER_CHANNEL, tenantId);
-            if (Objects.nonNull(phoneUserExists)) {
+            // 检测手机号
+            User userPhone = userService.checkPhoneExist(null, channelEmployeeRequest.getPhone(), User.TYPE_USER_CHANNEL, null, channelEmployee.getUid());
+            if (Objects.nonNull(userPhone)) {
                 log.error("current phone has been used by other one for update channel employee, phone = {}, tenant id = {}", channelEmployeeRequest.getPhone(), tenantId);
                 return Triple.of(false, "120001", "当前手机号已注册");
             }

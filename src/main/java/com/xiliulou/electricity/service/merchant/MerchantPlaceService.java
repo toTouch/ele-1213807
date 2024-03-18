@@ -38,4 +38,6 @@ public interface MerchantPlaceService {
     List<MerchantPlaceVO> queryListPlace(MerchantPlacePageRequest merchantPlacePageRequest);
     
     Triple<Boolean, String, Object> queryById(Long id);
+    
+    List<MerchantPlace> queryByIdList(List<Long> placeIdList,Integer tenantId);
 }
