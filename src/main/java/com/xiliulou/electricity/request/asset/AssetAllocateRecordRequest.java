@@ -66,4 +66,14 @@ public class AssetAllocateRecordRequest {
      */
     private List<Long> idList;
     
+    /**
+     * 调拨资产Sn列表
+     * <a herf="https://benyun.feishu.cn/wiki/GrNjwBNZkipB5wkiws2cmsEDnVU#S5pYdtn2ooNnzqxWFbxcqGownbe">12.8 资产调拨（2条优化点)</a>
+     */
+    private List<String> snList;
+    /**
+     * 调拨资产提交类型 ---0 id数组 ---1 输入的sn编号
+     * <a herf="https://benyun.feishu.cn/wiki/GrNjwBNZkipB5wkiws2cmsEDnVU#S5pYdtn2ooNnzqxWFbxcqGownbe">12.8 资产调拨（2条优化点)</a>
+     */
+    private Integer submitType;
 }

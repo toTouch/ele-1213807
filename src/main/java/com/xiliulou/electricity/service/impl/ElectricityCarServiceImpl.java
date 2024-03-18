@@ -1380,4 +1380,24 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
         return R.ok(result);
     }
     
+    /**
+     * <p>
+     *    Description: queryIdsBySnArray
+     * </p>
+     * @param snList snList
+     * @param tenantId tenantId
+     * @param sourceFranchiseeId sourceFranchiseeId
+     * @return java.util.List<java.lang.Long>
+     * <p>Project: ElectricityCarServiceImpl</p>
+     * <p>Copyright: Copyright (c) 2024</p>
+     * <p>Company: www.xiliulou.com</p>
+     * <a herf="https://benyun.feishu.cn/wiki/GrNjwBNZkipB5wkiws2cmsEDnVU#S5pYdtn2ooNnzqxWFbxcqGownbe">12.8 资产调拨（2条优化点)</a>
+     * @author <a href="mailto:wxblifeng@163.com">PeakLee</a>
+     * @since V1.0 2024/3/18
+    */
+    @Override
+    public List<Long> queryIdsBySnArray(List<String> snList, Integer tenantId, Long sourceFranchiseeId) {
+        return this.electricityCarMapper.queryIdsBySnArray(snList,tenantId,sourceFranchiseeId);
+    }
+    
 }

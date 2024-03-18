@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.service.impl.asset;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.collection.ListUtil;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.thread.XllThreadPoolExecutorService;
 import com.xiliulou.core.thread.XllThreadPoolExecutors;
@@ -130,14 +131,28 @@ public class AssetAllocateRecordServiceImpl implements AssetAllocateRecordServic
             }
             
             List<Long> idList = assetAllocateRecordRequest.getIdList();
+            /*********<a herf="https://benyun.feishu.cn/wiki/GrNjwBNZkipB5wkiws2cmsEDnVU#S5pYdtn2ooNnzqxWFbxcqGownbe">12.8 资产调拨（2条优化点)</a> start***********/
+            if (Objects.equals(assetAllocateRecordRequest.getSubmitType(),AssetConstant.ASSET_EXIT_WAREHOUSE_SUBMIT_TYPE_BY_SN)){
+                List<String> snList = assetAllocateRecordRequest.getSnList();
+                if (CollectionUtils.isEmpty(snList)) {
+                    return R.ok();
+                }
+                snList = assetAllocateRecordRequest.getSnList().stream().distinct().collect(Collectors.toList());
+                if (snList.size() > AssetConstant.ASSET_ALLOCATE_LIMIT_NUMBER) {
+                    return R.fail("300811", "资产调拨数量最大限制50条，请修改");
+                }
+                idList = queryIdBasedOnTypeAndSNCode(assetAllocateRecordRequest);
+                if (!Objects.equals(idList.size(),snList.size())){
+                    return R.fail("300832","没有找到相关的SN码,请核对后提交");
+                }
+            }
+            /*********<a herf="https://benyun.feishu.cn/wiki/GrNjwBNZkipB5wkiws2cmsEDnVU#S5pYdtn2ooNnzqxWFbxcqGownbe">12.8 资产调拨（2条优化点)</a> end***********/
             if (CollectionUtils.isEmpty(idList)) {
                 return R.ok();
             }
-            
             if (CollectionUtils.isNotEmpty(idList) && idList.size() > AssetConstant.ASSET_ALLOCATE_LIMIT_NUMBER) {
                 return R.fail("300811", "资产调拨数量最大限制50条，请修改");
             }
-            
             Integer tenantId = TenantContextHolder.getTenantId();
             Franchisee sourceFranchisee = franchiseeService.queryByIdFromCache(assetAllocateRecordRequest.getSourceFranchiseeId());
             if (Objects.isNull(sourceFranchisee)) {
@@ -215,6 +230,38 @@ public class AssetAllocateRecordServiceImpl implements AssetAllocateRecordServic
         } finally {
             redisService.delete(CacheConstant.CACHE_ASSET_ALLOCATE_LOCK + uid);
         }
+    }
+    /**
+     * <p>
+     *    Description: queryIdBasedOnTypeAndSNCode
+     * </p>
+     * @param type type
+     * @param assetAllocateRecordRequest assetAllocateRecordRequest
+     * @return java.util.List<java.lang.Long>
+     * <p>Project: AssetAllocateRecordServiceImpl</p>
+     * <p>Copyright: Copyright (c) 2024</p>
+     * <p>Company: www.xiliulou.com</p>
+     *  <a herf="https://benyun.feishu.cn/wiki/GrNjwBNZkipB5wkiws2cmsEDnVU#S5pYdtn2ooNnzqxWFbxcqGownbe">12.8 资产调拨（2条优化点)</a>
+     * @author <a href="mailto:wxblifeng@163.com">PeakLee</a>
+     * @since V1.0 2024/3/18
+    */
+    private List<Long> queryIdBasedOnTypeAndSNCode(AssetAllocateRecordRequest assetAllocateRecordRequest) {
+        List<String> snList = assetAllocateRecordRequest.getSnList().stream().distinct().collect(Collectors.toList());
+        Integer type = assetAllocateRecordRequest.getType();
+        List<Long> result = null;
+        if (Objects.equals(type,AssetTypeEnum.ASSET_TYPE_CAR.getCode())){
+            result = electricityCarService.queryIdsBySnArray(snList,TenantContextHolder.getTenantId(),assetAllocateRecordRequest.getSourceFranchiseeId());
+        }
+        if (Objects.equals(type,AssetTypeEnum.ASSET_TYPE_BATTERY.getCode())){
+            result = electricityBatteryService.queryIdsBySnArray(snList,TenantContextHolder.getTenantId(),assetAllocateRecordRequest.getSourceFranchiseeId());
+        }
+        if (Objects.equals(type,AssetTypeEnum.ASSET_TYPE_CABINET.getCode())){
+            result = electricityCabinetService.queryIdsBySnArray(snList,TenantContextHolder.getTenantId(),assetAllocateRecordRequest.getSourceFranchiseeId());
+        }
+        if (CollectionUtils.isEmpty(result)){
+            return ListUtil.empty();
+        }
+        return result;
     }
     
     public R electricityCarMove(AssetAllocateRecordRequest assetAllocateRecordRequest, Store targetStore, Franchisee targetStoreFranchisee, Integer tenantId, List<Long> idList,

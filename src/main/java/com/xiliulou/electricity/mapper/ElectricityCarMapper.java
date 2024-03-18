@@ -196,4 +196,21 @@ public interface ElectricityCarMapper extends BaseMapper<ElectricityCar> {
      * @since V1.0 2024/3/13
      */
     List<UserCarLikeVo> selectCarSnByLike(@Param("query") UserCarLikeSnQuery query);
+    
+    /**
+     * <p>
+     *    Description: queryIdsBySnArray
+     * </p>
+     * @param snList snList
+     * @param tenantId tenantId
+     * @param sourceFranchiseeId sourceFranchiseeId
+     * @return java.util.List<java.lang.Long>
+     * <p>Project: ElectricityCarMapper</p>
+     * <p>Copyright: Copyright (c) 2024</p>
+     * <p>Company: www.xiliulou.com</p>
+     * <a herf="https://benyun.feishu.cn/wiki/GrNjwBNZkipB5wkiws2cmsEDnVU#S5pYdtn2ooNnzqxWFbxcqGownbe">12.8 资产调拨（2条优化点)</a>
+     * @author <a href="mailto:wxblifeng@163.com">PeakLee</a>
+     * @since V1.0 2024/3/18
+    */
+    List<Long> queryIdsBySnArray(@Param("list") List<String> snList, @Param("tenantId") Integer tenantId, @Param("franchiseeId") Long sourceFranchiseeId);
 }

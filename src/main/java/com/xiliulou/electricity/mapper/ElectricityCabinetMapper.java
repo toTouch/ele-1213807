@@ -115,4 +115,21 @@ public interface ElectricityCabinetMapper extends BaseMapper<ElectricityCabinet>
     List<ElectricityCabinetBO> selectListByIdList(@Param("idList") List<Integer> idList);
     
     List<ElectricityCabinetCountVO> selectCabinetCount(ElectricityCabinetQuery cabinetQuery);
+    
+    /**
+     * <p>
+     *    Description: queryIdsBySnArray
+     * </p>
+     * @param snList snList
+     * @param tenantId tenantId
+     * @param sourceFranchiseeId sourceFranchiseeId
+     * @return java.util.List<java.lang.Long>
+     * <p>Project: ElectricityCabinetMapper</p>
+     * <p>Copyright: Copyright (c) 2024</p>
+     * <p>Company: www.xiliulou.com</p>
+     * <a herf="https://benyun.feishu.cn/wiki/GrNjwBNZkipB5wkiws2cmsEDnVU#S5pYdtn2ooNnzqxWFbxcqGownbe">12.8 资产调拨（2条优化点)</a>
+     * @author <a href="mailto:wxblifeng@163.com">PeakLee</a>
+     * @since V1.0 2024/3/18
+    */
+    List<Long> queryIdsBySnArray(@Param("list") List<String> snList, @Param("tenantId") Integer tenantId, @Param("franchiseeId") Long sourceFranchiseeId);
 }

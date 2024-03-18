@@ -1,13 +1,22 @@
 package com.xiliulou.electricity.service;
 
 import com.xiliulou.core.web.R;
-import com.xiliulou.electricity.entity.*;
-import com.xiliulou.electricity.dto.EleChargeConfigCalcDetailDto;
-import com.xiliulou.electricity.entity.EleChargeConfig;
+import com.xiliulou.electricity.entity.ElectricityAbnormalMessageNotify;
+import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.ElectricityCabinetBox;
+import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.Message;
-import com.xiliulou.electricity.query.*;
+import com.xiliulou.electricity.entity.MqNotifyCommon;
+import com.xiliulou.electricity.query.BatteryReportQuery;
+import com.xiliulou.electricity.query.EleOuterCommandQuery;
+import com.xiliulou.electricity.query.ElectricityCabinetAddAndUpdate;
+import com.xiliulou.electricity.query.ElectricityCabinetAddressQuery;
+import com.xiliulou.electricity.query.ElectricityCabinetImportQuery;
+import com.xiliulou.electricity.query.ElectricityCabinetQuery;
+import com.xiliulou.electricity.query.ElectricityCabinetTransferQuery;
+import com.xiliulou.electricity.query.HomepageBatteryFrequencyQuery;
+import com.xiliulou.electricity.query.HomepageElectricityExchangeFrequencyQuery;
 import com.xiliulou.electricity.query.api.ApiRequestQuery;
 import com.xiliulou.electricity.request.asset.TransferCabinetModelRequest;
 import com.xiliulou.electricity.vo.CabinetBatteryVO;
@@ -16,7 +25,6 @@ import com.xiliulou.electricity.vo.ElectricityCabinetCountVO;
 import com.xiliulou.electricity.vo.ElectricityCabinetVO;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
-import org.apache.ibatis.annotations.Param;
 
 import javax.servlet.http.HttpServletResponse;
 import java.util.HashMap;
@@ -255,4 +263,21 @@ public interface ElectricityCabinetService {
     List<ElectricityCabinetCountVO> queryCabinetCount(ElectricityCabinetQuery cabinetQuery);
     
     void addElectricityCabinetLocToGeo(ElectricityCabinet electricityCabinet);
+    
+    /**
+     * <p>
+     *    Description: queryIdsBySnArray
+     * </p>
+     * @param snList snList
+     * @param tenantId tenantId
+     * @param sourceFranchiseeId sourceFranchiseeId
+     * @return java.util.List<java.lang.Long>
+     * <p>Project: ElectricityCabinetService</p>
+     * <p>Copyright: Copyright (c) 2024</p>
+     * <p>Company: www.xiliulou.com</p>
+     * <a herf="https://benyun.feishu.cn/wiki/GrNjwBNZkipB5wkiws2cmsEDnVU#S5pYdtn2ooNnzqxWFbxcqGownbe">12.8 资产调拨（2条优化点)</a>
+     * @author <a href="mailto:wxblifeng@163.com">PeakLee</a>
+     * @since V1.0 2024/3/18
+    */
+    List<Long> queryIdsBySnArray(List<String> snList, Integer tenantId, Long sourceFranchiseeId);
 }

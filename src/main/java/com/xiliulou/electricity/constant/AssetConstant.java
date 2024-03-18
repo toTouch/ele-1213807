@@ -56,4 +56,18 @@ public class AssetConstant {
      */
     public static final Integer ASSET_EXIT_WAREHOUSE_LIMIT_NUMBER = 50;
     
+    /**
+     * <p>
+     *    Description: 类型为id的提交
+     * </p>
+    */
+    public static final Integer ASSET_EXIT_WAREHOUSE_SUBMIT_TYPE_BY_ID = 0;
+    
+    /**
+     * <p>
+     *    Description: 类型为sn的提交
+     * </p>
+     */
+    public static final Integer ASSET_EXIT_WAREHOUSE_SUBMIT_TYPE_BY_SN = 1;
+    
 }
