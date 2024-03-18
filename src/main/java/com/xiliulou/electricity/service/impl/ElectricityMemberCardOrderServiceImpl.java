@@ -2742,11 +2742,6 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
     @Override
     @Transactional(rollbackFor = Exception.class)
     public R renewalUserMemberCard(MemberCardOrderAddAndUpdate memberCardOrderAddAndUpdate) {
-        boolean result = redisService.setNx(CacheConstant.CACHE_USER_MEMBER_CARD_RENEWAL_LOCK + memberCardOrderAddAndUpdate.getUid(), "1", 2 * 1000L, false);
-        if (!result) {
-            return R.fail("ELECTRICITY.0034", "操作频繁");
-        }
-        
         //用户
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
