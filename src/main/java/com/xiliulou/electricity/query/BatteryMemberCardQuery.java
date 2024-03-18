@@ -111,5 +111,10 @@ public class BatteryMemberCardQuery {
      * 电池型号
      */
     private String batteryModel;
+    
+    /**
+     * 电池长型号
+     */
+    private String originalBatteryModel;
 
 }

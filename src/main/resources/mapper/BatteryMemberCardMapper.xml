@@ -168,10 +168,10 @@
                     #{id}
                 </foreach>
             </if>
-            <if test="batteryModel != null and batteryModel != '0'">
-                and tmcbt.battery_type = #{batteryModel}
+            <if test="originalBatteryModel != null">
+                and tmcbt.battery_type = #{originalBatteryModel}
             </if>
-            <if test="batteryModel == '0'">
+            <if test="batteryModel != null">
                 and tmcbt.mid is null
             </if>
         </where>

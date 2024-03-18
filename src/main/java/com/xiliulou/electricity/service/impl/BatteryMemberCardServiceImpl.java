@@ -381,7 +381,8 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
         if (StringUtils.isNotEmpty(query.getBatteryModel()) && !("0".equals(query.getBatteryModel()))) {
             String originalModel = batteryModelService.acquireOriginalModelByShortType(query.getBatteryModel(), TenantContextHolder.getTenantId());
             if (StringUtils.isNotEmpty(originalModel)) {
-                query.setBatteryModel(originalModel);
+                query.setOriginalBatteryModel(originalModel);
+                query.setBatteryModel(null);
             }
         }
         
