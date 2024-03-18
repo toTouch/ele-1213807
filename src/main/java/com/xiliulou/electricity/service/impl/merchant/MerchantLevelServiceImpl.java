@@ -222,7 +222,19 @@ public class MerchantLevelServiceImpl implements MerchantLevelService {
             }
         
             if (Objects.nonNull(request.getInvitationUserCount()) || Objects.nonNull(request.getRenewalUserCount())) {
-                merchantLevelUpdate.setRule(JsonUtil.toJson(new MerchantLevelDTO(request.getInvitationUserCount(), request.getRenewalUserCount())));
+                MerchantLevelDTO merchantLevelDTO = new MerchantLevelDTO();
+                MerchantLevelDTO oldMerchantLevel = JsonUtil.fromJson(merchantLevel.getRule(), MerchantLevelDTO.class);
+                BeanUtils.copyProperties(oldMerchantLevel, merchantLevelDTO);
+                
+                if(Objects.nonNull(request.getInvitationUserCount())){
+                    merchantLevelDTO.setInvitationUserCount(request.getInvitationUserCount());
+                }
+    
+                if(Objects.nonNull(request.getRenewalUserCount())){
+                    merchantLevelDTO.setRenewalUserCount(request.getRenewalUserCount());
+                }
+                
+                merchantLevelUpdate.setRule(JsonUtil.toJson(merchantLevelDTO));
             }
         }
     
