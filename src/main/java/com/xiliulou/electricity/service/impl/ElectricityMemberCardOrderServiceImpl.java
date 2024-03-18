@@ -2270,6 +2270,33 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             expireMembercardServiceFeeOrder.setUpdateTime(System.currentTimeMillis());
             expireMembercardServiceFeeOrder.setPayTime(System.currentTimeMillis());
             batteryServiceFeeOrderService.updateByOrderNo(expireMembercardServiceFeeOrder);
+        }else{
+            //兼容套餐过期，定时任务还未生成滞纳金订单的场景
+            Franchisee franchisee = franchiseeService.queryByIdFromCache(userInfo.getFranchiseeId());
+            ElectricityBattery electricityBattery = electricityBatteryService.queryByUid(userInfo.getUid());
+            List<String> userBatteryTypes = userBatteryTypeService.selectByUid(userInfo.getUid());
+    
+            EleBatteryServiceFeeOrder expireMembercardServiceFeeOrderInsert = new EleBatteryServiceFeeOrder();
+            expireMembercardServiceFeeOrderInsert.setUid(userInfo.getUid());
+            expireMembercardServiceFeeOrderInsert.setOrderId(OrderIdUtil.generateBusinessOrderId(BusinessType.BATTERY_STAGNATE, userInfo.getUid()));
+            expireMembercardServiceFeeOrderInsert.setStatus(EleBatteryServiceFeeOrder.STATUS_CLEAN);
+            expireMembercardServiceFeeOrderInsert.setName(userInfo.getName());
+            expireMembercardServiceFeeOrderInsert.setPhone(userInfo.getPhone());
+            expireMembercardServiceFeeOrderInsert.setTenantId(userInfo.getTenantId());
+            expireMembercardServiceFeeOrderInsert.setStoreId(userInfo.getStoreId());
+            expireMembercardServiceFeeOrderInsert.setFranchiseeId(userInfo.getFranchiseeId());
+            expireMembercardServiceFeeOrderInsert.setModelType(Objects.isNull(franchisee) ? 0 : franchisee.getModelType());
+            expireMembercardServiceFeeOrderInsert.setBatteryType(CollectionUtils.isEmpty(userBatteryTypes) ? "" : JsonUtil.toJson(userBatteryTypes));
+            expireMembercardServiceFeeOrderInsert.setSn(Objects.isNull(electricityBattery) ? "" : electricityBattery.getSn());
+            expireMembercardServiceFeeOrderInsert.setPayAmount(expireBatteryServiceFee);
+            expireMembercardServiceFeeOrderInsert.setBatteryServiceFee(batteryMemberCard.getServiceCharge());
+            expireMembercardServiceFeeOrderInsert.setBatteryServiceFeeGenerateTime(memberCardExpireTime);
+            expireMembercardServiceFeeOrderInsert.setBatteryServiceFeeEndTime(System.currentTimeMillis());
+            expireMembercardServiceFeeOrderInsert.setSource(EleBatteryServiceFeeOrder.MEMBER_CARD_OVERDUE);
+            expireMembercardServiceFeeOrderInsert.setPayTime(System.currentTimeMillis());
+            expireMembercardServiceFeeOrderInsert.setCreateTime(System.currentTimeMillis());
+            expireMembercardServiceFeeOrderInsert.setUpdateTime(System.currentTimeMillis());
+            batteryServiceFeeOrderService.insert(expireMembercardServiceFeeOrderInsert);
         }
         
         if (!Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE) && StringUtils.isNotBlank(
