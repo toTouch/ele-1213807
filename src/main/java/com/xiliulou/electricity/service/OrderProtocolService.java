@@ -15,6 +15,6 @@ public interface OrderProtocolService {
     R queryOrderProtocol();
 
 
-    Triple<Boolean, String, Object> update(OrderProtocolQuery orderProtocolQuery);
+    Triple<Boolean, String, Object> update(OrderProtocolQuery orderProtocolQuery, Long uid);
 
 }

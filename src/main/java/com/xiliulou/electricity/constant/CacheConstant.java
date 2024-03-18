@@ -560,4 +560,7 @@ public interface CacheConstant {
     String CACHE_BATCH_SEND_COUPON = "cache_batch_send_coupon:";
     
     String CACHE_USER_NOTICE_UPDATE_LOCK = "cache_user_notice_update_lock:";
+    String CACHE_USER_DEPOSIT_PROTOCOL_UPDATE_LOCK = "cache_user_deposit_protocol_update_lock:";
+    String CACHE_USER_ORDER_PROTOCOL_UPDATE_LOCK = "cache_user_order_protocol_update_lock:";
+    String CACHE_USER_CAR_RENTAL_REFUND_PROTOCOL_UPDATE_LOCK = "cache_user_car_rental_refund_protocol_update_lock:";
 }

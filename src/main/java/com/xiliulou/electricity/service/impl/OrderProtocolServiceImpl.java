@@ -1,7 +1,8 @@
 package com.xiliulou.electricity.service.impl;
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.OrderProtocol;
 import com.xiliulou.electricity.mapper.OrderProtocolMapper;
 import com.xiliulou.electricity.query.OrderProtocolQuery;
@@ -21,40 +22,51 @@ import java.util.Objects;
 
 @Service
 public class OrderProtocolServiceImpl implements OrderProtocolService {
-
-	@Resource
-	OrderProtocolMapper orderProtocolMapper;
-
-	@Override
-	public R queryOrderProtocol() {
-		//tenant
-		Integer tenantId = TenantContextHolder.getTenantId();
-
-		OrderProtocol orderProtocol = orderProtocolMapper.selectOne(new LambdaQueryWrapper<OrderProtocol>().eq(OrderProtocol::getTenantId, tenantId));
-		return R.ok(orderProtocol);
-	}
-
-
-
-	@Override
-	public Triple<Boolean, String, Object> update(OrderProtocolQuery orderProtocolQuery) {
-		if (Objects.isNull(orderProtocolQuery.getId())) {
-		
-			OrderProtocol orderProtocol = new OrderProtocol();
-			orderProtocol.setContent(orderProtocolQuery.getContent());
-			orderProtocol.setCreateTime(System.currentTimeMillis());
-			orderProtocol.setUpdateTime(System.currentTimeMillis());
-			orderProtocol.setTenantId(TenantContextHolder.getTenantId());
-			orderProtocolMapper.insert(orderProtocol);
-		} else {
-
-			OrderProtocol orderProtocol = new OrderProtocol();
-			orderProtocol.setId(orderProtocolQuery.getId());
-			orderProtocol.setContent(orderProtocolQuery.getContent());
-			orderProtocol.setUpdateTime(System.currentTimeMillis());
-			orderProtocol.setTenantId(TenantContextHolder.getTenantId());
-			orderProtocolMapper.update(orderProtocol);
-		}
-		return Triple.of(true, null, null);
-	}
+    
+    @Resource
+    OrderProtocolMapper orderProtocolMapper;
+    
+    @Resource
+    private RedisService redisService;
+    
+    @Override
+    public R queryOrderProtocol() {
+        //tenant
+        Integer tenantId = TenantContextHolder.getTenantId();
+        
+        OrderProtocol orderProtocol = orderProtocolMapper.selectLatest(tenantId);
+        return R.ok(orderProtocol);
+    }
+    
+    
+    @Override
+    public Triple<Boolean, String, Object> update(OrderProtocolQuery orderProtocolQuery, Long uid) {
+        boolean result = redisService.setNx(CacheConstant.CACHE_USER_ORDER_PROTOCOL_UPDATE_LOCK + uid, "1", 3 * 1000L, false);
+        if (!result) {
+            return Triple.of(false, "ELECTRICITY.0034", "操作频繁");
+        }
+        
+        try {
+            if (Objects.isNull(orderProtocolQuery.getId())) {
+                
+                OrderProtocol orderProtocol = new OrderProtocol();
+                orderProtocol.setContent(orderProtocolQuery.getContent());
+                orderProtocol.setCreateTime(System.currentTimeMillis());
+                orderProtocol.setUpdateTime(System.currentTimeMillis());
+                orderProtocol.setTenantId(TenantContextHolder.getTenantId());
+                orderProtocolMapper.insert(orderProtocol);
+            } else {
+                
+                OrderProtocol orderProtocol = new OrderProtocol();
+                orderProtocol.setId(orderProtocolQuery.getId());
+                orderProtocol.setContent(orderProtocolQuery.getContent());
+                orderProtocol.setUpdateTime(System.currentTimeMillis());
+                orderProtocol.setTenantId(TenantContextHolder.getTenantId());
+                orderProtocolMapper.update(orderProtocol);
+            }
+            return Triple.of(true, null, null);
+        } finally {
+            redisService.delete(CacheConstant.CACHE_USER_ORDER_PROTOCOL_UPDATE_LOCK + uid);
+        }
+    }
 }

@@ -25,14 +25,12 @@
     <!--查询指定行数据-->
     <select id="selectByPage" resultMap="UserNoticeMap">
         <include refid="selectUserNotice"/>
-        from t_user_notice
         limit #{offset}, #{limit}
     </select>
     
     <!--通过实体作为筛选条件查询-->
     <select id="selectByQuery" resultMap="UserNoticeMap">
         <include refid="selectUserNotice"/>
-        from t_user_notice
         <where>
             <if test="id != null">
                 and id = #{id}
@@ -52,9 +50,8 @@
         </where>
     </select>
     
-    <select id="selectLatestByTenantId" resultType="com.xiliulou.electricity.entity.UserNotice">
+    <select id="selectLatest" resultType="com.xiliulou.electricity.entity.UserNotice">
         <include refid="selectUserNotice"/>
-        from t_user_notice
         where tenant_id = #{tenantId}
         order by id desc limit 1
     </select>

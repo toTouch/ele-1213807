@@ -14,5 +14,5 @@ public interface UserNoticeMapper extends BaseMapper<UserNotice> {
     
     Integer update(UserNotice userNotice);
     
-    UserNotice selectLatestByTenantId(Integer tenantId);
+    UserNotice selectLatest(Integer tenantId);
 }

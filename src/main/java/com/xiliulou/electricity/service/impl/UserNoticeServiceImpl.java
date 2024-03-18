@@ -1,6 +1,5 @@
 package com.xiliulou.electricity.service.impl;
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.CacheConstant;
@@ -9,7 +8,6 @@ import com.xiliulou.electricity.mapper.UserNoticeMapper;
 import com.xiliulou.electricity.query.UserNoticeQuery;
 import com.xiliulou.electricity.service.UserNoticeService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
-import com.xiliulou.electricity.utils.SecurityUtils;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.stereotype.Service;
 
@@ -36,7 +34,7 @@ public class UserNoticeServiceImpl implements UserNoticeService {
 		//tenant
 		Integer tenantId = TenantContextHolder.getTenantId();
 
-		UserNotice userNotice = userNoticeMapper.selectLatestByTenantId(tenantId);
+		UserNotice userNotice = userNoticeMapper.selectLatest(tenantId);
 		return R.ok(userNotice);
 	}
 
