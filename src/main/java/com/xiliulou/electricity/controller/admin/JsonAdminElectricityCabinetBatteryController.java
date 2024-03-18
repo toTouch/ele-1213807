@@ -18,6 +18,7 @@ import com.xiliulou.electricity.utils.BatteryExcelListener;
 import com.xiliulou.electricity.utils.BatteryExcelListenerV2;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.validator.CreateGroup;
+import com.xiliulou.electricity.vo.ElectricityBatteryVO;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
@@ -610,5 +611,15 @@ public class JsonAdminElectricityCabinetBatteryController extends BaseController
         electricityBatteryQuery.setFranchiseeName(franchiseeName);
         
         electricityBatteryService.export(electricityBatteryQuery,response);
+    }
+    
+    
+    @GetMapping("/admin/battery/getIdAndSn")
+    public R listBatteryBySn(@RequestParam("offset") Integer offset,
+            @RequestParam("size") Integer size,
+            @RequestParam("franchiseeId") Long franchiseeId,
+            @RequestParam(value = "sn", required = false) String sn) {
+        
+        return R.ok(electricityBatteryService.listBatteryBySn(offset, size, franchiseeId, sn));
     }
 }

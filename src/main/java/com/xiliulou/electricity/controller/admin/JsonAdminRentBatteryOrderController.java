@@ -57,7 +57,7 @@ public class JsonAdminRentBatteryOrderController {
             @RequestParam(value = "phone", required = false) String phone, @RequestParam(value = "uid", required = false) Long uid,
             @RequestParam(value = "beginTime", required = false) Long beginTime, @RequestParam(value = "endTime", required = false) Long endTime,
             @RequestParam(value = "orderId", required = false) String orderId, @RequestParam(value = "electricityCabinetName", required = false) String electricityCabinetName,
-            @RequestParam(value = "franchiseeId", required = false) Long franchiseeId) {
+            @RequestParam(value = "franchiseeId", required = false) Long franchiseeId, @RequestParam(value = "electricityBatterySn", required = false) String electricityBatterySn) {
         if (size < 0 || size > 50) {
             size = 10L;
         }
@@ -99,7 +99,7 @@ public class JsonAdminRentBatteryOrderController {
         
         RentBatteryOrderQuery rentBatteryOrderQuery = RentBatteryOrderQuery.builder().offset(offset).size(size).name(name).phone(phone).uid(uid).beginTime(beginTime)
                 .endTime(endTime).status(status).orderId(orderId).type(type).franchiseeIds(franchiseeIds).storeIds(storeIds).tenantId(TenantContextHolder.getTenantId())
-                .electricityCabinetName(electricityCabinetName).franchiseeId(franchiseeId).build();
+                .electricityCabinetName(electricityCabinetName).franchiseeId(franchiseeId).electricityBatterySn(electricityBatterySn).build();
         
         return rentBatteryOrderService.queryList(rentBatteryOrderQuery);
     }
@@ -159,7 +159,7 @@ public class JsonAdminRentBatteryOrderController {
             @RequestParam(value = "name", required = false) String name, @RequestParam(value = "phone", required = false) String phone,
             @RequestParam(value = "uid", required = false) Long uid, @RequestParam(value = "beginTime", required = false) Long beginTime,
             @RequestParam(value = "endTime", required = false) Long endTime, @RequestParam(value = "orderId", required = false) String orderId,
-            @RequestParam(value = "franchiseeId", required = false) Long franchiseeId) {
+            @RequestParam(value = "franchiseeId", required = false) Long franchiseeId, @RequestParam(value = "electricityBatterySn", required = false) String electricityBatterySn) {
         
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
@@ -184,7 +184,7 @@ public class JsonAdminRentBatteryOrderController {
         
         RentBatteryOrderQuery rentBatteryOrderQuery = RentBatteryOrderQuery.builder().name(name).phone(phone).uid(uid).beginTime(beginTime).endTime(endTime).status(status)
                 .orderId(orderId).type(type).franchiseeIds(franchiseeIds).storeIds(storeIds).tenantId(TenantContextHolder.getTenantId())
-                .franchiseeId(franchiseeId).build();
+                .franchiseeId(franchiseeId).electricityBatterySn(electricityBatterySn).build();
         
         return rentBatteryOrderService.queryCount(rentBatteryOrderQuery);
     }

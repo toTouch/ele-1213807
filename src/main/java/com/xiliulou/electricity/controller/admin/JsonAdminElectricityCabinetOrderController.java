@@ -196,7 +196,9 @@ public class JsonAdminElectricityCabinetOrderController {
             @RequestParam(value = "beginTime", required = false) Long beginTime, @RequestParam(value = "endTime", required = false) Long endTime,
             @RequestParam(value = "source", required = false) Integer source, @RequestParam(value = "paymentMethod", required = false) Integer paymentMethod,
             @RequestParam(value = "electricityCabinetName", required = false) String electricityCabinetName, @RequestParam(value = "oldCellNo", required = false) Integer oldCellNo,
-            @RequestParam(value = "uid", required = false) Long uid, @RequestParam(value = "franchisee_id", required = false) Long franchiseeId) {
+            @RequestParam(value = "uid", required = false) Long uid, @RequestParam(value = "franchisee_id", required = false) Long franchiseeId,
+            @RequestParam(value = "batterySn", required = false) String batterySn, @RequestParam(value = "oldElectricityBatterySn", required = false) String oldElectricityBatterySn,
+            @RequestParam(value = "newElectricityBatterySn", required = false) String newElectricityBatterySn) {
         
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
@@ -223,7 +225,7 @@ public class JsonAdminElectricityCabinetOrderController {
         ElectricityCabinetOrderQuery electricityCabinetOrderQuery = ElectricityCabinetOrderQuery.builder().orderId(orderId).phone(phone).status(status).eid(eid)
                 .beginTime(beginTime).endTime(endTime).paymentMethod(paymentMethod).franchiseeIds(franchiseeIds).storeIds(storeIds).source(source)
                 .electricityCabinetName(electricityCabinetName).oldCellNo(oldCellNo).uid(uid).tenantId(TenantContextHolder.getTenantId())
-                .franchiseeId(franchiseeId).build();
+                .franchiseeId(franchiseeId).batterySn(batterySn).oldElectricityBatterySn(oldElectricityBatterySn).newElectricityBatterySn(newElectricityBatterySn).build();
         return electricityCabinetOrderService.queryCount(electricityCabinetOrderQuery);
     }
     

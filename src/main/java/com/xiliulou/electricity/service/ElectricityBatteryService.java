@@ -139,4 +139,6 @@ public interface ElectricityBatteryService extends IService<ElectricityBattery> 
     List<ElectricityBatteryVO> listEnableExitWarehouseBattery(Set<Long> idSet, Integer tenantId, Long franchiseeId, Integer stockStatus);
     
     List<ElectricityBattery> queryListByIdList(List<Long> batteryIdSet);
+    
+    List<ElectricityBatteryVO> listBatteryBySn(Integer offset, Integer size, Long franchiseeId, String sn);
 }

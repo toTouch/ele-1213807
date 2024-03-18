@@ -76,7 +76,7 @@
                 and tedo.phone = #{query.phone}
             </if>
             <if test="query.refundOrderNo != null and query.refundOrderNo != ''">
-                and tedo.refund_order_no like concat('%', #{query.phone,jdbcType=VARCHAR}, '%')
+                and tedo.refund_order_no = #{query.refundOrderNo}
             </if>
             <if test="query.storeIds != null">
                 and tedo.store_id in

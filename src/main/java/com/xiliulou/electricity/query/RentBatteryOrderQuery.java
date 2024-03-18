@@ -57,4 +57,9 @@ public class RentBatteryOrderQuery {
      * 加盟商ID
      */
     private Long franchiseeId;
+    
+    /**
+     * 电池编号
+     */
+    private String electricityBatterySn;
 }
