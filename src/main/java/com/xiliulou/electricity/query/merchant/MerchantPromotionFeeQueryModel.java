@@ -29,4 +29,8 @@ public class MerchantPromotionFeeQueryModel {
     private Long rebateStartTime;
     
     private Long rebateEndTime;
+    
+    private Long settleStartTime;
+    
+    private Long settleEndTime;
 }
