@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.google.common.collect.Lists;
@@ -36,6 +37,7 @@ import com.xiliulou.storage.config.StorageConfig;
 import com.xiliulou.storage.service.StorageService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -115,6 +117,9 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 	
 	@Autowired
 	private ShareMoneyActivityService shareMoneyActivityService;
+	
+	@Autowired
+	private UserDataScopeService userDataScopeService;
 
 
 	/**
@@ -388,6 +393,13 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 
 	@Override
 	public R queryList(ShareActivityQuery shareActivityQuery) {
+		
+		Pair<Boolean, List<Long>> pair = getFranchiseeIds(SecurityUtils.getUserInfo());
+		if (!pair.getLeft()){
+			return R.ok(new ArrayList<>());
+		}
+		shareActivityQuery.setFranchiseeIds(pair.getRight());
+		
 		List<ShareActivity> shareActivityList = shareActivityMapper.queryList(shareActivityQuery);
 		List<ShareActivityVO> shareActivityVOList = Lists.newArrayList();
 
@@ -414,6 +426,17 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 		}
 
 		return R.ok(shareActivityVOList);
+	}
+	
+	private Pair<Boolean, List<Long>> getFranchiseeIds(TokenUser userInfo) {
+		List<Long> franchiseeIds = null;
+		if (Objects.equals(userInfo.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+			franchiseeIds = userDataScopeService.selectDataIdByUid(userInfo.getUid());
+			if (CollUtil.isEmpty(franchiseeIds)) {
+				return Pair.of(false, null);
+			}
+		}
+		return Pair.of(true, franchiseeIds);
 	}
 
 	@Override
@@ -518,6 +541,12 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 
 	@Override
 	public R queryCount(ShareActivityQuery shareActivityQuery) {
+		Pair<Boolean, List<Long>> pair = getFranchiseeIds(SecurityUtils.getUserInfo());
+		if (!pair.getLeft()){
+			return R.ok(NumberConstant.ZERO);
+		}
+		shareActivityQuery.setFranchiseeIds(pair.getRight());
+		
 		Integer count = shareActivityMapper.queryCount(shareActivityQuery);
 		return R.ok(count);
 	}

@@ -1,21 +1,27 @@
 package com.xiliulou.electricity.service.impl;
 
+import cn.hutool.core.collection.CollUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.jpay.util.StringUtils;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.InvitationActivityJoinHistory;
+import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.mapper.InvitationActivityJoinHistoryMapper;
 import com.xiliulou.electricity.query.InvitationActivityJoinHistoryQuery;
 import com.xiliulou.electricity.request.activity.InvitationActivityAnalysisRequest;
 import com.xiliulou.electricity.service.InvitationActivityJoinHistoryService;
+import com.xiliulou.electricity.service.UserDataScopeService;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.utils.DateUtils;
+import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.InvitationActivityJoinHistoryVO;
 import com.xiliulou.electricity.vo.activity.InvitationActivityAnalysisAdminVO;
+import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -46,6 +52,8 @@ public class InvitationActivityJoinHistoryServiceImpl implements InvitationActiv
     private InvitationActivityJoinHistoryMapper invitationActivityJoinHistoryMapper;
     @Autowired
     private UserInfoService userInfoService;
+    @Autowired
+    private UserDataScopeService userDataScopeService;
     
     /**
      * 通过ID查询单条数据从DB
@@ -132,6 +140,13 @@ public class InvitationActivityJoinHistoryServiceImpl implements InvitationActiv
 
     @Override
     public List<InvitationActivityJoinHistoryVO> selectByPage(InvitationActivityJoinHistoryQuery query) {
+        Triple<List<Long>, List<Long>, Boolean> triple = assertPermission(SecurityUtils.getUserInfo());
+        if (!triple.getRight()){
+            return new ArrayList<>();
+        }
+        query.setFranchiseeIds(triple.getLeft());
+        query.setStoreIds(triple.getMiddle());
+        
         List<InvitationActivityJoinHistoryVO> list = this.invitationActivityJoinHistoryMapper.selectUserHistoryByPage(query);
         if (CollectionUtils.isEmpty(list)) {
             return Collections.emptyList();
@@ -149,9 +164,35 @@ public class InvitationActivityJoinHistoryServiceImpl implements InvitationActiv
 
     @Override
     public Integer selectByPageCount(InvitationActivityJoinHistoryQuery query) {
+        Triple<List<Long>, List<Long>, Boolean> triple = assertPermission(SecurityUtils.getUserInfo());
+        if (!triple.getRight()){
+            return NumberConstant.ZERO;
+        }
+        query.setFranchiseeIds(triple.getLeft());
+        query.setStoreIds(triple.getMiddle());
+        
         return invitationActivityJoinHistoryMapper.selectByPageCount(query);
     }
-
+    
+    private Triple<List<Long>, List<Long>, Boolean> assertPermission(TokenUser userInfo) {
+        List<Long> franchiseeIds = null;
+        if (Objects.equals(userInfo.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            franchiseeIds = userDataScopeService.selectDataIdByUid(userInfo.getUid());
+            if (CollUtil.isEmpty(franchiseeIds)) {
+                return Triple.of(null, null, false);
+            }
+        }
+        List<Long> storeIds = null;
+        if (Objects.equals(userInfo.getDataType(), User.DATA_TYPE_STORE)) {
+            storeIds = userDataScopeService.selectDataIdByUid(userInfo.getUid());
+            if (CollUtil.isEmpty(storeIds)) {
+                return Triple.of(null, null, false);
+            }
+        }
+        return Triple.of(franchiseeIds, storeIds, true);
+    }
+    
+    
     @Override
     public Integer updateStatusByActivityId(Long activityId, Integer status) {
         return invitationActivityJoinHistoryMapper.updateStatusByActivityId(activityId, status);

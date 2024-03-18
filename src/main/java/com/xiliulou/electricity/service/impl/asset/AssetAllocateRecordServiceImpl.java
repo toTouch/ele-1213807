@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.service.impl.asset;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.collection.CollUtil;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.thread.XllThreadPoolExecutorService;
 import com.xiliulou.core.thread.XllThreadPoolExecutors;
@@ -55,6 +56,7 @@ import com.xiliulou.electricity.vo.asset.AssetAllocateRecordVO;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -444,15 +446,11 @@ public class AssetAllocateRecordServiceImpl implements AssetAllocateRecordServic
         BeanUtil.copyProperties(allocateRecordPageRequest, queryModel);
         queryModel.setTenantId(TenantContextHolder.getTenantId());
         
-        List<Long> franchiseeIds = null;
-        TokenUser userInfo = SecurityUtils.getUserInfo();
-        if (Objects.equals(userInfo.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
-            franchiseeIds = userDataScopeService.selectDataIdByUid(userInfo.getUid());
-            if (org.springframework.util.CollectionUtils.isEmpty(franchiseeIds)) {
-                return Collections.EMPTY_LIST;
-            }
+        Pair<Boolean, List<Long>> pair = getFranchiseeIds(SecurityUtils.getUserInfo());
+        if (!pair.getLeft()) {
+            return new ArrayList<>();
         }
-        queryModel.setFranchiseeIds(franchiseeIds);
+        queryModel.setFranchiseeIds(pair.getRight());
         
         List<AssetAllocateRecordBO> allocateRecordBOList = assetAllocateRecordMapper.selectListByPage(queryModel);
         if (CollectionUtils.isNotEmpty(allocateRecordBOList)) {
@@ -503,17 +501,24 @@ public class AssetAllocateRecordServiceImpl implements AssetAllocateRecordServic
         BeanUtil.copyProperties(allocateRecordPageRequest, queryModel);
         queryModel.setTenantId(TenantContextHolder.getTenantId());
         
-        List<Long> franchiseeIds = null;
-        TokenUser userInfo = SecurityUtils.getUserInfo();
-        if (Objects.equals(userInfo.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
-            franchiseeIds = userDataScopeService.selectDataIdByUid(userInfo.getUid());
-            if (org.springframework.util.CollectionUtils.isEmpty(franchiseeIds)) {
-                return NumberConstant.ZERO;
-            }
+        Pair<Boolean, List<Long>> pair = getFranchiseeIds(SecurityUtils.getUserInfo());
+        if (!pair.getLeft()) {
+            return NumberConstant.ZERO;
         }
-        queryModel.setFranchiseeIds(franchiseeIds);
+        queryModel.setFranchiseeIds(pair.getRight());
         
         return assetAllocateRecordMapper.countTotal(queryModel);
     }
     
+    
+    private Pair<Boolean, List<Long>> getFranchiseeIds(TokenUser userInfo) {
+        List<Long> franchiseeIds = null;
+        if (Objects.equals(userInfo.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            franchiseeIds = userDataScopeService.selectDataIdByUid(userInfo.getUid());
+            if (CollUtil.isEmpty(franchiseeIds)) {
+                return Pair.of(false, null);
+            }
+        }
+        return Pair.of(true, franchiseeIds);
+    }
 }

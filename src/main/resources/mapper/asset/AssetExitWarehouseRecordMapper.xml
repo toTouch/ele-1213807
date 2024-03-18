@@ -64,6 +64,12 @@
             <if test="type != null ">
                 and taewr.type = #{type}
             </if>
+            <if test=" franchiseeIds != null and franchiseeIds.size > 0 ">
+                AND taewr.franchisee_id IN
+                <foreach collection="franchiseeIds" item="id" open="(" close=")" separator=",">
+                    #{id}
+                </foreach>
+            </if>
         </where>
         order by taewr.id desc
         limit #{offset}, #{size}
@@ -82,6 +88,12 @@
             </if>
             <if test="type != null ">
                 and type=#{type}
+            </if>
+            <if test=" franchiseeIds != null and franchiseeIds.size > 0 ">
+                AND franchisee_id IN
+                <foreach collection="franchiseeIds" item="id" open="(" close=")" separator=",">
+                    #{id}
+                </foreach>
             </if>
         </where>
     </select>

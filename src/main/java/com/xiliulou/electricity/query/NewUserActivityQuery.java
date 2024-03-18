@@ -27,5 +27,7 @@ public class NewUserActivityQuery {
      */
     private Integer status;
 
+    
+    private List<Long> franchiseeIds;
 
 }

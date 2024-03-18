@@ -113,9 +113,9 @@ public class JsonAdminShareActivityController extends BaseController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
-            return R.ok(Collections.EMPTY_LIST);
-        }
+        //if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
+        //    return R.ok(Collections.EMPTY_LIST);
+        //}
 
         ShareActivityQuery shareActivityQuery = ShareActivityQuery.builder()
                 .offset(offset)
@@ -147,9 +147,9 @@ public class JsonAdminShareActivityController extends BaseController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
-            return R.ok(NumberConstant.ZERO);
-        }
+        //if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
+        //    return R.ok(NumberConstant.ZERO);
+        //}
 
         ShareActivityQuery shareActivityQuery = ShareActivityQuery.builder()
                 .name(name)

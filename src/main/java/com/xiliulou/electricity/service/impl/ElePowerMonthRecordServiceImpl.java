@@ -1,19 +1,26 @@
 package com.xiliulou.electricity.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.collection.CollUtil;
 import com.alibaba.excel.EasyExcel;
 import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.utils.DataUtil;
+import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.dto.EleMonthPowerGroupDto;
 import com.xiliulou.electricity.entity.ElePower;
 import com.xiliulou.electricity.entity.ElePowerMonthRecord;
+import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.mapper.ElePowerMonthRecordMapper;
 import com.xiliulou.electricity.query.PowerMonthStatisticsQuery;
 import com.xiliulou.electricity.service.ElePowerMonthRecordService;
+import com.xiliulou.electricity.service.UserDataScopeService;
 import com.xiliulou.electricity.service.excel.AutoHeadColumnWidthStyleStrategy;
+import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.ElePowerMonthRecordExcelVo;
+import com.xiliulou.security.bean.TokenUser;
 import org.apache.commons.lang3.tuple.Pair;
+import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.stereotype.Service;
 
 import org.springframework.transaction.annotation.Transactional;
@@ -26,6 +33,7 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import lombok.extern.slf4j.Slf4j;
@@ -39,9 +47,13 @@ import lombok.extern.slf4j.Slf4j;
 @Service("elePowerMonthRecordService")
 @Slf4j
 public class ElePowerMonthRecordServiceImpl implements ElePowerMonthRecordService {
+    
     @Resource
     private ElePowerMonthRecordMapper elePowerMonthRecordMapper;
-
+    
+    @Resource
+    private UserDataScopeService userDataScopeService;
+    
     /**
      * 通过ID查询单条数据从DB
      *
@@ -52,7 +64,7 @@ public class ElePowerMonthRecordServiceImpl implements ElePowerMonthRecordServic
     public ElePowerMonthRecord queryByIdFromDB(Long id) {
         return this.elePowerMonthRecordMapper.queryById(id);
     }
-
+    
     /**
      * 通过ID查询单条数据从缓存
      *
@@ -63,8 +75,8 @@ public class ElePowerMonthRecordServiceImpl implements ElePowerMonthRecordServic
     public ElePowerMonthRecord queryByIdFromCache(Long id) {
         return null;
     }
-
-
+    
+    
     /**
      * 查询多条数据
      *
@@ -76,7 +88,7 @@ public class ElePowerMonthRecordServiceImpl implements ElePowerMonthRecordServic
     public List<ElePowerMonthRecord> queryAllByLimit(int offset, int limit) {
         return this.elePowerMonthRecordMapper.queryAllByLimit(offset, limit);
     }
-
+    
     /**
      * 新增数据
      *
@@ -89,7 +101,7 @@ public class ElePowerMonthRecordServiceImpl implements ElePowerMonthRecordServic
         this.elePowerMonthRecordMapper.insertOne(elePowerMonthRecord);
         return elePowerMonthRecord;
     }
-
+    
     /**
      * 修改数据
      *
@@ -100,9 +112,9 @@ public class ElePowerMonthRecordServiceImpl implements ElePowerMonthRecordServic
     @Transactional(rollbackFor = Exception.class)
     public Integer update(ElePowerMonthRecord elePowerMonthRecord) {
         return this.elePowerMonthRecordMapper.update(elePowerMonthRecord);
-
+        
     }
-
+    
     /**
      * 通过主键删除数据
      *
@@ -114,33 +126,65 @@ public class ElePowerMonthRecordServiceImpl implements ElePowerMonthRecordServic
     public Boolean deleteById(Long id) {
         return this.elePowerMonthRecordMapper.deleteById(id) > 0;
     }
-
+    
     @Override
     public Pair<Boolean, Object> queryMonthStatistics(PowerMonthStatisticsQuery query) {
+        Triple<List<Long>, List<Long>, Boolean> triple = assertPermission(SecurityUtils.getUserInfo());
+        if (!triple.getRight()) {
+            return Pair.of(true, Collections.EMPTY_LIST);
+        }
+        query.setFranchiseeIds(triple.getLeft());
+        query.setStoreIds(triple.getMiddle());
+        
         List<ElePowerMonthRecord> list = this.elePowerMonthRecordMapper.queryPartAttrList(query);
         if (!DataUtil.collectionIsUsable(list)) {
             return Pair.of(true, Collections.EMPTY_LIST);
         }
-
+        
         return Pair.of(true, list.parallelStream().map(e -> {
             ElePowerMonthRecord elePowerMonthRecord = new ElePowerMonthRecord();
             BeanUtil.copyProperties(e, elePowerMonthRecord);
             return elePowerMonthRecord;
         }).collect(Collectors.toList()));
     }
-
+    
     @Override
     public Pair<Boolean, Object> queryMonthStatisticsCount(PowerMonthStatisticsQuery query) {
+        Triple<List<Long>, List<Long>, Boolean> triple = assertPermission(SecurityUtils.getUserInfo());
+        if (!triple.getRight()) {
+            return Pair.of(true, NumberConstant.ZERO);
+        }
+        query.setFranchiseeIds(triple.getLeft());
+        query.setStoreIds(triple.getMiddle());
+        
         return Pair.of(true, this.elePowerMonthRecordMapper.queryCount(query));
     }
-
+    
+    private Triple<List<Long>, List<Long>, Boolean> assertPermission(TokenUser userInfo) {
+        List<Long> franchiseeIds = null;
+        if (Objects.equals(userInfo.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            franchiseeIds = userDataScopeService.selectDataIdByUid(userInfo.getUid());
+            if (CollUtil.isEmpty(franchiseeIds)) {
+                return Triple.of(null, null, false);
+            }
+        }
+        List<Long> storeIds = null;
+        if (Objects.equals(userInfo.getDataType(), User.DATA_TYPE_STORE)) {
+            storeIds = userDataScopeService.selectDataIdByUid(userInfo.getUid());
+            if (CollUtil.isEmpty(storeIds)) {
+                return Triple.of(null, null, false);
+            }
+        }
+        return Triple.of(franchiseeIds, storeIds, true);
+    }
+    
     @Override
     public void exportMonthStatistics(PowerMonthStatisticsQuery query, HttpServletResponse response) {
         List<ElePowerMonthRecord> list = this.elePowerMonthRecordMapper.queryPartAttrList(query);
         if (!DataUtil.collectionIsUsable(list)) {
             throw new CustomBusinessException("没有耗电月记录，无法导出");
         }
-
+        
         List<ElePowerMonthRecordExcelVo> vos = list.parallelStream().map(e -> {
             ElePowerMonthRecordExcelVo vo = new ElePowerMonthRecordExcelVo();
             vo.setCabinetName(e.getEName());
@@ -154,8 +198,7 @@ public class ElePowerMonthRecordServiceImpl implements ElePowerMonthRecordServic
             vo.setDate(e.getDate());
             return vo;
         }).collect(Collectors.toList());
-
-
+        
         String fileName = "耗电量月记录.xlsx";
         try {
             ServletOutputStream outputStream = response.getOutputStream();
@@ -167,22 +210,21 @@ public class ElePowerMonthRecordServiceImpl implements ElePowerMonthRecordServic
             log.error("导出报表失败！", e);
         }
     }
-
+    
     private String generatePowerTypeDetail(String jsonCharge) {
         List<EleMonthPowerGroupDto> eleMonthPowerGroupDtos = JsonUtil.fromJsonArray(jsonCharge, EleMonthPowerGroupDto.class);
         if (!DataUtil.collectionIsUsable(eleMonthPowerGroupDtos)) {
             return "";
         }
-
+        
         StringBuilder sb = new StringBuilder();
         for (EleMonthPowerGroupDto eleMonthPowerGroupDto : eleMonthPowerGroupDtos) {
-            sb.append(queryPowerType(eleMonthPowerGroupDto.getType()))
-                    .append("[").append("月耗电量:").append(eleMonthPowerGroupDto.getSumPower())
-                    .append("月电费:").append(eleMonthPowerGroupDto.getSumCharge()).append("]");
+            sb.append(queryPowerType(eleMonthPowerGroupDto.getType())).append("[").append("月耗电量:").append(eleMonthPowerGroupDto.getSumPower()).append("月电费:")
+                    .append(eleMonthPowerGroupDto.getSumCharge()).append("]");
         }
         return sb.toString();
     }
-
+    
     public String queryPowerType(Integer type) {
         switch (type) {
             case ElePower.ORDINARY_TYPE:

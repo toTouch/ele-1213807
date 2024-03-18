@@ -126,6 +126,18 @@
             <if test="signFinishStatus != null">
                 and tuer.sign_finish_status = #{signFinishStatus}
             </if>
+            <if test="franchiseeIds != null and franchiseeIds.size()>0">
+                and tui.franchisee_id in
+                <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
+                    #{id}
+                </foreach>
+            </if>
+            <if test="storeIds != null and storeIds.size()>0">
+                and tui.store_id in
+                <foreach collection="storeIds" item="id" index="index" open="(" close=")" separator=",">
+                    #{id}
+                </foreach>
+            </if>
         </where>
         order by tuer.create_time desc
         limit #{offset}, #{size}
@@ -148,6 +160,18 @@
             </if>
             <if test="signFinishStatus != null">
                 and tuer.sign_finish_status = #{signFinishStatus}
+            </if>
+            <if test="franchiseeIds != null and franchiseeIds.size()>0">
+                and tui.franchisee_id in
+                <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
+                    #{id}
+                </foreach>
+            </if>
+            <if test="storeIds != null and storeIds.size()>0">
+                and tui.store_id in
+                <foreach collection="storeIds" item="id" index="index" open="(" close=")" separator=",">
+                    #{id}
+                </foreach>
             </if>
         </where>
     </select>
