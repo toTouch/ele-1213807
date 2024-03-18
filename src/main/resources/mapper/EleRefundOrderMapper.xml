@@ -79,7 +79,7 @@
                 and tedo.order_type = #{query.orderType}
             </if>
             <if test="query.refundOrderNo != null and query.refundOrderNo != ''">
-                and tedo.refund_order_no = #{query.refundOrderNo}
+                and tero.refund_order_no = #{query.refundOrderNo}
             </if>
             <if test="query.storeIds != null">
                 and tedo.store_id in
@@ -183,7 +183,7 @@
                 and tedo.pay_type = #{query.payType}
             </if>
             <if test="query.refundOrderNo != null and query.refundOrderNo != ''">
-                and tedo.refund_order_no like concat('%', #{query.phone,jdbcType=VARCHAR}, '%')
+                and tero.refund_order_no like concat('%', #{query.phone,jdbcType=VARCHAR}, '%')
             </if>
             <if test="query.orderType != null and query.orderType != ''">
                 and tedo.order_type = #{query.orderType}

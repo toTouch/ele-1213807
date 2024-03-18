@@ -1250,4 +1250,14 @@
         GROUP BY
             tenant_id
     </select>
+    
+    <select id="listIdsByName" resultType="java.lang.Integer">
+        SELECT
+            id
+        FROM
+            t_electricity_cabinet
+        WHERE
+            del_flag = 0
+          AND name = #{name}
+    </select>
 </mapper>

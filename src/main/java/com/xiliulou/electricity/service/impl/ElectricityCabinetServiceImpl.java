@@ -5563,4 +5563,10 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 .collect(Collectors.toList());
         return R.ok(assignExchangeableVoltageAndCapacityV2(exchangeableList));
     }
+    
+    @Override
+    public List<Integer> listIdsByName(String name) {
+        List<Integer> ids = electricityCabinetMapper.listIdsByName(name);
+        return null;
+    }
 }

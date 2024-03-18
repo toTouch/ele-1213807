@@ -51,7 +51,7 @@ public class RentBatteryOrderQuery {
     /**
      * 换电柜ID
      */
-    private Integer electricityCabinetId;
+    private List<Integer> electricityCabinetIds;
     
     /**
      * 电柜名称
