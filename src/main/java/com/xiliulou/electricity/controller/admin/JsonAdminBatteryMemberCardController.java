@@ -4,7 +4,7 @@ import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.annotation.Log;
 import com.xiliulou.electricity.constant.NumberConstant;
-import com.xiliulou.electricity.query.BatteryMemberCardSortParamQuery;
+import com.xiliulou.electricity.query.MemberCardAndCarRentalPackageSortParamQuery;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.query.BatteryMemberCardQuery;
@@ -269,11 +269,11 @@ public class JsonAdminBatteryMemberCardController extends BaseController {
     /**
      * 批量修改套餐排序参数
      *
-     * @param sortParamDTOList
+     * @param sortParamQueries
      * @return
      */
     @PutMapping("/admin/battery/memberCard/batchUpdateSortParam")
-    public R batchUpdateSortParam(@RequestBody @Validated List<BatteryMemberCardSortParamQuery> sortParamDTOList) {
+    public R batchUpdateSortParam(@RequestBody @Validated List<MemberCardAndCarRentalPackageSortParamQuery> sortParamQueries) {
         
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
@@ -281,11 +281,11 @@ public class JsonAdminBatteryMemberCardController extends BaseController {
         }
         
         // 仅超级管理员和运营商可修改排序参数
-        if (!(SecurityUtils.isAdmin() || !Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
+        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
             return R.ok();
         }
         
-        return R.ok(batteryMemberCardService.batchUpdateSortParam(sortParamDTOList));
+        return R.ok(batteryMemberCardService.batchUpdateSortParam(sortParamQueries));
     }
     
 }

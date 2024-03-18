@@ -451,8 +451,15 @@
     </update>
     
     <update id="batchUpdateSortParam">
-        <foreach collection="sortParamDTOList" item="item" separator=";">
-            update `t_battery_member_card` set sort_param = #{item.sortParam} where id = #{item.id}
+        update t_battery_member_card
+        set sort_param = case id
+            <foreach collection="sortParamQueries" item="item" index="index">
+                when #{item.id} then #{item.sortParam}
+            </foreach>
+            end
+        where id in
+        <foreach collection="sortParamQueries" item="item" index="index" open="(" separator="," close=")">
+            #{item.id}
         </foreach>
     </update>
     

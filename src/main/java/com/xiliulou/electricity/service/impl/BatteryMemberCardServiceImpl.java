@@ -6,7 +6,7 @@ import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
-import com.xiliulou.electricity.query.BatteryMemberCardSortParamQuery;
+import com.xiliulou.electricity.query.MemberCardAndCarRentalPackageSortParamQuery;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.Coupon;
 import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
@@ -364,13 +364,13 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
     }
     
     @Override
-    public Integer batchUpdateSortParam(List<BatteryMemberCardSortParamQuery> sortParamDTOList) {
+    public Integer batchUpdateSortParam(List<MemberCardAndCarRentalPackageSortParamQuery> sortParamQueries) {
         
-        if (Objects.isNull(sortParamDTOList)) {
+        if (Objects.isNull(sortParamQueries)) {
             return null;
         }
         
-        return batteryMemberCardMapper.batchUpdateSortParam(sortParamDTOList);
+        return batteryMemberCardMapper.batchUpdateSortParam(sortParamQueries);
     }
     
     @Slave

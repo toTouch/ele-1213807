@@ -2,6 +2,7 @@ package com.xiliulou.electricity.service.impl.car;
 
 import com.alibaba.fastjson.JSON;
 import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CarRenalCacheConstant;
 import com.xiliulou.electricity.entity.car.CarRentalPackagePo;
@@ -11,6 +12,7 @@ import com.xiliulou.electricity.enums.basic.BasicEnum;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.car.CarRentalPackageMapper;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageQryModel;
+import com.xiliulou.electricity.query.MemberCardAndCarRentalPackageSortParamQuery;
 import com.xiliulou.electricity.service.car.CarRentalPackageOrderService;
 import com.xiliulou.electricity.service.car.CarRentalPackageService;
 import lombok.extern.slf4j.Slf4j;
@@ -22,6 +24,7 @@ import org.springframework.util.CollectionUtils;
 import javax.annotation.Resource;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * 租车套餐表 ServiceImpl
@@ -300,5 +303,15 @@ public class CarRentalPackageServiceImpl implements CarRentalPackageService {
      */
     private void delCache(String key) {
         redisService.delete(key);
+    }
+    
+    @Override
+    public Integer batchUpdateSortParam(List<MemberCardAndCarRentalPackageSortParamQuery> sortParamQueries) {
+        
+        if (Objects.isNull(sortParamQueries)) {
+            return null;
+        }
+        
+        return carRentalPackageMapper.batchUpdateSortParam(sortParamQueries);
     }
 }

@@ -2,6 +2,7 @@ package com.xiliulou.electricity.mapper.car;
 
 import com.xiliulou.electricity.entity.car.CarRentalPackagePo;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageQryModel;
+import com.xiliulou.electricity.query.MemberCardAndCarRentalPackageSortParamQuery;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -98,5 +99,6 @@ public interface CarRentalPackageMapper {
      * @return
      */
     List<CarRentalPackagePo> selectByCouponId(@Param("couponId") Long couponId);
-
+    
+    Integer batchUpdateSortParam(@Param("sortParamQueries") List<MemberCardAndCarRentalPackageSortParamQuery> sortParamQueries);
 }

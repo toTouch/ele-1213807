@@ -10,7 +10,7 @@ import javax.validation.constraints.NotNull;
  * @Date  2024/03/11 15:25
  */
 @Data
-public class BatteryMemberCardSortParamQuery {
+public class MemberCardAndCarRentalPackageSortParamQuery {
     
     /**
      * 套餐id

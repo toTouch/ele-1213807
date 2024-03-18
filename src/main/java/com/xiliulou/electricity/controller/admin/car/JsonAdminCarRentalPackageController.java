@@ -10,6 +10,7 @@ import com.xiliulou.electricity.enums.RentalPackageTypeEnum;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.model.car.opt.CarRentalPackageOptModel;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageQryModel;
+import com.xiliulou.electricity.query.MemberCardAndCarRentalPackageSortParamQuery;
 import com.xiliulou.electricity.query.car.CarRentalPackageQryReq;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.service.car.CarRentalPackageCarBatteryRelService;
@@ -24,6 +25,7 @@ import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.util.CollectionUtils;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
@@ -401,5 +403,25 @@ public class JsonAdminCarRentalPackageController extends BasicController {
 
         return R.ok(carRentalPackageBizService.insertPackage(optModel));
     }
-
+    
+    /**
+     * 批量修改套餐排序参数，排序参数为用户端排序使用
+     * @param sortParamQueries
+     * @return
+     */
+    @PutMapping("/admin/battery/memberCard/batchUpdateSortParam")
+    public R batchUpdateSortParam(@RequestBody @Validated List<MemberCardAndCarRentalPackageSortParamQuery> sortParamQueries) {
+    
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+    
+        // 仅超级管理员和运营商可修改排序参数
+        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
+            return R.ok();
+        }
+        
+        return R.ok(carRentalPackageService.batchUpdateSortParam(sortParamQueries));
+    }
 }
