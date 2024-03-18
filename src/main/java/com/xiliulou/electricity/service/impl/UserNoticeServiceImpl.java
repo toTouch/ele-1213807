@@ -1,12 +1,15 @@
 package com.xiliulou.electricity.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.UserNotice;
 import com.xiliulou.electricity.mapper.UserNoticeMapper;
 import com.xiliulou.electricity.query.UserNoticeQuery;
 import com.xiliulou.electricity.service.UserNoticeService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
+import com.xiliulou.electricity.utils.SecurityUtils;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.stereotype.Service;
 
@@ -24,36 +27,49 @@ public class UserNoticeServiceImpl implements UserNoticeService {
 
 	@Resource
 	UserNoticeMapper userNoticeMapper;
+	
+	@Resource
+	private RedisService redisService;
 
 	@Override
 	public R queryUserNotice() {
 		//tenant
 		Integer tenantId = TenantContextHolder.getTenantId();
 
-		UserNotice userNotice = userNoticeMapper.selectOne(new LambdaQueryWrapper<UserNotice>().eq(UserNotice::getTenantId, tenantId));
+		UserNotice userNotice = userNoticeMapper.selectLatestByTenantId(tenantId);
 		return R.ok(userNotice);
 	}
 
 
 
 	@Override
-	public Triple<Boolean, String, Object> update(UserNoticeQuery userNoticeQuery) {
-		if (Objects.isNull(userNoticeQuery.getId())) {
-			UserNotice userNotice = new UserNotice();
-			userNotice.setContent(userNoticeQuery.getContent());
-			userNotice.setCreateTime(System.currentTimeMillis());
-			userNotice.setUpdateTime(System.currentTimeMillis());
-			userNotice.setTenantId(TenantContextHolder.getTenantId());
-			userNoticeMapper.insert(userNotice);
-		} else {
-
-			UserNotice userNotice = new UserNotice();
-			userNotice.setId(userNoticeQuery.getId());
-			userNotice.setContent(userNoticeQuery.getContent());
-			userNotice.setUpdateTime(System.currentTimeMillis());
-			userNotice.setTenantId(TenantContextHolder.getTenantId());
-			userNoticeMapper.update(userNotice);
+	public Triple<Boolean, String, Object> update(UserNoticeQuery userNoticeQuery, Long uid) {
+		boolean result = redisService.setNx(CacheConstant.CACHE_USER_NOTICE_UPDATE_LOCK + uid, "1", 3 * 1000L, false);
+		if (!result) {
+			return Triple.of(false, "ELECTRICITY.0034", "操作频繁");
 		}
-		return Triple.of(true, null, null);
+		
+		try {
+			if (Objects.isNull(userNoticeQuery.getId())) {
+				UserNotice userNotice = new UserNotice();
+				userNotice.setContent(userNoticeQuery.getContent());
+				userNotice.setCreateTime(System.currentTimeMillis());
+				userNotice.setUpdateTime(System.currentTimeMillis());
+				userNotice.setTenantId(TenantContextHolder.getTenantId());
+				userNoticeMapper.insert(userNotice);
+			} else {
+				
+				UserNotice userNotice = new UserNotice();
+				userNotice.setId(userNoticeQuery.getId());
+				userNotice.setContent(userNoticeQuery.getContent());
+				userNotice.setUpdateTime(System.currentTimeMillis());
+				userNotice.setTenantId(TenantContextHolder.getTenantId());
+				userNoticeMapper.update(userNotice);
+			}
+			
+			return Triple.of(true, null, null);
+		} finally {
+			redisService.delete(CacheConstant.CACHE_USER_NOTICE_UPDATE_LOCK + uid);
+		}
 	}
 }

@@ -558,4 +558,6 @@ public interface CacheConstant {
     
 
     String CACHE_BATCH_SEND_COUPON = "cache_batch_send_coupon:";
+    
+    String CACHE_USER_NOTICE_UPDATE_LOCK = "cache_user_notice_update_lock:";
 }

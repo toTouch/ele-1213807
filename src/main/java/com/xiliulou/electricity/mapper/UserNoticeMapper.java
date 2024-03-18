@@ -13,4 +13,6 @@ import com.xiliulou.electricity.entity.UserNotice;
 public interface UserNoticeMapper extends BaseMapper<UserNotice> {
     
     Integer update(UserNotice userNotice);
+    
+    UserNotice selectLatestByTenantId(Integer tenantId);
 }
