@@ -1075,7 +1075,7 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
         
         BigDecimal yesterdayReturnIncomeResult = new BigDecimal(0);
         if (CollectionUtils.isNotEmpty(yesterdayList)) {
-            for (MerchantChannelEmployeeBindHistoryDTO dto : todayList) {
+            for (MerchantChannelEmployeeBindHistoryDTO dto : yesterdayList) {
                 // 计算渠道员的收入  昨日收入：“结算日期” = 今日，“结算状态” = 已结算 - 已退回（昨日发生的退款）；
                 MerchantPromotionFeeQueryModel yesterdayReturnQueryModel = MerchantPromotionFeeQueryModel.builder().status(MerchantConstant.MERCHANT_REBATE_STATUS_RETURNED)
                         .type(PromotionFeeQueryTypeEnum.CHANNEL_EMPLOYEE.getCode()).merchantUid(uid).uid(SecurityUtils.getUid()).tenantId(TenantContextHolder.getTenantId())
