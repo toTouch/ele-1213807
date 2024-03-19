@@ -131,8 +131,7 @@
     </select>
     
     <select id="selectByPage" resultMap="BatteryMemberCardTypeMap">
-        select * from
-        (select
+        select
         tbmc.id, tbmc.name, tbmc.deposit, tbmc.rent_price, tbmc.rent_price_unit, tbmc.valid_days, tbmc.rent_unit, tbmc.franchisee_id, tbmc.rent_type, tbmc.send_coupon,
         tbmc.status, tbmc.limit_count, tbmc.use_count, tbmc.coupon_id, tbmc.is_refund, tbmc.refund_limit, tbmc.free_deposite,
         tbmc.service_charge, tbmc.remark, tbmc.business_type, tbmc.del_flag, tbmc.tenant_id, tbmc.create_time, tbmc.update_time, tbmc.sort_param,
@@ -178,7 +177,7 @@
                 and tmcbt.mid is null
             </if>
         </where>
-        order by tbmc.id desc) a
+        order by tbmc.id desc
         limit #{offset}, #{size}
     </select>
     
@@ -252,6 +251,8 @@
         bmc.refund_limit,
         bmc.free_deposite,
         bmc.service_charge,
+        bmc.create_time,
+        bmc.sort_param,
         mcbt.id as mcbt_id,
         mcbt.battery_type battery_type
         from t_battery_member_card bmc

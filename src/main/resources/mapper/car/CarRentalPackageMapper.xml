@@ -34,6 +34,7 @@
         <result property="couponId" column="coupon_id" jdbcType="BIGINT" />
         <result property="status" column="status" jdbcType="INTEGER" />
         <result property="remark" column="remark" jdbcType="VARCHAR" />
+        <result property="sortParam" column="sort_param" jdbcType="BIGINT" />
     </resultMap>
 
     <!-- 表名 -->
