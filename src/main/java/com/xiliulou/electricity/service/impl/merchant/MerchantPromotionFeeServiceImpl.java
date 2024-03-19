@@ -360,7 +360,6 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
             bindHistoryList = merchantChannelEmployeeBindHistoryService.selectListByMerchantUid(queryModel);
         }
         
-        log.info("statisticUser bindHistoryList={}", bindHistoryList);
         Long startTime = beginTime;
         while (startTime < endTime) {
             List<MerchantChannelEmployeeBindHistoryDTO> dtoList = null;
@@ -963,9 +962,10 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
             MerchantChannelEmployeeBindHistoryDTO bindHistoryDTO = new MerchantChannelEmployeeBindHistoryDTO();
             BeanUtils.copyProperties(bindHistory, bindHistoryDTO);
             bindHistoryDTO.setQueryStartTime(bindHistory.getBindTime());
-            if (Objects.equals(bindHistory.getBindStatus(), MerchantChannelEmployeeBindHistoryConstant.BIND) && bindHistory.getBindTime() >= endTime) {
+            if (Objects.nonNull(bindHistory.getBindTime()) && bindHistory.getBindTime() >= endTime) {
                 return null;
             }
+            
             if (Objects.nonNull(bindHistory.getUnBindTime()) && bindHistory.getUnBindTime() <= endTime) {
                 bindHistoryDTO.setQueryEndTime(bindHistory.getUnBindTime());
             } else {
