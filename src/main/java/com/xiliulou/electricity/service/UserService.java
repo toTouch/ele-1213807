@@ -133,7 +133,7 @@ public interface UserService {
      */
     Integer updatePhoneByUid(Integer tenantId, Long uid, String newPhone);
     
-    User checkMerchantExist(String name, String phone, Integer typeUserMerchant, Integer tenantId, Long uid);
+    User checkPhoneExist(String name, String phone, Integer typeUserMerchant, Integer tenantId, Long uid);
     
     Integer updateMerchantUser(User updateUser);
     

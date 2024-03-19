@@ -25,6 +25,7 @@ import com.xiliulou.electricity.vo.merchant.MerchantCabinetPowerMonthExcelVO;
 import com.xiliulou.electricity.vo.merchant.MerchantCabinetPowerMonthRecordVO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
@@ -37,11 +38,14 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
+
+import static java.util.stream.Collectors.toMap;
 
 /**
  * @author HeYafeng
@@ -105,9 +109,11 @@ public class MerchantCabinetPowerMonthRecordServiceImpl implements MerchantCabin
             return excelVOList;
         }
         
+        Integer tenantId = TenantContextHolder.getTenantId();
+        
         MerchantPowerDetailQueryModel queryModel = new MerchantPowerDetailQueryModel();
         BeanUtils.copyProperties(request, queryModel);
-        queryModel.setTenantId(TenantContextHolder.getTenantId());
+        queryModel.setTenantId(tenantId);
         
         // 数据库存的是yyyy-MM-01
         queryModel.setMonthDate(monthDate + "-01");
@@ -117,6 +123,14 @@ public class MerchantCabinetPowerMonthRecordServiceImpl implements MerchantCabin
             return excelVOList;
         }
         
+        // 获取场地名称
+        Map<Long, String> placeNameMap = new HashMap<>(detailList.size());
+        Set<Long> placeIdSet = detailList.stream().filter(Objects::nonNull).map(MerchantCabinetPowerMonthDetailVO::getPlaceId).collect(Collectors.toSet());
+        List<MerchantPlace> placeList = merchantPlaceService.queryByIdList(new ArrayList<>(placeIdSet), tenantId);
+        if (ObjectUtils.isNotEmpty(placeList)) {
+            placeNameMap = placeList.stream().collect(toMap(MerchantPlace::getId, MerchantPlace::getName, (key, key1) -> key1));
+        }
+        
         // sumPower不为0的数据
         List<MerchantCabinetPowerMonthDetailVO> hasDataDetailList = detailList.stream().filter(item -> !Objects.equals(item.getSumPower(), NumberConstant.ZERO_D))
                 .collect(Collectors.toList());
@@ -124,6 +138,7 @@ public class MerchantCabinetPowerMonthRecordServiceImpl implements MerchantCabin
         // 按场地进行分组
         Map<Long, List<MerchantCabinetPowerMonthDetailVO>> placeMap = hasDataDetailList.stream().collect(Collectors.groupingBy(MerchantCabinetPowerMonthDetailVO::getPlaceId));
         
+        Map<Long, String> finalPlaceNameMap = placeNameMap;
         placeMap.forEach((placeId, placeDetailList) -> {
             
             // 排序
@@ -173,10 +188,13 @@ public class MerchantCabinetPowerMonthRecordServiceImpl implements MerchantCabin
                     }
                     
                     // 查询场地
-                    MerchantCabinetPowerMonthExcelVO excelVO = MerchantCabinetPowerMonthExcelVO.builder().monthDate(monthDate)
-                            .placeName(Optional.ofNullable(merchantPlaceService.queryByIdFromDB(item.getPlaceId())).orElse(new MerchantPlace()).getName())
-                            .monthSumPower(monthSumPower).monthSumCharge(monthSumCharge).endPower(item.getEndPower()).sumCharge(item.getSumCharge()).endTime(endDate)
-                            .beginTime(beginDate).startPower(item.getStartPower()).sumPower(item.getSumPower()).jsonRule(elePrice).sn(item.getSn()).build();
+                    MerchantCabinetPowerMonthExcelVO excelVO = MerchantCabinetPowerMonthExcelVO.builder().monthDate(monthDate).monthSumPower(monthSumPower)
+                            .monthSumCharge(monthSumCharge).endPower(item.getEndPower()).sumCharge(item.getSumCharge()).endTime(endDate).beginTime(beginDate)
+                            .startPower(item.getStartPower()).sumPower(item.getSumPower()).jsonRule(elePrice).sn(item.getSn()).build();
+                    
+                    if (ObjectUtils.isNotEmpty(finalPlaceNameMap.get(placeId))) {
+                        excelVO.setPlaceName(finalPlaceNameMap.get(placeId));
+                    }
                     
                     excelVOList.add(excelVO);
                 });
@@ -188,13 +206,15 @@ public class MerchantCabinetPowerMonthRecordServiceImpl implements MerchantCabin
                 .collect(Collectors.toList());
         if (CollectionUtils.isNotEmpty(emptyDetailList)) {
             emptyDetailList.forEach(item -> {
-                
+                Long placeId = item.getPlaceId();
                 String beginDate = DateUtils.getYearAndMonthAndDayByTimeStamps(item.getBeginTime());
                 String endDate = DateUtils.getYearAndMonthAndDayByTimeStamps(item.getEndTime());
                 
-                MerchantCabinetPowerMonthExcelVO excelVO = MerchantCabinetPowerMonthExcelVO.builder().monthDate(monthDate)
-                        .placeName(Optional.ofNullable(merchantPlaceService.queryByIdFromDB(item.getPlaceId())).orElse(new MerchantPlace()).getName()).endTime(endDate)
-                        .beginTime(beginDate).build();
+                MerchantCabinetPowerMonthExcelVO excelVO = MerchantCabinetPowerMonthExcelVO.builder().monthDate(monthDate).endTime(endDate).beginTime(beginDate).build();
+                
+                if (ObjectUtils.isNotEmpty(finalPlaceNameMap.get(placeId))) {
+                    excelVO.setPlaceName(finalPlaceNameMap.get(placeId));
+                }
                 
                 excelVOList.add(excelVO);
             });

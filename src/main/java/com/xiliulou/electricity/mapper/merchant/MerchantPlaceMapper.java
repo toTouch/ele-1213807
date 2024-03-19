@@ -29,5 +29,5 @@ public interface MerchantPlaceMapper {
     
     List<MerchantPlaceCabinetVO> selectCabinetList(MerchantPlaceQueryModel queryModel);
     
-    MerchantPlace selectHistoryById(@Param("id") Long id);
+    List<MerchantPlace> selectByIdList(@Param("idList") List<Long> placeIdList,@Param("tenantId") Integer tenantId);
 }

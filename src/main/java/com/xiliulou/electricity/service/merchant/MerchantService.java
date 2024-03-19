@@ -2,6 +2,7 @@ package com.xiliulou.electricity.service.merchant;
 
 import com.xiliulou.electricity.dto.merchant.MerchantDeleteCacheDTO;
 import com.xiliulou.electricity.entity.merchant.Merchant;
+import com.xiliulou.electricity.entity.merchant.MerchantPlace;
 import com.xiliulou.electricity.request.merchant.MerchantPageRequest;
 import com.xiliulou.electricity.request.merchant.MerchantSaveRequest;
 import com.xiliulou.electricity.vo.merchant.MerchantPlaceSelectVO;
@@ -11,6 +12,7 @@ import com.xiliulou.electricity.vo.merchant.MerchantVO;
 import org.apache.commons.lang3.tuple.Triple;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * @author maxiaodong
@@ -55,8 +57,5 @@ public interface MerchantService {
     
     Integer batchUpdateExistPlaceFee(List<Long> merchantIdList, Integer existsPlaceFeeYes, Long currentTimeMillis);
     
-    /**
-     * 根据id查询商户（包含已逻辑删除的）
-     */
-    Merchant queryByIdFromDB(Long id);
+    List<MerchantPlace> listAllByIds(Set<Long> merchantIdSet, Integer tenantId);
 }

@@ -4,7 +4,7 @@ import com.alibaba.excel.EasyExcel;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.merchant.RebateRecordConstant;
 import com.xiliulou.electricity.entity.User;
-import com.xiliulou.electricity.entity.merchant.Merchant;
+import com.xiliulou.electricity.entity.merchant.MerchantPlace;
 import com.xiliulou.electricity.entity.merchant.MerchantPromotionDayRecord;
 import com.xiliulou.electricity.entity.merchant.MerchantPromotionMonthRecord;
 import com.xiliulou.electricity.mapper.merchant.MerchantPromotionMonthRecordMapper;
@@ -26,6 +26,7 @@ import com.xiliulou.electricity.vo.merchant.MerchantPromotionMonthExcelVO;
 import com.xiliulou.electricity.vo.merchant.MerchantPromotionMonthRecordVO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
@@ -40,12 +41,16 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
+
+import static java.util.stream.Collectors.toMap;
 
 /**
  * @author HeYafeng
@@ -123,14 +128,24 @@ public class MerchantPromotionMonthRecordServiceImpl implements MerchantPromotio
             return excelVOList;
         }
         
+        Integer tenantId = TenantContextHolder.getTenantId();
+        
         MerchantPromotionDayRecordQueryModel queryModel = new MerchantPromotionDayRecordQueryModel();
-        queryModel.setTenantId(TenantContextHolder.getTenantId());
+        queryModel.setTenantId(tenantId);
         queryModel.setStartDate(DateUtils.getFirstDayByMonth(monthDate));
         queryModel.setEndDate(DateUtils.getLastDayByMonth(monthDate));
         
         List<MerchantPromotionDayRecordVO> detailList = merchantPromotionDayRecordService.listByTenantId(queryModel);
         if (CollectionUtils.isEmpty(detailList)) {
             return excelVOList;
+        }
+        
+        // 获取商户名称
+        Map<Long, String> merchantNameMap = new HashMap<>(detailList.size());
+        Set<Long> merchantIdSet = detailList.stream().filter(Objects::nonNull).map(MerchantPromotionDayRecordVO::getMerchantId).collect(Collectors.toSet());
+        List<MerchantPlace> merchantList = merchantService.listAllByIds(merchantIdSet, tenantId);
+        if (ObjectUtils.isNotEmpty(merchantList)) {
+            merchantNameMap = merchantList.stream().collect(toMap(MerchantPlace::getId, MerchantPlace::getName, (key, key1) -> key1));
         }
         
         // 不为0的数据
@@ -141,6 +156,7 @@ public class MerchantPromotionMonthRecordServiceImpl implements MerchantPromotio
         // excelVOList 按merchantId进行分组
         Map<Long, List<MerchantPromotionDayRecordVO>> detailMap = hasDataDetailList.stream().collect(Collectors.groupingBy(MerchantPromotionDayRecordVO::getMerchantId));
         
+        Map<Long, String> finalMerchantNameMap = merchantNameMap;
         detailMap.forEach((merchantId, merchantDayRecordVoList) -> {
             
             if (CollectionUtils.isNotEmpty(merchantDayRecordVoList)) {
@@ -187,11 +203,13 @@ public class MerchantPromotionMonthRecordServiceImpl implements MerchantPromotio
                             break;
                     }
                     
-                    MerchantPromotionMonthExcelVO excelVO = MerchantPromotionMonthExcelVO.builder().monthDate(monthDate)
-                            .merchantName(Optional.ofNullable(merchantService.queryByIdFromDB(item.getMerchantId())).orElse(new Merchant()).getName())
-                            .monthFirstMoney(monthFirstMoney).monthRenewMoney(monthRenewMoney)
-                            .inviterName(Optional.ofNullable(userService.queryByUidFromCache(item.getInviterUid())).orElse(new User()).getName()).typeName(typeName)
-                            .dayMoney(dayMoney).date(item.getDate()).build();
+                    MerchantPromotionMonthExcelVO excelVO = MerchantPromotionMonthExcelVO.builder().monthDate(monthDate).monthFirstMoney(monthFirstMoney)
+                            .monthRenewMoney(monthRenewMoney).inviterName(Optional.ofNullable(userService.queryByUidFromCache(item.getInviterUid())).orElse(new User()).getName())
+                            .typeName(typeName).dayMoney(dayMoney).date(item.getDate()).build();
+                    
+                    if (ObjectUtils.isNotEmpty(finalMerchantNameMap.get(merchantId))) {
+                        excelVO.setMerchantName(finalMerchantNameMap.get(merchantId));
+                    }
                     
                     excelVOList.add(excelVO);
                 });
@@ -204,9 +222,12 @@ public class MerchantPromotionMonthRecordServiceImpl implements MerchantPromotio
         
         if (CollectionUtils.isNotEmpty(emptyDetailList)) {
             emptyDetailList.forEach(item -> {
+                Long merchantId = item.getMerchantId();
+                MerchantPromotionMonthExcelVO excelVO = MerchantPromotionMonthExcelVO.builder().monthDate(monthDate).date(item.getDate()).build();
                 
-                MerchantPromotionMonthExcelVO excelVO = MerchantPromotionMonthExcelVO.builder().monthDate(monthDate)
-                        .merchantName(Optional.ofNullable(merchantService.queryByIdFromDB(item.getMerchantId())).orElse(new Merchant()).getName()).date(item.getDate()).build();
+                if (ObjectUtils.isNotEmpty(finalMerchantNameMap.get(merchantId))) {
+                    excelVO.setMerchantName(finalMerchantNameMap.get(merchantId));
+                }
                 
                 excelVOList.add(excelVO);
             });

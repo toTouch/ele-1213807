@@ -481,7 +481,7 @@ public class UserServiceImpl implements UserService {
     
     @Slave
     @Override
-    public User checkMerchantExist(String name, String phone, Integer userType, Integer tenantId, Long uid) {
+    public User checkPhoneExist(String name, String phone, Integer userType, Integer tenantId, Long uid) {
         return userMapper.checkMerchantExist(name, phone, userType, tenantId, uid);
     }
     
