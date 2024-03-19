@@ -67,7 +67,7 @@ public class MemberCardOrderQuery {
     private Integer useStatus;
     
     /**
-     * 套餐名称
+     * 套餐id
      */
-    private String cardName;
+    private Long cardId;
 }

@@ -80,8 +80,8 @@
         <if test="query.payType != null">
             and tel.pay_type = #{query.payType}
         </if>
-        <if test="query.cardName != null and query.cardName != ''">
-            and tel.card_name = #{query.cardName}
+        <if test="query.cardId != null and query.cardId != ''">
+            and tel.member_card_id = #{query.cardId}
         </if>
         <if test="query.queryStartTime != null">
             and tel.create_time BETWEEN #{query.queryStartTime} and #{query.queryEndTime}
@@ -149,8 +149,8 @@
         <if test="query.tenantId != null">
             and tel.tenant_id = #{query.tenantId}
         </if>
-        <if test="query.cardName != null and query.cardName != ''">
-            and tel.card_name = #{query.cardName}
+        <if test="query.cardId != null and query.cardId != ''">
+            and tel.member_card_id = #{query.cardId}
         </if>
         <if test="query.queryStartTime != null">
             and tel.create_time BETWEEN #{query.queryStartTime} and #{query.queryEndTime}
