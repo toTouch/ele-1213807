@@ -135,7 +135,8 @@
         (select
         tbmc.id, tbmc.name, tbmc.deposit, tbmc.rent_price, tbmc.rent_price_unit, tbmc.valid_days, tbmc.rent_unit, tbmc.franchisee_id, tbmc.rent_type, tbmc.send_coupon,
         tbmc.status, tbmc.limit_count, tbmc.use_count, tbmc.coupon_id, tbmc.is_refund, tbmc.refund_limit, tbmc.free_deposite,
-        tbmc.service_charge, tbmc.remark, tbmc.business_type, tbmc.del_flag, tbmc.tenant_id, tbmc.create_time, tbmc.update_time, tbmc.sort_param, tmcbt.mid mcbt_id, tmcbt.battery_type
+        tbmc.service_charge, tbmc.remark, tbmc.business_type, tbmc.del_flag, tbmc.tenant_id, tbmc.create_time, tbmc.update_time, tbmc.sort_param,
+        tmcbt.mid mcbt_id, tmcbt.battery_type
         from t_battery_member_card tbmc
         left join t_member_card_battery_type tmcbt on tbmc.id = tmcbt.mid
         <where>
@@ -177,7 +178,6 @@
                 and tmcbt.mid is null
             </if>
         </where>
-        group by tbmc.id
         order by tbmc.id desc) a
         limit #{offset}, #{size}
     </select>
