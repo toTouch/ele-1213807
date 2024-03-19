@@ -37,4 +37,7 @@ public interface MerchantEmployeeMapper {
     List<MerchantEmployeeVO> selectMerchantUsers(MerchantEmployeeRequest merchantEmployeeRequest);
     
     Integer batchRemoveByUidList(@Param("uidList") List<Long> uidList,@Param("updateTime") Long timeMillis);
+    
+    List<MerchantEmployee> selectListAllByMerchantUid(MerchantPromotionEmployeeDetailQueryModel queryModel);
+    
 }

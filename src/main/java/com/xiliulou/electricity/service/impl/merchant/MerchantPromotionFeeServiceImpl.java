@@ -530,11 +530,10 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
             List<MerchantChannelEmployeeBindHistoryDTO> bindList = buildMerchantChannelEmployeeBindHistoryDTO(bindHistoryList, DateUtils.getDayOfMonthStartTime(1),
                     System.currentTimeMillis());
             
-            List<MerchantChannelEmployeeBindHistoryDTO> settleList = buildMerchantChannelEmployeeBindHistoryDTO(bindHistoryList, DateUtils.getDayOfMonthStartTime(2),
-                    System.currentTimeMillis());
-            
             //统计收入未结算 已退回
             BigDecimal resultNoSettleAmount = new BigDecimal(0);
+            //统计已结算收入
+            BigDecimal resultSettleAmount = new BigDecimal(0);
             for (MerchantChannelEmployeeBindHistoryDTO bindHistoryDto : bindList) {
                 Long startTime = bindHistoryDto.getQueryStartTime();
                 Long endTime = bindHistoryDto.getQueryEndTime();
@@ -545,18 +544,12 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
                 
                 monthIncomeQueryModel.setStatus(MerchantConstant.MERCHANT_REBATE_STATUS_RETURNED);
                 BigDecimal currentMonthReturnInCome = rebateRecordService.sumByStatus(monthIncomeQueryModel);
-    
+                
                 resultNoSettleAmount = resultNoSettleAmount.add(currentMonthNoSettleInCome.subtract(currentMonthReturnInCome));
-            }
-            
-            //统计已结算收入
-            BigDecimal resultSettleAmount = new BigDecimal(0);
-            for (MerchantChannelEmployeeBindHistoryDTO bindHistoryDto : settleList) {
-                Long startTime = bindHistoryDto.getQueryStartTime();
-                Long endTime = bindHistoryDto.getQueryEndTime();
+                
                 MerchantPromotionFeeQueryModel monthSettleIncomeQueryModel = MerchantPromotionFeeQueryModel.builder().status(MerchantConstant.MERCHANT_REBATE_STATUS_SETTLED)
                         .type(PromotionFeeQueryTypeEnum.CHANNEL_EMPLOYEE.getCode()).merchantUid(uid).uid(SecurityUtils.getUid()).tenantId(TenantContextHolder.getTenantId())
-                        .settleStartTime(startTime).settleEndTime(endTime).build();
+                        .rebateStartTime(startTime).rebateEndTime(endTime).build();
                 BigDecimal settleInCome = rebateRecordService.sumByStatus(monthSettleIncomeQueryModel);
                 
                 resultSettleAmount = resultSettleAmount.add(settleInCome);
@@ -572,7 +565,7 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
             BigDecimal currentMonthReturnInCome = rebateRecordService.sumByStatus(monthIncomeQueryModel);
             
             MerchantPromotionFeeQueryModel monthSettleIncomeQueryModel = MerchantPromotionFeeQueryModel.builder().status(MerchantConstant.MERCHANT_REBATE_STATUS_SETTLED).type(type)
-                    .uid(uid).tenantId(TenantContextHolder.getTenantId()).settleStartTime(DateUtils.getDayOfMonthStartTime(2)).settleEndTime(System.currentTimeMillis()).build();
+                    .uid(uid).tenantId(TenantContextHolder.getTenantId()).rebateStartTime(DateUtils.getDayOfMonthStartTime(1)).rebateEndTime(System.currentTimeMillis()).build();
             BigDecimal currentMonthSettleInCome = rebateRecordService.sumByStatus(monthSettleIncomeQueryModel);
             return currentMonthNoSettleInCome.add(currentMonthSettleInCome).subtract(currentMonthReturnInCome);
         }
@@ -601,7 +594,7 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
             return R.ok();
         }
         
-        dataDetailVOList = merchantJoinRecords.parallelStream().map(merchantJoinRecord -> {
+        dataDetailVOList = merchantJoinRecords.stream().map(merchantJoinRecord -> {
             MerchantPromotionDataDetailVO vo = new MerchantPromotionDataDetailVO();
             UserInfo userInfo = userInfoService.queryByUidFromCache(merchantJoinRecord.getJoinUid());
             if (Objects.nonNull(userInfo)) {
@@ -665,7 +658,7 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
                 for (MerchantChannelEmployeeBindHistoryDTO dto : historyDTOList) {
                     MerchantPromotionFeeQueryModel totalIncomeQueryModel = MerchantPromotionFeeQueryModel.builder().status(MerchantConstant.MERCHANT_REBATE_STATUS_SETTLED)
                             .type(PromotionFeeQueryTypeEnum.CHANNEL_EMPLOYEE.getCode()).merchantUid(uid).uid(SecurityUtils.getUid()).tenantId(TenantContextHolder.getTenantId())
-                            .settleStartTime(dto.getQueryStartTime()).settleEndTime(dto.getQueryEndTime()).build();
+                            .rebateStartTime(dto.getQueryStartTime()).rebateEndTime(dto.getQueryEndTime()).build();
                     BigDecimal totalSettleInCome = rebateRecordService.sumByStatus(totalIncomeQueryModel);
                     
                     // 已退回需要用返现日期计算
@@ -681,8 +674,8 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
                 for (MerchantChannelEmployeeBindHistory bindHistory : bindHistoryList) {
                     MerchantPromotionFeeQueryModel totalIncomeQueryModel = MerchantPromotionFeeQueryModel.builder().status(MerchantConstant.MERCHANT_REBATE_STATUS_SETTLED)
                             .type(PromotionFeeQueryTypeEnum.CHANNEL_EMPLOYEE.getCode()).merchantUid(uid).uid(SecurityUtils.getUid()).tenantId(TenantContextHolder.getTenantId())
-                            .settleStartTime(bindHistory.getBindTime())
-                            .settleEndTime(Objects.nonNull(bindHistory.getUnBindTime()) ? bindHistory.getUnBindTime() : System.currentTimeMillis()).build();
+                            .rebateStartTime(bindHistory.getBindTime())
+                            .rebateEndTime(Objects.nonNull(bindHistory.getUnBindTime()) ? bindHistory.getUnBindTime() : System.currentTimeMillis()).build();
                     BigDecimal totalSettleInCome = rebateRecordService.sumByStatus(totalIncomeQueryModel);
                     
                     // 已退回需要用返现日期计算
@@ -699,7 +692,7 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
         } else {
             //累计收入：“结算日期” <= 今日，“结算状态” = 已结算 - 已退回；
             MerchantPromotionFeeQueryModel allSettleIncomeQueryModel = MerchantPromotionFeeQueryModel.builder().status(MerchantConstant.MERCHANT_REBATE_STATUS_SETTLED).type(type)
-                    .uid(uid).tenantId(TenantContextHolder.getTenantId()).settleStartTime(startTime).settleEndTime(endTime).build();
+                    .uid(uid).tenantId(TenantContextHolder.getTenantId()).rebateStartTime(startTime).rebateEndTime(endTime).build();
             BigDecimal allSettleIncome = rebateRecordService.sumByStatus(allSettleIncomeQueryModel);
             
             // 已退回需要用返现日期计算
@@ -875,6 +868,15 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
                 return null;
             }
             
+            if (Objects.equals(bindHistory.getBindStatus(), MerchantChannelEmployeeBindHistoryConstant.UN_BIND)) {
+                if (Objects.nonNull(endTime) && bindHistory.getBindTime() > endTime) {
+                    return null;
+                }
+                if (Objects.nonNull(startTime) && bindHistory.getUnBindTime() < startTime) {
+                    return null;
+                }
+            }
+            
             if (bindHistory.getBindTime() >= startTime) {
                 bindHistoryDTO.setQueryStartTime(bindHistory.getBindTime());
             } else {
@@ -1012,9 +1014,7 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
                     DateUtils.getTimeAgoEndTime(1));
             
             List<MerchantChannelEmployeeBindHistoryDTO> lastMonthList = buildMerchantChannelEmployeeBindHistoryDTO(bindHistoryList, dayOfMonthStartTime, dayOfMonthEndTime);
-            List<MerchantChannelEmployeeBindHistoryDTO> lastSettleMonthList = buildMerchantChannelEmployeeBindHistoryDTO(bindHistoryList, dayOfMonthStartTime,
-                    dayOfMonthEndTime + 60 * 60 * 1000 * 24);
-            handleMerchantTodayIncomeByChannelEmployee(type, uid, merchantPromotionFeeIncomeVO, todayList, yesterdatList, lastMonthList, lastSettleMonthList);
+            handleMerchantTodayIncomeByChannelEmployee(type, uid, merchantPromotionFeeIncomeVO, todayList, yesterdatList, lastMonthList);
         } else {
             // 今日预估收入：“返现日期” = 今日，“结算状态” = 未结算-已退回（今日发生的退款）；
             MerchantPromotionFeeQueryModel todayInComeQueryModel = MerchantPromotionFeeQueryModel.builder().status(MerchantConstant.MERCHANT_REBATE_STATUS_NOT_SETTLE).type(type)
@@ -1029,7 +1029,7 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
             
             // 昨日收入：“结算日期” = 今日，“结算状态” = 已结算 - 已退回（昨日发生的退款）；
             MerchantPromotionFeeQueryModel yesterdaySettleQueryModel = MerchantPromotionFeeQueryModel.builder().status(MerchantConstant.MERCHANT_REBATE_STATUS_SETTLED).type(type)
-                    .uid(uid).tenantId(TenantContextHolder.getTenantId()).settleStartTime(DateUtils.getTodayStartTimeStamp()).settleEndTime(DateUtils.getTodayEndTimeStamp())
+                    .uid(uid).tenantId(TenantContextHolder.getTenantId()).rebateStartTime(DateUtils.getTimeAgoStartTime(1)).rebateEndTime(DateUtils.getTimeAgoEndTime(1))
                     .build();
             BigDecimal todaySettleInCome = rebateRecordService.sumByStatus(yesterdaySettleQueryModel);
             
@@ -1040,7 +1040,7 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
             
             //上月收入：上月1号0点～本月1号0点，“结算状态”= 已结算-已退回（上月发生的退款）；
             MerchantPromotionFeeQueryModel lastMonthNOSettleIncomeQueryModel = MerchantPromotionFeeQueryModel.builder().status(MerchantConstant.MERCHANT_REBATE_STATUS_SETTLED)
-                    .type(type).uid(uid).tenantId(TenantContextHolder.getTenantId()).settleStartTime(dayOfMonthStartTime).settleEndTime(dayOfMonthEndTime + 60 * 60 * 1000 * 24)
+                    .type(type).uid(uid).tenantId(TenantContextHolder.getTenantId()).rebateStartTime(dayOfMonthStartTime).rebateEndTime(dayOfMonthEndTime)
                     .build();
             BigDecimal lastMonthSettleIncome = rebateRecordService.sumByStatus(lastMonthNOSettleIncomeQueryModel);
             
@@ -1057,7 +1057,7 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
     
     private void handleMerchantTodayIncomeByChannelEmployee(Integer type, Long uid, MerchantPromotionFeeIncomeVO merchantPromotionFeeIncomeVO,
             List<MerchantChannelEmployeeBindHistoryDTO> todayList, List<MerchantChannelEmployeeBindHistoryDTO> yesterdayList,
-            List<MerchantChannelEmployeeBindHistoryDTO> lastMonthList, List<MerchantChannelEmployeeBindHistoryDTO> lastSettleMonthList) {
+            List<MerchantChannelEmployeeBindHistoryDTO> lastMonthList) {
         BigDecimal todayIncomeResult = new BigDecimal(0);
         BigDecimal yesterdayIncomeResult = new BigDecimal(0);
         if (CollectionUtils.isNotEmpty(todayList)) {
@@ -1070,43 +1070,31 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
                 todayInComeQueryModel.setStatus(MerchantConstant.MERCHANT_REBATE_STATUS_RETURNED);
                 BigDecimal todayReturnInCome = rebateRecordService.sumByStatus(todayInComeQueryModel);
                 todayIncomeResult = todayIncomeResult.add(todayInCome.subtract(todayReturnInCome));
-                
-                // 计算渠道员的收入  昨日收入：“结算日期” = 今日，“结算状态” = 已结算 - 已退回（昨日发生的退款）；
-                MerchantPromotionFeeQueryModel yesterdaySettleQueryModel = MerchantPromotionFeeQueryModel.builder().status(MerchantConstant.MERCHANT_REBATE_STATUS_SETTLED)
-                        .type(PromotionFeeQueryTypeEnum.CHANNEL_EMPLOYEE.getCode()).merchantUid(uid).uid(SecurityUtils.getUid()).tenantId(TenantContextHolder.getTenantId())
-                        .settleStartTime(dto.getQueryStartTime()).settleEndTime(dto.getQueryEndTime()).build();
-                BigDecimal todaySettleInCome = rebateRecordService.sumByStatus(yesterdaySettleQueryModel);
-                yesterdayIncomeResult = yesterdayIncomeResult.add(todaySettleInCome);
             }
         }
         
         BigDecimal yesterdayReturnIncomeResult = new BigDecimal(0);
         if (CollectionUtils.isNotEmpty(yesterdayList)) {
-            for (MerchantChannelEmployeeBindHistoryDTO dto : todayList) {
+            for (MerchantChannelEmployeeBindHistoryDTO dto : yesterdayList) {
                 // 计算渠道员的收入  昨日收入：“结算日期” = 今日，“结算状态” = 已结算 - 已退回（昨日发生的退款）；
                 MerchantPromotionFeeQueryModel yesterdayReturnQueryModel = MerchantPromotionFeeQueryModel.builder().status(MerchantConstant.MERCHANT_REBATE_STATUS_RETURNED)
                         .type(PromotionFeeQueryTypeEnum.CHANNEL_EMPLOYEE.getCode()).merchantUid(uid).uid(SecurityUtils.getUid()).tenantId(TenantContextHolder.getTenantId())
                         .rebateStartTime(dto.getQueryStartTime()).rebateEndTime(dto.getQueryEndTime()).build();
                 BigDecimal yesterdayReturnInCome = rebateRecordService.sumByStatus(yesterdayReturnQueryModel);
                 yesterdayReturnIncomeResult = yesterdayReturnIncomeResult.add(yesterdayReturnInCome);
+                
+                // 计算渠道员的收入  昨日收入：“结算日期” = 今日，“结算状态” = 已结算 - 已退回（昨日发生的退款）；
+                MerchantPromotionFeeQueryModel yesterdaySettleQueryModel = MerchantPromotionFeeQueryModel.builder().status(MerchantConstant.MERCHANT_REBATE_STATUS_SETTLED)
+                        .type(PromotionFeeQueryTypeEnum.CHANNEL_EMPLOYEE.getCode()).merchantUid(uid).uid(SecurityUtils.getUid()).tenantId(TenantContextHolder.getTenantId())
+                        .rebateStartTime(dto.getQueryStartTime()).rebateEndTime(dto.getQueryEndTime()).build();
+                BigDecimal todaySettleInCome = rebateRecordService.sumByStatus(yesterdaySettleQueryModel);
+                yesterdayIncomeResult = yesterdayIncomeResult.add(todaySettleInCome);
             }
         }
         merchantPromotionFeeIncomeVO.setYesterdayIncome(yesterdayIncomeResult.subtract(yesterdayReturnIncomeResult));
         
+        
         BigDecimal lastMonthSettleIncomeResult = new BigDecimal(0);
-        
-        if (CollectionUtils.isNotEmpty(lastSettleMonthList)) {
-            for (MerchantChannelEmployeeBindHistoryDTO historyDTO : lastSettleMonthList) {
-                // 计算渠道员的收入  上月收入：上月1号0点～本月1号0点，“结算状态”= 已结算
-                MerchantPromotionFeeQueryModel lastMonthNOSettleIncomeQueryModel = MerchantPromotionFeeQueryModel.builder().status(MerchantConstant.MERCHANT_REBATE_STATUS_SETTLED)
-                        .type(PromotionFeeQueryTypeEnum.CHANNEL_EMPLOYEE.getCode()).merchantUid(uid).uid(SecurityUtils.getUid()).tenantId(TenantContextHolder.getTenantId())
-                        .settleStartTime(historyDTO.getQueryStartTime()).settleEndTime(historyDTO.getQueryEndTime()).build();
-                BigDecimal lastMonthSettleIncome = rebateRecordService.sumByStatus(lastMonthNOSettleIncomeQueryModel);
-                
-                lastMonthSettleIncomeResult = lastMonthSettleIncomeResult.add(lastMonthSettleIncome);
-            }
-        }
-        
         BigDecimal lastReturnMonthIncomeResult = new BigDecimal(0);
         if (CollectionUtils.isNotEmpty(lastMonthList)) {
             for (MerchantChannelEmployeeBindHistoryDTO historyDTO : lastMonthList) {
@@ -1117,6 +1105,14 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
                         .rebateEndTime(historyDTO.getQueryEndTime()).build();
                 BigDecimal lastMonthReturnSettleIncome = rebateRecordService.sumByStatus(lastMonthReturnSettleIncomeQueryModel);
                 lastReturnMonthIncomeResult = lastReturnMonthIncomeResult.add(lastMonthReturnSettleIncome);
+                
+                // 计算渠道员的收入  上月收入：上月1号0点～本月1号0点，“结算状态”= 已结算
+                MerchantPromotionFeeQueryModel lastMonthNOSettleIncomeQueryModel = MerchantPromotionFeeQueryModel.builder().status(MerchantConstant.MERCHANT_REBATE_STATUS_SETTLED)
+                        .type(PromotionFeeQueryTypeEnum.CHANNEL_EMPLOYEE.getCode()).merchantUid(uid).uid(SecurityUtils.getUid()).tenantId(TenantContextHolder.getTenantId())
+                        .rebateStartTime(historyDTO.getQueryStartTime()).rebateEndTime(historyDTO.getQueryEndTime()).build();
+                BigDecimal lastMonthSettleIncome = rebateRecordService.sumByStatus(lastMonthNOSettleIncomeQueryModel);
+                
+                lastMonthSettleIncomeResult = lastMonthSettleIncomeResult.add(lastMonthSettleIncome);
             }
         }
         
