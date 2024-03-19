@@ -1312,4 +1312,10 @@ public class MerchantServiceImpl implements MerchantService {
     public Integer batchUpdateExistPlaceFee(List<Long> merchantIdList, Integer existsPlaceFee, Long updateTime) {
         return merchantMapper.batchUpdateExistPlaceFee(merchantIdList, existsPlaceFee, updateTime);
     }
+    
+    @Slave
+    @Override
+    public List<Merchant> queryListByUidList(Set<Long> uidList, Integer tenantId) {
+        return merchantMapper.selectListByUidList(uidList, tenantId);
+    }
 }

@@ -1,11 +1,11 @@
 package com.xiliulou.electricity.mapper.merchant;
 
 import com.xiliulou.electricity.entity.merchant.Merchant;
-import com.xiliulou.electricity.query.merchant.MerchantPromotionFeeMerchantNumQueryModel;
 import com.xiliulou.electricity.query.merchant.MerchantQueryModel;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * @author maxiaodong
@@ -38,4 +38,6 @@ public interface MerchantMapper {
     Integer existsByName(@Param("name") String name, @Param("tenantId") Integer tenantId, @Param("id") Long id);
     
     Integer batchUpdateExistPlaceFee(@Param("merchantIdList") List<Long> merchantIdList,@Param("existsPlaceFee") Integer existsPlaceFee,@Param("updateTime") Long updateTime);
+    
+    List<Merchant> selectListByUidList(@Param("uidList") Set<Long> uidList, @Param("tenantId") Integer tenantId);
 }

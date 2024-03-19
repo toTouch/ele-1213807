@@ -1,13 +1,11 @@
 package com.xiliulou.electricity.service.impl.merchant;
 
 import com.google.api.client.util.Lists;
-import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.utils.PhoneUtils;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.merchant.MerchantChannelEmployeeBindHistoryConstant;
 import com.xiliulou.electricity.constant.merchant.MerchantConstant;
 import com.xiliulou.electricity.constant.merchant.MerchantJoinRecordConstant;
-import com.xiliulou.electricity.constant.merchant.MerchantWithdrawConstant;
 import com.xiliulou.electricity.dto.merchant.MerchantChannelEmployeeBindHistoryDTO;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.UserInfo;
@@ -37,7 +35,6 @@ import com.xiliulou.electricity.service.merchant.MerchantPlaceService;
 import com.xiliulou.electricity.service.merchant.MerchantPromotionFeeService;
 import com.xiliulou.electricity.service.merchant.MerchantService;
 import com.xiliulou.electricity.service.merchant.MerchantUserAmountService;
-import com.xiliulou.electricity.service.merchant.MerchantWithdrawApplicationService;
 import com.xiliulou.electricity.service.merchant.RebateRecordService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DateUtils;
@@ -61,6 +58,7 @@ import com.xiliulou.electricity.vo.merchant.PromotionFeeStatisticAnalysisUserSca
 import com.xiliulou.electricity.vo.merchant.PromotionFeeStatisticAnalysisUserVO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
@@ -70,10 +68,12 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
-import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
-import java.util.concurrent.CompletableFuture;
+import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -172,18 +172,30 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
         if (CollectionUtils.isEmpty(merchantChannelEmployeeBindHistories)) {
             return R.ok();
         }
+    
+        Set<Long> merchantUidList = merchantChannelEmployeeBindHistories.stream().map(MerchantChannelEmployeeBindHistory::getMerchantUid).collect(Collectors.toSet());
+    
+        List<Merchant> merchantList = merchantService.queryListByUidList(merchantUidList, TenantContextHolder.getTenantId());
+        
+        Map<Long, Merchant> merchantMap = new HashMap<>();
+        if (ObjectUtils.isNotEmpty(merchantList)) {
+            merchantMap = merchantList.stream().collect(Collectors.toMap(Merchant::getUid, Function.identity(), (key, key1) -> key1));
+        }
         
         // 需要显示有邀请数据的商户
+        Map<Long, Merchant> finalMerchantMap = merchantMap;
         List<MerchantPromotionFeeMerchantVO> merchantVOList = merchantChannelEmployeeBindHistories.parallelStream().map(bindHistory -> {
             Long merchantUid = bindHistory.getMerchantUid();
-            Merchant merchant = merchantService.queryByUid(merchantUid);
-            if (Objects.nonNull(merchant)) {
+            Merchant merchant = finalMerchantMap.get(merchantUid);
+            
+            if (ObjectUtils.isNotEmpty(merchant)) {
                 MerchantPromotionFeeMerchantVO vo = new MerchantPromotionFeeMerchantVO();
                 vo.setUserName(merchant.getName());
                 vo.setUid(merchant.getUid());
                 vo.setType(PromotionFeeQueryTypeEnum.MERCHANT.getCode());
                 return vo;
             }
+            
             return null;
         }).filter(Objects::nonNull).collect(Collectors.toList());
         

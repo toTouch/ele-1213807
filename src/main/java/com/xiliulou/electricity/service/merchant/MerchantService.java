@@ -2,7 +2,6 @@ package com.xiliulou.electricity.service.merchant;
 
 import com.xiliulou.electricity.dto.merchant.MerchantDeleteCacheDTO;
 import com.xiliulou.electricity.entity.merchant.Merchant;
-import com.xiliulou.electricity.query.merchant.MerchantPromotionFeeMerchantNumQueryModel;
 import com.xiliulou.electricity.request.merchant.MerchantPageRequest;
 import com.xiliulou.electricity.request.merchant.MerchantSaveRequest;
 import com.xiliulou.electricity.vo.merchant.MerchantPlaceSelectVO;
@@ -12,6 +11,7 @@ import com.xiliulou.electricity.vo.merchant.MerchantVO;
 import org.apache.commons.lang3.tuple.Triple;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * @author maxiaodong
@@ -55,4 +55,6 @@ public interface MerchantService {
     void deleteCacheById(Long id);
     
     Integer batchUpdateExistPlaceFee(List<Long> merchantIdList, Integer existsPlaceFeeYes, Long currentTimeMillis);
+    
+    List<Merchant> queryListByUidList(Set<Long> merchantUidList, Integer tenantId);
 }
