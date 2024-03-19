@@ -208,7 +208,7 @@
         <include refid="column"/>
         from t_merchant
         <where>
-            tenantId = #{tenantId}
+            tenant_id = #{tenantId}
             <if test="uidList != null and uidList.size() > 0">
                 and uid in
                 <foreach collection="uidList" item="uid" close=")" open="(" separator=",">
