@@ -384,14 +384,16 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
             query.setBatteryModel(null);
         }
         
-        List<BatteryMemberCard> list = this.batteryMemberCardMapper.selectByPage(query);
+        List<BatteryMemberCardAndTypeVO> list = this.batteryMemberCardMapper.selectByPage(query);
         
         return list.parallelStream().map(item -> {
             BatteryMemberCardVO batteryMemberCardVO = new BatteryMemberCardVO();
             BeanUtils.copyProperties(item, batteryMemberCardVO);
             
             Franchisee franchisee = franchiseeService.queryByIdFromCache(item.getFranchiseeId());
-            batteryMemberCardVO.setFranchiseeName(Objects.nonNull(franchisee) ? franchisee.getName() : "");
+            if (Objects.nonNull(franchisee)) {
+                batteryMemberCardVO.setFranchiseeName(Objects.nonNull(franchisee) ? franchisee.getName() : "");
+            }
             
             // 设置电池型号
             if (Objects.nonNull(franchisee) && Objects.equals(franchisee.getModelType(), Franchisee.NEW_MODEL_TYPE)) {

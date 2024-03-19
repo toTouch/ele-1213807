@@ -27,7 +27,7 @@
         <result property="tenantId" column="tenant_id" jdbcType="INTEGER"/>
         <result property="createTime" column="create_time" jdbcType="INTEGER"/>
         <result property="updateTime" column="update_time" jdbcType="INTEGER"/>
-        <result property="sortParam" column="sort_param" jdbcType="INTEGER"/>
+        <result property="sortParam" column="sort_param" jdbcType="BIGINT"/>
     </resultMap>
     
     <resultMap type="com.xiliulou.electricity.vo.BatteryMemberCardAndTypeVO" id="BatteryMemberCardTypeMap">
@@ -55,6 +55,7 @@
         <result property="tenantId" column="tenant_id" jdbcType="INTEGER"/>
         <result property="createTime" column="create_time" jdbcType="INTEGER"/>
         <result property="updateTime" column="update_time" jdbcType="INTEGER"/>
+        <result property="sortParam" column="sort_param" jdbcType="BIGINT"/>
         <collection property="batteryType" javaType="java.util.List" ofType="com.xiliulou.electricity.entity.MemberCardBatteryType">
             <id property="id" column="mcbt_id" jdbcType="INTEGER"/>
             <result property="batteryType" column="battery_type" jdbcType="VARCHAR"/>
@@ -129,11 +130,12 @@
         limit #{offset}, #{size}
     </select>
     
-    <select id="selectByPage" resultMap="BatteryMemberCardMap">
-        select
+    <select id="selectByPage" resultMap="BatteryMemberCardTypeMap">
+        select * from
+        (select
         tbmc.id, tbmc.name, tbmc.deposit, tbmc.rent_price, tbmc.rent_price_unit, tbmc.valid_days, tbmc.rent_unit, tbmc.franchisee_id, tbmc.rent_type, tbmc.send_coupon,
         tbmc.status, tbmc.limit_count, tbmc.use_count, tbmc.coupon_id, tbmc.is_refund, tbmc.refund_limit, tbmc.free_deposite,
-        tbmc.service_charge, tbmc.remark, tbmc.business_type, tbmc.del_flag, tbmc.tenant_id, tbmc.create_time, tbmc.update_time, tbmc.sort_param
+        tbmc.service_charge, tbmc.remark, tbmc.business_type, tbmc.del_flag, tbmc.tenant_id, tbmc.create_time, tbmc.update_time, tbmc.sort_param, tmcbt.mid mcbt_id, tmcbt.battery_type
         from t_battery_member_card tbmc
         left join t_member_card_battery_type tmcbt on tbmc.id = tmcbt.mid
         <where>
@@ -175,7 +177,8 @@
                 and tmcbt.mid is null
             </if>
         </where>
-        order by id desc
+        group by tbmc.id
+        order by tbmc.id desc) a
         limit #{offset}, #{size}
     </select>
     
@@ -578,9 +581,10 @@
     </select>
     
     <select id="listMemberCardForSort" resultType="com.xiliulou.electricity.vo.BatteryMemberCardVO">
-        select id, name, sort_param
+        select id, name, create_time, sort_param
         from t_battery_member_card
         where del_flag = 0
+        and status = 0
         <if test="tenantId != null">
             and tenant_id = #{tenantId}
         </if>

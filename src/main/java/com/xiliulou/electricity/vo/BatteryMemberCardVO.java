@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.vo;
 
+import com.xiliulou.electricity.entity.MemberCardBatteryType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -151,4 +152,9 @@ public class BatteryMemberCardVO {
      * 排序参数，前台展示给骑手时排序使用
      */
     private Long sortParam;
+    
+    /**
+     * 绑定的所有电池型号
+     */
+    private List<MemberCardBatteryType> batteryTypes;
 }

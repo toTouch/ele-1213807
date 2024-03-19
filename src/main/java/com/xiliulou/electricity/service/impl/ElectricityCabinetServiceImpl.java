@@ -62,7 +62,6 @@ import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.UserBattery;
 import com.xiliulou.electricity.entity.UserBatteryMemberCard;
 import com.xiliulou.electricity.entity.UserInfo;
-import com.xiliulou.electricity.enums.EleCabinetModelHeatingEnum;
 import com.xiliulou.electricity.enums.YesNoEnum;
 import com.xiliulou.electricity.enums.asset.StockStatusEnum;
 import com.xiliulou.electricity.exception.BizException;
@@ -1681,26 +1680,6 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         }
         //缓存柜机GEO信息
         redisService.addGeo(CacheConstant.CACHE_ELECTRICITY_CABINET_GEO + TenantContextHolder.getTenantId(), electricityCabinet.getId().toString(), new Point(electricityCabinet.getLongitude(), electricityCabinet.getLatitude()));
-    }
-    
-    /**
-     * <p>
-     *    Description: queryIdsBySnArray
-     * </p>
-     * @param snList snList
-     * @param tenantId tenantId
-     * @param sourceFranchiseeId sourceFranchiseeId
-     * @return java.util.List<java.lang.Long>
-     * <p>Project: ElectricityCabinetServiceImpl</p>
-     * <p>Copyright: Copyright (c) 2024</p>
-     * <p>Company: www.xiliulou.com</p>
-     * <a herf="https://benyun.feishu.cn/wiki/GrNjwBNZkipB5wkiws2cmsEDnVU#S5pYdtn2ooNnzqxWFbxcqGownbe">12.8 资产调拨（2条优化点)</a>
-     * @author <a href="mailto:wxblifeng@163.com">PeakLee</a>
-     * @since V1.0 2024/3/18
-     */
-    @Override
-    public List<Long> queryIdsBySnArray(List<String> snList, Integer tenantId, Long sourceFranchiseeId) {
-        return this.electricityCabinetMapper.queryIdsBySnArray(snList,tenantId,sourceFranchiseeId);
     }
     
     @Override
@@ -5391,9 +5370,6 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         cabinetModelInsert.setCellSize(electricityCabinetModel.getCellSize());
         cabinetModelInsert.setScreenSize(electricityCabinetModel.getScreenSize());
         cabinetModelInsert.setWaterproofGrade(electricityCabinetModel.getWaterproofGrade());
-        /*****************************12.2 电柜厂家型号（3条优化点）添加默认值 start ************************/
-        cabinetModelInsert.setHeating(EleCabinetModelHeatingEnum.HEATING_NOT_SUPPORT.getCode());
-        /*****************************12.2 电柜厂家型号（3条优化点）end ************************/
         return cabinetModelInsert;
     }
     

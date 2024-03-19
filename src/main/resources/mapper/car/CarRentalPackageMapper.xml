@@ -295,9 +295,10 @@
     </select>
     
     <select id="listCarRentalPackageForSort" resultType="com.xiliulou.electricity.entity.car.CarRentalPackagePo">
-        select id, name, sort_param
+        select id, name, create_time, sort_param
         from <include refid="table_name"/>
         where del_flag = 0
+        and status = 0
         <if test="tenantId != null">
             and tenant_id = #{tenantId}
         </if>
