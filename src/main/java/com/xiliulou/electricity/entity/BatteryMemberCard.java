@@ -11,6 +11,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 /**
  * (BatteryMemberCard)实体类
@@ -137,7 +138,7 @@ public class BatteryMemberCard {
     /**
      * 排序参数，前台展示给骑手时排序使用
      */
-    private Integer sortParam;
+    private Long sortParam;
     
     public static final Integer DEL_NORMAL = 0;
     

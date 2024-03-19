@@ -150,5 +150,5 @@ public class BatteryMemberCardVO {
     /**
      * 排序参数，前台展示给骑手时排序使用
      */
-    private Integer sortParam;
+    private Long sortParam;
 }
