@@ -85,4 +85,6 @@ public interface BatteryMemberCardService {
     Integer isMemberCardBindFranchinsee(Long id, Integer tenantId);
     
     Integer batchUpdateSortParam(List<MemberCardAndCarRentalPackageSortParamQuery> sortParamQueries);
+    
+    List<BatteryMemberCardVO> listMemberCardForSort();
 }

@@ -101,4 +101,6 @@ public interface CarRentalPackageMapper {
     List<CarRentalPackagePo> selectByCouponId(@Param("couponId") Long couponId);
     
     Integer batchUpdateSortParam(@Param("sortParamQueries") List<MemberCardAndCarRentalPackageSortParamQuery> sortParamQueries);
+    
+    List<CarRentalPackagePo> listCarRentalPackageForSort(@Param("tenantId") Integer tenantId);
 }

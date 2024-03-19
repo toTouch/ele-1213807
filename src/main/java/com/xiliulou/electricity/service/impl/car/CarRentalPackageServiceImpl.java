@@ -15,6 +15,7 @@ import com.xiliulou.electricity.model.car.query.CarRentalPackageQryModel;
 import com.xiliulou.electricity.query.MemberCardAndCarRentalPackageSortParamQuery;
 import com.xiliulou.electricity.service.car.CarRentalPackageOrderService;
 import com.xiliulou.electricity.service.car.CarRentalPackageService;
+import com.xiliulou.electricity.tenant.TenantContextHolder;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.stereotype.Service;
@@ -313,5 +314,10 @@ public class CarRentalPackageServiceImpl implements CarRentalPackageService {
         }
         
         return carRentalPackageMapper.batchUpdateSortParam(sortParamQueries);
+    }
+    
+    @Override
+    public List<CarRentalPackagePo> listCarRentalPackageForSort() {
+        return carRentalPackageMapper.listCarRentalPackageForSort(TenantContextHolder.getTenantId());
     }
 }

@@ -424,4 +424,24 @@ public class JsonAdminCarRentalPackageController extends BasicController {
         
         return R.ok(carRentalPackageService.batchUpdateSortParam(sortParamQueries));
     }
+    
+    /**
+     * 查询租车套餐以供排序
+     * @return
+     */
+    @GetMapping("/listCarRentalPackageForSort")
+    public R listCarRentalPackageForSort() {
+    
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+    
+        // 查询数据较多，限制仅超级管理员和运营商可使用
+        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
+            return R.ok();
+        }
+        
+        return R.ok(carRentalPackageService.listCarRentalPackageForSort());
+    }
 }

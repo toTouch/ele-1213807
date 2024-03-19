@@ -1236,6 +1236,7 @@
             t_electricity_battery
         <where>
             del_flag = 0
+            and franchisee_id = #{franchiseeId}
             <if test="sn != null and sn !=''">
                 and sn like concat('%',#{sn,jdbcType=VARCHAR},'%')
             </if>

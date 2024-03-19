@@ -106,4 +106,6 @@ public interface CarRentalPackageService {
     List<CarRentalPackagePo> findByCouponId(Long couponId);
     
     Integer batchUpdateSortParam(List<MemberCardAndCarRentalPackageSortParamQuery> sortParamQueries);
+    
+    List<CarRentalPackagePo> listCarRentalPackageForSort();
 }

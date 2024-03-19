@@ -745,6 +745,13 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
         return Objects.equals(BatteryMemberCard.RENT_UNIT_MINUTES, batteryMemberCard.getRentUnit()) ? validDays * 60 * 1000L : validDays * 24 * 60 * 60 * 1000L;
     }
     
+    @Override
+    @Slave
+    public List<BatteryMemberCardVO> listMemberCardForSort() {
+        
+        return batteryMemberCardMapper.listMemberCardForSort(TenantContextHolder.getTenantId());
+    }
+    
     private List<MemberCardBatteryType> buildMemberCardBatteryTypeList(List<String> batteryModels, Long mid) {
         
         List<MemberCardBatteryType> memberCardBatteryTypeList = Lists.newArrayList();

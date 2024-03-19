@@ -22,5 +22,5 @@ public class MemberCardAndCarRentalPackageSortParamQuery {
      * 套餐排序参数
      */
     @NotNull(message = "套餐排序参数不能为空")
-    private Integer sortParam;
+    private Long sortParam;
 }

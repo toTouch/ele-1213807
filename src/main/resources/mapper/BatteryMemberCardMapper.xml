@@ -576,5 +576,15 @@
             </if>
         </where>
     </select>
+    
+    <select id="listMemberCardForSort" resultType="com.xiliulou.electricity.vo.BatteryMemberCardVO">
+        select id, name, sort_param
+        from t_battery_member_card
+        where del_flag = 0
+        <if test="tenantId != null">
+            and tenant_id = #{tenantId}
+        </if>
+        order by create_time desc
+    </select>
 
 </mapper>

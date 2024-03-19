@@ -288,4 +288,24 @@ public class JsonAdminBatteryMemberCardController extends BaseController {
         return R.ok(batteryMemberCardService.batchUpdateSortParam(sortParamQueries));
     }
     
+    /**
+     * 查询id、name、sortParam供排序使用
+     * @return
+     */
+    @GetMapping("/admin/battery/memberCard/listMemberCardForSort")
+    public R listMemberCardForSort() {
+    
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+    
+        // 查询数据较多，限制仅超级管理员和运营商可使用
+        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
+            return R.ok();
+        }
+        
+        return R.ok(batteryMemberCardService.listMemberCardForSort());
+    }
+    
 }
