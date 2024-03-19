@@ -498,4 +498,10 @@ public class MerchantPlaceServiceImpl implements MerchantPlaceService {
         return Triple.of(true, "", merchantPlaceUpdateShowVO);
     }
     
+    @Slave
+    @Override
+    public List<MerchantPlace> queryByIdList(List<Long> placeIdList, Integer tenantId) {
+        return merchantPlaceMapper.selectByIdList(placeIdList, tenantId);
+    }
+    
 }
