@@ -75,6 +75,9 @@
                     #{id}
                 </foreach>
             </if>
+            <if test="query.insuranceName != null">
+                and tio.insurance_name like concat('%',#{query.insuranceName},'%')
+            </if>
         </where>
         order by tio.create_time desc
         limit #{query.offset},#{query.size}
@@ -140,6 +143,9 @@
                     #{id}
                 </foreach>
             </if>
+            <if test="query.insuranceName != null">
+                and tio.insurance_name like concat('%',#{query.insuranceName},'%')
+            </if>
         </where>
     </select>
 
@@ -159,4 +165,22 @@
         update t_insurance_order set phone=#{newPhone} where uid=#{uid} and tenant_id = #{tenantId}
     </update>
 
+    <select id="selectOrderIds" resultType="com.xiliulou.electricity.vo.insurance.InsuranceOrderIdsVo">
+        select tio.order_id as orderId,tio.insurance_name as insuranceName
+        from t_insurance_order tio left join t_franchisee tf on tio.franchisee_id=tf.id
+        <if test="query.franchiseeIds != null">
+            and tio.franchisee_id in
+            <foreach collection="query.franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
+                #{id}
+            </foreach>
+        </if>
+        <if test="query.storeIds != null">
+            and tio.store_id in
+            <foreach collection="query.storeIds" item="id" index="index" open="(" close=")" separator=",">
+                #{id}
+            </foreach>
+        </if>
+        order by tio.create_time desc
+        limit #{query.offset},#{query.size}
+    </select>
 </mapper>

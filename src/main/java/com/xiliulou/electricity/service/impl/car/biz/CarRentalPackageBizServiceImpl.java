@@ -267,6 +267,7 @@ public class CarRentalPackageBizServiceImpl implements CarRentalPackageBizServic
         }
         carRentalPackageService.delById(packageId, optId);
         carRentalPackageCarBatteryRelService.delByRentalPackageId(packageId, optId);
+        // todo 返回值正确？
         return false;
     }
 

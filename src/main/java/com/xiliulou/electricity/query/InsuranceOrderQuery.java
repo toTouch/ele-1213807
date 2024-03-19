@@ -47,4 +47,9 @@ public class InsuranceOrderQuery {
 
     private List<Long> franchiseeIds;
     private List<Long> storeIds;
+    
+    /**
+     * 保险名称
+     */
+    private String insuranceName;
 }

@@ -1,10 +1,10 @@
 package com.xiliulou.electricity.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.xiliulou.electricity.entity.FranchiseeInsurance;
 import com.xiliulou.electricity.entity.InsuranceOrder;
 import com.xiliulou.electricity.query.InsuranceOrderQuery;
 import com.xiliulou.electricity.vo.InsuranceOrderVO;
+import com.xiliulou.electricity.vo.insurance.InsuranceOrderIdsVo;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
@@ -28,4 +28,6 @@ public interface InsuranceOrderMapper extends BaseMapper<InsuranceOrder> {
     Integer updateUseStatusForRefund(@Param("orderId") String orderId, @Param("useStatus") Integer useStatus);
     
     Integer updatePhoneByUid(@Param("tenantId") Integer tenantId, @Param("uid") Long uid, @Param("newPhone") String newPhone);
+    
+    List<InsuranceOrderIdsVo> selectOrderIds(@Param("query") InsuranceOrderQuery insuranceOrderQuery);
 }

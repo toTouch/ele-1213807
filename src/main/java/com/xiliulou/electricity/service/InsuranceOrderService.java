@@ -3,9 +3,11 @@ package com.xiliulou.electricity.service;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.InsuranceOrder;
 import com.xiliulou.electricity.entity.UserInfo;
+import com.xiliulou.electricity.query.BasePageRequest;
 import com.xiliulou.electricity.query.InsuranceOrderAdd;
 import com.xiliulou.electricity.query.InsuranceOrderQuery;
 import com.xiliulou.electricity.vo.InsuranceOrderVO;
+import com.xiliulou.electricity.vo.insurance.InsuranceOrderIdsVo;
 import org.apache.commons.lang3.tuple.Triple;
 
 import javax.servlet.http.HttpServletRequest;
@@ -64,4 +66,6 @@ public interface InsuranceOrderService {
      * @return 影响行数
      */
     Integer updatePhoneByUid(Integer tenantId, Long uid, String newPhone);
+    
+    List<InsuranceOrderIdsVo> queryOrderIds(BasePageRequest basePageRequest);
 }

@@ -246,6 +246,7 @@
         SELECT COUNT(1) FROM <include refid="table_name" />
         <where>
             `rental_package_id` = #{rentalPackageId}
+             and use_state in('${@com.xiliulou.electricity.enums.UseStateEnum@UN_USED.code}' ,'${@com.xiliulou.electricity.enums.UseStateEnum@IN_USE.code}')
         </where>
     </select>
 
