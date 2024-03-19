@@ -377,13 +377,11 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
     @Override
     public List<BatteryMemberCardVO> selectByPage(BatteryMemberCardQuery query) {
         
-        // 若根据电池型号查询，需要将短型号转换为原型号，当前端传递型号为字符串0时，为标准型号即套餐不分型号，t_member_card_battery_type中未存关联数据
+        // 当前端传递型号为字符串0时，为标准型号即套餐不分型号，t_member_card_battery_type中未存关联数据
         if (StringUtils.isNotEmpty(query.getBatteryModel()) && !("0".equals(query.getBatteryModel()))) {
-            String originalModel = batteryModelService.acquireOriginalModelByShortType(query.getBatteryModel(), TenantContextHolder.getTenantId());
-            if (StringUtils.isNotEmpty(originalModel)) {
-                query.setOriginalBatteryModel(originalModel);
-                query.setBatteryModel(null);
-            }
+            
+            query.setOriginalBatteryModel(query.getBatteryModel());
+            query.setBatteryModel(null);
         }
         
         List<BatteryMemberCard> list = this.batteryMemberCardMapper.selectByPage(query);
@@ -568,14 +566,12 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
     @Slave
     @Override
     public Integer selectByPageCount(BatteryMemberCardQuery query) {
-        
-        // 若根据电池型号查询，需要将短型号转换为原型号，当前端传递型号为字符串0时，为标准型号即套餐不分型号，t_member_card_battery_type中未存关联数据
+    
+        // 当前端传递型号为字符串0时，为标准型号即套餐不分型号，t_member_card_battery_type中未存关联数据
         if (StringUtils.isNotEmpty(query.getBatteryModel()) && !("0".equals(query.getBatteryModel()))) {
-            String originalModel = batteryModelService.acquireOriginalModelByShortType(query.getBatteryModel(), TenantContextHolder.getTenantId());
-            if (StringUtils.isNotEmpty(originalModel)) {
-                query.setOriginalBatteryModel(originalModel);
-                query.setBatteryModel(null);
-            }
+        
+            query.setOriginalBatteryModel(query.getBatteryModel());
+            query.setBatteryModel(null);
         }
         
         return this.batteryMemberCardMapper.selectByPageCount(query);

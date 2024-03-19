@@ -1240,7 +1240,7 @@
                 and sn like concat('%',#{sn,jdbcType=VARCHAR},'%')
             </if>
         </where>
-        
+        limit #{offset}, #{size}
     </select>
     
     <update id="batchExitWarehouse">

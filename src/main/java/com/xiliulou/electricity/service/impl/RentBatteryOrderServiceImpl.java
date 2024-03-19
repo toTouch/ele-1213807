@@ -182,11 +182,6 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
     @Override
     public R queryList(RentBatteryOrderQuery rentBatteryOrderQuery) {
         
-        // 传了电柜名称就去查匹配的电柜ID
-        if (Objects.nonNull(rentBatteryOrderQuery.getElectricityCabinetName())) {
-            rentBatteryOrderQuery.setElectricityCabinetIds(electricityCabinetService.listIdsByName(rentBatteryOrderQuery.getElectricityCabinetName()));
-        }
-        
         List<RentBatteryOrderVO> rentBatteryOrderVOList = rentBatteryOrderMapper.queryList(rentBatteryOrderQuery);
         if (ObjectUtil.isEmpty(rentBatteryOrderVOList)) {
             return R.ok(new ArrayList<>());
@@ -1371,11 +1366,6 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
     @Slave
     @Override
     public R queryCount(RentBatteryOrderQuery rentBatteryOrderQuery) {
-    
-        // 传了电柜名称就去查匹配的电柜ID
-        if (Objects.nonNull(rentBatteryOrderQuery.getElectricityCabinetName())) {
-            rentBatteryOrderQuery.setElectricityCabinetIds(electricityCabinetService.listIdsByName(rentBatteryOrderQuery.getElectricityCabinetName()));
-        }
         
         return R.ok(rentBatteryOrderMapper.queryCount(rentBatteryOrderQuery));
     }
