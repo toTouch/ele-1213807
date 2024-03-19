@@ -1316,7 +1316,7 @@ public class MerchantServiceImpl implements MerchantService {
     
     @Slave
     @Override
-    public List<MerchantPlace> listAllByIds(Set<Long> merchantIdSet, Integer tenantId) {
+    public List<Merchant> listAllByIds(Set<Long> merchantIdSet, Integer tenantId) {
         return merchantMapper.selectListAllByIds(merchantIdSet, tenantId);
     }
 }

@@ -4,7 +4,7 @@ import com.alibaba.excel.EasyExcel;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.merchant.RebateRecordConstant;
 import com.xiliulou.electricity.entity.User;
-import com.xiliulou.electricity.entity.merchant.MerchantPlace;
+import com.xiliulou.electricity.entity.merchant.Merchant;
 import com.xiliulou.electricity.entity.merchant.MerchantPromotionDayRecord;
 import com.xiliulou.electricity.entity.merchant.MerchantPromotionMonthRecord;
 import com.xiliulou.electricity.mapper.merchant.MerchantPromotionMonthRecordMapper;
@@ -143,9 +143,9 @@ public class MerchantPromotionMonthRecordServiceImpl implements MerchantPromotio
         // 获取商户名称
         Map<Long, String> merchantNameMap = new HashMap<>(detailList.size());
         Set<Long> merchantIdSet = detailList.stream().filter(Objects::nonNull).map(MerchantPromotionDayRecordVO::getMerchantId).collect(Collectors.toSet());
-        List<MerchantPlace> merchantList = merchantService.listAllByIds(merchantIdSet, tenantId);
+        List<Merchant> merchantList = merchantService.listAllByIds(merchantIdSet, tenantId);
         if (ObjectUtils.isNotEmpty(merchantList)) {
-            merchantNameMap = merchantList.stream().collect(toMap(MerchantPlace::getId, MerchantPlace::getName, (key, key1) -> key1));
+            merchantNameMap = merchantList.stream().collect(toMap(Merchant::getId, Merchant::getName, (key, key1) -> key1));
         }
         
         // 不为0的数据
