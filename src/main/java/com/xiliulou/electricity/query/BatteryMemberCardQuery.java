@@ -116,5 +116,10 @@ public class BatteryMemberCardQuery {
      * 电池长型号
      */
     private String originalBatteryModel;
+    
+    /**
+     * 不分型号
+     */
+    public static final String REGARDLESS_OF_MODEL = "0";
 
 }

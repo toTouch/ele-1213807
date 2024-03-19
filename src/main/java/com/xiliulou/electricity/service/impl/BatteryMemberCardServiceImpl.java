@@ -378,7 +378,7 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
     public List<BatteryMemberCardVO> selectByPage(BatteryMemberCardQuery query) {
         
         // 当前端传递型号为字符串0时，为标准型号即套餐不分型号，t_member_card_battery_type中未存关联数据
-        if (StringUtils.isNotEmpty(query.getBatteryModel()) && !("0".equals(query.getBatteryModel()))) {
+        if (StringUtils.isNotEmpty(query.getBatteryModel()) && !(BatteryMemberCardQuery.REGARDLESS_OF_MODEL.equals(query.getBatteryModel()))) {
             
             query.setOriginalBatteryModel(query.getBatteryModel());
             query.setBatteryModel(null);
@@ -396,9 +396,11 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
             }
             
             // 设置电池型号
-            if (Objects.nonNull(franchisee) && Objects.equals(franchisee.getModelType(), Franchisee.NEW_MODEL_TYPE)) {
+            if (Objects.nonNull(item.getBatteryType())) {
+    
+                List<String> originalBatteryModels = item.getBatteryType().stream().map(MemberCardBatteryType::getBatteryType).distinct().collect(Collectors.toList());
                 batteryMemberCardVO.setBatteryModels(
-                        batteryModelService.selectShortBatteryType(memberCardBatteryTypeService.selectBatteryTypeByMid(item.getId()), item.getTenantId()));
+                        batteryModelService.selectShortBatteryType(originalBatteryModels, item.getTenantId()));
             }
             
             // 设置优惠券名称

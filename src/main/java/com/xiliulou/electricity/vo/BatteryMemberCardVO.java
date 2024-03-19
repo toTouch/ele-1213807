@@ -156,5 +156,5 @@ public class BatteryMemberCardVO {
     /**
      * 绑定的所有电池型号
      */
-    private List<MemberCardBatteryType> batteryTypes;
+    private List<MemberCardBatteryType> batteryType;
 }
