@@ -28,4 +28,6 @@ public interface MerchantPlaceMapper {
     List<MerchantPlace> selectListByPage(MerchantPlaceQueryModel merchantQueryModel);
     
     List<MerchantPlaceCabinetVO> selectCabinetList(MerchantPlaceQueryModel queryModel);
+    
+    List<MerchantPlace> selectByIdList(@Param("idList") List<Long> placeIdList,@Param("tenantId") Integer tenantId);
 }
