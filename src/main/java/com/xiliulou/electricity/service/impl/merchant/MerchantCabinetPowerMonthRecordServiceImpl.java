@@ -23,6 +23,7 @@ import com.xiliulou.electricity.utils.DateUtils;
 import com.xiliulou.electricity.vo.merchant.MerchantCabinetPowerMonthDetailVO;
 import com.xiliulou.electricity.vo.merchant.MerchantCabinetPowerMonthExcelVO;
 import com.xiliulou.electricity.vo.merchant.MerchantCabinetPowerMonthRecordVO;
+import com.xiliulou.electricity.vo.merchant.MerchantPromotionDayRecordVO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.ObjectUtils;
@@ -205,6 +206,10 @@ public class MerchantCabinetPowerMonthRecordServiceImpl implements MerchantCabin
         List<MerchantCabinetPowerMonthDetailVO> emptyDetailList = detailList.stream().filter(item -> Objects.equals(item.getSumPower(), NumberConstant.ZERO_D))
                 .collect(Collectors.toList());
         if (CollectionUtils.isNotEmpty(emptyDetailList)) {
+    
+            // emptyDetailList 按placeId进行升序
+            emptyDetailList.sort(Comparator.comparing(MerchantCabinetPowerMonthDetailVO::getPlaceId));
+            
             emptyDetailList.forEach(item -> {
                 Long placeId = item.getPlaceId();
                 String beginDate = DateUtils.getYearAndMonthAndDayByTimeStamps(item.getBeginTime());

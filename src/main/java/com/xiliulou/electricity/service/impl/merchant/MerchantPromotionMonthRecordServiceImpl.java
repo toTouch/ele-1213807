@@ -221,6 +221,10 @@ public class MerchantPromotionMonthRecordServiceImpl implements MerchantPromotio
         List<MerchantPromotionDayRecordVO> emptyDetailList = detailList.stream().filter(item -> item.getMoney().compareTo(BigDecimal.ZERO) == 0).collect(Collectors.toList());
         
         if (CollectionUtils.isNotEmpty(emptyDetailList)) {
+    
+            // emptyDetailList 按merchantId进行升序
+            emptyDetailList.sort(Comparator.comparing(MerchantPromotionDayRecordVO::getMerchantId));
+            
             emptyDetailList.forEach(item -> {
                 Long merchantId = item.getMerchantId();
                 MerchantPromotionMonthExcelVO excelVO = MerchantPromotionMonthExcelVO.builder().monthDate(monthDate).date(item.getDate()).build();
