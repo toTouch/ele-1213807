@@ -360,28 +360,79 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
             bindHistoryList = merchantChannelEmployeeBindHistoryService.selectListByMerchantUid(queryModel);
         }
         
+        log.info("statisticUser bindHistoryList={}", bindHistoryList);
         Long startTime = beginTime;
         while (startTime < endTime) {
             List<MerchantChannelEmployeeBindHistoryDTO> dtoList = null;
-            if (CollectionUtils.isNotEmpty(bindHistoryList)) {
-                dtoList = Lists.newArrayList();
-                for (MerchantChannelEmployeeBindHistory bindHistory : bindHistoryList) {
-                    MerchantChannelEmployeeBindHistoryDTO historyDTO = new MerchantChannelEmployeeBindHistoryDTO();
-                    BeanUtils.copyProperties(bindHistory, historyDTO);
-                    if (Objects.isNull(bindHistory.getUnBindTime())) {
-                        historyDTO.setQueryEndTime(DateUtils.getDayEndTimeStampByDate(startTime));
-                    }
-                    dtoList.add(historyDTO);
-                }
-            }
-            
+            long endOfDayTimestamp = DateUtils.getEndOfDayTimestamp(startTime);
+    
             int scanCodeNum = 0;
             int purchaseNum = 0;
             int renewalNum = 0;
-            if (CollectionUtils.isNotEmpty(dtoList)) {
-                scanCodeNum = buildScanCodeCount(type, uid, startTime, DateUtils.getEndOfDayTimestamp(startTime), null, dtoList);
-                purchaseNum = buildScanCodeCount(type, uid, startTime, DateUtils.getEndOfDayTimestamp(startTime), MerchantJoinRecordConstant.STATUS_SUCCESS, dtoList);
-                renewalNum = buildRenewalNum(type, uid, startTime, DateUtils.getEndOfDayTimestamp(startTime), dtoList);
+            
+            if (CollectionUtils.isNotEmpty(bindHistoryList)) {
+                dtoList = Lists.newArrayList();
+                for (MerchantChannelEmployeeBindHistory bindHistory : bindHistoryList) {
+                    Long startTimeTemp = null;
+                    Long endTimeTemp = null;
+                    
+                    MerchantChannelEmployeeBindHistoryDTO historyDTO = new MerchantChannelEmployeeBindHistoryDTO();
+                    if (Objects.isNull(bindHistory.getBindTime())) {
+                        continue;
+                    }
+    
+                    // 绑定时间大于结束时间过滤掉
+                    if (bindHistory.getBindTime() > endOfDayTimestamp) {
+                        continue;
+                    }
+                    
+                    if (Objects.equals(bindHistory.getBindStatus(), MerchantChannelEmployeeBindHistoryConstant.UN_BIND)) {
+                        if (Objects.isNull(bindHistory.getUnBindTime())) {
+                            continue;
+                        }
+                        
+                        // 解绑时间小于开始时间过滤
+                        if (bindHistory.getUnBindTime() < startTime) {
+                            continue;
+                        }
+                        
+                        // 设置结束时间
+                        if (bindHistory.getUnBindTime() < endOfDayTimestamp) {
+                            endTimeTemp = bindHistory.getUnBindTime();
+                        } else {
+                            endTimeTemp = endOfDayTimestamp;
+                        }
+                        
+                    } else {
+                        // 绑定状态结束时间为统计日期的当天日期末尾
+                        endTimeTemp = endOfDayTimestamp;
+                    }
+                    
+                    // 设置绑定时间
+                    if (bindHistory.getBindTime() > startTime) {
+                        startTimeTemp = bindHistory.getBindTime();
+                    } else {
+                        startTimeTemp = startTime;
+                    }
+                    
+                    if (Objects.isNull(startTimeTemp) || Objects.isNull(endTimeTemp)) {
+                        continue;
+                    }
+                    
+                    BeanUtils.copyProperties(bindHistory, historyDTO);
+    
+                    historyDTO.setQueryStartTime(startTimeTemp);
+                    historyDTO.setQueryEndTime(endTimeTemp);
+                    
+                    dtoList.add(historyDTO);
+                }
+    
+                if (CollectionUtils.isNotEmpty(dtoList)) {
+                    scanCodeNum = buildScanCodeCount(type, uid, null, null, null, dtoList);
+                    purchaseNum = buildScanCodeCount(type, uid, null, null, MerchantJoinRecordConstant.STATUS_SUCCESS, dtoList);
+                    renewalNum = buildRenewalNum(type, uid, null, null, dtoList);
+                }
+              
             } else {
                 scanCodeNum = buildScanCodeCount(type, uid, startTime, DateUtils.getEndOfDayTimestamp(startTime), null, null);
                 purchaseNum = buildScanCodeCount(type, uid, startTime, DateUtils.getEndOfDayTimestamp(startTime), MerchantJoinRecordConstant.STATUS_SUCCESS, null);
@@ -412,6 +463,7 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
         userVO.setPurchaseVOList(purchaseVOList);
         userVO.setScanCodeVOList(scanCodeVOList);
         userVO.setRenewalVOList(renewalVOList);
+        
         return R.ok(userVO);
     }
     
