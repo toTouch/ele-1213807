@@ -441,7 +441,7 @@ public class InsuranceOrderServiceImpl extends ServiceImpl<InsuranceOrderMapper,
     public List<InsuranceOrderIdsVo> queryOrderIds(BasePageRequest basePageRequest) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
-            new BizException("ELECTRICITY.0001", "未找到用户");
+            throw new BizException("ELECTRICITY.0001", "未找到用户");
         }
         
         List<Long> storeIds = null;

@@ -14,7 +14,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -144,7 +143,7 @@ public class JsonAdminInsuranceOrderController {
      * @param offset offset
      * @return R
      */
-    @GetMapping("/admin/insuranceOrder/list2")
+    @GetMapping("/admin/insuranceOrder/queryOrderIds")
     public R queryOrderIds(@RequestParam("size") Long size, @RequestParam("offset") Long offset) {
         if (size < 0 || size > 50) {
             size = 10L;
@@ -153,12 +152,6 @@ public class JsonAdminInsuranceOrderController {
             offset = 0L;
         }
         return R.ok(insuranceOrderService.queryOrderIds(new BasePageRequest(size, offset)));
-    }
-    
-    @GetMapping("/admin/insuranceOrder/hello")
-    public R hello(){
-        System.out.println("hello word");
-        return R.ok();
     }
     
 }

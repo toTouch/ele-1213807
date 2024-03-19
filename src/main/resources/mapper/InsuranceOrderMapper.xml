@@ -168,13 +168,13 @@
     <select id="selectOrderIds" resultType="com.xiliulou.electricity.vo.insurance.InsuranceOrderIdsVo">
         select tio.order_id as orderId,tio.insurance_name as insuranceName
         from t_insurance_order tio left join t_franchisee tf on tio.franchisee_id=tf.id
-        <if test="query.franchiseeIds != null">
+        <if test="query.franchiseeIds != null  and query.franchiseeIds.size() > 0">
             and tio.franchisee_id in
             <foreach collection="query.franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
                 #{id}
             </foreach>
         </if>
-        <if test="query.storeIds != null">
+        <if test="query.storeIds != null and query.storeIds.size() > 0">
             and tio.store_id in
             <foreach collection="query.storeIds" item="id" index="index" open="(" close=")" separator=",">
                 #{id}

@@ -19,10 +19,10 @@ public class InsuranceOrderIdsVo {
     /**
      * orderId
      */
-    Long orderId;
+    private String orderId;
     
     /**
      * 保险名称
      */
-    Long insuranceName;
+    private String insuranceName;
 }
