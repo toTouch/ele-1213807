@@ -138,12 +138,12 @@ public class JsonAdminInsuranceOrderController {
     
     /**
      * 保险列表orderIds下拉框
-     *
+     * 由于路径无权限，路径不统一
      * @param size   size
      * @param offset offset
      * @return R
      */
-    @GetMapping("/admin/insuranceOrder/queryOrderIds")
+    @GetMapping("/admin/franchiseeInsurance/queryOrderIds")
     public R queryOrderIds(@RequestParam(value = "size") Long size, @RequestParam("offset") Long offset,
             @RequestParam(value = "type",required = false) Integer type) {
         if (size < 0 || size > 50) {
