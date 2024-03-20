@@ -2299,7 +2299,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             expireMembercardServiceFeeOrderInsert.setSn(Objects.isNull(electricityBattery) ? "" : electricityBattery.getSn());
             expireMembercardServiceFeeOrderInsert.setPayAmount(expireBatteryServiceFee);
             expireMembercardServiceFeeOrderInsert.setBatteryServiceFee(batteryMemberCard.getServiceCharge());
-            expireMembercardServiceFeeOrderInsert.setBatteryServiceFeeGenerateTime(memberCardExpireTime);
+            expireMembercardServiceFeeOrderInsert.setBatteryServiceFeeGenerateTime(userBatteryMemberCard.getMemberCardExpireTime());
             expireMembercardServiceFeeOrderInsert.setBatteryServiceFeeEndTime(System.currentTimeMillis());
             expireMembercardServiceFeeOrderInsert.setSource(EleBatteryServiceFeeOrder.MEMBER_CARD_OVERDUE);
             expireMembercardServiceFeeOrderInsert.setPayTime(System.currentTimeMillis());
