@@ -368,7 +368,7 @@ public class NormalOffLineEleExchangeHandlerIot extends AbstractElectricityIotHa
                 .newElectricityBatterySn(offlineOrderMessage.getNewElectricityBatterySn()).oldElectricityBatterySn(offlineOrderMessage.getOldElectricityBatterySn()).orderSeq(null)
                 .status(orderStatus).source(Objects.isNull(offlineOrderMessage.getOfflineOrderStatus()) ? ORDER_SOURCE_FOR_OFFLINE : offlineOrderMessage.getOfflineOrderStatus())
                 .paymentMethod(BatteryMemberCard.BUSINESS_TYPE_BATTERY).createTime(offlineOrderMessage.getStartTime()).updateTime(offlineOrderMessage.getEndTime())
-                .storeId(electricityCabinet.getStoreId()).tenantId(electricityCabinet.getTenantId()).build();
+                .franchiseeId(electricityCabinet.getFranchiseeId()).storeId(electricityCabinet.getStoreId()).tenantId(electricityCabinet.getTenantId()).build();
     }
     
     private void handleBatteryTrackRecord(ElectricityCabinetOrder electricityCabinetOrder, ElectricityCabinet electricityCabinet, UserInfo userInfo) {
