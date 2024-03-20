@@ -1235,13 +1235,13 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
                 if (Objects.equals(tripleCheck.getMiddle(), "100211")) {
                     vo.setStatus("4");
                 }
-                if (Objects.equals(tripleCheck.getMiddle(), "ELECTRICITY.100004")) {
+                if (Objects.equals(tripleCheck.getMiddle(), "120314")) {
                     vo.setStatus("3");
                 }
-                if (Objects.equals(tripleCheck.getMiddle(), "ELECTRICITY.100000")) {
+                if (Objects.equals(tripleCheck.getMiddle(), "120315")) {
                     vo.setStatus("1");
                 }
-                if (Objects.equals(tripleCheck.getMiddle(), "ELECTRICITY.0045")) {
+                if (Objects.equals(tripleCheck.getMiddle(), "120316")) {
                     vo.setStatus("2");
                 }
             }
