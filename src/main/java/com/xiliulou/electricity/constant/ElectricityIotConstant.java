@@ -316,6 +316,8 @@ public class ElectricityIotConstant {
 
     public static final String ELE_BATTERY_SNAPSHOT = "battery_snap_shot";
 
+    public static final String ELE_BATTERY_SNAPSHOT_RSP = "battery_snap_shot_rsp";
+
     /**
      * 电柜模板 app参数设置
      */
@@ -502,6 +504,8 @@ public class ElectricityIotConstant {
 
         COMMAND_HANDLER_MAPS.put(GET_CARD_NUM_ICCID, ICID_COMMAND_IOT_HANDLER);
         COMMAND_HANDLER_MAPS.put(ELE_COMMAND_ICCID_GET_RSP, ICID_COMMAND_IOT_HANDLER);
+        COMMAND_HANDLER_MAPS.put(ELE_BATTERY_SNAPSHOT_RSP, NORMAL_BATTERY_SNAPSHOT_HANDLER);
+
 
 
         COMMAND_HANDLER_MAPS.put(OFFLINE_ELE_EXCHANGE_ORDER_RSP, NORMAL_OFFLINE_ELE_EXCHANGE_HANDLER);
