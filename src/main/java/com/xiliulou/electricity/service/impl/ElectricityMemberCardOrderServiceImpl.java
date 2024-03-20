@@ -2277,12 +2277,14 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             expireMembercardServiceFeeOrder.setUpdateTime(System.currentTimeMillis());
             expireMembercardServiceFeeOrder.setPayTime(System.currentTimeMillis());
             batteryServiceFeeOrderService.updateByOrderNo(expireMembercardServiceFeeOrder);
-        }else{
-            //兼容套餐过期，定时任务还未生成滞纳金订单的场景
+        }
+    
+        //兼容套餐过期，定时任务还未生成滞纳金订单的场景
+        if (userBatteryMemberCard.getMemberCardExpireTime() < System.currentTimeMillis() && StringUtils.isBlank(serviceFeeUserInfo.getExpireOrderNo())) {
             Franchisee franchisee = franchiseeService.queryByIdFromCache(userInfo.getFranchiseeId());
             ElectricityBattery electricityBattery = electricityBatteryService.queryByUid(userInfo.getUid());
             List<String> userBatteryTypes = userBatteryTypeService.selectByUid(userInfo.getUid());
-    
+        
             EleBatteryServiceFeeOrder expireMembercardServiceFeeOrderInsert = new EleBatteryServiceFeeOrder();
             expireMembercardServiceFeeOrderInsert.setUid(userInfo.getUid());
             expireMembercardServiceFeeOrderInsert.setOrderId(OrderIdUtil.generateBusinessOrderId(BusinessType.BATTERY_STAGNATE, userInfo.getUid()));
