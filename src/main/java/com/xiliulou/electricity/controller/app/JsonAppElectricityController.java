@@ -49,27 +49,27 @@ public class JsonAppElectricityController extends BaseController {
     /**
      * 保存机柜日志
      */
-    @PostMapping("/app/electricity/save/log")
-    public R addOfficeAccountMerchantFile(@RequestParam("file") MultipartFile file,
-                                          @RequestParam("deviceName") String deviceName,
-                                          @RequestParam("productKey") String productKey) {
-        if (Objects.isNull(deviceName) || Objects.isNull(productKey)) {
-            return R.fail("请传入正确的信息");
-        }
-
-        ElectricityCabinet cupboard = electricityCabinetService.queryByProductAndDeviceName(productKey, deviceName);
-        if (Objects.isNull(cupboard)) {
-            return R.fail("机柜不存在");
-        }
-
-        String objectName = "logs/" + deviceName + file.getOriginalFilename();
-        try {
-            aliyunOssService.uploadFile(storageConfig.getBucketName(), objectName, file.getInputStream());
-
-        } catch (IOException e) {
-            log.error("上传失败", e);
-            e.printStackTrace();
-        }
-        return R.ok();
-    }
+//    @PostMapping("/app/electricity/save/log")
+//    public R addOfficeAccountMerchantFile(@RequestParam("file") MultipartFile file,
+//                                          @RequestParam("deviceName") String deviceName,
+//                                          @RequestParam("productKey") String productKey) {
+//        if (Objects.isNull(deviceName) || Objects.isNull(productKey)) {
+//            return R.fail("请传入正确的信息");
+//        }
+//
+//        ElectricityCabinet cupboard = electricityCabinetService.queryByProductAndDeviceName(productKey, deviceName);
+//        if (Objects.isNull(cupboard)) {
+//            return R.fail("机柜不存在");
+//        }
+//
+//        String objectName = "logs/" + deviceName + file.getOriginalFilename();
+//        try {
+//            aliyunOssService.uploadFile(storageConfig.getBucketName(), objectName, file.getInputStream());
+//
+//        } catch (IOException e) {
+//            log.error("上传失败", e);
+//            e.printStackTrace();
+//        }
+//        return R.ok();
+//    }
 }
