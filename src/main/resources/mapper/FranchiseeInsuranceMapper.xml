@@ -276,7 +276,7 @@
     
     
     <select id="selectOrderIds" resultType="com.xiliulou.electricity.vo.insurance.FranchiseeInsuranceOrderIdsVo">
-        select tf.id,tf.insuranceName
+        select tf.id,tf.name as insuranceName
         from t_franchisee_insurance tf left join t_insurance_instruction ti on tf.id=ti.insurance_id
         where tf.del_flag=0
         <if test="tenantId != null ">
