@@ -1,10 +1,13 @@
 package com.xiliulou.electricity.task;
 
+import cn.hutool.core.util.IdUtil;
+import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.service.EleBatteryServiceFeeOrderService;
 import com.xxl.job.core.biz.model.ReturnT;
 import com.xxl.job.core.handler.IJobHandler;
 import com.xxl.job.core.handler.annotation.JobHandler;
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -24,6 +27,7 @@ public class BatteryMembercardExpireServiceFeeOrderTask extends IJobHandler {
 
     @Override
     public ReturnT<String> execute(String s) throws Exception {
+        MDC.put(CommonConstant.TRACE_ID, IdUtil.fastSimpleUUID());
 
         try {
             batteryServiceFeeOrderService.membercardExpireGenerateServiceFeeOrder(s);
