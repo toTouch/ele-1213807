@@ -3,6 +3,7 @@ package com.xiliulou.electricity.request.asset;
 import com.xiliulou.electricity.validator.CreateGroup;
 import lombok.Data;
 
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.Size;
 
@@ -12,7 +13,7 @@ public class CarBatchSaveExcelRequest {
     /**
      * 车辆sn
      */
-    @NotEmpty(message = "车辆sn不能为空!", groups = {CreateGroup.class})
+    @NotBlank(message = "车辆sn不能为空!", groups = {CreateGroup.class})
     private String sn;
     
     /**
