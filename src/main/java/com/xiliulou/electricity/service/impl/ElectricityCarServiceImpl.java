@@ -1263,11 +1263,11 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
                 return R.fail("100604", "车牌号输入长度超限，最长9位，请检查修改后再导入");
             }
     
-            if (StringUtils.isNotBlank(vin) && vin.length() > AssetConstant.ASSET_CAR_BATCH_SAVE_LICENSE_PLATE_NUMBER_SIZE) {
+            if (StringUtils.isNotBlank(vin) && vin.length() > AssetConstant.ASSET_CAR_BATCH_SAVE_VIN_SIZE) {
                 return R.fail("100605", "车架号输入长度超限，最长17位，请检查修改后再导入");
             }
     
-            if (StringUtils.isNotBlank(motorNumber) && motorNumber.length() > AssetConstant.ASSET_CAR_BATCH_SAVE_LICENSE_PLATE_NUMBER_SIZE) {
+            if (StringUtils.isNotBlank(motorNumber) && motorNumber.length() > AssetConstant.ASSET_CAR_BATCH_SAVE_MOTOR_NUMBER_SIZE) {
                 return R.fail("100606", "电机号输入长度超限，最长17位，请检查修改后再导入");
             }
     
