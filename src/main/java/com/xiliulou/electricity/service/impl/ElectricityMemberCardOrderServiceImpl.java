@@ -2178,7 +2178,14 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             log.error("admin saveUserMemberCard  ERROR! memberCard  is not exit,uid={},memberCardId={}", user.getUid(), userBatteryMemberCard.getMemberCardId());
             return R.fail("ELECTRICITY.00121", "套餐不存在");
         }
-        
+    
+        Triple<Boolean, Integer, BigDecimal> acquireUserBatteryServiceFeeResult = serviceFeeUserInfoService
+                .acquireUserBatteryServiceFee(userInfo, userBatteryMemberCard, batteryMemberCard, serviceFeeUserInfo);
+        if (!acquireUserBatteryServiceFeeResult.getLeft()) {
+            log.warn("admin clean service fee ERROR! user not exist service fee,uid={}", user.getUid());
+            return R.ok();
+        }
+    
         //套餐过期时间
         Long memberCardExpireTime = userBatteryMemberCard.getMemberCardExpireTime();
         //当前套餐过期时间
@@ -2284,6 +2291,35 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             expireMembercardServiceFeeOrder.setUpdateTime(System.currentTimeMillis());
             expireMembercardServiceFeeOrder.setPayTime(System.currentTimeMillis());
             batteryServiceFeeOrderService.updateByOrderNo(expireMembercardServiceFeeOrder);
+        }
+    
+        //兼容套餐过期，定时任务还未生成滞纳金订单的场景
+        if (userBatteryMemberCard.getMemberCardExpireTime() < System.currentTimeMillis() && StringUtils.isBlank(serviceFeeUserInfo.getExpireOrderNo())) {
+            Franchisee franchisee = franchiseeService.queryByIdFromCache(userInfo.getFranchiseeId());
+            ElectricityBattery electricityBattery = electricityBatteryService.queryByUid(userInfo.getUid());
+            List<String> userBatteryTypes = userBatteryTypeService.selectByUid(userInfo.getUid());
+        
+            EleBatteryServiceFeeOrder expireMembercardServiceFeeOrderInsert = new EleBatteryServiceFeeOrder();
+            expireMembercardServiceFeeOrderInsert.setUid(userInfo.getUid());
+            expireMembercardServiceFeeOrderInsert.setOrderId(OrderIdUtil.generateBusinessOrderId(BusinessType.BATTERY_STAGNATE, userInfo.getUid()));
+            expireMembercardServiceFeeOrderInsert.setStatus(EleBatteryServiceFeeOrder.STATUS_CLEAN);
+            expireMembercardServiceFeeOrderInsert.setName(userInfo.getName());
+            expireMembercardServiceFeeOrderInsert.setPhone(userInfo.getPhone());
+            expireMembercardServiceFeeOrderInsert.setTenantId(userInfo.getTenantId());
+            expireMembercardServiceFeeOrderInsert.setStoreId(userInfo.getStoreId());
+            expireMembercardServiceFeeOrderInsert.setFranchiseeId(userInfo.getFranchiseeId());
+            expireMembercardServiceFeeOrderInsert.setModelType(Objects.isNull(franchisee) ? 0 : franchisee.getModelType());
+            expireMembercardServiceFeeOrderInsert.setBatteryType(CollectionUtils.isEmpty(userBatteryTypes) ? "" : JsonUtil.toJson(userBatteryTypes));
+            expireMembercardServiceFeeOrderInsert.setSn(Objects.isNull(electricityBattery) ? "" : electricityBattery.getSn());
+            expireMembercardServiceFeeOrderInsert.setPayAmount(expireBatteryServiceFee);
+            expireMembercardServiceFeeOrderInsert.setBatteryServiceFee(batteryMemberCard.getServiceCharge());
+            expireMembercardServiceFeeOrderInsert.setBatteryServiceFeeGenerateTime(userBatteryMemberCard.getMemberCardExpireTime());
+            expireMembercardServiceFeeOrderInsert.setBatteryServiceFeeEndTime(System.currentTimeMillis());
+            expireMembercardServiceFeeOrderInsert.setSource(EleBatteryServiceFeeOrder.MEMBER_CARD_OVERDUE);
+            expireMembercardServiceFeeOrderInsert.setPayTime(System.currentTimeMillis());
+            expireMembercardServiceFeeOrderInsert.setCreateTime(System.currentTimeMillis());
+            expireMembercardServiceFeeOrderInsert.setUpdateTime(System.currentTimeMillis());
+            batteryServiceFeeOrderService.insert(expireMembercardServiceFeeOrderInsert);
         }
         
         if (!Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE) && StringUtils.isNotBlank(
