@@ -17,4 +17,10 @@ public class BasePageRequest {
     private Long size;
     
     private Long offset;
+    
+    /**
+     * 默认是0: 换电保险
+     * 1: 租车or车电一体
+     */
+    private Integer type = 0;
 }

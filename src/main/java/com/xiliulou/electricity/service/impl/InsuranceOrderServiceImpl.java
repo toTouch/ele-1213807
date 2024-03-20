@@ -460,7 +460,7 @@ public class InsuranceOrderServiceImpl extends ServiceImpl<InsuranceOrderMapper,
             }
         }
         InsuranceOrderQuery insuranceOrderQuery = InsuranceOrderQuery.builder().size(basePageRequest.getSize()).offset(basePageRequest.getOffset()).franchiseeIds(franchiseeIds)
-                .storeIds(storeIds).build();
+                .storeIds(storeIds).type(basePageRequest.getType()).build();
         return insuranceOrderMapper.selectOrderIds(insuranceOrderQuery);
     }
 }

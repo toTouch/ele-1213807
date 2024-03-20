@@ -144,14 +144,15 @@ public class JsonAdminInsuranceOrderController {
      * @return R
      */
     @GetMapping("/admin/insuranceOrder/queryOrderIds")
-    public R queryOrderIds(@RequestParam("size") Long size, @RequestParam("offset") Long offset) {
+    public R queryOrderIds(@RequestParam(value = "size") Long size, @RequestParam("offset") Long offset,
+            @RequestParam(value = "type",required = false) Integer type) {
         if (size < 0 || size > 50) {
             size = 10L;
         }
         if (offset < 0) {
             offset = 0L;
         }
-        return R.ok(insuranceOrderService.queryOrderIds(new BasePageRequest(size, offset)));
+        return R.ok(insuranceOrderService.queryOrderIds(new BasePageRequest(size, offset,type)));
     }
     
 }
