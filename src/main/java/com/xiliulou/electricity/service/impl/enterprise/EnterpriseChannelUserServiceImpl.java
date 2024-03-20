@@ -779,7 +779,7 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
         EnterpriseInfoVO enterpriseInfoVO = enterpriseInfoService.selectEnterpriseInfoByUid(id);
         if (Objects.isNull(enterpriseInfoVO) || Objects.isNull(enterpriseInfoVO.getId())) {
             log.error("channel User Exit Check  enterprise not exists, uid={}", id);
-            return Triple.of(false, "300082", "该用户无法操作");
+            return Triple.of(false, "120311", "该用户无法操作");
         }
         
         Long uid = request.getUid();
@@ -792,12 +792,12 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
         EnterpriseChannelUser user = enterpriseChannelUserMapper.selectByUid(uid);
         if (Objects.isNull(user)) {
             log.error("channel User Exit Check  user not exists, uid={}", uid);
-            return Triple.of(false, "300082", "骑手不存在");
+            return Triple.of(false, "120312", "骑手不存在");
         }
         
         if (!Objects.equals(user.getEnterpriseId(), enterpriseInfoVO.getId())) {
             log.error("channel User Exit Check user diff exists, ,uid={},id={}", uid, id);
-            return Triple.of(false, "300082", "当前企业下不存在该骑手");
+            return Triple.of(false, "120313", "当前企业下不存在该骑手");
         }
         
         if (!Objects.equals(user.getRenewalStatus(), EnterpriseChannelUser.RENEWAL_CLOSE)) {
@@ -814,13 +814,13 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
             
             if (Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE)) {
                 log.warn("channel User Exit Check! member card is disable userId={}", uid);
-                return Triple.of(false, "ELECTRICITY.100004", "该用户套餐已冻结，将影响云豆回收，请联系启用后操作");
+                return Triple.of(false, "120314", "该用户套餐已冻结，将影响云豆回收，请联系启用后操作");
             }
             
             BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());
             if (Objects.isNull(batteryMemberCard)) {
                 log.warn("channel User Exit Check! not found batteryMemberCard,uid={},mid={}", userInfo.getUid(), userBatteryMemberCard.getMemberCardId());
-                return Triple.of(false, "ELECTRICITY.00121", "套餐不存在");
+                return Triple.of(false, "300003", "套餐不存在");
             }
             
             // 判断滞纳金
@@ -828,12 +828,12 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
                     batteryMemberCard, serviceFeeUserInfoService.queryByUidFromCache(userInfo.getUid()));
             if (Boolean.TRUE.equals(acquireUserBatteryServiceFeeResult.getLeft())) {
                 log.warn("channel User Exit Check! user exist battery service fee,uid={}", userInfo.getUid());
-                return Triple.of(false, "ELECTRICITY.100000", "该用户未缴纳滞纳金，将影响云豆回收，请联系缴纳后操作");
+                return Triple.of(false, "120315", "该用户未缴纳滞纳金，将影响云豆回收，请联系缴纳后操作");
             }
             
             if (Objects.equals(userInfo.getBatteryRentStatus(), UserInfo.BATTERY_RENT_STATUS_YES)) {
                 log.warn("channel User Exit Check! user rent battery,uid={}", uid);
-                return Triple.of(false, "ELECTRICITY.0045", "该用户未退还电池，将影响云豆回收，请联系归还后操作");
+                return Triple.of(false, "120316", "该用户未退还电池，将影响云豆回收，请联系归还后操作");
             }
         }
         
@@ -876,7 +876,7 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
         EnterpriseChannelUser channelUser = enterpriseChannelUserMapper.selectByUid(request.getUid());
         if (Objects.isNull(channelUser)) {
             log.error("channel User Exit Check  user not exists, uid={}", request.getUid());
-            return Triple.of(false, "300082", "骑手不存在");
+            return Triple.of(false, "120312", "骑手不存在");
         }
         
         // 检测骑手的续费状态是否为关闭
@@ -935,7 +935,7 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
         EnterpriseInfoVO enterpriseInfoVO = enterpriseInfoService.selectEnterpriseInfoByUid(uid);
         if (Objects.isNull(enterpriseInfoVO)) {
             log.error("channel user exit  all  enterprise not exists, uid={}", request.getUid());
-            return Triple.of(false, "300082", "该用户无法操作");
+            return Triple.of(false, "120311", "该用户无法操作");
         }
         
         if (!Objects.equals(enterpriseInfoVO.getRenewalStatus(), EnterpriseChannelUser.RENEWAL_CLOSE)) {
@@ -970,7 +970,7 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
         EnterpriseInfoVO enterpriseInfoVO = enterpriseInfoService.selectEnterpriseInfoByUid(uid);
         if (Objects.isNull(enterpriseInfoVO)) {
             log.error("query channel user   enterprise not exists, uid={}", uid);
-            return Triple.of(false, "300082", "该用户无法操作");
+            return Triple.of(false, "120311", "该用户无法操作");
         }
         
         // 查询当前用户下的所有的骑手
@@ -1061,7 +1061,7 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
         EnterpriseInfoVO enterpriseInfoVO = enterpriseInfoService.selectEnterpriseInfoByUid(uid);
         if (Objects.isNull(enterpriseInfoVO) || Objects.isNull(enterpriseInfoVO.getId())) {
             log.error("channel user exit all enterprise not exists, uid={}", request.getUid());
-            return Triple.of(false, "300082", "该用户无法操作");
+            return Triple.of(false, "120311", "该用户无法操作");
         }
         
         if (!Objects.equals(enterpriseInfoVO.getRenewalStatus(), EnterpriseChannelUser.RENEWAL_CLOSE)) {
@@ -1147,7 +1147,7 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
         EnterpriseInfoVO enterpriseInfoVO = enterpriseInfoService.selectEnterpriseInfoByUid(uid);
         if (Objects.isNull(enterpriseInfoVO)) {
             log.error("channel user close  enterprise not exists, uid={}", request.getUid());
-            return Triple.of(false, "300082", "该用户无法操作");
+            return Triple.of(false, "120311", "该用户无法操作");
         }
         
         if (!Objects.equals(enterpriseInfoVO.getRenewalStatus(), EnterpriseChannelUser.RENEWAL_OPEN)) {
@@ -1488,7 +1488,7 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
             
             if (Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE)) {
                 log.warn("check User Enable Exit! member card is disable userId={}", uid);
-                return Triple.of(false, "ELECTRICITY.100004", "该用户套餐已冻结，将影响云豆回收，请联系启用后操作");
+                return Triple.of(false, "120314", "该用户套餐已冻结，将影响云豆回收，请联系启用后操作");
             }
             
             BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());
@@ -1502,12 +1502,12 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
                     batteryMemberCard, serviceFeeUserInfoService.queryByUidFromCache(userInfo.getUid()));
             if (Boolean.TRUE.equals(acquireUserBatteryServiceFeeResult.getLeft())) {
                 log.warn("check User Enable Exit! user exist battery service fee,uid={}", userInfo.getUid());
-                return Triple.of(false, "ELECTRICITY.100000", "该用户未缴纳滞纳金，将影响云豆回收，请联系缴纳后操作");
+                return Triple.of(false, "120315", "该用户未缴纳滞纳金，将影响云豆回收，请联系缴纳后操作");
             }
             
             if (Objects.equals(userInfo.getBatteryRentStatus(), UserInfo.BATTERY_RENT_STATUS_YES)) {
                 log.warn("check User Enable Exit! user rent battery,uid={}", uid);
-                return Triple.of(false, "ELECTRICITY.0045", "该用户未退还电池，将影响云豆回收，请联系归还后操作");
+                return Triple.of(false, "120316", "该用户未退还电池，将影响云豆回收，请联系归还后操作");
             }
         } else {
             log.warn("check User Enable Exit! userBatteryMemberCard is null,uid={}", uid);
