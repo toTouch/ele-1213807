@@ -1258,7 +1258,7 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
             String licensePlateNumber = car.getLicensePlateNumber();
             String vin = car.getVin();
             String motorNumber = car.getMotorNumber();
-    
+            
             if (StringUtils.isNotBlank(licensePlateNumber) && licensePlateNumber.length() > AssetConstant.ASSET_CAR_BATCH_SAVE_LICENSE_PLATE_NUMBER_SIZE) {
                 return R.fail("100604", "车牌号输入长度超限，最长9位，请检查修改后再导入");
             }
@@ -1271,8 +1271,8 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
                 return R.fail("100606", "电机号输入长度超限，最长17位，请检查修改后再导入");
             }
     
-            // 校验数据库中是否已存在该sn
-            if (existSnList.contains(sn)) {
+            // 校验数据库中是否已存在该sn或sn是否为空
+            if (existSnList.contains(sn) || StringUtils.isBlank(sn)) {
                 continue;
             }
             //换电柜车辆
