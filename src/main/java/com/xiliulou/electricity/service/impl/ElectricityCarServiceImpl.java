@@ -137,12 +137,6 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
     private CarMoveRecordMapper carMoveRecordMapper;
     
     @Autowired
-    private AssetAllocateRecordService assetAllocateRecordService;
-    
-    @Autowired
-    private AssetAllocateDetailService assetAllocateDetailService;
-    
-    @Autowired
     private AssetWarehouseService assetWarehouseService;
     
     @Resource
@@ -1248,9 +1242,6 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
         }
         
         List<CarBatchSaveExcelRequest> carList = carBatchSaveRequest.getCarList();
-        if (CollectionUtils.isEmpty(carList)) {
-            return R.fail("100604", "车辆SN数据列为空，请检查");
-        }
         
         Set<String> snSet = carList.stream().filter(Objects::nonNull).map(CarBatchSaveExcelRequest::getSn).collect(Collectors.toSet());
     

@@ -13,7 +13,7 @@ public class CarBatchSaveRequest {
     /**
      * 车辆sn
      */
-    @NotEmpty(message = "车辆sn不能为空!", groups = {CreateGroup.class})
+    @NotEmpty(message = "车辆SN数据列为空，请检查!", groups = {CreateGroup.class})
     private List<CarBatchSaveExcelRequest> carList;
     
     /**
