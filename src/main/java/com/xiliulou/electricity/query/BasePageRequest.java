@@ -23,4 +23,6 @@ public class BasePageRequest {
      * 1: 租车or车电一体
      */
     private Integer type = 0;
+    
+    private String name;
 }

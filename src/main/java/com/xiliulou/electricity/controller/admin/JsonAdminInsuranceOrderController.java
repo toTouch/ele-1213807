@@ -52,7 +52,7 @@ public class JsonAdminInsuranceOrderController {
             @RequestParam(value = "franchiseeId", required = false) Long franchiseeId, @RequestParam(value = "beginTime", required = false) Long beginTime,
             @RequestParam(value = "endTime", required = false) Long endTime, @RequestParam(value = "userName", required = false) String userName,
             @RequestParam(value = "uid", required = false) Long uid, @RequestParam(value = "type", required = false) Integer type,
-            @RequestParam(value = "payType", required = false) Integer payType, @RequestParam(value = "insuranceName", required = false) String insuranceName) {
+            @RequestParam(value = "payType", required = false) Integer payType, @RequestParam(value = "insuranceId", required = false) Integer insuranceId) {
         
         if (size < 0 || size > 50) {
             size = 10L;
@@ -90,7 +90,7 @@ public class JsonAdminInsuranceOrderController {
                 .storeIds(storeIds)
                 //.franchiseeName(franchiseeName)
                 .franchiseeId(franchiseeId).tenantId(tenantId).phone(phone).status(status).insuranceType(insuranceType).isUse(isUse).userName(userName).uid(uid).offset(offset)
-                .size(size).type(type).payType(payType).insuranceName(insuranceName).build();
+                .size(size).type(type).payType(payType).insuranceId(insuranceId).build();
         
         return insuranceOrderService.queryList(insuranceOrderQuery);
     }
@@ -103,7 +103,7 @@ public class JsonAdminInsuranceOrderController {
             @RequestParam(value = "beginTime", required = false) Long beginTime, @RequestParam(value = "endTime", required = false) Long endTime,
             @RequestParam(value = "userName", required = false) String userName, @RequestParam(value = "uid", required = false) Long uid,
             @RequestParam(value = "type", required = false) Integer type, @RequestParam(value = "payType", required = false) Integer payType,
-            @RequestParam(value = "insuranceName", required = false) String insuranceName) {
+            @RequestParam(value = "insuranceId", required = false) Integer insuranceId) {
         
         Integer tenantId = TenantContextHolder.getTenantId();
         
@@ -131,28 +131,9 @@ public class JsonAdminInsuranceOrderController {
         InsuranceOrderQuery insuranceOrderQuery = InsuranceOrderQuery.builder().orderId(orderId).beginTime(beginTime).endTime(endTime).status(status).insuranceType(insuranceType)
                 .isUse(isUse).franchiseeIds(franchiseeIds).storeIds(storeIds)
                 //.franchiseeName(franchiseeName)
-                .franchiseeId(franchiseeId).tenantId(tenantId).phone(phone).userName(userName).uid(uid).type(type).payType(payType).insuranceName(insuranceName).build();
+                .franchiseeId(franchiseeId).tenantId(tenantId).phone(phone).userName(userName).uid(uid).type(type).payType(payType).insuranceId(insuranceId).build();
         
         return insuranceOrderService.queryCount(insuranceOrderQuery);
-    }
-    
-    /**
-     * 保险列表orderIds下拉框
-     * 由于路径无权限，路径不统一
-     * @param size   size
-     * @param offset offset
-     * @return R
-     */
-    @GetMapping("/admin/franchiseeInsurance/queryOrderIds")
-    public R queryOrderIds(@RequestParam(value = "size") Long size, @RequestParam("offset") Long offset,
-            @RequestParam(value = "type",required = false) Integer type) {
-        if (size < 0 || size > 50) {
-            size = 10L;
-        }
-        if (offset < 0) {
-            offset = 0L;
-        }
-        return R.ok(insuranceOrderService.queryOrderIds(new BasePageRequest(size, offset,type)));
     }
     
 }

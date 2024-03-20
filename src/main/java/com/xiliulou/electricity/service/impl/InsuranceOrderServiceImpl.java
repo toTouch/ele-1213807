@@ -11,7 +11,6 @@ import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.InsuranceOrderMapper;
-import com.xiliulou.electricity.query.BasePageRequest;
 import com.xiliulou.electricity.query.InsuranceOrderAdd;
 import com.xiliulou.electricity.query.InsuranceOrderQuery;
 import com.xiliulou.electricity.service.*;
@@ -19,12 +18,10 @@ import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.InsuranceOrderVO;
-import com.xiliulou.electricity.vo.insurance.InsuranceOrderIdsVo;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiOrderResultDTO;
 import com.xiliulou.pay.weixinv3.exception.WechatPayException;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Triple;
@@ -35,7 +32,6 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -437,30 +433,4 @@ public class InsuranceOrderServiceImpl extends ServiceImpl<InsuranceOrderMapper,
         return insuranceOrderVOList;
     }
     
-    @Override
-    public List<InsuranceOrderIdsVo> queryOrderIds(BasePageRequest basePageRequest) {
-        TokenUser user = SecurityUtils.getUserInfo();
-        if (Objects.isNull(user)) {
-            throw new BizException("ELECTRICITY.0001", "未找到用户");
-        }
-        
-        List<Long> storeIds = null;
-        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
-            storeIds = userDataScopeService.selectDataIdByUid(user.getUid());
-            if (CollectionUtils.isEmpty(storeIds)) {
-                return Collections.EMPTY_LIST;
-            }
-        }
-        
-        List<Long> franchiseeIds = null;
-        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
-            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
-            if (CollectionUtils.isEmpty(franchiseeIds)) {
-                return Collections.EMPTY_LIST;
-            }
-        }
-        InsuranceOrderQuery insuranceOrderQuery = InsuranceOrderQuery.builder().size(basePageRequest.getSize()).offset(basePageRequest.getOffset()).franchiseeIds(franchiseeIds)
-                .storeIds(storeIds).type(basePageRequest.getType()).build();
-        return insuranceOrderMapper.selectOrderIds(insuranceOrderQuery);
-    }
 }

@@ -6,7 +6,7 @@ import lombok.NoArgsConstructor;
 
 
 /**
- * @ClassName: InsuranceOrderIdsVo
+ * @ClassName: FranchiseeInsuranceOrderIdsVo
  * @description: 保险订单orderids
  * @author: renhang
  * @create: 2024-03-19 14:32
@@ -14,12 +14,12 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class InsuranceOrderIdsVo {
+public class FranchiseeInsuranceOrderIdsVo {
     
     /**
-     * orderId
+     * id
      */
-    private String orderId;
+    private Integer id;
     
     /**
      * 保险名称

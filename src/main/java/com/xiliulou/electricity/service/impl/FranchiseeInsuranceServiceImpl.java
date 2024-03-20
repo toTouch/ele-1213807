@@ -11,7 +11,9 @@ import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.*;
+import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.FranchiseeInsuranceMapper;
+import com.xiliulou.electricity.query.BasePageRequest;
 import com.xiliulou.electricity.query.FranchiseeInsuranceAddAndUpdate;
 import com.xiliulou.electricity.query.FranchiseeInsuranceQuery;
 import com.xiliulou.electricity.query.ModelBatteryDeposit;
@@ -19,7 +21,10 @@ import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.service.car.biz.CarRentalPackageMemberTermBizService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
+import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.FranchiseeInsuranceVo;
+import com.xiliulou.electricity.vo.insurance.FranchiseeInsuranceOrderIdsVo;
+import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Triple;
@@ -79,6 +84,9 @@ public class FranchiseeInsuranceServiceImpl extends ServiceImpl<FranchiseeInsura
 
     @Autowired
     CarRentalPackageMemberTermBizService carRentalPackageMemberTermBizService;
+    
+    @Autowired
+    private UserDataScopeService userDataScopeService;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -572,5 +580,39 @@ public class FranchiseeInsuranceServiceImpl extends ServiceImpl<FranchiseeInsura
         franchiseeInsuranceVo.setCityName(Objects.isNull(city)?"":city.getName());
 
         return Triple.of(true,null,franchiseeInsuranceVo);
+    }
+    
+    @Override
+    public List<FranchiseeInsuranceOrderIdsVo> queryOrderIds(BasePageRequest basePageRequest) {
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            throw new BizException("ELECTRICITY.0001", "未找到用户");
+        }
+        
+        List<Long> storeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
+            storeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if (org.apache.commons.collections.CollectionUtils.isEmpty(storeIds)) {
+                return Collections.EMPTY_LIST;
+            }
+        }
+        
+        List<Long> franchiseeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if (org.apache.commons.collections.CollectionUtils.isEmpty(franchiseeIds)) {
+                return Collections.EMPTY_LIST;
+            }
+        }
+        FranchiseeInsuranceQuery insuranceOrderQuery = FranchiseeInsuranceQuery.builder()
+                .size(basePageRequest.getSize())
+                .offset(basePageRequest.getOffset())
+                .name(basePageRequest.getName())
+                .franchiseeIds(franchiseeIds)
+                .storeIds(storeIds)
+                .tenantId(TenantContextHolder.getTenantId())
+                .type(basePageRequest.getType())
+                .build();
+        return franchiseeInsuranceMapper.selectOrderIds(insuranceOrderQuery);
     }
 }

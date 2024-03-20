@@ -49,7 +49,7 @@ public class InsuranceOrderQuery {
     private List<Long> storeIds;
     
     /**
-     * 保险名称
+     * 保险id
      */
-    private String insuranceName;
+    private Integer insuranceId;
 }
