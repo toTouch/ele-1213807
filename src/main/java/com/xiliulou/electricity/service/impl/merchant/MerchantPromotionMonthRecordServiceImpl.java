@@ -26,6 +26,7 @@ import com.xiliulou.electricity.vo.merchant.MerchantPromotionMonthExcelVO;
 import com.xiliulou.electricity.vo.merchant.MerchantPromotionMonthRecordVO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
@@ -40,12 +41,16 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
+
+import static java.util.stream.Collectors.toMap;
 
 /**
  * @author HeYafeng
@@ -123,8 +128,10 @@ public class MerchantPromotionMonthRecordServiceImpl implements MerchantPromotio
             return excelVOList;
         }
         
+        Integer tenantId = TenantContextHolder.getTenantId();
+        
         MerchantPromotionDayRecordQueryModel queryModel = new MerchantPromotionDayRecordQueryModel();
-        queryModel.setTenantId(TenantContextHolder.getTenantId());
+        queryModel.setTenantId(tenantId);
         queryModel.setStartDate(DateUtils.getFirstDayByMonth(monthDate));
         queryModel.setEndDate(DateUtils.getLastDayByMonth(monthDate));
         
@@ -133,12 +140,23 @@ public class MerchantPromotionMonthRecordServiceImpl implements MerchantPromotio
             return excelVOList;
         }
         
+        // 获取商户名称
+        Map<Long, String> merchantNameMap = new HashMap<>(detailList.size());
+        Set<Long> merchantIdSet = detailList.stream().filter(Objects::nonNull).map(MerchantPromotionDayRecordVO::getMerchantId).collect(Collectors.toSet());
+        List<Merchant> merchantList = merchantService.listAllByIds(merchantIdSet, tenantId);
+        if (ObjectUtils.isNotEmpty(merchantList)) {
+            merchantNameMap = merchantList.stream().collect(toMap(Merchant::getId, Merchant::getName, (key, key1) -> key1));
+        }
+        
         // 不为0的数据
-        List<MerchantPromotionDayRecordVO> hasDataDetailList = detailList.stream().filter(item -> !Objects.equals(item.getMoney(), BigDecimal.ZERO)).collect(Collectors.toList());
+        List<MerchantPromotionDayRecordVO> hasDataDetailList = detailList.stream().filter(item -> item.getMoney().compareTo(BigDecimal.ZERO) != 0).collect(Collectors.toList());
+        
+        log.info("商户推广费，有数据={}", hasDataDetailList);
         
         // excelVOList 按merchantId进行分组
         Map<Long, List<MerchantPromotionDayRecordVO>> detailMap = hasDataDetailList.stream().collect(Collectors.groupingBy(MerchantPromotionDayRecordVO::getMerchantId));
         
+        Map<Long, String> finalMerchantNameMap = merchantNameMap;
         detailMap.forEach((merchantId, merchantDayRecordVoList) -> {
             
             if (CollectionUtils.isNotEmpty(merchantDayRecordVoList)) {
@@ -185,26 +203,36 @@ public class MerchantPromotionMonthRecordServiceImpl implements MerchantPromotio
                             break;
                     }
                     
-                    MerchantPromotionMonthExcelVO excelVO = MerchantPromotionMonthExcelVO.builder().monthDate(monthDate)
-                            .merchantName(Optional.ofNullable(merchantService.queryByIdFromCache(item.getMerchantId())).orElse(new Merchant()).getName())
-                            .monthFirstMoney(monthFirstMoney).monthRenewMoney(monthRenewMoney)
-                            .inviterName(Optional.ofNullable(userService.queryByUidFromCache(item.getInviterUid())).orElse(new User()).getName()).typeName(typeName)
-                            .dayMoney(dayMoney).date(item.getDate()).build();
+                    MerchantPromotionMonthExcelVO excelVO = MerchantPromotionMonthExcelVO.builder().monthDate(monthDate).monthFirstMoney(monthFirstMoney)
+                            .monthRenewMoney(monthRenewMoney).inviterName(Optional.ofNullable(userService.queryByUidFromCache(item.getInviterUid())).orElse(new User()).getName())
+                            .typeName(typeName).dayMoney(dayMoney).date(item.getDate()).build();
+                    
+                    if (ObjectUtils.isNotEmpty(finalMerchantNameMap.get(merchantId))) {
+                        excelVO.setMerchantName(finalMerchantNameMap.get(merchantId));
+                    }
                     
                     excelVOList.add(excelVO);
                 });
             }
             
         });
-    
+        
         // 为0的数据
-        List<MerchantPromotionDayRecordVO> emptyDetailList = detailList.stream().filter(item -> Objects.equals(item.getMoney(), BigDecimal.ZERO)).collect(Collectors.toList());
+        List<MerchantPromotionDayRecordVO> emptyDetailList = detailList.stream().filter(item -> item.getMoney().compareTo(BigDecimal.ZERO) == 0).collect(Collectors.toList());
+        
         if (CollectionUtils.isNotEmpty(emptyDetailList)) {
+    
+            // emptyDetailList 按merchantId进行升序
+            emptyDetailList.sort(Comparator.comparing(MerchantPromotionDayRecordVO::getMerchantId));
+            
             emptyDetailList.forEach(item -> {
-            
-                MerchantPromotionMonthExcelVO excelVO = MerchantPromotionMonthExcelVO.builder().monthDate(monthDate)
-                        .merchantName(Optional.ofNullable(merchantService.queryByIdFromCache(item.getMerchantId())).orElse(new Merchant()).getName()).date(item.getDate()).build();
-            
+                Long merchantId = item.getMerchantId();
+                MerchantPromotionMonthExcelVO excelVO = MerchantPromotionMonthExcelVO.builder().monthDate(monthDate).date(item.getDate()).build();
+                
+                if (ObjectUtils.isNotEmpty(finalMerchantNameMap.get(merchantId))) {
+                    excelVO.setMerchantName(finalMerchantNameMap.get(merchantId));
+                }
+                
                 excelVOList.add(excelVO);
             });
         }
@@ -229,7 +257,7 @@ public class MerchantPromotionMonthRecordServiceImpl implements MerchantPromotio
                     // 注意：需要先调用registerWriteHandler()再调用sheet()方法才能使合并策略生效！！！
                     .sheet("商户推广费出账记录").doWrite(getData(request));
         } catch (Exception e) {
-            log.error("导出报表失败！", e);
+            log.error("Merchant promotion exportExcel error!", e);
         }
     }
     
