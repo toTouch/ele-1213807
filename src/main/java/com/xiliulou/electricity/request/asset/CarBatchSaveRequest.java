@@ -14,7 +14,7 @@ public class CarBatchSaveRequest {
      * 车辆sn
      */
     @NotEmpty(message = "车辆sn不能为空!", groups = {CreateGroup.class})
-    private List<String> snList;
+    private List<CarBatchSaveExcelRequest> carList;
     
     /**
      * 型号Id
