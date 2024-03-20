@@ -14,6 +14,7 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.DS;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.bo.asset.ElectricityCarBO;
+import com.xiliulou.electricity.constant.AssetConstant;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
@@ -44,8 +45,6 @@ import com.xiliulou.electricity.request.asset.CarUpdateRequest;
 import com.xiliulou.electricity.request.asset.ElectricityCarBatchUpdateFranchiseeAndStoreRequest;
 import com.xiliulou.electricity.request.asset.ElectricityCarSnSearchRequest;
 import com.xiliulou.electricity.service.*;
-import com.xiliulou.electricity.service.asset.AssetAllocateDetailService;
-import com.xiliulou.electricity.service.asset.AssetAllocateRecordService;
 import com.xiliulou.electricity.service.asset.AssetWarehouseRecordService;
 import com.xiliulou.electricity.service.asset.AssetWarehouseService;
 import com.xiliulou.electricity.service.retrofit.Jt808RetrofitService;
@@ -1242,8 +1241,9 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
         }
         
         List<CarBatchSaveExcelRequest> carList = carBatchSaveRequest.getCarList();
-        
-        Set<String> snSet = carList.stream().filter(Objects::nonNull).map(CarBatchSaveExcelRequest::getSn).collect(Collectors.toSet());
+    
+        Set<String> snSet = carList.stream().filter(item -> Objects.nonNull(item) && StringUtils.isNotBlank(item.getSn())).map(CarBatchSaveExcelRequest::getSn)
+                .collect(Collectors.toSet());
     
         List<ElectricityCarVO> electricityCarVOList = electricityCarMapper.selectListBySnList(new ArrayList<>(snSet), TenantContextHolder.getTenantId(), null);
         
@@ -1255,6 +1255,21 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
     
         for (CarBatchSaveExcelRequest car : carList) {
             String sn = car.getSn();
+            String licensePlateNumber = car.getLicensePlateNumber();
+            String vin = car.getVin();
+            String motorNumber = car.getMotorNumber();
+    
+            if (StringUtils.isNotBlank(licensePlateNumber) && licensePlateNumber.length() > AssetConstant.ASSET_CAR_BATCH_SAVE_LICENSE_PLATE_NUMBER_SIZE) {
+                return R.fail("100604", "车牌号输入长度超限，最长9位，请检查修改后再导入");
+            }
+    
+            if (StringUtils.isNotBlank(vin) && vin.length() > AssetConstant.ASSET_CAR_BATCH_SAVE_LICENSE_PLATE_NUMBER_SIZE) {
+                return R.fail("100605", "车架号输入长度超限，最长17位，请检查修改后再导入");
+            }
+    
+            if (StringUtils.isNotBlank(motorNumber) && motorNumber.length() > AssetConstant.ASSET_CAR_BATCH_SAVE_LICENSE_PLATE_NUMBER_SIZE) {
+                return R.fail("100606", "电机号输入长度超限，最长17位，请检查修改后再导入");
+            }
     
             // 校验数据库中是否已存在该sn
             if (existSnList.contains(sn)) {
@@ -1273,9 +1288,9 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
             electricityCar.setFranchiseeId(NumberConstant.ZERO_L);
             electricityCar.setModel(electricityCarModel.getName());
             electricityCar.setModelId(electricityCarModel.getId());
-            electricityCar.setLicensePlateNumber(car.getLicensePlateNumber());
-            electricityCar.setVin(car.getVin());
-            electricityCar.setMotorNumber(car.getMotorNumber());
+            electricityCar.setLicensePlateNumber(licensePlateNumber);
+            electricityCar.setVin(vin);
+            electricityCar.setMotorNumber(motorNumber);
             
             electricityCarList.add(electricityCar);
         }
