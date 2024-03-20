@@ -2,7 +2,7 @@ package com.xiliulou.electricity.service;
 
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.*;
-import com.xiliulou.electricity.query.BasePageRequest;
+import com.xiliulou.electricity.query.FranchiseeInsuranceIdsRequest;
 import com.xiliulou.electricity.query.FranchiseeInsuranceAddAndUpdate;
 import com.xiliulou.electricity.query.FranchiseeInsuranceQuery;
 import com.xiliulou.electricity.vo.FranchiseeInsuranceVo;
@@ -57,5 +57,5 @@ public interface FranchiseeInsuranceService {
 
     Triple<Boolean, String, Object> selectInsuranceByUid(Long uid, Integer type);
     
-    List<FranchiseeInsuranceOrderIdsVo> queryOrderIds(BasePageRequest basePageRequest);
+    List<FranchiseeInsuranceOrderIdsVo> queryInsuranceIds(FranchiseeInsuranceIdsRequest franchiseeInsuranceIdsRequest);
 }

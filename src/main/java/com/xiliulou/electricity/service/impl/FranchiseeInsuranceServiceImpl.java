@@ -13,7 +13,7 @@ import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.FranchiseeInsuranceMapper;
-import com.xiliulou.electricity.query.BasePageRequest;
+import com.xiliulou.electricity.query.FranchiseeInsuranceIdsRequest;
 import com.xiliulou.electricity.query.FranchiseeInsuranceAddAndUpdate;
 import com.xiliulou.electricity.query.FranchiseeInsuranceQuery;
 import com.xiliulou.electricity.query.ModelBatteryDeposit;
@@ -583,7 +583,7 @@ public class FranchiseeInsuranceServiceImpl extends ServiceImpl<FranchiseeInsura
     }
     
     @Override
-    public List<FranchiseeInsuranceOrderIdsVo> queryOrderIds(BasePageRequest basePageRequest) {
+    public List<FranchiseeInsuranceOrderIdsVo> queryInsuranceIds(FranchiseeInsuranceIdsRequest franchiseeInsuranceIdsRequest) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             throw new BizException("ELECTRICITY.0001", "未找到用户");
@@ -605,13 +605,13 @@ public class FranchiseeInsuranceServiceImpl extends ServiceImpl<FranchiseeInsura
             }
         }
         FranchiseeInsuranceQuery insuranceOrderQuery = FranchiseeInsuranceQuery.builder()
-                .size(basePageRequest.getSize())
-                .offset(basePageRequest.getOffset())
-                .name(basePageRequest.getName())
+                .size(franchiseeInsuranceIdsRequest.getSize())
+                .offset(franchiseeInsuranceIdsRequest.getOffset())
+                .name(franchiseeInsuranceIdsRequest.getName())
                 .franchiseeIds(franchiseeIds)
                 .storeIds(storeIds)
                 .tenantId(TenantContextHolder.getTenantId())
-                .type(basePageRequest.getType())
+                .type(franchiseeInsuranceIdsRequest.getType())
                 .build();
         return franchiseeInsuranceMapper.selectOrderIds(insuranceOrderQuery);
     }

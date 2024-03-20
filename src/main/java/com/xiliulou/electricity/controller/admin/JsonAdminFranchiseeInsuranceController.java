@@ -8,7 +8,7 @@ import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.FranchiseeInsurance;
 import com.xiliulou.electricity.entity.User;
-import com.xiliulou.electricity.query.BasePageRequest;
+import com.xiliulou.electricity.query.FranchiseeInsuranceIdsRequest;
 import com.xiliulou.electricity.query.FranchiseeInsuranceAddAndUpdate;
 import com.xiliulou.electricity.query.FranchiseeInsuranceQuery;
 import com.xiliulou.electricity.service.FranchiseeInsuranceService;
@@ -256,8 +256,8 @@ public class JsonAdminFranchiseeInsuranceController extends BaseController {
      * @param offset offset
      * @return R
      */
-    @GetMapping("/admin/franchiseeInsurance/queryOrderIds")
-    public R queryOrderIds(@RequestParam(value = "size") Long size, @RequestParam("offset") Long offset,
+    @GetMapping("/admin/franchiseeInsurance/queryInsuranceIds")
+    public R queryInsuranceIds(@RequestParam(value = "size") Long size, @RequestParam("offset") Long offset,
             @RequestParam(value = "type",required = false) Integer type,
             @RequestParam(value = "name",required = false) String name) {
         if (size < 0 || size > 50) {
@@ -266,7 +266,7 @@ public class JsonAdminFranchiseeInsuranceController extends BaseController {
         if (offset < 0) {
             offset = 0L;
         }
-        return R.ok(franchiseeInsuranceService.queryOrderIds(new BasePageRequest(size, offset,type,name)));
+        return R.ok(franchiseeInsuranceService.queryInsuranceIds(new FranchiseeInsuranceIdsRequest(size, offset,type,name)));
     }
 
 

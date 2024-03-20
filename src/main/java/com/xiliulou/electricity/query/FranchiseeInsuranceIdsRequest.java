@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class BasePageRequest {
+public class FranchiseeInsuranceIdsRequest {
     
     private Long size;
     
