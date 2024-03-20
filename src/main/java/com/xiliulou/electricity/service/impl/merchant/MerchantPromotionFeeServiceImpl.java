@@ -1155,8 +1155,9 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
                 yesterdayIncomeResult = yesterdayIncomeResult.add(todaySettleInCome);
             }
         }
-        merchantPromotionFeeIncomeVO.setYesterdayIncome(yesterdayIncomeResult.subtract(yesterdayReturnIncomeResult));
         
+        // 昨天收入
+        merchantPromotionFeeIncomeVO.setYesterdayIncome(yesterdayIncomeResult.subtract(yesterdayReturnIncomeResult));
         
         BigDecimal lastMonthSettleIncomeResult = new BigDecimal(0);
         BigDecimal lastReturnMonthIncomeResult = new BigDecimal(0);
@@ -1181,7 +1182,6 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
         }
         
         merchantPromotionFeeIncomeVO.setTodayIncome(todayIncomeResult);
-        merchantPromotionFeeIncomeVO.setYesterdayIncome(yesterdayIncomeResult);
         merchantPromotionFeeIncomeVO.setLastMonthIncome(lastMonthSettleIncomeResult.subtract(lastReturnMonthIncomeResult));
     }
 }
