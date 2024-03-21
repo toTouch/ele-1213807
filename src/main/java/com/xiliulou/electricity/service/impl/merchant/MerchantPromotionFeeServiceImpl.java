@@ -365,16 +365,17 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
             int scanCodeNum = 0;
             int purchaseNum = 0;
             int renewalNum = 0;
+            long endOfDayTimestamp = DateUtils.getEndOfDayTimestamp(startTime);
             
             if (Objects.nonNull(dtoList)) {
-                scanCodeNum = buildScanCodeCount(type, uid, null, null, null, dtoList);
-                purchaseNum = buildScanCodeCount(type, uid, null, null, MerchantJoinRecordConstant.STATUS_SUCCESS, dtoList);
-                renewalNum = buildRenewalNum(type, uid, null, null, dtoList);
+                scanCodeNum = buildScanCodeCount(type, uid, startTime, endOfDayTimestamp, null, dtoList);
+                purchaseNum = buildScanCodeCount(type, uid, startTime, endOfDayTimestamp, MerchantJoinRecordConstant.STATUS_SUCCESS, dtoList);
+                renewalNum = buildRenewalNum(type, uid, startTime, endOfDayTimestamp, dtoList);
               
             } else {
-                scanCodeNum = buildScanCodeCount(type, uid, startTime, DateUtils.getEndOfDayTimestamp(startTime), null, null);
-                purchaseNum = buildScanCodeCount(type, uid, startTime, DateUtils.getEndOfDayTimestamp(startTime), MerchantJoinRecordConstant.STATUS_SUCCESS, null);
-                renewalNum = buildRenewalNum(type, uid, startTime, DateUtils.getEndOfDayTimestamp(startTime), null);
+                scanCodeNum = buildScanCodeCount(type, uid, startTime, endOfDayTimestamp, null, null);
+                purchaseNum = buildScanCodeCount(type, uid, startTime, endOfDayTimestamp, MerchantJoinRecordConstant.STATUS_SUCCESS, null);
+                renewalNum = buildRenewalNum(type, uid, startTime, endOfDayTimestamp, null);
             }
             
             // 扫码人数
