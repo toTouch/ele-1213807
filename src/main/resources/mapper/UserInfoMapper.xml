@@ -1111,13 +1111,13 @@
             <if test="query.phone != null and query.phone != '' ">
                 and tui.phone =#{query.phone}
             </if>
-            <if test="query.franchiseeId != null and query.franchiseeId != ''">
+            <if test="query.franchiseeId != null">
                 and tui.franchisee_id = #{query.franchiseeId}
             </if>
-            <if test="query.batteryDepositStatus != null and query.batteryDepositStatus != '' ">
+            <if test="query.batteryDepositStatus != null">
                 and tui.battery_deposit_status = #{query.batteryDepositStatus}
             </if>
-            <if test="query.memberCardStatus != null and query.memberCardStatus != '' ">
+            <if test="query.memberCardStatus != null">
                 and ubmc.member_card_status = #{query.memberCardStatus}
             </if>
 

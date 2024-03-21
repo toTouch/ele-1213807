@@ -75,7 +75,7 @@
             <if test="query.phone != null and query.phone != ''">
                 and tedo.phone = #{query.phone}
             </if>
-            <if test="query.orderType != null and query.orderType != ''">
+            <if test="query.orderType != null">
                 and tedo.order_type = #{query.orderType}
             </if>
             <if test="query.refundOrderNo != null and query.refundOrderNo != ''">

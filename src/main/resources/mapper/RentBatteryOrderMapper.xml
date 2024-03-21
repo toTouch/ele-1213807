@@ -38,13 +38,13 @@
             <if test="query.tenantId != null">
                 and tenant_id = #{query.tenantId}
             </if>
-            <if test="query.franchiseeId != null and query.franchiseeId != ''">
+            <if test="query.franchiseeId != null">
                 and franchisee_id = #{query.franchiseeId}
             </if>
             <if test="query.electricityBatterySn != null and query.electricityBatterySn != ''">
                 and electricity_battery_sn = #{query.electricityBatterySn}
             </if>
-            <if test="query.electricityCabinetId != null and query.electricityCabinetId != ''">
+            <if test="query.electricityCabinetId != null">
                 and electricity_cabinet_id = #{query.electricityCabinetId}
             </if>
             <if test="query.franchiseeIds != null">
@@ -60,7 +60,7 @@
                 </foreach>
             </if>
         </where>
-        order by create_time desc
+        order by id desc
         limit #{query.offset}, #{query.size}
     </select>
     

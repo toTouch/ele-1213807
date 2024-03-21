@@ -56,7 +56,39 @@
         <result property="createTime" column="create_time" jdbcType="INTEGER"/>
         <result property="updateTime" column="update_time" jdbcType="INTEGER"/>
         <result property="sortParam" column="sort_param" jdbcType="BIGINT"/>
-        <collection property="batteryType" ofType="com.xiliulou.electricity.entity.MemberCardBatteryType" column="id" select="selectListMemberCardBatteryType">
+        <collection property="batteryType" javaType="java.util.List" ofType="com.xiliulou.electricity.entity.MemberCardBatteryType">
+            <id property="id" column="mcbt_id" jdbcType="INTEGER"/>
+            <result property="batteryType" column="battery_type" jdbcType="VARCHAR"/>
+        </collection>
+    </resultMap>
+    
+    <resultMap type="com.xiliulou.electricity.vo.BatteryMemberCardAndTypeVO" id="BatteryMemberCardTypePageMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="name" column="name" jdbcType="VARCHAR"/>
+        <result property="deposit" column="deposit" jdbcType="NUMERIC"/>
+        <result property="rentPrice" column="rent_price" jdbcType="NUMERIC"/>
+        <result property="rentPriceUnit" column="rent_price_unit" jdbcType="NUMERIC"/>
+        <result property="validDays" column="valid_days" jdbcType="INTEGER"/>
+        <result property="rentUnit" column="rent_unit" jdbcType="INTEGER"/>
+        <result property="franchiseeId" column="franchisee_id" jdbcType="INTEGER"/>
+        <result property="rentType" column="rent_type" jdbcType="INTEGER"/>
+        <result property="sendCoupon" column="send_coupon" jdbcType="INTEGER"/>
+        <result property="status" column="status" jdbcType="INTEGER"/>
+        <result property="limitCount" column="limit_count" jdbcType="INTEGER"/>
+        <result property="useCount" column="use_count" jdbcType="INTEGER"/>
+        <result property="couponId" column="coupon_id" jdbcType="INTEGER"/>
+        <result property="isRefund" column="is_refund" jdbcType="INTEGER"/>
+        <result property="refundLimit" column="refund_limit" jdbcType="INTEGER"/>
+        <result property="freeDeposite" column="free_deposite" jdbcType="INTEGER"/>
+        <result property="serviceCharge" column="service_charge" jdbcType="NUMERIC"/>
+        <result property="remark" column="remark" jdbcType="VARCHAR"/>
+        <result property="businessType" column="business_type" jdbcType="INTEGER"/>
+        <result property="delFlag" column="del_flag" jdbcType="INTEGER"/>
+        <result property="tenantId" column="tenant_id" jdbcType="INTEGER"/>
+        <result property="createTime" column="create_time" jdbcType="INTEGER"/>
+        <result property="updateTime" column="update_time" jdbcType="INTEGER"/>
+        <result property="sortParam" column="sort_param" jdbcType="BIGINT"/>
+        <collection property="batteryType" javaType="java.util.List" ofType="com.xiliulou.electricity.entity.MemberCardBatteryType" column="id" select="selectListMemberCardBatteryType">
             <id property="id" column="mcbt_id" jdbcType="INTEGER"/>
             <result property="batteryType" column="battery_type" jdbcType="VARCHAR"/>
         </collection>
@@ -130,7 +162,7 @@
         limit #{offset}, #{size}
     </select>
     
-    <select id="selectByPage" resultMap="BatteryMemberCardTypeMap">
+    <select id="selectByPage" resultMap="BatteryMemberCardTypePageMap">
         select
         tbmc.id, tbmc.name, tbmc.deposit, tbmc.rent_price, tbmc.rent_price_unit, tbmc.valid_days, tbmc.rent_unit, tbmc.franchisee_id, tbmc.rent_type, tbmc.send_coupon,
         tbmc.status, tbmc.limit_count, tbmc.use_count, tbmc.coupon_id, tbmc.is_refund, tbmc.refund_limit, tbmc.free_deposite,
@@ -593,7 +625,7 @@
         <if test="tenantId != null">
             and tbmc.tenant_id = #{tenantId}
         </if>
-        order by create_time desc
+        order by tbmc.id desc
     </select>
 
 </mapper>

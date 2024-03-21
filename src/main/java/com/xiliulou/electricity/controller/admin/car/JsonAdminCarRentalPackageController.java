@@ -18,6 +18,7 @@ import com.xiliulou.electricity.service.car.CarRentalPackageService;
 import com.xiliulou.electricity.service.car.biz.CarRentalPackageBizService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
+import com.xiliulou.electricity.utils.ValidList;
 import com.xiliulou.electricity.vo.car.CarRentalPackageVo;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
@@ -410,7 +411,7 @@ public class JsonAdminCarRentalPackageController extends BasicController {
      * @return
      */
     @PostMapping("/batchUpdateSortParam")
-    public R batchUpdateSortParam(@RequestBody @Validated List<MemberCardAndCarRentalPackageSortParamQuery> sortParamQueries) {
+    public R batchUpdateSortParam(@RequestBody @Validated ValidList<MemberCardAndCarRentalPackageSortParamQuery> sortParamQueries) {
     
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {

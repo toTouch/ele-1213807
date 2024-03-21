@@ -80,7 +80,7 @@
         <if test="query.payType != null">
             and tel.pay_type = #{query.payType}
         </if>
-        <if test="query.cardId != null and query.cardId != ''">
+        <if test="query.cardId != null">
             and tel.member_card_id = #{query.cardId}
         </if>
         <if test="query.queryStartTime != null">
