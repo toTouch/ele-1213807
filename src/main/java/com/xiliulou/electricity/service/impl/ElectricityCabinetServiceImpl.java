@@ -4272,7 +4272,16 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         
         for (ElectricityCabinetFile electricityCabinetFile : electricityCabinetFiles) {
             if (StringUtils.isNotEmpty(electricityCabinetFile.getName())) {
-                cabinetPhoto.add("https://" + storageConfig.getUrlPrefix() + "/" + electricityCabinetFile.getName());
+                StringBuilder builder = new StringBuilder();
+                String urlPrefix = storageConfig.getUrlPrefix();
+                String fileName = electricityCabinetFile.getName();
+                if (fileName.startsWith("/")) {
+                    builder.append(urlPrefix).append(fileName.replaceFirst("/", ""));
+                } else {
+                    builder.append(urlPrefix).append("/").append(fileName);
+                }
+                
+                cabinetPhoto.add(builder.toString());
             }
         }
         return R.ok(cabinetPhoto);
