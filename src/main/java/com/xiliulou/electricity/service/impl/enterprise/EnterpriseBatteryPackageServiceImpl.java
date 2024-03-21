@@ -5,6 +5,7 @@ import com.google.api.client.util.Lists;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.db.dynamic.annotation.Slave;
+import com.xiliulou.electricity.bo.batteryPackage.UserBatteryMemberCardPackageBO;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.dto.FreeDepositUserDTO;
@@ -472,11 +473,24 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
                 EleDepositOrder eleDepositOrder = eleDepositOrderService.queryByOrderId(userBatteryDeposit.getOrderId());
                 isMember = Objects.equals(eleDepositOrder.getOrderType(), PackageOrderTypeEnum.PACKAGE_ORDER_TYPE_NORMAL.getCode());
             }
-            
-            // 企业用户并且用户押金为企业代付
+    
+            UserBatteryMemberCardPackageBO userBatteryMemberCardPackageBO = userBatteryMemberCardPackageService.queryEnterprisePackageByUid(query.getUid());
+    
+            // 企业用户并且用户押金为企业代付  押金未换电套餐的押金 但是已经购买了
             if (!isMember) {
                 query.setDeposit(batteryMemberCard.getDeposit());
                 query.setLimitCount(batteryMemberCard.getLimitCount());
+            } else {
+                // 如果是会员用户且当前的生效的套餐类型为企业套餐类型则现在生效的企业套餐对应的押金和限次进行查询
+                if (Objects.equals(batteryMemberCard.getBusinessType(), BatteryMemberCard.BUSINESS_TYPE_ENTERPRISE)) {
+                    query.setDeposit(batteryMemberCard.getDeposit());
+                    query.setLimitCount(batteryMemberCard.getLimitCount());
+                    
+                } else if (Objects.nonNull(userBatteryMemberCardPackageBO)) {
+                    // 如果是会员用户则查询的套餐为续租以后的企业套餐对应的押金及限次类型的套餐
+                    query.setDeposit(userBatteryMemberCardPackageBO.getDeposit());
+                    query.setLimitCount(userBatteryMemberCardPackageBO.getLimitCount());
+                }
             }
             query.setRentTypes(Arrays.asList(BatteryMemberCard.RENT_TYPE_OLD, BatteryMemberCard.RENT_TYPE_UNLIMIT));
             query.setBatteryV(Objects.equals(franchisee.getModelType(), Franchisee.NEW_MODEL_TYPE) ? userBatteryTypeService.selectUserSimpleBatteryType(enterpriseUserId) : null);
