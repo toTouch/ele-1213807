@@ -1837,12 +1837,6 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             log.error("battery deposit OffLine Refund ERROR ,NOT FOUND ELECTRICITY_REFUND_ORDER uid={}", uid);
             return R.fail("ELECTRICITY.0015", "未找到订单");
         }
-
-        BigDecimal deposit = userBatteryDeposit.getBatteryDeposit();
-        if (!Objects.equals(eleDepositOrder.getPayAmount(), deposit)) {
-            log.error("battery deposit OffLine Refund ERROR ,Inconsistent refund amount uid={}", uid);
-            return R.fail("ELECTRICITY.0044", "退款金额不符");
-        }
         
         //退押时校验是否有在退租的订单
         List<BatteryMembercardRefundOrder> batteryMembercardRefundOrders = batteryMembercardRefundOrderService.selectRefundingOrderByUid(userInfo.getUid());

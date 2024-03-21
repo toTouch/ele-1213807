@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.handler.iot.impl;
 
+import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.StrUtil;
 import com.google.common.collect.Maps;
 import com.xiliulou.cache.redis.RedisService;
@@ -7,6 +8,7 @@ import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.utils.TimeUtils;
 import com.xiliulou.electricity.config.WechatTemplateNotificationConfig;
 import com.xiliulou.electricity.constant.CacheConstant;
+import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.constant.ElectricityIotConstant;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.BatteryTrackRecord;
@@ -47,6 +49,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
+import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -95,7 +98,6 @@ public class NormalOffLineEleExchangeHandlerIot extends AbstractElectricityIotHa
     
     @Autowired
     BatteryMemberCardService batteryMemberCardService;
-    //    ElectricityMemberCardService electricityMemberCardService;
     
     @Autowired
     EleHardwareHandlerManager eleHardwareHandlerManager;
@@ -129,129 +131,68 @@ public class NormalOffLineEleExchangeHandlerIot extends AbstractElectricityIotHa
     
     @Override
     public void postHandleReceiveMsg(ElectricityCabinet electricityCabinet, ReceiverMessage receiverMessage) {
-        String sessionId = receiverMessage.getSessionId();
-        if (StrUtil.isEmpty(sessionId)) {
-            log.error("OFFLINE EXCHANGE NO sessionId={}", sessionId);
-            return;
-        }
-        
-        OfflineEleOrderVo offlineEleOrderVo = JsonUtil.fromJson(receiverMessage.getOriginContent(), OfflineEleOrderVo.class);
-        
-        //查找用户
-        User user = userService.queryByUserPhone(offlineEleOrderVo.getPhone(), User.TYPE_USER_NORMAL_WX_PRO, electricityCabinet.getTenantId());
-        if (Objects.isNull(user)) {
-            senMsg(electricityCabinet, offlineEleOrderVo, user);
-            log.error("OFFLINE EXCHANGE ERROR! not found user! userPhone={}", offlineEleOrderVo.getPhone());
-            return;
-        }
-        
-        //幂等加锁
-        Boolean result = redisService.setNx(CacheConstant.OFFLINE_ELE_RECEIVER_CACHE_KEY + offlineEleOrderVo.getOrderId() + receiverMessage.getType(), "true", 10 * 1000L, true);
-        if (!result) {
-            senMsg(electricityCabinet, offlineEleOrderVo, user);
-            log.error("OFFLINE EXCHANGE orderId is lock,orderId={}", offlineEleOrderVo.getOrderId());
-            return;
-        }
-        
-        ElectricityCabinetOfflineReportOrder oldElectricityCabinetOfflineReportOrder = electricityCabinetOfflineReportOrderService.queryByOrderId(offlineEleOrderVo.getOrderId());
-        if (Objects.nonNull(oldElectricityCabinetOfflineReportOrder)) {
-            senMsg(electricityCabinet, offlineEleOrderVo, user);
-            log.error("OFFLINE EXCHANGE orderId is lock,orderId={}", offlineEleOrderVo.getOrderId());
-            return;
-        }
-        
-        UserInfo userInfo = userInfoService.queryByUidFromCache(user.getUid());
-        if (Objects.isNull(userInfo)) {
-            log.error("OFFLINE EXCHANGE ERROR! userInfo is null! userId={}", user.getUid());
-            return;
-        }
-        
-        //新仓门号处理
-        Integer newCellNo = null;
-        if (StringUtils.isNotEmpty(offlineEleOrderVo.getNewCellNo())) {
-            newCellNo = Integer.valueOf(offlineEleOrderVo.getNewCellNo());
-        }
-        
-        //订单状态处理
-        String orderStatus = offlineEleOrderVo.getStatus();
-        if (offlineEleOrderVo.getIsProcessFail()) {
-            orderStatus = ElectricityCabinetOrder.ORDER_EXCEPTION_CANCEL;
-        }
-        
-        //生成订单
-        ElectricityCabinetOrder electricityCabinetOrder = ElectricityCabinetOrder.builder()
-                .orderId(generateOrderId(electricityCabinet.getId(), offlineEleOrderVo.getNewCellNo(), user.getUid())).uid(user.getUid()).phone(offlineEleOrderVo.getPhone())
-                .electricityCabinetId(electricityCabinet.getId()).oldCellNo(Integer.valueOf(offlineEleOrderVo.getOldCellNo())).newCellNo(newCellNo)
-                .newElectricityBatterySn(offlineEleOrderVo.getNewElectricityBatterySn()).oldElectricityBatterySn(offlineEleOrderVo.getOldElectricityBatterySn()).orderSeq(null)
-                .status(orderStatus).source(Objects.isNull(offlineEleOrderVo.getOfflineOrderStatus()) ? ORDER_SOURCE_FOR_OFFLINE : offlineEleOrderVo.getOfflineOrderStatus())
-                .paymentMethod(BatteryMemberCard.BUSINESS_TYPE_BATTERY).createTime(offlineEleOrderVo.getStartTime()).updateTime(offlineEleOrderVo.getEndTime())
-                .storeId(electricityCabinet.getStoreId()).tenantId(electricityCabinet.getTenantId()).build();
-        electricityCabinetOrderService.insertOrder(electricityCabinetOrder);
-        
-        //这里处理电池轨迹
-        handleBatteryTrackRecord(electricityCabinetOrder, electricityCabinet, userInfo);
-        
-        //操作记录
-        List<OperateMsgVo> operateMsgVoList = offlineEleOrderVo.getMsg();
-        OffLineElectricityCabinetOrderOperHistory offLineElectricityCabinetOrderOperHistory = OffLineElectricityCabinetOrderOperHistory.builder()
-                .orderId(electricityCabinetOrder.getOrderId()).type(offlineEleOrderVo.getOfflineOrderStatus()).tenantId(electricityCabinet.getTenantId()).operateMsgVos(operateMsgVoList).build();
-        electricityCabinetOrderOperHistoryService.insertOffLineOperateHistory(offLineElectricityCabinetOrderOperHistory);
-        
-        senMsg(electricityCabinet, offlineEleOrderVo, user);
-        
-        //新增离线换电上报订单数据
-        ElectricityCabinetOfflineReportOrder electricityCabinetOfflineReportOrder = ElectricityCabinetOfflineReportOrder.builder().orderId(offlineEleOrderVo.getOrderId())
-                .createTime(System.currentTimeMillis()).build();
-        electricityCabinetOfflineReportOrderService.insertOrder(electricityCabinetOfflineReportOrder);
-        
-        if (offlineEleOrderVo.getIsProcessFail()) {
-            log.warn("OFFLINE EXCHANGE ERROR! exchange exception!orderId={}", offlineEleOrderVo.getOrderId());
-            senMsg(electricityCabinet, offlineEleOrderVo, user);
+        MDC.put(CommonConstant.TRACE_ID, IdUtil.fastSimpleUUID());
+    
+        OfflineOrderMessage offlineOrderMessage = JsonUtil.fromJson(receiverMessage.getOriginContent(), OfflineOrderMessage.class);
+        if (StringUtils.isBlank(receiverMessage.getSessionId()) || Objects.isNull(offlineOrderMessage)) {
+            log.warn("OFFLINE EXCHANGE WARN! originalMessage is illegal,sessionId={}", receiverMessage.getSessionId());
             return;
         }
     
-        if (Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
-            UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
-            if (Objects.isNull(userBatteryMemberCard)) {
-                log.warn("OFFLINE EXCHANGE ERROR! not found userBatteryMemberCard,uid={}", user.getUid());
-                return;
-            }
-        
-            BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());
-            if (Objects.isNull(batteryMemberCard)) {
-                log.warn("OFFLINE EXCHANGE ERROR! not found batteryMemberCard,uid={}", user.getUid());
-                return;
-            }
-        
-            if (!Objects.equals(batteryMemberCard.getLimitCount(), BatteryMemberCard.UN_LIMIT) && Objects.nonNull(userBatteryMemberCard.getOrderEffectiveTime())) {
-                //如果换电订单的时间在当前套餐生效时间之后，则扣减次数
-                if (offlineEleOrderVo.getEndTime() > userBatteryMemberCard.getOrderEffectiveTime() && userBatteryMemberCard.getOrderExpireTime() > System.currentTimeMillis()) {
-                    //扣除月卡
-                    userBatteryMemberCardService.minCount(userBatteryMemberCard);
-                }
-            
-                //如果套餐没过期并且剩余次数为1
-                if ((userBatteryMemberCard.getOrderExpireTime() < System.currentTimeMillis()) || Objects
-                        .equals(userBatteryMemberCard.getOrderRemainingNumber(), UserBatteryMemberCard.MEMBER_CARD_ONE_REMAINING)) {
-                    updateUserBatteryMemberCardInfo(userBatteryMemberCard, userInfo, offlineEleOrderVo.getEndTime());
-                }
-            }
-        } else if (Objects.equals(userInfo.getCarBatteryDepositStatus(), YesNoEnum.YES.getCode())) {
-            try {
-                carRentalPackageMemberTermBizService.substractResidue(userInfo.getTenantId(), userInfo.getUid());
-            } catch (Exception e) {
-                log.error("OFFLINE EXCHANGE ERROR! carRentalPackageMember error, uid={}", user.getUid(), e);
-            }
-        } else {
-            log.warn("OFFLINE EXCHANGE WARN! user not pay deposit uid={}", user.getUid());
+        User user = userService.queryByUserPhone(offlineOrderMessage.getPhone(), User.TYPE_USER_NORMAL_WX_PRO, electricityCabinet.getTenantId());
+        if (Objects.isNull(user)) {
+            orderConfirm(electricityCabinet, offlineOrderMessage, null);
+            log.warn("OFFLINE EXCHANGE WARN! not found user,phone={},sessionId={}", offlineOrderMessage.getPhone(), receiverMessage.getSessionId());
             return;
         }
-        
+    
+        if (!redisService.setNx(CacheConstant.OFFLINE_ELE_RECEIVER_CACHE_KEY + offlineOrderMessage.getOrderId() + receiverMessage.getType(), "true", 10 * 1000L, true)) {
+            log.warn("OFFLINE EXCHANGE WARN! orderId is lock,orderId={},uid={}", offlineOrderMessage.getOrderId(), user.getUid());
+            return;
+        }
+    
+        orderConfirm(electricityCabinet, offlineOrderMessage, user);
+    
+        ElectricityCabinetOfflineReportOrder oldElectricityCabinetOfflineReportOrder = electricityCabinetOfflineReportOrderService.queryByOrderId(offlineOrderMessage.getOrderId());
+        if (Objects.nonNull(oldElectricityCabinetOfflineReportOrder)) {
+            log.warn("OFFLINE EXCHANGE WARN! orderId already processed,orderId={},uid={}", offlineOrderMessage.getOrderId(), user.getUid());
+            return;
+        }
+    
+        UserInfo userInfo = userInfoService.queryByUidFromCache(user.getUid());
+        if (Objects.isNull(userInfo)) {
+            log.warn("OFFLINE EXCHANGE WARN! userInfo is null,uid={}", user.getUid());
+            return;
+        }
+    
+        ElectricityCabinetOrder electricityCabinetOrder = buildElectricityCabinetOrder(electricityCabinet, offlineOrderMessage, user);
+        electricityCabinetOrderService.insertOrder(electricityCabinetOrder);
+    
+        //处理电池轨迹
+        handleBatteryTrackRecord(electricityCabinetOrder, electricityCabinet, userInfo);
+    
+        //操作记录
+        electricityCabinetOrderOperHistoryService.insertOffLineOperateHistory(buildOrderOperHistory(electricityCabinetOrder, electricityCabinet, offlineOrderMessage));
+    
+        electricityCabinetOfflineReportOrderService.insertOrder(buildOfflineReportOrder(offlineOrderMessage));
+    
+        if (offlineOrderMessage.getIsProcessFail()) {
+            log.warn("OFFLINE EXCHANGE WARN! exchange exception,orderId={},uid={}", offlineOrderMessage.getOrderId(), user.getUid());
+            return;
+        }
+    
+        //处理用户套餐
+        if (!handlerUserBatteryMemberCard(userInfo, offlineOrderMessage, receiverMessage.getSessionId())) {
+            return;
+        }
+    
+        //获取用户绑定的电池
+        ElectricityBattery electricityBattery = electricityBatteryService.queryByUid(user.getUid());
+    
         //查询当前归还的电池信息
-        ElectricityBattery oldElectricityBattery = electricityBatteryService.queryBySnFromDb(offlineEleOrderVo.getOldElectricityBatterySn());
-        //更新旧电池为在仓
+        ElectricityBattery oldElectricityBattery = electricityBatteryService.queryBySnFromDb(offlineOrderMessage.getOldElectricityBatterySn());
         if (Objects.isNull(oldElectricityBattery)) {
-            log.error("OFFLINE EXCHANGE ERROR! electricityBattery is null! BatterySn={}", offlineEleOrderVo.getOldElectricityBatterySn());
+            log.warn("OFFLINE EXCHANGE WARN! oldElectricityBattery is null,sn={},uid={}", offlineOrderMessage.getOldElectricityBatterySn(), user.getUid());
             return;
         }
         
@@ -265,34 +206,42 @@ public class NormalOffLineEleExchangeHandlerIot extends AbstractElectricityIotHa
                 electricityBatteryService.batchUpdateBatteryGuessUid(batteryIdList, oldElectricityBattery.getGuessUid());
             }
         }
-        
-        ElectricityBattery inWarehouseElectricityBattery = new ElectricityBattery();
-        inWarehouseElectricityBattery.setId(oldElectricityBattery.getId());
-        inWarehouseElectricityBattery.setBusinessStatus(ElectricityBattery.BUSINESS_STATUS_RETURN);
-        inWarehouseElectricityBattery.setElectricityCabinetId(electricityCabinet.getId());
-        inWarehouseElectricityBattery.setElectricityCabinetName(electricityCabinet.getName());
-        inWarehouseElectricityBattery.setUid(null);
-        inWarehouseElectricityBattery.setGuessUid(null);
-        inWarehouseElectricityBattery.setUpdateTime(System.currentTimeMillis());
-        inWarehouseElectricityBattery.setBorrowExpireTime(null);
-        Long returnBindTime = oldElectricityBattery.getBindTime();
-        
-        //如果绑定时间为空或者电池绑定时间小于当前时间则更新电池信息
-        log.info("off returnBindTime={},end time={},batteryId={}", returnBindTime, offlineEleOrderVo.getEndTime(), inWarehouseElectricityBattery.getId());
-        if (Objects.isNull(returnBindTime) || returnBindTime < offlineEleOrderVo.getEndTime()) {
-            inWarehouseElectricityBattery.setBindTime(offlineEleOrderVo.getEndTime());
-            electricityBatteryService.updateBatteryUser(inWarehouseElectricityBattery);
+    
+        //归还电池的上次绑定时间
+        Long oldBatteryBindTime = oldElectricityBattery.getBindTime();
+    
+        //如果电池绑定时间为空或者绑定时间小于当前订单结束时间则更新电池信息
+        if (Objects.isNull(oldBatteryBindTime) || offlineOrderMessage.getEndTime() > oldBatteryBindTime) {
+            ElectricityBattery oldElectricityBatteryUpdate = new ElectricityBattery();
+            oldElectricityBatteryUpdate.setId(oldElectricityBattery.getId());
+            oldElectricityBatteryUpdate.setBusinessStatus(ElectricityBattery.BUSINESS_STATUS_RETURN);
+            oldElectricityBatteryUpdate.setElectricityCabinetId(electricityCabinet.getId());
+            oldElectricityBatteryUpdate.setElectricityCabinetName(electricityCabinet.getName());
+            oldElectricityBatteryUpdate.setUid(null);
+            oldElectricityBatteryUpdate.setGuessUid(null);
+            oldElectricityBatteryUpdate.setUpdateTime(System.currentTimeMillis());
+            oldElectricityBatteryUpdate.setBorrowExpireTime(null);
+            oldElectricityBatteryUpdate.setBindTime(offlineOrderMessage.getEndTime());
+            electricityBatteryService.updateBatteryUser(oldElectricityBatteryUpdate);
         }
-        
-        ElectricityBattery electricityBattery = electricityBatteryService.queryByUid(user.getUid());
-        ElectricityBattery newElectricityBattery = electricityBatteryService.queryBySnFromDb(offlineEleOrderVo.getNewElectricityBatterySn());
+    
+        //判断用户是已租赁电池状态
+        if (Objects.equals(userInfo.getBatteryRentStatus(), UserInfo.BATTERY_RENT_STATUS_NO)) {
+            log.warn("OFFLINE EXCHANGE WARN! user not rent battery,uid={}", user.getUid());
+            return;
+        }
+    
+        ElectricityBattery newElectricityBattery = electricityBatteryService.queryBySnFromDb(offlineOrderMessage.getNewElectricityBatterySn());
+        if (Objects.isNull(newElectricityBattery)) {
+            log.warn("OFFLINE EXCHANGE WARN! electricityBattery is null,sn={},uid={}", offlineOrderMessage.getNewElectricityBatterySn(), user.getUid());
+            return;
+        }
         
         //如果已租电池的时间小于用户当前绑定电池的时间  则不需要更新
         if (Objects.nonNull(electricityBattery) && Objects.nonNull(electricityBattery.getBindTime()) && Objects.nonNull(newElectricityBattery.getBindTime())
-                && electricityBattery.getBindTime() > offlineEleOrderVo.getEndTime()) {
-            log.warn(
-                    "OFFLINE EXCHANGE ERROR! electricityBattery bindTime less than new electricityBattery bindTime,electricityBattery bindTime={},new electricityBattery bindTime={}",
-                    electricityBattery.getBindTime(), newElectricityBattery.getBindTime());
+                && electricityBattery.getBindTime() > offlineOrderMessage.getEndTime()) {
+            log.warn("OFFLINE EXCHANGE WARN! order endTime less than user bind battery bindTime,bindTime={},endTime={},uid={}", electricityBattery.getBindTime(),
+                    newElectricityBattery.getBindTime(), user.getUid());
             return;
         }
         
@@ -300,16 +249,15 @@ public class NormalOffLineEleExchangeHandlerIot extends AbstractElectricityIotHa
         if (Objects.nonNull(electricityBattery)) {
             //如果用户绑定的电池与放入的电池不一致 并且绑定的电池的uid和放入的电池的uid相同（离线换电会发生这种情况）
             if (!Objects.equals(electricityBattery.getSn(), oldElectricityBattery.getSn()) && Objects.equals(electricityBattery.getUid(), oldElectricityBattery.getUid())
-                    && Objects.nonNull(electricityBattery.getBindTime()) && electricityBattery.getBindTime() > offlineEleOrderVo.getEndTime()) {
-                log.warn("OFFLINE EXCHANGE ERROR! user binding battery! userId={},return batterySn={},binding batterySn={}", user.getUid(), oldElectricityBattery.getSn(),
+                    && Objects.nonNull(electricityBattery.getBindTime()) && electricityBattery.getBindTime() > offlineOrderMessage.getEndTime()) {
+                log.warn("OFFLINE EXCHANGE WARN! user binding battery! uid={},return batterySn={},binding batterySn={}", user.getUid(), oldElectricityBattery.getSn(),
                         electricityBattery.getSn());
                 return;
             }
             
-            if (!Objects.equals(electricityBattery.getSn(), offlineEleOrderVo.getOldElectricityBatterySn())) {
+            if (!Objects.equals(electricityBattery.getSn(), offlineOrderMessage.getOldElectricityBatterySn())) {
                 ElectricityBattery newBattery = new ElectricityBattery();
                 newBattery.setId(electricityBattery.getId());
-                //                newElectricityBattery.setStatus(ElectricityBattery.EXCEPTION_FREE);
                 newBattery.setBusinessStatus(ElectricityBattery.BUSINESS_STATUS_EXCEPTION);
                 newBattery.setUid(null);
                 
@@ -335,47 +283,92 @@ public class NormalOffLineEleExchangeHandlerIot extends AbstractElectricityIotHa
                 electricityBatteryService.updateBatteryUser(newBattery);
             }
         }
-        
-        //判断用户是已租赁电池状态
-        if (Objects.equals(userInfo.getBatteryRentStatus(), UserInfo.BATTERY_RENT_STATUS_NO)) {
-            log.warn("OFFLINE EXCHANGE ERROR! user not rent battery! userId={}", user.getUid());
-            return;
+    
+        //如果电池绑定时间为空或者绑定时间小于当前订单结束时间则更新电池信息
+        if (Objects.isNull(newElectricityBattery.getBindTime()) || offlineOrderMessage.getEndTime() > newElectricityBattery.getBindTime()) {
+            ElectricityBattery newElectricityBatteryUpdate = new ElectricityBattery();
+            newElectricityBatteryUpdate.setId(newElectricityBattery.getId());
+            newElectricityBatteryUpdate.setBusinessStatus(ElectricityBattery.BUSINESS_STATUS_LEASE);
+            newElectricityBatteryUpdate.setElectricityCabinetId(null);
+            newElectricityBatteryUpdate.setElectricityCabinetName(null);
+            newElectricityBatteryUpdate.setUid(user.getUid());
+            newElectricityBatteryUpdate.setUpdateTime(System.currentTimeMillis());
+            newElectricityBatteryUpdate.setBorrowExpireTime(Long.parseLong(wechatTemplateNotificationConfig.getExpirationTime()) * 3600000 + System.currentTimeMillis());
+            newElectricityBatteryUpdate.setBindTime(offlineOrderMessage.getEndTime());
+            electricityBatteryService.updateBatteryUser(newElectricityBatteryUpdate);
+        }
+    }
+    
+    private boolean handlerUserBatteryMemberCard(UserInfo userInfo, OfflineOrderMessage offlineOrderMessage, String sessionId) {
+        if (!(Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES) || Objects.equals(userInfo.getCarBatteryDepositStatus(),
+                YesNoEnum.YES.getCode()))) {
+            log.warn("OFFLINE EXCHANGE WARN! user not pay deposit uid={},sessionId={}", userInfo.getUid(), sessionId);
+            return Boolean.FALSE;
         }
         
-        //更新新电池为在用
-        if (Objects.isNull(newElectricityBattery)) {
-            log.warn("OFFLINE EXCHANGE ERROR! electricityBattery is null! BatterySn={}", offlineEleOrderVo.getNewElectricityBatterySn());
-            return;
+        //单电
+        if (Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
+            UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
+            if (Objects.isNull(userBatteryMemberCard)) {
+                log.warn("OFFLINE EXCHANGE WARN! not found userBatteryMemberCard,uid={},sessionId={}", userInfo.getUid(), sessionId);
+                return Boolean.FALSE;
+            }
+            
+            BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());
+            if (Objects.isNull(batteryMemberCard)) {
+                log.warn("OFFLINE EXCHANGE WARN! not found batteryMemberCard,uid={},sessionId={}", userInfo.getUid(), sessionId);
+                return Boolean.FALSE;
+            }
+            
+            if (!Objects.equals(batteryMemberCard.getLimitCount(), BatteryMemberCard.UN_LIMIT) && Objects.nonNull(userBatteryMemberCard.getOrderEffectiveTime())) {
+                //如果换电订单的时间在当前套餐生效时间之后，则扣减次数
+                if (offlineOrderMessage.getEndTime() > userBatteryMemberCard.getOrderEffectiveTime() && userBatteryMemberCard.getOrderExpireTime() > System.currentTimeMillis()) {
+                    //扣除月卡
+                    userBatteryMemberCardService.minCount(userBatteryMemberCard);
+                }
+                
+                //如果套餐没过期并且剩余次数为1
+                if ((userBatteryMemberCard.getOrderExpireTime() < System.currentTimeMillis()) || Objects.equals(userBatteryMemberCard.getOrderRemainingNumber(),
+                        UserBatteryMemberCard.MEMBER_CARD_ONE_REMAINING)) {
+                    updateUserBatteryMemberCardInfo(userBatteryMemberCard, userInfo, offlineOrderMessage.getEndTime());
+                }
+            }
         }
         
-        //后续日志代码需要删除
-        if (Objects.nonNull(electricityBattery)) {
-            log.info("currentUserId={},electricityBatterySn={},electricityBatteryBindTime={},newElectricityBatterySn={},newElectricityBatteryBindTime={},offerOrderEndTime={}",
-                    user.getUid(), electricityBattery.getSn(), electricityBattery.getBindTime(), newElectricityBattery.getSn(), newElectricityBattery.getBindTime(),
-                    offlineEleOrderVo.getEndTime());
+        //车电一体
+        if (Objects.equals(userInfo.getCarBatteryDepositStatus(), YesNoEnum.YES.getCode())) {
+            try {
+                carRentalPackageMemberTermBizService.substractResidue(userInfo.getTenantId(), userInfo.getUid());
+            } catch (Exception e) {
+                log.error("OFFLINE EXCHANGE ERROR! carRentalPackageMember error, uid={},sessionId={}", userInfo.getUid(), sessionId, e);
+            }
         }
         
-        ElectricityBattery usingElectricityBattery = new ElectricityBattery();
-        usingElectricityBattery.setId(newElectricityBattery.getId());
-        //        UsingElectricityBattery.setStatus(ElectricityBattery.LEASE_STATUS);
-        usingElectricityBattery.setBusinessStatus(ElectricityBattery.BUSINESS_STATUS_LEASE);
-        usingElectricityBattery.setElectricityCabinetId(null);
-        usingElectricityBattery.setElectricityCabinetName(null);
-        usingElectricityBattery.setUid(user.getUid());
-        usingElectricityBattery.setUpdateTime(System.currentTimeMillis());
-        usingElectricityBattery.setBorrowExpireTime(Long.parseLong(wechatTemplateNotificationConfig.getExpirationTime()) * 3600000 + System.currentTimeMillis());
+        return Boolean.TRUE;
+    }
+    
+    private ElectricityCabinetOfflineReportOrder buildOfflineReportOrder(OfflineOrderMessage offlineOrderMessage) {
+        return ElectricityCabinetOfflineReportOrder.builder().orderId(offlineOrderMessage.getOrderId()).createTime(System.currentTimeMillis()).build();
+    }
+    
+    private OffLineElectricityCabinetOrderOperHistory buildOrderOperHistory(ElectricityCabinetOrder electricityCabinetOrder, ElectricityCabinet electricityCabinet,
+            OfflineOrderMessage offlineOrderMessage) {
+        return OffLineElectricityCabinetOrderOperHistory.builder().orderId(electricityCabinetOrder.getOrderId()).type(offlineOrderMessage.getOfflineOrderStatus())
+                .tenantId(electricityCabinet.getTenantId()).operateMsgVos(offlineOrderMessage.getMsg()).build();
+    }
+    
+    private ElectricityCabinetOrder buildElectricityCabinetOrder(ElectricityCabinet electricityCabinet, OfflineOrderMessage offlineOrderMessage, User user) {
+        int newCellNo = StringUtils.isNotBlank(offlineOrderMessage.getNewCellNo()) ? Integer.parseInt(offlineOrderMessage.getNewCellNo()) : 0;
+        int oldCellNo = StringUtils.isNotBlank(offlineOrderMessage.getOldCellNo()) ? Integer.parseInt(offlineOrderMessage.getOldCellNo()) : 0;
         
-        //设置电池的绑定时间 1.必须为在租用户 2.要更新的电池的绑定时间为空或者小于上报订单的结束时间
-        //设置电池的绑定时间
-        Long bindTime = null;
-        if (Objects.nonNull(electricityBattery)) {
-            bindTime = newElectricityBattery.getBindTime();
-        }
-        log.info("off bindTime={},end time={},batterySn={}", bindTime, offlineEleOrderVo.getEndTime(), newElectricityBattery.getSn());
-        if (Objects.isNull(bindTime) || bindTime < offlineEleOrderVo.getEndTime()) {
-            usingElectricityBattery.setBindTime(offlineEleOrderVo.getEndTime());
-            electricityBatteryService.updateBatteryUser(usingElectricityBattery);
-        }
+        String orderStatus = offlineOrderMessage.getIsProcessFail() ? ElectricityCabinetOrder.ORDER_EXCEPTION_CANCEL : offlineOrderMessage.getStatus();
+        
+        return ElectricityCabinetOrder.builder().orderId(generateOrderId(electricityCabinet.getId(), offlineOrderMessage.getNewCellNo(), user.getUid())).uid(user.getUid())
+                .phone(offlineOrderMessage.getPhone()).electricityCabinetId(electricityCabinet.getId()).oldCellNo(oldCellNo).newCellNo(newCellNo)
+                .newElectricityBatterySn(offlineOrderMessage.getNewElectricityBatterySn()).oldElectricityBatterySn(offlineOrderMessage.getOldElectricityBatterySn()).orderSeq(null)
+                .status(orderStatus).source(Objects.isNull(offlineOrderMessage.getOfflineOrderStatus()) ? ORDER_SOURCE_FOR_OFFLINE : offlineOrderMessage.getOfflineOrderStatus())
+                .paymentMethod(BatteryMemberCard.BUSINESS_TYPE_BATTERY).createTime(offlineOrderMessage.getStartTime()).updateTime(offlineOrderMessage.getEndTime())
+                .franchiseeId(electricityCabinet.getFranchiseeId()).storeId(electricityCabinet.getStoreId()).tenantId(electricityCabinet.getTenantId()).build();
     }
     
     private void handleBatteryTrackRecord(ElectricityCabinetOrder electricityCabinetOrder, ElectricityCabinet electricityCabinet, UserInfo userInfo) {
@@ -437,7 +430,7 @@ public class NormalOffLineEleExchangeHandlerIot extends AbstractElectricityIotHa
         
         ElectricityMemberCardOrder electricityMemberCardOrder = batteryMemberCardOrderService.selectByOrderNo(userBatteryMemberCardPackageLatest.getOrderId());
         if (Objects.isNull(electricityMemberCardOrder)) {
-            log.warn("TRANSFER BATTERY MEMBER CARD PACKAGE ERROR!not found user member card order Info,uid={},orderId={}", userBatteryMemberCard.getUid(),
+            log.warn("TRANSFER BATTERY MEMBER CARD PACKAGE WARN!not found user member card order Info,uid={},orderId={}", userBatteryMemberCard.getUid(),
                     userBatteryMemberCardPackageLatest.getOrderId());
             return;
         }
@@ -446,10 +439,10 @@ public class NormalOffLineEleExchangeHandlerIot extends AbstractElectricityIotHa
         userBatteryTypeService.updateUserBatteryType(electricityMemberCardOrder, userInfo);
     }
     
-    private void senMsg(ElectricityCabinet electricityCabinet, OfflineEleOrderVo offlineEleOrderVo, User user) {
+    private void orderConfirm(ElectricityCabinet electricityCabinet, OfflineOrderMessage offlineOrderMessage, User user) {
         HashMap<String, Object> dataMap = Maps.newHashMap();
-        dataMap.put("orderId", offlineEleOrderVo.getOrderId());
-        dataMap.put("status", offlineEleOrderVo.getStatus());
+        dataMap.put("orderId", offlineOrderMessage.getOrderId());
+        dataMap.put("status", offlineOrderMessage.getStatus());
         
         Long uid = -1L;
         if (Objects.nonNull(user)) {
@@ -457,12 +450,12 @@ public class NormalOffLineEleExchangeHandlerIot extends AbstractElectricityIotHa
         }
         
         HardwareCommandQuery comm = HardwareCommandQuery.builder()
-                .sessionId(CacheConstant.ELE_OPERATOR_SESSION_PREFIX + "_" + System.currentTimeMillis() + "_" + uid + "_" + offlineEleOrderVo.getOrderId()).data(dataMap)
+                .sessionId(CacheConstant.ELE_OPERATOR_SESSION_PREFIX + "_" + System.currentTimeMillis() + "_" + uid + "_" + offlineOrderMessage.getOrderId()).data(dataMap)
                 .productKey(electricityCabinet.getProductKey()).deviceName(electricityCabinet.getDeviceName())
                 .command(ElectricityIotConstant.OFFLINE_ELE_EXCHANGE_ORDER_MANAGE_SUCCESS).build();
         Pair<Boolean, String> sendResult = eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
         if (!sendResult.getLeft()) {
-            log.error("OFFLINE EXCHANGE ERROR! send command error! orderId:{}", offlineEleOrderVo.getOrderId());
+            log.warn("OFFLINE EXCHANGE WARN! send command error! orderId={}", offlineOrderMessage.getOrderId());
         }
     }
     
@@ -472,7 +465,7 @@ public class NormalOffLineEleExchangeHandlerIot extends AbstractElectricityIotHa
     
     
     @Data
-    class OfflineEleOrderVo {
+    class OfflineOrderMessage {
         
         /**
          * 换电柜旧仓门号

@@ -43,7 +43,12 @@ public class JsonAdminUserNoticeController extends BaseController {
 
     @PutMapping("/admin/userNotice")
     public R update(@Validated @RequestBody UserNoticeQuery userNoticeQuery) {
-        return returnTripleResult(userNoticeService.update(userNoticeQuery));
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        
+        return returnTripleResult(userNoticeService.update(userNoticeQuery, user.getUid()));
     }
 
 }

@@ -158,7 +158,7 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
             
             if (StringUtils.isBlank(decrypt)) {
                 log.error("MERCHANT JOIN ERROR! merchant code decrypt error,code={}, joinUid={}", code, joinUid);
-                return R.fail("100463", "二维码已失效");
+                return R.fail("120105", "该二维码暂时无法使用,请稍后再试");
             }
             
             log.info("MERCHANT JOIN INFO! joinScanCode decrypt={}", decrypt);
@@ -166,7 +166,7 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
             String[] split = decrypt.split(String.valueOf(StrUtil.C_COLON));
             if (ArrayUtils.isEmpty(split) || split.length != NumberConstant.THREE) {
                 log.error("MERCHANT JOIN ERROR! illegal code! code={}, joinUid={}", code, joinUid);
-                return R.fail("100463", "二维码已失效");
+                return R.fail("120105", "该二维码暂时无法使用,请稍后再试");
             }
             
             String merchantIdStr = split[NumberConstant.ZERO];
@@ -174,7 +174,7 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
             String inviterTypeStr = split[NumberConstant.TWO];
             if (StringUtils.isBlank(merchantIdStr) || StringUtils.isBlank(inviterUidStr) || StringUtils.isBlank(inviterTypeStr)) {
                 log.error("MERCHANT JOIN ERROR! illegal code! code={}, joinUid={}", code, joinUid);
-                return R.fail("100463", "二维码已失效");
+                return R.fail("120105", "该二维码暂时无法使用,请稍后再试");
             }
             
             Long merchantId;
@@ -187,14 +187,14 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
             } catch (NumberFormatException e) {
                 log.error("MERCHANT JOIN ERROR! Invalid format, joinUid={}, merchantIdStr={}, inviterUidStr={}, inviterTypeStr={}", joinUid, merchantIdStr, inviterUidStr,
                         inviterTypeStr);
-                return R.fail("100463", "二维码已失效");
+                return R.fail("120105", "该二维码暂时无法使用,请稍后再试");
             }
             
             // 判断商户是否存在或被禁用
             Merchant merchant = merchantService.queryByIdFromCache(merchantId);
             if (Objects.isNull(merchant)) {
                 log.error("MERCHANT JOIN ERROR! not found merchant, merchantId={}", merchantId);
-                return R.fail("100463", "二维码已失效");
+                return R.fail("120105", "该二维码暂时无法使用,请稍后再试");
             }
             
             if (Objects.equals(merchant.getStatus(), MerchantConstant.DISABLE)) {
@@ -203,35 +203,35 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
             }
             
             // 判断邀请人是否存在或被禁用
-            User inviterUser = userService.queryByUidFromCache(inviterUid);
+            User inviterUser = userService.queryByUidFromDB(inviterUid);
             if (Objects.isNull(inviterUser)) {
                 log.error("MERCHANT JOIN ERROR! not found inviterUser, inviterUid={}", inviterUid);
-                return R.fail(false, "ELECTRICITY.0024", "用户已被禁用");
+                return R.fail("120105", "该二维码暂时无法使用,请稍后再试");
             }
             
             if (inviterUser.isLock()) {
                 log.error("MERCHANT JOIN ERROR! inviterUser locked, inviterUid={}", inviterUid);
-                return R.fail(false, "120105", "该二维码暂时无法使用,请稍后再试");
+                return R.fail("120105", "该二维码暂时无法使用,请稍后再试");
             }
             
             // 扫自己码
             if (Objects.equals(userInfo.getUid(), inviterUid)) {
                 log.info("MERCHANT JOIN ERROR! illegal operate! Can not scan own QR, inviterUid={}, joinUid={}", inviterUid, joinUid);
-                return R.fail("100463", "二维码已失效");
+                return R.fail("120105", "该二维码暂时无法使用,请稍后再试");
             }
             
             // 邀请人类型
             if (!Objects.equals(inviterType, MerchantJoinRecordConstant.INVITER_TYPE_MERCHANT_SELF) && !Objects.equals(inviterType,
                     MerchantJoinRecordConstant.INVITER_TYPE_MERCHANT_PLACE_EMPLOYEE)) {
                 log.info("MERCHANT JOIN ERROR! illegal operate! Inviter is illegal, inviterUid={}, inviterType={}, joinUid={}", inviterUid, inviterType, joinUid);
-                return R.fail("100463", "二维码已失效");
+                return R.fail("120105", "该二维码暂时无法使用,请稍后再试");
             }
             
             // 获取商户保护期和有效期
             MerchantAttr merchantAttr = merchantAttrService.queryByTenantIdFromCache(merchant.getTenantId());
             if (Objects.isNull(merchantAttr)) {
                 log.error("MERCHANT JOIN ERROR! not found merchantAttr, merchantId={}", merchantId);
-                return R.fail("100463", "二维码已失效");
+                return R.fail("120105", "该二维码暂时无法使用,请稍后再试");
             }
             
             // 渠道员uid
@@ -486,8 +486,8 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
     
     @Override
     @Slave
-    public Integer countEmployeeScanCodeNum(List<Long> uidList, Long startTime, Long endTime, Integer status, Integer tenantId,Long channelEmployeeUid) {
-        return merchantJoinRecordMapper.countEmployeeScanCodeNum(uidList, startTime, endTime, status, tenantId,channelEmployeeUid);
+    public Integer countEmployeeScanCodeNum(List<Long> uidList, Long startTime, Long endTime, Integer status, Integer tenantId, Long channelEmployeeUid) {
+        return merchantJoinRecordMapper.countEmployeeScanCodeNum(uidList, startTime, endTime, status, tenantId, channelEmployeeUid);
     }
     
     @Slave
