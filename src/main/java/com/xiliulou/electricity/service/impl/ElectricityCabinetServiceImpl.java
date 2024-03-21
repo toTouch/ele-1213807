@@ -4278,7 +4278,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 if (fileName.startsWith("/")) {
                     builder.append(urlPrefix).append(fileName.replaceFirst("/", ""));
                 } else {
-                    builder.append(urlPrefix).append("/").append(fileName);
+                    builder.append(urlPrefix).append(fileName);
                 }
                 
                 cabinetPhoto.add(builder.toString());
