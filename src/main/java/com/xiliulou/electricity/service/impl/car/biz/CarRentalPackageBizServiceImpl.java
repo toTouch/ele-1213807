@@ -265,9 +265,11 @@ public class CarRentalPackageBizServiceImpl implements CarRentalPackageBizServic
         if (ObjectUtils.isEmpty(packageId)) {
             throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
+        if (Objects.nonNull(carRentalPackageMemberTermService.checkUserByRentalPackageId(packageId))){
+            throw new BizException("300023", "当前套餐有用户使用，暂不支持删除");
+        }
         carRentalPackageService.delById(packageId, optId);
         carRentalPackageCarBatteryRelService.delByRentalPackageId(packageId, optId);
-        // todo 返回值正确？
         return false;
     }
 
