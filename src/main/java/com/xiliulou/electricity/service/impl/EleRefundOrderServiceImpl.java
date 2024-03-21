@@ -2281,8 +2281,8 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
     
     @Slave
     @Override
-    public EleRefundOrder queryLastByUid(Long uid) {
-        return eleRefundOrderMapper.queryLastByUid(uid);
+    public EleRefundOrder queryLastByOrderId(String orderId) {
+        return eleRefundOrderMapper.selectLastByOrderId(orderId);
     }
     
     @Slave

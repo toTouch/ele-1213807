@@ -680,7 +680,11 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
             ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(tenantId);
             
             // 查询退押订单
-            EleRefundOrder refundOrder = refundOrderService.queryLastByUid(query.getUid());
+            EleRefundOrder refundOrder = null;
+            
+            if (Objects.nonNull(eleDepositOrder)) {
+                refundOrder = refundOrderService.queryLastByOrderId(eleDepositOrder.getOrderId());
+            }
             
             if (Objects.nonNull(eleDepositOrder) && Objects.equals(eleDepositOrder.getOrderType(), EleDepositOrder.ORDER_TYPE_COMMON) && Objects.nonNull(electricityConfig)
                     && Objects.nonNull(electricityConfig.getChannelTimeLimit()) && Objects.nonNull(refundOrder)) {
@@ -1316,9 +1320,16 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
             ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(tenantId);
             
             // 查询退押订单
-            EleRefundOrder refundOrder = refundOrderService.queryLastByUid(query.getUid());
+            // 查询退押订单
+            EleRefundOrder refundOrder = null;
+    
+            if (Objects.nonNull(eleDepositOrder)) {
+                refundOrder = refundOrderService.queryLastByOrderId(eleDepositOrder.getOrderId());
+            }
+            
             if (Objects.nonNull(eleDepositOrder) && Objects.equals(eleDepositOrder.getOrderType(), EleDepositOrder.ORDER_TYPE_COMMON) && Objects.nonNull(electricityConfig)
                     && Objects.nonNull(electricityConfig.getChannelTimeLimit()) && Objects.nonNull(refundOrder)) {
+                
                 long l = DateUtils.diffDayV2(refundOrder.getUpdateTime(), System.currentTimeMillis());
                 if (l <= electricityConfig.getChannelTimeLimit()) {
                     log.error("scan code enterprise user is channel time limit user not join, enterpriseId={}, uid={}", query.getEnterpriseId(), query.getUid());
