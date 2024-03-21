@@ -457,13 +457,6 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
                 query.setDeposit(userBatteryDeposit.getBatteryDeposit());
             }
             
-            // 判断用户是否为换电套餐的流失用户
-            EleDepositOrder eleDepositOrder = eleDepositOrderService.queryLastPayDepositTimeByUid(query.getUid(), null, null, null);
-            if (Objects.nonNull(eleDepositOrder) && Objects.equals(eleDepositOrder.getOrderType(), EleDepositOrder.ORDER_TYPE_COMMON)) {
-                query.setRentTypes(Arrays.asList(BatteryMemberCard.RENT_TYPE_OLD, BatteryMemberCard.RENT_TYPE_UNLIMIT, BatteryMemberCard.RENT_TYPE_NEW));
-                query.setDeposit(null);
-            }
-            
         } else {
             //续费
             BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());
