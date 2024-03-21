@@ -349,6 +349,11 @@ public class MerchantEmployeeServiceImpl implements MerchantEmployeeService {
         return merchantEmployeeMapper.selectListByPlaceId(placeIdList);
     }
     
+    /**
+     * 查询当前或者历史中存在的场地员工
+     * @param queryModel
+     * @return
+     */
     @Slave
     @Override
     public List<MerchantEmployee> selectByMerchantUid(MerchantPromotionEmployeeDetailQueryModel queryModel) {

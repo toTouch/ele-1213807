@@ -40,9 +40,4 @@ public interface MerchantPlaceService {
     Triple<Boolean, String, Object> queryById(Long id);
     
     List<MerchantPlace> queryByIdList(List<Long> placeIdList,Integer tenantId);
-    
-    /**
-     *  根据id查询场地（包含已逻辑删除的）
-     */
-    MerchantPlace queryByIdFromDB(Long id);
 }

@@ -545,7 +545,7 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
                 
                 monthIncomeQueryModel.setStatus(MerchantConstant.MERCHANT_REBATE_STATUS_RETURNED);
                 BigDecimal currentMonthReturnInCome = rebateRecordService.sumByStatus(monthIncomeQueryModel);
-    
+                
                 resultNoSettleAmount = resultNoSettleAmount.add(currentMonthNoSettleInCome.subtract(currentMonthReturnInCome));
             }
             
@@ -601,7 +601,7 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
             return R.ok();
         }
         
-        dataDetailVOList = merchantJoinRecords.stream().map(merchantJoinRecord -> {
+        dataDetailVOList = merchantJoinRecords.parallelStream().map(merchantJoinRecord -> {
             MerchantPromotionDataDetailVO vo = new MerchantPromotionDataDetailVO();
             UserInfo userInfo = userInfoService.queryByUidFromCache(merchantJoinRecord.getJoinUid());
             if (Objects.nonNull(userInfo)) {
@@ -873,15 +873,6 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
             
             if (Objects.equals(bindHistory.getBindStatus(), MerchantChannelEmployeeBindHistoryConstant.BIND) && bindHistory.getBindTime() >= endTime) {
                 return null;
-            }
-            
-            if (Objects.equals(bindHistory.getBindStatus(), MerchantChannelEmployeeBindHistoryConstant.UN_BIND)) {
-                if (Objects.nonNull(endTime) && bindHistory.getBindTime() > endTime) {
-                    return null;
-                }
-                if (Objects.nonNull(startTime) && bindHistory.getUnBindTime() < startTime) {
-                    return null;
-                }
             }
             
             if (bindHistory.getBindTime() >= startTime) {

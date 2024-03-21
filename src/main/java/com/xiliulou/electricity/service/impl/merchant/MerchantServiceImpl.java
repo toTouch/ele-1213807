@@ -9,8 +9,8 @@ import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.constant.merchant.MerchantChannelEmployeeBindHistoryConstant;
 import com.xiliulou.electricity.constant.merchant.MerchantConstant;
-import com.xiliulou.electricity.constant.merchant.MerchantPlaceConstant;
 import com.xiliulou.electricity.constant.merchant.MerchantJoinRecordConstant;
+import com.xiliulou.electricity.constant.merchant.MerchantPlaceConstant;
 import com.xiliulou.electricity.dto.merchant.MerchantDeleteCacheDTO;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.Franchisee;
@@ -29,12 +29,10 @@ import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.merchant.MerchantMapper;
 import com.xiliulou.electricity.query.BatteryMemberCardQuery;
 import com.xiliulou.electricity.query.enterprise.EnterpriseInfoQuery;
-import com.xiliulou.electricity.query.merchant.MerchantChannelEmployeeBindHistoryQueryModel;
 import com.xiliulou.electricity.query.merchant.MerchantJoinRecordQueryMode;
 import com.xiliulou.electricity.query.merchant.MerchantPlaceCabinetBindQueryModel;
 import com.xiliulou.electricity.query.merchant.MerchantPlaceMapQueryModel;
 import com.xiliulou.electricity.query.merchant.MerchantPlaceQueryModel;
-import com.xiliulou.electricity.query.merchant.MerchantPromotionFeeMerchantNumQueryModel;
 import com.xiliulou.electricity.query.merchant.MerchantQueryModel;
 import com.xiliulou.electricity.query.merchant.MerchantUserAmountQueryMode;
 import com.xiliulou.electricity.request.merchant.MerchantPageRequest;
@@ -73,10 +71,8 @@ import com.xiliulou.electricity.vo.merchant.MerchantUserVO;
 import com.xiliulou.electricity.vo.merchant.MerchantVO;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.tuple.Triple;
-import org.apache.poi.ss.formula.functions.T;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -201,7 +197,7 @@ public class MerchantServiceImpl implements MerchantService {
         }
         
         // 检测手机号
-        User userPhone = userService.checkMerchantExist(null, merchantSaveRequest.getPhone(), User.TYPE_USER_MERCHANT, tenantId, null);
+        User userPhone = userService.checkPhoneExist(null, merchantSaveRequest.getPhone(), User.TYPE_USER_MERCHANT, null, null);
         if (Objects.nonNull(userPhone)) {
             log.error("merchant save error, phone is exit name={}", merchantSaveRequest.getPhone());
             return Triple.of(false, "120201", "手机号已经存在");
@@ -456,7 +452,7 @@ public class MerchantServiceImpl implements MerchantService {
         }
         
         // 检测手机号
-        User userPhone = userService.checkMerchantExist(null, merchantSaveRequest.getPhone(), User.TYPE_USER_MERCHANT, tenantId, merchant.getUid());
+        User userPhone = userService.checkPhoneExist(null, merchantSaveRequest.getPhone(), User.TYPE_USER_MERCHANT, null, merchant.getUid());
         if (Objects.nonNull(userPhone)) {
             log.error("merchant update error, phone is exit id={}, phone={}", merchantSaveRequest.getId(), merchantSaveRequest.getPhone());
             return Triple.of(false, "120201", "手机号已经存在");
@@ -615,7 +611,7 @@ public class MerchantServiceImpl implements MerchantService {
         merchantMapper.update(merchantUpdate);
         
         // 如果更新的渠道员和绑定的渠道员不一致才操作
-        if(!Objects.equals(merchant.getChannelEmployeeUid(), merchantSaveRequest.getChannelEmployeeUid())) {
+        if (!Objects.equals(merchant.getChannelEmployeeUid(), merchantSaveRequest.getChannelEmployeeUid())) {
             //如果解绑渠道员，则merchantSaveRequest.getChannelEmployeeUid为null
             if (Objects.isNull(merchantSaveRequest.getChannelEmployeeUid())) {
                 MerchantChannelEmployeeBindHistory updateBindHistory = MerchantChannelEmployeeBindHistory.builder().merchantUid(merchant.getUid()).unBindTime(timeMillis)
@@ -623,18 +619,19 @@ public class MerchantServiceImpl implements MerchantService {
                 merchantChannelEmployeeBindHistoryService.updateUnbindTimeByMerchantUid(updateBindHistory);
             } else if (Objects.isNull(merchant.getChannelEmployeeUid())) {
                 MerchantChannelEmployeeBindHistory insertBindHistory = MerchantChannelEmployeeBindHistory.builder().merchantUid(merchant.getUid())
-                        .channelEmployeeUid(merchantSaveRequest.getChannelEmployeeUid()).bindTime(timeMillis).bindStatus(MerchantChannelEmployeeBindHistoryConstant.BIND).createTime(timeMillis).updateTime(timeMillis).tenantId(tenantId).build();
+                        .channelEmployeeUid(merchantSaveRequest.getChannelEmployeeUid()).bindTime(timeMillis).bindStatus(MerchantChannelEmployeeBindHistoryConstant.BIND)
+                        .createTime(timeMillis).updateTime(timeMillis).tenantId(tenantId).build();
                 merchantChannelEmployeeBindHistoryService.insertOne(insertBindHistory);
             } else {
                 // 更新原有记录为解绑
                 MerchantChannelEmployeeBindHistory updateBindHistory = MerchantChannelEmployeeBindHistory.builder().merchantUid(merchant.getUid()).unBindTime(timeMillis)
                         .bindStatus(MerchantChannelEmployeeBindHistoryConstant.UN_BIND).updateTime(timeMillis).tenantId(tenantId).build();
                 merchantChannelEmployeeBindHistoryService.updateUnbindTimeByMerchantUid(updateBindHistory);
-    
+                
                 // 新增绑定记录
                 MerchantChannelEmployeeBindHistory insertBindHistory = MerchantChannelEmployeeBindHistory.builder().merchantUid(merchant.getUid())
-                        .channelEmployeeUid(merchantSaveRequest.getChannelEmployeeUid()).bindTime(timeMillis)
-                        .bindStatus(MerchantChannelEmployeeBindHistoryConstant.BIND).createTime(timeMillis).updateTime(timeMillis).tenantId(tenantId).build();
+                        .channelEmployeeUid(merchantSaveRequest.getChannelEmployeeUid()).bindTime(timeMillis).bindStatus(MerchantChannelEmployeeBindHistoryConstant.BIND)
+                        .createTime(timeMillis).updateTime(timeMillis).tenantId(tenantId).build();
                 merchantChannelEmployeeBindHistoryService.insertOne(insertBindHistory);
             }
         }
@@ -1319,7 +1316,7 @@ public class MerchantServiceImpl implements MerchantService {
     
     @Slave
     @Override
-    public Merchant queryByIdFromDB(Long id) {
-        return merchantMapper.selectHistoryById(id);
+    public List<Merchant> listAllByIds(Set<Long> merchantIdSet, Integer tenantId) {
+        return merchantMapper.selectListAllByIds(merchantIdSet, tenantId);
     }
 }

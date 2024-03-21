@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.queue;
 
+import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.StrUtil;
 import com.google.common.collect.Maps;
 import com.xiliulou.cache.redis.RedisService;
@@ -57,6 +58,7 @@ import com.xiliulou.iot.entity.HardwareCommandQuery;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
+import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.context.WebServerInitializedEvent;
 import org.springframework.context.event.EventListener;
@@ -196,11 +198,12 @@ public class EleOperateQueueHandler {
      * @param finalOpenDTO
      */
     private void handleOrderAfterOperated(EleOpenDTO finalOpenDTO) {
+        MDC.put(CommonConstant.TRACE_ID, IdUtil.fastSimpleUUID());
+        
         //参数
         String type = finalOpenDTO.getType();
         String orderId = finalOpenDTO.getOrderId();
         Double orderSeq = finalOpenDTO.getOrderSeq();
-        //        Integer isOpenLock=eleExceptionLockStorehouseDoorConfig.getIsOpenLock();
         
         //查找订单
         if (Objects.equals(type, ElectricityIotConstant.ELE_COMMAND_INIT_EXCHANGE_ORDER_RSP) || Objects.equals(type,

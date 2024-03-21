@@ -101,12 +101,6 @@
           and id = #{id}
     </select>
     
-    <select id="selectHistoryById" resultType="com.xiliulou.electricity.entity.merchant.MerchantPlace">
-        select <include refid="column"/>
-        from t_merchant_place
-        where id = #{id}
-    </select>
-    
     <sql id="pageFilter">
         <where>
             t.del_flag = 0

@@ -103,12 +103,6 @@
         where id=#{id} and del_flag = 0
     </select>
     
-    <select id="selectHistoryById" resultType="com.xiliulou.electricity.entity.merchant.Merchant">
-        select <include refid="column"/>
-        from t_merchant
-        where id = #{id}
-    </select>
-    
     <sql id="pageFilter">
         <where>
             del_flag = 0
@@ -209,4 +203,19 @@
           
     </select>
     
+    <select id="selectListAllByIds" resultType="com.xiliulou.electricity.entity.merchant.Merchant">
+        select
+        <include refid="column"/>
+        from t_merchant
+        <where>
+            tenant_id = #{tenantId}
+            <if test="merchantIdSet != null and merchantIdSet.size() > 0">
+                and id in
+                <foreach collection="merchantIdSet" item="id" close=")" open="(" separator=",">
+                    #{id}
+                </foreach>
+            </if>
+        </where>
+    </select>
+
 </mapper>
