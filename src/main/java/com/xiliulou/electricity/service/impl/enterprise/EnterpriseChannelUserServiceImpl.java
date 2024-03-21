@@ -196,7 +196,7 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
         if (Objects.isNull(userInfo)) {
             log.error("query enterprise user by phone failed. Not found user. phone is {}, franchisee id = {} ", enterpriseChannelUserQuery.getPhone(),
                     enterpriseChannelUserQuery.getFranchiseeId());
-            return Triple.of(false, "ELECTRICITY.0001", "未查询到该用户，请确保用户已登录小程序并完成实名认证");
+            return Triple.of(false, "300079", "未查询到该用户，请确保用户已登录小程序并完成实名认证");
         }
         
         enterpriseChannelUserVO.setUid(userInfo.getUid());
