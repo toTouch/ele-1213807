@@ -780,9 +780,8 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
             log.info("Merchant getLastMonthPowerForCabinetDetail merchantId={}, placeResultList={}", merchantId, placeResultList);
             
             // 合并连续时间段的记录（前一个时间段的endTime和后一个时间段的startTime是同一天）
-            List<MerchantProCabinetPowerDetailVO> afterMergeDetailResultList = mergeSerialTimeDetail(placeResultList, thisMonthStartTime);
-            
-            if (CollectionUtils.isNotEmpty(afterMergeDetailResultList)) {
+            if (CollectionUtils.isNotEmpty(placeResultList)) {
+                List<MerchantProCabinetPowerDetailVO> afterMergeDetailResultList = mergeSerialTimeDetail(placeResultList, thisMonthStartTime);
                 resultList.addAll(afterMergeDetailResultList);
             }
             
