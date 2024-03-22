@@ -62,9 +62,7 @@
         <if test=" rentalPackageId != null ">AND `rental_package_id` = #{rentalPackageId}</if>
         <if test=" rentalPackageType != null ">AND `rental_package_type` = #{rentalPackageType}</if>
         <if test=" payState != null ">AND `pay_state` = #{payState}</if>
-        /********14.10 滞纳金记录（3条优化项）start 20240311*******/
         <if test="type != null">AND `type` = #{type}</if>
-        /********14.10 滞纳金记录（3条优化项）end 20240311*******/
         <if test=" createTimeBegin != null and createTimeEnd != null ">AND `create_time` BETWEEN #{createTimeBegin} AND #{createTimeEnd}</if>
         <if test=" franchiseeIdList != null and franchiseeIdList.size > 0 ">
             AND `franchisee_id` IN

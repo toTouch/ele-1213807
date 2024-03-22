@@ -3,6 +3,7 @@ package com.xiliulou.electricity.service.impl;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.date.DatePattern;
 import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.map.MapUtil;
 import cn.hutool.core.util.NumberUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
@@ -21,6 +22,7 @@ import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
+import com.xiliulou.electricity.bo.asset.ElectricityCabinetBO;
 import com.xiliulou.electricity.config.EleCommonConfig;
 import com.xiliulou.electricity.config.EleIotOtaPathConfig;
 import com.xiliulou.electricity.constant.BatteryConstant;
@@ -1696,9 +1698,14 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
      * @author <a href="mailto:wxblifeng@163.com">PeakLee</a>
      * @since V1.0 2024/3/18
     */
+    @Slave
     @Override
-    public List<Long> queryIdsBySnArray(List<String> snList, Integer tenantId, Long sourceFranchiseeId) {
-        return this.electricityCabinetMapper.queryIdsBySnArray(snList,tenantId,sourceFranchiseeId);
+    public Map<String,Long> listIdsBySnArray(List<String> snList, Integer tenantId, Long sourceFranchiseeId) {
+        List<ElectricityCabinetBO> cabinetBOS = this.electricityCabinetMapper.selectListBySnArray(snList, tenantId, sourceFranchiseeId);
+        if (CollectionUtils.isEmpty(cabinetBOS)){
+            return MapUtil.empty();
+        }
+        return cabinetBOS.stream().collect(Collectors.toMap(ElectricityCabinetBO::getSn,e->e.getId().longValue(),(k1,k2)->k1));
     }
     
     @Override
@@ -5387,9 +5394,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         cabinetModelInsert.setCellSize(electricityCabinetModel.getCellSize());
         cabinetModelInsert.setScreenSize(electricityCabinetModel.getScreenSize());
         cabinetModelInsert.setWaterproofGrade(electricityCabinetModel.getWaterproofGrade());
-        /*****************************12.2 电柜厂家型号（3条优化点）添加默认值 start ************************/
         cabinetModelInsert.setHeating(EleCabinetModelHeatingEnum.HEATING_NOT_SUPPORT.getCode());
-        /*****************************12.2 电柜厂家型号（3条优化点）end ************************/
         return cabinetModelInsert;
     }
     

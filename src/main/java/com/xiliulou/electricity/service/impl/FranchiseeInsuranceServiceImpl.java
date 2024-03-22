@@ -588,7 +588,7 @@ public class FranchiseeInsuranceServiceImpl extends ServiceImpl<FranchiseeInsura
      * @since V1.0 2024/3/11
     */
     @Override
-    public List<FranchiseeInsuranceCarModelAndBatteryTypeDTO> queryCarModelAndBatteryTypeById(Collection<Long> ids) {
-        return this.baseMapper.queryCarModelAndBatteryTypeById(ids);
+    public List<FranchiseeInsuranceCarModelAndBatteryTypeDTO> selectListCarModelAndBatteryTypeById(Collection<Long> ids) {
+        return this.baseMapper.selectListCarModelAndBatteryTypeById(ids);
     }
 }

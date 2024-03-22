@@ -133,4 +133,9 @@ public class UserCarRentalPackageVO {
      * 套餐购买次数
      */
     private Integer payCount;
+    
+    
+    public static Integer FREE_OF_CHARGE = 2;
+    public static Integer PAID_IN = 1;
+    public static Integer UNPAID = 0;
 }

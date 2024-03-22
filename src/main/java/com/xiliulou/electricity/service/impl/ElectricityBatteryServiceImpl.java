@@ -3,6 +3,7 @@ package com.xiliulou.electricity.service.impl;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.date.DatePattern;
 import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.map.MapUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.RandomUtil;
 import cn.hutool.core.util.StrUtil;
@@ -1661,13 +1662,16 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
      * <p>Project: ElectricityBatteryServiceImpl</p>
      * <p>Copyright: Copyright (c) 2024</p>
      * <p>Company: www.xiliulou.com</p>
-     * <a herf="https://benyun.feishu.cn/wiki/GrNjwBNZkipB5wkiws2cmsEDnVU#S5pYdtn2ooNnzqxWFbxcqGownbe">12.8 资产调拨（2条优化点)</a>
      * @author <a href="mailto:wxblifeng@163.com">PeakLee</a>
      * @since V1.0 2024/3/18
     */
     @Override
-    public List<Long> queryIdsBySnArray(List<String> snList, Integer tenantId, Long sourceFranchiseeId) {
-        return this.electricitybatterymapper.queryIdsBySnArray(snList,tenantId,sourceFranchiseeId);
+    public Map<String,Long> listIdsBySnArray(List<String> snList, Integer tenantId, Long sourceFranchiseeId) {
+        List<ElectricityBattery> batteryList = this.electricitybatterymapper.selectListBySnArray(snList, tenantId, sourceFranchiseeId);
+        if (CollectionUtils.isEmpty(batteryList)){
+            return MapUtil.empty();
+        }
+        return batteryList.stream().collect(Collectors.toMap(ElectricityBattery::getSn,ElectricityBattery::getId,(k1,k2)->k1));
     }
     
 }

@@ -1250,9 +1250,8 @@
         GROUP BY
             tenant_id
     </select>
-    <!--<a herf="https://benyun.feishu.cn/wiki/GrNjwBNZkipB5wkiws2cmsEDnVU#S5pYdtn2ooNnzqxWFbxcqGownbe">12.8 资产调拨（2条优化点)</a> start-->
-    <select id="queryIdsBySnArray" resultType="java.lang.Long">
-        select id from t_electricity_cabinet where del_flag=0
+    <select id="selectListBySnArray" resultType="com.xiliulou.electricity.bo.asset.ElectricityCabinetBO">
+        select id,sn from t_electricity_cabinet where del_flag=0
         <if test="tenantId != null">
             and tenant_id = #{tenantId}
         </if>
@@ -1267,5 +1266,4 @@
             )
         </if>
     </select>
-    <!--<a herf="https://benyun.feishu.cn/wiki/GrNjwBNZkipB5wkiws2cmsEDnVU#S5pYdtn2ooNnzqxWFbxcqGownbe">12.8 资产调拨（2条优化点)</a> end-->
 </mapper>

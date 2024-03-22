@@ -918,7 +918,7 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 	 * @since V1.0 2024/3/14
 	 */
 	@Override
-	public R<?> delete(Long id) {
+	public R<?> removeById(Long id) {
 		ShareActivity shareActivity = this.queryByIdFromCache(Math.toIntExact(id));
 		if (Objects.isNull(shareActivity)) {
 			log.error("delete Activity  ERROR! not found Activity ! ActivityId:{} ", id);

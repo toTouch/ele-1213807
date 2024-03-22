@@ -10,13 +10,11 @@ import lombok.Data;
  * <p>Project: saas-electricity</p>
  * <p>Copyright: Copyright (c) 2024</p>
  * <p>Company: xiliulou</p>
- * <a herf="https://benyun.feishu.cn/wiki/GrNjwBNZkipB5wkiws2cmsEDnVU#Nffzd1GUWoZOWAxqnV9cXzk2nQh">15.1  实名用户列表（16条优化项）iv.4 </a>
- *
  * @author <a href="mailto:wxblifeng@163.com">PeakLee</a>
  * @since V1.0 2024/3/13
  **/
 @Data
-public class UserCarLikeVo {
+public class UserCarLikeVO {
     
     /**
      * <p>

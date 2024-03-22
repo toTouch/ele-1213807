@@ -8,15 +8,15 @@ import com.xiliulou.electricity.entity.car.CarDataEntity;
 import com.xiliulou.electricity.entity.car.CarDataVO;
 import com.xiliulou.electricity.query.ElectricityCarQuery;
 import com.xiliulou.electricity.query.UserCarLikeSnQuery;
-import com.xiliulou.electricity.query.car.CarDataConditionReq;
-import com.xiliulou.electricity.query.car.CarDataQuery;
 import com.xiliulou.electricity.query.asset.AssetBatchExitWarehouseQueryModel;
 import com.xiliulou.electricity.query.asset.ElectricityCarListSnByFranchiseeQueryModel;
 import com.xiliulou.electricity.query.asset.ElectricityCarUpdateFranchiseeAndStoreQueryModel;
+import com.xiliulou.electricity.query.car.CarDataConditionReq;
+import com.xiliulou.electricity.query.car.CarDataQuery;
 import com.xiliulou.electricity.vo.ElectricityCarMoveVo;
 import com.xiliulou.electricity.vo.ElectricityCarOverviewVo;
 import com.xiliulou.electricity.vo.ElectricityCarVO;
-import com.xiliulou.electricity.vo.UserCarLikeVo;
+import com.xiliulou.electricity.vo.UserCarLikeVO;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
@@ -195,7 +195,7 @@ public interface ElectricityCarMapper extends BaseMapper<ElectricityCar> {
      * @author <a href="mailto:wxblifeng@163.com">PeakLee</a>
      * @since V1.0 2024/3/13
      */
-    List<UserCarLikeVo> selectCarSnByLike(@Param("query") UserCarLikeSnQuery query);
+    List<UserCarLikeVO> selectListCarSnByLike(@Param("query") UserCarLikeSnQuery query);
     
     /**
      * <p>
@@ -212,5 +212,5 @@ public interface ElectricityCarMapper extends BaseMapper<ElectricityCar> {
      * @author <a href="mailto:wxblifeng@163.com">PeakLee</a>
      * @since V1.0 2024/3/18
     */
-    List<Long> queryIdsBySnArray(@Param("list") List<String> snList, @Param("tenantId") Integer tenantId, @Param("franchiseeId") Long sourceFranchiseeId);
+    List<ElectricityCarBO> selectListBySnArray(@Param("list") List<String> snList, @Param("tenantId") Integer tenantId, @Param("franchiseeId") Long sourceFranchiseeId);
 }

@@ -47,4 +47,8 @@ public class FranchiseeInsuranceCarModelAndBatteryTypeDTO {
      * </p>
      */
     private Integer insuranceType;
+    
+    
+    public static Integer BATTERY_TYPE = 0;
+    public static Integer CAR_TYPE = 0;
 }

@@ -59,5 +59,5 @@ public interface FranchiseeInsuranceService {
 
     Triple<Boolean, String, Object> selectInsuranceByUid(Long uid, Integer type);
     
-    List<FranchiseeInsuranceCarModelAndBatteryTypeDTO> queryCarModelAndBatteryTypeById(Collection<Long> collect);
+    List<FranchiseeInsuranceCarModelAndBatteryTypeDTO> selectListCarModelAndBatteryTypeById(Collection<Long> collect);
 }

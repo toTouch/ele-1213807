@@ -51,7 +51,7 @@
         <if test=" tenantId != null "> AND `tenant_id` = #{tenantId} </if>
         <if test=" franchiseeId != null "> AND `franchisee_id` = #{franchiseeId} </if>
         <if test=" storeId != null "> AND `store_id` = #{storeId} </if>
-        <if test=" orderNo != null and orderNo != '' "> AND `order_no` like concat('%',#{orderNo},'%')  </if>
+        <if test=" orderNo != null and orderNo != '' "> AND `order_no` = #{orderNo}  </if>
         <if test=" depositPayOrderNo != null and depositPayOrderNo != '' "> AND `deposit_pay_order_no` = #{depositPayOrderNo} </if>
         <if test=" rentalPackageType != null "> AND `rental_package_type` = #{rentalPackageType} </if>
         <if test=" uid != null "> AND `uid` = #{uid} </if>

@@ -25,11 +25,9 @@
         <if test="query.tenantId != null">
             and tenant_id = #{query.tenantId}
         </if>
-        /***********12.2 电柜厂家型号（3条优化点）查询 start **********/
         <if test="query.heating != null">
             and heating = #{query.heating}
         </if>
-        /***********12.2 电柜厂家型号（3条优化点）查询 end **********/
         order by update_time desc
         limit #{query.offset}, #{query.size}
     </select>
@@ -46,11 +44,9 @@
         <if test="query.tenantId != null">
             and tenant_id = #{query.tenantId}
         </if>
-        /***********12.2 电柜厂家型号（3条优化点）查询 start **********/
         <if test="query.heating != null">
             and heating = #{query.heating}
         </if>
-        /***********12.2 电柜厂家型号（3条优化点）查询 end **********/
     </select>
     
     <update id="update">
@@ -77,11 +73,9 @@
             <if test="waterproofGrade != null">
                 waterproof_grade = #{waterproofGrade},
             </if>
-            /***********12.2 电柜厂家型号（3条优化点）修改 start **********/
             <if test="heating != null">
                 heating = #{heating},
             </if>
-            /***********12.2 电柜厂家型号（3条优化点）修改 end **********/
             <if test="voltage != null and voltage != ''">
                 voltage = #{voltage},
             </if>

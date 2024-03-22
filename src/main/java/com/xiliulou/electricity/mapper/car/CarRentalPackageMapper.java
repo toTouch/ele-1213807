@@ -3,7 +3,7 @@ package com.xiliulou.electricity.mapper.car;
 import com.xiliulou.electricity.entity.car.CarRentalPackagePo;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageQryModel;
 import com.xiliulou.electricity.query.car.CarRentalPackageNameReq;
-import com.xiliulou.electricity.vo.car.CarRentalPackageSearchVo;
+import com.xiliulou.electricity.vo.car.CarRentalPackageSearchVO;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -114,6 +114,6 @@ public interface CarRentalPackageMapper {
      * @author <a href="mailto:wxblifeng@163.com">PeakLee</a>
      * @since V1.0 2024/3/14
     */
-    List<CarRentalPackageSearchVo> queryToSearchByName(@Param("query") CarRentalPackageNameReq query);
+    List<CarRentalPackageSearchVO> queryToSearchByName(@Param("query") CarRentalPackageNameReq query);
     
 }

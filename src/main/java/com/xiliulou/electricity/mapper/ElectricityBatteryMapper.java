@@ -173,5 +173,5 @@ public interface ElectricityBatteryMapper extends BaseMapper<ElectricityBattery>
      * @author <a href="mailto:wxblifeng@163.com">PeakLee</a>
      * @since V1.0 2024/3/18
     */
-    List<Long> queryIdsBySnArray(@Param("list") List<String> snList, @Param("tenantId") Integer tenantId, @Param("franchiseeId") Long sourceFranchiseeId);
+    List<ElectricityBattery> selectListBySnArray(@Param("list") List<String> snList, @Param("tenantId") Integer tenantId, @Param("franchiseeId") Long sourceFranchiseeId);
 }

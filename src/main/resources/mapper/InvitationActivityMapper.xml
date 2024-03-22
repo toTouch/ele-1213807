@@ -198,9 +198,9 @@
         where id = #{id}
     </update>
     <!--9. 活动管理-套餐返现活动里面的套餐配置记录想能够手动删除 start-->
-    <delete id="removeById">
+    <update id="removeById">
         update t_invitation_activity set `del_flag` = 1,`status`=2 where `del_flag` = 0 and `tenant_id` = #{tenantId} and `id` = #{id};
-    </delete>
+    </update>
     <!--9. 活动管理-套餐返现活动里面的套餐配置记录想能够手动删除 end-->
     
     <!--通过主键删除-->

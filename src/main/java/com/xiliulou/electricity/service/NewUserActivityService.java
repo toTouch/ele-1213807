@@ -68,5 +68,5 @@ public interface NewUserActivityService {
      * @author <a href="mailto:wxblifeng@163.com">PeakLee</a>
      * @since V1.0 2024/3/14
      */
-    R<?> delete(Long id);
+    R<?> removeById(Long id);
 }

@@ -249,7 +249,7 @@ public class JsonAdminShareMoneyActivityController {
 		if (Objects.isNull(id)){
 			return R.fail("ELECTRICITY.0007", "不合法的参数");
 		}
-		return shareMoneyActivityService.delete(id);
+		return shareMoneyActivityService.removeById(id);
 	}
 	
 }

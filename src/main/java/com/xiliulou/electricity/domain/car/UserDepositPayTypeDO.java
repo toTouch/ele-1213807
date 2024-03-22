@@ -15,7 +15,7 @@ import lombok.Data;
  * @since V1.0 2024/3/13
 **/
 @Data
-public class UserDepositPayTypeDo {
+public class UserDepositPayTypeDO {
     /**
      * <p>
      *    Description: 订单编号

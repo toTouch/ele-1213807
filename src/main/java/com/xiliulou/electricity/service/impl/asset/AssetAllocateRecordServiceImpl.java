@@ -2,6 +2,7 @@ package com.xiliulou.electricity.service.impl.asset;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.ListUtil;
+import cn.hutool.core.map.MapUtil;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.thread.XllThreadPoolExecutorService;
 import com.xiliulou.core.thread.XllThreadPoolExecutors;
@@ -129,9 +130,9 @@ public class AssetAllocateRecordServiceImpl implements AssetAllocateRecordServic
             if (Objects.equals(status, AssetConstant.ASSET_INVENTORY_STATUS_TAKING)) {
                 return R.fail("300806", "该加盟商车辆资产正在进行盘点，请稍后再试");
             }
-            
+            List<String> exitsSn = new ArrayList<>();
             List<Long> idList = assetAllocateRecordRequest.getIdList();
-            /*********<a herf="https://benyun.feishu.cn/wiki/GrNjwBNZkipB5wkiws2cmsEDnVU#S5pYdtn2ooNnzqxWFbxcqGownbe">12.8 资产调拨（2条优化点)</a> start***********/
+            //根据sn查询
             if (Objects.equals(assetAllocateRecordRequest.getSubmitType(),AssetConstant.ASSET_EXIT_WAREHOUSE_SUBMIT_TYPE_BY_SN)){
                 List<String> snList = assetAllocateRecordRequest.getSnList();
                 if (CollectionUtils.isEmpty(snList)) {
@@ -141,12 +142,17 @@ public class AssetAllocateRecordServiceImpl implements AssetAllocateRecordServic
                 if (snList.size() > AssetConstant.ASSET_ALLOCATE_LIMIT_NUMBER) {
                     return R.fail("300811", "资产调拨数量最大限制50条，请修改");
                 }
-                idList = queryIdBasedOnTypeAndSNCode(assetAllocateRecordRequest);
-                if (!Objects.equals(idList.size(),snList.size())){
-                    return R.fail("300832","没有找到相关的SN码,请核对后提交");
+                Map<String, Long> map = queryIdBasedOnTypeAndSNCode(assetAllocateRecordRequest);
+                for (String s : snList) {
+                    if (!map.containsKey(s)){
+                        exitsSn.add(s);
+                    }
                 }
+                if (CollectionUtils.isNotEmpty(exitsSn)){
+                    return R.fail("300832",String.format("您输入的编号为[%s]，系统未能找到对应的信息，请您核实并修改后提交",String.join(",",exitsSn)));
+                }
+                idList = ListUtil.toList(map.values());
             }
-            /*********<a herf="https://benyun.feishu.cn/wiki/GrNjwBNZkipB5wkiws2cmsEDnVU#S5pYdtn2ooNnzqxWFbxcqGownbe">12.8 资产调拨（2条优化点)</a> end***********/
             if (CollectionUtils.isEmpty(idList)) {
                 return R.ok();
             }
@@ -235,31 +241,29 @@ public class AssetAllocateRecordServiceImpl implements AssetAllocateRecordServic
      * <p>
      *    Description: queryIdBasedOnTypeAndSNCode
      * </p>
-     * @param type type
      * @param assetAllocateRecordRequest assetAllocateRecordRequest
      * @return java.util.List<java.lang.Long>
      * <p>Project: AssetAllocateRecordServiceImpl</p>
      * <p>Copyright: Copyright (c) 2024</p>
      * <p>Company: www.xiliulou.com</p>
-     *  <a herf="https://benyun.feishu.cn/wiki/GrNjwBNZkipB5wkiws2cmsEDnVU#S5pYdtn2ooNnzqxWFbxcqGownbe">12.8 资产调拨（2条优化点)</a>
      * @author <a href="mailto:wxblifeng@163.com">PeakLee</a>
      * @since V1.0 2024/3/18
     */
-    private List<Long> queryIdBasedOnTypeAndSNCode(AssetAllocateRecordRequest assetAllocateRecordRequest) {
+    private Map<String,Long> queryIdBasedOnTypeAndSNCode(AssetAllocateRecordRequest assetAllocateRecordRequest) {
         List<String> snList = assetAllocateRecordRequest.getSnList().stream().distinct().collect(Collectors.toList());
         Integer type = assetAllocateRecordRequest.getType();
-        List<Long> result = null;
+        Map<String,Long> result = null;
         if (Objects.equals(type,AssetTypeEnum.ASSET_TYPE_CAR.getCode())){
-            result = electricityCarService.queryIdsBySnArray(snList,TenantContextHolder.getTenantId(),assetAllocateRecordRequest.getSourceFranchiseeId());
+            result = electricityCarService.listIdsBySnArray(snList,TenantContextHolder.getTenantId(),assetAllocateRecordRequest.getSourceFranchiseeId());
         }
         if (Objects.equals(type,AssetTypeEnum.ASSET_TYPE_BATTERY.getCode())){
-            result = electricityBatteryService.queryIdsBySnArray(snList,TenantContextHolder.getTenantId(),assetAllocateRecordRequest.getSourceFranchiseeId());
+            result = electricityBatteryService.listIdsBySnArray(snList,TenantContextHolder.getTenantId(),assetAllocateRecordRequest.getSourceFranchiseeId());
         }
         if (Objects.equals(type,AssetTypeEnum.ASSET_TYPE_CABINET.getCode())){
-            result = electricityCabinetService.queryIdsBySnArray(snList,TenantContextHolder.getTenantId(),assetAllocateRecordRequest.getSourceFranchiseeId());
+            result = electricityCabinetService.listIdsBySnArray(snList,TenantContextHolder.getTenantId(),assetAllocateRecordRequest.getSourceFranchiseeId());
         }
-        if (CollectionUtils.isEmpty(result)){
-            return ListUtil.empty();
+        if (MapUtil.isEmpty(result)){
+            return MapUtil.empty();
         }
         return result;
     }

@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.map.MapUtil;
 import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -1375,8 +1376,8 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
      */
     @Slave
     @Override
-    public R<List<UserCarLikeVo>> queryCarSnByLike(UserCarLikeSnQuery likeSnQuery) {
-        List<UserCarLikeVo> result = this.electricityCarMapper.selectCarSnByLike(likeSnQuery);
+    public R<List<UserCarLikeVO>> listSnByLike(UserCarLikeSnQuery likeSnQuery) {
+        List<UserCarLikeVO> result = this.electricityCarMapper.selectListCarSnByLike(likeSnQuery);
         return R.ok(result);
     }
     
@@ -1391,13 +1392,17 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
      * <p>Project: ElectricityCarServiceImpl</p>
      * <p>Copyright: Copyright (c) 2024</p>
      * <p>Company: www.xiliulou.com</p>
-     * <a herf="https://benyun.feishu.cn/wiki/GrNjwBNZkipB5wkiws2cmsEDnVU#S5pYdtn2ooNnzqxWFbxcqGownbe">12.8 资产调拨（2条优化点)</a>
      * @author <a href="mailto:wxblifeng@163.com">PeakLee</a>
      * @since V1.0 2024/3/18
     */
+    @Slave
     @Override
-    public List<Long> queryIdsBySnArray(List<String> snList, Integer tenantId, Long sourceFranchiseeId) {
-        return this.electricityCarMapper.queryIdsBySnArray(snList,tenantId,sourceFranchiseeId);
+    public Map<String,Long> listIdsBySnArray(List<String> snList, Integer tenantId, Long sourceFranchiseeId) {
+        List<ElectricityCarBO> cars = this.electricityCarMapper.selectListBySnArray(snList, tenantId, sourceFranchiseeId);
+        if (CollectionUtils.isEmpty(cars)){
+            return MapUtil.empty();
+        }
+        return cars.stream().collect(Collectors.toMap(ElectricityCarBO::getSn,ElectricityCarBO::getId,(k1,k2)->k1));
     }
     
 }

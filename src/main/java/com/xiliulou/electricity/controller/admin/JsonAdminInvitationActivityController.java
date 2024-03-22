@@ -306,7 +306,7 @@ public class JsonAdminInvitationActivityController extends BaseController {
      * @since V1.0 2024/3/14
      */
     @GetMapping("/admin/invitationActivity/delete")
-    public R<?> delete(@RequestParam("id") Long id){
+    public R<?> removeById(@RequestParam("id") Long id){
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             log.error("ELECTRICITY  ERROR! not found user ");
@@ -318,7 +318,7 @@ public class JsonAdminInvitationActivityController extends BaseController {
         if (Objects.isNull(id)){
             return R.fail("ELECTRICITY.0007", "不合法的参数");
         }
-        return invitationActivityService.delete(id);
+        return invitationActivityService.removeById(id);
     }
     
 }

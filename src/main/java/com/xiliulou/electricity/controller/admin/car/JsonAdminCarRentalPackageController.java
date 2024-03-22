@@ -27,7 +27,7 @@ import com.xiliulou.electricity.service.car.CarRentalPackageService;
 import com.xiliulou.electricity.service.car.biz.CarRentalPackageBizService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
-import com.xiliulou.electricity.vo.car.CarRentalPackageSearchVo;
+import com.xiliulou.electricity.vo.car.CarRentalPackageSearchVO;
 import com.xiliulou.electricity.vo.car.CarRentalPackageVo;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
@@ -448,7 +448,7 @@ public class JsonAdminCarRentalPackageController extends BasicController {
      * @since V1.0 2024/3/14
      */
     @GetMapping("/search/name")
-    public R<List<CarRentalPackageSearchVo>> queryCarPackageName(@RequestParam(value = "packageName", required = false) String packageName,
+    public R<List<CarRentalPackageSearchVO>> queryCarPackageName(@RequestParam(value = "packageName", required = false) String packageName,
             @RequestParam(value = "offset", required = false) Long offset, @RequestParam(value = "size", required = false) Long size) {
         if (offset == null || offset < 0) {
             offset = 0L;

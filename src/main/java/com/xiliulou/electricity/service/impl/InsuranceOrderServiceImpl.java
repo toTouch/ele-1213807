@@ -64,6 +64,8 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static com.xiliulou.electricity.dto.FranchiseeInsuranceCarModelAndBatteryTypeDTO.BATTERY_TYPE;
+
 /**
  * 换电柜保险用户绑定(FranchiseeInsurance)表服务接口
  *
@@ -142,7 +144,6 @@ public class InsuranceOrderServiceImpl extends ServiceImpl<InsuranceOrderMapper,
         if (!isType){
             return R.ok(queryListByStatus(insuranceOrderQuery));
         }
-        /*****************************14.11 保险购买记录（3条优化项） start*********************************************/
         List<InsuranceOrderVO> insuranceOrderVOS = queryListByStatus(insuranceOrderQuery);
         if (CollectionUtil.isEmpty(insuranceOrderVOS)){
             return R.ok(ListUtil.empty());
@@ -154,7 +155,7 @@ public class InsuranceOrderServiceImpl extends ServiceImpl<InsuranceOrderMapper,
         }
         /*1.t_electricity_car_model -- name 车辆型号表*/
         /*2.t_franchisee_insurance -- car_model_id,simple_battery_type 保险配置表*/
-        List<FranchiseeInsuranceCarModelAndBatteryTypeDTO> result = franchiseeInsuranceService.queryCarModelAndBatteryTypeById(collect);
+        List<FranchiseeInsuranceCarModelAndBatteryTypeDTO> result = franchiseeInsuranceService.selectListCarModelAndBatteryTypeById(collect);
         if (CollectionUtil.isEmpty(result)){
             return R.ok(insuranceOrderVOS);
         }
@@ -164,13 +165,12 @@ public class InsuranceOrderServiceImpl extends ServiceImpl<InsuranceOrderMapper,
                 continue;
             }
             FranchiseeInsuranceCarModelAndBatteryTypeDTO dto = dtoMap.get(i.getInsuranceId());
-            if (Objects.equals(0,dto.getInsuranceType())){
+            if (Objects.equals(BATTERY_TYPE,dto.getInsuranceType())){
                 i.setBatteryModel(dto.getLabel());
                 continue;
             }
             i.setCarModel(dto.getLabel());
         }
-        /*****************************14.11 保险购买记录（3条优化项） end*********************************************/
         return R.ok(insuranceOrderVOS);
     }
 

@@ -14,7 +14,7 @@ import com.xiliulou.electricity.model.car.query.CarRentalPackageQryModel;
 import com.xiliulou.electricity.query.car.CarRentalPackageNameReq;
 import com.xiliulou.electricity.service.car.CarRentalPackageOrderService;
 import com.xiliulou.electricity.service.car.CarRentalPackageService;
-import com.xiliulou.electricity.vo.car.CarRentalPackageSearchVo;
+import com.xiliulou.electricity.vo.car.CarRentalPackageSearchVO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.stereotype.Service;
@@ -310,7 +310,7 @@ public class CarRentalPackageServiceImpl implements CarRentalPackageService {
      * @since V1.0 2024/3/14
     */
     @Override
-    public List<CarRentalPackageSearchVo> queryToSearchByName(CarRentalPackageNameReq rentalPackageNameReq) {
+    public List<CarRentalPackageSearchVO> queryToSearchByName(CarRentalPackageNameReq rentalPackageNameReq) {
         return this.carRentalPackageMapper.queryToSearchByName(rentalPackageNameReq);
     }
     

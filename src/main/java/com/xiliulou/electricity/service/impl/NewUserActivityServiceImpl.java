@@ -322,7 +322,7 @@ public class NewUserActivityServiceImpl implements NewUserActivityService {
 	 * @since V1.0 2024/3/14
 	 */
     @Override
-    public R<?> delete(Long id) {
+    public R<?> removeById(Long id) {
 	    NewUserActivity oldNewUserActivity = queryByIdFromCache(Math.toIntExact(id));
 	    if (Objects.isNull(oldNewUserActivity)) {
 		    log.error("update Activity  ERROR! not found Activity ! ActivityId={} ", id);

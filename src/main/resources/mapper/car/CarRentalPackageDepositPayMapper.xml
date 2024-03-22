@@ -227,7 +227,7 @@
             `id` = #{id}
         </where>
     </select>
-    <select id="selectPayTypeByOrders" resultType="com.xiliulou.electricity.domain.car.UserDepositPayTypeDo">
+    <select id="selectPayTypeByOrders" resultType="com.xiliulou.electricity.domain.car.UserDepositPayTypeDO">
         select
         `order_no` ,
         `pay_type`

@@ -12,7 +12,7 @@ import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.validator.CreateGroup;
 import com.xiliulou.electricity.validator.UpdateGroup;
-import com.xiliulou.electricity.vo.UserCarLikeVo;
+import com.xiliulou.electricity.vo.UserCarLikeVO;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -340,7 +340,7 @@ public class JsonAdminElectricityCarController {
      * @since V1.0 2024/3/13
      */
     @GetMapping("admin/electricityCar/like/carSn")
-    public R<List<UserCarLikeVo>> queryCarSnByLike(@RequestParam(value = "size", required = false) Long size, @RequestParam(value = "offset", required = false) Long offset,
+    public R<List<UserCarLikeVO>> listSnByLike(@RequestParam(value = "size", required = false) Long size, @RequestParam(value = "offset", required = false) Long offset,
             @RequestParam(value = "carSn", required = false) String carSn, @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
             @RequestParam(value = "storeId", required = false) Long storeId) {
         if (offset == null || offset < 0) {
@@ -356,6 +356,6 @@ public class JsonAdminElectricityCarController {
         }
         UserCarLikeSnQuery likeSnQuery = UserCarLikeSnQuery.builder().offset(offset).size(size).carSn(carSn).tenantId(TenantContextHolder.getTenantId().longValue())
                 .franchiseeId(franchiseeId).storeId(storeId).build();
-        return electricityCarService.queryCarSnByLike(likeSnQuery);
+        return electricityCarService.listSnByLike(likeSnQuery);
     }
 }

@@ -15,7 +15,7 @@ import lombok.Data;
  * @since V1.0 2024/3/14
 **/
 @Data
-public class CarRentalPackageSearchVo {
+public class CarRentalPackageSearchVO {
     /**
      * <p>
      *    Description: 套餐Id

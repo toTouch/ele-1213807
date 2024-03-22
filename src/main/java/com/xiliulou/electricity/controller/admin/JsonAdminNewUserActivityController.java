@@ -145,7 +145,7 @@ public class JsonAdminNewUserActivityController {
 	 * @since V1.0 2024/3/14
 	 */
 	@GetMapping("/admin/newUserActivity/delete")
-	public R<?> delete(@RequestParam("id") Long id){
+	public R<?> removeById(@RequestParam("id") Long id){
 		TokenUser user = SecurityUtils.getUserInfo();
 		if (Objects.isNull(user)) {
 			log.error("ELECTRICITY  ERROR! not found user ");
@@ -157,6 +157,6 @@ public class JsonAdminNewUserActivityController {
 		if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
 			return R.fail("ELECTRICITY.0066", "用户权限不足");
 		}
-		return newUserActivityService.delete(id);
+		return newUserActivityService.removeById(id);
 	}
 }

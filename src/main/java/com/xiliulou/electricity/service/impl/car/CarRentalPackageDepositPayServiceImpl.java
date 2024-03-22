@@ -3,7 +3,7 @@ package com.xiliulou.electricity.service.impl.car;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.map.MapUtil;
 import com.xiliulou.db.dynamic.annotation.Slave;
-import com.xiliulou.electricity.domain.car.UserDepositPayTypeDo;
+import com.xiliulou.electricity.domain.car.UserDepositPayTypeDO;
 import com.xiliulou.electricity.entity.car.CarRentalPackageDepositPayPo;
 import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.enums.DelFlagEnum;
@@ -226,10 +226,10 @@ public class CarRentalPackageDepositPayServiceImpl implements CarRentalPackageDe
         if (CollectionUtil.isEmpty(ordersOn)) {
             return MapUtil.empty();
         }
-        List<UserDepositPayTypeDo> list = this.carRentalPackageDepositPayMapper.selectPayTypeByOrders(ordersOn);
+        List<UserDepositPayTypeDO> list = this.carRentalPackageDepositPayMapper.selectPayTypeByOrders(ordersOn);
         if (CollectionUtil.isEmpty(list)) {
             return MapUtil.empty();
         }
-        return list.stream().collect(Collectors.toMap(UserDepositPayTypeDo::getOrderNo, UserDepositPayTypeDo::getPayType));
+        return list.stream().collect(Collectors.toMap(UserDepositPayTypeDO::getOrderNo, UserDepositPayTypeDO::getPayType,(k1,k2)->k1));
     }
 }

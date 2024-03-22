@@ -18,9 +18,10 @@ import com.xiliulou.electricity.request.asset.ElectricityCarBatchUpdateFranchise
 import com.xiliulou.electricity.request.asset.ElectricityCarSnSearchRequest;
 import com.xiliulou.electricity.service.impl.car.biz.CarRentalOrderBizServiceImpl;
 import com.xiliulou.electricity.vo.ElectricityCarVO;
-import com.xiliulou.electricity.vo.UserCarLikeVo;
+import com.xiliulou.electricity.vo.UserCarLikeVO;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 
@@ -189,7 +190,7 @@ public interface ElectricityCarService {
      * @author <a href="mailto:wxblifeng@163.com">PeakLee</a>
      * @since V1.0 2024/3/13
      */
-    R<List<UserCarLikeVo>> queryCarSnByLike(UserCarLikeSnQuery likeSnQuery);
+    R<List<UserCarLikeVO>> listSnByLike(UserCarLikeSnQuery likeSnQuery);
     
     /**
      * <p>
@@ -202,10 +203,9 @@ public interface ElectricityCarService {
      * <p>Project: ElectricityCarService</p>
      * <p>Copyright: Copyright (c) 2024</p>
      * <p>Company: www.xiliulou.com</p>
-     * <a herf="https://benyun.feishu.cn/wiki/GrNjwBNZkipB5wkiws2cmsEDnVU#S5pYdtn2ooNnzqxWFbxcqGownbe">12.8 资产调拨（2条优化点)</a>
      * @author <a href="mailto:wxblifeng@163.com">PeakLee</a>
      * @since V1.0 2024/3/18
     */
-    List<Long> queryIdsBySnArray(List<String> snList, Integer tenantId, Long sourceFranchiseeId);
+    Map<String,Long> listIdsBySnArray(List<String> snList, Integer tenantId, Long sourceFranchiseeId);
     
 }

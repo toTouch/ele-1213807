@@ -100,7 +100,7 @@ public class TenantServiceImpl implements TenantService {
     private AssetWarehouseMapper assetWarehouseMapper;
     
     
-    ExecutorService executorService = XllThreadPoolExecutors.newFixedThreadPool("tenantHandlerExecutors", 1, "TENANT_HANDLER_EXECUTORS");
+    ExecutorService executorService = XllThreadPoolExecutors.newFixedThreadPool("tenantHandlerExecutors", 2, "TENANT_HANDLER_EXECUTORS");
     /**
      * 新增数据
      *
@@ -212,7 +212,7 @@ public class TenantServiceImpl implements TenantService {
         electricityConfigService.insertElectricityConfig(electricityConfig);
 
         //新增租户给租户增加渠道活动（产品提的需求）
-        ChannelActivity channelActivity = new ChannelActivity();
+        final ChannelActivity channelActivity = new ChannelActivity();
         channelActivity.setName("渠道活动");
         channelActivity.setValidDayLimit(ChannelActivity.VALID_DAY_NOT_LIMIT);
         channelActivity.setStatus(ChannelActivity.STATUS_FORBIDDEN);
@@ -220,8 +220,7 @@ public class TenantServiceImpl implements TenantService {
         channelActivity.setTenantId(tenant.getId().longValue());
         channelActivity.setCreateTime(System.currentTimeMillis());
         channelActivity.setUpdateTime(System.currentTimeMillis());
-        channelActivityService.insert(channelActivity);
-        
+        executorService.submit(()->channelActivityService.insert(channelActivity));
         final AssetWarehouseSaveOrUpdateQueryModel warehouseSaveOrUpdateQueryModel = AssetWarehouseSaveOrUpdateQueryModel.builder()
                 .name(AssetConstant.ASSET_WAREHOUSE_DEFAULT_NAME)
                 .status(AssetConstant.ASSET_WAREHOUSE_STATUS_ENABLE)
@@ -229,9 +228,7 @@ public class TenantServiceImpl implements TenantService {
                 .createTime(System.currentTimeMillis())
                 .updateTime(System.currentTimeMillis())
                 .tenantId(TenantContextHolder.getTenantId()).build();
-        /**<a herf="https://benyun.feishu.cn/wiki/GrNjwBNZkipB5wkiws2cmsEDnVU#PWwwdQkbBo23YFxkVcEcYsJtn7b">12.7 库房列表（2条优化点）--异步处理 start</a> ******/
         executorService.submit(()->assetWarehouseMapper.insertOne(warehouseSaveOrUpdateQueryModel));
-        /**<a herf="https://benyun.feishu.cn/wiki/GrNjwBNZkipB5wkiws2cmsEDnVU#PWwwdQkbBo23YFxkVcEcYsJtn7b">12.7 库房列表（2条优化点）--异步处理 end</a> ******/
         return R.ok();
     }
 

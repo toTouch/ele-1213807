@@ -278,8 +278,7 @@
             </otherwise>
         </choose>
     </select>
-    <!--14.11 保险购买记录（3条优化项） start-->
-    <select id="queryCarModelAndBatteryTypeById"
+    <select id="selectListCarModelAndBatteryTypeById"
         resultType="com.xiliulou.electricity.dto.FranchiseeInsuranceCarModelAndBatteryTypeDTO">
         SELECT
         tfi.`id` as id,
@@ -298,5 +297,4 @@
         </foreach>
         )
     </select>
-    <!--14.11 保险购买记录（3条优化项） end-->
 </mapper>

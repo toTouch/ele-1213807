@@ -1,6 +1,6 @@
 package com.xiliulou.electricity.mapper.car;
 
-import com.xiliulou.electricity.domain.car.UserDepositPayTypeDo;
+import com.xiliulou.electricity.domain.car.UserDepositPayTypeDO;
 import com.xiliulou.electricity.entity.car.CarRentalPackageDepositPayPo;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageDepositPayQryModel;
 import org.apache.ibatis.annotations.Mapper;
@@ -97,5 +97,5 @@ public interface CarRentalPackageDepositPayMapper {
     int insert(CarRentalPackageDepositPayPo entity);
     
     
-    List<UserDepositPayTypeDo> selectPayTypeByOrders(@Param("list") Collection<String> ordersOn);
+    List<UserDepositPayTypeDO> selectPayTypeByOrders(@Param("list") Collection<String> ordersOn);
 }

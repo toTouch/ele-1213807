@@ -630,7 +630,7 @@ public class ShareMoneyActivityServiceImpl implements ShareMoneyActivityService 
      * @since V1.0 2024/3/14
      */
     @Override
-    public R<?> delete(Long id) {
+    public R<?> removeById(Long id) {
         ShareMoneyActivity shareMoneyActivity = this.queryByIdFromCache(Math.toIntExact(id));
         if (Objects.isNull(shareMoneyActivity)) {
             log.error("delete Activity  ERROR! not found Activity ! ActivityId:{} ", id);
