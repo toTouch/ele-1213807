@@ -177,6 +177,7 @@ public class JsonAdminEleDepositOrderController extends BaseController {
 
     //押金订单导出报表
     @GetMapping("/admin/eleDepositOrder/exportExcel")
+    @Deprecated
     public void exportExcel(@RequestParam(value = "franchiseeName", required = false) String franchiseeName,
             @RequestParam(value = "status", required = false) Integer status,
             @RequestParam(value = "name", required = false) String name,
@@ -232,6 +233,7 @@ public class JsonAdminEleDepositOrderController extends BaseController {
 
     //缴纳电池押金
     @PostMapping(value = "/admin/eleDepositOrder/batteryDeposit")
+    @Deprecated
     @Log(title = "缴纳电池押金")
     public R batteryDeposit(@RequestBody @Validated(value = CreateGroup.class) BatteryDepositAdd batteryDepositAdd) {
         return eleDepositOrderService.adminPayBatteryDeposit(batteryDepositAdd);
@@ -239,6 +241,7 @@ public class JsonAdminEleDepositOrderController extends BaseController {
     
     //缴纳租车押金
     @PostMapping(value = "/admin/eleDepositOrder/carDeposit")
+    @Deprecated
     @Log(title = "缴纳电池押金")
     public R carDeposit(@RequestBody @Validated(value = CreateGroup.class) RentCarDepositQuery rentCarDepositQuery) {
         return eleDepositOrderService.adminPayCarDeposit(rentCarDepositQuery);

@@ -396,7 +396,7 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
             }
             
             // 设置电池型号
-            if (Objects.nonNull(item.getBatteryType())) {
+            if (!item.getBatteryType().isEmpty()) {
     
                 List<String> originalBatteryModels = item.getBatteryType().stream().map(MemberCardBatteryType::getBatteryType).distinct().collect(Collectors.toList());
                 batteryMemberCardVO.setBatteryModels(
