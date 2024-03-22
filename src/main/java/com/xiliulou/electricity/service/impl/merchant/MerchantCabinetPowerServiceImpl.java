@@ -718,8 +718,8 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
                 resultList.addAll(afterMergeDetailResultList);
             }
             
-            // resultList按bindTime从小到大排序
-            resultList.sort(Comparator.comparing(MerchantProCabinetPowerDetailVO::getStartTime));
+            // resultList按bindTime倒序
+            resultList.sort(Comparator.comparing(MerchantProCabinetPowerDetailVO::getStartTime).reversed());
             
             log.info("Merchant getThisMonthPowerForCabinetDetail merchantId={}, resultList={}", merchantId, resultList);
         }
@@ -790,6 +790,9 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
             
             log.info("Merchant getLastMonthPowerForCabinetDetail merchantId={}, resultList={}", merchantId, resultList);
         }
+        
+        // resultList按bindTime倒序
+        resultList.sort(Comparator.comparing(MerchantProCabinetPowerDetailVO::getStartTime).reversed());
         
         return resultList;
     }
@@ -914,9 +917,6 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
                 });
             }
         }
-        
-        // resultList按bindTime从小到大排序
-        resultList.sort(Comparator.comparing(MerchantProCabinetPowerDetailVO::getStartTime));
         
         //绑定状态没有结束时间
         return resultList.stream().peek(detail -> {
@@ -1791,8 +1791,8 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
                 return Collections.emptyList();
             }
             
-            // resultList按bindTime从小到大排序
-            preTwoMonthPowerDetailList.sort(Comparator.comparing(MerchantCabinetPowerMonthDetailProHistory::getBeginTime));
+            // resultList按bindTime倒序
+            preTwoMonthPowerDetailList.sort(Comparator.comparing(MerchantCabinetPowerMonthDetailProHistory::getBeginTime).reversed());
             
             return preTwoMonthPowerDetailList.parallelStream().map(detailPro -> {
                 Long placeId = detailPro.getPlaceId();
