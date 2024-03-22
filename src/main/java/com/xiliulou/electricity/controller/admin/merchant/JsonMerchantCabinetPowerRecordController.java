@@ -72,20 +72,18 @@ public class JsonMerchantCabinetPowerRecordController extends BaseController {
      * @param monthDate 格式要求：yyyy-MM 2024-02
      */
     @GetMapping("/admin/merchant/power/record/exportExcel")
-    public R exportExcel(@RequestParam(value = "monthDate") String monthDate, HttpServletResponse response) {
+    public void exportExcel(@RequestParam(value = "monthDate") String monthDate, HttpServletResponse response) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
-            return R.fail("ELECTRICITY.0001", "未找到用户");
+            return;
         }
         
         if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
-            return R.ok();
+            return;
         }
         
         MerchantPowerRequest request = MerchantPowerRequest.builder().monthDate(monthDate).build();
         
         merchantCabinetPowerMonthRecordService.exportExcel(request, response);
-        
-        return R.ok();
     }
 }

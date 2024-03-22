@@ -9,8 +9,8 @@ import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.constant.merchant.MerchantChannelEmployeeBindHistoryConstant;
 import com.xiliulou.electricity.constant.merchant.MerchantConstant;
-import com.xiliulou.electricity.constant.merchant.MerchantPlaceConstant;
 import com.xiliulou.electricity.constant.merchant.MerchantJoinRecordConstant;
+import com.xiliulou.electricity.constant.merchant.MerchantPlaceConstant;
 import com.xiliulou.electricity.dto.merchant.MerchantDeleteCacheDTO;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.Franchisee;
@@ -611,7 +611,7 @@ public class MerchantServiceImpl implements MerchantService {
         merchantMapper.update(merchantUpdate);
         
         // 如果更新的渠道员和绑定的渠道员不一致才操作
-        if(!Objects.equals(merchant.getChannelEmployeeUid(), merchantSaveRequest.getChannelEmployeeUid())) {
+        if (!Objects.equals(merchant.getChannelEmployeeUid(), merchantSaveRequest.getChannelEmployeeUid())) {
             //如果解绑渠道员，则merchantSaveRequest.getChannelEmployeeUid为null
             if (Objects.isNull(merchantSaveRequest.getChannelEmployeeUid())) {
                 MerchantChannelEmployeeBindHistory updateBindHistory = MerchantChannelEmployeeBindHistory.builder().merchantUid(merchant.getUid()).unBindTime(timeMillis)
@@ -619,18 +619,19 @@ public class MerchantServiceImpl implements MerchantService {
                 merchantChannelEmployeeBindHistoryService.updateUnbindTimeByMerchantUid(updateBindHistory);
             } else if (Objects.isNull(merchant.getChannelEmployeeUid())) {
                 MerchantChannelEmployeeBindHistory insertBindHistory = MerchantChannelEmployeeBindHistory.builder().merchantUid(merchant.getUid())
-                        .channelEmployeeUid(merchantSaveRequest.getChannelEmployeeUid()).bindTime(timeMillis).bindStatus(MerchantChannelEmployeeBindHistoryConstant.BIND).createTime(timeMillis).updateTime(timeMillis).tenantId(tenantId).build();
+                        .channelEmployeeUid(merchantSaveRequest.getChannelEmployeeUid()).bindTime(timeMillis).bindStatus(MerchantChannelEmployeeBindHistoryConstant.BIND)
+                        .createTime(timeMillis).updateTime(timeMillis).tenantId(tenantId).build();
                 merchantChannelEmployeeBindHistoryService.insertOne(insertBindHistory);
             } else {
                 // 更新原有记录为解绑
                 MerchantChannelEmployeeBindHistory updateBindHistory = MerchantChannelEmployeeBindHistory.builder().merchantUid(merchant.getUid()).unBindTime(timeMillis)
                         .bindStatus(MerchantChannelEmployeeBindHistoryConstant.UN_BIND).updateTime(timeMillis).tenantId(tenantId).build();
                 merchantChannelEmployeeBindHistoryService.updateUnbindTimeByMerchantUid(updateBindHistory);
-    
+                
                 // 新增绑定记录
                 MerchantChannelEmployeeBindHistory insertBindHistory = MerchantChannelEmployeeBindHistory.builder().merchantUid(merchant.getUid())
-                        .channelEmployeeUid(merchantSaveRequest.getChannelEmployeeUid()).bindTime(timeMillis)
-                        .bindStatus(MerchantChannelEmployeeBindHistoryConstant.BIND).createTime(timeMillis).updateTime(timeMillis).tenantId(tenantId).build();
+                        .channelEmployeeUid(merchantSaveRequest.getChannelEmployeeUid()).bindTime(timeMillis).bindStatus(MerchantChannelEmployeeBindHistoryConstant.BIND)
+                        .createTime(timeMillis).updateTime(timeMillis).tenantId(tenantId).build();
                 merchantChannelEmployeeBindHistoryService.insertOne(insertBindHistory);
             }
         }
@@ -1311,6 +1312,12 @@ public class MerchantServiceImpl implements MerchantService {
     @Override
     public Integer batchUpdateExistPlaceFee(List<Long> merchantIdList, Integer existsPlaceFee, Long updateTime) {
         return merchantMapper.batchUpdateExistPlaceFee(merchantIdList, existsPlaceFee, updateTime);
+    }
+    
+    @Slave
+    @Override
+    public List<Merchant> listAllByIds(Set<Long> merchantIdSet, Integer tenantId) {
+        return merchantMapper.selectListAllByIds(merchantIdSet, tenantId);
     }
     
     @Slave

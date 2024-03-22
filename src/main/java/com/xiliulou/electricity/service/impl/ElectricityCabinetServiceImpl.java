@@ -640,6 +640,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         DbUtils.dbOperateSuccessThenHandleCache(delete, i -> {
             redisService.delete(CacheConstant.CACHE_ELECTRICITY_CABINET + electricityCabinet.getId());
             redisService.delete(CacheConstant.CACHE_ELECTRICITY_CABINET_DEVICE + electricityCabinet.getProductKey() + electricityCabinet.getDeviceName());
+            //删除柜机GEO信息
+            redisService.removeGeoMember(CacheConstant.CACHE_ELECTRICITY_CABINET_GEO + electricityCabinet.getTenantId(), electricityCabinet.getId().toString());
             
             //删除电柜服务时间
             electricityCabinetServerService.deleteByEid(electricityCabinet.getId());
@@ -4270,7 +4272,16 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         
         for (ElectricityCabinetFile electricityCabinetFile : electricityCabinetFiles) {
             if (StringUtils.isNotEmpty(electricityCabinetFile.getName())) {
-                cabinetPhoto.add("https://" + storageConfig.getUrlPrefix() + "/" + electricityCabinetFile.getName());
+                StringBuilder builder = new StringBuilder();
+                String urlPrefix = storageConfig.getUrlPrefix();
+                String fileName = electricityCabinetFile.getName();
+                if (fileName.startsWith("/")) {
+                    builder.append(urlPrefix).append(fileName.replaceFirst("/", ""));
+                } else {
+                    builder.append(urlPrefix).append(fileName);
+                }
+                
+                cabinetPhoto.add(builder.toString());
             }
         }
         return R.ok(cabinetPhoto);
@@ -5402,6 +5413,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         DbUtils.dbOperateSuccessThenHandleCache(electricityCabinetMapper.insert(electricityCabinetInsert), i -> {
             electricityCabinetBoxService.batchInsertBoxByModelIdV2(electricityCabinetModel, electricityCabinetInsert.getId());
             electricityCabinetServerService.insertOrUpdateByElectricityCabinet(electricityCabinetInsert, electricityCabinetInsert);
+            //更新柜机GEO缓存信息
+            redisService.addGeo(CacheConstant.CACHE_ELECTRICITY_CABINET_GEO + electricityCabinetInsert.getTenantId(), electricityCabinetInsert.getId().toString(), new Point(electricityCabinetInsert.getLongitude(), electricityCabinetInsert.getLatitude()));
         });
         
         //生成迁移记录

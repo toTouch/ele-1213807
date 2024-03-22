@@ -271,12 +271,6 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
             return R.fail("ELECTRICITY.0015", "未找到订单");
         }
 
-        BigDecimal deposit = userBatteryDeposit.getBatteryDeposit();
-        if (!Objects.equals(eleDepositOrder.getPayAmount(), deposit)) {
-            log.warn("ELE DEPOSIT WARN! illegal deposit! userId={}", user.getUid());
-            return R.fail("ELECTRICITY.0044", "退款金额不符");
-        }
-
         Triple<Boolean, Integer, BigDecimal> checkUserBatteryServiceFeeResult = serviceFeeUserInfoService.acquireUserBatteryServiceFee(userInfo, userBatteryMemberCard, batteryMemberCard, serviceFeeUserInfo);
         if (Boolean.TRUE.equals(checkUserBatteryServiceFeeResult.getLeft())) {
             log.warn("BATTERY MEMBERCARD REFUND WARN! user exit battery service fee,uid={}", user.getUid());
@@ -1282,12 +1276,6 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
             return R.fail("ELECTRICITY.0015", "未找到订单");
         }
 
-        BigDecimal deposit = userCarDeposit.getCarDeposit();
-        if (eleDepositOrder.getPayAmount().compareTo(deposit) == 0) {
-            log.error("ELE CAR REFUND ERROR! deposit not equals! uid={}", user.getUid());
-            return R.fail("ELECTRICITY.0044", "退款金额不符");
-        }
-
         BigDecimal payAmount = eleDepositOrder.getPayAmount();
         BigDecimal refundAmount =
                 getRefundAmount(eleDepositOrder).doubleValue() < 0 ? BigDecimal.ZERO : getRefundAmount(eleDepositOrder);
@@ -1885,11 +1873,6 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
             log.error("CAR REFUND DEPOSIT ERROR! not found eleDepositOrder! uid={},orderId={}", user.getUid(),
                     userCarDeposit.getOrderId());
             return R.fail("ELECTRICITY.0015", "未找到订单");
-        }
-    
-        if (carDepositOrder.getPayAmount().compareTo(userCarDeposit.getCarDeposit()) != 0) {
-            log.error("CAR REFUND DEPOSIT ERROR! deposit not equals! uid={}", user.getUid());
-            return R.fail("ELECTRICITY.0044", "退款金额不符");
         }
         
         //是否有正在进行中的退款

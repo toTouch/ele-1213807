@@ -1,7 +1,8 @@
 package com.xiliulou.electricity.service.impl;
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.UserNotice;
 import com.xiliulou.electricity.mapper.UserNoticeMapper;
 import com.xiliulou.electricity.query.UserNoticeQuery;
@@ -24,20 +25,28 @@ public class UserNoticeServiceImpl implements UserNoticeService {
 
 	@Resource
 	UserNoticeMapper userNoticeMapper;
+	
+	@Resource
+	private RedisService redisService;
 
 	@Override
 	public R queryUserNotice() {
 		//tenant
 		Integer tenantId = TenantContextHolder.getTenantId();
 
-		UserNotice userNotice = userNoticeMapper.selectOne(new LambdaQueryWrapper<UserNotice>().eq(UserNotice::getTenantId, tenantId));
+		UserNotice userNotice = userNoticeMapper.selectLatest(tenantId);
 		return R.ok(userNotice);
 	}
 
 
 
 	@Override
-	public Triple<Boolean, String, Object> update(UserNoticeQuery userNoticeQuery) {
+	public Triple<Boolean, String, Object> update(UserNoticeQuery userNoticeQuery, Long uid) {
+		boolean result = redisService.setNx(CacheConstant.CACHE_USER_NOTICE_UPDATE_LOCK + uid, "1", 2 * 1000L, false);
+		if (!result) {
+			return Triple.of(false, "ELECTRICITY.0034", "操作频繁");
+		}
+		
 		if (Objects.isNull(userNoticeQuery.getId())) {
 			UserNotice userNotice = new UserNotice();
 			userNotice.setContent(userNoticeQuery.getContent());
@@ -46,7 +55,7 @@ public class UserNoticeServiceImpl implements UserNoticeService {
 			userNotice.setTenantId(TenantContextHolder.getTenantId());
 			userNoticeMapper.insert(userNotice);
 		} else {
-
+			
 			UserNotice userNotice = new UserNotice();
 			userNotice.setId(userNoticeQuery.getId());
 			userNotice.setContent(userNoticeQuery.getContent());
@@ -54,6 +63,7 @@ public class UserNoticeServiceImpl implements UserNoticeService {
 			userNotice.setTenantId(TenantContextHolder.getTenantId());
 			userNoticeMapper.update(userNotice);
 		}
+		
 		return Triple.of(true, null, null);
 	}
 }
