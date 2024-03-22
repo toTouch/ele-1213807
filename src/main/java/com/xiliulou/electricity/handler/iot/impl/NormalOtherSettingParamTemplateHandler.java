@@ -263,5 +263,13 @@ public class NormalOtherSettingParamTemplateHandler extends AbstractElectricityI
          */
         private Integer restartLockCell;
         
+        /**
+         * 智能充电
+         * <pre>
+         *     0 - 打开
+         *     1 - 关闭
+         * </pre>
+         */
+        private Integer enableBmsChargeParams;
     }
 }
