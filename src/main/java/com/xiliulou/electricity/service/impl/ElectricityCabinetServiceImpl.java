@@ -110,7 +110,6 @@ import com.xiliulou.electricity.service.ElectricityConfigService;
 import com.xiliulou.electricity.service.ElectricityMemberCardOrderService;
 import com.xiliulou.electricity.service.ElectricityMemberCardService;
 import com.xiliulou.electricity.service.FranchiseeService;
-import com.xiliulou.electricity.service.FranchiseeUserInfoService;
 import com.xiliulou.electricity.service.MaintenanceUserNotifyConfigService;
 import com.xiliulou.electricity.service.OtaFileConfigService;
 import com.xiliulou.electricity.service.RentBatteryOrderService;
@@ -276,9 +275,6 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     
     @Autowired
     ElectricityMemberCardService electricityMemberCardService;
-    
-    @Autowired
-    FranchiseeUserInfoService franchiseeUserInfoService;
     
     @Autowired
     RentBatteryOrderService rentBatteryOrderService;

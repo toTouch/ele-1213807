@@ -257,43 +257,6 @@ public class JsonAdminElectricityMemberCardOrderController extends BaseControlle
     }
 
     /**
-     * 新增用户套餐
-     *
-     * @return
-     */
-    @Deprecated
-    @PostMapping(value = "/admin/electricityMemberCard/addUserMemberCard")
-    @Log(title = "用户绑定套餐")
-    public R addUserMemberCard(@RequestBody @Validated MemberCardOrderAddAndUpdate memberCardOrderAddAndUpdate) {
-        return electricityMemberCardOrderService.addUserMemberCard(memberCardOrderAddAndUpdate);
-    }
-
-    /**
-     * 编辑用户套餐
-     *
-     * @return
-     */
-    @Deprecated
-    @PutMapping(value = "/admin/electricityMemberCard/editUserMemberCard")
-	@Log(title = "编辑用户套餐")
-	public R editUserMemberCard(@RequestBody @Validated MemberCardOrderAddAndUpdate memberCardOrderAddAndUpdate) {
-        return electricityMemberCardOrderService.editUserMemberCard(memberCardOrderAddAndUpdate);
-    }
-
-    /**
-     * 续费用户套餐
-     *
-     * @return
-     */
-    @Deprecated
-    @PutMapping(value = "/admin/electricityMemberCard/renewalUserMemberCard")
-    @Log(title = "用户套餐续费")
-    public R renewalUserMemberCard(@RequestBody @Validated MemberCardOrderAddAndUpdate memberCardOrderAddAndUpdate) {
-
-        return electricityMemberCardOrderService.renewalUserMemberCard(memberCardOrderAddAndUpdate);
-    }
-
-    /**
      * 暂停用户套餐
      * @return
      */

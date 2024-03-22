@@ -49,7 +49,6 @@ public interface EleRefundOrderService {
 
     Pair<Boolean, Object> notifyDepositRefundOrder(WechatJsapiRefundOrderCallBackResource callBackResource);
 
-//    R handleRefundOrder(String refundOrderNo, String errMsg, Integer status, BigDecimal refundAmount, Long uid, HttpServletRequest request);
     Triple<Boolean, String, Object> handleRefundOrder(String refundOrderNo, String errMsg, Integer status, BigDecimal refundAmount, Long uid, HttpServletRequest request);
 
     R handleOffLineRefundRentCar(String refundOrderNo, String errMsg, Integer status, BigDecimal refundAmount, Long uid, HttpServletRequest request);
@@ -99,8 +98,6 @@ public interface EleRefundOrderService {
     Long queryRefundTime(String orderId, Integer refundOrderType);
 
     Triple<Boolean,String,Object> batteryFreeDepositRefund(String errMsg, Long uid);
-
-    Triple<Boolean, String, Object> carFreeDepositRefund(String errMsg, Long uid);
 
     List<EleRefundOrder> selectBatteryFreeDepositRefundingOrder(Integer offset, Integer size);
 
