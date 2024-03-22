@@ -57,5 +57,7 @@ public interface MerchantService {
     
     Integer batchUpdateExistPlaceFee(List<Long> merchantIdList, Integer existsPlaceFeeYes, Long currentTimeMillis);
     
+    List<Merchant> queryListByUidList(Set<Long> merchantUidList, Integer tenantId);
+    
     List<Merchant> listAllByIds(Set<Long> merchantIdSet, Integer tenantId);
 }
