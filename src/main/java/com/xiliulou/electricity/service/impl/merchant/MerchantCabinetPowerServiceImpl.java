@@ -718,6 +718,9 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
                 resultList.addAll(afterMergeDetailResultList);
             }
             
+            // resultList按bindTime从小到大排序
+            resultList.sort(Comparator.comparing(MerchantProCabinetPowerDetailVO::getStartTime));
+            
             log.info("Merchant getThisMonthPowerForCabinetDetail merchantId={}, resultList={}", merchantId, resultList);
         }
         
@@ -911,6 +914,9 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
                 });
             }
         }
+        
+        // resultList按bindTime从小到大排序
+        resultList.sort(Comparator.comparing(MerchantProCabinetPowerDetailVO::getStartTime));
         
         //绑定状态没有结束时间
         return resultList.stream().peek(detail -> {
@@ -1784,6 +1790,9 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
             if (CollectionUtils.isEmpty(preTwoMonthPowerDetailList)) {
                 return Collections.emptyList();
             }
+            
+            // resultList按bindTime从小到大排序
+            preTwoMonthPowerDetailList.sort(Comparator.comparing(MerchantCabinetPowerMonthDetailProHistory::getBeginTime));
             
             return preTwoMonthPowerDetailList.parallelStream().map(detailPro -> {
                 Long placeId = detailPro.getPlaceId();
