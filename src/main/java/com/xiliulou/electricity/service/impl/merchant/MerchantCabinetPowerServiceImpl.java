@@ -1120,9 +1120,14 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
         // 先掐头去尾
         for (MerchantPlaceCabinetBind placeCabinetBind : cabinetUnbindList) {
             Long bindTime = placeCabinetBind.getBindTime();
-            
+            Long unBindTime = placeCabinetBind.getUnBindTime();
+    
             if (bindTime < merchantPlaceBindTime) {
                 placeCabinetBind.setBindTime(merchantPlaceBindTime);
+            }
+    
+            if (unBindTime > merchantPlaceUnbindTime) {
+                placeCabinetBind.setUnBindTime(merchantPlaceUnbindTime);
             }
             
             stepOneList.add(placeCabinetBind);
@@ -1249,9 +1254,14 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
         // 先掐头去尾
         for (MerchantPlaceCabinetBind placeCabinetBind : cabinetUnbindList) {
             Long bindTime = placeCabinetBind.getBindTime();
-            
+            Long unBindTime = placeCabinetBind.getUnBindTime();
+    
             if (bindTime < merchantPlaceBindTime) {
                 placeCabinetBind.setBindTime(merchantPlaceBindTime);
+            }
+    
+            if (unBindTime > merchantPlaceUnbindTime) {
+                placeCabinetBind.setUnBindTime(merchantPlaceUnbindTime);
             }
             
             stepOneList.add(placeCabinetBind);
@@ -1310,9 +1320,14 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
         // 先掐头去尾
         for (MerchantPlaceCabinetBind placeCabinetBind : cabinetUnbindList) {
             Long bindTime = placeCabinetBind.getBindTime();
-            
+            Long unBindTime = placeCabinetBind.getUnBindTime();
+    
             if (bindTime < placeBindTime) {
                 placeCabinetBind.setBindTime(placeBindTime);
+            }
+    
+            if (unBindTime > placeUnbindTime) {
+                placeCabinetBind.setUnBindTime(placeUnbindTime);
             }
             
             stepOneList.add(placeCabinetBind);
@@ -1375,9 +1390,14 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
         // 先掐头去尾
         for (MerchantPlaceCabinetBind placeCabinetBind : cabinetUnbindList) {
             Long bindTime = placeCabinetBind.getBindTime();
-            
+            Long unBindTime = placeCabinetBind.getUnBindTime();
+    
             if (bindTime < placeBindTime) {
                 placeCabinetBind.setBindTime(placeBindTime);
+            }
+            
+            if (unBindTime > placeUnbindTime) {
+                placeCabinetBind.setUnBindTime(placeUnbindTime);
             }
             
             stepOneList.add(placeCabinetBind);
