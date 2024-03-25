@@ -423,6 +423,10 @@ public class JsonAdminCarRentalPackageController extends BasicController {
             return R.ok();
         }
         
+        if (sortParamQueries.isEmpty()) {
+            return R.ok();
+        }
+        
         return R.ok(carRentalPackageService.batchUpdateSortParam(sortParamQueries));
     }
     

@@ -286,6 +286,10 @@ public class JsonAdminBatteryMemberCardController extends BaseController {
             return R.ok();
         }
         
+        if (sortParamQueries.isEmpty()) {
+            return R.ok();
+        }
+        
         return R.ok(batteryMemberCardService.batchUpdateSortParam(sortParamQueries));
     }
     
