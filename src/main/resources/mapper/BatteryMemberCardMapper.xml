@@ -327,7 +327,7 @@
                 </foreach>
             </if>
         </where>
-        order by bmc.id desc
+        order by bmc.sort_param desc
         limit #{offset}, #{size}
     </select>
     
