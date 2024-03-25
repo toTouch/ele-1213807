@@ -625,7 +625,7 @@
         <if test="tenantId != null">
             and tenant_id = #{tenantId}
         </if>
-        order by sort_param desc
+        order by id desc
     </select>
 
 </mapper>
