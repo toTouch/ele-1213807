@@ -1286,7 +1286,9 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
         UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(userInfo.getUid());
         if (Objects.nonNull(userBatteryDeposit)) {
             EleDepositOrder depositOrder = eleDepositOrderService.queryByOrderId(userBatteryDeposit.getOrderId());
-            isMember = Objects.equals(depositOrder.getOrderType(), PackageOrderTypeEnum.PACKAGE_ORDER_TYPE_NORMAL.getCode());
+            if (Objects.nonNull(depositOrder)) {
+                isMember = Objects.equals(depositOrder.getOrderType(), PackageOrderTypeEnum.PACKAGE_ORDER_TYPE_NORMAL.getCode());
+            }
         }
         
         // 判断用户是否为会员用户
@@ -1312,12 +1314,12 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
         }
         
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
+        log.info("userBatteryMemberCard ={}, userInfo={}",userBatteryMemberCard , userInfo);
         if (Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_NO) && Objects.nonNull(userBatteryMemberCard) && Objects.equals(
                 userBatteryMemberCard.getMemberCardId(), NumberConstant.ZERO)) {
             EleDepositOrder eleDepositOrder = eleDepositOrderService.queryLastPayDepositTimeByUid(query.getUid(), null, null, null);
             
-            Integer tenantId = TenantContextHolder.getTenantId();
-            ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(tenantId);
+            ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(query.getTenantId().intValue());
             
             // 查询退押订单
             // 查询退押订单
@@ -1326,18 +1328,18 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
             if (Objects.nonNull(eleDepositOrder)) {
                 refundOrder = refundOrderService.queryLastByOrderId(eleDepositOrder.getOrderId());
             }
-            
+            log.info("eleDepositOrder ={}, refundOrder={}, electricityConfig={}",eleDepositOrder , refundOrder, electricityConfig);
             if (Objects.nonNull(eleDepositOrder) && Objects.equals(eleDepositOrder.getOrderType(), EleDepositOrder.ORDER_TYPE_COMMON) && Objects.nonNull(electricityConfig)
                     && Objects.nonNull(electricityConfig.getChannelTimeLimit()) && Objects.nonNull(refundOrder)) {
                 
                 long l = DateUtils.diffDayV2(refundOrder.getUpdateTime(), System.currentTimeMillis());
+                log.info("doNoEnterpriseUser uid={}, days={}", query.getUid(), l);
                 if (l <= electricityConfig.getChannelTimeLimit()) {
                     log.error("scan code enterprise user is channel time limit user not join, enterpriseId={}, uid={}", query.getEnterpriseId(), query.getUid());
                     return Triple.of(false, "120306", "渠道保护期内，暂无法加入企业渠道");
                 }
             }
         }
-        
         
         //检查是否已经有用户被关联至当前企业
         if (Objects.isNull(channelUserEntity)) {
@@ -1569,10 +1571,20 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
         //根据当前企业ID查询企业信息
         EnterpriseInfo enterpriseInfo = enterpriseInfoService.queryByIdFromCache(query.getEnterpriseId());
         
-        if (Objects.nonNull(enterpriseInfo)) {
-            query.setEnterpriseName(enterpriseInfo.getName());
-            query.setFranchiseeId(enterpriseInfo.getFranchiseeId());
+        // 判断骑手和企业是否在统一租户内
+        if (Objects.isNull(enterpriseInfo)) {
+            log.warn("add user to enterprise failed. not find enterprise. uid = {}", query.getUid());
+            return Triple.of(false, "120212", "商户不存在");
         }
+        
+        if (!Objects.equals(enterpriseInfo.getTenantId(), userInfo.getTenantId())) {
+            log.warn("add user to enterprise failed. not find user. uid = {}", query.getUid());
+            return Triple.of(false, "120312", "骑手不存在");
+        }
+    
+        query.setEnterpriseName(enterpriseInfo.getName());
+        query.setFranchiseeId(enterpriseInfo.getFranchiseeId());
+        query.setTenantId(Long.valueOf(enterpriseInfo.getTenantId()));
         
         return Triple.of(true, "", enterpriseInfo);
     }
