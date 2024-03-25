@@ -1052,7 +1052,7 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
             Integer refundCount = eleRefundOrderService.queryCountByOrderId(userBatteryDeposit.getOrderId(), EleRefundOrder.BATTERY_DEPOSIT_REFUND_ORDER);
             if (refundCount > 0) {
                 log.warn("purchase package by enterprise user error, have refunding order,uid={}", userInfo.getUid());
-                return Triple.of(false,"ELECTRICITY.0047", "电池押金退款中");
+                return Triple.of(false,"120317", "该用户退押审核中，无法代付，请联系用户处理后操作");
             }
             
             BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(query.getPackageId());
@@ -1077,17 +1077,17 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
                     batteryMemberCard, serviceFeeUserInfoService.queryByUidFromCache(userInfo.getUid()));
             if (Boolean.TRUE.equals(acquireUserBatteryServiceFeeResult.getLeft())) {
                 log.warn("purchase package by enterprise user error, user exist battery service fee,uid={},mid={}", userInfo.getUid(), query.getPackageId());
-                return Triple.of(false, "300084", "该骑手逾期未归还电池，已产生滞纳金，请联系骑手在'我的-滞纳金'支付后操作");
+                return Triple.of(false, "300084", "该用户未缴纳滞纳金，无法代付，请联系用户处理后操作");
             }
     
             if (Objects.equals(UserBatteryMemberCard.MEMBER_CARD_DISABLE, userBatteryMemberCard.getMemberCardStatus())) {
                 log.warn("purchase package by enterprise user error, user package was freeze, uid={}, mid={}", userInfo.getUid(), query.getPackageId());
-                return Triple.of(false, "300070", "该骑手套餐已暂停，无法代付，请联系骑手启用后操作");
+                return Triple.of(false, "300070", "该用户套餐已冻结，无法代付，请联系用户处理后操作");
             }
     
             if (Objects.equals(UserBatteryMemberCard.MEMBER_CARD_DISABLE_REVIEW, userBatteryMemberCard.getMemberCardStatus())) {
                 log.warn("purchase package by enterprise user error, user package freeze waiting approve, uid={}, mid={}", userInfo.getUid(), query.getPackageId());
-                return Triple.of(false, "300071", "套餐冻结审核中");
+                return Triple.of(false, "300071", "该用户套餐冻结审核中，无法代付，请联系用户处理后操作");
             }
             
             //续租操作时，已经有了电池信息，查询用户当前关联的电池型号
@@ -1345,18 +1345,18 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
                     batteryMemberCard, serviceFeeUserInfoService.queryByUidFromCache(userInfo.getUid()));
             if (Boolean.TRUE.equals(acquireUserBatteryServiceFeeResult.getLeft())) {
                 log.warn("purchase package by enterprise user error, user exist battery service fee,uid={},mid={}", userInfo.getUid(), query.getPackageId());
-                return Triple.of(false, "300084", "该骑手逾期未归还电池，已产生滞纳金，请联系骑手在'我的-滞纳金'支付后操作");
+                return Triple.of(false, "300084", "该用户未缴纳滞纳金，无法代付，请联系用户处理后操作");
             }
     
             if(Objects.nonNull(userBatteryMemberCard)){
                 if (Objects.equals(UserBatteryMemberCard.MEMBER_CARD_DISABLE, userBatteryMemberCard.getMemberCardStatus())) {
                     log.warn("purchase package by enterprise user error, user package was freeze, uid={}, mid={}", userInfo.getUid(), query.getPackageId());
-                    return Triple.of(false, "300070", "该骑手套餐已暂停，无法代付，请联系骑手启用后操作");
+                    return Triple.of(false, "300070", "该用户套餐已冻结，无法代付，请联系用户处理后操作");
                 }
     
                 if (Objects.equals(UserBatteryMemberCard.MEMBER_CARD_DISABLE_REVIEW, userBatteryMemberCard.getMemberCardStatus())) {
                     log.warn("purchase package by enterprise user error, user package freeze waiting approve, uid={}, mid={}", userInfo.getUid(), query.getPackageId());
-                    return Triple.of(false, "300071", "套餐冻结审核中");
+                    return Triple.of(false, "300071", "该用户套餐冻结审核中，无法代付，请联系用户处理后操作");
                 }
             }
             
@@ -1646,7 +1646,7 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
             Integer refundCount = eleRefundOrderService.queryCountByOrderId(userBatteryDeposit.getOrderId(), EleRefundOrder.BATTERY_DEPOSIT_REFUND_ORDER);
             if (refundCount > 0) {
                 log.warn("purchase Package with free deposit warning, have refunding order,uid={}", userInfo.getUid());
-                return Triple.of(false,"ELECTRICITY.0047", "电池押金退款中");
+                return Triple.of(false,"120317", "该用户退押审核中，无法代付，请联系用户处理后操作");
             }
             
             //判断是否存在滞纳金
@@ -1655,19 +1655,19 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
                     batteryMemberCard, serviceFeeUserInfoService.queryByUidFromCache(userInfo.getUid()));
             if (Boolean.TRUE.equals(acquireUserBatteryServiceFeeResult.getLeft())) {
                 log.warn("purchase package by enterprise user error, user exist battery service fee,uid={},mid={}", userInfo.getUid(), query.getPackageId());
-                return Triple.of(false, "300084", "该骑手逾期未归还电池，已产生滞纳金，请联系骑手在'我的-滞纳金'支付后操作");
+                return Triple.of(false, "300084", "该用户未缴纳滞纳金，无法代付，请联系用户处理后操作");
             }
             
             //如果会员表存在信息，则用户并非第一次购买套餐，需要检查是否存在冻结的状况
             if(Objects.nonNull(userBatteryMemberCard)){
                 if (Objects.equals(UserBatteryMemberCard.MEMBER_CARD_DISABLE, userBatteryMemberCard.getMemberCardStatus())) {
                     log.warn("purchase package by enterprise user error, user package was freeze, uid={}, mid={}", userInfo.getUid(), query.getPackageId());
-                    return Triple.of(false, "300070", "该骑手套餐已暂停，无法代付，请联系骑手启用后操作");
+                    return Triple.of(false, "300070", "该用户套餐已冻结，无法代付，请联系用户处理后操作");
                 }
     
                 if (Objects.equals(UserBatteryMemberCard.MEMBER_CARD_DISABLE_REVIEW, userBatteryMemberCard.getMemberCardStatus())) {
                     log.warn("purchase package by enterprise user error, user package freeze waiting approve, uid={}, mid={}", userInfo.getUid(), query.getPackageId());
-                    return Triple.of(false, "300071", "套餐冻结审核中");
+                    return Triple.of(false, "300071", "该用户套餐冻结审核中，无法代付，请联系用户处理后操作");
                 }
             }
             
