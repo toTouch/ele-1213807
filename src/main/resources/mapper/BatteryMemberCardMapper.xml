@@ -619,14 +619,13 @@
     </select>
     
     <select id="listMemberCardForSort" resultType="com.xiliulou.electricity.vo.BatteryMemberCardVO">
-        select tbmc.id, tbmc.name, tbmc.create_time, tbmc.sort_param
-        from t_battery_member_card tbmc
-        left join t_member_card_battery_type tmcbt on tbmc.id = tmcbt.mid
-        where tbmc.del_flag = 0 and tbmc.status = 0 and tbmc.business_type = 0
+        select id, `name`, create_time, sort_param
+        from t_battery_member_card
+        where del_flag = 0 and status = 0 and business_type = 0
         <if test="tenantId != null">
-            and tbmc.tenant_id = #{tenantId}
+            and tenant_id = #{tenantId}
         </if>
-        order by tbmc.id desc
+        order by sort_param desc
     </select>
 
 </mapper>

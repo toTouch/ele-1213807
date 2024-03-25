@@ -297,14 +297,14 @@
     </select>
     
     <select id="listCarRentalPackageForSort" resultType="com.xiliulou.electricity.entity.car.CarRentalPackagePo">
-        select id, name, create_time, sort_param
+        select id, `name`, `create_time`, `sort_param`
         from <include refid="table_name"/>
-        where del_flag = 0
-        and status = 0
+        where `del_flag` = 0
+        and `status` = 0
         <if test="tenantId != null">
-            and tenant_id = #{tenantId}
+            and `tenant_id` = #{tenantId}
         </if>
-        order by id desc
+        order by `sort_param` desc
     </select>
 
 </mapper>
