@@ -286,6 +286,7 @@ public class CarRentalPackageServiceImpl implements CarRentalPackageService {
         entity.setUpdateUid(entity.getCreateUid());
         entity.setCreateTime(now);
         entity.setUpdateTime(now);
+        entity.setSortParam(now);
         entity.setDelFlag(DelFlagEnum.OK.getCode());
 
         carRentalPackageMapper.insert(entity);

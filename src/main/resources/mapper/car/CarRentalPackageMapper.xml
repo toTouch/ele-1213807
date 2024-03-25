@@ -223,7 +223,7 @@
             `del_flag` = 0
             <include refid="where_field" />
         </where>
-        ORDER BY `create_time` DESC
+        ORDER BY `status`, `sort_param` DESC
         LIMIT #{offset}, #{size}
     </select>
 

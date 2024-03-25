@@ -371,6 +371,7 @@ public class CarRentalPackageBizServiceImpl implements CarRentalPackageBizServic
         batteryMemberCardEntity.setTenantId(entity.getTenantId());
         batteryMemberCardEntity.setCreateTime(entity.getCreateTime());
         batteryMemberCardEntity.setUpdateTime(entity.getUpdateTime());
+        batteryMemberCardEntity.setSortParam(entity.getCreateTime());
 
         return batteryMemberCardEntity;
     }

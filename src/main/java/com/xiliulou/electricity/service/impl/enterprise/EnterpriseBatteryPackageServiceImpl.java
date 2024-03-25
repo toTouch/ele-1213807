@@ -296,6 +296,7 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
         batteryMemberCard.setDelFlag(BatteryMemberCard.DEL_NORMAL);
         batteryMemberCard.setCreateTime(System.currentTimeMillis());
         batteryMemberCard.setUpdateTime(System.currentTimeMillis());
+        batteryMemberCard.setSortParam(System.currentTimeMillis());
         batteryMemberCard.setTenantId(TenantContextHolder.getTenantId());
         
         this.batteryMemberCardMapper.insert(batteryMemberCard);

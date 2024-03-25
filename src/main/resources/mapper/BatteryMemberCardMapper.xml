@@ -208,7 +208,8 @@
                 and tmcbt.mid is null
             </if>
         </where>
-        order by tbmc.id desc
+        group by tbmc.id
+        order by tbmc.status, tbmc.sort_param desc
         limit #{offset}, #{size}
     </select>
     
