@@ -130,6 +130,7 @@
             <if test=" couponId != null "> `coupon_id`, </if>
             <if test=" status != null "> `status`, </if>
             <if test=" remark != null and remark != '' "> `remark`, </if>
+            <if test=" sortParam != null "> `sort_param`, </if>
         </trim>
     </sql>
     <!-- 条件新增字段值 -->
@@ -163,6 +164,7 @@
             <if test=" couponId != null "> #{couponId}, </if>
             <if test=" status != null "> #{status}, </if>
             <if test=" remark != null and remark != '' "> #{remark}, </if>
+            <if test=" sortParam != null "> #{sortParam}, </if>
         </trim>
     </sql>
 
