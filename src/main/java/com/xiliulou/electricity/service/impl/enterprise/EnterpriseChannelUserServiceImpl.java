@@ -1316,7 +1316,7 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
         log.info("userBatteryMemberCard ={}, userInfo={}",userBatteryMemberCard , userInfo);
         if (Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_NO) && Objects.nonNull(userBatteryMemberCard) && Objects.equals(
-                userBatteryMemberCard.getMemberCardId(), NumberConstant.ZERO)) {
+                userBatteryMemberCard.getMemberCardId(), NumberConstant.ZERO_L)) {
             EleDepositOrder eleDepositOrder = eleDepositOrderService.queryLastPayDepositTimeByUid(query.getUid(), null, null, null);
             
             ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(query.getTenantId().intValue());
@@ -1332,9 +1332,9 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
             if (Objects.nonNull(eleDepositOrder) && Objects.equals(eleDepositOrder.getOrderType(), EleDepositOrder.ORDER_TYPE_COMMON) && Objects.nonNull(electricityConfig)
                     && Objects.nonNull(electricityConfig.getChannelTimeLimit()) && Objects.nonNull(refundOrder)) {
                 
-                long l = DateUtils.diffDayV2(refundOrder.getUpdateTime(), System.currentTimeMillis());
+                Long l = DateUtils.diffDayV2(refundOrder.getUpdateTime(), System.currentTimeMillis());
                 log.info("doNoEnterpriseUser uid={}, days={}", query.getUid(), l);
-                if (l <= electricityConfig.getChannelTimeLimit()) {
+                if (l.intValue() <= electricityConfig.getChannelTimeLimit()) {
                     log.error("scan code enterprise user is channel time limit user not join, enterpriseId={}, uid={}", query.getEnterpriseId(), query.getUid());
                     return Triple.of(false, "120306", "渠道保护期内，暂无法加入企业渠道");
                 }
