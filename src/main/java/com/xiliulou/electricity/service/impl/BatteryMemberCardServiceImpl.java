@@ -583,7 +583,7 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
         }
         
         if (Objects.nonNull(electricityMemberCardOrderService.checkOrderByMembercardId(id))) {
-            return Triple.of(false, "100272", "当前套餐有未使用、使用中的购买记录，暂不支持删除");
+            return Triple.of(false, "100272", "当前套餐有用户使用，暂不支持删除");
         }
         
         //套餐是否绑定企业

@@ -129,7 +129,7 @@ public class CarRentalPackageServiceImpl implements CarRentalPackageService {
         // 校验能否删除
         if (carRentalPackageOrderService.checkByRentalPackageId(id)) {
             log.info("CarRentalPackageService.delById, Purchase order record already exists, deletion not allowed. packageId is {}", id);
-            throw new BizException("300023", "当前套餐存在未使用、使用中的购买记录，暂不支持删除");
+            throw new BizException("300023", "当前套餐有用户使用，暂不支持删除");
         }
 
         int num = carRentalPackageMapper.delById(id, uid, System.currentTimeMillis());
