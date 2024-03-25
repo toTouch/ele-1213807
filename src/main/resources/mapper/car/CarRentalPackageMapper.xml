@@ -223,6 +223,7 @@
             `del_flag` = 0
             <include refid="where_field" />
         </where>
+        GROUP BY `id`
         ORDER BY `status`, `sort_param` DESC
         LIMIT #{offset}, #{size}
     </select>
@@ -234,6 +235,7 @@
             `del_flag` = 0
             <include refid="where_field" />
         </where>
+        GROUP BY `id`
     </select>
 
     <!-- 根据ID查询 -->

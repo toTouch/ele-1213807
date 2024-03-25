@@ -408,6 +408,7 @@
                 and tmcbt.mid is null
             </if>
         </where>
+        group by tbmc.id
     </select>
     
     <select id="checkMembercardExist" resultType="Integer">
