@@ -218,4 +218,18 @@
         </where>
     </select>
 
+    <select id="selectListByUidList" resultType="com.xiliulou.electricity.entity.merchant.Merchant">
+        select
+        <include refid="column"/>
+        from t_merchant
+        <where>
+            tenant_id = #{tenantId}
+            <if test="uidList != null and uidList.size() > 0">
+                and uid in
+                <foreach collection="uidList" item="uid" close=")" open="(" separator=",">
+                    #{uid}
+                </foreach>
+            </if>
+        </where>
+    </select>
 </mapper>

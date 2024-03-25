@@ -1263,7 +1263,7 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
                 query.getEnterpriseId())) {
             log.info("enterprise channel user by phone station diff, oldEnterpriseId={}, newEnterpriseId={}, uid={}", channelUser.getEnterpriseId(), query.getEnterpriseId(),
                     query.getUid());
-            return Triple.of(false, "120302", "切换渠道卡片，进行面对面添加");
+            return Triple.of(false, "120302", "如用户需切换站点，请切换到面对面添加扫码操作");
         }
         log.info("do Enterprise User By Phone end uid = {},msg={}", query.getUid());
         
@@ -1417,6 +1417,15 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
         return Triple.of(true, null, null);
     }
     
+    /**
+     *
+     * @param query
+     * @param channelUser ：当前骑手本身的uid
+     * @param uid
+     * @param channelUserEntity: 扫码空的channelUser
+     * @param enterpriseChannelUser: 企业空的uid
+     * @return
+     */
     private Triple<Boolean, String, Object> doEnterpriseUser(EnterpriseChannelUserQuery query, EnterpriseChannelUser channelUser, Long uid, EnterpriseChannelUser channelUserEntity,
             EnterpriseChannelUser enterpriseChannelUser) {
         if (Objects.nonNull(channelUser) && Objects.equals(channelUser.getRenewalStatus(), EnterpriseChannelUser.RENEWAL_CLOSE) && Objects.equals(channelUser.getEnterpriseId(),
