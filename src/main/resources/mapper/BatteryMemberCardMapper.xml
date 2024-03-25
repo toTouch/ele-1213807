@@ -201,10 +201,10 @@
                     #{id}
                 </foreach>
             </if>
-            <if test="originalBatteryModel != null and != ''">
+            <if test="originalBatteryModel != null and originalBatteryModel != ''">
                 and tmcbt.battery_type = #{originalBatteryModel}
             </if>
-            <if test="batteryModel != null and != ''">
+            <if test="batteryModel != null and batteryModel != ''">
                 and tmcbt.mid is null
             </if>
         </where>
@@ -401,10 +401,10 @@
                     #{id}
                 </foreach>
             </if>
-            <if test="originalBatteryModel != null and != ''">
+            <if test="originalBatteryModel != null and originalBatteryModel != ''">
                 and tmcbt.battery_type = #{originalBatteryModel}
             </if>
-            <if test="batteryModel != null and != ''">
+            <if test="batteryModel != null and batteryModel != ''">
                 and tmcbt.mid is null
             </if>
         </where>
