@@ -235,7 +235,6 @@
             `del_flag` = 0
             <include refid="where_field" />
         </where>
-        GROUP BY `id`
     </select>
 
     <!-- 根据ID查询 -->

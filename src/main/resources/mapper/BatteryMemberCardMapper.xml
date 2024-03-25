@@ -367,7 +367,7 @@
     
     <select id="selectByPageCount" resultType="int">
         select
-        count(*)
+        count(distinct tbmc.id)
         from t_battery_member_card tbmc
         left join t_member_card_battery_type tmcbt on tbmc.id = tmcbt.mid
         <where>
