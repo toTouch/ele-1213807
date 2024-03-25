@@ -247,6 +247,7 @@
         <where>
             `rental_package_id` = #{rentalPackageId}
              and use_state in('${@com.xiliulou.electricity.enums.UseStateEnum@UN_USED.code}' ,'${@com.xiliulou.electricity.enums.UseStateEnum@IN_USE.code}')
+             and pay_state = 2
         </where>
     </select>
 
