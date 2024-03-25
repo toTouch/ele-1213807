@@ -300,6 +300,7 @@ public class CarRentalPackageBizServiceImpl implements CarRentalPackageBizServic
         // 新增租车套餐
         CarRentalPackagePo entity = new CarRentalPackagePo();
         BeanUtils.copyProperties(optModel, entity);
+        entity.setSortParam(System.currentTimeMillis());
         Long packageId = carRentalPackageService.insert(entity);
 
         // 车电一体
