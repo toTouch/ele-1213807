@@ -973,7 +973,7 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
             if (Objects.nonNull(userBatteryMemberCard)) {
                 Long memberCardId = userBatteryMemberCard.getMemberCardId();
                 BatteryMemberCard batteryMemberCard = memberCardService.queryByIdFromCache(memberCardId);
-                if (Objects.nonNull(batteryMemberCard) && Objects.equals(batteryMemberCard.getBusinessType(), PackageOrderTypeEnum.PACKAGE_ORDER_TYPE_ENTERPRISE.getCode())) {
+                if (Objects.nonNull(batteryMemberCard) && Objects.equals(batteryMemberCard.getBusinessType(), BatteryMemberCard.BUSINESS_TYPE_ENTERPRISE)) {
                     userBatteryMemberCardService.unbindMembercardInfoByUid(userInfo.getUid());
                     //删除用户电池型号
                     userBatteryTypeService.deleteByUid(userInfo.getUid());
@@ -982,31 +982,35 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
                     serviceFeeUserInfoService.deleteByUid(userInfo.getUid());
                 }
                 
-                if (Objects.nonNull(batteryMemberCard) && Objects.equals(batteryMemberCard.getBusinessType(), PackageOrderTypeEnum.PACKAGE_ORDER_TYPE_NORMAL.getCode())) {
-                    // 当前套餐未换电套餐并且存在企业套餐则需将：t_user_battery_member_card的总的到期时间和次数减去未使用的企业套餐的总的时间和次数
+                if (Objects.nonNull(batteryMemberCard) && !Objects.equals(batteryMemberCard.getBusinessType(), BatteryMemberCard.BUSINESS_TYPE_ENTERPRISE)) {
+                    // 当前套餐为换电套餐并且存在企业套餐则需将：t_user_battery_member_card的总的到期时间和次数减去未使用的企业套餐的总的时间和次数
                     List<UserBatteryMemberCardPackage> packages = userBatteryMemberCardPackageService.queryChannelListByUid(userInfo.getUid());
-                    Long expireTimeSum = 0L;
-                    Integer remainingNumber = 0;
+    
                     if (ObjectUtils.isNotEmpty(packages)) {
+                        Long expireTimeSum = 0L;
+                        Integer remainingNumber = 0;
+        
                         for (UserBatteryMemberCardPackage memberCardPackage : packages) {
                             BatteryMemberCard batteryMemberCard1 = memberCardService.queryByIdFromCache(memberCardPackage.getMemberCardId());
                             if (Objects.isNull(batteryMemberCard1)) {
                                 log.error("recycle cloud bean batter member card is null, memberCardId={}", memberCardPackage.getMemberCardId());
                                 continue;
                             }
+            
                             String orderId = memberCardPackage.getOrderId();
                             ElectricityMemberCardOrder memberCardOrder = batteryMemberCardOrderService.selectByOrderNo(orderId);
                             if (Objects.isNull(memberCardOrder)) {
                                 log.error("recycle cloud bean batter member card order is null, orderId={}", orderId);
                                 continue;
                             }
+            
                             Long expireTime = batteryMemberCardService.transformBatteryMembercardEffectiveTime(batteryMemberCard1, memberCardOrder);
                             expireTimeSum += expireTime;
                             if (Objects.nonNull(memberCardOrder.getValidDays())) {
                                 remainingNumber += memberCardOrder.getValidDays();
                             }
                         }
-                        
+        
                         // 修改用户套餐信息
                         UserBatteryMemberCard userBatteryMemberCardUpdate = new UserBatteryMemberCard();
                         userBatteryMemberCardUpdate.setId(userBatteryMemberCard.getId());
@@ -1018,6 +1022,8 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
                     }
                     
                 }
+    
+                
             }
             //删除用户电池套餐资源包
             userBatteryMemberCardPackageService.deleteChannelMemberCardByUid(userInfo.getUid());
