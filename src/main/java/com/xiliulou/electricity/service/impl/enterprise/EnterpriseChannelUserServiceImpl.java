@@ -673,11 +673,10 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
         
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
         if (Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_NO) && Objects.nonNull(userBatteryMemberCard) && Objects.equals(
-                userBatteryMemberCard.getMemberCardId(), NumberConstant.ZERO)) {
+                userBatteryMemberCard.getMemberCardId(), NumberConstant.ZERO_L)) {
             EleDepositOrder eleDepositOrder = eleDepositOrderService.queryLastPayDepositTimeByUid(query.getUid(), null, null, null);
             
-            Integer tenantId = TenantContextHolder.getTenantId();
-            ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(tenantId);
+            ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(query.getTenantId().intValue());
             
             // 查询退押订单
             EleRefundOrder refundOrder = null;
@@ -689,8 +688,8 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
             if (Objects.nonNull(eleDepositOrder) && Objects.equals(eleDepositOrder.getOrderType(), EleDepositOrder.ORDER_TYPE_COMMON) && Objects.nonNull(electricityConfig)
                     && Objects.nonNull(electricityConfig.getChannelTimeLimit()) && Objects.nonNull(refundOrder)) {
                 
-                long l = DateUtils.diffDayV2(refundOrder.getUpdateTime(), System.currentTimeMillis());
-                if (l <= electricityConfig.getChannelTimeLimit()) {
+                Long l = DateUtils.diffDayV2(refundOrder.getUpdateTime(), System.currentTimeMillis());
+                if (l.intValue() <= electricityConfig.getChannelTimeLimit()) {
                     log.error("enterprise user by phone is channel time limit user not join, enterpriseId={}, uid={}", query.getEnterpriseId(), query.getUid());
                     return Triple.of(false, "120306", "渠道保护期内，暂无法加入企业渠道");
                 }
