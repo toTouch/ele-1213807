@@ -77,9 +77,9 @@ public class IotReportMetricsMonitorComponent {
                     return;
                 }
                 
-                IOT_MEAN_RATE.labels(address, address).set(v.getMeanRate());
-                IOT_ONE_MINUTE_RATE.labels(address, address).set(v.getOneMinuteRate());
-                IOT_FIVE_MINUTE_RATE.labels(address, address).set(v.getFiveMinuteRate());
+                IOT_MEAN_RATE.labels(k).set(v.getMeanRate());
+                IOT_ONE_MINUTE_RATE.labels(k).set(v.getOneMinuteRate());
+                IOT_FIVE_MINUTE_RATE.labels(k).set(v.getFiveMinuteRate());
             });
             
             sleep();
