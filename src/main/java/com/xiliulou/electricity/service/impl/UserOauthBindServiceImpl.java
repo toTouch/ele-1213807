@@ -191,6 +191,12 @@ public class UserOauthBindServiceImpl implements UserOauthBindService {
         return userOauthBindMapper.updatePhoneByUid(tenantId, uid, newPhone, System.currentTimeMillis());
     }
     
+    @Transactional(rollbackFor = Exception.class)
+    @Override
+    public Integer deleteByUid(Long uid, Integer tenantId) {
+        return userOauthBindMapper.deleteByUid(uid, tenantId);
+    }
+    
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Boolean checkOpenIdByJsCode(String jsCode) {

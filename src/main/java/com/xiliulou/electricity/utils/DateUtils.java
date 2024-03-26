@@ -10,10 +10,14 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
+import java.time.temporal.TemporalAdjusters;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -176,6 +180,32 @@ public class DateUtils {
         
     }
     
+    /*
+     * 获取前某月第一天00:00:00的时间戳
+     */
+    public static long getBeforeMonthFirstDayTimestamp(Integer minusMonth) {
+        LocalDate lastMonthFirstDay = LocalDate.now().minusMonths(minusMonth).withDayOfMonth(1);
+        return lastMonthFirstDay.atStartOfDay().atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
+    }
+    
+    /**
+     * 获取前某月最后一天23:59:59时间戳
+     */
+    public static long getBeforeMonthLastDayTimestamp(Integer minusMonth) {
+        LocalDate lastMonthFirstDay = LocalDate.now().minusMonths(minusMonth).withDayOfMonth(1);
+        LocalDate lastMonthLastDay = lastMonthFirstDay.with(TemporalAdjusters.lastDayOfMonth());
+        return lastMonthLastDay.atTime(23, 59, 59).atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
+    }
+    
+    public static boolean isSameDay(long time1, long time2) {
+        SimpleDateFormat fmt = new SimpleDateFormat("yyyyMMdd");
+        return fmt.format(new Date(time1)).equals(fmt.format(new Date(time2)));
+    }
+    
+    public static boolean isSameMonth(long time1, long time2) {
+        SimpleDateFormat fmt = new SimpleDateFormat("yyyyMM");
+        return fmt.format(new Date(time1)).equals(fmt.format(new Date(time2)));
+    }
     /**
      * 根据LocalDate获取当天的0点时间戳
      */
