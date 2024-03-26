@@ -685,7 +685,7 @@ public class JsonAdminUserInfoController extends BaseController {
             @RequestParam(value = "memberCardExpireTimeEnd", required = false) Long memberCardExpireTimeEnd, @RequestParam(value = "sortType", required = false) Integer sortType,
             @RequestParam(value = "sortBy", required = false) String sortBy, @RequestParam(value = "name", required = false) String name,
             @RequestParam(value = "phone", required = false) String phone, @RequestParam(value = "batteryDepositStatus", required = false) Integer batteryDepositStatus,
-            @RequestParam(value = "memberCardStatus", required = false) Integer memberCardStatus, @RequestParam(value = "franchiseeId", required = false) Long franchiseeId) {
+            @RequestParam(value = "memberCardFreezeStatus", required = false) Integer memberCardStatus, @RequestParam(value = "franchiseeId", required = false) Long franchiseeId) {
         if (size < 0 || size > 50) {
             size = 10L;
         }
@@ -732,7 +732,7 @@ public class JsonAdminUserInfoController extends BaseController {
             @RequestParam(value = "memberCardExpireTimeBegin", required = false) Long memberCardExpireTimeBegin,
             @RequestParam(value = "memberCardExpireTimeEnd", required = false) Long memberCardExpireTimeEnd, @RequestParam(value = "name", required = false) String name,
             @RequestParam(value = "phone", required = false) String phone, @RequestParam(value = "batteryDepositStatus", required = false) Integer batteryDepositStatus,
-            @RequestParam(value = "memberCardStatus", required = false) Integer memberCardStatus, @RequestParam(value = "franchiseeId", required = false) Long franchiseeId) {
+            @RequestParam(value = "memberCardFreezeStatus", required = false) Integer memberCardStatus, @RequestParam(value = "franchiseeId", required = false) Long franchiseeId) {
         
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {

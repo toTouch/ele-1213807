@@ -1117,8 +1117,11 @@
             <if test="query.batteryDepositStatus != null">
                 and tui.battery_deposit_status = #{query.batteryDepositStatus}
             </if>
-            <if test="query.memberCardStatus != null">
-                and ubmc.member_card_status = #{query.memberCardStatus}
+            <if test="query.memberCardStatus != null and query.memberCardStatus == 0">
+                and ubmc.member_card_status != 1
+            </if>
+            <if test="query.memberCardStatus != null and query.memberCardStatus == 1">
+                and ubmc.member_card_status = 1
             </if>
 
             <if test="query.sortType != null and query.sortType == 1 and query.sortBy == 'DESC'.toString()">
@@ -1195,8 +1198,11 @@
         <if test="query.batteryDepositStatus != null and query.batteryDepositStatus != '' ">
             and tui.battery_deposit_status = #{query.batteryDepositStatus}
         </if>
-        <if test="query.memberCardStatus != null and query.memberCardStatus != '' ">
-            and ubmc.member_card_status = #{query.memberCardStatus}
+        <if test="query.memberCardStatus != null and query.memberCardStatus == 0">
+            and ubmc.member_card_status != 1
+        </if>
+        <if test="query.memberCardStatus != null and query.memberCardStatus == 1">
+            and ubmc.member_card_status = 1
         </if>
     </select>
     <select id="selectListByUidList" resultType="com.xiliulou.electricity.entity.UserInfo">
