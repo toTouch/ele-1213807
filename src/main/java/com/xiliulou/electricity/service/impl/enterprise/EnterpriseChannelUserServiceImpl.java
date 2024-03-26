@@ -805,6 +805,10 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
             return Triple.of(false, "120305", "当前状态无法操作");
         }
         
+        if (Objects.equals(user.getCloudBeanStatus(), EnterpriseChannelUser.CLOUD_BEAN_STATUS_RECYCLE) || Objects.equals(user.getCloudBeanStatus(), EnterpriseChannelUser.CLOUD_BEAN_STATUS_INIT)) {
+            return Triple.of(true, null, null);
+        }
+        
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
         if (Objects.nonNull(userBatteryMemberCard)) {
             if (Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE_REVIEW)) {
@@ -865,6 +869,18 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
         if (Objects.equals(request.getRenewalStatus(), EnterpriseChannelUser.RENEWAL_CLOSE)) {
             return Triple.of(true, null, null);
         }
+    
+        EnterpriseChannelUser channelUser = enterpriseChannelUserMapper.selectByUid(request.getUid());
+        if (Objects.isNull(channelUser)) {
+            log.error("channel User Exit Check  user not exists, uid={}", request.getUid());
+            return Triple.of(false, "120312", "骑手不存在");
+        }
+    
+        // 检测骑手的续费状态是否为关闭
+        if (!Objects.equals(channelUser.getRenewalStatus(), EnterpriseChannelUser.RENEWAL_CLOSE)) {
+            log.error("channel User Exit renewal Status diff, uid={}, userRenewalStatus={}, renewalStatus={}", request.getUid(), channelUser.getRenewalStatus(), request.getRenewalStatus());
+            return Triple.of(false, "120305", "当前状态无法操作");
+        }
         
         // 检测是否能退出
         Triple<Boolean, String, Object> triple = this.channelUserExitCheck(request);
@@ -873,24 +889,11 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
             return triple;
         }
         
-        EnterpriseChannelUser channelUser = enterpriseChannelUserMapper.selectByUid(request.getUid());
-        if (Objects.isNull(channelUser)) {
-            log.error("channel User Exit Check  user not exists, uid={}", request.getUid());
-            return Triple.of(false, "120312", "骑手不存在");
-        }
-        
-        // 检测骑手的续费状态是否为关闭
-        if (!Objects.equals(channelUser.getRenewalStatus(), EnterpriseChannelUser.RENEWAL_CLOSE)) {
-            log.error("channel User Exit renewal Status diff, uid={}, userRenewalStatus={}, renewalStatus={}", request.getUid(), channelUser.getRenewalStatus(), request.getRenewalStatus());
-            return Triple.of(false, "120305", "当前状态无法操作");
-        }
-        
-        // todo 修改能回收云豆的逻辑
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(request.getUid());
         if (Objects.nonNull(userBatteryMemberCard) && Objects.equals(channelUser.getCloudBeanStatus(), EnterpriseChannelUser.NO_RECYCLE)) {
             Triple<Boolean, String, Object> tripleRecycle = enterpriseInfoService.recycleCloudBean(request.getUid());
             if (!tripleRecycle.getLeft()) {
-                log.error("channel user exit recycle Cloud Bean error,uid={}, msg={}", request.getUid(), triple.getRight());
+                log.error("channel user exit recycle Cloud Bean error,uid={}, msg={}", request.getUid(), tripleRecycle.getRight());
                 return tripleRecycle;
             }
         }
@@ -954,6 +957,10 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
         }
         
         for (EnterpriseChannelUser channelUser : enterpriseChannelUserList) {
+            if (Objects.equals(channelUser.getCloudBeanStatus(), EnterpriseChannelUser.CLOUD_BEAN_STATUS_RECYCLE) || Objects.equals(channelUser.getCloudBeanStatus(), EnterpriseChannelUser.CLOUD_BEAN_STATUS_INIT)) {
+                continue;
+            }
+            
             // 检测用户能否退出
             Triple<Boolean, String, Object> tripleCheck = checkUserEnableExit(channelUser.getUid());
             if (!tripleCheck.getLeft()) {
