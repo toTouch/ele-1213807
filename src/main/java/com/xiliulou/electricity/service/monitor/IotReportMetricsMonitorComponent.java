@@ -41,11 +41,11 @@ public class IotReportMetricsMonitorComponent {
     @Autowired
     private MetricRegistry metricRegistry;
     
-    static final Gauge IOT_MEAN_RATE = Gauge.build().name("meanRate").labelNames("address").help("activeCount metric").register();
+    static final Gauge IOT_MEAN_RATE = Gauge.build().name("metricName").help("meanRate metric").register();
     
-    static final Gauge IOT_ONE_MINUTE_RATE = Gauge.build().name("oneMinuteRate").labelNames("address").help("oneMinuteRate metric").register();
+    static final Gauge IOT_ONE_MINUTE_RATE = Gauge.build().name("metricName").help("oneMinuteRate metric").register();
     
-    static final Gauge IOT_FIVE_MINUTE_RATE = Gauge.build().name("fiveMinuteRate").labelNames("address").help("fiveMinuteRate metric").register();
+    static final Gauge IOT_FIVE_MINUTE_RATE = Gauge.build().name("metricName").help("fiveMinuteRate metric").register();
     
     private XllThreadPoolExecutorService xllThreadPoolExecutorService = XllThreadPoolExecutors.newFixedThreadPool("iot_report_monitor_pOOL", 1, "iot_report_monitor");
     
@@ -77,9 +77,9 @@ public class IotReportMetricsMonitorComponent {
                     return;
                 }
                 
-                IOT_MEAN_RATE.labels(k).set(v.getMeanRate());
-                IOT_ONE_MINUTE_RATE.labels(k).set(v.getOneMinuteRate());
-                IOT_FIVE_MINUTE_RATE.labels(k).set(v.getFiveMinuteRate());
+                IOT_MEAN_RATE.labels("meanRate").set(v.getMeanRate());
+                IOT_ONE_MINUTE_RATE.labels("oneMinuteRate").set(v.getOneMinuteRate());
+                IOT_FIVE_MINUTE_RATE.labels("fiveMinuteRate").set(v.getFiveMinuteRate());
             });
             
             sleep();
