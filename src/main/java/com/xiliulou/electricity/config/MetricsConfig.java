@@ -1,6 +1,5 @@
 package com.xiliulou.electricity.config;
 
-import com.codahale.metrics.ConsoleReporter;
 import com.codahale.metrics.Meter;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Slf4jReporter;
@@ -31,12 +30,8 @@ public class MetricsConfig {
     
     @Bean
     public Slf4jReporter consoleReporter(MetricRegistry metricRegistry) {
-        Slf4jReporter reporter = Slf4jReporter.forRegistry(metricRegistry)
-                .outputTo(LoggerFactory.getLogger("com.example.metrics"))
-                .convertRatesTo(TimeUnit.SECONDS)
-                .convertDurationsTo(TimeUnit.MILLISECONDS)
-                .build();
-        // 每5秒输出一次结果
+        Slf4jReporter reporter = Slf4jReporter.forRegistry(metricRegistry).outputTo(LoggerFactory.getLogger("com.xiliulou.electricity.metrics")).convertRatesTo(TimeUnit.SECONDS)
+                .convertDurationsTo(TimeUnit.MILLISECONDS).build();
         reporter.start(30, TimeUnit.SECONDS);
         return reporter;
     }

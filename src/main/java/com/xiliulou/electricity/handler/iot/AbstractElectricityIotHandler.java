@@ -59,6 +59,7 @@ public abstract class AbstractElectricityIotHandler implements IElectricityHandl
 
     @Override
     public boolean receiveMessageProcess(ReceiverMessage receiverMessage) {
+        iotMeter.mark();
         iotMeter.getMeanRate();
         iotMeter.getOneMinuteRate();
         iotMeter.getFiveMinuteRate();
