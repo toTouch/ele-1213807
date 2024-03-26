@@ -51,6 +51,8 @@ public interface CommonConstant {
     Integer DEL_N = 0;
 
     Integer DEL_Y = 1;
+    
+    Integer TIME_UNIT_HOURS = 1;
 
     /**
      * 版本

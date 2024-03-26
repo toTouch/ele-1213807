@@ -171,6 +171,9 @@ public class WxRefundPayBatteryRentServiceImpl implements WxRefundPayService {
             divisionAccountOrderDTO.setDivisionAccountType(DivisionAccountEnum.DA_TYPE_REFUND.getCode());
             divisionAccountOrderDTO.setTraceId(IdUtil.simpleUUID());
             divisionAccountRecordService.asyncHandleDivisionAccount(divisionAccountOrderDTO);
+            
+            //退租 发送返利MQ
+            batteryMembercardRefundOrderService.sendMerchantRebateRefundMQ(batteryMembercardRefundOrder.getUid(), batteryMembercardRefundOrder.getRefundOrderNo());
         } else {
             BatteryMembercardRefundOrder batteryMembercardRefundOrderUpdate = new BatteryMembercardRefundOrder();
             batteryMembercardRefundOrderUpdate.setId(batteryMembercardRefundOrder.getId());

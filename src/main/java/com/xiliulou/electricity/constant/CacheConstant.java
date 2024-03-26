@@ -331,6 +331,10 @@ public interface CacheConstant {
      */
     String CACHE_CITY_CODE = "city_code:";
     
+    /**
+     * 用户扩展信息缓存
+     */
+    String CACHE_USER_INFO_EXTRA = "user_info_extra:";
     
     /**
      * 加盟商缓存
@@ -530,6 +534,11 @@ public interface CacheConstant {
      * 企业配置缓存
      */
     String CACHE_ENTERPRISE_INFO = "enterprise_Info:";
+    
+    /**
+     * 商户扩展属性缓存
+     */
+    String CACHE_MERCHANT_ATTR = "merchantAttr:";
     
     String CACHE_WECHAT_APPROVE = "cache_wechat_approve";
     
