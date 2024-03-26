@@ -1,0 +1,207 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.merchant.MerchantPlaceMapper">
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        insert into t_merchant_place (name , franchisee_id , phone , merchant_area_id  , longitude  , latitude  , address
+        ,tenant_id  , del_flag, create_time, update_time)
+        values (#{name}, #{franchiseeId}, #{phone}, #{merchantAreaId}, #{longitude}, #{latitude},#{address}, #{tenantId}, #{delFlag},
+                #{createTime}, #{updateTime})
+    </insert>
+    <update id="update">
+        update t_merchant_place
+        <set>
+            merchant_area_id = #{merchantAreaId}
+            <if test="name != null and name != ''">
+                ,name = #{name}
+            </if>
+            <if test="franchiseeId != null">
+                ,franchisee_id = #{franchiseeId}
+            </if>
+            <if test="phone != null and phone != ''">
+                ,phone = #{phone}
+            </if>
+            
+            <if test="longitude != null">
+                ,longitude = #{longitude}
+            </if>
+            <if test="latitude != null">
+                ,latitude = #{latitude}
+            </if>
+           
+            <if test="address != null">
+                ,address = #{address}
+            </if>
+            
+            <if test="updateTime != null">
+                ,update_time = #{updateTime}
+            </if>
+        </set>
+        <where>
+            id = #{id}
+        </where>
+    </update>
+    
+    <update id="remove">
+        update t_merchant_place set del_flag = #{delFlag},update_time = #{updateTime} where id = #{id}
+    </update>
+    
+    <select id="list" resultType="com.xiliulou.electricity.entity.merchant.MerchantPlace">
+        SELECT
+        id,
+        `name`
+        FROM
+        t_merchant_place
+        <where>
+            del_flag = 0
+            <if test="tenantId != null">
+                and tenant_id = #{tenantId}
+            </if>
+    
+            <if test="franchiseeId != null">
+                and franchisee_id = #{franchiseeId}
+            </if>
+    
+            <if test="idList != null and idList.size() > 0">
+                AND id IN
+                <foreach collection="idList" separator="," open="(" close=")" item="id">
+                    #{id}
+                </foreach>
+            </if>
+        </where>
+    </select>
+    <select id="checkIsExists" resultType="java.lang.Integer">
+        SELECT
+            count(1)
+        FROM
+            t_merchant_place
+        <where>
+            del_flag = 0
+            <if test="tenantId != null">
+                and tenant_id = #{tenantId}
+            </if>
+            <if test="name != null and name != ''">
+                and name = #{name}
+            </if>
+            <if test="nqId != null">
+                and id != #{nqId}
+            </if>
+        </where>
+        
+    </select>
+    
+    <sql id="column">
+        id, name , franchisee_id , phone , merchant_area_id  , longitude  , latitude  , address
+        ,tenant_id , del_flag, create_time, update_time
+    </sql>
+    <select id="selectById" resultType="com.xiliulou.electricity.entity.merchant.MerchantPlace">
+        select <include refid="column"/>
+        from t_merchant_place
+        where
+          del_flag = 0
+          and id = #{id}
+    </select>
+    
+    <sql id="pageFilter">
+        <where>
+            t.del_flag = 0
+            <if test="name != null and name != ''">
+                and t.name like concat('%', concat(#{name}, '%'))
+            </if>
+            <if test="tenantId != null">
+                and t.tenant_id = #{tenantId}
+            </if>
+            <if test="merchantAreaId != null">
+                and t.merchant_area_id = #{merchantAreaId}
+            </if>
+            <if test="franchiseeId != null">
+                and t.franchisee_id = #{franchiseeId}
+            </if>
+            <if test="idList != null and idList.size() > 0">
+                and t.id in
+                <foreach collection="idList" separator="," open="(" close=")" item="id">
+                    #{id}
+                </foreach>
+            </if>
+            <if test="merchantId != null">
+                and EXISTS (
+                SELECT
+                1
+                FROM
+                t_merchant_place_map m
+                WHERE
+                m.place_id = t.id
+                and m.merchant_id = #{merchantId}
+                )
+            </if>
+        </where>
+    </sql>
+    
+    <select id="countTotal" resultType="java.lang.Integer">
+        SELECT
+        count(1)
+        FROM
+        t_merchant_place t
+        <include refid="pageFilter"/>
+    </select>
+    
+    <select id="selectListByPage" resultType="com.xiliulou.electricity.entity.merchant.MerchantPlace">
+        SELECT
+        t.id,
+        t.NAME,
+        t.franchisee_id,
+        t.phone,
+        t.merchant_area_id,
+        t.longitude,
+        t.latitude,
+        t.address,
+        t.tenant_id,
+        t.del_flag,
+        t.create_time,
+        t.update_time
+        FROM
+        t_merchant_place t
+        <include refid="pageFilter"/>
+        order by t.id desc
+        limit #{offset}, #{size}
+    </select>
+    
+    <select id="selectCabinetList" resultType="com.xiliulou.electricity.vo.merchant.MerchantPlaceCabinetVO">
+        SELECT
+            c.id as 'cabinetId',
+            c.`name` as 'cabinetName',
+            b.place_id
+        FROM
+            t_electricity_cabinet c
+        LEFT JOIN t_merchant_place_cabinet_bind b ON b.cabinet_id = c.id  AND b.del_flag = 0 AND b.`status` = 0
+       <where>
+            c.del_flag = 0
+            and c.franchisee_id = #{franchiseeId}
+            and c.tenant_id = #{tenantId}
+            <if test="cabinetName != null">
+                and c.`name` like concat('%', concat(#{cabinetName}, '%'))
+            </if>
+        </where>
+        ORDER BY c.id desc
+        limit #{offset}, #{size}
+    </select>
+    
+    <select id="selectByIdList" resultType="com.xiliulou.electricity.entity.merchant.MerchantPlace">
+        SELECT
+         id,
+        `name`
+        FROM
+        t_merchant_place
+        <where>
+            <if test="tenantId != null">
+                tenant_id = #{tenantId}
+            </if>
+        
+            <if test="idList != null and idList.size() > 0">
+                AND id IN
+                <foreach collection="idList" separator="," open="(" close=")" item="id">
+                    #{id}
+                </foreach>
+            </if>
+        </where>
+    </select>
+</mapper>
