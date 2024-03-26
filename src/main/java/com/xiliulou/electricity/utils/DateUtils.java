@@ -200,4 +200,9 @@ public class DateUtils {
         // 再次转换回时间戳
         return endOfDay.atZone(CHINA_ZONE_ID).toInstant().toEpochMilli();
     }
+    
+    public static boolean isSameMonth(long time1, long time2) {
+        SimpleDateFormat fmt = new SimpleDateFormat("yyyyMM");
+        return fmt.format(new Date(time1)).equals(fmt.format(new Date(time2)));
+    }
 }

@@ -106,5 +106,7 @@ public class BatteryMemberCardQuery {
      * @see BatteryMemberCardBusinessTypeEnum
      */
     private Integer businessType;
+    
+    private List<Long> idList;
 
 }

@@ -129,4 +129,6 @@ public interface UserService {
     Integer updateMerchantUser(User updateUser);
     
     Integer removeById(Long uid, Long updateTime);
+    
+    User queryByUidFromDB(Long uid);
 }

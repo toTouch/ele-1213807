@@ -531,6 +531,11 @@ public interface CacheConstant {
      */
     String CACHE_ENTERPRISE_INFO = "enterprise_Info:";
     
+    /**
+     * 商户扩展属性缓存
+     */
+    String CACHE_MERCHANT_ATTR = "merchantAttr:";
+    
     String CACHE_WECHAT_APPROVE = "cache_wechat_approve";
     
     String CACHE_INVITATION_ACTIVITY_USER_SAVE_LOCK = "cache_invitation_activity_user_save_lock:";
@@ -563,9 +568,15 @@ public interface CacheConstant {
     
     String MERCHANT_PLACE_CABINET_BIND_UID = "merchant_place_cabinet_bind_uid:";
     
+    String MERCHANT_PLACE_CABINET_UNBIND_UID = "merchant_place_cabinet_unbind_uid:";
+    
+    String MERCHANT_PLACE_CABINET_DELETE_UID = "merchant_place_cabinet_delete_uid:";
+    
     String CACHE_MERCHANT_PLACE = "cache_merchant_place:";
     
     String CACHE_MERCHANT_AREA_SAVE_LOCK = "cache_merchant_area_save_lock:";
+    
+    String CACHE_MERCHANT_SCAN_INTO_ACTIVITY_LOCK = "cache_merchant_scan_into_activity_lock:";
     
     String CACHE_USER_NOTICE_UPDATE_LOCK = "cache_user_notice_update_lock:";
     String CACHE_USER_DEPOSIT_PROTOCOL_UPDATE_LOCK = "cache_user_deposit_protocol_update_lock:";

@@ -83,4 +83,6 @@ public interface BatteryMemberCardService {
     List<BatteryMemberCard>  selectListByCouponId(Long couponId);
 
     Integer isMemberCardBindFranchinsee(Long id, Integer tenantId);
+    
+    List<BatteryMemberCard> queryListByIdList(BatteryMemberCardQuery query);
 }

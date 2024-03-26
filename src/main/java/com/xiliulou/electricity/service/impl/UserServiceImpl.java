@@ -1066,6 +1066,12 @@ public class UserServiceImpl implements UserService {
         return userMapper.removeById(uid, updateTime);
     }
     
+    @Slave
+    @Override
+    public User queryByUidFromDB(Long uid) {
+        return userMapper.selectByUid(uid);
+    }
+    
     private void delUserOauthBindAndClearToken(List<UserOauthBind> userOauthBinds) {
         userOauthBinds.parallelStream().forEach(e -> {
             String thirdId = e.getThirdId();

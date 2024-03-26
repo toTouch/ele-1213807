@@ -51,6 +51,12 @@ public interface CommonConstant {
     Integer DEL_N = 0;
 
     Integer DEL_Y = 1;
+    
+    /**
+     * 时间单位 0：分钟，1：小时
+     */
+    Integer TIME_UNIT_MINUTES = 0;
+    Integer TIME_UNIT_HOURS = 1;
 
     /**
      * 版本

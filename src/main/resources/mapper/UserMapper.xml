@@ -298,6 +298,11 @@
 		</if>
 	</select>
 	
+	<select id="selectByUid" resultType="com.xiliulou.electricity.entity.User">
+		<include refid="selectUser"/>
+		where del_flag = 0 and uid = #{uid}
+	</select>
+	
 	<update id="updatePhoneByUid">
 		update t_user set phone=#{newPhone},update_time=#{updateTime} where uid=#{uid} and tenant_id = #{tenantId}
 	</update>
