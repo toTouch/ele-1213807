@@ -12,6 +12,7 @@ import com.xiliulou.electricity.request.activity.InvitationActivityAnalysisReque
 import com.xiliulou.electricity.service.InvitationActivityJoinHistoryService;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.utils.DateUtils;
+import com.xiliulou.electricity.vo.FinalJoinInvitationActivityHistoryVO;
 import com.xiliulou.electricity.vo.InvitationActivityJoinHistoryVO;
 import com.xiliulou.electricity.vo.activity.InvitationActivityAnalysisAdminVO;
 import lombok.extern.slf4j.Slf4j;
@@ -287,5 +288,17 @@ public class InvitationActivityJoinHistoryServiceImpl implements InvitationActiv
     @Override
     public InvitationActivityJoinHistory queryByJoinUidAndActivityId(Long joinUid, Long activityId) {
         return invitationActivityJoinHistoryMapper.selectByJoinUidAndActivityId(joinUid, activityId);
+    }
+    
+    @Slave
+    @Override
+    public FinalJoinInvitationActivityHistoryVO queryFinalHistoryByJoinUid(Long uid, Integer tenantId) {
+        return invitationActivityJoinHistoryMapper.selectFinalHistoryByJoinUid(uid, tenantId);
+    }
+    
+    @Slave
+    @Override
+    public InvitationActivityJoinHistory querySuccessHistoryByJoinUid(Long uid, Integer tenantId) {
+        return invitationActivityJoinHistoryMapper.selectSuccessHistoryByJoinUid(uid, tenantId);
     }
 }

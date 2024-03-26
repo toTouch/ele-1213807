@@ -34,6 +34,7 @@ import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.ChannelActivityCodeVo;
 import com.xiliulou.electricity.vo.ChannelActivityHistoryExcelVo;
 import com.xiliulou.electricity.vo.ChannelActivityHistoryVo;
+import com.xiliulou.electricity.vo.FinalJoinChannelActivityHistoryVO;
 import com.xiliulou.electricity.vo.UserInfoExcelVO;
 import org.apache.commons.collections.ArrayStack;
 import org.apache.commons.collections.CollectionUtils;
@@ -511,7 +512,19 @@ public class ChannelActivityHistoryServiceImpl implements ChannelActivityHistory
 
         return Triple.of(true, "", count);
     }
-
+    
+    @Slave
+    @Override
+    public FinalJoinChannelActivityHistoryVO queryFinalHistoryByJoinUid(Long uid, Integer tenantId) {
+        return channelActivityHistoryMapper.selectFinalHistoryByJoinUid(uid, tenantId);
+    }
+    
+    @Slave
+    @Override
+    public ChannelActivityHistory querySuccessHistoryByJoinUid(Long uid, Integer tenantId) {
+        return channelActivityHistoryMapper.selectSuccessHistoryByJoinUid(uid, tenantId);
+    }
+    
     private String queryStatus(Integer status) {
         String result = "";
         switch (status) {

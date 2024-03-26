@@ -41,8 +41,6 @@ public interface MerchantJoinRecordMapper extends BaseMapper<MerchantJoinRecord>
     
     MerchantJoinRecord selectByJoinUid(Long joinUid);
     
-    //    Integer updateById(MerchantJoinRecord record);
-    
     Integer countByCondition(MerchantPromotionScanCodeQueryModel queryModel);
     
     List<MerchantJoinRecordVO> countByMerchantIdList(MerchantJoinRecordQueryMode joinRecordQueryMode);

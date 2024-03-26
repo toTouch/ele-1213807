@@ -5,6 +5,7 @@ import java.util.List;
 import com.xiliulou.electricity.entity.ChannelActivityHistory;
 import com.xiliulou.electricity.query.ChannelActivityHistoryQuery;
 import com.xiliulou.electricity.vo.ChannelActivityHistoryVo;
+import com.xiliulou.electricity.vo.FinalJoinChannelActivityHistoryVO;
 import org.apache.ibatis.annotations.Param;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 
@@ -80,4 +81,8 @@ public interface ChannelActivityHistoryMapper extends BaseMapper<ChannelActivity
     List<ChannelActivityHistoryVo> queryActivityHistoryList(ChannelActivityHistoryQuery channelActivityHistoryQuery);
 
     Long queryActivityHistoryCount(ChannelActivityHistoryQuery channelActivityHistoryQuery);
+    
+    FinalJoinChannelActivityHistoryVO selectFinalHistoryByJoinUid(@Param("joinUid") Long joinUid, @Param("tenantId")Integer tenantId);
+    
+    ChannelActivityHistory selectSuccessHistoryByJoinUid(@Param("joinUid") Long joinUid, @Param("tenantId")Integer tenantId);
 }

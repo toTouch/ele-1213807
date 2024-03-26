@@ -93,9 +93,6 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
     private InvitationActivityService invitationActivityService;
 
     @Autowired
-    private UserBatteryMemberCardService userBatteryMemberCardService;
-
-    @Autowired
     private InvitationActivityJoinHistoryService invitationActivityJoinHistoryService;
 
     @Autowired
@@ -1063,7 +1060,7 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
 
         //是否购买的是活动指定的套餐
         List<Long> memberCardIds = invitationActivityMemberCardService.selectMemberCardIdsByActivityId(activityJoinHistory.getActivityId());
-        if (CollectionUtils.isEmpty(memberCardIds) || !memberCardIds.contains(electricityMemberCardOrder.getMemberCardId().longValue())) {
+        if (CollectionUtils.isEmpty(memberCardIds) || !memberCardIds.contains(electricityMemberCardOrder.getMemberCardId())) {
             log.info("INVITATION ACTIVITY INFO!invite fail,activityId={},membercardId={},uid={}", activityJoinHistory.getActivityId(), electricityMemberCardOrder.getMemberCardId(), userInfo.getUid());
             return;
         }
@@ -1243,12 +1240,19 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
             } else {
                 //非首次购买需要判断 首次购买是否成功（同一个邀请人下 所有活动的首次）
                 if (!activityJoinHistoryStatusSet.contains(InvitationActivityJoinHistory.STATUS_SUCCESS)) {
-                    log.error("Invitation activity error! Unsuccessful join the first activity, activity join fail,activityHistoryId={},uid={}", activityJoinHistory.getId(),
+                    log.error("Invitation activity error! Unsuccessful join renewal activity, activity join fail,activityHistoryId={},uid={}", activityJoinHistory.getId(),
                             userInfo.getUid());
                     return;
                 }
                 
-                log.info("handle invitation activity for renewal package. join record id = {}, join uid = {}, invitor uid = {}", activityJoinHistory.getRecordId(),
+                // 如果修改了邀请人(成功的记录的del_flag = 1)，对原邀请人不进行返利
+                if (Objects.equals(activityJoinHistory.getDelFlag(), InvitationActivityJoinHistory.DEL_DEL)) {
+                    log.warn("Invitation activity error! inviter has been modified,activityHistoryId={},uid={}, inviter uid = {}", activityJoinHistory.getId(), userInfo.getUid(),
+                            activityJoinHistory.getUid());
+                    return;
+                }
+                
+                log.info("handle invitation activity for renewal package. join record id = {}, join uid = {}, inviter uid = {}", activityJoinHistory.getRecordId(),
                         activityJoinHistory.getJoinUid(), activityJoinHistory.getUid());
     
                 rewardAmount = invitationActivity.getOtherReward();

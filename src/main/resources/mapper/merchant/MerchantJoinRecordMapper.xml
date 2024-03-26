@@ -56,60 +56,6 @@
         where id = #{id}
     </update>
     
-    <!--    <update id="updateById">
-            update t_merchant_join_record
-            <set>
-                <if test="merchant_id != null">
-                    status = #{merchantId},
-                </if>
-                <if test="channelEmployeeUid != null">
-                    channel_employee_uid = #{channelEmployeeUid},
-                </if>
-                <if test="placeId != null">
-                    place_id = #{placeId},
-                </if>
-                <if test="inviterUid != null">
-                    inviter_uid = #{inviterUid},
-                </if>
-                <if test="inviterType != null">
-                    inviter_type = #{inviterType},
-                </if>
-                <if test="joinUid != null">
-                    join_uid = #{joinUid},
-                </if>
-                <if test="startTime != null">
-                    start_time = #{startTime},
-                </if>
-                <if test="expiredTime != null">
-                    expired_time = #{expiredTime},
-                </if>
-                <if test="status != null">
-                    status = #{status},
-                </if>
-                <if test="protectionTime != null">
-                    protection_time = #{protectionTime},
-                </if>
-                <if test="protectionStatus != null">
-                    protection_status = #{protectionStatus},
-                </if>
-                <if test="delFlag != null">
-                    del_flag = #{delFlag},
-                </if>
-                <if test="updateTime  != null">
-                    update_time = #{updateTime},
-                </if>
-                <if test="tenantId != null">
-                    tenant_id = #{tenantId},
-                </if>
-                <if test="remark != null and remark != ''">
-                remark = #{remark},
-                </if>
-            </set>
-            <where>
-                id = #{id}
-            </where>
-        </update>-->
-    
     <select id="existsInProtectionTimeByJoinUid" resultType="java.lang.Integer">
         select 1
         from t_merchant_join_record

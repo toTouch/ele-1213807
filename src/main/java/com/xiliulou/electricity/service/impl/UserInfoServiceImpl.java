@@ -43,6 +43,8 @@ import com.xiliulou.electricity.entity.FranchiseeInsurance;
 import com.xiliulou.electricity.entity.FranchiseeUserInfo;
 import com.xiliulou.electricity.entity.FreeDepositOrder;
 import com.xiliulou.electricity.entity.InvitationActivityJoinHistory;
+import com.xiliulou.electricity.entity.JoinShareActivityHistory;
+import com.xiliulou.electricity.entity.JoinShareMoneyActivityHistory;
 import com.xiliulou.electricity.entity.RentBatteryOrder;
 import com.xiliulou.electricity.entity.RentCarOrder;
 import com.xiliulou.electricity.entity.Store;
@@ -136,6 +138,8 @@ import com.xiliulou.electricity.vo.DetailsBatteryInfoVo;
 import com.xiliulou.electricity.vo.DetailsCarInfoVo;
 import com.xiliulou.electricity.vo.DetailsUserInfoVo;
 import com.xiliulou.electricity.vo.EleBatteryServiceFeeVO;
+import com.xiliulou.electricity.vo.FinalJoinChannelActivityHistoryVO;
+import com.xiliulou.electricity.vo.FinalJoinInvitationActivityHistoryVO;
 import com.xiliulou.electricity.vo.FinalJoinShareActivityHistoryVo;
 import com.xiliulou.electricity.vo.FinalJoinShareMoneyActivityHistoryVo;
 import com.xiliulou.electricity.vo.FreeDepositUserInfoVo;
@@ -2948,17 +2952,15 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         }
         
         //渠道活动
-        ChannelActivityHistory channelActivityHistory = channelActivityHistoryService.queryByUid(uid);
-        if (Objects.nonNull(channelActivityHistory)) {
-            UserInfo userInfo = this.queryByUidFromCache(channelActivityHistory.getInviteUid());
-            return Objects.isNull(userInfo) ? "" : userInfo.getName();
+        FinalJoinChannelActivityHistoryVO finalJoinChannelActivityHistoryVO = channelActivityHistoryService.queryFinalHistoryByJoinUid(uid, tenantId);
+        if (Objects.nonNull(finalJoinChannelActivityHistoryVO)) {
+            return finalJoinChannelActivityHistoryVO.getUserName();
         }
-        
+    
         //套餐返现
-        InvitationActivityJoinHistory invitationActivityJoinHistory = invitationActivityJoinHistoryService.selectByJoinUid(uid);
-        if (Objects.nonNull(invitationActivityJoinHistory)) {
-            UserInfo userInfo = this.queryByUidFromCache(invitationActivityJoinHistory.getUid());
-            return Objects.isNull(userInfo) ? "" : userInfo.getName();
+        FinalJoinInvitationActivityHistoryVO finalJoinInvitationActivityHistoryVO = invitationActivityJoinHistoryService.queryFinalHistoryByJoinUid(uid, tenantId);
+        if (Objects.nonNull(finalJoinInvitationActivityHistoryVO)) {
+            return finalJoinInvitationActivityHistoryVO.getUserName();
         }
         
         // 商户活动
@@ -3077,5 +3079,37 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     @Override
     public Integer updatePhoneByUid(Integer tenantId, Long uid, String newPhone) {
         return userInfoMapper.updatePhoneByUid(tenantId, uid, newPhone, System.currentTimeMillis());
+    }
+    
+    @Override
+    public Boolean canModifyInviter(Long uid) {
+        Integer tenantId = TenantContextHolder.getTenantId();
+        
+        JoinShareActivityHistory joinShareActivityHistory = joinShareActivityHistoryService.querySuccessHistoryByJoinUid(uid, tenantId);
+        if (Objects.nonNull(joinShareActivityHistory)) {
+            return Boolean.TRUE;
+        }
+    
+        JoinShareMoneyActivityHistory joinShareMoneyActivityHistory = joinShareMoneyActivityHistoryService.querySuccessHistoryByJoinUid(uid, tenantId);
+        if (Objects.nonNull(joinShareMoneyActivityHistory)) {
+            return Boolean.TRUE;
+        }
+    
+        ChannelActivityHistory channelActivityHistory = channelActivityHistoryService.querySuccessHistoryByJoinUid(uid, tenantId);
+        if (Objects.nonNull(channelActivityHistory)) {
+            return Boolean.TRUE;
+        }
+    
+        InvitationActivityJoinHistory invitationActivityJoinHistory = invitationActivityJoinHistoryService.querySuccessHistoryByJoinUid(uid, tenantId);
+        if (Objects.nonNull(invitationActivityJoinHistory)) {
+            return Boolean.TRUE;
+        }
+    
+        String merchantName = merchantJoinRecordService.queryMerchantNameByJoinUid(uid, MerchantJoinRecordConstant.STATUS_SUCCESS);
+        if (Objects.nonNull(merchantName)) {
+            return Boolean.TRUE;
+        }
+        
+        return Boolean.FALSE;
     }
 }
