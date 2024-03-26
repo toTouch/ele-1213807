@@ -4,11 +4,14 @@ import cn.hutool.core.date.DateUtil;
 import lombok.extern.slf4j.Slf4j;
 
 import java.text.SimpleDateFormat;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
@@ -28,6 +31,8 @@ public class DateUtils {
     
     static DateTimeFormatter MILLS_FORMAT_DATE = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
     static SimpleDateFormat simpleDateFormatYearAndMonth = new SimpleDateFormat("yyyy-MM-dd");
+    
+    static final ZoneId CHINA_ZONE_ID = ZoneId.of("Asia/Shanghai");
     
     /**
      * 解析毫秒的时间字符串
@@ -182,4 +187,17 @@ public class DateUtils {
         return simpleDateFormatYearAndMonth.format(timeStamp);
     }
     
+    public static long getEndOfDayTimestamp(long timestamp){
+        // 将时间戳转换为Instant对象
+        Instant instant = Instant.ofEpochMilli(timestamp);
+        
+        // 转换为LocalDateTime并设置为当天的开始时间
+        LocalDateTime localDateTime = instant.atZone(CHINA_ZONE_ID).toLocalDate().atStartOfDay();
+        
+        // 计算当天的最后一刻（即23:59:59.999）
+        LocalDateTime endOfDay = localDateTime.plus(1, ChronoUnit.DAYS).minus(1, ChronoUnit.MILLIS);
+        
+        // 再次转换回时间戳
+        return endOfDay.atZone(CHINA_ZONE_ID).toInstant().toEpochMilli();
+    }
 }

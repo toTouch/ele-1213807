@@ -133,6 +133,21 @@ public class User {
 	public static final Integer TYPE_USER_NORMAL_WX_PRO = 11;
 	
 	public static final Integer TYPE_USER_NORMAL_ADMIN = 1;
+	
+	/**
+	 * 商户
+	 */
+	public static final Integer TYPE_USER_MERCHANT = 12;
+	
+	/**
+	 * 渠道员
+	 */
+	public static final Integer TYPE_USER_CHANNEL = 13;
+	
+	/**
+	 * 商户员工
+	 */
+	public static final Integer TYPE_USER_MERCHANT_EMPLOYEE = 14;
 
 
 	/**
