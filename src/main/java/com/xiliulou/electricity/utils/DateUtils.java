@@ -3,6 +3,7 @@ package com.xiliulou.electricity.utils;
 import cn.hutool.core.date.DateUtil;
 import lombok.extern.slf4j.Slf4j;
 
+import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -26,6 +27,7 @@ public class DateUtils {
     }
     
     static DateTimeFormatter MILLS_FORMAT_DATE = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
+    static SimpleDateFormat simpleDateFormatYearAndMonth = new SimpleDateFormat("yyyy-MM-dd");
     
     /**
      * 解析毫秒的时间字符串
@@ -174,6 +176,10 @@ public class DateUtils {
      */
     public static long getDayStartTimeByLocalDate(LocalDate localDate) {
         return localDate.atStartOfDay().toEpochSecond(ZoneOffset.of("+8")) * 1000;
+    }
+    
+    public static String getYearAndMonthAndDayByTimeStamps(Long timeStamp) {
+        return simpleDateFormatYearAndMonth.format(timeStamp);
     }
     
 }
