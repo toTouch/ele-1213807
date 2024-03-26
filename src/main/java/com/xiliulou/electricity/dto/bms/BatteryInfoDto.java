@@ -23,7 +23,7 @@ public class BatteryInfoDto {
     /**
      * soc
      */
-    private Integer soc;
+    private Double soc;
     /**
      * 电池容量
      */
