@@ -3,40 +3,66 @@ package com.xiliulou.electricity.controller.merchant;
 import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.annotation.Log;
+import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.entity.User;
-import com.xiliulou.electricity.request.merchant.MerchantAttrRequest;
-import com.xiliulou.electricity.service.merchant.MerchantAttrService;
-import com.xiliulou.electricity.tenant.TenantContextHolder;
+import com.xiliulou.electricity.request.merchant.RebateConfigRequest;
+import com.xiliulou.electricity.service.merchant.RebateConfigService;
 import com.xiliulou.electricity.utils.SecurityUtils;
+import com.xiliulou.electricity.validator.CreateGroup;
+import com.xiliulou.electricity.validator.UpdateGroup;
 import com.xiliulou.security.bean.TokenUser;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.annotation.Resource;
+import java.util.Collections;
 import java.util.Objects;
 
 /**
- * @ClassName: JsonMerchantController
- * @description: 商户等级
- * @author: renhang
- * @create: 2024-03-26 13:37
+ * 返利配置
+ *
  */
+@Slf4j
 @RestController
-public class JsonMerchantController extends BaseController {
+public class JsonMerchantRebateConfigController extends BaseController {
     
     @Autowired
-    private MerchantAttrService merchantAttrService;
-    
+    private RebateConfigService rebateConfigService;
     
     /**
-     * 查询商户升级条件
+     * 获取返利配置列表
+     *
+     * @return
      */
-    @PutMapping("/admin/merchantAttr/upgradeConditionInfo")
-    public R upgradeConditionInfo() {
+    @GetMapping("/admin/rebateConfig/list")
+    public R getRebateConfigList(@RequestParam(value = "level", required = false) String level, @RequestParam(value = "mid", required = false) Long mid) {
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        
+        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
+            return R.ok(Collections.emptyList());
+        }
+        
+        RebateConfigRequest rebateConfigRequest = RebateConfigRequest.builder().mid(mid).level(level).delFlag(CommonConstant.DEL_N).build();
+        
+        return R.ok(rebateConfigService.listByPage(rebateConfigRequest));
+    }
+    
+    /**
+     * 保存返利配置
+     *
+     * @return
+     */
+    @PutMapping("/admin/rebateConfig/save")
+    @Log(title = "新增返利配置")
+    public R save(@RequestBody @Validated(CreateGroup.class) RebateConfigRequest request) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
@@ -46,15 +72,17 @@ public class JsonMerchantController extends BaseController {
             return R.ok();
         }
         
-        return R.ok(merchantAttrService.queryUpgradeCondition(TenantContextHolder.getTenantId()));
+        return returnTripleResult(rebateConfigService.save(request));
     }
     
     /**
-     * 修改商户升级条件
+     * 修改返利配置
+     *
+     * @return
      */
-    @PutMapping("/admin/merchantAttr/upgradeCondition")
-    @Log(title = "修改商户升级条件")
-    public R updateUpgradeCondition(@RequestParam("condition") Integer condition) {
+    @PutMapping("/admin/rebateConfig/update")
+    @Log(title = "修改返利配置")
+    public R modify(@RequestBody @Validated(UpdateGroup.class) RebateConfigRequest request) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
@@ -64,27 +92,6 @@ public class JsonMerchantController extends BaseController {
             return R.ok();
         }
         
-        return returnTripleResult(merchantAttrService.updateUpgradeCondition(TenantContextHolder.getTenantId(), condition));
+        return returnTripleResult(rebateConfigService.modify(request));
     }
-    
-    /**
-     * 修改邀请条件
-     */
-    @PutMapping("/admin/merchantAttr/invitationCondition")
-    @Log(title = "修改邀请条件")
-    public R updateInvitationCondition(@RequestBody @Validated MerchantAttrRequest request) {
-        TokenUser user = SecurityUtils.getUserInfo();
-        if (Objects.isNull(user)) {
-            return R.fail("ELECTRICITY.0001", "未找到用户");
-        }
-        
-        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
-            return R.ok();
-        }
-        
-        return returnTripleResult(merchantAttrService.updateInvitationCondition(request));
-    }
-    
-    
-    
 }
