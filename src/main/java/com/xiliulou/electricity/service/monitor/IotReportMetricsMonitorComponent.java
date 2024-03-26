@@ -16,8 +16,6 @@ import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.util.SortedMap;
 import java.util.concurrent.TimeUnit;
 
@@ -41,24 +39,15 @@ public class IotReportMetricsMonitorComponent {
     @Autowired
     private MetricRegistry metricRegistry;
     
-    static final Gauge IOT_REPORT_COUNT = Gauge.build().name("iotReportCount").help("count metric").register();
+    static final Gauge IOT_REPORT_METRIC = Gauge.build().name("iotReportMetric").labelNames("count", "meanRate", "oneMinuteRate","fiveMinuteRate").help("iot report metric").register();
     
-    static final Gauge IOT_MEAN_RATE = Gauge.build().name("iotReportMeanRate").help("meanRate metric").register();
-    
-    static final Gauge IOT_ONE_MINUTE_RATE = Gauge.build().name("iotReportOneMinuteRate").help("oneMinuteRate metric").register();
-    
-    static final Gauge IOT_FIVE_MINUTE_RATE = Gauge.build().name("iotReportFiveMinuteRate").help("fiveMinuteRate metric").register();
-    
-    private XllThreadPoolExecutorService xllThreadPoolExecutorService = XllThreadPoolExecutors.newFixedThreadPool("iot_report_monitor_pOOL", 1, "iot_report_monitor");
+    private XllThreadPoolExecutorService xllThreadPoolExecutorService = XllThreadPoolExecutors.newFixedThreadPool("iot_report_monitor_pool", 1, "iot_report_monitor");
     
     private volatile boolean shutdown = false;
     
     @PostConstruct
     public void init() {
-        collectorRegistry.register(IOT_REPORT_COUNT);
-        collectorRegistry.register(IOT_MEAN_RATE);
-        collectorRegistry.register(IOT_ONE_MINUTE_RATE);
-        collectorRegistry.register(IOT_FIVE_MINUTE_RATE);
+        collectorRegistry.register(IOT_REPORT_METRIC);
         xllThreadPoolExecutorService.execute(this::timeTaskCheckThreadPool);
     }
     
@@ -68,18 +57,16 @@ public class IotReportMetricsMonitorComponent {
             if (!DataUtil.mapIsUsable(meterMap)) {
                 sleep();
             }
-            
+    
             meterMap.forEach((k, v) -> {
                 log.error("===============vvv====================={}", JsonUtil.toJson(v));
-                IOT_REPORT_COUNT.set(v.getCount());
-                IOT_MEAN_RATE.set(v.getMeanRate());
-                IOT_ONE_MINUTE_RATE.set(v.getOneMinuteRate());
-                IOT_FIVE_MINUTE_RATE.set(v.getFiveMinuteRate());
+                IOT_REPORT_METRIC
+                        .labels(String.valueOf(v.getCount()), String.valueOf(v.getMeanRate()), String.valueOf(v.getOneMinuteRate()), String.valueOf(v.getFiveMinuteRate()));
+        
             });
             
             sleep();
         }
-        
     }
     
     public void destroy() {
