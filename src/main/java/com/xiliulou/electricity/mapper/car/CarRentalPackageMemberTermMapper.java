@@ -161,4 +161,6 @@ public interface CarRentalPackageMemberTermMapper {
      * @return
      */
     List<CarRentalPackageMemberTermPo> selectListUserPayCount(@Param("uidList") List<Long> uidList);
+    
+    Integer checkUserByRentalPackageId(Long packageId);
 }

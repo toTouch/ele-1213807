@@ -8,6 +8,7 @@ import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.FranchiseeInsurance;
 import com.xiliulou.electricity.entity.User;
+import com.xiliulou.electricity.query.FranchiseeInsuranceIdsRequest;
 import com.xiliulou.electricity.query.FranchiseeInsuranceAddAndUpdate;
 import com.xiliulou.electricity.query.FranchiseeInsuranceQuery;
 import com.xiliulou.electricity.service.FranchiseeInsuranceService;
@@ -247,6 +248,25 @@ public class JsonAdminFranchiseeInsuranceController extends BaseController {
     @GetMapping("/admin/franchiseeInsurance/selectInsuranceByUid")
     public R selectInsuranceByUid(@RequestParam(value = "uid") Long uid, @RequestParam(value = "type") Integer type) {
         return returnTripleResult(franchiseeInsuranceService.selectInsuranceByUid(uid, type));
+    }
+    
+    /**
+     * 保险列表orderIds下拉框
+     * @param size   size
+     * @param offset offset
+     * @return R
+     */
+    @GetMapping("/admin/franchiseeInsurance/queryInsuranceIds")
+    public R queryInsuranceIds(@RequestParam(value = "size") Long size, @RequestParam("offset") Long offset,
+            @RequestParam(value = "type",required = false) Integer type,
+            @RequestParam(value = "name",required = false) String name) {
+        if (size < 0 || size > 50) {
+            size = 10L;
+        }
+        if (offset < 0) {
+            offset = 0L;
+        }
+        return R.ok(franchiseeInsuranceService.queryInsuranceIds(new FranchiseeInsuranceIdsRequest(size, offset,type,name)));
     }
 
 

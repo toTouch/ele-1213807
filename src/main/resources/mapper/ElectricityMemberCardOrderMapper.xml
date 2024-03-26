@@ -449,7 +449,11 @@
     </select>
 
     <select id="checkOrderByMembercardId" resultType="Integer">
-        select 1 from t_electricity_member_card_order where member_card_id=#{membercardId} LIMIT 1
+        select 1 from t_electricity_member_card_order where member_card_id=#{membercardId}
+        and use_status in('${@com.xiliulou.electricity.enums.UseStateEnum@UN_USED.code}'
+        ,'${@com.xiliulou.electricity.enums.UseStateEnum@IN_USE.code}')
+        and status = 1
+        LIMIT 1
     </select>
 
     <update id="updateStatusByOrderNo">
