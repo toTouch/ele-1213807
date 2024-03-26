@@ -1010,14 +1010,21 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
                                 remainingNumber += memberCardOrder.getValidDays();
                             }
                         }
-        
+                        
                         // 修改用户套餐信息
                         UserBatteryMemberCard userBatteryMemberCardUpdate = new UserBatteryMemberCard();
                         userBatteryMemberCardUpdate.setId(userBatteryMemberCard.getId());
                         userBatteryMemberCardUpdate.setUid(userInfo.getUid());
                         userBatteryMemberCardUpdate.setUpdateTime(System.currentTimeMillis());
-                        userBatteryMemberCardUpdate.setMemberCardExpireTime(userBatteryMemberCard.getMemberCardExpireTime() - expireTimeSum);
-                        userBatteryMemberCardUpdate.setRemainingNumber(userBatteryMemberCard.getRemainingNumber() - remainingNumber);
+                        
+                        if (Objects.nonNull(userBatteryMemberCard.getMemberCardExpireTime())) {
+                            userBatteryMemberCardUpdate.setMemberCardExpireTime(userBatteryMemberCard.getMemberCardExpireTime() - expireTimeSum);
+                        }
+                        
+                        if (Objects.nonNull(userBatteryMemberCard.getRemainingNumber())) {
+                            userBatteryMemberCardUpdate.setRemainingNumber(userBatteryMemberCard.getRemainingNumber() - remainingNumber);
+                        }
+                        
                         userBatteryMemberCardService.updateByUid(userBatteryMemberCardUpdate);
                     }
                     
