@@ -52,6 +52,7 @@ import com.xiliulou.electricity.service.UserBatteryMemberCardService;
 import com.xiliulou.electricity.service.UserCarMemberCardService;
 import com.xiliulou.electricity.service.UserCarService;
 import com.xiliulou.electricity.service.UserDataScopeService;
+import com.xiliulou.electricity.service.UserInfoExtraService;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.UserOauthBindService;
 import com.xiliulou.electricity.service.UserRoleService;
@@ -168,6 +169,9 @@ public class UserServiceImpl implements UserService {
     
     @Autowired
     EnterpriseChannelUserService enterpriseChannelUserService;
+    
+    @Autowired
+    private UserInfoExtraService userInfoExtraService;
 
     /**
      * 通过ID查询单条数据从缓存
@@ -890,6 +894,8 @@ public class UserServiceImpl implements UserService {
         userBatteryMemberCardService.deleteByUid(uid);
 
         userCarService.deleteByUid(uid);
+        
+        userInfoExtraService.deleteByUid(uid);
 
         return Triple.of(true, null, null);
     }

@@ -96,7 +96,6 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
     
     @Override
     public Integer deleteByUid(Long uid) {
-        //        int delete = this.userInfoExtraMapper.deleteByUid(uid);
         UserInfoExtra userInfoExtra = new UserInfoExtra();
         userInfoExtra.setUid(uid);
         userInfoExtra.setDelFlag(User.DEL_DEL);

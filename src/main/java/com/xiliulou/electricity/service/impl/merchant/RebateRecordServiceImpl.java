@@ -174,10 +174,10 @@ public class RebateRecordServiceImpl implements RebateRecordService {
         //未结算
         if (Objects.equals(rebateRecord.getStatus(), MerchantConstant.MERCHANT_REBATE_STATUS_NOT_SETTLE)) {
             //商户返利
-           // merchantUserAmountService.addAmount(merchantRebate, rebateRecord.getMerchantUid(), rebateRecord.getTenantId().longValue());
+            merchantUserAmountService.addAmount(merchantRebate, rebateRecord.getMerchantUid(), rebateRecord.getTenantId().longValue());
             
             //渠道员返利
-            //channelEmployeeAmountService.addAmount(channelerRebate, rebateRecord.getChanneler(), rebateRecord.getTenantId().longValue());
+            channelEmployeeAmountService.addAmount(channelerRebate, rebateRecord.getChanneler(), rebateRecord.getTenantId().longValue());
         }
         
         RebateRecord rebateRecordUpdate = new RebateRecord();

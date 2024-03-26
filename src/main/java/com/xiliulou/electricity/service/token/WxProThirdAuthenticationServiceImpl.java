@@ -94,6 +94,9 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
 
     @Autowired
     UserBatteryMemberCardService userBatteryMemberCardService;
+    
+    @Autowired
+    private UserInfoExtraService userInfoExtraService;
 
     @Override
     public SecurityUser registerUserAndLoadUser(HashMap<String, Object> authMap) {
@@ -188,7 +191,8 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
                             .authStatus(UserInfo.AUTH_STATUS_STATUS_INIT).delFlag(User.DEL_NORMAL)
                             .usableStatus(UserInfo.USER_USABLE_STATUS).tenantId(tenantId).build();
                     UserInfo userInfo = userInfoService.insert(insertUserInfo);
-
+                    
+                    userInfoExtraService.insert(buildUserInfoExtra(uid, tenantId));
                 }
                 
                 if(StringUtils.isBlank(userOauthBind.getThirdId())){
@@ -314,6 +318,7 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
                             .delFlag(User.DEL_NORMAL).usableStatus(UserInfo.USER_USABLE_STATUS).tenantId(tenantId)
                             .build();
                     UserInfo userInfo = userInfoService.insert(insertUserInfo);
+                    userInfoExtraService.insert(buildUserInfoExtra(uid, tenantId));
 
 //                    Pair<Boolean, FranchiseeUserInfo> existFranchiseeUserInfo = checkFranchiseeUserInfoExists(
 //                            insertUserInfo.getId());
@@ -380,6 +385,8 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
                 .tenantId(tenantId).delFlag(User.DEL_NORMAL)
                 .usableStatus(UserInfo.USER_USABLE_STATUS).build();
         UserInfo userInfo = userInfoService.insert(insertUserInfo);
+        
+        userInfoExtraService.insert(buildUserInfoExtra(insert.getUid(), tenantId));
 
         //参加新用户活动
         NewUserActivity newUserActivity = newUserActivityService.queryActivity();
@@ -464,5 +471,15 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
             cipher.init(Cipher.DECRYPT_MODE, keySpec, params);
             return new String(cipher.doFinal(encData), "UTF-8");
         }
+    }
+    
+    private UserInfoExtra buildUserInfoExtra(Long uid, Integer tenantId) {
+        UserInfoExtra userInfoExtra = new UserInfoExtra();
+        userInfoExtra.setUid(uid);
+        userInfoExtra.setDelFlag(User.DEL_NORMAL);
+        userInfoExtra.setTenantId(tenantId);
+        userInfoExtra.setCreateTime(System.currentTimeMillis());
+        userInfoExtra.setUpdateTime(System.currentTimeMillis());
+        return userInfoExtra;
     }
 }
