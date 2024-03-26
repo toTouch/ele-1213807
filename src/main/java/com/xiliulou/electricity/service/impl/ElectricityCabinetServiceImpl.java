@@ -28,6 +28,7 @@ import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.ElectricityIotConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.constant.OtaConstant;
+import com.xiliulou.electricity.constant.RegularConstant;
 import com.xiliulou.electricity.constant.StringConstant;
 import com.xiliulou.electricity.entity.BatteryGeo;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
@@ -62,6 +63,7 @@ import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.UserBattery;
 import com.xiliulou.electricity.entity.UserBatteryMemberCard;
 import com.xiliulou.electricity.entity.UserInfo;
+import com.xiliulou.electricity.entity.merchant.MerchantPlaceFeeRecord;
 import com.xiliulou.electricity.enums.YesNoEnum;
 import com.xiliulou.electricity.enums.asset.StockStatusEnum;
 import com.xiliulou.electricity.exception.BizException;
@@ -129,6 +131,7 @@ import com.xiliulou.electricity.service.asset.AssetWarehouseService;
 import com.xiliulou.electricity.service.car.biz.CarRenalPackageSlippageBizService;
 import com.xiliulou.electricity.service.car.biz.CarRentalPackageMemberTermBizService;
 import com.xiliulou.electricity.service.excel.AutoHeadColumnWidthStyleStrategy;
+import com.xiliulou.electricity.service.merchant.MerchantPlaceFeeRecordService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DateUtils;
 import com.xiliulou.electricity.utils.DbUtils;
@@ -398,6 +401,12 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     @Autowired
     AssetWarehouseService assetWarehouseService;
     
+    @Resource
+    private MerchantPlaceFeeRecordService merchantPlaceFeeRecordService;
+    
+    @Resource
+    private MerchantAreaService merchantAreaService;
+    
     /**
      * 根据主键ID集获取柜机基本信息
      *
@@ -556,6 +565,20 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             return R.fail("100377", "参数校验错误");
         }
     
+        //  如果场地费不为空则需要判断 不能小于零 小数最多两位  整数不能大于8位
+        if (Objects.nonNull(electricityCabinetAddAndUpdate.getPlaceFee())) {
+            // 场地费必须大于零
+            if (Objects.equals(electricityCabinetAddAndUpdate.getPlaceFee().compareTo(BigDecimal.ZERO), NumberConstant.MINUS_ONE)) {
+                return R.fail("120235", "场地费必须大于等于零");
+            }
+        
+            // 场地费不能是负数
+            String placeFeeStr = electricityCabinetAddAndUpdate.getPlaceFee().toString();
+            if (!RegularConstant.PLACE_PATTERN.matcher(placeFeeStr).matches()) {
+                return R.fail("120234", "场地费保留两位小数且整数部分不能超过8位");
+            }
+        }
+    
         //操作频繁
         boolean result = redisService.setNx(CacheConstant.ELE_EDIT_UID + user.getUid(), "1", 3 * 1000L, false);
         if (!result) {
@@ -569,7 +592,9 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         if (Objects.isNull(oldElectricityCabinet)) {
             return R.fail("ELECTRICITY.0005", "未找到换电柜");
         }
-        
+    
+        MerchantPlaceFeeRecord finalMerchantPlaceFeeRecord = getPlaceFeeRecord(oldElectricityCabinet, electricityCabinetAddAndUpdate, user);
+    
         //判断参数
         if (Objects.nonNull(electricityCabinetAddAndUpdate.getBusinessTimeType())) {
             if (Objects.equals(electricityCabinetAddAndUpdate.getBusinessTimeType(), ElectricityCabinetAddAndUpdate.ALL_DAY)) {
@@ -619,8 +644,10 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         }
         electricityCabinet.setUpdateTime(System.currentTimeMillis());
         electricityCabinet.setTenantId(TenantContextHolder.getTenantId());
+    
+        // 扩展新的修改方法  场地费和区域不为空也可修改
+        int update = electricityCabinetMapper.updateCabinetById(electricityCabinet);
         
-        int update = electricityCabinetMapper.updateEleById(electricityCabinet);
         DbUtils.dbOperateSuccessThen(update, () -> {
             
             //更新缓存
@@ -639,6 +666,11 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             
             //修改柜机服务时间信息
             electricityCabinetServerService.insertOrUpdateByElectricityCabinet(electricityCabinet, oldElectricityCabinet);
+    
+            // 增加场地费变更记录
+            if (Objects.nonNull(finalMerchantPlaceFeeRecord)) {
+                merchantPlaceFeeRecordService.asyncInsertOne(finalMerchantPlaceFeeRecord);
+            }
             
             //云端下发命令修改换电标准
             if (!Objects.equals(oldElectricityCabinet.getFullyCharged(), electricityCabinet.getFullyCharged())) {
@@ -648,6 +680,45 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             return null;
         });
         return R.ok();
+    }
+    
+    private MerchantPlaceFeeRecord getPlaceFeeRecord(ElectricityCabinet oldElectricityCabinet, ElectricityCabinetAddAndUpdate electricityCabinetAddAndUpdate, TokenUser user) {
+        BigDecimal oldFee = BigDecimal.ZERO;
+        BigDecimal newFee = BigDecimal.ZERO;
+        // 判断新的场地费用和就的场地费用是否存在变化如果存在变化则将变换存入到历史表
+        if (Objects.nonNull(oldElectricityCabinet.getPlaceFee())) {
+            oldFee = oldElectricityCabinet.getPlaceFee();
+        } else {
+            oldFee = new BigDecimal(NumberConstant.MINUS_ONE);
+        }
+        
+        if (Objects.nonNull(electricityCabinetAddAndUpdate.getPlaceFee())) {
+            newFee = electricityCabinetAddAndUpdate.getPlaceFee();
+        } else {
+            newFee = new BigDecimal(NumberConstant.MINUS_ONE);
+        }
+        
+        MerchantPlaceFeeRecord merchantPlaceFeeRecord = null;
+        // 场地费有变化则进行记录
+        if (!Objects.equals(newFee.compareTo(oldFee), NumberConstant.ZERO)) {
+            merchantPlaceFeeRecord = new MerchantPlaceFeeRecord();
+            merchantPlaceFeeRecord.setCabinetId(electricityCabinetAddAndUpdate.getId());
+            if (!Objects.equals(newFee.compareTo(BigDecimal.ZERO), NumberConstant.MINUS_ONE)) {
+                merchantPlaceFeeRecord.setNewPlaceFee(newFee);
+            }
+            if (!Objects.equals(oldFee.compareTo(BigDecimal.ZERO), NumberConstant.MINUS_ONE)) {
+                merchantPlaceFeeRecord.setOldPlaceFee(oldFee);
+            }
+            if (Objects.nonNull(user)) {
+                merchantPlaceFeeRecord.setModifyUserId(user.getUid());
+                merchantPlaceFeeRecord.setTenantId(oldElectricityCabinet.getTenantId());
+                long currentTimeMillis = System.currentTimeMillis();
+                merchantPlaceFeeRecord.setCreateTime(currentTimeMillis);
+                merchantPlaceFeeRecord.setUpdateTime(currentTimeMillis);
+            }
+        }
+        
+        return merchantPlaceFeeRecord;
     }
     
     @Override

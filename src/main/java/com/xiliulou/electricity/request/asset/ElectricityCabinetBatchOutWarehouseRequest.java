@@ -6,6 +6,7 @@ import lombok.Data;
 
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
+import java.math.BigDecimal;
 import java.util.List;
 
 @Data
@@ -80,4 +81,14 @@ public class ElectricityCabinetBatchOutWarehouseRequest {
      * 可用状态(0--启用，1--禁用)
      */
     private Integer usableStatus;
+    
+    /**
+     * 区域id
+     */
+    private Long areaId;
+    
+    /**
+     * 场地费
+     */
+    private BigDecimal placeFee;
 }
