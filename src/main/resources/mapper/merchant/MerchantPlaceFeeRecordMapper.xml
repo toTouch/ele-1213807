@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.merchant.MerchantPlaceFeeRecordMapper">
+    <insert id="insert">
+        insert into t_merchant_place_fee_record (cabinet_id, old_place_fee, new_place_fee, modify_user_id, tenant_id, create_time, update_time)
+        values (#{cabinetId}, #{oldPlaceFee}, #{newPlaceFee},
+                #{modifyUserId}, #{tenantId}, #{createTime}, #{updateTime})
+    </insert>
+    <insert id="batchInsert" >
+        insert into t_merchant_place_fee_record (cabinet_id, old_place_fee, new_place_fee, modify_user_id, tenant_id, create_time, update_time)
+        values
+        <foreach item="item" index="index" collection="list" separator=",">
+            (#{item.cabinetId}, #{item.oldPlaceFee}, #{item.newPlaceFee},
+            #{item.modifyUserId}, #{item.tenantId}, #{item.createTime}, #{item.updateTime})
+        </foreach>
+    </insert>
+    
+    <sql id="pageFilter">
+        <where>
+            del_flag = 0
+            and cabinet_id = #{cabinetId}
+            and tenant_id = #{tenantId}
+        </where>
+    </sql>
+    <select id="countTotal" resultType="java.lang.Integer">
+        SELECT
+        count(1)
+        FROM
+        t_merchant_place_fee_record
+        <include refid="pageFilter"/>
+    </select>
+    <sql id="column">
+        cabinet_id, old_place_fee, new_place_fee, modify_user_id, tenant_id, create_time, update_time
+    </sql>
+    <select id="selectListByPage" resultType="com.xiliulou.electricity.entity.merchant.MerchantPlaceFeeRecord">
+        SELECT
+        cabinet_id, old_place_fee, new_place_fee, modify_user_id, tenant_id, create_time, update_time
+        FROM
+        t_merchant_place_fee_record
+        <include refid="pageFilter"/>
+        order by create_time desc
+        <if test="offset != null and size != null">
+            limit #{offset}, #{size}
+        </if>
+    </select>
+    
+    <select id="existPlaceFeeByCabinetId" resultType="java.lang.Integer">
+        SELECT
+            count(1)
+        FROM
+            t_merchant_place_fee_record
+        where
+            new_place_fee >= 0
+           and cabinet_id in
+          <foreach collection="cabinetIdList" separator="," open="(" close=")" item="cabinetId">
+            #{cabinetId}
+          </foreach>
+    </select>
+</mapper>
