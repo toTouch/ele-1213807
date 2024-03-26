@@ -130,5 +130,9 @@ public interface UserService {
     
     Integer removeById(Long uid, Long updateTime);
     
+    Integer batchRemoveByUidList(List<Long> employeeUidList, long timeMillis);
+    
+    List<User> queryListByUidList(List<Long> employeeUidList, Integer tenantId);
+    
     User queryByUidFromDB(Long uid);
 }

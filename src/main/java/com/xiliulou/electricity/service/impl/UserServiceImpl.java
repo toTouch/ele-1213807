@@ -1066,6 +1066,17 @@ public class UserServiceImpl implements UserService {
         return userMapper.removeById(uid, updateTime);
     }
     
+    @Override
+    public Integer batchRemoveByUidList(List<Long> uidList, long updateTime) {
+        return userMapper.batchRemoveByUidList(uidList, updateTime);
+    }
+    
+    @Slave
+    @Override
+    public List<User> queryListByUidList(List<Long> employeeUidList, Integer tenantId) {
+        return userMapper.queryListByUidList(employeeUidList, tenantId);
+    }
+    
     @Slave
     @Override
     public User queryByUidFromDB(Long uid) {

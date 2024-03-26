@@ -572,6 +572,10 @@ public interface CacheConstant {
     
     String MERCHANT_PLACE_CABINET_DELETE_UID = "merchant_place_cabinet_delete_uid:";
     
+    String MERCHANT_PLACE_UPDATE_UID = "merchant_place_update_uid:";
+    
+    String CACHE_MERCHANT = "cache_merchant:";
+    
     String CACHE_MERCHANT_PLACE = "cache_merchant_place:";
     
     String CACHE_MERCHANT_AREA_SAVE_LOCK = "cache_merchant_area_save_lock:";
