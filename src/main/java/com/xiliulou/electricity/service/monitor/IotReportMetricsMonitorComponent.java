@@ -41,11 +41,13 @@ public class IotReportMetricsMonitorComponent {
     @Autowired
     private MetricRegistry metricRegistry;
     
-    static final Gauge IOT_MEAN_RATE = Gauge.build().name("meanRate").help("meanRate metric").register();
+    static final Gauge IOT_REPORT_COUNT = Gauge.build().name("iotReportCount").help("count metric").register();
     
-    static final Gauge IOT_ONE_MINUTE_RATE = Gauge.build().name("oneMinuteRate").help("oneMinuteRate metric").register();
+    static final Gauge IOT_MEAN_RATE = Gauge.build().name("iotReportMeanRate").help("meanRate metric").register();
     
-    static final Gauge IOT_FIVE_MINUTE_RATE = Gauge.build().name("fiveMinuteRate").help("fiveMinuteRate metric").register();
+    static final Gauge IOT_ONE_MINUTE_RATE = Gauge.build().name("iotReportOneMinuteRate").help("oneMinuteRate metric").register();
+    
+    static final Gauge IOT_FIVE_MINUTE_RATE = Gauge.build().name("iotReportFiveMinuteRate").help("fiveMinuteRate metric").register();
     
     private XllThreadPoolExecutorService xllThreadPoolExecutorService = XllThreadPoolExecutors.newFixedThreadPool("iot_report_monitor_pOOL", 1, "iot_report_monitor");
     
@@ -53,6 +55,7 @@ public class IotReportMetricsMonitorComponent {
     
     @PostConstruct
     public void init() {
+        collectorRegistry.register(IOT_REPORT_COUNT);
         collectorRegistry.register(IOT_MEAN_RATE);
         collectorRegistry.register(IOT_ONE_MINUTE_RATE);
         collectorRegistry.register(IOT_FIVE_MINUTE_RATE);
@@ -67,16 +70,8 @@ public class IotReportMetricsMonitorComponent {
             }
             
             meterMap.forEach((k, v) -> {
-                log.error("===============kkk====================={}", k);
                 log.error("===============vvv====================={}", JsonUtil.toJson(v));
-                String address = "0";
-                try {
-                    address = InetAddress.getLocalHost().getHostAddress();
-                } catch (UnknownHostException e) {
-                    log.error("ele error!not found address", e);
-                    return;
-                }
-                
+                IOT_REPORT_COUNT.set(v.getCount());
                 IOT_MEAN_RATE.set(v.getMeanRate());
                 IOT_ONE_MINUTE_RATE.set(v.getOneMinuteRate());
                 IOT_FIVE_MINUTE_RATE.set(v.getFiveMinuteRate());
