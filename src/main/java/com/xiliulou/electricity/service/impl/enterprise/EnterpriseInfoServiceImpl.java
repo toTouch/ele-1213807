@@ -988,7 +988,7 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
     
                     if (ObjectUtils.isNotEmpty(packages)) {
                         Long expireTimeSum = 0L;
-                        Integer remainingNumber = 0;
+                        Long remainingNumber = 0L;
         
                         for (UserBatteryMemberCardPackage memberCardPackage : packages) {
                             BatteryMemberCard batteryMemberCard1 = memberCardService.queryByIdFromCache(memberCardPackage.getMemberCardId());
@@ -1006,8 +1006,9 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
             
                             Long expireTime = batteryMemberCardService.transformBatteryMembercardEffectiveTime(batteryMemberCard1, memberCardOrder);
                             expireTimeSum += expireTime;
-                            if (Objects.nonNull(memberCardOrder.getValidDays())) {
-                                remainingNumber += memberCardOrder.getValidDays();
+                            // 剩余次数
+                            if (Objects.nonNull(memberCardOrder.getMaxUseCount())) {
+                                remainingNumber += memberCardOrder.getMaxUseCount();
                             }
                         }
                         
@@ -1021,7 +1022,7 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
                             userBatteryMemberCardUpdate.setMemberCardExpireTime(userBatteryMemberCard.getMemberCardExpireTime() - expireTimeSum);
                         }
                         
-                        if (Objects.nonNull(userBatteryMemberCard.getRemainingNumber())) {
+                        if (Objects.nonNull(userBatteryMemberCard.getRemainingNumber()) && remainingNumber > NumberConstant.ZERO_L) {
                             userBatteryMemberCardUpdate.setRemainingNumber(userBatteryMemberCard.getRemainingNumber() - remainingNumber);
                         }
                         
