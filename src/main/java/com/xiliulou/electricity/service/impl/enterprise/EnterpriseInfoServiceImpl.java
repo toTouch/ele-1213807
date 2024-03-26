@@ -1016,8 +1016,8 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
                         userBatteryMemberCardUpdate.setId(userBatteryMemberCard.getId());
                         userBatteryMemberCardUpdate.setUid(userInfo.getUid());
                         userBatteryMemberCardUpdate.setUpdateTime(System.currentTimeMillis());
-                        userBatteryMemberCardUpdate.setMemberCardExpireTime(userBatteryMemberCardUpdate.getMemberCardExpireTime() - expireTimeSum);
-                        userBatteryMemberCardUpdate.setRemainingNumber(userBatteryMemberCardUpdate.getRemainingNumber() - remainingNumber);
+                        userBatteryMemberCardUpdate.setMemberCardExpireTime(userBatteryMemberCard.getMemberCardExpireTime() - expireTimeSum);
+                        userBatteryMemberCardUpdate.setRemainingNumber(userBatteryMemberCard.getRemainingNumber() - remainingNumber);
                         userBatteryMemberCardService.updateByUid(userBatteryMemberCardUpdate);
                     }
                     
