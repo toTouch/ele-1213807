@@ -123,4 +123,10 @@ public interface UserService {
      * @return 影响行数
      */
     Integer updatePhoneByUid(Integer tenantId, Long uid, String newPhone);
+    
+    User checkPhoneExist(String name, String phone, Integer typeUserMerchant, Integer tenantId, Long uid);
+    
+    Integer updateMerchantUser(User updateUser);
+    
+    Integer removeById(Long uid, Long updateTime);
 }

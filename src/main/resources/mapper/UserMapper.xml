@@ -276,7 +276,52 @@
 		</where>
 	</select>
 	
+	<select id="checkMerchantExist" resultType="com.xiliulou.electricity.entity.User">
+		SELECT
+		name,
+		phone,
+		uid
+		FROM
+		t_user
+		WHERE
+		del_flag = 0
+		and phone = #{phone}
+		
+		AND user_type = #{userType}
+		
+		<if test="tenantId != null">
+			AND tenant_id = #{tenantId}
+		</if>
+		
+		<if test="uid != null">
+			and uid != #{uid}
+		</if>
+	</select>
+	
 	<update id="updatePhoneByUid">
 		update t_user set phone=#{newPhone},update_time=#{updateTime} where uid=#{uid} and tenant_id = #{tenantId}
+	</update>
+	
+	<update id="updateMerchantUser">
+		update t_user
+		<set>
+			<if test="phone != null">
+				phone = #{phone},
+			</if>
+			<if test="name != null">
+				name = #{name},
+			</if>
+			<if test="updateTime != null">
+				update_time = #{updateTime},
+			</if>
+			<if test="lockFlag != null">
+				lock_flag = #{lockFlag},
+			</if>
+		</set>
+		where uid = #{uid}
+	</update>
+	
+	<update id="removeById">
+		update t_user set del_flag = 1, update_time = #{updateTime} where uid = #{uid}
 	</update>
 </mapper>
