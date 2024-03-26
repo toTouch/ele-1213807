@@ -28,12 +28,12 @@ public class MetricsConfig {
         return metricRegistry.meter(MetricsConstant.DEVICE_REPORT_METER);
     }
     
-    @Bean
-    public Slf4jReporter consoleReporter(MetricRegistry metricRegistry) {
-        Slf4jReporter reporter = Slf4jReporter.forRegistry(metricRegistry).outputTo(LoggerFactory.getLogger("com.xiliulou.electricity.metrics")).convertRatesTo(TimeUnit.SECONDS)
-                .convertDurationsTo(TimeUnit.MILLISECONDS).build();
-        reporter.start(30, TimeUnit.SECONDS);
-        return reporter;
-    }
+//    @Bean
+//    public Slf4jReporter consoleReporter(MetricRegistry metricRegistry) {
+//        Slf4jReporter reporter = Slf4jReporter.forRegistry(metricRegistry).outputTo(LoggerFactory.getLogger("com.xiliulou.electricity.metrics")).convertRatesTo(TimeUnit.SECONDS)
+//                .convertDurationsTo(TimeUnit.MILLISECONDS).build();
+//        reporter.start(30, TimeUnit.SECONDS);
+//        return reporter;
+//    }
     
 }

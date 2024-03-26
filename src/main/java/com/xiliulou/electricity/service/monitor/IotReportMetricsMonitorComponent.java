@@ -2,7 +2,6 @@ package com.xiliulou.electricity.service.monitor;
 
 import com.codahale.metrics.Meter;
 import com.codahale.metrics.MetricRegistry;
-import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.thread.XllThreadPoolExecutorService;
 import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.core.utils.DataUtil;
@@ -39,7 +38,8 @@ public class IotReportMetricsMonitorComponent {
     @Autowired
     private MetricRegistry metricRegistry;
     
-    static final Gauge IOT_REPORT_METRIC = Gauge.build().name("iotReportMetric").labelNames("count", "meanRate", "oneMinuteRate","fiveMinuteRate").help("iot report metric").register();
+    static final Gauge IOT_REPORT_COUNT_METRIC = Gauge.build().name("iotReportCountMetric").labelNames("meanRate", "oneMinuteRate", "fiveMinuteRate").help("iot report metric")
+            .register();
     
     private XllThreadPoolExecutorService xllThreadPoolExecutorService = XllThreadPoolExecutors.newFixedThreadPool("iot_report_monitor_pool", 1, "iot_report_monitor");
     
@@ -47,7 +47,7 @@ public class IotReportMetricsMonitorComponent {
     
     @PostConstruct
     public void init() {
-        collectorRegistry.register(IOT_REPORT_METRIC);
+        collectorRegistry.register(IOT_REPORT_COUNT_METRIC);
         xllThreadPoolExecutorService.execute(this::timeTaskCheckThreadPool);
     }
     
@@ -57,12 +57,9 @@ public class IotReportMetricsMonitorComponent {
             if (!DataUtil.mapIsUsable(meterMap)) {
                 sleep();
             }
-    
+            
             meterMap.forEach((k, v) -> {
-                log.error("===============vvv====================={}", JsonUtil.toJson(v));
-                IOT_REPORT_METRIC
-                        .labels(String.valueOf(v.getCount()), String.valueOf(v.getMeanRate()), String.valueOf(v.getOneMinuteRate()), String.valueOf(v.getFiveMinuteRate()));
-        
+                IOT_REPORT_COUNT_METRIC.labels(String.valueOf(v.getMeanRate()), String.valueOf(v.getOneMinuteRate()), String.valueOf(v.getFiveMinuteRate())).set(v.getCount());
             });
             
             sleep();
