@@ -163,4 +163,10 @@ public interface CarRentalPackageMemberTermService {
      */
     void deleteCache(Integer tenantId, Long uid);
     
+    /**
+     * 当前套餐是否有用户使用
+     * @param packageId 套餐id
+     * @return 是否存在
+     */
+    Integer checkUserByRentalPackageId(Long packageId);
 }

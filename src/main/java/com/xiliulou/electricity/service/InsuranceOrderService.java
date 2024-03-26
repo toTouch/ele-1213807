@@ -64,4 +64,6 @@ public interface InsuranceOrderService {
      * @return 影响行数
      */
     Integer updatePhoneByUid(Integer tenantId, Long uid, String newPhone);
+    
+   
 }
