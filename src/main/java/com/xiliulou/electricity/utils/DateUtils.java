@@ -12,6 +12,7 @@ import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
+import java.time.temporal.TemporalAdjusters;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
@@ -32,7 +33,14 @@ public class DateUtils {
     static DateTimeFormatter MILLS_FORMAT_DATE = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
     static SimpleDateFormat simpleDateFormatYearAndMonth = new SimpleDateFormat("yyyy-MM-dd");
     
+    static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+    
     static final ZoneId CHINA_ZONE_ID = ZoneId.of("Asia/Shanghai");
+    
+    /**
+     * 年月正则表达式：yyyy-MM
+     */
+    public static final String GREP_YEAR_MONTH = "^\\d{4}-\\d{2}$";
     
     /**
      * 解析毫秒的时间字符串
@@ -204,5 +212,53 @@ public class DateUtils {
     public static boolean isSameMonth(long time1, long time2) {
         SimpleDateFormat fmt = new SimpleDateFormat("yyyyMM");
         return fmt.format(new Date(time1)).equals(fmt.format(new Date(time2)));
+    }
+    
+    /*
+     * 获取前某月第一天00:00:00的时间戳
+     */
+    public static long getBeforeMonthFirstDayTimestamp(Integer minusMonth) {
+        LocalDate lastMonthFirstDay = LocalDate.now().minusMonths(minusMonth).withDayOfMonth(1);
+        return lastMonthFirstDay.atStartOfDay().atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
+    }
+    
+    /**
+     * 获取前某月最后一天23:59:59时间戳
+     */
+    public static long getBeforeMonthLastDayTimestamp(Integer minusMonth) {
+        LocalDate lastMonthFirstDay = LocalDate.now().minusMonths(minusMonth).withDayOfMonth(1);
+        LocalDate lastMonthLastDay = lastMonthFirstDay.with(TemporalAdjusters.lastDayOfMonth());
+        return lastMonthLastDay.atTime(23, 59, 59).atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
+    }
+    
+    /**
+     * 根据年月获取当月第一天 年月：2024-01 返回: 2024-01-01
+     */
+    public static String getFirstDayByMonth(String yearMonth) {
+        // 分割年月字符串并转换为整数
+        int year = Integer.parseInt(yearMonth.split("-")[0]);
+        int month = Integer.parseInt(yearMonth.split("-")[1]);
+        
+        // 创建指定年月的第一天日期
+        LocalDate startDate = LocalDate.of(year, month, 1);
+        
+        return startDate.format(DATE_FORMATTER);
+    }
+    
+    /**
+     * 根据年月获取当月最后一天 年月：2024-01 返回: 2024-01-31
+     */
+    public static String getLastDayByMonth(String yearMonth) {
+        // 分割年月字符串并转换为整数
+        int year = Integer.parseInt(yearMonth.split("-")[0]);
+        int month = Integer.parseInt(yearMonth.split("-")[1]);
+        
+        // 创建指定年月的第一天日期
+        LocalDate startDate = LocalDate.of(year, month, 1);
+        
+        // 获取该月的最后一天
+        LocalDate endDate = startDate.withDayOfMonth(startDate.lengthOfMonth());
+        
+        return endDate.format(DATE_FORMATTER);
     }
 }
