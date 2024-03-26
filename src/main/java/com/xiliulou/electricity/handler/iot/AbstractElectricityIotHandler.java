@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.handler.iot;
 
 import cn.hutool.core.util.StrUtil;
+import com.codahale.metrics.Meter;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
 import com.xiliulou.iot.entity.HardwareCommandQuery;
@@ -27,6 +28,9 @@ public abstract class AbstractElectricityIotHandler implements IElectricityHandl
 
     @Autowired
     ElectricityCabinetService electricityCabinetService;
+    
+    @Autowired
+    Meter iotMeter;
 
 
     @Override
@@ -55,6 +59,9 @@ public abstract class AbstractElectricityIotHandler implements IElectricityHandl
 
     @Override
     public boolean receiveMessageProcess(ReceiverMessage receiverMessage) {
+        iotMeter.getMeanRate();
+        iotMeter.getOneMinuteRate();
+        iotMeter.getFiveMinuteRate();
 
         ElectricityCabinet electricityCabinet = electricityCabinetService.queryFromCacheByProductAndDeviceName(receiverMessage.getProductKey(), receiverMessage.getDeviceName());
         if (Objects.isNull(electricityCabinet)) {
