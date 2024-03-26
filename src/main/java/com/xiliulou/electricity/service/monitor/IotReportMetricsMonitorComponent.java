@@ -41,11 +41,11 @@ public class IotReportMetricsMonitorComponent {
     @Autowired
     private MetricRegistry metricRegistry;
     
-    static final Gauge IOT_MEAN_RATE = Gauge.build().help("meanRate metric").register();
+    static final Gauge IOT_MEAN_RATE = Gauge.build().name("meanRate").help("meanRate metric").register();
     
-    static final Gauge IOT_ONE_MINUTE_RATE = Gauge.build().help("oneMinuteRate metric").register();
+    static final Gauge IOT_ONE_MINUTE_RATE = Gauge.build().name("oneMinuteRate").help("oneMinuteRate metric").register();
     
-    static final Gauge IOT_FIVE_MINUTE_RATE = Gauge.build().help("fiveMinuteRate metric").register();
+    static final Gauge IOT_FIVE_MINUTE_RATE = Gauge.build().name("fiveMinuteRate").help("fiveMinuteRate metric").register();
     
     private XllThreadPoolExecutorService xllThreadPoolExecutorService = XllThreadPoolExecutors.newFixedThreadPool("iot_report_monitor_pOOL", 1, "iot_report_monitor");
     
