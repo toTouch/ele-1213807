@@ -136,7 +136,9 @@ public class JsonAdminElectricityCabinetController extends BasicController {
                        @RequestParam(value = "warehouseId", required = false) Long warehouseId,
                        @RequestParam(value = "beginTime", required = false) Long beginTime,
                        @RequestParam(value = "endTime", required = false) Long endTime,
-                       @RequestParam(value = "id", required = false) Integer id) {
+                       @RequestParam(value = "id", required = false) Integer id,
+                       @RequestParam(value = "idList", required = false) List<Integer> idList,
+                       @RequestParam(value = "areaId", required = false) Long areaId) {
         if (Objects.isNull(size) || size < 0 || size > 50) {
             size = 10L;
         }
@@ -188,6 +190,8 @@ public class JsonAdminElectricityCabinetController extends BasicController {
                 .tenantId(TenantContextHolder.getTenantId())
                 .franchiseeIdList(permissionTriple.getLeft())
                 .storeIdList(permissionTriple.getMiddle())
+                .areaId(areaId)
+                .idList(idList)
                 .build();
 
         return electricityCabinetService.queryList(electricityCabinetQuery);
@@ -264,7 +268,8 @@ public class JsonAdminElectricityCabinetController extends BasicController {
                             @RequestParam(value = "warehouseId", required = false) Long warehouseId,
                             @RequestParam(value = "beginTime", required = false) Long beginTime,
                             @RequestParam(value = "endTime", required = false) Long endTime,
-                            @RequestParam(value = "id", required = false) Integer id) {
+                            @RequestParam(value = "id", required = false) Integer id,
+                            @RequestParam(value = "areaId", required = false) Long areaId) {
         if (size < 0 || size > 50) {
             size = 10L;
         }
@@ -288,7 +293,7 @@ public class JsonAdminElectricityCabinetController extends BasicController {
         }
 
 
-        ElectricityCabinetQuery electricityCabinetQuery = ElectricityCabinetQuery.builder().offset(offset).size(size)
+        ElectricityCabinetQuery electricityCabinetQuery = ElectricityCabinetQuery.builder().offset(offset).size(size).areaId(areaId)
                 .name(name).address(address).usableStatus(usableStatus).stockStatus(stockStatus).warehouseId(warehouseId).onlineStatus(onlineStatus).beginTime(beginTime)
                 .endTime(endTime).eleIdList(null).id(id).tenantId(null).build();
 
@@ -304,7 +309,8 @@ public class JsonAdminElectricityCabinetController extends BasicController {
                              @RequestParam(value = "stockStatus", required = false) Integer stockStatus,
                              @RequestParam(value = "warehouseId", required = false) Long warehouseId,
                              @RequestParam(value = "beginTime", required = false) Long beginTime,
-                             @RequestParam(value = "endTime", required = false) Long endTime) {
+                             @RequestParam(value = "endTime", required = false) Long endTime,
+                             @RequestParam(value = "areaId", required = false) Long areaId) {
         //用户区分
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
@@ -316,7 +322,7 @@ public class JsonAdminElectricityCabinetController extends BasicController {
             return R.fail("权限不足");
         }
 
-        ElectricityCabinetQuery electricityCabinetQuery = ElectricityCabinetQuery.builder().name(name).address(address)
+        ElectricityCabinetQuery electricityCabinetQuery = ElectricityCabinetQuery.builder().name(name).address(address).areaId(areaId)
                 .usableStatus(usableStatus).onlineStatus(onlineStatus).stockStatus(stockStatus).warehouseId(warehouseId).beginTime(beginTime).endTime(endTime)
                 .eleIdList(null).build();
 

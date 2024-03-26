@@ -8,7 +8,7 @@
         select
         id, name,sn, address, longitude, latitude, product_key, device_name, usable_status,
         online_status, model_id, version, fully_charged, service_phone, business_time, create_time,
-        update_time, del_flag,tenant_id,store_id,franchisee_id, exchange_type,stock_status,warehouse_id
+        update_time, del_flag,tenant_id,store_id,franchisee_id, exchange_type,stock_status,warehouse_id,area_id,place_fee
         from t_electricity_cabinet
         where del_flag=0
         <if test="query.name != null and query.name != ''">
@@ -22,6 +22,12 @@
         </if>
         <if test="query.id != null">
             and id =#{query.id}
+        </if>
+        <if test="query.idList != null and query.idList.size() > 0">
+            and id in
+            <foreach collection="query.idList" item="id" close=")" open="(" separator=",">
+                #{id}
+            </foreach>
         </if>
         <if test="query.onlineStatus != null">
             and online_status = #{query.onlineStatus}
@@ -58,6 +64,9 @@
             <foreach collection="query.storeIdList" item="storeId" open="(" close=")" separator=",">
                 #{storeId}
             </foreach>
+        </if>
+        <if test="query.areaId != null">
+            and area_id = #{query.areaId}
         </if>
         order by id desc
         limit #{query.offset}, #{query.size}
@@ -99,6 +108,15 @@
         </if>
         <if test="query.modelId != null">
             and model_id = #{query.modelId}
+        </if>
+        <if test="query.areaId != null">
+            and area_id = #{query.areaId}
+        </if>
+        <if test="query.idList != null and query.idList.size() > 0">
+            and id in
+            <foreach collection="query.idList" item="id" close=")" open="(" separator=",">
+                #{id}
+            </foreach>
         </if>
 		<if test="query.eleIdList!=null and query.eleIdList!=''">
 			and id in
@@ -469,6 +487,8 @@
         tec.update_time,
         tec.tenant_id,
         tec.store_id,
+        tec.area_id,
+        tec.place_fee,
         tecs.average_number,
         tecs.average_activity,
         tecs.today_number,
@@ -505,6 +525,9 @@
         </if>
         <if test="storeId != null ">
             and tec.store_id = #{storeId}
+        </if>
+        <if test="areaId != null">
+            and tec.area_id = #{areaId}
         </if>
         <if test="eleIdList!=null and eleIdList!=''">
             and tec.id in
@@ -579,6 +602,7 @@
         tec.update_time,
         tec.tenant_id,
         tec.store_id,
+        tec.area_id,
         any_value(tecs.average_number) AS average_number,
         any_value(tecs.average_activity) AS average_activity,
         any_value(tecs.today_number) AS today_number,
@@ -619,6 +643,9 @@
         </if>
         <if test="storeId != null ">
             and tec.store_id = #{storeId}
+        </if>
+        <if test="areaId != null">
+            and tec.area_id = #{areaId}
         </if>
         <if test="eleIdList!=null and eleIdList!=''">
             and tec.id in
@@ -695,6 +722,7 @@
         any_value(tec.update_time) AS update_time,
         any_value(tec.tenant_id) AS tenant_id,
         any_value(tec.store_id) AS store_id,
+        any_value(tec.area_id) AS area_id,
         any_value(tec.del_flag) AS del_flag,
         any_value(ecb.power) AS power,
         any_value(tecs.average_number) AS average_number,
@@ -735,6 +763,9 @@
         </if>
         <if test="storeId != null ">
             and tec.store_id = #{storeId}
+        </if>
+        <if test="areaId != null">
+            and tec.area_id = #{areaId}
         </if>
         <if test="eleIdList!=null and eleIdList!=''">
             and tec.id in
@@ -841,6 +872,9 @@
         <if test="storeId != null ">
             and tec.store_id = #{storeId}
         </if>
+        <if test="areaId != null">
+            and tec.area_id = #{areaId}
+        </if>
         <if test="eleIdList!=null and eleIdList!=''">
             and tec.id in
             <foreach collection="eleIdList" item="id" index="index" open="(" close=")" separator=",">
@@ -894,6 +928,9 @@
         <if test="tenantId != null ">
             and tec.tenant_id = #{tenantId}
         </if>
+        <if test="areaId != null ">
+            and tec.area_id = #{areaId}
+        </if>
         <if test="franchiseeId != null ">
             and ts.franchisee_id = #{franchiseeId}
         </if>
@@ -945,6 +982,9 @@
         </if>
         <if test="storeId != null ">
             and tec.store_id = #{storeId}
+        </if>
+        <if test="areaId != null">
+            and tec.area_id = #{areaId}
         </if>
         <if test="eleIdList!=null and eleIdList!=''">
             and tec.id in

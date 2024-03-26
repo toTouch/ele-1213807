@@ -220,6 +220,16 @@ public class ElectricityCabinetVO {
      * 柜机中可换电电池电压/容量统计
      */
     private Map<String,Integer> voltageAndCapacityMapes;
+    
+    /**
+     * 区域id
+     */
+    private Long areaId;
+    
+    /**
+     * 区域名称
+     */
+    private String areaName;
 
     //全天
     public static final String ALL_DAY = "-1";
