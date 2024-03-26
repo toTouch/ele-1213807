@@ -3018,11 +3018,14 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                 }
                 
                 // 设置已缴纳押金的用户的具体状态，为实缴还是免押，实缴：1  免押：2
-                UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(item.getUid());
-                if (Objects.nonNull(userBatteryDeposit)) {
-                    
-                    item.setBatteryDepositStatus(Objects.equals(0, userBatteryDeposit.getDepositType()) ? 1 : 2);
+                if (Objects.equals(UserInfo.BATTERY_DEPOSIT_STATUS_YES, item.getBatteryDepositStatus())) {
+                    UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(item.getUid());
+                    if (Objects.nonNull(userBatteryDeposit)) {
+        
+                        item.setBatteryDepositStatus(Objects.equals(0, userBatteryDeposit.getDepositType()) ? 1 : 2);
+                    }
                 }
+                
             });
         }, threadPool).exceptionally(e -> {
             log.error("ELE ERROR! query user other info error!", e);
