@@ -765,4 +765,5 @@ public class JsonAdminUserInfoController extends BaseController {
         
         return userInfoService.queryEleListCount(userInfoQuery);
     }
+    
 }
