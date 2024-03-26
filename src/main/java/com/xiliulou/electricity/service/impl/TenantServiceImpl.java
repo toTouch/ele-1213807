@@ -15,6 +15,8 @@ import com.xiliulou.electricity.mapper.TenantMapper;
 import com.xiliulou.electricity.query.TenantAddAndUpdateQuery;
 import com.xiliulou.electricity.query.TenantQuery;
 import com.xiliulou.electricity.service.*;
+import com.xiliulou.electricity.service.merchant.MerchantAttrService;
+import com.xiliulou.electricity.service.merchant.MerchantLevelService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.vo.TenantVO;
 import com.xiliulou.electricity.web.query.AdminUserQuery;
@@ -67,6 +69,12 @@ public class TenantServiceImpl implements TenantService {
     
     @Resource
     private TenantNoteService noteService;
+    
+    @Autowired
+    private MerchantLevelService merchantLevelService;
+    
+    @Autowired
+    private MerchantAttrService merchantAttrService;
 
     /**
      * 新增数据
@@ -188,7 +196,13 @@ public class TenantServiceImpl implements TenantService {
         channelActivity.setCreateTime(System.currentTimeMillis());
         channelActivity.setUpdateTime(System.currentTimeMillis());
         channelActivityService.insert(channelActivity);
-
+        
+        
+        //初始化商户等级
+        merchantLevelService.initMerchantLevel(tenant.getId());
+        //初始化商户升级条件
+        merchantAttrService.initMerchantAttr(tenant.getId());
+        
         return R.ok();
     }
 
