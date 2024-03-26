@@ -110,4 +110,6 @@ public interface EnterpriseInfoService {
     Integer updatePhoneByUid(Integer tenantId, Long uid, String newPhone);
     
     Triple<Boolean, String, Object> saveMerchantEnterprise(EnterpriseInfoQuery enterpriseInfoQuery);
+    
+    List<EnterpriseInfo> queryListByIdList(List<Long> enterpriseIdList);
 }
