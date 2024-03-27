@@ -59,6 +59,24 @@ public class UserInfoQuery {
     
     private Long carMemberCardExpireTimeEnd;
     
+    /***********排期表内可快速实现的 P0 需求 15.1  实名用户列表（16条优化项）iii 20240311 start**************/
+    /**
+     * <p>
+     * Description: 车辆押金缴纳状态，1已缴纳，0未缴纳
+     * </p>
+     */
+    private Integer carDepositStatus;
+    
+    /**
+     * <p>
+     * Description: 套餐冻结状态，1正常，0冻结
+     * </p>
+     */
+    private Integer freezeStatus;
+    
+    /***********排期表内可快速实现的 P0 需求 15.1  实名用户列表（16条优化项）iii 20240311 end**************/
+    
+    
     /**
      * 套餐id
      */
@@ -68,6 +86,7 @@ public class UserInfoQuery {
      * 套餐冻结状态
      */
     private Integer memberCardStatus;
+    
     
     private String cardName;
     
@@ -87,11 +106,6 @@ public class UserInfoQuery {
      * 套餐购买次数
      */
     private Integer cardPayCount;
-    
-    /**
-     * 租车押金缴纳状态
-     */
-    private Integer carDepositStatus;
     
     private Integer batteryRentStatus;
     

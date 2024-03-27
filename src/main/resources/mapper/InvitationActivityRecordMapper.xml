@@ -63,6 +63,7 @@
         iar.uid,
         iar.share_count,
         iar.invitation_count,
+        tia.name as activityName,
         iar.status,
         iar.money,
         iar.create_time,
@@ -71,6 +72,7 @@
         tui.phone as phone
         from t_invitation_activity_record iar
         left join t_user_info tui on tui.uid=iar.uid
+        left join t_invitation_activity tia on tia.id = iar.activity_id
         <where>
             <if test="userName != null and userName != ''">
                 and tui.name = #{userName}
@@ -114,6 +116,7 @@
         select count(*)
         from t_invitation_activity_record iar
         left join t_user_info tui on tui.uid=iar.uid
+        left join t_invitation_activity tia on tia.id = iar.activity_id
         <where>
             <if test="userName != null and userName != ''">
                 and tui.name = #{userName}

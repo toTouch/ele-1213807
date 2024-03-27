@@ -18,7 +18,14 @@ public class ElectricityCabinetModelQuery {
     private Long size;
     private Long offset;
     private String name;
-    
+    /***********12.2 电柜厂家型号（3条优化点）查询 start **********/
+    /**
+     * <p>
+     *    Description: ---0不支持 ---1支持
+     * </p>
+    */
+    private Integer heating;
+    /***********12.2 电柜厂家型号（3条优化点）查询 end **********/
     /**
      * 厂家名称
      */

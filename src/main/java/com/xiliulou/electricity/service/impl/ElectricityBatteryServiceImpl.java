@@ -3,6 +3,7 @@ package com.xiliulou.electricity.service.impl;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.date.DatePattern;
 import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.map.MapUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.RandomUtil;
 import cn.hutool.core.util.StrUtil;
@@ -1648,6 +1649,29 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
     @Override
     public List<ElectricityBattery> queryListByIdList(List<Long> idList) {
         return electricitybatterymapper.selectListByIdList(idList);
+    }
+    
+    /**
+     * <p>
+     *    Description: queryIdsBySnArray
+     * </p>
+     * @param snList snList
+     * @param tenantId tenantId
+     * @param sourceFranchiseeId sourceFranchiseeId
+     * @return java.util.List<java.lang.Long>
+     * <p>Project: ElectricityBatteryServiceImpl</p>
+     * <p>Copyright: Copyright (c) 2024</p>
+     * <p>Company: www.xiliulou.com</p>
+     * @author <a href="mailto:wxblifeng@163.com">PeakLee</a>
+     * @since V1.0 2024/3/18
+    */
+    @Override
+    public Map<String,Long> listIdsBySnArray(List<String> snList, Integer tenantId, Long sourceFranchiseeId) {
+        List<ElectricityBattery> batteryList = this.electricitybatterymapper.selectListBySnArray(snList, tenantId, sourceFranchiseeId);
+        if (CollectionUtils.isEmpty(batteryList)){
+            return MapUtil.empty();
+        }
+        return batteryList.stream().collect(Collectors.toMap(ElectricityBattery::getSn,ElectricityBattery::getId,(k1,k2)->k1));
     }
     
     @Override

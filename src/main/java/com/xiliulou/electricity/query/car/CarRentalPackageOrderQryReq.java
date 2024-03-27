@@ -101,4 +101,14 @@ public class CarRentalPackageOrderQryReq implements Serializable {
      * 购买时间截止
      */
     private Long buyTimeEnd;
+    
+    
+    /**
+     * <p>
+     *    Description: 套餐ID
+     *    <a herf ="https://benyun.feishu.cn/wiki/GrNjwBNZkipB5wkiws2cmsEDnVU#VPQodOLE2oTCGbxZBl4cZhbnnYd">14.4 套餐购买记录（2条优化项）</a>
+     * </p>
+    */
+    private Long rentalPackageId;
+    /*************14.4 套餐购买记录（2条优化项） end***********/
 }

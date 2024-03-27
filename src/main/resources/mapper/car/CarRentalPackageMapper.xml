@@ -297,6 +297,20 @@
             `coupon_id` = #{couponId} and `del_flag` = 0
         </where>
     </select>
+    <select id="queryToSearchByName" resultType="com.xiliulou.electricity.vo.car.CarRentalPackageSearchVO">
+        select
+            `id` as `value`,
+            `name` as label
+        from t_car_rental_package
+        where del_flag = 0
+        <if test="query.tenantId != null">
+            and tenant_id = #{query.tenantId}
+        </if>
+        <if test="query.packageName != null and query.packageName.trim()!=''">
+            and `name` like concat('%',#{query.packageName},'%')
+        </if>
+        limit #{query.offset} , #{query.size}
+    </select>
     
     <select id="listCarRentalPackageForSort" resultType="com.xiliulou.electricity.entity.car.CarRentalPackagePo">
         select `id`, `name`, `create_time`, `sort_param`

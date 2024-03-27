@@ -1,5 +1,7 @@
 package com.xiliulou.electricity.service.impl;
 
+import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.collection.ListUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.RandomUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -7,13 +9,37 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.NumberConstant;
-import com.xiliulou.electricity.entity.*;
+import com.xiliulou.electricity.dto.FranchiseeInsuranceCarModelAndBatteryTypeDTO;
+import com.xiliulou.electricity.entity.City;
+import com.xiliulou.electricity.entity.CommonPayOrder;
+import com.xiliulou.electricity.entity.ElectricityConfig;
+import com.xiliulou.electricity.entity.ElectricityPayParams;
+import com.xiliulou.electricity.entity.ElectricityTradeOrder;
+import com.xiliulou.electricity.entity.Franchisee;
+import com.xiliulou.electricity.entity.FranchiseeInsurance;
+import com.xiliulou.electricity.entity.InsuranceOrder;
+import com.xiliulou.electricity.entity.InsuranceUserInfo;
+import com.xiliulou.electricity.entity.UserInfo;
+import com.xiliulou.electricity.entity.UserOauthBind;
 import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.InsuranceOrderMapper;
 import com.xiliulou.electricity.query.InsuranceOrderAdd;
 import com.xiliulou.electricity.query.InsuranceOrderQuery;
-import com.xiliulou.electricity.service.*;
+import com.xiliulou.electricity.service.BatteryModelService;
+import com.xiliulou.electricity.service.CityService;
+import com.xiliulou.electricity.service.ElectricityCarModelService;
+import com.xiliulou.electricity.service.ElectricityConfigService;
+import com.xiliulou.electricity.service.ElectricityPayParamsService;
+import com.xiliulou.electricity.service.ElectricityTradeOrderService;
+import com.xiliulou.electricity.service.FranchiseeInsuranceService;
+import com.xiliulou.electricity.service.FranchiseeService;
+import com.xiliulou.electricity.service.InsuranceOrderService;
+import com.xiliulou.electricity.service.InsuranceUserInfoService;
+import com.xiliulou.electricity.service.UserBatteryService;
+import com.xiliulou.electricity.service.UserBatteryTypeService;
+import com.xiliulou.electricity.service.UserInfoService;
+import com.xiliulou.electricity.service.UserOauthBindService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
@@ -33,7 +59,12 @@ import javax.servlet.http.HttpServletRequest;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import static com.xiliulou.electricity.dto.FranchiseeInsuranceCarModelAndBatteryTypeDTO.BATTERY_TYPE;
 
 /**
  * 换电柜保险用户绑定(FranchiseeInsurance)表服务接口
@@ -85,6 +116,11 @@ public class InsuranceOrderServiceImpl extends ServiceImpl<InsuranceOrderMapper,
     UserBatteryTypeService userBatteryTypeService;
     
     @Autowired
+    ElectricityCarModelService electricityCarModelService;
+    
+    
+    
+    @Autowired
     private UserDataScopeService userDataScopeService;
     
     /**
@@ -108,8 +144,38 @@ public class InsuranceOrderServiceImpl extends ServiceImpl<InsuranceOrderMapper,
     
     @Slave
     @Override
-    public R queryList(InsuranceOrderQuery insuranceOrderQuery) {
-        return R.ok(queryListByStatus(insuranceOrderQuery));
+    public R queryList(InsuranceOrderQuery insuranceOrderQuery,Boolean isType) {
+        if (!isType){
+            return R.ok(queryListByStatus(insuranceOrderQuery));
+        }
+        List<InsuranceOrderVO> insuranceOrderVOS = queryListByStatus(insuranceOrderQuery);
+        if (CollectionUtil.isEmpty(insuranceOrderVOS)){
+            return R.ok(ListUtil.empty());
+        }
+        Set<Long> collect = insuranceOrderVOS.stream().map(InsuranceOrderVO::getInsuranceId)
+                .filter(Objects::nonNull).collect(Collectors.toSet());
+        if (CollectionUtil.isEmpty(collect)){
+            return R.ok(insuranceOrderVOS);
+        }
+        /*1.t_electricity_car_model -- name 车辆型号表*/
+        /*2.t_franchisee_insurance -- car_model_id,simple_battery_type 保险配置表*/
+        List<FranchiseeInsuranceCarModelAndBatteryTypeDTO> result = franchiseeInsuranceService.selectListCarModelAndBatteryTypeById(collect);
+        if (CollectionUtil.isEmpty(result)){
+            return R.ok(insuranceOrderVOS);
+        }
+        Map<Long, FranchiseeInsuranceCarModelAndBatteryTypeDTO> dtoMap = result.stream().collect(Collectors.toMap(FranchiseeInsuranceCarModelAndBatteryTypeDTO::getId, v -> v));
+        for (InsuranceOrderVO i : insuranceOrderVOS) {
+            if (!dtoMap.containsKey(i.getInsuranceId())){
+                continue;
+            }
+            FranchiseeInsuranceCarModelAndBatteryTypeDTO dto = dtoMap.get(i.getInsuranceId());
+            if (Objects.equals(BATTERY_TYPE,dto.getInsuranceType())){
+                i.setBatteryModel(dto.getLabel());
+                continue;
+            }
+            i.setCarModel(dto.getLabel());
+        }
+        return R.ok(insuranceOrderVOS);
     }
     
     @Slave

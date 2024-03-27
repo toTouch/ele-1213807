@@ -3,6 +3,8 @@ package com.xiliulou.electricity.mapper.car;
 import com.xiliulou.electricity.entity.car.CarRentalPackagePo;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageQryModel;
 import com.xiliulou.electricity.query.MemberCardAndCarRentalPackageSortParamQuery;
+import com.xiliulou.electricity.query.car.CarRentalPackageNameReq;
+import com.xiliulou.electricity.vo.car.CarRentalPackageSearchVO;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -99,6 +101,22 @@ public interface CarRentalPackageMapper {
      * @return
      */
     List<CarRentalPackagePo> selectByCouponId(@Param("couponId") Long couponId);
+    
+    /**
+     * <p>
+     *    Description: queryToSearchByName
+     *    14.4 套餐购买记录（2条优化项）
+     * </p>
+     * @param query query
+     * @return java.util.List<com.xiliulou.electricity.vo.car.CarRentalPackageSearchVo>
+     * <p>Project: CarRentalPackageMapper</p>
+     * <p>Copyright: Copyright (c) 2024</p>
+     * <p>Company: www.xiliulou.com</p>
+     * @author <a href="mailto:wxblifeng@163.com">PeakLee</a>
+     * @since V1.0 2024/3/14
+    */
+    List<CarRentalPackageSearchVO> queryToSearchByName(@Param("query") CarRentalPackageNameReq query);
+    
     
     Integer batchUpdateSortParam(@Param("sortParamQueries") List<MemberCardAndCarRentalPackageSortParamQuery> sortParamQueries);
     

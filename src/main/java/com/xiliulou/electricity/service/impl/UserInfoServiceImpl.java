@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.service.impl;
 
 import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.core.util.StrUtil;
 import com.alibaba.excel.EasyExcel;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -118,6 +119,7 @@ import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.UserMoveHistoryService;
 import com.xiliulou.electricity.service.UserOauthBindService;
 import com.xiliulou.electricity.service.UserService;
+import com.xiliulou.electricity.service.car.CarRentalPackageDepositPayService;
 import com.xiliulou.electricity.service.car.CarRentalPackageMemberTermService;
 import com.xiliulou.electricity.service.car.CarRentalPackageOrderSlippageService;
 import com.xiliulou.electricity.service.car.CarRentalPackageService;
@@ -187,6 +189,9 @@ import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
+
+import static com.xiliulou.electricity.vo.userinfo.UserCarRentalPackageVO.FREE_OF_CHARGE;
+import static com.xiliulou.electricity.vo.userinfo.UserCarRentalPackageVO.UNPAID;
 
 /**
  * 用户列表(TUserInfo)表服务实现类
@@ -370,6 +375,9 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     
     @Autowired
     EleUserOperateHistoryService eleUserOperateHistoryService;
+    
+    @Autowired
+    CarRentalPackageDepositPayService carRentalPackageDepositPayService;
     
     @Autowired
     EleUserEsignRecordService eleUserEsignRecordService;
@@ -606,18 +614,28 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         if (ObjectUtil.isEmpty(userCarRentalPackageDOList)) {
             return R.ok(Collections.emptyList());
         }
-        
+        List<String> ordersOn = userCarRentalPackageDOList.stream().filter(f -> f.getCarDepositStatus() == 1 || f.getCarBatteryDepositStatus() == 0)
+                .map(UserCarRentalPackageDO::getDepositOrderNo).filter(StrUtil::isNotBlank).collect(Collectors.toList());
+        //t_car_rental_package_deposit_pay
+        Map<String, Integer> orderMapPayType = carRentalPackageDepositPayService.selectPayTypeByOrders(ordersOn);
         //处理租车/车店一体押金状态 和 当前套餐冻结状态
         List<UserCarRentalPackageVO> userCarRentalPackageVOList = Lists.newArrayList();
         for (UserCarRentalPackageDO userCarRentalPackageDO : userCarRentalPackageDOList) {
             UserCarRentalPackageVO userCarRentalPackageVO = new UserCarRentalPackageVO();
             BeanUtils.copyProperties(userCarRentalPackageDO, userCarRentalPackageVO);
+            //如果用户尚未购买任何套餐则显示未缴纳
+            userCarRentalPackageVO.setDepositStatus(UNPAID);
             if (RentalPackageTypeEnum.CAR.getCode().equals(userCarRentalPackageDO.getPackageType())) {
                 userCarRentalPackageVO.setDepositStatus(userCarRentalPackageDO.getCarDepositStatus());
             } else if (RentalPackageTypeEnum.CAR_BATTERY.getCode().equals(userCarRentalPackageDO.getPackageType())) {
                 userCarRentalPackageVO.setDepositStatus(convertCarBatteryDepositStatus(userCarRentalPackageDO.getCarBatteryDepositStatus()));
             }
             
+            
+            if (orderMapPayType.containsKey(userCarRentalPackageDO.getDepositOrderNo()) && orderMapPayType.get(userCarRentalPackageDO.getDepositOrderNo()) == 3) {
+                userCarRentalPackageVO.setDepositStatus(FREE_OF_CHARGE);
+            }
+      
             if (MemberTermStatusEnum.FREEZE.getCode().equals(userCarRentalPackageDO.getPackageStatus())) {
                 userCarRentalPackageVO.setPackageFreezeStatus(0);
             } else {
@@ -712,7 +730,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
      * @param depositStatus
      * @return
      */
-    private Integer convertCarBatteryDepositStatus(Integer depositStatus) {
+    public static Integer convertCarBatteryDepositStatus(Integer depositStatus) {
         Integer status = 0;
         
         if (Objects.isNull(depositStatus)) {

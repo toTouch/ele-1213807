@@ -11,6 +11,7 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
+import com.xiliulou.electricity.dto.FranchiseeInsuranceCarModelAndBatteryTypeDTO;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.FranchiseeInsuranceMapper;
@@ -640,5 +641,22 @@ public class FranchiseeInsuranceServiceImpl extends ServiceImpl<FranchiseeInsura
                 .type(franchiseeInsuranceIdsRequest.getType())
                 .build();
         return franchiseeInsuranceMapper.selectOrderIds(insuranceOrderQuery);
+    }
+    
+    /**
+     * <p>
+     *    Description: queryCarModelAndBatteryTypeById
+     * </p>
+     * @param ids 查询出的保险id组
+     * @return java.util.List<com.xiliulou.electricity.dto.FranchiseeInsuranceCarModelAndBatteryTypeDTO>
+     * <p>Project: FranchiseeInsuranceServiceImpl</p>
+     * <p>Copyright: Copyright (c) 2024</p>
+     * <p>Company: www.xiliulou.com</p>
+     * @author <a href="mailto:wxblifeng@163.com">PeakLee</a>
+     * @since V1.0 2024/3/11
+    */
+    @Override
+    public List<FranchiseeInsuranceCarModelAndBatteryTypeDTO> selectListCarModelAndBatteryTypeById(Collection<Long> ids) {
+        return this.baseMapper.selectListCarModelAndBatteryTypeById(ids);
     }
 }

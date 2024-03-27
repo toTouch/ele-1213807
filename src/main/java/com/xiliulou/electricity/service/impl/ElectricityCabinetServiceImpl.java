@@ -3,6 +3,7 @@ package com.xiliulou.electricity.service.impl;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.date.DatePattern;
 import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.map.MapUtil;
 import cn.hutool.core.util.NumberUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
@@ -21,6 +22,7 @@ import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
+import com.xiliulou.electricity.bo.asset.ElectricityCabinetBO;
 import com.xiliulou.electricity.config.EleCommonConfig;
 import com.xiliulou.electricity.config.EleIotOtaPathConfig;
 import com.xiliulou.electricity.constant.BatteryConstant;
@@ -62,6 +64,7 @@ import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.UserBattery;
 import com.xiliulou.electricity.entity.UserBatteryMemberCard;
 import com.xiliulou.electricity.entity.UserInfo;
+import com.xiliulou.electricity.enums.EleCabinetModelHeatingEnum;
 import com.xiliulou.electricity.enums.YesNoEnum;
 import com.xiliulou.electricity.enums.asset.StockStatusEnum;
 import com.xiliulou.electricity.exception.BizException;
@@ -1680,6 +1683,31 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         }
         //缓存柜机GEO信息
         redisService.addGeo(CacheConstant.CACHE_ELECTRICITY_CABINET_GEO + TenantContextHolder.getTenantId(), electricityCabinet.getId().toString(), new Point(electricityCabinet.getLongitude(), electricityCabinet.getLatitude()));
+    }
+    
+    /**
+     * <p>
+     *    Description: queryIdsBySnArray
+     * </p>
+     * @param snList snList
+     * @param tenantId tenantId
+     * @param sourceFranchiseeId sourceFranchiseeId
+     * @return java.util.List<java.lang.Long>
+     * <p>Project: ElectricityCabinetServiceImpl</p>
+     * <p>Copyright: Copyright (c) 2024</p>
+     * <p>Company: www.xiliulou.com</p>
+     * <a herf="https://benyun.feishu.cn/wiki/GrNjwBNZkipB5wkiws2cmsEDnVU#S5pYdtn2ooNnzqxWFbxcqGownbe">12.8 资产调拨（2条优化点)</a>
+     * @author <a href="mailto:wxblifeng@163.com">PeakLee</a>
+     * @since V1.0 2024/3/18
+    */
+    @Slave
+    @Override
+    public Map<String,Long> listIdsBySnArray(List<String> snList, Integer tenantId, Long sourceFranchiseeId) {
+        List<ElectricityCabinetBO> cabinetBOS = this.electricityCabinetMapper.selectListBySnArray(snList, tenantId, sourceFranchiseeId);
+        if (CollectionUtils.isEmpty(cabinetBOS)){
+            return MapUtil.empty();
+        }
+        return cabinetBOS.stream().collect(Collectors.toMap(ElectricityCabinetBO::getSn,e->e.getId().longValue(),(k1,k2)->k1));
     }
     
     @Override
@@ -5370,6 +5398,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         cabinetModelInsert.setCellSize(electricityCabinetModel.getCellSize());
         cabinetModelInsert.setScreenSize(electricityCabinetModel.getScreenSize());
         cabinetModelInsert.setWaterproofGrade(electricityCabinetModel.getWaterproofGrade());
+        cabinetModelInsert.setHeating(EleCabinetModelHeatingEnum.HEATING_NOT_SUPPORT.getCode());
         return cabinetModelInsert;
     }
     

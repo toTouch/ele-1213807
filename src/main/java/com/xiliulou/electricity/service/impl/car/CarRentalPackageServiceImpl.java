@@ -13,9 +13,11 @@ import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.car.CarRentalPackageMapper;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageQryModel;
 import com.xiliulou.electricity.query.MemberCardAndCarRentalPackageSortParamQuery;
+import com.xiliulou.electricity.query.car.CarRentalPackageNameReq;
 import com.xiliulou.electricity.service.car.CarRentalPackageOrderService;
 import com.xiliulou.electricity.service.car.CarRentalPackageService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
+import com.xiliulou.electricity.vo.car.CarRentalPackageSearchVO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.stereotype.Service;
@@ -298,7 +300,25 @@ public class CarRentalPackageServiceImpl implements CarRentalPackageService {
     public List<CarRentalPackagePo> findByCouponId(Long couponId) {
         return carRentalPackageMapper.selectByCouponId(couponId);
     }
-
+    
+    /**
+     * <p>
+     *    Description: queryToSearchByName
+     *    14.4 套餐购买记录（2条优化项）
+     * </p>
+     * @param rentalPackageNameReq rentalPackageNameReq
+     * @return java.util.List<com.xiliulou.electricity.vo.car.CarRentalPackageSearchVo>
+     * <p>Project: CarRentalPackageServiceImpl</p>
+     * <p>Copyright: Copyright (c) 2024</p>
+     * <p>Company: www.xiliulou.com</p>
+     * @author <a href="mailto:wxblifeng@163.com">PeakLee</a>
+     * @since V1.0 2024/3/14
+    */
+    @Override
+    public List<CarRentalPackageSearchVO> queryToSearchByName(CarRentalPackageNameReq rentalPackageNameReq) {
+        return this.carRentalPackageMapper.queryToSearchByName(rentalPackageNameReq);
+    }
+    
     /**
      * 删除缓存
      * @param key

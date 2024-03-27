@@ -591,8 +591,8 @@ public class JsonAdminUserInfoController extends BaseController {
             @RequestParam(value = "carRentalExpireTimeBegin", required = false) Long carRentalExpireTimeBegin,
             @RequestParam(value = "carRentalExpireTimeEnd", required = false) Long carRentalExpireTimeEnd,
             @RequestParam(value = "carRentalExpireType", required = false) Integer carRentalExpireType,
-            @RequestParam(value = "batteryDepositStatus", required = false) Integer carDepositStatus,
-            @RequestParam(value = "MemberCardStatus", required = false) Integer memberCardStatus, @RequestParam(value = "franchiseeId", required = false) Long franchiseeId) {
+            @RequestParam(value = "depositStatus", required = false) Integer depositStatus, @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
+            @RequestParam(value = "packageFreezeStatus", required = false) Integer packageFreezeStatus) {
         
         if (size < 0 || size > 50) {
             size = 10L;
@@ -623,15 +623,10 @@ public class JsonAdminUserInfoController extends BaseController {
             }
         }
         
-        // 后台用户选择某加盟商查询
-        if (Objects.nonNull(franchiseeId)) {
-            franchiseeIds.add(franchiseeId);
-        }
-        
         UserInfoQuery userInfoQuery = UserInfoQuery.builder().offset(offset).size(size).carMemberCardExpireType(carRentalExpireType)
                 .carMemberCardExpireTimeBegin(carRentalExpireTimeBegin).carMemberCardExpireTimeEnd(carRentalExpireTimeEnd).uid(uid).name(name).phone(phone).sortType(sortType)
-                .sortBy(sortBy).franchiseeIds(franchiseeIds).storeIds(storeIds).tenantId(TenantContextHolder.getTenantId()).memberCardStatus(memberCardStatus)
-                .carDepositStatus(carDepositStatus).build();
+                .sortBy(sortBy).carDepositStatus(depositStatus).freezeStatus(packageFreezeStatus).franchiseeId(franchiseeId).franchiseeIds(franchiseeIds).storeIds(storeIds)
+                .tenantId(TenantContextHolder.getTenantId()).build();
         
         verifyCarMemberCardExpireTimeEnd(userInfoQuery);
         
@@ -643,7 +638,9 @@ public class JsonAdminUserInfoController extends BaseController {
             @RequestParam(value = "phone", required = false) String phone, @RequestParam(value = "sortType", required = false) Integer sortType,
             @RequestParam(value = "sortBy", required = false) String sortBy, @RequestParam(value = "carRentalExpireTimeBegin", required = false) Long carRentalExpireTimeBegin,
             @RequestParam(value = "carRentalExpireTimeEnd", required = false) Long carRentalExpireTimeEnd,
-            @RequestParam(value = "carRentalExpireType", required = false) Integer carRentalExpireType) {
+            @RequestParam(value = "carRentalExpireType", required = false) Integer carRentalExpireType,
+            @RequestParam(value = "depositStatus", required = false) Integer depositStatus, @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
+            @RequestParam(value = "packageFreezeStatus", required = false) Integer packageFreezeStatus) {
         
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
@@ -667,8 +664,8 @@ public class JsonAdminUserInfoController extends BaseController {
         }
         
         UserInfoQuery userInfoQuery = UserInfoQuery.builder().carMemberCardExpireType(carRentalExpireType).carMemberCardExpireTimeBegin(carRentalExpireTimeBegin)
-                .carMemberCardExpireTimeEnd(carRentalExpireTimeEnd).uid(uid).name(name).phone(phone).sortType(sortType).sortBy(sortBy).franchiseeIds(franchiseeIds)
-                .storeIds(storeIds).tenantId(TenantContextHolder.getTenantId()).build();
+                .carMemberCardExpireTimeEnd(carRentalExpireTimeEnd).uid(uid).name(name).phone(phone).sortType(sortType).sortBy(sortBy).carDepositStatus(depositStatus)
+                .freezeStatus(packageFreezeStatus).franchiseeId(franchiseeId).franchiseeIds(franchiseeIds).storeIds(storeIds).tenantId(TenantContextHolder.getTenantId()).build();
         
         verifyCarMemberCardExpireTimeEnd(userInfoQuery);
         
