@@ -975,8 +975,6 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
                 BatteryMemberCard batteryMemberCard = memberCardService.queryByIdFromCache(memberCardId);
                 if (Objects.nonNull(batteryMemberCard) && Objects.equals(batteryMemberCard.getBusinessType(), BatteryMemberCard.BUSINESS_TYPE_ENTERPRISE)) {
                     userBatteryMemberCardService.unbindMembercardInfoByUid(userInfo.getUid());
-                    //删除用户电池型号
-                    userBatteryTypeService.deleteByUid(userInfo.getUid());
     
                     //删除用户电池服务费
                     serviceFeeUserInfoService.deleteByUid(userInfo.getUid());
