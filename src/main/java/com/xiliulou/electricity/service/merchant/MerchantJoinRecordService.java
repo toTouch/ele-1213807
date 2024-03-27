@@ -109,4 +109,6 @@ public interface MerchantJoinRecordService {
     Integer countSuccessByCondition(MerchantPromotionScanCodeQueryModel scanCodeQueryModel);
     
     MerchantJoinRecord querySuccessRecordByJoinUid(Long uid, Integer tenantId);
+    
+    Integer countEmployeeScanCodeSuccessNum(List<Long> employeeIds, Long startTime, Long endTime, Integer status, Integer tenantId, Long uid);
 }
