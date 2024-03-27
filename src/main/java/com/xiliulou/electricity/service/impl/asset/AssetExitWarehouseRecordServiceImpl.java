@@ -27,6 +27,7 @@ import com.xiliulou.electricity.service.ElectricityBatteryService;
 import com.xiliulou.electricity.service.ElectricityCarService;
 import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.StoreService;
+import com.xiliulou.electricity.service.asset.AssertPermissionService;
 import com.xiliulou.electricity.service.asset.AssetExitWarehouseDetailService;
 import com.xiliulou.electricity.service.asset.AssetExitWarehouseRecordService;
 import com.xiliulou.electricity.service.asset.AssetInventoryService;
@@ -34,18 +35,21 @@ import com.xiliulou.electricity.service.asset.AssetWarehouseRecordService;
 import com.xiliulou.electricity.service.asset.ElectricityCabinetV2Service;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.OrderIdUtil;
+import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.ElectricityBatteryVO;
 import com.xiliulou.electricity.vo.ElectricityCabinetVO;
 import com.xiliulou.electricity.vo.ElectricityCarVO;
 import com.xiliulou.electricity.vo.asset.AssetExitWarehouseVO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -93,6 +97,10 @@ public class AssetExitWarehouseRecordServiceImpl implements AssetExitWarehouseRe
     
     @Resource
     private AssetWarehouseRecordService assetWarehouseRecordService;
+    
+    @Resource
+    private AssertPermissionService assertPermissionService;
+    
     
     @Override
     public R save(AssetExitWarehouseSaveRequest assetExitWarehouseSaveRequest, Long operator) {
@@ -334,8 +342,13 @@ public class AssetExitWarehouseRecordServiceImpl implements AssetExitWarehouseRe
         BeanUtils.copyProperties(assetExitWarehouseRecordRequest, assetExitWarehouseQueryModel);
         assetExitWarehouseQueryModel.setTenantId(TenantContextHolder.getTenantId());
         
-        List<AssetExitWarehouseVO> rspList = Collections.emptyList();
+        Pair<Boolean, List<Long>> pair = assertPermissionService.assertPermissionByPair(SecurityUtils.getUserInfo());
+        if (!pair.getLeft()){
+            return new ArrayList<>();
+        }
+        assetExitWarehouseQueryModel.setFranchiseeIds(pair.getRight());
         
+        List<AssetExitWarehouseVO> rspList = Collections.emptyList();
         List<AssetExitWarehouseBO> assetExitWarehouseBOList = assetExitWarehouseRecordMapper.selectListByFranchiseeId(assetExitWarehouseQueryModel);
         if (CollectionUtils.isNotEmpty(assetExitWarehouseBOList)) {
             rspList = assetExitWarehouseBOList.stream().map(item -> {
@@ -369,7 +382,15 @@ public class AssetExitWarehouseRecordServiceImpl implements AssetExitWarehouseRe
         BeanUtils.copyProperties(assetExitWarehouseRecordRequest, assetExitWarehouseQueryModel);
         assetExitWarehouseQueryModel.setTenantId(TenantContextHolder.getTenantId());
         
+        Pair<Boolean, List<Long>> pair = assertPermissionService.assertPermissionByPair(SecurityUtils.getUserInfo());
+        if (!pair.getLeft()){
+            return NumberConstant.ZERO;
+        }
+        assetExitWarehouseQueryModel.setFranchiseeIds(pair.getRight());
+        
         return assetExitWarehouseRecordMapper.countTotal(assetExitWarehouseQueryModel);
     }
+    
+    
     
 }

@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.service.impl;
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.RandomUtil;
 import com.alibaba.excel.EasyExcel;
@@ -12,6 +13,7 @@ import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mapper.ShareActivityRecordMapper;
 import com.xiliulou.electricity.query.ShareActivityRecordQuery;
 import com.xiliulou.electricity.service.*;
+import com.xiliulou.electricity.service.asset.AssertPermissionService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.CouponVO;
@@ -22,6 +24,7 @@ import com.xiliulou.pay.weixin.shareUrl.GenerateShareUrlService;
 import com.xiliulou.security.bean.TokenUser;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.tuple.Pair;
+import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -76,6 +79,9 @@ public class ShareActivityRecordServiceImpl implements ShareActivityRecordServic
 
     @Autowired
     UserCouponService userCouponService;
+    
+    @Autowired
+    private AssertPermissionService assertPermissionService;
 
 
     /**
@@ -294,6 +300,12 @@ public class ShareActivityRecordServiceImpl implements ShareActivityRecordServic
             throw new CustomBusinessException("日期不合法请重新选择");
         }
         
+        Triple<List<Long>, List<Long>, Boolean> triple = assertPermissionService.assertPermissionByTriple(SecurityUtils.getUserInfo());
+        if(triple.getRight()){
+            shareActivityRecordQuery.setFranchiseeIds(triple.getLeft());
+            shareActivityRecordQuery.setStoreIds(triple.getMiddle());
+        }
+        
         List<ShareActivityRecordVO> shareActivityRecordVOList = shareActivityRecordMapper
                 .queryList(shareActivityRecordQuery);
         if (CollectionUtils.isEmpty(shareActivityRecordVOList)) {
@@ -330,6 +342,7 @@ public class ShareActivityRecordServiceImpl implements ShareActivityRecordServic
             log.error("导出报表失败！", e);
         }
     }
+    
     
     private String getStatusName(Integer status) {
         //1--初始化，2--已分享，3--分享失败

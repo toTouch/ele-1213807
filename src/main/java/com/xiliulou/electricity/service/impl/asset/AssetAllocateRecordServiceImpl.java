@@ -40,17 +40,20 @@ import com.xiliulou.electricity.service.ElectricityCarService;
 import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.PictureService;
 import com.xiliulou.electricity.service.StoreService;
+import com.xiliulou.electricity.service.asset.AssertPermissionService;
 import com.xiliulou.electricity.service.asset.AssetAllocateDetailService;
 import com.xiliulou.electricity.service.asset.AssetAllocateRecordService;
 import com.xiliulou.electricity.service.asset.AssetInventoryService;
 import com.xiliulou.electricity.service.asset.ElectricityCabinetV2Service;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.OrderIdUtil;
+import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.ElectricityBatteryVO;
 import com.xiliulou.electricity.vo.asset.AssetAllocateDetailVO;
 import com.xiliulou.electricity.vo.asset.AssetAllocateRecordVO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -114,6 +117,9 @@ public class AssetAllocateRecordServiceImpl implements AssetAllocateRecordServic
     
     @Autowired
     private PictureService pictureService;
+    
+    @Autowired
+    private AssertPermissionService assertPermissionService;
     
     @Override
     public R save(AssetAllocateRecordRequest assetAllocateRecordRequest, Long uid) {
@@ -436,6 +442,13 @@ public class AssetAllocateRecordServiceImpl implements AssetAllocateRecordServic
         AssetAllocateRecordPageQueryModel queryModel = new AssetAllocateRecordPageQueryModel();
         BeanUtil.copyProperties(allocateRecordPageRequest, queryModel);
         queryModel.setTenantId(TenantContextHolder.getTenantId());
+       
+        
+        Pair<Boolean, List<Long>> pair = assertPermissionService.assertPermissionByPair(SecurityUtils.getUserInfo());
+        if (!pair.getLeft()) {
+            return new ArrayList<>();
+        }
+        queryModel.setFranchiseeIds(pair.getRight());
         
         List<AssetAllocateRecordBO> allocateRecordBOList = assetAllocateRecordMapper.selectListByPage(queryModel);
         if (CollectionUtils.isNotEmpty(allocateRecordBOList)) {
@@ -486,7 +499,12 @@ public class AssetAllocateRecordServiceImpl implements AssetAllocateRecordServic
         BeanUtil.copyProperties(allocateRecordPageRequest, queryModel);
         queryModel.setTenantId(TenantContextHolder.getTenantId());
         
+        Pair<Boolean, List<Long>> pair = assertPermissionService.assertPermissionByPair(SecurityUtils.getUserInfo());
+        if (!pair.getLeft()) {
+            return NumberConstant.ZERO;
+        }
+        queryModel.setFranchiseeIds(pair.getRight());
+        
         return assetAllocateRecordMapper.countTotal(queryModel);
     }
-    
 }

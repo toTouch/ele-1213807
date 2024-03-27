@@ -116,10 +116,28 @@ public class JsonAdminBatteryMemberCardController extends BaseController {
             return R.ok(Collections.emptyList());
         }
         
-        BatteryMemberCardQuery query = BatteryMemberCardQuery.builder().size(size).offset(offset).tenantId(TenantContextHolder.getTenantId()).franchiseeId(franchiseeId)
-                .status(status).businessType(businessType == null ? 0 : businessType).rentType(rentType).rentUnit(rentUnit).name(name).delFlag(BatteryMemberCard.DEL_NORMAL)
-                .batteryModel(batteryModel).build();
-        
+        List<Long> franchiseeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if(CollectionUtils.isEmpty(franchiseeIds)){
+                return R.ok(Collections.emptyList());
+            }
+        }
+
+        BatteryMemberCardQuery query = BatteryMemberCardQuery.builder()
+                .size(size)
+                .offset(offset)
+                .tenantId(TenantContextHolder.getTenantId())
+                .franchiseeId(franchiseeId)
+                .status(status)
+                .businessType(businessType == null ?  0 : businessType)
+                .rentType(rentType)
+                .rentUnit(rentUnit)
+                .name(name)
+                .delFlag(BatteryMemberCard.DEL_NORMAL)
+                .franchiseeIds(franchiseeIds)
+                .batteryModel(batteryModel)
+                .build();
         return R.ok(batteryMemberCardService.selectByPage(query));
     }
     
@@ -141,9 +159,26 @@ public class JsonAdminBatteryMemberCardController extends BaseController {
             return R.ok(NumberConstant.ZERO);
         }
         
-        BatteryMemberCardQuery query = BatteryMemberCardQuery.builder().franchiseeId(franchiseeId).status(status).businessType(businessType == null ? 0 : businessType)
-                .rentType(rentType).rentUnit(rentUnit).name(name).tenantId(TenantContextHolder.getTenantId()).delFlag(BatteryMemberCard.DEL_NORMAL)
-                .batteryModel(batteryModel).build();
+        List<Long> franchiseeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if(CollectionUtils.isEmpty(franchiseeIds)){
+                return R.ok(NumberConstant.ZERO);
+            }
+        }
+
+        BatteryMemberCardQuery query = BatteryMemberCardQuery.builder()
+                .franchiseeId(franchiseeId)
+                .status(status)
+                .businessType(businessType == null ?  0 : businessType)
+                .rentType(rentType)
+                .rentUnit(rentUnit)
+                .name(name)
+                .tenantId(TenantContextHolder.getTenantId())
+                .delFlag(BatteryMemberCard.DEL_NORMAL)
+                .franchiseeIds(franchiseeIds)
+                .batteryModel(batteryModel)
+                .build();
         
         return R.ok(batteryMemberCardService.selectByPageCount(query));
     }

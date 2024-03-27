@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.google.common.collect.Lists;
@@ -20,6 +21,7 @@ import com.xiliulou.electricity.query.BatteryMemberCardQuery;
 import com.xiliulou.electricity.query.ShareMoneyActivityAddAndUpdateQuery;
 import com.xiliulou.electricity.query.ShareMoneyActivityQuery;
 import com.xiliulou.electricity.service.*;
+import com.xiliulou.electricity.service.asset.AssertPermissionService;
 import com.xiliulou.electricity.service.car.CarRentalPackageService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
@@ -29,6 +31,7 @@ import com.xiliulou.electricity.vo.ShareMoneyActivityVO;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,6 +40,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -89,6 +93,10 @@ public class ShareMoneyActivityServiceImpl implements ShareMoneyActivityService 
 
     @Autowired
     private JoinShareMoneyActivityHistoryService joinShareMoneyActivityHistoryService;
+    
+    
+    @Autowired
+    private AssertPermissionService assertPermissionService;
 
     /**
      * 通过ID查询单条数据从缓存
@@ -331,6 +339,12 @@ public class ShareMoneyActivityServiceImpl implements ShareMoneyActivityService 
 
     @Override
     public R queryList(ShareMoneyActivityQuery shareMoneyActivityQuery) {
+        Pair<Boolean, List<Long>> pair = assertPermissionService.assertPermissionByPair(SecurityUtils.getUserInfo());
+        if (!pair.getLeft()){
+            return R.ok(new ArrayList<>());
+        }
+        shareMoneyActivityQuery.setFranchiseeIds(pair.getRight());
+        
         List<ShareMoneyActivity> shareMoneyActivityList = shareMoneyActivityMapper.queryList(shareMoneyActivityQuery);
         List<ShareMoneyActivityVO> shareMoneyActivityVOList = Lists.newArrayList();
 
@@ -367,7 +381,8 @@ public class ShareMoneyActivityServiceImpl implements ShareMoneyActivityService 
 
         return R.ok(shareMoneyActivityVOList);
     }
-
+    
+    
     private List<BatteryMemberCardVO> getAllBatteryPackages(Integer tenantId){
         BatteryMemberCardQuery query = BatteryMemberCardQuery.builder()
                 .delFlag(BatteryMemberCard.DEL_NORMAL)
@@ -382,6 +397,12 @@ public class ShareMoneyActivityServiceImpl implements ShareMoneyActivityService 
 
     @Override
     public R queryCount(ShareMoneyActivityQuery shareMoneyActivityQuery) {
+        Pair<Boolean, List<Long>> pair = assertPermissionService.assertPermissionByPair(SecurityUtils.getUserInfo());
+        if (!pair.getLeft()){
+            return R.ok(NumberConstant.ZERO);
+        }
+        shareMoneyActivityQuery.setFranchiseeIds(pair.getRight());
+        
         Integer count = shareMoneyActivityMapper.queryCount(shareMoneyActivityQuery);
         return R.ok(count);
     }

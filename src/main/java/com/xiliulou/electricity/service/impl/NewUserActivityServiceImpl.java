@@ -1,12 +1,14 @@
 package com.xiliulou.electricity.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
+import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.Coupon;
 import com.xiliulou.electricity.entity.NewUserActivity;
 import com.xiliulou.electricity.entity.User;
@@ -15,13 +17,16 @@ import com.xiliulou.electricity.query.NewUserActivityAddAndUpdateQuery;
 import com.xiliulou.electricity.query.NewUserActivityQuery;
 import com.xiliulou.electricity.service.CouponService;
 import com.xiliulou.electricity.service.NewUserActivityService;
+import com.xiliulou.electricity.service.UserDataScopeService;
 import com.xiliulou.electricity.service.UserService;
+import com.xiliulou.electricity.service.asset.AssertPermissionService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.NewUserActivityVO;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -52,6 +57,9 @@ public class NewUserActivityServiceImpl implements NewUserActivityService {
 
 	@Autowired
 	UserService userService;
+	
+	@Autowired
+	private AssertPermissionService assertPermissionService;
 
 	/**
 	 * 通过ID查询单条数据从缓存
@@ -180,6 +188,12 @@ public class NewUserActivityServiceImpl implements NewUserActivityService {
 	@Slave
 	@Override
 	public R queryList(NewUserActivityQuery newUserActivityQuery) {
+		Pair<Boolean, List<Long>> pair = assertPermissionService.assertPermissionByPair(SecurityUtils.getUserInfo());
+		if (!pair.getLeft()){
+			return R.ok(new ArrayList<>());
+		}
+		newUserActivityQuery.setFranchiseeIds(pair.getRight());
+		
 		List<NewUserActivity> newUserActivityList = newUserActivityMapper.queryList(newUserActivityQuery);
 		if (ObjectUtil.isEmpty(newUserActivityList)) {
 			return R.ok(newUserActivityList);
@@ -202,8 +216,15 @@ public class NewUserActivityServiceImpl implements NewUserActivityService {
 	@Slave
 	@Override
 	public R queryCount(NewUserActivityQuery newUserActivityQuery) {
+		Pair<Boolean, List<Long>> pair = assertPermissionService.assertPermissionByPair(SecurityUtils.getUserInfo());
+		if (!pair.getLeft()){
+			return R.ok(NumberConstant.ZERO);
+		}
+		newUserActivityQuery.setFranchiseeIds(pair.getRight());
 		return R.ok(newUserActivityMapper.queryCount(newUserActivityQuery));
 	}
+	
+	
 
 	@Override
 	public R queryInfo(Integer id) {
