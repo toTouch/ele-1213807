@@ -4,9 +4,9 @@ import com.xiliulou.electricity.entity.FranchiseeMoveInfo;
 import com.xiliulou.electricity.validator.CreateGroup;
 import com.xiliulou.electricity.validator.UpdateGroup;
 import lombok.Data;
+import org.hibernate.validator.constraints.Range;
 
 import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
 import java.util.List;
 
 /**
@@ -136,6 +136,11 @@ public class ElectricityConfigAddAndUpdateQuery {
      *  冻结是否强制退资产 0--是 1--否
      */
     private Integer allowFreezeWithAssets;
+    /**
+     * 打开微信客服 0-是 1-否
+     */
+    private Integer wxCustomer;
+
 }
 
 
