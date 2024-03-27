@@ -323,7 +323,9 @@
                ui.phone       as phone,
                ec.status      AS carStatus,
                ec.update_time AS updateTime,
-               ec.create_time AS creatTime crpmt.due_time  AS dueTime,ec.latitude AS latitude,
+               ec.create_time AS creatTime,
+               crpmt.due_time  AS dueTime,
+               ec.latitude AS latitude,
                ec.longitude   AS longitude
         from t_electricity_car ec
                  left join t_user_info ui on ec.uid = ui.uid
