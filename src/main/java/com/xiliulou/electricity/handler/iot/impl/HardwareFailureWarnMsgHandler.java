@@ -15,6 +15,7 @@ import com.xiliulou.iot.entity.ReceiverMessage;
 import com.xiliulou.mq.service.RocketMqService;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.BeanUtils;
@@ -67,6 +68,22 @@ public class HardwareFailureWarnMsgHandler extends AbstractElectricityIotHandler
         Pair<Boolean, String> sendResult = eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
         if (!sendResult.getLeft()) {
             log.error("HARDWARE WARN MSG ERROR! send command error! requestId:{}", receiverMessage.getSessionId());
+        }
+        
+        //系统锁仓通知
+        abnormalLockCellNotify(electricityCabinet,list);
+    }
+    
+    private void abnormalLockCellNotify(ElectricityCabinet electricityCabinet, List<HardwareFailureWarnMqMsg> list) {
+        if(CollectionUtils.isEmpty(list)){
+            return;
+        }
+    
+        for (HardwareFailureWarnMqMsg failureWarnMsg : list) {
+        
+        
+        
+        
         }
     }
     
