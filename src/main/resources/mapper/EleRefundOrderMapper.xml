@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.xiliulou.electricity.mapper.EleRefundOrderMapper">
-
+    
     <resultMap type="com.xiliulou.electricity.entity.EleRefundOrder" id="eleRefundOrderMap">
         <result property="id" column="id" jdbcType="INTEGER"/>
         <result property="refundOrderNo" column="refund_order_no" jdbcType="VARCHAR"/>
@@ -17,7 +17,7 @@
         <result property="createTime" column="create_time" jdbcType="INTEGER"/>
         <result property="updateTime" column="update_time" jdbcType="INTEGER"/>
     </resultMap>
-
+    
     <!-- 基础字段信息获取 -->
     <sql id="selectEleRefundOrder">
         select id,
@@ -36,7 +36,7 @@
                update_time
         from t_ele_refund_order
     </sql>
-
+    
     <!--查询指定行数据-->
     <select id="queryList" resultType="com.xiliulou.electricity.vo.EleRefundOrderVO">
         select
@@ -75,15 +75,21 @@
             <if test="query.phone != null and query.phone != ''">
                 and tedo.phone = #{query.phone}
             </if>
+            <if test="query.orderType != null">
+                and tedo.order_type = #{query.orderType}
+            </if>
+            <if test="query.refundOrderNo != null and query.refundOrderNo != ''">
+                and tero.refund_order_no = #{query.refundOrderNo}
+            </if>
             <if test="query.storeIds != null">
                 and tedo.store_id in
-                <foreach collection="query.storeIds" item="id" index="index" open="(" close=")"  separator=",">
+                <foreach collection="query.storeIds" item="id" index="index" open="(" close=")" separator=",">
                     #{id}
                 </foreach>
             </if>
             <if test="query.franchiseeIds != null">
                 and tedo.franchisee_id in
-                <foreach collection="query.franchiseeIds" item="id" index="index" open="(" close=")"  separator=",">
+                <foreach collection="query.franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
                     #{id}
                 </foreach>
             </if>
@@ -91,7 +97,7 @@
         order by tero.update_time desc
         limit #{query.offset}, #{query.size}
     </select>
-
+    
     <!--租车押金退款分页-->
     <select id="selectCarRefundPageList" resultType="com.xiliulou.electricity.vo.EleRefundOrderVO">
         select
@@ -129,13 +135,13 @@
             </if>
             <if test="storeIds != null">
                 and tedo.store_id in
-                <foreach collection="storeIds" item="id" index="index" open="(" close=")"  separator=",">
+                <foreach collection="storeIds" item="id" index="index" open="(" close=")" separator=",">
                     #{id}
                 </foreach>
             </if>
             <if test="franchiseeIds != null">
                 and tedo.franchisee_id in
-                <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")"  separator=",">
+                <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
                     #{id}
                 </foreach>
             </if>
@@ -143,8 +149,8 @@
         order by tero.update_time desc
         limit #{offset}, #{size}
     </select>
-
-
+    
+    
     <select id="queryCount" resultType="java.lang.Integer">
         select COUNT(1)
         from t_ele_refund_order tero left join t_ele_deposit_order as tedo on tero.order_id= tedo.order_id
@@ -176,21 +182,27 @@
             <if test="query.payType != null">
                 and tedo.pay_type = #{query.payType}
             </if>
+            <if test="query.refundOrderNo != null and query.refundOrderNo != ''">
+                and tero.refund_order_no like concat('%', #{query.phone,jdbcType=VARCHAR}, '%')
+            </if>
+            <if test="query.orderType != null and query.orderType != ''">
+                and tedo.order_type = #{query.orderType}
+            </if>
             <if test="query.storeIds != null">
                 and tedo.store_id in
-                <foreach collection="query.storeIds" item="id" index="index" open="(" close=")"  separator=",">
+                <foreach collection="query.storeIds" item="id" index="index" open="(" close=")" separator=",">
                     #{id}
                 </foreach>
             </if>
             <if test="query.franchiseeIds != null">
                 and tedo.franchisee_id in
-                <foreach collection="query.franchiseeIds" item="id" index="index" open="(" close=")"  separator=",">
+                <foreach collection="query.franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
                     #{id}
                 </foreach>
             </if>
         </where>
     </select>
-
+    
     <!--租车分页列表总数-->
     <select id="selectCarRefundPageCount" resultType="java.lang.Integer">
         select COUNT(1)
@@ -222,23 +234,27 @@
             </if>
             <if test="storeIds != null">
                 and tedo.store_id in
-                <foreach collection="storeIds" item="id" index="index" open="(" close=")"  separator=",">
+                <foreach collection="storeIds" item="id" index="index" open="(" close=")" separator=",">
                     #{id}
                 </foreach>
             </if>
             <if test="franchiseeIds != null">
                 and tedo.franchisee_id in
-                <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")"  separator=",">
+                <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
                     #{id}
                 </foreach>
             </if>
         </where>
     </select>
-
+    
     <select id="queryUserInfoId" resultType="java.lang.Long">
-        select tu.id from t_ele_deposit_order tedo left join  t_ele_refund_order tero on tedo.order_id =tero.order_id  left join t_user_info tu on tu.uid=tedo.uid where tero.refund_order_no=#{refundOrderNo}
+        select tu.id
+        from t_ele_deposit_order tedo
+                 left join t_ele_refund_order tero on tedo.order_id = tero.order_id
+                 left join t_user_info tu on tu.uid = tedo.uid
+        where tero.refund_order_no = #{refundOrderNo}
     </select>
-
+    
     <select id="queryTurnOver" resultType="decimal">
         select ifnull(sum(pay_amount),0) from t_ele_refund_order
         where status=4
@@ -246,7 +262,7 @@
             and tenant_id = #{tenantId}
         </if>
     </select>
-
+    
     <select id="queryTurnOverByTime" resultType="decimal">
         select sum(refund_amount) from t_ele_refund_order tero left join t_ele_deposit_order tedo on tero.order_id=tedo.order_id
         where tero.status=4
@@ -261,7 +277,7 @@
         </if>
         <if test="franchiseeIds != null">
             and tedo.franchisee_id in
-            <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")"  separator=",">
+            <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
                 #{id}
             </foreach>
         </if>
@@ -269,7 +285,7 @@
             and tedo.pay_type = #{payType}
         </if>
     </select>
-
+    
     <select id="queryCarRefundTurnOverByTime" resultType="decimal">
         select sum(refund_amount) from t_ele_refund_order tero left join t_car_deposit_order tedo on tero.order_id=tedo.order_id
         where tero.status=4
@@ -284,7 +300,7 @@
         </if>
         <if test="franchiseeIds != null">
             and tedo.franchisee_id in
-            <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")"  separator=",">
+            <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
                 #{id}
             </foreach>
         </if>
@@ -292,27 +308,41 @@
             and pay_type = #{payType}
         </if>
     </select>
-
+    
     <select id="queryRefundTime" resultType="long">
-        select update_time from t_ele_refund_order where order_id=#{orderId} and refund_order_type = #{refundOrderType} and status=4;
+        select update_time
+        from t_ele_refund_order
+        where order_id = #{orderId}
+          and refund_order_type = #{refundOrderType}
+          and status = 4;
     </select>
-
-
+    
+    
     <select id="selectBatteryFreeDepositRefundingOrder" resultType="com.xiliulou.electricity.entity.EleRefundOrder">
-        select
-        ero.id,ero.order_id, ero.tenant_id from t_ele_refund_order  ero
-        left join t_ele_deposit_order edo on ero.order_id=edo.order_id
-        WHERE edo.pay_type=2 and ero.status=3 and ero.refund_order_type=0 limit #{offset},#{size}
+        select ero.id,
+               ero.order_id,
+               ero.tenant_id
+        from t_ele_refund_order ero
+                 left join t_ele_deposit_order edo on ero.order_id = edo.order_id
+        WHERE edo.pay_type = 2
+          and ero.status = 3
+          and ero.refund_order_type = 0 limit #{offset}
+            , #{size}
     </select>
-
-
+    
+    
     <select id="selectCarFreeDepositRefundingOrder" resultType="com.xiliulou.electricity.entity.EleRefundOrder">
-        select
-        ero.id,ero.order_id, ero.tenant_id from t_ele_refund_order  ero
-        left join t_car_deposit_order cdo on ero.order_id=cdo.order_id
-        WHERE cdo.pay_type=2 and ero.status=3 and ero.refund_order_type=1 limit #{offset},#{size}
+        select ero.id,
+               ero.order_id,
+               ero.tenant_id
+        from t_ele_refund_order ero
+                 left join t_car_deposit_order cdo on ero.order_id = cdo.order_id
+        WHERE cdo.pay_type = 2
+          and ero.status = 3
+          and ero.refund_order_type = 1 limit #{offset}
+            , #{size}
     </select>
-
+    
     <select id="selectLatestRefundDepositOrder" resultMap="eleRefundOrderMap">
         <include refid="selectEleRefundOrder"/>
         where order_id = #{paymentOrderNo}

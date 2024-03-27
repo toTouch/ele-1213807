@@ -401,13 +401,28 @@ public class InsuranceOrderServiceImpl extends ServiceImpl<InsuranceOrderMapper,
         
         //生成保险独立订单
         String insuranceOrderId = OrderIdUtil.generateBusinessOrderId(BusinessType.BATTERY_INSURANCE, userInfo.getUid());
-        InsuranceOrder insuranceOrder = InsuranceOrder.builder().insuranceId(franchiseeInsurance.getId()).insuranceName(franchiseeInsurance.getName())
-                .insuranceType(FranchiseeInsurance.INSURANCE_TYPE_BATTERY).orderId(insuranceOrderId).cid(franchiseeInsurance.getCid())
-                .franchiseeId(franchiseeInsurance.getFranchiseeId()).isUse(InsuranceOrder.NOT_USE).payAmount(franchiseeInsurance.getPremium())
-                .forehead(franchiseeInsurance.getForehead()).payType(InsuranceOrder.ONLINE_PAY_TYPE).phone(userInfo.getPhone()).status(InsuranceOrder.STATUS_INIT)
-                .tenantId(userInfo.getTenantId()).storeId(userInfo.getStoreId()).uid(userInfo.getUid()).userName(userInfo.getName()).validDays(franchiseeInsurance.getValidDays())
-                .createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).build();
-        
+        InsuranceOrder insuranceOrder = InsuranceOrder.builder()
+                .insuranceId(franchiseeInsurance.getId())
+                .insuranceName(franchiseeInsurance.getName())
+                .insuranceType(FranchiseeInsurance.INSURANCE_TYPE_BATTERY)
+                .orderId(insuranceOrderId)
+                .cid(franchiseeInsurance.getCid())
+                .franchiseeId(franchiseeInsurance.getFranchiseeId())
+                .isUse(InsuranceOrder.NOT_USE)
+                .payAmount(franchiseeInsurance.getPremium())
+                .forehead(franchiseeInsurance.getForehead())
+                .payType(InsuranceOrder.ONLINE_PAY_TYPE)
+                .phone(userInfo.getPhone())
+                .status(InsuranceOrder.STATUS_INIT)
+                .tenantId(userInfo.getTenantId())
+                .storeId(userInfo.getStoreId())
+                .uid(userInfo.getUid())
+                .userName(userInfo.getName())
+                .validDays(franchiseeInsurance.getValidDays())
+                .createTime(System.currentTimeMillis())
+                .updateTime(System.currentTimeMillis())
+                .simpleBatteryType(franchiseeInsurance.getSimpleBatteryType()).build();
+
         return Triple.of(true, "", insuranceOrder);
     }
     

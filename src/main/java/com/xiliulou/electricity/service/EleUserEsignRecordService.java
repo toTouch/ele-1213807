@@ -16,5 +16,7 @@ public interface EleUserEsignRecordService {
     List<EleUserEsignRecordVO> queryUserEsignRecords(EleUserEsignRecordQuery eleUserEsignRecordQuery);
 
     Integer queryCount(EleUserEsignRecordQuery eleUserEsignRecordQuery);
+    
+    EleUserEsignRecord queryUserEsignRecordFromDB(Long uid, Long tenantId);
 
 }

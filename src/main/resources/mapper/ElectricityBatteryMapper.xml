@@ -1229,6 +1229,22 @@
           </foreach>
     </select>
     
+    <select id="listBatteryBySn" resultType="com.xiliulou.electricity.vo.ElectricityBatteryVO">
+        SELECT
+            id,
+            sn
+        FROM
+            t_electricity_battery
+        <where>
+            del_flag = 0
+            and franchisee_id = #{franchiseeId}
+            <if test="sn != null and sn !=''">
+                and sn like concat('%',#{sn,jdbcType=VARCHAR},'%')
+            </if>
+        </where>
+        limit #{offset}, #{size}
+    </select>
+    
     <update id="batchExitWarehouse">
         update t_electricity_battery
         <set>

@@ -34,6 +34,7 @@
         <result property="couponId" column="coupon_id" jdbcType="BIGINT" />
         <result property="status" column="status" jdbcType="INTEGER" />
         <result property="remark" column="remark" jdbcType="VARCHAR" />
+        <result property="sortParam" column="sort_param" jdbcType="BIGINT" />
     </resultMap>
 
     <!-- 表名 -->
@@ -47,7 +48,7 @@
     <!-- 私有字段 -->
     <sql id="private_field">
         `name`, `type`, `tenancy`, `tenancy_unit`, `rent`, `deposit`, `car_model_id`, `battery_voltage`, `applicable_type`, `rent_rebate`, `rent_rebate_term`, `free_deposit`,
-        `rent_unit_price`, `late_fee`, `confine`, `confine_num`, `give_coupon`, `coupon_id`, `status`, `remark`
+        `rent_unit_price`, `late_fee`, `confine`, `confine_num`, `give_coupon`, `coupon_id`, `status`, `remark`, `sort_param`
     </sql>
 
     <!-- 全部字段 -->
@@ -129,6 +130,7 @@
             <if test=" couponId != null "> `coupon_id`, </if>
             <if test=" status != null "> `status`, </if>
             <if test=" remark != null and remark != '' "> `remark`, </if>
+            <if test=" sortParam != null "> `sort_param`, </if>
         </trim>
     </sql>
     <!-- 条件新增字段值 -->
@@ -162,6 +164,7 @@
             <if test=" couponId != null "> #{couponId}, </if>
             <if test=" status != null "> #{status}, </if>
             <if test=" remark != null and remark != '' "> #{remark}, </if>
+            <if test=" sortParam != null "> #{sortParam}, </if>
         </trim>
     </sql>
 
@@ -222,7 +225,8 @@
             `del_flag` = 0
             <include refid="where_field" />
         </where>
-        ORDER BY `create_time` DESC
+        GROUP BY `id`
+        ORDER BY `status`, `sort_param` DESC
         LIMIT #{offset}, #{size}
     </select>
 
@@ -267,7 +271,20 @@
             `id` = #{id}
         </where>
     </update>
-
+    
+    <update id="batchUpdateSortParam">
+        update <include refid="table_name"/>
+        set sort_param = case id
+        <foreach collection="sortParamQueries" item="item" index="index">
+            when #{item.id} then #{item.sortParam}
+        </foreach>
+        end
+        where id in
+        <foreach collection="sortParamQueries" item="item" index="index" open="(" separator="," close=")">
+            #{item.id}
+        </foreach>
+    </update>
+    
     <!-- 条件新增 -->
     <insert id="insert" parameterType="com.xiliulou.electricity.entity.car.CarRentalPackagePo" useGeneratedKeys="true" keyProperty="id">
         INSERT INTO <include refid="table_name" /> <include refid="insert_field" /> VALUES <include refid="insert_value" />
@@ -279,6 +296,17 @@
         <where>
             `coupon_id` = #{couponId} and `del_flag` = 0
         </where>
+    </select>
+    
+    <select id="listCarRentalPackageForSort" resultType="com.xiliulou.electricity.entity.car.CarRentalPackagePo">
+        select `id`, `name`, `create_time`, `sort_param`
+        from <include refid="table_name"/>
+        where `del_flag` = 0
+        and `status` = 0
+        <if test="tenantId != null">
+            and `tenant_id` = #{tenantId}
+        </if>
+        order by `id` desc
     </select>
 
 </mapper>

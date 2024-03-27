@@ -255,4 +255,6 @@ public interface ElectricityCabinetService {
     List<ElectricityCabinetCountVO> queryCabinetCount(ElectricityCabinetQuery cabinetQuery);
     
     void addElectricityCabinetLocToGeo(ElectricityCabinet electricityCabinet);
+    
+    List<Integer> listIdsByName(String name);
 }

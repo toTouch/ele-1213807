@@ -1650,4 +1650,10 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
         return electricitybatterymapper.selectListByIdList(idList);
     }
     
+    @Override
+    @Slave
+    public List<ElectricityBatteryVO> listBatteryBySn(Integer offset, Integer size, Long franchiseeId, String sn) {
+    
+        return electricitybatterymapper.listBatteryBySn(offset, size, franchiseeId, sn);
+    }
 }

@@ -1,16 +1,13 @@
 package com.xiliulou.electricity.service.impl;
 
-import cn.hutool.core.collection.CollUtil;
+import com.xiliulou.electricity.entity.EleUserEsignRecord;
 import com.xiliulou.electricity.constant.NumberConstant;
-import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.mapper.EleUserEsignRecordMapper;
 import com.xiliulou.electricity.query.EleUserEsignRecordQuery;
 import com.xiliulou.electricity.service.EleUserEsignRecordService;
-import com.xiliulou.electricity.service.UserDataScopeService;
 import com.xiliulou.electricity.service.asset.AssertPermissionService;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.EleUserEsignRecordVO;
-import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.stereotype.Service;
@@ -60,6 +57,15 @@ public class EleUserEsignRecordServiceImpl implements EleUserEsignRecordService 
         eleUserEsignRecordQuery.setStoreIds(triple.getMiddle());
         return eleUserEsignRecordMapper.selectByPageCount(eleUserEsignRecordQuery);
     }
-    
-    
+
+    @Override
+    public EleUserEsignRecord queryUserEsignRecordFromDB(Long uid, Long tenantId) {
+        
+        if (Objects.isNull(uid)) {
+            return null;
+        }
+        
+        return eleUserEsignRecordMapper.selectLatestEsignRecordByUser(uid, tenantId);
+    }
+
 }

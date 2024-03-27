@@ -115,4 +115,6 @@ public interface ElectricityCabinetMapper extends BaseMapper<ElectricityCabinet>
     List<ElectricityCabinetBO> selectListByIdList(@Param("idList") List<Integer> idList);
     
     List<ElectricityCabinetCountVO> selectCabinetCount(ElectricityCabinetQuery cabinetQuery);
+    
+    List<Integer> listIdsByName(@Param("name") String name);
 }

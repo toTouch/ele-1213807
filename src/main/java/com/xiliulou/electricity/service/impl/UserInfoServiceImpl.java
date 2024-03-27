@@ -29,6 +29,7 @@ import com.xiliulou.electricity.entity.EleAuthEntry;
 import com.xiliulou.electricity.entity.EleDepositOrder;
 import com.xiliulou.electricity.entity.EleDisableMemberCardRecord;
 import com.xiliulou.electricity.entity.EleUserAuth;
+import com.xiliulou.electricity.entity.EleUserEsignRecord;
 import com.xiliulou.electricity.entity.EleUserOperateHistory;
 import com.xiliulou.electricity.entity.EleUserOperateRecord;
 import com.xiliulou.electricity.entity.ElectricityBattery;
@@ -60,6 +61,7 @@ import com.xiliulou.electricity.enums.BatteryMemberCardBusinessTypeEnum;
 import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.enums.MemberTermStatusEnum;
 import com.xiliulou.electricity.enums.RentalPackageTypeEnum;
+import com.xiliulou.electricity.enums.SignStatusEnum;
 import com.xiliulou.electricity.enums.YesNoEnum;
 import com.xiliulou.electricity.enums.enterprise.RentBatteryOrderTypeEnum;
 import com.xiliulou.electricity.enums.enterprise.UserCostTypeEnum;
@@ -81,6 +83,7 @@ import com.xiliulou.electricity.service.EleBatteryServiceFeeOrderService;
 import com.xiliulou.electricity.service.EleDepositOrderService;
 import com.xiliulou.electricity.service.EleDisableMemberCardRecordService;
 import com.xiliulou.electricity.service.EleUserAuthService;
+import com.xiliulou.electricity.service.EleUserEsignRecordService;
 import com.xiliulou.electricity.service.EleUserOperateHistoryService;
 import com.xiliulou.electricity.service.EleUserOperateRecordService;
 import com.xiliulou.electricity.service.ElectricityBatteryService;
@@ -367,6 +370,9 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     
     @Autowired
     EleUserOperateHistoryService eleUserOperateHistoryService;
+    
+    @Autowired
+    EleUserEsignRecordService eleUserEsignRecordService;
     
     /**
      * 分页查询
@@ -2059,6 +2065,15 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             vo.setEnterpriseChannelUserInfo(enterpriseChannelUserVO);
         }
         
+        // 设置电子签名信息
+        EleUserEsignRecord eleUserEsignRecord = eleUserEsignRecordService.queryUserEsignRecordFromDB(userInfo.getUid(), Long.valueOf(TenantContextHolder.getTenantId()));
+        if (Objects.nonNull(eleUserEsignRecord)) {
+            vo.setSignFlowId(eleUserEsignRecord.getSignFlowId());
+            vo.setSignFinishStatus(Objects.isNull(eleUserEsignRecord) ? SignStatusEnum.UNSIGNED.getCode() :
+                    (Objects.equals(1, eleUserEsignRecord.getSignFinishStatus()) ? SignStatusEnum.SIGNED_COMPLETED.getCode() : SignStatusEnum.SIGNED_INCOMPLETE.getCode()));
+        }
+        
+        
         // 根据openId判断是否可解绑微信
         UserOauthBind userOauthBind = userOauthBindService.selectByUidAndPhone(vo.getPhone(), uid, TenantContextHolder.getTenantId());
         if (Objects.nonNull(userOauthBind) && StringUtils.isNotBlank(userOauthBind.getThirdId())) {
@@ -2086,8 +2101,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                 clearUserOauthBindToken(userOauthBinds);
             }
             DbUtils.dbOperateSuccessThenHandleCache(
-                    userOauthBindService.updateOpenIdByUid(StringUtils.EMPTY, UserOauthBind.STATUS_UN_BIND, userOauthBind.getUid(),
-                            TenantContextHolder.getTenantId()), i -> {
+                    userOauthBindService.updateOpenIdByUid(StringUtils.EMPTY, UserOauthBind.STATUS_UN_BIND, userOauthBind.getUid(), TenantContextHolder.getTenantId()), i -> {
                         // 添加解绑操作记录
                         EleUserOperateHistory eleUserOperateHistory = buildEleUserOperateHistory(userInfo, EleUserOperateHistoryConstant.OPERATE_CONTENT_UNBIND_VX,
                                 EleUserOperateHistoryConstant.UNBIND_VX_OLD_OPERATION, EleUserOperateHistoryConstant.UNBIND_VX_NEW_OPERATION);
@@ -2140,7 +2154,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         }
         
         // 更新用戶
-        DbUtils.dbOperateSuccessThenHandleCache(userInfoMapper.updatePhoneByUid(TenantContextHolder.getTenantId(), uid, phone,System.currentTimeMillis()), i -> {
+        DbUtils.dbOperateSuccessThenHandleCache(userInfoMapper.updatePhoneByUid(TenantContextHolder.getTenantId(), uid, phone, System.currentTimeMillis()), i -> {
             redisService.delete(CacheConstant.CACHE_USER_INFO + userInfo.getUid());
         });
         
@@ -2151,7 +2165,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                 redisService.delete(CacheConstant.CACHE_USER_PHONE + TenantContextHolder.getTenantId() + ":" + user.getPhone() + ":" + user.getUserType());
             }
         });
-    
+        
         // 更新成功后 强制用户重新登录
         List<UserOauthBind> userOauthBinds = userOauthBindService.queryListByUid(uid);
         if (DataUtil.collectionIsUsable(userOauthBinds)) {
@@ -2159,7 +2173,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         }
         
         userOauthBindService.updatePhoneByUid(TenantContextHolder.getTenantId(), uid, phone);
-    
+        
         // 添加更換手机号操作记录
         EleUserOperateHistory eleUserOperateHistory = buildEleUserOperateHistory(userInfo, EleUserOperateHistoryConstant.OPERATE_CONTENT_UPDATE_PHONE, userInfo.getPhone(), phone);
         eleUserOperateHistoryService.asyncHandleEleUserOperateHistory(eleUserOperateHistory);
@@ -2910,7 +2924,9 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     }
     
     //TODO 优化
-    private String queryFinalInviterUserName(Long uid, Integer tenantId) {
+    @Override
+    @Slave
+    public String queryFinalInviterUserName(Long uid, Integer tenantId) {
         FinalJoinShareActivityHistoryVo finalJoinShareActivityHistoryVo = joinShareActivityHistoryService.queryFinalHistoryByJoinUid(uid, tenantId);
         if (Objects.nonNull(finalJoinShareActivityHistoryVo)) {
             return finalJoinShareActivityHistoryVo.getUserName();
@@ -2941,10 +2957,12 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     @Override
     @Slave
     public R queryEleList(UserInfoQuery userInfoQuery) {
+        
         List<UserEleInfoVO> userEleInfoVOS = userInfoMapper.queryEleList(userInfoQuery);
         if (ObjectUtil.isEmpty(userEleInfoVOS)) {
             return R.ok(Collections.emptyList());
         }
+        
         //获取用户电池套餐相关信息
         CompletableFuture<Void> queryUserBatteryMemberCardInfo = CompletableFuture.runAsync(() -> {
             userEleInfoVOS.forEach(item -> {
@@ -2998,6 +3016,16 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                     item.setIsUse(insuranceUserInfoVo.getIsUse());
                     item.setInsuranceExpireTime(insuranceUserInfoVo.getInsuranceExpireTime());
                 }
+                
+                // 设置已缴纳押金的用户的具体状态，为实缴还是免押，实缴：1  免押：2
+                if (Objects.equals(UserInfo.BATTERY_DEPOSIT_STATUS_YES, item.getBatteryDepositStatus())) {
+                    UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(item.getUid());
+                    if (Objects.nonNull(userBatteryDeposit)) {
+        
+                        item.setBatteryDepositStatus(Objects.equals(0, userBatteryDeposit.getDepositType()) ? 1 : 2);
+                    }
+                }
+                
             });
         }, threadPool).exceptionally(e -> {
             log.error("ELE ERROR! query user other info error!", e);

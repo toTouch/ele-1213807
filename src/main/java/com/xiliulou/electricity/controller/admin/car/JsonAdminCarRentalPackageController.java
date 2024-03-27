@@ -10,6 +10,7 @@ import com.xiliulou.electricity.enums.RentalPackageTypeEnum;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.model.car.opt.CarRentalPackageOptModel;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageQryModel;
+import com.xiliulou.electricity.query.MemberCardAndCarRentalPackageSortParamQuery;
 import com.xiliulou.electricity.query.car.CarRentalPackageQryReq;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.service.car.CarRentalPackageCarBatteryRelService;
@@ -17,6 +18,7 @@ import com.xiliulou.electricity.service.car.CarRentalPackageService;
 import com.xiliulou.electricity.service.car.biz.CarRentalPackageBizService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
+import com.xiliulou.electricity.utils.ValidList;
 import com.xiliulou.electricity.vo.car.CarRentalPackageVo;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
@@ -25,6 +27,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.BeanUtils;
 import org.springframework.util.CollectionUtils;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
@@ -416,5 +419,49 @@ public class JsonAdminCarRentalPackageController extends BasicController {
 
         return R.ok(carRentalPackageBizService.insertPackage(optModel));
     }
-
+    
+    /**
+     * 批量修改套餐排序参数，排序参数为用户端排序使用
+     * @param sortParamQueries
+     * @return
+     */
+    @PostMapping("/batchUpdateSortParam")
+    public R batchUpdateSortParam(@RequestBody @Validated ValidList<MemberCardAndCarRentalPackageSortParamQuery> sortParamQueries) {
+    
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+    
+        // 仅超级管理员和运营商可修改排序参数
+        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
+            return R.ok();
+        }
+        
+        if (sortParamQueries.isEmpty()) {
+            return R.ok();
+        }
+        
+        return R.ok(carRentalPackageService.batchUpdateSortParam(sortParamQueries));
+    }
+    
+    /**
+     * 查询租车套餐以供排序
+     * @return
+     */
+    @GetMapping("/listCarRentalPackageForSort")
+    public R listCarRentalPackageForSort() {
+    
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+    
+        // 查询数据较多，限制仅超级管理员和运营商可使用
+        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
+            return R.ok();
+        }
+        
+        return R.ok(carRentalPackageService.listCarRentalPackageForSort());
+    }
 }

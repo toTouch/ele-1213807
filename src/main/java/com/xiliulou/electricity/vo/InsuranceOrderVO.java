@@ -62,4 +62,9 @@ public class InsuranceOrderVO {
      * 来源订单编码
      */
     private String sourceOrderNo;
+    
+    /**
+     * 电池型号
+     */
+    private String simpleBatteryType;
 }

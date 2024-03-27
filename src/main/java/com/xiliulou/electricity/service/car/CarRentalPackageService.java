@@ -2,6 +2,7 @@ package com.xiliulou.electricity.service.car;
 
 import com.xiliulou.electricity.entity.car.CarRentalPackagePo;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageQryModel;
+import com.xiliulou.electricity.query.MemberCardAndCarRentalPackageSortParamQuery;
 
 import java.util.List;
 
@@ -103,5 +104,8 @@ public interface CarRentalPackageService {
      * @return
      */
     List<CarRentalPackagePo> findByCouponId(Long couponId);
-
+    
+    Integer batchUpdateSortParam(List<MemberCardAndCarRentalPackageSortParamQuery> sortParamQueries);
+    
+    List<CarRentalPackagePo> listCarRentalPackageForSort();
 }
