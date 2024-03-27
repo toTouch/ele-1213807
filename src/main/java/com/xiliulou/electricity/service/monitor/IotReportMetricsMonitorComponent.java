@@ -57,9 +57,10 @@ public class IotReportMetricsMonitorComponent {
             if (!DataUtil.mapIsUsable(meterMap)) {
                 sleep();
             }
-            
+    
             meterMap.forEach((k, v) -> {
-                IOT_REPORT_COUNT_METRIC.labels(String.valueOf(v.getMeanRate()), String.valueOf(v.getOneMinuteRate()), String.valueOf(v.getFiveMinuteRate())).set(v.getCount());
+                IOT_REPORT_COUNT_METRIC.labels(String.format("%.2f", v.getMeanRate()), String.format("%.2f", v.getOneMinuteRate()), String.format("%.2f", v.getFiveMinuteRate()))
+                        .set(v.getCount());
             });
             
             sleep();
