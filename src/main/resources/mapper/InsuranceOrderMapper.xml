@@ -75,6 +75,9 @@
                     #{id}
                 </foreach>
             </if>
+            <if test="query.insuranceId != null">
+                and tio.insurance_id = #{query.insuranceId}
+            </if>
         </where>
         order by tio.create_time desc
         limit #{query.offset},#{query.size}
@@ -139,6 +142,9 @@
                 <foreach collection="query.storeIds" item="id" index="index" open="(" close=")" separator=",">
                     #{id}
                 </foreach>
+            </if>
+            <if test="query.insuranceId != null">
+                and tio.insurance_id = #{query.insuranceId}
             </if>
         </where>
     </select>

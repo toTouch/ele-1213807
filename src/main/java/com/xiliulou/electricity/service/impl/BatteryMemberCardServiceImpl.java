@@ -39,6 +39,7 @@ import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.BatteryMemberCardAndTypeVO;
 import com.xiliulou.electricity.vo.BatteryMemberCardSearchVO;
 import com.xiliulou.electricity.vo.BatteryMemberCardVO;
+import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -623,8 +624,12 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
             return Triple.of(false, "ELECTRICITY.00121", "套餐不存在");
         }
         
+        if (Objects.nonNull(userBatteryMemberCardService.checkUserByMembercardId(id))){
+            return Triple.of(false, "100272", "当前套餐有用户使用，暂不支持删除");
+        }
+        
         if (Objects.nonNull(electricityMemberCardOrderService.checkOrderByMembercardId(id))) {
-            return Triple.of(false, "100272", "删除失败，该套餐已生成订单");
+            return Triple.of(false, "100272", "当前套餐有用户使用，暂不支持删除");
         }
         
         //套餐是否绑定企业

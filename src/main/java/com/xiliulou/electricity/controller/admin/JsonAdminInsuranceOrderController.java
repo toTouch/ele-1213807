@@ -29,149 +29,110 @@ import java.util.Objects;
 @RestController
 @Slf4j
 public class JsonAdminInsuranceOrderController {
+    
     /**
      * 服务对象
      */
     @Autowired
     InsuranceOrderService insuranceOrderService;
-
+    
     @Autowired
     FranchiseeService franchiseeService;
-
+    
     @Autowired
     UserDataScopeService userDataScopeService;
-
-
+    
+    
     //保险订单查询
     @GetMapping("/admin/insuranceOrder/list")
-    public R queryList(@RequestParam("size") Long size,
-                       @RequestParam("offset") Long offset,
-                       @RequestParam(value = "orderId", required = false) String orderId,
-                       @RequestParam(value = "phone", required = false) String phone,
-                       @RequestParam(value = "status", required = false) Integer status,
-                       @RequestParam(value = "insuranceType", required = false) Integer insuranceType,
-                       @RequestParam(value = "isUse", required = false) Integer isUse,
-                       @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
-                       @RequestParam(value = "beginTime", required = false) Long beginTime,
-                       @RequestParam(value = "endTime", required = false) Long endTime,
-                       @RequestParam(value = "userName", required = false) String userName,
-                       @RequestParam(value = "uid", required = false) Long uid,
-                       @RequestParam(value = "type", required = false) Integer type,
-                       @RequestParam(value = "payType", required = false) Integer payType) {
-
+    public R queryList(@RequestParam("size") Long size, @RequestParam("offset") Long offset, @RequestParam(value = "orderId", required = false) String orderId,
+            @RequestParam(value = "phone", required = false) String phone, @RequestParam(value = "status", required = false) Integer status,
+            @RequestParam(value = "insuranceType", required = false) Integer insuranceType, @RequestParam(value = "isUse", required = false) Integer isUse,
+            @RequestParam(value = "franchiseeId", required = false) Long franchiseeId, @RequestParam(value = "beginTime", required = false) Long beginTime,
+            @RequestParam(value = "endTime", required = false) Long endTime, @RequestParam(value = "userName", required = false) String userName,
+            @RequestParam(value = "uid", required = false) Long uid, @RequestParam(value = "type", required = false) Integer type,
+            @RequestParam(value = "payType", required = false) Integer payType, @RequestParam(value = "insuranceId", required = false) Integer insuranceId) {
+        
         if (size < 0 || size > 50) {
             size = 10L;
         }
-
+        
         if (offset < 0) {
             offset = 0L;
         }
-
+        
         //租户
         Integer tenantId = TenantContextHolder.getTenantId();
-
+        
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-
+        
         List<Long> storeIds = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
             storeIds = userDataScopeService.selectDataIdByUid(user.getUid());
-            if(CollectionUtils.isEmpty(storeIds)){
+            if (CollectionUtils.isEmpty(storeIds)) {
                 return R.ok(Collections.EMPTY_LIST);
             }
         }
-
+        
         List<Long> franchiseeIds = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
             franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
-            if(CollectionUtils.isEmpty(franchiseeIds)){
+            if (CollectionUtils.isEmpty(franchiseeIds)) {
                 return R.ok(Collections.EMPTY_LIST);
             }
         }
-
-        InsuranceOrderQuery insuranceOrderQuery=InsuranceOrderQuery.builder()
-                .orderId(orderId)
-                .beginTime(beginTime)
-                .endTime(endTime)
-                .franchiseeIds(franchiseeIds)
+        
+        InsuranceOrderQuery insuranceOrderQuery = InsuranceOrderQuery.builder().orderId(orderId).beginTime(beginTime).endTime(endTime).franchiseeIds(franchiseeIds)
                 .storeIds(storeIds)
                 //.franchiseeName(franchiseeName)
-                .franchiseeId(franchiseeId)
-                .tenantId(tenantId)
-                .phone(phone)
-                .status(status)
-                .insuranceType(insuranceType)
-                .isUse(isUse)
-                .userName(userName)
-                .uid(uid)
-                .offset(offset)
-                .size(size)
-                .type(type)
-                .payType(payType).build();
-
+                .franchiseeId(franchiseeId).tenantId(tenantId).phone(phone).status(status).insuranceType(insuranceType).isUse(isUse).userName(userName).uid(uid).offset(offset)
+                .size(size).type(type).payType(payType).insuranceId(insuranceId).build();
+        
         return insuranceOrderService.queryList(insuranceOrderQuery);
     }
-
+    
     //保险订单查询
     @GetMapping("/admin/insuranceOrder/queryCount")
-    public R queryCount(@RequestParam(value = "orderId", required = false) String orderId,
-                       @RequestParam(value = "phone", required = false) String phone,
-                        @RequestParam(value = "status", required = false) Integer status,
-                        @RequestParam(value = "insuranceType", required = false) Integer insuranceType,
-                        @RequestParam(value = "isUse", required = false) Integer isUse,
-                       @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
-                       @RequestParam(value = "beginTime", required = false) Long beginTime,
-                       @RequestParam(value = "endTime", required = false) Long endTime,
-                       @RequestParam(value = "userName", required = false) String userName,
-                        @RequestParam(value = "uid", required = false) Long uid,
-                        @RequestParam(value = "type", required = false) Integer type,
-                        @RequestParam(value = "payType", required = false) Integer payType) {
-
+    public R queryCount(@RequestParam(value = "orderId", required = false) String orderId, @RequestParam(value = "phone", required = false) String phone,
+            @RequestParam(value = "status", required = false) Integer status, @RequestParam(value = "insuranceType", required = false) Integer insuranceType,
+            @RequestParam(value = "isUse", required = false) Integer isUse, @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
+            @RequestParam(value = "beginTime", required = false) Long beginTime, @RequestParam(value = "endTime", required = false) Long endTime,
+            @RequestParam(value = "userName", required = false) String userName, @RequestParam(value = "uid", required = false) Long uid,
+            @RequestParam(value = "type", required = false) Integer type, @RequestParam(value = "payType", required = false) Integer payType,
+            @RequestParam(value = "insuranceId", required = false) Integer insuranceId) {
+        
         Integer tenantId = TenantContextHolder.getTenantId();
-
+        
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-
+        
         List<Long> storeIds = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
             storeIds = userDataScopeService.selectDataIdByUid(user.getUid());
-            if(CollectionUtils.isEmpty(storeIds)){
+            if (CollectionUtils.isEmpty(storeIds)) {
                 return R.ok(Collections.EMPTY_LIST);
             }
         }
-
+        
         List<Long> franchiseeIds = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
             franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
-            if(CollectionUtils.isEmpty(franchiseeIds)){
+            if (CollectionUtils.isEmpty(franchiseeIds)) {
                 return R.ok(Collections.EMPTY_LIST);
             }
         }
-
-        InsuranceOrderQuery insuranceOrderQuery=InsuranceOrderQuery.builder()
-                .orderId(orderId)
-                .beginTime(beginTime)
-                .endTime(endTime)
-                .status(status)
-                .insuranceType(insuranceType)
-                .isUse(isUse)
-                .franchiseeIds(franchiseeIds)
-                .storeIds(storeIds)
+        
+        InsuranceOrderQuery insuranceOrderQuery = InsuranceOrderQuery.builder().orderId(orderId).beginTime(beginTime).endTime(endTime).status(status).insuranceType(insuranceType)
+                .isUse(isUse).franchiseeIds(franchiseeIds).storeIds(storeIds)
                 //.franchiseeName(franchiseeName)
-                .franchiseeId(franchiseeId)
-                .tenantId(tenantId)
-                .phone(phone)
-                .userName(userName)
-                .uid(uid)
-                .type(type)
-                .payType(payType).build();
-
+                .franchiseeId(franchiseeId).tenantId(tenantId).phone(phone).userName(userName).uid(uid).type(type).payType(payType).insuranceId(insuranceId).build();
+        
         return insuranceOrderService.queryCount(insuranceOrderQuery);
     }
-
-
+    
 }

@@ -11,7 +11,7 @@ import org.apache.commons.lang3.tuple.Triple;
  */
 public interface CarProtocolService {
     CarProtocolVO findProtocolByQuery();
-
-    Integer update(CarProtocolQuery carProtocolQuery);
+    
+    Triple<Boolean, String, Object> update(CarProtocolQuery carProtocolQuery, Long uid);
 
 }
