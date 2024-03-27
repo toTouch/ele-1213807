@@ -509,7 +509,7 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
     
     @Slave
     @Override
-    public String queryMerchantNameByJoinUid(Long joinUid, Integer status) {
-        return merchantJoinRecordMapper.selectMerchantNameByJoinUid(joinUid, status);
+    public MerchantJoinRecord querySuccessRecordByJoinUid(Long uid, Integer tenantId) {
+        return merchantJoinRecordMapper.selectSuccessRecordByJoinUid(uid, tenantId);
     }
 }

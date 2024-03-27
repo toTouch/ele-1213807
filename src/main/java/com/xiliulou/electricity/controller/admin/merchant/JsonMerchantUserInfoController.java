@@ -6,10 +6,13 @@ import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.request.merchant.MerchantModifyInviterRequest;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.utils.SecurityUtils;
+import com.xiliulou.electricity.validator.UpdateGroup;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -57,7 +60,7 @@ public class JsonMerchantUserInfoController extends BaseController {
      * 修改邀请人
      */
     @PostMapping(value = "/admin/merchant/userinfo/modifyInviter")
-    public R modifyInviter(MerchantModifyInviterRequest merchantModifyInviterRequest) {
+    public R modifyInviter(@RequestBody @Validated(UpdateGroup.class) MerchantModifyInviterRequest merchantModifyInviterRequest) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
@@ -67,7 +70,7 @@ public class JsonMerchantUserInfoController extends BaseController {
             return R.ok();
         }
         
-        return R.ok(userInfoService.selectModifyInviterInfo(uid));
+        return userInfoService.modifyInviter(merchantModifyInviterRequest);
     }
     
 }

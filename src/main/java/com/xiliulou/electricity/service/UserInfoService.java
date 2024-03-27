@@ -6,6 +6,7 @@ import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.query.UserInfoBatteryAddAndUpdate;
 import com.xiliulou.electricity.query.UserInfoCarAddAndUpdate;
 import com.xiliulou.electricity.query.UserInfoQuery;
+import com.xiliulou.electricity.request.merchant.MerchantModifyInviterRequest;
 import com.xiliulou.electricity.request.user.UnbindOpenIdRequest;
 import com.xiliulou.electricity.request.user.UpdateUserPhoneRequest;
 import com.xiliulou.electricity.vo.HomePageUserByWeekDayVo;
@@ -184,4 +185,6 @@ public interface UserInfoService extends IService<UserInfo> {
     Integer updatePhoneByUid(Integer tenantId, Long uid, String newPhone);
     
     MerchantModifyInviterVO selectModifyInviterInfo(Long uid, Long size, Long offset);
+    
+    R modifyInviter(MerchantModifyInviterRequest merchantModifyInviterRequest);
 }

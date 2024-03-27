@@ -53,4 +53,6 @@ public interface JoinShareActivityHistoryMapper extends BaseMapper<JoinShareActi
 	List<JoinShareActivityHistory> queryActivityByJoinerAndInviter(@Param("joinUid") Long joinUid, @Param("inviterUid") Long inviterUid, @Param("activityId") Long activityId);
 	
 	JoinShareActivityHistory selectSuccessHistoryByJoinUid(@Param("joinUid") Long joinUid, @Param("tenantId") Integer tenantId);
+	
+	Integer deleteById(Long id);
 }

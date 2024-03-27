@@ -106,5 +106,5 @@ public interface MerchantJoinRecordService {
     
     Integer updateStatusById(Long id, Integer status, long updateTime);
     
-    String queryMerchantNameByJoinUid(Long joinUid, Integer status);
+    MerchantJoinRecord querySuccessRecordByJoinUid(Long uid, Integer tenantId);
 }
