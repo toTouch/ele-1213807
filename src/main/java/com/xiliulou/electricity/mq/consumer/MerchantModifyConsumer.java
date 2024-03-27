@@ -139,7 +139,7 @@ public class MerchantModifyConsumer implements RocketMQListener<String> {
                         log.warn("MERCHANT MODIFY CONSUMER WARN!rebateConfig is disable,id={},memberCardId={},level={}", item.getId(), item.getMemberCardId(), currentLevel);
                         return;
                     }
-                    
+                    // todo 判断两次？
                     if (Integer.parseInt(item.getLevel()) <= Integer.parseInt(currentLevel)) {
                         log.info("MERCHANT MODIFY CONSUMER INFO!illegal level,id={},itemLevel={},currentLevel={}", item.getId(), item.getLevel(), currentLevel);
                         return;

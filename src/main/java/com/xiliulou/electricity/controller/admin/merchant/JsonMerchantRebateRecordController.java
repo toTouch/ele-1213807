@@ -1,4 +1,4 @@
-package com.xiliulou.electricity.controller.merchant;
+package com.xiliulou.electricity.controller.admin.merchant;
 
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.request.merchant.RebateRecordRequest;

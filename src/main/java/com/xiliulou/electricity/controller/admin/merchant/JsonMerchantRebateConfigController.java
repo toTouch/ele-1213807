@@ -1,4 +1,4 @@
-package com.xiliulou.electricity.controller.merchant;
+package com.xiliulou.electricity.controller.admin.merchant;
 
 import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.web.R;
