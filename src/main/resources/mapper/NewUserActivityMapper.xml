@@ -19,6 +19,12 @@
 			<if test="query.status != null ">
 				and status = #{query.status}
 			</if>
+			<if test="query.franchiseeIds != null and query.franchiseeIds.size()>0">
+				and franchisee_id in
+				<foreach collection="query.franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
+					#{id}
+				</foreach>
+			</if>
 		</where>
 		order by update_time desc
 		<if test="query.offset != null and query.size != null">
@@ -39,6 +45,12 @@
 			</if>
 			<if test="query.status != null ">
 				and status = #{query.status}
+			</if>
+			<if test="query.franchiseeIds != null and query.franchiseeIds.size()>0">
+				and franchisee_id in
+				<foreach collection="query.franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
+					#{id}
+				</foreach>
 			</if>
 		</where>
 	</select>

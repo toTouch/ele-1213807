@@ -177,9 +177,21 @@
             <if test="startDate != null and startDate != ''">
                 and date &gt;= #{startDate}
             </if>
-
+            
             <if test="endDate != null and startDate != ''">
                 and date &lt; #{endDate}
+            </if>
+            <if test="franchiseeIds != null and franchiseeIds.size()>0">
+                and franchisee_id in
+                <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
+                    #{id}
+                </foreach>
+            </if>
+            <if test="storeIds != null and storeIds.size()>0">
+                and store_id in
+                <foreach collection="storeIds" item="id" index="index" open="(" close=")" separator=",">
+                    #{id}
+                </foreach>
             </if>
         </where>
         order by id desc
@@ -207,6 +219,18 @@
 
             <if test="endDate != null and startDate != ''">
                 and date &lt; #{endDate}
+            </if>
+            <if test="franchiseeIds != null and franchiseeIds.size()>0">
+                and franchisee_id in
+                <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
+                    #{id}
+                </foreach>
+            </if>
+            <if test="storeIds != null and storeIds.size()>0">
+                and store_id in
+                <foreach collection="storeIds" item="id" index="index" open="(" close=")" separator=",">
+                    #{id}
+                </foreach>
             </if>
         </where>
     </select>

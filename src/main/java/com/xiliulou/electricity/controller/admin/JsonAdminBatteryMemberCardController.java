@@ -116,8 +116,17 @@ public class JsonAdminBatteryMemberCardController extends BaseController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
-            return R.ok(Collections.emptyList());
+        
+        //if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
+        //    return R.ok(Collections.emptyList());
+        //}
+        
+        List<Long> franchiseeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if(CollectionUtils.isEmpty(franchiseeIds)){
+                return R.ok(Collections.emptyList());
+            }
         }
 
         BatteryMemberCardQuery query = BatteryMemberCardQuery.builder()
@@ -131,6 +140,7 @@ public class JsonAdminBatteryMemberCardController extends BaseController {
                 .rentUnit(rentUnit)
                 .name(name)
                 .delFlag(BatteryMemberCard.DEL_NORMAL)
+                .franchiseeIds(franchiseeIds)
                 .build();
 
         return R.ok(batteryMemberCardService.selectByPage(query));
@@ -152,8 +162,16 @@ public class JsonAdminBatteryMemberCardController extends BaseController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
-            return R.ok(NumberConstant.ZERO);
+        //if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
+        //    return R.ok(NumberConstant.ZERO);
+        //}
+        
+        List<Long> franchiseeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if(CollectionUtils.isEmpty(franchiseeIds)){
+                return R.ok(NumberConstant.ZERO);
+            }
         }
 
         BatteryMemberCardQuery query = BatteryMemberCardQuery.builder()
@@ -165,6 +183,7 @@ public class JsonAdminBatteryMemberCardController extends BaseController {
                 .name(name)
                 .tenantId(TenantContextHolder.getTenantId())
                 .delFlag(BatteryMemberCard.DEL_NORMAL)
+                .franchiseeIds(franchiseeIds)
                 .build();
 
         return R.ok(batteryMemberCardService.selectByPageCount(query));

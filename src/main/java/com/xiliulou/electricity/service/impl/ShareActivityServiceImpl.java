@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.google.common.collect.Lists;
@@ -20,6 +21,7 @@ import com.xiliulou.electricity.query.ShareActivityAddAndUpdateQuery;
 import com.xiliulou.electricity.query.ShareActivityQuery;
 import com.xiliulou.electricity.query.ShareActivityRuleQuery;
 import com.xiliulou.electricity.service.*;
+import com.xiliulou.electricity.service.asset.AssertPermissionService;
 import com.xiliulou.electricity.service.car.CarRentalPackageService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
@@ -36,6 +38,7 @@ import com.xiliulou.storage.config.StorageConfig;
 import com.xiliulou.storage.service.StorageService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -115,6 +118,9 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 	
 	@Autowired
 	private ShareMoneyActivityService shareMoneyActivityService;
+	
+	@Autowired
+	private AssertPermissionService assertPermissionService;
 
 
 	/**
@@ -388,6 +394,12 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 
 	@Override
 	public R queryList(ShareActivityQuery shareActivityQuery) {
+		Pair<Boolean, List<Long>> pair = assertPermissionService.assertPermissionByPair(SecurityUtils.getUserInfo());
+		if (!pair.getLeft()){
+			return R.ok(new ArrayList<>());
+		}
+		shareActivityQuery.setFranchiseeIds(pair.getRight());
+		
 		List<ShareActivity> shareActivityList = shareActivityMapper.queryList(shareActivityQuery);
 		List<ShareActivityVO> shareActivityVOList = Lists.newArrayList();
 
@@ -518,6 +530,12 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 
 	@Override
 	public R queryCount(ShareActivityQuery shareActivityQuery) {
+		Pair<Boolean, List<Long>> pair = assertPermissionService.assertPermissionByPair(SecurityUtils.getUserInfo());
+		if (!pair.getLeft()){
+			return R.ok(NumberConstant.ZERO);
+		}
+		shareActivityQuery.setFranchiseeIds(pair.getRight());
+		
 		Integer count = shareActivityMapper.queryCount(shareActivityQuery);
 		return R.ok(count);
 	}

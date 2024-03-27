@@ -3,6 +3,8 @@ package com.xiliulou.electricity.query;
 import lombok.Builder;
 import lombok.Data;
 
+import java.util.List;
+
 /**
  * @author: Kenneth
  * @Date: 2023/7/10 20:29
@@ -36,6 +38,10 @@ public class EleUserEsignRecordQuery {
     private Long size;
 
     private Long offset;
-
+    
+    
+    private List<Long> franchiseeIds;
+    
+    private List<Long> storeIds;
 
 }
