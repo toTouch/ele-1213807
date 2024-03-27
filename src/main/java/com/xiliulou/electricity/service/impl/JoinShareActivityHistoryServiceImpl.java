@@ -285,6 +285,11 @@ public class JoinShareActivityHistoryServiceImpl implements JoinShareActivityHis
 		return joinShareActivityHistoryMapper.selectSuccessHistoryByJoinUid(uid, tenantId);
 	}
 	
+	@Override
+	public Integer deleteById(Long id) {
+		return joinShareActivityHistoryMapper.deleteById(id);
+	}
+	
 	private String queryStatus(Integer status) {
 		//参与状态 1--初始化，2--已参与，3--已过期，4--被替换
 		String result = "";
