@@ -3,6 +3,7 @@ package com.xiliulou.electricity.service.impl;
 import cn.hutool.core.thread.ThreadUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
@@ -390,4 +391,11 @@ public class UserBatteryMemberCardServiceImpl implements UserBatteryMemberCardSe
             }
         }, 1, TimeUnit.SECONDS);
     }
+    
+    @Slave
+    @Override
+    public Integer queryRenewalNumberByMerchantId(Long merchantId, Integer tenantId) {
+        return userBatteryMemberCardMapper.selectRenewalNumberByMerchantId(merchantId, tenantId);
+    }
+    
 }
