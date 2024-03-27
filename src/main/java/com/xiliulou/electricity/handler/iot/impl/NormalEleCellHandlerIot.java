@@ -94,7 +94,12 @@ public class NormalEleCellHandlerIot extends AbstractElectricityIotHandler {
         if (Objects.nonNull(cellVoLockType)) {
             electricityCabinetBox.setLockType(cellVoLockType);
         }
-        
+    
+        Integer isBatteryExit = eleCellVo.getIs_battery_exit();
+        if(Objects.nonNull(isBatteryExit)){
+            electricityCabinetBox.setIsBatteryExit(isBatteryExit);
+        }
+    
         String version =
                 Objects.isNull(eleCellVo.getVersion()) || "null".equalsIgnoreCase(eleCellVo.getVersion()) ? null
                         : eleCellVo.getVersion();
@@ -160,6 +165,11 @@ public class NormalEleCellHandlerIot extends AbstractElectricityIotHandler {
 
         //子板版本号
         private String version;
+    
+        /**
+         * 在位检测 1：打开 0：关闭
+         */
+        private Integer is_battery_exit;
     }
 }
 
