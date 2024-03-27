@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.merchant.RebateConfigMapper">
+    
+    <resultMap type="com.xiliulou.electricity.entity.merchant.RebateConfig" id="RebateConfigMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="level" column="level" jdbcType="VARCHAR"/>
+        <result property="mid" column="mid" jdbcType="INTEGER"/>
+        <result property="channelerInvitation" column="channeler_invitation" jdbcType="NUMERIC"/>
+        <result property="channelerRenewal" column="channeler_renewal" jdbcType="NUMERIC"/>
+        <result property="merchantInvitation" column="merchant_invitation" jdbcType="NUMERIC"/>
+        <result property="merchantRenewal" column="merchant_renewal" jdbcType="NUMERIC"/>
+        <result property="status" column="status" jdbcType="INTEGER"/>
+        <result property="delFlag" column="del_flag" jdbcType="INTEGER"/>
+        <result property="tenantId" column="tenant_id" jdbcType="INTEGER"/>
+        <result property="createTime" column="create_time" jdbcType="INTEGER"/>
+        <result property="updateTime" column="update_time" jdbcType="INTEGER"/>
+    </resultMap>
+    
+    <!--查询单个-->
+    <select id="selectById" resultMap="RebateConfigMap">
+        select
+            id, level, mid, channeler_invitation, channeler_renewal, merchant_invitation, merchant_renewal, status, del_flag, tenant_id, create_time, update_time
+        from t_rebate_config
+        where id = #{id}
+    </select>
+    
+    <select id="selectByPage" resultMap="RebateConfigMap">
+        select
+            trc.id,
+            trc.level,
+            trc.mid,
+            trc.channeler_invitation,
+            trc.channeler_renewal,
+            trc.merchant_invitation,
+            trc.merchant_renewal,
+            trc.status,
+            trc.del_flag,
+            trc.tenant_id,
+            trc.create_time,
+            trc.update_time
+        from t_rebate_config trc left join t_battery_member_card bmc on trc.mid = bmc.id
+        <where>
+            <if test="mid != null">
+                and trc.mid = #{mid}
+            </if>
+            <if test="status != null">
+                and trc.status = #{status}
+            </if>
+            <if test="level != null and level != ''">
+                and trc.level = #{level}
+            </if>
+            <if test="tenantId != null">
+                and trc.tenant_id = #{tenantId}
+            </if>
+            <if test="delFlag != null">
+                and trc.del_flag = #{delFlag}
+            </if>
+        </where>
+        order by bmc.franchisee_id,bmc.id desc
+    </select>
+    
+    <select id="existsRebateConfigByMidAndLevel" resultType="Integer">
+        SELECT 1 FROM t_rebate_config WHERE del_flag=0 and mid = #{mid} AND level = #{level} LIMIT 1
+    </select>
+    
+    <select id="selectByMidAndMerchantLevel" resultMap="RebateConfigMap">
+        select
+            id, level, mid, channeler_invitation, channeler_renewal, merchant_invitation, merchant_renewal, status, del_flag, tenant_id, create_time, update_time
+        from t_rebate_config WHERE del_flag=0 and mid = #{mid} AND level = #{level}
+    </select>
+    
+    <select id="selectRebateConfigByMid" resultMap="RebateConfigMap">
+        select
+            id, level, mid, channeler_invitation, channeler_renewal, merchant_invitation, merchant_renewal, status, del_flag, tenant_id, create_time, update_time
+        from t_rebate_config WHERE del_flag=0 and mid = #{mid}
+    </select>
+    
+    <select id="selectLatestByMidAndMerchantLevel" resultMap="RebateConfigMap">
+        select
+            id, level, mid, channeler_invitation, channeler_renewal, merchant_invitation, merchant_renewal, status, del_flag, tenant_id, create_time, update_time
+        from t_rebate_config WHERE del_flag=0 and mid = #{mid} AND level &gt; #{level} order by level limit 1
+    </select>
+    
+    <!--新增所有列-->
+    <insert id="insert" keyProperty="id" useGeneratedKeys="true">
+        insert into t_rebate_config(level, mid, channeler_invitation, channeler_renewal, merchant_invitation, merchant_renewal, status, del_flag,tenant_id, create_time, update_time)
+        values (#{level}, #{mid}, #{channelerInvitation}, #{channelerRenewal}, #{merchantInvitation}, #{merchantRenewal}, #{status}, #{delFlag}, #{tenantId}, #{createTime}, #{updateTime})
+    </insert>
+    
+    <!--通过主键修改数据-->
+    <update id="updateById">
+        update t_rebate_config
+        <set>
+            <if test="level != null and level != ''">
+                level = #{level},
+            </if>
+            <if test="mid != null">
+                mid = #{mid},
+            </if>
+            <if test="channelerInvitation != null">
+                channeler_invitation = #{channelerInvitation},
+            </if>
+            <if test="channelerRenewal != null">
+                channeler_renewal = #{channelerRenewal},
+            </if>
+            <if test="merchantInvitation != null">
+                merchant_invitation = #{merchantInvitation},
+            </if>
+            <if test="merchantRenewal != null">
+                merchant_renewal = #{merchantRenewal},
+            </if>
+            <if test="status != null">
+                status = #{status},
+            </if>
+            <if test="delFlag != null">
+                del_flag = #{delFlag},
+            </if>
+            <if test="tenantId != null">
+                tenant_id = #{tenantId},
+            </if>
+            <if test="createTime != null">
+                create_time = #{createTime},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+    
+    <!--通过主键删除-->
+    <delete id="deleteById">
+        delete from t_rebate_config where id = #{id}
+    </delete>
+
+</mapper>
