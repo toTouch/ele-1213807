@@ -38,6 +38,7 @@ import com.xiliulou.electricity.service.InsuranceOrderService;
 import com.xiliulou.electricity.service.InsuranceUserInfoService;
 import com.xiliulou.electricity.service.UserBatteryService;
 import com.xiliulou.electricity.service.UserBatteryTypeService;
+import com.xiliulou.electricity.service.UserDataScopeService;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.UserOauthBindService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
