@@ -109,7 +109,7 @@ public interface CarRentalPackageOrderService {
     boolean isExitUnUseByUid(Integer tenantId, Long uid);
     
     /**
-     * 根据套餐ID查询是否存在购买订单
+     * 根据套餐ID查询是否存在未使用、使用中的购买订单
      *
      * @param rentalPackageId 套餐ID
      * @return true(存在)、false(不存在)

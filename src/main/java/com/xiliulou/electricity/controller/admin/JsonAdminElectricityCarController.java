@@ -59,6 +59,7 @@ public class JsonAdminElectricityCarController {
     }
 
     //修改换电柜车辆
+    @Deprecated
     @PutMapping(value = "/admin/electricityCar")
     public R update(@RequestBody @Validated(value = UpdateGroup.class) ElectricityCarAddAndUpdate electricityCarAddAndUpdate) {
         return electricityCarService.edit(electricityCarAddAndUpdate);

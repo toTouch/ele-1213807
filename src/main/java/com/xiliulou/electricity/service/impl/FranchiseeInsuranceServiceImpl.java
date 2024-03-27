@@ -12,7 +12,9 @@ import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.*;
+import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.FranchiseeInsuranceMapper;
+import com.xiliulou.electricity.query.FranchiseeInsuranceIdsRequest;
 import com.xiliulou.electricity.query.FranchiseeInsuranceAddAndUpdate;
 import com.xiliulou.electricity.query.FranchiseeInsuranceQuery;
 import com.xiliulou.electricity.query.ModelBatteryDeposit;
@@ -22,6 +24,7 @@ import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.FranchiseeInsuranceVo;
+import com.xiliulou.electricity.vo.insurance.FranchiseeInsuranceOrderIdsVo;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -85,7 +88,7 @@ public class FranchiseeInsuranceServiceImpl extends ServiceImpl<FranchiseeInsura
     
     @Resource
     UserDataScopeService userDataScopeService;
-    
+
     @Override
     @Transactional(rollbackFor = Exception.class)
     public R add(FranchiseeInsuranceAddAndUpdate franchiseeInsuranceAddAndUpdate) {
@@ -602,5 +605,40 @@ public class FranchiseeInsuranceServiceImpl extends ServiceImpl<FranchiseeInsura
         franchiseeInsuranceVo.setCityName(Objects.isNull(city) ? "" : city.getName());
         
         return Triple.of(true, null, franchiseeInsuranceVo);
+    }
+    
+    @Override
+    @Slave
+    public List<FranchiseeInsuranceOrderIdsVo> queryInsuranceIds(FranchiseeInsuranceIdsRequest franchiseeInsuranceIdsRequest) {
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            throw new BizException("ELECTRICITY.0001", "未找到用户");
+        }
+        
+        List<Long> storeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
+            storeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if (org.apache.commons.collections.CollectionUtils.isEmpty(storeIds)) {
+                return Collections.EMPTY_LIST;
+            }
+        }
+        
+        List<Long> franchiseeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if (org.apache.commons.collections.CollectionUtils.isEmpty(franchiseeIds)) {
+                return Collections.EMPTY_LIST;
+            }
+        }
+        FranchiseeInsuranceQuery insuranceOrderQuery = FranchiseeInsuranceQuery.builder()
+                .size(franchiseeInsuranceIdsRequest.getSize())
+                .offset(franchiseeInsuranceIdsRequest.getOffset())
+                .name(franchiseeInsuranceIdsRequest.getName())
+                .franchiseeIds(franchiseeIds)
+                .storeIds(storeIds)
+                .tenantId(TenantContextHolder.getTenantId())
+                .type(franchiseeInsuranceIdsRequest.getType())
+                .build();
+        return franchiseeInsuranceMapper.selectOrderIds(insuranceOrderQuery);
     }
 }

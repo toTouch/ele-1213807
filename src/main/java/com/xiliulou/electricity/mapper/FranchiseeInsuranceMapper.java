@@ -1,12 +1,11 @@
 package com.xiliulou.electricity.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.entity.FranchiseeInsurance;
 import com.xiliulou.electricity.query.*;
 import com.xiliulou.electricity.vo.*;
+import com.xiliulou.electricity.vo.insurance.FranchiseeInsuranceOrderIdsVo;
 import org.apache.ibatis.annotations.Param;
-import org.apache.ibatis.annotations.Select;
 
 import java.util.List;
 
@@ -40,4 +39,6 @@ public interface FranchiseeInsuranceMapper extends BaseMapper<FranchiseeInsuranc
     List<FranchiseeInsuranceVo> selectByPage(FranchiseeInsuranceQuery query);
 
     FranchiseeInsurance selectInsuranceByType(FranchiseeInsuranceQuery query);
+    
+    List<FranchiseeInsuranceOrderIdsVo> selectOrderIds(FranchiseeInsuranceQuery franchiseeInsuranceQuery);
 }

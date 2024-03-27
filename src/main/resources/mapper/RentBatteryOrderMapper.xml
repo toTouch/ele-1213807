@@ -12,7 +12,7 @@
         from t_rent_battery_order
         <where>
             <if test="query.orderId != null and query.orderId != ''">
-                and order_id like concat('%',#{query.orderId,jdbcType=VARCHAR},'%')
+                and order_id = #{query.orderId,jdbcType=VARCHAR}
             </if>
             <if test="query.name != null and query.name != ''">
                 and name = #{query.name}
@@ -61,7 +61,7 @@
         from t_rent_battery_order
         <where>
             <if test="query.orderId != null and query.orderId != ''">
-                and order_id like concat('%',#{query.orderId,jdbcType=VARCHAR},'%')
+                and order_id = #{query.orderId,jdbcType=VARCHAR}
             </if>
             <if test="query.name != null and query.name != ''">
                 and name = #{query.name}
@@ -137,10 +137,10 @@
                temp.create_time
         from
             ( select  uid, type, order_id,
-                case when type = 1 then electricity_battery_sn else null end as old_electricity_battery_sn,
-                case when type = 1 then cell_no else null end as old_cell_no,
-                case when type = 2 then electricity_battery_sn else null end as new_electricity_battery_sn,
-                case when type = 2 then cell_no else null end as new_cell_no,
+                case when type = 2 then electricity_battery_sn else null end as old_electricity_battery_sn,
+                case when type = 2 then cell_no else null end as old_cell_no,
+                case when type = 1 then electricity_battery_sn else null end as new_electricity_battery_sn,
+                case when type = 1 then cell_no else null end as new_cell_no,
                 electricity_cabinet_id,
                 create_time
             from t_rent_battery_order
@@ -179,10 +179,10 @@
         select count(1)
         from
             (select uid, type, order_id,
-                case when type = 1 then electricity_battery_sn else null end as old_electricity_battery_sn,
-                case when type = 1 then cell_no else null end as old_cell_no,
-                case when type = 2 then electricity_battery_sn else null end as new_electricity_battery_sn,
-                case when type = 2 then cell_no else null end as new_cell_no,
+                case when type = 2 then electricity_battery_sn else null end as old_electricity_battery_sn,
+                case when type = 2 then cell_no else null end as old_cell_no,
+                case when type = 1 then electricity_battery_sn else null end as new_electricity_battery_sn,
+                case when type = 1 then cell_no else null end as new_cell_no,
                 create_time
             from t_rent_battery_order
             where electricity_cabinet_id = #{query.id}
