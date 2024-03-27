@@ -51,4 +51,6 @@ public interface EleRefundOrderMapper extends BaseMapper<EleRefundOrder> {
     EleRefundOrder selectLatestRefundDepositOrder(@Param("paymentOrderNo") String paymentOrderNo);
     
     Integer existByOrderIdAndStatus(@Param("orderId") String orderId, @Param("statusList") List<Integer> statusList);
+    
+    Integer existsRefundOrderByUid(Long uid);
 }

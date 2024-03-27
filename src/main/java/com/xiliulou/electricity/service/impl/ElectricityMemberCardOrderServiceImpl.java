@@ -5096,4 +5096,19 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         
         return Triple.of(true, null, null);
     }
+    
+    @Slave
+    @Override
+    public Integer countRefundOrderByUid(Long uid) {
+        return baseMapper.countRefundOrderByUid(uid);
+    }
+    
+    
+    @Slave
+    @Override
+    public Integer countSuccessOrderByUid(Long uid) {
+        return baseMapper.countSuccessOrderByUid(uid);
+    }
+    
+    
 }

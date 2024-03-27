@@ -2256,4 +2256,10 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
         
         return Triple.of(true, null, "退款失败");
     }
+    
+    @Slave
+    @Override
+    public Integer existsRefundOrderByUid(Long uid) {
+        return eleRefundOrderMapper.existsRefundOrderByUid(uid);
+    }
 }

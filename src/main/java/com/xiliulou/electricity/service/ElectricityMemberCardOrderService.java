@@ -153,4 +153,16 @@ public interface ElectricityMemberCardOrderService {
     List<ElectricityMemberCardOrderVO> selectElectricityMemberCardOrderList(ElectricityMemberCardOrderQuery orderQuery);
 
     void sendUserCoupon(BatteryMemberCard batteryMemberCard, ElectricityMemberCardOrder memberCardOrder);
+    
+    /**
+     * 退租订单数量
+     * @param uid
+     * @return
+     */
+    Integer countRefundOrderByUid(Long uid);
+    
+    /**
+     * 购买成功订单数量
+     */
+    Integer countSuccessOrderByUid(Long uid);
 }

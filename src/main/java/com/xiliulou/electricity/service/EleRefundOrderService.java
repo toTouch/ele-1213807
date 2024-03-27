@@ -123,4 +123,6 @@ public interface EleRefundOrderService {
     List<EleRefundOrder> selectByOrderIdNoFilerStatus(String orderId);
     
     Triple<Boolean, String, Object> refund(BigDecimal refundAmount, Long uid, String orderId, HttpServletRequest request);
+    
+    Integer existsRefundOrderByUid(Long uid);
 }
