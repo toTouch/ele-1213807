@@ -132,7 +132,11 @@ public class ElectricityCabinetBoxVO {
      * 锁仓/解锁时间
      */
     private Long lockStatusChangeTime;
-
+    
+    /**
+     * 在位检测 1：打开 0：关闭
+     */
+    private Integer isBatteryExit;
     
     /**
      * 空闲开始时间
