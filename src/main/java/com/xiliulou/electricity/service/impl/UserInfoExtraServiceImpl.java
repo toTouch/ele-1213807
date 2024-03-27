@@ -3,17 +3,22 @@ package com.xiliulou.electricity.service.impl;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.merchant.MerchantConstant;
+import com.xiliulou.electricity.constant.merchant.MerchantJoinRecordConstant;
 import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.UserInfoExtra;
+import com.xiliulou.electricity.entity.merchant.Merchant;
 import com.xiliulou.electricity.entity.merchant.MerchantAttr;
+import com.xiliulou.electricity.entity.merchant.MerchantJoinRecord;
 import com.xiliulou.electricity.entity.merchant.MerchantLevel;
 import com.xiliulou.electricity.entity.merchant.RebateConfig;
 import com.xiliulou.electricity.mapper.UserInfoExtraMapper;
 import com.xiliulou.electricity.service.ElectricityMemberCardOrderService;
 import com.xiliulou.electricity.service.UserInfoExtraService;
 import com.xiliulou.electricity.service.merchant.MerchantAttrService;
+import com.xiliulou.electricity.service.merchant.MerchantJoinRecordService;
 import com.xiliulou.electricity.service.merchant.MerchantLevelService;
+import com.xiliulou.electricity.service.merchant.MerchantService;
 import com.xiliulou.electricity.service.merchant.RebateConfigService;
 import com.xiliulou.electricity.utils.DbUtils;
 import lombok.extern.slf4j.Slf4j;
@@ -53,6 +58,9 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
     
     @Autowired
     private MerchantLevelService merchantLevelService;
+    
+    @Autowired
+    private MerchantService merchantService;
     
     
     @Override

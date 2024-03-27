@@ -19,6 +19,7 @@ import com.xiliulou.electricity.mq.constant.MqConsumerConstant;
 import com.xiliulou.electricity.mq.constant.MqProducerConstant;
 import com.xiliulou.electricity.mq.model.BatteryMemberCardMerchantRebate;
 import com.xiliulou.electricity.mq.model.MerchantUpgrade;
+import com.xiliulou.electricity.query.merchant.MerchantJoinRecordQueryModel;
 import com.xiliulou.electricity.service.BatteryMembercardRefundOrderService;
 import com.xiliulou.electricity.service.EleRefundOrderService;
 import com.xiliulou.electricity.service.ElectricityMemberCardOrderService;
