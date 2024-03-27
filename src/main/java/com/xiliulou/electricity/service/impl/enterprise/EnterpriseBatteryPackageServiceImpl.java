@@ -452,10 +452,23 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
             //非新租 购买押金套餐
             query.setRentTypes(Arrays.asList(BatteryMemberCard.RENT_TYPE_OLD, BatteryMemberCard.RENT_TYPE_UNLIMIT));
     
+            boolean isMember = false;
+    
             UserInfo userInfo = userInfoService.queryByUidFromCache(query.getUid());
             UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(userBatteryMemberCard.getUid());
             if (Objects.nonNull(userBatteryDeposit) && UserInfo.BATTERY_DEPOSIT_STATUS_YES.equals(userInfo.getBatteryDepositStatus())) {
                 query.setDeposit(userBatteryDeposit.getBatteryDeposit());
+    
+                EleDepositOrder eleDepositOrder = eleDepositOrderService.queryByOrderId(userBatteryDeposit.getOrderId());
+                if (Objects.nonNull(eleDepositOrder)) {
+                    isMember = Objects.equals(eleDepositOrder.getOrderType(), PackageOrderTypeEnum.PACKAGE_ORDER_TYPE_NORMAL.getCode());
+                }
+            }
+    
+            if (isMember) {
+                // 如果是会员用户则查询的套餐为续租以后的企业套餐对应的押金及限次类型的套餐
+                query.setDeposit(null);
+                query.setLimitCount(null);
             }
             
         } else {
