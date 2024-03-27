@@ -23,4 +23,12 @@ public interface EleCabinetDataAnalyseService {
     EleCabinetOrderAnalyseVO averageStatistics(Integer eid);
 
     EleCabinetOrderAnalyseVO todayStatistics(Integer eid);
+    
+    List<EleCabinetDataAnalyseVO> selectLowPowerPage(ElectricityCabinetQuery cabinetQuery);
+    
+    Integer selectLowPowerPageCount(ElectricityCabinetQuery cabinetQuery);
+    
+    List<EleCabinetDataAnalyseVO> selectFullPowerPage(ElectricityCabinetQuery cabinetQuery);
+    
+    Integer selectFullPowerPageCount(ElectricityCabinetQuery cabinetQuery);
 }
