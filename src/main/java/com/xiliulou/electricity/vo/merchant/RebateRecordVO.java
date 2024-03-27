@@ -5,10 +5,9 @@ import lombok.Data;
 import java.math.BigDecimal;
 
 /**
- * @ClassName: RebateRecordVO
- * @description: 返利记录pageVo
- * @author: renhang
- * @create: 2024-03-26 09:47
+ * @author zzlong
+ * @email zhaozhilong@xiliulou.com
+ * @date 2024-02-20-16:12
  */
 @Data
 public class RebateRecordVO {

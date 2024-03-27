@@ -2,6 +2,11 @@ package com.xiliulou.electricity.vo.merchant;
 
 import lombok.Data;
 
+/**
+ * @author zzlong
+ * @email zhaozhilong@xiliulou.com
+ * @date 2024-02-04-15:42
+ */
 @Data
 public class MerchantLevelVO {
     

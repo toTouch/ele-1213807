@@ -5,6 +5,11 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+/**
+ * @author zzlong
+ * @email zhaozhilong@xiliulou.com
+ * @date 2024-02-20-16:05
+ */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

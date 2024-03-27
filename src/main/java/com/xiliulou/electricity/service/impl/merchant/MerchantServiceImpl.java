@@ -155,6 +155,8 @@ public class MerchantServiceImpl implements MerchantService {
     @Resource
     private MerchantLevelService merchantLevelService;
     
+    @Resource
+    private MerchantJoinRecordService merchantJoinRecService;
     
     @Resource
     private UserOauthBindService userOauthBindService;

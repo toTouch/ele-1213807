@@ -602,6 +602,28 @@ public interface CacheConstant {
     
     String CACHE_TENANT_NOTE = "cache_tenant_note:";
     
+    String CACHE_BATCH_SEND_COUPON = "cache_batch_send_coupon:";
+    
+    String MERCHANT_PLACE_SAVE_UID = "merchant_place_save_uid:";
+    
+    String MERCHANT_PLACE_DELETE_UID = "merchant_place_delete_uid:";
+    
+    String MERCHANT_PLACE_CABINET_BIND_UID = "merchant_place_cabinet_bind_uid:";
+    
+    String MERCHANT_PLACE_CABINET_UNBIND_UID = "merchant_place_cabinet_unbind_uid:";
+    
+    String MERCHANT_PLACE_CABINET_DELETE_UID = "merchant_place_cabinet_delete_uid:";
+    
+    String MERCHANT_PLACE_UPDATE_UID = "merchant_place_update_uid:";
+    
+    String CACHE_MERCHANT = "cache_merchant:";
+    
+    String CACHE_MERCHANT_PLACE = "cache_merchant_place:";
+    
+    String CACHE_MERCHANT_AREA_SAVE_LOCK = "cache_merchant_area_save_lock:";
+    
+    String CACHE_MERCHANT_SCAN_INTO_ACTIVITY_LOCK = "cache_merchant_scan_into_activity_lock:";
+    
     String CACHE_USER_NOTICE_UPDATE_LOCK = "cache_user_notice_update_lock:";
     String CACHE_USER_DEPOSIT_PROTOCOL_UPDATE_LOCK = "cache_user_deposit_protocol_update_lock:";
     String CACHE_USER_ORDER_PROTOCOL_UPDATE_LOCK = "cache_user_order_protocol_update_lock:";
@@ -612,5 +634,8 @@ public interface CacheConstant {
     String CACHE_USER_ADD_USER_DEPOSIT_MEMBER_CARD_LOCK = "cache_user_add_user_deposit_member_card_lock:";
     String CACHE_USER_MEMBER_CARD_EDIT_LOCK = "cache_user_member_card_edit_lock:";
     String CACHE_USER_BATTERY_MEMBER_CARD_RENEWAL_LOCK = "cache_user_battery_member_card_renewal_lock:";
-
+    
+    String CACHE_CHANNEL_EMPLOYEE_SAVE_LOCK = "cache_channel_employee_save_lock:";
+    
+    String CACHE_CHANNEL_EMPLOYEE_UPDATE_LOCK = "cache_channel_employee_update_lock:";
 }

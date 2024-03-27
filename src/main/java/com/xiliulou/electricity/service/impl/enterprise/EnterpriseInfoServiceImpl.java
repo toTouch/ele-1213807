@@ -96,6 +96,7 @@ import com.xiliulou.pay.deposit.paixiaozu.service.PxzDepositService;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiOrderResultDTO;
 import com.xiliulou.pay.weixinv3.exception.WechatPayException;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
@@ -301,6 +302,51 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
         return enterpriseInfoMapper.updatePhoneByUid(tenantId, uid, newPhone);
     }
     
+    @Override
+    @Transactional
+    public Triple<Boolean, String, Object> saveMerchantEnterprise(EnterpriseInfoQuery enterpriseInfoQuery) {
+        EnterpriseInfo enterpriseInfoExit = this.selectByName(enterpriseInfoQuery.getName());
+        if (Objects.nonNull(enterpriseInfoExit)) {
+            return Triple.of(false, "", "商户名称重复，请修改后操作");
+        }
+        
+        EnterpriseInfo enterpriseInfo = new EnterpriseInfo();
+        BeanUtils.copyProperties(enterpriseInfoQuery, enterpriseInfo);
+        enterpriseInfo.setBusinessId(Long.valueOf(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyMMdd")) + RandomUtil.randomInt(1000, 9999)));
+        enterpriseInfo.setRecoveryMode(EnterpriseInfo.RECOVERY_MODE_RETURN);
+        enterpriseInfo.setTotalBeanAmount(BigDecimal.ZERO);
+        enterpriseInfo.setDelFlag(EnterpriseInfo.DEL_NORMAL);
+        enterpriseInfo.setTenantId(TenantContextHolder.getTenantId());
+        enterpriseInfo.setCreateTime(System.currentTimeMillis());
+        enterpriseInfo.setUpdateTime(System.currentTimeMillis());
+        this.enterpriseInfoMapper.insert(enterpriseInfo);
+        
+        enterpriseInfoQuery.setId(enterpriseInfo.getId());
+        
+        if (ObjectUtils.isNotEmpty(enterpriseInfoQuery.getPackageIds())) {
+            List<EnterprisePackage> packageList = enterpriseInfoQuery.getPackageIds().stream().map(item -> {
+                EnterprisePackage enterprisePackage = new EnterprisePackage();
+                enterprisePackage.setEnterpriseId(enterpriseInfo.getId());
+                enterprisePackage.setPackageId(item);
+                enterprisePackage.setPackageType(enterpriseInfoQuery.getPackageType());
+                enterprisePackage.setTenantId(enterpriseInfo.getTenantId());
+                enterprisePackage.setCreateTime(System.currentTimeMillis());
+                enterprisePackage.setUpdateTime(System.currentTimeMillis());
+                return enterprisePackage;
+            }).collect(Collectors.toList());
+            
+            enterprisePackageService.batchInsert(packageList);
+        }
+        
+        return Triple.of(true, null, null);
+    }
+    
+    @Slave
+    @Override
+    public List<EnterpriseInfo> queryListByIdList(List<Long> enterpriseIdList) {
+        return enterpriseInfoMapper.queryListByIdList(enterpriseIdList);
+    }
+    
     /**
      * 通过主键删除数据
      *
@@ -351,6 +397,43 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
     @Override
     public Integer selectByPageCount(EnterpriseInfoQuery query) {
         return this.enterpriseInfoMapper.selectByPageCount(query);
+    }
+    
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Triple<Boolean, String, Object> updateMerchantEnterprise(EnterpriseInfoQuery enterpriseInfoQuery) {
+        EnterpriseInfo enterpriseInfo = this.queryByIdFromDB(enterpriseInfoQuery.getId());
+        if (Objects.isNull(enterpriseInfo)) {
+            return Triple.of(false, "120212", "商户不存在");
+        }
+        
+        EnterpriseInfo enterpriseInfoExit = this.selectByName(enterpriseInfoQuery.getName());
+        if (Objects.nonNull(enterpriseInfoExit) && !Objects.equals(enterpriseInfoExit.getId(), enterpriseInfo.getId())) {
+            return Triple.of(false, "120233", "商户名称重复，请修改后操作");
+        }
+        
+        enterprisePackageService.deleteByEnterpriseId(enterpriseInfo.getId());
+        if (!CollectionUtils.isEmpty(enterpriseInfoQuery.getPackageIds())) {
+            List<EnterprisePackage> packageList = enterpriseInfoQuery.getPackageIds().stream().map(item -> {
+                EnterprisePackage enterprisePackage = new EnterprisePackage();
+                enterprisePackage.setEnterpriseId(enterpriseInfo.getId());
+                enterprisePackage.setPackageId(item);
+                enterprisePackage.setPackageType(enterpriseInfoQuery.getPackageType());
+                enterprisePackage.setTenantId(enterpriseInfo.getTenantId());
+                enterprisePackage.setCreateTime(System.currentTimeMillis());
+                enterprisePackage.setUpdateTime(System.currentTimeMillis());
+                return enterprisePackage;
+            }).collect(Collectors.toList());
+            enterprisePackageService.batchInsert(packageList);
+        }
+        
+        EnterpriseInfo enterpriseInfoUpdate = new EnterpriseInfo();
+        BeanUtils.copyProperties(enterpriseInfoQuery, enterpriseInfoUpdate);
+        enterpriseInfoUpdate.setId(enterpriseInfo.getId());
+        enterpriseInfoUpdate.setUpdateTime(System.currentTimeMillis());
+        this.update(enterpriseInfoUpdate);
+        
+        return Triple.of(true, null, null);
     }
     
     @Override
@@ -474,6 +557,35 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
         
         enterprisePackageService.batchInsert(packageList);
         
+        return Triple.of(true, null, null);
+    }
+    
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Triple<Boolean, String, Object> deleteMerchantEnterprise(Long id) {
+        EnterpriseInfo enterpriseInfo = this.queryByIdFromCache(id);
+        if (Objects.isNull(enterpriseInfo) || !Objects.equals(TenantContextHolder.getTenantId(), enterpriseInfo.getTenantId())) {
+            return Triple.of(false, "120212", "商户不存在");
+        }
+        
+        //校验企业用户云豆是否都已回收
+        if (enterpriseChannelUserService.queryNotRecycleUserCount(id) > 0) {
+            return Triple.of(false, "120237", "该商户下还有未回收的云豆，请先处理后操作");
+        }
+        
+        if (BigDecimal.ZERO.compareTo(enterpriseInfo.getTotalBeanAmount()) < 0) {
+            return Triple.of(false, "120237", "该商户下还有未回收的云豆，请先处理后操作");
+        }
+        
+        enterpriseChannelUserService.deleteByEnterpriseId(id);
+        
+        enterprisePackageService.deleteByEnterpriseId(id);
+        
+        EnterpriseInfo enterpriseInfoUpdate = new EnterpriseInfo();
+        enterpriseInfoUpdate.setId(enterpriseInfo.getId());
+        enterpriseInfoUpdate.setDelFlag(EnterpriseInfo.DEL_DEL);
+        enterpriseInfoUpdate.setUpdateTime(System.currentTimeMillis());
+        this.update(enterpriseInfoUpdate);
         return Triple.of(true, null, null);
     }
     

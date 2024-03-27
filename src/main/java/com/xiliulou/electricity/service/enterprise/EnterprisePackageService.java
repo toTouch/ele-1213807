@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.service.enterprise;
 
 import com.xiliulou.electricity.entity.enterprise.EnterprisePackage;
+import com.xiliulou.electricity.vo.enterprise.EnterprisePackageVO;
 
 import java.util.List;
 
@@ -51,4 +52,6 @@ public interface EnterprisePackageService {
     EnterprisePackage selectByPackageId(Long id);
     
     int deleteByEnterpriseId(Long id);
+    
+    List<EnterprisePackageVO> queryListByEnterpriseId(Long id);
 }

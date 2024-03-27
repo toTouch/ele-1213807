@@ -10,9 +10,10 @@ import lombok.NoArgsConstructor;
 import java.math.BigDecimal;
 
 /**
- * @Description: RebateRecord
- * @Author: renhang
- * @Date 2024/3/26 09:43
+ * (RebateRecord)实体类
+ *
+ * @author Eclair
+ * @since 2024-02-20 14:31:51
  */
 @Data
 @AllArgsConstructor

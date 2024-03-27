@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.xiliulou.electricity.mapper.ElectricityCabinetMapper">
-
-
+    
+    
     <!--查询指定行数据-->
     <select id="queryList" resultType="com.xiliulou.electricity.vo.ElectricityCabinetVO">
         select
@@ -71,38 +71,38 @@
         order by id desc
         limit #{query.offset}, #{query.size}
     </select>
-
-	<select id="queryCount" resultType="java.lang.Integer">
-		select count(1)
-		from t_electricity_cabinet
-		where del_flag=0
-		<if test="query.name != null and query.name != ''">
-			and name like concat('%',#{query.name,jdbcType=VARCHAR},'%')
-		</if>
-		<if test="query.address != null and query.address != ''">
-			and address like concat('%',#{query.address,jdbcType=VARCHAR},'%')
-		</if>
-		<if test="query.usableStatus != null">
-			and usable_status = #{query.usableStatus}
-		</if>
-		<if test="query.onlineStatus != null">
-			and online_status = #{query.onlineStatus}
-		</if>
+    
+    <select id="queryCount" resultType="java.lang.Integer">
+        select count(1)
+        from t_electricity_cabinet
+        where del_flag=0
+        <if test="query.name != null and query.name != ''">
+            and name like concat('%',#{query.name,jdbcType=VARCHAR},'%')
+        </if>
+        <if test="query.address != null and query.address != ''">
+            and address like concat('%',#{query.address,jdbcType=VARCHAR},'%')
+        </if>
+        <if test="query.usableStatus != null">
+            and usable_status = #{query.usableStatus}
+        </if>
+        <if test="query.onlineStatus != null">
+            and online_status = #{query.onlineStatus}
+        </if>
         <if test="query.stockStatus != null">
             and stock_status = #{query.stockStatus}
         </if>
         <if test="query.warehouseId != null">
             and warehouse_id = #{query.warehouseId}
         </if>
-		<if test="query.tenantId != null ">
-			and tenant_id = #{query.tenantId}
-		</if>
-		<if test="query.beginTime != null">
-			and create_time &gt;=#{query.beginTime}
-		</if>
-		<if test="query.endTime != null">
-			and create_time &lt;=#{query.endTime}
-		</if>
+        <if test="query.tenantId != null ">
+            and tenant_id = #{query.tenantId}
+        </if>
+        <if test="query.beginTime != null">
+            and create_time &gt;=#{query.beginTime}
+        </if>
+        <if test="query.endTime != null">
+            and create_time &lt;=#{query.endTime}
+        </if>
         <if test="query.sn != null and query.sn != ''">
             and sn like concat('%',#{query.sn, jdbcType=VARCHAR},'%')
         </if>
@@ -152,7 +152,7 @@
         ) * 1000
         ) AS distance
         from t_electricity_cabinet tec
-        left join t_store ts on  tec.store_id=ts.id
+        left join t_store ts on tec.store_id=ts.id
         where tec.del_flag = 0
         <if test="query.name != null ">
             and tec.name like concat('%',#{query.name,jdbcType=VARCHAR},'%')
@@ -163,22 +163,23 @@
         <if test="query.tenantId != null ">
             and tec.tenant_id = #{query.tenantId}
         </if>
-         <if test="query.usableStatus != null ">
-             and tec.`usable_status` = #{query.usableStatus}
-         </if>
+        <if test="query.usableStatus != null ">
+            and tec.`usable_status` = #{query.usableStatus}
+        </if>
         <if test="query.distance != null">
             having distance &lt; #{query.distance}
         </if>
         order by distance asc
     </select>
-
-
+    
+    
     <select id="selectElectricityCabinetByAddress" resultType="com.xiliulou.electricity.vo.ElectricityCabinetVO">
-        select tec.id,tec.sn , tec.service_phone ,tec.fully_charged ,tec.business_time, tec.name,tec.address, tec.longitude, tec.latitude, ROUND( 6378.138 * 2 * ASIN( SQRT( POW( SIN( ( #{lat} * PI() / 180 - tec.latitude * PI() / 180
+        select tec.id,tec.sn , tec.service_phone ,tec.fully_charged ,tec.business_time, tec.name,tec.address, tec.longitude, tec.latitude, ROUND( 6378.138 * 2 * ASIN( SQRT( POW(
+        SIN( ( #{lat} * PI() / 180 - tec.latitude * PI() / 180
         ) / 2 ), 2 ) + COS(#{lat} * PI() / 180) * COS(tec.latitude * PI() / 180) * POW( SIN( ( #{lon} * PI() / 180 - tec.longitude * PI() / 180 ) / 2
         ), 2 ) ) ) * 1000 ) AS distance
         from t_electricity_cabinet tec
-        left join t_store ts on  tec.store_id=ts.id
+        left join t_store ts on tec.store_id=ts.id
         where tec.del_flag = 0
         <if test="address != null ">
             and ( tec.address like concat('%',#{address,jdbcType=VARCHAR},'%') or tec.name like
@@ -196,7 +197,7 @@
         order by distance asc
         limit #{offset}, #{size}
     </select>
-
+    
     <select id="queryFullyElectricityBattery" resultType="java.lang.Long">
         select eb.id from t_electricity_cabinet as ec
         left join t_electricity_cabinet_box as ecb on ec.id=ecb.electricity_cabinet_id
@@ -209,7 +210,7 @@
             and ecb.battery_type is null
         </if>
     </select>
-
+    
     <select id="queryFullyElectricityBatteryForLowBatteryExchange" resultType="java.lang.Long">
         select eb.id from t_electricity_cabinet as ec
         left join t_electricity_cabinet_box as ecb on ec.id=ecb.electricity_cabinet_id
@@ -222,8 +223,8 @@
             and ecb.battery_type is null
         </if>
     </select>
-
-
+    
+    
     <select id="queryNameList" resultType="java.util.Map">
         select
         id, name
@@ -240,7 +241,7 @@
         </if>
         limit #{offset}, #{size}
     </select>
-
+    
     <select id="homeOne" resultType="com.xiliulou.electricity.entity.ElectricityCabinet">
         select
         id, name,sn, address, longitude, latitude, product_key, device_name, device_secret, usable_status,
@@ -258,7 +259,7 @@
             and tenant_id = #{tenantId}
         </if>
     </select>
-
+    
     <select id="homeThree" resultType="java.util.HashMap">
         select from_unixtime(create_time / 1000, '%Y-%m-%d') date, count(*) as count
         from t_electricity_cabinet where create_time &gt;= #{startTimeMilliDay} and create_time &lt;=#{endTimeMilliDay}
@@ -274,7 +275,7 @@
         group by date
         order by date desc
     </select>
-
+    
     <select id="queryCountByStoreIds" resultType="integer">
         select count(1)
         from t_electricity_cabinet
@@ -291,94 +292,94 @@
             </if>
         </where>
     </select>
-
-	<select id="queryCountByStoreIdsAndStatus" resultType="integer">
-		select count(1)
-		from t_electricity_cabinet
-		<where>
-			del_flag=0
-			<if test="tenantId != null">
-				and tenant_id = #{tenantId}
-			</if>
-			<if test="storeIds != null and storeIds.size() > 0">
-				and store_id in
-				<foreach collection="storeIds" item="id" separator="," open="(" close=")">
-					#{id}
-				</foreach>
-			</if>
-			<if test="status != null">
-				and online_status = #{status}
-			</if>
-		</where>
-	</select>
-	
-	<!--通过主键修改数据-->
-	<update id="updateEleById">
-		update t_electricity_cabinet
-		<set>
-			<if test="name != null and name != ''">
-				name = #{name},
-			</if>
-			<if test="address != null and address != ''">
-				address = #{address},
-			</if>
-			<if test="longitude != null">
-				longitude = #{longitude},
-			</if>
-			<if test="latitude != null">
-				latitude = #{latitude},
-			</if>
-			<if test="productKey != null and productKey != ''">
-				product_key = #{productKey},
-			</if>
-			<if test="deviceName != null and deviceName != ''">
-				device_name = #{deviceName},
-			</if>
-			<if test="deviceSecret != null and deviceSecret != ''">
-				device_secret = #{deviceSecret},
-			</if>
-			<if test="usableStatus != null">
-				usable_status = #{usableStatus},
-			</if>
-			<if test="onlineStatus != null">
-				online_status = #{onlineStatus},
-			</if>
-			<if test="modelId != null">
-				model_id = #{modelId},
-			</if>
-			<if test="version != null and version != ''">
-				version = #{version},
-			</if>
-			<if test="fullyCharged != null">
-				fully_charged = #{fullyCharged},
-			</if>
-			<if test="servicePhone != null and servicePhone != ''">
-				service_phone = #{servicePhone},
-			</if>
-			<if test="businessTime != null and businessTime != ''">
-				business_time = #{businessTime},
-			</if>
-			<if test="createTime != null">
-				create_time = #{createTime},
-			</if>
-			<if test="updateTime != null">
-				update_time = #{updateTime},
-			</if>
-			<if test="delFlag != null">
-				del_flag = #{delFlag},
-			</if>
-			<if test="storeId != null">
-				store_id = #{storeId},
-			</if>
+    
+    <select id="queryCountByStoreIdsAndStatus" resultType="integer">
+        select count(1)
+        from t_electricity_cabinet
+        <where>
+            del_flag=0
+            <if test="tenantId != null">
+                and tenant_id = #{tenantId}
+            </if>
+            <if test="storeIds != null and storeIds.size() > 0">
+                and store_id in
+                <foreach collection="storeIds" item="id" separator="," open="(" close=")">
+                    #{id}
+                </foreach>
+            </if>
+            <if test="status != null">
+                and online_status = #{status}
+            </if>
+        </where>
+    </select>
+    
+    <!--通过主键修改数据-->
+    <update id="updateEleById">
+        update t_electricity_cabinet
+        <set>
+            <if test="name != null and name != ''">
+                name = #{name},
+            </if>
+            <if test="address != null and address != ''">
+                address = #{address},
+            </if>
+            <if test="longitude != null">
+                longitude = #{longitude},
+            </if>
+            <if test="latitude != null">
+                latitude = #{latitude},
+            </if>
+            <if test="productKey != null and productKey != ''">
+                product_key = #{productKey},
+            </if>
+            <if test="deviceName != null and deviceName != ''">
+                device_name = #{deviceName},
+            </if>
+            <if test="deviceSecret != null and deviceSecret != ''">
+                device_secret = #{deviceSecret},
+            </if>
+            <if test="usableStatus != null">
+                usable_status = #{usableStatus},
+            </if>
+            <if test="onlineStatus != null">
+                online_status = #{onlineStatus},
+            </if>
+            <if test="modelId != null">
+                model_id = #{modelId},
+            </if>
+            <if test="version != null and version != ''">
+                version = #{version},
+            </if>
+            <if test="fullyCharged != null">
+                fully_charged = #{fullyCharged},
+            </if>
+            <if test="servicePhone != null and servicePhone != ''">
+                service_phone = #{servicePhone},
+            </if>
+            <if test="businessTime != null and businessTime != ''">
+                business_time = #{businessTime},
+            </if>
+            <if test="createTime != null">
+                create_time = #{createTime},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+            <if test="delFlag != null">
+                del_flag = #{delFlag},
+            </if>
+            <if test="storeId != null">
+                store_id = #{storeId},
+            </if>
             <if test="franchiseeId != null">
                 franchisee_id = #{franchiseeId},
             </if>
             <if test="stockStatus  != null">
                 stock_status = #{stockStatus},
             </if>
-			<if test="sn != null and sn != ''">
-				sn = #{sn},
-			</if>
+            <if test="sn != null and sn != ''">
+                sn = #{sn},
+            </if>
             <if test="exchangeType != null">
                 exchange_type = #{exchangeType},
             </if>
@@ -386,9 +387,9 @@
                 warehouse_id = #{warehouseId},
             </if>
         </set>
-		where id = #{id} and tenant_id = #{tenantId}
-	</update>
-
+        where id = #{id} and tenant_id = #{tenantId}
+    </update>
+    
     <select id="queryName" resultType="com.xiliulou.electricity.vo.ElectricityCabinetVO">
         select id,name from t_electricity_cabinet
         where del_flag=0
@@ -435,7 +436,7 @@
         order by id
         limit #{offset}, #{size}
     </select>
-
+    
     <select id="selectByQuery" resultType="com.xiliulou.electricity.entity.ElectricityCabinet">
         select id, name,sn, address, usable_status, online_status, model_id, version, fully_charged, update_time, store_id, franchisee_id
         from t_electricity_cabinet
@@ -467,7 +468,7 @@
         order by id desc
         limit #{offset}, #{size}
     </select>
-
+    
     <select id="selecteleCabinetVOByQuery" resultType="com.xiliulou.electricity.vo.EleCabinetDataAnalyseVO">
         select
         <if test="franchiseeId != null ">
@@ -582,7 +583,7 @@
         </choose>
         limit #{offset}, #{size}
     </select>
-
+    
     <select id="selectLockCellByQuery" resultType="com.xiliulou.electricity.vo.EleCabinetDataAnalyseVO">
         select
         <if test="franchiseeId != null ">
@@ -702,7 +703,7 @@
         </choose>
         limit #{offset}, #{size}
     </select>
-
+    
     <select id="selectPowerPage" resultType="com.xiliulou.electricity.vo.EleCabinetDataAnalyseVO">
         select
         <if test="franchiseeId != null ">
@@ -829,7 +830,7 @@
         </choose>
         limit #{offset}, #{size}
     </select>
-
+    
     <select id="selectPowerPageCount" resultType="int">
         select count(1) from (
         select
@@ -892,7 +893,7 @@
         </if>
         ) a
     </select>
-
+    
     <select id="selectLockPageCount" resultType="int">
         select
         count(1) from (
@@ -946,7 +947,7 @@
         GROUP BY
         ecb.electricity_cabinet_id) a
     </select>
-
+    
     <select id="selectOfflinePageCount" resultType="int">
         select
         count(1)
@@ -993,7 +994,7 @@
             </foreach>
         </if>
     </select>
-
+    
     <select id="selectEidByStoreId" resultType="java.lang.Integer">
         select id from t_electricity_cabinet
         where del_flag=0
@@ -1004,27 +1005,27 @@
             and store_id =#{storeId}
         </if>
     </select>
-
-	<select id="selectEleCabinetListByLongitudeAndLatitude" resultType="com.xiliulou.electricity.entity.ElectricityCabinet">
-		select id, name,longitude, latitude, online_status
-		from t_electricity_cabinet
-		where del_flag=0
-		<if test="query.name != null and query.name != ''">
-			and name like concat('%',#{query.name,jdbcType=VARCHAR},'%')
-		</if>
-		<if test="query.id != null">
-			and id =#{query.id}
-		</if>
+    
+    <select id="selectEleCabinetListByLongitudeAndLatitude" resultType="com.xiliulou.electricity.entity.ElectricityCabinet">
+        select id, name,longitude, latitude, online_status
+        from t_electricity_cabinet
+        where del_flag=0
+        <if test="query.name != null and query.name != ''">
+            and name like concat('%',#{query.name,jdbcType=VARCHAR},'%')
+        </if>
+        <if test="query.id != null">
+            and id =#{query.id}
+        </if>
         <if test="query.eleIdList!=null and query.eleIdList!=''">
             and id in
             <foreach collection="query.eleIdList" item="id" index="index" open="(" close=")" separator=",">
                 #{id}
             </foreach>
         </if>
-		<if test="query.tenantId != null ">
-			and tenant_id = #{query.tenantId}
-		</if>
-	</select>
+        <if test="query.tenantId != null ">
+            and tenant_id = #{query.tenantId}
+        </if>
+    </select>
     
     <select id="batchOperateList" resultType="com.xiliulou.electricity.vo.ElectricityCabinetBatchOperateVo">
         select
@@ -1055,7 +1056,7 @@
         order by create_time desc
         limit #{offset}, #{size}
     </select>
-
+    
     <select id="cabinetSearch" resultType="com.xiliulou.electricity.vo.SearchVo">
         select id, name
         from t_electricity_cabinet_model
@@ -1069,13 +1070,21 @@
         order by id
         limit #{offset}, #{size}
     </select>
-
+    
     <select id="existByProductKeyAndDeviceName" resultType="Integer">
-       select 1 from t_electricity_cabinet where product_key = #{productKey} and device_name = #{deviceName} and del_flag = 0 limit 1;
+        select 1
+        from t_electricity_cabinet
+        where product_key = #{productKey}
+          and device_name = #{deviceName}
+          and del_flag = 0 limit 1;
     </select>
     
     <select id="existsByWarehouseId" resultType="java.lang.Integer">
-        select 1 from t_electricity_cabinet where warehouse_id = #{wareHouseId} and del_flag = 0 and stock_status=0 limit 1;
+        select 1
+        from t_electricity_cabinet
+        where warehouse_id = #{wareHouseId}
+          and del_flag = 0
+          and stock_status = 0 limit 1;
     </select>
     
     <select id="selectListByFranchiseeIdAndStockStatus" resultType="com.xiliulou.electricity.bo.asset.ElectricityCabinetBO">
@@ -1334,10 +1343,21 @@
     </update>
     
     <select id="selectListByPage" resultType="com.xiliulou.electricity.vo.ElectricityCabinetVO">
-        select id, name, sn, product_key, device_name, online_status, longitude, latitude, franchisee_id, store_id, tenant_id
+        select id,
+               name,
+               sn,
+               product_key,
+               device_name,
+               online_status,
+               longitude,
+               latitude,
+               franchisee_id,
+               store_id,
+               tenant_id
         from t_electricity_cabinet
-        where del_flag=0
-        limit #{offset}, #{size}
+        where del_flag = 0
+            limit #{offset}
+            , #{size}
     </select>
     
     <select id="selectListByIdList" resultType="com.xiliulou.electricity.bo.asset.ElectricityCabinetBO">
@@ -1355,17 +1375,38 @@
     </select>
     <select id="selectCabinetCount" resultType="com.xiliulou.electricity.vo.ElectricityCabinetCountVO">
         SELECT
-            tenant_id,
-            count( 1 ) as 'cabinetCount'
+        tenant_id,
+        count( 1 ) as 'cabinetCount'
         FROM
-            t_electricity_cabinet
+        t_electricity_cabinet
         WHERE
-            del_flag = 0
-            AND tenant_id IN
-            <foreach collection="tenantIdList" close=")" open="(" separator="," item="tenantId">
-                #{tenantId}
-            </foreach>
+        del_flag = 0
+        AND tenant_id IN
+        <foreach collection="tenantIdList" close=")" open="(" separator="," item="tenantId">
+            #{tenantId}
+        </foreach>
         GROUP BY
-            tenant_id
+        tenant_id
     </select>
+    
+    <select id="existsByAreaId" resultType="java.lang.Integer">
+        select 1
+        from t_electricity_cabinet
+        where del_flag = 0
+          and area_id = #{areaId} limit 1
+    </select>
+    
+    <select id="countByAreaGroup" resultType="com.xiliulou.electricity.bo.merchant.AreaCabinetNumBO">
+        select any_value(area_id) as areaId, count(1) as cabinetNum from t_electricity_cabinet
+        <where>
+            <if test="areaIdList != null and areaIdList.size() > 0">
+                and area_id in
+                <foreach collection="areaIdList" item="areaId" open="(" close=")" separator=",">
+                    #{areaId}
+                </foreach>
+            </if>
+        </where>
+        group by area_id
+    </select>
+
 </mapper>

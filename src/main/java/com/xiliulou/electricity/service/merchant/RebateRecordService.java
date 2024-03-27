@@ -1,9 +1,14 @@
 package com.xiliulou.electricity.service.merchant;
 
 import com.xiliulou.electricity.entity.merchant.RebateRecord;
+import com.xiliulou.electricity.query.merchant.MerchantPromotionEmployeeDetailSpecificsQueryModel;
+import com.xiliulou.electricity.query.merchant.MerchantPromotionFeeQueryModel;
+import com.xiliulou.electricity.query.merchant.MerchantPromotionRenewalQueryModel;
 import com.xiliulou.electricity.request.merchant.RebateRecordRequest;
+import com.xiliulou.electricity.vo.merchant.MerchantPromotionEmployeeDetailSpecificsVO;
 import com.xiliulou.electricity.vo.merchant.RebateRecordVO;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -40,12 +45,12 @@ public interface RebateRecordService {
     
     List<RebateRecord> listCurrentMonthRebateRecord( Long merchantId, long startTime, long endTime, int offset, int size);
     
-//    BigDecimal sumByStatus(MerchantPromotionFeeQueryModel merchantPromotionFeeQueryModel);
-//
-//    Integer countByTime(MerchantPromotionRenewalQueryModel merchantPromotionRenewalQueryModel);
-//
-//    List<MerchantPromotionEmployeeDetailSpecificsVO> selectListPromotionDetail(MerchantPromotionEmployeeDetailSpecificsQueryModel queryModel);
-//
+    BigDecimal sumByStatus(MerchantPromotionFeeQueryModel merchantPromotionFeeQueryModel);
+    
+    Integer countByTime(MerchantPromotionRenewalQueryModel merchantPromotionRenewalQueryModel);
+    
+    List<MerchantPromotionEmployeeDetailSpecificsVO> selectListPromotionDetail(MerchantPromotionEmployeeDetailSpecificsQueryModel queryModel);
+    
     /**
      * 获取比当前商户等级小的返利记录
      */
