@@ -18,9 +18,6 @@ public class MerchantModifyInviterRequest {
     @NotNull(message = "用户uid不能为空", groups = {UpdateGroup.class})
     private Long uid;
     
-    @NotNull(message = "现邀请人uid不能为空", groups = {UpdateGroup.class})
-    private Long oldInviterUid;
-    
     @NotNull(message = "修改后邀请人(商户)id不能为空", groups = {UpdateGroup.class})
     private Long merchantId;
     

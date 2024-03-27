@@ -184,7 +184,4 @@ public interface UserInfoService extends IService<UserInfo> {
      */
     Integer updatePhoneByUid(Integer tenantId, Long uid, String newPhone);
     
-    MerchantModifyInviterVO selectModifyInviterInfo(Long uid, Long size, Long offset);
-    
-    R modifyInviter(MerchantModifyInviterRequest merchantModifyInviterRequest);
 }

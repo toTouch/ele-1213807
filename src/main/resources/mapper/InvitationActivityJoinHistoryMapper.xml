@@ -322,6 +322,10 @@
         delete from t_invitation_activity_join_history where id = #{id}
     </delete>
     
+    <update id="removeById">
+        update t_invitation_activity_join_history set del_flag = 1 where id = #{id}
+    </update>
+    
     <select id="selectUserHistoryByPage" resultType="com.xiliulou.electricity.vo.InvitationActivityJoinHistoryVO">
     
         select

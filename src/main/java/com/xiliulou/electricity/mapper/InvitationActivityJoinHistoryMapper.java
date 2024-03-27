@@ -100,4 +100,6 @@ public interface InvitationActivityJoinHistoryMapper extends BaseMapper<Invitati
     FinalJoinInvitationActivityHistoryVO selectFinalHistoryByJoinUid(@Param("joinUid") Long joinUid, @Param("tenantId") Integer tenantId);
     
     InvitationActivityJoinHistory selectSuccessHistoryByJoinUid(@Param("joinUid") Long joinUid, @Param("tenantId") Integer tenantId);
+    
+    Integer removeById(Long id);
 }

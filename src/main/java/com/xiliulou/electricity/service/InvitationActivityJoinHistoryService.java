@@ -104,4 +104,7 @@ public interface InvitationActivityJoinHistoryService {
     FinalJoinInvitationActivityHistoryVO queryFinalHistoryByJoinUid(Long uid, Integer tenantId);
     
     InvitationActivityJoinHistory querySuccessHistoryByJoinUid(Long uid, Integer tenantId);
+    
+    Integer removeById(Long id);
+    
 }

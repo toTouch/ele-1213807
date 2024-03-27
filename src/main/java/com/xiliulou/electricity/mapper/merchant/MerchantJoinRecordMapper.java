@@ -63,4 +63,6 @@ public interface MerchantJoinRecordMapper extends BaseMapper<MerchantJoinRecord>
     Integer existMerchantAllInviterData(@Param("merchantId") Long merchantId, @Param("tenantId") Integer tenantId);
     
     MerchantJoinRecord selectSuccessRecordByJoinUid(@Param("joinUid") Long uid, @Param("tenantId") Integer tenantId);
+    
+    Integer updateOldRecord(Long id);
 }

@@ -525,6 +525,11 @@ public class ChannelActivityHistoryServiceImpl implements ChannelActivityHistory
         return channelActivityHistoryMapper.selectSuccessHistoryByJoinUid(uid, tenantId);
     }
     
+    @Override
+    public Integer removeById(Long id) {
+        return channelActivityHistoryMapper.removeById(id);
+    }
+    
     private String queryStatus(Integer status) {
         String result = "";
         switch (status) {

@@ -87,4 +87,6 @@ public interface ChannelActivityHistoryService {
     FinalJoinChannelActivityHistoryVO queryFinalHistoryByJoinUid(Long uid, Integer tenantId);
     
     ChannelActivityHistory querySuccessHistoryByJoinUid(Long uid, Integer tenantId);
+    
+    Integer removeById(Long id);
 }

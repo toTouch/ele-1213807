@@ -20,6 +20,11 @@ public class MerchantInviterVO {
     private Long uid;
     
     /**
+     * 邀请人uid
+     */
+    private Long inviterUid;
+    
+    /**
      * 邀请人名称
      */
     private String inviterName;

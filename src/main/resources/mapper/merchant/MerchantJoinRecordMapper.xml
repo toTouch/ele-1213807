@@ -56,6 +56,10 @@
         where id = #{id}
     </update>
     
+    <update id="updateOldRecord">
+        update t_merchant_join_record set del_flag = 1 and modify_inviter = 1 where id = #{id}
+    </update>
+    
     <select id="existsInProtectionTimeByJoinUid" resultType="java.lang.Integer">
         select 1
         from t_merchant_join_record

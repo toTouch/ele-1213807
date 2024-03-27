@@ -85,4 +85,6 @@ public interface ChannelActivityHistoryMapper extends BaseMapper<ChannelActivity
     FinalJoinChannelActivityHistoryVO selectFinalHistoryByJoinUid(@Param("joinUid") Long joinUid, @Param("tenantId")Integer tenantId);
     
     ChannelActivityHistory selectSuccessHistoryByJoinUid(@Param("joinUid") Long joinUid, @Param("tenantId")Integer tenantId);
+    
+    Integer removeById(Long id);
 }

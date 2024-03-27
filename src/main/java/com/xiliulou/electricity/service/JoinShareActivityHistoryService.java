@@ -68,5 +68,5 @@ public interface JoinShareActivityHistoryService {
     
     JoinShareActivityHistory querySuccessHistoryByJoinUid(Long uid, Integer tenantId);
     
-    Integer deleteById(Long id);
+    Integer removeById(Long id);
 }

@@ -98,6 +98,10 @@
         where id = #{id}
     </update>
     
+    <update id="removeById">
+        update t_channel_activity_history set del_flag = 1 where id = #{id}
+    </update>
+    
     <!--通过主键删除-->
     <delete id="deleteById">
         delete from t_channel_activity_history where id = #{id}

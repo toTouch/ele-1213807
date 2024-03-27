@@ -32,9 +32,9 @@
         from t_join_share_activity_history
     </sql>
     
-    <delete id="deleteById">
+    <update id="removeById">
         update t_join_share_activity_history set del_flag = 1 where id = #{id}
-    </delete>
+    </update>
     
     <!--通过实体作为筛选条件查询-->
     <select id="queryList" resultType="com.xiliulou.electricity.vo.JoinShareActivityHistoryVO">

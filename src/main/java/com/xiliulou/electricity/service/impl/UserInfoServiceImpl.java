@@ -19,7 +19,7 @@ import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.constant.EleUserOperateHistoryConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.constant.UserOperateRecordConstant;
-import com.xiliulou.electricity.constant.merchant.MerchantJoinRecordConstant;
+import com.xiliulou.electricity.constant.merchant.MerchantConstant;
 import com.xiliulou.electricity.domain.car.UserCarRentalPackageDO;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.CarDepositOrder;
@@ -56,6 +56,7 @@ import com.xiliulou.electricity.entity.UserCar;
 import com.xiliulou.electricity.entity.UserCarDeposit;
 import com.xiliulou.electricity.entity.UserCarMemberCard;
 import com.xiliulou.electricity.entity.UserInfo;
+import com.xiliulou.electricity.entity.UserInfoExtra;
 import com.xiliulou.electricity.entity.UserOauthBind;
 import com.xiliulou.electricity.entity.car.CarRentalPackageMemberTermPo;
 import com.xiliulou.electricity.entity.car.CarRentalPackagePo;
@@ -165,7 +166,6 @@ import com.xiliulou.electricity.vo.UserInfoSumTurnoverVo;
 import com.xiliulou.electricity.vo.UserTurnoverVo;
 import com.xiliulou.electricity.vo.enterprise.EnterpriseChannelUserVO;
 import com.xiliulou.electricity.vo.merchant.MerchantInviterVO;
-import com.xiliulou.electricity.vo.merchant.MerchantJoinRecordVO;
 import com.xiliulou.electricity.vo.merchant.MerchantModifyInviterVO;
 import com.xiliulou.electricity.vo.merchant.MerchantVO;
 import com.xiliulou.electricity.vo.userinfo.UserCarRentalInfoExcelVO;
@@ -388,9 +388,6 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     
     @Resource
     private MerchantJoinRecordService merchantJoinRecordService;
-    
-    @Resource
-    private MerchantService merchantService;
     
     /**
      * 分页查询
@@ -3095,130 +3092,4 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         return userInfoMapper.updatePhoneByUid(tenantId, uid, newPhone, System.currentTimeMillis());
     }
     
-    @Override
-    public MerchantModifyInviterVO selectModifyInviterInfo(Long uid, Long size, Long offset) {
-        Integer tenantId = TenantContextHolder.getTenantId();
-    
-        MerchantInviterVO successInviterVO = this.getSuccessInviterVO(uid, tenantId);
-        if (Objects.isNull(successInviterVO)) {
-            return null;
-        }
-    
-        Integer inviterSource = successInviterVO.getInviterSource();
-        String inviterSourceStr = null;
-        if (Objects.equals(inviterSource, MerchantInviterSourceEnum.MERCHANT_INVITER_SOURCE_MERCHANT.getCode())) {
-            inviterSourceStr = MerchantInviterSourceEnum.MERCHANT_INVITER_SOURCE_MERCHANT.getDesc();
-        } else {
-            inviterSourceStr = MerchantInviterSourceEnum.MERCHANT_INVITER_SOURCE_USER.getDesc();
-        }
-    
-        UserInfo userInfo = this.queryByUidFromCache(uid);
-        Long franchiseeId = null;
-        String franchiseeName = null;
-        if (Objects.nonNull(userInfo)) {
-            franchiseeId = userInfo.getFranchiseeId();
-            franchiseeName = userInfo.getName();
-        }
-    
-        // 商户列表
-        MerchantPageRequest merchantPageRequest = MerchantPageRequest.builder().size(size).offset(offset).tenantId(tenantId).franchiseeId(franchiseeId).build();
-        List<MerchantVO> merchantVOS = merchantService.listByPage(merchantPageRequest);
-    
-        return MerchantModifyInviterVO.builder().uid(uid).inviterName(successInviterVO.getInviterName()).inviterSource(inviterSourceStr)
-                .franchiseeId(franchiseeId).franchiseeName(franchiseeName).merchantList(merchantVOS).build();
-    }
-    
-    private MerchantInviterVO getSuccessInviterVO(Long uid, Integer tenantId) {
-        Long id = null;
-        String inviterName = null;
-        Integer inviterSource = null;
-        
-        JoinShareActivityHistory joinShareActivityHistory = joinShareActivityHistoryService.querySuccessHistoryByJoinUid(uid, tenantId);
-        if (Objects.nonNull(joinShareActivityHistory)) {
-            id = joinShareActivityHistory.getId();
-            UserInfo userInfo = this.queryByUidFromCache(joinShareActivityHistory.getUid());
-            
-            if (Objects.nonNull(userInfo)) {
-                inviterName = userInfo.getName();
-                inviterSource = MerchantInviterSourceEnum.MERCHANT_INVITER_SOURCE_SHARE_ACTIVITY.getCode();
-            }
-        }
-        
-        JoinShareMoneyActivityHistory joinShareMoneyActivityHistory = joinShareMoneyActivityHistoryService.querySuccessHistoryByJoinUid(uid, tenantId);
-        if (Objects.nonNull(joinShareMoneyActivityHistory)) {
-            id = joinShareMoneyActivityHistory.getId();
-            UserInfo userInfo = this.queryByUidFromCache(joinShareMoneyActivityHistory.getUid());
-            
-            if (Objects.nonNull(userInfo)) {
-                inviterName = userInfo.getName();
-                inviterSource = MerchantInviterSourceEnum.MERCHANT_INVITER_SOURCE_SHARE_MONEY_ACTIVITY.getCode();
-            }
-        }
-        
-        InvitationActivityJoinHistory invitationActivityJoinHistory = invitationActivityJoinHistoryService.querySuccessHistoryByJoinUid(uid, tenantId);
-        if (Objects.nonNull(invitationActivityJoinHistory)) {
-            id = invitationActivityJoinHistory.getId();
-            UserInfo userInfo = this.queryByUidFromCache(invitationActivityJoinHistory.getUid());
-            
-            if (Objects.nonNull(userInfo)) {
-                inviterName = userInfo.getName();
-                inviterSource = MerchantInviterSourceEnum.MERCHANT_INVITER_SOURCE_INVITATION_ACTIVITY.getCode();
-            }
-        }
-    
-        ChannelActivityHistory channelActivityHistory = channelActivityHistoryService.querySuccessHistoryByJoinUid(uid, tenantId);
-        if (Objects.nonNull(channelActivityHistory)) {
-            id = channelActivityHistory.getId();
-            UserInfo userInfo = this.queryByUidFromCache(channelActivityHistory.getUid());
-        
-            if (Objects.nonNull(userInfo)) {
-                inviterName = userInfo.getName();
-                inviterSource = MerchantInviterSourceEnum.MERCHANT_INVITER_SOURCE_CHANNEL_ACTIVITY.getCode();
-            }
-        }
-    
-        MerchantJoinRecord merchantJoinRecord = merchantJoinRecordService.querySuccessRecordByJoinUid(uid, tenantId);
-        if (Objects.nonNull(merchantJoinRecord)) {
-            id = merchantJoinRecord.getId();
-            inviterName = Optional.ofNullable(userService.queryByUidFromCache(merchantJoinRecord.getInviterUid())).map(User::getName).orElse("");
-            inviterSource = MerchantInviterSourceEnum.MERCHANT_INVITER_SOURCE_MERCHANT.getCode();
-        }
-        
-        if (Objects.isNull(inviterName)) {
-            return null;
-        }
-    
-        return MerchantInviterVO.builder().id(id).inviterName(inviterName).inviterSource(inviterSource).build();
-    }
-    
-    @Override
-    public R modifyInviter(MerchantModifyInviterRequest merchantModifyInviterRequest) {
-        Integer tenantId = TenantContextHolder.getTenantId();
-        Long uid = merchantModifyInviterRequest.getUid();
-        // 修改前邀请人uid
-        Long oldInviterUid = merchantModifyInviterRequest.getOldInviterUid();
-        // 修改后邀请人（商户id）
-        Long merchantId = merchantModifyInviterRequest.getMerchantId();
-        String remark = merchantModifyInviterRequest.getRemark();
-    
-        // 获取邀请人来源
-        MerchantInviterVO successInviterVO = getSuccessInviterVO(uid, tenantId);
-        if (Objects.isNull(successInviterVO)) {
-            log.warn("Modify inviter fail! successInviterVO is null, uid={}", uid);
-            return R.fail("120107", "未找到成功的参与记录，修改邀请人失败");
-        }
-    
-        Long id = successInviterVO.getId();
-        Integer inviterSource = successInviterVO.getInviterSource();
-    
-        return null;
-    }
-    
-    private void delOldRecord(Long id, Integer inviterSource) {
-        switch(inviterSource) {
-            case MerchantInviterSourceEnum.MERCHANT_INVITER_SOURCE_SHARE_ACTIVITY:
-                Integer integer = joinShareActivityHistoryService.deleteById(id);
-                break;
-            }
-    }
 }

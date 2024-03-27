@@ -301,4 +301,9 @@ public class InvitationActivityJoinHistoryServiceImpl implements InvitationActiv
     public InvitationActivityJoinHistory querySuccessHistoryByJoinUid(Long uid, Integer tenantId) {
         return invitationActivityJoinHistoryMapper.selectSuccessHistoryByJoinUid(uid, tenantId);
     }
+    
+    @Override
+    public Integer removeById(Long id) {
+        return invitationActivityJoinHistoryMapper.removeById(id);
+    }
 }

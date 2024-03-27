@@ -295,8 +295,13 @@ public class JoinShareMoneyActivityHistoryServiceImpl implements JoinShareMoneyA
 	public JoinShareMoneyActivityHistory querySuccessHistoryByJoinUid(Long uid, Integer tenantId) {
 		return joinShareMoneyActivityHistoryMapper.selectSuccessHistoryByJoinUid(uid, tenantId);
 	}
-	
-	private String queryStatus(Integer status) {
+    
+    @Override
+    public Integer removeById(Long id) {
+	    return joinShareMoneyActivityHistoryMapper.removeById(id);
+    }
+    
+    private String queryStatus(Integer status) {
         //参与状态 1--初始化，2--已参与，3--已过期，4--被替换
         String result = "";
         switch (status) {

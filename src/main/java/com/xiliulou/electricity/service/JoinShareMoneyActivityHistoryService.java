@@ -69,4 +69,6 @@ public interface JoinShareMoneyActivityHistoryService {
     Pair<Boolean, String> checkJoinedActivityFromSameInviter(Long joinUid, Long inviterUid, Long activityId);
     
     JoinShareMoneyActivityHistory querySuccessHistoryByJoinUid(Long uid, Integer tenantId);
+    
+    Integer removeById(Long id);
 }

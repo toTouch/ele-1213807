@@ -255,7 +255,12 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
         }
     }
     
-    private MerchantJoinRecord assembleRecord(Long merchantId, Long inviterUid, Integer inviterType, Long joinUid, Long channelEmployeeUid, Long placeId, MerchantAttr merchantAttr,
+    @Override
+    public Integer insertOne(MerchantJoinRecord record) {
+        return merchantJoinRecordMapper.insertOne(record);
+    }
+    
+    public MerchantJoinRecord assembleRecord(Long merchantId, Long inviterUid, Integer inviterType, Long joinUid, Long channelEmployeeUid, Long placeId, MerchantAttr merchantAttr,
             Integer tenantId) {
         long nowTime = System.currentTimeMillis();
         Integer protectionTime = merchantAttr.getInvitationProtectionTime();
@@ -511,5 +516,10 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
     @Override
     public MerchantJoinRecord querySuccessRecordByJoinUid(Long uid, Integer tenantId) {
         return merchantJoinRecordMapper.selectSuccessRecordByJoinUid(uid, tenantId);
+    }
+    
+    @Override
+    public Integer updateOldRecord(Long id) {
+        return merchantJoinRecordMapper.updateOldRecord(id);
     }
 }

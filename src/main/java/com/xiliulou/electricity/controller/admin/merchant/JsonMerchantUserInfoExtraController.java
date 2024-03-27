@@ -4,7 +4,7 @@ import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.request.merchant.MerchantModifyInviterRequest;
-import com.xiliulou.electricity.service.UserInfoService;
+import com.xiliulou.electricity.service.UserInfoExtraService;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.validator.UpdateGroup;
 import com.xiliulou.security.bean.TokenUser;
@@ -26,15 +26,15 @@ import java.util.Objects;
  */
 @Slf4j
 @RestController
-public class JsonMerchantUserInfoController extends BaseController {
+public class JsonMerchantUserInfoExtraController extends BaseController {
     
     @Resource
-    private UserInfoService userInfoService;
+    private UserInfoExtraService userInfoExtraService;
     
     /**
      * 返回null-不显示“修改邀请人”按钮
      */
-    @GetMapping(value = "/admin/merchant/userinfo/modifyInviterInfo")
+    @GetMapping(value = "/admin/merchant/userInfoExtra/modifyInviterInfo")
     public R modifyInviterInfo(@RequestParam("size") Long size, @RequestParam("offset") Long offset, @RequestParam("uid") Long uid) {
         if (size < 0 || size > 50) {
             size = 10L;
@@ -53,13 +53,13 @@ public class JsonMerchantUserInfoController extends BaseController {
             return R.ok();
         }
         
-        return R.ok(userInfoService.selectModifyInviterInfo(uid, size, offset));
+        return R.ok(userInfoExtraService.selectModifyInviterInfo(uid, size, offset));
     }
     
     /**
      * 修改邀请人
      */
-    @PostMapping(value = "/admin/merchant/userinfo/modifyInviter")
+    @PostMapping(value = "/admin/merchant/userInfoExtra/modifyInviter")
     public R modifyInviter(@RequestBody @Validated(UpdateGroup.class) MerchantModifyInviterRequest merchantModifyInviterRequest) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
@@ -70,7 +70,7 @@ public class JsonMerchantUserInfoController extends BaseController {
             return R.ok();
         }
         
-        return userInfoService.modifyInviter(merchantModifyInviterRequest);
+        return userInfoExtraService.modifyInviter(merchantModifyInviterRequest);
     }
     
 }

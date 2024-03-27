@@ -2,7 +2,6 @@ package com.xiliulou.electricity.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.xiliulou.electricity.entity.JoinShareActivityHistory;
-import com.xiliulou.electricity.entity.JoinShareActivityRecord;
 import com.xiliulou.electricity.query.ElectricityCabinetOrderExcelQuery;
 import com.xiliulou.electricity.query.JsonShareActivityHistoryQuery;
 import com.xiliulou.electricity.vo.FinalJoinShareActivityHistoryVo;
@@ -54,5 +53,5 @@ public interface JoinShareActivityHistoryMapper extends BaseMapper<JoinShareActi
 	
 	JoinShareActivityHistory selectSuccessHistoryByJoinUid(@Param("joinUid") Long joinUid, @Param("tenantId") Integer tenantId);
 	
-	Integer deleteById(Long id);
+	Integer removeById(Long id);
 }
