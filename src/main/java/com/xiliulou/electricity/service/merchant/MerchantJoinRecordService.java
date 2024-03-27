@@ -107,4 +107,6 @@ public interface MerchantJoinRecordService {
     Integer updateStatusById(Long id, Integer status, long updateTime);
     
     String queryMerchantNameByJoinUid(Long joinUid, Integer status);
+    
+    Integer countSuccessByCondition(MerchantPromotionScanCodeQueryModel scanCodeQueryModel);
 }

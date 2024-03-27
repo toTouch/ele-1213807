@@ -365,6 +365,36 @@
           and tmjr.join_uid = #{joinUid}
           and tmjr.status = #{status}
     </select>
+    
+    <select id="countSuccessByCondition" resultType="java.lang.Integer">
+        select IFNULL(count(1), 0) from (
+        select distinct(join_uid) from t_merchant_join_record
+        <where>
+            <if test="startTime != null">
+                and start_time >= #{startTime}
+            </if>
+            <if test="endTime != null">
+                and start_time &lt;= #{endTime}
+            </if>
+            <if test="channelEmployeeUid != null">
+                and channel_employee_uid = #{channelEmployeeUid}
+            </if>
+            <if test="type != null and type!=3">
+                and inviter_type = #{type}
+            </if>
+            <if test="uid != null and type!=3">
+                and inviter_uid = #{uid}
+            </if>
+            <if test="status != null">
+                and status = #{status}
+            </if>
+            <if test="tenantId != null">
+                and tenant_id = #{tenantId}
+            </if>
+    
+        </where>
+        ) a
+    </select>
 
 </mapper>
 

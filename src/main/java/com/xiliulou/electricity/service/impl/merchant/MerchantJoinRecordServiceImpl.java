@@ -512,4 +512,15 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
     public String queryMerchantNameByJoinUid(Long joinUid, Integer status) {
         return merchantJoinRecordMapper.selectMerchantNameByJoinUid(joinUid, status);
     }
+    
+    /**
+     * 查询扫码人数成功的数量
+     * @param scanCodeQueryModel
+     * @return
+     */
+    @Slave
+    @Override
+    public Integer countSuccessByCondition(MerchantPromotionScanCodeQueryModel scanCodeQueryModel) {
+        return merchantJoinRecordMapper.countSuccessByCondition(scanCodeQueryModel);
+    }
 }
