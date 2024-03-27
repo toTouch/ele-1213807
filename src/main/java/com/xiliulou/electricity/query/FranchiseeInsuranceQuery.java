@@ -38,8 +38,15 @@ public class FranchiseeInsuranceQuery {
      */
     private String simpleBatteryType;
     
+    /**
+     * 加盟商
+     */
     private List<Long> franchiseeIds;
     
+    
+    /**
+     * 门店列表
+     */
     private List<Long> storeIds;
 
 }

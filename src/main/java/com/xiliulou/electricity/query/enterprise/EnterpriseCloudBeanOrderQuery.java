@@ -5,6 +5,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 /**
  * @author zzlong
  * @email zhaozhilong@xiliulou.com
@@ -40,4 +42,6 @@ public class EnterpriseCloudBeanOrderQuery {
     private Integer type;
 
     private String orderId;
+    
+    private List<Long> franchiseeIds;
 }

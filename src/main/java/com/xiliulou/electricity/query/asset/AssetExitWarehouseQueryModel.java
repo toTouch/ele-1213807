@@ -5,6 +5,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 /**
  * @author HeYafeng
  * @description 退库查询model
@@ -39,5 +41,8 @@ public class AssetExitWarehouseQueryModel {
      * 租户ID
      */
     private Integer tenantId;
+    
+    
+    private List<Long> franchiseeIds;
     
 }
