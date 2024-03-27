@@ -10,6 +10,7 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.annotation.Log;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.ElectricityIotConstant;
+import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.controller.BasicController;
 import com.xiliulou.electricity.dto.ElectricityCabinetOtherSetting;
 import com.xiliulou.electricity.entity.EleCabinetCoreData;
@@ -893,22 +894,24 @@ public class JsonAdminElectricityCabinetController extends BasicController {
 
         return R.ok(electricityCabinetService.superAdminSelectByQuery(query));
     }
-
+    
     /**
      * 根据经纬度获取柜机列表
+     * @param status 0-全部、1-少电、2-多电、3-锁仓、4-离线
      *
      * @return
      */
     @GetMapping("/admin/electricityCabinet/listByLongitudeAndLatitude")
     public R selectEleCabinetListByLongitudeAndLatitude(@RequestParam(value = "id", required = false) Integer id,
-                                                        @RequestParam(value = "name", required = false) String name) {
-
+            @RequestParam(value = "name", required = false) String name,
+            @RequestParam(value = "status", required = false) Integer status) {
+        
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             log.error("ELE ERROR! not found user");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-
+        
         List<Integer> eleIdList = null;
         if (!SecurityUtils.isAdmin() && !Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE)) {
             UserTypeService userTypeService = userTypeFactory.getInstance(user.getDataType());
@@ -916,20 +919,21 @@ public class JsonAdminElectricityCabinetController extends BasicController {
                 log.warn("USER TYPE ERROR! not found operate service! userType={}", user.getDataType());
                 return R.fail("ELECTRICITY.0066", "用户权限不足");
             }
-
+            
             eleIdList = userTypeService.getEleIdListByDataType(user);
             if (CollectionUtils.isEmpty(eleIdList)) {
                 return R.ok(Collections.EMPTY_LIST);
             }
         }
-
+        
         ElectricityCabinetQuery cabinetQuery = ElectricityCabinetQuery.builder()
                 .id(id)
                 .name(name)
+                .status(Objects.isNull(status) ? NumberConstant.ONE : status)
                 .tenantId(TenantContextHolder.getTenantId())
                 .eleIdList(eleIdList)
                 .build();
-
+        
         return electricityCabinetService.selectEleCabinetListByLongitudeAndLatitude(cabinetQuery);
     }
 

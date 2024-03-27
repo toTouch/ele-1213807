@@ -1227,16 +1227,36 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         //之前有电池，将原来的电池解绑
         ElectricityBattery isBindElectricityBattery = electricityBatteryService.queryByUid(userInfoBatteryAddAndUpdate.getUid());
         if (Objects.equals(userInfoBatteryAddAndUpdate.getEdiType(), UserInfoBatteryAddAndUpdate.EDIT_TYPE) && Objects.nonNull(isBindElectricityBattery)) {
-            ElectricityBattery notBindOldElectricityBattery = new ElectricityBattery();
-            notBindOldElectricityBattery.setId(isBindElectricityBattery.getId());
-            notBindOldElectricityBattery.setBusinessStatus(ElectricityBattery.BUSINESS_STATUS_EXCEPTION);
-            notBindOldElectricityBattery.setElectricityCabinetId(null);
-            notBindOldElectricityBattery.setElectricityCabinetName(null);
-            notBindOldElectricityBattery.setUid(null);
-            notBindOldElectricityBattery.setBorrowExpireTime(null);
-            notBindOldElectricityBattery.setUpdateTime(System.currentTimeMillis());
-            notBindOldElectricityBattery.setBindTime(System.currentTimeMillis());
-            electricityBatteryService.updateBatteryUser(notBindOldElectricityBattery);
+            if (!Objects.equals(isBindElectricityBattery.getSn(), userInfoBatteryAddAndUpdate.getInitElectricityBatterySn())) {
+                ElectricityBattery notBindOldElectricityBattery = new ElectricityBattery();
+                notBindOldElectricityBattery.setId(isBindElectricityBattery.getId());
+                notBindOldElectricityBattery.setBusinessStatus(ElectricityBattery.BUSINESS_STATUS_ADMIN_UNBIND);
+                notBindOldElectricityBattery.setElectricityCabinetId(null);
+                notBindOldElectricityBattery.setElectricityCabinetName(null);
+                notBindOldElectricityBattery.setUid(null);
+                notBindOldElectricityBattery.setBorrowExpireTime(null);
+                notBindOldElectricityBattery.setUpdateTime(System.currentTimeMillis());
+                notBindOldElectricityBattery.setBindTime(System.currentTimeMillis());
+                electricityBatteryService.updateBatteryUser(notBindOldElectricityBattery);
+                
+                // 添加退电记录
+                RentBatteryOrder rentBatteryOrder = new RentBatteryOrder();
+                rentBatteryOrder.setUid(oldUserInfo.getUid());
+                rentBatteryOrder.setName(oldUserInfo.getName());
+                rentBatteryOrder.setPhone(oldUserInfo.getPhone());
+                rentBatteryOrder.setElectricityBatterySn(isBindElectricityBattery.getSn());
+                rentBatteryOrder.setBatteryDeposit(Objects.isNull(userBatteryDeposit) ? BigDecimal.ZERO : userBatteryDeposit.getBatteryDeposit());
+                rentBatteryOrder.setOrderId(OrderIdUtil.generateBusinessOrderId(BusinessType.RETURN_BATTERY, user.getUid()));
+                rentBatteryOrder.setStatus(RentBatteryOrder.RETURN_BATTERY_CHECK_SUCCESS);
+                rentBatteryOrder.setFranchiseeId(oldUserInfo.getFranchiseeId());
+                rentBatteryOrder.setStoreId(oldUserInfo.getStoreId());
+                rentBatteryOrder.setTenantId(oldUserInfo.getTenantId());
+                rentBatteryOrder.setCreateTime(System.currentTimeMillis());
+                rentBatteryOrder.setUpdateTime(System.currentTimeMillis());
+                rentBatteryOrder.setType(RentBatteryOrder.TYPE_WEB_UNBIND);
+                rentBatteryOrder.setOrderType(orderType);
+                rentBatteryOrderService.insert(rentBatteryOrder);
+            }
         }
         
         Integer finalOrderType = orderType;
@@ -1414,7 +1434,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         //解绑电池
         ElectricityBattery electricityBattery = new ElectricityBattery();
         electricityBattery.setId(oldElectricityBattery.getId());
-        electricityBattery.setBusinessStatus(ElectricityBattery.BUSINESS_STATUS_EXCEPTION);
+        electricityBattery.setBusinessStatus(ElectricityBattery.BUSINESS_STATUS_ADMIN_UNBIND);
         electricityBattery.setElectricityCabinetId(null);
         electricityBattery.setElectricityCabinetName(null);
         electricityBattery.setUid(null);

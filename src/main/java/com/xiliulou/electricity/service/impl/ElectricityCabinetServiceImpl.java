@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.collection.ListUtil;
 import cn.hutool.core.date.DatePattern;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.NumberUtil;
@@ -140,6 +141,8 @@ import com.xiliulou.electricity.vo.ElectricityCabinetBatchOperateVo;
 import com.xiliulou.electricity.vo.ElectricityCabinetBoxVO;
 import com.xiliulou.electricity.vo.ElectricityCabinetCountVO;
 import com.xiliulou.electricity.vo.ElectricityCabinetExcelVO;
+import com.xiliulou.electricity.vo.ElectricityCabinetListMapVO;
+import com.xiliulou.electricity.vo.ElectricityCabinetMapVO;
 import com.xiliulou.electricity.vo.ElectricityCabinetVO;
 import com.xiliulou.electricity.vo.HomePageDepositVo;
 import com.xiliulou.electricity.vo.HomePageElectricityOrderVo;
@@ -164,6 +167,7 @@ import com.xiliulou.storage.config.StorageConfig;
 import com.xiliulou.storage.service.StorageService;
 import jodd.util.StringUtil;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
@@ -186,6 +190,7 @@ import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.net.URLEncoder;
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -4812,7 +4817,114 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             return R.ok(Collections.EMPTY_LIST);
         }
         
-        return R.ok(electricityCabinets);
+        List<Integer> cabinetIds = electricityCabinets.stream().map(ElectricityCabinet::getId).collect(Collectors.toList());
+        
+        //分批次查询柜机格挡
+        List<ElectricityCabinetBox> electricityCabinetBoxList = new ArrayList<>();
+        List<List<Integer>> partitions = ListUtil.partition(cabinetIds, NumberConstant.TWO_HUNDRED);
+        partitions.forEach(item -> {
+            List<ElectricityCabinetBox> boxes = electricityCabinetBoxService.listByElectricityCabinetIdS(item, TenantContextHolder.getTenantId());
+            electricityCabinetBoxList.addAll(boxes);
+        });
+        
+        Map<Integer, List<ElectricityCabinetBox>> boxesByIdMap = new HashMap<>();
+        if (!CollectionUtils.isEmpty(electricityCabinetBoxList)) {
+            for (ElectricityCabinetBox box : electricityCabinetBoxList) {
+                boxesByIdMap.computeIfAbsent(box.getElectricityCabinetId(), k -> new ArrayList<>()).add(box);
+            }
+        }
+        
+        // 获取系统配置
+        ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(TenantContextHolder.getTenantId());
+        
+        List<ElectricityCabinetListMapVO> assembleCabinetList = new ArrayList<>();
+        electricityCabinets.forEach(cabinet -> {
+            ElectricityCabinetListMapVO electricityCabinetListMapVO = new ElectricityCabinetListMapVO();
+            BeanUtils.copyProperties(cabinet, electricityCabinetListMapVO);
+            
+            List<ElectricityCabinetBox> electricityCabinetBoxes = boxesByIdMap.getOrDefault(cabinet.getId(), Collections.emptyList());
+            int boxNum = NumberConstant.ZERO;
+            int batteryNum = NumberConstant.ZERO;
+            int unusableBoxNum = NumberConstant.ZERO;
+            if (!CollectionUtils.isEmpty(electricityCabinetBoxes)) {
+                //柜机格口数量
+                boxNum = electricityCabinetBoxes.size();
+                
+                // 电池在仓数量统计
+                batteryNum = (int) electricityCabinetBoxes.stream().filter(box -> Objects.equals(box.getStatus(), ElectricityCabinetBox.STATUS_ELECTRICITY_BATTERY)).count();
+                
+                // 电池锁仓数量统计
+                unusableBoxNum = (int) electricityCabinetBoxes.stream()
+                        .filter(box -> Objects.equals(box.getUsableStatus(), ElectricityCabinetBox.ELECTRICITY_CABINET_BOX_UN_USABLE)).count();
+                
+                //判断少/多电柜机
+                int chargeRate = BigDecimal.valueOf(batteryNum).multiply(NumberConstant.ONE_HUNDRED_BD).divide(BigDecimal.valueOf(boxNum), NumberConstant.ZERO, RoundingMode.DOWN)
+                        .intValue();
+                if (Objects.nonNull(electricityConfig)) {
+                    BigDecimal lowChargeRateBd = electricityConfig.getLowChargeRate();
+                    BigDecimal fullChargeRateBd = electricityConfig.getFullChargeRate();
+                    
+                    //默认低电比例25% 多电比例75%
+                    int lowChargeRate = Objects.isNull(lowChargeRateBd) ? NumberConstant.TWENTY_FIVE : lowChargeRateBd.intValue();
+                    int fullChargeRate = Objects.isNull(fullChargeRateBd) ? NumberConstant.SEVENTY_FIVE : fullChargeRateBd.intValue();
+                    
+                    if (chargeRate <= lowChargeRate) {
+                        electricityCabinetListMapVO.setIsLowCharge(NumberConstant.ONE);
+                    } else if (chargeRate >= fullChargeRate) {
+                        electricityCabinetListMapVO.setIsFulCharge(NumberConstant.ONE);
+                    } else {
+                        electricityCabinetListMapVO.setIsLowCharge(NumberConstant.ZERO);
+                        electricityCabinetListMapVO.setIsFulCharge(NumberConstant.ZERO);
+                    }
+                }
+                
+                // 是否锁仓柜机
+                electricityCabinetListMapVO.setIsUnusable(unusableBoxNum > NumberConstant.ZERO);
+            }
+            
+            electricityCabinetListMapVO.setBoxNum(boxNum);
+            electricityCabinetListMapVO.setBatteryNum(batteryNum);
+            electricityCabinetListMapVO.setUnusableBoxNum(unusableBoxNum);
+            
+            assembleCabinetList.add(electricityCabinetListMapVO);
+        });
+        
+        // 设置统计值
+        Integer totalCount = assembleCabinetList.size();
+        Integer lowChargeCount = (int) assembleCabinetList.stream().filter(cabinet -> Objects.equals(cabinet.getIsLowCharge(), NumberConstant.ONE)).count();
+        Integer fullChargeCount = (int) assembleCabinetList.stream().filter(cabinet -> Objects.equals(cabinet.getIsFulCharge(), NumberConstant.ONE)).count();
+        Integer unusableCount = (int) assembleCabinetList.stream().filter(cabinet -> BooleanUtils.isTrue(cabinet.getIsUnusable())).count();
+        Integer offLineCount = (int) assembleCabinetList.stream().filter(cabinet -> Objects.equals(cabinet.getOnlineStatus(), NumberConstant.ONE)).count();
+        
+        // 0-全部、1-少电、2-多电、3-锁仓、4-离线
+        List<ElectricityCabinetListMapVO> rspList = new ArrayList<>();
+        switch (cabinetQuery.getStatus()) {
+            default:
+                // 默认少电
+                rspList = assembleCabinetList.stream().filter(cabinet -> Objects.equals(cabinet.getIsLowCharge(), NumberConstant.ONE)).collect(Collectors.toList());
+                break;
+            case 0:
+                rspList = assembleCabinetList;
+                break;
+            case 2:
+                rspList = assembleCabinetList.stream().filter(cabinet -> Objects.equals(cabinet.getIsFulCharge(), NumberConstant.ONE)).collect(Collectors.toList());
+                break;
+            case 3:
+                rspList = assembleCabinetList.stream().filter(cabinet -> BooleanUtils.isTrue(cabinet.getIsUnusable())).collect(Collectors.toList());
+                break;
+            case 4:
+                rspList = assembleCabinetList.stream().filter(cabinet -> Objects.equals(cabinet.getOnlineStatus(), NumberConstant.ONE)).collect(Collectors.toList());
+                break;
+        }
+        
+        if (CollectionUtils.isEmpty(rspList)) {
+            rspList = Collections.emptyList();
+        }
+        
+        ElectricityCabinetMapVO rsp = ElectricityCabinetMapVO.builder().totalCount(totalCount).lowChargeCount(lowChargeCount).fullChargeCount(fullChargeCount)
+                .unusableCount(unusableCount).offLineCount(offLineCount).electricityCabinetListMapVOList(rspList).build();
+        
+        return R.ok(rsp);
     }
     
     @Slave

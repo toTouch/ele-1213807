@@ -210,6 +210,12 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
     public List<ElectricityCabinetBox> selectEleBoxAttrByEid(Integer id) {
         return electricityCabinetBoxMapper.selectEleBoxAttrByEid(id);
     }
+    
+    @Slave
+    @Override
+    public List<ElectricityCabinetBox> listByElectricityCabinetIdS(List<Integer> electricityCabinetIdS, Integer tenantId) {
+        return electricityCabinetBoxMapper.selectListByElectricityCabinetIdS(electricityCabinetIdS, tenantId);
+    }
 
     @Override
     @Slave

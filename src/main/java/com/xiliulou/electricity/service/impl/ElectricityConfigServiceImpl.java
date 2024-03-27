@@ -9,6 +9,7 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.constant.EleEsignConstant;
+import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.dto.FranchiseeBatteryModelDTO;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mapper.ElectricityConfigMapper;
@@ -66,8 +67,8 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
     PxzConfigService pxzConfigService;
     @Autowired
     EleEsignConfigService eleEsignConfigService;
-
-
+    
+    
     @Override
     @Transactional(rollbackFor = Exception.class)
     public R edit(ElectricityConfigAddAndUpdateQuery electricityConfigAddAndUpdateQuery) {
@@ -77,13 +78,13 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
             log.error("ELECTRICITY  ERROR! not found user ");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-
+        
         //操作频繁
         boolean result = redisService.setNx(CacheConstant.ELE_CONFIG_EDIT_UID + user.getUid(), "1", 3 * 1000L, false);
         if (!result) {
             return R.fail("ELECTRICITY.0034", "操作频繁");
         }
-    
+        
         //实名审核方式若为人脸核身
         if(Objects.equals(electricityConfigAddAndUpdateQuery.getIsManualReview(),ElectricityConfig.FACE_REVIEW)){
             //是否购买资源包
@@ -91,30 +92,30 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
             if(Objects.isNull(faceRecognizeData)){
                 return R.fail("100334", "未购买人脸核身资源包，请联系管理员");
             }
-        
+            
             //资源包是否可用
             if(faceRecognizeData.getFaceRecognizeCapacity()<=0){
                 return R.fail("100335", "人脸核身资源包余额不足，请充值");
             }
         }
-
+        
         String franchiseeMoveDetail = null;
         //若开启了迁移加盟商
         if (Objects.equals(electricityConfigAddAndUpdateQuery.getIsMoveFranchisee(), ElectricityConfig.MOVE_FRANCHISEE_OPEN)) {
             if (Objects.isNull(electricityConfigAddAndUpdateQuery.getFranchiseeMoveInfo()) || Objects.isNull(electricityConfigAddAndUpdateQuery.getFranchiseeMoveInfo().getBatteryModel())) {
                 return R.fail("ELECTRICITY.0007", "加盟商迁移信息不能为空");
             }
-
+            
             FranchiseeMoveInfo franchiseeMoveInfoQuery = electricityConfigAddAndUpdateQuery.getFranchiseeMoveInfo();
-
+            
             Franchisee oldFranchisee = franchiseeService.queryByIdFromCache(franchiseeMoveInfoQuery.getFromFranchiseeId());
             Franchisee newFranchisee = franchiseeService.queryByIdFromCache(franchiseeMoveInfoQuery.getToFranchiseeId());
-
+            
             Triple<Boolean, String, Object> verifyFranchiseeResult = verifyFranchisee(oldFranchisee, newFranchisee, franchiseeMoveInfoQuery);
             if (!verifyFranchiseeResult.getLeft()) {
                 return R.fail(verifyFranchiseeResult.getMiddle(), (String) verifyFranchiseeResult.getRight());
             }
-
+            
             FranchiseeMoveInfo franchiseeMoveInfo = new FranchiseeMoveInfo();
             franchiseeMoveInfo.setFromFranchiseeId(electricityConfigAddAndUpdateQuery.getFranchiseeMoveInfo().getFromFranchiseeId());
             franchiseeMoveInfo.setToFranchiseeId(electricityConfigAddAndUpdateQuery.getFranchiseeMoveInfo().getToFranchiseeId());
@@ -122,17 +123,17 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
             franchiseeMoveInfo.setFromFranchiseeName(oldFranchisee.getName());
             franchiseeMoveInfo.setToFranchiseeName(newFranchisee.getName());
             franchiseeMoveDetail = JsonUtil.toJson(franchiseeMoveInfo);
-
+            
             //将旧加盟商下套餐迁移到新加盟商
             electricityMemberCardService.moveMemberCard(franchiseeMoveInfo,newFranchisee);
-
+            
             //将旧加盟商下保险迁移到新加盟商
             franchiseeInsuranceService.moveInsurance(franchiseeMoveInfo,newFranchisee);
-
+            
             //将旧加盟商下的车辆型号迁移到新加盟商下
             electricityCarModelService.moveCarModel(franchiseeMoveInfo);
         }
-
+        
         //若开启免押
         if (Objects.nonNull(electricityConfigAddAndUpdateQuery.getFreeDepositType()) && !Objects.equals(electricityConfigAddAndUpdateQuery.getFreeDepositType(), ElectricityConfig.FREE_DEPOSIT_TYPE_DEFAULT)) {
             //检查免押配置
@@ -141,7 +142,7 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
                 return R.fail("100400", "免押功能未配置相关信息");
             }
         }
-
+        
         //若开启签名功能，需要检查签名相关信息是否已经配置
         if(Objects.equals(electricityConfigAddAndUpdateQuery.getIsEnableEsign(), EleEsignConstant.ESIGN_ENABLE)){
             EleEsignConfig eleEsignConfig = eleEsignConfigService.selectLatestByTenantId(TenantContextHolder.getTenantId());
@@ -149,7 +150,16 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
                 return R.fail("100500", "电子签名功能未配置相关信息,请检查");
             }
         }
-
+        
+        // 处理柜机 少电比例和多电比例参数
+        Integer lowChargeRate = electricityConfigAddAndUpdateQuery.getLowChargeRate();
+        Integer fullChargeRate = electricityConfigAddAndUpdateQuery.getFullChargeRate();
+        
+        if (Objects.isNull(lowChargeRate) || Objects.isNull(fullChargeRate) || lowChargeRate < NumberConstant.ZERO || fullChargeRate < NumberConstant.ZERO
+                || fullChargeRate <= lowChargeRate) {
+            return R.fail("100317", "请输入0-100的整数;多电比例需大于少电比例");
+        }
+        
         ElectricityConfig electricityConfig = electricityConfigMapper.selectOne(new LambdaQueryWrapper<ElectricityConfig>().eq(ElectricityConfig::getTenantId, TenantContextHolder.getTenantId()));
         if (Objects.isNull(electricityConfig)) {
             electricityConfig = new ElectricityConfig();
@@ -178,6 +188,11 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
             electricityConfig.setAllowRentEle(electricityConfigAddAndUpdateQuery.getAllowRentEle());
             electricityConfig.setAllowReturnEle(electricityConfigAddAndUpdateQuery.getAllowReturnEle());
             electricityConfig.setAllowFreezeWithAssets(electricityConfigAddAndUpdateQuery.getAllowFreezeWithAssets());
+            electricityConfig.setWxCustomer(ElectricityConfig.CLOSE_WX_CUSTOMER);
+            electricityConfig.setLowChargeRate(BigDecimal.valueOf(lowChargeRate));
+            electricityConfig.setFullChargeRate(BigDecimal.valueOf(fullChargeRate));
+            electricityConfig.setChannelTimeLimit(electricityConfigAddAndUpdateQuery.getChannelTimeLimit());
+            
             electricityConfigMapper.insert(electricityConfig);
             return R.ok();
         }
@@ -188,7 +203,7 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
         if (Objects.nonNull(selectionExchangeDB) && !Objects.equals(selectionExchangeDB, selectionExchangeUpdate)) {
             redisService.set(CacheConstant.CACHE_ELE_SELECTION_EXCHANGE_UPDATE_TIME + TenantContextHolder.getTenantId(), String.valueOf(System.currentTimeMillis()));
         }
-
+        
         electricityConfig.setTenantId(TenantContextHolder.getTenantId());
         electricityConfig.setName(electricityConfigAddAndUpdateQuery.getName());
         electricityConfig.setOrderTime(electricityConfigAddAndUpdateQuery.getOrderTime());
@@ -214,11 +229,15 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
         electricityConfig.setAllowRentEle(electricityConfigAddAndUpdateQuery.getAllowRentEle());
         electricityConfig.setAllowReturnEle(electricityConfigAddAndUpdateQuery.getAllowReturnEle());
         electricityConfig.setAllowFreezeWithAssets(electricityConfigAddAndUpdateQuery.getAllowFreezeWithAssets());
+        electricityConfig.setLowChargeRate(BigDecimal.valueOf(lowChargeRate));
+        electricityConfig.setFullChargeRate(BigDecimal.valueOf(fullChargeRate));
+        electricityConfig.setChannelTimeLimit(electricityConfigAddAndUpdateQuery.getChannelTimeLimit());
+        
         int updateResult = electricityConfigMapper.update(electricityConfig);
         if (updateResult > 0) {
             redisService.delete(CacheConstant.CACHE_ELE_SET_CONFIG + TenantContextHolder.getTenantId());
         }
-
+        
         return R.ok();
     }
 
@@ -277,20 +296,20 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
 
         return Triple.of(true, "", null);
     }
-
+    
     @Override
     public ElectricityConfig queryFromCacheByTenantId(Integer tenantId) {
         ElectricityConfig cache = redisService.getWithHash(CacheConstant.CACHE_ELE_SET_CONFIG + tenantId, ElectricityConfig.class);
         if (Objects.nonNull(cache)) {
             return cache;
         }
-
+        
         ElectricityConfig electricityConfig = electricityConfigMapper.selectOne(new LambdaQueryWrapper<ElectricityConfig>()
                 .eq(ElectricityConfig::getTenantId, tenantId));
         if (Objects.isNull(electricityConfig)) {
             return null;
         }
-
+        
         redisService.saveWithHash(CacheConstant.CACHE_ELE_SET_CONFIG + tenantId, electricityConfig);
         return electricityConfig;
     }
