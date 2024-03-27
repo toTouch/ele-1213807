@@ -59,11 +59,11 @@ public class BatteryInfoDto {
     /**
      * 总放电Ah
      */
-    private Integer totalDischarge;
+    private Double totalDischarge;
     /**
      * 总充电Ah
      */
-    private Integer totalCharge;
+    private Double totalCharge;
     /**
      * 预计放电时间
      */
