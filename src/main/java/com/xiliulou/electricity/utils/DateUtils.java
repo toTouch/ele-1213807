@@ -238,27 +238,6 @@ public class DateUtils {
         return endOfDay.atZone(CHINA_ZONE_ID).toInstant().toEpochMilli();
     }
     
-    public static boolean isSameMonth(long time1, long time2) {
-        SimpleDateFormat fmt = new SimpleDateFormat("yyyyMM");
-        return fmt.format(new Date(time1)).equals(fmt.format(new Date(time2)));
-    }
-    
-    /*
-     * 获取前某月第一天00:00:00的时间戳
-     */
-    public static long getBeforeMonthFirstDayTimestamp(Integer minusMonth) {
-        LocalDate lastMonthFirstDay = LocalDate.now().minusMonths(minusMonth).withDayOfMonth(1);
-        return lastMonthFirstDay.atStartOfDay().atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
-    }
-    
-    /**
-     * 获取前某月最后一天23:59:59时间戳
-     */
-    public static long getBeforeMonthLastDayTimestamp(Integer minusMonth) {
-        LocalDate lastMonthFirstDay = LocalDate.now().minusMonths(minusMonth).withDayOfMonth(1);
-        LocalDate lastMonthLastDay = lastMonthFirstDay.with(TemporalAdjusters.lastDayOfMonth());
-        return lastMonthLastDay.atTime(23, 59, 59).atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
-    }
     
     /**
      * 根据年月获取当月第一天 年月：2024-01 返回: 2024-01-01
