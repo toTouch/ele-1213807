@@ -46,4 +46,27 @@ public class MerchantJoinRecordConstant {
      * 邀请人类型：2-场地员工
      */
     public static Integer INVITER_TYPE_MERCHANT_PLACE_EMPLOYEE = 2;
+    
+    
+    /**
+     * 修改邀请人，邀请人来源-用户邀请
+     */
+    public static Integer MERCHANT_MODIFY_INVITER_SOURCE_USER = 1;
+    
+    
+    /**
+     * 修改邀请人，邀请人来源-商户邀请
+     */
+    public static Integer MERCHANT_MODIFY_INVITER_SOURCE_MERCHANT = 2;
+    
+    /**
+     * 邀请人是否被修改，0-否，1-是
+     */
+    public static Integer MERCHANT_MODIFY_INVITER_INVITER_NO = 0;
+    
+    
+    /**
+     * 修改邀请人，邀请人来源-商户邀请
+     */
+    public static Integer MERCHANT_MODIFY_INVITER_INVITER_YES = 1;
 }

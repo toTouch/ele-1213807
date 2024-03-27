@@ -10,6 +10,7 @@ import com.xiliulou.electricity.request.user.UnbindOpenIdRequest;
 import com.xiliulou.electricity.request.user.UpdateUserPhoneRequest;
 import com.xiliulou.electricity.vo.HomePageUserByWeekDayVo;
 import com.xiliulou.electricity.vo.UserInfoDetailVO;
+import com.xiliulou.electricity.vo.merchant.MerchantModifyInviterVO;
 import org.apache.commons.lang3.tuple.Triple;
 
 import javax.servlet.http.HttpServletResponse;
@@ -182,5 +183,5 @@ public interface UserInfoService extends IService<UserInfo> {
      */
     Integer updatePhoneByUid(Integer tenantId, Long uid, String newPhone);
     
-    Boolean canModifyInviter(Long uid);
+    MerchantModifyInviterVO selectModifyInviterInfo(Long uid, Long size, Long offset);
 }

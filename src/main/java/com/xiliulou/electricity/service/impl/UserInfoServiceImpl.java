@@ -71,6 +71,7 @@ import com.xiliulou.electricity.mapper.UserInfoMapper;
 import com.xiliulou.electricity.query.UserInfoBatteryAddAndUpdate;
 import com.xiliulou.electricity.query.UserInfoCarAddAndUpdate;
 import com.xiliulou.electricity.query.UserInfoQuery;
+import com.xiliulou.electricity.request.merchant.MerchantPageRequest;
 import com.xiliulou.electricity.request.user.UnbindOpenIdRequest;
 import com.xiliulou.electricity.request.user.UpdateUserPhoneRequest;
 import com.xiliulou.electricity.service.BatteryMemberCardService;
@@ -130,6 +131,7 @@ import com.xiliulou.electricity.service.enterprise.EnterpriseRentRecordService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseUserCostRecordService;
 import com.xiliulou.electricity.service.excel.AutoHeadColumnWidthStyleStrategy;
 import com.xiliulou.electricity.service.merchant.MerchantJoinRecordService;
+import com.xiliulou.electricity.service.merchant.MerchantService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.OrderIdUtil;
@@ -158,6 +160,8 @@ import com.xiliulou.electricity.vo.UserInfoSearchVo;
 import com.xiliulou.electricity.vo.UserInfoSumTurnoverVo;
 import com.xiliulou.electricity.vo.UserTurnoverVo;
 import com.xiliulou.electricity.vo.enterprise.EnterpriseChannelUserVO;
+import com.xiliulou.electricity.vo.merchant.MerchantModifyInviterVO;
+import com.xiliulou.electricity.vo.merchant.MerchantVO;
 import com.xiliulou.electricity.vo.userinfo.UserCarRentalInfoExcelVO;
 import com.xiliulou.electricity.vo.userinfo.UserCarRentalPackageVO;
 import com.xiliulou.electricity.vo.userinfo.UserEleInfoVO;
@@ -188,8 +192,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 /**
@@ -377,6 +383,9 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     
     @Resource
     private MerchantJoinRecordService merchantJoinRecordService;
+    
+    @Resource
+    private MerchantService merchantService;
     
     /**
      * 分页查询
@@ -2956,7 +2965,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         if (Objects.nonNull(finalJoinChannelActivityHistoryVO)) {
             return finalJoinChannelActivityHistoryVO.getUserName();
         }
-    
+        
         //套餐返现
         FinalJoinInvitationActivityHistoryVO finalJoinInvitationActivityHistoryVO = invitationActivityJoinHistoryService.queryFinalHistoryByJoinUid(uid, tenantId);
         if (Objects.nonNull(finalJoinInvitationActivityHistoryVO)) {
@@ -3082,34 +3091,74 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     }
     
     @Override
-    public Boolean canModifyInviter(Long uid) {
+    public MerchantModifyInviterVO selectModifyInviterInfo(Long uid, Long size, Long offset) {
         Integer tenantId = TenantContextHolder.getTenantId();
-        
+        String inviterName = null;
+        Integer inviterSource = null;
+    
         JoinShareActivityHistory joinShareActivityHistory = joinShareActivityHistoryService.querySuccessHistoryByJoinUid(uid, tenantId);
         if (Objects.nonNull(joinShareActivityHistory)) {
-            return Boolean.TRUE;
+            UserInfo userInfo = this.queryByUidFromCache(joinShareActivityHistory.getUid());
+        
+            if (Objects.nonNull(userInfo)) {
+                inviterName = userInfo.getName();
+                inviterSource = MerchantJoinRecordConstant.MERCHANT_MODIFY_INVITER_SOURCE_USER;
+            }
         }
     
         JoinShareMoneyActivityHistory joinShareMoneyActivityHistory = joinShareMoneyActivityHistoryService.querySuccessHistoryByJoinUid(uid, tenantId);
         if (Objects.nonNull(joinShareMoneyActivityHistory)) {
-            return Boolean.TRUE;
+            UserInfo userInfo = this.queryByUidFromCache(joinShareMoneyActivityHistory.getUid());
+        
+            if (Objects.nonNull(userInfo)) {
+                inviterName = userInfo.getName();
+                inviterSource = MerchantJoinRecordConstant.MERCHANT_MODIFY_INVITER_SOURCE_USER;
+            }
         }
     
         ChannelActivityHistory channelActivityHistory = channelActivityHistoryService.querySuccessHistoryByJoinUid(uid, tenantId);
         if (Objects.nonNull(channelActivityHistory)) {
-            return Boolean.TRUE;
+            UserInfo userInfo = this.queryByUidFromCache(channelActivityHistory.getUid());
+        
+            if (Objects.nonNull(userInfo)) {
+                inviterName = userInfo.getName();
+                inviterSource = MerchantJoinRecordConstant.MERCHANT_MODIFY_INVITER_SOURCE_USER;
+            }
         }
     
         InvitationActivityJoinHistory invitationActivityJoinHistory = invitationActivityJoinHistoryService.querySuccessHistoryByJoinUid(uid, tenantId);
         if (Objects.nonNull(invitationActivityJoinHistory)) {
-            return Boolean.TRUE;
+            UserInfo userInfo = this.queryByUidFromCache(invitationActivityJoinHistory.getUid());
+        
+            if (Objects.nonNull(userInfo)) {
+                inviterName = userInfo.getName();
+                inviterSource = MerchantJoinRecordConstant.MERCHANT_MODIFY_INVITER_SOURCE_USER;
+            }
         }
     
         String merchantName = merchantJoinRecordService.queryMerchantNameByJoinUid(uid, MerchantJoinRecordConstant.STATUS_SUCCESS);
         if (Objects.nonNull(merchantName)) {
-            return Boolean.TRUE;
+            inviterName = merchantName;
+            inviterSource = MerchantJoinRecordConstant.MERCHANT_MODIFY_INVITER_SOURCE_MERCHANT;
+        }
+    
+        if (Objects.isNull(inviterName)) {
+            return null;
         }
         
-        return Boolean.FALSE;
+        UserInfo userInfo = this.queryByUidFromCache(uid);
+        Long franchiseeId = null;
+        String franchiseeName = null;
+        if (Objects.nonNull(userInfo)) {
+            franchiseeId = userInfo.getFranchiseeId();
+            franchiseeName = userInfo.getName();
+        }
+    
+        // 商户列表
+        MerchantPageRequest merchantPageRequest = MerchantPageRequest.builder().size(size).offset(offset).tenantId(tenantId).franchiseeId(franchiseeId).build();
+        List<MerchantVO> merchantVOS = merchantService.listByPage(merchantPageRequest);
+    
+        return MerchantModifyInviterVO.builder().uid(uid).inviterName(inviterName).inviterSource(inviterSource).franchiseeId(franchiseeId)
+                .franchiseeName(franchiseeName).merchantList(merchantVOS).build();
     }
 }

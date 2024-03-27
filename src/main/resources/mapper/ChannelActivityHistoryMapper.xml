@@ -253,7 +253,7 @@
         from t_channel_activity_history as tcah
         left join t_user_info as tui on tui.uid = tcah.uid
         where tui.tenant_id = #{tenantId}
-          and tcah.join_uid = #{joinUid}
+          and tcah.uid = #{joinUid}
           and tcah.del_flag = 0
         order by tcah.create_time desc limit 1
     </select>
