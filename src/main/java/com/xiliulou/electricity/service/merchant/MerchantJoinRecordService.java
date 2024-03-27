@@ -1,7 +1,6 @@
 package com.xiliulou.electricity.service.merchant;
 
 import com.xiliulou.core.web.R;
-import com.xiliulou.electricity.entity.merchant.MerchantAttr;
 import com.xiliulou.electricity.entity.merchant.MerchantJoinRecord;
 import com.xiliulou.electricity.query.merchant.MerchantAllPromotionDataDetailQueryModel;
 import com.xiliulou.electricity.query.merchant.MerchantJoinRecordQueryMode;
@@ -109,10 +108,14 @@ public interface MerchantJoinRecordService {
     
     Integer updateStatusById(Long id, Integer status, long updateTime);
     
+    Integer countSuccessByCondition(MerchantPromotionScanCodeQueryModel scanCodeQueryModel);
+    
     MerchantJoinRecord querySuccessRecordByJoinUid(Long uid, Integer tenantId);
     
     Integer updateOldRecord(Long id);
     
     MerchantJoinRecord assembleRecord(Long merchantId, Long inviterUid, Integer inviterType, Long joinUid, Long channelEmployeeUid, Long placeId, MerchantAttr merchantAttr,
             Integer tenantId);
+    
+    Integer countEmployeeScanCodeSuccessNum(List<Long> employeeIds, Long startTime, Long endTime, Integer status, Integer tenantId, Long uid);
 }

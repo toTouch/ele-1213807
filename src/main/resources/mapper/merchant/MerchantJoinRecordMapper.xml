@@ -142,7 +142,7 @@
         select IFNULL(count(1), 0) from (
         select distinct(join_uid) from t_merchant_join_record
         <where>
-            del_flag = 0
+            modify_inviter = 0
             <if test="startTime != null">
                 and start_time >= #{startTime}
             </if>
@@ -293,7 +293,7 @@
         select IFNULL(count(1), 0) from (
         select distinct(join_uid) from t_merchant_join_record
         <where>
-            del_flag = 0 and inviter_type = 2
+            modify_inviter = 0 and inviter_type = 2
             <if test="startTime != null">
                 and start_time >= #{startTime}
             </if>
@@ -366,6 +366,68 @@
         <include refid="basic_field"/>
         from t_merchant_join_record
         where del_flag = 0 ant tenant_id = #{tenantId} and join_uid = #{joinUid} and status = 2
+    </select>
+    
+    <select id="countSuccessByCondition" resultType="java.lang.Integer">
+        select IFNULL(count(1), 0) from (
+        select distinct(join_uid) from t_merchant_join_record
+        <where>
+            del_flag = 0
+            <if test="startTime != null">
+                and start_time >= #{startTime}
+            </if>
+            <if test="endTime != null">
+                and start_time &lt;= #{endTime}
+            </if>
+            <if test="channelEmployeeUid != null">
+                and channel_employee_uid = #{channelEmployeeUid}
+            </if>
+            <if test="type != null and type!=3">
+                and inviter_type = #{type}
+            </if>
+            <if test="uid != null and type!=3">
+                and inviter_uid = #{uid}
+            </if>
+            <if test="status != null">
+                and status = #{status}
+            </if>
+            <if test="tenantId != null">
+                and tenant_id = #{tenantId}
+            </if>
+    
+        </where>
+        ) a
+    </select>
+    
+    <select id="countEmployeeScanCodeSuccessNum" resultType="java.lang.Integer">
+        select IFNULL(count(1), 0) from (
+        select distinct(join_uid) from t_merchant_join_record
+        <where>
+            del_flag = 0 and inviter_type = 2
+            <if test="startTime != null">
+                and start_time >= #{startTime}
+            </if>
+            <if test="endTime != null">
+                and start_time &lt;= #{endTime}
+            </if>
+            <if test="channelEmployeeUid != null">
+                and channel_employee_uid = #{channelEmployeeUid}
+            </if>
+            <if test="uidList != null">
+                and inviter_uid in
+                <foreach collection="uidList" separator="," open="(" close=")" item="inviterUid">
+                    #{inviterUid}
+                </foreach>
+            </if>
+            <if test="status != null">
+                and status = #{status}
+            </if>
+            <if test="tenantId != null">
+                and tenant_id = #{tenantId}
+            </if>
+    
+        </where>
+        ) a
     </select>
 
 </mapper>

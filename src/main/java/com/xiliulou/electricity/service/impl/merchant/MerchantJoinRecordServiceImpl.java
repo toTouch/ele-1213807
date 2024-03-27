@@ -522,4 +522,31 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
     public Integer updateOldRecord(Long id) {
         return merchantJoinRecordMapper.updateOldRecord(id);
     }
+    
+    /**
+     * 查询扫码人数成功的数量
+     * @param employeeIds
+     * @param startTime
+     * @param endTime
+     * @param status
+     * @param tenantId
+     * @param uid
+     * @return
+     */
+    @Slave
+    @Override
+    public Integer countEmployeeScanCodeSuccessNum(List<Long> employeeIds, Long startTime, Long endTime, Integer status, Integer tenantId, Long uid) {
+        return merchantJoinRecordMapper.countEmployeeScanCodeSuccessNum(employeeIds, startTime, endTime, status, tenantId, uid);
+    }
+    
+    /**
+     * 查询扫码人数成功的数量
+     * @param scanCodeQueryModel
+     * @return
+     */
+    @Slave
+    @Override
+    public Integer countSuccessByCondition(MerchantPromotionScanCodeQueryModel scanCodeQueryModel) {
+        return merchantJoinRecordMapper.countSuccessByCondition(scanCodeQueryModel);
+    }
 }

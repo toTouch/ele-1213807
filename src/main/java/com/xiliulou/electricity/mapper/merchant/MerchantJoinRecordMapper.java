@@ -60,9 +60,14 @@ public interface MerchantJoinRecordMapper extends BaseMapper<MerchantJoinRecord>
     
     Integer updateStatusById(@Param("id") Long id, @Param("status") Integer status, @Param("updateTime") long updateTime);
     
-    Integer existMerchantAllInviterData(@Param("merchantId") Long merchantId, @Param("tenantId") Integer tenantId);
+    Integer existMerchantAllInviterData(@Param("merchantId")Long merchantId, @Param("tenantId")Integer tenantId);
+    
+    Integer countSuccessByCondition(MerchantPromotionScanCodeQueryModel scanCodeQueryModel);
     
     MerchantJoinRecord selectSuccessRecordByJoinUid(@Param("joinUid") Long uid, @Param("tenantId") Integer tenantId);
     
     Integer updateOldRecord(Long id);
+    
+    Integer countEmployeeScanCodeSuccessNum(@Param("uidList") List<Long> employeeIdList, @Param("startTime") Long startTime, @Param("endTime") Long endTime,
+            @Param("status") Integer status, @Param("tenantId") Integer tenantId, @Param("channelEmployeeUid") Long channelEmployeeUid);
 }
