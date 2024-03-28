@@ -34,6 +34,7 @@ import com.xiliulou.electricity.entity.UserRole;
 import com.xiliulou.electricity.entity.enterprise.EnterpriseChannelUser;
 import com.xiliulou.electricity.entity.enterprise.EnterpriseInfo;
 import com.xiliulou.electricity.enums.enterprise.CloudBeanStatusEnum;
+import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.UserMapper;
 import com.xiliulou.electricity.query.UserInfoQuery;
 import com.xiliulou.electricity.query.UserSourceQuery;
@@ -74,6 +75,7 @@ import com.xiliulou.security.bean.TokenUser;
 import com.xiliulou.security.constant.TokenConstant;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
@@ -104,63 +106,67 @@ import java.util.stream.Collectors;
 @Service("userService")
 @Slf4j
 public class UserServiceImpl implements UserService {
-
+    
     @Autowired
     CustomPasswordEncoder customPasswordEncoder;
+    
     @Resource
     private UserMapper userMapper;
+    
     @Autowired
     RedisService redisService;
+    
     @Autowired
     UserInfoService userInfoService;
+    
     @Autowired
     UserRoleService userRoleService;
-
+    
     @Autowired
     CityService cityService;
-
+    
     @Autowired
     ProvinceService provinceService;
-
+    
     @Value("${security.encode.key:xiliu&lo@u%12345}")
     private String encodeKey;
-
+    
     @Autowired
     UserOauthBindService userOauthBindService;
-
+    
     @Autowired
     RoleService roleService;
-
+    
     @Autowired
     FranchiseeService franchiseeService;
-
+    
     @Autowired
     StoreService storeService;
-
+    
     @Autowired
     private UserDataScopeService userDataScopeService;
-
+    
     @Autowired
     UserBatteryMemberCardService userBatteryMemberCardService;
-
+    
     @Autowired
     UserBatteryDepositService userBatteryDepositService;
-
+    
     @Autowired
     UserCarMemberCardService userCarMemberCardService;
-
+    
     @Autowired
     UserCarService userCarService;
-
+    
     @Autowired
     ElectricityCabinetService electricityCabinetService;
-
+    
     @Autowired
     ElectricityMemberCardOrderService electricityMemberCardOrderService;
-
+    
     @Autowired
     ElectricityCarService electricityCarService;
-
+    
     @Autowired
     ElectricityBatteryService electricityBatteryService;
     
@@ -171,8 +177,44 @@ public class UserServiceImpl implements UserService {
     EnterpriseChannelUserService enterpriseChannelUserService;
     
     @Autowired
-    private UserInfoExtraService userInfoExtraService;
-
+    UserInfoExtraService userInfoExtraService;
+    
+    /**
+     * 启用锁定用户
+     *
+     * @param tenantId 租户ID
+     * @param uid      用户UID
+     * @return true、false
+     */
+    @Override
+    public boolean enableLockUser(Integer tenantId, Long uid) {
+        if (!ObjectUtils.allNotNull(tenantId, uid)) {
+            throw new BizException("ELECTRICITY.0007", "非法参数");
+        }
+        
+        // 缓存读取用户
+        User cacheUser = queryByUidFromCache(uid);
+        if (ObjectUtils.isEmpty(cacheUser) || !cacheUser.getTenantId().equals(tenantId)) {
+            log.warn("enableLockUser failed. The user not found. uid is {}", uid);
+            return false;
+        }
+        
+        // 更新数据
+        User userUpdate = new User();
+        userUpdate.setUid(uid);
+        userUpdate.setUpdateTime(System.currentTimeMillis());
+        userUpdate.setLockFlag(User.USER_UN_LOCK);
+        int num = userMapper.updateUserByUid(userUpdate);
+        
+        // 删除缓存
+        if (num > 0) {
+            redisService.delete(CacheConstant.CACHE_USER_UID + uid);
+            redisService.delete(CacheConstant.CACHE_USER_PHONE + cacheUser.getTenantId() + ":" + cacheUser.getPhone() + ":" + cacheUser.getUserType());
+        }
+        
+        return num >= 0;
+    }
+    
     /**
      * 通过ID查询单条数据从缓存
      *
@@ -185,18 +227,18 @@ public class UserServiceImpl implements UserService {
         if (Objects.nonNull(cacheUser)) {
             return cacheUser;
         }
-
+        
         User user = userMapper.selectById(uid);
         if (Objects.isNull(user)) {
             return null;
         }
-
+        
         redisService.saveWithHash(CacheConstant.CACHE_USER_UID + uid, user);
         redisService.saveWithHash(CacheConstant.CACHE_USER_PHONE + user.getTenantId() + ":" + user.getPhone() + ":" + user.getUserType(), user);
-
+        
         return user;
     }
-
+    
     /**
      * 新增数据
      *
@@ -210,14 +252,13 @@ public class UserServiceImpl implements UserService {
         int insert = this.userMapper.insert(user);
         DbUtils.dbOperateSuccessThen(insert, () -> {
             redisService.saveWithHash(CacheConstant.CACHE_USER_UID + user.getUid(), user);
-            redisService.saveWithHash(CacheConstant.CACHE_USER_PHONE + user.getTenantId() + ":" + user.getPhone() + ":"
-                    + user.getUserType(), user);
+            redisService.saveWithHash(CacheConstant.CACHE_USER_PHONE + user.getTenantId() + ":" + user.getPhone() + ":" + user.getUserType(), user);
             return user;
         });
-
+        
         return user;
     }
-
+    
     /**
      * 修改数据
      *
@@ -227,9 +268,9 @@ public class UserServiceImpl implements UserService {
     @Transactional(rollbackFor = Exception.class)
     public Integer update(User user) {
         return this.userMapper.updateById(user);
-
+        
     }
-
+    
     /**
      * 通过主键删除数据
      *
@@ -239,24 +280,24 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Boolean deleteById(Long uid) {
-//        User updateUser = new User();
-//        updateUser.setUid(uid);
-//        updateUser.setDelFlag(User.DEL_DEL);
-//        return this.userMapper.updateUserById(updateUser)>0;
+        //        User updateUser = new User();
+        //        updateUser.setUid(uid);
+        //        updateUser.setDelFlag(User.DEL_DEL);
+        //        return this.userMapper.updateUserById(updateUser)>0;
         return this.userMapper.deleteById(uid) > 0;
     }
-
+    
     @Override
     public User queryByUserName(String username) {
         return this.userMapper.queryByUserName(username);
-//        return this.userMapper.selectOne(new LambdaQueryWrapper<User>().eq(User::getName, username).eq(User::getDelFlag, User.DEL_NORMAL));
+        //        return this.userMapper.selectOne(new LambdaQueryWrapper<User>().eq(User::getName, username).eq(User::getDelFlag, User.DEL_NORMAL));
     }
-
+    
     @Override
     public User queryByUserNameAndTenantId(String username, Integer tenantId) {
         return this.userMapper.selectOne(new LambdaQueryWrapper<User>().eq(User::getName, username).eq(User::getDelFlag, User.DEL_NORMAL).eq(User::getTenantId, tenantId));
     }
-
+    
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Triple<Boolean, String, Object> addAdminUser(AdminUserQuery adminUserQuery) {
@@ -264,100 +305,85 @@ public class UserServiceImpl implements UserService {
         if (Objects.isNull(tokenUser)) {
             return Triple.of(false, "USER.0001", "查询不到用户！");
         }
-
+        
         //租户
         Integer tenantId = TenantContextHolder.getTenantId();
-
+        
         if (!Objects.equals(tokenUser.getType(), User.TYPE_USER_SUPER) && Objects.equals(adminUserQuery.getUserType(), User.TYPE_USER_SUPER)) {
             return Triple.of(false, null, "无权限操作！");
         }
-
+        
         User phoneUserExists = queryByUserPhone(adminUserQuery.getPhone(), adminUserQuery.getUserType(), tenantId);
         if (Objects.nonNull(phoneUserExists)) {
             return Triple.of(false, null, "手机号已存在");
         }
-
+        
         User userNameExists = queryByUserName(adminUserQuery.getName());
         if (Objects.nonNull(userNameExists)) {
             return Triple.of(false, null, "用户名已存在");
         }
-
+        
         //解密密码
         String encryptPassword = adminUserQuery.getPassword();
         String decryptPassword = decryptPassword(encryptPassword);
         if (StrUtil.isEmpty(decryptPassword)) {
-            log.error("ADMIN USER ERROR! decryptPassword error! username={},phone={},password={}", adminUserQuery.getName(), adminUserQuery.getPhone(), adminUserQuery.getPassword());
+            log.error("ADMIN USER ERROR! decryptPassword error! username={},phone={},password={}", adminUserQuery.getName(), adminUserQuery.getPhone(),
+                    adminUserQuery.getPassword());
             return Triple.of(false, "SYSTEM.0001", "系统错误!");
         }
-
+        
         //处理城市和省份
         City city = cityService.queryByIdFromDB(adminUserQuery.getCityId());
         Province province = provinceService.queryByIdFromDB(adminUserQuery.getProvinceId());
-
-        User user = User.builder()
-                .avatar("")
-                .salt("")
-                .createTime(System.currentTimeMillis())
-                .delFlag(User.DEL_NORMAL)
-                .lockFlag(User.USER_UN_LOCK)
-                .gender(adminUserQuery.getGender())
-                .lang(adminUserQuery.getLang())
-                .loginPwd(customPasswordEncoder.encode(decryptPassword))
-                .name(adminUserQuery.getName())
-                .phone(adminUserQuery.getPhone())
-                .updateTime(System.currentTimeMillis())
-                .userType(User.TYPE_USER_NORMAL_ADMIN)
-                .dataType(adminUserQuery.getDataType())
-                .salt("")
-                .city(Objects.nonNull(city) ? city.getName() : null)
-                .province(Objects.nonNull(province) ? province.getName() : null)
-                .cid(Objects.nonNull(city) ? city.getId() : null)
-                .tenantId(tenantId)
-                .build();
+        
+        User user = User.builder().avatar("").salt("").createTime(System.currentTimeMillis()).delFlag(User.DEL_NORMAL).lockFlag(User.USER_UN_LOCK)
+                .gender(adminUserQuery.getGender()).lang(adminUserQuery.getLang()).loginPwd(customPasswordEncoder.encode(decryptPassword)).name(adminUserQuery.getName())
+                .phone(adminUserQuery.getPhone()).updateTime(System.currentTimeMillis()).userType(User.TYPE_USER_NORMAL_ADMIN).dataType(adminUserQuery.getDataType()).salt("")
+                .city(Objects.nonNull(city) ? city.getName() : null).province(Objects.nonNull(province) ? province.getName() : null)
+                .cid(Objects.nonNull(city) ? city.getId() : null).tenantId(tenantId).build();
         User insert = insert(user);
-
-//        //默认值
-//        Long roleId = adminUserQuery.getUserType().longValue() + 1;
-//        //运营商
-//        if (Objects.equals(adminUserQuery.getUserType(), User.TYPE_USER_OPERATE)) {
-//            Long role = roleService.queryByName("OPERATE_USER", tenantId);
-//            if (Objects.nonNull(role)) {
-//                roleId = role;
-//            }
-//        }
-//
-//        //加盟商
-//        if (Objects.equals(adminUserQuery.getUserType(), User.TYPE_USER_FRANCHISEE)) {
-//            Long role = roleService.queryByName("FRANCHISEE_USER", tenantId);
-//            if (Objects.nonNull(role)) {
-//                roleId = role;
-//            }
-//        }
-//
-//        //门店
-//        if (Objects.equals(adminUserQuery.getUserType(), User.TYPE_USER_STORE)) {
-//            Long role = roleService.queryByName("STORE_USER", tenantId);
-//            if (Objects.nonNull(role)) {
-//                roleId = role;
-//            }
-//        }
-
+        
+        //        //默认值
+        //        Long roleId = adminUserQuery.getUserType().longValue() + 1;
+        //        //运营商
+        //        if (Objects.equals(adminUserQuery.getUserType(), User.TYPE_USER_OPERATE)) {
+        //            Long role = roleService.queryByName("OPERATE_USER", tenantId);
+        //            if (Objects.nonNull(role)) {
+        //                roleId = role;
+        //            }
+        //        }
+        //
+        //        //加盟商
+        //        if (Objects.equals(adminUserQuery.getUserType(), User.TYPE_USER_FRANCHISEE)) {
+        //            Long role = roleService.queryByName("FRANCHISEE_USER", tenantId);
+        //            if (Objects.nonNull(role)) {
+        //                roleId = role;
+        //            }
+        //        }
+        //
+        //        //门店
+        //        if (Objects.equals(adminUserQuery.getUserType(), User.TYPE_USER_STORE)) {
+        //            Long role = roleService.queryByName("STORE_USER", tenantId);
+        //            if (Objects.nonNull(role)) {
+        //                roleId = role;
+        //            }
+        //        }
+        
         //设置角色
         UserRole userRole = new UserRole();
         userRole.setRoleId(adminUserQuery.getRoleId());
         userRole.setUid(insert.getUid());
         userRoleService.insert(userRole);
-
-
+        
         //保存用户数据范围
         if (CollectionUtils.isNotEmpty(adminUserQuery.getDataIdList())) {
             List<UserDataScope> userDataScopes = buildUserDataScope(insert.getUid(), adminUserQuery.getDataIdList());
             userDataScopeService.batchInsert(userDataScopes);
         }
-
+        
         return insert.getUid() != null ? Triple.of(true, null, null) : Triple.of(false, null, "保存失败!");
     }
-
+    
     private List<UserDataScope> buildUserDataScope(Long uid, List<Long> dataIdList) {
         List<UserDataScope> list = Lists.newArrayList();
         dataIdList.forEach(item -> {
@@ -366,50 +392,58 @@ public class UserServiceImpl implements UserService {
             userDataScope.setDataId(item);
             list.add(userDataScope);
         });
-
+        
         return list;
     }
-
+    
     @Override
     public String decryptPassword(String encryptPassword) {
-        AES aes = new AES(Mode.CBC, Padding.ZeroPadding, new SecretKeySpec(encodeKey.getBytes(), "AES"),
-                new IvParameterSpec(encodeKey.getBytes()));
+        AES aes = new AES(Mode.CBC, Padding.ZeroPadding, new SecretKeySpec(encodeKey.getBytes(), "AES"), new IvParameterSpec(encodeKey.getBytes()));
         return new String(aes.decrypt(Base64.decode(encryptPassword.getBytes(StandardCharsets.UTF_8))), StandardCharsets.UTF_8);
     }
-
+    
     @Override
+    @Slave
     public List<User> queryByTenantIdAndType(Integer tenantId, Integer userType) {
         return this.userMapper.selectList(new QueryWrapper<User>().eq("tenant_id", tenantId).eq("user_type", userType));
     }
-
+    
+    @Override
+    @Slave
+    public List<User> listUserByPhone(String phone, Integer tenantId) {
+        return this.userMapper.selectList(new QueryWrapper<User>().eq("phone", phone).eq("tenant_id", tenantId).eq("del_flag", User.DEL_NORMAL));
+    }
+    
     @Override
     public User queryByUserPhone(String phone, Integer type, Integer tenantId) {
         User cacheUser = redisService.getWithHash(CacheConstant.CACHE_USER_PHONE + tenantId + ":" + phone + ":" + type, User.class);
         if (Objects.nonNull(cacheUser)) {
             return cacheUser;
         }
-
-        User user = this.userMapper.selectOne(new LambdaQueryWrapper<User>().eq(User::getPhone, phone).eq(User::getUserType, type).eq(User::getDelFlag, User.DEL_NORMAL).eq(User::getTenantId, tenantId));
+        
+        User user = this.userMapper.selectOne(
+                new LambdaQueryWrapper<User>().eq(User::getPhone, phone).eq(User::getUserType, type).eq(User::getDelFlag, User.DEL_NORMAL).eq(User::getTenantId, tenantId));
         if (Objects.isNull(user)) {
             return null;
         }
-
+        
         redisService.saveWithHash(CacheConstant.CACHE_USER_UID + user.getUid(), user);
         redisService.saveWithHash(CacheConstant.CACHE_USER_PHONE + tenantId + ":" + user.getPhone() + ":" + user.getUserType(), user);
-
+        
         return user;
     }
-
+    
     @Override
     public User queryByUserPhoneFromDB(String phone, Integer type, Integer tenantId) {
-        User user = this.userMapper.selectOne(new LambdaQueryWrapper<User>().eq(User::getPhone, phone).eq(User::getUserType, type).eq(User::getDelFlag, User.DEL_NORMAL).eq(User::getTenantId, tenantId));
+        User user = this.userMapper.selectOne(
+                new LambdaQueryWrapper<User>().eq(User::getPhone, phone).eq(User::getUserType, type).eq(User::getDelFlag, User.DEL_NORMAL).eq(User::getTenantId, tenantId));
         if (Objects.isNull(user)) {
             return null;
         }
-
+        
         return user;
     }
-
+    
     @Override
     @Slave
     public Pair<Boolean, Object> queryListUser(Long uid, Long size, Long offset, String name, String phone, Integer type, Long startTime, Long endTime, Integer tenantId) {
@@ -417,7 +451,7 @@ public class UserServiceImpl implements UserService {
         if (CollectionUtils.isEmpty(userList)) {
             return Pair.of(true, Collections.EMPTY_LIST);
         }
-
+        
         return Pair.of(true, userList);
     }
     
@@ -428,7 +462,7 @@ public class UserServiceImpl implements UserService {
         if (CollectionUtils.isEmpty(userList)) {
             return Collections.emptyList();
         }
-    
+        
         return userList;
     }
     
@@ -486,59 +520,51 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Pair<Boolean, Object> updateAdminUser(AdminUserQuery adminUserQuery) {
-
+        
         //租户
         Integer tenantId = TenantContextHolder.getTenantId();
-
+        
         User user = queryByUidFromCache(adminUserQuery.getUid());
         if (Objects.isNull(user)) {
             return Pair.of(false, "uid:" + adminUserQuery.getUid() + "用户不存在!");
         }
-
+        
         if (!SecurityUtils.isAdmin() && !Objects.equals(user.getTenantId(), tenantId)) {
             return Pair.of(true, null);
         }
-
+        
         if (StrUtil.isNotEmpty(adminUserQuery.getPhone())) {
             User phone = queryByUserPhone(adminUserQuery.getPhone(), User.TYPE_USER_NORMAL_ADMIN, user.getTenantId());
             if (Objects.nonNull(phone) && !Objects.equals(phone.getUid(), adminUserQuery.getUid())) {
                 return Pair.of(false, "手机号已存在！无法修改!");
             }
         }
-
+        
         if (StrUtil.isNotEmpty(adminUserQuery.getName())) {
             User nameUser = queryByUserName(adminUserQuery.getName());
             if (Objects.nonNull(nameUser) && !Objects.equals(nameUser.getUid(), adminUserQuery.getUid())) {
                 return Pair.of(false, "用户名已经存在！无法修改！");
             }
         }
-
+        
         String decryptPassword = null;
         if (StrUtil.isNotEmpty(adminUserQuery.getPassword())) {
             //解密密码
             String encryptPassword = adminUserQuery.getPassword();
             decryptPassword = decryptPassword(encryptPassword);
             if (StrUtil.isEmpty(decryptPassword)) {
-                log.error("ADMIN USER ERROR! decryptPassword error! username={},phone={},password={}", adminUserQuery.getName(), adminUserQuery.getPhone(), adminUserQuery.getPassword());
+                log.error("ADMIN USER ERROR! decryptPassword error! username={},phone={},password={}", adminUserQuery.getName(), adminUserQuery.getPhone(),
+                        adminUserQuery.getPassword());
                 return Pair.of(false, "系统错误!");
             }
         }
-
-        User updateUser = User.builder()
-                .uid(user.getUid())
-                .delFlag(User.DEL_NORMAL)
-                .lockFlag(User.USER_UN_LOCK)
-                .gender(adminUserQuery.getGender())
-                .lang(adminUserQuery.getLang())
-                .loginPwd(StrUtil.isEmpty(decryptPassword) ? null : customPasswordEncoder.encode(decryptPassword))
-                .name(adminUserQuery.getName())
-                .phone(adminUserQuery.getPhone())
+        
+        User updateUser = User.builder().uid(user.getUid()).delFlag(User.DEL_NORMAL).lockFlag(User.USER_UN_LOCK).gender(adminUserQuery.getGender()).lang(adminUserQuery.getLang())
+                .loginPwd(StrUtil.isEmpty(decryptPassword) ? null : customPasswordEncoder.encode(decryptPassword)).name(adminUserQuery.getName()).phone(adminUserQuery.getPhone())
                 .updateTime(System.currentTimeMillis())
-//                .userType(adminUserQuery.getUserType())
-                .dataType(adminUserQuery.getDataType())
-                .lockFlag(adminUserQuery.getLock())
-                .build();
-
+                //                .userType(adminUserQuery.getUserType())
+                .dataType(adminUserQuery.getDataType()).lockFlag(adminUserQuery.getLock()).build();
+        
         if (Objects.nonNull(adminUserQuery.getCityId())) {
             //城市
             City city = cityService.queryByIdFromDB(adminUserQuery.getCityId());
@@ -551,7 +577,15 @@ public class UserServiceImpl implements UserService {
                 }
             }
         }
-
+        
+        // 判断用户的数据类型是否为商户或者是渠道员
+        if (Objects.equals(user.getUserType(), User.TYPE_USER_MERCHANT) || Objects.equals(user.getUserType(), User.TYPE_USER_CHANNEL)) {
+            // 判断用户的手机号是否有变更 然后修改为禁用
+            if (!Objects.equals(user.getPhone(), adminUserQuery.getPhone())) {
+                updateUser.setLockFlag(User.USER_LOCK);
+            }
+        }
+        
         int i = updateUser(updateUser, user);
         //更新userInfo
         if (i > 0) {
@@ -565,68 +599,65 @@ public class UserServiceImpl implements UserService {
                 userInfo.setUid(oldUserInfo.getUid());
                 userInfoService.update(userInfo);
             }
-
-
+            
             //更新用户数据范围
             if (CollectionUtils.isNotEmpty(adminUserQuery.getDataIdList())) {
                 userDataScopeService.deleteByUid(user.getUid());
-
+                
                 List<UserDataScope> userDataScopes = buildUserDataScope(user.getUid(), adminUserQuery.getDataIdList());
                 userDataScopeService.batchInsert(userDataScopes);
             }
         }
-
+        
         return i > 0 ? Pair.of(true, null) : Pair.of(false, "更新失败!");
     }
-
+    
     @Override
     public Pair<Boolean, Object> deleteAdminUser(Long uid) {
-
+        
         //租户
         Integer tenantId = TenantContextHolder.getTenantId();
-
+        
         User user = queryByUidFromCache(uid);
         if (Objects.isNull(user)) {
             return Pair.of(false, "uid:" + uid + "用户不存在!");
         }
-
+        
         if (!Objects.equals(user.getTenantId(), tenantId)) {
             return Pair.of(true, null);
         }
-
+        
         if (Objects.equals(user.getUserType(), User.TYPE_USER_NORMAL_WX_PRO)) {
             return Pair.of(false, "非法操作");
         }
-
+        
         //不让删除租户
-        if (Objects.equals(SecurityUtils.getUid(), 1)
-                && !Objects.equals(user.getTenantId(), 1)
-                && Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE)) {
+        if (Objects.equals(SecurityUtils.getUid(), 1) && !Objects.equals(user.getTenantId(), 1) && Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE)) {
             return Pair.of(false, "非法操作");
         }
-
+        
         //加盟商用户删除查看是否绑定普通用户，绑定普通用户则不让删除
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
-
+            
             Integer count = franchiseeService.queryByFanchisee(user.getUid());
             if (count > 0) {
                 return Pair.of(false, "加盟商用户已绑定门店或用户");
             }
         }
-
+        
         //门店用户删除查看是否绑定换电柜
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
-
+            
             Integer count = storeService.queryCountByFranchisee(user.getUid());
             if (count > 0) {
                 return Pair.of(false, "门店用户已绑定换电柜");
             }
         }
-
+        
         if (deleteById(uid)) {
             redisService.delete(CacheConstant.CACHE_USER_UID + uid);
             redisService.delete(CacheConstant.CACHE_USER_PHONE + user.getTenantId() + ":" + user.getPhone() + ":" + user.getUserType());
-
+            
             //删除加盟商或门店
             if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
                 franchiseeService.deleteByUid(uid);
@@ -634,13 +665,20 @@ public class UserServiceImpl implements UserService {
             if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
                 storeService.deleteByUid(uid);
             }
-
+            
             //删除用户数据可见范围
             userDataScopeService.deleteByUid(user.getUid());
+            
+            // 判断用户的数据类型是否为商户或者是渠道员
+            if (Objects.equals(user.getUserType(), User.TYPE_USER_MERCHANT) || Objects.equals(user.getUserType(), User.TYPE_USER_CHANNEL)) {
+                // 删除用户对应的认证信息
+                userOauthBindService.deleteByUid(uid, tenantId);
+            }
+            
         }
         return Pair.of(true, null);
     }
-
+    
     @Override
     public Triple<Boolean, String, Object> updatePassword(PasswordQuery passwordQuery) {
         TokenUser user = SecurityUtils.getUserInfo();
@@ -650,27 +688,27 @@ public class UserServiceImpl implements UserService {
         }
         //租户
         Integer tenantId = TenantContextHolder.getTenantId();
-
+        
         User oldUser = queryByUserNameAndTenantId(passwordQuery.getName(), tenantId);
         if (Objects.isNull(oldUser)) {
             log.error("updatePassword  ERROR! not found userName{} ", passwordQuery.getName());
             return Triple.of(false, null, "用户名不存在");
         }
-
+        
         if (!Objects.equals(user.getUid(), oldUser.getUid())) {
             log.error("updatePassword  ERROR! not found userId{},oldUserId{} ", user.getUid(), oldUser.getUid());
             return Triple.of(false, null, "不能修改别人的密码");
         }
-
+        
         User updateUser = new User();
         updateUser.setUid(oldUser.getUid());
         updateUser.setLoginPwd(customPasswordEncoder.encode(passwordQuery.getPassword()));
         updateUser.setUpdateTime(System.currentTimeMillis());
         Integer update = updateUser(updateUser, oldUser);
-
+        
         return update > 0 ? Triple.of(true, null, null) : Triple.of(false, null, "修改密码失败!");
     }
-
+    
     @Override
     public Integer updateUser(User updateUser, User oldUser) {
         Integer update = update(updateUser);
@@ -680,7 +718,7 @@ public class UserServiceImpl implements UserService {
         }
         return update;
     }
-
+    
     @Override
     public Pair<Boolean, Object> addUserAddress(String cityCode) {
         Long uid = SecurityUtils.getUid();
@@ -688,25 +726,25 @@ public class UserServiceImpl implements UserService {
             log.error("USER ERROR! no user!");
             return Pair.of(false, "未能查到用户信息!");
         }
-
+        
         User user = queryByUidFromCache(uid);
         if (Objects.isNull(user)) {
             log.error("USER ERROR! no user! uid={}", uid);
             return Pair.of(false, "未能查到用户信息!");
         }
-
+        
         City city = cityService.queryCityByCode(cityCode);
         if (Objects.isNull(city)) {
             log.error("USER ERROR! no city! cityCode={},uid={}", cityCode, uid);
             return Pair.of(false, "未能查到相关城市信息");
         }
-
+        
         Province province = provinceService.queryByIdFromDB(city.getPid());
         if (Objects.isNull(province)) {
             log.error("USER ERROR! no province! provinceId={},uid={}", city.getPid(), uid);
             return Pair.of(false, "未能查到相关省份信息");
         }
-
+        
         User updateUser = new User();
         updateUser.setUid(user.getUid());
         updateUser.setCid(city.getId());
@@ -714,10 +752,10 @@ public class UserServiceImpl implements UserService {
         updateUser.setProvince(province.getName());
         updateUser.setUpdateTime(System.currentTimeMillis());
         updateUser(updateUser, user);
-
+        
         return Pair.of(true, null);
     }
-
+    
     @Override
     public Pair<Boolean, Object> getUserDetail() {
         Long uid = SecurityUtils.getUid();
@@ -725,23 +763,23 @@ public class UserServiceImpl implements UserService {
             log.error("USER ERROR! no use!");
             return Pair.of(false, "USER.0001");
         }
-
+        
         User user = queryByUidFromCache(uid);
         if (Objects.isNull(user)) {
             log.error("USER ERROR! no found user! uid={}", uid);
             return Pair.of(false, "USER.0001");
         }
-
+        
         HashMap<String, Object> resultMap = Maps.newHashMap();
-
+        
         //处理用户信息
         UserVo userVo = new UserVo();
         BeanUtils.copyProperties(user, userVo);
         resultMap.put("user", userVo);
-
+        
         return Pair.of(true, resultMap);
     }
-
+    
     @Override
     public R endLimitUser(Long uid) {
         String orderLimit = redisService.get(CacheConstant.ORDER_TIME_UID + uid);
@@ -751,74 +789,60 @@ public class UserServiceImpl implements UserService {
         redisService.delete(CacheConstant.ORDER_TIME_UID + uid);
         return R.ok();
     }
-
+    
     @Override
     public R addInnerUser(AdminUserQuery adminUserQuery) {
-
+        
         //租户
         Integer tenantId = TenantContextHolder.getTenantId();
-
+        
         User phoneUserExists = queryByUserPhone(adminUserQuery.getPhone(), adminUserQuery.getUserType(), tenantId);
         if (Objects.nonNull(phoneUserExists)) {
             return R.fail("手机号已存在！");
-
+            
         }
-
+        
         User userNameExists = queryByUserName(adminUserQuery.getName());
         if (Objects.nonNull(userNameExists)) {
             return R.fail("用户名已经存在！");
         }
-
+        
         //解密密码
         String encryptPassword = adminUserQuery.getPassword();
         String decryptPassword = decryptPassword(encryptPassword);
         if (StrUtil.isEmpty(decryptPassword)) {
-            log.error("ADMIN USER ERROR! decryptPassword error! username={},phone={},password={}", adminUserQuery.getName(), adminUserQuery.getPhone(), adminUserQuery.getPassword());
+            log.error("ADMIN USER ERROR! decryptPassword error! username={},phone={},password={}", adminUserQuery.getName(), adminUserQuery.getPhone(),
+                    adminUserQuery.getPassword());
             return R.fail("系统错误!");
         }
-
+        
         //处理城市和省份
         City city = cityService.queryByIdFromDB(adminUserQuery.getCityId());
         Province province = provinceService.queryByIdFromDB(adminUserQuery.getProvinceId());
-
-        User user = User.builder()
-                .avatar("")
-                .salt("")
-                .createTime(System.currentTimeMillis())
-                .delFlag(User.DEL_NORMAL)
-                .lockFlag(User.USER_UN_LOCK)
-                .gender(adminUserQuery.getGender())
-                .lang(adminUserQuery.getLang())
-                .loginPwd(customPasswordEncoder.encode(decryptPassword))
-                .name(adminUserQuery.getName())
-                .phone(adminUserQuery.getPhone())
-                .updateTime(System.currentTimeMillis())
-                .userType(adminUserQuery.getUserType())
-                .salt("")
-                .city(Objects.nonNull(city) ? city.getName() : null)
-                .province(Objects.nonNull(province) ? province.getName() : null)
-                .cid(Objects.nonNull(city) ? city.getId() : null)
-                .tenantId(tenantId)
-                .dataType(Objects.nonNull(adminUserQuery.getDataType()) ? adminUserQuery.getDataType() : null)
+        
+        User user = User.builder().avatar("").salt("").createTime(System.currentTimeMillis()).delFlag(User.DEL_NORMAL).lockFlag(User.USER_UN_LOCK)
+                .gender(adminUserQuery.getGender()).lang(adminUserQuery.getLang()).loginPwd(customPasswordEncoder.encode(decryptPassword)).name(adminUserQuery.getName())
+                .phone(adminUserQuery.getPhone()).updateTime(System.currentTimeMillis()).userType(adminUserQuery.getUserType()).salt("")
+                .city(Objects.nonNull(city) ? city.getName() : null).province(Objects.nonNull(province) ? province.getName() : null)
+                .cid(Objects.nonNull(city) ? city.getId() : null).tenantId(tenantId).dataType(Objects.nonNull(adminUserQuery.getDataType()) ? adminUserQuery.getDataType() : null)
                 .build();
         User insert = insert(user);
-
+        
         //默认值
         Long roleId = adminUserQuery.getUserType().longValue() + 1;
         if (Objects.nonNull(adminUserQuery.getRoleId())) {
             roleId = adminUserQuery.getRoleId();
         }
-
-
+        
         //运营商
         if (Objects.equals(adminUserQuery.getDataType(), User.DATA_TYPE_OPERATE)) {
             Long role = roleService.queryByName("OPERATE_USER", tenantId);
             if (Objects.nonNull(role)) {
                 roleId = role;
             }
-
+            
         }
-
+        
         //加盟商
         if (Objects.equals(adminUserQuery.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
             Long role = roleService.queryByName("FRANCHISEE_USER", tenantId);
@@ -826,7 +850,7 @@ public class UserServiceImpl implements UserService {
                 roleId = role;
             }
         }
-
+        
         //门店
         if (Objects.equals(adminUserQuery.getDataType(), User.DATA_TYPE_STORE)) {
             Long role = roleService.queryByName("STORE_USER", tenantId);
@@ -834,20 +858,20 @@ public class UserServiceImpl implements UserService {
                 roleId = role;
             }
         }
-
+        
         //设置角色
         UserRole userRole = new UserRole();
         userRole.setRoleId(roleId);
         userRole.setUid(insert.getUid());
         userRoleService.insert(userRole);
-
+        
         if (Objects.nonNull(insert.getUid())) {
             return R.ok(insert.getUid());
         }
-
+        
         return R.fail("系统错误!");
     }
-
+    
     @Override
     public void deleteInnerUser(Long uid) {
         User user = queryByUidFromCache(uid);
@@ -858,39 +882,39 @@ public class UserServiceImpl implements UserService {
             }
         }
     }
-
+    
     @Override
     public Pair<Boolean, Object> queryCount(Long uid, String name, String phone, Integer type, Long startTime, Long endTime, Integer tenantId) {
         return Pair.of(true, this.userMapper.queryCount(uid, name, phone, type, startTime, endTime, tenantId));
     }
-
+    
     @Slave
     @Override
     public Integer queryHomePageCount(Integer type, Long startTime, Long endTime, Integer tenantId) {
         return this.userMapper.queryCount(null, null, null, type, startTime, endTime, tenantId);
     }
-
+    
     @Override
     @Transactional
     public Triple<Boolean, String, Object> deleteNormalUser(Long uid) {
-
+        
         //租户
         Integer tenantId = TenantContextHolder.getTenantId();
-
+        
         TokenUser userInfo = SecurityUtils.getUserInfo();
         if (Objects.isNull(userInfo)) {
             return Triple.of(false, "USER.0001", "登陆用户不合法，无法操作！");
         }
-
+        
         if (!Objects.equals(User.TYPE_USER_SUPER, userInfo.getType()) && !Objects.equals(User.DATA_TYPE_OPERATE, userInfo.getDataType())) {
             return Triple.of(false, "AUTH.0002", "没有权限操作！");
         }
-
+        
         User user = queryByUidFromCache(uid);
         if (Objects.isNull(user) || !user.getUserType().equals(User.TYPE_USER_NORMAL_WX_PRO)) {
             return Triple.of(false, "USER.0001", "没有此用户！无法删除");
         }
-
+        
         if (!Objects.equals(tenantId, user.getTenantId())) {
             return Triple.of(true, null, null);
         }
@@ -904,7 +928,7 @@ public class UserServiceImpl implements UserService {
         if (!Objects.isNull(checkCarResult)) {
             return Triple.of(false, "100253", "用户已租车辆，请先退还车辆");
         }
-
+        
         List<UserOauthBind> userOauthBinds = userOauthBindService.queryListByUid(uid);
         if (DataUtil.collectionIsUsable(userOauthBinds)) {
             delUserOauthBindAndClearToken(userOauthBinds);
@@ -912,7 +936,7 @@ public class UserServiceImpl implements UserService {
         
         //判断用户是否为企业用户
         EnterpriseInfo enterpriseInfo = enterpriseInfoService.selectByUid(uid);
-        if(Objects.nonNull(enterpriseInfo)){
+        if (Objects.nonNull(enterpriseInfo)) {
             return Triple.of(false, "100253", "请先删除企业用户配置");
         }
         
@@ -921,65 +945,65 @@ public class UserServiceImpl implements UserService {
         if (Objects.nonNull(enterpriseChannelUser) && Objects.equals(enterpriseChannelUser.getCloudBeanStatus(), CloudBeanStatusEnum.NOT_RECYCLE.getCode())) {
             return Triple.of(false, "", "该用户名下有未回收的云豆订单，请联系所属企业处理");
         }
-    
+        
         //删除企业用户
         enterpriseChannelUserService.deleteByUid(uid);
         
         //删除用户
         deleteWxProUser(uid, user.getTenantId());
         userInfoService.deleteByUid(uid);
-
+        
         userBatteryMemberCardService.deleteByUid(uid);
-
+        
         userCarService.deleteByUid(uid);
         
         userInfoExtraService.deleteByUid(uid);
-
+        
         return Triple.of(true, null, null);
     }
-
+    
     @Override
     public R userAutoCodeGeneration() {
         if (!Objects.equals(SecurityUtils.getUserInfo().getType(), User.TYPE_USER_SUPER)) {
             return R.fail("权限不足");
         }
-
+        
         String key = RandomUtil.randomString(6);
         redisService.set(key, key);
         redisService.expire(key, TimeUnit.MINUTES.toMillis(10), false);
-
+        
         return R.ok(key);
     }
-
+    
     @Override
     public R userAutoCodeCheck(String autoCode) {
         String key = redisService.get(autoCode);
         if (StringUtils.isBlank(key)) {
             return R.fail("验证码已使用或不存在");
         }
-
+        
         redisService.delete(autoCode);
-
+        
         return R.ok();
     }
-
-
+    
+    
     @Override
     public String selectServicePhone(Integer tenantId) {
         String cachePhone = redisService.get(CacheConstant.CACHE_SERVICE_PHONE + tenantId);
-//        if (StringUtils.isNotBlank(cachePhone)) {
-//            return cachePhone;
-//        }
-//
-//        String phone = null;
-//        List<User> userList = this.queryByTenantIdAndType(tenantId, User.TYPE_USER_OPERATE);
-//        if (CollectionUtils.isNotEmpty(userList)) {
-//            phone = userList.get(0).getPhone();
-//        }
-
+        //        if (StringUtils.isNotBlank(cachePhone)) {
+        //            return cachePhone;
+        //        }
+        //
+        //        String phone = null;
+        //        List<User> userList = this.queryByTenantIdAndType(tenantId, User.TYPE_USER_OPERATE);
+        //        if (CollectionUtils.isNotEmpty(userList)) {
+        //            phone = userList.get(0).getPhone();
+        //        }
+        
         return cachePhone;
     }
-
+    
     @Override
     public R memberCardDetail() {
         Long uid = SecurityUtils.getUid();
@@ -987,18 +1011,19 @@ public class UserServiceImpl implements UserService {
             log.error("USER ERROR! no use!");
             return R.fail("USER.0001", "查询不到用户");
         }
-
+        
         UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
         if (Objects.isNull(userInfo)) {
             log.error("member card detail error! no found user uid={}", uid);
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-
+        
         UserBatteryMemberCardDetailVO userBatteryMemberCardDetailVO = null;
-
+        
         if (Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
             UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(uid);
-            if (Objects.nonNull(userBatteryMemberCard) && !Objects.equals(userBatteryMemberCard.getMemberCardId(), UserBatteryMemberCard.SEND_REMAINING_NUMBER) && userBatteryMemberCard.getMemberCardExpireTime() > System.currentTimeMillis()) {
+            if (Objects.nonNull(userBatteryMemberCard) && !Objects.equals(userBatteryMemberCard.getMemberCardId(), UserBatteryMemberCard.SEND_REMAINING_NUMBER)
+                    && userBatteryMemberCard.getMemberCardExpireTime() > System.currentTimeMillis()) {
                 userBatteryMemberCardDetailVO = new UserBatteryMemberCardDetailVO();
                 userBatteryMemberCardDetailVO.setMemberCardExpireTime(userBatteryMemberCard.getMemberCardExpireTime());
                 if (Objects.equals(userInfo.getBatteryRentStatus(), UserInfo.BATTERY_RENT_STATUS_YES)) {
@@ -1006,9 +1031,9 @@ public class UserServiceImpl implements UserService {
                 }
             }
         }
-
+        
         UserCarMemberCardDetailVO userCarMemberCardDetailVO = null;
-
+        
         if (Objects.equals(userInfo.getCarDepositStatus(), UserInfo.CAR_DEPOSIT_STATUS_YES)) {
             UserCarMemberCard userCarMemberCard = userCarMemberCardService.selectByUidFromCache(uid);
             if (Objects.nonNull(userCarMemberCard) && userCarMemberCard.getMemberCardExpireTime() > System.currentTimeMillis()) {
@@ -1022,17 +1047,17 @@ public class UserServiceImpl implements UserService {
                 }
             }
         }
-
+        
         Map<String, Object> map = new HashMap();
         map.put("userBatteryMemberCardDetailVO", userBatteryMemberCardDetailVO);
         map.put("userCarMemberCardDetailVO", userCarMemberCardDetailVO);
         map.put("franchiseeId", userInfo.getFranchiseeId());
         map.put("batteryDepositStatus", userInfo.getBatteryDepositStatus());
         map.put("carDepositStatus", userInfo.getCarDepositStatus());
-
+        
         return R.ok(map);
     }
-
+    
     @Override
     public Integer updateUserByUid(UserSourceUpdateQuery query) {
         User updateUser = new User();
@@ -1041,10 +1066,10 @@ public class UserServiceImpl implements UserService {
         updateUser.setRefId(query.getSourceId());
         updateUser.setTenantId(TenantContextHolder.getTenantId());
         updateUser.setUpdateTime(System.currentTimeMillis());
-
+        
         return this.userMapper.updateUserByUid(updateUser);
     }
-
+    
     @Override
     public Integer updateUserSource(User user) {
         Integer update = this.userMapper.updateUserSource(user);
@@ -1053,18 +1078,18 @@ public class UserServiceImpl implements UserService {
         }
         return update;
     }
-
+    
     @Override
     public void loginCallBack(UserSourceQuery query) {
-
+        
         User user = userMapper.selectById(SecurityUtils.getUid());
-
+        
         User updateUser = new User();
         updateUser.setUid(user.getUid());
         updateUser.setSource(Objects.nonNull(user.getSource()) && Objects.equals(user.getSource(), NumberConstant.ZERO) ? query.getSource() : null);
         updateUser.setTenantId(TenantContextHolder.getTenantId());
         updateUser.setUpdateTime(System.currentTimeMillis());
-
+        
         if (StringUtils.isNotBlank(query.getProductKey()) && StringUtils.isNotBlank(query.getDeviceName())) {
             ElectricityCabinet electricityCabinet = electricityCabinetService.queryFromCacheByProductAndDeviceName(query.getProductKey(), query.getDeviceName());
             if (Objects.nonNull(electricityCabinet) && Objects.isNull(user.getRefId())) {
@@ -1073,27 +1098,27 @@ public class UserServiceImpl implements UserService {
                 log.warn("ELE WARN! not found electricityCabinet,p={},d={},uid={}", query.getProductKey(), query.getDeviceName(), user.getUid());
             }
         }
-
+        
         this.updateUserSource(updateUser);
     }
-
+    
     @Override
     public List<UserSourceVO> selectUserSourceByPage(UserSourceQuery userSourceQuery) {
         if (!verifyParams(userSourceQuery)) {
             return Collections.EMPTY_LIST;
         }
-
+        
         List<UserSourceVO> userSourceVOList = this.userMapper.selectUserSourceByPage(userSourceQuery);
         if (CollectionUtils.isEmpty(userSourceVOList)) {
             return Collections.EMPTY_LIST;
         }
-
+        
         return userSourceVOList.parallelStream().peek(item -> {
             Franchisee franchisee = franchiseeService.queryByIdFromCache(item.getFranchiseeId());
             if (Objects.nonNull(franchisee)) {
                 item.setFranchiseeName(franchisee.getName());
             }
-
+            
             ElectricityCabinet electricityCabinet = electricityCabinetService.queryByIdFromCache(item.getElectricityCabinetId());
             if (Objects.nonNull(electricityCabinet)) {
                 item.setElectricityCabinetName(electricityCabinet.getName());
@@ -1102,7 +1127,7 @@ public class UserServiceImpl implements UserService {
                     item.setStoreName(store.getName());
                 }
             }
-
+            
             //获取用户首次购买套餐记录
             ElectricityMemberCardOrder electricityMemberCardOrder = electricityMemberCardOrderService.selectFirstMemberCardOrder(item.getUid());
             if (Objects.nonNull(electricityMemberCardOrder) && Objects.nonNull(electricityMemberCardOrder.getRefId())) {
@@ -1112,10 +1137,10 @@ public class UserServiceImpl implements UserService {
                     item.setFirstBuyMemberCardEleName(firstBuyMemberCardElectricityCabinet.getName());
                 }
             }
-
+            
         }).collect(Collectors.toList());
     }
-
+    
     @Override
     public Integer selectUserSourcePageCount(UserSourceQuery userSourceQuery) {
         if (!verifyParams(userSourceQuery)) {
@@ -1123,7 +1148,7 @@ public class UserServiceImpl implements UserService {
         }
         return this.userMapper.selectUserSourcePageCount(userSourceQuery);
     }
-
+    
     private void delUserOauthBindAndClearToken(List<UserOauthBind> userOauthBinds) {
         userOauthBinds.parallelStream().forEach(e -> {
             String thirdId = e.getThirdId();
@@ -1135,9 +1160,9 @@ public class UserServiceImpl implements UserService {
             }
             userOauthBindService.deleteById(e.getId());
         });
-
+        
     }
-
+    
     private void deleteWxProUser(Long uid, Integer tenantId) {
         User user = queryByUidFromCache(uid);
         if (Objects.nonNull(user)) {
@@ -1147,7 +1172,7 @@ public class UserServiceImpl implements UserService {
             }
         }
     }
-
+    
     private Boolean verifyParams(UserSourceQuery userSourceQuery) {
         //        if (Objects.equals(userSourceQuery.getSource(), User.SOURCE_TYPE_SCAN) && Objects.nonNull(userSourceQuery.getStoreId())) {
         if (Objects.nonNull(userSourceQuery.getStoreId())) {
@@ -1159,8 +1184,8 @@ public class UserServiceImpl implements UserService {
                 return Boolean.FALSE;
             }
         }
-
+        
         return Boolean.TRUE;
     }
-
+    
 }
