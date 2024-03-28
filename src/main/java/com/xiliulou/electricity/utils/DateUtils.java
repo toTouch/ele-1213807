@@ -38,6 +38,8 @@ public class DateUtils {
     
     static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
     
+    static final DateTimeFormatter MONTH_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM");
+    
     static final ZoneId CHINA_ZONE_ID = ZoneId.of("Asia/Shanghai");
     
     /**
@@ -268,5 +270,49 @@ public class DateUtils {
         LocalDate endDate = startDate.withDayOfMonth(startDate.lengthOfMonth());
         
         return endDate.format(DATE_FORMATTER);
+    }
+    
+    /**
+     * 根据时间戳获取当天开始时间
+     *
+     * @return 今天的开始时间
+     */
+    public static long getTimeByTimeStamp(long timestamp) {
+        // 将时间戳转换为UTC的Instant对象
+        Instant instant = Instant.ofEpochMilli(timestamp);
+        // 转换为指定时区的ZonedDateTime
+        ZonedDateTime zonedDateTime = instant.atZone(CHINA_ZONE_ID);
+        // 获取当天的开始时间（即00:00:00）
+        ZonedDateTime startOfDay = zonedDateTime.toLocalDate().atStartOfDay(CHINA_ZONE_ID);
+        // 如果需要再次转换回时间戳
+        return startOfDay.toInstant().toEpochMilli();
+    }
+    
+    /**
+     * 获取某个月：yyyy-MM
+     */
+    public static String getMonthDate(Long month) {
+        LocalDate yesterdayInChina = LocalDate.now(CHINA_ZONE_ID).minusMonths(month);
+        return yesterdayInChina.format(MONTH_FORMATTER);
+    }
+    
+    /**
+     * @description 获取本年截至本月(minusMonth = 0)的月份
+     * @date 2024/3/4 22:07:49
+     * @author HeYafeng
+     */
+    public static List<String> getMonthsUntilCurrent(int minusMonth) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM");
+        List<String> yearList = new ArrayList<>();
+        LocalDate now = LocalDate.now();
+        int currentYear = now.getYear();
+        int currentMonth = now.getMonthValue() - minusMonth;
+        
+        for (int month = 1; month <= currentMonth; month++) {
+            String monthStr = LocalDate.of(currentYear, month, 1).format(formatter);
+            yearList.add(monthStr);
+        }
+        
+        return yearList;
     }
 }
