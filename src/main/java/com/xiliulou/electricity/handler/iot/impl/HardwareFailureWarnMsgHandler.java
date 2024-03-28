@@ -69,22 +69,6 @@ public class HardwareFailureWarnMsgHandler extends AbstractElectricityIotHandler
         if (!sendResult.getLeft()) {
             log.error("HARDWARE WARN MSG ERROR! send command error! requestId:{}", receiverMessage.getSessionId());
         }
-        
-        //系统锁仓通知
-        abnormalLockCellNotify(electricityCabinet,list);
-    }
-    
-    private void abnormalLockCellNotify(ElectricityCabinet electricityCabinet, List<HardwareFailureWarnMqMsg> list) {
-        if(CollectionUtils.isEmpty(list)){
-            return;
-        }
-    
-        for (HardwareFailureWarnMqMsg failureWarnMsg : list) {
-        
-        
-        
-        
-        }
     }
     
     private List<HardwareFailureWarnMqMsg> convertMqMsg(HardwareFailureWarnMsg hardwareFailureWarnMsg, ElectricityCabinet electricityCabinet) {
