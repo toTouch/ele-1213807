@@ -54,7 +54,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -253,44 +252,58 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
     }
     
     @Override
-    public MerchantModifyInviterVO selectModifyInviterInfo(Long uid, Long size, Long offset) {
+    public R selectModifyInviterInfo(Long uid, Long size, Long offset) {
         Integer tenantId = TenantContextHolder.getTenantId();
         
         MerchantInviterVO successInviterVO = this.querySuccessInviter(uid, tenantId);
         if (Objects.isNull(successInviterVO)) {
-            return null;
+            log.warn("Modify inviter fail! not found success record, uid={}", uid);
+            return R.fail("120107", "该用户未成功参与活动，无法修改邀请人");
+        }
+        
+        UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
+        if (Objects.isNull(userInfo)) {
+            log.warn("Modify inviter fail! not found userInfo, uid={}", uid);
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        
+        // 商户列表
+        MerchantPageRequest merchantPageRequest = MerchantPageRequest.builder().size(size).offset(offset).tenantId(tenantId).franchiseeId(userInfo.getFranchiseeId()).build();
+        List<MerchantVO> merchantList = merchantService.listByPage(merchantPageRequest);
+        if (CollectionUtils.isEmpty(merchantList)) {
+            log.warn("Modify inviter fail! merchantList is empty, uid={}", uid);
+            return R.fail("120007", "未找到商户");
         }
         
         Integer inviterSource = successInviterVO.getInviterSource();
+        Long inviterUid = successInviterVO.getInviterUid();
         String inviterSourceStr;
+        List<MerchantVO> filterMerchantList = null;
         if (Objects.equals(inviterSource, MerchantInviterSourceEnum.MERCHANT_INVITER_SOURCE_MERCHANT.getCode())) {
             inviterSourceStr = MerchantInviterSourceEnum.MERCHANT_INVITER_SOURCE_MERCHANT_FOR_VO.getDesc();
+            
+            // 去除原商户邀请人
+            filterMerchantList = merchantList.stream().filter(merchant -> !Objects.equals(merchant.getUid(), inviterUid)).collect(Collectors.toList());
         } else {
             inviterSourceStr = MerchantInviterSourceEnum.MERCHANT_INVITER_SOURCE_USER_FOR_VO.getDesc();
         }
         
-        UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
-        Long franchiseeId = null;
-        if (Objects.nonNull(userInfo)) {
-            franchiseeId = userInfo.getFranchiseeId();
+        if (CollectionUtils.isEmpty(filterMerchantList)) {
+            log.warn("Modify inviter fail! filterMerchantList is empty, uid={}", uid);
+            return R.fail("120007", "未找到商户");
         }
         
-        // 商户列表
-        MerchantPageRequest merchantPageRequest = MerchantPageRequest.builder().size(size).offset(offset).tenantId(tenantId).franchiseeId(franchiseeId).build();
-        List<MerchantVO> merchantList = merchantService.listByPage(merchantPageRequest);
-        
-        if (CollectionUtils.isEmpty(merchantList)) {
-            return null;
-        }
-    
-        List<MerchantForModifyInviterVO> merchantVOList = merchantList.stream().map(item -> {
+        List<MerchantForModifyInviterVO> merchantVOList = filterMerchantList.stream().map(item -> {
             MerchantForModifyInviterVO merchantForModifyInviterVO = new MerchantForModifyInviterVO();
             BeanUtils.copyProperties(item, merchantForModifyInviterVO);
-        
+            
             return merchantForModifyInviterVO;
         }).collect(Collectors.toList());
-    
-        return MerchantModifyInviterVO.builder().inviterName(successInviterVO.getInviterName()).inviterSource(inviterSourceStr).merchantList(merchantVOList).build();
+        
+        MerchantModifyInviterVO vo = MerchantModifyInviterVO.builder().inviterName(successInviterVO.getInviterName()).inviterSource(inviterSourceStr).merchantList(merchantVOList)
+                .build();
+        
+        return R.ok(vo);
     }
     
     @Override
@@ -369,23 +382,31 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
         Integer tenantId = TenantContextHolder.getTenantId();
         Long uid = merchantModifyInviterRequest.getUid();
         Long merchantId = merchantModifyInviterRequest.getMerchantId();
-    
+        
         Merchant merchant = merchantService.queryByIdFromCache(merchantId);
         if (Objects.isNull(merchant)) {
             log.warn("Modify inviter fail! merchant not exist, merchantId={}", merchantId);
             return R.fail("120212", "商户不存在");
         }
-    
+        
         // 参与成功的记录
         MerchantInviterVO successInviterVO = querySuccessInviter(uid, tenantId);
         if (Objects.isNull(successInviterVO)) {
             log.warn("Modify inviter fail! not found success record, uid={}", uid);
-            return R.fail("120107", "未找到成功的参与记录，修改邀请人失败");
+            return R.fail("120107", "该用户未成功参与活动，无法修改邀请人");
         }
-    
+        
         Long id = successInviterVO.getId();
         Integer inviterSource = successInviterVO.getInviterSource();
-    
+        Long oldInviterUid = successInviterVO.getInviterUid();
+        Long newInviterUid = merchant.getUid();
+        Long channelEmployeeUid = merchant.getChannelEmployeeUid();
+        
+        if (Objects.equals(oldInviterUid, newInviterUid)) {
+            log.warn("Modify inviter fail! inviters can not be the same, uid={}, oldInviterUid={}, newInviterUid={}", uid, oldInviterUid, newInviterUid);
+            return R.fail("120108", "修改前的邀请人和修改后的邀请人不能相同");
+        }
+        
         // 逻辑删除旧的记录
         switch (inviterSource) {
             case 1:
@@ -411,35 +432,32 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
             default:
                 break;
         }
-    
+        
         // 新增用户商户绑定
         UserInfoExtra userInfoExtra = UserInfoExtra.builder().merchantId(merchantId).channelEmployeeUid(merchant.getChannelEmployeeUid()).uid(uid).tenantId(tenantId)
                 .delFlag(MerchantConstant.DEL_NORMAL).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).build();
         
         this.insert(userInfoExtra);
-    
+        
         // 获取商户保护期和有效期
         MerchantAttr merchantAttr = merchantAttrService.queryByTenantIdFromCache(merchant.getTenantId());
         if (Objects.isNull(merchantAttr)) {
             log.error("Modify inviter fail! not found merchantAttr, merchantId={}", merchantId);
-            return R.fail("120107", "未找到成功的参与记录，修改邀请人失败");
+            return R.fail("120107", "该用户未成功参与活动，无法修改邀请人");
         }
-    
-        Long newInviterUid = merchant.getUid();
-        Long channelEmployeeUid = merchant.getChannelEmployeeUid();
-    
+        
         // 新增商户参与记录
         MerchantJoinRecord merchantJoinRecord = this.assembleRecord(merchantId, newInviterUid, MerchantJoinRecordConstant.INVITER_TYPE_MERCHANT_SELF, uid, channelEmployeeUid,
                 merchantAttr, tenantId);
         merchantJoinRecordService.insertOne(merchantJoinRecord);
-    
+        
         // 新增修改记录
         MerchantInviterModifyRecord merchantInviterModifyRecord = MerchantInviterModifyRecord.builder().uid(uid).inviterUid(newInviterUid)
-                .inviterName(Optional.ofNullable(userInfoService.queryByUidFromCache(newInviterUid)).orElse(new UserInfo()).getName())
-                .oldInviterUid(successInviterVO.getInviterUid()).oldInviterName(successInviterVO.getInviterName()).oldInviterSource(inviterSource).merchantId(merchantId)
-                .franchiseeId(merchant.getFranchiseeId()).tenantId(tenantId).operator(operator).remark(merchantModifyInviterRequest.getRemark())
-                .delFlag(MerchantConstant.DEL_NORMAL).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).build();
-    
+                .inviterName(Optional.ofNullable(userInfoService.queryByUidFromCache(newInviterUid)).orElse(new UserInfo()).getName()).oldInviterUid(oldInviterUid)
+                .oldInviterName(successInviterVO.getInviterName()).oldInviterSource(inviterSource).merchantId(merchantId).franchiseeId(merchant.getFranchiseeId())
+                .tenantId(tenantId).operator(operator).remark(merchantModifyInviterRequest.getRemark()).delFlag(MerchantConstant.DEL_NORMAL).createTime(System.currentTimeMillis())
+                .updateTime(System.currentTimeMillis()).build();
+        
         merchantInviterModifyRecordService.insertOne(merchantInviterModifyRecord);
         
         return R.ok();

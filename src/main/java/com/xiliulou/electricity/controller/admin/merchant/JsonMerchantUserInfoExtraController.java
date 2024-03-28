@@ -53,7 +53,7 @@ public class JsonMerchantUserInfoExtraController extends BaseController {
             return R.ok();
         }
         
-        return R.ok(userInfoExtraService.selectModifyInviterInfo(uid, size, offset));
+        return userInfoExtraService.selectModifyInviterInfo(uid, size, offset);
     }
     
     /**
