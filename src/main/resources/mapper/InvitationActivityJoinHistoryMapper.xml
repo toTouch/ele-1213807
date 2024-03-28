@@ -323,7 +323,7 @@
     </delete>
     
     <update id="removeById">
-        update t_invitation_activity_join_history set del_flag = 1 where id = #{id}
+        update t_invitation_activity_join_history set del_flag = 1, set update_time = #{updateTime} where id = #{id}
     </update>
     
     <select id="selectUserHistoryByPage" resultType="com.xiliulou.electricity.vo.InvitationActivityJoinHistoryVO">

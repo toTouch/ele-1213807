@@ -286,8 +286,8 @@ public class JoinShareActivityHistoryServiceImpl implements JoinShareActivityHis
 	}
 	
 	@Override
-	public Integer removeById(Long id) {
-		return joinShareActivityHistoryMapper.removeById(id);
+	public Integer removeById(Long id, Long updateTime) {
+		return joinShareActivityHistoryMapper.removeById(id, updateTime);
 	}
 	
 	private String queryStatus(Integer status) {

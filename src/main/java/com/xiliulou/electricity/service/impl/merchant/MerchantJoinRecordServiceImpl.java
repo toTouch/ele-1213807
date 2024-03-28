@@ -519,8 +519,8 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
     }
     
     @Override
-    public Integer updateOldRecord(Long id) {
-        return merchantJoinRecordMapper.updateOldRecord(id);
+    public Integer updateOldRecord(Long id, Long updateTime) {
+        return merchantJoinRecordMapper.updateOldRecord(id, updateTime);
     }
     
     /**

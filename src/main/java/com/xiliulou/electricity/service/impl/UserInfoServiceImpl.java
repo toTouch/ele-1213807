@@ -2964,35 +2964,47 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     
     //TODO 优化
     private String queryFinalInviterUserName(Long uid, Integer tenantId) {
+        String inviterName = null;
+    
+        // 邀请返券
         FinalJoinShareActivityHistoryVo finalJoinShareActivityHistoryVo = joinShareActivityHistoryService.queryFinalHistoryByJoinUid(uid, tenantId);
         if (Objects.nonNull(finalJoinShareActivityHistoryVo)) {
-            return finalJoinShareActivityHistoryVo.getUserName();
-        }
-        
-        FinalJoinShareMoneyActivityHistoryVo finalJoinShareMoneyActivityHistoryVo = joinShareMoneyActivityHistoryService.queryFinalHistoryByJoinUid(uid, tenantId);
-        if (Objects.nonNull(finalJoinShareMoneyActivityHistoryVo)) {
-            return finalJoinShareMoneyActivityHistoryVo.getUserName();
-        }
-        
-        //渠道活动
-        FinalJoinChannelActivityHistoryVO finalJoinChannelActivityHistoryVO = channelActivityHistoryService.queryFinalHistoryByJoinUid(uid, tenantId);
-        if (Objects.nonNull(finalJoinChannelActivityHistoryVO)) {
-            return finalJoinChannelActivityHistoryVO.getUserName();
-        }
-        
-        //套餐返现
-        FinalJoinInvitationActivityHistoryVO finalJoinInvitationActivityHistoryVO = invitationActivityJoinHistoryService.queryFinalHistoryByJoinUid(uid, tenantId);
-        if (Objects.nonNull(finalJoinInvitationActivityHistoryVO)) {
-            return finalJoinInvitationActivityHistoryVO.getUserName();
-        }
-        
-        // 商户活动
-        MerchantJoinRecord merchantJoinRecord = merchantJoinRecordService.querySuccessRecordByJoinUid(uid, tenantId);
-        if (Objects.nonNull(merchantJoinRecord)) {
-            return Optional.ofNullable(userService.queryByUidFromCache(merchantJoinRecord.getInviterUid())).map(User::getName).orElse("");
+            inviterName = finalJoinShareActivityHistoryVo.getUserName();
         }
     
-        return null;
+        if (Objects.isNull(inviterName)) {
+            //邀请返现
+            FinalJoinShareMoneyActivityHistoryVo finalJoinShareMoneyActivityHistoryVo = joinShareMoneyActivityHistoryService.queryFinalHistoryByJoinUid(uid, tenantId);
+            if (Objects.nonNull(finalJoinShareMoneyActivityHistoryVo)) {
+                inviterName = finalJoinShareMoneyActivityHistoryVo.getUserName();
+            }
+        }
+    
+        if (Objects.isNull(inviterName)) {
+            //渠道活动
+            FinalJoinChannelActivityHistoryVO finalJoinChannelActivityHistoryVO = channelActivityHistoryService.queryFinalHistoryByJoinUid(uid, tenantId);
+            if (Objects.nonNull(finalJoinChannelActivityHistoryVO)) {
+                inviterName = finalJoinChannelActivityHistoryVO.getUserName();
+            }
+        }
+    
+        if (Objects.isNull(inviterName)) {
+            //套餐返现
+            FinalJoinInvitationActivityHistoryVO finalJoinInvitationActivityHistoryVO = invitationActivityJoinHistoryService.queryFinalHistoryByJoinUid(uid, tenantId);
+            if (Objects.nonNull(finalJoinInvitationActivityHistoryVO)) {
+                inviterName = finalJoinInvitationActivityHistoryVO.getUserName();
+            }
+        }
+    
+        if (Objects.isNull(inviterName)) {
+            // 商户活动
+            MerchantJoinRecord merchantJoinRecord = merchantJoinRecordService.querySuccessRecordByJoinUid(uid, tenantId);
+            if (Objects.nonNull(merchantJoinRecord)) {
+                inviterName = Optional.ofNullable(userService.queryByUidFromCache(merchantJoinRecord.getInviterUid())).map(User::getName).orElse("");
+            }
+        }
+    
+        return inviterName;
     }
     
     @Override

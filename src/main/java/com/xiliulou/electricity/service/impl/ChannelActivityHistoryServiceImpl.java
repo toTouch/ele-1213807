@@ -526,8 +526,8 @@ public class ChannelActivityHistoryServiceImpl implements ChannelActivityHistory
     }
     
     @Override
-    public Integer removeById(Long id) {
-        return channelActivityHistoryMapper.removeById(id);
+    public Integer removeById(Long id, Long updateTime) {
+        return channelActivityHistoryMapper.removeById(id, updateTime);
     }
     
     private String queryStatus(Integer status) {

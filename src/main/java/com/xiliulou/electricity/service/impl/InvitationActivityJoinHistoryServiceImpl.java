@@ -303,7 +303,7 @@ public class InvitationActivityJoinHistoryServiceImpl implements InvitationActiv
     }
     
     @Override
-    public Integer removeById(Long id) {
-        return invitationActivityJoinHistoryMapper.removeById(id);
+    public Integer removeById(Long id, Long updateTime) {
+        return invitationActivityJoinHistoryMapper.removeById(id, updateTime);
     }
 }

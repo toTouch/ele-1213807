@@ -316,48 +316,56 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
             }
         }
         
-        JoinShareMoneyActivityHistory joinShareMoneyActivityHistory = joinShareMoneyActivityHistoryService.querySuccessHistoryByJoinUid(uid, tenantId);
-        if (Objects.nonNull(joinShareMoneyActivityHistory)) {
-            id = joinShareMoneyActivityHistory.getId();
-            inviterUid = joinShareMoneyActivityHistory.getUid();
-            inviterSource = MerchantInviterSourceEnum.MERCHANT_INVITER_SOURCE_SHARE_MONEY_ACTIVITY.getCode();
-            
-            UserInfo userInfo = userInfoService.queryByUidFromCache(inviterUid);
-            if (Objects.nonNull(userInfo)) {
-                inviterName = userInfo.getName();
+        if (Objects.isNull(inviterUid)) {
+            JoinShareMoneyActivityHistory joinShareMoneyActivityHistory = joinShareMoneyActivityHistoryService.querySuccessHistoryByJoinUid(uid, tenantId);
+            if (Objects.nonNull(joinShareMoneyActivityHistory)) {
+                id = joinShareMoneyActivityHistory.getId();
+                inviterUid = joinShareMoneyActivityHistory.getUid();
+                inviterSource = MerchantInviterSourceEnum.MERCHANT_INVITER_SOURCE_SHARE_MONEY_ACTIVITY.getCode();
+                
+                UserInfo userInfo = userInfoService.queryByUidFromCache(inviterUid);
+                if (Objects.nonNull(userInfo)) {
+                    inviterName = userInfo.getName();
+                }
             }
         }
         
-        InvitationActivityJoinHistory invitationActivityJoinHistory = invitationActivityJoinHistoryService.querySuccessHistoryByJoinUid(uid, tenantId);
-        if (Objects.nonNull(invitationActivityJoinHistory)) {
-            id = invitationActivityJoinHistory.getId();
-            inviterUid = invitationActivityJoinHistory.getUid();
-            inviterSource = MerchantInviterSourceEnum.MERCHANT_INVITER_SOURCE_INVITATION_ACTIVITY.getCode();
-            
-            UserInfo userInfo = userInfoService.queryByUidFromCache(inviterUid);
-            if (Objects.nonNull(userInfo)) {
-                inviterName = userInfo.getName();
+        if (Objects.isNull(inviterUid)) {
+            InvitationActivityJoinHistory invitationActivityJoinHistory = invitationActivityJoinHistoryService.querySuccessHistoryByJoinUid(uid, tenantId);
+            if (Objects.nonNull(invitationActivityJoinHistory)) {
+                id = invitationActivityJoinHistory.getId();
+                inviterUid = invitationActivityJoinHistory.getUid();
+                inviterSource = MerchantInviterSourceEnum.MERCHANT_INVITER_SOURCE_INVITATION_ACTIVITY.getCode();
+                
+                UserInfo userInfo = userInfoService.queryByUidFromCache(inviterUid);
+                if (Objects.nonNull(userInfo)) {
+                    inviterName = userInfo.getName();
+                }
             }
         }
         
-        ChannelActivityHistory channelActivityHistory = channelActivityHistoryService.querySuccessHistoryByJoinUid(uid, tenantId);
-        if (Objects.nonNull(channelActivityHistory)) {
-            id = channelActivityHistory.getId();
-            inviterUid = channelActivityHistory.getUid();
-            inviterSource = MerchantInviterSourceEnum.MERCHANT_INVITER_SOURCE_CHANNEL_ACTIVITY.getCode();
-            
-            UserInfo userInfo = userInfoService.queryByUidFromCache(inviterUid);
-            if (Objects.nonNull(userInfo)) {
-                inviterName = userInfo.getName();
+        if (Objects.isNull(inviterUid)) {
+            ChannelActivityHistory channelActivityHistory = channelActivityHistoryService.querySuccessHistoryByJoinUid(uid, tenantId);
+            if (Objects.nonNull(channelActivityHistory)) {
+                id = channelActivityHistory.getId();
+                inviterUid = channelActivityHistory.getUid();
+                inviterSource = MerchantInviterSourceEnum.MERCHANT_INVITER_SOURCE_CHANNEL_ACTIVITY.getCode();
+                
+                UserInfo userInfo = userInfoService.queryByUidFromCache(inviterUid);
+                if (Objects.nonNull(userInfo)) {
+                    inviterName = userInfo.getName();
+                }
             }
         }
         
-        MerchantJoinRecord merchantJoinRecord = merchantJoinRecordService.querySuccessRecordByJoinUid(uid, tenantId);
-        if (Objects.nonNull(merchantJoinRecord)) {
-            id = merchantJoinRecord.getId();
-            inviterUid = merchantJoinRecord.getInviterUid();
-            inviterName = Optional.ofNullable(userService.queryByUidFromCache(inviterUid)).map(User::getName).orElse("");
-            inviterSource = MerchantInviterSourceEnum.MERCHANT_INVITER_SOURCE_MERCHANT.getCode();
+        if (Objects.isNull(inviterUid)) {
+            MerchantJoinRecord merchantJoinRecord = merchantJoinRecordService.querySuccessRecordByJoinUid(uid, tenantId);
+            if (Objects.nonNull(merchantJoinRecord)) {
+                id = merchantJoinRecord.getId();
+                inviterUid = merchantJoinRecord.getInviterUid();
+                inviterName = Optional.ofNullable(userService.queryByUidFromCache(inviterUid)).map(User::getName).orElse("");
+                inviterSource = MerchantInviterSourceEnum.MERCHANT_INVITER_SOURCE_MERCHANT.getCode();
+            }
         }
         
         if (Objects.isNull(inviterUid)) {
@@ -402,23 +410,23 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
         switch (inviterSource) {
             case 1:
                 // 邀请返券
-                joinShareActivityHistoryService.removeById(id);
+                joinShareActivityHistoryService.removeById(id, System.currentTimeMillis());
                 break;
             case 2:
                 // 邀请返现
-                joinShareMoneyActivityHistoryService.removeById(id);
+                joinShareMoneyActivityHistoryService.removeById(id, System.currentTimeMillis());
                 break;
             case 3:
                 // 套餐返现
-                invitationActivityJoinHistoryService.removeById(id);
+                invitationActivityJoinHistoryService.removeById(id, System.currentTimeMillis());
                 break;
             case 4:
                 // 渠道邀请
-                channelActivityHistoryService.removeById(id);
+                channelActivityHistoryService.removeById(id, System.currentTimeMillis());
                 break;
             case 5:
                 // 商户邀请
-                merchantJoinRecordService.updateOldRecord(id);
+                merchantJoinRecordService.updateOldRecord(id, System.currentTimeMillis());
                 break;
             default:
                 break;

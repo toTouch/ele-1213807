@@ -113,7 +113,7 @@ public interface MerchantJoinRecordService {
     
     MerchantJoinRecord querySuccessRecordByJoinUid(Long uid, Integer tenantId);
     
-    Integer updateOldRecord(Long id);
+    Integer updateOldRecord(Long id, Long updateTime);
     
     Integer countEmployeeScanCodeSuccessNum(List<Long> employeeIds, Long startTime, Long endTime, Integer status, Integer tenantId, Long uid);
 }

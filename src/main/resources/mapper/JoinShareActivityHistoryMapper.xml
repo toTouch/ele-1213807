@@ -33,7 +33,7 @@
     </sql>
     
     <update id="removeById">
-        update t_join_share_activity_history set del_flag = 1 where id = #{id}
+        update t_join_share_activity_history set del_flag = 1, update_time = #{updateTime} where id = #{id}
     </update>
     
     <!--通过实体作为筛选条件查询-->

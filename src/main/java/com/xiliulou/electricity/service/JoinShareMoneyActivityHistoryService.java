@@ -70,5 +70,5 @@ public interface JoinShareMoneyActivityHistoryService {
     
     JoinShareMoneyActivityHistory querySuccessHistoryByJoinUid(Long uid, Integer tenantId);
     
-    Integer removeById(Long id);
+    Integer removeById(Long id, Long updateTime);
 }

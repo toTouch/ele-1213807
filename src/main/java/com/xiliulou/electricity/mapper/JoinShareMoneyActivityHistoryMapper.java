@@ -53,6 +53,6 @@ public interface JoinShareMoneyActivityHistoryMapper extends BaseMapper<JoinShar
 	List<JoinShareMoneyActivityHistory> queryJoinedActivityByJoinerAndInviter(@Param("joinUid") Long joinUid, @Param("inviterUid") Long inviterUid, @Param("activityId") Long activityId);
 	
 	JoinShareMoneyActivityHistory selectSuccessHistoryByJoinUid(@Param("joinUid") Long joinUid, @Param("tenantId") Integer tenantId);
-    
-    Integer removeById(Long id);
+	
+	Integer removeById(@Param("id") Long id, @Param("updateTime") Long updateTime);
 }

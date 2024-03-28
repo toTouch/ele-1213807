@@ -99,7 +99,7 @@
     </update>
     
     <update id="removeById">
-        update t_channel_activity_history set del_flag = 1 where id = #{id}
+        update t_channel_activity_history set del_flag = 1, update_time = #{updateTime} where id = #{id}
     </update>
     
     <!--通过主键删除-->
