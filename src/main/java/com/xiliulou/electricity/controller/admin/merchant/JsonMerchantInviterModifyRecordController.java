@@ -30,15 +30,7 @@ public class JsonMerchantInviterModifyRecordController {
      * 分页查询
      */
     @GetMapping("/admin/merchant/inviterModifyRecord/page")
-    public R page(@RequestParam("size") long size, @RequestParam("offset") long offset, @RequestParam("uid") Long uid) {
-        if (size < 0 || size > 50) {
-            size = 10L;
-        }
-        
-        if (offset < 0) {
-            offset = 0L;
-        }
-        
+    public R page(@RequestParam("uid") Long uid) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
@@ -48,7 +40,7 @@ public class JsonMerchantInviterModifyRecordController {
             return R.ok();
         }
         
-        MerchantInviterModifyRecordRequest request = MerchantInviterModifyRecordRequest.builder().size(size).offset(offset).uid(uid).build();
+        MerchantInviterModifyRecordRequest request = MerchantInviterModifyRecordRequest.builder().uid(uid).build();
         
         return R.ok(merchantInviterModifyRecordService.listByPage(request));
     }

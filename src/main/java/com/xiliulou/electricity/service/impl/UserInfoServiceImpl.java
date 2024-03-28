@@ -64,6 +64,7 @@ import com.xiliulou.electricity.enums.YesNoEnum;
 import com.xiliulou.electricity.enums.enterprise.RentBatteryOrderTypeEnum;
 import com.xiliulou.electricity.enums.enterprise.UserCostTypeEnum;
 import com.xiliulou.electricity.enums.merchant.MerchantInviterCanModifyEnum;
+import com.xiliulou.electricity.enums.merchant.MerchantInviterSourceEnum;
 import com.xiliulou.electricity.mapper.UserInfoMapper;
 import com.xiliulou.electricity.query.UserInfoBatteryAddAndUpdate;
 import com.xiliulou.electricity.query.UserInfoCarAddAndUpdate;
@@ -2104,15 +2105,21 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         }
         
         // 邀请人是否可被修改
+        Integer inviterSource = MerchantInviterSourceEnum.MERCHANT_INVITER_SOURCE_USER_FOR_VO.getCode();
         MerchantInviterVO merchantInviterVO = userInfoExtraService.querySuccessInviter(uid, tenantId);
         if (Objects.isNull(merchantInviterVO)) {
             vo.setCanModifyInviter(MerchantInviterCanModifyEnum.MERCHANT_INVITER_CAN_NOT_MODIFY.getCode());
         } else {
             vo.setCanModifyInviter(MerchantInviterCanModifyEnum.MERCHANT_INVITER_CAN_MODIFY.getCode());
+            if (Objects.equals(merchantInviterVO.getInviterSource(), MerchantInviterSourceEnum.MERCHANT_INVITER_SOURCE_MERCHANT.getCode())) {
+                inviterSource = MerchantInviterSourceEnum.MERCHANT_INVITER_SOURCE_MERCHANT_FOR_VO.getCode();
+            }
         }
         
         // 邀请人名称
         vo.setInviterName(queryFinalInviterUserName(uid, tenantId));
+        //邀请人来源
+        vo.setInviterSource(inviterSource);
     
         return R.ok(vo);
     }

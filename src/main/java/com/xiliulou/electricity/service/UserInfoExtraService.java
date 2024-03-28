@@ -4,7 +4,6 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.UserInfoExtra;
 import com.xiliulou.electricity.request.merchant.MerchantModifyInviterRequest;
 import com.xiliulou.electricity.vo.merchant.MerchantInviterVO;
-import com.xiliulou.electricity.vo.merchant.MerchantModifyInviterVO;
 
 /**
  * (UserInfoExtra)表服务接口

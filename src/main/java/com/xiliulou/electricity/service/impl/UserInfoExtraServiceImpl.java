@@ -44,7 +44,6 @@ import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.vo.merchant.MerchantForModifyInviterVO;
 import com.xiliulou.electricity.vo.merchant.MerchantInviterVO;
-import com.xiliulou.electricity.vo.merchant.MerchantModifyInviterVO;
 import com.xiliulou.electricity.vo.merchant.MerchantVO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
@@ -277,15 +276,10 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
         
         Integer inviterSource = successInviterVO.getInviterSource();
         Long inviterUid = successInviterVO.getInviterUid();
-        Integer inviterSourceVO;
         List<MerchantVO> filterMerchantList = null;
         if (Objects.equals(inviterSource, MerchantInviterSourceEnum.MERCHANT_INVITER_SOURCE_MERCHANT.getCode())) {
-            inviterSourceVO = MerchantInviterSourceEnum.MERCHANT_INVITER_SOURCE_MERCHANT_FOR_VO.getCode();
-            
             // 去除原商户邀请人
             filterMerchantList = merchantList.stream().filter(merchant -> !Objects.equals(merchant.getUid(), inviterUid)).collect(Collectors.toList());
-        } else {
-            inviterSourceVO = MerchantInviterSourceEnum.MERCHANT_INVITER_SOURCE_USER_FOR_VO.getCode();
         }
         
         if (CollectionUtils.isEmpty(filterMerchantList)) {
@@ -300,10 +294,7 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
             return merchantForModifyInviterVO;
         }).collect(Collectors.toList());
         
-        MerchantModifyInviterVO vo = MerchantModifyInviterVO.builder().inviterName(successInviterVO.getInviterName()).inviterSource(inviterSourceVO).merchantList(merchantVOList)
-                .build();
-        
-        return R.ok(vo);
+        return R.ok(merchantVOList);
     }
     
     @Override
@@ -434,10 +425,20 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
         }
         
         // 新增用户商户绑定
-        UserInfoExtra userInfoExtra = UserInfoExtra.builder().merchantId(merchantId).channelEmployeeUid(merchant.getChannelEmployeeUid()).uid(uid).tenantId(tenantId)
-                .delFlag(MerchantConstant.DEL_NORMAL).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).build();
-        
-        this.insert(userInfoExtra);
+        UserInfoExtra userInfoExtra = this.queryByUidFromCache(uid);
+        if (Objects.isNull(userInfoExtra)) {
+            UserInfoExtra insertUserInfoExtra = UserInfoExtra.builder().merchantId(merchantId).channelEmployeeUid(merchant.getChannelEmployeeUid()).uid(uid).tenantId(tenantId)
+                    .delFlag(MerchantConstant.DEL_NORMAL).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).build();
+            
+            this.insert(insertUserInfoExtra);
+        } else {
+            userInfoExtra.setMerchantId(merchantId);
+            userInfoExtra.setChannelEmployeeUid(merchant.getChannelEmployeeUid());
+            userInfoExtra.setTenantId(tenantId);
+            userInfoExtra.setUpdateTime(System.currentTimeMillis());
+            
+            this.updateByUid(userInfoExtra);
+        }
         
         // 获取商户保护期和有效期
         MerchantAttr merchantAttr = merchantAttrService.queryByTenantIdFromCache(merchant.getTenantId());

@@ -117,4 +117,9 @@ public class DetailsUserInfoVo {
      * 邀请人名称
      */
     private String inviterName;
+    
+    /**
+     * 邀请人来源：1-用户邀请，2-商户邀请
+     */
+    private Integer inviterSource;
 }
