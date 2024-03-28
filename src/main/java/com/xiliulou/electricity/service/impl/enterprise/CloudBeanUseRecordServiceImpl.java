@@ -165,9 +165,9 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
     
     @Slave
     @Override
-    public BigDecimal acquireUserRecycledCloudBean(Long uid) {
+    public BigDecimal acquireUserRecycledCloudBean(Long uid, Long enterpriseId) {
         List<CloudBeanUseRecord> cloudBeanUseRecords = this.cloudBeanUseRecordMapper
-                .selectList(new LambdaQueryWrapper<CloudBeanUseRecord>().eq(CloudBeanUseRecord::getUid, uid).eq(CloudBeanUseRecord::getType, CloudBeanUseRecord.TYPE_RECYCLE));
+                .selectList(new LambdaQueryWrapper<CloudBeanUseRecord>().eq(CloudBeanUseRecord::getUid, uid).eq(CloudBeanUseRecord::getType, CloudBeanUseRecord.TYPE_RECYCLE).eq(CloudBeanUseRecord::getEnterpriseId, enterpriseId));
         if (CollectionUtils.isEmpty(cloudBeanUseRecords)) {
             return BigDecimal.ZERO;
         }

@@ -5,14 +5,19 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.query.enterprise.CloudBeanUseRecordQuery;
 import com.xiliulou.electricity.service.enterprise.CloudBeanUseRecordService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseCloudBeanOrderService;
+import com.xiliulou.electricity.service.enterprise.EnterpriseInfoService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
+import com.xiliulou.electricity.vo.enterprise.EnterpriseInfoVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import javax.annotation.Resource;
+import java.util.Objects;
 
 /**
  * @author zzlong
@@ -28,6 +33,9 @@ public class JsonUserCloudBeanUseRecordController extends BaseController {
     
     @Autowired
     private EnterpriseCloudBeanOrderService enterpriseCloudBeanOrderService;
+    
+    @Resource
+    private EnterpriseInfoService enterpriseInfoService;
     
     /**
      * 云豆流水
@@ -80,7 +88,15 @@ public class JsonUserCloudBeanUseRecordController extends BaseController {
      */
     @GetMapping({"/user/cloudBeanUse/recyclabed/{uid}", "/merchant/cloudBeanUse/recyclabed/{uid}"})
     public R cloudBeanUseRecyclabed(@PathVariable("uid") Long uid) {
-        return R.ok(cloudBeanUseRecordService.acquireUserRecycledCloudBean(uid));
+        Long id = SecurityUtils.getUid();
+        
+        EnterpriseInfoVO enterpriseInfoVO = enterpriseInfoService.selectEnterpriseInfoByUid(id);
+        if (Objects.isNull(enterpriseInfoVO) || Objects.isNull(enterpriseInfoVO.getId())) {
+            log.error("channel User Exit Check  enterprise not exists, uid={}", id);
+            return R.fail("120311", "该用户无法操作");
+        }
+        
+        return R.ok(cloudBeanUseRecordService.acquireUserRecycledCloudBean(uid, enterpriseInfoVO.getId()));
     }
     
     /**
