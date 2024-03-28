@@ -277,15 +277,15 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
         
         Integer inviterSource = successInviterVO.getInviterSource();
         Long inviterUid = successInviterVO.getInviterUid();
-        String inviterSourceStr;
+        Integer inviterSourceVO;
         List<MerchantVO> filterMerchantList = null;
         if (Objects.equals(inviterSource, MerchantInviterSourceEnum.MERCHANT_INVITER_SOURCE_MERCHANT.getCode())) {
-            inviterSourceStr = MerchantInviterSourceEnum.MERCHANT_INVITER_SOURCE_MERCHANT_FOR_VO.getDesc();
+            inviterSourceVO = MerchantInviterSourceEnum.MERCHANT_INVITER_SOURCE_MERCHANT_FOR_VO.getCode();
             
             // 去除原商户邀请人
             filterMerchantList = merchantList.stream().filter(merchant -> !Objects.equals(merchant.getUid(), inviterUid)).collect(Collectors.toList());
         } else {
-            inviterSourceStr = MerchantInviterSourceEnum.MERCHANT_INVITER_SOURCE_USER_FOR_VO.getDesc();
+            inviterSourceVO = MerchantInviterSourceEnum.MERCHANT_INVITER_SOURCE_USER_FOR_VO.getCode();
         }
         
         if (CollectionUtils.isEmpty(filterMerchantList)) {
@@ -300,7 +300,7 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
             return merchantForModifyInviterVO;
         }).collect(Collectors.toList());
         
-        MerchantModifyInviterVO vo = MerchantModifyInviterVO.builder().inviterName(successInviterVO.getInviterName()).inviterSource(inviterSourceStr).merchantList(merchantVOList)
+        MerchantModifyInviterVO vo = MerchantModifyInviterVO.builder().inviterName(successInviterVO.getInviterName()).inviterSource(inviterSourceVO).merchantList(merchantVOList)
                 .build();
         
         return R.ok(vo);
@@ -453,7 +453,7 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
         
         // 新增修改记录
         MerchantInviterModifyRecord merchantInviterModifyRecord = MerchantInviterModifyRecord.builder().uid(uid).inviterUid(newInviterUid)
-                .inviterName(Optional.ofNullable(userInfoService.queryByUidFromCache(newInviterUid)).orElse(new UserInfo()).getName()).oldInviterUid(oldInviterUid)
+                .inviterName(Optional.ofNullable(userService.queryByUidFromCache(newInviterUid)).orElse(new User()).getName()).oldInviterUid(oldInviterUid)
                 .oldInviterName(successInviterVO.getInviterName()).oldInviterSource(inviterSource).merchantId(merchantId).franchiseeId(merchant.getFranchiseeId())
                 .tenantId(tenantId).operator(operator).remark(merchantModifyInviterRequest.getRemark()).delFlag(MerchantConstant.DEL_NORMAL).createTime(System.currentTimeMillis())
                 .updateTime(System.currentTimeMillis()).build();

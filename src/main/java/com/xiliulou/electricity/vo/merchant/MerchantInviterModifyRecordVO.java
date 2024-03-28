@@ -42,7 +42,7 @@ public class MerchantInviterModifyRecordVO {
     private String oldInviterName;
     
     /**
-     * 邀请人来源:1-邀请返券,2-邀请返现,3-套餐返现,4-渠道邀请,5-商户邀请
+     * 邀请人来源：1-用户邀请，2-商户邀请
      */
     private Integer oldInviterSource;
     
@@ -64,7 +64,7 @@ public class MerchantInviterModifyRecordVO {
     /**
      * 操作人
      */
-    private Long operator;
+    private String operator;
     
     /**
      * 商户id

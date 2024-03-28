@@ -21,7 +21,7 @@ public class MerchantModifyInviterVO {
     /**
      * 邀请人来源：1-用户邀请，2-商户邀请
      */
-    private String inviterSource;
+    private Integer inviterSource;
     
     List<MerchantForModifyInviterVO> merchantList;
 }
