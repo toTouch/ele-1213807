@@ -194,7 +194,7 @@ public class EleUserAuthServiceImpl implements EleUserAuthService {
         }
 
         userInfo.setUid(user.getUid());
-        userInfo.setAuthType(electricityConfig.getIsManualReview());
+        userInfo.setAuthType(transfomStatus(electricityConfig.getIsManualReview()));
         userInfo.setAuthStatus(status);
         userInfo.setTenantId(tenantId);
         userInfo.setUpdateTime(System.currentTimeMillis());
@@ -206,6 +206,22 @@ public class EleUserAuthServiceImpl implements EleUserAuthService {
         }
 
         return R.ok();
+    }
+    
+    private Integer transfomStatus(Integer isManualReview) {
+        Integer result = ElectricityConfig.MANUAL_REVIEW;
+        switch (isManualReview) {
+            case 0:
+                result = UserInfo.AUTH_TYPE_PERSON;
+                break;
+            case 1:
+                result = UserInfo.AUTH_TYPE_SYSTEM;
+                break;
+            case 2:
+                result = UserInfo.AUTH_TYPE_FACE;
+                break;
+        }
+        return result;
     }
     
     private Triple<Boolean, String, Object> checkIdCardExists(List<EleUserAuth> eleUserAuthList) {
