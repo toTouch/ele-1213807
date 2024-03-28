@@ -3,6 +3,9 @@ package com.xiliulou.electricity.service.impl;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.CacheConstant;
+import com.xiliulou.electricity.constant.CommonConstant;
+import com.xiliulou.electricity.constant.NumberConstant;
+import com.xiliulou.electricity.constant.TimeConstant;
 import com.xiliulou.electricity.constant.merchant.MerchantConstant;
 import com.xiliulou.electricity.constant.merchant.MerchantJoinRecordConstant;
 import com.xiliulou.electricity.entity.ChannelActivityHistory;
@@ -15,6 +18,7 @@ import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.UserInfoExtra;
 import com.xiliulou.electricity.entity.merchant.Merchant;
 import com.xiliulou.electricity.entity.merchant.MerchantAttr;
+import com.xiliulou.electricity.entity.merchant.MerchantInviterModifyRecord;
 import com.xiliulou.electricity.entity.merchant.MerchantJoinRecord;
 import com.xiliulou.electricity.entity.merchant.MerchantLevel;
 import com.xiliulou.electricity.entity.merchant.RebateConfig;
@@ -31,24 +35,30 @@ import com.xiliulou.electricity.service.UserInfoExtraService;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.service.merchant.MerchantAttrService;
+import com.xiliulou.electricity.service.merchant.MerchantInviterModifyRecordService;
 import com.xiliulou.electricity.service.merchant.MerchantJoinRecordService;
 import com.xiliulou.electricity.service.merchant.MerchantLevelService;
 import com.xiliulou.electricity.service.merchant.MerchantService;
 import com.xiliulou.electricity.service.merchant.RebateConfigService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
+import com.xiliulou.electricity.vo.merchant.MerchantForModifyInviterVO;
 import com.xiliulou.electricity.vo.merchant.MerchantInviterVO;
 import com.xiliulou.electricity.vo.merchant.MerchantModifyInviterVO;
 import com.xiliulou.electricity.vo.merchant.MerchantVO;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * (UserInfoExtra)表服务实现类
@@ -101,6 +111,9 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
     
     @Resource
     private UserService userService;
+    
+    @Resource
+    private MerchantInviterModifyRecordService merchantInviterModifyRecordService;
     
     @Override
     public UserInfoExtra queryByUidFromDB(Long uid) {
@@ -243,36 +256,45 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
     public MerchantModifyInviterVO selectModifyInviterInfo(Long uid, Long size, Long offset) {
         Integer tenantId = TenantContextHolder.getTenantId();
         
-        MerchantInviterVO successInviterVO = this.getSuccessInviterVO(uid, tenantId);
+        MerchantInviterVO successInviterVO = this.querySuccessInviter(uid, tenantId);
         if (Objects.isNull(successInviterVO)) {
             return null;
         }
         
         Integer inviterSource = successInviterVO.getInviterSource();
-        String inviterSourceStr = null;
+        String inviterSourceStr;
         if (Objects.equals(inviterSource, MerchantInviterSourceEnum.MERCHANT_INVITER_SOURCE_MERCHANT.getCode())) {
-            inviterSourceStr = MerchantInviterSourceEnum.MERCHANT_INVITER_SOURCE_MERCHANT.getDesc();
+            inviterSourceStr = MerchantInviterSourceEnum.MERCHANT_INVITER_SOURCE_MERCHANT_FOR_VO.getDesc();
         } else {
-            inviterSourceStr = MerchantInviterSourceEnum.MERCHANT_INVITER_SOURCE_USER.getDesc();
+            inviterSourceStr = MerchantInviterSourceEnum.MERCHANT_INVITER_SOURCE_USER_FOR_VO.getDesc();
         }
         
         UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
         Long franchiseeId = null;
-        String franchiseeName = null;
         if (Objects.nonNull(userInfo)) {
             franchiseeId = userInfo.getFranchiseeId();
-            franchiseeName = userInfo.getName();
         }
         
         // 商户列表
         MerchantPageRequest merchantPageRequest = MerchantPageRequest.builder().size(size).offset(offset).tenantId(tenantId).franchiseeId(franchiseeId).build();
-        List<MerchantVO> merchantVOS = merchantService.listByPage(merchantPageRequest);
+        List<MerchantVO> merchantList = merchantService.listByPage(merchantPageRequest);
         
-        return MerchantModifyInviterVO.builder().uid(uid).inviterName(successInviterVO.getInviterName()).inviterSource(inviterSourceStr)
-                .franchiseeId(franchiseeId).franchiseeName(franchiseeName).merchantList(merchantVOS).build();
+        if (CollectionUtils.isEmpty(merchantList)) {
+            return null;
+        }
+    
+        List<MerchantForModifyInviterVO> merchantVOList = merchantList.stream().map(item -> {
+            MerchantForModifyInviterVO merchantForModifyInviterVO = new MerchantForModifyInviterVO();
+            BeanUtils.copyProperties(item, merchantForModifyInviterVO);
+        
+            return merchantForModifyInviterVO;
+        }).collect(Collectors.toList());
+    
+        return MerchantModifyInviterVO.builder().inviterName(successInviterVO.getInviterName()).inviterSource(inviterSourceStr).merchantList(merchantVOList).build();
     }
     
-    private MerchantInviterVO getSuccessInviterVO(Long uid, Integer tenantId) {
+    @Override
+    public MerchantInviterVO querySuccessInviter(Long uid, Integer tenantId) {
         Long id = null;
         Long inviterUid = null;
         String inviterName = null;
@@ -299,7 +321,6 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
             UserInfo userInfo = userInfoService.queryByUidFromCache(inviterUid);
             if (Objects.nonNull(userInfo)) {
                 inviterName = userInfo.getName();
-                
             }
         }
         
@@ -344,34 +365,59 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
     
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public R modifyInviter(MerchantModifyInviterRequest merchantModifyInviterRequest) {
+    public R modifyInviter(MerchantModifyInviterRequest merchantModifyInviterRequest, Long operator) {
         Integer tenantId = TenantContextHolder.getTenantId();
         Long uid = merchantModifyInviterRequest.getUid();
         Long merchantId = merchantModifyInviterRequest.getMerchantId();
-        String remark = merchantModifyInviterRequest.getRemark();
-        
+    
         Merchant merchant = merchantService.queryByIdFromCache(merchantId);
         if (Objects.isNull(merchant)) {
             log.warn("Modify inviter fail! merchant not exist, merchantId={}", merchantId);
             return R.fail("120212", "商户不存在");
         }
-        
+    
         // 参与成功的记录
-        MerchantInviterVO successInviterVO = getSuccessInviterVO(uid, tenantId);
+        MerchantInviterVO successInviterVO = querySuccessInviter(uid, tenantId);
         if (Objects.isNull(successInviterVO)) {
             log.warn("Modify inviter fail! not found success record, uid={}", uid);
             return R.fail("120107", "未找到成功的参与记录，修改邀请人失败");
         }
-        
-        Long oldInviterUid = successInviterVO.getInviterUid();
-        String oldInviterName = successInviterVO.getInviterName();
-        Integer oldInviterSource = successInviterVO.getInviterSource();
+    
+        Long id = successInviterVO.getId();
+        Integer inviterSource = successInviterVO.getInviterSource();
+    
+        // 逻辑删除旧的记录
+        switch (inviterSource) {
+            case 1:
+                // 邀请返券
+                joinShareActivityHistoryService.removeById(id);
+                break;
+            case 2:
+                // 邀请返现
+                joinShareMoneyActivityHistoryService.removeById(id);
+                break;
+            case 3:
+                // 套餐返现
+                invitationActivityJoinHistoryService.removeById(id);
+                break;
+            case 4:
+                // 渠道邀请
+                channelActivityHistoryService.removeById(id);
+                break;
+            case 5:
+                // 商户邀请
+                merchantJoinRecordService.updateOldRecord(id);
+                break;
+            default:
+                break;
+        }
     
         // 新增用户商户绑定
         UserInfoExtra userInfoExtra = UserInfoExtra.builder().merchantId(merchantId).channelEmployeeUid(merchant.getChannelEmployeeUid()).uid(uid).tenantId(tenantId)
                 .delFlag(MerchantConstant.DEL_NORMAL).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).build();
-        this.insert(userInfoExtra);
         
+        this.insert(userInfoExtra);
+    
         // 获取商户保护期和有效期
         MerchantAttr merchantAttr = merchantAttrService.queryByTenantIdFromCache(merchant.getTenantId());
         if (Objects.isNull(merchantAttr)) {
@@ -379,13 +425,60 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
             return R.fail("120107", "未找到成功的参与记录，修改邀请人失败");
         }
     
+        Long newInviterUid = merchant.getUid();
+        Long channelEmployeeUid = merchant.getChannelEmployeeUid();
+    
         // 新增商户参与记录
-        MerchantJoinRecord merchantJoinRecord = merchantJoinRecordService.assembleRecord(merchantId, inviterUid, inviterType, joinUid, channelEmployeeUid, placeId, merchantAttr,
-                tenantId);
+        MerchantJoinRecord merchantJoinRecord = this.assembleRecord(merchantId, newInviterUid, MerchantJoinRecordConstant.INVITER_TYPE_MERCHANT_SELF, uid, channelEmployeeUid,
+                merchantAttr, tenantId);
         merchantJoinRecordService.insertOne(merchantJoinRecord);
     
-        // 异步记录修改记录
+        // 新增修改记录
+        MerchantInviterModifyRecord merchantInviterModifyRecord = MerchantInviterModifyRecord.builder().uid(uid).inviterUid(newInviterUid)
+                .inviterName(Optional.ofNullable(userInfoService.queryByUidFromCache(newInviterUid)).orElse(new UserInfo()).getName())
+                .oldInviterUid(successInviterVO.getInviterUid()).oldInviterName(successInviterVO.getInviterName()).oldInviterSource(inviterSource).merchantId(merchantId)
+                .franchiseeId(merchant.getFranchiseeId()).tenantId(tenantId).operator(operator).remark(merchantModifyInviterRequest.getRemark())
+                .delFlag(MerchantConstant.DEL_NORMAL).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).build();
+    
+        merchantInviterModifyRecordService.insertOne(merchantInviterModifyRecord);
         
-        return null;
+        return R.ok();
+    }
+    
+    private MerchantJoinRecord assembleRecord(Long merchantId, Long inviterUid, Integer inviterType, Long joinUid, Long channelEmployeeUid, MerchantAttr merchantAttr,
+            Integer tenantId) {
+        long nowTime = System.currentTimeMillis();
+        Integer protectionTime = merchantAttr.getInvitationProtectionTime();
+        Integer protectionTimeUnit = merchantAttr.getProtectionTimeUnit();
+        Integer validTime = merchantAttr.getInvitationValidTime();
+        Integer validTimeUnit = merchantAttr.getValidTimeUnit();
+        
+        // 保护期过期时间
+        long protectionExpireTime = nowTime;
+        //分钟转毫秒
+        if (Objects.equals(protectionTimeUnit, CommonConstant.TIME_UNIT_MINUTES)) {
+            protectionExpireTime += protectionTime * TimeConstant.MINUTE_MILLISECOND;
+        }
+        //小时转毫秒
+        if (Objects.equals(protectionTimeUnit, CommonConstant.TIME_UNIT_HOURS)) {
+            protectionExpireTime += protectionTime * TimeConstant.HOURS_MILLISECOND;
+        }
+        
+        // 参与有效期过期时间
+        long expiredTime = nowTime;
+        //分钟转毫秒
+        if (Objects.equals(validTimeUnit, CommonConstant.TIME_UNIT_MINUTES)) {
+            expiredTime += validTime * TimeConstant.MINUTE_MILLISECOND;
+        }
+        //小时转毫秒
+        if (Objects.equals(validTimeUnit, CommonConstant.TIME_UNIT_HOURS)) {
+            expiredTime += validTime * TimeConstant.HOURS_MILLISECOND;
+        }
+        
+        // 生成参与记录
+        return MerchantJoinRecord.builder().merchantId(merchantId).channelEmployeeUid(channelEmployeeUid).inviterUid(inviterUid).inviterType(inviterType).joinUid(joinUid)
+                .startTime(nowTime).expiredTime(expiredTime).status(MerchantJoinRecordConstant.STATUS_INIT).protectionTime(protectionExpireTime)
+                .protectionStatus(MerchantJoinRecordConstant.PROTECTION_STATUS_NORMAL).delFlag(NumberConstant.ZERO).createTime(nowTime).updateTime(nowTime).tenantId(tenantId)
+                .build();
     }
 }

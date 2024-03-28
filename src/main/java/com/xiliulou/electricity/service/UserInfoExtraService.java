@@ -3,9 +3,8 @@ package com.xiliulou.electricity.service;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.UserInfoExtra;
 import com.xiliulou.electricity.request.merchant.MerchantModifyInviterRequest;
+import com.xiliulou.electricity.vo.merchant.MerchantInviterVO;
 import com.xiliulou.electricity.vo.merchant.MerchantModifyInviterVO;
-
-import java.util.List;
 
 /**
  * (UserInfoExtra)表服务接口
@@ -27,7 +26,9 @@ public interface UserInfoExtraService {
     
     void bindMerchant(Long uid, String orderId ,Long memberCardId);
     
+    MerchantInviterVO querySuccessInviter(Long uid, Integer tenantId);
+    
     MerchantModifyInviterVO selectModifyInviterInfo(Long uid, Long size, Long offset);
     
-    R modifyInviter(MerchantModifyInviterRequest merchantModifyInviterRequest);
+    R modifyInviter(MerchantModifyInviterRequest merchantModifyInviterRequest, Long operator);
 }

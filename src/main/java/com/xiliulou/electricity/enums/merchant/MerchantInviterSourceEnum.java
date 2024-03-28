@@ -14,7 +14,9 @@ public enum MerchantInviterSourceEnum {
     MERCHANT_INVITER_SOURCE_INVITATION_ACTIVITY(3, "套餐返现"),
     MERCHANT_INVITER_SOURCE_CHANNEL_ACTIVITY(4, "渠道邀请"),
     MERCHANT_INVITER_SOURCE_MERCHANT(5, "商户邀请"),
-    MERCHANT_INVITER_SOURCE_USER(6, "用户邀请"),
+    
+    MERCHANT_INVITER_SOURCE_USER_FOR_VO(1, "用户邀请"),
+    MERCHANT_INVITER_SOURCE_MERCHANT_FOR_VO(2, "商户邀请"),
     ;
     
     private final Integer code;

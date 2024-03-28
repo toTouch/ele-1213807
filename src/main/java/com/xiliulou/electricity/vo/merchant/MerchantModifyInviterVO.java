@@ -13,22 +13,15 @@ import java.util.List;
 @Builder
 @Data
 public class MerchantModifyInviterVO {
-    
-    /**
-     * 用户uid
-     */
-    private Long uid;
-    
     /**
      * 邀请人名称
      */
     private String inviterName;
     
+    /**
+     * 邀请人来源：1-用户邀请，2-商户邀请
+     */
     private String inviterSource;
     
-    private Long franchiseeId;
-    
-    private String franchiseeName;
-    
-    List<MerchantVO> merchantList;
+    List<MerchantForModifyInviterVO> merchantList;
 }

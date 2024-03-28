@@ -107,4 +107,14 @@ public class DetailsUserInfoVo {
      * 是否可解绑微信 0：不可解绑 1：可解绑
      */
     private Integer bindWX;
+    
+    /**
+     * 邀请人是否可被修改 0：可修改 1：不可修改
+     */
+    private Integer canModifyInviter;
+    
+    /**
+     * 邀请人名称
+     */
+    private String inviterName;
 }
