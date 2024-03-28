@@ -9,6 +9,7 @@ import com.xiliulou.electricity.vo.ElePowerDayDetailVo;
 import com.xiliulou.electricity.vo.ElePowerDayVo;
 import com.xiliulou.electricity.vo.ElePowerMonthDetailVo;
 import com.xiliulou.electricity.vo.ElePowerMothVo;
+import com.xiliulou.electricity.vo.EleSumPowerVO;
 import org.apache.ibatis.annotations.Param;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 
@@ -87,4 +88,6 @@ public interface ElePowerMapper extends BaseMapper<ElePower> {
                                                           @Param("endTime") Long endTime, @Param("tenantId") Integer tenantId);
 
 //    void queryDayList(Long eid, Long startTime, Long endTime, Integer tenantId);
+    
+    EleSumPowerVO selectListByCondition(@Param("startTime") Long startTime, @Param("endTime") Long endTime, @Param("eidList") List<Long> eidList, @Param("tenantId") Integer tenantId);
 }
