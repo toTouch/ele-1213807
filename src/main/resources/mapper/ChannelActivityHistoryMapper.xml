@@ -265,7 +265,7 @@
     <select id="selectSuccessHistoryByJoinUid" resultType="com.xiliulou.electricity.entity.ChannelActivityHistory">
         select id, uid, invite_uid, channel_uid, status, create_time, update_time, tenant_id
         from t_channel_activity_history
-        where tenant_id = #{tenantId} and join_uid = #{joinUid} and status = 2 and del_flag = 0 order by id desc limit 1
+        where tenant_id = #{tenantId} and uid = #{joinUid} and status = 2 and del_flag = 0 order by id desc limit 1
     </select>
 
 </mapper>
