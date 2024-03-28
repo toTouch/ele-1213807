@@ -6,6 +6,7 @@ import org.hibernate.validator.constraints.Range;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 
 /**
  * @author HeYafeng
@@ -21,7 +22,7 @@ public class MerchantModifyInviterRequest {
     @NotNull(message = "修改后邀请人(商户)id不能为空", groups = {UpdateGroup.class})
     private Long merchantId;
     
-    @Range(min = 1, max = 100, message = "修改原因输入不合法", groups = {UpdateGroup.class})
+    @Size(min = 1, max = 100, message = "修改原因输入不合法", groups = {UpdateGroup.class})
     @NotBlank(message = "修改原因不能为空", groups = {UpdateGroup.class})
     private String remark;
 }
