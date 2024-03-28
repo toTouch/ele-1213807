@@ -1,45 +1,52 @@
 package com.xiliulou.electricity.service.impl;
 
-import java.time.LocalDateTime;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
-import java.util.stream.Collectors;
-
-import javax.annotation.Resource;
-
-import cn.hutool.core.util.IdUtil;
-import com.xiliulou.electricity.dto.ActivityProcessDTO;
-import com.xiliulou.electricity.enums.ActivityEnum;
+import cn.hutool.core.date.DatePattern;
+import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.util.ObjectUtil;
+import com.alibaba.fastjson.JSON;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
+import com.xiliulou.core.json.JsonUtil;
+import com.xiliulou.core.utils.DataUtil;
+import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.entity.AuthenticationAuditMessageNotify;
+import com.xiliulou.electricity.entity.EleAuthEntry;
+import com.xiliulou.electricity.entity.EleUserAuth;
+import com.xiliulou.electricity.entity.ElectricityConfig;
+import com.xiliulou.electricity.entity.FranchiseeUserInfo;
+import com.xiliulou.electricity.entity.MaintenanceUserNotifyConfig;
+import com.xiliulou.electricity.entity.MqNotifyCommon;
+import com.xiliulou.electricity.entity.UserAuthMessage;
+import com.xiliulou.electricity.entity.UserInfo;
+import com.xiliulou.electricity.mapper.EleUserAuthMapper;
+import com.xiliulou.electricity.mq.constant.MqProducerConstant;
+import com.xiliulou.electricity.service.EleAuthEntryService;
+import com.xiliulou.electricity.service.EleUserAuthService;
+import com.xiliulou.electricity.service.ElectricityConfigService;
+import com.xiliulou.electricity.service.MaintenanceUserNotifyConfigService;
+import com.xiliulou.electricity.service.UserAuthMessageService;
+import com.xiliulou.electricity.service.UserInfoService;
+import com.xiliulou.electricity.tenant.TenantContextHolder;
+import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.UserAuthMessageVO;
+import com.xiliulou.mq.service.RocketMqService;
+import com.xiliulou.security.bean.TokenUser;
+import com.xiliulou.storage.config.StorageConfig;
+import com.xiliulou.storage.service.StorageService;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
-
-import com.alibaba.fastjson.JSON;
-import com.baomidou.mybatisplus.core.toolkit.Wrappers;
-import com.xiliulou.core.json.JsonUtil;
-import com.xiliulou.core.utils.DataUtil;
-import com.xiliulou.core.web.R;
-import com.xiliulou.electricity.entity.*;
-import com.xiliulou.electricity.mapper.EleUserAuthMapper;
-import com.xiliulou.electricity.mq.constant.MqProducerConstant;
-import com.xiliulou.electricity.service.*;
-import com.xiliulou.electricity.tenant.TenantContextHolder;
-import com.xiliulou.electricity.utils.SecurityUtils;
-import com.xiliulou.mq.service.RocketMqService;
-import com.xiliulou.security.bean.TokenUser;
-import com.xiliulou.storage.config.StorageConfig;
-import com.xiliulou.storage.service.StorageService;
-
-import cn.hutool.core.date.DatePattern;
-import cn.hutool.core.date.DateUtil;
-import cn.hutool.core.util.ObjectUtil;
-import lombok.extern.slf4j.Slf4j;
 import shaded.org.apache.commons.lang3.StringUtils;
+
+import javax.annotation.Resource;
+import java.time.LocalDateTime;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * 实名认证信息(TEleUserAuth)表服务实现类
@@ -147,13 +154,16 @@ public class EleUserAuthServiceImpl implements EleUserAuthService {
 
         //是否需要人工审核
         Integer status = EleUserAuth.STATUS_PENDING_REVIEW;
+    
         ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(tenantId);
-        if (Objects.nonNull(electricityConfig)) {
-            if (Objects.equals(electricityConfig.getIsManualReview(), ElectricityConfig.AUTO_REVIEW)) {
-                status = EleUserAuth.STATUS_REVIEW_PASSED;
-//                userInfo.setServiceStatus(UserInfo.STATUS_IS_AUTH);
-                userInfo.setAuthType(UserInfo.AUTH_TYPE_SYSTEM);
-            }
+        if (Objects.isNull(electricityConfig)) {
+            log.error("not found electricityConfig,uid={}", user.getUid());
+            return R.fail("系统配置不存在");
+        }
+        
+        if (Objects.equals(electricityConfig.getIsManualReview(), ElectricityConfig.AUTO_REVIEW)) {
+            status = EleUserAuth.STATUS_REVIEW_PASSED;
+            userInfo.setAuthType(UserInfo.AUTH_TYPE_SYSTEM);
         }
 
         for (EleUserAuth eleUserAuth : eleUserAuthList) {
@@ -184,14 +194,13 @@ public class EleUserAuthServiceImpl implements EleUserAuthService {
         }
 
         userInfo.setUid(user.getUid());
+        userInfo.setAuthType(electricityConfig.getIsManualReview());
         userInfo.setAuthStatus(status);
         userInfo.setTenantId(tenantId);
         userInfo.setUpdateTime(System.currentTimeMillis());
         Integer result = userInfoService.update(userInfo);
     
-        boolean flag = result > 0 && Objects.nonNull(electricityConfig)
-                && Objects.equals(electricityConfig.getIsManualReview(), ElectricityConfig.MANUAL_REVIEW);
-        
+        boolean flag = result > 0 && Objects.equals(electricityConfig.getIsManualReview(), ElectricityConfig.MANUAL_REVIEW);
         if (flag) {
             sendAuthenticationAuditMessage(userInfo);
         }
