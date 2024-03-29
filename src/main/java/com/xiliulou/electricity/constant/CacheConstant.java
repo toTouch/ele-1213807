@@ -596,4 +596,8 @@ public interface CacheConstant {
     String CACHE_CHANNEL_EMPLOYEE_SAVE_LOCK = "cache_channel_employee_save_lock:";
     
     String CACHE_CHANNEL_EMPLOYEE_UPDATE_LOCK = "cache_channel_employee_update_lock:";
+    
+    String CACHE_MERCHANT_EMPLOYEE_SAVE_LOCK = "cache_merchant_employee_save_lock:";
+    
+    String CACHE_MERCHANT_EMPLOYEE_UPDATE_LOCK = "cache_merchant_employee_update_lock:";
 }
