@@ -294,7 +294,7 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
         return MerchantJoinRecord.builder().merchantId(merchantId).channelEmployeeUid(channelEmployeeUid).placeId(placeId).inviterUid(inviterUid).inviterType(inviterType)
                 .joinUid(joinUid).startTime(nowTime).expiredTime(expiredTime).status(MerchantJoinRecordConstant.STATUS_INIT).protectionTime(protectionExpireTime)
                 .protectionStatus(MerchantJoinRecordConstant.PROTECTION_STATUS_NORMAL).delFlag(NumberConstant.ZERO).createTime(nowTime).updateTime(nowTime).tenantId(tenantId)
-                .build();
+                .modifyInviter(MerchantJoinRecordConstant.MODIFY_INVITER_NO).build();
     }
     
     @Slave
@@ -519,8 +519,8 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
     }
     
     @Override
-    public Integer updateOldRecord(Long id, Long updateTime) {
-        return merchantJoinRecordMapper.updateOldRecord(id, updateTime);
+    public Integer removeById(Long id, Long updateTime) {
+        return merchantJoinRecordMapper.removeById(id, updateTime);
     }
     
     /**

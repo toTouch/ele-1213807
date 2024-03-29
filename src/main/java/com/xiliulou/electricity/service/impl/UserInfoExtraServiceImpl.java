@@ -426,7 +426,7 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
                 break;
             case 5:
                 // 商户邀请
-                merchantJoinRecordService.updateOldRecord(id, System.currentTimeMillis());
+                merchantJoinRecordService.removeById(id, System.currentTimeMillis());
                 break;
             default:
                 break;
@@ -442,7 +442,6 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
         } else {
             userInfoExtra.setMerchantId(merchantId);
             userInfoExtra.setChannelEmployeeUid(merchant.getChannelEmployeeUid());
-            userInfoExtra.setTenantId(tenantId);
             userInfoExtra.setUpdateTime(System.currentTimeMillis());
             
             this.updateByUid(userInfoExtra);
@@ -506,6 +505,6 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
         return MerchantJoinRecord.builder().merchantId(merchantId).channelEmployeeUid(channelEmployeeUid).inviterUid(inviterUid).inviterType(inviterType).joinUid(joinUid)
                 .startTime(nowTime).expiredTime(expiredTime).status(MerchantJoinRecordConstant.STATUS_INIT).protectionTime(protectionExpireTime)
                 .protectionStatus(MerchantJoinRecordConstant.PROTECTION_STATUS_NORMAL).delFlag(NumberConstant.ZERO).createTime(nowTime).updateTime(nowTime).tenantId(tenantId)
-                .build();
+                .modifyInviter(MerchantJoinRecordConstant.MODIFY_INVITER_YES).build();
     }
 }

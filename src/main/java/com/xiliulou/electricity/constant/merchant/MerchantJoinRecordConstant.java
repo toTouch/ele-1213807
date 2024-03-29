@@ -47,4 +47,14 @@ public class MerchantJoinRecordConstant {
      */
     public static Integer INVITER_TYPE_MERCHANT_PLACE_EMPLOYEE = 2;
     
+    /**
+     * 邀请人是否被修改：0-未修改（旧的记录）
+     */
+    public static Integer MODIFY_INVITER_NO = 0;
+    
+    /**
+     * 邀请人是否被修改：1-已修改（新的记录）
+     */
+    public static Integer MODIFY_INVITER_YES = 1;
+    
 }
