@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.operate.UserOperateLogMapper">
+    
+    <select id="selectByPage" resultType="com.xiliulou.electricity.entity.operate.UserOperateLogEntity">
+        select
+        uid ,
+        tenantId ,
+        operateType ,
+        operateUsername ,
+        operateIp ,
+        operateContent ,
+        operateTime
+        from t_user_operate_log
+        <where>
+            <if test="query.operateType != null and query.operateType.trim()!=''">
+                and operateType = #{query.operateType}
+            </if>
+            <if test="query.tenantId != null">
+                and tenantId = #{query.tenantId}
+            </if>
+            <if test="query.uid != null">
+                and uid = #{query.uid}
+            </if>
+            <if test="query.startTime != null and query.endTime!=null">
+                and operateTime between '${com.xiliulou.electricity.service.operate.UserOperateLogService@convertTime(query.startTime)}' and
+                '${com.xiliulou.electricity.service.operate.UserOperateLogService@convertTime(query.endTime)}'
+            </if>
+        </where>
+        limit #{query.size} offset #{query.offset}
+    </select>
+    <select id="selectByCount" resultType="java.lang.Long">
+        select
+        count(1)
+        from t_user_operate_log
+        <where>
+            <if test="query.operateType != null and query.operateType.trim()!=''">
+                and operateType = #{query.operateType}
+            </if>
+            <if test="query.tenantId != null">
+                and tenantId = #{query.tenantId}
+            </if>
+            <if test="query.uid != null">
+                and uid = #{query.uid}
+            </if>
+            <if test="query.startTime != null and query.endTime!=null">
+                and operateTime between '${com.xiliulou.electricity.service.operate.UserOperateLogService@convertTime(query.startTime)}' and
+                '${com.xiliulou.electricity.service.operate.UserOperateLogService@convertTime(query.endTime)}'
+            </if>
+        </where>
+    </select>
+</mapper>
