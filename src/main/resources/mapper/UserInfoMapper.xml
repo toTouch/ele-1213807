@@ -89,7 +89,7 @@
             and tui.auth_type =#{query.authType}
         </if>
         <if test="query.authStatus ==null or query.authStatus==''">
-            and tui.auth_status in (0,1,2)
+            and tui.auth_status in (0,1,2,3)
         </if>
         <if test="query.franchiseeIds != null and query.franchiseeIds.size()>0">
             and tui.franchisee_id in
@@ -648,7 +648,7 @@
             and tui.auth_type =#{query.authType}
         </if>
         <if test="query.authStatus ==null or query.authStatus==''">
-            and tui.auth_status in (0,1,2)
+            and tui.auth_status in (0,1,2,3)
         </if>
         <if test="query.franchiseeIds != null and query.franchiseeIds.size()>0">
             and tui.franchisee_id in
