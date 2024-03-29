@@ -442,6 +442,8 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
         } else {
             userInfoExtra.setMerchantId(merchantId);
             userInfoExtra.setChannelEmployeeUid(merchant.getChannelEmployeeUid());
+            userInfoExtra.setPlaceId(NumberConstant.ZERO_L);
+            userInfoExtra.setPlaceUid(NumberConstant.ZERO_L);
             userInfoExtra.setUpdateTime(System.currentTimeMillis());
             
             this.updateByUid(userInfoExtra);
