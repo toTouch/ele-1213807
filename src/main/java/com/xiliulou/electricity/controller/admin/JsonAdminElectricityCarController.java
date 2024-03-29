@@ -19,6 +19,7 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import javax.annotation.Resource;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -37,7 +38,7 @@ public class JsonAdminElectricityCarController {
      */
     @Autowired
     RedisService redisService;
-    @Autowired
+    @Resource
     ElectricityCarService electricityCarService;
     @Autowired
     StoreService storeService;

@@ -29,11 +29,8 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 public class DateUtils {
     
-    public static void main(String[] args) {
-        System.out.println(getTodayEndTimeStamp());
-    }
+    static DateTimeFormatter MILLS_FORMAT_DATE = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
     
-    static DateTimeFormatter MILLS_FORMAT_DATE = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
     static SimpleDateFormat simpleDateFormatYearAndMonth = new SimpleDateFormat("yyyy-MM-dd");
     
     static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
@@ -55,7 +52,7 @@ public class DateUtils {
      */
     public static long parseMillsDateStrToTimestamp(String date) {
         LocalDateTime datetime = LocalDateTime.parse(date, MILLS_FORMAT_DATE);
-        return datetime.toInstant(ZoneOffset.of("+8")).toEpochMilli();
+        return datetime.toInstant(ZoneOffset.of("+0")).toEpochMilli();
     }
     
     public static long getTodayStartTimeStamp() {
@@ -240,6 +237,16 @@ public class DateUtils {
         return endOfDay.atZone(CHINA_ZONE_ID).toInstant().toEpochMilli();
     }
     
+    /**
+     * 根据某个时间戳获取当天的结束时间戳
+     *
+     * @param timeStamp
+     * @return
+     */
+    public static Long getDayEndTimeStampByDate(Long timeStamp) {
+        LocalDate localDate = Instant.ofEpochMilli(timeStamp).atZone(ZoneOffset.of("+8")).toLocalDate();
+        return LocalDateTime.of(localDate, LocalTime.MAX).toEpochSecond(ZoneOffset.of("+8")) * 1000;
+    }
     
     /**
      * 根据年月获取当月第一天 年月：2024-01 返回: 2024-01-01
@@ -273,19 +280,15 @@ public class DateUtils {
     }
     
     /**
-     * 根据时间戳获取当天开始时间
+     * 根据某个时间戳获取当天的结束时间戳
      *
-     * @return 今天的开始时间
+     * @param timeStamp
+     * @return
      */
-    public static long getTimeByTimeStamp(long timestamp) {
-        // 将时间戳转换为UTC的Instant对象
-        Instant instant = Instant.ofEpochMilli(timestamp);
-        // 转换为指定时区的ZonedDateTime
-        ZonedDateTime zonedDateTime = instant.atZone(CHINA_ZONE_ID);
-        // 获取当天的开始时间（即00:00:00）
-        ZonedDateTime startOfDay = zonedDateTime.toLocalDate().atStartOfDay(CHINA_ZONE_ID);
-        // 如果需要再次转换回时间戳
-        return startOfDay.toInstant().toEpochMilli();
+    public static Long getMonthEndTimeStampByDate(Long timeStamp) {
+        LocalDate localDate = Instant.ofEpochMilli(timeStamp).atZone(ZoneOffset.of("+8")).toLocalDate();
+        return Date.from(localDate.with(TemporalAdjusters.lastDayOfMonth()).atTime(LocalTime.MAX).atZone(ZoneOffset.of("+8")).toInstant()).getTime();
+        // return LocalDateTime.of(localDate, LocalTime.MAX).toEpochSecond(ZoneOffset.of("+8"))*1000;
     }
     
     /**
@@ -294,6 +297,45 @@ public class DateUtils {
     public static String getMonthDate(Long month) {
         LocalDate yesterdayInChina = LocalDate.now(CHINA_ZONE_ID).minusMonths(month);
         return yesterdayInChina.format(MONTH_FORMATTER);
+    }
+    
+    /*
+     * 获取前某月第一天00:00:00的时间戳
+     */
+    public static long getBeforeMonthFirstDayTimestamp(Integer minusMonth) {
+        LocalDate lastMonthFirstDay = LocalDate.now().minusMonths(minusMonth).withDayOfMonth(1);
+        return lastMonthFirstDay.atStartOfDay().atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
+    }
+    
+    /**
+     * 获取前某月最后一天23:59:59时间戳
+     */
+    public static long getBeforeMonthLastDayTimestamp(Integer minusMonth) {
+        LocalDate lastMonthFirstDay = LocalDate.now().minusMonths(minusMonth).withDayOfMonth(1);
+        LocalDate lastMonthLastDay = lastMonthFirstDay.with(TemporalAdjusters.lastDayOfMonth());
+        return lastMonthLastDay.atTime(23, 59, 59).atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
+    }
+    
+    public static boolean isSameDay(long time1, long time2) {
+        SimpleDateFormat fmt = new SimpleDateFormat("yyyyMMdd");
+        return fmt.format(new Date(time1)).equals(fmt.format(new Date(time2)));
+    }
+    
+    public static boolean isSameMonth(long time1, long time2) {
+        SimpleDateFormat fmt = new SimpleDateFormat("yyyyMM");
+        return fmt.format(new Date(time1)).equals(fmt.format(new Date(time2)));
+    }
+    
+    /**
+     * 根据时间戳获取当天0点的时间戳
+     */
+    public static long getStartTimeByTimeStamp(long timestamp) {
+        // 将输入的时间戳转换为指定时区的ZonedDateTime对象，默认使用系统默认时区
+        ZonedDateTime zonedDateTime = Instant.ofEpochMilli(timestamp).atZone(ZoneId.systemDefault());
+        
+        // 获取当天零点的ZonedDateTime对象
+        ZonedDateTime startOfDay = zonedDateTime.toLocalDate().atStartOfDay(zonedDateTime.getZone());
+        return startOfDay.toInstant().toEpochMilli();
     }
     
     /**
@@ -314,5 +356,35 @@ public class DateUtils {
         }
         
         return yearList;
+    }
+    
+    /**
+     * 根据时间戳获取当天开始时间
+     *
+     * @return 今天的开始时间
+     */
+    public static long getTimeByTimeStamp(long timestamp) {
+        // 将时间戳转换为UTC的Instant对象
+        Instant instant = Instant.ofEpochMilli(timestamp);
+        // 转换为指定时区的ZonedDateTime
+        ZonedDateTime zonedDateTime = instant.atZone(CHINA_ZONE_ID);
+        // 获取当天的开始时间（即00:00:00）
+        ZonedDateTime startOfDay = zonedDateTime.toLocalDate().atStartOfDay(CHINA_ZONE_ID);
+        // 如果需要再次转换回时间戳
+        return startOfDay.toInstant().toEpochMilli();
+    }
+    
+    public static long getEndOfDayTimestamp(long timestamp){
+        // 将时间戳转换为Instant对象
+        Instant instant = Instant.ofEpochMilli(timestamp);
+    
+        // 转换为LocalDateTime并设置为当天的开始时间
+        LocalDateTime localDateTime = instant.atZone(CHINA_ZONE_ID).toLocalDate().atStartOfDay();
+    
+        // 计算当天的最后一刻（即23:59:59.999）
+        LocalDateTime endOfDay = localDateTime.plus(1, ChronoUnit.DAYS).minus(1, ChronoUnit.MILLIS);
+    
+        // 再次转换回时间戳
+        return endOfDay.atZone(CHINA_ZONE_ID).toInstant().toEpochMilli();
     }
 }
