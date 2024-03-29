@@ -2,6 +2,7 @@ package com.xiliulou.electricity.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.codec.Base64;
+import cn.hutool.core.map.MapUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.RandomUtil;
 import cn.hutool.core.util.StrUtil;
@@ -25,10 +26,12 @@ import com.xiliulou.electricity.entity.WechatWithdrawalCertificate;
 import com.xiliulou.electricity.entity.WithdrawPassword;
 import com.xiliulou.electricity.entity.WithdrawRecord;
 import com.xiliulou.electricity.mapper.WithdrawRecordMapper;
+import com.xiliulou.electricity.query.BatchHandleWithdrawRequest;
 import com.xiliulou.electricity.query.CheckQuery;
 import com.xiliulou.electricity.query.HandleWithdrawQuery;
 import com.xiliulou.electricity.query.WithdrawQuery;
 import com.xiliulou.electricity.query.WithdrawRecordQuery;
+import com.xiliulou.electricity.query.WithdrawRecordQueryModel;
 import com.xiliulou.electricity.service.BankCardService;
 import com.xiliulou.electricity.service.ElectricityConfigService;
 import com.xiliulou.electricity.service.ElectricityPayParamsService;
@@ -40,27 +43,21 @@ import com.xiliulou.electricity.service.WechatWithdrawalCertificateService;
 import com.xiliulou.electricity.service.WithdrawPasswordService;
 import com.xiliulou.electricity.service.WithdrawRecordService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
+import com.xiliulou.electricity.utils.OperateRecordUtil;
+import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.WithdrawRecordVO;
 import com.xiliulou.pay.weixin.query.PayTransferQuery;
 import com.xiliulou.pay.weixin.transferPay.TransferPayHandlerService;
 import com.xiliulou.security.authentication.console.CustomPasswordEncoder;
-import com.xiliulou.electricity.query.BatchHandleWithdrawRequest;
-import com.xiliulou.electricity.query.WithdrawRecordQueryModel;
-import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.security.bean.TokenUser;
-import org.springframework.util.CollectionUtils;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import javax.annotation.Resource;
@@ -74,10 +71,14 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * @author: Miss.Li
@@ -104,6 +105,9 @@ public class WithdrawRecordRecordServiceImpl implements WithdrawRecordService {
 
 	@Autowired
 	TransferPayHandlerService transferPayHandlerService;
+	
+	@Autowired
+	OperateRecordUtil operateRecordUtil;
 
 	@Autowired
 	UserService userService;
@@ -316,7 +320,7 @@ public class WithdrawRecordRecordServiceImpl implements WithdrawRecordService {
 						.tenantId(userAmount.getTenantId()).build();
 				userAmountHistoryService.insert(history);
 			}
-
+			operateRecordUtil.record(null,withdrawRecord);
 			return R.ok();
 		}
 
@@ -329,7 +333,7 @@ public class WithdrawRecordRecordServiceImpl implements WithdrawRecordService {
 				withdrawRecord.setType(WithdrawRecord.TYPE_UN_ONLINE);
 				//提现审核通过
 				withdrawRecordMapper.updateById(withdrawRecord);
-
+				operateRecordUtil.record(null,withdrawRecord);
 				return R.ok();
 			}
 		}
@@ -337,6 +341,7 @@ public class WithdrawRecordRecordServiceImpl implements WithdrawRecordService {
 		//线上提现
 		withdrawRecord.setType(WithdrawRecord.TYPE_ONLINE);
 		withdrawRecordMapper.updateById(withdrawRecord);
+		operateRecordUtil.record(null,withdrawRecord);
 		return transferPay(withdrawRecord);
 
 	}
@@ -547,7 +552,8 @@ public class WithdrawRecordRecordServiceImpl implements WithdrawRecordService {
         
         // 批量修改审核结果
         withdrawRecordMapper.batchWithdrawById(withdrawRecord, batchHandleWithdrawRequest.getIdList(), tenantId);
-        
+		Map<Object, Object> build = MapUtil.builder().put("data", withdrawRecord).put("count", batchHandleWithdrawRequest.getIdList()).build();
+		operateRecordUtil.record(null,build);
         return R.ok();
     }
 	

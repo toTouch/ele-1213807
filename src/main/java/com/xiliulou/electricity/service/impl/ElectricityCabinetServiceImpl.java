@@ -132,6 +132,7 @@ import com.xiliulou.electricity.service.excel.AutoHeadColumnWidthStyleStrategy;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DateUtils;
 import com.xiliulou.electricity.utils.DbUtils;
+import com.xiliulou.electricity.utils.OperateRecordUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.CabinetBatteryVO;
 import com.xiliulou.electricity.vo.EleCabinetDataAnalyseVO;
@@ -385,6 +386,9 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     
     @Autowired
     ServiceFeeUserInfoService serviceFeeUserInfoService;
+    
+    @Autowired
+    OperateRecordUtil operateRecordUtil;
     
     @Autowired
     CarRentalPackageMemberTermBizService carRentalPackageMemberTermBizService;
@@ -1408,6 +1412,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         redisService.saveWithHash(CacheConstant.CACHE_ELECTRICITY_CABINET + electricityCabinet.getId(), electricityCabinet);
         
         redisService.delete(CacheConstant.CACHE_ELECTRICITY_CABINET_DEVICE + oldElectricityCabinet.getProductKey() + oldElectricityCabinet.getDeviceName());
+        operateRecordUtil.record(oldElectricityCabinet,electricityCabinet);
         return R.ok();
     }
     
@@ -2077,6 +2082,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         if (!result.getLeft()) {
             return R.fail("ELECTRICITY.0037", "发送命令失败");
         }
+        operateRecordUtil.record(null,comm);
         return R.ok(sessionId);
     }
     
@@ -2124,6 +2130,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         if (!result.getLeft()) {
             return R.fail("ELECTRICITY.0037", "发送命令失败");
         }
+        operateRecordUtil.record(null,comm);
         return R.ok(sessionId);
     }
     

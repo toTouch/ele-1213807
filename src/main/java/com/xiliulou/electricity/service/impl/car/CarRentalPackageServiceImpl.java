@@ -13,8 +13,10 @@ import com.xiliulou.electricity.mapper.car.CarRentalPackageMapper;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageQryModel;
 import com.xiliulou.electricity.service.car.CarRentalPackageOrderService;
 import com.xiliulou.electricity.service.car.CarRentalPackageService;
+import com.xiliulou.electricity.utils.OperateRecordUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
@@ -37,6 +39,9 @@ public class CarRentalPackageServiceImpl implements CarRentalPackageService {
 
     @Resource
     private CarRentalPackageOrderService carRentalPackageOrderService;
+    
+    @Autowired
+    private OperateRecordUtil operateRecordUtil;
 
     @Resource
     private CarRentalPackageMapper carRentalPackageMapper;
@@ -251,7 +256,7 @@ public class CarRentalPackageServiceImpl implements CarRentalPackageService {
         // 删除缓存
         String cacheEky = String.format(CarRenalCacheConstant.CAR_RENAL_PACKAGE_ID_KEY, entity.getId());
         redisService.delete(cacheEky);
-
+        operateRecordUtil.record(oriEntity,entity);
         return num >= 0;
     }
 

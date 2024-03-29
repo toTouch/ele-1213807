@@ -34,6 +34,7 @@ import com.xiliulou.electricity.service.UserBatteryTypeService;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseUserCostRecordService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
+import com.xiliulou.electricity.utils.OperateRecordUtil;
 import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.vo.EleDisableMemberCardRecordVO;
 import lombok.extern.slf4j.Slf4j;
@@ -45,8 +46,10 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Resource;
 import java.math.BigDecimal;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
@@ -82,6 +85,9 @@ public class EleDisableMemberCardRecordServiceImpl extends ServiceImpl<Electrici
 
     @Autowired
     UserBatteryTypeService userBatteryTypeService;
+    
+    @Autowired
+    OperateRecordUtil operateRecordUtil;
 
     @Autowired
     ServiceFeeUserInfoService serviceFeeUserInfoService;
@@ -265,7 +271,17 @@ public class EleDisableMemberCardRecordServiceImpl extends ServiceImpl<Electrici
             //记录企业用户冻结套餐记录
             enterpriseUserCostRecordService.asyncSaveUserCostRecordForBattery(userInfo.getUid(), updateEleDisableMemberCardRecord.getId() + "_" + updateEleDisableMemberCardRecord.getDisableMemberCardNo(), UserCostTypeEnum.COST_TYPE_FREEZE_PACKAGE.getCode(), updateEleDisableMemberCardRecord.getDisableMemberCardTime());
         }
-
+        try {
+            Map<String, Object> map = new HashMap<>();
+            map.put("username",eleDisableMemberCardRecord.getUserName());
+            map.put("phone",eleDisableMemberCardRecord.getPhone());
+            map.put("packageName",eleDisableMemberCardRecord.getMemberCardName());
+            map.put("approve",Objects.equals(updateEleDisableMemberCardRecord.getStatus(),EleBatteryServiceFeeOrder.DISABLE_MEMBER_CARD)?0:1);
+            map.put("residue",updateEleDisableMemberCardRecord.getChooseDays());
+            operateRecordUtil.record(null,map);
+        }catch (Throwable e){
+            log.warn("Recording user operation records failed because:{}",e.getMessage());
+        }
         return R.ok();
     }
 

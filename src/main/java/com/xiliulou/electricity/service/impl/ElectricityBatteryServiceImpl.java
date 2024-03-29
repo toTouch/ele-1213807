@@ -3,6 +3,7 @@ package com.xiliulou.electricity.service.impl;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.date.DatePattern;
 import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.map.MapUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.RandomUtil;
 import cn.hutool.core.util.StrUtil;
@@ -60,6 +61,7 @@ import com.xiliulou.electricity.service.excel.AutoHeadColumnWidthStyleStrategy;
 import com.xiliulou.electricity.service.retrofit.BatteryPlatRetrofitService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.AESUtils;
+import com.xiliulou.electricity.utils.OperateRecordUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.*;
 import com.xiliulou.electricity.vo.asset.AssetWarehouseNameVO;
@@ -107,6 +109,9 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
     
     @Autowired
     UserInfoService userInfoService;
+    
+    @Autowired
+    OperateRecordUtil operateRecordUtil;
     
     @Autowired
     ElectricityCabinetService electricityCabinetService;
@@ -748,6 +753,17 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
         Integer rows = electricitybatterymapper.update(updateBattery);
         if (rows > 0) {
             redisService.delete(CacheConstant.CACHE_BT_ATTR + electricityBatteryDb.getSn());
+            try {
+                TokenUser userInfo = SecurityUtils.getUserInfo();
+                Map<String, Object> map = BeanUtil.beanToMap(updateBattery, false, true);
+                if (!Objects.isNull(userInfo)){
+                    map.put("username",userInfo.getUsername());
+                    map.put("phone",userInfo.getPhone());
+                }
+                operateRecordUtil.record(electricityBatteryDb,map);
+            }catch (Throwable e){
+                log.warn("Recording user operation records failed because:{}",e.getMessage());
+            }
             return R.ok();
         } else {
             return R.fail("修改失败!");
@@ -1048,6 +1064,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
         geoService.deleteBySn(electricityBattery.getSn());
         if (raws > 0) {
             redisService.delete(CacheConstant.CACHE_BT_ATTR + electricityBattery.getSn());
+            operateRecordUtil.record(null, MapUtil.of("batterySN",electricityBattery.getSn()));
             return R.ok();
         } else {
             return R.fail("100227", "删除失败!");
@@ -1335,7 +1352,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
         if (CollectionUtils.isEmpty(batteryQuery.getElectricityBatteryIdList())) {
             return R.ok();
         }
-    
+        Map<String, Object> operateRecordMap =new HashMap<>();
         List<Long> electricityBatteryIdList = batteryQuery.getElectricityBatteryIdList();
         List<ElectricityBattery> electricityBatteries = electricitybatterymapper.selectByBatteryIds(electricityBatteryIdList);
         Integer stockStatus = null;
@@ -1356,6 +1373,8 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
                 return R.fail("300804", "该加盟商电池资产正在进行盘点，请稍后再试");
             }
             stockStatus = StockStatusEnum.UN_STOCK.getCode();
+            operateRecordMap.put("outboundStatus",0);
+            operateRecordMap.put("franchisee",franchisee.getName());
         } else {
             //进入电池解绑流程
             log.info("unbind franchisee for battery. battery ids: {}", batteryQuery.getElectricityBatteryIdList());
@@ -1373,6 +1392,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
             
             batteryQuery.setFranchiseeId(null);
             stockStatus = StockStatusEnum.STOCK.getCode();
+            operateRecordMap.put("outboundStatus",1);
         }
     
         int count = electricitybatterymapper.bindFranchiseeId(batteryQuery, stockStatus);
@@ -1390,7 +1410,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
                 assetWarehouseRecordService.asyncRecords(TenantContextHolder.getTenantId(), uid, snWarehouseList, AssetTypeEnum.ASSET_TYPE_BATTERY.getCode(), operateType);
             }
         }
-    
+        operateRecordUtil.record(null,operateRecordMap);
         return R.ok(count);
     }
     

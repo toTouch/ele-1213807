@@ -20,6 +20,7 @@ import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.service.car.CarRentalPackageService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
+import com.xiliulou.electricity.utils.OperateRecordUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.BatteryMemberCardVO;
 import com.xiliulou.electricity.vo.SearchVo;
@@ -60,6 +61,8 @@ public class CouponServiceImpl implements CouponService {
     private NewUserActivityService newUserActivityService;
     @Autowired
     private CarRentalPackageService carRentalPackageService;
+    @Autowired
+    private OperateRecordUtil operateRecordUtil;
     @Autowired
     private CouponActivityPackageService couponActivityPackageService;
     @Autowired
@@ -220,6 +223,7 @@ public class CouponServiceImpl implements CouponService {
         if (insert > 0) {
             return R.ok();
         }
+        operateRecordUtil.record(null,coupon);
         return R.fail("ELECTRICITY.0086", "操作失败");
     }
 
@@ -525,7 +529,7 @@ public class CouponServiceImpl implements CouponService {
             redisService.saveWithHash(CacheConstant.COUPON_CACHE + couponUpdate.getId(), couponUpdate);
             return null;
         });
-
+        operateRecordUtil.record(null,coupon);
         return Triple.of(true, "", "删除成功！");
     }
 }

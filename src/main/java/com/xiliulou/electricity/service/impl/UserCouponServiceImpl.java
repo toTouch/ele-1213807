@@ -1,7 +1,9 @@
 package com.xiliulou.electricity.service.impl;
 
+import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.ConcurrentHashSet;
 import cn.hutool.core.lang.UUID;
+import cn.hutool.core.map.MapUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.google.api.client.util.Lists;
@@ -28,6 +30,7 @@ import com.xiliulou.electricity.query.UserCouponQuery;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.service.car.CarRentalPackageService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
+import com.xiliulou.electricity.utils.OperateRecordUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.BatchSendCouponVO;
 import com.xiliulou.electricity.vo.BatteryMemberCardVO;
@@ -84,6 +87,9 @@ public class UserCouponServiceImpl implements UserCouponService {
 
     @Autowired
     ShareActivityRuleService shareActivityRuleService;
+    
+    @Autowired
+    OperateRecordUtil operateRecordUtil;
 
     @Autowired
     CouponIssueOperateRecordService couponIssueOperateRecordService;
@@ -289,7 +295,10 @@ public class UserCouponServiceImpl implements UserCouponService {
             CouponIssueOperateRecord couponIssueOperateRecordBuild = couponIssueOperateRecord.build();
             couponIssueOperateRecordService.insert(couponIssueOperateRecordBuild);
         }
-
+        Coupon userCoupon = new Coupon();
+        BeanUtil.copyProperties(coupon,userCoupon);
+        userCoupon.setCount(uids.length);
+        operateRecordUtil.record(null,userCoupon);
         return R.ok();
     }
 
@@ -310,7 +319,6 @@ public class UserCouponServiceImpl implements UserCouponService {
 
         //租户
         Integer tenantId = TenantContextHolder.getTenantId();
-
         for (Long couponId : couponIds) {
             UserCoupon couponBuild = UserCoupon.builder()
                     .id(couponId)
@@ -320,7 +328,7 @@ public class UserCouponServiceImpl implements UserCouponService {
 
             userCouponMapper.update(couponBuild);
         }
-
+        operateRecordUtil.record(null, MapUtil.of("size",couponIds.length));
         return R.ok();
     }
 
@@ -744,7 +752,10 @@ public class UserCouponServiceImpl implements UserCouponService {
         executorService.execute(() -> {
             handleBatchSaveCoupon(existsPhone, coupon, sessionId, operateUser.getName());
         });
-
+        Coupon copyCoupon = new Coupon();
+        BeanUtil.copyProperties(coupon,copyCoupon);
+        copyCoupon.setCount(existsPhone.size());
+        operateRecordUtil.record(null,copyCoupon);
         return R.ok(batchSendCouponVO);
     }
 

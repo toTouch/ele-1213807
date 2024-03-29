@@ -31,6 +31,7 @@ import com.xiliulou.electricity.service.user.biz.UserBizService;
 import com.xiliulou.electricity.service.wxrefund.WxRefundPayService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DateUtils;
+import com.xiliulou.electricity.utils.OperateRecordUtil;
 import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.ElectricityUserBatteryVo;
@@ -107,6 +108,9 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
     
     @Resource
     private CarRentalPackageOrderFreezeService carRentalPackageOrderFreezeService;
+
+    @Autowired
+    private OperateRecordUtil operateRecordUtil;
     
     @Resource
     private InsuranceUserInfoService insuranceUserInfoService;
@@ -906,7 +910,11 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             }
             
             eleUserOperateRecordService.asyncHandleUserOperateRecord(rentalOrderRecord);
-            
+            Map<String, Object> map = new HashMap<>();
+            map.put("username",userInfo.getName());
+            map.put("phone",user.getPhone());
+            map.put("packageName",buyPackageEntity.getName());
+            operateRecordUtil.record(null,map);
         } catch (BizException e) {
             log.error("bindingPackage failed. ", e);
             throw new BizException(e.getErrCode(), e.getMessage());
@@ -917,7 +925,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             //临时处理重复提交问题
             //redisService.delete(bindingUidLockKey);
         }
-        
+
         return true;
     }
     
@@ -981,6 +989,21 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         if (expireFlag) {
             throw new BizException("300030", "套餐已过期，无法审核");
         }
+        try {
+            UserInfo userInfo = userInfoService.queryByUidFromCache(freezeEntity.getUid());
+            CarRentalPackagePo rentalPackagePo = carRentalPackageService.selectById(freezeEntity.getRentalPackageId());
+            Map<String, Object> map = new HashMap<>();
+            map.put("username",userInfo.getName());
+            map.put("phone",userInfo.getPhone());
+            map.put("packageName",rentalPackagePo.getName());
+            map.put("approve",approveFlag?0:1);
+            map.put("residue",freezeEntity.getResidue());
+            map.put("residueUnit",freezeEntity.getResidueUnit());
+            operateRecordUtil.record(null,map);
+        }catch (Throwable e){
+            log.warn("Recording user operation records failed because:{}",e.getMessage());
+        }
+        
         return true;
     }
     
@@ -1683,7 +1706,17 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                     .tenantId(TenantContextHolder.getTenantId()).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).build();
             eleUserOperateRecordService.asyncHandleUserOperateRecord(record);
         }
-        
+        try {
+            CarRentalPackagePo packagePo = carRentalPackageService.selectById(packageOrderEntity.getRentalPackageId());
+            Map<String, Object> map = new HashMap<>();
+            map.put("username",userInfo.getName());
+            map.put("phone",userInfo.getPhone());
+            map.put("packageName",packagePo.getName());
+            map.put("residue",applyTerm);
+            operateRecordUtil.record(null,map);
+        }catch (Throwable e){
+            log.warn("Recording user operation records failed because:{}",e.getMessage());
+        }
         return true;
     }
     

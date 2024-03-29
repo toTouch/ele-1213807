@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.service.impl;
 
+import cn.hutool.core.map.MapUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.alibaba.excel.EasyExcel;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -127,6 +128,7 @@ import com.xiliulou.electricity.service.enterprise.EnterpriseUserCostRecordServi
 import com.xiliulou.electricity.service.excel.AutoHeadColumnWidthStyleStrategy;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
+import com.xiliulou.electricity.utils.OperateRecordUtil;
 import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.DetailsBatteryInfoVo;
@@ -358,6 +360,9 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     
     @Autowired
     EnterpriseRentRecordService enterpriseRentRecordService;
+    
+    @Autowired
+    OperateRecordUtil operateRecordUtil;
     
     @Resource
     EnterpriseUserCostRecordService enterpriseUserCostRecordService;
@@ -1294,6 +1299,16 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             
             return null;
         });
+        try {
+            Map<String, Object> map = new HashMap<>();
+            map.put("username",oldUserInfo.getName());
+            map.put("phone",oldUserInfo.getPhone());
+            map.put("batterySN",oldElectricityBattery.getSn());
+            operateRecordUtil.record(null,map);
+        }catch (Throwable e){
+            log.warn("Recording user operation records failed because:{}",e.getMessage());
+        }
+        
         return R.ok();
     }
     
@@ -1461,7 +1476,15 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         
         //记录企业用户还电池记录
         enterpriseUserCostRecordService.asyncSaveUserCostRecordForRentalAndReturnBattery(UserCostTypeEnum.COST_TYPE_RETURN_BATTERY.getCode(), rentBatteryOrder);
-        
+        try {
+            Map<String, Object> map = new HashMap<>();
+            map.put("username",oldUserInfo.getName());
+            map.put("phone",oldUserInfo.getPhone());
+            map.put("batterySN",oldElectricityBattery.getSn());
+            operateRecordUtil.record(null,map);
+        }catch (Throwable e){
+            log.warn("Recording user operation records failed because:{}",e.getMessage());
+        }
         return R.ok();
     }
     
@@ -1932,6 +1955,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         
         Triple<Boolean, String, Object> result = userService.deleteNormalUser(uid);
         if (result.getLeft()) {
+            operateRecordUtil.record(null,userInfo);
             return R.ok();
         }
         
@@ -2095,6 +2119,10 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                     });
             
         }
+        Map<String, Object> map =new HashMap<>();
+        map.put("username",userInfo.getName());
+        map.put("phone",userInfo.getPhone());
+        operateRecordUtil.record(null,map);
         return R.ok();
     }
     
@@ -2164,6 +2192,14 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         EleUserOperateHistory eleUserOperateHistory = buildEleUserOperateHistory(userInfo, EleUserOperateHistoryConstant.OPERATE_CONTENT_UPDATE_PHONE, userInfo.getPhone(), phone);
         eleUserOperateHistoryService.asyncHandleEleUserOperateHistory(eleUserOperateHistory);
         eleUserOperateHistoryService.asyncHandleUpdateUserPhone(TenantContextHolder.getTenantId(), uid, phone, oldPhone);
+        try {
+            Map<String, Object> map = new HashMap<>();
+            map.put("username",userInfo.getName());
+            map.put("phone",phone);
+            operateRecordUtil.record(MapUtil.of("phone",oldPhone),map);
+        }catch (Throwable e){
+            log.warn("Recording user operation records failed because:{}",e.getMessage());
+        }
         return R.ok();
     }
     
