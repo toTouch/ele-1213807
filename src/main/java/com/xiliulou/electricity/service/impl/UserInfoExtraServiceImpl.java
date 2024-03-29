@@ -503,7 +503,7 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
         
         // 生成参与记录
         return MerchantJoinRecord.builder().merchantId(merchantId).channelEmployeeUid(channelEmployeeUid).inviterUid(inviterUid).inviterType(inviterType).joinUid(joinUid)
-                .startTime(nowTime).expiredTime(expiredTime).status(MerchantJoinRecordConstant.STATUS_INIT).protectionTime(protectionExpireTime)
+                .startTime(nowTime).expiredTime(expiredTime).status(MerchantJoinRecordConstant.STATUS_SUCCESS).protectionTime(protectionExpireTime)
                 .protectionStatus(MerchantJoinRecordConstant.PROTECTION_STATUS_NORMAL).delFlag(NumberConstant.ZERO).createTime(nowTime).updateTime(nowTime).tenantId(tenantId)
                 .modifyInviter(MerchantJoinRecordConstant.MODIFY_INVITER_YES).build();
     }
