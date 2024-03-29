@@ -34,7 +34,7 @@ public class JsonMerchantUserInfoExtraController extends BaseController {
     /**
      * 修改邀请人初始化信息
      */
-    @GetMapping(value = "/admin/merchant/userInfoExtra/modifyInviterInfo")
+    @GetMapping(value = "/admin/merchant/userInfoExtra/selectInviterList")
     public R modifyInviterInfo(@RequestParam("size") Long size, @RequestParam("offset") Long offset, @RequestParam("uid") Long uid) {
         if (size < 0 || size > 50) {
             size = 10L;
@@ -53,7 +53,7 @@ public class JsonMerchantUserInfoExtraController extends BaseController {
             return R.ok();
         }
         
-        return userInfoExtraService.selectModifyInviterInfo(uid, size, offset);
+        return userInfoExtraService.selectInviterList(uid, size, offset);
     }
     
     /**

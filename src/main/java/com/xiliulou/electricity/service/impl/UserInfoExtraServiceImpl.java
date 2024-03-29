@@ -251,7 +251,7 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
     }
     
     @Override
-    public R selectModifyInviterInfo(Long uid, Long size, Long offset) {
+    public R selectInviterList(Long uid, Long size, Long offset) {
         Integer tenantId = TenantContextHolder.getTenantId();
         
         MerchantInviterVO successInviterVO = this.querySuccessInviter(uid, tenantId);
@@ -403,7 +403,7 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
         
         if (Objects.equals(oldInviterUid, newInviterUid)) {
             log.warn("Modify inviter fail! inviters can not be the same, uid={}, oldInviterUid={}, newInviterUid={}", uid, oldInviterUid, newInviterUid);
-            return R.fail("120108", "修改前的邀请人和修改后的邀请人不能相同");
+            return R.fail("120108", "只可修改为非当前商户，请重新选择");
         }
         
         // 逻辑删除旧的记录

@@ -27,7 +27,7 @@ public interface UserInfoExtraService {
     
     MerchantInviterVO querySuccessInviter(Long uid, Integer tenantId);
     
-    R selectModifyInviterInfo(Long uid, Long size, Long offset);
+    R selectInviterList(Long uid, Long size, Long offset);
     
     R modifyInviter(MerchantModifyInviterRequest merchantModifyInviterRequest, Long operator);
 }
