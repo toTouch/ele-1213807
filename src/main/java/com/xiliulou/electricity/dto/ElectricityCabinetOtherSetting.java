@@ -199,4 +199,13 @@ public class ElectricityCabinetOtherSetting {
      */
     private String timedChargeParams;
     
+    /**
+     * 智能充电
+     * <pre>
+     *     0 - 打开
+     *     1 - 关闭
+     * </pre>
+     */
+    private Integer enableBmsChargeParams;
+    
 }
