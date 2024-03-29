@@ -186,32 +186,6 @@ public class DateUtils {
         
     }
     
-    /*
-     * 获取前某月第一天00:00:00的时间戳
-     */
-    public static long getBeforeMonthFirstDayTimestamp(Integer minusMonth) {
-        LocalDate lastMonthFirstDay = LocalDate.now().minusMonths(minusMonth).withDayOfMonth(1);
-        return lastMonthFirstDay.atStartOfDay().atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
-    }
-    
-    /**
-     * 获取前某月最后一天23:59:59时间戳
-     */
-    public static long getBeforeMonthLastDayTimestamp(Integer minusMonth) {
-        LocalDate lastMonthFirstDay = LocalDate.now().minusMonths(minusMonth).withDayOfMonth(1);
-        LocalDate lastMonthLastDay = lastMonthFirstDay.with(TemporalAdjusters.lastDayOfMonth());
-        return lastMonthLastDay.atTime(23, 59, 59).atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
-    }
-    
-    public static boolean isSameDay(long time1, long time2) {
-        SimpleDateFormat fmt = new SimpleDateFormat("yyyyMMdd");
-        return fmt.format(new Date(time1)).equals(fmt.format(new Date(time2)));
-    }
-    
-    public static boolean isSameMonth(long time1, long time2) {
-        SimpleDateFormat fmt = new SimpleDateFormat("yyyyMM");
-        return fmt.format(new Date(time1)).equals(fmt.format(new Date(time2)));
-    }
     /**
      * 根据LocalDate获取当天的0点时间戳
      */
@@ -223,19 +197,6 @@ public class DateUtils {
         return simpleDateFormatYearAndMonth.format(timeStamp);
     }
     
-    public static long getEndOfDayTimestamp(long timestamp){
-        // 将时间戳转换为Instant对象
-        Instant instant = Instant.ofEpochMilli(timestamp);
-        
-        // 转换为LocalDateTime并设置为当天的开始时间
-        LocalDateTime localDateTime = instant.atZone(CHINA_ZONE_ID).toLocalDate().atStartOfDay();
-        
-        // 计算当天的最后一刻（即23:59:59.999）
-        LocalDateTime endOfDay = localDateTime.plus(1, ChronoUnit.DAYS).minus(1, ChronoUnit.MILLIS);
-        
-        // 再次转换回时间戳
-        return endOfDay.atZone(CHINA_ZONE_ID).toInstant().toEpochMilli();
-    }
     
     /**
      * 根据某个时间戳获取当天的结束时间戳
