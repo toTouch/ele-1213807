@@ -1495,17 +1495,19 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
             // 添加操作记录, 新记录和原站点的记录
             List<EnterpriseChannelUserHistory> channelUserList = new ArrayList<>();
             EnterpriseChannelUserHistory history = new EnterpriseChannelUserHistory();
+            log.info("switch enterprise, channelUser={}, history={}", channelUser, history);
             BeanUtils.copyProperties(channelUser, history);
             history.setExitTime(System.currentTimeMillis());
             history.setType(EnterpriseChannelUserHistory.EXIT);
             channelUserList.add(history);
             
             EnterpriseChannelUserHistory channelUserHistory = new EnterpriseChannelUserHistory();
+            log.info("switch enterprise1, enterpriseChannelUser={}, channelUserHistory={}", enterpriseChannelUser, channelUserHistory);
             BeanUtils.copyProperties(enterpriseChannelUser, channelUserHistory);
             channelUserHistory.setJoinTime(System.currentTimeMillis());
             channelUserHistory.setType(EnterpriseChannelUserHistory.JOIN);
             channelUserList.add(channelUserHistory);
-            
+            log.info("switch enterprise EnterpriseChannelUserHistory={}", channelUserList);
             channelUserHistoryMapper.batchInsert(channelUserList);
         }
         return Triple.of(true, null, null);
