@@ -201,12 +201,18 @@ public class AssetWarehouseServiceImpl implements AssetWarehouseService {
         
         // 根据id查库房
         AssetWarehouseNameVO assetWarehouseNameVO = queryById(id);
-        if (Objects.nonNull(assetWarehouseNameVO) && !Objects.equals(assetWarehouseNameVO.getTenantId(), TenantContextHolder.getTenantId())) {
-            return R.ok();
+        if (Objects.isNull(assetWarehouseNameVO)) {
+            return R.fail("100564", "您选择的库房不存在，请检测后操作");
         }
-        
+    
+        Integer tenantId = TenantContextHolder.getTenantId();
+    
+        if (!Objects.equals(assetWarehouseNameVO.getTenantId(), tenantId)) {
+            return R.fail("AUTH.0003", "租户信息不匹配");
+        }
+    
         AssetWarehouseSaveOrUpdateQueryModel warehouseSaveOrUpdateQueryModel = AssetWarehouseSaveOrUpdateQueryModel.builder().id(id).delFlag(AssetConstant.DEL_DEL)
-                .updateTime(System.currentTimeMillis()).tenantId(TenantContextHolder.getTenantId()).build();
+                .updateTime(System.currentTimeMillis()).tenantId(tenantId).build();
         
         return R.ok(assetWarehouseMapper.updateById(warehouseSaveOrUpdateQueryModel));
     }
@@ -220,20 +226,26 @@ public class AssetWarehouseServiceImpl implements AssetWarehouseService {
         
         try {
             AssetWarehouseBO assetWarehouseBO = assetWarehouseMapper.selectById(assetWarehouseSaveOrUpdateRequest.getId());
-            if (Objects.nonNull(assetWarehouseBO) && !Objects.equals(assetWarehouseBO.getName(), assetWarehouseSaveOrUpdateRequest.getName())) {
+            if (Objects.isNull(assetWarehouseBO)) {
+                return R.fail("100564", "您选择的库房不存在，请检测后操作");
+            }
+    
+            Integer tenantId = TenantContextHolder.getTenantId();
+    
+            if (!Objects.equals(assetWarehouseBO.getTenantId(), tenantId)) {
+                return R.fail("AUTH.0003", "租户信息不匹配");
+            }
+            
+            if (!Objects.equals(assetWarehouseBO.getName(), assetWarehouseSaveOrUpdateRequest.getName())) {
                 Integer exists = existsByName(assetWarehouseSaveOrUpdateRequest.getName());
                 if (Objects.nonNull(exists)) {
                     return R.fail("300803", "库房名称重复，请修改后操作");
-                }
-                
-                if (!Objects.equals(assetWarehouseBO.getTenantId(), TenantContextHolder.getTenantId())) {
-                    return R.ok();
                 }
             }
             
             AssetWarehouseSaveOrUpdateQueryModel warehouseSaveOrUpdateQueryModel = new AssetWarehouseSaveOrUpdateQueryModel();
             BeanUtils.copyProperties(assetWarehouseSaveOrUpdateRequest, warehouseSaveOrUpdateQueryModel);
-            warehouseSaveOrUpdateQueryModel.setTenantId(TenantContextHolder.getTenantId());
+            warehouseSaveOrUpdateQueryModel.setTenantId(tenantId);
             warehouseSaveOrUpdateQueryModel.setUpdateTime(System.currentTimeMillis());
             
             return R.ok(assetWarehouseMapper.updateById(warehouseSaveOrUpdateQueryModel));
