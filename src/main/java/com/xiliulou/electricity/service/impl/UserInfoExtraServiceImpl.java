@@ -43,7 +43,6 @@ import com.xiliulou.electricity.service.merchant.MerchantService;
 import com.xiliulou.electricity.service.merchant.RebateConfigService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
-import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.merchant.MerchantForModifyInviterVO;
 import com.xiliulou.electricity.vo.merchant.MerchantInviterVO;
 import com.xiliulou.electricity.vo.merchant.MerchantVO;
@@ -445,8 +444,8 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
                     joinShareMoneyActivityHistoryService.removeById(id, System.currentTimeMillis());
                     break;
                 case 3:
-                    // 套餐返现
-                    invitationActivityJoinHistoryService.removeById(id, System.currentTimeMillis());
+                    // 套餐返现：多个活动对应的多条参与记录的delFlag都改为1
+                    invitationActivityJoinHistoryService.removeByJoinUid(uid, System.currentTimeMillis(), tenantId);
                     break;
                 case 4:
                     // 渠道邀请

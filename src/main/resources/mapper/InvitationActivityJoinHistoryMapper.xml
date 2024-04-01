@@ -322,8 +322,8 @@
         delete from t_invitation_activity_join_history where id = #{id}
     </delete>
     
-    <update id="removeById">
-        update t_invitation_activity_join_history set del_flag = 1, update_time = #{updateTime} where id = #{id}
+    <update id="updateByJoinUid">
+        update t_invitation_activity_join_history set del_flag = 1, update_time = #{updateTime} where join_uid = #{joinUid} and tenant_id = #{tenantId}
     </update>
     
     <select id="selectUserHistoryByPage" resultType="com.xiliulou.electricity.vo.InvitationActivityJoinHistoryVO">

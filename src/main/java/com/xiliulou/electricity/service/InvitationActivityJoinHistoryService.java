@@ -105,6 +105,6 @@ public interface InvitationActivityJoinHistoryService {
     
     InvitationActivityJoinHistory querySuccessHistoryByJoinUid(Long uid, Integer tenantId);
     
-    Integer removeById(Long id, Long updateTime);
+    Integer removeByJoinUid(Long uid, Long updateTime, Integer tenantId);
     
 }

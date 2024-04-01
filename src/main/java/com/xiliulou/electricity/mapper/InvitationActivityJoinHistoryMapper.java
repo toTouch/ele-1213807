@@ -101,5 +101,5 @@ public interface InvitationActivityJoinHistoryMapper extends BaseMapper<Invitati
     
     InvitationActivityJoinHistory selectSuccessHistoryByJoinUid(@Param("joinUid") Long joinUid, @Param("tenantId") Integer tenantId);
     
-    Integer removeById(@Param("id") Long id, @Param("updateTime") Long updateTime);
+    Integer updateByJoinUid(@Param("joinUid") Long joinUid, @Param("updateTime") Long updateTime, @Param("tenantId") Integer tenantId);
 }
