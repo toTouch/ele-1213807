@@ -10,6 +10,7 @@ import com.xiliulou.electricity.query.operate.OperateQuery;
 import com.xiliulou.electricity.service.operate.UserOperateLogService;
 import org.springframework.stereotype.Service;
 
+import java.util.Date;
 import java.util.List;
 
 
@@ -40,5 +41,13 @@ public class UserOperateLogServiceImpl extends ServiceImpl<UserOperateLogMapper,
         return R.ok(this.baseMapper.selectByCount(query));
     }
     
+    
+    public static String convertTime(Long time){
+        try {
+            return FORMAT.format(new Date(time));
+        }catch (Throwable e){
+            return null;
+        }
+    }
     
 }

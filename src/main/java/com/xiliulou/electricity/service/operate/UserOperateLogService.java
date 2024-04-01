@@ -26,13 +26,7 @@ public interface UserOperateLogService  {
     
     R<List<UserOperateLogEntity>> page(OperateQuery query);
     
-    static String convertTime(Long time){
-        try {
-            return FORMAT.format(new Date(time));
-        }catch (Throwable e){
-            return null;
-        }
-    }
+ 
     
     R<Long> pageCount(OperateQuery query);
 }
