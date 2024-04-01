@@ -82,6 +82,11 @@ public class JsonOuterElectricityConfigController extends BaseController {
         return R.ok(electricityConfigService.queryTenantConfigWxCustomer());
     }
     
+    @GetMapping(value = "/outer/merchant/minPro/config")
+    public R merchantMinProConfig(@RequestParam("appId") String appId) {
+        return returnTripleResult(electricityPayParamsService.queryByMerchantAppId(appId));
+    }
+    
     /**
      * @description 微信小程序过审配合
      * @date 2023/11/3 17:18:22
