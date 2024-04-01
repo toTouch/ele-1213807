@@ -1499,6 +1499,9 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
             BeanUtils.copyProperties(channelUser, history);
             history.setExitTime(System.currentTimeMillis());
             history.setType(EnterpriseChannelUserHistory.EXIT);
+            history.setCreateTime(System.currentTimeMillis());
+            history.setUpdateTime(System.currentTimeMillis());
+            history.setId(null);
             channelUserList.add(history);
             
             EnterpriseChannelUserHistory channelUserHistory = new EnterpriseChannelUserHistory();
@@ -1506,7 +1509,9 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
             BeanUtils.copyProperties(enterpriseChannelUser, channelUserHistory);
             channelUserHistory.setJoinTime(System.currentTimeMillis());
             channelUserHistory.setType(EnterpriseChannelUserHistory.JOIN);
+            channelUserHistory.setId(null);
             channelUserList.add(channelUserHistory);
+            
             log.info("switch enterprise EnterpriseChannelUserHistory={}", channelUserList);
             channelUserHistoryMapper.batchInsert(channelUserList);
         }
