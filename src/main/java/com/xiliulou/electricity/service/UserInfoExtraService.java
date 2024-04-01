@@ -3,6 +3,7 @@ package com.xiliulou.electricity.service;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.UserInfoExtra;
 import com.xiliulou.electricity.request.merchant.MerchantModifyInviterRequest;
+import com.xiliulou.electricity.request.merchant.MerchantModifyInviterUpdateRequest;
 import com.xiliulou.electricity.vo.merchant.MerchantInviterVO;
 
 /**
@@ -27,7 +28,7 @@ public interface UserInfoExtraService {
     
     MerchantInviterVO querySuccessInviter(Long uid, Integer tenantId);
     
-    R selectInviterList(Long uid, Long size, Long offset);
+    R selectInviterList(MerchantModifyInviterRequest request);
     
-    R modifyInviter(MerchantModifyInviterRequest merchantModifyInviterRequest, Long operator);
+    R modifyInviter(MerchantModifyInviterUpdateRequest merchantModifyInviterUpdateRequest, Long operator);
 }

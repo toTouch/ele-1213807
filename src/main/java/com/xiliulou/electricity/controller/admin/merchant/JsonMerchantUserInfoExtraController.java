@@ -4,6 +4,7 @@ import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.request.merchant.MerchantModifyInviterRequest;
+import com.xiliulou.electricity.request.merchant.MerchantModifyInviterUpdateRequest;
 import com.xiliulou.electricity.service.UserInfoExtraService;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.validator.UpdateGroup;
@@ -35,7 +36,8 @@ public class JsonMerchantUserInfoExtraController extends BaseController {
      * 修改邀请人初始化信息
      */
     @GetMapping(value = "/admin/merchant/userInfoExtra/selectInviterList")
-    public R modifyInviterInfo(@RequestParam("size") Long size, @RequestParam("offset") Long offset, @RequestParam("uid") Long uid) {
+    public R modifyInviterInfo(@RequestParam("size") Long size, @RequestParam("offset") Long offset, @RequestParam("uid") Long uid,
+            @RequestParam(value = "name", required = false) String name) {
         if (size < 0 || size > 50) {
             size = 10L;
         }
@@ -53,14 +55,16 @@ public class JsonMerchantUserInfoExtraController extends BaseController {
             return R.ok();
         }
         
-        return userInfoExtraService.selectInviterList(uid, size, offset);
+        MerchantModifyInviterRequest request = MerchantModifyInviterRequest.builder().size(size).offset(offset).uid(uid).merchantName(name).build();
+        
+        return userInfoExtraService.selectInviterList(request);
     }
     
     /**
      * 修改邀请人
      */
     @PostMapping(value = "/admin/merchant/userInfoExtra/modifyInviter")
-    public R modifyInviter(@RequestBody @Validated(UpdateGroup.class) MerchantModifyInviterRequest merchantModifyInviterRequest) {
+    public R modifyInviter(@RequestBody @Validated(UpdateGroup.class) MerchantModifyInviterUpdateRequest merchantModifyInviterUpdateRequest) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
@@ -70,7 +74,7 @@ public class JsonMerchantUserInfoExtraController extends BaseController {
             return R.ok();
         }
         
-        return userInfoExtraService.modifyInviter(merchantModifyInviterRequest, user.getUid());
+        return userInfoExtraService.modifyInviter(merchantModifyInviterUpdateRequest, user.getUid());
     }
     
 }
