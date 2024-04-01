@@ -107,4 +107,5 @@ public interface InvitationActivityJoinHistoryService {
     
     Integer removeByJoinUid(Long uid, Long updateTime, Integer tenantId);
     
+    InvitationActivityJoinHistory queryModifiedInviterHistory(Long joinUid, Integer tenantId);
 }

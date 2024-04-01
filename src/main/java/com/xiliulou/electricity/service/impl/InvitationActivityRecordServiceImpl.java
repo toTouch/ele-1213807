@@ -1139,9 +1139,10 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
                         .values());
     
         // 获取租户下所有上架的套餐返现活动
-        List<InvitationActivity> invitationActivities = invitationActivityService.selectUsableActivity(userInfo.getTenantId());
+        Integer tenantId = userInfo.getTenantId();
+        List<InvitationActivity> invitationActivities = invitationActivityService.selectUsableActivity(tenantId);
         if (CollectionUtils.isEmpty(invitationActivities)) {
-            log.info("Invitation activity info! invitationActivities is empty,tenantId={},uid={}", userInfo.getTenantId(), userInfo.getUid());
+            log.info("Invitation activity info! invitationActivities is empty,tenantId={},uid={}", tenantId, userInfo.getUid());
             return;
         }
     
@@ -1245,8 +1246,9 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
                     return;
                 }
                 
-                // 如果修改了邀请人(成功的记录的del_flag = 1)，对原邀请人不进行返利
-                if (Objects.equals(activityJoinHistory.getDelFlag(), InvitationActivityJoinHistory.DEL_DEL)) {
+                // 如果该参与人有修改邀请人的记录（status=2 and del_flag=1），则其参与的套餐返现的所有活动都不再对原邀请人进行返利
+                InvitationActivityJoinHistory modifyInviterHistory = invitationActivityJoinHistoryService.queryModifiedInviterHistory(activityJoinHistory.getJoinUid(), tenantId);
+                if (Objects.nonNull(modifyInviterHistory)) {
                     log.warn("Invitation activity error! inviter has been modified,activityHistoryId={},uid={}, inviter uid = {}", activityJoinHistory.getId(), userInfo.getUid(),
                             activityJoinHistory.getUid());
                     return;

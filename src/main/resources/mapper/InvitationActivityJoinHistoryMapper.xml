@@ -529,5 +529,11 @@
         from t_invitation_activity_join_history
         where tenant_id = #{tenantId} and join_uid = #{joinUid} and status = 2 and del_flag = 0 order by id desc limit 1
     </select>
+    
+    <select id="selectModifiedInviterHistory" resultType="com.xiliulou.electricity.entity.InvitationActivityJoinHistory">
+        select id, uid, record_id, join_uid
+        from t_invitation_activity_join_history
+        where tenant_id = #{tenantId} and join_uid = #{joinUid} and status = 2 and del_flag = 1 order by id desc limit 1
+    </select>
 
 </mapper>

@@ -306,4 +306,10 @@ public class InvitationActivityJoinHistoryServiceImpl implements InvitationActiv
     public Integer removeByJoinUid(Long uid, Long updateTime, Integer tenantId) {
         return invitationActivityJoinHistoryMapper.updateByJoinUid(uid, updateTime, tenantId);
     }
+    
+    @Slave
+    @Override
+    public InvitationActivityJoinHistory queryModifiedInviterHistory(Long joinUid, Integer tenantId) {
+        return invitationActivityJoinHistoryMapper.selectModifiedInviterHistory(joinUid, tenantId);
+    }
 }
