@@ -43,6 +43,7 @@ import com.xiliulou.electricity.service.merchant.MerchantService;
 import com.xiliulou.electricity.service.merchant.RebateConfigService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
+import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.merchant.MerchantForModifyInviterVO;
 import com.xiliulou.electricity.vo.merchant.MerchantInviterVO;
 import com.xiliulou.electricity.vo.merchant.MerchantVO;
@@ -386,110 +387,121 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public R modifyInviter(MerchantModifyInviterUpdateRequest merchantModifyInviterUpdateRequest, Long operator) {
-        Integer tenantId = TenantContextHolder.getTenantId();
         Long uid = merchantModifyInviterUpdateRequest.getUid();
-        Long merchantId = merchantModifyInviterUpdateRequest.getMerchantId();
-    
-        UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
-        if (Objects.isNull(userInfo)) {
-            log.warn("Modify inviter fail! not found userInfo, uid={}", uid);
-            return R.fail("ELECTRICITY.0001", "未找到用户");
+        
+        //操作频繁
+        boolean result = redisService.setNx(CacheConstant.CACHE_MERCHANT_MODIFY_INVITER_LOCK + uid, "1", 3 * 1000L, false);
+        if (!result) {
+            return R.fail("ELECTRICITY.0034", "操作频繁");
         }
     
-        if (!Objects.equals(userInfo.getTenantId(), tenantId)) {
-            log.warn("Modify inviter fail! not found userInfo, uid={}", uid);
-            return R.fail("AUTH.0003", "租户信息不匹配");
+        try {
+            Integer tenantId = TenantContextHolder.getTenantId();
+            Long merchantId = merchantModifyInviterUpdateRequest.getMerchantId();
+        
+            UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
+            if (Objects.isNull(userInfo)) {
+                log.warn("Modify inviter fail! not found userInfo, uid={}", uid);
+                return R.fail("ELECTRICITY.0001", "未找到用户");
+            }
+        
+            if (!Objects.equals(userInfo.getTenantId(), tenantId)) {
+                log.warn("Modify inviter fail! not found userInfo, uid={}", uid);
+                return R.fail("AUTH.0003", "租户信息不匹配");
+            }
+        
+            Merchant merchant = merchantService.queryByIdFromCache(merchantId);
+            if (Objects.isNull(merchant)) {
+                log.warn("Modify inviter fail! merchant not exist, merchantId={}", merchantId);
+                return R.fail("120212", "商户不存在");
+            }
+        
+            // 参与成功的记录
+            MerchantInviterVO successInviterVO = querySuccessInviter(uid, tenantId);
+            if (Objects.isNull(successInviterVO)) {
+                log.warn("Modify inviter fail! not found success record, uid={}", uid);
+                return R.fail("120107", "该用户未成功参与活动，无法修改邀请人");
+            }
+        
+            Long id = successInviterVO.getId();
+            Integer inviterSource = successInviterVO.getInviterSource();
+            Long oldInviterUid = successInviterVO.getInviterUid();
+            Long newInviterUid = merchant.getUid();
+            Long channelEmployeeUid = merchant.getChannelEmployeeUid();
+        
+            if (Objects.equals(oldInviterUid, newInviterUid)) {
+                log.warn("Modify inviter fail! inviters can not be the same, uid={}, oldInviterUid={}, newInviterUid={}", uid, oldInviterUid, newInviterUid);
+                return R.fail("120108", "只可修改为非当前商户，请重新选择");
+            }
+        
+            // 逻辑删除旧的记录
+            switch (inviterSource) {
+                case 1:
+                    // 邀请返券
+                    joinShareActivityHistoryService.removeById(id, System.currentTimeMillis());
+                    break;
+                case 2:
+                    // 邀请返现
+                    joinShareMoneyActivityHistoryService.removeById(id, System.currentTimeMillis());
+                    break;
+                case 3:
+                    // 套餐返现
+                    invitationActivityJoinHistoryService.removeById(id, System.currentTimeMillis());
+                    break;
+                case 4:
+                    // 渠道邀请
+                    channelActivityHistoryService.removeById(id, System.currentTimeMillis());
+                    break;
+                case 5:
+                    // 商户邀请
+                    merchantJoinRecordService.removeById(id, System.currentTimeMillis());
+                    break;
+                default:
+                    break;
+            }
+        
+            // 新增用户商户绑定
+            UserInfoExtra userInfoExtra = this.queryByUidFromCache(uid);
+            if (Objects.isNull(userInfoExtra)) {
+                UserInfoExtra insertUserInfoExtra = UserInfoExtra.builder().merchantId(merchantId).channelEmployeeUid(merchant.getChannelEmployeeUid()).uid(uid).tenantId(tenantId)
+                        .delFlag(MerchantConstant.DEL_NORMAL).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).build();
+                
+                this.insert(insertUserInfoExtra);
+            } else {
+                userInfoExtra.setMerchantId(merchantId);
+                userInfoExtra.setChannelEmployeeUid(merchant.getChannelEmployeeUid());
+                userInfoExtra.setPlaceId(NumberConstant.ZERO_L);
+                userInfoExtra.setPlaceUid(NumberConstant.ZERO_L);
+                userInfoExtra.setUpdateTime(System.currentTimeMillis());
+                
+                this.updateByUid(userInfoExtra);
+            }
+        
+            // 获取商户保护期和有效期
+            MerchantAttr merchantAttr = merchantAttrService.queryByTenantIdFromCache(merchant.getTenantId());
+            if (Objects.isNull(merchantAttr)) {
+                log.error("Modify inviter fail! not found merchantAttr, merchantId={}", merchantId);
+                return R.fail("120107", "该用户未成功参与活动，无法修改邀请人");
+            }
+        
+            // 新增商户参与记录
+            MerchantJoinRecord merchantJoinRecord = this.assembleRecord(merchantId, newInviterUid, MerchantJoinRecordConstant.INVITER_TYPE_MERCHANT_SELF, uid, channelEmployeeUid,
+                    merchantAttr, tenantId);
+            merchantJoinRecordService.insertOne(merchantJoinRecord);
+        
+            // 新增修改记录
+            MerchantInviterModifyRecord merchantInviterModifyRecord = MerchantInviterModifyRecord.builder().uid(uid).inviterUid(newInviterUid)
+                    .inviterName(Optional.ofNullable(userService.queryByUidFromCache(newInviterUid)).orElse(new User()).getName()).oldInviterUid(oldInviterUid)
+                    .oldInviterName(successInviterVO.getInviterName()).oldInviterSource(inviterSource).merchantId(merchantId).franchiseeId(merchant.getFranchiseeId())
+                    .tenantId(tenantId).operator(operator).remark(merchantModifyInviterUpdateRequest.getRemark()).delFlag(MerchantConstant.DEL_NORMAL).createTime(System.currentTimeMillis())
+                    .updateTime(System.currentTimeMillis()).build();
+        
+            merchantInviterModifyRecordService.insertOne(merchantInviterModifyRecord);
+        
+            return R.ok();
+        } finally {
+            redisService.delete(CacheConstant.CACHE_MERCHANT_MODIFY_INVITER_LOCK + uid);
         }
-        
-        Merchant merchant = merchantService.queryByIdFromCache(merchantId);
-        if (Objects.isNull(merchant)) {
-            log.warn("Modify inviter fail! merchant not exist, merchantId={}", merchantId);
-            return R.fail("120212", "商户不存在");
-        }
-        
-        // 参与成功的记录
-        MerchantInviterVO successInviterVO = querySuccessInviter(uid, tenantId);
-        if (Objects.isNull(successInviterVO)) {
-            log.warn("Modify inviter fail! not found success record, uid={}", uid);
-            return R.fail("120107", "该用户未成功参与活动，无法修改邀请人");
-        }
-        
-        Long id = successInviterVO.getId();
-        Integer inviterSource = successInviterVO.getInviterSource();
-        Long oldInviterUid = successInviterVO.getInviterUid();
-        Long newInviterUid = merchant.getUid();
-        Long channelEmployeeUid = merchant.getChannelEmployeeUid();
-        
-        if (Objects.equals(oldInviterUid, newInviterUid)) {
-            log.warn("Modify inviter fail! inviters can not be the same, uid={}, oldInviterUid={}, newInviterUid={}", uid, oldInviterUid, newInviterUid);
-            return R.fail("120108", "只可修改为非当前商户，请重新选择");
-        }
-        
-        // 逻辑删除旧的记录
-        switch (inviterSource) {
-            case 1:
-                // 邀请返券
-                joinShareActivityHistoryService.removeById(id, System.currentTimeMillis());
-                break;
-            case 2:
-                // 邀请返现
-                joinShareMoneyActivityHistoryService.removeById(id, System.currentTimeMillis());
-                break;
-            case 3:
-                // 套餐返现
-                invitationActivityJoinHistoryService.removeById(id, System.currentTimeMillis());
-                break;
-            case 4:
-                // 渠道邀请
-                channelActivityHistoryService.removeById(id, System.currentTimeMillis());
-                break;
-            case 5:
-                // 商户邀请
-                merchantJoinRecordService.removeById(id, System.currentTimeMillis());
-                break;
-            default:
-                break;
-        }
-        
-        // 新增用户商户绑定
-        UserInfoExtra userInfoExtra = this.queryByUidFromCache(uid);
-        if (Objects.isNull(userInfoExtra)) {
-            UserInfoExtra insertUserInfoExtra = UserInfoExtra.builder().merchantId(merchantId).channelEmployeeUid(merchant.getChannelEmployeeUid()).uid(uid).tenantId(tenantId)
-                    .delFlag(MerchantConstant.DEL_NORMAL).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).build();
-            
-            this.insert(insertUserInfoExtra);
-        } else {
-            userInfoExtra.setMerchantId(merchantId);
-            userInfoExtra.setChannelEmployeeUid(merchant.getChannelEmployeeUid());
-            userInfoExtra.setPlaceId(NumberConstant.ZERO_L);
-            userInfoExtra.setPlaceUid(NumberConstant.ZERO_L);
-            userInfoExtra.setUpdateTime(System.currentTimeMillis());
-            
-            this.updateByUid(userInfoExtra);
-        }
-        
-        // 获取商户保护期和有效期
-        MerchantAttr merchantAttr = merchantAttrService.queryByTenantIdFromCache(merchant.getTenantId());
-        if (Objects.isNull(merchantAttr)) {
-            log.error("Modify inviter fail! not found merchantAttr, merchantId={}", merchantId);
-            return R.fail("120107", "该用户未成功参与活动，无法修改邀请人");
-        }
-        
-        // 新增商户参与记录
-        MerchantJoinRecord merchantJoinRecord = this.assembleRecord(merchantId, newInviterUid, MerchantJoinRecordConstant.INVITER_TYPE_MERCHANT_SELF, uid, channelEmployeeUid,
-                merchantAttr, tenantId);
-        merchantJoinRecordService.insertOne(merchantJoinRecord);
-        
-        // 新增修改记录
-        MerchantInviterModifyRecord merchantInviterModifyRecord = MerchantInviterModifyRecord.builder().uid(uid).inviterUid(newInviterUid)
-                .inviterName(Optional.ofNullable(userService.queryByUidFromCache(newInviterUid)).orElse(new User()).getName()).oldInviterUid(oldInviterUid)
-                .oldInviterName(successInviterVO.getInviterName()).oldInviterSource(inviterSource).merchantId(merchantId).franchiseeId(merchant.getFranchiseeId())
-                .tenantId(tenantId).operator(operator).remark(merchantModifyInviterUpdateRequest.getRemark()).delFlag(MerchantConstant.DEL_NORMAL).createTime(System.currentTimeMillis())
-                .updateTime(System.currentTimeMillis()).build();
-        
-        merchantInviterModifyRecordService.insertOne(merchantInviterModifyRecord);
-        
-        return R.ok();
     }
     
     private MerchantJoinRecord assembleRecord(Long merchantId, Long inviterUid, Integer inviterType, Long joinUid, Long channelEmployeeUid, MerchantAttr merchantAttr,
