@@ -1355,12 +1355,12 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
         
         //检查是否已经有用户被关联至当前企业
         if (Objects.isNull(channelUserEntity)) {
-            log.error("scan code query enterprise channel record failed after QR scan,  uid = {}, channel user record id", uid, channelUserId);
+            log.error("scan code query enterprise channel record failed after QR scan,  uid = {}, channel user record id={}", uid, channelUserId);
             return Triple.of(false, "300082", "企业信息不存在, 请检测后操作");
         }
         
         if (Objects.nonNull(channelUserEntity.getUid())) {
-            log.error("scan code user already exist after QR scan,  uid = {}, channel user record id", uid, channelUserId);
+            log.error("scan code user already exist after QR scan,  uid = {}, channel user record id={}", uid, channelUserId);
             return Triple.of(false, "300083", "已添加其他用户, 请重新扫码");
         }
         
@@ -1495,7 +1495,6 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
             // 添加操作记录, 新记录和原站点的记录
             List<EnterpriseChannelUserHistory> channelUserList = new ArrayList<>();
             EnterpriseChannelUserHistory history = new EnterpriseChannelUserHistory();
-            log.info("switch enterprise, channelUser={}, history={}", channelUser, history);
             BeanUtils.copyProperties(channelUser, history);
             history.setExitTime(System.currentTimeMillis());
             history.setType(EnterpriseChannelUserHistory.EXIT);
@@ -1505,14 +1504,12 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
             channelUserList.add(history);
             
             EnterpriseChannelUserHistory channelUserHistory = new EnterpriseChannelUserHistory();
-            log.info("switch enterprise1, enterpriseChannelUser={}, channelUserHistory={}", enterpriseChannelUser, channelUserHistory);
             BeanUtils.copyProperties(enterpriseChannelUser, channelUserHistory);
             channelUserHistory.setJoinTime(System.currentTimeMillis());
             channelUserHistory.setType(EnterpriseChannelUserHistory.JOIN);
             channelUserHistory.setId(null);
             channelUserList.add(channelUserHistory);
             
-            log.info("switch enterprise EnterpriseChannelUserHistory={}", channelUserList);
             channelUserHistoryMapper.batchInsert(channelUserList);
         }
         return Triple.of(true, null, null);
