@@ -44,8 +44,8 @@
                 and uid = #{query.uid}
             </if>
             <if test="query.startTime != null and query.endTime!=null">
-                and operateTime between '${com.xiliulou.electricity.service.operate.UserOperateLogService@convertTime(query.startTime)}' and
-                '${com.xiliulou.electricity.service.operate.UserOperateLogService@convertTime(query.endTime)}'
+                and operateTime between '${@com.xiliulou.electricity.service.operate.impl.UserOperateLogServiceImpl@convertTime(query.startTime)}' and
+                '${@com.xiliulou.electricity.service.operate.impl.UserOperateLogServiceImpl@convertTime(query.endTime)}'
             </if>
         </where>
     </select>
