@@ -221,9 +221,9 @@ public class CouponServiceImpl implements CouponService {
         }
 
         if (insert > 0) {
+            operateRecordUtil.record(null,coupon);
             return R.ok();
         }
-        operateRecordUtil.record(null,coupon);
         return R.fail("ELECTRICITY.0086", "操作失败");
     }
 
