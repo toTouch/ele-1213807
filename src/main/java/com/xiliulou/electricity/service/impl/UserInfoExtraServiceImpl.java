@@ -285,7 +285,7 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
     
         Integer inviterSource = successInviterVO.getInviterSource();
         Long inviterUid = successInviterVO.getInviterUid();
-        List<MerchantVO> filterMerchantList = null;
+        List<MerchantVO> filterMerchantList = merchantList;
         if (Objects.equals(inviterSource, MerchantInviterSourceEnum.MERCHANT_INVITER_SOURCE_MERCHANT.getCode())) {
             // 去除原商户邀请人
             filterMerchantList = merchantList.stream().filter(merchant -> !Objects.equals(merchant.getUid(), inviterUid)).collect(Collectors.toList());
