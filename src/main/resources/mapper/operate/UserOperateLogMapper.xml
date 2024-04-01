@@ -14,7 +14,7 @@
         from t_user_operate_log
         <where>
             <if test="query.operateType != null and query.operateType.trim()!=''">
-                and operateType = #{query.operateType}
+                and operateType like '%#{query.operateType}%'
             </if>
             <if test="query.tenantId != null">
                 and tenantId = #{query.tenantId}
@@ -27,6 +27,7 @@
                 '${@com.xiliulou.electricity.service.operate.impl.UserOperateLogServiceImpl@convertTime(query.endTime)}'
             </if>
         </where>
+        order by operateTime desc
         limit #{query.size} offset #{query.offset}
     </select>
     <select id="selectByCount" resultType="java.lang.Long">
@@ -35,7 +36,7 @@
         from t_user_operate_log
         <where>
             <if test="query.operateType != null and query.operateType.trim()!=''">
-                and operateType = #{query.operateType}
+                and operateType like '%#{query.operateType}%'
             </if>
             <if test="query.tenantId != null">
                 and tenantId = #{query.tenantId}
