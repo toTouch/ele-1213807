@@ -2169,6 +2169,7 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
         
         //查询用户押金状况
         UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(userInfo.getUid());
+        log.info("userBatteryDeposit={}, uid={}", userBatteryDeposit, userInfo.getUid());
         if (Objects.isNull(userBatteryDeposit) || StringUtils.isBlank(userBatteryDeposit.getOrderId())) {
             log.warn("query user deposit info failed, not found userBatteryDeposit,uid = {}", userInfo.getUid());
             return Triple.of(true, null, enterpriseUserPackageDetailsVO);
