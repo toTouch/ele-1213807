@@ -54,6 +54,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -291,8 +292,7 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
         }
     
         if (CollectionUtils.isEmpty(filterMerchantList)) {
-            log.warn("Modify inviter fail! filterMerchantList is empty, uid={}", uid);
-            return R.fail("120007", "未找到商户");
+            return R.ok();
         }
     
         List<MerchantForModifyInviterVO> merchantVOList = filterMerchantList.stream().map(item -> {

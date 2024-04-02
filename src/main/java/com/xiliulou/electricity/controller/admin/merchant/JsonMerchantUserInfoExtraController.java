@@ -33,7 +33,7 @@ public class JsonMerchantUserInfoExtraController extends BaseController {
     private UserInfoExtraService userInfoExtraService;
     
     /**
-     * 修改邀请人初始化信息
+     * 修改邀请人 邀请人（商户）列表
      */
     @GetMapping(value = "/admin/merchant/userInfoExtra/selectInviterList")
     public R modifyInviterInfo(@RequestParam("size") Long size, @RequestParam("offset") Long offset, @RequestParam("uid") Long uid,
