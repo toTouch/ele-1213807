@@ -209,6 +209,8 @@ import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import static com.xiliulou.electricity.constant.ElectricityIotConstant.ELE_COMMAND_CELL_UPDATE;
+
 /**
  * 换电柜表(TElectricityCabinet)表服务实现类
  *
@@ -2084,6 +2086,9 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         }
         Map<String, Object> map = BeanUtil.beanToMap(comm, false, true);
         map.put("operateType",1);
+        if (comm.getCommand().equals(ELE_COMMAND_CELL_UPDATE) && eleOuterCommandQuery.getData().containsKey("lockReason")){
+            map.put("command","cell_update_down");
+        }
         operateRecordUtil.record(null,map);
         return R.ok(sessionId);
     }
@@ -2134,6 +2139,9 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         }
         Map<String, Object> map = BeanUtil.beanToMap(comm, false, true);
         map.put("operateType",1);
+        if (comm.getCommand().equals(ELE_COMMAND_CELL_UPDATE) && eleOuterCommandQuery.getData().containsKey("lockReason")){
+            map.put("command","cell_update_down");
+        }
         operateRecordUtil.record(null,map);
         return R.ok(sessionId);
     }

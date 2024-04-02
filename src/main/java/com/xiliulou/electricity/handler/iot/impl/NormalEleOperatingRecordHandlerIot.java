@@ -86,12 +86,10 @@ public class NormalEleOperatingRecordHandlerIot extends AbstractElectricityIotHa
             return;
         }
         UserOperateRecord record = new UserOperateRecord();
-        record.setCommand(request.getIoTMsgType());
+        record.setCommand(request.getOperateMsg());
         record.setOperateType(request.getOperateType());
-        record.setDeviceName(request.getDevicesName());
-        if (!Objects.isNull(array)) {
-            record.setData(MapUtil.of("cell_list", array));
-        }
+        record.setDeviceName(electricityCabinet.getName());
+        record.setData(MapUtil.of("cell_list", array));
         OperateLogDTO dto = OperateLogDTO.ofStatic();
         if (!Objects.isNull(electricityCabinet.getTenantId())) {
             dto.setTenantId(electricityCabinet.getTenantId().longValue());
