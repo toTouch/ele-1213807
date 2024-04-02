@@ -279,8 +279,7 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
                 .tenantId(tenantId).franchiseeId(userInfo.getFranchiseeId()).build();
         List<MerchantVO> merchantList = merchantService.queryList(merchantPageRequest);
         if (CollectionUtils.isEmpty(merchantList)) {
-            log.warn("Modify inviter fail! merchantList is empty, uid={}", uid);
-            return R.fail("120007", "未找到商户");
+            return R.ok();
         }
     
         Integer inviterSource = successInviterVO.getInviterSource();
