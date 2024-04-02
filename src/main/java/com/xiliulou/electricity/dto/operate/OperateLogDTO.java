@@ -67,4 +67,16 @@ public class OperateLogDTO {
         }
         return dto;
     }
+    
+    public static OperateLogDTO ofStatic(){
+        OperateLogDTO dto = new OperateLogDTO();
+        dto.setMethod(COMMAND_METHOD);
+        dto.setUri(COMMAND_URL);
+        dto.setIp(COMMAND_IP);
+        return dto;
+    }
+    
+    private static String COMMAND_METHOD="POST";
+    private static String COMMAND_URL="/admin/electricityCabinet/command";
+    private static String COMMAND_IP="0.0.0.0";
 }

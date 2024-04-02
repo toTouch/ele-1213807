@@ -38,6 +38,9 @@ public class OperateRecordUtil {
     
     @SuppressWarnings("unchecked")
     public void record(Object oldValue, Object newValue,OperateLogDTO operateLogDTO) {
+        if (Objects.isNull(operateLogDTO)){
+            return;
+        }
         if (!Objects.isNull(oldValue)) {
             if (oldValue instanceof Map){
                 operateLogDTO.setOldValue((Map<String, Object>) oldValue);

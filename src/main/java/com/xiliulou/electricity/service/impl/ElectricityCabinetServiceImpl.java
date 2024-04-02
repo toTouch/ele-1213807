@@ -2082,7 +2082,9 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         if (!result.getLeft()) {
             return R.fail("ELECTRICITY.0037", "发送命令失败");
         }
-        operateRecordUtil.record(null,comm);
+        Map<String, Object> map = BeanUtil.beanToMap(comm, false, true);
+        map.put("operateType",1);
+        operateRecordUtil.record(null,map);
         return R.ok(sessionId);
     }
     
@@ -2130,7 +2132,9 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         if (!result.getLeft()) {
             return R.fail("ELECTRICITY.0037", "发送命令失败");
         }
-        operateRecordUtil.record(null,comm);
+        Map<String, Object> map = BeanUtil.beanToMap(comm, false, true);
+        map.put("operateType",1);
+        operateRecordUtil.record(null,map);
         return R.ok(sessionId);
     }
     

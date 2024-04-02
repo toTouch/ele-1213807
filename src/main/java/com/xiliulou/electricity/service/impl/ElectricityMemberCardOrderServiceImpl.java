@@ -4146,8 +4146,8 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             BatteryMemberCard card = batteryMemberCardService.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());
             Map<String, Object> map = BeanUtil.beanToMap(userBatteryMemberCardUpdate,false,true);
             map.put("packageName",card.getName());
-            map.put("phone",user.getPhone());
-            map.put("name",user.getName());
+            map.put("phone",userInfo.getPhone());
+            map.put("name",userInfo.getName());
             operateRecordUtil.record(userBatteryMemberCard,map);
         }catch (Exception e){
             log.warn("The user failed to modify the battery plan record because: {}",e.getMessage());

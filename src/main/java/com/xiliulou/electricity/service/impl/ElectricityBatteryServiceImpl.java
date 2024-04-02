@@ -753,17 +753,17 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
         Integer rows = electricitybatterymapper.update(updateBattery);
         if (rows > 0) {
             redisService.delete(CacheConstant.CACHE_BT_ATTR + electricityBatteryDb.getSn());
-            try {
-                TokenUser userInfo = SecurityUtils.getUserInfo();
-                Map<String, Object> map = BeanUtil.beanToMap(updateBattery, false, true);
-                if (!Objects.isNull(userInfo)){
-                    map.put("username",userInfo.getUsername());
-                    map.put("phone",userInfo.getPhone());
-                }
-                operateRecordUtil.record(electricityBatteryDb,map);
-            }catch (Throwable e){
-                log.warn("Recording user operation records failed because:{}",e.getMessage());
-            }
+//            try {
+//                TokenUser userInfo = SecurityUtils.getUserInfo();
+//                Map<String, Object> map = BeanUtil.beanToMap(updateBattery, false, true);
+//                if (!Objects.isNull(userInfo)){
+//                    map.put("username",userInfo.getUsername());
+//                    map.put("phone",userInfo.getPhone());
+//                }
+//                operateRecordUtil.record(electricityBatteryDb,map);
+//            }catch (Throwable e){
+//                log.warn("Recording user operation records failed because:{}",e.getMessage());
+//            }
             return R.ok();
         } else {
             return R.fail("修改失败!");

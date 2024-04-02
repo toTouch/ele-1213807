@@ -1303,8 +1303,9 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             Map<String, Object> map = new HashMap<>();
             map.put("username",oldUserInfo.getName());
             map.put("phone",oldUserInfo.getPhone());
-            map.put("batterySN",oldElectricityBattery.getSn());
-            operateRecordUtil.record(null,map);
+            map.put("editType",userInfoBatteryAddAndUpdate.getEdiType());
+            map.put("batterySN",userInfoBatteryAddAndUpdate.getInitElectricityBatterySn());
+            operateRecordUtil.record(Objects.isNull(isBindElectricityBattery)?null:MapUtil.of("batterySN",isBindElectricityBattery.getSn()),map);
         }catch (Throwable e){
             log.warn("Recording user operation records failed because:{}",e.getMessage());
         }

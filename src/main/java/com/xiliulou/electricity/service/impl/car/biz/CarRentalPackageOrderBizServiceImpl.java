@@ -914,6 +914,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             map.put("username",userInfo.getName());
             map.put("phone",user.getPhone());
             map.put("packageName",buyPackageEntity.getName());
+            map.put("type",buyPackageEntity.getType());
             operateRecordUtil.record(null,map);
         } catch (BizException e) {
             log.error("bindingPackage failed. ", e);
@@ -999,6 +1000,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             map.put("approve",approveFlag?0:1);
             map.put("residue",freezeEntity.getResidue());
             map.put("residueUnit",freezeEntity.getResidueUnit());
+            map.put("type",freezeEntity.getRentalPackageType());
             operateRecordUtil.record(null,map);
         }catch (Throwable e){
             log.warn("Recording user operation records failed because:{}",e.getMessage());
@@ -1713,6 +1715,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             map.put("phone",userInfo.getPhone());
             map.put("packageName",packagePo.getName());
             map.put("residue",applyTerm);
+            map.put("type",packagePo.getType());
             operateRecordUtil.record(null,map);
         }catch (Throwable e){
             log.warn("Recording user operation records failed because:{}",e.getMessage());

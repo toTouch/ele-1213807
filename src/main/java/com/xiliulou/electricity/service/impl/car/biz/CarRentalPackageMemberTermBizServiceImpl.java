@@ -522,18 +522,19 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
         eleUserOperateRecordService.asyncHandleUserOperateRecord(record);
         try {
             CarRentalPackagePo packagePo = carRentalPackageService.selectById(packageOrderEntity.getRentalPackageId());
-            operateRecordUtil.record(builderOperateRecord(record,packagePo.getName(),userInfo.getPhone(),userInfo.getName(),false),builderOperateRecord(record,packagePo.getName(),userInfo.getPhone(),userInfo.getName(),true));
+            operateRecordUtil.record(builderOperateRecord(record,packagePo.getName(),userInfo.getPhone(),userInfo.getName(),packagePo.getType(),false),builderOperateRecord(record,packagePo.getName(),userInfo.getPhone(),userInfo.getName(),packagePo.getType(),true));
         }catch (Throwable e){
             log.warn("The user failed to modify the car plan record because: {}",e.getMessage());
         }
         return true;
     }
     
-    private Map<String,Object> builderOperateRecord(EleUserOperateRecord record,String packageName,String phone,String username,Boolean isNew){
+    private Map<String,Object> builderOperateRecord(EleUserOperateRecord record,String packageName,String phone,String username,Integer type,Boolean isNew){
         Map<String,Object> result =new HashMap<>();
         result.put("packageName",packageName);
         result.put("phone",phone);
         result.put("username",username);
+        result.put("type",type);
         if (!isNew){
             result.put("validDays",record.getOldValidDays());
             result.put("electricityBatterySn",record.getInitElectricityBatterySn());

@@ -109,12 +109,14 @@ public class CarRentalPackageServiceImpl implements CarRentalPackageService {
         if (!ObjectUtils.allNotNull(id, status, uid) || !BasicEnum.isExist(status, UpDownEnum.class)) {
             throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
-
+        CarRentalPackagePo rentalPackagePo = this.selectById(id);
+        rentalPackagePo.setStatus(status);
+    
         int num = carRentalPackageMapper.updateStatusById(id, status, uid, System.currentTimeMillis());
 
         // 删除缓存
         delCache(String.format(CarRenalCacheConstant.CAR_RENAL_PACKAGE_ID_KEY, id));
-
+        operateRecordUtil.record(num,rentalPackagePo);
         return num >= 0;
     }
 
