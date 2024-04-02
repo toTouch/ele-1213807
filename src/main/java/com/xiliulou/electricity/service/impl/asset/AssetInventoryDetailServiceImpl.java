@@ -204,7 +204,7 @@ public class AssetInventoryDetailServiceImpl implements AssetInventoryDetailServ
                 
                 //同步盘点数据
                 AssetInventoryUpdateDataQueryModel assetInventoryUpdateDataQueryModel = AssetInventoryUpdateDataQueryModel.builder().tenantId(TenantContextHolder.getTenantId())
-                        .orderNo(inventoryRequest.getOrderNo()).inventoryCount(inventoryRequest.getSnList().size()).operator(operator).status(status)
+                        .orderNo(inventoryRequest.getOrderNo()).inventoryCount(count).operator(operator).status(status)
                         .updateTime(System.currentTimeMillis()).build();
                 
                 assetInventoryService.updateByOrderNo(assetInventoryUpdateDataQueryModel);

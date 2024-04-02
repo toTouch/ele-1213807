@@ -39,7 +39,7 @@
                     </if>
                 </foreach>
             </if>
-            and tenant_id = #{tenantId} and order_no = #{orderNo}
+            and tenant_id = #{tenantId} and order_no = #{orderNo} and inventory_status = 0
         </where>
     </update>
     
