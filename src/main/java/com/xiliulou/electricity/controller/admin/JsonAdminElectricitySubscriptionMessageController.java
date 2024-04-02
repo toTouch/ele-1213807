@@ -69,10 +69,12 @@ public class JsonAdminElectricitySubscriptionMessageController {
         //租户
         Integer tenantId = TenantContextHolder.getTenantId();
         String oldPhone="";
-        redisService.set(CacheConstant.CACHE_SERVICE_PHONE+tenantId, servicePhoneQuery.getPhone());
         if (redisService.hasKey(CacheConstant.CACHE_SERVICE_PHONE+tenantId)){
             oldPhone= redisService.get(CacheConstant.CACHE_SERVICE_PHONE + tenantId);
         }
+        
+        redisService.set(CacheConstant.CACHE_SERVICE_PHONE+tenantId, servicePhoneQuery.getPhone());
+        
         operateRecordUtil.record(MapUtil.of("phone",oldPhone),MapUtil.of("phone",servicePhoneQuery.getPhone()));
         return R.ok();
     }
