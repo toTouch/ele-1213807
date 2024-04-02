@@ -4282,8 +4282,8 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         
         sendUserCoupon(batteryMemberCard, memberCardOrder);
         Map<String, Object> map = new HashMap<>();
-        map.put("username",user.getName());
-        map.put("phone",user.getPhone());
+        map.put("username",userInfo.getName());
+        map.put("phone",userInfo.getPhone());
         map.put("packageName",batteryMemberCard.getName());
         operateRecordUtil.record(null,map);
         return Triple.of(true, null, null);

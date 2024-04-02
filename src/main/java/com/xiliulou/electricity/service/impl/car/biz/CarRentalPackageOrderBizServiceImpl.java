@@ -912,7 +912,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             eleUserOperateRecordService.asyncHandleUserOperateRecord(rentalOrderRecord);
             Map<String, Object> map = new HashMap<>();
             map.put("username",userInfo.getName());
-            map.put("phone",user.getPhone());
+            map.put("phone",userInfo.getPhone());
             map.put("packageName",buyPackageEntity.getName());
             map.put("type",buyPackageEntity.getType());
             operateRecordUtil.record(null,map);
