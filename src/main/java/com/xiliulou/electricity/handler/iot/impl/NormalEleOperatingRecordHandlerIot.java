@@ -49,7 +49,7 @@ public class NormalEleOperatingRecordHandlerIot extends AbstractElectricityIotHa
                     receiverMessage.getProductKey(), receiverMessage.getDeviceName());
             return;
         }
-        
+        log.info("POST-HANDLE-RECEIVE-MSG:{}",request);
         if (StrUtil.isNotBlank(request.getCellNo())) {
             StringTokenizer stringTokenizer = new StringTokenizer(request.getCellNo(), ",");
             JSONArray array = JSONUtil.createArray();
