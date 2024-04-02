@@ -82,6 +82,9 @@ public class NormalEleOperatingRecordHandlerIot extends AbstractElectricityIotHa
     
     
     public void userOperateRecord(ElectricityCabinet electricityCabinet, CupboardOperatingRecordRequest request, JSONArray array) {
+        if (Objects.isNull(request.getOperateType()) || Objects.equals(request.getOperateType(),1)){
+            return;
+        }
         UserOperateRecord record = new UserOperateRecord();
         record.setCommand(request.getIoTMsgType());
         record.setOperateType(request.getOperateType());
