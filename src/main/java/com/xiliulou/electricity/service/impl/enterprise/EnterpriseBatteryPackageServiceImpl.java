@@ -670,11 +670,12 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
         
         UserInfo userInfo = userInfoService.queryByUidFromCache(SecurityUtils.getUid());
         if (Objects.isNull(userInfo)) {
+            log.info("queryUserBatteryDeposit114, uid={}",  uid);
             log.warn("query deposit warning, not found userInfo,uid = {}", SecurityUtils.getUid());
             return Triple.of(true, "", userBatteryDepositVO);
             
         }
-        
+        log.info("queryUserBatteryDeposit115, uid={}",  userInfo);
         userBatteryDepositVO.setBatteryRentStatus(userInfo.getBatteryRentStatus());
         userBatteryDepositVO.setBatteryDepositStatus(userInfo.getBatteryDepositStatus());
         
