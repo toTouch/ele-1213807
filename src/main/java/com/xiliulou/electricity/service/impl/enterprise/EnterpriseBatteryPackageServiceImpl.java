@@ -668,10 +668,10 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
         userBatteryDepositVO.setBatteryDeposit(BigDecimal.ZERO);
         log.info("queryUserBatteryDeposit112, uid={}",  uid);
         
-        UserInfo userInfo = userInfoService.queryByUidFromCache(SecurityUtils.getUid());
+        UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
         if (Objects.isNull(userInfo)) {
             log.info("queryUserBatteryDeposit114, uid={}",  uid);
-            log.warn("query deposit warning, not found userInfo,uid = {}", SecurityUtils.getUid());
+            log.warn("query deposit warning, not found userInfo,uid = {}", uid);
             return Triple.of(true, "", userBatteryDepositVO);
             
         }
@@ -2172,7 +2172,6 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
         
         //查询用户押金状况
         UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(userInfo.getUid());
-        log.info("userBatteryDeposit={}, uid={}", userBatteryDeposit, userInfo.getUid());
         if (Objects.isNull(userBatteryDeposit) || StringUtils.isBlank(userBatteryDeposit.getOrderId())) {
             log.warn("query user deposit info failed, not found userBatteryDeposit,uid = {}", userInfo.getUid());
             return Triple.of(true, null, enterpriseUserPackageDetailsVO);
