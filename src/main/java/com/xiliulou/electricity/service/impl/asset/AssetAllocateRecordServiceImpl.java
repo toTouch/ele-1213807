@@ -134,37 +134,52 @@ public class AssetAllocateRecordServiceImpl implements AssetAllocateRecordServic
             Integer type = assetAllocateRecordRequest.getType();
             Integer status = assetInventoryService.queryInventoryStatusByFranchiseeId(assetAllocateRecordRequest.getSourceFranchiseeId(), type);
             if (Objects.equals(status, AssetConstant.ASSET_INVENTORY_STATUS_TAKING)) {
-                return R.fail("300806", "该加盟商车辆资产正在进行盘点，请稍后再试");
+                if (Objects.equals(type, AssetTypeEnum.ASSET_TYPE_BATTERY.getCode())) {
+                    return R.fail("300804", "该加盟商电池资产正在进行盘点，请稍后再试");
+                } else if (Objects.equals(type, AssetTypeEnum.ASSET_TYPE_CABINET.getCode())) {
+                    return R.fail("300805", "该加盟商电柜资产正在进行盘点，请稍后再试");
+                } else {
+                    return R.fail("300806", "该加盟商车辆资产正在进行盘点，请稍后再试");
+                }
             }
+            
             List<String> exitsSn = new ArrayList<>();
             List<Long> idList = assetAllocateRecordRequest.getIdList();
+            
             //根据sn查询
             if (Objects.equals(assetAllocateRecordRequest.getSubmitType(),AssetConstant.ASSET_EXIT_WAREHOUSE_SUBMIT_TYPE_BY_SN)){
                 List<String> snList = assetAllocateRecordRequest.getSnList();
                 if (CollectionUtils.isEmpty(snList)) {
                     return R.ok();
                 }
+                
                 snList = assetAllocateRecordRequest.getSnList().stream().distinct().collect(Collectors.toList());
                 if (snList.size() > AssetConstant.ASSET_ALLOCATE_LIMIT_NUMBER) {
                     return R.fail("300811", "资产调拨数量最大限制50条，请修改");
                 }
+                
                 Map<String, Long> map = queryIdBasedOnTypeAndSNCode(assetAllocateRecordRequest);
                 for (String s : snList) {
                     if (!map.containsKey(s)){
                         exitsSn.add(s);
                     }
                 }
+                
                 if (CollectionUtils.isNotEmpty(exitsSn)){
                     return R.fail("300832",String.format("您输入的编号为[%s]，系统未能找到对应的信息，请您核实并修改后提交",String.join(",",exitsSn)));
                 }
+                
                 idList = ListUtil.toList(map.values());
             }
+            
             if (CollectionUtils.isEmpty(idList)) {
                 return R.ok();
             }
-            if (CollectionUtils.isNotEmpty(idList) && idList.size() > AssetConstant.ASSET_ALLOCATE_LIMIT_NUMBER) {
+            
+            if (idList.size() > AssetConstant.ASSET_ALLOCATE_LIMIT_NUMBER) {
                 return R.fail("300811", "资产调拨数量最大限制50条，请修改");
             }
+            
             Integer tenantId = TenantContextHolder.getTenantId();
             Franchisee sourceFranchisee = franchiseeService.queryByIdFromCache(assetAllocateRecordRequest.getSourceFranchiseeId());
             if (Objects.isNull(sourceFranchisee)) {
@@ -183,7 +198,6 @@ public class AssetAllocateRecordServiceImpl implements AssetAllocateRecordServic
             }
             
             if (Objects.equals(AssetTypeEnum.ASSET_TYPE_CAR.getCode(), type) || Objects.equals(AssetTypeEnum.ASSET_TYPE_CABINET.getCode(), type)) {
-                
                 if (Objects.equals(assetAllocateRecordRequest.getSourceStoreId(), assetAllocateRecordRequest.getTargetStoreId())) {
                     log.error("ASSET_ALLOCATE ERROR! same store! sourceStoreId={}, targetStoreId={}", assetAllocateRecordRequest.getSourceStoreId(),
                             assetAllocateRecordRequest.getTargetStoreId());
