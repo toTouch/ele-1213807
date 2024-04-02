@@ -2,6 +2,7 @@ package com.xiliulou.electricity.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.codec.Base64;
+import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.map.MapUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.RandomUtil;
@@ -552,7 +553,10 @@ public class WithdrawRecordRecordServiceImpl implements WithdrawRecordService {
         
         // 批量修改审核结果
         withdrawRecordMapper.batchWithdrawById(withdrawRecord, batchHandleWithdrawRequest.getIdList(), tenantId);
-		Map<Object, Object> build = MapUtil.builder().put("data", withdrawRecord).put("count", batchHandleWithdrawRequest.getIdList()).build();
+		Map<Object, Object> build = MapUtil.builder().put("data", withdrawRecord).build();
+		if (!CollectionUtil.isEmpty(batchHandleWithdrawRequest.getIdList())){
+			build.put("count", batchHandleWithdrawRequest.getIdList().size());
+		}
 		operateRecordUtil.record(null,build);
         return R.ok();
     }
