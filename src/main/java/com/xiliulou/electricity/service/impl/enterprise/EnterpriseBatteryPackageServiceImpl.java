@@ -666,6 +666,7 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
         userBatteryDepositVO.setBatteryRentStatus(UserInfo.BATTERY_RENT_STATUS_NO);
         userBatteryDepositVO.setBatteryDepositStatus(UserInfo.BATTERY_DEPOSIT_STATUS_YES);
         userBatteryDepositVO.setBatteryDeposit(BigDecimal.ZERO);
+        log.info("queryUserBatteryDeposit112, uid={}",  uid);
         
         UserInfo userInfo = userInfoService.queryByUidFromCache(SecurityUtils.getUid());
         if (Objects.isNull(userInfo)) {
@@ -678,7 +679,7 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
         userBatteryDepositVO.setBatteryDepositStatus(userInfo.getBatteryDepositStatus());
         
         UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(userInfo.getUid());
-        log.info("queryUserBatteryDeposit={}, uid={}", userBatteryDeposit, uid);
+        log.info("queryUserBatteryDeposit11={}, uid={}", userBatteryDeposit, uid);
         if (Objects.isNull(userBatteryDeposit)) {
             log.warn("query deposit warning, not found userBatteryDeposit,uid = {}", userInfo.getUid());
             return Triple.of(true, "", userBatteryDepositVO);
