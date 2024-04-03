@@ -244,7 +244,9 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
         List<EnterpriseRentRecord> enterpriseRentRecords = enterpriseRentRecordService.selectByUid(userInfo.getUid());
     
         //若未租退电
+        log.info("acquireUserCanRecycleCloudBean, totalCloudBean={}", totalCloudBean);
         if (CollectionUtils.isEmpty(enterpriseRentRecords)) {
+            log.info("acquireUserCanRecycleCloudBean1, totalCloudBean={}", totalCloudBean);
             return result.add(totalCloudBean);
         }
     
@@ -324,7 +326,7 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
                 }
             }
         }
-        
+        log.info("acquireUserCanRecycleCloudBean1, totalCloudBean={}, totalUsedCloudBean={}", totalCloudBean, totalUsedCloudBean);
         //待回收云豆=总的支付的云豆-总消耗的云豆
         return result.add(totalCloudBean.subtract(totalUsedCloudBean));
     }

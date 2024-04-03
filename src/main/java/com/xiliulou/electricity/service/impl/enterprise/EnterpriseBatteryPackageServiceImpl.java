@@ -1672,12 +1672,7 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
                 return Triple.of(false, "100483", "电池套餐不合法");
             }
     
-            if (Objects.nonNull(userBatteryDeposit.getBatteryDeposit()) && batteryMemberCard.getDeposit().compareTo(userBatteryDeposit.getBatteryDeposit()) != 0) {
-                log.warn("FREE DEPOSIT WARN! batteryMemberCard not equals free deposit,uid={},mid={}", userInfo.getUid(), query.getPackageId());
-                return Triple.of(false, "100484", "免押押金与电池套餐押金不一致");
-            }
-    
-            if(Objects.nonNull(userInfo.getFranchiseeId()) && !Objects.equals(userInfo.getFranchiseeId(),NumberConstant.ZERO_L) && !Objects.equals(userInfo.getFranchiseeId(),batteryMemberCard.getFranchiseeId())){
+            if(Objects.nonNull(userInfo.getFranchiseeId()) && !Objects.equals(userInfo.getFranchiseeId(),NumberConstant.ZERO_L) && !Objects.equals(userInfo.getFranchiseeId(), batteryMemberCard.getFranchiseeId())){
                 log.warn("BATTERY DEPOSIT WARN! batteryMemberCard franchiseeId not equals,uid={},mid={}", userInfo.getUid(), query.getPackageId());
                 return Triple.of(false, "100349", "用户加盟商与套餐加盟商不一致");
             }
