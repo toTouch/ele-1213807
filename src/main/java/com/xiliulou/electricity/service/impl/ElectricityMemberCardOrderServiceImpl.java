@@ -1491,6 +1491,16 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         userBatteryMemberCardService.updateByUid(userBatteryMemberCardUpdate);
         
         sendDisableMemberCardMessage(userInfo);
+        try {
+            Map<String, Object> map = new HashMap<>();
+            map.put("username",eleDisableMemberCardRecord.getUserName());
+            map.put("phone",eleDisableMemberCardRecord.getPhone());
+            map.put("packageName",eleDisableMemberCardRecord.getMemberCardName());
+            map.put("residue",eleDisableMemberCardRecord.getChooseDays());
+            operateRecordUtil.record(null,map);
+        }catch (Throwable e){
+            log.warn("Recording user operation records failed because:{}",e.getMessage());
+        }
         return R.ok();
     }
     
