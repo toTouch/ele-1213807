@@ -248,7 +248,7 @@ public class WithdrawRecordRecordServiceImpl implements WithdrawRecordService {
 			}
 			if (!Objects.isNull(withdrawRecord.getAuditorId())){
 				User auditor = userService.queryByUidFromCache(withdrawRecord.getAuditorId());
-				if (!Objects.isNull(user)) {
+				if (!Objects.isNull(auditor)) {
 					withdrawRecordVO.setAuditorName(auditor.getName());
 				}
 			}
