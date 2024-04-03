@@ -727,8 +727,11 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
             EnterpriseChannelUserHistory history = new EnterpriseChannelUserHistory();
             EnterpriseChannelUser user = enterpriseChannelUserMapper.queryById(channelUserId);
             BeanUtils.copyProperties(user, history);
-            history.setExitTime(System.currentTimeMillis());
+            history.setJoinTime(System.currentTimeMillis());
             history.setType(EnterpriseChannelUserHistory.JOIN);
+            history.setId(null);
+            history.setCreateTime(System.currentTimeMillis());
+            history.setUpdateTime(System.currentTimeMillis());
             
             channelUserHistoryMapper.insertOne(history);
         }
@@ -756,8 +759,11 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
             EnterpriseChannelUserHistory history = new EnterpriseChannelUserHistory();
             EnterpriseChannelUser user = enterpriseChannelUserMapper.queryById(channelUser.getId());
             BeanUtils.copyProperties(user, history);
-            history.setExitTime(System.currentTimeMillis());
+            history.setJoinTime(System.currentTimeMillis());
             history.setType(EnterpriseChannelUserHistory.JOIN);
+            history.setId(null);
+            history.setCreateTime(System.currentTimeMillis());
+            history.setUpdateTime(System.currentTimeMillis());
             
             channelUserHistoryMapper.insertOne(history);
         }
@@ -1392,7 +1398,10 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
             EnterpriseChannelUserHistory history = new EnterpriseChannelUserHistory();
             EnterpriseChannelUser user = enterpriseChannelUserMapper.queryById(channelUserId);
             BeanUtils.copyProperties(user, history);
-            history.setExitTime(System.currentTimeMillis());
+            history.setId(null);
+            history.setCreateTime(System.currentTimeMillis());
+            history.setUpdateTime(System.currentTimeMillis());
+            history.setJoinTime(System.currentTimeMillis());
             history.setType(EnterpriseChannelUserHistory.JOIN);
             
             channelUserHistoryMapper.insertOne(history);
@@ -1420,8 +1429,11 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
             EnterpriseChannelUserHistory history = new EnterpriseChannelUserHistory();
             EnterpriseChannelUser user = enterpriseChannelUserMapper.queryById(channelUser.getId());
             BeanUtils.copyProperties(user, history);
-            history.setExitTime(System.currentTimeMillis());
+            history.setJoinTime(System.currentTimeMillis());
             history.setType(EnterpriseChannelUserHistory.JOIN);
+            history.setId(null);
+            history.setCreateTime(System.currentTimeMillis());
+            history.setUpdateTime(System.currentTimeMillis());
             
             channelUserHistoryMapper.insertOne(history);
         }
@@ -1508,6 +1520,8 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
             channelUserHistory.setJoinTime(System.currentTimeMillis());
             channelUserHistory.setType(EnterpriseChannelUserHistory.JOIN);
             channelUserHistory.setId(null);
+            channelUserHistory.setCreateTime(System.currentTimeMillis());
+            channelUserHistory.setUpdateTime(System.currentTimeMillis());
             channelUserList.add(channelUserHistory);
             
             channelUserHistoryMapper.batchInsert(channelUserList);
