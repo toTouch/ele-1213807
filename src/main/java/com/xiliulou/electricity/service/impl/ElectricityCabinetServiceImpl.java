@@ -1064,6 +1064,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 electricityCabinetVO.setOnlineStatus(e.getOnlineStatus());
                 electricityCabinetVO.setFullyElectricityBattery(e.getFullyElectricityBattery());
                 electricityCabinetVO.setDistance(e.getDistance());
+                assignAttribute(electricityCabinetVO,e.getFullyCharged());
                 return electricityCabinetVO;
             }).filter(Objects::nonNull).collect(Collectors.toList());
             
