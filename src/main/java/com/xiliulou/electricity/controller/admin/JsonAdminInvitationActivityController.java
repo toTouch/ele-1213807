@@ -6,6 +6,7 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.User;
+import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.enums.PackageTypeEnum;
 import com.xiliulou.electricity.enums.RentalPackageTypeEnum;
 import com.xiliulou.electricity.enums.UpDownEnum;
@@ -16,6 +17,7 @@ import com.xiliulou.electricity.query.InvitationActivityQuery;
 import com.xiliulou.electricity.query.InvitationActivityStatusQuery;
 import com.xiliulou.electricity.service.BatteryMemberCardService;
 import com.xiliulou.electricity.service.InvitationActivityService;
+import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.service.car.CarRentalPackageService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
@@ -59,7 +61,7 @@ public class JsonAdminInvitationActivityController extends BaseController {
     private CarRentalPackageService carRentalPackageService;
     
     @Autowired
-    private UserService userService;
+    private UserInfoService userInfoService;
 
     @GetMapping("/admin/invitationActivity/search")
     public R search(@RequestParam("size") long size, @RequestParam("offset") long offset,
@@ -101,7 +103,7 @@ public class JsonAdminInvitationActivityController extends BaseController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
     
-        User invitationUser = userService.queryByUidFromCache(uid);
+        UserInfo invitationUser = userInfoService.queryByUidFromCache(uid);
         if (Objects.isNull(invitationUser)) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
