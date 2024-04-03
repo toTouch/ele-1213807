@@ -55,6 +55,9 @@ public class IotReportMetricsMonitorComponent {
     @PostConstruct
     public void init() {
         collectorRegistry.register(IOT_REPORT_COUNT_METRIC);
+        collectorRegistry.register(IOT_REPORT_MEAN_RATE_METRIC);
+        collectorRegistry.register(IOT_REPORT_ONE_MINUTE_RATE_METRIC);
+        collectorRegistry.register(IOT_REPORT_FIVE_MINUTE_RATE_METRIC);
         xllThreadPoolExecutorService.execute(this::timeTaskCheckThreadPool);
     }
     
