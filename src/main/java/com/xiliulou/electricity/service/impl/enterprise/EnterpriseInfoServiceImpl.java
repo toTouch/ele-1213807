@@ -1424,7 +1424,7 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
             }
         });
         
-        return Triple.of(true, null, userBatteryDeposit.getBatteryDeposit());
+        return Triple.of(true, null, batteryDeposit);
     }
     
     @Override
