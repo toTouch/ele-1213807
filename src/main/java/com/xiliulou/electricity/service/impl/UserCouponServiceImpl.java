@@ -275,6 +275,7 @@ public class UserCouponServiceImpl implements UserCouponService {
         CouponIssueOperateRecord.CouponIssueOperateRecordBuilder couponIssueOperateRecord = CouponIssueOperateRecord.builder()
                 .couponId(coupon.getId())
                 .tenantId(tenantId)
+                .issuedUid(operateUser.getUid())
                 .createTime(System.currentTimeMillis())
                 .updateTime(System.currentTimeMillis());
 
