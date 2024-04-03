@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+
 /**
  * @author HeYafeng
  * @description 资产调拨分页request
@@ -28,5 +29,5 @@ public class AssetAllocateRecordPageRequest {
     private Long size;
     
     private Long offset;
-
+    
 }

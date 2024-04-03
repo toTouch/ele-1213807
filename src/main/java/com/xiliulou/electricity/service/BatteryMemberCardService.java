@@ -1,11 +1,11 @@
 package com.xiliulou.electricity.service;
 
+import com.xiliulou.electricity.query.MemberCardAndCarRentalPackageSortParamQuery;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageQryModel;
 import com.xiliulou.electricity.query.BatteryMemberCardQuery;
 import com.xiliulou.electricity.query.BatteryMemberCardStatusQuery;
-import com.xiliulou.electricity.query.BatteryModelQuery;
 import com.xiliulou.electricity.vo.BatteryMemberCardSearchVO;
 import com.xiliulou.electricity.vo.BatteryMemberCardVO;
 import org.apache.commons.lang3.tuple.Triple;
@@ -83,4 +83,8 @@ public interface BatteryMemberCardService {
     List<BatteryMemberCard>  selectListByCouponId(Long couponId);
 
     Integer isMemberCardBindFranchinsee(Long id, Integer tenantId);
+    
+    Integer batchUpdateSortParam(List<MemberCardAndCarRentalPackageSortParamQuery> sortParamQueries);
+    
+    List<BatteryMemberCardVO> listMemberCardForSort();
 }

@@ -40,7 +40,7 @@ public class ElectricityCabinetBoxVO {
      * */
     private Integer isFan;
     /**
-     * 温度
+     * 仓内温度
      */
     private String temperature;
     /**
@@ -142,6 +142,11 @@ public class ElectricityCabinetBoxVO {
      * 空闲开始时间
      */
     private Long emptyGridStartTime;
+    
+    /**
+     * 电池温度
+     */
+    private String batteryTemperature;
     
     public static final Integer EXCHANGE_YES=0;
     public static final Integer EXCHANGE_NO=1;

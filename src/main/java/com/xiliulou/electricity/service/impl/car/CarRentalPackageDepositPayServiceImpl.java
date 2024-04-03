@@ -1,6 +1,9 @@
 package com.xiliulou.electricity.service.impl.car;
 
+import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.map.MapUtil;
 import com.xiliulou.db.dynamic.annotation.Slave;
+import com.xiliulou.electricity.domain.car.UserDepositPayTypeDO;
 import com.xiliulou.electricity.entity.car.CarRentalPackageDepositPayPo;
 import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.enums.DelFlagEnum;
@@ -17,19 +20,23 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * 租车套餐押金缴纳订单表 ServiceImpl
+ *
  * @author xiaohui.song
  **/
 @Slf4j
 @Service
 public class CarRentalPackageDepositPayServiceImpl implements CarRentalPackageDepositPayService {
-
+    
     @Resource
     private CarRentalPackageDepositPayMapper carRentalPackageDepositPayMapper;
-
+    
     /**
      * 根据用户ID和租户ID查询最后一条押金信息
      *
@@ -44,7 +51,7 @@ public class CarRentalPackageDepositPayServiceImpl implements CarRentalPackageDe
         }
         return carRentalPackageDepositPayMapper.selectLastByUid(tenantId, uid);
     }
-
+    
     /**
      * 同步免押状态
      *
@@ -56,7 +63,7 @@ public class CarRentalPackageDepositPayServiceImpl implements CarRentalPackageDe
     public boolean syncFreeState(String orderNo, Long optUid) {
         return false;
     }
-
+    
     /**
      * 根据订单编号更新支付状态
      *
@@ -68,7 +75,7 @@ public class CarRentalPackageDepositPayServiceImpl implements CarRentalPackageDe
     public Boolean updatePayStateByOrderNo(String orderNo, Integer payState) {
         return updatePayStateByOrderNo(orderNo, payState, null, null);
     }
-
+    
     /**
      * 根据订单编号更新支付状态
      *
@@ -83,13 +90,13 @@ public class CarRentalPackageDepositPayServiceImpl implements CarRentalPackageDe
         if (StringUtils.isBlank(orderNo) || !BasicEnum.isExist(payState, PayStateEnum.class)) {
             throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
-
+        
         long now = System.currentTimeMillis();
         int num = carRentalPackageDepositPayMapper.updatePayStateByOrderNo(orderNo, payState, remark, uid, now);
-
+        
         return num >= 0;
     }
-
+    
     /**
      * 根据用户ID和租户ID查询支付成功的最后一条押金信息
      *
@@ -103,13 +110,12 @@ public class CarRentalPackageDepositPayServiceImpl implements CarRentalPackageDe
         if (!ObjectUtils.allNotNull(tenantId, uid)) {
             throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
-
+        
         return carRentalPackageDepositPayMapper.selectUnRefundCarDeposit(tenantId, uid);
     }
-
+    
     /**
-     * 条件查询列表<br />
-     * 全表扫描，慎用
+     * 条件查询列表<br /> 全表扫描，慎用
      *
      * @param qryModel 查询模型
      * @return
@@ -119,7 +125,7 @@ public class CarRentalPackageDepositPayServiceImpl implements CarRentalPackageDe
     public List<CarRentalPackageDepositPayPo> list(CarRentalPackageDepositPayQryModel qryModel) {
         return carRentalPackageDepositPayMapper.list(qryModel);
     }
-
+    
     /**
      * 条件查询分页
      *
@@ -132,10 +138,10 @@ public class CarRentalPackageDepositPayServiceImpl implements CarRentalPackageDe
         if (ObjectUtils.isEmpty(qryModel)) {
             qryModel = new CarRentalPackageDepositPayQryModel();
         }
-
+        
         return carRentalPackageDepositPayMapper.page(qryModel);
     }
-
+    
     /**
      * 条件查询总数
      *
@@ -148,10 +154,10 @@ public class CarRentalPackageDepositPayServiceImpl implements CarRentalPackageDe
         if (ObjectUtils.isEmpty(qryModel)) {
             qryModel = new CarRentalPackageDepositPayQryModel();
         }
-
+        
         return carRentalPackageDepositPayMapper.count(qryModel);
     }
-
+    
     /**
      * 根据订单编码查询
      *
@@ -164,10 +170,10 @@ public class CarRentalPackageDepositPayServiceImpl implements CarRentalPackageDe
         if (StringUtils.isBlank(orderNo)) {
             throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
-
+        
         return carRentalPackageDepositPayMapper.selectByOrderNo(orderNo);
     }
-
+    
     /**
      * 根据ID查询
      *
@@ -180,10 +186,10 @@ public class CarRentalPackageDepositPayServiceImpl implements CarRentalPackageDe
         if (ObjectUtils.isEmpty(id)) {
             throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
-
+        
         return carRentalPackageDepositPayMapper.selectById(id);
     }
-
+    
     /**
      * 新增数据，返回主键ID
      *
@@ -195,22 +201,35 @@ public class CarRentalPackageDepositPayServiceImpl implements CarRentalPackageDe
         if (!ObjectUtils.allNotNull(entity, entity.getTenantId(), entity.getUid())) {
             throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
-
+        
         // 赋值操作人、时间、删除标记
         long now = System.currentTimeMillis();
         entity.setUpdateUid(entity.getCreateUid());
         entity.setCreateTime(now);
         entity.setUpdateTime(now);
         entity.setDelFlag(DelFlagEnum.OK.getCode());
-
+        
         // 订单编号
         if (StringUtils.isBlank(entity.getOrderNo())) {
             entity.setOrderNo(OrderIdUtil.generateBusinessOrderId(BusinessType.CAR_DEPOSIT, entity.getUid()));
         }
-
+        
         // 保存入库
         carRentalPackageDepositPayMapper.insert(entity);
-
+        
         return entity.getId();
+    }
+    
+    @Slave
+    @Override
+    public Map<String, Integer> selectPayTypeByOrders(Collection<String> ordersOn) {
+        if (CollectionUtil.isEmpty(ordersOn)) {
+            return MapUtil.empty();
+        }
+        List<UserDepositPayTypeDO> list = this.carRentalPackageDepositPayMapper.selectPayTypeByOrders(ordersOn);
+        if (CollectionUtil.isEmpty(list)) {
+            return MapUtil.empty();
+        }
+        return list.stream().collect(Collectors.toMap(UserDepositPayTypeDO::getOrderNo, UserDepositPayTypeDO::getPayType,(k1,k2)->k1));
     }
 }

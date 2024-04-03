@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.mapper;
 
+import com.xiliulou.electricity.query.MemberCardAndCarRentalPackageSortParamQuery;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
 
 import java.util.List;
@@ -43,7 +44,7 @@ public interface BatteryMemberCardMapper extends BaseMapper<BatteryMemberCard> {
      */
     int deleteById(Long id);
 
-    List<BatteryMemberCard> selectByPage(BatteryMemberCardQuery query);
+    List<BatteryMemberCardAndTypeVO> selectByPage(BatteryMemberCardQuery query);
     
     Integer selectByPageCount(BatteryMemberCardQuery query);
 
@@ -62,4 +63,8 @@ public interface BatteryMemberCardMapper extends BaseMapper<BatteryMemberCard> {
     List<BatteryMemberCardVO> selectMembercardBatteryVByEnterprise(EnterpriseMemberCardQuery query);
 
     Integer isMemberCardBindFranchinsee(@Param("franchiseeId") Long franchiseeId, @Param("tenantId") Integer tenantId);
+    
+    Integer batchUpdateSortParam(@Param("sortParamQueries") List<MemberCardAndCarRentalPackageSortParamQuery> sortParamQueries);
+    
+    List<BatteryMemberCardVO> listMemberCardForSort(@Param("tenantId") Integer tenantId);
 }

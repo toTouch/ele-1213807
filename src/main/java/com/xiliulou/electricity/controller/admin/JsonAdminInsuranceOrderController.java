@@ -91,7 +91,7 @@ public class JsonAdminInsuranceOrderController {
                 .franchiseeId(franchiseeId).tenantId(tenantId).phone(phone).status(status).insuranceType(insuranceType).isUse(isUse).userName(userName).uid(uid).offset(offset)
                 .size(size).type(type).payType(payType).insuranceId(insuranceId).build();
         
-        return insuranceOrderService.queryList(insuranceOrderQuery);
+        return insuranceOrderService.queryList(insuranceOrderQuery, true);
     }
     
     //保险订单查询
@@ -134,5 +134,6 @@ public class JsonAdminInsuranceOrderController {
         
         return insuranceOrderService.queryCount(insuranceOrderQuery);
     }
-    
+
+
 }

@@ -220,6 +220,15 @@ public class OtherSettingParamTemplateRequestDTO {
     private String timedChargeParams;
     
     /**
+     * 智能充电
+     * <pre>
+     *     0 - 打开
+     *     1 - 关闭
+     * </pre>
+     */
+    private Integer enableBmsChargeParams;
+    
+    /**
      * 在位检测 0：关闭 1：打开  （默认关闭）
      */
     private Integer checkBatteryExit;

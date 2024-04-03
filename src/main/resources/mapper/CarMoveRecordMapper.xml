@@ -60,6 +60,28 @@
             <if test="endTime != null">
                 and create_time &lt;= #{endTime}
             </if>
+            <if test="franchiseeIds != null and franchiseeIds.size > 0 ">
+                and (new_franchisee_id in
+                <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
+                    #{id}
+                </foreach>
+                or old_franchisee_id in
+                <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
+                    #{id}
+                </foreach>
+                )
+            </if>
+            <if test="storeIds != null and franchiseeIds.size > 0 ">
+                and (new_store_id in
+                <foreach collection="storeIds" item="id" index="index" open="(" close=")" separator=",">
+                    #{id}
+                </foreach>
+                or old_store_id in
+                <foreach collection="storeIds" item="id" index="index" open="(" close=")" separator=",">
+                    #{id}
+                </foreach>
+                )
+            </if>
         </where>
         order by create_time desc
         limit #{offset}, #{size}
@@ -97,7 +119,28 @@
             <if test="endTime != null">
                 and create_time &lt;= #{endTime}
             </if>
-
+            <if test="franchiseeIds != null and franchiseeIds.size > 0 ">
+                and (new_franchisee_id in
+                <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
+                    #{id}
+                </foreach>
+                or old_franchisee_id in
+                <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
+                    #{id}
+                </foreach>
+                )
+            </if>
+            <if test="storeIds != null and franchiseeIds.size > 0 ">
+                and (new_store_id in
+                <foreach collection="storeIds" item="id" index="index" open="(" close=")" separator=",">
+                    #{id}
+                </foreach>
+                or old_store_id in
+                <foreach collection="storeIds" item="id" index="index" open="(" close=")" separator=",">
+                    #{id}
+                </foreach>
+                )
+            </if>
         </where>
     </select>
 

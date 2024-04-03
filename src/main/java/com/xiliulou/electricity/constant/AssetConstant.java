@@ -17,6 +17,11 @@ public class AssetConstant {
     public static final Integer ASSET_WAREHOUSE_STATUS_ENABLE = 0;
     
     /**
+     * 默认库房名称
+     */
+    public static final String ASSET_WAREHOUSE_DEFAULT_NAME = "默认库房";
+    
+    /**
      * 库房状态：1-禁用
      */
     public static final Integer ASSET_WAREHOUSE_STATUS_DISABLE = 1;
@@ -65,5 +70,19 @@ public class AssetConstant {
      * 车辆批量入库 电机号长度限制
      */
     public static final Integer ASSET_CAR_BATCH_SAVE_MOTOR_NUMBER_SIZE = 17;
+    
+    /**
+     * <p>
+     *    Description: 类型为id的提交
+     * </p>
+    */
+    public static final Integer ASSET_EXIT_WAREHOUSE_SUBMIT_TYPE_BY_ID = 0;
+    
+    /**
+     * <p>
+     *    Description: 类型为sn的提交
+     * </p>
+     */
+    public static final Integer ASSET_EXIT_WAREHOUSE_SUBMIT_TYPE_BY_SN = 1;
     
 }

@@ -218,5 +218,10 @@ public class CarRentalPackageVo implements Serializable {
      * 赠送的优惠券名称
      */
     private String couponName;
+    
+    /**
+     * 套餐排序参数
+     */
+    private Long sortParam;
 
 }

@@ -3,6 +3,8 @@ package com.xiliulou.electricity.query;
 import lombok.Builder;
 import lombok.Data;
 
+import java.util.List;
+
 /**
  * @author : eclair
  * @date : 2023/7/19 16:27
@@ -18,4 +20,8 @@ public class PowerMonthStatisticsQuery {
     private Long eid;
     private Integer size;
     private Integer offset;
+    
+    private List<Long> franchiseeIds;
+    
+    private List<Long> storeIds;
 }

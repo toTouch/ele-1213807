@@ -3,6 +3,8 @@ package com.xiliulou.electricity.query;
 import lombok.Builder;
 import lombok.Data;
 
+import java.util.List;
+
 /**
  * @author: Kenneth
  * @Date: 2023/7/15 14:16
@@ -83,4 +85,8 @@ public class CarMoveRecordQuery {
 
     private Long endTime;
 
+    
+    private List<Long> franchiseeIds;
+    
+    private List<Long> storeIds;
 }

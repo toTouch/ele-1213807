@@ -13,25 +13,53 @@ import java.util.List;
 @Data
 @Builder
 public class RentBatteryOrderQuery {
+    
     private Long size;
+    
     private Long offset;
+    
     /**
      * 用户UID
      */
     private Long uid;
+    
     /**
      * 用户名字
      */
     private String name;
+    
     private String phone;
-
+    
     private Long beginTime;
+    
     private Long endTime;
+    
     private String status;
+    
     private String orderId;
+    
     private Integer type;
+    
     private List<Integer> eleIdList;
+    
     private Integer tenantId;
+    
     private List<Long> franchiseeIds;
+    
     private List<Long> storeIds;
+    
+    /**
+     * 换电柜ID
+     */
+    private Integer electricityCabinetId;
+    
+    /**
+     * 加盟商ID
+     */
+    private Long franchiseeId;
+    
+    /**
+     * 电池编号
+     */
+    private String electricityBatterySn;
 }

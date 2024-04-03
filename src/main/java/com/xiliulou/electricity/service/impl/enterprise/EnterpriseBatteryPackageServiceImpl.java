@@ -296,6 +296,7 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
         batteryMemberCard.setDelFlag(BatteryMemberCard.DEL_NORMAL);
         batteryMemberCard.setCreateTime(System.currentTimeMillis());
         batteryMemberCard.setUpdateTime(System.currentTimeMillis());
+        batteryMemberCard.setSortParam(System.currentTimeMillis());
         batteryMemberCard.setTenantId(TenantContextHolder.getTenantId());
         
         this.batteryMemberCardMapper.insert(batteryMemberCard);
@@ -1821,7 +1822,8 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
                 .forehead(franchiseeInsurance.getForehead()).payType(InsuranceOrder.ONLINE_PAY_TYPE).phone(userInfo.getPhone()).status(InsuranceOrder.STATUS_INIT)
                 // .storeId(Objects.nonNull(electricityCabinet) ? electricityCabinet.getStoreId() : userInfo.getStoreId())
                 .tenantId(userInfo.getTenantId()).uid(userInfo.getUid()).userName(userInfo.getName()).validDays(franchiseeInsurance.getValidDays())
-                .createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).build();
+                .createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis())
+                .simpleBatteryType(franchiseeInsurance.getSimpleBatteryType()).build();
         
         return Triple.of(true, null, insuranceOrder);
     }

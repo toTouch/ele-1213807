@@ -518,7 +518,8 @@ public class InsuranceUserInfoServiceImpl extends ServiceImpl<InsuranceUserInfoM
                 .insuranceType(franchiseeInsurance.getInsuranceType()).orderId(orderId).cid(franchiseeInsurance.getCid()).franchiseeId(franchiseeInsurance.getFranchiseeId())
                 .isUse(InsuranceOrder.NOT_USE).payAmount(franchiseeInsurance.getPremium()).forehead(franchiseeInsurance.getForehead()).payType(InsuranceOrder.OFFLINE_PAY_TYPE)
                 .phone(userInfo.getPhone()).status(InsuranceOrder.STATUS_SUCCESS).tenantId(TenantContextHolder.getTenantId()).uid(userInfo.getUid()).userName(userInfo.getName())
-                .validDays(franchiseeInsurance.getValidDays()).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).build();
+                .validDays(franchiseeInsurance.getValidDays()).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis())
+                .simpleBatteryType(franchiseeInsurance.getSimpleBatteryType()).build();
         insuranceOrderService.insert(insuranceUserOrder);
 
 /*
@@ -681,7 +682,8 @@ public class InsuranceUserInfoServiceImpl extends ServiceImpl<InsuranceUserInfoM
                 .insuranceType(franchiseeInsurance.getInsuranceType()).orderId(orderId).cid(franchiseeInsurance.getCid()).franchiseeId(franchiseeInsurance.getFranchiseeId())
                 .isUse(InsuranceOrder.NOT_USE).payAmount(franchiseeInsurance.getPremium()).forehead(franchiseeInsurance.getForehead()).payType(InsuranceOrder.OFFLINE_PAY_TYPE)
                 .phone(userInfo.getPhone()).status(InsuranceOrder.STATUS_SUCCESS).tenantId(TenantContextHolder.getTenantId()).uid(userInfo.getUid()).userName(userInfo.getName())
-                .validDays(franchiseeInsurance.getValidDays()).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).build();
+                .validDays(franchiseeInsurance.getValidDays()).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis())
+                .simpleBatteryType(franchiseeInsurance.getSimpleBatteryType()).build();
         insuranceOrderService.insert(insuranceUserOrder);
         
         InsuranceUserInfo newInsuranceUserInfo = this.saveUserInsurance(insuranceUserOrder);

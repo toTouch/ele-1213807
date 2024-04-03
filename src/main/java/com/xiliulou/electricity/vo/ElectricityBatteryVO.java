@@ -174,4 +174,8 @@ public class ElectricityBatteryVO {
      * 电池型号ID
      */
     private Long modelId;
+    /**
+     * 电池温度
+     */
+    private String batteryTemperature;
 }

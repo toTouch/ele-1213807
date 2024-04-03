@@ -106,6 +106,14 @@ public class BatteryMemberCardAndTypeVO {
     private Long createTime;
 
     private Long updateTime;
-
+    
+    /**
+     * 套餐排序参数
+     */
+    private Long sortParam;
+    
+    /**
+     * 绑定所有电池型号
+     */
     private List<MemberCardBatteryType> batteryType;
 }
