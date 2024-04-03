@@ -137,4 +137,14 @@ public class EleDisableMemberCardRecordVO {
      * 租期单位 0：分钟，1：天
      */
     private Integer rentUnit;
+    
+    /**
+     * 审核员ID
+     */
+    private Long auditorId;
+    
+    /**
+     * 审核员名称
+     */
+    private String auditorName;
 }

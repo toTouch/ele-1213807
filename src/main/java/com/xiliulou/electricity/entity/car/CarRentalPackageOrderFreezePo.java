@@ -86,6 +86,11 @@ public class CarRentalPackageOrderFreezePo extends BasicCarPo {
      * 审核时间
      */
     private Long auditTime;
+    
+    /**
+     * 审核人员ID
+     */
+    private Long auditorId;
 
     /**
      * 启用时间

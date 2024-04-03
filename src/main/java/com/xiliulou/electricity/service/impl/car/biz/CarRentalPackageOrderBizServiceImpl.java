@@ -1032,6 +1032,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         freezeUpdateEntity.setAuditTime(nowTime);
         freezeUpdateEntity.setRemark(apploveDesc);
         freezeUpdateEntity.setUpdateUid(apploveUid);
+        freezeUpdateEntity.setAuditorId(apploveUid);
         
         // 过期
         if (expireFlag) {
