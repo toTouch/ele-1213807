@@ -126,9 +126,11 @@ public class EleDisableMemberCardRecordServiceImpl extends ServiceImpl<Electrici
             item.setBusinessType(Objects.isNull(batteryMemberCard) ? BatteryMemberCardBusinessTypeEnum.BUSINESS_TYPE_BATTERY.getCode() : batteryMemberCard.getBusinessType());
     
             // 设置审核员名称
-            User user = userService.queryByUidFromCache(item.getAuditorId());
-            if (Objects.nonNull(user)) {
-                item.setAuditorName(user.getName());
+            if (!Objects.isNull(item.getAuditorId())){
+                User user = userService.queryByUidFromCache(item.getAuditorId());
+                if (!Objects.isNull(user)) {
+                    item.setAuditorName(user.getName());
+                }
             }
         });
 
