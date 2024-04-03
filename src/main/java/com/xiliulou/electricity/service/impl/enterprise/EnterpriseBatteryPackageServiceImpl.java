@@ -473,6 +473,7 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
                     // 如果是会员用户则查询的套餐为续租以后的企业套餐对应的押金及限次类型的套餐
                     query.setDeposit(null);
                     query.setLimitCount(null);
+                    query.setFreeDeposite(null);
                 }
             }
             
@@ -496,6 +497,7 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
                 // 如果是会员用户则查询的套餐为续租以后的企业套餐对应的押金及限次类型的套餐
                 query.setDeposit(null);
                 query.setLimitCount(null);
+                query.setFreeDeposite(null);
             }
             
         } else {
@@ -514,6 +516,8 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
             }
     
             UserBatteryMemberCardPackageBO userBatteryMemberCardPackageBO = userBatteryMemberCardPackageService.queryEnterprisePackageByUid(query.getUid());
+            
+            query.setFreeDeposite(Objects.nonNull(userBatteryDeposit) && Objects.equals( userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES) && Objects.equals(userBatteryDeposit.getDepositType(), UserBatteryDeposit.DEPOSIT_TYPE_FREE) ? BatteryMemberCard.YES: null);
     
             // 企业用户并且用户押金为企业代付  押金未换电套餐的押金 但是已经购买了
             if (!isMember) {
@@ -529,11 +533,15 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
                     // 如果是会员用户则查询的套餐为续租以后的企业套餐对应的押金及限次类型的套餐
                     query.setDeposit(userBatteryMemberCardPackageBO.getDeposit());
                     query.setLimitCount(userBatteryMemberCardPackageBO.getLimitCount());
+                } else {
+                    // 会员用户加入站点以后第一次代付 不受限制
+                    query.setDeposit(null);
+                    query.setLimitCount(null);
+                    query.setFreeDeposite(null);
                 }
             }
             query.setRentTypes(Arrays.asList(BatteryMemberCard.RENT_TYPE_OLD, BatteryMemberCard.RENT_TYPE_UNLIMIT));
             query.setBatteryV(Objects.equals(franchisee.getModelType(), Franchisee.NEW_MODEL_TYPE) ? userBatteryTypeService.selectUserSimpleBatteryType(enterpriseUserId) : null);
-            query.setFreeDeposite(Objects.nonNull(userBatteryDeposit) && Objects.equals( userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES) && Objects.equals(userBatteryDeposit.getDepositType(), UserBatteryDeposit.DEPOSIT_TYPE_FREE) ? BatteryMemberCard.YES: null);
         }
         
         //先获取企业关联套餐信息
