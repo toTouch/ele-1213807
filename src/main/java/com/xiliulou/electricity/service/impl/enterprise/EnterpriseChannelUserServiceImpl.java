@@ -1526,6 +1526,7 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
             
             channelUserHistoryMapper.batchInsert(channelUserList);
         }
+        
         return Triple.of(true, null, null);
     }
     

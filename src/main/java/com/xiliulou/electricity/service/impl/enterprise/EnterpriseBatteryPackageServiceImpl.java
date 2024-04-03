@@ -446,20 +446,36 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(query.getUid());
         UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(query.getUid());
         UserInfo userInfo = userInfoService.queryByUidFromCache(query.getUid());
-        
+    
+    
         if (Objects.isNull(userBatteryMemberCard) || Objects.isNull(userBatteryMemberCard.getCardPayCount()) || userBatteryMemberCard.getCardPayCount() <= 0) {
             //新租
             query.setRentTypes(Arrays.asList(BatteryMemberCard.RENT_TYPE_NEW, BatteryMemberCard.RENT_TYPE_UNLIMIT));
             query.setFreeDeposite(Objects.nonNull(userBatteryDeposit)&& Objects.equals( userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES) && Objects.equals(userBatteryDeposit.getDepositType(), UserBatteryDeposit.DEPOSIT_TYPE_FREE) ? BatteryMemberCard.YES: null);
     
+    
             //为了兼容免押后购买套餐
             if (Objects.nonNull(userBatteryDeposit) && Objects.equals(userBatteryDeposit.getDepositType(), UserBatteryDeposit.DEPOSIT_TYPE_FREE) && UserInfo.BATTERY_DEPOSIT_STATUS_YES.equals(userInfo.getBatteryDepositStatus())) {
+                boolean isMember = false;
+    
                 if (Objects.equals(userBatteryDeposit.getDepositModifyFlag(), UserBatteryDeposit.DEPOSIT_MODIFY_YES)) {
                     query.setDeposit(userBatteryDeposit.getBeforeModifyDeposit());
                 } else {
                     query.setDeposit(userBatteryDeposit.getBatteryDeposit());
                 }
+    
+                EleDepositOrder eleDepositOrder = eleDepositOrderService.queryByOrderId(userBatteryDeposit.getOrderId());
+                if (Objects.nonNull(eleDepositOrder)) {
+                    isMember = Objects.equals(eleDepositOrder.getOrderType(), PackageOrderTypeEnum.PACKAGE_ORDER_TYPE_NORMAL.getCode());
+                }
+    
+                if (isMember) {
+                    // 如果是会员用户则查询的套餐为续租以后的企业套餐对应的押金及限次类型的套餐
+                    query.setDeposit(null);
+                    query.setLimitCount(null);
+                }
             }
+            
         } else if (Objects.isNull(userBatteryMemberCard.getMemberCardId()) || Objects.equals(userBatteryMemberCard.getMemberCardId(), NumberConstant.ZERO_L)) {
             //非新租 购买押金套餐
             query.setRentTypes(Arrays.asList(BatteryMemberCard.RENT_TYPE_OLD, BatteryMemberCard.RENT_TYPE_UNLIMIT));
