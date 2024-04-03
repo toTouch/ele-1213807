@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.service.asset;
 
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.query.asset.AssetInventoryDetailBatchInventoryQueryModel;
 import com.xiliulou.electricity.request.asset.AssetInventoryDetailBatchInventoryRequest;
 import com.xiliulou.electricity.request.asset.AssetInventoryDetailRequest;
 import com.xiliulou.electricity.request.asset.ElectricityBatterySnSearchRequest;
@@ -18,6 +19,8 @@ public interface AssetInventoryDetailService {
     List<AssetInventoryDetailVO> listByOrderNo(AssetInventoryDetailRequest assetInventoryRequest);
     
     R batchInventory(AssetInventoryDetailBatchInventoryRequest assetInventoryDetailBatchInventoryRequest, Long operator);
+    
+    Integer batchInventoryBySnList(AssetInventoryDetailBatchInventoryQueryModel queryModel);
     
     Integer countTotal(AssetInventoryDetailRequest assetInventoryRequest);
     
