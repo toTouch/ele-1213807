@@ -283,11 +283,11 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
         }
     
         Integer inviterSource = successInviterVO.getInviterSource();
-        Long inviterUid = successInviterVO.getInviterUid();
+        Long inviterMerchantId = successInviterVO.getMerchantId();
         List<MerchantVO> filterMerchantList = merchantList;
         if (Objects.equals(inviterSource, MerchantInviterSourceEnum.MERCHANT_INVITER_SOURCE_MERCHANT.getCode())) {
             // 去除原商户邀请人
-            filterMerchantList = merchantList.stream().filter(merchant -> !Objects.equals(merchant.getUid(), inviterUid)).collect(Collectors.toList());
+            filterMerchantList = merchantList.stream().filter(merchant -> !Objects.equals(merchant.getId(), inviterMerchantId)).collect(Collectors.toList());
         }
     
         if (CollectionUtils.isEmpty(filterMerchantList)) {
@@ -364,7 +364,8 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
                 }
             }
         }
-        
+    
+        Long inviterMerchantId = NumberConstant.ZERO_L;
         if (Objects.isNull(inviterUid)) {
             MerchantJoinRecord merchantJoinRecord = merchantJoinRecordService.querySuccessRecordByJoinUid(uid, tenantId);
             if (Objects.nonNull(merchantJoinRecord)) {
@@ -372,14 +373,15 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
                 inviterUid = merchantJoinRecord.getInviterUid();
                 inviterName = Optional.ofNullable(userService.queryByUidFromCache(inviterUid)).map(User::getName).orElse("");
                 inviterSource = MerchantInviterSourceEnum.MERCHANT_INVITER_SOURCE_MERCHANT.getCode();
+                inviterMerchantId = merchantJoinRecord.getMerchantId();
             }
         }
-        
+    
         if (Objects.isNull(inviterUid)) {
             return null;
         }
-        
-        return MerchantInviterVO.builder().id(id).inviterUid(inviterUid).inviterName(inviterName).inviterSource(inviterSource).build();
+    
+        return MerchantInviterVO.builder().id(id).inviterUid(inviterUid).inviterName(inviterName).inviterSource(inviterSource).merchantId(inviterMerchantId).build();
     }
     
     @Override

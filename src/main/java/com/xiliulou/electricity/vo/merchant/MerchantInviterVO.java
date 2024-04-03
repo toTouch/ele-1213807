@@ -30,6 +30,11 @@ public class MerchantInviterVO {
     private String inviterName;
     
     /**
+     * 商户ID
+     */
+    private Long merchantId;
+    
+    /**
      * 邀请人来源：1-邀请返券,2-邀请返现,3-套餐返现,4-渠道邀请,5-商户邀请
      */
     private Integer inviterSource;
