@@ -1036,8 +1036,6 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 electricityCabinetVO.setId(electricityCabinet.getId());
                 electricityCabinetVO.setName(electricityCabinet.getName());
                 electricityCabinetVO.setAddress(electricityCabinet.getAddress());
-                electricityCabinetVO.setDeviceName(electricityCabinet.getDeviceName());
-                electricityCabinetVO.setProductKey(electricityCabinet.getProductKey());
                 electricityCabinetVO.setOnlineStatus(electricityCabinet.getOnlineStatus());
                 electricityCabinetVO.setLatitude(e.getContent().getPoint().getY());
                 electricityCabinetVO.setLongitude(e.getContent().getPoint().getX());
@@ -1063,8 +1061,6 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 electricityCabinetVO.setAddress(e.getAddress());
                 electricityCabinetVO.setLongitude(e.getLongitude());
                 electricityCabinetVO.setLatitude(e.getLatitude());
-                electricityCabinetVO.setProductKey(e.getProductKey());
-                electricityCabinetVO.setDeviceName(e.getDeviceName());
                 electricityCabinetVO.setOnlineStatus(e.getOnlineStatus());
                 electricityCabinetVO.setFullyElectricityBattery(e.getFullyElectricityBattery());
                 electricityCabinetVO.setDistance(e.getDistance());

@@ -46,15 +46,6 @@ public class ElectricityCabinetSimpleVO implements Serializable {
      */
     private Double latitude;
     
-    /**
-     * 物联网productKey
-     */
-    private String productKey;
-    
-    /**
-     * 物联网deviceName
-     */
-    private String deviceName;
     
     /**
      * 物联网连接状态（0--连网，1--断网）
