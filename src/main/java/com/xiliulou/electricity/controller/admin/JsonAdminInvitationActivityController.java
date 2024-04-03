@@ -18,7 +18,6 @@ import com.xiliulou.electricity.query.InvitationActivityStatusQuery;
 import com.xiliulou.electricity.service.BatteryMemberCardService;
 import com.xiliulou.electricity.service.InvitationActivityService;
 import com.xiliulou.electricity.service.UserInfoService;
-import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.service.car.CarRentalPackageService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
