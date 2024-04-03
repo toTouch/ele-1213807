@@ -577,6 +577,7 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
                     errorMsg = (String) triple.getRight();
                     userExitMapper.updateById(errorMsg, EnterpriseChannelUserExit.TYPE_FAIL, memberCardChannelExitVo.getChannelUserExitId(), System.currentTimeMillis());
                 }
+                
                 try {
                     //解绑用户数据
                     enterpriseInfoService.unbindUserData(userInfo, enterpriseChannelUser);

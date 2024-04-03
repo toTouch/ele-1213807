@@ -666,21 +666,17 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
         userBatteryDepositVO.setBatteryRentStatus(UserInfo.BATTERY_RENT_STATUS_NO);
         userBatteryDepositVO.setBatteryDepositStatus(UserInfo.BATTERY_DEPOSIT_STATUS_YES);
         userBatteryDepositVO.setBatteryDeposit(BigDecimal.ZERO);
-        log.info("queryUserBatteryDeposit112, uid={}",  uid);
         
         UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
         if (Objects.isNull(userInfo)) {
-            log.info("queryUserBatteryDeposit114, uid={}",  uid);
             log.warn("query deposit warning, not found userInfo,uid = {}", uid);
             return Triple.of(true, "", userBatteryDepositVO);
             
         }
-        log.info("queryUserBatteryDeposit115, uid={}",  userInfo);
         userBatteryDepositVO.setBatteryRentStatus(userInfo.getBatteryRentStatus());
         userBatteryDepositVO.setBatteryDepositStatus(userInfo.getBatteryDepositStatus());
         
         UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(userInfo.getUid());
-        log.info("queryUserBatteryDeposit11={}, uid={}", userBatteryDeposit, uid);
         if (Objects.isNull(userBatteryDeposit)) {
             log.warn("query deposit warning, not found userBatteryDeposit,uid = {}", userInfo.getUid());
             return Triple.of(true, "", userBatteryDepositVO);
@@ -1009,7 +1005,7 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
         EnterpriseUserPackageDetailsVO enterpriseUserPackageDetailsVO = new EnterpriseUserPackageDetailsVO();
         
         try {
-            EnterpriseInfo enterpriseInfo = enterpriseInfoService.queryByIdFromCache(enterpriseId);
+            EnterpriseInfo enterpriseInfo = enterpriseInfoService.queryByIdFromDB(enterpriseId);
             if (Objects.isNull(enterpriseInfo)) {
                 log.error("purchase package by enterprise user error, not found enterprise info, enterprise id = {}", enterpriseId);
                 return Triple.of(false, "ELECTRICITY.0001", "未找到企业信息");
@@ -1200,11 +1196,7 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
             BigDecimal totalBeanAmount = enterpriseInfo.getTotalBeanAmount();
             totalBeanAmount = totalBeanAmount.subtract(integratedPaAmount);
             
-            EnterpriseInfo updateEnterpriseInfo = new EnterpriseInfo();
-            updateEnterpriseInfo.setId(enterpriseInfo.getId());
-            updateEnterpriseInfo.setTotalBeanAmount(totalBeanAmount);
-            updateEnterpriseInfo.setUpdateTime(System.currentTimeMillis());
-            enterpriseInfoService.update(updateEnterpriseInfo);
+            enterpriseInfoService.subtractCloudBean(enterpriseInfo.getId(), integratedPaAmount, System.currentTimeMillis());
             
             CloudBeanUseRecord cloudBeanUseRecord = new CloudBeanUseRecord();
             cloudBeanUseRecord.setEnterpriseId(enterpriseInfo.getId());
@@ -1295,7 +1287,7 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
         EnterpriseUserPackageDetailsVO enterpriseUserPackageDetailsVO = new EnterpriseUserPackageDetailsVO();
         
         try {
-            EnterpriseInfo enterpriseInfo = enterpriseInfoService.queryByIdFromCache(enterpriseId);
+            EnterpriseInfo enterpriseInfo = enterpriseInfoService.queryByIdFromDB(enterpriseId);
             if (Objects.isNull(enterpriseInfo)) {
                 log.error("purchase package with deposit by enterprise user error, not found enterprise info, enterprise id = {}", enterpriseId);
                 return Triple.of(false, "ELECTRICITY.0001", "未找到企业信息");
@@ -1486,13 +1478,9 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
             //扣减企业云豆数量
             BigDecimal totalBeanAmount = enterpriseInfo.getTotalBeanAmount();
             totalBeanAmount = totalBeanAmount.subtract(integratedPaAmount);
-            
-            EnterpriseInfo updateEnterpriseInfo = new EnterpriseInfo();
-            updateEnterpriseInfo.setId(enterpriseInfo.getId());
-            updateEnterpriseInfo.setTotalBeanAmount(totalBeanAmount);
-            updateEnterpriseInfo.setUpdateTime(System.currentTimeMillis());
-            enterpriseInfoService.update(updateEnterpriseInfo);
-            
+      
+            enterpriseInfoService.subtractCloudBean(enterpriseInfo.getId(), integratedPaAmount, System.currentTimeMillis());
+    
             //添加云豆使用记录
             CloudBeanUseRecord cloudBeanUseRecord = new CloudBeanUseRecord();
             cloudBeanUseRecord.setEnterpriseId(enterpriseInfo.getId());
@@ -1583,7 +1571,7 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
         
         EnterpriseUserPackageDetailsVO enterpriseUserPackageDetailsVO = new EnterpriseUserPackageDetailsVO();
         try {
-            EnterpriseInfo enterpriseInfo = enterpriseInfoService.queryByIdFromCache(enterpriseId);
+            EnterpriseInfo enterpriseInfo = enterpriseInfoService.queryByIdFromDB(enterpriseId);
             if (Objects.isNull(enterpriseInfo)) {
                 log.error("purchase package with deposit by enterprise user error, not found enterprise info, enterprise id = {}", enterpriseId);
                 return Triple.of(false, "ELECTRICITY.0001", "未找到企业信息");
@@ -1784,12 +1772,9 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
             BigDecimal totalBeanAmount = enterpriseInfo.getTotalBeanAmount();
             totalBeanAmount = totalBeanAmount.subtract(totalPayAmount);
             
-            EnterpriseInfo updateEnterpriseInfo = new EnterpriseInfo();
-            updateEnterpriseInfo.setId(enterpriseInfo.getId());
-            updateEnterpriseInfo.setTotalBeanAmount(totalBeanAmount);
-            updateEnterpriseInfo.setUpdateTime(System.currentTimeMillis());
-            enterpriseInfoService.update(updateEnterpriseInfo);
-            
+            enterpriseInfoService.subtractCloudBean(enterpriseInfo.getId(), totalPayAmount, System.currentTimeMillis());
+    
+    
             CloudBeanUseRecord cloudBeanUseRecord = new CloudBeanUseRecord();
             cloudBeanUseRecord.setEnterpriseId(enterpriseInfo.getId());
             cloudBeanUseRecord.setUid(userInfo.getUid());

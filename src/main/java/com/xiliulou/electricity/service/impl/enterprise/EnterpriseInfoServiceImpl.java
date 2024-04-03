@@ -300,6 +300,18 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
         return update;
     }
     
+    @Override
+    public int subtractCloudBean(Long id, BigDecimal subtract, long updateTime) {
+        int update = this.enterpriseInfoMapper.subtractCloudBean(id, subtract, updateTime);
+    
+        DbUtils.dbOperateSuccessThen(update, () -> {
+            redisService.delete(CacheConstant.CACHE_ENTERPRISE_INFO + id);
+            return null;
+        });
+    
+        return update;
+    }
+    
     /**
      * 更新用户手机号
      *
@@ -683,7 +695,7 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Triple<Boolean, String, Object> rechargeForAdmin(EnterpriseCloudBeanRechargeQuery enterpriseCloudBeanRechargeQuery) {
-        EnterpriseInfo enterpriseInfo = this.queryByIdFromCache(enterpriseCloudBeanRechargeQuery.getId());
+        EnterpriseInfo enterpriseInfo = this.queryByIdFromDB(enterpriseCloudBeanRechargeQuery.getId());
         if (Objects.isNull(enterpriseInfo)) {
             return Triple.of(false, "100315", "企业配置不存在");
         }
@@ -875,7 +887,7 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
             return Triple.of(false, "ELECTRICITY.0019", "未找到用户");
         }
         
-        EnterpriseInfo enterpriseInfo = this.queryByIdFromCache(enterpriseChannelUser.getEnterpriseId());
+        EnterpriseInfo enterpriseInfo = this.queryByIdFromDB(enterpriseChannelUser.getEnterpriseId());
         if (Objects.isNull(enterpriseInfo)) {
             log.error("RECYCLE CLOUD BEAN ERROR! not found enterpriseInfo,enterpriseId={},uid={}", enterpriseChannelUser.getEnterpriseId(), uid);
             return Triple.of(false, "ELECTRICITY.0019", "企业信息不存在");
@@ -1284,9 +1296,15 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
                 log.info("RECYCLE BATTERY MEMBERCARD INFO!not used membercard cloudBean={},uid={}", v.getPayAmount().doubleValue(), userInfo.getUid());
             });
         }
+        BigDecimal res = totalCloudBean.subtract(totalUsedCloudBean);
+        // 如果结果小于零 则默认为零
+        if (Objects.equals(res.compareTo(BigDecimal.ZERO), NumberConstant.MINUS_ONE)) {
+            res = BigDecimal.ZERO;
+            log.info("RECYCLE BATTERY MEMBERCARD INFO! cloud count is minus totalCloudBean={},totalUsedCloudBean={},uid={}", totalCloudBean.doubleValue(), totalUsedCloudBean.doubleValue(), userInfo.getUid());
+        }
         
         //待回收云豆=总的支付的云豆-总消耗的云豆
-        return Triple.of(true, null, result.add(totalCloudBean.subtract(totalUsedCloudBean)));
+        return Triple.of(true, null, result.add(res));
     }
     
     @Override
@@ -1307,7 +1325,13 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
             return Triple.of(true, null, BigDecimal.ZERO);
         }
         
-        enterpriseInfo.setTotalBeanAmount(enterpriseInfo.getTotalBeanAmount().add(userBatteryDeposit.getBatteryDeposit()));
+        // 免押回收默认为零
+        BigDecimal batteryDeposit = userBatteryDeposit.getBatteryDeposit();
+        if (Objects.equals(userBatteryDeposit.getDepositType(), UserBatteryDeposit.DEPOSIT_TYPE_FREE)) {
+            batteryDeposit = BigDecimal.ZERO;
+        }
+        
+        enterpriseInfo.setTotalBeanAmount(enterpriseInfo.getTotalBeanAmount().add(batteryDeposit));
         
         //保存回收记录
         CloudBeanUseRecord cloudBeanUseRecord = new CloudBeanUseRecord();
@@ -1315,7 +1339,7 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
         cloudBeanUseRecord.setUid(userInfo.getUid());
         cloudBeanUseRecord.setType(CloudBeanUseRecord.TYPE_RECYCLE);
         cloudBeanUseRecord.setOrderType(CloudBeanUseRecord.ORDER_TYPE_BATTERY_DEPOSIT);
-        cloudBeanUseRecord.setBeanAmount(userBatteryDeposit.getBatteryDeposit());
+        cloudBeanUseRecord.setBeanAmount(batteryDeposit);
         cloudBeanUseRecord.setRemainingBeanAmount(enterpriseInfo.getTotalBeanAmount());
         cloudBeanUseRecord.setPackageId(userBatteryDeposit.getDid());
         cloudBeanUseRecord.setFranchiseeId(enterpriseInfo.getFranchiseeId());
