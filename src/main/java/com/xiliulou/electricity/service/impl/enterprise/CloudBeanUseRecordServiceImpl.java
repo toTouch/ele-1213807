@@ -215,8 +215,8 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
             return result;
         }
     
-        //押金云豆数
-        if (Objects.equals(eleDepositOrder.getOrderType(), PackageOrderTypeEnum.PACKAGE_ORDER_TYPE_ENTERPRISE.getCode())) {
+        //押金云豆数: 免押用户不需要计算
+        if (Objects.equals(userBatteryDeposit.getDepositType(), UserBatteryDeposit.DEPOSIT_TYPE_DEFAULT) && Objects.equals(eleDepositOrder.getOrderType(), PackageOrderTypeEnum.PACKAGE_ORDER_TYPE_ENTERPRISE.getCode())) {
             result = result.add(eleDepositOrder.getPayAmount());
         }
     
