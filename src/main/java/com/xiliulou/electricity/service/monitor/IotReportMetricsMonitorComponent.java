@@ -38,8 +38,15 @@ public class IotReportMetricsMonitorComponent {
     @Autowired
     private MetricRegistry metricRegistry;
     
-    static final Gauge IOT_REPORT_COUNT_METRIC = Gauge.build().name("iotReportCountMetric").labelNames("meanRate", "oneMinuteRate", "fiveMinuteRate").help("iot report metric")
+    static final Gauge IOT_REPORT_COUNT_METRIC = Gauge.build().name("iotReportCountMetric").labelNames("count").help("iot report count metric").register();
+    
+    static final Gauge IOT_REPORT_MEAN_RATE_METRIC = Gauge.build().name("iotReportMeanRateMetric").labelNames("meanRate").help("iot report meanRate metric").register();
+    
+    static final Gauge IOT_REPORT_ONE_MINUTE_RATE_METRIC = Gauge.build().name("iotReportOneMinuteRateMetric").labelNames("oneMinuteRate").help("iot report oneMinuteRate metric")
             .register();
+    
+    static final Gauge IOT_REPORT_FIVE_MINUTE_RATE_METRIC = Gauge.build().name("iotReportFiveMinuteRateMetric").labelNames("fiveMinuteRate")
+            .help("iot report fiveMinuteRate metric").register();
     
     private XllThreadPoolExecutorService xllThreadPoolExecutorService = XllThreadPoolExecutors.newFixedThreadPool("iot_report_monitor_pool", 1, "iot_report_monitor");
     
@@ -48,6 +55,9 @@ public class IotReportMetricsMonitorComponent {
     @PostConstruct
     public void init() {
         collectorRegistry.register(IOT_REPORT_COUNT_METRIC);
+        collectorRegistry.register(IOT_REPORT_MEAN_RATE_METRIC);
+        collectorRegistry.register(IOT_REPORT_ONE_MINUTE_RATE_METRIC);
+        collectorRegistry.register(IOT_REPORT_FIVE_MINUTE_RATE_METRIC);
         xllThreadPoolExecutorService.execute(this::timeTaskCheckThreadPool);
     }
     
@@ -57,10 +67,12 @@ public class IotReportMetricsMonitorComponent {
             if (!DataUtil.mapIsUsable(meterMap)) {
                 sleep();
             }
-    
+            
             meterMap.forEach((k, v) -> {
-                IOT_REPORT_COUNT_METRIC.labels(String.format("%.2f", v.getMeanRate()), String.format("%.2f", v.getOneMinuteRate()), String.format("%.2f", v.getFiveMinuteRate()))
-                        .set(v.getCount());
+                IOT_REPORT_COUNT_METRIC.labels("count").set(v.getCount());
+                IOT_REPORT_MEAN_RATE_METRIC.labels("meanRate").set(Double.parseDouble(String.format("%.2f", v.getMeanRate())));
+                IOT_REPORT_ONE_MINUTE_RATE_METRIC.labels("oneMinuteRate").set(Double.parseDouble(String.format("%.2f", v.getOneMinuteRate())));
+                IOT_REPORT_FIVE_MINUTE_RATE_METRIC.labels("fiveMinuteRate").set(Double.parseDouble(String.format("%.2f", v.getFiveMinuteRate())));
             });
             
             sleep();
