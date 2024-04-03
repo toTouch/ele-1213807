@@ -318,9 +318,7 @@ public class ElectricityIotConstant {
     public static final String ELE_BATTERY_SNAPSHOT = "battery_snap_shot";
     public static final String ELE_BATTERY_SNAPSHOT_RSP = "battery_snap_shot_rsp";
 
-
-    public static final String ELE_BATTERY_SNAPSHOT_RSP = "battery_snap_shot_rsp";
-
+    
     /**
      * 电柜模板 app参数设置
      */
