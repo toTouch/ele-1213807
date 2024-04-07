@@ -1163,7 +1163,6 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
             FreeDepositOrder freeDepositOrder = freeDepositOrderService.selectByOrderId(eleRefundOrder.getOrderId());
             if (Objects.isNull(freeDepositOrder)) {
                 log.error("RECYCLE BATTERY DEPOSIT ERROR! not found freeDepositOrder,uid={}", userInfo.getUid());
-                updateEleRefundOrder(eleRefundOrder.getId(), EleRefundOrder.STATUS_REFUND);
                 return;
             }
     
