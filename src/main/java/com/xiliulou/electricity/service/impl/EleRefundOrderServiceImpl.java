@@ -2284,4 +2284,9 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
     public Integer existsRefundOrderByUid(Long uid) {
         return eleRefundOrderMapper.existsRefundOrderByUid(uid);
     }
+    
+    @Override
+    public Integer updateById(EleRefundOrder eleRefundOrderUpdate) {
+        return eleRefundOrderMapper.update(eleRefundOrderUpdate);
+    }
 }

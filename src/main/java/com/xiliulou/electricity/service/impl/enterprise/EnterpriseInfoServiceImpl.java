@@ -1353,11 +1353,16 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
         cloudBeanUseRecord.setCreateTime(System.currentTimeMillis());
         cloudBeanUseRecord.setUpdateTime(System.currentTimeMillis());
         cloudBeanUseRecordService.insert(cloudBeanUseRecord);
-        
+    
+        Integer status = EleRefundOrder.STATUS_SUCCESS;
+        // 如果是免押则改为退款中
+        if (Objects.equals(eleDepositOrder.getPayType(), EleDepositOrder.FREE_DEPOSIT_PAYMENT)) {
+            status = EleRefundOrder.STATUS_REFUND;
+        }
         //生成退押订单
         EleRefundOrder eleRefundOrder = EleRefundOrder.builder().orderId(userBatteryDeposit.getOrderId())
                 .refundOrderNo(OrderIdUtil.generateBusinessOrderId(BusinessType.BATTERY_DEPOSIT_REFUND, userInfo.getUid())).payAmount(userBatteryDeposit.getBatteryDeposit())
-                .refundAmount(userBatteryDeposit.getBatteryDeposit()).status(EleRefundOrder.STATUS_SUCCESS).createTime(System.currentTimeMillis())
+                .refundAmount(userBatteryDeposit.getBatteryDeposit()).status(status).createTime(System.currentTimeMillis())
                 .updateTime(System.currentTimeMillis()).tenantId(userInfo.getTenantId()).memberCardOweNumber(0).build();
         eleRefundOrderService.insert(eleRefundOrder);
         
@@ -1382,7 +1387,7 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
             freeDepositOrderUpdate.setUpdateTime(System.currentTimeMillis());
             freeDepositOrderService.update(freeDepositOrderUpdate);
         
-            PxzConfig pxzConfig = pxzConfigService.queryByTenantIdFromCache(TenantContextHolder.getTenantId());
+            PxzConfig pxzConfig = pxzConfigService.queryByTenantIdFromCache(freeDepositOrder.getTenantId());
             if (Objects.isNull(pxzConfig) || StringUtils.isBlank(pxzConfig.getAesKey()) || StringUtils.isBlank(pxzConfig.getMerchantCode())) {
                 log.error("REFUND ORDER ERROR! not found pxzConfig,uid={}", userInfo.getUid());
                 return;
@@ -1426,10 +1431,21 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
                 updateFreeDepositOrder.setAuthStatus(FreeDepositOrder.AUTH_UN_FROZEN);
                 updateFreeDepositOrder.setUpdateTime(System.currentTimeMillis());
                 freeDepositOrderService.update(updateFreeDepositOrder);
+    
+                // 修改退押订单为退款成功
+                updateEleRefundOrder(eleRefundOrder.getId(), EleRefundOrder.STATUS_SUCCESS);
             }
         });
         
         return Triple.of(true, null, batteryDeposit);
+    }
+    
+    private void updateEleRefundOrder(Long id, Integer status) {
+        EleRefundOrder eleRefundOrderUpdate = new EleRefundOrder();
+        eleRefundOrderUpdate.setId(id);
+        eleRefundOrderUpdate.setUpdateTime(System.currentTimeMillis());
+        eleRefundOrderUpdate.setStatus(status);
+        eleRefundOrderService.updateById(eleRefundOrderUpdate);
     }
     
     @Override

@@ -861,6 +861,12 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
     @Override
     @Transactional
     public Triple<Boolean, String, Object> channelUserExit(EnterpriseUserExitCheckRequest request) {
+        Long uid = SecurityUtils.getUid();
+        
+        if (!redisService.setNx(CacheConstant.CACHE_CHANNEL_USER_EXIT_LOCK + uid, "1", 3 * 1000L, false)) {
+            return Triple.of(false, "ELECTRICITY.0034", "操作频繁");
+        }
+        
         // 自主续费不能为空
         if (Objects.isNull(request.getRenewalStatus())) {
             log.error("channel User Exit renewal Status is null, uid={}", request.getUid());
@@ -1075,6 +1081,11 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
     public Triple<Boolean, String, Object> channelUserExitAll(EnterpriseUserExitCheckRequest request) {
         // 查询当前用户是否为站长
         Long uid = SecurityUtils.getUid();
+    
+        if (!redisService.setNx(CacheConstant.CACHE_CHANNEL_USER_EXIT_ALL_LOCK + uid, "1", 3 * 1000L, false)) {
+            return Triple.of(false, "ELECTRICITY.0034", "操作频繁");
+        }
+        
         EnterpriseInfoVO enterpriseInfoVO = enterpriseInfoService.selectEnterpriseInfoByUid(uid);
         if (Objects.isNull(enterpriseInfoVO) || Objects.isNull(enterpriseInfoVO.getId())) {
             log.error("channel user exit all enterprise not exists, uid={}", request.getUid());
