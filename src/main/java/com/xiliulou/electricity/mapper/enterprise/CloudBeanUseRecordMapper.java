@@ -5,6 +5,7 @@ import com.xiliulou.electricity.entity.enterprise.CloudBeanUseRecord;
 import java.util.List;
 
 import com.xiliulou.electricity.query.enterprise.CloudBeanUseRecordQuery;
+import com.xiliulou.electricity.vo.enterprise.CloudBeanSumVO;
 import org.apache.ibatis.annotations.Param;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 
@@ -49,4 +50,8 @@ public interface CloudBeanUseRecordMapper extends BaseMapper<CloudBeanUseRecord>
     List<CloudBeanUseRecord> selectCanRecycleRecord(@Param("enterpriseId") Long enterpriseId, @Param("currentTimeMillis") long currentTimeMillis);
     
     List<CloudBeanUseRecord> selectByTime(@Param("beginTime") Long beginTime, @Param("endTime") Long endTime, @Param("enterpriseId") Long enterpriseId);
+    
+    List<Long> selectListEnterpriseId();
+    
+    List<CloudBeanSumVO> selectBeanAmountByEnterpriseId(@Param("enterpriseId") Long enterpriseId);
 }

@@ -45,12 +45,14 @@ import com.xiliulou.electricity.service.excel.AutoHeadColumnWidthStyleStrategy;
 import com.xiliulou.electricity.utils.DateUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.enterprise.CloudBeanOrderExcelVO;
+import com.xiliulou.electricity.vo.enterprise.CloudBeanSumVO;
 import com.xiliulou.electricity.vo.enterprise.CloudBeanUseRecordVO;
 import com.xiliulou.storage.config.StorageConfig;
 import com.xiliulou.storage.service.StorageService;
 import com.xiliulou.storage.service.impl.AliyunOssService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.BeanUtils;
@@ -519,6 +521,79 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
         
         //总共消耗的云豆
         return BigDecimal.valueOf(useDays).multiply(rentPrice);
+    }
+    
+    @Slave
+    @Override
+    public void checkCloudBeanTask() {
+        List<Long> enterpriseIdList = cloudBeanUseRecordMapper.selectListEnterpriseId();
+        if (ObjectUtils.isEmpty(enterpriseIdList)) {
+            return;
+        }
+    
+        enterpriseIdList.stream().forEach(enterpriseId -> {
+            EnterpriseInfo enterpriseInfo = enterpriseInfoService.queryByIdFromDB(enterpriseId);
+            if (Objects.isNull(enterpriseInfo)) {
+                log.info("check cloud bean task enterprise not find enterpriseId={}", enterpriseId);
+                return;
+            }
+            
+            List<CloudBeanSumVO> cloudBeanSumVOList = cloudBeanUseRecordMapper.selectBeanAmountByEnterpriseId(enterpriseId);
+            if (ObjectUtils.isEmpty(cloudBeanSumVOList)) {
+                return;
+            }
+            
+            // 计算每个类型云豆数量的总和
+            Map<Integer, BigDecimal> beanAmountMap = cloudBeanSumVOList.stream().filter(cloudBeanSumVO -> Objects.nonNull(cloudBeanSumVO.getBeanAmount()))
+                    .collect(Collectors.groupingBy(CloudBeanSumVO::getType, Collectors.reducing(BigDecimal.ZERO, CloudBeanSumVO::getBeanAmount, BigDecimal::add)));
+            
+            // 企业总充值的：t_cloud_bean_use_record :type 2，3，4  - 5
+            BigDecimal rechargeSum = getRechargeSum(beanAmountMap);
+            
+            // 计算真实消费的云豆数量：总代扣的减去-总回收的
+            BigDecimal realConsumeSum = getRealConsumeSum(beanAmountMap);
+    
+            BigDecimal totalBeanAmount = realConsumeSum.add(enterpriseInfo.getTotalBeanAmount());
+            if (!Objects.equals(totalBeanAmount.compareTo(rechargeSum), NumberConstant.ZERO)) {
+                log.error("check cloud bean task calculate error enterpriseId={}, rechargeSum={}, totalBeanAmount={}", enterpriseId, totalBeanAmount);
+            }
+        });
+    }
+    
+    private BigDecimal getRealConsumeSum(Map<Integer, BigDecimal> beanAmountMap) {
+        BigDecimal sum = BigDecimal.ZERO;
+        // 代扣总和
+        if (ObjectUtils.isNotEmpty(beanAmountMap.get(EnterpriseCloudBeanOrder.TYPE_PAY_MEMBERCARD))) {
+            sum = sum.add(beanAmountMap.get(EnterpriseCloudBeanOrder.TYPE_PAY_MEMBERCARD));
+        }
+        // 回收总和
+        if (ObjectUtils.isNotEmpty(beanAmountMap.get(EnterpriseCloudBeanOrder.TYPE_RECYCLE))) {
+            sum = sum.subtract(beanAmountMap.get(EnterpriseCloudBeanOrder.TYPE_RECYCLE));
+        }
+        
+        return sum;
+    }
+    
+    private BigDecimal getRechargeSum(Map<Integer, BigDecimal> beanAmountMap) {
+        BigDecimal sum = BigDecimal.ZERO;
+        
+        if (ObjectUtils.isNotEmpty(beanAmountMap.get(EnterpriseCloudBeanOrder.TYPE_ADMIN_RECHARGE))) {
+            sum = sum.add(beanAmountMap.get(EnterpriseCloudBeanOrder.TYPE_ADMIN_RECHARGE));
+        }
+    
+        if (ObjectUtils.isNotEmpty(beanAmountMap.get(EnterpriseCloudBeanOrder.TYPE_PRESENT))) {
+            sum = sum.add(beanAmountMap.get(EnterpriseCloudBeanOrder.TYPE_PRESENT));
+        }
+        
+        if (ObjectUtils.isNotEmpty(beanAmountMap.get(EnterpriseCloudBeanOrder.TYPE_USER_RECHARGE))) {
+            sum = sum.add(beanAmountMap.get(EnterpriseCloudBeanOrder.TYPE_USER_RECHARGE));
+        }
+    
+        if (ObjectUtils.isNotEmpty(beanAmountMap.get(EnterpriseCloudBeanOrder.TYPE_ADMIN_DEDUCT))) {
+            sum = sum.subtract(beanAmountMap.get(EnterpriseCloudBeanOrder.TYPE_ADMIN_DEDUCT));
+        }
+        
+        return sum;
     }
     
     private BigDecimal getContainMembercardUsedCloudBeanV2(EnterpriseRentRecord enterpriseRentRecord, List<AnotherPayMembercardRecord> anotherPayMembercardRecords,
