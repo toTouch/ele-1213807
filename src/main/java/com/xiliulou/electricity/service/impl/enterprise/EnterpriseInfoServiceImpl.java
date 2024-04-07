@@ -1145,17 +1145,22 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
         cloudBeanUseRecord.setUpdateTime(System.currentTimeMillis());
         cloudBeanUseRecordService.insert(cloudBeanUseRecord);
         
+        Integer status = EleRefundOrder.STATUS_SUCCESS;
+        // 如果是免押则改为退款中
+        if (Objects.equals(eleDepositOrder.getPayType(), EleDepositOrder.FREE_DEPOSIT_PAYMENT)) {
+            status = EleRefundOrder.STATUS_REFUND;
+        }
         //生成退押订单
         EleRefundOrder eleRefundOrder = EleRefundOrder.builder().orderId(userBatteryDeposit.getOrderId())
                 .refundOrderNo(OrderIdUtil.generateBusinessOrderId(BusinessType.BATTERY_DEPOSIT_REFUND, userInfo.getUid())).payAmount(userBatteryDeposit.getBatteryDeposit())
-                .refundAmount(userBatteryDeposit.getBatteryDeposit()).status(EleRefundOrder.STATUS_SUCCESS).createTime(System.currentTimeMillis())
+                .refundAmount(userBatteryDeposit.getBatteryDeposit()).status(status).createTime(System.currentTimeMillis())
                 .updateTime(System.currentTimeMillis()).tenantId(userInfo.getTenantId()).memberCardOweNumber(0).build();
         eleRefundOrderService.insert(eleRefundOrder);
         
         //记录企业用户退押记录
         enterpriseUserCostRecordService.asyncSaveUserCostRecordForRefundDeposit(userInfo.getUid(), UserCostTypeEnum.COST_TYPE_REFUND_DEPOSIT.getCode(), eleRefundOrder);
         
-        if(!Objects.equals( eleDepositOrder.getPayType(),EleDepositOrder.FREE_DEPOSIT_PAYMENT)){
+        if(!Objects.equals(eleDepositOrder.getPayType(), EleDepositOrder.FREE_DEPOSIT_PAYMENT)){
             return Triple.of(true, null, userBatteryDeposit.getBatteryDeposit());
         }
     
@@ -1176,7 +1181,6 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
             PxzConfig pxzConfig = pxzConfigService.queryByTenantIdFromCache(TenantContextHolder.getTenantId());
             if (Objects.isNull(pxzConfig) || StringUtils.isBlank(pxzConfig.getAesKey()) || StringUtils.isBlank(pxzConfig.getMerchantCode())) {
                 log.error("REFUND ORDER ERROR! not found pxzConfig,uid={}", userInfo.getUid());
-                updateEleRefundOrder(eleRefundOrder.getId(), EleRefundOrder.STATUS_REFUND);
                 return;
             }
         
@@ -1196,21 +1200,18 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
             try {
                 pxzUnfreezeDepositCommonRsp = pxzDepositService.unfreezeDeposit(testQuery);
             } catch (Exception e) {
-                updateEleRefundOrder(eleRefundOrder.getId(), EleRefundOrder.STATUS_REFUND);
                 log.error("REFUND ORDER ERROR! unfreeDepositOrder fail! uid={},orderId={}", userInfo.getUid(), freeDepositOrder.getOrderId(), e);
                 return;
             }
         
             if (Objects.isNull(pxzUnfreezeDepositCommonRsp)) {
                 log.error("REFUND ORDER ERROR! unfreeDepositOrder fail! rsp is null! uid={},orderId={}", userInfo.getUid(), freeDepositOrder.getOrderId());
-                updateEleRefundOrder(eleRefundOrder.getId(), EleRefundOrder.STATUS_REFUND);
                 return;
             }
         
             if (!pxzUnfreezeDepositCommonRsp.isSuccess()) {
                 log.error("REFUND ORDER ERROR! unfreeDepositOrder fail! rsp is null! uid={},orderId={},result={}", userInfo.getUid(), freeDepositOrder.getOrderId(),
                         pxzUnfreezeDepositCommonRsp.getRespDesc());
-                updateEleRefundOrder(eleRefundOrder.getId(), EleRefundOrder.STATUS_REFUND);
                 return;
             }
         
@@ -1221,6 +1222,9 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
                 updateFreeDepositOrder.setAuthStatus(FreeDepositOrder.AUTH_UN_FROZEN);
                 updateFreeDepositOrder.setUpdateTime(System.currentTimeMillis());
                 freeDepositOrderService.update(updateFreeDepositOrder);
+                
+                // 修改退押订单为退款成功
+                updateEleRefundOrder(eleRefundOrder.getId(), EleRefundOrder.STATUS_SUCCESS);
             }
         });
         
