@@ -23,7 +23,7 @@ public class BatteryInfoDto {
     /**
      * soc
      */
-    private Integer soc;
+    private Double soc;
     /**
      * 电池容量
      */
@@ -59,11 +59,11 @@ public class BatteryInfoDto {
     /**
      * 总放电Ah
      */
-    private Integer totalDischarge;
+    private Double totalDischarge;
     /**
      * 总充电Ah
      */
-    private Integer totalCharge;
+    private Double totalCharge;
     /**
      * 预计放电时间
      */
