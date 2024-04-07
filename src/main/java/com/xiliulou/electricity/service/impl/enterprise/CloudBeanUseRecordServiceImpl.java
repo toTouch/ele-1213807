@@ -4,6 +4,7 @@ import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.alibaba.excel.EasyExcel;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
@@ -552,7 +553,7 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
             
             // 计算真实消费的云豆数量：总代扣的减去-总回收的
             BigDecimal realConsumeSum = getRealConsumeSum(beanAmountMap);
-    
+            log.info("sssss cloudBeanSumVOList={}, realConsumeSum={}, enterpriseInfo={}", JsonUtil.toJson(cloudBeanSumVOList), realConsumeSum, enterpriseInfo);
             BigDecimal totalBeanAmount = realConsumeSum.add(enterpriseInfo.getTotalBeanAmount());
             if (!Objects.equals(totalBeanAmount.compareTo(rechargeSum), NumberConstant.ZERO)) {
                 log.error("check cloud bean task calculate error enterpriseId={}, rechargeSum={}, totalBeanAmount={}", enterpriseId, rechargeSum, totalBeanAmount);
