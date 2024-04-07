@@ -831,6 +831,11 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
             log.warn("RECYCLE WARN! not found user,uid={}", uid);
             return Triple.of(false, "ELECTRICITY.0019", "未找到用户");
         }
+    
+        if (!redisService.setNx(CacheConstant.CACHE_RECYCLE_CLOUD_BEAN_LOCK + uid, String.valueOf(System.currentTimeMillis()), 3000L, false)) {
+            log.warn("RECYCLE WARN! Frequency too fast");
+            return Triple.of(false, "ELECTRICITY.0034", "操作频繁");
+        }
         
         if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
             log.warn("RECYCLE WARN! user is unUsable,uid={}", uid);
