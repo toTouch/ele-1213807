@@ -555,7 +555,7 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
     
             BigDecimal totalBeanAmount = realConsumeSum.add(enterpriseInfo.getTotalBeanAmount());
             if (!Objects.equals(totalBeanAmount.compareTo(rechargeSum), NumberConstant.ZERO)) {
-                log.error("check cloud bean task calculate error enterpriseId={}, rechargeSum={}, totalBeanAmount={}", enterpriseId, totalBeanAmount);
+                log.error("check cloud bean task calculate error enterpriseId={}, rechargeSum={}, totalBeanAmount={}", enterpriseId, rechargeSum, totalBeanAmount);
             }
         });
     }
