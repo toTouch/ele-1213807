@@ -96,7 +96,7 @@
     </select>
     
     <select id="selectListEnterpriseId" resultType="java.lang.Long">
-        select distinct enterprise_id from t_cloud_bean_use_record where del_flag = 0;
+        select distinct enterprise_id from t_cloud_bean_use_record where del_flag = 0
     </select>
     
     <select id="selectBeanAmountByEnterpriseId"
