@@ -1163,6 +1163,7 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
             FreeDepositOrder freeDepositOrder = freeDepositOrderService.selectByOrderId(eleRefundOrder.getOrderId());
             if (Objects.isNull(freeDepositOrder)) {
                 log.error("RECYCLE BATTERY DEPOSIT ERROR! not found freeDepositOrder,uid={}", userInfo.getUid());
+                updateEleRefundOrder(eleRefundOrder.getId(), EleRefundOrder.STATUS_REFUND);
                 return;
             }
     
@@ -1176,6 +1177,7 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
             PxzConfig pxzConfig = pxzConfigService.queryByTenantIdFromCache(TenantContextHolder.getTenantId());
             if (Objects.isNull(pxzConfig) || StringUtils.isBlank(pxzConfig.getAesKey()) || StringUtils.isBlank(pxzConfig.getMerchantCode())) {
                 log.error("REFUND ORDER ERROR! not found pxzConfig,uid={}", userInfo.getUid());
+                updateEleRefundOrder(eleRefundOrder.getId(), EleRefundOrder.STATUS_REFUND);
                 return;
             }
         
@@ -1195,18 +1197,21 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
             try {
                 pxzUnfreezeDepositCommonRsp = pxzDepositService.unfreezeDeposit(testQuery);
             } catch (Exception e) {
+                updateEleRefundOrder(eleRefundOrder.getId(), EleRefundOrder.STATUS_REFUND);
                 log.error("REFUND ORDER ERROR! unfreeDepositOrder fail! uid={},orderId={}", userInfo.getUid(), freeDepositOrder.getOrderId(), e);
                 return;
             }
         
             if (Objects.isNull(pxzUnfreezeDepositCommonRsp)) {
                 log.error("REFUND ORDER ERROR! unfreeDepositOrder fail! rsp is null! uid={},orderId={}", userInfo.getUid(), freeDepositOrder.getOrderId());
+                updateEleRefundOrder(eleRefundOrder.getId(), EleRefundOrder.STATUS_REFUND);
                 return;
             }
         
             if (!pxzUnfreezeDepositCommonRsp.isSuccess()) {
                 log.error("REFUND ORDER ERROR! unfreeDepositOrder fail! rsp is null! uid={},orderId={},result={}", userInfo.getUid(), freeDepositOrder.getOrderId(),
                         pxzUnfreezeDepositCommonRsp.getRespDesc());
+                updateEleRefundOrder(eleRefundOrder.getId(), EleRefundOrder.STATUS_REFUND);
                 return;
             }
         
@@ -1221,6 +1226,14 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
         });
         
         return Triple.of(true, null, batteryDeposit);
+    }
+    
+    private void updateEleRefundOrder(Long id, Integer status) {
+        EleRefundOrder eleRefundOrderUpdate = new EleRefundOrder();
+        eleRefundOrderUpdate.setId(id);
+        eleRefundOrderUpdate.setUpdateTime(System.currentTimeMillis());
+        eleRefundOrderUpdate.setStatus(status);
+        eleRefundOrderService.updateById(eleRefundOrderUpdate);
     }
     
     @Override

@@ -37,6 +37,10 @@
         from t_ele_refund_order
     </sql>
     
+    <update id="update">
+        update t_ele_refund_order set status = #{status},update_time = #{updateTime} where id = #{id}
+    </update>
+    
     <!--查询指定行数据-->
     <select id="queryList" resultType="com.xiliulou.electricity.vo.EleRefundOrderVO">
         select
