@@ -85,4 +85,6 @@ public interface CloudBeanUseRecordService {
             List<AnotherPayMembercardRecord> anotherPayMembercardRecords);
     
     void recycleCloudBeanExitTask();
+    
+    void checkCloudBeanTask();
 }
