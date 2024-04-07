@@ -1178,7 +1178,7 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
             freeDepositOrderUpdate.setUpdateTime(System.currentTimeMillis());
             freeDepositOrderService.update(freeDepositOrderUpdate);
         
-            PxzConfig pxzConfig = pxzConfigService.queryByTenantIdFromCache(TenantContextHolder.getTenantId());
+            PxzConfig pxzConfig = pxzConfigService.queryByTenantIdFromCache(freeDepositOrder.getTenantId());
             if (Objects.isNull(pxzConfig) || StringUtils.isBlank(pxzConfig.getAesKey()) || StringUtils.isBlank(pxzConfig.getMerchantCode())) {
                 log.error("REFUND ORDER ERROR! not found pxzConfig,uid={}", userInfo.getUid());
                 return;
