@@ -1039,12 +1039,11 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 electricityCabinetVO.setServicePhone(electricityCabinet.getServicePhone());
                 electricityCabinetVO.setAddress(electricityCabinet.getAddress());
                 electricityCabinetVO.setOnlineStatus(electricityCabinet.getOnlineStatus());
-                electricityCabinetVO.setBusinessTime(electricityCabinet.getBusinessTime());
                 electricityCabinetVO.setLatitude(e.getContent().getPoint().getY());
                 electricityCabinetVO.setLongitude(e.getContent().getPoint().getX());
                 //将公里数转化为米，返回给前端
                 electricityCabinetVO.setDistance(e.getDistance().getValue() * 1000);
-                assignAttribute(electricityCabinetVO, electricityCabinet.getFullyCharged());
+                assignAttribute(electricityCabinetVO, electricityCabinet.getFullyCharged(),electricityCabinet.getBusinessTime());
                 return electricityCabinetVO;
                 
             }).filter(Objects::nonNull).collect(Collectors.toList());
@@ -1068,8 +1067,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 electricityCabinetVO.setDistance(e.getDistance());
                 electricityCabinetVO.setSn(e.getSn());
                 electricityCabinetVO.setServicePhone(e.getServicePhone());
-                electricityCabinetVO.setBusinessTime(e.getBusinessTime());
-                assignAttribute(electricityCabinetVO,e.getFullyCharged());
+                assignAttribute(electricityCabinetVO,e.getFullyCharged(), e.getBusinessTime());
                 return electricityCabinetVO;
             }).filter(Objects::nonNull).collect(Collectors.toList());
             
@@ -1078,16 +1076,22 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         return R.ok(resultVo.stream().sorted(Comparator.comparing(ElectricityCabinetSimpleVO::getDistance)).collect(Collectors.toList()));
     }
     
-    private void assignAttribute(ElectricityCabinetSimpleVO e, Double fullyCharged) {
+    private void assignAttribute(ElectricityCabinetSimpleVO e, Double fullyCharged, String businessTime) {
         //营业时间
-        if (Objects.nonNull(e.getBusinessTime())&&!Objects.equals(e.getBusinessTime(), ElectricityCabinetVO.ALL_DAY)) {
-            String businessTime = e.getBusinessTime();
-            int index = businessTime.indexOf("-");
-            if (!Objects.equals(index, -1) && index > 0) {
-                Long totalBeginTime = Long.valueOf(businessTime.substring(0, index));
-                Long totalEndTime = Long.valueOf(businessTime.substring(index + 1));
-                e.setBeginTime(totalBeginTime);
-                e.setEndTime(totalEndTime);
+        if (StringUtils.isNotBlank(businessTime)) {
+            if (Objects.equals(businessTime, ElectricityCabinetVO.ALL_DAY)) {
+                e.setBusinessTimeType(ElectricityCabinetVO.ALL_DAY);
+//                e.setIsBusiness(ElectricityCabinetVO.IS_BUSINESS);
+            } else {
+                e.setBusinessTimeType(ElectricityCabinetVO.ILLEGAL_DATA);
+                int index = businessTime.indexOf("-");
+                if (!Objects.equals(index, -1) && index > 0) {
+                    e.setBusinessTimeType(ElectricityCabinetVO.CUSTOMIZE_TIME);
+                    Long totalBeginTime = Long.valueOf(businessTime.substring(0, index));
+                    Long totalEndTime = Long.valueOf(businessTime.substring(index + 1));
+                    e.setBeginTime(totalBeginTime);
+                    e.setEndTime(totalEndTime);
+                }
             }
         }
         List<ElectricityCabinetBox> cabinetBoxList = electricityCabinetBoxService.selectEleBoxAttrByEid(e.getId());
