@@ -208,4 +208,8 @@ public class ElectricityCabinetOtherSetting {
      */
     private Integer enableBmsChargeParams;
     
+    /**
+     * 少电告警
+     */
+    private Integer minBatteryCountAlarm;
 }
