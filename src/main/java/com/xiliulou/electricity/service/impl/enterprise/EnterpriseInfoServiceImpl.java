@@ -1151,7 +1151,7 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
                     
                     log.info("RECYCLE BATTERY MEMBERCARD INFO! rent battery totalUseDay={},uid={}", totalUseDay, userInfo.getUid());
                     
-                    ElectricityMemberCardOrder electricityMemberCardOrder = electricityMemberCardOrderService.selectByOrderNo(userBatteryMemberCard.getOrderId());
+                    ElectricityMemberCardOrder electricityMemberCardOrder = electricityMemberCardOrderService.selectByOrderNo(enterpriseRentRecord.getRentMembercardOrderId());
                     if (Objects.nonNull(electricityMemberCardOrder)) {
                         
                         BigDecimal price = electricityMemberCardOrder.getPayAmount().divide(BigDecimal.valueOf(electricityMemberCardOrder.getValidDays()), 2, RoundingMode.HALF_UP);
