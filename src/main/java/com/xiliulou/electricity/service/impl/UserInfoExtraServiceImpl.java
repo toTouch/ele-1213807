@@ -355,7 +355,7 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
             ChannelActivityHistory channelActivityHistory = channelActivityHistoryService.querySuccessHistoryByJoinUid(uid, tenantId);
             if (Objects.nonNull(channelActivityHistory)) {
                 id = channelActivityHistory.getId();
-                inviterUid = channelActivityHistory.getUid();
+                inviterUid = channelActivityHistory.getInviteUid();
                 inviterSource = MerchantInviterSourceEnum.MERCHANT_INVITER_SOURCE_CHANNEL_ACTIVITY.getCode();
                 
                 UserInfo userInfo = userInfoService.queryByUidFromCache(inviterUid);
