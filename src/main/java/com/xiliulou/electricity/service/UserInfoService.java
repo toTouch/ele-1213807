@@ -181,4 +181,5 @@ public interface UserInfoService extends IService<UserInfo> {
      * @return 影响行数
      */
     Integer updatePhoneByUid(Integer tenantId, Long uid, String newPhone);
+    
 }

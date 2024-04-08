@@ -27,6 +27,8 @@ public interface MerchantJoinRecordService {
      */
     R joinScanCode(MerchantJoinScanRequest request);
     
+    Integer insertOne(MerchantJoinRecord record);
+    
     /**
      * 根据参与人uid查询记录
      */
@@ -106,5 +108,11 @@ public interface MerchantJoinRecordService {
     
     Integer updateStatusById(Long id, Integer status, long updateTime);
     
-    String queryMerchantNameByJoinUid(Long joinUid, Integer status);
+    Integer countSuccessByCondition(MerchantPromotionScanCodeQueryModel scanCodeQueryModel);
+    
+    MerchantJoinRecord querySuccessRecordByJoinUid(Long uid, Integer tenantId);
+    
+    Integer removeById(Long id, Long updateTime);
+    
+    Integer countEmployeeScanCodeSuccessNum(List<Long> employeeIds, Long startTime, Long endTime, Integer status, Integer tenantId, Long uid);
 }

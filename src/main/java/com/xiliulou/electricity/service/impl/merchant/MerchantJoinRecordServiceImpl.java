@@ -255,6 +255,11 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
         }
     }
     
+    @Override
+    public Integer insertOne(MerchantJoinRecord record) {
+        return merchantJoinRecordMapper.insertOne(record);
+    }
+    
     private MerchantJoinRecord assembleRecord(Long merchantId, Long inviterUid, Integer inviterType, Long joinUid, Long channelEmployeeUid, Long placeId, MerchantAttr merchantAttr,
             Integer tenantId) {
         long nowTime = System.currentTimeMillis();
@@ -289,7 +294,7 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
         return MerchantJoinRecord.builder().merchantId(merchantId).channelEmployeeUid(channelEmployeeUid).placeId(placeId).inviterUid(inviterUid).inviterType(inviterType)
                 .joinUid(joinUid).startTime(nowTime).expiredTime(expiredTime).status(MerchantJoinRecordConstant.STATUS_INIT).protectionTime(protectionExpireTime)
                 .protectionStatus(MerchantJoinRecordConstant.PROTECTION_STATUS_NORMAL).delFlag(NumberConstant.ZERO).createTime(nowTime).updateTime(nowTime).tenantId(tenantId)
-                .build();
+                .modifyInviter(MerchantJoinRecordConstant.MODIFY_INVITER_NO).build();
     }
     
     @Slave
@@ -509,7 +514,39 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
     
     @Slave
     @Override
-    public String queryMerchantNameByJoinUid(Long joinUid, Integer status) {
-        return merchantJoinRecordMapper.selectMerchantNameByJoinUid(joinUid, status);
+    public MerchantJoinRecord querySuccessRecordByJoinUid(Long uid, Integer tenantId) {
+        return merchantJoinRecordMapper.selectSuccessRecordByJoinUid(uid, tenantId);
+    }
+    
+    @Override
+    public Integer removeById(Long id, Long updateTime) {
+        return merchantJoinRecordMapper.removeById(id, updateTime);
+    }
+    
+    /**
+     * 查询扫码人数成功的数量
+     * @param employeeIds
+     * @param startTime
+     * @param endTime
+     * @param status
+     * @param tenantId
+     * @param uid
+     * @return
+     */
+    @Slave
+    @Override
+    public Integer countEmployeeScanCodeSuccessNum(List<Long> employeeIds, Long startTime, Long endTime, Integer status, Integer tenantId, Long uid) {
+        return merchantJoinRecordMapper.countEmployeeScanCodeSuccessNum(employeeIds, startTime, endTime, status, tenantId, uid);
+    }
+    
+    /**
+     * 查询扫码人数成功的数量
+     * @param scanCodeQueryModel
+     * @return
+     */
+    @Slave
+    @Override
+    public Integer countSuccessByCondition(MerchantPromotionScanCodeQueryModel scanCodeQueryModel) {
+        return merchantJoinRecordMapper.countSuccessByCondition(scanCodeQueryModel);
     }
 }

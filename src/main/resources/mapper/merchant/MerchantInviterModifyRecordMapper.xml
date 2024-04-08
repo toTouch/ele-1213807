@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.merchant.MerchantInviterModifyRecordMapper">
+    <!-- 基础字段 -->
+    <sql id="basic_field">
+        id, uid, inviter_uid, inviter_name, old_inviter_uid, old_inviter_name, old_inviter_source, merchant_id, franchisee_id, tenant_id, operator, remark, del_flag, create_time, update_time
+    </sql>
+    
+    <!--新增所有列-->
+    <insert id="insertOne" keyProperty="id" useGeneratedKeys="true">
+        insert into t_merchant_inviter_modify_record
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            uid, inviter_uid, inviter_name, old_inviter_uid, old_inviter_name, old_inviter_source, merchant_id, franchisee_id, tenant_id, operator, remark, del_flag, create_time, update_time
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            #{uid}, #{inviterUid}, #{inviterName}, #{oldInviterUid}, #{oldInviterName}, #{oldInviterSource}, #{merchantId}, #{franchiseeId}, #{tenantId}, #{operator}, #{remark}, #{delFlag}, #{createTime}, #{updateTime}
+        </trim>
+    </insert>
+    
+    <select id="selectPage" resultType="com.xiliulou.electricity.entity.merchant.MerchantInviterModifyRecord">
+        select
+        <include refid="basic_field"/>
+        from t_merchant_inviter_modify_record
+        where del_flag = 0 and tenant_id = #{tenantId} and uid = #{uid}
+        order by id desc
+        <if test="offset != null and size != null">
+            limit #{offset}, #{size}
+        </if>
+    </select>
+    
+    <select id="countTotal" resultType="java.lang.Integer">
+        select count(1)
+        from t_merchant_inviter_modify_record
+        where del_flag = 0
+          and tenant_id = #{tenantId}
+          and uid = #{uid}
+    </select>
+
+</mapper>
+
+
+
+
