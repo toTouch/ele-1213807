@@ -131,7 +131,19 @@
             <if test=" rentalPackageDeposit != null "> #{rentalPackageDeposit}, </if>
         </trim>
     </sql>
-
+    
+    <!-- 查询用户最后一次的免押订单生成信息 -->
+    <select id="selectLastFreeOrderByUid" resultMap="entityMap">
+        SELECT
+        <include refid="all_field"/>
+        FROM
+        <include refid="table_name"/>
+        <where>
+            `tenant_id` = #{tenantId} AND `uid` = #{uid} AND `free_deposit` = 0 AND `del_flag` = 0
+        </where>
+        ORDER BY `id` DESC LIMIT 1
+    </select>
+    
     <!-- 根据用户ID和租户ID查询最后一条押金信息 -->
     <select id="selectLastByUid" resultMap="entityMap">
         SELECT <include refid="all_field" /> FROM <include refid="table_name" />

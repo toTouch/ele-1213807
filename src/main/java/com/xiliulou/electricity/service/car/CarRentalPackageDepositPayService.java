@@ -11,7 +11,13 @@ import java.util.List;
  * @author xiaohui.song
  **/
 public interface CarRentalPackageDepositPayService {
-
+    
+    /**
+     * 查询用户最后一次的免押订单生成信息
+     * @return
+     */
+    CarRentalPackageDepositPayPo queryLastFreeOrderByUid(Integer tenantId, Long uid);
+    
     /**
      * 根据用户ID和租户ID查询最后一条押金信息
      * @param tenantId 租户ID
