@@ -611,5 +611,7 @@ public interface CacheConstant {
     String CACHE_USER_ADD_USER_DEPOSIT_MEMBER_CARD_LOCK = "cache_user_add_user_deposit_member_card_lock:";
     String CACHE_USER_MEMBER_CARD_EDIT_LOCK = "cache_user_member_card_edit_lock:";
     String CACHE_USER_BATTERY_MEMBER_CARD_RENEWAL_LOCK = "cache_user_battery_member_card_renewal_lock:";
+    
+    String CACHE_MERCHANT_MODIFY_INVITER_LOCK = "cache_merchant_modify_inviter_lock:";
 
 }

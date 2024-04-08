@@ -19,13 +19,11 @@ import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.constant.EleUserOperateHistoryConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.constant.UserOperateRecordConstant;
-import com.xiliulou.electricity.constant.merchant.MerchantJoinRecordConstant;
 import com.xiliulou.electricity.domain.car.UserCarRentalPackageDO;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.CarDepositOrder;
 import com.xiliulou.electricity.entity.CarLockCtrlHistory;
 import com.xiliulou.electricity.entity.CarMemberCardOrder;
-import com.xiliulou.electricity.entity.ChannelActivityHistory;
 import com.xiliulou.electricity.entity.EleAuthEntry;
 import com.xiliulou.electricity.entity.EleDepositOrder;
 import com.xiliulou.electricity.entity.EleDisableMemberCardRecord;
@@ -42,7 +40,6 @@ import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.FranchiseeInsurance;
 import com.xiliulou.electricity.entity.FranchiseeUserInfo;
 import com.xiliulou.electricity.entity.FreeDepositOrder;
-import com.xiliulou.electricity.entity.InvitationActivityJoinHistory;
 import com.xiliulou.electricity.entity.RentBatteryOrder;
 import com.xiliulou.electricity.entity.RentCarOrder;
 import com.xiliulou.electricity.entity.Store;
@@ -58,6 +55,8 @@ import com.xiliulou.electricity.entity.UserOauthBind;
 import com.xiliulou.electricity.entity.car.CarRentalPackageMemberTermPo;
 import com.xiliulou.electricity.entity.car.CarRentalPackagePo;
 import com.xiliulou.electricity.entity.enterprise.EnterpriseChannelUser;
+import com.xiliulou.electricity.entity.merchant.Merchant;
+import com.xiliulou.electricity.entity.merchant.MerchantJoinRecord;
 import com.xiliulou.electricity.enums.BatteryMemberCardBusinessTypeEnum;
 import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.enums.MemberTermStatusEnum;
@@ -65,6 +64,8 @@ import com.xiliulou.electricity.enums.RentalPackageTypeEnum;
 import com.xiliulou.electricity.enums.YesNoEnum;
 import com.xiliulou.electricity.enums.enterprise.RentBatteryOrderTypeEnum;
 import com.xiliulou.electricity.enums.enterprise.UserCostTypeEnum;
+import com.xiliulou.electricity.enums.merchant.MerchantInviterCanModifyEnum;
+import com.xiliulou.electricity.enums.merchant.MerchantInviterSourceEnum;
 import com.xiliulou.electricity.mapper.UserInfoMapper;
 import com.xiliulou.electricity.query.UserInfoBatteryAddAndUpdate;
 import com.xiliulou.electricity.query.UserInfoCarAddAndUpdate;
@@ -113,6 +114,7 @@ import com.xiliulou.electricity.service.UserBatteryTypeService;
 import com.xiliulou.electricity.service.UserCarDepositService;
 import com.xiliulou.electricity.service.UserCarMemberCardService;
 import com.xiliulou.electricity.service.UserCarService;
+import com.xiliulou.electricity.service.UserInfoExtraService;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.UserMoveHistoryService;
 import com.xiliulou.electricity.service.UserOauthBindService;
@@ -128,6 +130,7 @@ import com.xiliulou.electricity.service.enterprise.EnterpriseRentRecordService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseUserCostRecordService;
 import com.xiliulou.electricity.service.excel.AutoHeadColumnWidthStyleStrategy;
 import com.xiliulou.electricity.service.merchant.MerchantJoinRecordService;
+import com.xiliulou.electricity.service.merchant.MerchantService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.OrderIdUtil;
@@ -136,6 +139,8 @@ import com.xiliulou.electricity.vo.DetailsBatteryInfoVo;
 import com.xiliulou.electricity.vo.DetailsCarInfoVo;
 import com.xiliulou.electricity.vo.DetailsUserInfoVo;
 import com.xiliulou.electricity.vo.EleBatteryServiceFeeVO;
+import com.xiliulou.electricity.vo.FinalJoinChannelActivityHistoryVO;
+import com.xiliulou.electricity.vo.FinalJoinInvitationActivityHistoryVO;
 import com.xiliulou.electricity.vo.FinalJoinShareActivityHistoryVo;
 import com.xiliulou.electricity.vo.FinalJoinShareMoneyActivityHistoryVo;
 import com.xiliulou.electricity.vo.FreeDepositUserInfoVo;
@@ -154,6 +159,7 @@ import com.xiliulou.electricity.vo.UserInfoSearchVo;
 import com.xiliulou.electricity.vo.UserInfoSumTurnoverVo;
 import com.xiliulou.electricity.vo.UserTurnoverVo;
 import com.xiliulou.electricity.vo.enterprise.EnterpriseChannelUserVO;
+import com.xiliulou.electricity.vo.merchant.MerchantInviterVO;
 import com.xiliulou.electricity.vo.userinfo.UserCarRentalInfoExcelVO;
 import com.xiliulou.electricity.vo.userinfo.UserCarRentalPackageVO;
 import com.xiliulou.electricity.vo.userinfo.UserEleInfoVO;
@@ -184,6 +190,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -373,6 +380,12 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     
     @Resource
     private MerchantJoinRecordService merchantJoinRecordService;
+    
+    @Resource
+    private UserInfoExtraService userInfoExtraService;
+    
+    @Resource
+    private MerchantService merchantService;
     
     /**
      * 分页查询
@@ -1244,7 +1257,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                 notBindOldElectricityBattery.setUpdateTime(System.currentTimeMillis());
                 notBindOldElectricityBattery.setBindTime(System.currentTimeMillis());
                 electricityBatteryService.updateBatteryUser(notBindOldElectricityBattery);
-            
+                
                 // 添加退电记录
                 RentBatteryOrder rentBatteryOrder = new RentBatteryOrder();
                 rentBatteryOrder.setUid(oldUserInfo.getUid());
@@ -2059,7 +2072,9 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     @Override
     public R queryDetailsBasicInfo(Long uid) {
         UserInfo userInfo = this.queryByUidFromDb(uid);
-        if (Objects.isNull(userInfo) || !Objects.equals(userInfo.getTenantId(), TenantContextHolder.getTenantId())) {
+        Integer tenantId = TenantContextHolder.getTenantId();
+        
+        if (Objects.isNull(userInfo) || !Objects.equals(userInfo.getTenantId(), tenantId)) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         
@@ -2087,13 +2102,30 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         }
         
         // 根据openId判断是否可解绑微信
-        UserOauthBind userOauthBind = userOauthBindService.selectByUidAndPhone(vo.getPhone(), uid, TenantContextHolder.getTenantId());
+        UserOauthBind userOauthBind = userOauthBindService.selectByUidAndPhone(vo.getPhone(), uid, tenantId);
         if (Objects.nonNull(userOauthBind) && StringUtils.isNotBlank(userOauthBind.getThirdId())) {
             vo.setBindWX(UserOauthBind.STATUS_BIND_VX);
         } else {
             vo.setBindWX(UserOauthBind.STATUS_UN_BIND_VX);
         }
         
+        // 邀请人是否可被修改
+        Integer inviterSource = MerchantInviterSourceEnum.MERCHANT_INVITER_SOURCE_USER_FOR_VO.getCode();
+        MerchantInviterVO merchantInviterVO = userInfoExtraService.querySuccessInviter(uid, tenantId);
+        if (Objects.isNull(merchantInviterVO)) {
+            vo.setCanModifyInviter(MerchantInviterCanModifyEnum.MERCHANT_INVITER_CAN_NOT_MODIFY.getCode());
+        } else {
+            vo.setCanModifyInviter(MerchantInviterCanModifyEnum.MERCHANT_INVITER_CAN_MODIFY.getCode());
+            if (Objects.equals(merchantInviterVO.getInviterSource(), MerchantInviterSourceEnum.MERCHANT_INVITER_SOURCE_MERCHANT.getCode())) {
+                inviterSource = MerchantInviterSourceEnum.MERCHANT_INVITER_SOURCE_MERCHANT_FOR_VO.getCode();
+            }
+        }
+        
+        // 邀请人名称
+        vo.setInviterName(queryFinalInviterUserName(uid, tenantId));
+        //邀请人来源
+        vo.setInviterSource(inviterSource);
+    
         return R.ok(vo);
     }
     
@@ -2113,8 +2145,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                 clearUserOauthBindToken(userOauthBinds);
             }
             DbUtils.dbOperateSuccessThenHandleCache(
-                    userOauthBindService.updateOpenIdByUid(StringUtils.EMPTY, UserOauthBind.STATUS_UN_BIND, userOauthBind.getUid(),
-                            TenantContextHolder.getTenantId()), i -> {
+                    userOauthBindService.updateOpenIdByUid(StringUtils.EMPTY, UserOauthBind.STATUS_UN_BIND, userOauthBind.getUid(), TenantContextHolder.getTenantId()), i -> {
                         // 添加解绑操作记录
                         EleUserOperateHistory eleUserOperateHistory = buildEleUserOperateHistory(userInfo, EleUserOperateHistoryConstant.OPERATE_CONTENT_UNBIND_VX,
                                 EleUserOperateHistoryConstant.UNBIND_VX_OLD_OPERATION, EleUserOperateHistoryConstant.UNBIND_VX_NEW_OPERATION);
@@ -2167,7 +2198,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         }
         
         // 更新用戶
-        DbUtils.dbOperateSuccessThenHandleCache(userInfoMapper.updatePhoneByUid(TenantContextHolder.getTenantId(), uid, phone,System.currentTimeMillis()), i -> {
+        DbUtils.dbOperateSuccessThenHandleCache(userInfoMapper.updatePhoneByUid(TenantContextHolder.getTenantId(), uid, phone, System.currentTimeMillis()), i -> {
             redisService.delete(CacheConstant.CACHE_USER_INFO + userInfo.getUid());
         });
         
@@ -2178,7 +2209,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                 redisService.delete(CacheConstant.CACHE_USER_PHONE + TenantContextHolder.getTenantId() + ":" + user.getPhone() + ":" + user.getUserType());
             }
         });
-    
+        
         // 更新成功后 强制用户重新登录
         List<UserOauthBind> userOauthBinds = userOauthBindService.queryListByUid(uid);
         if (DataUtil.collectionIsUsable(userOauthBinds)) {
@@ -2186,7 +2217,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         }
         
         userOauthBindService.updatePhoneByUid(TenantContextHolder.getTenantId(), uid, phone);
-    
+        
         // 添加更換手机号操作记录
         EleUserOperateHistory eleUserOperateHistory = buildEleUserOperateHistory(userInfo, EleUserOperateHistoryConstant.OPERATE_CONTENT_UPDATE_PHONE, userInfo.getPhone(), phone);
         eleUserOperateHistoryService.asyncHandleEleUserOperateHistory(eleUserOperateHistory);
@@ -2938,37 +2969,47 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     
     //TODO 优化
     private String queryFinalInviterUserName(Long uid, Integer tenantId) {
+        String inviterName = null;
+    
+        // 邀请返券
         FinalJoinShareActivityHistoryVo finalJoinShareActivityHistoryVo = joinShareActivityHistoryService.queryFinalHistoryByJoinUid(uid, tenantId);
         if (Objects.nonNull(finalJoinShareActivityHistoryVo)) {
-            return finalJoinShareActivityHistoryVo.getUserName();
-        }
-        
-        FinalJoinShareMoneyActivityHistoryVo finalJoinShareMoneyActivityHistoryVo = joinShareMoneyActivityHistoryService.queryFinalHistoryByJoinUid(uid, tenantId);
-        if (Objects.nonNull(finalJoinShareMoneyActivityHistoryVo)) {
-            return finalJoinShareMoneyActivityHistoryVo.getUserName();
-        }
-        
-        //渠道活动
-        ChannelActivityHistory channelActivityHistory = channelActivityHistoryService.queryByUid(uid);
-        if (Objects.nonNull(channelActivityHistory)) {
-            UserInfo userInfo = this.queryByUidFromCache(channelActivityHistory.getInviteUid());
-            return Objects.isNull(userInfo) ? "" : userInfo.getName();
-        }
-        
-        //套餐返现
-        InvitationActivityJoinHistory invitationActivityJoinHistory = invitationActivityJoinHistoryService.selectByJoinUid(uid);
-        if (Objects.nonNull(invitationActivityJoinHistory)) {
-            UserInfo userInfo = this.queryByUidFromCache(invitationActivityJoinHistory.getUid());
-            return Objects.isNull(userInfo) ? "" : userInfo.getName();
+            inviterName = finalJoinShareActivityHistoryVo.getUserName();
         }
     
-        // 商户活动
-        String merchantName = merchantJoinRecordService.queryMerchantNameByJoinUid(uid, MerchantJoinRecordConstant.STATUS_SUCCESS);
-        if (Objects.nonNull(merchantName)) {
-            return merchantName;
+        if (Objects.isNull(inviterName)) {
+            //邀请返现
+            FinalJoinShareMoneyActivityHistoryVo finalJoinShareMoneyActivityHistoryVo = joinShareMoneyActivityHistoryService.queryFinalHistoryByJoinUid(uid, tenantId);
+            if (Objects.nonNull(finalJoinShareMoneyActivityHistoryVo)) {
+                inviterName = finalJoinShareMoneyActivityHistoryVo.getUserName();
+            }
         }
     
-        return null;
+        if (Objects.isNull(inviterName)) {
+            //渠道活动
+            FinalJoinChannelActivityHistoryVO finalJoinChannelActivityHistoryVO = channelActivityHistoryService.queryFinalHistoryByJoinUid(uid, tenantId);
+            if (Objects.nonNull(finalJoinChannelActivityHistoryVO)) {
+                inviterName = finalJoinChannelActivityHistoryVO.getUserName();
+            }
+        }
+    
+        if (Objects.isNull(inviterName)) {
+            //套餐返现
+            FinalJoinInvitationActivityHistoryVO finalJoinInvitationActivityHistoryVO = invitationActivityJoinHistoryService.queryFinalHistoryByJoinUid(uid, tenantId);
+            if (Objects.nonNull(finalJoinInvitationActivityHistoryVO)) {
+                inviterName = finalJoinInvitationActivityHistoryVO.getUserName();
+            }
+        }
+    
+        if (Objects.isNull(inviterName)) {
+            // 商户活动
+            MerchantJoinRecord merchantJoinRecord = merchantJoinRecordService.querySuccessRecordByJoinUid(uid, tenantId);
+            if (Objects.nonNull(merchantJoinRecord)) {
+                inviterName = Optional.ofNullable(merchantService.queryByIdFromCache(merchantJoinRecord.getMerchantId())).map(Merchant::getName).orElse("");
+            }
+        }
+    
+        return inviterName;
     }
     
     @Override
@@ -3010,13 +3051,8 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                 
                 // 设置企业信息
                 EnterpriseChannelUserVO enterpriseChannelUserVO = enterpriseChannelUserService.queryUserRelatedEnterprise(item.getUid());
-                if(Objects.nonNull(enterpriseChannelUserVO) && Objects.equals(enterpriseChannelUserVO.getRenewalStatus(), EnterpriseChannelUser.RENEWAL_CLOSE)) {
+                if (Objects.nonNull(enterpriseChannelUserVO) && Objects.equals(enterpriseChannelUserVO.getRenewalStatus(), EnterpriseChannelUser.RENEWAL_CLOSE)) {
                     item.setEnterpriseName(enterpriseChannelUserVO.getEnterpriseName());
-                }
-                // 企业名称设为商户名称
-                String merchantName = merchantJoinRecordService.queryMerchantNameByJoinUid(item.getUid(), MerchantJoinRecordConstant.STATUS_SUCCESS);
-                if (Objects.nonNull(merchantName)) {
-                    item.setEnterpriseName(merchantName);
                 }
                 
                 threadPool.execute(() -> userBatteryMemberCardPackageService.batteryMembercardTransform(item.getUid()));
@@ -3084,4 +3120,5 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     public Integer updatePhoneByUid(Integer tenantId, Long uid, String newPhone) {
         return userInfoMapper.updatePhoneByUid(tenantId, uid, newPhone, System.currentTimeMillis());
     }
+    
 }

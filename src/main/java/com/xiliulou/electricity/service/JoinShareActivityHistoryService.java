@@ -65,4 +65,8 @@ public interface JoinShareActivityHistoryService {
     List<JoinShareActivityHistory> queryUserJoinedActivity(Long joinUid, Integer tenantId);
 
     Pair<Boolean, String> checkTheActivityFromSameInviter(Long joinUid, Long inviterUid, Long activityId);
+    
+    JoinShareActivityHistory querySuccessHistoryByJoinUid(Long uid, Integer tenantId);
+    
+    Integer removeById(Long id, Long updateTime);
 }
