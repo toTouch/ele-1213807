@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.userInfo.userInfoGroup.UserInfoGroupMapper">
+    <!-- 基础字段 -->
+    <sql id="basic_field">
+        id, group_no, name, operator, franchisee_id, tenant_id, del_flag, create_time, update_time
+    </sql>
+    
+    <insert id="insertOne" keyProperty="id" useGeneratedKeys="true">
+        insert into t_user_info_group (group_no, name, operator, franchisee_id, tenant_id, create_time, update_time)
+        values (#{groupNo}, #{name}, #{operator}, #{franchiseeId}, #{tenantId}, #{createTime}, #{updateTime})
+    </insert>
+    
+    <select id="selectPage" resultType="com.xiliulou.electricity.bo.asset.AssetAllocateDetailBO">
+    
+    </select>
+    
+    <select id="queryByName" resultType="com.xiliulou.electricity.entity.userInfo.userInfoGroup.UserInfoGroup">
+        select
+        <include refid="basic_field"/>
+        from t_user_info_group
+        where tenant_id = #{tenantId} and name = #{userGroupName} and del_flag = 0
+    </select>
+
+</mapper>
+
+
+
+
