@@ -1,13 +1,11 @@
 package com.xiliulou.electricity.service.impl;
 
-import cn.hutool.core.collection.CollUtil;
 import com.google.api.client.util.Lists;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.CommonConstant;
-import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.entity.car.CarRentalPackagePo;
 import com.xiliulou.electricity.enums.PackageTypeEnum;
@@ -19,18 +17,15 @@ import com.xiliulou.electricity.model.car.query.CarRentalPackageQryModel;
 import com.xiliulou.electricity.query.BatteryMemberCardQuery;
 import com.xiliulou.electricity.query.CouponQuery;
 import com.xiliulou.electricity.service.*;
-import com.xiliulou.electricity.service.asset.AssertPermissionService;
 import com.xiliulou.electricity.service.car.CarRentalPackageService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
-import com.xiliulou.electricity.utils.OperateRecordUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.BatteryMemberCardVO;
 import com.xiliulou.electricity.vo.SearchVo;
 import com.xiliulou.electricity.vo.activity.CouponActivityVO;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,7 +34,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -75,15 +69,10 @@ public class CouponServiceImpl implements CouponService {
     private CarRentalPackageService carRentalPackageService;
     
     @Autowired
-    private OperateRecordUtil operateRecordUtil;
-    @Autowired
     private CouponActivityPackageService couponActivityPackageService;
     
     @Autowired
     BatteryMemberCardService batteryMemberCardService;
-    
-    @Autowired
-    private AssertPermissionService assertPermissionService;
     
     
     /**
@@ -231,7 +220,6 @@ public class CouponServiceImpl implements CouponService {
         }
         
         if (insert > 0) {
-            operateRecordUtil.record(null,coupon);
             return R.ok();
         }
         return R.fail("ELECTRICITY.0086", "操作失败");
@@ -382,12 +370,6 @@ public class CouponServiceImpl implements CouponService {
     @Slave
     @Override
     public R queryCouponList(CouponQuery couponQuery) {
-        Pair<Boolean, List<Long>> pair = assertPermissionService.assertPermissionByPair(SecurityUtils.getUserInfo());
-        if (!pair.getLeft()) {
-            return R.ok(new ArrayList<>());
-        }
-        couponQuery.setFranchiseeIds(pair.getRight());
-        
         List<Coupon> couponList = couponMapper.queryList(couponQuery);
         List<CouponActivityVO> couponActivityVOList = Lists.newArrayList();
         for (Coupon coupon : couponList) {
@@ -403,15 +385,8 @@ public class CouponServiceImpl implements CouponService {
     @Slave
     @Override
     public R queryCount(CouponQuery couponQuery) {
-        Pair<Boolean, List<Long>> pair = assertPermissionService.assertPermissionByPair(SecurityUtils.getUserInfo());
-        if (!pair.getLeft()) {
-            return R.ok(NumberConstant.ZERO);
-        }
-        couponQuery.setFranchiseeIds(pair.getRight());
-        
         return R.ok(couponMapper.queryCount(couponQuery));
     }
-    
     
     @Override
     public List<SearchVo> search(CouponQuery query) {
@@ -552,7 +527,7 @@ public class CouponServiceImpl implements CouponService {
             redisService.saveWithHash(CacheConstant.COUPON_CACHE + couponUpdate.getId(), couponUpdate);
             return null;
         });
-        operateRecordUtil.record(null,coupon);
+        
         return Triple.of(true, "", "删除成功！");
     }
 }
