@@ -13,7 +13,10 @@ import com.xiliulou.electricity.entity.WithdrawPassword;
 import com.xiliulou.electricity.mapper.WithdrawPasswordMapper;
 import com.xiliulou.electricity.service.WithdrawPasswordService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
+import com.xiliulou.electricity.utils.OperateRecordUtil;
+import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.security.authentication.console.CustomPasswordEncoder;
+import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -44,6 +47,9 @@ public class WithdrawPasswordServiceImpl implements WithdrawPasswordService {
 
 	@Value("${security.encode.key:xiliu&lo@u%12345}")
 	private String encodeKey;
+	
+	@Autowired
+	private OperateRecordUtil operateRecordUtil;
 
 	@Autowired
 	CustomPasswordEncoder customPasswordEncoder;
@@ -98,6 +104,8 @@ public class WithdrawPasswordServiceImpl implements WithdrawPasswordService {
 			withdrawPasswordMapper.updateByIdAndTenantId(withdrawPassword);
 			redisService.delete(CacheConstant.CACHE_WITHDRAW_PASSWORD+tenantId);
 		}
+		TokenUser userInfo = SecurityUtils.getUserInfo();
+		operateRecordUtil.record(null, userInfo);
 		return R.ok();
 	}
 

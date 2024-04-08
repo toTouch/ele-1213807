@@ -16,10 +16,12 @@ import com.xiliulou.electricity.query.MemberCardAndCarRentalPackageSortParamQuer
 import com.xiliulou.electricity.query.car.CarRentalPackageNameReq;
 import com.xiliulou.electricity.service.car.CarRentalPackageOrderService;
 import com.xiliulou.electricity.service.car.CarRentalPackageService;
+import com.xiliulou.electricity.utils.OperateRecordUtil;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.vo.car.CarRentalPackageSearchVO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
@@ -43,6 +45,9 @@ public class CarRentalPackageServiceImpl implements CarRentalPackageService {
 
     @Resource
     private CarRentalPackageOrderService carRentalPackageOrderService;
+    
+    @Autowired
+    private OperateRecordUtil operateRecordUtil;
 
     @Resource
     private CarRentalPackageMapper carRentalPackageMapper;
@@ -110,12 +115,14 @@ public class CarRentalPackageServiceImpl implements CarRentalPackageService {
         if (!ObjectUtils.allNotNull(id, status, uid) || !BasicEnum.isExist(status, UpDownEnum.class)) {
             throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
-
+        CarRentalPackagePo rentalPackagePo = this.selectById(id);
+        rentalPackagePo.setStatus(status);
+    
         int num = carRentalPackageMapper.updateStatusById(id, status, uid, System.currentTimeMillis());
 
         // 删除缓存
         delCache(String.format(CarRenalCacheConstant.CAR_RENAL_PACKAGE_ID_KEY, id));
-
+        operateRecordUtil.record(num,rentalPackagePo);
         return num >= 0;
     }
 
@@ -257,7 +264,7 @@ public class CarRentalPackageServiceImpl implements CarRentalPackageService {
         // 删除缓存
         String cacheEky = String.format(CarRenalCacheConstant.CAR_RENAL_PACKAGE_ID_KEY, entity.getId());
         redisService.delete(cacheEky);
-
+        operateRecordUtil.record(oriEntity,entity);
         return num >= 0;
     }
 

@@ -1,7 +1,10 @@
 package com.xiliulou.electricity.service.impl;
 
+import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.ConcurrentHashSet;
+import cn.hutool.core.collection.ListUtil;
 import cn.hutool.core.lang.UUID;
+import cn.hutool.core.map.MapUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.google.api.client.util.Lists;
@@ -28,6 +31,7 @@ import com.xiliulou.electricity.query.UserCouponQuery;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.service.car.CarRentalPackageService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
+import com.xiliulou.electricity.utils.OperateRecordUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.BatchSendCouponVO;
 import com.xiliulou.electricity.vo.BatteryMemberCardVO;
@@ -84,6 +88,9 @@ public class UserCouponServiceImpl implements UserCouponService {
 
     @Autowired
     ShareActivityRuleService shareActivityRuleService;
+    
+    @Autowired
+    OperateRecordUtil operateRecordUtil;
 
     @Autowired
     CouponIssueOperateRecordService couponIssueOperateRecordService;
@@ -166,6 +173,16 @@ public class UserCouponServiceImpl implements UserCouponService {
     @Override
     public R queryList(UserCouponQuery userCouponQuery) {
         List<UserCouponVO> userCouponList = userCouponMapper.queryList(userCouponQuery);
+        if (CollectionUtils.isEmpty(userCouponList)) {
+            return R.ok(ListUtil.empty());
+        }
+        //******************************查询核销人************************************/
+        userCouponList.forEach(u -> {
+            Long verifiedUid = u.getVerifiedUid();
+            User user = userService.queryByUidFromCache(verifiedUid);
+            u.setVerifiedName(Objects.isNull(user) ? null : user.getName());
+        });
+        //******************************查询核销人结束************************************/
         return R.ok(userCouponList);
     }
 
@@ -258,6 +275,7 @@ public class UserCouponServiceImpl implements UserCouponService {
         CouponIssueOperateRecord.CouponIssueOperateRecordBuilder couponIssueOperateRecord = CouponIssueOperateRecord.builder()
                 .couponId(coupon.getId())
                 .tenantId(tenantId)
+                .issuedUid(operateUser.getUid())
                 .createTime(System.currentTimeMillis())
                 .updateTime(System.currentTimeMillis());
 
@@ -289,7 +307,10 @@ public class UserCouponServiceImpl implements UserCouponService {
             CouponIssueOperateRecord couponIssueOperateRecordBuild = couponIssueOperateRecord.build();
             couponIssueOperateRecordService.insert(couponIssueOperateRecordBuild);
         }
-
+        Coupon userCoupon = new Coupon();
+        BeanUtil.copyProperties(coupon,userCoupon);
+        userCoupon.setCount(uids.length);
+        operateRecordUtil.record(null,userCoupon);
         return R.ok();
     }
 
@@ -310,17 +331,17 @@ public class UserCouponServiceImpl implements UserCouponService {
 
         //租户
         Integer tenantId = TenantContextHolder.getTenantId();
-
         for (Long couponId : couponIds) {
             UserCoupon couponBuild = UserCoupon.builder()
                     .id(couponId)
                     .status(UserCoupon.STATUS_DESTRUCTION)
+                    .verifiedUid(operateUser.getUid())
                     .updateTime(System.currentTimeMillis())
                     .tenantId(tenantId).build();
 
             userCouponMapper.update(couponBuild);
         }
-
+        operateRecordUtil.record(null, MapUtil.of("size",couponIds.length));
         return R.ok();
     }
 
@@ -702,8 +723,14 @@ public class UserCouponServiceImpl implements UserCouponService {
         if (CollectionUtils.isEmpty(phones)) {
             return R.fail("ELECTRICITY.0007", "手机号不可以为空");
         }
-
-        User operateUser = userService.queryByUidFromCache(SecurityUtils.getUid());
+    
+        //增加优惠劵发放人Id
+        Long operateUid = SecurityUtils.getUid();
+        if (Objects.isNull(operateUid)){
+            log.error("ELECTRICITY  ERROR! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        User operateUser = userService.queryByUidFromCache(operateUid);
         if (Objects.isNull(operateUser)) {
             log.error("ELECTRICITY  ERROR! not found user ");
             return R.fail("ELECTRICITY.0001", "未找到用户");
@@ -742,9 +769,12 @@ public class UserCouponServiceImpl implements UserCouponService {
 
         batchSendCouponVO.setIsSend(true);
         executorService.execute(() -> {
-            handleBatchSaveCoupon(existsPhone, coupon, sessionId, operateUser.getName());
+            handleBatchSaveCoupon(existsPhone, coupon, sessionId, operateUser.getName(),operateUid);
         });
-
+        Coupon copyCoupon = new Coupon();
+        BeanUtil.copyProperties(coupon,copyCoupon);
+        copyCoupon.setCount(existsPhone.size());
+        operateRecordUtil.record(null,copyCoupon);
         return R.ok(batchSendCouponVO);
     }
 
@@ -756,7 +786,7 @@ public class UserCouponServiceImpl implements UserCouponService {
         return R.ok();
     }
 
-    private void handleBatchSaveCoupon(ConcurrentHashSet<User> existsPhone, Coupon coupon, String sessionId, String name) {
+    private void handleBatchSaveCoupon(ConcurrentHashSet<User> existsPhone, Coupon coupon, String sessionId, String name,Long operateUid) {
         Iterator<User> iterator = existsPhone.iterator();
         List<UserCoupon> userCouponList = new ArrayList<>();
         List<CouponIssueOperateRecord> couponIssueOperateRecords = new ArrayList<>();
@@ -765,7 +795,7 @@ public class UserCouponServiceImpl implements UserCouponService {
         LocalDateTime now = LocalDateTime.now().plusDays(coupon.getDays());
 
         while (iterator.hasNext()) {
-            if (size >= 300) {
+            if (size >= maxSize) {
                 userCouponMapper.batchInsert(userCouponList);
                 couponIssueOperateRecordService.batchInsert(couponIssueOperateRecords);
                 userCouponList.clear();
@@ -787,6 +817,7 @@ public class UserCouponServiceImpl implements UserCouponService {
             saveCoupon.setUpdateTime(System.currentTimeMillis());
             saveCoupon.setStatus(UserCoupon.STATUS_UNUSED);
             saveCoupon.setDelFlag(UserCoupon.DEL_NORMAL);
+            saveCoupon.setVerifiedUid(UserCoupon.INITIALIZE_THE_VERIFIER);
             saveCoupon.setTenantId(user.getTenantId());
             userCouponList.add(saveCoupon);
 
@@ -798,6 +829,7 @@ public class UserCouponServiceImpl implements UserCouponService {
                     .uid(user.getUid())
                     .name(user.getName())
                     .operateName(name)
+                    .issuedUid(operateUid)
                     .phone(user.getPhone()).build();
             couponIssueOperateRecords.add(record);
             size++;

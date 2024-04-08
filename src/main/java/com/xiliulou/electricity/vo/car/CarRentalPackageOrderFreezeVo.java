@@ -133,5 +133,10 @@ public class CarRentalPackageOrderFreezeVo implements Serializable {
      * 租车套餐名称
      */
     private String carRentalPackageName;
+    
+    /**
+     * 审核员名称
+     */
+    private String auditorName;
 
 }

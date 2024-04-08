@@ -135,6 +135,7 @@ import com.xiliulou.electricity.service.excel.AutoHeadColumnWidthStyleStrategy;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DateUtils;
 import com.xiliulou.electricity.utils.DbUtils;
+import com.xiliulou.electricity.utils.OperateRecordUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.CabinetBatteryVO;
 import com.xiliulou.electricity.vo.EleCabinetDataAnalyseVO;
@@ -211,6 +212,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
+
+import static com.xiliulou.electricity.constant.ElectricityIotConstant.ELE_COMMAND_CELL_UPDATE;
 
 /**
  * 换电柜表(TElectricityCabinet)表服务实现类
@@ -389,6 +392,9 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     
     @Autowired
     ServiceFeeUserInfoService serviceFeeUserInfoService;
+    
+    @Autowired
+    OperateRecordUtil operateRecordUtil;
     
     @Autowired
     CarRentalPackageMemberTermBizService carRentalPackageMemberTermBizService;
@@ -1346,6 +1352,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         redisService.saveWithHash(CacheConstant.CACHE_ELECTRICITY_CABINET + electricityCabinet.getId(), electricityCabinet);
         
         redisService.delete(CacheConstant.CACHE_ELECTRICITY_CABINET_DEVICE + oldElectricityCabinet.getProductKey() + oldElectricityCabinet.getDeviceName());
+        operateRecordUtil.record(oldElectricityCabinet,electricityCabinet);
         return R.ok();
     }
     
@@ -2044,6 +2051,12 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         if (!result.getLeft()) {
             return R.fail("ELECTRICITY.0037", "发送命令失败");
         }
+        Map<String, Object> map = BeanUtil.beanToMap(comm, false, true);
+        map.put("operateType",1);
+        if (comm.getCommand().equals(ELE_COMMAND_CELL_UPDATE) && eleOuterCommandQuery.getData().containsKey("lockReason")){
+            map.put("command","cell_update_down");
+        }
+        operateRecordUtil.record(null,map);
         return R.ok(sessionId);
     }
     
@@ -2091,6 +2104,12 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         if (!result.getLeft()) {
             return R.fail("ELECTRICITY.0037", "发送命令失败");
         }
+        Map<String, Object> map = BeanUtil.beanToMap(comm, false, true);
+        map.put("operateType",1);
+        if (comm.getCommand().equals(ELE_COMMAND_CELL_UPDATE) && eleOuterCommandQuery.getData().containsKey("lockReason")){
+            map.put("command","cell_update_down");
+        }
+        operateRecordUtil.record(null,map);
         return R.ok(sessionId);
     }
     

@@ -1,20 +1,37 @@
 package com.xiliulou.electricity.service.impl;
 
-import cn.hutool.core.util.StrUtil;
+import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.bean.copier.CopyOptions;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.CacheConstant;
-import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.constant.EleEsignConstant;
 import com.xiliulou.electricity.dto.FranchiseeBatteryModelDTO;
-import com.xiliulou.electricity.entity.*;
+import com.xiliulou.electricity.entity.EleEsignConfig;
+import com.xiliulou.electricity.entity.ElectricityConfig;
+import com.xiliulou.electricity.entity.ElectricityPayParams;
+import com.xiliulou.electricity.entity.FaceRecognizeData;
+import com.xiliulou.electricity.entity.Franchisee;
+import com.xiliulou.electricity.entity.FranchiseeMoveInfo;
+import com.xiliulou.electricity.entity.PxzConfig;
 import com.xiliulou.electricity.mapper.ElectricityConfigMapper;
 import com.xiliulou.electricity.query.ElectricityConfigAddAndUpdateQuery;
-import com.xiliulou.electricity.service.*;
+import com.xiliulou.electricity.service.EleEsignConfigService;
+import com.xiliulou.electricity.service.ElectricityCarModelService;
+import com.xiliulou.electricity.service.ElectricityConfigService;
+import com.xiliulou.electricity.service.ElectricityMemberCardService;
+import com.xiliulou.electricity.service.ElectricityPayParamsService;
+import com.xiliulou.electricity.service.FaceRecognizeDataService;
+import com.xiliulou.electricity.service.FranchiseeInsuranceService;
+import com.xiliulou.electricity.service.FranchiseeService;
+import com.xiliulou.electricity.service.PxzConfigService;
+import com.xiliulou.electricity.service.TemplateConfigService;
+import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
+import com.xiliulou.electricity.utils.OperateRecordUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.TenantConfigVO;
 import com.xiliulou.security.bean.TokenUser;
@@ -28,7 +45,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.Objects;
 
@@ -66,6 +82,9 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
     PxzConfigService pxzConfigService;
     @Autowired
     EleEsignConfigService eleEsignConfigService;
+    
+    @Autowired
+    OperateRecordUtil operateRecordUtil;
 
 
     @Override
@@ -151,6 +170,8 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
         }
 
         ElectricityConfig electricityConfig = electricityConfigMapper.selectOne(new LambdaQueryWrapper<ElectricityConfig>().eq(ElectricityConfig::getTenantId, TenantContextHolder.getTenantId()));
+        ElectricityConfig oldElectricityConfig = new ElectricityConfig();
+        BeanUtil.copyProperties(electricityConfig,oldElectricityConfig, CopyOptions.create().ignoreNullValue().ignoreError());
         if (Objects.isNull(electricityConfig)) {
             electricityConfig = new ElectricityConfig();
             electricityConfig.setName(electricityConfigAddAndUpdateQuery.getName());
@@ -218,7 +239,7 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
         if (updateResult > 0) {
             redisService.delete(CacheConstant.CACHE_ELE_SET_CONFIG + TenantContextHolder.getTenantId());
         }
-
+        operateRecordUtil.record(oldElectricityConfig,electricityConfig);
         return R.ok();
     }
 

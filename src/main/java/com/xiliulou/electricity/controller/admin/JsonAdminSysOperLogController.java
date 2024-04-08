@@ -2,13 +2,18 @@ package com.xiliulou.electricity.controller.admin;
 
 import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.entity.operate.UserOperateLogEntity;
 import com.xiliulou.electricity.query.SysOperLogQuery;
+import com.xiliulou.electricity.query.operate.OperateQuery;
 import com.xiliulou.electricity.service.SysOperLogService;
+import com.xiliulou.electricity.service.operate.UserOperateLogService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.SysOperLogVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -26,6 +31,9 @@ public class JsonAdminSysOperLogController extends BaseController {
     
     @Autowired
     private SysOperLogService sysOperLogService;
+    
+    @Autowired
+    private UserOperateLogService userOperateLogService;
     
     
     @RequestMapping("/admin/sysOperLog/page")
@@ -67,6 +75,23 @@ public class JsonAdminSysOperLogController extends BaseController {
         int count=sysOperLogService.pageCount(sysOperLogQuery);
         
         return R.ok(count);
+    }
+    
+    
+    @PostMapping("/admin/sysOperLog/v2/page")
+    public R<List<UserOperateLogEntity>> pageV2(@RequestBody OperateQuery query){
+        if(!SecurityUtils.isAdmin()){
+            query.setTenantId(TenantContextHolder.getTenantId().longValue());
+        }
+        return userOperateLogService.page(query);
+    }
+    
+    @PostMapping("/admin/sysOperLog/v2/pageCount")
+    public R<Long> pageCountV2(@RequestBody OperateQuery query){
+        if(!SecurityUtils.isAdmin()){
+            query.setTenantId(TenantContextHolder.getTenantId().longValue());
+        }
+        return userOperateLogService.pageCount(query);
     }
     
 }
