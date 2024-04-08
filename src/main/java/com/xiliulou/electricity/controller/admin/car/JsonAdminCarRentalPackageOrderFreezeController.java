@@ -63,7 +63,7 @@ public class JsonAdminCarRentalPackageOrderFreezeController extends BasicControl
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-        return R.ok(carRentalPackageOrderBizService.approveFreezeRentOrder(optReq.getOrderNo(), false, optReq.getReason(), user.getUid()));
+        return R.ok(carRentalPackageOrderBizService.approveFreezeRentOrder(optReq.getOrderNo(), false, optReq.getReason(), user.getUid(),true));
     }
 
     /**
@@ -84,7 +84,7 @@ public class JsonAdminCarRentalPackageOrderFreezeController extends BasicControl
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-        return R.ok(carRentalPackageOrderBizService.approveFreezeRentOrder(optReq.getOrderNo(), true, optReq.getReason(), user.getUid()));
+        return R.ok(carRentalPackageOrderBizService.approveFreezeRentOrder(optReq.getOrderNo(), true, optReq.getReason(), user.getUid(),true));
     }
 
     /**
