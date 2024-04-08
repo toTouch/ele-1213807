@@ -32,6 +32,14 @@ public class ElectricityCabinetSimpleVO implements Serializable {
     private String name;
     
     /**
+     * 换电柜sn
+     */
+    private String sn;
+    /**
+     * 联系电话
+     */
+    private String servicePhone;
+    /**
      * 换电柜地址
      */
     private String address;

@@ -1035,6 +1035,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 }
                 electricityCabinetVO.setId(electricityCabinet.getId());
                 electricityCabinetVO.setName(electricityCabinet.getName());
+                electricityCabinetVO.setSn(electricityCabinet.getSn());
+                electricityCabinetVO.setServicePhone(electricityCabinet.getServicePhone());
                 electricityCabinetVO.setAddress(electricityCabinet.getAddress());
                 electricityCabinetVO.setOnlineStatus(electricityCabinet.getOnlineStatus());
                 electricityCabinetVO.setLatitude(e.getContent().getPoint().getY());
@@ -1064,6 +1066,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 electricityCabinetVO.setOnlineStatus(e.getOnlineStatus());
                 electricityCabinetVO.setFullyElectricityBattery(e.getFullyElectricityBattery());
                 electricityCabinetVO.setDistance(e.getDistance());
+                electricityCabinetVO.setSn(e.getSn());
+                electricityCabinetVO.setServicePhone(e.getServicePhone());
                 assignAttribute(electricityCabinetVO,e.getFullyCharged());
                 return electricityCabinetVO;
             }).filter(Objects::nonNull).collect(Collectors.toList());
