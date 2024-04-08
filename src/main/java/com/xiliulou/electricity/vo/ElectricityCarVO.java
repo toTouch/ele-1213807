@@ -103,5 +103,20 @@ public class ElectricityCarVO {
      * 更新时间
      */
     private Long updateTime;
+    
+    /**
+     * 车牌号
+     */
+    private String licensePlateNumber;
+    
+    /**
+     * 车架号
+     */
+    private String vin;
+    
+    /**
+     * 电机号
+     */
+    private String motorNumber;
 
 }

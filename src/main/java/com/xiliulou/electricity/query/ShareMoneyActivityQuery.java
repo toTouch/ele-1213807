@@ -28,5 +28,7 @@ public class ShareMoneyActivityQuery {
      */
     private Integer status;
 
+    
+    private List<Long> franchiseeIds;
 
 }

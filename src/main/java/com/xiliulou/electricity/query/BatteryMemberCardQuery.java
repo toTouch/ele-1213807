@@ -106,5 +106,20 @@ public class BatteryMemberCardQuery {
      * @see BatteryMemberCardBusinessTypeEnum
      */
     private Integer businessType;
+    
+    /**
+     * 电池型号
+     */
+    private String batteryModel;
+    
+    /**
+     * 电池长型号
+     */
+    private String originalBatteryModel;
+    
+    /**
+     * 不分型号
+     */
+    public static final String REGARDLESS_OF_MODEL = "0";
 
 }

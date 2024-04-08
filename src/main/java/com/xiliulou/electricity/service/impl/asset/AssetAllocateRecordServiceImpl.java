@@ -1,6 +1,8 @@
 package com.xiliulou.electricity.service.impl.asset;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.collection.ListUtil;
+import cn.hutool.core.map.MapUtil;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.thread.XllThreadPoolExecutorService;
 import com.xiliulou.core.thread.XllThreadPoolExecutors;
@@ -40,17 +42,20 @@ import com.xiliulou.electricity.service.ElectricityCarService;
 import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.PictureService;
 import com.xiliulou.electricity.service.StoreService;
+import com.xiliulou.electricity.service.asset.AssertPermissionService;
 import com.xiliulou.electricity.service.asset.AssetAllocateDetailService;
 import com.xiliulou.electricity.service.asset.AssetAllocateRecordService;
 import com.xiliulou.electricity.service.asset.AssetInventoryService;
 import com.xiliulou.electricity.service.asset.ElectricityCabinetV2Service;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.OrderIdUtil;
+import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.ElectricityBatteryVO;
 import com.xiliulou.electricity.vo.asset.AssetAllocateDetailVO;
 import com.xiliulou.electricity.vo.asset.AssetAllocateRecordVO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -115,6 +120,9 @@ public class AssetAllocateRecordServiceImpl implements AssetAllocateRecordServic
     @Autowired
     private PictureService pictureService;
     
+    @Autowired
+    private AssertPermissionService assertPermissionService;
+    
     @Override
     public R save(AssetAllocateRecordRequest assetAllocateRecordRequest, Long uid) {
         boolean result = redisService.setNx(CacheConstant.CACHE_ASSET_ALLOCATE_LOCK + uid, "1", 3 * 1000L, false);
@@ -128,16 +136,35 @@ public class AssetAllocateRecordServiceImpl implements AssetAllocateRecordServic
             if (Objects.equals(status, AssetConstant.ASSET_INVENTORY_STATUS_TAKING)) {
                 return R.fail("300806", "该加盟商车辆资产正在进行盘点，请稍后再试");
             }
-            
+            List<String> exitsSn = new ArrayList<>();
             List<Long> idList = assetAllocateRecordRequest.getIdList();
+            //根据sn查询
+            if (Objects.equals(assetAllocateRecordRequest.getSubmitType(),AssetConstant.ASSET_EXIT_WAREHOUSE_SUBMIT_TYPE_BY_SN)){
+                List<String> snList = assetAllocateRecordRequest.getSnList();
+                if (CollectionUtils.isEmpty(snList)) {
+                    return R.ok();
+                }
+                snList = assetAllocateRecordRequest.getSnList().stream().distinct().collect(Collectors.toList());
+                if (snList.size() > AssetConstant.ASSET_ALLOCATE_LIMIT_NUMBER) {
+                    return R.fail("300811", "资产调拨数量最大限制50条，请修改");
+                }
+                Map<String, Long> map = queryIdBasedOnTypeAndSNCode(assetAllocateRecordRequest);
+                for (String s : snList) {
+                    if (!map.containsKey(s)){
+                        exitsSn.add(s);
+                    }
+                }
+                if (CollectionUtils.isNotEmpty(exitsSn)){
+                    return R.fail("300832",String.format("您输入的编号为[%s]，系统未能找到对应的信息，请您核实并修改后提交",String.join(",",exitsSn)));
+                }
+                idList = ListUtil.toList(map.values());
+            }
             if (CollectionUtils.isEmpty(idList)) {
                 return R.ok();
             }
-            
             if (CollectionUtils.isNotEmpty(idList) && idList.size() > AssetConstant.ASSET_ALLOCATE_LIMIT_NUMBER) {
                 return R.fail("300811", "资产调拨数量最大限制50条，请修改");
             }
-            
             Integer tenantId = TenantContextHolder.getTenantId();
             Franchisee sourceFranchisee = franchiseeService.queryByIdFromCache(assetAllocateRecordRequest.getSourceFranchiseeId());
             if (Objects.isNull(sourceFranchisee)) {
@@ -215,6 +242,36 @@ public class AssetAllocateRecordServiceImpl implements AssetAllocateRecordServic
         } finally {
             redisService.delete(CacheConstant.CACHE_ASSET_ALLOCATE_LOCK + uid);
         }
+    }
+    /**
+     * <p>
+     *    Description: queryIdBasedOnTypeAndSNCode
+     * </p>
+     * @param assetAllocateRecordRequest assetAllocateRecordRequest
+     * @return java.util.List<java.lang.Long>
+     * <p>Project: AssetAllocateRecordServiceImpl</p>
+     * <p>Copyright: Copyright (c) 2024</p>
+     * <p>Company: www.xiliulou.com</p>
+     * @author <a href="mailto:wxblifeng@163.com">PeakLee</a>
+     * @since V1.0 2024/3/18
+    */
+    private Map<String,Long> queryIdBasedOnTypeAndSNCode(AssetAllocateRecordRequest assetAllocateRecordRequest) {
+        List<String> snList = assetAllocateRecordRequest.getSnList().stream().distinct().collect(Collectors.toList());
+        Integer type = assetAllocateRecordRequest.getType();
+        Map<String,Long> result = null;
+        if (Objects.equals(type,AssetTypeEnum.ASSET_TYPE_CAR.getCode())){
+            result = electricityCarService.listIdsBySnArray(snList,TenantContextHolder.getTenantId(),assetAllocateRecordRequest.getSourceFranchiseeId());
+        }
+        if (Objects.equals(type,AssetTypeEnum.ASSET_TYPE_BATTERY.getCode())){
+            result = electricityBatteryService.listIdsBySnArray(snList,TenantContextHolder.getTenantId(),assetAllocateRecordRequest.getSourceFranchiseeId());
+        }
+        if (Objects.equals(type,AssetTypeEnum.ASSET_TYPE_CABINET.getCode())){
+            result = electricityCabinetService.listIdsBySnArray(snList,TenantContextHolder.getTenantId(),assetAllocateRecordRequest.getSourceFranchiseeId());
+        }
+        if (MapUtil.isEmpty(result)){
+            return MapUtil.empty();
+        }
+        return result;
     }
     
     public R electricityCarMove(AssetAllocateRecordRequest assetAllocateRecordRequest, Store targetStore, Franchisee targetStoreFranchisee, Integer tenantId, List<Long> idList,
@@ -436,6 +493,13 @@ public class AssetAllocateRecordServiceImpl implements AssetAllocateRecordServic
         AssetAllocateRecordPageQueryModel queryModel = new AssetAllocateRecordPageQueryModel();
         BeanUtil.copyProperties(allocateRecordPageRequest, queryModel);
         queryModel.setTenantId(TenantContextHolder.getTenantId());
+       
+        
+        Pair<Boolean, List<Long>> pair = assertPermissionService.assertPermissionByPair(SecurityUtils.getUserInfo());
+        if (!pair.getLeft()) {
+            return new ArrayList<>();
+        }
+        queryModel.setFranchiseeIds(pair.getRight());
         
         List<AssetAllocateRecordBO> allocateRecordBOList = assetAllocateRecordMapper.selectListByPage(queryModel);
         if (CollectionUtils.isNotEmpty(allocateRecordBOList)) {
@@ -486,7 +550,12 @@ public class AssetAllocateRecordServiceImpl implements AssetAllocateRecordServic
         BeanUtil.copyProperties(allocateRecordPageRequest, queryModel);
         queryModel.setTenantId(TenantContextHolder.getTenantId());
         
+        Pair<Boolean, List<Long>> pair = assertPermissionService.assertPermissionByPair(SecurityUtils.getUserInfo());
+        if (!pair.getLeft()) {
+            return NumberConstant.ZERO;
+        }
+        queryModel.setFranchiseeIds(pair.getRight());
+        
         return assetAllocateRecordMapper.countTotal(queryModel);
     }
-    
 }

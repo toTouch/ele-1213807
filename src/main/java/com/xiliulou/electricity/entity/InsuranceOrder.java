@@ -114,6 +114,11 @@ public class InsuranceOrder {
      * 来源订单编码
      */
     private String sourceOrderNo;
+    
+    /**
+     * 电池型号
+     */
+    private String simpleBatteryType;
 
     //保险状态 3.0重新定义  0：未出险  1：已出险  2：已过期  3：已失效
     public static final Integer NOT_USE = 0;

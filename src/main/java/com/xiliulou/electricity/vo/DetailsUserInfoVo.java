@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.vo;
 
+import com.xiliulou.electricity.enums.SignStatusEnum;
 import com.xiliulou.electricity.vo.enterprise.EnterpriseChannelUserVO;
 import lombok.Data;
 
@@ -107,4 +108,17 @@ public class DetailsUserInfoVo {
      * 是否可解绑微信 0：不可解绑 1：可解绑
      */
     private Integer bindWX;
+    
+    /**
+     * 签署流程ID
+     */
+    private String signFlowId;
+    
+    /**
+     * 签署完成状态；0签了未部署，1签了部署了，2未做电子签名
+     * @see SignStatusEnum
+     */
+    private Integer signFinishStatus;
+    
+    
 }

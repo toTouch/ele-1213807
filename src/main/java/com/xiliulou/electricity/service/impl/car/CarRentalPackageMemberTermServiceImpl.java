@@ -358,4 +358,8 @@ public class CarRentalPackageMemberTermServiceImpl implements CarRentalPackageMe
         redisService.delete(cacheKey);
     }
     
+    @Override
+    public Integer checkUserByRentalPackageId(Long packageId) {
+        return carRentalPackageMemberTermMapper.checkUserByRentalPackageId(packageId);
+    }
 }

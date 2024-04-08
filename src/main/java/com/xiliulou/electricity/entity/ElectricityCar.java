@@ -106,6 +106,21 @@ public class ElectricityCar {
      */
     private Integer stockStatus;
     
+    /**
+     * 车牌号
+     */
+    private String licensePlateNumber;
+    
+    /**
+     * 车架号
+     */
+    private String vin;
+    
+    /**
+     * 电机号
+     */
+    private String motorNumber;
+    
     public static final Integer STATUS_NOT_RENT = 0;
     public static final Integer STATUS_IS_RENT = 1;
 

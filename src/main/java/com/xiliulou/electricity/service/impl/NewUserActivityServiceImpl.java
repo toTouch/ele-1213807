@@ -1,12 +1,14 @@
 package com.xiliulou.electricity.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
+import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.Coupon;
 import com.xiliulou.electricity.entity.NewUserActivity;
 import com.xiliulou.electricity.entity.User;
@@ -15,13 +17,16 @@ import com.xiliulou.electricity.query.NewUserActivityAddAndUpdateQuery;
 import com.xiliulou.electricity.query.NewUserActivityQuery;
 import com.xiliulou.electricity.service.CouponService;
 import com.xiliulou.electricity.service.NewUserActivityService;
+import com.xiliulou.electricity.service.UserDataScopeService;
 import com.xiliulou.electricity.service.UserService;
+import com.xiliulou.electricity.service.asset.AssertPermissionService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.NewUserActivityVO;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -52,6 +57,9 @@ public class NewUserActivityServiceImpl implements NewUserActivityService {
 
 	@Autowired
 	UserService userService;
+	
+	@Autowired
+	private AssertPermissionService assertPermissionService;
 
 	/**
 	 * 通过ID查询单条数据从缓存
@@ -180,6 +188,12 @@ public class NewUserActivityServiceImpl implements NewUserActivityService {
 	@Slave
 	@Override
 	public R queryList(NewUserActivityQuery newUserActivityQuery) {
+		Pair<Boolean, List<Long>> pair = assertPermissionService.assertPermissionByPair(SecurityUtils.getUserInfo());
+		if (!pair.getLeft()){
+			return R.ok(new ArrayList<>());
+		}
+		newUserActivityQuery.setFranchiseeIds(pair.getRight());
+		
 		List<NewUserActivity> newUserActivityList = newUserActivityMapper.queryList(newUserActivityQuery);
 		if (ObjectUtil.isEmpty(newUserActivityList)) {
 			return R.ok(newUserActivityList);
@@ -202,8 +216,15 @@ public class NewUserActivityServiceImpl implements NewUserActivityService {
 	@Slave
 	@Override
 	public R queryCount(NewUserActivityQuery newUserActivityQuery) {
+		Pair<Boolean, List<Long>> pair = assertPermissionService.assertPermissionByPair(SecurityUtils.getUserInfo());
+		if (!pair.getLeft()){
+			return R.ok(NumberConstant.ZERO);
+		}
+		newUserActivityQuery.setFranchiseeIds(pair.getRight());
 		return R.ok(newUserActivityMapper.queryCount(newUserActivityQuery));
 	}
+	
+	
 
 	@Override
 	public R queryInfo(Integer id) {
@@ -306,5 +327,33 @@ public class NewUserActivityServiceImpl implements NewUserActivityService {
 	public NewUserActivity selectByCouponId(Long id) {
 		return newUserActivityMapper.selectByCouponId(id);
 	}
+	
+	/**
+	 * <p>
+	 *    Description: delete
+	 *    9. 活动管理-套餐返现活动里面的套餐配置记录想能够手动删除
+	 * </p>
+	 * @param id id 主键id
+	 * @return com.xiliulou.core.web.R<?>
+	 * <p>Project: saas-electricity</p>
+	 * <p>Copyright: Copyright (c) 2024</p>
+	 * <p>Company: www.xiliulou.com</p>
+	 * <a herf="https://benyun.feishu.cn/wiki/GrNjwBNZkipB5wkiws2cmsEDnVU#UH1YdEuCwojVzFxtiK6c3jltneb"></a>
+	 * @author <a href="mailto:wxblifeng@163.com">PeakLee</a>
+	 * @since V1.0 2024/3/14
+	 */
+    @Override
+    public R<?> removeById(Long id) {
+	    NewUserActivity oldNewUserActivity = queryByIdFromCache(Math.toIntExact(id));
+	    if (Objects.isNull(oldNewUserActivity)) {
+		    log.error("update Activity  ERROR! not found Activity ! ActivityId={} ", id);
+		    return R.fail("ELECTRICITY.0069", "未找到活动");
+	    }
+		int count = this.newUserActivityMapper.removeById(id,TenantContextHolder.getTenantId().longValue());
+		DbUtils.dbOperateSuccessThenHandleCache(Math.toIntExact(id),(identification)->{
+			redisService.delete(CacheConstant.NEW_USER_ACTIVITY_CACHE + identification);
+		});
+        return R.ok(count);
+    }
 }
 

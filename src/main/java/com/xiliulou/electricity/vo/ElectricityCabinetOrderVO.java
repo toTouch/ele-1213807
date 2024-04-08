@@ -95,6 +95,16 @@ public class ElectricityCabinetOrderVO {
     private Long updateTime;
 
     private Integer selfOpenCell;
+    
+    /**
+     * 订单的加盟商ID
+     */
+    private Long franchiseeId;
+    
+    /**
+     * 加盟商名称
+     */
+    private String franchiseeName;
 
 
 }

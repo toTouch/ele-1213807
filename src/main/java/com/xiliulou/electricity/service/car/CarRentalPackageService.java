@@ -2,6 +2,9 @@ package com.xiliulou.electricity.service.car;
 
 import com.xiliulou.electricity.entity.car.CarRentalPackagePo;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageQryModel;
+import com.xiliulou.electricity.query.car.CarRentalPackageNameReq;
+import com.xiliulou.electricity.vo.car.CarRentalPackageSearchVO;
+import com.xiliulou.electricity.query.MemberCardAndCarRentalPackageSortParamQuery;
 
 import java.util.List;
 
@@ -103,5 +106,23 @@ public interface CarRentalPackageService {
      * @return
      */
     List<CarRentalPackagePo> findByCouponId(Long couponId);
-
+    
+    /**
+     * <p>
+     *    Description: queryToSearchByName
+     *    14.4 套餐购买记录（2条优化项）
+     * </p>
+     * @param rentalPackageNameReq rentalPackageNameReq
+     * @return java.util.List<com.xiliulou.electricity.vo.car.CarRentalPackageSearchVo>
+     * <p>Project: CarRentalPackageService</p>
+     * <p>Copyright: Copyright (c) 2024</p>
+     * <p>Company: www.xiliulou.com</p>
+     * @author <a href="mailto:wxblifeng@163.com">PeakLee</a>
+     * @since V1.0 2024/3/14
+    */
+    List<CarRentalPackageSearchVO> queryToSearchByName(CarRentalPackageNameReq rentalPackageNameReq);
+    
+    Integer batchUpdateSortParam(List<MemberCardAndCarRentalPackageSortParamQuery> sortParamQueries);
+    
+    List<CarRentalPackagePo> listCarRentalPackageForSort();
 }

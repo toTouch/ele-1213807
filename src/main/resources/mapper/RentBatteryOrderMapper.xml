@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.xiliulou.electricity.mapper.RentBatteryOrderMapper">
-
-
-
+    
+    
+    
     <!--查询指定行数据-->
     <select id="queryList" resultType="com.xiliulou.electricity.vo.RentBatteryOrderVO">
         select
         id, order_id,uid,name , phone, electricity_battery_sn, battery_deposit,electricity_cabinet_id,cell_no,type,
-        status, create_time,update_time,remark
+        status, create_time,update_time,remark, franchisee_id
         from t_rent_battery_order
         <where>
             <if test="query.orderId != null and query.orderId != ''">
@@ -38,6 +38,15 @@
             <if test="query.tenantId != null">
                 and tenant_id = #{query.tenantId}
             </if>
+            <if test="query.franchiseeId != null">
+                and franchisee_id = #{query.franchiseeId}
+            </if>
+            <if test="query.electricityBatterySn != null and query.electricityBatterySn != ''">
+                and electricity_battery_sn = #{query.electricityBatterySn}
+            </if>
+            <if test="query.electricityCabinetId != null">
+                and electricity_cabinet_id = #{query.electricityCabinetId}
+            </if>
             <if test="query.franchiseeIds != null">
                 and franchisee_id in
                 <foreach collection="query.franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
@@ -51,12 +60,12 @@
                 </foreach>
             </if>
         </where>
-        order by create_time desc
+        order by id desc
         limit #{query.offset}, #{query.size}
     </select>
-
-
-	<select id="queryCount" resultType="java.lang.Integer">
+    
+    
+    <select id="queryCount" resultType="java.lang.Integer">
         select  COUNT(1)
         from t_rent_battery_order
         <where>
@@ -87,6 +96,15 @@
             <if test="query.tenantId != null">
                 and tenant_id = #{query.tenantId}
             </if>
+            <if test="query.franchiseeId != null and query.franchiseeId != ''">
+                and franchisee_id = #{query.franchiseeId}
+            </if>
+            <if test="query.electricityBatterySn != null and query.electricityBatterySn != ''">
+                and electricity_battery_sn = #{query.electricityBatterySn}
+            </if>
+            <if test="query.electricityCabinetId != null and query.electricityCabinetId != ''">
+                and electricity_cabinet_id = #{query.electricityCabinetId}
+            </if>
             <if test="query.franchiseeIds != null">
                 and franchisee_id in
                 <foreach collection="query.franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
@@ -104,13 +122,13 @@
     
     <select id="selectByUidAndTime" resultType="com.xiliulou.electricity.entity.RentBatteryOrder">
         select id, order_id,uid,type, status, create_time,update_time
-         from t_rent_battery_order where uid=#{uid} and create_time &gt;=#{query.startTime} and create_time &lt;=#{query.endTime} order by id
+        from t_rent_battery_order where uid=#{uid} and create_time &gt;=#{query.startTime} and create_time &lt;=#{query.endTime} order by id
     </select>
-
+    
     <select id="selectLatestByUid" resultType="com.xiliulou.electricity.entity.RentBatteryOrder">
         select id,uid,electricity_battery_sn from t_rent_battery_order where uid=#{uid} and tenant_id=#{tenantId} order by create_time desc limit 1
     </select>
-
+    
     <resultMap type="com.xiliulou.electricity.entity.EleCabinetUsedRecord" id="EleCabinetUsedRecordMap">
         <result property="id" column="electricity_cabinet_id" jdbcType="INTEGER"/>
         <result property="uid" column="uid" jdbcType="INTEGER"/>
@@ -124,78 +142,78 @@
         <result property="leaseCellNo" column="new_cell_no" jdbcType="INTEGER" />
         <result property="createTime" column="create_time" jdbcType="INTEGER"/>
     </resultMap>
-
+    
     <select id="selectEleCabinetUsedRecords" resultType="com.xiliulou.electricity.query.EleCabinetUsedRecordQuery" resultMap="EleCabinetUsedRecordMap">
         select temp.uid,
-               temp.type,
-               temp.order_id,
-               temp.old_electricity_battery_sn,
-               temp.old_cell_no,
-               temp.new_electricity_battery_sn,
-               temp.new_cell_no,
-               temp.electricity_cabinet_id,
-               temp.create_time
+        temp.type,
+        temp.order_id,
+        temp.old_electricity_battery_sn,
+        temp.old_cell_no,
+        temp.new_electricity_battery_sn,
+        temp.new_cell_no,
+        temp.electricity_cabinet_id,
+        temp.create_time
         from
-            ( select  uid, type, order_id,
-                case when type = 2 then electricity_battery_sn else null end as old_electricity_battery_sn,
-                case when type = 2 then cell_no else null end as old_cell_no,
-                case when type = 1 then electricity_battery_sn else null end as new_electricity_battery_sn,
-                case when type = 1 then cell_no else null end as new_cell_no,
-                electricity_cabinet_id,
-                create_time
-            from t_rent_battery_order
-            where electricity_cabinet_id = #{query.id}
-            and type in (1,2)
-            union all
-            select uid, 9 type, order_id,
-                old_electricity_battery_sn ,
-                old_cell_no ,
-                new_electricity_battery_sn,
-                new_cell_no,
-                electricity_cabinet_id,
-                create_time
-            from t_electricity_cabinet_order
-            where electricity_cabinet_id = #{query.id}) temp
+        ( select  uid, type, order_id,
+        case when type = 2 then electricity_battery_sn else null end as old_electricity_battery_sn,
+        case when type = 2 then cell_no else null end as old_cell_no,
+        case when type = 1 then electricity_battery_sn else null end as new_electricity_battery_sn,
+        case when type = 1 then cell_no else null end as new_cell_no,
+        electricity_cabinet_id,
+        create_time
+        from t_rent_battery_order
+        where electricity_cabinet_id = #{query.id}
+        and type in (1,2)
+        union all
+        select uid, 9 type, order_id,
+        old_electricity_battery_sn ,
+        old_cell_no ,
+        new_electricity_battery_sn,
+        new_cell_no,
+        electricity_cabinet_id,
+        create_time
+        from t_electricity_cabinet_order
+        where electricity_cabinet_id = #{query.id}) temp
         <where>
-
+            
             <if test="query.uid != null">
                 and temp.uid = #{query.uid}
             </if>
-
+            
             <if test="query.beginTime != null">
                 and temp.create_time &gt;= #{query.beginTime}
             </if>
-
+            
             <if test="query.endTime != null">
                 and temp.create_time &lt;= #{query.endTime}
             </if>
-
+        
         </where>
         order by temp.create_time desc
         limit #{query.offset}, #{query.size}
     </select>
-
+    
     <select id="selectUsedRecordsTotalCount" resultType="java.lang.Integer">
         select count(1)
         from
-            (select uid, type, order_id,
-                case when type = 2 then electricity_battery_sn else null end as old_electricity_battery_sn,
-                case when type = 2 then cell_no else null end as old_cell_no,
-                case when type = 1 then electricity_battery_sn else null end as new_electricity_battery_sn,
-                case when type = 1 then cell_no else null end as new_cell_no,
-                create_time
-            from t_rent_battery_order
-            where electricity_cabinet_id = #{query.id}
-            and type in (1,2)
-            union all
-            select uid, 9 type, teco.order_id,
-                teco.old_electricity_battery_sn,
-                teco.old_cell_no,
-                teco.new_electricity_battery_sn,
-                teco.new_cell_no,
-                teco.create_time
-            from t_electricity_cabinet_order teco
-            where electricity_cabinet_id = #{query.id}) temp
+        (select uid, type, order_id,
+        case when type = 2 then electricity_battery_sn else null end as old_electricity_battery_sn,
+        case when type = 2 then cell_no else null end as old_cell_no,
+        case when type = 1 then electricity_battery_sn else null end as new_electricity_battery_sn,
+        case when type = 1 then cell_no else null end as new_cell_no,
+        create_time
+        from t_rent_battery_order
+        where electricity_cabinet_id = #{query.id}
+        and type in (1,2)
+        union all
+        select uid, 9 type, teco.order_id,
+        teco.old_electricity_battery_sn,
+        teco.old_cell_no,
+        teco.new_electricity_battery_sn,
+        teco.new_cell_no,
+        teco.create_time
+        from t_electricity_cabinet_order teco
+        where electricity_cabinet_id = #{query.id}) temp
         <where>
             <if test="query.uid != null">
                 and temp.uid = #{query.uid}
@@ -203,11 +221,11 @@
             <if test="query.beginTime != null">
                 and temp.create_time &gt;= #{query.beginTime}
             </if>
-
+            
             <if test="query.endTime != null">
                 and temp.create_time &lt;= #{query.endTime}
             </if>
-
+        
         </where>
     </select>
     

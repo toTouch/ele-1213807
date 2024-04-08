@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.map.MapUtil;
 import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -14,6 +15,7 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.DS;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.bo.asset.ElectricityCarBO;
+import com.xiliulou.electricity.constant.AssetConstant;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
@@ -37,13 +39,13 @@ import com.xiliulou.electricity.query.asset.ElectricityCarListSnByFranchiseeQuer
 import com.xiliulou.electricity.request.asset.AssetBatchExitWarehouseRequest;
 import com.xiliulou.electricity.request.asset.AssetSnWarehouseRequest;
 import com.xiliulou.electricity.request.asset.CarAddRequest;
+import com.xiliulou.electricity.request.asset.CarBatchSaveExcelRequest;
 import com.xiliulou.electricity.request.asset.CarBatchSaveRequest;
 import com.xiliulou.electricity.request.asset.CarOutWarehouseRequest;
+import com.xiliulou.electricity.request.asset.CarUpdateRequest;
 import com.xiliulou.electricity.request.asset.ElectricityCarBatchUpdateFranchiseeAndStoreRequest;
 import com.xiliulou.electricity.request.asset.ElectricityCarSnSearchRequest;
 import com.xiliulou.electricity.service.*;
-import com.xiliulou.electricity.service.asset.AssetAllocateDetailService;
-import com.xiliulou.electricity.service.asset.AssetAllocateRecordService;
 import com.xiliulou.electricity.service.asset.AssetWarehouseRecordService;
 import com.xiliulou.electricity.service.asset.AssetWarehouseService;
 import com.xiliulou.electricity.service.retrofit.Jt808RetrofitService;
@@ -77,36 +79,46 @@ import java.util.stream.Collectors;
 @Service("electricityCarService")
 @Slf4j
 public class ElectricityCarServiceImpl implements ElectricityCarService {
+    
     @Resource
     private ElectricityCarMapper electricityCarMapper;
-
+    
     @Resource
     CarAttrMapper carAttrMapper;
+    
     @Autowired
     RedisService redisService;
+    
     @Autowired
     ElectricityCarModelService electricityCarModelService;
+    
     @Autowired
     UserInfoService userInfoService;
+    
     @Autowired
     EleBindCarRecordService eleBindCarRecordService;
+    
     @Autowired
     ElectricityBatteryService electricityBatteryService;
+    
     @Autowired
     UserCarService userCarService;
+    
     @Autowired
     UserCarMemberCardService userCarMemberCardService;
+    
     @Autowired
     RentCarOrderService rentCarOrderService;
+    
     @Autowired
     UserCarDepositService userCarDepositService;
     
     @Autowired
     Jt808RetrofitService jt808RetrofitService;
-
+    
     @Autowired
     ClickHouseService clickHouseService;
-
+    
     @Autowired
     Jt808CarService jt808CarService;
     
@@ -124,28 +136,22 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
     
     @Autowired
     CarRefundOrderService carRefundOrderService;
-
+    
     @Autowired
     ElectricityConfigService electricityConfigService;
     
     @Autowired
     CarLockCtrlHistoryService carLockCtrlHistoryService;
-
+    
     @Resource
     private CarMoveRecordMapper carMoveRecordMapper;
-    
-    @Autowired
-    private AssetAllocateRecordService assetAllocateRecordService;
-    
-    @Autowired
-    private AssetAllocateDetailService assetAllocateDetailService;
     
     @Autowired
     private AssetWarehouseService assetWarehouseService;
     
     @Resource
     private AssetWarehouseRecordService assetWarehouseRecordService;
-
+    
     /**
      * 根据ID更新车辆绑定用户，包含绑定、解绑
      *
@@ -157,13 +163,13 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
         if (!ObjectUtils.allNotNull(electricityCarUpdate, electricityCarUpdate.getId())) {
             throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
-
+        
         Integer num = electricityCarMapper.updateCarBindStatusById(electricityCarUpdate);
         redisService.delete(CacheConstant.CACHE_ELECTRICITY_CAR + electricityCarUpdate.getId());
-
+        
         return num >= 0;
     }
-
+    
     /**
      * 根据用户ID查询车辆信息
      *
@@ -181,7 +187,7 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
         queryWrapper.eq(ElectricityCar::getTenantId, tenantId).eq(ElectricityCar::getUid, uid).eq(ElectricityCar::getDelFlag, DelFlagEnum.OK.getCode());
         return electricityCarMapper.selectOne(queryWrapper);
     }
-
+    
     /**
      * 根据车辆型号ID判定，是否存在未租车辆
      *
@@ -195,11 +201,12 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
             throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
         LambdaQueryWrapper<ElectricityCar> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(ElectricityCar::getModelId, carModelId).eq(ElectricityCar::getDelFlag, DelFlagEnum.OK.getCode()).eq(ElectricityCar::getStatus, ElectricityCar.STATUS_NOT_RENT);
+        queryWrapper.eq(ElectricityCar::getModelId, carModelId).eq(ElectricityCar::getDelFlag, DelFlagEnum.OK.getCode())
+                .eq(ElectricityCar::getStatus, ElectricityCar.STATUS_NOT_RENT);
         Integer count = electricityCarMapper.selectCount(queryWrapper);
         return count > 0;
     }
-
+    
     /**
      * 根据车辆型号ID，判定是否进行绑定
      *
@@ -217,12 +224,12 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
         Integer count = electricityCarMapper.selectCount(queryWrapper);
         return count > 0;
     }
-
+    
     /**
-     * 根据 uid 查询车辆信息<br />
-     * 复合查询，车辆、门店、车辆经纬度
+     * 根据 uid 查询车辆信息<br /> 复合查询，车辆、门店、车辆经纬度
+     *
      * @param tenantId 租户ID
-     * @param carId 车辆ID
+     * @param carId    车辆ID
      * @return
      */
     @Slave
@@ -231,15 +238,15 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
         if (!ObjectUtils.allNotNull(tenantId, carId)) {
             return null;
         }
-
+        
         CarInfoDO carInfoDO = electricityCarMapper.queryByCarId(tenantId, carId);
         if (ObjectUtils.isEmpty(carInfoDO)) {
             return null;
         }
-
+        
         return carInfoDO;
     }
-
+    
     /**
      * 通过ID查询单条数据从缓存
      *
@@ -262,7 +269,7 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
         redisService.saveWithHash(CacheConstant.CACHE_ELECTRICITY_CAR + id, electricityCar);
         return electricityCar;
     }
-
+    
     @Override
     @Transactional
     public R save(ElectricityCarAddAndUpdate electricityCarAddAndUpdate) {
@@ -271,21 +278,21 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
         if (Objects.isNull(user)) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-
+        
         //操作频繁
         boolean result = redisService.setNx(CacheConstant.CAR_SAVE_UID + user.getUid(), "1", 3 * 1000L, false);
         if (!result) {
             return R.fail("ELECTRICITY.0034", "操作频繁");
         }
-
+        
         Store store = storeService.queryByIdFromCache(electricityCarAddAndUpdate.getStoreId());
-        if(Objects.isNull(store)){
+        if (Objects.isNull(store)) {
             return R.fail("100204", "未找到门店");
         }
-
+        
         //租户
         Integer tenantId = TenantContextHolder.getTenantId();
-
+        
         //换电柜车辆
         ElectricityCar electricityCar = new ElectricityCar();
         BeanUtil.copyProperties(electricityCarAddAndUpdate, electricityCar);
@@ -294,23 +301,22 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
         electricityCar.setUpdateTime(System.currentTimeMillis());
         electricityCar.setDelFlag(ElectricityCabinet.DEL_NORMAL);
         electricityCar.setFranchiseeId(store.getFranchiseeId());
-
+        
         //查找车辆型号
         ElectricityCarModel electricityCarModel = electricityCarModelService.queryByIdFromCache(electricityCar.getModelId());
         if (Objects.isNull(electricityCarModel)) {
             return R.fail("100005", "未找到车辆型号");
         }
-        ElectricityCar existElectricityCar = electricityCarMapper.selectOne(new LambdaQueryWrapper<ElectricityCar>()
-                .eq(ElectricityCar::getSn, electricityCarAddAndUpdate.getSn())
-                .eq(ElectricityCar::getDelFlag, ElectricityCar.DEL_NORMAL)
-                .eq(ElectricityCar::getTenantId, tenantId));
+        ElectricityCar existElectricityCar = electricityCarMapper.selectOne(
+                new LambdaQueryWrapper<ElectricityCar>().eq(ElectricityCar::getSn, electricityCarAddAndUpdate.getSn()).eq(ElectricityCar::getDelFlag, ElectricityCar.DEL_NORMAL)
+                        .eq(ElectricityCar::getTenantId, tenantId));
         if (Objects.nonNull(existElectricityCar)) {
             return R.fail("100017", "已存在该编号车辆");
         }
-
+        
         electricityCar.setModel(electricityCarModel.getName());
         electricityCar.setModelId(electricityCarModel.getId());
-
+        
         int insert = electricityCarMapper.insert(electricityCar);
         DbUtils.dbOperateSuccessThen(insert, () -> {
             //新增缓存
@@ -337,6 +343,9 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
         electricityCar.setDelFlag(ElectricityCabinet.DEL_NORMAL);
         electricityCar.setStoreId(NumberConstant.ZERO_L);
         electricityCar.setStockStatus(StockStatusEnum.STOCK.getCode());
+        electricityCar.setLicensePlateNumber(carAddRequest.getLicensePlateNumber());
+        electricityCar.setVin(carAddRequest.getVin());
+        electricityCar.setMotorNumber(carAddRequest.getMotorNumber());
         
         //查找车辆型号
         ElectricityCarModel electricityCarModel = electricityCarModelService.queryByIdFromCache(electricityCar.getModelId());
@@ -344,7 +353,7 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
             return R.fail("100005", "未找到车辆型号");
         }
         
-        ElectricityCar existElectricityCar = electricityCarMapper.selectBySn(carAddRequest.getSn(),TenantContextHolder.getTenantId());
+        ElectricityCar existElectricityCar = electricityCarMapper.selectBySn(carAddRequest.getSn(), TenantContextHolder.getTenantId());
         
         if (Objects.nonNull(existElectricityCar)) {
             return R.fail("100017", "已存在该编号车辆");
@@ -354,13 +363,13 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
         electricityCar.setModelId(electricityCarModel.getId());
         
         electricityCarMapper.insert(electricityCar);
-    
+        
         // 异步记录
         Long warehouseId = carAddRequest.getWarehouseId();
         if (Objects.nonNull(warehouseId) && !Objects.equals(warehouseId, NumberConstant.ZERO_L)) {
             Long uid = Objects.requireNonNull(SecurityUtils.getUserInfo()).getUid();
             String sn = carAddRequest.getSn();
-        
+            
             assetWarehouseRecordService.asyncRecordOne(TenantContextHolder.getTenantId(), uid, warehouseId, sn, AssetTypeEnum.ASSET_TYPE_CAR.getCode(),
                     WarehouseOperateTypeEnum.WAREHOUSE_OPERATE_TYPE_IN.getCode());
         }
@@ -368,6 +377,7 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
         return R.ok(electricityCar.getId());
     }
 
+    @Deprecated
     @Override
     @Transactional
     public R edit(ElectricityCarAddAndUpdate electricityCarAddAndUpdate) {
@@ -376,16 +386,16 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
         if (Objects.isNull(user)) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-
+        
         //租户
         Integer tenantId = TenantContextHolder.getTenantId();
-
+        
         //操作频繁
         boolean result = redisService.setNx(CacheConstant.CAR_EDIT_UID + user.getUid(), "1", 3 * 1000L, false);
         if (!result) {
             return R.fail("ELECTRICITY.0034", "操作频繁");
         }
-
+        
         //换电柜车辆
         ElectricityCar electricityCar = new ElectricityCar();
         BeanUtil.copyProperties(electricityCarAddAndUpdate, electricityCar);
@@ -393,11 +403,11 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
         if (Objects.isNull(oldElectricityCar)) {
             return R.fail("100007", "未找到车辆");
         }
-
+        
         if (!Objects.equals(tenantId, oldElectricityCar.getTenantId())) {
             return R.ok();
         }
-
+        
         //车辆老型号
         Integer oldModelId = oldElectricityCar.getModelId();
         //查找快递柜型号
@@ -405,29 +415,30 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
         if (Objects.isNull(electricityCarModel)) {
             return R.fail("100005", "未找到车辆型号");
         }
-
+        
         if (Objects.equals(tenantId, electricityCarModel.getTenantId())) {
             return R.ok();
         }
-
+        
         if (!oldModelId.equals(electricityCar.getModelId())) {
             return R.fail("ELECTRICITY.0010", "不能修改型号");
         }
-        ElectricityCar existElectricityCar = electricityCarMapper.selectOne(new LambdaQueryWrapper<ElectricityCar>().eq(ElectricityCar::getSn, electricityCarAddAndUpdate.getSn()).eq(ElectricityCar::getTenantId, tenantId));
+        ElectricityCar existElectricityCar = electricityCarMapper.selectOne(
+                new LambdaQueryWrapper<ElectricityCar>().eq(ElectricityCar::getSn, electricityCarAddAndUpdate.getSn()).eq(ElectricityCar::getTenantId, tenantId));
         if (Objects.nonNull(existElectricityCar)) {
             return R.fail("100017", "已存在该编号车辆");
         }
-
+        
         electricityCar.setUpdateTime(System.currentTimeMillis());
-
-        if(Objects.nonNull(electricityCarAddAndUpdate.getStoreId())){
+        
+        if (Objects.nonNull(electricityCarAddAndUpdate.getStoreId())) {
             Store store = storeService.queryByIdFromCache(electricityCarAddAndUpdate.getStoreId());
-            if(Objects.isNull(store)){
+            if (Objects.isNull(store)) {
                 return R.fail("100204", "未找到门店");
             }
             electricityCar.setFranchiseeId(store.getFranchiseeId());
         }
-
+        
         int update = electricityCarMapper.updateById(electricityCar);
         DbUtils.dbOperateSuccessThen(update, () -> {
             //更新缓存
@@ -436,26 +447,26 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
         });
         return R.ok();
     }
-
+    
     @Override
     @Transactional
     public R delete(Integer id) {
-
+        
         Integer tenantId = TenantContextHolder.getTenantId();
-
+        
         ElectricityCar electricityCar = queryByIdFromCache(id);
         if (Objects.isNull(electricityCar)) {
             return R.fail("100007", "未找到车辆");
         }
-
+        
         if (!Objects.equals(tenantId, electricityCar.getTenantId())) {
             return R.ok();
         }
-
+        
         if (Objects.nonNull(electricityCar.getUid()) || StringUtils.isNotBlank(electricityCar.getUserName())) {
             return R.fail("100231", "车辆已绑定用户！");
         }
-
+        
         //删除数据库
         electricityCar.setId(id);
         electricityCar.setUpdateTime(System.currentTimeMillis());
@@ -468,7 +479,7 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
         });
         return R.ok();
     }
-
+    
     @Override
     @Slave
     public R queryList(ElectricityCarQuery electricityCarQuery) {
@@ -476,13 +487,13 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
         if (CollectionUtils.isEmpty(electricityCarVOS)) {
             return R.ok(Collections.EMPTY_LIST);
         }
-
+        
         // 获取库房名称列表 根据库房id查询库房名称，不需要过滤库房状态是已删除的
         List<Long> warehouseIdList = electricityCarVOS.stream().map(ElectricityCarVO::getWarehouseId).filter(Objects::nonNull).distinct().collect(Collectors.toList());
         List<AssetWarehouseNameVO> assetWarehouseNameVOS = assetWarehouseService.selectByIdList(warehouseIdList);
         
         Map<Long, String> warehouseNameVOMap = Maps.newHashMap();
-        if(CollectionUtils.isNotEmpty(assetWarehouseNameVOS)){
+        if (CollectionUtils.isNotEmpty(assetWarehouseNameVOS)) {
             warehouseNameVOMap = assetWarehouseNameVOS.stream().collect(Collectors.toMap(AssetWarehouseNameVO::getId, AssetWarehouseNameVO::getName, (item1, item2) -> item2));
         }
         
@@ -510,21 +521,22 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
             }
             
         }).collect(Collectors.toList());
-
+        
         return R.ok(carVOList);
     }
-
+    
     @Override
     public Integer queryByModelId(Integer id) {
-        return electricityCarMapper.selectCount(Wrappers.<ElectricityCar>lambdaQuery().eq(ElectricityCar::getModelId, id).eq(ElectricityCar::getDelFlag, ElectricityCar.DEL_NORMAL).eq(ElectricityCar::getTenantId, TenantContextHolder.getTenantId()));
+        return electricityCarMapper.selectCount(Wrappers.<ElectricityCar>lambdaQuery().eq(ElectricityCar::getModelId, id).eq(ElectricityCar::getDelFlag, ElectricityCar.DEL_NORMAL)
+                .eq(ElectricityCar::getTenantId, TenantContextHolder.getTenantId()));
     }
-
+    
     @Slave
     @Override
     public R queryCount(ElectricityCarQuery electricityCarQuery) {
         return R.ok(electricityCarMapper.queryCount(electricityCarQuery));
     }
-
+    
     @Override
     public Integer update(ElectricityCar updateElectricityCar) {
         int update = electricityCarMapper.updateById(updateElectricityCar);
@@ -535,7 +547,7 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
         });
         return update;
     }
-
+    
     @Override
     public Integer carUnBindUser(ElectricityCar updateElectricityCar) {
         int update = electricityCarMapper.updateBindUser(updateElectricityCar);
@@ -561,7 +573,6 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
     }
     
     
-
     @Override
     public R attrList(Long beginTime, Long endTime) {
         //用户
@@ -587,39 +598,37 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
             }
             sn = userCar.getSn();
         }*/
-
+        
         Integer tenantId = TenantContextHolder.getTenantId();
         ElectricityCar electricityCar = selectByUid(tenantId, user.getUid());
         if (ObjectUtils.isEmpty(electricityCar)) {
             throw new BizException("100015", "用户未绑定车辆");
         }
-
+        
         String begin = TimeUtils.convertToStandardFormatTime(beginTime);
         String end = TimeUtils.convertToStandardFormatTime(endTime);
-
+        
         List<CarAttr> query = jt808CarService.queryListBySn(electricityCar.getSn(), begin, end);
         if (CollectionUtils.isEmpty(query)) {
             query = new ArrayList<>();
         }
-
+        
         List<CarGpsVo> result = query.parallelStream()
-                .map(e -> new CarGpsVo().setLatitude(e.getLatitude()).setLongitude(e.getLongitude())
-                        .setDevId(e.getDevId()).setCreateTime(e.getCreateTime().getTime()))
+                .map(e -> new CarGpsVo().setLatitude(e.getLatitude()).setLongitude(e.getLongitude()).setDevId(e.getDevId()).setCreateTime(e.getCreateTime().getTime()))
                 .collect(Collectors.toList());
         return R.ok(result);
     }
-
+    
     @Override
     @DS(value = "clickhouse")
     public CarAttr queryLastReportPointBySn(String sn) {
         return carAttrMapper.queryLastReportPointBySn(sn);
     }
-
+    
     @Slave
     @Override
     public R queryElectricityCarMove(Long storeId, String sn, Long size, Long offset) {
-        List<ElectricityCarMoveVo> queryList = electricityCarMapper
-                .queryEnableMoveCarByStoreId(storeId, sn, size, offset, TenantContextHolder.getTenantId());
+        List<ElectricityCarMoveVo> queryList = electricityCarMapper.queryEnableMoveCarByStoreId(storeId, sn, size, offset, TenantContextHolder.getTenantId());
         return R.ok(queryList);
     }
     
@@ -630,19 +639,18 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
         if (CollectionUtils.isEmpty(carIds)) {
             return R.ok();
         }
-    
+        
         if (carIds.size() > 50) {
-            log.error("ELECTRICITY_CAR_MOVE ERROR! car size too long ！sourceStore={}， targetStore={}, size={}",
-                    electricityCarMoveQuery.getSourceSid(), electricityCarMoveQuery.getTargetSid(), carIds.size());
+            log.error("ELECTRICITY_CAR_MOVE ERROR! car size too long ！sourceStore={}， targetStore={}, size={}", electricityCarMoveQuery.getSourceSid(),
+                    electricityCarMoveQuery.getTargetSid(), carIds.size());
             return R.fail("100270", "迁移车辆数量过多");
         }
-    
+        
         if (Objects.equals(electricityCarMoveQuery.getSourceSid(), electricityCarMoveQuery.getTargetSid())) {
-            log.error("ELECTRICITY_CAR_MOVE ERROR! Same store ！sourceStore={}， targetStore={}",
-                    electricityCarMoveQuery.getSourceSid(), electricityCarMoveQuery.getTargetSid());
+            log.error("ELECTRICITY_CAR_MOVE ERROR! Same store ！sourceStore={}， targetStore={}", electricityCarMoveQuery.getSourceSid(), electricityCarMoveQuery.getTargetSid());
             return R.fail("ELECTRICITY.0018", "车辆迁移门店不能相同");
         }
-    
+        
         Integer tenantId = TenantContextHolder.getTenantId();
         
         Store targetStore = storeService.queryByIdFromCache(electricityCarMoveQuery.getTargetSid());
@@ -657,27 +665,24 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
             return R.fail("ELECTRICITY.0018", "未找到门店");
         }
         
-        if (!Objects.equals(targetStore.getTenantId(), TenantContextHolder.getTenantId()) || !Objects
-                .equals(sourceStore.getTenantId(), TenantContextHolder.getTenantId())) {
+        if (!Objects.equals(targetStore.getTenantId(), TenantContextHolder.getTenantId()) || !Objects.equals(sourceStore.getTenantId(), TenantContextHolder.getTenantId())) {
             return R.ok();
         }
-    
+        
         Franchisee franchisee = franchiseeService.queryByIdFromCache(targetStore.getFranchiseeId());
         if (Objects.isNull(franchisee)) {
             log.error("ELECTRICITY_CAR_MOVE ERROR! not found franchisee！franchiseeId={}", targetStore.getFranchiseeId());
             return R.fail("ELECTRICITY.0038", "未找到加盟商");
         }
-    
-        List<ElectricityCar> queryList = electricityCarMapper
-                .queryModelIdBySidAndIds(carIds, electricityCarMoveQuery.getSourceSid(), ElectricityCar.STATUS_NOT_RENT,
-                        TenantContextHolder.getTenantId());
+        
+        List<ElectricityCar> queryList = electricityCarMapper.queryModelIdBySidAndIds(carIds, electricityCarMoveQuery.getSourceSid(), ElectricityCar.STATUS_NOT_RENT,
+                TenantContextHolder.getTenantId());
         if (CollectionUtils.isEmpty(queryList) || queryList.size() != carIds.size()) {
             log.error("ELECTRICITY_CAR_MOVE ERROR! has illegal cars！carIds={}", carIds);
             return R.fail("100262", "部分车辆不符合迁移条件，请检查后重试");
         }
-    
-        Map<Integer, List<ElectricityCar>> collect = queryList.parallelStream()
-                .collect(Collectors.groupingBy(ElectricityCar::getModelId));
+        
+        Map<Integer, List<ElectricityCar>> collect = queryList.parallelStream().collect(Collectors.groupingBy(ElectricityCar::getModelId));
         collect.forEach((k, v) -> {
             //k --> ModelId  v --> List<ElectricityCar>
             ElectricityCarModel electricityCarModel = electricityCarModelService.queryByIdFromCache(k);
@@ -685,10 +690,9 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
                 log.error("ELECTRICITY_CAR_MOVE ERROR! CarModel is null error! carModel={}", k);
                 return;
             }
-    
+            
             //如果目标门店没同名类型则要创建
-            ElectricityCarModel targetCarModel = electricityCarModelService
-                    .queryByNameAndStoreId(electricityCarModel.getName(), targetStore.getId());
+            ElectricityCarModel targetCarModel = electricityCarModelService.queryByNameAndStoreId(electricityCarModel.getName(), targetStore.getId());
             if (Objects.isNull(targetCarModel)) {
                 //拷贝类型
                 targetCarModel = new ElectricityCarModel();
@@ -698,11 +702,9 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
                 targetCarModel.setUpdateTime(System.currentTimeMillis());
                 targetCarModel.setCreateTime(System.currentTimeMillis());
                 electricityCarModelService.insert(targetCarModel);
-    
+                
                 //拷贝标签
-                List<CarModelTag> carModelTags = Optional
-                        .ofNullable(carModelTagService.selectByCarModelId(electricityCarModel.getId()))
-                        .orElse(new ArrayList<>());
+                List<CarModelTag> carModelTags = Optional.ofNullable(carModelTagService.selectByCarModelId(electricityCarModel.getId())).orElse(new ArrayList<>());
                 for (CarModelTag carModelTag : carModelTags) {
                     carModelTag.setId(null);
                     carModelTag.setCarModelId(targetCarModel.getId().longValue());
@@ -710,7 +712,7 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
                     carModelTag.setUpdateTime(System.currentTimeMillis());
                 }
                 carModelTagService.batchInsert(carModelTags);
-    
+                
                 ///拷贝图片
                 PictureQuery pictureQuery = new PictureQuery();
                 pictureQuery.setBusinessId(electricityCarModel.getId().longValue());
@@ -727,9 +729,9 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
                 }
                 pictureService.batchInsert(pictures);
             }
-    
+            
             Integer targetCarModelId = targetCarModel.getId();
-    
+            
             //修改被迁移车辆门店及类型
             Optional.ofNullable(v).orElse(new ArrayList<>()).parallelStream().forEach(item -> {
                 ElectricityCar updateElectricityCar = new ElectricityCar();
@@ -740,23 +742,24 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
                 this.update(updateElectricityCar);
             });
         });
-
+        
         saveCarMoveRecords(queryList, sourceStore, targetStore);
-    
+        
         return R.ok();
     }
-
+    
     /**
      * 保存车辆迁移信息
+     *
      * @param queryList
      * @param sourceStore
      * @param targetStore
      */
     @Transactional(rollbackFor = Exception.class)
-    public void saveCarMoveRecords(List<ElectricityCar> queryList, Store sourceStore, Store targetStore){
+    public void saveCarMoveRecords(List<ElectricityCar> queryList, Store sourceStore, Store targetStore) {
         //记录迁移的车辆数据信息
         List<CarMoveRecord> carMoveRecords = new ArrayList<>();
-        for(ElectricityCar electricityCar : queryList){
+        for (ElectricityCar electricityCar : queryList) {
             CarMoveRecord carMoveRecord = new CarMoveRecord();
             carMoveRecord.setTenantId(TenantContextHolder.getTenantId().longValue());
             carMoveRecord.setCarId(electricityCar.getId().longValue());
@@ -773,24 +776,25 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
             carMoveRecords.add(carMoveRecord);
         }
         log.error("move car records is : {}", carMoveRecords);
-        if(CollectionUtils.isNotEmpty(carMoveRecords)){
+        if (CollectionUtils.isNotEmpty(carMoveRecords)) {
             carMoveRecordMapper.batchInsertCarMoveRecord(carMoveRecords);
         }
     }
+    
     @Override
     @Transactional(rollbackFor = Exception.class)
     public R bindUser(ElectricityCarBindUser electricityCarBindUser) {
-
+        
         //租户
         Integer tenantId = TenantContextHolder.getTenantId();
-
+        
         //用户
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             log.error("ELE CAR  ERROR! not found user ");
             return R.fail("ELECTRICITY.0001", "未找到操作用户");
         }
-
+        
         UserInfo userInfo = userInfoService.queryByUidFromCache(electricityCarBindUser.getUid());
         if (Objects.isNull(userInfo)) {
             log.error("ELE CAR ERROR! not found user uid={}", electricityCarBindUser.getUid());
@@ -799,38 +803,38 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
         if (!Objects.equals(userInfo.getTenantId(), tenantId)) {
             return R.ok();
         }
-
+        
         //押金
         if (!Objects.equals(userInfo.getCarDepositStatus(), UserInfo.CAR_DEPOSIT_STATUS_YES)) {
             log.error("ELE CAR ERROR! this user not pay deposit,uid={}", userInfo.getUid());
             return R.fail("100012", "未缴纳租车押金");
         }
-
+        
         UserCarDeposit userCarDeposit = userCarDepositService.selectByUidFromCache(userInfo.getUid());
         if (Objects.isNull(userCarDeposit)) {
             log.error("ELE CAR ERROR! this user not pay deposit,uid={}", userInfo.getUid());
             return R.fail("100247", "未找到用户信息");
         }
-
+        
         //是否绑定车辆
         if (Objects.equals(userInfo.getCarRentStatus(), UserInfo.CAR_RENT_STATUS_YES)) {
             log.error("ELE CAR ERROR! this user already binding car,uid={}", userInfo.getUid());
             return R.fail("100012", "用户已绑定车辆");
         }
-
+        
         //购买租车套餐
         UserCarMemberCard userCarMemberCard = userCarMemberCardService.selectByUidFromCache(userInfo.getUid());
         if (Objects.isNull(userCarMemberCard) || Objects.isNull(userCarMemberCard.getCardId()) || Objects.isNull(userCarMemberCard.getMemberCardExpireTime())) {
             log.error("ELE CAR ERROR! not found userCarMemberCard,uid={}", userInfo.getUid());
             return R.fail("100014", "未购买租车套餐");
         }
-
+        
         //套餐是否过期
         if (userCarMemberCard.getMemberCardExpireTime() < System.currentTimeMillis()) {
             log.error("ELE CAR ERROR! rent car memberCard is Expire,uid={}", userInfo.getUid());
             return R.fail("100013", "租车套餐已过期");
         }
-
+        
         ElectricityCar electricityCar = queryByIdFromCache(electricityCarBindUser.getCarId());
         if (Objects.isNull(electricityCar)) {
             log.error("ELE CAR ERROR! not found electricityCar,uid={}", userInfo.getUid());
@@ -839,31 +843,31 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
         if (!Objects.equals(electricityCar.getTenantId(), tenantId)) {
             return R.ok();
         }
-
+        
         UserCar userCar = userCarService.selectByUidFromCache(userInfo.getUid());
         if (Objects.isNull(userCar)) {
             log.error("ELE CAR ERROR! not found userCar,uid={}", userInfo.getUid());
             return R.fail("100015", "用户未绑定车辆");
         }
-
+        
         if (!Objects.equals(electricityCar.getModelId(), userCar.getCarModel().intValue())) {
             log.error("ELE CAR ERROR! user bind carModel not equals will bond carModel,uid={}", userInfo.getUid());
             return R.fail("100016", "用户缴纳的车辆型号押金与绑定的不符");
         }
-
+        
         UserInfo updateUserInfo = new UserInfo();
         updateUserInfo.setUid(userInfo.getUid());
         updateUserInfo.setCarRentStatus(UserInfo.CAR_RENT_STATUS_YES);
         updateUserInfo.setUpdateTime(System.currentTimeMillis());
         userInfoService.updateByUid(updateUserInfo);
-
+        
         UserCar updateUserCar = new UserCar();
         updateUserCar.setUid(userInfo.getUid());
         updateUserCar.setCid(electricityCar.getId().longValue());
         updateUserCar.setSn(electricityCar.getSn());
         updateUserCar.setUpdateTime(System.currentTimeMillis());
         userCarService.updateByUid(updateUserCar);
-
+        
         //生成租车记录
         String orderId = OrderIdUtil.generateBusinessOrderId(BusinessType.RENT_CAR, user.getUid());
         RentCarOrder rentCarOrder = new RentCarOrder();
@@ -882,44 +886,33 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
         rentCarOrder.setTenantId(TenantContextHolder.getTenantId());
         rentCarOrder.setCreateTime(System.currentTimeMillis());
         rentCarOrder.setUpdateTime(System.currentTimeMillis());
-
+        
         rentCarOrderService.insert(rentCarOrder);
-
+        
         //新增操作记录
-        EleBindCarRecord eleBindCarRecord = EleBindCarRecord.builder()
-                .carId(electricityCar.getId())
-                .sn(electricityCar.getSn())
-                .operateUser(user.getUsername())
-                .model(electricityCar.getModel())
-                .phone(userInfo.getPhone())
-                .status(EleBindCarRecord.BIND_CAR)
-                .userName(userInfo.getName())
-                .tenantId(electricityCar.getTenantId())
-                .createTime(System.currentTimeMillis())
-                .updateTime(System.currentTimeMillis()).build();
+        EleBindCarRecord eleBindCarRecord = EleBindCarRecord.builder().carId(electricityCar.getId()).sn(electricityCar.getSn()).operateUser(user.getUsername())
+                .model(electricityCar.getModel()).phone(userInfo.getPhone()).status(EleBindCarRecord.BIND_CAR).userName(userInfo.getName()).tenantId(electricityCar.getTenantId())
+                .createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).build();
         eleBindCarRecordService.insert(eleBindCarRecord);
-
+        
         electricityCar.setStatus(ElectricityCar.STATUS_IS_RENT);
         electricityCar.setUid(userInfo.getUid());
         electricityCar.setPhone(userInfo.getPhone());
         electricityCar.setUserInfoId(userInfo.getId());
         electricityCar.setUserName(userInfo.getName());
         electricityCar.setUpdateTime(System.currentTimeMillis());
-    
+        
         //用户绑定解锁
         //ElectricityCar electricityCar = electricityCarService.queryInfoByUid(userInfo.getUid());
-        ElectricityConfig electricityConfig = electricityConfigService
-                .queryFromCacheByTenantId(TenantContextHolder.getTenantId());
-        if (Objects.nonNull(electricityConfig) && Objects
-                .equals(electricityConfig.getIsOpenCarControl(), ElectricityConfig.ENABLE_CAR_CONTROL)) {
+        ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(TenantContextHolder.getTenantId());
+        if (Objects.nonNull(electricityConfig) && Objects.equals(electricityConfig.getIsOpenCarControl(), ElectricityConfig.ENABLE_CAR_CONTROL)) {
             boolean result = this.retryCarLockCtrl(electricityCar.getSn(), ElectricityCar.TYPE_UN_LOCK, 3);
-        
+            
             CarLockCtrlHistory carLockCtrlHistory = new CarLockCtrlHistory();
             carLockCtrlHistory.setUid(userInfo.getUid());
             carLockCtrlHistory.setName(userInfo.getName());
             carLockCtrlHistory.setPhone(userInfo.getPhone());
-            carLockCtrlHistory.setStatus(
-                    result ? CarLockCtrlHistory.STATUS_UN_LOCK_SUCCESS : CarLockCtrlHistory.STATUS_UN_LOCK_FAIL);
+            carLockCtrlHistory.setStatus(result ? CarLockCtrlHistory.STATUS_UN_LOCK_SUCCESS : CarLockCtrlHistory.STATUS_UN_LOCK_FAIL);
             carLockCtrlHistory.setType(CarLockCtrlHistory.TYPE_BIND_USER_UN_LOCK);
             carLockCtrlHistory.setCarModelId(electricityCar.getModelId().longValue());
             carLockCtrlHistory.setCarModel(electricityCar.getModel());
@@ -932,17 +925,17 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
         }
         return R.ok(this.update(electricityCar));
     }
-
+    
     @Override
     @Transactional(rollbackFor = Exception.class)
     public R unBindUser(ElectricityCarBindUser electricityCarBindUser) {
-
+        
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             log.error("ELE CAR  ERROR! not found user");
             return R.fail("ELECTRICITY.0001", "未找到操作用户");
         }
-
+        
         UserInfo userInfo = userInfoService.queryByUidFromCache(electricityCarBindUser.getUid());
         if (Objects.isNull(userInfo)) {
             log.error("ELE CAR ERROR! not found user uid={}", electricityCarBindUser.getUid());
@@ -951,7 +944,7 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
         if (!Objects.equals(userInfo.getTenantId(), TenantContextHolder.getTenantId())) {
             return R.ok();
         }
-
+        
         ElectricityCar electricityCar = queryByIdFromCache(electricityCarBindUser.getCarId());
         if (Objects.isNull(electricityCar)) {
             log.error("ELE CAR ERROR! not found car,uid={},carId={}", userInfo.getUid(), electricityCarBindUser.getCarId());
@@ -960,39 +953,31 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
         if (!Objects.equals(electricityCar.getTenantId(), TenantContextHolder.getTenantId())) {
             return R.ok();
         }
-
+        
         //用户是否绑定车辆
         if (!Objects.equals(userInfo.getCarRentStatus(), UserInfo.CAR_RENT_STATUS_YES) || !Objects.equals(userInfo.getUid(), electricityCarBindUser.getUid())) {
             log.error("ELE CAR ERROR! user not binding car,uid={}", userInfo.getUid());
             return R.fail("100015", "用户未绑定车辆");
         }
-
+        
         UserInfo updateUserInfo = new UserInfo();
         updateUserInfo.setUid(userInfo.getUid());
         updateUserInfo.setCarRentStatus(UserInfo.CAR_RENT_STATUS_NO);
         updateUserInfo.setUpdateTime(System.currentTimeMillis());
         userInfoService.updateByUid(updateUserInfo);
-
+        
         UserCar updateUserCar = new UserCar();
         updateUserCar.setUid(userInfo.getUid());
         updateUserCar.setCid(null);
         updateUserCar.setSn("");
         userCarService.unBindingCarByUid(updateUserCar);
-
+        
         //新增操作记录
-        EleBindCarRecord eleBindCarRecord = EleBindCarRecord.builder()
-                .carId(electricityCar.getId())
-                .sn(electricityCar.getSn())
-                .operateUser(user.getUsername())
-                .model(electricityCar.getModel())
-                .phone(userInfo.getPhone())
-                .status(EleBindCarRecord.NOT_BIND_CAR)
-                .userName(userInfo.getName())
-                .tenantId(TenantContextHolder.getTenantId())
-                .createTime(System.currentTimeMillis())
-                .updateTime(System.currentTimeMillis()).build();
+        EleBindCarRecord eleBindCarRecord = EleBindCarRecord.builder().carId(electricityCar.getId()).sn(electricityCar.getSn()).operateUser(user.getUsername())
+                .model(electricityCar.getModel()).phone(userInfo.getPhone()).status(EleBindCarRecord.NOT_BIND_CAR).userName(userInfo.getName())
+                .tenantId(TenantContextHolder.getTenantId()).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).build();
         eleBindCarRecordService.insert(eleBindCarRecord);
-
+        
         electricityCar.setStatus(ElectricityCar.STATUS_NOT_RENT);
         electricityCar.setUid(null);
         electricityCar.setPhone(null);
@@ -1000,20 +985,17 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
         electricityCar.setUserName(null);
         electricityCar.setUpdateTime(System.currentTimeMillis());
         this.carUnBindUser(electricityCar);
-    
-        //用户解绑加锁
-        ElectricityConfig electricityConfig = electricityConfigService
-                .queryFromCacheByTenantId(TenantContextHolder.getTenantId());
-        if (Objects.nonNull(electricityConfig) && Objects
-                .equals(electricityConfig.getIsOpenCarControl(), ElectricityConfig.ENABLE_CAR_CONTROL)) {
-            boolean result = this.retryCarLockCtrl(electricityCar.getSn(), ElectricityCar.TYPE_LOCK, 3);
         
+        //用户解绑加锁
+        ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(TenantContextHolder.getTenantId());
+        if (Objects.nonNull(electricityConfig) && Objects.equals(electricityConfig.getIsOpenCarControl(), ElectricityConfig.ENABLE_CAR_CONTROL)) {
+            boolean result = this.retryCarLockCtrl(electricityCar.getSn(), ElectricityCar.TYPE_LOCK, 3);
+            
             CarLockCtrlHistory carLockCtrlHistory = new CarLockCtrlHistory();
             carLockCtrlHistory.setUid(userInfo.getUid());
             carLockCtrlHistory.setName(userInfo.getName());
             carLockCtrlHistory.setPhone(userInfo.getPhone());
-            carLockCtrlHistory
-                    .setStatus(result ? CarLockCtrlHistory.STATUS_LOCK_SUCCESS : CarLockCtrlHistory.STATUS_LOCK_FAIL);
+            carLockCtrlHistory.setStatus(result ? CarLockCtrlHistory.STATUS_LOCK_SUCCESS : CarLockCtrlHistory.STATUS_LOCK_FAIL);
             carLockCtrlHistory.setType(CarLockCtrlHistory.TYPE_UN_BIND_USER_LOCK);
             carLockCtrlHistory.setCarModelId(electricityCar.getModelId().longValue());
             carLockCtrlHistory.setCarModel(electricityCar.getModel());
@@ -1026,18 +1008,18 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
         }
         return R.ok();
     }
-
+    
     @Override
     public ElectricityCar queryInfoByUid(Long uid) {
         return electricityCarMapper.selectOne(new LambdaQueryWrapper<ElectricityCar>().eq(ElectricityCar::getUid, uid));
     }
-
+    
     @Slave
     @Override
     public Integer queryCountByStoreIds(Integer tenantId, List<Long> storeIds) {
         return electricityCarMapper.queryCountByStoreIds(tenantId, storeIds);
     }
-
+    
     @Override
     public ElectricityCar selectBySn(String sn, Integer tenantId) {
         return electricityCarMapper.selectBySn(sn, tenantId);
@@ -1045,13 +1027,12 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
     
     @Override
     public Boolean carLockCtrl(String sn, Integer lockType) {
-        R<Jt808DeviceInfoVo> result = jt808RetrofitService
-                .controlDevice(new Jt808DeviceControlRequest(IdUtil.randomUUID(), sn, lockType));
+        R<Jt808DeviceInfoVo> result = jt808RetrofitService.controlDevice(new Jt808DeviceControlRequest(IdUtil.randomUUID(), sn, lockType));
         if (!result.isSuccess()) {
             log.warn("Jt808 warn! controlDevice error! carSn={},result={}", sn, result);
             return false;
         }
-    
+        
         //        ElectricityCar update = new ElectricityCar();
         //        update.setId(electricityCar.getId());
         //        update.setLockType(lockType);
@@ -1069,21 +1050,18 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
         
         final String requestId = query.getRequestId();
         
-        if (StrUtil.isBlank(query.getDevId()) || Objects.isNull(query.getLatitude()) || Objects
-                .isNull(query.getLongitude()) || StrUtil.isBlank(query.getRequestId())) {
+        if (StrUtil.isBlank(query.getDevId()) || Objects.isNull(query.getLatitude()) || Objects.isNull(query.getLongitude()) || StrUtil.isBlank(query.getRequestId())) {
             log.warn("CAR POSITION REPORT WARN! args error! requestId={}, query={}", requestId, query);
             return R.failMsg("参数错误");
         }
         
         ElectricityCar electricityCar = selectBySn(query.getDevId(), null);
         if (Objects.isNull(electricityCar)) {
-            log.warn("CAR POSITION REPORT WARN! no electricityCar Sn! requestId={}, sn={}", requestId,
-                    query.getDevId());
+            log.warn("CAR POSITION REPORT WARN! no electricityCar Sn! requestId={}, sn={}", requestId, query.getDevId());
             return R.failMsg("未查询到车辆");
         }
         
-        if (Objects.equals(electricityCar.getLatitude(), query.getLatitude()) && Objects
-                .equals(electricityCar.getLongitude(), query.getLongitude())) {
+        if (Objects.equals(electricityCar.getLatitude(), query.getLatitude()) && Objects.equals(electricityCar.getLongitude(), query.getLongitude())) {
             return R.ok();
         }
         
@@ -1101,21 +1079,20 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
     public List<ElectricityCar> queryByStoreIds(List<Long> storeIds) {
         return electricityCarMapper.queryByStoreIds(storeIds, TenantContextHolder.getTenantId());
     }
-
+    
     @Slave
     @Override
     public R queryElectricityCarOverview(String sn, List<Integer> carIds) {
-        List<ElectricityCarOverviewVo> electricityCars = electricityCarMapper
-                .queryElectricityCarOverview(carIds, sn, TenantContextHolder.getTenantId());
+        List<ElectricityCarOverviewVo> electricityCars = electricityCarMapper.queryElectricityCarOverview(carIds, sn, TenantContextHolder.getTenantId());
         return R.ok(electricityCars);
     }
-
+    
     @Slave
     @Override
     public R batteryStatistical(List<Integer> carIdList, Integer tenantId) {
         return R.ok(electricityCarMapper.batteryStatistical(carIdList, tenantId));
     }
-
+    
     /**
      * 判断用户是否绑定的有车
      *
@@ -1135,8 +1112,7 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
         retryCount = retryCount > 5 ? 5 : retryCount;
         
         for (int i = 0; i < retryCount; i++) {
-            R<Jt808DeviceInfoVo> result = jt808RetrofitService
-                    .controlDevice(new Jt808DeviceControlRequest(IdUtil.randomUUID(), sn, lockType));
+            R<Jt808DeviceInfoVo> result = jt808RetrofitService.controlDevice(new Jt808DeviceControlRequest(IdUtil.randomUUID(), sn, lockType));
             if (result.isSuccess()) {
                 return true;
             }
@@ -1165,7 +1141,7 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
         List<ElectricityCarBO> electricityCarBOList = electricityCarMapper.selectListByFranchiseeIdAndStockStatus(queryModel);
         if (CollectionUtils.isNotEmpty(electricityCarBOList)) {
             rspList = electricityCarBOList.stream().map(item -> {
-    
+                
                 ElectricityCarVO electricityCarVO = new ElectricityCarVO();
                 BeanUtil.copyProperties(item, electricityCarVO);
                 
@@ -1173,7 +1149,7 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
                 
             }).collect(Collectors.toList());
         }
-    
+        
         if (CollectionUtils.isEmpty(rspList)) {
             return Collections.emptyList();
         }
@@ -1187,14 +1163,14 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
         AssetBatchExitWarehouseQueryModel assetBatchExitWarehouseQueryModel = new AssetBatchExitWarehouseQueryModel();
         BeanUtils.copyProperties(assetBatchExitWarehouseRequest, assetBatchExitWarehouseQueryModel);
         assetBatchExitWarehouseQueryModel.setUpdateTime(System.currentTimeMillis());
-    
+        
         return electricityCarMapper.batchExitWarehouse(assetBatchExitWarehouseQueryModel);
     }
     
     @Override
     public R batchUpdateFranchiseeIdAndStoreId(CarOutWarehouseRequest carOutWarehouseRequest) {
         List<Integer> idList = carOutWarehouseRequest.getIdList();
-        Integer exist = electricityCarMapper.existOutWarehouse(idList,TenantContextHolder.getTenantId());
+        Integer exist = electricityCarMapper.existOutWarehouse(idList, TenantContextHolder.getTenantId());
         if (Objects.nonNull(exist)) {
             return R.fail("100561", "已选择项中有已出库车辆，请重新选择后操作");
         }
@@ -1205,18 +1181,18 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
         idList.forEach(item -> {
             redisService.delete(CacheConstant.CACHE_ELECTRICITY_CAR + item);
         });
-    
+        
         // 异步记录
         Integer operateType = carOutWarehouseRequest.getType();
         List<ElectricityCarBO> electricityCarBOList = electricityCarMapper.selectListByIds(new HashSet<>(idList));
         if (CollectionUtils.isNotEmpty(electricityCarBOList) && Objects.nonNull(operateType)) {
-        
+            
             List<AssetSnWarehouseRequest> snWarehouseList = electricityCarBOList.stream().filter(item -> Objects.nonNull(item.getWarehouseId()))
                     .map(item -> AssetSnWarehouseRequest.builder().sn(item.getSn()).warehouseId(item.getWarehouseId()).build()).collect(Collectors.toList());
-        
+            
             Integer tenantId = TenantContextHolder.getTenantId();
             Long uid = Objects.requireNonNull(SecurityUtils.getUserInfo()).getUid();
-        
+            
             assetWarehouseRecordService.asyncRecords(tenantId, uid, snWarehouseList, AssetTypeEnum.ASSET_TYPE_CAR.getCode(), operateType);
         }
         
@@ -1224,39 +1200,57 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
     }
     
     @Override
-    public  R bathSaveCar(CarBatchSaveRequest carBatchSaveRequest){
+    public R bathSaveCar(CarBatchSaveRequest carBatchSaveRequest) {
         //操作频繁
         boolean result = redisService.setNx(CacheConstant.CAR_SAVE_UID + SecurityUtils.getUid(), "1", 5 * 1000L, false);
         if (!result) {
             return R.fail("ELECTRICITY.0034", "操作频繁");
         }
         
-        if (CommonConstant.EXCEL_MAX_COUNT_TWO_THOUSAND < carBatchSaveRequest.getSnList().size()) {
+        if (CommonConstant.EXCEL_MAX_COUNT_TWO_THOUSAND < carBatchSaveRequest.getCarList().size()) {
             return R.fail("100600", "Excel模版中数据不能超过2000条，请检查修改后再操作");
         }
         
         // 校验车辆型号是否存在
         ElectricityCarModel electricityCarModel = electricityCarModelService.queryByIdFromCache(carBatchSaveRequest.getModelId());
-        if (Objects.isNull(electricityCarModel)) {;
+        if (Objects.isNull(electricityCarModel)) {
+            ;
             return R.fail("100005", "未找到车辆型号");
         }
         
-        List<String> carSnList = carBatchSaveRequest.getSnList();
-        
-        //过滤重复的sn
-        List<String> snList = carSnList.stream().filter(StringUtils::isNotBlank).distinct().collect(Collectors.toList());
-        
-        List<ElectricityCarVO> electricityCarVOList = electricityCarMapper.selectListBySnList(snList, TenantContextHolder.getTenantId(), null);
+        List<CarBatchSaveExcelRequest> carList = carBatchSaveRequest.getCarList();
+    
+        Set<String> snSet = carList.stream().filter(item -> Objects.nonNull(item) && StringUtils.isNotBlank(item.getSn())).map(CarBatchSaveExcelRequest::getSn)
+                .collect(Collectors.toSet());
+    
+        List<ElectricityCarVO> electricityCarVOList = electricityCarMapper.selectListBySnList(new ArrayList<>(snSet), TenantContextHolder.getTenantId(), null);
         
         // 已存在的sn
         List<String> existSnList = electricityCarVOList.stream().map(ElectricityCarVO::getSn).collect(Collectors.toList());
-     
+        
         // 准备新增的车辆
         List<ElectricityCar> electricityCarList = Lists.newArrayList();
-        
-        for (String sn:snList) {
-            // 校验数据库中是否已存在该sn
-            if (existSnList.contains(sn)) {
+    
+        for (CarBatchSaveExcelRequest car : carList) {
+            String sn = car.getSn();
+            String licensePlateNumber = car.getLicensePlateNumber();
+            String vin = car.getVin();
+            String motorNumber = car.getMotorNumber();
+            
+            if (StringUtils.isNotBlank(licensePlateNumber) && licensePlateNumber.length() > AssetConstant.ASSET_CAR_BATCH_SAVE_LICENSE_PLATE_NUMBER_SIZE) {
+                return R.fail("100604", "车牌号输入长度超限，最长9位，请检查修改后再导入");
+            }
+    
+            if (StringUtils.isNotBlank(vin) && vin.length() > AssetConstant.ASSET_CAR_BATCH_SAVE_VIN_SIZE) {
+                return R.fail("100605", "车架号输入长度超限，最长17位，请检查修改后再导入");
+            }
+    
+            if (StringUtils.isNotBlank(motorNumber) && motorNumber.length() > AssetConstant.ASSET_CAR_BATCH_SAVE_MOTOR_NUMBER_SIZE) {
+                return R.fail("100606", "电机号输入长度超限，最长17位，请检查修改后再导入");
+            }
+    
+            // 校验数据库中是否已存在该sn或sn是否为空
+            if (existSnList.contains(sn) || StringUtils.isBlank(sn)) {
                 continue;
             }
             //换电柜车辆
@@ -1272,10 +1266,14 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
             electricityCar.setFranchiseeId(NumberConstant.ZERO_L);
             electricityCar.setModel(electricityCarModel.getName());
             electricityCar.setModelId(electricityCarModel.getId());
+            electricityCar.setLicensePlateNumber(licensePlateNumber);
+            electricityCar.setVin(vin);
+            electricityCar.setMotorNumber(motorNumber);
+            
             electricityCarList.add(electricityCar);
         }
         
-        if(CollectionUtils.isEmpty(electricityCarList)){
+        if (CollectionUtils.isEmpty(electricityCarList)) {
             return R.fail("100562", "Excel模版中所有车辆数据均已存在，请勿重复导入");
         }
         // 保存到本地数据库
@@ -1300,22 +1298,22 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
     @Override
     public List<ElectricityCarVO> listByIds(Set<Integer> idSet) {
         List<ElectricityCarBO> electricityCarBOList = electricityCarMapper.selectListByIds(idSet);
-    
+        
         List<ElectricityCarVO> rspList = null;
         if (CollectionUtils.isNotEmpty(electricityCarBOList)) {
             rspList = electricityCarBOList.stream().map(item -> {
                 ElectricityCarVO electricityCarVO = new ElectricityCarVO();
                 BeanUtils.copyProperties(item, electricityCarVO);
-            
+                
                 return electricityCarVO;
-            
+                
             }).collect(Collectors.toList());
         }
-    
+        
         if (CollectionUtils.isEmpty(rspList)) {
             rspList = Collections.emptyList();
         }
-    
+        
         return rspList;
     }
     
@@ -1323,42 +1321,42 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
     @Override
     public List<ElectricityCarVO> listEnableExitWarehouseCar(Set<Long> idSet, Integer tenantId, Long franchiseeId, Integer stockStatus) {
         List<ElectricityCarBO> electricityCarBOList = electricityCarMapper.selectListEnableExitWarehouseCar(idSet, tenantId, franchiseeId, stockStatus);
-    
+        
         List<ElectricityCarVO> rspList = null;
         if (CollectionUtils.isNotEmpty(electricityCarBOList)) {
             rspList = electricityCarBOList.stream().map(item -> {
                 ElectricityCarVO electricityCarVO = new ElectricityCarVO();
                 BeanUtils.copyProperties(item, electricityCarVO);
-            
+                
                 return electricityCarVO;
-            
+                
             }).collect(Collectors.toList());
         }
-    
+        
         if (CollectionUtils.isEmpty(rspList)) {
             rspList = Collections.emptyList();
         }
-    
+        
         return rspList;
-    
+        
     }
     
     @Override
     public Integer batchUpdateRemove(List<ElectricityCarBatchUpdateFranchiseeAndStoreRequest> carBatchUpdateFranchiseeAndStoreRequestList) {
         Integer count = NumberConstant.ZERO;
-    
+        
         for (ElectricityCarBatchUpdateFranchiseeAndStoreRequest updateFranchiseeAndStoreRequest : carBatchUpdateFranchiseeAndStoreRequestList) {
             ElectricityCarUpdateFranchiseeAndStoreQueryModel updateFranchiseeAndStoreQueryModel = new ElectricityCarUpdateFranchiseeAndStoreQueryModel();
             BeanUtil.copyProperties(updateFranchiseeAndStoreRequest, updateFranchiseeAndStoreQueryModel);
             updateFranchiseeAndStoreQueryModel.setUpdateTime(System.currentTimeMillis());
-        
+            
             electricityCarMapper.updateFranchiseeIdAndStoreId(updateFranchiseeAndStoreQueryModel);
             count += 1;
-        
+            
             //清理缓存
             redisService.delete(CacheConstant.CACHE_ELECTRICITY_CAR + updateFranchiseeAndStoreQueryModel.getId());
         }
-    
+        
         return count;
     }
     
@@ -1380,5 +1378,86 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
     @Override
     public Integer updatePhoneByUid(Integer tenantId, Long uid, String newPhone) {
         return electricityCarMapper.updatePhoneByUid(tenantId, uid, newPhone);
+    }
+    
+    
+    /**
+     * <p>
+     * Description: queryCarSnByLike P0需求 15.1 实名用户列表（16条优化项）iv.4 模糊搜索车辆SN码
+     * </p>
+     *
+     * @param likeSnQuery likeSnQuery
+     * @return com.xiliulou.core.web.R<java.util.List < com.xiliulou.electricity.vo.UserCarLikeVo>>
+     * <p>Project: ElectricityCarServiceImpl</p>
+     * <p>Copyright: Copyright (c) 2024</p>
+     * <p>Company: www.xiliulou.com</p>
+     * @author <a href="mailto:wxblifeng@163.com">PeakLee</a>
+     * @since V1.0 2024/3/13
+     */
+    @Slave
+    @Override
+    public R<List<UserCarLikeVO>> listSnByLike(UserCarLikeSnQuery likeSnQuery) {
+        List<UserCarLikeVO> result = this.electricityCarMapper.selectListCarSnByLike(likeSnQuery);
+        return R.ok(result);
+    }
+    
+    /**
+     * <p>
+     *    Description: queryIdsBySnArray
+     * </p>
+     * @param snList snList
+     * @param tenantId tenantId
+     * @param sourceFranchiseeId sourceFranchiseeId
+     * @return java.util.List<java.lang.Long>
+     * <p>Project: ElectricityCarServiceImpl</p>
+     * <p>Copyright: Copyright (c) 2024</p>
+     * <p>Company: www.xiliulou.com</p>
+     * @author <a href="mailto:wxblifeng@163.com">PeakLee</a>
+     * @since V1.0 2024/3/18
+    */
+    @Slave
+    @Override
+    public Map<String,Long> listIdsBySnArray(List<String> snList, Integer tenantId, Long sourceFranchiseeId) {
+        List<ElectricityCarBO> cars = this.electricityCarMapper.selectListBySnArray(snList, tenantId, sourceFranchiseeId);
+        if (CollectionUtils.isEmpty(cars)){
+            return MapUtil.empty();
+        }
+        return cars.stream().collect(Collectors.toMap(ElectricityCarBO::getSn,ElectricityCarBO::getId,(k1,k2)->k1));
+    }
+    
+    
+    @Override
+    public R editV2(CarUpdateRequest carUpdateRequest, Long uid) {
+        //租户
+        Integer tenantId = TenantContextHolder.getTenantId();
+    
+        //操作频繁
+        boolean result = redisService.setNx(CacheConstant.CAR_EDIT_UID + uid, "1", 3 * 1000L, false);
+        if (!result) {
+            return R.fail("ELECTRICITY.0034", "操作频繁");
+        }
+    
+        //换电柜车辆
+        ElectricityCar electricityCar = queryByIdFromCache(carUpdateRequest.getId().intValue());
+        if (Objects.isNull(electricityCar)) {
+            return R.fail("100007", "未找到车辆");
+        }
+    
+        if (!Objects.equals(tenantId, electricityCar.getTenantId())) {
+            return R.ok();
+        }
+    
+        electricityCar.setLicensePlateNumber(carUpdateRequest.getLicensePlateNumber());
+        electricityCar.setVin(carUpdateRequest.getVin());
+        electricityCar.setMotorNumber(carUpdateRequest.getMotorNumber());
+    
+        int update = electricityCarMapper.updateById(electricityCar);
+        
+        DbUtils.dbOperateSuccessThenHandleCache(update, i -> {
+            //更新缓存
+            redisService.delete(CacheConstant.CACHE_ELECTRICITY_CAR + electricityCar.getId());
+        });
+        
+        return R.ok();
     }
 }

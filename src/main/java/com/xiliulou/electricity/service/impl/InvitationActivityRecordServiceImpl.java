@@ -122,13 +122,13 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
         if (CollectionUtils.isEmpty(list)) {
             return Collections.emptyList();
         }
-
-        return list.parallelStream().peek(item -> {
-
-            InvitationActivity invitationActivity = invitationActivityService.queryByIdFromCache(item.getActivityId());
-            item.setActivityName(Objects.isNull(invitationActivity) ? StringUtils.EMPTY : invitationActivity.getName());
-
-        }).collect(Collectors.toList());
+        return list;
+//        return list.parallelStream().peek(item -> {
+//
+//            InvitationActivity invitationActivity = invitationActivityService.queryByIdFromCache(item.getActivityId());
+//            item.setActivityName(Objects.isNull(invitationActivity) ? StringUtils.EMPTY : invitationActivity.getName());
+//
+//        }).collect(Collectors.toList());
     }
 
     @Override

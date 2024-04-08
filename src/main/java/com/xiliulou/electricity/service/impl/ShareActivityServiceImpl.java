@@ -1,17 +1,29 @@
 package com.xiliulou.electricity.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.google.common.collect.Lists;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
+import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.constant.TimeConstant;
-import com.xiliulou.electricity.entity.*;
+import com.xiliulou.electricity.entity.BatteryMemberCard;
+import com.xiliulou.electricity.entity.Coupon;
+import com.xiliulou.electricity.entity.JoinShareActivityHistory;
+import com.xiliulou.electricity.entity.JoinShareActivityRecord;
+import com.xiliulou.electricity.entity.ShareActivity;
+import com.xiliulou.electricity.entity.ShareActivityMemberCard;
+import com.xiliulou.electricity.entity.ShareActivityOperateRecord;
+import com.xiliulou.electricity.entity.ShareActivityRecord;
+import com.xiliulou.electricity.entity.ShareActivityRule;
+import com.xiliulou.electricity.entity.UserCoupon;
+import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.car.CarRentalPackagePo;
 import com.xiliulou.electricity.enums.ActivityEnum;
 import com.xiliulou.electricity.enums.PackageTypeEnum;
@@ -20,6 +32,23 @@ import com.xiliulou.electricity.query.ShareActivityAddAndUpdateQuery;
 import com.xiliulou.electricity.query.ShareActivityQuery;
 import com.xiliulou.electricity.query.ShareActivityRuleQuery;
 import com.xiliulou.electricity.service.*;
+import com.xiliulou.electricity.service.asset.AssertPermissionService;
+import com.xiliulou.electricity.service.BatteryMemberCardService;
+import com.xiliulou.electricity.service.CouponService;
+import com.xiliulou.electricity.service.ElectricityCabinetFileService;
+import com.xiliulou.electricity.service.ElectricityMemberCardService;
+import com.xiliulou.electricity.service.FranchiseeService;
+import com.xiliulou.electricity.service.JoinShareActivityHistoryService;
+import com.xiliulou.electricity.service.JoinShareActivityRecordService;
+import com.xiliulou.electricity.service.ShareActivityMemberCardService;
+import com.xiliulou.electricity.service.ShareActivityOperateRecordService;
+import com.xiliulou.electricity.service.ShareActivityRecordService;
+import com.xiliulou.electricity.service.ShareActivityRuleService;
+import com.xiliulou.electricity.service.ShareActivityService;
+import com.xiliulou.electricity.service.ShareMoneyActivityService;
+import com.xiliulou.electricity.service.UserCouponService;
+import com.xiliulou.electricity.service.UserInfoService;
+import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.service.car.CarRentalPackageService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
@@ -36,6 +65,7 @@ import com.xiliulou.storage.config.StorageConfig;
 import com.xiliulou.storage.service.StorageService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,6 +77,7 @@ import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.ExecutorService;
 
 /**
  * 活动表(TActivity)表服务实现类
@@ -115,6 +146,12 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 	
 	@Autowired
 	private ShareMoneyActivityService shareMoneyActivityService;
+	
+	
+	ExecutorService executorService = XllThreadPoolExecutors.newFixedThreadPool("shareActivityHandlerExecutor", 1, "SHARE_ACTIVITY_HANDLER_EXECUTOR");
+	
+	@Autowired
+	private AssertPermissionService assertPermissionService;
 
 
 	/**
@@ -388,6 +425,12 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 
 	@Override
 	public R queryList(ShareActivityQuery shareActivityQuery) {
+		Pair<Boolean, List<Long>> pair = assertPermissionService.assertPermissionByPair(SecurityUtils.getUserInfo());
+		if (!pair.getLeft()){
+			return R.ok(new ArrayList<>());
+		}
+		shareActivityQuery.setFranchiseeIds(pair.getRight());
+		
 		List<ShareActivity> shareActivityList = shareActivityMapper.queryList(shareActivityQuery);
 		List<ShareActivityVO> shareActivityVOList = Lists.newArrayList();
 
@@ -518,6 +561,12 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 
 	@Override
 	public R queryCount(ShareActivityQuery shareActivityQuery) {
+		Pair<Boolean, List<Long>> pair = assertPermissionService.assertPermissionByPair(SecurityUtils.getUserInfo());
+		if (!pair.getLeft()){
+			return R.ok(NumberConstant.ZERO);
+		}
+		shareActivityQuery.setFranchiseeIds(pair.getRight());
+		
 		Integer count = shareActivityMapper.queryCount(shareActivityQuery);
 		return R.ok(count);
 	}
@@ -873,6 +922,52 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 		}
 		
 		return R.ok(shareActivityVO);
+	}
+	
+	/**
+	 * <p>
+	 *    Description: delete
+	 *    9. 活动管理-套餐返现活动里面的套餐配置记录想能够手动删除
+	 * </p>
+	 * @param id id 主键id
+	 * @return com.xiliulou.core.web.R<?>
+	 * <p>Project: saas-electricity</p>
+	 * <p>Copyright: Copyright (c) 2024</p>
+	 * <p>Company: www.xiliulou.com</p>
+	 * <a herf="https://benyun.feishu.cn/wiki/GrNjwBNZkipB5wkiws2cmsEDnVU#UH1YdEuCwojVzFxtiK6c3jltneb"></a>
+	 * @author <a href="mailto:wxblifeng@163.com">PeakLee</a>
+	 * @since V1.0 2024/3/14
+	 */
+	@Override
+	public R<?> removeById(Long id) {
+		ShareActivity shareActivity = this.queryByIdFromCache(Math.toIntExact(id));
+		if (Objects.isNull(shareActivity)) {
+			log.error("delete Activity  ERROR! not found Activity ! ActivityId:{} ", id);
+			return R.fail("ELECTRICITY.0069", "未找到活动");
+		}
+		int count = this.shareActivityMapper.removeById(id,TenantContextHolder.getTenantId().longValue());
+		DbUtils.dbOperateSuccessThenHandleCache(Math.toIntExact(id),(identification)->{
+			redisService.delete(CacheConstant.SHARE_ACTIVITY_CACHE + identification);
+		});
+		if (Objects.equals(shareActivity.getStatus(),ShareActivity.STATUS_OFF)){
+			return R.ok(count);
+		}
+		executorService.submit(()->{
+			//修改邀请状态
+			JoinShareActivityRecord joinShareActivityRecord = new JoinShareActivityRecord();
+			joinShareActivityRecord.setStatus(JoinShareActivityRecord.STATUS_OFF);
+			joinShareActivityRecord.setUpdateTime(System.currentTimeMillis());
+			joinShareActivityRecord.setActivityId(Math.toIntExact(id));
+			joinShareActivityRecordService.updateByActivityId(joinShareActivityRecord);
+			
+			//修改历史记录状态
+			JoinShareActivityHistory joinShareActivityHistory = new JoinShareActivityHistory();
+			joinShareActivityHistory.setStatus(JoinShareActivityHistory.STATUS_OFF);
+			joinShareActivityHistory.setUpdateTime(System.currentTimeMillis());
+			joinShareActivityHistory.setActivityId(Math.toIntExact(id));
+			joinShareActivityHistoryService.updateByActivityId(joinShareActivityHistory);
+		});
+		return R.ok(count);
 	}
 }
 

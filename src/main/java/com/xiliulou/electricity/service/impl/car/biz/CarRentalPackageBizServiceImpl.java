@@ -201,9 +201,13 @@ public class CarRentalPackageBizServiceImpl implements CarRentalPackageBizServic
 
             // 是否缴纳过租车的押金（单车、车电一体）
             if (UserInfo.CAR_DEPOSIT_STATUS_YES.equals(userInfo.getCarDepositStatus()) || YesNoEnum.YES.getCode().equals(userInfo.getCarBatteryDepositStatus())) {
-                // 查询保险缴纳信息
+                // 查询押金缴纳信息
                 CarRentalPackageDepositPayPo depositPayPo = carRentalPackageDepositPayService.selectLastPaySucessByUid(tenantId, uid);
-                confine = depositPayPo.getRentalPackageType();
+                // 根据查询出来的套餐ID，查询套餐信息
+                CarRentalPackagePo carRentalPackagePo = carRentalPackageService.selectById(depositPayPo.getRentalPackageId());
+                if (ObjectUtils.isNotEmpty(carRentalPackagePo)) {
+                    confine = carRentalPackagePo.getConfine();
+                }
             }
         }
 
@@ -286,6 +290,9 @@ public class CarRentalPackageBizServiceImpl implements CarRentalPackageBizServic
         if (ObjectUtils.isEmpty(packageId)) {
             throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
+        if (Objects.nonNull(carRentalPackageMemberTermService.checkUserByRentalPackageId(packageId))){
+            throw new BizException("300023", "当前套餐有用户使用，暂不支持删除");
+        }
         carRentalPackageService.delById(packageId, optId);
         carRentalPackageCarBatteryRelService.delByRentalPackageId(packageId, optId);
         return false;
@@ -321,6 +328,7 @@ public class CarRentalPackageBizServiceImpl implements CarRentalPackageBizServic
         // 新增租车套餐
         CarRentalPackagePo entity = new CarRentalPackagePo();
         BeanUtils.copyProperties(optModel, entity);
+        entity.setSortParam(System.currentTimeMillis());
         Long packageId = carRentalPackageService.insert(entity);
 
         // 车电一体
@@ -392,6 +400,7 @@ public class CarRentalPackageBizServiceImpl implements CarRentalPackageBizServic
         batteryMemberCardEntity.setTenantId(entity.getTenantId());
         batteryMemberCardEntity.setCreateTime(entity.getCreateTime());
         batteryMemberCardEntity.setUpdateTime(entity.getUpdateTime());
+        batteryMemberCardEntity.setSortParam(entity.getCreateTime());
 
         return batteryMemberCardEntity;
     }

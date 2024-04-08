@@ -1,12 +1,11 @@
 package com.xiliulou.electricity.mapper;
 
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.xiliulou.electricity.entity.InvitationActivity;
-
-import java.util.List;
-
 import com.xiliulou.electricity.query.InvitationActivityQuery;
 import org.apache.ibatis.annotations.Param;
-import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+
+import java.util.List;
 
 /**
  * (InvitationActivity)表数据库访问层
@@ -65,4 +64,20 @@ public interface InvitationActivityMapper extends BaseMapper<InvitationActivity>
     List<InvitationActivity> selectUsableActivity(Integer tenantId);
 
     List<InvitationActivity> selectBySearch(InvitationActivityQuery query);
+    
+    /**
+     * <p>
+     *    Description: removeById
+     *    9. 活动管理-套餐返现活动里面的套餐配置记录想能够手动删除
+     * </p>
+     * @param id id 主键id
+     * @return com.xiliulou.core.web.R<?>
+     * <p>Project: saas-electricity</p>
+     * <p>Copyright: Copyright (c) 2024</p>
+     * <p>Company: www.xiliulou.com</p>
+     * <a herf="https://benyun.feishu.cn/wiki/GrNjwBNZkipB5wkiws2cmsEDnVU#UH1YdEuCwojVzFxtiK6c3jltneb"></a>
+     * @author <a href="mailto:wxblifeng@163.com">PeakLee</a>
+     * @since V1.0 2024/3/14
+     */
+    int removeById(@Param("id") Long id,@Param("tenantId") Long tenantId);
 }

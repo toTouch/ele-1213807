@@ -363,6 +363,12 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
                     }
                 }
                 
+                // 设置加盟商名称
+                Franchisee franchisee = franchiseeService.queryByIdFromCache(e.getFranchiseeId());
+                if (Objects.nonNull(franchisee)) {
+                    e.setFranchiseeName(franchisee.getName());
+                }
+                
             });
         }
         

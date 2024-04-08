@@ -20,6 +20,7 @@ import org.apache.commons.lang3.tuple.Triple;
 
 import javax.servlet.http.HttpServletResponse;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -139,4 +140,22 @@ public interface ElectricityBatteryService extends IService<ElectricityBattery> 
     List<ElectricityBatteryVO> listEnableExitWarehouseBattery(Set<Long> idSet, Integer tenantId, Long franchiseeId, Integer stockStatus);
     
     List<ElectricityBattery> queryListByIdList(List<Long> batteryIdSet);
+    
+    List<ElectricityBatteryVO> listBatteryBySn(Integer offset, Integer size, Long franchiseeId, String sn);
+    
+    /**
+     * <p>
+     *    Description: queryIdsBySnArray
+     * </p>
+     * @param snList snList
+     * @param tenantId tenantId
+     * @param sourceFranchiseeId sourceFranchiseeId
+     * @return java.util.List<java.lang.Long>
+     * <p>Project: ElectricityBatteryService</p>
+     * <p>Copyright: Copyright (c) 2024</p>
+     * <p>Company: www.xiliulou.com</p>
+     * @author <a href="mailto:wxblifeng@163.com">PeakLee</a>
+     * @since V1.0 2024/3/18
+    */
+    Map<String,Long> listIdsBySnArray(List<String> snList, Integer tenantId, Long sourceFranchiseeId);
 }

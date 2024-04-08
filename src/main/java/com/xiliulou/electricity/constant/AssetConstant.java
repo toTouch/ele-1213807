@@ -17,6 +17,11 @@ public class AssetConstant {
     public static final Integer ASSET_WAREHOUSE_STATUS_ENABLE = 0;
     
     /**
+     * 默认库房名称
+     */
+    public static final String ASSET_WAREHOUSE_DEFAULT_NAME = "默认库房";
+    
+    /**
      * 库房状态：1-禁用
      */
     public static final Integer ASSET_WAREHOUSE_STATUS_DISABLE = 1;
@@ -24,12 +29,12 @@ public class AssetConstant {
     /**
      * 资产盘点（t_asset_inventory）状态：进行中
      */
-    public static final Integer ASSET_INVENTORY_STATUS_TAKING=0;
+    public static final Integer ASSET_INVENTORY_STATUS_TAKING = 0;
     
     /**
      * 资产盘点（t_asset_inventory）状态：完成
      */
-    public static final Integer ASSET_INVENTORY_STATUS_FINISHED=1;
+    public static final Integer ASSET_INVENTORY_STATUS_FINISHED = 1;
     
     /**
      * 盘点详情（t_asset_inventory_detail）是否已盘点：0-未盘点
@@ -50,5 +55,34 @@ public class AssetConstant {
      * 资产退库数量限制
      */
     public static final Integer ASSET_EXIT_WAREHOUSE_LIMIT_NUMBER = 50;
+    
+    /***
+     * 车辆批量入库 车牌号长度限制
+     */
+    public static final Integer ASSET_CAR_BATCH_SAVE_LICENSE_PLATE_NUMBER_SIZE = 9;
+    
+    /***
+     * 车辆批量入库 车架号长度限制
+     */
+    public static final Integer ASSET_CAR_BATCH_SAVE_VIN_SIZE = 17;
+    
+    /***
+     * 车辆批量入库 电机号长度限制
+     */
+    public static final Integer ASSET_CAR_BATCH_SAVE_MOTOR_NUMBER_SIZE = 17;
+    
+    /**
+     * <p>
+     *    Description: 类型为id的提交
+     * </p>
+    */
+    public static final Integer ASSET_EXIT_WAREHOUSE_SUBMIT_TYPE_BY_ID = 0;
+    
+    /**
+     * <p>
+     *    Description: 类型为sn的提交
+     * </p>
+     */
+    public static final Integer ASSET_EXIT_WAREHOUSE_SUBMIT_TYPE_BY_SN = 1;
     
 }

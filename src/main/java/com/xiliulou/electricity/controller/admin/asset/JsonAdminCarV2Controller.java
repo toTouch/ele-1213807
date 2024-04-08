@@ -3,9 +3,11 @@ package com.xiliulou.electricity.controller.admin.asset;
 
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.enums.asset.StockStatusEnum;
+import com.xiliulou.electricity.query.ElectricityCarAddAndUpdate;
 import com.xiliulou.electricity.request.asset.CarAddRequest;
 import com.xiliulou.electricity.request.asset.CarBatchSaveRequest;
 import com.xiliulou.electricity.request.asset.CarOutWarehouseRequest;
+import com.xiliulou.electricity.request.asset.CarUpdateRequest;
 import com.xiliulou.electricity.request.asset.ElectricityCarSnSearchRequest;
 import com.xiliulou.electricity.service.ElectricityCarService;
 import com.xiliulou.electricity.utils.SecurityUtils;
@@ -17,6 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -72,6 +75,20 @@ public class JsonAdminCarV2Controller {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         return electricityCarService.bathSaveCar(carBatchSaveRequest);
+    }
+    
+    /***
+     * 编辑
+     */
+    @PostMapping(value = "/admin/electricityCar/update")
+    public R update(@RequestBody @Validated(value = UpdateGroup.class) CarUpdateRequest carUpdateRequest) {
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELE ERROR! not found user");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        
+        return electricityCarService.editV2(carUpdateRequest, user.getUid());
     }
     
     /**
