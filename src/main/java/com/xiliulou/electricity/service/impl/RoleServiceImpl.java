@@ -122,7 +122,7 @@ public class RoleServiceImpl implements RoleService {
         role.setTenantId(tenantId);
 
         int insert = roleMapper.insertOne(role);
-        return insert > 0 ? R.ok(insert) : R.fail("保存失败！");
+        return insert > 0 ? R.ok(role.getId()) : R.fail("保存失败！");
     }
 
     //
