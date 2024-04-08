@@ -69,9 +69,6 @@
                 #{storeId}
             </foreach>
         </if>
-        <if test="query.areaId != null">
-            and area_id = #{query.areaId}
-        </if>
         order by id desc
         limit #{query.offset}, #{query.size}
     </select>
