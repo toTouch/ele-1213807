@@ -16,9 +16,17 @@
             <if test="status != null ">
                 and status = #{status}
             </if>
+            <if test="ids != null">
+                and id in
+                <foreach collection="ids" item="id" index="index" open="(" separator="," close=")">
+                    #{id}
+                </foreach>
+            </if>
         </where>
         order by id desc
-        limit #{offset}, #{size}
+        <if test="offset != null">
+            limit #{offset}, #{size}
+        </if>
     </select>
 
     <!--查询指定行数据-->

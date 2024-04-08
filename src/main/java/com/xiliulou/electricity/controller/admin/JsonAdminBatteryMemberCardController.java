@@ -98,7 +98,14 @@ public class JsonAdminBatteryMemberCardController extends BaseController {
     public R page(@RequestParam("size") long size, @RequestParam("offset") long offset, @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
             @RequestParam(value = "status", required = false) Integer status, @RequestParam(value = "rentType", required = false) Integer rentType,
             @RequestParam(value = "rentUnit", required = false) Integer rentUnit, @RequestParam(value = "businessType", required = false) Integer businessType,
-            @RequestParam(value = "name", required = false) String name, @RequestParam(value = "batteryModel", required = false) String batteryModel) {
+            @RequestParam(value = "name", required = false) String name, @RequestParam(value = "batteryModel", required = false) String batteryModel,
+            @RequestParam(value = "userGroupId", required = false) Long userGroupId) {
+        
+        // 若同时传递系统分组及用户分组返回失败结果
+        if (Objects.nonNull(rentType) && Objects.nonNull(userGroupId)) {
+            return R.fail("100272", "不可同时根据系统分组及用户分组查询！");
+        }
+        
         if (size < 0 || size > 50) {
             size = 10L;
         }
@@ -137,6 +144,7 @@ public class JsonAdminBatteryMemberCardController extends BaseController {
                 .delFlag(BatteryMemberCard.DEL_NORMAL)
                 .franchiseeIds(franchiseeIds)
                 .batteryModel(batteryModel)
+                .userGroupId(Objects.nonNull(userGroupId) ? userGroupId.toString() : null)
                 .build();
         return R.ok(batteryMemberCardService.selectByPage(query));
     }
@@ -148,7 +156,12 @@ public class JsonAdminBatteryMemberCardController extends BaseController {
     public R pageCount(@RequestParam(value = "franchiseeId", required = false) Long franchiseeId, @RequestParam(value = "status", required = false) Integer status,
             @RequestParam(value = "rentType", required = false) Integer rentType, @RequestParam(value = "rentUnit", required = false) Integer rentUnit,
             @RequestParam(value = "businessType", required = false) Integer businessType, @RequestParam(value = "name", required = false) String name,
-            @RequestParam(value = "batteryModel", required = false) String batteryModel) {
+            @RequestParam(value = "batteryModel", required = false) String batteryModel, @RequestParam(value = "userGroupId", required = false) Long userGroupId) {
+    
+        // 若同时传递系统分组及用户分组返回失败结果
+        if (Objects.nonNull(rentType) && Objects.nonNull(userGroupId)) {
+            return R.fail("100272", "不可同时根据系统分组及用户分组查询！");
+        }
         
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
@@ -178,6 +191,7 @@ public class JsonAdminBatteryMemberCardController extends BaseController {
                 .delFlag(BatteryMemberCard.DEL_NORMAL)
                 .franchiseeIds(franchiseeIds)
                 .batteryModel(batteryModel)
+                .userGroupId(Objects.nonNull(userGroupId) ? userGroupId.toString() : null)
                 .build();
         
         return R.ok(batteryMemberCardService.selectByPageCount(query));
@@ -291,14 +305,15 @@ public class JsonAdminBatteryMemberCardController extends BaseController {
      */
     @GetMapping("/admin/battery/memberCardByUid")
     public R userBatteryMembercardList(@RequestParam("size") long size, @RequestParam("offset") long offset, @RequestParam("uid") long uid,
-            @RequestParam(value = "franchiseeId", required = false) Long franchiseeId, @RequestParam(value = "name", required = false) String name) {
+            @RequestParam(value = "franchiseeId", required = false) Long franchiseeId, @RequestParam(value = "name", required = false) String name,
+            @RequestParam(value = "userGroupIdsTransfer", required = false) List<Long> userGroupIdsTransfer) {
         
         if (offset != 0) {
             return R.ok(Collections.emptyList());
         }
         
         BatteryMemberCardQuery query = BatteryMemberCardQuery.builder().name(name).uid(uid).franchiseeId(franchiseeId).status(BatteryMemberCard.STATUS_UP)
-                .delFlag(BatteryMemberCard.DEL_NORMAL).size(100L).offset(0L).tenantId(TenantContextHolder.getTenantId()).build();
+                .delFlag(BatteryMemberCard.DEL_NORMAL).size(100L).offset(0L).tenantId(TenantContextHolder.getTenantId()).userGroupIdsTransfer(userGroupIdsTransfer).build();
         return R.ok(batteryMemberCardService.selectUserBatteryMembercardList(query));
     }
     

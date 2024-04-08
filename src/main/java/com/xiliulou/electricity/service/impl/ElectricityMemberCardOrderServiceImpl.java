@@ -6,6 +6,8 @@ import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.RandomUtil;
 import cn.hutool.core.util.StrUtil;
+import cn.hutool.json.JSONArray;
+import cn.hutool.json.JSONUtil;
 import com.alibaba.excel.EasyExcel;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -4494,17 +4496,30 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
     
     @Override
     public void sendUserCoupon(BatteryMemberCard batteryMemberCard, ElectricityMemberCardOrder memberCardOrder) {
-        if (Objects.isNull(batteryMemberCard.getCouponId())) {
+        if (Objects.isNull(batteryMemberCard.getCouponIds()) && Objects.isNull(batteryMemberCard.getCouponId())) {
             return;
         }
         
+        // 新旧数据兼容处理，防止优惠券重复发放
+        HashSet<Long> couponIdSet = new HashSet<>();
+        if (Objects.nonNull(batteryMemberCard.getCouponId())) {
+            couponIdSet.add(batteryMemberCard.getCouponId().longValue());
+        }
+    
+        if (Objects.nonNull(batteryMemberCard.getCouponIds())) {
+            JSONUtil.parseArray(batteryMemberCard.getCouponIds()).forEach(id -> couponIdSet.add(Long.valueOf(id.toString())));
+        }
+        
         //发送优惠券
-        UserCouponDTO userCouponDTO = new UserCouponDTO();
-        userCouponDTO.setCouponId(batteryMemberCard.getCouponId().longValue());
-        userCouponDTO.setUid(memberCardOrder.getUid());
-        userCouponDTO.setSourceOrderNo(memberCardOrder.getOrderId());
-        userCouponDTO.setTraceId(IdUtil.simpleUUID());
-        userCouponService.asyncSendCoupon(userCouponDTO);
+        couponIdSet.forEach(couponId -> {
+            UserCouponDTO userCouponDTO = new UserCouponDTO();
+            userCouponDTO.setCouponId(couponId);
+            userCouponDTO.setUid(memberCardOrder.getUid());
+            userCouponDTO.setSourceOrderNo(memberCardOrder.getOrderId());
+            userCouponDTO.setTraceId(IdUtil.simpleUUID());
+            userCouponService.asyncSendCoupon(userCouponDTO);
+        });
+        
     }
     
     @Override

@@ -116,4 +116,14 @@ public class BatteryMemberCardAndTypeVO {
      * 绑定所有电池型号
      */
     private List<MemberCardBatteryType> batteryType;
+    
+    /**
+     * 套餐绑定的所有优惠券id
+     */
+    private String couponIds;
+    
+    /**
+     * 套餐绑定的所有用户分组id
+     */
+    private String userGroupIds;
 }
