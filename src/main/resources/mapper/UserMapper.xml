@@ -164,6 +164,7 @@
 		tu.phone,
 		tu.source,
 		tu.ref_id as electricityCabinetId,
+		tu.tenant_id,
 		tui.create_time,
 		tui.update_time,
 		tui.name,

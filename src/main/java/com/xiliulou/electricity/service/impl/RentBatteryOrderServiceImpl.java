@@ -181,6 +181,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
     @Slave
     @Override
     public R queryList(RentBatteryOrderQuery rentBatteryOrderQuery) {
+        
         List<RentBatteryOrderVO> rentBatteryOrderVOList = rentBatteryOrderMapper.queryList(rentBatteryOrderQuery);
         if (ObjectUtil.isEmpty(rentBatteryOrderVOList)) {
             return R.ok(new ArrayList<>());
@@ -190,6 +191,12 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
                 ElectricityCabinet electricityCabinet = electricityCabinetService.queryByIdFromCache(e.getElectricityCabinetId());
                 if (Objects.nonNull(electricityCabinet)) {
                     e.setElectricityCabinetName(electricityCabinet.getName());
+                }
+                
+                // 设置加盟商名称
+                Franchisee franchisee = franchiseeService.queryByIdFromCache(e.getFranchiseeId());
+                if (Objects.nonNull(franchisee)) {
+                    e.setFranchiseeName(franchisee.getName());
                 }
             });
         }
@@ -1359,6 +1366,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
     @Slave
     @Override
     public R queryCount(RentBatteryOrderQuery rentBatteryOrderQuery) {
+        
         return R.ok(rentBatteryOrderMapper.queryCount(rentBatteryOrderQuery));
     }
     

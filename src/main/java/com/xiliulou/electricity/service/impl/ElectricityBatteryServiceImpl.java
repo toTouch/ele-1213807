@@ -981,7 +981,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
         userBatteryVo.setSn(electricityBattery.getSn());
         userBatteryVo.setLatitude(result.getRight().getLatitude());
         userBatteryVo.setLongitude(result.getRight().getLongitude());
-        userBatteryVo.setPower(Double.valueOf(result.getRight().getSoc()));
+        userBatteryVo.setPower(result.getRight().getSoc());
         userBatteryVo.setUpdateTime(result.getRight().getUpdateTime());
         
         Franchisee franchisee = franchiseeService.queryByIdFromCache(electricityBattery.getFranchiseeId());
@@ -1670,4 +1670,33 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
         return electricitybatterymapper.selectListByIdList(idList);
     }
     
+    /**
+     * <p>
+     *    Description: queryIdsBySnArray
+     * </p>
+     * @param snList snList
+     * @param tenantId tenantId
+     * @param sourceFranchiseeId sourceFranchiseeId
+     * @return java.util.List<java.lang.Long>
+     * <p>Project: ElectricityBatteryServiceImpl</p>
+     * <p>Copyright: Copyright (c) 2024</p>
+     * <p>Company: www.xiliulou.com</p>
+     * @author <a href="mailto:wxblifeng@163.com">PeakLee</a>
+     * @since V1.0 2024/3/18
+    */
+    @Override
+    public Map<String,Long> listIdsBySnArray(List<String> snList, Integer tenantId, Long sourceFranchiseeId) {
+        List<ElectricityBattery> batteryList = this.electricitybatterymapper.selectListBySnArray(snList, tenantId, sourceFranchiseeId);
+        if (CollectionUtils.isEmpty(batteryList)){
+            return MapUtil.empty();
+        }
+        return batteryList.stream().collect(Collectors.toMap(ElectricityBattery::getSn,ElectricityBattery::getId,(k1,k2)->k1));
+    }
+    
+    @Override
+    @Slave
+    public List<ElectricityBatteryVO> listBatteryBySn(Integer offset, Integer size, Long franchiseeId, String sn) {
+    
+        return electricitybatterymapper.listBatteryBySn(offset, size, franchiseeId, sn);
+    }
 }

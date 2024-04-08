@@ -5,10 +5,10 @@
 
     <select id="queryList" resultType="com.xiliulou.electricity.vo.InsuranceOrderVO">
         select tf.name as franchiseeName, tio.insurance_name as insuranceName,tio.insurance_type as
-        insuranceType,tio.uid, tio.user_name as userName,tio.order_id as orderId
+        insuranceType,tio.uid, tio.user_name as userName,tio.order_id as orderId , tio.insurance_id as insuranceId
         ,tui.id_number as idCard,tio.phone as phone,tio.cid as cid,tio.pay_amount as insuranceAmount,tio.create_time as
         createTime,tio.valid_days as validDays,tio.status,tio.pay_type as payType
-        ,tio.forehead,tio.update_time,tio.is_use, tio.`source_order_no`
+        ,tio.forehead,tio.update_time,tio.is_use, tio.`source_order_no`, tio.`simple_battery_type` as simpleBatteryType
         from t_insurance_order tio left join t_franchisee tf on tio.franchisee_id=tf.id left join t_user_info tui on
         tio.uid=tui.uid
         <where>
@@ -75,6 +75,9 @@
                     #{id}
                 </foreach>
             </if>
+            <if test="query.insuranceId != null">
+                and tio.insurance_id = #{query.insuranceId}
+            </if>
         </where>
         order by tio.create_time desc
         limit #{query.offset},#{query.size}
@@ -139,6 +142,9 @@
                 <foreach collection="query.storeIds" item="id" index="index" open="(" close=")" separator=",">
                     #{id}
                 </foreach>
+            </if>
+            <if test="query.insuranceId != null">
+                and tio.insurance_id = #{query.insuranceId}
             </if>
         </where>
     </select>

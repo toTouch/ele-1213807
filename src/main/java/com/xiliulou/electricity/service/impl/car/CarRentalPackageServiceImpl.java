@@ -2,6 +2,7 @@ package com.xiliulou.electricity.service.impl.car;
 
 import com.alibaba.fastjson.JSON;
 import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CarRenalCacheConstant;
 import com.xiliulou.electricity.entity.car.CarRentalPackagePo;
@@ -11,9 +12,13 @@ import com.xiliulou.electricity.enums.basic.BasicEnum;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.car.CarRentalPackageMapper;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageQryModel;
+import com.xiliulou.electricity.query.MemberCardAndCarRentalPackageSortParamQuery;
+import com.xiliulou.electricity.query.car.CarRentalPackageNameReq;
 import com.xiliulou.electricity.service.car.CarRentalPackageOrderService;
 import com.xiliulou.electricity.service.car.CarRentalPackageService;
 import com.xiliulou.electricity.utils.OperateRecordUtil;
+import com.xiliulou.electricity.tenant.TenantContextHolder;
+import com.xiliulou.electricity.vo.car.CarRentalPackageSearchVO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +29,7 @@ import org.springframework.util.CollectionUtils;
 import javax.annotation.Resource;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * 租车套餐表 ServiceImpl
@@ -136,7 +142,7 @@ public class CarRentalPackageServiceImpl implements CarRentalPackageService {
         // 校验能否删除
         if (carRentalPackageOrderService.checkByRentalPackageId(id)) {
             log.info("CarRentalPackageService.delById, Purchase order record already exists, deletion not allowed. packageId is {}", id);
-            throw new BizException("300023", "已有购买订单记录");
+            throw new BizException("300023", "当前套餐有用户使用，暂不支持删除");
         }
 
         int num = carRentalPackageMapper.delById(id, uid, System.currentTimeMillis());
@@ -289,6 +295,7 @@ public class CarRentalPackageServiceImpl implements CarRentalPackageService {
         entity.setUpdateUid(entity.getCreateUid());
         entity.setCreateTime(now);
         entity.setUpdateTime(now);
+        entity.setSortParam(now);
         entity.setDelFlag(DelFlagEnum.OK.getCode());
 
         carRentalPackageMapper.insert(entity);
@@ -300,12 +307,45 @@ public class CarRentalPackageServiceImpl implements CarRentalPackageService {
     public List<CarRentalPackagePo> findByCouponId(Long couponId) {
         return carRentalPackageMapper.selectByCouponId(couponId);
     }
-
+    
+    /**
+     * <p>
+     *    Description: queryToSearchByName
+     *    14.4 套餐购买记录（2条优化项）
+     * </p>
+     * @param rentalPackageNameReq rentalPackageNameReq
+     * @return java.util.List<com.xiliulou.electricity.vo.car.CarRentalPackageSearchVo>
+     * <p>Project: CarRentalPackageServiceImpl</p>
+     * <p>Copyright: Copyright (c) 2024</p>
+     * <p>Company: www.xiliulou.com</p>
+     * @author <a href="mailto:wxblifeng@163.com">PeakLee</a>
+     * @since V1.0 2024/3/14
+    */
+    @Override
+    public List<CarRentalPackageSearchVO> queryToSearchByName(CarRentalPackageNameReq rentalPackageNameReq) {
+        return this.carRentalPackageMapper.queryToSearchByName(rentalPackageNameReq);
+    }
+    
     /**
      * 删除缓存
      * @param key
      */
     private void delCache(String key) {
         redisService.delete(key);
+    }
+    
+    @Override
+    public Integer batchUpdateSortParam(List<MemberCardAndCarRentalPackageSortParamQuery> sortParamQueries) {
+        
+        if (Objects.isNull(sortParamQueries)) {
+            return null;
+        }
+        
+        return carRentalPackageMapper.batchUpdateSortParam(sortParamQueries);
+    }
+    
+    @Override
+    public List<CarRentalPackagePo> listCarRentalPackageForSort() {
+        return carRentalPackageMapper.listCarRentalPackageForSort(TenantContextHolder.getTenantId());
     }
 }

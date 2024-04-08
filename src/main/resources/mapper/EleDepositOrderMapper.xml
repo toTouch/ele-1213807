@@ -61,6 +61,9 @@
             <if test="query.storeName != null and query.storeName != ''">
                 and s.name like concat('%', #{query.storeName}, '%')
             </if>
+            <if test="query.orderType != null and query.orderType != ''">
+                and edo.order_type = #{query.orderType}
+            </if>
         </where>
         order by edo.create_time desc
         limit #{query.offset}, #{query.size}
@@ -187,6 +190,9 @@
             </if>
             <if test="query.storeName != null and query.storeName != ''">
                 and ts.name like concat('%', #{query.storeName}, '%')
+            </if>
+            <if test="query.orderType != null and query.orderType != ''">
+                and edo.order_type = #{query.orderType}
             </if>
         </where>
     </select>

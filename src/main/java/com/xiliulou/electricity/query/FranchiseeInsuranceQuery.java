@@ -5,6 +5,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 /**
  * @author zzlong
  * @email zhaozhilong@xiliulou.com
@@ -35,5 +37,16 @@ public class FranchiseeInsuranceQuery {
      * 电池型号
      */
     private String simpleBatteryType;
+    
+    /**
+     * 加盟商
+     */
+    private List<Long> franchiseeIds;
+    
+    
+    /**
+     * 门店列表
+     */
+    private List<Long> storeIds;
 
 }

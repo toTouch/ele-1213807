@@ -159,4 +159,14 @@ public class CarRentalPackagePo extends BasicCarPo {
      * 备注
      */
     private String remark;
+    
+    /**
+     * 创建时间
+     */
+    private Long createTime;
+    
+    /**
+     * 排序参数，用户端排序使用
+     */
+    private Long sortParam;
 }

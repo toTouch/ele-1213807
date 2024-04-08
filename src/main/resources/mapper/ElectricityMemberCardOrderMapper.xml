@@ -28,9 +28,9 @@
         tel.send_coupon_id ,
         tui.phone as phone , tui.name as userName from
         t_electricity_member_card_order tel
-
+        
         LEFT JOIN t_user_info tui on tui.uid = tel.uid
-
+        
         WHERE 0= 0
         <if test="query.cardPayCount != null">
             and tel.pay_count =#{query.cardPayCount}
@@ -80,6 +80,9 @@
         <if test="query.payType != null">
             and tel.pay_type = #{query.payType}
         </if>
+        <if test="query.cardId != null">
+            and tel.member_card_id = #{query.cardId}
+        </if>
         <if test="query.queryStartTime != null">
             and tel.create_time BETWEEN #{query.queryStartTime} and #{query.queryEndTime}
         </if>
@@ -98,7 +101,7 @@
         order by tel.id desc
         limit #{query.offset}, #{query.size}
     </select>
-
+    
     <select id="queryCount" resultType="java.lang.Integer">
         select COUNT(1)
         from t_electricity_member_card_order tel
@@ -146,6 +149,9 @@
         <if test="query.tenantId != null">
             and tel.tenant_id = #{query.tenantId}
         </if>
+        <if test="query.cardId != null and query.cardId != ''">
+            and tel.member_card_id = #{query.cardId}
+        </if>
         <if test="query.queryStartTime != null">
             and tel.create_time BETWEEN #{query.queryStartTime} and #{query.queryEndTime}
         </if>
@@ -168,8 +174,8 @@
             and tel.pay_count =#{query.cardPayCount}
         </if>
     </select>
-
-
+    
+    
     <select id="queryUserList" resultType="com.xiliulou.electricity.entity.ElectricityMemberCardOrder">
         SELECT * FROM
         t_electricity_member_card_order
@@ -180,12 +186,13 @@
         </if>
         order by create_time desc
         limit #{offset},#{size}
-
+    
     </select>
     
     <select id="selectUserMemberCardOrderList" resultType="com.xiliulou.electricity.entity.ElectricityMemberCardOrder">
         SELECT
-        id,pay_amount,valid_days,create_time,order_id,status,member_card_id,user_name,max_use_count,card_name,franchisee_id,pay_type,pay_count,source,coupon_id,use_status ,refund_status, order_type
+        id,pay_amount,valid_days,create_time,order_id,status,member_card_id,user_name,max_use_count,card_name,franchisee_id,pay_type,pay_count,source,coupon_id,use_status
+        ,refund_status, order_type
         FROM t_electricity_member_card_order
         WHERE uid =#{uid} and member_card_model=0
         <if test="tenantId != null">
@@ -222,9 +229,9 @@
             and create_time &lt;= #{queryEndTime}
         </if>
     </select>
-
+    
     <select id="getMemberCardOrderCount" resultType="java.lang.Long">
-
+        
         SELECT count(1)
         FROM t_electricity_member_card_order
         WHERE uid =#{uid}
@@ -232,16 +239,16 @@
         <if test="startTime != null">
             and create_time BETWEEN #{startTime} and #{endTime}
         </if>
-
-
+    
+    
     </select>
-
-
+    
+    
     <select id="homeOne" resultType="java.math.BigDecimal">
-
+        
         SELECT sum(pay_amount) FROM t_electricity_member_card_order
         WHERE status = 1 and create_time >= #{first} and create_time &lt;=#{now}
-
+        
         <if test="cardIdList!=null and cardIdList!=''">
             and member_card_id in
             <foreach collection="cardIdList" item="id" index="index" open="(" close=")" separator=",">
@@ -251,16 +258,16 @@
         <if test="tenantId != null ">
             and tenant_id = #{tenantId}
         </if>
-
+    
     </select>
-
-
+    
+    
     <select id="homeTwo" resultType="java.util.HashMap">
-
+        
         select from_unixtime(create_time / 1000, '%Y-%m-%d') date, sum(pay_amount) as money
         from t_electricity_member_card_order
         where create_time >= #{startTimeMilliDay} and create_time &lt;= #{endTimeMilliDay} and status = 1
-
+        
         <if test="cardIdList!=null and cardIdList!=''">
             and member_card_id in
             <foreach collection="cardIdList" item="id" index="index" open="(" close=")" separator=",">
@@ -272,9 +279,9 @@
         </if>
         group by date
         order by date desc
-
+    
     </select>
-
+    
     <select id="queryTurnOver" resultType="decimal">
         select sum(pay_amount) from t_electricity_member_card_order
         where status=1
@@ -285,10 +292,10 @@
             and uid = #{uid}
         </if>
     </select>
-
-
+    
+    
     <select id="queryLastPayMemberCardTimeByUid"
-            resultType="com.xiliulou.electricity.entity.ElectricityMemberCardOrder">
+        resultType="com.xiliulou.electricity.entity.ElectricityMemberCardOrder">
         select * from t_electricity_member_card_order where uid=#{uid}
         <if test="tenantId != null">
             and tenant_id = #{tenantId}
@@ -298,15 +305,29 @@
         </if>
         ORDER BY id DESC limit 1
     </select>
-
-
-    <select id="selectLatestByUid"   resultType="com.xiliulou.electricity.entity.ElectricityMemberCardOrder">
-        select id,pay_amount,valid_days,uid,order_id,status,member_card_id,max_use_count,card_name,pay_type,create_time,update_time
-        from t_electricity_member_card_order where uid=#{uid} and status=1  ORDER BY id DESC limit 1
+    
+    
+    <select id="selectLatestByUid" resultType="com.xiliulou.electricity.entity.ElectricityMemberCardOrder">
+        select id,
+               pay_amount,
+               valid_days,
+               uid,
+               order_id,
+               status,
+               member_card_id,
+               max_use_count,
+               card_name,
+               pay_type,
+               create_time,
+               update_time
+        from t_electricity_member_card_order
+        where uid = #{uid}
+          and status = 1
+        ORDER BY id DESC limit 1
     </select>
-
+    
     <select id="queryLastPayMemberCardTimeByUidAndSuccess"
-            resultType="com.xiliulou.electricity.entity.ElectricityMemberCardOrder">
+        resultType="com.xiliulou.electricity.entity.ElectricityMemberCardOrder">
         select * from t_electricity_member_card_order where uid=#{uid} and status=1
         <if test="tenantId != null">
             and tenant_id = #{tenantId}
@@ -316,7 +337,7 @@
         </if>
         ORDER BY id DESC limit 1
     </select>
-
+    
     <select id="queryBatteryMemberCardTurnOver" resultType="decimal">
         select sum(pay_amount) from t_electricity_member_card_order
         where status=1 and pay_type=0 and member_card_model=0
@@ -336,10 +357,10 @@
             </foreach>
         </if>
     </select>
-
-
+    
+    
     <select id="queryBatteryMemberCardTurnOverByCreateTime"
-            resultType="com.xiliulou.electricity.vo.HomePageTurnOverGroupByWeekDayVo">
+        resultType="com.xiliulou.electricity.vo.HomePageTurnOverGroupByWeekDayVo">
         select sum(pay_amount) as turnOver,FROM_UNIXTIME( create_time / 1000, '%Y-%m-%d' ) as
         weekDate from t_electricity_member_card_order
         where status=1 and pay_type=0 and member_card_model=0
@@ -364,7 +385,7 @@
         GROUP BY
         weekDate
     </select>
-
+    
     <select id="queryCarMemberCardTurnOver" resultType="decimal">
         select sum(pay_amount) from t_electricity_member_card_order
         where status=1 and pay_type=0 and member_card_model=1
@@ -384,9 +405,9 @@
             </foreach>
         </if>
     </select>
-
+    
     <select id="queryCarMemberCardTurnOverByCreateTime"
-            resultType="com.xiliulou.electricity.vo.HomePageTurnOverGroupByWeekDayVo">
+        resultType="com.xiliulou.electricity.vo.HomePageTurnOverGroupByWeekDayVo">
         select sum(pay_amount) as turnOver,FROM_UNIXTIME( create_time / 1000, '%Y-%m-%d' ) as
         weekDate from t_electricity_member_card_order
         where status=1 and pay_type=0 and member_card_model=1
@@ -411,7 +432,7 @@
         GROUP BY
         weekDate
     </select>
-
+    
     <select id="querySumMemberCardTurnOverByCreateTime" resultType="decimal">
         select sum(pay_amount) from t_electricity_member_card_order
         where status=1 and pay_type=0
@@ -434,24 +455,39 @@
             and create_time &lt;=#{endTime}
         </if>
     </select>
-
+    
     <select id="queryCreateTimeMaxMemberCardOrder" resultType="com.xiliulou.electricity.entity.ElectricityMemberCardOrder">
-        select id,order_id,status,coupon_id from t_electricity_member_card_order where uid=#{uid} and tenant_id=#{tenantId} order by create_time desc limit 1
+        select id, order_id, status, coupon_id
+        from t_electricity_member_card_order
+        where uid = #{uid}
+          and tenant_id = #{tenantId}
+        order by create_time desc limit 1
     </select>
     
     <select id="queryMaxPayCountByUid" resultType="integer">
-        select max(pay_count) from t_electricity_member_card_order
-        where tenant_id = #{tenantId} and uid = #{uid}
+        select max(pay_count)
+        from t_electricity_member_card_order
+        where tenant_id = #{tenantId}
+          and uid = #{uid}
     </select>
-
+    
     <select id="selectFirstMemberCardOrder" resultType="com.xiliulou.electricity.entity.ElectricityMemberCardOrder">
-        select id,ref_id from t_electricity_member_card_order where uid=#{uid} and status=1 and pay_count=1 order by create_time desc limit 1
+        select id, ref_id
+        from t_electricity_member_card_order
+        where uid = #{uid}
+          and status = 1
+          and pay_count = 1
+        order by create_time desc limit 1
     </select>
-
+    
     <select id="checkOrderByMembercardId" resultType="Integer">
-        select 1 from t_electricity_member_card_order where member_card_id=#{membercardId} LIMIT 1
+        select 1 from t_electricity_member_card_order where member_card_id=#{membercardId}
+        and use_status in('${@com.xiliulou.electricity.enums.UseStateEnum@UN_USED.code}'
+        ,'${@com.xiliulou.electricity.enums.UseStateEnum@IN_USE.code}')
+        and status = 1
+        LIMIT 1
     </select>
-
+    
     <update id="updateStatusByOrderNo">
         update t_electricity_member_card_order
         <set>
@@ -467,7 +503,7 @@
         </set>
         where order_id = #{orderId}
     </update>
-
+    
     <update id="batchUpdateStatusByOrderNo">
         update t_electricity_member_card_order set use_status = #{useStatus},update_time = UNIX_TIMESTAMP()*1000
         where order_id in

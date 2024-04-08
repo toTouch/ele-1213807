@@ -1138,7 +1138,8 @@ public class TradeOrderServiceImpl implements TradeOrderService {
                 .userName(userInfo.getName())
                 .validDays(franchiseeInsurance.getValidDays())
                 .createTime(System.currentTimeMillis())
-                .updateTime(System.currentTimeMillis()).build();
+                .updateTime(System.currentTimeMillis())
+                .simpleBatteryType(franchiseeInsurance.getSimpleBatteryType()).build();
 
         return Triple.of(true, null, insuranceOrder);
     }

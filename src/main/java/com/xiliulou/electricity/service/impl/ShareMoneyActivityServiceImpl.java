@@ -1,10 +1,12 @@
 package com.xiliulou.electricity.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.google.common.collect.Lists;
 import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.CommonConstant;
@@ -20,6 +22,7 @@ import com.xiliulou.electricity.query.BatteryMemberCardQuery;
 import com.xiliulou.electricity.query.ShareMoneyActivityAddAndUpdateQuery;
 import com.xiliulou.electricity.query.ShareMoneyActivityQuery;
 import com.xiliulou.electricity.service.*;
+import com.xiliulou.electricity.service.asset.AssertPermissionService;
 import com.xiliulou.electricity.service.car.CarRentalPackageService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
@@ -29,6 +32,7 @@ import com.xiliulou.electricity.vo.ShareMoneyActivityVO;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,10 +41,12 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.ExecutorService;
 
 /**
  * 活动表(TActivity)表服务实现类
@@ -89,7 +95,16 @@ public class ShareMoneyActivityServiceImpl implements ShareMoneyActivityService 
 
     @Autowired
     private JoinShareMoneyActivityHistoryService joinShareMoneyActivityHistoryService;
+    
+    
+    @Autowired
+    private AssertPermissionService assertPermissionService;
 
+    
+    
+    
+    ExecutorService executorService = XllThreadPoolExecutors.newFixedThreadPool("shareActivityHandlerExecutor", 1, "SHARE_ACTIVITY_HANDLER_EXECUTOR");
+    
     /**
      * 通过ID查询单条数据从缓存
      *
@@ -331,6 +346,12 @@ public class ShareMoneyActivityServiceImpl implements ShareMoneyActivityService 
 
     @Override
     public R queryList(ShareMoneyActivityQuery shareMoneyActivityQuery) {
+        Pair<Boolean, List<Long>> pair = assertPermissionService.assertPermissionByPair(SecurityUtils.getUserInfo());
+        if (!pair.getLeft()){
+            return R.ok(new ArrayList<>());
+        }
+        shareMoneyActivityQuery.setFranchiseeIds(pair.getRight());
+        
         List<ShareMoneyActivity> shareMoneyActivityList = shareMoneyActivityMapper.queryList(shareMoneyActivityQuery);
         List<ShareMoneyActivityVO> shareMoneyActivityVOList = Lists.newArrayList();
 
@@ -367,7 +388,8 @@ public class ShareMoneyActivityServiceImpl implements ShareMoneyActivityService 
 
         return R.ok(shareMoneyActivityVOList);
     }
-
+    
+    
     private List<BatteryMemberCardVO> getAllBatteryPackages(Integer tenantId){
         BatteryMemberCardQuery query = BatteryMemberCardQuery.builder()
                 .delFlag(BatteryMemberCard.DEL_NORMAL)
@@ -382,6 +404,12 @@ public class ShareMoneyActivityServiceImpl implements ShareMoneyActivityService 
 
     @Override
     public R queryCount(ShareMoneyActivityQuery shareMoneyActivityQuery) {
+        Pair<Boolean, List<Long>> pair = assertPermissionService.assertPermissionByPair(SecurityUtils.getUserInfo());
+        if (!pair.getLeft()){
+            return R.ok(NumberConstant.ZERO);
+        }
+        shareMoneyActivityQuery.setFranchiseeIds(pair.getRight());
+        
         Integer count = shareMoneyActivityMapper.queryCount(shareMoneyActivityQuery);
         return R.ok(count);
     }
@@ -608,5 +636,52 @@ public class ShareMoneyActivityServiceImpl implements ShareMoneyActivityService 
         return shareMoneyActivityMapper.existShareMoneyActivity(tenantId);
     }
     
+    
+    /**
+     * <p>
+     *    Description: delete
+     *    9. 活动管理-套餐返现活动里面的套餐配置记录想能够手动删除
+     * </p>
+     * @param id id 主键id
+     * @return com.xiliulou.core.web.R<?>
+     * <p>Project: saas-electricity</p>
+     * <p>Copyright: Copyright (c) 2024</p>
+     * <p>Company: www.xiliulou.com</p>
+     * <a herf="https://benyun.feishu.cn/wiki/GrNjwBNZkipB5wkiws2cmsEDnVU#UH1YdEuCwojVzFxtiK6c3jltneb"></a>
+     * @author <a href="mailto:wxblifeng@163.com">PeakLee</a>
+     * @since V1.0 2024/3/14
+     */
+    @Override
+    public R<?> removeById(Long id) {
+        ShareMoneyActivity shareMoneyActivity = this.queryByIdFromCache(Math.toIntExact(id));
+        if (Objects.isNull(shareMoneyActivity)) {
+            log.error("delete Activity  ERROR! not found Activity ! ActivityId:{} ", id);
+            return R.fail("ELECTRICITY.0069", "未找到活动");
+        }
+        int count = this.shareMoneyActivityMapper.removeById(id,TenantContextHolder.getTenantId().longValue());
+        
+        DbUtils.dbOperateSuccessThenHandleCache(Math.toIntExact(id),(identifier)->{
+            redisService.delete(CacheConstant.SHARE_MONEY_ACTIVITY_CACHE+identifier);
+        });
+        if (Objects.equals(shareMoneyActivity.getStatus(),ShareActivity.STATUS_OFF)){
+            return R.ok(count);
+        }
+        executorService.submit(()->{
+            //修改邀请状态
+            JoinShareMoneyActivityRecord joinShareMoneyActivityRecord = new JoinShareMoneyActivityRecord();
+            joinShareMoneyActivityRecord.setStatus(JoinShareMoneyActivityRecord.STATUS_OFF);
+            joinShareMoneyActivityRecord.setUpdateTime(System.currentTimeMillis());
+            joinShareMoneyActivityRecord.setActivityId(Math.toIntExact(id));
+            joinShareMoneyActivityRecordService.updateByActivityId(joinShareMoneyActivityRecord);
+    
+            //修改历史记录状态
+            JoinShareMoneyActivityHistory joinShareMoneyActivityHistory = new JoinShareMoneyActivityHistory();
+            joinShareMoneyActivityHistory.setStatus(JoinShareMoneyActivityHistory.STATUS_OFF);
+            joinShareMoneyActivityHistory.setUpdateTime(System.currentTimeMillis());
+            joinShareMoneyActivityHistory.setActivityId(Math.toIntExact(id));
+            joinShareMoneyActivityHistoryService.updateByActivityId(joinShareMoneyActivityHistory);
+        });
+        return R.ok(count);
+    }
 }
 

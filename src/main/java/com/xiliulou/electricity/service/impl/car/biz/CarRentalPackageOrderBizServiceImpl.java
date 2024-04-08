@@ -3385,6 +3385,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         long nowTime = System.currentTimeMillis();
         insuranceOrder.setCreateTime(nowTime);
         insuranceOrder.setUpdateTime(nowTime);
+        insuranceOrder.setSimpleBatteryType(buyInsurance.getSimpleBatteryType());
         
         // 支付方式的转换赋值
         if (PayTypeEnum.ON_LINE.getCode().equals(payType)) {

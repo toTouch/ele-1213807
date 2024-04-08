@@ -57,4 +57,24 @@ public class ElectricityCabinetOrderQuery {
     private List<Long> franchiseeIds;
 
     private List<Long> storeIds;
+    
+    /**
+     * 新旧一起查，电池编号
+     */
+    private String batterySn;
+    
+    /**
+     * 旧电池编号
+     */
+    private String oldElectricityBatterySn;
+    
+    /**
+     * 新电池编号
+     */
+    private String newElectricityBatterySn;
+    
+    /**
+     * 加盟商ID
+     */
+    private Long franchiseeId;
 }
