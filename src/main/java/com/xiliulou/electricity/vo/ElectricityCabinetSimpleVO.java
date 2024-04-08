@@ -68,4 +68,15 @@ public class ElectricityCabinetSimpleVO implements Serializable {
     
     private Double distance;
     
+    /**
+     * 营业时间
+     */
+    private String businessTime;
+    
+    
+    private Long beginTime;
+    
+    
+    private Long endTime;
+    
 }
