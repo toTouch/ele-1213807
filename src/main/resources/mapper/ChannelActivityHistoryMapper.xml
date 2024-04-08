@@ -255,7 +255,7 @@
     <select id="selectFinalHistoryByJoinUid" resultType="com.xiliulou.electricity.vo.FinalJoinChannelActivityHistoryVO">
         select tcah.uid, tui.name as user_name
         from t_channel_activity_history as tcah
-        left join t_user_info as tui on tui.uid = tcah.uid
+        left join t_user_info as tui on tui.uid = tcah.invite_uid
         where tui.tenant_id = #{tenantId}
           and tcah.uid = #{joinUid}
           and tcah.del_flag = 0
