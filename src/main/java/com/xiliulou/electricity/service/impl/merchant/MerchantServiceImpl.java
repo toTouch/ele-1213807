@@ -1319,4 +1319,10 @@ public class MerchantServiceImpl implements MerchantService {
     public List<Merchant> listAllByIds(Set<Long> merchantIdSet, Integer tenantId) {
         return merchantMapper.selectListAllByIds(merchantIdSet, tenantId);
     }
+    
+    @Slave
+    @Override
+    public List<Merchant> queryListByUidList(Set<Long> uidList, Integer tenantId) {
+        return merchantMapper.selectListByUidList(uidList, tenantId);
+    }
 }
