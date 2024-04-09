@@ -1050,13 +1050,10 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 electricityCabinetVO.setLongitude(e.getContent().getPoint().getX());
                 //将公里数转化为米，返回给前端
                 electricityCabinetVO.setDistance(e.getDistance().getValue() * 1000);
-                assignAttribute(electricityCabinetVO, electricityCabinet.getFullyCharged(), electricityCabinet.getBusinessTime());
-                return electricityCabinetVO;
-                
+                return assignAttribute(electricityCabinetVO, electricityCabinet.getFullyCharged(), electricityCabinet.getBusinessTime());
             }).filter(Objects::nonNull).collect(Collectors.toList());
             
         } else {
-            log.info("Get location distance from DB start");
             List<ElectricityCabinetVO> electricityCabinetList = electricityCabinetMapper.showInfoByDistance(electricityCabinetQuery);
             if (CollectionUtils.isEmpty(electricityCabinetList)) {
                 return R.ok(Collections.emptyList());
@@ -1074,8 +1071,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 electricityCabinetVO.setDistance(e.getDistance());
                 electricityCabinetVO.setSn(e.getSn());
                 electricityCabinetVO.setServicePhone(e.getServicePhone());
-                assignAttribute(electricityCabinetVO, e.getFullyCharged(), e.getBusinessTime());
-                return electricityCabinetVO;
+                return assignAttribute(electricityCabinetVO, e.getFullyCharged(), e.getBusinessTime());
             }).filter(Objects::nonNull).collect(Collectors.toList());
             
         }
@@ -1083,7 +1079,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         return R.ok(resultVo.stream().sorted(Comparator.comparing(ElectricityCabinetSimpleVO::getDistance)).collect(Collectors.toList()));
     }
     
-    private void assignAttribute(ElectricityCabinetSimpleVO e, Double fullyCharged, String businessTime) {
+    private ElectricityCabinetSimpleVO assignAttribute(ElectricityCabinetSimpleVO e, Double fullyCharged, String businessTime) {
         //营业时间
         if (StringUtils.isNotBlank(businessTime)) {
             if (Objects.equals(businessTime, ElectricityCabinetVO.ALL_DAY)) {
@@ -1103,12 +1099,13 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         }
         List<ElectricityCabinetBox> cabinetBoxList = electricityCabinetBoxService.selectEleBoxAttrByEid(e.getId());
         if (CollectionUtils.isEmpty(cabinetBoxList)) {
-            return;
+            return null;
         }
         //可换电数量
         List<ElectricityCabinetBox> exchangeableList = cabinetBoxList.stream().filter(item -> isExchangeable(item, fullyCharged)).collect(Collectors.toList());
         long exchangeableNumber = exchangeableList.size();
         e.setFullyElectricityBattery((int) exchangeableNumber);//兼容2.0小程序首页显示问题
+        return e;
     }
     
     private void assignExchangeableBatteryType(List<ElectricityCabinetBox> exchangeableList, ElectricityCabinetVO e) {
