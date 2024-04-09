@@ -370,10 +370,11 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
             MerchantJoinRecord merchantJoinRecord = merchantJoinRecordService.querySuccessRecordByJoinUid(uid, tenantId);
             if (Objects.nonNull(merchantJoinRecord)) {
                 id = merchantJoinRecord.getId();
-                inviterUid = merchantJoinRecord.getInviterUid();
-                inviterName = Optional.ofNullable(userService.queryByUidFromCache(inviterUid)).map(User::getName).orElse("");
-                inviterSource = MerchantInviterSourceEnum.MERCHANT_INVITER_SOURCE_MERCHANT.getCode();
                 inviterMerchantId = merchantJoinRecord.getMerchantId();
+                inviterUid = merchantJoinRecord.getInviterUid();
+                // 邀请人都是商户
+                inviterName = Optional.ofNullable(merchantService.queryByIdFromCache(inviterMerchantId)).map(Merchant::getName).orElse("");
+                inviterSource = MerchantInviterSourceEnum.MERCHANT_INVITER_SOURCE_MERCHANT.getCode();
             }
         }
     
