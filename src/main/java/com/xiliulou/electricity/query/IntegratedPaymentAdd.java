@@ -47,9 +47,4 @@ public class IntegratedPaymentAdd {
     
     //优惠券
     private List<Integer> userCouponIds;
-    
-    /**
-     * 用户绑定的所有用户分组id
-     */
-    private List<Long> userGroupIdsTransfer;
 }

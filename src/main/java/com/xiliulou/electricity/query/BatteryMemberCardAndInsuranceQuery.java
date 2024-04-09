@@ -34,9 +34,4 @@ public class BatteryMemberCardAndInsuranceQuery {
     
     //优惠券
     private Set<Integer> userCouponIds;
-    
-    /**
-     * 用户绑定的所有用户分组id
-     */
-    private List<Long> userGroupIdsTransfer;
 }

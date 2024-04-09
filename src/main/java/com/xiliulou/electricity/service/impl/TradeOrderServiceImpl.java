@@ -70,10 +70,12 @@ import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.UserOauthBindService;
 import com.xiliulou.electricity.service.car.CarRentalPackageOrderSlippageService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseChannelUserService;
+import com.xiliulou.electricity.service.userinfo.userInfoGroup.UserInfoGroupService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DateUtils;
 import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
+import com.xiliulou.electricity.vo.userinfo.UserInfoGroupVO;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiOrderResultDTO;
 import com.xiliulou.pay.weixinv3.exception.WechatPayException;
 import com.xiliulou.security.bean.TokenUser;
@@ -217,6 +219,9 @@ public class TradeOrderServiceImpl implements TradeOrderService {
     @Resource
     EnterpriseChannelUserService enterpriseChannelUserService;
     
+    @Autowired
+    private UserInfoGroupService userInfoGroupService;
+    
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Triple<Boolean, String, Object> integratedPayment(IntegratedPaymentAdd integratedPaymentAdd, HttpServletRequest request) {
@@ -294,8 +299,10 @@ public class TradeOrderServiceImpl implements TradeOrderService {
             }
             
             // 判断套餐用户分组和用户的用户分组是否匹配
-            if (Objects.nonNull(integratedPaymentAdd.getUserGroupIdsTransfer())) {
-                Triple<Boolean, String, Object> triple = userGroupIdFit(integratedPaymentAdd.getUserGroupIdsTransfer(), batteryMemberCard);
+            List<UserInfoGroupVO> userInfoGroupVOS = userInfoGroupService.listGroupByUid(SecurityUtils.getUid(), TenantContextHolder.getTenantId());
+            if (CollectionUtils.isNotEmpty(userInfoGroupVOS)) {
+                List<Long> userGroupIds = userInfoGroupVOS.stream().map(UserInfoGroupVO::getId).collect(Collectors.toList());
+                Triple<Boolean, String, Object> triple = userGroupIdFit(userGroupIds, batteryMemberCard);
                 if (!triple.getLeft()) {
                     return triple;
                 }
@@ -488,8 +495,10 @@ public class TradeOrderServiceImpl implements TradeOrderService {
             }
     
             // 判断套餐用户分组和用户的用户分组是否匹配
-            if (Objects.nonNull(query.getUserGroupIdsTransfer())) {
-                Triple<Boolean, String, Object> triple = userGroupIdFit(query.getUserGroupIdsTransfer(), batteryMemberCard);
+            List<UserInfoGroupVO> userInfoGroupVOS = userInfoGroupService.listGroupByUid(SecurityUtils.getUid(), TenantContextHolder.getTenantId());
+            if (CollectionUtils.isNotEmpty(userInfoGroupVOS)) {
+                List<Long> userGroupIds = userInfoGroupVOS.stream().map(UserInfoGroupVO::getId).collect(Collectors.toList());
+                Triple<Boolean, String, Object> triple = userGroupIdFit(userGroupIds, batteryMemberCard);
                 if (triple.getLeft()) {
                     return triple;
                 }
@@ -1113,23 +1122,13 @@ public class TradeOrderServiceImpl implements TradeOrderService {
         return Triple.of(true, null, insuranceOrder);
     }
     
-    
-    private String generateDepositOrderId(Long uid) {
-        return String.valueOf(System.currentTimeMillis()).substring(2) + uid + RandomUtil.randomNumbers(6);
-    }
-    
-    private String generateInsuranceOrderId(Long uid) {
-        return String.valueOf(System.currentTimeMillis()).substring(0, 6) + uid + RandomUtil.randomNumbers(4);
-    }
-    
-    private Triple<Boolean, String, Object> userGroupIdFit(List<Long> userGroupIdsTransfer, BatteryMemberCard batteryMemberCard) {
+    private Triple<Boolean, String, Object> userGroupIdFit(List<Long> userGroupIds, BatteryMemberCard batteryMemberCard) {
         
-        if (Objects.nonNull(batteryMemberCard.getUserGroupIds())) {
+        if (StringUtils.isNotBlank(batteryMemberCard.getUserGroupIds())) {
             
-            Set<Long> memberCardUserGroupIds = JSONUtil.parseArray(batteryMemberCard.getUserGroupIds()).stream()
-                    .map(memberCardUserGroupId -> Long.valueOf(memberCardUserGroupId.toString())).collect(Collectors.toSet());
+            HashSet<Long> memberCardUserGroupIds = new HashSet<>(JsonUtil.fromJsonArray(batteryMemberCard.getUserGroupIds(), Long.class));
             
-            if (!memberCardUserGroupIds.containsAll(userGroupIdsTransfer)) {
+            if (!memberCardUserGroupIds.containsAll(userGroupIds)) {
                 return Triple.of(false, "100318", "您浏览的套餐已下架，请看看其他的吧");
             }
         } else {
