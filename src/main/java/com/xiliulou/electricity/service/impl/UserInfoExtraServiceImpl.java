@@ -54,7 +54,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -370,11 +369,10 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
             MerchantJoinRecord merchantJoinRecord = merchantJoinRecordService.querySuccessRecordByJoinUid(uid, tenantId);
             if (Objects.nonNull(merchantJoinRecord)) {
                 id = merchantJoinRecord.getId();
-                inviterMerchantId = merchantJoinRecord.getMerchantId();
                 inviterUid = merchantJoinRecord.getInviterUid();
-                // 邀请人都是商户
-                inviterName = Optional.ofNullable(merchantService.queryByIdFromCache(inviterMerchantId)).map(Merchant::getName).orElse("");
+                inviterName = Optional.ofNullable(userService.queryByUidFromCache(inviterUid)).map(User::getName).orElse("");
                 inviterSource = MerchantInviterSourceEnum.MERCHANT_INVITER_SOURCE_MERCHANT.getCode();
+                inviterMerchantId = merchantJoinRecord.getMerchantId();
             }
         }
     
@@ -486,15 +484,15 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
             }
         
             // 新增商户参与记录
-            MerchantJoinRecord merchantJoinRecord = this.assembleRecord(merchantId, newInviterUid, MerchantJoinRecordConstant.INVITER_TYPE_MERCHANT_SELF, uid, channelEmployeeUid,
-                    merchantAttr, tenantId);
+            MerchantJoinRecord merchantJoinRecord = this.assembleRecord(merchantId, newInviterUid, uid, channelEmployeeUid, merchantAttr, tenantId);
             merchantJoinRecordService.insertOne(merchantJoinRecord);
         
             // 新增修改记录
             MerchantInviterModifyRecord merchantInviterModifyRecord = MerchantInviterModifyRecord.builder().uid(uid).inviterUid(newInviterUid)
-                    .inviterName(Optional.ofNullable(userService.queryByUidFromCache(newInviterUid)).orElse(new User()).getName()).oldInviterUid(oldInviterUid)
-                    .oldInviterName(successInviterVO.getInviterName()).oldInviterSource(inviterSource).merchantId(merchantId).franchiseeId(merchant.getFranchiseeId())
-                    .tenantId(tenantId).operator(operator).remark(merchantModifyInviterUpdateRequest.getRemark()).delFlag(MerchantConstant.DEL_NORMAL).createTime(System.currentTimeMillis())
+                    .inviterName(Optional.ofNullable(merchantService.queryByIdFromCache(merchantId)).orElse(new Merchant()).getName()).oldInviterUid(oldInviterUid)
+                    .oldInviterName(Optional.ofNullable(merchantService.queryByIdFromCache(successInviterVO.getMerchantId())).orElse(new Merchant()).getName())
+                    .oldInviterSource(inviterSource).merchantId(merchantId).franchiseeId(merchant.getFranchiseeId()).tenantId(tenantId).operator(operator)
+                    .remark(merchantModifyInviterUpdateRequest.getRemark()).delFlag(MerchantConstant.DEL_NORMAL).createTime(System.currentTimeMillis())
                     .updateTime(System.currentTimeMillis()).build();
         
             merchantInviterModifyRecordService.insertOne(merchantInviterModifyRecord);
@@ -505,8 +503,7 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
         }
     }
     
-    private MerchantJoinRecord assembleRecord(Long merchantId, Long inviterUid, Integer inviterType, Long joinUid, Long channelEmployeeUid, MerchantAttr merchantAttr,
-            Integer tenantId) {
+    private MerchantJoinRecord assembleRecord(Long merchantId, Long inviterUid, Long joinUid, Long channelEmployeeUid, MerchantAttr merchantAttr, Integer tenantId) {
         long nowTime = System.currentTimeMillis();
         Integer protectionTime = merchantAttr.getInvitationProtectionTime();
         Integer protectionTimeUnit = merchantAttr.getProtectionTimeUnit();
@@ -536,9 +533,9 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
         }
         
         // 生成参与记录
-        return MerchantJoinRecord.builder().merchantId(merchantId).channelEmployeeUid(channelEmployeeUid).inviterUid(inviterUid).inviterType(inviterType).joinUid(joinUid)
-                .startTime(nowTime).expiredTime(expiredTime).status(MerchantJoinRecordConstant.STATUS_SUCCESS).protectionTime(protectionExpireTime)
-                .protectionStatus(MerchantJoinRecordConstant.PROTECTION_STATUS_NORMAL).delFlag(NumberConstant.ZERO).createTime(nowTime).updateTime(nowTime).tenantId(tenantId)
-                .modifyInviter(MerchantJoinRecordConstant.MODIFY_INVITER_YES).build();
+        return MerchantJoinRecord.builder().merchantId(merchantId).channelEmployeeUid(channelEmployeeUid).inviterUid(inviterUid)
+                .inviterType(MerchantJoinRecordConstant.INVITER_TYPE_MERCHANT_SELF).joinUid(joinUid).startTime(nowTime).expiredTime(expiredTime)
+                .status(MerchantJoinRecordConstant.STATUS_SUCCESS).protectionTime(protectionExpireTime).protectionStatus(MerchantJoinRecordConstant.PROTECTION_STATUS_NORMAL)
+                .delFlag(NumberConstant.ZERO).createTime(nowTime).updateTime(nowTime).tenantId(tenantId).modifyInviter(MerchantJoinRecordConstant.MODIFY_INVITER_YES).build();
     }
 }
