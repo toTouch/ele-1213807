@@ -1036,7 +1036,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 
                 Integer eid = Integer.valueOf(e.getContent().getName());
                 ElectricityCabinet electricityCabinet = queryByIdFromCache(eid);
-                if (Objects.isNull(electricityCabinet)||!Objects.equals(ELECTRICITY_CABINET_USABLE_STATUS,electricityCabinet.getUsableStatus())) {
+                if (Objects.isNull(electricityCabinet) || !Objects.equals(ELECTRICITY_CABINET_USABLE_STATUS, electricityCabinet.getUsableStatus())) {
                     log.error("query cabinet error! eid = {}", eid);
                     return null;
                 }
@@ -1050,7 +1050,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 electricityCabinetVO.setLongitude(e.getContent().getPoint().getX());
                 //将公里数转化为米，返回给前端
                 electricityCabinetVO.setDistance(e.getDistance().getValue() * 1000);
-                assignAttribute(electricityCabinetVO, electricityCabinet.getFullyCharged(),electricityCabinet.getBusinessTime());
+                assignAttribute(electricityCabinetVO, electricityCabinet.getFullyCharged(), electricityCabinet.getBusinessTime());
                 return electricityCabinetVO;
                 
             }).filter(Objects::nonNull).collect(Collectors.toList());
@@ -1074,7 +1074,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 electricityCabinetVO.setDistance(e.getDistance());
                 electricityCabinetVO.setSn(e.getSn());
                 electricityCabinetVO.setServicePhone(e.getServicePhone());
-                assignAttribute(electricityCabinetVO,e.getFullyCharged(), e.getBusinessTime());
+                assignAttribute(electricityCabinetVO, e.getFullyCharged(), e.getBusinessTime());
                 return electricityCabinetVO;
             }).filter(Objects::nonNull).collect(Collectors.toList());
             
@@ -1088,7 +1088,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         if (StringUtils.isNotBlank(businessTime)) {
             if (Objects.equals(businessTime, ElectricityCabinetVO.ALL_DAY)) {
                 e.setBusinessTimeType(ElectricityCabinetVO.ALL_DAY);
-//                e.setIsBusiness(ElectricityCabinetVO.IS_BUSINESS);
+                //                e.setIsBusiness(ElectricityCabinetVO.IS_BUSINESS);
             } else {
                 e.setBusinessTimeType(ElectricityCabinetVO.ILLEGAL_DATA);
                 int index = businessTime.indexOf("-");
@@ -1353,7 +1353,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         redisService.saveWithHash(CacheConstant.CACHE_ELECTRICITY_CABINET + electricityCabinet.getId(), electricityCabinet);
         
         redisService.delete(CacheConstant.CACHE_ELECTRICITY_CABINET_DEVICE + oldElectricityCabinet.getProductKey() + oldElectricityCabinet.getDeviceName());
-        operateRecordUtil.record(oldElectricityCabinet,electricityCabinet);
+        operateRecordUtil.record(oldElectricityCabinet, electricityCabinet);
         return R.ok();
     }
     
@@ -2053,11 +2053,11 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             return R.fail("ELECTRICITY.0037", "发送命令失败");
         }
         Map<String, Object> map = BeanUtil.beanToMap(comm, false, true);
-        map.put("operateType",1);
-        if (comm.getCommand().equals(ELE_COMMAND_CELL_UPDATE) && eleOuterCommandQuery.getData().containsKey("lockReason")){
-            map.put("command","cell_update_down");
+        map.put("operateType", 1);
+        if (comm.getCommand().equals(ELE_COMMAND_CELL_UPDATE) && eleOuterCommandQuery.getData().containsKey("lockReason")) {
+            map.put("command", "cell_update_down");
         }
-        operateRecordUtil.record(null,map);
+        operateRecordUtil.record(null, map);
         return R.ok(sessionId);
     }
     
@@ -2106,11 +2106,11 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             return R.fail("ELECTRICITY.0037", "发送命令失败");
         }
         Map<String, Object> map = BeanUtil.beanToMap(comm, false, true);
-        map.put("operateType",1);
-        if (comm.getCommand().equals(ELE_COMMAND_CELL_UPDATE) && eleOuterCommandQuery.getData().containsKey("lockReason")){
-            map.put("command","cell_update_down");
+        map.put("operateType", 1);
+        if (comm.getCommand().equals(ELE_COMMAND_CELL_UPDATE) && eleOuterCommandQuery.getData().containsKey("lockReason")) {
+            map.put("command", "cell_update_down");
         }
-        operateRecordUtil.record(null,map);
+        operateRecordUtil.record(null, map);
         return R.ok(sessionId);
     }
     
