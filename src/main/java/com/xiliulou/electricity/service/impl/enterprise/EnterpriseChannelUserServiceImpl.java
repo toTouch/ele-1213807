@@ -812,13 +812,17 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
             return Triple.of(false, "120305", "当前状态无法操作");
         }
         
-        if (Objects.equals(user.getCloudBeanStatus(), EnterpriseChannelUser.CLOUD_BEAN_STATUS_RECYCLE) || Objects.equals(user.getCloudBeanStatus(),
-                EnterpriseChannelUser.CLOUD_BEAN_STATUS_INIT)) {
+        if (Objects.equals(user.getCloudBeanStatus(), EnterpriseChannelUser.CLOUD_BEAN_STATUS_RECYCLE)) {
             return Triple.of(true, null, null);
         }
         
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
         if (Objects.nonNull(userBatteryMemberCard)) {
+            if (Objects.equals(userInfo.getBatteryRentStatus(), UserInfo.BATTERY_RENT_STATUS_YES)) {
+                log.warn("channel User Exit Check! user rent battery,uid={}", uid);
+                return Triple.of(false, "120316", "该用户未退还电池，将影响云豆回收，请联系归还后操作");
+            }
+            
             if (Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE_REVIEW)) {
                 log.warn("channel User Exit Check! user stop member card review,uid={}", uid);
                 return Triple.of(false, "100211", "该用户已申请套餐冻结，将影响云豆回收，请联系解除后操作");
@@ -827,6 +831,10 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
             if (Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE)) {
                 log.warn("channel User Exit Check! member card is disable userId={}", uid);
                 return Triple.of(false, "120314", "该用户套餐已冻结，将影响云豆回收，请联系启用后操作");
+            }
+    
+            if (Objects.isNull(userBatteryMemberCard.getMemberCardId()) || Objects.equals(userBatteryMemberCard.getMemberCardId(), NumberConstant.ZERO_L)) {
+                return Triple.of(true, null, null);
             }
             
             BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());
@@ -841,11 +849,6 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
             if (Boolean.TRUE.equals(acquireUserBatteryServiceFeeResult.getLeft())) {
                 log.warn("channel User Exit Check! user exist battery service fee,uid={}", userInfo.getUid());
                 return Triple.of(false, "120315", "该用户未缴纳滞纳金，将影响云豆回收，请联系缴纳后操作");
-            }
-            
-            if (Objects.equals(userInfo.getBatteryRentStatus(), UserInfo.BATTERY_RENT_STATUS_YES)) {
-                log.warn("channel User Exit Check! user rent battery,uid={}", uid);
-                return Triple.of(false, "120316", "该用户未退还电池，将影响云豆回收，请联系归还后操作");
             }
         }
         
@@ -974,8 +977,7 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
         }
         
         for (EnterpriseChannelUser channelUser : enterpriseChannelUserList) {
-            if (Objects.equals(channelUser.getCloudBeanStatus(), EnterpriseChannelUser.CLOUD_BEAN_STATUS_RECYCLE) || Objects.equals(channelUser.getCloudBeanStatus(),
-                    EnterpriseChannelUser.CLOUD_BEAN_STATUS_INIT)) {
+            if (Objects.equals(channelUser.getCloudBeanStatus(), EnterpriseChannelUser.CLOUD_BEAN_STATUS_RECYCLE)) {
                 continue;
             }
             
@@ -1548,6 +1550,11 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
         
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
         if (Objects.nonNull(userBatteryMemberCard)) {
+            if (Objects.equals(userInfo.getBatteryRentStatus(), UserInfo.BATTERY_RENT_STATUS_YES)) {
+                log.warn("check User Enable Exit! user rent battery,uid={}", uid);
+                return Triple.of(false, "120316", "该用户未退还电池，将影响云豆回收，请联系归还后操作");
+            }
+            
             if (Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE_REVIEW)) {
                 log.warn("check User Enable Exit! user stop member card review,uid={}", uid);
                 return Triple.of(false, "100211", "该用户已申请套餐冻结，将影响云豆回收，请联系解除后操作");
@@ -1556,6 +1563,10 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
             if (Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE)) {
                 log.warn("check User Enable Exit! member card is disable userId={}", uid);
                 return Triple.of(false, "120314", "该用户套餐已冻结，将影响云豆回收，请联系启用后操作");
+            }
+            
+            if (Objects.isNull(userBatteryMemberCard.getMemberCardId()) || Objects.equals(userBatteryMemberCard.getMemberCardId(), NumberConstant.ZERO_L)) {
+                return Triple.of(true, null, null);
             }
             
             BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());
@@ -1570,11 +1581,6 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
             if (Boolean.TRUE.equals(acquireUserBatteryServiceFeeResult.getLeft())) {
                 log.warn("check User Enable Exit! user exist battery service fee,uid={}", userInfo.getUid());
                 return Triple.of(false, "120315", "该用户未缴纳滞纳金，将影响云豆回收，请联系缴纳后操作");
-            }
-            
-            if (Objects.equals(userInfo.getBatteryRentStatus(), UserInfo.BATTERY_RENT_STATUS_YES)) {
-                log.warn("check User Enable Exit! user rent battery,uid={}", uid);
-                return Triple.of(false, "120316", "该用户未退还电池，将影响云豆回收，请联系归还后操作");
             }
         } else {
             log.warn("check User Enable Exit! userBatteryMemberCard is null,uid={}", uid);
