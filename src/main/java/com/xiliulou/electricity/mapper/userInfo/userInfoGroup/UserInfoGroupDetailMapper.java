@@ -20,7 +20,11 @@ public interface UserInfoGroupDetailMapper {
     
     Integer countTotal(UserInfoGroupDetailQuery query);
     
-    List<UserInfoGroupNamesVO> selectListByUid(@Param("uid") Long uid, @Param("tenantId") Integer tenantId);
+    List<UserInfoGroupNamesVO> selectListGroupByUid(UserInfoGroupDetailQuery query);
     
     Integer batchInsert(@Param("detailList") List<UserInfoGroupDetail> detailList);
+    
+    Integer countUserByGroupId(Long id);
+    
+    Integer deleteByUidAndGroupNoList(@Param("uid") Long uid, @Param("groupNoList") List<String> groupNoList);
 }

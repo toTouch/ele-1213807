@@ -3,7 +3,8 @@
 <mapper namespace="com.xiliulou.electricity.mapper.userInfo.userInfoGroup.UserInfoGroupDetailMapper">
     <!-- 基础字段 -->
     <sql id="basic_field">
-        id, group_no, uid, franchisee_id, tenant_id, del_flag, create_time, update_time
+        id
+        , group_no, uid, franchisee_id, tenant_id, del_flag, create_time, update_time
     </sql>
     
     <insert id="batchInsert" keyProperty="id" useGeneratedKeys="true">
@@ -14,6 +15,13 @@
         </foreach>
     </insert>
     
+    <delete id="deleteByUidAndGroupNoList">
+        delete from t_user_info_group_detail where uid = #{uid} and group_no in
+        <foreach item="item" index="index" collection="groupNoList" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </delete>
+    
     <select id="selectByUid" resultType="com.xiliulou.electricity.entity.userInfo.userInfoGroup.UserInfoGroupDetail">
         select
         <include refid="basic_field"/>
@@ -22,7 +30,8 @@
     </select>
     
     <select id="selectPage" resultType="com.xiliulou.electricity.entity.userInfo.userInfoGroup.UserInfoGroupDetail">
-        select tuigd.id as id, tuigd.group_no as groupNo, tuigd.uid as uid, tuigd.franchisee_id as franchiseeId, tuigd.tenant_id as tenantId, tuigd.del_flag as delFlag, tuigd.create_time as createTime, tuigd.update_time as updateTime
+        select tuigd.id as id, tuigd.group_no as groupNo, tuigd.uid as uid, tuigd.franchisee_id as franchiseeId, tuigd.tenant_id as tenantId, tuigd.del_flag as delFlag,
+        tuigd.create_time as createTime, tuigd.update_time as updateTime
         from t_user_info_group_detail tuigd
         left join t_user_info_group tuig on tuig.group_no = tuigd.group_no
         <where>
@@ -65,11 +74,34 @@
         </where>
     </select>
     
-    <select id="selectListByUid" resultType="com.xiliulou.electricity.vo.userinfo.UserInfoGroupNamesVO">
-        select tuigd.uid as uid, tuigd.group_no as groupNo, tuig.name as groupName
+    <select id="countUserByGroupId" resultType="java.lang.Integer">
+        select count(1)
         from t_user_info_group_detail tuigd
-        left join t_user_info_group tuig on tuig.group_no = tuigd.group_no
-        where tuigd.del_flag = 0 and tuigd.uid = #{uid} and tuigd.tenant_id = #{tenantId}
+                 left join t_user_info_group tuig on tuig.group_no = tuigd.group_no
+        where tuigd.del_flag = 0
+          and tuig.id = #{id}
+    </select>
+    
+    <select id="selectListGroupByUid" resultType="com.xiliulou.electricity.vo.userinfo.UserInfoGroupNamesVO">
+        select tuigd.uid as uid, tuigd.group_no as groupNo, tuig.id as groupId, tuig.name as groupName
+        from t_user_info_group_detail tuigd
+        left join t_user_info_group tuig on tuigd.group_no = tuig.group_no
+        <where>
+            tuigd.del_flag = 0 and tuig.del_flag = 0 and tuigd.uid = #{uid}
+            <if test="tenantId != null">
+                and tuigd.id = #{tenantId}
+            </if>
+            <if test="franchiseeIds != null and franchiseeIds.size()>0">
+                and tuigd.franchisee_id in
+                <foreach collection="franchiseeIds" item="franchiseeId" index="index" open="(" close=")" separator=",">
+                    #{franchiseeId}
+                </foreach>
+            </if>
+        </where>
+        order by tuigd.update_time desc, tuigd.id asc
+        <if test="offset != null and size!= null">
+            limit #{offset}, #{size}
+        </if>
     </select>
 
 </mapper>

@@ -1,23 +1,29 @@
 package com.xiliulou.electricity.service.impl.userInfo.userInfoGroup;
 
+import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.userInfo.userInfoGroup.UserInfoGroupDetail;
 import com.xiliulou.electricity.mapper.userInfo.userInfoGroup.UserInfoGroupDetailMapper;
 import com.xiliulou.electricity.query.UserInfoGroupDetailQuery;
+import com.xiliulou.electricity.request.user.UserInfoGroupDetailUpdateRequest;
 import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.userinfo.userInfoGroup.UserInfoGroupDetailService;
+import com.xiliulou.electricity.service.userinfo.userInfoGroup.UserInfoGroupService;
 import com.xiliulou.electricity.vo.userinfo.UserInfoGroupDetailVO;
 import com.xiliulou.electricity.vo.userinfo.UserInfoGroupNamesVO;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -27,6 +33,7 @@ import java.util.stream.Collectors;
  * @description 用户分组详情
  * @date 2024/4/9 14:45:00
  */
+@Slf4j
 @Service
 public class UserInfoGroupDetailServiceImpl implements UserInfoGroupDetailService {
     
@@ -38,6 +45,9 @@ public class UserInfoGroupDetailServiceImpl implements UserInfoGroupDetailServic
     
     @Resource
     private FranchiseeService franchiseeService;
+    
+    @Resource
+    private UserInfoGroupService userInfoGroupService;
     
     @Slave
     @Override
@@ -69,7 +79,8 @@ public class UserInfoGroupDetailServiceImpl implements UserInfoGroupDetailServic
             detailVO.setUpdateTime(item.getUpdateTime());
             
             Set<String> groupNames = new HashSet<>();
-            List<UserInfoGroupNamesVO> groupNameDetails = userInfoGroupDetailMapper.selectListByUid(uid, query.getTenantId());
+            UserInfoGroupDetailQuery detailQuery = UserInfoGroupDetailQuery.builder().uid(uid).tenantId(query.getTenantId()).build();
+            List<UserInfoGroupNamesVO> groupNameDetails = userInfoGroupDetailMapper.selectListGroupByUid(detailQuery);
             if (CollectionUtils.isNotEmpty(groupNameDetails)) {
                 List<UserInfoGroupNamesVO> nameDetail = groupNameDetails.stream().filter(detail -> detail.getGroupNo().equals(item.getGroupNo())).collect(Collectors.toList());
                 Optional.of(nameDetail.get(0)).ifPresent(d -> {
@@ -104,6 +115,72 @@ public class UserInfoGroupDetailServiceImpl implements UserInfoGroupDetailServic
     @Override
     public Integer batchInsert(List<UserInfoGroupDetail> detailList) {
         return userInfoGroupDetailMapper.batchInsert(detailList);
+    }
+    
+    @Slave
+    @Override
+    public Integer countUserByGroupId(Long id) {
+        return userInfoGroupDetailMapper.countUserByGroupId(id);
+    }
+    
+    @Slave
+    @Override
+    public List<UserInfoGroupNamesVO> listGroupByUid(UserInfoGroupDetailQuery query) {
+        return userInfoGroupDetailMapper.selectListGroupByUid(query);
+    }
+    
+    @Override
+    public R update(UserInfoGroupDetailUpdateRequest request) {
+        Long uid = request.getUid();
+        Integer tenantId = request.getTenantId();
+        List<Long> groupIds = request.getGroupIds();
+        
+        UserInfo userInfo = userInfoService.queryByUidFromDb(uid);
+        if (Objects.isNull(userInfo)) {
+            log.error("Update userInfoGroup error! userInfo not exist, uid={}", uid);
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        
+        if (!Objects.equals(tenantId, userInfo.getTenantId())) {
+            return R.ok();
+        }
+        
+        UserInfoGroupDetailQuery query = UserInfoGroupDetailQuery.builder().uid(uid).tenantId(tenantId).build();
+        List<UserInfoGroupNamesVO> userInfoGroupNamesVOS = this.listGroupByUid(query);
+        if (CollectionUtils.isNotEmpty(userInfoGroupNamesVOS)) {
+            // 获取交集
+            List<Long> intersection = new ArrayList<>(groupIds);
+            intersection.retainAll(userInfoGroupNamesVOS.stream().map(UserInfoGroupNamesVO::getGroupId).collect(Collectors.toList()));
+            
+            // 去除交集后，剩下的就是需要新增的
+            groupIds.removeAll(intersection);
+            
+            // 去除交集后，剩下的是需要删除的
+            userInfoGroupNamesVOS.removeAll(userInfoGroupNamesVOS.stream().filter(item -> intersection.contains(item.getGroupId())).collect(Collectors.toList()));
+        }
+        
+        // 新增
+        List<UserInfoGroupDetail> detailList = null;
+        if (CollectionUtils.isNotEmpty(groupIds)) {
+            detailList = new ArrayList<>();
+            long nowTime = System.currentTimeMillis();
+            
+            groupIds.stream().map(groupId -> {
+                UserInfoGroupDetail detail = UserInfoGroupDetail.builder().groupNo(userGroup.getGroupNo()).uid(uid).franchiseeId(franchiseeId).tenantId(tenantId)
+                        .createTime(nowTime).updateTime(nowTime).build();
+                
+                detailList.add(detail);
+                
+            }).collect(Collectors.toList());
+        }
+        
+        // 删除
+        if (CollectionUtils.isNotEmpty(userInfoGroupNamesVOS)) {
+            List<String> deleteGroupNoList = userInfoGroupNamesVOS.stream().map(UserInfoGroupNamesVO::getGroupNo).collect(Collectors.toList());
+            userInfoGroupDetailMapper.deleteByUidAndGroupNoList(uid, deleteGroupNoList);
+        }
+        
+        return R.ok();
     }
     
 }

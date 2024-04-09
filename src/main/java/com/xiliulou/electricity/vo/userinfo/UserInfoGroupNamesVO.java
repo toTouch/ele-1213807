@@ -18,6 +18,8 @@ public class UserInfoGroupNamesVO {
     
     private Long uid;
     
+    private Long groupId;
+    
     private String groupNo;
     
     private String groupName;

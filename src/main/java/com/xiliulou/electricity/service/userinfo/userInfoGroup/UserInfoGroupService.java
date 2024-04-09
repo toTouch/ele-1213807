@@ -4,7 +4,7 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.userInfo.userInfoGroup.UserInfoGroup;
 import com.xiliulou.electricity.query.UserInfoGroupQuery;
 import com.xiliulou.electricity.request.user.UserInfoGroupBatchImportRequest;
-import com.xiliulou.electricity.request.user.UserInfoGroupSaveRequest;
+import com.xiliulou.electricity.request.user.UserInfoGroupSaveAndUpdateRequest;
 import com.xiliulou.electricity.vo.userinfo.UserInfoGroupVO;
 
 import java.util.List;
@@ -16,7 +16,9 @@ import java.util.List;
  */
 public interface UserInfoGroupService {
     
-    R save(UserInfoGroupSaveRequest userInfoGroupSaveRequest, Long uid);
+    R save(UserInfoGroupSaveAndUpdateRequest request, Long uid);
+    
+    R update(UserInfoGroupSaveAndUpdateRequest request, Long uid);
     
     List<UserInfoGroupVO> listByPage(UserInfoGroupQuery query);
     
@@ -28,7 +30,7 @@ public interface UserInfoGroupService {
     
     UserInfoGroup queryByIdFromCache(Long id);
     
-    List<UserInfoGroupVO> listGroupByUid(Long uid, Integer tenantId);
-    
     List<UserInfoGroupVO> listByIds(List<Long> ids);
+    
+    R remove(Long id, Long uid);
 }
