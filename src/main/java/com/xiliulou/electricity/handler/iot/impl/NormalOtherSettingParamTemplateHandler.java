@@ -262,5 +262,25 @@ public class NormalOtherSettingParamTemplateHandler extends AbstractElectricityI
          * </pre>
          */
         private Integer enableBmsChargeParams;
+    
+        /**
+         * 充电方式
+         */
+        private Integer whilstCharging;
+    
+        /**
+         * 总功率
+         */
+        private Integer sumPowerLimit;
+    
+        /**
+         * 整柜加热功率
+         */
+        private Integer cabinetHeatPower;
+    
+        /**
+         * 单个充电器最大功率
+         */
+        private Integer cellChargingMaxPower;
     }
 }
