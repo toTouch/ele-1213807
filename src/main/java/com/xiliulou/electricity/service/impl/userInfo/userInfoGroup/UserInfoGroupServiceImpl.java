@@ -251,12 +251,12 @@ public class UserInfoGroupServiceImpl implements UserInfoGroupService {
     @Override
     public UserInfoGroup queryByIdFromCache(Long id) {
         //先查缓存
-        UserInfoGroup userInfoGroup = redisService.getWithHash(CacheConstant.CACHE_USER_GROUP + id, UserInfoGroup.class);
-        if (Objects.nonNull(userInfoGroup)) {
-            return userInfoGroup;
+        UserInfoGroup cacheUserInfoGroup = redisService.getWithHash(CacheConstant.CACHE_USER_GROUP + id, UserInfoGroup.class);
+        if (Objects.nonNull(cacheUserInfoGroup)) {
+            return cacheUserInfoGroup;
         }
         //缓存没有再查数据库
-        userInfoGroup = userInfoGroupMapper.selectById(id);
+        UserInfoGroup userInfoGroup = userInfoGroupMapper.selectById(id);
         if (Objects.isNull(userInfoGroup)) {
             return null;
         }
