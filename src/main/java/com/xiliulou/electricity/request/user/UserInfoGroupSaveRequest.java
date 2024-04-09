@@ -13,7 +13,7 @@ import javax.validation.constraints.Size;
  */
 
 @Data
-public class UserGroupSaveRequest {
+public class UserInfoGroupSaveRequest {
     
     @NotNull(message = "加盟商ID不能为空", groups = {CreateGroup.class})
     private Long franchiseId;
