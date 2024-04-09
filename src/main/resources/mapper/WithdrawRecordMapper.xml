@@ -125,6 +125,9 @@
 			<if test="record.type != null">
 				type = #{record.type},
 			</if>
+			<if test="record.auditorId != null">
+				auditor_id = #{record.auditorId},
+			</if>
 		</set>
 		
 		<where>
