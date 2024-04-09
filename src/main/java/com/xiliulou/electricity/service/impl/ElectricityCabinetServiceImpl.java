@@ -214,6 +214,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import static com.xiliulou.electricity.constant.ElectricityIotConstant.ELE_COMMAND_CELL_UPDATE;
+import static com.xiliulou.electricity.entity.ElectricityCabinet.ELECTRICITY_CABINET_USABLE_STATUS;
 
 /**
  * 换电柜表(TElectricityCabinet)表服务实现类
@@ -997,7 +998,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 item.setId(e.getId());
                 
                 //电柜不在线也返回，可离线换电
-                if (Objects.equals(e.getUsableStatus(), ElectricityCabinet.ELECTRICITY_CABINET_USABLE_STATUS)) {
+                if (Objects.equals(e.getUsableStatus(), ELECTRICITY_CABINET_USABLE_STATUS)) {
                     electricityCabinets.add(e);
                 }
             });
@@ -1035,7 +1036,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 
                 Integer eid = Integer.valueOf(e.getContent().getName());
                 ElectricityCabinet electricityCabinet = queryByIdFromCache(eid);
-                if (Objects.isNull(electricityCabinet)) {
+                if (Objects.isNull(electricityCabinet) || !Objects.equals(ELECTRICITY_CABINET_USABLE_STATUS, electricityCabinet.getUsableStatus())) {
                     log.error("query cabinet error! eid = {}", eid);
                     return null;
                 }
@@ -1049,19 +1050,19 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 electricityCabinetVO.setLongitude(e.getContent().getPoint().getX());
                 //将公里数转化为米，返回给前端
                 electricityCabinetVO.setDistance(e.getDistance().getValue() * 1000);
-                assignAttribute(electricityCabinetVO, electricityCabinet.getFullyCharged(),electricityCabinet.getBusinessTime());
-                return electricityCabinetVO;
-                
+                return assignAttribute(electricityCabinetVO, electricityCabinet.getFullyCharged(), electricityCabinet.getBusinessTime());
             }).filter(Objects::nonNull).collect(Collectors.toList());
             
         } else {
-            log.info("Get location distance from DB start");
             List<ElectricityCabinetVO> electricityCabinetList = electricityCabinetMapper.showInfoByDistance(electricityCabinetQuery);
             if (CollectionUtils.isEmpty(electricityCabinetList)) {
                 return R.ok(Collections.emptyList());
             }
             
             resultVo = electricityCabinetList.parallelStream().map(e -> {
+                if (!Objects.equals(ELECTRICITY_CABINET_USABLE_STATUS, e.getUsableStatus())){
+                    return null;
+                }
                 ElectricityCabinetSimpleVO electricityCabinetVO = new ElectricityCabinetSimpleVO();
                 electricityCabinetVO.setId(e.getId());
                 electricityCabinetVO.setName(e.getName());
@@ -1073,8 +1074,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 electricityCabinetVO.setDistance(e.getDistance());
                 electricityCabinetVO.setSn(e.getSn());
                 electricityCabinetVO.setServicePhone(e.getServicePhone());
-                assignAttribute(electricityCabinetVO,e.getFullyCharged(), e.getBusinessTime());
-                return electricityCabinetVO;
+                return assignAttribute(electricityCabinetVO, e.getFullyCharged(), e.getBusinessTime());
             }).filter(Objects::nonNull).collect(Collectors.toList());
             
         }
@@ -1082,12 +1082,12 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         return R.ok(resultVo.stream().sorted(Comparator.comparing(ElectricityCabinetSimpleVO::getDistance)).collect(Collectors.toList()));
     }
     
-    private void assignAttribute(ElectricityCabinetSimpleVO e, Double fullyCharged, String businessTime) {
+    private ElectricityCabinetSimpleVO assignAttribute(ElectricityCabinetSimpleVO e, Double fullyCharged, String businessTime) {
         //营业时间
         if (StringUtils.isNotBlank(businessTime)) {
             if (Objects.equals(businessTime, ElectricityCabinetVO.ALL_DAY)) {
                 e.setBusinessTimeType(ElectricityCabinetVO.ALL_DAY);
-//                e.setIsBusiness(ElectricityCabinetVO.IS_BUSINESS);
+                //                e.setIsBusiness(ElectricityCabinetVO.IS_BUSINESS);
             } else {
                 e.setBusinessTimeType(ElectricityCabinetVO.ILLEGAL_DATA);
                 int index = businessTime.indexOf("-");
@@ -1102,12 +1102,13 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         }
         List<ElectricityCabinetBox> cabinetBoxList = electricityCabinetBoxService.selectEleBoxAttrByEid(e.getId());
         if (CollectionUtils.isEmpty(cabinetBoxList)) {
-            return;
+            return null;
         }
         //可换电数量
         List<ElectricityCabinetBox> exchangeableList = cabinetBoxList.stream().filter(item -> isExchangeable(item, fullyCharged)).collect(Collectors.toList());
         long exchangeableNumber = exchangeableList.size();
         e.setFullyElectricityBattery((int) exchangeableNumber);//兼容2.0小程序首页显示问题
+        return e;
     }
     
     private void assignExchangeableBatteryType(List<ElectricityCabinetBox> exchangeableList, ElectricityCabinetVO e) {
@@ -1352,7 +1353,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         redisService.saveWithHash(CacheConstant.CACHE_ELECTRICITY_CABINET + electricityCabinet.getId(), electricityCabinet);
         
         redisService.delete(CacheConstant.CACHE_ELECTRICITY_CABINET_DEVICE + oldElectricityCabinet.getProductKey() + oldElectricityCabinet.getDeviceName());
-        operateRecordUtil.record(oldElectricityCabinet,electricityCabinet);
+        operateRecordUtil.record(oldElectricityCabinet, electricityCabinet);
         return R.ok();
     }
     
@@ -2052,11 +2053,11 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             return R.fail("ELECTRICITY.0037", "发送命令失败");
         }
         Map<String, Object> map = BeanUtil.beanToMap(comm, false, true);
-        map.put("operateType",1);
-        if (comm.getCommand().equals(ELE_COMMAND_CELL_UPDATE) && eleOuterCommandQuery.getData().containsKey("lockReason")){
-            map.put("command","cell_update_down");
+        map.put("operateType", 1);
+        if (comm.getCommand().equals(ELE_COMMAND_CELL_UPDATE) && eleOuterCommandQuery.getData().containsKey("lockReason")) {
+            map.put("command", "cell_update_down");
         }
-        operateRecordUtil.record(null,map);
+        operateRecordUtil.record(null, map);
         return R.ok(sessionId);
     }
     
@@ -2105,11 +2106,11 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             return R.fail("ELECTRICITY.0037", "发送命令失败");
         }
         Map<String, Object> map = BeanUtil.beanToMap(comm, false, true);
-        map.put("operateType",1);
-        if (comm.getCommand().equals(ELE_COMMAND_CELL_UPDATE) && eleOuterCommandQuery.getData().containsKey("lockReason")){
-            map.put("command","cell_update_down");
+        map.put("operateType", 1);
+        if (comm.getCommand().equals(ELE_COMMAND_CELL_UPDATE) && eleOuterCommandQuery.getData().containsKey("lockReason")) {
+            map.put("command", "cell_update_down");
         }
-        operateRecordUtil.record(null,map);
+        operateRecordUtil.record(null, map);
         return R.ok(sessionId);
     }
     
@@ -2233,7 +2234,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 }
                 
                 //电柜不在线也返回，可离线换电
-                if (Objects.equals(e.getUsableStatus(), ElectricityCabinet.ELECTRICITY_CABINET_USABLE_STATUS)) {
+                if (Objects.equals(e.getUsableStatus(), ELECTRICITY_CABINET_USABLE_STATUS)) {
                     electricityCabinetVOs.add(e);
                 }
             });
@@ -5302,7 +5303,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         electricityCabinetInsert.setAddress(query.getAddress());
         electricityCabinetInsert.setLatitude(query.getLatitude());
         electricityCabinetInsert.setLongitude(query.getLongitude());
-        electricityCabinetInsert.setUsableStatus(ElectricityCabinet.ELECTRICITY_CABINET_USABLE_STATUS);
+        electricityCabinetInsert.setUsableStatus(ELECTRICITY_CABINET_USABLE_STATUS);
         electricityCabinetInsert.setOnlineStatus(ElectricityCabinet.ELECTRICITY_CABINET_OFFLINE_STATUS);
         electricityCabinetInsert.setVersion(testFactoryCabinet.getVersion());
         electricityCabinetInsert.setFullyCharged(testFactoryCabinet.getFullyCharged());
@@ -5424,7 +5425,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             excelVO.setSn(cabinetVO.getSn());
             excelVO.setName(cabinetVO.getName());
             excelVO.setAddress(cabinetVO.getAddress());
-            excelVO.setUsableStatus(Objects.equals(cabinetVO.getUsableStatus(), ElectricityCabinet.ELECTRICITY_CABINET_USABLE_STATUS) ? "启用" : "禁用");
+            excelVO.setUsableStatus(Objects.equals(cabinetVO.getUsableStatus(), ELECTRICITY_CABINET_USABLE_STATUS) ? "启用" : "禁用");
             excelVO.setModelName(Objects.nonNull(cabinetModel) ? cabinetModel.getName() : "");
             excelVO.setVersion(cabinetVO.getVersion());
             excelVO.setFranchiseeName(acquireFranchiseeNameByStore(cabinetVO.getStoreId()));
