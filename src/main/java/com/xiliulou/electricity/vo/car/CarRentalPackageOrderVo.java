@@ -12,6 +12,8 @@ import lombok.Data;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.util.List;
+import java.util.Map;
 
 /**
  * 租车套餐购买订单展示层数据模型
@@ -236,7 +238,7 @@ public class CarRentalPackageOrderVo implements Serializable {
     /**
      * 赠送的优惠券名称
      */
-    private String couponName;
+    private List<Map<String, Object>> couponName;
     
     /**
      * 电池型号对应的电压伏数

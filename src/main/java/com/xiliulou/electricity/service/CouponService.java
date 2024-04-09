@@ -6,6 +6,7 @@ import com.xiliulou.electricity.vo.SearchVo;
 import org.apache.commons.lang3.tuple.Triple;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * 优惠券规则表(TCoupon)表服务接口
@@ -55,5 +56,6 @@ public interface CouponService {
     List<SearchVo> search(CouponQuery query);
 
     Triple<Boolean, String, Object> findCouponById(Long id);
-
+    
+    List<Map<String,Object>> queryNameListByIds(List<Long> couponId,Integer tenantId);
 }

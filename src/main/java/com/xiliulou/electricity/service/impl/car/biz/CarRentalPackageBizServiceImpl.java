@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.service.impl.car.biz;
 
+import cn.hutool.core.collection.CollectionUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.Coupon;
@@ -320,14 +321,21 @@ public class CarRentalPackageBizServiceImpl implements CarRentalPackageBizServic
         if (carRentalPackageService.uqByTenantIdAndName(tenantId, name)) {
             throw new BizException("300022", "套餐名称已存在");
         }
+    
+        if (Objects.equals(optModel.getGiveCoupon(), YesNoEnum.YES.getCode()) && (CollectionUtil.isEmpty(optModel.getCouponId()) || optModel.getCouponId().size() > 6)) {
+            throw new BizException("300833", "优惠劵最多支持发6张");
+        }
 
         // 新增租车套餐
         CarRentalPackagePo entity = new CarRentalPackagePo();
-        BeanUtils.copyProperties(optModel, entity);
+        BeanUtils.copyProperties(optModel, entity,"couponId");
+        if (Objects.equals(optModel.getGiveCoupon(), YesNoEnum.YES.getCode())){
+            entity.setCouponIds(optModel.getCouponId());
+        }
         entity.setSortParam(System.currentTimeMillis());
         Long packageId = carRentalPackageService.insert(entity);
 
-        // 车电一体
+        // 单车
         if (RentalPackageTypeEnum.CAR.getCode().equals(optModel.getType())) {
             return true;
         }
@@ -384,7 +392,8 @@ public class CarRentalPackageBizServiceImpl implements CarRentalPackageBizServic
         batteryMemberCardEntity.setLimitCount(entity.getConfine());
         batteryMemberCardEntity.setUseCount(entity.getConfineNum());
         if (ObjectUtils.isNotEmpty(entity.getCouponId())) {
-            batteryMemberCardEntity.setCouponId(Integer.valueOf(entity.getCouponId().intValue()));
+            // TODO: 2024/4/8  等电套餐改动
+//            batteryMemberCardEntity.setCouponId(Integer.valueOf(entity.getCouponId().intValue()));
         }
         batteryMemberCardEntity.setIsRefund(entity.getRentRebate());
         batteryMemberCardEntity.setRefundLimit(entity.getRentRebateTerm());

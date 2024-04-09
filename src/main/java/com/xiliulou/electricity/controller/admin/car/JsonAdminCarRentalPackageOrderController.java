@@ -3,7 +3,6 @@ package com.xiliulou.electricity.controller.admin.car;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.controller.BasicController;
-import com.xiliulou.electricity.entity.Coupon;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.car.CarRentalPackageMemberTermPo;
 import com.xiliulou.electricity.entity.car.CarRentalPackageOrderPo;
@@ -11,6 +10,7 @@ import com.xiliulou.electricity.entity.car.CarRentalPackageOrderRentRefundPo;
 import com.xiliulou.electricity.enums.UseStateEnum;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageOrderQryModel;
 import com.xiliulou.electricity.query.car.CarRentalPackageOrderQryReq;
+import com.xiliulou.electricity.service.CouponService;
 import com.xiliulou.electricity.service.car.CarRentalPackageMemberTermService;
 import com.xiliulou.electricity.service.car.CarRentalPackageOrderRentRefundService;
 import com.xiliulou.electricity.service.car.CarRentalPackageOrderService;
@@ -20,6 +20,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -27,7 +28,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
-import java.util.*;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -47,6 +53,9 @@ public class JsonAdminCarRentalPackageOrderController extends BasicController {
 
     @Resource
     private CarRentalPackageOrderRentRefundService carRentalPackageOrderRentRefundService;
+    
+    @Autowired
+    private CouponService couponService;
 
     /**
      * 条件查询列表
@@ -86,12 +95,12 @@ public class JsonAdminCarRentalPackageOrderController extends BasicController {
         Set<Long> uids = new HashSet<>();
         Set<Long> rentalPackageIds = new HashSet<>();
         Set<Long> franchiseeIds = new HashSet<>();
-        List<Long> couponIds = new ArrayList<>();
+//        List<Long> couponIds = new ArrayList<>();
         carRentalPackageOrderPOList.forEach(carRentalPackageOrder -> {
             uids.add(carRentalPackageOrder.getUid());
             rentalPackageIds.add(carRentalPackageOrder.getRentalPackageId());
             franchiseeIds.add(Long.valueOf(carRentalPackageOrder.getFranchiseeId()));
-            couponIds.add(carRentalPackageOrder.getCouponId());
+//            couponIds.add(carRentalPackageOrder.getCouponId());
         });
 
         // 用户信息
@@ -104,7 +113,7 @@ public class JsonAdminCarRentalPackageOrderController extends BasicController {
         Map<Long, String> franchiseeMap = getFranchiseeNameByIdsForMap(franchiseeIds);
 
         // 优惠券信息
-        Map<Long, Coupon> couponMap = getCouponForMapByIds(couponIds);
+//        Map<Long, Coupon> couponMap = getCouponForMapByIds(couponIds);
 
         // 模型转换，封装返回
         List<CarRentalPackageOrderVo> carRentalPackageVOList = carRentalPackageOrderPOList.stream().map(carRentalPackageOrder -> {
@@ -125,9 +134,10 @@ public class JsonAdminCarRentalPackageOrderController extends BasicController {
             if (!franchiseeMap.isEmpty()) {
                 carRentalPackageOrderVO.setFranchiseeName(franchiseeMap.getOrDefault(Long.valueOf(carRentalPackageOrder.getFranchiseeId()), ""));
             }
-
-            if (!couponMap.isEmpty()) {
-                carRentalPackageOrderVO.setCouponName(couponMap.getOrDefault(carRentalPackageOrder.getCouponId(), new Coupon()).getName());
+            List<Long> couponIds = carRentalPackageOrder.getCouponIds();
+            if (!CollectionUtils.isEmpty(couponIds)) {
+                List<Map<String, Object>> list = couponService.queryNameListByIds(couponIds, TenantContextHolder.getTenantId());
+                carRentalPackageOrderVO.setCouponName(list);
             }
 
             // 对使用中的订单，进行二次处理

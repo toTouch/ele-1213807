@@ -1,12 +1,19 @@
 package com.xiliulou.electricity.entity.car;
 
+import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.collection.ListUtil;
+import cn.hutool.core.util.StrUtil;
+import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.xiliulou.electricity.entity.basic.BasicCarPo;
 import com.xiliulou.electricity.enums.*;
 import com.xiliulou.electricity.enums.RentalPackageTypeEnum;
 import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
 
 import java.math.BigDecimal;
+import java.util.HashSet;
+import java.util.List;
 
 /**
  * 租车套餐购买订单表
@@ -14,6 +21,7 @@ import java.math.BigDecimal;
  * @author xiaohui.song
  **/
 @Data
+@Slf4j
 @TableName("t_car_rental_package_order")
 public class CarRentalPackageOrderPo extends BasicCarPo {
 
@@ -148,7 +156,7 @@ public class CarRentalPackageOrderPo extends BasicCarPo {
     /**
      * 赠送的优惠券ID
      */
-    private Long couponId;
+    private String couponId;
 
     /**
      * 支付状态
@@ -188,5 +196,25 @@ public class CarRentalPackageOrderPo extends BasicCarPo {
      * 套餐押金
      */
     private BigDecimal rentalPackageDeposit;
-
+    
+    public List<Long> getCouponIds(){
+        if (StrUtil.isNotBlank(this.couponId)){
+            try {
+                return JSONUtil.parseArray(couponId, true).toList(Long.class);
+            }catch (Throwable e){
+                log.warn("Coupon group conversion error.");
+            }
+        }
+        return ListUtil.empty();
+    }
+    
+    public void setCouponIds(List<Long> couponId){
+        if (CollectionUtil.isNotEmpty(couponId)){
+            try {
+                this.couponId = JSONUtil.toJsonStr(new HashSet<>(couponId));
+            }catch (Throwable e){
+                log.warn("Coupon group conversion error.");
+            }
+        }
+    }
 }

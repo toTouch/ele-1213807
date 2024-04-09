@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.service.impl;
 
-import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.collection.ListUtil;
+import cn.hutool.core.map.MapUtil;
 import com.google.api.client.util.Lists;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
@@ -8,17 +9,30 @@ import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
-import com.xiliulou.electricity.entity.*;
+import com.xiliulou.electricity.entity.BatteryMemberCard;
+import com.xiliulou.electricity.entity.Coupon;
+import com.xiliulou.electricity.entity.CouponActivityPackage;
+import com.xiliulou.electricity.entity.NewUserActivity;
+import com.xiliulou.electricity.entity.OldUserActivity;
+import com.xiliulou.electricity.entity.ShareActivityRule;
+import com.xiliulou.electricity.entity.User;
+import com.xiliulou.electricity.entity.UserCoupon;
 import com.xiliulou.electricity.entity.car.CarRentalPackagePo;
 import com.xiliulou.electricity.enums.PackageTypeEnum;
+import com.xiliulou.electricity.enums.RentalPackageTypeEnum;
 import com.xiliulou.electricity.enums.SpecificPackagesEnum;
 import com.xiliulou.electricity.enums.UpDownEnum;
-import com.xiliulou.electricity.enums.RentalPackageTypeEnum;
 import com.xiliulou.electricity.mapper.CouponMapper;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageQryModel;
 import com.xiliulou.electricity.query.BatteryMemberCardQuery;
 import com.xiliulou.electricity.query.CouponQuery;
-import com.xiliulou.electricity.service.*;
+import com.xiliulou.electricity.service.BatteryMemberCardService;
+import com.xiliulou.electricity.service.CouponActivityPackageService;
+import com.xiliulou.electricity.service.CouponService;
+import com.xiliulou.electricity.service.NewUserActivityService;
+import com.xiliulou.electricity.service.OldUserActivityService;
+import com.xiliulou.electricity.service.ShareActivityRuleService;
+import com.xiliulou.electricity.service.UserCouponService;
 import com.xiliulou.electricity.service.asset.AssertPermissionService;
 import com.xiliulou.electricity.service.car.CarRentalPackageService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
@@ -40,7 +54,9 @@ import org.springframework.util.CollectionUtils;
 import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * 优惠券规则表(TCoupon)表服务实现类
@@ -439,6 +455,19 @@ public class CouponServiceImpl implements CouponService {
             }
         }
         return Triple.of(true, null, couponActivityVO);
+    }
+    
+    @Slave
+    @Override
+    public List<Map<String,Object>> queryNameListByIds(List<Long> couponId,Integer tenantId) {
+        if (CollectionUtils.isEmpty(couponId)){
+            return ListUtil.empty();
+        }
+        List<Coupon> coupons = couponMapper.selectNameListByIds(couponId, tenantId);
+        if (CollectionUtils.isEmpty(coupons)){
+            return ListUtil.empty();
+        }
+        return coupons.stream().map(f -> MapUtil.<String,Object>builder().put("id", f.getId()).put("couponName", f.getName()).build()).collect(Collectors.toList());
     }
     
     public List<BatteryMemberCardVO> getAllBatteryPackages() {

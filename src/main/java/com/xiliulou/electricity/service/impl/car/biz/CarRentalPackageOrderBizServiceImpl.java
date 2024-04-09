@@ -3093,13 +3093,16 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                 activityService.asyncProcessActivity(activityProcessDTO);
                 
                 // 10. 发放优惠券
-                if (ObjectUtils.isNotEmpty(buyCarRentalPackageOrderEntity.getCouponId())) {
-                    UserCouponDTO userCouponDTO = new UserCouponDTO();
-                    userCouponDTO.setCouponId(buyCarRentalPackageOrderEntity.getCouponId());
-                    userCouponDTO.setUid(uid);
-                    userCouponDTO.setSourceOrderNo(buyOrderNo);
-                    userCouponDTO.setTraceId(UUID.randomUUID().toString().replaceAll("-", ""));
-                    userCouponService.asyncSendCoupon(userCouponDTO);
+                if (ObjectUtils.isNotEmpty(buyCarRentalPackageOrderEntity.getCouponIds())) {
+                    Set<Long> couponIds = new HashSet<>(buyCarRentalPackageOrderEntity.getCouponIds());
+                    for (Long couponId : couponIds) {
+                        UserCouponDTO userCouponDTO = new UserCouponDTO();
+                        userCouponDTO.setCouponId(couponId);
+                        userCouponDTO.setUid(uid);
+                        userCouponDTO.setSourceOrderNo(buyOrderNo);
+                        userCouponDTO.setTraceId(UUID.randomUUID().toString().replaceAll("-", ""));
+                        userCouponService.asyncSendCoupon(userCouponDTO);
+                    }
                 }
                 
                 // 车电一体，同步电池会员信息

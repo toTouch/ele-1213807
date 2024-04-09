@@ -11,6 +11,7 @@ import lombok.Data;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 租车套餐展示层数据模型
@@ -159,7 +160,7 @@ public class CarRentalPackageVo implements Serializable {
     /**
      * 赠送的优惠券ID
      */
-    private Long couponId;
+    private List<Long> couponId;
 
     /**
      * 上下架状态
@@ -217,7 +218,7 @@ public class CarRentalPackageVo implements Serializable {
     /**
      * 赠送的优惠券名称
      */
-    private String couponName;
+    private List<Map<String, Object>> couponName;
     
     /**
      * 套餐排序参数

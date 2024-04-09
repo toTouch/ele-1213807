@@ -214,7 +214,7 @@ public class CarRentalPackageOptModel implements Serializable {
     /**
      * 优惠券ID
      */
-    private Long couponId;
+    private List<Long> couponId;
 
     /**
      * 上下架状态

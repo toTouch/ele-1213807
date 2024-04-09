@@ -1,19 +1,32 @@
 package com.xiliulou.electricity.entity.car;
 
+import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.collection.ListUtil;
+import cn.hutool.core.util.StrUtil;
+import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.xiliulou.electricity.entity.basic.BasicCarPo;
-import com.xiliulou.electricity.enums.*;
+import com.xiliulou.electricity.enums.ApplicableTypeEnum;
+import com.xiliulou.electricity.enums.RenalPackageConfineEnum;
 import com.xiliulou.electricity.enums.RentalPackageTypeEnum;
+import com.xiliulou.electricity.enums.RentalUnitEnum;
+import com.xiliulou.electricity.enums.UpDownEnum;
+import com.xiliulou.electricity.enums.YesNoEnum;
 import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
 
 import java.math.BigDecimal;
+import java.util.HashSet;
+import java.util.List;
 
 /**
  * 租车套餐持久类
  *
  * @author xiaohui.song
  **/
+
 @Data
+@Slf4j
 @TableName("t_car_rental_package")
 public class CarRentalPackagePo extends BasicCarPo {
 
@@ -143,7 +156,7 @@ public class CarRentalPackagePo extends BasicCarPo {
     /**
      * 优惠券ID
      */
-    private Long couponId;
+    private String couponId;
 
     /**
      * 上下架状态
@@ -169,4 +182,26 @@ public class CarRentalPackagePo extends BasicCarPo {
      * 排序参数，用户端排序使用
      */
     private Long sortParam;
+    
+    
+    public List<Long> getCouponIds(){
+        if (StrUtil.isNotBlank(this.couponId)){
+            try {
+                return JSONUtil.parseArray(couponId, true).toList(Long.class);
+            }catch (Throwable e){
+                log.warn("Coupon group conversion error.");
+            }
+        }
+        return ListUtil.empty();
+    }
+    
+    public void setCouponIds(List<Long> couponId){
+        if (CollectionUtil.isNotEmpty(couponId)){
+            try {
+                this.couponId = JSONUtil.toJsonStr(new HashSet<>(couponId));
+            }catch (Throwable e){
+                log.warn("Coupon group conversion error.");
+            }
+        }
+    }
 }

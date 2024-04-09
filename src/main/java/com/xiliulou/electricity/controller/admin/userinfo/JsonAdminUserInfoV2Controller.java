@@ -14,6 +14,7 @@ import com.xiliulou.electricity.query.car.CarRentalPackageQryReq;
 import com.xiliulou.electricity.reqparam.opt.carpackage.FreezeRentOrderOptReq;
 import com.xiliulou.electricity.reqparam.opt.carpackage.MemberCurrPackageOptReq;
 import com.xiliulou.electricity.reqparam.qry.userinfo.UserInfoQryReq;
+import com.xiliulou.electricity.service.CouponService;
 import com.xiliulou.electricity.service.UserDataScopeService;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.car.biz.*;
@@ -33,6 +34,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.annotation.Resource;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -62,6 +64,9 @@ public class JsonAdminUserInfoV2Controller {
 
     @Resource
     private UserInfoService userInfoService;
+    
+    @Autowired
+    private CouponService couponService;
 
     @Autowired
     UserDataScopeService userDataScopeService;
@@ -271,6 +276,12 @@ public class JsonAdminUserInfoV2Controller {
             packageVo.setGiveCoupon(entity.getGiveCoupon());
             packageVo.setRemark(entity.getRemark());
             packageVo.setBatteryVoltage(entity.getBatteryVoltage());
+            if (!CollectionUtils.isEmpty(entity.getCouponIds())){
+                List<Long> couponIds = entity.getCouponIds();
+                List<Map<String, Object>> list = couponService.queryNameListByIds(couponIds, TenantContextHolder.getTenantId());
+                packageVo.setCouponName(list);
+                packageVo.setCouponId(entity.getCouponIds());
+            }
             return packageVo;
         }).collect(Collectors.toList());
     }
