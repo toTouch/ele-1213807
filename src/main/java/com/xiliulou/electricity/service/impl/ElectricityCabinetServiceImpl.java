@@ -1060,6 +1060,9 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             }
             
             resultVo = electricityCabinetList.parallelStream().map(e -> {
+                if (!Objects.equals(ELECTRICITY_CABINET_USABLE_STATUS, e.getUsableStatus())){
+                    return null;
+                }
                 ElectricityCabinetSimpleVO electricityCabinetVO = new ElectricityCabinetSimpleVO();
                 electricityCabinetVO.setId(e.getId());
                 electricityCabinetVO.setName(e.getName());
