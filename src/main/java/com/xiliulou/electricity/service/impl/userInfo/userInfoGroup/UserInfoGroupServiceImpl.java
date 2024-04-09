@@ -11,6 +11,7 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
+import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.UserInfo;
@@ -247,10 +248,28 @@ public class UserInfoGroupServiceImpl implements UserInfoGroupService {
         return userInfoGroupMapper.selectById(id);
     }
     
+    @Override
+    public UserInfoGroup queryByIdFromCache(Long id) {
+        //先查缓存
+        UserInfoGroup cacheUserInfoGroup = redisService.getWithHash(CacheConstant.CACHE_USER_GROUP + id, UserInfoGroup.class);
+        if (Objects.nonNull(cacheUserInfoGroup)) {
+            return cacheUserInfoGroup;
+        }
+        //缓存没有再查数据库
+        UserInfoGroup userInfoGroup = userInfoGroupMapper.selectById(id);
+        if (Objects.isNull(userInfoGroup)) {
+            return null;
+        }
+    
+        //放入缓存
+        redisService.saveWithHash(CacheConstant.CACHE_USER_GROUP + id, userInfoGroup);
+        return userInfoGroup;
+    }
+    
     @Slave
     @Override
-    public List<String> listGroupNameByUid(Long uid, Integer tenantId) {
-        return userInfoGroupMapper.selectListGroupNameByUid(uid, tenantId);
+    public List<UserInfoGroupVO> listGroupByUid(Long uid, Integer tenantId) {
+        return userInfoGroupMapper.selectListGroupByUid(uid, tenantId);
     }
     
     @Slave

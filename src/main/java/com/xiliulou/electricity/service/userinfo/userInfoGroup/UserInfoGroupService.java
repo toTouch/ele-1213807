@@ -26,7 +26,9 @@ public interface UserInfoGroupService {
     
     UserInfoGroup queryById(Long id);
     
-    List<String> listGroupNameByUid(Long uid, Integer tenantId);
+    UserInfoGroup queryByIdFromCache(Long id);
+    
+    List<UserInfoGroupVO> listGroupByUid(Long uid, Integer tenantId);
     
     List<UserInfoGroupVO> listByIds(List<Long> ids);
 }
