@@ -937,8 +937,10 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
         EnterpriseChannelUserExitQueryModel queryModel = EnterpriseChannelUserExitQueryModel.builder().uidList(uidList).typeList(typeList).build();
         List<EnterpriseChannelUserExit> channelUserList = channelUserExitMapper.list(queryModel);
         if (ObjectUtils.isNotEmpty(channelUserList)) {
+            List<Long> idList = channelUserList.stream().map(EnterpriseChannelUserExit::getId).collect(Collectors.toList());
+            
             // 修改用户退出成功
-            channelUserExitMapper.batchUpdateById(null, EnterpriseChannelUserExit.TYPE_SUCCESS, uidList, System.currentTimeMillis());
+            channelUserExitMapper.batchUpdateById(null, EnterpriseChannelUserExit.TYPE_SUCCESS, idList, System.currentTimeMillis());
         }
         
         log.error("channel User Exit Check success, uid={}, msg={}", request.getUid());
