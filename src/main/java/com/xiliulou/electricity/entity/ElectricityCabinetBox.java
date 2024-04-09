@@ -116,6 +116,11 @@ public class ElectricityCabinetBox {
     private Integer lockType;
     
     /**
+     * 在位检测 1：打开 0：关闭
+     */
+    private Integer isBatteryExit;
+    
+    /**
      * 空闲开始时间
      */
     private Long emptyGridStartTime;
