@@ -572,4 +572,6 @@ public interface CacheConstant {
     
     String CACHE_USER_GROUP_SAVE_LOCK = "cache_user_group_save_lock:";
     String CACHE_USER_GROUP_BATCH_IMPORT = "cache_user_group_batch_import:";
+    
+    String CACHE_USER_GROUP = "cache_user_group:";
 }

@@ -62,8 +62,8 @@
         where del_flag = 0 and id = #{id}
     </select>
     
-    <select id="selectListGroupNameByUid" resultType="java.lang.String">
-        select tuig.name
+    <select id="selectListGroupByUid" resultType="com.xiliulou.electricity.vo.userinfo.UserInfoGroupVO">
+        select tuig.id as id, tuig.name as groupName
         from t_user_info_group tuig
                  left join t_user_info_group_detail tuigd on tuig.group_no = tuigd.group_no
         where tuigd.del_flag = 0

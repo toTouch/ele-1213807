@@ -24,7 +24,7 @@ public interface UserInfoGroupMapper {
     
     UserInfoGroup selectById(Long id);
     
-    List<String> selectListGroupNameByUid(@Param("uid") Long uid, @Param("tenantId") Integer tenantId);
+    List<UserInfoGroupVO> selectListGroupByUid(@Param("uid") Long uid, @Param("tenantId") Integer tenantId);
     
     List<UserInfoGroupVO> selectListByIds(@Param("ids") List<Long> ids);
 }
