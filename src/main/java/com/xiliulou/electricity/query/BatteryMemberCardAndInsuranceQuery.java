@@ -20,18 +20,23 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 public class BatteryMemberCardAndInsuranceQuery {
+    
     @NotNull(message = "月卡不能为空!", groups = {CreateGroup.class})
     private Long memberId;
-
+    
     private Integer insuranceId;
-
+    
     //三元组
     private String productKey;
-
+    
     //三元组
     private String deviceName;
-
-
+    
     //优惠券
     private Set<Integer> userCouponIds;
+    
+    /**
+     * 用户绑定的所有用户分组id
+     */
+    private List<Long> userGroupIdsTransfer;
 }

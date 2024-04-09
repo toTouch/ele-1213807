@@ -299,6 +299,7 @@
         bmc.service_charge,
         bmc.create_time,
         bmc.sort_param,
+        bmc.coupon_ids,
         mcbt.id as mcbt_id,
         mcbt.battery_type battery_type
         from t_battery_member_card bmc
@@ -519,9 +520,6 @@
             </if>
             <if test="groupType != null">
                 group_type = #{groupType},
-            </if>
-            <if test="couponIds != null">
-                coupon_ids = #{couponIds},
             </if>
             <if test="userGroupIds != null">
                 user_group_ids = #{userGroupIds},

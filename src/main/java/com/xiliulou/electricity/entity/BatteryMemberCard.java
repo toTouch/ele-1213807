@@ -200,5 +200,13 @@ public class BatteryMemberCard {
     
     public static final Integer RENT_TYPE_OLD = 2;
     
+    /**
+     * 赠送优惠券
+     */
+    public static final Integer SEND_COUPON_YES = 0;
     
+    /**
+     * 不赠送优惠券
+     */
+    public static final Integer SEND_COUPON_NO = 1;
 }

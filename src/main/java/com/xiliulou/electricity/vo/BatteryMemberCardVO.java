@@ -161,7 +161,7 @@ public class BatteryMemberCardVO {
     /**
      * 套餐绑定的优惠券信息
      */
-    private List<SearchVo> coupons;
+    private List<CouponSearchVo> coupons;
     
     /**
      * 套餐绑定的用户分组信息

@@ -3785,6 +3785,21 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             return Triple.of(false, "ELECTRICITY.00121", "电池套餐不存在");
         }
     
+        // 判断套餐用户分组和用户的用户分组是否匹配
+        if (Objects.nonNull(query.getUserGroupIdsTransfer())) {
+            if (Objects.nonNull(batteryMemberCard.getUserGroupIds())) {
+            
+                Set<Long> memberCardUserGroupIds = JSONUtil.parseArray(batteryMemberCard.getUserGroupIds()).stream()
+                        .map(memberCardUserGroupId -> Long.valueOf(memberCardUserGroupId.toString())).collect(Collectors.toSet());
+            
+                if (!memberCardUserGroupIds.containsAll(query.getUserGroupIdsTransfer())) {
+                    return Triple.of(false, "100317", "用户与套餐关联的用户分组不一致，请刷新重试");
+                }
+            } else {
+                return Triple.of(false, "100317", "用户与套餐关联的用户分组不一致，请刷新重试");
+            }
+        }
+    
         //判断套餐租赁状态，用户为老用户，套餐类型为新租，则不支持购买
         if(userInfo.getPayCount() > 0 && BatteryMemberCard.RENT_TYPE_NEW.equals(batteryMemberCard.getRentType())){
             log.warn("The rent type of current package is a new rental package for add user deposit and member card, uid={}, mid={}", userInfo.getUid(), query.getMembercardId());

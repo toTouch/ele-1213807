@@ -5,6 +5,7 @@ import lombok.Data;
 
 import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
+import java.util.List;
 
 /**
  * @author zzlong
@@ -33,5 +34,10 @@ public class UserBatteryDepositAndMembercardQuery {
     private Long storeId;
 
     private BigDecimal batteryDeposit;
+    
+    /**
+     * 用户绑定的所有用户分组id
+     */
+    private List<Long> userGroupIdsTransfer;
 
 }

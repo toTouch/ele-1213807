@@ -103,7 +103,7 @@ public class JsonAdminBatteryMemberCardController extends BaseController {
         
         // 若同时传递系统分组及用户分组返回失败结果
         if (Objects.nonNull(rentType) && Objects.nonNull(userGroupId)) {
-            return R.fail("100272", "不可同时根据系统分组及用户分组查询！");
+            return R.fail("110210", "不可同时根据系统分组及用户分组查询");
         }
         
         if (size < 0 || size > 50) {
@@ -160,7 +160,7 @@ public class JsonAdminBatteryMemberCardController extends BaseController {
     
         // 若同时传递系统分组及用户分组返回失败结果
         if (Objects.nonNull(rentType) && Objects.nonNull(userGroupId)) {
-            return R.fail("100272", "不可同时根据系统分组及用户分组查询！");
+            return R.fail("110210", "不可同时根据系统分组及用户分组查询");
         }
         
         TokenUser user = SecurityUtils.getUserInfo();
