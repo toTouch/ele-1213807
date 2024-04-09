@@ -79,4 +79,6 @@ public class ElectricityMemberCardOrderVO extends ElectricityMemberCardOrder {
      */
     private Integer orderType;
     
+    private List<CouponSearchVo> coupons;
+    
 }
