@@ -185,6 +185,11 @@
         update t_enterprise_info set total_bean_amount = total_bean_amount+ #{totalCloudBean}
         where id = #{id}
     </update>
+    
+    <update id="subtractCloudBean">
+        update t_enterprise_info set total_bean_amount = total_bean_amount- #{subtractCloudBean}, update_time = #{updateTime}
+        where id = #{id}
+    </update>
 
     <!--通过主键删除-->
     <delete id="deleteById">

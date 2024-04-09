@@ -288,6 +288,18 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
         return update;
     }
     
+    @Override
+    public int subtractCloudBean(Long id, BigDecimal subtract, long updateTime) {
+        int update = this.enterpriseInfoMapper.subtractCloudBean(id, subtract, updateTime);
+        
+        DbUtils.dbOperateSuccessThen(update, () -> {
+            redisService.delete(CacheConstant.CACHE_ENTERPRISE_INFO + id);
+            return null;
+        });
+        
+        return update;
+    }
+    
     /**
      * 更新用户手机号
      *
@@ -551,7 +563,7 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Triple<Boolean, String, Object> rechargeForAdmin(EnterpriseCloudBeanRechargeQuery enterpriseCloudBeanRechargeQuery) {
-        EnterpriseInfo enterpriseInfo = this.queryByIdFromCache(enterpriseCloudBeanRechargeQuery.getId());
+        EnterpriseInfo enterpriseInfo = this.queryByIdFromDB(enterpriseCloudBeanRechargeQuery.getId());
         if (Objects.isNull(enterpriseInfo)) {
             return Triple.of(false, "100315", "企业配置不存在");
         }
@@ -683,6 +695,12 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
     @Transactional(rollbackFor = Exception.class)
     public Triple<Boolean, String, Object> recycleCloudBean(Long uid) {
         UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
+    
+        if (!redisService.setNx(CacheConstant.CACHE_RECYCLE_CLOUD_BEAN_LOCK + uid, String.valueOf(System.currentTimeMillis()), 3000L, false)) {
+            log.warn("RECYCLE WARN! Frequency too fast");
+            return Triple.of(false, "ELECTRICITY.0034", "操作频繁");
+        }
+        
         if (Objects.isNull(userInfo) || !Objects.equals(userInfo.getTenantId(), TenantContextHolder.getTenantId())) {
             log.warn("RECYCLE WARN! not found user,uid={}", uid);
             return Triple.of(false, "ELECTRICITY.0019", "未找到用户");
@@ -743,7 +761,7 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
             return Triple.of(false, "ELECTRICITY.0019", "未找到用户");
         }
         
-        EnterpriseInfo enterpriseInfo = this.queryByIdFromCache(enterpriseChannelUser.getEnterpriseId());
+        EnterpriseInfo enterpriseInfo = this.queryByIdFromDB(enterpriseChannelUser.getEnterpriseId());
         if (Objects.isNull(enterpriseInfo)) {
             log.error("RECYCLE CLOUD BEAN ERROR! not found enterpriseInfo,enterpriseId={},uid={}", enterpriseChannelUser.getEnterpriseId(), uid);
             return Triple.of(false, "ELECTRICITY.0019", "企业信息不存在");
@@ -1073,9 +1091,16 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
                 log.info("RECYCLE BATTERY MEMBERCARD INFO!not used membercard cloudBean={},uid={}", v.getPayAmount().doubleValue(), userInfo.getUid());
             });
         }
+    
+        BigDecimal res = totalCloudBean.subtract(totalUsedCloudBean);
+        // 如果结果小于零 则默认为零
+        if (Objects.equals(res.compareTo(BigDecimal.ZERO), NumberConstant.MINUS_ONE)) {
+            res = BigDecimal.ZERO;
+            log.info("RECYCLE BATTERY MEMBERCARD INFO! cloud count is minus totalCloudBean={},totalUsedCloudBean={},uid={}", totalCloudBean.doubleValue(), totalUsedCloudBean.doubleValue(), userInfo.getUid());
+        }
         
         //待回收云豆=总的支付的云豆-总消耗的云豆
-        return Triple.of(true, null, result.add(totalCloudBean.subtract(totalUsedCloudBean)));
+        return Triple.of(true, null, result.add(res));
     }
     
     @Override
@@ -1095,8 +1120,14 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
         if(!Objects.equals(eleDepositOrder.getOrderType(), PackageOrderTypeEnum.PACKAGE_ORDER_TYPE_ENTERPRISE.getCode())){
             return Triple.of(true, null, BigDecimal.ZERO);
         }
-        
-        enterpriseInfo.setTotalBeanAmount(enterpriseInfo.getTotalBeanAmount().add(userBatteryDeposit.getBatteryDeposit()));
+    
+        // 免押回收默认为零
+        BigDecimal batteryDeposit = userBatteryDeposit.getBatteryDeposit();
+        if (Objects.equals(userBatteryDeposit.getDepositType(), UserBatteryDeposit.DEPOSIT_TYPE_FREE)) {
+            batteryDeposit = BigDecimal.ZERO;
+        }
+    
+        enterpriseInfo.setTotalBeanAmount(enterpriseInfo.getTotalBeanAmount().add(batteryDeposit));
         
         //保存回收记录
         CloudBeanUseRecord cloudBeanUseRecord = new CloudBeanUseRecord();
@@ -1104,7 +1135,7 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
         cloudBeanUseRecord.setUid(userInfo.getUid());
         cloudBeanUseRecord.setType(CloudBeanUseRecord.TYPE_RECYCLE);
         cloudBeanUseRecord.setOrderType(CloudBeanUseRecord.ORDER_TYPE_BATTERY_DEPOSIT);
-        cloudBeanUseRecord.setBeanAmount(userBatteryDeposit.getBatteryDeposit());
+        cloudBeanUseRecord.setBeanAmount(batteryDeposit);
         cloudBeanUseRecord.setRemainingBeanAmount(enterpriseInfo.getTotalBeanAmount());
         cloudBeanUseRecord.setPackageId(userBatteryDeposit.getDid());
         cloudBeanUseRecord.setFranchiseeId(enterpriseInfo.getFranchiseeId());
@@ -1114,17 +1145,22 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
         cloudBeanUseRecord.setUpdateTime(System.currentTimeMillis());
         cloudBeanUseRecordService.insert(cloudBeanUseRecord);
         
+        Integer status = EleRefundOrder.STATUS_SUCCESS;
+        // 如果是免押则改为退款中
+        if (Objects.equals(eleDepositOrder.getPayType(), EleDepositOrder.FREE_DEPOSIT_PAYMENT)) {
+            status = EleRefundOrder.STATUS_REFUND;
+        }
         //生成退押订单
         EleRefundOrder eleRefundOrder = EleRefundOrder.builder().orderId(userBatteryDeposit.getOrderId())
                 .refundOrderNo(OrderIdUtil.generateBusinessOrderId(BusinessType.BATTERY_DEPOSIT_REFUND, userInfo.getUid())).payAmount(userBatteryDeposit.getBatteryDeposit())
-                .refundAmount(userBatteryDeposit.getBatteryDeposit()).status(EleRefundOrder.STATUS_SUCCESS).createTime(System.currentTimeMillis())
+                .refundAmount(userBatteryDeposit.getBatteryDeposit()).status(status).createTime(System.currentTimeMillis())
                 .updateTime(System.currentTimeMillis()).tenantId(userInfo.getTenantId()).memberCardOweNumber(0).build();
         eleRefundOrderService.insert(eleRefundOrder);
         
         //记录企业用户退押记录
         enterpriseUserCostRecordService.asyncSaveUserCostRecordForRefundDeposit(userInfo.getUid(), UserCostTypeEnum.COST_TYPE_REFUND_DEPOSIT.getCode(), eleRefundOrder);
         
-        if(!Objects.equals( eleDepositOrder.getPayType(),EleDepositOrder.FREE_DEPOSIT_PAYMENT)){
+        if(!Objects.equals(eleDepositOrder.getPayType(), EleDepositOrder.FREE_DEPOSIT_PAYMENT)){
             return Triple.of(true, null, userBatteryDeposit.getBatteryDeposit());
         }
     
@@ -1142,7 +1178,7 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
             freeDepositOrderUpdate.setUpdateTime(System.currentTimeMillis());
             freeDepositOrderService.update(freeDepositOrderUpdate);
         
-            PxzConfig pxzConfig = pxzConfigService.queryByTenantIdFromCache(TenantContextHolder.getTenantId());
+            PxzConfig pxzConfig = pxzConfigService.queryByTenantIdFromCache(freeDepositOrder.getTenantId());
             if (Objects.isNull(pxzConfig) || StringUtils.isBlank(pxzConfig.getAesKey()) || StringUtils.isBlank(pxzConfig.getMerchantCode())) {
                 log.error("REFUND ORDER ERROR! not found pxzConfig,uid={}", userInfo.getUid());
                 return;
@@ -1186,10 +1222,21 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
                 updateFreeDepositOrder.setAuthStatus(FreeDepositOrder.AUTH_UN_FROZEN);
                 updateFreeDepositOrder.setUpdateTime(System.currentTimeMillis());
                 freeDepositOrderService.update(updateFreeDepositOrder);
+                
+                // 修改退押订单为退款成功
+                updateEleRefundOrder(eleRefundOrder.getId(), EleRefundOrder.STATUS_SUCCESS);
             }
         });
         
-        return Triple.of(true, null, userBatteryDeposit.getBatteryDeposit());
+        return Triple.of(true, null, batteryDeposit);
+    }
+    
+    private void updateEleRefundOrder(Long id, Integer status) {
+        EleRefundOrder eleRefundOrderUpdate = new EleRefundOrder();
+        eleRefundOrderUpdate.setId(id);
+        eleRefundOrderUpdate.setUpdateTime(System.currentTimeMillis());
+        eleRefundOrderUpdate.setStatus(status);
+        eleRefundOrderService.updateById(eleRefundOrderUpdate);
     }
     
     @Override
