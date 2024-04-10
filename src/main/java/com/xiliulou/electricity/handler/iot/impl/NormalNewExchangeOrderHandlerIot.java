@@ -20,6 +20,7 @@ import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.ElectricityCabinetOrder;
 import com.xiliulou.electricity.entity.ElectricityConfig;
 import com.xiliulou.electricity.entity.ElectricityExceptionOrderStatusRecord;
+import com.xiliulou.electricity.entity.ExchangeBatterySoc;
 import com.xiliulou.electricity.entity.Tenant;
 import com.xiliulou.electricity.entity.UserBatteryMemberCard;
 import com.xiliulou.electricity.entity.UserBatteryMemberCardPackage;
@@ -36,6 +37,7 @@ import com.xiliulou.electricity.service.ElectricityCabinetService;
 import com.xiliulou.electricity.service.ElectricityConfigService;
 import com.xiliulou.electricity.service.ElectricityExceptionOrderStatusRecordService;
 import com.xiliulou.electricity.service.ElectricityMemberCardService;
+import com.xiliulou.electricity.service.ExchangeBatterySocService;
 import com.xiliulou.electricity.service.TenantService;
 import com.xiliulou.electricity.service.UserBatteryMemberCardPackageService;
 import com.xiliulou.electricity.service.UserBatteryMemberCardService;
@@ -55,6 +57,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -122,6 +125,9 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
     @Autowired
     UserBatteryMemberCardPackageService userBatteryMemberCardPackageService;
     
+    @Autowired
+    private ExchangeBatterySocService exchangeBatterySocService;
+    
     XllThreadPoolExecutorService callBatterySocThreadPool = XllThreadPoolExecutors.newFixedThreadPool("CALL_BATTERY_SOC_CHANGE", 2, "callBatterySocChange");
     
     
@@ -136,7 +142,7 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
         }
         
         ElectricityCabinetOrder electricityCabinetOrder = null;
-    
+        
         if (!redisService.setNx(CacheConstant.EXCHANGE_ORDER_HANDLE_LIMIT + exchangeOrderRsp.getOrderId(), "1", 200L, false)) {
             log.info("EXCHANGE ORDER INFO! order is being processed,requestId={},orderId={}", receiverMessage.getSessionId(), exchangeOrderRsp.getOrderId());
             return;
@@ -148,10 +154,10 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
                 log.warn("EXCHANGE ORDER WARN! order not found !requestId={},orderId={}", receiverMessage.getSessionId(), exchangeOrderRsp.getOrderId());
                 return;
             }
-    
+            
             //确认订单结束
             senOrderSuccessMsg(electricityCabinet, electricityCabinetOrder, exchangeOrderRsp);
-    
+            
             // 处理失败回退电池套餐次数
             handlePackageNumber(exchangeOrderRsp, receiverMessage, electricityCabinetOrder);
             
@@ -188,7 +194,7 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
             electricityCabinetOrderService.update(newElectricityCabinetOrder);
             
             //处理放入电池的相关信息
-//            handlePlaceBatteryInfo(exchangeOrderRsp, electricityCabinetOrder, electricityCabinet);
+            //            handlePlaceBatteryInfo(exchangeOrderRsp, electricityCabinetOrder, electricityCabinet);
             
             //处理取走电池的相关信息
             handleTakeBatteryInfo(exchangeOrderRsp, electricityCabinetOrder, electricityCabinet);
@@ -328,7 +334,12 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
                 }
                 
             } else {
+                // 归还电池 修改电池状态
                 returnBattery(oldElectricityBattery, electricityCabinetOrder.getUid());
+                
+                // 归还电池，保存归还电池soc
+                handlerUserRentBatterySoc(userInfo,exchangeOrderRsp.getPlaceBatteryName(),exchangeOrderRsp.getPlaceBatterySoc());
+                
             }
         } else {
             //异常交换如果放入的电池的uid为空，则需要清除guessId
@@ -361,6 +372,9 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
             
             handleCallBatteryChangeSoc(electricityBattery);
             
+            // 保存取走电池，记录电池soc
+            handlerUserTakeBatterySoc(userInfo, exchangeOrderRsp.getTakeBatteryName(), electricityBattery.getPower());
+            
         } else {
             log.error("EXCHANGE ORDER ERROR! takeBattery is null!uid={},requestId={},orderId={}", userInfo.getUid(), exchangeOrderRsp.getSessionId(),
                     exchangeOrderRsp.getOrderId());
@@ -376,6 +390,46 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
                 .setCreateTime(TimeUtils.convertToStandardFormatTime(exchangeOrderRsp.getReportTime())).setOrderId(exchangeOrderRsp.getOrderId()).setUid(userInfo.getUid())
                 .setName(userInfo.getName()).setPhone(userInfo.getPhone());
         batteryTrackRecordService.putBatteryTrackQueue(takeBatteryTrackRecord);
+        
+        
+    }
+    
+    /**
+     * 取走电池记录soc
+     */
+    private void handlerUserTakeBatterySoc(UserInfo userInfo, String sn, Double takeAwayPower) {
+        if (Objects.isNull(takeAwayPower)) {
+            log.error("handlerUserTakeBatterySoc is error,takeAwayPower is null");
+            return;
+        }
+        ExchangeBatterySoc exchangeBatterySoc = exchangeBatterySocService.selectByUidAndSn(userInfo.getUid(), sn);
+        if (Objects.nonNull(exchangeBatterySoc)) {
+            log.error("handlerUserTakeBatterySoc is error, takeBatterSoc should is null");
+            return;
+        }
+        ExchangeBatterySoc batterySoc = ExchangeBatterySoc.builder().uid(userInfo.getUid()).sn(sn).tenantId(userInfo.getTenantId()).franchiseeId(userInfo.getFranchiseeId())
+                .storeId(userInfo.getStoreId()).takeAwayPower(takeAwayPower).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).build();
+        exchangeBatterySocService.insertOne(batterySoc);
+        
+    }
+    
+    /**
+     * 归还电池记录归还soc
+     */
+    private void handlerUserRentBatterySoc(UserInfo userInfo, String sn, Double returnPower) {
+        if (Objects.isNull(returnPower)) {
+            log.error("handlerUserRentBatterySoc is error,returnPower is null");
+            return;
+        }
+        ExchangeBatterySoc exchangeBatterySoc = exchangeBatterySocService.selectByUidAndSn(userInfo.getUid(), sn);
+        if (Objects.nonNull(exchangeBatterySoc)) {
+            log.error("handlerUserRentBatterySoc is error, rentBatterySoc should is not null");
+            return;
+        }
+        exchangeBatterySoc.setReturnPower(returnPower);
+        exchangeBatterySoc.setPoorPower(exchangeBatterySoc.getTakeAwayPower() - returnPower);
+        exchangeBatterySoc.setUpdateTime(System.currentTimeMillis());
+        exchangeBatterySocService.update(exchangeBatterySoc);
     }
     
     private void returnBattery(ElectricityBattery placeBattery, Long uid) {
@@ -383,9 +437,9 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
         List<ElectricityBattery> electricityBatteries = electricityBatteryService.listBatteryByGuessUid(uid);
         if (CollectionUtils.isNotEmpty(electricityBatteries) && !Objects.equals(placeBattery.getUid(), uid)) {
             List<Long> batteryIdList = electricityBatteries.stream().map(ElectricityBattery::getId).collect(Collectors.toList());
-            if(Objects.nonNull(placeBattery.getUid())){
+            if (Objects.nonNull(placeBattery.getUid())) {
                 electricityBatteryService.batchUpdateBatteryGuessUid(batteryIdList, placeBattery.getUid());
-            }else {
+            } else {
                 electricityBatteryService.batchUpdateBatteryGuessUid(batteryIdList, placeBattery.getGuessUid());
             }
         }
@@ -570,8 +624,8 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
         Integer electricityCabinetId = null;
         
         //旧仓门异常
-        if (Objects.equals(orderStatus, ElectricityCabinetOrder.INIT_OPEN_FAIL) || Objects.equals(orderStatus, ElectricityCabinetOrder.INIT_CHECK_FAIL) || Objects.equals(orderStatus, ElectricityCabinetOrder.INIT_CHECK_BATTERY_EXISTS) || Objects.equals(
-                orderStatus, ElectricityCabinetOrder.INIT_BATTERY_CHECK_TIMEOUT)) {
+        if (Objects.equals(orderStatus, ElectricityCabinetOrder.INIT_OPEN_FAIL) || Objects.equals(orderStatus, ElectricityCabinetOrder.INIT_CHECK_FAIL) || Objects.equals(
+                orderStatus, ElectricityCabinetOrder.INIT_CHECK_BATTERY_EXISTS) || Objects.equals(orderStatus, ElectricityCabinetOrder.INIT_BATTERY_CHECK_TIMEOUT)) {
             cellNo = electricityCabinetOrder.getOldCellNo();
             electricityCabinetId = electricityCabinetOrder.getElectricityCabinetId();
         } else if (Objects.equals(orderStatus, ElectricityCabinetOrder.COMPLETE_OPEN_FAIL) || Objects.equals(orderStatus, ElectricityCabinetOrder.COMPLETE_BATTERY_TAKE_TIMEOUT)) {
@@ -636,11 +690,22 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
         
         private Integer placeCellNo;
         
+        /**
+         * 归还的电池
+         */
         private String placeBatteryName;
         
+        /**
+         * 取走电池
+         */
         private String takeBatteryName;
         
         private Integer takeCellNo;
+        
+        /**
+         * 归还soc
+         */
+        private Double placeBatterySoc;
     }
 }
 
