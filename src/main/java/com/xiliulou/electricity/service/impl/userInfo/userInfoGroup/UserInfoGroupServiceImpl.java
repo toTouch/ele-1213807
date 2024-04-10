@@ -122,7 +122,7 @@ public class UserInfoGroupServiceImpl implements UserInfoGroupService {
         }
         
         Integer count = userInfoGroupDetailService.countUserByGroupId(id);
-        if (Objects.nonNull(count) && count > 0) {
+        if (Objects.nonNull(count) && count > NumberConstant.ZERO) {
             return R.fail("120113", "该分组中存在用户，请先移除用户后再操作");
         }
         
@@ -249,7 +249,7 @@ public class UserInfoGroupServiceImpl implements UserInfoGroupService {
         }
         
         groupIds.parallelStream().forEach(e -> {
-            UserInfoGroup userInfoGroup = queryById(e);
+            UserInfoGroup userInfoGroup = this.queryByIdFromCache(e);
             if (Objects.isNull(userInfoGroup)) {
                 notExistsUserGroup.add(e);
             } else {
