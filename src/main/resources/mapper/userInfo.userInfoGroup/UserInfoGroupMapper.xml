@@ -47,6 +47,7 @@
                 </foreach>
             </if>
         </where>
+        group by tuig.id
         order by tuig.id desc
         limit #{offset}, #{size}
     </select>
