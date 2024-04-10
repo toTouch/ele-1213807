@@ -189,7 +189,7 @@
             <if test="query.refundOrderNo != null and query.refundOrderNo != ''">
                 and tero.refund_order_no like concat('%', #{query.phone,jdbcType=VARCHAR}, '%')
             </if>
-            <if test="query.orderType != null and query.orderType != ''">
+            <if test="query.orderType != null">
                 and tedo.order_type = #{query.orderType}
             </if>
             <if test="query.storeIds != null">
