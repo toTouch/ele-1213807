@@ -146,10 +146,6 @@ public class UserInfoGroupServiceImpl implements UserInfoGroupService {
         }
         
         try {
-            if (Objects.isNull(franchiseeService.queryByIdFromCache(request.getFranchiseeId()))) {
-                return R.fail("ELECTRICITY.0038", "未找到加盟商");
-            }
-            
             UserInfoGroup oldUserInfo = this.queryByIdFromCache(request.getId());
             if (Objects.isNull(oldUserInfo)) {
                 return R.fail("120112", "未找到用户分组");
