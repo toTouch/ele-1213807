@@ -93,6 +93,7 @@ import com.xiliulou.electricity.query.MemberCardOrderQuery;
 import com.xiliulou.electricity.query.ModelBatteryDeposit;
 import com.xiliulou.electricity.query.UserBatteryDepositAndMembercardQuery;
 import com.xiliulou.electricity.query.UserBatteryMembercardQuery;
+import com.xiliulou.electricity.query.UserInfoGroupDetailQuery;
 import com.xiliulou.electricity.service.ActivityService;
 import com.xiliulou.electricity.service.BatteryMemberCardOrderCouponService;
 import com.xiliulou.electricity.service.BatteryMemberCardService;
@@ -149,6 +150,7 @@ import com.xiliulou.electricity.service.enterprise.EnterpriseChannelUserService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseUserCostRecordService;
 import com.xiliulou.electricity.service.excel.AutoHeadColumnWidthStyleStrategy;
 import com.xiliulou.electricity.service.impl.car.biz.CarRentalPackageOrderBizServiceImpl;
+import com.xiliulou.electricity.service.userinfo.userInfoGroup.UserInfoGroupDetailService;
 import com.xiliulou.electricity.service.userinfo.userInfoGroup.UserInfoGroupService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.BigDecimalUtil;
@@ -161,6 +163,7 @@ import com.xiliulou.electricity.vo.ElectricityMemberCardOrderVO;
 import com.xiliulou.electricity.vo.HomePageTurnOverGroupByWeekDayVo;
 import com.xiliulou.electricity.vo.OldUserActivityVO;
 import com.xiliulou.electricity.vo.UserBatteryMemberCardInfoVO;
+import com.xiliulou.electricity.vo.userinfo.UserInfoGroupNamesVO;
 import com.xiliulou.electricity.vo.userinfo.UserInfoGroupVO;
 import com.xiliulou.mq.service.RocketMqService;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiOrderResultDTO;
@@ -399,6 +402,9 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
     
     @Autowired
     private UserInfoGroupService userInfoGroupService;
+    
+    @Autowired
+    private UserInfoGroupDetailService userInfoGroupDetailService;
     
     /**
      * 根据用户ID查询对应状态的记录
@@ -3796,12 +3802,14 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         }
         
         // 判断套餐用户分组和用户的用户分组是否匹配
-        List<UserInfoGroupVO> userInfoGroupVOS = userInfoGroupService.listGroupByUid(SecurityUtils.getUid(), TenantContextHolder.getTenantId());
-        if (CollectionUtils.isNotEmpty(userInfoGroupVOS)) {
+        List<UserInfoGroupNamesVO> userInfoGroupNamesVOS = userInfoGroupDetailService.listGroupByUid(
+                UserInfoGroupDetailQuery.builder().uid(SecurityUtils.getUid()).tenantId(TenantContextHolder.getTenantId()).build());
+        
+        if (CollectionUtils.isNotEmpty(userInfoGroupNamesVOS)) {
             if (StringUtils.isNotBlank(batteryMemberCard.getUserGroupIds())) {
                 
                 HashSet<Long> memberCardUserGroupIds = new HashSet<>(JsonUtil.fromJsonArray(batteryMemberCard.getUserGroupIds(), Long.class));
-                List<Long> userInfoGroupIds = userInfoGroupVOS.stream().map(UserInfoGroupVO::getId).collect(Collectors.toList());
+                List<Long> userInfoGroupIds = userInfoGroupNamesVOS.stream().map(UserInfoGroupNamesVO::getGroupId).collect(Collectors.toList());
                 
                 if (!memberCardUserGroupIds.containsAll(userInfoGroupIds)) {
                     return Triple.of(false, "100317", "用户与套餐关联的用户分组不一致，请刷新重试");

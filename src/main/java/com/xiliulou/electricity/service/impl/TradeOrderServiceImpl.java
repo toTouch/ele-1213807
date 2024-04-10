@@ -33,6 +33,7 @@ import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.enums.ServiceFeeEnum;
 import com.xiliulou.electricity.query.BatteryMemberCardAndInsuranceQuery;
 import com.xiliulou.electricity.query.IntegratedPaymentAdd;
+import com.xiliulou.electricity.query.UserInfoGroupDetailQuery;
 import com.xiliulou.electricity.service.BatteryMemberCardOrderCouponService;
 import com.xiliulou.electricity.service.BatteryMemberCardService;
 import com.xiliulou.electricity.service.BatteryMembercardRefundOrderService;
@@ -70,11 +71,13 @@ import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.UserOauthBindService;
 import com.xiliulou.electricity.service.car.CarRentalPackageOrderSlippageService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseChannelUserService;
+import com.xiliulou.electricity.service.userinfo.userInfoGroup.UserInfoGroupDetailService;
 import com.xiliulou.electricity.service.userinfo.userInfoGroup.UserInfoGroupService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DateUtils;
 import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
+import com.xiliulou.electricity.vo.userinfo.UserInfoGroupNamesVO;
 import com.xiliulou.electricity.vo.userinfo.UserInfoGroupVO;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiOrderResultDTO;
 import com.xiliulou.pay.weixinv3.exception.WechatPayException;
@@ -222,6 +225,9 @@ public class TradeOrderServiceImpl implements TradeOrderService {
     @Autowired
     private UserInfoGroupService userInfoGroupService;
     
+    @Autowired
+    private UserInfoGroupDetailService userInfoGroupDetailService;
+    
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Triple<Boolean, String, Object> integratedPayment(IntegratedPaymentAdd integratedPaymentAdd, HttpServletRequest request) {
@@ -299,9 +305,11 @@ public class TradeOrderServiceImpl implements TradeOrderService {
             }
             
             // 判断套餐用户分组和用户的用户分组是否匹配
-            List<UserInfoGroupVO> userInfoGroupVOS = userInfoGroupService.listGroupByUid(SecurityUtils.getUid(), TenantContextHolder.getTenantId());
-            if (CollectionUtils.isNotEmpty(userInfoGroupVOS)) {
-                List<Long> userGroupIds = userInfoGroupVOS.stream().map(UserInfoGroupVO::getId).collect(Collectors.toList());
+            List<UserInfoGroupNamesVO> userInfoGroupNamesVOS = userInfoGroupDetailService.listGroupByUid(
+                    UserInfoGroupDetailQuery.builder().uid(SecurityUtils.getUid()).tenantId(TenantContextHolder.getTenantId()).build());
+            
+            if (CollectionUtils.isNotEmpty(userInfoGroupNamesVOS)) {
+                List<Long> userGroupIds = userInfoGroupNamesVOS.stream().map(UserInfoGroupNamesVO::getGroupId).collect(Collectors.toList());
                 Triple<Boolean, String, Object> triple = userGroupIdFit(userGroupIds, batteryMemberCard);
                 if (!triple.getLeft()) {
                     return triple;
@@ -495,9 +503,11 @@ public class TradeOrderServiceImpl implements TradeOrderService {
             }
     
             // 判断套餐用户分组和用户的用户分组是否匹配
-            List<UserInfoGroupVO> userInfoGroupVOS = userInfoGroupService.listGroupByUid(SecurityUtils.getUid(), TenantContextHolder.getTenantId());
-            if (CollectionUtils.isNotEmpty(userInfoGroupVOS)) {
-                List<Long> userGroupIds = userInfoGroupVOS.stream().map(UserInfoGroupVO::getId).collect(Collectors.toList());
+            List<UserInfoGroupNamesVO> userInfoGroupNamesVOS = userInfoGroupDetailService.listGroupByUid(
+                    UserInfoGroupDetailQuery.builder().uid(SecurityUtils.getUid()).tenantId(TenantContextHolder.getTenantId()).build());
+    
+            if (CollectionUtils.isNotEmpty(userInfoGroupNamesVOS)) {
+                List<Long> userGroupIds = userInfoGroupNamesVOS.stream().map(UserInfoGroupNamesVO::getGroupId).collect(Collectors.toList());
                 Triple<Boolean, String, Object> triple = userGroupIdFit(userGroupIds, batteryMemberCard);
                 if (triple.getLeft()) {
                     return triple;
