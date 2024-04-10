@@ -166,7 +166,7 @@
         select
         tbmc.id, tbmc.name, tbmc.deposit, tbmc.rent_price, tbmc.rent_price_unit, tbmc.valid_days, tbmc.rent_unit, tbmc.franchisee_id, tbmc.rent_type, tbmc.send_coupon,
         tbmc.status, tbmc.limit_count, tbmc.use_count, tbmc.coupon_id, tbmc.is_refund, tbmc.refund_limit, tbmc.free_deposite,
-        tbmc.service_charge, tbmc.remark, tbmc.business_type, tbmc.del_flag, tbmc.tenant_id, tbmc.create_time, tbmc.update_time, tbmc.sort_param
+        tbmc.service_charge, tbmc.remark, tbmc.business_type, tbmc.del_flag, tbmc.tenant_id, tbmc.create_time, tbmc.update_time, tbmc.sort_param, tbmc.coupon_ids, tbmc.user_group_ids
         from t_battery_member_card tbmc
         left join t_member_card_battery_type tmcbt on tbmc.id = tmcbt.mid
         <where>
@@ -186,6 +186,9 @@
             <if test="rentType != null">
                 and tbmc.rent_type = #{rentType}
             </if>
+            <if test="rentType != null">
+                and tbmc.group_type = 0
+            </if>
             <if test="rentUnit != null">
                 and tbmc.rent_unit = #{rentUnit}
             </if>
@@ -203,6 +206,12 @@
             </if>
             <if test="originalBatteryModel != null and originalBatteryModel != ''">
                 and tmcbt.battery_type = #{originalBatteryModel}
+            </if>
+            <if test="userGroupId != null and userGroupId != ''">
+                and JSON_CONTAINS(tbmc.user_group_ids, #{userGroupId})
+            </if>
+            <if test="userGroupId != null and userGroupId != ''">
+                and tbmc.group_type = 1
             </if>
             <if test="batteryModel != null and batteryModel != ''">
                 and tmcbt.mid is null
@@ -290,6 +299,7 @@
         bmc.service_charge,
         bmc.create_time,
         bmc.sort_param,
+        bmc.coupon_ids,
         mcbt.id as mcbt_id,
         mcbt.battery_type battery_type
         from t_battery_member_card bmc
@@ -319,6 +329,18 @@
             </if>
             <if test="tenantId != null">
                 and bmc.tenant_id = #{tenantId}
+            </if>
+            <if test="userGroupIdsForSearch != null">
+                and
+                <foreach collection="userGroupIdsForSearch" item="userGroupId" index="index" open="(" separator="or" close=")">
+                    JSON_CONTAINS(bmc.user_group_ids, #{userGroupId})
+                </foreach>
+            </if>
+            <if test="userGroupIdsForSearch != null">
+                and bmc.group_type = 1
+            </if>
+            <if test="rentTypes != null">
+                and bmc.group_type = 0
             </if>
             <if test="rentTypes != null">
                 and bmc.rent_type in
@@ -386,6 +408,9 @@
             <if test="rentType != null">
                 and tbmc.rent_type = #{rentType}
             </if>
+            <if test="rentType != null">
+                and tbmc.group_type = 0
+            </if>
             <if test="rentUnit != null">
                 and tbmc.rent_unit = #{rentUnit}
             </if>
@@ -403,6 +428,12 @@
             </if>
             <if test="originalBatteryModel != null and originalBatteryModel != ''">
                 and tmcbt.battery_type = #{originalBatteryModel}
+            </if>
+            <if test="userGroupId != null and userGroupId != ''">
+                and JSON_CONTAINS(tbmc.user_group_ids, #{userGroupId})
+            </if>
+            <if test="userGroupId != null and userGroupId != ''">
+                and tbmc.group_type = 1
             </if>
             <if test="batteryModel != null and batteryModel != ''">
                 and tmcbt.mid is null
@@ -486,6 +517,12 @@
             </if>
             <if test="updateTime != null">
                 update_time = #{updateTime},
+            </if>
+            <if test="groupType != null">
+                group_type = #{groupType},
+            </if>
+            <if test="userGroupIds != null">
+                user_group_ids = #{userGroupIds},
             </if>
         </set>
         where id = #{id}
