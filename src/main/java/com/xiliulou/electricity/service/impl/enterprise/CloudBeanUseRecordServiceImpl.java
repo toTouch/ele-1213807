@@ -528,6 +528,10 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
                 if (Objects.equals(enterpriseChannelUser.getCloudBeanStatus(), EnterpriseChannelUser.CLOUD_BEAN_STATUS_RECYCLE)) {
                     // 修改历史退出为成功
                     userExitMapper.updateById(null, EnterpriseChannelUserExit.TYPE_SUCCESS, memberCardChannelExitVo.getChannelUserExitId(), System.currentTimeMillis());
+                    
+                    // 修改企业用户为自主续费为退出
+                    EnterpriseChannelUserQuery query = EnterpriseChannelUserQuery.builder().uid(userInfo.getUid()).renewalStatus(EnterpriseChannelUser.RENEWAL_OPEN).build();
+                    enterpriseChannelUserService.updateRenewStatus(query);
                     return;
                 }
     
