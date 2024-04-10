@@ -399,7 +399,6 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
             }
             
             // 设置优惠券
-            
             if (Objects.equals(item.getSendCoupon(), BatteryMemberCard.SEND_COUPON_YES)) {
                 List<CouponSearchVo> coupons = new ArrayList<>();
                 HashSet<Integer> couponIdsSet = new HashSet<>();

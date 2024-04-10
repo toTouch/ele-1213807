@@ -79,6 +79,11 @@ public class ElectricityMemberCardOrderVO extends ElectricityMemberCardOrder {
      */
     private Integer orderType;
     
+    /**
+     * 购买套餐赠送的优惠券id
+     */
+    private String couponIds;
+    
     private List<CouponSearchVo> coupons;
     
 }

@@ -155,6 +155,7 @@ import com.xiliulou.electricity.utils.BigDecimalUtil;
 import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.BatteryMemberCardVO;
+import com.xiliulou.electricity.vo.CouponSearchVo;
 import com.xiliulou.electricity.vo.ElectricityMemberCardOrderExcelVO;
 import com.xiliulou.electricity.vo.ElectricityMemberCardOrderVO;
 import com.xiliulou.electricity.vo.HomePageTurnOverGroupByWeekDayVo;
@@ -1146,6 +1147,30 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             electricityMemberCardOrderVO.setRentUnit(Objects.isNull(batteryMemberCard) ? null : batteryMemberCard.getRentUnit());
             electricityMemberCardOrderVO.setIsRefund(Objects.isNull(batteryMemberCard) ? null : batteryMemberCard.getIsRefund());
             electricityMemberCardOrderVO.setLimitCount(Objects.isNull(batteryMemberCard) ? null : batteryMemberCard.getLimitCount());
+            
+            // 设置优惠券
+            List<CouponSearchVo> coupons = new ArrayList<>();
+            HashSet<Integer> couponIdsSet = new HashSet<>();
+    
+            if (Objects.nonNull(electricityMemberCardOrderVO.getSendCouponId())) {
+                couponIdsSet.add(Integer.parseInt(electricityMemberCardOrderVO.getSendCouponId().toString()));
+            }
+            if (StringUtils.isNotBlank(electricityMemberCardOrderVO.getCouponIds())) {
+                couponIdsSet.addAll(JsonUtil.fromJsonArray(electricityMemberCardOrderVO.getCouponIds(), Integer.class));
+            }
+    
+            if (!CollectionUtils.isEmpty(couponIdsSet)) {
+                CouponSearchVo couponSearchVo = new CouponSearchVo();
+                couponIdsSet.forEach(couponId -> {
+                    Coupon coupon = couponService.queryByIdFromCache(couponId);
+                    if (Objects.nonNull(coupon)) {
+                        BeanUtils.copyProperties(coupon, couponSearchVo);
+                    }
+                    coupons.add(couponSearchVo);
+                });
+            }
+            electricityMemberCardOrderVO.setCoupons(coupons);
+            
             
             ElectricityMemberCardOrderVOs.add(electricityMemberCardOrderVO);
         }
