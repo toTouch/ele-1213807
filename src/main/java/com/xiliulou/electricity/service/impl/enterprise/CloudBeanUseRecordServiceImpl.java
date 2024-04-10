@@ -597,8 +597,9 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
     
                     enterpriseInfoService.addCloudBean(enterpriseInfo.getId(), membercardTotalCloudBean.add(batteryDepositTotalCloudBean));
                 } catch (Exception e) {
-                    log.error("recycle cloud bean exit error msg={}", e.getMessage());
-                    errorMsg = "recycle cloud bean exit error msg";
+                    log.error("recycle cloud bean exit error msg={}", e);
+                    errorMsg = "recycle cloud bean exit error" + e.getMessage();
+                    
                     userExitMapper.updateById(errorMsg, EnterpriseChannelUserExit.TYPE_FAIL, memberCardChannelExitVo.getChannelUserExitId(), System.currentTimeMillis());
                 }
                 

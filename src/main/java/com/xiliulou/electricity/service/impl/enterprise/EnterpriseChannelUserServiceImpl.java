@@ -634,6 +634,7 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
         log.info("do No Enterprise User start uid = {},msg={}", query.getUid());
         
         boolean isMember = false;
+        
         UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
         // 如果是车电一体的会员则不允许进行添加
         if (Objects.equals(userInfo.getCarBatteryDepositStatus(), YesNoEnum.YES.getCode())) {
@@ -660,8 +661,8 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
         
         // 查询当前加入的企业的加盟商
         EnterpriseInfo enterpriseInfo = enterpriseInfoService.queryByIdFromCache(query.getEnterpriseId());
-        
         boolean isModify = false;
+        
         // 如果电池押金或者单车押金已经存在则校验加盟商和即将加入的加盟商是否一致
         if (Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES) || Objects.equals(userInfo.getBatteryDepositStatus(),
                 UserInfo.BATTERY_DEPOSIT_STATUS_REFUNDING) || Objects.equals(userInfo.getCarBatteryDepositStatus(), YesNoEnum.YES.getCode())) {
@@ -669,6 +670,7 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
                 log.error("channel user by phone franchisee diff, enterpriseId={}, uid={}", query.getEnterpriseId(), query.getUid());
                 return Triple.of(false, "120310", "所属加盟商不一致，请退押后操作");
             }
+            
             isModify = true;
         }
         
@@ -699,6 +701,7 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
         
         if (Objects.isNull(channelUser)) {
             log.info("enterprise channel phone add new user");
+            
             // 手机添加
             BeanUtil.copyProperties(query, enterpriseChannelUser);
             enterpriseChannelUser.setFranchiseeId(enterpriseInfo.getFranchiseeId());
@@ -711,6 +714,7 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
             enterpriseChannelUser.setUpdateTime(System.currentTimeMillis());
             
             enterpriseChannelUserMapper.insertOne(enterpriseChannelUser);
+            
             Long channelUserId = enterpriseChannelUser.getId();
             
             if (!isModify) {
