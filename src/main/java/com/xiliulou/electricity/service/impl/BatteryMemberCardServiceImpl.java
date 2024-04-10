@@ -718,6 +718,8 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
             return Triple.of(false, "100271", "请先下架套餐再进行编辑操作");
         }
         
+        
+        
         BatteryMemberCard batteryMemberCardUpdate = new BatteryMemberCard();
         batteryMemberCardUpdate.setId(batteryMemberCard.getId());
         batteryMemberCardUpdate.setName(query.getName());
@@ -737,9 +739,13 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
         batteryMemberCardUpdate.setServiceCharge(query.getServiceCharge());
         batteryMemberCardUpdate.setRemark(query.getRemark());
         batteryMemberCardUpdate.setUpdateTime(System.currentTimeMillis());
-        batteryMemberCardUpdate.setCouponIds(Objects.equals(query.getSendCoupon(), BatteryMemberCard.SEND_COUPON_YES) ? JsonUtil.toJson(query.getCouponIdsTransfer()) : null);
-        batteryMemberCardUpdate.setUserGroupIds(JsonUtil.toJson(query.getUserGroupIdsTransfer()));
+        batteryMemberCardUpdate.setUserGroupIds(CollectionUtils.isEmpty(query.getCouponIdsTransfer())? null : JsonUtil.toJson(query.getCouponIdsTransfer()));
         batteryMemberCardUpdate.setGroupType(query.getGroupType());
+    
+        if (CollectionUtils.isEmpty(query.getCouponIdsTransfer())) {
+            query.setCouponIdsTransfer(null);
+        }
+        batteryMemberCardUpdate.setCouponIds(Objects.equals(query.getSendCoupon(), BatteryMemberCard.SEND_COUPON_YES) ? JsonUtil.toJson(query.getCouponIdsTransfer()) : null);
         
         this.update(batteryMemberCardUpdate);
         
@@ -775,8 +781,8 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
         batteryMemberCard.setUpdateTime(System.currentTimeMillis());
         batteryMemberCard.setSortParam(System.currentTimeMillis());
         batteryMemberCard.setTenantId(TenantContextHolder.getTenantId());
-        batteryMemberCard.setUserGroupIds(JsonUtil.toJson(query.getUserGroupIdsTransfer()));
-        batteryMemberCard.setCouponIds(JsonUtil.toJson(query.getCouponIdsTransfer()));
+        batteryMemberCard.setUserGroupIds(CollectionUtils.isEmpty(query.getUserGroupIdsTransfer())? null : JsonUtil.toJson(query.getUserGroupIdsTransfer()));
+        batteryMemberCard.setCouponIds(CollectionUtils.isEmpty(query.getCouponIdsTransfer())? null : JsonUtil.toJson(query.getCouponIdsTransfer()));
         
         //适配企业渠道添加套餐业务
         if (Objects.isNull(query.getBusinessType())) {
