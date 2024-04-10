@@ -571,15 +571,9 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
             BatteryMemberCardVO batteryMemberCardVO = new BatteryMemberCardVO();
             BeanUtils.copyProperties(item, batteryMemberCardVO);
             
-            if (Objects.nonNull(item.getCouponId())) {
-                Coupon coupon = couponService.queryByIdFromCache(item.getCouponId());
-                batteryMemberCardVO.setCouponName(Objects.isNull(coupon) ? "" : coupon.getName());
-                batteryMemberCardVO.setAmount(Objects.isNull(coupon) ? null : coupon.getAmount());
-            }
-            
-            // 绑定多张优惠券时，设置返回的优惠券信息
-            if (StringUtils.isNotBlank(item.getCouponIds())) {
-                dealCouponSearchVo(item.getCouponIds(), batteryMemberCardVO);
+            // 设置优惠券
+            if (Objects.nonNull(item.getCouponId()) || StringUtils.isNotBlank(item.getCouponIds())) {
+                dealCouponSearchVo(item.getCouponId(), item.getCouponIds(), batteryMemberCardVO);
             }
             
             result.add(batteryMemberCardVO);
@@ -858,24 +852,41 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
         return Triple.of(true, null, null);
     }
     
-    private void dealCouponSearchVo(String couponIds, BatteryMemberCardVO batteryMemberCardVO) {
+    private void dealCouponSearchVo(Integer couponId, String couponIds, BatteryMemberCardVO batteryMemberCardVO) {
+    
+        List<CouponSearchVo> couponSearchVos = new ArrayList<>();
         
-        batteryMemberCardVO.setAmount(BigDecimal.ZERO);
-        
-        List<CouponSearchVo> couponSearchVos = JsonUtil.fromJsonArray(couponIds, Integer.class).parallelStream().map(couponId -> {
+        if (Objects.nonNull(couponId)) {
             CouponSearchVo couponSearchVo = new CouponSearchVo();
             Coupon coupon = couponService.queryByIdFromCache(couponId);
+            
+            batteryMemberCardVO.setCouponName(Objects.isNull(coupon) ? "" : coupon.getName());
+            batteryMemberCardVO.setAmount(Objects.isNull(coupon) ? null : coupon.getAmount());
+            
             if (Objects.nonNull(coupon)) {
                 BeanUtils.copyProperties(coupon, couponSearchVo);
             }
-            
-            // 兼容旧版本小程序，取优惠金额最大的优惠券的金额与name展示
-            if (Objects.nonNull(couponSearchVo.getAmount()) && couponSearchVo.getAmount().compareTo(batteryMemberCardVO.getAmount()) > 0) {
-                batteryMemberCardVO.setAmount(couponSearchVo.getAmount());
-                batteryMemberCardVO.setCouponName(couponSearchVo.getName());
-            }
-            return couponSearchVo;
-        }).collect(Collectors.toList());
+            couponSearchVos.add(couponSearchVo);
+        }
+        
+        if (StringUtils.isNotBlank(couponIds)) {
+            batteryMemberCardVO.setAmount(BigDecimal.ZERO);
+    
+            JsonUtil.fromJsonArray(couponIds, Integer.class).parallelStream().forEach(couponIdFromList -> {
+                CouponSearchVo couponSearchVo = new CouponSearchVo();
+                Coupon coupon = couponService.queryByIdFromCache(couponIdFromList);
+                if (Objects.nonNull(coupon)) {
+                    BeanUtils.copyProperties(coupon, couponSearchVo);
+                }
+        
+                // 兼容旧版本小程序，取优惠金额最大的优惠券的金额与name展示
+                if (Objects.nonNull(couponSearchVo.getAmount()) && couponSearchVo.getAmount().compareTo(batteryMemberCardVO.getAmount()) > 0) {
+                    batteryMemberCardVO.setAmount(couponSearchVo.getAmount());
+                    batteryMemberCardVO.setCouponName(couponSearchVo.getName());
+                }
+                couponSearchVos.add(couponSearchVo);
+            });
+        }
         
         batteryMemberCardVO.setCoupons(couponSearchVos);
     }
