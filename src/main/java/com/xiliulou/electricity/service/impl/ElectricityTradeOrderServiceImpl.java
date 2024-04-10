@@ -1151,7 +1151,7 @@ public class ElectricityTradeOrderServiceImpl extends
             return Pair.of(false, "云豆充值订单已处理!");
         }
 
-        EnterpriseInfo enterpriseInfo = enterpriseInfoService.queryByIdFromCache(enterpriseCloudBeanOrder.getEnterpriseId());
+        EnterpriseInfo enterpriseInfo = enterpriseInfoService.queryByIdFromDB(enterpriseCloudBeanOrder.getEnterpriseId());
         if (Objects.isNull(enterpriseInfo)) {
             log.error("NOTIFY_INSURANCE_ORDER ERROR ! not found enterpriseInfo,orderNo={},enterpriseId={}", electricityTradeOrder.getOrderNo(), enterpriseCloudBeanOrder.getEnterpriseId());
             return Pair.of(false, "企业配置不存在!");

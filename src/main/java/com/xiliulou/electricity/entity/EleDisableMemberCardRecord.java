@@ -126,6 +126,11 @@ public class EleDisableMemberCardRecord {
     private Long franchiseeId;
 
     private Long storeId;
+    
+    /**
+     * 审核员ID
+     */
+    private Long auditorId;
 
     public static final Integer MEMBER_CARD_NOT_DISABLE = 0;
     public static final Integer MEMBER_CARD_DISABLE = 1;

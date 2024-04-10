@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.service.impl;
 
+import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.date.DatePattern;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.IdUtil;
@@ -150,6 +151,7 @@ import com.xiliulou.electricity.service.excel.AutoHeadColumnWidthStyleStrategy;
 import com.xiliulou.electricity.service.impl.car.biz.CarRentalPackageOrderBizServiceImpl;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.BigDecimalUtil;
+import com.xiliulou.electricity.utils.OperateRecordUtil;
 import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.BatteryMemberCardVO;
@@ -383,6 +385,9 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
     
     @Autowired
     EleBatteryServiceFeeOrderService eleBatteryServiceFeeOrderService;
+    
+    @Autowired
+    OperateRecordUtil operateRecordUtil;
     
     @Autowired
     CarRentalPackageOrderBizService carRentalPackageOrderBizService;
@@ -1486,6 +1491,16 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         userBatteryMemberCardService.updateByUid(userBatteryMemberCardUpdate);
         
         sendDisableMemberCardMessage(userInfo);
+        try {
+            Map<String, Object> map = new HashMap<>();
+            map.put("username",eleDisableMemberCardRecord.getUserName());
+            map.put("phone",eleDisableMemberCardRecord.getPhone());
+            map.put("packageName",eleDisableMemberCardRecord.getMemberCardName());
+            map.put("residue",eleDisableMemberCardRecord.getChooseDays());
+            operateRecordUtil.record(null,map);
+        }catch (Throwable e){
+            log.warn("Recording user operation records failed because:{}",e.getMessage());
+        }
         return R.ok();
     }
     
@@ -1853,7 +1868,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                 .status(UserBatteryMemberCard.MEMBER_CARD_DISABLE).tenantId(userInfo.getTenantId()).uid(uid).franchiseeId(userInfo.getFranchiseeId()).storeId(userInfo.getStoreId())
                 .chargeRate(batteryMemberCard.getServiceCharge()).chooseDays(days).disableCardTimeType(EleDisableMemberCardRecord.DISABLE_CARD_LIMIT_TIME)
                 .cardDays(userBatteryMemberCardService.transforRemainingTime(userBatteryMemberCard, batteryMemberCard)).disableMemberCardTime(System.currentTimeMillis())
-                .createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).build();
+                .createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).auditorId(SecurityUtils.getUserInfo().getUid()).build();
         eleDisableMemberCardRecordService.save(eleDisableMemberCardRecord);
         
         //更新用户套餐状态为暂停
@@ -2003,6 +2018,16 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                 .updateTime(System.currentTimeMillis()).build();
         eleUserOperateRecordService.insert(eleUserOperateRecord);
 */
+        try {
+            Map<String, Object> map = new HashMap<>();
+            map.put("username",eleDisableMemberCardRecord.getUserName());
+            map.put("phone",eleDisableMemberCardRecord.getPhone());
+            map.put("packageName",eleDisableMemberCardRecord.getMemberCardName());
+            map.put("residue",eleDisableMemberCardRecord.getChooseDays());
+            operateRecordUtil.record(null,map);
+        }catch (Throwable e){
+            log.warn("Recording user operation records failed because:{}",e.getMessage());
+        }
         return R.ok();
     }
     
@@ -4111,7 +4136,17 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             updateChannelActivityHistory.setUpdateTime(System.currentTimeMillis());
             channelActivityHistoryService.update(updateChannelActivityHistory);
         }
-        
+        //添加用户操作记录
+        try {
+            BatteryMemberCard card = batteryMemberCardService.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());
+            Map<String, Object> map = BeanUtil.beanToMap(userBatteryMemberCardUpdate,false,true);
+            map.put("packageName",card.getName());
+            map.put("phone",userInfo.getPhone());
+            map.put("name",userInfo.getName());
+            operateRecordUtil.record(userBatteryMemberCard,map);
+        }catch (Exception e){
+            log.warn("The user failed to modify the battery plan record because: {}",e.getMessage());
+        }
         return Triple.of(true, null, null);
     }
     
@@ -4242,7 +4277,11 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         activityService.asyncProcessActivity(activityProcessDTO);
         
         sendUserCoupon(batteryMemberCard, memberCardOrder);
-        
+        Map<String, Object> map = new HashMap<>();
+        map.put("username",userInfo.getName());
+        map.put("phone",userInfo.getPhone());
+        map.put("packageName",batteryMemberCard.getName());
+        operateRecordUtil.record(null,map);
         return Triple.of(true, null, null);
     }
     
