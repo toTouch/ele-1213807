@@ -22,7 +22,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -35,15 +34,16 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/user/car/renalPackage")
 public class JsonUserCarRenalPackageController extends BasicController {
-
+    
     @Resource
     private CarRentalPackageBizService carRentalPackageBizService;
     
     @Autowired
     private CouponService couponService;
-
+    
     /**
      * 获取用户可以购买的套餐
+     *
      * @param qryReq 查询数据模型
      * @return 可购买的套餐数据集，包含赠送优惠券信息
      */
@@ -52,33 +52,34 @@ public class JsonUserCarRenalPackageController extends BasicController {
         if (!ObjectUtils.allNotNull(qryReq, qryReq.getFranchiseeId(), qryReq.getStoreId(), qryReq.getCarModelId())) {
             throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
-
+        
         Integer tenantId = TenantContextHolder.getTenantId();
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-
+        
         qryReq.setTenantId(tenantId);
-
+        
         List<CarRentalPackagePo> entityList = carRentalPackageBizService.queryCanPurchasePackage(qryReq, user.getUid());
-
-//        // 获取优惠券ID集
-//        List<Long> couponIdList = entityList.stream()
-//                .filter(entity -> ObjectUtils.isNotEmpty(entity.getCouponId()) && YesNoEnum.YES.getCode().equals(entity.getGiveCoupon()))
-//                .map(CarRentalPackagePo::getCouponId).distinct().collect(Collectors.toList());
-//
-//        // 查询赠送的优惠券信息
-//        Map<Long, Coupon> couponMap = getCouponForMapByIds(couponIdList);
-
+        
+        //        // 获取优惠券ID集
+        //        List<Long> couponIdList = entityList.stream()
+        //                .filter(entity -> ObjectUtils.isNotEmpty(entity.getCouponId()) && YesNoEnum.YES.getCode().equals(entity.getGiveCoupon()))
+        //                .map(CarRentalPackagePo::getCouponId).distinct().collect(Collectors.toList());
+        //
+        //        // 查询赠送的优惠券信息
+        //        Map<Long, Coupon> couponMap = getCouponForMapByIds(couponIdList);
+        
         // 转换 VO
         List<CarRentalPackageVo> voList = buildVOList(entityList);
-
+        
         return R.ok(voList);
     }
-
+    
     /**
      * entityList to voList
+     *
      * @param entityList
      * @return
      */
@@ -104,14 +105,10 @@ public class JsonUserCarRenalPackageController extends BasicController {
             packageVo.setSortParam(entity.getSortParam());
             // 设置辅助业务信息
             if (YesNoEnum.YES.getCode().equals(entity.getGiveCoupon())) {
-                List<Long> couponIds = entity.getCouponIds();
-                List<Map<String, Object>> list = couponService.queryNameListByIds(couponIds, TenantContextHolder.getTenantId());
-                packageVo.setCouponName(list);
-                packageVo.setCouponId(entity.getCouponIds());
-//                packageVo.setGiveCouponAmount(couponMap.getOrDefault(entity.getCouponId(), new Coupon()).getAmount());
+                packageVo = carRentalPackageBizService.buildCouponsToCarRentalVo(packageVo, entity.getCouponIds());
             }
             return packageVo;
         }).collect(Collectors.toList());
     }
-
+    
 }

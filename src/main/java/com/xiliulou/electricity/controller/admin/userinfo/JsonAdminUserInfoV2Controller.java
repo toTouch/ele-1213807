@@ -17,7 +17,11 @@ import com.xiliulou.electricity.reqparam.qry.userinfo.UserInfoQryReq;
 import com.xiliulou.electricity.service.CouponService;
 import com.xiliulou.electricity.service.UserDataScopeService;
 import com.xiliulou.electricity.service.UserInfoService;
-import com.xiliulou.electricity.service.car.biz.*;
+import com.xiliulou.electricity.service.car.biz.CarRenalPackageSlippageBizService;
+import com.xiliulou.electricity.service.car.biz.CarRentalOrderBizService;
+import com.xiliulou.electricity.service.car.biz.CarRentalPackageBizService;
+import com.xiliulou.electricity.service.car.biz.CarRentalPackageMemberTermBizService;
+import com.xiliulou.electricity.service.car.biz.CarRentalPackageOrderBizService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.car.CarRentalPackageVo;
@@ -29,50 +33,55 @@ import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.CollectionUtils;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
  * 用户信息Controller
+ *
  * @author xiaohui.song
  **/
 @Slf4j
 @RestController
 @RequestMapping("/admin/userInfo/v2")
 public class JsonAdminUserInfoV2Controller {
-
+    
     @Resource
     private CarRentalOrderBizService carRentalOrderBizService;
-
+    
     @Resource
     private CarRenalPackageSlippageBizService carRenalPackageSlippageBizService;
-
+    
     @Resource
     private CarRentalPackageMemberTermBizService carRentalPackageMemberTermBizService;
-
+    
     @Resource
     private CarRentalPackageOrderBizService carRentalPackageOrderBizService;
-
+    
     @Resource
     private CarRentalPackageBizService carRentalPackageBizService;
-
+    
     @Resource
     private UserInfoService userInfoService;
     
     @Autowired
     private CouponService couponService;
-
+    
     @Autowired
     UserDataScopeService userDataScopeService;
-
+    
     /**
      * 编辑会员当前套餐信息
+     *
      * @param optReq 操作数据模型
      * @return true(成功)、false(失败)
      */
@@ -81,19 +90,20 @@ public class JsonAdminUserInfoV2Controller {
         if (!ObjectUtils.allNotNull(optReq, optReq.getUid(), optReq.getPackageOrderNo(), optReq.getType())) {
             return R.fail("ELECTRICITY.0007", "不合法的参数");
         }
-
+        
         Integer tenantId = TenantContextHolder.getTenantId();
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-
+        
         return R.ok(carRentalPackageMemberTermBizService.updateCurrPackage(tenantId, optReq, user.getUid(), user.getUsername()));
-
+        
     }
-
+    
     /**
      * 解绑车辆
+     *
      * @param uid 用户ID
      * @return true(成功)、false(失败)
      */
@@ -102,18 +112,19 @@ public class JsonAdminUserInfoV2Controller {
         if (ObjectUtils.isEmpty(uid)) {
             return R.fail("ELECTRICITY.0007", "不合法的参数");
         }
-
+        
         Integer tenantId = TenantContextHolder.getTenantId();
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-
+        
         return R.ok(carRentalOrderBizService.unBindingCar(tenantId, uid, user.getUid(), user.getUsername()));
     }
-
+    
     /**
      * 绑定车辆
+     *
      * @param carSn 车辆SN码
      * @return true(成功)、false(失败)
      */
@@ -122,18 +133,19 @@ public class JsonAdminUserInfoV2Controller {
         if (!ObjectUtils.allNotNull(carSn, uid)) {
             return R.fail("ELECTRICITY.0007", "不合法的参数");
         }
-
+        
         Integer tenantId = TenantContextHolder.getTenantId();
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-
+        
         return R.ok(carRentalOrderBizService.bindingCar(tenantId, uid, carSn, user.getUid(), user.getUsername()));
     }
-
+    
     /**
      * 清空滞纳金
+     *
      * @param uid 用户UID
      * @return
      */
@@ -142,18 +154,19 @@ public class JsonAdminUserInfoV2Controller {
         if (ObjectUtils.isEmpty(uid)) {
             return R.fail("ELECTRICITY.0007", "不合法的参数");
         }
-
+        
         Integer tenantId = TenantContextHolder.getTenantId();
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-
+        
         return R.ok(carRenalPackageSlippageBizService.clearSlippage(tenantId, uid, user.getUid(), user.getUsername()));
     }
-
+    
     /**
      * 启用冻结套餐订单
+     *
      * @param packageOrderNo 购买订单编号
      * @return true(成功)、false(失败)
      */
@@ -162,18 +175,19 @@ public class JsonAdminUserInfoV2Controller {
         if (StringUtils.isBlank(packageOrderNo) || ObjectUtils.isEmpty(uid)) {
             return R.fail("ELECTRICITY.0007", "不合法的参数");
         }
-
+        
         Integer tenantId = TenantContextHolder.getTenantId();
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-
-        return R.ok(carRentalPackageOrderBizService.enableFreezeRentOrder(tenantId, uid, packageOrderNo, user.getUid(),user.getUsername()));
+        
+        return R.ok(carRentalPackageOrderBizService.enableFreezeRentOrder(tenantId, uid, packageOrderNo, user.getUid(), user.getUsername()));
     }
-
+    
     /**
      * 冻结套餐订单
+     *
      * @param freezeRentOrderoptReq 请求操作数据模型
      * @return true(成功)、false(失败)
      */
@@ -182,21 +196,22 @@ public class JsonAdminUserInfoV2Controller {
         if (!ObjectUtils.allNotNull(freezeRentOrderoptReq, freezeRentOrderoptReq.getUid(), freezeRentOrderoptReq.getApplyTerm(), freezeRentOrderoptReq.getApplyTerm())) {
             return R.fail("ELECTRICITY.0007", "不合法的参数");
         }
-
+        
         Integer tenantId = TenantContextHolder.getTenantId();
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-
-        Boolean freezeFlag = carRentalPackageOrderBizService.freezeRentOrder(tenantId, freezeRentOrderoptReq.getUid(), freezeRentOrderoptReq.getPackageOrderNo(), freezeRentOrderoptReq.getApplyTerm(),
-                freezeRentOrderoptReq.getApplyReason(), SystemDefinitionEnum.BACKGROUND, user.getUid(), user.getUsername());
+        
+        Boolean freezeFlag = carRentalPackageOrderBizService.freezeRentOrder(tenantId, freezeRentOrderoptReq.getUid(), freezeRentOrderoptReq.getPackageOrderNo(),
+                freezeRentOrderoptReq.getApplyTerm(), freezeRentOrderoptReq.getApplyReason(), SystemDefinitionEnum.BACKGROUND, user.getUid(), user.getUsername());
         return R.ok(freezeFlag);
-
+        
     }
-
+    
     /**
      * 获取会员的全量信息（套餐订单信息、车辆信息）
+     *
      * @param uid 用户ID
      * @return 用户会员全量信息（套餐订单信息、车辆信息）
      */
@@ -205,33 +220,35 @@ public class JsonAdminUserInfoV2Controller {
         if (ObjectUtils.isEmpty(uid)) {
             throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
-
+        
         Integer tenantId = TenantContextHolder.getTenantId();
-
+        
         return R.ok(carRentalPackageMemberTermBizService.queryUserMemberInfo(tenantId, uid));
-
+        
     }
-
+    
     /**
      * 给用户绑定套餐
+     *
      * @param buyOptModel 绑定数据模型
      * @return true(成功)、false(失败)
      */
     @PostMapping("/bindingPackage")
-    public R<Boolean> bindingPackage(@RequestBody CarRentalPackageOrderBuyOptModel buyOptModel ) {
+    public R<Boolean> bindingPackage(@RequestBody CarRentalPackageOrderBuyOptModel buyOptModel) {
         if (!ObjectUtils.allNotNull(buyOptModel, buyOptModel.getUid(), buyOptModel.getFranchiseeId(), buyOptModel.getStoreId(), buyOptModel.getRentalPackageId())) {
             throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
-
+        
         Integer tenantId = TenantContextHolder.getTenantId();
         buyOptModel.setTenantId(tenantId);
         buyOptModel.setPayType(PayTypeEnum.OFF_LINE.getCode());
-
+        
         return R.ok(carRentalPackageOrderBizService.bindingPackage(buyOptModel));
     }
-
+    
     /**
      * 获取用户可以购买的套餐
+     *
      * @param qryReq 查询数据模型
      * @return 可购买的套餐数据集，包含赠送优惠券信息
      */
@@ -240,21 +257,22 @@ public class JsonAdminUserInfoV2Controller {
         if (!ObjectUtils.allNotNull(qryReq, qryReq.getFranchiseeId(), qryReq.getStoreId(), qryReq.getCarModelId(), qryReq.getUid())) {
             throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
-
+        
         Integer tenantId = TenantContextHolder.getTenantId();
         qryReq.setTenantId(tenantId);
-
+        
         List<CarRentalPackagePo> entityList = carRentalPackageBizService.queryCanPurchasePackage(qryReq, qryReq.getUid());
-
+        
         // 转换 VO
         List<CarRentalPackageVo> voList = buildVOList(entityList);
-
+        
         return R.ok(voList);
     }
-
-
+    
+    
     /**
      * entityList to voList
+     *
      * @param entityList
      * @return
      */
@@ -276,18 +294,15 @@ public class JsonAdminUserInfoV2Controller {
             packageVo.setGiveCoupon(entity.getGiveCoupon());
             packageVo.setRemark(entity.getRemark());
             packageVo.setBatteryVoltage(entity.getBatteryVoltage());
-            if (!CollectionUtils.isEmpty(entity.getCouponIds())){
-                List<Long> couponIds = entity.getCouponIds();
-                List<Map<String, Object>> list = couponService.queryNameListByIds(couponIds, TenantContextHolder.getTenantId());
-                packageVo.setCouponName(list);
-                packageVo.setCouponId(entity.getCouponIds());
-            }
+            List<Long> couponIds = packageVo.getCouponIds();
+            packageVo = carRentalPackageBizService.buildCouponsToCarRentalVo(packageVo, couponIds);
             return packageVo;
         }).collect(Collectors.toList());
     }
-
+    
     /**
      * 根据关键字查询用户集
+     *
      * @param userInfoQryReq 查询模型
      * @return 用户集
      */
@@ -296,15 +311,15 @@ public class JsonAdminUserInfoV2Controller {
         if (ObjectUtils.isEmpty(userInfoQryReq)) {
             userInfoQryReq = new UserInfoQryReq();
         }
-
+        
         // 赋值租户
         Integer tenantId = TenantContextHolder.getTenantId();
-
+        
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-
+        
         List<Long> franchiseeIds = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
             franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
@@ -312,7 +327,7 @@ public class JsonAdminUserInfoV2Controller {
                 return R.ok(Collections.EMPTY_LIST);
             }
         }
-
+        
         List<Long> storeIds = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
             storeIds = userDataScopeService.selectDataIdByUid(user.getUid());
@@ -323,26 +338,19 @@ public class JsonAdminUserInfoV2Controller {
         
         //处理查询关键自重带有/时，无法进行搜索的问题
         String keyWords = userInfoQryReq.getKeywords();
-        if(StringUtils.isNotBlank(keyWords) && keyWords.contains(StringConstant.FORWARD_SLASH)){
+        if (StringUtils.isNotBlank(keyWords) && keyWords.contains(StringConstant.FORWARD_SLASH)) {
             keyWords = StringUtils.substringBefore(keyWords, StringConstant.FORWARD_SLASH);
             userInfoQryReq.setKeywords(keyWords);
         }
-
-        UserInfoQuery userInfoQuery = UserInfoQuery.builder()
-                .tenantId(tenantId)
-                .keywords(userInfoQryReq.getKeywords())
-                .authStatus(userInfoQryReq.getAuthStatus())
-                .offset(Long.valueOf(userInfoQryReq.getOffset()))
-                .size(Long.valueOf(userInfoQryReq.getSize()))
-                .franchiseeIds(franchiseeIds)
-                .storeIds(storeIds)
-                .build();
-
+        
+        UserInfoQuery userInfoQuery = UserInfoQuery.builder().tenantId(tenantId).keywords(userInfoQryReq.getKeywords()).authStatus(userInfoQryReq.getAuthStatus())
+                .offset(Long.valueOf(userInfoQryReq.getOffset())).size(Long.valueOf(userInfoQryReq.getSize())).franchiseeIds(franchiseeIds).storeIds(storeIds).build();
+        
         List<UserInfo> userInfos = userInfoService.page(userInfoQuery);
         if (CollectionUtils.isEmpty(userInfos)) {
             return R.ok();
         }
-
+        
         List<UserInfoVO> userInfoVoList = userInfos.stream().map(userInfo -> {
             // 拼装返回字段
             UserInfoVO userInfoVo = new UserInfoVO();
@@ -350,7 +358,7 @@ public class JsonAdminUserInfoV2Controller {
             userInfoVo.setUid(userInfo.getUid());
             userInfoVo.setName(userInfo.getName());
             userInfoVo.setPhone(userInfo.getPhone());
-
+            
             // 赋值复合字段
             StringBuilder builderNameAndPhone = new StringBuilder();
             if (StringUtils.isNotBlank(userInfo.getName())) {
@@ -363,10 +371,10 @@ public class JsonAdminUserInfoV2Controller {
                 builderNameAndPhone.append(userInfo.getPhone());
             }
             userInfoVo.setNameAndPhone(builderNameAndPhone.toString());
-
+            
             return userInfoVo;
         }).collect(Collectors.toList());
-
+        
         return R.ok(userInfoVoList);
     }
 }

@@ -1,7 +1,6 @@
 package com.xiliulou.electricity.service.impl;
 
 import cn.hutool.core.collection.ListUtil;
-import cn.hutool.core.map.MapUtil;
 import com.google.api.client.util.Lists;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
@@ -41,6 +40,7 @@ import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.BatteryMemberCardVO;
 import com.xiliulou.electricity.vo.SearchVo;
 import com.xiliulou.electricity.vo.activity.CouponActivityVO;
+import com.xiliulou.electricity.vo.car.CarCouponVO;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
@@ -54,9 +54,7 @@ import org.springframework.util.CollectionUtils;
 import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 /**
  * 优惠券规则表(TCoupon)表服务实现类
@@ -459,15 +457,22 @@ public class CouponServiceImpl implements CouponService {
     
     @Slave
     @Override
-    public List<Map<String,Object>> queryNameListByIds(List<Long> couponId,Integer tenantId) {
-        if (CollectionUtils.isEmpty(couponId)){
+    public List<CarCouponVO> queryListByIdsFromCache(List<Long> couponId) {
+        if (CollectionUtils.isEmpty(couponId)) {
             return ListUtil.empty();
         }
-        List<Coupon> coupons = couponMapper.selectNameListByIds(couponId, tenantId);
-        if (CollectionUtils.isEmpty(coupons)){
-            return ListUtil.empty();
+        List<CarCouponVO> result = new ArrayList<>();
+        for (Long id : couponId) {
+            Coupon coupon = queryByIdFromCache(id.intValue());
+            if (!Objects.isNull(coupon)) {
+                CarCouponVO couponVO = new CarCouponVO();
+                couponVO.setName(coupon.getName());
+                couponVO.setId(coupon.getId().longValue());
+                couponVO.setAmount(coupon.getAmount());
+                result.add(couponVO);
+            }
         }
-        return coupons.stream().map(f -> MapUtil.<String,Object>builder().put("id", f.getId()).put("couponName", f.getName()).build()).collect(Collectors.toList());
+        return result;
     }
     
     public List<BatteryMemberCardVO> getAllBatteryPackages() {
