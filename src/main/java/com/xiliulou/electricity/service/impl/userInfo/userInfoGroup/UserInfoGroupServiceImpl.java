@@ -10,8 +10,8 @@ import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
+import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
-import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.UserInfo;
@@ -20,13 +20,14 @@ import com.xiliulou.electricity.entity.userInfo.userInfoGroup.UserInfoGroupDetai
 import com.xiliulou.electricity.mapper.userInfo.userInfoGroup.UserInfoGroupMapper;
 import com.xiliulou.electricity.query.UserInfoGroupQuery;
 import com.xiliulou.electricity.request.user.UserInfoGroupBatchImportRequest;
-import com.xiliulou.electricity.request.user.UserInfoGroupSaveRequest;
+import com.xiliulou.electricity.request.user.UserInfoGroupSaveAndUpdateRequest;
 import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.service.userinfo.userInfoGroup.UserInfoGroupDetailService;
 import com.xiliulou.electricity.service.userinfo.userInfoGroup.UserInfoGroupService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
+import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.vo.userinfo.BatchImportUserInfoVO;
 import com.xiliulou.electricity.vo.userinfo.UserInfoGroupVO;
 import lombok.extern.slf4j.Slf4j;
@@ -75,15 +76,15 @@ public class UserInfoGroupServiceImpl implements UserInfoGroupService {
     private UserInfoGroupDetailService userInfoGroupDetailService;
     
     @Override
-    public R save(UserInfoGroupSaveRequest userInfoGroupSaveRequest, Long uid) {
+    public R save(UserInfoGroupSaveAndUpdateRequest request, Long uid) {
         boolean result = redisService.setNx(CacheConstant.CACHE_USER_GROUP_SAVE_LOCK + uid, "1", 3 * 1000L, false);
         if (!result) {
             return R.fail("ELECTRICITY.0034", "操作频繁");
         }
         
         try {
-            Long franchiseeId = userInfoGroupSaveRequest.getFranchiseId();
-            String userGroupName = userInfoGroupSaveRequest.getName();
+            Long franchiseeId = request.getFranchiseId();
+            String userGroupName = request.getName();
             
             if (Objects.isNull(franchiseeService.queryByIdFromCache(franchiseeId))) {
                 return R.fail("ELECTRICITY.0038", "未找到加盟商");
@@ -104,6 +105,83 @@ public class UserInfoGroupServiceImpl implements UserInfoGroupService {
             return R.ok(userInfoGroupMapper.insertOne(userInfoGroup));
         } finally {
             redisService.delete(CacheConstant.CACHE_USER_GROUP_SAVE_LOCK + uid);
+        }
+    }
+    
+    @Override
+    public R remove(Long id, Long uid) {
+        UserInfoGroup userInfoGroup = this.queryByIdFromCache(id);
+        if (Objects.isNull(userInfoGroup)) {
+            return R.fail("120112", "未找到用户分组");
+        }
+        
+        Integer tenantId = TenantContextHolder.getTenantId();
+        
+        if (!Objects.equals(tenantId, userInfoGroup.getTenantId())) {
+            return R.ok();
+        }
+        
+        Integer count = userInfoGroupDetailService.countUserByGroupId(id);
+        if (Objects.nonNull(count) && count > 0) {
+            return R.fail("120113", "该分组中存在用户，请先移除用户后再操作");
+        }
+        
+        UserInfoGroup delUserInfoGroup = UserInfoGroup.builder().id(id).updateTime(System.currentTimeMillis()).delFlag(CommonConstant.DEL_Y).operator(uid).build();
+        
+        int update = userInfoGroupMapper.update(delUserInfoGroup);
+        
+        DbUtils.dbOperateSuccessThenHandleCache(update, i -> {
+            redisService.delete(CacheConstant.CACHE_USER_GROUP + id);
+        });
+        
+        return R.ok(update);
+    }
+    
+    
+    @Override
+    public R update(UserInfoGroupSaveAndUpdateRequest request, Long uid) {
+        boolean result = redisService.setNx(CacheConstant.CACHE_USER_GROUP_UPDATE_LOCK + uid, "1", 3 * 1000L, false);
+        if (!result) {
+            return R.fail("ELECTRICITY.0034", "操作频繁");
+        }
+        
+        try {
+            if (Objects.isNull(franchiseeService.queryByIdFromCache(request.getFranchiseId()))) {
+                return R.fail("ELECTRICITY.0038", "未找到加盟商");
+            }
+            
+            UserInfoGroup oldUserInfo = this.queryByIdFromCache(request.getId());
+            if (Objects.isNull(oldUserInfo)) {
+                return R.fail("120112", "未找到用户分组");
+            }
+            
+            String name = request.getName();
+            Integer tenantId = TenantContextHolder.getTenantId();
+            
+            if (!Objects.equals(tenantId, oldUserInfo.getTenantId())) {
+                return R.ok();
+            }
+            
+            if (!Objects.equals(oldUserInfo.getName(), name)) {
+                UserInfoGroup userInfoGroup = userInfoGroupMapper.queryByName(name, tenantId);
+                if (Objects.nonNull(userInfoGroup)) {
+                    return R.fail("120110", "分组名称已存在");
+                }
+            }
+            
+            oldUserInfo.setName(name);
+            oldUserInfo.setOperator(uid);
+            oldUserInfo.setUpdateTime(System.currentTimeMillis());
+            
+            int update = userInfoGroupMapper.update(oldUserInfo);
+            
+            DbUtils.dbOperateSuccessThenHandleCache(update, i -> {
+                redisService.delete(CacheConstant.CACHE_USER_GROUP + oldUserInfo.getId());
+            });
+            
+            return R.ok(update);
+        } finally {
+            redisService.delete(CacheConstant.CACHE_USER_GROUP_UPDATE_LOCK + uid);
         }
     }
     
@@ -260,16 +338,10 @@ public class UserInfoGroupServiceImpl implements UserInfoGroupService {
         if (Objects.isNull(userInfoGroup)) {
             return null;
         }
-    
+        
         //放入缓存
         redisService.saveWithHash(CacheConstant.CACHE_USER_GROUP + id, userInfoGroup);
         return userInfoGroup;
-    }
-    
-    @Slave
-    @Override
-    public List<UserInfoGroupVO> listGroupByUid(Long uid, Integer tenantId) {
-        return userInfoGroupMapper.selectListGroupByUid(uid, tenantId);
     }
     
     @Slave

@@ -1,8 +1,11 @@
 package com.xiliulou.electricity.service.userinfo.userInfoGroup;
 
+import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.userInfo.userInfoGroup.UserInfoGroupDetail;
 import com.xiliulou.electricity.query.UserInfoGroupDetailQuery;
+import com.xiliulou.electricity.request.user.UserInfoGroupDetailUpdateRequest;
 import com.xiliulou.electricity.vo.userinfo.UserInfoGroupDetailVO;
+import com.xiliulou.electricity.vo.userinfo.UserInfoGroupNamesVO;
 
 import java.util.List;
 
@@ -20,4 +23,10 @@ public interface UserInfoGroupDetailService {
     Integer countTotal(UserInfoGroupDetailQuery query);
     
     Integer batchInsert(List<UserInfoGroupDetail> detailList);
+    
+    Integer countUserByGroupId(Long id);
+    
+    List<UserInfoGroupNamesVO> listGroupByUid(UserInfoGroupDetailQuery query);
+    
+    R update(UserInfoGroupDetailUpdateRequest request);
 }
