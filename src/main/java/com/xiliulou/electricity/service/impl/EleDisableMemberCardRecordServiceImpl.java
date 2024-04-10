@@ -262,6 +262,7 @@ public class EleDisableMemberCardRecordServiceImpl extends ServiceImpl<Electrici
                 enterpriseUserCostRecordService.asyncSaveUserCostRecordForBattery(userInfo.getUid(),
                         updateEleDisableMemberCardRecord.getId() + "_" + updateEleDisableMemberCardRecord.getDisableMemberCardNo(),
                         UserCostTypeEnum.COST_TYPE_FREEZE_PACKAGE.getCode(), updateEleDisableMemberCardRecord.getDisableMemberCardTime());
+                sendUserOperateRecord(eleDisableMemberCardRecord, status);
                 return R.ok();
             }
             
@@ -294,17 +295,7 @@ public class EleDisableMemberCardRecordServiceImpl extends ServiceImpl<Electrici
                     updateEleDisableMemberCardRecord.getId() + "_" + updateEleDisableMemberCardRecord.getDisableMemberCardNo(), UserCostTypeEnum.COST_TYPE_FREEZE_PACKAGE.getCode(),
                     updateEleDisableMemberCardRecord.getDisableMemberCardTime());
         }
-        try {
-            Map<String, Object> map = new HashMap<>();
-            map.put("username", eleDisableMemberCardRecord.getUserName());
-            map.put("phone", eleDisableMemberCardRecord.getPhone());
-            map.put("packageName", eleDisableMemberCardRecord.getMemberCardName());
-            map.put("approve", Objects.equals(status, EleBatteryServiceFeeOrder.STATUS_SUCCESS) ? 0 : 1);
-            map.put("residue", updateEleDisableMemberCardRecord.getChooseDays());
-            operateRecordUtil.record(null, map);
-        } catch (Throwable e) {
-            log.error("Recording user operation records failed because:", e);
-        }
+        sendUserOperateRecord(eleDisableMemberCardRecord, status);
         return R.ok();
     }
     
@@ -346,5 +337,20 @@ public class EleDisableMemberCardRecordServiceImpl extends ServiceImpl<Electrici
     @Override
     public Integer updatePhoneByUid(Integer tenantId, Long uid, String newPhone) {
         return eleDisableMemberCardRecordMapper.updatePhoneByUid(tenantId, uid, newPhone);
+    }
+    
+    
+    private void sendUserOperateRecord(EleDisableMemberCardRecord eleDisableMemberCardRecord, Integer status) {
+        try {
+            Map<String, Object> map = new HashMap<>();
+            map.put("username", eleDisableMemberCardRecord.getUserName());
+            map.put("phone", eleDisableMemberCardRecord.getPhone());
+            map.put("packageName", eleDisableMemberCardRecord.getMemberCardName());
+            map.put("approve", Objects.equals(status, EleBatteryServiceFeeOrder.STATUS_SUCCESS) ? 0 : 1);
+            map.put("residue", eleDisableMemberCardRecord.getChooseDays());
+            operateRecordUtil.record(null, map);
+        } catch (Throwable e) {
+            log.error("Recording user operation records failed because:", e);
+        }
     }
 }
