@@ -19,9 +19,11 @@
 
     <!--查询单个-->
     <select id="selectByUidAndSn" resultMap="ExchangeBatterySocMap">
-        select id,uid,sn,takeAwayPower
+        select id, uid, sn, takeAwayPower
         from t_exchange_battery_soc
-        where uid = #{uid} and sn =#{sn}
+        where uid = #{uid}
+          and sn = #{sn}
+          and del_flag = 0
     </select>
 
     <!--新增所有列-->

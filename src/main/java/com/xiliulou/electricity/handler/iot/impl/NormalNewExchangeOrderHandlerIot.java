@@ -338,7 +338,7 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
                 returnBattery(oldElectricityBattery, electricityCabinetOrder.getUid());
                 
                 // 归还电池，保存归还电池soc
-                handlerUserRentBatterySoc(userInfo,exchangeOrderRsp.getPlaceBatteryName(),exchangeOrderRsp.getPlaceBatterySoc());
+                handlerUserRentBatterySoc(userInfo, exchangeOrderRsp.getPlaceBatteryName(), exchangeOrderRsp.getPlaceBatterySoc());
                 
             }
         } else {
@@ -395,41 +395,50 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
     }
     
     /**
-     * 取走电池记录soc
+     * 换电取走电池 记录soc
      */
     private void handlerUserTakeBatterySoc(UserInfo userInfo, String sn, Double takeAwayPower) {
         if (Objects.isNull(takeAwayPower)) {
-            log.error("handlerUserTakeBatterySoc is error,takeAwayPower is null");
+            log.error("handlerUserTakeBatterySoc/exchangeBattery is error,takeAwayPower is null");
             return;
         }
         ExchangeBatterySoc exchangeBatterySoc = exchangeBatterySocService.selectByUidAndSn(userInfo.getUid(), sn);
         if (Objects.nonNull(exchangeBatterySoc)) {
-            log.error("handlerUserTakeBatterySoc is error, takeBatterSoc should is null");
+            log.error("handlerUserTakeBatterySoc/exchangeBattery is error, takeBatterSoc should is null");
             return;
         }
-        ExchangeBatterySoc batterySoc = ExchangeBatterySoc.builder().uid(userInfo.getUid()).sn(sn).tenantId(userInfo.getTenantId()).franchiseeId(userInfo.getFranchiseeId())
-                .storeId(userInfo.getStoreId()).takeAwayPower(takeAwayPower).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).build();
-        exchangeBatterySocService.insertOne(batterySoc);
+        try {
+            ExchangeBatterySoc batterySoc = ExchangeBatterySoc.builder().uid(userInfo.getUid()).sn(sn).tenantId(userInfo.getTenantId()).franchiseeId(userInfo.getFranchiseeId())
+                    .storeId(userInfo.getStoreId()).takeAwayPower(takeAwayPower).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).build();
+            exchangeBatterySocService.insertOne(batterySoc);
+        } catch (Exception e) {
+            log.error("handlerUserTakeBatterySoc/exchangeBattery/insert is exception,error is={}", e);
+        }
         
     }
     
     /**
-     * 归还电池记录归还soc
+     * 换电归还电池 记录soc
      */
     private void handlerUserRentBatterySoc(UserInfo userInfo, String sn, Double returnPower) {
         if (Objects.isNull(returnPower)) {
-            log.error("handlerUserRentBatterySoc is error,returnPower is null");
+            log.error("handlerUserRentBatterySoc/exchangeBattery is error,returnPower is null");
             return;
         }
         ExchangeBatterySoc exchangeBatterySoc = exchangeBatterySocService.selectByUidAndSn(userInfo.getUid(), sn);
         if (Objects.nonNull(exchangeBatterySoc)) {
-            log.error("handlerUserRentBatterySoc is error, rentBatterySoc should is not null");
+            log.error("handlerUserRentBatterySoc/exchangeBattery is error, rentBatterySoc should is not null");
             return;
         }
-        exchangeBatterySoc.setReturnPower(returnPower);
-        exchangeBatterySoc.setPoorPower(exchangeBatterySoc.getTakeAwayPower() - returnPower);
-        exchangeBatterySoc.setUpdateTime(System.currentTimeMillis());
-        exchangeBatterySocService.update(exchangeBatterySoc);
+        try {
+            exchangeBatterySoc.setReturnPower(returnPower);
+            exchangeBatterySoc.setPoorPower(exchangeBatterySoc.getTakeAwayPower() - returnPower);
+            exchangeBatterySoc.setUpdateTime(System.currentTimeMillis());
+            exchangeBatterySocService.update(exchangeBatterySoc);
+        } catch (Exception e) {
+            log.error("handlerUserTakeBatterySoc/exchangeBattery/update is exception,error is={}", e);
+        }
+        
     }
     
     private void returnBattery(ElectricityBattery placeBattery, Long uid) {
