@@ -11,6 +11,25 @@
         values (#{groupNo}, #{name}, #{operator}, #{franchiseeId}, #{tenantId}, #{createTime}, #{updateTime})
     </insert>
     
+    <update id="update">
+        update t_user_info_group
+        <set>
+            <if test="name != null and name != ''">
+                name = #{name},
+            </if>
+            <if test="operator != null">
+                operator = #{operator},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+            <if test="delFlag != null">
+                del_flag = #{delFlag},
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+    
     <select id="selectPage" resultType="com.xiliulou.electricity.vo.userinfo.UserInfoGroupVO">
         select tuig.id as id, tuig.name as groupName, count(distinct (tuigd.uid)) as userCount, tuig.franchisee_id as franchiseeId, tuig.operator as operator, tuig.update_time as
         operatorTime, tuig.creat_time as createTime
@@ -60,16 +79,6 @@
         <include refid="basic_field"/>
         from t_user_info_group
         where del_flag = 0 and id = #{id}
-    </select>
-    
-    <select id="selectListGroupByUid" resultType="com.xiliulou.electricity.vo.userinfo.UserInfoGroupVO">
-        select tuig.id as id, tuig.name as groupName
-        from t_user_info_group tuig
-                 left join t_user_info_group_detail tuigd on tuig.group_no = tuigd.group_no
-        where tuigd.del_flag = 0
-          and tuig.del_flag = 0
-          and tuigd.uid = #{uid}
-          and tuigd.tenant_id = #{tenantId}
     </select>
     
     <select id="selectListByIds" resultType="com.xiliulou.electricity.vo.userinfo.UserInfoGroupVO">
