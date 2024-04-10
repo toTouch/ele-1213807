@@ -30,13 +30,16 @@ import java.util.Objects;
 @RestController
 @Slf4j
 public class JsonAdminElectricitySubscriptionMessageController {
+    
     @Autowired
     ElectricitySubscriptionMessageService electricitySubscriptionMessageService;
+    
     @Autowired
     RedisService redisService;
-
+    
     @Autowired
     OperateRecordUtil operateRecordUtil;
+    
     /**
      * 新增
      *
@@ -46,7 +49,7 @@ public class JsonAdminElectricitySubscriptionMessageController {
     public R saveElectricitySubscriptionMessage(@RequestBody @Validated ElectricitySubscriptionMessage electricitySubscriptionMessage) {
         return electricitySubscriptionMessageService.saveElectricitySubscriptionMessage(electricitySubscriptionMessage);
     }
-
+    
     /**
      * 获取 小程序服务信息
      *
@@ -56,9 +59,9 @@ public class JsonAdminElectricitySubscriptionMessageController {
     public R getServicePhone() {
         //租户
         Integer tenantId = TenantContextHolder.getTenantId();
-        return R.ok(redisService.get(CacheConstant.CACHE_SERVICE_PHONE+tenantId));
+        return R.ok(redisService.get(CacheConstant.CACHE_SERVICE_PHONE + tenantId));
     }
-
+    
     /**
      * 设置小程序服务信息
      *
@@ -68,18 +71,18 @@ public class JsonAdminElectricitySubscriptionMessageController {
     public R getServicePhone(@RequestBody ServicePhoneQuery servicePhoneQuery) {
         //租户
         Integer tenantId = TenantContextHolder.getTenantId();
-        String oldPhone="";
-        if (redisService.hasKey(CacheConstant.CACHE_SERVICE_PHONE+tenantId)){
-            oldPhone= redisService.get(CacheConstant.CACHE_SERVICE_PHONE + tenantId);
+        String oldPhone = "";
+        if (redisService.hasKey(CacheConstant.CACHE_SERVICE_PHONE + tenantId)) {
+            oldPhone = redisService.get(CacheConstant.CACHE_SERVICE_PHONE + tenantId);
         }
         
-        redisService.set(CacheConstant.CACHE_SERVICE_PHONE+tenantId, servicePhoneQuery.getPhone());
+        redisService.set(CacheConstant.CACHE_SERVICE_PHONE + tenantId, servicePhoneQuery.getPhone());
         
-        operateRecordUtil.record(MapUtil.of("phone",oldPhone),MapUtil.of("phone",servicePhoneQuery.getPhone()));
+        operateRecordUtil.record(MapUtil.of("phone", oldPhone), MapUtil.of("phone", servicePhoneQuery.getPhone()));
         return R.ok();
     }
-
-
+    
+    
     /**
      * 修改
      *
@@ -92,8 +95,8 @@ public class JsonAdminElectricitySubscriptionMessageController {
         }
         return electricitySubscriptionMessageService.updateElectricitySubscriptionMessage(electricitySubscriptionMessage);
     }
-
-
+    
+    
     /**
      * 分页
      *
@@ -103,7 +106,7 @@ public class JsonAdminElectricitySubscriptionMessageController {
     public R getElectricityMemberCardPage(@RequestParam(value = "type", required = false) Integer type) {
         //租户
         Integer tenantId = TenantContextHolder.getTenantId();
-        return electricitySubscriptionMessageService.getElectricitySubscriptionMessagePage(type,tenantId);
+        return electricitySubscriptionMessageService.getElectricitySubscriptionMessagePage(type, tenantId);
     }
-
+    
 }

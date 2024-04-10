@@ -512,7 +512,7 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
         if (Objects.equals(memberTermEntity.getRentalPackageConfine(), RenalPackageConfineEnum.NO.getCode())) {
             record.setOldMaxUseCount(UserOperateRecordConstant.UN_LIMIT_COUNT_REMAINING_NUMBER);
         }
-    
+        
         //如果修改后的套餐次数为不限次套餐，则修改最大使用次数。
         CarRentalPackageMemberTermPo memberTermEntityUpdated = carRentalPackageMemberTermService.selectByTenantIdAndUid(memberTermEntity.getTenantId(), memberTermEntity.getUid());
         if (Objects.equals(memberTermEntityUpdated.getRentalPackageConfine(), RenalPackageConfineEnum.NO.getCode())) {
@@ -522,42 +522,43 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
         eleUserOperateRecordService.asyncHandleUserOperateRecord(record);
         try {
             CarRentalPackagePo packagePo = carRentalPackageService.selectById(packageOrderEntity.getRentalPackageId());
-            operateRecordUtil.record(builderOperateRecord(record,packagePo.getName(),userInfo.getPhone(),userInfo.getName(),packagePo.getType(),false),builderOperateRecord(record,packagePo.getName(),userInfo.getPhone(),userInfo.getName(),packagePo.getType(),true));
-        }catch (Throwable e){
-            log.warn("The user failed to modify the car plan record because: {}",e.getMessage());
+            operateRecordUtil.record(builderOperateRecord(record, packagePo.getName(), userInfo.getPhone(), userInfo.getName(), packagePo.getType(), false),
+                    builderOperateRecord(record, packagePo.getName(), userInfo.getPhone(), userInfo.getName(), packagePo.getType(), true));
+        } catch (Throwable e) {
+            log.error("The user failed to modify the car plan record because:", e);
         }
         return true;
     }
     
-    private Map<String,Object> builderOperateRecord(EleUserOperateRecord record,String packageName,String phone,String username,Integer type,Boolean isNew){
-        Map<String,Object> result =new HashMap<>();
-        result.put("packageName",packageName);
-        result.put("phone",phone);
-        result.put("username",username);
-        result.put("type",type);
-        if (!isNew){
-            result.put("validDays",record.getOldValidDays());
-            result.put("electricityBatterySn",record.getInitElectricityBatterySn());
-            result.put("batteryDeposit",record.getOldBatteryDeposit());
-            result.put("batteryInsuranceStatus",record.getOldBatteryInsuranceStatus());
-            result.put("carInsuranceStatus",record.getOldCarInsuranceStatus());
-            result.put("batteryInsuranceExpireTime",record.getOldBatteryInsuranceExpireTime());
-            result.put("carInsuranceExpireTime",record.getOldCarInsuranceExpireTime());
-            result.put("carDeposit",record.getOldCarDeposit());
-            result.put("electricityCarSn",record.getInitElectricityCarSn());
-            result.put("maxUseCount",record.getOldMaxUseCount());
+    private Map<String, Object> builderOperateRecord(EleUserOperateRecord record, String packageName, String phone, String username, Integer type, Boolean isNew) {
+        Map<String, Object> result = new HashMap<>();
+        result.put("packageName", packageName);
+        result.put("phone", phone);
+        result.put("username", username);
+        result.put("type", type);
+        if (!isNew) {
+            result.put("validDays", record.getOldValidDays());
+            result.put("electricityBatterySn", record.getInitElectricityBatterySn());
+            result.put("batteryDeposit", record.getOldBatteryDeposit());
+            result.put("batteryInsuranceStatus", record.getOldBatteryInsuranceStatus());
+            result.put("carInsuranceStatus", record.getOldCarInsuranceStatus());
+            result.put("batteryInsuranceExpireTime", record.getOldBatteryInsuranceExpireTime());
+            result.put("carInsuranceExpireTime", record.getOldCarInsuranceExpireTime());
+            result.put("carDeposit", record.getOldCarDeposit());
+            result.put("electricityCarSn", record.getInitElectricityCarSn());
+            result.put("maxUseCount", record.getOldMaxUseCount());
             return result;
         }
-        result.put("validDays",record.getNewValidDays());
-        result.put("electricityBatterySn",record.getNowElectricityBatterySn());
-        result.put("batteryDeposit",record.getNewBatteryDeposit());
-        result.put("batteryInsuranceStatus",record.getNewBatteryInsuranceStatus());
-        result.put("carInsuranceStatus",record.getNewCarInsuranceStatus());
-        result.put("batteryInsuranceExpireTime",record.getNewBatteryInsuranceExpireTime());
-        result.put("carInsuranceExpireTime",record.getNewCarInsuranceExpireTime());
-        result.put("carDeposit",record.getNewCarDeposit());
-        result.put("electricityCarSn",record.getNewElectricityCarSn());
-        result.put("maxUseCount",record.getNewMaxUseCount());
+        result.put("validDays", record.getNewValidDays());
+        result.put("electricityBatterySn", record.getNowElectricityBatterySn());
+        result.put("batteryDeposit", record.getNewBatteryDeposit());
+        result.put("batteryInsuranceStatus", record.getNewBatteryInsuranceStatus());
+        result.put("carInsuranceStatus", record.getNewCarInsuranceStatus());
+        result.put("batteryInsuranceExpireTime", record.getNewBatteryInsuranceExpireTime());
+        result.put("carInsuranceExpireTime", record.getNewCarInsuranceExpireTime());
+        result.put("carDeposit", record.getNewCarDeposit());
+        result.put("electricityCarSn", record.getNewElectricityCarSn());
+        result.put("maxUseCount", record.getNewMaxUseCount());
         return result;
     }
     
@@ -701,7 +702,8 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
         }
         // 更改状态
         if ((ObjectUtils.isNotEmpty(memberTermEntity.getDueTime()) && memberTermEntity.getDueTime() != 0L && memberTermEntity.getDueTime() <= System.currentTimeMillis()) || (
-                Objects.equals(memberTermEntity.getRentalPackageConfine(), RenalPackageConfineEnum.NUMBER.getCode()) && ObjectUtils.isNotEmpty(memberTermEntity.getResidue()) && memberTermEntity.getResidue() <= 0L)) {
+                Objects.equals(memberTermEntity.getRentalPackageConfine(), RenalPackageConfineEnum.NUMBER.getCode()) && ObjectUtils.isNotEmpty(memberTermEntity.getResidue())
+                        && memberTermEntity.getResidue() <= 0L)) {
             userMemberInfoVo.setStatus(MemberTermStatusEnum.EXPIRE.getCode());
         }
         if (!CollectionUtils.isEmpty(batteryModelEntityList)) {
@@ -975,9 +977,8 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
             if (RentalUnitEnum.MINUTE.getCode().equals(tenancyUnit)) {
                 dueTime = dueTime + (tenancy * TimeConstant.MINUTE_MILLISECOND);
             }
-
+            
             memberTermEntityUpdate.setDueTime(dueTime);
-           
             
             // 计算余量
             if (RenalPackageConfineEnum.NUMBER.getCode().equals(packageOrderEntityNew.getConfine())) {
