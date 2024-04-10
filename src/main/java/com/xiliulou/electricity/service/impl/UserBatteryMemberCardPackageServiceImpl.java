@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.service.impl;
 
 import com.xiliulou.db.dynamic.annotation.Slave;
+import com.xiliulou.electricity.bo.batteryPackage.UserBatteryMemberCardPackageBO;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mapper.UserBatteryMemberCardPackageMapper;
 import com.xiliulou.electricity.service.*;
@@ -14,7 +15,6 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Resource;
 import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.ExecutorService;
 
 /**
  * (UserBatteryMemberCardPackage)表服务实现类
@@ -293,6 +293,17 @@ public class UserBatteryMemberCardPackageServiceImpl implements UserBatteryMembe
     @Override
     public List<UserBatteryMemberCardPackage> queryChannelListByUid(Long uid) {
         return userBatteryMemberCardPackageMapper.listChannelByUid(uid);
+    }
+    
+    /**
+     * 根据uid查询用户最新的一条的企业套餐的信息
+     * @param uid
+     * @return
+     */
+    @Slave
+    @Override
+    public UserBatteryMemberCardPackageBO queryEnterprisePackageByUid(Long uid) {
+        return userBatteryMemberCardPackageMapper.selectLastEnterprisePackageByUid(uid);
     }
     
 }

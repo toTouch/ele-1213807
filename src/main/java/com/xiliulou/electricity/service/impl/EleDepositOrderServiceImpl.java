@@ -197,7 +197,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         EnterpriseChannelUserVO enterpriseChannelUserVO = enterpriseChannelUserService.queryUserRelatedEnterprise(userInfo.getUid());
         if (Objects.nonNull(enterpriseChannelUserVO) && Objects.equals(enterpriseChannelUserVO.getRenewalStatus(), EnterpriseChannelUser.RENEWAL_CLOSE)) {
             log.warn("ELE DEPOSIT WARN! return Deposit channel user is disable! uid={}", user.getUid());
-            return R.fail("120303", "企业渠道用户，暂不支持退押操作");
+            return R.fail("120303", "您已是渠道用户，请联系站点开启自主续费后，进行退押操作");
         }
 
         BatteryMemberCard batteryMemberCard = null;

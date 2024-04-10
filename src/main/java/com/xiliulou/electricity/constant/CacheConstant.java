@@ -614,4 +614,10 @@ public interface CacheConstant {
     
     String CACHE_MERCHANT_MODIFY_INVITER_LOCK = "cache_merchant_modify_inviter_lock:";
 
+    
+    String CACHE_RECYCLE_CLOUD_BEAN_LOCK = "cache_recycle_cloud_bean_lock:";
+    
+    String CACHE_CHANNEL_USER_EXIT_LOCK = "cache_channel_user_exit_lock:";
+    
+    String CACHE_CHANNEL_USER_EXIT_ALL_LOCK = "cache_channel_user_exit_all_lock:";
 }

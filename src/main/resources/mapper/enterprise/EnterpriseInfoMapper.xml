@@ -214,4 +214,9 @@
     <update id="updatePhoneByUid">
         update t_enterprise_info set phone=#{newPhone} where uid=#{uid} and tenant_id = #{tenantId}
     </update>
+    
+    <update id="subtractCloudBean">
+        update t_enterprise_info set total_bean_amount = total_bean_amount- #{subtractCloudBean}, update_time = #{updateTime}
+        where id = #{id}
+    </update>
 </mapper>

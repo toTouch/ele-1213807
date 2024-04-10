@@ -101,6 +101,8 @@ public interface EnterpriseInfoService {
     
     int addCloudBean(Long id, BigDecimal add);
     
+    int subtractCloudBean(Long id, BigDecimal subtract, long updateTime);
+    
     /**
      * 根据更换手机号
      *

@@ -9,26 +9,24 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 /**
- * 站长自主续费退出时候所有用户云豆退出
  * @author maxiaodong
- * @date 2024-01-16-14:10
+ * @date 2024/4/7 9:34
+ * @desc 检测企业云豆消费和充值情况是否相等
  */
 @Component
-@JobHandler(value = "cloudBeanRecycleExitTask")
+@JobHandler(value = "cloudBeanCheckTask")
 @Slf4j
-public class CloudBeanRecycleExitTask extends IJobHandler {
-    
+public class CloudBeanCheckTask extends IJobHandler {
     @Autowired
     private CloudBeanUseRecordService cloudBeanUseRecordService;
     
     @Override
     public ReturnT<String> execute(String s) throws Exception {
         try {
-            cloudBeanUseRecordService.recycleCloudBeanExitTask();
+            cloudBeanUseRecordService.checkCloudBeanTask();
         } catch (Exception e) {
-            log.error("xxl-job cloud bean recycle exit task", e);
+            log.error("cloud bean check task error", e);
         }
-        
         return IJobHandler.SUCCESS;
     }
 }
