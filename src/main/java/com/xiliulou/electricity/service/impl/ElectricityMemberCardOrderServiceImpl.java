@@ -1161,12 +1161,13 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
     
             if (!CollectionUtils.isEmpty(couponIdsSet)) {
                 CouponSearchVo couponSearchVo = new CouponSearchVo();
+                
                 couponIdsSet.forEach(couponId -> {
                     Coupon coupon = couponService.queryByIdFromCache(couponId);
                     if (Objects.nonNull(coupon)) {
                         BeanUtils.copyProperties(coupon, couponSearchVo);
+                        coupons.add(couponSearchVo);
                     }
-                    coupons.add(couponSearchVo);
                 });
             }
             electricityMemberCardOrderVO.setCoupons(coupons);

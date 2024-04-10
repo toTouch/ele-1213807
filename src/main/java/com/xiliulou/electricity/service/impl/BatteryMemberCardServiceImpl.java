@@ -413,11 +413,12 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
                 if (!CollectionUtils.isEmpty(couponIdsSet)) {
                     CouponSearchVo couponSearchVo = new CouponSearchVo();
                     couponIdsSet.forEach(couponId -> {
+                        
                         Coupon coupon = couponService.queryByIdFromCache(couponId);
                         if (Objects.nonNull(coupon)) {
                             BeanUtils.copyProperties(coupon, couponSearchVo);
+                            coupons.add(couponSearchVo);
                         }
-                        coupons.add(couponSearchVo);
                     });
                 }
                 batteryMemberCardVO.setCoupons(coupons);
@@ -429,13 +430,13 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
                 
                 JsonUtil.fromJsonArray(item.getUserGroupIds(), Long.class).forEach(userGroupId -> {
                     SearchVo searchVo = new SearchVo();
+                    
                     UserInfoGroup userInfoGroup = userInfoGroupService.queryByIdFromCache(userGroupId);
                     if (Objects.nonNull(userInfoGroup)) {
                         BeanUtils.copyProperties(userInfoGroup, searchVo);
+                        userGroups.add(searchVo);
                     }
-                    userGroups.add(searchVo);
                 });
-                
                 batteryMemberCardVO.setUserGroups(userGroups);
             }
             
