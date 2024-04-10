@@ -1187,7 +1187,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             return exchangeStatus;
         }
         
-        Pair<Boolean, Integer> usableEmptyCellNo = electricityCabinetService.findUsableEmptyCellNo(selectBox.getElectricityCabinetId());
+        Pair<Boolean, Integer> usableEmptyCellNo = electricityCabinetService.findUsableEmptyCellNoV2(selectBox.getElectricityCabinetId());
         if (Boolean.FALSE.equals(usableEmptyCellNo.getLeft())) {
             log.warn("SELECTION EXCHANGE ORDER WARN!  not found usable empty cell!uid={},eid={}", userInfo.getUid(), electricityCabinet.getId());
             return Triple.of(false, "100215", "当前无空余格挡可供换电，请联系客服！");
@@ -1508,7 +1508,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             orderQuery.setSource(OrderQuery.SOURCE_WX_MP);
         }
         
-        Pair<Boolean, Integer> usableEmptyCellNo = electricityCabinetService.findUsableEmptyCellNo(electricityCabinet.getId());
+        Pair<Boolean, Integer> usableEmptyCellNo = electricityCabinetService.findUsableEmptyCellNoV2(electricityCabinet.getId());
         if (Boolean.FALSE.equals(usableEmptyCellNo.getLeft())) {
             return Triple.of(false, "100215", "当前无空余格挡可供换电，请联系客服！");
         }
@@ -1621,7 +1621,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             orderQuery.setSource(OrderQuery.SOURCE_WX_MP);
         }
         
-        Pair<Boolean, Integer> usableEmptyCellNo = electricityCabinetService.findUsableEmptyCellNo(electricityCabinet.getId());
+        Pair<Boolean, Integer> usableEmptyCellNo = electricityCabinetService.findUsableEmptyCellNoV2(electricityCabinet.getId());
         if (Boolean.FALSE.equals(usableEmptyCellNo.getLeft())) {
             return Triple.of(false, "100215", "当前无空余格挡可供换电，请联系客服！");
         }
@@ -1712,10 +1712,6 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             log.warn("ORDER WARN! user's member card is stop! uid={}", userInfo.getUid());
             return Triple.of(false, "100211", "换电套餐已暂停");
         }
-        //            Triple<Boolean, String, Object> checkUserMemberCardResult = checkUserMemberCard(userBatteryMemberCard, user);
-        //            if (Boolean.FALSE.equals(checkUserMemberCardResult.getLeft())) {
-        //                return checkUserMemberCardResult;
-        //            }
         
         BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());
         if (Objects.isNull(batteryMemberCard)) {
@@ -1757,7 +1753,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             orderQuery.setSource(OrderQuery.SOURCE_WX_MP);
         }
         
-        Pair<Boolean, Integer> usableEmptyCellNo = electricityCabinetService.findUsableEmptyCellNo(electricityCabinet.getId());
+        Pair<Boolean, Integer> usableEmptyCellNo = electricityCabinetService.findUsableEmptyCellNoV2(electricityCabinet.getId());
         if (Boolean.FALSE.equals(usableEmptyCellNo.getLeft())) {
             return Triple.of(false, "100215", "当前无空余格挡可供换电，请联系客服！");
         }

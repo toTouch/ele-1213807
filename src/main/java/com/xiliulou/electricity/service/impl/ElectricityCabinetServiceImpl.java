@@ -3180,6 +3180,32 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     }
     
     @Override
+    public Pair<Boolean, Integer> findUsableEmptyCellNoV2(Integer eid) {
+        Integer cellNo = null;
+        List<ElectricityCabinetBox> emptyCellList = electricityCabinetBoxService.listUsableEmptyCell(eid);
+        if (CollectionUtils.isEmpty(emptyCellList)) {
+            return Pair.of(false, null);
+        }
+    
+        //可用格挡只有一个默认直接分配
+        if (emptyCellList.size() == 1) {
+            cellNo = Integer.valueOf(emptyCellList.get(0).getCellNo());
+            return Pair.of(true, cellNo);
+        }
+    
+        //有多个空格挡  优先分配开门的格挡
+        List<ElectricityCabinetBox> openDoorEmptyCellList = emptyCellList.stream().filter(item -> Objects.equals(item.getIsLock(), ElectricityCabinetBox.OPEN_DOOR))
+                .collect(Collectors.toList());
+        if (!CollectionUtils.isEmpty(openDoorEmptyCellList)) {
+            cellNo = Integer.parseInt(openDoorEmptyCellList.get(ThreadLocalRandom.current().nextInt(openDoorEmptyCellList.size())).getCellNo());
+            return Pair.of(true, cellNo);
+        }
+    
+        cellNo = Integer.parseInt(emptyCellList.get(ThreadLocalRandom.current().nextInt(emptyCellList.size())).getCellNo());
+        return Pair.of(true, cellNo);
+    }
+    
+    @Override
     public Pair<Boolean, Integer> findUsableEmptyCellNo(Integer eid) {
         List<FreeCellNoQuery> electricityCabinetBoxes = electricityCabinetBoxService.findUsableEmptyCellNo(eid);
         if (!DataUtil.collectionIsUsable(electricityCabinetBoxes)) {
