@@ -83,7 +83,7 @@ public class UserInfoGroupServiceImpl implements UserInfoGroupService {
         }
         
         try {
-            Long franchiseeId = request.getFranchiseId();
+            Long franchiseeId = request.getFranchiseeId();
             String userGroupName = request.getName();
             
             if (Objects.isNull(franchiseeService.queryByIdFromCache(franchiseeId))) {
@@ -146,7 +146,7 @@ public class UserInfoGroupServiceImpl implements UserInfoGroupService {
         }
         
         try {
-            if (Objects.isNull(franchiseeService.queryByIdFromCache(request.getFranchiseId()))) {
+            if (Objects.isNull(franchiseeService.queryByIdFromCache(request.getFranchiseeId()))) {
                 return R.fail("ELECTRICITY.0038", "未找到加盟商");
             }
             
