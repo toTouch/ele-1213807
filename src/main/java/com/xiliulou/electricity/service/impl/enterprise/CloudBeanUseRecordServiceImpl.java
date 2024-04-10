@@ -507,34 +507,47 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
                 UserBatteryMemberCard item = new UserBatteryMemberCard();
                 BeanUtils.copyProperties(memberCardChannelExitVo, item);
                 
-                String errorMsg = "";
                 UserInfo userInfo = userInfoService.queryByUidFromCache(item.getUid());
+                String errorMsg = "";
+    
                 if (Objects.isNull(userInfo)) {
-                    errorMsg = "user Info is null";
+                    log.error("RECYCLE TASK WARN! user Info is null,uid={}", item.getUid());
+                    errorMsg = "RECYCLE TASK WARN! user Info is null";
                     userExitMapper.updateById(errorMsg, EnterpriseChannelUserExit.TYPE_FAIL, memberCardChannelExitVo.getChannelUserExitId(), System.currentTimeMillis());
                     return;
                 }
+                
+                EnterpriseChannelUser enterpriseChannelUser = enterpriseChannelUserService.selectByUid(userInfo.getUid());
+                if (Objects.isNull(enterpriseChannelUser)) {
+                    log.error("RECYCLE TASK WARN! channel user Info is null,uid={}", item.getUid());
+                    userExitMapper.updateById(errorMsg, EnterpriseChannelUserExit.TYPE_FAIL, memberCardChannelExitVo.getChannelUserExitId(), System.currentTimeMillis());
+                    return;
+                }
+    
+                // 如果已经回收了则直接修改状态
+                if (Objects.equals(enterpriseChannelUser.getCloudBeanStatus(), EnterpriseChannelUser.CLOUD_BEAN_STATUS_RECYCLE)) {
+                    // 修改历史退出为成功
+                    userExitMapper.updateById(null, EnterpriseChannelUserExit.TYPE_SUCCESS, memberCardChannelExitVo.getChannelUserExitId(), System.currentTimeMillis());
+                    return;
+                }
+    
             
                 if (Objects.equals(userInfo.getBatteryRentStatus(), UserInfo.BATTERY_RENT_STATUS_YES)) {
-                    errorMsg = "user battery is not return";
-                    userExitMapper.updateById(errorMsg, EnterpriseChannelUserExit.TYPE_FAIL, memberCardChannelExitVo.getChannelUserExitId(), System.currentTimeMillis());
+                    log.warn("RECYCLE TASK WARN! ser battery is not return,uid={}", item.getUid());
                     return;
                 }
             
                 if (Objects.equals(item.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE)) {
                     log.warn("RECYCLE TASK WARN! user's member card is stop,uid={}", item.getUid());
-                    errorMsg = "RECYCLE TASK WARN! user's member card is stop";
-                    userExitMapper.updateById(errorMsg, EnterpriseChannelUserExit.TYPE_FAIL, memberCardChannelExitVo.getChannelUserExitId(), System.currentTimeMillis());
                     return;
                 }
             
                 if (Objects.equals(item.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE_REVIEW)) {
                     log.warn("RECYCLE TASK WARN! user stop member card review,uid={}", item.getUid());
-                    errorMsg = "RECYCLE TASK WARN! user stop member card review";
-                    userExitMapper.updateById(errorMsg, EnterpriseChannelUserExit.TYPE_FAIL, memberCardChannelExitVo.getChannelUserExitId(), System.currentTimeMillis());
                     return;
                 }
-            
+                
+                
                 BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(item.getMemberCardId());
                 if (Objects.isNull(batteryMemberCard)) {
                     log.warn("RECYCLE TASK WARN! not found batteryMemberCard,uid={},mid={}", userInfo.getUid(), item.getMemberCardId());
@@ -552,11 +565,6 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
                     return;
                 }
             
-                EnterpriseChannelUser enterpriseChannelUser = enterpriseChannelUserService.selectByUid(userInfo.getUid());
-                if (Objects.isNull(enterpriseChannelUser)) {
-                    return;
-                }
-            
                 EnterpriseInfo enterpriseInfo = enterpriseInfoService.queryByIdFromDB(enterpriseChannelUser.getEnterpriseId());
                 if (Objects.isNull(enterpriseInfo)) {
                     log.error("RECYCLE CLOUD BEAN TASK ERROR! not found enterpriseInfo,enterpriseId={}", enterpriseChannelUser.getEnterpriseId());
@@ -564,7 +572,7 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
                     userExitMapper.updateById(errorMsg, EnterpriseChannelUserExit.TYPE_FAIL, memberCardChannelExitVo.getChannelUserExitId(), System.currentTimeMillis());
                     return;
                 }
-    
+                
                 //回收押金
                 Triple<Boolean, String, Object> batteryDepositTriple = enterpriseInfoService.recycleBatteryDeposit(userInfo, enterpriseInfo);
                 if (!batteryDepositTriple.getLeft()) {
@@ -585,9 +593,6 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
                     //解绑用户数据
                     enterpriseInfoService.unbindUserData(userInfo, enterpriseChannelUser);
     
-                    // 修改历史退出为成功
-                    userExitMapper.updateById(null, EnterpriseChannelUserExit.TYPE_SUCCESS, memberCardChannelExitVo.getChannelUserExitId(), System.currentTimeMillis());
-    
                     // 修改企业用户为自主续费为退出
                     EnterpriseChannelUserQuery query = EnterpriseChannelUserQuery.builder().uid(userInfo.getUid()).renewalStatus(EnterpriseChannelUser.RENEWAL_OPEN).build();
                     enterpriseChannelUserService.updateRenewStatus(query);
@@ -596,6 +601,9 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
                     BigDecimal batteryDepositTotalCloudBean = (BigDecimal) batteryDepositTriple.getRight();
     
                     enterpriseInfoService.addCloudBean(enterpriseInfo.getId(), membercardTotalCloudBean.add(batteryDepositTotalCloudBean));
+    
+                    // 修改历史退出为成功
+                    userExitMapper.updateById(null, EnterpriseChannelUserExit.TYPE_SUCCESS, memberCardChannelExitVo.getChannelUserExitId(), System.currentTimeMillis());
                 } catch (Exception e) {
                     log.error("recycle cloud bean exit error msg={}", e);
                     errorMsg = "recycle cloud bean exit error" + e.getMessage();
