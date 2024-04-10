@@ -112,7 +112,7 @@ public class UserInfoGroupServiceImpl implements UserInfoGroupService {
     public R remove(Long id, Long uid) {
         UserInfoGroup userInfoGroup = this.queryByIdFromCache(id);
         if (Objects.isNull(userInfoGroup)) {
-            return R.fail("120112", "未找到该用户分组");
+            return R.fail("120112", "未找到用户分组");
         }
         
         Integer tenantId = TenantContextHolder.getTenantId();
@@ -152,7 +152,7 @@ public class UserInfoGroupServiceImpl implements UserInfoGroupService {
             
             UserInfoGroup oldUserInfo = this.queryByIdFromCache(request.getId());
             if (Objects.isNull(oldUserInfo)) {
-                return R.fail("120112", "未找到该用户分组");
+                return R.fail("120112", "未找到用户分组");
             }
             
             String name = request.getName();
