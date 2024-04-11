@@ -109,5 +109,16 @@ public class CarRentalPackageQryReq implements Serializable {
      * @see RentalPackageTypeEnum
      */
     private Integer rentalPackageType;
-
+    
+    
+    /**
+     * <p>
+     * Description: 用户是否为自定义分组
+     * <pre>
+     *        0 -- 系统分组
+     *        1 -- 自定义分组
+     *    </pre>
+     * </p>
+     */
+    private Long userGroupId;
 }

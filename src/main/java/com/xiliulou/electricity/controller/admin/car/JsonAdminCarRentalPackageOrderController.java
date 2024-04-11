@@ -137,12 +137,15 @@ public class JsonAdminCarRentalPackageOrderController extends BasicController {
             if (!franchiseeMap.isEmpty()) {
                 carRentalPackageOrderVO.setFranchiseeName(franchiseeMap.getOrDefault(Long.valueOf(carRentalPackageOrder.getFranchiseeId()), ""));
             }
+            
             List<Long> couponIds = carRentalPackageOrder.getCouponIds();
             List<CarCouponVO> carCouponVOS = couponService.queryListByIdsFromCache(couponIds);
-            carRentalPackageOrderVO.setCoupons(carCouponVOS);
-            CarCouponVO couponVO = carCouponVOS.stream().max(Comparator.comparing(CarCouponVO::getAmount)).orElse(carCouponVOS.get(0));
-            carRentalPackageOrderVO.setCouponId(couponVO.getId());
-            carRentalPackageOrderVO.setCouponName(couponVO.getName());
+            if (!carCouponVOS.isEmpty()){
+                carRentalPackageOrderVO.setCoupons(carCouponVOS);
+                CarCouponVO couponVO = carCouponVOS.stream().max(Comparator.comparing(CarCouponVO::getAmount)).orElse(carCouponVOS.get(0));
+                carRentalPackageOrderVO.setCouponId(couponVO.getId());
+                carRentalPackageOrderVO.setCouponName(couponVO.getName());
+            }
             
             // 对使用中的订单，进行二次处理
             // 查询会员信息

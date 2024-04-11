@@ -241,4 +241,15 @@ public class CarRentalPackageVo implements Serializable {
      */
     private Long sortParam;
     
+    /**
+     * <p>
+     * Description: 用户是否为自定义分组
+     * <pre>
+     *        0 -- 系统分组
+     *        1 -- 自定义分组
+     *    </pre>
+     * </p>
+     */
+    private Integer isUserGroup;
+    
 }
