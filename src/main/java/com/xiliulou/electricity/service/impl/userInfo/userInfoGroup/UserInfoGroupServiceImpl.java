@@ -158,7 +158,9 @@ public class UserInfoGroupServiceImpl implements UserInfoGroupService {
                 return R.ok();
             }
             
-            if (!Objects.equals(oldUserInfo.getName(), name)) {
+            if (Objects.equals(oldUserInfo.getName(), name)) {
+                return R.ok();
+            } else {
                 UserInfoGroup userInfoGroup = userInfoGroupMapper.queryByName(name, tenantId);
                 if (Objects.nonNull(userInfoGroup)) {
                     return R.fail("120110", "分组名称已存在");
@@ -252,21 +254,20 @@ public class UserInfoGroupServiceImpl implements UserInfoGroupService {
                 existsUserGroup.add(userInfoGroup);
             }
         });
-        
-        String sessionId = UUID.fastUUID().toString(true);
+    
         BatchImportUserInfoVO batchImportUserInfoVO = new BatchImportUserInfoVO();
+        String sessionId = UUID.fastUUID().toString(true);
         batchImportUserInfoVO.setSessionId(sessionId);
+        batchImportUserInfoVO.setNotExistUserGroups(CollectionUtils.isEmpty(notExistsUserGroup) ? Collections.emptySet() : notExistsUserGroup);
+        batchImportUserInfoVO.setNotExistPhones(CollectionUtils.isEmpty(notExistsPhone) ? Collections.emptySet() : notExistsPhone);
+        batchImportUserInfoVO.setNotBoundFranchiseePhones(CollectionUtils.isEmpty(notBoundFranchiseePhone) ? Collections.emptySet() : notBoundFranchiseePhone);
+        batchImportUserInfoVO.setNotSameFranchiseePhones(CollectionUtils.isEmpty(notSameFranchiseePhone) ? Collections.emptySet() : notSameFranchiseePhone);
         
         if (existsUserGroup.isEmpty() || existsPhone.isEmpty()) {
-            batchImportUserInfoVO.setNotExistUserGroups(notExistsUserGroup);
-            batchImportUserInfoVO.setNotExistPhones(notExistsPhone);
-            batchImportUserInfoVO.setNotBoundFranchiseePhones(notBoundFranchiseePhone);
-            batchImportUserInfoVO.setNotSameFranchiseePhones(notSameFranchiseePhone);
             batchImportUserInfoVO.setIsImported(false);
-            
             return R.ok(batchImportUserInfoVO);
         }
-        
+    
         batchImportUserInfoVO.setIsImported(true);
         executorService.execute(() -> {
             handleBatchImportUserInfo(existsUserGroup, existsPhone, sessionId, franchiseeId, tenantId);
