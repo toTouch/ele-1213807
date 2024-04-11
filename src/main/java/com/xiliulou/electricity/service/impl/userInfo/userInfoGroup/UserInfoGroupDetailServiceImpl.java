@@ -16,6 +16,7 @@ import com.xiliulou.electricity.service.userinfo.userInfoGroup.UserInfoGroupServ
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.vo.userinfo.UserInfoGroupDetailPageVO;
 import com.xiliulou.electricity.vo.userinfo.UserInfoGroupDetailVO;
+import com.xiliulou.electricity.vo.userinfo.UserInfoGroupIdAndNameVO;
 import com.xiliulou.electricity.vo.userinfo.UserInfoGroupNamesVO;
 import com.xiliulou.electricity.vo.userinfo.UserInfoGroupVO;
 import lombok.extern.slf4j.Slf4j;
@@ -25,11 +26,9 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -81,27 +80,25 @@ public class UserInfoGroupDetailServiceImpl implements UserInfoGroupDetailServic
             detailVO.setFranchiseeId(item.getFranchiseeId());
             detailVO.setFranchiseeName(Optional.ofNullable(franchiseeService.queryByIdFromCache(item.getFranchiseeId())).orElse(new Franchisee()).getName());
             detailVO.setUpdateTime(item.getUpdateTime());
-            detailVO.setGroupId(item.getGroupId());
             
-            Set<String> groupNames = new HashSet<>(Set.of(item.getGroupName()));
+            UserInfoGroupIdAndNameVO groupVo1 = UserInfoGroupIdAndNameVO.builder().id(item.getGroupId()).name(item.getGroupName()).groupNo(item.getGroupNo()).build();
+            List<UserInfoGroupIdAndNameVO> groups = new ArrayList<>(List.of(groupVo1));
             
             UserInfoGroupDetailQuery detailQuery = UserInfoGroupDetailQuery.builder().uid(uid).tenantId(query.getTenantId()).build();
             List<UserInfoGroupNamesVO> groupNameDetails = userInfoGroupDetailMapper.selectListGroupByUid(detailQuery);
             if (CollectionUtils.isNotEmpty(groupNameDetails)) {
-                Set<String> nameSet = groupNameDetails.stream().map(UserInfoGroupNamesVO::getGroupName).collect(Collectors.toSet());
-                if (CollectionUtils.isNotEmpty(nameSet)) {
-                    groupNames.addAll(nameSet);
+                List<UserInfoGroupNamesVO> filterGroups = groupNameDetails.stream().filter(i -> !Objects.equals(i.getGroupId(), item.getGroupId())).collect(Collectors.toList());
+                if (CollectionUtils.isNotEmpty(filterGroups)) {
+                    filterGroups.parallelStream().forEach(group -> {
+                        UserInfoGroupIdAndNameVO groupVO = UserInfoGroupIdAndNameVO.builder().id(group.getGroupId()).name(group.getGroupName()).groupNo(group.getGroupNo()).build();
+                        groups.add(groupVO);
+                    });
                 }
             }
             
-            detailVO.setGroupNames(List.copyOf(groupNames));
-            
-            if (CollectionUtils.isEmpty(groupNames)) {
-                detailVO.setGroupNames(Collections.emptyList());
-            }
+            detailVO.setGroups(groups);
             
             return detailVO;
-            
         }).collect(Collectors.toList());
     }
     

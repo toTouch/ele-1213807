@@ -30,9 +30,8 @@ public class UserInfoGroupDetailPageVO {
     
     private String franchiseeName;
     
-    private List<String> groupNames;
+    private List<UserInfoGroupIdAndNameVO> groups;
     
     private Long updateTime;
     
-    private Long groupId;
 }
