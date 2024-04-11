@@ -37,10 +37,10 @@
         <where>
             tuigd.tenant_id = #{tenantId}
             <if test="uid != null">
-                tuigd.uid = #{uid}
+                and tuigd.uid = #{uid}
             </if>
             <if test="groupId != null">
-                tuig.id = #{groupId}
+                and tuig.id = #{groupId}
             </if>
             <if test="franchiseeIds != null and franchiseeIds.size()>0">
                 and tuigd.franchisee_id in
@@ -60,10 +60,10 @@
         <where>
             tuigd.tenant_id = #{tenantId}
             <if test="uid != null">
-                tuigd.uid = #{uid}
+                and tuigd.uid = #{uid}
             </if>
             <if test="groupId != null">
-                tuig.id = #{groupId}
+                and tuig.id = #{groupId}
             </if>
             <if test="franchiseeIds != null and franchiseeIds.size()>0">
                 and tuigd.franchisee_id in

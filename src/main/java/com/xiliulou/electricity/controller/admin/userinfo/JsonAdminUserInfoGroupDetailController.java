@@ -12,6 +12,7 @@ import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -156,7 +157,7 @@ public class JsonAdminUserInfoGroupDetailController extends BasicController {
      * 编辑
      */
     @PostMapping("/admin/userInfo/userInfoGroupDetail/update")
-    public R update(@RequestBody UserInfoGroupDetailUpdateRequest request) {
+    public R update(@RequestBody @Validated UserInfoGroupDetailUpdateRequest request) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             log.error("ELE ERROR! not found user");

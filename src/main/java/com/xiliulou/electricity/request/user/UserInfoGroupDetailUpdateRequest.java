@@ -1,6 +1,5 @@
 package com.xiliulou.electricity.request.user;
 
-import lombok.Builder;
 import lombok.Data;
 
 import javax.validation.constraints.NotNull;
@@ -12,7 +11,6 @@ import java.util.List;
  * @date 2024/4/8 19:45:12
  */
 
-@Builder
 @Data
 public class UserInfoGroupDetailUpdateRequest {
     
