@@ -138,14 +138,6 @@ public class UserInfoGroupServiceImpl implements UserInfoGroupService {
         return R.ok(update);
     }
     
-    @Slave
-    @Override
-    public List<UserInfoGroupIdAndNameVO> listAllGroup(UserInfoGroupQuery query) {
-        // todo
-        return null;
-    }
-    
-    
     @Override
     public R update(UserInfoGroupSaveAndUpdateRequest request, Long uid) {
         boolean result = redisService.setNx(CacheConstant.CACHE_USER_GROUP_UPDATE_LOCK + uid, "1", 3 * 1000L, false);
@@ -210,6 +202,18 @@ public class UserInfoGroupServiceImpl implements UserInfoGroupService {
     @Override
     public Integer countTotal(UserInfoGroupQuery query) {
         return userInfoGroupMapper.selectCount(query);
+    }
+    
+    @Slave
+    @Override
+    public List<UserInfoGroupIdAndNameVO> listAllGroup(UserInfoGroupQuery query) {
+        List<UserInfoGroupIdAndNameVO> pageList = userInfoGroupMapper.selectAllGroup(query);
+    
+        if (CollectionUtils.isEmpty(pageList)) {
+            return Collections.emptyList();
+        }
+        
+        return pageList;
     }
     
     @Override
