@@ -69,7 +69,7 @@
     </select>
     
     <select id="selectAllGroup" resultType="com.xiliulou.electricity.vo.userinfo.UserInfoGroupIdAndNameVO">
-        select id as id, name as groupName, group_no as groupNo
+        select id as groupId, name as groupName, group_no as groupNo
         from t_user_info_group
         <where>
             tenant_id = #{tenantId} and del_flag = 0
