@@ -652,6 +652,10 @@ public class EleOperateQueueHandler {
         if (Objects.equals(rentBatteryOrder.getType(), RentBatteryOrder.TYPE_USER_RETURN)) {
             rentBatteryOrder.setElectricityBatterySn(finalOpenDTO.getBatterySn());
         }
+    
+        if (Objects.nonNull(finalOpenDTO.getCellNo())) {
+            rentBatteryOrder.setCellNo(finalOpenDTO.getCellNo());
+        }
         rentBatteryOrderService.update(rentBatteryOrder);
         
         if (Objects.equals(rentBatteryOrder.getType(), RentBatteryOrder.TYPE_USER_RENT) && Objects.equals(rentBatteryOrder.getStatus(),
