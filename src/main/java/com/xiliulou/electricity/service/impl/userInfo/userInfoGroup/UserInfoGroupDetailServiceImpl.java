@@ -271,23 +271,33 @@ public class UserInfoGroupDetailServiceImpl implements UserInfoGroupDetailServic
         }
         
         // 超限判断
-        Integer limitGroupNum = userInfoGroupDetailMapper.countGroupByUid(userInfo.getUid());
+        Integer limitGroupNum = userInfoGroupDetailMapper.countGroupByUid(uid);
         if (Objects.nonNull(limitGroupNum) && ((limitGroupNum + groupIds.size()) > UserGroupConstant.USER_GROUP_LIMIT)) {
             return R.fail("120114", "用户绑定的分组数量已达上限10个");
         }
-        
+    
+        List<Long> filterGroupIds = null;
+        UserInfoGroupDetailQuery query = UserInfoGroupDetailQuery.builder().tenantId(tenantId).uid(uid).build();
+        List<UserInfoGroupNamesVO> userInfoGroupNamesList = userInfoGroupDetailMapper.selectListGroupByUid(query);
+        if (CollectionUtils.isNotEmpty(userInfoGroupNamesList)) {
+            List<Long> existGroupIds = userInfoGroupNamesList.stream().map(UserInfoGroupNamesVO::getGroupId).collect(Collectors.toList());
+            filterGroupIds = groupIds.stream().filter(groupId -> !existGroupIds.contains(groupId)).collect(Collectors.toList());
+        }
+    
         List<UserInfoGroupDetail> list = new ArrayList<>();
         long nowTime = System.currentTimeMillis();
         
-        groupIds.parallelStream().forEach(groupId -> {
-            UserInfoGroup userInfoGroup = userInfoGroupService.queryByIdFromCache(groupId);
-            if (Objects.nonNull(userInfoGroup)) {
-                UserInfoGroupDetail detail = UserInfoGroupDetail.builder().groupNo(userInfoGroup.getGroupNo()).uid(uid).franchiseeId(userInfoGroup.getFranchiseeId())
-                        .tenantId(tenantId).createTime(nowTime).updateTime(nowTime).build();
-                
-                list.add(detail);
-            }
-        });
+        if (CollectionUtils.isNotEmpty(filterGroupIds)) {
+            groupIds.parallelStream().forEach(groupId -> {
+                UserInfoGroup userInfoGroup = userInfoGroupService.queryByIdFromCache(groupId);
+                if (Objects.nonNull(userInfoGroup)) {
+                    UserInfoGroupDetail detail = UserInfoGroupDetail.builder().groupNo(userInfoGroup.getGroupNo()).uid(uid).franchiseeId(userInfoGroup.getFranchiseeId())
+                            .tenantId(tenantId).createTime(nowTime).updateTime(nowTime).build();
+            
+                    list.add(detail);
+                }
+            });
+        }
         
         if (CollectionUtils.isNotEmpty(list)) {
             this.batchInsert(list);
