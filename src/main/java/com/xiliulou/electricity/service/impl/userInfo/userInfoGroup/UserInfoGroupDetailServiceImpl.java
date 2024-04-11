@@ -13,6 +13,7 @@ import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.userinfo.userInfoGroup.UserInfoGroupDetailService;
 import com.xiliulou.electricity.service.userinfo.userInfoGroup.UserInfoGroupService;
+import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.vo.userinfo.UserInfoGroupDetailVO;
 import com.xiliulou.electricity.vo.userinfo.UserInfoGroupNamesVO;
 import com.xiliulou.electricity.vo.userinfo.UserInfoGroupVO;
@@ -134,13 +135,14 @@ public class UserInfoGroupDetailServiceImpl implements UserInfoGroupDetailServic
     @Override
     public R update(UserInfoGroupDetailUpdateRequest request) {
         Long uid = request.getUid();
-        Integer tenantId = request.getTenantId();
         List<Long> groupIds = request.getGroupIds();
         
         UserInfo userInfo = userInfoService.queryByUidFromDb(uid);
         if (Objects.isNull(userInfo)) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
+    
+        Integer tenantId = TenantContextHolder.getTenantId();
         
         if (!Objects.equals(tenantId, userInfo.getTenantId())) {
             return R.ok();

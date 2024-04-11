@@ -16,9 +16,9 @@ import lombok.NoArgsConstructor;
 @Data
 public class UserInfoGroupIdAndNameVO {
     
-    private Long groupId;
+    private Long id;
+    
+    private String name;
     
     private String groupNo;
-    
-    private String groupName;
 }

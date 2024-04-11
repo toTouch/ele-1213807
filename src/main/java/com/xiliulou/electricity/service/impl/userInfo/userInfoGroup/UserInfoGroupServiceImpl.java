@@ -263,18 +263,18 @@ public class UserInfoGroupServiceImpl implements UserInfoGroupService {
         groupIds.parallelStream().forEach(e -> {
             UserInfoGroup userInfoGroup = this.queryByIdFromCache(e);
             if (Objects.isNull(userInfoGroup)) {
-                notExistsUserGroup.add(UserInfoGroupIdAndNameVO.builder().groupId(e).build());
+                notExistsUserGroup.add(UserInfoGroupIdAndNameVO.builder().id(e).build());
             } else {
                 Long bindFranchiseeId = userInfoGroup.getFranchiseeId();
                 
                 if (Objects.isNull(bindFranchiseeId) || Objects.equals(bindFranchiseeId, NumberConstant.ZERO_L)) {
-                    notBoundFranchiseeUserGroup.add(UserInfoGroupIdAndNameVO.builder().groupId(e).groupName(userInfoGroup.getName()).groupNo(userInfoGroup.getGroupNo()).build());
+                    notBoundFranchiseeUserGroup.add(UserInfoGroupIdAndNameVO.builder().id(e).name(userInfoGroup.getName()).groupNo(userInfoGroup.getGroupNo()).build());
                 } else {
                     if (Objects.equals(bindFranchiseeId, franchiseeId)) {
                         existsUserGroup.add(userInfoGroup);
                     } else {
                         notSameFranchiseeUserGroup.add(
-                                UserInfoGroupIdAndNameVO.builder().groupId(e).groupName(userInfoGroup.getName()).groupNo(userInfoGroup.getGroupNo()).build());
+                                UserInfoGroupIdAndNameVO.builder().id(e).name(userInfoGroup.getName()).groupNo(userInfoGroup.getGroupNo()).build());
                     }
                 }
             }

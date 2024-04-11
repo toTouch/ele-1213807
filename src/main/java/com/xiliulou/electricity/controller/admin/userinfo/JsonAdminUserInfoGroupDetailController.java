@@ -14,6 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -155,7 +156,7 @@ public class JsonAdminUserInfoGroupDetailController extends BasicController {
      * 编辑
      */
     @PostMapping("/admin/userInfo/userInfoGroupDetail/update")
-    public R update(@RequestParam("uid") Long uid, @RequestParam("groupIds") List<Long> groupIds) {
+    public R update(@RequestBody UserInfoGroupDetailUpdateRequest request) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             log.error("ELE ERROR! not found user");
@@ -165,8 +166,6 @@ public class JsonAdminUserInfoGroupDetailController extends BasicController {
         if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE) || Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE))) {
             return R.fail("ELECTRICITY.0066", "用户权限不足");
         }
-        
-        UserInfoGroupDetailUpdateRequest request = UserInfoGroupDetailUpdateRequest.builder().uid(uid).groupIds(groupIds).tenantId(TenantContextHolder.getTenantId()).build();
         
         return userInfoGroupDetailService.update(request);
     }

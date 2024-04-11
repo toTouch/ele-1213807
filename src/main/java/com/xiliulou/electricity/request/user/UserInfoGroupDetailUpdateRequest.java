@@ -21,7 +21,5 @@ public class UserInfoGroupDetailUpdateRequest {
     
     @NotNull(message = "分组ID不能为空")
     private List<Long> groupIds;
-    
-    private Integer tenantId;
 }
     
