@@ -537,8 +537,8 @@
             <if test="groupType != null">
                 group_type = #{groupType},
             </if>
-            <if test="userGroupIds != null">
-                user_group_ids = #{userGroupIds},
+            <if test="userInfoGroupIds != null">
+                user_info_group_ids = #{userInfoGroupIds},
             </if>
         </set>
         where id = #{id}
