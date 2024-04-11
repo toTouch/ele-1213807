@@ -77,11 +77,11 @@
         <if test=" freeDeposit != null ">AND `free_deposit` = #{freeDeposit}</if>
         <if test=" confine != null ">AND `confine` = #{confine}</if>
         <if test=" giveCoupon != null ">AND `give_coupon` = #{giveCoupon}</if>
-        <if test=" userGroupId != null ">AND #{userGroupId} member of(`user_group_ids`)</if>
+        <if test=" userGroupId != null ">AND JSON_CONTAINS(`user_group_ids`,#{userGroupId})</if>
         <if test=' userGroupIds != null and userGroupIds.size() != 0'>
             AND
             <foreach collection="userGroupIds" item="item" open="(" close=")" separator=" OR ">
-                #{item} member of(`user_group_ids`)
+                JSON_CONTAINS(`user_group_ids`,#{item})
             </foreach>
         </if>
         <if test=" idList != null and idList.size > 0">
@@ -336,7 +336,7 @@
         FROM
         <include refid="table_name"/>
         <where>
-            #{couponId} member of(`coupon_id`) and `del_flag` = 0
+            JSON_CONTAINS(`coupon_id`,#{couponId}) and `del_flag` = 0
         </where>
     </select>
     <select id="queryToSearchByName" resultType="com.xiliulou.electricity.vo.car.CarRentalPackageSearchVO">
