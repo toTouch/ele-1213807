@@ -92,7 +92,7 @@
     </select>
     
     <select id="countGroupByUid" resultType="java.lang.Integer">
-        select count(distinct(group_no))
+        select count(distinct (group_no))
         from t_user_info_group_detail
         where uid = #{uid}
     </select>
@@ -133,9 +133,6 @@
             </if>
         </where>
         order by tuigd.update_time desc
-        <if test="offset != null and size!= null">
-            limit #{offset}, #{size}
-        </if>
     </select>
 
 </mapper>
