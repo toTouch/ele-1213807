@@ -119,6 +119,11 @@ public class ElectricityMemberCardOrder {
      * 企业ID
      */
     private Long enterpriseId;
+    
+    /**
+     * 套餐绑定的所有优惠券id
+     */
+    private String couponIds;
 
     // 订单状态 0未支付,1支付成功 2支付失败,3取消支付
     public static final Integer STATUS_INIT = 0;

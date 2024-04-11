@@ -69,10 +69,21 @@ public class BatteryMemberCardQuery {
      * 使用次数
      */
     private Long useCount;
+    
     /**
      * 优惠券id
      */
     private Integer couponId;
+    
+    /**
+     * 套餐绑定的所有优惠券id
+     */
+    private List<Long> couponIdsTransfer;
+    
+    /**
+     * 套餐绑定的所有优惠券id
+     */
+    private String couponIds;
 
     @NotNull(message = "是否退租金不能为空", groups = {CreateGroup.class, UpdateGroup.class})
     private Integer isRefund;
@@ -116,6 +127,26 @@ public class BatteryMemberCardQuery {
      * 电池长型号
      */
     private String originalBatteryModel;
+    
+    /**
+     * 用户分组id
+     */
+    private String userGroupId;
+    
+    /**
+     * 套餐绑定的所有用户分组id
+     */
+    private List<Long> userGroupIdsTransfer;
+    
+    /**
+     * 用户分组id，查询用户可用套餐时使用
+     */
+    private List<String> userGroupIdsForSearch;
+    
+    /**
+     * 分组类型，0-系统分组，1-用户分组。
+     */
+    private Integer groupType;
     
     /**
      * 不分型号

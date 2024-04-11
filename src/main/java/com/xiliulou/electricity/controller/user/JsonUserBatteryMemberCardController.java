@@ -12,6 +12,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
+
 /**
  * @author zzlong
  * @email zhaozhilong@xiliulou.com
@@ -34,7 +36,8 @@ public class JsonUserBatteryMemberCardController extends BaseController {
                   @RequestParam(value = "batteryV", required = false) String batteryV,
                   @RequestParam(value = "status", required = false) Integer status,
                   @RequestParam(value = "rentType", required = false) Integer rentType,
-                  @RequestParam(value = "name", required = false) String name) {
+                  @RequestParam(value = "name", required = false) String name,
+                  @RequestParam(value = "userGroupIdsTransfer", required = false) List<Long> userGroupIdsTransfer) {
 
         BatteryMemberCardQuery query = BatteryMemberCardQuery.builder()
                 .size(size)
@@ -45,6 +48,7 @@ public class JsonUserBatteryMemberCardController extends BaseController {
                 .status(BatteryMemberCard.STATUS_UP)
                 .name(name)
                 .delFlag(BatteryMemberCard.DEL_NORMAL)
+                .userGroupIdsTransfer(userGroupIdsTransfer)
                 .build();
 
         return R.ok(batteryMemberCardService.selectByPageForUser(query));
