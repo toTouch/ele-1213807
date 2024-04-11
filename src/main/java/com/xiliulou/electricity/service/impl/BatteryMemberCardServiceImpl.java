@@ -399,7 +399,6 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
             
             // 设置电池型号
             if (!item.getBatteryType().isEmpty()) {
-                
                 List<String> originalBatteryModels = item.getBatteryType().stream().map(MemberCardBatteryType::getBatteryType).distinct().collect(Collectors.toList());
                 batteryMemberCardVO.setBatteryModels(batteryModelService.selectShortBatteryType(originalBatteryModels, item.getTenantId()));
             }
@@ -408,7 +407,6 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
             if (Objects.equals(item.getSendCoupon(), BatteryMemberCard.SEND_COUPON_YES)) {
                 List<CouponSearchVo> coupons = new ArrayList<>();
                 HashSet<Integer> couponIdsSet = new HashSet<>();
-                
                 if (Objects.nonNull(item.getCouponId())) {
                     couponIdsSet.add(item.getCouponId());
                 }
@@ -417,12 +415,12 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
                 }
                 
                 if (!CollectionUtils.isEmpty(couponIdsSet)) {
-                    CouponSearchVo couponSearchVo = new CouponSearchVo();
                     couponIdsSet.forEach(couponId -> {
-                        
+                        CouponSearchVo couponSearchVo = new CouponSearchVo();
                         Coupon coupon = couponService.queryByIdFromCache(couponId);
                         if (Objects.nonNull(coupon)) {
                             BeanUtils.copyProperties(coupon, couponSearchVo);
+                            couponSearchVo.setId(coupon.getId().longValue());
                             coupons.add(couponSearchVo);
                         }
                     });
@@ -436,7 +434,6 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
                 
                 JsonUtil.fromJsonArray(item.getUserInfoGroupIds(), Long.class).forEach(userGroupId -> {
                     SearchVo searchVo = new SearchVo();
-                    
                     UserInfoGroup userInfoGroup = userInfoGroupService.queryByIdFromCache(userGroupId);
                     if (Objects.nonNull(userInfoGroup)) {
                         BeanUtils.copyProperties(userInfoGroup, searchVo);
