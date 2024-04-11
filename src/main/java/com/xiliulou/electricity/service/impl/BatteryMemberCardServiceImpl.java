@@ -740,7 +740,7 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
         batteryMemberCardUpdate.setServiceCharge(query.getServiceCharge());
         batteryMemberCardUpdate.setRemark(query.getRemark());
         batteryMemberCardUpdate.setUpdateTime(System.currentTimeMillis());
-        batteryMemberCardUpdate.setUserInfoGroupIds(CollectionUtils.isEmpty(query.getCouponIdsTransfer()) ? null : JsonUtil.toJson(query.getCouponIdsTransfer()));
+        batteryMemberCardUpdate.setUserInfoGroupIds(CollectionUtils.isEmpty(query.getUserInfoGroupIdsTransfer()) ? null : JsonUtil.toJson(query.getUserInfoGroupIdsTransfer()));
         batteryMemberCardUpdate.setGroupType(query.getGroupType());
         if (Objects.equals(query.getSendCoupon(), BatteryMemberCard.SEND_COUPON_NO)) {
             batteryMemberCardUpdate.setCouponIds(null);
