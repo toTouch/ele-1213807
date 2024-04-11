@@ -426,7 +426,7 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
             return;
         }
         ExchangeBatterySoc exchangeBatterySoc = exchangeBatterySocService.selectByUidAndSn(userInfo.getUid(), sn);
-        if (Objects.nonNull(exchangeBatterySoc)) {
+        if (Objects.isNull(exchangeBatterySoc)) {
             log.error("handlerUserRentBatterySoc/exchangeBattery is error, rentBatterySoc should is not null");
             return;
         }

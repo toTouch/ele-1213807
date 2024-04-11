@@ -788,7 +788,7 @@ public class EleOperateQueueHandler {
             return;
         }
         ExchangeBatterySoc exchangeBatterySoc = exchangeBatterySocService.selectByUidAndSn(userInfo.getUid(), sn);
-        if (Objects.nonNull(exchangeBatterySoc)) {
+        if (Objects.isNull(exchangeBatterySoc)) {
             log.error("handlerUserRentBatterySoc/returnBattery is error, rentBatterySoc should is not null");
             return;
         }
