@@ -29,6 +29,7 @@ import com.xiliulou.electricity.service.userinfo.userInfoGroup.UserInfoGroupServ
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.vo.userinfo.BatchImportUserInfoVO;
+import com.xiliulou.electricity.vo.userinfo.UserInfoGroupIdAndNameVO;
 import com.xiliulou.electricity.vo.userinfo.UserInfoGroupVO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
@@ -194,7 +195,7 @@ public class UserInfoGroupServiceImpl implements UserInfoGroupService {
         
         return pageList.stream().peek(userInfoGroupVO -> {
             userInfoGroupVO.setFranchiseeName(Optional.ofNullable(franchiseeService.queryByIdFromCache(userInfoGroupVO.getFranchiseeId())).orElse(new Franchisee()).getName());
-            userInfoGroupVO.setOperatorName(Optional.ofNullable(userService.queryByUidFromCache(userInfoGroupVO.getFranchiseeId())).orElse(new User()).getName());
+            userInfoGroupVO.setOperatorName(Optional.ofNullable(userService.queryByUidFromCache(userInfoGroupVO.getOperator())).orElse(new User()).getName());
         }).collect(Collectors.toList());
     }
     
@@ -220,7 +221,9 @@ public class UserInfoGroupServiceImpl implements UserInfoGroupService {
         
         Integer tenantId = TenantContextHolder.getTenantId();
         
-        ConcurrentHashSet<Long> notExistsUserGroup = new ConcurrentHashSet<>();
+        ConcurrentHashSet<UserInfoGroupIdAndNameVO> notExistsUserGroup = new ConcurrentHashSet<>();
+        ConcurrentHashSet<UserInfoGroupIdAndNameVO> notBoundFranchiseeUserGroup = new ConcurrentHashSet<>();
+        ConcurrentHashSet<UserInfoGroupIdAndNameVO> notSameFranchiseeUserGroup = new ConcurrentHashSet<>();
         ConcurrentHashSet<UserInfoGroup> existsUserGroup = new ConcurrentHashSet<>();
         ConcurrentHashSet<String> notExistsPhone = new ConcurrentHashSet<>();
         ConcurrentHashSet<String> notBoundFranchiseePhone = new ConcurrentHashSet<>();
@@ -249,16 +252,29 @@ public class UserInfoGroupServiceImpl implements UserInfoGroupService {
         groupIds.parallelStream().forEach(e -> {
             UserInfoGroup userInfoGroup = this.queryByIdFromCache(e);
             if (Objects.isNull(userInfoGroup)) {
-                notExistsUserGroup.add(e);
+                notExistsUserGroup.add(UserInfoGroupIdAndNameVO.builder().groupId(e).build());
             } else {
-                existsUserGroup.add(userInfoGroup);
+                Long bindFranchiseeId = userInfoGroup.getFranchiseeId();
+                
+                if (Objects.isNull(bindFranchiseeId) || Objects.equals(bindFranchiseeId, NumberConstant.ZERO_L)) {
+                    notBoundFranchiseeUserGroup.add(UserInfoGroupIdAndNameVO.builder().groupId(e).groupName(userInfoGroup.getName()).groupNo(userInfoGroup.getGroupNo()).build());
+                } else {
+                    if (Objects.equals(bindFranchiseeId, franchiseeId)) {
+                        existsUserGroup.add(userInfoGroup);
+                    } else {
+                        notSameFranchiseeUserGroup.add(
+                                UserInfoGroupIdAndNameVO.builder().groupId(e).groupName(userInfoGroup.getName()).groupNo(userInfoGroup.getGroupNo()).build());
+                    }
+                }
             }
         });
-    
+        
         BatchImportUserInfoVO batchImportUserInfoVO = new BatchImportUserInfoVO();
         String sessionId = UUID.fastUUID().toString(true);
         batchImportUserInfoVO.setSessionId(sessionId);
         batchImportUserInfoVO.setNotExistUserGroups(CollectionUtils.isEmpty(notExistsUserGroup) ? Collections.emptySet() : notExistsUserGroup);
+        batchImportUserInfoVO.setNotBoundFranchiseeUserGroups(CollectionUtils.isEmpty(notBoundFranchiseeUserGroup) ? Collections.emptySet() : notBoundFranchiseeUserGroup);
+        batchImportUserInfoVO.setNotSameFranchiseeUserGroups(CollectionUtils.isEmpty(notSameFranchiseeUserGroup) ? Collections.emptySet() : notSameFranchiseeUserGroup);
         batchImportUserInfoVO.setNotExistPhones(CollectionUtils.isEmpty(notExistsPhone) ? Collections.emptySet() : notExistsPhone);
         batchImportUserInfoVO.setNotBoundFranchiseePhones(CollectionUtils.isEmpty(notBoundFranchiseePhone) ? Collections.emptySet() : notBoundFranchiseePhone);
         batchImportUserInfoVO.setNotSameFranchiseePhones(CollectionUtils.isEmpty(notSameFranchiseePhone) ? Collections.emptySet() : notSameFranchiseePhone);
@@ -267,7 +283,7 @@ public class UserInfoGroupServiceImpl implements UserInfoGroupService {
             batchImportUserInfoVO.setIsImported(false);
             return R.ok(batchImportUserInfoVO);
         }
-    
+        
         batchImportUserInfoVO.setIsImported(true);
         executorService.execute(() -> {
             handleBatchImportUserInfo(existsUserGroup, existsPhone, sessionId, franchiseeId, tenantId);

@@ -88,7 +88,7 @@
         <where>
             tuig.del_flag = 0 and tuigd.uid = #{uid}
             <if test="tenantId != null">
-                and tuigd.id = #{tenantId}
+                and tuigd.tenant_id = #{tenantId}
             </if>
             <if test="franchiseeIds != null and franchiseeIds.size()>0">
                 and tuigd.franchisee_id in
