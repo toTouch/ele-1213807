@@ -181,12 +181,12 @@ public class CarRentalPackageQryModel implements Serializable {
      * Description: 根据用户分组查询,单选
      * </p>
      */
-    private Long userGroupId;
+    private String userGroupId;
     
     /**
      * <p>
      * Description: 根据用户分组查询,多选
      * </p>
      */
-    private List<Long> userGroupIds;
+    private List<String> userGroupIds;
 }

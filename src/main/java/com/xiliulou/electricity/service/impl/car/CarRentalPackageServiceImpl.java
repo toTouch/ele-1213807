@@ -2,7 +2,6 @@ package com.xiliulou.electricity.service.impl.car;
 
 import com.alibaba.fastjson.JSON;
 import com.xiliulou.cache.redis.RedisService;
-import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CarRenalCacheConstant;
 import com.xiliulou.electricity.entity.car.CarRentalPackagePo;
@@ -298,7 +297,7 @@ public class CarRentalPackageServiceImpl implements CarRentalPackageService {
 
     @Override
     public List<CarRentalPackagePo> findByCouponId(Long couponId) {
-        return carRentalPackageMapper.selectByCouponId(couponId);
+        return carRentalPackageMapper.selectByCouponId(String.valueOf(couponId));
     }
     
     /**

@@ -248,7 +248,7 @@ public class CarRentalPackageBizServiceImpl implements CarRentalPackageBizServic
         
         //如果用户分组有值则为分组用户
         if (!CollectionUtils.isEmpty(vos)) {
-            List<Long> collect = vos.stream().map(UserInfoGroupNamesVO::getGroupId).distinct().collect(Collectors.toList());
+            List<String> collect = vos.stream().map(m->String.valueOf(m.getGroupId())).distinct().collect(Collectors.toList());
             qryModel.setUserGroupIds(collect);
         }else {
             //反之则为系统用户
