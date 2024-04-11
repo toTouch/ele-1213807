@@ -6,8 +6,8 @@ import com.xiliulou.electricity.entity.car.CarRentalPackagePo;
 import com.xiliulou.electricity.enums.YesNoEnum;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.query.car.CarRentalPackageQryReq;
-import com.xiliulou.electricity.service.CouponService;
 import com.xiliulou.electricity.service.car.biz.CarRentalPackageBizService;
+import com.xiliulou.electricity.service.userinfo.userInfoGroup.UserInfoGroupService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.car.CarRentalPackageVo;
@@ -39,7 +39,7 @@ public class JsonUserCarRenalPackageController extends BasicController {
     private CarRentalPackageBizService carRentalPackageBizService;
     
     @Autowired
-    private CouponService couponService;
+    private UserInfoGroupService userInfoGroupService;
     
     /**
      * 获取用户可以购买的套餐
@@ -107,6 +107,10 @@ public class JsonUserCarRenalPackageController extends BasicController {
             if (YesNoEnum.YES.getCode().equals(entity.getGiveCoupon())) {
                 packageVo = carRentalPackageBizService.buildCouponsToCarRentalVo(packageVo, entity.getCouponIds());
             }
+            //设置用户分组信息
+            List<Long> userGroupIds = entity.getUserGroupId();
+            packageVo = carRentalPackageBizService.buildUserGroupToCarRentalVo(packageVo, userGroupIds);
+            
             return packageVo;
         }).collect(Collectors.toList());
     }

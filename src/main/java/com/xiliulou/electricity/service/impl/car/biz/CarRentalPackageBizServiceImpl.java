@@ -22,6 +22,7 @@ import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.model.car.opt.CarRentalPackageOptModel;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageQryModel;
 import com.xiliulou.electricity.query.CouponQuery;
+import com.xiliulou.electricity.query.UserInfoGroupDetailQuery;
 import com.xiliulou.electricity.query.car.CarRentalPackageQryReq;
 import com.xiliulou.electricity.service.BatteryMemberCardService;
 import com.xiliulou.electricity.service.CouponActivityPackageService;
@@ -36,12 +37,18 @@ import com.xiliulou.electricity.service.car.CarRentalPackageService;
 import com.xiliulou.electricity.service.car.biz.CarRenalPackageDepositBizService;
 import com.xiliulou.electricity.service.car.biz.CarRentalPackageBizService;
 import com.xiliulou.electricity.service.user.biz.UserBizService;
+import com.xiliulou.electricity.service.userinfo.userInfoGroup.UserInfoGroupDetailService;
+import com.xiliulou.electricity.service.userinfo.userInfoGroup.UserInfoGroupService;
 import com.xiliulou.electricity.vo.car.CarCouponVO;
 import com.xiliulou.electricity.vo.car.CarRentalPackageVo;
+import com.xiliulou.electricity.vo.userinfo.UserGroupByCarVO;
+import com.xiliulou.electricity.vo.userinfo.UserInfoGroupNamesVO;
+import com.xiliulou.electricity.vo.userinfo.UserInfoGroupVO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
@@ -55,6 +62,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.StringJoiner;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -103,6 +111,12 @@ public class CarRentalPackageBizServiceImpl implements CarRentalPackageBizServic
     
     @Resource
     private UserCouponService userCouponService;
+    
+    @Autowired
+    private UserInfoGroupService userInfoGroupService;
+    
+    @Autowired
+    private UserInfoGroupDetailService userInfoGroupDetailService;
     
     /**
      * 获取用户可以购买的套餐
@@ -228,10 +242,12 @@ public class CarRentalPackageBizServiceImpl implements CarRentalPackageBizServic
         qryModel.setConfine(confine);
         qryModel.setName(qryReq.getName());
         
-        //todo 根据用户uid查询出对应分组，然后作为条件查询
-        List<Long> userGroupIds = null;
-        if (!CollectionUtils.isEmpty(userGroupIds)) {
-            qryModel.setUserGroupIds(userGroupIds);
+        //根据用户uid查询出对应分组，然后作为条件查询
+        UserInfoGroupDetailQuery built = UserInfoGroupDetailQuery.builder().uid(uid).build();
+        List<UserInfoGroupNamesVO> vos = userInfoGroupDetailService.listGroupByUid(built);
+        if (!CollectionUtils.isEmpty(vos)) {
+            List<Long> collect = vos.stream().map(UserInfoGroupNamesVO::getGroupId).distinct().collect(Collectors.toList());
+            qryModel.setUserGroupIds(collect);
         }
         
         List<CarRentalPackagePo> packageEntityList = carRentalPackageService.page(qryModel);
@@ -514,6 +530,23 @@ public class CarRentalPackageBizServiceImpl implements CarRentalPackageBizServic
                 carRentalPackageVo.setCouponName(couponVO.getName());
                 carRentalPackageVo.setGiveCouponAmount(couponVO.getAmount());
                 carRentalPackageVo.setCouponId(couponVO.getId());
+            }
+        }
+        return carRentalPackageVo;
+    }
+    
+    @Override
+    public CarRentalPackageVo buildUserGroupToCarRentalVo(CarRentalPackageVo carRentalPackageVo, List<Long> userGroupIds) {
+        if (!CollectionUtils.isEmpty(userGroupIds)) {
+            List<UserInfoGroupVO> infoGroupVOS = userInfoGroupService.listByIds(userGroupIds);
+            if (!CollectionUtils.isEmpty(infoGroupVOS)) {
+                Set<UserGroupByCarVO> collect = infoGroupVOS.stream().map(m -> {
+                    UserGroupByCarVO byCarVO = new UserGroupByCarVO();
+                    byCarVO.setId(m.getId());
+                    byCarVO.setName(m.getGroupName());
+                    return byCarVO;
+                }).collect(Collectors.toSet());
+                carRentalPackageVo.setUserGroupName(collect);
             }
         }
         return carRentalPackageVo;

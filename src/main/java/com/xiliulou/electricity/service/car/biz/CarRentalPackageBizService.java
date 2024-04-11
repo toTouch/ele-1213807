@@ -70,4 +70,21 @@ public interface CarRentalPackageBizService {
      * @since V1.0 2024/4/10
      */
     CarRentalPackageVo buildCouponsToCarRentalVo(CarRentalPackageVo carRentalPackageVo, List<Long> couponIds);
+    
+    
+    /**
+     * <p>
+     * Description: 构建返回的用户组
+     * </p>
+     *
+     * @param carRentalPackageVo carRentalPackageVo
+     * @param couponIds          couponIds
+     * @return com.xiliulou.electricity.vo.car.CarRentalPackageVo
+     * <p>Project: CarRentalPackageBizService</p>
+     * <p>Copyright: Copyright (c) 2024</p>
+     * <p>Company: www.xiliulou.com</p>
+     * @author <a href="mailto:wxblifeng@163.com">PeakLee</a>
+     * @since V1.0 2024/4/10
+     */
+    CarRentalPackageVo buildUserGroupToCarRentalVo(CarRentalPackageVo carRentalPackageVo, List<Long> couponIds);
 }

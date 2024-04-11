@@ -25,6 +25,7 @@ import com.xiliulou.electricity.service.StoreService;
 import com.xiliulou.electricity.service.car.CarRentalPackageCarBatteryRelService;
 import com.xiliulou.electricity.service.car.CarRentalPackageService;
 import com.xiliulou.electricity.service.car.biz.CarRentalPackageBizService;
+import com.xiliulou.electricity.service.userinfo.userInfoGroup.UserInfoGroupService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.utils.ValidList;
@@ -36,6 +37,7 @@ import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.CollectionUtils;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -89,6 +91,9 @@ public class JsonAdminCarRentalPackageController extends BasicController {
     
     @Resource
     private CarRentalPackageService carRentalPackageService;
+    
+    @Autowired
+    private UserInfoGroupService userInfoGroupService;
     
     
     /**
@@ -261,14 +266,15 @@ public class JsonAdminCarRentalPackageController extends BasicController {
             if (!carModelMap.isEmpty()) {
                 carRentalPackageVo.setCarModelName(carModelMap.getOrDefault(carRentalPackageEntity.getCarModelId(), ""));
             }
+            
+            //设置优惠劵信息
             List<Long> couponIds = carRentalPackageEntity.getCouponIds();
             carRentalPackageVo = carRentalPackageBizService.buildCouponsToCarRentalVo(carRentalPackageVo, couponIds);
+            
+            
+            //设置用户分组信息
             List<Long> userGroupIds = carRentalPackageEntity.getUserGroupId();
-            if (!CollectionUtils.isEmpty(userGroupIds)) {
-                //todo  等待分组提交代码调用
-                //                List<Map<String, Object>> list= couponService.queryNameListByIds(couponIds,TenantContextHolder.getTenantId());
-                carRentalPackageVo.setUserGroupName(null);
-            }
+            carRentalPackageVo = carRentalPackageBizService.buildUserGroupToCarRentalVo(carRentalPackageVo, userGroupIds);
             //            if (!couponMap.isEmpty()) {
             //                carRentalPackageVo.setCouponName(couponMap.getOrDefault(carRentalPackageEntity.getCouponId(), new Coupon()).getName());
             //            }
@@ -371,12 +377,9 @@ public class JsonAdminCarRentalPackageController extends BasicController {
         List<Long> couponIds = carRentalPackageEntity.getCouponIds();
         carRentalPackageVo = carRentalPackageBizService.buildCouponsToCarRentalVo(carRentalPackageVo, couponIds);
         
-        //设置用户组名称
+        //设置用户分组信息
         List<Long> userGroupIds = carRentalPackageEntity.getUserGroupId();
-        if (!CollectionUtils.isEmpty(userGroupIds)) {
-            //todo  等待分组提交代码调用
-            carRentalPackageVo.setUserGroupName(null);
-        }
+        carRentalPackageVo = carRentalPackageBizService.buildUserGroupToCarRentalVo(carRentalPackageVo, userGroupIds);
         
         // 查询电池型号
         if (carRentalPackageEntity.getType().equals(RentalPackageTypeEnum.CAR_BATTERY.getCode())) {

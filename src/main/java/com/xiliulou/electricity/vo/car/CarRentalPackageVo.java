@@ -6,12 +6,13 @@ import com.xiliulou.electricity.enums.RentalPackageTypeEnum;
 import com.xiliulou.electricity.enums.RentalUnitEnum;
 import com.xiliulou.electricity.enums.UpDownEnum;
 import com.xiliulou.electricity.enums.YesNoEnum;
+import com.xiliulou.electricity.vo.userinfo.UserGroupByCarVO;
 import lombok.Data;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.Map;
+import java.util.Set;
 
 /**
  * 租车套餐展示层数据模型
@@ -233,7 +234,7 @@ public class CarRentalPackageVo implements Serializable {
     /**
      * 用户组名称
      */
-    private List<Map<String, Object>> userGroupName;
+    private Set<UserGroupByCarVO> userGroupName;
     
     /**
      * 套餐排序参数
