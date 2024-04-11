@@ -139,7 +139,6 @@ public class UserInfoGroupDetailServiceImpl implements UserInfoGroupDetailServic
         
         UserInfo userInfo = userInfoService.queryByUidFromDb(uid);
         if (Objects.isNull(userInfo)) {
-            log.warn("Update userInfoGroupDetail error! userInfo not exist, uid={}", uid);
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         
