@@ -649,7 +649,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             Set<Long> groupIds = new HashSet<>();
             UserInfoGroupDetailQuery detailQuery = UserInfoGroupDetailQuery.builder().uid(uid).build();
             List<UserInfoGroupNamesVO> vos = userInfoGroupDetailService.listGroupByUid(detailQuery);
-            if (!CollectionUtils.isEmpty(vos)){
+            if (!CollectionUtils.isEmpty(vos)) {
                 groupIds.addAll(vos.stream().map(UserInfoGroupNamesVO::getGroupId).collect(Collectors.toSet()));
             }
             
@@ -698,17 +698,17 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             
             //6.1.1 判断用户分组是否包含在购买的套餐中存在
             Set<Long> packageGroupIds = new HashSet<>();
-            if (!CollectionUtils.isEmpty(buyPackageEntity.getUserGroupId())){
+            if (!CollectionUtils.isEmpty(buyPackageEntity.getUserGroupId())) {
                 packageGroupIds.addAll(buyPackageEntity.getUserGroupId());
             }
             
             try {
                 packageGroupIds.retainAll(groupIds);
-                if (packageGroupIds.isEmpty()){
-                    throw new BizException("100317","用户与套餐关联的用户分组不一致，请刷新重试");
+                if (packageGroupIds.isEmpty()) {
+                    throw new BizException("100317", "用户与套餐关联的用户分组不一致，请刷新重试");
                 }
-            }catch (NullPointerException e){
-                log.error("User group or package user group is empty:",e);
+            } catch (NullPointerException e) {
+                log.error("User group or package user group is empty:", e);
             }
             
             // 6.2 套餐上下架状态
@@ -2491,7 +2491,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         
         // 获取加锁 KEY
         String buyLockKey = String.format(CarRenalCacheConstant.CAR_RENAL_PACKAGE_BUY_UID_KEY, uid);
-    
+        
         // 加锁
         if (!redisService.setNx(buyLockKey, uid.toString(), 5 * 1000L, false)) {
             return R.fail("ELECTRICITY.0034", "操作频繁");
@@ -2518,7 +2518,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             Set<Long> groupIds = new HashSet<>();
             UserInfoGroupDetailQuery detailQuery = UserInfoGroupDetailQuery.builder().uid(uid).build();
             List<UserInfoGroupNamesVO> vos = userInfoGroupDetailService.listGroupByUid(detailQuery);
-            if (!CollectionUtils.isEmpty(vos)){
+            if (!CollectionUtils.isEmpty(vos)) {
                 groupIds.addAll(vos.stream().map(UserInfoGroupNamesVO::getGroupId).collect(Collectors.toSet()));
             }
             
@@ -2579,17 +2579,17 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             
             //6.1.1 判断用户分组是否包含在购买的套餐中存在
             Set<Long> packageGroupIds = new HashSet<>();
-            if (!CollectionUtils.isEmpty(buyPackageEntity.getUserGroupId())){
+            if (!CollectionUtils.isEmpty(buyPackageEntity.getUserGroupId())) {
                 packageGroupIds.addAll(buyPackageEntity.getUserGroupId());
             }
             
             try {
                 packageGroupIds.retainAll(groupIds);
-                if (packageGroupIds.isEmpty()){
-                    return R.fail("100318","您浏览的套餐已下架，请看看其他的吧");
+                if (packageGroupIds.isEmpty()) {
+                    return R.fail("100318", "您浏览的套餐已下架，请看看其他的吧");
                 }
-            }catch (NullPointerException e){
-                log.error("User group or package user group is empty:",e);
+            } catch (NullPointerException e) {
+                log.error("User group or package user group is empty:", e);
             }
             
             // 6.2 套餐上下架状态
@@ -3185,7 +3185,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                         userBatteryTypeService.synchronizedUserBatteryType(uid, tenantId, batteryTypes);
                     }
                 }
-    
+                
                 //fix 回调后事务未提交导致缓存清除失败的问题
                 carRentalPackageMemberTermService.deleteCache(tenantId, uid);
                 userInfoService.deleteCache(uid);
