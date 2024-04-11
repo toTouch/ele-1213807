@@ -206,7 +206,7 @@ public class UserInfoGroupDetailServiceImpl implements UserInfoGroupDetailServic
             // 处理新增
             List<UserInfoGroupDetail> insertList = null;
             if (CollectionUtils.isNotEmpty(groupIds)) {
-                if ((intersection.size() + groupIds.size()) >= UserGroupConstant.USER_GROUP_LIMIT) {
+                if ((intersection.size() + groupIds.size()) > UserGroupConstant.USER_GROUP_LIMIT) {
                     return R.fail("120114", "用户绑定的分组数量已达上限10个");
                 }
                 
@@ -266,7 +266,13 @@ public class UserInfoGroupDetailServiceImpl implements UserInfoGroupDetailServic
         }
         
         // 超限判断
-        if (groupIds.size() >= UserGroupConstant.USER_GROUP_LIMIT) {
+        if (groupIds.size() > UserGroupConstant.USER_GROUP_LIMIT) {
+            return R.fail("120114", "用户绑定的分组数量已达上限10个");
+        }
+        
+        // 超限判断
+        Integer limitGroupNum = userInfoGroupDetailMapper.countGroupByUid(userInfo.getUid());
+        if (Objects.nonNull(limitGroupNum) && (limitGroupNum + groupIds.size()) > UserGroupConstant.USER_GROUP_LIMIT) {
             return R.fail("120114", "用户绑定的分组数量已达上限10个");
         }
         
