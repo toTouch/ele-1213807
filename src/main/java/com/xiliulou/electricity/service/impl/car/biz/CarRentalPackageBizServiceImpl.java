@@ -235,7 +235,6 @@ public class CarRentalPackageBizServiceImpl implements CarRentalPackageBizServic
         qryModel.setTenantId(tenantId);
         qryModel.setFranchiseeId(franchiseeId);
         qryModel.setStoreId(storeId);
-        qryModel.setApplicableTypeList(oldUserFlag ? ApplicableTypeEnum.oldUserApplicable() : ApplicableTypeEnum.newUserApplicable());
         qryModel.setDeposit(rentalPackageDeposit);
         qryModel.setType(rentalPackageType);
         qryModel.setCarModelId(carModelId);
@@ -246,9 +245,14 @@ public class CarRentalPackageBizServiceImpl implements CarRentalPackageBizServic
         //根据用户uid查询出对应分组，然后作为条件查询
         UserInfoGroupDetailQuery built = UserInfoGroupDetailQuery.builder().uid(uid).build();
         List<UserInfoGroupNamesVO> vos = userInfoGroupDetailService.listGroupByUid(built);
+        
+        //如果用户分组有值则为分组用户
         if (!CollectionUtils.isEmpty(vos)) {
             List<Long> collect = vos.stream().map(UserInfoGroupNamesVO::getGroupId).distinct().collect(Collectors.toList());
             qryModel.setUserGroupIds(collect);
+        }else {
+            //反之则为系统用户
+            qryModel.setApplicableTypeList(oldUserFlag ? ApplicableTypeEnum.oldUserApplicable() : ApplicableTypeEnum.newUserApplicable());
         }
         
         List<CarRentalPackagePo> packageEntityList = carRentalPackageService.page(qryModel);

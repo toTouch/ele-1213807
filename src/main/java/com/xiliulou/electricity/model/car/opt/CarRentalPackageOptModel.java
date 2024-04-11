@@ -153,7 +153,6 @@ public class CarRentalPackageOptModel implements Serializable {
      *
      * @see ApplicableTypeEnum
      */
-    @NotNull(message = "[租赁类型]不能为空")
     private Integer applicableType;
     
     /**
@@ -266,5 +265,6 @@ public class CarRentalPackageOptModel implements Serializable {
      *    </pre>
      * </p>
      */
+    @NotNull(message = "[可见用户]不能为空")
     private Integer isUserGroup;
 }

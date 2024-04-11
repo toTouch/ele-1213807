@@ -716,11 +716,14 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                 throw new BizException("300004", "套餐已下架");
             }
             
-            // 6.3 判定用户是否是老用户，然后和套餐的适用类型做比对
-            Boolean oldUserFlag = userBizService.isOldUser(tenantId, uid);
-            if (oldUserFlag && !ApplicableTypeEnum.oldUserApplicable().contains(buyPackageEntity.getApplicableType())) {
-                log.warn("bindingPackage failed. Package type mismatch. Buy package type is {}, user is old", buyPackageEntity.getApplicableType());
-                throw new BizException("300005", "套餐不匹配");
+            //如果是系统分组
+            if (Objects.equals(buyPackageEntity.getIsUserGroup(),YesNoEnum.YES.getCode())){
+                // 6.3 判定用户是否是老用户，然后和套餐的适用类型做比对
+                Boolean oldUserFlag = userBizService.isOldUser(tenantId, uid);
+                if (oldUserFlag && !ApplicableTypeEnum.oldUserApplicable().contains(buyPackageEntity.getApplicableType())) {
+                    log.warn("bindingPackage failed. Package type mismatch. Buy package type is {}, user is old", buyPackageEntity.getApplicableType());
+                    throw new BizException("300005", "套餐不匹配");
+                }
             }
             
             // 7. 判定套餐互斥
@@ -2597,12 +2600,16 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                 return R.fail("300004", "套餐已下架");
             }
             
-            // 6.3 判定用户是否是老用户，然后和套餐的适用类型做比对
-            Boolean oldUserFlag = userBizService.isOldUser(tenantId, uid);
-            if (oldUserFlag && !ApplicableTypeEnum.oldUserApplicable().contains(buyPackageEntity.getApplicableType())) {
-                log.warn("buyRentalPackageOrder failed. Package type mismatch. Buy package type is {}, user is old", buyPackageEntity.getApplicableType());
-                return R.fail("300005", "套餐不匹配");
+            //判断用户是否为系统分组
+            if (Objects.equals(buyPackageEntity.getIsUserGroup(),YesNoEnum.YES.getCode())){
+                // 6.3 判定用户是否是老用户，然后和套餐的适用类型做比对
+                Boolean oldUserFlag = userBizService.isOldUser(tenantId, uid);
+                if (oldUserFlag && !ApplicableTypeEnum.oldUserApplicable().contains(buyPackageEntity.getApplicableType())) {
+                    log.warn("buyRentalPackageOrder failed. Package type mismatch. Buy package type is {}, user is old", buyPackageEntity.getApplicableType());
+                    return R.fail("300005", "套餐不匹配");
+                }
             }
+            
             
             // 7. 判定套餐互斥
             // 7.1 车或者电与车电一体互斥
