@@ -11,6 +11,7 @@ import com.xiliulou.electricity.entity.userInfo.userInfoGroup.UserInfoGroup;
 import com.xiliulou.electricity.entity.userInfo.userInfoGroup.UserInfoGroupDetail;
 import com.xiliulou.electricity.mapper.userInfo.userInfoGroup.UserInfoGroupDetailMapper;
 import com.xiliulou.electricity.query.UserInfoGroupDetailQuery;
+import com.xiliulou.electricity.request.user.UserInfoBindGroupRequest;
 import com.xiliulou.electricity.request.user.UserInfoGroupDetailUpdateRequest;
 import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.UserInfoService;
@@ -247,6 +248,46 @@ public class UserInfoGroupDetailServiceImpl implements UserInfoGroupDetailServic
             List<String> deleteGroupNoList = userInfoGroupNamesVOList.stream().map(UserInfoGroupNamesVO::getGroupNo).collect(Collectors.toList());
             userInfoGroupDetailMapper.deleteByUidAndGroupNoList(uid, deleteGroupNoList);
         }
+    }
+    
+    @Override
+    public R bindGroup(UserInfoBindGroupRequest request) {
+        Long uid = request.getUid();
+        List<Long> groupIds = request.getGroupIds();
+        Integer tenantId = TenantContextHolder.getTenantId();
+        
+        UserInfo userInfo = userInfoService.queryByUidFromDb(uid);
+        if (Objects.isNull(userInfo)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        
+        if (Objects.equals(userInfo.getTenantId(), tenantId)) {
+            return R.ok();
+        }
+        
+        // 超限判断
+        if (groupIds.size() >= UserGroupConstant.USER_GROUP_LIMIT) {
+            return R.fail("120114", "用户绑定的分组数量已达上限10个");
+        }
+        
+        List<UserInfoGroupDetail> list = new ArrayList<>();
+        long nowTime = System.currentTimeMillis();
+        
+        groupIds.parallelStream().forEach(groupId -> {
+            UserInfoGroup userInfoGroup = userInfoGroupService.queryByIdFromCache(groupId);
+            if (Objects.nonNull(userInfoGroup)) {
+                UserInfoGroupDetail detail = UserInfoGroupDetail.builder().groupNo(userInfoGroup.getGroupNo()).uid(uid).franchiseeId(userInfoGroup.getFranchiseeId())
+                        .tenantId(tenantId).createTime(nowTime).updateTime(nowTime).build();
+                
+                list.add(detail);
+            }
+        });
+        
+        if (CollectionUtils.isNotEmpty(list)) {
+            this.batchInsert(list);
+        }
+        
+        return R.ok();
     }
     
 }

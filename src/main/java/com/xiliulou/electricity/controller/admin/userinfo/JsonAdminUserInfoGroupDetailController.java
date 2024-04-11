@@ -4,6 +4,7 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.controller.BasicController;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.query.UserInfoGroupDetailQuery;
+import com.xiliulou.electricity.request.user.UserInfoBindGroupRequest;
 import com.xiliulou.electricity.request.user.UserInfoGroupDetailUpdateRequest;
 import com.xiliulou.electricity.service.UserDataScopeService;
 import com.xiliulou.electricity.service.userinfo.userInfoGroup.UserInfoGroupDetailService;
@@ -169,6 +170,24 @@ public class JsonAdminUserInfoGroupDetailController extends BasicController {
         }
         
         return userInfoGroupDetailService.update(request);
+    }
+    
+    /**
+     * 加入分组
+     */
+    @PostMapping("/admin/userInfo/userInfoGroupDetail/bindGroup")
+    public R bindGroup(@RequestBody @Validated UserInfoBindGroupRequest request) {
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELE ERROR! not found user");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        
+        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE) || Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE))) {
+            return R.fail("ELECTRICITY.0066", "用户权限不足");
+        }
+        
+        return userInfoGroupDetailService.bindGroup(request);
     }
     
 }

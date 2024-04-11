@@ -3,6 +3,7 @@ package com.xiliulou.electricity.service.userinfo.userInfoGroup;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.userInfo.userInfoGroup.UserInfoGroupDetail;
 import com.xiliulou.electricity.query.UserInfoGroupDetailQuery;
+import com.xiliulou.electricity.request.user.UserInfoBindGroupRequest;
 import com.xiliulou.electricity.request.user.UserInfoGroupDetailUpdateRequest;
 import com.xiliulou.electricity.vo.userinfo.UserInfoGroupDetailPageVO;
 import com.xiliulou.electricity.vo.userinfo.UserInfoGroupNamesVO;
@@ -33,4 +34,6 @@ public interface UserInfoGroupDetailService {
     List<UserInfoGroupNamesVO> listGroupByUidList(List<Long> uidList);
     
     R update(UserInfoGroupDetailUpdateRequest request);
+    
+    R bindGroup(UserInfoBindGroupRequest request);
 }
