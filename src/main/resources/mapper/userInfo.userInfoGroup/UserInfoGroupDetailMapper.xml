@@ -31,16 +31,16 @@
     
     <select id="selectPage" resultType="com.xiliulou.electricity.vo.userinfo.UserInfoGroupDetailVO">
         select
-            any_value(tuigd.id) as id,
-            any_value(tuigd.group_no) as groupno,
-            tuigd.uid as uid,
-            any_value(tuigd.franchisee_id) as franchiseeid,
-            any_value(tuigd.tenant_id) as tenantid,
-            any_value(tuigd.del_flag) as delflag,
-            any_value(tuigd.create_time) as createtime,
-            any_value(tuigd.update_time) as updatetime,
-            any_value(tuig.id) as groupid,
-            any_value(tuig.name) as groupname
+        any_value(tuigd.id) as id,
+        any_value(tuigd.group_no) as groupno,
+        tuigd.uid as uid,
+        any_value(tuigd.franchisee_id) as franchiseeid,
+        any_value(tuigd.tenant_id) as tenantid,
+        any_value(tuigd.del_flag) as delflag,
+        any_value(tuigd.create_time) as createtime,
+        any_value(tuigd.update_time) as updatetime,
+        any_value(tuig.id) as groupid,
+        any_value(tuig.name) as groupname
         from t_user_info_group_detail tuigd
         left join t_user_info_group tuig on tuig.group_no = tuigd.group_no
         <where>
@@ -91,6 +91,12 @@
         where tuig.id = #{id}
     </select>
     
+    <select id="countGroupByUid" resultType="java.lang.Integer">
+        select count(distinct(group_no))
+        from t_user_info_group_detail
+        where uid = #{uid}
+    </select>
+    
     <select id="selectListGroupByUid" resultType="com.xiliulou.electricity.vo.userinfo.UserInfoGroupNamesVO">
         select tuigd.uid as uid, tuigd.group_no as groupNo, tuig.id as groupId, tuig.name as groupName
         from t_user_info_group_detail tuigd
@@ -125,17 +131,8 @@
                     #{uid}
                 </foreach>
             </if>
-            <if test="tenantId != null">
-                and tuigd.tenant_id = #{tenantId}
-            </if>
-            <if test="franchiseeIds != null and franchiseeIds.size()>0">
-                and tuigd.franchisee_id in
-                <foreach collection="franchiseeIds" item="franchiseeId" index="index" open="(" close=")" separator=",">
-                    #{franchiseeId}
-                </foreach>
-            </if>
         </where>
-        order by tuigd.update_time desc, tuigd.id asc
+        order by tuigd.update_time desc
         <if test="offset != null and size!= null">
             limit #{offset}, #{size}
         </if>

@@ -26,6 +26,8 @@ public interface UserInfoGroupDetailService {
     
     Integer countUserByGroupId(Long id);
     
+    Integer countGroupByUid(Long uid);
+    
     List<UserInfoGroupNamesVO> listGroupByUid(UserInfoGroupDetailQuery query);
     
     List<UserInfoGroupNamesVO> listGroupByUidList(List<Long> uidList);

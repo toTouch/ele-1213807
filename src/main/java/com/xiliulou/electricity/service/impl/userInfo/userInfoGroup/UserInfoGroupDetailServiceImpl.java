@@ -127,6 +127,12 @@ public class UserInfoGroupDetailServiceImpl implements UserInfoGroupDetailServic
     
     @Slave
     @Override
+    public Integer countGroupByUid(Long uid) {
+        return userInfoGroupDetailMapper.countGroupByUid(uid);
+    }
+    
+    @Slave
+    @Override
     public List<UserInfoGroupNamesVO> listGroupByUid(UserInfoGroupDetailQuery query) {
         return userInfoGroupDetailMapper.selectListGroupByUid(query);
     }

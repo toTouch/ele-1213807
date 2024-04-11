@@ -12,6 +12,7 @@ import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
+import com.xiliulou.electricity.constant.UserGroupConstant;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.UserInfo;
@@ -203,7 +204,7 @@ public class UserInfoGroupServiceImpl implements UserInfoGroupService {
     @Override
     public List<UserInfoGroupIdAndNameVO> listAllGroup(UserInfoGroupQuery query) {
         List<UserInfoGroupIdAndNameVO> pageList = userInfoGroupMapper.selectAllGroup(query);
-    
+        
         if (CollectionUtils.isEmpty(pageList)) {
             return Collections.emptyList();
         }
@@ -234,6 +235,7 @@ public class UserInfoGroupServiceImpl implements UserInfoGroupService {
         ConcurrentHashSet<String> notExistsPhone = new ConcurrentHashSet<>();
         ConcurrentHashSet<String> notBoundFranchiseePhone = new ConcurrentHashSet<>();
         ConcurrentHashSet<String> notSameFranchiseePhone = new ConcurrentHashSet<>();
+        ConcurrentHashSet<String> overLimitGroupNumPhone = new ConcurrentHashSet<>();
         ConcurrentHashSet<UserInfo> existsPhone = new ConcurrentHashSet<>();
         
         for (String e : phones) {
@@ -247,7 +249,13 @@ public class UserInfoGroupServiceImpl implements UserInfoGroupService {
                     notBoundFranchiseePhone.add(e);
                 } else {
                     if (Objects.equals(bindFranchiseeId, franchiseeId)) {
-                        existsPhone.add(userInfo);
+                        // 判断绑定分组数量是否超限
+                        Integer limitGroupNum = userInfoGroupDetailService.countGroupByUid(userInfo.getUid());
+                        if (limitGroupNum >= UserGroupConstant.USER_GROUP_LIMIT) {
+                            overLimitGroupNumPhone.add(userInfo.getPhone());
+                        } else {
+                            existsPhone.add(userInfo);
+                        }
                     } else {
                         notSameFranchiseePhone.add(e);
                     }
@@ -268,8 +276,7 @@ public class UserInfoGroupServiceImpl implements UserInfoGroupService {
                     if (Objects.equals(bindFranchiseeId, franchiseeId)) {
                         existsUserGroup.add(userInfoGroup);
                     } else {
-                        notSameFranchiseeUserGroup.add(
-                                UserInfoGroupIdAndNameVO.builder().id(e).name(userInfoGroup.getName()).groupNo(userInfoGroup.getGroupNo()).build());
+                        notSameFranchiseeUserGroup.add(UserInfoGroupIdAndNameVO.builder().id(e).name(userInfoGroup.getName()).groupNo(userInfoGroup.getGroupNo()).build());
                     }
                 }
             }
@@ -284,6 +291,7 @@ public class UserInfoGroupServiceImpl implements UserInfoGroupService {
         batchImportUserInfoVO.setNotExistPhones(CollectionUtils.isEmpty(notExistsPhone) ? Collections.emptySet() : notExistsPhone);
         batchImportUserInfoVO.setNotBoundFranchiseePhones(CollectionUtils.isEmpty(notBoundFranchiseePhone) ? Collections.emptySet() : notBoundFranchiseePhone);
         batchImportUserInfoVO.setNotSameFranchiseePhones(CollectionUtils.isEmpty(notSameFranchiseePhone) ? Collections.emptySet() : notSameFranchiseePhone);
+        batchImportUserInfoVO.setOverLimitGroupNumPhones(CollectionUtils.isEmpty(overLimitGroupNumPhone) ? Collections.emptySet() : overLimitGroupNumPhone);
         
         if (existsUserGroup.isEmpty() || existsPhone.isEmpty()) {
             batchImportUserInfoVO.setIsImported(false);
@@ -317,13 +325,14 @@ public class UserInfoGroupServiceImpl implements UserInfoGroupService {
                 }
                 
                 UserInfo userInfo = iterator.next();
+                Long uid = userInfo.getUid();
                 
-                UserInfoGroupDetail existDetail = userInfoGroupDetailService.queryByUid(userGroup.getGroupNo(), userInfo.getUid(), tenantId);
+                UserInfoGroupDetail existDetail = userInfoGroupDetailService.queryByUid(userGroup.getGroupNo(), uid, tenantId);
                 if (Objects.nonNull(existDetail)) {
                     continue;
                 }
                 
-                UserInfoGroupDetail detail = UserInfoGroupDetail.builder().groupNo(userGroup.getGroupNo()).uid(userInfo.getUid()).franchiseeId(franchiseeId).tenantId(tenantId)
+                UserInfoGroupDetail detail = UserInfoGroupDetail.builder().groupNo(userGroup.getGroupNo()).uid(uid).franchiseeId(franchiseeId).tenantId(tenantId)
                         .createTime(nowTime).updateTime(nowTime).build();
                 
                 detailList.add(detail);
