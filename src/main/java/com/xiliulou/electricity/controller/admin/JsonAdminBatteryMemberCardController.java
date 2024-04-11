@@ -101,7 +101,6 @@ public class JsonAdminBatteryMemberCardController extends BaseController {
             @RequestParam(value = "name", required = false) String name, @RequestParam(value = "batteryModel", required = false) String batteryModel,
             @RequestParam(value = "userGroupId", required = false) Long userGroupId) {
         
-        // 若同时传递系统分组及用户分组返回失败结果
         if (Objects.nonNull(rentType) && Objects.nonNull(userGroupId)) {
             return R.fail("110210", "不可同时根据系统分组及用户分组查询");
         }
@@ -157,8 +156,7 @@ public class JsonAdminBatteryMemberCardController extends BaseController {
             @RequestParam(value = "rentType", required = false) Integer rentType, @RequestParam(value = "rentUnit", required = false) Integer rentUnit,
             @RequestParam(value = "businessType", required = false) Integer businessType, @RequestParam(value = "name", required = false) String name,
             @RequestParam(value = "batteryModel", required = false) String batteryModel, @RequestParam(value = "userGroupId", required = false) Long userGroupId) {
-    
-        // 若同时传递系统分组及用户分组返回失败结果
+        
         if (Objects.nonNull(rentType) && Objects.nonNull(userGroupId)) {
             return R.fail("110210", "不可同时根据系统分组及用户分组查询");
         }

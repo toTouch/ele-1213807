@@ -381,7 +381,6 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
         
         // 当前端传递型号为字符串0时，为标准型号即套餐不分型号，t_member_card_battery_type中未存关联数据
         if (StringUtils.isNotEmpty(query.getBatteryModel()) && !(BatteryMemberCardQuery.REGARDLESS_OF_MODEL.equals(query.getBatteryModel()))) {
-            
             query.setOriginalBatteryModel(query.getBatteryModel());
             query.setBatteryModel(null);
         }
@@ -743,7 +742,6 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
         batteryMemberCardUpdate.setUpdateTime(System.currentTimeMillis());
         batteryMemberCardUpdate.setUserInfoGroupIds(CollectionUtils.isEmpty(query.getCouponIdsTransfer()) ? null : JsonUtil.toJson(query.getCouponIdsTransfer()));
         batteryMemberCardUpdate.setGroupType(query.getGroupType());
-    
         if (Objects.equals(query.getSendCoupon(), BatteryMemberCard.SEND_COUPON_NO)) {
             batteryMemberCardUpdate.setCouponIds(null);
         }else {
@@ -786,7 +784,6 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
         batteryMemberCard.setSortParam(System.currentTimeMillis());
         batteryMemberCard.setTenantId(TenantContextHolder.getTenantId());
         batteryMemberCard.setUserInfoGroupIds(CollectionUtils.isEmpty(query.getUserInfoGroupIdsTransfer()) ? null : JsonUtil.toJson(query.getUserInfoGroupIdsTransfer()));
-        
         if (Objects.equals(query.getSendCoupon(), BatteryMemberCard.SEND_COUPON_NO)) {
             batteryMemberCard.setCouponIds(null);
         }else {

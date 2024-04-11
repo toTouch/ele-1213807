@@ -141,4 +141,9 @@ public class BatteryMemberCardAndTypeVO {
      * 套餐绑定的所有用户分组id
      */
     private String userInfoGroupIds;
+    
+    /**
+     * 分组类型，0-系统分组，1-用户分组。
+     */
+    private Integer groupType;
 }

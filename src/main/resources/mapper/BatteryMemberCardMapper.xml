@@ -28,6 +28,9 @@
         <result property="createTime" column="create_time" jdbcType="INTEGER"/>
         <result property="updateTime" column="update_time" jdbcType="INTEGER"/>
         <result property="sortParam" column="sort_param" jdbcType="BIGINT"/>
+        <result property="groupType" column="group_type" jdbcType="INTEGER"/>
+        <result property="couponIds" column="coupon_ids"/>
+        <result property="userInfoGroupIds" column="user_info_group_ids"/>
     </resultMap>
     
     <resultMap type="com.xiliulou.electricity.vo.BatteryMemberCardAndTypeVO" id="BatteryMemberCardTypeMap">
@@ -56,6 +59,9 @@
         <result property="createTime" column="create_time" jdbcType="INTEGER"/>
         <result property="updateTime" column="update_time" jdbcType="INTEGER"/>
         <result property="sortParam" column="sort_param" jdbcType="BIGINT"/>
+        <result property="groupType" column="group_type" jdbcType="INTEGER"/>
+        <result property="couponIds" column="coupon_ids"/>
+        <result property="userInfoGroupIds" column="user_info_group_ids"/>
         <collection property="batteryType" javaType="java.util.List" ofType="com.xiliulou.electricity.entity.MemberCardBatteryType">
             <id property="id" column="mcbt_id" jdbcType="INTEGER"/>
             <result property="batteryType" column="battery_type" jdbcType="VARCHAR"/>
@@ -88,6 +94,9 @@
         <result property="createTime" column="create_time" jdbcType="INTEGER"/>
         <result property="updateTime" column="update_time" jdbcType="INTEGER"/>
         <result property="sortParam" column="sort_param" jdbcType="BIGINT"/>
+        <result property="groupType" column="group_type" jdbcType="INTEGER"/>
+        <result property="couponIds" column="coupon_ids"/>
+        <result property="userInfoGroupIds" column="user_info_group_ids"/>
         <collection property="batteryType" javaType="java.util.List" ofType="com.xiliulou.electricity.entity.MemberCardBatteryType" column="id" select="selectListMemberCardBatteryType">
             <id property="id" column="mcbt_id" jdbcType="INTEGER"/>
             <result property="batteryType" column="battery_type" jdbcType="VARCHAR"/>
@@ -119,7 +128,11 @@
                del_flag,
                tenant_id,
                create_time,
-               update_time
+               update_time,
+               sort_param,
+               group_type,
+               coupon_ids,
+               user_info_group_ids
         from t_battery_member_card
         where id = #{id}
     </select>
@@ -166,7 +179,7 @@
         select
         tbmc.id, tbmc.name, tbmc.deposit, tbmc.rent_price, tbmc.rent_price_unit, tbmc.valid_days, tbmc.rent_unit, tbmc.franchisee_id, tbmc.rent_type, tbmc.send_coupon,
         tbmc.status, tbmc.limit_count, tbmc.use_count, tbmc.coupon_id, tbmc.is_refund, tbmc.refund_limit, tbmc.free_deposite,
-        tbmc.service_charge, tbmc.remark, tbmc.business_type, tbmc.del_flag, tbmc.tenant_id, tbmc.create_time, tbmc.update_time, tbmc.sort_param, tbmc.coupon_ids, tbmc.user_info_group_ids
+        tbmc.service_charge, tbmc.remark, tbmc.business_type, tbmc.del_flag, tbmc.tenant_id, tbmc.create_time, tbmc.update_time, tbmc.sort_param, tbmc.coupon_ids, tbmc.user_info_group_ids, tbmc.group_type
         from t_battery_member_card tbmc
         left join t_member_card_battery_type tmcbt on tbmc.id = tmcbt.mid
         <where>
@@ -229,8 +242,8 @@
     
     <select id="selectByQuery" resultMap="BatteryMemberCardMap">
         select
-        id, name, deposit, rent_price, rent_price_unit, valid_days, rent_unit, franchisee_id, rent_type, send_coupon,
-        status, limit_count, use_count, coupon_id, is_refund, refund_limit, free_deposite, service_charge, remark, business_type, del_flag, tenant_id, create_time, update_time
+        id, name, deposit, rent_price, rent_price_unit, valid_days, rent_unit, franchisee_id, rent_type, send_coupon,status, limit_count, use_count, coupon_id, is_refund,
+        refund_limit, free_deposite, service_charge, remark, business_type, del_flag, tenant_id, create_time, update_time, sort_param, group_type, coupon_ids, user_info_group_ids
         from t_battery_member_card
         <where>
             business_type=0
@@ -300,6 +313,8 @@
         bmc.create_time,
         bmc.sort_param,
         bmc.coupon_ids,
+        bmc.user_info_group_ids,
+        bmc.group_type
         mcbt.id as mcbt_id,
         mcbt.battery_type battery_type
         from t_battery_member_card bmc
@@ -485,6 +500,7 @@
                 status = #{status},
             </if>
             coupon_id = #{couponId},
+            coupon_ids = #{couponIds},
             <if test="limitCount != null">
                 limit_count = #{limitCount},
             </if>
