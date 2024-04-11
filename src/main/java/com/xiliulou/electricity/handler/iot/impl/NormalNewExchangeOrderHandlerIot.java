@@ -373,7 +373,7 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
             handleCallBatteryChangeSoc(electricityBattery);
             
             // 保存取走电池，记录电池soc
-            handlerUserTakeBatterySoc(userInfo, exchangeOrderRsp.getTakeBatteryName(), electricityBattery.getPower());
+            handlerUserTakeBatterySoc(userInfo, exchangeOrderRsp.getTakeBatteryName(), exchangeOrderRsp.getTakeBatterySoc());
             
         } else {
             log.error("EXCHANGE ORDER ERROR! takeBattery is null!uid={},requestId={},orderId={}", userInfo.getUid(), exchangeOrderRsp.getSessionId(),
@@ -715,6 +715,11 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
          * 归还soc
          */
         private Double placeBatterySoc;
+        
+        /**
+         * 取走soc
+         */
+        private Double takeBatterySoc;
     }
 }
 
