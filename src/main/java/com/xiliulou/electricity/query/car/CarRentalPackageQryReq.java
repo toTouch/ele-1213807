@@ -120,5 +120,5 @@ public class CarRentalPackageQryReq implements Serializable {
      *    </pre>
      * </p>
      */
-    private Long userGroupId;
+    private String userGroupId;
 }

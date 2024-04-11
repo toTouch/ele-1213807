@@ -77,7 +77,7 @@
         <if test=" freeDeposit != null ">AND `free_deposit` = #{freeDeposit}</if>
         <if test=" confine != null ">AND `confine` = #{confine}</if>
         <if test=" giveCoupon != null ">AND `give_coupon` = #{giveCoupon}</if>
-        <if test=" userGroupId != null and userGroupId.trim() != ''">AND JSON_CONTAINS(`user_group_ids`,#{userGroupId})</if>
+        <if test=" userGroupId != null and userGroupId != ''">AND JSON_CONTAINS(`user_group_ids`,#{userGroupId})</if>
         <if test=' userGroupIds != null and userGroupIds.size() != 0'>
             AND
             <foreach collection="userGroupIds" item="item" open="(" close=")" separator=" OR ">
