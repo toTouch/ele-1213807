@@ -138,6 +138,13 @@ public class UserInfoGroupServiceImpl implements UserInfoGroupService {
         return R.ok(update);
     }
     
+    @Slave
+    @Override
+    public List<UserInfoGroupIdAndNameVO> listAllGroup(UserInfoGroupQuery query) {
+        // todo
+        return null;
+    }
+    
     
     @Override
     public R update(UserInfoGroupSaveAndUpdateRequest request, Long uid) {
