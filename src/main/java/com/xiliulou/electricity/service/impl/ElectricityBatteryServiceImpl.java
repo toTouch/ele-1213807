@@ -1375,6 +1375,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
             stockStatus = StockStatusEnum.UN_STOCK.getCode();
             operateRecordMap.put("outboundStatus", 0);
             operateRecordMap.put("franchisee", franchisee.getName());
+            operateRecordUtil.record(null, operateRecordMap);
         } else {
             //进入电池解绑流程
             log.info("unbind franchisee for battery. battery ids: {}", batteryQuery.getElectricityBatteryIdList());
@@ -1392,7 +1393,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
             
             batteryQuery.setFranchiseeId(null);
             stockStatus = StockStatusEnum.STOCK.getCode();
-            operateRecordMap.put("outboundStatus", 1);
+            //            operateRecordMap.put("outboundStatus", 1);
         }
         
         int count = electricitybatterymapper.bindFranchiseeId(batteryQuery, stockStatus);
@@ -1410,7 +1411,6 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
                 assetWarehouseRecordService.asyncRecords(TenantContextHolder.getTenantId(), uid, snWarehouseList, AssetTypeEnum.ASSET_TYPE_BATTERY.getCode(), operateType);
             }
         }
-        operateRecordUtil.record(null, operateRecordMap);
         return R.ok(count);
     }
     
