@@ -16,8 +16,8 @@ import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 
 import java.math.BigDecimal;
+import java.util.HashSet;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * 租车套餐持久类
@@ -213,8 +213,7 @@ public class CarRentalPackagePo extends BasicCarPo {
     public List<Long> getCouponIds() {
         if (StrUtil.isNotBlank(this.couponId)) {
             try {
-                return JSONUtil.parseArray(couponId, true).toList(String.class)
-                        .stream().map(Long::parseLong).collect(Collectors.toList());
+                return JSONUtil.parseArray(couponId, true).toList(Long.class);
             } catch (Throwable e) {
                 log.warn("Coupon group serializer error.");
             }
@@ -228,8 +227,7 @@ public class CarRentalPackagePo extends BasicCarPo {
             return;
         }
         try {
-            List<String> ids = couponId.stream().map(String::valueOf).distinct().collect(Collectors.toList());
-            this.couponId = JSONUtil.toJsonStr(ids);
+            this.couponId = JSONUtil.toJsonStr(new HashSet<>(couponId));
         } catch (Throwable e) {
             log.warn("Coupon group deserializer error.");
         }
@@ -239,8 +237,7 @@ public class CarRentalPackagePo extends BasicCarPo {
     public List<Long> getUserGroupId() {
         if (StrUtil.isNotBlank(this.userGroupIds)) {
             try {
-                return JSONUtil.parseArray(this.userGroupIds, true).toList(String.class)
-                        .stream().map(Long::parseLong).collect(Collectors.toList());
+                return JSONUtil.parseArray(this.userGroupIds, true).toList(Long.class);
             } catch (Throwable e) {
                 log.warn("user group serializer error.");
             }
@@ -254,8 +251,7 @@ public class CarRentalPackagePo extends BasicCarPo {
             return;
         }
         try {
-            List<String> ids = userGroupId.stream().map(String::valueOf).distinct().collect(Collectors.toList());
-            this.userGroupIds = JSONUtil.toJsonStr(ids);
+            this.userGroupIds = JSONUtil.toJsonStr(new HashSet<>(userGroupId));
         } catch (Throwable e) {
             log.warn("user group deserializer error.");
         }

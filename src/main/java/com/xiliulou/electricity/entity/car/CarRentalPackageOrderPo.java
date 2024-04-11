@@ -6,15 +6,20 @@ import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.xiliulou.electricity.entity.basic.BasicCarPo;
-import com.xiliulou.electricity.enums.*;
+import com.xiliulou.electricity.enums.ApplicableTypeEnum;
+import com.xiliulou.electricity.enums.PayStateEnum;
+import com.xiliulou.electricity.enums.PayTypeEnum;
+import com.xiliulou.electricity.enums.RenalPackageConfineEnum;
 import com.xiliulou.electricity.enums.RentalPackageTypeEnum;
+import com.xiliulou.electricity.enums.RentalUnitEnum;
+import com.xiliulou.electricity.enums.UseStateEnum;
+import com.xiliulou.electricity.enums.YesNoEnum;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 
 import java.math.BigDecimal;
 import java.util.HashSet;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * 租车套餐购买订单表
@@ -209,8 +214,7 @@ public class CarRentalPackageOrderPo extends BasicCarPo {
     public List<Long> getCouponIds() {
         if (StrUtil.isNotBlank(this.couponId)) {
             try {
-                return JSONUtil.parseArray(couponId, true).toList(String.class)
-                        .stream().map(Long::parseLong).collect(Collectors.toList());
+                return JSONUtil.parseArray(couponId, true).toList(Long.class);
             } catch (Throwable e) {
                 log.warn("Coupon group conversion error.");
             }
@@ -224,8 +228,7 @@ public class CarRentalPackageOrderPo extends BasicCarPo {
             return;
         }
         try {
-            List<String> ids = couponId.stream().map(String::valueOf).distinct().collect(Collectors.toList());
-            this.couponId = JSONUtil.toJsonStr(ids);
+            this.couponId = JSONUtil.toJsonStr(new HashSet<>(couponId));
         } catch (Throwable e) {
             log.warn("Coupon group serializer error.");
         }
