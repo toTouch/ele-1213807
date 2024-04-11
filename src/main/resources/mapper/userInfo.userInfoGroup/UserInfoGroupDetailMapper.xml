@@ -26,7 +26,7 @@
         select
         <include refid="basic_field"/>
         from t_user_info_group_detail
-        where del_flag = 0 and group_no = #{groupNo} and uid = #{uid} and tenant_id = #{tenantId}
+        where group_no = #{groupNo} and uid = #{uid} and tenant_id = #{tenantId}
     </select>
     
     <select id="selectPage" resultType="com.xiliulou.electricity.entity.userInfo.userInfoGroup.UserInfoGroupDetail">
@@ -35,7 +35,7 @@
         from t_user_info_group_detail tuigd
         left join t_user_info_group tuig on tuig.group_no = tuigd.group_no
         <where>
-            tuigd.tenant_id = #{tenantId} and tuigd.del_flag = 0
+            tuigd.tenant_id = #{tenantId}
             <if test="uid != null">
                 tuigd.uid = #{uid}
             </if>
@@ -58,7 +58,7 @@
         from t_user_info_group_detail tuigd
         left join t_user_info_group tuig on tuig.group_no = tuigd.group_no
         <where>
-            tuigd.tenant_id = #{tenantId} and tuigd.del_flag = 0
+            tuigd.tenant_id = #{tenantId}
             <if test="uid != null">
                 tuigd.uid = #{uid}
             </if>
@@ -78,8 +78,7 @@
         select count(1)
         from t_user_info_group_detail tuigd
                  left join t_user_info_group tuig on tuig.group_no = tuigd.group_no
-        where tuigd.del_flag = 0
-          and tuig.id = #{id}
+        where tuig.id = #{id}
     </select>
     
     <select id="selectListGroupByUid" resultType="com.xiliulou.electricity.vo.userinfo.UserInfoGroupNamesVO">
@@ -87,9 +86,9 @@
         from t_user_info_group_detail tuigd
         left join t_user_info_group tuig on tuigd.group_no = tuig.group_no
         <where>
-            tuigd.del_flag = 0 and tuig.del_flag = 0 and tuigd.uid = #{uid}
+            tuig.del_flag = 0 and tuigd.uid = #{uid}
             <if test="tenantId != null">
-                and tuigd.id = #{tenantId}
+                and tuigd.tenant_id = #{tenantId}
             </if>
             <if test="franchiseeIds != null and franchiseeIds.size()>0">
                 and tuigd.franchisee_id in

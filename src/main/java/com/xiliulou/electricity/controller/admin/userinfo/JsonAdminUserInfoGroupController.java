@@ -76,11 +76,11 @@ public class JsonAdminUserInfoGroupController extends BasicController {
             log.error("ELE ERROR! not found user");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-    
+        
         if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE) || Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE))) {
             return R.fail("ELECTRICITY.0066", "用户权限不足");
         }
-    
+        
         return userInfoGroupService.remove(id, user.getUid());
     }
     
@@ -194,6 +194,46 @@ public class JsonAdminUserInfoGroupController extends BasicController {
         }
         
         return userInfoGroupService.batchImport(request, user.getUid());
+    }
+    
+    /**
+     * 租户下所有分组
+     */
+    @GetMapping("/admin/userInfo/userInfoGroup/allGroup")
+    public R page(@RequestParam("size") long size, @RequestParam("offset") long offset, @RequestParam(value = "franchiseeId", required = false) Long franchiseeId) {
+        if (size < 0 || size > 50) {
+            size = 10L;
+        }
+        
+        if (offset < 0) {
+            offset = 0L;
+        }
+        
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELE ERROR! not found user");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        
+        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE) || Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE))) {
+            return R.fail("ELECTRICITY.0066", "用户权限不足");
+        }
+        
+        List<Long> franchiseeIds = new ArrayList<>();
+        if (Objects.nonNull(franchiseeId)) {
+            franchiseeIds.add(franchiseeId);
+        }
+        
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if (CollectionUtils.isEmpty(franchiseeIds)) {
+                return R.ok(Collections.emptyList());
+            }
+        }
+        
+        UserInfoGroupQuery query = UserInfoGroupQuery.builder().size(size).offset(offset).tenantId(TenantContextHolder.getTenantId()).franchiseeIds(franchiseeIds).build();
+        
+        return R.ok(userInfoGroupService.listAllGroup(query));
     }
     
 }

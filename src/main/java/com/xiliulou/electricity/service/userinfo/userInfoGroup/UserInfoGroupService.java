@@ -5,6 +5,7 @@ import com.xiliulou.electricity.entity.userInfo.userInfoGroup.UserInfoGroup;
 import com.xiliulou.electricity.query.UserInfoGroupQuery;
 import com.xiliulou.electricity.request.user.UserInfoGroupBatchImportRequest;
 import com.xiliulou.electricity.request.user.UserInfoGroupSaveAndUpdateRequest;
+import com.xiliulou.electricity.vo.userinfo.UserInfoGroupIdAndNameVO;
 import com.xiliulou.electricity.vo.userinfo.UserInfoGroupVO;
 
 import java.util.List;
@@ -33,4 +34,6 @@ public interface UserInfoGroupService {
     List<UserInfoGroupVO> listByIds(List<Long> ids);
     
     R remove(Long id, Long uid);
+    
+    List<UserInfoGroupIdAndNameVO> listAllGroup(UserInfoGroupQuery query);
 }
