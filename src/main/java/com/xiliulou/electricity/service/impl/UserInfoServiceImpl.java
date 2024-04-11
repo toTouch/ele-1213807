@@ -1320,19 +1320,19 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             //记录企业用户租电池记录
             enterpriseUserCostRecordService.asyncSaveUserCostRecordForRentalAndReturnBattery(UserCostTypeEnum.COST_TYPE_RENT_BATTERY.getCode(), rentBatteryOrder);
             
+            //发送操作记录
+            try {
+                Map<String, Object> map = new HashMap<>();
+                map.put("username", oldUserInfo.getName());
+                map.put("phone", oldUserInfo.getPhone());
+                map.put("editType", userInfoBatteryAddAndUpdate.getEdiType());
+                map.put("batterySN", userInfoBatteryAddAndUpdate.getInitElectricityBatterySn());
+                operateRecordUtil.record(Objects.isNull(isBindElectricityBattery) ? null : MapUtil.of("batterySN", isBindElectricityBattery.getSn()), map);
+            } catch (Throwable e) {
+                log.error("Recording user operation records failed because:", e);
+            }
             return null;
         });
-        try {
-            Map<String, Object> map = new HashMap<>();
-            map.put("username", oldUserInfo.getName());
-            map.put("phone", oldUserInfo.getPhone());
-            map.put("editType", userInfoBatteryAddAndUpdate.getEdiType());
-            map.put("batterySN", userInfoBatteryAddAndUpdate.getInitElectricityBatterySn());
-            operateRecordUtil.record(Objects.isNull(isBindElectricityBattery) ? null : MapUtil.of("batterySN", isBindElectricityBattery.getSn()), map);
-        } catch (Throwable e) {
-            log.error("Recording user operation records failed because:", e);
-        }
-        
         return R.ok();
     }
     
