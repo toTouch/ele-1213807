@@ -137,6 +137,7 @@ import com.xiliulou.electricity.utils.DateUtils;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.OperateRecordUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
+import com.xiliulou.electricity.utils.VersionUtil;
 import com.xiliulou.electricity.vo.CabinetBatteryVO;
 import com.xiliulou.electricity.vo.EleCabinetDataAnalyseVO;
 import com.xiliulou.electricity.vo.ElectricityCabinetBatchOperateVo;
@@ -236,6 +237,11 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     private static final String OPEN_FAN_CONDITION_KEY = "openFanCondition";
     
     private static final String OPEN_HEAT_CONDITION_KEY = "openHeatCondition";
+    
+    /**
+     * 吞电池优化版本
+     */
+    private static final String ELE_CABINET_VERSION = "2.1.5";
     
     //    @Value("${testFactory.tenantId}")
     //    private Integer testFactoryTenantId;
@@ -3180,7 +3186,13 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     }
     
     @Override
-    public Pair<Boolean, Integer> findUsableEmptyCellNoV2(Integer eid) {
+    public Pair<Boolean, Integer> findUsableEmptyCellNoV2(Integer eid, String version) {
+    
+        //旧版本仍走旧分配逻辑
+        if (StringUtils.isNotBlank(version) && VersionUtil.compareVersion(ELE_CABINET_VERSION, version) > 0) {
+            return this.findUsableEmptyCellNo(eid);
+        }
+        
         Integer cellNo = null;
         List<ElectricityCabinetBox> emptyCellList = electricityCabinetBoxService.listUsableEmptyCell(eid);
         if (CollectionUtils.isEmpty(emptyCellList)) {

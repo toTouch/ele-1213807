@@ -137,7 +137,7 @@ public interface ElectricityCabinetService {
 
     Pair<Boolean, Integer> findUsableEmptyCellNo(Integer id);
     
-    Pair<Boolean, Integer> findUsableEmptyCellNoV2(Integer eid);
+    Pair<Boolean, Integer> findUsableEmptyCellNoV2(Integer eid, String version);
 
     R getFranchisee(String productKey, String deviceName);
 
