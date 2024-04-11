@@ -108,7 +108,7 @@ public class JsonAdminUserPermissionController extends BaseController {
     public R bindPermissionToRole(@RequestParam("roleId") Long roleId, @RequestParam("pids") String jsonPids) {
         List<Long> pids = JsonUtil.fromJsonArray(jsonPids, Long.class);
         if (!DataUtil.collectionIsUsable(pids)) {
-            return R.fail("SYSTEM.0002", "参数不合法");
+            return R.fail("120120", "请分配权限");
         }
         return returnPairResult(permissionResourceService.bindPermissionToRole(roleId, pids));
     }
