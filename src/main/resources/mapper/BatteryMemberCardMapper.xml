@@ -97,7 +97,8 @@
         <result property="groupType" column="group_type" jdbcType="INTEGER"/>
         <result property="couponIds" column="coupon_ids"/>
         <result property="userInfoGroupIds" column="user_info_group_ids"/>
-        <collection property="batteryType" javaType="java.util.List" ofType="com.xiliulou.electricity.entity.MemberCardBatteryType" column="id" select="selectListMemberCardBatteryType">
+        <collection property="batteryType" javaType="java.util.List" ofType="com.xiliulou.electricity.entity.MemberCardBatteryType" column="id"
+            select="selectListMemberCardBatteryType">
             <id property="id" column="mcbt_id" jdbcType="INTEGER"/>
             <result property="batteryType" column="battery_type" jdbcType="VARCHAR"/>
         </collection>
@@ -179,7 +180,8 @@
         select
         tbmc.id, tbmc.name, tbmc.deposit, tbmc.rent_price, tbmc.rent_price_unit, tbmc.valid_days, tbmc.rent_unit, tbmc.franchisee_id, tbmc.rent_type, tbmc.send_coupon,
         tbmc.status, tbmc.limit_count, tbmc.use_count, tbmc.coupon_id, tbmc.is_refund, tbmc.refund_limit, tbmc.free_deposite,
-        tbmc.service_charge, tbmc.remark, tbmc.business_type, tbmc.del_flag, tbmc.tenant_id, tbmc.create_time, tbmc.update_time, tbmc.sort_param, tbmc.coupon_ids, tbmc.user_info_group_ids, tbmc.group_type
+        tbmc.service_charge, tbmc.remark, tbmc.business_type, tbmc.del_flag, tbmc.tenant_id, tbmc.create_time, tbmc.update_time, tbmc.sort_param, tbmc.coupon_ids,
+        tbmc.user_info_group_ids, tbmc.group_type
         from t_battery_member_card tbmc
         left join t_member_card_battery_type tmcbt on tbmc.id = tmcbt.mid
         <where>
@@ -237,7 +239,9 @@
     
     <!--一对多分页查询，查询集合属性值-->
     <select id="selectListMemberCardBatteryType" resultType="com.xiliulou.electricity.entity.MemberCardBatteryType">
-        select id, battery_type from t_member_card_battery_type where mid = #{id}
+        select id, battery_type
+        from t_member_card_battery_type
+        where mid = #{id}
     </select>
     
     <select id="selectByQuery" resultMap="BatteryMemberCardMap">
@@ -547,10 +551,10 @@
     <update id="batchUpdateSortParam">
         update t_battery_member_card
         set sort_param = case id
-            <foreach collection="sortParamQueries" item="item" index="index">
-                when #{item.id} then #{item.sortParam}
-            </foreach>
-            end
+        <foreach collection="sortParamQueries" item="item" index="index">
+            when #{item.id} then #{item.sortParam}
+        </foreach>
+        end
         where id in
         <foreach collection="sortParamQueries" item="item" index="index" open="(" separator="," close=")">
             #{item.id}

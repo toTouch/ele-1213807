@@ -441,7 +441,6 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
                 });
                 batteryMemberCardVO.setUserInfoGroups(userInfoGroups);
             }
-            
             return batteryMemberCardVO;
         }).collect(Collectors.toList());
     }
@@ -469,10 +468,10 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(SecurityUtils.getUid());
         UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(SecurityUtils.getUid());
         UserInfo userInfo = userInfoService.queryByUidFromCache(SecurityUtils.getUid());
-    
+        
         List<UserInfoGroupNamesVO> userInfoGroupNamesVOs = userInfoGroupDetailService.listGroupByUid(
                 UserInfoGroupDetailQuery.builder().uid(SecurityUtils.getUid()).tenantId(TenantContextHolder.getTenantId()).build());
-    
+        
         //处理新租套餐重复购买的问题，如果先购买了租车套餐，则用户属于老用户，则只能购买租赁类型为不限或者续租的套餐
         if (Objects.isNull(userBatteryMemberCard) && userInfo.getPayCount() <= 0) {
             //新租
@@ -744,7 +743,7 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
         batteryMemberCardUpdate.setGroupType(query.getGroupType());
         if (Objects.equals(query.getSendCoupon(), BatteryMemberCard.SEND_COUPON_NO)) {
             batteryMemberCardUpdate.setCouponIds(null);
-        }else {
+        } else {
             batteryMemberCardUpdate.setCouponIds(CollectionUtils.isEmpty(query.getCouponIdsTransfer()) ? null : JsonUtil.toJson(query.getCouponIdsTransfer()));
         }
         
@@ -775,7 +774,6 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
             return verifyBatteryMemberCardResult;
         }
         
-        
         BatteryMemberCard batteryMemberCard = new BatteryMemberCard();
         BeanUtils.copyProperties(query, batteryMemberCard);
         batteryMemberCard.setDelFlag(BatteryMemberCard.DEL_NORMAL);
@@ -786,7 +784,7 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
         batteryMemberCard.setUserInfoGroupIds(CollectionUtils.isEmpty(query.getUserInfoGroupIdsTransfer()) ? null : JsonUtil.toJson(query.getUserInfoGroupIdsTransfer()));
         if (Objects.equals(query.getSendCoupon(), BatteryMemberCard.SEND_COUPON_NO)) {
             batteryMemberCard.setCouponIds(null);
-        }else {
+        } else {
             batteryMemberCard.setCouponIds(CollectionUtils.isEmpty(query.getCouponIdsTransfer()) ? null : JsonUtil.toJson(query.getCouponIdsTransfer()));
         }
         

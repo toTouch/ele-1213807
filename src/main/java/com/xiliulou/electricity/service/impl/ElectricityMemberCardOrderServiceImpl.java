@@ -1155,14 +1155,14 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             // 设置优惠券
             List<CouponSearchVo> coupons = new ArrayList<>();
             HashSet<Integer> couponIdsSet = new HashSet<>();
-    
+            
             if (Objects.nonNull(electricityMemberCardOrderVO.getSendCouponId())) {
                 couponIdsSet.add(Integer.parseInt(electricityMemberCardOrderVO.getSendCouponId().toString()));
             }
             if (StringUtils.isNotBlank(electricityMemberCardOrderVO.getCouponIds())) {
                 couponIdsSet.addAll(JsonUtil.fromJsonArray(electricityMemberCardOrderVO.getCouponIds(), Integer.class));
             }
-    
+            
             if (!CollectionUtils.isEmpty(couponIdsSet)) {
                 CouponSearchVo couponSearchVo = new CouponSearchVo();
                 
@@ -1175,7 +1175,6 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                 });
             }
             electricityMemberCardOrderVO.setCoupons(coupons);
-            
             
             ElectricityMemberCardOrderVOs.add(electricityMemberCardOrderVO);
         }
@@ -3802,13 +3801,10 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         // 判断套餐用户分组和用户的用户分组是否匹配
         List<UserInfoGroupNamesVO> userInfoGroupNamesVOs = userInfoGroupDetailService.listGroupByUid(
                 UserInfoGroupDetailQuery.builder().uid(SecurityUtils.getUid()).tenantId(TenantContextHolder.getTenantId()).build());
-        
         if (CollectionUtils.isNotEmpty(userInfoGroupNamesVOs)) {
             if (StringUtils.isNotBlank(batteryMemberCard.getUserInfoGroupIds())) {
-                
                 HashSet<Long> memberCardUserGroupIds = new HashSet<>(JsonUtil.fromJsonArray(batteryMemberCard.getUserInfoGroupIds(), Long.class));
                 List<Long> userInfoGroupIds = userInfoGroupNamesVOs.stream().map(UserInfoGroupNamesVO::getGroupId).collect(Collectors.toList());
-                
                 if (!memberCardUserGroupIds.containsAll(userInfoGroupIds)) {
                     return Triple.of(false, "100317", "用户与套餐关联的用户分组不一致，请刷新重试");
                 }
