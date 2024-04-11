@@ -412,7 +412,7 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
                     .storeId(userInfo.getStoreId()).takeAwayPower(takeAwayPower).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).build();
             exchangeBatterySocService.insertOne(batterySoc);
         } catch (Exception e) {
-            log.error("handlerUserTakeBatterySoc/exchangeBattery/insert is exception, uid={},sn={},error ={}", userInfo.getUid(), sn, e);
+            log.error("handlerUserTakeBatterySoc/exchangeBattery/insert is exception, uid={},sn={}", userInfo.getUid(), sn, e);
         }
         
     }
@@ -436,7 +436,7 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
             exchangeBatterySoc.setUpdateTime(System.currentTimeMillis());
             exchangeBatterySocService.update(exchangeBatterySoc);
         } catch (Exception e) {
-            log.error("handlerUserTakeBatterySoc/exchangeBattery/update is exception,uid={},sn={},error={}", userInfo.getUid(), sn, e);
+            log.error("handlerUserTakeBatterySoc/exchangeBattery/update is exception,uid={},sn={}", userInfo.getUid(), sn, e);
         }
         
     }
