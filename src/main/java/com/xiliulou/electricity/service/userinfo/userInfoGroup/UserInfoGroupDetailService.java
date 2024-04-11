@@ -4,7 +4,7 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.userInfo.userInfoGroup.UserInfoGroupDetail;
 import com.xiliulou.electricity.query.UserInfoGroupDetailQuery;
 import com.xiliulou.electricity.request.user.UserInfoGroupDetailUpdateRequest;
-import com.xiliulou.electricity.vo.userinfo.UserInfoGroupDetailVO;
+import com.xiliulou.electricity.vo.userinfo.UserInfoGroupDetailPageVO;
 import com.xiliulou.electricity.vo.userinfo.UserInfoGroupNamesVO;
 
 import java.util.List;
@@ -18,7 +18,7 @@ public interface UserInfoGroupDetailService {
     
     UserInfoGroupDetail queryByUid(String groupNo, Long uid, Integer tenantId);
     
-    List<UserInfoGroupDetailVO> listByPage(UserInfoGroupDetailQuery query);
+    List<UserInfoGroupDetailPageVO> listByPage(UserInfoGroupDetailQuery query);
     
     Integer countTotal(UserInfoGroupDetailQuery query);
     

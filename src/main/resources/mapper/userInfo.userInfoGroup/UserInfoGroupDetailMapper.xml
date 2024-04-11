@@ -29,9 +29,9 @@
         where group_no = #{groupNo} and uid = #{uid} and tenant_id = #{tenantId}
     </select>
     
-    <select id="selectPage" resultType="com.xiliulou.electricity.entity.userInfo.userInfoGroup.UserInfoGroupDetail">
+    <select id="selectPage" resultType="com.xiliulou.electricity.vo.userinfo.UserInfoGroupDetailVO">
         select tuigd.id as id, tuigd.group_no as groupNo, tuigd.uid as uid, tuigd.franchisee_id as franchiseeId, tuigd.tenant_id as tenantId, tuigd.del_flag as delFlag,
-        tuigd.create_time as createTime, tuigd.update_time as updateTime
+        tuigd.create_time as createTime, tuigd.update_time as updateTime, tuig.id as groupId, tuig.group_name as groupName
         from t_user_info_group_detail tuigd
         left join t_user_info_group tuig on tuig.group_no = tuigd.group_no
         <where>

@@ -2,6 +2,7 @@ package com.xiliulou.electricity.mapper.userInfo.userInfoGroup;
 
 import com.xiliulou.electricity.entity.userInfo.userInfoGroup.UserInfoGroupDetail;
 import com.xiliulou.electricity.query.UserInfoGroupDetailQuery;
+import com.xiliulou.electricity.vo.userinfo.UserInfoGroupDetailVO;
 import com.xiliulou.electricity.vo.userinfo.UserInfoGroupNamesVO;
 import org.apache.ibatis.annotations.Param;
 
@@ -16,7 +17,7 @@ public interface UserInfoGroupDetailMapper {
     
     UserInfoGroupDetail selectByUid(@Param("groupNo") String groupNo, @Param("uid") Long uid, @Param("tenantId") Integer tenantId);
     
-    List<UserInfoGroupDetail> selectPage(UserInfoGroupDetailQuery query);
+    List<UserInfoGroupDetailVO> selectPage(UserInfoGroupDetailQuery query);
     
     Integer countTotal(UserInfoGroupDetailQuery query);
     

@@ -14,6 +14,7 @@ import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.userinfo.userInfoGroup.UserInfoGroupDetailService;
 import com.xiliulou.electricity.service.userinfo.userInfoGroup.UserInfoGroupService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
+import com.xiliulou.electricity.vo.userinfo.UserInfoGroupDetailPageVO;
 import com.xiliulou.electricity.vo.userinfo.UserInfoGroupDetailVO;
 import com.xiliulou.electricity.vo.userinfo.UserInfoGroupNamesVO;
 import com.xiliulou.electricity.vo.userinfo.UserInfoGroupVO;
@@ -60,15 +61,15 @@ public class UserInfoGroupDetailServiceImpl implements UserInfoGroupDetailServic
     
     @Slave
     @Override
-    public List<UserInfoGroupDetailVO> listByPage(UserInfoGroupDetailQuery query) {
-        List<UserInfoGroupDetail> list = userInfoGroupDetailMapper.selectPage(query);
+    public List<UserInfoGroupDetailPageVO> listByPage(UserInfoGroupDetailQuery query) {
+        List<UserInfoGroupDetailVO> list = userInfoGroupDetailMapper.selectPage(query);
         
         if (CollectionUtils.isEmpty(list)) {
             return Collections.emptyList();
         }
         
-        return list.stream().map(item -> {
-            UserInfoGroupDetailVO detailVO = new UserInfoGroupDetailVO();
+        return list.stream().filter(Objects::nonNull).map(item -> {
+            UserInfoGroupDetailPageVO detailVO = new UserInfoGroupDetailPageVO();
             Long uid = item.getUid();
             
             UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
@@ -80,18 +81,13 @@ public class UserInfoGroupDetailServiceImpl implements UserInfoGroupDetailServic
             detailVO.setFranchiseeId(item.getFranchiseeId());
             detailVO.setFranchiseeName(Optional.ofNullable(franchiseeService.queryByIdFromCache(item.getFranchiseeId())).orElse(new Franchisee()).getName());
             detailVO.setUpdateTime(item.getUpdateTime());
+            detailVO.setGroupId(item.getGroupId());
             
-            Set<String> groupNames = new HashSet<>();
+            Set<String> groupNames = new HashSet<>(Set.of(item.getGroupName()));
+            
             UserInfoGroupDetailQuery detailQuery = UserInfoGroupDetailQuery.builder().uid(uid).tenantId(query.getTenantId()).build();
             List<UserInfoGroupNamesVO> groupNameDetails = userInfoGroupDetailMapper.selectListGroupByUid(detailQuery);
             if (CollectionUtils.isNotEmpty(groupNameDetails)) {
-                List<UserInfoGroupNamesVO> nameDetail = groupNameDetails.stream().filter(detail -> detail.getGroupNo().equals(item.getGroupNo())).collect(Collectors.toList());
-                Optional.of(nameDetail.get(0)).ifPresent(d -> {
-                    groupNames.add(d.getGroupName());
-                });
-                
-                groupNameDetails.removeAll(nameDetail);
-                
                 Set<String> nameSet = groupNameDetails.stream().map(UserInfoGroupNamesVO::getGroupName).collect(Collectors.toSet());
                 if (CollectionUtils.isNotEmpty(nameSet)) {
                     groupNames.addAll(nameSet);
@@ -141,7 +137,7 @@ public class UserInfoGroupDetailServiceImpl implements UserInfoGroupDetailServic
         if (Objects.isNull(userInfo)) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-    
+        
         Integer tenantId = TenantContextHolder.getTenantId();
         
         if (!Objects.equals(tenantId, userInfo.getTenantId())) {
@@ -151,6 +147,14 @@ public class UserInfoGroupDetailServiceImpl implements UserInfoGroupDetailServic
         List<UserInfoGroupVO> groupList = userInfoGroupService.listByIds(groupIds);
         if (CollectionUtils.isEmpty(groupList) || !Objects.equals(groupList.size(), groupIds.size())) {
             log.warn("Update userInfoGroupDetail error! groupList is empty or size not equal, groupIds={}", groupIds);
+            return R.fail("120112", "未找到用户分组");
+        }
+        
+        List<UserInfoGroupVO> notSameFranchiseeGroups = groupList.stream().filter(item -> !Objects.equals(item.getFranchiseeId(), userInfo.getFranchiseeId()))
+                .collect(Collectors.toList());
+        if (CollectionUtils.isNotEmpty(notSameFranchiseeGroups)) {
+            List<Long> differentGroupIds = notSameFranchiseeGroups.stream().map(UserInfoGroupVO::getId).collect(Collectors.toList());
+            log.warn("Update userInfoGroupDetail error! has different franchisee, different groupIds={}", differentGroupIds);
             return R.fail("120112", "未找到用户分组");
         }
         
