@@ -6,7 +6,6 @@ import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.RandomUtil;
 import cn.hutool.core.util.StrUtil;
-import cn.hutool.json.JSONUtil;
 import com.alibaba.excel.EasyExcel;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -164,7 +163,6 @@ import com.xiliulou.electricity.vo.HomePageTurnOverGroupByWeekDayVo;
 import com.xiliulou.electricity.vo.OldUserActivityVO;
 import com.xiliulou.electricity.vo.UserBatteryMemberCardInfoVO;
 import com.xiliulou.electricity.vo.userinfo.UserInfoGroupNamesVO;
-import com.xiliulou.electricity.vo.userinfo.UserInfoGroupVO;
 import com.xiliulou.mq.service.RocketMqService;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiOrderResultDTO;
 import com.xiliulou.pay.weixinv3.exception.WechatPayException;
@@ -3802,14 +3800,14 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         }
         
         // 判断套餐用户分组和用户的用户分组是否匹配
-        List<UserInfoGroupNamesVO> userInfoGroupNamesVOS = userInfoGroupDetailService.listGroupByUid(
+        List<UserInfoGroupNamesVO> userInfoGroupNamesVOs = userInfoGroupDetailService.listGroupByUid(
                 UserInfoGroupDetailQuery.builder().uid(SecurityUtils.getUid()).tenantId(TenantContextHolder.getTenantId()).build());
         
-        if (CollectionUtils.isNotEmpty(userInfoGroupNamesVOS)) {
-            if (StringUtils.isNotBlank(batteryMemberCard.getUserGroupIds())) {
+        if (CollectionUtils.isNotEmpty(userInfoGroupNamesVOs)) {
+            if (StringUtils.isNotBlank(batteryMemberCard.getUserInfoGroupIds())) {
                 
-                HashSet<Long> memberCardUserGroupIds = new HashSet<>(JsonUtil.fromJsonArray(batteryMemberCard.getUserGroupIds(), Long.class));
-                List<Long> userInfoGroupIds = userInfoGroupNamesVOS.stream().map(UserInfoGroupNamesVO::getGroupId).collect(Collectors.toList());
+                HashSet<Long> memberCardUserGroupIds = new HashSet<>(JsonUtil.fromJsonArray(batteryMemberCard.getUserInfoGroupIds(), Long.class));
+                List<Long> userInfoGroupIds = userInfoGroupNamesVOs.stream().map(UserInfoGroupNamesVO::getGroupId).collect(Collectors.toList());
                 
                 if (!memberCardUserGroupIds.containsAll(userInfoGroupIds)) {
                     return Triple.of(false, "100317", "用户与套餐关联的用户分组不一致，请刷新重试");

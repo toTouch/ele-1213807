@@ -166,7 +166,7 @@
         select
         tbmc.id, tbmc.name, tbmc.deposit, tbmc.rent_price, tbmc.rent_price_unit, tbmc.valid_days, tbmc.rent_unit, tbmc.franchisee_id, tbmc.rent_type, tbmc.send_coupon,
         tbmc.status, tbmc.limit_count, tbmc.use_count, tbmc.coupon_id, tbmc.is_refund, tbmc.refund_limit, tbmc.free_deposite,
-        tbmc.service_charge, tbmc.remark, tbmc.business_type, tbmc.del_flag, tbmc.tenant_id, tbmc.create_time, tbmc.update_time, tbmc.sort_param, tbmc.coupon_ids, tbmc.user_group_ids
+        tbmc.service_charge, tbmc.remark, tbmc.business_type, tbmc.del_flag, tbmc.tenant_id, tbmc.create_time, tbmc.update_time, tbmc.sort_param, tbmc.coupon_ids, tbmc.user_info_group_ids
         from t_battery_member_card tbmc
         left join t_member_card_battery_type tmcbt on tbmc.id = tmcbt.mid
         <where>
@@ -207,10 +207,10 @@
             <if test="originalBatteryModel != null and originalBatteryModel != ''">
                 and tmcbt.battery_type = #{originalBatteryModel}
             </if>
-            <if test="userGroupId != null and userGroupId != ''">
-                and JSON_CONTAINS(tbmc.user_group_ids, #{userGroupId})
+            <if test="userInfoGroupId != null and userInfoGroupId != ''">
+                and JSON_CONTAINS(tbmc.user_info_group_ids, #{userInfoGroupId})
             </if>
-            <if test="userGroupId != null and userGroupId != ''">
+            <if test="userInfoGroupId != null and userInfoGroupId != ''">
                 and tbmc.group_type = 1
             </if>
             <if test="batteryModel != null and batteryModel != ''">
@@ -330,13 +330,13 @@
             <if test="tenantId != null">
                 and bmc.tenant_id = #{tenantId}
             </if>
-            <if test="userGroupIdsForSearch != null">
+            <if test="userInfoGroupIdsForSearch != null">
                 and
-                <foreach collection="userGroupIdsForSearch" item="userGroupId" index="index" open="(" separator="or" close=")">
-                    JSON_CONTAINS(bmc.user_group_ids, #{userGroupId})
+                <foreach collection="userInfoGroupIdsForSearch" item="userInfoGroupId" index="index" open="(" separator="or" close=")">
+                    JSON_CONTAINS(bmc.user_info_group_ids, #{userInfoGroupId})
                 </foreach>
             </if>
-            <if test="userGroupIdsForSearch != null">
+            <if test="userInfoGroupIdsForSearch != null">
                 and bmc.group_type = 1
             </if>
             <if test="rentTypes != null">
@@ -429,10 +429,10 @@
             <if test="originalBatteryModel != null and originalBatteryModel != ''">
                 and tmcbt.battery_type = #{originalBatteryModel}
             </if>
-            <if test="userGroupId != null and userGroupId != ''">
-                and JSON_CONTAINS(tbmc.user_group_ids, #{userGroupId})
+            <if test="userInfoGroupId != null and userInfoGroupId != ''">
+                and JSON_CONTAINS(tbmc.user_info_group_ids, #{userInfoGroupId})
             </if>
-            <if test="userGroupId != null and userGroupId != ''">
+            <if test="userInfoGroupId != null and userInfoGroupId != ''">
                 and tbmc.group_type = 1
             </if>
             <if test="batteryModel != null and batteryModel != ''">

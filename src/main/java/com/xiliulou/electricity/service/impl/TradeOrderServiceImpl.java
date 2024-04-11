@@ -2,8 +2,6 @@ package com.xiliulou.electricity.service.impl;
 
 import cn.hutool.core.util.NumberUtil;
 import cn.hutool.core.util.ObjectUtil;
-import cn.hutool.core.util.RandomUtil;
-import cn.hutool.json.JSONUtil;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.constant.CacheConstant;
@@ -78,7 +76,6 @@ import com.xiliulou.electricity.utils.DateUtils;
 import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.userinfo.UserInfoGroupNamesVO;
-import com.xiliulou.electricity.vo.userinfo.UserInfoGroupVO;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiOrderResultDTO;
 import com.xiliulou.pay.weixinv3.exception.WechatPayException;
 import com.xiliulou.security.bean.TokenUser;
@@ -305,11 +302,11 @@ public class TradeOrderServiceImpl implements TradeOrderService {
             }
             
             // 判断套餐用户分组和用户的用户分组是否匹配
-            List<UserInfoGroupNamesVO> userInfoGroupNamesVOS = userInfoGroupDetailService.listGroupByUid(
+            List<UserInfoGroupNamesVO> userInfoGroupNamesVOs = userInfoGroupDetailService.listGroupByUid(
                     UserInfoGroupDetailQuery.builder().uid(SecurityUtils.getUid()).tenantId(TenantContextHolder.getTenantId()).build());
             
-            if (CollectionUtils.isNotEmpty(userInfoGroupNamesVOS)) {
-                List<Long> userGroupIds = userInfoGroupNamesVOS.stream().map(UserInfoGroupNamesVO::getGroupId).collect(Collectors.toList());
+            if (CollectionUtils.isNotEmpty(userInfoGroupNamesVOs)) {
+                List<Long> userGroupIds = userInfoGroupNamesVOs.stream().map(UserInfoGroupNamesVO::getGroupId).collect(Collectors.toList());
                 Triple<Boolean, String, Object> triple = userGroupIdFit(userGroupIds, batteryMemberCard);
                 if (!triple.getLeft()) {
                     return triple;
@@ -503,11 +500,11 @@ public class TradeOrderServiceImpl implements TradeOrderService {
             }
     
             // 判断套餐用户分组和用户的用户分组是否匹配
-            List<UserInfoGroupNamesVO> userInfoGroupNamesVOS = userInfoGroupDetailService.listGroupByUid(
+            List<UserInfoGroupNamesVO> userInfoGroupNamesVOs = userInfoGroupDetailService.listGroupByUid(
                     UserInfoGroupDetailQuery.builder().uid(SecurityUtils.getUid()).tenantId(TenantContextHolder.getTenantId()).build());
     
-            if (CollectionUtils.isNotEmpty(userInfoGroupNamesVOS)) {
-                List<Long> userGroupIds = userInfoGroupNamesVOS.stream().map(UserInfoGroupNamesVO::getGroupId).collect(Collectors.toList());
+            if (CollectionUtils.isNotEmpty(userInfoGroupNamesVOs)) {
+                List<Long> userGroupIds = userInfoGroupNamesVOs.stream().map(UserInfoGroupNamesVO::getGroupId).collect(Collectors.toList());
                 Triple<Boolean, String, Object> triple = userGroupIdFit(userGroupIds, batteryMemberCard);
                 if (triple.getLeft()) {
                     return triple;
@@ -1134,9 +1131,9 @@ public class TradeOrderServiceImpl implements TradeOrderService {
     
     private Triple<Boolean, String, Object> userGroupIdFit(List<Long> userGroupIds, BatteryMemberCard batteryMemberCard) {
         
-        if (StringUtils.isNotBlank(batteryMemberCard.getUserGroupIds())) {
+        if (StringUtils.isNotBlank(batteryMemberCard.getUserInfoGroupIds())) {
             
-            HashSet<Long> memberCardUserGroupIds = new HashSet<>(JsonUtil.fromJsonArray(batteryMemberCard.getUserGroupIds(), Long.class));
+            HashSet<Long> memberCardUserGroupIds = new HashSet<>(JsonUtil.fromJsonArray(batteryMemberCard.getUserInfoGroupIds(), Long.class));
             
             if (!memberCardUserGroupIds.containsAll(userGroupIds)) {
                 return Triple.of(false, "100318", "您浏览的套餐已下架，请看看其他的吧");

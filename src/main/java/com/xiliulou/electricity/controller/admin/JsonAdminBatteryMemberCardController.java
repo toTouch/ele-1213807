@@ -144,7 +144,7 @@ public class JsonAdminBatteryMemberCardController extends BaseController {
                 .delFlag(BatteryMemberCard.DEL_NORMAL)
                 .franchiseeIds(franchiseeIds)
                 .batteryModel(batteryModel)
-                .userGroupId(Objects.nonNull(userGroupId) ? userGroupId.toString() : null)
+                .userInfoGroupId(Objects.nonNull(userGroupId) ? userGroupId.toString() : null)
                 .build();
         return R.ok(batteryMemberCardService.selectByPage(query));
     }
@@ -191,7 +191,7 @@ public class JsonAdminBatteryMemberCardController extends BaseController {
                 .delFlag(BatteryMemberCard.DEL_NORMAL)
                 .franchiseeIds(franchiseeIds)
                 .batteryModel(batteryModel)
-                .userGroupId(Objects.nonNull(userGroupId) ? userGroupId.toString() : null)
+                .userInfoGroupId(Objects.nonNull(userGroupId) ? userGroupId.toString() : null)
                 .build();
         
         return R.ok(batteryMemberCardService.selectByPageCount(query));
@@ -305,15 +305,14 @@ public class JsonAdminBatteryMemberCardController extends BaseController {
      */
     @GetMapping("/admin/battery/memberCardByUid")
     public R userBatteryMembercardList(@RequestParam("size") long size, @RequestParam("offset") long offset, @RequestParam("uid") long uid,
-            @RequestParam(value = "franchiseeId", required = false) Long franchiseeId, @RequestParam(value = "name", required = false) String name,
-            @RequestParam(value = "userGroupIdsTransfer", required = false) List<Long> userGroupIdsTransfer) {
+            @RequestParam(value = "franchiseeId", required = false) Long franchiseeId, @RequestParam(value = "name", required = false) String name) {
         
         if (offset != 0) {
             return R.ok(Collections.emptyList());
         }
         
         BatteryMemberCardQuery query = BatteryMemberCardQuery.builder().name(name).uid(uid).franchiseeId(franchiseeId).status(BatteryMemberCard.STATUS_UP)
-                .delFlag(BatteryMemberCard.DEL_NORMAL).size(100L).offset(0L).tenantId(TenantContextHolder.getTenantId()).userGroupIdsTransfer(userGroupIdsTransfer).build();
+                .delFlag(BatteryMemberCard.DEL_NORMAL).size(100L).offset(0L).tenantId(TenantContextHolder.getTenantId()).build();
         return R.ok(batteryMemberCardService.selectUserBatteryMembercardList(query));
     }
     

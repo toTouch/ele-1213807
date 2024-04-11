@@ -166,5 +166,5 @@ public class BatteryMemberCardVO {
     /**
      * 套餐绑定的用户分组信息
      */
-    private List<SearchVo> userGroups;
+    private List<SearchVo> userInfoGroups;
 }

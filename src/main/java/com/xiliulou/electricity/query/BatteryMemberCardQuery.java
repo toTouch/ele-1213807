@@ -7,9 +7,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.hibernate.validator.constraints.Range;
+
 import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.util.List;
@@ -131,17 +130,17 @@ public class BatteryMemberCardQuery {
     /**
      * 用户分组id
      */
-    private String userGroupId;
+    private String userInfoGroupId;
     
     /**
      * 套餐绑定的所有用户分组id
      */
-    private List<Long> userGroupIdsTransfer;
+    private List<Long> userInfoGroupIdsTransfer;
     
     /**
      * 用户分组id，查询用户可用套餐时使用
      */
-    private List<String> userGroupIdsForSearch;
+    private List<String> userInfoGroupIdsForSearch;
     
     /**
      * 分组类型，0-系统分组，1-用户分组。
