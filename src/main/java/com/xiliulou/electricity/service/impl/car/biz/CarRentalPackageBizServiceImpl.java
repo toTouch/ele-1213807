@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.service.impl.car.biz;
 
 import cn.hutool.core.collection.CollectionUtil;
+import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.Coupon;
@@ -352,14 +353,25 @@ public class CarRentalPackageBizServiceImpl implements CarRentalPackageBizServic
             throw new BizException("300022", "套餐名称已存在");
         }
         
-        if (Objects.equals(optModel.getGiveCoupon(), YesNoEnum.YES.getCode()) && (CollectionUtil.isEmpty(optModel.getCouponId()) || optModel.getCouponId().size() > 6)) {
+        if (Objects.equals(optModel.getGiveCoupon(), YesNoEnum.YES.getCode()) && (CollectionUtil.isEmpty(optModel.getCouponIds()) || optModel.getCouponIds().size() > 6)) {
             throw new BizException("300833", "优惠劵最多支持发6张");
+        }
+        
+        if (Objects.equals(optModel.getIsUserGroup(),YesNoEnum.NO.getCode()) && (CollectionUtil.isEmpty(optModel.getUserGroupIds()) || optModel.getUserGroupIds().size() > 6)){
+            throw new BizException("300834", "用户分组最多支持选10个");
         }
         
         // 新增租车套餐
         CarRentalPackagePo entity = new CarRentalPackagePo();
-        BeanUtils.copyProperties(optModel, entity, "couponId", "userGroupIds");
-        entity.setCouponIds(optModel.getCouponId());
+        BeanUtils.copyProperties(optModel, entity, "couponId","couponIds", "userGroupIds");
+        List<Long> couponIds = new ArrayList<>();
+        if (!Objects.isNull(optModel.getCouponId())){
+            couponIds.add(optModel.getCouponId());
+        }
+        if (!CollectionUtils.isEmpty(optModel.getCouponIds())){
+            couponIds.addAll(optModel.getCouponIds());
+        }
+        entity.setCouponIds(couponIds);
         entity.setUserGroupId(optModel.getUserGroupIds());
         entity.setSortParam(System.currentTimeMillis());
         Long packageId = carRentalPackageService.insert(entity);
@@ -420,9 +432,9 @@ public class CarRentalPackageBizServiceImpl implements CarRentalPackageBizServic
         batteryMemberCardEntity.setStatus(entity.getStatus());
         batteryMemberCardEntity.setLimitCount(entity.getConfine());
         batteryMemberCardEntity.setUseCount(entity.getConfineNum());
-        if (ObjectUtils.isNotEmpty(entity.getCouponId())) {
-            // TODO: 2024/4/8  等电套餐改动
-            //            batteryMemberCardEntity.setCouponId(Integer.valueOf(entity.getCouponId().intValue()));
+        if (ObjectUtils.isNotEmpty(entity.getCouponIds())) {
+            List<Long> couponIds = entity.getCouponIds();
+            batteryMemberCardEntity.setCouponIds(JsonUtil.toJson(couponIds));
         }
         batteryMemberCardEntity.setIsRefund(entity.getRentRebate());
         batteryMemberCardEntity.setRefundLimit(entity.getRentRebateTerm());

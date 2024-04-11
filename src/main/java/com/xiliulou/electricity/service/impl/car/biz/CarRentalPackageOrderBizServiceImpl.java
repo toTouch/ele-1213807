@@ -22,12 +22,14 @@ import com.xiliulou.electricity.enums.car.CarRentalStateEnum;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.model.car.opt.CarRentalPackageOrderBuyOptModel;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageOrderFreezeQryModel;
+import com.xiliulou.electricity.query.UserInfoGroupDetailQuery;
 import com.xiliulou.electricity.query.car.CarRentalPackageRefundReq;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.service.car.*;
 import com.xiliulou.electricity.service.car.biz.*;
 import com.xiliulou.electricity.service.retrofit.Jt808RetrofitService;
 import com.xiliulou.electricity.service.user.biz.UserBizService;
+import com.xiliulou.electricity.service.userinfo.userInfoGroup.UserInfoGroupDetailService;
 import com.xiliulou.electricity.service.wxrefund.WxRefundPayService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DateUtils;
@@ -44,6 +46,7 @@ import com.xiliulou.electricity.vo.insurance.UserInsuranceVO;
 import com.xiliulou.electricity.vo.rental.RefundRentOrderHintVo;
 import com.xiliulou.electricity.vo.rental.RentalPackageRefundVO;
 import com.xiliulou.electricity.vo.rental.RentalPackageVO;
+import com.xiliulou.electricity.vo.userinfo.UserInfoGroupNamesVO;
 import com.xiliulou.electricity.web.query.battery.BatteryInfoQuery;
 import com.xiliulou.electricity.web.query.jt808.Jt808GetInfoRequest;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiOrderResultDTO;
@@ -200,6 +203,9 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
     
     @Autowired
     private EleUserOperateRecordService eleUserOperateRecordService;
+    
+    @Autowired
+    private UserInfoGroupDetailService userInfoGroupDetailService;
     
     
     public static final Integer ELE = 0;
@@ -639,6 +645,14 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                 throw new BizException("ELECTRICITY.0041", "用户尚未实名认证");
             }
             
+            // 1.3 查询用户当前所在分组
+            Set<Long> groupIds = new HashSet<>();
+            UserInfoGroupDetailQuery detailQuery = UserInfoGroupDetailQuery.builder().uid(uid).build();
+            List<UserInfoGroupNamesVO> vos = userInfoGroupDetailService.listGroupByUid(detailQuery);
+            if (!CollectionUtils.isEmpty(vos)){
+                groupIds.addAll(vos.stream().map(UserInfoGroupNamesVO::getGroupId).collect(Collectors.toSet()));
+            }
+            
             // 2. 判定滞纳金
             if (carRenalPackageSlippageBizService.isExitUnpaid(tenantId, uid)) {
                 throw new BizException("300001", "存在滞纳金，请先缴纳");
@@ -680,6 +694,21 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             CarRentalPackagePo buyPackageEntity = carRentalPackageService.selectById(buyRentalPackageId);
             if (ObjectUtils.isEmpty(buyPackageEntity)) {
                 throw new BizException("300003", "套餐不存在");
+            }
+            
+            //6.1.1 判断用户分组是否包含在购买的套餐中存在
+            Set<Long> packageGroupIds = new HashSet<>();
+            if (!CollectionUtils.isEmpty(buyPackageEntity.getUserGroupId())){
+                packageGroupIds.addAll(buyPackageEntity.getUserGroupId());
+            }
+            
+            try {
+                packageGroupIds.retainAll(groupIds);
+                if (packageGroupIds.isEmpty()){
+                    throw new BizException("100317","用户与套餐关联的用户分组不一致，请刷新重试");
+                }
+            }catch (NullPointerException e){
+                log.error("User group or package user group is empty:",e);
             }
             
             // 6.2 套餐上下架状态
@@ -2485,6 +2514,14 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                 throw new BizException("ELECTRICITY.0041", "用户尚未实名认证");
             }
             
+            // 1.3 查询用户当前所在分组
+            Set<Long> groupIds = new HashSet<>();
+            UserInfoGroupDetailQuery detailQuery = UserInfoGroupDetailQuery.builder().uid(uid).build();
+            List<UserInfoGroupNamesVO> vos = userInfoGroupDetailService.listGroupByUid(detailQuery);
+            if (!CollectionUtils.isEmpty(vos)){
+                groupIds.addAll(vos.stream().map(UserInfoGroupNamesVO::getGroupId).collect(Collectors.toSet()));
+            }
+            
             // 2. 判定滞纳金
             if (carRenalPackageSlippageBizService.isExitUnpaid(tenantId, uid)) {
                 throw new BizException("300001", "存在滞纳金，请先缴纳");
@@ -2538,6 +2575,21 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             CarRentalPackagePo buyPackageEntity = carRentalPackageService.selectById(buyRentalPackageId);
             if (ObjectUtils.isEmpty(buyPackageEntity) || DelFlagEnum.DEL.getCode().equals(buyPackageEntity.getDelFlag())) {
                 return R.fail("300003", "套餐不存在");
+            }
+            
+            //6.1.1 判断用户分组是否包含在购买的套餐中存在
+            Set<Long> packageGroupIds = new HashSet<>();
+            if (!CollectionUtils.isEmpty(buyPackageEntity.getUserGroupId())){
+                packageGroupIds.addAll(buyPackageEntity.getUserGroupId());
+            }
+            
+            try {
+                packageGroupIds.retainAll(groupIds);
+                if (packageGroupIds.isEmpty()){
+                    return R.fail("100318","您浏览的套餐已下架，请看看其他的吧");
+                }
+            }catch (NullPointerException e){
+                log.error("User group or package user group is empty:",e);
             }
             
             // 6.2 套餐上下架状态

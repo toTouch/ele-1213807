@@ -1,7 +1,5 @@
 package com.xiliulou.electricity.model.car.opt;
 
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.xiliulou.electricity.config.serial.List2LongDeserializer;
 import com.xiliulou.electricity.enums.ApplicableTypeEnum;
 import com.xiliulou.electricity.enums.DelFlagEnum;
 import com.xiliulou.electricity.enums.RenalPackageConfineEnum;
@@ -229,8 +227,12 @@ public class CarRentalPackageOptModel implements Serializable {
     /**
      * 优惠券ID
      */
-    @JsonDeserialize(using = List2LongDeserializer.class)
-    private List<Long> couponId;
+    private Long couponId;
+    
+    /**
+     * 优惠券ID组
+     */
+    private List<Long> couponIds;
     
     /**
      * 上下架状态
