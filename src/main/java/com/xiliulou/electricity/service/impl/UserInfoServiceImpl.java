@@ -1320,8 +1320,12 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             //记录企业用户租电池记录
             enterpriseUserCostRecordService.asyncSaveUserCostRecordForRentalAndReturnBattery(UserCostTypeEnum.COST_TYPE_RENT_BATTERY.getCode(), rentBatteryOrder);
             
-            //发送操作记录
             try {
+                //发送操作记录
+                //判断没有发送实际的电池变更则不记录
+                if (!Objects.isNull(isBindElectricityBattery) && Objects.equals(userInfoBatteryAddAndUpdate.getInitElectricityBatterySn(), isBindElectricityBattery.getSn())) {
+                    return null;
+                }
                 Map<String, Object> map = new HashMap<>();
                 map.put("username", oldUserInfo.getName());
                 map.put("phone", oldUserInfo.getPhone());
