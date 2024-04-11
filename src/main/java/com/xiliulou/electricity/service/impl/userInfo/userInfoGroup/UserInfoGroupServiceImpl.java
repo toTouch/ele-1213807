@@ -86,11 +86,6 @@ public class UserInfoGroupServiceImpl implements UserInfoGroupService {
         try {
             Long franchiseeId = request.getFranchiseeId();
             String userGroupName = request.getName();
-            
-            if (Objects.isNull(franchiseeService.queryByIdFromCache(franchiseeId))) {
-                return R.fail("ELECTRICITY.0038", "未找到加盟商");
-            }
-            
             Integer tenantId = TenantContextHolder.getTenantId();
             
             UserInfoGroup userInfoGroup = userInfoGroupMapper.queryByName(userGroupName, tenantId);

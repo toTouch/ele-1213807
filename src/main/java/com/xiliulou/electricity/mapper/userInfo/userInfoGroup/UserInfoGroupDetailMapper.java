@@ -28,4 +28,6 @@ public interface UserInfoGroupDetailMapper {
     Integer countUserByGroupId(Long id);
     
     Integer deleteByUidAndGroupNoList(@Param("uid") Long uid, @Param("groupNoList") List<String> groupNoList);
+    
+    List<UserInfoGroupNamesVO> selectListGroupByUidList(@Param("uidList") List<Long> uidList);
 }

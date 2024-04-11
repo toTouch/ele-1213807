@@ -2,10 +2,12 @@ package com.xiliulou.electricity.controller.admin.userinfo;
 
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.controller.BasicController;
+import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.query.UserInfoGroupQuery;
 import com.xiliulou.electricity.request.user.UserInfoGroupBatchImportRequest;
 import com.xiliulou.electricity.request.user.UserInfoGroupSaveAndUpdateRequest;
+import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.UserDataScopeService;
 import com.xiliulou.electricity.service.userinfo.userInfoGroup.UserInfoGroupService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
@@ -44,6 +46,9 @@ public class JsonAdminUserInfoGroupController extends BasicController {
     @Resource
     private UserDataScopeService userDataScopeService;
     
+    @Resource
+    private FranchiseeService franchiseeService;
+    
     /**
      * @description 新增用户分组
      * @date 2024/4/8 19:43:44
@@ -56,11 +61,31 @@ public class JsonAdminUserInfoGroupController extends BasicController {
             log.error("ELE ERROR! not found user");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-        
+    
         if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE) || Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE))) {
             return R.fail("ELECTRICITY.0066", "用户权限不足");
         }
+    
+        // 租户操作，加盟商ID不能为空
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE)) {
+            Long franchiseeId = userInfoGroupSaveAndUpdateRequest.getFranchiseeId();
         
+            if (Objects.isNull(franchiseeService.queryByIdFromCache(franchiseeId))) {
+                return R.fail("ELECTRICITY.0038", "未找到加盟商");
+            }
+        }
+    
+        // 加盟商操作，查询加盟商
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            Franchisee franchisee = franchiseeService.queryByUid(user.getUid());
+        
+            if (Objects.isNull(franchisee)) {
+                return R.fail("ELECTRICITY.0038", "未找到加盟商");
+            }
+        
+            userInfoGroupSaveAndUpdateRequest.setFranchiseeId(franchisee.getId());
+        }
+    
         return userInfoGroupService.save(userInfoGroupSaveAndUpdateRequest, user.getUid());
     }
     

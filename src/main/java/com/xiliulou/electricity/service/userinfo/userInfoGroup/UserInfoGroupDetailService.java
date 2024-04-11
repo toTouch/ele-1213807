@@ -28,5 +28,7 @@ public interface UserInfoGroupDetailService {
     
     List<UserInfoGroupNamesVO> listGroupByUid(UserInfoGroupDetailQuery query);
     
+    List<UserInfoGroupNamesVO> listGroupByUidList(List<Long> uidList);
+    
     R update(UserInfoGroupDetailUpdateRequest request);
 }
