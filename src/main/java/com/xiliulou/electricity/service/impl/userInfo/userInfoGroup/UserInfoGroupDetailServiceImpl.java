@@ -4,6 +4,7 @@ import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
+import com.xiliulou.electricity.constant.UserGroupConstant;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.userInfo.userInfoGroup.UserInfoGroup;
@@ -24,6 +25,7 @@ import com.xiliulou.electricity.vo.userinfo.UserInfoGroupVO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
@@ -144,6 +146,7 @@ public class UserInfoGroupDetailServiceImpl implements UserInfoGroupDetailServic
     }
     
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public R update(UserInfoGroupDetailUpdateRequest request) {
         Long uid = request.getUid();
         List<Long> groupIds = request.getGroupIds();
@@ -165,8 +168,14 @@ public class UserInfoGroupDetailServiceImpl implements UserInfoGroupDetailServic
                 return R.ok();
             }
             
+            // 如果没有分组，则删除
+            if (CollectionUtils.isEmpty(groupIds)) {
+                userInfoGroupDetailMapper.deleteByUidAndGroupNoList(uid, null);
+                return R.ok();
+            }
+            
             List<UserInfoGroupVO> groupList = userInfoGroupService.listByIds(groupIds);
-            if (CollectionUtils.isEmpty(groupList) || !Objects.equals(groupList.size(), groupIds.size())) {
+            if (!Objects.equals(groupList.size(), groupIds.size())) {
                 log.warn("Update userInfoGroupDetail error! groupList is empty or size not equal, groupIds={}", groupIds);
                 return R.fail("120112", "未找到用户分组");
             }
@@ -181,9 +190,9 @@ public class UserInfoGroupDetailServiceImpl implements UserInfoGroupDetailServic
             
             UserInfoGroupDetailQuery query = UserInfoGroupDetailQuery.builder().uid(uid).tenantId(tenantId).build();
             List<UserInfoGroupNamesVO> userInfoGroupNamesVOList = this.listGroupByUid(query);
+            List<Long> intersection = new ArrayList<>(groupIds);
             if (CollectionUtils.isNotEmpty(userInfoGroupNamesVOList)) {
                 // 获取交集
-                List<Long> intersection = new ArrayList<>(groupIds);
                 intersection.retainAll(userInfoGroupNamesVOList.stream().map(UserInfoGroupNamesVO::getGroupId).collect(Collectors.toList()));
                 
                 // 去除交集后，剩下的就是需要新增的
@@ -193,8 +202,13 @@ public class UserInfoGroupDetailServiceImpl implements UserInfoGroupDetailServic
                 userInfoGroupNamesVOList.removeAll(userInfoGroupNamesVOList.stream().filter(item -> intersection.contains(item.getGroupId())).collect(Collectors.toList()));
             }
             
-            // 新增
+            // 处理新增
+            List<UserInfoGroupDetail> insertList = null;
             if (CollectionUtils.isNotEmpty(groupIds)) {
+                if ((intersection.size() + groupIds.size()) >= UserGroupConstant.USER_GROUP_LIMIT) {
+                    return R.fail("120114", "用户绑定的分组数量已达上限10个");
+                }
+                
                 long nowTime = System.currentTimeMillis();
                 
                 List<UserInfoGroupDetail> detailList = groupIds.stream().map(groupId -> {
@@ -209,22 +223,29 @@ public class UserInfoGroupDetailServiceImpl implements UserInfoGroupDetailServic
                     return detail;
                 }).collect(Collectors.toList());
                 
-                List<UserInfoGroupDetail> insertList = detailList.stream().filter(Objects::nonNull).collect(Collectors.toList());
-                
-                if (CollectionUtils.isNotEmpty(insertList)) {
-                    userInfoGroupDetailMapper.batchInsert(insertList);
-                }
+                insertList = detailList.stream().filter(Objects::nonNull).collect(Collectors.toList());
             }
             
-            // 删除
-            if (CollectionUtils.isNotEmpty(userInfoGroupNamesVOList)) {
-                List<String> deleteGroupNoList = userInfoGroupNamesVOList.stream().map(UserInfoGroupNamesVO::getGroupNo).collect(Collectors.toList());
-                userInfoGroupDetailMapper.deleteByUidAndGroupNoList(uid, deleteGroupNoList);
-            }
+            // 处理持久化
+            handleGroupDetailDb(uid, insertList, userInfoGroupNamesVOList);
             
             return R.ok();
         } finally {
             redisService.delete(CacheConstant.CACHE_USER_GROUP_DETAIL_UPDATE_LOCK + uid);
+        }
+    }
+    
+    @Transactional(rollbackFor = Exception.class)
+    public void handleGroupDetailDb(Long uid, List<UserInfoGroupDetail> insertList, List<UserInfoGroupNamesVO> userInfoGroupNamesVOList) {
+        // 新增
+        if (CollectionUtils.isNotEmpty(insertList)) {
+            userInfoGroupDetailMapper.batchInsert(insertList);
+        }
+        
+        // 删除
+        if (CollectionUtils.isNotEmpty(userInfoGroupNamesVOList)) {
+            List<String> deleteGroupNoList = userInfoGroupNamesVOList.stream().map(UserInfoGroupNamesVO::getGroupNo).collect(Collectors.toList());
+            userInfoGroupDetailMapper.deleteByUidAndGroupNoList(uid, deleteGroupNoList);
         }
     }
     

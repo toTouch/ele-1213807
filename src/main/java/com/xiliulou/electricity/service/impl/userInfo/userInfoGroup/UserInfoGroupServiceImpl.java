@@ -222,6 +222,10 @@ public class UserInfoGroupServiceImpl implements UserInfoGroupService {
             return R.fail("120111", "手机号不可以为空");
         }
         
+        if (groupIds.size() >= UserGroupConstant.USER_GROUP_LIMIT) {
+            return R.fail("120114", "用户绑定的分组数量已达上限10个");
+        }
+        
         if (Objects.isNull(franchiseeService.queryByIdFromCache(franchiseeId))) {
             return R.fail("ELECTRICITY.0038", "未找到加盟商");
         }

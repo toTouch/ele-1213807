@@ -17,7 +17,6 @@ public class UserInfoGroupDetailUpdateRequest {
     @NotNull(message = "uid不能为空")
     private Long uid;
     
-    @NotNull(message = "分组ID不能为空")
     private List<Long> groupIds;
 }
     

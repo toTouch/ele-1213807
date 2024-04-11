@@ -16,10 +16,13 @@
     </insert>
     
     <delete id="deleteByUidAndGroupNoList">
-        delete from t_user_info_group_detail where uid = #{uid} and group_no in
-        <foreach item="item" index="index" collection="groupNoList" open="(" separator="," close=")">
-            #{item}
-        </foreach>
+        delete from t_user_info_group_detail where uid = #{uid}
+        <if test="groupNoList != null and groupNoList.size() > 0">
+            and group_no in
+            <foreach item="item" index="index" collection="groupNoList" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
     </delete>
     
     <select id="selectByUid" resultType="com.xiliulou.electricity.entity.userInfo.userInfoGroup.UserInfoGroupDetail">
