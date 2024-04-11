@@ -95,6 +95,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * 混合支付(UnionTradeOrder)表服务接口
@@ -291,6 +292,16 @@ public class TradeOrderServiceImpl implements TradeOrderService {
                 log.warn("BATTERY DEPOSIT WARN! batteryMemberCard franchiseeId not equals,uid={},mid={}", user.getUid(), integratedPaymentAdd.getMemberCardId());
                 return Triple.of(false, "100349", "用户加盟商与套餐加盟商不一致");
             }
+    
+            // 判断套餐用户分组和用户的用户分组是否匹配
+            List<UserInfoGroupVO> userInfoGroupVOS = userInfoGroupService.listGroupByUid(SecurityUtils.getUid(), TenantContextHolder.getTenantId());
+            if (CollectionUtils.isNotEmpty(userInfoGroupVOS)) {
+                List<Long> userInfoGroupIds = userInfoGroupVOS.stream().map(UserInfoGroupVO::getId).collect(Collectors.toList());
+                Triple<Boolean, String, Object> triple = userGroupIdFit(userInfoGroupIds, batteryMemberCard);
+                if (!triple.getLeft()) {
+                    return triple;
+                }
+            }
             
             //判断套餐租赁状态，用户为老用户，套餐类型为新租，则不支持购买
             if(userInfo.getPayCount() > 0 && BatteryMemberCard.RENT_TYPE_NEW.equals(batteryMemberCard.getRentType())){
@@ -479,21 +490,21 @@ public class TradeOrderServiceImpl implements TradeOrderService {
                 log.warn("BATTERY DEPOSIT WARN!not found batteryMemberCard,uid={},mid={}", userInfo.getUid(), query.getMemberId());
                 return Triple.of(false, "ELECTRICITY.00121", "电池套餐不存在");
             }
+    
+            // 判断套餐用户分组和用户的用户分组是否匹配
+            List<UserInfoGroupVO> userInfoGroupVOS = userInfoGroupService.listGroupByUid(SecurityUtils.getUid(), TenantContextHolder.getTenantId());
+            if (CollectionUtils.isNotEmpty(userInfoGroupVOS)) {
+                List<Long> userInfoGroupIds = userInfoGroupVOS.stream().map(UserInfoGroupVO::getId).collect(Collectors.toList());
+                Triple<Boolean, String, Object> triple = userGroupIdFit(userInfoGroupIds, batteryMemberCard);
+                if (triple.getLeft()) {
+                    return triple;
+                }
+            }
 
             if(!Objects.equals( BatteryMemberCard.STATUS_UP, batteryMemberCard.getStatus())){
                 log.warn("BATTERY DEPOSIT WARN! batteryMemberCard is disable,uid={},mid={}", userInfo.getUid(), query.getMemberId());
                 return Triple.of(false, "100275", "电池套餐不可用");
             }
-    
-//            if (Objects.nonNull(userBatteryDeposit.getBatteryDeposit()) &&  Objects.equals( userBatteryDeposit.getDepositModifyFlag(), UserBatteryDeposit.DEPOSIT_MODIFY_NO) && batteryMemberCard.getDeposit().compareTo(userBatteryDeposit.getBatteryDeposit()) != 0) {
-//                log.warn("BATTERY DEPOSIT WARN! batteryMemberCard not equals user deposit,uid={},mid={}", userInfo.getUid(), query.getMemberId());
-//                return Triple.of(false, "100484", "用户押金与电池套餐押金不一致");
-//            }
-//
-//            if (Objects.nonNull(userBatteryDeposit.getBatteryDeposit()) && Objects.equals( userBatteryDeposit.getDepositModifyFlag(),UserBatteryDeposit.DEPOSIT_MODIFY_YES ) && batteryMemberCard.getDeposit().compareTo(userBatteryDeposit.getBeforeModifyDeposit()) != 0) {
-//                log.warn("BATTERY DEPOSIT WARN! batteryMemberCard not equals user deposit,uid={},mid={}", userInfo.getUid(), query.getMemberId());
-//                return Triple.of(false, "100484", "用户押金与电池套餐押金不一致");
-//            }
     
             //判断套餐租赁状态，用户为老用户，套餐类型为新租，则不支持购买
             if(userInfo.getPayCount() > 0 && BatteryMemberCard.RENT_TYPE_NEW.equals(batteryMemberCard.getRentType())){
@@ -1141,15 +1152,19 @@ public class TradeOrderServiceImpl implements TradeOrderService {
 
         return Triple.of(true, null, insuranceOrder);
     }
-
-
-    private String generateDepositOrderId(Long uid) {
-        return String.valueOf(System.currentTimeMillis()).substring(2) + uid +
-                RandomUtil.randomNumbers(6);
-    }
-
-    private String generateInsuranceOrderId(Long uid) {
-        return String.valueOf(System.currentTimeMillis()).substring(0, 6) + uid +
-                RandomUtil.randomNumbers(4);
+    
+    private Triple<Boolean, String, Object> userGroupIdFit(List<Long> userInfoGroupIds, BatteryMemberCard batteryMemberCard) {
+        
+        if (StringUtils.isNotBlank(batteryMemberCard.getUserInfoGroupIds())) {
+            
+            HashSet<Long> memberCardUserGroupIds = new HashSet<>(JsonUtil.fromJsonArray(batteryMemberCard.getUserInfoGroupIds(), Long.class));
+            
+            if (!memberCardUserGroupIds.containsAll(userInfoGroupIds)) {
+                return Triple.of(false, "100318", "您浏览的套餐已下架，请看看其他的吧");
+            }
+        } else {
+            return Triple.of(false, "100318", "您浏览的套餐已下架，请看看其他的吧");
+        }
+        return Triple.of(true, null, null);
     }
 }

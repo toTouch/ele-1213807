@@ -285,12 +285,15 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         }
         
         // 购买的时候，赠送的优惠券是否被使用，若为使用中、已使用，则不允许退租
-        UserCoupon userCoupon = userCouponService.selectBySourceOrderId(packageOrderEntity.getOrderNo());
-        if (ObjectUtils.isNotEmpty(userCoupon)) {
-            Integer status = userCoupon.getStatus();
-            if (UserCoupon.STATUS_IS_BEING_VERIFICATION.equals(status) || UserCoupon.STATUS_USED.equals(status)) {
-                throw new BizException("300016", "您已使用优惠券，该套餐不可退");
-            }
+        List<UserCoupon> userCoupons = userCouponService.selectListBySourceOrderId(packageOrderEntity.getOrderNo());
+        if (!CollectionUtils.isEmpty(userCoupons)) {
+        
+            userCoupons.forEach(userCoupon -> {
+                Integer status = userCoupon.getStatus();
+                if (UserCoupon.STATUS_IS_BEING_VERIFICATION.equals(status) || UserCoupon.STATUS_USED.equals(status)) {
+                    throw new BizException("300016", "您已使用优惠券，该套餐不可退");
+                }
+            });
         }
         
         if (UseStateEnum.IN_USE.getCode().equals(packageOrderEntity.getUseState())) {
@@ -571,12 +574,15 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         }
         
         // 购买的时候，赠送的优惠券是否被使用，若为使用中、已使用，则不允许退租
-        UserCoupon userCoupon = userCouponService.selectBySourceOrderId(packageOrderEntity.getOrderNo());
-        if (ObjectUtils.isNotEmpty(userCoupon)) {
-            Integer status = userCoupon.getStatus();
-            if (UserCoupon.STATUS_IS_BEING_VERIFICATION.equals(status) || UserCoupon.STATUS_USED.equals(status)) {
-                throw new BizException("300016", "您已使用优惠券，该套餐不可退");
-            }
+        List<UserCoupon> userCoupons = userCouponService.selectListBySourceOrderId(packageOrderEntity.getOrderNo());
+        if (!CollectionUtils.isEmpty(userCoupons)) {
+        
+            userCoupons.forEach(userCoupon -> {
+                Integer status = userCoupon.getStatus();
+                if (UserCoupon.STATUS_IS_BEING_VERIFICATION.equals(status) || UserCoupon.STATUS_USED.equals(status)) {
+                    throw new BizException("300016", "您已使用优惠券，该套餐不可退");
+                }
+            });
         }
         
         log.info("verify refund rent confirmation flow end, uid = {}, package order no = {}", uid, packageOrderNo);
@@ -1900,12 +1906,15 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         }
         
         // 购买的时候，赠送的优惠券是否被使用，若为使用中、已使用，则不允许退租
-        UserCoupon userCoupon = userCouponService.selectBySourceOrderId(packageOrderEntity.getOrderNo());
-        if (ObjectUtils.isNotEmpty(userCoupon)) {
-            Integer status = userCoupon.getStatus();
-            if (UserCoupon.STATUS_IS_BEING_VERIFICATION.equals(status) || UserCoupon.STATUS_USED.equals(status)) {
-                throw new BizException("300016", "您已使用优惠券，该套餐不可退");
-            }
+        List<UserCoupon> userCoupons = userCouponService.selectListBySourceOrderId(packageOrderEntity.getOrderNo());
+        if (!CollectionUtils.isEmpty(userCoupons)) {
+        
+            userCoupons.forEach(userCoupon -> {
+                Integer status = userCoupon.getStatus();
+                if (UserCoupon.STATUS_IS_BEING_VERIFICATION.equals(status) || UserCoupon.STATUS_USED.equals(status)) {
+                    throw new BizException("300016", "您已使用优惠券，该套餐不可退");
+                }
+            });
         }
         
         CarRentalPackageMemberTermPo memberTermUpdateEntity = null;

@@ -1,6 +1,5 @@
 package com.xiliulou.electricity.vo;
 
-import com.xiliulou.electricity.entity.Coupon;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -124,6 +123,16 @@ public class BatteryMemberCardVO {
      * 优惠券减免金额
      */
     private BigDecimal amount;
+    
+    /**
+     * 套餐绑定的优惠券信息
+     */
+    private List<CouponSearchVo> coupons;
+    
+    /**
+     * 套餐绑定的用户分组信息
+     */
+    private List<SearchVo> userInfoGroups;
 
     private Boolean editUserMembercard = Boolean.TRUE;
 }

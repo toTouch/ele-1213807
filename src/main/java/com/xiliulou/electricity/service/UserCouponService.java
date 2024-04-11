@@ -85,7 +85,7 @@ public interface UserCouponService {
     
     Integer updateUserCouponStatus(UserCoupon userCoupon);
     
-    UserCoupon selectBySourceOrderId(String orderId);
+    List<UserCoupon> selectListBySourceOrderId(String orderId);
     
     void sendCouponToUser(UserCouponDTO userCouponDTO);
     
