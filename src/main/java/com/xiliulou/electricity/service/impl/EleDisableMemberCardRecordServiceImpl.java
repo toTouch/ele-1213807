@@ -72,6 +72,7 @@ public class EleDisableMemberCardRecordServiceImpl extends ServiceImpl<Electrici
     
     @Autowired
     UserInfoService userInfoService;
+    
     @Autowired
     UserBatteryMemberCardService userBatteryMemberCardService;
     
@@ -95,7 +96,7 @@ public class EleDisableMemberCardRecordServiceImpl extends ServiceImpl<Electrici
     
     @Autowired
     UserService userService;
-
+    
     @Autowired
     ServiceFeeUserInfoService serviceFeeUserInfoService;
     
@@ -111,22 +112,22 @@ public class EleDisableMemberCardRecordServiceImpl extends ServiceImpl<Electrici
     @Override
     public R list(ElectricityMemberCardRecordQuery electricityMemberCardRecordQuery) {
         List<EleDisableMemberCardRecordVO> eleDisableMemberCardRecordVOS = eleDisableMemberCardRecordMapper.queryList(electricityMemberCardRecordQuery);
-        if(CollectionUtils.isEmpty(eleDisableMemberCardRecordVOS)){
+        if (CollectionUtils.isEmpty(eleDisableMemberCardRecordVOS)) {
             return R.ok(Collections.emptyList());
         }
         
-        eleDisableMemberCardRecordVOS.forEach(item->{
+        eleDisableMemberCardRecordVOS.forEach(item -> {
             //            if(Objects.isNull(item.getDisableTime())){
             //                UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(item.getUid());
             //                item.setDisableTime(Objects.isNull(userBatteryMemberCard)?null:userBatteryMemberCard.getDisableMemberCardTime());
             //            }
             
             BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(item.getBatteryMemberCardId());
-            item.setRentUnit(Objects.isNull(batteryMemberCard)?null:batteryMemberCard.getRentUnit());
+            item.setRentUnit(Objects.isNull(batteryMemberCard) ? null : batteryMemberCard.getRentUnit());
             item.setBusinessType(Objects.isNull(batteryMemberCard) ? BatteryMemberCardBusinessTypeEnum.BUSINESS_TYPE_BATTERY.getCode() : batteryMemberCard.getBusinessType());
-    
+            
             // 设置审核员名称
-            if (!Objects.isNull(item.getAuditorId())){
+            if (!Objects.isNull(item.getAuditorId())) {
                 User user = userService.queryByUidFromCache(item.getAuditorId());
                 if (!Objects.isNull(user)) {
                     item.setAuditorName(user.getName());
@@ -157,7 +158,9 @@ public class EleDisableMemberCardRecordServiceImpl extends ServiceImpl<Electrici
         if (Objects.isNull(user)) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-        EleDisableMemberCardRecord eleDisableMemberCardRecord = eleDisableMemberCardRecordMapper.selectOne(new LambdaQueryWrapper<EleDisableMemberCardRecord>().eq(EleDisableMemberCardRecord::getDisableMemberCardNo, disableMemberCardNo).eq(EleDisableMemberCardRecord::getTenantId, tenantId));
+        EleDisableMemberCardRecord eleDisableMemberCardRecord = eleDisableMemberCardRecordMapper.selectOne(
+                new LambdaQueryWrapper<EleDisableMemberCardRecord>().eq(EleDisableMemberCardRecord::getDisableMemberCardNo, disableMemberCardNo)
+                        .eq(EleDisableMemberCardRecord::getTenantId, tenantId));
         if (Objects.isNull(eleDisableMemberCardRecord)) {
             log.error("REVIEW_DISABLE_MEMBER_CARD ERROR ,NOT FOUND DISABLE_MEMBER_CARD ORDER_NO={}", disableMemberCardNo);
             return R.fail("未找到停卡订单!");
@@ -170,19 +173,21 @@ public class EleDisableMemberCardRecordServiceImpl extends ServiceImpl<Electrici
         }
         
         Franchisee franchisee = franchiseeService.queryByIdFromCache(userInfo.getFranchiseeId());
-        if(Objects.isNull(franchisee)){
+        if (Objects.isNull(franchisee)) {
             log.error("ELECTRICITY  ERROR! not found franchisee,uid={}", eleDisableMemberCardRecord.getUid());
             return R.fail("ELECTRICITY.0038", "未找到加盟商");
         }
         
         //判断用户是否购买套餐
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
-        if (Objects.isNull(userBatteryMemberCard) || Objects.equals(userBatteryMemberCard.getMemberCardId(), NumberConstant.ZERO_L) || Objects.equals(userBatteryMemberCard.getMemberCardExpireTime(), NumberConstant.ZERO_L) || Objects.isNull(userBatteryMemberCard.getRemainingNumber())) {
+        if (Objects.isNull(userBatteryMemberCard) || Objects.equals(userBatteryMemberCard.getMemberCardId(), NumberConstant.ZERO_L) || Objects.equals(
+                userBatteryMemberCard.getMemberCardExpireTime(), NumberConstant.ZERO_L) || Objects.isNull(userBatteryMemberCard.getRemainingNumber())) {
             log.warn("REVIEW_DISABLE_MEMBER_CARD ERROR! user haven't memberCard uid={}", userInfo.getUid());
             return R.fail("100210", "用户未开通套餐");
         }
         
-        if (Objects.equals(status, UserBatteryMemberCard.MEMBER_CARD_DISABLE) && (Objects.isNull(userBatteryMemberCard.getMemberCardExpireTime()) || userBatteryMemberCard.getMemberCardExpireTime() < System.currentTimeMillis())) {
+        if (Objects.equals(status, UserBatteryMemberCard.MEMBER_CARD_DISABLE) && (Objects.isNull(userBatteryMemberCard.getMemberCardExpireTime())
+                || userBatteryMemberCard.getMemberCardExpireTime() < System.currentTimeMillis())) {
             EleDisableMemberCardRecord updateEleDisableMemberCardRecord = new EleDisableMemberCardRecord();
             updateEleDisableMemberCardRecord.setId(eleDisableMemberCardRecord.getId());
             updateEleDisableMemberCardRecord.setStatus(EleDisableMemberCardRecord.MEMBER_CARD_EXPIRE);
@@ -201,9 +206,9 @@ public class EleDisableMemberCardRecordServiceImpl extends ServiceImpl<Electrici
         }
         
         BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());
-        if(Objects.isNull(batteryMemberCard)){
+        if (Objects.isNull(batteryMemberCard)) {
             log.warn("BATTERY SERVICE FEE WARN! not found batteryMemberCard,uid={}", userInfo.getUid());
-            return R.fail("ELECTRICITY.00121","套餐不存在");
+            return R.fail("ELECTRICITY.00121", "套餐不存在");
         }
         
         EleDisableMemberCardRecord updateEleDisableMemberCardRecord = new EleDisableMemberCardRecord();
@@ -214,15 +219,16 @@ public class EleDisableMemberCardRecordServiceImpl extends ServiceImpl<Electrici
         updateEleDisableMemberCardRecord.setDisableMemberCardTime(System.currentTimeMillis());
         updateEleDisableMemberCardRecord.setUpdateTime(System.currentTimeMillis());
         updateEleDisableMemberCardRecord.setAuditorId(user.getUid());
-        if (Objects.equals(eleDisableMemberCardRecord.getDisableCardTimeType(), EleDisableMemberCardRecord.DISABLE_CARD_LIMIT_TIME) && Objects.equals(status, EleDisableMemberCardRecord.MEMBER_CARD_DISABLE)) {
+        if (Objects.equals(eleDisableMemberCardRecord.getDisableCardTimeType(), EleDisableMemberCardRecord.DISABLE_CARD_LIMIT_TIME) && Objects.equals(status,
+                EleDisableMemberCardRecord.MEMBER_CARD_DISABLE)) {
             updateEleDisableMemberCardRecord.setDisableDeadline(System.currentTimeMillis() + eleDisableMemberCardRecord.getChooseDays() * (24 * 60 * 60 * 1000L));
         }
         
         eleDisableMemberCardRecordMapper.updateById(updateEleDisableMemberCardRecord);
         
-        if(Objects.equals(status, UserBatteryMemberCard.MEMBER_CARD_DISABLE_REVIEW_REFUSE)){
+        if (Objects.equals(status, UserBatteryMemberCard.MEMBER_CARD_DISABLE_REVIEW_REFUSE)) {
             //拒绝停卡
-            UserBatteryMemberCard updateUserBatteryMemberCard=new UserBatteryMemberCard();
+            UserBatteryMemberCard updateUserBatteryMemberCard = new UserBatteryMemberCard();
             updateUserBatteryMemberCard.setUid(userBatteryMemberCard.getUid());
             updateUserBatteryMemberCard.setMemberCardStatus(UserBatteryMemberCard.MEMBER_CARD_DISABLE_REVIEW_REFUSE);
             updateUserBatteryMemberCard.setDisableMemberCardTime(null);
@@ -236,9 +242,9 @@ public class EleDisableMemberCardRecordServiceImpl extends ServiceImpl<Electrici
             updateServiceFeeUserInfo.setDisableMemberCardNo("");
             updateServiceFeeUserInfo.setPauseOrderNo("");
             serviceFeeUserInfoService.updateByUid(updateServiceFeeUserInfo);
-        }else{
+        } else {
             //同意停卡
-            UserBatteryMemberCard updateUserBatteryMemberCard=new UserBatteryMemberCard();
+            UserBatteryMemberCard updateUserBatteryMemberCard = new UserBatteryMemberCard();
             updateUserBatteryMemberCard.setUid(userBatteryMemberCard.getUid());
             updateUserBatteryMemberCard.setMemberCardStatus(UserBatteryMemberCard.MEMBER_CARD_DISABLE);
             updateUserBatteryMemberCard.setUpdateTime(System.currentTimeMillis());
@@ -246,14 +252,17 @@ public class EleDisableMemberCardRecordServiceImpl extends ServiceImpl<Electrici
             
             // 套餐过期时间需要加上冻结的时间
             Long frozenTime = eleDisableMemberCardRecord.getChooseDays() * TimeConstant.DAY_MILLISECOND;
-            updateUserBatteryMemberCard.setOrderExpireTime(userBatteryMemberCard.getOrderExpireTime()+frozenTime);
+            updateUserBatteryMemberCard.setOrderExpireTime(userBatteryMemberCard.getOrderExpireTime() + frozenTime);
             updateUserBatteryMemberCard.setMemberCardExpireTime(userBatteryMemberCard.getMemberCardExpireTime() + frozenTime);
             userBatteryMemberCardService.updateByUid(updateUserBatteryMemberCard);
             
             //用户是否绑定电池
-            if(!Objects.equals(userInfo.getBatteryRentStatus(),UserInfo.BATTERY_RENT_STATUS_YES)){
+            if (!Objects.equals(userInfo.getBatteryRentStatus(), UserInfo.BATTERY_RENT_STATUS_YES)) {
                 //记录企业用户冻结套餐记录
-                enterpriseUserCostRecordService.asyncSaveUserCostRecordForBattery(userInfo.getUid(), updateEleDisableMemberCardRecord.getId() + "_" + updateEleDisableMemberCardRecord.getDisableMemberCardNo(), UserCostTypeEnum.COST_TYPE_FREEZE_PACKAGE.getCode(), updateEleDisableMemberCardRecord.getDisableMemberCardTime());
+                enterpriseUserCostRecordService.asyncSaveUserCostRecordForBattery(userInfo.getUid(),
+                        updateEleDisableMemberCardRecord.getId() + "_" + updateEleDisableMemberCardRecord.getDisableMemberCardNo(),
+                        UserCostTypeEnum.COST_TYPE_FREEZE_PACKAGE.getCode(), updateEleDisableMemberCardRecord.getDisableMemberCardTime());
+                sendUserOperateRecord(eleDisableMemberCardRecord, status);
                 return R.ok();
             }
             
@@ -267,23 +276,12 @@ public class EleDisableMemberCardRecordServiceImpl extends ServiceImpl<Electrici
             }
             
             EleBatteryServiceFeeOrder eleBatteryServiceFeeOrder = EleBatteryServiceFeeOrder.builder()
-                    .orderId(OrderIdUtil.generateBusinessOrderId(BusinessType.BATTERY_STAGNATE,userInfo.getUid()))
-                    .uid(userInfo.getUid())
-                    .phone(userInfo.getPhone())
-                    .name(userInfo.getName())
-                    .payAmount(BigDecimal.ZERO)
-                    .status(EleDepositOrder.STATUS_INIT)
-                    .batteryServiceFeeGenerateTime(System.currentTimeMillis())
-                    .createTime(System.currentTimeMillis())
-                    .updateTime(System.currentTimeMillis())
-                    .tenantId(tenantId)
-                    .source(EleBatteryServiceFeeOrder.DISABLE_MEMBER_CARD)
-                    .franchiseeId(franchisee.getId())
-                    .storeId(userInfo.getStoreId())
-                    .modelType(franchisee.getModelType())
+                    .orderId(OrderIdUtil.generateBusinessOrderId(BusinessType.BATTERY_STAGNATE, userInfo.getUid())).uid(userInfo.getUid()).phone(userInfo.getPhone())
+                    .name(userInfo.getName()).payAmount(BigDecimal.ZERO).status(EleDepositOrder.STATUS_INIT).batteryServiceFeeGenerateTime(System.currentTimeMillis())
+                    .createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).tenantId(tenantId).source(EleBatteryServiceFeeOrder.DISABLE_MEMBER_CARD)
+                    .franchiseeId(franchisee.getId()).storeId(userInfo.getStoreId()).modelType(franchisee.getModelType())
                     .batteryType(CollectionUtils.isEmpty(batteryTypeSet) ? "" : JsonUtil.toJson(batteryTypeSet))
-                    .sn(Objects.isNull(electricityBattery) ? "" : electricityBattery.getSn())
-                    .batteryServiceFee(batteryMemberCard.getServiceCharge()).build();
+                    .sn(Objects.isNull(electricityBattery) ? "" : electricityBattery.getSn()).batteryServiceFee(batteryMemberCard.getServiceCharge()).build();
             eleBatteryServiceFeeOrderService.insert(eleBatteryServiceFeeOrder);
             
             ServiceFeeUserInfo serviceFeeUserInfoUpdate = new ServiceFeeUserInfo();
@@ -293,19 +291,11 @@ public class EleDisableMemberCardRecordServiceImpl extends ServiceImpl<Electrici
             serviceFeeUserInfoService.updateByUid(serviceFeeUserInfoUpdate);
             
             //记录企业用户冻结套餐记录
-            enterpriseUserCostRecordService.asyncSaveUserCostRecordForBattery(userInfo.getUid(), updateEleDisableMemberCardRecord.getId() + "_" + updateEleDisableMemberCardRecord.getDisableMemberCardNo(), UserCostTypeEnum.COST_TYPE_FREEZE_PACKAGE.getCode(), updateEleDisableMemberCardRecord.getDisableMemberCardTime());
+            enterpriseUserCostRecordService.asyncSaveUserCostRecordForBattery(userInfo.getUid(),
+                    updateEleDisableMemberCardRecord.getId() + "_" + updateEleDisableMemberCardRecord.getDisableMemberCardNo(), UserCostTypeEnum.COST_TYPE_FREEZE_PACKAGE.getCode(),
+                    updateEleDisableMemberCardRecord.getDisableMemberCardTime());
         }
-        try {
-            Map<String, Object> map = new HashMap<>();
-            map.put("username",eleDisableMemberCardRecord.getUserName());
-            map.put("phone",eleDisableMemberCardRecord.getPhone());
-            map.put("packageName",eleDisableMemberCardRecord.getMemberCardName());
-            map.put("approve",Objects.equals(updateEleDisableMemberCardRecord.getStatus(),EleBatteryServiceFeeOrder.DISABLE_MEMBER_CARD)?0:1);
-            map.put("residue",updateEleDisableMemberCardRecord.getChooseDays());
-            operateRecordUtil.record(null,map);
-        }catch (Throwable e){
-            log.warn("Recording user operation records failed because:{}",e.getMessage());
-        }
+        sendUserOperateRecord(eleDisableMemberCardRecord, status);
         return R.ok();
     }
     
@@ -332,7 +322,8 @@ public class EleDisableMemberCardRecordServiceImpl extends ServiceImpl<Electrici
     
     @Override
     public EleDisableMemberCardRecord selectByDisableMemberCardNo(String disableMemberCardNo) {
-        return eleDisableMemberCardRecordMapper.selectOne(new LambdaQueryWrapper<EleDisableMemberCardRecord>().eq(EleDisableMemberCardRecord::getDisableMemberCardNo,disableMemberCardNo));
+        return eleDisableMemberCardRecordMapper.selectOne(
+                new LambdaQueryWrapper<EleDisableMemberCardRecord>().eq(EleDisableMemberCardRecord::getDisableMemberCardNo, disableMemberCardNo));
     }
     
     /**
@@ -346,5 +337,20 @@ public class EleDisableMemberCardRecordServiceImpl extends ServiceImpl<Electrici
     @Override
     public Integer updatePhoneByUid(Integer tenantId, Long uid, String newPhone) {
         return eleDisableMemberCardRecordMapper.updatePhoneByUid(tenantId, uid, newPhone);
+    }
+    
+    
+    private void sendUserOperateRecord(EleDisableMemberCardRecord eleDisableMemberCardRecord, Integer status) {
+        try {
+            Map<String, Object> map = new HashMap<>();
+            map.put("username", eleDisableMemberCardRecord.getUserName());
+            map.put("phone", eleDisableMemberCardRecord.getPhone());
+            map.put("packageName", eleDisableMemberCardRecord.getMemberCardName());
+            map.put("approve", Objects.equals(status, EleBatteryServiceFeeOrder.STATUS_SUCCESS) ? 0 : 1);
+            map.put("residue", eleDisableMemberCardRecord.getChooseDays());
+            operateRecordUtil.record(null, map);
+        } catch (Throwable e) {
+            log.error("Recording user operation records failed because:", e);
+        }
     }
 }

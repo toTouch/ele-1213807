@@ -49,7 +49,7 @@ public class NormalEleOperatingRecordHandlerIot extends AbstractElectricityIotHa
                     receiverMessage.getProductKey(), receiverMessage.getDeviceName());
             return;
         }
-        log.info("POST-HANDLE-RECEIVE-MSG:{}",request);
+        log.info("POST-HANDLE-RECEIVE-MSG:{}", request);
         if (StrUtil.isNotBlank(request.getCellNo())) {
             StringTokenizer stringTokenizer = new StringTokenizer(request.getCellNo(), ",");
             JSONArray array = JSONUtil.createArray();
@@ -82,7 +82,7 @@ public class NormalEleOperatingRecordHandlerIot extends AbstractElectricityIotHa
     
     
     public void userOperateRecord(ElectricityCabinet electricityCabinet, CupboardOperatingRecordRequest request, JSONArray array) {
-        if (Objects.isNull(request.getOperateType()) || Objects.equals(request.getOperateType(),1)){
+        if (Objects.isNull(request.getOperateType()) || Objects.equals(request.getOperateType(), 1)) {
             return;
         }
         UserOperateRecord record = new UserOperateRecord();

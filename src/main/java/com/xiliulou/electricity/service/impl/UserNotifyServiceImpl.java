@@ -213,7 +213,7 @@ public class UserNotifyServiceImpl implements UserNotifyService {
             updateAndInsert.setId(userNotify.getId());
             update(updateAndInsert);
         }
-        operateRecordUtil.record(userNotify,updateAndInsert);
+        operateRecordUtil.record(userNotify, updateAndInsert);
         return R.ok();
     }
     

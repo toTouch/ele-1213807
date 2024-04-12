@@ -1493,13 +1493,13 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         sendDisableMemberCardMessage(userInfo);
         try {
             Map<String, Object> map = new HashMap<>();
-            map.put("username",eleDisableMemberCardRecord.getUserName());
-            map.put("phone",eleDisableMemberCardRecord.getPhone());
-            map.put("packageName",eleDisableMemberCardRecord.getMemberCardName());
-            map.put("residue",eleDisableMemberCardRecord.getChooseDays());
-            operateRecordUtil.record(null,map);
-        }catch (Throwable e){
-            log.warn("Recording user operation records failed because:{}",e.getMessage());
+            map.put("username", eleDisableMemberCardRecord.getUserName());
+            map.put("phone", eleDisableMemberCardRecord.getPhone());
+            map.put("packageName", eleDisableMemberCardRecord.getMemberCardName());
+            map.put("residue", eleDisableMemberCardRecord.getChooseDays());
+            operateRecordUtil.record(null, map);
+        } catch (Throwable e) {
+            log.error("Recording user operation records failed because:", e);
         }
         return R.ok();
     }
@@ -2020,13 +2020,13 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 */
         try {
             Map<String, Object> map = new HashMap<>();
-            map.put("username",eleDisableMemberCardRecord.getUserName());
-            map.put("phone",eleDisableMemberCardRecord.getPhone());
-            map.put("packageName",eleDisableMemberCardRecord.getMemberCardName());
-            map.put("residue",eleDisableMemberCardRecord.getChooseDays());
-            operateRecordUtil.record(null,map);
-        }catch (Throwable e){
-            log.warn("Recording user operation records failed because:{}",e.getMessage());
+            map.put("username", eleDisableMemberCardRecord.getUserName());
+            map.put("phone", eleDisableMemberCardRecord.getPhone());
+            map.put("packageName", eleDisableMemberCardRecord.getMemberCardName());
+            map.put("residue", eleDisableMemberCardRecord.getChooseDays());
+            operateRecordUtil.record(null, map);
+        } catch (Throwable e) {
+            log.error("Recording user operation records failed because:", e);
         }
         return R.ok();
     }
@@ -4094,7 +4094,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             }
         }
         
-        userBatteryMemberCardService.updateByUid(userBatteryMemberCardUpdate);
+        Integer i = userBatteryMemberCardService.updateByUid(userBatteryMemberCardUpdate);
         
         ServiceFeeUserInfo serviceFeeUserInfoUpdate = new ServiceFeeUserInfo();
         serviceFeeUserInfoUpdate.setUid(userInfo.getUid());
@@ -4139,13 +4139,13 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         //添加用户操作记录
         try {
             BatteryMemberCard card = batteryMemberCardService.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());
-            Map<String, Object> map = BeanUtil.beanToMap(userBatteryMemberCardUpdate,false,true);
-            map.put("packageName",card.getName());
-            map.put("phone",userInfo.getPhone());
-            map.put("name",userInfo.getName());
-            operateRecordUtil.record(userBatteryMemberCard,map);
-        }catch (Exception e){
-            log.warn("The user failed to modify the battery plan record because: {}",e.getMessage());
+            Map<String, Object> map = BeanUtil.beanToMap(userBatteryMemberCardUpdate, false, true);
+            map.put("packageName", card.getName());
+            map.put("phone", userInfo.getPhone());
+            map.put("name", userInfo.getName());
+            operateRecordUtil.record(userBatteryMemberCard, map);
+        } catch (Exception e) {
+            log.error("The user failed to modify the battery plan record because: ", e);
         }
         return Triple.of(true, null, null);
     }
@@ -4278,10 +4278,10 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         
         sendUserCoupon(batteryMemberCard, memberCardOrder);
         Map<String, Object> map = new HashMap<>();
-        map.put("username",userInfo.getName());
-        map.put("phone",userInfo.getPhone());
-        map.put("packageName",batteryMemberCard.getName());
-        operateRecordUtil.record(null,map);
+        map.put("username", userInfo.getName());
+        map.put("phone", userInfo.getPhone());
+        map.put("packageName", batteryMemberCard.getName());
+        operateRecordUtil.record(null, map);
         return Triple.of(true, null, null);
     }
     

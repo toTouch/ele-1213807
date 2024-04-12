@@ -321,7 +321,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
         saveBattery.setIotCardNumber(batteryAddRequest.getIotCardNumber());
         
         electricitybatterymapper.insert(saveBattery);
-    
+        
         // 异步记录
         Long warehouseId = batteryAddRequest.getWarehouseId();
         if (Objects.nonNull(warehouseId) && !Objects.equals(warehouseId, NumberConstant.ZERO_L)) {
@@ -330,7 +330,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
             if (Objects.nonNull(franchiseeId)) {
                 operateType = WarehouseOperateTypeEnum.WAREHOUSE_OPERATE_TYPE_OUT.getCode();
             }
-        
+            
             assetWarehouseRecordService.asyncRecordOne(TenantContextHolder.getTenantId(), user.getUid(), warehouseId, sn, AssetTypeEnum.ASSET_TYPE_BATTERY.getCode(), operateType);
         }
         
@@ -345,7 +345,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
             log.error("Franchisee id is invalid! uid = {}", uid);
             return R.fail("ELECTRICITY.0038", "未找到加盟商");
         }
-
+        
         // 校验库房
         Long warehouseId = batteryExcelV3Query.getWarehouseId();
         if (Objects.nonNull(warehouseId)) {
@@ -439,11 +439,11 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
         
         // 保存到本地数据库
         insertBatch(saveList);
-    
+        
         // 异步记录
         if (Objects.nonNull(warehouseId) && !Objects.equals(warehouseId, NumberConstant.ZERO_L)) {
             List<String> snList = saveList.stream().map(ElectricityBattery::getSn).collect(Collectors.toList());
-        
+            
             assetWarehouseRecordService.asyncRecordByWarehouseId(TenantContextHolder.getTenantId(), uid, warehouseId, snList, AssetTypeEnum.ASSET_TYPE_BATTERY.getCode(),
                     WarehouseOperateTypeEnum.WAREHOUSE_OPERATE_TYPE_BATCH_IN.getCode());
         }
@@ -753,17 +753,17 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
         Integer rows = electricitybatterymapper.update(updateBattery);
         if (rows > 0) {
             redisService.delete(CacheConstant.CACHE_BT_ATTR + electricityBatteryDb.getSn());
-//            try {
-//                TokenUser userInfo = SecurityUtils.getUserInfo();
-//                Map<String, Object> map = BeanUtil.beanToMap(updateBattery, false, true);
-//                if (!Objects.isNull(userInfo)){
-//                    map.put("username",userInfo.getUsername());
-//                    map.put("phone",userInfo.getPhone());
-//                }
-//                operateRecordUtil.record(electricityBatteryDb,map);
-//            }catch (Throwable e){
-//                log.warn("Recording user operation records failed because:{}",e.getMessage());
-//            }
+            //            try {
+            //                TokenUser userInfo = SecurityUtils.getUserInfo();
+            //                Map<String, Object> map = BeanUtil.beanToMap(updateBattery, false, true);
+            //                if (!Objects.isNull(userInfo)){
+            //                    map.put("username",userInfo.getUsername());
+            //                    map.put("phone",userInfo.getPhone());
+            //                }
+            //                operateRecordUtil.record(electricityBatteryDb,map);
+            //            }catch (Throwable e){
+            //                log.warn("Recording user operation records failed because:{}",e.getMessage());
+            //            }
             return R.ok();
         } else {
             return R.fail("修改失败!");
@@ -1064,7 +1064,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
         geoService.deleteBySn(electricityBattery.getSn());
         if (raws > 0) {
             redisService.delete(CacheConstant.CACHE_BT_ATTR + electricityBattery.getSn());
-            operateRecordUtil.record(null, MapUtil.of("batterySN",electricityBattery.getSn()));
+            operateRecordUtil.record(null, MapUtil.of("batterySN", electricityBattery.getSn()));
             return R.ok();
         } else {
             return R.fail("100227", "删除失败!");
@@ -1352,7 +1352,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
         if (CollectionUtils.isEmpty(batteryQuery.getElectricityBatteryIdList())) {
             return R.ok();
         }
-        Map<String, Object> operateRecordMap =new HashMap<>();
+        Map<String, Object> operateRecordMap = new HashMap<>();
         List<Long> electricityBatteryIdList = batteryQuery.getElectricityBatteryIdList();
         List<ElectricityBattery> electricityBatteries = electricitybatterymapper.selectByBatteryIds(electricityBatteryIdList);
         Integer stockStatus = null;
@@ -1373,8 +1373,9 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
                 return R.fail("300804", "该加盟商电池资产正在进行盘点，请稍后再试");
             }
             stockStatus = StockStatusEnum.UN_STOCK.getCode();
-            operateRecordMap.put("outboundStatus",0);
-            operateRecordMap.put("franchisee",franchisee.getName());
+            operateRecordMap.put("outboundStatus", 0);
+            operateRecordMap.put("franchisee", franchisee.getName());
+            operateRecordUtil.record(null, operateRecordMap);
         } else {
             //进入电池解绑流程
             log.info("unbind franchisee for battery. battery ids: {}", batteryQuery.getElectricityBatteryIdList());
@@ -1392,11 +1393,11 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
             
             batteryQuery.setFranchiseeId(null);
             stockStatus = StockStatusEnum.STOCK.getCode();
-            operateRecordMap.put("outboundStatus",1);
+            //            operateRecordMap.put("outboundStatus", 1);
         }
-    
+        
         int count = electricitybatterymapper.bindFranchiseeId(batteryQuery, stockStatus);
-    
+        
         // 出库，需要异步记录
         Integer operateType = batteryQuery.getType();
         if (isBind && Objects.nonNull(operateType)) {
@@ -1404,13 +1405,12 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
             if (CollectionUtils.isNotEmpty(electricityBatteries)) {
                 List<AssetSnWarehouseRequest> snWarehouseList = electricityBatteries.stream().filter(item -> Objects.nonNull(item.getWarehouseId()))
                         .map(item -> AssetSnWarehouseRequest.builder().sn(item.getSn()).warehouseId(item.getWarehouseId()).build()).collect(Collectors.toList());
-            
+                
                 Long uid = Objects.requireNonNull(SecurityUtils.getUserInfo()).getUid();
-            
+                
                 assetWarehouseRecordService.asyncRecords(TenantContextHolder.getTenantId(), uid, snWarehouseList, AssetTypeEnum.ASSET_TYPE_BATTERY.getCode(), operateType);
             }
         }
-        operateRecordUtil.record(null,operateRecordMap);
         return R.ok(count);
     }
     
@@ -1595,28 +1595,28 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
     public List<ElectricityBatteryVO> listEnableAllocateBattery(ElectricityBatteryEnableAllocateRequest electricityBatteryEnableAllocateRequest) {
         ElectricityBatteryEnableAllocateQueryModel queryModel = new ElectricityBatteryEnableAllocateQueryModel();
         BeanUtils.copyProperties(electricityBatteryEnableAllocateRequest, queryModel);
-    
+        
         List<ElectricityBatteryVO> rspList = null;
         List<ElectricityBatteryBO> electricityBatteryBOList = electricitybatterymapper.selectListEnableAllocateBattery(queryModel);
         if (CollectionUtils.isNotEmpty(electricityBatteryBOList)) {
             rspList = electricityBatteryBOList.stream().map(item -> {
                 ElectricityBatteryVO electricityBatteryVO = new ElectricityBatteryVO();
                 BeanUtils.copyProperties(item, electricityBatteryVO);
-            
+                
                 BatteryModel batteryModel = batteryModelService.selectByBatteryType(electricityBatteryEnableAllocateRequest.getTenantId(), item.getModel());
                 if (Objects.nonNull(batteryModel)) {
                     electricityBatteryVO.setModelId(batteryModel.getId());
                 }
-            
+                
                 return electricityBatteryVO;
-            
+                
             }).collect(Collectors.toList());
         }
-    
+        
         if (CollectionUtils.isEmpty(rspList)) {
             return Collections.emptyList();
         }
-    
+        
         return rspList;
     }
     
@@ -1644,23 +1644,23 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
     @Override
     public List<ElectricityBatteryVO> listEnableExitWarehouseBattery(Set<Long> idSet, Integer tenantId, Long franchiseeId, Integer stockStatus) {
         List<ElectricityBatteryBO> electricityBatteryBOList = electricitybatterymapper.selectListEnableExitWarehouseBattery(idSet, tenantId, franchiseeId, stockStatus);
-    
+        
         List<ElectricityBatteryVO> rspList = null;
-    
+        
         if (CollectionUtils.isNotEmpty(electricityBatteryBOList)) {
             rspList = electricityBatteryBOList.stream().map(item -> {
                 ElectricityBatteryVO electricityBatteryVO = new ElectricityBatteryVO();
                 BeanUtils.copyProperties(item, electricityBatteryVO);
-            
+                
                 return electricityBatteryVO;
-            
+                
             }).collect(Collectors.toList());
         }
-    
+        
         if (CollectionUtils.isEmpty(rspList)) {
             rspList = Collections.emptyList();
         }
-    
+        
         return rspList;
     }
     
@@ -1672,10 +1672,11 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
     
     /**
      * <p>
-     *    Description: queryIdsBySnArray
+     * Description: queryIdsBySnArray
      * </p>
-     * @param snList snList
-     * @param tenantId tenantId
+     *
+     * @param snList             snList
+     * @param tenantId           tenantId
      * @param sourceFranchiseeId sourceFranchiseeId
      * @return java.util.List<java.lang.Long>
      * <p>Project: ElectricityBatteryServiceImpl</p>
@@ -1683,20 +1684,20 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
      * <p>Company: www.xiliulou.com</p>
      * @author <a href="mailto:wxblifeng@163.com">PeakLee</a>
      * @since V1.0 2024/3/18
-    */
+     */
     @Override
-    public Map<String,Long> listIdsBySnArray(List<String> snList, Integer tenantId, Long sourceFranchiseeId) {
+    public Map<String, Long> listIdsBySnArray(List<String> snList, Integer tenantId, Long sourceFranchiseeId) {
         List<ElectricityBattery> batteryList = this.electricitybatterymapper.selectListBySnArray(snList, tenantId, sourceFranchiseeId);
-        if (CollectionUtils.isEmpty(batteryList)){
+        if (CollectionUtils.isEmpty(batteryList)) {
             return MapUtil.empty();
         }
-        return batteryList.stream().collect(Collectors.toMap(ElectricityBattery::getSn,ElectricityBattery::getId,(k1,k2)->k1));
+        return batteryList.stream().collect(Collectors.toMap(ElectricityBattery::getSn, ElectricityBattery::getId, (k1, k2) -> k1));
     }
     
     @Override
     @Slave
     public List<ElectricityBatteryVO> listBatteryBySn(Integer offset, Integer size, Long franchiseeId, String sn) {
-    
+        
         return electricitybatterymapper.listBatteryBySn(offset, size, franchiseeId, sn);
     }
 }

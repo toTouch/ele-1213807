@@ -57,36 +57,47 @@ import java.util.Objects;
 @Service("electricityConfig")
 @Slf4j
 public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigMapper, ElectricityConfig> implements ElectricityConfigService {
-
+    
     @Resource
     ElectricityConfigMapper electricityConfigMapper;
+    
     @Autowired
     TemplateConfigService templateConfigService;
+    
     @Autowired
     ElectricityPayParamsService electricityPayParamsService;
+    
     @Autowired
     UserService userService;
+    
     @Autowired
     RedisService redisService;
+    
     @Autowired
     FranchiseeService franchiseeService;
+    
     @Autowired
     FranchiseeInsuranceService franchiseeInsuranceService;
+    
     @Autowired
     ElectricityMemberCardService electricityMemberCardService;
+    
     @Autowired
     ElectricityCarModelService electricityCarModelService;
+    
     @Autowired
     FaceRecognizeDataService faceRecognizeDataService;
+    
     @Autowired
     PxzConfigService pxzConfigService;
+    
     @Autowired
     EleEsignConfigService eleEsignConfigService;
     
     @Autowired
     OperateRecordUtil operateRecordUtil;
-
-
+    
+    
     @Override
     @Transactional(rollbackFor = Exception.class)
     public R edit(ElectricityConfigAddAndUpdateQuery electricityConfigAddAndUpdateQuery) {
@@ -96,44 +107,45 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
             log.error("ELECTRICITY  ERROR! not found user ");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-
+        
         //操作频繁
         boolean result = redisService.setNx(CacheConstant.ELE_CONFIG_EDIT_UID + user.getUid(), "1", 3 * 1000L, false);
         if (!result) {
             return R.fail("ELECTRICITY.0034", "操作频繁");
         }
-    
+        
         //实名审核方式若为人脸核身
-        if(Objects.equals(electricityConfigAddAndUpdateQuery.getIsManualReview(),ElectricityConfig.FACE_REVIEW)){
+        if (Objects.equals(electricityConfigAddAndUpdateQuery.getIsManualReview(), ElectricityConfig.FACE_REVIEW)) {
             //是否购买资源包
             FaceRecognizeData faceRecognizeData = faceRecognizeDataService.selectByTenantId(TenantContextHolder.getTenantId());
-            if(Objects.isNull(faceRecognizeData)){
+            if (Objects.isNull(faceRecognizeData)) {
                 return R.fail("100334", "未购买人脸核身资源包，请联系管理员");
             }
-        
+            
             //资源包是否可用
-            if(faceRecognizeData.getFaceRecognizeCapacity()<=0){
+            if (faceRecognizeData.getFaceRecognizeCapacity() <= 0) {
                 return R.fail("100335", "人脸核身资源包余额不足，请充值");
             }
         }
-
+        
         String franchiseeMoveDetail = null;
         //若开启了迁移加盟商
         if (Objects.equals(electricityConfigAddAndUpdateQuery.getIsMoveFranchisee(), ElectricityConfig.MOVE_FRANCHISEE_OPEN)) {
-            if (Objects.isNull(electricityConfigAddAndUpdateQuery.getFranchiseeMoveInfo()) || Objects.isNull(electricityConfigAddAndUpdateQuery.getFranchiseeMoveInfo().getBatteryModel())) {
+            if (Objects.isNull(electricityConfigAddAndUpdateQuery.getFranchiseeMoveInfo()) || Objects.isNull(
+                    electricityConfigAddAndUpdateQuery.getFranchiseeMoveInfo().getBatteryModel())) {
                 return R.fail("ELECTRICITY.0007", "加盟商迁移信息不能为空");
             }
-
+            
             FranchiseeMoveInfo franchiseeMoveInfoQuery = electricityConfigAddAndUpdateQuery.getFranchiseeMoveInfo();
-
+            
             Franchisee oldFranchisee = franchiseeService.queryByIdFromCache(franchiseeMoveInfoQuery.getFromFranchiseeId());
             Franchisee newFranchisee = franchiseeService.queryByIdFromCache(franchiseeMoveInfoQuery.getToFranchiseeId());
-
+            
             Triple<Boolean, String, Object> verifyFranchiseeResult = verifyFranchisee(oldFranchisee, newFranchisee, franchiseeMoveInfoQuery);
             if (!verifyFranchiseeResult.getLeft()) {
                 return R.fail(verifyFranchiseeResult.getMiddle(), (String) verifyFranchiseeResult.getRight());
             }
-
+            
             FranchiseeMoveInfo franchiseeMoveInfo = new FranchiseeMoveInfo();
             franchiseeMoveInfo.setFromFranchiseeId(electricityConfigAddAndUpdateQuery.getFranchiseeMoveInfo().getFromFranchiseeId());
             franchiseeMoveInfo.setToFranchiseeId(electricityConfigAddAndUpdateQuery.getFranchiseeMoveInfo().getToFranchiseeId());
@@ -141,37 +153,39 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
             franchiseeMoveInfo.setFromFranchiseeName(oldFranchisee.getName());
             franchiseeMoveInfo.setToFranchiseeName(newFranchisee.getName());
             franchiseeMoveDetail = JsonUtil.toJson(franchiseeMoveInfo);
-
+            
             //将旧加盟商下套餐迁移到新加盟商
-            electricityMemberCardService.moveMemberCard(franchiseeMoveInfo,newFranchisee);
-
+            electricityMemberCardService.moveMemberCard(franchiseeMoveInfo, newFranchisee);
+            
             //将旧加盟商下保险迁移到新加盟商
-            franchiseeInsuranceService.moveInsurance(franchiseeMoveInfo,newFranchisee);
-
+            franchiseeInsuranceService.moveInsurance(franchiseeMoveInfo, newFranchisee);
+            
             //将旧加盟商下的车辆型号迁移到新加盟商下
             electricityCarModelService.moveCarModel(franchiseeMoveInfo);
         }
-
+        
         //若开启免押
-        if (Objects.nonNull(electricityConfigAddAndUpdateQuery.getFreeDepositType()) && !Objects.equals(electricityConfigAddAndUpdateQuery.getFreeDepositType(), ElectricityConfig.FREE_DEPOSIT_TYPE_DEFAULT)) {
+        if (Objects.nonNull(electricityConfigAddAndUpdateQuery.getFreeDepositType()) && !Objects.equals(electricityConfigAddAndUpdateQuery.getFreeDepositType(),
+                ElectricityConfig.FREE_DEPOSIT_TYPE_DEFAULT)) {
             //检查免押配置
             PxzConfig pxzConfig = pxzConfigService.queryByTenantIdFromCache(TenantContextHolder.getTenantId());
             if (Objects.isNull(pxzConfig) || StringUtils.isBlank(pxzConfig.getAesKey()) || StringUtils.isBlank(pxzConfig.getMerchantCode())) {
                 return R.fail("100400", "免押功能未配置相关信息");
             }
         }
-
+        
         //若开启签名功能，需要检查签名相关信息是否已经配置
-        if(Objects.equals(electricityConfigAddAndUpdateQuery.getIsEnableEsign(), EleEsignConstant.ESIGN_ENABLE)){
+        if (Objects.equals(electricityConfigAddAndUpdateQuery.getIsEnableEsign(), EleEsignConstant.ESIGN_ENABLE)) {
             EleEsignConfig eleEsignConfig = eleEsignConfigService.selectLatestByTenantId(TenantContextHolder.getTenantId());
-            if (Objects.isNull(eleEsignConfig) || StringUtils.isBlank(eleEsignConfig.getAppId()) || StringUtils.isBlank(eleEsignConfig.getAppSecret())){
+            if (Objects.isNull(eleEsignConfig) || StringUtils.isBlank(eleEsignConfig.getAppId()) || StringUtils.isBlank(eleEsignConfig.getAppSecret())) {
                 return R.fail("100500", "电子签名功能未配置相关信息,请检查");
             }
         }
-
-        ElectricityConfig electricityConfig = electricityConfigMapper.selectOne(new LambdaQueryWrapper<ElectricityConfig>().eq(ElectricityConfig::getTenantId, TenantContextHolder.getTenantId()));
+        
+        ElectricityConfig electricityConfig = electricityConfigMapper.selectOne(
+                new LambdaQueryWrapper<ElectricityConfig>().eq(ElectricityConfig::getTenantId, TenantContextHolder.getTenantId()));
         ElectricityConfig oldElectricityConfig = new ElectricityConfig();
-        BeanUtil.copyProperties(electricityConfig,oldElectricityConfig, CopyOptions.create().ignoreNullValue().ignoreError());
+        BeanUtil.copyProperties(electricityConfig, oldElectricityConfig, CopyOptions.create().ignoreNullValue().ignoreError());
         if (Objects.isNull(electricityConfig)) {
             electricityConfig = new ElectricityConfig();
             electricityConfig.setName(electricityConfigAddAndUpdateQuery.getName());
@@ -209,7 +223,7 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
         if (Objects.nonNull(selectionExchangeDB) && !Objects.equals(selectionExchangeDB, selectionExchangeUpdate)) {
             redisService.set(CacheConstant.CACHE_ELE_SELECTION_EXCHANGE_UPDATE_TIME + TenantContextHolder.getTenantId(), String.valueOf(System.currentTimeMillis()));
         }
-
+        
         electricityConfig.setTenantId(TenantContextHolder.getTenantId());
         electricityConfig.setName(electricityConfigAddAndUpdateQuery.getName());
         electricityConfig.setOrderTime(electricityConfigAddAndUpdateQuery.getOrderTime());
@@ -239,10 +253,10 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
         if (updateResult > 0) {
             redisService.delete(CacheConstant.CACHE_ELE_SET_CONFIG + TenantContextHolder.getTenantId());
         }
-        operateRecordUtil.record(oldElectricityConfig,electricityConfig);
+        operateRecordUtil.record(oldElectricityConfig, electricityConfig);
         return R.ok();
     }
-
+    
     private Triple<Boolean, String, Object> verifyFranchisee(Franchisee oldFranchisee, Franchisee newFranchisee, FranchiseeMoveInfo franchiseeMoveInfoQuery) {
         //旧加盟商校验
         if (Objects.isNull(oldFranchisee)) {
@@ -253,7 +267,7 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
             log.error("ELE ERROR! old franchisee not allow new MODEL TYPE,franchiseeId={}", franchiseeMoveInfoQuery.getFromFranchiseeId());
             return Triple.of(false, "100350", "旧加盟商不能为多型号");
         }
-
+        
         //新加盟商校验
         if (Objects.isNull(newFranchisee)) {
             log.error("ELE ERROR! not found new franchisee,franchiseeId={}", franchiseeMoveInfoQuery.getToFranchiseeId());
@@ -263,69 +277,68 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
             log.error("ELE ERROR! new franchisee not allow new MODEL TYPE,franchiseeId={}", franchiseeMoveInfoQuery.getToFranchiseeId());
             return Triple.of(false, "100351", "新加盟商不能为单型号");
         }
-
+        
         List<FranchiseeBatteryModelDTO> franchiseeBatteryModels = JsonUtil.fromJsonArray(newFranchisee.getModelBatteryDeposit(), FranchiseeBatteryModelDTO.class);
         if (CollectionUtils.isEmpty(franchiseeBatteryModels)) {
             log.error("ELE ERROR!not found newFranchiseeBatteryModelDTO,franchinseeId={}", newFranchisee.getId());
             return Triple.of(false, "100355", "加盟商电池型号信息不存在");
         }
-
-        FranchiseeBatteryModelDTO franchiseeBatteryModelDTO = franchiseeBatteryModels.stream().filter(item -> Objects.equals(item.getModel(), franchiseeMoveInfoQuery.getBatteryModel())).findFirst().orElse(null);
+        
+        FranchiseeBatteryModelDTO franchiseeBatteryModelDTO = franchiseeBatteryModels.stream()
+                .filter(item -> Objects.equals(item.getModel(), franchiseeMoveInfoQuery.getBatteryModel())).findFirst().orElse(null);
         if (Objects.isNull(franchiseeBatteryModelDTO)) {
             log.error("ELE ERROR!franchiseeBatteryModelDTO is null,franchinseeId={}", newFranchisee.getId());
             return Triple.of(false, "100355", "加盟商电池型号信息不存在");
         }
-
+        
         //加盟商押金校验
         if (oldFranchisee.getBatteryDeposit().compareTo(franchiseeBatteryModelDTO.getBatteryDeposit()) != 0) {
             log.error("ELE ERROR! oldFranchisee batteryDeposit not equals newFranchisee,oldFranchinseeId={},newFranchinseeId={}", newFranchisee.getId(), oldFranchisee.getId());
             return Triple.of(false, "100363", "新加盟商与旧加盟商押金不一致");
         }
-
+        
         //加盟商电池服务费开关校验
         if (!Objects.equals(oldFranchisee.getIsOpenServiceFee(), newFranchisee.getIsOpenServiceFee())) {
             log.error("ELE ERROR! IsOpenServiceFee new franchisee not equals old franchisee,newfranchiseeId={},oldfranchiseeId={}", newFranchisee.getId(), oldFranchisee.getId());
             return Triple.of(false, "100367", "新加盟商与旧加盟商电池服务费开关不一致");
         }
-
+        
         //加盟商电池服务费校验
-        if (Objects.equals(oldFranchisee.getIsOpenServiceFee(), Franchisee.OPEN_SERVICE_FEE)
-                && Objects.equals(newFranchisee.getIsOpenServiceFee(), Franchisee.OPEN_SERVICE_FEE)
+        if (Objects.equals(oldFranchisee.getIsOpenServiceFee(), Franchisee.OPEN_SERVICE_FEE) && Objects.equals(newFranchisee.getIsOpenServiceFee(), Franchisee.OPEN_SERVICE_FEE)
                 && oldFranchisee.getBatteryServiceFee().compareTo(franchiseeBatteryModelDTO.getBatteryServiceFee()) != 0) {
             log.error("ELE ERROR! oldFranchisee batteryServiceFee not equals newFranchisee,oldFranchinseeId={},newFranchinseeId={}", newFranchisee.getId(), oldFranchisee.getId());
             return Triple.of(false, "100364", "新加盟商与旧加盟商电池服务费不一致");
         }
-
+        
         return Triple.of(true, "", null);
     }
-
+    
     @Override
     public ElectricityConfig queryFromCacheByTenantId(Integer tenantId) {
         ElectricityConfig cache = redisService.getWithHash(CacheConstant.CACHE_ELE_SET_CONFIG + tenantId, ElectricityConfig.class);
         if (Objects.nonNull(cache)) {
             return cache;
         }
-
-        ElectricityConfig electricityConfig = electricityConfigMapper.selectOne(new LambdaQueryWrapper<ElectricityConfig>()
-                .eq(ElectricityConfig::getTenantId, tenantId));
+        
+        ElectricityConfig electricityConfig = electricityConfigMapper.selectOne(new LambdaQueryWrapper<ElectricityConfig>().eq(ElectricityConfig::getTenantId, tenantId));
         if (Objects.isNull(electricityConfig)) {
             return null;
         }
-
+        
         redisService.saveWithHash(CacheConstant.CACHE_ELE_SET_CONFIG + tenantId, electricityConfig);
         return electricityConfig;
     }
-
+    
     @Override
     public void insertElectricityConfig(ElectricityConfig electricityConfig) {
         this.electricityConfigMapper.insert(electricityConfig);
     }
-
+    
     @Override
     public TenantConfigVO getTenantConfig(String appId) {
-
+        
         TenantConfigVO tenantConfigVO = new TenantConfigVO();
-
+        
         //根据appId获取租户id
         ElectricityPayParams electricityPayParams = electricityPayParamsService.selectTenantId(appId);
         if (Objects.isNull(electricityPayParams)) {
@@ -333,19 +346,19 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
             return tenantConfigVO;
         }
         Integer tenantId = electricityPayParams.getTenantId();
-
+        
         //获取租户配置信息
         ElectricityConfig electricityConfig = this.queryFromCacheByTenantId(tenantId);
         BeanUtils.copyProperties(electricityConfig, tenantConfigVO);
-
+        
         //获取租户模板id
         List<String> templateConfigList = templateConfigService.selectTemplateId(tenantId);
         tenantConfigVO.setTemplateConfigList(templateConfigList);
-
+        
         //获取客服电话
         String servicePhone = userService.selectServicePhone(tenantId);
         tenantConfigVO.setServicePhone(servicePhone);
-
+        
         return tenantConfigVO;
     }
 }

@@ -636,11 +636,10 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                 userCarRentalPackageVO.setDepositStatus(convertCarBatteryDepositStatus(userCarRentalPackageDO.getCarBatteryDepositStatus()));
             }
             
-            
             if (orderMapPayType.containsKey(userCarRentalPackageDO.getDepositOrderNo()) && orderMapPayType.get(userCarRentalPackageDO.getDepositOrderNo()) == 3) {
                 userCarRentalPackageVO.setDepositStatus(FREE_OF_CHARGE);
             }
-      
+            
             if (MemberTermStatusEnum.FREEZE.getCode().equals(userCarRentalPackageDO.getPackageStatus())) {
                 userCarRentalPackageVO.setPackageFreezeStatus(0);
             } else {
@@ -1321,19 +1320,23 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             //记录企业用户租电池记录
             enterpriseUserCostRecordService.asyncSaveUserCostRecordForRentalAndReturnBattery(UserCostTypeEnum.COST_TYPE_RENT_BATTERY.getCode(), rentBatteryOrder);
             
+            try {
+                //发送操作记录
+                //判断没有发送实际的电池变更则不记录
+                if (!Objects.isNull(isBindElectricityBattery) && Objects.equals(userInfoBatteryAddAndUpdate.getInitElectricityBatterySn(), isBindElectricityBattery.getSn())) {
+                    return null;
+                }
+                Map<String, Object> map = new HashMap<>();
+                map.put("username", oldUserInfo.getName());
+                map.put("phone", oldUserInfo.getPhone());
+                map.put("editType", userInfoBatteryAddAndUpdate.getEdiType());
+                map.put("batterySN", userInfoBatteryAddAndUpdate.getInitElectricityBatterySn());
+                operateRecordUtil.record(Objects.isNull(isBindElectricityBattery) ? null : MapUtil.of("batterySN", isBindElectricityBattery.getSn()), map);
+            } catch (Throwable e) {
+                log.error("Recording user operation records failed because:", e);
+            }
             return null;
         });
-        try {
-            Map<String, Object> map = new HashMap<>();
-            map.put("username",oldUserInfo.getName());
-            map.put("phone",oldUserInfo.getPhone());
-            map.put("editType",userInfoBatteryAddAndUpdate.getEdiType());
-            map.put("batterySN",userInfoBatteryAddAndUpdate.getInitElectricityBatterySn());
-            operateRecordUtil.record(Objects.isNull(isBindElectricityBattery)?null:MapUtil.of("batterySN",isBindElectricityBattery.getSn()),map);
-        }catch (Throwable e){
-            log.warn("Recording user operation records failed because:{}",e.getMessage());
-        }
-        
         return R.ok();
     }
     
@@ -1503,12 +1506,12 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         enterpriseUserCostRecordService.asyncSaveUserCostRecordForRentalAndReturnBattery(UserCostTypeEnum.COST_TYPE_RETURN_BATTERY.getCode(), rentBatteryOrder);
         try {
             Map<String, Object> map = new HashMap<>();
-            map.put("username",oldUserInfo.getName());
-            map.put("phone",oldUserInfo.getPhone());
-            map.put("batterySN",oldElectricityBattery.getSn());
-            operateRecordUtil.record(null,map);
-        }catch (Throwable e){
-            log.warn("Recording user operation records failed because:{}",e.getMessage());
+            map.put("username", oldUserInfo.getName());
+            map.put("phone", oldUserInfo.getPhone());
+            map.put("batterySN", oldElectricityBattery.getSn());
+            operateRecordUtil.record(null, map);
+        } catch (Throwable e) {
+            log.error("Recording user operation records failed because:", e);
         }
         return R.ok();
     }
@@ -1980,7 +1983,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         
         Triple<Boolean, String, Object> result = userService.deleteNormalUser(uid);
         if (result.getLeft()) {
-            operateRecordUtil.record(null,userInfo);
+            operateRecordUtil.record(null, userInfo);
             return R.ok();
         }
         
@@ -2112,10 +2115,9 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         EleUserEsignRecord eleUserEsignRecord = eleUserEsignRecordService.queryUserEsignRecordFromDB(userInfo.getUid(), Long.valueOf(TenantContextHolder.getTenantId()));
         if (Objects.nonNull(eleUserEsignRecord)) {
             vo.setSignFlowId(eleUserEsignRecord.getSignFlowId());
-            vo.setSignFinishStatus(Objects.isNull(eleUserEsignRecord) ? SignStatusEnum.UNSIGNED.getCode() :
-                    (Objects.equals(1, eleUserEsignRecord.getSignFinishStatus()) ? SignStatusEnum.SIGNED_COMPLETED.getCode() : SignStatusEnum.SIGNED_INCOMPLETE.getCode()));
+            vo.setSignFinishStatus(Objects.isNull(eleUserEsignRecord) ? SignStatusEnum.UNSIGNED.getCode()
+                    : (Objects.equals(1, eleUserEsignRecord.getSignFinishStatus()) ? SignStatusEnum.SIGNED_COMPLETED.getCode() : SignStatusEnum.SIGNED_INCOMPLETE.getCode()));
         }
-        
         
         // 根据openId判断是否可解绑微信
         UserOauthBind userOauthBind = userOauthBindService.selectByUidAndPhone(vo.getPhone(), uid, TenantContextHolder.getTenantId());
@@ -2152,10 +2154,10 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                     });
             
         }
-        Map<String, Object> map =new HashMap<>();
-        map.put("username",userInfo.getName());
-        map.put("phone",userInfo.getPhone());
-        operateRecordUtil.record(null,map);
+        Map<String, Object> map = new HashMap<>();
+        map.put("username", userInfo.getName());
+        map.put("phone", userInfo.getPhone());
+        operateRecordUtil.record(null, map);
         return R.ok();
     }
     
@@ -2227,11 +2229,11 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         eleUserOperateHistoryService.asyncHandleUpdateUserPhone(TenantContextHolder.getTenantId(), uid, phone, oldPhone);
         try {
             Map<String, Object> map = new HashMap<>();
-            map.put("username",userInfo.getName());
-            map.put("phone",phone);
-            operateRecordUtil.record(MapUtil.of("phone",oldPhone),map);
-        }catch (Throwable e){
-            log.warn("Recording user operation records failed because:{}",e.getMessage());
+            map.put("username", userInfo.getName());
+            map.put("phone", phone);
+            operateRecordUtil.record(MapUtil.of("phone", oldPhone), map);
+        } catch (Throwable e) {
+            log.error("Recording user operation records failed because:", e);
         }
         return R.ok();
     }
@@ -3076,7 +3078,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                 if (Objects.equals(UserInfo.BATTERY_DEPOSIT_STATUS_YES, item.getBatteryDepositStatus())) {
                     UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(item.getUid());
                     if (Objects.nonNull(userBatteryDeposit)) {
-        
+                        
                         item.setBatteryDepositStatus(Objects.equals(0, userBatteryDeposit.getDepositType()) ? 1 : 2);
                     }
                 }
