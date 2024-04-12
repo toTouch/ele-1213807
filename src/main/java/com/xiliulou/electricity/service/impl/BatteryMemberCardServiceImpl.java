@@ -231,7 +231,7 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
         
         List<UserInfoGroupNamesBO> userInfoGroupNamesBOs = userInfoGroupDetailService.listGroupByUid(
-                UserInfoGroupDetailQuery.builder().uid(SecurityUtils.getUid()).tenantId(TenantContextHolder.getTenantId()).build());
+                UserInfoGroupDetailQuery.builder().uid(query.getUid()).tenantId(TenantContextHolder.getTenantId()).build());
         
         //处理新租套餐重复购买的问题，如果先购买了租车套餐，则用户属于老用户，则只能购买租赁类型为不限或者续租的套餐
         if (Objects.isNull(userBatteryMemberCard) && userInfo.getPayCount() <= 0) {
