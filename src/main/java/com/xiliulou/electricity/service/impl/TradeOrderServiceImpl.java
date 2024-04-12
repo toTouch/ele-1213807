@@ -1049,6 +1049,7 @@ public class TradeOrderServiceImpl implements TradeOrderService {
         electricityMemberCardOrder.setRefId(Objects.nonNull(electricityCabinet) ? electricityCabinet.getId().longValue() : null);
         electricityMemberCardOrder.setSource(Objects.nonNull(electricityCabinet) ? ElectricityMemberCardOrder.SOURCE_SCAN : ElectricityMemberCardOrder.SOURCE_NOT_SCAN);
         electricityMemberCardOrder.setStoreId(Objects.nonNull(electricityCabinet) ? electricityCabinet.getStoreId() : userInfo.getStoreId());
+        electricityMemberCardOrder.setCouponIds(batteryMemberCard.getCouponIds());
         
         return Triple.of(true, null, electricityMemberCardOrder);
     }
@@ -1098,6 +1099,7 @@ public class TradeOrderServiceImpl implements TradeOrderService {
         electricityMemberCardOrder.setRefId(Objects.nonNull(electricityCabinet) ? electricityCabinet.getId().longValue() : null);
         electricityMemberCardOrder.setSource(Objects.nonNull(electricityCabinet) ? ElectricityMemberCardOrder.SOURCE_SCAN : ElectricityMemberCardOrder.SOURCE_NOT_SCAN);
         electricityMemberCardOrder.setStoreId(Objects.nonNull(electricityCabinet) ? electricityCabinet.getStoreId() : userInfo.getStoreId());
+        electricityMemberCardOrder.setCouponIds(batteryMemberCard.getCouponIds());
         
         return Triple.of(true, null, electricityMemberCardOrder);
     }

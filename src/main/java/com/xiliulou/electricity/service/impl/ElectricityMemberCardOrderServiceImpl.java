@@ -3616,6 +3616,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         electricityMemberCardOrder.setSource(source);
         electricityMemberCardOrder.setRefId(refId);
         electricityMemberCardOrder.setPayCount(payCount);
+        electricityMemberCardOrder.setCouponIds(electricityMemberCardOrder.getCouponIds());
         
         return Triple.of(true, null, electricityMemberCardOrder);
     }
