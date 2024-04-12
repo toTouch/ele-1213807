@@ -1,9 +1,9 @@
 package com.xiliulou.electricity.mapper.userInfo.userInfoGroup;
 
+import com.xiliulou.electricity.bo.userInfoGroup.UserInfoGroupDetailBO;
+import com.xiliulou.electricity.bo.userInfoGroup.UserInfoGroupNamesBO;
 import com.xiliulou.electricity.entity.userInfo.userInfoGroup.UserInfoGroupDetail;
 import com.xiliulou.electricity.query.UserInfoGroupDetailQuery;
-import com.xiliulou.electricity.vo.userinfo.UserInfoGroupDetailVO;
-import com.xiliulou.electricity.vo.userinfo.UserInfoGroupNamesVO;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
@@ -17,11 +17,11 @@ public interface UserInfoGroupDetailMapper {
     
     UserInfoGroupDetail selectByUid(@Param("groupNo") String groupNo, @Param("uid") Long uid, @Param("tenantId") Integer tenantId);
     
-    List<UserInfoGroupDetailVO> selectPage(UserInfoGroupDetailQuery query);
+    List<UserInfoGroupDetailBO> selectPage(UserInfoGroupDetailQuery query);
     
     Integer countTotal(UserInfoGroupDetailQuery query);
     
-    List<UserInfoGroupNamesVO> selectListGroupByUid(UserInfoGroupDetailQuery query);
+    List<UserInfoGroupNamesBO> selectListGroupByUid(UserInfoGroupDetailQuery query);
     
     Integer batchInsert(@Param("detailList") List<UserInfoGroupDetail> detailList);
     
@@ -31,5 +31,5 @@ public interface UserInfoGroupDetailMapper {
     
     Integer deleteByUidAndGroupNoList(@Param("uid") Long uid, @Param("groupNoList") List<String> groupNoList);
     
-    List<UserInfoGroupNamesVO> selectListGroupByUidList(@Param("uidList") List<Long> uidList);
+    List<UserInfoGroupNamesBO> selectListGroupByUidList(@Param("uidList") List<Long> uidList);
 }

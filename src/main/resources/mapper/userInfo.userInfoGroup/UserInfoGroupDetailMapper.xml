@@ -4,14 +4,14 @@
     <!-- 基础字段 -->
     <sql id="basic_field">
         id
-        , group_no, uid, franchisee_id, tenant_id, del_flag, create_time, update_time
+        , group_no, uid, franchisee_id, tenant_id, del_flag, create_time, update_time, operator
     </sql>
     
     <insert id="batchInsert" keyProperty="id" useGeneratedKeys="true">
-        insert into t_user_info_group_detail(group_no, uid, franchisee_id, tenant_id, create_time, update_time)
+        insert into t_user_info_group_detail(group_no, uid, franchisee_id, tenant_id, create_time, update_time, operator)
         values
         <foreach item="item" index="index" collection="detailList" separator=",">
-            (#{item.groupNo},#{item.uid},#{item.franchiseeId}, #{item.tenantId}, #{item.createTime}, #{item.updateTime})
+            (#{item.groupNo},#{item.uid},#{item.franchiseeId}, #{item.tenantId}, #{item.createTime}, #{item.updateTime}), #{item.operator}}
         </foreach>
     </insert>
     
@@ -32,7 +32,7 @@
         where group_no = #{groupNo} and uid = #{uid} and tenant_id = #{tenantId}
     </select>
     
-    <select id="selectPage" resultType="com.xiliulou.electricity.vo.userinfo.UserInfoGroupDetailVO">
+    <select id="selectPage" resultType="com.xiliulou.electricity.bo.userInfoGroup.UserInfoGroupDetailBO">
         select
         any_value(tuigd.id) as id,
         any_value(tuigd.group_no) as groupno,
@@ -42,6 +42,7 @@
         any_value(tuigd.del_flag) as delflag,
         any_value(tuigd.create_time) as createtime,
         any_value(tuigd.update_time) as updatetime,
+        any_value(tuigd.operator) as operator
         any_value(tuig.id) as groupid,
         any_value(tuig.name) as groupname
         from t_user_info_group_detail tuigd
@@ -100,7 +101,7 @@
         where uid = #{uid}
     </select>
     
-    <select id="selectListGroupByUid" resultType="com.xiliulou.electricity.vo.userinfo.UserInfoGroupNamesVO">
+    <select id="selectListGroupByUid" resultType="com.xiliulou.electricity.bo.userInfoGroup.UserInfoGroupNamesBO">
         select tuigd.uid as uid, tuigd.group_no as groupNo, tuig.id as groupId, tuig.name as groupName
         from t_user_info_group_detail tuigd
         left join t_user_info_group tuig on tuigd.group_no = tuig.group_no
@@ -122,7 +123,7 @@
         </if>
     </select>
     
-    <select id="selectListGroupByUidList" resultType="com.xiliulou.electricity.vo.userinfo.UserInfoGroupNamesVO">
+    <select id="selectListGroupByUidList" resultType="com.xiliulou.electricity.bo.userInfoGroup.UserInfoGroupNamesBO">
         select tuigd.uid as uid, tuigd.group_no as groupNo, tuig.id as groupId, tuig.name as groupName
         from t_user_info_group_detail tuigd
         left join t_user_info_group tuig on tuigd.group_no = tuig.group_no

@@ -1,18 +1,25 @@
 package com.xiliulou.electricity.controller.admin.userinfo;
 
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.bo.userInfoGroup.UserInfoGroupDetailPageBO;
+import com.xiliulou.electricity.bo.userInfoGroup.UserInfoGroupNamesBO;
 import com.xiliulou.electricity.controller.BasicController;
+import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.query.UserInfoGroupDetailQuery;
 import com.xiliulou.electricity.request.user.UserInfoBindGroupRequest;
 import com.xiliulou.electricity.request.user.UserInfoGroupDetailUpdateRequest;
+import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.UserDataScopeService;
 import com.xiliulou.electricity.service.userinfo.userInfoGroup.UserInfoGroupDetailService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
+import com.xiliulou.electricity.vo.userinfo.UserInfoGroupDetailPageVO;
+import com.xiliulou.electricity.vo.userinfo.UserInfoGroupNamesVO;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
+import org.springframework.beans.BeanUtils;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -25,6 +32,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * @author HeYafeng
@@ -40,6 +48,9 @@ public class JsonAdminUserInfoGroupDetailController extends BasicController {
     
     @Resource
     private UserDataScopeService userDataScopeService;
+    
+    @Resource
+    private FranchiseeService franchiseeService;
     
     /**
      * 分页查询
@@ -79,8 +90,24 @@ public class JsonAdminUserInfoGroupDetailController extends BasicController {
         
         UserInfoGroupDetailQuery query = UserInfoGroupDetailQuery.builder().size(size).offset(offset).tenantId(TenantContextHolder.getTenantId()).franchiseeIds(franchiseeIds)
                 .groupId(groupId).uid(uid).build();
+        List<UserInfoGroupDetailPageBO> boList = userInfoGroupDetailService.listByPage(query);
         
-        return R.ok(userInfoGroupDetailService.listByPage(query));
+        // BO转化为VO
+        List<UserInfoGroupDetailPageVO> result = null;
+        if (CollectionUtils.isNotEmpty(boList)) {
+            result = boList.stream().map(bo -> {
+                UserInfoGroupDetailPageVO vo = new UserInfoGroupDetailPageVO();
+                BeanUtils.copyProperties(bo, vo);
+                
+                return vo;
+            }).collect(Collectors.toList());
+        }
+        
+        if (CollectionUtils.isEmpty(result)) {
+            result = Collections.emptyList();
+        }
+        
+        return R.ok(result);
     }
     
     /**
@@ -116,8 +143,24 @@ public class JsonAdminUserInfoGroupDetailController extends BasicController {
         
         UserInfoGroupDetailQuery query = UserInfoGroupDetailQuery.builder().size(size).offset(offset).tenantId(TenantContextHolder.getTenantId()).franchiseeIds(franchiseeIds)
                 .uid(uid).build();
+        List<UserInfoGroupNamesBO> boList = userInfoGroupDetailService.listGroupByUid(query);
         
-        return R.ok(userInfoGroupDetailService.listGroupByUid(query));
+        //BO转化为VO
+        List<UserInfoGroupNamesVO> result = null;
+        if (CollectionUtils.isNotEmpty(boList)) {
+            result = boList.stream().map(bo -> {
+                UserInfoGroupNamesVO vo = new UserInfoGroupNamesVO();
+                BeanUtils.copyProperties(bo, vo);
+                
+                return vo;
+            }).collect(Collectors.toList());
+        }
+        
+        if (CollectionUtils.isEmpty(result)) {
+            result = Collections.emptyList();
+        }
+        
+        return R.ok(result);
     }
     
     /**
@@ -169,7 +212,17 @@ public class JsonAdminUserInfoGroupDetailController extends BasicController {
             return R.fail("ELECTRICITY.0066", "用户权限不足");
         }
         
-        return userInfoGroupDetailService.update(request);
+        // 加盟商操作，查询加盟商
+        Franchisee franchisee = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            franchisee = franchiseeService.queryByUid(user.getUid());
+            
+            if (Objects.isNull(franchisee)) {
+                return R.fail("ELECTRICITY.0038", "未找到加盟商");
+            }
+        }
+        
+        return userInfoGroupDetailService.update(request, user.getUid(), franchisee);
     }
     
     /**
@@ -187,7 +240,17 @@ public class JsonAdminUserInfoGroupDetailController extends BasicController {
             return R.fail("ELECTRICITY.0066", "用户权限不足");
         }
         
-        return userInfoGroupDetailService.bindGroup(request);
+        // 加盟商操作，查询加盟商
+        Franchisee franchisee = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            franchisee = franchiseeService.queryByUid(user.getUid());
+            
+            if (Objects.isNull(franchisee)) {
+                return R.fail("ELECTRICITY.0038", "未找到加盟商");
+            }
+        }
+        
+        return userInfoGroupDetailService.bindGroup(request, user.getUid(), franchisee);
     }
     
 }

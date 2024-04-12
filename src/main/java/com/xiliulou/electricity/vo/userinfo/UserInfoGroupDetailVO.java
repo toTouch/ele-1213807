@@ -31,6 +31,12 @@ public class UserInfoGroupDetailVO {
      */
     private Long uid;
     
+    
+    /**
+     * 操作账号
+     */
+    private Long operator;
+    
     /**
      * 加盟商ID
      */

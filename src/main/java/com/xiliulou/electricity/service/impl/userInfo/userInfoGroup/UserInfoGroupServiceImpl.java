@@ -9,6 +9,8 @@ import com.xiliulou.core.thread.XllThreadPoolExecutorService;
 import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
+import com.xiliulou.electricity.bo.userInfoGroup.UserInfoGroupBO;
+import com.xiliulou.electricity.bo.userInfoGroup.UserInfoGroupIdAndNameBO;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
@@ -78,8 +80,8 @@ public class UserInfoGroupServiceImpl implements UserInfoGroupService {
     private UserInfoGroupDetailService userInfoGroupDetailService;
     
     @Override
-    public R save(UserInfoGroupSaveAndUpdateRequest request, Long uid) {
-        boolean result = redisService.setNx(CacheConstant.CACHE_USER_GROUP_SAVE_LOCK + uid, "1", 3 * 1000L, false);
+    public R save(UserInfoGroupSaveAndUpdateRequest request, Long operator) {
+        boolean result = redisService.setNx(CacheConstant.CACHE_USER_GROUP_SAVE_LOCK + operator, "1", 3 * 1000L, false);
         if (!result) {
             return R.fail("ELECTRICITY.0034", "操作频繁");
         }
@@ -96,24 +98,29 @@ public class UserInfoGroupServiceImpl implements UserInfoGroupService {
             
             long nowTime = System.currentTimeMillis();
             
-            userInfoGroup = UserInfoGroup.builder().groupNo(IdUtil.simpleUUID()).name(userGroupName).operator(uid).franchiseeId(franchiseeId).tenantId(tenantId).createTime(nowTime)
+            userInfoGroup = UserInfoGroup.builder().groupNo(IdUtil.simpleUUID()).name(userGroupName).operator(operator).franchiseeId(franchiseeId).tenantId(tenantId).createTime(nowTime)
                     .updateTime(nowTime).build();
             
             return R.ok(userInfoGroupMapper.insertOne(userInfoGroup));
         } finally {
-            redisService.delete(CacheConstant.CACHE_USER_GROUP_SAVE_LOCK + uid);
+            redisService.delete(CacheConstant.CACHE_USER_GROUP_SAVE_LOCK + operator);
         }
     }
     
     @Override
-    public R remove(Long id, Long uid) {
+    public R remove(Long id, Long operator, Franchisee franchisee) {
         UserInfoGroup userInfoGroup = this.queryByIdFromCache(id);
         if (Objects.isNull(userInfoGroup)) {
             return R.fail("120112", "未找到用户分组");
         }
         
-        Integer tenantId = TenantContextHolder.getTenantId();
+        // 加盟商校验
+        if (Objects.nonNull(franchisee) && !Objects.equals(franchisee.getId(), userInfoGroup.getFranchiseeId())) {
+            return R.ok();
+        }
         
+        // 租户校验
+        Integer tenantId = TenantContextHolder.getTenantId();
         if (!Objects.equals(tenantId, userInfoGroup.getTenantId())) {
             return R.ok();
         }
@@ -123,10 +130,8 @@ public class UserInfoGroupServiceImpl implements UserInfoGroupService {
             return R.fail("120113", "该分组中存在用户，请先移除用户后再操作");
         }
         
-        UserInfoGroup delUserInfoGroup = UserInfoGroup.builder().id(id).updateTime(System.currentTimeMillis()).delFlag(CommonConstant.DEL_Y).operator(uid).build();
-        
+        UserInfoGroup delUserInfoGroup = UserInfoGroup.builder().id(id).updateTime(System.currentTimeMillis()).delFlag(CommonConstant.DEL_Y).operator(operator).build();
         int update = userInfoGroupMapper.update(delUserInfoGroup);
-        
         DbUtils.dbOperateSuccessThenHandleCache(update, i -> {
             redisService.delete(CacheConstant.CACHE_USER_GROUP + id);
         });
@@ -135,8 +140,8 @@ public class UserInfoGroupServiceImpl implements UserInfoGroupService {
     }
     
     @Override
-    public R update(UserInfoGroupSaveAndUpdateRequest request, Long uid) {
-        boolean result = redisService.setNx(CacheConstant.CACHE_USER_GROUP_UPDATE_LOCK + uid, "1", 3 * 1000L, false);
+    public R update(UserInfoGroupSaveAndUpdateRequest request, Long operator, Franchisee franchisee) {
+        boolean result = redisService.setNx(CacheConstant.CACHE_USER_GROUP_UPDATE_LOCK + operator, "1", 3 * 1000L, false);
         if (!result) {
             return R.fail("ELECTRICITY.0034", "操作频繁");
         }
@@ -149,7 +154,13 @@ public class UserInfoGroupServiceImpl implements UserInfoGroupService {
             
             String name = request.getName();
             Integer tenantId = TenantContextHolder.getTenantId();
-            
+    
+            // 加盟商校验
+            if (Objects.nonNull(franchisee) && !Objects.equals(franchisee.getId(), oldUserInfo.getFranchiseeId())) {
+                return R.ok();
+            }
+    
+            // 租户校验
             if (!Objects.equals(tenantId, oldUserInfo.getTenantId())) {
                 return R.ok();
             }
@@ -164,7 +175,7 @@ public class UserInfoGroupServiceImpl implements UserInfoGroupService {
             }
             
             oldUserInfo.setName(name);
-            oldUserInfo.setOperator(uid);
+            oldUserInfo.setOperator(operator);
             oldUserInfo.setUpdateTime(System.currentTimeMillis());
             
             int update = userInfoGroupMapper.update(oldUserInfo);
@@ -175,22 +186,22 @@ public class UserInfoGroupServiceImpl implements UserInfoGroupService {
             
             return R.ok(update);
         } finally {
-            redisService.delete(CacheConstant.CACHE_USER_GROUP_UPDATE_LOCK + uid);
+            redisService.delete(CacheConstant.CACHE_USER_GROUP_UPDATE_LOCK + operator);
         }
     }
     
     @Slave
     @Override
-    public List<UserInfoGroupVO> listByPage(UserInfoGroupQuery query) {
-        List<UserInfoGroupVO> pageList = userInfoGroupMapper.selectPage(query);
+    public List<UserInfoGroupBO> listByPage(UserInfoGroupQuery query) {
+        List<UserInfoGroupBO> pageList = userInfoGroupMapper.selectPage(query);
         
         if (CollectionUtils.isEmpty(pageList)) {
             return Collections.emptyList();
         }
         
-        return pageList.stream().peek(userInfoGroupVO -> {
-            userInfoGroupVO.setFranchiseeName(Optional.ofNullable(franchiseeService.queryByIdFromCache(userInfoGroupVO.getFranchiseeId())).orElse(new Franchisee()).getName());
-            userInfoGroupVO.setOperatorName(Optional.ofNullable(userService.queryByUidFromCache(userInfoGroupVO.getOperator())).orElse(new User()).getName());
+        return pageList.stream().peek(userInfoGroupBo -> {
+            userInfoGroupBo.setFranchiseeName(Optional.ofNullable(franchiseeService.queryByIdFromCache(userInfoGroupBo.getFranchiseeId())).orElse(new Franchisee()).getName());
+            userInfoGroupBo.setOperatorName(Optional.ofNullable(userService.queryByUidFromCache(userInfoGroupBo.getOperator())).orElse(new User()).getName());
         }).collect(Collectors.toList());
     }
     
@@ -202,8 +213,8 @@ public class UserInfoGroupServiceImpl implements UserInfoGroupService {
     
     @Slave
     @Override
-    public List<UserInfoGroupIdAndNameVO> listAllGroup(UserInfoGroupQuery query) {
-        List<UserInfoGroupIdAndNameVO> pageList = userInfoGroupMapper.selectAllGroup(query);
+    public List<UserInfoGroupIdAndNameBO> listAllGroup(UserInfoGroupQuery query) {
+        List<UserInfoGroupIdAndNameBO> pageList = userInfoGroupMapper.selectAllGroup(query);
         
         if (CollectionUtils.isEmpty(pageList)) {
             return Collections.emptyList();
@@ -213,7 +224,7 @@ public class UserInfoGroupServiceImpl implements UserInfoGroupService {
     }
     
     @Override
-    public R batchImport(UserInfoGroupBatchImportRequest request, Long uid) {
+    public R batchImport(UserInfoGroupBatchImportRequest request, Long operator) {
         Long franchiseeId = request.getFranchiseeId();
         List<Long> groupIds = request.getGroupIds();
         Set<String> phones = new HashSet<>(JsonUtil.fromJsonArray(request.getJsonPhones(), String.class));
@@ -300,14 +311,14 @@ public class UserInfoGroupServiceImpl implements UserInfoGroupService {
         
         batchImportUserInfoVO.setIsImported(true);
         executorService.execute(() -> {
-            handleBatchImportUserInfo(existsUserGroup, existsPhone, sessionId, franchiseeId, tenantId);
+            handleBatchImportUserInfo(existsUserGroup, existsPhone, sessionId, franchiseeId, tenantId, operator);
         });
         
         return R.ok(batchImportUserInfoVO);
     }
     
     private void handleBatchImportUserInfo(ConcurrentHashSet<UserInfoGroup> existsUserGroup, ConcurrentHashSet<UserInfo> existsPhone, String sessionId, Long franchiseeId,
-            Integer tenantId) {
+            Integer tenantId, Long operator) {
         // 遍历分组
         existsUserGroup.forEach(userGroup -> {
             List<UserInfoGroupDetail> detailList = new ArrayList<>();
@@ -333,7 +344,7 @@ public class UserInfoGroupServiceImpl implements UserInfoGroupService {
                 }
                 
                 UserInfoGroupDetail detail = UserInfoGroupDetail.builder().groupNo(userGroup.getGroupNo()).uid(uid).franchiseeId(franchiseeId).tenantId(tenantId)
-                        .createTime(nowTime).updateTime(nowTime).build();
+                        .createTime(nowTime).updateTime(nowTime).operator(operator).build();
                 
                 detailList.add(detail);
                 
@@ -374,7 +385,7 @@ public class UserInfoGroupServiceImpl implements UserInfoGroupService {
     
     @Slave
     @Override
-    public List<UserInfoGroupVO> listByIds(List<Long> ids) {
+    public List<UserInfoGroupBO> listByIds(List<Long> ids) {
         return userInfoGroupMapper.selectListByIds(ids);
     }
     
