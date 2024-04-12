@@ -3,6 +3,8 @@ package com.xiliulou.electricity.service.impl.car.biz;
 import cn.hutool.core.collection.CollectionUtil;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.bo.userInfoGroup.UserInfoGroupBO;
+import com.xiliulou.electricity.bo.userInfoGroup.UserInfoGroupNamesBO;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.Coupon;
 import com.xiliulou.electricity.entity.Franchisee;
@@ -44,8 +46,6 @@ import com.xiliulou.electricity.service.userinfo.userInfoGroup.UserInfoGroupServ
 import com.xiliulou.electricity.vo.car.CarCouponVO;
 import com.xiliulou.electricity.vo.car.CarRentalPackageVo;
 import com.xiliulou.electricity.vo.userinfo.UserGroupByCarVO;
-import com.xiliulou.electricity.vo.userinfo.UserInfoGroupNamesVO;
-import com.xiliulou.electricity.vo.userinfo.UserInfoGroupVO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.tuple.Triple;
@@ -248,7 +248,7 @@ public class CarRentalPackageBizServiceImpl implements CarRentalPackageBizServic
         
         //根据用户uid查询出对应分组，然后作为条件查询
         UserInfoGroupDetailQuery built = UserInfoGroupDetailQuery.builder().uid(uid).build();
-        List<UserInfoGroupNamesVO> vos = userInfoGroupDetailService.listGroupByUid(built);
+        List<UserInfoGroupNamesBO> vos = userInfoGroupDetailService.listGroupByUid(built);
         
         //如果用户分组有值则为分组用户
         if (!CollectionUtils.isEmpty(vos)) {
@@ -571,7 +571,7 @@ public class CarRentalPackageBizServiceImpl implements CarRentalPackageBizServic
     @Override
     public CarRentalPackageVo buildUserGroupToCarRentalVo(CarRentalPackageVo carRentalPackageVo, List<Long> userGroupIds) {
         if (!CollectionUtils.isEmpty(userGroupIds)) {
-            List<UserInfoGroupVO> infoGroupVOS = userInfoGroupService.listByIds(userGroupIds);
+            List<UserInfoGroupBO> infoGroupVOS = userInfoGroupService.listByIds(userGroupIds);
             if (!CollectionUtils.isEmpty(infoGroupVOS)) {
                 Set<UserGroupByCarVO> collect = infoGroupVOS.stream().map(m -> {
                     UserGroupByCarVO byCarVO = new UserGroupByCarVO();
