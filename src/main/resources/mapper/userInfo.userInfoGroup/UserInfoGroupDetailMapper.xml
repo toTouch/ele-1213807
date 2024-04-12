@@ -11,7 +11,7 @@
         insert into t_user_info_group_detail(group_no, uid, franchisee_id, tenant_id, create_time, update_time, operator)
         values
         <foreach item="item" index="index" collection="detailList" separator=",">
-            (#{item.groupNo},#{item.uid},#{item.franchiseeId}, #{item.tenantId}, #{item.createTime}, #{item.updateTime}), #{item.operator}}
+            (#{item.groupNo},#{item.uid},#{item.franchiseeId}, #{item.tenantId}, #{item.createTime}, #{item.updateTime}, #{item.operator})
         </foreach>
     </insert>
     

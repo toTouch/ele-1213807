@@ -322,7 +322,6 @@ public class UserInfoGroupServiceImpl implements UserInfoGroupService {
         }
         
         batchImportUserInfoVO.setIsImported(true);
-        log.debug("handleBatchImportUserInfo start, sessionId: {}, userInfoGroup: {}, existsPhone: {}", sessionId, userInfoGroup, existsPhone);
         executorService.execute(() -> {
             handleBatchImportUserInfo(userInfoGroup, existsPhone, sessionId, franchiseeId, tenantId, operator);
         });
@@ -350,7 +349,6 @@ public class UserInfoGroupServiceImpl implements UserInfoGroupService {
             Long uid = userInfo.getUid();
             
             UserInfoGroupDetail existDetail = userInfoGroupDetailService.queryByUid(userInfoGroup.getGroupNo(), uid, tenantId);
-            log.debug("handleBatchImportUserInfo start, existDetail: {}", existDetail);
             if (Objects.nonNull(existDetail)) {
                 continue;
             }
@@ -362,7 +360,6 @@ public class UserInfoGroupServiceImpl implements UserInfoGroupService {
             
             size++;
         }
-        log.debug("handleBatchImportUserInfo start, detailList: {}", detailList);
         if (!detailList.isEmpty()) {
             userInfoGroupDetailService.batchInsert(detailList);
         }
