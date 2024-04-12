@@ -1,10 +1,14 @@
 package com.xiliulou.electricity.service.userinfo.userInfoGroup;
 
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.bo.userInfoGroup.UserInfoGroupBO;
+import com.xiliulou.electricity.bo.userInfoGroup.UserInfoGroupIdAndNameBO;
+import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.userInfo.userInfoGroup.UserInfoGroup;
 import com.xiliulou.electricity.query.UserInfoGroupQuery;
 import com.xiliulou.electricity.request.user.UserInfoGroupBatchImportRequest;
 import com.xiliulou.electricity.request.user.UserInfoGroupSaveAndUpdateRequest;
+import com.xiliulou.electricity.vo.userinfo.UserInfoGroupIdAndNameVO;
 import com.xiliulou.electricity.vo.userinfo.UserInfoGroupVO;
 
 import java.util.List;
@@ -16,21 +20,23 @@ import java.util.List;
  */
 public interface UserInfoGroupService {
     
-    R save(UserInfoGroupSaveAndUpdateRequest request, Long uid);
+    R save(UserInfoGroupSaveAndUpdateRequest request, Long operator);
     
-    R update(UserInfoGroupSaveAndUpdateRequest request, Long uid);
+    R update(UserInfoGroupSaveAndUpdateRequest request, Long operator, Franchisee franchisee);
     
-    List<UserInfoGroupVO> listByPage(UserInfoGroupQuery query);
+    List<UserInfoGroupBO> listByPage(UserInfoGroupQuery query);
     
     Integer countTotal(UserInfoGroupQuery query);
     
-    R batchImport(UserInfoGroupBatchImportRequest request, Long uid);
+    R batchImport(UserInfoGroupBatchImportRequest request, Long operator);
     
     UserInfoGroup queryById(Long id);
     
     UserInfoGroup queryByIdFromCache(Long id);
     
-    List<UserInfoGroupVO> listByIds(List<Long> ids);
+    List<UserInfoGroupBO> listByIds(List<Long> ids);
     
-    R remove(Long id, Long uid);
+    R remove(Long id, Long operator, Franchisee franchisee);
+    
+    List<UserInfoGroupIdAndNameBO> listAllGroup(UserInfoGroupQuery query);
 }

@@ -1,6 +1,5 @@
-package com.xiliulou.electricity.entity.userInfo.userInfoGroup;
+package com.xiliulou.electricity.bo.userInfoGroup;
 
-import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -15,8 +14,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@TableName("t_user_info_group_detail")
-public class UserInfoGroupDetail {
+public class UserInfoGroupDetailBO {
     
     /**
      * 主键ID
@@ -32,6 +30,7 @@ public class UserInfoGroupDetail {
      * 用户uid
      */
     private Long uid;
+    
     
     /**
      * 操作账号
@@ -62,4 +61,8 @@ public class UserInfoGroupDetail {
      * 更新时间
      */
     private Long updateTime;
+    
+    private Long groupId;
+    
+    private String groupName;
 }

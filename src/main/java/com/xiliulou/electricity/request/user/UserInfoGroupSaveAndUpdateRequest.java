@@ -19,8 +19,7 @@ public class UserInfoGroupSaveAndUpdateRequest {
     @NotNull(message = "id不能为空", groups = {UpdateGroup.class})
     private Long id;
     
-    @NotNull(message = "加盟商ID不能为空", groups = {CreateGroup.class, UpdateGroup.class})
-    private Long franchiseId;
+    private Long franchiseeId;
     
     @Size(max = 30, message = "分组名称字数超出最大限制30字", groups = {CreateGroup.class, UpdateGroup.class})
     @NotNull(message = "分组名称不能为空")
