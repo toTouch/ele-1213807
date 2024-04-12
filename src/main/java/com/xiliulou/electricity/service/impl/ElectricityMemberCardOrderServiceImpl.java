@@ -1171,6 +1171,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                     Coupon coupon = couponService.queryByIdFromCache(couponId);
                     if (Objects.nonNull(coupon)) {
                         BeanUtils.copyProperties(coupon, couponSearchVo);
+                        couponSearchVo.setId(coupon.getId().longValue());
                         coupons.add(couponSearchVo);
                     }
                 });
