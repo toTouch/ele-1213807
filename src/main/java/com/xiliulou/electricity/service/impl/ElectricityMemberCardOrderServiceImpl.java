@@ -4556,7 +4556,6 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         if (Objects.nonNull(memberCardOrder.getSendCouponId()) && !Objects.equals(memberCardOrder.getSendCouponId(), ElectricityMemberCardOrder.SEND_COUPON_ID_DEFAULT_VALUE)) {
             couponIdSet.add(memberCardOrder.getSendCouponId());
         }
-        
         if (StringUtils.isNotBlank(memberCardOrder.getCouponIds())) {
             couponIdSet.addAll(JsonUtil.fromJsonArray(memberCardOrder.getCouponIds(), Long.class));
         }
