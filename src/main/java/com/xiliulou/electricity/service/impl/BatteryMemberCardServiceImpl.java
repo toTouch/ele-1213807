@@ -62,6 +62,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -863,41 +864,37 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
     }
     
     private void dealCouponSearchVo(Integer couponId, String couponIds, BatteryMemberCardVO batteryMemberCardVO) {
-        
-        List<CouponSearchVo> couponSearchVos = new ArrayList<>();
-        
+        LinkedHashSet<Integer> couponIdSet = new LinkedHashSet<>();
+        ArrayList<CouponSearchVo> couponSearchVos = new ArrayList<>();
+        batteryMemberCardVO.setAmount(BigDecimal.ZERO);
         if (Objects.nonNull(couponId)) {
+            couponIdSet.add(couponId);
+        }
+        if (StringUtils.isNotBlank(couponIds)) {
+            couponIdSet.addAll(JsonUtil.fromJsonArray(couponIds, Integer.class));
+        }
+    
+        couponIdSet.forEach(couponIdFromSet -> {
             CouponSearchVo couponSearchVo = new CouponSearchVo();
-            Coupon coupon = couponService.queryByIdFromCache(couponId);
-            
-            batteryMemberCardVO.setCouponName(Objects.isNull(coupon) ? "" : coupon.getName());
-            batteryMemberCardVO.setAmount(Objects.isNull(coupon) ? null : coupon.getAmount());
-            
+            Coupon coupon = couponService.queryByIdFromCache(couponIdFromSet);
             if (Objects.nonNull(coupon)) {
                 BeanUtils.copyProperties(coupon, couponSearchVo);
+                couponSearchVo.setId(coupon.getId().longValue());
             }
-            couponSearchVos.add(couponSearchVo);
-        }
         
-        if (StringUtils.isNotBlank(couponIds)) {
-            batteryMemberCardVO.setAmount(BigDecimal.ZERO);
-            
-            JsonUtil.fromJsonArray(couponIds, Integer.class).parallelStream().forEach(couponIdFromList -> {
-                CouponSearchVo couponSearchVo = new CouponSearchVo();
-                Coupon coupon = couponService.queryByIdFromCache(couponIdFromList);
-                if (Objects.nonNull(coupon)) {
-                    BeanUtils.copyProperties(coupon, couponSearchVo);
-                }
-                
-                // 兼容旧版本小程序，取优惠金额最大的优惠券的金额与name展示
-                if (Objects.nonNull(couponSearchVo.getAmount()) && couponSearchVo.getAmount().compareTo(batteryMemberCardVO.getAmount()) > 0) {
-                    batteryMemberCardVO.setAmount(couponSearchVo.getAmount());
-                    batteryMemberCardVO.setCouponName(couponSearchVo.getName());
-                }
+            // 兼容旧版本小程序，取优惠金额最大的优惠券的金额与name展示
+            if (Objects.nonNull(couponSearchVo.getAmount()) && couponSearchVo.getAmount().compareTo(batteryMemberCardVO.getAmount()) > 0) {
+                couponSearchVos.add(0, couponSearchVo);
+            }else {
                 couponSearchVos.add(couponSearchVo);
-            });
+            }
+        });
+    
+        if (CollectionUtils.isNotEmpty(couponSearchVos)) {
+            batteryMemberCardVO.setCouponId(couponSearchVos.get(0).getId().intValue());
+            batteryMemberCardVO.setAmount(couponSearchVos.get(0).getAmount());
+            batteryMemberCardVO.setCouponName(couponSearchVos.get(0).getName());
         }
-        
         batteryMemberCardVO.setCoupons(couponSearchVos);
     }
     
