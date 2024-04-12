@@ -885,17 +885,13 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
         
             // 兼容旧版本小程序，取优惠金额最大的优惠券的金额与name展示
             if (Objects.nonNull(couponSearchVo.getAmount()) && couponSearchVo.getAmount().compareTo(batteryMemberCardVO.getAmount()) > 0) {
-                couponSearchVos.add(0, couponSearchVo);
-            }else {
-                couponSearchVos.add(couponSearchVo);
+                batteryMemberCardVO.setCouponId(couponSearchVo.getId().intValue());
+                batteryMemberCardVO.setAmount(couponSearchVo.getAmount());
+                batteryMemberCardVO.setCouponName(couponSearchVo.getName());
             }
+            couponSearchVos.add(couponSearchVo);
         });
-    
-        if (CollectionUtils.isNotEmpty(couponSearchVos)) {
-            batteryMemberCardVO.setCouponId(couponSearchVos.get(0).getId().intValue());
-            batteryMemberCardVO.setAmount(couponSearchVos.get(0).getAmount());
-            batteryMemberCardVO.setCouponName(couponSearchVos.get(0).getName());
-        }
+        
         batteryMemberCardVO.setCoupons(couponSearchVos);
     }
     
