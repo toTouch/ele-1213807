@@ -4,6 +4,7 @@ import cn.hutool.core.util.NumberUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
+import com.xiliulou.electricity.bo.userInfoGroup.UserInfoGroupNamesBO;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
@@ -302,10 +303,10 @@ public class TradeOrderServiceImpl implements TradeOrderService {
             }
             
             // 判断套餐用户分组和用户的用户分组是否匹配
-            List<UserInfoGroupNamesVO> userInfoGroupNamesVOs = userInfoGroupDetailService.listGroupByUid(
+            List<UserInfoGroupNamesBO> userInfoGroupNamesBOs = userInfoGroupDetailService.listGroupByUid(
                     UserInfoGroupDetailQuery.builder().uid(SecurityUtils.getUid()).tenantId(TenantContextHolder.getTenantId()).build());
-            if (CollectionUtils.isNotEmpty(userInfoGroupNamesVOs)) {
-                List<Long> userGroupIds = userInfoGroupNamesVOs.stream().map(UserInfoGroupNamesVO::getGroupId).collect(Collectors.toList());
+            if (CollectionUtils.isNotEmpty(userInfoGroupNamesBOs)) {
+                List<Long> userGroupIds = userInfoGroupNamesBOs.stream().map(UserInfoGroupNamesBO::getGroupId).collect(Collectors.toList());
                 Triple<Boolean, String, Object> triple = userGroupIdFit(userGroupIds, batteryMemberCard);
                 if (!triple.getLeft()) {
                     return triple;
@@ -499,10 +500,10 @@ public class TradeOrderServiceImpl implements TradeOrderService {
             }
     
             // 判断套餐用户分组和用户的用户分组是否匹配
-            List<UserInfoGroupNamesVO> userInfoGroupNamesVOs = userInfoGroupDetailService.listGroupByUid(
+            List<UserInfoGroupNamesBO> userInfoGroupNamesBOs = userInfoGroupDetailService.listGroupByUid(
                     UserInfoGroupDetailQuery.builder().uid(SecurityUtils.getUid()).tenantId(TenantContextHolder.getTenantId()).build());
-            if (CollectionUtils.isNotEmpty(userInfoGroupNamesVOs)) {
-                List<Long> userGroupIds = userInfoGroupNamesVOs.stream().map(UserInfoGroupNamesVO::getGroupId).collect(Collectors.toList());
+            if (CollectionUtils.isNotEmpty(userInfoGroupNamesBOs)) {
+                List<Long> userGroupIds = userInfoGroupNamesBOs.stream().map(UserInfoGroupNamesBO::getGroupId).collect(Collectors.toList());
                 Triple<Boolean, String, Object> triple = userGroupIdFit(userGroupIds, batteryMemberCard);
                 if (triple.getLeft()) {
                     return triple;
@@ -513,16 +514,6 @@ public class TradeOrderServiceImpl implements TradeOrderService {
                 log.warn("BATTERY DEPOSIT WARN! batteryMemberCard is disable,uid={},mid={}", userInfo.getUid(), query.getMemberId());
                 return Triple.of(false, "100275", "电池套餐不可用");
             }
-            
-            //            if (Objects.nonNull(userBatteryDeposit.getBatteryDeposit()) &&  Objects.equals( userBatteryDeposit.getDepositModifyFlag(), UserBatteryDeposit.DEPOSIT_MODIFY_NO) && batteryMemberCard.getDeposit().compareTo(userBatteryDeposit.getBatteryDeposit()) != 0) {
-            //                log.warn("BATTERY DEPOSIT WARN! batteryMemberCard not equals user deposit,uid={},mid={}", userInfo.getUid(), query.getMemberId());
-            //                return Triple.of(false, "100484", "用户押金与电池套餐押金不一致");
-            //            }
-            //
-            //            if (Objects.nonNull(userBatteryDeposit.getBatteryDeposit()) && Objects.equals( userBatteryDeposit.getDepositModifyFlag(),UserBatteryDeposit.DEPOSIT_MODIFY_YES ) && batteryMemberCard.getDeposit().compareTo(userBatteryDeposit.getBeforeModifyDeposit()) != 0) {
-            //                log.warn("BATTERY DEPOSIT WARN! batteryMemberCard not equals user deposit,uid={},mid={}", userInfo.getUid(), query.getMemberId());
-            //                return Triple.of(false, "100484", "用户押金与电池套餐押金不一致");
-            //            }
             
             //判断套餐租赁状态，用户为老用户，套餐类型为新租，则不支持购买
             if (userInfo.getPayCount() > 0 && BatteryMemberCard.RENT_TYPE_NEW.equals(batteryMemberCard.getRentType())) {
