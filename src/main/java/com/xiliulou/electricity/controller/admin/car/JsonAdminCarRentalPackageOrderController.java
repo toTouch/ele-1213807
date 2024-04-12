@@ -4,6 +4,7 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.controller.BasicController;
 import com.xiliulou.electricity.entity.UserInfo;
+import com.xiliulou.electricity.entity.car.CarCouponNamePO;
 import com.xiliulou.electricity.entity.car.CarRentalPackageMemberTermPo;
 import com.xiliulou.electricity.entity.car.CarRentalPackageOrderPo;
 import com.xiliulou.electricity.entity.car.CarRentalPackageOrderRentRefundPo;
@@ -133,10 +134,15 @@ public class JsonAdminCarRentalPackageOrderController extends BasicController {
             }
             
             List<Long> couponIds = carRentalPackageOrder.getCouponIds();
-            List<CarCouponVO> carCouponVOS = couponService.queryListByIdsFromCache(couponIds);
+            List<CarCouponNamePO> carCouponVOS = couponService.queryListByIdsFromCache(couponIds);
+            List<CarCouponVO> collect = carCouponVOS.stream().map(m -> {
+                CarCouponVO couponVO = new CarCouponVO();
+                BeanUtils.copyProperties(m, couponVO);
+                return couponVO;
+            }).collect(Collectors.toList());
             if (!carCouponVOS.isEmpty()){
-                carRentalPackageOrderVO.setCoupons(carCouponVOS);
-                CarCouponVO couponVO = carCouponVOS.stream().max(Comparator.comparing(CarCouponVO::getAmount)).orElse(carCouponVOS.get(0));
+                carRentalPackageOrderVO.setCoupons(collect);
+                CarCouponVO couponVO = collect.stream().max(Comparator.comparing(CarCouponVO::getAmount)).orElse(collect.get(0));
                 carRentalPackageOrderVO.setCouponId(couponVO.getId());
                 carRentalPackageOrderVO.setCouponName(couponVO.getName());
             }
