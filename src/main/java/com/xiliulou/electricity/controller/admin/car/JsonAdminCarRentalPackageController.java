@@ -226,7 +226,7 @@ public class JsonAdminCarRentalPackageController extends BasicController {
         qryModel.setStoreIdList(triple.getMiddle());
         
         if (Objects.nonNull(qryReq.getUserGroupId()) && Objects.nonNull(qryReq.getApplicableType())){
-            return R.fail("110210","不可同时根据系统分组及用户分组查询");
+            return R.ok(Collections.emptyList());
         }
         
         if (StringUtils.isNotBlank(qryReq.getUserGroupId())){
@@ -348,7 +348,7 @@ public class JsonAdminCarRentalPackageController extends BasicController {
         qryModel.setStoreIdList(triple.getMiddle());
         
         if (Objects.nonNull(qryReq.getUserGroupId()) && Objects.nonNull(qryReq.getApplicableType())){
-            return R.fail("110210","不可同时根据系统分组及用户分组查询");
+            return R.ok(0);
         }
         
         if (StringUtils.isNotBlank(qryReq.getUserGroupId())){
