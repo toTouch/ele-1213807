@@ -1,4 +1,4 @@
-package com.xiliulou.electricity.vo.userinfo;
+package com.xiliulou.electricity.bo.userInfoGroup;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -14,7 +14,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 @Data
-public class UserInfoGroupIdAndNameVO {
+public class UserInfoGroupIdAndNameBO {
     
     private Long id;
     

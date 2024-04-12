@@ -1,11 +1,13 @@
 package com.xiliulou.electricity.service.userinfo.userInfoGroup;
 
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.bo.userInfoGroup.UserInfoGroupDetailPageBO;
+import com.xiliulou.electricity.bo.userInfoGroup.UserInfoGroupNamesBO;
+import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.userInfo.userInfoGroup.UserInfoGroupDetail;
 import com.xiliulou.electricity.query.UserInfoGroupDetailQuery;
+import com.xiliulou.electricity.request.user.UserInfoBindGroupRequest;
 import com.xiliulou.electricity.request.user.UserInfoGroupDetailUpdateRequest;
-import com.xiliulou.electricity.vo.userinfo.UserInfoGroupDetailVO;
-import com.xiliulou.electricity.vo.userinfo.UserInfoGroupNamesVO;
 
 import java.util.List;
 
@@ -18,7 +20,7 @@ public interface UserInfoGroupDetailService {
     
     UserInfoGroupDetail queryByUid(String groupNo, Long uid, Integer tenantId);
     
-    List<UserInfoGroupDetailVO> listByPage(UserInfoGroupDetailQuery query);
+    List<UserInfoGroupDetailPageBO> listByPage(UserInfoGroupDetailQuery query);
     
     Integer countTotal(UserInfoGroupDetailQuery query);
     
@@ -26,7 +28,13 @@ public interface UserInfoGroupDetailService {
     
     Integer countUserByGroupId(Long id);
     
-    List<UserInfoGroupNamesVO> listGroupByUid(UserInfoGroupDetailQuery query);
+    Integer countGroupByUid(Long uid);
     
-    R update(UserInfoGroupDetailUpdateRequest request);
+    List<UserInfoGroupNamesBO> listGroupByUid(UserInfoGroupDetailQuery query);
+    
+    List<UserInfoGroupNamesBO> listGroupByUidList(List<Long> uidList);
+    
+    R update(UserInfoGroupDetailUpdateRequest request, Long operator, Franchisee franchisee);
+    
+    R bindGroup(UserInfoBindGroupRequest request, Long operator, Franchisee franchisee);
 }
