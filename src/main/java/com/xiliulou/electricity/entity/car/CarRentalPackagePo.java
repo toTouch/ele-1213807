@@ -1,10 +1,10 @@
 package com.xiliulou.electricity.entity.car;
 
 import cn.hutool.core.collection.CollectionUtil;
-import cn.hutool.core.collection.ListUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.entity.basic.BasicCarPo;
 import com.xiliulou.electricity.enums.ApplicableTypeEnum;
 import com.xiliulou.electricity.enums.RenalPackageConfineEnum;
@@ -16,6 +16,7 @@ import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 
 import java.math.BigDecimal;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 
@@ -212,13 +213,9 @@ public class CarRentalPackagePo extends BasicCarPo {
     
     public List<Long> getCouponIds() {
         if (StrUtil.isNotBlank(this.couponId)) {
-            try {
-                return JSONUtil.parseArray(couponId, true).toList(Long.class);
-            } catch (Throwable e) {
-                log.warn("Coupon group serializer error.");
-            }
+            return JsonUtil.fromJsonArray(this.couponId, Long.class);
         }
-        return ListUtil.empty();
+        return Collections.emptyList();
     }
     
     public void setCouponIds(List<Long> couponId) {
@@ -226,23 +223,15 @@ public class CarRentalPackagePo extends BasicCarPo {
             this.couponId = JSONUtil.createArray().toString();
             return;
         }
-        try {
-            this.couponId = JSONUtil.toJsonStr(new HashSet<>(couponId));
-        } catch (Throwable e) {
-            log.warn("Coupon group deserializer error.");
-        }
+        this.couponId = JsonUtil.toJson(new HashSet<>(couponId));
     }
     
     
     public List<Long> getUserGroupId() {
         if (StrUtil.isNotBlank(this.userGroupIds)) {
-            try {
-                return JSONUtil.parseArray(this.userGroupIds, true).toList(Long.class);
-            } catch (Throwable e) {
-                log.warn("user group serializer error.");
-            }
+            return JsonUtil.fromJsonArray(this.userGroupIds, Long.class);
         }
-        return ListUtil.empty();
+        return Collections.emptyList();
     }
     
     public void setUserGroupId(List<Long> userGroupId) {
@@ -250,10 +239,6 @@ public class CarRentalPackagePo extends BasicCarPo {
             this.userGroupIds = JSONUtil.createArray().toString();
             return;
         }
-        try {
-            this.userGroupIds = JSONUtil.toJsonStr(new HashSet<>(userGroupId));
-        } catch (Throwable e) {
-            log.warn("user group deserializer error.");
-        }
+        this.userGroupIds = JsonUtil.toJson(new HashSet<>(userGroupId));
     }
 }

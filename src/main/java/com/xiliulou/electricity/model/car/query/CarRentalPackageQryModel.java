@@ -189,4 +189,17 @@ public class CarRentalPackageQryModel implements Serializable {
      * </p>
      */
     private List<String> userGroupIds;
+    
+    /**
+     * <p>
+     * Description: 是否为自定义用户
+     * <pre>
+     *     0 -- 系统用户
+     *     1 -- 分组用户
+     * </pre>
+     *
+     * @see YesNoEnum
+     * </p>
+     */
+    private Integer isUserGroup;
 }

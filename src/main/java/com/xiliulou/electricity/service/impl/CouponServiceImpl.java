@@ -16,6 +16,7 @@ import com.xiliulou.electricity.entity.OldUserActivity;
 import com.xiliulou.electricity.entity.ShareActivityRule;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.UserCoupon;
+import com.xiliulou.electricity.entity.car.CarCouponNamePO;
 import com.xiliulou.electricity.entity.car.CarRentalPackagePo;
 import com.xiliulou.electricity.enums.PackageTypeEnum;
 import com.xiliulou.electricity.enums.RentalPackageTypeEnum;
@@ -40,7 +41,6 @@ import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.BatteryMemberCardVO;
 import com.xiliulou.electricity.vo.SearchVo;
 import com.xiliulou.electricity.vo.activity.CouponActivityVO;
-import com.xiliulou.electricity.vo.car.CarCouponVO;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
@@ -457,15 +457,16 @@ public class CouponServiceImpl implements CouponService {
     
     @Slave
     @Override
-    public List<CarCouponVO> queryListByIdsFromCache(List<Long> couponId) {
+    public List<CarCouponNamePO> queryListByIdsFromCache(List<Long> couponId) {
         if (CollectionUtils.isEmpty(couponId)) {
             return ListUtil.empty();
         }
-        List<CarCouponVO> result = new ArrayList<>();
+        
+        List<CarCouponNamePO> result = new ArrayList<>();
         for (Long id : couponId) {
             Coupon coupon = queryByIdFromCache(id.intValue());
             if (!Objects.isNull(coupon)) {
-                CarCouponVO couponVO = new CarCouponVO();
+                CarCouponNamePO couponVO = new CarCouponNamePO();
                 couponVO.setName(coupon.getName());
                 couponVO.setId(coupon.getId().longValue());
                 couponVO.setAmount(coupon.getAmount());

@@ -696,33 +696,32 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                 throw new BizException("300003", "套餐不存在");
             }
             
-            //6.1.1 判断用户分组是否包含在购买的套餐中存在
-            Set<Long> packageGroupIds = new HashSet<>();
-            if (!CollectionUtils.isEmpty(buyPackageEntity.getUserGroupId())) {
-                packageGroupIds.addAll(buyPackageEntity.getUserGroupId());
-            }
-            
-            try {
-                packageGroupIds.retainAll(groupIds);
-                if (packageGroupIds.isEmpty()) {
-                    throw new BizException("100317", "用户与套餐关联的用户分组不一致，请刷新重试");
-                }
-            } catch (NullPointerException e) {
-                log.error("User group or package user group is empty:", e);
-            }
-            
             // 6.2 套餐上下架状态
             if (UpDownEnum.DOWN.getCode().equals(buyPackageEntity.getStatus())) {
                 throw new BizException("300004", "套餐已下架");
             }
             
             //如果是系统分组
-            if (Objects.equals(buyPackageEntity.getIsUserGroup(),YesNoEnum.YES.getCode())){
+            if (Objects.equals(buyPackageEntity.getIsUserGroup(), YesNoEnum.YES.getCode())) {
                 // 6.3 判定用户是否是老用户，然后和套餐的适用类型做比对
                 Boolean oldUserFlag = userBizService.isOldUser(tenantId, uid);
                 if (oldUserFlag && !ApplicableTypeEnum.oldUserApplicable().contains(buyPackageEntity.getApplicableType())) {
                     log.warn("bindingPackage failed. Package type mismatch. Buy package type is {}, user is old", buyPackageEntity.getApplicableType());
                     throw new BizException("300005", "套餐不匹配");
+                }
+            }
+            
+            //6.3.1 判断用户分组是否包含在购买的套餐中存在
+            if (Objects.equals(buyPackageEntity.getIsUserGroup(), YesNoEnum.NO.getCode())) {
+                Set<Long> packageGroupIds = new HashSet<>();
+                if (!CollectionUtils.isEmpty(buyPackageEntity.getUserGroupId())) {
+                    packageGroupIds.addAll(buyPackageEntity.getUserGroupId());
+                }
+                
+                packageGroupIds.retainAll(groupIds);
+                if (packageGroupIds.isEmpty()) {
+                    log.warn("Binding package failed because the user's group has changed:{}", groupIds);
+                    throw new BizException("100318", "您浏览的套餐已下架，请看看其他的吧");
                 }
             }
             
@@ -2580,28 +2579,13 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                 return R.fail("300003", "套餐不存在");
             }
             
-            //6.1.1 判断用户分组是否包含在购买的套餐中存在
-            Set<Long> packageGroupIds = new HashSet<>();
-            if (!CollectionUtils.isEmpty(buyPackageEntity.getUserGroupId())) {
-                packageGroupIds.addAll(buyPackageEntity.getUserGroupId());
-            }
-            
-            try {
-                packageGroupIds.retainAll(groupIds);
-                if (packageGroupIds.isEmpty()) {
-                    return R.fail("100318", "您浏览的套餐已下架，请看看其他的吧");
-                }
-            } catch (NullPointerException e) {
-                log.error("User group or package user group is empty:", e);
-            }
-            
             // 6.2 套餐上下架状态
             if (UpDownEnum.DOWN.getCode().equals(buyPackageEntity.getStatus())) {
                 return R.fail("300004", "套餐已下架");
             }
             
-            //判断用户是否为系统分组
-            if (Objects.equals(buyPackageEntity.getIsUserGroup(),YesNoEnum.YES.getCode())){
+            //判断套餐是否为系统分组
+            if (Objects.equals(buyPackageEntity.getIsUserGroup(), YesNoEnum.YES.getCode())) {
                 // 6.3 判定用户是否是老用户，然后和套餐的适用类型做比对
                 Boolean oldUserFlag = userBizService.isOldUser(tenantId, uid);
                 if (oldUserFlag && !ApplicableTypeEnum.oldUserApplicable().contains(buyPackageEntity.getApplicableType())) {
@@ -2610,6 +2594,19 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                 }
             }
             
+            //6.3.1 判断用户分组是否包含在购买的套餐中存在
+            if (Objects.equals(buyPackageEntity.getIsUserGroup(), YesNoEnum.NO.getCode())) {
+                Set<Long> packageGroupIds = new HashSet<>();
+                if (!CollectionUtils.isEmpty(buyPackageEntity.getUserGroupId())) {
+                    packageGroupIds.addAll(buyPackageEntity.getUserGroupId());
+                }
+                //取交集,不存在则表示发生变动
+                packageGroupIds.retainAll(groupIds);
+                if (packageGroupIds.isEmpty()) {
+                    log.warn("buy package failed because the user's group has changed:{}", groupIds);
+                    return R.fail("100318", "您浏览的套餐已下架，请看看其他的吧");
+                }
+            }
             
             // 7. 判定套餐互斥
             // 7.1 车或者电与车电一体互斥

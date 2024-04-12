@@ -1,10 +1,9 @@
 package com.xiliulou.electricity.entity.car;
 
 import cn.hutool.core.collection.CollectionUtil;
-import cn.hutool.core.collection.ListUtil;
-import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.entity.basic.BasicCarPo;
 import com.xiliulou.electricity.enums.ApplicableTypeEnum;
 import com.xiliulou.electricity.enums.PayStateEnum;
@@ -16,8 +15,10 @@ import com.xiliulou.electricity.enums.UseStateEnum;
 import com.xiliulou.electricity.enums.YesNoEnum;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 
 import java.math.BigDecimal;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 
@@ -212,14 +213,10 @@ public class CarRentalPackageOrderPo extends BasicCarPo {
     private BigDecimal rentalPackageDeposit;
     
     public List<Long> getCouponIds() {
-        if (StrUtil.isNotBlank(this.couponId)) {
-            try {
-                return JSONUtil.parseArray(couponId, true).toList(Long.class);
-            } catch (Throwable e) {
-                log.warn("Coupon group conversion error.");
-            }
+        if (StringUtils.isNotBlank(this.couponId)) {
+            return JsonUtil.fromJsonArray(this.couponId, Long.class);
         }
-        return ListUtil.empty();
+        return Collections.emptyList();
     }
     
     public void setCouponIds(List<Long> couponId) {
@@ -227,10 +224,6 @@ public class CarRentalPackageOrderPo extends BasicCarPo {
             this.couponId = JSONUtil.createArray().toString();
             return;
         }
-        try {
-            this.couponId = JSONUtil.toJsonStr(new HashSet<>(couponId));
-        } catch (Throwable e) {
-            log.warn("Coupon group serializer error.");
-        }
+        this.couponId = JsonUtil.toJson(new HashSet<>(couponId));
     }
 }

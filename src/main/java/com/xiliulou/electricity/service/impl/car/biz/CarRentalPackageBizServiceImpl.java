@@ -8,6 +8,7 @@ import com.xiliulou.electricity.entity.Coupon;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.UserCoupon;
 import com.xiliulou.electricity.entity.UserInfo;
+import com.xiliulou.electricity.entity.car.CarCouponNamePO;
 import com.xiliulou.electricity.entity.car.CarRentalPackageCarBatteryRelPo;
 import com.xiliulou.electricity.entity.car.CarRentalPackageDepositPayPo;
 import com.xiliulou.electricity.entity.car.CarRentalPackageMemberTermPo;
@@ -67,6 +68,9 @@ import java.util.Set;
 import java.util.StringJoiner;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+
+import static com.xiliulou.electricity.model.car.opt.CarRentalPackageOptModel.COUPON_MAX_LIMIT;
+import static com.xiliulou.electricity.model.car.opt.CarRentalPackageOptModel.USER_GROUP_MAX_LIMIT;
 
 /**
  * 租赁套餐相关的业务聚合 BizServiceImpl
@@ -248,10 +252,12 @@ public class CarRentalPackageBizServiceImpl implements CarRentalPackageBizServic
         
         //如果用户分组有值则为分组用户
         if (!CollectionUtils.isEmpty(vos)) {
-            List<String> collect = vos.stream().map(m->String.valueOf(m.getGroupId())).distinct().collect(Collectors.toList());
+            List<String> collect = vos.stream().map(m -> String.valueOf(m.getGroupId())).distinct().collect(Collectors.toList());
             qryModel.setUserGroupIds(collect);
-        }else {
+            qryModel.setIsUserGroup(YesNoEnum.NO.getCode());
+        } else {
             //反之则为系统用户
+            qryModel.setIsUserGroup(YesNoEnum.YES.getCode());
             qryModel.setApplicableTypeList(oldUserFlag ? ApplicableTypeEnum.oldUserApplicable() : ApplicableTypeEnum.newUserApplicable());
         }
         
@@ -357,22 +363,24 @@ public class CarRentalPackageBizServiceImpl implements CarRentalPackageBizServic
             throw new BizException("300022", "套餐名称已存在");
         }
         
-        if (Objects.equals(optModel.getGiveCoupon(), YesNoEnum.YES.getCode()) && (CollectionUtil.isEmpty(optModel.getCouponIds()) || optModel.getCouponIds().size() > 6)) {
+        if (Objects.equals(optModel.getGiveCoupon(), YesNoEnum.YES.getCode()) && (CollectionUtil.isEmpty(optModel.getCouponIds())
+                || optModel.getCouponIds().size() > COUPON_MAX_LIMIT)) {
             throw new BizException("300833", "优惠劵最多支持发6张");
         }
         
-        if (Objects.equals(optModel.getIsUserGroup(),YesNoEnum.NO.getCode()) && (CollectionUtil.isEmpty(optModel.getUserGroupIds()) || optModel.getUserGroupIds().size() > 6)){
+        if (Objects.equals(optModel.getIsUserGroup(), YesNoEnum.NO.getCode()) && (CollectionUtil.isEmpty(optModel.getUserGroupIds())
+                || optModel.getUserGroupIds().size() > USER_GROUP_MAX_LIMIT)) {
             throw new BizException("300834", "用户分组最多支持选10个");
         }
         
         // 新增租车套餐
         CarRentalPackagePo entity = new CarRentalPackagePo();
-        BeanUtils.copyProperties(optModel, entity, "couponId","couponIds", "userGroupIds");
+        BeanUtils.copyProperties(optModel, entity, "couponId", "couponIds", "userGroupIds");
         List<Long> couponIds = new ArrayList<>();
-        if (!Objects.isNull(optModel.getCouponId())){
+        if (!Objects.isNull(optModel.getCouponId())) {
             couponIds.add(optModel.getCouponId());
         }
-        if (!CollectionUtils.isEmpty(optModel.getCouponIds())){
+        if (!CollectionUtils.isEmpty(optModel.getCouponIds())) {
             couponIds.addAll(optModel.getCouponIds());
         }
         entity.setCouponIds(couponIds);
@@ -416,6 +424,7 @@ public class CarRentalPackageBizServiceImpl implements CarRentalPackageBizServic
         carRentalPackageCarBatteryRelService.batchInsert(carBatteryRelEntityList);
         
         // 2. 调用租电套餐设置接口
+        //todo 此版本不需要这块租电套餐
         BatteryMemberCard batteryMemberCard = buildBatteryMemberCardEntity(entity);
         batteryMemberCardService.insertBatteryMemberCardAndBatteryType(batteryMemberCard, batteryModelTypes);
         
@@ -538,11 +547,19 @@ public class CarRentalPackageBizServiceImpl implements CarRentalPackageBizServic
     @Override
     public CarRentalPackageVo buildCouponsToCarRentalVo(CarRentalPackageVo carRentalPackageVo, List<Long> couponIds) {
         if (!Objects.isNull(carRentalPackageVo) && !CollectionUtils.isEmpty(couponIds)) {
-            List<CarCouponVO> list = couponService.queryListByIdsFromCache(couponIds);
-            carRentalPackageVo.setCoupons(list);
+            List<CarCouponNamePO> list = couponService.queryListByIdsFromCache(couponIds);
+            //转化PO到VO
+            List<CarCouponVO> collect = list.stream().map(m -> {
+                CarCouponVO couponVO = new CarCouponVO();
+                BeanUtils.copyProperties(m, couponVO);
+                return couponVO;
+            }).collect(Collectors.toList());
+            
+            carRentalPackageVo.setCoupons(collect);
             carRentalPackageVo.setCouponIds(couponIds);
-            if (!CollectionUtils.isEmpty(list)) {
-                CarCouponVO couponVO = list.stream().max(Comparator.comparing(CarCouponVO::getAmount)).orElse(list.get(0));
+            
+            if (!CollectionUtils.isEmpty(collect)) {
+                CarCouponVO couponVO = collect.stream().max(Comparator.comparing(CarCouponVO::getAmount)).orElse(collect.get(0));
                 carRentalPackageVo.setCouponName(couponVO.getName());
                 carRentalPackageVo.setGiveCouponAmount(couponVO.getAmount());
                 carRentalPackageVo.setCouponId(couponVO.getId());
@@ -562,7 +579,7 @@ public class CarRentalPackageBizServiceImpl implements CarRentalPackageBizServic
                     byCarVO.setName(m.getGroupName());
                     return byCarVO;
                 }).collect(Collectors.toSet());
-                carRentalPackageVo.setUserGroupName(collect);
+                carRentalPackageVo.setUserGroups(collect);
             }
         }
         return carRentalPackageVo;

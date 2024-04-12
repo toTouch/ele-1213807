@@ -234,7 +234,7 @@ public class CarRentalPackageVo implements Serializable {
     /**
      * 用户组名称
      */
-    private Set<UserGroupByCarVO> userGroupName;
+    private Set<UserGroupByCarVO> userGroups;
     
     /**
      * 套餐排序参数

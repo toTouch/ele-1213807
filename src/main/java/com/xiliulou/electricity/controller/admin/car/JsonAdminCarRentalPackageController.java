@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.controller.admin.car;
 
+import cn.hutool.core.collection.CollectionUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.controller.BasicController;
@@ -11,6 +12,7 @@ import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.car.CarRentalPackageCarBatteryRelPo;
 import com.xiliulou.electricity.entity.car.CarRentalPackagePo;
 import com.xiliulou.electricity.enums.RentalPackageTypeEnum;
+import com.xiliulou.electricity.enums.YesNoEnum;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.model.car.opt.CarRentalPackageOptModel;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageQryModel;
@@ -57,6 +59,9 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import static com.xiliulou.electricity.model.car.opt.CarRentalPackageOptModel.COUPON_MAX_LIMIT;
+import static com.xiliulou.electricity.model.car.opt.CarRentalPackageOptModel.USER_GROUP_MAX_LIMIT;
 
 /**
  * 租车套餐表 Controller
@@ -220,6 +225,18 @@ public class JsonAdminCarRentalPackageController extends BasicController {
         qryModel.setFranchiseeIdList(triple.getLeft());
         qryModel.setStoreIdList(triple.getMiddle());
         
+        if (Objects.nonNull(qryReq.getUserGroupId()) && Objects.nonNull(qryReq.getApplicableType())){
+            return R.fail("110210","不可同时根据系统分组及用户分组查询");
+        }
+        
+        if (StringUtils.isNotBlank(qryReq.getUserGroupId())){
+            qryModel.setIsUserGroup(YesNoEnum.NO.getCode());
+        }
+        
+        if (!Objects.isNull(qryReq.getApplicableType())){
+            qryModel.setIsUserGroup(YesNoEnum.YES.getCode());
+        }
+        
         // 调用服务
         List<CarRentalPackagePo> carRentalPackageEntityList = carRentalPackageService.page(qryModel);
         if (ObjectUtils.isEmpty(carRentalPackageEntityList)) {
@@ -330,6 +347,18 @@ public class JsonAdminCarRentalPackageController extends BasicController {
         qryModel.setFranchiseeIdList(triple.getLeft());
         qryModel.setStoreIdList(triple.getMiddle());
         
+        if (Objects.nonNull(qryReq.getUserGroupId()) && Objects.nonNull(qryReq.getApplicableType())){
+            return R.fail("110210","不可同时根据系统分组及用户分组查询");
+        }
+        
+        if (StringUtils.isNotBlank(qryReq.getUserGroupId())){
+            qryModel.setIsUserGroup(YesNoEnum.NO.getCode());
+        }
+        
+        if (!Objects.isNull(qryReq.getApplicableType())){
+            qryModel.setIsUserGroup(YesNoEnum.YES.getCode());
+        }
+        
         // 调用服务
         return R.ok(carRentalPackageService.count(qryModel));
     }
@@ -432,6 +461,14 @@ public class JsonAdminCarRentalPackageController extends BasicController {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             throw new BizException("ELECTRICITY.0001", "未找到用户");
+        }
+        
+        if (Objects.equals(optModel.getGiveCoupon(), YesNoEnum.YES.getCode()) && (CollectionUtil.isEmpty(optModel.getCouponIds()) || optModel.getCouponIds().size() > COUPON_MAX_LIMIT)) {
+            throw new BizException("300833", "优惠劵最多支持发6张");
+        }
+        
+        if (Objects.equals(optModel.getIsUserGroup(), YesNoEnum.NO.getCode()) && (CollectionUtil.isEmpty(optModel.getUserGroupIds()) || optModel.getUserGroupIds().size() > USER_GROUP_MAX_LIMIT)) {
+            throw new BizException("300834", "用户分组最多支持选10个");
         }
         
         optModel.setTenantId(tenantId);

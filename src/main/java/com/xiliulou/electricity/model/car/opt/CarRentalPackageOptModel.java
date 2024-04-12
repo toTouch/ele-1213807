@@ -262,9 +262,16 @@ public class CarRentalPackageOptModel implements Serializable {
      * <pre>
      *        0 -- 系统分组
      *        1 -- 自定义分组
-     *    </pre>
+     * </pre>
+     *
+     * @see YesNoEnum
      * </p>
      */
     @NotNull(message = "[可见用户]不能为空")
     private Integer isUserGroup;
+    
+    
+    public static final Integer COUPON_MAX_LIMIT = 6;
+    
+    public static final Integer USER_GROUP_MAX_LIMIT = 10;
 }
