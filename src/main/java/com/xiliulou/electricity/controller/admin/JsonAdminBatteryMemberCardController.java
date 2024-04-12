@@ -87,6 +87,10 @@ public class JsonAdminBatteryMemberCardController extends BaseController {
             @RequestParam(value = "businessType", required = false) Integer businessType, @RequestParam(value = "name", required = false) String name,
             @RequestParam(value = "userGroupId", required = false) Long userGroupId) {
         
+        if (Objects.nonNull(rentType) && Objects.nonNull(userGroupId)) {
+            return R.fail("110210", "不可同时根据系统分组及用户分组查询");
+        }
+        
         if (size < 0 || size > 50) {
             size = 10L;
         }

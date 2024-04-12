@@ -27,6 +27,9 @@
         <result property="tenantId" column="tenant_id" jdbcType="INTEGER"/>
         <result property="createTime" column="create_time" jdbcType="INTEGER"/>
         <result property="updateTime" column="update_time" jdbcType="INTEGER"/>
+        <result property="groupType" column="group_type" jdbcType="INTEGER"/>
+        <result property="couponIds" column="coupon_ids"/>
+        <result property="userInfoGroupIds" column="user_info_group_ids"/>
     </resultMap>
     
     <resultMap type="com.xiliulou.electricity.vo.BatteryMemberCardAndTypeVO" id="BatteryMemberCardTypeMap">
@@ -54,6 +57,9 @@
         <result property="tenantId" column="tenant_id" jdbcType="INTEGER"/>
         <result property="createTime" column="create_time" jdbcType="INTEGER"/>
         <result property="updateTime" column="update_time" jdbcType="INTEGER"/>
+        <result property="groupType" column="group_type" jdbcType="INTEGER"/>
+        <result property="couponIds" column="coupon_ids"/>
+        <result property="userInfoGroupIds" column="user_info_group_ids"/>
         <collection property="batteryType" javaType="java.util.List" ofType="com.xiliulou.electricity.entity.MemberCardBatteryType">
             <id property="id" column="mcbt_id" jdbcType="INTEGER"/>
             <result property="batteryType" column="battery_type" jdbcType="VARCHAR"/>
@@ -132,7 +138,7 @@
         select
         id, name, deposit, rent_price, rent_price_unit, valid_days, rent_unit, franchisee_id, rent_type, send_coupon,
         status, limit_count, use_count, coupon_id, is_refund, refund_limit, free_deposite,
-        service_charge, remark, business_type, del_flag, tenant_id, create_time, update_time
+        service_charge, remark, business_type, del_flag, tenant_id, create_time, update_time, group_type, coupon_ids, user_info_group_ids
         from t_battery_member_card
         <where>
             <if test="businessType != null">

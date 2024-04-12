@@ -412,7 +412,6 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
             if (Objects.equals(item.getSendCoupon(), BatteryMemberCard.SEND_COUPON_YES)) {
                 List<CouponSearchVo> coupons = new ArrayList<>();
                 HashSet<Integer> couponIdsSet = new HashSet<>();
-        
                 if (Objects.nonNull(item.getCouponId())) {
                     couponIdsSet.add(item.getCouponId());
                 }
@@ -421,12 +420,12 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
                 }
         
                 if (!CollectionUtils.isEmpty(couponIdsSet)) {
-                    CouponSearchVo couponSearchVo = new CouponSearchVo();
                     couponIdsSet.forEach(couponId -> {
-                
+                        CouponSearchVo couponSearchVo = new CouponSearchVo();
                         Coupon coupon = couponService.queryByIdFromCache(couponId);
                         if (Objects.nonNull(coupon)) {
                             BeanUtils.copyProperties(coupon, couponSearchVo);
+                            couponSearchVo.setId(coupon.getId().longValue());
                             coupons.add(couponSearchVo);
                         }
                     });
@@ -436,18 +435,17 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
     
             // 设置用户分组
             if (StringUtils.isNotBlank(item.getUserInfoGroupIds())) {
-                List<SearchVo> userGroups = new ArrayList<>();
+                List<SearchVo> userInfoGroups = new ArrayList<>();
         
                 JsonUtil.fromJsonArray(item.getUserInfoGroupIds(), Long.class).forEach(userGroupId -> {
                     SearchVo searchVo = new SearchVo();
-            
                     UserInfoGroup userInfoGroup = userInfoGroupService.queryByIdFromCache(userGroupId);
                     if (Objects.nonNull(userInfoGroup)) {
                         BeanUtils.copyProperties(userInfoGroup, searchVo);
-                        userGroups.add(searchVo);
+                        userInfoGroups.add(searchVo);
                     }
                 });
-                batteryMemberCardVO.setUserInfoGroups(userGroups);
+                batteryMemberCardVO.setUserInfoGroups(userInfoGroups);
             }
 
             return batteryMemberCardVO;
@@ -757,9 +755,13 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
         batteryMemberCardUpdate.setServiceCharge(query.getServiceCharge());
         batteryMemberCardUpdate.setRemark(query.getRemark());
         batteryMemberCardUpdate.setUpdateTime(System.currentTimeMillis());
-        batteryMemberCardUpdate.setCouponIds(CollectionUtils.isEmpty(query.getCouponIdsTransfer()) ? null : JsonUtil.toJson(query.getCouponIdsTransfer()));
         batteryMemberCardUpdate.setUserInfoGroupIds(CollectionUtils.isEmpty(query.getUserInfoGroupIdsTransfer()) ? null : JsonUtil.toJson(query.getUserInfoGroupIdsTransfer()));
         batteryMemberCardUpdate.setGroupType(query.getGroupType());
+        if (Objects.equals(query.getSendCoupon(), BatteryMemberCard.SEND_COUPON_NO)) {
+            batteryMemberCardUpdate.setCouponIds(null);
+        } else {
+            batteryMemberCardUpdate.setCouponIds(CollectionUtils.isEmpty(query.getCouponIdsTransfer()) ? null : JsonUtil.toJson(query.getCouponIdsTransfer()));
+        }
 
         this.update(batteryMemberCardUpdate);
 
@@ -797,17 +799,16 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
 
         BatteryMemberCard batteryMemberCard = new BatteryMemberCard();
         BeanUtils.copyProperties(query, batteryMemberCard);
-        
-        if (Objects.equals(query.getSendCoupon(), BatteryMemberCard.SEND_COUPON_NO)) {
-            query.setCouponIdsTransfer(null);
-        }
-        
         batteryMemberCard.setDelFlag(BatteryMemberCard.DEL_NORMAL);
         batteryMemberCard.setCreateTime(System.currentTimeMillis());
         batteryMemberCard.setUpdateTime(System.currentTimeMillis());
         batteryMemberCard.setTenantId(TenantContextHolder.getTenantId());
         batteryMemberCard.setUserInfoGroupIds(CollectionUtils.isEmpty(query.getUserInfoGroupIdsTransfer()) ? null : JsonUtil.toJson(query.getUserInfoGroupIdsTransfer()));
-        batteryMemberCard.setCouponIds(CollectionUtils.isEmpty(query.getCouponIdsTransfer()) ? null : JsonUtil.toJson(query.getCouponIdsTransfer()));
+        if (Objects.equals(query.getSendCoupon(), BatteryMemberCard.SEND_COUPON_NO)) {
+            batteryMemberCard.setCouponIds(null);
+        } else {
+            batteryMemberCard.setCouponIds(CollectionUtils.isEmpty(query.getCouponIdsTransfer()) ? null : JsonUtil.toJson(query.getCouponIdsTransfer()));
+        }
         
         //适配企业渠道添加套餐业务
         if(Objects.isNull(query.getBusinessType())){
