@@ -111,6 +111,40 @@ public class JsonAdminUserInfoGroupDetailController extends BasicController {
     }
     
     /**
+     * 分页总数
+     */
+    @GetMapping("/admin/userInfo/userInfoGroupDetail/pageCount")
+    public R pageCount(@RequestParam(value = "uid", required = false) Long uid, @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
+            @RequestParam(value = "groupId", required = false) Long groupId) {
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELE ERROR! not found user");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        
+        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE) || Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE))) {
+            return R.fail("ELECTRICITY.0066", "用户权限不足");
+        }
+        
+        List<Long> franchiseeIds = new ArrayList<>();
+        if (Objects.nonNull(franchiseeId)) {
+            franchiseeIds.add(franchiseeId);
+        }
+        
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if (CollectionUtils.isEmpty(franchiseeIds)) {
+                return R.ok(Collections.emptyList());
+            }
+        }
+        
+        UserInfoGroupDetailQuery query = UserInfoGroupDetailQuery.builder().tenantId(TenantContextHolder.getTenantId()).franchiseeIds(franchiseeIds).groupId(groupId).uid(uid)
+                .build();
+        
+        return R.ok(userInfoGroupDetailService.countTotal(query));
+    }
+    
+    /**
      * 根据uid查询分组列表
      */
     @GetMapping("/admin/userInfo/userInfoGroupDetail/listGroupByUid")
@@ -161,40 +195,6 @@ public class JsonAdminUserInfoGroupDetailController extends BasicController {
         }
         
         return R.ok(result);
-    }
-    
-    /**
-     * 分页总数
-     */
-    @GetMapping("/admin/userInfo/userInfoGroupDetail/pageCount")
-    public R pageCount(@RequestParam(value = "uid", required = false) Long uid, @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
-            @RequestParam(value = "groupId", required = false) Long groupId) {
-        TokenUser user = SecurityUtils.getUserInfo();
-        if (Objects.isNull(user)) {
-            log.error("ELE ERROR! not found user");
-            return R.fail("ELECTRICITY.0001", "未找到用户");
-        }
-        
-        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE) || Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE))) {
-            return R.fail("ELECTRICITY.0066", "用户权限不足");
-        }
-        
-        List<Long> franchiseeIds = new ArrayList<>();
-        if (Objects.nonNull(franchiseeId)) {
-            franchiseeIds.add(franchiseeId);
-        }
-        
-        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
-            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
-            if (CollectionUtils.isEmpty(franchiseeIds)) {
-                return R.ok(Collections.emptyList());
-            }
-        }
-        
-        UserInfoGroupDetailQuery query = UserInfoGroupDetailQuery.builder().tenantId(TenantContextHolder.getTenantId()).franchiseeIds(franchiseeIds).groupId(groupId).uid(uid)
-                .build();
-        
-        return R.ok(userInfoGroupDetailService.countTotal(query));
     }
     
     /**

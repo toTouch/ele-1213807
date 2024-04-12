@@ -25,6 +25,7 @@ import com.xiliulou.electricity.service.userinfo.userInfoGroup.UserInfoGroupServ
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.MapUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -79,8 +80,12 @@ public class UserInfoGroupDetailServiceImpl implements UserInfoGroupDetailServic
         List<Long> uidList = list.stream().map(UserInfoGroupDetailBO::getUid).collect(Collectors.toList());
         List<UserInfoGroupNamesBO> listByUidList = this.listGroupByUidList(uidList);
         // 根据uid进行分组
-        Map<Long, List<UserInfoGroupNamesBO>> groupMap = listByUidList.stream().collect(Collectors.groupingBy(UserInfoGroupNamesBO::getUid));
+        Map<Long, List<UserInfoGroupNamesBO>> groupMap = null;
+        if (CollectionUtils.isNotEmpty(listByUidList)) {
+            groupMap = listByUidList.stream().collect(Collectors.groupingBy(UserInfoGroupNamesBO::getUid));
+        }
         
+        Map<Long, List<UserInfoGroupNamesBO>> finalGroupMap = groupMap;
         return list.stream().filter(Objects::nonNull).map(item -> {
             UserInfoGroupDetailPageBO detailBO = new UserInfoGroupDetailPageBO();
             Long uid = item.getUid();
@@ -96,14 +101,16 @@ public class UserInfoGroupDetailServiceImpl implements UserInfoGroupDetailServic
             detailBO.setUpdateTime(item.getUpdateTime());
             
             List<UserInfoGroupIdAndNameBO> groups = new ArrayList<>();
-            groupMap.forEach((k, v) -> {
-                if (k.equals(uid)) {
-                    v.forEach(i -> {
-                        UserInfoGroupIdAndNameBO idAndNameBO = UserInfoGroupIdAndNameBO.builder().id(i.getGroupId()).name(i.getGroupName()).groupNo(i.getGroupNo()).build();
-                        groups.add(idAndNameBO);
-                    });
-                }
-            });
+            if (MapUtils.isNotEmpty(finalGroupMap)) {
+                finalGroupMap.forEach((k, v) -> {
+                    if (k.equals(uid)) {
+                        v.forEach(i -> {
+                            UserInfoGroupIdAndNameBO idAndNameBO = UserInfoGroupIdAndNameBO.builder().id(i.getGroupId()).name(i.getGroupName()).groupNo(i.getGroupNo()).build();
+                            groups.add(idAndNameBO);
+                        });
+                    }
+                });
+            }
             
             detailBO.setGroups(groups);
             
@@ -282,7 +289,7 @@ public class UserInfoGroupDetailServiceImpl implements UserInfoGroupDetailServic
             return R.fail("120114", "用户绑定的分组数量已达上限10个");
         }
         
-        List<Long> filterGroupIds = null;
+        List<Long> filterGroupIds = groupIds;
         UserInfoGroupDetailQuery query = UserInfoGroupDetailQuery.builder().tenantId(tenantId).uid(uid).build();
         List<UserInfoGroupNamesBO> userInfoGroupNamesList = userInfoGroupDetailMapper.selectListGroupByUid(query);
         if (CollectionUtils.isNotEmpty(userInfoGroupNamesList)) {

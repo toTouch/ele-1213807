@@ -23,6 +23,8 @@ public interface UserInfoGroupDetailMapper {
     
     List<UserInfoGroupNamesBO> selectListGroupByUid(UserInfoGroupDetailQuery query);
     
+    List<UserInfoGroupNamesBO> selectListGroupByUidList(@Param("uidList") List<Long> uidList);
+    
     Integer batchInsert(@Param("detailList") List<UserInfoGroupDetail> detailList);
     
     Integer countUserByGroupId(Long id);
@@ -31,5 +33,4 @@ public interface UserInfoGroupDetailMapper {
     
     Integer deleteByUidAndGroupNoList(@Param("uid") Long uid, @Param("groupNoList") List<String> groupNoList);
     
-    List<UserInfoGroupNamesBO> selectListGroupByUidList(@Param("uidList") List<Long> uidList);
 }
