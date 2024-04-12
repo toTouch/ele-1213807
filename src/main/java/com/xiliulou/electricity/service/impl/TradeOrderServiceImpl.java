@@ -304,7 +304,7 @@ public class TradeOrderServiceImpl implements TradeOrderService {
             
             // 判断套餐用户分组和用户的用户分组是否匹配
             List<UserInfoGroupNamesBO> userInfoGroupNamesBOs = userInfoGroupDetailService.listGroupByUid(
-                    UserInfoGroupDetailQuery.builder().uid(SecurityUtils.getUid()).tenantId(TenantContextHolder.getTenantId()).build());
+                    UserInfoGroupDetailQuery.builder().uid(userInfo.getUid()).tenantId(TenantContextHolder.getTenantId()).build());
             if (CollectionUtils.isNotEmpty(userInfoGroupNamesBOs)) {
                 List<Long> userGroupIds = userInfoGroupNamesBOs.stream().map(UserInfoGroupNamesBO::getGroupId).collect(Collectors.toList());
                 Triple<Boolean, String, Object> triple = userGroupIdFit(userGroupIds, batteryMemberCard);
@@ -1121,7 +1121,7 @@ public class TradeOrderServiceImpl implements TradeOrderService {
     private Triple<Boolean, String, Object> userGroupIdFit(List<Long> userGroupIds, BatteryMemberCard batteryMemberCard) {
         if (StringUtils.isNotBlank(batteryMemberCard.getUserInfoGroupIds())) {
             HashSet<Long> memberCardUserGroupIds = new HashSet<>(JsonUtil.fromJsonArray(batteryMemberCard.getUserInfoGroupIds(), Long.class));
-            if (!memberCardUserGroupIds.containsAll(userGroupIds)) {
+            if (Objects.equals(batteryMemberCard.getGroupType(), BatteryMemberCard.GROUP_TYPE_SYSTEM) || !memberCardUserGroupIds.containsAll(userGroupIds)) {
                 return Triple.of(false, "100318", "您浏览的套餐已下架，请看看其他的吧");
             }
         } else {

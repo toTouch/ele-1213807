@@ -3803,7 +3803,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         List<UserInfoGroupNamesBO> userInfoGroupNamesBOs = userInfoGroupDetailService.listGroupByUid(
                 UserInfoGroupDetailQuery.builder().uid(SecurityUtils.getUid()).tenantId(TenantContextHolder.getTenantId()).build());
         if (CollectionUtils.isNotEmpty(userInfoGroupNamesBOs)) {
-            if (StringUtils.isNotBlank(batteryMemberCard.getUserInfoGroupIds())) {
+            if (Objects.equals(batteryMemberCard.getGroupType(), BatteryMemberCard.GROUP_TYPE_USER) && StringUtils.isNotBlank(batteryMemberCard.getUserInfoGroupIds())) {
                 HashSet<Long> memberCardUserGroupIds = new HashSet<>(JsonUtil.fromJsonArray(batteryMemberCard.getUserInfoGroupIds(), Long.class));
                 List<Long> userInfoGroupIds = userInfoGroupNamesBOs.stream().map(UserInfoGroupNamesBO::getGroupId).collect(Collectors.toList());
                 if (!memberCardUserGroupIds.containsAll(userInfoGroupIds)) {
@@ -4212,15 +4212,6 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             return Triple.of(false, "ELECTRICITY.0042", "未缴纳押金");
         }
         
-        //        if (Objects.nonNull(userBatteryDeposit.getBatteryDeposit()) &&  Objects.equals( userBatteryDeposit.getDepositModifyFlag(), UserBatteryDeposit.DEPOSIT_MODIFY_NO) && batteryMemberCard.getDeposit().compareTo(userBatteryDeposit.getBatteryDeposit()) != 0) {
-        //            log.warn("ELE DEPOSIT WARN! batteryMemberCard not equals user deposit,uid={},mid={}", userInfo.getUid(), query.getMembercardId());
-        //            return Triple.of(false, "100484", "用户押金与电池套餐押金不一致");
-        //        }
-        //
-        //        if (Objects.nonNull(userBatteryDeposit.getBatteryDeposit()) && Objects.equals( userBatteryDeposit.getDepositModifyFlag(),UserBatteryDeposit.DEPOSIT_MODIFY_YES ) && batteryMemberCard.getDeposit().compareTo(userBatteryDeposit.getBeforeModifyDeposit()) != 0) {
-        //            log.warn("ELE DEPOSIT WARN! batteryMemberCard not equals user deposit,uid={},mid={}", userInfo.getUid(), query.getMembercardId());
-        //            return Triple.of(false, "100484", "用户押金与电池套餐押金不一致");
-        //        }
         
         //判断套餐是否为免押套餐
         if (Objects.equals(userBatteryDeposit.getDepositType(), UserBatteryDeposit.DEPOSIT_TYPE_FREE) && !Objects.equals(batteryMemberCard.getFreeDeposite(),
@@ -4259,6 +4250,20 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         if (Boolean.TRUE.equals(acquireUserBatteryServiceFeeResult.getLeft())) {
             log.warn("BATTERY MEMBER ORDER WARN! user exist battery service fee,uid={},mid={}", userInfo.getUid(), userBatteryMemberCard.getMemberCardId());
             return Triple.of(false, "ELECTRICITY.100000", "存在电池服务费");
+        }
+    
+        List<UserInfoGroupNamesBO> userInfoGroupNamesBOs = userInfoGroupDetailService.listGroupByUid(
+                UserInfoGroupDetailQuery.builder().uid(userInfo.getUid()).tenantId(TenantContextHolder.getTenantId()).build());
+        if (CollectionUtils.isNotEmpty(userInfoGroupNamesBOs)) {
+            if (StringUtils.isNotBlank(batteryMemberCard.getUserInfoGroupIds())) {
+                HashSet<Long> memberCardUserGroupIds = new HashSet<>(JsonUtil.fromJsonArray(batteryMemberCard.getUserInfoGroupIds(), Long.class));
+                List<Long> userInfoGroupIds = userInfoGroupNamesBOs.stream().map(UserInfoGroupNamesBO::getGroupId).collect(Collectors.toList());
+                if (!memberCardUserGroupIds.containsAll(userInfoGroupIds)) {
+                    return Triple.of(false, "100317", "用户与套餐关联的用户分组不一致，请刷新重试");
+                }
+            } else {
+                return Triple.of(false, "100317", "用户与套餐关联的用户分组不一致，请刷新重试");
+            }
         }
         
         ElectricityMemberCardOrder memberCardOrder = saveRenewalUserBatteryMemberCardOrder(user, userInfo, batteryMemberCard, userBatteryMemberCard, userBindbatteryMemberCard);
@@ -4398,6 +4403,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
     @Transactional(rollbackFor = Exception.class)
     public ElectricityMemberCardOrder saveRenewalUserBatteryMemberCardOrder(User user, UserInfo userInfo, BatteryMemberCard batteryMemberCard,
             UserBatteryMemberCard userBatteryMemberCard, BatteryMemberCard userBindbatteryMemberCard) {
+        
         ElectricityMemberCardOrder memberCardOrder = new ElectricityMemberCardOrder();
         memberCardOrder.setOrderId(OrderIdUtil.generateBusinessOrderId(BusinessType.BATTERY_MEMBERCARD, userInfo.getUid()));
         memberCardOrder.setStatus(ElectricityMemberCardOrder.STATUS_SUCCESS);
@@ -4530,13 +4536,13 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
     
     @Override
     public void sendUserCoupon(BatteryMemberCard batteryMemberCard, ElectricityMemberCardOrder memberCardOrder) {
-        if (StringUtils.isNotBlank(memberCardOrder.getCouponIds()) && Objects.isNull(memberCardOrder.getSendCouponId())) {
+        if (StringUtils.isBlank(memberCardOrder.getCouponIds()) && Objects.isNull(memberCardOrder.getSendCouponId())) {
             return;
         }
         
         // 新旧数据兼容处理，防止优惠券重复发放
         HashSet<Long> couponIdSet = new HashSet<>();
-        if (Objects.nonNull(memberCardOrder.getSendCouponId())) {
+        if (Objects.nonNull(memberCardOrder.getSendCouponId()) && !Objects.equals(memberCardOrder.getSendCouponId(), ElectricityMemberCardOrder.SEND_COUPON_ID_DEFAULT_VALUE)) {
             couponIdSet.add(memberCardOrder.getSendCouponId());
         }
         
