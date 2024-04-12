@@ -3,14 +3,55 @@ package com.xiliulou.electricity.service.impl.car.biz;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.constant.TimeConstant;
 import com.xiliulou.electricity.constant.UserOperateRecordConstant;
-import com.xiliulou.electricity.entity.*;
-import com.xiliulou.electricity.entity.car.*;
-import com.xiliulou.electricity.enums.*;
+import com.xiliulou.electricity.entity.BatteryModel;
+import com.xiliulou.electricity.entity.CarLockCtrlHistory;
+import com.xiliulou.electricity.entity.EleUserOperateRecord;
+import com.xiliulou.electricity.entity.ElectricityBattery;
+import com.xiliulou.electricity.entity.ElectricityCar;
+import com.xiliulou.electricity.entity.ElectricityCarModel;
+import com.xiliulou.electricity.entity.ElectricityConfig;
+import com.xiliulou.electricity.entity.Franchisee;
+import com.xiliulou.electricity.entity.Store;
+import com.xiliulou.electricity.entity.UserCoupon;
+import com.xiliulou.electricity.entity.UserInfo;
+import com.xiliulou.electricity.entity.car.CarRentalPackageCarBatteryRelPo;
+import com.xiliulou.electricity.entity.car.CarRentalPackageDepositPayPo;
+import com.xiliulou.electricity.entity.car.CarRentalPackageMemberTermPo;
+import com.xiliulou.electricity.entity.car.CarRentalPackageOrderFreezePo;
+import com.xiliulou.electricity.entity.car.CarRentalPackageOrderPo;
+import com.xiliulou.electricity.entity.car.CarRentalPackageOrderSlippagePo;
+import com.xiliulou.electricity.entity.car.CarRentalPackagePo;
+import com.xiliulou.electricity.enums.MemberOptTypeEnum;
+import com.xiliulou.electricity.enums.MemberTermStatusEnum;
+import com.xiliulou.electricity.enums.PayStateEnum;
+import com.xiliulou.electricity.enums.RenalPackageConfineEnum;
+import com.xiliulou.electricity.enums.RentalPackageTypeEnum;
+import com.xiliulou.electricity.enums.RentalUnitEnum;
+import com.xiliulou.electricity.enums.SlippageTypeEnum;
+import com.xiliulou.electricity.enums.UseStateEnum;
+import com.xiliulou.electricity.enums.YesNoEnum;
 import com.xiliulou.electricity.enums.basic.BasicEnum;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.reqparam.opt.carpackage.MemberCurrPackageOptReq;
-import com.xiliulou.electricity.service.*;
-import com.xiliulou.electricity.service.car.*;
+import com.xiliulou.electricity.service.BatteryModelService;
+import com.xiliulou.electricity.service.CarLockCtrlHistoryService;
+import com.xiliulou.electricity.service.EleUserOperateRecordService;
+import com.xiliulou.electricity.service.ElectricityBatteryService;
+import com.xiliulou.electricity.service.ElectricityCarModelService;
+import com.xiliulou.electricity.service.ElectricityCarService;
+import com.xiliulou.electricity.service.ElectricityConfigService;
+import com.xiliulou.electricity.service.FranchiseeService;
+import com.xiliulou.electricity.service.StoreService;
+import com.xiliulou.electricity.service.UserBatteryTypeService;
+import com.xiliulou.electricity.service.UserCouponService;
+import com.xiliulou.electricity.service.UserInfoService;
+import com.xiliulou.electricity.service.car.CarRentalPackageCarBatteryRelService;
+import com.xiliulou.electricity.service.car.CarRentalPackageDepositPayService;
+import com.xiliulou.electricity.service.car.CarRentalPackageMemberTermService;
+import com.xiliulou.electricity.service.car.CarRentalPackageOrderFreezeService;
+import com.xiliulou.electricity.service.car.CarRentalPackageOrderService;
+import com.xiliulou.electricity.service.car.CarRentalPackageOrderSlippageService;
+import com.xiliulou.electricity.service.car.CarRentalPackageService;
 import com.xiliulou.electricity.service.car.biz.CarRenalPackageSlippageBizService;
 import com.xiliulou.electricity.service.car.biz.CarRentalOrderBizService;
 import com.xiliulou.electricity.service.car.biz.CarRentalPackageMemberTermBizService;
@@ -464,7 +505,7 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
         if (Objects.equals(memberTermEntity.getRentalPackageConfine(), RenalPackageConfineEnum.NO.getCode())) {
             record.setOldMaxUseCount(UserOperateRecordConstant.UN_LIMIT_COUNT_REMAINING_NUMBER);
         }
-    
+        
         //如果修改后的套餐次数为不限次套餐，则修改最大使用次数。
         CarRentalPackageMemberTermPo memberTermEntityUpdated = carRentalPackageMemberTermService.selectByTenantIdAndUid(memberTermEntity.getTenantId(), memberTermEntity.getUid());
         if (Objects.equals(memberTermEntityUpdated.getRentalPackageConfine(), RenalPackageConfineEnum.NO.getCode())) {
@@ -616,7 +657,8 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
         }
         // 更改状态
         if ((ObjectUtils.isNotEmpty(memberTermEntity.getDueTime()) && memberTermEntity.getDueTime() != 0L && memberTermEntity.getDueTime() <= System.currentTimeMillis()) || (
-                Objects.equals(memberTermEntity.getRentalPackageConfine(), RenalPackageConfineEnum.NUMBER.getCode()) && ObjectUtils.isNotEmpty(memberTermEntity.getResidue()) && memberTermEntity.getResidue() <= 0L)) {
+                Objects.equals(memberTermEntity.getRentalPackageConfine(), RenalPackageConfineEnum.NUMBER.getCode()) && ObjectUtils.isNotEmpty(memberTermEntity.getResidue())
+                        && memberTermEntity.getResidue() <= 0L)) {
             userMemberInfoVo.setStatus(MemberTermStatusEnum.EXPIRE.getCode());
         }
         if (!CollectionUtils.isEmpty(batteryModelEntityList)) {
@@ -636,7 +678,6 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
             // 购买的时候，赠送的优惠券是否被使用，若为使用中、已使用，则不允许退租
             List<UserCoupon> userCoupons = userCouponService.selectListBySourceOrderId(rentalPackageOrderEntity.getOrderNo());
             if (!CollectionUtils.isEmpty(userCoupons)) {
-                
                 userCoupons.forEach(userCoupon -> {
                     Integer status = userCoupon.getStatus();
                     if (UserCoupon.STATUS_IS_BEING_VERIFICATION.equals(status) || UserCoupon.STATUS_USED.equals(status)) {
@@ -893,9 +934,8 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
             if (RentalUnitEnum.MINUTE.getCode().equals(tenancyUnit)) {
                 dueTime = dueTime + (tenancy * TimeConstant.MINUTE_MILLISECOND);
             }
-
+            
             memberTermEntityUpdate.setDueTime(dueTime);
-           
             
             // 计算余量
             if (RenalPackageConfineEnum.NUMBER.getCode().equals(packageOrderEntityNew.getConfine())) {

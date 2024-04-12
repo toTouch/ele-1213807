@@ -6,7 +6,6 @@ import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.RandomUtil;
 import cn.hutool.core.util.StrUtil;
-import cn.hutool.json.JSONUtil;
 import com.alibaba.excel.EasyExcel;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -20,6 +19,7 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.core.wp.entity.AppTemplateQuery;
 import com.xiliulou.core.wp.service.WeChatAppTemplateService;
 import com.xiliulou.db.dynamic.annotation.Slave;
+import com.xiliulou.electricity.bo.userInfoGroup.UserInfoGroupNamesBO;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.constant.TimeConstant;
@@ -164,7 +164,6 @@ import com.xiliulou.electricity.vo.HomePageTurnOverGroupByWeekDayVo;
 import com.xiliulou.electricity.vo.OldUserActivityVO;
 import com.xiliulou.electricity.vo.UserBatteryMemberCardInfoVO;
 import com.xiliulou.electricity.vo.userinfo.UserInfoGroupNamesVO;
-import com.xiliulou.electricity.vo.userinfo.UserInfoGroupVO;
 import com.xiliulou.mq.service.RocketMqService;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiOrderResultDTO;
 import com.xiliulou.pay.weixinv3.exception.WechatPayException;
@@ -1157,14 +1156,14 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             // 设置优惠券
             List<CouponSearchVo> coupons = new ArrayList<>();
             HashSet<Integer> couponIdsSet = new HashSet<>();
-    
+            
             if (Objects.nonNull(electricityMemberCardOrderVO.getSendCouponId())) {
                 couponIdsSet.add(Integer.parseInt(electricityMemberCardOrderVO.getSendCouponId().toString()));
             }
             if (StringUtils.isNotBlank(electricityMemberCardOrderVO.getCouponIds())) {
                 couponIdsSet.addAll(JsonUtil.fromJsonArray(electricityMemberCardOrderVO.getCouponIds(), Integer.class));
             }
-    
+            
             if (!CollectionUtils.isEmpty(couponIdsSet)) {
                 CouponSearchVo couponSearchVo = new CouponSearchVo();
                 
@@ -1177,7 +1176,6 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                 });
             }
             electricityMemberCardOrderVO.setCoupons(coupons);
-            
             
             ElectricityMemberCardOrderVOs.add(electricityMemberCardOrderVO);
         }
@@ -3802,15 +3800,12 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         }
         
         // 判断套餐用户分组和用户的用户分组是否匹配
-        List<UserInfoGroupNamesVO> userInfoGroupNamesVOS = userInfoGroupDetailService.listGroupByUid(
+        List<UserInfoGroupNamesBO> userInfoGroupNamesBOs = userInfoGroupDetailService.listGroupByUid(
                 UserInfoGroupDetailQuery.builder().uid(SecurityUtils.getUid()).tenantId(TenantContextHolder.getTenantId()).build());
-        
-        if (CollectionUtils.isNotEmpty(userInfoGroupNamesVOS)) {
-            if (StringUtils.isNotBlank(batteryMemberCard.getUserGroupIds())) {
-                
-                HashSet<Long> memberCardUserGroupIds = new HashSet<>(JsonUtil.fromJsonArray(batteryMemberCard.getUserGroupIds(), Long.class));
-                List<Long> userInfoGroupIds = userInfoGroupNamesVOS.stream().map(UserInfoGroupNamesVO::getGroupId).collect(Collectors.toList());
-                
+        if (CollectionUtils.isNotEmpty(userInfoGroupNamesBOs)) {
+            if (StringUtils.isNotBlank(batteryMemberCard.getUserInfoGroupIds())) {
+                HashSet<Long> memberCardUserGroupIds = new HashSet<>(JsonUtil.fromJsonArray(batteryMemberCard.getUserInfoGroupIds(), Long.class));
+                List<Long> userInfoGroupIds = userInfoGroupNamesBOs.stream().map(UserInfoGroupNamesBO::getGroupId).collect(Collectors.toList());
                 if (!memberCardUserGroupIds.containsAll(userInfoGroupIds)) {
                     return Triple.of(false, "100317", "用户与套餐关联的用户分组不一致，请刷新重试");
                 }
