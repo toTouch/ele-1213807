@@ -270,7 +270,7 @@ public class UserInfoGroupServiceImpl implements UserInfoGroupService {
             }
         });
     
-        List<UserInfo> sameFranchiseeUserInfoList = new ArrayList<>();
+        ConcurrentHashSet<UserInfo> sameFranchiseeUserInfos = new ConcurrentHashSet<>();
         Map<Long, UserInfo> userInfoMap =new HashMap<>();
         
         for (String e : phones) {
@@ -283,7 +283,7 @@ public class UserInfoGroupServiceImpl implements UserInfoGroupService {
                     notBoundFranchiseePhone.add(e);
                 } else {
                     if (Objects.equals(bindFranchiseeId, franchiseeId)) {
-                        sameFranchiseeUserInfoList.add(userInfo);
+                        sameFranchiseeUserInfos.add(userInfo);
                         userInfoMap.put(userInfo.getUid(), userInfo);
                     } else {
                         notSameFranchiseePhone.add(e);
@@ -293,25 +293,29 @@ public class UserInfoGroupServiceImpl implements UserInfoGroupService {
         }
     
         // 判断绑定分组数量是否超限
-        if (CollectionUtils.isNotEmpty(sameFranchiseeUserInfoList)) {
-            List<Long> uidList = sameFranchiseeUserInfoList.stream().map(UserInfo::getUid).collect(Collectors.toList());
+        if (CollectionUtils.isNotEmpty(sameFranchiseeUserInfos)) {
+            List<Long> uidList = sameFranchiseeUserInfos.stream().map(UserInfo::getUid).collect(Collectors.toList());
             List<UserInfoGroupNamesBO> listByUidList = userInfoGroupDetailService.listGroupByUidList(uidList);
-        
-            // 根据uid进行分组
-            Map<Long, List<UserInfoGroupNamesBO>> groupMap = listByUidList.stream().collect(Collectors.groupingBy(UserInfoGroupNamesBO::getUid));
-            if (MapUtils.isNotEmpty(groupMap)) {
-                groupMap.forEach((uid, v) -> {
-                    if (CollectionUtils.isNotEmpty(v)) {
-                        UserInfo userInfo = userInfoMap.get(uid);
-                        if (Objects.nonNull(userInfo)) {
-                            if (v.size() >= UserGroupConstant.USER_GROUP_LIMIT) {
-                                overLimitGroupNumPhone.add(userInfo.getPhone());
-                            } else {
-                                existsPhone.add(userInfo);
+            
+            if (CollectionUtils.isEmpty(listByUidList)) {
+                existsPhone.addAll(sameFranchiseeUserInfos);
+            } else {
+                // 根据uid进行分组
+                Map<Long, List<UserInfoGroupNamesBO>> groupMap = listByUidList.stream().collect(Collectors.groupingBy(UserInfoGroupNamesBO::getUid));
+                if (MapUtils.isNotEmpty(groupMap)) {
+                    groupMap.forEach((uid, v) -> {
+                        if (CollectionUtils.isNotEmpty(v)) {
+                            UserInfo userInfo = userInfoMap.get(uid);
+                            if (Objects.nonNull(userInfo)) {
+                                if (v.size() >= UserGroupConstant.USER_GROUP_LIMIT) {
+                                    overLimitGroupNumPhone.add(userInfo.getPhone());
+                                } else {
+                                    existsPhone.add(userInfo);
+                                }
                             }
                         }
-                    }
-                });
+                    });
+                }
             }
         }
         
