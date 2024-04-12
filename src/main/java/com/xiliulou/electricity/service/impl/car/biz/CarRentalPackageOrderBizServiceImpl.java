@@ -148,13 +148,7 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
-import java.util.StringJoiner;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -375,7 +369,6 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         // 购买的时候，赠送的优惠券是否被使用，若为使用中、已使用，则不允许退租
         List<UserCoupon> userCoupons = userCouponService.selectListBySourceOrderId(packageOrderEntity.getOrderNo());
         if (!CollectionUtils.isEmpty(userCoupons)) {
-            
             userCoupons.forEach(userCoupon -> {
                 Integer status = userCoupon.getStatus();
                 if (UserCoupon.STATUS_IS_BEING_VERIFICATION.equals(status) || UserCoupon.STATUS_USED.equals(status)) {
@@ -664,7 +657,6 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         // 购买的时候，赠送的优惠券是否被使用，若为使用中、已使用，则不允许退租
         List<UserCoupon> userCoupons = userCouponService.selectListBySourceOrderId(packageOrderEntity.getOrderNo());
         if (!CollectionUtils.isEmpty(userCoupons)) {
-            
             userCoupons.forEach(userCoupon -> {
                 Integer status = userCoupon.getStatus();
                 if (UserCoupon.STATUS_IS_BEING_VERIFICATION.equals(status) || UserCoupon.STATUS_USED.equals(status)) {
@@ -2020,7 +2012,6 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         // 购买的时候，赠送的优惠券是否被使用，若为使用中、已使用，则不允许退租
         List<UserCoupon> userCoupons = userCouponService.selectListBySourceOrderId(packageOrderEntity.getOrderNo());
         if (!CollectionUtils.isEmpty(userCoupons)) {
-            
             userCoupons.forEach(userCoupon -> {
                 Integer status = userCoupon.getStatus();
                 if (UserCoupon.STATUS_IS_BEING_VERIFICATION.equals(status) || UserCoupon.STATUS_USED.equals(status)) {

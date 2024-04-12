@@ -103,10 +103,6 @@ public class BatteryMemberCardAndTypeVO {
      * 服务费
      */
     private BigDecimal serviceCharge;
-    /**
-     *
-     */
-    //    private Integer type;
     
     /**
      * 备注
@@ -144,5 +140,10 @@ public class BatteryMemberCardAndTypeVO {
     /**
      * 套餐绑定的所有用户分组id
      */
-    private String userGroupIds;
+    private String userInfoGroupIds;
+    
+    /**
+     * 分组类型，0-系统分组，1-用户分组。
+     */
+    private Integer groupType;
 }

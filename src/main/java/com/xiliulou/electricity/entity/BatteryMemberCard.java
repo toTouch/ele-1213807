@@ -11,7 +11,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
-import java.util.List;
 
 /**
  * (BatteryMemberCard)实体类
@@ -153,7 +152,7 @@ public class BatteryMemberCard {
     /**
      * 套餐绑定的所有用户分组id
      */
-    private String userGroupIds;
+    private String userInfoGroupIds;
     
     public static final Integer GROUP_TYPE_SYSTEM = 0;
     
