@@ -1119,9 +1119,10 @@ public class TradeOrderServiceImpl implements TradeOrderService {
     }
     
     private Triple<Boolean, String, Object> userGroupIdFit(List<Long> userGroupIds, BatteryMemberCard batteryMemberCard) {
-        if (StringUtils.isNotBlank(batteryMemberCard.getUserInfoGroupIds())) {
+        if (Objects.equals(batteryMemberCard.getGroupType(), BatteryMemberCard.GROUP_TYPE_USER) && StringUtils.isNotBlank(batteryMemberCard.getUserInfoGroupIds())) {
             HashSet<Long> memberCardUserGroupIds = new HashSet<>(JsonUtil.fromJsonArray(batteryMemberCard.getUserInfoGroupIds(), Long.class));
-            if (Objects.equals(batteryMemberCard.getGroupType(), BatteryMemberCard.GROUP_TYPE_SYSTEM) || !memberCardUserGroupIds.containsAll(userGroupIds)) {
+            memberCardUserGroupIds.retainAll(userGroupIds);
+            if (memberCardUserGroupIds.isEmpty()) {
                 return Triple.of(false, "100318", "您浏览的套餐已下架，请看看其他的吧");
             }
         } else {
