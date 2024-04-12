@@ -1,5 +1,7 @@
 package com.xiliulou.electricity.mapper.userInfo.userInfoGroup;
 
+import com.xiliulou.electricity.bo.userInfoGroup.UserInfoGroupBO;
+import com.xiliulou.electricity.bo.userInfoGroup.UserInfoGroupIdAndNameBO;
 import com.xiliulou.electricity.entity.userInfo.userInfoGroup.UserInfoGroup;
 import com.xiliulou.electricity.query.UserInfoGroupQuery;
 import com.xiliulou.electricity.vo.userinfo.UserInfoGroupIdAndNameVO;
@@ -19,15 +21,15 @@ public interface UserInfoGroupMapper {
     
     Integer insertOne(UserInfoGroup userInfoGroup);
     
-    List<UserInfoGroupVO> selectPage(UserInfoGroupQuery query);
+    List<UserInfoGroupBO> selectPage(UserInfoGroupQuery query);
     
     Integer selectCount(UserInfoGroupQuery query);
     
-    List<UserInfoGroupIdAndNameVO> selectAllGroup(UserInfoGroupQuery query);
+    List<UserInfoGroupIdAndNameBO> selectAllGroup(UserInfoGroupQuery query);
     
     UserInfoGroup selectById(Long id);
     
-    List<UserInfoGroupVO> selectListByIds(@Param("ids") List<Long> ids);
+    List<UserInfoGroupBO> selectListByIds(@Param("ids") List<Long> ids);
     
     int update(UserInfoGroup oldUserInfo);
     

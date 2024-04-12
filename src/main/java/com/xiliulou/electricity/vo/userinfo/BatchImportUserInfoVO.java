@@ -42,6 +42,11 @@ public class BatchImportUserInfoVO {
      */
     private Set<String> notSameFranchiseePhones;
     
+    /**
+     * 绑定用户组数量超限的手机号
+     */
+    private Set<String> overLimitGroupNumPhones;
+    
     private String sessionId;
     
     private Boolean isImported;

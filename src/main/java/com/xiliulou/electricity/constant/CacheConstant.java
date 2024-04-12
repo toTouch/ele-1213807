@@ -571,9 +571,8 @@ public interface CacheConstant {
     String CACHE_RECYCLE_CLOUD_BEAN_LOCK = "cache_recycle_cloud_bean_lock:";
     
     String CACHE_USER_GROUP_SAVE_LOCK = "cache_user_group_save_lock:";
-    
     String CACHE_USER_GROUP_UPDATE_LOCK = "cache_user_group_update_lock:";
     String CACHE_USER_GROUP_BATCH_IMPORT = "cache_user_group_batch_import:";
-    
+    String CACHE_USER_GROUP_DETAIL_UPDATE_LOCK = "cache_user_group_detail_update_lock:";
     String CACHE_USER_GROUP = "cache_user_group:";
 }
