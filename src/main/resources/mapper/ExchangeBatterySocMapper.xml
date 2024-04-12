@@ -2,30 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.xiliulou.electricity.mapper.ExchangeBatterySocMapper">
 
-    <resultMap type="com.xiliulou.electricity.entity.ExchangeBatterySoc" id="ExchangeBatterySocMap">
-        <result property="id" column="id" jdbcType=""/>
-        <result property="uid" column="uid" jdbcType=""/>
-        <result property="sn" column="sn" jdbcType=""/>
-        <result property="tenantId" column="tenant_id" jdbcType=""/>
-        <result property="franchiseeId" column="franchisee_id" jdbcType=""/>
-        <result property="storeId" column="store_id" jdbcType=""/>
-        <result property="takeAwayPower" column="take_away_power" jdbcType=""/>
-        <result property="returnPower" column="return_power" jdbcType=""/>
-        <result property="poorPower" column="poor_power" jdbcType=""/>
-        <result property="delFlag" column="del_flag" jdbcType=""/>
-        <result property="createTime" column="create_time" jdbcType=""/>
-        <result property="updateTime" column="update_time" jdbcType=""/>
-    </resultMap>
-
-    <!--查询单个-->
-    <select id="selectByUidAndSn" resultMap="ExchangeBatterySocMap">
-        select id, uid, sn, takeAwayPower
-        from t_exchange_battery_soc
-        where uid = #{uid}
-          and sn = #{sn}
-          and del_flag = 0
-    </select>
-
+  
     <!--新增所有列-->
     <insert id="insertOne" keyProperty="id" useGeneratedKeys="true">
         insert into t_exchange_battery_soc(uid, sn, tenant_id, franchisee_id, store_id, take_away_power, return_power, poor_power, del_flag, create_time, update_time)
