@@ -130,7 +130,8 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
     
     XllThreadPoolExecutorService callBatterySocThreadPool = XllThreadPoolExecutors.newFixedThreadPool("CALL_BATTERY_SOC_CHANGE", 2, "callBatterySocChange");
     
-    XllThreadPoolExecutorService batterSocThreadPool = XllThreadPoolExecutors.newFixedThreadPool("BATTERY_SOC_ANALYZE", 1, "battery-soc-pool-thread");
+    XllThreadPoolExecutorService lineExchangeBatterSocThreadPool = XllThreadPoolExecutors.newFixedThreadPool("LINE_EXCHANGE_BATTERY_SOC_ANALYZE", 1,
+            "line-exchange-battery-soc-pool-thread");
     
     @Override
     public void postHandleReceiveMsg(ElectricityCabinet electricityCabinet, ReceiverMessage receiverMessage) {
@@ -345,7 +346,7 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
         }
         
         // 归还电池，保存归还电池soc，兼容异常交换
-        batterSocThreadPool.execute(() -> handlerUserRentBatterySoc(exchangeOrderRsp.getPlaceBatteryName(), exchangeOrderRsp.getPlaceBatterySoc()));
+        lineExchangeBatterSocThreadPool.execute(() -> handlerUserRentBatterySoc(exchangeOrderRsp.getPlaceBatteryName(), exchangeOrderRsp.getPlaceBatterySoc()));
         
         //电池改为在用
         ElectricityBattery electricityBattery = electricityBatteryService.queryBySnFromDb(exchangeOrderRsp.getTakeBatteryName());
@@ -374,7 +375,7 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
             handleCallBatteryChangeSoc(electricityBattery);
             
             // 保存取走电池，记录电池soc
-            batterSocThreadPool.execute(
+            lineExchangeBatterSocThreadPool.execute(
                     () -> handlerUserTakeBatterySoc(electricityCabinetOrder.getUid(), exchangeOrderRsp.getTakeBatteryName(), exchangeOrderRsp.getTakeBatterySoc()));
             
             
@@ -402,12 +403,12 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
      */
     private void handlerUserTakeBatterySoc(Long uid, String takeBatterySn, Double takeAwayPower) {
         if (Objects.isNull(takeAwayPower)) {
-            log.error("handlerUserTakeBatterySoc/exchangeBattery is error,takeAwayPower is null, sn={}", takeBatterySn);
+            log.error("NormalNewExchangeOrderHandlerIot/handlerUserTakeBatterySoc is error,takeAwayPower is null, sn={}", takeBatterySn);
             return;
         }
         UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
         if (Objects.isNull(userInfo)) {
-            log.error("handlerUserTakeBatterySoc/exchangeBattery is error,userInfo is null, uid={},sn={}", uid, takeBatterySn);
+            log.error("NormalNewExchangeOrderHandlerIot/handlerUserTakeBatterySoc is error,userInfo is null, uid={},sn={}", uid, takeBatterySn);
             return;
         }
         try {
@@ -416,7 +417,7 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
                     .updateTime(System.currentTimeMillis()).build();
             exchangeBatterySocService.insertOne(batterySoc);
         } catch (Exception e) {
-            log.error("handlerUserTakeBatterySoc/exchangeBattery/insert is exception, uid={},sn={}", userInfo.getUid(), takeBatterySn, e);
+            log.error("NormalNewExchangeOrderHandlerIot/handlerUserTakeBatterySoc/insert is exception, uid={},sn={}", userInfo.getUid(), takeBatterySn, e);
         }
         
     }
@@ -426,19 +427,19 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
      */
     private void handlerUserRentBatterySoc(String returnSn, Double returnPower) {
         if (Objects.isNull(returnPower)) {
-            log.error("handlerUserRentBatterySoc/exchangeBattery is error,returnPower is null, returnSn={}", returnSn);
+            log.error("NormalNewExchangeOrderHandlerIot/handlerUserRentBatterySoc is error,returnPower is null, returnSn={}", returnSn);
             return;
         }
         
         ElectricityBattery placeBattery = electricityBatteryService.queryBySnFromDb(returnSn);
         if (Objects.isNull(placeBattery.getUid())) {
-            log.error("handlerUserRentBatterySoc/placeBattery , uid is null, returnSn={}", returnSn);
+            log.error("NormalNewExchangeOrderHandlerIot/handlerUserRentBatterySoc , uid is null, returnSn={}", returnSn);
             return;
         }
         //  上报的sn绑定的用户+Sn;兼容异常交换场景
         ExchangeBatterySoc exchangeBatterySoc = exchangeBatterySocService.selectByUidAndSn(placeBattery.getUid(), returnSn);
         if (Objects.isNull(exchangeBatterySoc)) {
-            log.error("handlerUserRentBatterySoc/exchangeBattery is error, rentBatterySoc should is not null, uid={},sn={}", placeBattery.getUid(), returnSn);
+            log.error("NormalNewExchangeOrderHandlerIot/handlerUserRentBatterySoc is error, rentBatterySoc should is not null, uid={},sn={}", placeBattery.getUid(), returnSn);
             return;
         }
         try {
@@ -447,7 +448,7 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
             exchangeBatterySoc.setUpdateTime(System.currentTimeMillis());
             exchangeBatterySocService.update(exchangeBatterySoc);
         } catch (Exception e) {
-            log.error("handlerUserTakeBatterySoc/exchangeBattery/update is exception,uid={},sn={}", placeBattery.getUid(), returnPower, e);
+            log.error("NormalNewExchangeOrderHandlerIot/handlerUserTakeBatterySoc update is exception,uid={},sn={}", placeBattery.getUid(), returnPower, e);
         }
         
     }
