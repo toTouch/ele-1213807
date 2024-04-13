@@ -367,17 +367,16 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
             if (Objects.isNull(bindTime) || bindTime < System.currentTimeMillis()) {
                 newElectricityBattery.setBindTime(System.currentTimeMillis());
                 electricityBatteryService.updateBatteryUser(newElectricityBattery);
+                // 保存取走电池，记录电池soc
+                lineExchangeBatterSocThreadPool.execute(
+                        () -> handlerUserTakeBatterySoc(electricityCabinetOrder.getUid(), exchangeOrderRsp.getTakeBatteryName(), exchangeOrderRsp.getTakeBatterySoc()));
+                
             }
             
             //保存取走电池格挡
             redisService.set(CacheConstant.CACHE_PRE_TAKE_CELL + electricityCabinet.getId(), String.valueOf(electricityCabinetOrder.getNewCellNo()), 2L, TimeUnit.DAYS);
             
             handleCallBatteryChangeSoc(electricityBattery);
-            
-            // 保存取走电池，记录电池soc
-            lineExchangeBatterSocThreadPool.execute(
-                    () -> handlerUserTakeBatterySoc(electricityCabinetOrder.getUid(), exchangeOrderRsp.getTakeBatteryName(), exchangeOrderRsp.getTakeBatterySoc()));
-            
             
         } else {
             log.error("EXCHANGE ORDER ERROR! takeBattery is null!uid={},requestId={},orderId={}", userInfo.getUid(), exchangeOrderRsp.getSessionId(),

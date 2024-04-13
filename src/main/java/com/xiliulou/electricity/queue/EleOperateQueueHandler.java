@@ -751,10 +751,10 @@ public class EleOperateQueueHandler {
             newElectricityBattery.setBindTime(System.currentTimeMillis());
             electricityBatteryService.updateBatteryUser(newElectricityBattery);
             handleCallBatteryChangeSoc(electricityBattery);
+            // 取走电池保存取走电池的soc
+            operateBatterSocThreadPool.execute(() -> handlerUserTakeBatterySoc(userInfo, electricityBattery.getSn(), electricityBattery.getPower()));
         }
         
-        // 取走电池保存取走电池的soc
-        operateBatterSocThreadPool.execute(() -> handlerUserTakeBatterySoc(userInfo, electricityBattery.getSn(), electricityBattery.getPower()));
     }
     
     

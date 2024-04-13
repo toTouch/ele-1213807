@@ -296,6 +296,9 @@ public class NormalOffLineEleExchangeHandlerIot extends AbstractElectricityIotHa
             }
         }
         
+        // 归还电池soc
+        offLineExchangeBatterSocThreadPool.execute(() -> handlerUserRentBatterySoc(offlineOrderMessage.getOldElectricityBatterySn(), offlineOrderMessage.getPlaceBatterySoc()));
+        
         //如果电池绑定时间为空或者绑定时间小于当前订单结束时间则更新电池信息
         if (Objects.isNull(newElectricityBattery.getBindTime()) || offlineOrderMessage.getEndTime() > newElectricityBattery.getBindTime()) {
             ElectricityBattery newElectricityBatteryUpdate = new ElectricityBattery();
@@ -308,14 +311,12 @@ public class NormalOffLineEleExchangeHandlerIot extends AbstractElectricityIotHa
             newElectricityBatteryUpdate.setBorrowExpireTime(Long.parseLong(wechatTemplateNotificationConfig.getExpirationTime()) * 3600000 + System.currentTimeMillis());
             newElectricityBatteryUpdate.setBindTime(offlineOrderMessage.getEndTime());
             electricityBatteryService.updateBatteryUser(newElectricityBatteryUpdate);
+            
+            // 取走电池soc
+            offLineExchangeBatterSocThreadPool.execute(
+                    () -> handlerUserTakeBatterySoc(user.getUid(), offlineOrderMessage.getNewElectricityBatterySn(), offlineOrderMessage.getTakeBatterySoc()));
         }
         
-        // 归还电池soc
-        offLineExchangeBatterSocThreadPool.execute(() -> handlerUserRentBatterySoc(offlineOrderMessage.getOldElectricityBatterySn(), offlineOrderMessage.getPlaceBatterySoc()));
-        
-        // 取走电池soc
-        offLineExchangeBatterSocThreadPool.execute(
-                () -> handlerUserTakeBatterySoc(user.getUid(), offlineOrderMessage.getNewElectricityBatterySn(), offlineOrderMessage.getTakeBatterySoc()));
     }
     
     
