@@ -336,7 +336,7 @@ public class NormalOffLineEleExchangeHandlerIot extends AbstractElectricityIotHa
         try {
             ExchangeBatterySoc batterySoc = ExchangeBatterySoc.builder().uid(userInfo.getUid()).sn(takeBatterySn).tenantId(userInfo.getTenantId())
                     .franchiseeId(userInfo.getFranchiseeId()).storeId(userInfo.getStoreId()).takeAwayPower(takeAwayPower).createTime(System.currentTimeMillis())
-                    .updateTime(System.currentTimeMillis()).build();
+                    .build();
             exchangeBatterySocService.insertOne(batterySoc);
         } catch (Exception e) {
             log.error("NormalOffLineEleExchangeHandlerIot/handlerUserTakeBatterySoc/insert is exception, uid={},sn={}", userInfo.getUid(), takeBatterySn, e);
