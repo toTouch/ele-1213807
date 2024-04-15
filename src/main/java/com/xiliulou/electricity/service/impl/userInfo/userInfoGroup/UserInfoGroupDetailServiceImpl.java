@@ -9,23 +9,27 @@ import com.xiliulou.electricity.bo.userInfoGroup.UserInfoGroupDetailPageBO;
 import com.xiliulou.electricity.bo.userInfoGroup.UserInfoGroupIdAndNameBO;
 import com.xiliulou.electricity.bo.userInfoGroup.UserInfoGroupNamesBO;
 import com.xiliulou.electricity.constant.CacheConstant;
+import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.constant.UserGroupConstant;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.userInfo.userInfoGroup.UserInfoGroup;
 import com.xiliulou.electricity.entity.userInfo.userInfoGroup.UserInfoGroupDetail;
+import com.xiliulou.electricity.entity.userInfo.userInfoGroup.UserInfoGroupDetailHistory;
 import com.xiliulou.electricity.mapper.userInfo.userInfoGroup.UserInfoGroupDetailMapper;
 import com.xiliulou.electricity.query.UserInfoGroupDetailQuery;
 import com.xiliulou.electricity.request.user.UserInfoBindGroupRequest;
 import com.xiliulou.electricity.request.user.UserInfoGroupDetailUpdateRequest;
 import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.UserInfoService;
+import com.xiliulou.electricity.service.userinfo.userInfoGroup.UserInfoGroupDetailHistoryService;
 import com.xiliulou.electricity.service.userinfo.userInfoGroup.UserInfoGroupDetailService;
 import com.xiliulou.electricity.service.userinfo.userInfoGroup.UserInfoGroupService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -61,6 +65,9 @@ public class UserInfoGroupDetailServiceImpl implements UserInfoGroupDetailServic
     
     @Resource
     private RedisService redisService;
+    
+    @Resource
+    private UserInfoGroupDetailHistoryService userInfoGroupDetailHistoryService;
     
     @Slave
     @Override
@@ -183,8 +190,18 @@ public class UserInfoGroupDetailServiceImpl implements UserInfoGroupDetailServic
             
             // 如果没有分组，则删除
             if (CollectionUtils.isEmpty(groupIds)) {
-                userInfoGroupDetailMapper.deleteByUidAndGroupNoList(uid, null);
-                return R.ok();
+                List<UserInfoGroupNamesBO> existGroupList = this.listGroupByUid(UserInfoGroupDetailQuery.builder().uid(uid).tenantId(tenantId).build());
+                if (CollectionUtils.isNotEmpty(existGroupList)) {
+                    // 修改历史记录
+                    String oldGroupIds = existGroupList.stream().map(g -> g.getGroupId().toString()).collect(Collectors.joining(CommonConstant.STR_COMMA));
+                    UserInfoGroupDetailHistory detailHistory = assembleDetailHistory(uid, oldGroupIds, "", operator, franchisee.getId(), tenantId);
+                    
+                    Integer delete = userInfoGroupDetailMapper.deleteByUidAndGroupNoList(uid, null);
+                    if (delete > 0) {
+                        userInfoGroupDetailHistoryService.batchInsert(List.of(detailHistory));
+                    }
+                    return R.ok();
+                }
             }
             
             List<UserInfoGroupBO> groupList = userInfoGroupService.listByIds(groupIds);
@@ -202,18 +219,23 @@ public class UserInfoGroupDetailServiceImpl implements UserInfoGroupDetailServic
                 return R.fail("120112", "未找到用户分组");
             }
             
-            UserInfoGroupDetailQuery query = UserInfoGroupDetailQuery.builder().uid(uid).tenantId(tenantId).build();
-            List<UserInfoGroupNamesBO> userInfoGroupNamesBOList = this.listGroupByUid(query);
+            List<UserInfoGroupNamesBO> existGroupList = this.listGroupByUid(UserInfoGroupDetailQuery.builder().uid(uid).tenantId(tenantId).build());
             List<Long> intersection = new ArrayList<>(groupIds);
-            if (CollectionUtils.isNotEmpty(userInfoGroupNamesBOList)) {
+            List<Long> oldGroupIds = new ArrayList<>();
+            if (CollectionUtils.isNotEmpty(existGroupList)) {
+                // 分组ids
+                oldGroupIds = existGroupList.stream().map(UserInfoGroupNamesBO::getGroupId).collect(Collectors.toList());
+                
                 // 获取交集
-                intersection.retainAll(userInfoGroupNamesBOList.stream().map(UserInfoGroupNamesBO::getGroupId).collect(Collectors.toList()));
+                intersection.retainAll(existGroupList.stream().map(UserInfoGroupNamesBO::getGroupId).collect(Collectors.toList()));
                 
-                // 去除交集后，剩下的就是需要新增的
-                groupIds.removeAll(intersection);
-                
-                // 去除交集后，剩下的是需要删除的
-                userInfoGroupNamesBOList.removeAll(userInfoGroupNamesBOList.stream().filter(item -> intersection.contains(item.getGroupId())).collect(Collectors.toList()));
+                if (CollectionUtils.isNotEmpty(intersection)) {
+                    // 去除交集后，剩下的就是需要新增的
+                    groupIds.removeAll(intersection);
+                    
+                    // 去除交集后，剩下的是需要删除的
+                    existGroupList.removeAll(existGroupList.stream().filter(item -> intersection.contains(item.getGroupId())).collect(Collectors.toList()));
+                }
             }
             
             // 处理新增
@@ -240,8 +262,8 @@ public class UserInfoGroupDetailServiceImpl implements UserInfoGroupDetailServic
                 insertList = detailList.stream().filter(Objects::nonNull).collect(Collectors.toList());
             }
             
-            // 处理持久化
-            handleGroupDetailDb(uid, insertList, userInfoGroupNamesBOList);
+            // 持久化detail
+            handleGroupDetailDb(uid, insertList, existGroupList, oldGroupIds, operator, franchisee.getId(), tenantId);
             
             return R.ok();
         } finally {
@@ -250,17 +272,48 @@ public class UserInfoGroupDetailServiceImpl implements UserInfoGroupDetailServic
     }
     
     @Transactional(rollbackFor = Exception.class)
-    public void handleGroupDetailDb(Long uid, List<UserInfoGroupDetail> insertList, List<UserInfoGroupNamesBO> userInfoGroupNamesVOList) {
+    public void handleGroupDetailDb(Long uid, List<UserInfoGroupDetail> insertList, List<UserInfoGroupNamesBO> existGroupList, List<Long> oldGroupIds, Long operator,
+            Long franchiseeId, Integer tenantId) {
+        
         // 新增
+        List<Long> addGroupList = null;
         if (CollectionUtils.isNotEmpty(insertList)) {
             userInfoGroupDetailMapper.batchInsert(insertList);
+            
+            addGroupList = insertList.stream().map(UserInfoGroupDetail::getId).collect(Collectors.toList());
         }
         
         // 删除
-        if (CollectionUtils.isNotEmpty(userInfoGroupNamesVOList)) {
-            List<String> deleteGroupNoList = userInfoGroupNamesVOList.stream().map(UserInfoGroupNamesBO::getGroupNo).collect(Collectors.toList());
+        List<Long> deleteGroupList = null;
+        if (CollectionUtils.isNotEmpty(existGroupList)) {
+            List<String> deleteGroupNoList = existGroupList.stream().map(UserInfoGroupNamesBO::getGroupNo).collect(Collectors.toList());
             userInfoGroupDetailMapper.deleteByUidAndGroupNoList(uid, deleteGroupNoList);
+            
+            deleteGroupList = existGroupList.stream().map(UserInfoGroupNamesBO::getGroupId).collect(Collectors.toList());
         }
+        
+        List<Long> newGroupList = new ArrayList<>(oldGroupIds);
+        // 删除记录
+        if (CollectionUtils.isNotEmpty(deleteGroupList)) {
+            newGroupList.removeAll(deleteGroupList);
+        }
+        
+        // 新增记录
+        if (CollectionUtils.isNotEmpty(addGroupList)) {
+            newGroupList.addAll(addGroupList);
+        }
+        
+        UserInfoGroupDetailHistory detailHistory = this.assembleDetailHistory(uid, StringUtils.join(oldGroupIds, CommonConstant.STR_COMMA),
+                StringUtils.join(newGroupList, CommonConstant.STR_COMMA), operator, franchiseeId, tenantId);
+        
+        userInfoGroupDetailHistoryService.batchInsert(List.of(detailHistory));
+    }
+    
+    private UserInfoGroupDetailHistory assembleDetailHistory(Long uid, String oldGroupIds, String newGroupIds, Long operator, Long franchiseeId, Integer tenantId) {
+        long nowTime = System.currentTimeMillis();
+        
+        return UserInfoGroupDetailHistory.builder().uid(uid).oldGroupIds(oldGroupIds).newGroupIds(newGroupIds).operator(operator).franchiseeId(franchiseeId).tenantId(tenantId)
+                .createTime(nowTime).updateTime(nowTime).build();
     }
     
     @Override
@@ -291,14 +344,18 @@ public class UserInfoGroupDetailServiceImpl implements UserInfoGroupDetailServic
         
         List<Long> filterGroupIds = groupIds;
         UserInfoGroupDetailQuery query = UserInfoGroupDetailQuery.builder().tenantId(tenantId).uid(uid).build();
-        List<UserInfoGroupNamesBO> userInfoGroupNamesList = userInfoGroupDetailMapper.selectListGroupByUid(query);
-        if (CollectionUtils.isNotEmpty(userInfoGroupNamesList)) {
-            List<Long> existGroupIds = userInfoGroupNamesList.stream().map(UserInfoGroupNamesBO::getGroupId).collect(Collectors.toList());
+        List<UserInfoGroupNamesBO> existGroupList = userInfoGroupDetailMapper.selectListGroupByUid(query);
+        String oldGroupIds = "";
+        String newGroupIds = "";
+        if (CollectionUtils.isNotEmpty(existGroupList)) {
+            List<Long> existGroupIds = existGroupList.stream().map(UserInfoGroupNamesBO::getGroupId).collect(Collectors.toList());
             filterGroupIds = groupIds.stream().filter(groupId -> !existGroupIds.contains(groupId)).collect(Collectors.toList());
+            
+            // 旧的修改记录
+            oldGroupIds = existGroupList.stream().map(g -> g.getGroupId().toString()).collect(Collectors.joining(CommonConstant.STR_COMMA));
         }
         
         List<UserInfoGroupDetail> list = new ArrayList<>();
-        
         if (CollectionUtils.isNotEmpty(filterGroupIds)) {
             // 超限判断
             Integer limitGroupNum = userInfoGroupDetailMapper.countGroupByUid(uid);
@@ -317,10 +374,19 @@ public class UserInfoGroupDetailServiceImpl implements UserInfoGroupDetailServic
                     list.add(detail);
                 }
             });
+            
+            // 新的修改记录
+            if (StringUtils.isNotBlank(oldGroupIds)) {
+                newGroupIds = oldGroupIds + CommonConstant.STR_COMMA + StringUtils.join(filterGroupIds, CommonConstant.STR_COMMA);
+            }
         }
         
         if (CollectionUtils.isNotEmpty(list)) {
-            this.batchInsert(list);
+            Integer integer = this.batchInsert(list);
+            if (integer > 0) {
+                UserInfoGroupDetailHistory detailHistory = this.assembleDetailHistory(uid, oldGroupIds, newGroupIds, operator, franchisee.getId(), tenantId);
+                userInfoGroupDetailHistoryService.batchInsert(List.of(detailHistory));
+            }
         }
         
         return R.ok();
