@@ -3,8 +3,7 @@
 <mapper namespace="com.xiliulou.electricity.mapper.userInfo.userInfoGroup.UserInfoGroupDetailHistoryMapper">
     <!-- 基础字段 -->
     <sql id="basic_field">
-        id
-        , uid, oldGroupIds, newGroupIds, operator, franchiseeId, tenantId, delFlag, createTime, updateTime
+        id, uid, old_group_Ids, new_group_Ids, operator, franchisee_id, tenant_id, del_flag, create_time, update_time
     </sql>
     
     <insert id="batchInsert" keyProperty="id" useGeneratedKeys="true">
