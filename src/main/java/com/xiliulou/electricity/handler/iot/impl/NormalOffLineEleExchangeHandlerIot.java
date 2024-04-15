@@ -297,7 +297,8 @@ public class NormalOffLineEleExchangeHandlerIot extends AbstractElectricityIotHa
         }
         
         // 归还电池soc
-        offLineExchangeBatterSocThreadPool.execute(() -> handlerUserRentBatterySoc(offlineOrderMessage.getOldElectricityBatterySn(), offlineOrderMessage.getPlaceBatterySoc()));
+        offLineExchangeBatterSocThreadPool.execute(
+                () -> handlerUserRentBatterySoc(oldElectricityBattery, offlineOrderMessage.getOldElectricityBatterySn(), offlineOrderMessage.getPlaceBatterySoc()));
         
         //如果电池绑定时间为空或者绑定时间小于当前订单结束时间则更新电池信息
         if (Objects.isNull(newElectricityBattery.getBindTime()) || offlineOrderMessage.getEndTime() > newElectricityBattery.getBindTime()) {
@@ -335,9 +336,8 @@ public class NormalOffLineEleExchangeHandlerIot extends AbstractElectricityIotHa
         }
         try {
             ExchangeBatterySoc batterySoc = ExchangeBatterySoc.builder().uid(userInfo.getUid()).sn(takeBatterySn).tenantId(userInfo.getTenantId())
-                    .franchiseeId(userInfo.getFranchiseeId()).storeId(userInfo.getStoreId()).takeAwayPower(takeAwayPower)
-                    .returnPower(0.00).poorPower(0.00).delFlag(0).createTime(System.currentTimeMillis())
-                    .build();
+                    .franchiseeId(userInfo.getFranchiseeId()).storeId(userInfo.getStoreId()).takeAwayPower(takeAwayPower).returnPower(0.00).poorPower(0.00).delFlag(0)
+                    .createTime(System.currentTimeMillis()).build();
             exchangeBatterySocService.insertOne(batterySoc);
         } catch (Exception e) {
             log.error("NormalOffLineEleExchangeHandlerIot/handlerUserTakeBatterySoc/insert is exception, uid={},sn={}", userInfo.getUid(), takeBatterySn, e);
@@ -348,17 +348,17 @@ public class NormalOffLineEleExchangeHandlerIot extends AbstractElectricityIotHa
     /**
      * 换电归还电池 记录soc
      */
-    private void handlerUserRentBatterySoc(String returnSn, Double returnPower) {
+    private void handlerUserRentBatterySoc(ElectricityBattery placeBattery, String returnSn, Double returnPower) {
         if (Objects.isNull(returnPower)) {
             log.error("NormalOffLineEleExchangeHandlerIot/handlerUserRentBatterySoc is error,returnPower is null, returnSn={}", returnSn);
             return;
         }
         
-        ElectricityBattery placeBattery = electricityBatteryService.queryBySnFromDb(returnSn);
-        if (Objects.isNull(placeBattery.getUid())) {
-            log.error("NormalOffLineEleExchangeHandlerIot/handlerUserRentBatterySoc , uid is null, returnSn={}", returnSn);
-            return;
-        }
+        //        ElectricityBattery placeBattery = electricityBatteryService.queryBySnFromDb(returnSn);
+        //        if (Objects.isNull(placeBattery.getUid())) {
+        //            log.error("NormalOffLineEleExchangeHandlerIot/handlerUserRentBatterySoc , uid is null, returnSn={}", returnSn);
+        //            return;
+        //        }
         //  上报的sn绑定的用户+Sn;兼容异常交换场景
         ExchangeBatterySoc exchangeBatterySoc = exchangeBatterySocService.selectByUidAndSn(placeBattery.getUid(), returnSn);
         if (Objects.isNull(exchangeBatterySoc)) {

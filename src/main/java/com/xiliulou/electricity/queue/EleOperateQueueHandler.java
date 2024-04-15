@@ -780,16 +780,16 @@ public class EleOperateQueueHandler {
     /**
      * 退电电池 记录soc
      */
-    private void handlerUserRentBatterySoc(String returnSn, Double returnPower) {
+    private void handlerUserRentBatterySoc(ElectricityBattery placeBattery, String returnSn, Double returnPower) {
         if (Objects.isNull(returnPower)) {
             log.error("EleOperateQueueHandler/handlerUserRentBatterySoc is error,returnPower is null");
             return;
         }
-        ElectricityBattery placeBattery = electricityBatteryService.queryBySnFromDb(returnSn);
-        if (Objects.isNull(placeBattery.getUid())) {
-            log.error("EleOperateQueueHandler/handlerUserRentBatterySoc, uid is null, returnSn={}", returnSn);
-            return;
-        }
+        //        ElectricityBattery placeBattery = electricityBatteryService.queryBySnFromDb(returnSn);
+        //        if (Objects.isNull(placeBattery.getUid())) {
+        //            log.error("EleOperateQueueHandler/handlerUserRentBatterySoc, uid is null, returnSn={}", returnSn);
+        //            return;
+        //        }
         ExchangeBatterySoc exchangeBatterySoc = exchangeBatterySocService.selectByUidAndSn(placeBattery.getUid(), returnSn);
         if (Objects.isNull(exchangeBatterySoc)) {
             log.error("EleOperateQueueHandler/handlerUserRentBatterySoc is error, rentBatterySoc should is not null, uid={},sn={}", placeBattery.getUid(), returnSn);
@@ -877,7 +877,7 @@ public class EleOperateQueueHandler {
             
         }
         // 归还电池
-        operateBatterSocThreadPool.execute(() -> handlerUserRentBatterySoc(oldElectricityBattery.getSn(), oldElectricityBattery.getPower()));
+        operateBatterSocThreadPool.execute(() -> handlerUserRentBatterySoc(oldElectricityBattery, oldElectricityBattery.getSn(), oldElectricityBattery.getPower()));
         
     }
     
