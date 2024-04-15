@@ -15,7 +15,7 @@
         </foreach>
     </insert>
     
-    <delete id="deleteByUidAndGroupNoList">
+    <delete id="deleteByUid">
         delete from t_user_info_group_detail where uid = #{uid}
         <if test="groupNoList != null and groupNoList.size() > 0">
             and group_no in

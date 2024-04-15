@@ -37,4 +37,6 @@ public interface UserInfoGroupDetailService {
     R update(UserInfoGroupDetailUpdateRequest request, Long operator, Franchisee franchisee);
     
     R bindGroup(UserInfoBindGroupRequest request, Long operator, Franchisee franchisee);
+    
+    Integer deleteByUid(Long uid, List<String> groupNoList);
 }

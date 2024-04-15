@@ -196,7 +196,7 @@ public class UserInfoGroupDetailServiceImpl implements UserInfoGroupDetailServic
                     String oldGroupIds = existGroupList.stream().map(g -> g.getGroupId().toString()).collect(Collectors.joining(CommonConstant.STR_COMMA));
                     UserInfoGroupDetailHistory detailHistory = assembleDetailHistory(uid, oldGroupIds, "", operator, franchisee.getId(), tenantId);
                     
-                    Integer delete = userInfoGroupDetailMapper.deleteByUidAndGroupNoList(uid, null);
+                    Integer delete = userInfoGroupDetailMapper.deleteByUid(uid, null);
                     if (delete > 0) {
                         userInfoGroupDetailHistoryService.batchInsert(List.of(detailHistory));
                     }
@@ -287,7 +287,7 @@ public class UserInfoGroupDetailServiceImpl implements UserInfoGroupDetailServic
         List<Long> deleteGroupList = null;
         if (CollectionUtils.isNotEmpty(existGroupList)) {
             List<String> deleteGroupNoList = existGroupList.stream().map(UserInfoGroupNamesBO::getGroupNo).collect(Collectors.toList());
-            userInfoGroupDetailMapper.deleteByUidAndGroupNoList(uid, deleteGroupNoList);
+            this.deleteByUid(uid, deleteGroupNoList);
             
             deleteGroupList = existGroupList.stream().map(UserInfoGroupNamesBO::getGroupId).collect(Collectors.toList());
         }
@@ -390,6 +390,11 @@ public class UserInfoGroupDetailServiceImpl implements UserInfoGroupDetailServic
         }
         
         return R.ok();
+    }
+    
+    @Override
+    public Integer deleteByUid(Long uid, List<String> groupNoList) {
+        return userInfoGroupDetailMapper.deleteByUid(uid, groupNoList);
     }
     
 }
