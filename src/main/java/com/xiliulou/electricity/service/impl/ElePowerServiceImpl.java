@@ -5,6 +5,7 @@ import com.alibaba.excel.EasyExcel;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.utils.DataUtil;
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.entity.ElePower;
 import com.xiliulou.electricity.mapper.ElePowerMapper;
 import com.xiliulou.electricity.query.ElePowerListQuery;
@@ -14,10 +15,10 @@ import com.xiliulou.electricity.service.excel.AutoHeadColumnWidthStyleStrategy;
 import com.xiliulou.electricity.utils.DateUtils;
 import com.xiliulou.electricity.vo.ElePowerExcelVo;
 import com.xiliulou.electricity.vo.ElePowerVo;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
@@ -29,8 +30,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
-
-import lombok.extern.slf4j.Slf4j;
 
 /**
  * (ElePower)表服务实现类
@@ -127,7 +126,8 @@ public class ElePowerServiceImpl implements ElePowerService {
     public int insertOrUpdate(ElePower power) {
         return this.elePowerMapper.insertOrUpdate(power);
     }
-
+    
+    @Slave
     @Override
     public Pair<Boolean, Object> queryList(ElePowerListQuery query) {
         List<ElePower> powerList = this.elePowerMapper.queryPartAttList(query);
@@ -163,7 +163,13 @@ public class ElePowerServiceImpl implements ElePowerService {
     public Pair<Boolean, Object> queryMonthDetail(Long eid, Long startTime, Long endTime, Integer tenantId) {
         return Pair.of(true, this.elePowerMapper.queryMonthDetail(eid, startTime, endTime, tenantId));
     }
-
+    
+    @Slave
+    @Override
+    public ElePower queryLatestByEid(Long eid) {
+        return this.elePowerMapper.selectLatestByEid(eid);
+    }
+    
     @Override
     public void exportList(ElePowerListQuery query, HttpServletResponse response) {
         List<ElePower> elePowers = elePowerMapper.queryPartAttList(query);
