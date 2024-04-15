@@ -252,4 +252,10 @@ public class CarRentalPackageVo implements Serializable {
      */
     private Integer isUserGroup;
     
+    /**
+     * <p>
+     *    Description: 加盟商Id
+     * </p>
+    */
+    private Integer franchiseeId;
 }
