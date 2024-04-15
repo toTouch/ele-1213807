@@ -762,6 +762,7 @@ public class EleOperateQueueHandler {
      * 租电电池 记录soc
      */
     private void handlerUserTakeBatterySoc(UserInfo userInfo, String sn, Double takeAwayPower) {
+        log.info("handlerUserTakeBatterySoc exec, sn={}",sn);
         if (Objects.isNull(takeAwayPower)) {
             log.error("EleOperateQueueHandler/handlerUserTakeBatterySoc is error,takeAwayPower is null");
             return;
