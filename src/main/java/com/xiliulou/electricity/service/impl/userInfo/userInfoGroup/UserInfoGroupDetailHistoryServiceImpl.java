@@ -69,6 +69,12 @@ public class UserInfoGroupDetailHistoryServiceImpl implements UserInfoGroupDetai
         }).collect(Collectors.toList());
     }
     
+    @Slave
+    @Override
+    public Integer countTotal(UserInfoGroupDetailHistoryQuery query) {
+        return userInfoGroupDetailHistoryMapper.countTotal(query);
+    }
+    
     private String getGroupNames(String groupIds) {
         if (StringUtils.isBlank(groupIds)) {
             return "";
