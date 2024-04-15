@@ -762,14 +762,14 @@ public class EleOperateQueueHandler {
      * 租电电池 记录soc
      */
     private void handlerUserTakeBatterySoc(UserInfo userInfo, String sn, Double takeAwayPower) {
-        log.info("handlerUserTakeBatterySoc exec, sn={}",sn);
+        //log.info("handlerUserTakeBatterySoc exec, sn={}", sn);
         if (Objects.isNull(takeAwayPower)) {
             log.error("EleOperateQueueHandler/handlerUserTakeBatterySoc is error,takeAwayPower is null");
             return;
         }
         try {
             ExchangeBatterySoc batterySoc = ExchangeBatterySoc.builder().uid(userInfo.getUid()).sn(sn).tenantId(userInfo.getTenantId()).franchiseeId(userInfo.getFranchiseeId())
-                    .storeId(userInfo.getStoreId()).takeAwayPower(takeAwayPower).createTime(System.currentTimeMillis()).build();
+                    .storeId(userInfo.getStoreId()).takeAwayPower(takeAwayPower).returnPower(0.00).poorPower(0.00).delFlag(0).createTime(System.currentTimeMillis()).build();
             exchangeBatterySocService.insertOne(batterySoc);
         } catch (Exception e) {
             log.error("EleOperateQueueHandler/handlerUserTakeBatterySoc/insert is exception,uid ={}, sn={}", userInfo.getUid(), sn, e);

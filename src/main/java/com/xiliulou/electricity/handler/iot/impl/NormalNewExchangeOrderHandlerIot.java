@@ -412,7 +412,8 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
         }
         try {
             ExchangeBatterySoc batterySoc = ExchangeBatterySoc.builder().uid(userInfo.getUid()).sn(takeBatterySn).tenantId(userInfo.getTenantId())
-                    .franchiseeId(userInfo.getFranchiseeId()).storeId(userInfo.getStoreId()).takeAwayPower(takeAwayPower).createTime(System.currentTimeMillis())
+                    .franchiseeId(userInfo.getFranchiseeId()).storeId(userInfo.getStoreId()).takeAwayPower(takeAwayPower)
+                    .returnPower(0.00).poorPower(0.00).delFlag(0).createTime(System.currentTimeMillis())
                      .build();
             exchangeBatterySocService.insertOne(batterySoc);
         } catch (Exception e) {
