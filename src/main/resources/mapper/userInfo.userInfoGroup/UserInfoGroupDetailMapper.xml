@@ -41,7 +41,7 @@
         any_value(tuigd.tenant_id) as tenantid,
         any_value(tuigd.del_flag) as delflag,
         any_value(tuigd.create_time) as createtime,
-        (select max(update_time) from t_user_info_group_detail) as updatetime,
+        any_value(tuigd.update_time) as updatetime,
         any_value(tuigd.operator) as operator,
         any_value(tuig.id) as groupid,
         any_value(tuig.name) as groupname
@@ -63,7 +63,7 @@
             </if>
         </where>
         group by tuigd.uid
-        order by max(tuigd.update_time) desc
+        order by any_value(tuigd.update_time) desc;
         limit #{offset}, #{size}
     </select>
     
