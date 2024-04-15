@@ -31,6 +31,6 @@ public interface UserInfoGroupDetailMapper {
     
     Integer countGroupByUid(Long uid);
     
-    Integer deleteByUidAndGroupNoList(@Param("uid") Long uid, @Param("groupNoList") List<String> groupNoList);
+    Integer deleteByUid(@Param("uid") Long uid, @Param("groupNoList") List<String> groupNoList);
     
 }
