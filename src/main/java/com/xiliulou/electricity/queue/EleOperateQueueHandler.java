@@ -768,8 +768,17 @@ public class EleOperateQueueHandler {
             return;
         }
         try {
-            ExchangeBatterySoc batterySoc = ExchangeBatterySoc.builder().uid(userInfo.getUid()).sn(sn).tenantId(userInfo.getTenantId()).franchiseeId(userInfo.getFranchiseeId())
-                    .storeId(userInfo.getStoreId()).takeAwayPower(takeAwayPower).returnPower(0.00).poorPower(0.00).delFlag(0).createTime(System.currentTimeMillis()).build();
+            ExchangeBatterySoc batterySoc =new ExchangeBatterySoc();
+            batterySoc.setUid(userInfo.getUid());
+            batterySoc.setSn(sn);
+            batterySoc.setTenantId(userInfo.getTenantId());
+            batterySoc.setFranchiseeId(userInfo.getFranchiseeId());
+            batterySoc.setStoreId(userInfo.getStoreId());
+            batterySoc.setTakeAwayPower(takeAwayPower);
+            batterySoc.setReturnPower(0.00);
+            batterySoc.setPoorPower(0.00);
+            batterySoc.setDelFlag(0);
+            batterySoc.setCreateTime(System.currentTimeMillis());
             exchangeBatterySocService.insertOne(batterySoc);
         } catch (Exception e) {
             log.error("EleOperateQueueHandler/handlerUserTakeBatterySoc/insert is exception,uid ={}, sn={}", userInfo.getUid(), sn, e);
