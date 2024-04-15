@@ -11,6 +11,7 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.bo.userInfoGroup.UserInfoGroupBO;
 import com.xiliulou.electricity.bo.userInfoGroup.UserInfoGroupIdAndNameBO;
+import com.xiliulou.electricity.bo.userInfoGroup.UserInfoGroupNamesBO;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
@@ -32,18 +33,19 @@ import com.xiliulou.electricity.service.userinfo.userInfoGroup.UserInfoGroupServ
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.vo.userinfo.BatchImportUserInfoVO;
-import com.xiliulou.electricity.vo.userinfo.UserInfoGroupIdAndNameVO;
-import com.xiliulou.electricity.vo.userinfo.UserInfoGroupVO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.MapUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -98,8 +100,8 @@ public class UserInfoGroupServiceImpl implements UserInfoGroupService {
             
             long nowTime = System.currentTimeMillis();
             
-            userInfoGroup = UserInfoGroup.builder().groupNo(IdUtil.simpleUUID()).name(userGroupName).operator(operator).franchiseeId(franchiseeId).tenantId(tenantId).createTime(nowTime)
-                    .updateTime(nowTime).build();
+            userInfoGroup = UserInfoGroup.builder().groupNo(IdUtil.simpleUUID()).name(userGroupName).operator(operator).franchiseeId(franchiseeId).tenantId(tenantId)
+                    .createTime(nowTime).updateTime(nowTime).build();
             
             return R.ok(userInfoGroupMapper.insertOne(userInfoGroup));
         } finally {
@@ -154,12 +156,12 @@ public class UserInfoGroupServiceImpl implements UserInfoGroupService {
             
             String name = request.getName();
             Integer tenantId = TenantContextHolder.getTenantId();
-    
+            
             // 加盟商校验
             if (Objects.nonNull(franchisee) && !Objects.equals(franchisee.getId(), oldUserInfo.getFranchiseeId())) {
                 return R.ok();
             }
-    
+            
             // 租户校验
             if (!Objects.equals(tenantId, oldUserInfo.getTenantId())) {
                 return R.ok();
@@ -224,30 +226,41 @@ public class UserInfoGroupServiceImpl implements UserInfoGroupService {
     }
     
     @Override
-    public R batchImport(UserInfoGroupBatchImportRequest request, Long operator) {
+    public R batchImport(UserInfoGroupBatchImportRequest request, Long operator, Franchisee franchisee) {
         Long franchiseeId = request.getFranchiseeId();
-        List<Long> groupIds = request.getGroupIds();
+        Long groupId = request.getGroupId();
         Set<String> phones = new HashSet<>(JsonUtil.fromJsonArray(request.getJsonPhones(), String.class));
         
         if (CollectionUtils.isEmpty(phones)) {
             return R.fail("120111", "手机号不可以为空");
         }
         
-        if (Objects.isNull(franchiseeService.queryByIdFromCache(franchiseeId))) {
-            return R.fail("ELECTRICITY.0038", "未找到加盟商");
+        UserInfoGroup userInfoGroup = this.queryByIdFromCache(groupId);
+        if (Objects.isNull(userInfoGroup)) {
+            return R.fail("120115", "分组名称不存在");
         }
         
-        Integer tenantId = TenantContextHolder.getTenantId();
+        // 加盟商校验
+        if (Objects.isNull(franchisee) && !Objects.equals(franchiseeId, userInfoGroup.getFranchiseeId())) {
+            return R.ok();
+        }
+        if (Objects.nonNull(franchisee) && !Objects.equals(franchisee.getId(), userInfoGroup.getFranchiseeId())) {
+            return R.ok();
+        }
         
-        ConcurrentHashSet<UserInfoGroupIdAndNameVO> notExistsUserGroup = new ConcurrentHashSet<>();
-        ConcurrentHashSet<UserInfoGroupIdAndNameVO> notBoundFranchiseeUserGroup = new ConcurrentHashSet<>();
-        ConcurrentHashSet<UserInfoGroupIdAndNameVO> notSameFranchiseeUserGroup = new ConcurrentHashSet<>();
-        ConcurrentHashSet<UserInfoGroup> existsUserGroup = new ConcurrentHashSet<>();
+        // 租户校验
+        Integer tenantId = TenantContextHolder.getTenantId();
+        if (!Objects.equals(tenantId, userInfoGroup.getTenantId())) {
+            return R.ok();
+        }
+        
         ConcurrentHashSet<String> notExistsPhone = new ConcurrentHashSet<>();
         ConcurrentHashSet<String> notBoundFranchiseePhone = new ConcurrentHashSet<>();
         ConcurrentHashSet<String> notSameFranchiseePhone = new ConcurrentHashSet<>();
         ConcurrentHashSet<String> overLimitGroupNumPhone = new ConcurrentHashSet<>();
         ConcurrentHashSet<UserInfo> existsPhone = new ConcurrentHashSet<>();
+        ConcurrentHashSet<UserInfo> sameFranchiseeUserInfos = new ConcurrentHashSet<>();
+        Map<Long, UserInfo> userInfoMap = new HashMap<>();
         
         for (String e : phones) {
             UserInfo userInfo = userInfoService.queryUserInfoByPhone(e, tenantId);
@@ -255,18 +268,12 @@ public class UserInfoGroupServiceImpl implements UserInfoGroupService {
                 notExistsPhone.add(e);
             } else {
                 Long bindFranchiseeId = userInfo.getFranchiseeId();
-                
                 if (Objects.isNull(bindFranchiseeId) || Objects.equals(bindFranchiseeId, NumberConstant.ZERO_L)) {
                     notBoundFranchiseePhone.add(e);
                 } else {
                     if (Objects.equals(bindFranchiseeId, franchiseeId)) {
-                        // 判断绑定分组数量是否超限
-                        Integer limitGroupNum = userInfoGroupDetailService.countGroupByUid(userInfo.getUid());
-                        if (limitGroupNum >= UserGroupConstant.USER_GROUP_LIMIT) {
-                            overLimitGroupNumPhone.add(userInfo.getPhone());
-                        } else {
-                            existsPhone.add(userInfo);
-                        }
+                        sameFranchiseeUserInfos.add(userInfo);
+                        userInfoMap.put(userInfo.getUid(), userInfo);
                     } else {
                         notSameFranchiseePhone.add(e);
                     }
@@ -274,87 +281,88 @@ public class UserInfoGroupServiceImpl implements UserInfoGroupService {
             }
         }
         
-        groupIds.parallelStream().forEach(e -> {
-            UserInfoGroup userInfoGroup = this.queryByIdFromCache(e);
-            if (Objects.isNull(userInfoGroup)) {
-                notExistsUserGroup.add(UserInfoGroupIdAndNameVO.builder().id(e).build());
+        // 判断绑定分组数量是否超限
+        if (CollectionUtils.isNotEmpty(sameFranchiseeUserInfos)) {
+            List<Long> uidList = sameFranchiseeUserInfos.stream().map(UserInfo::getUid).collect(Collectors.toList());
+            List<UserInfoGroupNamesBO> listByUidList = userInfoGroupDetailService.listGroupByUidList(uidList);
+            
+            if (CollectionUtils.isEmpty(listByUidList)) {
+                existsPhone.addAll(sameFranchiseeUserInfos);
             } else {
-                Long bindFranchiseeId = userInfoGroup.getFranchiseeId();
-                
-                if (Objects.isNull(bindFranchiseeId) || Objects.equals(bindFranchiseeId, NumberConstant.ZERO_L)) {
-                    notBoundFranchiseeUserGroup.add(UserInfoGroupIdAndNameVO.builder().id(e).name(userInfoGroup.getName()).groupNo(userInfoGroup.getGroupNo()).build());
-                } else {
-                    if (Objects.equals(bindFranchiseeId, franchiseeId)) {
-                        existsUserGroup.add(userInfoGroup);
-                    } else {
-                        notSameFranchiseeUserGroup.add(UserInfoGroupIdAndNameVO.builder().id(e).name(userInfoGroup.getName()).groupNo(userInfoGroup.getGroupNo()).build());
-                    }
+                // 根据uid进行分组
+                Map<Long, List<UserInfoGroupNamesBO>> groupMap = listByUidList.stream().collect(Collectors.groupingBy(UserInfoGroupNamesBO::getUid));
+                if (MapUtils.isNotEmpty(groupMap)) {
+                    groupMap.forEach((uid, v) -> {
+                        if (CollectionUtils.isNotEmpty(v)) {
+                            UserInfo userInfo = userInfoMap.get(uid);
+                            if (Objects.nonNull(userInfo)) {
+                                if (v.size() >= UserGroupConstant.USER_GROUP_LIMIT) {
+                                    overLimitGroupNumPhone.add(userInfo.getPhone());
+                                } else {
+                                    existsPhone.add(userInfo);
+                                }
+                            }
+                        }
+                    });
                 }
             }
-        });
+        }
         
         BatchImportUserInfoVO batchImportUserInfoVO = new BatchImportUserInfoVO();
         String sessionId = UUID.fastUUID().toString(true);
         batchImportUserInfoVO.setSessionId(sessionId);
-        batchImportUserInfoVO.setNotExistUserGroups(CollectionUtils.isEmpty(notExistsUserGroup) ? Collections.emptySet() : notExistsUserGroup);
-        batchImportUserInfoVO.setNotBoundFranchiseeUserGroups(CollectionUtils.isEmpty(notBoundFranchiseeUserGroup) ? Collections.emptySet() : notBoundFranchiseeUserGroup);
-        batchImportUserInfoVO.setNotSameFranchiseeUserGroups(CollectionUtils.isEmpty(notSameFranchiseeUserGroup) ? Collections.emptySet() : notSameFranchiseeUserGroup);
         batchImportUserInfoVO.setNotExistPhones(CollectionUtils.isEmpty(notExistsPhone) ? Collections.emptySet() : notExistsPhone);
         batchImportUserInfoVO.setNotBoundFranchiseePhones(CollectionUtils.isEmpty(notBoundFranchiseePhone) ? Collections.emptySet() : notBoundFranchiseePhone);
         batchImportUserInfoVO.setNotSameFranchiseePhones(CollectionUtils.isEmpty(notSameFranchiseePhone) ? Collections.emptySet() : notSameFranchiseePhone);
         batchImportUserInfoVO.setOverLimitGroupNumPhones(CollectionUtils.isEmpty(overLimitGroupNumPhone) ? Collections.emptySet() : overLimitGroupNumPhone);
         
-        if (existsUserGroup.isEmpty() || existsPhone.isEmpty()) {
+        if (existsPhone.isEmpty()) {
             batchImportUserInfoVO.setIsImported(false);
             return R.ok(batchImportUserInfoVO);
         }
         
         batchImportUserInfoVO.setIsImported(true);
         executorService.execute(() -> {
-            handleBatchImportUserInfo(existsUserGroup, existsPhone, sessionId, franchiseeId, tenantId, operator);
+            handleBatchImportUserInfo(userInfoGroup, existsPhone, sessionId, franchiseeId, tenantId, operator);
         });
         
         return R.ok(batchImportUserInfoVO);
     }
     
-    private void handleBatchImportUserInfo(ConcurrentHashSet<UserInfoGroup> existsUserGroup, ConcurrentHashSet<UserInfo> existsPhone, String sessionId, Long franchiseeId,
-            Integer tenantId, Long operator) {
-        // 遍历分组
-        existsUserGroup.forEach(userGroup -> {
-            List<UserInfoGroupDetail> detailList = new ArrayList<>();
-            Iterator<UserInfo> iterator = existsPhone.iterator();
-            long nowTime = System.currentTimeMillis();
-            int maxSize = 300;
-            int size = 0;
-            
-            while (iterator.hasNext()) {
-                if (size >= maxSize) {
-                    userInfoGroupDetailService.batchInsert(detailList);
-                    detailList.clear();
-                    size = 0;
-                    continue;
-                }
-                
-                UserInfo userInfo = iterator.next();
-                Long uid = userInfo.getUid();
-                
-                UserInfoGroupDetail existDetail = userInfoGroupDetailService.queryByUid(userGroup.getGroupNo(), uid, tenantId);
-                if (Objects.nonNull(existDetail)) {
-                    continue;
-                }
-                
-                UserInfoGroupDetail detail = UserInfoGroupDetail.builder().groupNo(userGroup.getGroupNo()).uid(uid).franchiseeId(franchiseeId).tenantId(tenantId)
-                        .createTime(nowTime).updateTime(nowTime).operator(operator).build();
-                
-                detailList.add(detail);
-                
-                size++;
-            }
-            
-            if (!detailList.isEmpty()) {
+    private void handleBatchImportUserInfo(UserInfoGroup userInfoGroup, ConcurrentHashSet<UserInfo> existsPhone, String sessionId, Long franchiseeId, Integer tenantId,
+            Long operator) {
+        List<UserInfoGroupDetail> detailList = new ArrayList<>();
+        Iterator<UserInfo> iterator = existsPhone.iterator();
+        long nowTime = System.currentTimeMillis();
+        int maxSize = 300;
+        int size = 0;
+        
+        while (iterator.hasNext()) {
+            if (size >= maxSize) {
                 userInfoGroupDetailService.batchInsert(detailList);
+                detailList.clear();
+                size = 0;
+                continue;
             }
-        });
+            
+            UserInfo userInfo = iterator.next();
+            Long uid = userInfo.getUid();
+            
+            UserInfoGroupDetail existDetail = userInfoGroupDetailService.queryByUid(userInfoGroup.getGroupNo(), uid, tenantId);
+            if (Objects.nonNull(existDetail)) {
+                continue;
+            }
+            
+            UserInfoGroupDetail detail = UserInfoGroupDetail.builder().groupNo(userInfoGroup.getGroupNo()).uid(uid).franchiseeId(franchiseeId).tenantId(tenantId)
+                    .createTime(nowTime).updateTime(nowTime).operator(operator).build();
+            
+            detailList.add(detail);
+            
+            size++;
+        }
+        if (!detailList.isEmpty()) {
+            userInfoGroupDetailService.batchInsert(detailList);
+        }
         
         redisService.set(CacheConstant.CACHE_USER_GROUP_BATCH_IMPORT + sessionId, "1", 60L, TimeUnit.SECONDS);
     }
