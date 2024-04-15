@@ -291,12 +291,12 @@ public class UserInfoGroupServiceImpl implements UserInfoGroupService {
         Map<Long, List<UserInfoGroupNamesBO>> userGroupMap = null;
         // 判断绑定分组数量是否超限
         if (CollectionUtils.isNotEmpty(sameFranchiseeUserInfos)) {
+            existsPhone.addAll(sameFranchiseeUserInfos);
+            
             List<Long> uidList = sameFranchiseeUserInfos.stream().map(UserInfo::getUid).collect(Collectors.toList());
             List<UserInfoGroupNamesBO> listByUidList = userInfoGroupDetailService.listGroupByUidList(uidList);
             
-            if (CollectionUtils.isEmpty(listByUidList)) {
-                existsPhone.addAll(sameFranchiseeUserInfos);
-            } else {
+            if (CollectionUtils.isNotEmpty(listByUidList)) {
                 // 根据uid进行分组
                 userGroupMap = listByUidList.stream().collect(Collectors.groupingBy(UserInfoGroupNamesBO::getUid));
                 if (MapUtils.isNotEmpty(userGroupMap)) {
@@ -306,8 +306,7 @@ public class UserInfoGroupServiceImpl implements UserInfoGroupService {
                             if (Objects.nonNull(userInfo)) {
                                 if (v.size() >= UserGroupConstant.USER_GROUP_LIMIT) {
                                     overLimitGroupNumPhone.add(userInfo.getPhone());
-                                } else {
-                                    existsPhone.add(userInfo);
+                                    existsPhone.removeIf(e -> Objects.equals(e.getUid(), uid));
                                 }
                             }
                         }
