@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.mapper;
 
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.xiliulou.electricity.entity.ElePower;
 
 import java.util.List;
@@ -12,7 +13,8 @@ import com.xiliulou.electricity.vo.ElePowerMonthDetailVo;
 import com.xiliulou.electricity.vo.ElePowerMothVo;
 import com.xiliulou.electricity.vo.EleSumPowerVO;
 import org.apache.ibatis.annotations.Param;
-import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+
+import java.util.List;
 
 /**
  * (ElePower)表数据库访问层
@@ -88,6 +90,9 @@ public interface ElePowerMapper extends BaseMapper<ElePower> {
     List<ElePowerMonthDetailVo> queryMonthDetail(@Param("eid") Long eid, @Param("startTime") Long startTime,
                                                           @Param("endTime") Long endTime, @Param("tenantId") Integer tenantId);
     
+    ElePower selectLatestByEid(Long eid);
+    
+    //    void queryDayList(Long eid, Long startTime, Long endTime, Integer tenantId);
     EleSumPowerVO selectListByCondition(@Param("startTime") Long startTime, @Param("endTime") Long endTime, @Param("eidList") List<Long> eidList, @Param("tenantId") Integer tenantId);
     
     Long selectLatestReportTime(@Param("startTime") Long startTime, @Param("endTime") Long endTime, @Param("eidList") List<Long> eidList, @Param("tenantId") Integer tenantId);

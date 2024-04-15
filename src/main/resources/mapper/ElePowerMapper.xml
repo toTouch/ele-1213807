@@ -123,6 +123,12 @@
         order by report_time desc
         limit #{offset}, #{size}
     </select>
+    
+    <select id="selectLatestByEid" resultMap="ElePowerMap">
+        select
+        sum_power, hour_power, electric_charge
+        from t_ele_power where eid = #{eid} order by id desc limit 1
+    </select>
 
     <select id="queryDayList" resultType="com.xiliulou.electricity.vo.ElePowerDayVo">
         select from_unixtime(report_time/1000, '%Y-%m-%d') date,sum(hour_power) sumPower

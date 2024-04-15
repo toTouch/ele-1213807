@@ -77,6 +77,8 @@ public interface ElePowerService {
     Pair<Boolean, Object> queryDayDetail(Long eid, Long startTime, Long endTime, Integer tenantId);
 
     Pair<Boolean, Object> queryMonthDetail(Long eid, Long startTime, Long endTime, Integer tenantId);
+    
+    ElePower queryLatestByEid(Long eid);
 
     void exportList(ElePowerListQuery query, HttpServletResponse response);
     
