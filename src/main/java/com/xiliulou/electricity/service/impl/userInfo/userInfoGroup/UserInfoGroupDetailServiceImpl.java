@@ -194,7 +194,7 @@ public class UserInfoGroupDetailServiceImpl implements UserInfoGroupDetailServic
                 if (CollectionUtils.isNotEmpty(existGroupList)) {
                     // 修改历史记录
                     String oldGroupIds = existGroupList.stream().map(g -> g.getGroupId().toString()).collect(Collectors.joining(CommonConstant.STR_COMMA));
-                    UserInfoGroupDetailHistory detailHistory = assembleDetailHistory(uid, oldGroupIds, "", operator, franchisee.getId(), tenantId);
+                    UserInfoGroupDetailHistory detailHistory = assembleDetailHistory(uid, oldGroupIds, "", operator, userInfo.getFranchiseeId(), tenantId);
                     
                     Integer delete = userInfoGroupDetailMapper.deleteByUid(uid, null);
                     if (delete > 0) {
@@ -263,7 +263,7 @@ public class UserInfoGroupDetailServiceImpl implements UserInfoGroupDetailServic
             }
             
             // 持久化detail
-            handleGroupDetailDb(uid, insertList, existGroupList, oldGroupIds, operator, franchisee.getId(), tenantId);
+            handleGroupDetailDb(uid, insertList, existGroupList, oldGroupIds, operator, userInfo.getFranchiseeId(), tenantId);
             
             return R.ok();
         } finally {
@@ -384,7 +384,7 @@ public class UserInfoGroupDetailServiceImpl implements UserInfoGroupDetailServic
         if (CollectionUtils.isNotEmpty(list)) {
             Integer integer = this.batchInsert(list);
             if (integer > 0) {
-                UserInfoGroupDetailHistory detailHistory = this.assembleDetailHistory(uid, oldGroupIds, newGroupIds, operator, franchisee.getId(), tenantId);
+                UserInfoGroupDetailHistory detailHistory = this.assembleDetailHistory(uid, oldGroupIds, newGroupIds, operator, userInfo.getFranchiseeId(), tenantId);
                 userInfoGroupDetailHistoryService.batchInsert(List.of(detailHistory));
             }
         }
