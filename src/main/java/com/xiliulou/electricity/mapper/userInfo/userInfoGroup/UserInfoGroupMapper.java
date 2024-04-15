@@ -4,8 +4,6 @@ import com.xiliulou.electricity.bo.userInfoGroup.UserInfoGroupBO;
 import com.xiliulou.electricity.bo.userInfoGroup.UserInfoGroupIdAndNameBO;
 import com.xiliulou.electricity.entity.userInfo.userInfoGroup.UserInfoGroup;
 import com.xiliulou.electricity.query.UserInfoGroupQuery;
-import com.xiliulou.electricity.vo.userinfo.UserInfoGroupIdAndNameVO;
-import com.xiliulou.electricity.vo.userinfo.UserInfoGroupVO;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
@@ -33,4 +31,5 @@ public interface UserInfoGroupMapper {
     
     int update(UserInfoGroup oldUserInfo);
     
+    Integer batchUpdateByIds(@Param("ids") List<Long> ids, @Param("updateTime") Long updateTime, @Param("operator") Long operator, @Param("delFlag") Integer delFlag);
 }

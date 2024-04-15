@@ -52,7 +52,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import java.util.StringJoiner;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -233,6 +232,11 @@ public class UserInfoGroupServiceImpl implements UserInfoGroupService {
     }
     
     @Override
+    public Integer batchUpdateByIds(List<Long> groupIds, Long updateTime, Long operator, Integer delFlag) {
+        return userInfoGroupMapper.batchUpdateByIds(groupIds, updateTime, operator, delFlag);
+    }
+    
+    @Override
     public R batchImport(UserInfoGroupBatchImportRequest request, Long operator, Franchisee franchisee) {
         Long franchiseeId = request.getFranchiseeId();
         Long groupId = request.getGroupId();
@@ -331,14 +335,14 @@ public class UserInfoGroupServiceImpl implements UserInfoGroupService {
         batchImportUserInfoVO.setIsImported(true);
         Map<Long, List<UserInfoGroupNamesBO>> finalUserGroupMap = userGroupMap;
         executorService.execute(() -> {
-            handleBatchImportUserInfo(userInfoGroup, existsPhone, sessionId, franchiseeId, tenantId, operator, finalUserGroupMap);
+            handleBatchImportUserInfo(userInfoGroup, existsPhone, sessionId, franchiseeId, tenantId, operator, finalUserGroupMap, groupId);
         });
         
         return R.ok(batchImportUserInfoVO);
     }
     
     private void handleBatchImportUserInfo(UserInfoGroup userInfoGroup, ConcurrentHashSet<UserInfo> existsPhone, String sessionId, Long franchiseeId, Integer tenantId,
-            Long operator, Map<Long, List<UserInfoGroupNamesBO>> userGroupMap) {
+            Long operator, Map<Long, List<UserInfoGroupNamesBO>> userGroupMap, Long groupId) {
         List<UserInfoGroupDetail> detailList = new ArrayList<>();
         List<UserInfoGroupDetailHistory> detailHistoryList = new ArrayList<>();
         Iterator<UserInfo> iterator = existsPhone.iterator();
@@ -356,7 +360,7 @@ public class UserInfoGroupServiceImpl implements UserInfoGroupService {
             
             UserInfo userInfo = iterator.next();
             Long uid = userInfo.getUid();
-    
+            
             String oldGroupIds = "";
             if (MapUtils.isNotEmpty(userGroupMap)) {
                 // 该用户已绑定的所有分组
@@ -392,7 +396,17 @@ public class UserInfoGroupServiceImpl implements UserInfoGroupService {
         }
         if (!detailList.isEmpty()) {
             Integer insert = userInfoGroupDetailService.batchInsert(detailList);
+            
             if (insert > 0 && CollectionUtils.isNotEmpty(detailHistoryList)) {
+                // 更新时间
+                UserInfoGroup updateGroup = UserInfoGroup.builder().operator(operator).updateTime(nowTime).id(groupId).build();
+                int update = userInfoGroupMapper.update(updateGroup);
+                
+                DbUtils.dbOperateSuccessThenHandleCache(update, i -> {
+                    redisService.delete(CacheConstant.CACHE_USER_GROUP + groupId);
+                });
+                
+                // 新增修改记录
                 userInfoGroupDetailHistoryService.batchInsert(detailHistoryList);
             }
         }

@@ -192,12 +192,18 @@ public class UserInfoGroupDetailServiceImpl implements UserInfoGroupDetailServic
             if (CollectionUtils.isEmpty(groupIds)) {
                 List<UserInfoGroupNamesBO> existGroupList = this.listGroupByUid(UserInfoGroupDetailQuery.builder().uid(uid).tenantId(tenantId).build());
                 if (CollectionUtils.isNotEmpty(existGroupList)) {
-                    // 修改历史记录
                     String oldGroupIds = existGroupList.stream().map(g -> g.getGroupId().toString()).collect(Collectors.joining(CommonConstant.STR_COMMA));
                     UserInfoGroupDetailHistory detailHistory = assembleDetailHistory(uid, oldGroupIds, "", operator, userInfo.getFranchiseeId(), tenantId);
                     
                     Integer delete = userInfoGroupDetailMapper.deleteByUid(uid, null);
                     if (delete > 0) {
+                        // 更新分组的updateTime
+                        List<Long> updateIds = existGroupList.stream().map(UserInfoGroupNamesBO::getGroupId).collect(Collectors.toList());
+                        userInfoGroupService.batchUpdateByIds(updateIds, System.currentTimeMillis(), operator, null);
+                        // 清除分组缓存
+                        delGroupCacheByIds(updateIds);
+                        
+                        // 新增历史记录
                         userInfoGroupDetailHistoryService.batchInsert(List.of(detailHistory));
                     }
                     return R.ok();
@@ -271,6 +277,12 @@ public class UserInfoGroupDetailServiceImpl implements UserInfoGroupDetailServic
         }
     }
     
+    private void delGroupCacheByIds(List<Long> ids) {
+        ids.forEach(id -> {
+            redisService.delete(CacheConstant.CACHE_USER_GROUP + id);
+        });
+    }
+    
     @Transactional(rollbackFor = Exception.class)
     public void handleGroupDetailDb(Long uid, List<UserInfoGroupDetail> insertList, List<UserInfoGroupNamesBO> existGroupList, List<Long> oldGroupIds, Long operator,
             Long franchiseeId, Integer tenantId) {
@@ -303,9 +315,21 @@ public class UserInfoGroupDetailServiceImpl implements UserInfoGroupDetailServic
             newGroupList.addAll(addGroupList);
         }
         
+        // 更新分组的updateTime
+        List<Long> updateIds = new ArrayList<>();
+        if (CollectionUtils.isNotEmpty(deleteGroupList)) {
+            updateIds.addAll(deleteGroupList);
+        }
+        if (CollectionUtils.isNotEmpty(addGroupList)) {
+            updateIds.addAll(addGroupList);
+        }
+        userInfoGroupService.batchUpdateByIds(updateIds, System.currentTimeMillis(), operator, null);
+        // 清除分组缓存
+        delGroupCacheByIds(updateIds);
+        
+        // 新增历史记录
         UserInfoGroupDetailHistory detailHistory = this.assembleDetailHistory(uid, StringUtils.join(oldGroupIds, CommonConstant.STR_COMMA),
                 StringUtils.join(newGroupList, CommonConstant.STR_COMMA), operator, franchiseeId, tenantId);
-        
         userInfoGroupDetailHistoryService.batchInsert(List.of(detailHistory));
     }
     
@@ -319,77 +343,76 @@ public class UserInfoGroupDetailServiceImpl implements UserInfoGroupDetailServic
     @Override
     public R bindGroup(UserInfoBindGroupRequest request, Long operator, Franchisee franchisee) {
         Long uid = request.getUid();
-        List<Long> groupIds = request.getGroupIds();
-        Integer tenantId = TenantContextHolder.getTenantId();
         
-        UserInfo userInfo = userInfoService.queryByUidFromDb(uid);
-        if (Objects.isNull(userInfo)) {
-            return R.fail("ELECTRICITY.0001", "未找到用户");
+        boolean result = redisService.setNx(CacheConstant.CACHE_USER_GROUP_DETAIL_BIND_GROUP_LOCK + uid, "1", 3 * 1000L, false);
+        if (!result) {
+            return R.fail("ELECTRICITY.0034", "操作频繁");
         }
         
-        // 加盟商校验
-        if (Objects.nonNull(franchisee) && !Objects.equals(franchisee.getId(), userInfo.getFranchiseeId())) {
-            return R.ok();
-        }
-        
-        // 租户校验
-        if (!Objects.equals(userInfo.getTenantId(), tenantId)) {
-            return R.ok();
-        }
-        
-        // 超限判断
-        if (groupIds.size() > UserGroupConstant.USER_GROUP_LIMIT) {
-            return R.fail("120114", "用户绑定的分组数量已达上限10个");
-        }
-        
-        List<Long> filterGroupIds = groupIds;
-        UserInfoGroupDetailQuery query = UserInfoGroupDetailQuery.builder().tenantId(tenantId).uid(uid).build();
-        List<UserInfoGroupNamesBO> existGroupList = userInfoGroupDetailMapper.selectListGroupByUid(query);
-        String oldGroupIds = "";
-        String newGroupIds = "";
-        if (CollectionUtils.isNotEmpty(existGroupList)) {
-            List<Long> existGroupIds = existGroupList.stream().map(UserInfoGroupNamesBO::getGroupId).collect(Collectors.toList());
-            filterGroupIds = groupIds.stream().filter(groupId -> !existGroupIds.contains(groupId)).collect(Collectors.toList());
+        try {
+            List<Long> groupIds = request.getGroupIds();
+            Integer tenantId = TenantContextHolder.getTenantId();
             
-            // 旧的修改记录
-            oldGroupIds = existGroupList.stream().map(g -> g.getGroupId().toString()).collect(Collectors.joining(CommonConstant.STR_COMMA));
-        }
-        
-        List<UserInfoGroupDetail> list = new ArrayList<>();
-        if (CollectionUtils.isNotEmpty(filterGroupIds)) {
+            UserInfo userInfo = userInfoService.queryByUidFromDb(uid);
+            if (Objects.isNull(userInfo)) {
+                return R.fail("ELECTRICITY.0001", "未找到用户");
+            }
+            
+            // 加盟商校验
+            if (Objects.nonNull(franchisee) && !Objects.equals(franchisee.getId(), userInfo.getFranchiseeId())) {
+                return R.ok();
+            }
+            
+            // 租户校验
+            if (!Objects.equals(userInfo.getTenantId(), tenantId)) {
+                return R.ok();
+            }
+            
             // 超限判断
-            Integer limitGroupNum = userInfoGroupDetailMapper.countGroupByUid(uid);
-            if (Objects.nonNull(limitGroupNum) && ((limitGroupNum + filterGroupIds.size()) > UserGroupConstant.USER_GROUP_LIMIT)) {
+            if (groupIds.size() > UserGroupConstant.USER_GROUP_LIMIT) {
                 return R.fail("120114", "用户绑定的分组数量已达上限10个");
             }
             
-            long nowTime = System.currentTimeMillis();
-            
-            groupIds.parallelStream().forEach(groupId -> {
-                UserInfoGroup userInfoGroup = userInfoGroupService.queryByIdFromCache(groupId);
-                if (Objects.nonNull(userInfoGroup)) {
-                    UserInfoGroupDetail detail = UserInfoGroupDetail.builder().groupNo(userInfoGroup.getGroupNo()).uid(uid).franchiseeId(userInfoGroup.getFranchiseeId())
-                            .tenantId(tenantId).createTime(nowTime).updateTime(nowTime).operator(operator).build();
-                    
-                    list.add(detail);
+            List<UserInfoGroupDetail> list = new ArrayList<>();
+            if (CollectionUtils.isNotEmpty(groupIds)) {
+                // 超限判断
+                Integer limitGroupNum = userInfoGroupDetailMapper.countGroupByUid(uid);
+                if (Objects.nonNull(limitGroupNum) && ((limitGroupNum + groupIds.size()) > UserGroupConstant.USER_GROUP_LIMIT)) {
+                    return R.fail("120114", "用户绑定的分组数量已达上限10个");
                 }
-            });
+                
+                long nowTime = System.currentTimeMillis();
+                
+                groupIds.parallelStream().forEach(groupId -> {
+                    UserInfoGroup userInfoGroup = userInfoGroupService.queryByIdFromCache(groupId);
+                    if (Objects.nonNull(userInfoGroup)) {
+                        UserInfoGroupDetail detail = UserInfoGroupDetail.builder().groupNo(userInfoGroup.getGroupNo()).uid(uid).franchiseeId(userInfoGroup.getFranchiseeId())
+                                .tenantId(tenantId).createTime(nowTime).updateTime(nowTime).operator(operator).build();
+                        
+                        list.add(detail);
+                    }
+                });
+            }
             
-            // 新的修改记录
-            if (StringUtils.isNotBlank(oldGroupIds)) {
-                newGroupIds = oldGroupIds + CommonConstant.STR_COMMA + StringUtils.join(filterGroupIds, CommonConstant.STR_COMMA);
+            if (CollectionUtils.isNotEmpty(list)) {
+                Integer integer = this.batchInsert(list);
+                if (integer > 0) {
+                    // 更新updateTime
+                    userInfoGroupService.batchUpdateByIds(groupIds, System.currentTimeMillis(), operator, null);
+                    // 清除分组缓存
+                    delGroupCacheByIds(groupIds);
+                    
+                    // 新增历史记录
+                    UserInfoGroupDetailHistory detailHistory = this.assembleDetailHistory(uid, "", StringUtils.join(groupIds, CommonConstant.STR_COMMA), operator,
+                            userInfo.getFranchiseeId(), tenantId);
+                    userInfoGroupDetailHistoryService.batchInsert(List.of(detailHistory));
+                }
             }
+            
+            return R.ok();
+        } finally {
+            redisService.delete(CacheConstant.CACHE_USER_GROUP_DETAIL_BIND_GROUP_LOCK + uid);
         }
-        
-        if (CollectionUtils.isNotEmpty(list)) {
-            Integer integer = this.batchInsert(list);
-            if (integer > 0) {
-                UserInfoGroupDetailHistory detailHistory = this.assembleDetailHistory(uid, oldGroupIds, newGroupIds, operator, userInfo.getFranchiseeId(), tenantId);
-                userInfoGroupDetailHistoryService.batchInsert(List.of(detailHistory));
-            }
-        }
-        
-        return R.ok();
     }
     
     @Override
