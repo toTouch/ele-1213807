@@ -349,11 +349,21 @@ public class UserInfoGroupServiceImpl implements UserInfoGroupService {
         long nowTime = System.currentTimeMillis();
         int maxSize = 300;
         int size = 0;
+        boolean isCountChanged = false;
         
         while (iterator.hasNext()) {
             if (size >= maxSize) {
-                userInfoGroupDetailService.batchInsert(detailList);
+                Integer insert = userInfoGroupDetailService.batchInsert(detailList);
+    
+                if (insert > 0 && CollectionUtils.isNotEmpty(detailHistoryList)) {
+                    isCountChanged = true;
+        
+                    // 新增修改记录
+                    userInfoGroupDetailHistoryService.batchInsert(detailHistoryList);
+                }
+                
                 detailList.clear();
+                detailHistoryList.clear();
                 size = 0;
                 continue;
             }
@@ -398,17 +408,21 @@ public class UserInfoGroupServiceImpl implements UserInfoGroupService {
             Integer insert = userInfoGroupDetailService.batchInsert(detailList);
             
             if (insert > 0 && CollectionUtils.isNotEmpty(detailHistoryList)) {
-                // 更新时间
-                UserInfoGroup updateGroup = UserInfoGroup.builder().operator(operator).updateTime(nowTime).id(groupId).build();
-                int update = userInfoGroupMapper.update(updateGroup);
-                
-                DbUtils.dbOperateSuccessThenHandleCache(update, i -> {
-                    redisService.delete(CacheConstant.CACHE_USER_GROUP + groupId);
-                });
+                isCountChanged = true;
                 
                 // 新增修改记录
                 userInfoGroupDetailHistoryService.batchInsert(detailHistoryList);
             }
+        }
+        
+        if (isCountChanged) {
+            // 更新时间
+            UserInfoGroup updateGroup = UserInfoGroup.builder().operator(operator).updateTime(nowTime).id(groupId).build();
+            int update = userInfoGroupMapper.update(updateGroup);
+    
+            DbUtils.dbOperateSuccessThenHandleCache(update, i -> {
+                redisService.delete(CacheConstant.CACHE_USER_GROUP + groupId);
+            });
         }
         
         redisService.set(CacheConstant.CACHE_USER_GROUP_BATCH_IMPORT + sessionId, "1", 60L, TimeUnit.SECONDS);
