@@ -27,7 +27,7 @@ public abstract class AbstractElectricityIotHandler implements IElectricityHandl
     HwIotService hwIotService;
 
     @Autowired
-    ElectricityCabinetService electricityCabinetService;
+    protected ElectricityCabinetService electricityCabinetService;
 
 
     @Override
