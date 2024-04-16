@@ -67,4 +67,10 @@ public interface MqProducerConstant {
     
     String ENTERPRISE_USER_COST_RECORD_TOPIC = "ENTERPRISE_USER_COST_RECORD_TOPIC";
     
+    /**
+     * <p>
+     * Description:
+     * </p>
+     */
+    String USER_OPERATION_RECORD_LOG = "USER_OPERATION_RECORD_LOG";
 }

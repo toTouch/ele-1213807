@@ -41,6 +41,7 @@ import com.xiliulou.electricity.service.userinfo.userInfoGroup.UserInfoGroupDeta
 import com.xiliulou.electricity.service.userinfo.userInfoGroup.UserInfoGroupService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
+import com.xiliulou.electricity.utils.OperateRecordUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.BatteryMemberCardAndTypeVO;
 import com.xiliulou.electricity.vo.BatteryMemberCardSearchVO;
@@ -101,6 +102,9 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
     
     @Autowired
     private FranchiseeService franchiseeService;
+    
+    @Autowired
+    OperateRecordUtil operateRecordUtil;
     
     @Autowired
     private CouponService couponService;
@@ -400,6 +404,7 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
             
             // 设置电池型号
             if (!item.getBatteryType().isEmpty()) {
+    
                 List<String> originalBatteryModels = item.getBatteryType().stream().map(MemberCardBatteryType::getBatteryType).distinct().collect(Collectors.toList());
                 batteryMemberCardVO.setBatteryModels(batteryModelService.selectShortBatteryType(originalBatteryModels, item.getTenantId()));
             }
@@ -666,7 +671,7 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
         batteryMemberCard.setStatus(batteryModelQuery.getStatus());
         batteryMemberCard.setUpdateTime(System.currentTimeMillis());
         this.update(batteryMemberCard);
-        
+        operateRecordUtil.record(null, batteryMemberCard);
         return Triple.of(true, null, null);
     }
     
@@ -750,7 +755,7 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
         }
         
         this.update(batteryMemberCardUpdate);
-        
+        operateRecordUtil.record(batteryMemberCard, batteryMemberCardUpdate);
         return Triple.of(true, null, null);
     }
     

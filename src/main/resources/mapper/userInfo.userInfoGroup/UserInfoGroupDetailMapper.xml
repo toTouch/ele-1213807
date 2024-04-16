@@ -11,11 +11,11 @@
         insert into t_user_info_group_detail(group_no, uid, franchisee_id, tenant_id, create_time, update_time, operator)
         values
         <foreach item="item" index="index" collection="detailList" separator=",">
-            (#{item.groupNo},#{item.uid},#{item.franchiseeId}, #{item.tenantId}, #{item.createTime}, #{item.updateTime}), #{item.operator}}
+            (#{item.groupNo},#{item.uid},#{item.franchiseeId}, #{item.tenantId}, #{item.createTime}, #{item.updateTime}, #{item.operator})
         </foreach>
     </insert>
     
-    <delete id="deleteByUidAndGroupNoList">
+    <delete id="deleteByUid">
         delete from t_user_info_group_detail where uid = #{uid}
         <if test="groupNoList != null and groupNoList.size() > 0">
             and group_no in
@@ -41,8 +41,8 @@
         any_value(tuigd.tenant_id) as tenantid,
         any_value(tuigd.del_flag) as delflag,
         any_value(tuigd.create_time) as createtime,
-        any_value(tuigd.update_time) as updatetime,
-        any_value(tuigd.operator) as operator
+        (select max(update_time) from t_user_info_group_detail) as updatetime,
+        any_value(tuigd.operator) as operator,
         any_value(tuig.id) as groupid,
         any_value(tuig.name) as groupname
         from t_user_info_group_detail tuigd

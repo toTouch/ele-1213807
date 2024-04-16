@@ -41,6 +41,20 @@ public class UserCouponVO {
      * 优惠类型，1--减免券，2--打折券，3-体验劵
      */
     private Integer discountType;
+    
+    /**
+     * <p>
+     * Description: 核销人ID
+     * </p>
+     */
+    private Long verifiedUid;
+    
+    /**
+     * <p>
+     * Description: 核销人名称
+     * </p>
+     */
+    private String verifiedName;
 
     /**
      * 用户uid

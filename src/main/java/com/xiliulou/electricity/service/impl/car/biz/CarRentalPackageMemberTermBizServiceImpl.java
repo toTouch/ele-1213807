@@ -57,6 +57,7 @@ import com.xiliulou.electricity.service.car.biz.CarRentalOrderBizService;
 import com.xiliulou.electricity.service.car.biz.CarRentalPackageMemberTermBizService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DateUtils;
+import com.xiliulou.electricity.utils.OperateRecordUtil;
 import com.xiliulou.electricity.vo.car.CarRentalPackageDepositPayVo;
 import com.xiliulou.electricity.vo.car.CarRentalPackageOrderVo;
 import com.xiliulou.electricity.vo.car.CarVo;
@@ -65,6 +66,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
@@ -72,7 +74,9 @@ import org.springframework.util.CollectionUtils;
 import javax.annotation.Resource;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -142,6 +146,9 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
     
     @Resource
     private CarRentalPackageMemberTermService carRentalPackageMemberTermService;
+    
+    @Autowired
+    private OperateRecordUtil operateRecordUtil;
     
     @Resource
     private EleUserOperateRecordService eleUserOperateRecordService;
@@ -513,8 +520,46 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
         }
         
         eleUserOperateRecordService.asyncHandleUserOperateRecord(record);
-        
+        try {
+            CarRentalPackagePo packagePo = carRentalPackageService.selectById(packageOrderEntity.getRentalPackageId());
+            operateRecordUtil.record(builderOperateRecord(record, packagePo.getName(), userInfo.getPhone(), userInfo.getName(), packagePo.getType(), false),
+                    builderOperateRecord(record, packagePo.getName(), userInfo.getPhone(), userInfo.getName(), packagePo.getType(), true));
+        } catch (Throwable e) {
+            log.error("The user failed to modify the car plan record because:", e);
+        }
         return true;
+    }
+    
+    private Map<String, Object> builderOperateRecord(EleUserOperateRecord record, String packageName, String phone, String username, Integer type, Boolean isNew) {
+        Map<String, Object> result = new HashMap<>();
+        result.put("packageName", packageName);
+        result.put("phone", phone);
+        result.put("username", username);
+        result.put("type", type);
+        if (!isNew) {
+            result.put("validDays", record.getOldValidDays());
+            result.put("electricityBatterySn", record.getInitElectricityBatterySn());
+            result.put("batteryDeposit", record.getOldBatteryDeposit());
+            result.put("batteryInsuranceStatus", record.getOldBatteryInsuranceStatus());
+            result.put("carInsuranceStatus", record.getOldCarInsuranceStatus());
+            result.put("batteryInsuranceExpireTime", record.getOldBatteryInsuranceExpireTime());
+            result.put("carInsuranceExpireTime", record.getOldCarInsuranceExpireTime());
+            result.put("carDeposit", record.getOldCarDeposit());
+            result.put("electricityCarSn", record.getInitElectricityCarSn());
+            result.put("maxUseCount", record.getOldMaxUseCount());
+            return result;
+        }
+        result.put("validDays", record.getNewValidDays());
+        result.put("electricityBatterySn", record.getNowElectricityBatterySn());
+        result.put("batteryDeposit", record.getNewBatteryDeposit());
+        result.put("batteryInsuranceStatus", record.getNewBatteryInsuranceStatus());
+        result.put("carInsuranceStatus", record.getNewCarInsuranceStatus());
+        result.put("batteryInsuranceExpireTime", record.getNewBatteryInsuranceExpireTime());
+        result.put("carInsuranceExpireTime", record.getNewCarInsuranceExpireTime());
+        result.put("carDeposit", record.getNewCarDeposit());
+        result.put("electricityCarSn", record.getNewElectricityCarSn());
+        result.put("maxUseCount", record.getNewMaxUseCount());
+        return result;
     }
     
     /**

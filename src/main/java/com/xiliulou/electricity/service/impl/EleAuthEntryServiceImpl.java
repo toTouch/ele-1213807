@@ -1,21 +1,24 @@
 package com.xiliulou.electricity.service.impl;
+
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.EleAuthEntry;
-import com.xiliulou.electricity.entity.FranchiseeAmount;
 import com.xiliulou.electricity.mapper.EleAuthEntryMapper;
 import com.xiliulou.electricity.service.EleAuthEntryService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
+import com.xiliulou.electricity.utils.OperateRecordUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
 import javax.annotation.Resource;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -29,6 +32,9 @@ import java.util.Objects;
 public class EleAuthEntryServiceImpl implements EleAuthEntryService {
     @Resource
     EleAuthEntryMapper eleAuthEntryMapper;
+    
+    @Autowired
+    OperateRecordUtil operateRecordUtil;
 
     @Autowired
     RedisService redisService;
@@ -58,7 +64,10 @@ public class EleAuthEntryServiceImpl implements EleAuthEntryService {
 
         //租户
         Integer tenantId = TenantContextHolder.getTenantId();
-
+    
+        Map<String,Object> oldMap = new HashMap<>();
+        Map<String,Object> newMap = new HashMap<>();
+        
         for (EleAuthEntry eleAuthEntry : eleAuthEntryList) {
             if (ObjectUtil.isEmpty(eleAuthEntry.getId())) {
                 return R.fail("ELECTRICITY.0007", "不合法的参数");
@@ -71,10 +80,14 @@ public class EleAuthEntryServiceImpl implements EleAuthEntryService {
             if (ObjectUtil.isNotEmpty(eleAuthEntry.getType()) && !this.checkAuthEntryTypeAllowable(eleAuthEntry.getType())) {
                 return R.fail("ELECTRICITY.0007", "不合法的参数");
             }
+            EleAuthEntry old = queryByIdFromCache(eleAuthEntry.getId());
+            oldMap.put(String.format("identify%s",old.getIdentify()),old.getIsUse());
+            newMap.put(String.format("identify%s",old.getIdentify()),eleAuthEntry.getIsUse());
             eleAuthEntry.setUpdateTime(System.currentTimeMillis());
             eleAuthEntryMapper.update(eleAuthEntry);
             redisService.delete(CacheConstant.ELE_CACHE_AUTH_ENTRY + eleAuthEntry.getId());
         }
+        operateRecordUtil.record(oldMap,newMap);
         return R.ok();
     }
 

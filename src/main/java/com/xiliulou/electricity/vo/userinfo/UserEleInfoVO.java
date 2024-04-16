@@ -5,6 +5,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 
 @Data
 @AllArgsConstructor
@@ -131,5 +133,10 @@ public class UserEleInfoVO {
      * 所属企业名称
      */
     private String enterpriseName;
+    
+    /**
+     * 所属分组
+     */
+    private List<UserInfoGroupIdAndNameVO> groupList;
 
 }

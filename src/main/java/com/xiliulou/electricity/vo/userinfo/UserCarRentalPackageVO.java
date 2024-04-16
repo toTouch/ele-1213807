@@ -3,6 +3,8 @@ package com.xiliulou.electricity.vo.userinfo;
 import com.xiliulou.electricity.domain.car.UserCarRentalPackageDO;
 import lombok.Data;
 
+import java.util.List;
+
 /**
  * @author: Kenneth
  * @Date: 2023/8/21 19:25
@@ -133,6 +135,11 @@ public class UserCarRentalPackageVO {
      * 套餐购买次数
      */
     private Integer payCount;
+    
+    /**
+     * 用户所属分组
+     */
+    private List<UserInfoGroupIdAndNameVO> groupList;
     
     
     public static Integer FREE_OF_CHARGE = 2;

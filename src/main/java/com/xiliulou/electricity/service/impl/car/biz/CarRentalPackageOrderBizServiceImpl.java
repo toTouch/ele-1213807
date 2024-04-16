@@ -6,6 +6,7 @@ import cn.hutool.core.util.ObjectUtil;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.bo.userInfoGroup.UserInfoGroupNamesBO;
 import com.xiliulou.electricity.config.WechatConfig;
 import com.xiliulou.electricity.constant.CarRenalCacheConstant;
 import com.xiliulou.electricity.constant.TimeConstant;
@@ -66,6 +67,7 @@ import com.xiliulou.electricity.enums.car.CarRentalStateEnum;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.model.car.opt.CarRentalPackageOrderBuyOptModel;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageOrderFreezeQryModel;
+import com.xiliulou.electricity.query.UserInfoGroupDetailQuery;
 import com.xiliulou.electricity.query.car.CarRentalPackageRefundReq;
 import com.xiliulou.electricity.service.ActivityService;
 import com.xiliulou.electricity.service.BatteryMembercardRefundOrderService;
@@ -104,9 +106,11 @@ import com.xiliulou.electricity.service.car.biz.CarRentalPackageBizService;
 import com.xiliulou.electricity.service.car.biz.CarRentalPackageOrderBizService;
 import com.xiliulou.electricity.service.retrofit.Jt808RetrofitService;
 import com.xiliulou.electricity.service.user.biz.UserBizService;
+import com.xiliulou.electricity.service.userinfo.userInfoGroup.UserInfoGroupDetailService;
 import com.xiliulou.electricity.service.wxrefund.WxRefundPayService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DateUtils;
+import com.xiliulou.electricity.utils.OperateRecordUtil;
 import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.ElectricityUserBatteryVo;
@@ -146,7 +150,9 @@ import javax.servlet.http.HttpServletRequest;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.StringJoiner;
 import java.util.UUID;
@@ -187,6 +193,9 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
     
     @Resource
     private CarRentalPackageOrderFreezeService carRentalPackageOrderFreezeService;
+    
+    @Autowired
+    private OperateRecordUtil operateRecordUtil;
     
     @Resource
     private InsuranceUserInfoService insuranceUserInfoService;
@@ -280,6 +289,9 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
     
     @Autowired
     private EleUserOperateRecordService eleUserOperateRecordService;
+    
+    @Autowired
+    private UserInfoGroupDetailService userInfoGroupDetailService;
     
     
     public static final Integer ELE = 0;
@@ -717,6 +729,14 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                 throw new BizException("ELECTRICITY.0041", "用户尚未实名认证");
             }
             
+            // 1.3 查询用户当前所在分组
+            Set<Long> groupIds = new HashSet<>();
+            UserInfoGroupDetailQuery detailQuery = UserInfoGroupDetailQuery.builder().uid(uid).build();
+            List<UserInfoGroupNamesBO> vos = userInfoGroupDetailService.listGroupByUid(detailQuery);
+            if (!CollectionUtils.isEmpty(vos)) {
+                groupIds.addAll(vos.stream().map(UserInfoGroupNamesBO::getGroupId).collect(Collectors.toSet()));
+            }
+            
             // 2. 判定滞纳金
             if (carRenalPackageSlippageBizService.isExitUnpaid(tenantId, uid)) {
                 throw new BizException("300001", "存在滞纳金，请先缴纳");
@@ -765,11 +785,28 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                 throw new BizException("300004", "套餐已下架");
             }
             
-            // 6.3 判定用户是否是老用户，然后和套餐的适用类型做比对
-            Boolean oldUserFlag = userBizService.isOldUser(tenantId, uid);
-            if (oldUserFlag && !ApplicableTypeEnum.oldUserApplicable().contains(buyPackageEntity.getApplicableType())) {
-                log.warn("bindingPackage failed. Package type mismatch. Buy package type is {}, user is old", buyPackageEntity.getApplicableType());
-                throw new BizException("300005", "套餐不匹配");
+            //如果是系统分组
+            if (Objects.equals(buyPackageEntity.getIsUserGroup(), YesNoEnum.YES.getCode())) {
+                // 6.3 判定用户是否是老用户，然后和套餐的适用类型做比对
+                Boolean oldUserFlag = userBizService.isOldUser(tenantId, uid);
+                if (oldUserFlag && !ApplicableTypeEnum.oldUserApplicable().contains(buyPackageEntity.getApplicableType())) {
+                    log.warn("bindingPackage failed. Package type mismatch. Buy package type is {}, user is old", buyPackageEntity.getApplicableType());
+                    throw new BizException("300005", "套餐不匹配");
+                }
+            }
+            
+            //6.3.1 判断用户分组是否包含在购买的套餐中存在
+            if (Objects.equals(buyPackageEntity.getIsUserGroup(), YesNoEnum.NO.getCode())) {
+                Set<Long> packageGroupIds = new HashSet<>();
+                if (!CollectionUtils.isEmpty(buyPackageEntity.getUserGroupId())) {
+                    packageGroupIds.addAll(buyPackageEntity.getUserGroupId());
+                }
+                
+                packageGroupIds.retainAll(groupIds);
+                if (packageGroupIds.isEmpty()) {
+                    log.warn("Binding package failed because the user's group has changed:{}", groupIds);
+                    throw new BizException("100317", "用户与套餐关联的用户分组不一致，请刷新重试");
+                }
             }
             
             // 7. 判定套餐互斥
@@ -990,7 +1027,12 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             }
             
             eleUserOperateRecordService.asyncHandleUserOperateRecord(rentalOrderRecord);
-            
+            Map<String, Object> map = new HashMap<>();
+            map.put("username", userInfo.getName());
+            map.put("phone", userInfo.getPhone());
+            map.put("packageName", buyPackageEntity.getName());
+            map.put("type", buyPackageEntity.getType());
+            operateRecordUtil.record(null, map);
         } catch (BizException e) {
             log.error("bindingPackage failed. ", e);
             throw new BizException(e.getErrCode(), e.getMessage());
@@ -1015,7 +1057,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
      * @return
      */
     @Override
-    public Boolean approveFreezeRentOrder(String freezeRentOrderNo, boolean approveFlag, String apploveDesc, Long apploveUid) {
+    public Boolean approveFreezeRentOrder(String freezeRentOrderNo, boolean approveFlag, String apploveDesc, Long apploveUid, Boolean isRecord) {
         if (!ObjectUtils.allNotNull(freezeRentOrderNo, approveFlag, apploveUid)) {
             throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
@@ -1065,6 +1107,24 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         if (expireFlag) {
             throw new BizException("300030", "套餐已过期，无法审核");
         }
+        if (!isRecord) {
+            return true;
+        }
+        try {
+            UserInfo userInfo = userInfoService.queryByUidFromCache(freezeEntity.getUid());
+            CarRentalPackagePo rentalPackagePo = carRentalPackageService.selectById(freezeEntity.getRentalPackageId());
+            Map<String, Object> map = new HashMap<>();
+            map.put("username", userInfo.getName());
+            map.put("phone", userInfo.getPhone());
+            map.put("packageName", rentalPackagePo.getName());
+            map.put("approve", approveFlag ? 0 : 1);
+            map.put("residue", freezeEntity.getApplyTerm());
+            map.put("type", freezeEntity.getRentalPackageType());
+            operateRecordUtil.record(null, map);
+        } catch (Throwable e) {
+            log.error("Recording user operation records failed because:", e);
+        }
+        
         return true;
     }
     
@@ -1091,6 +1151,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         freezeUpdateEntity.setAuditTime(nowTime);
         freezeUpdateEntity.setRemark(apploveDesc);
         freezeUpdateEntity.setUpdateUid(apploveUid);
+        freezeUpdateEntity.setAuditorId(apploveUid);
         
         // 过期
         if (expireFlag) {
@@ -1767,7 +1828,18 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                     .tenantId(TenantContextHolder.getTenantId()).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).build();
             eleUserOperateRecordService.asyncHandleUserOperateRecord(record);
         }
-        
+        try {
+            CarRentalPackagePo packagePo = carRentalPackageService.selectById(packageOrderEntity.getRentalPackageId());
+            Map<String, Object> map = new HashMap<>();
+            map.put("username", userInfo.getName());
+            map.put("phone", userInfo.getPhone());
+            map.put("packageName", packagePo.getName());
+            map.put("residue", applyTerm);
+            map.put("type", packagePo.getType());
+            operateRecordUtil.record(null, map);
+        } catch (Throwable e) {
+            log.warn("Recording user operation records failed because:", e);
+        }
         return true;
     }
     
@@ -1788,7 +1860,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         carRentalPackageMemberTermService.updateStatusByUidAndTenantId(tenantId, uid, MemberTermStatusEnum.APPLY_FREEZE.getCode(), uid);
         
         if (SystemDefinitionEnum.BACKGROUND.getCode().equals(systemDefinitionEnum.getCode())) {
-            approveFreezeRentOrder(freezeEntity.getOrderNo(), true, null, optUid);
+            approveFreezeRentOrder(freezeEntity.getOrderNo(), true, null, optUid, false);
         }
         
     }
@@ -2562,6 +2634,14 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                 throw new BizException("ELECTRICITY.0041", "用户尚未实名认证");
             }
             
+            // 1.3 查询用户当前所在分组
+            Set<Long> groupIds = new HashSet<>();
+            UserInfoGroupDetailQuery detailQuery = UserInfoGroupDetailQuery.builder().uid(uid).build();
+            List<UserInfoGroupNamesBO> vos = userInfoGroupDetailService.listGroupByUid(detailQuery);
+            if (!CollectionUtils.isEmpty(vos)) {
+                groupIds.addAll(vos.stream().map(UserInfoGroupNamesBO::getGroupId).collect(Collectors.toSet()));
+            }
+            
             // 2. 判定滞纳金
             if (carRenalPackageSlippageBizService.isExitUnpaid(tenantId, uid)) {
                 throw new BizException("300001", "存在滞纳金，请先缴纳");
@@ -2622,11 +2702,28 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                 return R.fail("300004", "套餐已下架");
             }
             
-            // 6.3 判定用户是否是老用户，然后和套餐的适用类型做比对
-            Boolean oldUserFlag = userBizService.isOldUser(tenantId, uid);
-            if (oldUserFlag && !ApplicableTypeEnum.oldUserApplicable().contains(buyPackageEntity.getApplicableType())) {
-                log.warn("buyRentalPackageOrder failed. Package type mismatch. Buy package type is {}, user is old", buyPackageEntity.getApplicableType());
-                return R.fail("300005", "套餐不匹配");
+            //判断套餐是否为系统分组
+            if (Objects.equals(buyPackageEntity.getIsUserGroup(), YesNoEnum.YES.getCode())) {
+                // 6.3 判定用户是否是老用户，然后和套餐的适用类型做比对
+                Boolean oldUserFlag = userBizService.isOldUser(tenantId, uid);
+                if (oldUserFlag && !ApplicableTypeEnum.oldUserApplicable().contains(buyPackageEntity.getApplicableType())) {
+                    log.warn("buyRentalPackageOrder failed. Package type mismatch. Buy package type is {}, user is old", buyPackageEntity.getApplicableType());
+                    return R.fail("300005", "套餐不匹配");
+                }
+            }
+            
+            //6.3.1 判断用户分组是否包含在购买的套餐中存在
+            if (Objects.equals(buyPackageEntity.getIsUserGroup(), YesNoEnum.NO.getCode())) {
+                Set<Long> packageGroupIds = new HashSet<>();
+                if (!CollectionUtils.isEmpty(buyPackageEntity.getUserGroupId())) {
+                    packageGroupIds.addAll(buyPackageEntity.getUserGroupId());
+                }
+                //取交集,不存在则表示发生变动
+                packageGroupIds.retainAll(groupIds);
+                if (packageGroupIds.isEmpty()) {
+                    log.warn("buy package failed because the user's group has changed:{}", groupIds);
+                    return R.fail("100318", "您浏览的套餐已下架，请看看其他的吧");
+                }
             }
             
             // 7. 判定套餐互斥
@@ -3179,13 +3276,16 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                 activityService.asyncProcessActivity(activityProcessDTO);
                 
                 // 10. 发放优惠券
-                if (ObjectUtils.isNotEmpty(buyCarRentalPackageOrderEntity.getCouponId())) {
-                    UserCouponDTO userCouponDTO = new UserCouponDTO();
-                    userCouponDTO.setCouponId(buyCarRentalPackageOrderEntity.getCouponId());
-                    userCouponDTO.setUid(uid);
-                    userCouponDTO.setSourceOrderNo(buyOrderNo);
-                    userCouponDTO.setTraceId(UUID.randomUUID().toString().replaceAll("-", ""));
-                    userCouponService.asyncSendCoupon(userCouponDTO);
+                if (ObjectUtils.isNotEmpty(buyCarRentalPackageOrderEntity.getCouponIds())) {
+                    Set<Long> couponIds = new HashSet<>(buyCarRentalPackageOrderEntity.getCouponIds());
+                    for (Long couponId : couponIds) {
+                        UserCouponDTO userCouponDTO = new UserCouponDTO();
+                        userCouponDTO.setCouponId(couponId);
+                        userCouponDTO.setUid(uid);
+                        userCouponDTO.setSourceOrderNo(buyOrderNo);
+                        userCouponDTO.setTraceId(UUID.randomUUID().toString().replaceAll("-", ""));
+                        userCouponService.asyncSendCoupon(userCouponDTO);
+                    }
                 }
                 
                 // 车电一体，同步电池会员信息

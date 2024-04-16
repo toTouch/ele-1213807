@@ -106,6 +106,7 @@ public class ElectricityConfig {
      * 押金缴纳类型 (0：缴纳押金，1：电池免押金，2：租车免押金，3：车辆电池免押金)
      */
     private Integer freeDepositType;
+    
 
     /**
      * 是否迁移加盟商 1--关闭 2--开启
