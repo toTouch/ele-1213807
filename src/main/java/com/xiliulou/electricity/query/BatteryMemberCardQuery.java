@@ -155,5 +155,15 @@ public class BatteryMemberCardQuery {
      * 不分型号
      */
     public static final String REGARDLESS_OF_MODEL = "0";
+
+    /**
+     * 套餐最大赠送优惠券数
+     */
+    public static final Integer MAX_COUPON_NO = 6;
+
+    /**
+     * 套餐绑定最大用户分组数
+     */
+    public static final Integer MAX_USER_INFO_GROUP_NO = 10;
     
 }

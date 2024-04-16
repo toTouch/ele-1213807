@@ -304,14 +304,24 @@ public class TradeOrderServiceImpl implements TradeOrderService {
             
             // 判断套餐用户分组和用户的用户分组是否匹配
             List<UserInfoGroupNamesBO> userInfoGroupNamesBOs = userInfoGroupDetailService.listGroupByUid(
-                    UserInfoGroupDetailQuery.builder().uid(SecurityUtils.getUid()).tenantId(TenantContextHolder.getTenantId()).build());
+                    UserInfoGroupDetailQuery.builder().uid(userInfo.getUid()).tenantId(TenantContextHolder.getTenantId()).build());
+            
             if (CollectionUtils.isNotEmpty(userInfoGroupNamesBOs)) {
+                if (Objects.equals(batteryMemberCard.getGroupType(), BatteryMemberCard.GROUP_TYPE_SYSTEM)) {
+                    return Triple.of(false, "100318", "您浏览的套餐已下架，请看看其他的吧");
+                }
+    
                 List<Long> userGroupIds = userInfoGroupNamesBOs.stream().map(UserInfoGroupNamesBO::getGroupId).collect(Collectors.toList());
-                Triple<Boolean, String, Object> triple = userGroupIdFit(userGroupIds, batteryMemberCard);
-                if (!triple.getLeft()) {
-                    return triple;
+                userGroupIds.retainAll(JsonUtil.fromJsonArray(batteryMemberCard.getUserInfoGroupIds(), Long.class));
+                if (CollectionUtils.isEmpty(userGroupIds)) {
+                    return Triple.of(false, "100318", "您浏览的套餐已下架，请看看其他的吧");
+                }
+            }else {
+                if (Objects.equals(batteryMemberCard.getGroupType(), BatteryMemberCard.GROUP_TYPE_USER)) {
+                    return Triple.of(false, "100318", "您浏览的套餐已下架，请看看其他的吧");
                 }
             }
+            
             
             //判断套餐租赁状态，用户为老用户，套餐类型为新租，则不支持购买
             if (userInfo.getPayCount() > 0 && BatteryMemberCard.RENT_TYPE_NEW.equals(batteryMemberCard.getRentType())) {
@@ -502,13 +512,23 @@ public class TradeOrderServiceImpl implements TradeOrderService {
             // 判断套餐用户分组和用户的用户分组是否匹配
             List<UserInfoGroupNamesBO> userInfoGroupNamesBOs = userInfoGroupDetailService.listGroupByUid(
                     UserInfoGroupDetailQuery.builder().uid(SecurityUtils.getUid()).tenantId(TenantContextHolder.getTenantId()).build());
+    
             if (CollectionUtils.isNotEmpty(userInfoGroupNamesBOs)) {
+                if (Objects.equals(batteryMemberCard.getGroupType(), BatteryMemberCard.GROUP_TYPE_SYSTEM)) {
+                    return Triple.of(false, "100318", "您浏览的套餐已下架，请看看其他的吧");
+                }
+        
                 List<Long> userGroupIds = userInfoGroupNamesBOs.stream().map(UserInfoGroupNamesBO::getGroupId).collect(Collectors.toList());
-                Triple<Boolean, String, Object> triple = userGroupIdFit(userGroupIds, batteryMemberCard);
-                if (triple.getLeft()) {
-                    return triple;
+                userGroupIds.retainAll(JsonUtil.fromJsonArray(batteryMemberCard.getUserInfoGroupIds(), Long.class));
+                if (CollectionUtils.isEmpty(userGroupIds)) {
+                    return Triple.of(false, "100318", "您浏览的套餐已下架，请看看其他的吧");
+                }
+            }else {
+                if (Objects.equals(batteryMemberCard.getGroupType(), BatteryMemberCard.GROUP_TYPE_USER)) {
+                    return Triple.of(false, "100318", "您浏览的套餐已下架，请看看其他的吧");
                 }
             }
+            
             
             if (!Objects.equals(BatteryMemberCard.STATUS_UP, batteryMemberCard.getStatus())) {
                 log.warn("BATTERY DEPOSIT WARN! batteryMemberCard is disable,uid={},mid={}", userInfo.getUid(), query.getMemberId());
@@ -1029,6 +1049,7 @@ public class TradeOrderServiceImpl implements TradeOrderService {
         electricityMemberCardOrder.setRefId(Objects.nonNull(electricityCabinet) ? electricityCabinet.getId().longValue() : null);
         electricityMemberCardOrder.setSource(Objects.nonNull(electricityCabinet) ? ElectricityMemberCardOrder.SOURCE_SCAN : ElectricityMemberCardOrder.SOURCE_NOT_SCAN);
         electricityMemberCardOrder.setStoreId(Objects.nonNull(electricityCabinet) ? electricityCabinet.getStoreId() : userInfo.getStoreId());
+        electricityMemberCardOrder.setCouponIds(batteryMemberCard.getCouponIds());
         
         return Triple.of(true, null, electricityMemberCardOrder);
     }
@@ -1078,6 +1099,7 @@ public class TradeOrderServiceImpl implements TradeOrderService {
         electricityMemberCardOrder.setRefId(Objects.nonNull(electricityCabinet) ? electricityCabinet.getId().longValue() : null);
         electricityMemberCardOrder.setSource(Objects.nonNull(electricityCabinet) ? ElectricityMemberCardOrder.SOURCE_SCAN : ElectricityMemberCardOrder.SOURCE_NOT_SCAN);
         electricityMemberCardOrder.setStoreId(Objects.nonNull(electricityCabinet) ? electricityCabinet.getStoreId() : userInfo.getStoreId());
+        electricityMemberCardOrder.setCouponIds(batteryMemberCard.getCouponIds());
         
         return Triple.of(true, null, electricityMemberCardOrder);
     }
@@ -1118,15 +1140,4 @@ public class TradeOrderServiceImpl implements TradeOrderService {
         return Triple.of(true, null, insuranceOrder);
     }
     
-    private Triple<Boolean, String, Object> userGroupIdFit(List<Long> userGroupIds, BatteryMemberCard batteryMemberCard) {
-        if (StringUtils.isNotBlank(batteryMemberCard.getUserInfoGroupIds())) {
-            HashSet<Long> memberCardUserGroupIds = new HashSet<>(JsonUtil.fromJsonArray(batteryMemberCard.getUserInfoGroupIds(), Long.class));
-            if (!memberCardUserGroupIds.containsAll(userGroupIds)) {
-                return Triple.of(false, "100318", "您浏览的套餐已下架，请看看其他的吧");
-            }
-        } else {
-            return Triple.of(false, "100318", "您浏览的套餐已下架，请看看其他的吧");
-        }
-        return Triple.of(true, null, null);
-    }
 }
