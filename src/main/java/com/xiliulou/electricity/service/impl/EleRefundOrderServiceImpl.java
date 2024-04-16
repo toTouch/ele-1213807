@@ -367,6 +367,9 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
 
                 //删除用户电池服务费
                 serviceFeeUserInfoService.deleteByUid(userInfo.getUid());
+                
+                //删除用户分组
+                userInfoGroupDetailService.deleteByUid(userInfo.getUid(), null);
             }
         }
 
@@ -405,6 +408,9 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
 
             //退押金解绑用户所属加盟商
             userInfoService.unBindUserFranchiseeId(userInfo.getUid());
+    
+            //删除用户分组
+            userInfoGroupDetailService.deleteByUid(userInfo.getUid(), null);
         }
 
         EleRefundOrder eleRefundOrderUpdate = new EleRefundOrder();
@@ -690,6 +696,8 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
     
             //修改企业用户代付状态为代付过期
             enterpriseChannelUserService.updatePaymentStatusForRefundDeposit(userInfo.getUid(), EnterprisePaymentStatusEnum.PAYMENT_TYPE_EXPIRED.getCode());
+            
+            userInfoGroupDetailService.deleteByUid(userInfo.getUid(), null);
 
             return Triple.of(true, "", "免押解冻成功");
         }
@@ -1248,6 +1256,9 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
     
             //修改企业用户代付状态为代付过期
             enterpriseChannelUserService.updatePaymentStatusForRefundDeposit(userInfo.getUid(), EnterprisePaymentStatusEnum.PAYMENT_TYPE_EXPIRED.getCode());
+            
+            //删除用户分组
+            userInfoGroupDetailService.deleteByUid(userInfo.getUid(), null);
 
             return Triple.of(true, "", null);
         }
@@ -1541,6 +1552,9 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
     
         //删除用户电池服务费
         serviceFeeUserInfoService.deleteByUid(userInfo.getUid());
+        
+        //删除用户分组
+        userInfoGroupDetailService.deleteByUid(userInfo.getUid(), null);
 
         return Triple.of(true, "", null);
     }

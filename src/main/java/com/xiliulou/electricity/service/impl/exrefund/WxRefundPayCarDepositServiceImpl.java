@@ -19,6 +19,7 @@ import com.xiliulou.electricity.service.car.CarRentalPackageDepositRefundService
 import com.xiliulou.electricity.service.car.CarRentalPackageMemberTermService;
 import com.xiliulou.electricity.service.car.CarRentalPackageOrderService;
 import com.xiliulou.electricity.service.user.biz.UserBizService;
+import com.xiliulou.electricity.service.userinfo.userInfoGroup.UserInfoGroupDetailService;
 import com.xiliulou.electricity.service.wxrefund.WxRefundPayService;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiRefundOrderCallBackResource;
 import lombok.extern.slf4j.Slf4j;
@@ -68,6 +69,9 @@ public class WxRefundPayCarDepositServiceImpl implements WxRefundPayService {
 
     @Resource
     private RedisService redisService;
+    
+    @Resource
+    private UserInfoGroupDetailService userInfoGroupDetailService;
 
     /**
      * 执行方法
@@ -186,6 +190,9 @@ public class WxRefundPayCarDepositServiceImpl implements WxRefundPayService {
                     userBatteryTypeService.deleteByUid(depositPayEntity.getUid());
                     userBatteryDepositService.deleteByUid(depositPayEntity.getUid());
                 }
+    
+                //删除用户分组
+                userInfoGroupDetailService.deleteByUid(depositPayEntity.getUid(), null);
             }
 
         } else {
