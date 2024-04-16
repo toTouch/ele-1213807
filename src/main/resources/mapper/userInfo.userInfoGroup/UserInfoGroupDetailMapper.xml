@@ -63,7 +63,7 @@
             </if>
         </where>
         group by tuigd.uid
-        order by any_value(tuigd.update_time) desc
+        order by any_value(tuigd.id) desc
         limit #{offset}, #{size}
     </select>
     

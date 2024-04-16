@@ -199,7 +199,10 @@ public class UserInfoGroupDetailServiceImpl implements UserInfoGroupDetailServic
                     if (delete > 0) {
                         // 更新分组的updateTime
                         List<Long> updateIds = existGroupList.stream().map(UserInfoGroupNamesBO::getGroupId).collect(Collectors.toList());
-                        userInfoGroupService.batchUpdateByIds(updateIds, System.currentTimeMillis(), operator, null);
+                        
+                        if (CollectionUtils.isNotEmpty(updateIds)) {
+                            userInfoGroupService.batchUpdateByIds(updateIds, System.currentTimeMillis(), operator, null);
+                        }
                         // 清除分组缓存
                         delGroupCacheByIds(updateIds);
                         
@@ -315,7 +318,10 @@ public class UserInfoGroupDetailServiceImpl implements UserInfoGroupDetailServic
             updateIds.addAll(addGroupList);
         }
         
-        userInfoGroupService.batchUpdateByIds(updateIds, System.currentTimeMillis(), operator, null);
+        // 更新时间
+        if (CollectionUtils.isNotEmpty(updateIds)) {
+            userInfoGroupService.batchUpdateByIds(updateIds, System.currentTimeMillis(), operator, null);
+        }
         // 清除分组缓存
         delGroupCacheByIds(updateIds);
         
@@ -396,7 +402,9 @@ public class UserInfoGroupDetailServiceImpl implements UserInfoGroupDetailServic
                 Integer integer = this.batchInsert(list);
                 if (integer > 0) {
                     // 更新updateTime
-                    userInfoGroupService.batchUpdateByIds(groupIds, System.currentTimeMillis(), operator, null);
+                    if (CollectionUtils.isNotEmpty(groupIds)) {
+                        userInfoGroupService.batchUpdateByIds(groupIds, System.currentTimeMillis(), operator, null);
+                    }
                     // 清除分组缓存
                     delGroupCacheByIds(groupIds);
                     
