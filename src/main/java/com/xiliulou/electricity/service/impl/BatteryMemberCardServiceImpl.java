@@ -5,6 +5,7 @@ import com.google.api.client.util.Lists;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.db.dynamic.annotation.Slave;
+import com.xiliulou.electricity.bo.userInfoGroup.UserInfoGroupBO;
 import com.xiliulou.electricity.bo.userInfoGroup.UserInfoGroupNamesBO;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
@@ -16,6 +17,7 @@ import com.xiliulou.electricity.entity.MemberCardBatteryType;
 import com.xiliulou.electricity.entity.UserBatteryDeposit;
 import com.xiliulou.electricity.entity.UserBatteryMemberCard;
 import com.xiliulou.electricity.entity.UserInfo;
+import com.xiliulou.electricity.entity.car.CarCouponNamePO;
 import com.xiliulou.electricity.entity.car.CarRentalPackagePo;
 import com.xiliulou.electricity.entity.userInfo.userInfoGroup.UserInfoGroup;
 import com.xiliulou.electricity.enums.BatteryMemberCardBusinessTypeEnum;
@@ -755,6 +757,27 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
         }
         
         this.update(batteryMemberCardUpdate);
+        
+        operateRecordUtil.asyncRecord(batteryMemberCard, batteryMemberCardUpdate, userInfoGroupService, couponService, (u,c,o)->{
+            List<Long> oldUserGroupIds = JsonUtil.fromJsonArray((String) o.getOldValue().getOrDefault("userGroupIds", "[]"),Long.class);
+            List<UserInfoGroupBO> oldUserGroups = u.listByIds(oldUserGroupIds);
+            o.getOldValue().put("userGroups",oldUserGroups);
+    
+            List<Long> userGroupIds = JsonUtil.fromJsonArray((String) o.getNewValue().getOrDefault("userGroupIds", "[]"),Long.class);
+            List<UserInfoGroupBO> userGroups = u.listByIds(userGroupIds);
+            o.getNewValue().put("userGroups",userGroups);
+    
+            List<Long> oldCouponIds = JsonUtil.fromJsonArray((String) o.getOldValue().getOrDefault("couponId", "[]"),Long.class);
+            List<CarCouponNamePO> oldCoupons = c.queryListByIdsFromCache(oldCouponIds);
+            o.getOldValue().put("coupons",oldCoupons);
+    
+            List<Long> couponIds = JsonUtil.fromJsonArray((String) o.getNewValue().getOrDefault("couponId", "[]"),Long.class);
+            List<CarCouponNamePO> coupons = c.queryListByIdsFromCache(couponIds);
+            o.getNewValue().put("coupons",coupons);
+    
+            return o;
+        });
+        
         operateRecordUtil.record(batteryMemberCard, batteryMemberCardUpdate);
         return Triple.of(true, null, null);
     }
