@@ -2,6 +2,7 @@ package com.xiliulou.electricity.service.impl.userInfo.userInfoGroup;
 
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.bo.userInfoGroup.UserInfoGroupDetailHistoryBO;
+import com.xiliulou.electricity.bo.userInfoGroup.UserInfoGroupIdAndNameBO;
 import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.userInfo.userInfoGroup.UserInfoGroup;
@@ -11,15 +12,16 @@ import com.xiliulou.electricity.query.UserInfoGroupDetailHistoryQuery;
 import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.service.userinfo.userInfoGroup.UserInfoGroupDetailHistoryService;
 import com.xiliulou.electricity.service.userinfo.userInfoGroup.UserInfoGroupService;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import java.util.StringJoiner;
 import java.util.stream.Collectors;
 
 /**
@@ -59,9 +61,8 @@ public class UserInfoGroupDetailHistoryServiceImpl implements UserInfoGroupDetai
         return detailHistories.stream().map(item -> {
             UserInfoGroupDetailHistoryBO bo = new UserInfoGroupDetailHistoryBO();
             BeanUtils.copyProperties(item, bo);
-            
-            bo.setOldGroupNames(getGroupNames(item.getOldGroupIds()));
-            bo.setNewGroupNames(getGroupNames(item.getNewGroupIds()));
+            bo.setOldGroupList(getGroupNames(item.getOldGroupIds()));
+            bo.setNewGroupList(getGroupNames(item.getNewGroupIds()));
             bo.setOperatorName(Optional.ofNullable(userService.queryByUidFromCache(item.getOperator())).map(User::getName).orElse(""));
             bo.setOperatorTime(item.getCreateTime());
             
@@ -75,25 +76,25 @@ public class UserInfoGroupDetailHistoryServiceImpl implements UserInfoGroupDetai
         return userInfoGroupDetailHistoryMapper.countTotal(query);
     }
     
-    private String getGroupNames(String groupIds) {
+    private List<UserInfoGroupIdAndNameBO> getGroupNames(String groupIds) {
         if (StringUtils.isBlank(groupIds)) {
-            return "";
+            return Collections.emptyList();
         }
         
-        StringJoiner names = new StringJoiner(CommonConstant.STR_COMMA);
-        
+        List<UserInfoGroupIdAndNameBO> boList = new ArrayList<>();
         String[] split = groupIds.split(CommonConstant.STR_COMMA);
         for (String id : split) {
             UserInfoGroup userInfoGroup = userInfoGroupService.queryByIdFromCache(Long.valueOf(id));
             if (userInfoGroup != null) {
-                names.add(userInfoGroup.getName());
+                UserInfoGroupIdAndNameBO bo = UserInfoGroupIdAndNameBO.builder().id(Long.valueOf(id)).name(userInfoGroup.getName()).build();
+                boList.add(bo);
             }
         }
         
-        if (names.length() == 0) {
-            return "";
+        if (CollectionUtils.isEmpty(boList)) {
+            return Collections.emptyList();
         }
         
-        return names.toString();
+        return boList;
     }
 }
