@@ -276,6 +276,7 @@ public class UserInfoGroupServiceImpl implements UserInfoGroupService {
         for (String e : phones) {
             User user = userService.queryByUserPhone(e, User.TYPE_USER_NORMAL_WX_PRO, tenantId);
             if (Objects.isNull(user)) {
+                notExistsPhone.add(e);
                 continue;
             }
             
