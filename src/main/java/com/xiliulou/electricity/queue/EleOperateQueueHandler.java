@@ -269,6 +269,41 @@ public class EleOperateQueueHandler {
                 if (Objects.isNull(electricityConfig) || Objects.equals(electricityConfig.getIsOpenDoorLock(), ElectricityConfig.OPEN_DOOR_LOCK)) {
                     lockExceptionDoor(null, rentBatteryOrder, finalOpenDTO);
                 }
+    
+                if (finalOpenDTO.getIsProcessFail()) {
+                    //取消订单
+                    if (finalOpenDTO.getIsNeedEndOrder()) {
+                        RentBatteryOrder newRentBatteryOrder = new RentBatteryOrder();
+                        newRentBatteryOrder.setId(rentBatteryOrder.getId());
+                        newRentBatteryOrder.setUpdateTime(System.currentTimeMillis());
+                        newRentBatteryOrder.setOrderSeq(RentBatteryOrder.STATUS_ORDER_CANCEL);
+                        newRentBatteryOrder.setStatus(RentBatteryOrder.ORDER_CANCEL);
+                        rentBatteryOrderService.update(newRentBatteryOrder);
+                        return;
+                    }
+        
+                    //订单状态
+                    RentBatteryOrder newRentBatteryOrder = new RentBatteryOrder();
+                    newRentBatteryOrder.setId(rentBatteryOrder.getId());
+                    newRentBatteryOrder.setUpdateTime(System.currentTimeMillis());
+                    newRentBatteryOrder.setOrderSeq(finalOpenDTO.getOrderSeq());
+                    newRentBatteryOrder.setStatus(finalOpenDTO.getOrderStatus());
+                    rentBatteryOrderService.update(newRentBatteryOrder);
+                    return;
+                }
+    
+                //订单状态
+                rentBatteryOrder.setUpdateTime(System.currentTimeMillis());
+                rentBatteryOrder.setOrderSeq(finalOpenDTO.getOrderSeq());
+                rentBatteryOrder.setStatus(finalOpenDTO.getOrderStatus());
+                if (Objects.equals(rentBatteryOrder.getType(), RentBatteryOrder.TYPE_USER_RETURN)) {
+                    rentBatteryOrder.setElectricityBatterySn(finalOpenDTO.getBatterySn());
+                }
+    
+                if (Objects.nonNull(finalOpenDTO.getCellNo())) {
+                    rentBatteryOrder.setCellNo(finalOpenDTO.getCellNo());
+                }
+                rentBatteryOrderService.update(rentBatteryOrder);
                 
                 handleRentOrder(rentBatteryOrder, finalOpenDTO, electricityCabinet);
             }  catch (Exception e) {
@@ -621,7 +656,7 @@ public class EleOperateQueueHandler {
     //开租/还 电池门
     public void handleRentOrder(RentBatteryOrder rentBatteryOrder, EleOpenDTO finalOpenDTO, ElectricityCabinet electricityCabinet) {
 
-        //开门失败
+/*        //开门失败
         if (finalOpenDTO.getIsProcessFail()) {
             //取消订单
             if (finalOpenDTO.getIsNeedEndOrder()) {
@@ -656,9 +691,9 @@ public class EleOperateQueueHandler {
         if (Objects.nonNull(finalOpenDTO.getCellNo())) {
             rentBatteryOrder.setCellNo(finalOpenDTO.getCellNo());
         }
-        rentBatteryOrderService.update(rentBatteryOrder);
+        rentBatteryOrderService.update(rentBatteryOrder);*/
         
-        if (Objects.equals(rentBatteryOrder.getType(), RentBatteryOrder.TYPE_USER_RENT) && Objects.equals(rentBatteryOrder.getStatus(),
+        if (Objects.equals(rentBatteryOrder.getType(), RentBatteryOrder.TYPE_USER_RENT) && Objects.equals(finalOpenDTO.getOrderStatus(),
                 RentBatteryOrder.RENT_BATTERY_TAKE_SUCCESS)) {
             
             checkRentBatteryDoor(rentBatteryOrder);
@@ -675,7 +710,7 @@ public class EleOperateQueueHandler {
             enterpriseUserCostRecordService.asyncSaveUserCostRecordForRentalAndReturnBattery(UserCostTypeEnum.COST_TYPE_RENT_BATTERY.getCode(), rentBatteryOrder);
         }
         
-        if (Objects.equals(rentBatteryOrder.getType(), RentBatteryOrder.TYPE_USER_RETURN) && Objects.equals(rentBatteryOrder.getStatus(),
+        if (Objects.equals(rentBatteryOrder.getType(), RentBatteryOrder.TYPE_USER_RETURN) && Objects.equals(finalOpenDTO.getOrderStatus(),
                 RentBatteryOrder.RETURN_BATTERY_CHECK_SUCCESS)) {
             
             checkReturnBatteryDoor(rentBatteryOrder);
