@@ -50,7 +50,6 @@ import com.xiliulou.electricity.vo.BatteryMemberCardSearchVO;
 import com.xiliulou.electricity.vo.BatteryMemberCardVO;
 import com.xiliulou.electricity.vo.CouponSearchVo;
 import com.xiliulou.electricity.vo.SearchVo;
-import com.xiliulou.electricity.vo.userinfo.UserInfoGroupNamesVO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -406,7 +405,7 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
             
             // 设置电池型号
             if (!item.getBatteryType().isEmpty()) {
-    
+                
                 List<String> originalBatteryModels = item.getBatteryType().stream().map(MemberCardBatteryType::getBatteryType).distinct().collect(Collectors.toList());
                 batteryMemberCardVO.setBatteryModels(batteryModelService.selectShortBatteryType(originalBatteryModels, item.getTenantId()));
             }
@@ -758,24 +757,31 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
         
         this.update(batteryMemberCardUpdate);
         
-        operateRecordUtil.asyncRecord(batteryMemberCard, batteryMemberCardUpdate, userInfoGroupService, couponService, (u,c,o)->{
-            List<Long> oldUserGroupIds = JsonUtil.fromJsonArray((String) o.getOldValue().getOrDefault("userGroupIds", "[]"),Long.class);
-            List<UserInfoGroupBO> oldUserGroups = u.listByIds(oldUserGroupIds);
-            o.getOldValue().put("userGroups",oldUserGroups);
-    
-            List<Long> userGroupIds = JsonUtil.fromJsonArray((String) o.getNewValue().getOrDefault("userGroupIds", "[]"),Long.class);
-            List<UserInfoGroupBO> userGroups = u.listByIds(userGroupIds);
-            o.getNewValue().put("userGroups",userGroups);
-    
-            List<Long> oldCouponIds = JsonUtil.fromJsonArray((String) o.getOldValue().getOrDefault("couponId", "[]"),Long.class);
-            List<CarCouponNamePO> oldCoupons = c.queryListByIdsFromCache(oldCouponIds);
-            o.getOldValue().put("coupons",oldCoupons);
-    
-            List<Long> couponIds = JsonUtil.fromJsonArray((String) o.getNewValue().getOrDefault("couponId", "[]"),Long.class);
-            List<CarCouponNamePO> coupons = c.queryListByIdsFromCache(couponIds);
-            o.getNewValue().put("coupons",coupons);
-    
-            return o;
+        operateRecordUtil.asyncRecord(batteryMemberCard, batteryMemberCardUpdate, userInfoGroupService, couponService, (userInfoGroupService, couponService, operateLogDTO) -> {
+            List<Long> oldUserGroupIds = JsonUtil.fromJsonArray((String) operateLogDTO.getOldValue().getOrDefault("userGroupIds", "[]"), Long.class);
+            List<UserInfoGroupBO> oldUserGroups = userInfoGroupService.listByIds(oldUserGroupIds);
+            if (!org.springframework.util.CollectionUtils.isEmpty(oldUserGroups)) {
+                operateLogDTO.getOldValue().put("userGroups", oldUserGroups.stream().map(UserInfoGroupBO::getGroupName).collect(Collectors.toList()));
+            }
+            
+            List<Long> userGroupIds = JsonUtil.fromJsonArray((String) operateLogDTO.getNewValue().getOrDefault("userGroupIds", "[]"), Long.class);
+            List<UserInfoGroupBO> userGroups = userInfoGroupService.listByIds(userGroupIds);
+            if (!org.springframework.util.CollectionUtils.isEmpty(userGroups)) {
+                operateLogDTO.getNewValue().put("userGroups", userGroups.stream().map(UserInfoGroupBO::getGroupName).collect(Collectors.toList()));
+            }
+            
+            List<Long> oldCouponIds = JsonUtil.fromJsonArray((String) operateLogDTO.getOldValue().getOrDefault("couponId", "[]"), Long.class);
+            List<CarCouponNamePO> oldCoupons = couponService.queryListByIdsFromCache(oldCouponIds);
+            if (!org.springframework.util.CollectionUtils.isEmpty(oldCoupons)) {
+                operateLogDTO.getOldValue().put("coupons", oldCoupons.stream().map(CarCouponNamePO::getName).collect(Collectors.toList()));
+            }
+            
+            List<Long> couponIds = JsonUtil.fromJsonArray((String) operateLogDTO.getNewValue().getOrDefault("couponId", "[]"), Long.class);
+            List<CarCouponNamePO> coupons = couponService.queryListByIdsFromCache(couponIds);
+            if (!org.springframework.util.CollectionUtils.isEmpty(coupons)) {
+                operateLogDTO.getOldValue().put("coupons", coupons.stream().map(CarCouponNamePO::getName).collect(Collectors.toList()));
+            }
+            return operateLogDTO;
         });
         
         operateRecordUtil.record(batteryMemberCard, batteryMemberCardUpdate);
@@ -902,7 +908,7 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
         if (StringUtils.isNotBlank(couponIds)) {
             couponIdSet.addAll(JsonUtil.fromJsonArray(couponIds, Integer.class));
         }
-    
+        
         couponIdSet.forEach(couponIdFromSet -> {
             CouponSearchVo couponSearchVo = new CouponSearchVo();
             Coupon coupon = couponService.queryByIdFromCache(couponIdFromSet);
@@ -910,7 +916,7 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
                 BeanUtils.copyProperties(coupon, couponSearchVo);
                 couponSearchVo.setId(coupon.getId().longValue());
             }
-        
+            
             // 兼容旧版本小程序，取优惠金额最大的优惠券的金额与name展示
             if (Objects.nonNull(couponSearchVo.getAmount()) && couponSearchVo.getAmount().compareTo(batteryMemberCardVO.getAmount()) > 0) {
                 batteryMemberCardVO.setCouponId(couponSearchVo.getId().intValue());
