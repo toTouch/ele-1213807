@@ -697,6 +697,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             //修改企业用户代付状态为代付过期
             enterpriseChannelUserService.updatePaymentStatusForRefundDeposit(userInfo.getUid(), EnterprisePaymentStatusEnum.PAYMENT_TYPE_EXPIRED.getCode());
             
+            // 删除用户分组
             userInfoGroupDetailService.deleteByUid(userInfo.getUid(), null);
 
             return Triple.of(true, "", "免押解冻成功");
