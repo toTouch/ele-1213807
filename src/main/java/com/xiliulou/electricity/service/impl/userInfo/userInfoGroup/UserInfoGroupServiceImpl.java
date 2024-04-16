@@ -417,7 +417,7 @@ public class UserInfoGroupServiceImpl implements UserInfoGroupService {
         
         if (isCountChanged) {
             // 更新时间
-            UserInfoGroup updateGroup = UserInfoGroup.builder().operator(operator).updateTime(nowTime).id(groupId).build();
+            UserInfoGroup updateGroup = UserInfoGroup.builder().operator(operator).updateTime(System.currentTimeMillis()).id(groupId).build();
             int update = userInfoGroupMapper.update(updateGroup);
     
             DbUtils.dbOperateSuccessThenHandleCache(update, i -> {
