@@ -3119,7 +3119,7 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
                 serviceFeeUserInfoService.deleteByUid(freeDepositOrder.getUid());
                 
                 //删除用户分组
-                userInfoGroupDetailService.deleteByUid(freeDepositOrder.getUid(), null);
+                userInfoGroupDetailService.handleAfterRefundDeposit(freeDepositOrder.getUid());
             }
         }
     }

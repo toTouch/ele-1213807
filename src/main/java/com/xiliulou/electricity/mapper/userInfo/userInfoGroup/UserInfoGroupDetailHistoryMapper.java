@@ -18,4 +18,6 @@ public interface UserInfoGroupDetailHistoryMapper {
     List<UserInfoGroupDetailHistory> selectListByPage(UserInfoGroupDetailHistoryQuery query);
     
     Integer countTotal(UserInfoGroupDetailHistoryQuery query);
+    
+    Integer insertOne(UserInfoGroupDetailHistory detail);
 }

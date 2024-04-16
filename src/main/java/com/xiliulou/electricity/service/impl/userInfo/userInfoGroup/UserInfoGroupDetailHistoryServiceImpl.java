@@ -4,6 +4,7 @@ import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.bo.userInfoGroup.UserInfoGroupDetailHistoryBO;
 import com.xiliulou.electricity.bo.userInfoGroup.UserInfoGroupIdAndNameBO;
 import com.xiliulou.electricity.constant.CommonConstant;
+import com.xiliulou.electricity.constant.UserGroupConstant;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.userInfo.userInfoGroup.UserInfoGroup;
 import com.xiliulou.electricity.entity.userInfo.userInfoGroup.UserInfoGroupDetailHistory;
@@ -21,6 +22,7 @@ import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -63,7 +65,13 @@ public class UserInfoGroupDetailHistoryServiceImpl implements UserInfoGroupDetai
             BeanUtils.copyProperties(item, bo);
             bo.setOldGroupList(getGroupNames(item.getOldGroupIds()));
             bo.setNewGroupList(getGroupNames(item.getNewGroupIds()));
-            bo.setOperatorName(Optional.ofNullable(userService.queryByUidFromCache(item.getOperator())).map(User::getName).orElse(""));
+            
+            if (Objects.equals(item.getType(), UserGroupConstant.USER_GROUP_HISTORY_TYPE_REFUND_DEPOSIT)) {
+                bo.setOperatorName(UserGroupConstant.USER_GROUP_HISTORY_TYPE_REFUND_DEPOSIT_NAME);
+            } else {
+                bo.setOperatorName(Optional.ofNullable(userService.queryByUidFromCache(item.getOperator())).map(User::getName).orElse(""));
+            }
+            
             bo.setOperatorTime(item.getCreateTime());
             
             return bo;
@@ -74,6 +82,11 @@ public class UserInfoGroupDetailHistoryServiceImpl implements UserInfoGroupDetai
     @Override
     public Integer countTotal(UserInfoGroupDetailHistoryQuery query) {
         return userInfoGroupDetailHistoryMapper.countTotal(query);
+    }
+    
+    @Override
+    public Integer insertOne(UserInfoGroupDetailHistory detail) {
+        return userInfoGroupDetailHistoryMapper.insertOne(detail);
     }
     
     private List<UserInfoGroupIdAndNameBO> getGroupNames(String groupIds) {

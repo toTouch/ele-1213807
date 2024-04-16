@@ -18,4 +18,6 @@ public interface UserInfoGroupDetailHistoryService {
     List<UserInfoGroupDetailHistoryBO> listByPage(UserInfoGroupDetailHistoryQuery query);
     
     Integer countTotal(UserInfoGroupDetailHistoryQuery query);
+    
+    Integer insertOne(UserInfoGroupDetailHistory detail);
 }

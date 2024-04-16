@@ -369,7 +369,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
                 serviceFeeUserInfoService.deleteByUid(userInfo.getUid());
                 
                 //删除用户分组
-                userInfoGroupDetailService.deleteByUid(userInfo.getUid(), null);
+                userInfoGroupDetailService.handleAfterRefundDeposit(userInfo.getUid());
             }
         }
 
@@ -410,7 +410,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             userInfoService.unBindUserFranchiseeId(userInfo.getUid());
     
             //删除用户分组
-            userInfoGroupDetailService.deleteByUid(userInfo.getUid(), null);
+            userInfoGroupDetailService.handleAfterRefundDeposit(userInfo.getUid());
         }
 
         EleRefundOrder eleRefundOrderUpdate = new EleRefundOrder();
@@ -698,7 +698,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             enterpriseChannelUserService.updatePaymentStatusForRefundDeposit(userInfo.getUid(), EnterprisePaymentStatusEnum.PAYMENT_TYPE_EXPIRED.getCode());
             
             // 删除用户分组
-            userInfoGroupDetailService.deleteByUid(userInfo.getUid(), null);
+            userInfoGroupDetailService.handleAfterRefundDeposit(userInfo.getUid());
 
             return Triple.of(true, "", "免押解冻成功");
         }
@@ -1259,7 +1259,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             enterpriseChannelUserService.updatePaymentStatusForRefundDeposit(userInfo.getUid(), EnterprisePaymentStatusEnum.PAYMENT_TYPE_EXPIRED.getCode());
             
             //删除用户分组
-            userInfoGroupDetailService.deleteByUid(userInfo.getUid(), null);
+            userInfoGroupDetailService.handleAfterRefundDeposit(userInfo.getUid());
 
             return Triple.of(true, "", null);
         }
@@ -1555,7 +1555,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
         serviceFeeUserInfoService.deleteByUid(userInfo.getUid());
         
         //删除用户分组
-        userInfoGroupDetailService.deleteByUid(userInfo.getUid(), null);
+        userInfoGroupDetailService.handleAfterRefundDeposit(userInfo.getUid());
 
         return Triple.of(true, "", null);
     }
@@ -1926,7 +1926,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             serviceFeeUserInfoService.deleteByUid(uid);
             
             //删除用户分组
-            userInfoGroupDetailService.deleteByUid(uid, null);
+            userInfoGroupDetailService.handleAfterRefundDeposit(uid);
 
             //生成后台操作记录
             EleUserOperateRecord eleUserOperateRecord = EleUserOperateRecord.builder()
@@ -1986,7 +1986,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
                 serviceFeeUserInfoService.deleteByUid(uid);
     
                 //删除用户分组
-                userInfoGroupDetailService.deleteByUid(uid, null);
+                userInfoGroupDetailService.handleAfterRefundDeposit(uid);
                 
                 return R.ok();
             }

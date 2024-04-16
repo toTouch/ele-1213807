@@ -192,7 +192,7 @@ public class WxRefundPayCarDepositServiceImpl implements WxRefundPayService {
                 }
     
                 //删除用户分组
-                userInfoGroupDetailService.deleteByUid(depositPayEntity.getUid(), null);
+                userInfoGroupDetailService.handleAfterRefundDeposit(depositPayEntity.getUid());
             }
 
         } else {

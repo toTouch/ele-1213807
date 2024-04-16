@@ -67,4 +67,9 @@ public class UserInfoGroupDetailHistory {
      * 更新时间
      */
     private Long updateTime;
+    
+    /**
+     * 操作类型:0-其它 1-退押
+     */
+    private Integer type;
 }

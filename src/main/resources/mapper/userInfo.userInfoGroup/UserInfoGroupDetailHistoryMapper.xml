@@ -3,15 +3,20 @@
 <mapper namespace="com.xiliulou.electricity.mapper.userInfo.userInfoGroup.UserInfoGroupDetailHistoryMapper">
     <!-- 基础字段 -->
     <sql id="basic_field">
-        id, uid, old_group_Ids, new_group_Ids, operator, franchisee_id, tenant_id, del_flag, create_time, update_time
+        id, uid, old_group_Ids, new_group_Ids, operator, franchisee_id, tenant_id, del_flag, create_time, update_time, type
     </sql>
     
     <insert id="batchInsert" keyProperty="id" useGeneratedKeys="true">
-        insert into t_user_info_group_detail_history(uid, old_group_Ids, new_group_Ids, operator, franchisee_id, tenant_id, create_time, update_time)
+        insert into t_user_info_group_detail_history(uid, old_group_Ids, new_group_Ids, operator, franchisee_id, tenant_id, create_time, update_time, type)
         values
         <foreach item="item" index="index" collection="detailList" separator=",">
-            (#{item.uid}, #{item.oldGroupIds}, #{item.newGroupIds}, #{item.operator}, #{item.franchiseeId}, #{item.tenantId}, #{item.createTime}, #{item.updateTime})
+            (#{item.uid}, #{item.oldGroupIds}, #{item.newGroupIds}, #{item.operator}, #{item.franchiseeId}, #{item.tenantId}, #{item.createTime}, #{item.updateTime}, #{item.type})
         </foreach>
+    </insert>
+    
+    <insert id="insertOne" keyProperty="id" useGeneratedKeys="true">
+        insert into t_user_info_group_detail_history(uid, old_group_Ids, new_group_Ids, operator, franchisee_id, tenant_id, create_time, update_time, type)
+        values (#{uid}, #{oldGroupIds}, #{newGroupIds}, #{operator}, #{franchiseeId}, #{tenantId}, #{createTime}, #{updateTime}, #{type})
     </insert>
     
     <select id="selectListByPage" resultType="com.xiliulou.electricity.entity.userInfo.userInfoGroup.UserInfoGroupDetailHistory">

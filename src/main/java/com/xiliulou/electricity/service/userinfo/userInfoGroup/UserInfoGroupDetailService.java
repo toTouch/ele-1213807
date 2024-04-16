@@ -39,4 +39,7 @@ public interface UserInfoGroupDetailService {
     R bindGroup(UserInfoBindGroupRequest request, Long operator, Franchisee franchisee);
     
     Integer deleteByUid(Long uid, List<String> groupNoList);
+    
+    void handleAfterRefundDeposit(Long uid);
+    
 }

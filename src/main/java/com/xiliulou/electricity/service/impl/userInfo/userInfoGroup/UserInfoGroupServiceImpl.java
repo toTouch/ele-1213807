@@ -402,7 +402,7 @@ public class UserInfoGroupServiceImpl implements UserInfoGroupService {
             }
             
             UserInfoGroupDetailHistory detailHistory = UserInfoGroupDetailHistory.builder().uid(uid).oldGroupIds(oldGroupIds).newGroupIds(newGroupIds).operator(operator)
-                    .franchiseeId(franchiseeId).tenantId(tenantId).createTime(nowTime).updateTime(nowTime).build();
+                    .franchiseeId(franchiseeId).tenantId(tenantId).createTime(nowTime).updateTime(nowTime).type(UserGroupConstant.USER_GROUP_HISTORY_TYPE_OTHER).build();
             detailHistoryList.add(detailHistory);
             
             size++;

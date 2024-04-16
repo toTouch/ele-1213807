@@ -10,6 +10,7 @@ import com.xiliulou.electricity.bo.userInfoGroup.UserInfoGroupIdAndNameBO;
 import com.xiliulou.electricity.bo.userInfoGroup.UserInfoGroupNamesBO;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.CommonConstant;
+import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.constant.UserGroupConstant;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.UserInfo;
@@ -193,7 +194,8 @@ public class UserInfoGroupDetailServiceImpl implements UserInfoGroupDetailServic
                 List<UserInfoGroupNamesBO> existGroupList = this.listGroupByUid(UserInfoGroupDetailQuery.builder().uid(uid).tenantId(tenantId).build());
                 if (CollectionUtils.isNotEmpty(existGroupList)) {
                     String oldGroupIds = existGroupList.stream().map(g -> g.getGroupId().toString()).collect(Collectors.joining(CommonConstant.STR_COMMA));
-                    UserInfoGroupDetailHistory detailHistory = assembleDetailHistory(uid, oldGroupIds, "", operator, userInfo.getFranchiseeId(), tenantId);
+                    UserInfoGroupDetailHistory detailHistory = assembleDetailHistory(uid, oldGroupIds, "", operator, userInfo.getFranchiseeId(), tenantId,
+                            UserGroupConstant.USER_GROUP_HISTORY_TYPE_OTHER);
                     
                     Integer delete = userInfoGroupDetailMapper.deleteByUid(uid, null);
                     if (delete > 0) {
@@ -305,15 +307,15 @@ public class UserInfoGroupDetailServiceImpl implements UserInfoGroupDetailServic
         
         // 新增历史记录
         UserInfoGroupDetailHistory detailHistory = this.assembleDetailHistory(uid, StringUtils.join(oldGroupIds, CommonConstant.STR_COMMA),
-                StringUtils.join(newGroupList, CommonConstant.STR_COMMA), operator, franchiseeId, tenantId);
+                StringUtils.join(newGroupList, CommonConstant.STR_COMMA), operator, franchiseeId, tenantId, UserGroupConstant.USER_GROUP_HISTORY_TYPE_OTHER);
         userInfoGroupDetailHistoryService.batchInsert(List.of(detailHistory));
     }
     
-    private UserInfoGroupDetailHistory assembleDetailHistory(Long uid, String oldGroupIds, String newGroupIds, Long operator, Long franchiseeId, Integer tenantId) {
+    private UserInfoGroupDetailHistory assembleDetailHistory(Long uid, String oldGroupIds, String newGroupIds, Long operator, Long franchiseeId, Integer tenantId, Integer type) {
         long nowTime = System.currentTimeMillis();
         
         return UserInfoGroupDetailHistory.builder().uid(uid).oldGroupIds(oldGroupIds).newGroupIds(newGroupIds).operator(operator).franchiseeId(franchiseeId).tenantId(tenantId)
-                .createTime(nowTime).updateTime(nowTime).build();
+                .createTime(nowTime).updateTime(nowTime).type(type).build();
     }
     
     @Override
@@ -375,7 +377,7 @@ public class UserInfoGroupDetailServiceImpl implements UserInfoGroupDetailServic
                 if (integer > 0) {
                     // 新增历史记录
                     UserInfoGroupDetailHistory detailHistory = this.assembleDetailHistory(uid, "", StringUtils.join(groupIds, CommonConstant.STR_COMMA), operator,
-                            userInfo.getFranchiseeId(), tenantId);
+                            userInfo.getFranchiseeId(), tenantId, UserGroupConstant.USER_GROUP_HISTORY_TYPE_OTHER);
                     userInfoGroupDetailHistoryService.batchInsert(List.of(detailHistory));
                 }
             }
@@ -389,6 +391,30 @@ public class UserInfoGroupDetailServiceImpl implements UserInfoGroupDetailServic
     @Override
     public Integer deleteByUid(Long uid, List<String> groupNoList) {
         return userInfoGroupDetailMapper.deleteByUid(uid, groupNoList);
+    }
+    
+    @Override
+    public void handleAfterRefundDeposit(Long uid) {
+        List<UserInfoGroupNamesBO> groupList = this.listGroupByUid(UserInfoGroupDetailQuery.builder().uid(uid).build());
+        Integer delete = 0;
+        if (CollectionUtils.isNotEmpty(groupList)) {
+            delete = this.deleteByUid(uid, null);
+        }
+        
+        if (delete > 0) {
+            UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
+            Long franchiseeId = NumberConstant.ZERO_L;
+            Integer tenantId = NumberConstant.ZERO;
+            if (Objects.nonNull(userInfo)) {
+                franchiseeId = userInfo.getFranchiseeId();
+                tenantId = userInfo.getTenantId();
+            }
+            String oldGroupIds = groupList.stream().map(g -> g.getGroupId().toString()).collect(Collectors.joining(CommonConstant.STR_COMMA));
+            UserInfoGroupDetailHistory detail = this.assembleDetailHistory(uid, oldGroupIds, "", uid, franchiseeId, tenantId,
+                    UserGroupConstant.USER_GROUP_HISTORY_TYPE_REFUND_DEPOSIT);
+            
+            userInfoGroupDetailHistoryService.insertOne(detail);
+        }
     }
     
 }
