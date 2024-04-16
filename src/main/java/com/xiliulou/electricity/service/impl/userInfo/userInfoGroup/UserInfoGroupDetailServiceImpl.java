@@ -197,15 +197,6 @@ public class UserInfoGroupDetailServiceImpl implements UserInfoGroupDetailServic
                     
                     Integer delete = userInfoGroupDetailMapper.deleteByUid(uid, null);
                     if (delete > 0) {
-                        // 更新分组的updateTime
-                        List<Long> updateIds = existGroupList.stream().map(UserInfoGroupNamesBO::getGroupId).collect(Collectors.toList());
-                        
-                        if (CollectionUtils.isNotEmpty(updateIds)) {
-                            userInfoGroupService.batchUpdateByIds(updateIds, System.currentTimeMillis(), operator, null);
-                        }
-                        // 清除分组缓存
-                        delGroupCacheByIds(updateIds);
-                        
                         // 新增历史记录
                         userInfoGroupDetailHistoryService.batchInsert(List.of(detailHistory));
                     }
@@ -264,7 +255,7 @@ public class UserInfoGroupDetailServiceImpl implements UserInfoGroupDetailServic
                     if (Objects.nonNull(userInfoGroup)) {
                         detail = UserInfoGroupDetail.builder().groupNo(userInfoGroup.getGroupNo()).uid(uid).franchiseeId(userInfoGroup.getFranchiseeId()).tenantId(tenantId)
                                 .createTime(nowTime).updateTime(nowTime).operator(operator).build();
-    
+                        
                         addGroupList.add(groupId);
                     }
                     
@@ -284,8 +275,8 @@ public class UserInfoGroupDetailServiceImpl implements UserInfoGroupDetailServic
     }
     
     @Transactional(rollbackFor = Exception.class)
-    public void handleGroupDetailDb(Long uid, List<UserInfoGroupDetail> insertList, List<UserInfoGroupNamesBO> delGroupList, List<Long> addGroupList, List<Long> oldGroupIds, Long operator,
-            Long franchiseeId, Integer tenantId) {
+    public void handleGroupDetailDb(Long uid, List<UserInfoGroupDetail> insertList, List<UserInfoGroupNamesBO> delGroupList, List<Long> addGroupList, List<Long> oldGroupIds,
+            Long operator, Long franchiseeId, Integer tenantId) {
         
         // 新增
         if (CollectionUtils.isNotEmpty(insertList)) {
@@ -300,41 +291,22 @@ public class UserInfoGroupDetailServiceImpl implements UserInfoGroupDetailServic
             
             deleteGroupList = delGroupList.stream().map(UserInfoGroupNamesBO::getGroupId).collect(Collectors.toList());
         }
-    
-        // 更新分组的updateTime
-        List<Long> updateIds = new ArrayList<>();
+        
         List<Long> newGroupList = new ArrayList<>(oldGroupIds);
         if (CollectionUtils.isNotEmpty(deleteGroupList)) {
             // 删除记录
             newGroupList.removeAll(deleteGroupList);
-    
-            updateIds.addAll(deleteGroupList);
         }
         
         // 新增记录
         if (CollectionUtils.isNotEmpty(addGroupList)) {
             newGroupList.addAll(addGroupList);
-    
-            updateIds.addAll(addGroupList);
         }
-        
-        // 更新时间
-        if (CollectionUtils.isNotEmpty(updateIds)) {
-            userInfoGroupService.batchUpdateByIds(updateIds, System.currentTimeMillis(), operator, null);
-        }
-        // 清除分组缓存
-        delGroupCacheByIds(updateIds);
         
         // 新增历史记录
         UserInfoGroupDetailHistory detailHistory = this.assembleDetailHistory(uid, StringUtils.join(oldGroupIds, CommonConstant.STR_COMMA),
                 StringUtils.join(newGroupList, CommonConstant.STR_COMMA), operator, franchiseeId, tenantId);
         userInfoGroupDetailHistoryService.batchInsert(List.of(detailHistory));
-    }
-    
-    private void delGroupCacheByIds(List<Long> ids) {
-        ids.forEach(id -> {
-            redisService.delete(CacheConstant.CACHE_USER_GROUP + id);
-        });
     }
     
     private UserInfoGroupDetailHistory assembleDetailHistory(Long uid, String oldGroupIds, String newGroupIds, Long operator, Long franchiseeId, Integer tenantId) {
@@ -401,13 +373,6 @@ public class UserInfoGroupDetailServiceImpl implements UserInfoGroupDetailServic
             if (CollectionUtils.isNotEmpty(list)) {
                 Integer integer = this.batchInsert(list);
                 if (integer > 0) {
-                    // 更新updateTime
-                    if (CollectionUtils.isNotEmpty(groupIds)) {
-                        userInfoGroupService.batchUpdateByIds(groupIds, System.currentTimeMillis(), operator, null);
-                    }
-                    // 清除分组缓存
-                    delGroupCacheByIds(groupIds);
-                    
                     // 新增历史记录
                     UserInfoGroupDetailHistory detailHistory = this.assembleDetailHistory(uid, "", StringUtils.join(groupIds, CommonConstant.STR_COMMA), operator,
                             userInfo.getFranchiseeId(), tenantId);
