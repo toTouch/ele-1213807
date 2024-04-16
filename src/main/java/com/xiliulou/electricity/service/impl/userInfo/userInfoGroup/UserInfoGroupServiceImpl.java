@@ -274,7 +274,12 @@ public class UserInfoGroupServiceImpl implements UserInfoGroupService {
         Map<Long, UserInfo> userInfoMap = new HashMap<>();
         
         for (String e : phones) {
-            UserInfo userInfo = userInfoService.queryUserInfoByPhone(e, tenantId);
+            User user = userService.queryByUserPhone(e, User.TYPE_USER_NORMAL_WX_PRO, tenantId);
+            if (Objects.isNull(user)) {
+                continue;
+            }
+            
+            UserInfo userInfo = userInfoService.queryByUidFromCache(user.getUid());
             if (Objects.isNull(userInfo)) {
                 notExistsPhone.add(e);
             } else {
