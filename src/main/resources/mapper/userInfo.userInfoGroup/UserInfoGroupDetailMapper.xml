@@ -40,7 +40,7 @@
         any_value(tuigd.franchisee_id) as franchiseeid,
         any_value(tuigd.tenant_id) as tenantid,
         any_value(tuigd.del_flag) as delflag,
-        any_value(tuigd.create_time) as createtime,
+        min(tuigd.create_time) as createtime,
         any_value(tuigd.update_time) as updatetime,
         any_value(tuigd.operator) as operator,
         any_value(tuig.id) as groupid,
