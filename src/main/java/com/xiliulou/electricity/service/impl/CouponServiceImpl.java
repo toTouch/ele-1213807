@@ -8,15 +8,7 @@ import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
-import com.xiliulou.electricity.entity.BatteryMemberCard;
-import com.xiliulou.electricity.entity.Coupon;
-import com.xiliulou.electricity.entity.CouponActivityPackage;
-import com.xiliulou.electricity.entity.NewUserActivity;
-import com.xiliulou.electricity.entity.OldUserActivity;
-import com.xiliulou.electricity.entity.ShareActivityRule;
-import com.xiliulou.electricity.entity.User;
-import com.xiliulou.electricity.entity.UserCoupon;
-import com.xiliulou.electricity.entity.car.CarCouponNamePO;
+import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.entity.car.CarRentalPackagePo;
 import com.xiliulou.electricity.enums.PackageTypeEnum;
 import com.xiliulou.electricity.enums.RentalPackageTypeEnum;
@@ -37,6 +29,7 @@ import com.xiliulou.electricity.service.asset.AssertPermissionService;
 import com.xiliulou.electricity.service.car.CarRentalPackageService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
+import com.xiliulou.electricity.utils.OperateRecordUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.BatteryMemberCardVO;
 import com.xiliulou.electricity.vo.SearchVo;
@@ -86,6 +79,9 @@ public class CouponServiceImpl implements CouponService {
     
     @Autowired
     private CarRentalPackageService carRentalPackageService;
+    
+    @Autowired
+    private OperateRecordUtil operateRecordUtil;
     
     @Autowired
     private CouponActivityPackageService couponActivityPackageService;
@@ -242,6 +238,7 @@ public class CouponServiceImpl implements CouponService {
         }
         
         if (insert > 0) {
+            operateRecordUtil.record(null, coupon);
             return R.ok();
         }
         return R.fail("ELECTRICITY.0086", "操作失败");
@@ -583,7 +580,7 @@ public class CouponServiceImpl implements CouponService {
             redisService.saveWithHash(CacheConstant.COUPON_CACHE + couponUpdate.getId(), couponUpdate);
             return null;
         });
-        
+        operateRecordUtil.record(null, coupon);
         return Triple.of(true, "", "删除成功！");
     }
 }

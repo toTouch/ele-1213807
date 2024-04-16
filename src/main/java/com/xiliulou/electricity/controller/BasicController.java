@@ -21,6 +21,7 @@ import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.tuple.Triple;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
@@ -63,6 +64,9 @@ public class BasicController extends BaseController {
 
     @Resource
     private FranchiseeService franchiseeService;
+    
+    @Autowired
+    private UserService userService;
 
     @Resource
     private ElectricityCarModelService electricityCarModelService;
@@ -193,7 +197,34 @@ public class BasicController extends BaseController {
 
         return couponMap;
     }
-
+    
+    /**
+     * 根据UID集获取B及C端用户信息
+     *
+     * @param uids
+     * @return
+     */
+    protected Map<Long, User> getUserByUidsForMap(Set<Long> uids) {
+        if (CollectionUtils.isEmpty(uids)) {
+            return Collections.emptyMap();
+        }
+        
+        List<User> users = new ArrayList<>();
+        uids.parallelStream().forEach(uid -> {
+            
+            User user = userService.queryByUidFromCache(uid);
+            if (Objects.nonNull(user)) {
+                users.add(user);
+            }
+        });
+        
+        if (users.isEmpty()) {
+            return Collections.emptyMap();
+        }
+        
+        return users.stream().collect(Collectors.toMap(User::getUid, Function.identity(), (k1, k2) -> k1));
+    }
+    
     /**
      * 根据柜机ID集获取柜机信息<br />
      * K：柜机ID<br />

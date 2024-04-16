@@ -1,12 +1,19 @@
 package com.xiliulou.electricity.service.impl;
 
+import cn.hutool.core.collection.ListUtil;
+import cn.hutool.core.util.ObjectUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.entity.CouponIssueOperateRecord;
+import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.mapper.CouponIssueOperateRecordMapper;
 import com.xiliulou.electricity.query.CouponIssueOperateRecordQuery;
 import com.xiliulou.electricity.service.CouponIssueOperateRecordService;
+import com.xiliulou.electricity.service.UserService;
+import com.xiliulou.electricity.vo.CouponIssueOperateRecordVO;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -25,6 +32,9 @@ public class CouponIssueOperateRecordServiceImpl implements CouponIssueOperateRe
 
     @Resource
     CouponIssueOperateRecordMapper couponIssueOperateRecordMapper;
+    
+    @Autowired
+    private UserService userService;
 
     @Override
     public void insert(CouponIssueOperateRecord couponIssueOperateRecord) {
@@ -47,7 +57,18 @@ public class CouponIssueOperateRecordServiceImpl implements CouponIssueOperateRe
     @Slave
     @Override
     public R queryRecordList(CouponIssueOperateRecordQuery couponIssueOperateRecordQuery) {
-        return R.ok(couponIssueOperateRecordMapper.queryRecordList(couponIssueOperateRecordQuery));
+        List<CouponIssueOperateRecordVO> operateRecordVOS = couponIssueOperateRecordMapper.queryRecordList(couponIssueOperateRecordQuery);
+        if (CollectionUtils.isEmpty(operateRecordVOS)) {
+            return R.ok(ListUtil.empty());
+        }
+        //*********************************查询优惠劵发放人*************************/
+        operateRecordVOS.forEach(n -> {
+            Long issuedUid = n.getIssuedUid();
+            User user = userService.queryByUidFromCache(issuedUid);
+            n.setIssuedName(ObjectUtil.isNull(user) ? null : user.getName());
+        });
+        //******************************优惠劵发放人查询完毕*************************/
+        return R.ok(operateRecordVOS);
     }
     @Slave
     @Override
