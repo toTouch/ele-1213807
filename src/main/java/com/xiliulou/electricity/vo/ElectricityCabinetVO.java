@@ -1,4 +1,5 @@
 package com.xiliulou.electricity.vo;
+import com.xiliulou.electricity.constant.EleCabinetConstant;
 import lombok.Data;
 
 import java.util.Map;
@@ -153,6 +154,12 @@ public class ElectricityCabinetVO {
     //门店id
     private Integer storeId;
     private String storeName;
+    
+    /**
+     * @see EleCabinetConstant
+     * 柜机供电类型：0--市电，1--反向供电
+     */
+    private Integer powerType;
 
     /**
      * 满电标准
