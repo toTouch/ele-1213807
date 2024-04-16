@@ -288,8 +288,9 @@ public class JsonAdminUserInfoGroupController extends BasicController {
      * 租户下所有分组
      */
     @GetMapping("/admin/userInfo/userInfoGroup/allGroup")
-    public R page(@RequestParam("size") long size, @RequestParam("offset") long offset, @RequestParam(value = "franchiseeId", required = false) Long franchiseeId) {
-        if (size < 0 || size > 50) {
+    public R page(@RequestParam("size") long size, @RequestParam("offset") long offset, @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
+            @RequestParam(value = "name", required = false) String name) {
+        if (size < 0) {
             size = 10L;
         }
         
@@ -319,7 +320,8 @@ public class JsonAdminUserInfoGroupController extends BasicController {
             }
         }
         
-        UserInfoGroupQuery query = UserInfoGroupQuery.builder().size(size).offset(offset).tenantId(TenantContextHolder.getTenantId()).franchiseeIds(franchiseeIds).build();
+        UserInfoGroupQuery query = UserInfoGroupQuery.builder().size(size).offset(offset).tenantId(TenantContextHolder.getTenantId()).franchiseeIds(franchiseeIds).groupName(name)
+                .build();
         List<UserInfoGroupIdAndNameBO> boList = userInfoGroupService.listAllGroup(query);
         
         //BO转化为VO

@@ -246,6 +246,7 @@ public class UserInfoGroupDetailServiceImpl implements UserInfoGroupDetailServic
             
             // 处理新增
             List<UserInfoGroupDetail> insertList = null;
+            List<Long> addGroupList = new ArrayList<>();
             if (CollectionUtils.isNotEmpty(groupIds)) {
                 if ((intersection.size() + groupIds.size()) > UserGroupConstant.USER_GROUP_LIMIT) {
                     return R.fail("120114", "用户绑定的分组数量已达上限10个");
@@ -260,6 +261,8 @@ public class UserInfoGroupDetailServiceImpl implements UserInfoGroupDetailServic
                     if (Objects.nonNull(userInfoGroup)) {
                         detail = UserInfoGroupDetail.builder().groupNo(userInfoGroup.getGroupNo()).uid(uid).franchiseeId(userInfoGroup.getFranchiseeId()).tenantId(tenantId)
                                 .createTime(nowTime).updateTime(nowTime).operator(operator).build();
+    
+                        addGroupList.add(groupId);
                     }
                     
                     return detail;
@@ -269,7 +272,7 @@ public class UserInfoGroupDetailServiceImpl implements UserInfoGroupDetailServic
             }
             
             // 持久化detail
-            handleGroupDetailDb(uid, insertList, existGroupList, oldGroupIds, operator, userInfo.getFranchiseeId(), tenantId);
+            handleGroupDetailDb(uid, insertList, existGroupList, addGroupList, oldGroupIds, operator, userInfo.getFranchiseeId(), tenantId);
             
             return R.ok();
         } finally {
@@ -277,52 +280,41 @@ public class UserInfoGroupDetailServiceImpl implements UserInfoGroupDetailServic
         }
     }
     
-    private void delGroupCacheByIds(List<Long> ids) {
-        ids.forEach(id -> {
-            redisService.delete(CacheConstant.CACHE_USER_GROUP + id);
-        });
-    }
-    
     @Transactional(rollbackFor = Exception.class)
-    public void handleGroupDetailDb(Long uid, List<UserInfoGroupDetail> insertList, List<UserInfoGroupNamesBO> existGroupList, List<Long> oldGroupIds, Long operator,
+    public void handleGroupDetailDb(Long uid, List<UserInfoGroupDetail> insertList, List<UserInfoGroupNamesBO> delGroupList, List<Long> addGroupList, List<Long> oldGroupIds, Long operator,
             Long franchiseeId, Integer tenantId) {
         
         // 新增
-        List<Long> addGroupList = null;
         if (CollectionUtils.isNotEmpty(insertList)) {
             userInfoGroupDetailMapper.batchInsert(insertList);
-            
-            addGroupList = insertList.stream().map(UserInfoGroupDetail::getId).collect(Collectors.toList());
         }
         
         // 删除
         List<Long> deleteGroupList = null;
-        if (CollectionUtils.isNotEmpty(existGroupList)) {
-            List<String> deleteGroupNoList = existGroupList.stream().map(UserInfoGroupNamesBO::getGroupNo).collect(Collectors.toList());
+        if (CollectionUtils.isNotEmpty(delGroupList)) {
+            List<String> deleteGroupNoList = delGroupList.stream().map(UserInfoGroupNamesBO::getGroupNo).collect(Collectors.toList());
             this.deleteByUid(uid, deleteGroupNoList);
             
-            deleteGroupList = existGroupList.stream().map(UserInfoGroupNamesBO::getGroupId).collect(Collectors.toList());
+            deleteGroupList = delGroupList.stream().map(UserInfoGroupNamesBO::getGroupId).collect(Collectors.toList());
         }
-        
+    
+        // 更新分组的updateTime
+        List<Long> updateIds = new ArrayList<>();
         List<Long> newGroupList = new ArrayList<>(oldGroupIds);
-        // 删除记录
         if (CollectionUtils.isNotEmpty(deleteGroupList)) {
+            // 删除记录
             newGroupList.removeAll(deleteGroupList);
+    
+            updateIds.addAll(deleteGroupList);
         }
         
         // 新增记录
         if (CollectionUtils.isNotEmpty(addGroupList)) {
             newGroupList.addAll(addGroupList);
-        }
-        
-        // 更新分组的updateTime
-        List<Long> updateIds = new ArrayList<>();
-        if (CollectionUtils.isNotEmpty(deleteGroupList)) {
-            updateIds.addAll(deleteGroupList);
-        }
-        if (CollectionUtils.isNotEmpty(addGroupList)) {
+    
             updateIds.addAll(addGroupList);
         }
+        
         userInfoGroupService.batchUpdateByIds(updateIds, System.currentTimeMillis(), operator, null);
         // 清除分组缓存
         delGroupCacheByIds(updateIds);
@@ -331,6 +323,12 @@ public class UserInfoGroupDetailServiceImpl implements UserInfoGroupDetailServic
         UserInfoGroupDetailHistory detailHistory = this.assembleDetailHistory(uid, StringUtils.join(oldGroupIds, CommonConstant.STR_COMMA),
                 StringUtils.join(newGroupList, CommonConstant.STR_COMMA), operator, franchiseeId, tenantId);
         userInfoGroupDetailHistoryService.batchInsert(List.of(detailHistory));
+    }
+    
+    private void delGroupCacheByIds(List<Long> ids) {
+        ids.forEach(id -> {
+            redisService.delete(CacheConstant.CACHE_USER_GROUP + id);
+        });
     }
     
     private UserInfoGroupDetailHistory assembleDetailHistory(Long uid, String oldGroupIds, String newGroupIds, Long operator, Long franchiseeId, Integer tenantId) {
