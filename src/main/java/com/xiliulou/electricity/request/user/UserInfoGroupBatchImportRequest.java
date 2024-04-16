@@ -1,12 +1,8 @@
 package com.xiliulou.electricity.request.user;
 
-import com.xiliulou.electricity.validator.CreateGroup;
 import lombok.Data;
 
-import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
-import java.util.List;
 
 /**
  * @author HeYafeng
@@ -16,12 +12,10 @@ import java.util.List;
 @Data
 public class UserInfoGroupBatchImportRequest {
     
-    @NotNull(message = "加盟商ID不能为空")
     private Long franchiseeId;
     
-    @Size(max = 10, message = "分组名称不能超过10个")
-    @NotEmpty(message = "分组名称不能为空")
-    private List<Long> groupIds;
+    @NotNull(message = "分组ID不能为空")
+    private Long groupId;
     
     @NotNull(message = "用户电话号不能为空")
     private String jsonPhones;

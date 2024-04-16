@@ -23,13 +23,14 @@ public interface UserInfoGroupDetailMapper {
     
     List<UserInfoGroupNamesBO> selectListGroupByUid(UserInfoGroupDetailQuery query);
     
+    List<UserInfoGroupNamesBO> selectListGroupByUidList(@Param("uidList") List<Long> uidList);
+    
     Integer batchInsert(@Param("detailList") List<UserInfoGroupDetail> detailList);
     
     Integer countUserByGroupId(Long id);
     
     Integer countGroupByUid(Long uid);
     
-    Integer deleteByUidAndGroupNoList(@Param("uid") Long uid, @Param("groupNoList") List<String> groupNoList);
+    Integer deleteByUid(@Param("uid") Long uid, @Param("groupNoList") List<String> groupNoList);
     
-    List<UserInfoGroupNamesBO> selectListGroupByUidList(@Param("uidList") List<Long> uidList);
 }

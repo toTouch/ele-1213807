@@ -28,7 +28,7 @@ public interface UserInfoGroupService {
     
     Integer countTotal(UserInfoGroupQuery query);
     
-    R batchImport(UserInfoGroupBatchImportRequest request, Long operator);
+    R batchImport(UserInfoGroupBatchImportRequest request, Long operator, Franchisee franchisee);
     
     UserInfoGroup queryById(Long id);
     

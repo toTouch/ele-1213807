@@ -76,7 +76,7 @@ public class JsonAdminUserInfoGroupController extends BasicController {
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE)) {
             Long franchiseeId = request.getFranchiseeId();
             
-            if (Objects.isNull(franchiseeService.queryByIdFromCache(franchiseeId))) {
+            if (Objects.isNull(franchiseeId) || Objects.isNull(franchiseeService.queryByIdFromCache(franchiseeId))) {
                 return R.fail("ELECTRICITY.0038", "未找到加盟商");
             }
         }
@@ -194,7 +194,7 @@ public class JsonAdminUserInfoGroupController extends BasicController {
         UserInfoGroupQuery query = UserInfoGroupQuery.builder().size(size).offset(offset).tenantId(TenantContextHolder.getTenantId()).franchiseeIds(franchiseeIds).groupId(groupId)
                 .build();
         List<UserInfoGroupBO> boList = userInfoGroupService.listByPage(query);
-    
+        
         //BO转化为VO
         List<UserInfoGroupVO> result = null;
         if (CollectionUtils.isNotEmpty(boList)) {
@@ -264,14 +264,15 @@ public class JsonAdminUserInfoGroupController extends BasicController {
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE)) {
             Long franchiseeId = request.getFranchiseeId();
             
-            if (Objects.isNull(franchiseeService.queryByIdFromCache(franchiseeId))) {
+            if (Objects.isNull(franchiseeId) || Objects.isNull(franchiseeService.queryByIdFromCache(franchiseeId))) {
                 return R.fail("ELECTRICITY.0038", "未找到加盟商");
             }
         }
         
         // 加盟商操作，查询加盟商
+        Franchisee franchisee = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
-            Franchisee franchisee = franchiseeService.queryByUid(user.getUid());
+            franchisee = franchiseeService.queryByUid(user.getUid());
             
             if (Objects.isNull(franchisee)) {
                 return R.fail("ELECTRICITY.0038", "未找到加盟商");
@@ -280,7 +281,7 @@ public class JsonAdminUserInfoGroupController extends BasicController {
             request.setFranchiseeId(franchisee.getId());
         }
         
-        return userInfoGroupService.batchImport(request, user.getUid());
+        return userInfoGroupService.batchImport(request, user.getUid(), franchisee);
     }
     
     /**
