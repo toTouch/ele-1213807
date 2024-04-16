@@ -2,8 +2,11 @@ package com.xiliulou.electricity.service.impl.car;
 
 import com.alibaba.fastjson.JSON;
 import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.db.dynamic.annotation.Slave;
+import com.xiliulou.electricity.bo.userInfoGroup.UserInfoGroupBO;
 import com.xiliulou.electricity.constant.CarRenalCacheConstant;
+import com.xiliulou.electricity.entity.car.CarCouponNamePO;
 import com.xiliulou.electricity.entity.car.CarRentalPackagePo;
 import com.xiliulou.electricity.enums.DelFlagEnum;
 import com.xiliulou.electricity.enums.UpDownEnum;
@@ -13,8 +16,10 @@ import com.xiliulou.electricity.mapper.car.CarRentalPackageMapper;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageQryModel;
 import com.xiliulou.electricity.query.MemberCardAndCarRentalPackageSortParamQuery;
 import com.xiliulou.electricity.query.car.CarRentalPackageNameReq;
+import com.xiliulou.electricity.service.CouponService;
 import com.xiliulou.electricity.service.car.CarRentalPackageOrderService;
 import com.xiliulou.electricity.service.car.CarRentalPackageService;
+import com.xiliulou.electricity.service.userinfo.userInfoGroup.UserInfoGroupService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.OperateRecordUtil;
 import com.xiliulou.electricity.vo.car.CarRentalPackageSearchVO;
@@ -50,6 +55,12 @@ public class CarRentalPackageServiceImpl implements CarRentalPackageService {
     
     @Resource
     private CarRentalPackageMapper carRentalPackageMapper;
+    
+    @Autowired
+    private UserInfoGroupService userInfoGroupService;
+    
+    @Autowired
+    private CouponService couponService;
     
     /**
      * 根据主键ID查询，不区分是否删除
@@ -265,6 +276,25 @@ public class CarRentalPackageServiceImpl implements CarRentalPackageService {
         // 删除缓存
         String cacheEky = String.format(CarRenalCacheConstant.CAR_RENAL_PACKAGE_ID_KEY, entity.getId());
         redisService.delete(cacheEky);
+        operateRecordUtil.asyncRecord(oriEntity,entity,userInfoGroupService,couponService,(u,c,o)->{
+            List<Long> oldUserGroupIds = JsonUtil.fromJsonArray((String) o.getOldValue().getOrDefault("userGroupIds", "[]"),Long.class);
+            List<UserInfoGroupBO> oldUserGroups = u.listByIds(oldUserGroupIds);
+            o.getOldValue().put("userGroups",oldUserGroups);
+            
+            List<Long> userGroupIds = JsonUtil.fromJsonArray((String) o.getNewValue().getOrDefault("userGroupIds", "[]"),Long.class);
+            List<UserInfoGroupBO> UserGroups = u.listByIds(userGroupIds);
+            o.getNewValue().put("userGroups",UserGroups);
+            
+            List<Long> oldCouponIds = JsonUtil.fromJsonArray((String) o.getOldValue().getOrDefault("couponId", "[]"),Long.class);
+            List<CarCouponNamePO> oldCoupons = c.queryListByIdsFromCache(oldCouponIds);
+            o.getOldValue().put("coupons",oldCoupons);
+            
+            List<Long> couponIds = JsonUtil.fromJsonArray((String) o.getNewValue().getOrDefault("couponId", "[]"),Long.class);
+            List<CarCouponNamePO> coupons = c.queryListByIdsFromCache(couponIds);
+            o.getNewValue().put("coupons",coupons);
+            
+            return o;
+        });
         operateRecordUtil.record(oriEntity, entity);
         return num >= 0;
     }

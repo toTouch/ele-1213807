@@ -52,6 +52,7 @@ public class OperateLogDTO {
         HttpServletRequest request = ServletUtils.getRequest();
         dto.setMethod(request.getMethod());
         dto.setUri(request.getServletPath());
+        dto.setOperateTime(System.currentTimeMillis());
         String ip = WebUtils.getIP(request);
         if (StrUtil.isNotBlank(ip)){
             dto.setIp(ip);
