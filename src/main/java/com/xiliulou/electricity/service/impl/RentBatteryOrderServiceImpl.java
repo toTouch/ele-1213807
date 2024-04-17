@@ -1291,22 +1291,19 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
     }
     
     private Triple<Boolean, String, Object> allocateFullBatteryBox(ElectricityCabinet electricityCabinet, UserInfo userInfo, Franchisee franchisee) {
-        //上次分配的格挡
-        String lastAllocateFullyBatteryCell = redisService.get(CacheConstant.CACHE_LAST_ALLOCATE_FULLY_BATTERY_CELL + electricityCabinet.getId());
-        
         //租电满电电池分配规则：优先电量最高，若存在多个电量相同的，则取串数最大的
-        List<ElectricityCabinetBox> electricityCabinetBoxList = electricityCabinetBoxService
-                .queryElectricityBatteryBox(electricityCabinet, null, null, electricityCabinet.getFullyCharged());
-        
-        if (CollectionUtils.isNotEmpty(electricityCabinetBoxList) && StringUtils.isNotBlank(lastAllocateFullyBatteryCell)) {
-            electricityCabinetBoxList = electricityCabinetBoxList.stream().filter(item -> !Objects.equals(item.getCellNo(), lastAllocateFullyBatteryCell))
-                    .collect(Collectors.toList());
-        }
-        
+        List<ElectricityCabinetBox> electricityCabinetBoxList = electricityCabinetBoxService.queryElectricityBatteryBox(electricityCabinet, null, null, electricityCabinet.getFullyCharged());
         if (CollectionUtils.isEmpty(electricityCabinetBoxList)) {
             return Triple.of(false, "ELECTRICITY.0026", "换电柜暂无满电电池");
         }
-        
+    
+        electricityCabinetBoxList = electricityCabinetBoxList.stream().filter(item -> !checkFullBatteryBoxIsAllocated(item.getElectricityCabinetId().longValue(), item.getCellNo()))
+                .collect(Collectors.toList());
+        if (CollectionUtils.isEmpty(electricityCabinetBoxList)) {
+            log.info("ELE iNFO!not found full battery box,uid={}", userInfo.getUid());
+            return Triple.of(false, "ELECTRICITY.0026", "换电柜暂无满电电池");
+        }
+    
         if (Objects.equals(franchisee.getModelType(), Franchisee.NEW_MODEL_TYPE)) {
             //获取用户绑定的电池型号
             List<String> userBatteryTypes = userBatteryTypeService.selectByUid(userInfo.getUid());
@@ -1321,10 +1318,10 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
             if (ObjectUtil.isEmpty(usableBoxes)) {
                 return Triple.of(false, "ELECTRICITY.0026", "换电柜暂无满电电池");
             }
-            
+    
             if (usableBoxes.size() == 1) {
-                redisService.set(CacheConstant.CACHE_LAST_ALLOCATE_FULLY_BATTERY_CELL + electricityCabinet.getId(), usableBoxes.get(0).getCellNo());
-                redisService.expire(CacheConstant.CACHE_LAST_ALLOCATE_FULLY_BATTERY_CELL + electricityCabinet.getId(), 4 * 1000L, false);
+                redisService.set(CacheConstant.CACHE_LAST_ALLOCATE_FULLY_BATTERY_CELL + electricityCabinet.getId() + ":" + usableBoxes.get(0).getCellNo(), "1");
+                redisService.expire(CacheConstant.CACHE_LAST_ALLOCATE_FULLY_BATTERY_CELL + electricityCabinet.getId(), 5 * 1000L, false);
                 return Triple.of(true, null, usableBoxes.get(0).getCellNo());
             }
             
@@ -1351,10 +1348,14 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
             return Triple.of(false, "", "换电柜暂无满电电池");
         }
     
-        redisService.set(CacheConstant.CACHE_LAST_ALLOCATE_FULLY_BATTERY_CELL + electricityCabinet.getId(), usableCabinetBox.getCellNo());
-        redisService.expire(CacheConstant.CACHE_LAST_ALLOCATE_FULLY_BATTERY_CELL + electricityCabinet.getId(), 4 * 1000L, false);
+        redisService.set(CacheConstant.CACHE_LAST_ALLOCATE_FULLY_BATTERY_CELL + electricityCabinet.getId() + ":" + usableCabinetBox.getCellNo(), "1");
+        redisService.expire(CacheConstant.CACHE_LAST_ALLOCATE_FULLY_BATTERY_CELL + electricityCabinet.getId(), 5 * 1000L, false);
         
         return Triple.of(true, null, usableCabinetBox.getCellNo());
+    }
+    
+    private boolean checkFullBatteryBoxIsAllocated(Long eid, String cellNo) {
+        return redisService.hasKey(CacheConstant.CACHE_LAST_ALLOCATE_FULLY_BATTERY_CELL + eid + ":" + cellNo);
     }
     
     @Deprecated
