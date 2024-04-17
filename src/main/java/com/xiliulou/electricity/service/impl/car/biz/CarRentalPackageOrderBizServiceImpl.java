@@ -3563,7 +3563,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         carRentalPackageOrderEntity.setLateFee(packagePO.getLateFee());
         carRentalPackageOrderEntity.setPayType(payType);
         if (YesNoEnum.YES.getCode().equals(packagePO.getGiveCoupon())) {
-            carRentalPackageOrderEntity.setCouponId(packagePO.getCouponId());
+            carRentalPackageOrderEntity.setCouponIds(packagePO.getCouponIds());
         }
         carRentalPackageOrderEntity.setPayState(PayStateEnum.UNPAID.getCode());
         carRentalPackageOrderEntity.setUseState(UseStateEnum.UN_USED.getCode());
