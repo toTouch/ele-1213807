@@ -16,6 +16,7 @@ import com.xiliulou.electricity.enums.UseStateEnum;
 import com.xiliulou.electricity.enums.YesNoEnum;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.util.CollectionUtils;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -224,7 +225,10 @@ public class CarRentalPackageOrderPo extends BasicCarPo {
     public List<Long> getCouponIds() {
         Set<Long> result = new HashSet<>();
         if (StrUtil.isNotBlank(this.couponArrays)) {
-            result.addAll(JsonUtil.fromJsonArray(this.couponArrays, Long.class));
+            List<Long> longs = JsonUtil.fromJsonArray(this.couponArrays, Long.class);
+            if (!CollectionUtils.isEmpty(longs)){
+                result.addAll(longs);
+            }
         }
         if (!Objects.isNull(this.couponId)){
             result.add(this.couponId);
