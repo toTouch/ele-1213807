@@ -760,31 +760,33 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
         operateRecordUtil.asyncRecord(batteryMemberCard, batteryMemberCardUpdate, userInfoGroupService, couponService, (userInfoGroupService, couponService, operateLogDTO) -> {
             List<Long> oldUserGroupIds = JsonUtil.fromJsonArray((String) operateLogDTO.getOldValue().getOrDefault("userInfoGroupIds", "[]"), Long.class);
             List<UserInfoGroupBO> oldUserGroups = userInfoGroupService.listByIds(oldUserGroupIds);
+            operateLogDTO.getOldValue().put("userGroups",Collections.emptyList());
             if (!org.springframework.util.CollectionUtils.isEmpty(oldUserGroups)) {
                 operateLogDTO.getOldValue().put("userGroups", oldUserGroups.stream().map(UserInfoGroupBO::getGroupName).collect(Collectors.toList()));
             }
-            
+    
             List<Long> userGroupIds = JsonUtil.fromJsonArray((String) operateLogDTO.getNewValue().getOrDefault("userInfoGroupIds", "[]"), Long.class);
             List<UserInfoGroupBO> userGroups = userInfoGroupService.listByIds(userGroupIds);
+            operateLogDTO.getNewValue().put("userGroups",Collections.emptyList());
             if (!org.springframework.util.CollectionUtils.isEmpty(userGroups)) {
                 operateLogDTO.getNewValue().put("userGroups", userGroups.stream().map(UserInfoGroupBO::getGroupName).collect(Collectors.toList()));
             }
-            
+    
             List<Long> oldCouponIds = JsonUtil.fromJsonArray((String) operateLogDTO.getOldValue().getOrDefault("couponIds", "[]"), Long.class);
             List<CarCouponNamePO> oldCoupons = couponService.queryListByIdsFromCache(oldCouponIds);
+            operateLogDTO.getOldValue().put("coupons",Collections.emptyList());
             if (!org.springframework.util.CollectionUtils.isEmpty(oldCoupons)) {
                 operateLogDTO.getOldValue().put("coupons", oldCoupons.stream().map(CarCouponNamePO::getName).collect(Collectors.toList()));
             }
-            
+    
             List<Long> couponIds = JsonUtil.fromJsonArray((String) operateLogDTO.getNewValue().getOrDefault("couponIds", "[]"), Long.class);
             List<CarCouponNamePO> coupons = couponService.queryListByIdsFromCache(couponIds);
+            operateLogDTO.getNewValue().put("coupons",Collections.emptyList());
             if (!org.springframework.util.CollectionUtils.isEmpty(coupons)) {
-                operateLogDTO.getOldValue().put("coupons", coupons.stream().map(CarCouponNamePO::getName).collect(Collectors.toList()));
+                operateLogDTO.getNewValue().put("coupons", coupons.stream().map(CarCouponNamePO::getName).collect(Collectors.toList()));
             }
             return operateLogDTO;
         });
-        
-        operateRecordUtil.record(batteryMemberCard, batteryMemberCardUpdate);
         return Triple.of(true, null, null);
     }
     
