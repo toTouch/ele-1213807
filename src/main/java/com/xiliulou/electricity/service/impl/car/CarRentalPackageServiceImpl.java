@@ -281,26 +281,30 @@ public class CarRentalPackageServiceImpl implements CarRentalPackageService {
         operateRecordUtil.asyncRecord(oriEntity, entity, userInfoGroupService, couponService, (userInfoGroupService, couponService, operateLogDTO) -> {
             List<Long> oldUserGroupIds = JsonUtil.fromJsonArray((String) operateLogDTO.getOldValue().getOrDefault("userGroupIds", "[]"), Long.class);
             List<UserInfoGroupBO> oldUserGroups = userInfoGroupService.listByIds(oldUserGroupIds);
+            operateLogDTO.getOldValue().put("userGroups",Collections.emptyList());
             if (!CollectionUtils.isEmpty(oldUserGroups)) {
                 operateLogDTO.getOldValue().put("userGroups", oldUserGroups.stream().map(UserInfoGroupBO::getGroupName).collect(Collectors.toList()));
             }
             
             List<Long> userGroupIds = JsonUtil.fromJsonArray((String) operateLogDTO.getNewValue().getOrDefault("userGroupIds", "[]"), Long.class);
             List<UserInfoGroupBO> userGroups = userInfoGroupService.listByIds(userGroupIds);
+            operateLogDTO.getNewValue().put("userGroups",Collections.emptyList());
             if (!CollectionUtils.isEmpty(userGroups)) {
                 operateLogDTO.getNewValue().put("userGroups", userGroups.stream().map(UserInfoGroupBO::getGroupName).collect(Collectors.toList()));
             }
             
             List<Long> oldCouponIds = JsonUtil.fromJsonArray((String) operateLogDTO.getOldValue().getOrDefault("couponArrays", "[]"), Long.class);
             List<CarCouponNamePO> oldCoupons = couponService.queryListByIdsFromCache(oldCouponIds);
+            operateLogDTO.getOldValue().put("coupons",Collections.emptyList());
             if (!CollectionUtils.isEmpty(oldCoupons)) {
                 operateLogDTO.getOldValue().put("coupons", oldCoupons.stream().map(CarCouponNamePO::getName).collect(Collectors.toList()));
             }
             
             List<Long> couponIds = JsonUtil.fromJsonArray((String) operateLogDTO.getNewValue().getOrDefault("couponArrays", "[]"), Long.class);
             List<CarCouponNamePO> coupons = couponService.queryListByIdsFromCache(couponIds);
+            operateLogDTO.getNewValue().put("coupons",Collections.emptyList());
             if (!CollectionUtils.isEmpty(coupons)) {
-                operateLogDTO.getOldValue().put("coupons", coupons.stream().map(CarCouponNamePO::getName).collect(Collectors.toList()));
+                operateLogDTO.getNewValue().put("coupons", coupons.stream().map(CarCouponNamePO::getName).collect(Collectors.toList()));
             }
             return operateLogDTO;
         });
