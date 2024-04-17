@@ -16,4 +16,8 @@ public interface UserInfoGroupDetailHistoryMapper {
     Integer batchInsert(@Param("detailList") List<UserInfoGroupDetailHistory> detailHistoryList);
     
     List<UserInfoGroupDetailHistory> selectListByPage(UserInfoGroupDetailHistoryQuery query);
+    
+    Integer countTotal(UserInfoGroupDetailHistoryQuery query);
+    
+    Integer insertOne(UserInfoGroupDetailHistory detail);
 }

@@ -50,7 +50,7 @@ public class JsonAdminUserInfoGroupDetailHistoryController extends BasicControll
      * 分页查询
      */
     @GetMapping("/admin/userInfo/userInfoGroupDetailHistory/page")
-    public R page(@RequestParam("size") long size, @RequestParam("offset") long offset, @RequestParam(value = "uid", required = false) Long uid) {
+    public R page(@RequestParam("size") long size, @RequestParam("offset") long offset, @RequestParam(value = "uid") Long uid) {
         if (size < 0 || size > 50) {
             size = 10L;
         }
@@ -65,7 +65,7 @@ public class JsonAdminUserInfoGroupDetailHistoryController extends BasicControll
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         
-        UserInfo userInfo = userInfoService.queryByUidFromDb(user.getUid());
+        UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
         if (Objects.isNull(userInfo)) {
             log.error("ELE ERROR! not found user");
             return R.fail("ELECTRICITY.0001", "未找到用户");
@@ -76,9 +76,8 @@ public class JsonAdminUserInfoGroupDetailHistoryController extends BasicControll
         }
         
         // 加盟商操作，查询加盟商
-        Franchisee franchisee = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
-            franchisee = franchiseeService.queryByUid(user.getUid());
+            Franchisee franchisee = franchiseeService.queryByUid(user.getUid());
             
             if (Objects.isNull(franchisee)) {
                 return R.fail("ELECTRICITY.0038", "未找到加盟商");
@@ -109,5 +108,46 @@ public class JsonAdminUserInfoGroupDetailHistoryController extends BasicControll
         }
         
         return R.ok(result);
+    }
+    
+    
+    /**
+     * 分页查询
+     */
+    @GetMapping("/admin/userInfo/userInfoGroupDetailHistory/pageCount")
+    public R pageCount(@RequestParam(value = "uid") Long uid) {
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELE ERROR! not found user");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        
+        UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
+        if (Objects.isNull(userInfo)) {
+            log.error("ELE ERROR! not found user");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        
+        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE) || Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE))) {
+            return R.fail("ELECTRICITY.0066", "用户权限不足");
+        }
+        
+        // 加盟商操作，查询加盟商
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            Franchisee franchisee = franchiseeService.queryByUid(user.getUid());
+            
+            if (Objects.isNull(franchisee)) {
+                return R.fail("ELECTRICITY.0038", "未找到加盟商");
+            }
+            
+            // 加盟商一致性校验
+            if (!Objects.equals(franchisee.getId(), userInfo.getFranchiseeId())) {
+                return R.ok();
+            }
+        }
+        
+        UserInfoGroupDetailHistoryQuery query = UserInfoGroupDetailHistoryQuery.builder().uid(uid).tenantId(TenantContextHolder.getTenantId()).build();
+        
+        return R.ok(userInfoGroupDetailHistoryService.countTotal(query));
     }
 }

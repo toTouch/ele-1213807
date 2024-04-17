@@ -23,4 +23,6 @@ public class UserInfoGroupQuery {
     private Integer tenantId;
     
     private List<Long> franchiseeIds;
+    
+    private String groupName;
 }

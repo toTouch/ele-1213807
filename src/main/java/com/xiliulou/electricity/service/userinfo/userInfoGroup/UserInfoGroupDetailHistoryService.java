@@ -16,4 +16,8 @@ public interface UserInfoGroupDetailHistoryService {
     Integer batchInsert(List<UserInfoGroupDetailHistory> detailHistoryList);
     
     List<UserInfoGroupDetailHistoryBO> listByPage(UserInfoGroupDetailHistoryQuery query);
+    
+    Integer countTotal(UserInfoGroupDetailHistoryQuery query);
+    
+    Integer insertOne(UserInfoGroupDetailHistory detail);
 }

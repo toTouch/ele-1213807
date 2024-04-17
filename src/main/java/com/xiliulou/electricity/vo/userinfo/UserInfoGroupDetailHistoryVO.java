@@ -1,9 +1,12 @@
 package com.xiliulou.electricity.vo.userinfo;
 
+import com.xiliulou.electricity.bo.userInfoGroup.UserInfoGroupIdAndNameBO;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import java.util.List;
 
 /**
  * @author HeYafeng
@@ -27,24 +30,14 @@ public class UserInfoGroupDetailHistoryVO {
     private Long uid;
     
     /**
-     * 变更前分组ID
+     * 变更前分组
      */
-    private String oldGroupIds;
+    private List<UserInfoGroupIdAndNameBO> oldGroupList;
     
     /**
-     * 变更前分组名称
+     * 变更前分组
      */
-    private String oldGroupNames;
-    
-    /**
-     * 变更后分组ID
-     */
-    private String newGroupIds;
-    
-    /**
-     * 变更后分组名称
-     */
-    private String newGroupNames;
+    private List<UserInfoGroupIdAndNameBO> newGroupList;
     
     /**
      * 操作人

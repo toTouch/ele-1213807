@@ -5,6 +5,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 /**
  * @author HeYafeng
  * @description 用户分组详情修改记录
@@ -27,24 +29,15 @@ public class UserInfoGroupDetailHistoryBO {
     private Long uid;
     
     /**
-     * 变更前分组ID
+     * 变更前分组
      */
-    private String oldGroupIds;
+    private List<UserInfoGroupIdAndNameBO> oldGroupList;
     
     /**
-     * 变更前分组名称
+     * 变更前分组
      */
-    private String oldGroupNames;
+    private List<UserInfoGroupIdAndNameBO> newGroupList;
     
-    /**
-     * 变更后分组ID
-     */
-    private String newGroupIds;
-    
-    /**
-     * 变更后分组名称
-     */
-    private String newGroupNames;
     
     /**
      * 操作人
