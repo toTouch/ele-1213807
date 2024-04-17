@@ -14,11 +14,15 @@ import com.xiliulou.electricity.enums.UpDownEnum;
 import com.xiliulou.electricity.enums.YesNoEnum;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.util.CollectionUtils;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 
 /**
  * 租车套餐持久类
@@ -164,7 +168,14 @@ public class CarRentalPackagePo extends BasicCarPo {
     /**
      * 优惠券ID
      */
-    private String couponId;
+    private Long couponId;
+    
+    /**
+     * <p>
+     *    Description: 优惠劵组id,JSON数组格式
+     * </p>
+    */
+    private String couponArrays;
     
     /**
      * 上下架状态
@@ -212,18 +223,25 @@ public class CarRentalPackagePo extends BasicCarPo {
     
     
     public List<Long> getCouponIds() {
-        if (StrUtil.isNotBlank(this.couponId)) {
-            return JsonUtil.fromJsonArray(this.couponId, Long.class);
+        Set<Long> result = new HashSet<>();
+        if (StrUtil.isNotBlank(this.couponArrays)) {
+            List<Long> longs = JsonUtil.fromJsonArray(this.couponArrays, Long.class);
+            if (!CollectionUtils.isEmpty(longs)){
+                result.addAll(longs);
+            }
         }
-        return Collections.emptyList();
+        if (!Objects.isNull(this.couponId)){
+            result.add(this.couponId);
+        }
+        return new ArrayList<>(result);
     }
     
     public void setCouponIds(List<Long> couponId) {
         if (CollectionUtil.isEmpty(couponId)) {
-            this.couponId = JSONUtil.createArray().toString();
+            this.couponArrays = JSONUtil.createArray().toString();
             return;
         }
-        this.couponId = JsonUtil.toJson(new HashSet<>(couponId));
+        this.couponArrays = JsonUtil.toJson(new HashSet<>(couponId));
     }
     
     
