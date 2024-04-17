@@ -225,15 +225,15 @@ public class JsonAdminCarRentalPackageController extends BasicController {
         qryModel.setFranchiseeIdList(triple.getLeft());
         qryModel.setStoreIdList(triple.getMiddle());
         
-        if (Objects.nonNull(qryReq.getUserGroupId()) && Objects.nonNull(qryReq.getApplicableType())){
+        if (Objects.nonNull(qryReq.getUserGroupId()) && Objects.nonNull(qryReq.getApplicableType())) {
             return R.ok(Collections.emptyList());
         }
         
-        if (StringUtils.isNotBlank(qryReq.getUserGroupId())){
+        if (StringUtils.isNotBlank(qryReq.getUserGroupId())) {
             qryModel.setIsUserGroup(YesNoEnum.NO.getCode());
         }
         
-        if (!Objects.isNull(qryReq.getApplicableType())){
+        if (!Objects.isNull(qryReq.getApplicableType())) {
             qryModel.setIsUserGroup(YesNoEnum.YES.getCode());
         }
         
@@ -274,8 +274,8 @@ public class JsonAdminCarRentalPackageController extends BasicController {
         List<CarRentalPackageVo> carRentalPackageVOList = carRentalPackageEntityList.stream().map(carRentalPackageEntity -> {
             
             CarRentalPackageVo carRentalPackageVo = new CarRentalPackageVo();
-            BeanUtils.copyProperties(carRentalPackageEntity, carRentalPackageVo);
-            
+            BeanUtils.copyProperties(carRentalPackageEntity, carRentalPackageVo, "couponIds", "userGroupIds");
+            carRentalPackageVo.setCouponIds(carRentalPackageEntity.getCouponIds());
             if (!franchiseeMap.isEmpty()) {
                 carRentalPackageVo.setFranchiseeName(franchiseeMap.getOrDefault(Long.valueOf(carRentalPackageEntity.getFranchiseeId()), ""));
             }
@@ -287,7 +287,6 @@ public class JsonAdminCarRentalPackageController extends BasicController {
             //设置优惠劵信息
             List<Long> couponIds = carRentalPackageEntity.getCouponIds();
             carRentalPackageVo = carRentalPackageBizService.buildCouponsToCarRentalVo(carRentalPackageVo, couponIds);
-            
             
             //设置用户分组信息
             List<Long> userGroupIds = carRentalPackageEntity.getUserGroupId();
@@ -347,15 +346,15 @@ public class JsonAdminCarRentalPackageController extends BasicController {
         qryModel.setFranchiseeIdList(triple.getLeft());
         qryModel.setStoreIdList(triple.getMiddle());
         
-        if (Objects.nonNull(qryReq.getUserGroupId()) && Objects.nonNull(qryReq.getApplicableType())){
+        if (Objects.nonNull(qryReq.getUserGroupId()) && Objects.nonNull(qryReq.getApplicableType())) {
             return R.ok(0);
         }
         
-        if (StringUtils.isNotBlank(qryReq.getUserGroupId())){
+        if (StringUtils.isNotBlank(qryReq.getUserGroupId())) {
             qryModel.setIsUserGroup(YesNoEnum.NO.getCode());
         }
         
-        if (!Objects.isNull(qryReq.getApplicableType())){
+        if (!Objects.isNull(qryReq.getApplicableType())) {
             qryModel.setIsUserGroup(YesNoEnum.YES.getCode());
         }
         
@@ -395,7 +394,7 @@ public class JsonAdminCarRentalPackageController extends BasicController {
         
         // 转换模型，组装返回值
         CarRentalPackageVo carRentalPackageVo = new CarRentalPackageVo();
-        BeanUtils.copyProperties(carRentalPackageEntity, carRentalPackageVo);
+        BeanUtils.copyProperties(carRentalPackageEntity, carRentalPackageVo, "couponIds", "userGroupIds");
         
         // 赋值辅助业务数据
         carRentalPackageVo.setFranchiseeName(ObjectUtils.isNotEmpty(franchisee) ? franchisee.getName() : null);
@@ -463,11 +462,13 @@ public class JsonAdminCarRentalPackageController extends BasicController {
             throw new BizException("ELECTRICITY.0001", "未找到用户");
         }
         
-        if (Objects.equals(optModel.getGiveCoupon(), YesNoEnum.YES.getCode()) && (CollectionUtil.isEmpty(optModel.getCouponIds()) || optModel.getCouponIds().size() > COUPON_MAX_LIMIT)) {
+        if (Objects.equals(optModel.getGiveCoupon(), YesNoEnum.YES.getCode()) && (CollectionUtil.isEmpty(optModel.getCouponIds())
+                || optModel.getCouponIds().size() > COUPON_MAX_LIMIT)) {
             throw new BizException("300833", "优惠劵最多支持发6张");
         }
         
-        if (Objects.equals(optModel.getIsUserGroup(), YesNoEnum.NO.getCode()) && (CollectionUtil.isEmpty(optModel.getUserGroupIds()) || optModel.getUserGroupIds().size() > USER_GROUP_MAX_LIMIT)) {
+        if (Objects.equals(optModel.getIsUserGroup(), YesNoEnum.NO.getCode()) && (CollectionUtil.isEmpty(optModel.getUserGroupIds())
+                || optModel.getUserGroupIds().size() > USER_GROUP_MAX_LIMIT)) {
             throw new BizException("300834", "用户分组最多支持选10个");
         }
         
@@ -475,12 +476,12 @@ public class JsonAdminCarRentalPackageController extends BasicController {
         optModel.setUpdateUid(user.getUid());
         
         CarRentalPackagePo entity = new CarRentalPackagePo();
-        BeanUtils.copyProperties(optModel, entity, "couponId","couponIds", "userGroupIds");
+        BeanUtils.copyProperties(optModel, entity, "couponId", "couponIds", "userGroupIds");
         List<Long> couponIds = new ArrayList<>();
-        if (!Objects.isNull(optModel.getCouponId())){
+        if (!Objects.isNull(optModel.getCouponId())) {
             couponIds.add(optModel.getCouponId());
         }
-        if (!CollectionUtils.isEmpty(optModel.getCouponIds())){
+        if (!CollectionUtils.isEmpty(optModel.getCouponIds())) {
             couponIds.addAll(optModel.getCouponIds());
         }
         entity.setCouponIds(couponIds);

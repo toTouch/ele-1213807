@@ -117,8 +117,7 @@ public class JsonAdminCarRentalPackageOrderController extends BasicController {
         List<CarRentalPackageOrderVo> carRentalPackageVOList = carRentalPackageOrderPOList.stream().map(carRentalPackageOrder -> {
             
             CarRentalPackageOrderVo carRentalPackageOrderVO = new CarRentalPackageOrderVo();
-            BeanUtils.copyProperties(carRentalPackageOrder, carRentalPackageOrderVO);
-            
+            BeanUtils.copyProperties(carRentalPackageOrder, carRentalPackageOrderVO, "couponIds");
             if (!userInfoMap.isEmpty()) {
                 UserInfo userInfo = userInfoMap.getOrDefault(carRentalPackageOrder.getUid(), new UserInfo());
                 carRentalPackageOrderVO.setUserRelName(userInfo.getName());
@@ -140,7 +139,7 @@ public class JsonAdminCarRentalPackageOrderController extends BasicController {
                 BeanUtils.copyProperties(m, couponVO);
                 return couponVO;
             }).collect(Collectors.toList());
-            if (!carCouponVOS.isEmpty()){
+            if (!carCouponVOS.isEmpty()) {
                 carRentalPackageOrderVO.setCoupons(collect);
                 CarCouponVO couponVO = collect.stream().max(Comparator.comparing(CarCouponVO::getAmount)).orElse(collect.get(0));
                 carRentalPackageOrderVO.setCouponId(couponVO.getId());
