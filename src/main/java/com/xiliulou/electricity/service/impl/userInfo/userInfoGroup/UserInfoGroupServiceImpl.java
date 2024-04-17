@@ -52,7 +52,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import java.util.StringJoiner;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -233,6 +232,11 @@ public class UserInfoGroupServiceImpl implements UserInfoGroupService {
     }
     
     @Override
+    public Integer batchUpdateByIds(List<Long> groupIds, Long updateTime, Long operator, Integer delFlag) {
+        return userInfoGroupMapper.batchUpdateByIds(groupIds, updateTime, operator, delFlag);
+    }
+    
+    @Override
     public R batchImport(UserInfoGroupBatchImportRequest request, Long operator, Franchisee franchisee) {
         Long franchiseeId = request.getFranchiseeId();
         Long groupId = request.getGroupId();
@@ -270,7 +274,13 @@ public class UserInfoGroupServiceImpl implements UserInfoGroupService {
         Map<Long, UserInfo> userInfoMap = new HashMap<>();
         
         for (String e : phones) {
-            UserInfo userInfo = userInfoService.queryUserInfoByPhone(e, tenantId);
+            User user = userService.queryByUserPhone(e, User.TYPE_USER_NORMAL_WX_PRO, tenantId);
+            if (Objects.isNull(user)) {
+                notExistsPhone.add(e);
+                continue;
+            }
+            
+            UserInfo userInfo = userInfoService.queryByUidFromCache(user.getUid());
             if (Objects.isNull(userInfo)) {
                 notExistsPhone.add(e);
             } else {
@@ -291,12 +301,12 @@ public class UserInfoGroupServiceImpl implements UserInfoGroupService {
         Map<Long, List<UserInfoGroupNamesBO>> userGroupMap = null;
         // 判断绑定分组数量是否超限
         if (CollectionUtils.isNotEmpty(sameFranchiseeUserInfos)) {
+            existsPhone.addAll(sameFranchiseeUserInfos);
+            
             List<Long> uidList = sameFranchiseeUserInfos.stream().map(UserInfo::getUid).collect(Collectors.toList());
             List<UserInfoGroupNamesBO> listByUidList = userInfoGroupDetailService.listGroupByUidList(uidList);
             
-            if (CollectionUtils.isEmpty(listByUidList)) {
-                existsPhone.addAll(sameFranchiseeUserInfos);
-            } else {
+            if (CollectionUtils.isNotEmpty(listByUidList)) {
                 // 根据uid进行分组
                 userGroupMap = listByUidList.stream().collect(Collectors.groupingBy(UserInfoGroupNamesBO::getUid));
                 if (MapUtils.isNotEmpty(userGroupMap)) {
@@ -306,8 +316,7 @@ public class UserInfoGroupServiceImpl implements UserInfoGroupService {
                             if (Objects.nonNull(userInfo)) {
                                 if (v.size() >= UserGroupConstant.USER_GROUP_LIMIT) {
                                     overLimitGroupNumPhone.add(userInfo.getPhone());
-                                } else {
-                                    existsPhone.add(userInfo);
+                                    existsPhone.removeIf(e -> Objects.equals(e.getUid(), uid));
                                 }
                             }
                         }
@@ -332,14 +341,14 @@ public class UserInfoGroupServiceImpl implements UserInfoGroupService {
         batchImportUserInfoVO.setIsImported(true);
         Map<Long, List<UserInfoGroupNamesBO>> finalUserGroupMap = userGroupMap;
         executorService.execute(() -> {
-            handleBatchImportUserInfo(userInfoGroup, existsPhone, sessionId, franchiseeId, tenantId, operator, finalUserGroupMap);
+            handleBatchImportUserInfo(userInfoGroup, existsPhone, sessionId, franchiseeId, tenantId, operator, finalUserGroupMap, groupId);
         });
         
         return R.ok(batchImportUserInfoVO);
     }
     
     private void handleBatchImportUserInfo(UserInfoGroup userInfoGroup, ConcurrentHashSet<UserInfo> existsPhone, String sessionId, Long franchiseeId, Integer tenantId,
-            Long operator, Map<Long, List<UserInfoGroupNamesBO>> userGroupMap) {
+            Long operator, Map<Long, List<UserInfoGroupNamesBO>> userGroupMap, Long groupId) {
         List<UserInfoGroupDetail> detailList = new ArrayList<>();
         List<UserInfoGroupDetailHistory> detailHistoryList = new ArrayList<>();
         Iterator<UserInfo> iterator = existsPhone.iterator();
@@ -349,15 +358,22 @@ public class UserInfoGroupServiceImpl implements UserInfoGroupService {
         
         while (iterator.hasNext()) {
             if (size >= maxSize) {
-                userInfoGroupDetailService.batchInsert(detailList);
+                Integer insert = userInfoGroupDetailService.batchInsert(detailList);
+                
+                if (insert > 0 && CollectionUtils.isNotEmpty(detailHistoryList)) {
+                    // 新增修改记录
+                    userInfoGroupDetailHistoryService.batchInsert(detailHistoryList);
+                }
+                
                 detailList.clear();
+                detailHistoryList.clear();
                 size = 0;
                 continue;
             }
             
             UserInfo userInfo = iterator.next();
             Long uid = userInfo.getUid();
-    
+            
             String oldGroupIds = "";
             if (MapUtils.isNotEmpty(userGroupMap)) {
                 // 该用户已绑定的所有分组
@@ -386,14 +402,16 @@ public class UserInfoGroupServiceImpl implements UserInfoGroupService {
             }
             
             UserInfoGroupDetailHistory detailHistory = UserInfoGroupDetailHistory.builder().uid(uid).oldGroupIds(oldGroupIds).newGroupIds(newGroupIds).operator(operator)
-                    .franchiseeId(franchiseeId).tenantId(tenantId).createTime(nowTime).updateTime(nowTime).build();
+                    .franchiseeId(franchiseeId).tenantId(tenantId).createTime(nowTime).updateTime(nowTime).type(UserGroupConstant.USER_GROUP_HISTORY_TYPE_OTHER).build();
             detailHistoryList.add(detailHistory);
             
             size++;
         }
         if (!detailList.isEmpty()) {
             Integer insert = userInfoGroupDetailService.batchInsert(detailList);
+            
             if (insert > 0 && CollectionUtils.isNotEmpty(detailHistoryList)) {
+                // 新增修改记录
                 userInfoGroupDetailHistoryService.batchInsert(detailHistoryList);
             }
         }

@@ -151,9 +151,11 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.StringJoiner;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -381,7 +383,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         if (!CollectionUtils.isEmpty(userCoupons)) {
             userCoupons.forEach(userCoupon -> {
                 Integer status = userCoupon.getStatus();
-                if (UserCoupon.STATUS_IS_BEING_VERIFICATION.equals(status) || UserCoupon.STATUS_USED.equals(status)) {
+                if (UserCoupon.STATUS_IS_BEING_VERIFICATION.equals(status) || UserCoupon.STATUS_USED.equals(status) || UserCoupon.STATUS_DESTRUCTION.equals(status)) {
                     throw new BizException("300016", "您已使用优惠券，该套餐不可退");
                 }
             });
@@ -669,7 +671,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         if (!CollectionUtils.isEmpty(userCoupons)) {
             userCoupons.forEach(userCoupon -> {
                 Integer status = userCoupon.getStatus();
-                if (UserCoupon.STATUS_IS_BEING_VERIFICATION.equals(status) || UserCoupon.STATUS_USED.equals(status)) {
+                if (UserCoupon.STATUS_IS_BEING_VERIFICATION.equals(status) || UserCoupon.STATUS_USED.equals(status) || UserCoupon.STATUS_DESTRUCTION.equals(status)) {
                     throw new BizException("300016", "您已使用优惠券，该套餐不可退");
                 }
             });
@@ -2059,7 +2061,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         if (!CollectionUtils.isEmpty(userCoupons)) {
             userCoupons.forEach(userCoupon -> {
                 Integer status = userCoupon.getStatus();
-                if (UserCoupon.STATUS_IS_BEING_VERIFICATION.equals(status) || UserCoupon.STATUS_USED.equals(status)) {
+                if (UserCoupon.STATUS_IS_BEING_VERIFICATION.equals(status) || UserCoupon.STATUS_USED.equals(status) || UserCoupon.STATUS_DESTRUCTION.equals(status)) {
                     throw new BizException("300016", "您已使用优惠券，该套餐不可退");
                 }
             });
@@ -3561,7 +3563,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         carRentalPackageOrderEntity.setLateFee(packagePO.getLateFee());
         carRentalPackageOrderEntity.setPayType(payType);
         if (YesNoEnum.YES.getCode().equals(packagePO.getGiveCoupon())) {
-            carRentalPackageOrderEntity.setCouponId(packagePO.getCouponId());
+            carRentalPackageOrderEntity.setCouponIds(packagePO.getCouponIds());
         }
         carRentalPackageOrderEntity.setPayState(PayStateEnum.UNPAID.getCode());
         carRentalPackageOrderEntity.setUseState(UseStateEnum.UN_USED.getCode());

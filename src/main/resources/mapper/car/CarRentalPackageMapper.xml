@@ -32,6 +32,7 @@
         <result property="confineNum" column="confine_num" jdbcType="BIGINT"/>
         <result property="giveCoupon" column="give_coupon" jdbcType="INTEGER"/>
         <result property="couponId" column="coupon_id" jdbcType="BIGINT"/>
+        <result property="couponArrays" column="coupon_arrays"/>
         <result property="status" column="status" jdbcType="INTEGER"/>
         <result property="remark" column="remark" jdbcType="VARCHAR"/>
         <result property="sortParam" column="sort_param" jdbcType="BIGINT"/>
@@ -52,7 +53,7 @@
     <sql id="private_field">
         `name`
         , `type`, `tenancy`, `tenancy_unit`, `rent`, `deposit`, `car_model_id`, `battery_voltage`, `applicable_type`, `rent_rebate`, `rent_rebate_term`, `free_deposit`,
-        `rent_unit_price`, `late_fee`, `confine`, `confine_num`, `give_coupon`, `coupon_id`, `status`, `remark`, `sort_param`,`user_group_ids`,`is_user_group`
+        `rent_unit_price`, `late_fee`, `confine`, `confine_num`, `give_coupon`, `coupon_id`,`coupon_arrays`, `status`, `remark`, `sort_param`,`user_group_ids`,`is_user_group`
     </sql>
     
     <!-- 全部字段 -->
@@ -140,6 +141,7 @@
             <if test=" confineNum != null ">`confine_num`,</if>
             <if test=" giveCoupon != null ">`give_coupon`,</if>
             <if test=" couponId != null ">`coupon_id`,</if>
+            <if test=" couponArrays != null and couponArrays != '' ">`coupon_arrays`,</if>
             <if test=" status != null ">`status`,</if>
             <if test=" remark != null and remark != '' ">`remark`,</if>
             <if test=" sortParam != null ">`sort_param`,</if>
@@ -176,6 +178,7 @@
             <if test=" confineNum != null ">#{confineNum},</if>
             <if test=" giveCoupon != null ">#{giveCoupon},</if>
             <if test=" couponId != null ">#{couponId},</if>
+            <if test=" couponArrays != null and couponArrays != '' ">#{couponArrays},</if>
             <if test=" status != null ">#{status},</if>
             <if test=" remark != null and remark != '' ">#{remark},</if>
             <if test=" sortParam != null ">#{sortParam},</if>
@@ -298,6 +301,7 @@
             <if test=" lateFee != null ">, `late_fee` = #{lateFee}</if>
             <if test=" giveCoupon != null ">, `give_coupon` = #{giveCoupon}</if>
             <if test=" couponId != null ">, `coupon_id` = #{couponId}</if>
+            <if test=" couponArrays != null and couponArrays != '' ">, `coupon_arrays` = #{couponArrays}</if>
             <if test=" remark != null and remark != '' ">, `remark` = #{remark}</if>
             <if test=" userGroupIds != null and userGroupIds != '' ">, `user_group_ids` = #{userGroupIds}</if>
             <if test=" isUserGroup != null  ">, `is_user_group` = #{isUserGroup}</if>
@@ -337,7 +341,7 @@
         FROM
         <include refid="table_name"/>
         <where>
-            JSON_CONTAINS(`coupon_id`,#{couponId}) and `del_flag` = 0
+            JSON_CONTAINS(`coupon_arrays`,#{couponId}) and `del_flag` = 0
         </where>
     </select>
     <select id="queryToSearchByName" resultType="com.xiliulou.electricity.vo.car.CarRentalPackageSearchVO">
