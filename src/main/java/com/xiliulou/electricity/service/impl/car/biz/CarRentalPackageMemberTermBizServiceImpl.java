@@ -725,7 +725,7 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
             if (!CollectionUtils.isEmpty(userCoupons)) {
                 userCoupons.forEach(userCoupon -> {
                     Integer status = userCoupon.getStatus();
-                    if (UserCoupon.STATUS_IS_BEING_VERIFICATION.equals(status) || UserCoupon.STATUS_USED.equals(status)) {
+                    if (UserCoupon.STATUS_IS_BEING_VERIFICATION.equals(status) || UserCoupon.STATUS_USED.equals(status) || UserCoupon.STATUS_DESTRUCTION.equals(status)) {
                         userMemberInfoVo.setCarRentalPackageOrderRefundFlag(false);
                     }
                 });
