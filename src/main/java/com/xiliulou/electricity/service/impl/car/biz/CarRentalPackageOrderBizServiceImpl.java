@@ -2061,7 +2061,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         if (!CollectionUtils.isEmpty(userCoupons)) {
             userCoupons.forEach(userCoupon -> {
                 Integer status = userCoupon.getStatus();
-                if (UserCoupon.STATUS_IS_BEING_VERIFICATION.equals(status) || UserCoupon.STATUS_USED.equals(status)) {
+                if (UserCoupon.STATUS_IS_BEING_VERIFICATION.equals(status) || UserCoupon.STATUS_USED.equals(status) || UserCoupon.STATUS_DESTRUCTION.equals(status)) {
                     throw new BizException("300016", "您已使用优惠券，该套餐不可退");
                 }
             });
