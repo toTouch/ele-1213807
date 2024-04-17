@@ -48,10 +48,6 @@ public class NormalCabinetCoreDataHandler extends AbstractElectricityIotHandler 
     private void updateEleCabinetPowerType(ElectricityCabinet electricityCabinet, EleCabinetCoreDataVO eleCabinetCoreDataVO) {
         Integer powerType = eleCabinetCoreDataVO.isBackupPower() ? EleCabinetConstant.POWER_TYPE_BACKUP : EleCabinetConstant.POWER_TYPE_ORDINARY;
         
-        if (Objects.equals(electricityCabinet.getPowerType(), powerType)) {
-            return;
-        }
-        
         ElectricityCabinet electricityCabinetUpdate = new ElectricityCabinet();
         electricityCabinetUpdate.setId(electricityCabinet.getId());
         electricityCabinetUpdate.setPowerType(powerType);
