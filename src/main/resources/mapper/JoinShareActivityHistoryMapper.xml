@@ -31,7 +31,11 @@
             activity_id
         from t_join_share_activity_history
     </sql>
-
+    
+    <update id="removeById">
+        update t_join_share_activity_history set del_flag = 1, update_time = #{updateTime} where id = #{id}
+    </update>
+    
     <!--通过实体作为筛选条件查询-->
     <select id="queryList" resultType="com.xiliulou.electricity.vo.JoinShareActivityHistoryVO">
         select
@@ -74,7 +78,7 @@
         select jsah.id, tui.name as user_name
         from t_join_share_activity_history as jsah
         left join t_user_info as tui on tui.uid = jsah.uid
-        where tui.tenant_id = #{tenantId} and jsah.join_uid = #{joinUid}
+        where tui.tenant_id = #{tenantId} and jsah.join_uid = #{joinUid} and jsah.del_flag = 0
         order by jsah.create_time desc
         limit 1
     </select>
@@ -297,6 +301,11 @@
                 and  activity_id = #{activityId}
             </if>
         </where>
+    </select>
+    
+    <select id="selectSuccessHistoryByJoinUid" resultType="com.xiliulou.electricity.entity.JoinShareActivityHistory">
+        <include refid="selectJoinShareActivityHistory"/>
+        where tenant_id = #{tenantId} and join_uid = #{joinUid} and status = 2 and del_flag = 0 order by id desc limit 1
     </select>
 
 </mapper>

@@ -90,5 +90,13 @@ public class EnterpriseChannelUser {
 
     public static final Integer DEL_NORMAL = 0;
     public static final Integer DEL_DEL = 1;
+    
+    public static final Integer RENEWAL_OPEN = 1;
+    public static final Integer RENEWAL_CLOSE = 0;
+    
+    public static final Integer NO_RECYCLE = 1;
+    public static final Integer CLOUD_BEAN_STATUS_INIT = 0;
+    
+    public static final Integer CLOUD_BEAN_STATUS_RECYCLE = 2;
 
 }

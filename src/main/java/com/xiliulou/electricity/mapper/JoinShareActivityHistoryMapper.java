@@ -2,7 +2,6 @@ package com.xiliulou.electricity.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.xiliulou.electricity.entity.JoinShareActivityHistory;
-import com.xiliulou.electricity.entity.JoinShareActivityRecord;
 import com.xiliulou.electricity.query.ElectricityCabinetOrderExcelQuery;
 import com.xiliulou.electricity.query.JsonShareActivityHistoryQuery;
 import com.xiliulou.electricity.vo.FinalJoinShareActivityHistoryVo;
@@ -51,4 +50,8 @@ public interface JoinShareActivityHistoryMapper extends BaseMapper<JoinShareActi
 	List<JoinShareActivityHistory> queryUserJoinedActivity(@Param("joinUid") Long joinUid, @Param("tenantId") Integer tenantId);
 
 	List<JoinShareActivityHistory> queryActivityByJoinerAndInviter(@Param("joinUid") Long joinUid, @Param("inviterUid") Long inviterUid, @Param("activityId") Long activityId);
+	
+	JoinShareActivityHistory selectSuccessHistoryByJoinUid(@Param("joinUid") Long joinUid, @Param("tenantId") Integer tenantId);
+	
+	Integer removeById(@Param("id") Long id, @Param("updateTime") Long updateTime);
 }
