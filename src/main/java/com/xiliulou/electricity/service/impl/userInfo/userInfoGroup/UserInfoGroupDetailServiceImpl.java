@@ -186,7 +186,7 @@ public class UserInfoGroupDetailServiceImpl implements UserInfoGroupDetailServic
             // 租户校验
             Integer tenantId = TenantContextHolder.getTenantId();
             if (!Objects.equals(tenantId, userInfo.getTenantId())) {
-                return R.ok();
+                return R.fail("AUTH.0003", "租户信息不匹配");
             }
             
             // 如果没有分组，则删除
@@ -343,7 +343,7 @@ public class UserInfoGroupDetailServiceImpl implements UserInfoGroupDetailServic
             
             // 租户校验
             if (!Objects.equals(userInfo.getTenantId(), tenantId)) {
-                return R.ok();
+                return R.fail("AUTH.0003", "租户信息不匹配");
             }
             
             // 超限判断
