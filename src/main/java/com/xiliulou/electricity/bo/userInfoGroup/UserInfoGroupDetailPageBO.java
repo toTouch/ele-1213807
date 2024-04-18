@@ -33,6 +33,8 @@ public class UserInfoGroupDetailPageBO {
     
     private List<UserInfoGroupIdAndNameBO> groups;
     
+    private Long createTime;
+    
     private Long updateTime;
     
 }

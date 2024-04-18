@@ -32,6 +32,8 @@ public class UserInfoGroupDetailPageVO {
     
     private List<UserInfoGroupIdAndNameVO> groups;
     
+    private Long createTime;
+    
     private Long updateTime;
     
 }

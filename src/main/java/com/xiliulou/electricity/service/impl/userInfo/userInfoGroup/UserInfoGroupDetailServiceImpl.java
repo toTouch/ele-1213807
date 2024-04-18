@@ -106,6 +106,7 @@ public class UserInfoGroupDetailServiceImpl implements UserInfoGroupDetailServic
             detailBO.setPhone(Optional.ofNullable(userInfo).orElse(new UserInfo()).getPhone());
             detailBO.setFranchiseeId(item.getFranchiseeId());
             detailBO.setFranchiseeName(Optional.ofNullable(franchiseeService.queryByIdFromCache(item.getFranchiseeId())).orElse(new Franchisee()).getName());
+            detailBO.setCreateTime(item.getCreateTime());
             detailBO.setUpdateTime(item.getUpdateTime());
             
             List<UserInfoGroupIdAndNameBO> groups = new ArrayList<>();
