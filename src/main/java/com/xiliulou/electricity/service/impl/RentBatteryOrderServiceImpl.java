@@ -1309,6 +1309,13 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
     }
     
     private String acquireFullBatteryBox(List<ElectricityCabinetBox> electricityCabinetBoxList, UserInfo userInfo, Franchisee franchisee) {
+        electricityCabinetBoxList = electricityCabinetBoxList.stream().filter(item -> !checkFullBatteryBoxIsAllocated(item.getElectricityCabinetId().longValue(), item.getCellNo()))
+                .collect(Collectors.toList());
+        if (CollectionUtils.isEmpty(electricityCabinetBoxList)) {
+            log.info("RENT BATTERY ALLOCATE FULL BATTERY INFO!cabinetBoxList is empty,uid={}", userInfo.getUid());
+            return null;
+        }
+        
         if (Objects.equals(franchisee.getModelType(), Franchisee.NEW_MODEL_TYPE)) {
             //获取用户绑定的电池型号
             List<String> userBatteryTypes = userBatteryTypeService.selectByUid(userInfo.getUid());
@@ -1335,7 +1342,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
                 return null;
             }
         }
-    
+        
         List<ElectricityCabinetBox> usableBoxes = electricityCabinetBoxList.stream().filter(item -> StringUtils.isNotBlank(item.getSn()) && Objects.nonNull(item.getPower()))
                 .sorted(Comparator.comparing(ElectricityCabinetBox::getPower).reversed()).collect(Collectors.toList());
         if (CollectionUtils.isEmpty(usableBoxes)) {
