@@ -787,6 +787,16 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                 throw new BizException("300004", "套餐已下架");
             }
             
+            //如果用户分组为空,则为系统分组,判断套餐是否为系统分组套餐
+            if (groupIds.isEmpty() && Objects.equals(buyPackageEntity.getIsUserGroup(), YesNoEnum.NO.getCode())){
+                throw new BizException("100318", "您浏览的套餐已下架，请看看其他的吧");
+            }
+            
+            //如果用户分组不为空,则为自定义分组,判断套餐是否为用户分组套餐
+            if (!groupIds.isEmpty() && Objects.equals(buyPackageEntity.getIsUserGroup(), YesNoEnum.YES.getCode())){
+                throw new BizException("100318", "您浏览的套餐已下架，请看看其他的吧");
+            }
+            
             //如果是系统分组
             if (Objects.equals(buyPackageEntity.getIsUserGroup(), YesNoEnum.YES.getCode())) {
                 // 6.3 判定用户是否是老用户，然后和套餐的适用类型做比对
@@ -2702,6 +2712,16 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             // 6.2 套餐上下架状态
             if (UpDownEnum.DOWN.getCode().equals(buyPackageEntity.getStatus())) {
                 return R.fail("300004", "套餐已下架");
+            }
+            
+            //如果用户分组为空,则为系统分组,判断套餐是否为系统分组套餐
+            if (groupIds.isEmpty() && Objects.equals(buyPackageEntity.getIsUserGroup(), YesNoEnum.NO.getCode())){
+                return R.fail("100318", "您浏览的套餐已下架，请看看其他的吧");
+            }
+            
+            //如果用户分组不为空,则为自定义分组,判断套餐是否为用户分组套餐
+            if (!groupIds.isEmpty() && Objects.equals(buyPackageEntity.getIsUserGroup(), YesNoEnum.YES.getCode())){
+                return R.fail("100318", "您浏览的套餐已下架，请看看其他的吧");
             }
             
             //判断套餐是否为系统分组
