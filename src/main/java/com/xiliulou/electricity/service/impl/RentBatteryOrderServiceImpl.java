@@ -1342,10 +1342,9 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
                 return null;
             }
         }
-        
-        List<ElectricityCabinetBox> usableBoxes = electricityCabinetBoxList.stream()
-                .filter(item -> StringUtils.isNotBlank(item.getSn()) && !checkFullBatteryBoxIsAllocated(item.getElectricityCabinetId().longValue(), item.getCellNo())
-                        && Objects.nonNull(item.getPower())).sorted(Comparator.comparing(ElectricityCabinetBox::getPower).reversed()).collect(Collectors.toList());
+    
+        List<ElectricityCabinetBox> usableBoxes = electricityCabinetBoxList.stream().filter(item -> StringUtils.isNotBlank(item.getSn()) && Objects.nonNull(item.getPower()))
+                .sorted(Comparator.comparing(ElectricityCabinetBox::getPower).reversed()).collect(Collectors.toList());
         if (CollectionUtils.isEmpty(usableBoxes)) {
             log.info("RENT BATTERY ALLOCATE FULL BATTERY INFO!not found usableBoxes,uid={}", userInfo.getUid());
             return null;
