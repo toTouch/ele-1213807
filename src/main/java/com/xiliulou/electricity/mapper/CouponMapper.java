@@ -1,13 +1,14 @@
 package com.xiliulou.electricity.mapper;
 
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.xiliulou.electricity.entity.Coupon;
-import java.util.List;
-
 import com.xiliulou.electricity.query.CouponQuery;
 import com.xiliulou.electricity.vo.SearchVo;
 import org.apache.ibatis.annotations.Param;
-import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import org.apache.ibatis.annotations.Select;
+
+import java.util.Collection;
+import java.util.List;
 
 /**
  * 优惠券规则表(TCoupon)表数据库访问层
@@ -36,5 +37,6 @@ public interface CouponMapper extends BaseMapper<Coupon>{
     List<SearchVo> search(CouponQuery query);
 
     List<Coupon> selectCouponByQuery(Coupon coupon);
-
+    
+    List<Coupon> selectNameListByIds(@Param("list")Collection<Long> couponId,@Param("tenantId") Integer tenantId);
 }

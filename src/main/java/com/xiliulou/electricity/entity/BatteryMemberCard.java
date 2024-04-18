@@ -11,7 +11,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
-import java.util.List;
 
 /**
  * (BatteryMemberCard)实体类
@@ -92,6 +91,11 @@ public class BatteryMemberCard {
     private Integer couponId;
     
     /**
+     * 套餐绑定的所有优惠券id
+     */
+    private String couponIds;
+    
+    /**
      * 是否退租金 0--是 1--否
      */
     private Integer isRefund;
@@ -140,6 +144,20 @@ public class BatteryMemberCard {
      */
     private Long sortParam;
     
+    /**
+     * 分组类型，0-系统分组，1-用户分组。
+     */
+    private Integer groupType;
+    
+    /**
+     * 套餐绑定的所有用户分组id
+     */
+    private String userInfoGroupIds;
+    
+    public static final Integer GROUP_TYPE_SYSTEM = 0;
+    
+    public static final Integer GROUP_TYPE_USER = 1;
+    
     public static final Integer DEL_NORMAL = 0;
     
     public static final Integer DEL_DEL = 1;
@@ -181,5 +199,13 @@ public class BatteryMemberCard {
     
     public static final Integer RENT_TYPE_OLD = 2;
     
+    /**
+     * 赠送优惠券
+     */
+    public static final Integer SEND_COUPON_YES = 0;
     
+    /**
+     * 不赠送优惠券
+     */
+    public static final Integer SEND_COUPON_NO = 1;
 }

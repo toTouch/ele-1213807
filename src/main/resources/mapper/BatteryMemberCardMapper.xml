@@ -28,6 +28,9 @@
         <result property="createTime" column="create_time" jdbcType="INTEGER"/>
         <result property="updateTime" column="update_time" jdbcType="INTEGER"/>
         <result property="sortParam" column="sort_param" jdbcType="BIGINT"/>
+        <result property="groupType" column="group_type" jdbcType="INTEGER"/>
+        <result property="couponIds" column="coupon_ids"/>
+        <result property="userInfoGroupIds" column="user_info_group_ids"/>
     </resultMap>
     
     <resultMap type="com.xiliulou.electricity.vo.BatteryMemberCardAndTypeVO" id="BatteryMemberCardTypeMap">
@@ -56,6 +59,9 @@
         <result property="createTime" column="create_time" jdbcType="INTEGER"/>
         <result property="updateTime" column="update_time" jdbcType="INTEGER"/>
         <result property="sortParam" column="sort_param" jdbcType="BIGINT"/>
+        <result property="groupType" column="group_type" jdbcType="INTEGER"/>
+        <result property="couponIds" column="coupon_ids"/>
+        <result property="userInfoGroupIds" column="user_info_group_ids"/>
         <collection property="batteryType" javaType="java.util.List" ofType="com.xiliulou.electricity.entity.MemberCardBatteryType">
             <id property="id" column="mcbt_id" jdbcType="INTEGER"/>
             <result property="batteryType" column="battery_type" jdbcType="VARCHAR"/>
@@ -88,7 +94,11 @@
         <result property="createTime" column="create_time" jdbcType="INTEGER"/>
         <result property="updateTime" column="update_time" jdbcType="INTEGER"/>
         <result property="sortParam" column="sort_param" jdbcType="BIGINT"/>
-        <collection property="batteryType" javaType="java.util.List" ofType="com.xiliulou.electricity.entity.MemberCardBatteryType" column="id" select="selectListMemberCardBatteryType">
+        <result property="groupType" column="group_type" jdbcType="INTEGER"/>
+        <result property="couponIds" column="coupon_ids"/>
+        <result property="userInfoGroupIds" column="user_info_group_ids"/>
+        <collection property="batteryType" javaType="java.util.List" ofType="com.xiliulou.electricity.entity.MemberCardBatteryType" column="id"
+            select="selectListMemberCardBatteryType">
             <id property="id" column="mcbt_id" jdbcType="INTEGER"/>
             <result property="batteryType" column="battery_type" jdbcType="VARCHAR"/>
         </collection>
@@ -119,7 +129,11 @@
                del_flag,
                tenant_id,
                create_time,
-               update_time
+               update_time,
+               sort_param,
+               group_type,
+               coupon_ids,
+               user_info_group_ids
         from t_battery_member_card
         where id = #{id}
     </select>
@@ -166,7 +180,8 @@
         select
         tbmc.id, tbmc.name, tbmc.deposit, tbmc.rent_price, tbmc.rent_price_unit, tbmc.valid_days, tbmc.rent_unit, tbmc.franchisee_id, tbmc.rent_type, tbmc.send_coupon,
         tbmc.status, tbmc.limit_count, tbmc.use_count, tbmc.coupon_id, tbmc.is_refund, tbmc.refund_limit, tbmc.free_deposite,
-        tbmc.service_charge, tbmc.remark, tbmc.business_type, tbmc.del_flag, tbmc.tenant_id, tbmc.create_time, tbmc.update_time, tbmc.sort_param
+        tbmc.service_charge, tbmc.remark, tbmc.business_type, tbmc.del_flag, tbmc.tenant_id, tbmc.create_time, tbmc.update_time, tbmc.sort_param, tbmc.coupon_ids,
+        tbmc.user_info_group_ids, tbmc.group_type
         from t_battery_member_card tbmc
         left join t_member_card_battery_type tmcbt on tbmc.id = tmcbt.mid
         <where>
@@ -186,6 +201,9 @@
             <if test="rentType != null">
                 and tbmc.rent_type = #{rentType}
             </if>
+            <if test="rentType != null">
+                and tbmc.group_type = 0
+            </if>
             <if test="rentUnit != null">
                 and tbmc.rent_unit = #{rentUnit}
             </if>
@@ -204,6 +222,12 @@
             <if test="originalBatteryModel != null and originalBatteryModel != ''">
                 and tmcbt.battery_type = #{originalBatteryModel}
             </if>
+            <if test="userInfoGroupId != null and userInfoGroupId != ''">
+                and JSON_CONTAINS(tbmc.user_info_group_ids, #{userInfoGroupId})
+            </if>
+            <if test="userInfoGroupId != null and userInfoGroupId != ''">
+                and tbmc.group_type = 1
+            </if>
             <if test="batteryModel != null and batteryModel != ''">
                 and tmcbt.mid is null
             </if>
@@ -215,13 +239,15 @@
     
     <!--一对多分页查询，查询集合属性值-->
     <select id="selectListMemberCardBatteryType" resultType="com.xiliulou.electricity.entity.MemberCardBatteryType">
-        select id, battery_type from t_member_card_battery_type where mid = #{id}
+        select id, battery_type
+        from t_member_card_battery_type
+        where mid = #{id}
     </select>
     
     <select id="selectByQuery" resultMap="BatteryMemberCardMap">
         select
-        id, name, deposit, rent_price, rent_price_unit, valid_days, rent_unit, franchisee_id, rent_type, send_coupon,
-        status, limit_count, use_count, coupon_id, is_refund, refund_limit, free_deposite, service_charge, remark, business_type, del_flag, tenant_id, create_time, update_time
+        id, name, deposit, rent_price, rent_price_unit, valid_days, rent_unit, franchisee_id, rent_type, send_coupon,status, limit_count, use_count, coupon_id, is_refund,
+        refund_limit, free_deposite, service_charge, remark, business_type, del_flag, tenant_id, create_time, update_time, sort_param, group_type, coupon_ids, user_info_group_ids
         from t_battery_member_card
         <where>
             business_type=0
@@ -290,6 +316,9 @@
         bmc.service_charge,
         bmc.create_time,
         bmc.sort_param,
+        bmc.coupon_ids,
+        bmc.user_info_group_ids,
+        bmc.group_type,
         mcbt.id as mcbt_id,
         mcbt.battery_type battery_type
         from t_battery_member_card bmc
@@ -319,6 +348,18 @@
             </if>
             <if test="tenantId != null">
                 and bmc.tenant_id = #{tenantId}
+            </if>
+            <if test="userInfoGroupIdsForSearch != null">
+                and
+                <foreach collection="userInfoGroupIdsForSearch" item="userInfoGroupId" index="index" open="(" separator="or" close=")">
+                    JSON_CONTAINS(bmc.user_info_group_ids, #{userInfoGroupId})
+                </foreach>
+            </if>
+            <if test="userInfoGroupIdsForSearch != null">
+                and bmc.group_type = 1
+            </if>
+            <if test="rentTypes != null">
+                and bmc.group_type = 0
             </if>
             <if test="rentTypes != null">
                 and bmc.rent_type in
@@ -386,6 +427,9 @@
             <if test="rentType != null">
                 and tbmc.rent_type = #{rentType}
             </if>
+            <if test="rentType != null">
+                and tbmc.group_type = 0
+            </if>
             <if test="rentUnit != null">
                 and tbmc.rent_unit = #{rentUnit}
             </if>
@@ -403,6 +447,12 @@
             </if>
             <if test="originalBatteryModel != null and originalBatteryModel != ''">
                 and tmcbt.battery_type = #{originalBatteryModel}
+            </if>
+            <if test="userInfoGroupId != null and userInfoGroupId != ''">
+                and JSON_CONTAINS(tbmc.user_info_group_ids, #{userInfoGroupId})
+            </if>
+            <if test="userInfoGroupId != null and userInfoGroupId != ''">
+                and tbmc.group_type = 1
             </if>
             <if test="batteryModel != null and batteryModel != ''">
                 and tmcbt.mid is null
@@ -454,6 +504,7 @@
                 status = #{status},
             </if>
             coupon_id = #{couponId},
+            coupon_ids = #{couponIds},
             <if test="limitCount != null">
                 limit_count = #{limitCount},
             </if>
@@ -487,6 +538,12 @@
             <if test="updateTime != null">
                 update_time = #{updateTime},
             </if>
+            <if test="groupType != null">
+                group_type = #{groupType},
+            </if>
+            <if test="userInfoGroupIds != null">
+                user_info_group_ids = #{userInfoGroupIds},
+            </if>
         </set>
         where id = #{id}
     </update>
@@ -494,10 +551,10 @@
     <update id="batchUpdateSortParam">
         update t_battery_member_card
         set sort_param = case id
-            <foreach collection="sortParamQueries" item="item" index="index">
-                when #{item.id} then #{item.sortParam}
-            </foreach>
-            end
+        <foreach collection="sortParamQueries" item="item" index="index">
+            when #{item.id} then #{item.sortParam}
+        </foreach>
+        end
         where id in
         <foreach collection="sortParamQueries" item="item" index="index" open="(" separator="," close=")">
             #{item.id}

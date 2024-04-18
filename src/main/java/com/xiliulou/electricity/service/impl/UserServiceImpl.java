@@ -15,6 +15,7 @@ import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.DS;
 import com.xiliulou.db.dynamic.annotation.Slave;
+import com.xiliulou.electricity.bo.userInfoGroup.UserInfoGroupNamesBO;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.City;
@@ -35,6 +36,7 @@ import com.xiliulou.electricity.entity.enterprise.EnterpriseChannelUser;
 import com.xiliulou.electricity.entity.enterprise.EnterpriseInfo;
 import com.xiliulou.electricity.enums.enterprise.CloudBeanStatusEnum;
 import com.xiliulou.electricity.mapper.UserMapper;
+import com.xiliulou.electricity.query.UserInfoGroupDetailQuery;
 import com.xiliulou.electricity.query.UserInfoQuery;
 import com.xiliulou.electricity.query.UserSourceQuery;
 import com.xiliulou.electricity.query.UserSourceUpdateQuery;
@@ -58,6 +60,7 @@ import com.xiliulou.electricity.service.UserRoleService;
 import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseChannelUserService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseInfoService;
+import com.xiliulou.electricity.service.userinfo.userInfoGroup.UserInfoGroupDetailService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
@@ -168,6 +171,9 @@ public class UserServiceImpl implements UserService {
     
     @Autowired
     EnterpriseChannelUserService enterpriseChannelUserService;
+    
+    @Resource
+    private UserInfoGroupDetailService userInfoGroupDetailService;
 
     /**
      * 通过ID查询单条数据从缓存
@@ -879,7 +885,7 @@ public class UserServiceImpl implements UserService {
         if (Objects.nonNull(enterpriseChannelUser) && Objects.equals(enterpriseChannelUser.getCloudBeanStatus(), CloudBeanStatusEnum.NOT_RECYCLE.getCode())) {
             return Triple.of(false, "", "该用户名下有未回收的云豆订单，请联系所属企业处理");
         }
-    
+        
         //删除企业用户
         enterpriseChannelUserService.deleteByUid(uid);
         
@@ -890,6 +896,9 @@ public class UserServiceImpl implements UserService {
         userBatteryMemberCardService.deleteByUid(uid);
 
         userCarService.deleteByUid(uid);
+        
+        // 删除用户分组信息
+        userInfoGroupDetailService.deleteByUid(uid, null);
 
         return Triple.of(true, null, null);
     }
