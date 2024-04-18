@@ -10,6 +10,7 @@ import cn.hutool.json.JSONUtil;
 //import com.alibaba.nacos.client.identify.Base64;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.ElectricityCabinetApplication;
+import com.xiliulou.electricity.entity.ExchangeBatterySoc;
 import com.xiliulou.electricity.service.ExchangeBatterySocService;
 import com.xiliulou.pay.weixin.constant.WechatConstant;
 import com.xiliulou.pay.weixin.entity.AccessTokenResult;
@@ -37,7 +38,11 @@ import org.springframework.web.client.RestTemplate;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.math.BigDecimal;
 import java.net.URI;
+import java.util.Objects;
+
+import static com.xiliulou.electricity.entity.ExchangeBatterySoc.RETURN_POWER_DEFAULT;
 
 @Slf4j
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -49,7 +54,11 @@ public class EleTest {
     
     @Test
     public void test(){
-        System.out.println("结果："+service.selectByUidAndSn(3010043l,"BT106002512NNTB211118417"));
+        ExchangeBatterySoc batterySoc = service.selectByUidAndSn(3010043l, "BT106002512NNTB211118417");
+        System.out.println(Objects.equals(batterySoc.getReturnPower(),RETURN_POWER_DEFAULT));
+        System.out.println(Objects.equals(batterySoc.getReturnPower(),0));
+        
+        System.out.println(BigDecimal.valueOf(batterySoc.getReturnPower()).compareTo(BigDecimal.valueOf(0)));
     }
 
 //	@Test

@@ -67,6 +67,8 @@ import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import static com.xiliulou.electricity.entity.ExchangeBatterySoc.RETURN_POWER_DEFAULT;
+
 @Service(value = ElectricityIotConstant.NORMAL_NEW_EXCHANGE_ORDER_HANDLER)
 @Slf4j
 public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHandler {
@@ -443,10 +445,12 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
             return;
         }
         try {
-            exchangeBatterySoc.setReturnPower(returnPower);
-            exchangeBatterySoc.setPoorPower(exchangeBatterySoc.getTakeAwayPower() - returnPower);
-            exchangeBatterySoc.setUpdateTime(System.currentTimeMillis());
-            exchangeBatterySocService.update(exchangeBatterySoc);
+            if (Objects.equals(exchangeBatterySoc.getReturnPower(),RETURN_POWER_DEFAULT)){
+                exchangeBatterySoc.setReturnPower(returnPower);
+                exchangeBatterySoc.setPoorPower(exchangeBatterySoc.getTakeAwayPower() - returnPower);
+                exchangeBatterySoc.setUpdateTime(System.currentTimeMillis());
+                exchangeBatterySocService.update(exchangeBatterySoc);
+            }
         } catch (Exception e) {
             log.error("NormalNewExchangeOrderHandlerIot/handlerUserTakeBatterySoc update is exception,uid={},sn={}", placeBattery.getUid(), returnPower, e);
         }

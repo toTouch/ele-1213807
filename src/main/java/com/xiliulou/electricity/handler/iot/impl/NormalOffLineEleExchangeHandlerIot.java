@@ -62,6 +62,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import static com.xiliulou.electricity.entity.ExchangeBatterySoc.RETURN_POWER_DEFAULT;
+
 /**
  * @author: HRP
  * @Date: 2022/03/03 15:22
@@ -237,6 +239,11 @@ public class NormalOffLineEleExchangeHandlerIot extends AbstractElectricityIotHa
             electricityBatteryService.updateBatteryUser(oldElectricityBatteryUpdate);
         }
         
+        // 归还电池soc
+        offLineExchangeBatterSocThreadPool.execute(
+                () -> handlerUserRentBatterySoc(oldElectricityBattery, offlineOrderMessage.getOldElectricityBatterySn(), offlineOrderMessage.getPlaceBatterySoc()));
+        
+        
         //判断用户是已租赁电池状态
         if (Objects.equals(userInfo.getBatteryRentStatus(), UserInfo.BATTERY_RENT_STATUS_NO)) {
             log.warn("OFFLINE EXCHANGE WARN! user not rent battery,uid={}", user.getUid());
@@ -296,10 +303,7 @@ public class NormalOffLineEleExchangeHandlerIot extends AbstractElectricityIotHa
             }
         }
         
-        // 归还电池soc
-        offLineExchangeBatterSocThreadPool.execute(
-                () -> handlerUserRentBatterySoc(oldElectricityBattery, offlineOrderMessage.getOldElectricityBatterySn(), offlineOrderMessage.getPlaceBatterySoc()));
-        
+      
         //如果电池绑定时间为空或者绑定时间小于当前订单结束时间则更新电池信息
         if (Objects.isNull(newElectricityBattery.getBindTime()) || offlineOrderMessage.getEndTime() > newElectricityBattery.getBindTime()) {
             ElectricityBattery newElectricityBatteryUpdate = new ElectricityBattery();
@@ -374,10 +378,12 @@ public class NormalOffLineEleExchangeHandlerIot extends AbstractElectricityIotHa
             return;
         }
         try {
-            exchangeBatterySoc.setReturnPower(returnPower);
-            exchangeBatterySoc.setPoorPower(exchangeBatterySoc.getTakeAwayPower() - returnPower);
-            exchangeBatterySoc.setUpdateTime(System.currentTimeMillis());
-            exchangeBatterySocService.update(exchangeBatterySoc);
+            if (Objects.equals(exchangeBatterySoc.getReturnPower(),RETURN_POWER_DEFAULT)) {
+                exchangeBatterySoc.setReturnPower(returnPower);
+                exchangeBatterySoc.setPoorPower(exchangeBatterySoc.getTakeAwayPower() - returnPower);
+                exchangeBatterySoc.setUpdateTime(System.currentTimeMillis());
+                exchangeBatterySocService.update(exchangeBatterySoc);
+            }
         } catch (Exception e) {
             log.error("NormalOffLineEleExchangeHandlerIot/handlerUserRentBatterySoc/update is exception,uid={},sn={}", placeBattery.getUid(), returnPower, e);
         }

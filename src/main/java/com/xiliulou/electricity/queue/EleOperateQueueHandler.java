@@ -75,6 +75,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
+import static com.xiliulou.electricity.entity.ExchangeBatterySoc.RETURN_POWER_DEFAULT;
+
 /**
  * @author: lxc
  * @Date: 2020/12/3 08:31
@@ -805,10 +807,12 @@ public class EleOperateQueueHandler {
             return;
         }
         try {
-            exchangeBatterySoc.setReturnPower(returnPower);
-            exchangeBatterySoc.setPoorPower(exchangeBatterySoc.getTakeAwayPower() - returnPower);
-            exchangeBatterySoc.setUpdateTime(System.currentTimeMillis());
-            exchangeBatterySocService.update(exchangeBatterySoc);
+            if (Objects.equals(exchangeBatterySoc.getReturnPower(),RETURN_POWER_DEFAULT)) {
+                exchangeBatterySoc.setReturnPower(returnPower);
+                exchangeBatterySoc.setPoorPower(exchangeBatterySoc.getTakeAwayPower() - returnPower);
+                exchangeBatterySoc.setUpdateTime(System.currentTimeMillis());
+                exchangeBatterySocService.update(exchangeBatterySoc);
+            }
         } catch (Exception e) {
             log.error("EleOperateQueueHandler/handlerUserTakeBatterySoc is exception, uid ={}, sn={}", placeBattery.getUid(), returnSn, e);
         }
