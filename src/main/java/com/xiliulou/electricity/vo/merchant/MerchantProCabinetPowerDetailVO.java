@@ -39,4 +39,6 @@ public class MerchantProCabinetPowerDetailVO {
     private String placeName;
     
     private Integer bindStatus;
+    
+    private Long createTime;
 }
