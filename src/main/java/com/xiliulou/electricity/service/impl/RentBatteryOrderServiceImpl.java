@@ -1320,8 +1320,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
             }
     
             if (usableBoxes.size() == 1) {
-                redisService.set(CacheConstant.CACHE_LAST_ALLOCATE_FULLY_BATTERY_CELL + electricityCabinet.getId() + ":" + usableBoxes.get(0).getCellNo(), "1");
-                redisService.expire(CacheConstant.CACHE_LAST_ALLOCATE_FULLY_BATTERY_CELL + electricityCabinet.getId(), 5 * 1000L, false);
+                redisService.setNx(CacheConstant.CACHE_LAST_ALLOCATE_FULLY_BATTERY_CELL + electricityCabinet.getId() + ":" + usableBoxes.get(0).getCellNo(), "1", 3 * 1000L, false);
                 return Triple.of(true, null, usableBoxes.get(0).getCellNo());
             }
             
@@ -1348,8 +1347,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
             return Triple.of(false, "", "换电柜暂无满电电池");
         }
     
-        redisService.set(CacheConstant.CACHE_LAST_ALLOCATE_FULLY_BATTERY_CELL + electricityCabinet.getId() + ":" + usableCabinetBox.getCellNo(), "1");
-        redisService.expire(CacheConstant.CACHE_LAST_ALLOCATE_FULLY_BATTERY_CELL + electricityCabinet.getId(), 5 * 1000L, false);
+        redisService.setNx(CacheConstant.CACHE_LAST_ALLOCATE_FULLY_BATTERY_CELL + electricityCabinet.getId() + ":" + usableCabinetBox.getCellNo(), "1", 4 * 1000L, false);
         
         return Triple.of(true, null, usableCabinetBox.getCellNo());
     }
