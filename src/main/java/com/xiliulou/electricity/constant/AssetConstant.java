@@ -85,4 +85,14 @@ public class AssetConstant {
      */
     public static final Integer ASSET_EXIT_WAREHOUSE_SUBMIT_TYPE_BY_SN = 1;
     
+    /**
+     * 根据ID退库
+     */
+    public static final Integer ASSET_EXIT_WAREHOUSE_MODE_ID = 1;
+    
+    /**
+     * 根据SN退库
+     */
+    public static final Integer ASSET_EXIT_WAREHOUSE_MODE_SN = 2;
+    
 }

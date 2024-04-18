@@ -206,7 +206,6 @@ public class AssetWarehouseServiceImpl implements AssetWarehouseService {
         }
     
         Integer tenantId = TenantContextHolder.getTenantId();
-    
         if (!Objects.equals(assetWarehouseNameVO.getTenantId(), tenantId)) {
             return R.fail("AUTH.0003", "租户信息不匹配");
         }
@@ -226,14 +225,13 @@ public class AssetWarehouseServiceImpl implements AssetWarehouseService {
         
         try {
             AssetWarehouseBO assetWarehouseBO = assetWarehouseMapper.selectById(assetWarehouseSaveOrUpdateRequest.getId());
-            if (Objects.isNull(assetWarehouseBO)) {
-                return R.fail("100564", "您选择的库房不存在，请检测后操作");
-            }
-    
             Integer tenantId = TenantContextHolder.getTenantId();
-    
             if (!Objects.equals(assetWarehouseBO.getTenantId(), tenantId)) {
                 return R.fail("AUTH.0003", "租户信息不匹配");
+            }
+            
+            if (Objects.isNull(assetWarehouseBO)) {
+                return R.fail("100564", "您选择的库房不存在，请检测后操作");
             }
             
             if (!Objects.equals(assetWarehouseBO.getName(), assetWarehouseSaveOrUpdateRequest.getName())) {

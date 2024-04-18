@@ -194,7 +194,7 @@ public class AssetAllocateRecordServiceImpl implements AssetAllocateRecordServic
             }
             
             if (!Objects.equals(sourceFranchisee.getTenantId(), tenantId) || !Objects.equals(targetFranchisee.getTenantId(), tenantId)) {
-                return R.ok();
+                return R.fail("AUTH.0003", "租户信息不匹配");
             }
             
             if (Objects.equals(AssetTypeEnum.ASSET_TYPE_CAR.getCode(), type) || Objects.equals(AssetTypeEnum.ASSET_TYPE_CABINET.getCode(), type)) {
