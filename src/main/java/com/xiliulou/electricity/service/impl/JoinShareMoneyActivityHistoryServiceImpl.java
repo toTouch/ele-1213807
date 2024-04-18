@@ -289,8 +289,19 @@ public class JoinShareMoneyActivityHistoryServiceImpl implements JoinShareMoneyA
 
 		return Pair.of(Boolean.FALSE, null);
 	}
-
-	private String queryStatus(Integer status) {
+	
+	@Slave
+	@Override
+	public JoinShareMoneyActivityHistory querySuccessHistoryByJoinUid(Long uid, Integer tenantId) {
+		return joinShareMoneyActivityHistoryMapper.selectSuccessHistoryByJoinUid(uid, tenantId);
+	}
+    
+    @Override
+    public Integer removeById(Long id, Long updateTime) {
+	    return joinShareMoneyActivityHistoryMapper.removeById(id, updateTime);
+    }
+    
+    private String queryStatus(Integer status) {
         //参与状态 1--初始化，2--已参与，3--已过期，4--被替换
         String result = "";
         switch (status) {

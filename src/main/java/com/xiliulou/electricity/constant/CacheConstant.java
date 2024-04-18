@@ -539,12 +539,11 @@ public interface CacheConstant {
      * 商户扩展属性缓存
      */
     String CACHE_MERCHANT_ATTR = "merchantAttr:";
-    
     /**
      * 返利配置
      */
     String CACHE_REBATE_CONFIG = "rebateConfig:";
-    
+
     String CACHE_WECHAT_APPROVE = "cache_wechat_approve";
     
     String CACHE_INVITATION_ACTIVITY_USER_SAVE_LOCK = "cache_invitation_activity_user_save_lock:";
@@ -554,6 +553,8 @@ public interface CacheConstant {
     String CACHE_ASSET_WAREHOUSE_UPDATE_LOCK = "cache_asset_warehouse_update_lock:";
     String CACHE_ASSET_ALLOCATE_LOCK = "cache_asset_allocate_lock:";
     String CACHE_ASSET_BATCH_INVENTORY_LOCK = "cache_asset_batch_inventory_lock:";
+
+    String CACHE_BATCH_SEND_COUPON = "cache_batch_send_coupon:";
 
     String CACHE_MERCHANT_AREA_SAVE_LOCK = "cache_merchant_area_save_lock:";
 
@@ -600,8 +601,6 @@ public interface CacheConstant {
     
     String CACHE_TENANT_NOTE = "cache_tenant_note:";
     
-    String CACHE_BATCH_SEND_COUPON = "cache_batch_send_coupon:";
-    
     String CACHE_USER_NOTICE_UPDATE_LOCK = "cache_user_notice_update_lock:";
     String CACHE_USER_DEPOSIT_PROTOCOL_UPDATE_LOCK = "cache_user_deposit_protocol_update_lock:";
     String CACHE_USER_ORDER_PROTOCOL_UPDATE_LOCK = "cache_user_order_protocol_update_lock:";
@@ -612,4 +611,7 @@ public interface CacheConstant {
     String CACHE_USER_ADD_USER_DEPOSIT_MEMBER_CARD_LOCK = "cache_user_add_user_deposit_member_card_lock:";
     String CACHE_USER_MEMBER_CARD_EDIT_LOCK = "cache_user_member_card_edit_lock:";
     String CACHE_USER_BATTERY_MEMBER_CARD_RENEWAL_LOCK = "cache_user_battery_member_card_renewal_lock:";
+    
+    String CACHE_MERCHANT_MODIFY_INVITER_LOCK = "cache_merchant_modify_inviter_lock:";
+
 }

@@ -3,6 +3,7 @@ package com.xiliulou.electricity.service;
 import com.xiliulou.electricity.entity.InvitationActivityJoinHistory;
 import com.xiliulou.electricity.query.InvitationActivityJoinHistoryQuery;
 import com.xiliulou.electricity.request.activity.InvitationActivityAnalysisRequest;
+import com.xiliulou.electricity.vo.FinalJoinInvitationActivityHistoryVO;
 import com.xiliulou.electricity.vo.InvitationActivityJoinHistoryVO;
 import com.xiliulou.electricity.vo.activity.InvitationActivityAnalysisAdminVO;
 
@@ -99,4 +100,12 @@ public interface InvitationActivityJoinHistoryService {
      * 根据活动id和参与人uid查询对应的参与记录
      */
     InvitationActivityJoinHistory queryByJoinUidAndActivityId(Long joinUid, Long activityId);
+    
+    FinalJoinInvitationActivityHistoryVO queryFinalHistoryByJoinUid(Long uid, Integer tenantId);
+    
+    InvitationActivityJoinHistory querySuccessHistoryByJoinUid(Long uid, Integer tenantId);
+    
+    Integer removeByJoinUid(Long uid, Long updateTime, Integer tenantId);
+    
+    InvitationActivityJoinHistory queryModifiedInviterHistory(Long joinUid, Integer tenantId);
 }

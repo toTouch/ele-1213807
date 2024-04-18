@@ -104,4 +104,9 @@ public class MerchantJoinRecord {
      */
     private String remark;
     
+    /**
+     * 邀请人是否被修改：0-未修改（旧的记录），1-已修改（新的记录）
+     */
+    private Integer modifyInviter;
+    
 }
