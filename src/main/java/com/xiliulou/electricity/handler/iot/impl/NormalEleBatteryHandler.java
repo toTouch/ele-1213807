@@ -77,9 +77,6 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
     RedisService redisService;
 
     @Autowired
-    StoreService storeService;
-
-    @Autowired
     EleCommonConfig eleCommonConfig;
 
     @Autowired
@@ -487,10 +484,9 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
     private void checkBatteryFranchisee(ElectricityCabinet electricityCabinet, ElectricityBattery electricityBattery,
                                         ElectricityCabinetBox updateElectricityCabinetBox, String sessionId) {
         // 查换电柜所属加盟商
-        Store store = storeService.queryByIdFromCache(electricityCabinet.getStoreId());
-        if (!Objects.equals(store.getFranchiseeId(), electricityBattery.getFranchiseeId())) {
+        if (!Objects.equals(electricityCabinet.getFranchiseeId(), electricityBattery.getFranchiseeId())) {
             log.warn("ELE BATTERY REPORT WARN! franchisee is not equal,franchiseeId1={},franchiseeId2={},sessionId={}",
-                    store.getFranchiseeId(), electricityBattery.getFranchiseeId(), sessionId);
+                    electricityCabinet.getFranchiseeId(), electricityBattery.getFranchiseeId(), sessionId);
             updateElectricityCabinetBox.setSn("UNKNOW" + electricityBattery.getSn());
         }
     }
