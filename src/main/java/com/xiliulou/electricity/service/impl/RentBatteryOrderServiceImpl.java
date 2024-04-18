@@ -1285,18 +1285,12 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
     
     private Triple<Boolean, String, Object> allocateFullBatteryBox(ElectricityCabinet electricityCabinet, UserInfo userInfo, Franchisee franchisee) {
         //租电满电电池分配规则：优先电量最高，若存在多个电量相同的，则取串数最大的
-        List<ElectricityCabinetBox> electricityCabinetBoxList = electricityCabinetBoxService.queryElectricityBatteryBox(electricityCabinet, null, null, electricityCabinet.getFullyCharged());
+        List<ElectricityCabinetBox> electricityCabinetBoxList = electricityCabinetBoxService.queryElectricityBatteryBox(electricityCabinet, null, null,
+                electricityCabinet.getFullyCharged());
         if (CollectionUtils.isEmpty(electricityCabinetBoxList)) {
             return Triple.of(false, "ELECTRICITY.0026", "换电柜暂无满电电池");
         }
-    
-        electricityCabinetBoxList = electricityCabinetBoxList.stream().filter(item -> !checkFullBatteryBoxIsAllocated(item.getElectricityCabinetId().longValue(), item.getCellNo()))
-                .collect(Collectors.toList());
-        if (CollectionUtils.isEmpty(electricityCabinetBoxList)) {
-            log.info("ELE iNFO!not found full battery box,uid={}", userInfo.getUid());
-            return Triple.of(false, "ELECTRICITY.0026", "换电柜暂无满电电池");
-        }
-    
+        
         if (Objects.equals(franchisee.getModelType(), Franchisee.NEW_MODEL_TYPE)) {
             //获取用户绑定的电池型号
             List<String> userBatteryTypes = userBatteryTypeService.selectByUid(userInfo.getUid());
@@ -1306,16 +1300,17 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
             }
             
             List<ElectricityCabinetBox> usableBoxes = electricityCabinetBoxList.stream()
-                    .filter(item -> StringUtils.isNotBlank(item.getSn()) && StringUtils.isNotBlank(item.getBatteryType()) && Objects.nonNull(item.getPower()) && userBatteryTypes
-                            .contains(item.getBatteryType())).sorted(Comparator.comparing(ElectricityCabinetBox::getPower).reversed()).collect(Collectors.toList());
+                    .filter(item -> StringUtils.isNotBlank(item.getSn()) && StringUtils.isNotBlank(item.getBatteryType()) && Objects.nonNull(item.getPower())
+                            && userBatteryTypes.contains(item.getBatteryType())).sorted(Comparator.comparing(ElectricityCabinetBox::getPower).reversed())
+                    .collect(Collectors.toList());
             if (ObjectUtil.isEmpty(usableBoxes)) {
                 return Triple.of(false, "ELECTRICITY.0026", "换电柜暂无满电电池");
             }
-    
-            if (usableBoxes.size() == 1) {
-                redisService.setNx(CacheConstant.CACHE_LAST_ALLOCATE_FULLY_BATTERY_CELL + electricityCabinet.getId() + ":" + usableBoxes.get(0).getCellNo(), "1", 3 * 1000L, false);
-                return Triple.of(true, null, usableBoxes.get(0).getCellNo());
-            }
+            
+            //                        if (usableBoxes.size() == 1) {
+            //                            redisService.setNx(CacheConstant.CACHE_LAST_ALLOCATE_FULLY_BATTERY_CELL + electricityCabinet.getId() + ":" + usableBoxes.get(0).getCellNo(), "1", 3 * 1000L, false);
+            //                            return Triple.of(true, null, usableBoxes.get(0).getCellNo());
+            //                        }
             
             //如果存在多个电量满电且相同的电池，取串数最大的
             Double maxPower = usableBoxes.get(0).getPower();
@@ -1326,9 +1321,11 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
             }
         }
         
-        List<ElectricityCabinetBox> usableBoxes = electricityCabinetBoxList.stream().filter(item -> StringUtils.isNotBlank(item.getSn()) && Objects.nonNull(item.getPower()))
-                .sorted(Comparator.comparing(ElectricityCabinetBox::getPower).reversed()).collect(Collectors.toList());
+        List<ElectricityCabinetBox> usableBoxes = electricityCabinetBoxList.stream()
+                .filter(item -> StringUtils.isNotBlank(item.getSn()) && !checkFullBatteryBoxIsAllocated(item.getElectricityCabinetId().longValue(), item.getCellNo())
+                        && Objects.nonNull(item.getPower())).sorted(Comparator.comparing(ElectricityCabinetBox::getPower).reversed()).collect(Collectors.toList());
         if (ObjectUtil.isEmpty(usableBoxes)) {
+            log.info("ELE iNFO!not found full battery box,uid={}", userInfo.getUid());
             return Triple.of(false, "", "换电柜暂无满电电池");
         }
         
@@ -1339,7 +1336,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
         if (Objects.isNull(usableCabinetBox)) {
             return Triple.of(false, "", "换电柜暂无满电电池");
         }
-    
+        
         redisService.setNx(CacheConstant.CACHE_LAST_ALLOCATE_FULLY_BATTERY_CELL + electricityCabinet.getId() + ":" + usableCabinetBox.getCellNo(), "1", 4 * 1000L, false);
         
         return Triple.of(true, null, usableCabinetBox.getCellNo());
