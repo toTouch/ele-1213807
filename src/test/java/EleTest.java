@@ -54,7 +54,7 @@ public class EleTest {
     
     @Test
     public void test(){
-        ExchangeBatterySoc batterySoc = service.selectByUidAndSn(3010043l, "BT106002512NNTB211118417");
+        ExchangeBatterySoc batterySoc = service.queryOneByUidAndSn(3010043l, "BT106002512NNTB211118417");
         System.out.println(Objects.equals(batterySoc.getReturnPower(),RETURN_POWER_DEFAULT));
         System.out.println(Objects.equals(batterySoc.getReturnPower(),0));
         

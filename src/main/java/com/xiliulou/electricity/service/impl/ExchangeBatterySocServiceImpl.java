@@ -30,7 +30,7 @@ public class ExchangeBatterySocServiceImpl implements ExchangeBatterySocService 
     }
     
     @Override
-    public ExchangeBatterySoc selectByUidAndSn(Long uid, String sn) {
-        return exchangeBatterySocMapper.selectByUidAndSn(uid, sn);
+    public ExchangeBatterySoc queryOneByUidAndSn(Long uid, String sn) {
+        return exchangeBatterySocMapper.selectOneByUidAndSn(uid, sn);
     }
 }

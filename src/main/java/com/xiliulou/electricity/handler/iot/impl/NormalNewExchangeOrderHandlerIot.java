@@ -405,13 +405,15 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
             log.error("NormalNewExchangeOrderHandlerIot/handlerUserTakeBatterySoc is error,takeAwayPower is null, sn={}", takeBatterySn);
             return;
         }
+        
         UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
         if (Objects.isNull(userInfo)) {
             log.error("NormalNewExchangeOrderHandlerIot/handlerUserTakeBatterySoc is error,userInfo is null, uid={},sn={}", uid, takeBatterySn);
             return;
         }
+        
         try {
-            ExchangeBatterySoc batterySoc =new ExchangeBatterySoc();
+            ExchangeBatterySoc batterySoc = new ExchangeBatterySoc();
             batterySoc.setUid(userInfo.getUid());
             batterySoc.setSn(takeBatterySn);
             batterySoc.setTenantId(userInfo.getTenantId());
@@ -439,17 +441,19 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
         }
         
         //  上报的sn绑定的用户+Sn;兼容异常交换场景
-        ExchangeBatterySoc exchangeBatterySoc = exchangeBatterySocService.selectByUidAndSn(placeBattery.getUid(), returnSn);
+        ExchangeBatterySoc exchangeBatterySoc = exchangeBatterySocService.queryOneByUidAndSn(placeBattery.getUid(), returnSn);
         if (Objects.isNull(exchangeBatterySoc)) {
             log.error("NormalNewExchangeOrderHandlerIot/handlerUserRentBatterySoc is error, rentBatterySoc should is not null, uid={},sn={}", placeBattery.getUid(), returnSn);
             return;
         }
         try {
-            if (Objects.equals(exchangeBatterySoc.getReturnPower(),RETURN_POWER_DEFAULT)){
-                exchangeBatterySoc.setReturnPower(returnPower);
-                exchangeBatterySoc.setPoorPower(exchangeBatterySoc.getTakeAwayPower() - returnPower);
-                exchangeBatterySoc.setUpdateTime(System.currentTimeMillis());
-                exchangeBatterySocService.update(exchangeBatterySoc);
+            if (Objects.equals(exchangeBatterySoc.getReturnPower(), RETURN_POWER_DEFAULT)) {
+                ExchangeBatterySoc batterySoc = new ExchangeBatterySoc();
+                batterySoc.setId(exchangeBatterySoc.getId());
+                batterySoc.setReturnPower(returnPower);
+                batterySoc.setPoorPower(exchangeBatterySoc.getTakeAwayPower() - returnPower);
+                batterySoc.setUpdateTime(System.currentTimeMillis());
+                exchangeBatterySocService.update(batterySoc);
             }
         } catch (Exception e) {
             log.error("NormalNewExchangeOrderHandlerIot/handlerUserTakeBatterySoc update is exception,uid={},sn={}", placeBattery.getUid(), returnPower, e);

@@ -19,7 +19,7 @@
     </resultMap>
     
     <!--查询单个-->
-    <select id="selectByUidAndSn" resultMap="ExchangeBatterySocMap">
+    <select id="selectOneByUidAndSn" resultMap="ExchangeBatterySocMap">
         select id, uid, sn, take_away_power ,return_power
         from t_exchange_battery_soc
         where uid = #{uid}
