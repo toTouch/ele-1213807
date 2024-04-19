@@ -131,6 +131,7 @@ public class JsonAdminElectricityCabinetController extends BasicController {
                        @RequestParam(value = "name", required = false) String name,
                        @RequestParam(value = "address", required = false) String address,
                        @RequestParam(value = "usableStatus", required = false) Integer usableStatus,
+                       @RequestParam(value = "powerType", required = false) Integer powerType,
                        @RequestParam(value = "onlineStatus", required = false) Integer onlineStatus,
                        @RequestParam(value = "stockStatus", required = false) Integer stockStatus,
                        @RequestParam(value = "warehouseId", required = false) Long warehouseId,
@@ -177,6 +178,7 @@ public class JsonAdminElectricityCabinetController extends BasicController {
                 .size(size)
                 .name(name)
                 .address(address)
+                .powerType(powerType)
                 .usableStatus(usableStatus)
                 .onlineStatus(onlineStatus)
                 .stockStatus(stockStatus)
@@ -199,6 +201,7 @@ public class JsonAdminElectricityCabinetController extends BasicController {
     public R queryCount(@RequestParam(value = "name", required = false) String name,
                         @RequestParam(value = "address", required = false) String address,
                         @RequestParam(value = "usableStatus", required = false) Integer usableStatus,
+                        @RequestParam(value = "powerType", required = false) Integer powerType,
                         @RequestParam(value = "onlineStatus", required = false) Integer onlineStatus,
                         @RequestParam(value = "stockStatus", required = false) Integer stockStatus,
                         @RequestParam(value = "warehouseId", required = false) Long warehouseId,
@@ -236,6 +239,7 @@ public class JsonAdminElectricityCabinetController extends BasicController {
         ElectricityCabinetQuery electricityCabinetQuery = ElectricityCabinetQuery.builder()
                 .name(name)
                 .address(address)
+                .powerType(powerType)
                 .usableStatus(usableStatus)
                 .onlineStatus(onlineStatus)
                 .warehouseId(warehouseId)
