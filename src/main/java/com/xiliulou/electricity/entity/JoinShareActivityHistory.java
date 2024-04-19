@@ -65,6 +65,8 @@ public class JoinShareActivityHistory {
     * 租户id
     */
     private Integer tenantId;
+    
+    private Integer delFlag;
 
 
     //已参与

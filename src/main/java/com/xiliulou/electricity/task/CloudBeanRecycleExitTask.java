@@ -28,6 +28,7 @@ public class CloudBeanRecycleExitTask extends IJobHandler {
         } catch (Exception e) {
             log.error("xxl-job cloud bean recycle exit task", e);
         }
+        
         return IJobHandler.SUCCESS;
     }
 }

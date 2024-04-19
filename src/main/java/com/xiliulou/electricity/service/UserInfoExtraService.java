@@ -1,8 +1,10 @@
 package com.xiliulou.electricity.service;
 
+import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.UserInfoExtra;
-
-import java.util.List;
+import com.xiliulou.electricity.request.merchant.MerchantModifyInviterRequest;
+import com.xiliulou.electricity.request.merchant.MerchantModifyInviterUpdateRequest;
+import com.xiliulou.electricity.vo.merchant.MerchantInviterVO;
 
 /**
  * (UserInfoExtra)表服务接口
@@ -23,4 +25,10 @@ public interface UserInfoExtraService {
     Integer deleteByUid(Long uid);
     
     void bindMerchant(Long uid, String orderId ,Long memberCardId);
+    
+    MerchantInviterVO querySuccessInviter(Long uid, Integer tenantId);
+    
+    R selectInviterList(MerchantModifyInviterRequest request);
+    
+    R modifyInviter(MerchantModifyInviterUpdateRequest merchantModifyInviterUpdateRequest, Long operator);
 }

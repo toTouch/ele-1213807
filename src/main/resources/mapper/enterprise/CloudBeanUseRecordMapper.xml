@@ -95,6 +95,15 @@
         limit #{offset}, #{size}
     </select>
     
+    <select id="selectListEnterpriseId" resultType="java.lang.Long">
+        select distinct enterprise_id from t_cloud_bean_use_record where del_flag = 0
+    </select>
+    
+    <select id="selectBeanAmountByEnterpriseId"
+        resultType="com.xiliulou.electricity.vo.enterprise.CloudBeanSumVO">
+        select type,sum(bean_amount) as 'beanAmount' from t_cloud_bean_use_record where enterprise_id = #{enterpriseId} GROUP BY type
+    </select>
+    
     <!--通过主键修改数据-->
     <update id="update">
         update t_cloud_bean_use_record

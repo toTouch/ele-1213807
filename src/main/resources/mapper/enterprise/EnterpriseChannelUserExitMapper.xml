@@ -85,8 +85,8 @@
         </set>
         <where>
             id in
-            <foreach collection="uidList" separator="," open="(" close=")" item="uid">
-                #{uid}
+            <foreach collection="idList" separator="," open="(" close=")" item="id">
+                #{id}
             </foreach>
         </where>
     </update>

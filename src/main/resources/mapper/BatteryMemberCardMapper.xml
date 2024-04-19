@@ -579,6 +579,9 @@
             <if test="limitCount != null">
                 and bmc.limit_count = #{limitCount}
             </if>
+            <if test="freeDeposite != null">
+                and bmc.free_deposite = #{freeDeposite}
+            </if>
             <if test="name != null and name != ''">
                 and bmc.name like concat('%',#{name,jdbcType=VARCHAR},'%')
             </if>

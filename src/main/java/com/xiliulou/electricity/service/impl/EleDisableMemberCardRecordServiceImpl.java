@@ -153,6 +153,10 @@ public class EleDisableMemberCardRecordServiceImpl extends ServiceImpl<Electrici
             log.error("REVIEW_DISABLE_MEMBER_CARD ERROR ,NOT FOUND DISABLE_MEMBER_CARD ORDER_NO={}", disableMemberCardNo);
             return R.fail("未找到停卡订单!");
         }
+    
+        if (!Objects.equals(eleDisableMemberCardRecord.getStatus(), EleDisableMemberCardRecord.MEMBER_CARD_DISABLE_REVIEW)) {
+            return R.fail("订单状态异常!");
+        }
         
         UserInfo userInfo = userInfoService.queryByUidFromCache(eleDisableMemberCardRecord.getUid());
         if (Objects.isNull(userInfo)) {

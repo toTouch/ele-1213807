@@ -14,7 +14,15 @@ import java.util.List;
  **/
 @Mapper
 public interface CarRentalPackageDepositPayMapper {
-
+    
+    /**
+     * 查询用户最后一次的免押订单生成信息
+     * @param tenantId
+     * @param uid
+     * @return
+     */
+    CarRentalPackageDepositPayPo selectLastFreeOrderByUid(@Param("tenantId") Integer tenantId, @Param("uid") Long uid);
+    
     /**
      * 根据用户ID和租户ID查询最后一条押金信息
      * @param tenantId 租户ID

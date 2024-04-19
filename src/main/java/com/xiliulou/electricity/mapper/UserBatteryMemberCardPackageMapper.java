@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.mapper;
 
+import com.xiliulou.electricity.bo.batteryPackage.UserBatteryMemberCardPackageBO;
 import com.xiliulou.electricity.entity.UserBatteryMemberCardPackage;
 
 import java.util.List;
@@ -54,4 +55,6 @@ public interface UserBatteryMemberCardPackageMapper extends BaseMapper<UserBatte
     Integer deleteChannelMemberCardByUid(@Param("uid") Long uid);
     
     List<UserBatteryMemberCardPackage> listChannelByUid(@Param("uid") Long uid);
+    
+    UserBatteryMemberCardPackageBO selectLastEnterprisePackageByUid(@Param("uid") Long uid);
 }

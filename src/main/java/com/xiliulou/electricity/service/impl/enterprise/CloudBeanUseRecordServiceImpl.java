@@ -20,11 +20,13 @@ import com.xiliulou.electricity.utils.DateUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.UserBatteryMemberCardChannelExitVo;
 import com.xiliulou.electricity.vo.enterprise.CloudBeanOrderExcelVO;
+import com.xiliulou.electricity.vo.enterprise.CloudBeanSumVO;
 import com.xiliulou.electricity.vo.enterprise.CloudBeanUseRecordVO;
 import com.xiliulou.storage.config.StorageConfig;
 import com.xiliulou.storage.service.StorageService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.BeanUtils;
@@ -165,9 +167,9 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
     
     @Slave
     @Override
-    public BigDecimal acquireUserRecycledCloudBean(Long uid) {
+    public BigDecimal acquireUserRecycledCloudBean(Long uid, Long enterpriseId) {
         List<CloudBeanUseRecord> cloudBeanUseRecords = this.cloudBeanUseRecordMapper
-                .selectList(new LambdaQueryWrapper<CloudBeanUseRecord>().eq(CloudBeanUseRecord::getUid, uid).eq(CloudBeanUseRecord::getType, CloudBeanUseRecord.TYPE_RECYCLE));
+                .selectList(new LambdaQueryWrapper<CloudBeanUseRecord>().eq(CloudBeanUseRecord::getUid, uid).eq(CloudBeanUseRecord::getType, CloudBeanUseRecord.TYPE_RECYCLE).eq(CloudBeanUseRecord::getEnterpriseId, enterpriseId));
         if (CollectionUtils.isEmpty(cloudBeanUseRecords)) {
             return BigDecimal.ZERO;
         }
@@ -215,8 +217,8 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
             return result;
         }
     
-        //押金云豆数
-        if (Objects.equals(eleDepositOrder.getOrderType(), PackageOrderTypeEnum.PACKAGE_ORDER_TYPE_ENTERPRISE.getCode())) {
+        //押金云豆数: 免押用户不需要计算
+        if (Objects.equals(userBatteryDeposit.getDepositType(), UserBatteryDeposit.DEPOSIT_TYPE_DEFAULT) && Objects.equals(eleDepositOrder.getOrderType(), PackageOrderTypeEnum.PACKAGE_ORDER_TYPE_ENTERPRISE.getCode())) {
             result = result.add(eleDepositOrder.getPayAmount());
         }
     
@@ -505,34 +507,51 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
                 UserBatteryMemberCard item = new UserBatteryMemberCard();
                 BeanUtils.copyProperties(memberCardChannelExitVo, item);
                 
-                String errorMsg = "";
                 UserInfo userInfo = userInfoService.queryByUidFromCache(item.getUid());
+                String errorMsg = "";
+    
                 if (Objects.isNull(userInfo)) {
-                    errorMsg = "user Info is null";
+                    log.error("RECYCLE TASK WARN! user Info is null,uid={}", item.getUid());
+                    errorMsg = "RECYCLE TASK WARN! user Info is null";
                     userExitMapper.updateById(errorMsg, EnterpriseChannelUserExit.TYPE_FAIL, memberCardChannelExitVo.getChannelUserExitId(), System.currentTimeMillis());
                     return;
                 }
+                
+                EnterpriseChannelUser enterpriseChannelUser = enterpriseChannelUserService.selectByUid(userInfo.getUid());
+                if (Objects.isNull(enterpriseChannelUser)) {
+                    log.error("RECYCLE TASK WARN! channel user Info is null,uid={}", item.getUid());
+                    userExitMapper.updateById(errorMsg, EnterpriseChannelUserExit.TYPE_FAIL, memberCardChannelExitVo.getChannelUserExitId(), System.currentTimeMillis());
+                    return;
+                }
+    
+                // 如果已经回收了则直接修改状态
+                if (Objects.equals(enterpriseChannelUser.getCloudBeanStatus(), EnterpriseChannelUser.CLOUD_BEAN_STATUS_RECYCLE)) {
+                    // 修改历史退出为成功
+                    userExitMapper.updateById(null, EnterpriseChannelUserExit.TYPE_SUCCESS, memberCardChannelExitVo.getChannelUserExitId(), System.currentTimeMillis());
+                    
+                    // 修改企业用户为自主续费为退出
+                    EnterpriseChannelUserQuery query = EnterpriseChannelUserQuery.builder().uid(userInfo.getUid()).renewalStatus(EnterpriseChannelUser.RENEWAL_OPEN).build();
+                    enterpriseChannelUserService.updateRenewStatus(query);
+                    return;
+                }
+    
             
                 if (Objects.equals(userInfo.getBatteryRentStatus(), UserInfo.BATTERY_RENT_STATUS_YES)) {
-                    errorMsg = "user battery is not return";
-                    userExitMapper.updateById(errorMsg, EnterpriseChannelUserExit.TYPE_FAIL, memberCardChannelExitVo.getChannelUserExitId(), System.currentTimeMillis());
+                    log.warn("RECYCLE TASK WARN! ser battery is not return,uid={}", item.getUid());
                     return;
                 }
             
                 if (Objects.equals(item.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE)) {
                     log.warn("RECYCLE TASK WARN! user's member card is stop,uid={}", item.getUid());
-                    errorMsg = "RECYCLE TASK WARN! user's member card is stop";
-                    userExitMapper.updateById(errorMsg, EnterpriseChannelUserExit.TYPE_FAIL, memberCardChannelExitVo.getChannelUserExitId(), System.currentTimeMillis());
                     return;
                 }
             
                 if (Objects.equals(item.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE_REVIEW)) {
                     log.warn("RECYCLE TASK WARN! user stop member card review,uid={}", item.getUid());
-                    errorMsg = "RECYCLE TASK WARN! user stop member card review";
-                    userExitMapper.updateById(errorMsg, EnterpriseChannelUserExit.TYPE_FAIL, memberCardChannelExitVo.getChannelUserExitId(), System.currentTimeMillis());
                     return;
                 }
-            
+                
+                
                 BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(item.getMemberCardId());
                 if (Objects.isNull(batteryMemberCard)) {
                     log.warn("RECYCLE TASK WARN! not found batteryMemberCard,uid={},mid={}", userInfo.getUid(), item.getMemberCardId());
@@ -550,15 +569,18 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
                     return;
                 }
             
-                EnterpriseChannelUser enterpriseChannelUser = enterpriseChannelUserService.selectByUid(userInfo.getUid());
-                if (Objects.isNull(enterpriseChannelUser)) {
-                    return;
-                }
-            
-                EnterpriseInfo enterpriseInfo = enterpriseInfoService.queryByIdFromCache(enterpriseChannelUser.getEnterpriseId());
+                EnterpriseInfo enterpriseInfo = enterpriseInfoService.queryByIdFromDB(enterpriseChannelUser.getEnterpriseId());
                 if (Objects.isNull(enterpriseInfo)) {
                     log.error("RECYCLE CLOUD BEAN TASK ERROR! not found enterpriseInfo,enterpriseId={}", enterpriseChannelUser.getEnterpriseId());
                     errorMsg = "RECYCLE CLOUD BEAN TASK ERROR! not found enterpriseInfo";
+                    userExitMapper.updateById(errorMsg, EnterpriseChannelUserExit.TYPE_FAIL, memberCardChannelExitVo.getChannelUserExitId(), System.currentTimeMillis());
+                    return;
+                }
+                
+                //回收押金
+                Triple<Boolean, String, Object> batteryDepositTriple = enterpriseInfoService.recycleBatteryDeposit(userInfo, enterpriseInfo);
+                if (!batteryDepositTriple.getLeft()) {
+                    errorMsg = (String) batteryDepositTriple.getRight();
                     userExitMapper.updateById(errorMsg, EnterpriseChannelUserExit.TYPE_FAIL, memberCardChannelExitVo.getChannelUserExitId(), System.currentTimeMillis());
                     return;
                 }
@@ -570,26 +592,26 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
                     userExitMapper.updateById(errorMsg, EnterpriseChannelUserExit.TYPE_FAIL, memberCardChannelExitVo.getChannelUserExitId(), System.currentTimeMillis());
                     return;
                 }
-            
-                //回收押金
-                Triple<Boolean, String, Object> triple = enterpriseInfoService.recycleBatteryDeposit(userInfo, enterpriseInfo);
-                if (!triple.getLeft()) {
-                    errorMsg = (String) triple.getRight();
-                    userExitMapper.updateById(errorMsg, EnterpriseChannelUserExit.TYPE_FAIL, memberCardChannelExitVo.getChannelUserExitId(), System.currentTimeMillis());
-                }
+                
                 try {
                     //解绑用户数据
                     enterpriseInfoService.unbindUserData(userInfo, enterpriseChannelUser);
     
-                    // 修改历史退出为成功
-                    userExitMapper.updateById(null, EnterpriseChannelUserExit.TYPE_SUCCESS, memberCardChannelExitVo.getChannelUserExitId(), System.currentTimeMillis());
-    
                     // 修改企业用户为自主续费为退出
                     EnterpriseChannelUserQuery query = EnterpriseChannelUserQuery.builder().uid(userInfo.getUid()).renewalStatus(EnterpriseChannelUser.RENEWAL_OPEN).build();
                     enterpriseChannelUserService.updateRenewStatus(query);
+    
+                    BigDecimal membercardTotalCloudBean = (BigDecimal) recycleBatteryMembercard.getRight();
+                    BigDecimal batteryDepositTotalCloudBean = (BigDecimal) batteryDepositTriple.getRight();
+    
+                    enterpriseInfoService.addCloudBean(enterpriseInfo.getId(), membercardTotalCloudBean.add(batteryDepositTotalCloudBean));
+    
+                    // 修改历史退出为成功
+                    userExitMapper.updateById(null, EnterpriseChannelUserExit.TYPE_SUCCESS, memberCardChannelExitVo.getChannelUserExitId(), System.currentTimeMillis());
                 } catch (Exception e) {
-                    log.error("recycle cloud bean exit error msg={}", e.getMessage());
-                    errorMsg = "recycle cloud bean exit error msg";
+                    log.error("recycle cloud bean exit error msg={}", e);
+                    errorMsg = "recycle cloud bean exit error" + e.getMessage();
+                    
                     userExitMapper.updateById(errorMsg, EnterpriseChannelUserExit.TYPE_FAIL, memberCardChannelExitVo.getChannelUserExitId(), System.currentTimeMillis());
                 }
                 
@@ -597,6 +619,79 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
         
             offset += size;
         }
+    }
+    
+    @Slave
+    @Override
+    public void checkCloudBeanTask() {
+        List<Long> enterpriseIdList = cloudBeanUseRecordMapper.selectListEnterpriseId();
+        if (ObjectUtils.isEmpty(enterpriseIdList)) {
+            return;
+        }
+    
+        enterpriseIdList.stream().forEach(enterpriseId -> {
+            EnterpriseInfo enterpriseInfo = enterpriseInfoService.queryByIdFromDB(enterpriseId);
+            if (Objects.isNull(enterpriseInfo)) {
+                log.info("check cloud bean task enterprise not find enterpriseId={}", enterpriseId);
+                return;
+            }
+        
+            List<CloudBeanSumVO> cloudBeanSumVOList = cloudBeanUseRecordMapper.selectBeanAmountByEnterpriseId(enterpriseId);
+            if (ObjectUtils.isEmpty(cloudBeanSumVOList)) {
+                return;
+            }
+        
+            // 计算每个类型云豆数量的总和
+            Map<Integer, BigDecimal> beanAmountMap = cloudBeanSumVOList.stream().filter(cloudBeanSumVO -> Objects.nonNull(cloudBeanSumVO.getBeanAmount()))
+                    .collect(Collectors.groupingBy(CloudBeanSumVO::getType, Collectors.reducing(BigDecimal.ZERO, CloudBeanSumVO::getBeanAmount, BigDecimal::add)));
+        
+            // 企业总充值的：t_cloud_bean_use_record :type 2，3，4  - 5
+            BigDecimal rechargeSum = getRechargeSum(beanAmountMap);
+        
+            // 计算真实消费的云豆数量：总代扣的减去-总回收的
+            BigDecimal realConsumeSum = getRealConsumeSum(beanAmountMap);
+        
+            BigDecimal totalBeanAmount = realConsumeSum.add(enterpriseInfo.getTotalBeanAmount());
+            if (!Objects.equals(totalBeanAmount.compareTo(rechargeSum), NumberConstant.ZERO)) {
+                log.error("check cloud bean task calculate error enterpriseId={}, rechargeSum={}, totalBeanAmount={}", enterpriseId, rechargeSum, totalBeanAmount);
+            }
+        });
+    }
+    
+    private BigDecimal getRealConsumeSum(Map<Integer, BigDecimal> beanAmountMap) {
+        BigDecimal sum = BigDecimal.ZERO;
+        // 代扣总和
+        if (ObjectUtils.isNotEmpty(beanAmountMap.get(EnterpriseCloudBeanOrder.TYPE_PAY_MEMBERCARD))) {
+            sum = sum.add(beanAmountMap.get(EnterpriseCloudBeanOrder.TYPE_PAY_MEMBERCARD));
+        }
+        // 回收总和
+        if (ObjectUtils.isNotEmpty(beanAmountMap.get(EnterpriseCloudBeanOrder.TYPE_RECYCLE))) {
+            sum = sum.subtract(beanAmountMap.get(EnterpriseCloudBeanOrder.TYPE_RECYCLE));
+        }
+        
+        return sum;
+    }
+    
+    private BigDecimal getRechargeSum(Map<Integer, BigDecimal> beanAmountMap) {
+        BigDecimal sum = BigDecimal.ZERO;
+        
+        if (ObjectUtils.isNotEmpty(beanAmountMap.get(EnterpriseCloudBeanOrder.TYPE_ADMIN_RECHARGE))) {
+            sum = sum.add(beanAmountMap.get(EnterpriseCloudBeanOrder.TYPE_ADMIN_RECHARGE));
+        }
+        
+        if (ObjectUtils.isNotEmpty(beanAmountMap.get(EnterpriseCloudBeanOrder.TYPE_PRESENT))) {
+            sum = sum.add(beanAmountMap.get(EnterpriseCloudBeanOrder.TYPE_PRESENT));
+        }
+        
+        if (ObjectUtils.isNotEmpty(beanAmountMap.get(EnterpriseCloudBeanOrder.TYPE_USER_RECHARGE))) {
+            sum = sum.add(beanAmountMap.get(EnterpriseCloudBeanOrder.TYPE_USER_RECHARGE));
+        }
+        
+        if (ObjectUtils.isNotEmpty(beanAmountMap.get(EnterpriseCloudBeanOrder.TYPE_ADMIN_DEDUCT))) {
+            sum = sum.subtract(beanAmountMap.get(EnterpriseCloudBeanOrder.TYPE_ADMIN_DEDUCT));
+        }
+        
+        return sum;
     }
     
     private BigDecimal getContainMembercardUsedCloudBeanV2(EnterpriseRentRecord enterpriseRentRecord, List<AnotherPayMembercardRecord> anotherPayMembercardRecords,
@@ -812,23 +907,32 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
                     return;
                 }
         
-                EnterpriseInfo enterpriseInfo = enterpriseInfoService.queryByIdFromCache(enterpriseChannelUser.getEnterpriseId());
+                EnterpriseInfo enterpriseInfo = enterpriseInfoService.queryByIdFromDB(enterpriseChannelUser.getEnterpriseId());
+                
                 if (Objects.isNull(enterpriseInfo)) {
                     log.error("RECYCLE CLOUD BEAN TASK ERROR! not found enterpriseInfo,enterpriseId={}", enterpriseChannelUser.getEnterpriseId());
                     return;
                 }
-        
+    
+                //回收押金
+                Triple<Boolean, String, Object> batteryDepositTriple = enterpriseInfoService.recycleBatteryDeposit(userInfo, enterpriseInfo);
+                if (Boolean.FALSE.equals(batteryDepositTriple.getLeft())) {
+                    return;
+                }
+                
                 //回收套餐
                 Triple<Boolean, String, Object> recycleBatteryMembercard = enterpriseInfoService.recycleBatteryMembercard(userInfo, enterpriseInfo, item);
                 if (Boolean.FALSE.equals(recycleBatteryMembercard.getLeft())) {
                     return;
                 }
-        
-                //回收押金
-                enterpriseInfoService.recycleBatteryDeposit(userInfo, enterpriseInfo);
-        
+    
                 //解绑用户数据
                 enterpriseInfoService.unbindUserData(userInfo, enterpriseChannelUser);
+    
+                BigDecimal membercardTotalCloudBean = (BigDecimal) recycleBatteryMembercard.getRight();
+                BigDecimal batteryDepositTotalCloudBean = (BigDecimal) batteryDepositTriple.getRight();
+    
+                enterpriseInfoService.addCloudBean(enterpriseInfo.getId(), membercardTotalCloudBean.add(batteryDepositTotalCloudBean));
             });
             
             offset += size;

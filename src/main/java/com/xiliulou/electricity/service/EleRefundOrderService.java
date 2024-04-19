@@ -14,7 +14,6 @@ import org.apache.commons.lang3.tuple.Triple;
 import javax.servlet.http.HttpServletRequest;
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.Map;
 
 /**
  * 退款订单表(TEleRefundOrder)表服务接口
@@ -124,7 +123,9 @@ public interface EleRefundOrderService {
     
     Triple<Boolean, String, Object> refund(BigDecimal refundAmount, Long uid, String orderId, HttpServletRequest request);
     
-    EleRefundOrder queryLastByUid(Long uid);
+    EleRefundOrder queryLastByOrderId(String orderId);
     
     Integer existsRefundOrderByUid(Long uid);
+    
+    Integer updateById(EleRefundOrder eleRefundOrderUpdate);
 }

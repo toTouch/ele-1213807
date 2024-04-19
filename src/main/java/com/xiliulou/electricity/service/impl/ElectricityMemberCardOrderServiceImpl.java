@@ -877,7 +877,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             Boolean userRenewalStatus = enterpriseChannelUserService.checkRenewalStatusByUid(user.getUid());
             if (!userRenewalStatus) {
                 log.warn("BATTERY MEMBER ORDER WARN! user renewal status is false, uid={}, mid={}", user.getUid(), query.getMemberId());
-                return Triple.of(false, "000088", "自主续费状态已关闭，购买套餐请联系企业负责人");
+                return Triple.of(false, "000088", "您已是渠道用户，请联系对应站点购买套餐");
             }
             
             if (!Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
