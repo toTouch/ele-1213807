@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.handler.iot;
 
 import cn.hutool.core.util.StrUtil;
+import com.codahale.metrics.Meter;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
 import com.xiliulou.iot.entity.HardwareCommandQuery;
@@ -26,7 +27,10 @@ public abstract class AbstractElectricityIotHandler implements IElectricityHandl
     PubHardwareService pubHardwareService;
 
     @Autowired
-    ElectricityCabinetService electricityCabinetService;
+    protected ElectricityCabinetService electricityCabinetService;
+    
+    @Autowired
+    Meter iotMeter;
 
 
     @Override
@@ -55,7 +59,12 @@ public abstract class AbstractElectricityIotHandler implements IElectricityHandl
 
     @Override
     public boolean receiveMessageProcess(ReceiverMessage receiverMessage) {
-
+        try {
+            iotMeter.mark();
+        } catch (Exception e) {
+            log.error("ELE ERROR! meter monitor fail", e);
+        }
+    
         ElectricityCabinet electricityCabinet = electricityCabinetService.queryFromCacheByProductAndDeviceName(receiverMessage.getProductKey(), receiverMessage.getDeviceName());
         if (Objects.isNull(electricityCabinet)) {
             log.error("ELE ERROR! not found  electricity ,productKey={},deviceName={}", receiverMessage.getProductKey(), receiverMessage.getDeviceName());

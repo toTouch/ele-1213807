@@ -739,6 +739,20 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
             String result = UriUtils.decode(redisService.get(CacheConstant.ELE_CACHE_CAR_RENTAL_FREE_DEPOSIT_ORDER_GENERATE_LOCK_KEY + uid), StandardCharsets.UTF_8);
             result = JsonUtil.fromJson(result, String.class);
             log.info("found the free order result from cache for car rental. uid = {}, result = {}", uid, result);
+            
+            // 此时代表：在5分钟内用户调用了取消订单的接口且二次申请免押，则需要创建租车会员信息
+            if (ObjectUtils.isEmpty(memberTermEntity)) {
+                // 查询最后一次的免押订单信息
+                CarRentalPackageDepositPayPo carRentalPackageDepositPayOri = carRentalPackageDepositPayService.queryLastFreeOrderByUid(tenantId, uid);
+                if (ObjectUtils.isEmpty(carRentalPackageDepositPayOri)) {
+                    log.error("t_car_rental_package_deposit_pay not found. uid = {}", uid);
+                    throw new BizException("300015", "押金订单状态异常");
+                }
+                
+                CarRentalPackageMemberTermPo memberTermInsertEntity = buildCarRentalPackageMemberTerm(tenantId, uid, carRentalPackage, carRentalPackageDepositPayOri.getOrderNo(), memberTermEntity);
+                carRentalPackageMemberTermService.insert(memberTermInsertEntity);
+            }
+            
             return result;
         }
 
@@ -801,7 +815,7 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
      * @param freeDepositOrder           免押记录
      * @param memberTermEntity           新增的会员期限信息
      */
-    @Transactional(rollbackFor = Exception.class)
+    //@Transactional(rollbackFor = Exception.class)
     public void saveFreeDepositTx(CarRentalPackageDepositPayPo carRentalPackageDepositPay, FreeDepositOrder freeDepositOrder, CarRentalPackageMemberTermPo memberTermEntity) {
         carRentalPackageDepositPayService.insert(carRentalPackageDepositPay);
         freeDepositOrderService.insert(freeDepositOrder);
@@ -922,7 +936,7 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
 
         // 租车会员信息
         CarRentalPackageMemberTermPo memberTermEntity = carRentalPackageMemberTermService.selectByTenantIdAndUid(tenantId, uid);
-        if (ObjectUtils.isEmpty(memberTermEntity)) {
+        if (ObjectUtils.isEmpty(memberTermEntity) || MemberTermStatusEnum.PENDING_EFFECTIVE.getCode().equals(memberTermEntity.getStatus())) {
             log.warn("selectUnRefundCarDeposit, not found car_rental_package_member_term, tenantId is {}, uid is {}", tenantId, uid);
             return null;
         }
@@ -944,7 +958,7 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
         }
 
         // 押金缴纳信息
-        CarRentalPackageDepositPayPo depositPayEntity = carRentalPackageDepositPayService.selectLastByUid(tenantId, uid);
+        CarRentalPackageDepositPayPo depositPayEntity = carRentalPackageDepositPayService.selectByOrderNo(memberTermEntity.getDepositPayOrderNo());
         if (ObjectUtils.isEmpty(depositPayEntity) || !PayStateEnum.SUCCESS.getCode().equals(depositPayEntity.getPayState())) {
             return null;
         }

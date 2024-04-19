@@ -201,9 +201,13 @@ public class CarRentalPackageBizServiceImpl implements CarRentalPackageBizServic
 
             // 是否缴纳过租车的押金（单车、车电一体）
             if (UserInfo.CAR_DEPOSIT_STATUS_YES.equals(userInfo.getCarDepositStatus()) || YesNoEnum.YES.getCode().equals(userInfo.getCarBatteryDepositStatus())) {
-                // 查询保险缴纳信息
+                // 查询押金缴纳信息
                 CarRentalPackageDepositPayPo depositPayPo = carRentalPackageDepositPayService.selectLastPaySucessByUid(tenantId, uid);
-                confine = depositPayPo.getRentalPackageType();
+                // 根据查询出来的套餐ID，查询套餐信息
+                CarRentalPackagePo carRentalPackagePo = carRentalPackageService.selectById(depositPayPo.getRentalPackageId());
+                if (ObjectUtils.isNotEmpty(carRentalPackagePo)) {
+                    confine = carRentalPackagePo.getConfine();
+                }
             }
         }
 

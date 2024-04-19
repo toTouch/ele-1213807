@@ -27,4 +27,6 @@ public interface AssetInventoryDetailMapper {
     Integer countTotal(AssetInventoryDetailQueryModel assetInventoryDetailQueryModel);
     
     List<AssetInventoryDetailBO> selectListBySnListAndOrderNo(@Param("snList") List<String> snList, @Param("orderNo") String orderNo);
+    
+    Integer countPendingTotal(@Param("orderNo") String orderNo, @Param("tenantId") Integer tenantId);
 }

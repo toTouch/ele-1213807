@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.controller.admin;
 
+import cn.hutool.core.map.MapUtil;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.CacheConstant;
@@ -7,10 +8,16 @@ import com.xiliulou.electricity.entity.ElectricitySubscriptionMessage;
 import com.xiliulou.electricity.query.ServicePhoneQuery;
 import com.xiliulou.electricity.service.ElectricitySubscriptionMessageService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
+import com.xiliulou.electricity.utils.OperateRecordUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Objects;
 
@@ -23,11 +30,16 @@ import java.util.Objects;
 @RestController
 @Slf4j
 public class JsonAdminElectricitySubscriptionMessageController {
+    
     @Autowired
     ElectricitySubscriptionMessageService electricitySubscriptionMessageService;
+    
     @Autowired
     RedisService redisService;
-
+    
+    @Autowired
+    OperateRecordUtil operateRecordUtil;
+    
     /**
      * 新增
      *
@@ -37,7 +49,7 @@ public class JsonAdminElectricitySubscriptionMessageController {
     public R saveElectricitySubscriptionMessage(@RequestBody @Validated ElectricitySubscriptionMessage electricitySubscriptionMessage) {
         return electricitySubscriptionMessageService.saveElectricitySubscriptionMessage(electricitySubscriptionMessage);
     }
-
+    
     /**
      * 获取 小程序服务信息
      *
@@ -47,9 +59,9 @@ public class JsonAdminElectricitySubscriptionMessageController {
     public R getServicePhone() {
         //租户
         Integer tenantId = TenantContextHolder.getTenantId();
-        return R.ok(redisService.get(CacheConstant.CACHE_SERVICE_PHONE+tenantId));
+        return R.ok(redisService.get(CacheConstant.CACHE_SERVICE_PHONE + tenantId));
     }
-
+    
     /**
      * 设置小程序服务信息
      *
@@ -59,11 +71,18 @@ public class JsonAdminElectricitySubscriptionMessageController {
     public R getServicePhone(@RequestBody ServicePhoneQuery servicePhoneQuery) {
         //租户
         Integer tenantId = TenantContextHolder.getTenantId();
-        redisService.set(CacheConstant.CACHE_SERVICE_PHONE+tenantId, servicePhoneQuery.getPhone());
+        String oldPhone = "";
+        if (redisService.hasKey(CacheConstant.CACHE_SERVICE_PHONE + tenantId)) {
+            oldPhone = redisService.get(CacheConstant.CACHE_SERVICE_PHONE + tenantId);
+        }
+        
+        redisService.set(CacheConstant.CACHE_SERVICE_PHONE + tenantId, servicePhoneQuery.getPhone());
+        
+        operateRecordUtil.record(MapUtil.of("phone", oldPhone), MapUtil.of("phone", servicePhoneQuery.getPhone()));
         return R.ok();
     }
-
-
+    
+    
     /**
      * 修改
      *
@@ -76,8 +95,8 @@ public class JsonAdminElectricitySubscriptionMessageController {
         }
         return electricitySubscriptionMessageService.updateElectricitySubscriptionMessage(electricitySubscriptionMessage);
     }
-
-
+    
+    
     /**
      * 分页
      *
@@ -87,7 +106,7 @@ public class JsonAdminElectricitySubscriptionMessageController {
     public R getElectricityMemberCardPage(@RequestParam(value = "type", required = false) Integer type) {
         //租户
         Integer tenantId = TenantContextHolder.getTenantId();
-        return electricitySubscriptionMessageService.getElectricitySubscriptionMessagePage(type,tenantId);
+        return electricitySubscriptionMessageService.getElectricitySubscriptionMessagePage(type, tenantId);
     }
-
+    
 }

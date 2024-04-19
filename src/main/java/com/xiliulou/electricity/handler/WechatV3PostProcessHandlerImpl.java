@@ -80,11 +80,10 @@ public class WechatV3PostProcessHandlerImpl implements WechatV3PostProcessHandle
         //幂等加锁
         String orderNo = callBackResource.getOutTradeNo();
         if (!redisService.setNx(WechatPayConstant.PAY_ORDER_ID_CALL_BACK + orderNo, String.valueOf(System.currentTimeMillis()), 10 * 1000L, false)) {
+            log.info("ELE INFO! order in process orderId={}", orderNo);
             return;
         }
-
-        log.info("WECHAT INFO! orderNo={}", orderNo);
-
+        
         if (Objects.equals(callBackResource.getAttach(), ElectricityTradeOrder.ATTACH_DEPOSIT)) {
             electricityTradeOrderService.notifyDepositOrder(callBackResource);
         } else if (Objects.equals(callBackResource.getAttach(), ElectricityTradeOrder.ATTACH_BATTERY_SERVICE_FEE)) {

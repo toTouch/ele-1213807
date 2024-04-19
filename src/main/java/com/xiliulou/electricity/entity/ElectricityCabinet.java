@@ -2,6 +2,7 @@ package com.xiliulou.electricity.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
+import com.xiliulou.electricity.constant.EleCabinetConstant;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -113,6 +114,12 @@ public class ElectricityCabinet {
      * 库存状态；0,库存；1,已出库
      */
     private Integer stockStatus;
+    
+    /**
+     * @see EleCabinetConstant
+     * 柜机供电类型：0--市电，1--反向供电
+     */
+    private Integer powerType;
     
     /**
      * 换电方式 1：有屏，2：无屏，3：单片机  -1:电柜类型为空

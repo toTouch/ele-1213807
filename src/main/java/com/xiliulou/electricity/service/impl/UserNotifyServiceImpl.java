@@ -13,23 +13,22 @@ import com.xiliulou.electricity.query.NotifyPictureInfo;
 import com.xiliulou.electricity.query.UserNotifyQuery;
 import com.xiliulou.electricity.service.UserNotifyService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
+import com.xiliulou.electricity.utils.OperateRecordUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.NotifyPictureInfoVO;
 import com.xiliulou.electricity.vo.UserNotifyVo;
 import com.xiliulou.storage.config.StorageConfig;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-
-import lombok.extern.slf4j.Slf4j;
 
 /**
  * (UserNotify)表服务实现类
@@ -49,6 +48,9 @@ public class UserNotifyServiceImpl implements UserNotifyService {
     
     @Autowired
     StorageConfig storageConfig;
+    
+    @Autowired
+    OperateRecordUtil operateRecordUtil;
     
     /**
      * 通过ID查询单条数据从DB
@@ -211,7 +213,7 @@ public class UserNotifyServiceImpl implements UserNotifyService {
             updateAndInsert.setId(userNotify.getId());
             update(updateAndInsert);
         }
-        
+        operateRecordUtil.record(userNotify, updateAndInsert);
         return R.ok();
     }
     

@@ -3,19 +3,61 @@ package com.xiliulou.electricity.service.impl.car.biz;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.constant.TimeConstant;
 import com.xiliulou.electricity.constant.UserOperateRecordConstant;
-import com.xiliulou.electricity.entity.*;
-import com.xiliulou.electricity.entity.car.*;
-import com.xiliulou.electricity.enums.*;
+import com.xiliulou.electricity.entity.BatteryModel;
+import com.xiliulou.electricity.entity.CarLockCtrlHistory;
+import com.xiliulou.electricity.entity.EleUserOperateRecord;
+import com.xiliulou.electricity.entity.ElectricityBattery;
+import com.xiliulou.electricity.entity.ElectricityCar;
+import com.xiliulou.electricity.entity.ElectricityCarModel;
+import com.xiliulou.electricity.entity.ElectricityConfig;
+import com.xiliulou.electricity.entity.Franchisee;
+import com.xiliulou.electricity.entity.Store;
+import com.xiliulou.electricity.entity.UserCoupon;
+import com.xiliulou.electricity.entity.UserInfo;
+import com.xiliulou.electricity.entity.car.CarRentalPackageCarBatteryRelPo;
+import com.xiliulou.electricity.entity.car.CarRentalPackageDepositPayPo;
+import com.xiliulou.electricity.entity.car.CarRentalPackageMemberTermPo;
+import com.xiliulou.electricity.entity.car.CarRentalPackageOrderFreezePo;
+import com.xiliulou.electricity.entity.car.CarRentalPackageOrderPo;
+import com.xiliulou.electricity.entity.car.CarRentalPackageOrderSlippagePo;
+import com.xiliulou.electricity.entity.car.CarRentalPackagePo;
+import com.xiliulou.electricity.enums.MemberOptTypeEnum;
+import com.xiliulou.electricity.enums.MemberTermStatusEnum;
+import com.xiliulou.electricity.enums.PayStateEnum;
+import com.xiliulou.electricity.enums.RenalPackageConfineEnum;
+import com.xiliulou.electricity.enums.RentalPackageTypeEnum;
+import com.xiliulou.electricity.enums.RentalUnitEnum;
+import com.xiliulou.electricity.enums.SlippageTypeEnum;
+import com.xiliulou.electricity.enums.UseStateEnum;
+import com.xiliulou.electricity.enums.YesNoEnum;
 import com.xiliulou.electricity.enums.basic.BasicEnum;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.reqparam.opt.carpackage.MemberCurrPackageOptReq;
-import com.xiliulou.electricity.service.*;
-import com.xiliulou.electricity.service.car.*;
+import com.xiliulou.electricity.service.BatteryModelService;
+import com.xiliulou.electricity.service.CarLockCtrlHistoryService;
+import com.xiliulou.electricity.service.EleUserOperateRecordService;
+import com.xiliulou.electricity.service.ElectricityBatteryService;
+import com.xiliulou.electricity.service.ElectricityCarModelService;
+import com.xiliulou.electricity.service.ElectricityCarService;
+import com.xiliulou.electricity.service.ElectricityConfigService;
+import com.xiliulou.electricity.service.FranchiseeService;
+import com.xiliulou.electricity.service.StoreService;
+import com.xiliulou.electricity.service.UserBatteryTypeService;
+import com.xiliulou.electricity.service.UserCouponService;
+import com.xiliulou.electricity.service.UserInfoService;
+import com.xiliulou.electricity.service.car.CarRentalPackageCarBatteryRelService;
+import com.xiliulou.electricity.service.car.CarRentalPackageDepositPayService;
+import com.xiliulou.electricity.service.car.CarRentalPackageMemberTermService;
+import com.xiliulou.electricity.service.car.CarRentalPackageOrderFreezeService;
+import com.xiliulou.electricity.service.car.CarRentalPackageOrderService;
+import com.xiliulou.electricity.service.car.CarRentalPackageOrderSlippageService;
+import com.xiliulou.electricity.service.car.CarRentalPackageService;
 import com.xiliulou.electricity.service.car.biz.CarRenalPackageSlippageBizService;
 import com.xiliulou.electricity.service.car.biz.CarRentalOrderBizService;
 import com.xiliulou.electricity.service.car.biz.CarRentalPackageMemberTermBizService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DateUtils;
+import com.xiliulou.electricity.utils.OperateRecordUtil;
 import com.xiliulou.electricity.vo.car.CarRentalPackageDepositPayVo;
 import com.xiliulou.electricity.vo.car.CarRentalPackageOrderVo;
 import com.xiliulou.electricity.vo.car.CarVo;
@@ -24,6 +66,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
@@ -31,7 +74,9 @@ import org.springframework.util.CollectionUtils;
 import javax.annotation.Resource;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -101,6 +146,9 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
     
     @Resource
     private CarRentalPackageMemberTermService carRentalPackageMemberTermService;
+    
+    @Autowired
+    private OperateRecordUtil operateRecordUtil;
     
     @Resource
     private EleUserOperateRecordService eleUserOperateRecordService;
@@ -464,7 +512,7 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
         if (Objects.equals(memberTermEntity.getRentalPackageConfine(), RenalPackageConfineEnum.NO.getCode())) {
             record.setOldMaxUseCount(UserOperateRecordConstant.UN_LIMIT_COUNT_REMAINING_NUMBER);
         }
-    
+        
         //如果修改后的套餐次数为不限次套餐，则修改最大使用次数。
         CarRentalPackageMemberTermPo memberTermEntityUpdated = carRentalPackageMemberTermService.selectByTenantIdAndUid(memberTermEntity.getTenantId(), memberTermEntity.getUid());
         if (Objects.equals(memberTermEntityUpdated.getRentalPackageConfine(), RenalPackageConfineEnum.NO.getCode())) {
@@ -472,8 +520,46 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
         }
         
         eleUserOperateRecordService.asyncHandleUserOperateRecord(record);
-        
+        try {
+            CarRentalPackagePo packagePo = carRentalPackageService.selectById(packageOrderEntity.getRentalPackageId());
+            operateRecordUtil.record(builderOperateRecord(record, packagePo.getName(), userInfo.getPhone(), userInfo.getName(), packagePo.getType(), false),
+                    builderOperateRecord(record, packagePo.getName(), userInfo.getPhone(), userInfo.getName(), packagePo.getType(), true));
+        } catch (Throwable e) {
+            log.error("The user failed to modify the car plan record because:", e);
+        }
         return true;
+    }
+    
+    private Map<String, Object> builderOperateRecord(EleUserOperateRecord record, String packageName, String phone, String username, Integer type, Boolean isNew) {
+        Map<String, Object> result = new HashMap<>();
+        result.put("packageName", packageName);
+        result.put("phone", phone);
+        result.put("username", username);
+        result.put("type", type);
+        if (!isNew) {
+            result.put("validDays", record.getOldValidDays());
+            result.put("electricityBatterySn", record.getInitElectricityBatterySn());
+            result.put("batteryDeposit", record.getOldBatteryDeposit());
+            result.put("batteryInsuranceStatus", record.getOldBatteryInsuranceStatus());
+            result.put("carInsuranceStatus", record.getOldCarInsuranceStatus());
+            result.put("batteryInsuranceExpireTime", record.getOldBatteryInsuranceExpireTime());
+            result.put("carInsuranceExpireTime", record.getOldCarInsuranceExpireTime());
+            result.put("carDeposit", record.getOldCarDeposit());
+            result.put("electricityCarSn", record.getInitElectricityCarSn());
+            result.put("maxUseCount", record.getOldMaxUseCount());
+            return result;
+        }
+        result.put("validDays", record.getNewValidDays());
+        result.put("electricityBatterySn", record.getNowElectricityBatterySn());
+        result.put("batteryDeposit", record.getNewBatteryDeposit());
+        result.put("batteryInsuranceStatus", record.getNewBatteryInsuranceStatus());
+        result.put("carInsuranceStatus", record.getNewCarInsuranceStatus());
+        result.put("batteryInsuranceExpireTime", record.getNewBatteryInsuranceExpireTime());
+        result.put("carInsuranceExpireTime", record.getNewCarInsuranceExpireTime());
+        result.put("carDeposit", record.getNewCarDeposit());
+        result.put("electricityCarSn", record.getNewElectricityCarSn());
+        result.put("maxUseCount", record.getNewMaxUseCount());
+        return result;
     }
     
     /**
@@ -616,7 +702,8 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
         }
         // 更改状态
         if ((ObjectUtils.isNotEmpty(memberTermEntity.getDueTime()) && memberTermEntity.getDueTime() != 0L && memberTermEntity.getDueTime() <= System.currentTimeMillis()) || (
-                Objects.equals(memberTermEntity.getRentalPackageConfine(), RenalPackageConfineEnum.NUMBER.getCode()) && ObjectUtils.isNotEmpty(memberTermEntity.getResidue()) && memberTermEntity.getResidue() <= 0L)) {
+                Objects.equals(memberTermEntity.getRentalPackageConfine(), RenalPackageConfineEnum.NUMBER.getCode()) && ObjectUtils.isNotEmpty(memberTermEntity.getResidue())
+                        && memberTermEntity.getResidue() <= 0L)) {
             userMemberInfoVo.setStatus(MemberTermStatusEnum.EXPIRE.getCode());
         }
         if (!CollectionUtils.isEmpty(batteryModelEntityList)) {
@@ -890,9 +977,8 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
             if (RentalUnitEnum.MINUTE.getCode().equals(tenancyUnit)) {
                 dueTime = dueTime + (tenancy * TimeConstant.MINUTE_MILLISECOND);
             }
-
+            
             memberTermEntityUpdate.setDueTime(dueTime);
-           
             
             // 计算余量
             if (RenalPackageConfineEnum.NUMBER.getCode().equals(packageOrderEntityNew.getConfine())) {

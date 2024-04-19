@@ -20,7 +20,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @TableName("t_user_coupon")
 public class UserCoupon {
-
+    
     @TableId(value = "id", type = IdType.AUTO)
     private Long id;
     /**
@@ -63,6 +63,10 @@ public class UserCoupon {
      * 优惠券使用的订单id
      */
     private String orderId;
+    /**
+     * 核销时核销人的Id
+     */
+    private Long verifiedUid;
     /**
      * 优惠券来源的订单id
      */
@@ -126,5 +130,7 @@ public class UserCoupon {
 
     //体验劵
     public static final Integer DAYS = 3;
-
+    
+    //核销人
+    public static final Long INITIALIZE_THE_VERIFIER=-1L;
 }
