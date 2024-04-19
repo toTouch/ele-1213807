@@ -27,7 +27,7 @@ public abstract class AbstractElectricityIotHandler implements IElectricityHandl
     PubHardwareService pubHardwareService;
 
     @Autowired
-    ElectricityCabinetService electricityCabinetService;
+    protected ElectricityCabinetService electricityCabinetService;
     
     @Autowired
     Meter iotMeter;

@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.handler.iot.impl;
 
 import com.xiliulou.core.json.JsonUtil;
+import com.xiliulou.electricity.constant.EleCabinetConstant;
 import com.xiliulou.electricity.constant.ElectricityIotConstant;
 import com.xiliulou.electricity.entity.EleCabinetCoreData;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
@@ -25,102 +26,136 @@ import java.util.Objects;
 @Service(value = ElectricityIotConstant.NORMAL_CABINET_CORE_DATA_HANDLER)
 @Slf4j
 public class NormalCabinetCoreDataHandler extends AbstractElectricityIotHandler {
-
+    
     @Autowired
     private EleCabinetCoreDataService eleCabinetCoreDataService;
-
+    
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void postHandleReceiveMsg(ElectricityCabinet electricityCabinet, ReceiverMessage receiverMessage) {
-
+        
         EleCabinetCoreDataVO eleCabinetCoreDataVO = JsonUtil.fromJson(receiverMessage.getOriginContent(), EleCabinetCoreDataVO.class);
         if (Objects.isNull(eleCabinetCoreDataVO)) {
             log.error("ELE ERROR! cabinetCoreData is null,sessionId={}", receiverMessage.getSessionId());
             return;
         }
-
-        this.idempotentUpdateCabinetCoreData(electricityCabinet,eleCabinetCoreDataVO);
+        
+        updateEleCabinetPowerType(electricityCabinet, eleCabinetCoreDataVO);
+        
+        insertOrUpdateCabinetCoreData(electricityCabinet, eleCabinetCoreDataVO);
     }
-
-    /**
-     * 原子更新核心板上报数据
-     */
-    private void idempotentUpdateCabinetCoreData(ElectricityCabinet electricityCabinet,EleCabinetCoreDataVO eleCabinetCoreDataVO) {
-
-        EleCabinetCoreData cabinetCoreData = EleCabinetCoreData.builder()
-                .electricityCabinetId(electricityCabinet.getId().longValue()).
-                        lockOpen(eleCabinetCoreDataVO.isLockOpen() ? EleCabinetCoreData.STSTUS_YES : EleCabinetCoreData.STSTUS_NO).
-                        smokeSensorOpen(eleCabinetCoreDataVO.isSmokeSensorOpen() ? EleCabinetCoreData.STSTUS_YES : EleCabinetCoreData.STSTUS_NO).
-                        lightOpen(eleCabinetCoreDataVO.isLightOpen() ? EleCabinetCoreData.STSTUS_YES : EleCabinetCoreData.STSTUS_NO).
-                        fanOpen(eleCabinetCoreDataVO.isFanOpen() ? EleCabinetCoreData.STSTUS_YES : EleCabinetCoreData.STSTUS_NO).
-                        extinguisherOpen(eleCabinetCoreDataVO.isExtinguisherOpen() ? EleCabinetCoreData.STSTUS_YES : EleCabinetCoreData.STSTUS_NO).
-                        v(eleCabinetCoreDataVO.getV()).
-                        a(eleCabinetCoreDataVO.getA()).
-                        power(eleCabinetCoreDataVO.getPower()).
-                        powerFactor(eleCabinetCoreDataVO.getPowerFactor()).
-                        activeElectricalEnergy(eleCabinetCoreDataVO.getActiveElectricalEnergy()).
-                        waterPumpOpen(eleCabinetCoreDataVO.isWaterPumpOpen() ? EleCabinetCoreData.STSTUS_YES : EleCabinetCoreData.STSTUS_NO).
-                        waterLevelWarning(eleCabinetCoreDataVO.isWaterLevelWarning() ? EleCabinetCoreData.STSTUS_YES : EleCabinetCoreData.STSTUS_NO).
-                        heatOpen(eleCabinetCoreDataVO.isHeatOpen() ? EleCabinetCoreData.STSTUS_YES : EleCabinetCoreData.STSTUS_NO).
-                        temp(eleCabinetCoreDataVO.getTemp()).
-                        humidity(eleCabinetCoreDataVO.getHumidity()).
-                        waterLeachingWarning(eleCabinetCoreDataVO.isWaterLeachingWarning() ? EleCabinetCoreData.STSTUS_YES : EleCabinetCoreData.STSTUS_NO).
-                        coreVersion(Objects.isNull(eleCabinetCoreDataVO.getCoreVersion())? "0":String.valueOf(eleCabinetCoreDataVO.getCoreVersion())).
-                        createTime(System.currentTimeMillis()).
+    
+    private void updateEleCabinetPowerType(ElectricityCabinet electricityCabinet, EleCabinetCoreDataVO eleCabinetCoreDataVO) {
+        Integer powerType = eleCabinetCoreDataVO.isBackupPower() ? EleCabinetConstant.POWER_TYPE_BACKUP : EleCabinetConstant.POWER_TYPE_ORDINARY;
+        
+        ElectricityCabinet electricityCabinetUpdate = new ElectricityCabinet();
+        electricityCabinetUpdate.setId(electricityCabinet.getId());
+        electricityCabinetUpdate.setPowerType(powerType);
+        electricityCabinetUpdate.setUpdateTime(System.currentTimeMillis());
+        electricityCabinetService.update(electricityCabinetUpdate);
+    }
+    
+    private void insertOrUpdateCabinetCoreData(ElectricityCabinet electricityCabinet, EleCabinetCoreDataVO eleCabinetCoreDataVO) {
+        EleCabinetCoreData cabinetCoreData = EleCabinetCoreData.builder().electricityCabinetId(electricityCabinet.getId().longValue()).
+                lockOpen(eleCabinetCoreDataVO.isLockOpen() ? EleCabinetCoreData.STSTUS_YES : EleCabinetCoreData.STSTUS_NO).
+                smokeSensorOpen(eleCabinetCoreDataVO.isSmokeSensorOpen() ? EleCabinetCoreData.STSTUS_YES : EleCabinetCoreData.STSTUS_NO).
+                lightOpen(eleCabinetCoreDataVO.isLightOpen() ? EleCabinetCoreData.STSTUS_YES : EleCabinetCoreData.STSTUS_NO).
+                fanOpen(eleCabinetCoreDataVO.isFanOpen() ? EleCabinetCoreData.STSTUS_YES : EleCabinetCoreData.STSTUS_NO).
+                extinguisherOpen(eleCabinetCoreDataVO.isExtinguisherOpen() ? EleCabinetCoreData.STSTUS_YES : EleCabinetCoreData.STSTUS_NO).
+                v(eleCabinetCoreDataVO.getV()).
+                a(eleCabinetCoreDataVO.getA()).
+                power(eleCabinetCoreDataVO.getPower()).
+                powerFactor(eleCabinetCoreDataVO.getPowerFactor()).
+                activeElectricalEnergy(eleCabinetCoreDataVO.getActiveElectricalEnergy()).
+                waterPumpOpen(eleCabinetCoreDataVO.isWaterPumpOpen() ? EleCabinetCoreData.STSTUS_YES : EleCabinetCoreData.STSTUS_NO).
+                waterLevelWarning(eleCabinetCoreDataVO.isWaterLevelWarning() ? EleCabinetCoreData.STSTUS_YES : EleCabinetCoreData.STSTUS_NO).
+                heatOpen(eleCabinetCoreDataVO.isHeatOpen() ? EleCabinetCoreData.STSTUS_YES : EleCabinetCoreData.STSTUS_NO).
+                temp(eleCabinetCoreDataVO.getTemp()).
+                humidity(eleCabinetCoreDataVO.getHumidity()).
+                waterLeachingWarning(eleCabinetCoreDataVO.isWaterLeachingWarning() ? EleCabinetCoreData.STSTUS_YES : EleCabinetCoreData.STSTUS_NO).
+                coreVersion(Objects.isNull(eleCabinetCoreDataVO.getCoreVersion()) ? "0" : String.valueOf(eleCabinetCoreDataVO.getCoreVersion()))
+                .backupPower(eleCabinetCoreDataVO.isBackupPower() ? EleCabinetConstant.POWER_TYPE_BACKUP : EleCabinetConstant.POWER_TYPE_ORDINARY)
+                .backupPowerReason(eleCabinetCoreDataVO.getBackupPowerReason()).createTime(System.currentTimeMillis()).
                         updateTime(System.currentTimeMillis()).build();
-
-
-        eleCabinetCoreDataService.idempotentUpdateCabinetCoreData(cabinetCoreData);
+        
+        eleCabinetCoreDataService.insertOrUpdateCabinetCoreData(cabinetCoreData);
     }
-
-
+    
     @Data
     class EleCabinetCoreDataVO {
+        
         private String productKey;
+        
         private boolean isLockOpen;
+        
         private boolean isSmokeSensorOpen;
+        
         private boolean isLightOpen;
+        
         private boolean isFanOpen;
+        
         /**
          * 灭火器装置是否开启
          */
         private boolean isExtinguisherOpen;
+        
         private double v;
+        
         private double a;
+        
         private double power;
+        
         /**
          * 功率因数
          */
         private double powerFactor;
+        
         /**
          * 有功电能
          */
         private double activeElectricalEnergy;
+        
         private boolean isWaterPumpOpen;
+        
         /**
          * 水箱水位是否报警
          */
         private boolean isWaterLevelWarning;
+        
         /**
          * 温度
          */
         private double temp;
+        
         /**
          * 湿度
          */
         private double humidity;
+        
         /**
          * 柜内水浸状态
          */
         private boolean isWaterLeachingWarning;
+        
         /**
          * 核心板版本号
          */
         private String coreVersion;
+        
         /**
          * 整柜加热
          */
         private boolean isHeatOpen;
+        
+        /**
+         * 反向供电状态
+         */
+        private boolean isBackupPower;
+        
+        /**
+         * 反向供电原因
+         */
+        private String backupPowerReason;
     }
-
+    
 }
