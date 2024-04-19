@@ -244,11 +244,14 @@ public class EleCabinetSignatureServiceImpl implements EleCabinetSignatureServic
             createFileVO.setFileId(fileId);
             List<SignFieldPositionQuery> signFieldPositionList = new ArrayList<>();
             for (Component component : components) {
-                SignFieldPositionQuery signFieldPositionQuery = new SignFieldPositionQuery();
-                signFieldPositionQuery.setPositionPage(String.valueOf(component.getComponentPosition().getComponentPageNum()));
-                signFieldPositionQuery.setPositionX(component.getComponentPosition().getComponentPositionX());
-                signFieldPositionQuery.setPositionY(component.getComponentPosition().getComponentPositionY());
-                signFieldPositionList.add(signFieldPositionQuery);
+                // 只获取填写组件位置坐标
+                if(EleEsignConstant.SIGN_FLOW_COMPONENT_TYPE_TEXT.equals(component.getComponentType())) {
+                    SignFieldPositionQuery signFieldPositionQuery = new SignFieldPositionQuery();
+                    signFieldPositionQuery.setPositionPage(String.valueOf(component.getComponentPosition().getComponentPageNum()));
+                    signFieldPositionQuery.setPositionX(component.getComponentPosition().getComponentPositionX());
+                    signFieldPositionQuery.setPositionY(component.getComponentPosition().getComponentPositionY());
+                    signFieldPositionList.add(signFieldPositionQuery);
+                }
             }
             createFileVO.setSignFieldPositionList(signFieldPositionList);
         }catch(Exception e){
