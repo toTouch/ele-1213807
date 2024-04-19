@@ -121,6 +121,8 @@ public class BatteryMemberCardQuery {
      */
     private Integer businessType;
     
+    private List<Long> idList;
+    
     /**
      * 电池型号
      */

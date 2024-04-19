@@ -19,6 +19,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Builder
 @TableName("t_faq")
+@Deprecated
 public class Faq {
 
 

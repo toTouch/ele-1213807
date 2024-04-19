@@ -372,6 +372,13 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
         return this.batteryMemberCardMapper.isMemberCardBindFranchinsee(id, tenantId);
     }
     
+    @Slave
+    @Override
+    public List<BatteryMemberCard> queryListByIdList(BatteryMemberCardQuery query) {
+        return batteryMemberCardMapper.listByIdList(query);
+    }
+
+    
     @Override
     public Integer batchUpdateSortParam(List<MemberCardAndCarRentalPackageSortParamQuery> sortParamQueries) {
         
@@ -931,4 +938,27 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
         batteryMemberCardVO.setCoupons(couponSearchVos);
     }
     
+    @Override
+    public List<BatteryMemberCardVO> selectByPageForMerchant(BatteryMemberCardQuery query) {
+        List<BatteryMemberCard> list = this.batteryMemberCardMapper.selectByPageForMerchant(query);
+        
+        return list.stream().map(item -> {
+            BatteryMemberCardVO batteryMemberCardVO = new BatteryMemberCardVO();
+            BeanUtils.copyProperties(item, batteryMemberCardVO);
+            
+            Franchisee franchisee = franchiseeService.queryByIdFromCache(item.getFranchiseeId());
+            batteryMemberCardVO.setFranchiseeName(Objects.nonNull(franchisee) ? franchisee.getName() : "");
+            
+            if (Objects.nonNull(franchisee) && Objects.equals(franchisee.getModelType(), Franchisee.NEW_MODEL_TYPE)) {
+                batteryMemberCardVO.setBatteryModels(batteryModelService.selectShortBatteryType(memberCardBatteryTypeService.selectBatteryTypeByMid(item.getId()), item.getTenantId()));
+            }
+            
+            if (Objects.nonNull(item.getCouponId())) {
+                Coupon coupon = couponService.queryByIdFromCache(item.getCouponId());
+                batteryMemberCardVO.setCouponName(Objects.isNull(coupon) ? "" : coupon.getName());
+            }
+            
+            return batteryMemberCardVO;
+        }).collect(Collectors.toList());
+    }
 }

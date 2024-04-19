@@ -52,5 +52,7 @@ public interface EnterpriseInfoMapper extends BaseMapper<EnterpriseInfo> {
     
     Integer updatePhoneByUid(@Param("tenantId") Integer tenantId, @Param("uid") Long uid, @Param("newPhone") String newPhone);
     
+    List<EnterpriseInfo> queryListByIdList(@Param("idList") List<Long> enterpriseIdList);
+    
     int subtractCloudBean(@Param("id") Long id, @Param("subtractCloudBean") BigDecimal subtract,@Param("updateTime") long updateTime);
 }

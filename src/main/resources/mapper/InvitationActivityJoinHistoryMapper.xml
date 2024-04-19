@@ -269,7 +269,7 @@
     </select>
     
     <select id="selectListByJoinUid" resultType="com.xiliulou.electricity.entity.InvitationActivityJoinHistory">
-        select id, uid, record_id, join_uid, start_time, expired_time, activity_id, status, pay_count, money
+        select id, uid, record_id, join_uid, start_time, expired_time, activity_id, status, pay_count, money, del_flag
         from t_invitation_activity_join_history
         where join_uid = #{uid} order by id desc
     </select>
@@ -344,6 +344,10 @@
     <delete id="deleteById">
         delete from t_invitation_activity_join_history where id = #{id}
     </delete>
+    
+    <update id="updateByJoinUid">
+        update t_invitation_activity_join_history set del_flag = 1, update_time = #{updateTime} where join_uid = #{joinUid} and tenant_id = #{tenantId}
+    </update>
     
     <select id="selectUserHistoryByPage" resultType="com.xiliulou.electricity.vo.InvitationActivityJoinHistoryVO">
     
@@ -531,6 +535,28 @@
         select id, uid, record_id, join_uid, start_time, expired_time, activity_id, status, pay_count, money
         from t_invitation_activity_join_history
         where join_uid = #{joinUid} and activity_id = #{activityId} and status = 1;
+    </select>
+    
+    <select id="selectFinalHistoryByJoinUid" resultType="com.xiliulou.electricity.vo.FinalJoinInvitationActivityHistoryVO">
+        select tiajh.uid, tui.name as user_name
+        from t_invitation_activity_join_history as tiajh
+                 left join t_user_info as tui on tui.uid = tiajh.uid
+        where tui.tenant_id = #{tenantId}
+          and tiajh.join_uid = #{joinUid}
+          and tiajh.del_flag = 0
+        order by tiajh.create_time desc limit 1
+    </select>
+    
+    <select id="selectSuccessHistoryByJoinUid" resultType="com.xiliulou.electricity.entity.InvitationActivityJoinHistory">
+        select id, uid, record_id, join_uid, start_time, expired_time, activity_id, status, pay_count, money
+        from t_invitation_activity_join_history
+        where tenant_id = #{tenantId} and join_uid = #{joinUid} and status = 2 and del_flag = 0 order by id desc limit 1
+    </select>
+    
+    <select id="selectModifiedInviterHistory" resultType="com.xiliulou.electricity.entity.InvitationActivityJoinHistory">
+        select id, uid, record_id, join_uid
+        from t_invitation_activity_join_history
+        where tenant_id = #{tenantId} and join_uid = #{joinUid} and status = 2 and del_flag = 1 order by id desc limit 1
     </select>
 
 </mapper>

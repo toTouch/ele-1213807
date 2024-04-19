@@ -9,6 +9,7 @@ import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.EleEsignConstant;
+import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.dto.FranchiseeBatteryModelDTO;
 import com.xiliulou.electricity.entity.EleEsignConfig;
 import com.xiliulou.electricity.entity.ElectricityConfig;
@@ -19,6 +20,8 @@ import com.xiliulou.electricity.entity.FranchiseeMoveInfo;
 import com.xiliulou.electricity.entity.PxzConfig;
 import com.xiliulou.electricity.mapper.ElectricityConfigMapper;
 import com.xiliulou.electricity.query.ElectricityConfigAddAndUpdateQuery;
+import com.xiliulou.electricity.query.ElectricityConfigWxCustomerQuery;
+import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.service.EleEsignConfigService;
 import com.xiliulou.electricity.service.ElectricityCarModelService;
 import com.xiliulou.electricity.service.ElectricityConfigService;
@@ -93,6 +96,8 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
     
     @Autowired
     EleEsignConfigService eleEsignConfigService;
+    
+    
     
     @Autowired
     OperateRecordUtil operateRecordUtil;
@@ -182,6 +187,17 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
             }
         }
         
+        // 处理柜机 少电比例和多电比例参数
+        Integer lowChargeRate = electricityConfigAddAndUpdateQuery.getLowChargeRate();
+        Integer fullChargeRate = electricityConfigAddAndUpdateQuery.getFullChargeRate();
+        
+        if (Objects.isNull(lowChargeRate) || Objects.isNull(fullChargeRate) || lowChargeRate < NumberConstant.ZERO || fullChargeRate < NumberConstant.ZERO
+                || fullChargeRate <= lowChargeRate) {
+            return R.fail("100317", "请输入0-100的整数;多电比例需大于少电比例");
+        }
+        
+        ElectricityConfig electricityConfig = electricityConfigMapper.selectOne(new LambdaQueryWrapper<ElectricityConfig>().eq(ElectricityConfig::getTenantId, TenantContextHolder.getTenantId()));
+        
         ElectricityConfig electricityConfig = electricityConfigMapper.selectOne(
                 new LambdaQueryWrapper<ElectricityConfig>().eq(ElectricityConfig::getTenantId, TenantContextHolder.getTenantId()));
         ElectricityConfig oldElectricityConfig = new ElectricityConfig();
@@ -213,6 +229,11 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
             electricityConfig.setAllowRentEle(electricityConfigAddAndUpdateQuery.getAllowRentEle());
             electricityConfig.setAllowReturnEle(electricityConfigAddAndUpdateQuery.getAllowReturnEle());
             electricityConfig.setAllowFreezeWithAssets(electricityConfigAddAndUpdateQuery.getAllowFreezeWithAssets());
+            electricityConfig.setWxCustomer(ElectricityConfig.CLOSE_WX_CUSTOMER);
+            electricityConfig.setLowChargeRate(BigDecimal.valueOf(lowChargeRate));
+            electricityConfig.setFullChargeRate(BigDecimal.valueOf(fullChargeRate));
+            electricityConfig.setChannelTimeLimit(electricityConfigAddAndUpdateQuery.getChannelTimeLimit());
+            
             electricityConfigMapper.insert(electricityConfig);
             return R.ok();
         }
@@ -249,6 +270,10 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
         electricityConfig.setAllowRentEle(electricityConfigAddAndUpdateQuery.getAllowRentEle());
         electricityConfig.setAllowReturnEle(electricityConfigAddAndUpdateQuery.getAllowReturnEle());
         electricityConfig.setAllowFreezeWithAssets(electricityConfigAddAndUpdateQuery.getAllowFreezeWithAssets());
+        electricityConfig.setLowChargeRate(BigDecimal.valueOf(lowChargeRate));
+        electricityConfig.setFullChargeRate(BigDecimal.valueOf(fullChargeRate));
+        electricityConfig.setChannelTimeLimit(electricityConfigAddAndUpdateQuery.getChannelTimeLimit());
+        
         int updateResult = electricityConfigMapper.update(electricityConfig);
         if (updateResult > 0) {
             redisService.delete(CacheConstant.CACHE_ELE_SET_CONFIG + TenantContextHolder.getTenantId());
@@ -321,6 +346,7 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
         }
         
         ElectricityConfig electricityConfig = electricityConfigMapper.selectOne(new LambdaQueryWrapper<ElectricityConfig>().eq(ElectricityConfig::getTenantId, tenantId));
+        
         if (Objects.isNull(electricityConfig)) {
             return null;
         }
@@ -360,5 +386,44 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
         tenantConfigVO.setServicePhone(servicePhone);
         
         return tenantConfigVO;
+    }
+
+    @Override
+    public Triple<Boolean, String, Object> editWxCustomer(ElectricityConfigWxCustomerQuery electricityConfigAddAndUpdateQuery) {
+        ElectricityConfig electricityConfig = queryFromCacheByTenantId(TenantContextHolder.getTenantId());
+        if (Objects.isNull(electricityConfig)) {
+            return Triple.of(false, null, "未找到租户配置信息");
+        }
+
+        ElectricityConfig updateElectricityConfig = new ElectricityConfig();
+        updateElectricityConfig.setId(electricityConfig.getId());
+        updateElectricityConfig.setTenantId(TenantContextHolder.getTenantId());
+        updateElectricityConfig.setWxCustomer(electricityConfigAddAndUpdateQuery.getEnableWxCustomer());
+        updateElectricityConfig.setUpdateTime(System.currentTimeMillis());
+        int updateResult = electricityConfigMapper.update(updateElectricityConfig);
+        if (updateResult > 0) {
+            redisService.delete(CacheConstant.CACHE_ELE_SET_CONFIG + TenantContextHolder.getTenantId());
+        }
+        return Triple.of(true, null, null);
+    }
+    
+    @Override
+    public void updateTenantConfigWxCustomer(Integer status) {
+        if (Objects.isNull(TenantContextHolder.getTenantId())) {
+            return;
+        }
+        ElectricityConfig electricityConfig = new ElectricityConfig();
+        electricityConfig.setTenantId(TenantContextHolder.getTenantId());
+        electricityConfig.setWxCustomer(status);
+        electricityConfig.setUpdateTime(System.currentTimeMillis());
+        Integer updateResult = electricityConfigMapper.updateWxCuStatusByTenantId(electricityConfig);
+        if (updateResult > 0) {
+            redisService.delete(CacheConstant.CACHE_ELE_SET_CONFIG + TenantContextHolder.getTenantId());
+        }
+    }
+    
+    @Override
+    public ElectricityConfig queryTenantConfigWxCustomer() {
+        return electricityConfigMapper.selectElectricityConfigByTenantId(TenantContextHolder.getTenantId());
     }
 }

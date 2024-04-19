@@ -6,6 +6,7 @@ import lombok.Data;
 
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
+import java.math.BigDecimal;
 
 @Data
 public class ElectricityCabinetOutWarehouseRequest {
@@ -103,4 +104,14 @@ public class ElectricityCabinetOutWarehouseRequest {
      * 可用状态(0--启用，1--禁用)
      */
     private Integer usableStatus;
+    
+    /**
+     * 区域id
+     */
+    private Long areaId;
+    
+    /**
+     * 场地费
+     */
+    private BigDecimal placeFee;
 }

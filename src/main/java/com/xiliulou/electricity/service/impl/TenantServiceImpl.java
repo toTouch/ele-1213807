@@ -24,6 +24,9 @@ import com.xiliulou.electricity.mapper.TenantMapper;
 import com.xiliulou.electricity.mapper.asset.AssetWarehouseMapper;
 import com.xiliulou.electricity.query.TenantAddAndUpdateQuery;
 import com.xiliulou.electricity.query.TenantQuery;
+import com.xiliulou.electricity.service.*;
+import com.xiliulou.electricity.service.merchant.MerchantAttrService;
+import com.xiliulou.electricity.service.merchant.MerchantLevelService;
 import com.xiliulou.electricity.query.asset.AssetWarehouseSaveOrUpdateQueryModel;
 import com.xiliulou.electricity.service.BatteryModelService;
 import com.xiliulou.electricity.service.ChannelActivityService;
@@ -95,6 +98,13 @@ public class TenantServiceImpl implements TenantService {
     
     @Resource
     private TenantNoteService noteService;
+    
+    @Autowired
+    private MerchantLevelService merchantLevelService;
+    
+    @Autowired
+    private MerchantAttrService merchantAttrService;
+
     
     @Resource
     private AssetWarehouseMapper assetWarehouseMapper;
@@ -229,6 +239,11 @@ public class TenantServiceImpl implements TenantService {
                 .updateTime(System.currentTimeMillis())
                 .tenantId(TenantContextHolder.getTenantId()).build();
         executorService.submit(()->assetWarehouseMapper.insertOne(warehouseSaveOrUpdateQueryModel));
+        
+        //初始化商户等级
+        merchantLevelService.initMerchantLevel(tenant.getId());
+        //初始化商户升级条件
+        merchantAttrService.initMerchantAttr(tenant.getId());
         return R.ok();
     }
 

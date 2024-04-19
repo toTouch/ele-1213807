@@ -10,6 +10,7 @@ import com.xiliulou.electricity.config.WechatConfig;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.constant.TimeConstant;
+import com.xiliulou.electricity.constant.merchant.MerchantConstant;
 import com.xiliulou.electricity.dto.ActivityProcessDTO;
 import com.xiliulou.electricity.dto.DivisionAccountOrderDTO;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
@@ -41,6 +42,7 @@ import com.xiliulou.electricity.entity.UserCarDeposit;
 import com.xiliulou.electricity.entity.UserCarMemberCard;
 import com.xiliulou.electricity.entity.UserCoupon;
 import com.xiliulou.electricity.entity.UserInfo;
+import com.xiliulou.electricity.entity.UserInfoExtra;
 import com.xiliulou.electricity.entity.car.CarRentalPackageMemberTermPo;
 import com.xiliulou.electricity.entity.car.CarRentalPackageOrderFreezePo;
 import com.xiliulou.electricity.entity.car.CarRentalPackageOrderSlippagePo;
@@ -48,6 +50,8 @@ import com.xiliulou.electricity.entity.enterprise.EnterpriseChannelUser;
 import com.xiliulou.electricity.enums.enterprise.CloudBeanStatusEnum;
 import com.xiliulou.electricity.enums.enterprise.EnterprisePaymentStatusEnum;
 import com.xiliulou.electricity.mapper.UnionTradeOrderMapper;
+import com.xiliulou.electricity.mq.constant.MqProducerConstant;
+import com.xiliulou.electricity.mq.model.BatteryMemberCardMerchantRebate;
 import com.xiliulou.electricity.mq.producer.ActivityProducer;
 import com.xiliulou.electricity.mq.producer.DivisionAccountProducer;
 import com.xiliulou.electricity.query.enterprise.EnterpriseChannelUserQuery;
@@ -103,6 +107,7 @@ import com.xiliulou.electricity.service.UserCarDepositService;
 import com.xiliulou.electricity.service.UserCarMemberCardService;
 import com.xiliulou.electricity.service.UserCarService;
 import com.xiliulou.electricity.service.UserCouponService;
+import com.xiliulou.electricity.service.UserInfoExtraService;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.car.CarRentalPackageMemberTermService;
 import com.xiliulou.electricity.service.car.CarRentalPackageOrderFreezeService;
@@ -112,6 +117,7 @@ import com.xiliulou.electricity.service.enterprise.AnotherPayMembercardRecordSer
 import com.xiliulou.electricity.service.enterprise.EnterpriseChannelUserService;
 import com.xiliulou.electricity.service.retrofit.Jt808RetrofitService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
+import com.xiliulou.mq.service.RocketMqService;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiOrderCallBackResource;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiOrderResultDTO;
 import com.xiliulou.pay.weixinv3.exception.WechatPayException;
@@ -313,6 +319,12 @@ public class UnionTradeOrderServiceImpl extends
     
     @Resource
     EnterpriseChannelUserService enterpriseChannelUserService;
+    
+    @Autowired
+    UserInfoExtraService userInfoExtraService;
+    
+    @Autowired
+    RocketMqService rocketMqService;
 
     @Override
     public WechatJsapiOrderResultDTO unionCreateTradeOrderAndGetPayParams(UnionPayOrder unionPayOrder, ElectricityPayParams electricityPayParams, String openId, HttpServletRequest request) throws WechatPayException {
@@ -774,6 +786,12 @@ public class UnionTradeOrderServiceImpl extends
                     activityService.asyncProcessActivity(activityProcessDTO);
 
                     electricityMemberCardOrderService.sendUserCoupon(batteryMemberCard, electricityMemberCardOrder);
+                    
+                    //用户绑定商户
+                    userInfoExtraService.bindMerchant(electricityMemberCardOrder.getUid(), electricityMemberCardOrder.getOrderId(), electricityMemberCardOrder.getMemberCardId());
+                    
+                    //商户返利
+                    sendMerchantRebateMQ(electricityMemberCardOrder.getUid(), electricityMemberCardOrder.getOrderId());
                 }
             });
         }else{
@@ -791,7 +809,29 @@ public class UnionTradeOrderServiceImpl extends
         redisService.delete(CacheConstant.CACHE_USER_BATTERY_MEMBERCARD + userInfo.getUid());
         return Pair.of(true, null);
     }
-
+    
+    
+    private void sendMerchantRebateMQ(Long uid, String orderId) {
+        UserInfoExtra userInfoExtra = userInfoExtraService.queryByUidFromCache(uid);
+        if(Objects.isNull(userInfoExtra)){
+            log.warn("BATTERY MERCHANT REBATE WARN!userInfoExtra is null,uid={}",uid);
+            return;
+        }
+        
+        if(Objects.isNull(userInfoExtra.getMerchantId())){
+            log.warn("BATTERY MERCHANT REBATE WARN!merchantId is null,uid={}",uid);
+            return;
+        }
+        
+        BatteryMemberCardMerchantRebate merchantRebate = new BatteryMemberCardMerchantRebate();
+        merchantRebate.setUid(uid);
+        merchantRebate.setOrderId(orderId);
+        merchantRebate.setType(MerchantConstant.TYPE_PURCHASE);
+        merchantRebate.setMerchantId(userInfoExtra.getMerchantId());
+        //续费成功  发送返利MQ
+        rocketMqService.sendAsyncMsg(MqProducerConstant.BATTERY_MEMBER_CARD_MERCHANT_REBATE_TOPIC, JsonUtil.toJson(merchantRebate));
+    }
+    
     /**
      * 3.0电池套餐续费回调处理
      * @param orderNo
@@ -992,6 +1032,13 @@ public class UnionTradeOrderServiceImpl extends
                     activityService.asyncProcessActivity(activityProcessDTO);
 
                     electricityMemberCardOrderService.sendUserCoupon(batteryMemberCard, electricityMemberCardOrder);
+                    
+                    //用户绑定商户
+                    userInfoExtraService.bindMerchant(electricityMemberCardOrder.getUid(), electricityMemberCardOrder.getOrderId(),electricityMemberCardOrder.getMemberCardId());
+                    
+                    //商户返利
+                    sendMerchantRebateMQ(electricityMemberCardOrder.getUid(), electricityMemberCardOrder.getOrderId());
+                    
                 }
             });
         }else{

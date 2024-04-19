@@ -9,6 +9,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import com.baomidou.mybatisplus.annotation.TableName;
 
+import java.math.BigDecimal;
+
 
 /**
  * 换电柜表(TElectricityCabinet)实体类
@@ -125,6 +127,16 @@ public class ElectricityCabinet {
      * 换电方式 1：有屏，2：无屏，3：单片机  -1:电柜类型为空
      */
     private Integer exchangeType;
+    
+    /**
+     * 区域id
+     */
+    private Long areaId;
+    
+    /**
+     * 场地费
+     */
+    private BigDecimal placeFee;
 
     //换电方式 1：有屏，2：无屏，3：单片机
     public static final Integer EXCHANGE_TYPE_SCREEN = 1;

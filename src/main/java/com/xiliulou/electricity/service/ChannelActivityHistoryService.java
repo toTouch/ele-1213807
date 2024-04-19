@@ -3,6 +3,7 @@ package com.xiliulou.electricity.service;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.ChannelActivityHistory;
 import com.xiliulou.electricity.query.ChannelActivityHistoryQuery;
+import com.xiliulou.electricity.vo.FinalJoinChannelActivityHistoryVO;
 import org.apache.commons.lang3.tuple.Triple;
 
 import javax.servlet.http.HttpServletResponse;
@@ -82,5 +83,10 @@ public interface ChannelActivityHistoryService {
     Triple<Boolean, String, Object> queryActivityHistoryList(ChannelActivityHistoryQuery channelActivityHistoryQuery);
 
     Triple<Boolean, String, Object> queryActivityHistoryCount(ChannelActivityHistoryQuery channelActivityHistoryQuery);
-
+    
+    FinalJoinChannelActivityHistoryVO queryFinalHistoryByJoinUid(Long uid, Integer tenantId);
+    
+    ChannelActivityHistory querySuccessHistoryByJoinUid(Long uid, Integer tenantId);
+    
+    Integer removeById(Long id, Long updateTime);
 }

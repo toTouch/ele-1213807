@@ -63,6 +63,11 @@ public interface BatteryMemberCardMapper extends BaseMapper<BatteryMemberCard> {
     
     Integer isMemberCardBindFranchinsee(@Param("franchiseeId") Long franchiseeId, @Param("tenantId") Integer tenantId);
     
+    List<BatteryMemberCard> selectByPageForMerchant(BatteryMemberCardQuery query);
+    
+    
+    List<BatteryMemberCard> listByIdList(BatteryMemberCardQuery query);
+    
     Integer batchUpdateSortParam(@Param("sortParamQueries") List<MemberCardAndCarRentalPackageSortParamQuery> sortParamQueries);
     
     List<BatteryMemberCardVO> listMemberCardForSort(@Param("tenantId") Integer tenantId);

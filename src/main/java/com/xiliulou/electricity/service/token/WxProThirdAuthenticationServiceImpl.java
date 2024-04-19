@@ -8,19 +8,33 @@ import com.xiliulou.core.http.resttemplate.service.RestTemplateService;
 import com.xiliulou.core.i18n.MessageUtils;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.constant.CacheConstant;
-import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.dto.WXMinProAuth2SessionResult;
 import com.xiliulou.electricity.dto.WXMinProPhoneResultDTO;
-import com.xiliulou.electricity.entity.*;
+import com.xiliulou.electricity.entity.ElectricityPayParams;
+import com.xiliulou.electricity.entity.NewUserActivity;
+import com.xiliulou.electricity.entity.User;
+import com.xiliulou.electricity.entity.UserInfo;
+import com.xiliulou.electricity.entity.UserInfoExtra;
+import com.xiliulou.electricity.entity.UserOauthBind;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.exception.UserLoginException;
-import com.xiliulou.electricity.service.*;
+import com.xiliulou.electricity.service.EleUserAuthOldService;
+import com.xiliulou.electricity.service.EleUserAuthService;
+import com.xiliulou.electricity.service.ElectricityPayParamsService;
+import com.xiliulou.electricity.service.NewUserActivityService;
+import com.xiliulou.electricity.service.OldCardService;
+import com.xiliulou.electricity.service.UserBatteryMemberCardService;
+import com.xiliulou.electricity.service.UserCouponService;
+import com.xiliulou.electricity.service.UserInfoExtraService;
+import com.xiliulou.electricity.service.UserInfoOldService;
+import com.xiliulou.electricity.service.UserInfoService;
+import com.xiliulou.electricity.service.UserOauthBindService;
+import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.security.authentication.console.CustomPasswordEncoder;
 import com.xiliulou.security.authentication.thirdauth.ThirdAuthenticationService;
 import com.xiliulou.security.bean.SecurityUser;
 import lombok.extern.slf4j.Slf4j;
-
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
@@ -94,6 +108,9 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
 
     @Autowired
     UserBatteryMemberCardService userBatteryMemberCardService;
+    
+    @Autowired
+    private UserInfoExtraService userInfoExtraService;
 
     @Override
     public SecurityUser registerUserAndLoadUser(HashMap<String, Object> authMap) {
@@ -188,7 +205,8 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
                             .authStatus(UserInfo.AUTH_STATUS_STATUS_INIT).delFlag(User.DEL_NORMAL)
                             .usableStatus(UserInfo.USER_USABLE_STATUS).tenantId(tenantId).build();
                     UserInfo userInfo = userInfoService.insert(insertUserInfo);
-
+                    
+                    userInfoExtraService.insert(buildUserInfoExtra(uid, tenantId));
                 }
                 
                 if(StringUtils.isBlank(userOauthBind.getThirdId())){
@@ -314,6 +332,7 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
                             .delFlag(User.DEL_NORMAL).usableStatus(UserInfo.USER_USABLE_STATUS).tenantId(tenantId)
                             .build();
                     UserInfo userInfo = userInfoService.insert(insertUserInfo);
+                    userInfoExtraService.insert(buildUserInfoExtra(uid, tenantId));
 
 //                    Pair<Boolean, FranchiseeUserInfo> existFranchiseeUserInfo = checkFranchiseeUserInfoExists(
 //                            insertUserInfo.getId());
@@ -380,6 +399,8 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
                 .tenantId(tenantId).delFlag(User.DEL_NORMAL)
                 .usableStatus(UserInfo.USER_USABLE_STATUS).build();
         UserInfo userInfo = userInfoService.insert(insertUserInfo);
+        
+        userInfoExtraService.insert(buildUserInfoExtra(insert.getUid(), tenantId));
 
         //参加新用户活动
         NewUserActivity newUserActivity = newUserActivityService.queryActivity();
@@ -431,7 +452,7 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
         return Objects.nonNull(user) ? Pair.of(true, user) : Pair.of(false, null);
     }
 
-    private Pair<Boolean, List<UserOauthBind>> checkOpenIdExists(String openid, Integer tenantId) {
+    public Pair<Boolean, List<UserOauthBind>> checkOpenIdExists(String openid, Integer tenantId) {
         List<UserOauthBind> userOauthBindList = userOauthBindService.selectListOauthByOpenIdAndSource(openid,
                 UserOauthBind.SOURCE_WX_PRO, tenantId);
         return CollectionUtils.isNotEmpty(userOauthBindList) ? Pair.of(true, userOauthBindList) : Pair.of(false, null);
@@ -464,5 +485,15 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
             cipher.init(Cipher.DECRYPT_MODE, keySpec, params);
             return new String(cipher.doFinal(encData), "UTF-8");
         }
+    }
+    
+    private UserInfoExtra buildUserInfoExtra(Long uid, Integer tenantId) {
+        UserInfoExtra userInfoExtra = new UserInfoExtra();
+        userInfoExtra.setUid(uid);
+        userInfoExtra.setDelFlag(User.DEL_NORMAL);
+        userInfoExtra.setTenantId(tenantId);
+        userInfoExtra.setCreateTime(System.currentTimeMillis());
+        userInfoExtra.setUpdateTime(System.currentTimeMillis());
+        return userInfoExtra;
     }
 }

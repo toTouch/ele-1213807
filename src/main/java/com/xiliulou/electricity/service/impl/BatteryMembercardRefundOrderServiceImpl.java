@@ -11,6 +11,7 @@ import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.config.WechatConfig;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
+import com.xiliulou.electricity.constant.merchant.MerchantConstant;
 import com.xiliulou.electricity.dto.DivisionAccountOrderDTO;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.BatteryMembercardRefundOrder;
@@ -34,6 +35,7 @@ import com.xiliulou.electricity.enums.DivisionAccountEnum;
 import com.xiliulou.electricity.enums.PackageTypeEnum;
 import com.xiliulou.electricity.mapper.BatteryMembercardRefundOrderMapper;
 import com.xiliulou.electricity.mq.constant.MqProducerConstant;
+import com.xiliulou.electricity.mq.model.BatteryMemberCardMerchantRebate;
 import com.xiliulou.electricity.query.BatteryMembercardRefundOrderQuery;
 import com.xiliulou.electricity.service.BatteryMemberCardService;
 import com.xiliulou.electricity.service.BatteryMembercardRefundOrderService;
@@ -159,6 +161,9 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
     @Autowired
     RocketMqService rocketMqService;
     
+    @Autowired
+    UserInfoExtraService userInfoExtraService;
+
     @Override
     public WechatJsapiRefundResultDTO handleRefundOrder(BatteryMembercardRefundOrder batteryMembercardRefundOrder, HttpServletRequest request) throws WechatPayException {
         
@@ -808,9 +813,36 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
         divisionAccountOrderDTO.setTraceId(IdUtil.simpleUUID());
         divisionAccountRecordService.asyncHandleDivisionAccount(divisionAccountOrderDTO);
         
+        
+        //如果是线上支付，0元退租
+        if (Objects.equals(electricityMemberCardOrder.getPayType(), ElectricityMemberCardOrder.ONLINE_PAYMENT)) {
+            this.sendMerchantRebateRefundMQ(batteryMembercardRefundOrder.getUid(), batteryMembercardRefundOrder.getRefundOrderNo());
+        }
+        
         return Triple.of(true, "", null);
     }
     
+    @Override
+    public void sendMerchantRebateRefundMQ(Long uid, String orderId) {
+        UserInfoExtra userInfoExtra = userInfoExtraService.queryByUidFromCache(uid);
+        if(Objects.isNull(userInfoExtra)){
+            log.warn("sendMerchantRebateRefundMQ is exception，userInfoExtra is null,uid={}",uid);
+            return;
+        }
+        
+        if(Objects.isNull(userInfoExtra.getMerchantId())){
+            log.warn("sendMerchantRebateRefundMQ is exception，merchantId is null,uid={}",uid);
+            return;
+        }
+        
+        BatteryMemberCardMerchantRebate merchantRebate = new BatteryMemberCardMerchantRebate();
+        merchantRebate.setUid(uid);
+        merchantRebate.setOrderId(orderId);
+        merchantRebate.setType(MerchantConstant.TYPE_REFUND);
+        //续费成功  发送返利退费MQ
+        rocketMqService.sendAsyncMsg(MqProducerConstant.BATTERY_MEMBER_CARD_MERCHANT_REBATE_TOPIC, JsonUtil.toJson(merchantRebate));
+    }
+
     @Slave
     @Override
     public List<BatteryMembercardRefundOrder> selectRefundingOrderByUid(Long uid) {

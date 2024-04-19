@@ -130,4 +130,14 @@ public class ElectricityCabinetQuery {
      */
     private Integer status;
     
+    /**
+     * 区域ID
+     */
+    private Long areaId;
+    
+    /**
+     * 柜机id集合
+     */
+    private List<Integer> idList;
+    
 }

@@ -31,6 +31,18 @@
         from t_enterprise_package
         where package_id = #{packageId}
     </select>
+    
+    <select id="selectListByEnterpriseId"
+        resultType="com.xiliulou.electricity.bo.merchant.MerchantEnterprisePackageBO">
+        SELECT
+            e.package_id,
+            b.`name`
+        FROM
+            t_enterprise_package e
+                left join t_battery_member_card b on b.id = e.package_id
+        WHERE
+            enterprise_id = #{id}
+    </select>
 
     <!--通过主键修改数据-->
     <update id="update">

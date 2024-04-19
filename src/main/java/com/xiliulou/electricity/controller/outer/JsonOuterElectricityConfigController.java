@@ -1,5 +1,7 @@
 package com.xiliulou.electricity.controller.outer;
+
 import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.service.ElectricityConfigService;
@@ -8,7 +10,7 @@ import com.xiliulou.electricity.tenant.TenantContextHolder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -19,7 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
  * @since 2020-12-07 14:59:37
  */
 @RestController
-public class JsonOuterElectricityConfigController {
+public class JsonOuterElectricityConfigController extends BaseController {
     /**
      * 服务对象
      */
@@ -59,6 +61,30 @@ public class JsonOuterElectricityConfigController {
     @GetMapping(value = "/outer/tenantConfig")
     public R tenantConfig(@RequestParam("appId") String appId) {
         return R.ok(electricityConfigService.getTenantConfig(appId));
+    }
+    
+    /**
+     * 更新小程序客服配置
+     * @param status  打开微信客服 0-是 1-否
+     * @return  R.ok()
+     */
+    @PutMapping(value = "/outer/tenantConfig/wxCustomer")
+    public R updateTenantConfigWxCustomer(@RequestParam("status") Integer status ) {
+        electricityConfigService.updateTenantConfigWxCustomer(status);
+        return R.ok();
+    }
+    
+    /**
+     * 获取 微信客服配置
+     */
+    @GetMapping(value = "/outer/tenantConfig/wxCustomer")
+    public R queryTenantConfigWxCustomer() {
+        return R.ok(electricityConfigService.queryTenantConfigWxCustomer());
+    }
+    
+    @GetMapping(value = "/outer/merchant/minPro/config")
+    public R merchantMinProConfig(@RequestParam("appId") String appId) {
+        return returnTripleResult(electricityPayParamsService.queryByMerchantAppId(appId));
     }
     
     /**

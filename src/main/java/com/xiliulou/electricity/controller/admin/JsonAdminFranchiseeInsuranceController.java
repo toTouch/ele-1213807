@@ -22,6 +22,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import javax.annotation.Resource;
+import java.util.Collections;
 import java.util.Objects;
 
 /**
@@ -34,7 +36,7 @@ import java.util.Objects;
 @Slf4j
 public class JsonAdminFranchiseeInsuranceController extends BaseController {
 
-    @Autowired
+    @Resource
     FranchiseeInsuranceService franchiseeInsuranceService;
 
     @Autowired

@@ -512,5 +512,23 @@
             #{id}
         </foreach>
     </update>
-
+    
+    
+    <select id="countRefundOrderByUid" resultType="Integer">
+        select count(1)
+        from t_electricity_member_card_order emco
+                 left join t_battery_membercard_refund_order bmro on (emco.order_id collate utf8mb4_0900_ai_ci) = (bmro.member_card_order_no collate utf8mb4_0900_ai_ci)
+        where emco.status = 1
+          and emco.pay_type = 0
+          and bmro.status = 4
+          and emco.uid = #{uid}
+    </select>
+    
+    <select id="countSuccessOrderByUid" resultType="Integer">
+        select count(1)
+        from t_electricity_member_card_order
+        where status = 1
+          and pay_type = 0
+          and uid = #{uid}
+    </select>
 </mapper>

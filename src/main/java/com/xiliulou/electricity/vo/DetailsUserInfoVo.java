@@ -110,6 +110,21 @@ public class DetailsUserInfoVo {
     private Integer bindWX;
     
     /**
+     * 邀请人是否可被修改 0：可修改 1：不可修改
+     */
+    private Integer canModifyInviter;
+    
+    /**
+     * 邀请人名称
+     */
+    private String inviterName;
+    
+    /**
+     * 邀请人来源：1-用户邀请，2-商户邀请
+     */
+    private Integer inviterSource;
+    
+    /**
      * 签署流程ID
      */
     private String signFlowId;

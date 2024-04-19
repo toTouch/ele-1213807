@@ -65,6 +65,7 @@ public class JoinShareMoneyActivityHistory {
     */
     private Integer tenantId;
 
+    private Integer delFlag;
 
     //已参与
     public static Integer STATUS_INIT = 1;
