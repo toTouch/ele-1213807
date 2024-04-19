@@ -1,4 +1,4 @@
-package com.xiliulou.electricity.bo.userInfoGroup;
+package com.xiliulou.electricity.vo.userinfo.userInfoGroup;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -16,7 +16,7 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 @Data
-public class UserInfoGroupDetailPageBO {
+public class UserInfoGroupDetailPageVO {
     
     private Long id;
     
@@ -30,7 +30,7 @@ public class UserInfoGroupDetailPageBO {
     
     private String franchiseeName;
     
-    private List<UserInfoGroupIdAndNameBO> groups;
+    private List<UserInfoGroupIdAndNameVO> groups;
     
     private Long createTime;
     

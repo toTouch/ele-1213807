@@ -4,10 +4,10 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.bo.userInfoGroup.UserInfoGroupBO;
 import com.xiliulou.electricity.bo.userInfoGroup.UserInfoGroupIdAndNameBO;
 import com.xiliulou.electricity.entity.Franchisee;
-import com.xiliulou.electricity.entity.userInfo.userInfoGroup.UserInfoGroup;
-import com.xiliulou.electricity.query.UserInfoGroupQuery;
-import com.xiliulou.electricity.request.user.UserInfoGroupBatchImportRequest;
-import com.xiliulou.electricity.request.user.UserInfoGroupSaveAndUpdateRequest;
+import com.xiliulou.electricity.entity.userinfo.userInfoGroup.UserInfoGroup;
+import com.xiliulou.electricity.query.userinfo.userInfoGroup.UserInfoGroupQuery;
+import com.xiliulou.electricity.request.userinfo.userInfoGroup.UserInfoGroupBatchImportRequest;
+import com.xiliulou.electricity.request.userinfo.userInfoGroup.UserInfoGroupSaveAndUpdateRequest;
 
 import java.util.List;
 
@@ -38,5 +38,5 @@ public interface UserInfoGroupService {
     
     List<UserInfoGroupIdAndNameBO> listAllGroup(UserInfoGroupQuery query);
     
-    Integer batchUpdateByIds(List<Long>groupIds, Long updateTime, Long operator, Integer delFlag);
+    Integer batchUpdateByIds(List<Long> groupIds, Long updateTime, Long operator, Integer delFlag);
 }

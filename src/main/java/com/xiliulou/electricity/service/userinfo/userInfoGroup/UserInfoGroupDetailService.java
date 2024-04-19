@@ -4,10 +4,10 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.bo.userInfoGroup.UserInfoGroupDetailPageBO;
 import com.xiliulou.electricity.bo.userInfoGroup.UserInfoGroupNamesBO;
 import com.xiliulou.electricity.entity.Franchisee;
-import com.xiliulou.electricity.entity.userInfo.userInfoGroup.UserInfoGroupDetail;
-import com.xiliulou.electricity.query.UserInfoGroupDetailQuery;
-import com.xiliulou.electricity.request.user.UserInfoBindGroupRequest;
-import com.xiliulou.electricity.request.user.UserInfoGroupDetailUpdateRequest;
+import com.xiliulou.electricity.entity.userinfo.userInfoGroup.UserInfoGroupDetail;
+import com.xiliulou.electricity.query.userinfo.userInfoGroup.UserInfoGroupDetailQuery;
+import com.xiliulou.electricity.request.userinfo.userInfoGroup.UserInfoBindGroupRequest;
+import com.xiliulou.electricity.request.userinfo.userInfoGroup.UserInfoGroupDetailUpdateRequest;
 
 import java.util.List;
 
