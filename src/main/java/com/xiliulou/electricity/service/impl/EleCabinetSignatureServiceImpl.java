@@ -5,12 +5,21 @@ import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.EleEsignConstant;
-import com.xiliulou.electricity.entity.*;
+import com.xiliulou.electricity.entity.EleEsignConfig;
+import com.xiliulou.electricity.entity.EleUserEsignRecord;
+import com.xiliulou.electricity.entity.EleUserIdentityAuthRecord;
+import com.xiliulou.electricity.entity.ElectricityConfig;
+import com.xiliulou.electricity.entity.EsignCapacityData;
+import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.mapper.EleUserEsignRecordMapper;
 import com.xiliulou.electricity.mapper.EleUserIdentityAuthRecordMapper;
 import com.xiliulou.electricity.mapper.ElectricityEsignConfigMapper;
 import com.xiliulou.electricity.query.SignFileQuery;
-import com.xiliulou.electricity.service.*;
+import com.xiliulou.electricity.service.EleCabinetSignatureService;
+import com.xiliulou.electricity.service.EleEsignConfigService;
+import com.xiliulou.electricity.service.ElectricityConfigService;
+import com.xiliulou.electricity.service.EsignCapacityDataService;
+import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.utils.SignUtils;
@@ -20,9 +29,21 @@ import com.xiliulou.esign.config.EsignConfig;
 import com.xiliulou.esign.constant.EsignConstant;
 import com.xiliulou.esign.entity.query.ComponentData;
 import com.xiliulou.esign.entity.query.EsignCallBackQuery;
+import com.xiliulou.esign.entity.query.SignFieldPositionQuery;
 import com.xiliulou.esign.entity.query.SignFlowDataQuery;
 import com.xiliulou.esign.entity.query.UserInfoQuery;
-import com.xiliulou.esign.entity.resp.*;
+import com.xiliulou.esign.entity.resp.Component;
+import com.xiliulou.esign.entity.resp.FaceRecognitionInfoResp;
+import com.xiliulou.esign.entity.resp.FileCreateByTempResp;
+import com.xiliulou.esign.entity.resp.FileDownLoadResp;
+import com.xiliulou.esign.entity.resp.PersonResp;
+import com.xiliulou.esign.entity.resp.PsnAuthDetailResp;
+import com.xiliulou.esign.entity.resp.PsnAuthLinkData;
+import com.xiliulou.esign.entity.resp.PsnAuthLinkResp;
+import com.xiliulou.esign.entity.resp.SignComponentResp;
+import com.xiliulou.esign.entity.resp.SignDocsCreateResp;
+import com.xiliulou.esign.entity.resp.SignFlowDetailResp;
+import com.xiliulou.esign.entity.resp.SignFlowUrlResp;
 import com.xiliulou.esign.service.ElectronicSignatureService;
 import com.xiliulou.esign.service.PersonalAuthenticationService;
 import com.xiliulou.esign.service.SignatureFileService;
@@ -216,13 +237,20 @@ public class EleCabinetSignatureServiceImpl implements EleCabinetSignatureServic
 
             //根据模版ID获取组件位置
             SignComponentResp signComponentResp = signatureFileService.findComponentsLocation(eleEsignConfig.getDocTemplateId(),eleEsignConfig.getAppId(), eleEsignConfig.getAppSecret());
-            ComponentPosition componentPosition = signComponentResp.getData().getComponents().get(0).getComponentPosition();
-
+            List<Component> components = signComponentResp.getData().getComponents();
+            
+            //扩展功能，将签署组件位置信息保存在缓存中，在下个接口中使用
+            //redisService.saveWithString(CacheConstant.CACHE_ELE_CABINET_ESIGN_COMPONENTS_SAVE_KEY + SecurityUtils.getUid(), signComponentResp.getData());
             createFileVO.setFileId(fileId);
-            createFileVO.setComponentPageNum(componentPosition.getComponentPageNum());
-            createFileVO.setComponentPositionX(componentPosition.getComponentPositionX());
-            createFileVO.setComponentPositionY(componentPosition.getComponentPositionY());
-
+            List<SignFieldPositionQuery> signFieldPositionList = new ArrayList<>();
+            for (Component component : components) {
+                SignFieldPositionQuery signFieldPositionQuery = new SignFieldPositionQuery();
+                signFieldPositionQuery.setPositionPage(String.valueOf(component.getComponentPosition().getComponentPageNum()));
+                signFieldPositionQuery.setPositionX(component.getComponentPosition().getComponentPositionX());
+                signFieldPositionQuery.setPositionY(component.getComponentPosition().getComponentPositionY());
+                signFieldPositionList.add(signFieldPositionQuery);
+            }
+            createFileVO.setSignFieldPositionList(signFieldPositionList);
         }catch(Exception e){
             log.error("Create File error! create file by template error,uid={},ex={}", userInfo.getUid(), e);
             return Triple.of(false, "000110", "根据模板创建文件失败");
@@ -301,14 +329,9 @@ public class EleCabinetSignatureServiceImpl implements EleCabinetSignatureServic
             signFlowDataQuery.setTenantAppSecret(eleEsignConfig.getAppSecret());
             signFlowDataQuery.setRedirectUrl(esignConfig.getRedirectUrlAfterSign());
             signFlowDataQuery.setNotifyUrl(esignConfig.getSignFlowNotifyUrl() + eleEsignConfig.getId());
-
-            signFlowDataQuery.setPositionPage(String.valueOf(signFileQuery.getComponentPageNum()));
-            signFlowDataQuery.setPositionX(signFileQuery.getComponentPositionX());
-            signFlowDataQuery.setPositionY(signFileQuery.getComponentPositionY());
-
-            //signFlowVO = getSignFlowResp(userInfo.getUid(), userInfoQuery, signFlowDataQuery);
+            signFlowDataQuery.setSignFieldPositionList(signFileQuery.getSignFieldPositionList());
+            
             signFlowId = getSignFlowId(userInfo.getUid(), userInfoQuery, signFlowDataQuery);
-
         }catch(Exception e){
             log.error("get sign flow link error! get sign flow link error,uid={},ex={}", userInfo.getUid(), e);
 
@@ -391,50 +414,7 @@ public class EleCabinetSignatureServiceImpl implements EleCabinetSignatureServic
 
         return Triple.of(true, "", signFlowVO);
     }
-
-    @Deprecated
-    public SignFlowVO getSignFlowResp(Long uid, UserInfoQuery userInfoQuery, SignFlowDataQuery signFlowDataQuery){
-        SignFlowVO signFlowVO = new SignFlowVO();
-
-        //基于文件发起签署流程, 每发起一次签署流程都需要计费，则需要判断之前是否有发起过签署。如果有，则从数据库中拿出signFlowId
-        EleUserEsignRecord eleUserEsignRecord = eleUserEsignRecordMapper.selectLatestEsignRecordByUser(uid, TenantContextHolder.getTenantId().longValue());
-        if(Objects.nonNull(eleUserEsignRecord)){
-            log.info("Signing process already exist, sign flow id: {}", eleUserEsignRecord.getSignFlowId());
-            String signFlowId = eleUserEsignRecord.getSignFlowId();
-
-            //根据signFlowId获取psnId信息，并获取有效期信息。
-            SignFlowDetailResp signFlowDetailResp = electronicSignatureService.querySignFlowDetailInfo(signFlowId, signFlowDataQuery.getTenantAppId(), signFlowDataQuery.getTenantAppSecret());
-            Long expiredTime = signFlowDetailResp.getData().getSignFlowConfig().getSignFlowExpireTime();
-            if(System.currentTimeMillis() < expiredTime){
-                signFlowVO.setSignFlowId(signFlowId);
-                signFlowVO.setPsnId(signFlowDetailResp.getData().getSigners().get(0).getPsnSigner().getPsnId());
-
-                //获取文件签署链接
-                SignFlowUrlResp signFlowUrlResp = electronicSignatureService.querySignFlowLink(signFlowId, userInfoQuery, signFlowDataQuery);
-                signFlowVO.setUrl(signFlowUrlResp.getData().getUrl());
-                signFlowVO.setShortUrl(signFlowUrlResp.getData().getShortUrl());
-
-                return signFlowVO;
-            }
-        }
-
-        //数据库中没有记录，则基于文件发起新的签署流程
-        SignDocsCreateResp signDocsCreateResp = electronicSignatureService.createByFileFlow(userInfoQuery, signFlowDataQuery);
-        String signFlowId = signDocsCreateResp.getData().getSignFlowId();
-        log.info("create new signing process, sign flow id: {}", signFlowId);
-        signFlowVO.setSignFlowId(signFlowId);
-
-        SignFlowDetailResp signFlowDetailResp = electronicSignatureService.querySignFlowDetailInfo(signFlowId, signFlowDataQuery.getTenantAppId(), signFlowDataQuery.getTenantAppSecret());
-        signFlowVO.setPsnId(signFlowDetailResp.getData().getSigners().get(0).getPsnSigner().getPsnId());
-
-        SignFlowUrlResp signFlowUrlResp = electronicSignatureService.querySignFlowLink(signFlowId, userInfoQuery, signFlowDataQuery);
-        signFlowVO.setUrl(signFlowUrlResp.getData().getUrl());
-        signFlowVO.setShortUrl(signFlowUrlResp.getData().getShortUrl());
-        //创建新的签署流程记录
-        createUserEsignRecord(uid, signFlowId, signFlowDataQuery.getFileId(), signFlowDataQuery.getSignFileName());
-        return signFlowVO;
-    }
-
+    
     @Deprecated
     private void savePsnAuthResult(UserInfo userInfo, PsnAuthDetailResp psnAuthDetailResp){
 
