@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.service.impl.user.biz;
 
 import com.xiliulou.core.json.JsonUtil;
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.enums.PayStateEnum;
 import com.xiliulou.electricity.enums.RentalPackageTypeEnum;
@@ -439,5 +440,15 @@ public class UserBizServiceImpl implements UserBizService {
         }catch (Exception e){
             log.error("join channel activity process issue, uid = {}", joinUid, e);
         }
+    }
+    
+    @Slave
+    @Override
+    public boolean isBoundDeposit(Long uid) {
+        UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
+        
+        // 判断用户是否存在已缴纳的押金（电、车或车电一体）
+        return Objects.nonNull(userInfo) && (Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES) || Objects.equals(
+                userInfo.getCarDepositStatus(), UserInfo.CAR_DEPOSIT_STATUS_YES) || Objects.equals(userInfo.getCarBatteryDepositStatus(), YesNoEnum.YES.getCode()));
     }
 }

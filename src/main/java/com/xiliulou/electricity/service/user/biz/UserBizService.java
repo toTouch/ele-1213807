@@ -55,5 +55,10 @@ public interface UserBizService {
     void joinShareMoneyActivityProcess(Long joinUid, Long packageId, Integer tenantId);
 
     void joinChannelActivityProcess(Long joinUid);
-
+    
+    /**
+     * 是否绑定押金
+     */
+    boolean isBoundDeposit(Long uid);
+    
 }
