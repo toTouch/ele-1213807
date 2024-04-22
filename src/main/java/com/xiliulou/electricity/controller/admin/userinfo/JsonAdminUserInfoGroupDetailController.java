@@ -8,7 +8,6 @@ import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.query.userinfo.userInfoGroup.UserInfoGroupDetailQuery;
 import com.xiliulou.electricity.request.userinfo.userInfoGroup.UserInfoBindGroupRequest;
 import com.xiliulou.electricity.request.userinfo.userInfoGroup.UserInfoGroupDetailUpdateRequest;
-import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.UserDataScopeService;
 import com.xiliulou.electricity.service.userinfo.userInfoGroup.UserInfoGroupDetailService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
@@ -47,9 +46,6 @@ public class JsonAdminUserInfoGroupDetailController extends BasicController {
     
     @Resource
     private UserDataScopeService userDataScopeService;
-    
-    @Resource
-    private FranchiseeService franchiseeService;
     
     /**
      * 分页查询
