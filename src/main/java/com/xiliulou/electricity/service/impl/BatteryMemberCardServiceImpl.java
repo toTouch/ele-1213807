@@ -245,7 +245,7 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
                 query.setRentTypes(Arrays.asList(BatteryMemberCard.RENT_TYPE_NEW, BatteryMemberCard.RENT_TYPE_UNLIMIT));
             } else {
                 // 用户绑定了用户分组
-                query.setUserInfoGroupIdsForSearch(userInfoGroupNamesBOs.stream().map(userInfoGroupVO -> userInfoGroupVO.getGroupId().toString()).collect(Collectors.toList()));
+                query.setUserInfoGroupIdsForSearch(userInfoGroupNamesBOs.stream().map(userInfoGroupNamesBO -> userInfoGroupNamesBO.getGroupId().toString()).collect(Collectors.toList()));
             }
             
             query.setFreeDeposite(Objects.nonNull(userBatteryDeposit) && Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES) && Objects.equals(
@@ -266,7 +266,7 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
                 query.setRentTypes(Arrays.asList(BatteryMemberCard.RENT_TYPE_OLD, BatteryMemberCard.RENT_TYPE_UNLIMIT));
             } else {
                 // 用户绑定了用户分组
-                query.setUserInfoGroupIdsForSearch(userInfoGroupNamesBOs.stream().map(userInfoGroupVO -> userInfoGroupVO.getGroupId().toString()).collect(Collectors.toList()));
+                query.setUserInfoGroupIdsForSearch(userInfoGroupNamesBOs.stream().map(userInfoGroupNamesBO -> userInfoGroupNamesBO.getGroupId().toString()).collect(Collectors.toList()));
             }
             
             query.setFreeDeposite(Objects.nonNull(userBatteryDeposit) && Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES) && Objects.equals(
@@ -294,7 +294,7 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
                 query.setRentTypes(Arrays.asList(BatteryMemberCard.RENT_TYPE_OLD, BatteryMemberCard.RENT_TYPE_UNLIMIT));
             } else {
                 // 用户绑定了用户分组
-                query.setUserInfoGroupIdsForSearch(userInfoGroupNamesBOs.stream().map(userInfoGroupVO -> userInfoGroupVO.getGroupId().toString()).collect(Collectors.toList()));
+                query.setUserInfoGroupIdsForSearch(userInfoGroupNamesBOs.stream().map(userInfoGroupNamesBO -> userInfoGroupNamesBO.getGroupId().toString()).collect(Collectors.toList()));
             }
             
             query.setBatteryV(Objects.equals(franchisee.getModelType(), Franchisee.NEW_MODEL_TYPE) ? userBatteryTypeService.selectUserSimpleBatteryType(userInfo.getUid()) : null);
@@ -489,7 +489,7 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
                 query.setRentTypes(Arrays.asList(BatteryMemberCard.RENT_TYPE_NEW, BatteryMemberCard.RENT_TYPE_UNLIMIT));
             } else {
                 // 用户绑定了用户分组
-                query.setUserInfoGroupIdsForSearch(userInfoGroupNamesBOs.stream().map(userInfoGroupVO -> userInfoGroupVO.getGroupId().toString()).collect(Collectors.toList()));
+                query.setUserInfoGroupIdsForSearch(userInfoGroupNamesBOs.stream().map(userInfoGroupNamesBO -> userInfoGroupNamesBO.getGroupId().toString()).collect(Collectors.toList()));
             }
             
             query.setFreeDeposite(Objects.nonNull(userBatteryDeposit) && Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES) && Objects.equals(
@@ -510,7 +510,7 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
                 query.setRentTypes(Arrays.asList(BatteryMemberCard.RENT_TYPE_OLD, BatteryMemberCard.RENT_TYPE_UNLIMIT));
             } else {
                 // 用户绑定了用户分组
-                query.setUserInfoGroupIdsForSearch(userInfoGroupNamesBOs.stream().map(userInfoGroupVO -> userInfoGroupVO.getGroupId().toString()).collect(Collectors.toList()));
+                query.setUserInfoGroupIdsForSearch(userInfoGroupNamesBOs.stream().map(userInfoGroupNamesBO -> userInfoGroupNamesBO.getGroupId().toString()).collect(Collectors.toList()));
             }
             
             query.setFreeDeposite(Objects.nonNull(userBatteryDeposit) && Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES) && Objects.equals(
@@ -539,7 +539,7 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
                 query.setRentTypes(Arrays.asList(BatteryMemberCard.RENT_TYPE_OLD, BatteryMemberCard.RENT_TYPE_UNLIMIT));
             } else {
                 // 用户绑定了用户分组
-                query.setUserInfoGroupIdsForSearch(userInfoGroupNamesBOs.stream().map(userInfoGroupVO -> userInfoGroupVO.getGroupId().toString()).collect(Collectors.toList()));
+                query.setUserInfoGroupIdsForSearch(userInfoGroupNamesBOs.stream().map(userInfoGroupNamesBO -> userInfoGroupNamesBO.getGroupId().toString()).collect(Collectors.toList()));
             }
             
             query.setBatteryV(
