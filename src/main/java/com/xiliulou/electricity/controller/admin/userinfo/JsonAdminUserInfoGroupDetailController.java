@@ -6,16 +6,16 @@ import com.xiliulou.electricity.bo.userInfoGroup.UserInfoGroupNamesBO;
 import com.xiliulou.electricity.controller.BasicController;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.User;
-import com.xiliulou.electricity.query.UserInfoGroupDetailQuery;
-import com.xiliulou.electricity.request.user.UserInfoBindGroupRequest;
-import com.xiliulou.electricity.request.user.UserInfoGroupDetailUpdateRequest;
+import com.xiliulou.electricity.query.userinfo.userInfoGroup.UserInfoGroupDetailQuery;
+import com.xiliulou.electricity.request.userinfo.userInfoGroup.UserInfoBindGroupRequest;
+import com.xiliulou.electricity.request.userinfo.userInfoGroup.UserInfoGroupDetailUpdateRequest;
 import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.UserDataScopeService;
 import com.xiliulou.electricity.service.userinfo.userInfoGroup.UserInfoGroupDetailService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
-import com.xiliulou.electricity.vo.userinfo.UserInfoGroupDetailPageVO;
-import com.xiliulou.electricity.vo.userinfo.UserInfoGroupNamesVO;
+import com.xiliulou.electricity.vo.userinfo.userInfoGroup.UserInfoGroupDetailPageVO;
+import com.xiliulou.electricity.vo.userinfo.userInfoGroup.UserInfoGroupNamesVO;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
@@ -212,17 +212,7 @@ public class JsonAdminUserInfoGroupDetailController extends BasicController {
             return R.fail("ELECTRICITY.0066", "用户权限不足");
         }
         
-        // 加盟商操作，查询加盟商
-        Franchisee franchisee = null;
-        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
-            franchisee = franchiseeService.queryByUid(user.getUid());
-            
-            if (Objects.isNull(franchisee)) {
-                return R.fail("ELECTRICITY.0038", "未找到加盟商");
-            }
-        }
-        
-        return userInfoGroupDetailService.update(request, user.getUid(), franchisee);
+        return userInfoGroupDetailService.update(request, user.getUid());
     }
     
     /**
@@ -240,17 +230,7 @@ public class JsonAdminUserInfoGroupDetailController extends BasicController {
             return R.fail("ELECTRICITY.0066", "用户权限不足");
         }
         
-        // 加盟商操作，查询加盟商
-        Franchisee franchisee = null;
-        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
-            franchisee = franchiseeService.queryByUid(user.getUid());
-            
-            if (Objects.isNull(franchisee)) {
-                return R.fail("ELECTRICITY.0038", "未找到加盟商");
-            }
-        }
-        
-        return userInfoGroupDetailService.bindGroup(request, user.getUid(), franchisee);
+        return userInfoGroupDetailService.bindGroup(request, user.getUid());
     }
     
 }

@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.vo.userinfo;
 
 import com.xiliulou.electricity.domain.car.UserCarRentalPackageDO;
+import com.xiliulou.electricity.vo.userinfo.userInfoGroup.UserInfoGroupIdAndNameVO;
 import lombok.Data;
 
 import java.util.List;

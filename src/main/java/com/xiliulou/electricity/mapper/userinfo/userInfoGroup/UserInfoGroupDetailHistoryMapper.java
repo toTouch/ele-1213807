@@ -1,21 +1,21 @@
-package com.xiliulou.electricity.service.userinfo.userInfoGroup;
+package com.xiliulou.electricity.mapper.userinfo.userInfoGroup;
 
-import com.xiliulou.electricity.bo.userInfoGroup.UserInfoGroupDetailHistoryBO;
 import com.xiliulou.electricity.entity.userinfo.userInfoGroup.UserInfoGroupDetailHistory;
 import com.xiliulou.electricity.query.userinfo.userInfoGroup.UserInfoGroupDetailHistoryQuery;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
 /**
  * @author HeYafeng
  * @description 用户分组详情修改记录
- * @date 2024/4/15 09:21:02
+ * @date 2024/4/15 09:22:56
  */
-public interface UserInfoGroupDetailHistoryService {
+public interface UserInfoGroupDetailHistoryMapper {
     
-    Integer batchInsert(List<UserInfoGroupDetailHistory> detailHistoryList);
+    Integer batchInsert(@Param("detailList") List<UserInfoGroupDetailHistory> detailHistoryList);
     
-    List<UserInfoGroupDetailHistoryBO> listByPage(UserInfoGroupDetailHistoryQuery query);
+    List<UserInfoGroupDetailHistory> selectListByPage(UserInfoGroupDetailHistoryQuery query);
     
     Integer countTotal(UserInfoGroupDetailHistoryQuery query);
     

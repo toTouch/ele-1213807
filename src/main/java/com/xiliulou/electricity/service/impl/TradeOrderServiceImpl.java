@@ -32,7 +32,7 @@ import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.enums.ServiceFeeEnum;
 import com.xiliulou.electricity.query.BatteryMemberCardAndInsuranceQuery;
 import com.xiliulou.electricity.query.IntegratedPaymentAdd;
-import com.xiliulou.electricity.query.UserInfoGroupDetailQuery;
+import com.xiliulou.electricity.query.userinfo.userInfoGroup.UserInfoGroupDetailQuery;
 import com.xiliulou.electricity.service.BatteryMemberCardOrderCouponService;
 import com.xiliulou.electricity.service.BatteryMemberCardService;
 import com.xiliulou.electricity.service.BatteryMembercardRefundOrderService;
@@ -76,7 +76,6 @@ import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DateUtils;
 import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
-import com.xiliulou.electricity.vo.userinfo.UserInfoGroupNamesVO;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiOrderResultDTO;
 import com.xiliulou.pay.weixinv3.exception.WechatPayException;
 import com.xiliulou.security.bean.TokenUser;
@@ -219,9 +218,6 @@ public class TradeOrderServiceImpl implements TradeOrderService {
     
     @Resource
     EnterpriseChannelUserService enterpriseChannelUserService;
-    
-    @Autowired
-    private UserInfoGroupService userInfoGroupService;
     
     @Autowired
     private UserInfoGroupDetailService userInfoGroupDetailService;
