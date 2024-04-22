@@ -52,9 +52,6 @@ public class JsonAdminUserInfoGroupController extends BasicController {
     @Resource
     private UserDataScopeService userDataScopeService;
     
-    @Resource
-    private FranchiseeService franchiseeService;
-    
     /**
      * @description 新增用户分组
      * @date 2024/4/8 19:43:44
