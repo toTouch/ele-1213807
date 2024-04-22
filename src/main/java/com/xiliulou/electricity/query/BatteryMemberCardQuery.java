@@ -54,7 +54,7 @@ public class BatteryMemberCardQuery {
     @NotNull(message = "加盟商不能为空", groups = {CreateGroup.class, UpdateGroup.class})
     private Long franchiseeId;
     
-    @NotNull(message = "租赁类型不能为空", groups = {CreateGroup.class, UpdateGroup.class})
+    //@NotNull(message = "租赁类型不能为空", groups = {CreateGroup.class, UpdateGroup.class})
     private Integer rentType;
     
     @NotNull(message = "是否赠送优惠券不能为空", groups = {CreateGroup.class, UpdateGroup.class})
@@ -137,5 +137,15 @@ public class BatteryMemberCardQuery {
      * 分组类型，0-系统分组，1-用户分组。
      */
     private Integer groupType;
+    
+    /**
+     * 套餐最大赠送优惠券数
+     */
+    public static final Integer MAX_COUPON_NO = 6;
+    
+    /**
+     * 套餐绑定最大用户分组数
+     */
+    public static final Integer MAX_USER_INFO_GROUP_NO = 10;
     
 }

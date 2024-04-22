@@ -91,7 +91,10 @@
                del_flag,
                tenant_id,
                create_time,
-               update_time
+               update_time,
+               group_type,
+               coupon_ids,
+               user_info_group_ids
         from t_battery_member_card
         where id = #{id}
     </select>
@@ -172,10 +175,10 @@
             <if test="delFlag != null">
                 and del_flag = #{delFlag}
             </if>
-            <if test="userGroupId != null and userGroupId != ''">
-                and JSON_CONTAINS(user_group_ids, #{userGroupId})
+            <if test="userInfoGroupId != null and userInfoGroupId != ''">
+                and JSON_CONTAINS(user_info_group_ids, #{userInfoGroupId})
             </if>
-            <if test="userGroupId != null and userGroupId != ''">
+            <if test="userInfoGroupId != null and userInfoGroupId != ''">
                 and group_type = 1
             </if>
             <if test="franchiseeIds != null">
@@ -304,6 +307,8 @@
         bmc.free_deposite,
         bmc.service_charge,
         bmc.coupon_ids,
+        bmc.user_info_group_ids,
+        bmc.group_type,
         mcbt.id as mcbt_id,
         mcbt.battery_type battery_type
         from t_battery_member_card bmc
@@ -426,10 +431,10 @@
             <if test="delFlag != null">
                 and del_flag = #{delFlag}
             </if>
-            <if test="userGroupId != null and userGroupId != ''">
-                and JSON_CONTAINS(user_group_ids, #{userGroupId})
+            <if test="userInfoGroupId != null and userInfoGroupId != ''">
+                and JSON_CONTAINS(user_info_group_ids, #{userInfoGroupId})
             </if>
-            <if test="userGroupId != null and userGroupId != ''">
+            <if test="userInfoGroupId != null and userInfoGroupId != ''">
                 and group_type = 1
             </if>
             <if test="franchiseeIds != null">

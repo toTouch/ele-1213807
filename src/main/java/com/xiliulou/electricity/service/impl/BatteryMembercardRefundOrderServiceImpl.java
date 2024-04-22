@@ -355,7 +355,6 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
     
             List<UserCoupon> userCoupons = userCouponService.selectListBySourceOrderId(electricityMemberCardOrder.getOrderId());
             if (!CollectionUtils.isEmpty(userCoupons)) {
-        
                 for (UserCoupon userCoupon : userCoupons) {
                     if (Objects.equals(userCoupon.getStatus(), UserCoupon.STATUS_DESTRUCTION) || Objects.equals(userCoupon.getStatus(), UserCoupon.STATUS_USED)) {
                         log.warn("BATTERY MEMBERCARD REFUND WARN! battery memberCard binding coupon already used,uid={}", userInfo.getUid());
@@ -484,7 +483,6 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
     
         List<UserCoupon> userCoupons = userCouponService.selectListBySourceOrderId(electricityMemberCardOrder.getOrderId());
         if (!CollectionUtils.isEmpty(userCoupons)) {
-        
             for (UserCoupon userCoupon : userCoupons) {
                 if (Objects.equals(userCoupon.getStatus(), UserCoupon.STATUS_DESTRUCTION) || Objects.equals(userCoupon.getStatus(), UserCoupon.STATUS_USED)) {
                     log.warn("BATTERY MEMBERCARD REFUND WARN! battery memberCard binding coupon already used,uid={}", electricityMemberCardOrder.getUid());
@@ -934,7 +932,6 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
         if (Objects.nonNull(confirm)) {
             List<UserCoupon> userCoupons = userCouponService.selectListBySourceOrderId(electricityMemberCardOrder.getOrderId());
             if (!CollectionUtils.isEmpty(userCoupons)) {
-        
                 for (UserCoupon userCoupon : userCoupons) {
                     if (Objects.equals(userCoupon.getStatus(), UserCoupon.STATUS_DESTRUCTION) || Objects.equals(userCoupon.getStatus(), UserCoupon.STATUS_USED)) {
                         log.warn("BATTERY MEMBERCARD REFUND WARN! battery memberCard binding coupon already used,uid={}", userInfo.getUid());

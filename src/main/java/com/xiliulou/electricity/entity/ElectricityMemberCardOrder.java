@@ -189,4 +189,6 @@ public class ElectricityMemberCardOrder {
     
     public static final Integer REFUND_STATUS_REFUSED = 6;
     
+    public static final Long SEND_COUPON_ID_DEFAULT_VALUE = 0L;
+    
 }

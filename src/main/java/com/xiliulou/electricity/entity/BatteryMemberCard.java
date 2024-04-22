@@ -197,4 +197,8 @@ public class BatteryMemberCard {
      * 不赠送优惠券
      */
     public static final Integer SEND_COUPON_NO = 1;
+    
+    public static final Integer GROUP_TYPE_SYSTEM = 0;
+    
+    public static final Integer GROUP_TYPE_USER = 1;
 }

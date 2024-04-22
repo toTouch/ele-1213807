@@ -1151,21 +1151,21 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             // 设置优惠券
             List<CouponSearchVo> coupons = new ArrayList<>();
             HashSet<Integer> couponIdsSet = new HashSet<>();
-            
+    
             if (Objects.nonNull(electricityMemberCardOrderVO.getSendCouponId())) {
                 couponIdsSet.add(Integer.parseInt(electricityMemberCardOrderVO.getSendCouponId().toString()));
             }
             if (StringUtils.isNotBlank(electricityMemberCardOrderVO.getCouponIds())) {
                 couponIdsSet.addAll(JsonUtil.fromJsonArray(electricityMemberCardOrderVO.getCouponIds(), Integer.class));
             }
-            
+    
             if (!CollectionUtils.isEmpty(couponIdsSet)) {
-                CouponSearchVo couponSearchVo = new CouponSearchVo();
-                
                 couponIdsSet.forEach(couponId -> {
+                    CouponSearchVo couponSearchVo = new CouponSearchVo();
                     Coupon coupon = couponService.queryByIdFromCache(couponId);
                     if (Objects.nonNull(coupon)) {
                         BeanUtils.copyProperties(coupon, couponSearchVo);
+                        couponSearchVo.setId(coupon.getId().longValue());
                         coupons.add(couponSearchVo);
                     }
                 });
@@ -3624,6 +3624,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         electricityMemberCardOrder.setSource(source);
         electricityMemberCardOrder.setRefId(refId);
         electricityMemberCardOrder.setPayCount(payCount);
+        electricityMemberCardOrder.setCouponIds(CollectionUtils.isEmpty(userCouponIds) ? null : JsonUtil.toJson(userCouponIds));
         
         return Triple.of(true, null, electricityMemberCardOrder);
     }
@@ -3808,17 +3809,21 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         }
         
         // 判断套餐用户分组和用户的用户分组是否匹配
-        List<UserInfoGroupVO> userInfoGroupVOS = userInfoGroupService.listGroupByUid(SecurityUtils.getUid(), TenantContextHolder.getTenantId());
-        if (CollectionUtils.isNotEmpty(userInfoGroupVOS)) {
-            if (StringUtils.isNotBlank(batteryMemberCard.getUserInfoGroupIds())) {
-                
-                HashSet<Long> memberCardUserGroupIds = new HashSet<>(JsonUtil.fromJsonArray(batteryMemberCard.getUserInfoGroupIds(), Long.class));
-                List<Long> userInfoGroupIds = userInfoGroupVOS.stream().map(UserInfoGroupVO::getId).collect(Collectors.toList());
-                
-                if (!memberCardUserGroupIds.containsAll(userInfoGroupIds)) {
-                    return Triple.of(false, "100317", "用户与套餐关联的用户分组不一致，请刷新重试");
-                }
-            } else {
+        List<UserInfoGroupNamesBO> userInfoGroupNamesBOs = userInfoGroupDetailService.listGroupByUid(
+                UserInfoGroupDetailQuery.builder().uid(query.getUid()).tenantId(TenantContextHolder.getTenantId()).build());
+        
+        if (CollectionUtils.isNotEmpty(userInfoGroupNamesBOs)) {
+            if (Objects.equals(batteryMemberCard.getGroupType(), BatteryMemberCard.GROUP_TYPE_SYSTEM)) {
+                return Triple.of(false, "100317", "用户与套餐关联的用户分组不一致，请刷新重试");
+            }
+            
+            List<Long> userGroupIds = userInfoGroupNamesBOs.stream().map(UserInfoGroupNamesBO::getGroupId).collect(Collectors.toList());
+            userGroupIds.retainAll(JsonUtil.fromJsonArray(batteryMemberCard.getUserInfoGroupIds(), Long.class));
+            if (CollectionUtils.isEmpty(userGroupIds)) {
+                return Triple.of(false, "100317", "用户与套餐关联的用户分组不一致，请刷新重试");
+            }
+        } else {
+            if (Objects.equals(batteryMemberCard.getGroupType(), BatteryMemberCard.GROUP_TYPE_USER)) {
                 return Triple.of(false, "100317", "用户与套餐关联的用户分组不一致，请刷新重试");
             }
         }
@@ -4546,10 +4551,9 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         
         // 新旧数据兼容处理，防止优惠券重复发放
         HashSet<Long> couponIdSet = new HashSet<>();
-        if (Objects.nonNull(memberCardOrder.getSendCouponId())) {
+        if (Objects.nonNull(memberCardOrder.getSendCouponId()) && !Objects.equals(memberCardOrder.getSendCouponId(), ElectricityMemberCardOrder.SEND_COUPON_ID_DEFAULT_VALUE)) {
             couponIdSet.add(memberCardOrder.getSendCouponId());
         }
-        
         if (StringUtils.isNotBlank(memberCardOrder.getCouponIds())) {
             couponIdSet.addAll(JsonUtil.fromJsonArray(memberCardOrder.getCouponIds(), Long.class));
         }
