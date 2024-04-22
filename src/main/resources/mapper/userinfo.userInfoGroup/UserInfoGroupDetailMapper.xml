@@ -136,7 +136,7 @@
                 </foreach>
             </if>
         </where>
-        order by tuigd.update_time desc
+        order by tuigd.update_time, tuigd.id desc
     </select>
 
 </mapper>
