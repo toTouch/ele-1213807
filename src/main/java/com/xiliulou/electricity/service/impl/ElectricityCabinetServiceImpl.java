@@ -1042,6 +1042,12 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     }
     
     private ElectricityCabinetVO assignAttribute(ElectricityCabinetVO e) {
+        
+        if (Objects.nonNull(e.getDistance())){
+            // 乘以10，向下取整，再除以10,保留一位小数
+            e.setDistance(Math.floor(e.getDistance() * 10.0) / 10.0);
+        }
+        
         //营业时间
         if (Objects.nonNull(e.getBusinessTime())) {
             String businessTime = e.getBusinessTime();
