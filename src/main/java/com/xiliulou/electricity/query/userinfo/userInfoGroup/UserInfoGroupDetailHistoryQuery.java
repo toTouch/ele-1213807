@@ -3,6 +3,8 @@ package com.xiliulou.electricity.query.userinfo.userInfoGroup;
 import lombok.Builder;
 import lombok.Data;
 
+import java.util.List;
+
 /**
  * @author HeYafeng
  * @description 用户分组详情历史记录查询
@@ -19,5 +21,7 @@ public class UserInfoGroupDetailHistoryQuery {
     private Long uid;
     
     private Integer tenantId;
+    
+    private List<Long> franchiseeIds;
     
 }
