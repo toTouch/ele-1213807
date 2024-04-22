@@ -21,6 +21,7 @@ import com.xiliulou.electricity.mapper.EleDepositOrderMapper;
 import com.xiliulou.electricity.query.*;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.service.enterprise.EnterpriseChannelUserService;
+import com.xiliulou.electricity.service.userinfo.userInfoGroup.UserInfoGroupDetailService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.OrderIdUtil;
@@ -161,6 +162,9 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
     UserBatteryTypeService userBatteryTypeService;
     @Resource
     EnterpriseChannelUserService enterpriseChannelUserService;
+    
+    @Resource
+    UserInfoGroupDetailService userInfoGroupDetailService;
 
     @Override
     public EleDepositOrder queryByOrderId(String orderNo) {
@@ -412,6 +416,10 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
                 serviceFeeUserInfoService.deleteByUid(userInfo.getUid());
 
                 eleRefundOrderService.insert(eleRefundOrder);
+    
+                // 删除用户分组
+                userInfoGroupDetailService.handleAfterRefundDeposit(userInfo.getUid());
+                
                 return R.ok("SUCCESS");
             }
         }
