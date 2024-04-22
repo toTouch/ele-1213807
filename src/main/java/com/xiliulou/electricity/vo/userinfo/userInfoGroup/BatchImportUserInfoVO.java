@@ -1,4 +1,4 @@
-package com.xiliulou.electricity.vo.userinfo;
+package com.xiliulou.electricity.vo.userinfo.userInfoGroup;
 
 import lombok.Data;
 
