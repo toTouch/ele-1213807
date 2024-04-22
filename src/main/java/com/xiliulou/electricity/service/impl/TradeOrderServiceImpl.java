@@ -1174,19 +1174,4 @@ public class TradeOrderServiceImpl implements TradeOrderService {
 
         return Triple.of(true, null, insuranceOrder);
     }
-    
-    private Triple<Boolean, String, Object> userGroupIdFit(List<Long> userInfoGroupIds, BatteryMemberCard batteryMemberCard) {
-        
-        if (StringUtils.isNotBlank(batteryMemberCard.getUserInfoGroupIds())) {
-            
-            HashSet<Long> memberCardUserGroupIds = new HashSet<>(JsonUtil.fromJsonArray(batteryMemberCard.getUserInfoGroupIds(), Long.class));
-            
-            if (!memberCardUserGroupIds.containsAll(userInfoGroupIds)) {
-                return Triple.of(false, "100318", "您浏览的套餐已下架，请看看其他的吧");
-            }
-        } else {
-            return Triple.of(false, "100318", "您浏览的套餐已下架，请看看其他的吧");
-        }
-        return Triple.of(true, null, null);
-    }
 }
