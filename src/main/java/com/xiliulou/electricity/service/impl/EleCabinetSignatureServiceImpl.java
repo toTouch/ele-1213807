@@ -239,8 +239,6 @@ public class EleCabinetSignatureServiceImpl implements EleCabinetSignatureServic
             SignComponentResp signComponentResp = signatureFileService.findComponentsLocation(eleEsignConfig.getDocTemplateId(),eleEsignConfig.getAppId(), eleEsignConfig.getAppSecret());
             List<Component> components = signComponentResp.getData().getComponents();
             
-            //扩展功能，将签署组件位置信息保存在缓存中，在下个接口中使用
-            //redisService.saveWithString(CacheConstant.CACHE_ELE_CABINET_ESIGN_COMPONENTS_SAVE_KEY + SecurityUtils.getUid(), signComponentResp.getData());
             createFileVO.setFileId(fileId);
             List<SignFieldPositionQuery> signFieldPositionList = new ArrayList<>();
             for (Component component : components) {
