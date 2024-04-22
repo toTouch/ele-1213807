@@ -2691,12 +2691,12 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         ElectricityBattery newElectricityBattery = new ElectricityBattery();
         newElectricityBattery.setId(electricityBattery.getId());
         
-        BatteryGeo batteryGeo = new BatteryGeo();
-        batteryGeo.setSn(electricityBattery.getSn());
-        batteryGeo.setCreateTime(System.currentTimeMillis());
-        batteryGeo.setUpdateTime(System.currentTimeMillis());
-        batteryGeo.setTenantId(electricityBattery.getTenantId());
-        batteryGeo.setFranchiseeId(electricityBattery.getFranchiseeId());
+//        BatteryGeo batteryGeo = new BatteryGeo();
+//        batteryGeo.setSn(electricityBattery.getSn());
+//        batteryGeo.setCreateTime(System.currentTimeMillis());
+//        batteryGeo.setUpdateTime(System.currentTimeMillis());
+//        batteryGeo.setTenantId(electricityBattery.getTenantId());
+//        batteryGeo.setFranchiseeId(electricityBattery.getFranchiseeId());
         
         if (Objects.nonNull(power)) {
             newElectricityBattery.setPower(power);
@@ -2704,13 +2704,13 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         
         Double latitude = batteryReportQuery.getLatitude();
         if (Objects.nonNull(latitude)) {
-            batteryGeo.setLatitude(latitude);
+//            batteryGeo.setLatitude(latitude);
             newElectricityBattery.setLatitude(latitude);
         }
         
         Double longitude = batteryReportQuery.getLongitude();
         if (Objects.nonNull(longitude)) {
-            batteryGeo.setLongitude(longitude);
+//            batteryGeo.setLongitude(longitude);
             newElectricityBattery.setLongitude(longitude);
         }
         electricityBattery.setUpdateTime(System.currentTimeMillis());
@@ -2718,9 +2718,9 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         newElectricityBattery.setUpdateTime(System.currentTimeMillis());
         electricityBatteryService.update(newElectricityBattery);
         
-        if (Objects.nonNull(batteryGeo.getLatitude()) && Objects.nonNull(batteryGeo.getLongitude())) {
-            batteryGeoService.insertOrUpdate(batteryGeo);
-        }
+//        if (Objects.nonNull(batteryGeo.getLatitude()) && Objects.nonNull(batteryGeo.getLongitude())) {
+//            batteryGeoService.insertOrUpdate(batteryGeo);
+//        }
         
         //电池上报是否有其他信息,只处理电量
         //        if (Objects.nonNull(batteryReportQuery.getHasOtherAttr()) && batteryReportQuery.getHasOtherAttr()) {
