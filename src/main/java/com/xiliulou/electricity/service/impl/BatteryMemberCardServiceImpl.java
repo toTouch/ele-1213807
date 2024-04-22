@@ -438,15 +438,17 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
             // 设置用户分组
             if (StringUtils.isNotBlank(item.getUserInfoGroupIds())) {
                 List<SearchVo> userInfoGroups = new ArrayList<>();
-                
-                JsonUtil.fromJsonArray(item.getUserInfoGroupIds(), Long.class).forEach(userGroupId -> {
-                    SearchVo searchVo = new SearchVo();
-                    UserInfoGroup userInfoGroup = userInfoGroupService.queryByIdFromCache(userGroupId);
-                    if (Objects.nonNull(userInfoGroup)) {
-                        BeanUtils.copyProperties(userInfoGroup, searchVo);
-                        userInfoGroups.add(searchVo);
-                    }
-                });
+                List<Long> userInfoGroupIds = JsonUtil.fromJsonArray(item.getUserInfoGroupIds(), Long.class);
+                if (CollectionUtils.isNotEmpty(userInfoGroupIds)) {
+                    userInfoGroupIds.forEach(userGroupId -> {
+                        SearchVo searchVo = new SearchVo();
+                        UserInfoGroup userInfoGroup = userInfoGroupService.queryByIdFromCache(userGroupId);
+                        if (Objects.nonNull(userInfoGroup)) {
+                            BeanUtils.copyProperties(userInfoGroup, searchVo);
+                            userInfoGroups.add(searchVo);
+                        }
+                    });
+                }
                 batteryMemberCardVO.setUserInfoGroups(userInfoGroups);
             }
             return batteryMemberCardVO;
@@ -747,7 +749,7 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
         batteryMemberCardUpdate.setServiceCharge(query.getServiceCharge());
         batteryMemberCardUpdate.setRemark(query.getRemark());
         batteryMemberCardUpdate.setUpdateTime(System.currentTimeMillis());
-        batteryMemberCardUpdate.setUserInfoGroupIds(CollectionUtils.isEmpty(query.getUserInfoGroupIdsTransfer()) ? null : JsonUtil.toJson(query.getUserInfoGroupIdsTransfer()));
+        batteryMemberCardUpdate.setUserInfoGroupIds(Objects.isNull(query.getUserInfoGroupIdsTransfer()) ? null : JsonUtil.toJson(query.getUserInfoGroupIdsTransfer()));
         batteryMemberCardUpdate.setGroupType(query.getGroupType());
         if (Objects.equals(query.getSendCoupon(), BatteryMemberCard.SEND_COUPON_NO)) {
             batteryMemberCardUpdate.setCouponIds(null);
