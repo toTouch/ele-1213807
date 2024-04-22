@@ -789,12 +789,12 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             
             //如果用户分组为空,则为系统分组,判断套餐是否为系统分组套餐
             if (groupIds.isEmpty() && Objects.equals(buyPackageEntity.getIsUserGroup(), YesNoEnum.NO.getCode())){
-                throw new BizException("100317", "用户与套餐关联的用户分组不一致，请刷新重试");
+                throw new BizException("100319", "用户与套餐关联的用户分组不一致，请刷新重试");
             }
             
             //如果用户分组不为空,则为自定义分组,判断套餐是否为用户分组套餐
             if (!groupIds.isEmpty() && Objects.equals(buyPackageEntity.getIsUserGroup(), YesNoEnum.YES.getCode())){
-                throw new BizException("100317", "用户与套餐关联的用户分组不一致，请刷新重试");
+                throw new BizException("100319", "用户与套餐关联的用户分组不一致，请刷新重试");
             }
             
             //如果是系统分组
@@ -817,7 +817,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                 packageGroupIds.retainAll(groupIds);
                 if (packageGroupIds.isEmpty()) {
                     log.warn("Binding package failed because the user's group has changed:{}", groupIds);
-                    throw new BizException("100317", "用户与套餐关联的用户分组不一致，请刷新重试");
+                    throw new BizException("100319", "用户与套餐关联的用户分组不一致，请刷新重试");
                 }
             }
             
