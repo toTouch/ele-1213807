@@ -24,7 +24,7 @@ public class UserInfoGroupBO {
     
     private String operatorName;
     
-    private Long operatorTime;
+    private Long updateTime;
     
     private Long createTime;
 }
