@@ -98,6 +98,11 @@ public class UserInfoGroupServiceImpl implements UserInfoGroupService {
             Long franchiseeId = request.getFranchiseeId();
             String userGroupName = request.getName();
             Integer tenantId = TenantContextHolder.getTenantId();
+    
+            Franchisee franchisee = franchiseeService.queryByIdFromCache(franchiseeId);
+            if (Objects.isNull(franchisee)) {
+                return R.fail("ELECTRICITY.0038", "未找到加盟商");
+            }
             
             UserInfoGroup userInfoGroup = userInfoGroupMapper.queryByName(userGroupName, tenantId);
             if (Objects.nonNull(userInfoGroup)) {
@@ -116,15 +121,10 @@ public class UserInfoGroupServiceImpl implements UserInfoGroupService {
     }
     
     @Override
-    public R remove(Long id, Long operator, Franchisee franchisee) {
+    public R remove(Long id, Long operator) {
         UserInfoGroup userInfoGroup = this.queryByIdFromCache(id);
         if (Objects.isNull(userInfoGroup)) {
             return R.fail("120112", "未找到用户分组");
-        }
-        
-        // 加盟商校验
-        if (Objects.nonNull(franchisee) && !Objects.equals(franchisee.getId(), userInfoGroup.getFranchiseeId())) {
-            return R.ok();
         }
         
         // 租户校验
@@ -148,7 +148,7 @@ public class UserInfoGroupServiceImpl implements UserInfoGroupService {
     }
     
     @Override
-    public R update(UserInfoGroupSaveAndUpdateRequest request, Long operator, Franchisee franchisee) {
+    public R update(UserInfoGroupSaveAndUpdateRequest request, Long operator) {
         boolean result = redisService.setNx(CacheConstant.CACHE_USER_GROUP_UPDATE_LOCK + operator, "1", 3 * 1000L, false);
         if (!result) {
             return R.fail("ELECTRICITY.0034", "操作频繁");
@@ -161,16 +161,17 @@ public class UserInfoGroupServiceImpl implements UserInfoGroupService {
             }
             
             String name = request.getName();
+            Long franchiseeId = request.getFranchiseeId();
             Integer tenantId = TenantContextHolder.getTenantId();
-            
-            // 加盟商校验
-            if (Objects.nonNull(franchisee) && !Objects.equals(franchisee.getId(), oldUserInfo.getFranchiseeId())) {
-                return R.ok();
-            }
             
             // 租户校验
             if (!Objects.equals(tenantId, oldUserInfo.getTenantId())) {
                 return R.fail("AUTH.0003", "租户信息不匹配");
+            }
+    
+            Franchisee franchisee = franchiseeService.queryByIdFromCache(franchiseeId);
+            if (Objects.isNull(franchisee)) {
+                return R.fail("ELECTRICITY.0038", "未找到加盟商");
             }
             
             if (Objects.equals(oldUserInfo.getName(), name)) {
@@ -237,7 +238,7 @@ public class UserInfoGroupServiceImpl implements UserInfoGroupService {
     }
     
     @Override
-    public R batchImport(UserInfoGroupBatchImportRequest request, Long operator, Franchisee franchisee) {
+    public R batchImport(UserInfoGroupBatchImportRequest request, Long operator) {
         Long franchiseeId = request.getFranchiseeId();
         Long groupId = request.getGroupId();
         Set<String> phones = new HashSet<>(JsonUtil.fromJsonArray(request.getJsonPhones(), String.class));
@@ -251,18 +252,15 @@ public class UserInfoGroupServiceImpl implements UserInfoGroupService {
             return R.fail("120115", "分组名称不存在");
         }
         
-        // 加盟商校验
-        if (Objects.isNull(franchisee) && !Objects.equals(franchiseeId, userInfoGroup.getFranchiseeId())) {
-            return R.ok();
-        }
-        if (Objects.nonNull(franchisee) && !Objects.equals(franchisee.getId(), userInfoGroup.getFranchiseeId())) {
-            return R.ok();
-        }
-        
         // 租户校验
         Integer tenantId = TenantContextHolder.getTenantId();
         if (!Objects.equals(tenantId, userInfoGroup.getTenantId())) {
             return R.fail("AUTH.0003", "租户信息不匹配");
+        }
+    
+        Franchisee franchisee = franchiseeService.queryByIdFromCache(franchiseeId);
+        if (Objects.isNull(franchisee)) {
+            return R.fail("ELECTRICITY.0038", "未找到加盟商");
         }
         
         ConcurrentHashSet<String> notExistsPhone = new ConcurrentHashSet<>();

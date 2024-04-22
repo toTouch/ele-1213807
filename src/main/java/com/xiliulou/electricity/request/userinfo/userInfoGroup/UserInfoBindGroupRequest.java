@@ -15,6 +15,9 @@ import java.util.List;
 @Data
 public class UserInfoBindGroupRequest {
     
+    @NotNull(message = "加盟商id不能为空")
+    private Long franchiseeId;
+    
     @NotNull(message = "uid不能为空")
     private Long uid;
     

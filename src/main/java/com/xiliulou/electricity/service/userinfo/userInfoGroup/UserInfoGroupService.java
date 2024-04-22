@@ -20,13 +20,13 @@ public interface UserInfoGroupService {
     
     R save(UserInfoGroupSaveAndUpdateRequest request, Long operator);
     
-    R update(UserInfoGroupSaveAndUpdateRequest request, Long operator, Franchisee franchisee);
+    R update(UserInfoGroupSaveAndUpdateRequest request, Long operator);
     
     List<UserInfoGroupBO> listByPage(UserInfoGroupQuery query);
     
     Integer countTotal(UserInfoGroupQuery query);
     
-    R batchImport(UserInfoGroupBatchImportRequest request, Long operator, Franchisee franchisee);
+    R batchImport(UserInfoGroupBatchImportRequest request, Long operator);
     
     UserInfoGroup queryById(Long id);
     
@@ -34,7 +34,7 @@ public interface UserInfoGroupService {
     
     List<UserInfoGroupBO> listByIds(List<Long> ids);
     
-    R remove(Long id, Long operator, Franchisee franchisee);
+    R remove(Long id, Long operator);
     
     List<UserInfoGroupIdAndNameBO> listAllGroup(UserInfoGroupQuery query);
     

@@ -23,6 +23,7 @@ import com.xiliulou.electricity.request.userinfo.userInfoGroup.UserInfoBindGroup
 import com.xiliulou.electricity.request.userinfo.userInfoGroup.UserInfoGroupDetailUpdateRequest;
 import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.UserInfoService;
+import com.xiliulou.electricity.service.user.biz.UserBizService;
 import com.xiliulou.electricity.service.userinfo.userInfoGroup.UserInfoGroupDetailHistoryService;
 import com.xiliulou.electricity.service.userinfo.userInfoGroup.UserInfoGroupDetailService;
 import com.xiliulou.electricity.service.userinfo.userInfoGroup.UserInfoGroupService;
@@ -41,6 +42,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 /**
@@ -69,6 +71,9 @@ public class UserInfoGroupDetailServiceImpl implements UserInfoGroupDetailServic
     
     @Resource
     private UserInfoGroupDetailHistoryService userInfoGroupDetailHistoryService;
+    
+    @Resource
+    private UserBizService userBizService;
     
     @Slave
     @Override
@@ -164,8 +169,9 @@ public class UserInfoGroupDetailServiceImpl implements UserInfoGroupDetailServic
     
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public R update(UserInfoGroupDetailUpdateRequest request, Long operator, Franchisee franchisee) {
+    public R update(UserInfoGroupDetailUpdateRequest request, Long operator) {
         Long uid = request.getUid();
+        Long franchiseeId = request.getFranchiseeId();
         List<Long> groupIds = request.getGroupIds();
         
         boolean result = redisService.setNx(CacheConstant.CACHE_USER_GROUP_DETAIL_UPDATE_LOCK + uid, "1", 3 * 1000L, false);
@@ -179,17 +185,17 @@ public class UserInfoGroupDetailServiceImpl implements UserInfoGroupDetailServic
                 return R.fail("ELECTRICITY.0001", "未找到用户");
             }
             
-            // 加盟商校验
-            if (Objects.nonNull(franchisee) && !Objects.equals(franchisee.getId(), userInfo.getFranchiseeId())) {
-                return R.ok();
-            }
-            
             // 租户校验
             Integer tenantId = TenantContextHolder.getTenantId();
             if (!Objects.equals(tenantId, userInfo.getTenantId())) {
                 return R.fail("AUTH.0003", "租户信息不匹配");
             }
-            
+    
+            Franchisee franchisee = franchiseeService.queryByIdFromCache(franchiseeId);
+            if (Objects.isNull(franchisee)) {
+                return R.fail("ELECTRICITY.0038", "未找到加盟商");
+            }
+    
             // 如果没有分组，则删除
             if (CollectionUtils.isEmpty(groupIds)) {
                 List<UserInfoGroupNamesBO> existGroupList = this.listGroupByUid(UserInfoGroupDetailQuery.builder().uid(uid).tenantId(tenantId).build());
@@ -320,9 +326,10 @@ public class UserInfoGroupDetailServiceImpl implements UserInfoGroupDetailServic
     }
     
     @Override
-    public R bindGroup(UserInfoBindGroupRequest request, Long operator, Franchisee franchisee) {
+    public R bindGroup(UserInfoBindGroupRequest request, Long operator) {
         Long uid = request.getUid();
-        
+        Long franchiseeId = request.getFranchiseeId();
+    
         boolean result = redisService.setNx(CacheConstant.CACHE_USER_GROUP_DETAIL_BIND_GROUP_LOCK + uid, "1", 3 * 1000L, false);
         if (!result) {
             return R.fail("ELECTRICITY.0034", "操作频繁");
@@ -337,14 +344,14 @@ public class UserInfoGroupDetailServiceImpl implements UserInfoGroupDetailServic
                 return R.fail("ELECTRICITY.0001", "未找到用户");
             }
             
-            // 加盟商校验
-            if (Objects.nonNull(franchisee) && !Objects.equals(franchisee.getId(), userInfo.getFranchiseeId())) {
-                return R.ok();
-            }
-            
             // 租户校验
             if (!Objects.equals(userInfo.getTenantId(), tenantId)) {
                 return R.fail("AUTH.0003", "租户信息不匹配");
+            }
+    
+            Franchisee franchisee = franchiseeService.queryByIdFromCache(franchiseeId);
+            if (Objects.isNull(franchisee)) {
+                return R.fail("ELECTRICITY.0038", "未找到加盟商");
             }
             
             // 超限判断
@@ -396,24 +403,31 @@ public class UserInfoGroupDetailServiceImpl implements UserInfoGroupDetailServic
     
     @Override
     public void handleAfterRefundDeposit(Long uid) {
+        boolean depositStatus = userBizService.isBoundDeposit(uid);
+        if (depositStatus) {
+            return;
+        }
+    
         List<UserInfoGroupNamesBO> groupList = this.listGroupByUid(UserInfoGroupDetailQuery.builder().uid(uid).build());
         Integer delete = 0;
         if (CollectionUtils.isNotEmpty(groupList)) {
             delete = this.deleteByUid(uid, null);
         }
-        
+    
         if (delete > 0) {
-            UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
-            Long franchiseeId = NumberConstant.ZERO_L;
-            Integer tenantId = NumberConstant.ZERO;
-            if (Objects.nonNull(userInfo)) {
-                franchiseeId = userInfo.getFranchiseeId();
-                tenantId = userInfo.getTenantId();
-            }
+            AtomicReference<Long> franchiseeId = new AtomicReference<>(NumberConstant.ZERO_L);
+            AtomicReference<Integer> tenantId = new AtomicReference<>(NumberConstant.ZERO);
+        
+            Optional<UserInfo> optionalUserInfo = Optional.ofNullable(userInfoService.queryByUidFromCache(uid));
+            optionalUserInfo.ifPresent(u -> {
+                franchiseeId.set(Objects.isNull(u.getFranchiseeId()) ? NumberConstant.ZERO_L : u.getFranchiseeId());
+                tenantId.set(Objects.isNull(u.getTenantId()) ? NumberConstant.ZERO : u.getTenantId());
+            });
+        
             String oldGroupIds = groupList.stream().map(g -> g.getGroupId().toString()).collect(Collectors.joining(CommonConstant.STR_COMMA));
-            UserInfoGroupDetailHistory detail = this.assembleDetailHistory(uid, oldGroupIds, "", uid, franchiseeId, tenantId,
+            UserInfoGroupDetailHistory detail = this.assembleDetailHistory(uid, oldGroupIds, "", uid, franchiseeId.get(), tenantId.get(),
                     UserInfoGroupConstant.USER_GROUP_HISTORY_TYPE_REFUND_DEPOSIT);
-            
+        
             userInfoGroupDetailHistoryService.insertOne(detail);
         }
     }

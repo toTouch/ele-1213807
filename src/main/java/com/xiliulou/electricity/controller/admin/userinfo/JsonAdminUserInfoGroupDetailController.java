@@ -212,17 +212,7 @@ public class JsonAdminUserInfoGroupDetailController extends BasicController {
             return R.fail("ELECTRICITY.0066", "用户权限不足");
         }
         
-        // 加盟商操作，查询加盟商
-        Franchisee franchisee = null;
-        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
-            franchisee = franchiseeService.queryByUid(user.getUid());
-            
-            if (Objects.isNull(franchisee)) {
-                return R.fail("ELECTRICITY.0038", "未找到加盟商");
-            }
-        }
-        
-        return userInfoGroupDetailService.update(request, user.getUid(), franchisee);
+        return userInfoGroupDetailService.update(request, user.getUid());
     }
     
     /**
@@ -240,17 +230,7 @@ public class JsonAdminUserInfoGroupDetailController extends BasicController {
             return R.fail("ELECTRICITY.0066", "用户权限不足");
         }
         
-        // 加盟商操作，查询加盟商
-        Franchisee franchisee = null;
-        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
-            franchisee = franchiseeService.queryByUid(user.getUid());
-            
-            if (Objects.isNull(franchisee)) {
-                return R.fail("ELECTRICITY.0038", "未找到加盟商");
-            }
-        }
-        
-        return userInfoGroupDetailService.bindGroup(request, user.getUid(), franchisee);
+        return userInfoGroupDetailService.bindGroup(request, user.getUid());
     }
     
 }

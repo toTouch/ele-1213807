@@ -1,5 +1,7 @@
 package com.xiliulou.electricity.request.userinfo.userInfoGroup;
 
+import com.xiliulou.electricity.validator.CreateGroup;
+import com.xiliulou.electricity.validator.UpdateGroup;
 import lombok.Data;
 
 import javax.validation.constraints.NotNull;
@@ -12,6 +14,7 @@ import javax.validation.constraints.NotNull;
 @Data
 public class UserInfoGroupBatchImportRequest {
     
+    @NotNull(message = "加盟商id不能为空")
     private Long franchiseeId;
     
     @NotNull(message = "分组ID不能为空")
