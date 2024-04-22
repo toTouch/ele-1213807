@@ -230,6 +230,7 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
             electricityConfig.setLowChargeRate(BigDecimal.valueOf(lowChargeRate));
             electricityConfig.setFullChargeRate(BigDecimal.valueOf(fullChargeRate));
             electricityConfig.setChannelTimeLimit(electricityConfigAddAndUpdateQuery.getChannelTimeLimit());
+            electricityConfig.setChargeRateType(electricityConfigAddAndUpdateQuery.getChargeRateType());
             
             electricityConfigMapper.insert(electricityConfig);
             return R.ok();
@@ -270,6 +271,7 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
         electricityConfig.setLowChargeRate(BigDecimal.valueOf(lowChargeRate));
         electricityConfig.setFullChargeRate(BigDecimal.valueOf(fullChargeRate));
         electricityConfig.setChannelTimeLimit(electricityConfigAddAndUpdateQuery.getChannelTimeLimit());
+        electricityConfig.setChargeRateType(electricityConfigAddAndUpdateQuery.getChargeRateType());
         
         int updateResult = electricityConfigMapper.update(electricityConfig);
         if (updateResult > 0) {

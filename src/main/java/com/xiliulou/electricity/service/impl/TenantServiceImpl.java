@@ -220,7 +220,8 @@ public class TenantServiceImpl implements TenantService {
                 .disableMemberCard(ElectricityConfig.DISABLE_MEMBER_CARD)
                 .isBatteryReview(ElectricityConfig.NON_BATTERY_REVIEW)
                 .lowChargeRate(NumberConstant.TWENTY_FIVE_DB)
-                .fullChargeRate(NumberConstant.SEVENTY_FIVE_DB).build();
+                .fullChargeRate(NumberConstant.SEVENTY_FIVE_DB)
+                .chargeRateType(ElectricityConfig.CHARGE_RATE_TYPE_UNIFY).build();
         electricityConfigService.insertElectricityConfig(electricityConfig);
 
         //新增租户给租户增加渠道活动（产品提的需求）

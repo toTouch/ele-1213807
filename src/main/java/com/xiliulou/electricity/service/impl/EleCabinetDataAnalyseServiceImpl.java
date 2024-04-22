@@ -114,7 +114,16 @@ public class EleCabinetDataAnalyseServiceImpl implements EleCabinetDataAnalyseSe
     @Override
     public List<EleCabinetDataAnalyseVO> selectLowPowerPage(ElectricityCabinetQuery cabinetQuery) {
         ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(cabinetQuery.getTenantId());
-        BigDecimal lowChargeRate = Optional.ofNullable(electricityConfig).map(ElectricityConfig::getLowChargeRate).orElse(NumberConstant.ZERO_BD);
+    
+        BigDecimal lowChargeRate = NumberConstant.TWENTY_FIVE_DB;
+        if (Objects.nonNull(electricityConfig)) {
+            // 统一配置
+            if (Objects.equals(electricityConfig.getChargeRateType(), ElectricityConfig.CHARGE_RATE_TYPE_UNIFY)) {
+                lowChargeRate = electricityConfig.getLowChargeRate();
+            } else {
+                // 单个配置
+            }
+        }
         
         cabinetQuery.setLowChargeRate(lowChargeRate.doubleValue());
         

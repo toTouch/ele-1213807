@@ -425,7 +425,7 @@ public class JsonAdminEleCabinetDataAnalyseController extends BaseController {
     @GetMapping(value = "/admin/eleCabinet/lowPower/page")
     public R lowPowerPage(@RequestParam("size") long size, @RequestParam("offset") long offset, @RequestParam(value = "name", required = false) String name,
             @RequestParam(value = "sn", required = false) String sn, @RequestParam(value = "address", required = false) String address,
-            @RequestParam(value = "lowChargeRate", required = false) Double lowChargeRate, @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
+            @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
             @RequestParam(value = "orderByAverageNumber", required = false) Integer orderByAverageNumber,
             @RequestParam(value = "orderByAverageActivity", required = false) Integer orderByAverageActivity,
             @RequestParam(value = "orderByTodayNumber", required = false) Integer orderByTodayNumber,
