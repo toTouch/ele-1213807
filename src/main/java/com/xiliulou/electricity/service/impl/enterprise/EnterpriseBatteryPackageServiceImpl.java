@@ -1963,6 +1963,7 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
         electricityMemberCardOrder.setSource(ElectricityMemberCardOrder.SOURCE_NOT_SCAN);
         //企业套餐没有门店信息
         // electricityMemberCardOrder.setStoreId( );
+        electricityMemberCardOrder.setCouponIds(batteryMemberCard.getCouponIds());
         
         return Triple.of(true, null, electricityMemberCardOrder);
     }
