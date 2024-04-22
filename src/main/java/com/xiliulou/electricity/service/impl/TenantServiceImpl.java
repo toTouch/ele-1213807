@@ -20,11 +20,11 @@ import com.xiliulou.electricity.entity.Role;
 import com.xiliulou.electricity.entity.RolePermission;
 import com.xiliulou.electricity.entity.Tenant;
 import com.xiliulou.electricity.entity.User;
+import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.mapper.TenantMapper;
 import com.xiliulou.electricity.mapper.asset.AssetWarehouseMapper;
 import com.xiliulou.electricity.query.TenantAddAndUpdateQuery;
 import com.xiliulou.electricity.query.TenantQuery;
-import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.service.merchant.MerchantAttrService;
 import com.xiliulou.electricity.service.merchant.MerchantLevelService;
 import com.xiliulou.electricity.query.asset.AssetWarehouseSaveOrUpdateQueryModel;
@@ -218,7 +218,9 @@ public class TenantServiceImpl implements TenantService {
                 .isWithdraw(ElectricityConfig.WITHDRAW)
                 .isOpenDoorLock(ElectricityConfig.NON_OPEN_DOOR_LOCK)
                 .disableMemberCard(ElectricityConfig.DISABLE_MEMBER_CARD)
-                .isBatteryReview(ElectricityConfig.NON_BATTERY_REVIEW).build();
+                .isBatteryReview(ElectricityConfig.NON_BATTERY_REVIEW)
+                .lowChargeRate(NumberConstant.TWENTY_FIVE_DB)
+                .fullChargeRate(NumberConstant.SEVENTY_FIVE_DB).build();
         electricityConfigService.insertElectricityConfig(electricityConfig);
 
         //新增租户给租户增加渠道活动（产品提的需求）
