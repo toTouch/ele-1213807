@@ -4,10 +4,10 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.bo.userInfoGroup.UserInfoGroupDetailPageBO;
 import com.xiliulou.electricity.bo.userInfoGroup.UserInfoGroupNamesBO;
 import com.xiliulou.electricity.entity.Franchisee;
-import com.xiliulou.electricity.entity.userInfo.userInfoGroup.UserInfoGroupDetail;
-import com.xiliulou.electricity.query.UserInfoGroupDetailQuery;
-import com.xiliulou.electricity.request.user.UserInfoBindGroupRequest;
-import com.xiliulou.electricity.request.user.UserInfoGroupDetailUpdateRequest;
+import com.xiliulou.electricity.entity.userinfo.userInfoGroup.UserInfoGroupDetail;
+import com.xiliulou.electricity.query.userinfo.userInfoGroup.UserInfoGroupDetailQuery;
+import com.xiliulou.electricity.request.userinfo.userInfoGroup.UserInfoBindGroupRequest;
+import com.xiliulou.electricity.request.userinfo.userInfoGroup.UserInfoGroupDetailUpdateRequest;
 
 import java.util.List;
 
@@ -34,9 +34,9 @@ public interface UserInfoGroupDetailService {
     
     List<UserInfoGroupNamesBO> listGroupByUidList(List<Long> uidList);
     
-    R update(UserInfoGroupDetailUpdateRequest request, Long operator, Franchisee franchisee);
+    R update(UserInfoGroupDetailUpdateRequest request, Long operator);
     
-    R bindGroup(UserInfoBindGroupRequest request, Long operator, Franchisee franchisee);
+    R bindGroup(UserInfoBindGroupRequest request, Long operator);
     
     Integer deleteByUid(Long uid, List<String> groupNoList);
     
