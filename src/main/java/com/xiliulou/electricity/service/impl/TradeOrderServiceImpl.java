@@ -303,17 +303,17 @@ public class TradeOrderServiceImpl implements TradeOrderService {
             
             if (CollectionUtils.isNotEmpty(userInfoGroupNamesBOs)) {
                 if (Objects.equals(batteryMemberCard.getGroupType(), BatteryMemberCard.GROUP_TYPE_SYSTEM)) {
-                    return Triple.of(false, "100318", "您浏览的套餐已下架，请看看其他的吧");
+                    return Triple.of(false, "100325", "您浏览的套餐已下架，请看看其他的吧");
                 }
                 
                 List<Long> userGroupIds = userInfoGroupNamesBOs.stream().map(UserInfoGroupNamesBO::getGroupId).collect(Collectors.toList());
                 userGroupIds.retainAll(JsonUtil.fromJsonArray(batteryMemberCard.getUserInfoGroupIds(), Long.class));
                 if (CollectionUtils.isEmpty(userGroupIds)) {
-                    return Triple.of(false, "100318", "您浏览的套餐已下架，请看看其他的吧");
+                    return Triple.of(false, "100325", "您浏览的套餐已下架，请看看其他的吧");
                 }
             } else {
                 if (Objects.equals(batteryMemberCard.getGroupType(), BatteryMemberCard.GROUP_TYPE_USER)) {
-                    return Triple.of(false, "100318", "您浏览的套餐已下架，请看看其他的吧");
+                    return Triple.of(false, "100325", "您浏览的套餐已下架，请看看其他的吧");
                 }
             }
             
@@ -509,17 +509,17 @@ public class TradeOrderServiceImpl implements TradeOrderService {
             
             if (CollectionUtils.isNotEmpty(userInfoGroupNamesBOs)) {
                 if (Objects.equals(batteryMemberCard.getGroupType(), BatteryMemberCard.GROUP_TYPE_SYSTEM)) {
-                    return Triple.of(false, "100318", "您浏览的套餐已下架，请看看其他的吧");
+                    return Triple.of(false, "100325", "您浏览的套餐已下架，请看看其他的吧");
                 }
                 
                 List<Long> userGroupIds = userInfoGroupNamesBOs.stream().map(UserInfoGroupNamesBO::getGroupId).collect(Collectors.toList());
                 userGroupIds.retainAll(JsonUtil.fromJsonArray(batteryMemberCard.getUserInfoGroupIds(), Long.class));
                 if (CollectionUtils.isEmpty(userGroupIds)) {
-                    return Triple.of(false, "100318", "您浏览的套餐已下架，请看看其他的吧");
+                    return Triple.of(false, "100325", "您浏览的套餐已下架，请看看其他的吧");
                 }
             } else {
                 if (Objects.equals(batteryMemberCard.getGroupType(), BatteryMemberCard.GROUP_TYPE_USER)) {
-                    return Triple.of(false, "100318", "您浏览的套餐已下架，请看看其他的吧");
+                    return Triple.of(false, "100325", "您浏览的套餐已下架，请看看其他的吧");
                 }
             }
             

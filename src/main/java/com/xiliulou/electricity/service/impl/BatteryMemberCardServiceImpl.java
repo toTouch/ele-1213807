@@ -459,13 +459,15 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
             if (StringUtils.isNotBlank(item.getUserInfoGroupIds())) {
                 List<SearchVo> userInfoGroups = new ArrayList<>();
                 List<Long> userInfoGroupIds = JsonUtil.fromJsonArray(item.getUserInfoGroupIds(), Long.class);
-    
-                for (Long userInfoGroupId : userInfoGroupIds) {
-                    SearchVo searchVo = new SearchVo();
-                    UserInfoGroup userInfoGroup = userInfoGroupService.queryByIdFromCache(userInfoGroupId);
-                    if (Objects.nonNull(userInfoGroup)) {
-                        BeanUtils.copyProperties(userInfoGroup, searchVo);
-                        userInfoGroups.add(searchVo);
+                
+                if (CollectionUtils.isNotEmpty(userInfoGroupIds)) {
+                    for (Long userInfoGroupId : userInfoGroupIds) {
+                        SearchVo searchVo = new SearchVo();
+                        UserInfoGroup userInfoGroup = userInfoGroupService.queryByIdFromCache(userInfoGroupId);
+                        if (Objects.nonNull(userInfoGroup)) {
+                            BeanUtils.copyProperties(userInfoGroup, searchVo);
+                            userInfoGroups.add(searchVo);
+                        }
                     }
                 }
                 batteryMemberCardVO.setUserInfoGroups(userInfoGroups);

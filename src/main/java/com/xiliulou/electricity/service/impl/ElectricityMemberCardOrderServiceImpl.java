@@ -3820,17 +3820,17 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         
         if (CollectionUtils.isNotEmpty(userInfoGroupNamesBOs)) {
             if (Objects.equals(batteryMemberCard.getGroupType(), BatteryMemberCard.GROUP_TYPE_SYSTEM)) {
-                return Triple.of(false, "100317", "用户与套餐关联的用户分组不一致，请刷新重试");
+                return Triple.of(false, "100324", "用户与套餐关联的用户分组不一致，请刷新重试");
             }
             
             List<Long> userGroupIds = userInfoGroupNamesBOs.stream().map(UserInfoGroupNamesBO::getGroupId).collect(Collectors.toList());
             userGroupIds.retainAll(JsonUtil.fromJsonArray(batteryMemberCard.getUserInfoGroupIds(), Long.class));
             if (CollectionUtils.isEmpty(userGroupIds)) {
-                return Triple.of(false, "100317", "用户与套餐关联的用户分组不一致，请刷新重试");
+                return Triple.of(false, "100324", "用户与套餐关联的用户分组不一致，请刷新重试");
             }
         } else {
             if (Objects.equals(batteryMemberCard.getGroupType(), BatteryMemberCard.GROUP_TYPE_USER)) {
-                return Triple.of(false, "100317", "用户与套餐关联的用户分组不一致，请刷新重试");
+                return Triple.of(false, "100324", "用户与套餐关联的用户分组不一致，请刷新重试");
             }
         }
         
