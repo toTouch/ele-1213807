@@ -853,6 +853,7 @@ public class EleOperateQueueHandler {
         if (Objects.isNull(userBatteryMemberCardPackageLatest)) {
             UserBatteryMemberCard userBatteryMemberCardUpdate = new UserBatteryMemberCard();
             userBatteryMemberCardUpdate.setUid(userBatteryMemberCard.getUid());
+            userBatteryMemberCardUpdate.setOrderExpireTime(System.currentTimeMillis());
             userBatteryMemberCardUpdate.setMemberCardExpireTime(System.currentTimeMillis());
             userBatteryMemberCardService.updateByUid(userBatteryMemberCardUpdate);
         }
