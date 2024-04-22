@@ -325,15 +325,6 @@ public class JsonAdminEleRefundOrderController extends BaseController {
     }
     
     /**
-     * 租车免押退押金
-     */
-    @PostMapping("/admin/car/freeDeposit/refund")
-    @Log(title = "租车免押后台退押金")
-    public R carFreeDepositRefund(@RequestParam(value = "errMsg", required = false) String errMsg, @RequestParam("uid") Long uid) {
-        return returnTripleResult(eleRefundOrderService.carFreeDepositRefund(errMsg, uid));
-    }
-    
-    /**
      * 车辆退押金审核
      */
     @PostMapping("/admin/car/refundDeposit/review")

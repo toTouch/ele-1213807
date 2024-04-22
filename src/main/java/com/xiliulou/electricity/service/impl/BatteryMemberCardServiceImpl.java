@@ -245,7 +245,7 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
                 query.setRentTypes(Arrays.asList(BatteryMemberCard.RENT_TYPE_NEW, BatteryMemberCard.RENT_TYPE_UNLIMIT));
             } else {
                 // 用户绑定了用户分组
-                query.setUserInfoGroupIdsForSearch(userInfoGroupNamesBOs.stream().map(userInfoGroupVO -> userInfoGroupVO.getGroupId().toString()).collect(Collectors.toList()));
+                query.setUserInfoGroupIdsForSearch(userInfoGroupNamesBOs.stream().map(userInfoGroupNamesBO -> userInfoGroupNamesBO.getGroupId().toString()).collect(Collectors.toList()));
             }
             
             query.setFreeDeposite(Objects.nonNull(userBatteryDeposit) && Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES) && Objects.equals(
@@ -266,7 +266,7 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
                 query.setRentTypes(Arrays.asList(BatteryMemberCard.RENT_TYPE_OLD, BatteryMemberCard.RENT_TYPE_UNLIMIT));
             } else {
                 // 用户绑定了用户分组
-                query.setUserInfoGroupIdsForSearch(userInfoGroupNamesBOs.stream().map(userInfoGroupVO -> userInfoGroupVO.getGroupId().toString()).collect(Collectors.toList()));
+                query.setUserInfoGroupIdsForSearch(userInfoGroupNamesBOs.stream().map(userInfoGroupNamesBO -> userInfoGroupNamesBO.getGroupId().toString()).collect(Collectors.toList()));
             }
             
             query.setFreeDeposite(Objects.nonNull(userBatteryDeposit) && Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES) && Objects.equals(
@@ -294,7 +294,7 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
                 query.setRentTypes(Arrays.asList(BatteryMemberCard.RENT_TYPE_OLD, BatteryMemberCard.RENT_TYPE_UNLIMIT));
             } else {
                 // 用户绑定了用户分组
-                query.setUserInfoGroupIdsForSearch(userInfoGroupNamesBOs.stream().map(userInfoGroupVO -> userInfoGroupVO.getGroupId().toString()).collect(Collectors.toList()));
+                query.setUserInfoGroupIdsForSearch(userInfoGroupNamesBOs.stream().map(userInfoGroupNamesBO -> userInfoGroupNamesBO.getGroupId().toString()).collect(Collectors.toList()));
             }
             
             query.setBatteryV(Objects.equals(franchisee.getModelType(), Franchisee.NEW_MODEL_TYPE) ? userBatteryTypeService.selectUserSimpleBatteryType(userInfo.getUid()) : null);
@@ -438,15 +438,18 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
             // 设置用户分组
             if (StringUtils.isNotBlank(item.getUserInfoGroupIds())) {
                 List<SearchVo> userInfoGroups = new ArrayList<>();
-                
-                JsonUtil.fromJsonArray(item.getUserInfoGroupIds(), Long.class).forEach(userGroupId -> {
-                    SearchVo searchVo = new SearchVo();
-                    UserInfoGroup userInfoGroup = userInfoGroupService.queryByIdFromCache(userGroupId);
-                    if (Objects.nonNull(userInfoGroup)) {
-                        BeanUtils.copyProperties(userInfoGroup, searchVo);
-                        userInfoGroups.add(searchVo);
+                List<Long> userInfoGroupIds = JsonUtil.fromJsonArray(item.getUserInfoGroupIds(), Long.class);
+    
+                if (CollectionUtils.isNotEmpty(userInfoGroupIds)) {
+                    for (Long userInfoGroupId : userInfoGroupIds) {
+                        SearchVo searchVo = new SearchVo();
+                        UserInfoGroup userInfoGroup = userInfoGroupService.queryByIdFromCache(userInfoGroupId);
+                        if (Objects.nonNull(userInfoGroup)) {
+                            BeanUtils.copyProperties(userInfoGroup, searchVo);
+                            userInfoGroups.add(searchVo);
+                        }
                     }
-                });
+                }
                 batteryMemberCardVO.setUserInfoGroups(userInfoGroups);
             }
             return batteryMemberCardVO;
@@ -487,7 +490,7 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
                 query.setRentTypes(Arrays.asList(BatteryMemberCard.RENT_TYPE_NEW, BatteryMemberCard.RENT_TYPE_UNLIMIT));
             } else {
                 // 用户绑定了用户分组
-                query.setUserInfoGroupIdsForSearch(userInfoGroupNamesBOs.stream().map(userInfoGroupVO -> userInfoGroupVO.getGroupId().toString()).collect(Collectors.toList()));
+                query.setUserInfoGroupIdsForSearch(userInfoGroupNamesBOs.stream().map(userInfoGroupNamesBO -> userInfoGroupNamesBO.getGroupId().toString()).collect(Collectors.toList()));
             }
             
             query.setFreeDeposite(Objects.nonNull(userBatteryDeposit) && Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES) && Objects.equals(
@@ -508,7 +511,7 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
                 query.setRentTypes(Arrays.asList(BatteryMemberCard.RENT_TYPE_OLD, BatteryMemberCard.RENT_TYPE_UNLIMIT));
             } else {
                 // 用户绑定了用户分组
-                query.setUserInfoGroupIdsForSearch(userInfoGroupNamesBOs.stream().map(userInfoGroupVO -> userInfoGroupVO.getGroupId().toString()).collect(Collectors.toList()));
+                query.setUserInfoGroupIdsForSearch(userInfoGroupNamesBOs.stream().map(userInfoGroupNamesBO -> userInfoGroupNamesBO.getGroupId().toString()).collect(Collectors.toList()));
             }
             
             query.setFreeDeposite(Objects.nonNull(userBatteryDeposit) && Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES) && Objects.equals(
@@ -537,7 +540,7 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
                 query.setRentTypes(Arrays.asList(BatteryMemberCard.RENT_TYPE_OLD, BatteryMemberCard.RENT_TYPE_UNLIMIT));
             } else {
                 // 用户绑定了用户分组
-                query.setUserInfoGroupIdsForSearch(userInfoGroupNamesBOs.stream().map(userInfoGroupVO -> userInfoGroupVO.getGroupId().toString()).collect(Collectors.toList()));
+                query.setUserInfoGroupIdsForSearch(userInfoGroupNamesBOs.stream().map(userInfoGroupNamesBO -> userInfoGroupNamesBO.getGroupId().toString()).collect(Collectors.toList()));
             }
             
             query.setBatteryV(
@@ -747,7 +750,7 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
         batteryMemberCardUpdate.setServiceCharge(query.getServiceCharge());
         batteryMemberCardUpdate.setRemark(query.getRemark());
         batteryMemberCardUpdate.setUpdateTime(System.currentTimeMillis());
-        batteryMemberCardUpdate.setUserInfoGroupIds(CollectionUtils.isEmpty(query.getUserInfoGroupIdsTransfer()) ? null : JsonUtil.toJson(query.getUserInfoGroupIdsTransfer()));
+        batteryMemberCardUpdate.setUserInfoGroupIds(Objects.isNull(query.getUserInfoGroupIdsTransfer()) ? null : JsonUtil.toJson(query.getUserInfoGroupIdsTransfer()));
         batteryMemberCardUpdate.setGroupType(query.getGroupType());
         if (Objects.equals(query.getSendCoupon(), BatteryMemberCard.SEND_COUPON_NO)) {
             batteryMemberCardUpdate.setCouponIds(null);
@@ -760,31 +763,33 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
         operateRecordUtil.asyncRecord(batteryMemberCard, batteryMemberCardUpdate, userInfoGroupService, couponService, (userInfoGroupService, couponService, operateLogDTO) -> {
             List<Long> oldUserGroupIds = JsonUtil.fromJsonArray((String) operateLogDTO.getOldValue().getOrDefault("userInfoGroupIds", "[]"), Long.class);
             List<UserInfoGroupBO> oldUserGroups = userInfoGroupService.listByIds(oldUserGroupIds);
+            operateLogDTO.getOldValue().put("userGroups",Collections.emptyList());
             if (!org.springframework.util.CollectionUtils.isEmpty(oldUserGroups)) {
                 operateLogDTO.getOldValue().put("userGroups", oldUserGroups.stream().map(UserInfoGroupBO::getGroupName).collect(Collectors.toList()));
             }
-            
+    
             List<Long> userGroupIds = JsonUtil.fromJsonArray((String) operateLogDTO.getNewValue().getOrDefault("userInfoGroupIds", "[]"), Long.class);
             List<UserInfoGroupBO> userGroups = userInfoGroupService.listByIds(userGroupIds);
+            operateLogDTO.getNewValue().put("userGroups",Collections.emptyList());
             if (!org.springframework.util.CollectionUtils.isEmpty(userGroups)) {
                 operateLogDTO.getNewValue().put("userGroups", userGroups.stream().map(UserInfoGroupBO::getGroupName).collect(Collectors.toList()));
             }
-            
+    
             List<Long> oldCouponIds = JsonUtil.fromJsonArray((String) operateLogDTO.getOldValue().getOrDefault("couponIds", "[]"), Long.class);
             List<CarCouponNamePO> oldCoupons = couponService.queryListByIdsFromCache(oldCouponIds);
+            operateLogDTO.getOldValue().put("coupons",Collections.emptyList());
             if (!org.springframework.util.CollectionUtils.isEmpty(oldCoupons)) {
                 operateLogDTO.getOldValue().put("coupons", oldCoupons.stream().map(CarCouponNamePO::getName).collect(Collectors.toList()));
             }
-            
+    
             List<Long> couponIds = JsonUtil.fromJsonArray((String) operateLogDTO.getNewValue().getOrDefault("couponIds", "[]"), Long.class);
             List<CarCouponNamePO> coupons = couponService.queryListByIdsFromCache(couponIds);
+            operateLogDTO.getNewValue().put("coupons",Collections.emptyList());
             if (!org.springframework.util.CollectionUtils.isEmpty(coupons)) {
-                operateLogDTO.getOldValue().put("coupons", coupons.stream().map(CarCouponNamePO::getName).collect(Collectors.toList()));
+                operateLogDTO.getNewValue().put("coupons", coupons.stream().map(CarCouponNamePO::getName).collect(Collectors.toList()));
             }
             return operateLogDTO;
         });
-        
-        operateRecordUtil.record(batteryMemberCard, batteryMemberCardUpdate);
         return Triple.of(true, null, null);
     }
     

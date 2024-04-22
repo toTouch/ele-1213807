@@ -104,6 +104,16 @@ public class EleCabinetCoreData {
      * 整柜加热;0：开启，1：关闭
      */
     private Integer heatOpen;
+    
+    /**
+     * 反向供电(0--关闭，1--开启)
+     */
+    private Integer backupPower;
+    
+    /**
+     * 反向供电原因
+     */
+    private String backupPowerReason;
 
     public static final Integer DEL_NORMAL = 0;
     public static final Integer DEL_DEL = 1;

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.xiliulou.electricity.mapper.EleCabinetCoreDataMapper">
-
+    
     <resultMap type="com.xiliulou.electricity.entity.EleCabinetCoreData" id="EleCabinetCoreDataMap">
         <result property="id" column="id" jdbcType="INTEGER"/>
         <result property="electricityCabinetId" column="electricity_cabinet_id" jdbcType="VARCHAR"/>
@@ -25,7 +25,7 @@
         <result property="createTime" column="create_time" jdbcType="INTEGER"/>
         <result property="updateTime" column="update_time" jdbcType="INTEGER"/>
     </resultMap>
-
+    
     <!--查询单个-->
     <select id="queryById" resultMap="EleCabinetCoreDataMap">
         select
@@ -33,7 +33,7 @@
         from t_ele_cabinet_core_data
         where id = #{id}
     </select>
-
+    
     <!--查询指定行数据-->
     <select id="queryAllByLimit" resultMap="EleCabinetCoreDataMap">
         select
@@ -41,7 +41,7 @@
         from t_ele_cabinet_core_data
         limit #{offset}, #{limit}
     </select>
-
+    
     <!--通过实体作为筛选条件查询-->
     <select id="queryAll" resultMap="EleCabinetCoreDataMap">
         select
@@ -109,13 +109,13 @@
             </if>
         </where>
     </select>
-
+    
     <!--新增所有列-->
     <insert id="insertOne" keyProperty="id" useGeneratedKeys="true">
         insert into t_ele_cabinet_core_data(electricity_cabinet_id, lock_open, smoke_sensor_open, light_open, fan_open, extinguisher_open, v, a, power, power_factor, active_electrical_energy, water_pump_open, water_level_warning, temp, humidity, water_leaching_warning, create_time, update_time)
         values (#{electricityCabinetId}, #{lockOpen}, #{smokeSensorOpen}, #{lightOpen}, #{fanOpen}, #{extinguisherOpen}, #{v}, #{a}, #{power}, #{powerFactor}, #{activeElectricalEnergy}, #{waterPumpOpen}, #{waterLevelWarning}, #{temp}, #{humidity}, #{waterLeachingWarning}, #{createTime}, #{updateTime})
     </insert>
-
+    
     <!--通过主键修改数据-->
     <update id="update">
         update t_ele_cabinet_core_data
@@ -180,24 +180,25 @@
         </set>
         where id = #{id}
     </update>
-
+    
     <!--通过主键删除-->
     <delete id="deleteById">
         delete from t_ele_cabinet_core_data where id = #{id}
     </delete>
-
-    <!--原子更新-->
-    <insert id="idempotentUpdateCabinetCoreData" keyProperty="id" useGeneratedKeys="true">
-        insert into t_ele_cabinet_core_data(electricity_cabinet_id, lock_open, smoke_sensor_open, light_open, fan_open, extinguisher_open, v, a, power, power_factor, active_electrical_energy, water_pump_open, water_level_warning, temp, humidity, water_leaching_warning, create_time, update_time,core_version,heat_open)
-        values (#{electricityCabinetId}, #{lockOpen}, #{smokeSensorOpen}, #{lightOpen}, #{fanOpen}, #{extinguisherOpen}, #{v}, #{a}, #{power}, #{powerFactor}, #{activeElectricalEnergy}, #{waterPumpOpen}, #{waterLevelWarning}, #{temp}, #{humidity}, #{waterLeachingWarning}, #{createTime}, #{updateTime},#{coreVersion},#{heatOpen})
+    
+    <insert id="insertOrUpdateCabinetCoreData" keyProperty="id" useGeneratedKeys="true">
+        insert into t_ele_cabinet_core_data(electricity_cabinet_id, lock_open, smoke_sensor_open, light_open, fan_open, extinguisher_open, v, a, power, power_factor, active_electrical_energy, water_pump_open, water_level_warning, temp, humidity, water_leaching_warning, create_time, update_time,
+        core_version,heat_open, backup_power, backup_power_reason)
+        values (#{electricityCabinetId}, #{lockOpen}, #{smokeSensorOpen}, #{lightOpen}, #{fanOpen}, #{extinguisherOpen}, #{v}, #{a}, #{power}, #{powerFactor}, #{activeElectricalEnergy}, #{waterPumpOpen}, #{waterLevelWarning}, #{temp}, #{humidity}, #{waterLeachingWarning}, #{createTime}, #{updateTime},
+        #{coreVersion},#{heatOpen},#{backupPower},#{backupPowerReason})
         on duplicate key update lock_open = #{lockOpen} ,smoke_sensor_open = #{smokeSensorOpen} ,light_open =
         #{lightOpen} , fan_open =#{fanOpen},extinguisher_open = #{extinguisherOpen},v = #{v},a = #{a},power =
         #{power},power_factor = #{powerFactor},active_electrical_energy = #{activeElectricalEnergy},water_pump_open =
         #{waterPumpOpen},water_level_warning = #{waterLevelWarning},temp = #{temp},humidity =
-        #{humidity},water_leaching_warning = #{waterLeachingWarning},update_time = #{updateTime},core_version=#{coreVersion},heat_open=#{heatOpen}
+        #{humidity},water_leaching_warning = #{waterLeachingWarning},update_time = #{updateTime},core_version=#{coreVersion},heat_open=#{heatOpen},backup_power=#{backupPower},backup_power_reason=#{backupPowerReason}
     </insert>
-
-
+    
+    
     <select id="selectListByQuery" resultMap="EleCabinetCoreDataMap">
         select
         tccd.id, tccd.electricity_cabinet_id, tccd.lock_open, tccd.smoke_sensor_open, tccd.light_open, tccd.fan_open,
@@ -218,7 +219,7 @@
             </if>
         </where>
     </select>
-
+    
     <select id="selectById" resultMap="EleCabinetCoreDataMap">
         select
         tccd.id, tccd.electricity_cabinet_id, tccd.lock_open, tccd.smoke_sensor_open,
@@ -228,12 +229,12 @@
         from t_ele_cabinet_core_data as tccd
         left join t_electricity_cabinet as tec on tccd.electricity_cabinet_id=tec.id
         <where>
-        <if test="id != null">
-            and tccd.electricity_cabinet_id = #{id}
-        </if>
-        <if test="tenantId != null">
-            and tec.tenant_id = #{tenantId}
-        </if>
+            <if test="id != null">
+                and tccd.electricity_cabinet_id = #{id}
+            </if>
+            <if test="tenantId != null">
+                and tec.tenant_id = #{tenantId}
+            </if>
         </where>
     </select>
     

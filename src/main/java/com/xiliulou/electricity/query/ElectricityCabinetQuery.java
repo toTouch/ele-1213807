@@ -69,7 +69,12 @@ public class ElectricityCabinetQuery {
     private Integer modelId;
 
     private Long storeId;
-
+    
+    /**
+     * 供电类型
+     */
+    private Integer powerType;
+    
     private Integer usableStatusCell;
 
     private Double fullChargeRate;

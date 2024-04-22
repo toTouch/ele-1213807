@@ -67,7 +67,7 @@ public interface EleCabinetCoreDataService {
      * @param cabinetCoreData
      * @return
      */
-    int idempotentUpdateCabinetCoreData(EleCabinetCoreData cabinetCoreData);
+    int insertOrUpdateCabinetCoreData(EleCabinetCoreData cabinetCoreData);
 
     List<EleCabinetCoreData> selectListByQuery(EleCabinetCoreDataQuery eleCabinetCoreDataQuery);
 

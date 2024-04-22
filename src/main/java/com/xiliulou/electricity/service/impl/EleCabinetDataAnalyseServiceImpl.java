@@ -51,8 +51,10 @@ public class EleCabinetDataAnalyseServiceImpl implements EleCabinetDataAnalyseSe
     private EleCabinetCoreDataService eleCabinetCoreDataService;
     @Autowired
     private FranchiseeService franchiseeService;
+    
     @Autowired
-    private ElectricityCabinetPowerService eleCabinetPowerService;
+    private ElePowerService elePowerService;
+    
     @Autowired
     private ElectricityBatteryService electricityBatteryService;
     @Autowired
@@ -172,9 +174,10 @@ public class EleCabinetDataAnalyseServiceImpl implements EleCabinetDataAnalyseSe
 
             ElectricityCabinetServer eleCabinetServer = eleCabinetServerService.selectByEid(item.getId());
             item.setServerEndTime(Objects.nonNull(eleCabinetServer) ? eleCabinetServer.getServerEndTime() : System.currentTimeMillis());
-
-            ElectricityCabinetPower eleCabinetPower = eleCabinetPowerService.selectLatestByEid(item.getId());
-            item.setPowerConsumption(Objects.nonNull(eleCabinetPower) ? eleCabinetPower.getSumPower() : 0);
+    
+            ElePower elePower = elePowerService.queryLatestByEid(item.getId().longValue());
+//            ElectricityCabinetPower eleCabinetPower = eleCabinetPowerService.selectLatestByEid(item.getId());
+            item.setPowerConsumption(Objects.nonNull(elePower) ? elePower.getSumPower() : 0);
 
             Store store = storeService.queryByIdFromCache(item.getStoreId());
             item.setStoreName(Objects.nonNull(store) ? store.getName() : "");

@@ -26,9 +26,7 @@ public interface EleDepositOrderService {
     EleDepositOrder queryByOrderId(String orderNo);
 
     R returnDeposit(HttpServletRequest request);
-
-    Triple<Boolean, String, Object> returnDepositPreCheck(UserInfo userInfo);
-
+    
     R queryList(EleDepositOrderQuery eleDepositOrderQuery);
 
     R queryListToUser(EleDepositOrderQuery eleDepositOrderQuery);
