@@ -5,6 +5,7 @@ import com.google.api.client.util.Maps;
 import com.xiliulou.core.thread.XllThreadPoolExecutorService;
 import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.db.dynamic.annotation.Slave;
+import com.xiliulou.electricity.constant.EleCabinetConstant;
 import com.xiliulou.electricity.constant.ElectricityCabinetDataAnalyseConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.entity.merchant.MerchantArea;
@@ -115,17 +116,16 @@ public class EleCabinetDataAnalyseServiceImpl implements EleCabinetDataAnalyseSe
     public List<EleCabinetDataAnalyseVO> selectLowPowerPage(ElectricityCabinetQuery cabinetQuery) {
         ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(cabinetQuery.getTenantId());
     
-        BigDecimal lowChargeRate = NumberConstant.TWENTY_FIVE_DB;
         if (Objects.nonNull(electricityConfig)) {
             // 统一配置
             if (Objects.equals(electricityConfig.getChargeRateType(), ElectricityConfig.CHARGE_RATE_TYPE_UNIFY)) {
-                lowChargeRate = electricityConfig.getLowChargeRate();
+                BigDecimal lowChargeRate = electricityConfig.getLowChargeRate();
+                cabinetQuery.setLowChargeRate(lowChargeRate.doubleValue());
             } else {
                 // 单个配置
+                cabinetQuery.setBatteryCountType(EleCabinetConstant.BATTERY_COUNT_TYPE_LESS);
             }
         }
-        
-        cabinetQuery.setLowChargeRate(lowChargeRate.doubleValue());
         
         return this.selectPowerPage(cabinetQuery);
     }
@@ -134,9 +134,17 @@ public class EleCabinetDataAnalyseServiceImpl implements EleCabinetDataAnalyseSe
     @Override
     public Integer selectLowPowerPageCount(ElectricityCabinetQuery cabinetQuery) {
         ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(cabinetQuery.getTenantId());
-        BigDecimal lowChargeRate = Optional.ofNullable(electricityConfig).map(ElectricityConfig::getLowChargeRate).orElse(NumberConstant.ZERO_BD);
         
-        cabinetQuery.setLowChargeRate(lowChargeRate.doubleValue());
+        if (Objects.nonNull(electricityConfig)) {
+            // 统一配置
+            if (Objects.equals(electricityConfig.getChargeRateType(), ElectricityConfig.CHARGE_RATE_TYPE_UNIFY)) {
+                BigDecimal lowChargeRate = electricityConfig.getLowChargeRate();
+                cabinetQuery.setLowChargeRate(lowChargeRate.doubleValue());
+            } else {
+                // 单个配置
+                cabinetQuery.setBatteryCountType(EleCabinetConstant.BATTERY_COUNT_TYPE_LESS);
+            }
+        }
         
         return this.selectPowerPageCount(cabinetQuery);
     }
@@ -145,10 +153,18 @@ public class EleCabinetDataAnalyseServiceImpl implements EleCabinetDataAnalyseSe
     @Override
     public List<EleCabinetDataAnalyseVO> selectFullPowerPage(ElectricityCabinetQuery cabinetQuery) {
         ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(cabinetQuery.getTenantId());
-        BigDecimal fullChargeRate = Optional.ofNullable(electricityConfig).map(ElectricityConfig::getFullChargeRate).orElse(NumberConstant.ZERO_BD);
-        
-        cabinetQuery.setFullChargeRate(fullChargeRate.doubleValue());
-        
+    
+        if (Objects.nonNull(electricityConfig)) {
+            // 统一配置
+            if (Objects.equals(electricityConfig.getChargeRateType(), ElectricityConfig.CHARGE_RATE_TYPE_UNIFY)) {
+                BigDecimal fullChargeRate = electricityConfig.getFullChargeRate();
+                cabinetQuery.setFullChargeRate(fullChargeRate.doubleValue());
+            } else {
+                // 单个配置
+                cabinetQuery.setBatteryCountType(EleCabinetConstant.BATTERY_COUNT_TYPE_MORE);
+            }
+        }
+    
         return this.selectPowerPage(cabinetQuery);
     }
     
@@ -156,9 +172,17 @@ public class EleCabinetDataAnalyseServiceImpl implements EleCabinetDataAnalyseSe
     @Override
     public Integer selectFullPowerPageCount(ElectricityCabinetQuery cabinetQuery) {
         ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(cabinetQuery.getTenantId());
-        BigDecimal fullChargeRate = Optional.ofNullable(electricityConfig).map(ElectricityConfig::getFullChargeRate).orElse(NumberConstant.ZERO_BD);
-        
-        cabinetQuery.setFullChargeRate(fullChargeRate.doubleValue());
+    
+        if (Objects.nonNull(electricityConfig)) {
+            // 统一配置
+            if (Objects.equals(electricityConfig.getChargeRateType(), ElectricityConfig.CHARGE_RATE_TYPE_UNIFY)) {
+                BigDecimal fullChargeRate = electricityConfig.getFullChargeRate();
+                cabinetQuery.setFullChargeRate(fullChargeRate.doubleValue());
+            } else {
+                // 单个配置
+                cabinetQuery.setBatteryCountType(EleCabinetConstant.BATTERY_COUNT_TYPE_MORE);
+            }
+        }
         
         return this.selectPowerPageCount(cabinetQuery);
     }
