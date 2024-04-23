@@ -20,10 +20,9 @@
     
     <!--查询单个-->
     <select id="selectOneByUidAndSn" resultMap="ExchangeBatterySocMap">
-        select id, uid, sn, take_away_power ,return_power
+        select id, uid, sn, take_away_power, return_power, update_time
         from t_exchange_battery_soc
-        where uid = #{uid}
-          and sn = #{sn}
+        where sn = #{sn}
           and del_flag = 0
         order by id desc limit 1
     </select>

@@ -16,7 +16,7 @@ public interface ExchangeBatterySocMapper {
      *
      * @return 实例对象
      */
-    ExchangeBatterySoc selectOneByUidAndSn(@Param("uid") Long uid, @Param("sn") String sn);
+    ExchangeBatterySoc selectOneByUidAndSn(@Param("sn") String sn);
     
     /**
      * 新增数据

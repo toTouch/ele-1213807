@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.handler.iot.impl;
 
 import cn.hutool.core.util.IdUtil;
+import cn.hutool.core.util.StrUtil;
 import com.google.common.collect.Maps;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
@@ -346,7 +347,7 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
         }
         
         // 归还电池，保存归还电池soc，兼容异常交换
-        lineExchangeBatterSocThreadPool.execute(() -> handlerUserRentBatterySoc(placeBattery, exchangeOrderRsp.getPlaceBatteryName(), exchangeOrderRsp.getPlaceBatterySoc()));
+        lineExchangeBatterSocThreadPool.execute(() -> handlerUserRentBatterySoc(exchangeOrderRsp.getPlaceBatteryName(), exchangeOrderRsp.getPlaceBatterySoc()));
         
         //电池改为在用
         ElectricityBattery electricityBattery = electricityBatteryService.queryBySnFromDb(exchangeOrderRsp.getTakeBatteryName());
@@ -434,20 +435,24 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
     /**
      * 换电归还电池 记录soc
      */
-    private void handlerUserRentBatterySoc(ElectricityBattery placeBattery, String returnSn, Double returnPower) {
+    private void handlerUserRentBatterySoc(String returnSn, Double returnPower) {
+        if (StrUtil.isBlank(returnSn)) {
+            log.error("NormalNewExchangeOrderHandlerIot/handlerUserRentBatterySoc is error,returnSn is null");
+            return;
+        }
         if (Objects.isNull(returnPower)) {
             log.error("NormalNewExchangeOrderHandlerIot/handlerUserRentBatterySoc is error,returnPower is null, returnSn={}", returnSn);
             return;
         }
         
         //  上报的sn绑定的用户+Sn;兼容异常交换场景
-        ExchangeBatterySoc exchangeBatterySoc = exchangeBatterySocService.queryOneByUidAndSn(placeBattery.getUid(), returnSn);
+        ExchangeBatterySoc exchangeBatterySoc = exchangeBatterySocService.queryOneByUidAndSn(returnSn);
         if (Objects.isNull(exchangeBatterySoc)) {
-            log.error("NormalNewExchangeOrderHandlerIot/handlerUserRentBatterySoc is error, rentBatterySoc should is not null, uid={},sn={}", placeBattery.getUid(), returnSn);
+            log.error("NormalNewExchangeOrderHandlerIot/handlerUserRentBatterySoc is error, rentBatterySoc is  null,sn={}", returnSn);
             return;
         }
         try {
-            if (Objects.equals(exchangeBatterySoc.getReturnPower(), RETURN_POWER_DEFAULT)) {
+            if (Objects.equals(exchangeBatterySoc.getReturnPower(), RETURN_POWER_DEFAULT) && Objects.isNull(exchangeBatterySoc.getUpdateTime())) {
                 ExchangeBatterySoc batterySoc = new ExchangeBatterySoc();
                 batterySoc.setId(exchangeBatterySoc.getId());
                 batterySoc.setReturnPower(returnPower);
@@ -456,7 +461,7 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
                 exchangeBatterySocService.update(batterySoc);
             }
         } catch (Exception e) {
-            log.error("NormalNewExchangeOrderHandlerIot/handlerUserTakeBatterySoc update is exception,uid={},sn={}", placeBattery.getUid(), returnPower, e);
+            log.error("NormalNewExchangeOrderHandlerIot/handlerUserTakeBatterySoc update is exception,sn={}", returnPower, e);
         }
         
     }

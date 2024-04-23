@@ -8,5 +8,5 @@ public interface ExchangeBatterySocService {
     
     int update(ExchangeBatterySoc exchangeBatterySoc);
     
-    ExchangeBatterySoc queryOneByUidAndSn(Long uid,String sn);
+    ExchangeBatterySoc queryOneByUidAndSn(String sn);
 }

@@ -54,11 +54,11 @@ public class EleTest {
     
     @Test
     public void test(){
-        ExchangeBatterySoc batterySoc = service.queryOneByUidAndSn(3010043l, "BT106002512NNTB211118417");
-        System.out.println(Objects.equals(batterySoc.getReturnPower(),RETURN_POWER_DEFAULT));
-        System.out.println(Objects.equals(batterySoc.getReturnPower(),0));
-        
-        System.out.println(BigDecimal.valueOf(batterySoc.getReturnPower()).compareTo(BigDecimal.valueOf(0)));
+//        ExchangeBatterySoc batterySoc = service.queryOneByUidAndSn(3010043l, "BT106002512NNTB211118417");
+//        System.out.println(Objects.equals(batterySoc.getReturnPower(),RETURN_POWER_DEFAULT));
+//        System.out.println(Objects.equals(batterySoc.getReturnPower(),0));
+//
+//        System.out.println(BigDecimal.valueOf(batterySoc.getReturnPower()).compareTo(BigDecimal.valueOf(0)));
     }
 
 //	@Test

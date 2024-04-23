@@ -791,20 +791,25 @@ public class EleOperateQueueHandler {
     /**
      * 退电电池 记录soc
      */
-    private void handlerUserRentBatterySoc(ElectricityBattery placeBattery, String returnSn, Double returnPower) {
+    private void handlerUserRentBatterySoc(String returnSn, Double returnPower) {
+        if (StrUtil.isBlank(returnSn)) {
+            log.error("EleOperateQueueHandler/handlerUserRentBatterySoc is error,returnSn is null");
+            return;
+        }
         if (Objects.isNull(returnPower)) {
-            log.error("EleOperateQueueHandler/handlerUserRentBatterySoc is error,returnPower is null");
+            log.error("EleOperateQueueHandler/handlerUserRentBatterySoc is error,returnPower is null, sn={}", returnSn);
             return;
         }
         
-        ExchangeBatterySoc exchangeBatterySoc = exchangeBatterySocService.queryOneByUidAndSn(placeBattery.getUid(), returnSn);
+        ExchangeBatterySoc exchangeBatterySoc = exchangeBatterySocService.queryOneByUidAndSn(returnSn);
         if (Objects.isNull(exchangeBatterySoc)) {
-            log.error("EleOperateQueueHandler/handlerUserRentBatterySoc is error, rentBatterySoc should is not null, uid={},sn={}", placeBattery.getUid(), returnSn);
+            log.error("EleOperateQueueHandler/handlerUserRentBatterySoc is error, rentBatterySoc should is null, sn={}", returnSn);
             return;
         }
         
         try {
-            if (Objects.equals(exchangeBatterySoc.getReturnPower(), RETURN_POWER_DEFAULT)) {
+            // 处理异常交换
+            if (Objects.equals(exchangeBatterySoc.getReturnPower(), RETURN_POWER_DEFAULT) && Objects.isNull(exchangeBatterySoc.getUpdateTime())) {
                 ExchangeBatterySoc batterySoc = new ExchangeBatterySoc();
                 batterySoc.setId(exchangeBatterySoc.getId());
                 batterySoc.setReturnPower(returnPower);
@@ -813,7 +818,7 @@ public class EleOperateQueueHandler {
                 exchangeBatterySocService.update(batterySoc);
             }
         } catch (Exception e) {
-            log.error("EleOperateQueueHandler/handlerUserTakeBatterySoc is exception, uid ={}, sn={}", placeBattery.getUid(), returnSn, e);
+            log.error("EleOperateQueueHandler/handlerUserTakeBatterySoc is exception, sn={}", returnSn, e);
         }
     }
     
@@ -889,7 +894,7 @@ public class EleOperateQueueHandler {
             
         }
         // 归还电池
-        operateBatterSocThreadPool.execute(() -> handlerUserRentBatterySoc(oldElectricityBattery, oldElectricityBattery.getSn(), oldElectricityBattery.getPower()));
+        operateBatterSocThreadPool.execute(() -> handlerUserRentBatterySoc(oldElectricityBattery.getSn(), oldElectricityBattery.getPower()));
         
     }
     
