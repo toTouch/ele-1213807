@@ -527,7 +527,7 @@
             <if test="groupType != null">
                 group_type = #{groupType},
             </if>
-            <if test="userInfoGroupIds != null">
+            <if test="userInfoGroupIds != null and userInfoGroupIds != ''">
                 user_info_group_ids = #{userInfoGroupIds},
             </if>
         </set>

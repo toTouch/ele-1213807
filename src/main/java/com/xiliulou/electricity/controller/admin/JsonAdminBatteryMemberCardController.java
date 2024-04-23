@@ -88,13 +88,12 @@ public class JsonAdminBatteryMemberCardController extends BaseController {
             @RequestParam(value = "userGroupId", required = false) Long userGroupId) {
         
         if (Objects.nonNull(rentType) && Objects.nonNull(userGroupId)) {
-            return R.fail("110210", "不可同时根据系统分组及用户分组查询");
+            return R.ok(Collections.emptyList());
         }
         
         if (size < 0 || size > 50) {
             size = 10L;
         }
-        
         if (offset < 0) {
             offset = 0L;
         }
@@ -145,6 +144,10 @@ public class JsonAdminBatteryMemberCardController extends BaseController {
             @RequestParam(value = "status", required = false) Integer status, @RequestParam(value = "rentType", required = false) Integer rentType,
             @RequestParam(value = "rentUnit", required = false) Integer rentUnit, @RequestParam(value = "businessType", required = false) Integer businessType,
             @RequestParam(value = "name", required = false) String name, @RequestParam(value = "userGroupId", required = false) Long userGroupId) {
+        
+        if (Objects.nonNull(rentType) && Objects.nonNull(userGroupId)) {
+            return R.ok(Collections.emptyList());
+        }
         
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {

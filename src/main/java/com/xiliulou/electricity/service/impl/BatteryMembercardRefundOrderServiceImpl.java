@@ -352,7 +352,7 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
             if (Objects.equals(electricityMemberCardOrder.getUseStatus(), ElectricityMemberCardOrder.USE_STATUS_EXPIRE)) {
                 return Triple.of(false, "100285", "电池套餐已失效");
             }
-    
+            
             List<UserCoupon> userCoupons = userCouponService.selectListBySourceOrderId(electricityMemberCardOrder.getOrderId());
             if (!CollectionUtils.isEmpty(userCoupons)) {
                 for (UserCoupon userCoupon : userCoupons) {
@@ -480,7 +480,7 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
             log.warn("BATTERY MEMBERCARD REFUND WARN! not found electricityMemberCardOrder,orderNo={}", orderNo);
             return Triple.of(false, "100281", "电池套餐订单不存在");
         }
-    
+        
         List<UserCoupon> userCoupons = userCouponService.selectListBySourceOrderId(electricityMemberCardOrder.getOrderId());
         if (!CollectionUtils.isEmpty(userCoupons)) {
             for (UserCoupon userCoupon : userCoupons) {
@@ -839,9 +839,8 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
     @Override
     public void updateUserCouponStatus(String orderId) {
         List<UserCoupon> userCoupons = userCouponService.selectListBySourceOrderId(orderId);
-    
-        if (!CollectionUtils.isEmpty(userCoupons)) {
         
+        if (CollectionUtils.isNotEmpty(userCoupons)) {
             userCoupons.forEach(userCoupon -> {
                 UserCoupon userCouponUpdate = new UserCoupon();
                 userCouponUpdate.setId(userCoupon.getId());
