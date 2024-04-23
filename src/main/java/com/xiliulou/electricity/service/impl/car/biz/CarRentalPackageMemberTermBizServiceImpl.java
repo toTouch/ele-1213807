@@ -464,7 +464,7 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
         if (Objects.equals(memberTermEntity.getRentalPackageConfine(), RenalPackageConfineEnum.NO.getCode())) {
             record.setOldMaxUseCount(UserOperateRecordConstant.UN_LIMIT_COUNT_REMAINING_NUMBER);
         }
-    
+        
         //如果修改后的套餐次数为不限次套餐，则修改最大使用次数。
         CarRentalPackageMemberTermPo memberTermEntityUpdated = carRentalPackageMemberTermService.selectByTenantIdAndUid(memberTermEntity.getTenantId(), memberTermEntity.getUid());
         if (Objects.equals(memberTermEntityUpdated.getRentalPackageConfine(), RenalPackageConfineEnum.NO.getCode())) {
@@ -616,7 +616,8 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
         }
         // 更改状态
         if ((ObjectUtils.isNotEmpty(memberTermEntity.getDueTime()) && memberTermEntity.getDueTime() != 0L && memberTermEntity.getDueTime() <= System.currentTimeMillis()) || (
-                Objects.equals(memberTermEntity.getRentalPackageConfine(), RenalPackageConfineEnum.NUMBER.getCode()) && ObjectUtils.isNotEmpty(memberTermEntity.getResidue()) && memberTermEntity.getResidue() <= 0L)) {
+                Objects.equals(memberTermEntity.getRentalPackageConfine(), RenalPackageConfineEnum.NUMBER.getCode()) && ObjectUtils.isNotEmpty(memberTermEntity.getResidue())
+                        && memberTermEntity.getResidue() <= 0L)) {
             userMemberInfoVo.setStatus(MemberTermStatusEnum.EXPIRE.getCode());
         }
         if (!CollectionUtils.isEmpty(batteryModelEntityList)) {
@@ -638,7 +639,7 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
             if (!CollectionUtils.isEmpty(userCoupons)) {
                 userCoupons.forEach(userCoupon -> {
                     Integer status = userCoupon.getStatus();
-                    if (UserCoupon.STATUS_IS_BEING_VERIFICATION.equals(status) || UserCoupon.STATUS_USED.equals(status)) {
+                    if (UserCoupon.STATUS_IS_BEING_VERIFICATION.equals(status) || UserCoupon.STATUS_USED.equals(status) || UserCoupon.STATUS_DESTRUCTION.equals(status)) {
                         userMemberInfoVo.setCarRentalPackageOrderRefundFlag(false);
                     }
                 });
@@ -892,9 +893,8 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
             if (RentalUnitEnum.MINUTE.getCode().equals(tenancyUnit)) {
                 dueTime = dueTime + (tenancy * TimeConstant.MINUTE_MILLISECOND);
             }
-
+            
             memberTermEntityUpdate.setDueTime(dueTime);
-           
             
             // 计算余量
             if (RenalPackageConfineEnum.NUMBER.getCode().equals(packageOrderEntityNew.getConfine())) {
