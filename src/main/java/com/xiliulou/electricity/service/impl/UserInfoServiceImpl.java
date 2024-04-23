@@ -391,6 +391,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     @Resource
     private MerchantService merchantService;
     
+    @Resource
     private UserInfoGroupDetailService userInfoGroupDetailService;
     
     /**
