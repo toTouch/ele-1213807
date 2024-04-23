@@ -16,7 +16,7 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
  * @since 2023-09-18 10:35:12
  */
 public interface CloudBeanUseRecordMapper extends BaseMapper<CloudBeanUseRecord> {
-
+    
     /**
      * 通过ID查询单条数据
      *
@@ -24,7 +24,7 @@ public interface CloudBeanUseRecordMapper extends BaseMapper<CloudBeanUseRecord>
      * @return 实例对象
      */
     CloudBeanUseRecord queryById(Long id);
-
+    
     /**
      * 修改数据
      *
@@ -32,7 +32,7 @@ public interface CloudBeanUseRecordMapper extends BaseMapper<CloudBeanUseRecord>
      * @return 影响行数
      */
     int update(CloudBeanUseRecord cloudBeanUseRecord);
-
+    
     /**
      * 通过主键删除数据
      *
@@ -40,9 +40,9 @@ public interface CloudBeanUseRecordMapper extends BaseMapper<CloudBeanUseRecord>
      * @return 影响行数
      */
     int deleteById(Long id);
-
+    
     double selectCloudBeanByEnterpriseIdAndType(@Param("enterpriseId") Long enterpriseId, @Param("type") Integer type);
-
+    
     List<CloudBeanUseRecord> selectByUserPage(CloudBeanUseRecordQuery query);
     
     List<CloudBeanUseRecord> selectByEnterpriseIdAndType(@Param("enterpriseId") Long enterpriseId, @Param("type") Integer type);

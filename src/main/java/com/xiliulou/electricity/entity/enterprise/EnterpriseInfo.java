@@ -26,9 +26,9 @@ public class EnterpriseInfo {
      * 主键ID
      */
     private Long id;
-
+    
     private Long businessId;
-
+    
     private String name;
     /**
      * 企业用户id
@@ -80,15 +80,22 @@ public class EnterpriseInfo {
      */
     private String remark;
     
+    /**
+     * 会员代付权限 0：关，1：开
+     */
+    private Integer purchaseAuthority;
+    
     public static final Integer DEL_NORMAL = 0;
     public static final Integer DEL_DEL = 1;
-
+    
     //企业状态 0:开启,1:关闭
     public static final Integer STATUS_OPEN = 0;
     public static final Integer STATUS_CLOSE = 1;
-
+    
     //残值回收方式 0:以实际退电日期回收云豆,1:以实际未消耗天数回收云豆
     public static final Integer RECOVERY_MODE_RETURN = 0;
     public static final Integer RECOVERY_MODE_REALY = 1;
-
+    
+    public static final Integer PURCHASE_AUTHORITY_OPEN=1;
+    public static final Integer PURCHASE_AUTHORITY_CLOSE=0;
 }

@@ -32,6 +32,12 @@
         where package_id = #{packageId}
     </select>
     
+    <select id="listByIdList" resultType="com.xiliulou.electricity.entity.enterprise.EnterprisePackage">
+        select  package_id
+        from t_enterprise_package
+        where package_id = #{packageId}
+    </select>
+    
     <select id="selectListByEnterpriseId"
         resultType="com.xiliulou.electricity.bo.merchant.MerchantEnterprisePackageBO">
         SELECT
@@ -42,6 +48,7 @@
                 left join t_battery_member_card b on b.id = e.package_id
         WHERE
             enterprise_id = #{id}
+             and status = 0
     </select>
 
     <!--通过主键修改数据-->

@@ -625,4 +625,8 @@ public interface CacheConstant {
     String CACHE_USER_GROUP_DETAIL_UPDATE_LOCK = "cache_user_group_detail_update_lock:";
     String CACHE_USER_GROUP_DETAIL_BIND_GROUP_LOCK = "cache_user_group_detail_bind_group_lock:";
     String CACHE_USER_GROUP = "cache_user_group:";
+    
+    String CACHE_CHANNEL_USER_EXIT_LOCK = "cache_channel_user_exit_lock:";
+    
+    String CACHE_CHANNEL_USER_EXIT_ALL_LOCK = "cache_channel_user_exit_all_lock:";
 }

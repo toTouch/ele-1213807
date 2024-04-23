@@ -531,4 +531,14 @@
           and pay_type = 0
           and uid = #{uid}
     </select>
+    
+    <update id="batchUpdateChannelOrderStatusByOrderNo">
+        update t_electricity_member_card_order set use_status = #{useStatus},update_time = UNIX_TIMESTAMP()*1000
+        where
+        order_type = 1
+        and order_id in
+        <foreach collection="orderIds" item="id" index="index" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </update>
 </mapper>

@@ -156,6 +156,11 @@ public class ElectricityConfig {
     private Integer allowFreezeWithAssets;
     
     /**
+     * 渠道时限
+     */
+    private Integer channelTimeLimit;
+    
+    /**
      * 打开微信客服 0-是 1-否
      */
     private Integer wxCustomer;
@@ -169,11 +174,6 @@ public class ElectricityConfig {
      *  柜机多电比例
      */
     private BigDecimal fullChargeRate;
-    
-    /**
-     * 渠道时限
-     */
-    private Integer channelTimeLimit;
     
     public static Integer MOVE_FRANCHISEE_CLOSE = 1;
     

@@ -1,64 +1,78 @@
-package com.xiliulou.electricity.entity.enterprise;
-
+package com.xiliulou.electricity.query.enterprise;
 
 import com.xiliulou.electricity.enums.enterprise.CloudBeanStatusEnum;
 import com.xiliulou.electricity.enums.enterprise.EnterprisePaymentStatusEnum;
 import com.xiliulou.electricity.enums.enterprise.InvitationWayEnum;
 import com.xiliulou.electricity.enums.enterprise.RenewalStatusEnum;
+import com.xiliulou.electricity.validator.CreateGroup;
+import com.xiliulou.electricity.validator.UpdateGroup;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import com.baomidou.mybatisplus.annotation.TableName;
+
+import javax.validation.constraints.NotNull;
+import java.util.List;
 
 /**
- * 企业渠道邀请用户表(EnterpriseChannelUser)实体类
- *
- * @author Eclair
- * @since 2023-09-14 10:18:18
+ * @author BaoYu
+ * @description:
+ * @date 2023/9/18 14:00
  */
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@TableName("t_enterprise_channel_user")
-public class EnterpriseChannelUser {
+public class EnterpriseChannelUserExitRequest {
+
     /**
      * 主键ID
      */
+    @NotNull(message = "id不能为空", groups = {UpdateGroup.class})
     private Long id;
-    
+
     /**
-     * 企业id
+     * 企业ID
      */
+    @NotNull(message = "企业id不能为空", groups = {CreateGroup.class})
     private Long enterpriseId;
-    
+
     /**
-     * 企业添加用户的uid
+     * 被邀请用户ID
      */
     private Long uid;
+
     /**
-     * 邀请方式 0:面对面添加,1:手机号添加
+     * 被邀请用户电话
+     */
+    private String phone;
+
+    /**
+     * 邀请方式
      * @see InvitationWayEnum
      */
     private Integer invitationWay;
-    
+
     /**
-     * 所属加盟商id
+     * 企业用户所属运营商ID
      */
     private Long franchiseeId;
+
     /**
-     * 租户ID
+     * 企业用户所属租户ID
      */
     private Long tenantId;
+
     /**
-     * 自主续费状态 0:不自主续费, 1:自主续费
+     * 续费状态
      * @see RenewalStatusEnum
      */
+    @NotNull(message = "自主续费状态不能为空", groups = {CreateGroup.class, UpdateGroup.class})
     private Integer renewalStatus;
     
     /**
-     * 云豆状态（0-初始态, 1-未回收, 2-已回收）
+     * 云豆状态（1-未回收，2-已回收）
      * @see CloudBeanStatusEnum
      */
     private Integer cloudBeanStatus;
@@ -71,11 +85,6 @@ public class EnterpriseChannelUser {
     private Integer paymentStatus;
     
     /**
-     * 邀请人UID
-     */
-    private Long inviterId;
-    
-    /**
      * 创建时间
      */
     private Long createTime;
@@ -83,20 +92,25 @@ public class EnterpriseChannelUser {
      * 修改时间
      */
     private Long updateTime;
+    
+    
     /**
-     * 备注
+     * 偏移量
      */
-    private String remark;
+    private Integer offset = 0;
     
-    public static final Integer DEL_NORMAL = 0;
-    public static final Integer DEL_DEL = 1;
+    /**
+     * 取值数量
+     */
+    private Integer size = 10;
     
-    public static final Integer RENEWAL_OPEN = 1;
-    public static final Integer RENEWAL_CLOSE = 0;
+    /**
+     * 关键字查询，手机号/真实姓名，模糊查询
+     */
+    private String keywords;
     
-    public static final Integer NO_RECYCLE = 1;
-    public static final Integer CLOUD_BEAN_STATUS_INIT = 0;
+    private String name;
     
-    public static final Integer CLOUD_BEAN_STATUS_RECYCLE = 2;
-    
+    private List<Long> franchiseeIds;
+    private List<Long> storeIds;
 }

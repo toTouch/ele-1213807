@@ -73,6 +73,7 @@ import com.xiliulou.electricity.entity.UserCarMemberCard;
 import com.xiliulou.electricity.entity.UserCoupon;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.UserOauthBind;
+import com.xiliulou.electricity.entity.enterprise.EnterpriseChannelUserExit;
 import com.xiliulou.electricity.enums.ActivityEnum;
 import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.enums.DivisionAccountEnum;
@@ -82,6 +83,7 @@ import com.xiliulou.electricity.enums.enterprise.UserCostTypeEnum;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.manager.CalcRentCarPriceFactory;
 import com.xiliulou.electricity.mapper.ElectricityMemberCardOrderMapper;
+import com.xiliulou.electricity.mapper.enterprise.EnterpriseChannelUserExitMapper;
 import com.xiliulou.electricity.mq.constant.MqProducerConstant;
 import com.xiliulou.electricity.mq.producer.ActivityProducer;
 import com.xiliulou.electricity.mq.producer.DivisionAccountProducer;
@@ -95,6 +97,7 @@ import com.xiliulou.electricity.query.ModelBatteryDeposit;
 import com.xiliulou.electricity.query.UserBatteryDepositAndMembercardQuery;
 import com.xiliulou.electricity.query.UserBatteryMembercardQuery;
 import com.xiliulou.electricity.query.userinfo.userInfoGroup.UserInfoGroupDetailQuery;
+import com.xiliulou.electricity.queryModel.enterprise.EnterpriseChannelUserExitQueryModel;
 import com.xiliulou.electricity.service.ActivityService;
 import com.xiliulou.electricity.service.BatteryMemberCardOrderCouponService;
 import com.xiliulou.electricity.service.BatteryMemberCardService;
@@ -403,6 +406,9 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
     @Resource
     EnterpriseUserCostRecordService enterpriseUserCostRecordService;
     
+    @Resource
+    EnterpriseChannelUserExitMapper channelUserExitMapper;
+    
     @Autowired
     private UserInfoGroupService userInfoGroupService;
     
@@ -468,7 +474,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             Boolean userRenewalStatus = enterpriseChannelUserService.checkRenewalStatusByUid(user.getUid());
             if (!userRenewalStatus) {
                 log.warn("BATTERY MEMBER ORDER WARN! user renewal status is false, uid={}, mid={}", user.getUid(), query.getMemberId());
-                return Triple.of(false, "000088", "自主续费状态已关闭，购买套餐请联系企业负责人");
+                return Triple.of(false, "000088", "您已是渠道用户，请联系对应站点购买套餐");
             }
             
             if (!Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
@@ -1086,6 +1092,19 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         if (Boolean.TRUE.equals(acquireUserBatteryServiceFeeResult.getLeft())) {
             log.error("DISABLE MEMBER CARD ERROR! user exist battery service fee,uid={}", userInfo.getUid());
             return R.fail("ELECTRICITY.100000", "存在电池服务费", acquireUserBatteryServiceFeeResult.getRight());
+        }
+    
+        // 判断用户是否存在与企业渠道用户然后站长退出的表中，类型未未处理或者是处理失败
+        List<Integer> typeList = new ArrayList<>();
+        typeList.add(EnterpriseChannelUserExit.TYPE_INIT);
+        typeList.add(EnterpriseChannelUserExit.TYPE_FAIL);
+        List<Long> uidList = new ArrayList<>();
+        uidList.add(user.getUid());
+        EnterpriseChannelUserExitQueryModel queryModel = EnterpriseChannelUserExitQueryModel.builder().uidList(uidList).typeList(typeList).build();
+        List<EnterpriseChannelUserExit> channelUserList = channelUserExitMapper.list(queryModel);
+        if (ObjectUtils.isNotEmpty(channelUserList)) {
+            log.error("DISABLE MEMBER CARD ERROR! channel user exit,uid={}", userInfo.getUid());
+            return R.fail("300853", "企业用户无法申请冻结套餐", acquireUserBatteryServiceFeeResult.getRight());
         }
         
         EleDisableMemberCardRecord eleDisableMemberCardRecord = EleDisableMemberCardRecord.builder().disableMemberCardNo(generateOrderId(user.getUid()))
@@ -3616,6 +3635,14 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
     }
     
     @Override
+    public Integer batchUpdateChannelOrderStatusByOrderNo(List<String> orderIds, Integer useStatus) {
+        if (CollectionUtils.isEmpty(orderIds)) {
+            return NumberConstant.ZERO;
+        }
+        return this.baseMapper.batchUpdateChannelOrderStatusByOrderNo(orderIds, useStatus);
+    }
+    
+    @Override
     public Triple<Boolean, String, Object> userBatteryMembercardInfo(Long uid) {
         UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
         if (Objects.isNull(userInfo) || !Objects.equals(userInfo.getTenantId(), TenantContextHolder.getTenantId())) {
@@ -3725,6 +3752,20 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         Boolean userRenewalStatus = enterpriseChannelUserService.checkRenewalStatusByUid(userInfo.getUid());
         if (userRenewalStatus) {
             userBatteryMemberCardInfoVO.setRenewalStatus(RenewalStatusEnum.RENEWAL_STATUS_BY_SELF.getCode());
+        }
+    
+        // 判断用户是否存在与企业渠道用户然后站长退出的表中，类型未未处理或者是处理失败
+        List<Integer> typeList = new ArrayList<>();
+        typeList.add(EnterpriseChannelUserExit.TYPE_INIT);
+        typeList.add(EnterpriseChannelUserExit.TYPE_FAIL);
+        List<Long> uidList = new ArrayList<>();
+        uidList.add(userInfo.getUid());
+        EnterpriseChannelUserExitQueryModel queryModel = EnterpriseChannelUserExitQueryModel.builder().uidList(uidList).typeList(typeList).build();
+        List<EnterpriseChannelUserExit> channelUserList = channelUserExitMapper.list(queryModel);
+        if (ObjectUtils.isNotEmpty(channelUserList)) {
+            userBatteryMemberCardInfoVO.setChannelUserExit(UserBatteryMemberCardInfoVO.YES);
+        } else {
+            userBatteryMemberCardInfoVO.setChannelUserExit(UserBatteryMemberCardInfoVO.NO);
         }
         
         return Triple.of(true, null, userBatteryMemberCardInfoVO);

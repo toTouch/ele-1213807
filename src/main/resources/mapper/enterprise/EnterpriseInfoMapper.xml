@@ -18,19 +18,20 @@
         <result property="createTime" column="create_time" jdbcType="INTEGER"/>
         <result property="updateTime" column="update_time" jdbcType="INTEGER"/>
         <result property="remark" column="remark" jdbcType="VARCHAR"/>
+        <result property="purchaseAuthority" column="purchase_authority" javaType="INTEGER"/>
     </resultMap>
 
     <!--查询单个-->
     <select id="queryById" resultMap="EnterpriseInfoMap">
         select
-          id, uid, business_id, name, phone, franchisee_id, status, recovery_mode, total_bean_amount, renewal_status, tenant_id, create_time, update_time, remark
+          id, uid, business_id, name, phone, franchisee_id, status, recovery_mode, total_bean_amount, renewal_status, tenant_id, create_time, update_time, remark,purchase_authority
         from t_enterprise_info
         where id = #{id} and del_flag=0
     </select>
 
     <select id="selectByUid" resultMap="EnterpriseInfoMap">
         select
-          id, uid, business_id, name, phone, franchisee_id, status, recovery_mode, total_bean_amount, renewal_status, tenant_id, create_time, update_time, remark
+          id, uid, business_id, name, phone, franchisee_id, status, recovery_mode, total_bean_amount, renewal_status, tenant_id, create_time, update_time, remark,purchase_authority
         from t_enterprise_info
         where uid = #{uid} and del_flag=0
     </select>
@@ -49,6 +50,7 @@
         <result property="createTime" column="create_time" jdbcType="INTEGER"/>
         <result property="updateTime" column="update_time" jdbcType="INTEGER"/>
         <result property="remark" column="remark" jdbcType="VARCHAR"/>
+        <result property="purchaseAuthority" column="purchase_authority" javaType="INTEGER"/>
         <collection property="enterprisePackage" javaType="java.util.List" ofType="com.xiliulou.electricity.entity.enterprise.EnterprisePackage">
             <id property="id" column="mcbt_id" jdbcType="INTEGER"/>
             <result property="packageId" column="package_id" jdbcType="INTEGER"/>
@@ -70,7 +72,8 @@
         tei.tenant_id,
         tei.create_time,
         tei.update_time,
-        tei.remark
+        tei.remark,
+        tei.purchase_authority
         from t_enterprise_info tei left join t_enterprise_package tep on tei.id=tep.enterprise_id
         <where>
             tei.del_flag=0
@@ -147,7 +150,7 @@
             #{id}
         </foreach>
     </select>
-
+    
     <!--通过主键修改数据-->
     <update id="update">
         update t_enterprise_info
@@ -190,6 +193,9 @@
             </if>
             <if test="remark != null and remark != ''">
                 remark = #{remark},
+            </if>
+            <if test="purchaseAuthority != null">
+                purchase_authority = #{purchaseAuthority},
             </if>
         </set>
         where id = #{id}

@@ -17,7 +17,7 @@ import java.util.List;
  * @since 2023-09-14 10:15:08
  */
 public interface EnterpriseInfoMapper extends BaseMapper<EnterpriseInfo> {
-
+    
     /**
      * 通过ID查询单条数据
      *
@@ -25,7 +25,7 @@ public interface EnterpriseInfoMapper extends BaseMapper<EnterpriseInfo> {
      * @return 实例对象
      */
     EnterpriseInfo queryById(Long id);
-
+    
     /**
      * 修改数据
      *
@@ -33,7 +33,7 @@ public interface EnterpriseInfoMapper extends BaseMapper<EnterpriseInfo> {
      * @return 影响行数
      */
     int update(EnterpriseInfo enterpriseInfo);
-
+    
     /**
      * 通过主键删除数据
      *
@@ -41,11 +41,11 @@ public interface EnterpriseInfoMapper extends BaseMapper<EnterpriseInfo> {
      * @return 影响行数
      */
     int deleteById(Long id);
-
+    
     List<EnterpriseInfoPackageVO> selectByPage(EnterpriseInfoQuery query);
-
+    
     Integer selectByPageCount(EnterpriseInfoQuery query);
-
+    
     EnterpriseInfo selectByUid(Long uid);
     
     int addCloudBean(@Param("id") Long id, @Param("totalCloudBean") BigDecimal totalCloudBean);

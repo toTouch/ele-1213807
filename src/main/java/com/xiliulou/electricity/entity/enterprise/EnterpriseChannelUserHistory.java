@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.entity.enterprise;
 
 
+import com.baomidou.mybatisplus.annotation.TableName;
 import com.xiliulou.electricity.enums.enterprise.CloudBeanStatusEnum;
 import com.xiliulou.electricity.enums.enterprise.EnterprisePaymentStatusEnum;
 import com.xiliulou.electricity.enums.enterprise.InvitationWayEnum;
@@ -9,7 +10,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import com.baomidou.mybatisplus.annotation.TableName;
 
 /**
  * 企业渠道邀请用户表(EnterpriseChannelUser)实体类
@@ -21,18 +21,18 @@ import com.baomidou.mybatisplus.annotation.TableName;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@TableName("t_enterprise_channel_user")
-public class EnterpriseChannelUser {
+@TableName("t_enterprise_channel_user_history")
+public class EnterpriseChannelUserHistory {
     /**
      * 主键ID
      */
     private Long id;
-    
+
     /**
      * 企业id
      */
     private Long enterpriseId;
-    
+
     /**
      * 企业添加用户的uid
      */
@@ -42,7 +42,7 @@ public class EnterpriseChannelUser {
      * @see InvitationWayEnum
      */
     private Integer invitationWay;
-    
+
     /**
      * 所属加盟商id
      */
@@ -71,6 +71,21 @@ public class EnterpriseChannelUser {
     private Integer paymentStatus;
     
     /**
+     * 类型：0-加入，1-退出
+     */
+    private Integer type;
+    
+    /**
+     * 加入时间
+     */
+    private Long joinTime;
+    
+    /**
+     * 退出时间
+     */
+    private Long exitTime;
+    
+    /**
      * 邀请人UID
      */
     private Long inviterId;
@@ -87,16 +102,11 @@ public class EnterpriseChannelUser {
      * 备注
      */
     private String remark;
-    
+
     public static final Integer DEL_NORMAL = 0;
     public static final Integer DEL_DEL = 1;
     
-    public static final Integer RENEWAL_OPEN = 1;
-    public static final Integer RENEWAL_CLOSE = 0;
-    
-    public static final Integer NO_RECYCLE = 1;
-    public static final Integer CLOUD_BEAN_STATUS_INIT = 0;
-    
-    public static final Integer CLOUD_BEAN_STATUS_RECYCLE = 2;
-    
+    public static final Integer JOIN = 0;
+    public static final Integer EXIT = 1;
+
 }

@@ -1,6 +1,8 @@
 package com.xiliulou.electricity.service.impl;
 
 import com.xiliulou.core.thread.XllThreadPoolExecutors;
+import com.xiliulou.db.dynamic.annotation.Slave;
+import com.xiliulou.electricity.bo.batteryPackage.UserBatteryMemberCardPackageBO;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mapper.UserBatteryMemberCardPackageMapper;
 import com.xiliulou.electricity.service.*;
@@ -282,6 +284,28 @@ public class UserBatteryMemberCardPackageServiceImpl implements UserBatteryMembe
         
         //更新用户电池型号
         userBatteryTypeService.updateUserBatteryType(electricityMemberCardOrder, userInfo);
+    }
+    
+    @Override
+    public Integer deleteChannelMemberCardByUid(Long uid) {
+        return this.userBatteryMemberCardPackageMapper.deleteChannelMemberCardByUid(uid);
+    }
+    
+    @Slave
+    @Override
+    public List<UserBatteryMemberCardPackage> queryChannelListByUid(Long uid) {
+        return userBatteryMemberCardPackageMapper.listChannelByUid(uid);
+    }
+    
+    /**
+     * 根据uid查询用户最新的一条的企业套餐的信息
+     * @param uid
+     * @return
+     */
+    @Slave
+    @Override
+    public UserBatteryMemberCardPackageBO queryEnterprisePackageByUid(Long uid) {
+        return userBatteryMemberCardPackageMapper.selectLastEnterprisePackageByUid(uid);
     }
     
 }

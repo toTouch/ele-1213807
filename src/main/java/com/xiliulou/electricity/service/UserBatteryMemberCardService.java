@@ -7,6 +7,7 @@ import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.query.BatteryMemberCardExpiringSoonQuery;
 import com.xiliulou.electricity.query.CarMemberCardExpiringSoonQuery;
 import com.xiliulou.electricity.vo.FailureMemberCardVo;
+import com.xiliulou.electricity.vo.UserBatteryMemberCardChannelExitVo;
 import org.apache.commons.lang3.tuple.Triple;
 import org.apache.ibatis.annotations.Update;
 
@@ -120,6 +121,8 @@ public interface UserBatteryMemberCardService {
     Long transforRemainingTime(UserBatteryMemberCard userBatteryMemberCard, BatteryMemberCard batteryMemberCard);
 
     List<UserBatteryMemberCard> selectUseableListByTenantIds(int offset, int size, List<Integer> tenantIds);
+    
+    List<UserBatteryMemberCardChannelExitVo> selectExpireExitList(int offset, int size);
     
     Integer queryRenewalNumberByMerchantId(Long id, Integer tenantId);
 }
