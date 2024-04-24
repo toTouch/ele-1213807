@@ -232,9 +232,15 @@ public class OtherSettingParamTemplateRequestDTO {
      * 在位检测 0：关闭 1：打开  （默认关闭）
      */
     private Integer checkBatteryExit;
+    
     /**
-     * 少电告警
+     * 少电告警/少电柜机
      */
     private Integer minBatteryCountAlarm;
+    
+    /**
+     * 多电告警/多电柜机
+     */
+    private Integer maxBatteryCountAlarm;
     
 }

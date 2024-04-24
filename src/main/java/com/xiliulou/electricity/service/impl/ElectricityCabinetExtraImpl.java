@@ -41,6 +41,11 @@ public class ElectricityCabinetExtraImpl implements ElectricityCabinetExtraServi
                     electricityCabinetExtra.getSn());
             return NumberConstant.ZERO;
         }
+        
+        // 少电多电类型不相同时才更新
+        if (Objects.equals(exist.getBatteryCountType(), electricityCabinetExtra.getBatteryCountType())) {
+            return NumberConstant.ZERO;
+        }
     
         exist.setBatteryCountType(electricityCabinetExtra.getBatteryCountType());
         exist.setUpdateTime(System.currentTimeMillis());
