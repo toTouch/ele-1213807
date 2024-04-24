@@ -3,6 +3,7 @@ package com.xiliulou.electricity.mapper;
 import com.xiliulou.electricity.entity.enterprise.AnotherPayMembercardRecord;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
@@ -43,4 +44,6 @@ public interface AnotherPayMembercardRecordMapper extends BaseMapper<AnotherPayM
     AnotherPayMembercardRecord selectLatestByUid(Long uid);
     
     List<AnotherPayMembercardRecord> selectListByEnterpriseId(Long enterpriseId);
+    
+    int batchUpdateBeginAndEndTimeByIds(@Param("idList") List<Long> idList,@Param("realDisableTime") long realDisableTime,@Param("updateTime") long currentTimeMillis);
 }

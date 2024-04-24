@@ -156,4 +156,6 @@ public interface ElectricityMemberCardOrderService {
      * 购买成功订单数量
      */
     Integer countSuccessOrderByUid(Long uid);
+    
+    List<ElectricityMemberCardOrder> queryListByOrderIds(List<String> orderIdList);
 }

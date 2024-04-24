@@ -1,9 +1,13 @@
 package com.xiliulou.electricity.service.impl.enterprise;
 
+import cn.hutool.core.date.DateField;
+import cn.hutool.core.date.DateTime;
+import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.alibaba.excel.EasyExcel;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.*;
@@ -45,6 +49,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -126,6 +131,12 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
     @Resource
     private EnterpriseChannelUserExitMapper userExitMapper;
     
+    @Resource
+    private EnterpriseRentRecordDetailService enterpriseRentRecordDetailService;
+    
+    @Resource
+    private EnableMemberCardRecordService enableMemberCardRecordService;
+    
     @Override
     public CloudBeanUseRecord queryByIdFromDB(Long id) {
         return this.cloudBeanUseRecordMapper.queryById(id);
@@ -180,60 +191,68 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
     @Override
     public BigDecimal acquireUserCanRecycleCloudBean(Long uid) {
         BigDecimal result = BigDecimal.ZERO;
-        
+    
         UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
         if (Objects.isNull(userInfo)) {
             log.warn("ACQUIRE CAN RECYCLE WARN!not found userInfo,uid={}", uid);
             return result;
         }
-        
+    
         EnterpriseChannelUser enterpriseChannelUser = enterpriseChannelUserService.selectByUid(uid);
         if (Objects.isNull(enterpriseChannelUser)) {
             log.warn("ACQUIRE CAN RECYCLE WARN! user illegal,uid={}", uid);
             return result;
         }
-        
+    
         EnterpriseInfo enterpriseInfo = enterpriseInfoService.queryByIdFromCache(enterpriseChannelUser.getEnterpriseId());
         if (Objects.isNull(enterpriseInfo)) {
             log.warn("ACQUIRE CAN RECYCLE WARN! not found enterpriseInfo,enterpriseId={},uid={}", enterpriseChannelUser.getEnterpriseId(), uid);
             return result;
         }
-        
+    
         UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(uid);
         if (Objects.isNull(userBatteryDeposit)) {
             log.warn("ACQUIRE CAN RECYCLE WARN!not found userBatteryDeposit,uid={}", uid);
             return result;
         }
-        
+    
         EleDepositOrder eleDepositOrder = eleDepositOrderService.queryByOrderId(userBatteryDeposit.getOrderId());
         if(Objects.isNull(eleDepositOrder)){
             log.warn("ACQUIRE CAN RECYCLE WARN!not found eleDepositOrder,uid={}", uid);
             return result;
         }
-        
+    
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(uid);
         if(Objects.isNull(userBatteryMemberCard)){
             log.warn("ACQUIRE CAN RECYCLE WARN!not found userBatteryMemberCard,uid={}", uid);
             return result;
         }
-        
+    
         //押金云豆数: 免押用户不需要计算
         if (Objects.equals(userBatteryDeposit.getDepositType(), UserBatteryDeposit.DEPOSIT_TYPE_DEFAULT) && Objects.equals(eleDepositOrder.getOrderType(), PackageOrderTypeEnum.PACKAGE_ORDER_TYPE_ENTERPRISE.getCode())) {
             result = result.add(eleDepositOrder.getPayAmount());
         }
-        
+    
         //代付套餐记录
         List<AnotherPayMembercardRecord> anotherPayMembercardRecords = anotherPayMembercardRecordService.selectByUid(userInfo.getUid());
         if (CollectionUtils.isEmpty(anotherPayMembercardRecords)) {
             return result;
         }
-        
+    
         Map<String, AnotherPayMembercardRecord> payMembercardRecordMap = anotherPayMembercardRecords.stream().collect(Collectors.toMap(AnotherPayMembercardRecord::getOrderId, entity -> entity));
-        
+    
+        List<String> orderList = new ArrayList<>(payMembercardRecordMap.keySet());
+        Map<String, ElectricityMemberCardOrder> orderMap = new HashMap<>();
+    
+        List<ElectricityMemberCardOrder> electricityMemberCardOrderList = electricityMemberCardOrderService.queryListByOrderIds(orderList);
+        if (ObjectUtils.isNotEmpty(electricityMemberCardOrderList)) {
+            orderMap = electricityMemberCardOrderList.stream().collect(Collectors.toMap(ElectricityMemberCardOrder::getOrderId, Function.identity(), (key, key1) -> key1));
+        }
+    
         //套餐总的云豆数
         BigDecimal totalCloudBean = BigDecimal.ZERO;
         for (AnotherPayMembercardRecord anotherPayMembercardRecord : anotherPayMembercardRecords) {
-            ElectricityMemberCardOrder electricityMemberCardOrder = electricityMemberCardOrderService.selectByOrderNo(anotherPayMembercardRecord.getOrderId());
+            ElectricityMemberCardOrder electricityMemberCardOrder = orderMap.get(anotherPayMembercardRecord.getOrderId());
             if (Objects.isNull(electricityMemberCardOrder)) {
                 log.warn("ACQUIRE CAN RECYCLE BATTERY MEMBERCARD WARN! not found electricityMemberCardOrder,uid={},orderId={}", userInfo.getUid(), anotherPayMembercardRecord.getOrderId());
                 continue;
@@ -241,94 +260,146 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
             totalCloudBean = totalCloudBean.add(electricityMemberCardOrder.getPayAmount());
         }
         log.info("ACQUIRE CAN RECYCLE BATTERY MEMBERCARD INFO!totalCloudBean={},uid={}", totalCloudBean.doubleValue(), userInfo.getUid());
-        
-        //租退电记录
-        List<EnterpriseRentRecord> enterpriseRentRecords = enterpriseRentRecordService.selectByUid(userInfo.getUid());
-        
+    
+        // 租退电记录详情
+        List<EnterpriseRentRecordDetail> enterpriseRentRecordDetailList = enterpriseRentRecordDetailService.queryListByUid(userInfo.getUid());
+    
         //若未租退电
-        if (CollectionUtils.isEmpty(enterpriseRentRecords)) {
+        if (CollectionUtils.isEmpty(enterpriseRentRecordDetailList)) {
             return result.add(totalCloudBean);
         }
-        
+    
+        List<String> orderIdList = enterpriseRentRecordDetailList.stream().map(EnterpriseRentRecordDetail::getOrderId).distinct().collect(Collectors.toList());
+        // 查询套餐是否有冻结相关的操作
+        List<EnableMemberCardRecord> enableMemberCardRecords = enableMemberCardRecordService.queryListByOrderIds(orderIdList);
+        Map<String, List<EnableMemberCardRecord>> enableMemberCardRecordMap = new HashMap<>();
+        if (ObjectUtils.isNotEmpty(enableMemberCardRecords)) {
+            enableMemberCardRecordMap = enableMemberCardRecords.stream().filter(record -> Objects.nonNull(record.getDisableTime()) && Objects.nonNull(record.getEnableTime()))
+                    .collect(Collectors.groupingBy(EnableMemberCardRecord::getOrderId));
+        }
+        log.info("enterpriseRentRecordDetailList={}, enableMemberCardRecords={}, electricityMemberCardOrderList={}", JsonUtil.toJson(enterpriseRentRecordDetailList), JsonUtil.toJson(enableMemberCardRecords), JsonUtil.toJson(electricityMemberCardOrderList));
+    
+        // 将租电记录根据订单id进行分组
+        Map<String, List<EnterpriseRentRecordDetail>> recordDetailMap = enterpriseRentRecordDetailList.stream()
+                .collect(Collectors.groupingBy(EnterpriseRentRecordDetail::getOrderId));
         //租退电消耗的云豆数
         BigDecimal totalUsedCloudBean = BigDecimal.ZERO;
-        for (EnterpriseRentRecord enterpriseRentRecord : enterpriseRentRecords) {
-            if (Objects.nonNull(enterpriseRentRecord.getRentTime()) && Objects.nonNull(enterpriseRentRecord.getReturnTime())) {
-                
-                //租退电是否在同一个套餐内
-                if(ObjectUtil.equal( enterpriseRentRecord.getRentMembercardOrderId(), enterpriseRentRecord.getReturnMembercardOrderId())){
-                    ElectricityMemberCardOrder electricityMemberCardOrder = electricityMemberCardOrderService.selectByOrderNo(enterpriseRentRecord.getRentMembercardOrderId());
-                    if (Objects.nonNull(electricityMemberCardOrder)) {
-                        AnotherPayMembercardRecord returnAnotherPayMembercardRecord = payMembercardRecordMap.getOrDefault(enterpriseRentRecord.getRentMembercardOrderId(), null);
-                        
-                        Long beginTime = enterpriseRentRecord.getRentTime();
-                        
-                        Long endTime = Objects.nonNull(returnAnotherPayMembercardRecord) && Objects.nonNull(returnAnotherPayMembercardRecord.getEndTime())&& Objects.nonNull(enterpriseRentRecord.getReturnTime()) && enterpriseRentRecord.getReturnTime() > returnAnotherPayMembercardRecord.getEndTime() ? returnAnotherPayMembercardRecord.getEndTime() : enterpriseRentRecord.getReturnTime();
-                        
-                        long useDays = DateUtils.diffDayV2(beginTime , endTime);
-                        
-                        //退电套餐单价
-                        BigDecimal price = electricityMemberCardOrder.getPayAmount().divide(BigDecimal.valueOf(electricityMemberCardOrder.getValidDays()), 2, RoundingMode.HALF_UP);
-                        
-                        totalUsedCloudBean = totalUsedCloudBean.add(price.multiply(BigDecimal.valueOf(useDays)));
-                        log.info("ACQUIRE CAN RECYCLE BATTERY MEMBERCARD INFO!one membercard used cloud bean={},uid={}", totalUsedCloudBean.doubleValue(), userInfo.getUid());
+        log.info("orderIdList={}", orderIdList);
+    
+        for (String orderId : orderIdList) {
+            AnotherPayMembercardRecord payMemberCardRecord = payMembercardRecordMap.get(orderId);
+            if (Objects.isNull(payMemberCardRecord)) {
+                log.warn("RECYCLE BATTERY MEMBERCARD WARN! not found pay record,uid={},orderId={}", userInfo.getUid(), orderId);
+                continue;
+            }
+        
+            ElectricityMemberCardOrder electricityMemberCardOrder = orderMap.get(orderId);
+            if (Objects.isNull(electricityMemberCardOrder)) {
+                log.warn("RECYCLE BATTERY MEMBERCARD WARN! not find member card order,uid={},orderId={}", userInfo.getUid(), orderId);
+                continue;
+            }
+        
+            List<AnotherPayMembercardRecord> payRecordSubList = new ArrayList<>();
+        
+            // 不存在冻结记录
+            List<EnableMemberCardRecord> enableMemberCardRecordList = enableMemberCardRecordMap.get(orderId);
+            if (ObjectUtils.isEmpty(enableMemberCardRecordList)) {
+                payRecordSubList.add(payMemberCardRecord);
+            } else {
+                // 根据冻结时间进行拆分
+                List<Long> startTimeList = new ArrayList<>();
+                List<Long> endTimeList = new ArrayList<>();
+                startTimeList.add(payMemberCardRecord.getBeginTime());
+                endTimeList.add(payMemberCardRecord.getEndTime());
+                log.info("enableMemberCardRecordList={}", enableMemberCardRecordList);
+                for (EnableMemberCardRecord enableMemberCardRecord : enableMemberCardRecordList) {
+                    startTimeList.add(enableMemberCardRecord.getEnableTime());
+                    endTimeList.add(enableMemberCardRecord.getDisableTime());
+                }
+                log.info("startTimeList={},endTimeList={}", startTimeList, endTimeList);
+                startTimeList = startTimeList.stream().sorted().collect(Collectors.toList());
+                endTimeList = endTimeList.stream().sorted().collect(Collectors.toList());
+            
+                for (int i = 0; i < startTimeList.size(); i++) {
+                    AnotherPayMembercardRecord payRecord = AnotherPayMembercardRecord.builder().orderId(orderId).beginTime(startTimeList.get(i)).endTime(endTimeList.get(i))
+                            .build();
+                    if (payRecord.getBeginTime() > payRecord.getEndTime()) {
+                        log.warn("RECYCLE BATTERY MEMBERCARD WARN! pay record begin time greater than end time,uid={},orderId={}", userInfo.getUid(), orderId);
+                        continue;
                     }
-                } else {
-                    //租电套餐消耗的云豆
-                    AnotherPayMembercardRecord rentAnotherPayMembercardRecord = payMembercardRecordMap.getOrDefault(enterpriseRentRecord.getRentMembercardOrderId(),null);
-                    ElectricityMemberCardOrder rentElectricityMemberCardOrder = electricityMemberCardOrderService.selectByOrderNo(enterpriseRentRecord.getRentMembercardOrderId());
-                    if (Objects.nonNull(rentAnotherPayMembercardRecord) && Objects.nonNull(rentElectricityMemberCardOrder)) {
-                        //单价
-                        BigDecimal price = rentElectricityMemberCardOrder.getPayAmount()
-                                .divide(BigDecimal.valueOf(rentElectricityMemberCardOrder.getValidDays()), 2, RoundingMode.HALF_UP);
-                        //使用天数
-                        long useDays = DateUtils.diffDayV2(enterpriseRentRecord.getRentTime(), rentAnotherPayMembercardRecord.getEndTime());
-                        
-                        totalUsedCloudBean = totalUsedCloudBean.add(price.multiply(BigDecimal.valueOf(useDays)));
-                        log.info("ACQUIRE CAN RECYCLE BATTERY MEMBERCARD INFO!rentUsedCloudBean={},uid={}", totalUsedCloudBean.doubleValue(), userInfo.getUid());
-                    }
-                    
-                    List<String> membercardList = anotherPayMembercardRecords.stream().map(AnotherPayMembercardRecord::getOrderId).collect(Collectors.toList());
-                    //租退电包含的套餐订单
-                    if (CollectionUtils.isNotEmpty(membercardList) && membercardList.size() > 1) {
-                        List<String> containMembercardList = membercardList.subList(membercardList.indexOf(enterpriseRentRecord.getRentMembercardOrderId()) + 1,
-                                membercardList.indexOf(enterpriseRentRecord.getReturnMembercardOrderId()));
-                        if (CollectionUtils.isNotEmpty(containMembercardList)) {
-                            for (String orderId : containMembercardList) {
-                                ElectricityMemberCardOrder electricityMemberCardOrder = electricityMemberCardOrderService.selectByOrderNo(orderId);
-                                if (Objects.nonNull(electricityMemberCardOrder)) {
-                                    totalUsedCloudBean = totalUsedCloudBean.add(electricityMemberCardOrder.getPayAmount());
-                                    log.info("ACQUIRE CAN RECYCLE BATTERY MEMBERCARD INFO!containUsedCloudBean={},uid={}", totalUsedCloudBean.doubleValue(), userInfo.getUid());
-                                }
-                            }
-                        }
-                    }
-                    
-                    //退电消耗的云豆
-                    AnotherPayMembercardRecord returnAnotherPayMembercardRecord = payMembercardRecordMap.getOrDefault(enterpriseRentRecord.getReturnMembercardOrderId(), null);
-                    ElectricityMemberCardOrder returnElectricityMemberCardOrder = electricityMemberCardOrderService
-                            .selectByOrderNo(enterpriseRentRecord.getReturnMembercardOrderId());
-                    if (Objects.nonNull(returnAnotherPayMembercardRecord) && Objects.nonNull(returnElectricityMemberCardOrder)) {
-                        //单价
-                        BigDecimal price = returnElectricityMemberCardOrder.getPayAmount()
-                                .divide(BigDecimal.valueOf(returnElectricityMemberCardOrder.getValidDays()), 2, RoundingMode.HALF_UP);
-                        
-                        Long beginTime = returnAnotherPayMembercardRecord.getBeginTime();
-                        
-                        Long endTime = Objects.nonNull(enterpriseRentRecord.getReturnTime()) && enterpriseRentRecord.getReturnTime() > returnAnotherPayMembercardRecord.getEndTime() ? returnAnotherPayMembercardRecord.getEndTime() : enterpriseRentRecord.getReturnTime();
-                        
-                        //使用天数
-                        long useDays = DateUtils.diffDayV2( beginTime, endTime);
-                        
-                        totalUsedCloudBean = totalUsedCloudBean.add(price.multiply(BigDecimal.valueOf(useDays)));
-                        log.info("ACQUIRE CAN RECYCLE BATTERY MEMBERCARD INFO!returnUsedCloudBean={},uid={}", totalUsedCloudBean.doubleValue(), userInfo.getUid());
-                    }
+                    payRecordSubList.add(payRecord);
+                }
+            
+                if (ObjectUtils.isEmpty(payRecordSubList)) {
+                    log.warn("RECYCLE BATTERY MEMBERCARD WARN! pay record sub list is empty,uid={},orderId={}", userInfo.getUid(), orderId);
+                    continue;
                 }
             }
-        }
         
+            int totalUseDay = 0;
+            List<EnterpriseRentRecordDetail> rentRecordDetails = recordDetailMap.get(orderId);
+            log.info("payRecordSubList={}, orderId-{}", payRecordSubList, orderId);
+        
+            for (AnotherPayMembercardRecord payRecord : payRecordSubList) {
+                // 将退电时间在套餐有效时间段内的记录进行分段过滤
+                List<EnterpriseRentRecordDetail> detailList = rentRecordDetails.stream()
+                        .filter(record -> record.getReturnTime() <= payRecord.getEndTime() && record.getReturnTime() >= payRecord.getBeginTime()).collect(Collectors.toList());
+                log.info("detailList={}, orderId-{}", detailList, orderId);
+                if (ObjectUtils.isEmpty(detailList)) {
+                    continue;
+                }
+            
+                int payRecordMaxDaySize = getMaxDaySize(payRecord.getBeginTime(), payRecord.getEndTime());
+                int subTotalDay = 0;
+            
+                // 计算每一段时间的总天数如果大于这段时间日期的差值，则按照差值计算
+                for (EnterpriseRentRecordDetail rentRecordDetail : detailList) {
+                    int rentDetailMaxDaySize = getMaxDaySize(rentRecordDetail.getRentTime(), rentRecordDetail.getReturnTime());
+                    Long day = DateUtils.diffDayV2(rentRecordDetail.getRentTime(), rentRecordDetail.getReturnTime());
+                
+                    if (day > rentDetailMaxDaySize) {
+                        subTotalDay = subTotalDay + rentDetailMaxDaySize;
+                        log.info("sum is big, startTime={}, endTime={}, orderId={}", rentRecordDetail.getRentTime(), rentRecordDetail.getReturnTime(), orderId);
+                    } else {
+                        subTotalDay = subTotalDay + day.intValue();
+                    }
+                }
+            
+                if (subTotalDay > payRecordMaxDaySize) {
+                    log.info("detailList={}, orderId{}, subTotalDay={}, payRecord={}", detailList, orderId, subTotalDay, payRecord);
+                    totalUseDay = totalUseDay + payRecordMaxDaySize;
+                } else {
+                    totalUseDay = totalUseDay + subTotalDay;
+                }
+            }
+        
+            BigDecimal price = electricityMemberCardOrder.getPayAmount().divide(BigDecimal.valueOf(electricityMemberCardOrder.getValidDays()), 2, RoundingMode.HALF_UP);
+        
+            // 套餐回收的总的消耗天数大于订单的有效天数则按照有效天数进行云豆回收
+            if (totalUseDay > electricityMemberCardOrder.getValidDays()) {
+                totalUseDay = electricityMemberCardOrder.getValidDays();
+                log.info("RECYCLE BATTERY MEMBERCARD INFO!cloud bean use day is error, uid={}, orderId={}", userInfo.getUid(), orderId);
+            }
+        
+            totalUsedCloudBean = totalUsedCloudBean.add(price.multiply(BigDecimal.valueOf(totalUseDay)));
+            log.info("RECYCLE BATTERY MEMBERCARD INFO!return battery used cloudBean={},uid={}", totalUsedCloudBean.doubleValue(), userInfo.getUid());
+        }
+    
         //待回收云豆=总的支付的云豆-总消耗的云豆
         return result.add(totalCloudBean.subtract(totalUsedCloudBean));
+    }
+    
+    private int getMaxDaySize(Long beginTime, Long endTime) {
+        int maxDaySize = 1;
+        
+        // 计算分段的最大天数
+        
+        List<DateTime> dateTimes = DateUtil.rangeToList(new Date(DateUtils.getTimeByTimeStamp(beginTime)), new Date(DateUtils.getTimeByTimeStamp(endTime)), DateField.DAY_OF_MONTH);
+        if (dateTimes.size() > 1) {
+            maxDaySize = dateTimes.size() - 1;
+        }
+        
+        return maxDaySize;
     }
     
     @Override
@@ -586,7 +657,7 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
                 }
                 
                 //回收套餐
-                Triple<Boolean, String, Object> recycleBatteryMembercard = enterpriseInfoService.recycleBatteryMembercard(userInfo, enterpriseInfo, item);
+                Triple<Boolean, String, Object> recycleBatteryMembercard = enterpriseInfoService.recycleBatteryMemberCardV2(userInfo, enterpriseInfo, item);
                 if (Boolean.FALSE.equals(recycleBatteryMembercard.getLeft())) {
                     errorMsg = (String) recycleBatteryMembercard.getRight();
                     userExitMapper.updateById(errorMsg, EnterpriseChannelUserExit.TYPE_FAIL, memberCardChannelExitVo.getChannelUserExitId(), System.currentTimeMillis());
@@ -657,6 +728,12 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
             }
         });
     }
+    
+    @Override
+    public int batchInsert(List<CloudBeanUseRecord> cloudBeanUseRecordList) {
+        return cloudBeanUseRecordMapper.batchInsert(cloudBeanUseRecordList);
+    }
+    
     
     private BigDecimal getRealConsumeSum(Map<Integer, BigDecimal> beanAmountMap) {
         BigDecimal sum = BigDecimal.ZERO;
@@ -921,7 +998,7 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
                 }
                 
                 //回收套餐
-                Triple<Boolean, String, Object> recycleBatteryMembercard = enterpriseInfoService.recycleBatteryMembercard(userInfo, enterpriseInfo, item);
+                Triple<Boolean, String, Object> recycleBatteryMembercard = enterpriseInfoService.recycleBatteryMemberCardV2(userInfo, enterpriseInfo, item);
                 if (Boolean.FALSE.equals(recycleBatteryMembercard.getLeft())) {
                     return;
                 }

@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.service.enterprise;
 
+import com.xiliulou.electricity.entity.UserBatteryMemberCard;
 import com.xiliulou.electricity.entity.enterprise.AnotherPayMembercardRecord;
 
 import java.util.List;
@@ -53,4 +54,8 @@ public interface AnotherPayMembercardRecordService {
     List<AnotherPayMembercardRecord> selectListByEnterpriseId(Long enterpriseId);
     
     AnotherPayMembercardRecord selectByOrderId(String orderId);
+    
+    void enableMemberCardHandler(Long uid);
+    
+    void handlerOrderEffect(UserBatteryMemberCard userBatteryMemberCardUpdate, Long uid);
 }

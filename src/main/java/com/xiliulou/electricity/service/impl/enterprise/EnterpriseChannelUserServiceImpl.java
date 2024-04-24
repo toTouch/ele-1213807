@@ -658,6 +658,11 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
                 return Triple.of(false, "300082", "已是平台会员，无法加入企业渠道");
             }
         }
+    
+        if (Objects.equals(userInfo.getBatteryRentStatus(), UserInfo.BATTERY_RENT_STATUS_YES)) {
+            log.warn("check User Enable Exit! user rent battery,uid={}", uid);
+            return Triple.of(false, "120316", "请归还电池后操作");
+        }
         
         // 查询当前加入的企业的加盟商
         EnterpriseInfo enterpriseInfo = enterpriseInfoService.queryByIdFromCache(query.getEnterpriseId());
@@ -1337,6 +1342,11 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
                 log.error("scan code enterprise user is platform user not join, enterpriseId={}, uid={}", query.getEnterpriseId(), query.getUid());
                 return Triple.of(false, "300082", "已是平台会员，无法加入企业渠道");
             }
+        }
+    
+        if (Objects.equals(userInfo.getBatteryRentStatus(), UserInfo.BATTERY_RENT_STATUS_YES)) {
+            log.warn("check User Enable Exit! user rent battery,uid={}", uid);
+            return Triple.of(false, "120316", "请归还电池后操作");
         }
         
         boolean isModify = false;

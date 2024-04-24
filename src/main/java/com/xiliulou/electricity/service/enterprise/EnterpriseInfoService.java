@@ -116,4 +116,6 @@ public interface EnterpriseInfoService {
     Triple<Boolean, String, Object> saveMerchantEnterprise(EnterpriseInfoQuery enterpriseInfoQuery);
     
     List<EnterpriseInfo> queryListByIdList(List<Long> enterpriseIdList);
+    
+    Triple<Boolean, String, Object> recycleBatteryMemberCardV2(UserInfo userInfo, EnterpriseInfo enterpriseInfo, UserBatteryMemberCard item);
 }

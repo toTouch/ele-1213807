@@ -87,4 +87,6 @@ public interface CloudBeanUseRecordService {
     void recycleCloudBeanExitTask();
     
     void checkCloudBeanTask();
+    
+    int batchInsert(List<CloudBeanUseRecord> cloudBeanUseRecordList);
 }

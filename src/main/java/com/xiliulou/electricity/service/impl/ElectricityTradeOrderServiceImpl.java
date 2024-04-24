@@ -704,6 +704,7 @@ public class ElectricityTradeOrderServiceImpl extends
                             .tenantId(userInfo.getTenantId())
                             .uid(userInfo.getUid())
                             .userName(userInfo.getName())
+                            .orderId(userBatteryMemberCard.getOrderId())
                             .updateTime(System.currentTimeMillis()).build();
                     enableMemberCardRecordService.insert(enableMemberCardRecordInsert);
                 } else {
@@ -718,6 +719,10 @@ public class ElectricityTradeOrderServiceImpl extends
 
 
             }
+    
+            // 处理企业用户对应的支付记录时间
+            anotherPayMembercardRecordService.enableMemberCardHandler(userBatteryMemberCard.getUid());
+            
             userBatteryMemberCardUpdate.setUid(userInfo.getUid());
             userBatteryMemberCardUpdate.setUpdateTime(System.currentTimeMillis());
             userBatteryMemberCardUpdate.setDisableMemberCardTime(null);

@@ -100,6 +100,11 @@ public class EnableMemberCardRecord {
     private Long franchiseeId;
 
     private Long storeId;
+    
+    /**
+     * 订单id
+     */
+    private String orderId;
 
     /**
      * 服务费金额

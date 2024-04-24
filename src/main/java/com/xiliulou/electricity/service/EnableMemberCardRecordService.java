@@ -5,6 +5,8 @@ import com.xiliulou.electricity.entity.EnableMemberCardRecord;
 import com.xiliulou.electricity.query.CouponQuery;
 import com.xiliulou.electricity.query.EnableMemberCardRecordQuery;
 
+import java.util.List;
+
 /**
  * 启用套餐(TEnableMemberCardRecord)实体类
  *
@@ -51,4 +53,6 @@ public interface EnableMemberCardRecordService {
      * @return 影响行数
      */
     Integer updatePhoneByUid(Integer tenantId, Long uid, String newPhone);
+    
+    List<EnableMemberCardRecord> queryListByOrderIds(List<String> orderIdList);
 }
