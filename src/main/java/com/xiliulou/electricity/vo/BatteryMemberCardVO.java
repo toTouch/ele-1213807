@@ -133,6 +133,11 @@ public class BatteryMemberCardVO {
      * 套餐绑定的用户分组信息
      */
     private List<SearchVo> userInfoGroups;
+    
+    /**
+     * 分组类型，0-系统分组，1-用户分组。
+     */
+    private Integer groupType;
 
     private Boolean editUserMembercard = Boolean.TRUE;
 }
