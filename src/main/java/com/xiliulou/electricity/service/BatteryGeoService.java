@@ -11,6 +11,7 @@ import java.util.List;
  * @author makejava
  * @since 2023-03-03 08:54:46
  */
+@Deprecated
 public interface BatteryGeoService {
 
     /**
