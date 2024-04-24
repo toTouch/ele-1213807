@@ -1912,11 +1912,11 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                     .storeId(userInfo.getStoreId()).phone(userInfo.getPhone()).createTime(System.currentTimeMillis()).tenantId(user.getTenantId()).uid(uid)
                     .userName(userInfo.getName()).updateTime(System.currentTimeMillis()).orderId(userBatteryMemberCard.getOrderId()).build();
             enableMemberCardRecordService.insert(enableMemberCardRecord);
+    
+            // 处理企业用户对应的支付记录时间
+            anotherPayMembercardRecordService.enableMemberCardHandler(userBatteryMemberCard.getUid());
         }
     
-        // 处理企业用户对应的支付记录时间
-        anotherPayMembercardRecordService.enableMemberCardHandler(userBatteryMemberCard.getUid());
-        
         UserBatteryMemberCard userBatteryMemberCardUpdate = new UserBatteryMemberCard();
         userBatteryMemberCardUpdate.setUid(userBatteryMemberCard.getUid());
         userBatteryMemberCardUpdate.setMemberCardStatus(UserBatteryMemberCard.MEMBER_CARD_NOT_DISABLE);
