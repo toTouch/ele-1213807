@@ -2817,12 +2817,12 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         ElectricityBattery newElectricityBattery = new ElectricityBattery();
         newElectricityBattery.setId(electricityBattery.getId());
         
-        BatteryGeo batteryGeo = new BatteryGeo();
-        batteryGeo.setSn(electricityBattery.getSn());
-        batteryGeo.setCreateTime(System.currentTimeMillis());
-        batteryGeo.setUpdateTime(System.currentTimeMillis());
-        batteryGeo.setTenantId(electricityBattery.getTenantId());
-        batteryGeo.setFranchiseeId(electricityBattery.getFranchiseeId());
+//        BatteryGeo batteryGeo = new BatteryGeo();
+//        batteryGeo.setSn(electricityBattery.getSn());
+//        batteryGeo.setCreateTime(System.currentTimeMillis());
+//        batteryGeo.setUpdateTime(System.currentTimeMillis());
+//        batteryGeo.setTenantId(electricityBattery.getTenantId());
+//        batteryGeo.setFranchiseeId(electricityBattery.getFranchiseeId());
         
         if (Objects.nonNull(power)) {
             newElectricityBattery.setPower(power);
@@ -2830,7 +2830,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         
         Double latitude = batteryReportQuery.getLatitude();
         if (Objects.nonNull(latitude)) {
-            batteryGeo.setLatitude(latitude);
+            //batteryGeo.setLatitude(latitude);
             newElectricityBattery.setLatitude(latitude);
         }
         
