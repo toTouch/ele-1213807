@@ -372,6 +372,7 @@ public class EleChargeConfigServiceImpl implements EleChargeConfigService {
                 record.setOperationType(MerchantEleChargeConfigRecordConstant.OPERATION_TYPE_UPDATE);
                 record.setOperationTime(System.currentTimeMillis());
                 record.setOperator(Optional.ofNullable(SecurityUtils.getUserInfo()).map(TokenUser::getUid).orElse(NumberConstant.ZERO_L));
+                record.setCreateTime(config.getCreateTime());
     
                 eleChargeConfigRecordService.insertOne(record);
             });
