@@ -274,6 +274,7 @@ public class EleChargeConfigServiceImpl implements EleChargeConfigService {
                 record.setOperationType(MerchantEleChargeConfigRecordConstant.OPERATION_TYPE_NEW);
                 record.setOperationTime(System.currentTimeMillis());
                 record.setOperator(Optional.ofNullable(SecurityUtils.getUserInfo()).map(TokenUser::getUid).orElse(NumberConstant.ZERO_L));
+                record.setConfigId(Objects.nonNull(config.getId()) ? config.getId() : NumberConstant.ZERO_L);
         
                 eleChargeConfigRecordService.insertOne(record);
             });
@@ -373,6 +374,7 @@ public class EleChargeConfigServiceImpl implements EleChargeConfigService {
                 record.setOperationTime(System.currentTimeMillis());
                 record.setOperator(Optional.ofNullable(SecurityUtils.getUserInfo()).map(TokenUser::getUid).orElse(NumberConstant.ZERO_L));
                 record.setCreateTime(config.getCreateTime());
+                record.setConfigId(config.getId());
     
                 eleChargeConfigRecordService.insertOne(record);
             });
@@ -397,6 +399,7 @@ public class EleChargeConfigServiceImpl implements EleChargeConfigService {
             record.setOperationType(MerchantEleChargeConfigRecordConstant.OPERATION_TYPE_DELETE);
             record.setOperationTime(System.currentTimeMillis());
             record.setOperator(Optional.ofNullable(SecurityUtils.getUserInfo()).map(TokenUser::getUid).orElse(NumberConstant.ZERO_L));
+            record.setConfigId(config.getId());
     
             eleChargeConfigRecordService.insertOne(record);
         });
