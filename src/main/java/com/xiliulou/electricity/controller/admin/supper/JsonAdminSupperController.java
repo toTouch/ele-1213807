@@ -32,7 +32,7 @@ public class JsonAdminSupperController {
      * @param delBatteryReq 删除电池请求体
      * @return R<DelBatteryVo>
      */
-    @PostMapping
+    @PostMapping("/delBatterys")
     public R<DelBatteryVo> delBatterys(@RequestBody DelBatteryReq delBatteryReq) {
         Pair<List<String>, List<String>> pair = adminSupperService.delBatteryBySnList(delBatteryReq.getTenantId(), delBatteryReq.getBatterySnList());
         DelBatteryVo delBatteryVo = new DelBatteryVo();
