@@ -249,7 +249,7 @@ public class CarRentalPackageServiceImpl implements CarRentalPackageService {
         }
         
         // 适配优惠券多张更新
-        if (!StringUtils.hasText(entity.getCouponArrays()) && !Objects.isNull(oriEntity.getCouponId()) && !entity.getCouponArrays()
+        if (StringUtils.hasText(entity.getCouponArrays()) && !Objects.isNull(oriEntity.getCouponId()) && !entity.getCouponArrays()
                 .contains(String.valueOf(oriEntity.getCouponId()))) {
             entity.setCouponId(-1L);
         }
