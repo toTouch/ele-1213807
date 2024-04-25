@@ -271,7 +271,7 @@ public class CarRentalPackageServiceImpl implements CarRentalPackageService {
             throw new BizException("300022", "套餐名称已存在");
         }
         // 适配优惠券多张更新
-        if (!StringUtils.hasText(entity.getCouponArrays()) && !Objects.isNull(oriEntity.getCouponId()) && !entity.getCouponArrays()
+        if (StringUtils.hasText(entity.getCouponArrays()) && !Objects.isNull(oriEntity.getCouponId()) && !entity.getCouponArrays()
                 .contains(String.valueOf(oriEntity.getCouponId()))) {
             entity.setCouponId(-1L);
         }
