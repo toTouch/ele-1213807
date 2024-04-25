@@ -188,7 +188,7 @@
         from t_rebate_record
         where status = 0
           and create_time &gt;= #{startTime}
-          and create_time &lt; #{endTime} limit #{offset}
+          and create_time &lt; #{endTime} order by id limit #{offset}
             , #{size}
     </select>
     
