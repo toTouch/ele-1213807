@@ -4551,7 +4551,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
     
     @Override
     public void sendUserCoupon(BatteryMemberCard batteryMemberCard, ElectricityMemberCardOrder memberCardOrder) {
-        if (StringUtils.isNotBlank(memberCardOrder.getCouponIds()) && Objects.isNull(memberCardOrder.getSendCouponId())) {
+        if (StringUtils.isBlank(memberCardOrder.getCouponIds()) && Objects.isNull(memberCardOrder.getSendCouponId())) {
             return;
         }
         
