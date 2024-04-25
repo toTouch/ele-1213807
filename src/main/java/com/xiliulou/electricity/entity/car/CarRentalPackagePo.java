@@ -230,7 +230,7 @@ public class CarRentalPackagePo extends BasicCarPo {
                 result.addAll(longs);
             }
         }
-        if (!Objects.isNull(this.couponId)){
+        if (!Objects.isNull(this.couponId) && !Objects.equals(this.couponId, -1L)) {
             result.add(this.couponId);
         }
         return new ArrayList<>(result);
