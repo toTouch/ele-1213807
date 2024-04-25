@@ -26,7 +26,7 @@ public class WebConfigurer implements WebMvcConfigurer {
 	@Override
 	public void addInterceptors(InterceptorRegistry registry) {
 		registry.addInterceptor(adminSupperInterceptor).addPathPatterns("/admin/inner/super/**");
-		registry.addInterceptor(enterprisePackageInterceptor).addPathPatterns("/user/cloudBeanUse/**", "/user/enterprise/**", "/user/enterpriseInfo/**", "/user/cloudBean/**");
+		registry.addInterceptor(enterprisePackageInterceptor).addPathPatterns("/user/cloudBeanUse/**", "/user/enterprise/**", "/user/enterpriseInfo/**", "/user/cloudBean/**").excludePathPatterns("/user/enterprise/addUserByScanNew", "/user/enterprise/addUserByScanNewCheck");
 	}
 
 }
