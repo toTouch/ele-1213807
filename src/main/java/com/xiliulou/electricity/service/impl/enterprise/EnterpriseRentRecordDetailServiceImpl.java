@@ -31,4 +31,9 @@ public class EnterpriseRentRecordDetailServiceImpl implements EnterpriseRentReco
     public List<EnterpriseRentRecordDetail> queryListByUid(Long uid) {
         return enterpriseRentRecordDetailMapper.selectListByUid(uid);
     }
+    
+    @Override
+    public int removeByUid(Long uid) {
+        return enterpriseRentRecordDetailMapper.removeByUid(uid, System.currentTimeMillis());
+    }
 }

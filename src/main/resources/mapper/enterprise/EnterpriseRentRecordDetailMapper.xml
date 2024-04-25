@@ -43,4 +43,13 @@
         WHERE
             t.row_num = 1
     </select>
+    
+    <update id="removeByUid">
+        UPDATE t_enterprise_rent_record_detail
+        SET del_flag = 1,
+            update_time = #{updateTime}
+        WHERE
+            uid = #{uid}
+          AND del_flag = 0
+    </update>
 </mapper>

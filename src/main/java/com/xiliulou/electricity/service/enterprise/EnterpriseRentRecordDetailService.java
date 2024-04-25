@@ -14,4 +14,6 @@ public interface EnterpriseRentRecordDetailService {
     int batchInsert(List<EnterpriseRentRecordDetail> enterpriseRentRecordDetailList);
     
     List<EnterpriseRentRecordDetail> queryListByUid(Long uid);
+    
+    int removeByUid(Long uid);
 }

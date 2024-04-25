@@ -230,6 +230,9 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
     private EnterpriseRentRecordService enterpriseRentRecordService;
     
     @Autowired
+    private EnterpriseRentRecordDetailService enterpriseRentRecordDetailService;
+    
+    @Autowired
     private EleDepositOrderService eleDepositOrderService;
     
     @Resource
@@ -1212,6 +1215,8 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
         anotherPayMembercardRecordService.deleteByUid(userInfo.getUid());
         
         enterpriseRentRecordService.deleteByUid(userInfo.getUid());
+    
+        enterpriseRentRecordDetailService.removeByUid(userInfo.getUid());
         
         //更新用户云豆状态为已回收
         EnterpriseChannelUser enterpriseChannelUserUpdate = new EnterpriseChannelUser();
