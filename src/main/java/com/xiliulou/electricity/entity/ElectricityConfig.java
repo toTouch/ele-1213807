@@ -290,13 +290,13 @@ public class ElectricityConfig {
     public static Integer CLOSE_WX_CUSTOMER = 1;
     
     /**
-     * 柜机少电多电配置标准:1-统一配置
+     * 柜机少电多电配置标准:0-统一配置
      */
-    public static Integer CHARGE_RATE_TYPE_UNIFY = 1;
+    public static Integer CHARGE_RATE_TYPE_UNIFY = 0;
     
     /**
-     * 柜机少电多电配置标准:1-统一配置 2-单个柜机配置
+     * 柜机少电多电配置标准:1-单个柜机配置
      */
-    public static Integer CHARGE_RATE_TYPE_SINGLE = 2;
+    public static Integer CHARGE_RATE_TYPE_SINGLE = 1;
 
 }
