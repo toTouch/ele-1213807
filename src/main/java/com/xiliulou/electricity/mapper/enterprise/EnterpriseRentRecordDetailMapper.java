@@ -15,4 +15,6 @@ public interface EnterpriseRentRecordDetailMapper {
     int batchInsert(@Param("list") List<EnterpriseRentRecordDetail> list);
     
     List<EnterpriseRentRecordDetail> selectListByUid(@Param("uid") Long uid);
+    
+    int removeByUid(@Param("uid") Long uid,@Param("updateTime") long updateTime);
 }

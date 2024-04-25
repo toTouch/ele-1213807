@@ -123,6 +123,59 @@ public class EnterpriseRentRecordServiceImpl implements EnterpriseRentRecordServ
     }
     
     @Override
+    public int createEnterpriseRecordDetail() {
+        // 查询已经退电完成的记录
+        List<EnterpriseRentRecord> enterpriseRentRecords = queryListAlreadyReturn();
+        
+        if (ObjectUtils.isEmpty(enterpriseRentRecords)) {
+            log.info("SAVE RENT RECORD DETAIL WARN!not found enterpriseRentRecords");
+            return 0;
+        }
+        
+        for (EnterpriseRentRecord enterpriseReturnRecord : enterpriseRentRecords) {
+            Long uid = enterpriseReturnRecord.getUid();
+            
+            EnterpriseChannelUser enterpriseChannelUser = enterpriseChannelUserService.selectByUid(uid);
+            if (Objects.isNull(enterpriseChannelUser)) {
+                log.warn("SAVE RENT RECORD DETAIL WARN!not found enterpriseChannelUser,uid={}", uid);
+                continue;
+            }
+    
+            UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(uid);
+            if (Objects.isNull(userBatteryMemberCard)) {
+                log.warn("SAVE RENT RECORD DETAIL WARN!not found userBatteryMemberCard,uid={}", uid);
+                continue;
+            }
+            
+            // 退电订单设置为 用户当前生效的订单号
+            userBatteryMemberCard.setOrderId(enterpriseReturnRecord.getReturnMembercardOrderId());
+            
+            EnterpriseRentRecord enterpriseReturnRecordUpdate = new EnterpriseRentRecord();
+            enterpriseReturnRecordUpdate.setId(enterpriseReturnRecord.getId());
+            enterpriseReturnRecordUpdate.setUpdateTime(System.currentTimeMillis());
+    
+            // 获取组退电对应的套餐类型
+            List<EnterpriseRentRecordDetail> enterpriseRentRecordDetailList = new ArrayList<>();
+            Integer orderType = getRentOrderType(enterpriseReturnRecord, userBatteryMemberCard, uid, enterpriseRentRecordDetailList, enterpriseChannelUser.getEnterpriseId());
+            enterpriseReturnRecordUpdate.setRentOrderType(orderType);
+    
+            this.enterpriseRentRecordMapper.updateById(enterpriseReturnRecordUpdate);
+    
+            if (ObjectUtils.isNotEmpty(enterpriseRentRecordDetailList)) {
+                // 批量保存详情记录
+                enterpriseRentRecordDetailService.batchInsert(enterpriseRentRecordDetailList);
+            }
+        }
+        
+        return 0;
+    }
+    
+    @Slave
+    private List<EnterpriseRentRecord> queryListAlreadyReturn() {
+        return enterpriseRentRecordMapper.selectListAlreadyReturn();
+    }
+    
+    @Override
     public void saveEnterpriseRentRecord(Long uid) {
         EnterpriseChannelUser enterpriseChannelUser = enterpriseChannelUserService.selectByUid(uid);
         if (Objects.isNull(enterpriseChannelUser)) {

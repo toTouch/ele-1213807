@@ -716,12 +716,10 @@ public class ElectricityTradeOrderServiceImpl extends
                     enableMemberCardRecordUpdate.setUpdateTime(System.currentTimeMillis());
                     enableMemberCardRecordService.update(enableMemberCardRecordUpdate);
                 }
-
-
+                
+                // 处理企业用户对应的支付记录时间
+                anotherPayMembercardRecordService.enableMemberCardHandler(userBatteryMemberCard.getUid());
             }
-    
-            // 处理企业用户对应的支付记录时间
-            anotherPayMembercardRecordService.enableMemberCardHandler(userBatteryMemberCard.getUid());
             
             userBatteryMemberCardUpdate.setUid(userInfo.getUid());
             userBatteryMemberCardUpdate.setUpdateTime(System.currentTimeMillis());
