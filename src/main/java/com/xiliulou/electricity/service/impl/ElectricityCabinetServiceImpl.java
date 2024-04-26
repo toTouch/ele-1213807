@@ -241,7 +241,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     /**
      * 吞电池优化版本
      */
-    private static final String ELE_CABINET_VERSION = "2.1.5";
+    private static final String ELE_CABINET_VERSION = "2.1.7";
     
     //    @Value("${testFactory.tenantId}")
     //    private Integer testFactoryTenantId;
