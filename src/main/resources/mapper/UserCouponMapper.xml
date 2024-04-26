@@ -44,7 +44,7 @@
     <!--查询指定行数据-->
     <select id="queryList" resultType="com.xiliulou.electricity.vo.UserCouponVO">
         select
-        tuc.id as id, tuc.name as name, tuc.uid as uid, tuc.phone as phone, tuc.coupon_id as couponId,
+        tuc.id as id, tuc.name as name,tuc.verified_uid as  verifiedUid, tuc.uid as uid, tuc.phone as phone, tuc.coupon_id as couponId,
         tuc.deadline as deadline, tuc.order_id as orderId,tuc.create_time as createTime,tc.superposition as superposition,
         tuc.update_time as updateTime, tuc.status as status, tuc.source as source, tuc.del_flag as delFlag,
         tuc.discount_type as discountType,tc.amount AS amount,tc.discount AS discount,tui.name as userName, tc.description, tc.specific_packages
@@ -194,6 +194,9 @@
             <if test="updateTime != null">
                 update_time = #{updateTime},
             </if>
+            <if test="verifiedUid != null">
+                verified_uid = #{verifiedUid},
+            </if>
             <if test="delFlag != null">
                 del_flag = #{delFlag},
             </if>
@@ -232,11 +235,11 @@
 
     <insert id="batchInsert"  keyProperty="id" useGeneratedKeys="true">
         insert into t_user_coupon(uid, phone, coupon_id, deadline, create_time, update_time, status, source, del_flag,
-        discount_type, tenant_id,name)
+        discount_type, tenant_id,name,verified_uid)
         values
         <foreach collection="list" item="item" separator=",">
             (#{item.uid}, #{item.phone}, #{item.couponId}, #{item.deadline}, #{item.createTime}, #{item.updateTime},
-            #{item.status}, #{item.source}, #{item.delFlag}, #{item.discountType}, #{item.tenantId},#{item.name})
+            #{item.status}, #{item.source}, #{item.delFlag}, #{item.discountType}, #{item.tenantId},#{item.name},#{item.verifiedUid})
         </foreach>
 
     </insert>

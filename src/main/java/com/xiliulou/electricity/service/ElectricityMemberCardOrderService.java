@@ -25,9 +25,7 @@ public interface ElectricityMemberCardOrderService {
      * @return
      */
     Integer selectCountByUid(Integer tenantId, Long uid, Integer status);
-
-    R createOrder(ElectricityMemberCardOrderQuery electricityMemberCardOrderQuery, HttpServletRequest request);
-
+    
     Triple<Boolean, String, Object> buyBatteryMemberCard(ElectricityMemberCardOrderQuery electricityMemberCardOrderQuery, HttpServletRequest request);
 
     List<ElectricityMemberCardOrder> selectUserMemberCardOrderList(ElectricityMemberCardOrderQuery orderQuery);
@@ -63,12 +61,6 @@ public interface ElectricityMemberCardOrderService {
     R cleanBatteryServiceFee(Long uid);
 
     R getDisableMemberCardList(ElectricityMemberCardRecordQuery electricityMemberCardRecordQuery);
-
-    R addUserMemberCard(MemberCardOrderAddAndUpdate memberCardOrderAddAndUpdate);
-
-    R editUserMemberCard(MemberCardOrderAddAndUpdate memberCardOrderAddAndUpdate);
-
-    R renewalUserMemberCard(MemberCardOrderAddAndUpdate memberCardOrderAddAndUpdate);
 
     Long calcRentCarMemberCardExpireTime(String rentType, Integer rentTime, UserCarMemberCard userCarMemberCard);
 
@@ -109,8 +101,6 @@ public interface ElectricityMemberCardOrderService {
     Triple<Boolean, String, Object> handleRentBatteryMemberCard(String productKey, String deviceName, Set<Integer> userCouponIds, Integer memberCardId, Long franchiseeId, UserInfo userInfo);
 
     R cancelPayMemberCard();
-
-    Pair<Boolean, Object> checkUserHaveBatteryServiceFee(UserInfo userInfo, UserBatteryMemberCard userBatteryMemberCard);
     
     Integer queryMaxPayCount(UserBatteryMemberCard userBatteryMemberCard);
 
@@ -121,9 +111,7 @@ public interface ElectricityMemberCardOrderService {
     Triple<Boolean, String, Object> endOrder(String orderNo, Long uid);
     
     R disableMemberCardForRollback();
-
-//    Long handlerMembercardBindActivity(ElectricityMemberCard electricityMemberCard, UserBatteryMemberCard userBatteryMemberCard, UserInfo userInfo, Long remainingNumber);
-
+    
     Set<Integer> generateUserCouponIds(Integer userCouponId, List<Integer> userCouponIds);
 
     List<UserCoupon> buildUserCouponList(Set<Integer> userCouponIds, Integer status, String orderId);

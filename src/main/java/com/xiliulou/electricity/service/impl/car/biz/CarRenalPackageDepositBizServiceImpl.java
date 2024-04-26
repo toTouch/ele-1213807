@@ -822,7 +822,7 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
      * @param freeDepositOrder           免押记录
      * @param memberTermEntity           新增的会员期限信息
      */
-    @Transactional(rollbackFor = Exception.class)
+    //@Transactional(rollbackFor = Exception.class)
     public void saveFreeDepositTx(CarRentalPackageDepositPayPo carRentalPackageDepositPay, FreeDepositOrder freeDepositOrder, CarRentalPackageMemberTermPo memberTermEntity) {
         carRentalPackageDepositPayService.insert(carRentalPackageDepositPay);
         freeDepositOrderService.insert(freeDepositOrder);

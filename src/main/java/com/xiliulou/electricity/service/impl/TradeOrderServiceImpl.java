@@ -682,10 +682,10 @@ public class TradeOrderServiceImpl implements TradeOrderService {
         }
         
         Integer tenantId = TenantContextHolder.getTenantId();
-        
-        boolean getLockSuccess = redisService.setNx(CacheConstant.ELE_CACHE_SERVICE_FEE_LOCK_KEY + SecurityUtils.getUid(), "1", 3 * 1000L, false);
+
+        boolean getLockSuccess = redisService.setNx(CacheConstant.ELE_CACHE_SERVICE_FEE_LOCK_KEY + SecurityUtils.getUid(), "1", 60 * 1000L, false);
         if (!getLockSuccess) {
-            return Triple.of(false, "ELECTRICITY.0034", "操作频繁");
+            return Triple.of(false, "ELECTRICITY.0034", "操作频繁，请1分钟后重试");
         }
         
         try {
@@ -869,8 +869,7 @@ public class TradeOrderServiceImpl implements TradeOrderService {
             BigDecimal expireBatteryServiceFee = BigDecimal.ZERO;
             //是否存在套餐过期电池服务费
             if (System.currentTimeMillis() - (userBatteryMemberCard.getMemberCardExpireTime() + 24 * 60 * 60 * 1000L) > 0) {
-                int batteryMemebercardExpireDays = (int) Math.ceil(
-                        (System.currentTimeMillis() - (serviceFeeUserInfo.getServiceFeeGenerateTime() + 24 * 60 * 60 * 1000L)) / 1000.0 / 60 / 60 / 24);
+                int batteryMemebercardExpireDays = (int) Math.ceil((System.currentTimeMillis() - (userBatteryMemberCard.getMemberCardExpireTime() + 24 * 60 * 60 * 1000L)) / 1000.0 / 60 / 60 / 24);
                 expireBatteryServiceFee = batteryMemberCard.getServiceCharge().multiply(BigDecimal.valueOf(batteryMemebercardExpireDays));
                 log.info("BATTERY SERVICE FEE INFO!user exist expire fee,uid={},fee={}", userInfo.getUid(), expireBatteryServiceFee.doubleValue());
             }

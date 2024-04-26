@@ -15,12 +15,10 @@ import org.apache.commons.lang3.StringUtils;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.AfterReturning;
 import org.aspectj.lang.annotation.AfterThrowing;
-import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.Objects;
@@ -33,8 +31,8 @@ import java.util.concurrent.ExecutorService;
  * @email zhaozhilong@xiliulou.com
  * @date 2022-10-11-17:42
  */
-@Aspect
-@Component
+//@Aspect
+//@Component
 public class LogAspect {
     
     private ExecutorService executorService = XllThreadPoolExecutors.newFixedThreadPool("eleOperateLogExecutor", 1, "ELE_OPERATE_LOG_EXECUTOR");
