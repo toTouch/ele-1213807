@@ -36,8 +36,7 @@ public class OrderIdUtil {
     }
 
     public static String generateBusinessId(BusinessType businessType, Long uid) {
-        return businessType.getBusiness().toString() + System.currentTimeMillis() + String.format("%08d", uid)
-                + RandomUtil.randomInt(1000, 9999);
+        return businessType.getBusiness().toString() + System.currentTimeMillis() + uid  + RandomUtil.randomInt(1000, 9999);
     }
 //
 //    public static void main(String[] args) {
