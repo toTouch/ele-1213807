@@ -108,10 +108,10 @@
             <if test="disableMemberCardNo != null and disableMemberCardNo != ''">
                 and disable_member_card_no like concat('%', #{disableMemberCardNo,jdbcType=VARCHAR}, '%')
             </if>
-            <if test="beginDisableTime != null and beginDisableTime != ''">
+            <if test="beginDisableTime != null">
                 and disable_time &gt; #{beginDisableTime}
             </if>
-            <if test="endDisableTime != null and endDisableTime != ''">
+            <if test="endDisableTime != null">
                 and disable_time &lt; #{endDisableTime}
             </if>
             <if test="franchiseeIds != null">

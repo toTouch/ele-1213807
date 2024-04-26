@@ -66,9 +66,10 @@ public interface CarRentalPackageOrderBizService {
      * @param approveFlag 审批标识，true(同意)；false(驳回)
      * @param apploveDesc 审批意见
      * @param apploveUid 审批人
+     * @param isRecord 是否记录审核
      * @return
      */
-    Boolean approveFreezeRentOrder(String freezeRentOrderNo, boolean approveFlag, String apploveDesc, Long apploveUid);
+    Boolean approveFreezeRentOrder(String freezeRentOrderNo, boolean approveFlag, String apploveDesc, Long apploveUid,Boolean isRecord);
 
     /**
      * 审批退租申请单

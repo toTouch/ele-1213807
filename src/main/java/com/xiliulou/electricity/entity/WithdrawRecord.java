@@ -8,8 +8,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.math.BigDecimal;
-
 /**
  * @author: Miss.Li
  * @Date: 2021/8/30 09:33
@@ -85,7 +83,9 @@ public class WithdrawRecord {
     private String bankCode;
 
     private Integer tenantId;
-
+    
+    // 审核员ID
+    private Long auditorId;
 
     //状态
     //审核中

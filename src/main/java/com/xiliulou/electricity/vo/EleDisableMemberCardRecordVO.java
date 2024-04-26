@@ -142,4 +142,14 @@ public class EleDisableMemberCardRecordVO {
      * 套餐剩余次数
      */
     private Long orderRemainingNumber;
+    
+    /**
+     * 审核员ID
+     */
+    private Long auditorId;
+    
+    /**
+     * 审核员名称
+     */
+    private String auditorName;
 }
