@@ -189,7 +189,7 @@ public class UserInfoGroupDetailServiceImpl implements UserInfoGroupDetailServic
             // 租户校验
             Integer tenantId = TenantContextHolder.getTenantId();
             if (!Objects.equals(tenantId, userInfo.getTenantId())) {
-                return R.fail("AUTH.0003", "租户信息不匹配");
+                return R.ok();
             }
     
             Franchisee franchisee = franchiseeService.queryByIdFromCache(franchiseeId);
@@ -356,7 +356,7 @@ public class UserInfoGroupDetailServiceImpl implements UserInfoGroupDetailServic
             
             // 租户校验
             if (!Objects.equals(userInfo.getTenantId(), tenantId)) {
-                return R.fail("AUTH.0003", "租户信息不匹配");
+                return R.ok();
             }
     
             Franchisee franchisee = franchiseeService.queryByIdFromCache(franchiseeId);
