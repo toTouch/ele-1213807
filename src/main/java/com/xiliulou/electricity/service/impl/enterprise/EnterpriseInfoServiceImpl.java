@@ -16,6 +16,7 @@ import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.constant.StringConstant;
+import com.xiliulou.electricity.constant.TimeConstant;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.CommonPayOrder;
 import com.xiliulou.electricity.entity.EleDepositOrder;
@@ -446,10 +447,22 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
         List<EnableMemberCardRecord> enableMemberCardRecords = enableMemberCardRecordService.queryListByOrderIds(orderIdList);
         Map<String, List<EnableMemberCardRecord>> enableMemberCardRecordMap = new HashMap<>();
         if (ObjectUtils.isNotEmpty(enableMemberCardRecords)) {
-            enableMemberCardRecordMap = enableMemberCardRecords.stream().filter(record -> Objects.nonNull(record.getDisableTime()) && Objects.nonNull(record.getEnableTime()))
-                    .collect(Collectors.groupingBy(EnableMemberCardRecord::getOrderId));
+            // 过滤掉禁用和启用时间不满一天的启用和禁用告警记录
+            enableMemberCardRecordMap = enableMemberCardRecords.stream().filter(record ->  {
+                if (Objects.isNull(record.getEnableTime()) || Objects.isNull(record.getDisableTime())) {
+                    return false;
+                }
+                
+                long realDisableTime = record.getEnableTime() - userBatteryMemberCard.getDisableMemberCardTime();
+                // 如果禁用的时间不超过一天则代付记录不做修改
+                if (realDisableTime < TimeConstant.DAY_MILLISECOND) {
+                    return false;
+                }
+                
+                return true;
+            }).collect(Collectors.groupingBy(EnableMemberCardRecord::getOrderId));
         }
-    
+        
         List<CloudBeanUseRecord> cloudBeanUseRecordList = new ArrayList<>();
         // 将租电记录根据订单id进行分组
         Map<String, List<EnterpriseRentRecordDetail>> recordDetailMap = enterpriseRentRecordDetailList.stream()
@@ -581,6 +594,8 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
             cloudBeanUseRecord.setUpdateTime(System.currentTimeMillis());
         
             cloudBeanUseRecordList.add(cloudBeanUseRecord);
+    
+            orderMap.remove(orderId);
         }
         // 批量保存回收套餐记录
         if (ObjectUtils.isNotEmpty(cloudBeanUseRecordList)) {
@@ -598,6 +613,29 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
             });
         
             cloudBeanUseRecordDetailService.batchInsert(cloudBeanUseRecordDetailList);
+        }
+    
+        if (!CollectionUtils.isEmpty(orderMap)) {
+            orderMap.forEach((k, v) -> {
+                enterpriseInfo.setTotalBeanAmount(enterpriseInfo.getTotalBeanAmount().add(v.getPayAmount()));
+            
+                CloudBeanUseRecord cloudBeanUseRecord = new CloudBeanUseRecord();
+                cloudBeanUseRecord.setEnterpriseId(enterpriseInfo.getId());
+                cloudBeanUseRecord.setUid(userInfo.getUid());
+                cloudBeanUseRecord.setType(CloudBeanUseRecord.TYPE_RECYCLE);
+                cloudBeanUseRecord.setOrderType(CloudBeanUseRecord.ORDER_TYPE_BATTERY_MEMBERCARD);
+                cloudBeanUseRecord.setBeanAmount(v.getPayAmount());
+                cloudBeanUseRecord.setRemainingBeanAmount(enterpriseInfo.getTotalBeanAmount());
+                cloudBeanUseRecord.setPackageId(userBatteryMemberCard.getMemberCardId());
+                cloudBeanUseRecord.setFranchiseeId(enterpriseInfo.getFranchiseeId());
+                cloudBeanUseRecord.setRef(k);
+                cloudBeanUseRecord.setTenantId(enterpriseInfo.getTenantId());
+                cloudBeanUseRecord.setCreateTime(System.currentTimeMillis());
+                cloudBeanUseRecord.setUpdateTime(System.currentTimeMillis());
+                cloudBeanUseRecordService.insert(cloudBeanUseRecord);
+            
+                log.info("RECYCLE BATTERY MEMBERCARD INFO!not used membercard cloudBean={},uid={}", v.getPayAmount().doubleValue(), userInfo.getUid());
+            });
         }
     
         BigDecimal res = totalCloudBean.subtract(totalUsedCloudBean);

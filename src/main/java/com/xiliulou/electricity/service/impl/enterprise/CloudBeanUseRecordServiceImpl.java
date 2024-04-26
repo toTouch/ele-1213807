@@ -10,6 +10,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.NumberConstant;
+import com.xiliulou.electricity.constant.TimeConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.entity.enterprise.*;
 import com.xiliulou.electricity.enums.enterprise.PackageOrderTypeEnum;
@@ -276,6 +277,21 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
         if (ObjectUtils.isNotEmpty(enableMemberCardRecords)) {
             enableMemberCardRecordMap = enableMemberCardRecords.stream().filter(record -> Objects.nonNull(record.getDisableTime()) && Objects.nonNull(record.getEnableTime()))
                     .collect(Collectors.groupingBy(EnableMemberCardRecord::getOrderId));
+    
+            // 过滤掉禁用和启用时间不满一天的启用和禁用告警记录
+            enableMemberCardRecordMap = enableMemberCardRecords.stream().filter(record ->  {
+                if (Objects.isNull(record.getEnableTime()) || Objects.isNull(record.getDisableTime())) {
+                    return false;
+                }
+        
+                long realDisableTime = record.getEnableTime() - userBatteryMemberCard.getDisableMemberCardTime();
+                // 如果禁用的时间不超过一天则代付记录不做修改
+                if (realDisableTime < TimeConstant.DAY_MILLISECOND) {
+                    return false;
+                }
+        
+                return true;
+            }).collect(Collectors.groupingBy(EnableMemberCardRecord::getOrderId));
         }
         log.info("enterpriseRentRecordDetailList={}, enableMemberCardRecords={}, electricityMemberCardOrderList={}", JsonUtil.toJson(enterpriseRentRecordDetailList), JsonUtil.toJson(enableMemberCardRecords), JsonUtil.toJson(electricityMemberCardOrderList));
     
