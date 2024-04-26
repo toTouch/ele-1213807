@@ -183,6 +183,18 @@ public class JsonMerchantController extends BaseController {
     
     /**
      * @param
+     * @description 修补历史企业数据
+     * @date 2023/12/15 18:17:54
+     * @author maxiaodong
+     */
+    @GetMapping("/admin/merchant/repairEnterprise")
+    public R repairEnterprise() {
+        merchantService.repairEnterprise();
+        return R.ok();
+    }
+    
+    /**
+     * @param
      * @description 商户列表数量统计
      * @date 2023/12/15 18:17:54
      * @author maxiaodong

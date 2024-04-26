@@ -15,6 +15,9 @@ import com.xiliulou.electricity.dto.merchant.MerchantDeleteCacheDTO;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.User;
+import com.xiliulou.electricity.entity.enterprise.EnterpriseChannelUser;
+import com.xiliulou.electricity.entity.enterprise.EnterpriseChannelUserHistory;
+import com.xiliulou.electricity.entity.enterprise.EnterpriseCloudBeanOrder;
 import com.xiliulou.electricity.entity.enterprise.EnterpriseInfo;
 import com.xiliulou.electricity.entity.merchant.Merchant;
 import com.xiliulou.electricity.entity.merchant.MerchantChannelEmployeeBindHistory;
@@ -26,6 +29,9 @@ import com.xiliulou.electricity.entity.merchant.MerchantPlaceCabinetBind;
 import com.xiliulou.electricity.entity.merchant.MerchantPlaceMap;
 import com.xiliulou.electricity.entity.merchant.MerchantUserAmount;
 import com.xiliulou.electricity.exception.BizException;
+import com.xiliulou.electricity.mapper.enterprise.EnterpriseChannelUserHistoryMapper;
+import com.xiliulou.electricity.mapper.enterprise.EnterpriseChannelUserMapper;
+import com.xiliulou.electricity.mapper.enterprise.EnterpriseCloudBeanOrderMapper;
 import com.xiliulou.electricity.mapper.merchant.MerchantMapper;
 import com.xiliulou.electricity.query.BatteryMemberCardQuery;
 import com.xiliulou.electricity.query.enterprise.EnterpriseInfoQuery;
@@ -164,6 +170,14 @@ public class MerchantServiceImpl implements MerchantService {
     @Resource
     private MerchantChannelEmployeeBindHistoryService merchantChannelEmployeeBindHistoryService;
     
+    @Resource
+    private EnterpriseChannelUserHistoryMapper enterpriseChannelUserHistoryMapper;
+    
+    @Resource
+    private EnterpriseChannelUserMapper enterpriseChannelUserMapper;
+    
+    @Resource
+    private EnterpriseCloudBeanOrderMapper enterpriseCloudBeanOrderMapper;
     
     /**
      * 商户保存
@@ -394,6 +408,227 @@ public class MerchantServiceImpl implements MerchantService {
         
         // 调用开户账号
         return Triple.of(true, "", "");
+    }
+    
+    public Triple<Boolean, String, Object> saveV2(MerchantSaveRequest merchantSaveRequest, Integer tenantId) {
+        TokenUser tokenUser = SecurityUtils.getUserInfo();
+        
+        if (!redisService.setNx(CacheConstant.MERCHANT_PLACE_SAVE_UID + tokenUser.getUid(), "1", 3 * 1000L, false)) {
+            return Triple.of(false, "ELECTRICITY.0034", "操作频繁");
+        }
+        
+        // 检测商户名称是否存在用户表中
+        User user = userService.queryByUserName(merchantSaveRequest.getName());
+        if (Objects.nonNull(user)) {
+            log.error("merchant save error, name is exit user name={}", merchantSaveRequest.getName());
+            return Triple.of(false, "120233", "商户名称重复，请修改");
+        }
+        
+        // 检测商户名称是否存在
+        Integer nameCount = merchantMapper.existsByName(merchantSaveRequest.getName(), tenantId, null);
+        if (nameCount > 0) {
+            log.error("merchant save error, name is exit merchant name={}", merchantSaveRequest.getName());
+            return Triple.of(false, "120233", "商户名称重复，请修改");
+        }
+        
+        // 检测手机号
+        User userPhone = userService.checkPhoneExist(null, merchantSaveRequest.getPhone(), User.TYPE_USER_MERCHANT, null, null);
+        if (Objects.nonNull(userPhone)) {
+            log.error("merchant save error, phone is exit name={}", merchantSaveRequest.getPhone());
+            return Triple.of(false, "120201", "手机号已经存在");
+        }
+        
+        // 判断邀请权限和站点代付权限是否都没有选中
+        if (Objects.equals(merchantSaveRequest.getInviteAuth(), MerchantConstant.DISABLE) && Objects.equals(merchantSaveRequest.getEnterprisePackageAuth(),
+                MerchantConstant.DISABLE)) {
+            log.error("merchant save error, invite auth and enterprise package auth select at least one, name={}, inviteAuth={}, enterprisePackageAuth={}",
+                    merchantSaveRequest.getName(), merchantSaveRequest.getInviteAuth(), merchantSaveRequest.getEnterprisePackageAuth());
+            return Triple.of(false, "120202", "推广权限，站点代付权限，必须选一个");
+        }
+        
+        Franchisee franchisee = franchiseeService.queryByIdFromCache(merchantSaveRequest.getFranchiseeId());
+        if (Objects.isNull(franchisee) || !Objects.equals(franchisee.getTenantId(), tenantId)) {
+            log.error("merchant save error, franchisee is null name={}, franchiseeId={}", merchantSaveRequest.getName(), merchantSaveRequest.getFranchiseeId());
+            return Triple.of(false, "120203", "加盟商不存在");
+        }
+        
+        // 检测商户等级是否存在
+        MerchantLevel merchantLevel = merchantLevelService.queryById(merchantSaveRequest.getMerchantGradeId());
+        if (Objects.isNull(merchantLevel) || !Objects.equals(merchantLevel.getTenantId(), tenantId)) {
+            log.error("merchant save error, merchant level is null name={}, merchantLevelId={}", merchantSaveRequest.getName(), merchantSaveRequest.getMerchantGradeId());
+            return Triple.of(false, "120204", "商户等级不存在");
+        }
+        
+        // 检测渠道员是否存在
+        if (Objects.nonNull(merchantSaveRequest.getChannelEmployeeUid())) {
+            ChannelEmployeeVO channelEmployeeVO = channelEmployeeService.queryByUid(merchantSaveRequest.getChannelEmployeeUid());
+            
+            if (Objects.isNull(channelEmployeeVO)) {
+                log.error("merchant save error, channel us is not find name={}, channelEmployeeUid={}", merchantSaveRequest.getName(), merchantSaveRequest.getChannelEmployeeUid());
+                return Triple.of(false, "120205", "渠道员不存在");
+            }
+            
+            if (Objects.nonNull(channelEmployeeVO) && !Objects.equals(channelEmployeeVO.getFranchiseeId(), merchantSaveRequest.getFranchiseeId())) {
+                log.error("merchant save error, channel us is not find name={}, franchiseeId={}, channelUserFranchiseeId={}, channelEmployeeUid={}", merchantSaveRequest.getName(),
+                        merchantSaveRequest.getFranchiseeId(), channelEmployeeVO.getFranchiseeId(), merchantSaveRequest.getChannelEmployeeUid());
+                return Triple.of(false, "120206", "渠道员的加盟商和选中的加盟商不一致");
+            }
+        }
+        
+        // 检测企业套餐是否存在
+        if (ObjectUtils.isNotEmpty(merchantSaveRequest.getEnterprisePackageIdList())) {
+            BatteryMemberCardQuery query = BatteryMemberCardQuery.builder().tenantId(tenantId).franchiseeId(merchantSaveRequest.getFranchiseeId())
+                    .status(BatteryMemberCard.STATUS_UP).idList(merchantSaveRequest.getEnterprisePackageIdList()).businessType(BatteryMemberCard.BUSINESS_TYPE_ENTERPRISE)
+                    .delFlag(BatteryMemberCard.DEL_NORMAL).build();
+            
+            List<BatteryMemberCard> packageList = batteryMemberCardService.queryListByIdList(query);
+            if (ObjectUtils.isEmpty(packageList)) {
+                log.error("merchant save error, package is not exist name={}, packageId={}", merchantSaveRequest.getName(), merchantSaveRequest.getEnterprisePackageIdList());
+                return Triple.of(false, "120207", "企业套餐不存在");
+            }
+            
+            Set<Long> memberCardIdList = packageList.stream().map(BatteryMemberCard::getId).collect(Collectors.toSet());
+            if (!Objects.equals(packageList.size(), merchantSaveRequest.getEnterprisePackageIdList().size())) {
+                List<Long> diffIdList = merchantSaveRequest.getEnterprisePackageIdList().stream().filter(item -> !memberCardIdList.contains(item)).collect(Collectors.toList());
+                log.error("merchant save error,franchiseeId = {}, merchant name={},diff package Id ={}", merchantSaveRequest.getFranchiseeId(), merchantSaveRequest.getName(),
+                        diffIdList);
+                return Triple.of(false, "120207", "企业套餐不存在");
+            }
+        }
+        
+        // 检测绑定的场地数量是否大于20
+        if (ObjectUtils.isNotEmpty(merchantSaveRequest.getPlaceIdList())) {
+            if (merchantSaveRequest.getPlaceIdList().size() > 20) {
+                return Triple.of(false, "120208", "绑定的场地数量不能大于20");
+            }
+            
+            MerchantPlaceQueryModel placeQueryModel = MerchantPlaceQueryModel.builder().idList(merchantSaveRequest.getPlaceIdList())
+                    .franchiseeId(merchantSaveRequest.getFranchiseeId()).tenantId(tenantId).build();
+            
+            List<MerchantPlace> placeList = merchantPlaceService.queryList(placeQueryModel);
+            if (ObjectUtils.isEmpty(placeList)) {
+                log.error("merchant save error, place is not exist merchant name={}, placeId={}", merchantSaveRequest.getName(), merchantSaveRequest.getPlaceIdList());
+                return Triple.of(false, "120209", "场地不存在");
+            }
+            
+            List<Long> placeIdList = placeList.stream().map(MerchantPlace::getId).collect(Collectors.toList());
+            if (!Objects.equals(placeList.size(), merchantSaveRequest.getPlaceIdList().size())) {
+                List<Long> diffIdList = merchantSaveRequest.getPlaceIdList().stream().filter(item -> !placeIdList.contains(item)).collect(Collectors.toList());
+                log.error("merchant save error,merchant name={},diff place Id={}", merchantSaveRequest.getName(), diffIdList);
+                return Triple.of(false, "120209", "场地不存在");
+            }
+            
+            MerchantPlaceMapQueryModel queryModel = MerchantPlaceMapQueryModel.builder().placeIdList(placeIdList).merchantId(merchantSaveRequest.getId())
+                    .eqFlag(MerchantPlaceMapQueryModel.NO_EQ).build();
+            // 检测场地是否已经被绑定
+            List<MerchantPlaceMap> placeMapList = merchantPlaceMapService.queryList(queryModel);
+            
+            if (ObjectUtils.isNotEmpty(placeMapList)) {
+                Set<Long> collect = placeMapList.stream().map(MerchantPlaceMap::getPlaceId).collect(Collectors.toSet());
+                log.error("merchant save error,merchant name={}, place is bind placeId={}", merchantSaveRequest.getName(), collect);
+                return Triple.of(false, "120210", "场地已经被绑定");
+            }
+        }
+        
+        long timeMillis = System.currentTimeMillis();
+        // 用户信息
+        User user1 = User.builder().avatar("").salt("").createTime(timeMillis).delFlag(User.DEL_NORMAL).name(merchantSaveRequest.getName()).lockFlag(User.USER_UN_LOCK)
+                .phone(merchantSaveRequest.getPhone()).updateTime(timeMillis).userType(User.TYPE_USER_MERCHANT).salt("").tenantId(tenantId).build();
+        
+        // 如果是禁用则用户默认锁定
+        if (Objects.equals(merchantSaveRequest.getStatus(), MerchantConstant.DISABLE)) {
+            user1.setLockFlag(User.USER_LOCK);
+        }
+        
+        // 保存用户
+        userService.insert(user1);
+        
+        // 保存企业信息
+        EnterpriseInfoQuery enterpriseInfoQuery = EnterpriseInfoQuery.builder().uid(user1.getUid()).name(merchantSaveRequest.getName())
+                .franchiseeId(merchantSaveRequest.getFranchiseeId()).status(merchantSaveRequest.getEnterprisePackageAuth()).packageType(BatteryMemberCard.BUSINESS_TYPE_ENTERPRISE)
+                .purchaseAuthority(merchantSaveRequest.getPurchaseAuthority()).build();
+        
+        if (ObjectUtils.isNotEmpty(merchantSaveRequest.getEnterprisePackageIdList())) {
+            Set<Long> collect = merchantSaveRequest.getEnterprisePackageIdList().stream().collect(Collectors.toSet());
+            enterpriseInfoQuery.setPackageIds(collect);
+        }
+        
+        Triple<Boolean, String, Object> enterpriseSaveRes = enterpriseInfoService.saveMerchantEnterprise(enterpriseInfoQuery);
+        if (!enterpriseSaveRes.getLeft()) {
+            String msg = "";
+            
+            if (ObjectUtils.isNotEmpty(enterpriseSaveRes.getRight())) {
+                msg = (String) enterpriseSaveRes.getRight();
+                log.error("merchant save enterprise error,name={}, msg={}", merchantSaveRequest.getName(), msg);
+            }
+            
+            throw new BizException("120211", msg);
+        }
+        
+        Merchant merchant = new Merchant();
+        BeanUtils.copyProperties(merchantSaveRequest, merchant);
+        merchant.setEnterpriseId(enterpriseInfoQuery.getId());
+        merchant.setUid(user1.getUid());
+        merchant.setCreateTime(timeMillis);
+        merchant.setDelFlag(MerchantConstant.DEL_NORMAL);
+        merchant.setExistPlaceFee(MerchantConstant.EXISTS_PLACE_FEE_NO);
+        merchant.setUpdateTime(timeMillis);
+        merchant.setTenantId(tenantId);
+        
+        // 保存商户信息
+        int i = merchantMapper.insert(merchant);
+        
+        // 如果有绑定渠道员 设置商户渠道员绑定时间 小程序商户首页需要使用该字段统计
+        if (Objects.nonNull(merchantSaveRequest.getChannelEmployeeUid())) {
+            MerchantChannelEmployeeBindHistory merchantChannelEmployeeBindHistory = MerchantChannelEmployeeBindHistory.builder().merchantUid(merchant.getUid()).bindTime(timeMillis)
+                    .channelEmployeeUid(merchantSaveRequest.getChannelEmployeeUid()).bindStatus(MerchantChannelEmployeeBindHistoryConstant.BIND).createTime(timeMillis)
+                    .updateTime(timeMillis).tenantId(tenantId).build();
+            merchantChannelEmployeeBindHistoryService.insertOne(merchantChannelEmployeeBindHistory);
+        }
+        
+        if (ObjectUtils.isNotEmpty(merchantSaveRequest.getPlaceIdList())) {
+            List<MerchantPlaceMap> merchantPlaceMapList = new ArrayList<>();
+            List<MerchantPlaceBind> merchantPlaceBindList = new ArrayList<>();
+            
+            merchantSaveRequest.getPlaceIdList().stream().forEach(placeId -> {
+                // 商户场地映射
+                MerchantPlaceMap merchantPlaceMap = MerchantPlaceMap.builder().merchantId(merchant.getId()).placeId(placeId).tenantId(tenantId).delFlag(MerchantPlaceMap.DEL_NORMAL)
+                        .updateTime(timeMillis).createTime(timeMillis).build();
+                
+                merchantPlaceMapList.add(merchantPlaceMap);
+                
+                // 商户场地绑定历史
+                MerchantPlaceBind merchantPlaceBind = MerchantPlaceBind.builder().merchantId(merchant.getId()).placeId(placeId).bindTime(timeMillis)
+                        .delFlag(MerchantPlaceMap.DEL_NORMAL).type(MerchantPlaceConstant.BIND).merchantMonthSettlement(MerchantPlaceConstant.MONTH_SETTLEMENT_NO)
+                        .merchantMonthSettlementPower(MerchantPlaceConstant.MONTH_SETTLEMENT_POWER_NO).tenantId(tenantId).createTime(timeMillis).updateTime(timeMillis).build();
+                merchantPlaceBindList.add(merchantPlaceBind);
+            });
+            
+            // 批量保存商户场地映射
+            merchantPlaceMapService.batchInsert(merchantPlaceMapList);
+            
+            // 批量保存商户场地绑定
+            merchantPlaceBindService.batchInsert(merchantPlaceBindList);
+            
+            // 判断绑定的场地是否存在柜机 且修改修改存在场地费标识
+            dealPlaceFee(merchant.getId(), merchantSaveRequest.getPlaceIdList());
+        }
+        
+        // 创建商户余额
+        MerchantUserAmount merchantUserAmount = new MerchantUserAmount();
+        merchantUserAmount.setUid(merchant.getUid());
+        merchantUserAmount.setTenantId(tenantId);
+        merchantUserAmount.setTotalIncome(BigDecimal.ZERO);
+        merchantUserAmount.setBalance(BigDecimal.ZERO);
+        merchantUserAmount.setWithdrawAmount(BigDecimal.ZERO);
+        merchantUserAmount.setCreateTime(timeMillis);
+        merchantUserAmount.setUpdateTime(timeMillis);
+        merchantUserAmount.setDelFlag(MerchantConstant.DEL_NORMAL);
+        
+        merchantUserAmountService.save(merchantUserAmount);
+        
+        // 调用开户账号
+        return Triple.of(true, "", merchant);
     }
     
     /**
@@ -1318,6 +1553,67 @@ public class MerchantServiceImpl implements MerchantService {
     @Override
     public List<Merchant> listAllByIds(Set<Long> merchantIdSet, Integer tenantId) {
         return merchantMapper.selectListAllByIds(merchantIdSet, tenantId);
+    }
+    
+    @Override
+    public void repairEnterprise() {
+        // 查询状态为开启的企业
+        List<EnterpriseInfo> enterpriseInfos = enterpriseInfoService.queryList();
+        if (ObjectUtils.isEmpty(enterpriseInfos)) {
+            log.error("repair enterprise error, enterprise info is empty");
+            return;
+        }
+        long currentTimeMillis = System.currentTimeMillis();
+        enterpriseInfos.forEach(enterpriseInfo -> {
+            MerchantSaveRequest merchantSaveRequest = new MerchantSaveRequest();
+            merchantSaveRequest.setName(enterpriseInfo.getName());
+            merchantSaveRequest.setFranchiseeId(enterpriseInfo.getFranchiseeId());
+            merchantSaveRequest.setPhone(enterpriseInfo.getPhone());
+            merchantSaveRequest.setStatus(0);
+            merchantSaveRequest.setInviteAuth(1);
+            merchantSaveRequest.setEnterprisePackageAuth(0);
+            merchantSaveRequest.setPurchaseAuthority(0);
+            merchantSaveRequest.setAutoUpGrade(0);
+            // 为该企业创建商户
+            Triple<Boolean, String, Object> triple = this.saveV2(merchantSaveRequest, enterpriseInfo.getTenantId());
+            if (!triple.getLeft()) {
+                log.error("repair enterprise error, enterprise saveV2 is error={}, enterpriseId={}", triple.getRight(), enterpriseInfo.getId());
+            }
+            Merchant merchant = (Merchant) triple.getRight();
+            // 修改商户的的企业id为老的企业id
+            Merchant merchantUpdate = Merchant.builder().enterpriseId(enterpriseInfo.getId()).updateTime(currentTimeMillis).id(merchant.getId()).build();
+            this.updateById(merchantUpdate);
+            // 删除新企业
+            enterpriseInfoService.delete(merchant.getEnterpriseId());
+            // 将原企业表的uid改变为商户对应的uid
+            EnterpriseInfo enterpriseInfoUpdate = new EnterpriseInfo();
+            enterpriseInfoUpdate.setId(enterpriseInfo.getId());
+            enterpriseInfoUpdate.setUpdateTime(currentTimeMillis);
+            enterpriseInfoUpdate.setUid(merchant.getUid());
+            enterpriseInfoService.update(enterpriseInfo);
+            // 修改邀请历史表中的邀请人
+            enterpriseChannelUserHistoryMapper.updateByInviterId(merchant.getUid(), enterpriseInfo.getUid(), currentTimeMillis);
+    
+            EnterpriseChannelUser enterpriseChannelUser = new EnterpriseChannelUser();
+            enterpriseChannelUser.setEnterpriseId(enterpriseInfo.getId());
+            enterpriseChannelUser.setInviterId(merchant.getUid());
+            enterpriseChannelUser.setUpdateTime(currentTimeMillis);
+            enterpriseChannelUserMapper.updateByEnterpriseId(enterpriseChannelUser);
+            
+            EnterpriseCloudBeanOrder enterpriseCloudBeanOrder  = new EnterpriseCloudBeanOrder();
+            enterpriseCloudBeanOrder.setEnterpriseId(enterpriseInfo.getId());
+            enterpriseCloudBeanOrder.setUid(merchant.getUid());
+            enterpriseCloudBeanOrder.setOperateUid(merchant.getUid());
+            enterpriseCloudBeanOrder.setUpdateTime(currentTimeMillis);
+            
+            enterpriseCloudBeanOrderMapper.updateByEnterpriseId(enterpriseCloudBeanOrder);
+            
+            log.info("repair enterprise success, enterpriseId={}", enterpriseInfo.getId());
+        });
+        
+        // 删除缓存
+        
+        
     }
     
     @Slave

@@ -15,4 +15,6 @@ public interface EnterpriseChannelUserHistoryMapper extends BaseMapper<Enterpris
     int insertOne(EnterpriseChannelUserHistory channelUserHistory);
     
     int batchInsert(@Param("list") List<EnterpriseChannelUserHistory> list);
+    
+    int updateByInviterId(@Param("newUid") Long newUid,@Param("oldUid") Long oldUid,@Param("updateTime") Long updateTime);
 }

@@ -400,6 +400,10 @@
       
     </update>
     
+    <update id="updateByEnterpriseId">
+        update t_enterprise_channel_user set inviter_id = #{inviterId}, update_time = #{updateTime} where enterprise_id = #{enterpriseId}
+    </update>
+    
     <delete id="deleteByEnterpriseId">
         delete from t_enterprise_channel_user where enterprise_id = #{enterpriseId}
     </delete>

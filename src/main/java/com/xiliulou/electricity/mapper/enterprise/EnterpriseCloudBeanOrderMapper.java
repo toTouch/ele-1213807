@@ -43,4 +43,6 @@ public interface EnterpriseCloudBeanOrderMapper extends BaseMapper<EnterpriseClo
     Integer selectByPageCount(EnterpriseCloudBeanOrderQuery query);
 
     List<EnterpriseCloudBeanOrder> selectByPage(EnterpriseCloudBeanOrderQuery query);
+    
+    void updateByEnterpriseId(EnterpriseCloudBeanOrder enterpriseCloudBeanOrder);
 }

@@ -71,7 +71,10 @@
                 update_time = #{updateTime},
             </if>
             <if test="existPlaceFee != null">
-                exist_place_fee  = #{existPlaceFee}
+                exist_place_fee  = #{existPlaceFee},
+            </if>
+            <if test="enterpriseId != null">
+                enterprise_id  = #{enterpriseId}
             </if>
         </set>
         

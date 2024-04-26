@@ -611,6 +611,12 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
         return Triple.of(true, null, result.add(res));
     }
     
+    @Slave
+    @Override
+    public List<EnterpriseInfo> queryList() {
+        return enterpriseInfoMapper.selectList();
+    }
+    
     private int getMaxDaySize(Long beginTime, Long endTime) {
         int maxDaySize = 1;
         

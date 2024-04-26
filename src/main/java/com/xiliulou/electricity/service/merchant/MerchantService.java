@@ -60,4 +60,6 @@ public interface MerchantService {
     List<Merchant> queryListByUidList(Set<Long> merchantUidList, Integer tenantId);
     
     List<Merchant> listAllByIds(Set<Long> merchantIdSet, Integer tenantId);
+    
+    void repairEnterprise();
 }

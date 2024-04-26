@@ -147,7 +147,11 @@
         </set>
         where id = #{id}
     </update>
-
+    
+    <update id="updateByEnterpriseId">
+        update t_enterprise_cloud_bean_order set uid = #{uid}, operate_uid = #{operateUid}, update_time = #{updateTime} where enterprise_id = #{enterpriseId}
+    </update>
+    
     <!--通过主键删除-->
     <delete id="deleteById">
         delete from t_enterprise_cloud_bean_order where id = #{id}

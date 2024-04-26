@@ -118,4 +118,6 @@ public interface EnterpriseInfoService {
     List<EnterpriseInfo> queryListByIdList(List<Long> enterpriseIdList);
     
     Triple<Boolean, String, Object> recycleBatteryMemberCardV2(UserInfo userInfo, EnterpriseInfo enterpriseInfo, UserBatteryMemberCard item);
+    
+    List<EnterpriseInfo> queryList();
 }

@@ -151,6 +151,13 @@
         </foreach>
     </select>
     
+    <select id="selectList" resultType="com.xiliulou.electricity.entity.enterprise.EnterpriseInfo">
+        select  id, uid, business_id, name, phone, franchisee_id, status, recovery_mode, total_bean_amount, renewal_status, tenant_id, create_time, update_time, remark,purchase_authority
+        from  t_enterprise_info
+        where
+            del_flag = 0 and status = 0
+    </select>
+    
     <!--通过主键修改数据-->
     <update id="update">
         update t_enterprise_info

@@ -55,4 +55,6 @@ public interface EnterpriseInfoMapper extends BaseMapper<EnterpriseInfo> {
     List<EnterpriseInfo> queryListByIdList(@Param("idList") List<Long> enterpriseIdList);
     
     int subtractCloudBean(@Param("id") Long id, @Param("subtractCloudBean") BigDecimal subtract,@Param("updateTime") long updateTime);
+    
+    List<EnterpriseInfo> selectList();
 }
