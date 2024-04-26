@@ -16,7 +16,7 @@ import org.apache.commons.lang3.StringUtils;
 public class OrderIdUtil {
     
     private static final String PURE_DATE_PATTERN = "yyMMddHHmmss";
-    
+
     private OrderIdUtil() {
     }
     
@@ -33,6 +33,10 @@ public class OrderIdUtil {
     public static String generateBusinessOrderId(BusinessType businessType, Long uid) {
         return businessType.getBusiness().toString() + DateUtil.format(DateUtil.date(), PURE_DATE_PATTERN) + String.format("%08d", uid)
                 + RandomUtil.randomInt(1000, 9999);
+    }
+
+    public static String generateBusinessId(BusinessType businessType, Long uid) {
+        return businessType.getBusiness().toString() + System.currentTimeMillis() + uid  + RandomUtil.randomInt(1000, 9999);
     }
 //
 //    public static void main(String[] args) {
