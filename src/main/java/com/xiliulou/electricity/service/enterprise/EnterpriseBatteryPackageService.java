@@ -35,7 +35,6 @@ public interface EnterpriseBatteryPackageService {
     
     public Triple<Boolean, String, Object> queryRiderDepositAndPackage(Long uid);
     
-    @Deprecated
     public Triple<Boolean, String, Object>  queryUserBatteryDeposit(Long uid);
     
     public Triple<Boolean, String, Object> checkUserFreeBatteryDepositStatus(Long uid);

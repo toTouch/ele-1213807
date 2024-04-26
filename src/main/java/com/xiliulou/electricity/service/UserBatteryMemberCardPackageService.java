@@ -1,8 +1,7 @@
 package com.xiliulou.electricity.service;
 
-import com.xiliulou.electricity.entity.UserBatteryMemberCard;
+import com.xiliulou.electricity.bo.batteryPackage.UserBatteryMemberCardPackageBO;
 import com.xiliulou.electricity.entity.UserBatteryMemberCardPackage;
-import com.xiliulou.electricity.entity.UserInfo;
 import org.apache.commons.lang3.tuple.Triple;
 
 import java.util.List;
@@ -60,4 +59,6 @@ public interface UserBatteryMemberCardPackageService {
     Integer deleteChannelMemberCardByUid(Long uid);
     
     List<UserBatteryMemberCardPackage> queryChannelListByUid(Long uid);
+    
+    UserBatteryMemberCardPackageBO queryEnterprisePackageByUid(Long uid);
 }

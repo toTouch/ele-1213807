@@ -8,6 +8,7 @@ import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.ElectricityCabinetDataAnalyseConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.EleCabinetCoreData;
+import com.xiliulou.electricity.entity.ElePower;
 import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.ElectricityCabinetBox;
@@ -23,6 +24,7 @@ import com.xiliulou.electricity.query.ElectricityCabinetQuery;
 import com.xiliulou.electricity.request.merchant.MerchantAreaRequest;
 import com.xiliulou.electricity.service.EleCabinetCoreDataService;
 import com.xiliulou.electricity.service.EleCabinetDataAnalyseService;
+import com.xiliulou.electricity.service.ElePowerService;
 import com.xiliulou.electricity.service.EleWarnMsgService;
 import com.xiliulou.electricity.service.ElectricityBatteryService;
 import com.xiliulou.electricity.service.ElectricityCabinetBoxService;
@@ -85,7 +87,7 @@ public class EleCabinetDataAnalyseServiceImpl implements EleCabinetDataAnalyseSe
     private FranchiseeService franchiseeService;
     
     @Autowired
-    private ElectricityCabinetPowerService eleCabinetPowerService;
+    private ElePowerService elePowerService;
     
     @Autowired
     private ElectricityBatteryService electricityBatteryService;
@@ -263,8 +265,9 @@ public class EleCabinetDataAnalyseServiceImpl implements EleCabinetDataAnalyseSe
             ElectricityCabinetServer eleCabinetServer = eleCabinetServerService.selectByEid(item.getId());
             item.setServerEndTime(Objects.nonNull(eleCabinetServer) ? eleCabinetServer.getServerEndTime() : System.currentTimeMillis());
             
-            ElectricityCabinetPower eleCabinetPower = eleCabinetPowerService.selectLatestByEid(item.getId());
-            item.setPowerConsumption(Objects.nonNull(eleCabinetPower) ? eleCabinetPower.getSumPower() : 0);
+            ElePower elePower = elePowerService.queryLatestByEid(item.getId().longValue());
+//            ElectricityCabinetPower eleCabinetPower = eleCabinetPowerService.selectLatestByEid(item.getId());
+            item.setPowerConsumption(Objects.nonNull(elePower) ? elePower.getSumPower() : 0);
             
             Store store = storeService.queryByIdFromCache(item.getStoreId());
             item.setStoreName(Objects.nonNull(store) ? store.getName() : "");

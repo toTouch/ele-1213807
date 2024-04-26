@@ -21,7 +21,6 @@ import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.ElectricityCabinetBox;
 import com.xiliulou.electricity.entity.Message;
 import com.xiliulou.electricity.entity.NotExistSn;
-import com.xiliulou.electricity.entity.Store;
 import com.xiliulou.electricity.handler.iot.AbstractElectricityIotHandler;
 import com.xiliulou.electricity.queue.MessageDelayQueueService;
 import com.xiliulou.electricity.service.BatteryModelService;
@@ -32,7 +31,6 @@ import com.xiliulou.electricity.service.ElectricityCabinetBoxService;
 import com.xiliulou.electricity.service.ElectricityCabinetModelService;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
 import com.xiliulou.electricity.service.NotExistSnService;
-import com.xiliulou.electricity.service.StoreService;
 import com.xiliulou.electricity.utils.VersionUtil;
 import com.xiliulou.iot.entity.ReceiverMessage;
 import lombok.Data;
@@ -75,9 +73,6 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
 
     @Autowired
     RedisService redisService;
-
-    @Autowired
-    StoreService storeService;
 
     @Autowired
     EleCommonConfig eleCommonConfig;
@@ -487,10 +482,9 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
     private void checkBatteryFranchisee(ElectricityCabinet electricityCabinet, ElectricityBattery electricityBattery,
                                         ElectricityCabinetBox updateElectricityCabinetBox, String sessionId) {
         // 查换电柜所属加盟商
-        Store store = storeService.queryByIdFromCache(electricityCabinet.getStoreId());
-        if (!Objects.equals(store.getFranchiseeId(), electricityBattery.getFranchiseeId())) {
+        if (!Objects.equals(electricityCabinet.getFranchiseeId(), electricityBattery.getFranchiseeId())) {
             log.warn("ELE BATTERY REPORT WARN! franchisee is not equal,franchiseeId1={},franchiseeId2={},sessionId={}",
-                    store.getFranchiseeId(), electricityBattery.getFranchiseeId(), sessionId);
+                    electricityCabinet.getFranchiseeId(), electricityBattery.getFranchiseeId(), sessionId);
             updateElectricityCabinetBox.setSn("UNKNOW" + electricityBattery.getSn());
         }
     }

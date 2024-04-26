@@ -256,7 +256,7 @@ public class TradeOrderServiceImpl implements TradeOrderService {
             Boolean userRenewalStatus = enterpriseChannelUserService.checkRenewalStatusByUid(user.getUid());
             if(!userRenewalStatus){
                 log.warn("BATTERY MEMBER ORDER WARN! user renewal status is false, uid={}, mid={}", user.getUid(), integratedPaymentAdd.getMemberCardId());
-                return Triple.of(false, "000088", "自主续费状态已关闭，购买套餐请联系企业负责人");
+                return Triple.of(false, "000088", "您已是渠道用户，请联系对应站点购买套餐");
             }
 
             if (Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
@@ -441,7 +441,7 @@ public class TradeOrderServiceImpl implements TradeOrderService {
             Boolean userRenewalStatus = enterpriseChannelUserService.checkRenewalStatusByUid(userInfo.getUid());
             if(!userRenewalStatus){
                 log.warn("BATTERY MEMBER ORDER WARN! user renewal status is false, uid={}, mid={}", userInfo.getUid(), query.getMemberId());
-                return Triple.of(false, "000088", "自主续费状态已关闭，购买套餐请联系企业负责人");
+                return Triple.of(false, "000088", "您已是渠道用户，请联系对应站点购买套餐");
             }
 
             if (!Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
@@ -669,9 +669,9 @@ public class TradeOrderServiceImpl implements TradeOrderService {
 
         Integer tenantId = TenantContextHolder.getTenantId();
 
-        boolean getLockSuccess = redisService.setNx(CacheConstant.ELE_CACHE_SERVICE_FEE_LOCK_KEY + SecurityUtils.getUid(), "1", 3 * 1000L, false);
+        boolean getLockSuccess = redisService.setNx(CacheConstant.ELE_CACHE_SERVICE_FEE_LOCK_KEY + SecurityUtils.getUid(), "1", 60 * 1000L, false);
         if (!getLockSuccess) {
-            return Triple.of(false, "ELECTRICITY.0034", "操作频繁");
+            return Triple.of(false, "ELECTRICITY.0034", "操作频繁，请1分钟后重试");
         }
 
         try {

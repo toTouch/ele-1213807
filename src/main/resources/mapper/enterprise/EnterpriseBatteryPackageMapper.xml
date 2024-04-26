@@ -381,8 +381,7 @@
         left join t_user_info tui on tecu.uid = tui.uid
         where
         tecu.payment_status = 2
-        and tbmc.business_type = 2
-    
+        
         <if test="enterpriseId != null">
             and tecu.enterprise_id = #{enterpriseId}
         </if>

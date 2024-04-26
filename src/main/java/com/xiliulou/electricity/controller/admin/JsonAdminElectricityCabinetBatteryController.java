@@ -527,7 +527,7 @@ public class JsonAdminElectricityCabinetBatteryController extends BaseController
     public R queryBatteryMap(@RequestParam(value = "lat") Double lat, @RequestParam(value = "lon") Double lon,
             @RequestParam(value = "size", required = false, defaultValue = "10000") Long size,
             @RequestParam(value = "length", required = false, defaultValue = "5") Integer length) {
-        return returnTripleResult(batteryGeoService.queryBatteryMap(lat, lon, size, length));
+        return R.ok();
     }
     
     

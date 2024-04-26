@@ -76,6 +76,9 @@ public class FranchiseeInsuranceServiceImpl extends ServiceImpl<FranchiseeInsura
 
     @Autowired
     UserBatteryTypeService userBatteryTypeService;
+    
+    @Autowired
+    ElectricityConfigService electricityConfigService;
 
     @Autowired
     CarRentalPackageMemberTermBizService carRentalPackageMemberTermBizService;
@@ -504,11 +507,20 @@ public class FranchiseeInsuranceServiceImpl extends ServiceImpl<FranchiseeInsura
 
     @Override
     public FranchiseeInsurance selectInsuranceByType(FranchiseeInsuranceQuery query) {
+        ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(TenantContextHolder.getTenantId());
+        if (Objects.isNull(electricityConfig) || !Objects.equals(electricityConfig.getIsOpenInsurance(), ElectricityConfig.ENABLE_INSURANCE)) {
+            return null;
+        }
+        
         return franchiseeInsuranceMapper.selectInsuranceByType(query);
     }
 
     @Override
     public Triple<Boolean, String, Object> selectInsuranceByUid(Long uid, Integer type) {
+        ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(TenantContextHolder.getTenantId());
+        if (Objects.isNull(electricityConfig) || !Objects.equals(electricityConfig.getIsOpenInsurance(), ElectricityConfig.ENABLE_INSURANCE)) {
+            return null;
+        }
 
         UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
         if (Objects.isNull(userInfo) || !Objects.equals(userInfo.getTenantId(), TenantContextHolder.getTenantId())) {

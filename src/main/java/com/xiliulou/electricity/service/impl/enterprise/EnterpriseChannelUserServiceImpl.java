@@ -196,7 +196,7 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
         if (Objects.isNull(userInfo)) {
             log.error("query enterprise user by phone failed. Not found user. phone is {}, franchisee id = {} ", enterpriseChannelUserQuery.getPhone(),
                     enterpriseChannelUserQuery.getFranchiseeId());
-            return Triple.of(false, "ELECTRICITY.0001", "未查询到该用户，请确保用户已登录小程序并完成实名认证");
+            return Triple.of(false, "300079", "未查询到该用户，请确保用户已登录小程序并完成实名认证");
         }
         
         enterpriseChannelUserVO.setUid(userInfo.getUid());
@@ -578,8 +578,6 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
      */
     @Override
     public Triple<Boolean, String, Object> addUserNew(EnterpriseChannelUserQuery query) {
-        log.info("add new user by enterprise start, channel user = {}", JsonUtil.toJson(query));
-        
         if (!redisService.setNx(CacheConstant.ELE_CACHE_ENTERPRISE_USER_SAVE_BY_PHONE_LOCK_KEY + query.getUid(), "1", 3 * 1000L, false)) {
             return Triple.of(false, "ELECTRICITY.0034", "操作频繁");
         }
@@ -605,8 +603,6 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
             EnterpriseChannelUser channelUser = enterpriseChannelUserMapper.selectByUid(query.getUid());
             
             Long uid = query.getUid();
-            Long channelUserId = query.getId();
-            EnterpriseChannelUser channelUserEntity = enterpriseChannelUserMapper.queryById(channelUserId);
             
             // 企业用户
             Triple<Boolean, String, Object> result1 = doEnterpriseUserByPhone(query, channelUser);
@@ -615,7 +611,7 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
             }
             
             // 非企业用户
-            Triple<Boolean, String, Object> result2 = doNoEnterpriseUserByPhone(query, channelUser, uid, channelUserId, channelUserEntity, enterpriseChannelUser);
+            Triple<Boolean, String, Object> result2 = doNoEnterpriseUserByPhone(query, channelUser, uid, enterpriseChannelUser);
             if (!result2.getLeft()) {
                 return result2;
             }
@@ -633,11 +629,12 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
         return Triple.of(true, "", null);
     }
     
-    private Triple<Boolean, String, Object> doNoEnterpriseUserByPhone(EnterpriseChannelUserQuery query, EnterpriseChannelUser channelUser, Long uid, Long channelUserId,
-            EnterpriseChannelUser channelUserEntity, EnterpriseChannelUser enterpriseChannelUser) {
+    private Triple<Boolean, String, Object> doNoEnterpriseUserByPhone(EnterpriseChannelUserQuery query, EnterpriseChannelUser channelUser, Long uid,
+            EnterpriseChannelUser enterpriseChannelUser) {
         log.info("do No Enterprise User start uid = {},msg={}", query.getUid());
         
         boolean isMember = false;
+        
         UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
         // 如果是车电一体的会员则不允许进行添加
         if (Objects.equals(userInfo.getCarBatteryDepositStatus(), YesNoEnum.YES.getCode())) {
@@ -664,8 +661,8 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
         
         // 查询当前加入的企业的加盟商
         EnterpriseInfo enterpriseInfo = enterpriseInfoService.queryByIdFromCache(query.getEnterpriseId());
-        
         boolean isModify = false;
+        
         // 如果电池押金或者单车押金已经存在则校验加盟商和即将加入的加盟商是否一致
         if (Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES) || Objects.equals(userInfo.getBatteryDepositStatus(),
                 UserInfo.BATTERY_DEPOSIT_STATUS_REFUNDING) || Objects.equals(userInfo.getCarBatteryDepositStatus(), YesNoEnum.YES.getCode())) {
@@ -673,21 +670,29 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
                 log.error("channel user by phone franchisee diff, enterpriseId={}, uid={}", query.getEnterpriseId(), query.getUid());
                 return Triple.of(false, "120310", "所属加盟商不一致，请退押后操作");
             }
+            
             isModify = true;
         }
         
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
         if (Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_NO) && Objects.nonNull(userBatteryMemberCard) && Objects.equals(
-                userBatteryMemberCard.getMemberCardId(), NumberConstant.ZERO)) {
+                userBatteryMemberCard.getMemberCardId(), NumberConstant.ZERO_L)) {
             EleDepositOrder eleDepositOrder = eleDepositOrderService.queryLastPayDepositTimeByUid(query.getUid(), null, null, null);
-            Integer tenantId = TenantContextHolder.getTenantId();
-            ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(tenantId);
+            
+            ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(query.getTenantId().intValue());
+            
             // 查询退押订单
-            EleRefundOrder refundOrder = refundOrderService.queryLastByUid(query.getUid());
+            EleRefundOrder refundOrder = null;
+            
+            if (Objects.nonNull(eleDepositOrder)) {
+                refundOrder = refundOrderService.queryLastByOrderId(eleDepositOrder.getOrderId());
+            }
+            
             if (Objects.nonNull(eleDepositOrder) && Objects.equals(eleDepositOrder.getOrderType(), EleDepositOrder.ORDER_TYPE_COMMON) && Objects.nonNull(electricityConfig)
                     && Objects.nonNull(electricityConfig.getChannelTimeLimit()) && Objects.nonNull(refundOrder)) {
-                long l = DateUtils.diffDayV2(refundOrder.getUpdateTime(), System.currentTimeMillis());
-                if (l <= electricityConfig.getChannelTimeLimit()) {
+                
+                Long l = DateUtils.diffDayV2(refundOrder.getUpdateTime(), System.currentTimeMillis());
+                if (l.intValue() <= electricityConfig.getChannelTimeLimit()) {
                     log.error("enterprise user by phone is channel time limit user not join, enterpriseId={}, uid={}", query.getEnterpriseId(), query.getUid());
                     return Triple.of(false, "120306", "渠道保护期内，暂无法加入企业渠道");
                 }
@@ -698,7 +703,6 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
             log.info("enterprise channel phone add new user");
             
             // 手机添加
-            
             BeanUtil.copyProperties(query, enterpriseChannelUser);
             enterpriseChannelUser.setFranchiseeId(enterpriseInfo.getFranchiseeId());
             enterpriseChannelUser.setTenantId(TenantContextHolder.getTenantId().longValue());
@@ -710,8 +714,9 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
             enterpriseChannelUser.setUpdateTime(System.currentTimeMillis());
             
             enterpriseChannelUserMapper.insertOne(enterpriseChannelUser);
-            channelUserId = enterpriseChannelUser.getId();
-    
+            
+            Long channelUserId = enterpriseChannelUser.getId();
+            
             if (!isModify) {
                 // 添加用户加盟商信息
                 EnterpriseChannelUser channelUser1 = enterpriseChannelUserMapper.selectByUid(uid);
@@ -726,8 +731,11 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
             EnterpriseChannelUserHistory history = new EnterpriseChannelUserHistory();
             EnterpriseChannelUser user = enterpriseChannelUserMapper.queryById(channelUserId);
             BeanUtils.copyProperties(user, history);
-            history.setExitTime(System.currentTimeMillis());
+            history.setJoinTime(System.currentTimeMillis());
             history.setType(EnterpriseChannelUserHistory.JOIN);
+            history.setId(null);
+            history.setCreateTime(System.currentTimeMillis());
+            history.setUpdateTime(System.currentTimeMillis());
             
             channelUserHistoryMapper.insertOne(history);
         }
@@ -755,8 +763,11 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
             EnterpriseChannelUserHistory history = new EnterpriseChannelUserHistory();
             EnterpriseChannelUser user = enterpriseChannelUserMapper.queryById(channelUser.getId());
             BeanUtils.copyProperties(user, history);
-            history.setExitTime(System.currentTimeMillis());
+            history.setJoinTime(System.currentTimeMillis());
             history.setType(EnterpriseChannelUserHistory.JOIN);
+            history.setId(null);
+            history.setCreateTime(System.currentTimeMillis());
+            history.setUpdateTime(System.currentTimeMillis());
             
             channelUserHistoryMapper.insertOne(history);
         }
@@ -779,7 +790,7 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
         EnterpriseInfoVO enterpriseInfoVO = enterpriseInfoService.selectEnterpriseInfoByUid(id);
         if (Objects.isNull(enterpriseInfoVO) || Objects.isNull(enterpriseInfoVO.getId())) {
             log.error("channel User Exit Check  enterprise not exists, uid={}", id);
-            return Triple.of(false, "300082", "该用户无法操作");
+            return Triple.of(false, "120311", "该用户无法操作");
         }
         
         Long uid = request.getUid();
@@ -792,12 +803,12 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
         EnterpriseChannelUser user = enterpriseChannelUserMapper.selectByUid(uid);
         if (Objects.isNull(user)) {
             log.error("channel User Exit Check  user not exists, uid={}", uid);
-            return Triple.of(false, "300082", "骑手不存在");
+            return Triple.of(false, "120312", "骑手不存在");
         }
         
         if (!Objects.equals(user.getEnterpriseId(), enterpriseInfoVO.getId())) {
             log.error("channel User Exit Check user diff exists, ,uid={},id={}", uid, id);
-            return Triple.of(false, "300082", "当前企业下不存在该骑手");
+            return Triple.of(false, "120313", "当前企业下不存在该骑手");
         }
         
         if (!Objects.equals(user.getRenewalStatus(), EnterpriseChannelUser.RENEWAL_CLOSE)) {
@@ -805,8 +816,17 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
             return Triple.of(false, "120305", "当前状态无法操作");
         }
         
+        if (Objects.equals(user.getCloudBeanStatus(), EnterpriseChannelUser.CLOUD_BEAN_STATUS_RECYCLE)) {
+            return Triple.of(true, null, null);
+        }
+        
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
         if (Objects.nonNull(userBatteryMemberCard)) {
+            if (Objects.equals(userInfo.getBatteryRentStatus(), UserInfo.BATTERY_RENT_STATUS_YES)) {
+                log.warn("channel User Exit Check! user rent battery,uid={}", uid);
+                return Triple.of(false, "120316", "该用户未退还电池，将影响云豆回收，请联系归还后操作");
+            }
+            
             if (Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE_REVIEW)) {
                 log.warn("channel User Exit Check! user stop member card review,uid={}", uid);
                 return Triple.of(false, "100211", "该用户已申请套餐冻结，将影响云豆回收，请联系解除后操作");
@@ -814,13 +834,17 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
             
             if (Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE)) {
                 log.warn("channel User Exit Check! member card is disable userId={}", uid);
-                return Triple.of(false, "ELECTRICITY.100004", "该用户套餐已冻结，将影响云豆回收，请联系启用后操作");
+                return Triple.of(false, "120314", "该用户套餐已冻结，将影响云豆回收，请联系启用后操作");
+            }
+    
+            if (Objects.isNull(userBatteryMemberCard.getMemberCardId()) || Objects.equals(userBatteryMemberCard.getMemberCardId(), NumberConstant.ZERO_L)) {
+                return Triple.of(true, null, null);
             }
             
             BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());
             if (Objects.isNull(batteryMemberCard)) {
                 log.warn("channel User Exit Check! not found batteryMemberCard,uid={},mid={}", userInfo.getUid(), userBatteryMemberCard.getMemberCardId());
-                return Triple.of(false, "ELECTRICITY.00121", "套餐不存在");
+                return Triple.of(false, "300003", "套餐不存在");
             }
             
             // 判断滞纳金
@@ -828,12 +852,7 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
                     batteryMemberCard, serviceFeeUserInfoService.queryByUidFromCache(userInfo.getUid()));
             if (Boolean.TRUE.equals(acquireUserBatteryServiceFeeResult.getLeft())) {
                 log.warn("channel User Exit Check! user exist battery service fee,uid={}", userInfo.getUid());
-                return Triple.of(false, "ELECTRICITY.100000", "该用户未缴纳滞纳金，将影响云豆回收，请联系缴纳后操作");
-            }
-            
-            if (Objects.equals(userInfo.getBatteryRentStatus(), UserInfo.BATTERY_RENT_STATUS_YES)) {
-                log.warn("channel User Exit Check! user rent battery,uid={}", uid);
-                return Triple.of(false, "ELECTRICITY.0045", "该用户未退还电池，将影响云豆回收，请联系归还后操作");
+                return Triple.of(false, "120315", "该用户未缴纳滞纳金，将影响云豆回收，请联系缴纳后操作");
             }
         }
         
@@ -849,6 +868,12 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
     @Override
     @Transactional
     public Triple<Boolean, String, Object> channelUserExit(EnterpriseUserExitCheckRequest request) {
+        Long uid = SecurityUtils.getUid();
+        
+        if (!redisService.setNx(CacheConstant.CACHE_CHANNEL_USER_EXIT_LOCK + uid, "1", 3 * 1000L, false)) {
+            return Triple.of(false, "ELECTRICITY.0034", "操作频繁");
+        }
+        
         // 自主续费不能为空
         if (Objects.isNull(request.getRenewalStatus())) {
             log.error("channel User Exit renewal Status is null, uid={}", request.getUid());
@@ -866,6 +891,19 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
             return Triple.of(true, null, null);
         }
         
+        EnterpriseChannelUser channelUser = enterpriseChannelUserMapper.selectByUid(request.getUid());
+        if (Objects.isNull(channelUser)) {
+            log.error("channel User Exit Check  user not exists, uid={}", request.getUid());
+            return Triple.of(false, "120312", "骑手不存在");
+        }
+        
+        // 检测骑手的续费状态是否为关闭
+        if (!Objects.equals(channelUser.getRenewalStatus(), EnterpriseChannelUser.RENEWAL_CLOSE)) {
+            log.error("channel User Exit renewal Status diff, uid={}, userRenewalStatus={}, renewalStatus={}", request.getUid(), channelUser.getRenewalStatus(),
+                    request.getRenewalStatus());
+            return Triple.of(false, "120305", "当前状态无法操作");
+        }
+        
         // 检测是否能退出
         Triple<Boolean, String, Object> triple = this.channelUserExitCheck(request);
         if (!triple.getLeft()) {
@@ -873,24 +911,11 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
             return triple;
         }
         
-        EnterpriseChannelUser channelUser = enterpriseChannelUserMapper.selectByUid(request.getUid());
-        if (Objects.isNull(channelUser)) {
-            log.error("channel User Exit Check  user not exists, uid={}", request.getUid());
-            return Triple.of(false, "300082", "骑手不存在");
-        }
-        
-        // 检测骑手的续费状态是否为关闭
-        if (!Objects.equals(channelUser.getRenewalStatus(), EnterpriseChannelUser.RENEWAL_CLOSE)) {
-            log.error("channel User Exit renewal Status diff, uid={}, userRenewalStatus={}, renewalStatus={}", request.getUid(), channelUser.getRenewalStatus(), request.getRenewalStatus());
-            return Triple.of(false, "120305", "当前状态无法操作");
-        }
-        
-        // todo 修改能回收云豆的逻辑
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(request.getUid());
         if (Objects.nonNull(userBatteryMemberCard) && Objects.equals(channelUser.getCloudBeanStatus(), EnterpriseChannelUser.NO_RECYCLE)) {
             Triple<Boolean, String, Object> tripleRecycle = enterpriseInfoService.recycleCloudBean(request.getUid());
             if (!tripleRecycle.getLeft()) {
-                log.error("channel user exit recycle Cloud Bean error,uid={}, msg={}", request.getUid(), triple.getRight());
+                log.error("channel user exit recycle Cloud Bean error,uid={}, msg={}", request.getUid(), tripleRecycle.getRight());
                 return tripleRecycle;
             }
         }
@@ -910,7 +935,7 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
         enterpriseChannelUserUpdate.setRenewalStatus(EnterpriseChannelUser.RENEWAL_OPEN);
         enterpriseChannelUserUpdate.setUpdateTime(System.currentTimeMillis());
         update(enterpriseChannelUserUpdate);
-    
+        
         // 判断用户是否存在与企业渠道用户然后站长退出的表中，类型未未处理或者是处理失败
         List<Integer> typeList = new ArrayList<>();
         typeList.add(EnterpriseChannelUserExit.TYPE_INIT);
@@ -919,8 +944,10 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
         EnterpriseChannelUserExitQueryModel queryModel = EnterpriseChannelUserExitQueryModel.builder().uidList(uidList).typeList(typeList).build();
         List<EnterpriseChannelUserExit> channelUserList = channelUserExitMapper.list(queryModel);
         if (ObjectUtils.isNotEmpty(channelUserList)) {
+            List<Long> idList = channelUserList.stream().map(EnterpriseChannelUserExit::getId).collect(Collectors.toList());
+            
             // 修改用户退出成功
-            channelUserExitMapper.batchUpdateById(null, EnterpriseChannelUserExit.TYPE_SUCCESS, uidList, System.currentTimeMillis());
+            channelUserExitMapper.batchUpdateById(null, EnterpriseChannelUserExit.TYPE_SUCCESS, idList, System.currentTimeMillis());
         }
         
         log.error("channel User Exit Check success, uid={}, msg={}", request.getUid());
@@ -935,7 +962,7 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
         EnterpriseInfoVO enterpriseInfoVO = enterpriseInfoService.selectEnterpriseInfoByUid(uid);
         if (Objects.isNull(enterpriseInfoVO)) {
             log.error("channel user exit  all  enterprise not exists, uid={}", request.getUid());
-            return Triple.of(false, "300082", "该用户无法操作");
+            return Triple.of(false, "120311", "该用户无法操作");
         }
         
         if (!Objects.equals(enterpriseInfoVO.getRenewalStatus(), EnterpriseChannelUser.RENEWAL_CLOSE)) {
@@ -954,6 +981,10 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
         }
         
         for (EnterpriseChannelUser channelUser : enterpriseChannelUserList) {
+            if (Objects.equals(channelUser.getCloudBeanStatus(), EnterpriseChannelUser.CLOUD_BEAN_STATUS_RECYCLE)) {
+                continue;
+            }
+            
             // 检测用户能否退出
             Triple<Boolean, String, Object> tripleCheck = checkUserEnableExit(channelUser.getUid());
             if (!tripleCheck.getLeft()) {
@@ -970,7 +1001,7 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
         EnterpriseInfoVO enterpriseInfoVO = enterpriseInfoService.selectEnterpriseInfoByUid(uid);
         if (Objects.isNull(enterpriseInfoVO)) {
             log.error("query channel user   enterprise not exists, uid={}", uid);
-            return Triple.of(false, "300082", "该用户无法操作");
+            return Triple.of(false, "120311", "该用户无法操作");
         }
         
         // 查询当前用户下的所有的骑手
@@ -1058,10 +1089,15 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
     public Triple<Boolean, String, Object> channelUserExitAll(EnterpriseUserExitCheckRequest request) {
         // 查询当前用户是否为站长
         Long uid = SecurityUtils.getUid();
+    
+        if (!redisService.setNx(CacheConstant.CACHE_CHANNEL_USER_EXIT_ALL_LOCK + uid, "1", 3 * 1000L, false)) {
+            return Triple.of(false, "ELECTRICITY.0034", "操作频繁");
+        }
+        
         EnterpriseInfoVO enterpriseInfoVO = enterpriseInfoService.selectEnterpriseInfoByUid(uid);
         if (Objects.isNull(enterpriseInfoVO) || Objects.isNull(enterpriseInfoVO.getId())) {
             log.error("channel user exit all enterprise not exists, uid={}", request.getUid());
-            return Triple.of(false, "300082", "该用户无法操作");
+            return Triple.of(false, "120311", "该用户无法操作");
         }
         
         if (!Objects.equals(enterpriseInfoVO.getRenewalStatus(), EnterpriseChannelUser.RENEWAL_CLOSE)) {
@@ -1094,12 +1130,13 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
             log.error("channel user exit all check error uid={}, msg={}", request.getUid(), tripleCheck.getRight());
             return tripleCheck;
         }
-    
+        
         List<Long> channelUserIds = new ArrayList<>();
         List<EnterpriseChannelUserExit> addList = new ArrayList<>();
         for (EnterpriseChannelUser item : enterpriseChannelUserList) {
             // cloudBeanStatus=（云豆状态（0-初始态, 1-未回收, 2-已回收）） 初始态，已回收的
-            if (Objects.equals(item.getCloudBeanStatus(), EnterpriseChannelUser.CLOUD_BEAN_STATUS_INIT) || Objects.equals(item.getCloudBeanStatus(), EnterpriseChannelUser.CLOUD_BEAN_STATUS_RECYCLE)) {
+            if (Objects.equals(item.getCloudBeanStatus(), EnterpriseChannelUser.CLOUD_BEAN_STATUS_INIT) || Objects.equals(item.getCloudBeanStatus(),
+                    EnterpriseChannelUser.CLOUD_BEAN_STATUS_RECYCLE)) {
                 channelUserIds.add(item.getId());
             }
             
@@ -1128,7 +1165,7 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
             log.error("channel user exit all batch insert history,  uid={}", uid);
             channelUserExitMapper.batchInsert(addList);
         }
-    
+        
         // 修改站长本身的状态为
         Long id = enterpriseInfoVO.getId();
         EnterpriseInfo enterpriseInfo = new EnterpriseInfo();
@@ -1147,7 +1184,7 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
         EnterpriseInfoVO enterpriseInfoVO = enterpriseInfoService.selectEnterpriseInfoByUid(uid);
         if (Objects.isNull(enterpriseInfoVO)) {
             log.error("channel user close  enterprise not exists, uid={}", request.getUid());
-            return Triple.of(false, "300082", "该用户无法操作");
+            return Triple.of(false, "120311", "该用户无法操作");
         }
         
         if (!Objects.equals(enterpriseInfoVO.getRenewalStatus(), EnterpriseChannelUser.RENEWAL_OPEN)) {
@@ -1168,6 +1205,7 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
     
     /**
      * 检测
+     *
      * @param query
      * @return
      */
@@ -1177,7 +1215,7 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
         if (!ObjectUtils.allNotNull(query.getUid(), query.getId())) {
             return Triple.of(true, null, vo);
         }
-    
+        
         EnterpriseChannelUser enterpriseChannelUser = new EnterpriseChannelUser();
         try {
             Triple<Boolean, String, Object> result = checkUserInfo(query);
@@ -1186,7 +1224,7 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
             if (Boolean.FALSE.equals(result.getLeft())) {
                 return Triple.of(true, null, vo);
             }
-        
+            
             //7. 骑手手机号不能重复添加
             if (Objects.nonNull(query.getPhone())) {
                 EnterpriseChannelUser channelUser = enterpriseChannelUserMapper.selectChannelUserByPhone(query.getPhone(), query.getUid());
@@ -1194,7 +1232,7 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
                     return Triple.of(true, null, vo);
                 }
             }
-        
+            
             // 查询用户当前企业
             EnterpriseChannelUser channelUser = enterpriseChannelUserMapper.selectByUid(query.getUid());
             Long uid = query.getUid();
@@ -1203,22 +1241,22 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
             // 企业用户
             doEnterpriseUserCheck(query, channelUser, uid, channelUserEntity, enterpriseChannelUser, vo);
             return Triple.of(true, null, vo);
-    
+            
         } catch (Exception e) {
             log.error("add new user after QR scan check error, uid = {}, ex = {}", query.getUid(), e);
             throw new BizException("300068", "扫码添加用户失败");
-        
+            
         }
     }
     
-    private Triple<Boolean, String, Object> doEnterpriseUserCheck(EnterpriseChannelUserQuery query, EnterpriseChannelUser channelUser, Long uid, EnterpriseChannelUser channelUserEntity, EnterpriseChannelUser enterpriseChannelUser,
-            EnterpriseChannelUserScanCheckVO vo) {
+    private Triple<Boolean, String, Object> doEnterpriseUserCheck(EnterpriseChannelUserQuery query, EnterpriseChannelUser channelUser, Long uid,
+            EnterpriseChannelUser channelUserEntity, EnterpriseChannelUser enterpriseChannelUser, EnterpriseChannelUserScanCheckVO vo) {
         if (Objects.nonNull(channelUser) && Objects.equals(channelUser.getRenewalStatus(), EnterpriseChannelUser.RENEWAL_CLOSE) && Objects.equals(channelUser.getEnterpriseId(),
                 query.getEnterpriseId())) {
             vo.setOldEnterpriseId(channelUser.getEnterpriseId());
             return Triple.of(false, "120300", "已是该渠道用户，无需重复添加");
         }
-    
+        
         if (Objects.nonNull(channelUser) && Objects.equals(channelUser.getRenewalStatus(), EnterpriseChannelUser.RENEWAL_CLOSE) && !Objects.equals(channelUser.getEnterpriseId(),
                 query.getEnterpriseId())) {
             vo.setOldEnterpriseId(channelUser.getEnterpriseId());
@@ -1226,7 +1264,7 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
             if (!Objects.equals(channelUser.getFranchiseeId(), channelUserEntity.getFranchiseeId())) {
                 return Triple.of(false, "120301", "切换站点的加盟商必须一致");
             }
-        
+            
             UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
             UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
             if (Objects.nonNull(userBatteryMemberCard)) {
@@ -1235,13 +1273,13 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
                 if (Objects.equals(tripleCheck.getMiddle(), "100211")) {
                     vo.setStatus("4");
                 }
-                if (Objects.equals(tripleCheck.getMiddle(), "ELECTRICITY.100004")) {
+                if (Objects.equals(tripleCheck.getMiddle(), "120314")) {
                     vo.setStatus("3");
                 }
-                if (Objects.equals(tripleCheck.getMiddle(), "ELECTRICITY.100000")) {
+                if (Objects.equals(tripleCheck.getMiddle(), "120315")) {
                     vo.setStatus("1");
                 }
-                if (Objects.equals(tripleCheck.getMiddle(), "ELECTRICITY.0045")) {
+                if (Objects.equals(tripleCheck.getMiddle(), "120316")) {
                     vo.setStatus("2");
                 }
             }
@@ -1274,6 +1312,7 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
         log.info("scan code enterprise user start uid = {},msg={}", query.getUid());
         
         boolean isMember = false;
+        
         UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
         // 如果是车电一体的会员则不允许进行添加
         if (Objects.equals(userInfo.getCarBatteryDepositStatus(), YesNoEnum.YES.getCode())) {
@@ -1284,7 +1323,9 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
         UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(userInfo.getUid());
         if (Objects.nonNull(userBatteryDeposit)) {
             EleDepositOrder depositOrder = eleDepositOrderService.queryByOrderId(userBatteryDeposit.getOrderId());
-            isMember = Objects.equals(depositOrder.getOrderType(), PackageOrderTypeEnum.PACKAGE_ORDER_TYPE_NORMAL.getCode());
+            if (Objects.nonNull(depositOrder)) {
+                isMember = Objects.equals(depositOrder.getOrderType(), PackageOrderTypeEnum.PACKAGE_ORDER_TYPE_NORMAL.getCode());
+            }
         }
         
         // 判断用户是否为会员用户
@@ -1310,32 +1351,41 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
         }
         
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
+        log.info("userBatteryMemberCard ={}, userInfo={}", userBatteryMemberCard, userInfo);
         if (Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_NO) && Objects.nonNull(userBatteryMemberCard) && Objects.equals(
-                userBatteryMemberCard.getMemberCardId(), NumberConstant.ZERO)) {
+                userBatteryMemberCard.getMemberCardId(), NumberConstant.ZERO_L)) {
             EleDepositOrder eleDepositOrder = eleDepositOrderService.queryLastPayDepositTimeByUid(query.getUid(), null, null, null);
-            Integer tenantId = TenantContextHolder.getTenantId();
-            ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(tenantId);
+            
+            ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(query.getTenantId().intValue());
+            
             // 查询退押订单
-            EleRefundOrder refundOrder = refundOrderService.queryLastByUid(query.getUid());
+            // 查询退押订单
+            EleRefundOrder refundOrder = null;
+            
+            if (Objects.nonNull(eleDepositOrder)) {
+                refundOrder = refundOrderService.queryLastByOrderId(eleDepositOrder.getOrderId());
+            }
+            log.info("eleDepositOrder ={}, refundOrder={}, electricityConfig={}", eleDepositOrder, refundOrder, electricityConfig);
             if (Objects.nonNull(eleDepositOrder) && Objects.equals(eleDepositOrder.getOrderType(), EleDepositOrder.ORDER_TYPE_COMMON) && Objects.nonNull(electricityConfig)
                     && Objects.nonNull(electricityConfig.getChannelTimeLimit()) && Objects.nonNull(refundOrder)) {
-                long l = DateUtils.diffDayV2(refundOrder.getUpdateTime(), System.currentTimeMillis());
-                if (l <= electricityConfig.getChannelTimeLimit()) {
+                
+                Long l = DateUtils.diffDayV2(refundOrder.getUpdateTime(), System.currentTimeMillis());
+                log.info("doNoEnterpriseUser uid={}, days={}", query.getUid(), l);
+                if (l.intValue() <= electricityConfig.getChannelTimeLimit()) {
                     log.error("scan code enterprise user is channel time limit user not join, enterpriseId={}, uid={}", query.getEnterpriseId(), query.getUid());
                     return Triple.of(false, "120306", "渠道保护期内，暂无法加入企业渠道");
                 }
             }
         }
         
-        
         //检查是否已经有用户被关联至当前企业
         if (Objects.isNull(channelUserEntity)) {
-            log.error("scan code query enterprise channel record failed after QR scan,  uid = {}, channel user record id", uid, channelUserId);
+            log.error("scan code query enterprise channel record failed after QR scan,  uid = {}, channel user record id={}", uid, channelUserId);
             return Triple.of(false, "300082", "企业信息不存在, 请检测后操作");
         }
         
         if (Objects.nonNull(channelUserEntity.getUid())) {
-            log.error("scan code user already exist after QR scan,  uid = {}, channel user record id", uid, channelUserId);
+            log.error("scan code user already exist after QR scan,  uid = {}, channel user record id={}", uid, channelUserId);
             return Triple.of(false, "300083", "已添加其他用户, 请重新扫码");
         }
         
@@ -1344,6 +1394,7 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
             // 扫码添加
             enterpriseChannelUser.setId(channelUserId);
             enterpriseChannelUser.setUid(uid);
+            enterpriseChannelUser.setFranchiseeId(query.getFranchiseeId());
             enterpriseChannelUser.setRenewalStatus(EnterpriseChannelUser.RENEWAL_CLOSE);
             enterpriseChannelUser.setCloudBeanStatus(EnterpriseChannelUser.CLOUD_BEAN_STATUS_INIT);
             enterpriseChannelUser.setCreateTime(System.currentTimeMillis());
@@ -1366,7 +1417,10 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
             EnterpriseChannelUserHistory history = new EnterpriseChannelUserHistory();
             EnterpriseChannelUser user = enterpriseChannelUserMapper.queryById(channelUserId);
             BeanUtils.copyProperties(user, history);
-            history.setExitTime(System.currentTimeMillis());
+            history.setId(null);
+            history.setCreateTime(System.currentTimeMillis());
+            history.setUpdateTime(System.currentTimeMillis());
+            history.setJoinTime(System.currentTimeMillis());
             history.setType(EnterpriseChannelUserHistory.JOIN);
             
             channelUserHistoryMapper.insertOne(history);
@@ -1394,8 +1448,11 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
             EnterpriseChannelUserHistory history = new EnterpriseChannelUserHistory();
             EnterpriseChannelUser user = enterpriseChannelUserMapper.queryById(channelUser.getId());
             BeanUtils.copyProperties(user, history);
-            history.setExitTime(System.currentTimeMillis());
+            history.setJoinTime(System.currentTimeMillis());
             history.setType(EnterpriseChannelUserHistory.JOIN);
+            history.setId(null);
+            history.setCreateTime(System.currentTimeMillis());
+            history.setUpdateTime(System.currentTimeMillis());
             
             channelUserHistoryMapper.insertOne(history);
         }
@@ -1404,11 +1461,10 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
     }
     
     /**
-     *
      * @param query
-     * @param channelUser ：当前骑手本身的uid
+     * @param channelUser            ：当前骑手本身的uid
      * @param uid
-     * @param channelUserEntity: 扫码空的channelUser
+     * @param channelUserEntity:     扫码空的channelUser
      * @param enterpriseChannelUser: 企业空的uid
      * @return
      */
@@ -1425,7 +1481,7 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
             log.info("enterprise channel switch user, uid={}", query.getUid());
             // 切换站点
             // 判断两个加盟商是否一致
-            if (!Objects.equals(channelUser.getFranchiseeId(), channelUserEntity.getFranchiseeId())) {
+            if (!Objects.equals(channelUser.getFranchiseeId(), query.getFranchiseeId())) {
                 log.info("enterprise channel switch user station diff, oldEnterpriseId={}, newEnterpriseId={}, uid={}", channelUser.getEnterpriseId(), query.getEnterpriseId(),
                         query.getUid());
                 return Triple.of(false, "120301", "切换站点的加盟商必须一致");
@@ -1433,7 +1489,8 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
             
             UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
             UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
-            if (Objects.nonNull(userBatteryMemberCard)) {
+            
+            if (Objects.nonNull(userBatteryMemberCard) && Objects.equals(channelUser.getCloudBeanStatus(), EnterpriseChannelUser.NO_RECYCLE)) {
                 // 检测用户能否退出
                 Triple<Boolean, String, Object> tripleCheck = checkUserEnableExit(uid);
                 if (!tripleCheck.getLeft()) {
@@ -1441,13 +1498,11 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
                     return tripleCheck;
                 }
                 
-                if (Objects.equals(channelUser.getCloudBeanStatus(), EnterpriseChannelUser.NO_RECYCLE)) {
-                    // 回收云豆
-                    Triple<Boolean, String, Object> triple = enterpriseInfoService.recycleCloudBean(query.getUid());
-                    if (!triple.getLeft()) {
-                        log.error("enterprise channel switch user recycle cloud bean error, uid={},msg={}", userInfo.getUid(), triple.getRight());
-                        return triple;
-                    }
+                // 回收云豆
+                Triple<Boolean, String, Object> triple = enterpriseInfoService.recycleCloudBean(query.getUid());
+                if (!triple.getLeft()) {
+                    log.error("enterprise channel switch user recycle cloud bean error, uid={},msg={}", userInfo.getUid(), triple.getRight());
+                    return triple;
                 }
             }
             
@@ -1465,6 +1520,7 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
             enterpriseChannelUser.setUid(query.getUid());
             enterpriseChannelUser.setCreateTime(System.currentTimeMillis());
             enterpriseChannelUser.setUpdateTime(System.currentTimeMillis());
+            
             enterpriseChannelUserMapper.update(enterpriseChannelUser);
             
             // 添加操作记录, 新记录和原站点的记录
@@ -1473,15 +1529,23 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
             BeanUtils.copyProperties(channelUser, history);
             history.setExitTime(System.currentTimeMillis());
             history.setType(EnterpriseChannelUserHistory.EXIT);
+            history.setCreateTime(System.currentTimeMillis());
+            history.setUpdateTime(System.currentTimeMillis());
+            history.setId(null);
             channelUserList.add(history);
             
             EnterpriseChannelUserHistory channelUserHistory = new EnterpriseChannelUserHistory();
             BeanUtils.copyProperties(enterpriseChannelUser, channelUserHistory);
             channelUserHistory.setJoinTime(System.currentTimeMillis());
             channelUserHistory.setType(EnterpriseChannelUserHistory.JOIN);
+            channelUserHistory.setId(null);
+            channelUserHistory.setCreateTime(System.currentTimeMillis());
+            channelUserHistory.setUpdateTime(System.currentTimeMillis());
             channelUserList.add(channelUserHistory);
+            
             channelUserHistoryMapper.batchInsert(channelUserList);
         }
+        
         return Triple.of(true, null, null);
     }
     
@@ -1490,6 +1554,11 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
         
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
         if (Objects.nonNull(userBatteryMemberCard)) {
+            if (Objects.equals(userInfo.getBatteryRentStatus(), UserInfo.BATTERY_RENT_STATUS_YES)) {
+                log.warn("check User Enable Exit! user rent battery,uid={}", uid);
+                return Triple.of(false, "120316", "该用户未退还电池，将影响云豆回收，请联系归还后操作");
+            }
+            
             if (Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE_REVIEW)) {
                 log.warn("check User Enable Exit! user stop member card review,uid={}", uid);
                 return Triple.of(false, "100211", "该用户已申请套餐冻结，将影响云豆回收，请联系解除后操作");
@@ -1497,7 +1566,11 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
             
             if (Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE)) {
                 log.warn("check User Enable Exit! member card is disable userId={}", uid);
-                return Triple.of(false, "ELECTRICITY.100004", "该用户套餐已冻结，将影响云豆回收，请联系启用后操作");
+                return Triple.of(false, "120314", "该用户套餐已冻结，将影响云豆回收，请联系启用后操作");
+            }
+            
+            if (Objects.isNull(userBatteryMemberCard.getMemberCardId()) || Objects.equals(userBatteryMemberCard.getMemberCardId(), NumberConstant.ZERO_L)) {
+                return Triple.of(true, null, null);
             }
             
             BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());
@@ -1511,12 +1584,7 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
                     batteryMemberCard, serviceFeeUserInfoService.queryByUidFromCache(userInfo.getUid()));
             if (Boolean.TRUE.equals(acquireUserBatteryServiceFeeResult.getLeft())) {
                 log.warn("check User Enable Exit! user exist battery service fee,uid={}", userInfo.getUid());
-                return Triple.of(false, "ELECTRICITY.100000", "该用户未缴纳滞纳金，将影响云豆回收，请联系缴纳后操作");
-            }
-            
-            if (Objects.equals(userInfo.getBatteryRentStatus(), UserInfo.BATTERY_RENT_STATUS_YES)) {
-                log.warn("check User Enable Exit! user rent battery,uid={}", uid);
-                return Triple.of(false, "ELECTRICITY.0045", "该用户未退还电池，将影响云豆回收，请联系归还后操作");
+                return Triple.of(false, "120315", "该用户未缴纳滞纳金，将影响云豆回收，请联系缴纳后操作");
             }
         } else {
             log.warn("check User Enable Exit! userBatteryMemberCard is null,uid={}", uid);
@@ -1533,7 +1601,6 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
                 return Triple.of(false, "120307", "二维码已失效，请刷新页面后操作");
             }
             query.setEnterpriseId(channelUser.getEnterpriseId());
-            query.setFranchiseeId(channelUser.getFranchiseeId());
         }
         
         // 0. 添加的骑手不能是企业站长
@@ -1563,12 +1630,22 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
         }
         
         //根据当前企业ID查询企业信息
-        //        Long uid = SecurityUtils.getUid();
-        Integer tenantId = TenantContextHolder.getTenantId();
         EnterpriseInfo enterpriseInfo = enterpriseInfoService.queryByIdFromCache(query.getEnterpriseId());
-        if (Objects.nonNull(enterpriseInfo)) {
-            query.setEnterpriseName(enterpriseInfo.getName());
+        
+        // 判断骑手和企业是否在统一租户内
+        if (Objects.isNull(enterpriseInfo)) {
+            log.warn("add user to enterprise failed. not find enterprise. uid = {}", query.getUid());
+            return Triple.of(false, "120212", "商户不存在");
         }
+        
+        if (!Objects.equals(enterpriseInfo.getTenantId(), userInfo.getTenantId())) {
+            log.warn("add user to enterprise failed. not find user. uid = {}", query.getUid());
+            return Triple.of(false, "120312", "骑手不存在");
+        }
+        
+        query.setEnterpriseName(enterpriseInfo.getName());
+        query.setFranchiseeId(enterpriseInfo.getFranchiseeId());
+        query.setTenantId(Long.valueOf(enterpriseInfo.getTenantId()));
         
         return Triple.of(true, "", enterpriseInfo);
     }

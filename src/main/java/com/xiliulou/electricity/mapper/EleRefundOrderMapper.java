@@ -4,7 +4,6 @@ import com.xiliulou.electricity.entity.EleRefundOrder;
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.Map;
 
 import com.xiliulou.electricity.query.EleRefundQuery;
 import com.xiliulou.electricity.vo.EleRefundOrderVO;
@@ -52,7 +51,9 @@ public interface EleRefundOrderMapper extends BaseMapper<EleRefundOrder> {
     
     Integer existByOrderIdAndStatus(@Param("orderId") String orderId, @Param("statusList") List<Integer> statusList);
     
-    EleRefundOrder queryLastByUid(@Param("uid") Long uid);
+    EleRefundOrder selectLastByOrderId(@Param("orderId") String orderId);
     
     Integer existsRefundOrderByUid(Long uid);
+    
+    Integer update(EleRefundOrder eleRefundOrderUpdate);
 }
