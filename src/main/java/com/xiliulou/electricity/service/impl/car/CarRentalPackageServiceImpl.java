@@ -29,6 +29,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
 
 import javax.annotation.Resource;
 import java.util.Collections;
@@ -268,6 +269,11 @@ public class CarRentalPackageServiceImpl implements CarRentalPackageService {
         if (!oriEntity.getName().equals(name) && carRentalPackageMapper.uqByTenantIdAndName(tenantId, name) > 0) {
             log.info("CarRentalPackageService.updateById, Package name already exists.");
             throw new BizException("300022", "套餐名称已存在");
+        }
+        // 适配优惠券多张更新
+        if (StringUtils.hasText(entity.getCouponArrays()) && !Objects.isNull(oriEntity.getCouponId()) && !entity.getCouponArrays()
+                .contains(String.valueOf(oriEntity.getCouponId()))) {
+            entity.setCouponId(-1L);
         }
         
         entity.setUpdateTime(System.currentTimeMillis());

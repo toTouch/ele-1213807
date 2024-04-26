@@ -477,10 +477,10 @@ public class JsonAdminCarRentalPackageController extends BasicController {
         
         CarRentalPackagePo entity = new CarRentalPackagePo();
         BeanUtils.copyProperties(optModel, entity, "couponId", "couponIds", "userGroupIds");
-        List<Long> couponIds = new ArrayList<>();
         if (!Objects.isNull(optModel.getCouponId())) {
-            couponIds.add(optModel.getCouponId());
+            entity.setCouponId(optModel.getCouponId());
         }
+        List<Long> couponIds = new ArrayList<>();
         if (!CollectionUtils.isEmpty(optModel.getCouponIds())) {
             couponIds.addAll(optModel.getCouponIds());
         }
