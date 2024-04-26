@@ -28,6 +28,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -189,7 +191,12 @@ public class JsonMerchantController extends BaseController {
      */
     @GetMapping("/admin/merchant/repairEnterprise")
     public R repairEnterprise() {
-        merchantService.repairEnterprise();
+        List<Long> enterpriseIds = new ArrayList<>();
+        List<Long> merchantIds = new ArrayList<>();
+        
+        merchantService.repairEnterprise(enterpriseIds, merchantIds);
+        
+        merchantService.deleteCacheForRepairEnterprise(enterpriseIds, merchantIds);
         return R.ok();
     }
     

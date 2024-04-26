@@ -16,7 +16,6 @@ import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.enterprise.EnterpriseChannelUser;
-import com.xiliulou.electricity.entity.enterprise.EnterpriseChannelUserHistory;
 import com.xiliulou.electricity.entity.enterprise.EnterpriseCloudBeanOrder;
 import com.xiliulou.electricity.entity.enterprise.EnterpriseInfo;
 import com.xiliulou.electricity.entity.merchant.Merchant;
@@ -1555,8 +1554,9 @@ public class MerchantServiceImpl implements MerchantService {
         return merchantMapper.selectListAllByIds(merchantIdSet, tenantId);
     }
     
+    @Transactional
     @Override
-    public void repairEnterprise() {
+    public void repairEnterprise(List<Long> enterpriseIds, List<Long> merchantIds) {
         // 查询状态为开启的企业
         List<EnterpriseInfo> enterpriseInfos = enterpriseInfoService.queryList();
         if (ObjectUtils.isEmpty(enterpriseInfos)) {
@@ -1607,13 +1607,29 @@ public class MerchantServiceImpl implements MerchantService {
             enterpriseCloudBeanOrder.setUpdateTime(currentTimeMillis);
             
             enterpriseCloudBeanOrderMapper.updateByEnterpriseId(enterpriseCloudBeanOrder);
+    
+            enterpriseIds.add(enterpriseInfo.getId());
+            enterpriseIds.add(merchant.getEnterpriseId());
             
+            merchantIds.add(merchant.getId());
             log.info("repair enterprise success, enterpriseId={}", enterpriseInfo.getId());
         });
+    }
+    
+    @Override
+    public void deleteCacheForRepairEnterprise(List<Long> enterpriseIds, List<Long> merchantIds) {
+        if (ObjectUtils.isNotEmpty(enterpriseIds)) {
+            enterpriseIds.forEach(enterpriseId -> {
+                redisService.delete(CacheConstant.CACHE_ENTERPRISE_INFO + enterpriseId);
+            });
+        }
         
-        // 删除缓存
-        
-        
+        if (ObjectUtils.isNotEmpty(merchantIds)) {
+            merchantIds.stream().forEach(merchantId -> {
+                redisService.delete(CacheConstant.CACHE_MERCHANT + merchantId);
+            });
+            
+        }
     }
     
     @Slave

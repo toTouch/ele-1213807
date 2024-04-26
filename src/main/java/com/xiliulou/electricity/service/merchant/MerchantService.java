@@ -2,7 +2,6 @@ package com.xiliulou.electricity.service.merchant;
 
 import com.xiliulou.electricity.dto.merchant.MerchantDeleteCacheDTO;
 import com.xiliulou.electricity.entity.merchant.Merchant;
-import com.xiliulou.electricity.entity.merchant.MerchantPlace;
 import com.xiliulou.electricity.request.merchant.MerchantPageRequest;
 import com.xiliulou.electricity.request.merchant.MerchantSaveRequest;
 import com.xiliulou.electricity.vo.merchant.MerchantPlaceSelectVO;
@@ -61,5 +60,7 @@ public interface MerchantService {
     
     List<Merchant> listAllByIds(Set<Long> merchantIdSet, Integer tenantId);
     
-    void repairEnterprise();
+    void repairEnterprise(List<Long> enterpriseIds, List<Long> merchantIds);
+    
+    void deleteCacheForRepairEnterprise(List<Long> enterpriseIds, List<Long> merchantIds);
 }
