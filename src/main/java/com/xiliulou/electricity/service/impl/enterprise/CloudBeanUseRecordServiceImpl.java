@@ -275,9 +275,6 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
         List<EnableMemberCardRecord> enableMemberCardRecords = enableMemberCardRecordService.queryListByOrderIds(orderIdList);
         Map<String, List<EnableMemberCardRecord>> enableMemberCardRecordMap = new HashMap<>();
         if (ObjectUtils.isNotEmpty(enableMemberCardRecords)) {
-            enableMemberCardRecordMap = enableMemberCardRecords.stream().filter(record -> Objects.nonNull(record.getDisableTime()) && Objects.nonNull(record.getEnableTime()))
-                    .collect(Collectors.groupingBy(EnableMemberCardRecord::getOrderId));
-    
             // 过滤掉禁用和启用时间不满一天的启用和禁用告警记录
             enableMemberCardRecordMap = enableMemberCardRecords.stream().filter(record ->  {
                 if (Objects.isNull(record.getEnableTime()) || Objects.isNull(record.getDisableTime())) {
@@ -327,12 +324,12 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
                 List<Long> endTimeList = new ArrayList<>();
                 startTimeList.add(payMemberCardRecord.getBeginTime());
                 endTimeList.add(payMemberCardRecord.getEndTime());
-                log.info("enableMemberCardRecordList={}", enableMemberCardRecordList);
+                
                 for (EnableMemberCardRecord enableMemberCardRecord : enableMemberCardRecordList) {
                     startTimeList.add(enableMemberCardRecord.getEnableTime());
                     endTimeList.add(enableMemberCardRecord.getDisableTime());
                 }
-                log.info("startTimeList={},endTimeList={}", startTimeList, endTimeList);
+                
                 startTimeList = startTimeList.stream().sorted().collect(Collectors.toList());
                 endTimeList = endTimeList.stream().sorted().collect(Collectors.toList());
             
@@ -343,6 +340,7 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
                         log.warn("RECYCLE BATTERY MEMBERCARD WARN! pay record begin time greater than end time,uid={},orderId={}", userInfo.getUid(), orderId);
                         continue;
                     }
+                    
                     payRecordSubList.add(payRecord);
                 }
             
@@ -354,7 +352,6 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
         
             int totalUseDay = 0;
             List<EnterpriseRentRecordDetail> rentRecordDetails = recordDetailMap.get(orderId);
-            log.info("payRecordSubList={}, orderId-{}", payRecordSubList, orderId);
         
             for (AnotherPayMembercardRecord payRecord : payRecordSubList) {
                 // 将退电时间在套餐有效时间段内的记录进行分段过滤

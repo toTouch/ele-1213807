@@ -1111,7 +1111,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         List<EnterpriseChannelUserExit> channelUserList = channelUserExitMapper.list(queryModel);
         if (ObjectUtils.isNotEmpty(channelUserList)) {
             log.error("DISABLE MEMBER CARD ERROR! channel user exit,uid={}", userInfo.getUid());
-            return R.fail("300853", "企业用户无法申请冻结套餐", acquireUserBatteryServiceFeeResult.getRight());
+            return R.fail("120308", "企业用户无法申请冻结套餐", acquireUserBatteryServiceFeeResult.getRight());
         }
         
         EleDisableMemberCardRecord eleDisableMemberCardRecord = EleDisableMemberCardRecord.builder().disableMemberCardNo(generateOrderId(user.getUid()))
