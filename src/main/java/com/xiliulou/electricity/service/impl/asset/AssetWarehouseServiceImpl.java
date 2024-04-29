@@ -199,6 +199,7 @@ public class AssetWarehouseServiceImpl implements AssetWarehouseService {
             return R.fail("300802", "该库房有车辆正在使用,请先解绑后操作");
         }
         
+        // TODO(heyafeng) 2024/4/29 16:17
         // 根据id查库房
         AssetWarehouseNameVO assetWarehouseNameVO = queryById(id);
         if (Objects.isNull(assetWarehouseNameVO)) {
@@ -207,7 +208,7 @@ public class AssetWarehouseServiceImpl implements AssetWarehouseService {
     
         Integer tenantId = TenantContextHolder.getTenantId();
         if (!Objects.equals(assetWarehouseNameVO.getTenantId(), tenantId)) {
-            return R.fail("AUTH.0003", "租户信息不匹配");
+            return R.ok();
         }
     
         AssetWarehouseSaveOrUpdateQueryModel warehouseSaveOrUpdateQueryModel = AssetWarehouseSaveOrUpdateQueryModel.builder().id(id).delFlag(AssetConstant.DEL_DEL)
@@ -224,10 +225,11 @@ public class AssetWarehouseServiceImpl implements AssetWarehouseService {
         }
         
         try {
+            // TODO(heyafeng) 2024/4/29 16:23
             AssetWarehouseBO assetWarehouseBO = assetWarehouseMapper.selectById(assetWarehouseSaveOrUpdateRequest.getId());
             Integer tenantId = TenantContextHolder.getTenantId();
             if (!Objects.equals(assetWarehouseBO.getTenantId(), tenantId)) {
-                return R.fail("AUTH.0003", "租户信息不匹配");
+                return R.ok();
             }
             
             if (Objects.isNull(assetWarehouseBO)) {

@@ -110,6 +110,7 @@ public class AssetExitWarehouseRecordServiceImpl implements AssetExitWarehouseRe
         }
         
         try {
+            // TODO(heyafeng) 2024/4/29 16:26
             Long franchiseeId = assetExitWarehouseSaveRequest.getFranchiseeId();
             Integer type = assetExitWarehouseSaveRequest.getType();
             Long storeId = assetExitWarehouseSaveRequest.getStoreId();
@@ -124,7 +125,7 @@ public class AssetExitWarehouseRecordServiceImpl implements AssetExitWarehouseRe
             
             // tenantId校验
             if (!Objects.equals(franchisee.getTenantId(), tenantId)) {
-                return R.fail("AUTH.0003", "租户信息不匹配");
+                return R.ok();
             }
     
             if (assetList.size() > AssetConstant.ASSET_EXIT_WAREHOUSE_LIMIT_NUMBER) {
@@ -210,7 +211,7 @@ public class AssetExitWarehouseRecordServiceImpl implements AssetExitWarehouseRe
                 }
     
                 if (!Objects.equals(store.getTenantId(), TenantContextHolder.getTenantId())) {
-                    return R.fail("AUTH.0003", "租户信息不匹配");
+                    return R.ok();
                 }
                 
                 if (Objects.equals(inventoryStatus, AssetConstant.ASSET_INVENTORY_STATUS_TAKING)) {

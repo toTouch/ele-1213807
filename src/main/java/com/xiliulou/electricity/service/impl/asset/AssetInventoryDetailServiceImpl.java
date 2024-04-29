@@ -115,16 +115,11 @@ public class AssetInventoryDetailServiceImpl implements AssetInventoryDetailServ
     public Integer asyncBatteryProcess(ElectricityBatterySnSearchRequest snSearchRequest, String orderNo, Long operator) {
         List<ElectricityBatteryVO> electricityBatteryVOList = electricityBatteryService.listSnByFranchiseeId(snSearchRequest);
         if (CollectionUtils.isNotEmpty(electricityBatteryVOList)) {
-            List<AssetInventoryDetailSaveQueryModel> inventoryDetailSaveQueryModelList = electricityBatteryVOList.stream().map(item -> {
-                
-                AssetInventoryDetailSaveQueryModel inventoryDetailSaveQueryModel = AssetInventoryDetailSaveQueryModel.builder().orderNo(orderNo).sn(item.getSn())
-                        .type(AssetTypeEnum.ASSET_TYPE_BATTERY.getCode()).franchiseeId(snSearchRequest.getFranchiseeId())
-                        .inventoryStatus(AssetConstant.ASSET_INVENTORY_DETAIL_STATUS_NO).operator(operator).tenantId(snSearchRequest.getTenantId())
-                        .delFlag(AssetConstant.DEL_NORMAL).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).build();
-                
-                return inventoryDetailSaveQueryModel;
-                
-            }).collect(Collectors.toList());
+            // TODO(heyafeng) 2024/4/29 16:50
+            List<AssetInventoryDetailSaveQueryModel> inventoryDetailSaveQueryModelList = electricityBatteryVOList.stream().map(item -> AssetInventoryDetailSaveQueryModel.builder().orderNo(orderNo).sn(item.getSn())
+                    .type(AssetTypeEnum.ASSET_TYPE_BATTERY.getCode()).franchiseeId(snSearchRequest.getFranchiseeId())
+                    .inventoryStatus(AssetConstant.ASSET_INVENTORY_DETAIL_STATUS_NO).operator(operator).tenantId(snSearchRequest.getTenantId())
+                    .delFlag(AssetConstant.DEL_NORMAL).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).build()).collect(Collectors.toList());
             
             // 批量新增
             if (CollectionUtils.isNotEmpty(inventoryDetailSaveQueryModelList)) {

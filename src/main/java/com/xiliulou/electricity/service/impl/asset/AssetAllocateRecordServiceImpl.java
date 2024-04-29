@@ -131,6 +131,7 @@ public class AssetAllocateRecordServiceImpl implements AssetAllocateRecordServic
         }
         
         try {
+            // TODO(heyafeng) 2024/4/29 16:25
             Integer type = assetAllocateRecordRequest.getType();
             Integer status = assetInventoryService.queryInventoryStatusByFranchiseeId(assetAllocateRecordRequest.getSourceFranchiseeId(), type);
             if (Objects.equals(status, AssetConstant.ASSET_INVENTORY_STATUS_TAKING)) {
@@ -194,7 +195,7 @@ public class AssetAllocateRecordServiceImpl implements AssetAllocateRecordServic
             }
             
             if (!Objects.equals(sourceFranchisee.getTenantId(), tenantId) || !Objects.equals(targetFranchisee.getTenantId(), tenantId)) {
-                return R.fail("AUTH.0003", "租户信息不匹配");
+                return R.ok();
             }
             
             if (Objects.equals(AssetTypeEnum.ASSET_TYPE_CAR.getCode(), type) || Objects.equals(AssetTypeEnum.ASSET_TYPE_CABINET.getCode(), type)) {
