@@ -57,6 +57,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -427,10 +428,11 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
         
         //创建转账明细记录
         List<WechatTransferBatchOrderDetailQuery> wechatTransferBatchOrderDetailQueryList = new ArrayList<>();
-        
+
+        AtomicInteger suffixId = new AtomicInteger();
         merchantWithdrawApplications.forEach(merchantWithdrawApplication -> {
             //生成提现明细的批次号
-            String batchDetailNo = OrderIdUtil.generateBusinessOrderId(BusinessType.MERCHANT_WITHDRAW_BATCH_DETAIL, merchantWithdrawApplication.getUid());
+            String batchDetailNo = OrderIdUtil.generateBusinessId(BusinessType.MERCHANT_WITHDRAW_BATCH_DETAIL, merchantWithdrawApplication.getUid()) + suffixId.getAndIncrement();
             MerchantWithdrawApplicationRecord withdrawApplicationRecord = new MerchantWithdrawApplicationRecord();
             withdrawApplicationRecord.setUid(merchantWithdrawApplication.getUid());
             withdrawApplicationRecord.setOrderNo(merchantWithdrawApplication.getOrderNo());
