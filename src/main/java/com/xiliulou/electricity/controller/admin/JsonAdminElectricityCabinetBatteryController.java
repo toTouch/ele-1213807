@@ -319,7 +319,7 @@ public class JsonAdminElectricityCabinetBatteryController extends BaseController
     public R queryCountByFranchisee(@RequestParam(value = "physicsStatus", required = false) Integer physicsStatus,
             @RequestParam(value = "sn", required = false) String sn,
             @RequestParam(value = "chargeStatus", required = false) Integer chargeStatus,
-            @RequestParam(value = "businessStatus", required = false) Integer businessStatus,) {
+            @RequestParam(value = "businessStatus", required = false) Integer businessStatus) {
         
         //租户
         Integer tenantId = TenantContextHolder.getTenantId();
