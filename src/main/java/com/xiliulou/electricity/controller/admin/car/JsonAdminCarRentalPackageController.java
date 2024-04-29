@@ -1,10 +1,10 @@
 package com.xiliulou.electricity.controller.admin.car;
 
+import cn.hutool.core.collection.CollectionUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.controller.BasicController;
 import com.xiliulou.electricity.entity.BatteryModel;
-import com.xiliulou.electricity.entity.Coupon;
 import com.xiliulou.electricity.entity.ElectricityCarModel;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.Store;
@@ -12,6 +12,7 @@ import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.car.CarRentalPackageCarBatteryRelPo;
 import com.xiliulou.electricity.entity.car.CarRentalPackagePo;
 import com.xiliulou.electricity.enums.RentalPackageTypeEnum;
+import com.xiliulou.electricity.enums.YesNoEnum;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.model.car.opt.CarRentalPackageOptModel;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageQryModel;
@@ -26,6 +27,7 @@ import com.xiliulou.electricity.service.StoreService;
 import com.xiliulou.electricity.service.car.CarRentalPackageCarBatteryRelService;
 import com.xiliulou.electricity.service.car.CarRentalPackageService;
 import com.xiliulou.electricity.service.car.biz.CarRentalPackageBizService;
+import com.xiliulou.electricity.service.userinfo.userInfoGroup.UserInfoGroupService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.utils.ValidList;
@@ -37,15 +39,15 @@ import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.CollectionUtils;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.validation.Valid;
@@ -57,6 +59,9 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import static com.xiliulou.electricity.model.car.opt.CarRentalPackageOptModel.COUPON_MAX_LIMIT;
+import static com.xiliulou.electricity.model.car.opt.CarRentalPackageOptModel.USER_GROUP_MAX_LIMIT;
 
 /**
  * 租车套餐表 Controller
@@ -91,6 +96,9 @@ public class JsonAdminCarRentalPackageController extends BasicController {
     
     @Resource
     private CarRentalPackageService carRentalPackageService;
+    
+    @Autowired
+    private UserInfoGroupService userInfoGroupService;
     
     
     /**
@@ -216,7 +224,19 @@ public class JsonAdminCarRentalPackageController extends BasicController {
         BeanUtils.copyProperties(qryReq, qryModel);
         qryModel.setFranchiseeIdList(triple.getLeft());
         qryModel.setStoreIdList(triple.getMiddle());
-
+        
+        if (Objects.nonNull(qryReq.getUserGroupId()) && Objects.nonNull(qryReq.getApplicableType())) {
+            return R.ok(Collections.emptyList());
+        }
+        
+        if (StringUtils.isNotBlank(qryReq.getUserGroupId())) {
+            qryModel.setIsUserGroup(YesNoEnum.NO.getCode());
+        }
+        
+        if (!Objects.isNull(qryReq.getApplicableType())) {
+            qryModel.setIsUserGroup(YesNoEnum.YES.getCode());
+        }
+        
         // 调用服务
         List<CarRentalPackagePo> carRentalPackageEntityList = carRentalPackageService.page(qryModel);
         if (ObjectUtils.isEmpty(carRentalPackageEntityList)) {
@@ -226,15 +246,15 @@ public class JsonAdminCarRentalPackageController extends BasicController {
         // 获取辅助业务信息（加盟商、车辆型号、优惠券信息、关联信息）
         Set<Long> franchiseeIds = new HashSet<>();
         Set<Integer> carModelIds = new HashSet<>();
-        List<Long> couponIds = new ArrayList<>();
+        //        List<Long> couponIds = new ArrayList<>();
         List<Long> packageIds = new ArrayList<>();
         carRentalPackageEntityList.forEach(carRentalPackageEntity -> {
             franchiseeIds.add(Long.valueOf(carRentalPackageEntity.getFranchiseeId()));
             carModelIds.add(carRentalPackageEntity.getCarModelId());
-            Long couponId = carRentalPackageEntity.getCouponId();
-            if (ObjectUtils.isNotEmpty(couponId) && !couponIds.contains(couponId)) {
-                couponIds.add(couponId);
-            }
+            //            Long couponId = carRentalPackageEntity.getCouponId();
+            //            if (ObjectUtils.isNotEmpty(couponId) && !couponIds.contains(couponId)) {
+            //                couponIds.add(couponId);
+            //            }
             if (RentalPackageTypeEnum.CAR_BATTERY.getCode().equals(carRentalPackageEntity.getType())) {
                 packageIds.add(carRentalPackageEntity.getId());
             }
@@ -248,14 +268,14 @@ public class JsonAdminCarRentalPackageController extends BasicController {
         Map<Integer, String> carModelMap = getCarModelNameByIdsForMap(carModelIds);
         
         // 优惠券信息
-        Map<Long, Coupon> couponMap = getCouponForMapByIds(couponIds);
+        //        Map<Long, Coupon> couponMap = getCouponForMapByIds(couponIds);
         
         // 模型转换，封装返回
         List<CarRentalPackageVo> carRentalPackageVOList = carRentalPackageEntityList.stream().map(carRentalPackageEntity -> {
             
             CarRentalPackageVo carRentalPackageVo = new CarRentalPackageVo();
-            BeanUtils.copyProperties(carRentalPackageEntity, carRentalPackageVo);
-            
+            BeanUtils.copyProperties(carRentalPackageEntity, carRentalPackageVo, "couponIds", "userGroupIds");
+            carRentalPackageVo.setCouponIds(carRentalPackageEntity.getCouponIds());
             if (!franchiseeMap.isEmpty()) {
                 carRentalPackageVo.setFranchiseeName(franchiseeMap.getOrDefault(Long.valueOf(carRentalPackageEntity.getFranchiseeId()), ""));
             }
@@ -264,9 +284,16 @@ public class JsonAdminCarRentalPackageController extends BasicController {
                 carRentalPackageVo.setCarModelName(carModelMap.getOrDefault(carRentalPackageEntity.getCarModelId(), ""));
             }
             
-            if (!couponMap.isEmpty()) {
-                carRentalPackageVo.setCouponName(couponMap.getOrDefault(carRentalPackageEntity.getCouponId(), new Coupon()).getName());
-            }
+            //设置优惠劵信息
+            List<Long> couponIds = carRentalPackageEntity.getCouponIds();
+            carRentalPackageVo = carRentalPackageBizService.buildCouponsToCarRentalVo(carRentalPackageVo, couponIds);
+            
+            //设置用户分组信息
+            List<Long> userGroupIds = carRentalPackageEntity.getUserGroupId();
+            carRentalPackageVo = carRentalPackageBizService.buildUserGroupToCarRentalVo(carRentalPackageVo, userGroupIds);
+            //            if (!couponMap.isEmpty()) {
+            //                carRentalPackageVo.setCouponName(couponMap.getOrDefault(carRentalPackageEntity.getCouponId(), new Coupon()).getName());
+            //            }
             
             // TODO 临时解决，添加字段，后续优化
             // 查询电池型号
@@ -318,7 +345,19 @@ public class JsonAdminCarRentalPackageController extends BasicController {
         BeanUtils.copyProperties(qryReq, qryModel);
         qryModel.setFranchiseeIdList(triple.getLeft());
         qryModel.setStoreIdList(triple.getMiddle());
-
+        
+        if (Objects.nonNull(qryReq.getUserGroupId()) && Objects.nonNull(qryReq.getApplicableType())) {
+            return R.ok(0);
+        }
+        
+        if (StringUtils.isNotBlank(qryReq.getUserGroupId())) {
+            qryModel.setIsUserGroup(YesNoEnum.NO.getCode());
+        }
+        
+        if (!Objects.isNull(qryReq.getApplicableType())) {
+            qryModel.setIsUserGroup(YesNoEnum.YES.getCode());
+        }
+        
         // 调用服务
         return R.ok(carRentalPackageService.count(qryModel));
     }
@@ -353,22 +392,22 @@ public class JsonAdminCarRentalPackageController extends BasicController {
         Integer carModelId = carRentalPackageEntity.getCarModelId();
         ElectricityCarModel carModel = electricityCarModelService.queryByIdFromCache(carModelId);
         
-        // 查询优惠券
-        Long couponId = carRentalPackageEntity.getCouponId();
-        Coupon coupon = null;
-        if (ObjectUtils.isNotEmpty(couponId)) {
-            coupon = couponService.queryByIdFromCache(couponId.intValue());
-        }
-        
         // 转换模型，组装返回值
         CarRentalPackageVo carRentalPackageVo = new CarRentalPackageVo();
-        BeanUtils.copyProperties(carRentalPackageEntity, carRentalPackageVo);
+        BeanUtils.copyProperties(carRentalPackageEntity, carRentalPackageVo, "couponIds", "userGroupIds");
         
         // 赋值辅助业务数据
         carRentalPackageVo.setFranchiseeName(ObjectUtils.isNotEmpty(franchisee) ? franchisee.getName() : null);
         carRentalPackageVo.setStoreName(ObjectUtils.isNotEmpty(store) ? store.getName() : null);
         carRentalPackageVo.setCarModelName(ObjectUtils.isNotEmpty(carModel) ? carModel.getName() : null);
-        carRentalPackageVo.setCouponName(ObjectUtils.isNotEmpty(coupon) ? coupon.getName() : null);
+        
+        //设置优惠劵名称
+        List<Long> couponIds = carRentalPackageEntity.getCouponIds();
+        carRentalPackageVo = carRentalPackageBizService.buildCouponsToCarRentalVo(carRentalPackageVo, couponIds);
+        
+        //设置用户分组信息
+        List<Long> userGroupIds = carRentalPackageEntity.getUserGroupId();
+        carRentalPackageVo = carRentalPackageBizService.buildUserGroupToCarRentalVo(carRentalPackageVo, userGroupIds);
         
         // 查询电池型号
         if (carRentalPackageEntity.getType().equals(RentalPackageTypeEnum.CAR_BATTERY.getCode())) {
@@ -423,12 +462,30 @@ public class JsonAdminCarRentalPackageController extends BasicController {
             throw new BizException("ELECTRICITY.0001", "未找到用户");
         }
         
+        if (Objects.equals(optModel.getGiveCoupon(), YesNoEnum.YES.getCode()) && (CollectionUtil.isEmpty(optModel.getCouponIds())
+                || optModel.getCouponIds().size() > COUPON_MAX_LIMIT)) {
+            throw new BizException("300833", "优惠劵最多支持发6张");
+        }
+        
+        if (Objects.equals(optModel.getIsUserGroup(), YesNoEnum.NO.getCode()) && (CollectionUtil.isEmpty(optModel.getUserGroupIds())
+                || optModel.getUserGroupIds().size() > USER_GROUP_MAX_LIMIT)) {
+            throw new BizException("300834", "用户分组最多支持选10个");
+        }
+        
         optModel.setTenantId(tenantId);
         optModel.setUpdateUid(user.getUid());
         
         CarRentalPackagePo entity = new CarRentalPackagePo();
-        BeanUtils.copyProperties(optModel, entity);
-        
+        BeanUtils.copyProperties(optModel, entity, "couponId", "couponIds", "userGroupIds");
+        if (!Objects.isNull(optModel.getCouponId())) {
+            entity.setCouponId(optModel.getCouponId());
+        }
+        List<Long> couponIds = new ArrayList<>();
+        if (!CollectionUtils.isEmpty(optModel.getCouponIds())) {
+            couponIds.addAll(optModel.getCouponIds());
+        }
+        entity.setCouponIds(couponIds);
+        entity.setUserGroupId(optModel.getUserGroupIds());
         return R.ok(carRentalPackageService.updateById(entity));
     }
     
@@ -455,17 +512,18 @@ public class JsonAdminCarRentalPackageController extends BasicController {
     
     /**
      * 批量修改套餐排序参数，排序参数为用户端排序使用
+     *
      * @param sortParamQueries
      * @return
      */
     @PostMapping("/batchUpdateSortParam")
     public R batchUpdateSortParam(@RequestBody @Validated ValidList<MemberCardAndCarRentalPackageSortParamQuery> sortParamQueries) {
-    
+        
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-    
+        
         // 仅超级管理员和运营商可修改排序参数
         if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
             return R.ok();
@@ -480,16 +538,17 @@ public class JsonAdminCarRentalPackageController extends BasicController {
     
     /**
      * 查询租车套餐以供排序
+     *
      * @return
      */
     @GetMapping("/listCarRentalPackageForSort")
     public R listCarRentalPackageForSort() {
-    
+        
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-    
+        
         // 查询数据较多，限制仅超级管理员和运营商可使用
         if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
             return R.ok();
