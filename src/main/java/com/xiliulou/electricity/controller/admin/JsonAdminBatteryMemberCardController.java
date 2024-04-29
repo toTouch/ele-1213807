@@ -4,11 +4,11 @@ import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.annotation.Log;
 import com.xiliulou.electricity.constant.NumberConstant;
-import com.xiliulou.electricity.query.MemberCardAndCarRentalPackageSortParamQuery;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.query.BatteryMemberCardQuery;
 import com.xiliulou.electricity.query.BatteryMemberCardStatusQuery;
+import com.xiliulou.electricity.query.MemberCardAndCarRentalPackageSortParamQuery;
 import com.xiliulou.electricity.service.BatteryMemberCardService;
 import com.xiliulou.electricity.service.UserDataScopeService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
@@ -71,18 +71,6 @@ public class JsonAdminBatteryMemberCardController extends BaseController {
         if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
             return R.ok(Collections.EMPTY_LIST);
         }
-
-        /*if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
-            return R.ok(Collections.EMPTY_LIST);
-        }
-
-        List<Long> franchiseeIds = null;
-        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
-            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
-            if (CollectionUtils.isEmpty(franchiseeIds)) {
-                return R.ok(Collections.EMPTY_LIST);
-            }
-        }*/
         
         BatteryMemberCardQuery query = BatteryMemberCardQuery.builder().size(size).offset(offset).tenantId(TenantContextHolder.getTenantId()).franchiseeId(franchiseeId)
                 //.franchiseeIds(franchiseeIds)
@@ -98,7 +86,13 @@ public class JsonAdminBatteryMemberCardController extends BaseController {
     public R page(@RequestParam("size") long size, @RequestParam("offset") long offset, @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
             @RequestParam(value = "status", required = false) Integer status, @RequestParam(value = "rentType", required = false) Integer rentType,
             @RequestParam(value = "rentUnit", required = false) Integer rentUnit, @RequestParam(value = "businessType", required = false) Integer businessType,
-            @RequestParam(value = "name", required = false) String name, @RequestParam(value = "batteryModel", required = false) String batteryModel) {
+            @RequestParam(value = "name", required = false) String name, @RequestParam(value = "batteryModel", required = false) String batteryModel,
+            @RequestParam(value = "userGroupId", required = false) Long userGroupId) {
+        
+        if (Objects.nonNull(rentType) && Objects.nonNull(userGroupId)) {
+            return R.fail("110210", "不可同时根据系统分组及用户分组查询");
+        }
+        
         if (size < 0 || size > 50) {
             size = 10L;
         }
@@ -119,25 +113,14 @@ public class JsonAdminBatteryMemberCardController extends BaseController {
         List<Long> franchiseeIds = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
             franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
-            if(CollectionUtils.isEmpty(franchiseeIds)){
+            if (CollectionUtils.isEmpty(franchiseeIds)) {
                 return R.ok(Collections.emptyList());
             }
         }
-
-        BatteryMemberCardQuery query = BatteryMemberCardQuery.builder()
-                .size(size)
-                .offset(offset)
-                .tenantId(TenantContextHolder.getTenantId())
-                .franchiseeId(franchiseeId)
-                .status(status)
-                .businessType(businessType == null ?  0 : businessType)
-                .rentType(rentType)
-                .rentUnit(rentUnit)
-                .name(name)
-                .delFlag(BatteryMemberCard.DEL_NORMAL)
-                .franchiseeIds(franchiseeIds)
-                .batteryModel(batteryModel)
-                .build();
+        
+        BatteryMemberCardQuery query = BatteryMemberCardQuery.builder().size(size).offset(offset).tenantId(TenantContextHolder.getTenantId()).franchiseeId(franchiseeId)
+                .status(status).businessType(businessType == null ? 0 : businessType).rentType(rentType).rentUnit(rentUnit).name(name).delFlag(BatteryMemberCard.DEL_NORMAL)
+                .franchiseeIds(franchiseeIds).batteryModel(batteryModel).userInfoGroupId(Objects.nonNull(userGroupId) ? userGroupId.toString() : null).build();
         return R.ok(batteryMemberCardService.selectByPage(query));
     }
     
@@ -148,7 +131,11 @@ public class JsonAdminBatteryMemberCardController extends BaseController {
     public R pageCount(@RequestParam(value = "franchiseeId", required = false) Long franchiseeId, @RequestParam(value = "status", required = false) Integer status,
             @RequestParam(value = "rentType", required = false) Integer rentType, @RequestParam(value = "rentUnit", required = false) Integer rentUnit,
             @RequestParam(value = "businessType", required = false) Integer businessType, @RequestParam(value = "name", required = false) String name,
-            @RequestParam(value = "batteryModel", required = false) String batteryModel) {
+            @RequestParam(value = "batteryModel", required = false) String batteryModel, @RequestParam(value = "userGroupId", required = false) Long userGroupId) {
+        
+        if (Objects.nonNull(rentType) && Objects.nonNull(userGroupId)) {
+            return R.fail("110210", "不可同时根据系统分组及用户分组查询");
+        }
         
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
@@ -162,23 +149,14 @@ public class JsonAdminBatteryMemberCardController extends BaseController {
         List<Long> franchiseeIds = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
             franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
-            if(CollectionUtils.isEmpty(franchiseeIds)){
+            if (CollectionUtils.isEmpty(franchiseeIds)) {
                 return R.ok(NumberConstant.ZERO);
             }
         }
-
-        BatteryMemberCardQuery query = BatteryMemberCardQuery.builder()
-                .franchiseeId(franchiseeId)
-                .status(status)
-                .businessType(businessType == null ?  0 : businessType)
-                .rentType(rentType)
-                .rentUnit(rentUnit)
-                .name(name)
-                .tenantId(TenantContextHolder.getTenantId())
-                .delFlag(BatteryMemberCard.DEL_NORMAL)
-                .franchiseeIds(franchiseeIds)
-                .batteryModel(batteryModel)
-                .build();
+        
+        BatteryMemberCardQuery query = BatteryMemberCardQuery.builder().franchiseeId(franchiseeId).status(status).businessType(businessType == null ? 0 : businessType)
+                .rentType(rentType).rentUnit(rentUnit).name(name).tenantId(TenantContextHolder.getTenantId()).delFlag(BatteryMemberCard.DEL_NORMAL).franchiseeIds(franchiseeIds)
+                .batteryModel(batteryModel).userInfoGroupId(Objects.nonNull(userGroupId) ? userGroupId.toString() : null).build();
         
         return R.ok(batteryMemberCardService.selectByPageCount(query));
     }
@@ -330,16 +308,17 @@ public class JsonAdminBatteryMemberCardController extends BaseController {
     
     /**
      * 查询id、name、sortParam供排序使用
+     *
      * @return
      */
     @GetMapping("/admin/battery/memberCard/listMemberCardForSort")
     public R listMemberCardForSort() {
-    
+        
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-    
+        
         // 查询数据较多，限制仅超级管理员和运营商可使用
         if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
             return R.ok();

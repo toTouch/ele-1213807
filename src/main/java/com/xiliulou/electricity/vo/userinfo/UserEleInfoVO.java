@@ -1,9 +1,12 @@
 package com.xiliulou.electricity.vo.userinfo;
 
+import com.xiliulou.electricity.vo.userinfo.userInfoGroup.UserInfoGroupIdAndNameVO;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import java.util.List;
 
 
 @Data
@@ -131,5 +134,10 @@ public class UserEleInfoVO {
      * 所属企业名称
      */
     private String enterpriseName;
+    
+    /**
+     * 所属分组
+     */
+    private List<UserInfoGroupIdAndNameVO> groupList;
 
 }
