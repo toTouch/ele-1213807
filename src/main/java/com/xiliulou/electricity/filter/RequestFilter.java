@@ -3,7 +3,7 @@ package com.xiliulou.electricity.filter;
 import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.StrUtil;
 import com.xiliulou.core.json.JsonUtil;
-import com.xiliulou.electricity.constant.CommonConstant;
+import com.xiliulou.electricity.ttl.TtlTraceIdSupport;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.utils.WebUtils;
 import com.xiliulou.electricity.web.entity.BodyReaderHttpServletRequestWrapper;
@@ -12,7 +12,6 @@ import io.prometheus.client.Gauge;
 import io.prometheus.client.Histogram;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
-import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpHeaders;
@@ -139,7 +138,7 @@ public class RequestFilter implements Filter {
         
         String params = null;
         // 加入链路ID
-        MDC.put(CommonConstant.TRACE_ID, UUID.randomUUID().toString().replaceAll("-", ""));
+        TtlTraceIdSupport.set();
         try {
             if (StrUtil.isEmpty(header) || header.startsWith(MediaType.MULTIPART_FORM_DATA_VALUE) || header.startsWith(
                     MediaType.APPLICATION_FORM_URLENCODED_VALUE)) {
@@ -158,7 +157,7 @@ public class RequestFilter implements Filter {
             }
         }finally {
             afterCompletion(ip, httpServletRequest, params,httpServletResponse);
-            MDC.clear();
+            TtlTraceIdSupport.clear();
         }
        
         
