@@ -3,6 +3,7 @@ package com.xiliulou.electricity.controller.admin.car;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.controller.BasicController;
+import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.car.CarRentalPackageOrderFreezePo;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageOrderFreezeQryModel;
@@ -62,7 +63,7 @@ public class JsonAdminCarRentalPackageOrderFreezeController extends BasicControl
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-        return R.ok(carRentalPackageOrderBizService.approveFreezeRentOrder(optReq.getOrderNo(), false, optReq.getReason(), user.getUid()));
+        return R.ok(carRentalPackageOrderBizService.approveFreezeRentOrder(optReq.getOrderNo(), false, optReq.getReason(), user.getUid(),true));
     }
 
     /**
@@ -83,7 +84,7 @@ public class JsonAdminCarRentalPackageOrderFreezeController extends BasicControl
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-        return R.ok(carRentalPackageOrderBizService.approveFreezeRentOrder(optReq.getOrderNo(), true, optReq.getReason(), user.getUid()));
+        return R.ok(carRentalPackageOrderBizService.approveFreezeRentOrder(optReq.getOrderNo(), true, optReq.getReason(), user.getUid(),true));
     }
 
     /**
@@ -122,9 +123,11 @@ public class JsonAdminCarRentalPackageOrderFreezeController extends BasicControl
         // 获取辅助业务信息（用户信息、套餐信息）
         Set<Long> uids = new HashSet<>();
         Set<Long> rentalPackageIds = new HashSet<>();
+        Set<Long> userIds = new HashSet<>();
         freezeEntityList.forEach(freezePO -> {
             uids.add(freezePO.getUid());
             rentalPackageIds.add(freezePO.getRentalPackageId());
+            userIds.add(freezePO.getAuditorId());
         });
 
         // 用户信息
@@ -132,7 +135,10 @@ public class JsonAdminCarRentalPackageOrderFreezeController extends BasicControl
 
         // 套餐信息
         Map<Long, String> packageNameMap = getCarRentalPackageNameByIdsForMap(rentalPackageIds);
-
+    
+        // 审核员信息
+        Map<Long, User> userMap = getUserByUidsForMap(userIds);
+        
         // 模型转换，封装返回
         List<CarRentalPackageOrderFreezeVo> freezeVoList = freezeEntityList.stream().map(freezeEntity -> {
 
@@ -148,7 +154,10 @@ public class JsonAdminCarRentalPackageOrderFreezeController extends BasicControl
             if (!packageNameMap.isEmpty()) {
                 freezeVO.setCarRentalPackageName(packageNameMap.getOrDefault(freezeEntity.getRentalPackageId(), ""));
             }
-
+            if (!userMap.isEmpty()) {
+                User user = userMap.getOrDefault(freezeEntity.getAuditorId(), new User());
+                freezeVO.setAuditorName(user.getName());
+            }
             return freezeVO;
         }).collect(Collectors.toList());
 

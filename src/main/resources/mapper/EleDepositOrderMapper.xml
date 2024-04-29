@@ -61,7 +61,7 @@
             <if test="query.storeName != null and query.storeName != ''">
                 and s.name like concat('%', #{query.storeName}, '%')
             </if>
-            <if test="query.orderType != null and query.orderType != ''">
+            <if test="query.orderType != null">
                 and edo.order_type = #{query.orderType}
             </if>
         </where>
@@ -191,7 +191,7 @@
             <if test="query.storeName != null and query.storeName != ''">
                 and ts.name like concat('%', #{query.storeName}, '%')
             </if>
-            <if test="query.orderType != null and query.orderType != ''">
+            <if test="query.orderType != null">
                 and edo.order_type = #{query.orderType}
             </if>
         </where>

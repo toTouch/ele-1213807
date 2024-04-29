@@ -2,12 +2,9 @@ package com.xiliulou.electricity.service.impl;
 
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
-import com.xiliulou.db.dynamic.annotation.DS;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
-import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.entity.UserActiveInfo;
-import com.xiliulou.electricity.entity.UserBattery;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.mapper.UserActiveInfoMapper;
 import com.xiliulou.electricity.query.UserActiveInfoQuery;
@@ -17,11 +14,12 @@ import com.xiliulou.electricity.service.UserActiveInfoService;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
+import com.xiliulou.electricity.vo.EleBatteryServiceFeeVO;
 import com.xiliulou.electricity.vo.UserActiveInfoVo;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
@@ -29,8 +27,6 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-
-import lombok.extern.slf4j.Slf4j;
 
 /**
  * (UserActiveInfo)表服务实现类
@@ -182,11 +178,10 @@ public class UserActiveInfoServiceImpl implements UserActiveInfoService {
         if (CollectionUtils.isEmpty(userActiveInfoList)) {
             return R.ok(new ArrayList<>());
         }
-        
+    
         userActiveInfoList.parallelStream().forEach(item -> {
-            UserInfo userInfo = userInfoService.queryByUidFromCache(item.getUid());
-            BigDecimal batteryServiceFee = serviceFeeUserInfoService.queryUserBatteryServiceFee(userInfo);
-            item.setBatteryServiceFee(batteryServiceFee);
+            EleBatteryServiceFeeVO eleBatteryServiceFeeVO = serviceFeeUserInfoService.queryUserBatteryServiceFee(item.getUid());
+            item.setBatteryServiceFee(Objects.nonNull(eleBatteryServiceFeeVO) ? eleBatteryServiceFeeVO.getUserBatteryServiceFee() : BigDecimal.ZERO);
         });
         return R.ok(userActiveInfoList);
     }

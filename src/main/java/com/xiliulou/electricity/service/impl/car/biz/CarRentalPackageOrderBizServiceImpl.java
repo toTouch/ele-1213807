@@ -14,23 +14,100 @@ import com.xiliulou.electricity.domain.car.CarInfoDO;
 import com.xiliulou.electricity.dto.ActivityProcessDTO;
 import com.xiliulou.electricity.dto.DivisionAccountOrderDTO;
 import com.xiliulou.electricity.dto.UserCouponDTO;
-import com.xiliulou.electricity.entity.*;
-import com.xiliulou.electricity.entity.car.*;
+import com.xiliulou.electricity.entity.CarLockCtrlHistory;
+import com.xiliulou.electricity.entity.CommonPayOrder;
+import com.xiliulou.electricity.entity.EleUserOperateRecord;
+import com.xiliulou.electricity.entity.ElectricityBattery;
+import com.xiliulou.electricity.entity.ElectricityCar;
+import com.xiliulou.electricity.entity.ElectricityCarModel;
+import com.xiliulou.electricity.entity.ElectricityConfig;
+import com.xiliulou.electricity.entity.ElectricityPayParams;
+import com.xiliulou.electricity.entity.ElectricityTradeOrder;
+import com.xiliulou.electricity.entity.Franchisee;
+import com.xiliulou.electricity.entity.FranchiseeInsurance;
+import com.xiliulou.electricity.entity.InsuranceOrder;
+import com.xiliulou.electricity.entity.RefundOrder;
+import com.xiliulou.electricity.entity.UserCoupon;
+import com.xiliulou.electricity.entity.UserInfo;
+import com.xiliulou.electricity.entity.UserOauthBind;
+import com.xiliulou.electricity.entity.car.CarRentalOrderPo;
+import com.xiliulou.electricity.entity.car.CarRentalPackageCarBatteryRelPo;
+import com.xiliulou.electricity.entity.car.CarRentalPackageDepositPayPo;
+import com.xiliulou.electricity.entity.car.CarRentalPackageMemberTermPo;
+import com.xiliulou.electricity.entity.car.CarRentalPackageOrderFreezePo;
+import com.xiliulou.electricity.entity.car.CarRentalPackageOrderPo;
+import com.xiliulou.electricity.entity.car.CarRentalPackageOrderRentRefundPo;
+import com.xiliulou.electricity.entity.car.CarRentalPackageOrderSlippagePo;
+import com.xiliulou.electricity.entity.car.CarRentalPackagePo;
 import com.xiliulou.electricity.entity.clickhouse.CarAttr;
-import com.xiliulou.electricity.enums.*;
+import com.xiliulou.electricity.enums.ActivityEnum;
+import com.xiliulou.electricity.enums.ApplicableTypeEnum;
+import com.xiliulou.electricity.enums.BusinessType;
+import com.xiliulou.electricity.enums.CallBackEnums;
+import com.xiliulou.electricity.enums.DelFlagEnum;
+import com.xiliulou.electricity.enums.DepositTypeEnum;
+import com.xiliulou.electricity.enums.DivisionAccountEnum;
+import com.xiliulou.electricity.enums.MemberTermStatusEnum;
+import com.xiliulou.electricity.enums.PackageTypeEnum;
+import com.xiliulou.electricity.enums.PayStateEnum;
+import com.xiliulou.electricity.enums.PayTypeEnum;
+import com.xiliulou.electricity.enums.RefundStateEnum;
+import com.xiliulou.electricity.enums.RenalPackageConfineEnum;
+import com.xiliulou.electricity.enums.RentalPackageOrderFreezeStatusEnum;
+import com.xiliulou.electricity.enums.RentalPackageTypeEnum;
+import com.xiliulou.electricity.enums.RentalTypeEnum;
+import com.xiliulou.electricity.enums.RentalUnitEnum;
+import com.xiliulou.electricity.enums.SlippageTypeEnum;
+import com.xiliulou.electricity.enums.SystemDefinitionEnum;
+import com.xiliulou.electricity.enums.UpDownEnum;
+import com.xiliulou.electricity.enums.UseStateEnum;
+import com.xiliulou.electricity.enums.YesNoEnum;
 import com.xiliulou.electricity.enums.car.CarRentalStateEnum;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.model.car.opt.CarRentalPackageOrderBuyOptModel;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageOrderFreezeQryModel;
 import com.xiliulou.electricity.query.car.CarRentalPackageRefundReq;
-import com.xiliulou.electricity.service.*;
-import com.xiliulou.electricity.service.car.*;
-import com.xiliulou.electricity.service.car.biz.*;
+import com.xiliulou.electricity.service.ActivityService;
+import com.xiliulou.electricity.service.BatteryMembercardRefundOrderService;
+import com.xiliulou.electricity.service.CarLockCtrlHistoryService;
+import com.xiliulou.electricity.service.DivisionAccountRecordService;
+import com.xiliulou.electricity.service.EleUserOperateRecordService;
+import com.xiliulou.electricity.service.ElectricityBatteryService;
+import com.xiliulou.electricity.service.ElectricityCarModelService;
+import com.xiliulou.electricity.service.ElectricityCarService;
+import com.xiliulou.electricity.service.ElectricityConfigService;
+import com.xiliulou.electricity.service.ElectricityPayParamsService;
+import com.xiliulou.electricity.service.ElectricityTradeOrderService;
+import com.xiliulou.electricity.service.FranchiseeInsuranceService;
+import com.xiliulou.electricity.service.FranchiseeService;
+import com.xiliulou.electricity.service.InsuranceOrderService;
+import com.xiliulou.electricity.service.InsuranceUserInfoService;
+import com.xiliulou.electricity.service.UserBatteryDepositService;
+import com.xiliulou.electricity.service.UserBatteryTypeService;
+import com.xiliulou.electricity.service.UserCarService;
+import com.xiliulou.electricity.service.UserCouponService;
+import com.xiliulou.electricity.service.UserInfoService;
+import com.xiliulou.electricity.service.UserOauthBindService;
+import com.xiliulou.electricity.service.car.CarRentalOrderService;
+import com.xiliulou.electricity.service.car.CarRentalPackageCarBatteryRelService;
+import com.xiliulou.electricity.service.car.CarRentalPackageDepositPayService;
+import com.xiliulou.electricity.service.car.CarRentalPackageMemberTermService;
+import com.xiliulou.electricity.service.car.CarRentalPackageOrderFreezeService;
+import com.xiliulou.electricity.service.car.CarRentalPackageOrderRentRefundService;
+import com.xiliulou.electricity.service.car.CarRentalPackageOrderService;
+import com.xiliulou.electricity.service.car.CarRentalPackageOrderSlippageService;
+import com.xiliulou.electricity.service.car.CarRentalPackageService;
+import com.xiliulou.electricity.service.car.biz.CarRenalPackageDepositBizService;
+import com.xiliulou.electricity.service.car.biz.CarRenalPackageSlippageBizService;
+import com.xiliulou.electricity.service.car.biz.CarRentalOrderBizService;
+import com.xiliulou.electricity.service.car.biz.CarRentalPackageBizService;
+import com.xiliulou.electricity.service.car.biz.CarRentalPackageOrderBizService;
 import com.xiliulou.electricity.service.retrofit.Jt808RetrofitService;
 import com.xiliulou.electricity.service.user.biz.UserBizService;
 import com.xiliulou.electricity.service.wxrefund.WxRefundPayService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DateUtils;
+import com.xiliulou.electricity.utils.OperateRecordUtil;
 import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.ElectricityUserBatteryVo;
@@ -69,7 +146,13 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.StringJoiner;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
@@ -107,6 +190,9 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
     
     @Resource
     private CarRentalPackageOrderFreezeService carRentalPackageOrderFreezeService;
+    
+    @Autowired
+    private OperateRecordUtil operateRecordUtil;
     
     @Resource
     private InsuranceUserInfoService insuranceUserInfoService;
@@ -906,7 +992,12 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             }
             
             eleUserOperateRecordService.asyncHandleUserOperateRecord(rentalOrderRecord);
-            
+            Map<String, Object> map = new HashMap<>();
+            map.put("username", userInfo.getName());
+            map.put("phone", userInfo.getPhone());
+            map.put("packageName", buyPackageEntity.getName());
+            map.put("type", buyPackageEntity.getType());
+            operateRecordUtil.record(null, map);
         } catch (BizException e) {
             log.error("bindingPackage failed. ", e);
             throw new BizException(e.getErrCode(), e.getMessage());
@@ -931,7 +1022,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
      * @return
      */
     @Override
-    public Boolean approveFreezeRentOrder(String freezeRentOrderNo, boolean approveFlag, String apploveDesc, Long apploveUid) {
+    public Boolean approveFreezeRentOrder(String freezeRentOrderNo, boolean approveFlag, String apploveDesc, Long apploveUid, Boolean isRecord) {
         if (!ObjectUtils.allNotNull(freezeRentOrderNo, approveFlag, apploveUid)) {
             throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
@@ -981,6 +1072,24 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         if (expireFlag) {
             throw new BizException("300030", "套餐已过期，无法审核");
         }
+        if (!isRecord) {
+            return true;
+        }
+        try {
+            UserInfo userInfo = userInfoService.queryByUidFromCache(freezeEntity.getUid());
+            CarRentalPackagePo rentalPackagePo = carRentalPackageService.selectById(freezeEntity.getRentalPackageId());
+            Map<String, Object> map = new HashMap<>();
+            map.put("username", userInfo.getName());
+            map.put("phone", userInfo.getPhone());
+            map.put("packageName", rentalPackagePo.getName());
+            map.put("approve", approveFlag ? 0 : 1);
+            map.put("residue", freezeEntity.getApplyTerm());
+            map.put("type", freezeEntity.getRentalPackageType());
+            operateRecordUtil.record(null, map);
+        } catch (Throwable e) {
+            log.error("Recording user operation records failed because:", e);
+        }
+        
         return true;
     }
     
@@ -1007,6 +1116,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         freezeUpdateEntity.setAuditTime(nowTime);
         freezeUpdateEntity.setRemark(apploveDesc);
         freezeUpdateEntity.setUpdateUid(apploveUid);
+        freezeUpdateEntity.setAuditorId(apploveUid);
         
         // 过期
         if (expireFlag) {
@@ -1683,7 +1793,18 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                     .tenantId(TenantContextHolder.getTenantId()).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).build();
             eleUserOperateRecordService.asyncHandleUserOperateRecord(record);
         }
-        
+        try {
+            CarRentalPackagePo packagePo = carRentalPackageService.selectById(packageOrderEntity.getRentalPackageId());
+            Map<String, Object> map = new HashMap<>();
+            map.put("username", userInfo.getName());
+            map.put("phone", userInfo.getPhone());
+            map.put("packageName", packagePo.getName());
+            map.put("residue", applyTerm);
+            map.put("type", packagePo.getType());
+            operateRecordUtil.record(null, map);
+        } catch (Throwable e) {
+            log.warn("Recording user operation records failed because:", e);
+        }
         return true;
     }
     
@@ -1704,7 +1825,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         carRentalPackageMemberTermService.updateStatusByUidAndTenantId(tenantId, uid, MemberTermStatusEnum.APPLY_FREEZE.getCode(), uid);
         
         if (SystemDefinitionEnum.BACKGROUND.getCode().equals(systemDefinitionEnum.getCode())) {
-            approveFreezeRentOrder(freezeEntity.getOrderNo(), true, null, optUid);
+            approveFreezeRentOrder(freezeEntity.getOrderNo(), true, null, optUid, false);
         }
         
     }
@@ -2453,7 +2574,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         
         // 获取加锁 KEY
         String buyLockKey = String.format(CarRenalCacheConstant.CAR_RENAL_PACKAGE_BUY_UID_KEY, uid);
-    
+        
         // 加锁
         if (!redisService.setNx(buyLockKey, uid.toString(), 5 * 1000L, false)) {
             return R.fail("ELECTRICITY.0034", "操作频繁");
@@ -3121,7 +3242,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                         userBatteryTypeService.synchronizedUserBatteryType(uid, tenantId, batteryTypes);
                     }
                 }
-    
+                
                 //fix 回调后事务未提交导致缓存清除失败的问题
                 carRentalPackageMemberTermService.deleteCache(tenantId, uid);
                 userInfoService.deleteCache(uid);

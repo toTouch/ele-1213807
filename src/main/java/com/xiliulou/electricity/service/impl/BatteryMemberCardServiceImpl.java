@@ -6,7 +6,6 @@ import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
-import com.xiliulou.electricity.query.MemberCardAndCarRentalPackageSortParamQuery;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.Coupon;
 import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
@@ -21,6 +20,7 @@ import com.xiliulou.electricity.mapper.BatteryMemberCardMapper;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageQryModel;
 import com.xiliulou.electricity.query.BatteryMemberCardQuery;
 import com.xiliulou.electricity.query.BatteryMemberCardStatusQuery;
+import com.xiliulou.electricity.query.MemberCardAndCarRentalPackageSortParamQuery;
 import com.xiliulou.electricity.service.BatteryMemberCardService;
 import com.xiliulou.electricity.service.BatteryModelService;
 import com.xiliulou.electricity.service.CouponService;
@@ -35,11 +35,11 @@ import com.xiliulou.electricity.service.car.CarRentalPackageService;
 import com.xiliulou.electricity.service.enterprise.EnterprisePackageService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
+import com.xiliulou.electricity.utils.OperateRecordUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.BatteryMemberCardAndTypeVO;
 import com.xiliulou.electricity.vo.BatteryMemberCardSearchVO;
 import com.xiliulou.electricity.vo.BatteryMemberCardVO;
-import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -90,6 +90,9 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
     
     @Autowired
     private FranchiseeService franchiseeService;
+    
+    @Autowired
+    OperateRecordUtil operateRecordUtil;
     
     @Autowired
     private CouponService couponService;
@@ -398,10 +401,9 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
             
             // 设置电池型号
             if (!item.getBatteryType().isEmpty()) {
-    
+                
                 List<String> originalBatteryModels = item.getBatteryType().stream().map(MemberCardBatteryType::getBatteryType).distinct().collect(Collectors.toList());
-                batteryMemberCardVO.setBatteryModels(
-                        batteryModelService.selectShortBatteryType(originalBatteryModels, item.getTenantId()));
+                batteryMemberCardVO.setBatteryModels(batteryModelService.selectShortBatteryType(originalBatteryModels, item.getTenantId()));
             }
             
             // 设置优惠券名称
@@ -571,10 +573,10 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
     @Slave
     @Override
     public Integer selectByPageCount(BatteryMemberCardQuery query) {
-    
+        
         // 当前端传递型号为字符串0时，为标准型号即套餐不分型号，t_member_card_battery_type中未存关联数据
         if (StringUtils.isNotEmpty(query.getBatteryModel()) && !("0".equals(query.getBatteryModel()))) {
-        
+            
             query.setOriginalBatteryModel(query.getBatteryModel());
             query.setBatteryModel(null);
         }
@@ -612,7 +614,7 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
         batteryMemberCard.setStatus(batteryModelQuery.getStatus());
         batteryMemberCard.setUpdateTime(System.currentTimeMillis());
         this.update(batteryMemberCard);
-        
+        operateRecordUtil.record(null, batteryMemberCard);
         return Triple.of(true, null, null);
     }
     
@@ -624,7 +626,7 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
             return Triple.of(false, "ELECTRICITY.00121", "套餐不存在");
         }
         
-        if (Objects.nonNull(userBatteryMemberCardService.checkUserByMembercardId(id))){
+        if (Objects.nonNull(userBatteryMemberCardService.checkUserByMembercardId(id))) {
             return Triple.of(false, "100272", "当前套餐有用户使用，暂不支持删除");
         }
         
@@ -689,7 +691,7 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
         batteryMemberCardUpdate.setUpdateTime(System.currentTimeMillis());
         
         this.update(batteryMemberCardUpdate);
-        
+        operateRecordUtil.record(batteryMemberCard, batteryMemberCardUpdate);
         return Triple.of(true, null, null);
     }
     

@@ -6,7 +6,7 @@
     <!--查询指定行数据-->
     <select id="queryList" resultType="com.xiliulou.electricity.vo.ElectricityCabinetVO">
         select
-        id, name,sn, address, longitude, latitude, product_key, device_name, usable_status,
+        id, name,sn, address, longitude, latitude, product_key, device_name, usable_status,power_type,
         online_status, model_id, version, fully_charged, service_phone, business_time, create_time,
         update_time, del_flag,tenant_id,store_id,franchisee_id, exchange_type,stock_status,warehouse_id
         from t_electricity_cabinet
@@ -19,6 +19,9 @@
         </if>
         <if test="query.usableStatus != null">
             and usable_status = #{query.usableStatus}
+        </if>
+        <if test="query.powerType != null">
+            and power_type = #{query.powerType}
         </if>
         <if test="query.id != null">
             and id =#{query.id}
@@ -73,6 +76,9 @@
 		<if test="query.address != null and query.address != ''">
 			and address like concat('%',#{query.address,jdbcType=VARCHAR},'%')
 		</if>
+        <if test="query.powerType != null">
+            and power_type = #{query.powerType}
+        </if>
 		<if test="query.usableStatus != null">
 			and usable_status = #{query.usableStatus}
 		</if>
@@ -516,40 +522,40 @@
             <when test="orderByAverageNumber != null">
                 <choose>
                     <when test="orderByAverageNumber == 1">
-                        order by tecs.average_number desc
+                        order by tecs.average_number,tec.id desc
                     </when>
                     <when test="orderByAverageNumber == 2">
-                        order by tecs.average_number
+                        order by tecs.average_number,tec.id
                     </when>
                 </choose>
             </when>
             <when test="orderByAverageActivity != null">
                 <choose>
                     <when test="orderByAverageActivity == 1">
-                        order by tecs.average_activity desc
+                        order by tecs.average_activity,tec.id desc
                     </when>
                     <when test="orderByAverageActivity == 2">
-                        order by tecs.average_activity
+                        order by tecs.average_activity,tec.id
                     </when>
                 </choose>
             </when>
             <when test="orderByTodayNumber != null">
                 <choose>
                     <when test="orderByTodayNumber == 1">
-                        order by tecs.today_number desc
+                        order by tecs.today_number,tec.id desc
                     </when>
                     <when test="orderByTodayNumber == 2">
-                        order by tecs.today_number
+                        order by tecs.today_number,tec.id
                     </when>
                 </choose>
             </when>
             <when test="orderByTodayActivity != null">
                 <choose>
                     <when test="orderByTodayActivity == 1">
-                        order by tecs.today_activity desc
+                        order by tecs.today_activity,tec.id desc
                     </when>
                     <when test="orderByTodayActivity == 2">
-                        order by tecs.today_activity
+                        order by tecs.today_activity,tec.id
                     </when>
                 </choose>
             </when>
@@ -632,40 +638,40 @@
             <when test="orderByAverageNumber != null">
                 <choose>
                     <when test="orderByAverageNumber == 1">
-                        order by any_value(tecs.average_number) desc
+                        order by any_value(tecs.average_number),tec.id desc
                     </when>
                     <when test="orderByAverageNumber == 2">
-                        order by any_value(tecs.average_number)
+                        order by any_value(tecs.average_number),tec.id
                     </when>
                 </choose>
             </when>
             <when test="orderByAverageActivity != null">
                 <choose>
                     <when test="orderByAverageActivity == 1">
-                        order by any_value(tecs.average_activity) desc
+                        order by any_value(tecs.average_activity),tec.id desc
                     </when>
                     <when test="orderByAverageActivity == 2">
-                        order by any_value(tecs.average_activity)
+                        order by any_value(tecs.average_activity),tec.id
                     </when>
                 </choose>
             </when>
             <when test="orderByTodayNumber != null">
                 <choose>
                     <when test="orderByTodayNumber == 1">
-                        order by any_value(tecs.today_number) desc
+                        order by any_value(tecs.today_number),tec.id desc
                     </when>
                     <when test="orderByTodayNumber == 2">
-                        order by any_value(tecs.today_number)
+                        order by any_value(tecs.today_number),tec.id
                     </when>
                 </choose>
             </when>
             <when test="orderByTodayActivity != null">
                 <choose>
                     <when test="orderByTodayActivity == 1">
-                        order by any_value(tecs.today_activity) desc
+                        order by any_value(tecs.today_activity),tec.id desc
                     </when>
                     <when test="orderByTodayActivity == 2">
-                        order by any_value(tecs.today_activity)
+                        order by any_value(tecs.today_activity),tec.id
                     </when>
                 </choose>
             </when>
@@ -755,40 +761,40 @@
             <when test="orderByAverageNumber != null">
                 <choose>
                     <when test="orderByAverageNumber == 1">
-                        order by any_value(tecs.average_number) desc
+                        order by any_value(tecs.average_number),tec.id desc
                     </when>
                     <when test="orderByAverageNumber == 2">
-                        order by any_value(tecs.average_number)
+                        order by any_value(tecs.average_number),tec.id
                     </when>
                 </choose>
             </when>
             <when test="orderByAverageActivity != null">
                 <choose>
                     <when test="orderByAverageActivity == 1">
-                        order by any_value(tecs.average_activity) desc
+                        order by any_value(tecs.average_activity),tec.id desc
                     </when>
                     <when test="orderByAverageActivity == 2">
-                        order by any_value(tecs.average_activity)
+                        order by any_value(tecs.average_activity),tec.id
                     </when>
                 </choose>
             </when>
             <when test="orderByTodayNumber != null">
                 <choose>
                     <when test="orderByTodayNumber == 1">
-                        order by any_value(tecs.today_number) desc
+                        order by any_value(tecs.today_number),tec.id desc
                     </when>
                     <when test="orderByTodayNumber == 2">
-                        order by any_value(tecs.today_number)
+                        order by any_value(tecs.today_number),tec.id
                     </when>
                 </choose>
             </when>
             <when test="orderByTodayActivity != null">
                 <choose>
                     <when test="orderByTodayActivity == 1">
-                        order by any_value(tecs.today_activity) desc
+                        order by any_value(tecs.today_activity),tec.id desc
                     </when>
                     <when test="orderByTodayActivity == 2">
-                        order by any_value(tecs.today_activity)
+                        order by any_value(tecs.today_activity),tec.id
                     </when>
                 </choose>
             </when>

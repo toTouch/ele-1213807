@@ -98,6 +98,10 @@
             </if>
         </where>
     </select>
+    
+    <select id="countPendingTotal" resultType="java.lang.Integer">
+        select count(1) from t_asset_inventory_detail where order_no=#{orderNo} and tenant_id = #{tenantId} and inventory_status = 0
+    </select>
 
 </mapper>
 

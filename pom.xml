@@ -180,6 +180,12 @@
             <artifactId>retrofit-spring-boot-starter</artifactId>
             <version>2.3.11</version>
         </dependency>
+    
+        <dependency>
+            <groupId>io.dropwizard.metrics</groupId>
+            <artifactId>metrics-core</artifactId>
+            <version>4.2.23</version>
+        </dependency>
     </dependencies>
     <build>
         <plugins>

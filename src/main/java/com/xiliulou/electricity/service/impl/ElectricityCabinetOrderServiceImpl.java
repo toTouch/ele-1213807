@@ -17,7 +17,24 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.ElectricityIotConstant;
-import com.xiliulou.electricity.entity.*;
+import com.xiliulou.electricity.entity.BatteryMemberCard;
+import com.xiliulou.electricity.entity.BatteryMembercardRefundOrder;
+import com.xiliulou.electricity.entity.ElectricityBattery;
+import com.xiliulou.electricity.entity.ElectricityCabinet;
+import com.xiliulou.electricity.entity.ElectricityCabinetBox;
+import com.xiliulou.electricity.entity.ElectricityCabinetOrder;
+import com.xiliulou.electricity.entity.ElectricityCabinetOrderOperHistory;
+import com.xiliulou.electricity.entity.ElectricityConfig;
+import com.xiliulou.electricity.entity.ElectricityExceptionOrderStatusRecord;
+import com.xiliulou.electricity.entity.ElectricityMemberCard;
+import com.xiliulou.electricity.entity.Franchisee;
+import com.xiliulou.electricity.entity.RentBatteryOrder;
+import com.xiliulou.electricity.entity.ServiceFeeUserInfo;
+import com.xiliulou.electricity.entity.Store;
+import com.xiliulou.electricity.entity.UserBatteryMemberCard;
+import com.xiliulou.electricity.entity.UserCarDeposit;
+import com.xiliulou.electricity.entity.UserCarMemberCard;
+import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.enums.ExchangeTypeEnum;
 import com.xiliulou.electricity.enums.SelectionExchageEunm;
@@ -25,14 +42,47 @@ import com.xiliulou.electricity.enums.YesNoEnum;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.ElectricityCabinetOrderMapper;
 import com.xiliulou.electricity.mns.EleHardwareHandlerManager;
-import com.xiliulou.electricity.query.*;
-import com.xiliulou.electricity.service.*;
+import com.xiliulou.electricity.query.ElectricityCabinetOrderQuery;
+import com.xiliulou.electricity.query.HomepageElectricityExchangeFrequencyQuery;
+import com.xiliulou.electricity.query.OpenDoorQuery;
+import com.xiliulou.electricity.query.OrderQuery;
+import com.xiliulou.electricity.query.OrderQueryV2;
+import com.xiliulou.electricity.query.OrderSelectionExchangeQuery;
+import com.xiliulou.electricity.query.OrderSelfOpenCellQuery;
+import com.xiliulou.electricity.service.BatteryMemberCardService;
+import com.xiliulou.electricity.service.BatteryMembercardRefundOrderService;
+import com.xiliulou.electricity.service.ElectricityBatteryService;
+import com.xiliulou.electricity.service.ElectricityCabinetBoxService;
+import com.xiliulou.electricity.service.ElectricityCabinetOrderOperHistoryService;
+import com.xiliulou.electricity.service.ElectricityCabinetOrderService;
+import com.xiliulou.electricity.service.ElectricityCabinetService;
+import com.xiliulou.electricity.service.ElectricityConfigService;
+import com.xiliulou.electricity.service.ElectricityExceptionOrderStatusRecordService;
+import com.xiliulou.electricity.service.ElectricityMemberCardOrderService;
+import com.xiliulou.electricity.service.ElectricityMemberCardService;
+import com.xiliulou.electricity.service.FranchiseeService;
+import com.xiliulou.electricity.service.RentBatteryOrderService;
+import com.xiliulou.electricity.service.ServiceFeeUserInfoService;
+import com.xiliulou.electricity.service.StoreService;
+import com.xiliulou.electricity.service.UserActiveInfoService;
+import com.xiliulou.electricity.service.UserBatteryMemberCardService;
+import com.xiliulou.electricity.service.UserBatteryService;
+import com.xiliulou.electricity.service.UserBatteryTypeService;
+import com.xiliulou.electricity.service.UserCarDepositService;
+import com.xiliulou.electricity.service.UserCarMemberCardService;
+import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.car.biz.CarRenalPackageSlippageBizService;
 import com.xiliulou.electricity.service.car.biz.CarRentalPackageMemberTermBizService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
-import com.xiliulou.electricity.vo.*;
+import com.xiliulou.electricity.vo.ElectricityCabinetOrderExcelVO;
+import com.xiliulou.electricity.vo.ElectricityCabinetOrderVO;
+import com.xiliulou.electricity.vo.ElectricityCabinetVO;
+import com.xiliulou.electricity.vo.ExchangeOrderMsgShowVO;
+import com.xiliulou.electricity.vo.ExchangeUnFinishOrderVo;
+import com.xiliulou.electricity.vo.HomepageElectricityExchangeFrequencyVo;
+import com.xiliulou.electricity.vo.WarnMsgVo;
 import com.xiliulou.iot.entity.HardwareCommandQuery;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
@@ -53,7 +103,12 @@ import java.net.URLEncoder;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -1186,8 +1241,8 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         if (Boolean.FALSE.equals(exchangeStatus.getLeft())) {
             return exchangeStatus;
         }
-        
-        Pair<Boolean, Integer> usableEmptyCellNo = electricityCabinetService.findUsableEmptyCellNo(selectBox.getElectricityCabinetId());
+    
+        Pair<Boolean, Integer> usableEmptyCellNo = electricityCabinetService.findUsableEmptyCellNoV2(selectBox.getElectricityCabinetId(), electricityCabinet.getVersion());
         if (Boolean.FALSE.equals(usableEmptyCellNo.getLeft())) {
             log.warn("SELECTION EXCHANGE ORDER WARN!  not found usable empty cell!uid={},eid={}", userInfo.getUid(), electricityCabinet.getId());
             return Triple.of(false, "100215", "当前无空余格挡可供换电，请联系客服！");
@@ -1507,8 +1562,8 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         if (Objects.isNull(orderQuery.getSource())) {
             orderQuery.setSource(OrderQuery.SOURCE_WX_MP);
         }
-        
-        Pair<Boolean, Integer> usableEmptyCellNo = electricityCabinetService.findUsableEmptyCellNo(electricityCabinet.getId());
+    
+        Pair<Boolean, Integer> usableEmptyCellNo = electricityCabinetService.findUsableEmptyCellNoV2(electricityCabinet.getId(), electricityCabinet.getVersion());
         if (Boolean.FALSE.equals(usableEmptyCellNo.getLeft())) {
             return Triple.of(false, "100215", "当前无空余格挡可供换电，请联系客服！");
         }
@@ -1620,8 +1675,8 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         if (Objects.isNull(orderQuery.getSource())) {
             orderQuery.setSource(OrderQuery.SOURCE_WX_MP);
         }
-        
-        Pair<Boolean, Integer> usableEmptyCellNo = electricityCabinetService.findUsableEmptyCellNo(electricityCabinet.getId());
+    
+        Pair<Boolean, Integer> usableEmptyCellNo = electricityCabinetService.findUsableEmptyCellNoV2(electricityCabinet.getId(), electricityCabinet.getVersion());
         if (Boolean.FALSE.equals(usableEmptyCellNo.getLeft())) {
             return Triple.of(false, "100215", "当前无空余格挡可供换电，请联系客服！");
         }
@@ -1712,10 +1767,6 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             log.warn("ORDER WARN! user's member card is stop! uid={}", userInfo.getUid());
             return Triple.of(false, "100211", "换电套餐已暂停");
         }
-        //            Triple<Boolean, String, Object> checkUserMemberCardResult = checkUserMemberCard(userBatteryMemberCard, user);
-        //            if (Boolean.FALSE.equals(checkUserMemberCardResult.getLeft())) {
-        //                return checkUserMemberCardResult;
-        //            }
         
         BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());
         if (Objects.isNull(batteryMemberCard)) {
@@ -1756,8 +1807,8 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         if (Objects.isNull(orderQuery.getSource())) {
             orderQuery.setSource(OrderQuery.SOURCE_WX_MP);
         }
-        
-        Pair<Boolean, Integer> usableEmptyCellNo = electricityCabinetService.findUsableEmptyCellNo(electricityCabinet.getId());
+    
+        Pair<Boolean, Integer> usableEmptyCellNo = electricityCabinetService.findUsableEmptyCellNoV2(electricityCabinet.getId(), electricityCabinet.getVersion());
         if (Boolean.FALSE.equals(usableEmptyCellNo.getLeft())) {
             return Triple.of(false, "100215", "当前无空余格挡可供换电，请联系客服！");
         }
@@ -1934,36 +1985,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         }
         return Triple.of(true, null, null);
     }
-    
-    private Triple<Boolean, String, Object> checkUserBatteryServiceFee(UserBatteryMemberCard userBatteryMemberCard, UserInfo userInfo, TokenUser user,
-            ServiceFeeUserInfo serviceFeeUserInfo, Franchisee franchisee) {
-        
-        if (Objects.isNull(serviceFeeUserInfo) || Objects.isNull(serviceFeeUserInfo.getServiceFeeGenerateTime())) {
-            return Triple.of(true, null, null);
-        }
-        
-        Long now = System.currentTimeMillis();
-        //这里开始计费用户套餐过期电池服务费
-        long cardDays = (now - serviceFeeUserInfo.getServiceFeeGenerateTime()) / 1000L / 60 / 60 / 24;
-        BigDecimal userChangeServiceFee = electricityMemberCardOrderService.checkUserMemberCardExpireBatteryService(userInfo, franchisee, cardDays);
-        
-        //判断用户是否产生停卡电池服务费
-        if (Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE) || Objects.nonNull(
-                userBatteryMemberCard.getDisableMemberCardTime())) {
-            cardDays = (now - userBatteryMemberCard.getDisableMemberCardTime()) / 1000L / 60 / 60 / 24;
-            //不足一天按一天计算
-            double time = Math.ceil((now - userBatteryMemberCard.getDisableMemberCardTime()) / 1000L / 60 / 60.0);
-            if (time < 24) {
-                cardDays = 1;
-            }
-            userChangeServiceFee = electricityMemberCardOrderService.checkUserDisableCardBatteryService(userInfo, user.getUid(), cardDays, null, serviceFeeUserInfo);
-        }
-        if (BigDecimal.valueOf(0).compareTo(userChangeServiceFee) != 0) {
-            return Triple.of(false, "100220", "用户存在电池服务费");
-        }
-        return Triple.of(true, null, null);
-    }
-    
+
     private Triple<Boolean, String, Object> checkUserExistsUnFinishOrder(Long uid) {
         RentBatteryOrder rentBatteryOrder = rentBatteryOrderService.queryByUidAndType(uid);
         if (Objects.nonNull(rentBatteryOrder) && Objects.equals(rentBatteryOrder.getType(), RentBatteryOrder.TYPE_USER_RENT)) {

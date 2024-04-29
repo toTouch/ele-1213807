@@ -27,6 +27,8 @@ public interface CacheConstant {
     //占用仓门缓存
     String ELECTRICITY_CABINET_CACHE_OCCUPY_CELL_NO_KEY = "electricity_cabinet_cell_occupy:";
     
+    String CACHE_LAST_ALLOCATE_FULLY_BATTERY_CELL = "last_allocate_fully_battery_cell:";
+    
     //执行订单取消定时任务
     String CACHE_ELECTRICITY_CABINET_ORDER_CANCEL = "electricity_cabinet_order_cancel";
     
@@ -567,4 +569,6 @@ public interface CacheConstant {
     String CACHE_USER_ADD_USER_DEPOSIT_MEMBER_CARD_LOCK = "cache_user_add_user_deposit_member_card_lock:";
     String CACHE_USER_MEMBER_CARD_EDIT_LOCK = "cache_user_member_card_edit_lock:";
     String CACHE_USER_BATTERY_MEMBER_CARD_RENEWAL_LOCK = "cache_user_battery_member_card_renewal_lock:";
+    
+    String CACHE_RECYCLE_CLOUD_BEAN_LOCK = "cache_recycle_cloud_bean_lock:";
 }

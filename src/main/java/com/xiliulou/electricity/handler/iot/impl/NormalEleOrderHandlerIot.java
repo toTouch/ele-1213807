@@ -68,6 +68,7 @@ public class NormalEleOrderHandlerIot extends AbstractElectricityIotHandler {
 				.isNeedEndOrder(eleOrderVo.getIsNeedEndOrder())
 				.isProcessFail(eleOrderVo.getIsProcessFail())
 				.msg(eleOrderVo.getMsg())
+				.cellNo(eleOrderVo.getCellNo())
 				.batterySn(eleOrderVo.getBatterySn()).build();
 		eleOperateQueueHandler.putQueue(eleOpenDTO);
 	}
@@ -89,6 +90,11 @@ public class NormalEleOrderHandlerIot extends AbstractElectricityIotHandler {
 		private String msg;
 
 		private String batterySn;
+		
+		/**
+		 * 退电空仓仓门
+		 */
+		private Integer cellNo;
 	}
 }
 

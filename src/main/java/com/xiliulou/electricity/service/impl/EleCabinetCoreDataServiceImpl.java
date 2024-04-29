@@ -1,6 +1,5 @@
 package com.xiliulou.electricity.service.impl;
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.entity.EleCabinetCoreData;
 import com.xiliulou.electricity.mapper.EleCabinetCoreDataMapper;
@@ -29,8 +28,8 @@ public class EleCabinetCoreDataServiceImpl implements EleCabinetCoreDataService 
     private EleCabinetCoreDataMapper eleCabinetCoreDataMapper;
 
     @Override
-    public int idempotentUpdateCabinetCoreData(EleCabinetCoreData cabinetCoreData) {
-        return eleCabinetCoreDataMapper.idempotentUpdateCabinetCoreData(cabinetCoreData);
+    public int insertOrUpdateCabinetCoreData(EleCabinetCoreData cabinetCoreData) {
+        return eleCabinetCoreDataMapper.insertOrUpdateCabinetCoreData(cabinetCoreData);
     }
 
     @Override

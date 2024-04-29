@@ -3,15 +3,25 @@ package com.xiliulou.electricity.service.impl;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.google.api.client.util.Lists;
-import com.google.common.collect.Maps;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.dto.bms.BatteryInfoDto;
-import com.xiliulou.electricity.entity.*;
+import com.xiliulou.electricity.entity.BatteryModel;
+import com.xiliulou.electricity.entity.BatteryOtherProperties;
+import com.xiliulou.electricity.entity.ElectricityBattery;
+import com.xiliulou.electricity.entity.Franchisee;
+import com.xiliulou.electricity.entity.Tenant;
+import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.mapper.ElectricityBatteryMapper;
 import com.xiliulou.electricity.query.ElectricityBatteryDataQuery;
-import com.xiliulou.electricity.service.*;
+import com.xiliulou.electricity.service.BatteryModelService;
+import com.xiliulou.electricity.service.BatteryOtherPropertiesService;
+import com.xiliulou.electricity.service.ElectricityBatteryDataService;
+import com.xiliulou.electricity.service.FranchiseeService;
+import com.xiliulou.electricity.service.TenantService;
+import com.xiliulou.electricity.service.UserDataScopeService;
+import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.retrofit.BatteryPlatRetrofitService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.AESUtils;
@@ -19,7 +29,6 @@ import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.ElectricityBatteryDataVO;
 import com.xiliulou.electricity.vo.api.EleBatteryDataVO;
 import com.xiliulou.electricity.web.query.battery.BatteryInfoQuery;
-import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -27,7 +36,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
@@ -84,6 +99,14 @@ public class ElectricityBatteryDataServiceImpl extends ServiceImpl<ElectricityBa
         
         Map<String, Double> finalOtherPropertiesMap = otherPropertiesMap;
         
+        //获取电池型号
+        Map<String, BatteryModel> batteryModelMap = null;
+        List<BatteryModel> batteryModels = batteryModelService.queryByTenantIdFromCache(TenantContextHolder.getTenantId());
+        if (CollectionUtils.isNotEmpty(batteryModels)) {
+            batteryModelMap = batteryModels.stream().collect(Collectors.toMap(BatteryModel::getBatteryType, Function.identity(), (item1, item2) -> item2));
+        }
+        Map<String, BatteryModel> finalBatteryModelMap = batteryModelMap;
+        
         electricityBatteries.parallelStream().forEach(item -> {
             //设置电压
             if (Objects.nonNull(finalOtherPropertiesMap) && finalOtherPropertiesMap.containsKey(item.getSn())) {
@@ -120,11 +143,21 @@ public class ElectricityBatteryDataServiceImpl extends ServiceImpl<ElectricityBa
                 }
             }
             
-            String batteryShortType = batteryModelService.acquireBatteryShortType(item.getModel(), electricityBatteryQuery.getTenantId());
-            if (StringUtils.isNotEmpty(batteryShortType)) {
-                item.setModel(batteryShortType);
+//            String batteryShortType = batteryModelService.acquireBatteryShortType(item.getModel(), electricityBatteryQuery.getTenantId());
+//            if (StringUtils.isNotEmpty(batteryShortType)) {
+//                item.setModel(batteryShortType);
+//            }
+    
+            if (CollectionUtils.isNotEmpty(Collections.singleton(finalBatteryModelMap)) && finalBatteryModelMap.containsKey(item.getModel())) {
+                BatteryModel batteryModel = finalBatteryModelMap.get(item.getModel());
+                if (Objects.nonNull(batteryModel)) {
+                    item.setModel(batteryModel.getBatteryVShort());
+                }
+        
+                if (Objects.nonNull(batteryModel) && Objects.nonNull(batteryModel.getCapacity())) {
+                    item.setDbCapacity(batteryModel.getCapacity());
+                }
             }
-            
         });
         return R.ok(queryDataFromBMS(electricityBatteries, electricityBatteryQuery.getTenant()));
     }

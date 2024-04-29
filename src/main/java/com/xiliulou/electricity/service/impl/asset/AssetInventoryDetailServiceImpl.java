@@ -6,6 +6,7 @@ import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.bo.asset.AssetInventoryDetailBO;
 import com.xiliulou.electricity.constant.AssetConstant;
 import com.xiliulou.electricity.constant.CacheConstant;
+import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.enums.asset.AssetTypeEnum;
 import com.xiliulou.electricity.mapper.asset.AssetInventoryDetailMapper;
@@ -154,6 +155,7 @@ public class AssetInventoryDetailServiceImpl implements AssetInventoryDetailServ
     }
     
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public R batchInventory(AssetInventoryDetailBatchInventoryRequest inventoryRequest, Long operator) {
         boolean result = redisService.setNx(CacheConstant.CACHE_ASSET_BATCH_INVENTORY_LOCK + operator, "1", 3 * 1000L, false);
         if (!result) {
@@ -186,20 +188,19 @@ public class AssetInventoryDetailServiceImpl implements AssetInventoryDetailServ
                         .status(inventoryRequest.getStatus()).snList(inventoryRequest.getSnList()).operator(operator).tenantId(tenantId).updateTime(System.currentTimeMillis())
                         .build();
                 //批量盘点
-                count = assetInventoryDetailMapper.batchInventoryBySnList(assetInventoryDetailBatchInventoryQueryModel);
+                count = batchInventoryBySnList(assetInventoryDetailBatchInventoryQueryModel);
                 
-                AssetInventoryQueryModel assetInventoryQueryModel = AssetInventoryQueryModel.builder().orderNo(orderNo).tenantId(tenantId).build();
-                AssetInventoryVO assetInventoryVO = assetInventoryService.queryByOrderNo(assetInventoryQueryModel);
+                // 查询剩余盘点数量
+                Integer pendingTotal = assetInventoryDetailMapper.countPendingTotal(orderNo, tenantId);
+                
                 Integer status = AssetConstant.ASSET_INVENTORY_STATUS_TAKING;
-                
-                // 本次盘点数量=待盘点数，则修改盘点状态为 已完成
-                if (Objects.nonNull(assetInventoryVO) && Objects.equals(assetInventoryVO.getPendingTotal(), count)) {
+                if (Objects.equals(pendingTotal, NumberConstant.ZERO)) {
                     status = AssetConstant.ASSET_INVENTORY_STATUS_FINISHED;
                 }
                 
                 //同步盘点数据
                 AssetInventoryUpdateDataQueryModel assetInventoryUpdateDataQueryModel = AssetInventoryUpdateDataQueryModel.builder().tenantId(TenantContextHolder.getTenantId())
-                        .orderNo(inventoryRequest.getOrderNo()).inventoryCount(inventoryRequest.getSnList().size()).operator(operator).status(status)
+                        .orderNo(inventoryRequest.getOrderNo()).inventoryCount(count).operator(operator).status(status)
                         .updateTime(System.currentTimeMillis()).build();
                 
                 assetInventoryService.updateByOrderNo(assetInventoryUpdateDataQueryModel);
@@ -210,5 +211,10 @@ public class AssetInventoryDetailServiceImpl implements AssetInventoryDetailServ
         } finally {
             redisService.delete(CacheConstant.CACHE_ASSET_BATCH_INVENTORY_LOCK + operator);
         }
+    }
+    
+    @Override
+    public Integer batchInventoryBySnList(AssetInventoryDetailBatchInventoryQueryModel queryModel) {
+        return assetInventoryDetailMapper.batchInventoryBySnList(queryModel);
     }
 }

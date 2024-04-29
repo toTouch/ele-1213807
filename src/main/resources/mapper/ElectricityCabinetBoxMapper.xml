@@ -23,7 +23,7 @@
     
     <select id="selectBoxList" resultType="com.xiliulou.electricity.vo.ElectricityCabinetBoxVO">
         select
-        ecb.id, ecb.electricity_cabinet_id, ecb.cell_no, ecb.sn, ecb.usable_status,
+        ecb.id, ecb.electricity_cabinet_id, ecb.cell_no, ecb.sn, ecb.usable_status,ecb.is_battery_exit ,
         ecb.status,ecb.is_lock,ecb.is_fan,ecb.temperature,ecb.is_heat,ecb.is_light, ecb.create_time,
         ecb.update_time, ecb.del_flag,ecb.tenant_id,ecb.temperature,ecb.battery_type,ecb.charge_v,ecb.charge_a,ecb.version,ecb.lock_type,
         bop.lock_reason,bop.remark,bop.lock_status_change_time,empty_grid_start_time
@@ -135,6 +135,9 @@
             <if test="emptyGridStartTime != null">
                 empty_grid_start_time = #{emptyGridStartTime},
             </if>
+            <if test="isBatteryExit != null">
+                is_battery_exit = #{isBatteryExit},
+            </if>
         </set>
         where cell_no = #{cellNo}
         and electricity_cabinet_id = #{electricityCabinetId}
@@ -171,6 +174,18 @@
             and status = 1
         </where>
         order by cell_no desc
+    </select>
+    
+    <select id="selectUsableEmptyCell" resultType="com.xiliulou.electricity.entity.ElectricityCabinetBox">
+        select
+        id, electricity_cabinet_id, cell_no, usable_status, status,is_lock
+        from t_electricity_cabinet_box
+        <where>
+            electricity_cabinet_id = #{eid}
+            and usable_status = 0
+            and del_flag = 0
+            and status = 1
+        </where>
     </select>
     
     <select id="selectUsableEmptyCellNumber" resultType="int">
