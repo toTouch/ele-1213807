@@ -136,6 +136,8 @@ public interface ElectricityCabinetService {
     Triple<Boolean, String, Object> findUsableBatteryCellNoV3(Integer eid, Franchisee franchisee, Double fullyCharged, ElectricityBattery electricityBattery, Long uid);
 
     Pair<Boolean, Integer> findUsableEmptyCellNo(Integer id);
+    
+    Pair<Boolean, Integer> findUsableEmptyCellNoV2(Integer eid, String version);
 
     R getFranchisee(String productKey, String deviceName);
 

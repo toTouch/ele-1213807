@@ -136,6 +136,7 @@ import com.xiliulou.electricity.utils.DateUtils;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.OperateRecordUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
+import com.xiliulou.electricity.utils.VersionUtil;
 import com.xiliulou.electricity.vo.CabinetBatteryVO;
 import com.xiliulou.electricity.vo.EleCabinetDataAnalyseVO;
 import com.xiliulou.electricity.vo.ElectricityCabinetBatchOperateVo;
@@ -235,6 +236,11 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     private static final String OPEN_FAN_CONDITION_KEY = "openFanCondition";
     
     private static final String OPEN_HEAT_CONDITION_KEY = "openHeatCondition";
+    
+    /**
+     * 吞电池优化版本
+     */
+    private static final String ELE_CABINET_VERSION = "2.1.7";
     
     //    @Value("${testFactory.tenantId}")
     //    private Integer testFactoryTenantId;
@@ -3172,6 +3178,38 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             }
         }
         return Triple.of(true, null, usableBatteryCellNos.get(maxChargeVIndex));
+    }
+    
+    @Override
+    public Pair<Boolean, Integer> findUsableEmptyCellNoV2(Integer eid, String version) {
+    
+        //旧版本仍走旧分配逻辑
+        if (StringUtils.isNotBlank(version) && VersionUtil.compareVersion(ELE_CABINET_VERSION, version) > 0) {
+            return this.findUsableEmptyCellNo(eid);
+        }
+        
+        Integer cellNo = null;
+        List<ElectricityCabinetBox> emptyCellList = electricityCabinetBoxService.listUsableEmptyCell(eid);
+        if (CollectionUtils.isEmpty(emptyCellList)) {
+            return Pair.of(false, null);
+        }
+    
+        //可用格挡只有一个默认直接分配
+        if (emptyCellList.size() == 1) {
+            cellNo = Integer.valueOf(emptyCellList.get(0).getCellNo());
+            return Pair.of(true, cellNo);
+        }
+    
+        //有多个空格挡  优先分配开门的格挡
+        List<ElectricityCabinetBox> openDoorEmptyCellList = emptyCellList.stream().filter(item -> Objects.equals(item.getIsLock(), ElectricityCabinetBox.OPEN_DOOR))
+                .collect(Collectors.toList());
+        if (!CollectionUtils.isEmpty(openDoorEmptyCellList)) {
+            cellNo = Integer.parseInt(openDoorEmptyCellList.get(ThreadLocalRandom.current().nextInt(openDoorEmptyCellList.size())).getCellNo());
+            return Pair.of(true, cellNo);
+        }
+    
+        cellNo = Integer.parseInt(emptyCellList.get(ThreadLocalRandom.current().nextInt(emptyCellList.size())).getCellNo());
+        return Pair.of(true, cellNo);
     }
     
     @Override
