@@ -803,7 +803,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
             }
             
             //分配开门格挡
-            Pair<Boolean, Integer> usableEmptyCellNo = electricityCabinetService.findUsableEmptyCellNo(electricityCabinet.getId());
+            Pair<Boolean, Integer> usableEmptyCellNo = electricityCabinetService.findUsableEmptyCellNoV2(electricityCabinet.getId(), electricityCabinet.getVersion());
             if (Objects.isNull(usableEmptyCellNo.getRight())) {
                 log.error("RETURNBATTERY ERROR! electricityCabinet not empty cell,electricityCabinetId={} ", electricityCabinetId);
                 return R.fail("100240", "当前无空余格挡可供退电，请联系客服！");
