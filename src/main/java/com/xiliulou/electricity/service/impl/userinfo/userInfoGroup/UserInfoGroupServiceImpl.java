@@ -44,6 +44,7 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -130,7 +131,7 @@ public class UserInfoGroupServiceImpl implements UserInfoGroupService {
         // 租户校验
         Integer tenantId = TenantContextHolder.getTenantId();
         if (!Objects.equals(tenantId, userInfoGroup.getTenantId())) {
-            return R.fail("AUTH.0003", "租户信息不匹配");
+            return R.ok();
         }
         
         Integer count = userInfoGroupDetailService.countUserByGroupId(id);
@@ -166,7 +167,7 @@ public class UserInfoGroupServiceImpl implements UserInfoGroupService {
             
             // 租户校验
             if (!Objects.equals(tenantId, oldUserInfo.getTenantId())) {
-                return R.fail("AUTH.0003", "租户信息不匹配");
+                return R.ok();
             }
     
             Franchisee franchisee = franchiseeService.queryByIdFromCache(franchiseeId);
@@ -255,7 +256,7 @@ public class UserInfoGroupServiceImpl implements UserInfoGroupService {
         // 租户校验
         Integer tenantId = TenantContextHolder.getTenantId();
         if (!Objects.equals(tenantId, userInfoGroup.getTenantId())) {
-            return R.fail("AUTH.0003", "租户信息不匹配");
+            return R.ok();
         }
     
         Franchisee franchisee = franchiseeService.queryByIdFromCache(franchiseeId);
@@ -339,14 +340,14 @@ public class UserInfoGroupServiceImpl implements UserInfoGroupService {
         batchImportUserInfoVO.setIsImported(true);
         Map<Long, List<UserInfoGroupNamesBO>> finalUserGroupMap = userGroupMap;
         executorService.execute(() -> {
-            handleBatchImportUserInfo(userInfoGroup, existsPhone, sessionId, franchiseeId, tenantId, operator, finalUserGroupMap, groupId);
+            handleBatchImportUserInfo(userInfoGroup, existsPhone, sessionId, franchiseeId, tenantId, operator, finalUserGroupMap);
         });
         
         return R.ok(batchImportUserInfoVO);
     }
     
     private void handleBatchImportUserInfo(UserInfoGroup userInfoGroup, ConcurrentHashSet<UserInfo> existsPhone, String sessionId, Long franchiseeId, Integer tenantId,
-            Long operator, Map<Long, List<UserInfoGroupNamesBO>> userGroupMap, Long groupId) {
+            Long operator, Map<Long, List<UserInfoGroupNamesBO>> userGroupMap) {
         List<UserInfoGroupDetail> detailList = new ArrayList<>();
         List<UserInfoGroupDetailHistory> detailHistoryList = new ArrayList<>();
         Iterator<UserInfo> iterator = existsPhone.iterator();

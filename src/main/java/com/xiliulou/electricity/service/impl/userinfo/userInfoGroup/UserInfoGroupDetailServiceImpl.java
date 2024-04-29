@@ -38,6 +38,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -188,7 +189,7 @@ public class UserInfoGroupDetailServiceImpl implements UserInfoGroupDetailServic
             // 租户校验
             Integer tenantId = TenantContextHolder.getTenantId();
             if (!Objects.equals(tenantId, userInfo.getTenantId())) {
-                return R.fail("AUTH.0003", "租户信息不匹配");
+                return R.ok();
             }
     
             Franchisee franchisee = franchiseeService.queryByIdFromCache(franchiseeId);
@@ -311,6 +312,15 @@ public class UserInfoGroupDetailServiceImpl implements UserInfoGroupDetailServic
         if (CollectionUtils.isNotEmpty(addGroupList)) {
             newGroupList.addAll(addGroupList);
         }
+    
+        // 升序
+        oldGroupIds.sort(Comparator.comparing(Long::intValue));
+        newGroupList.sort(Comparator.comparing(Long::intValue));
+        
+        // 修改前后分组相同，则不新增记录
+        if (oldGroupIds.equals(newGroupList)) {
+            return;
+        }
         
         // 新增历史记录
         UserInfoGroupDetailHistory detailHistory = this.assembleDetailHistory(uid, StringUtils.join(oldGroupIds, CommonConstant.STR_COMMA),
@@ -346,7 +356,7 @@ public class UserInfoGroupDetailServiceImpl implements UserInfoGroupDetailServic
             
             // 租户校验
             if (!Objects.equals(userInfo.getTenantId(), tenantId)) {
-                return R.fail("AUTH.0003", "租户信息不匹配");
+                return R.ok();
             }
     
             Franchisee franchisee = franchiseeService.queryByIdFromCache(franchiseeId);

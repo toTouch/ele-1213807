@@ -519,7 +519,7 @@ public class FranchiseeInsuranceServiceImpl extends ServiceImpl<FranchiseeInsura
     public Triple<Boolean, String, Object> selectInsuranceByUid(Long uid, Integer type) {
         ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(TenantContextHolder.getTenantId());
         if (Objects.isNull(electricityConfig) || !Objects.equals(electricityConfig.getIsOpenInsurance(), ElectricityConfig.ENABLE_INSURANCE)) {
-            return null;
+            return Triple.of(true, null, null);
         }
 
         UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
