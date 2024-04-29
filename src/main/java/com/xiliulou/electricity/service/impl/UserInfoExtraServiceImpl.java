@@ -270,7 +270,7 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
     
         if (!Objects.equals(userInfo.getTenantId(), tenantId)) {
             log.warn("Modify inviter fail! not found userInfo, uid={}", uid);
-            return R.fail("AUTH.0003", "租户信息不匹配");
+            return R.ok();
         }
     
         // 商户列表
@@ -406,7 +406,7 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
         
             if (!Objects.equals(userInfo.getTenantId(), tenantId)) {
                 log.warn("Modify inviter fail! not found userInfo, uid={}", uid);
-                return R.fail("AUTH.0003", "租户信息不匹配");
+                return R.ok();
             }
         
             Merchant merchant = merchantService.queryByIdFromCache(merchantId);
