@@ -60,6 +60,7 @@ import com.xiliulou.electricity.service.UserRoleService;
 import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseChannelUserService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseInfoService;
+import com.xiliulou.electricity.service.userinfo.userInfoGroup.UserInfoGroupDetailService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
@@ -178,6 +179,9 @@ public class UserServiceImpl implements UserService {
     
     @Autowired
     UserInfoExtraService userInfoExtraService;
+    
+    @Resource
+    private UserInfoGroupDetailService userInfoGroupDetailService;
     
     /**
      * 启用锁定用户
@@ -958,6 +962,9 @@ public class UserServiceImpl implements UserService {
         userCarService.deleteByUid(uid);
         
         userInfoExtraService.deleteByUid(uid);
+    
+        // 删除用户分组信息
+        userInfoGroupDetailService.deleteByUid(uid, null);
         
         return Triple.of(true, null, null);
     }

@@ -58,6 +58,7 @@ import com.xiliulou.electricity.service.car.CarRentalPackageService;
 import com.xiliulou.electricity.service.car.biz.CarRenalPackageDepositBizService;
 import com.xiliulou.electricity.service.car.biz.CarRenalPackageSlippageBizService;
 import com.xiliulou.electricity.service.user.biz.UserBizService;
+import com.xiliulou.electricity.service.userinfo.userInfoGroup.UserInfoGroupDetailService;
 import com.xiliulou.electricity.service.wxrefund.WxRefundPayService;
 import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.vo.FreeDepositUserInfoVo;
@@ -170,6 +171,9 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
     
     @Resource
     RedisService redisService;
+    
+    @Resource
+    private UserInfoGroupDetailService userInfoGroupDetailService;
 
     /**
      * 运营商端创建退押，特殊退押(2.0过度数据)
@@ -435,6 +439,9 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
             freeDepositOrderUpdate.setUpdateTime(System.currentTimeMillis());
             freeDepositOrderService.update(freeDepositOrderUpdate);
         }
+        
+        //删除用户分组
+        userInfoGroupDetailService.handleAfterRefundDeposit(depositRefundEntity.getUid());
     }
 
     /**
@@ -1296,6 +1303,9 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
                         userBatteryTypeService.deleteByUid(depositPayEntity.getUid());
                         userBatteryDepositService.deleteByUid(depositPayEntity.getUid());
                     }
+                    
+                    // 删除用户分组
+                    userInfoGroupDetailService.handleAfterRefundDeposit(depositPayEntity.getUid());
                 }
 
                 // 线上，调用微信退款
@@ -1413,6 +1423,9 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
                         userBatteryTypeService.deleteByUid(depositPayEntity.getUid());
                         userBatteryDepositService.deleteByUid(depositPayEntity.getUid());
                     }
+    
+                    // 删除用户分组
+                    userInfoGroupDetailService.handleAfterRefundDeposit(depositPayEntity.getUid());
                 }
 
                 // 免押
@@ -1611,7 +1624,9 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
                 userBatteryTypeService.deleteByUid(memberTermEntity.getUid());
                 userBatteryDepositService.deleteByUid(memberTermEntity.getUid());
             }
-
+            
+            // 删除用户分组
+            userInfoGroupDetailService.handleAfterRefundDeposit(memberTermEntity.getUid());
         }
     }
 
