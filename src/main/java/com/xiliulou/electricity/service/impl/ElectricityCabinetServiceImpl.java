@@ -1085,6 +1085,12 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     }
     
     private ElectricityCabinetSimpleVO assignAttribute(ElectricityCabinetSimpleVO e, Double fullyCharged, String businessTime) {
+        
+        if (Objects.nonNull(e.getDistance())){
+            // 乘以10，向下取整，再除以10,保留一位小数
+            e.setDistance(Math.floor(e.getDistance() * 10.0) / 10.0);
+        }
+        
         //营业时间
         if (StringUtils.isNotBlank(businessTime)) {
             if (Objects.equals(businessTime, ElectricityCabinetVO.ALL_DAY)) {

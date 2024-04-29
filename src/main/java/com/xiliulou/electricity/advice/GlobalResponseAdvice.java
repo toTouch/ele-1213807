@@ -1,9 +1,8 @@
 package com.xiliulou.electricity.advice;
 
 import com.xiliulou.core.web.R;
-import com.xiliulou.electricity.constant.CommonConstant;
+import com.xiliulou.electricity.ttl.TtlTraceIdSupport;
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.MDC;
 import org.springframework.core.MethodParameter;
 import org.springframework.http.MediaType;
 import org.springframework.http.server.ServerHttpRequest;
@@ -27,7 +26,7 @@ public class GlobalResponseAdvice implements ResponseBodyAdvice {
     public Object beforeBodyWrite(Object body, MethodParameter returnType, MediaType selectedContentType, Class selectedConverterType, ServerHttpRequest request, ServerHttpResponse response) {
         if (body instanceof R) {
             R result = (R) body;
-            result.setTraceId(MDC.get(CommonConstant.TRACE_ID));
+            result.setTraceId(TtlTraceIdSupport.get());
             return result;
         }
         return body;
