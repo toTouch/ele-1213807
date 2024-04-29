@@ -49,7 +49,7 @@ public class JsonUserEnterpriseChannelUserController extends BaseController {
      * @param uid
      * @return
      */
-    @GetMapping({"/user/enterprise/queryEnterpriseChannelUser", "/user/enterprise/queryEnterpriseChannelUser"})
+    @GetMapping({"/user/enterprise/queryEnterpriseChannelUser", "/merchant/enterprise/queryEnterpriseChannelUser"})
     public R queryEnterpriseChannelUser(@RequestParam(value = "uid", required = true) Long uid) {
         
         return R.ok(enterpriseChannelUserService.queryEnterpriseChannelUser(uid));
