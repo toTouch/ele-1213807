@@ -67,8 +67,8 @@ import com.xiliulou.electricity.enums.car.CarRentalStateEnum;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.model.car.opt.CarRentalPackageOrderBuyOptModel;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageOrderFreezeQryModel;
-import com.xiliulou.electricity.query.UserInfoGroupDetailQuery;
 import com.xiliulou.electricity.query.car.CarRentalPackageRefundReq;
+import com.xiliulou.electricity.query.userinfo.userInfoGroup.UserInfoGroupDetailQuery;
 import com.xiliulou.electricity.service.ActivityService;
 import com.xiliulou.electricity.service.BatteryMembercardRefundOrderService;
 import com.xiliulou.electricity.service.CarLockCtrlHistoryService;
@@ -787,6 +787,16 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                 throw new BizException("300004", "套餐已下架");
             }
             
+            //如果用户分组为空,则为系统分组,判断套餐是否为系统分组套餐
+            if (groupIds.isEmpty() && Objects.equals(buyPackageEntity.getIsUserGroup(), YesNoEnum.NO.getCode())){
+                throw new BizException("100319", "用户与套餐关联的用户分组不一致，请刷新重试");
+            }
+            
+            //如果用户分组不为空,则为自定义分组,判断套餐是否为用户分组套餐
+            if (!groupIds.isEmpty() && Objects.equals(buyPackageEntity.getIsUserGroup(), YesNoEnum.YES.getCode())){
+                throw new BizException("100319", "用户与套餐关联的用户分组不一致，请刷新重试");
+            }
+            
             //如果是系统分组
             if (Objects.equals(buyPackageEntity.getIsUserGroup(), YesNoEnum.YES.getCode())) {
                 // 6.3 判定用户是否是老用户，然后和套餐的适用类型做比对
@@ -807,7 +817,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                 packageGroupIds.retainAll(groupIds);
                 if (packageGroupIds.isEmpty()) {
                     log.warn("Binding package failed because the user's group has changed:{}", groupIds);
-                    throw new BizException("100317", "用户与套餐关联的用户分组不一致，请刷新重试");
+                    throw new BizException("100319", "用户与套餐关联的用户分组不一致，请刷新重试");
                 }
             }
             
@@ -2702,6 +2712,16 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             // 6.2 套餐上下架状态
             if (UpDownEnum.DOWN.getCode().equals(buyPackageEntity.getStatus())) {
                 return R.fail("300004", "套餐已下架");
+            }
+            
+            //如果用户分组为空,则为系统分组,判断套餐是否为系统分组套餐
+            if (groupIds.isEmpty() && Objects.equals(buyPackageEntity.getIsUserGroup(), YesNoEnum.NO.getCode())){
+                return R.fail("100318", "您浏览的套餐已下架，请看看其他的吧");
+            }
+            
+            //如果用户分组不为空,则为自定义分组,判断套餐是否为用户分组套餐
+            if (!groupIds.isEmpty() && Objects.equals(buyPackageEntity.getIsUserGroup(), YesNoEnum.YES.getCode())){
+                return R.fail("100318", "您浏览的套餐已下架，请看看其他的吧");
             }
             
             //判断套餐是否为系统分组

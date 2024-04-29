@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.vo.userinfo;
 
+import com.xiliulou.electricity.vo.userinfo.userInfoGroup.UserInfoGroupIdAndNameVO;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

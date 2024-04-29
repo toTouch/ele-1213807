@@ -176,6 +176,18 @@
         order by cell_no desc
     </select>
     
+    <select id="selectUsableEmptyCell" resultType="com.xiliulou.electricity.entity.ElectricityCabinetBox">
+        select
+        id, electricity_cabinet_id, cell_no, usable_status, status,is_lock
+        from t_electricity_cabinet_box
+        <where>
+            electricity_cabinet_id = #{eid}
+            and usable_status = 0
+            and del_flag = 0
+            and status = 1
+        </where>
+    </select>
+    
     <select id="selectUsableEmptyCellNumber" resultType="int">
         select count(1)
         from t_electricity_cabinet_box

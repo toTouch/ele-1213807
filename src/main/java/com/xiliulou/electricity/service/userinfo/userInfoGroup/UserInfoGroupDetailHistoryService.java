@@ -1,8 +1,8 @@
 package com.xiliulou.electricity.service.userinfo.userInfoGroup;
 
 import com.xiliulou.electricity.bo.userInfoGroup.UserInfoGroupDetailHistoryBO;
-import com.xiliulou.electricity.entity.userInfo.userInfoGroup.UserInfoGroupDetailHistory;
-import com.xiliulou.electricity.query.UserInfoGroupDetailHistoryQuery;
+import com.xiliulou.electricity.entity.userinfo.userInfoGroup.UserInfoGroupDetailHistory;
+import com.xiliulou.electricity.query.userinfo.userInfoGroup.UserInfoGroupDetailHistoryQuery;
 
 import java.util.List;
 

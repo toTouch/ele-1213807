@@ -56,6 +56,8 @@ public interface ElectricityCabinetBoxService {
     
     List<FreeCellNoQuery> findUsableEmptyCellNo(Integer eid);
     
+    List<ElectricityCabinetBox> listUsableEmptyCell(Integer eid);
+    
     int selectUsableEmptyCellNumber(Integer eid, Integer tenantId);
 
     /**

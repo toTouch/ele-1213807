@@ -6,9 +6,9 @@ import com.xiliulou.electricity.bo.userInfoGroup.UserInfoGroupIdAndNameBO;
 import com.xiliulou.electricity.controller.BasicController;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.User;
-import com.xiliulou.electricity.query.UserInfoGroupQuery;
-import com.xiliulou.electricity.request.user.UserInfoGroupBatchImportRequest;
-import com.xiliulou.electricity.request.user.UserInfoGroupSaveAndUpdateRequest;
+import com.xiliulou.electricity.query.userinfo.userInfoGroup.UserInfoGroupQuery;
+import com.xiliulou.electricity.request.userinfo.userInfoGroup.UserInfoGroupBatchImportRequest;
+import com.xiliulou.electricity.request.userinfo.userInfoGroup.UserInfoGroupSaveAndUpdateRequest;
 import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.UserDataScopeService;
 import com.xiliulou.electricity.service.userinfo.userInfoGroup.UserInfoGroupService;
@@ -16,8 +16,8 @@ import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.validator.CreateGroup;
 import com.xiliulou.electricity.validator.UpdateGroup;
-import com.xiliulou.electricity.vo.userinfo.UserInfoGroupIdAndNameVO;
-import com.xiliulou.electricity.vo.userinfo.UserInfoGroupVO;
+import com.xiliulou.electricity.vo.userinfo.userInfoGroup.UserInfoGroupIdAndNameVO;
+import com.xiliulou.electricity.vo.userinfo.userInfoGroup.UserInfoGroupVO;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
@@ -52,9 +52,6 @@ public class JsonAdminUserInfoGroupController extends BasicController {
     @Resource
     private UserDataScopeService userDataScopeService;
     
-    @Resource
-    private FranchiseeService franchiseeService;
-    
     /**
      * @description 新增用户分组
      * @date 2024/4/8 19:43:44
@@ -70,26 +67,6 @@ public class JsonAdminUserInfoGroupController extends BasicController {
         
         if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE) || Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE))) {
             return R.fail("ELECTRICITY.0066", "用户权限不足");
-        }
-        
-        // 租户操作，加盟商ID不能为空
-        if (Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE)) {
-            Long franchiseeId = request.getFranchiseeId();
-            
-            if (Objects.isNull(franchiseeId) || Objects.isNull(franchiseeService.queryByIdFromCache(franchiseeId))) {
-                return R.fail("ELECTRICITY.0038", "未找到加盟商");
-            }
-        }
-        
-        // 加盟商操作，查询加盟商
-        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
-            Franchisee franchisee = franchiseeService.queryByUid(user.getUid());
-            
-            if (Objects.isNull(franchisee)) {
-                return R.fail("ELECTRICITY.0038", "未找到加盟商");
-            }
-            
-            request.setFranchiseeId(franchisee.getId());
         }
         
         return userInfoGroupService.save(request, user.getUid());
@@ -112,17 +89,7 @@ public class JsonAdminUserInfoGroupController extends BasicController {
             return R.fail("ELECTRICITY.0066", "用户权限不足");
         }
         
-        // 加盟商操作，查询加盟商
-        Franchisee franchisee = null;
-        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
-            franchisee = franchiseeService.queryByUid(user.getUid());
-            
-            if (Objects.isNull(franchisee)) {
-                return R.fail("ELECTRICITY.0038", "未找到加盟商");
-            }
-        }
-        
-        return userInfoGroupService.remove(id, user.getUid(), franchisee);
+        return userInfoGroupService.remove(id, user.getUid());
     }
     
     /**
@@ -142,17 +109,7 @@ public class JsonAdminUserInfoGroupController extends BasicController {
             return R.fail("ELECTRICITY.0066", "用户权限不足");
         }
         
-        // 加盟商操作，查询加盟商
-        Franchisee franchisee = null;
-        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
-            franchisee = franchiseeService.queryByUid(user.getUid());
-            
-            if (Objects.isNull(franchisee)) {
-                return R.fail("ELECTRICITY.0038", "未找到加盟商");
-            }
-        }
-        
-        return userInfoGroupService.update(userInfoGroupSaveAndUpdateRequest, user.getUid(), franchisee);
+        return userInfoGroupService.update(userInfoGroupSaveAndUpdateRequest, user.getUid());
     }
     
     /**
@@ -260,28 +217,7 @@ public class JsonAdminUserInfoGroupController extends BasicController {
             return R.fail("ELECTRICITY.0066", "用户权限不足");
         }
         
-        // 租户操作，加盟商ID不能为空
-        if (Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE)) {
-            Long franchiseeId = request.getFranchiseeId();
-            
-            if (Objects.isNull(franchiseeId) || Objects.isNull(franchiseeService.queryByIdFromCache(franchiseeId))) {
-                return R.fail("ELECTRICITY.0038", "未找到加盟商");
-            }
-        }
-        
-        // 加盟商操作，查询加盟商
-        Franchisee franchisee = null;
-        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
-            franchisee = franchiseeService.queryByUid(user.getUid());
-            
-            if (Objects.isNull(franchisee)) {
-                return R.fail("ELECTRICITY.0038", "未找到加盟商");
-            }
-            
-            request.setFranchiseeId(franchisee.getId());
-        }
-        
-        return userInfoGroupService.batchImport(request, user.getUid(), franchisee);
+        return userInfoGroupService.batchImport(request, user.getUid());
     }
     
     /**
