@@ -317,7 +317,8 @@ public class JsonAdminElectricityCabinetBatteryController extends BaseController
     @GetMapping(value = "/admin/battery/queryCountByFranchisee")
     public R queryCountByFranchisee(@RequestParam(value = "physicsStatus", required = false) Integer physicsStatus,
             @RequestParam(value = "sn", required = false) String sn,
-            @RequestParam(value = "chargeStatus", required = false) Integer chargeStatus) {
+            @RequestParam(value = "chargeStatus", required = false) Integer chargeStatus,
+            @RequestParam(value = "businessStatus", required = false) Integer businessStatus) {
         
         //租户
         Integer tenantId = TenantContextHolder.getTenantId();
@@ -347,6 +348,7 @@ public class JsonAdminElectricityCabinetBatteryController extends BaseController
         electricityBatteryQuery.setFranchiseeIds(franchiseeIds);
         electricityBatteryQuery.setTenantId(tenantId);
         electricityBatteryQuery.setChargeStatus(chargeStatus);
+        electricityBatteryQuery.setBusinessStatus(businessStatus);
         
         return electricityBatteryService.queryCount(electricityBatteryQuery);
     }
