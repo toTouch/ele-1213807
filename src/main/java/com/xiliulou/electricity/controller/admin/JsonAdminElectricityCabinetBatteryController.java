@@ -274,7 +274,8 @@ public class JsonAdminElectricityCabinetBatteryController extends BaseController
             @RequestParam(value = "sn", required = false) String sn,
             @RequestParam(value = "chargeStatus", required = false) Integer chargeStatus,
             @RequestParam(value = "stockStatus", required = false) Integer stockStatus,
-            @RequestParam(value = "warehouseId", required = false) Long warehouseId) {
+            @RequestParam(value = "warehouseId", required = false) Long warehouseId,
+            @RequestParam(value = "businessStatus", required = false) Integer businessStatus) {
         
         //用户
         TokenUser user = SecurityUtils.getUserInfo();
@@ -303,7 +304,7 @@ public class JsonAdminElectricityCabinetBatteryController extends BaseController
         electricityBatteryQuery.setChargeStatus(chargeStatus);
         electricityBatteryQuery.setStockStatus(stockStatus);
         electricityBatteryQuery.setWarehouseId(warehouseId);
-        
+        electricityBatteryQuery.setBusinessStatus(businessStatus);
         return electricityBatteryService.queryList(electricityBatteryQuery, offset, size);
     }
     
@@ -317,7 +318,8 @@ public class JsonAdminElectricityCabinetBatteryController extends BaseController
     @GetMapping(value = "/admin/battery/queryCountByFranchisee")
     public R queryCountByFranchisee(@RequestParam(value = "physicsStatus", required = false) Integer physicsStatus,
             @RequestParam(value = "sn", required = false) String sn,
-            @RequestParam(value = "chargeStatus", required = false) Integer chargeStatus) {
+            @RequestParam(value = "chargeStatus", required = false) Integer chargeStatus,
+            @RequestParam(value = "businessStatus", required = false) Integer businessStatus,) {
         
         //租户
         Integer tenantId = TenantContextHolder.getTenantId();
@@ -347,7 +349,7 @@ public class JsonAdminElectricityCabinetBatteryController extends BaseController
         electricityBatteryQuery.setFranchiseeIds(franchiseeIds);
         electricityBatteryQuery.setTenantId(tenantId);
         electricityBatteryQuery.setChargeStatus(chargeStatus);
-        
+        electricityBatteryQuery.setBusinessStatus(businessStatus);
         return electricityBatteryService.queryCount(electricityBatteryQuery);
     }
     
