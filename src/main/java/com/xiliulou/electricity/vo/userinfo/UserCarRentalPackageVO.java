@@ -1,7 +1,10 @@
 package com.xiliulou.electricity.vo.userinfo;
 
 import com.xiliulou.electricity.domain.car.UserCarRentalPackageDO;
+import com.xiliulou.electricity.vo.userinfo.userInfoGroup.UserInfoGroupIdAndNameVO;
 import lombok.Data;
+
+import java.util.List;
 
 /**
  * @author: Kenneth
@@ -133,4 +136,9 @@ public class UserCarRentalPackageVO {
      * 套餐购买次数
      */
     private Integer payCount;
+    
+    /**
+     * 用户所属分组
+     */
+    private List<UserInfoGroupIdAndNameVO> groupList;
 }

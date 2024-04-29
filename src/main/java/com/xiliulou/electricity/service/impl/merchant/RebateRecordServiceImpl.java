@@ -224,7 +224,7 @@ public class RebateRecordServiceImpl implements RebateRecordService {
                 }
             });
             
-            offset += size;
+//            offset += size;
         }
     }
     

@@ -4,6 +4,7 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.bo.userInfoGroup.UserInfoGroupBO;
 import com.xiliulou.electricity.bo.userInfoGroup.UserInfoGroupIdAndNameBO;
 import com.xiliulou.electricity.controller.BasicController;
+import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.query.userinfo.userInfoGroup.UserInfoGroupQuery;
 import com.xiliulou.electricity.request.userinfo.userInfoGroup.UserInfoGroupBatchImportRequest;
@@ -50,9 +51,6 @@ public class JsonAdminUserInfoGroupController extends BasicController {
     
     @Resource
     private UserDataScopeService userDataScopeService;
-    
-    @Resource
-    private FranchiseeService franchiseeService;
     
     /**
      * @description 新增用户分组
