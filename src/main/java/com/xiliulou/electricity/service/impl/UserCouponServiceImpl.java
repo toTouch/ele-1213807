@@ -813,8 +813,8 @@ public class UserCouponServiceImpl implements UserCouponService {
     }
     
     @Override
-    public UserCoupon selectBySourceOrderId(String orderId) {
-        return userCouponMapper.selectOne(new LambdaQueryWrapper<UserCoupon>().eq(UserCoupon::getSourceOrderId, orderId));
+    public List<UserCoupon> selectListBySourceOrderId(String orderId) {
+        return userCouponMapper.selectListBySourceOrderId(orderId);
     }
     
     @Override

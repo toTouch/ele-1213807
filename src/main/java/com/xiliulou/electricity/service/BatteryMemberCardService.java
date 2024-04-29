@@ -18,7 +18,7 @@ import java.util.List;
  * @since 2023-07-07 14:06:31
  */
 public interface BatteryMemberCardService {
-
+    
     /**
      * 通过ID查询单条数据从数据库
      *
@@ -26,7 +26,7 @@ public interface BatteryMemberCardService {
      * @return 实例对象
      */
     BatteryMemberCard queryByIdFromDB(Long id);
-
+    
     /**
      * 通过ID查询单条数据从缓存
      *
@@ -34,13 +34,13 @@ public interface BatteryMemberCardService {
      * @return 实例对象
      */
     BatteryMemberCard queryByIdFromCache(Long id);
-
+    
     Integer insert(BatteryMemberCard batteryMemberCard);
-
-    Integer insertBatteryMemberCardAndBatteryType(BatteryMemberCard batteryMemberCard,List<String> batteryModels);
-
+    
+    Integer insertBatteryMemberCardAndBatteryType(BatteryMemberCard batteryMemberCard, List<String> batteryModels);
+    
     Integer update(BatteryMemberCard batteryMemberCard);
-
+    
     /**
      * 通过主键删除数据
      *
@@ -48,41 +48,41 @@ public interface BatteryMemberCardService {
      * @return 是否成功
      */
     Integer deleteById(Long id);
-
+    
     List<BatteryMemberCardVO> selectByPage(BatteryMemberCardQuery query);
     
     List<BatteryMemberCardVO> selectByPageForMerchant(BatteryMemberCardQuery query);
-
+    
     Integer selectByPageCount(BatteryMemberCardQuery query);
-
+    
     List<BatteryMemberCardVO> selectCarRentalAndElectricityPackages(CarRentalPackageQryModel qryModel);
-
+    
     List<BatteryMemberCardSearchVO> search(BatteryMemberCardQuery query);
-
+    
     List<BatteryMemberCardVO> selectByQuery(BatteryMemberCardQuery query);
-
+    
     Triple<Boolean, String, Object> updateStatus(BatteryMemberCardStatusQuery batteryModelQuery);
-
+    
     Triple<Boolean, String, Object> delete(Long id);
-
+    
     Triple<Boolean, String, Object> modify(BatteryMemberCardQuery query);
-
+    
     Triple<Boolean, String, Object> save(BatteryMemberCardQuery query);
-
+    
     Long transformBatteryMembercardEffectiveTime(BatteryMemberCard batteryMemberCard, ElectricityMemberCardOrder memberCardOrder);
-
+    
     Long transformBatteryMembercardEffectiveTime(BatteryMemberCard batteryMemberCard, Long validDays);
-
+    
     List<BatteryMemberCardVO> selectByPageForUser(BatteryMemberCardQuery query);
-
+    
     List<String> selectMembercardBatteryV(BatteryMemberCardQuery query);
-
+    
     List<BatteryMemberCardVO> selectUserBatteryMembercardList(BatteryMemberCardQuery query);
-
-    List<BatteryMemberCardVO>  selectListByQuery(BatteryMemberCardQuery query);
-
-    List<BatteryMemberCard>  selectListByCouponId(Long couponId);
-
+    
+    List<BatteryMemberCardVO> selectListByQuery(BatteryMemberCardQuery query);
+    
+    List<BatteryMemberCard> selectListByCouponId(Long couponId);
+    
     Integer isMemberCardBindFranchinsee(Long id, Integer tenantId);
     
     List<BatteryMemberCard> queryListByIdList(BatteryMemberCardQuery query);
