@@ -3232,6 +3232,24 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         if (!Objects.equals(BatteryMemberCard.STATUS_UP, batteryMemberCard.getStatus())) {
             return Triple.of(false, "100275", "电池套餐不可用");
         }
+    
+        List<UserInfoGroupNamesBO> userInfoGroupNamesBOs = userInfoGroupDetailService.listGroupByUid(
+                UserInfoGroupDetailQuery.builder().uid(query.getUid()).tenantId(TenantContextHolder.getTenantId()).build());
+    
+        if (CollectionUtils.isNotEmpty(userInfoGroupNamesBOs)) {
+            if (Objects.equals(batteryMemberCard.getGroupType(), BatteryMemberCard.GROUP_TYPE_SYSTEM)) {
+                return Triple.of(false, "100319", "用户与套餐关联的用户分组不一致，请刷新重试");
+            }
+            List<Long> userGroupIds = userInfoGroupNamesBOs.stream().map(UserInfoGroupNamesBO::getGroupId).collect(Collectors.toList());
+            userGroupIds.retainAll(JsonUtil.fromJsonArray(batteryMemberCard.getUserInfoGroupIds(), Long.class));
+            if (CollectionUtils.isEmpty(userGroupIds)) {
+                return Triple.of(false, "100319", "用户与套餐关联的用户分组不一致，请刷新重试");
+            }
+        }else {
+            if (Objects.equals(batteryMemberCard.getGroupType(), BatteryMemberCard.GROUP_TYPE_USER)) {
+                return Triple.of(false, "100319", "用户与套餐关联的用户分组不一致，请刷新重试");
+            }
+        }
         
         //判断套餐租赁状态，用户为老用户，套餐类型为新租，则不支持购买
         if (userInfo.getPayCount() > 0 && BatteryMemberCard.RENT_TYPE_NEW.equals(batteryMemberCard.getRentType())) {
@@ -3295,25 +3313,6 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         if (Boolean.TRUE.equals(acquireUserBatteryServiceFeeResult.getLeft())) {
             log.warn("BATTERY MEMBER ORDER WARN! user exist battery service fee,uid={},mid={}", userInfo.getUid(), userBatteryMemberCard.getMemberCardId());
             return Triple.of(false, "ELECTRICITY.100000", "存在电池服务费");
-        }
-    
-        List<UserInfoGroupNamesBO> userInfoGroupNamesBOs = userInfoGroupDetailService.listGroupByUid(
-                UserInfoGroupDetailQuery.builder().uid(query.getUid()).tenantId(TenantContextHolder.getTenantId()).build());
-    
-        if (CollectionUtils.isNotEmpty(userInfoGroupNamesBOs)) {
-            if (Objects.equals(batteryMemberCard.getGroupType(), BatteryMemberCard.GROUP_TYPE_SYSTEM)) {
-                return Triple.of(false, "100319", "用户与套餐关联的用户分组不一致，请刷新重试");
-            }
-        
-            List<Long> userGroupIds = userInfoGroupNamesBOs.stream().map(UserInfoGroupNamesBO::getGroupId).collect(Collectors.toList());
-            userGroupIds.retainAll(JsonUtil.fromJsonArray(batteryMemberCard.getUserInfoGroupIds(), Long.class));
-            if (CollectionUtils.isEmpty(userGroupIds)) {
-                return Triple.of(false, "100319", "用户与套餐关联的用户分组不一致，请刷新重试");
-            }
-        }else {
-            if (Objects.equals(batteryMemberCard.getGroupType(), BatteryMemberCard.GROUP_TYPE_USER)) {
-                return Triple.of(false, "100319", "用户与套餐关联的用户分组不一致，请刷新重试");
-            }
         }
         
         ElectricityMemberCardOrder memberCardOrder = saveRenewalUserBatteryMemberCardOrder(user, userInfo, batteryMemberCard, userBatteryMemberCard, userBindbatteryMemberCard);
