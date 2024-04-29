@@ -164,7 +164,9 @@ public class AssetInventoryDetailServiceImpl implements AssetInventoryDetailServ
         
         try {
             Integer count = 0;
-            if (CollectionUtils.isNotEmpty(inventoryRequest.getSnList())) {
+            // TODO(heyafeng) 2024/4/29 17:06
+            List<String> snList = inventoryRequest.getSnList();
+            if (CollectionUtils.isNotEmpty(snList)) {
                 String orderNo = inventoryRequest.getOrderNo();
                 Integer tenantId = TenantContextHolder.getTenantId();
                 
@@ -175,7 +177,7 @@ public class AssetInventoryDetailServiceImpl implements AssetInventoryDetailServ
                     return R.ok();
                 }
                 
-                List<AssetInventoryDetailVO> assetInventoryDetailVOList = listBySnListAndOrderNo(inventoryRequest.getSnList(), inventoryRequest.getOrderNo());
+                List<AssetInventoryDetailVO> assetInventoryDetailVOList = listBySnListAndOrderNo(snList, inventoryRequest.getOrderNo());
                 if (CollectionUtils.isNotEmpty(assetInventoryDetailVOList)) {
                     for (AssetInventoryDetailVO assetInventoryDetailVO : assetInventoryDetailVOList) {
                         if (Objects.equals(AssetConstant.ASSET_INVENTORY_DETAIL_STATUS_YES, assetInventoryDetailVO.getInventoryStatus())) {
@@ -185,7 +187,7 @@ public class AssetInventoryDetailServiceImpl implements AssetInventoryDetailServ
                 }
                 
                 AssetInventoryDetailBatchInventoryQueryModel assetInventoryDetailBatchInventoryQueryModel = AssetInventoryDetailBatchInventoryQueryModel.builder().orderNo(orderNo)
-                        .status(inventoryRequest.getStatus()).snList(inventoryRequest.getSnList()).operator(operator).tenantId(tenantId).updateTime(System.currentTimeMillis())
+                        .status(inventoryRequest.getStatus()).snList(snList).operator(operator).tenantId(tenantId).updateTime(System.currentTimeMillis())
                         .build();
                 //批量盘点
                 count = batchInventoryBySnList(assetInventoryDetailBatchInventoryQueryModel);
