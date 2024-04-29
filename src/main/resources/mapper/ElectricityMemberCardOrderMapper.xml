@@ -26,6 +26,7 @@
         tel.member_card_id ,
         tel.use_status ,
         tel.send_coupon_id ,
+        tel.coupon_ids,
         tui.phone as phone , tui.name as userName from
         t_electricity_member_card_order tel
         

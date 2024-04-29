@@ -34,4 +34,9 @@ public class EleOpenDTO {
 	private String msg;
 
 	private String batterySn;
+	
+	/**
+	 * 退电空仓仓门
+	 */
+	private Integer cellNo;
 }

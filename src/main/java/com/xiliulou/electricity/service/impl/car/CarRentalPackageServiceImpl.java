@@ -2,8 +2,11 @@ package com.xiliulou.electricity.service.impl.car;
 
 import com.alibaba.fastjson.JSON;
 import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.db.dynamic.annotation.Slave;
+import com.xiliulou.electricity.bo.userInfoGroup.UserInfoGroupBO;
 import com.xiliulou.electricity.constant.CarRenalCacheConstant;
+import com.xiliulou.electricity.entity.car.CarCouponNamePO;
 import com.xiliulou.electricity.entity.car.CarRentalPackagePo;
 import com.xiliulou.electricity.enums.DelFlagEnum;
 import com.xiliulou.electricity.enums.UpDownEnum;
@@ -13,8 +16,10 @@ import com.xiliulou.electricity.mapper.car.CarRentalPackageMapper;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageQryModel;
 import com.xiliulou.electricity.query.MemberCardAndCarRentalPackageSortParamQuery;
 import com.xiliulou.electricity.query.car.CarRentalPackageNameReq;
+import com.xiliulou.electricity.service.CouponService;
 import com.xiliulou.electricity.service.car.CarRentalPackageOrderService;
 import com.xiliulou.electricity.service.car.CarRentalPackageService;
+import com.xiliulou.electricity.service.userinfo.userInfoGroup.UserInfoGroupService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.OperateRecordUtil;
 import com.xiliulou.electricity.vo.car.CarRentalPackageSearchVO;
@@ -24,11 +29,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
 
 import javax.annotation.Resource;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * 租车套餐表 ServiceImpl
@@ -50,6 +57,12 @@ public class CarRentalPackageServiceImpl implements CarRentalPackageService {
     
     @Resource
     private CarRentalPackageMapper carRentalPackageMapper;
+    
+    @Autowired
+    private UserInfoGroupService userInfoGroupService;
+    
+    @Autowired
+    private CouponService couponService;
     
     /**
      * 根据主键ID查询，不区分是否删除
@@ -257,6 +270,11 @@ public class CarRentalPackageServiceImpl implements CarRentalPackageService {
             log.info("CarRentalPackageService.updateById, Package name already exists.");
             throw new BizException("300022", "套餐名称已存在");
         }
+        // 适配优惠券多张更新
+        if (StringUtils.hasText(entity.getCouponArrays()) && !Objects.isNull(oriEntity.getCouponId()) && !entity.getCouponArrays()
+                .contains(String.valueOf(oriEntity.getCouponId()))) {
+            entity.setCouponId(-1L);
+        }
         
         entity.setUpdateTime(System.currentTimeMillis());
         
@@ -265,7 +283,37 @@ public class CarRentalPackageServiceImpl implements CarRentalPackageService {
         // 删除缓存
         String cacheEky = String.format(CarRenalCacheConstant.CAR_RENAL_PACKAGE_ID_KEY, entity.getId());
         redisService.delete(cacheEky);
-        operateRecordUtil.record(oriEntity, entity);
+        
+        operateRecordUtil.asyncRecord(oriEntity, entity, userInfoGroupService, couponService, (userInfoGroupService, couponService, operateLogDTO) -> {
+            List<Long> oldUserGroupIds = JsonUtil.fromJsonArray((String) operateLogDTO.getOldValue().getOrDefault("userGroupIds", "[]"), Long.class);
+            List<UserInfoGroupBO> oldUserGroups = userInfoGroupService.listByIds(oldUserGroupIds);
+            operateLogDTO.getOldValue().put("userGroups",Collections.emptyList());
+            if (!CollectionUtils.isEmpty(oldUserGroups)) {
+                operateLogDTO.getOldValue().put("userGroups", oldUserGroups.stream().map(UserInfoGroupBO::getGroupName).collect(Collectors.toList()));
+            }
+            
+            List<Long> userGroupIds = JsonUtil.fromJsonArray((String) operateLogDTO.getNewValue().getOrDefault("userGroupIds", "[]"), Long.class);
+            List<UserInfoGroupBO> userGroups = userInfoGroupService.listByIds(userGroupIds);
+            operateLogDTO.getNewValue().put("userGroups",Collections.emptyList());
+            if (!CollectionUtils.isEmpty(userGroups)) {
+                operateLogDTO.getNewValue().put("userGroups", userGroups.stream().map(UserInfoGroupBO::getGroupName).collect(Collectors.toList()));
+            }
+            
+            List<Long> oldCouponIds = JsonUtil.fromJsonArray((String) operateLogDTO.getOldValue().getOrDefault("couponArrays", "[]"), Long.class);
+            List<CarCouponNamePO> oldCoupons = couponService.queryListByIdsFromCache(oldCouponIds);
+            operateLogDTO.getOldValue().put("coupons",Collections.emptyList());
+            if (!CollectionUtils.isEmpty(oldCoupons)) {
+                operateLogDTO.getOldValue().put("coupons", oldCoupons.stream().map(CarCouponNamePO::getName).collect(Collectors.toList()));
+            }
+            
+            List<Long> couponIds = JsonUtil.fromJsonArray((String) operateLogDTO.getNewValue().getOrDefault("couponArrays", "[]"), Long.class);
+            List<CarCouponNamePO> coupons = couponService.queryListByIdsFromCache(couponIds);
+            operateLogDTO.getNewValue().put("coupons",Collections.emptyList());
+            if (!CollectionUtils.isEmpty(coupons)) {
+                operateLogDTO.getNewValue().put("coupons", coupons.stream().map(CarCouponNamePO::getName).collect(Collectors.toList()));
+            }
+            return operateLogDTO;
+        });
         return num >= 0;
     }
     
@@ -306,7 +354,7 @@ public class CarRentalPackageServiceImpl implements CarRentalPackageService {
     
     @Override
     public List<CarRentalPackagePo> findByCouponId(Long couponId) {
-        return carRentalPackageMapper.selectByCouponId(couponId);
+        return carRentalPackageMapper.selectByCouponId(String.valueOf(couponId));
     }
     
     /**

@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.service.impl;
 
+import cn.hutool.core.collection.ListUtil;
 import com.google.api.client.util.Lists;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
@@ -7,14 +8,8 @@ import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
-import com.xiliulou.electricity.entity.BatteryMemberCard;
-import com.xiliulou.electricity.entity.Coupon;
-import com.xiliulou.electricity.entity.CouponActivityPackage;
-import com.xiliulou.electricity.entity.NewUserActivity;
-import com.xiliulou.electricity.entity.OldUserActivity;
-import com.xiliulou.electricity.entity.ShareActivityRule;
-import com.xiliulou.electricity.entity.User;
-import com.xiliulou.electricity.entity.UserCoupon;
+import com.xiliulou.electricity.entity.*;
+import com.xiliulou.electricity.entity.car.CarCouponNamePO;
 import com.xiliulou.electricity.entity.car.CarRentalPackagePo;
 import com.xiliulou.electricity.enums.PackageTypeEnum;
 import com.xiliulou.electricity.enums.RentalPackageTypeEnum;
@@ -456,6 +451,27 @@ public class CouponServiceImpl implements CouponService {
             }
         }
         return Triple.of(true, null, couponActivityVO);
+    }
+    
+    @Slave
+    @Override
+    public List<CarCouponNamePO> queryListByIdsFromCache(List<Long> couponId) {
+        if (CollectionUtils.isEmpty(couponId)) {
+            return ListUtil.empty();
+        }
+        
+        List<CarCouponNamePO> result = new ArrayList<>();
+        for (Long id : couponId) {
+            Coupon coupon = queryByIdFromCache(id.intValue());
+            if (!Objects.isNull(coupon)) {
+                CarCouponNamePO couponVO = new CarCouponNamePO();
+                couponVO.setName(coupon.getName());
+                couponVO.setId(coupon.getId().longValue());
+                couponVO.setAmount(coupon.getAmount());
+                result.add(couponVO);
+            }
+        }
+        return result;
     }
     
     public List<BatteryMemberCardVO> getAllBatteryPackages() {

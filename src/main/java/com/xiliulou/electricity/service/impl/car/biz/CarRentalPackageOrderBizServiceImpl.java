@@ -6,6 +6,7 @@ import cn.hutool.core.util.ObjectUtil;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.bo.userInfoGroup.UserInfoGroupNamesBO;
 import com.xiliulou.electricity.config.WechatConfig;
 import com.xiliulou.electricity.constant.CarRenalCacheConstant;
 import com.xiliulou.electricity.constant.TimeConstant;
@@ -67,6 +68,7 @@ import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.model.car.opt.CarRentalPackageOrderBuyOptModel;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageOrderFreezeQryModel;
 import com.xiliulou.electricity.query.car.CarRentalPackageRefundReq;
+import com.xiliulou.electricity.query.userinfo.userInfoGroup.UserInfoGroupDetailQuery;
 import com.xiliulou.electricity.service.ActivityService;
 import com.xiliulou.electricity.service.BatteryMembercardRefundOrderService;
 import com.xiliulou.electricity.service.CarLockCtrlHistoryService;
@@ -104,6 +106,7 @@ import com.xiliulou.electricity.service.car.biz.CarRentalPackageBizService;
 import com.xiliulou.electricity.service.car.biz.CarRentalPackageOrderBizService;
 import com.xiliulou.electricity.service.retrofit.Jt808RetrofitService;
 import com.xiliulou.electricity.service.user.biz.UserBizService;
+import com.xiliulou.electricity.service.userinfo.userInfoGroup.UserInfoGroupDetailService;
 import com.xiliulou.electricity.service.wxrefund.WxRefundPayService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DateUtils;
@@ -148,9 +151,11 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.StringJoiner;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -287,6 +292,9 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
     @Autowired
     private EleUserOperateRecordService eleUserOperateRecordService;
     
+    @Autowired
+    private UserInfoGroupDetailService userInfoGroupDetailService;
+    
     
     public static final Integer ELE = 0;
     
@@ -371,12 +379,14 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         }
         
         // 购买的时候，赠送的优惠券是否被使用，若为使用中、已使用，则不允许退租
-        UserCoupon userCoupon = userCouponService.selectBySourceOrderId(packageOrderEntity.getOrderNo());
-        if (ObjectUtils.isNotEmpty(userCoupon)) {
-            Integer status = userCoupon.getStatus();
-            if (UserCoupon.STATUS_IS_BEING_VERIFICATION.equals(status) || UserCoupon.STATUS_USED.equals(status)) {
-                throw new BizException("300016", "您已使用优惠券，该套餐不可退");
-            }
+        List<UserCoupon> userCoupons = userCouponService.selectListBySourceOrderId(packageOrderEntity.getOrderNo());
+        if (!CollectionUtils.isEmpty(userCoupons)) {
+            userCoupons.forEach(userCoupon -> {
+                Integer status = userCoupon.getStatus();
+                if (UserCoupon.STATUS_IS_BEING_VERIFICATION.equals(status) || UserCoupon.STATUS_USED.equals(status) || UserCoupon.STATUS_DESTRUCTION.equals(status)) {
+                    throw new BizException("300016", "您已使用优惠券，该套餐不可退");
+                }
+            });
         }
         
         if (UseStateEnum.IN_USE.getCode().equals(packageOrderEntity.getUseState())) {
@@ -657,12 +667,14 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         }
         
         // 购买的时候，赠送的优惠券是否被使用，若为使用中、已使用，则不允许退租
-        UserCoupon userCoupon = userCouponService.selectBySourceOrderId(packageOrderEntity.getOrderNo());
-        if (ObjectUtils.isNotEmpty(userCoupon)) {
-            Integer status = userCoupon.getStatus();
-            if (UserCoupon.STATUS_IS_BEING_VERIFICATION.equals(status) || UserCoupon.STATUS_USED.equals(status)) {
-                throw new BizException("300016", "您已使用优惠券，该套餐不可退");
-            }
+        List<UserCoupon> userCoupons = userCouponService.selectListBySourceOrderId(packageOrderEntity.getOrderNo());
+        if (!CollectionUtils.isEmpty(userCoupons)) {
+            userCoupons.forEach(userCoupon -> {
+                Integer status = userCoupon.getStatus();
+                if (UserCoupon.STATUS_IS_BEING_VERIFICATION.equals(status) || UserCoupon.STATUS_USED.equals(status) || UserCoupon.STATUS_DESTRUCTION.equals(status)) {
+                    throw new BizException("300016", "您已使用优惠券，该套餐不可退");
+                }
+            });
         }
         
         log.info("verify refund rent confirmation flow end, uid = {}, package order no = {}", uid, packageOrderNo);
@@ -719,6 +731,14 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                 throw new BizException("ELECTRICITY.0041", "用户尚未实名认证");
             }
             
+            // 1.3 查询用户当前所在分组
+            Set<Long> groupIds = new HashSet<>();
+            UserInfoGroupDetailQuery detailQuery = UserInfoGroupDetailQuery.builder().uid(uid).build();
+            List<UserInfoGroupNamesBO> vos = userInfoGroupDetailService.listGroupByUid(detailQuery);
+            if (!CollectionUtils.isEmpty(vos)) {
+                groupIds.addAll(vos.stream().map(UserInfoGroupNamesBO::getGroupId).collect(Collectors.toSet()));
+            }
+            
             // 2. 判定滞纳金
             if (carRenalPackageSlippageBizService.isExitUnpaid(tenantId, uid)) {
                 throw new BizException("300001", "存在滞纳金，请先缴纳");
@@ -767,11 +787,38 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                 throw new BizException("300004", "套餐已下架");
             }
             
-            // 6.3 判定用户是否是老用户，然后和套餐的适用类型做比对
-            Boolean oldUserFlag = userBizService.isOldUser(tenantId, uid);
-            if (oldUserFlag && !ApplicableTypeEnum.oldUserApplicable().contains(buyPackageEntity.getApplicableType())) {
-                log.warn("bindingPackage failed. Package type mismatch. Buy package type is {}, user is old", buyPackageEntity.getApplicableType());
-                throw new BizException("300005", "套餐不匹配");
+            //如果用户分组为空,则为系统分组,判断套餐是否为系统分组套餐
+            if (groupIds.isEmpty() && Objects.equals(buyPackageEntity.getIsUserGroup(), YesNoEnum.NO.getCode())){
+                throw new BizException("100319", "用户与套餐关联的用户分组不一致，请刷新重试");
+            }
+            
+            //如果用户分组不为空,则为自定义分组,判断套餐是否为用户分组套餐
+            if (!groupIds.isEmpty() && Objects.equals(buyPackageEntity.getIsUserGroup(), YesNoEnum.YES.getCode())){
+                throw new BizException("100319", "用户与套餐关联的用户分组不一致，请刷新重试");
+            }
+            
+            //如果是系统分组
+            if (Objects.equals(buyPackageEntity.getIsUserGroup(), YesNoEnum.YES.getCode())) {
+                // 6.3 判定用户是否是老用户，然后和套餐的适用类型做比对
+                Boolean oldUserFlag = userBizService.isOldUser(tenantId, uid);
+                if (oldUserFlag && !ApplicableTypeEnum.oldUserApplicable().contains(buyPackageEntity.getApplicableType())) {
+                    log.warn("bindingPackage failed. Package type mismatch. Buy package type is {}, user is old", buyPackageEntity.getApplicableType());
+                    throw new BizException("300005", "套餐不匹配");
+                }
+            }
+            
+            //6.3.1 判断用户分组是否包含在购买的套餐中存在
+            if (Objects.equals(buyPackageEntity.getIsUserGroup(), YesNoEnum.NO.getCode())) {
+                Set<Long> packageGroupIds = new HashSet<>();
+                if (!CollectionUtils.isEmpty(buyPackageEntity.getUserGroupId())) {
+                    packageGroupIds.addAll(buyPackageEntity.getUserGroupId());
+                }
+                
+                packageGroupIds.retainAll(groupIds);
+                if (packageGroupIds.isEmpty()) {
+                    log.warn("Binding package failed because the user's group has changed:{}", groupIds);
+                    throw new BizException("100319", "用户与套餐关联的用户分组不一致，请刷新重试");
+                }
             }
             
             // 7. 判定套餐互斥
@@ -2020,12 +2067,14 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         }
         
         // 购买的时候，赠送的优惠券是否被使用，若为使用中、已使用，则不允许退租
-        UserCoupon userCoupon = userCouponService.selectBySourceOrderId(packageOrderEntity.getOrderNo());
-        if (ObjectUtils.isNotEmpty(userCoupon)) {
-            Integer status = userCoupon.getStatus();
-            if (UserCoupon.STATUS_IS_BEING_VERIFICATION.equals(status) || UserCoupon.STATUS_USED.equals(status)) {
-                throw new BizException("300016", "您已使用优惠券，该套餐不可退");
-            }
+        List<UserCoupon> userCoupons = userCouponService.selectListBySourceOrderId(packageOrderEntity.getOrderNo());
+        if (!CollectionUtils.isEmpty(userCoupons)) {
+            userCoupons.forEach(userCoupon -> {
+                Integer status = userCoupon.getStatus();
+                if (UserCoupon.STATUS_IS_BEING_VERIFICATION.equals(status) || UserCoupon.STATUS_USED.equals(status) || UserCoupon.STATUS_DESTRUCTION.equals(status)) {
+                    throw new BizException("300016", "您已使用优惠券，该套餐不可退");
+                }
+            });
         }
         
         CarRentalPackageMemberTermPo memberTermUpdateEntity = null;
@@ -2597,6 +2646,14 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                 throw new BizException("ELECTRICITY.0041", "用户尚未实名认证");
             }
             
+            // 1.3 查询用户当前所在分组
+            Set<Long> groupIds = new HashSet<>();
+            UserInfoGroupDetailQuery detailQuery = UserInfoGroupDetailQuery.builder().uid(uid).build();
+            List<UserInfoGroupNamesBO> vos = userInfoGroupDetailService.listGroupByUid(detailQuery);
+            if (!CollectionUtils.isEmpty(vos)) {
+                groupIds.addAll(vos.stream().map(UserInfoGroupNamesBO::getGroupId).collect(Collectors.toSet()));
+            }
+            
             // 2. 判定滞纳金
             if (carRenalPackageSlippageBizService.isExitUnpaid(tenantId, uid)) {
                 throw new BizException("300001", "存在滞纳金，请先缴纳");
@@ -2657,11 +2714,38 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                 return R.fail("300004", "套餐已下架");
             }
             
-            // 6.3 判定用户是否是老用户，然后和套餐的适用类型做比对
-            Boolean oldUserFlag = userBizService.isOldUser(tenantId, uid);
-            if (oldUserFlag && !ApplicableTypeEnum.oldUserApplicable().contains(buyPackageEntity.getApplicableType())) {
-                log.warn("buyRentalPackageOrder failed. Package type mismatch. Buy package type is {}, user is old", buyPackageEntity.getApplicableType());
-                return R.fail("300005", "套餐不匹配");
+            //如果用户分组为空,则为系统分组,判断套餐是否为系统分组套餐
+            if (groupIds.isEmpty() && Objects.equals(buyPackageEntity.getIsUserGroup(), YesNoEnum.NO.getCode())){
+                return R.fail("100318", "您浏览的套餐已下架，请看看其他的吧");
+            }
+            
+            //如果用户分组不为空,则为自定义分组,判断套餐是否为用户分组套餐
+            if (!groupIds.isEmpty() && Objects.equals(buyPackageEntity.getIsUserGroup(), YesNoEnum.YES.getCode())){
+                return R.fail("100318", "您浏览的套餐已下架，请看看其他的吧");
+            }
+            
+            //判断套餐是否为系统分组
+            if (Objects.equals(buyPackageEntity.getIsUserGroup(), YesNoEnum.YES.getCode())) {
+                // 6.3 判定用户是否是老用户，然后和套餐的适用类型做比对
+                Boolean oldUserFlag = userBizService.isOldUser(tenantId, uid);
+                if (oldUserFlag && !ApplicableTypeEnum.oldUserApplicable().contains(buyPackageEntity.getApplicableType())) {
+                    log.warn("buyRentalPackageOrder failed. Package type mismatch. Buy package type is {}, user is old", buyPackageEntity.getApplicableType());
+                    return R.fail("300005", "套餐不匹配");
+                }
+            }
+            
+            //6.3.1 判断用户分组是否包含在购买的套餐中存在
+            if (Objects.equals(buyPackageEntity.getIsUserGroup(), YesNoEnum.NO.getCode())) {
+                Set<Long> packageGroupIds = new HashSet<>();
+                if (!CollectionUtils.isEmpty(buyPackageEntity.getUserGroupId())) {
+                    packageGroupIds.addAll(buyPackageEntity.getUserGroupId());
+                }
+                //取交集,不存在则表示发生变动
+                packageGroupIds.retainAll(groupIds);
+                if (packageGroupIds.isEmpty()) {
+                    log.warn("buy package failed because the user's group has changed:{}", groupIds);
+                    return R.fail("100318", "您浏览的套餐已下架，请看看其他的吧");
+                }
             }
             
             // 7. 判定套餐互斥
@@ -3214,13 +3298,16 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                 activityService.asyncProcessActivity(activityProcessDTO);
                 
                 // 10. 发放优惠券
-                if (ObjectUtils.isNotEmpty(buyCarRentalPackageOrderEntity.getCouponId())) {
-                    UserCouponDTO userCouponDTO = new UserCouponDTO();
-                    userCouponDTO.setCouponId(buyCarRentalPackageOrderEntity.getCouponId());
-                    userCouponDTO.setUid(uid);
-                    userCouponDTO.setSourceOrderNo(buyOrderNo);
-                    userCouponDTO.setTraceId(UUID.randomUUID().toString().replaceAll("-", ""));
-                    userCouponService.asyncSendCoupon(userCouponDTO);
+                if (ObjectUtils.isNotEmpty(buyCarRentalPackageOrderEntity.getCouponIds())) {
+                    Set<Long> couponIds = new HashSet<>(buyCarRentalPackageOrderEntity.getCouponIds());
+                    for (Long couponId : couponIds) {
+                        UserCouponDTO userCouponDTO = new UserCouponDTO();
+                        userCouponDTO.setCouponId(couponId);
+                        userCouponDTO.setUid(uid);
+                        userCouponDTO.setSourceOrderNo(buyOrderNo);
+                        userCouponDTO.setTraceId(UUID.randomUUID().toString().replaceAll("-", ""));
+                        userCouponService.asyncSendCoupon(userCouponDTO);
+                    }
                 }
                 
                 // 车电一体，同步电池会员信息
@@ -3496,7 +3583,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         carRentalPackageOrderEntity.setLateFee(packagePO.getLateFee());
         carRentalPackageOrderEntity.setPayType(payType);
         if (YesNoEnum.YES.getCode().equals(packagePO.getGiveCoupon())) {
-            carRentalPackageOrderEntity.setCouponId(packagePO.getCouponId());
+            carRentalPackageOrderEntity.setCouponIds(packagePO.getCouponIds());
         }
         carRentalPackageOrderEntity.setPayState(PayStateEnum.UNPAID.getCode());
         carRentalPackageOrderEntity.setUseState(UseStateEnum.UN_USED.getCode());

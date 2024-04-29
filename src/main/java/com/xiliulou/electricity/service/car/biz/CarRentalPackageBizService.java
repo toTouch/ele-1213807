@@ -3,6 +3,7 @@ package com.xiliulou.electricity.service.car.biz;
 import com.xiliulou.electricity.entity.car.CarRentalPackagePo;
 import com.xiliulou.electricity.model.car.opt.CarRentalPackageOptModel;
 import com.xiliulou.electricity.query.car.CarRentalPackageQryReq;
+import com.xiliulou.electricity.vo.car.CarRentalPackageVo;
 import org.apache.commons.lang3.tuple.Triple;
 
 import java.math.BigDecimal;
@@ -14,39 +15,76 @@ import java.util.List;
  * @author xiaohui.song
  **/
 public interface CarRentalPackageBizService {
-
+    
     /**
      * 获取用户可以购买的套餐
+     *
      * @param qryReq 查询模型
-     * @param uid 用户ID
+     * @param uid    用户ID
      * @return 可购买的套餐数据集
      */
     List<CarRentalPackagePo> queryCanPurchasePackage(CarRentalPackageQryReq qryReq, Long uid);
-
+    
     /**
      * 根据套餐ID删除套餐信息
+     *
      * @param packageId 套餐ID
-     * @param optId 操作人ID
+     * @param optId     操作人ID
      * @return true(成功)、false(失败)
      */
     boolean delPackageById(Long packageId, Long optId);
-
+    
     /**
      * 新增套餐
+     *
      * @param optModel 操作数据模型
      * @return true(成功)、false(失败)
      */
     boolean insertPackage(CarRentalPackageOptModel optModel);
-
+    
     /**
      * 计算需要支付的金额
-     * @param amount 原金额
+     *
+     * @param amount        原金额
      * @param userCouponIds 用户的优惠券ID集合
-     * @param uid 用户ID
-     * @param packageId       套餐ID
-     * @param packageType       套餐类型：1-租电、2-租车、3-车电一体 @see com.xiliulou.electricity.enums.PackageTypeEnum
-     * @return Triple<BigDecimal, List<Long>, Boolean> 实际支付金额、已用的优惠券ID、Boolean（暂无实际意义）
+     * @param uid           用户ID
+     * @param packageId     套餐ID
+     * @param packageType   套餐类型：1-租电、2-租车、3-车电一体 @see com.xiliulou.electricity.enums.PackageTypeEnum
+     * @return Triple<BigDecimal, List < Long>, Boolean> 实际支付金额、已用的优惠券ID、Boolean（暂无实际意义）
      */
     Triple<BigDecimal, List<Long>, Boolean> calculatePaymentAmount(BigDecimal amount, List<Long> userCouponIds, Long uid, Long packageId, Integer packageType);
-
+    
+    
+    /**
+     * <p>
+     * Description: 构建返回的优惠劵组
+     * </p>
+     *
+     * @param carRentalPackageVo carRentalPackageVo
+     * @param couponIds          couponIds
+     * @return com.xiliulou.electricity.vo.car.CarRentalPackageVo
+     * <p>Project: CarRentalPackageBizService</p>
+     * <p>Copyright: Copyright (c) 2024</p>
+     * <p>Company: www.xiliulou.com</p>
+     * @author <a href="mailto:wxblifeng@163.com">PeakLee</a>
+     * @since V1.0 2024/4/10
+     */
+    CarRentalPackageVo buildCouponsToCarRentalVo(CarRentalPackageVo carRentalPackageVo, List<Long> couponIds);
+    
+    
+    /**
+     * <p>
+     * Description: 构建返回的用户组
+     * </p>
+     *
+     * @param carRentalPackageVo carRentalPackageVo
+     * @param couponIds          couponIds
+     * @return com.xiliulou.electricity.vo.car.CarRentalPackageVo
+     * <p>Project: CarRentalPackageBizService</p>
+     * <p>Copyright: Copyright (c) 2024</p>
+     * <p>Company: www.xiliulou.com</p>
+     * @author <a href="mailto:wxblifeng@163.com">PeakLee</a>
+     * @since V1.0 2024/4/10
+     */
+    CarRentalPackageVo buildUserGroupToCarRentalVo(CarRentalPackageVo carRentalPackageVo, List<Long> couponIds);
 }

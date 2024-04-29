@@ -157,4 +157,19 @@ public class BatteryMemberCardVO {
      * 绑定的所有电池型号
      */
     private List<MemberCardBatteryType> batteryType;
+    
+    /**
+     * 套餐绑定的优惠券信息
+     */
+    private List<CouponSearchVo> coupons;
+    
+    /**
+     * 套餐绑定的用户分组信息
+     */
+    private List<SearchVo> userInfoGroups;
+    
+    /**
+     * 分组类型，0-系统分组，1-用户分组。
+     */
+    private Integer groupType;
 }
