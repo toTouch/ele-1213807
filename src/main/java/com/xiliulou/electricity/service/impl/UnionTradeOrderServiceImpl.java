@@ -1594,7 +1594,10 @@ public class UnionTradeOrderServiceImpl extends
                 }
                 
                 cardDays = (System.currentTimeMillis() - userBatteryMemberCard.getDisableMemberCardTime()) / 1000L / 60 / 60 / 24;
-
+    
+                // 处理企业用户对应的支付记录时间
+                anotherPayMembercardRecordService.enableMemberCardHandler(userBatteryMemberCard.getUid());
+                
                 //更新用户套餐到期时间，启用用户套餐
                 UserBatteryMemberCard userBatteryMemberCardUpdate = new UserBatteryMemberCard();
                 userBatteryMemberCardUpdate.setUid(userBatteryMemberCard.getUid());
@@ -1656,6 +1659,7 @@ public class UnionTradeOrderServiceImpl extends
                         .tenantId(userInfo.getTenantId())
                         .uid(userInfo.getUid())
                         .userName(userInfo.getName())
+                        .orderId(userBatteryMemberCard.getOrderId())
                         .updateTime(System.currentTimeMillis()).build();
                 enableMemberCardRecordService.insert(enableMemberCardRecordInsert);
             } else {

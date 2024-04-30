@@ -84,4 +84,9 @@ public class EleChargeConfigRecord {
      */
     private Long operator;
     
+    /**
+     * 电价配置ID
+     */
+    private Long configId;
+    
 }

@@ -367,4 +367,26 @@
         select  1 from t_ele_refund_order  ero  left join t_ele_deposit_order edo on ero.order_id=edo.order_id
         WHERE edo.uid = #{uid} and ero.status=4 limit 1
     </select>
+    
+    <select id="selectLastByOrderId" resultType="com.xiliulou.electricity.entity.EleRefundOrder">
+        select
+            refund_order_no,
+            order_id,
+            pay_amount,
+            refund_amount,
+            status ,
+            err_msg,
+            create_time,
+            update_time,
+            tenant_id,
+            refund_order_type,
+            franchisee_id,
+            store_id,
+            member_card_owe_number
+        from t_ele_refund_order
+        where
+            status=4
+          and order_id= #{orderId}
+        ORDER BY id DESC limit 1
+    </select>
 </mapper>

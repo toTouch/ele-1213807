@@ -28,6 +28,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -178,6 +180,23 @@ public class JsonMerchantController extends BaseController {
         MerchantDeleteCacheDTO merchantDeleteCacheDTO = (MerchantDeleteCacheDTO) r.getRight();
         merchantService.deleteCache(merchantDeleteCacheDTO);
         
+        return R.ok();
+    }
+    
+    /**
+     * @param
+     * @description 修补历史企业数据
+     * @date 2023/12/15 18:17:54
+     * @author maxiaodong
+     */
+    @GetMapping("/admin/merchant/repairEnterprise")
+    public R repairEnterprise() {
+        List<Long> enterpriseIds = new ArrayList<>();
+        List<Long> merchantIds = new ArrayList<>();
+        
+        merchantService.repairEnterprise(enterpriseIds, merchantIds);
+        
+        merchantService.deleteCacheForRepairEnterprise(enterpriseIds, merchantIds);
         return R.ok();
     }
     

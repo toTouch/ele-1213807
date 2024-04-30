@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.enterprise.EnterpriseChannelUserExitMapper">
+    <insert id="insertOne" keyProperty="id" useGeneratedKeys="true">
+        insert into t_enterprise_channel_user_exit
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            uid,
+            channel_user_id,
+            enterprise_id,
+            franchisee_id,
+            tenant_id,
+            type,
+            error_msg,
+            create_time,
+            update_time
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            #{uid},
+            #{channelUserId},
+            #{enterpriseId},
+            #{franchiseeId},
+            #{tenantId},
+            #{type},
+            #{errorMsg},
+            #{createTime},
+            #{updateTime}
+        </trim>
+    </insert>
+    
+    <insert id="batchInsert" keyProperty="id" useGeneratedKeys="true">
+        insert into t_enterprise_channel_user_exit(  uid,
+        channel_user_id,
+        enterprise_id,
+        franchisee_id,
+        tenant_id,
+        type,
+        error_msg,
+        create_time,
+        update_time)
+        values
+        <foreach item="item" index="index" collection="list" separator=",">
+            (#{item.uid},
+            #{item.channelUserId},
+            #{item.enterpriseId},
+            #{item.franchiseeId},
+            #{item.tenantId},
+            #{item.type},
+            #{item.errorMsg},
+            #{item.createTime},
+            #{item.updateTime}
+            )
+        </foreach>
+
+    </insert>
+    <update id="updateById">
+        update t_enterprise_channel_user_exit
+        <set>
+            <if test="type != null">
+                type = #{type},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+            <if test="errorMsg != null">
+                error_msg = #{errorMsg},
+            </if>
+        </set>
+        <where>
+            id = #{id}
+        </where>
+    </update>
+    
+    <update id="batchUpdateById">
+        update t_enterprise_channel_user_exit
+        <set>
+            <if test="type != null">
+                type = #{type},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+            <if test="errorMsg != null">
+                error_msg = #{errorMsg},
+            </if>
+        </set>
+        <where>
+            id in
+            <foreach collection="idList" separator="," open="(" close=")" item="id">
+                #{id}
+            </foreach>
+        </where>
+    </update>
+    <select id="list" resultType="com.xiliulou.electricity.entity.enterprise.EnterpriseChannelUserExit">
+        SELECT
+            id,
+            uid,
+            channel_user_id,
+            enterprise_id,
+            franchisee_id,
+            tenant_id,
+            type,
+            error_msg,
+            create_time,
+            update_time
+        FROM
+            t_enterprise_channel_user_exit
+        where
+            del_flag = 0
+          <if test="uidList != null and uidList.size() > 0">
+              and uid in
+              <foreach collection="uidList" close=")" open="(" separator="," item="uid">
+                  #{uid}
+              </foreach>
+          </if>
+          <if test="typeList != null and typeList.size() > 0">
+              and type in
+              <foreach collection="typeList" close=")" open="(" separator="," item="type">
+                  #{type}
+              </foreach>
+          </if>
+    </select>
+</mapper>

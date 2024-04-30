@@ -219,6 +219,26 @@ public class ElectricityCabinetOtherSetting {
     private Integer minBatteryCountAlarm;
     
     /**
+     * 充电方式
+     */
+    private Integer whilstCharging;
+    
+    /**
+     * 总功率
+     */
+    private Integer sumPowerLimit;
+    
+    /**
+     * 整柜加热功率
+     */
+    private Integer cabinetHeatPower;
+    
+    /**
+     * 单个充电器最大功率
+     */
+    private Integer cellChargingMaxPower;
+    
+    /**
      * 多电告警/多电柜机
      */
     private Integer maxBatteryCountAlarm;

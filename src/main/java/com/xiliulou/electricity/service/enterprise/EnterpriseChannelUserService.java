@@ -2,11 +2,13 @@ package com.xiliulou.electricity.service.enterprise;
 
 import com.xiliulou.electricity.entity.enterprise.EnterpriseChannelUser;
 import com.xiliulou.electricity.query.enterprise.EnterpriseChannelUserQuery;
+import com.xiliulou.electricity.request.enterprise.EnterpriseUserExitCheckRequest;
 import com.xiliulou.electricity.vo.ElectricityUserBatteryVo;
 import com.xiliulou.electricity.vo.enterprise.EnterpriseChannelUserVO;
 import org.apache.commons.lang3.tuple.Triple;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * @author BaoYu
@@ -14,7 +16,7 @@ import java.util.List;
  * @date 2023/9/18 13:58
  */
 public interface EnterpriseChannelUserService {
-
+    
     /**
      * 企业渠道新增关联用户
      * @param query
@@ -28,14 +30,14 @@ public interface EnterpriseChannelUserService {
      * @return
      */
     public Triple<Boolean, String, Object> queryUser(EnterpriseChannelUserQuery enterpriseChannelUserQuery);
-
+    
     /**
      * 生成企业渠道用户基础数据
      * @param query
      * @return
      */
     public Triple<Boolean, String, Object> generateChannelUser(EnterpriseChannelUserQuery query);
-
+    
     /**
      * 扫码成功后，将用户更新至企业渠道用户表中
      * @param query
@@ -97,4 +99,24 @@ public interface EnterpriseChannelUserService {
     int updatePaymentStatusByUid(Long uid, Integer paymentStatus);
     
     void updatePaymentStatusForRefundDeposit(Long uid, Integer paymentStatus);
+    
+    List<EnterpriseChannelUser> listByEnterpriseId(Set<Long> enterpriseIdList);
+    
+    Triple<Boolean, String, Object> updateUserAfterQRScanNew(EnterpriseChannelUserQuery enterpriseChannelUserQuery);
+    
+    Triple<Boolean, String, Object> addUserNew(EnterpriseChannelUserQuery query);
+    
+    Triple<Boolean, String, Object> channelUserExitCheck(EnterpriseUserExitCheckRequest request);
+    
+    Triple<Boolean, String, Object> channelUserExit(EnterpriseUserExitCheckRequest request);
+    
+    Triple<Boolean, String, Object> channelUserExitCheckAll(EnterpriseUserExitCheckRequest request);
+    
+    Triple<Boolean, String, Object> queryEnterpriseChannelUserList();
+    
+    Triple<Boolean, String, Object> channelUserExitAll(EnterpriseUserExitCheckRequest request);
+    
+    Triple<Boolean, String, Object> channelUserClose(EnterpriseUserExitCheckRequest request);
+    
+    Triple<Boolean, String, Object> addUserByScanNewCheck(EnterpriseChannelUserQuery enterpriseChannelUserQuery);
 }

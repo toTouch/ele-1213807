@@ -32,7 +32,7 @@ import java.util.List;
 public class EnterprisePackageServiceImpl implements EnterprisePackageService {
     @Resource
     private EnterprisePackageMapper enterprisePackageMapper;
-
+    
     /**
      * 通过ID查询单条数据从DB
      *
@@ -43,7 +43,7 @@ public class EnterprisePackageServiceImpl implements EnterprisePackageService {
     public EnterprisePackage queryByIdFromDB(Long id) {
         return this.enterprisePackageMapper.queryById(id);
     }
-
+    
     /**
      * 通过ID查询单条数据从缓存
      *
@@ -54,7 +54,7 @@ public class EnterprisePackageServiceImpl implements EnterprisePackageService {
     public EnterprisePackage queryByIdFromCache(Long id) {
         return null;
     }
-
+    
     /**
      * 修改数据
      *
@@ -65,9 +65,9 @@ public class EnterprisePackageServiceImpl implements EnterprisePackageService {
     @Transactional(rollbackFor = Exception.class)
     public Integer update(EnterprisePackage enterprisePackage) {
         return this.enterprisePackageMapper.update(enterprisePackage);
-
+        
     }
-
+    
     /**
      * 通过主键删除数据
      *
@@ -79,16 +79,16 @@ public class EnterprisePackageServiceImpl implements EnterprisePackageService {
     public Boolean deleteById(Long id) {
         return this.enterprisePackageMapper.deleteById(id) > 0;
     }
-
+    
     @Override
     public void batchInsert(List<EnterprisePackage> packageList) {
         if(CollectionUtils.isEmpty(packageList)){
             return;
         }
-
+        
         this.enterprisePackageMapper.batchInsert(packageList);
     }
-
+    
     @Override
     public List<Long> selectByEnterpriseId(Long id) {
         return this.enterprisePackageMapper.selectByEnterpriseId(id);

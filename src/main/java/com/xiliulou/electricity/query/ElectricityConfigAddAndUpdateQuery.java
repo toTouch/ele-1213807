@@ -138,6 +138,11 @@ public class ElectricityConfigAddAndUpdateQuery {
     private Integer allowFreezeWithAssets;
     
     /**
+     * 渠道时限
+     */
+    private Integer channelTimeLimit;
+    
+    /**
      *  柜机少电比例
      */
     @Range(min = 0, max = 100, message = "请输入0-100的整数", groups = {CreateGroup.class, UpdateGroup.class})
@@ -149,10 +154,6 @@ public class ElectricityConfigAddAndUpdateQuery {
     @Range(min = 0, max = 100, message = "请输入0-100的整数", groups = {CreateGroup.class, UpdateGroup.class})
     private Integer fullChargeRate;
     
-    /**
-     * 渠道时限
-     */
-    private Integer channelTimeLimit;
     
     /**
      * 打开微信客服 0-是 1-否

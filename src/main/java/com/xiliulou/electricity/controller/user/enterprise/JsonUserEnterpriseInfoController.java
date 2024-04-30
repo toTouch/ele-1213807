@@ -45,7 +45,7 @@ public class JsonUserEnterpriseInfoController extends BaseController {
     /**
      * 获取用户云豆详情
      */
-    @GetMapping("/user/cloudBean/detail")
+    @GetMapping({"/user/cloudBean/detail", "/merchant/cloudBean/detail"})
     public R cloudBeanDetail() {
         return R.ok(enterpriseInfoService.cloudBeanDetail());
     }
@@ -55,7 +55,7 @@ public class JsonUserEnterpriseInfoController extends BaseController {
      *
      * @return
      */
-    @GetMapping("/user/enterpriseInfo/detail")
+    @GetMapping({"/user/enterpriseInfo/detail", "/merchant/enterpriseInfo/detail"})
     public R queryEnterpriseInfo() {
         return R.ok(enterpriseInfoService.selectDetailByUid(SecurityUtils.getUid()));
     }
@@ -63,7 +63,7 @@ public class JsonUserEnterpriseInfoController extends BaseController {
     /**
      * 云豆充值
      */
-    @PutMapping("/user/enterpriseInfo/recharge")
+    @PutMapping({"/user/enterpriseInfo/recharge", "/merchant/enterpriseInfo/recharge"})
     public R recharge(@RequestBody @Validated UserCloudBeanRechargeQuery userCloudBeanRechargeQuery, HttpServletRequest request) {
         return returnTripleResult(enterpriseInfoService.rechargeForUser(userCloudBeanRechargeQuery, request));
     }
@@ -71,7 +71,7 @@ public class JsonUserEnterpriseInfoController extends BaseController {
     /**
      * 云豆概览
      */
-    @GetMapping("/user/enterpriseInfo/cloudBean/generalView")
+    @GetMapping({"/user/enterpriseInfo/cloudBean/generalView", "/merchant/enterpriseInfo/cloudBean/generalView"})
     public R cloudBeanGeneralView() {
         return returnTripleResult(enterpriseInfoService.cloudBeanGeneralView());
     }
@@ -79,7 +79,7 @@ public class JsonUserEnterpriseInfoController extends BaseController {
     /**
      * 云豆回收
      */
-    @PutMapping("/user/enterpriseInfo/recycleCloudBean/{uid}")
+    @PutMapping({"/user/enterpriseInfo/recycleCloudBean/{uid}", "/merchant/enterpriseInfo/recycleCloudBean/{uid}"})
     public R recycleCloudBean(@PathVariable("uid") Long uid) {
         return returnTripleResult(enterpriseInfoService.recycleCloudBean(uid));
     }
@@ -89,7 +89,7 @@ public class JsonUserEnterpriseInfoController extends BaseController {
      *
      * @return
      */
-    @GetMapping("/user/enterpriseInfo/queryPurchasePackageCount")
+    @GetMapping({"/user/enterpriseInfo/queryPurchasePackageCount", "/merchant/enterpriseInfo/queryPurchasePackageCount"})
     public R queryPurchasePackageCount() {
         Long uid = SecurityUtils.getUid();
         Long tenantId = TenantContextHolder.getTenantId().longValue();
@@ -113,7 +113,7 @@ public class JsonUserEnterpriseInfoController extends BaseController {
      *
      * @return
      */
-    @PutMapping("/user/enterpriseInfo/updateAllRenewalStatus/{renewalStatus}")
+    @PutMapping({"/user/enterpriseInfo/updateAllRenewalStatus/{renewalStatus}", "/merchant/enterpriseInfo/updateAllRenewalStatus/{renewalStatus}"})
     public R updateAllRenewalStatus(@PathVariable("renewalStatus") Integer renewalStatus) {
         Integer tenantId = TenantContextHolder.getTenantId();
         EnterpriseInfoQuery enterpriseInfoQuery = EnterpriseInfoQuery.builder().renewalStatus(renewalStatus).tenantId(tenantId).build();

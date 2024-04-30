@@ -25,6 +25,7 @@ import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseChannelUserService;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.vo.FailureMemberCardVo;
+import com.xiliulou.electricity.vo.UserBatteryMemberCardChannelExitVo;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -290,6 +291,12 @@ public class UserBatteryMemberCardServiceImpl implements UserBatteryMemberCardSe
     @Override
     public List<UserBatteryMemberCard> selectUseableListByTenantIds(int offset, int size, List<Integer> tenantIds) {
         return userBatteryMemberCardMapper.selectUseableListByTenantIds(offset, size , tenantIds);
+    }
+    
+    @Slave
+    @Override
+    public List<UserBatteryMemberCardChannelExitVo> selectExpireExitList(int offset, int size) {
+        return userBatteryMemberCardMapper.selectExpireExitList(offset, size);
     }
 
     /**

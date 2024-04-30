@@ -142,6 +142,9 @@ public interface ElectricityMemberCardOrderService {
 
     void sendUserCoupon(BatteryMemberCard batteryMemberCard, ElectricityMemberCardOrder memberCardOrder);
     
+    Integer batchUpdateChannelOrderStatusByOrderNo(List<String> selectUserBatteryMemberCardOrder, Integer useStatusExpire);
+    
+    
     /**
      * 退租订单数量
      * @param uid
@@ -153,4 +156,6 @@ public interface ElectricityMemberCardOrderService {
      * 购买成功订单数量
      */
     Integer countSuccessOrderByUid(Long uid);
+    
+    List<ElectricityMemberCardOrder> queryListByOrderIds(List<String> orderIdList);
 }

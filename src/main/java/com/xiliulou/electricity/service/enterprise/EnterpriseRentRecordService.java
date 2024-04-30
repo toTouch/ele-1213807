@@ -51,4 +51,6 @@ public interface EnterpriseRentRecordService {
     int deleteByUid(Long uid);
     
     List<EnterpriseRentRecord> selectByUid(Long uid);
+    
+    int createEnterpriseRecordDetail();
 }

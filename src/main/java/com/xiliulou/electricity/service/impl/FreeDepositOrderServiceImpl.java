@@ -2157,7 +2157,7 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         Boolean userRenewalStatus = enterpriseChannelUserService.checkRenewalStatusByUid(uid);
         if(!userRenewalStatus){
             log.warn("BATTERY MEMBER ORDER WARN! user renewal status is false, uid={}, mid={}", uid, query.getMemberCardId());
-            return Triple.of(false, "000088", "自主续费状态已关闭，购买套餐请联系企业负责人");
+            return Triple.of(false, "000088", "您已是渠道用户，请联系对应站点购买套餐");
         }
 
         ElectricityPayParams electricityPayParams = electricityPayParamsService.queryFromCache(tenantId);

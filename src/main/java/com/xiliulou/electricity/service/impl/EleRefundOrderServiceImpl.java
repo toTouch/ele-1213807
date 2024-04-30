@@ -32,6 +32,7 @@ import com.xiliulou.electricity.entity.UserBatteryDeposit;
 import com.xiliulou.electricity.entity.UserBatteryMemberCard;
 import com.xiliulou.electricity.entity.UserCarDeposit;
 import com.xiliulou.electricity.entity.UserInfo;
+import com.xiliulou.electricity.entity.enterprise.EnterpriseChannelUser;
 import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.enums.enterprise.EnterprisePaymentStatusEnum;
 import com.xiliulou.electricity.enums.enterprise.PackageOrderTypeEnum;
@@ -70,6 +71,7 @@ import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.EleRefundOrderVO;
+import com.xiliulou.electricity.vo.enterprise.EnterpriseChannelUserVO;
 import com.xiliulou.pay.deposit.paixiaozu.pojo.request.PxzCommonRequest;
 import com.xiliulou.pay.deposit.paixiaozu.pojo.request.PxzFreeDepositUnfreezeRequest;
 import com.xiliulou.pay.deposit.paixiaozu.pojo.rsp.PxzCommonRsp;
@@ -1053,6 +1055,13 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             log.error("REFUND ORDER ERROR!userInfo is null,uid={}", uid);
             return Triple.of(false, "ELECTRICITY.0001", "未找到用户");
         }
+    
+        // 设置企业信息
+        EnterpriseChannelUserVO enterpriseChannelUserVO = enterpriseChannelUserService.queryUserRelatedEnterprise(userInfo.getUid());
+        if (Objects.nonNull(enterpriseChannelUserVO) && Objects.equals(enterpriseChannelUserVO.getRenewalStatus(), EnterpriseChannelUser.RENEWAL_CLOSE)) {
+            log.warn("ELE DEPOSIT WARN! battery free deposit refund channel user is disable! uid={}", userInfo.getUid());
+            return Triple.of(false,"120303", "您已是渠道用户，请联系站点开启自主续费后，进行退押操作");
+        }
 
         PxzConfig pxzConfig = pxzConfigService.queryByTenantIdFromCache(TenantContextHolder.getTenantId());
         if (Objects.isNull(pxzConfig) || StringUtils.isBlank(pxzConfig.getAesKey()) || StringUtils.isBlank(pxzConfig.getMerchantCode())) {
@@ -1588,6 +1597,13 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
         if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
             return R.fail("ELECTRICITY.0024", "用户已被禁用");
         }
+    
+        // 设置企业信息
+        EnterpriseChannelUserVO enterpriseChannelUserVO = enterpriseChannelUserService.queryUserRelatedEnterprise(userInfo.getUid());
+        if (Objects.nonNull(enterpriseChannelUserVO) && Objects.equals(enterpriseChannelUserVO.getRenewalStatus(), EnterpriseChannelUser.RENEWAL_CLOSE)) {
+            log.warn("ELE DEPOSIT WARN! battery offline refund channel user is disable! uid={}", user.getUid());
+            return R.fail("120303", "您已是渠道用户，请联系站点开启自主续费后，进行退押操作");
+        }
 
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
         if (Objects.nonNull(userBatteryMemberCard) && Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE)) {
@@ -2071,5 +2087,11 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
     @Override
     public Integer updateById(EleRefundOrder eleRefundOrderUpdate) {
         return eleRefundOrderMapper.update(eleRefundOrderUpdate);
+    }
+    
+    @Slave
+    @Override
+    public EleRefundOrder queryLastByOrderId(String orderId) {
+        return eleRefundOrderMapper.selectLastByOrderId(orderId);
     }
 }

@@ -27,12 +27,12 @@ public class EnterpriseChannelUser {
      * 主键ID
      */
     private Long id;
-
+    
     /**
      * 企业id
      */
     private Long enterpriseId;
-
+    
     /**
      * 企业添加用户的uid
      */
@@ -42,7 +42,7 @@ public class EnterpriseChannelUser {
      * @see InvitationWayEnum
      */
     private Integer invitationWay;
-
+    
     /**
      * 所属加盟商id
      */
@@ -87,7 +87,7 @@ public class EnterpriseChannelUser {
      * 备注
      */
     private String remark;
-
+    
     public static final Integer DEL_NORMAL = 0;
     public static final Integer DEL_DEL = 1;
     
@@ -98,5 +98,5 @@ public class EnterpriseChannelUser {
     public static final Integer CLOUD_BEAN_STATUS_INIT = 0;
     
     public static final Integer CLOUD_BEAN_STATUS_RECYCLE = 2;
-
+    
 }

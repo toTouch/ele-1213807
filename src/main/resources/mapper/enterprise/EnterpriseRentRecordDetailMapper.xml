@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.enterprise.EnterpriseRentRecordDetailMapper">
+    
+    <insert id="insert" keyProperty="id" useGeneratedKeys="true">
+        insert into t_enterprise_rent_record_detail (id, uid, order_id, rent_time, return_time, tenant_id, return_date, create_time, update_time, rent_record_id, enterprise_id)
+        values (#{id}, #{uid}, #{orderId}, #{rentTime}, #{returnTime}, #{tenantId}, #{returnDate},#{createTime}, #{updateTime}, #{rentRecordId}, #{enterpriseId})
+    </insert>
+    
+    
+    <insert id="batchInsert">
+        insert into t_enterprise_rent_record_detail (id, uid, order_id, rent_time, return_time, tenant_id, return_date, create_time, update_time, rent_record_id, enterprise_id )
+        values
+        <foreach item="item" index="index" collection="list" separator=",">
+            (#{item.id}, #{item.uid}, #{item.orderId}, #{item.rentTime}, #{item.returnTime}, #{item.tenantId}, #{item.returnDate},#{item.createTime}, #{item.updateTime}, #{item.rentRecordId}, #{item.enterpriseId})
+        </foreach>
+    </insert>
+ 
+    <select id="selectListByUid"
+            resultType="com.xiliulou.electricity.entity.enterprise.EnterpriseRentRecordDetail">
+        SELECT
+            *
+        FROM
+            (
+                SELECT
+                    id,
+                    uid,
+                    order_id,
+                    rent_time,
+                    return_time,
+                    tenant_id,
+                    rent_record_id,
+                    return_date,
+                    create_time,
+                    update_time,
+                    ROW_NUMBER() OVER ( PARTITION BY return_date,order_id  ORDER BY id ) AS row_num
+                FROM
+                    t_enterprise_rent_record_detail
+                WHERE
+                    uid = #{uid}
+                  and del_flag  = 0
+            ) t
+        WHERE
+            t.row_num = 1
+    </select>
+    
+    <update id="removeByUid">
+        UPDATE t_enterprise_rent_record_detail
+        SET del_flag = 1,
+            update_time = #{updateTime}
+        WHERE
+            uid = #{uid}
+          AND del_flag = 0
+    </update>
+</mapper>

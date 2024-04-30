@@ -531,4 +531,52 @@
           and pay_type = 0
           and uid = #{uid}
     </select>
+    
+    <update id="batchUpdateChannelOrderStatusByOrderNo">
+        update t_electricity_member_card_order set use_status = #{useStatus},update_time = UNIX_TIMESTAMP()*1000
+        where
+        order_type = 1
+        and order_id in
+        <foreach collection="orderIds" item="id" index="index" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </update>
+    
+    <sql id="column">
+        id ,
+        pay_amount ,
+        valid_days ,
+        create_time ,
+        order_id ,
+        status ,
+        user_name ,
+        member_card_type ,
+        max_use_count ,
+        card_name ,
+        franchisee_id ,
+        is_bind_activity ,
+        activity_id ,
+        member_card_model ,
+        pay_type ,
+        pay_count ,
+        coupon_id ,
+        source ,
+        ref_id ,
+        uid,
+        member_card_id ,
+        use_status ,
+        send_coupon_id,
+		order_type
+    </sql>
+    
+    <select id="selectListByOrderIds" resultType="com.xiliulou.electricity.entity.ElectricityMemberCardOrder">
+        select <include refid="column"/>
+        from t_electricity_member_card_order
+        <where>
+            order_id in
+            <foreach collection="orderIdList" separator="," open="(" close=")" item="orderId">
+                #{orderId}
+            </foreach>
+        </where>
+    </select>
 </mapper>

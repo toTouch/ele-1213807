@@ -146,6 +146,7 @@ import com.xiliulou.electricity.utils.DateUtils;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.OperateRecordUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
+import com.xiliulou.electricity.utils.VersionUtil;
 import com.xiliulou.electricity.vo.CabinetBatteryVO;
 import com.xiliulou.electricity.vo.EleCabinetDataAnalyseVO;
 import com.xiliulou.electricity.vo.ElectricityCabinetBatchOperateVo;
@@ -249,6 +250,11 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     private static final String OPEN_FAN_CONDITION_KEY = "openFanCondition";
     
     private static final String OPEN_HEAT_CONDITION_KEY = "openHeatCondition";
+    
+    /**
+     * 吞电池优化版本
+     */
+    private static final String ELE_CABINET_VERSION = "2.1.7";
     
     //    @Value("${testFactory.tenantId}")
     //    private Integer testFactoryTenantId;
@@ -1177,6 +1183,12 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     }
     
     private ElectricityCabinetSimpleVO assignAttribute(ElectricityCabinetSimpleVO e, Double fullyCharged, String businessTime) {
+        
+        if (Objects.nonNull(e.getDistance())){
+            // 乘以10，向下取整，再除以10,保留一位小数
+            e.setDistance(Math.floor(e.getDistance() * 10.0) / 10.0);
+        }
+        
         //营业时间
         if (StringUtils.isNotBlank(businessTime)) {
             if (Objects.equals(businessTime, ElectricityCabinetVO.ALL_DAY)) {
@@ -2801,12 +2813,12 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         ElectricityBattery newElectricityBattery = new ElectricityBattery();
         newElectricityBattery.setId(electricityBattery.getId());
         
-        BatteryGeo batteryGeo = new BatteryGeo();
-        batteryGeo.setSn(electricityBattery.getSn());
-        batteryGeo.setCreateTime(System.currentTimeMillis());
-        batteryGeo.setUpdateTime(System.currentTimeMillis());
-        batteryGeo.setTenantId(electricityBattery.getTenantId());
-        batteryGeo.setFranchiseeId(electricityBattery.getFranchiseeId());
+//        BatteryGeo batteryGeo = new BatteryGeo();
+//        batteryGeo.setSn(electricityBattery.getSn());
+//        batteryGeo.setCreateTime(System.currentTimeMillis());
+//        batteryGeo.setUpdateTime(System.currentTimeMillis());
+//        batteryGeo.setTenantId(electricityBattery.getTenantId());
+//        batteryGeo.setFranchiseeId(electricityBattery.getFranchiseeId());
         
         if (Objects.nonNull(power)) {
             newElectricityBattery.setPower(power);
@@ -2814,13 +2826,13 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         
         Double latitude = batteryReportQuery.getLatitude();
         if (Objects.nonNull(latitude)) {
-            batteryGeo.setLatitude(latitude);
+//            batteryGeo.setLatitude(latitude);
             newElectricityBattery.setLatitude(latitude);
         }
         
         Double longitude = batteryReportQuery.getLongitude();
         if (Objects.nonNull(longitude)) {
-            batteryGeo.setLongitude(longitude);
+//            batteryGeo.setLongitude(longitude);
             newElectricityBattery.setLongitude(longitude);
         }
         electricityBattery.setUpdateTime(System.currentTimeMillis());
@@ -2828,9 +2840,9 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         newElectricityBattery.setUpdateTime(System.currentTimeMillis());
         electricityBatteryService.update(newElectricityBattery);
         
-        if (Objects.nonNull(batteryGeo.getLatitude()) && Objects.nonNull(batteryGeo.getLongitude())) {
-            batteryGeoService.insertOrUpdate(batteryGeo);
-        }
+//        if (Objects.nonNull(batteryGeo.getLatitude()) && Objects.nonNull(batteryGeo.getLongitude())) {
+//            batteryGeoService.insertOrUpdate(batteryGeo);
+//        }
         
         //电池上报是否有其他信息,只处理电量
         //        if (Objects.nonNull(batteryReportQuery.getHasOtherAttr()) && batteryReportQuery.getHasOtherAttr()) {
@@ -3270,6 +3282,38 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             }
         }
         return Triple.of(true, null, usableBatteryCellNos.get(maxChargeVIndex));
+    }
+    
+    @Override
+    public Pair<Boolean, Integer> findUsableEmptyCellNoV2(Integer eid, String version) {
+    
+        //旧版本仍走旧分配逻辑
+        if (StringUtils.isNotBlank(version) && VersionUtil.compareVersion(ELE_CABINET_VERSION, version) > 0) {
+            return this.findUsableEmptyCellNo(eid);
+        }
+        
+        Integer cellNo = null;
+        List<ElectricityCabinetBox> emptyCellList = electricityCabinetBoxService.listUsableEmptyCell(eid);
+        if (CollectionUtils.isEmpty(emptyCellList)) {
+            return Pair.of(false, null);
+        }
+    
+        //可用格挡只有一个默认直接分配
+        if (emptyCellList.size() == 1) {
+            cellNo = Integer.valueOf(emptyCellList.get(0).getCellNo());
+            return Pair.of(true, cellNo);
+        }
+    
+        //有多个空格挡  优先分配开门的格挡
+        List<ElectricityCabinetBox> openDoorEmptyCellList = emptyCellList.stream().filter(item -> Objects.equals(item.getIsLock(), ElectricityCabinetBox.OPEN_DOOR))
+                .collect(Collectors.toList());
+        if (!CollectionUtils.isEmpty(openDoorEmptyCellList)) {
+            cellNo = Integer.parseInt(openDoorEmptyCellList.get(ThreadLocalRandom.current().nextInt(openDoorEmptyCellList.size())).getCellNo());
+            return Pair.of(true, cellNo);
+        }
+    
+        cellNo = Integer.parseInt(emptyCellList.get(ThreadLocalRandom.current().nextInt(emptyCellList.size())).getCellNo());
+        return Pair.of(true, cellNo);
     }
     
     @Override

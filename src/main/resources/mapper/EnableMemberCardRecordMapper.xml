@@ -138,4 +138,22 @@
         where uid = #{uid}
           and tenant_id = #{tenantId}
     </update>
+    
+    <select id="selectListByOrderIds" resultType="com.xiliulou.electricity.entity.EnableMemberCardRecord">
+        SELECT
+        r.order_id,
+        r.member_card_id,
+        r.enable_time,
+        d.disable_member_card_time as 'disable_time'
+        FROM
+        t_enable_member_card_record r
+        inner join t_ele_disable_member_card_record d on d.disable_member_card_no = r.disable_member_card_no
+        <where>
+            order_id IN
+            <foreach collection="orderIdList" separator="," open="(" close=")" item="orderId">
+                #{orderId}
+            </foreach>
+        </where>
+    
+    </select>
 </mapper>

@@ -134,4 +134,5 @@ public class MerchantVO {
      */
     private Long createTime;
     
+    
 }
