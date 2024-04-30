@@ -272,6 +272,11 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
     public List<FreeCellNoQuery> findUsableEmptyCellNo(Integer eid) {
         return electricityCabinetBoxMapper.queryUsableEmptyCellNo(eid);
     }
+    
+    @Override
+    public List<ElectricityCabinetBox> listUsableEmptyCell(Integer eid) {
+        return electricityCabinetBoxMapper.selectUsableEmptyCell(eid);
+    }
 
     @Override
     public int selectUsableEmptyCellNumber(Integer eid, Integer tenantId) {

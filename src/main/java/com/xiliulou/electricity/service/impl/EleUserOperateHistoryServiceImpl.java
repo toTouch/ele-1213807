@@ -42,6 +42,8 @@ import com.xiliulou.electricity.service.UserPhoneModifyRecordService;
 import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.service.VerificationCodeService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseInfoService;
+import com.xiliulou.electricity.ttl.TtlXllThreadPoolExecutorServiceWrapper;
+import com.xiliulou.electricity.ttl.TtlXllThreadPoolExecutorsSupport;
 import com.xiliulou.electricity.utils.DbUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -61,8 +63,9 @@ import java.util.Objects;
 @Slf4j
 public class EleUserOperateHistoryServiceImpl implements EleUserOperateHistoryService {
     
-    protected XllThreadPoolExecutorService eleUserOperateHistoryService = XllThreadPoolExecutors.newFixedThreadPool("ELE_USER_OPERATE_HISTORY_POOL", 2,
-            "ele_user_operate_history_thread");
+    
+    TtlXllThreadPoolExecutorServiceWrapper eleUserOperateHistoryService = TtlXllThreadPoolExecutorsSupport
+            .get(XllThreadPoolExecutors.newFixedThreadPool("ELE_USER_OPERATE_HISTORY_POOL", 2, "ele_user_operate_history_thread"));
     
     @Resource
     private EleUserOperateHistoryMapper historyMapper;

@@ -21,7 +21,6 @@ import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.ElectricityCabinetBox;
 import com.xiliulou.electricity.entity.Message;
 import com.xiliulou.electricity.entity.NotExistSn;
-import com.xiliulou.electricity.entity.Store;
 import com.xiliulou.electricity.handler.iot.AbstractElectricityIotHandler;
 import com.xiliulou.electricity.queue.MessageDelayQueueService;
 import com.xiliulou.electricity.service.BatteryModelService;

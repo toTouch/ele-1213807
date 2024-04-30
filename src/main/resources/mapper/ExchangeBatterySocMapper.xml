@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.ExchangeBatterySocMapper">
+    
+    
+    <resultMap type="com.xiliulou.electricity.entity.ExchangeBatterySoc" id="ExchangeBatterySocMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="uid" column="uid" jdbcType="INTEGER"/>
+        <result property="sn" column="sn" jdbcType="VARCHAR"/>
+        <result property="tenantId" column="tenant_id" jdbcType="INTEGER"/>
+        <result property="franchiseeId" column="franchisee_id" jdbcType="INTEGER"/>
+        <result property="storeId" column="store_id" jdbcType="INTEGER"/>
+        <result property="takeAwayPower" column="take_away_power" jdbcType="NUMERIC"/>
+        <result property="returnPower" column="return_power" jdbcType="NUMERIC"/>
+        <result property="poorPower" column="poor_power" jdbcType="NUMERIC"/>
+        <result property="delFlag" column="del_flag" jdbcType="INTEGER"/>
+        <result property="createTime" column="create_time" jdbcType="INTEGER"/>
+        <result property="updateTime" column="update_time" jdbcType="INTEGER"/>
+    </resultMap>
+    
+    <!--查询单个-->
+    <select id="selectOneByUidAndSn" resultMap="ExchangeBatterySocMap">
+        select id, uid, sn, take_away_power, return_power, update_time
+        from t_exchange_battery_soc
+        where sn = #{sn}
+          and del_flag = 0
+        order by id desc limit 1
+    </select>
+  
+    <!--新增所有列-->
+    <insert id="insertOne" keyProperty="id" useGeneratedKeys="true">
+        insert into t_exchange_battery_soc(uid, sn, tenant_id, franchisee_id, store_id, take_away_power, return_power, poor_power, del_flag, create_time, update_time)
+        values (#{uid}, #{sn}, #{tenantId}, #{franchiseeId}, #{storeId}, #{takeAwayPower}, #{returnPower}, #{poorPower}, #{delFlag}, #{createTime}, #{updateTime})
+    </insert>
+
+    <!--通过主键修改数据-->
+    <update id="update">
+        update t_exchange_battery_soc
+        <set>
+            <if test="uid != null">
+                uid = #{uid},
+            </if>
+            <if test="sn != null and sn != ''">
+                sn = #{sn},
+            </if>
+            <if test="tenantId != null">
+                tenant_id = #{tenantId},
+            </if>
+            <if test="franchiseeId != null">
+                franchisee_id = #{franchiseeId},
+            </if>
+            <if test="storeId != null">
+                store_id = #{storeId},
+            </if>
+            <if test="takeAwayPower != null">
+                take_away_power = #{takeAwayPower},
+            </if>
+            <if test="returnPower != null">
+                return_power = #{returnPower},
+            </if>
+            <if test="poorPower != null">
+                poor_power = #{poorPower},
+            </if>
+            <if test="delFlag != null">
+                del_flag = #{delFlag},
+            </if>
+            <if test="createTime != null">
+                create_time = #{createTime},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+
+    <!--通过主键删除-->
+    <delete id="removeById">
+        update t_exchange_battery_soc set del_flag = 1  where id = #{id}
+    </delete>
+
+</mapper>
