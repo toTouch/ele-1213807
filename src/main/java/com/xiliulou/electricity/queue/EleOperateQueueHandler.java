@@ -23,6 +23,7 @@ import com.xiliulou.electricity.entity.ElectricityCabinetBox;
 import com.xiliulou.electricity.entity.ElectricityCabinetOrder;
 import com.xiliulou.electricity.entity.ElectricityConfig;
 import com.xiliulou.electricity.entity.ElectricityExceptionOrderStatusRecord;
+import com.xiliulou.electricity.entity.ExchangeBatterySoc;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.RentBatteryOrder;
 import com.xiliulou.electricity.entity.Tenant;
@@ -42,6 +43,7 @@ import com.xiliulou.electricity.service.ElectricityCabinetService;
 import com.xiliulou.electricity.service.ElectricityConfigService;
 import com.xiliulou.electricity.service.ElectricityExceptionOrderStatusRecordService;
 import com.xiliulou.electricity.service.ElectricityMemberCardService;
+import com.xiliulou.electricity.service.ExchangeBatterySocService;
 import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.RentBatteryOrderService;
 import com.xiliulou.electricity.service.TenantService;
@@ -72,6 +74,8 @@ import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
+
+import static com.xiliulou.electricity.entity.ExchangeBatterySoc.RETURN_POWER_DEFAULT;
 
 /**
  * @author: lxc
@@ -163,7 +167,12 @@ public class EleOperateQueueHandler {
     @Autowired
     UserBatteryMemberCardPackageService userBatteryMemberCardPackageService;
     
+    @Autowired
+    private ExchangeBatterySocService exchangeBatterySocService;
+    
     XllThreadPoolExecutorService callBatterySocThreadPool = XllThreadPoolExecutors.newFixedThreadPool("CALL_RENT_SOC_CHANGE", 1, "callRentSocChange");
+    
+    XllThreadPoolExecutorService operateBatterSocThreadPool = XllThreadPoolExecutors.newFixedThreadPool("OPERATE_BATTERY_SOC_ANALYZE", 1, "operate-battery-soc-pool-thread");
     
     
     @EventListener({WebServerInitializedEvent.class})
@@ -242,13 +251,13 @@ public class EleOperateQueueHandler {
                 if (Objects.isNull(rentBatteryOrder)) {
                     return;
                 }
-    
+                
                 ElectricityCabinet electricityCabinet = electricityCabinetService.queryByIdFromCache(rentBatteryOrder.getElectricityCabinetId());
                 if (Objects.isNull(electricityCabinet)) {
                     log.warn("RENT ORDER WARN! not found electricityCabinet,requestId={},orderId={},uid={}", finalOpenDTO.getSessionId(), finalOpenDTO.getOrderId(),
                             rentBatteryOrder.getUid());
                 }
-    
+                
                 //租电订单确认
                 if (Objects.equals(rentBatteryOrder.getType(), RentBatteryOrder.TYPE_USER_RENT)) {
                     rentOrderConfirm(electricityCabinet, finalOpenDTO);
@@ -257,7 +266,7 @@ public class EleOperateQueueHandler {
                 if (Objects.equals(rentBatteryOrder.getType(), RentBatteryOrder.TYPE_USER_RETURN)) {
                     returnOrderConfirm(electricityCabinet, finalOpenDTO);
                 }
-    
+                
                 if (rentBatteryOrder.getOrderSeq() > finalOpenDTO.getOrderSeq()) {
                     log.warn("RENT ORDER WARN! rsp order seq is lower order! requestId={},orderId={},uid={}", finalOpenDTO.getSessionId(), finalOpenDTO.getOrderId(),
                             rentBatteryOrder.getUid());
@@ -269,9 +278,44 @@ public class EleOperateQueueHandler {
                 if (Objects.isNull(electricityConfig) || Objects.equals(electricityConfig.getIsOpenDoorLock(), ElectricityConfig.OPEN_DOOR_LOCK)) {
                     lockExceptionDoor(null, rentBatteryOrder, finalOpenDTO);
                 }
+    
+                if (finalOpenDTO.getIsProcessFail()) {
+                    //取消订单
+                    if (finalOpenDTO.getIsNeedEndOrder()) {
+                        RentBatteryOrder newRentBatteryOrder = new RentBatteryOrder();
+                        newRentBatteryOrder.setId(rentBatteryOrder.getId());
+                        newRentBatteryOrder.setUpdateTime(System.currentTimeMillis());
+                        newRentBatteryOrder.setOrderSeq(RentBatteryOrder.STATUS_ORDER_CANCEL);
+                        newRentBatteryOrder.setStatus(RentBatteryOrder.ORDER_CANCEL);
+                        rentBatteryOrderService.update(newRentBatteryOrder);
+                        return;
+                    }
+        
+                    //订单状态
+                    RentBatteryOrder newRentBatteryOrder = new RentBatteryOrder();
+                    newRentBatteryOrder.setId(rentBatteryOrder.getId());
+                    newRentBatteryOrder.setUpdateTime(System.currentTimeMillis());
+                    newRentBatteryOrder.setOrderSeq(finalOpenDTO.getOrderSeq());
+                    newRentBatteryOrder.setStatus(finalOpenDTO.getOrderStatus());
+                    rentBatteryOrderService.update(newRentBatteryOrder);
+                    return;
+                }
+    
+                //订单状态
+                rentBatteryOrder.setUpdateTime(System.currentTimeMillis());
+                rentBatteryOrder.setOrderSeq(finalOpenDTO.getOrderSeq());
+                rentBatteryOrder.setStatus(finalOpenDTO.getOrderStatus());
+                if (Objects.equals(rentBatteryOrder.getType(), RentBatteryOrder.TYPE_USER_RETURN)) {
+                    rentBatteryOrder.setElectricityBatterySn(finalOpenDTO.getBatterySn());
+                }
+    
+                if (Objects.nonNull(finalOpenDTO.getCellNo())) {
+                    rentBatteryOrder.setCellNo(finalOpenDTO.getCellNo());
+                }
+                rentBatteryOrderService.update(rentBatteryOrder);
                 
                 handleRentOrder(rentBatteryOrder, finalOpenDTO, electricityCabinet);
-            }  catch (Exception e) {
+            } catch (Exception e) {
                 log.error("RENT BATTERY HANDLER ERROR!", e);
             } finally {
                 redisService.delete(CacheConstant.RENT_BATTERY_ORDER_HANDLE_LIMIT + finalOpenDTO.getOrderId());
@@ -298,7 +342,7 @@ public class EleOperateQueueHandler {
         Integer cellNo = null;
         //电柜Id
         Integer electricityCabinetId = null;
-    
+        
         if (Objects.nonNull(electricityCabinetOrder) && Objects.isNull(rentBatteryOrder)) {
             //旧仓门异常
             if (Objects.equals(orderStatus, ElectricityCabinetOrder.INIT_OPEN_FAIL) || Objects.equals(orderStatus, ElectricityCabinetOrder.INIT_BATTERY_CHECK_FAIL)
@@ -337,7 +381,7 @@ public class EleOperateQueueHandler {
         dataMap.put("lockType", CabinetBoxConstant.LOCK_BY_SYSTEM);
         dataMap.put("isForbidden", true);
         dataMap.put("lockReason", CabinetBoxConstant.LOCK_REASON_EXCEPTION);
-    
+        
         HardwareCommandQuery comm = HardwareCommandQuery.builder().sessionId(UUID.randomUUID().toString().replace("-", "")).data(dataMap)
                 .productKey(electricityCabinet.getProductKey()).deviceName(electricityCabinet.getDeviceName()).command(ElectricityIotConstant.ELE_COMMAND_CELL_UPDATE).build();
         
@@ -621,7 +665,7 @@ public class EleOperateQueueHandler {
     //开租/还 电池门
     public void handleRentOrder(RentBatteryOrder rentBatteryOrder, EleOpenDTO finalOpenDTO, ElectricityCabinet electricityCabinet) {
 
-        //开门失败
+/*        //开门失败
         if (finalOpenDTO.getIsProcessFail()) {
             //取消订单
             if (finalOpenDTO.getIsNeedEndOrder()) {
@@ -652,9 +696,13 @@ public class EleOperateQueueHandler {
         if (Objects.equals(rentBatteryOrder.getType(), RentBatteryOrder.TYPE_USER_RETURN)) {
             rentBatteryOrder.setElectricityBatterySn(finalOpenDTO.getBatterySn());
         }
-        rentBatteryOrderService.update(rentBatteryOrder);
+    
+        if (Objects.nonNull(finalOpenDTO.getCellNo())) {
+            rentBatteryOrder.setCellNo(finalOpenDTO.getCellNo());
+        }
+        rentBatteryOrderService.update(rentBatteryOrder);*/
         
-        if (Objects.equals(rentBatteryOrder.getType(), RentBatteryOrder.TYPE_USER_RENT) && Objects.equals(rentBatteryOrder.getStatus(),
+        if (Objects.equals(rentBatteryOrder.getType(), RentBatteryOrder.TYPE_USER_RENT) && Objects.equals(finalOpenDTO.getOrderStatus(),
                 RentBatteryOrder.RENT_BATTERY_TAKE_SUCCESS)) {
             
             checkRentBatteryDoor(rentBatteryOrder);
@@ -662,25 +710,25 @@ public class EleOperateQueueHandler {
             if (StrUtil.isNotBlank(rentBatteryOrder.getElectricityBatterySn())) {
                 redisService.set(CacheConstant.CACHE_PRE_TAKE_CELL + rentBatteryOrder.getElectricityCabinetId(), String.valueOf(rentBatteryOrder.getCellNo()), 2L, TimeUnit.DAYS);
             }
-
+            
             //处理用户套餐如果扣成0次，将套餐改为失效套餐，即过期时间改为当前时间
             handleExpireMemberCard(rentBatteryOrder);
-
+            
             enterpriseRentRecordService.saveEnterpriseRentRecord(rentBatteryOrder.getUid());
             //记录企业用户租电池记录
             enterpriseUserCostRecordService.asyncSaveUserCostRecordForRentalAndReturnBattery(UserCostTypeEnum.COST_TYPE_RENT_BATTERY.getCode(), rentBatteryOrder);
         }
         
-        if (Objects.equals(rentBatteryOrder.getType(), RentBatteryOrder.TYPE_USER_RETURN) && Objects.equals(rentBatteryOrder.getStatus(),
+        if (Objects.equals(rentBatteryOrder.getType(), RentBatteryOrder.TYPE_USER_RETURN) && Objects.equals(finalOpenDTO.getOrderStatus(),
                 RentBatteryOrder.RETURN_BATTERY_CHECK_SUCCESS)) {
             
             checkReturnBatteryDoor(rentBatteryOrder);
-
+            
             enterpriseRentRecordService.saveEnterpriseReturnRecord(rentBatteryOrder.getUid());
             //记录企业用户还电池记录
             enterpriseUserCostRecordService.asyncSaveUserCostRecordForRentalAndReturnBattery(UserCostTypeEnum.COST_TYPE_RETURN_BATTERY.getCode(), rentBatteryOrder);
         }
-
+        
     }
     
     //检测租电池
@@ -744,6 +792,72 @@ public class EleOperateQueueHandler {
             newElectricityBattery.setBindTime(System.currentTimeMillis());
             electricityBatteryService.updateBatteryUser(newElectricityBattery);
             handleCallBatteryChangeSoc(electricityBattery);
+            // 取走电池保存取走电池的soc
+            operateBatterSocThreadPool.execute(() -> handlerUserTakeBatterySoc(userInfo, electricityBattery.getSn(), electricityBattery.getPower()));
+        }
+        
+    }
+    
+    
+    /**
+     * 租电电池 记录soc
+     */
+    private void handlerUserTakeBatterySoc(UserInfo userInfo, String sn, Double takeAwayPower) {
+        if (Objects.isNull(takeAwayPower)) {
+            log.error("EleOperateQueueHandler/handlerUserTakeBatterySoc is error,takeAwayPower is null");
+            return;
+        }
+        
+        try {
+            ExchangeBatterySoc batterySoc = new ExchangeBatterySoc();
+            batterySoc.setUid(userInfo.getUid());
+            batterySoc.setSn(sn);
+            batterySoc.setTenantId(userInfo.getTenantId());
+            batterySoc.setFranchiseeId(userInfo.getFranchiseeId());
+            batterySoc.setStoreId(userInfo.getStoreId());
+            batterySoc.setTakeAwayPower(takeAwayPower);
+            batterySoc.setReturnPower(0.00);
+            batterySoc.setPoorPower(0.00);
+            batterySoc.setDelFlag(0);
+            batterySoc.setCreateTime(System.currentTimeMillis());
+            exchangeBatterySocService.insertOne(batterySoc);
+        } catch (Exception e) {
+            log.error("EleOperateQueueHandler/handlerUserTakeBatterySoc/insert is exception,uid ={}, sn={}", userInfo.getUid(), sn, e);
+        }
+        
+    }
+    
+    /**
+     * 退电电池 记录soc
+     */
+    private void handlerUserRentBatterySoc(String returnSn, Double returnPower) {
+        if (StrUtil.isBlank(returnSn)) {
+            log.error("EleOperateQueueHandler/handlerUserRentBatterySoc is error,returnSn is null");
+            return;
+        }
+        if (Objects.isNull(returnPower)) {
+            log.error("EleOperateQueueHandler/handlerUserRentBatterySoc is error,returnPower is null, sn={}", returnSn);
+            return;
+        }
+        
+        ExchangeBatterySoc exchangeBatterySoc = exchangeBatterySocService.queryOneByUidAndSn(returnSn);
+        if (Objects.isNull(exchangeBatterySoc)) {
+            log.error("EleOperateQueueHandler/handlerUserRentBatterySoc is error, rentBatterySoc should is null, sn={}", returnSn);
+            return;
+        }
+        
+        try {
+            // 处理异常交换
+            if (Objects.equals(exchangeBatterySoc.getReturnPower(), RETURN_POWER_DEFAULT) && Objects.isNull(exchangeBatterySoc.getUpdateTime())) {
+                ExchangeBatterySoc batterySoc = new ExchangeBatterySoc();
+                batterySoc.setId(exchangeBatterySoc.getId());
+                batterySoc.setReturnPower(returnPower);
+                batterySoc.setPoorPower(exchangeBatterySoc.getTakeAwayPower() - returnPower);
+                batterySoc.setUpdateTime(System.currentTimeMillis());
+                exchangeBatterySocService.update(batterySoc);
+            }
+        } catch (Exception e) {
+            log.error("EleOperateQueueHandler/handlerUserTakeBatterySoc is exception, sn={}", returnSn, e);
         }
     }
     
@@ -782,7 +896,8 @@ public class EleOperateQueueHandler {
                 newElectricityBattery.setBusinessStatus(ElectricityBattery.BUSINESS_STATUS_EXCEPTION);
                 newElectricityBattery.setUid(null);
                 //如果放入的电池和用户绑定的电池不一样且放入的电池不为空
-                if (Objects.nonNull(oldElectricityBattery) && Objects.nonNull(oldElectricityBattery.getUid()) && !Objects.equals(electricityBattery.getUid(), oldElectricityBattery.getUid())) {
+                if (Objects.nonNull(oldElectricityBattery) && Objects.nonNull(oldElectricityBattery.getUid()) && !Objects.equals(electricityBattery.getUid(),
+                        oldElectricityBattery.getUid())) {
                     newElectricityBattery.setGuessUid(oldElectricityBattery.getUid());
                 }
                 newElectricityBattery.setElectricityCabinetId(null);
@@ -806,16 +921,19 @@ public class EleOperateQueueHandler {
                 newElectricityBattery.setBorrowExpireTime(null);
                 
                 Long bindTime = oldElectricityBattery.getBindTime();
-                log.info("return bindTime={},currentTime={}",bindTime,System.currentTimeMillis());
+                log.info("return bindTime={},currentTime={}", bindTime, System.currentTimeMillis());
                 //如果绑定时间为空或者电池绑定时间小于当前时间则更新电池信息
                 if (Objects.isNull(bindTime) || bindTime < System.currentTimeMillis()) {
                     newElectricityBattery.setBindTime(System.currentTimeMillis());
                     electricityBatteryService.updateBatteryUser(newElectricityBattery);
+                    
                 }
                 
             }
             
         }
+        // 归还电池
+        operateBatterSocThreadPool.execute(() -> handlerUserRentBatterySoc(oldElectricityBattery.getSn(), oldElectricityBattery.getPower()));
         
     }
     
@@ -853,16 +971,16 @@ public class EleOperateQueueHandler {
         if (Objects.isNull(userBatteryMemberCardPackageLatest)) {
             UserBatteryMemberCard userBatteryMemberCardUpdate = new UserBatteryMemberCard();
             userBatteryMemberCardUpdate.setUid(userBatteryMemberCard.getUid());
+            userBatteryMemberCardUpdate.setOrderExpireTime(System.currentTimeMillis());
             userBatteryMemberCardUpdate.setMemberCardExpireTime(System.currentTimeMillis());
             userBatteryMemberCardService.updateByUid(userBatteryMemberCardUpdate);
         }
     }
     
     private void rentOrderConfirm(ElectricityCabinet electricityCabinet, EleOpenDTO finalOpenDTO) {
-        if (!(Objects.equals(finalOpenDTO.getOrderStatus(), RentBatteryOrder.RENT_INIT_CHECK) || Objects
-                .equals(finalOpenDTO.getOrderStatus(), RentBatteryOrder.RENT_BATTERY_NOT_EXISTS) || Objects.equals(finalOpenDTO.getOrderStatus(), RentBatteryOrder.RENT_OPEN_FAIL)
-                || Objects.equals(finalOpenDTO.getOrderStatus(), RentBatteryOrder.RENT_BATTERY_TAKE_SUCCESS) || Objects
-                .equals(finalOpenDTO.getOrderStatus(), RentBatteryOrder.INIT_DEVICE_USING))) {
+        if (!(Objects.equals(finalOpenDTO.getOrderStatus(), RentBatteryOrder.RENT_INIT_CHECK) || Objects.equals(finalOpenDTO.getOrderStatus(),
+                RentBatteryOrder.RENT_BATTERY_NOT_EXISTS) || Objects.equals(finalOpenDTO.getOrderStatus(), RentBatteryOrder.RENT_OPEN_FAIL) || Objects.equals(
+                finalOpenDTO.getOrderStatus(), RentBatteryOrder.RENT_BATTERY_TAKE_SUCCESS) || Objects.equals(finalOpenDTO.getOrderStatus(), RentBatteryOrder.INIT_DEVICE_USING))) {
             return;
         }
         
@@ -879,12 +997,11 @@ public class EleOperateQueueHandler {
     }
     
     private void returnOrderConfirm(ElectricityCabinet electricityCabinet, EleOpenDTO finalOpenDTO) {
-        if (!(Objects.equals(finalOpenDTO.getOrderStatus(), RentBatteryOrder.RETURN_INIT_CHECK) || Objects
-                .equals(finalOpenDTO.getOrderStatus(), RentBatteryOrder.RETURN_BATTERY_EXISTS) || Objects.equals(finalOpenDTO.getOrderStatus(), RentBatteryOrder.RETURN_OPEN_FAIL)
-                || Objects.equals(finalOpenDTO.getOrderStatus(), RentBatteryOrder.RETURN_BATTERY_CHECK_TIMEOUT) || Objects
-                .equals(finalOpenDTO.getOrderStatus(), RentBatteryOrder.RETURN_BATTERY_CHECK_FAIL) || Objects
-                .equals(finalOpenDTO.getOrderStatus(), RentBatteryOrder.RETURN_BATTERY_CHECK_SUCCESS) || Objects
-                .equals(finalOpenDTO.getOrderStatus(), RentBatteryOrder.INIT_DEVICE_USING))) {
+        if (!(Objects.equals(finalOpenDTO.getOrderStatus(), RentBatteryOrder.RETURN_INIT_CHECK) || Objects.equals(finalOpenDTO.getOrderStatus(),
+                RentBatteryOrder.RETURN_BATTERY_EXISTS) || Objects.equals(finalOpenDTO.getOrderStatus(), RentBatteryOrder.RETURN_OPEN_FAIL) || Objects.equals(
+                finalOpenDTO.getOrderStatus(), RentBatteryOrder.RETURN_BATTERY_CHECK_TIMEOUT) || Objects.equals(finalOpenDTO.getOrderStatus(),
+                RentBatteryOrder.RETURN_BATTERY_CHECK_FAIL) || Objects.equals(finalOpenDTO.getOrderStatus(), RentBatteryOrder.RETURN_BATTERY_CHECK_SUCCESS) || Objects.equals(
+                finalOpenDTO.getOrderStatus(), RentBatteryOrder.INIT_DEVICE_USING))) {
             return;
         }
         

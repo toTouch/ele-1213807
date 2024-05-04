@@ -1,6 +1,9 @@
 package com.xiliulou.electricity.vo;
 
+import com.xiliulou.esign.entity.query.SignFieldPositionQuery;
 import lombok.Data;
+
+import java.util.List;
 
 /**
  * @author: Kenneth
@@ -12,11 +15,7 @@ import lombok.Data;
 public class CreateFileVO {
 
     private String fileId;
-
-    private Float componentPositionX;
-
-    private Float componentPositionY;
-
-    private Integer componentPageNum;
+    
+    private List<SignFieldPositionQuery> signFieldPositionList;
 
 }
