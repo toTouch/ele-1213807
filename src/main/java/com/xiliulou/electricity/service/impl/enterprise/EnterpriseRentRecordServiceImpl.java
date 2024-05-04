@@ -133,6 +133,12 @@ public class EnterpriseRentRecordServiceImpl implements EnterpriseRentRecordServ
         }
         
         for (EnterpriseRentRecord enterpriseReturnRecord : enterpriseRentRecords) {
+            // 检测是否已经存在退电记录
+            int count = enterpriseRentRecordDetailService.existsByRentRecordId(enterpriseReturnRecord.getId());
+            if (count > 0) {
+                log.info("SAVE RENT RECORD DETAIL WARN!detail exists id={}", enterpriseReturnRecord.getId());
+            }
+            // 获取退电订单id
             Long uid = enterpriseReturnRecord.getUid();
             
             EnterpriseChannelUser enterpriseChannelUser = enterpriseChannelUserService.selectByUid(uid);

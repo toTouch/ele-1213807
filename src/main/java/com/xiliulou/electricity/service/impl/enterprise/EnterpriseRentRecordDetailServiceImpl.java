@@ -36,4 +36,10 @@ public class EnterpriseRentRecordDetailServiceImpl implements EnterpriseRentReco
     public int removeByUid(Long uid) {
         return enterpriseRentRecordDetailMapper.removeByUid(uid, System.currentTimeMillis());
     }
+    
+    @Slave
+    @Override
+    public int existsByRentRecordId(Long id) {
+        return enterpriseRentRecordDetailMapper.existsByRentRecordId(id);
+    }
 }

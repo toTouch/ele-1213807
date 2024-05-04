@@ -43,6 +43,15 @@
         WHERE
             t.row_num = 1
     </select>
+    <select id="existsByRentRecordId" resultType="java.lang.Integer">
+        SELECT
+            COUNT(1)
+        FROM
+            t_enterprise_rent_record_detail
+        WHERE
+            rent_record_id = #{rentRecordId}
+          AND del_flag = 0
+    </select>
     
     <update id="removeByUid">
         UPDATE t_enterprise_rent_record_detail
