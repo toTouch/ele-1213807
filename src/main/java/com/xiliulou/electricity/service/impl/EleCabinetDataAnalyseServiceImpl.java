@@ -175,6 +175,7 @@ public class EleCabinetDataAnalyseServiceImpl implements EleCabinetDataAnalyseSe
         return this.selectPowerPageCount(cabinetQuery);
     }
     
+    @Slave
     @Override
     public List<EleCabinetDataAnalyseVO> selectPowerPage(ElectricityCabinetQuery cabinetQuery) {
         List<EleCabinetDataAnalyseVO> electricityCabinetList = eleCabinetService.selectPowerPage(cabinetQuery);
@@ -195,6 +196,7 @@ public class EleCabinetDataAnalyseServiceImpl implements EleCabinetDataAnalyseSe
         return eleCabinetService.selectLockPageCount(cabinetQuery);
     }
     
+    @Slave
     @Override
     public Integer selectPowerPageCount(ElectricityCabinetQuery cabinetQuery) {
         return eleCabinetService.selectPowerPageCount(cabinetQuery);

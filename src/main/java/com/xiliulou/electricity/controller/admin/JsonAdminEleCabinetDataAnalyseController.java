@@ -568,7 +568,7 @@ public class JsonAdminEleCabinetDataAnalyseController extends BaseController {
         ElectricityCabinetQuery cabinetQuery = ElectricityCabinetQuery.builder().sn(sn).address(address).areaId(areaId).franchiseeId(franchiseeId).storeId(storeId).name(name)
                 .tenantId(TenantContextHolder.getTenantId()).statisticDate(timeAgoStartTime).eleIdList(eleIdList).build();
         
-        return R.ok(eleCabinetDataAnalyseService.selectPowerPageCount(cabinetQuery));
+        return R.ok(eleCabinetDataAnalyseService.selectFullPowerPageCount(cabinetQuery));
     }
     
     /**
