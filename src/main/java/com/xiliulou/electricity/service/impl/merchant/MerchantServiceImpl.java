@@ -1469,6 +1469,7 @@ public class MerchantServiceImpl implements MerchantService {
             log.info("repair enterprise trip={}", triple.getRight());
             if (!triple.getLeft()) {
                 log.error("repair enterprise error, enterprise saveV2 is error={}, enterpriseId={}", triple.getRight(), enterpriseInfo.getId());
+                return;
             }
             Merchant merchant = (Merchant) triple.getRight();
            
