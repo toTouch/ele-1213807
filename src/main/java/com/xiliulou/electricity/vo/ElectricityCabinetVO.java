@@ -2,6 +2,7 @@ package com.xiliulou.electricity.vo;
 import com.xiliulou.electricity.constant.EleCabinetConstant;
 import lombok.Data;
 
+import java.math.BigDecimal;
 import java.util.Map;
 import java.util.Set;
 
@@ -237,6 +238,11 @@ public class ElectricityCabinetVO {
      * 区域名称
      */
     private String areaName;
+    
+    /**
+     * 场地费
+     */
+    private BigDecimal placeFee;
 
     //全天
     public static final String ALL_DAY = "-1";

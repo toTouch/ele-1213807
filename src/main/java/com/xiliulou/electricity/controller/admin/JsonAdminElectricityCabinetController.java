@@ -213,6 +213,8 @@ public class JsonAdminElectricityCabinetController extends BasicController {
                         @RequestParam(value = "beginTime", required = false) Long beginTime,
                         @RequestParam(value = "endTime", required = false) Long endTime,
                         @RequestParam(value = "sn", required = false) String sn,
+                        @RequestParam(value = "areaId", required = false) Long areaId,
+                        @RequestParam(value = "idList", required = false) List<Integer> idList,
                         @RequestParam(value = "modelId", required = false) Integer modelId) {
 
         // 数据权校验
@@ -253,6 +255,8 @@ public class JsonAdminElectricityCabinetController extends BasicController {
                 .eleIdList(eleIdList)
                 .modelId(modelId)
                 .sn(sn)
+                .idList(idList)
+                .areaId(areaId)
                 .stockStatus(stockStatus)
                 .tenantId(TenantContextHolder.getTenantId())
                 .franchiseeIdList(permissionTriple.getLeft())
