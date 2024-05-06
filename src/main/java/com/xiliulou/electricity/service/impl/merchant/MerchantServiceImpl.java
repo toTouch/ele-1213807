@@ -413,10 +413,6 @@ public class MerchantServiceImpl implements MerchantService {
     public Triple<Boolean, String, Object> saveV2(MerchantSaveRequest merchantSaveRequest, Integer tenantId) {
         TokenUser tokenUser = SecurityUtils.getUserInfo();
         
-        if (!redisService.setNx(CacheConstant.MERCHANT_PLACE_SAVE_UID + tokenUser.getUid(), "1", 3 * 1000L, false)) {
-            return Triple.of(false, "ELECTRICITY.0034", "操作频繁");
-        }
-        
         // 检测商户名称是否存在用户表中
         User user = userService.queryByUserName(merchantSaveRequest.getName());
         if (Objects.nonNull(user)) {
