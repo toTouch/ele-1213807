@@ -443,6 +443,13 @@ public class MerchantServiceImpl implements MerchantService {
                     merchantSaveRequest.getId(), merchantSaveRequest.getInviteAuth(), merchantSaveRequest.getEnterprisePackageAuth());
             return Triple.of(false, "120202", "推广权限，站点代付权限，必须选一个");
         }
+    
+        // 检测商户名称是否存在用户表中
+        User user = userService.queryByUserName(merchantSaveRequest.getName());
+        if (Objects.nonNull(user) && !Objects.equals(user.getUid(), merchant.getUid())) {
+            log.error("merchant update error, name is exit user name={}", merchantSaveRequest.getName());
+            return Triple.of(false, "120233", "商户名称重复，请修改");
+        }
         
         // 检测商户名称是否存在
         Integer nameCount = merchantMapper.existsByName(merchantSaveRequest.getName(), tenantId, merchantSaveRequest.getId());
@@ -551,6 +558,14 @@ public class MerchantServiceImpl implements MerchantService {
         if (!Objects.equals(merchant.getPhone(), merchantSaveRequest.getPhone())) {
             flag = true;
             updateUser.setPhone(merchantSaveRequest.getPhone());
+            // 手机号变更用户禁用
+            //            updateUser.setLockFlag(User.USER_LOCK);
+        }
+    
+        // 判断名称是否有变化
+        if (!Objects.equals(merchant.getName(), merchantSaveRequest.getName())) {
+            flag = true;
+            updateUser.setName(merchantSaveRequest.getName());
             // 手机号变更用户禁用
             //            updateUser.setLockFlag(User.USER_LOCK);
         }
