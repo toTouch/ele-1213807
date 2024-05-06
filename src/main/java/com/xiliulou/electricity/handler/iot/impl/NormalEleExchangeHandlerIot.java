@@ -14,14 +14,12 @@ import com.xiliulou.electricity.service.ElectricityCabinetService;
 import com.xiliulou.iot.entity.ReceiverMessage;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import shaded.org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Resource;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 
 
@@ -70,13 +68,16 @@ public class NormalEleExchangeHandlerIot extends AbstractElectricityIotHandler {
             }
     
             // 封装柜机扩展参数
-            ElectricityCabinetExtra electricityCabinetExtra = ElectricityCabinetExtra.builder().eid(Long.valueOf(eid)).batteryCountType(normalEleExchangeMsg.getBatSta()).build();
+            ElectricityCabinetExtra electricityCabinetExtra = ElectricityCabinetExtra.builder().eid(Long.valueOf(eid)).batteryCountType(normalEleExchangeMsg.getBatSta())
+                    .createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).build();
             ElectricityCabinet cabinetFromCache = electricityCabinetService.queryByIdFromCache(eid);
             if (Objects.nonNull(cabinetFromCache)) {
-                BeanUtils.copyProperties(cabinetFromCache, electricityCabinetExtra);
+                electricityCabinetExtra.setSn(cabinetFromCache.getSn());
+                electricityCabinetExtra.setTenantId(cabinetFromCache.getTenantId());
+                electricityCabinetExtra.setDelFlag(cabinetFromCache.getDelFlag());
             }
     
-            electricityExtraService.insertOne(electricityCabinetExtra);
+            electricityExtraService.insertOrUpdate(electricityCabinetExtra);
         });
     }
 

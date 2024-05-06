@@ -36,19 +36,12 @@ public class ElectricityCabinetExtraImpl implements ElectricityCabinetExtraServi
             return electricityCabinetExtraMapper.insertOne(electricityCabinetExtra);
         }
     
-        if (!Objects.equals(exist.getSn(), electricityCabinetExtra.getSn())) {
-            log.error("Update ElectricityCabinetExtra error! sn are different, eid={}, existSn={}, reportSn={}", electricityCabinetExtra.getEid(), exist.getSn(),
-                    electricityCabinetExtra.getSn());
-            return NumberConstant.ZERO;
-        }
-        
-        // 少电多电类型不相同时才更新
-        if (Objects.equals(exist.getBatteryCountType(), electricityCabinetExtra.getBatteryCountType())) {
+        if (!Objects.equals(exist.getSn(), electricityCabinetExtra.getSn()) || Objects.equals(exist.getBatteryCountType(), electricityCabinetExtra.getBatteryCountType())) {
             return NumberConstant.ZERO;
         }
     
         exist.setBatteryCountType(electricityCabinetExtra.getBatteryCountType());
-        exist.setUpdateTime(System.currentTimeMillis());
+        exist.setUpdateTime(electricityCabinetExtra.getUpdateTime());
         
         return electricityCabinetExtraMapper.update(exist);
     }
