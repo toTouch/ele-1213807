@@ -1430,7 +1430,7 @@ public class MerchantServiceImpl implements MerchantService {
             log.error("repair enterprise error, enterprise info is empty");
             return;
         }
-        enterpriseInfos = enterpriseInfos.stream().filter(item -> Objects.equals(item.getId(), 29L)).collect(Collectors.toList());
+        
         long currentTimeMillis = System.currentTimeMillis();
         enterpriseInfos.forEach(enterpriseInfo -> {
             Integer tenantId = enterpriseInfo.getTenantId();
