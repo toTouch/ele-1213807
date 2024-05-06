@@ -26,5 +26,4 @@ public interface TenantMapper  extends BaseMapper<Tenant>{
 
     Integer queryCount(TenantQuery tenantQuery);
     
-    List<Integer> selectAllTenantId();
 }

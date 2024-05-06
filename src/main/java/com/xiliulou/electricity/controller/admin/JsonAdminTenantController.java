@@ -114,18 +114,4 @@ public class JsonAdminTenantController extends BaseController {
     public R addTenant(@PathVariable("id") Integer id) {
         return R.ok(tenantService.queryByIdFromCache(id));
     }
-    
-    /**
-     * @param
-     * @description 修补历史企业数据
-     * @date 2023/12/15 18:17:54
-     * @author maxiaodong
-     */
-    @GetMapping("/admin/merchant/initMerchantLevel")
-    public R initMerchantLevel() {
-        tenantService.initMerchantLevel();
-        
-        return R.ok();
-    }
-
 }

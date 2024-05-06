@@ -391,36 +391,6 @@ public class TenantServiceImpl implements TenantService {
         return tenantMapper.queryCount(tenantQuery);
     }
     
-    @Override
-    public void initMerchantLevel() {
-        // 查询所有的租户
-        List<Integer> tenantIdList = queryAllTenantId();
-        
-        if (ObjectUtils.isEmpty(tenantIdList)) {
-            log.error("init merchant level error! query tenant is empty");
-            return;
-        }
-    
-        tenantIdList.stream().forEach(tenantId -> {
-            // 检测等级是否存在
-            List<MerchantLevel> merchantLevels = merchantLevelService.listByTenantId(tenantId);
-            
-            if (ObjectUtils.isNotEmpty(merchantLevels)) {
-                return;
-            }
-            
-            //初始化商户等级
-            merchantLevelService.initMerchantLevel(tenantId);
-            //初始化商户升级条件
-            merchantAttrService.initMerchantAttr(tenantId);
-    
-        });
-        
-    }
-    
-    public List<Integer> queryAllTenantId() {
-        return tenantMapper.selectAllTenantId();
-    }
     
     /**
      * 生成新的租户code
