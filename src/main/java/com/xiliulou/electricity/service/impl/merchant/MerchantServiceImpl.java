@@ -1469,6 +1469,7 @@ public class MerchantServiceImpl implements MerchantService {
             
             // 为该企业创建商户
             Triple<Boolean, String, Object> triple = this.saveV2(merchantSaveRequest, tenantId);
+            log.info("repair enterprise trip={}", triple.getRight());
             if (!triple.getLeft()) {
                 log.error("repair enterprise error, enterprise saveV2 is error={}, enterpriseId={}", triple.getRight(), enterpriseInfo.getId());
             }
