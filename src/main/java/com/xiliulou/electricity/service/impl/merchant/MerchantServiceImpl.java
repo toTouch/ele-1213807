@@ -1451,11 +1451,16 @@ public class MerchantServiceImpl implements MerchantService {
                 }
             }
     
+           
+            
             // 查询商户等级配置默认为五级
             MerchantSaveRequest merchantSaveRequest = new MerchantSaveRequest();
             merchantSaveRequest.setName(enterpriseInfo.getName());
             merchantSaveRequest.setFranchiseeId(enterpriseInfo.getFranchiseeId());
-            merchantSaveRequest.setPhone(enterpriseInfo.getPhone());
+            User user = userService.queryByUidFromCache(enterpriseInfo.getUid());
+            if (Objects.nonNull(user)) {
+                merchantSaveRequest.setPhone(user.getPhone());
+            }
             merchantSaveRequest.setStatus(0);
             merchantSaveRequest.setInviteAuth(1);
             merchantSaveRequest.setEnterprisePackageAuth(0);
