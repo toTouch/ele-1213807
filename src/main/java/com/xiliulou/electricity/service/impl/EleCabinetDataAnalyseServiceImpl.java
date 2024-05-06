@@ -120,7 +120,7 @@ public class EleCabinetDataAnalyseServiceImpl implements EleCabinetDataAnalyseSe
             // 统一配置
             if (Objects.equals(electricityConfig.getChargeRateType(), ElectricityConfig.CHARGE_RATE_TYPE_UNIFY)) {
                 BigDecimal lowChargeRate = electricityConfig.getLowChargeRate();
-                cabinetQuery.setLowChargeRate(lowChargeRate.doubleValue());
+                cabinetQuery.setLowChargeRate(Objects.isNull(lowChargeRate) ? NumberConstant.TWENTY_FIVE_D : lowChargeRate.doubleValue());
             } else {
                 // 单个配置
                 cabinetQuery.setBatteryCountType(EleCabinetConstant.BATTERY_COUNT_TYPE_LESS);
@@ -139,7 +139,7 @@ public class EleCabinetDataAnalyseServiceImpl implements EleCabinetDataAnalyseSe
             // 统一配置
             if (Objects.equals(electricityConfig.getChargeRateType(), ElectricityConfig.CHARGE_RATE_TYPE_UNIFY)) {
                 BigDecimal lowChargeRate = electricityConfig.getLowChargeRate();
-                cabinetQuery.setLowChargeRate(lowChargeRate.doubleValue());
+                cabinetQuery.setLowChargeRate(Objects.isNull(lowChargeRate) ? NumberConstant.TWENTY_FIVE_D : lowChargeRate.doubleValue());
             } else {
                 // 单个配置
                 cabinetQuery.setBatteryCountType(EleCabinetConstant.BATTERY_COUNT_TYPE_LESS);
@@ -158,7 +158,7 @@ public class EleCabinetDataAnalyseServiceImpl implements EleCabinetDataAnalyseSe
             // 统一配置
             if (Objects.equals(electricityConfig.getChargeRateType(), ElectricityConfig.CHARGE_RATE_TYPE_UNIFY)) {
                 BigDecimal fullChargeRate = electricityConfig.getFullChargeRate();
-                cabinetQuery.setFullChargeRate(fullChargeRate.doubleValue());
+                cabinetQuery.setFullChargeRate(Objects.isNull(fullChargeRate) ? NumberConstant.SEVENTY_FIVE_D : fullChargeRate.doubleValue());
             } else {
                 // 单个配置
                 cabinetQuery.setBatteryCountType(EleCabinetConstant.BATTERY_COUNT_TYPE_MORE);
@@ -177,7 +177,7 @@ public class EleCabinetDataAnalyseServiceImpl implements EleCabinetDataAnalyseSe
             // 统一配置
             if (Objects.equals(electricityConfig.getChargeRateType(), ElectricityConfig.CHARGE_RATE_TYPE_UNIFY)) {
                 BigDecimal fullChargeRate = electricityConfig.getFullChargeRate();
-                cabinetQuery.setFullChargeRate(fullChargeRate.doubleValue());
+                cabinetQuery.setFullChargeRate(Objects.isNull(fullChargeRate) ? NumberConstant.SEVENTY_FIVE_D : fullChargeRate.doubleValue());
             } else {
                 // 单个配置
                 cabinetQuery.setBatteryCountType(EleCabinetConstant.BATTERY_COUNT_TYPE_MORE);

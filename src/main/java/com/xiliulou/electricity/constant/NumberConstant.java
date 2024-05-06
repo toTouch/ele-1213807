@@ -43,6 +43,10 @@ public class NumberConstant {
     
     public static final Double ZERO_D = 0D;
     
+    public static final Double TWENTY_FIVE_D = 25D;
+    
+    public static final Double SEVENTY_FIVE_D = 75D;
+    
     public static final Double ONE_HUNDRED_D = 100D;
     
     public static final Long NOTE_MAX_NUM = 999999999L;

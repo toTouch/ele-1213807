@@ -5038,8 +5038,6 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         ElectricityCabinetListMapVO electricityCabinetListMapVO = new ElectricityCabinetListMapVO();
     
         //判断少/多电柜机
-        int chargeRate = BigDecimal.valueOf(batteryNum).multiply(NumberConstant.ONE_HUNDRED_BD).divide(BigDecimal.valueOf(boxNum), NumberConstant.ZERO, RoundingMode.DOWN)
-                .intValue();
         if (Objects.nonNull(electricityConfig) && Objects.equals(electricityConfig.getChargeRateType(), ElectricityConfig.CHARGE_RATE_TYPE_UNIFY)) {
             BigDecimal lowChargeRateBd = electricityConfig.getLowChargeRate();
             BigDecimal fullChargeRateBd = electricityConfig.getFullChargeRate();
@@ -5047,7 +5045,9 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             //默认低电比例25% 多电比例75%
             int lowChargeRate = Objects.isNull(lowChargeRateBd) ? NumberConstant.TWENTY_FIVE : lowChargeRateBd.intValue();
             int fullChargeRate = Objects.isNull(fullChargeRateBd) ? NumberConstant.SEVENTY_FIVE : fullChargeRateBd.intValue();
-        
+            int chargeRate = BigDecimal.valueOf(batteryNum).multiply(NumberConstant.ONE_HUNDRED_BD).divide(BigDecimal.valueOf(boxNum), NumberConstant.ZERO, RoundingMode.DOWN)
+                    .intValue();
+            
             if (chargeRate <= lowChargeRate) {
                 electricityCabinetListMapVO.setIsLowCharge(NumberConstant.ONE);
             } else if (chargeRate >= fullChargeRate) {
