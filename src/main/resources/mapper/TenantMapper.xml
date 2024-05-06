@@ -58,7 +58,9 @@
 			and create_time &lt;=#{endTime}
 		</if>
 	</select>
-
+	<select id="selectAllTenantId" resultType="java.lang.Integer">
+		select id from t_tenant where del_flag = 0
+	</select>
 
 
 </mapper>

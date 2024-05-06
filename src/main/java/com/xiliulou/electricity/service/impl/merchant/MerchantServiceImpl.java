@@ -1445,12 +1445,6 @@ public class MerchantServiceImpl implements MerchantService {
                 return;
             }
             
-            // 初始化租户的升级条件信息
-            //初始化商户等级
-            merchantLevelService.initMerchantLevel(tenantId);
-            //初始化商户升级条件
-            merchantAttrService.initMerchantAttr(tenantId);
-    
             List<MerchantLevel> merchantLevels = merchantLevelService.listByTenantId(tenantId);
             Long levelId = NumberConstant.ZERO_L;
             if (ObjectUtils.isNotEmpty(merchantLevels)) {
