@@ -37,7 +37,7 @@
             <if test="updateTime != null">
                 update_time = #{updateTime},
             </if>
-            <if test="remark != null">
+            <if test="remark != null and remark != ''">
                 remark = #{remark}
             </if>
         </set>
