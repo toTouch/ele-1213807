@@ -1476,6 +1476,7 @@ public class MerchantServiceImpl implements MerchantService {
             UserInfo user = userInfoService.queryByUidFromCache(enterpriseInfo.getUid());
             if (Objects.isNull(user)) {
                 log.error("repair enterprise error! not find user id={}", enterpriseInfo.getId());
+                return;
             }
             merchantSaveRequest.setPhone(user.getPhone());
             merchantSaveRequest.setStatus(0);
