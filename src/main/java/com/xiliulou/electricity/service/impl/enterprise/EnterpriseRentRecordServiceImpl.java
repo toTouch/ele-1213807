@@ -137,6 +137,7 @@ public class EnterpriseRentRecordServiceImpl implements EnterpriseRentRecordServ
             int count = enterpriseRentRecordDetailService.existsByRentRecordId(enterpriseReturnRecord.getId());
             if (count > 0) {
                 log.info("SAVE RENT RECORD DETAIL WARN!detail exists id={}", enterpriseReturnRecord.getId());
+                continue;
             }
             // 获取退电订单id
             Long uid = enterpriseReturnRecord.getUid();
