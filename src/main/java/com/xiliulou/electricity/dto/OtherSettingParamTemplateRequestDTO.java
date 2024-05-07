@@ -234,7 +234,7 @@ public class OtherSettingParamTemplateRequestDTO {
     private Integer checkBatteryExit;
     
     /**
-     * 少电告警
+     * 少电告警/少电柜机
      */
     private Integer minBatteryCountAlarm;
     
@@ -258,4 +258,9 @@ public class OtherSettingParamTemplateRequestDTO {
      * 单个充电器最大功率
      */
     private Integer cellChargingMaxPower;
+    /**
+     * 多电告警/多电柜机
+     */
+    private Integer maxBatteryCountAlarm;
+    
 }

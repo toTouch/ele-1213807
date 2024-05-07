@@ -8,10 +8,12 @@ import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.bo.asset.ElectricityCabinetBO;
 import com.xiliulou.electricity.constant.CacheConstant;
+import com.xiliulou.electricity.constant.EleCabinetConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.constant.RegularConstant;
 import com.xiliulou.electricity.dto.asset.CabinetBatchOutWarehouseDTO;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
+import com.xiliulou.electricity.entity.ElectricityCabinetExtra;
 import com.xiliulou.electricity.entity.ElectricityCabinetModel;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.Store;
@@ -34,6 +36,7 @@ import com.xiliulou.electricity.request.asset.ElectricityCabinetEnableAllocateRe
 import com.xiliulou.electricity.request.asset.ElectricityCabinetOutWarehouseRequest;
 import com.xiliulou.electricity.request.asset.ElectricityCabinetSnSearchRequest;
 import com.xiliulou.electricity.service.ElectricityCabinetBoxService;
+import com.xiliulou.electricity.service.ElectricityCabinetExtraService;
 import com.xiliulou.electricity.service.ElectricityCabinetModelService;
 import com.xiliulou.electricity.service.ElectricityCabinetServerService;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
@@ -103,6 +106,9 @@ public class ElectricityCabinetServiceV2Impl implements ElectricityCabinetV2Serv
     @Resource
     private MerchantPlaceFeeRecordService merchantPlaceFeeRecordService;
     
+    @Resource
+    private ElectricityCabinetExtraService electricityCabinetExtraService;
+    
     
     @Override
     public Triple<Boolean, String, Object> save(ElectricityCabinetAddRequest electricityCabinetAddRequest) {
@@ -155,7 +161,14 @@ public class ElectricityCabinetServiceV2Impl implements ElectricityCabinetV2Serv
                 electricityCabinetBoxService.batchInsertBoxByModelIdV2(electricityCabinetModel, electricityCabinet.getId());
                 // 添加服务时间记录
                 electricityCabinetServerService.insertOrUpdateByElectricityCabinet(electricityCabinet, electricityCabinet);
-    
+                
+                // 新增柜机扩展参数
+                ElectricityCabinetExtra electricityCabinetExtra = ElectricityCabinetExtra.builder().eid(electricityCabinet.getId().longValue())
+                        .batteryCountType(EleCabinetConstant.BATTERY_COUNT_TYPE_NORMAL).tenantId(electricityCabinet.getTenantId()).delFlag(electricityCabinet.getDelFlag())
+                        .createTime(electricityCabinet.getCreateTime()).updateTime(electricityCabinet.getUpdateTime()).build();
+                
+                electricityCabinetExtraService.insertOne(electricityCabinetExtra);
+                
                 // 异步记录
                 Long warehouseId = electricityCabinetAddRequest.getWarehouseId();
                 if (Objects.nonNull(warehouseId) && !Objects.equals(warehouseId, NumberConstant.ZERO_L)) {

@@ -423,13 +423,16 @@ public class JsonAdminEleCabinetDataAnalyseController extends BaseController {
      * 少电列表
      */
     @GetMapping(value = "/admin/eleCabinet/lowPower/page")
-    public R lowPowerPage(@RequestParam("size") long size, @RequestParam("offset") long offset, @RequestParam(value = "name", required = false) String name,
-            @RequestParam(value = "sn", required = false) String sn, @RequestParam(value = "address", required = false) String address,
-            @RequestParam(value = "lowChargeRate", required = false) Double lowChargeRate, @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
+    public R lowPowerPage(@RequestParam("size") long size, @RequestParam("offset") long offset,
+            @RequestParam(value = "name", required = false) String name,
+            @RequestParam(value = "sn", required = false) String sn,
+            @RequestParam(value = "address", required = false) String address,
+            @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
             @RequestParam(value = "orderByAverageNumber", required = false) Integer orderByAverageNumber,
             @RequestParam(value = "orderByAverageActivity", required = false) Integer orderByAverageActivity,
             @RequestParam(value = "orderByTodayNumber", required = false) Integer orderByTodayNumber,
-            @RequestParam(value = "orderByTodayActivity", required = false) Integer orderByTodayActivity, @RequestParam(value = "areaId", required = false) Long areaId,
+            @RequestParam(value = "orderByTodayActivity", required = false) Integer orderByTodayActivity,
+            @RequestParam(value = "areaId", required = false) Long areaId,
             @RequestParam(value = "storeId", required = false) Long storeId) {
         
         if (size < 0 || size > 50) {
@@ -473,9 +476,11 @@ public class JsonAdminEleCabinetDataAnalyseController extends BaseController {
     }
     
     @GetMapping(value = "/admin/eleCabinet/lowPower/count")
-    public R lowPowerPageCount(@RequestParam(value = "name", required = false) String name, @RequestParam(value = "sn", required = false) String sn,
-            @RequestParam(value = "address", required = false) String address, @RequestParam(value = "lowChargeRate", required = false) Double lowChargeRate,
-            @RequestParam(value = "franchiseeId", required = false) Long franchiseeId, @RequestParam(value = "areaId", required = false) Long areaId,
+    public R lowPowerPageCount(@RequestParam(value = "name", required = false) String name,
+            @RequestParam(value = "sn", required = false) String sn,
+            @RequestParam(value = "address", required = false) String address,
+            @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
+            @RequestParam(value = "areaId", required = false) Long areaId,
             @RequestParam(value = "storeId", required = false) Long storeId) {
         
         //用户区分
@@ -512,13 +517,16 @@ public class JsonAdminEleCabinetDataAnalyseController extends BaseController {
      * 多电列表
      */
     @GetMapping(value = "/admin/eleCabinet/fullPower/page")
-    public R fullPowerPage(@RequestParam("size") long size, @RequestParam("offset") long offset, @RequestParam(value = "name", required = false) String name,
-            @RequestParam(value = "sn", required = false) String sn, @RequestParam(value = "address", required = false) String address,
-            @RequestParam(value = "fullChargeRate", required = false) Double fullChargeRate, @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
+    public R fullPowerPage(@RequestParam("size") long size, @RequestParam("offset") long offset,
+            @RequestParam(value = "name", required = false) String name,
+            @RequestParam(value = "sn", required = false) String sn,
+            @RequestParam(value = "address", required = false) String address,
+            @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
             @RequestParam(value = "orderByAverageNumber", required = false) Integer orderByAverageNumber,
             @RequestParam(value = "orderByAverageActivity", required = false) Integer orderByAverageActivity,
             @RequestParam(value = "orderByTodayNumber", required = false) Integer orderByTodayNumber,
-            @RequestParam(value = "orderByTodayActivity", required = false) Integer orderByTodayActivity, @RequestParam(value = "areaId", required = false) Long areaId,
+            @RequestParam(value = "orderByTodayActivity", required = false) Integer orderByTodayActivity,
+            @RequestParam(value = "areaId", required = false) Long areaId,
             @RequestParam(value = "storeId", required = false) Long storeId) {
         
         if (size < 0 || size > 50) {
@@ -562,9 +570,11 @@ public class JsonAdminEleCabinetDataAnalyseController extends BaseController {
     }
     
     @GetMapping(value = "/admin/eleCabinet/fullPower/count")
-    public R fullPowerPageCount(@RequestParam(value = "name", required = false) String name, @RequestParam(value = "sn", required = false) String sn,
-            @RequestParam(value = "address", required = false) String address, @RequestParam(value = "fullChargeRate", required = false) Double fullChargeRate,
-            @RequestParam(value = "franchiseeId", required = false) Long franchiseeId, @RequestParam(value = "areaId", required = false) Long areaId,
+    public R fullPowerPageCount(@RequestParam(value = "name", required = false) String name,
+            @RequestParam(value = "sn", required = false) String sn,
+            @RequestParam(value = "address", required = false) String address,
+            @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
+            @RequestParam(value = "areaId", required = false) Long areaId,
             @RequestParam(value = "storeId", required = false) Long storeId) {
         
         //用户区分
@@ -594,7 +604,7 @@ public class JsonAdminEleCabinetDataAnalyseController extends BaseController {
         ElectricityCabinetQuery cabinetQuery = ElectricityCabinetQuery.builder().sn(sn).address(address).areaId(areaId).franchiseeId(franchiseeId).storeId(storeId).name(name)
                 .tenantId(TenantContextHolder.getTenantId()).statisticDate(timeAgoStartTime).eleIdList(eleIdList).build();
         
-        return R.ok(eleCabinetDataAnalyseService.selectPowerPageCount(cabinetQuery));
+        return R.ok(eleCabinetDataAnalyseService.selectFullPowerPageCount(cabinetQuery));
     }
     
     /**

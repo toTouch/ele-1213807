@@ -744,6 +744,7 @@
         any_value(tecs.today_activity) AS today_activity
         from t_electricity_cabinet_box ecb
         LEFT JOIN t_electricity_cabinet tec ON ecb.electricity_cabinet_id = tec.id
+        LEFT JOIN t_electricity_cabinet_extra tece ON tece.eid = tec.id
         <if test="franchiseeId != null ">
             left join t_store ts on tec.store_id=ts.id
         </if>
@@ -785,6 +786,9 @@
             <foreach collection="eleIdList" item="id" index="index" open="(" close=")" separator=",">
                 #{id}
             </foreach>
+        </if>
+        <if test="batteryCountType != null">
+            and tece.battery_count_type = #{batteryCountType}
         </if>
         GROUP BY
         ecb.electricity_cabinet_id
@@ -852,6 +856,7 @@
         any_value(ecb.power) power
         from t_electricity_cabinet_box ecb
         LEFT JOIN t_electricity_cabinet tec ON ecb.electricity_cabinet_id = tec.id
+        LEFT JOIN t_electricity_cabinet_extra tece ON tece.eid = tec.id
         <if test="franchiseeId != null ">
             left join t_store ts on tec.store_id=ts.id
         </if>
@@ -893,6 +898,9 @@
             <foreach collection="eleIdList" item="id" index="index" open="(" close=")" separator=",">
                 #{id}
             </foreach>
+        </if>
+        <if test="batteryCountType != null">
+            and tece.battery_count_type = #{batteryCountType}
         </if>
         GROUP BY
         ecb.electricity_cabinet_id
@@ -1018,24 +1026,28 @@
         </if>
     </select>
     
-    <select id="selectEleCabinetListByLongitudeAndLatitude" resultType="com.xiliulou.electricity.entity.ElectricityCabinet">
-        select id, name,longitude, latitude, online_status
-        from t_electricity_cabinet
-        where del_flag=0
+    <select id="selectEleCabinetListByLongitudeAndLatitude" resultType="com.xiliulou.electricity.bo.cabinet.ElectricityCabinetMapBO">
+        select tec.id, tec.name,tec.longitude, tec.latitude, tec.online_status, tece.battery_count_type
+        from t_electricity_cabinet tec
+        left join t_electricity_cabinet_extra tece on tece.eid=tec.id
+        where tec.del_flag=0
         <if test="query.name != null and query.name != ''">
-            and name like concat('%',#{query.name,jdbcType=VARCHAR},'%')
+            and tec.name like concat('%',#{query.name,jdbcType=VARCHAR},'%')
         </if>
         <if test="query.id != null">
-            and id =#{query.id}
+            and tec.id =#{query.id}
         </if>
         <if test="query.eleIdList!=null and query.eleIdList!=''">
-            and id in
+            and tec.id in
             <foreach collection="query.eleIdList" item="id" index="index" open="(" close=")" separator=",">
                 #{id}
             </foreach>
         </if>
         <if test="query.tenantId != null ">
-            and tenant_id = #{query.tenantId}
+            and tec.tenant_id = #{query.tenantId}
+        </if>
+        <if test="batteryCountType != null">
+            and tece.battery_count_type = #{query.batteryCountType}
         </if>
     </select>
     

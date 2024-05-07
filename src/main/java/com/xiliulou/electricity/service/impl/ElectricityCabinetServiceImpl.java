@@ -23,12 +23,14 @@ import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
+import com.xiliulou.electricity.bo.cabinet.ElectricityCabinetMapBO;
 import com.xiliulou.electricity.bo.merchant.AreaCabinetNumBO;
 import com.xiliulou.electricity.bo.asset.ElectricityCabinetBO;
 import com.xiliulou.electricity.config.EleCommonConfig;
 import com.xiliulou.electricity.config.EleIotOtaPathConfig;
 import com.xiliulou.electricity.constant.BatteryConstant;
 import com.xiliulou.electricity.constant.CacheConstant;
+import com.xiliulou.electricity.constant.EleCabinetConstant;
 import com.xiliulou.electricity.constant.ElectricityIotConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.constant.OtaConstant;
@@ -48,6 +50,7 @@ import com.xiliulou.electricity.entity.ElectricityAbnormalMessageNotify;
 import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.ElectricityCabinetBox;
+import com.xiliulou.electricity.entity.ElectricityCabinetExtra;
 import com.xiliulou.electricity.entity.ElectricityCabinetFile;
 import com.xiliulou.electricity.entity.ElectricityCabinetModel;
 import com.xiliulou.electricity.entity.ElectricityCabinetOrder;
@@ -109,6 +112,7 @@ import com.xiliulou.electricity.service.EleOtherConfigService;
 import com.xiliulou.electricity.service.EleRefundOrderService;
 import com.xiliulou.electricity.service.ElectricityBatteryService;
 import com.xiliulou.electricity.service.ElectricityCabinetBoxService;
+import com.xiliulou.electricity.service.ElectricityCabinetExtraService;
 import com.xiliulou.electricity.service.ElectricityCabinetFileService;
 import com.xiliulou.electricity.service.ElectricityCabinetModelService;
 import com.xiliulou.electricity.service.ElectricityCabinetOrderService;
@@ -428,6 +432,9 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     
     @Resource
     private MerchantAreaService merchantAreaService;
+    
+    @Resource
+    private ElectricityCabinetExtraService electricityCabinetExtraService;
     
     /**
      * 根据主键ID集获取柜机基本信息
@@ -761,10 +768,16 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         //解绑库房
         electricityCabinet.setWarehouseId(NumberConstant.ZERO_L);
         int update = electricityCabinetMapper.updateEleById(electricityCabinet);
+        
+        // 删除柜机扩展参数
+        electricityCabinetExtraService.update(
+                ElectricityCabinetExtra.builder().eid(Long.valueOf(id)).delFlag(electricityCabinet.getDelFlag()).updateTime(electricityCabinet.getUpdateTime()).build());
+        
         DbUtils.dbOperateSuccessThen(update, () -> {
             //删除缓存
             redisService.delete(CacheConstant.CACHE_ELECTRICITY_CABINET + id);
             redisService.delete(CacheConstant.CACHE_ELECTRICITY_CABINET_DEVICE + electricityCabinet.getProductKey() + electricityCabinet.getDeviceName());
+            redisService.delete(CacheConstant.CACHE_ELECTRICITY_CABINET_EXTRA + id);
             
             //删除柜机GEO信息
             redisService.removeGeoMember(CacheConstant.CACHE_ELECTRICITY_CABINET_GEO + electricityCabinet.getTenantId(), electricityCabinet.getId().toString());
@@ -773,6 +786,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             electricityCabinetBoxService.batchDeleteBoxByElectricityCabinetId(id);
             
             electricityCabinetServerService.logicalDeleteByEid(id);
+            
             return null;
         });
         return R.ok();
@@ -4928,12 +4942,12 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     @Slave
     @Override
     public R selectEleCabinetListByLongitudeAndLatitude(ElectricityCabinetQuery cabinetQuery) {
-        List<ElectricityCabinet> electricityCabinets = electricityCabinetMapper.selectEleCabinetListByLongitudeAndLatitude(cabinetQuery);
+        List<ElectricityCabinetMapBO> electricityCabinets = electricityCabinetMapper.selectEleCabinetListByLongitudeAndLatitude(cabinetQuery);
         if (CollectionUtils.isEmpty(electricityCabinets)) {
             return R.ok(Collections.EMPTY_LIST);
         }
         
-        List<Integer> cabinetIds = electricityCabinets.stream().map(ElectricityCabinet::getId).collect(Collectors.toList());
+        List<Integer> cabinetIds = electricityCabinets.stream().map(ElectricityCabinetMapBO::getId).collect(Collectors.toList());
         
         //分批次查询柜机格挡
         List<ElectricityCabinetBox> electricityCabinetBoxList = new ArrayList<>();
@@ -4973,29 +4987,15 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 unusableBoxNum = (int) electricityCabinetBoxes.stream()
                         .filter(box -> Objects.equals(box.getUsableStatus(), ElectricityCabinetBox.ELECTRICITY_CABINET_BOX_UN_USABLE)).count();
                 
-                //判断少/多电柜机
-                int chargeRate = BigDecimal.valueOf(batteryNum).multiply(NumberConstant.ONE_HUNDRED_BD).divide(BigDecimal.valueOf(boxNum), NumberConstant.ZERO, RoundingMode.DOWN)
-                        .intValue();
-                if (Objects.nonNull(electricityConfig)) {
-                    BigDecimal lowChargeRateBd = electricityConfig.getLowChargeRate();
-                    BigDecimal fullChargeRateBd = electricityConfig.getFullChargeRate();
-                    
-                    //默认低电比例25% 多电比例75%
-                    int lowChargeRate = Objects.isNull(lowChargeRateBd) ? NumberConstant.TWENTY_FIVE : lowChargeRateBd.intValue();
-                    int fullChargeRate = Objects.isNull(fullChargeRateBd) ? NumberConstant.SEVENTY_FIVE : fullChargeRateBd.intValue();
-                    
-                    if (chargeRate <= lowChargeRate) {
-                        electricityCabinetListMapVO.setIsLowCharge(NumberConstant.ONE);
-                    } else if (chargeRate >= fullChargeRate) {
-                        electricityCabinetListMapVO.setIsFulCharge(NumberConstant.ONE);
-                    } else {
-                        electricityCabinetListMapVO.setIsLowCharge(NumberConstant.ZERO);
-                        electricityCabinetListMapVO.setIsFulCharge(NumberConstant.ZERO);
-                    }
-                }
-                
                 // 是否锁仓柜机
                 electricityCabinetListMapVO.setIsUnusable(unusableBoxNum > NumberConstant.ZERO);
+                
+                // 少电多电
+                ElectricityCabinetListMapVO batteryCountVO = this.judgeBatteryCountType(cabinet, electricityConfig, boxNum, batteryNum);
+                if (Objects.nonNull(batteryCountVO)) {
+                    electricityCabinetListMapVO.setIsLowCharge(batteryCountVO.getIsLowCharge());
+                    electricityCabinetListMapVO.setIsFulCharge(batteryCountVO.getIsFulCharge());
+                }
             }
             
             electricityCabinetListMapVO.setBoxNum(boxNum);
@@ -5041,6 +5041,56 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 .unusableCount(unusableCount).offLineCount(offLineCount).electricityCabinetListMapVOList(rspList).build();
         
         return R.ok(rsp);
+    }
+    
+    /***
+     * 判断少电/多电
+     */
+    private ElectricityCabinetListMapVO judgeBatteryCountType(ElectricityCabinetMapBO cabinet, ElectricityConfig electricityConfig, Integer boxNum, Integer batteryNum) {
+        ElectricityCabinetListMapVO electricityCabinetListMapVO = new ElectricityCabinetListMapVO();
+    
+        //判断少/多电柜机
+        if (Objects.nonNull(electricityConfig) && Objects.equals(electricityConfig.getChargeRateType(), ElectricityConfig.CHARGE_RATE_TYPE_UNIFY)) {
+            BigDecimal lowChargeRateBd = electricityConfig.getLowChargeRate();
+            BigDecimal fullChargeRateBd = electricityConfig.getFullChargeRate();
+        
+            //默认低电比例25% 多电比例75%
+            int lowChargeRate = Objects.isNull(lowChargeRateBd) ? NumberConstant.TWENTY_FIVE : lowChargeRateBd.intValue();
+            int fullChargeRate = Objects.isNull(fullChargeRateBd) ? NumberConstant.SEVENTY_FIVE : fullChargeRateBd.intValue();
+            int chargeRate = BigDecimal.valueOf(batteryNum).multiply(NumberConstant.ONE_HUNDRED_BD).divide(BigDecimal.valueOf(boxNum), NumberConstant.ZERO, RoundingMode.DOWN)
+                    .intValue();
+            
+            if (chargeRate <= lowChargeRate) {
+                electricityCabinetListMapVO.setIsLowCharge(NumberConstant.ONE);
+            } else if (chargeRate >= fullChargeRate) {
+                electricityCabinetListMapVO.setIsFulCharge(NumberConstant.ONE);
+            } else {
+                electricityCabinetListMapVO.setIsLowCharge(NumberConstant.ZERO);
+                electricityCabinetListMapVO.setIsFulCharge(NumberConstant.ZERO);
+            }
+        } else {
+            // 单个配置
+            Integer batteryCountType = cabinet.getBatteryCountType();
+            if (Objects.nonNull(batteryCountType)) {
+                switch (batteryCountType) {
+                    // 少电
+                    case EleCabinetConstant.BATTERY_COUNT_TYPE_LESS:
+                        electricityCabinetListMapVO.setIsLowCharge(NumberConstant.ONE);
+                        break;
+                    // 多电
+                    case EleCabinetConstant.BATTERY_COUNT_TYPE_MORE:
+                        electricityCabinetListMapVO.setIsFulCharge(NumberConstant.ONE);
+                        break;
+                    // 正常
+                    default:
+                        electricityCabinetListMapVO.setIsLowCharge(NumberConstant.ZERO);
+                        electricityCabinetListMapVO.setIsFulCharge(NumberConstant.ZERO);
+                        break;
+                }
+            }
+        }
+    
+        return electricityCabinetListMapVO;
     }
     
     @Slave

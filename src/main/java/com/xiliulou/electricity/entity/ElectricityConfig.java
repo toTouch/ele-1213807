@@ -175,6 +175,11 @@ public class ElectricityConfig {
      */
     private BigDecimal fullChargeRate;
     
+    /**
+     * 柜机少电多电配置标准:1-统一配置 2-单个柜机配置
+     */
+    private Integer chargeRateType;
+    
     public static Integer MOVE_FRANCHISEE_CLOSE = 1;
     
     public static Integer MOVE_FRANCHISEE_OPEN = 0;
@@ -283,5 +288,15 @@ public class ElectricityConfig {
      */
     public static Integer OPEN_WX_CUSTOMER = 0;
     public static Integer CLOSE_WX_CUSTOMER = 1;
+    
+    /**
+     * 柜机少电多电配置标准:0-统一配置
+     */
+    public static Integer CHARGE_RATE_TYPE_UNIFY = 0;
+    
+    /**
+     * 柜机少电多电配置标准:1-单个柜机配置
+     */
+    public static Integer CHARGE_RATE_TYPE_SINGLE = 1;
 
 }
