@@ -65,6 +65,7 @@ public class EleCabinetDataAnalyseServiceImpl implements EleCabinetDataAnalyseSe
     @Autowired
     private ElectricityCabinetPowerService eleCabinetPowerService;
     
+    @Resource
     private ElePowerService elePowerService;
     
     @Autowired
@@ -264,6 +265,13 @@ public class EleCabinetDataAnalyseServiceImpl implements EleCabinetDataAnalyseSe
         return result;
     }
     
+    
+    public static void main(String[] args) {
+        EleCabinetDataAnalyseVO item = new EleCabinetDataAnalyseVO();
+        item.setId(2715);
+        item.getId().longValue();
+    }
+    
     private List<EleCabinetDataAnalyseVO> buildEleCabinetDataAnalyseVOs(List<EleCabinetDataAnalyseVO> electricityCabinetList, ElectricityCabinetQuery cabinetQuery) {
         CompletableFuture<Void> acquireBasicInfo = CompletableFuture.runAsync(() -> electricityCabinetList.forEach(item -> {
             ElectricityCabinetModel cabinetModel = eleCabinetModelService.queryByIdFromCache(item.getModelId());
@@ -278,13 +286,8 @@ public class EleCabinetDataAnalyseServiceImpl implements EleCabinetDataAnalyseSe
             ElectricityCabinetPower eleCabinetPower = eleCabinetPowerService.selectLatestByEid(item.getId());
             item.setPowerConsumption(Objects.nonNull(eleCabinetPower) ? eleCabinetPower.getSumPower() : 0);
             
-            log.info("item==={}", item);
-            log.info("item.getId==={}", item.getId());
-            
             ElePower elePower = elePowerService.queryLatestByEid(item.getId().longValue());
             //ElectricityCabinetPower eleCabinetPower = eleCabinetPowerService.selectLatestByEid(item.getId());
-            log.info("elePower==={}", elePower);
-            log.info("elePower.getSumPower==={}", elePower.getSumPower());
             item.setPowerConsumption(Objects.nonNull(elePower) ? elePower.getSumPower() : 0);
 
             Store store = storeService.queryByIdFromCache(item.getStoreId());
