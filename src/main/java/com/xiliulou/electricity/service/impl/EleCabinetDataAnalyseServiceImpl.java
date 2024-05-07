@@ -266,7 +266,7 @@ public class EleCabinetDataAnalyseServiceImpl implements EleCabinetDataAnalyseSe
     }
     
     private List<EleCabinetDataAnalyseVO> buildEleCabinetDataAnalyseVOs(List<EleCabinetDataAnalyseVO> electricityCabinetList, ElectricityCabinetQuery cabinetQuery) {
-        CompletableFuture<Void> acquireBasicInfo = CompletableFuture.runAsync(() -> electricityCabinetList.stream().filter(Objects::nonNull).forEach(item -> {
+        CompletableFuture<Void> acquireBasicInfo = CompletableFuture.runAsync(() -> electricityCabinetList.forEach(item -> {
             
             log.info("item={}", item);
             
@@ -285,7 +285,14 @@ public class EleCabinetDataAnalyseServiceImpl implements EleCabinetDataAnalyseSe
     
             ElePower elePower = elePowerService.queryLatestByEid(item.getId().longValue());
 //            ElectricityCabinetPower eleCabinetPower = eleCabinetPowerService.selectLatestByEid(item.getId());
-            item.setPowerConsumption(Objects.nonNull(elePower) ? elePower.getSumPower() : 0);
+            
+            if (Objects.nonNull(elePower)) {
+                log.info("elePower={}", elePower);
+                item.setPowerConsumption(elePower.getSumPower());
+            } else {
+                log.info("elePower is null");
+                item.setPowerConsumption(0D);
+            }
 
             Store store = storeService.queryByIdFromCache(item.getStoreId());
             item.setStoreName(Objects.nonNull(store) ? store.getName() : "");
