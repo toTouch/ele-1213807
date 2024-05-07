@@ -1046,9 +1046,6 @@
         <if test="query.tenantId != null ">
             and tec.tenant_id = #{query.tenantId}
         </if>
-        <if test="batteryCountType != null">
-            and tece.battery_count_type = #{query.batteryCountType}
-        </if>
     </select>
     
     <select id="batchOperateList" resultType="com.xiliulou.electricity.vo.ElectricityCabinetBatchOperateVo">
