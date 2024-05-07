@@ -185,13 +185,6 @@ public class AnotherPayMembercardRecordServiceImpl implements AnotherPayMemberca
         long currentTimeMillis = System.currentTimeMillis();
         long realDisableTime = System.currentTimeMillis() - userBatteryMemberCard.getDisableMemberCardTime();
     
-        // 如果禁用的时间不超过一天则代付记录不做修改
-        if (realDisableTime < TimeConstant.DAY_MILLISECOND) {
-            log.warn("channel user enable member card handler!real disable time less than one day,uid={}, startTime={}, endTime={}, orderId={}", uid,
-                    userBatteryMemberCard.getDisableMemberCardTime(), System.currentTimeMillis(), userBatteryMemberCard.getOrderId());
-            return;
-        }
-    
         // 判断骑手当前的套餐是否为企业套餐
         ElectricityMemberCardOrder electricityMemberCardOrder = electricityMemberCardOrderService.selectByOrderNo(userBatteryMemberCard.getOrderId());
         if (Objects.equals(electricityMemberCardOrder.getOrderType(), PackageOrderTypeEnum.PACKAGE_ORDER_TYPE_ENTERPRISE.getCode())) {
