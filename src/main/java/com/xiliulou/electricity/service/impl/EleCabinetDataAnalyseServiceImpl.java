@@ -279,12 +279,13 @@ public class EleCabinetDataAnalyseServiceImpl implements EleCabinetDataAnalyseSe
             item.setPowerConsumption(Objects.nonNull(eleCabinetPower) ? eleCabinetPower.getSumPower() : 0);
             
             log.info("item==={}", item);
+            log.info("item.getId==={}", item.getId());
             
-            if (Objects.nonNull(item.getId())) {
-                ElePower elePower = elePowerService.queryLatestByEid(item.getId().longValue());
-                //            ElectricityCabinetPower eleCabinetPower = eleCabinetPowerService.selectLatestByEid(item.getId());
-                item.setPowerConsumption(Objects.nonNull(elePower) ? elePower.getSumPower() : 0);
-            }
+            ElePower elePower = elePowerService.queryLatestByEid(item.getId().longValue());
+            //ElectricityCabinetPower eleCabinetPower = eleCabinetPowerService.selectLatestByEid(item.getId());
+            log.info("elePower==={}", elePower);
+            log.info("elePower.getSumPower==={}", elePower.getSumPower());
+            item.setPowerConsumption(Objects.nonNull(elePower) ? elePower.getSumPower() : 0);
 
             Store store = storeService.queryByIdFromCache(item.getStoreId());
             item.setStoreName(Objects.nonNull(store) ? store.getName() : "");
