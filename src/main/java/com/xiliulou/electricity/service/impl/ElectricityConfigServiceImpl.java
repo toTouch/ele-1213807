@@ -9,7 +9,6 @@ import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.EleEsignConstant;
-import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.dto.FranchiseeBatteryModelDTO;
 import com.xiliulou.electricity.entity.EleEsignConfig;
 import com.xiliulou.electricity.entity.ElectricityConfig;
@@ -187,15 +186,6 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
             }
         }
         
-        // 处理柜机 少电比例和多电比例参数
-        Integer lowChargeRate = electricityConfigAddAndUpdateQuery.getLowChargeRate();
-        Integer fullChargeRate = electricityConfigAddAndUpdateQuery.getFullChargeRate();
-        
-        if (Objects.isNull(lowChargeRate) || Objects.isNull(fullChargeRate) || lowChargeRate < NumberConstant.ZERO || fullChargeRate < NumberConstant.ZERO
-                || fullChargeRate <= lowChargeRate) {
-            return R.fail("100317", "请输入0-100的整数;多电比例需大于少电比例");
-        }
-        
         ElectricityConfig electricityConfig = electricityConfigMapper.selectOne(new LambdaQueryWrapper<ElectricityConfig>().eq(ElectricityConfig::getTenantId, TenantContextHolder.getTenantId()));
         ElectricityConfig oldElectricityConfig = new ElectricityConfig();
         BeanUtil.copyProperties(electricityConfig, oldElectricityConfig, CopyOptions.create().ignoreNullValue().ignoreError());
@@ -227,9 +217,8 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
             electricityConfig.setAllowReturnEle(electricityConfigAddAndUpdateQuery.getAllowReturnEle());
             electricityConfig.setAllowFreezeWithAssets(electricityConfigAddAndUpdateQuery.getAllowFreezeWithAssets());
             electricityConfig.setWxCustomer(ElectricityConfig.CLOSE_WX_CUSTOMER);
-            electricityConfig.setLowChargeRate(BigDecimal.valueOf(lowChargeRate));
-            electricityConfig.setFullChargeRate(BigDecimal.valueOf(fullChargeRate));
             electricityConfig.setChannelTimeLimit(electricityConfigAddAndUpdateQuery.getChannelTimeLimit());
+            electricityConfig.setChargeRateType(electricityConfigAddAndUpdateQuery.getChargeRateType());
             
             electricityConfigMapper.insert(electricityConfig);
             return R.ok();
@@ -267,9 +256,8 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
         electricityConfig.setAllowRentEle(electricityConfigAddAndUpdateQuery.getAllowRentEle());
         electricityConfig.setAllowReturnEle(electricityConfigAddAndUpdateQuery.getAllowReturnEle());
         electricityConfig.setAllowFreezeWithAssets(electricityConfigAddAndUpdateQuery.getAllowFreezeWithAssets());
-        electricityConfig.setLowChargeRate(BigDecimal.valueOf(lowChargeRate));
-        electricityConfig.setFullChargeRate(BigDecimal.valueOf(fullChargeRate));
         electricityConfig.setChannelTimeLimit(electricityConfigAddAndUpdateQuery.getChannelTimeLimit());
+        electricityConfig.setChargeRateType(electricityConfigAddAndUpdateQuery.getChargeRateType());
         
         int updateResult = electricityConfigMapper.update(electricityConfig);
         if (updateResult > 0) {

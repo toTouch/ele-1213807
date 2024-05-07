@@ -2,6 +2,7 @@ package com.xiliulou.electricity.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.xiliulou.electricity.bo.asset.ElectricityCabinetBO;
+import com.xiliulou.electricity.bo.cabinet.ElectricityCabinetMapBO;
 import com.xiliulou.electricity.bo.merchant.AreaCabinetNumBO;
 import com.xiliulou.electricity.dto.asset.CabinetBatchOutWarehouseDTO;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
@@ -61,7 +62,7 @@ public interface ElectricityCabinetMapper extends BaseMapper<ElectricityCabinet>
 	
 	Integer updateEleById(ElectricityCabinet electricityCabinet);
 
-    List<ElectricityCabinet> selectEleCabinetListByLongitudeAndLatitude(@Param("query") ElectricityCabinetQuery cabinetQuery);
+    List<ElectricityCabinetMapBO> selectEleCabinetListByLongitudeAndLatitude(@Param("query") ElectricityCabinetQuery cabinetQuery);
     List<ElectricityCabinetVO> queryName(@Param("tenantId") Integer tenantId, @Param("id") Integer id);
     
     List<ElectricityCabinet> eleCabinetSearch(ElectricityCabinetQuery query);

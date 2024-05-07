@@ -159,6 +159,11 @@ public class ElectricityConfigAddAndUpdateQuery {
      * 打开微信客服 0-是 1-否
      */
     private Integer wxCustomer;
+    
+    /**
+     * 柜机少电多电配置标准:1-统一配置 2-单个柜机配置
+     */
+    private Integer chargeRateType;
 }
 
 
