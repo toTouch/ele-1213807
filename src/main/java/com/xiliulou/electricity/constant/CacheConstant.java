@@ -14,6 +14,9 @@ public interface CacheConstant {
     //加载换电柜GEO缓存锁
     String CACHE_RELOAD_ELECTRICITY_CABINET_GEO = "reload_electricity_cabinet_geo:";
     
+    //换电柜扩充信息缓存
+    String CACHE_ELECTRICITY_CABINET_EXTRA = "electricity_cabinet_extra:";
+    
     String ADMIN_OPERATE_LOCK_KEY = "admin_operate_lock_key:";
     String CACHE_PAY_PARAMS = "cache_pay_params";
     //用户缓存

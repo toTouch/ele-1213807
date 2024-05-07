@@ -1,8 +1,11 @@
 package com.xiliulou.electricity.service.impl;
 
+import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.db.dynamic.annotation.Slave;
+import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.ElectricityCabinetExtra;
+import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.mapper.ElectricityCabinetExtraMapper;
 import com.xiliulou.electricity.service.ElectricityCabinetExtraService;
 import lombok.extern.slf4j.Slf4j;
@@ -23,27 +26,29 @@ public class ElectricityCabinetExtraImpl implements ElectricityCabinetExtraServi
     @Resource
     private ElectricityCabinetExtraMapper electricityCabinetExtraMapper;
     
+    @Resource
+    private RedisService redisService;
+    
     @Slave
     @Override
-    public ElectricityCabinetExtra queryByEid(Long eid, Integer tenantId) {
-        return electricityCabinetExtraMapper.selectByEid(eid, tenantId);
+    public ElectricityCabinetExtra queryByEid(Long eid) {
+        return electricityCabinetExtraMapper.selectByEid(eid);
     }
     
     @Override
-    public Integer insertOrUpdate(ElectricityCabinetExtra electricityCabinetExtra) {
-        ElectricityCabinetExtra exist = this.queryByEid(electricityCabinetExtra.getEid(), electricityCabinetExtra.getTenantId());
-        if (Objects.isNull(exist)) {
-            return electricityCabinetExtraMapper.insertOne(electricityCabinetExtra);
+    public ElectricityCabinetExtra queryByEidFromCache(Long eid) {
+        ElectricityCabinetExtra cacheEleCabinetExtra = redisService.getWithHash(CacheConstant.CACHE_ELECTRICITY_CABINET_EXTRA + eid, ElectricityCabinetExtra.class);
+        if (Objects.nonNull(cacheEleCabinetExtra)) {
+            return cacheEleCabinetExtra;
         }
     
-        if (!Objects.equals(exist.getSn(), electricityCabinetExtra.getSn()) || Objects.equals(exist.getBatteryCountType(), electricityCabinetExtra.getBatteryCountType())) {
-            return NumberConstant.ZERO;
+        ElectricityCabinetExtra electricityCabinetExtra = this.queryByEid(eid);
+        if (Objects.isNull(electricityCabinetExtra)) {
+            return null;
         }
     
-        exist.setBatteryCountType(electricityCabinetExtra.getBatteryCountType());
-        exist.setUpdateTime(electricityCabinetExtra.getUpdateTime());
-        
-        return electricityCabinetExtraMapper.update(exist);
+        redisService.saveWithHash(CacheConstant.CACHE_ELECTRICITY_CABINET_EXTRA + eid, electricityCabinetExtra);
+        return electricityCabinetExtra;
     }
     
     @Override

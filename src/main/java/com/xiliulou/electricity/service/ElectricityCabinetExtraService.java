@@ -9,9 +9,9 @@ import com.xiliulou.electricity.entity.ElectricityCabinetExtra;
  */
 public interface ElectricityCabinetExtraService {
     
-    ElectricityCabinetExtra queryByEid(Long eid, Integer tenantId);
+    ElectricityCabinetExtra queryByEid(Long eid);
     
-    Integer insertOrUpdate(ElectricityCabinetExtra electricityCabinetExtra);
+    ElectricityCabinetExtra queryByEidFromCache(Long eid);
     
     Integer insertOne(ElectricityCabinetExtra electricityCabinetExtra);
     

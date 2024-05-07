@@ -161,7 +161,7 @@ public class ElectricityConfigAddAndUpdateQuery {
     private Integer wxCustomer;
     
     /**
-     * 柜机少电多电配置标准:1-统一配置 2-单个柜机配置
+     * 柜机少电多电配置标准:0-统一配置 1-单个柜机配置
      */
     private Integer chargeRateType;
 }
