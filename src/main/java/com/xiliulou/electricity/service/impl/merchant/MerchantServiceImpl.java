@@ -1450,8 +1450,6 @@ public class MerchantServiceImpl implements MerchantService {
                     levelId = merchantLevel.getId();
                 }
             }
-    
-           
             
             // 查询商户等级配置默认为五级
             MerchantSaveRequest merchantSaveRequest = new MerchantSaveRequest();
