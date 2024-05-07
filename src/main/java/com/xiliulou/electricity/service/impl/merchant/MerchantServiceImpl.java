@@ -15,6 +15,7 @@ import com.xiliulou.electricity.dto.merchant.MerchantDeleteCacheDTO;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.User;
+import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.enterprise.EnterpriseChannelUser;
 import com.xiliulou.electricity.entity.enterprise.EnterpriseCloudBeanOrder;
 import com.xiliulou.electricity.entity.enterprise.EnterpriseInfo;
@@ -44,6 +45,7 @@ import com.xiliulou.electricity.request.merchant.MerchantPageRequest;
 import com.xiliulou.electricity.request.merchant.MerchantSaveRequest;
 import com.xiliulou.electricity.service.BatteryMemberCardService;
 import com.xiliulou.electricity.service.FranchiseeService;
+import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.UserOauthBindService;
 import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseInfoService;
@@ -178,6 +180,9 @@ public class MerchantServiceImpl implements MerchantService {
     
     @Resource
     private EnterpriseCloudBeanOrderMapper enterpriseCloudBeanOrderMapper;
+    
+    @Resource
+    private UserInfoService userInfoService;
     
     /**
      * 商户保存
@@ -1468,7 +1473,7 @@ public class MerchantServiceImpl implements MerchantService {
             MerchantSaveRequest merchantSaveRequest = new MerchantSaveRequest();
             merchantSaveRequest.setName(enterpriseInfo.getName());
             merchantSaveRequest.setFranchiseeId(enterpriseInfo.getFranchiseeId());
-            User user = userService.queryByUidFromCache(enterpriseInfo.getUid());
+            UserInfo user = userInfoService.queryByUidFromCache(enterpriseInfo.getUid());
             if (Objects.nonNull(user)) {
                 merchantSaveRequest.setPhone(user.getPhone());
             }
