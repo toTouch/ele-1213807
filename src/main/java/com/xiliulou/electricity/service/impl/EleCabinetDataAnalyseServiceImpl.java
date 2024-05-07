@@ -32,7 +32,6 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -267,9 +266,6 @@ public class EleCabinetDataAnalyseServiceImpl implements EleCabinetDataAnalyseSe
     
     private List<EleCabinetDataAnalyseVO> buildEleCabinetDataAnalyseVOs(List<EleCabinetDataAnalyseVO> electricityCabinetList, ElectricityCabinetQuery cabinetQuery) {
         CompletableFuture<Void> acquireBasicInfo = CompletableFuture.runAsync(() -> electricityCabinetList.forEach(item -> {
-            
-            log.info("item={}", item);
-            
             ElectricityCabinetModel cabinetModel = eleCabinetModelService.queryByIdFromCache(item.getModelId());
             item.setModelName(Objects.nonNull(cabinetModel) ? cabinetModel.getName() : "");
             
@@ -282,16 +278,12 @@ public class EleCabinetDataAnalyseServiceImpl implements EleCabinetDataAnalyseSe
             ElectricityCabinetPower eleCabinetPower = eleCabinetPowerService.selectLatestByEid(item.getId());
             item.setPowerConsumption(Objects.nonNull(eleCabinetPower) ? eleCabinetPower.getSumPower() : 0);
             
-    
-            ElePower elePower = elePowerService.queryLatestByEid(item.getId().longValue());
-//            ElectricityCabinetPower eleCabinetPower = eleCabinetPowerService.selectLatestByEid(item.getId());
+            log.info("item==={}", item);
             
-            if (Objects.nonNull(elePower)) {
-                log.info("elePower={}", elePower);
-                item.setPowerConsumption(elePower.getSumPower());
-            } else {
-                log.info("elePower is null");
-                item.setPowerConsumption(0D);
+            if (Objects.nonNull(item.getId())) {
+                ElePower elePower = elePowerService.queryLatestByEid(item.getId().longValue());
+                //            ElectricityCabinetPower eleCabinetPower = eleCabinetPowerService.selectLatestByEid(item.getId());
+                item.setPowerConsumption(Objects.nonNull(elePower) ? elePower.getSumPower() : 0);
             }
 
             Store store = storeService.queryByIdFromCache(item.getStoreId());
