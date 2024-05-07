@@ -67,17 +67,13 @@ public class NormalEleExchangeHandlerIot extends AbstractElectricityIotHandler {
                 return;
             }
     
-            // 封装柜机扩展参数
-            ElectricityCabinetExtra electricityCabinetExtra = ElectricityCabinetExtra.builder().eid(Long.valueOf(eid)).batteryCountType(normalEleExchangeMsg.getBatSta())
-                    .createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).build();
-            ElectricityCabinet cabinetFromCache = electricityCabinetService.queryByIdFromCache(eid);
+            // 更新柜机参数
+            ElectricityCabinetExtra cabinetFromCache = electricityExtraService.queryByEidFromCache(Long.valueOf(eid));
             if (Objects.nonNull(cabinetFromCache)) {
-                electricityCabinetExtra.setSn(cabinetFromCache.getSn());
-                electricityCabinetExtra.setTenantId(cabinetFromCache.getTenantId());
-                electricityCabinetExtra.setDelFlag(cabinetFromCache.getDelFlag());
+                ElectricityCabinetExtra electricityCabinetExtra = ElectricityCabinetExtra.builder().id(cabinetFromCache.getId()).batteryCountType(normalEleExchangeMsg.getBatSta())
+                        .updateTime(System.currentTimeMillis()).build();
+                electricityExtraService.update(electricityCabinetExtra);
             }
-    
-            electricityExtraService.insertOrUpdate(electricityCabinetExtra);
         });
     }
 

@@ -10,7 +10,7 @@ import org.apache.ibatis.annotations.Param;
  */
 public interface ElectricityCabinetExtraMapper {
     
-    ElectricityCabinetExtra selectByEid(@Param("eid") Long eid, @Param("tenantId") Integer tenantId);
+    ElectricityCabinetExtra selectByEid(Long eid);
     
     Integer insertOne(ElectricityCabinetExtra electricityCabinetExtra);
     

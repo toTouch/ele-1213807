@@ -50,6 +50,7 @@ import com.xiliulou.electricity.entity.ElectricityAbnormalMessageNotify;
 import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.ElectricityCabinetBox;
+import com.xiliulou.electricity.entity.ElectricityCabinetExtra;
 import com.xiliulou.electricity.entity.ElectricityCabinetFile;
 import com.xiliulou.electricity.entity.ElectricityCabinetModel;
 import com.xiliulou.electricity.entity.ElectricityCabinetOrder;
@@ -111,6 +112,7 @@ import com.xiliulou.electricity.service.EleOtherConfigService;
 import com.xiliulou.electricity.service.EleRefundOrderService;
 import com.xiliulou.electricity.service.ElectricityBatteryService;
 import com.xiliulou.electricity.service.ElectricityCabinetBoxService;
+import com.xiliulou.electricity.service.ElectricityCabinetExtraService;
 import com.xiliulou.electricity.service.ElectricityCabinetFileService;
 import com.xiliulou.electricity.service.ElectricityCabinetModelService;
 import com.xiliulou.electricity.service.ElectricityCabinetOrderService;
@@ -430,6 +432,9 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     
     @Resource
     private MerchantAreaService merchantAreaService;
+    
+    @Resource
+    private ElectricityCabinetExtraService electricityCabinetExtraService;
     
     /**
      * 根据主键ID集获取柜机基本信息
@@ -763,10 +768,16 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         //解绑库房
         electricityCabinet.setWarehouseId(NumberConstant.ZERO_L);
         int update = electricityCabinetMapper.updateEleById(electricityCabinet);
+        
+        // 删除柜机扩展参数
+        electricityCabinetExtraService.update(
+                ElectricityCabinetExtra.builder().eid(Long.valueOf(id)).delFlag(electricityCabinet.getDelFlag()).updateTime(electricityCabinet.getUpdateTime()).build());
+        
         DbUtils.dbOperateSuccessThen(update, () -> {
             //删除缓存
             redisService.delete(CacheConstant.CACHE_ELECTRICITY_CABINET + id);
             redisService.delete(CacheConstant.CACHE_ELECTRICITY_CABINET_DEVICE + electricityCabinet.getProductKey() + electricityCabinet.getDeviceName());
+            redisService.delete(CacheConstant.CACHE_ELECTRICITY_CABINET_EXTRA + id);
             
             //删除柜机GEO信息
             redisService.removeGeoMember(CacheConstant.CACHE_ELECTRICITY_CABINET_GEO + electricityCabinet.getTenantId(), electricityCabinet.getId().toString());
@@ -775,6 +786,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             electricityCabinetBoxService.batchDeleteBoxByElectricityCabinetId(id);
             
             electricityCabinetServerService.logicalDeleteByEid(id);
+            
             return null;
         });
         return R.ok();
