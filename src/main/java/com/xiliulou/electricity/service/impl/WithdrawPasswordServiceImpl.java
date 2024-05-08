@@ -106,6 +106,9 @@ public class WithdrawPasswordServiceImpl implements WithdrawPasswordService {
         }
         TokenUser userInfo = SecurityUtils.getUserInfo();
     
+        log.info("oldWithdrawPassword={},oldWithdrawPassword.getPassword={},decryptPassword={},encode(decryptPassword)={}", oldWithdrawPassword, oldWithdrawPassword.getPassword(),
+                decryptPassword, customPasswordEncoder.encode(decryptPassword));
+        
         if (Objects.isNull(oldWithdrawPassword) || !oldWithdrawPassword.getPassword().equals(customPasswordEncoder.encode(decryptPassword))) {
             operateRecordUtil.record(null, userInfo);
         }
