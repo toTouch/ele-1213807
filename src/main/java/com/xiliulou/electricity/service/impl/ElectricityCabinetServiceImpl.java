@@ -36,7 +36,6 @@ import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.constant.OtaConstant;
 import com.xiliulou.electricity.constant.RegularConstant;
 import com.xiliulou.electricity.constant.StringConstant;
-import com.xiliulou.electricity.entity.BatteryGeo;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.BatteryMembercardRefundOrder;
 import com.xiliulou.electricity.entity.BatteryModel;
@@ -5426,7 +5425,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     
             // 删除柜机扩展参数
             electricityCabinetExtraService.update(
-                    ElectricityCabinetExtra.builder().eid(Long.valueOf(id)).delFlag(electricityCabinet.getDelFlag()).updateTime(electricityCabinet.getUpdateTime()).build());
+                    ElectricityCabinetExtra.builder().eid(Long.valueOf(id)).delFlag(electricityCabinetUpdate.getDelFlag()).updateTime(electricityCabinet.getUpdateTime()).build());
             
             DbUtils.dbOperateSuccessThenHandleCache(electricityCabinetMapper.updateEleById(electricityCabinetUpdate), i -> {
                 redisService.delete(CacheConstant.CACHE_ELECTRICITY_CABINET + id);
