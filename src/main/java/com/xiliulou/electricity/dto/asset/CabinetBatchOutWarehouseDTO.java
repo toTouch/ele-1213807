@@ -2,6 +2,7 @@ package com.xiliulou.electricity.dto.asset;
 
 import lombok.Data;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -71,4 +72,14 @@ public class CabinetBatchOutWarehouseDTO {
     private Integer usableStatus;
     
     private Integer tenantId;
+    
+    /**
+     * 区域id
+     */
+    private Long areaId;
+    
+    /**
+     * 场地费
+     */
+    private BigDecimal placeFee;
 }

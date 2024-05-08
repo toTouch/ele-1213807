@@ -1474,9 +1474,11 @@ public class MerchantServiceImpl implements MerchantService {
             merchantSaveRequest.setName(enterpriseInfo.getName());
             merchantSaveRequest.setFranchiseeId(enterpriseInfo.getFranchiseeId());
             UserInfo user = userInfoService.queryByUidFromCache(enterpriseInfo.getUid());
-            if (Objects.nonNull(user)) {
-                merchantSaveRequest.setPhone(user.getPhone());
+            if (Objects.isNull(user)) {
+                log.error("repair enterprise error! not find user id={}", enterpriseInfo.getId());
+                return;
             }
+            merchantSaveRequest.setPhone(user.getPhone());
             merchantSaveRequest.setStatus(0);
             merchantSaveRequest.setInviteAuth(1);
             merchantSaveRequest.setEnterprisePackageAuth(0);
@@ -1499,7 +1501,7 @@ public class MerchantServiceImpl implements MerchantService {
             enterpriseInfoUpdate.setId(enterpriseInfo.getId());
             enterpriseInfoUpdate.setUpdateTime(currentTimeMillis);
             enterpriseInfoUpdate.setUid(merchant.getUid());
-            enterpriseInfoService.update(enterpriseInfo);
+            enterpriseInfoService.update(enterpriseInfoUpdate);
     
             EnterpriseChannelUser enterpriseChannelUser = new EnterpriseChannelUser();
             enterpriseChannelUser.setEnterpriseId(enterpriseInfo.getId());

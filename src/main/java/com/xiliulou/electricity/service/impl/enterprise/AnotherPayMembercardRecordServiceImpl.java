@@ -207,6 +207,7 @@ public class AnotherPayMembercardRecordServiceImpl implements AnotherPayMemberca
                     .collect(Collectors.toList());
             if (ObjectUtils.isEmpty(notUseRecordList)) {
                 log.warn("channel user enable member card handler!not use pay record is empty,uid={}, orderId={}", uid, userBatteryMemberCard.getOrderId());
+                return;
             }
         
             List<Long> idList = notUseRecordList.stream().map(AnotherPayMembercardRecord::getId).collect(Collectors.toList());
