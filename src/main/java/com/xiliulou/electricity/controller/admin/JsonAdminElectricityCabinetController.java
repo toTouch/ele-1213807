@@ -37,6 +37,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
+import javax.validation.Valid;
 import java.util.*;
 
 /**
@@ -1037,7 +1038,8 @@ public class JsonAdminElectricityCabinetController extends BasicController {
      * 批量编辑租退标准
      */
     @PostMapping(value = "/admin/electricityCabinet/batchEditRentReturn")
-    public void batchEditRentReturn(@RequestBody @Validated List<ElectricityCabinetBatchEditRentReturnCountQuery> countQueryList) {
-        electricityCabinetService.batchEditRentReturn(countQueryList);
+    public R batchEditRentReturn(@RequestBody @Validated ElectricityCabinetBatchEditRentReturnQuery rentReturnQuery) {
+        electricityCabinetService.batchEditRentReturn(rentReturnQuery);
+        return R.ok();
     }
 }

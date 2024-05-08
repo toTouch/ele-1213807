@@ -84,6 +84,7 @@ import com.xiliulou.electricity.query.EleOuterCommandQuery;
 import com.xiliulou.electricity.query.ElectricityCabinetAddAndUpdate;
 import com.xiliulou.electricity.query.ElectricityCabinetAddressQuery;
 import com.xiliulou.electricity.query.ElectricityCabinetBatchEditRentReturnCountQuery;
+import com.xiliulou.electricity.query.ElectricityCabinetBatchEditRentReturnQuery;
 import com.xiliulou.electricity.query.ElectricityCabinetImportQuery;
 import com.xiliulou.electricity.query.ElectricityCabinetQuery;
 import com.xiliulou.electricity.query.ElectricityCabinetTransferQuery;
@@ -5946,24 +5947,25 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         ElectricityCabinetExtra cabinetExtra = electricityCabinetExtraService.queryByEid(id);
         if (Objects.isNull(cabinetExtra)) {
             log.warn("rentReturnEditEcho is error, cabinetExtra is null, id:{}", id);
+            return new RentReturnEditEchoVO();
         }
         
         return new RentReturnEditEchoVO(cabinetExtra.getMinRetainBatteryCount(), cabinetExtra.getMaxRetainBatteryCount());
     }
     
     @Override
-    public void batchEditRentReturn(List<ElectricityCabinetBatchEditRentReturnCountQuery> countQueryList) {
+    public void batchEditRentReturn(ElectricityCabinetBatchEditRentReturnQuery rentReturnQuery) {
         //用户
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             log.error("rentReturnEditEcho is error! not found user ");
             new CustomBusinessException("用户未找到");
         }
-        if (CollUtil.isEmpty(countQueryList)) {
+        if (CollUtil.isEmpty(rentReturnQuery.getCountQueryList())) {
             new CustomBusinessException("请至少选择一个柜机");
         }
         
-        for (ElectricityCabinetBatchEditRentReturnCountQuery countQuery : countQueryList) {
+        for (ElectricityCabinetBatchEditRentReturnCountQuery countQuery : rentReturnQuery.getCountQueryList()) {
             DbUtils.dbOperateSuccessThenHandleCache(
                     electricityCabinetExtraService.updateElectricityCabinetExtra(countQuery.getMinRetainBatteryCount(), countQuery.getMaxRetainBatteryCount(), countQuery.getId()),
                     i -> {
