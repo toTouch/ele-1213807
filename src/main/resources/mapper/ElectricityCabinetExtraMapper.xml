@@ -42,4 +42,21 @@
         </set>
             where id = #{id}
     </update>
+    
+    
+    <update id="updateElectricityCabinetExtra">
+        update t_electricity_cabinet_extra
+        <set>
+            <if test="minRetainBatteryCount != null">
+                min_retain_battery_count = #{minRetainBatteryCount},
+            </if>
+            <if test="maxRetainBatteryCount != null">
+                max_retain_battery_count = #{maxRetainBatteryCount},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+        </set>
+        where id = #{id}
+    </update>
 </mapper>

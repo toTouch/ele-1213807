@@ -7,11 +7,13 @@ import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.ElectricityCabinetExtra;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.mapper.ElectricityCabinetExtraMapper;
+import com.xiliulou.electricity.query.ElectricityCabinetBatchEditRentReturnCountQuery;
 import com.xiliulou.electricity.service.ElectricityCabinetExtraService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -41,12 +43,12 @@ public class ElectricityCabinetExtraImpl implements ElectricityCabinetExtraServi
         if (Objects.nonNull(cacheEleCabinetExtra)) {
             return cacheEleCabinetExtra;
         }
-    
+        
         ElectricityCabinetExtra electricityCabinetExtra = this.queryByEid(eid);
         if (Objects.isNull(electricityCabinetExtra)) {
             return null;
         }
-    
+        
         redisService.saveWithHash(CacheConstant.CACHE_ELECTRICITY_CABINET_EXTRA + eid, electricityCabinetExtra);
         return electricityCabinetExtra;
     }
@@ -60,4 +62,10 @@ public class ElectricityCabinetExtraImpl implements ElectricityCabinetExtraServi
     public Integer update(ElectricityCabinetExtra electricityCabinetExtra) {
         return electricityCabinetExtraMapper.update(electricityCabinetExtra);
     }
+    
+    @Override
+    public void updateElectricityCabinetExtra(Integer minRetainBatteryCount, Integer maxRetainBatteryCount, Integer id) {
+        electricityCabinetExtraMapper.updateElectricityCabinetExtra(minRetainBatteryCount, maxRetainBatteryCount, id, System.currentTimeMillis());
+    }
+    
 }

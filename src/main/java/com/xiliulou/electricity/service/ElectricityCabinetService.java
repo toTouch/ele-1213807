@@ -2,9 +2,6 @@ package com.xiliulou.electricity.service;
 
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.bo.merchant.AreaCabinetNumBO;
-import com.xiliulou.electricity.entity.*;
-import com.xiliulou.electricity.dto.EleChargeConfigCalcDetailDto;
-import com.xiliulou.electricity.entity.EleChargeConfig;
 import com.xiliulou.electricity.entity.ElectricityAbnormalMessageNotify;
 import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
@@ -16,6 +13,7 @@ import com.xiliulou.electricity.query.BatteryReportQuery;
 import com.xiliulou.electricity.query.EleOuterCommandQuery;
 import com.xiliulou.electricity.query.ElectricityCabinetAddAndUpdate;
 import com.xiliulou.electricity.query.ElectricityCabinetAddressQuery;
+import com.xiliulou.electricity.query.ElectricityCabinetBatchEditRentReturnCountQuery;
 import com.xiliulou.electricity.query.ElectricityCabinetImportQuery;
 import com.xiliulou.electricity.query.ElectricityCabinetQuery;
 import com.xiliulou.electricity.query.ElectricityCabinetTransferQuery;
@@ -27,6 +25,7 @@ import com.xiliulou.electricity.vo.CabinetBatteryVO;
 import com.xiliulou.electricity.vo.EleCabinetDataAnalyseVO;
 import com.xiliulou.electricity.vo.ElectricityCabinetCountVO;
 import com.xiliulou.electricity.vo.ElectricityCabinetVO;
+import com.xiliulou.electricity.vo.RentReturnEditEchoVO;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 
@@ -291,4 +290,9 @@ public interface ElectricityCabinetService {
     Map<String,Long> listIdsBySnArray(List<String> snList, Integer tenantId, Long sourceFranchiseeId);
     
     List<Integer> listIdsByName(String name);
+    
+    RentReturnEditEchoVO rentReturnEditEcho(Long id);
+    
+    void batchEditRentReturn(List<ElectricityCabinetBatchEditRentReturnCountQuery> countQueryList);
+    
 }

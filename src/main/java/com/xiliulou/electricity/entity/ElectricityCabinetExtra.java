@@ -34,6 +34,16 @@ public class ElectricityCabinetExtra {
     private Integer batteryCountType;
     
     /**
+     * 最小保留电池数量
+     */
+    private Integer minRetainBatteryCount;
+    
+    /**
+     * 最大保留电池数量
+     */
+    private Integer maxRetainBatteryCount;
+    
+    /**
      * 租户ID
      */
     private Integer tenantId;
