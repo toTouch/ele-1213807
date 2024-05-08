@@ -5423,10 +5423,15 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             electricityCabinetUpdate.setUpdateTime(System.currentTimeMillis());
             electricityCabinetUpdate.setDelFlag(ElectricityCabinet.DEL_DEL);
             electricityCabinetUpdate.setTenantId(TenantContextHolder.getTenantId());
+    
+            // 删除柜机扩展参数
+            electricityCabinetExtraService.update(
+                    ElectricityCabinetExtra.builder().eid(Long.valueOf(id)).delFlag(electricityCabinet.getDelFlag()).updateTime(electricityCabinet.getUpdateTime()).build());
             
             DbUtils.dbOperateSuccessThenHandleCache(electricityCabinetMapper.updateEleById(electricityCabinetUpdate), i -> {
                 redisService.delete(CacheConstant.CACHE_ELECTRICITY_CABINET + id);
                 redisService.delete(CacheConstant.CACHE_ELECTRICITY_CABINET_DEVICE + electricityCabinet.getProductKey() + electricityCabinet.getDeviceName());
+                redisService.delete(CacheConstant.CACHE_ELECTRICITY_CABINET_EXTRA + id);
                 
                 //删除格挡
                 electricityCabinetBoxService.batchDeleteBoxByElectricityCabinetId(id);
@@ -5475,6 +5480,12 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 
                 //缓存柜机GEO信息
                 addElectricityCabinetLocToGeo(electricityCabinet);
+    
+                // 新增柜机扩展参数
+                ElectricityCabinetExtra electricityCabinetExtra = ElectricityCabinetExtra.builder().eid(electricityCabinet.getId().longValue())
+                        .batteryCountType(EleCabinetConstant.BATTERY_COUNT_TYPE_NORMAL).tenantId(electricityCabinet.getTenantId()).delFlag(electricityCabinet.getDelFlag())
+                        .createTime(electricityCabinet.getCreateTime()).updateTime(electricityCabinet.getUpdateTime()).build();
+                electricityCabinetExtraService.insertOne(electricityCabinetExtra);
             });
         }
         
