@@ -62,4 +62,6 @@ public class ElectricityCabinetExtra {
      * 更新时间
      */
     private Long updateTime;
+    
+    public final static Integer EFFECT_ROWS_ZERO = 0;
 }

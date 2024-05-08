@@ -233,6 +233,7 @@ import java.util.stream.Collectors;
 
 import static com.xiliulou.electricity.constant.ElectricityIotConstant.ELE_COMMAND_CELL_UPDATE;
 import static com.xiliulou.electricity.entity.ElectricityCabinet.ELECTRICITY_CABINET_USABLE_STATUS;
+import static com.xiliulou.electricity.entity.ElectricityCabinetExtra.EFFECT_ROWS_ZERO;
 
 /**
  * 换电柜表(TElectricityCabinet)表服务实现类
@@ -700,7 +701,11 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             electricityCabinetServerService.insertOrUpdateByElectricityCabinet(electricityCabinet, oldElectricityCabinet);
             
             // 修改柜机额外信息
-            updateElectricityCabinetExtra(electricityCabinetAddAndUpdate);
+            Integer rows = updateElectricityCabinetExtra(electricityCabinetAddAndUpdate);
+            if (!Objects.equals(rows, EFFECT_ROWS_ZERO)) {
+                // 删除柜机额外信息redis
+                redisService.delete(CacheConstant.CACHE_ELECTRICITY_CABINET_EXTRA + electricityCabinet.getId());
+            }
             
             // 增加场地费变更记录
             if (Objects.nonNull(finalMerchantPlaceFeeRecord)) {
@@ -717,15 +722,15 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         return R.ok();
     }
     
-    private void updateElectricityCabinetExtra(ElectricityCabinetAddAndUpdate electricityCabinetAddAndUpdate) {
+    private Integer updateElectricityCabinetExtra(ElectricityCabinetAddAndUpdate electricityCabinetAddAndUpdate) {
         ElectricityCabinetExtra cabinetExtra = electricityCabinetExtraService.queryByEid(Long.valueOf(electricityCabinetAddAndUpdate.getId()));
         if (Objects.isNull(cabinetExtra)) {
             log.warn("updateElectricityCabinetExtra is error, cabinetExtra is null, id:{}", electricityCabinetAddAndUpdate.getId());
         }
         if (Objects.isNull(electricityCabinetAddAndUpdate.getMinRetainBatteryCount()) && Objects.isNull(electricityCabinetAddAndUpdate.getMaxRetainBatteryCount())) {
-            return;
+            return 0;
         }
-        electricityCabinetExtraService.updateElectricityCabinetExtra(electricityCabinetAddAndUpdate.getMinRetainBatteryCount(),
+        return electricityCabinetExtraService.updateElectricityCabinetExtra(electricityCabinetAddAndUpdate.getMinRetainBatteryCount(),
                 electricityCabinetAddAndUpdate.getMaxRetainBatteryCount(), electricityCabinetAddAndUpdate.getId());
     }
     
@@ -1288,7 +1293,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         e.setFullyElectricityBattery((int) exchangeableNumber);//兼容2.0小程序首页显示问题
         
         // 筛选可换、可租、可退标签返回
-        e.setLabel(electricityCabinetLabelHandler(e.getId(),fullyCharged));
+        e.setLabel(electricityCabinetLabelHandler(e.getId(), fullyCharged));
         return e;
     }
     
@@ -2687,11 +2692,11 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         
-        Integer tenantId = TenantContextHolder.getTenantId();
-        ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(tenantId);
-        if (Objects.nonNull(electricityConfig) && Objects.equals(electricityConfig.getAllowRentEle(), ElectricityConfig.NOT_ALLOW_RENT_ELE)) {
-            return R.fail("ELECTRICITY.100271", "当前柜机不支持租电");
-        }
+        //        Integer tenantId = TenantContextHolder.getTenantId();
+        //        ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(tenantId);
+        //        if (Objects.nonNull(electricityConfig) && Objects.equals(electricityConfig.getAllowRentEle(), ElectricityConfig.NOT_ALLOW_RENT_ELE)) {
+        //            return R.fail("ELECTRICITY.100271", "当前柜机不支持租电");
+        //        }
         
         //是否存在未完成的租电池订单
         RentBatteryOrder rentBatteryOrder = rentBatteryOrderService.queryByUidAndType(user.getUid());
@@ -5959,7 +5964,13 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         }
         
         for (ElectricityCabinetBatchEditRentReturnCountQuery countQuery : countQueryList) {
-            electricityCabinetExtraService.updateElectricityCabinetExtra(countQuery.getMinRetainBatteryCount(), countQuery.getMaxRetainBatteryCount(), countQuery.getId());
+            DbUtils.dbOperateSuccessThenHandleCache(
+                    electricityCabinetExtraService.updateElectricityCabinetExtra(countQuery.getMinRetainBatteryCount(), countQuery.getMaxRetainBatteryCount(), countQuery.getId()),
+                    i -> {
+                        // 删除柜机额外信息redis
+                        redisService.delete(CacheConstant.CACHE_ELECTRICITY_CABINET_EXTRA + countQuery.getId());
+                    });
+            
         }
     }
 }
