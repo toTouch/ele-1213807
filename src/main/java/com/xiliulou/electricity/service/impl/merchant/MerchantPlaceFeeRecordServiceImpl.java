@@ -137,8 +137,8 @@ public class MerchantPlaceFeeRecordServiceImpl implements MerchantPlaceFeeRecord
             List<MerchantPlaceFeeRecord> placeFeeRecords = new ArrayList<>();
             
             for (ElectricityCabinet electricityCabinet : electricityCabinetList) {
-                BigDecimal oldFee = BigDecimal.ZERO;
-                BigDecimal newFee = BigDecimal.ZERO;
+                BigDecimal oldFee = new BigDecimal(NumberConstant.MINUS_ONE);
+                BigDecimal newFee = new BigDecimal(NumberConstant.MINUS_ONE);
                 
                 // 判断新的场地费用和就的场地费用是否存在变化如果存在变化则将变换存入到历史表
                 if (Objects.nonNull(electricityCabinet.getPlaceFee())) {
@@ -159,12 +159,17 @@ public class MerchantPlaceFeeRecordServiceImpl implements MerchantPlaceFeeRecord
                 if (!Objects.equals(newFee.compareTo(oldFee), NumberConstant.ZERO)) {
                     merchantPlaceFeeRecord = new MerchantPlaceFeeRecord();
                     merchantPlaceFeeRecord.setCabinetId(electricityCabinet.getId());
-                    if (!Objects.equals(newFee.compareTo(BigDecimal.ZERO), NumberConstant.MINUS_ONE)) {
-                        merchantPlaceFeeRecord.setNewPlaceFee(newFee);
+                    merchantPlaceFeeRecord.setNewPlaceFee(newFee);
+                    merchantPlaceFeeRecord.setOldPlaceFee(oldFee);
+    
+                    if (newFee.compareTo(new BigDecimal(NumberConstant.MINUS_ONE)) == 0) {
+                        merchantPlaceFeeRecord.setNewPlaceFee(null);
                     }
-                    if (!Objects.equals(oldFee.compareTo(BigDecimal.ZERO), NumberConstant.MINUS_ONE)) {
-                        merchantPlaceFeeRecord.setOldPlaceFee(oldFee);
+    
+                    if (oldFee.compareTo(new BigDecimal(NumberConstant.MINUS_ONE)) == 0) {
+                        merchantPlaceFeeRecord.setOldPlaceFee(null);
                     }
+                    
                     if (Objects.nonNull(user)) {
                         merchantPlaceFeeRecord.setModifyUserId(user.getUid());
                         merchantPlaceFeeRecord.setTenantId(electricityCabinet.getTenantId());
