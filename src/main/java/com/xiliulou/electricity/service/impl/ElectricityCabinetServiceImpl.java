@@ -4968,7 +4968,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(TenantContextHolder.getTenantId());
         
         List<ElectricityCabinetListMapVO> assembleCabinetList = new ArrayList<>();
-        electricityCabinets.forEach(cabinet -> {
+    
+        electricityCabinets.stream().filter(Objects::nonNull).forEach(cabinet -> {
             ElectricityCabinetListMapVO electricityCabinetListMapVO = new ElectricityCabinetListMapVO();
             BeanUtils.copyProperties(cabinet, electricityCabinetListMapVO);
             
@@ -4976,6 +4977,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             int boxNum = NumberConstant.ZERO;
             int batteryNum = NumberConstant.ZERO;
             int unusableBoxNum = NumberConstant.ZERO;
+            
             if (!CollectionUtils.isEmpty(electricityCabinetBoxes)) {
                 //柜机格口数量
                 boxNum = electricityCabinetBoxes.size();
@@ -4992,10 +4994,11 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 
                 // 少电多电
                 ElectricityCabinetListMapVO batteryCountVO = this.judgeBatteryCountType(cabinet, electricityConfig, boxNum, batteryNum);
-                if (Objects.nonNull(batteryCountVO)) {
-                    electricityCabinetListMapVO.setIsLowCharge(batteryCountVO.getIsLowCharge());
-                    electricityCabinetListMapVO.setIsFulCharge(batteryCountVO.getIsFulCharge());
-                }
+                electricityCabinetListMapVO.setIsLowCharge(batteryCountVO.getIsLowCharge());
+                electricityCabinetListMapVO.setIsFulCharge(batteryCountVO.getIsFulCharge());
+            } else {
+                // 无仓，显示为少电
+                electricityCabinetListMapVO.setIsLowCharge(NumberConstant.ONE);
             }
             
             electricityCabinetListMapVO.setBoxNum(boxNum);
@@ -5004,7 +5007,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             
             assembleCabinetList.add(electricityCabinetListMapVO);
         });
-        
+    
         // 设置统计值
         Integer totalCount = assembleCabinetList.size();
         Integer lowChargeCount = (int) assembleCabinetList.stream().filter(cabinet -> Objects.equals(cabinet.getIsLowCharge(), NumberConstant.ONE)).count();

@@ -22,6 +22,26 @@ public interface UserOauthBindMapper extends BaseMapper<UserOauthBind> {
     
     UserOauthBind selectByUidAndPhone(@Param("phone") String phone, @Param("uid") Long uid, @Param("tenantId") Integer tenantId);
     
+    /**
+     * 根据手机号、类型、租户查询用户
+     *
+     * @param phone    手机号
+     * @param source   类型
+     * @param tenantId 租户ID
+     * @return 绑定集
+     */
+    List<UserOauthBind> selectListUserByPhone(@Param("phone") String phone, @Param("source") Integer source, @Param("tenantId") Integer tenantId);
+    
+    /**
+     *
+     * @param phone
+     * @param source
+     * @param tenantId
+     * @return
+     *
+     * @see UserOauthBindMapper#selectListUserByPhone(String, Integer, Integer)
+     */
+    @Deprecated
     UserOauthBind selectUserByPhone(@Param("phone") String phone, @Param("source") Integer source, @Param("tenantId") Integer tenantId);
     
     Integer updateOpenIdByUid(@Param("openId") String openId, @Param("status") Integer status, @Param("uid") Long uid, @Param("tenantId") Integer tenantId,

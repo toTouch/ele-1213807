@@ -25,40 +25,39 @@ import java.util.concurrent.ExecutorService;
 @Slf4j
 @Service
 public class ShippingManagerServiceImpl implements ShippingManagerService {
-    
+
     private ExecutorService shippingManagerExecutorService = XllThreadPoolExecutors.newFixedThreadPool("shippingUpload", 2, "ele_shipping");
-    
+
     @Autowired
     ShippingUploadService shippingUploadService;
-    
+
     @Autowired
     UserOauthBindService userOauthBindService;
-    
+
     @Autowired
     ElectricityPayParamsService electricityPayParamsService;
-    
+
     @Override
     public void uploadShippingInfo(Long uid, String phone, String orderNo, Integer tenantId) {
-        
+
         //支付相关
         ElectricityPayParams electricityPayParams = electricityPayParamsService.queryFromCache(tenantId);
         if (Objects.isNull(electricityPayParams)) {
             log.error("SHIPPING ERROR! not found electricityPayParams,tenantId={}", tenantId);
             return;
         }
-        
+
         if (StringUtils.isBlank(electricityPayParams.getMerchantMinProAppId()) || StringUtils.isBlank(electricityPayParams.getMerchantMinProAppSecert())) {
             log.error("SHIPPING ERROR! electricityPayParams is illegal,tenantId={}", tenantId);
             return;
         }
-        
-        UserOauthBind userOauthBind = userOauthBindService.queryUserOauthBySysId(uid, tenantId);
+
+        UserOauthBind userOauthBind = userOauthBindService.queryByUserPhone(uid, phone, UserOauthBind.SOURCE_WX_PRO, tenantId);
         if (Objects.isNull(userOauthBind)) {
-            log.error("SHIPPING ERROR! userOauthBind is illegal,tenantId={},phone={}", tenantId, phone);
+            log.error("SHIPPING ERROR! userOauthBind is illegal,uid = {}, tenantId={},phone={}", uid, tenantId, phone);
             return;
         }
-        
-        shippingManagerExecutorService.execute(() -> shippingUploadService.shippingUploadInfo(userOauthBind.getThirdId(), orderNo, electricityPayParams.getMerchantMinProAppId(),
-                electricityPayParams.getMerchantMinProAppSecert()));
+
+        shippingManagerExecutorService.execute(() -> shippingUploadService.shippingUploadInfo(userOauthBind.getThirdId(), orderNo, electricityPayParams.getMerchantMinProAppId(), electricityPayParams.getMerchantMinProAppSecert()));
     }
 }
