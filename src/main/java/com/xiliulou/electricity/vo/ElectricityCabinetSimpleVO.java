@@ -8,6 +8,7 @@ import lombok.Builder;
 import lombok.Data;
 
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * description: 换电柜简单vo
@@ -77,4 +78,8 @@ public class ElectricityCabinetSimpleVO implements Serializable {
     
     private Long endTime;
     
+    /**
+     * 柜子的可换(1)、可租(2)、可退(3) 标签
+     */
+    private List<Integer> label;
 }

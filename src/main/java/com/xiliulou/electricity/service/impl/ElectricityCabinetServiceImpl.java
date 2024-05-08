@@ -1212,6 +1212,48 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         return R.ok(resultVo.stream().sorted(Comparator.comparing(ElectricityCabinetSimpleVO::getDistance)).collect(Collectors.toList()));
     }
     
+    private List<Integer> electricityCabinetLabelHandler(Integer eid, Double fullyCharged) {
+        List<Integer> label = CollUtil.newArrayList();
+        
+        // 换电限制标签：柜内符合可换电标准的电池≥1，则可换电
+        List<ElectricityCabinetBox> boxes = electricityCabinetBoxService.queryUsableBatteryCellNo(eid, null, fullyCharged);
+        if (CollUtil.isNotEmpty(boxes) && boxes.size() >= 1) {
+            label.add(0);
+        }
+        
+        ElectricityCabinetExtra cabinetExtra = electricityCabinetExtraService.queryByEidFromCache(Long.valueOf(eid));
+        if (Objects.isNull(cabinetExtra)) {
+            return label;
+        }
+        // 租电
+        if (Objects.isNull(cabinetExtra.getMinRetainBatteryCount())) {
+            // 无限制,柜内符合可换电标准的电池≥1，则可租电
+            if (CollUtil.isNotEmpty(boxes) && boxes.size() >= 1) {
+                label.add(1);
+            }
+        } else {
+            // 有限制：最少保留电池数量设置为有限制数量时，柜内符合可换电标准的电池＞设置的数量
+            if (CollUtil.isNotEmpty(boxes) && boxes.size() > cabinetExtra.getMinRetainBatteryCount()) {
+                label.add(1);
+            }
+        }
+        
+        //  退电
+        if (Objects.isNull(cabinetExtra.getMaxRetainBatteryCount())) {
+            // 最多保留电池数量设置为无限制时，无空仓情况下不允许退电
+            List<ElectricityCabinetBox> emptyCellList = electricityCabinetBoxService.listUsableEmptyCell(eid);
+            if (CollUtil.isNotEmpty(emptyCellList)) {
+                label.add(2);
+            }
+        } else {
+            // 最少保留电池数量设置为有限制数量时，柜内符合可换电标准的电池＞设置的数量
+            if (CollUtil.isNotEmpty(boxes) && boxes.size() < cabinetExtra.getMaxRetainBatteryCount()) {
+                label.add(2);
+            }
+        }
+        return label;
+    }
+    
     private ElectricityCabinetSimpleVO assignAttribute(ElectricityCabinetSimpleVO e, Double fullyCharged, String businessTime) {
         
         if (Objects.nonNull(e.getDistance())) {
@@ -1244,6 +1286,9 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         List<ElectricityCabinetBox> exchangeableList = cabinetBoxList.stream().filter(item -> isExchangeable(item, fullyCharged)).collect(Collectors.toList());
         long exchangeableNumber = exchangeableList.size();
         e.setFullyElectricityBattery((int) exchangeableNumber);//兼容2.0小程序首页显示问题
+        
+        // 筛选可换、可租、可退标签返回
+        e.setLabel(electricityCabinetLabelHandler(e.getId(),fullyCharged));
         return e;
     }
     
