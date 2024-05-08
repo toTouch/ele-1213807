@@ -71,6 +71,12 @@
         <if test="query.areaId != null">
             and area_id = #{query.areaId}
         </if>
+        <if test="query.productKey != null and query.productKey != ''">
+            and product_key = #{query.productKey}
+        </if>
+        <if test="query.deviceName != null and query.deviceName != ''">
+            and device_name = #{query.deviceName}
+        </if>
         order by id desc
         limit #{query.offset}, #{query.size}
     </select>
@@ -130,6 +136,12 @@
 				#{id}
 			</foreach>
 		</if>
+        <if test="query.productKey != null and query.productKey != ''">
+            and product_key = #{query.productKey}
+        </if>
+        <if test="query.deviceName != null and query.deviceName != ''">
+            and device_name = #{query.deviceName}
+        </if>
 	</select>
 
 

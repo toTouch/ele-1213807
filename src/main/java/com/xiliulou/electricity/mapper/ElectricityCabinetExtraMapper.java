@@ -1,7 +1,6 @@
 package com.xiliulou.electricity.mapper;
 
 import com.xiliulou.electricity.entity.ElectricityCabinetExtra;
-import org.apache.ibatis.annotations.Param;
 
 /**
  * @author HeYafeng
