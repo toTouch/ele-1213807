@@ -71,7 +71,7 @@
         update t_another_pay_membercard_record set begin_time = begin_time + #{realDisableTime}, end_time = end_time + #{realDisableTime}, update_time = #{updateTime}
         <where>
             id in
-            <foreach collection="idList" item="id" close=")" open="(" separator=",">
+            <foreach collection="idList" item="id" open="(" close=")" separator=",">
                 #{id}
             </foreach>
         </where>
