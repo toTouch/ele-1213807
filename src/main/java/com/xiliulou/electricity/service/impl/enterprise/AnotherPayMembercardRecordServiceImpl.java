@@ -210,9 +210,11 @@ public class AnotherPayMembercardRecordServiceImpl implements AnotherPayMemberca
             }
         
             List<Long> idList = notUseRecordList.stream().map(AnotherPayMembercardRecord::getId).collect(Collectors.toList());
+            log.info("channel user enable member card handler!updateTime idList={}, realDisableTime={}", idList, realDisableTime);
             this.anotherPayMembercardRecordMapper.batchUpdateBeginAndEndTimeByIds(idList, realDisableTime, currentTimeMillis);
         } else {
             List<Long> idList = anotherPayMembercardRecords.stream().map(AnotherPayMembercardRecord::getId).collect(Collectors.toList());
+            log.info("channel user enable member card handler!updateTime1 idList={}, realDisableTime={}", idList, realDisableTime);
             this.anotherPayMembercardRecordMapper.batchUpdateBeginAndEndTimeByIds(idList, realDisableTime, currentTimeMillis);
         }
     }
