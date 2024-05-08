@@ -105,7 +105,10 @@ public class WithdrawPasswordServiceImpl implements WithdrawPasswordService {
             redisService.delete(CacheConstant.CACHE_WITHDRAW_PASSWORD + tenantId);
         }
         TokenUser userInfo = SecurityUtils.getUserInfo();
-        operateRecordUtil.record(null, userInfo);
+    
+        if (Objects.isNull(oldWithdrawPassword) || !oldWithdrawPassword.getPassword().equals(customPasswordEncoder.encode(decryptPassword))) {
+            operateRecordUtil.record(null, userInfo);
+        }
         return R.ok();
     }
     
