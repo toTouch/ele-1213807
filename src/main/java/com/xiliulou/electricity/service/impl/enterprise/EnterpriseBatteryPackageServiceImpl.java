@@ -1901,7 +1901,8 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
                 .forehead(franchiseeInsurance.getForehead()).payType(InsuranceOrder.ONLINE_PAY_TYPE).phone(userInfo.getPhone()).status(InsuranceOrder.STATUS_INIT)
                 // .storeId(Objects.nonNull(electricityCabinet) ? electricityCabinet.getStoreId() : userInfo.getStoreId())
                 .tenantId(userInfo.getTenantId()).uid(userInfo.getUid()).userName(userInfo.getName()).validDays(franchiseeInsurance.getValidDays())
-                .createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).build();
+                .createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis())
+                .simpleBatteryType(franchiseeInsurance.getSimpleBatteryType()).build();
         
         return Triple.of(true, null, insuranceOrder);
     }
@@ -1963,6 +1964,7 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
         electricityMemberCardOrder.setSource(ElectricityMemberCardOrder.SOURCE_NOT_SCAN);
         //企业套餐没有门店信息
         // electricityMemberCardOrder.setStoreId( );
+        electricityMemberCardOrder.setCouponIds(batteryMemberCard.getCouponIds());
         
         return Triple.of(true, null, electricityMemberCardOrder);
     }
