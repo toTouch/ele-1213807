@@ -147,7 +147,7 @@
         delete from t_cloud_bean_use_record where id = #{id}
     </delete>
     
-    <insert id="batchInsert">
+    <insert id="batchInsert" keyProperty="id" useGeneratedKeys="true">
         insert into t_cloud_bean_use_record (id, enterprise_id, uid, type, bean_amount, remaining_bean_amount, package_id, franchisee_id, ref, tenant_id, create_time, update_time, order_type)
         values
         <foreach item="item" index="index" collection="list" separator=",">
