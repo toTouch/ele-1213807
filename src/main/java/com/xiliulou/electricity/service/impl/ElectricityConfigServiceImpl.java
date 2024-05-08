@@ -2,6 +2,7 @@ package com.xiliulou.electricity.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.bean.copier.CopyOptions;
+import cn.hutool.core.map.MapUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.xiliulou.cache.redis.RedisService;
@@ -17,6 +18,7 @@ import com.xiliulou.electricity.entity.FaceRecognizeData;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.FranchiseeMoveInfo;
 import com.xiliulou.electricity.entity.PxzConfig;
+import com.xiliulou.electricity.enums.YesNoEnum;
 import com.xiliulou.electricity.mapper.ElectricityConfigMapper;
 import com.xiliulou.electricity.query.ElectricityConfigAddAndUpdateQuery;
 import com.xiliulou.electricity.query.ElectricityConfigWxCustomerQuery;
@@ -37,6 +39,7 @@ import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.TenantConfigVO;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.BeanUtils;
@@ -397,12 +400,16 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
         if (Objects.isNull(TenantContextHolder.getTenantId())) {
             return;
         }
+        ElectricityConfig config = electricityConfigMapper.selectElectricityConfigByTenantId(TenantContextHolder.getTenantId());
         ElectricityConfig electricityConfig = new ElectricityConfig();
         electricityConfig.setTenantId(TenantContextHolder.getTenantId());
         electricityConfig.setWxCustomer(status);
         electricityConfig.setUpdateTime(System.currentTimeMillis());
         Integer updateResult = electricityConfigMapper.updateWxCuStatusByTenantId(electricityConfig);
         if (updateResult > 0) {
+            if (Objects.isNull(config) || Objects.isNull(config.getWxCustomer()) || !Objects.equals(config.getWxCustomer(),electricityConfig.getWxCustomer())){
+                operateRecordUtil.record(MapUtil.of("wxCustomer", ObjectUtils.defaultIfNull(config.getWxCustomer(),Objects.equals(electricityConfig.getWxCustomer(), YesNoEnum.YES.getCode()) ? YesNoEnum.NO.getCode() : YesNoEnum.YES.getCode())), MapUtil.of("wxCustomer",status));
+            }
             redisService.delete(CacheConstant.CACHE_ELE_SET_CONFIG + TenantContextHolder.getTenantId());
         }
     }
