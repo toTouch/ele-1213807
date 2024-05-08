@@ -19,11 +19,6 @@ import lombok.NoArgsConstructor;
 public class ElectricityCabinetExtra {
     
     /**
-     * 主键ID
-     */
-    private Long id;
-    
-    /**
      * 柜机id
      */
     private Long eid;

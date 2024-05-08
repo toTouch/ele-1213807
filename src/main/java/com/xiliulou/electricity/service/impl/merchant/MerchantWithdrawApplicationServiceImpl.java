@@ -198,14 +198,6 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
             return Triple.of(false, "120017", "未配置支付参数");
         }
         
-        UserOauthBind userOauthBind = userOauthBindService.queryUserOauthBySysId(merchantWithdrawApplication.getUid(), tenantId);
-        if (Objects.isNull(userOauthBind) || Objects.isNull(userOauthBind.getThirdId())) {
-            log.error("review Merchant withdraw application error, not found user auth bind info for merchant user. uid = {}", merchantWithdrawApplication.getUid());
-            return Triple.of(false, "120018", "未找到用户的第三方授权信息");
-        }
-        
-        // ElectricityPayParams electricityPayParams = electricityPayParamsService.queryFromCache(withdrawRecord.getTenantId());
-        
         //生成提现批次单号
         String batchNo = OrderIdUtil.generateBusinessOrderId(BusinessType.MERCHANT_WITHDRAW_BATCH, user.getUid());
         String batchDetailNo = OrderIdUtil.generateBusinessOrderId(BusinessType.MERCHANT_WITHDRAW_BATCH_DETAIL, user.getUid());
@@ -229,6 +221,12 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
                     merchantWithdrawApplication.getTenantId().longValue());
             
             return Triple.of(true, null, result);
+        }
+    
+        UserOauthBind userOauthBind = userOauthBindService.queryUserOauthBySysId(merchantWithdrawApplication.getUid(), tenantId);
+        if (Objects.isNull(userOauthBind) || Objects.isNull(userOauthBind.getThirdId())) {
+            log.error("review Merchant withdraw application error, not found user auth bind info for merchant user. uid = {}", merchantWithdrawApplication.getUid());
+            return Triple.of(false, "120018", "未找到用户的第三方授权信息");
         }
         
         //若为同意提现，则修改提现状态为已审核，并且修改提现记录表中的提现状态为已审核。

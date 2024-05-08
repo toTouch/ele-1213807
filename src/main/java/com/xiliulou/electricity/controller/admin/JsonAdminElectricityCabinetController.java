@@ -128,13 +128,21 @@ public class JsonAdminElectricityCabinetController extends BasicController {
     
     //列表查询
     @GetMapping(value = "/admin/electricityCabinet/list")
-    public R queryList(@RequestParam("size") Long size, @RequestParam("offset") Long offset, @RequestParam(value = "name", required = false) String name,
-            @RequestParam(value = "address", required = false) String address, @RequestParam(value = "usableStatus", required = false) Integer usableStatus,
-            @RequestParam(value = "powerType", required = false) Integer powerType, @RequestParam(value = "onlineStatus", required = false) Integer onlineStatus,
-            @RequestParam(value = "stockStatus", required = false) Integer stockStatus, @RequestParam(value = "warehouseId", required = false) Long warehouseId,
-            @RequestParam(value = "beginTime", required = false) Long beginTime, @RequestParam(value = "endTime", required = false) Long endTime,
-            @RequestParam(value = "id", required = false) Integer id, @RequestParam(value = "idList", required = false) List<Integer> idList,
-            @RequestParam(value = "areaId", required = false) Long areaId) {
+    public R queryList(@RequestParam("size") Long size, @RequestParam("offset") Long offset,
+                       @RequestParam(value = "name", required = false) String name,
+                       @RequestParam(value = "address", required = false) String address,
+                       @RequestParam(value = "usableStatus", required = false) Integer usableStatus,
+                       @RequestParam(value = "powerType", required = false) Integer powerType,
+                       @RequestParam(value = "onlineStatus", required = false) Integer onlineStatus,
+                       @RequestParam(value = "stockStatus", required = false) Integer stockStatus,
+                       @RequestParam(value = "warehouseId", required = false) Long warehouseId,
+                       @RequestParam(value = "beginTime", required = false) Long beginTime,
+                       @RequestParam(value = "endTime", required = false) Long endTime,
+                       @RequestParam(value = "id", required = false) Integer id,
+                       @RequestParam(value = "idList", required = false) List<Integer> idList,
+                       @RequestParam(value = "areaId", required = false) Long areaId,
+            @RequestParam(value = "productKey", required = false) String productKey,
+            @RequestParam(value = "deviceName", required = false) String deviceName) {
         if (Objects.isNull(size) || size < 0 || size > 50) {
             size = 10L;
         }
@@ -169,26 +177,53 @@ public class JsonAdminElectricityCabinetController extends BasicController {
                 return R.ok(Collections.EMPTY_LIST);
             }
         }
-        
-        ElectricityCabinetQuery electricityCabinetQuery = ElectricityCabinetQuery.builder().offset(offset).size(size).name(name).address(address).powerType(powerType)
-                .usableStatus(usableStatus).onlineStatus(onlineStatus).stockStatus(stockStatus).warehouseId(warehouseId).beginTime(beginTime).endTime(endTime).eleIdList(eleIdList)
-                .id(id).tenantId(TenantContextHolder.getTenantId()).franchiseeIdList(permissionTriple.getLeft()).storeIdList(permissionTriple.getMiddle()).areaId(areaId)
-                .idList(idList).build();
-        
+
+        ElectricityCabinetQuery electricityCabinetQuery = ElectricityCabinetQuery.builder()
+                .offset(offset)
+                .size(size)
+                .name(name)
+                .address(address)
+                .powerType(powerType)
+                .usableStatus(usableStatus)
+                .onlineStatus(onlineStatus)
+                .stockStatus(stockStatus)
+                .warehouseId(warehouseId)
+                .beginTime(beginTime)
+                .endTime(endTime)
+                .eleIdList(eleIdList)
+                .id(id)
+                .tenantId(TenantContextHolder.getTenantId())
+                .franchiseeIdList(permissionTriple.getLeft())
+                .storeIdList(permissionTriple.getMiddle())
+                .areaId(areaId)
+                .productKey(productKey)
+                .deviceName(deviceName)
+                .idList(idList)
+                .build();
+
         return electricityCabinetService.queryList(electricityCabinetQuery);
     }
     
     
     //列表数量查询
     @GetMapping(value = "/admin/electricityCabinet/queryCount")
-    public R queryCount(@RequestParam(value = "name", required = false) String name, @RequestParam(value = "address", required = false) String address,
-            @RequestParam(value = "usableStatus", required = false) Integer usableStatus, @RequestParam(value = "powerType", required = false) Integer powerType,
-            @RequestParam(value = "onlineStatus", required = false) Integer onlineStatus, @RequestParam(value = "stockStatus", required = false) Integer stockStatus,
-            @RequestParam(value = "warehouseId", required = false) Long warehouseId, @RequestParam(value = "beginTime", required = false) Long beginTime,
-            @RequestParam(value = "endTime", required = false) Long endTime, @RequestParam(value = "sn", required = false) String sn,
-            @RequestParam(value = "areaId", required = false) Long areaId, @RequestParam(value = "idList", required = false) List<Integer> idList,
-            @RequestParam(value = "modelId", required = false) Integer modelId) {
-        
+    public R queryCount(@RequestParam(value = "name", required = false) String name,
+                        @RequestParam(value = "address", required = false) String address,
+                        @RequestParam(value = "usableStatus", required = false) Integer usableStatus,
+                        @RequestParam(value = "powerType", required = false) Integer powerType,
+                        @RequestParam(value = "onlineStatus", required = false) Integer onlineStatus,
+                        @RequestParam(value = "stockStatus", required = false) Integer stockStatus,
+                        @RequestParam(value = "warehouseId", required = false) Long warehouseId,
+                        @RequestParam(value = "beginTime", required = false) Long beginTime,
+                        @RequestParam(value = "endTime", required = false) Long endTime,
+                        @RequestParam(value = "sn", required = false) String sn,
+                        @RequestParam(value = "areaId", required = false) Long areaId,
+                        @RequestParam(value = "idList", required = false) List<Integer> idList,
+                        @RequestParam(value = "modelId", required = false) Integer modelId,
+            @RequestParam(value = "productKey", required = false) String productKey,
+            @RequestParam(value = "deviceName", required = false) String deviceName
+            ) {
+
         // 数据权校验
         Triple<List<Long>, List<Long>, Boolean> permissionTriple = checkPermission();
         if (!permissionTriple.getRight()) {
@@ -214,12 +249,29 @@ public class JsonAdminElectricityCabinetController extends BasicController {
                 return R.ok(Collections.EMPTY_LIST);
             }
         }
-        
-        ElectricityCabinetQuery electricityCabinetQuery = ElectricityCabinetQuery.builder().name(name).address(address).powerType(powerType).usableStatus(usableStatus)
-                .onlineStatus(onlineStatus).warehouseId(warehouseId).beginTime(beginTime).endTime(endTime).eleIdList(eleIdList).modelId(modelId).sn(sn).idList(idList)
-                .areaId(areaId).stockStatus(stockStatus).tenantId(TenantContextHolder.getTenantId()).franchiseeIdList(permissionTriple.getLeft())
-                .storeIdList(permissionTriple.getMiddle()).build();
-        
+
+        ElectricityCabinetQuery electricityCabinetQuery = ElectricityCabinetQuery.builder()
+                .name(name)
+                .address(address)
+                .powerType(powerType)
+                .usableStatus(usableStatus)
+                .onlineStatus(onlineStatus)
+                .warehouseId(warehouseId)
+                .beginTime(beginTime)
+                .endTime(endTime)
+                .eleIdList(eleIdList)
+                .modelId(modelId)
+                .sn(sn)
+                .idList(idList)
+                .areaId(areaId)
+                .stockStatus(stockStatus)
+                .tenantId(TenantContextHolder.getTenantId())
+                .franchiseeIdList(permissionTriple.getLeft())
+                .storeIdList(permissionTriple.getMiddle())
+                .productKey(productKey)
+                .deviceName(deviceName)
+                .build();
+
         return electricityCabinetService.queryCount(electricityCabinetQuery);
     }
     

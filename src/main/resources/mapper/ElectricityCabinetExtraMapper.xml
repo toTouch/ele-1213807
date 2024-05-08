@@ -3,8 +3,7 @@
 <mapper namespace="com.xiliulou.electricity.mapper.ElectricityCabinetExtraMapper">
     <!-- 基础字段 -->
     <sql id="basic_field">
-        id
-        , eid, battery_count_type, min_retain_battery_count ,max_retain_battery_count,tenant_id, del_flag, create_time, update_time
+        eid, battery_count_type, min_retain_battery_count ,max_retain_battery_count,tenant_id, del_flag, create_time, update_time
     </sql>
     
     <select id="selectByEid" resultType="com.xiliulou.electricity.entity.ElectricityCabinetExtra">
@@ -22,9 +21,6 @@
     <update id="update">
         update t_electricity_cabinet_extra
         <set>
-            <if test="eid != null">
-                eid = #{eid},
-            </if>
             <if test="batteryCountType != null">
                 battery_count_type = #{batteryCountType},
             </if>
@@ -41,7 +37,7 @@
                 update_time = #{updateTime},
             </if>
         </set>
-        where id = #{id}
+        where eid = #{eid}
     </update>
     
     
