@@ -207,14 +207,13 @@ public class AnotherPayMembercardRecordServiceImpl implements AnotherPayMemberca
                     .collect(Collectors.toList());
             if (ObjectUtils.isEmpty(notUseRecordList)) {
                 log.warn("channel user enable member card handler!not use pay record is empty,uid={}, orderId={}", uid, userBatteryMemberCard.getOrderId());
+                return;
             }
         
             List<Long> idList = notUseRecordList.stream().map(AnotherPayMembercardRecord::getId).collect(Collectors.toList());
-            log.info("channel user enable member card handler!updateTime idList={}, realDisableTime={}", idList, realDisableTime);
             this.anotherPayMembercardRecordMapper.batchUpdateBeginAndEndTimeByIds(idList, realDisableTime, currentTimeMillis);
         } else {
             List<Long> idList = anotherPayMembercardRecords.stream().map(AnotherPayMembercardRecord::getId).collect(Collectors.toList());
-            log.info("channel user enable member card handler!updateTime1 idList={}, realDisableTime={}", idList, realDisableTime);
             this.anotherPayMembercardRecordMapper.batchUpdateBeginAndEndTimeByIds(idList, realDisableTime, currentTimeMillis);
         }
     }
