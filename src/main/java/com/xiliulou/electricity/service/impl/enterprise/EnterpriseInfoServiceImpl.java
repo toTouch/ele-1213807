@@ -531,7 +531,6 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
         // 批量保存回收套餐记录详情
         if (ObjectUtils.isNotEmpty(cloudBeanUseRecordDetailList)) {
             Map<String, Long> cloudBeanUseRecordMap = cloudBeanUseRecordList.stream().collect(Collectors.toMap(CloudBeanUseRecord::getRef, CloudBeanUseRecord::getId, (key, key1) -> key1));
-            log.info("cloudBeanUseRecordMap1={}, cloudBeanUseRecordDetailList={}", cloudBeanUseRecordMap, cloudBeanUseRecordDetailList);
             cloudBeanUseRecordDetailList.parallelStream().forEach(item -> {
                 Long cloudBeanUseRecordId = cloudBeanUseRecordMap.get(item.getOrderId());
                 if (Objects.nonNull(cloudBeanUseRecordId)) {

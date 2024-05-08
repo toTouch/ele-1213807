@@ -788,7 +788,7 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
             String excelPath = CLOUD_BEAN_BILL_PATH + IdUtil.simpleUUID() + ".xlsx";
             
             storageService.uploadFile(storageConfig.getBucketName(), excelPath, new ByteArrayInputStream(out.toByteArray()));
-            
+            log.info("CLOUD BEAN ORDER DOWNLOAD SUCCESS ! excelPath={}, storageConfig={}", excelPath, storageConfig);
             return Triple.of(true, null, storageConfig.getUrlPrefix()+excelPath);
         } catch (Exception e) {
             log.error("导出云豆账单失败！", e);
