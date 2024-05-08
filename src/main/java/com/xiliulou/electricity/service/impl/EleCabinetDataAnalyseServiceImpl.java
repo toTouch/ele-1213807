@@ -265,13 +265,6 @@ public class EleCabinetDataAnalyseServiceImpl implements EleCabinetDataAnalyseSe
         return result;
     }
     
-    
-    public static void main(String[] args) {
-        EleCabinetDataAnalyseVO item = new EleCabinetDataAnalyseVO();
-        item.setId(2715);
-        item.getId().longValue();
-    }
-    
     private List<EleCabinetDataAnalyseVO> buildEleCabinetDataAnalyseVOs(List<EleCabinetDataAnalyseVO> electricityCabinetList, ElectricityCabinetQuery cabinetQuery) {
         CompletableFuture<Void> acquireBasicInfo = CompletableFuture.runAsync(() -> electricityCabinetList.forEach(item -> {
             ElectricityCabinetModel cabinetModel = eleCabinetModelService.queryByIdFromCache(item.getModelId());
