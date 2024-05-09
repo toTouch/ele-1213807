@@ -440,6 +440,13 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
             return Triple.of(true, null, totalCloudBean);
         }
     
+        // 过滤非法数据
+        enterpriseRentRecordDetailList = enterpriseRentRecordDetailList.stream().filter(item -> Objects.nonNull(item.getRentTime()) && Objects.nonNull(item.getReturnTime())).collect(Collectors.toList());
+        if (ObjectUtils.isEmpty(enterpriseRentRecordDetailList)) {
+            recycleEmptyRentRecord(anotherPayMembercardRecords, orderMap, userInfo, enterpriseInfo);
+            return Triple.of(true, null, totalCloudBean);
+        }
+    
         List<String> orderIdList = enterpriseRentRecordDetailList.stream().map(EnterpriseRentRecordDetail::getOrderId).distinct().collect(Collectors.toList());
         
         

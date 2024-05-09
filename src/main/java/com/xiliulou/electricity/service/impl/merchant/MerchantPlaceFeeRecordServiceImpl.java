@@ -127,7 +127,7 @@ public class MerchantPlaceFeeRecordServiceImpl implements MerchantPlaceFeeRecord
     }
     
     @Override
-    public void asyncRecords(List<ElectricityCabinet> electricityCabinetList, ElectricityCabinetBatchOutWarehouseRequest outWarehouseRequest, TokenUser user) {
+    public void asyncRecords(List<ElectricityCabinet> electricityCabinetList, ElectricityCabinetBatchOutWarehouseRequest outWarehouseRequest, TokenUser user, Integer tenantId) {
         if (ObjectUtils.isEmpty(electricityCabinetList)) {
             return;
         }
@@ -137,6 +137,7 @@ public class MerchantPlaceFeeRecordServiceImpl implements MerchantPlaceFeeRecord
             List<MerchantPlaceFeeRecord> placeFeeRecords = new ArrayList<>();
             
             for (ElectricityCabinet electricityCabinet : electricityCabinetList) {
+                log.info("electricityCabinet:{}, outWarehouseRequest:{}", electricityCabinet, outWarehouseRequest);
                 BigDecimal oldFee = new BigDecimal(NumberConstant.MINUS_ONE);
                 BigDecimal newFee = new BigDecimal(NumberConstant.MINUS_ONE);
                 
@@ -153,6 +154,7 @@ public class MerchantPlaceFeeRecordServiceImpl implements MerchantPlaceFeeRecord
                     newFee = new BigDecimal(NumberConstant.MINUS_ONE);
                 }
                 
+                log.info("oldFee:{}, newFee:{}", oldFee, newFee);
                 MerchantPlaceFeeRecord merchantPlaceFeeRecord = null;
                 
                 // 场地费有变化则进行记录
@@ -172,7 +174,7 @@ public class MerchantPlaceFeeRecordServiceImpl implements MerchantPlaceFeeRecord
                     
                     if (Objects.nonNull(user)) {
                         merchantPlaceFeeRecord.setModifyUserId(user.getUid());
-                        merchantPlaceFeeRecord.setTenantId(electricityCabinet.getTenantId());
+                        merchantPlaceFeeRecord.setTenantId(tenantId);
                         long currentTimeMillis = System.currentTimeMillis();
                         merchantPlaceFeeRecord.setCreateTime(currentTimeMillis);
                         merchantPlaceFeeRecord.setUpdateTime(currentTimeMillis);
