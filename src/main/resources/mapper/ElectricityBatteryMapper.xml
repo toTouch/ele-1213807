@@ -30,6 +30,14 @@
         from t_electricity_battery
     </sql>
     
+    <delete id="batchDeleteBySnList">
+        DELETE FROM `t_electricity_battery`
+        WHERE `tenant_id` = #{tenantId} AND `sn` IN
+        <foreach collection="batterySnList" item="batterySn" open="(" close=")" separator=",">
+            #{batterySn}
+        </foreach>
+    </delete>
+    
     <select id="selectListBySnList" resultType="com.xiliulou.electricity.entity.ElectricityBattery">
         SELECT `id`, `sn`, `uid`, `tenant_id`, `franchisee_id` FROM `t_electricity_battery`
         <where>
