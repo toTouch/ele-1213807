@@ -772,14 +772,11 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
             cloudBeanOrderExcelVO.setRemainingBeanAmount(cloudBeanUseRecord.getRemainingBeanAmount().toPlainString());
             cloudBeanOrderExcelVO.setPackageName(Objects.isNull(batteryMemberCard) ? "" : batteryMemberCard.getName());
             cloudBeanOrderExcelVO.setCreateTime(simpleDateFormat.format(new Date(cloudBeanUseRecord.getCreateTime())));
-            log.info("CLOUD BEAN ORDER DOWNLOAD INFO ! cloudBeanUseRecord={}", cloudBeanUseRecord);
             if (Objects.equals(cloudBeanUseRecord.getType(), CloudBeanUseRecord.TYPE_ADMIN_DEDUCT) || Objects
                     .equals(cloudBeanUseRecord.getType(), CloudBeanUseRecord.TYPE_ADMIN_RECHARGE)) {
                 EnterpriseCloudBeanOrder enterpriseCloudBeanOrder = enterpriseCloudBeanOrderService.selectByOrderId(cloudBeanUseRecord.getRef());
-                log.info("CLOUD BEAN ORDER DOWNLOAD INFO ! enterpriseCloudBeanOrder={}", enterpriseCloudBeanOrder);
                 if (Objects.nonNull(enterpriseCloudBeanOrder)) {
                     User user = userService.queryByUidFromCache(enterpriseCloudBeanOrder.getOperateUid());
-                    log.info("CLOUD BEAN ORDER DOWNLOAD INFO ! user={}", user);
                     cloudBeanOrderExcelVO.setOperateName(Objects.isNull(user) ? "" : user.getName());
                 }
             }
