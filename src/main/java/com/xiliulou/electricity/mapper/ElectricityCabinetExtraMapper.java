@@ -19,6 +19,7 @@ public interface ElectricityCabinetExtraMapper {
     
     Integer update(ElectricityCabinetExtra electricityCabinetExtra);
     
-    Integer updateElectricityCabinetExtra(@Param("minRetainBatteryCount") Integer minRetainBatteryCount, @Param("maxRetainBatteryCount") Integer maxRetainBatteryCount,
-            @Param("id") Integer id, @Param("updateTime") Long updateTime);
+    Integer updateMaxElectricityCabinetExtra(@Param("maxRetainBatteryCount") Integer maxRetainBatteryCount, @Param("id") Integer id, @Param("updateTime") Long updateTime);
+    
+    Integer updateMinElectricityCabinetExtra(@Param("minRetainBatteryCount") Integer minRetainBatteryCount, @Param("id") Integer id, @Param("updateTime") Long updateTime);
 }

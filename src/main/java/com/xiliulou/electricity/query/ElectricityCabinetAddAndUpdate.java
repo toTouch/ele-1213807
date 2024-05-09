@@ -138,6 +138,16 @@ public class ElectricityCabinetAddAndUpdate {
     
     
     /**
+     * 最小是否限制 0 无限制，1限制
+     */
+    private Integer minIsLimit;
+    
+    /**
+     * 最大是否限制 0 无限制，1限制
+     */
+    private Integer maxIsLimit;
+    
+    /**
      * 最小保留电池数量，不限制为null;限制则需要前端传递
      */
     @Min(value = 0, message = "最小保留电池数量不能小于0")
