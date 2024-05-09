@@ -127,7 +127,7 @@ public class MerchantPlaceFeeRecordServiceImpl implements MerchantPlaceFeeRecord
     }
     
     @Override
-    public void asyncRecords(List<ElectricityCabinet> electricityCabinetList, ElectricityCabinetBatchOutWarehouseRequest outWarehouseRequest, TokenUser user) {
+    public void asyncRecords(List<ElectricityCabinet> electricityCabinetList, ElectricityCabinetBatchOutWarehouseRequest outWarehouseRequest, TokenUser user, Integer tenantId) {
         if (ObjectUtils.isEmpty(electricityCabinetList)) {
             return;
         }
@@ -174,7 +174,7 @@ public class MerchantPlaceFeeRecordServiceImpl implements MerchantPlaceFeeRecord
                     
                     if (Objects.nonNull(user)) {
                         merchantPlaceFeeRecord.setModifyUserId(user.getUid());
-                        merchantPlaceFeeRecord.setTenantId(electricityCabinet.getTenantId());
+                        merchantPlaceFeeRecord.setTenantId(tenantId);
                         long currentTimeMillis = System.currentTimeMillis();
                         merchantPlaceFeeRecord.setCreateTime(currentTimeMillis);
                         merchantPlaceFeeRecord.setUpdateTime(currentTimeMillis);

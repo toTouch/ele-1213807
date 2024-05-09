@@ -413,7 +413,7 @@ public class ElectricityCabinetServiceV2Impl implements ElectricityCabinetV2Serv
     
         log.info("ElectricityCabinetServiceV2Impl.batchOutWarehouse:electricityCabinetList:{}, batchOutWarehouseRequest={}", electricityCabinetList, batchOutWarehouseRequest);
         // 保存场地费变更记录
-        merchantPlaceFeeRecordService.asyncRecords(electricityCabinetList, batchOutWarehouseRequest, SecurityUtils.getUserInfo());
+        merchantPlaceFeeRecordService.asyncRecords(electricityCabinetList, batchOutWarehouseRequest, SecurityUtils.getUserInfo(), TenantContextHolder.getTenantId());
         
         // 异步记录
         List<ElectricityCabinetBO> electricityCabinetBOList = electricityCabinetMapper.selectListByIdList(batchOutWarehouseRequest.getIdList());
