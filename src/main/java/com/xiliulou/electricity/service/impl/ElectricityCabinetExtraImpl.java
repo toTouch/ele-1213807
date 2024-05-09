@@ -63,9 +63,14 @@ public class ElectricityCabinetExtraImpl implements ElectricityCabinetExtraServi
         return electricityCabinetExtraMapper.update(electricityCabinetExtra);
     }
     
+    
     @Override
-    public Integer updateElectricityCabinetExtra(Integer minRetainBatteryCount, Integer maxRetainBatteryCount, Integer id) {
-        return electricityCabinetExtraMapper.updateElectricityCabinetExtra(minRetainBatteryCount, maxRetainBatteryCount, id, System.currentTimeMillis());
+    public Integer updateMaxElectricityCabinetExtra(Integer maxRetainBatteryCount, Integer id) {
+        return electricityCabinetExtraMapper.updateMaxElectricityCabinetExtra(maxRetainBatteryCount, id, System.currentTimeMillis());
     }
     
+    @Override
+    public Integer updateMinElectricityCabinetExtra(Integer minRetainBatteryCount, Integer id) {
+        return electricityCabinetExtraMapper.updateMinElectricityCabinetExtra(minRetainBatteryCount, id, System.currentTimeMillis());
+    }
 }

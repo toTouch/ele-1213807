@@ -20,5 +20,8 @@ public interface ElectricityCabinetExtraService {
     
     Integer update(ElectricityCabinetExtra electricityCabinetExtra);
     
-    Integer updateElectricityCabinetExtra(Integer minRetainBatteryCount, Integer maxRetainBatteryCount, Integer id);
+  
+    Integer updateMaxElectricityCabinetExtra(Integer maxRetainBatteryCount, Integer id);
+    
+    Integer updateMinElectricityCabinetExtra(Integer minRetainBatteryCount, Integer id);
 }
