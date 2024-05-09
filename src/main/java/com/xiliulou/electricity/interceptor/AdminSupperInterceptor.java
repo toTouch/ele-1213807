@@ -31,7 +31,7 @@ public class AdminSupperInterceptor implements HandlerInterceptor {
             return false;
         }
         
-        if (1 == userInfo.getTenantId()) {
+        if (1 != userInfo.getTenantId()) {
             log.error("AdminSupperInterceptor error. The use's tenant not admin.");
             preHandleFalseResponseJsonBody(R.fail("ELECTRICITY.0066", "用户权限不足"), response);
             return false;
