@@ -24,6 +24,7 @@ public class AdminSupperTxService {
     
     @Transactional(rollbackFor = Exception.class)
     public void delBatteryBySnList(Integer tenantId, List<String> batterySnList) {
-    
+        electricityBatteryMapper.batchDeleteBySnList(tenantId, batterySnList);
+        batteryOtherPropertiesMapper.batchDeleteBySnList(tenantId, batterySnList);
     }
 }

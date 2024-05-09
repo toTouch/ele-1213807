@@ -27,6 +27,14 @@ import java.util.Set;
 public interface ElectricityBatteryMapper extends BaseMapper<ElectricityBattery> {
     
     /**
+     * 根据电池编码批量删除电池
+     * @param tenantId
+     * @param batterySnList
+     * @return
+     */
+    Integer batchDeleteBySnList(@Param("tenantId") Integer tenantId, @Param("batterySnList") List<String> batterySnList);
+    
+    /**
      * 根据电池SN集查询电池
      * <p>用于内部接口，删除电池使用</p>
      * @param tenantId 租户ID
