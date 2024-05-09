@@ -155,7 +155,7 @@
         where id = #{id}
     </update>
     
-    <update id="updateByEnterpriseId">
+    <update id="updateOneById">
         update t_enterprise_cloud_bean_order
         <set>
             <if test="uid != null">
@@ -168,7 +168,7 @@
                 update_time = #{updateTime},
             </if>
         </set>
-        where enterprise_id = #{enterpriseId}
+        where id = #{id}
     </update>
     
     <!--通过主键删除-->

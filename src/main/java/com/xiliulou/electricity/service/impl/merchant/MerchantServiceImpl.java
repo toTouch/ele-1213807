@@ -1516,6 +1516,7 @@ public class MerchantServiceImpl implements MerchantService {
             if (ObjectUtils.isNotEmpty(enterpriseCloudBeanOrderList)) {
                 enterpriseCloudBeanOrderList.stream().forEach(enterpriseCloudBeanOrder -> {
                     EnterpriseCloudBeanOrder enterpriseCloudBeanOrderUpdate  = new EnterpriseCloudBeanOrder();
+                    enterpriseCloudBeanOrderUpdate.setId(enterpriseCloudBeanOrder.getId());
                     enterpriseCloudBeanOrderUpdate.setEnterpriseId(enterpriseInfo.getId());
                     enterpriseCloudBeanOrderUpdate.setUid(merchant.getUid());
                     // 如果操作人是站长自己则需要修改uid
@@ -1524,7 +1525,7 @@ public class MerchantServiceImpl implements MerchantService {
                     }
                     enterpriseCloudBeanOrderUpdate.setUpdateTime(currentTimeMillis);
     
-                    enterpriseCloudBeanOrderMapper.updateByEnterpriseId(enterpriseCloudBeanOrder);
+                    enterpriseCloudBeanOrderMapper.updateOneById(enterpriseCloudBeanOrder);
                 });
             }
     
