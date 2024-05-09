@@ -1511,14 +1511,22 @@ public class MerchantServiceImpl implements MerchantService {
             enterpriseChannelUser.setInviterId(merchant.getUid());
             enterpriseChannelUser.setUpdateTime(currentTimeMillis);
             enterpriseChannelUserMapper.updateByEnterpriseId(enterpriseChannelUser);
-            
-            EnterpriseCloudBeanOrder enterpriseCloudBeanOrder  = new EnterpriseCloudBeanOrder();
-            enterpriseCloudBeanOrder.setEnterpriseId(enterpriseInfo.getId());
-            enterpriseCloudBeanOrder.setUid(merchant.getUid());
-            enterpriseCloudBeanOrder.setOperateUid(merchant.getUid());
-            enterpriseCloudBeanOrder.setUpdateTime(currentTimeMillis);
-            
-            enterpriseCloudBeanOrderMapper.updateByEnterpriseId(enterpriseCloudBeanOrder);
+    
+            List<EnterpriseCloudBeanOrder> enterpriseCloudBeanOrderList = enterpriseCloudBeanOrderMapper.selectListByEnterpriseId(enterpriseInfo.getId());
+            if (ObjectUtils.isNotEmpty(enterpriseCloudBeanOrderList)) {
+                enterpriseCloudBeanOrderList.stream().forEach(enterpriseCloudBeanOrder -> {
+                    EnterpriseCloudBeanOrder enterpriseCloudBeanOrderUpdate  = new EnterpriseCloudBeanOrder();
+                    enterpriseCloudBeanOrderUpdate.setEnterpriseId(enterpriseInfo.getId());
+                    enterpriseCloudBeanOrderUpdate.setUid(merchant.getUid());
+                    // 如果操作人是站长自己则需要修改uid
+                    if (Objects.equals(enterpriseCloudBeanOrder.getOperateUid(), enterpriseInfo.getUid())) {
+                        enterpriseCloudBeanOrderUpdate.setOperateUid(merchant.getUid());
+                    }
+                    enterpriseCloudBeanOrderUpdate.setUpdateTime(currentTimeMillis);
+    
+                    enterpriseCloudBeanOrderMapper.updateByEnterpriseId(enterpriseCloudBeanOrder);
+                });
+            }
     
             enterpriseIds.add(enterpriseInfo.getId());
             

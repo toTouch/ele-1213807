@@ -137,6 +137,7 @@ public class MerchantPlaceFeeRecordServiceImpl implements MerchantPlaceFeeRecord
             List<MerchantPlaceFeeRecord> placeFeeRecords = new ArrayList<>();
             
             for (ElectricityCabinet electricityCabinet : electricityCabinetList) {
+                log.info("electricityCabinet:{}, outWarehouseRequest:{}", electricityCabinet, outWarehouseRequest);
                 BigDecimal oldFee = new BigDecimal(NumberConstant.MINUS_ONE);
                 BigDecimal newFee = new BigDecimal(NumberConstant.MINUS_ONE);
                 
@@ -153,6 +154,7 @@ public class MerchantPlaceFeeRecordServiceImpl implements MerchantPlaceFeeRecord
                     newFee = new BigDecimal(NumberConstant.MINUS_ONE);
                 }
                 
+                log.info("oldFee:{}, newFee:{}", oldFee, newFee);
                 MerchantPlaceFeeRecord merchantPlaceFeeRecord = null;
                 
                 // 场地费有变化则进行记录
