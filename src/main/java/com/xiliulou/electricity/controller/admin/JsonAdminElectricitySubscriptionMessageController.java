@@ -6,6 +6,7 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.ElectricitySubscriptionMessage;
 import com.xiliulou.electricity.query.ServicePhoneQuery;
+import com.xiliulou.electricity.service.ElectricityConfigService;
 import com.xiliulou.electricity.service.ElectricitySubscriptionMessageService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.OperateRecordUtil;
@@ -35,6 +36,9 @@ public class JsonAdminElectricitySubscriptionMessageController {
     ElectricitySubscriptionMessageService electricitySubscriptionMessageService;
     
     @Autowired
+    ElectricityConfigService electricityConfigService;
+    
+    @Autowired
     RedisService redisService;
     
     @Autowired
@@ -48,6 +52,25 @@ public class JsonAdminElectricitySubscriptionMessageController {
     @PostMapping("admin/subscriptionMessage")
     public R saveElectricitySubscriptionMessage(@RequestBody @Validated ElectricitySubscriptionMessage electricitySubscriptionMessage) {
         return electricitySubscriptionMessageService.saveElectricitySubscriptionMessage(electricitySubscriptionMessage);
+    }
+    
+    /**
+     * 更新小程序客服配置
+     * @param status  打开微信客服 0-是 1-否
+     * @return  R.ok()
+     */
+    @PutMapping(value = "/admin/tenantConfig/wxCustomer")
+    public R updateTenantConfigWxCustomer(@RequestParam("status") Integer status ) {
+        electricityConfigService.updateTenantConfigWxCustomer(status);
+        return R.ok();
+    }
+    
+    /**
+     * 获取 微信客服配置
+     */
+    @GetMapping(value = "/admin/tenantConfig/wxCustomer")
+    public R queryTenantConfigWxCustomer() {
+        return R.ok(electricityConfigService.queryTenantConfigWxCustomer());
     }
     
     /**

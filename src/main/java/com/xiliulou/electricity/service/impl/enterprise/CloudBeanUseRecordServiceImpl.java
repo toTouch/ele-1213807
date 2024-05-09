@@ -29,6 +29,7 @@ import com.xiliulou.electricity.vo.enterprise.CloudBeanSumVO;
 import com.xiliulou.electricity.vo.enterprise.CloudBeanUseRecordVO;
 import com.xiliulou.storage.config.StorageConfig;
 import com.xiliulou.storage.service.StorageService;
+import com.xiliulou.storage.service.impl.AliyunOssService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.ObjectUtils;
@@ -68,9 +69,12 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
     @Autowired
     StorageConfig storageConfig;
     
-    @Qualifier("hwOssService")
+    @Qualifier("aliyunOssService")
     @Autowired
     StorageService storageService;
+    
+    @Autowired
+    AliyunOssService aliyunOssService;
     
     @Resource
     private CloudBeanUseRecordMapper cloudBeanUseRecordMapper;
@@ -736,29 +740,29 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
         if (endTime < beginTime || endTime - beginTime > 366 * 24 * 60 * 60 * 1000L) {
             return Triple.of(false, "100314", "时间参数不合法");
         }
-        
+    
         EnterpriseInfo enterpriseInfo = enterpriseInfoService.selectByUid(SecurityUtils.getUid());
         if (Objects.isNull(enterpriseInfo)) {
             log.error("CLOUD BEAN ORDER DOWNLOAD ERROR ! not found enterpriseInfo,uid={}", SecurityUtils.getUid());
             return Triple.of(false, "100315", "企业配置不存在!");
         }
-        
+    
         List<CloudBeanUseRecord> list = cloudBeanUseRecordMapper.selectByTime(beginTime, endTime, enterpriseInfo.getId());
         if (CollectionUtils.isEmpty(list)) {
             log.error("CLOUD BEAN ORDER DOWNLOAD ERROR ! list is empty,uid={}", SecurityUtils.getUid());
             return Triple.of(false, "100316", "所选时间段内无可用账单数据，无法下载");
         }
-        
+    
         List<CloudBeanOrderExcelVO> cloudBeanOrderExcelVOList = new ArrayList<>();
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        
+    
         int index = 0;
         for (CloudBeanUseRecord cloudBeanUseRecord : list) {
             index++;
             UserInfo userInfo = userInfoService.queryByUidFromCache(cloudBeanUseRecord.getUid());
-            
+        
             BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(cloudBeanUseRecord.getPackageId());
-            
+        
             CloudBeanOrderExcelVO cloudBeanOrderExcelVO = new CloudBeanOrderExcelVO();
             cloudBeanOrderExcelVO.setId(index);
             cloudBeanOrderExcelVO.setUsername(Objects.isNull(userInfo) ? "" : userInfo.getName());
@@ -776,24 +780,24 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
                     cloudBeanOrderExcelVO.setOperateName(Objects.isNull(user) ? "" : user.getName());
                 }
             }
-            
+        
             cloudBeanOrderExcelVOList.add(cloudBeanOrderExcelVO);
         }
-        
+    
         try {
             ByteArrayOutputStream out = new ByteArrayOutputStream();
-            
+        
             EasyExcel.write(out, CloudBeanOrderExcelVO.class).sheet("sheet").registerWriteHandler(new AutoHeadColumnWidthStyleStrategy()).doWrite(cloudBeanOrderExcelVOList);
-            
+        
             String excelPath = CLOUD_BEAN_BILL_PATH + IdUtil.simpleUUID() + ".xlsx";
-            
-            storageService.uploadFile(storageConfig.getBucketName(), excelPath, new ByteArrayInputStream(out.toByteArray()));
-            
-            return Triple.of(true, null, storageConfig.getUrlPrefix()+excelPath);
+        
+            aliyunOssService.uploadFile(storageConfig.getBucketName(), excelPath, new ByteArrayInputStream(out.toByteArray()));
+        
+            return Triple.of(true, null, StorageConfig.HTTPS + storageConfig.getBucketName() + "." + storageConfig.getOssEndpoint() + "/" +excelPath);
         } catch (Exception e) {
             log.error("导出云豆账单失败！", e);
         }
-        
+    
         return Triple.of(false, null, "导出云豆账单失败");
     }
     
