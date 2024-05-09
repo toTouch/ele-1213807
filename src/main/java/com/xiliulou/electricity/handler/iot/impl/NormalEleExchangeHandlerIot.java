@@ -62,7 +62,7 @@ public class NormalEleExchangeHandlerIot extends AbstractElectricityIotHandler {
             }
     
             NormalEleExchangeMsg normalEleExchangeMsg = JsonUtil.fromJson(receiverMessage.getOriginContent(), NormalEleExchangeMsg.class);
-            if (Objects.isNull(normalEleExchangeMsg)) {
+            if (Objects.isNull(normalEleExchangeMsg) || Objects.isNull(normalEleExchangeMsg.getBatSta())) {
                 log.error("PARSE ELE EXCHANGE MSG ERROR! sessionId={}", receiverMessage.getSessionId());
                 return;
             }
@@ -70,6 +70,7 @@ public class NormalEleExchangeHandlerIot extends AbstractElectricityIotHandler {
             // 更新柜机参数
             ElectricityCabinetExtra cabinetFromCache = electricityExtraService.queryByEidFromCache(Long.valueOf(eid));
             
+            // TODO(heyafeng) 2024/5/9 19:43
             log.info("cabinetFromCache={}", cabinetFromCache);
             log.info("normalEleExchangeMsg={}", normalEleExchangeMsg);
             
