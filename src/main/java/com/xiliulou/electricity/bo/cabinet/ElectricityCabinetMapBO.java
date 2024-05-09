@@ -22,6 +22,11 @@ public class ElectricityCabinetMapBO {
     private String name;
     
     /**
+     * 柜机地址
+     */
+    private String address;
+    
+    /**
      * 地址经度
      */
     private Double longitude;
