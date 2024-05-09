@@ -817,7 +817,7 @@ public class MerchantServiceImpl implements MerchantService {
             userService.removeById(merchant.getUid(), timeMillis);
             
             // 删除用户绑定关系
-            userOauthBindService.deleteByUid(merchant.getUid(), tenantId);
+            // userOauthBindService.deleteByUid(merchant.getUid(), tenantId);
             
             // 删除用户缓存
             merchantDeleteCacheDTO.setDeleteUserFlag(true);
