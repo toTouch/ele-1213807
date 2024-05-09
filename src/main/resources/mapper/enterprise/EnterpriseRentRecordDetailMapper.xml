@@ -39,6 +39,7 @@
                 WHERE
                     uid = #{uid}
                   and del_flag  = 0
+                  
             ) t
         WHERE
             t.row_num = 1

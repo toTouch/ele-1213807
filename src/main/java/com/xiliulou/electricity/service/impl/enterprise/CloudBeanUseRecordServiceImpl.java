@@ -273,7 +273,13 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
         if (ObjectUtils.isEmpty(enterpriseRentRecordDetailList)) {
             return result.add(totalCloudBean);
         }
-    
+        
+        // 过滤非法数据
+        enterpriseRentRecordDetailList = enterpriseRentRecordDetailList.stream().filter(item -> Objects.nonNull(item.getRentTime()) && Objects.nonNull(item.getReturnTime())).collect(Collectors.toList());
+        if (ObjectUtils.isEmpty(enterpriseRentRecordDetailList)) {
+            return result.add(totalCloudBean);
+        }
+        
         List<String> orderIdList = enterpriseRentRecordDetailList.stream().map(EnterpriseRentRecordDetail::getOrderId).distinct().collect(Collectors.toList());
         // 将租电记录根据订单id进行分组
         Map<String, List<EnterpriseRentRecordDetail>> recordDetailMap = enterpriseRentRecordDetailList.stream()
