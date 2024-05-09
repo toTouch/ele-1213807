@@ -411,6 +411,10 @@ public class ElectricityCabinetServiceV2Impl implements ElectricityCabinetV2Serv
             redisService.addGeo(CacheConstant.CACHE_ELECTRICITY_CABINET_GEO + TenantContextHolder.getTenantId(), item.getId().toString(), new Point(batchOutWarehouseRequest.getLongitude(), batchOutWarehouseRequest.getLatitude()));
         });
     
+        log.info("ElectricityCabinetServiceV2Impl.batchOutWarehouse:electricityCabinetList:{}, batchOutWarehouseRequest={}", electricityCabinetList, batchOutWarehouseRequest);
+        // 保存场地费变更记录
+        merchantPlaceFeeRecordService.asyncRecords(electricityCabinetList, batchOutWarehouseRequest, SecurityUtils.getUserInfo(), TenantContextHolder.getTenantId());
+        
         // 异步记录
         List<ElectricityCabinetBO> electricityCabinetBOList = electricityCabinetMapper.selectListByIdList(batchOutWarehouseRequest.getIdList());
         if (CollectionUtils.isNotEmpty(electricityCabinetBOList)) {
@@ -422,9 +426,6 @@ public class ElectricityCabinetServiceV2Impl implements ElectricityCabinetV2Serv
         
             assetWarehouseRecordService.asyncRecords(TenantContextHolder.getTenantId(), uid, snWarehouseList, AssetTypeEnum.ASSET_TYPE_CABINET.getCode(),
                     WarehouseOperateTypeEnum.WAREHOUSE_OPERATE_TYPE_BATCH_OUT.getCode());
-    
-            // 保存场地费变更记录
-            merchantPlaceFeeRecordService.asyncRecords(electricityCabinetList, batchOutWarehouseRequest, SecurityUtils.getUserInfo());
         }
         
         return Triple.of(true, null, null);

@@ -97,7 +97,14 @@
             </foreach>
         </if>
     </select>
-
+    <select id="selectListByEnterpriseId"
+            resultType="com.xiliulou.electricity.entity.enterprise.EnterpriseCloudBeanOrder">
+        select
+          id, enterprise_id, uid, operate_uid ,pay_amount, order_id, status, pay_type, type, bean_amount, franchisee_id, tenant_id, create_time, update_time, remark
+        from t_enterprise_cloud_bean_order
+        where  enterprise_id = #{enterpriseId}
+    </select>
+    
     <!--通过主键修改数据-->
     <update id="update">
         update t_enterprise_cloud_bean_order
@@ -148,8 +155,20 @@
         where id = #{id}
     </update>
     
-    <update id="updateByEnterpriseId">
-        update t_enterprise_cloud_bean_order set uid = #{uid}, operate_uid = #{operateUid}, update_time = #{updateTime} where enterprise_id = #{enterpriseId}
+    <update id="updateOneById">
+        update t_enterprise_cloud_bean_order
+        <set>
+            <if test="uid != null">
+                uid = #{uid},
+            </if>
+            <if test="operateUid != null">
+                operate_uid = #{operateUid},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+        </set>
+        where id = #{id}
     </update>
     
     <!--通过主键删除-->

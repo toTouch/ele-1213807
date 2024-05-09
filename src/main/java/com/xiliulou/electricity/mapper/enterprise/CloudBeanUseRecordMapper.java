@@ -55,5 +55,5 @@ public interface CloudBeanUseRecordMapper extends BaseMapper<CloudBeanUseRecord>
     
     List<CloudBeanSumVO> selectBeanAmountByEnterpriseId(@Param("enterpriseId") Long enterpriseId);
     
-    int batchInsert(@Param("cloudBeanUseRecordList") List<CloudBeanUseRecord> cloudBeanUseRecordList);
+    int batchInsert(@Param("list") List<CloudBeanUseRecord> cloudBeanUseRecordList);
 }

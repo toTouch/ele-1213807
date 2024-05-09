@@ -22,7 +22,7 @@ public interface MerchantPlaceFeeRecordService {
     
     void asyncInsertOne(MerchantPlaceFeeRecord merchantPlaceFeeRecord);
     
-    void asyncRecords(List<ElectricityCabinet> electricityCabinetList, ElectricityCabinetBatchOutWarehouseRequest batchOutWarehouseRequest, TokenUser userInfo);
+    void asyncRecords(List<ElectricityCabinet> electricityCabinetList, ElectricityCabinetBatchOutWarehouseRequest batchOutWarehouseRequest, TokenUser userInfo, Integer tenantId);
     
     Integer existPlaceFeeByCabinetId(List<Long> cabinetIdList);
 }

@@ -17,4 +17,6 @@ public interface EnterpriseRentRecordDetailMapper {
     List<EnterpriseRentRecordDetail> selectListByUid(@Param("uid") Long uid);
     
     int removeByUid(@Param("uid") Long uid,@Param("updateTime") long updateTime);
+    
+    int existsByRentRecordId(@Param("rentRecordId") Long id);
 }

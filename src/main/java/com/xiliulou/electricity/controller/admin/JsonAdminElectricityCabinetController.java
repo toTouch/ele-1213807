@@ -140,7 +140,9 @@ public class JsonAdminElectricityCabinetController extends BasicController {
                        @RequestParam(value = "endTime", required = false) Long endTime,
                        @RequestParam(value = "id", required = false) Integer id,
                        @RequestParam(value = "idList", required = false) List<Integer> idList,
-                       @RequestParam(value = "areaId", required = false) Long areaId) {
+                       @RequestParam(value = "areaId", required = false) Long areaId,
+            @RequestParam(value = "productKey", required = false) String productKey,
+            @RequestParam(value = "deviceName", required = false) String deviceName) {
         if (Objects.isNull(size) || size < 0 || size > 50) {
             size = 10L;
         }
@@ -194,6 +196,8 @@ public class JsonAdminElectricityCabinetController extends BasicController {
                 .franchiseeIdList(permissionTriple.getLeft())
                 .storeIdList(permissionTriple.getMiddle())
                 .areaId(areaId)
+                .productKey(productKey)
+                .deviceName(deviceName)
                 .idList(idList)
                 .build();
 
@@ -213,7 +217,12 @@ public class JsonAdminElectricityCabinetController extends BasicController {
                         @RequestParam(value = "beginTime", required = false) Long beginTime,
                         @RequestParam(value = "endTime", required = false) Long endTime,
                         @RequestParam(value = "sn", required = false) String sn,
-                        @RequestParam(value = "modelId", required = false) Integer modelId) {
+                        @RequestParam(value = "areaId", required = false) Long areaId,
+                        @RequestParam(value = "idList", required = false) List<Integer> idList,
+                        @RequestParam(value = "modelId", required = false) Integer modelId,
+            @RequestParam(value = "productKey", required = false) String productKey,
+            @RequestParam(value = "deviceName", required = false) String deviceName
+            ) {
 
         // 数据权校验
         Triple<List<Long>, List<Long>, Boolean> permissionTriple = checkPermission();
@@ -253,10 +262,14 @@ public class JsonAdminElectricityCabinetController extends BasicController {
                 .eleIdList(eleIdList)
                 .modelId(modelId)
                 .sn(sn)
+                .idList(idList)
+                .areaId(areaId)
                 .stockStatus(stockStatus)
                 .tenantId(TenantContextHolder.getTenantId())
                 .franchiseeIdList(permissionTriple.getLeft())
                 .storeIdList(permissionTriple.getMiddle())
+                .productKey(productKey)
+                .deviceName(deviceName)
                 .build();
 
         return electricityCabinetService.queryCount(electricityCabinetQuery);

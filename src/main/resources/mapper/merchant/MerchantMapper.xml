@@ -71,10 +71,7 @@
                 update_time = #{updateTime},
             </if>
             <if test="existPlaceFee != null">
-                exist_place_fee  = #{existPlaceFee},
-            </if>
-            <if test="enterpriseId != null">
-                enterprise_id  = #{enterpriseId}
+                exist_place_fee  = #{existPlaceFee}
             </if>
         </set>
         
@@ -234,5 +231,14 @@
                 </foreach>
             </if>
         </where>
+    </select>
+    <select id="existsEnterpriseByEnterpriseId" resultType="java.lang.Integer">
+        SELECT
+            count(1)
+        FROM
+            t_merchant
+        WHERE
+            del_flag = 0
+            and enterprise_id = #{enterpriseId}
     </select>
 </mapper>

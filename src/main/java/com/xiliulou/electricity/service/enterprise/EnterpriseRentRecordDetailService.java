@@ -16,4 +16,6 @@ public interface EnterpriseRentRecordDetailService {
     List<EnterpriseRentRecordDetail> queryListByUid(Long uid);
     
     int removeByUid(Long uid);
+    
+    int existsByRentRecordId(Long id);
 }

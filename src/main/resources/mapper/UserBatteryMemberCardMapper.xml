@@ -326,7 +326,7 @@
              FROM
                  t_user_info_extra uie
                      LEFT JOIN t_electricity_member_card_order emco ON uie.uid = emco.uid
-                     LEFT JOIN t_battery_membercard_refund_order bmro ON (emco.order_id collate utf8mb4_0900_ai_ci)=(bmro.member_card_order_no collate utf8mb4_0900_ai_ci)
+                     LEFT JOIN t_battery_membercard_refund_order bmro ON (emco.order_id)=(bmro.member_card_order_no collate utf8mb4_0900_ai_ci)
              WHERE
                  uie.merchant_id = #{merchantId}  and  uie.tenant_id =#{tenantId} and
                  emco.pay_count > 1

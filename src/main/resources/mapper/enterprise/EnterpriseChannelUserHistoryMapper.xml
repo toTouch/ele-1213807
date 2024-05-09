@@ -78,7 +78,4 @@
 
     </insert>
     
-    <update id="updateByInviterId">
-        update t_enterprise_channel_user_history set inviter_id = #{newUid}, update_time = #{updateTime} where inviter_id = #{oldUid} and del_flag = 0;
-    </update>
 </mapper>

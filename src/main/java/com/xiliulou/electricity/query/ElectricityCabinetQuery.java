@@ -145,4 +145,8 @@ public class ElectricityCabinetQuery {
      */
     private Integer batteryCountType;
     
+    
+    private String productKey;
+    
+    private String deviceName;
 }

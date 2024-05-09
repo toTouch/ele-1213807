@@ -14,6 +14,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -112,5 +114,4 @@ public class JsonAdminTenantController extends BaseController {
     public R addTenant(@PathVariable("id") Integer id) {
         return R.ok(tenantService.queryByIdFromCache(id));
     }
-
 }

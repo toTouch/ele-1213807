@@ -98,4 +98,9 @@ public class MerchantSaveRequest {
      * 企业套餐id集合
      */
     private List<Long> enterprisePackageIdList;
+    
+    /**
+     * 企业id
+     */
+    private Long enterpriseId;
 }

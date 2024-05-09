@@ -21,6 +21,7 @@ import com.xiliulou.electricity.entity.RolePermission;
 import com.xiliulou.electricity.entity.Tenant;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.constant.NumberConstant;
+import com.xiliulou.electricity.entity.merchant.MerchantLevel;
 import com.xiliulou.electricity.mapper.TenantMapper;
 import com.xiliulou.electricity.mapper.asset.AssetWarehouseMapper;
 import com.xiliulou.electricity.query.TenantAddAndUpdateQuery;
@@ -45,6 +46,7 @@ import com.xiliulou.electricity.vo.TenantVO;
 import com.xiliulou.electricity.web.query.AdminUserQuery;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.RandomStringUtils;
+import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -389,7 +391,8 @@ public class TenantServiceImpl implements TenantService {
     public Integer querySumCount(TenantQuery tenantQuery) {
         return tenantMapper.queryCount(tenantQuery);
     }
-
+    
+    
     /**
      * 生成新的租户code
      */

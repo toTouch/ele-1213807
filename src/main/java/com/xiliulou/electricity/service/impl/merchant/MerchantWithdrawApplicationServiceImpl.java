@@ -57,6 +57,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -197,14 +198,6 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
             return Triple.of(false, "120017", "未配置支付参数");
         }
         
-        UserOauthBind userOauthBind = userOauthBindService.queryUserOauthBySysId(merchantWithdrawApplication.getUid(), tenantId);
-        if (Objects.isNull(userOauthBind) || Objects.isNull(userOauthBind.getThirdId())) {
-            log.error("review Merchant withdraw application error, not found user auth bind info for merchant user. uid = {}", merchantWithdrawApplication.getUid());
-            return Triple.of(false, "120018", "未找到用户的第三方授权信息");
-        }
-        
-        // ElectricityPayParams electricityPayParams = electricityPayParamsService.queryFromCache(withdrawRecord.getTenantId());
-        
         //生成提现批次单号
         String batchNo = OrderIdUtil.generateBusinessOrderId(BusinessType.MERCHANT_WITHDRAW_BATCH, user.getUid());
         String batchDetailNo = OrderIdUtil.generateBusinessOrderId(BusinessType.MERCHANT_WITHDRAW_BATCH_DETAIL, user.getUid());
@@ -228,6 +221,12 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
                     merchantWithdrawApplication.getTenantId().longValue());
             
             return Triple.of(true, null, result);
+        }
+    
+        UserOauthBind userOauthBind = userOauthBindService.queryUserOauthBySysId(merchantWithdrawApplication.getUid(), tenantId);
+        if (Objects.isNull(userOauthBind) || Objects.isNull(userOauthBind.getThirdId())) {
+            log.error("review Merchant withdraw application error, not found user auth bind info for merchant user. uid = {}", merchantWithdrawApplication.getUid());
+            return Triple.of(false, "120018", "未找到用户的第三方授权信息");
         }
         
         //若为同意提现，则修改提现状态为已审核，并且修改提现记录表中的提现状态为已审核。
@@ -427,10 +426,11 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
         
         //创建转账明细记录
         List<WechatTransferBatchOrderDetailQuery> wechatTransferBatchOrderDetailQueryList = new ArrayList<>();
-        
+    
+        AtomicInteger suffixId = new AtomicInteger();
         merchantWithdrawApplications.forEach(merchantWithdrawApplication -> {
             //生成提现明细的批次号
-            String batchDetailNo = OrderIdUtil.generateBusinessOrderId(BusinessType.MERCHANT_WITHDRAW_BATCH_DETAIL, merchantWithdrawApplication.getUid());
+            String batchDetailNo = OrderIdUtil.generateBusinessId(BusinessType.MERCHANT_WITHDRAW_BATCH_DETAIL, merchantWithdrawApplication.getUid()) + suffixId.getAndIncrement();
             MerchantWithdrawApplicationRecord withdrawApplicationRecord = new MerchantWithdrawApplicationRecord();
             withdrawApplicationRecord.setUid(merchantWithdrawApplication.getUid());
             withdrawApplicationRecord.setOrderNo(merchantWithdrawApplication.getOrderNo());
@@ -468,7 +468,7 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
         //发起微信第三方提现申请
         //创建调用第三方参数信息
         WechatTransferBatchOrderQuery wechatTransferBatchOrderQuery = new WechatTransferBatchOrderQuery();
-        wechatTransferBatchOrderQuery.setAppid(electricityPayParams.getMerchantMinProAppId());
+        wechatTransferBatchOrderQuery.setAppid(electricityPayParams.getMerchantAppletId());
         //转账批次号
         wechatTransferBatchOrderQuery.setOutBatchNo(batchNo);
         wechatTransferBatchOrderQuery.setTotalAmount(totalAmount.multiply(new BigDecimal(100)).intValue());

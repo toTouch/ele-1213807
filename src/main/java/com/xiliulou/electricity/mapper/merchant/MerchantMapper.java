@@ -43,4 +43,6 @@ public interface MerchantMapper {
     List<Merchant> selectListAllByIds(@Param("merchantIdSet") Set<Long> merchantIdSet, @Param("tenantId") Integer tenantId);
     
     List<Merchant> selectListByUidList(@Param("uidList") Set<Long> uidList, @Param("tenantId") Integer tenantId);
+    
+    int existsEnterpriseByEnterpriseId(@Param("enterpriseId") Long id);
 }
