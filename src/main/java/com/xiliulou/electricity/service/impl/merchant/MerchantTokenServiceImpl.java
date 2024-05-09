@@ -163,6 +163,12 @@ public class MerchantTokenServiceImpl implements MerchantTokenService {
                     userOauthBindService.insert(oauthBind);
                 } else {
                     UserOauthBind userOauthBind = userOauthBindService.queryUserOauthBySysId(e.getUid(), tenantId);
+                    /*if (ObjectUtils.isEmpty(userOauthBind)) {
+                        // 通过 openId 查询到了绑定信息，但是通过当前登录人，并未查询到绑定，则代表同一个微信登陆了不同的商户，此种情况，进行拦截，抛出异常
+                        log.warn("merchant token login warning. The open id is bind other uid. current login uid is {}", e.getUid());
+                        throw new CustomBusinessException("当前登录账号异常，请联系客服处理");
+                    }*/
+                    
                     if (ObjectUtils.isNotEmpty(userOauthBind) && !result.getOpenid().equals(userOauthBind.getThirdId())) {
                         log.warn("merchant token login warning. the uid is bind other third id. uid is {}", e.getUid());
                         throw new CustomBusinessException("当前登录账号异常，请联系客服处理");
