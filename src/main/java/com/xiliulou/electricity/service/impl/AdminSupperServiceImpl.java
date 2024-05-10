@@ -95,8 +95,8 @@ public class AdminSupperServiceImpl implements AdminSupperService {
         List<String> dbBatterySnList = dbBatteryList.stream().map(ElectricityBattery::getSn).collect(Collectors.toList());
         // 定义失败的 SN 集
         List<String> batterySnFailList = new ArrayList<>();
-        // 定义等待删除的电池 SN 集
-        List<String> batterySnWaitList = new ArrayList<>();
+        // 定义等待删除的电池
+        List<ElectricityBattery> batteryWaitList = new ArrayList<>();
         
         // 比对入参和查询结果是否一致
         if (batterySnDistinctList.size() != dbBatterySnList.size()) {
@@ -114,12 +114,12 @@ public class AdminSupperServiceImpl implements AdminSupperService {
                 List<String> stocktakingSnList = v.stream().map(ElectricityBattery::getSn).collect(Collectors.toList());
                 batterySnFailList.addAll(stocktakingSnList);
             } else {
-                batterySnWaitList.addAll(v);
+                batteryWaitList.addAll(v);
             }
         });
         
         // 根据 UID 是否为空分组
-        Map<Boolean, List<ElectricityBattery>> rentGroupBatteryList = batterySnWaitList.stream()
+        Map<Boolean, List<ElectricityBattery>> rentGroupBatteryList = batteryWaitList.stream()
                 .collect(Collectors.groupingBy(batteryWait -> batteryWait.getUid() != null, Collectors.mapping(Function.identity(), Collectors.toList())));
         rentGroupBatteryList.forEach((k, v) -> {
             // 电池租用中的电池，不允许删除
@@ -128,15 +128,14 @@ public class AdminSupperServiceImpl implements AdminSupperService {
                 batterySnFailList.addAll(rentSnList);
                 
                 // 从待删除的里面删除这条数据
-                
-                
+                batteryWaitList.removeIf(batteryWait -> rentSnList.contains(batteryWait.getSn()));
             } else {
-                batterySnWaitList.addAll(v);
+                batteryWaitList.addAll(v);
             }
         });
         
         // 对等待删除的数据，进行删除
-        List<String> batteryWaitSnList = batterySnWaitList.stream().map(ElectricityBattery::getSn).collect(Collectors.toList());
+        List<String> batteryWaitSnList = batteryWaitList.stream().map(ElectricityBattery::getSn).distinct().collect(Collectors.toList());
         
         // 1、调用 BMS 删除
         Map<String, String> headers = new HashMap<>();
