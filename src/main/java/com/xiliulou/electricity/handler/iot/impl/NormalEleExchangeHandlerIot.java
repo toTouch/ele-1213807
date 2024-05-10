@@ -69,17 +69,13 @@ public class NormalEleExchangeHandlerIot extends AbstractElectricityIotHandler {
     
             // 更新柜机参数
             ElectricityCabinetExtra cabinetFromCache = electricityExtraService.queryByEidFromCache(Long.valueOf(eid));
-            
-            // TODO(heyafeng) 2024/5/9 19:43
-            log.info("cabinetFromCache={}", cabinetFromCache);
-            log.info("normalEleExchangeMsg={}", normalEleExchangeMsg);
-            
-            
             if (Objects.nonNull(cabinetFromCache) && !Objects.equals(cabinetFromCache.getBatteryCountType(), normalEleExchangeMsg.getBatSta())) {
                 ElectricityCabinetExtra electricityCabinetExtra = ElectricityCabinetExtra.builder().eid(cabinetFromCache.getEid())
                         .batteryCountType(normalEleExchangeMsg.getBatSta()).updateTime(System.currentTimeMillis()).build();
         
-                electricityExtraService.update(electricityCabinetExtra);
+                if (electricityExtraService.update(electricityCabinetExtra) > 0) {
+                    redisService.delete(CacheConstant.CACHE_ELECTRICITY_CABINET_EXTRA + eid);
+                }
             }
         });
     }
