@@ -47,6 +47,8 @@ public class NormalEleExchangeHandlerIot extends AbstractElectricityIotHandler {
     public void postHandleReceiveMsg(ElectricityCabinet electricityCabinet, ReceiverMessage receiverMessage) {
         
         executorService.execute(() -> {
+            log.error("receiverMessage={}", receiverMessage);
+    
             Integer eid = electricityCabinet.getId();
             //版本号修改
             if (StringUtils.isNotEmpty(receiverMessage.getVersion())) {
@@ -66,8 +68,13 @@ public class NormalEleExchangeHandlerIot extends AbstractElectricityIotHandler {
                 log.error("PARSE ELE EXCHANGE MSG ERROR! sessionId={}, eid={}", receiverMessage.getSessionId(), eid);
                 return;
             }
+            
+            log.info("normalEleExchangeMsg={}", normalEleExchangeMsg);
     
             ElectricityCabinetExtra cabinetFromCache = electricityExtraService.queryByEidFromCache(Long.valueOf(eid));
+            
+            log.info("cabinetFromCache={}", cabinetFromCache);
+            
             ElectricityCabinetExtra electricityCabinetExtra = new ElectricityCabinetExtra();
             electricityCabinetExtra.setEid(eid.longValue());
             Integer batteryCountType = null;
