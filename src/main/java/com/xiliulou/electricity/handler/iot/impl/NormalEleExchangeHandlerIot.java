@@ -62,7 +62,7 @@ public class NormalEleExchangeHandlerIot extends AbstractElectricityIotHandler {
             }
     
             NormalEleExchangeMsg normalEleExchangeMsg = JsonUtil.fromJson(receiverMessage.getOriginContent(), NormalEleExchangeMsg.class);
-            if (Objects.isNull(normalEleExchangeMsg)) {
+            if (Objects.isNull(normalEleExchangeMsg) || Objects.isNull(normalEleExchangeMsg.getBatSta())) {
                 log.error("PARSE ELE EXCHANGE MSG ERROR! sessionId={}", receiverMessage.getSessionId());
                 return;
             }
@@ -73,7 +73,9 @@ public class NormalEleExchangeHandlerIot extends AbstractElectricityIotHandler {
                 ElectricityCabinetExtra electricityCabinetExtra = ElectricityCabinetExtra.builder().eid(cabinetFromCache.getEid())
                         .batteryCountType(normalEleExchangeMsg.getBatSta()).updateTime(System.currentTimeMillis()).build();
         
-                electricityExtraService.update(electricityCabinetExtra);
+                if (electricityExtraService.update(electricityCabinetExtra) > 0) {
+                    redisService.delete(CacheConstant.CACHE_ELECTRICITY_CABINET_EXTRA + eid);
+                }
             }
         });
     }
