@@ -7,6 +7,7 @@ import com.xiliulou.electricity.constant.DateFormatConstant;
 import com.xiliulou.electricity.constant.enterprise.EnterpriseRentRecordConstant;
 import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
 import com.xiliulou.electricity.entity.UserBatteryMemberCard;
+import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.enterprise.AnotherPayMembercardRecord;
 import com.xiliulou.electricity.entity.enterprise.EnterpriseChannelUser;
 import com.xiliulou.electricity.entity.enterprise.EnterpriseRentRecord;
@@ -16,6 +17,7 @@ import com.xiliulou.electricity.enums.enterprise.RenewalStatusEnum;
 import com.xiliulou.electricity.mapper.enterprise.EnterpriseRentRecordMapper;
 import com.xiliulou.electricity.service.ElectricityMemberCardOrderService;
 import com.xiliulou.electricity.service.UserBatteryMemberCardService;
+import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.enterprise.AnotherPayMembercardRecordService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseChannelUserService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseRentRecordDetailService;
@@ -64,6 +66,9 @@ public class EnterpriseRentRecordServiceImpl implements EnterpriseRentRecordServ
     
     @Resource
     private EnterpriseRentRecordDetailService enterpriseRentRecordDetailService;
+    
+    @Resource
+    private UserInfoService userInfoService;
     
     /**
      * 通过ID查询单条数据从DB
@@ -158,13 +163,21 @@ public class EnterpriseRentRecordServiceImpl implements EnterpriseRentRecordServ
                     log.warn("SAVE RENT RECORD DETAIL WARN!not found userBatteryMemberCard,uid={}", uid);
                     continue;
                 }
-        
+    
+                UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
+                if (Objects.isNull(userBatteryMemberCard)) {
+                    log.warn("SAVE RENT RECORD DETAIL WARN!not found userInfo,uid={}", uid);
+                    continue;
+                }
+    
+                enterpriseReturnRecord.setTenantId(userInfo.getTenantId());
                 // 退电订单设置为 用户当前生效的订单号
                 userBatteryMemberCard.setOrderId(enterpriseReturnRecord.getReturnMembercardOrderId());
         
                 EnterpriseRentRecord enterpriseReturnRecordUpdate = new EnterpriseRentRecord();
                 enterpriseReturnRecordUpdate.setId(enterpriseReturnRecord.getId());
                 enterpriseReturnRecordUpdate.setUpdateTime(System.currentTimeMillis());
+                enterpriseReturnRecordUpdate.setTenantId(userInfo.getTenantId());
         
                 // 获取组退电对应的套餐类型
                 List<EnterpriseRentRecordDetail> enterpriseRentRecordDetailList = new ArrayList<>();
@@ -209,6 +222,13 @@ public class EnterpriseRentRecordServiceImpl implements EnterpriseRentRecordServ
             log.warn("channel user enable member card handler!renewal status is open,uid={}", uid);
             return;
         }
+    
+        UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
+        // 判断自主续费是否打开
+        if (Objects.isNull(userInfo)) {
+            log.warn("SAVE RENT RECORD WARN!not found userInfo,uid={}", uid);
+            return;
+        }
         
         EnterpriseRentRecord enterpriseRentRecord = new EnterpriseRentRecord();
         enterpriseRentRecord.setUid(uid);
@@ -216,7 +236,7 @@ public class EnterpriseRentRecordServiceImpl implements EnterpriseRentRecordServ
         enterpriseRentRecord.setRentTime(System.currentTimeMillis());
         enterpriseRentRecord.setCreateTime(System.currentTimeMillis());
         enterpriseRentRecord.setUpdateTime(System.currentTimeMillis());
-        enterpriseRentRecord.setTenantId(userBatteryMemberCard.getTenantId());
+        enterpriseRentRecord.setTenantId(userInfo.getTenantId());
         this.enterpriseRentRecordMapper.insert(enterpriseRentRecord);
     }
     
