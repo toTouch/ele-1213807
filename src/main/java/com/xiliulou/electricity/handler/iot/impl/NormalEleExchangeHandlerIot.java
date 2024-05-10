@@ -74,7 +74,7 @@ public class NormalEleExchangeHandlerIot extends AbstractElectricityIotHandler {
             log.info("cabinetFromCache.getBatteryCountType={}, normalEleExchangeMsg.getBatSta={}", cabinetFromCache.getBatteryCountType(), normalEleExchangeMsg.getBatSta());
             if (Objects.nonNull(cabinetFromCache) && !Objects.equals(cabinetFromCache.getBatteryCountType(), normalEleExchangeMsg.getBatSta())) {
                 ElectricityCabinetExtra electricityCabinetExtra = ElectricityCabinetExtra.builder().eid(cabinetFromCache.getEid())
-                        .batteryCountType(normalEleExchangeMsg.getBatSta()).updateTime(System.currentTimeMillis()).build();
+                        .batteryCountType(normalEleExchangeMsg.getBatSta()).build();
                 
                 if (electricityExtraService.update(electricityCabinetExtra) > 0) {
                     redisService.delete(CacheConstant.CACHE_ELECTRICITY_CABINET_EXTRA + eid);
