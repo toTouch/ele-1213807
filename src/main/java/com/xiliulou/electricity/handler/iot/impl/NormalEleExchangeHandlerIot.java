@@ -45,10 +45,7 @@ public class NormalEleExchangeHandlerIot extends AbstractElectricityIotHandler {
     
     @Override
     public void postHandleReceiveMsg(ElectricityCabinet electricityCabinet, ReceiverMessage receiverMessage) {
-        
         executorService.execute(() -> {
-            log.error("receiverMessage={}", receiverMessage);
-    
             Integer eid = electricityCabinet.getId();
             //版本号修改
             if (StringUtils.isNotEmpty(receiverMessage.getVersion())) {
@@ -69,12 +66,7 @@ public class NormalEleExchangeHandlerIot extends AbstractElectricityIotHandler {
                 return;
             }
             
-            log.info("normalEleExchangeMsg={}", normalEleExchangeMsg);
-    
             ElectricityCabinetExtra cabinetFromCache = electricityExtraService.queryByEidFromCache(Long.valueOf(eid));
-            
-            log.info("cabinetFromCache={}", cabinetFromCache);
-            
             ElectricityCabinetExtra electricityCabinetExtra = new ElectricityCabinetExtra();
             electricityCabinetExtra.setEid(eid.longValue());
             Integer batteryCountType = null;
@@ -87,6 +79,8 @@ public class NormalEleExchangeHandlerIot extends AbstractElectricityIotHandler {
                 // 低于2.1.8的版本，不支持少电多电参数上报，修改状态为正常
                 batteryCountType = EleCabinetConstant.BATTERY_COUNT_TYPE_NORMAL;
             }
+    
+            electricityCabinetExtra.setBatteryCountType(batteryCountType);
             
             if (Objects.nonNull(batteryCountType) && electricityExtraService.update(electricityCabinetExtra) > 0) {
                 redisService.delete(CacheConstant.CACHE_ELECTRICITY_CABINET_EXTRA + eid);
