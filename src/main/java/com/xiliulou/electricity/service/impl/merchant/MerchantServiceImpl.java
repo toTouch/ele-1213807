@@ -1445,6 +1445,8 @@ public class MerchantServiceImpl implements MerchantService {
     @Transactional
     @Override
     public void repairEnterprise(List<Long> enterpriseIds, List<Long> merchantIds) {
+        log.info("repair enterprise start");
+        
         // 查询状态为开启的企业
         List<EnterpriseInfo> enterpriseInfos = enterpriseInfoService.queryList();
         if (ObjectUtils.isEmpty(enterpriseInfos)) {
@@ -1534,6 +1536,8 @@ public class MerchantServiceImpl implements MerchantService {
             merchantIds.add(merchant.getId());
             log.info("repair enterprise success, enterpriseId={}", enterpriseInfo.getId());
         });
+        
+        log.info("repair enterprise end");
     }
     
     @Slave
