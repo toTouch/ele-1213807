@@ -1,6 +1,5 @@
 package com.xiliulou.electricity.handler.iot.impl;
 
-import com.google.gson.annotations.SerializedName;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.thread.XllThreadPoolExecutors;
@@ -45,7 +44,7 @@ public class NormalEleExchangeHandlerIot extends AbstractElectricityIotHandler {
     
     @Override
     public void postHandleReceiveMsg(ElectricityCabinet electricityCabinet, ReceiverMessage receiverMessage) {
-      
+        
         executorService.execute(() -> {
             if (StringUtils.isEmpty(receiverMessage.getVersion())) {
                 return;
@@ -60,46 +59,36 @@ public class NormalEleExchangeHandlerIot extends AbstractElectricityIotHandler {
                 redisService.delete(CacheConstant.CACHE_ELECTRICITY_CABINET + newElectricityCabinet.getId());
                 redisService.delete(CacheConstant.CACHE_ELECTRICITY_CABINET_DEVICE + electricityCabinet.getProductKey() + electricityCabinet.getDeviceName());
             }
-    
+            
             NormalEleExchangeMsg normalEleExchangeMsg = JsonUtil.fromJson(receiverMessage.getOriginContent(), NormalEleExchangeMsg.class);
             if (Objects.isNull(normalEleExchangeMsg) || Objects.isNull(normalEleExchangeMsg.getBatSta())) {
                 log.error("PARSE ELE EXCHANGE MSG ERROR! sessionId={}", receiverMessage.getSessionId());
                 return;
             }
-    
-    
+            
             log.info("normalEleExchangeMsg==={}", normalEleExchangeMsg);
             // 更新柜机参数
             ElectricityCabinetExtra cabinetFromCache = electricityExtraService.queryByEidFromCache(Long.valueOf(eid));
             log.info("cabinetFromCache==={}", cabinetFromCache);
-    
+            
             log.info("cabinetFromCache.getBatteryCountType={}, normalEleExchangeMsg.getBatSta={}", cabinetFromCache.getBatteryCountType(), normalEleExchangeMsg.getBatSta());
             if (Objects.nonNull(cabinetFromCache) && !Objects.equals(cabinetFromCache.getBatteryCountType(), normalEleExchangeMsg.getBatSta())) {
                 ElectricityCabinetExtra electricityCabinetExtra = ElectricityCabinetExtra.builder().eid(cabinetFromCache.getEid())
                         .batteryCountType(normalEleExchangeMsg.getBatSta()).updateTime(System.currentTimeMillis()).build();
-        
+                
                 if (electricityExtraService.update(electricityCabinetExtra) > 0) {
                     redisService.delete(CacheConstant.CACHE_ELECTRICITY_CABINET_EXTRA + eid);
                 }
             }
         });
     }
-
+    
 }
 
 @Data
 class NormalEleExchangeMsg {
     
-    private String productKey;
-    
-    private String sessionId;
-    
     private String type;
-    
-    @SerializedName("update_time")
-    private Long updateTime;
-    
-    private String version;
     
     /**
      * batSta: 电池状态：0 正常、1 少电、2 多电
