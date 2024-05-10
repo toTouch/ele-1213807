@@ -220,6 +220,15 @@ public class OtherSettingParamTemplateRequestDTO {
     private String timedChargeParams;
     
     /**
+     * 柜机断电锁仓
+     * <pre>
+     *     0-开
+     *     1-关
+     * </pre>
+     */
+    private Integer restartLockCell;
+    
+    /**
      * 智能充电
      * <pre>
      *     0 - 打开
