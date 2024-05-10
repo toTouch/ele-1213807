@@ -736,7 +736,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             throw new CustomBusinessException("限制！最保留电池数不能为空");
         }
         
-        if (Objects.equals(electricityCabinetAddAndUpdate.getMinIsLimit(), LIMIT) && Objects.isNull(electricityCabinetAddAndUpdate.getMaxRetainBatteryCount())) {
+        if (Objects.equals(electricityCabinetAddAndUpdate.getMaxIsLimit(), LIMIT) && Objects.isNull(electricityCabinetAddAndUpdate.getMaxRetainBatteryCount())) {
             throw new CustomBusinessException("限制！最大保留电池数不能为空");
         }
     }
@@ -6044,7 +6044,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             throw new CustomBusinessException("限制！最保留电池数不能为空");
         }
         
-        if (Objects.equals(rentReturnQuery.getMinIsLimit(), LIMIT) && Objects.isNull(countQuery.getMaxRetainBatteryCount())) {
+        if (Objects.equals(rentReturnQuery.getMaxIsLimit(), LIMIT) && Objects.isNull(countQuery.getMaxRetainBatteryCount())) {
             throw new CustomBusinessException("限制！最大保留电池数不能为空");
         }
     }
