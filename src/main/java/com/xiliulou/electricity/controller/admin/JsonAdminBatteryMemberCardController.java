@@ -90,7 +90,7 @@ public class JsonAdminBatteryMemberCardController extends BaseController {
                   @RequestParam(value = "rentType", required = false) Integer rentType,
                   @RequestParam(value = "rentUnit", required = false) Integer rentUnit,
                   @RequestParam(value = "businessType", required = false) Integer businessType,
-                  @RequestParam(value = "name", required = false) String name,
+                  @RequestParam(value = "name", required = false) String name, @RequestParam(value = "batteryModel", required = false) String batteryModel,
             @RequestParam(value = "userGroupId", required = false) Long userGroupId) {
         
         if (Objects.nonNull(rentType) && Objects.nonNull(userGroupId)) {
@@ -134,6 +134,7 @@ public class JsonAdminBatteryMemberCardController extends BaseController {
                 .rentUnit(rentUnit)
                 .name(name)
                 .delFlag(BatteryMemberCard.DEL_NORMAL)
+                .franchiseeIds(franchiseeIds).batteryModel(batteryModel)
                 .userInfoGroupId(Objects.nonNull(userGroupId) ? userGroupId.toString() : null)
                 .build();
 
