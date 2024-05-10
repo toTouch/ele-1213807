@@ -14,6 +14,8 @@ import java.util.List;
  */
 public interface BatteryOtherPropertiesMapper extends BaseMapper<BatteryOtherProperties>{
     
+    Integer batchDeleteBySnList(@Param("tenantId") Integer tenantId, @Param("batterySnList") List<String> batterySnList);
+    
     /**
      * 通过电池sn获取list
      *
@@ -21,4 +23,5 @@ public interface BatteryOtherPropertiesMapper extends BaseMapper<BatteryOtherPro
      * @return 对象列表
      */
     List<BatteryOtherProperties> selectBatteryOtherPropertiesList(@Param("snList") List<String> snList);
+    
 }
