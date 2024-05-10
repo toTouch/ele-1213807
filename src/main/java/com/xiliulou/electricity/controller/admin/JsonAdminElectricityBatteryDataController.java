@@ -436,7 +436,7 @@ public class JsonAdminElectricityBatteryDataController extends BaseController {
             @RequestParam(value = "sn", required = false) String sn, @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
             @RequestParam(value = "electricityCabinetId", required = false) Integer electricityCabinetId,
             @RequestParam(value = "physicsStatus", required = false) Integer physicsStatus, @RequestParam(value = "businessStatus", required = false) Integer businessStatus,
-            @RequestParam(value = "sort", required = false) Integer sort
+            @RequestParam(value = "sort", required = false , defaultValue = "0") Integer sort
     ) {
         if (size < 0 || size > 50) {
             size = 10;

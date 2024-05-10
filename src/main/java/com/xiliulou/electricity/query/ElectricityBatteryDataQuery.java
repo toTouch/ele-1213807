@@ -95,5 +95,5 @@ public class ElectricityBatteryDataQuery {
     /**
      *  默认为0降序，1为升序
      */
-    private Integer sort = 0;
+    private Integer sort ;
 }
