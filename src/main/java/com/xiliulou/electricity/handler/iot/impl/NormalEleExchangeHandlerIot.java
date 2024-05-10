@@ -4,6 +4,7 @@ import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.electricity.constant.CacheConstant;
+import com.xiliulou.electricity.constant.EleCabinetConstant;
 import com.xiliulou.electricity.constant.ElectricityIotConstant;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.ElectricityCabinetExtra;
@@ -46,39 +47,42 @@ public class NormalEleExchangeHandlerIot extends AbstractElectricityIotHandler {
     public void postHandleReceiveMsg(ElectricityCabinet electricityCabinet, ReceiverMessage receiverMessage) {
         
         executorService.execute(() -> {
-            if (StringUtils.isEmpty(receiverMessage.getVersion())) {
-                return;
-            }
-            
-            //版本号修改
-            ElectricityCabinet newElectricityCabinet = new ElectricityCabinet();
             Integer eid = electricityCabinet.getId();
-            newElectricityCabinet.setId(eid);
-            newElectricityCabinet.setVersion(receiverMessage.getVersion());
-            if (electricityCabinetService.update(newElectricityCabinet) > 0) {
-                redisService.delete(CacheConstant.CACHE_ELECTRICITY_CABINET + newElectricityCabinet.getId());
-                redisService.delete(CacheConstant.CACHE_ELECTRICITY_CABINET_DEVICE + electricityCabinet.getProductKey() + electricityCabinet.getDeviceName());
+            //版本号修改
+            if (StringUtils.isNotEmpty(receiverMessage.getVersion())) {
+                ElectricityCabinet newElectricityCabinet = new ElectricityCabinet();
+                newElectricityCabinet.setId(eid);
+                newElectricityCabinet.setVersion(receiverMessage.getVersion());
+                
+                if (electricityCabinetService.update(newElectricityCabinet) > 0) {
+                    redisService.delete(CacheConstant.CACHE_ELECTRICITY_CABINET + newElectricityCabinet.getId());
+                    redisService.delete(CacheConstant.CACHE_ELECTRICITY_CABINET_DEVICE + electricityCabinet.getProductKey() + electricityCabinet.getDeviceName());
+                }
             }
-            
+    
+            // 更新柜机参数
             NormalEleExchangeMsg normalEleExchangeMsg = JsonUtil.fromJson(receiverMessage.getOriginContent(), NormalEleExchangeMsg.class);
-            if (Objects.isNull(normalEleExchangeMsg) || Objects.isNull(normalEleExchangeMsg.getBatSta())) {
-                log.error("PARSE ELE EXCHANGE MSG ERROR! sessionId={}", receiverMessage.getSessionId());
+            if (Objects.isNull(normalEleExchangeMsg)) {
+                log.error("PARSE ELE EXCHANGE MSG ERROR! sessionId={}, eid={}", receiverMessage.getSessionId(), eid);
                 return;
             }
-            
-            log.info("normalEleExchangeMsg==={}", normalEleExchangeMsg);
-            // 更新柜机参数
+    
             ElectricityCabinetExtra cabinetFromCache = electricityExtraService.queryByEidFromCache(Long.valueOf(eid));
-            log.info("cabinetFromCache==={}", cabinetFromCache);
+            ElectricityCabinetExtra electricityCabinetExtra = new ElectricityCabinetExtra();
+            electricityCabinetExtra.setEid(eid.longValue());
+            Integer batteryCountType = null;
             
-            log.info("cabinetFromCache.getBatteryCountType={}, normalEleExchangeMsg.getBatSta={}", cabinetFromCache.getBatteryCountType(), normalEleExchangeMsg.getBatSta());
-            if (Objects.nonNull(cabinetFromCache) && !Objects.equals(cabinetFromCache.getBatteryCountType(), normalEleExchangeMsg.getBatSta())) {
-                ElectricityCabinetExtra electricityCabinetExtra = ElectricityCabinetExtra.builder().eid(cabinetFromCache.getEid())
-                        .batteryCountType(normalEleExchangeMsg.getBatSta()).build();
-                
-                if (electricityExtraService.update(electricityCabinetExtra) > 0) {
-                    redisService.delete(CacheConstant.CACHE_ELECTRICITY_CABINET_EXTRA + eid);
+            if (Objects.nonNull(normalEleExchangeMsg.getBatSta())) {
+                if (!Objects.equals(cabinetFromCache.getBatteryCountType(), normalEleExchangeMsg.getBatSta())) {
+                    batteryCountType = normalEleExchangeMsg.getBatSta();
                 }
+            } else {
+                // 低于2.1.8的版本，不支持少电多电参数上报，修改状态为正常
+                batteryCountType = EleCabinetConstant.BATTERY_COUNT_TYPE_NORMAL;
+            }
+            
+            if (Objects.nonNull(batteryCountType) && electricityExtraService.update(electricityCabinetExtra) > 0) {
+                redisService.delete(CacheConstant.CACHE_ELECTRICITY_CABINET_EXTRA + eid);
             }
         });
     }

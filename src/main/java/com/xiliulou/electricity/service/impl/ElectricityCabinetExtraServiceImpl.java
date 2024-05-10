@@ -44,8 +44,6 @@ public class ElectricityCabinetExtraServiceImpl implements ElectricityCabinetExt
         if (Objects.isNull(electricityCabinetExtra)) {
             return null;
         }
-        
-        log.info("electricityCabinetExtra====={}", electricityCabinetExtra);
     
         redisService.saveWithHash(CacheConstant.CACHE_ELECTRICITY_CABINET_EXTRA + eid, electricityCabinetExtra);
         return electricityCabinetExtra;
