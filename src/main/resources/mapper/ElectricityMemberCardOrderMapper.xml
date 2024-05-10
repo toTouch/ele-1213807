@@ -473,7 +473,7 @@
     </select>
     
     <select id="selectFirstMemberCardOrder" resultType="com.xiliulou.electricity.entity.ElectricityMemberCardOrder">
-        select id, ref_id
+        select id, ref_id, create_time, update_time
         from t_electricity_member_card_order
         where uid = #{uid}
           and status = 1
