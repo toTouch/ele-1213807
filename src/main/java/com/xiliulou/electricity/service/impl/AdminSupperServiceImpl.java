@@ -126,13 +126,16 @@ public class AdminSupperServiceImpl implements AdminSupperService {
             if (Boolean.TRUE.equals(k)) {
                 List<String> rentSnList = v.stream().map(ElectricityBattery::getSn).collect(Collectors.toList());
                 batterySnFailList.addAll(rentSnList);
+                
+                // 从待删除的里面删除这条数据
+                batteryWaitList.removeIf(batteryWait -> rentSnList.contains(batteryWait.getSn()));
             } else {
                 batteryWaitList.addAll(v);
             }
         });
         
         // 对等待删除的数据，进行删除
-        List<String> batteryWaitSnList = batteryWaitList.stream().map(ElectricityBattery::getSn).collect(Collectors.toList());
+        List<String> batteryWaitSnList = batteryWaitList.stream().map(ElectricityBattery::getSn).distinct().collect(Collectors.toList());
         
         // 1、调用 BMS 删除
         Map<String, String> headers = new HashMap<>();
