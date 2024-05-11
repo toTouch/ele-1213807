@@ -2,6 +2,7 @@ package com.xiliulou.electricity.event.publish;
 
 
 import com.xiliulou.electricity.event.OverdueUserRemarkEvent;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 
@@ -16,6 +17,7 @@ import org.springframework.stereotype.Component;
  * @author <a href="mailto:wxblifeng@163.com">PeakLee</a>
  * @since V1.0 2024/5/11
  **/
+@Slf4j
 @Component
 public class OverdueUserRemarkPublish {
     
@@ -26,6 +28,7 @@ public class OverdueUserRemarkPublish {
     }
     
     public void publish(Long uid, Integer type,Integer tenantId) {
+        log.info("Publish overdue user remark event : uid[{}] type[{}]",uid,type);
         applicationEventPublisher.publishEvent(new OverdueUserRemarkEvent(this, uid, type,tenantId));
     }
 }
