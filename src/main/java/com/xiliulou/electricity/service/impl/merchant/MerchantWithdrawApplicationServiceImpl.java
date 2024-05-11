@@ -102,7 +102,7 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
     @Override
     public Triple<Boolean, String, Object> saveMerchantWithdrawApplication(MerchantWithdrawApplicationRequest merchantWithdrawApplicationRequest) {
         //限频
-        Boolean getLockSuccess = redisService.setNx(CacheConstant.CACHE_MERCHANT_WITHDRAW_APPLICATION + merchantWithdrawApplicationRequest.getUid(), "1", 3L, false);
+        Boolean getLockSuccess = redisService.setNx(CacheConstant.CACHE_MERCHANT_WITHDRAW_APPLICATION + merchantWithdrawApplicationRequest.getUid(), "1", 3 * 1000L, false);
         if (!getLockSuccess) {
             return Triple.of(false, "000000", "操作频繁,请稍后再试");
         }
