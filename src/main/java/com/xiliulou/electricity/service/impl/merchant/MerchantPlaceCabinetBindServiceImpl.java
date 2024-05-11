@@ -131,7 +131,7 @@ public class MerchantPlaceCabinetBindServiceImpl implements MerchantPlaceCabinet
         if (!Objects.equals(electricityCabinet.getFranchiseeId(), merchantPlace.getFranchiseeId())) {
             log.error("place bind error, franchisee is diff, placeId ={}, merchantFranchiseeId={}, cabinetFranchiseeId={}", placeCabinetBindSaveRequest.getPlaceId(),
                     electricityCabinet.getFranchiseeId(), merchantPlace.getFranchiseeId());
-            return Triple.of(false, "120224", "柜机所属加盟上和当前选中的加盟上不一致");
+            return Triple.of(false, "120224", "柜机所属加盟商和当前选中的加盟商不一致");
         }
         
         // 检测柜机是否被绑定
