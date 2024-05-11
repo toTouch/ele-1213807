@@ -16,6 +16,7 @@ import com.xiliulou.mq.service.RocketMqService;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.BeanUtils;
@@ -27,6 +28,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
 
 /**
  * @author : maxiaodong
@@ -95,6 +97,37 @@ public class HardwareFailureWarnMsgHandler extends AbstractElectricityIotHandler
             list.add(msg);
         });
         return list;
+    }
+    
+    public void testSend() {
+        List<HardwareFailureWarnMqMsg> list = new ArrayList<>();
+        
+        for (int i = 0; i < 10000;i++) {
+            String json = "{\"cabinetId\":2708,\"tenantId\":80,\"tenantName\":\"aaa\",\"cabinetName\":\"迁移测试\",\"sn\":\"迁移测试\",\"address\":\"陕西省西安市雁塔区丈八街道唐延路31号中国农业银行陕西省分行大厦\",\"msgType\":410,\"devId\":\"213dhewu2123\",\"reportTime\":1715391888909,\"txnNo\":\"a041e9fac39049928b726a9e2cc64912\",\"signalId\":\"02096001\",\"alarmTime\":1715391888909,\"alarmDesc\":\"03\",\"alarmFlag\":1,\"alarmId\":\"15b8636820964256a2c99bb8c58b8e86\",\"cellNo\":3,\"batterySn\":\"\",\"type\":0,\"occurNum\":1}";
+            HardwareFailureWarnMqMsg hardwareFailureWarnMsg = JsonUtil.fromJson(json, HardwareFailureWarnMqMsg.class);
+            long currentTimeMillis = System.currentTimeMillis();
+            final String s = UUID.randomUUID().toString();
+            hardwareFailureWarnMsg.setAlarmTime(currentTimeMillis);
+            hardwareFailureWarnMsg.setReportTime(currentTimeMillis);
+            hardwareFailureWarnMsg.setAlarmId(s);
+         
+            list.add(hardwareFailureWarnMsg);
+        }
+        
+        log.info("HARDWARE FAILURE WARN SEND START TEST MSG list size={}", list.size());
+        
+        List<List<HardwareFailureWarnMqMsg>> partition = ListUtils.partition(list, 5);
+        log.info("HARDWARE FAILURE WARN SEND START TEST MSG list size={}", partition.size(), partition.get(0));
+        partition.forEach(item -> {
+            try {
+                Thread.sleep(1000);
+                log.info("HARDWARE FAILURE WARN SEND START TEST MSG={}", JsonUtil.toJson(list));
+                rocketMqService.sendAsyncMsg(MqProducerConstant.TOPIC_FAILURE_WARNING_BREAKDOWN, JsonUtil.toJson(item));
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+            
+        });
     }
 }
 
