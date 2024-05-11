@@ -59,7 +59,6 @@ public class JsonUserMerchantJoinRecordController extends BaseController {
         }
         
         if (offset < 0) {
-            
             offset = 0L;
         }
         

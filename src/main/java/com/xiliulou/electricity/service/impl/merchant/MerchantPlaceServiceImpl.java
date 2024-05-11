@@ -405,7 +405,7 @@ public class MerchantPlaceServiceImpl implements MerchantPlaceService {
         MerchantPlaceQueryModel queryModel = new MerchantPlaceQueryModel();
         BeanUtils.copyProperties(merchantPlacePageRequest, queryModel);
         
-        // 查询加盟上下的柜机的信息
+        // 查询加盟商下的柜机的信息
         List<MerchantPlaceCabinetVO> merchantPlaceCabinetVOS = merchantPlaceMapper.selectCabinetList(queryModel);
         
         merchantPlaceCabinetVOS = merchantPlaceCabinetVOS.stream().filter(item -> Objects.nonNull(item)).collect(Collectors.toList());

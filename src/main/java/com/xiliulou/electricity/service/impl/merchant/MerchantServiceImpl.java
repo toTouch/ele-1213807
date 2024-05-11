@@ -571,7 +571,7 @@ public class MerchantServiceImpl implements MerchantService {
             return Triple.of(false, "120201", "手机号已经存在");
         }
         
-        // 检测加盟上是否存在
+        // 检测加盟商是否存在
         Franchisee franchisee = franchiseeService.queryByIdFromCache(merchantSaveRequest.getFranchiseeId());
         if (Objects.isNull(franchisee) || !Objects.equals(franchisee.getTenantId(), tenantId)) {
             log.error("merchant update error, franchisee is null id={}, franchiseeId={}", merchantSaveRequest.getId(), merchantSaveRequest.getFranchiseeId());

@@ -129,6 +129,7 @@ public class EnterpriseRentRecordServiceImpl implements EnterpriseRentRecordServ
     
     @Override
     public int createEnterpriseRecordDetail() {
+        log.info("SAVE RENT RECORD DETAIL START!");
         // 查询已经退电完成的记录
         List<EnterpriseRentRecord> enterpriseRentRecords = queryListAlreadyReturn();
         
@@ -194,6 +195,8 @@ public class EnterpriseRentRecordServiceImpl implements EnterpriseRentRecordServ
                 }
             }
         });
+        
+        log.info("SAVE RENT RECORD DETAIL END!");
         
         return 0;
     }
