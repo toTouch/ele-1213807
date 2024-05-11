@@ -906,17 +906,17 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
         
         ElectricityCabinetExtra cabinetExtra = electricityCabinetExtraService.queryByEidFromCache(Long.valueOf(eid));
         if (Objects.isNull(cabinetExtra)) {
-            new CustomBusinessException("换电柜异常，不存在的电柜扩展信息");
+            throw new CustomBusinessException("换电柜异常，不存在的电柜扩展信息");
         }
         if (Objects.isNull(cabinetExtra.getMaxRetainBatteryCount())) {
             // 不限制
             if (CollUtil.isEmpty(emptyCellList)) {
-                new CustomBusinessException("当前无空余格挡可供退电，请联系客服！");
+                throw new CustomBusinessException("当前无空余格挡可供退电，请联系客服！");
             }
         } else {
             // 限制
             if (CollUtil.isNotEmpty(emptyCellList) && emptyCellList.size() > cabinetExtra.getMaxRetainBatteryCount()) {
-                new CustomBusinessException("在仓电池数高于限值，暂无法退电，请选择其他柜机!");
+                throw new CustomBusinessException("在仓电池数高于限值，暂无法退电，请选择其他柜机!");
             }
         }
         
