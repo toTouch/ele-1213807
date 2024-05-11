@@ -12,9 +12,11 @@ import com.xiliulou.electricity.entity.car.CarRentalPackageMemberTermPo;
 import com.xiliulou.electricity.entity.car.CarRentalPackageOrderFreezePo;
 import com.xiliulou.electricity.entity.car.CarRentalPackageOrderSlippagePo;
 import com.xiliulou.electricity.enums.MemberTermStatusEnum;
+import com.xiliulou.electricity.enums.OverdueType;
 import com.xiliulou.electricity.enums.PayStateEnum;
 import com.xiliulou.electricity.enums.RentalPackageOrderFreezeStatusEnum;
 import com.xiliulou.electricity.enums.SlippageTypeEnum;
+import com.xiliulou.electricity.event.publish.OverdueUserRemarkPublish;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.service.CarLockCtrlHistoryService;
 import com.xiliulou.electricity.service.EleUserOperateRecordService;
@@ -31,6 +33,7 @@ import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DateUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -79,6 +82,9 @@ public class CarRenalPackageSlippageBizServiceImpl implements CarRenalPackageSli
     
     @Resource
     private EleUserOperateRecordService eleUserOperateRecordService;
+    
+    @Autowired
+    private OverdueUserRemarkPublish overdueUserRemarkPublish;
     
     /**
      * 清除滞纳金
@@ -138,7 +144,8 @@ public class CarRenalPackageSlippageBizServiceImpl implements CarRenalPackageSli
                 .operateContent(UserOperateRecordConstant.CLEAN_CAR_SERVICE_FEE).operateType(UserOperateRecordConstant.OPERATE_TYPE_CAR).operateUid(optUid).uid(uid).name(userName)
                 .carServiceFee(lateFeeAmount).tenantId(TenantContextHolder.getTenantId()).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).build();
         eleUserOperateRecordService.asyncHandleUserOperateRecord(eleUserOperateRecord);
-        
+        //清除逾期用户备注
+        overdueUserRemarkPublish.publish(uid, OverdueType.CAR.getCode(),tenantId);
         return true;
     }
     

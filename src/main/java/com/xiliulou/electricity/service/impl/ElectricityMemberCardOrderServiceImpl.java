@@ -77,9 +77,11 @@ import com.xiliulou.electricity.entity.enterprise.EnterpriseChannelUserExit;
 import com.xiliulou.electricity.enums.ActivityEnum;
 import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.enums.DivisionAccountEnum;
+import com.xiliulou.electricity.enums.OverdueType;
 import com.xiliulou.electricity.enums.PackageTypeEnum;
 import com.xiliulou.electricity.enums.enterprise.RenewalStatusEnum;
 import com.xiliulou.electricity.enums.enterprise.UserCostTypeEnum;
+import com.xiliulou.electricity.event.publish.OverdueUserRemarkPublish;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.manager.CalcRentCarPriceFactory;
 import com.xiliulou.electricity.mapper.ElectricityMemberCardOrderMapper;
@@ -418,6 +420,9 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
     
     @Autowired
     private UserInfoGroupDetailService userInfoGroupDetailService;
+    
+    @Autowired
+    private OverdueUserRemarkPublish overdueUserRemarkPublish;
     
     /**
      * 根据用户ID查询对应状态的记录
@@ -2006,6 +2011,9 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                 .name(user.getUsername()).batteryServiceFee(expireBatteryServiceFee.add(pauseBatteryServiceFee)).tenantId(TenantContextHolder.getTenantId())
                 .createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).build();
         eleUserOperateRecordService.insert(eleUserOperateRecord);
+        
+        //清除逾期用户备注
+        overdueUserRemarkPublish.publish(uid, OverdueType.BATTERY.getCode(),TenantContextHolder.getTenantId());
 
 /*
 
