@@ -46,9 +46,6 @@ public class FailureAlarmController {
     @Resource
     private FailureAlarmService failureAlarmService;
     
-    @Resource
-    private HardwareFailureWarnMsgHandler hardwareFailureWarnMsgHandler;
-    
     /**
      * 保存
      *
@@ -111,7 +108,6 @@ public class FailureAlarmController {
             @RequestParam(value = "grade", required = false) Integer grade, @RequestParam(value = "protectMeasureList", required = false) List<Long> protectMeasureList,
             @RequestParam(value = "status", required = false) Integer status, @RequestParam(value = "deviceType", required = false) Integer deviceType,
             @RequestParam(value = "tenantVisible", required = false) Integer tenantVisible) {
-        hardwareFailureWarnMsgHandler.testSend();
         if (size < 0 || size > 50) {
             size = 10L;
         }
