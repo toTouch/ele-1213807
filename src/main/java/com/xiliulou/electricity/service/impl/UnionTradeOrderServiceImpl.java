@@ -47,8 +47,10 @@ import com.xiliulou.electricity.entity.car.CarRentalPackageMemberTermPo;
 import com.xiliulou.electricity.entity.car.CarRentalPackageOrderFreezePo;
 import com.xiliulou.electricity.entity.car.CarRentalPackageOrderSlippagePo;
 import com.xiliulou.electricity.entity.enterprise.EnterpriseChannelUser;
+import com.xiliulou.electricity.enums.OverdueType;
 import com.xiliulou.electricity.enums.enterprise.CloudBeanStatusEnum;
 import com.xiliulou.electricity.enums.enterprise.EnterprisePaymentStatusEnum;
+import com.xiliulou.electricity.event.publish.OverdueUserRemarkPublish;
 import com.xiliulou.electricity.mapper.UnionTradeOrderMapper;
 import com.xiliulou.electricity.mq.constant.MqProducerConstant;
 import com.xiliulou.electricity.mq.model.BatteryMemberCardMerchantRebate;
@@ -325,6 +327,9 @@ public class UnionTradeOrderServiceImpl extends
     
     @Autowired
     RocketMqService rocketMqService;
+    
+    @Autowired
+    private OverdueUserRemarkPublish overdueUserRemarkPublish;
 
     @Override
     public WechatJsapiOrderResultDTO unionCreateTradeOrderAndGetPayParams(UnionPayOrder unionPayOrder, ElectricityPayParams electricityPayParams, String openId, HttpServletRequest request) throws WechatPayException {
@@ -1490,6 +1495,8 @@ public class UnionTradeOrderServiceImpl extends
 
             // 更新逾期订单
             carRentalPackageOrderSlippageService.updateById(slippageUpdateEntity);
+            //清除逾期用户备注
+            overdueUserRemarkPublish.publish(userInfo.getUid(), OverdueType.CAR.getCode(), userInfo.getTenantId());
 
             // 查询车辆
             ElectricityCar electricityCar = electricityCarService.selectByUid(tenantId, uid);
@@ -1679,6 +1686,7 @@ public class UnionTradeOrderServiceImpl extends
         eleBatteryServiceFeeOrderUpdate.setUpdateTime(System.currentTimeMillis());
         eleBatteryServiceFeeOrderUpdate.setPayTime(System.currentTimeMillis());
         eleBatteryServiceFeeOrderService.update(eleBatteryServiceFeeOrderUpdate);
+        overdueUserRemarkPublish.publish(userInfo.getUid(), OverdueType.BATTERY.getCode(), userInfo.getTenantId());
     }
 
     private void handleBatteryMembercardExpireServiceFeeOrder(String orderId, Integer status, UserInfo userInfo) {
@@ -1732,6 +1740,8 @@ public class UnionTradeOrderServiceImpl extends
         eleBatteryServiceFeeOrderUpdate.setUpdateTime(System.currentTimeMillis());
         eleBatteryServiceFeeOrderUpdate.setPayTime(System.currentTimeMillis());
         eleBatteryServiceFeeOrderService.update(eleBatteryServiceFeeOrderUpdate);
+        //清除逾期用户备注
+        overdueUserRemarkPublish.publish(userInfo.getUid(), OverdueType.BATTERY.getCode(), userInfo.getTenantId());
     }
 
     /**
