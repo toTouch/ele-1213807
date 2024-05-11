@@ -3,9 +3,7 @@ package com.xiliulou.electricity.service.impl;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
-import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.ElectricityCabinetExtra;
-import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.mapper.ElectricityCabinetExtraMapper;
 import com.xiliulou.electricity.service.ElectricityCabinetExtraService;
 import lombok.extern.slf4j.Slf4j;
@@ -21,7 +19,7 @@ import java.util.Objects;
  */
 @Slf4j
 @Service
-public class ElectricityCabinetExtraImpl implements ElectricityCabinetExtraService {
+public class ElectricityCabinetExtraServiceImpl implements ElectricityCabinetExtraService {
     
     @Resource
     private ElectricityCabinetExtraMapper electricityCabinetExtraMapper;
