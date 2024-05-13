@@ -49,6 +49,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -185,20 +186,76 @@ public class EleCabinetDataAnalyseServiceImpl implements EleCabinetDataAnalyseSe
     }
 
     private List<EleCabinetDataAnalyseVO> buildEleCabinetDataAnalyseVOs(List<EleCabinetDataAnalyseVO> electricityCabinetList, ElectricityCabinetQuery cabinetQuery) {
+        List<Integer> electricityCabinetIdList = electricityCabinetList.stream().map(EleCabinetDataAnalyseVO::getId).collect(Collectors.toList());
+    
+        //柜机核心板数据
+        List<EleCabinetCoreData> eleCabinetCoreDataList=eleCabinetCoreDataService.listCabinetCoreDataByEids(electricityCabinetIdList);
+        Map<Long, EleCabinetCoreData> eleCabinetCoreDataMap =Maps.newHashMap();
+        if(CollectionUtils.isNotEmpty(eleCabinetCoreDataList)){
+            eleCabinetCoreDataMap = eleCabinetCoreDataList.stream().collect(Collectors.toMap(EleCabinetCoreData::getElectricityCabinetId, Function.identity(), (k1, k2) -> k2));
+        }
+        
+        //柜机服务时间
+        List<ElectricityCabinetServer> eleCabinetServerList=eleCabinetServerService.listCabinetServerByEids(electricityCabinetIdList);
+        Map<Integer, ElectricityCabinetServer> eleCabinetServerMap =Maps.newHashMap();
+        if(CollectionUtils.isNotEmpty(eleCabinetServerList)){
+            eleCabinetServerMap=eleCabinetServerList.stream().collect(Collectors.toMap(ElectricityCabinetServer::getElectricityCabinetId, Function.identity(), (k1, k2) -> k2));
+        }
+        
+        //柜机电表读数
+        List<ElePower> eleCabinetPowerList=elePowerService.listCabinetPowerByEids(electricityCabinetIdList);
+        Map<Long, ElePower> eleCabinetPowerMap =Maps.newHashMap();
+        if(CollectionUtils.isNotEmpty(eleCabinetPowerList)){
+            eleCabinetPowerMap=eleCabinetPowerList.stream().collect(Collectors.toMap(ElePower::getEid,Function.identity(), (k1, k2) -> k2));
+        }
+    
+        //充电中的电池
+        List<ElectricityBattery> batteryList = electricityBatteryService.listBatteryByEid(electricityCabinetIdList);
+        Map<Integer, Long> chargeBatteryMap = Maps.newHashMap();
+        if (CollectionUtils.isNotEmpty(batteryList)) {
+            chargeBatteryMap = batteryList.stream()
+                    .filter(battery -> Objects.nonNull(battery.getElectricityCabinetId()) && (Objects.equals(battery.getChargeStatus(), ElectricityBattery.CHARGE_STATUS_STARTING)
+                            || Objects.equals(battery.getChargeStatus(), ElectricityBattery.CHARGE_STATUS_CHARGING)))
+                    .collect(Collectors.groupingBy(ElectricityBattery::getElectricityCabinetId, Collectors.counting()));
+        }
+    
+        for (EleCabinetDataAnalyseVO item : electricityCabinetList) {
+            //电柜温度
+            EleCabinetCoreData eleCabinetCoreData =eleCabinetCoreDataMap.get(item.getId().longValue());
+            if(Objects.nonNull(eleCabinetCoreData) && Objects.nonNull(eleCabinetCoreData.getTemp())){
+                item.setTemp(eleCabinetCoreData.getTemp());
+            }else{
+                item.setTemp(0);
+            }
+            
+            //电柜服务时间
+            ElectricityCabinetServer eleCabinetServer =eleCabinetServerMap.get(item.getId());
+            if(Objects.nonNull(eleCabinetServer) && Objects.nonNull(eleCabinetServer.getServerEndTime())){
+                item.setServerEndTime(eleCabinetServer.getServerEndTime());
+            }else{
+                item.setServerEndTime(System.currentTimeMillis());
+            }
+            
+            //电表读数
+            ElePower elePower =eleCabinetPowerMap.get(item.getId().longValue());
+            if(Objects.nonNull(elePower) && Objects.nonNull(elePower.getSumPower())){
+                item.setPowerConsumption(elePower.getSumPower());
+            }else{
+                item.setPowerConsumption(0D);
+            }
+            
+            //充电电池数
+            Long chargeBatteryNumber = chargeBatteryMap.get(item.getId());
+            if(Objects.nonNull(chargeBatteryNumber)){
+                item.setChargeBatteryNumber(Math.toIntExact(chargeBatteryNumber));
+            }else{
+                item.setChargeBatteryNumber(NumberConstant.ZERO);
+            }
+        }
+        
         CompletableFuture<Void> acquireBasicInfo = CompletableFuture.runAsync(() -> electricityCabinetList.forEach(item -> {
-
             ElectricityCabinetModel cabinetModel = eleCabinetModelService.queryByIdFromCache(item.getModelId());
             item.setModelName(Objects.nonNull(cabinetModel) ? cabinetModel.getName() : "");
-
-            EleCabinetCoreData eleCabinetCoreData = eleCabinetCoreDataService.selectByEid(item.getId());
-            item.setTemp(Objects.nonNull(eleCabinetCoreData) ? eleCabinetCoreData.getTemp() : 0);
-
-            ElectricityCabinetServer eleCabinetServer = eleCabinetServerService.selectByEid(item.getId());
-            item.setServerEndTime(Objects.nonNull(eleCabinetServer) ? eleCabinetServer.getServerEndTime() : System.currentTimeMillis());
-    
-            ElePower elePower = elePowerService.queryLatestByEid(item.getId().longValue());
-//            ElectricityCabinetPower eleCabinetPower = eleCabinetPowerService.selectLatestByEid(item.getId());
-            item.setPowerConsumption(Objects.nonNull(elePower) ? elePower.getSumPower() : 0);
 
             Store store = storeService.queryByIdFromCache(item.getStoreId());
             item.setStoreName(Objects.nonNull(store) ? store.getName() : "");
@@ -211,25 +268,18 @@ public class EleCabinetDataAnalyseServiceImpl implements EleCabinetDataAnalyseSe
             return null;
         });
     
-        //充电中的电池
-        Map<Integer, Long> chargeBatteryMap = Maps.newHashMap();
-    
-        List<Integer> electricityCabinetIdList = electricityCabinetList.stream().map(EleCabinetDataAnalyseVO::getId).collect(Collectors.toList());
-        List<ElectricityBattery> batteryList = electricityBatteryService.listBatteryByEid(electricityCabinetIdList);
-        if (CollectionUtils.isNotEmpty(batteryList)) {
-            chargeBatteryMap = batteryList.stream()
-                    .filter(battery -> Objects.nonNull(battery.getElectricityCabinetId()) && (Objects.equals(battery.getChargeStatus(), ElectricityBattery.CHARGE_STATUS_STARTING)
-                            || Objects.equals(battery.getChargeStatus(), ElectricityBattery.CHARGE_STATUS_CHARGING)))
-                    .collect(Collectors.groupingBy(ElectricityBattery::getElectricityCabinetId, Collectors.counting()));
+        //将格挡根据柜机id分组
+        List<ElectricityCabinetBox> eleCabinetBoxList = electricityCabinetBoxService.listCabineBoxByEids(electricityCabinetIdList);
+        Map<Integer, List<ElectricityCabinetBox>> cabinetBoxMap=Maps.newHashMap();
+        if(CollectionUtils.isNotEmpty(eleCabinetBoxList)){
+            cabinetBoxMap = eleCabinetBoxList.stream().collect(Collectors.groupingBy(ElectricityCabinetBox::getElectricityCabinetId));
         }
     
-        Map<Integer, Long> finalChargeBatteryMap = chargeBatteryMap;
-        
+        Map<Integer, List<ElectricityCabinetBox>> finalCabinetBoxMap = cabinetBoxMap;
         CompletableFuture<Void> acquireCellInfo = CompletableFuture.runAsync(() -> electricityCabinetList.forEach(item -> {
-
             Double fullyCharged = item.getFullyCharged();
 
-            List<ElectricityCabinetBox> cabinetBoxList = electricityCabinetBoxService.queryAllBoxByElectricityCabinetId(item.getId());
+            List<ElectricityCabinetBox> cabinetBoxList = finalCabinetBoxMap.get(item.getId());
             if (CollectionUtils.isEmpty(cabinetBoxList)) {
                 return;
             }
@@ -249,12 +299,6 @@ public class EleCabinetDataAnalyseServiceImpl implements EleCabinetDataAnalyseSe
             item.setDisableCellNumber((int) disableCellNumber);
             item.setFanOpenNumber((int) openFanNumber);
             item.setExchangeBatteryNumber((int) exchangeableNumber);
-    
-            if (CollUtil.isNotEmpty(finalChargeBatteryMap) && Objects.nonNull(finalChargeBatteryMap.get(item.getId()))) {
-                item.setChargeBatteryNumber(Math.toIntExact(finalChargeBatteryMap.get(item.getId())));
-            } else {
-                item.setChargeBatteryNumber(NumberConstant.ZERO);
-            }
         }), DATA_ANALYSE_THREAD_POOL).exceptionally(e -> {
             log.error("ELE ERROR! acquire eleCabinet cell info fail", e);
             return null;

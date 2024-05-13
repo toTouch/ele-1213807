@@ -79,4 +79,6 @@ public interface ElectricityCabinetBoxService {
     Triple<Boolean, String, Object> selectAvailableBoxNumber(Integer electricityCabinetId, Integer tenantId);
 
     List<ElectricityCabinetBox> selectEleBoxAttrByEid(Integer id);
+    
+    List<ElectricityCabinetBox> listCabineBoxByEids(List<Integer> electricityCabinetIdList);
 }

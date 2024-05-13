@@ -81,4 +81,6 @@ public interface ElePowerService {
     ElePower queryLatestByEid(Long eid);
 
     void exportList(ElePowerListQuery query, HttpServletResponse response);
+    
+    List<ElePower> listCabinetPowerByEids(List<Integer> electricityCabinetIdList);
 }
