@@ -1283,6 +1283,24 @@
         limit #{offset}, #{size}
     </select>
     
+    select id, sn,power, voltage, capacity, physics_status , business_status, create_time, update_time, del_flag,
+    tenant_id, electricity_cabinet_id,
+    model, charge_status, iot_card_number, franchisee_id,uid,warehouse_id,stock_status
+    from t_electricity_battery
+    
+    <select id="selectListByEid" resultType="com.xiliulou.electricity.entity.ElectricityBattery">
+        SELECT
+        id,sn,charge_status
+        FROM
+        t_electricity_battery
+        where
+        del_flag = 0
+        and electricity_cabinet_id in
+        <foreach collection="selectListByEid" separator="," open="(" close=")" item="id">
+            #{id}
+        </foreach>
+    </select>
+    
     <update id="batchExitWarehouse">
         update t_electricity_battery
         <set>

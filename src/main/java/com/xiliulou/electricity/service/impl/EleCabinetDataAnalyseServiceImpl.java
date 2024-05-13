@@ -1,12 +1,34 @@
 package com.xiliulou.electricity.service.impl;
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
+import com.google.common.collect.Maps;
 import com.xiliulou.core.thread.XllThreadPoolExecutorService;
 import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.electricity.constant.ElectricityCabinetDataAnalyseConstant;
-import com.xiliulou.electricity.entity.*;
+import com.xiliulou.electricity.entity.EleCabinetCoreData;
+import com.xiliulou.electricity.entity.ElePower;
+import com.xiliulou.electricity.entity.ElectricityBattery;
+import com.xiliulou.electricity.entity.ElectricityCabinet;
+import com.xiliulou.electricity.entity.ElectricityCabinetBox;
+import com.xiliulou.electricity.entity.ElectricityCabinetModel;
+import com.xiliulou.electricity.entity.ElectricityCabinetOrder;
+import com.xiliulou.electricity.entity.ElectricityCabinetServer;
+import com.xiliulou.electricity.entity.Franchisee;
+import com.xiliulou.electricity.entity.Store;
 import com.xiliulou.electricity.query.ElectricityCabinetQuery;
-import com.xiliulou.electricity.service.*;
+import com.xiliulou.electricity.service.EleCabinetCoreDataService;
+import com.xiliulou.electricity.service.EleCabinetDataAnalyseService;
+import com.xiliulou.electricity.service.ElePowerService;
+import com.xiliulou.electricity.service.EleWarnMsgService;
+import com.xiliulou.electricity.service.ElectricityBatteryService;
+import com.xiliulou.electricity.service.ElectricityCabinetBoxService;
+import com.xiliulou.electricity.service.ElectricityCabinetModelService;
+import com.xiliulou.electricity.service.ElectricityCabinetOrderService;
+import com.xiliulou.electricity.service.ElectricityCabinetServerService;
+import com.xiliulou.electricity.service.ElectricityCabinetService;
+import com.xiliulou.electricity.service.FranchiseeService;
+import com.xiliulou.electricity.service.StoreService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DateUtils;
 import com.xiliulou.electricity.vo.EleCabinetDataAnalyseVO;
@@ -21,13 +43,11 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -189,7 +209,20 @@ public class EleCabinetDataAnalyseServiceImpl implements EleCabinetDataAnalyseSe
             log.error("ELE ERROR! acquire eleCabinet basic info fail", e);
             return null;
         });
-
+    
+        //充电中的电池
+        Map<Integer, Long> chargeBatteryMap = Maps.newHashMap();
+    
+        List<Integer> electricityCabinetIdList = electricityCabinetList.stream().map(EleCabinetDataAnalyseVO::getId).collect(Collectors.toList());
+        List<ElectricityBattery> batteryList = electricityBatteryService.listBatteryByEid(electricityCabinetIdList);
+        if (CollectionUtils.isNotEmpty(batteryList)) {
+            chargeBatteryMap = batteryList.stream().filter(battery -> (Objects.equals(battery.getChargeStatus(), ElectricityBattery.CHARGE_STATUS_STARTING) || Objects
+                    .equals(battery.getChargeStatus(), ElectricityBattery.CHARGE_STATUS_CHARGING)))
+                    .collect(Collectors.groupingBy(ElectricityBattery::getElectricityCabinetId, Collectors.counting()));
+        }
+    
+        Map<Integer, Long> finalChargeBatteryMap = chargeBatteryMap;
+        
         CompletableFuture<Void> acquireCellInfo = CompletableFuture.runAsync(() -> electricityCabinetList.forEach(item -> {
 
             Double fullyCharged = item.getFullyCharged();
@@ -208,15 +241,16 @@ public class EleCabinetDataAnalyseServiceImpl implements EleCabinetDataAnalyseSe
             long disableCellNumber = cabinetBoxList.stream().filter(e -> Objects.equals(e.getUsableStatus(), ElectricityCabinetBox.ELECTRICITY_CABINET_BOX_UN_USABLE)).count();
 
             long openFanNumber = cabinetBoxList.stream().filter(e -> !Objects.equals(e.getIsFan(), ElectricityCabinetBox.OPEN_FAN)).count();
-
-            long chargeCellNumber = cabinetBoxList.stream().filter(e -> StringUtils.isNotBlank(e.getSn())).map(t -> electricityBatteryService.queryBySnFromDb(t.getSn())).filter(battery -> Objects.nonNull(battery) && (Objects.equals(battery.getChargeStatus(), ElectricityBattery.CHARGE_STATUS_STARTING) || Objects.equals(battery.getChargeStatus(), ElectricityBattery.CHARGE_STATUS_CHARGING))).count();
-
+            
             item.setFullBatteryNumber((int) fullBatteryNumber);
-            item.setChargeBatteryNumber((int) chargeCellNumber);
             item.setEmptyCellNumber((int) emptyCellNumber);
             item.setDisableCellNumber((int) disableCellNumber);
             item.setFanOpenNumber((int) openFanNumber);
             item.setExchangeBatteryNumber((int) exchangeableNumber);
+    
+            if (CollUtil.isNotEmpty(finalChargeBatteryMap) && Objects.nonNull(finalChargeBatteryMap.get(item.getId()))) {
+                item.setChargeBatteryNumber(Math.toIntExact(finalChargeBatteryMap.get(item.getId())));
+            }
         }), DATA_ANALYSE_THREAD_POOL).exceptionally(e -> {
             log.error("ELE ERROR! acquire eleCabinet cell info fail", e);
             return null;
