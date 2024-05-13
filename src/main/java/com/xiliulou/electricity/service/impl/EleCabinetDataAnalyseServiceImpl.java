@@ -6,6 +6,7 @@ import com.google.common.collect.Maps;
 import com.xiliulou.core.thread.XllThreadPoolExecutorService;
 import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.electricity.constant.ElectricityCabinetDataAnalyseConstant;
+import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.EleCabinetCoreData;
 import com.xiliulou.electricity.entity.ElePower;
 import com.xiliulou.electricity.entity.ElectricityBattery;
@@ -250,6 +251,8 @@ public class EleCabinetDataAnalyseServiceImpl implements EleCabinetDataAnalyseSe
     
             if (CollUtil.isNotEmpty(finalChargeBatteryMap) && Objects.nonNull(finalChargeBatteryMap.get(item.getId()))) {
                 item.setChargeBatteryNumber(Math.toIntExact(finalChargeBatteryMap.get(item.getId())));
+            } else {
+                item.setChargeBatteryNumber(NumberConstant.ZERO);
             }
         }), DATA_ANALYSE_THREAD_POOL).exceptionally(e -> {
             log.error("ELE ERROR! acquire eleCabinet cell info fail", e);
