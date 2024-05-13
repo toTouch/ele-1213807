@@ -1285,7 +1285,7 @@
     
     <select id="selectListByEid" resultType="com.xiliulou.electricity.entity.ElectricityBattery">
         SELECT
-        id,sn,charge_status
+        id,sn,charge_status,electricity_cabinet_id
         FROM
         t_electricity_battery
         where

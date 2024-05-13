@@ -217,8 +217,9 @@ public class EleCabinetDataAnalyseServiceImpl implements EleCabinetDataAnalyseSe
         List<Integer> electricityCabinetIdList = electricityCabinetList.stream().map(EleCabinetDataAnalyseVO::getId).collect(Collectors.toList());
         List<ElectricityBattery> batteryList = electricityBatteryService.listBatteryByEid(electricityCabinetIdList);
         if (CollectionUtils.isNotEmpty(batteryList)) {
-            chargeBatteryMap = batteryList.stream().filter(battery -> (Objects.equals(battery.getChargeStatus(), ElectricityBattery.CHARGE_STATUS_STARTING) || Objects
-                    .equals(battery.getChargeStatus(), ElectricityBattery.CHARGE_STATUS_CHARGING)))
+            chargeBatteryMap = batteryList.stream()
+                    .filter(battery -> Objects.nonNull(battery.getElectricityCabinetId()) && (Objects.equals(battery.getChargeStatus(), ElectricityBattery.CHARGE_STATUS_STARTING)
+                            || Objects.equals(battery.getChargeStatus(), ElectricityBattery.CHARGE_STATUS_CHARGING)))
                     .collect(Collectors.groupingBy(ElectricityBattery::getElectricityCabinetId, Collectors.counting()));
         }
     
