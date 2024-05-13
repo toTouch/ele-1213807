@@ -7,8 +7,11 @@ import com.xiliulou.electricity.request.merchant.MerchantAreaRequest;
 import com.xiliulou.electricity.request.merchant.MerchantAreaSaveOrUpdateRequest;
 import com.xiliulou.electricity.service.merchant.MerchantAreaService;
 import com.xiliulou.electricity.utils.SecurityUtils;
+import com.xiliulou.electricity.validator.CreateGroup;
+import com.xiliulou.electricity.validator.UpdateGroup;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -34,7 +37,7 @@ public class JsonMerchantAreaController extends BaseController {
      * 新增
      */
     @PostMapping("/admin/merchant/area/save")
-    public R save(@RequestBody MerchantAreaSaveOrUpdateRequest saveRequest) {
+    public R save(@RequestBody @Validated(CreateGroup.class) MerchantAreaSaveOrUpdateRequest saveRequest) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
@@ -68,7 +71,7 @@ public class JsonMerchantAreaController extends BaseController {
      * 编辑
      */
     @PostMapping("/admin/merchant/area/edit")
-    public R updateById(@RequestBody MerchantAreaSaveOrUpdateRequest updateRequest) {
+    public R updateById(@RequestBody @Validated(UpdateGroup.class)MerchantAreaSaveOrUpdateRequest updateRequest) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             return R.fail("ELECTRICITY.0001", "未找到用户");

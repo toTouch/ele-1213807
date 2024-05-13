@@ -6,6 +6,7 @@ import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.ElectricityCabinetExtra;
 import com.xiliulou.electricity.mapper.ElectricityCabinetExtraMapper;
 import com.xiliulou.electricity.service.ElectricityCabinetExtraService;
+import com.xiliulou.electricity.utils.DbUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -56,6 +57,11 @@ public class ElectricityCabinetExtraServiceImpl implements ElectricityCabinetExt
     
     @Override
     public Integer update(ElectricityCabinetExtra electricityCabinetExtra) {
-        return electricityCabinetExtraMapper.update(electricityCabinetExtra);
+        Integer update = electricityCabinetExtraMapper.update(electricityCabinetExtra);
+    
+        DbUtils.dbOperateSuccessThenHandleCache(update, i -> {
+            redisService.delete(CacheConstant.CACHE_ELECTRICITY_CABINET_EXTRA + electricityCabinetExtra.getEid());
+        });
+        return update;
     }
 }

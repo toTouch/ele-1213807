@@ -80,10 +80,9 @@ public class NormalEleExchangeHandlerIot extends AbstractElectricityIotHandler {
                 batteryCountType = EleCabinetConstant.BATTERY_COUNT_TYPE_NORMAL;
             }
     
-            electricityCabinetExtra.setBatteryCountType(batteryCountType);
-            
-            if (Objects.nonNull(batteryCountType) && electricityExtraService.update(electricityCabinetExtra) > 0) {
-                redisService.delete(CacheConstant.CACHE_ELECTRICITY_CABINET_EXTRA + eid);
+            if (Objects.nonNull(batteryCountType)) {
+                electricityCabinetExtra.setBatteryCountType(batteryCountType);
+                electricityExtraService.update(electricityCabinetExtra);
             }
         });
     }

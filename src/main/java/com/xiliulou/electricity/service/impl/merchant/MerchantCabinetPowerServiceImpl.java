@@ -822,93 +822,104 @@ public class MerchantCabinetPowerServiceImpl implements MerchantCabinetPowerServ
     private static List<MerchantProCabinetPowerDetailVO> mergeSerialTimeDetail(List<MerchantProCabinetPowerDetailVO> detailList, Long thisMonthStartTime) {
         List<MerchantProCabinetPowerDetailVO> resultList = new ArrayList<>();
         
+        if (CollectionUtils.isEmpty(detailList)) {
+            return Collections.emptyList();
+        }
+        
         // 去重
         detailList = detailList.stream().distinct().collect(Collectors.toList());
         
         // 统计上月时，本月拉取到上月的时间段不参与合并
         Map<Long, List<MerchantProCabinetPowerDetailVO>> fetchBindMap = null;
+        List<MerchantProCabinetPowerDetailVO> fetchBindList = null;
         if (Objects.nonNull(thisMonthStartTime)) {
             // 本月拉取到上月的时间段不参与合并
-            List<MerchantProCabinetPowerDetailVO> fetchBindList = detailList.stream().filter(bind -> bind.getCreateTime() >= thisMonthStartTime).collect(Collectors.toList());
+            fetchBindList = detailList.stream().filter(bind -> bind.getCreateTime() >= thisMonthStartTime).collect(Collectors.toList());
             if (CollectionUtils.isNotEmpty(fetchBindList)) {
                 // 按场地进行分组
                 fetchBindMap = fetchBindList.stream().collect(Collectors.groupingBy(MerchantProCabinetPowerDetailVO::getPlaceId));
                 detailList.removeAll(fetchBindList);
             }
         }
-        
-        // 按场地分组
-        Map<Long, List<MerchantProCabinetPowerDetailVO>> placeCabinetBindMap = detailList.stream().collect(Collectors.groupingBy(MerchantProCabinetPowerDetailVO::getPlaceId));
-        
-        for (Map.Entry<Long, List<MerchantProCabinetPowerDetailVO>> entry : placeCabinetBindMap.entrySet()) {
-            List<MerchantProCabinetPowerDetailVO> placeDetailList = entry.getValue();
-            Long placeId = entry.getKey();
-            
-            if (CollectionUtils.isEmpty(placeDetailList)) {
-                continue;
+    
+        if (CollectionUtils.isEmpty(detailList)) {
+            if (CollectionUtils.isNotEmpty(fetchBindList)) {
+                resultList.addAll(fetchBindList);
             }
+        } else {
+            // 按场地分组
+            Map<Long, List<MerchantProCabinetPowerDetailVO>> placeCabinetBindMap = detailList.stream().collect(Collectors.groupingBy(MerchantProCabinetPowerDetailVO::getPlaceId));
+        
+            for (Map.Entry<Long, List<MerchantProCabinetPowerDetailVO>> entry : placeCabinetBindMap.entrySet()) {
+                List<MerchantProCabinetPowerDetailVO> placeDetailList = entry.getValue();
+                Long placeId = entry.getKey();
             
-            // 按柜机分组
-            Map<Long, List<MerchantProCabinetPowerDetailVO>> cabinetBindMap = placeDetailList.stream()
-                    .collect(Collectors.groupingBy(MerchantProCabinetPowerDetailVO::getCabinetId));
-            
-            for (Map.Entry<Long, List<MerchantProCabinetPowerDetailVO>> cabinetEntry : cabinetBindMap.entrySet()) {
-                List<MerchantProCabinetPowerDetailVO> cabinetDetailList = cabinetEntry.getValue();
-                
-                if (CollectionUtils.isEmpty(cabinetDetailList)) {
+                if (CollectionUtils.isEmpty(placeDetailList)) {
                     continue;
                 }
+            
+                // 按柜机分组
+                Map<Long, List<MerchantProCabinetPowerDetailVO>> cabinetBindMap = placeDetailList.stream()
+                        .collect(Collectors.groupingBy(MerchantProCabinetPowerDetailVO::getCabinetId));
+            
+                for (Map.Entry<Long, List<MerchantProCabinetPowerDetailVO>> cabinetEntry : cabinetBindMap.entrySet()) {
+                    List<MerchantProCabinetPowerDetailVO> cabinetDetailList = cabinetEntry.getValue();
                 
-                // 按状态分组
-                Map<Integer, List<MerchantProCabinetPowerDetailVO>> groupMap = cabinetDetailList.stream()
-                        .collect(Collectors.groupingBy(MerchantProCabinetPowerDetailVO::getBindStatus));
-                
-                for (Map.Entry<Integer, List<MerchantProCabinetPowerDetailVO>> statusEntry : groupMap.entrySet()) {
-                    List<MerchantProCabinetPowerDetailVO> list = statusEntry.getValue();
-                    
-                    if (CollectionUtils.isEmpty(list)) {
+                    if (CollectionUtils.isEmpty(cabinetDetailList)) {
                         continue;
                     }
+                
+                    // 按状态分组
+                    Map<Integer, List<MerchantProCabinetPowerDetailVO>> groupMap = cabinetDetailList.stream()
+                            .collect(Collectors.groupingBy(MerchantProCabinetPowerDetailVO::getBindStatus));
+                
+                    for (Map.Entry<Integer, List<MerchantProCabinetPowerDetailVO>> statusEntry : groupMap.entrySet()) {
+                        List<MerchantProCabinetPowerDetailVO> list = statusEntry.getValue();
                     
-                    // 排序
-                    list.sort(Comparator.comparing(detail -> detail.getEndTime() == null ? NumberConstant.ZERO_L : detail.getEndTime()));
+                        if (CollectionUtils.isEmpty(list)) {
+                            continue;
+                        }
                     
-                    if (list.size() > NumberConstant.ONE) {
-                        // 合并时间段
-                        for (int i = 0; i < list.size() - 1; i++) {
-                            MerchantProCabinetPowerDetailVO current = list.get(i);
-                            MerchantProCabinetPowerDetailVO next = list.get(i + 1);
+                        // 排序
+                        list.sort(Comparator.comparing(detail -> detail.getEndTime() == null ? NumberConstant.ZERO_L : detail.getEndTime()));
+                    
+                        if (list.size() > NumberConstant.ONE) {
+                            // 合并时间段
+                            for (int i = 0; i < list.size() - 1; i++) {
+                                MerchantProCabinetPowerDetailVO current = list.get(i);
+                                MerchantProCabinetPowerDetailVO next = list.get(i + 1);
                             
-                            if (Objects.equals(DateUtils.getTimeByTimeStamp(current.getEndTime()), DateUtils.getTimeByTimeStamp(next.getStartTime()))) {
-                                current.setEndTime(next.getEndTime());
-                                if (current.getStartTime() > next.getStartTime()) {
-                                    current.setEndTime(next.getStartTime());
+                                if (Objects.equals(DateUtils.getTimeByTimeStamp(current.getEndTime()), DateUtils.getTimeByTimeStamp(next.getStartTime()))) {
+                                    current.setEndTime(next.getEndTime());
+                                    if (current.getStartTime() > next.getStartTime()) {
+                                        current.setEndTime(next.getStartTime());
+                                    }
+                                
+                                    BigDecimal currentPower = Objects.isNull(current.getPower()) ? BigDecimal.ZERO : current.getPower();
+                                    BigDecimal currentCharge = Objects.isNull(current.getCharge()) ? BigDecimal.ZERO : current.getCharge();
+                                    BigDecimal nextPower = Objects.isNull(next.getPower()) ? BigDecimal.ZERO : next.getPower();
+                                    BigDecimal nextCharge = Objects.isNull(next.getCharge()) ? BigDecimal.ZERO : next.getCharge();
+                                
+                                    current.setPower(currentPower.add(nextPower));
+                                    current.setCharge(currentCharge.add(nextCharge));
+                                
+                                    list.remove(next);
                                 }
-                                
-                                BigDecimal currentPower = Objects.isNull(current.getPower()) ? BigDecimal.ZERO : current.getPower();
-                                BigDecimal currentCharge = Objects.isNull(current.getCharge()) ? BigDecimal.ZERO : current.getCharge();
-                                BigDecimal nextPower = Objects.isNull(next.getPower()) ? BigDecimal.ZERO : next.getPower();
-                                BigDecimal nextCharge = Objects.isNull(next.getCharge()) ? BigDecimal.ZERO : next.getCharge();
-                                
-                                current.setPower(currentPower.add(nextPower));
-                                current.setCharge(currentCharge.add(nextCharge));
-                                
-                                list.remove(next);
                             }
                         }
-                    }
                     
-                    resultList.addAll(list);
-                }
-            }
-            
-            // 将拉取的时间段数据添加到结果中
-            if (MapUtils.isNotEmpty(fetchBindMap)) {
-                fetchBindMap.forEach((key, bindList) -> {
-                    if (Objects.equals(placeId, key)) {
-                        resultList.addAll(bindList);
+                        resultList.addAll(list);
                     }
-                });
+                }
+            
+                // 将拉取的时间段数据添加到结果中
+                if (MapUtils.isNotEmpty(fetchBindMap)) {
+                    fetchBindMap.forEach((key, bindList) -> {
+                        if (Objects.equals(placeId, key)) {
+                            resultList.addAll(bindList);
+                        }
+                    });
+                }
             }
         }
         
