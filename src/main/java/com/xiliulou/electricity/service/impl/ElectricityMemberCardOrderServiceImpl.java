@@ -1852,6 +1852,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                 .acquireUserBatteryServiceFee(userInfo, userBatteryMemberCard, batteryMemberCard, serviceFeeUserInfo);
         if (Boolean.FALSE.equals(acquireUserBatteryServiceFeeResult.getLeft())) {
             log.warn("admin clean service fee ERROR! user not exist service fee,uid={}", user.getUid());
+            overdueUserRemarkPublish.publish(uid, OverdueType.BATTERY.getCode(),TenantContextHolder.getTenantId());
             return R.ok();
         }
         
