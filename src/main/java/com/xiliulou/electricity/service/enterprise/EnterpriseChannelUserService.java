@@ -119,4 +119,6 @@ public interface EnterpriseChannelUserService {
     Triple<Boolean, String, Object> channelUserClose(EnterpriseUserExitCheckRequest request);
     
     Triple<Boolean, String, Object> addUserByScanNewCheck(EnterpriseChannelUserQuery enterpriseChannelUserQuery);
+    
+    Triple<Boolean, String, Object> channelUserExitForAdmin(EnterpriseUserExitCheckRequest request);
 }
