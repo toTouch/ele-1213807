@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.mq.consumer;
 
 import cn.hutool.core.util.IdUtil;
+import cn.hutool.core.util.StrUtil;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.constant.merchant.MerchantConstant;
@@ -8,6 +9,7 @@ import com.xiliulou.electricity.constant.merchant.MerchantJoinRecordConstant;
 import com.xiliulou.electricity.entity.UserInfoExtra;
 import com.xiliulou.electricity.entity.merchant.Merchant;
 import com.xiliulou.electricity.entity.merchant.MerchantAttr;
+import com.xiliulou.electricity.entity.merchant.MerchantLevel;
 import com.xiliulou.electricity.mq.constant.MqConsumerConstant;
 import com.xiliulou.electricity.mq.constant.MqProducerConstant;
 import com.xiliulou.electricity.mq.model.MerchantModify;
@@ -193,6 +195,15 @@ public class MerchantUpgradeConsumer implements RocketMQListener<String> {
         }
         
         if (Objects.equals(merchant.getMerchantGradeId(), merchantLevel.getId())) {
+            return;
+        }
+        
+        //商户将要升到的等级
+        int nextLevel = Integer.parseInt(merchantLevel.getLevel());
+        //商户当前的等级
+        MerchantLevel merchantCurrentLevel = merchantLevelService.queryById(merchant.getMerchantGradeId());
+        //防止商户自动降级
+        if (Objects.nonNull(merchantCurrentLevel) && StrUtil.isNotBlank(merchantCurrentLevel.getLevel()) && nextLevel >= Integer.parseInt(merchantCurrentLevel.getLevel())) {
             return;
         }
         
