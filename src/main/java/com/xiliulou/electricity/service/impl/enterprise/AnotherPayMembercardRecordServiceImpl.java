@@ -3,6 +3,7 @@ package com.xiliulou.electricity.service.impl.enterprise;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.TimeConstant;
+import com.xiliulou.electricity.entity.EleDisableMemberCardRecord;
 import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
 import com.xiliulou.electricity.entity.UserBatteryMemberCard;
 import com.xiliulou.electricity.entity.UserInfo;
@@ -266,5 +267,68 @@ public class AnotherPayMembercardRecordServiceImpl implements AnotherPayMemberca
                 .build();
         // 修改套餐的开始，结束时间
         update(payMembercardRecordUpdate);
+    }
+    
+    @Override
+    public void systemEnableMemberCardHandler(Long uid, EleDisableMemberCardRecord eleDisableMemberCardRecord) {
+        EnterpriseChannelUser enterpriseChannelUser = enterpriseChannelUserService.selectByUid(uid);
+        if (Objects.isNull(enterpriseChannelUser)) {
+            log.warn("channel user enable member card handler!not found enterpriseChannelUser,uid={}", uid);
+            return;
+        }
+    
+        UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(uid);
+        if (Objects.isNull(userBatteryMemberCard)) {
+            log.warn("channel user enable member card handler!not found userBatteryMemberCard,uid={}, orderId={}", uid, userBatteryMemberCard.getOrderId());
+            return;
+        }
+    
+        // 判断自主续费是否打开
+        if (!Objects.equals(enterpriseChannelUser.getRenewalStatus(), RenewalStatusEnum.RENEWAL_STATUS_NOT_BY_SELF.getCode())) {
+            log.warn("channel user enable member card handler!renewal status is open,uid={}, orderId={}", uid, userBatteryMemberCard.getOrderId());
+            return;
+        }
+    
+        // 检测骑手的代付记录
+        List<AnotherPayMembercardRecord> anotherPayMembercardRecords = selectByUid(uid);
+        if (ObjectUtils.isEmpty(anotherPayMembercardRecords)) {
+            log.warn("channel user enable member card handler!pay record is empty,uid={}, orderId={}", uid, userBatteryMemberCard.getOrderId());
+            return;
+        }
+    
+        long currentTimeMillis = System.currentTimeMillis();
+        long realDisableTime = eleDisableMemberCardRecord.getChooseDays() * TimeConstant.DAY_MILLISECOND;
+    
+        // 判断骑手当前的套餐是否为企业套餐
+        ElectricityMemberCardOrder electricityMemberCardOrder = electricityMemberCardOrderService.selectByOrderNo(userBatteryMemberCard.getOrderId());
+        if (Objects.equals(electricityMemberCardOrder.getOrderType(), PackageOrderTypeEnum.PACKAGE_ORDER_TYPE_ENTERPRISE.getCode())) {
+            // 检测当前套餐对应的id是否存在
+            Optional<AnotherPayMembercardRecord> payMembercardRecordOptional = anotherPayMembercardRecords.stream()
+                    .filter(item -> Objects.equals(item.getOrderId(), userBatteryMemberCard.getOrderId())).findFirst();
+            if (!payMembercardRecordOptional.isPresent()) {
+                log.error("channel user enable member card handler!not found pay record,uid={}, orderId={}", uid, userBatteryMemberCard.getOrderId());
+            }
+        
+            AnotherPayMembercardRecord anotherPayMembercardRecord = payMembercardRecordOptional.get();
+            // 计算套餐的冻结的真实时间
+            AnotherPayMembercardRecord updateRecord = AnotherPayMembercardRecord.builder().id(anotherPayMembercardRecord.getId())
+                    .endTime(anotherPayMembercardRecord.getEndTime() + realDisableTime).updateTime(currentTimeMillis).build();
+            // 修改当前生效套餐对应的截至日期
+            update(updateRecord);
+        
+            // 将支付记录按照购买的顺序升序排列
+            List<AnotherPayMembercardRecord> notUseRecordList = anotherPayMembercardRecords.stream().filter(item -> item.getId() > anotherPayMembercardRecord.getId())
+                    .collect(Collectors.toList());
+            if (ObjectUtils.isEmpty(notUseRecordList)) {
+                log.warn("channel user enable member card handler!not use pay record is empty,uid={}, orderId={}", uid, userBatteryMemberCard.getOrderId());
+                return;
+            }
+        
+            List<Long> idList = notUseRecordList.stream().map(AnotherPayMembercardRecord::getId).collect(Collectors.toList());
+            this.anotherPayMembercardRecordMapper.batchUpdateBeginAndEndTimeByIds(idList, realDisableTime, currentTimeMillis);
+        } else {
+            List<Long> idList = anotherPayMembercardRecords.stream().map(AnotherPayMembercardRecord::getId).collect(Collectors.toList());
+            this.anotherPayMembercardRecordMapper.batchUpdateBeginAndEndTimeByIds(idList, realDisableTime, currentTimeMillis);
+        }
     }
 }

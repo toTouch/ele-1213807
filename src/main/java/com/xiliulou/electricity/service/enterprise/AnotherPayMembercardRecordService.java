@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.service.enterprise;
 
+import com.xiliulou.electricity.entity.EleDisableMemberCardRecord;
 import com.xiliulou.electricity.entity.UserBatteryMemberCard;
 import com.xiliulou.electricity.entity.enterprise.AnotherPayMembercardRecord;
 
@@ -58,4 +59,6 @@ public interface AnotherPayMembercardRecordService {
     void enableMemberCardHandler(Long uid);
     
     void handlerOrderEffect(UserBatteryMemberCard userBatteryMemberCardUpdate, Long uid);
+    
+    void systemEnableMemberCardHandler(Long uid, EleDisableMemberCardRecord eleDisableMemberCardRecord);
 }
