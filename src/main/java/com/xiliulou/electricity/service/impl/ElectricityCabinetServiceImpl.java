@@ -1257,7 +1257,13 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         
         // 换电限制标签：柜内符合可换电标准的电池≥1，则可换电
         List<ElectricityCabinetBox> boxes = electricityCabinetBoxService.queryUsableBatteryCellNo(eid, null, fullyCharged);
-        if (CollUtil.isNotEmpty(boxes) && boxes.size() >= 1) {
+        
+        // 过滤掉电池名称不符合标准的
+        List<ElectricityCabinetBox> exchangeableList = boxes.stream().filter(item -> filterNotExchangeable(item))
+                .collect(Collectors.toList());
+        
+        //可换电数量
+        if (CollUtil.isNotEmpty(exchangeableList) && exchangeableList.size() >= 1) {
             label.add(1);
         }
         
@@ -1268,12 +1274,12 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         // 租电
         if (Objects.isNull(cabinetExtra.getMinRetainBatteryCount())) {
             // 无限制,柜内符合可换电标准的电池≥1，则可租电
-            if (CollUtil.isNotEmpty(boxes) && boxes.size() >= 1) {
+            if (CollUtil.isNotEmpty(exchangeableList) && exchangeableList.size() >= 1) {
                 label.add(2);
             }
         } else {
             // 有限制：最少保留电池数量设置为有限制数量时，柜内符合可换电标准的电池＞设置的数量
-            if (CollUtil.isNotEmpty(boxes) && boxes.size() > cabinetExtra.getMinRetainBatteryCount()) {
+            if (CollUtil.isNotEmpty(exchangeableList) && exchangeableList.size() > cabinetExtra.getMinRetainBatteryCount()) {
                 label.add(2);
             }
         }
@@ -1287,11 +1293,17 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             }
         } else {
             // 最少保留电池数量设置为有限制数量时，柜内符合可换电标准的电池＞设置的数量
-            if (CollUtil.isNotEmpty(boxes) && boxes.size() < cabinetExtra.getMaxRetainBatteryCount()) {
+            if (CollUtil.isNotEmpty(exchangeableList) && exchangeableList.size() < cabinetExtra.getMaxRetainBatteryCount()) {
                 label.add(3);
             }
         }
         return label;
+    }
+    
+    
+    private boolean filterNotExchangeable(ElectricityCabinetBox electricityCabinetBox) {
+        return Objects.nonNull(electricityCabinetBox.getPower()) && StringUtils.isNotBlank(electricityCabinetBox.getSn()) && !StringUtils.startsWithIgnoreCase(
+                electricityCabinetBox.getSn(), "UNKNOW");
     }
     
     private ElectricityCabinetSimpleVO assignAttribute(ElectricityCabinetSimpleVO e, Double fullyCharged, String businessTime) {
