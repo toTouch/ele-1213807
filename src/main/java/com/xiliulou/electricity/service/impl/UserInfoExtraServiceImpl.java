@@ -463,19 +463,19 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
         
             // 新增用户商户绑定
             UserInfoExtra userInfoExtra = this.queryByUidFromCache(uid);
-            if (Objects.isNull(userInfoExtra)) {
-                UserInfoExtra insertUserInfoExtra = UserInfoExtra.builder().merchantId(merchantId).channelEmployeeUid(merchant.getChannelEmployeeUid()).uid(uid).tenantId(tenantId)
-                        .delFlag(MerchantConstant.DEL_NORMAL).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).build();
-                
-                this.insert(insertUserInfoExtra);
-            } else {
+            if (Objects.nonNull(userInfoExtra)) {
                 userInfoExtra.setMerchantId(merchantId);
                 userInfoExtra.setChannelEmployeeUid(merchant.getChannelEmployeeUid());
                 userInfoExtra.setPlaceId(NumberConstant.ZERO_L);
                 userInfoExtra.setPlaceUid(NumberConstant.ZERO_L);
                 userInfoExtra.setUpdateTime(System.currentTimeMillis());
-                
+        
                 this.updateByUid(userInfoExtra);
+            } else {
+                UserInfoExtra insertUserInfoExtra = UserInfoExtra.builder().merchantId(merchantId).channelEmployeeUid(merchant.getChannelEmployeeUid()).uid(uid).tenantId(tenantId)
+                        .delFlag(MerchantConstant.DEL_NORMAL).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).build();
+        
+                this.insert(insertUserInfoExtra);
             }
         
             // 获取商户保护期和有效期
