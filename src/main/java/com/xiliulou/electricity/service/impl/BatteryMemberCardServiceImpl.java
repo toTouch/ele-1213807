@@ -823,6 +823,13 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
             return verifyBatteryMemberCardResult;
         }
         
+        //套餐数量最多50个
+        BatteryMemberCardQuery queryCount = BatteryMemberCardQuery.builder().businessType(BatteryMemberCardBusinessTypeEnum.BUSINESS_TYPE_BATTERY.getCode())
+                .tenantId(TenantContextHolder.getTenantId()).delFlag(BatteryMemberCard.DEL_NORMAL).build();
+        if (selectByPageCount(queryCount) >= 50) {
+            return Triple.of(false, "100378", "换电套餐新增已达最大上限，可删除多余套餐后操作");
+        }
+        
         BatteryMemberCard batteryMemberCard = new BatteryMemberCard();
         BeanUtils.copyProperties(query, batteryMemberCard);
         batteryMemberCard.setDelFlag(BatteryMemberCard.DEL_NORMAL);
