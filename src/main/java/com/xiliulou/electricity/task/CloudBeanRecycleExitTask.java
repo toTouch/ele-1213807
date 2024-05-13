@@ -23,11 +23,15 @@ public class CloudBeanRecycleExitTask extends IJobHandler {
     
     @Override
     public ReturnT<String> execute(String s) throws Exception {
+        log.info("xxl-job cloud bean recycle exit task");
+        
         try {
             cloudBeanUseRecordService.recycleCloudBeanExitTask();
         } catch (Exception e) {
             log.error("xxl-job cloud bean recycle exit task", e);
         }
+        
+        log.info("xxl-job cloud bean recycle exit task end");
         
         return IJobHandler.SUCCESS;
     }

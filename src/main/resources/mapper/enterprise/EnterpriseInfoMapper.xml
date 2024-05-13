@@ -156,6 +156,9 @@
         from  t_enterprise_info
         where
             del_flag = 0 and status = 0
+            <if test="tenantId != null">
+                and tenant_id = #{tenantId}
+            </if>
     </select>
     
     <!--通过主键修改数据-->

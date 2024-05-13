@@ -56,5 +56,5 @@ public interface EnterpriseInfoMapper extends BaseMapper<EnterpriseInfo> {
     
     int subtractCloudBean(@Param("id") Long id, @Param("subtractCloudBean") BigDecimal subtract,@Param("updateTime") long updateTime);
     
-    List<EnterpriseInfo> selectList();
+    List<EnterpriseInfo> selectList(@Param("tenantId") Integer tenantId);
 }
