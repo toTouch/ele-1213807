@@ -427,6 +427,7 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
             Long oldInviterUid = successInviterVO.getInviterUid();
             Long newInviterUid = merchant.getUid();
             Long channelEmployeeUid = merchant.getChannelEmployeeUid();
+            String oldInviterName = Optional.ofNullable(userInfoService.queryByUidFromCache(oldInviterUid)).orElse(new UserInfo()).getName();
         
             if (Objects.equals(oldInviterUid, newInviterUid)) {
                 log.warn("Modify inviter fail! inviters can not be the same, uid={}, oldInviterUid={}, newInviterUid={}", uid, oldInviterUid, newInviterUid);
@@ -454,6 +455,7 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
                 case 5:
                     // 商户邀请
                     merchantJoinRecordService.removeById(id, System.currentTimeMillis());
+                    oldInviterName = Optional.ofNullable(merchantService.queryByIdFromCache(successInviterVO.getMerchantId())).orElse(new Merchant()).getName();
                     break;
                 default:
                     break;
@@ -461,19 +463,19 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
         
             // 新增用户商户绑定
             UserInfoExtra userInfoExtra = this.queryByUidFromCache(uid);
-            if (Objects.isNull(userInfoExtra)) {
-                UserInfoExtra insertUserInfoExtra = UserInfoExtra.builder().merchantId(merchantId).channelEmployeeUid(merchant.getChannelEmployeeUid()).uid(uid).tenantId(tenantId)
-                        .delFlag(MerchantConstant.DEL_NORMAL).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).build();
-                
-                this.insert(insertUserInfoExtra);
-            } else {
+            if (Objects.nonNull(userInfoExtra)) {
                 userInfoExtra.setMerchantId(merchantId);
                 userInfoExtra.setChannelEmployeeUid(merchant.getChannelEmployeeUid());
                 userInfoExtra.setPlaceId(NumberConstant.ZERO_L);
                 userInfoExtra.setPlaceUid(NumberConstant.ZERO_L);
                 userInfoExtra.setUpdateTime(System.currentTimeMillis());
-                
+        
                 this.updateByUid(userInfoExtra);
+            } else {
+                UserInfoExtra insertUserInfoExtra = UserInfoExtra.builder().merchantId(merchantId).channelEmployeeUid(merchant.getChannelEmployeeUid()).uid(uid).tenantId(tenantId)
+                        .delFlag(MerchantConstant.DEL_NORMAL).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).build();
+        
+                this.insert(insertUserInfoExtra);
             }
         
             // 获取商户保护期和有效期
@@ -490,7 +492,7 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
             // 新增修改记录
             MerchantInviterModifyRecord merchantInviterModifyRecord = MerchantInviterModifyRecord.builder().uid(uid).inviterUid(newInviterUid)
                     .inviterName(Optional.ofNullable(merchantService.queryByIdFromCache(merchantId)).orElse(new Merchant()).getName()).oldInviterUid(oldInviterUid)
-                    .oldInviterName(Optional.ofNullable(merchantService.queryByIdFromCache(successInviterVO.getMerchantId())).orElse(new Merchant()).getName())
+                    .oldInviterName(oldInviterName)
                     .oldInviterSource(inviterSource).merchantId(merchantId).franchiseeId(merchant.getFranchiseeId()).tenantId(tenantId).operator(operator)
                     .remark(merchantModifyInviterUpdateRequest.getRemark()).delFlag(MerchantConstant.DEL_NORMAL).createTime(System.currentTimeMillis())
                     .updateTime(System.currentTimeMillis()).build();
