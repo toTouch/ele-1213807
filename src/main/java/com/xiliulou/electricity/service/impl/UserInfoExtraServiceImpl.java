@@ -427,6 +427,7 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
             Long oldInviterUid = successInviterVO.getInviterUid();
             Long newInviterUid = merchant.getUid();
             Long channelEmployeeUid = merchant.getChannelEmployeeUid();
+            String oldInviterName = Optional.ofNullable(userInfoService.queryByUidFromCache(oldInviterUid)).orElse(new UserInfo()).getName();
         
             if (Objects.equals(oldInviterUid, newInviterUid)) {
                 log.warn("Modify inviter fail! inviters can not be the same, uid={}, oldInviterUid={}, newInviterUid={}", uid, oldInviterUid, newInviterUid);
@@ -454,6 +455,7 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
                 case 5:
                     // 商户邀请
                     merchantJoinRecordService.removeById(id, System.currentTimeMillis());
+                    oldInviterName = Optional.ofNullable(merchantService.queryByIdFromCache(successInviterVO.getMerchantId())).orElse(new Merchant()).getName();
                     break;
                 default:
                     break;
@@ -490,7 +492,7 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
             // 新增修改记录
             MerchantInviterModifyRecord merchantInviterModifyRecord = MerchantInviterModifyRecord.builder().uid(uid).inviterUid(newInviterUid)
                     .inviterName(Optional.ofNullable(merchantService.queryByIdFromCache(merchantId)).orElse(new Merchant()).getName()).oldInviterUid(oldInviterUid)
-                    .oldInviterName(Optional.ofNullable(merchantService.queryByIdFromCache(successInviterVO.getMerchantId())).orElse(new Merchant()).getName())
+                    .oldInviterName(oldInviterName)
                     .oldInviterSource(inviterSource).merchantId(merchantId).franchiseeId(merchant.getFranchiseeId()).tenantId(tenantId).operator(operator)
                     .remark(merchantModifyInviterUpdateRequest.getRemark()).delFlag(MerchantConstant.DEL_NORMAL).createTime(System.currentTimeMillis())
                     .updateTime(System.currentTimeMillis()).build();
