@@ -2276,7 +2276,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                         userBatteryMemberCard.getOrderExpireTime() - userBatteryMemberCard.getDisableMemberCardTime());*/
     
                 // 处理企业用户对应的支付记录时间
-                anotherPayMembercardRecordService.enableMemberCardHandler(userBatteryMemberCard.getUid());
+                anotherPayMembercardRecordService.systemEnableMemberCardHandler(userBatteryMemberCard.getUid(), eleDisableMemberCardRecord);
                 
                 //更新用户套餐到期时间，启用用户套餐
                 UserBatteryMemberCard userBatteryMemberCardUpdate = new UserBatteryMemberCard();

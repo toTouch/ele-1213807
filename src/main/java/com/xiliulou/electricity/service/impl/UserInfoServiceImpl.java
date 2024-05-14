@@ -735,7 +735,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                 item.setGroupList(CollectionUtils.isEmpty(groupVoList) ? Collections.emptyList() : groupVoList);
             });
         }, threadPool).exceptionally(e -> {
-            log.error("ELE ERROR! query user other info error!", e);
+            log.error("ELE ERROR! query user group info error!", e);
             return null;
         });
         
@@ -3205,7 +3205,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                 item.setGroupList(CollectionUtils.isEmpty(groupVoList) ? Collections.emptyList() : groupVoList);
             });
         }, threadPool).exceptionally(e -> {
-            log.error("ELE ERROR! query user other info error!", e);
+            log.error("ELE ERROR! query user group info error!", e);
             return null;
         });
         

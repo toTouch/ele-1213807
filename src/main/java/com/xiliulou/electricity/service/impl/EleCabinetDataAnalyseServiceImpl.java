@@ -207,6 +207,7 @@ public class EleCabinetDataAnalyseServiceImpl implements EleCabinetDataAnalyseSe
         return eleCabinetService.selectLockPageCount(cabinetQuery);
     }
     
+    @Slave
     @Override
     public Integer selectPowerPageCount(ElectricityCabinetQuery cabinetQuery) {
         return eleCabinetService.selectPowerPageCount(cabinetQuery);

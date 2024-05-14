@@ -62,10 +62,7 @@
                 update_time = #{updateTime},
             </if>
             <if test="errorMsg != null">
-                error_msg = #{errorMsg},
-            </if>
-            <if test="tenantId != null">
-                tenant_id = #{tenantId},
+                error_msg = #{errorMsg}
             </if>
         </set>
         <where>

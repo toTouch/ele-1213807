@@ -52,5 +52,5 @@ public interface EnterpriseRentRecordService {
     
     List<EnterpriseRentRecord> selectByUid(Long uid);
     
-    int createEnterpriseRecordDetail();
+    int createEnterpriseRecordDetail(Integer tenantId);
 }
