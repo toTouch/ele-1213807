@@ -60,7 +60,7 @@
             left join t_user_info u on u.uid = r.uid
         where r.return_time is not null
            <if test="tenantId != null">
-               and u.tenant_id = = #{tenantId}
+               and u.tenant_id = tenantId}
            </if>
     </select>
     
