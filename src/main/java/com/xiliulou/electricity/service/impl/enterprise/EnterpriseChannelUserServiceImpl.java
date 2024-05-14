@@ -30,6 +30,7 @@ import com.xiliulou.electricity.mapper.enterprise.EnterpriseChannelUserHistoryMa
 import com.xiliulou.electricity.mapper.enterprise.EnterpriseChannelUserMapper;
 import com.xiliulou.electricity.query.enterprise.EnterpriseChannelUserQuery;
 import com.xiliulou.electricity.queryModel.enterprise.EnterpriseChannelUserExitQueryModel;
+import com.xiliulou.electricity.request.enterprise.EnterpriseUserAdminExitCheckRequest;
 import com.xiliulou.electricity.request.enterprise.EnterpriseUserExitCheckRequest;
 import com.xiliulou.electricity.service.BatteryMemberCardService;
 import com.xiliulou.electricity.service.EleDepositOrderService;
@@ -47,6 +48,7 @@ import com.xiliulou.electricity.service.enterprise.EnterpriseChannelUserService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseInfoService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DateUtils;
+import com.xiliulou.electricity.utils.OperateRecordUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.ElectricityCabinetOrderVO;
 import com.xiliulou.electricity.vo.ElectricityUserBatteryVo;
@@ -69,7 +71,9 @@ import javax.annotation.Resource;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -135,6 +139,9 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
     
     @Resource
     private UserBatteryDepositService userBatteryDepositService;
+    
+    @Resource
+    private OperateRecordUtil operateRecordUtil;
     
     
     @Override
@@ -1260,7 +1267,7 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
      * @return
      */
     @Override
-    public Triple<Boolean, String, Object> channelUserExitForAdmin(EnterpriseUserExitCheckRequest request) {
+    public Triple<Boolean, String, Object> channelUserExitForAdmin(EnterpriseUserAdminExitCheckRequest request) {
         Integer tenantId = TenantContextHolder.getTenantId();
         Long uid = SecurityUtils.getUid();
         
@@ -1274,10 +1281,16 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
         // 检测是否能退出
         Triple<Boolean, String, Object> triple = this.channelUserAdminExitCheck(request, channelUser, tenantId);
         if (!triple.getLeft()) {
-            log.error("channel user admin exit Check fail, uid={}, msg={}", request.getUid(), triple.getRight());
+            log.error("channel user admin exit check error, uid={}, msg={}", request.getUid(), triple.getRight());
             return triple;
         }
-        
+    
+        EnterpriseInfo enterpriseInfo = enterpriseInfoService.queryByIdFromCache(channelUser.getEnterpriseId());
+        if (Objects.isNull(enterpriseInfo)) {
+            log.error("channel user admin exit error, uid={}", request.getUid());
+            return Triple.of(false, "120212", "商户不存在");
+        }
+    
         // 云豆回收
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(request.getUid());
         if (Objects.nonNull(userBatteryMemberCard) && Objects.equals(channelUser.getCloudBeanStatus(), EnterpriseChannelUser.NO_RECYCLE)) {
@@ -1318,13 +1331,16 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
             channelUserExitMapper.batchUpdateById(null, EnterpriseChannelUserExit.TYPE_SUCCESS, idList, System.currentTimeMillis());
         }
         
-        // todo 操作记录
-        log.error("channel user admin exit check success, uid={}, msg={}", request.getUid());
+        // 操作记录
+        Map<String, String> operateRecordMap = new HashMap<>();
+        operateRecordMap.put("merchantName", enterpriseInfo.getName());
+        operateRecordMap.put("reason", request.getReason());
+        operateRecordUtil.record(null, operateRecordMap);
         
         return Triple.of(true, null, null);
     }
     
-    private Triple<Boolean, String, Object> channelUserAdminExitCheck(EnterpriseUserExitCheckRequest request, EnterpriseChannelUser channelUser, Integer tenantId) {
+    private Triple<Boolean, String, Object> channelUserAdminExitCheck(EnterpriseUserAdminExitCheckRequest request, EnterpriseChannelUser channelUser, Integer tenantId) {
         // 判断用户是否存在当前站长的企业内
         Long uid = request.getUid();
         UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
@@ -1345,8 +1361,7 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
         
         // 检测骑手的续费状态是否为关闭
         if (!Objects.equals(channelUser.getRenewalStatus(), EnterpriseChannelUser.RENEWAL_CLOSE)) {
-            log.error("channel user admin exit renewal Status diff, uid={}, userRenewalStatus={}, renewalStatus={}", request.getUid(), channelUser.getRenewalStatus(),
-                    request.getRenewalStatus());
+            log.error("channel user admin exit renewal Status diff, uid={}, userRenewalStatus={}", request.getUid(), channelUser.getRenewalStatus());
             return Triple.of(false, "120305", "当前状态无法操作");
         }
         

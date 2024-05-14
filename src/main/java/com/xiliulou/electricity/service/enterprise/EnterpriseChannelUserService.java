@@ -2,6 +2,7 @@ package com.xiliulou.electricity.service.enterprise;
 
 import com.xiliulou.electricity.entity.enterprise.EnterpriseChannelUser;
 import com.xiliulou.electricity.query.enterprise.EnterpriseChannelUserQuery;
+import com.xiliulou.electricity.request.enterprise.EnterpriseUserAdminExitCheckRequest;
 import com.xiliulou.electricity.request.enterprise.EnterpriseUserExitCheckRequest;
 import com.xiliulou.electricity.vo.ElectricityUserBatteryVo;
 import com.xiliulou.electricity.vo.enterprise.EnterpriseChannelUserVO;
@@ -120,5 +121,5 @@ public interface EnterpriseChannelUserService {
     
     Triple<Boolean, String, Object> addUserByScanNewCheck(EnterpriseChannelUserQuery enterpriseChannelUserQuery);
     
-    Triple<Boolean, String, Object> channelUserExitForAdmin(EnterpriseUserExitCheckRequest request);
+    Triple<Boolean, String, Object> channelUserExitForAdmin(EnterpriseUserAdminExitCheckRequest request);
 }

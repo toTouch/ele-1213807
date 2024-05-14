@@ -2,9 +2,8 @@ package com.xiliulou.electricity.controller.admin.enterprise;
 
 import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.web.R;
-import com.xiliulou.electricity.request.enterprise.EnterpriseUserExitCheckRequest;
+import com.xiliulou.electricity.request.enterprise.EnterpriseUserAdminExitCheckRequest;
 import com.xiliulou.electricity.service.enterprise.EnterpriseChannelUserService;
-import com.xiliulou.electricity.validator.UpdateGroup;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -31,8 +30,8 @@ public class JsonAdminEnterpriseChannelUserController extends BaseController {
      * @return
      */
     @PostMapping( "/admin/enterprise/channelUserExit")
-    public R channelUserExit(@RequestBody @Validated(UpdateGroup.class) EnterpriseUserExitCheckRequest request) {
-        
+    public R channelUserExit(@RequestBody @Validated EnterpriseUserAdminExitCheckRequest request) {
+    
         return returnTripleResult(enterpriseChannelUserService.channelUserExitForAdmin(request));
     }
     
