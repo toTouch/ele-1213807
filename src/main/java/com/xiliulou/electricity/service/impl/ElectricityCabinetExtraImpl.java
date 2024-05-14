@@ -9,6 +9,7 @@ import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.mapper.ElectricityCabinetExtraMapper;
 import com.xiliulou.electricity.query.ElectricityCabinetBatchEditRentReturnCountQuery;
 import com.xiliulou.electricity.service.ElectricityCabinetExtraService;
+import com.xiliulou.electricity.utils.DbUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -60,7 +61,11 @@ public class ElectricityCabinetExtraImpl implements ElectricityCabinetExtraServi
     
     @Override
     public Integer update(ElectricityCabinetExtra electricityCabinetExtra) {
-        return electricityCabinetExtraMapper.update(electricityCabinetExtra);
+        Integer update = electricityCabinetExtraMapper.update(electricityCabinetExtra);
+        DbUtils.dbOperateSuccessThenHandleCache(update,i -> {
+            redisService.delete(CacheConstant.CACHE_ELECTRICITY_CABINET_EXTRA+electricityCabinetExtra.getEid());
+        });
+        return update;
     }
     
     
