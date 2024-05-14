@@ -112,6 +112,7 @@ public class JoinShareActivityHistoryServiceImpl implements JoinShareActivityHis
 	}
 
 	@Override
+	@Slave
 	public R userList(Integer activityId) {
 		//用户
 		TokenUser user = SecurityUtils.getUserInfo();
@@ -157,6 +158,7 @@ public class JoinShareActivityHistoryServiceImpl implements JoinShareActivityHis
 	}
 	
 	@Override
+	@Slave
 	public FinalJoinShareActivityHistoryVo queryFinalHistoryByJoinUid(Long uid, Integer tenantId) {
 		return joinShareActivityHistoryMapper.queryFinalHistoryByJoinUid(uid, tenantId);
 	}
@@ -263,6 +265,7 @@ public class JoinShareActivityHistoryServiceImpl implements JoinShareActivityHis
 	}
 
 	@Override
+	@Slave
 	public Pair<Boolean, String> checkTheActivityFromSameInviter(Long joinUid, Long inviterUid, Long activityId) {
 		List<JoinShareActivityHistory> joinShareActivityHistories = joinShareActivityHistoryMapper.queryActivityByJoinerAndInviter(joinUid, inviterUid, activityId);
 		if(CollectionUtils.isNotEmpty(joinShareActivityHistories)){

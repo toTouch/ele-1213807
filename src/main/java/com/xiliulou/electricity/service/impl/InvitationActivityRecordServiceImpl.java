@@ -114,6 +114,7 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
     private CarRentalPackageService carRentalPackageService;
 
     @Override
+    @Slave
     public List<InvitationActivityRecordVO> selectByPage(InvitationActivityRecordQuery query) {
         List<InvitationActivityRecordVO> list = invitationActivityRecordMapper.selectByPage(query);
         if (CollectionUtils.isEmpty(list)) {
@@ -129,6 +130,7 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
     }
 
     @Override
+    @Slave
     public Integer selectByPageCount(InvitationActivityRecordQuery query) {
         return invitationActivityRecordMapper.selectByPageCount(query);
     }
@@ -178,6 +180,7 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
     }
 
     @Override
+    @Slave
     public List<InvitationActivityRecord> selectByUid(Long uid) {
         return this.invitationActivityRecordMapper.selectByUid(uid);
     }

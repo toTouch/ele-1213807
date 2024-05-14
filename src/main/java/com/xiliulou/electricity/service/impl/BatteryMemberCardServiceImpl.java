@@ -209,6 +209,7 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
     }
     
     @Override
+    @Slave
     public List<BatteryMemberCardSearchVO> search(BatteryMemberCardQuery query) {
         List<BatteryMemberCard> list = this.batteryMemberCardMapper.selectBySearch(query);
         
@@ -465,6 +466,7 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
     }
     
     @Override
+    @Slave
     public List<BatteryMemberCardVO> selectByQuery(BatteryMemberCardQuery query) {
         List<BatteryMemberCard> list = this.batteryMemberCardMapper.selectByQuery(query);
         
@@ -654,6 +656,7 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
     }
     
     @Override
+    @Slave
     public List<BatteryMemberCardVO> selectCarRentalAndElectricityPackages(CarRentalPackageQryModel qryModel) {
         List<CarRentalPackagePo> carRentalPackagePOList = carRentalPackageService.list(qryModel);
         if (CollectionUtils.isEmpty(carRentalPackagePOList)) {

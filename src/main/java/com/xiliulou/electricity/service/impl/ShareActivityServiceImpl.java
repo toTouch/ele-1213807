@@ -9,6 +9,7 @@ import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.core.web.R;
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
@@ -424,6 +425,7 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 	}
 
 	@Override
+	@Slave
 	public R queryList(ShareActivityQuery shareActivityQuery) {
 		Pair<Boolean, List<Long>> pair = assertPermissionService.assertPermissionByPair(SecurityUtils.getUserInfo());
 		if (!pair.getLeft()){
@@ -560,6 +562,7 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 	}
 
 	@Override
+	@Slave
 	public R queryCount(ShareActivityQuery shareActivityQuery) {
 		Pair<Boolean, List<Long>> pair = assertPermissionService.assertPermissionByPair(SecurityUtils.getUserInfo());
 		if (!pair.getLeft()){
@@ -796,6 +799,7 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 	}
 
 	@Override
+	@Slave
 	public ShareActivity queryByStatus(Integer activityId) {
 		return shareActivityMapper.selectOne(new LambdaQueryWrapper<ShareActivity>()
 				.eq(ShareActivity::getId, activityId).eq(ShareActivity::getStatus, ShareActivity.STATUS_ON));

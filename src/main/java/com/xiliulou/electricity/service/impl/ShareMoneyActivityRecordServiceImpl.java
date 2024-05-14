@@ -4,6 +4,7 @@ import cn.hutool.core.util.RandomUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.ElectricityPayParams;
 import com.xiliulou.electricity.entity.JoinShareMoneyActivityRecord;
@@ -66,6 +67,7 @@ public class ShareMoneyActivityRecordServiceImpl implements ShareMoneyActivityRe
 	 * @return 实例对象
 	 */
 	@Override
+	@Slave
 	public ShareMoneyActivityRecord queryByIdFromDB(Long id) {
 		return this.shareMoneyActivityRecordMapper.selectById(id);
 	}
@@ -195,6 +197,7 @@ public class ShareMoneyActivityRecordServiceImpl implements ShareMoneyActivityRe
 	}
 
 	@Override
+	@Slave
 	public ShareMoneyActivityRecord queryByUid(Long uid,Integer activityId) {
 		return shareMoneyActivityRecordMapper.selectOne(new LambdaQueryWrapper<ShareMoneyActivityRecord>()
 				.eq(ShareMoneyActivityRecord::getUid, uid).eq(ShareMoneyActivityRecord::getActivityId,activityId));
@@ -208,6 +211,7 @@ public class ShareMoneyActivityRecordServiceImpl implements ShareMoneyActivityRe
 
 
 	@Override
+	@Slave
 	public R queryList(ShareMoneyActivityRecordQuery shareMoneyActivityRecordQuery) {
 
 		List<ShareMoneyActivityRecordVO> shareMoneyActivityRecordVOList= shareMoneyActivityRecordMapper.queryList(shareMoneyActivityRecordQuery);
@@ -222,6 +226,7 @@ public class ShareMoneyActivityRecordServiceImpl implements ShareMoneyActivityRe
 	}
 
 	@Override
+	@Slave
 	public R queryCount(ShareMoneyActivityRecordQuery shareMoneyActivityRecordQuery) {
 		return R.ok(shareMoneyActivityRecordMapper.queryCount(shareMoneyActivityRecordQuery));
 	}

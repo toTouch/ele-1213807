@@ -2,6 +2,7 @@ package com.xiliulou.electricity.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.core.web.R;
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.entity.UserAmount;
 import com.xiliulou.electricity.entity.UserAmountHistory;
 import com.xiliulou.electricity.entity.UserInfo;
@@ -43,6 +44,7 @@ public class UserAmountServiceImpl implements UserAmountService {
 	UserAmountHistoryService userAmountHistoryService;
 
 	@Override
+	@Slave
 	public UserAmount queryByUid(Long uid) {
 		return userAmountMapper.selectOne(new LambdaQueryWrapper<UserAmount>().eq(UserAmount::getUid, uid)
 				.eq(UserAmount::getDelFlg, UserAmount.DEL_NORMAL));
@@ -61,6 +63,7 @@ public class UserAmountServiceImpl implements UserAmountService {
 	}
 
 	@Override
+	@Slave
 	public R queryByUid() {
 
 		//用户
@@ -110,12 +113,14 @@ public class UserAmountServiceImpl implements UserAmountService {
 	}
 
 	@Override
+	@Slave
 	public R queryList(UserAmountQuery userAmountQuery) {
 		List<UserAmountVO> userAmountVOList=userAmountMapper.queryList(userAmountQuery);
 		return R.ok(userAmountVOList);
 	}
 
 	@Override
+	@Slave
 	public R queryCount(UserAmountQuery userAmountQuery) {
 		Integer count=userAmountMapper.queryCount(userAmountQuery);
 		return R.ok(count);

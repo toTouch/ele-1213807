@@ -166,6 +166,7 @@ public class JoinShareMoneyActivityRecordServiceImpl implements JoinShareMoneyAc
 	}
 
 	@Override
+	@Slave
 	public JoinShareMoneyActivityRecord queryByJoinUid(Long uid) {
 		return joinShareMoneyActivityRecordMapper.selectOne(new LambdaQueryWrapper<JoinShareMoneyActivityRecord>()
 				.eq(JoinShareMoneyActivityRecord::getJoinUid, uid).gt(JoinShareMoneyActivityRecord::getExpiredTime, System.currentTimeMillis())

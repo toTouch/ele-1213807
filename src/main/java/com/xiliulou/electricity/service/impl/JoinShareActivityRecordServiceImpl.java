@@ -2,6 +2,7 @@ package com.xiliulou.electricity.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.core.web.R;
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.constant.TimeConstant;
 import com.xiliulou.electricity.entity.*;
@@ -180,6 +181,7 @@ public class JoinShareActivityRecordServiceImpl implements JoinShareActivityReco
     }
 
     @Override
+    @Slave
     public JoinShareActivityRecord queryByJoinUid(Long uid) {
         return joinShareActivityRecordMapper.selectOne(new LambdaQueryWrapper<JoinShareActivityRecord>()
                 .eq(JoinShareActivityRecord::getJoinUid, uid).gt(JoinShareActivityRecord::getExpiredTime, System.currentTimeMillis())

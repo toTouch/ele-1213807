@@ -178,11 +178,13 @@ public class ChannelActivityHistoryServiceImpl implements ChannelActivityHistory
      * 查询邀请人邀请数量
      */
     @Override
+    @Slave
     public Long queryInviteCount(Long uid) {
         return this.channelActivityHistoryMapper.queryInviteCount(uid);
     }
     
     @Override
+    @Slave
     public ChannelActivityHistory queryByUid(Long uid) {
         return this.channelActivityHistoryMapper.queryByUid(uid);
     }
