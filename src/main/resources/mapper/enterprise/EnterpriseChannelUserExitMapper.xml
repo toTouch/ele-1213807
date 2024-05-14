@@ -64,6 +64,9 @@
             <if test="errorMsg != null">
                 error_msg = #{errorMsg},
             </if>
+            <if test="tenantId != null">
+                tenant_id = #{tenantId},
+            </if>
         </set>
         <where>
             id = #{id}

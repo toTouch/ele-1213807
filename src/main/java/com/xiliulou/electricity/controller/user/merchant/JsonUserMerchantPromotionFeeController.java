@@ -240,10 +240,10 @@ public class JsonUserMerchantPromotionFeeController extends BaseController {
      */
     @GetMapping("/merchant/promotion/employee/details/page")
     public R promotionEmployeeDetails(@RequestParam("size") long size, @RequestParam("offset") Long offset, @RequestParam("type") Integer type, @RequestParam("uid") Long uid) {
-        if (size < 0 || size > 5) {
-            size = 5L;
+        if (size < 0 || size > 50) {
+            size = 10L;
         }
-        
+    
         if (offset < 0) {
             offset = 0L;
         }

@@ -12,6 +12,7 @@ import com.xiliulou.electricity.config.RolePermissionConfig;
 import com.xiliulou.electricity.constant.AssetConstant;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.CommonConstant;
+import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.ChannelActivity;
 import com.xiliulou.electricity.entity.ElectricityConfig;
 import com.xiliulou.electricity.entity.FreeDepositData;
@@ -20,14 +21,10 @@ import com.xiliulou.electricity.entity.Role;
 import com.xiliulou.electricity.entity.RolePermission;
 import com.xiliulou.electricity.entity.Tenant;
 import com.xiliulou.electricity.entity.User;
-import com.xiliulou.electricity.constant.NumberConstant;
-import com.xiliulou.electricity.entity.merchant.MerchantLevel;
 import com.xiliulou.electricity.mapper.TenantMapper;
 import com.xiliulou.electricity.mapper.asset.AssetWarehouseMapper;
 import com.xiliulou.electricity.query.TenantAddAndUpdateQuery;
 import com.xiliulou.electricity.query.TenantQuery;
-import com.xiliulou.electricity.service.merchant.MerchantAttrService;
-import com.xiliulou.electricity.service.merchant.MerchantLevelService;
 import com.xiliulou.electricity.query.asset.AssetWarehouseSaveOrUpdateQueryModel;
 import com.xiliulou.electricity.service.BatteryModelService;
 import com.xiliulou.electricity.service.ChannelActivityService;
@@ -41,12 +38,13 @@ import com.xiliulou.electricity.service.TenantNoteService;
 import com.xiliulou.electricity.service.TenantService;
 import com.xiliulou.electricity.service.UserRoleService;
 import com.xiliulou.electricity.service.UserService;
+import com.xiliulou.electricity.service.merchant.MerchantAttrService;
+import com.xiliulou.electricity.service.merchant.MerchantLevelService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.vo.TenantVO;
 import com.xiliulou.electricity.web.query.AdminUserQuery;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.RandomStringUtils;
-import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -162,6 +160,18 @@ public class TenantServiceImpl implements TenantService {
         storeRole.setName(CommonConstant.STORE_NAME);
         storeRole.setCode(CommonConstant.STORE_CODE);
 
+        // 商户角色，渠道角色，商户员工
+        Role merchantRole = new Role();
+        merchantRole.setName(CommonConstant.MERCHANT_NAME);
+        merchantRole.setCode(CommonConstant.MERCHANTL_CODE);
+        
+        Role channelRole = new Role();
+        channelRole.setName(CommonConstant.CHANNEL_NAME);
+        channelRole.setCode(CommonConstant.CHANNEL_CODE);
+        
+        Role merchantEmployeeRole = new Role();
+        merchantEmployeeRole.setName(CommonConstant.MERCHANT_EMPLOYEE_NAME);
+        merchantEmployeeRole.setCode(CommonConstant.MERCHANT_EMPLOYEE_CODE);
         //运维
         Role maintainRole = new Role();
         maintainRole.setName(CommonConstant.MAINTAIN_NAME);
@@ -171,6 +181,9 @@ public class TenantServiceImpl implements TenantService {
         roleList.add(operateRole);
         roleList.add(franchiseeRole);
         roleList.add(storeRole);
+        roleList.add(merchantRole);
+        roleList.add(channelRole);
+        roleList.add(merchantEmployeeRole);
         roleList.add(maintainRole);
 
         roleList.forEach(item -> {

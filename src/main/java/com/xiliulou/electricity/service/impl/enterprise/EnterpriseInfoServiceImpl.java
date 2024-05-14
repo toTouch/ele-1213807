@@ -584,8 +584,8 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
     
     @Slave
     @Override
-    public List<EnterpriseInfo> queryList() {
-        return enterpriseInfoMapper.selectList();
+    public List<EnterpriseInfo> queryList(Integer tenantId) {
+        return enterpriseInfoMapper.selectList(tenantId);
     }
     
     private int getRentDayNum(Long beginTime, Long endTime) {

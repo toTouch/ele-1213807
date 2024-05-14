@@ -190,11 +190,11 @@ public class JsonMerchantController extends BaseController {
      * @author maxiaodong
      */
     @GetMapping("/admin/merchant/repairEnterprise")
-    public R repairEnterprise() {
+    public R repairEnterprise(@RequestParam(value = "tenantId", required = false) Integer tenantId) {
         List<Long> enterpriseIds = new ArrayList<>();
         List<Long> merchantIds = new ArrayList<>();
-        
-        merchantService.repairEnterprise(enterpriseIds, merchantIds);
+    
+        merchantService.repairEnterprise(enterpriseIds, merchantIds, tenantId);
         
         merchantService.deleteCacheForRepairEnterprise(enterpriseIds, merchantIds);
         return R.ok();
