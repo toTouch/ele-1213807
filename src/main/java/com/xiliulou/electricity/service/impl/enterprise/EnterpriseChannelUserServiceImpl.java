@@ -1353,8 +1353,8 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
             log.error("channel user exit Check  user not exists, uid={}", request.getUid());
             return Triple.of(false, "120312", "骑手不存在");
         }
-        
-        if (!Objects.equals(tenantId, channelUser.getTenantId())) {
+    
+        if (Objects.isNull(channelUser.getTenantId()) || !Objects.equals(tenantId, channelUser.getTenantId().intValue())) {
             log.error("channel user admin exit Check  user not exists, tenant not equal, uid={}, tenantId={}", request.getUid(), tenantId);
             return Triple.of(false, "120312", "骑手不存在");
         }
