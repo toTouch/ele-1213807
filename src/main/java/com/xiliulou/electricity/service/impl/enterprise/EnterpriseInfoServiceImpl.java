@@ -733,6 +733,10 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
                 log.error("CLOUD BEAN RECHARGE ERROR!not found pay params,uid={}", uid);
                 return Triple.of(false, "100314", "未配置支付参数!");
             }
+    
+            //兼容商户小程序充值
+            electricityPayParams.setMerchantMinProAppId(electricityPayParams.getMerchantAppletId());
+            electricityPayParams.setMerchantAppletSecret(electricityPayParams.getMerchantAppletSecret());
             
             UserOauthBind userOauthBind = userOauthBindService.queryUserOauthBySysId(uid, TenantContextHolder.getTenantId());
             if (Objects.isNull(userOauthBind) || Objects.isNull(userOauthBind.getThirdId())) {

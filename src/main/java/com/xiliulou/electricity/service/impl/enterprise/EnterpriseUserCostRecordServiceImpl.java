@@ -295,7 +295,6 @@ public class EnterpriseUserCostRecordServiceImpl implements EnterpriseUserCostRe
     @Override
     public void asyncSaveUserCostRecordForBattery(Long uid, String orderId, Integer costType, Long createTime) {
         log.info("save user cost record flow for battery, uid = {}, order no = {}, cost type = {}", uid, orderId, costType);
-        Integer tenantId = TenantContextHolder.getTenantId();
         
         EnterpriseChannelUser enterpriseChannelUser = enterpriseChannelUserService.selectByUid(uid);
         if (Objects.isNull(enterpriseChannelUser)) {
@@ -328,7 +327,7 @@ public class EnterpriseUserCostRecordServiceImpl implements EnterpriseUserCostRe
         enterpriseUserCostRecordDTO.setPackageName(batteryMemberCard.getName());
         enterpriseUserCostRecordDTO.setCostType(costType);
         enterpriseUserCostRecordDTO.setType(EnterpriseUserCostRecordTypeEnum.USER_COST_TYPE_BATTERY.getCode());
-        enterpriseUserCostRecordDTO.setTenantId(tenantId.longValue());
+        enterpriseUserCostRecordDTO.setTenantId(enterpriseChannelUser.getTenantId());
         enterpriseUserCostRecordDTO.setCreateTime(createTime);
         enterpriseUserCostRecordDTO.setUpdateTime(System.currentTimeMillis());
         enterpriseUserCostRecordDTO.setTraceId(UUID.randomUUID().toString().replaceAll("-", ""));
