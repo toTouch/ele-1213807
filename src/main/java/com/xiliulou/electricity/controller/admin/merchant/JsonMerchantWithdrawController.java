@@ -11,6 +11,7 @@ import com.xiliulou.electricity.service.merchant.MerchantWithdrawApplicationServ
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -143,12 +144,18 @@ public class JsonMerchantWithdrawController extends BaseController {
     
     @PostMapping(value = "/admin/merchant/withdraw/review")
     public R reviewMerchantWithdrawApplication(@Validated @RequestBody ReviewWithdrawApplicationRequest reviewWithdrawApplicationRequest) {
-        return returnTripleResult(merchantWithdrawApplicationService.reviewMerchantWithdrawApplication(reviewWithdrawApplicationRequest));
+        // 临时处理，暂时对外不开放此功能
+        return returnTripleResult(Triple.of(false, "000000", "该功能需要微信商户开通“企业付款到零钱”功能，请确认开通后使用"));
+        
+        // return returnTripleResult(merchantWithdrawApplicationService.reviewMerchantWithdrawApplication(reviewWithdrawApplicationRequest));
     }
     
     @PostMapping(value = "/admin/merchant/withdraw/batchReview")
     public R batchReviewMerchantWithdrawApplication(@Validated @RequestBody BatchReviewWithdrawApplicationRequest batchReviewWithdrawApplicationRequest) {
-        return returnTripleResult(merchantWithdrawApplicationService.batchReviewMerchantWithdrawApplication(batchReviewWithdrawApplicationRequest));
+        // 临时处理，暂时对外不开放此功能
+        return returnTripleResult(Triple.of(false, "000000", "该功能需要微信商户开通“企业付款到零钱”功能，请确认开通后使用"));
+        
+        // return returnTripleResult(merchantWithdrawApplicationService.batchReviewMerchantWithdrawApplication(batchReviewWithdrawApplicationRequest));
     }
     
     /**
