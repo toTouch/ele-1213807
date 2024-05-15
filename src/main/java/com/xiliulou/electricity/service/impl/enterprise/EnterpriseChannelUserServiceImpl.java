@@ -1234,6 +1234,7 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
             if (Objects.nonNull(query.getPhone())) {
                 EnterpriseChannelUser channelUser = enterpriseChannelUserMapper.selectChannelUserByPhone(query.getPhone(), query.getUid());
                 if (Objects.nonNull(channelUser)) {
+                    log.error("add user by scan new check error! phone replete uid={}, phone={}", query.getUid(), query.getPhone());
                     return Triple.of(true, null, vo);
                 }
             }
@@ -1266,7 +1267,8 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
                 query.getEnterpriseId())) {
             vo.setOldEnterpriseId(channelUser.getEnterpriseId());
             // 判断两个加盟商是否一致
-            if (!Objects.equals(channelUser.getFranchiseeId(), channelUserEntity.getFranchiseeId())) {
+            if (!Objects.equals(channelUser.getFranchiseeId(), query.getFranchiseeId())) {
+                log.error("add user by scan new check error! franchiseeId different uid={}, franchiseeId={}", query.getUid(), channelUser.getFranchiseeId());
                 return Triple.of(false, "120301", "切换站点的加盟商必须一致");
             }
             
