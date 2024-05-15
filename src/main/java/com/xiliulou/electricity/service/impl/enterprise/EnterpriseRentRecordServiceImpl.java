@@ -128,10 +128,10 @@ public class EnterpriseRentRecordServiceImpl implements EnterpriseRentRecordServ
     }
     
     @Override
-    public int createEnterpriseRecordDetail() {
+    public int createEnterpriseRecordDetail(Integer tenantId) {
         log.info("SAVE RENT RECORD DETAIL START!");
         // 查询已经退电完成的记录
-        List<EnterpriseRentRecord> enterpriseRentRecords = queryListAlreadyReturn();
+        List<EnterpriseRentRecord> enterpriseRentRecords = queryListAlreadyReturn(tenantId);
         
         if (ObjectUtils.isEmpty(enterpriseRentRecords)) {
             log.info("SAVE RENT RECORD DETAIL WARN!not found enterpriseRentRecords");
@@ -202,8 +202,8 @@ public class EnterpriseRentRecordServiceImpl implements EnterpriseRentRecordServ
     }
     
     @Slave
-    private List<EnterpriseRentRecord> queryListAlreadyReturn() {
-        return enterpriseRentRecordMapper.selectListAlreadyReturn();
+    private List<EnterpriseRentRecord> queryListAlreadyReturn(Integer tenantId) {
+        return enterpriseRentRecordMapper.selectListAlreadyReturn(tenantId);
     }
     
     @Override

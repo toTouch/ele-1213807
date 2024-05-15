@@ -60,7 +60,7 @@ public interface MerchantService {
     
     List<Merchant> listAllByIds(Set<Long> merchantIdSet, Integer tenantId);
     
-    void repairEnterprise(List<Long> enterpriseIds, List<Long> merchantIds);
+    void repairEnterprise(List<Long> enterpriseIds, List<Long> merchantIds, Integer tenantId);
     
     void deleteCacheForRepairEnterprise(List<Long> enterpriseIds, List<Long> merchantIds);
 }

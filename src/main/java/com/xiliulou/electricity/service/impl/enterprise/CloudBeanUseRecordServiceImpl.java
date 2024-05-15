@@ -518,6 +518,7 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
         while (true) {
             List<UserBatteryMemberCardChannelExitVo> userBatteryMemberCardList = userBatteryMemberCardService.selectExpireExitList(offset, size);
             if (CollectionUtils.isEmpty(userBatteryMemberCardList)) {
+                log.info("RECYCLE TASK WARN! userBatteryMemberCardList is empty");
                 return;
             }
             

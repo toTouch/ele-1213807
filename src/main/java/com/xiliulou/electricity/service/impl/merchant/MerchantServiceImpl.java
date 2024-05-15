@@ -1444,11 +1444,11 @@ public class MerchantServiceImpl implements MerchantService {
     
     @Transactional
     @Override
-    public void repairEnterprise(List<Long> enterpriseIds, List<Long> merchantIds) {
+    public void repairEnterprise(List<Long> enterpriseIds, List<Long> merchantIds, Integer queryTenantId) {
         log.info("repair enterprise start");
         
         // 查询状态为开启的企业
-        List<EnterpriseInfo> enterpriseInfos = enterpriseInfoService.queryList();
+        List<EnterpriseInfo> enterpriseInfos = enterpriseInfoService.queryList(queryTenantId);
         if (ObjectUtils.isEmpty(enterpriseInfos)) {
             log.error("repair enterprise error, enterprise info is empty");
             return;

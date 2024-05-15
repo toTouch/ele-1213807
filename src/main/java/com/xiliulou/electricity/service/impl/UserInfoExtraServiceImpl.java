@@ -427,7 +427,7 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
             Long oldInviterUid = successInviterVO.getInviterUid();
             Long newInviterUid = merchant.getUid();
             Long channelEmployeeUid = merchant.getChannelEmployeeUid();
-            String oldInviterName = Optional.ofNullable(userInfoService.queryByUidFromCache(oldInviterUid)).orElse(new UserInfo()).getName();
+            String oldInviterName = Optional.ofNullable(userInfoService.queryByUidFromDb(oldInviterUid)).orElse(new UserInfo()).getName();
         
             if (Objects.equals(oldInviterUid, newInviterUid)) {
                 log.warn("Modify inviter fail! inviters can not be the same, uid={}, oldInviterUid={}, newInviterUid={}", uid, oldInviterUid, newInviterUid);

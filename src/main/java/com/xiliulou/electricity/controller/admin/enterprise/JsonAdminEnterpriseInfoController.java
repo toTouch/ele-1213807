@@ -136,9 +136,9 @@ public class JsonAdminEnterpriseInfoController extends BaseController {
      * 根据已经完成的租退电记录生成详情
      */
     @GetMapping("/admin/enterpriseInfo/createEnterpriseRecordDetail")
-    public R createEnterpriseRecordDetail() {
+    public R createEnterpriseRecordDetail(@RequestParam(value = "tenantId", required = false) Integer tenantId) {
         
-        return R.ok(enterpriseRentRecordService.createEnterpriseRecordDetail());
+        return R.ok(enterpriseRentRecordService.createEnterpriseRecordDetail(tenantId));
     }
 
     /**
