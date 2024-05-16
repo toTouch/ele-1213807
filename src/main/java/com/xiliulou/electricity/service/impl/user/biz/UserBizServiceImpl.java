@@ -5,6 +5,7 @@ import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.enums.PayStateEnum;
 import com.xiliulou.electricity.enums.RentalPackageTypeEnum;
+import com.xiliulou.electricity.enums.UserInfoActivitySourceEnum;
 import com.xiliulou.electricity.enums.YesNoEnum;
 import com.xiliulou.electricity.enums.basic.BasicEnum;
 import com.xiliulou.electricity.exception.BizException;
@@ -93,6 +94,9 @@ public class UserBizServiceImpl implements UserBizService {
     UserBatteryTypeService userBatteryTypeService;
     @Autowired
     private BatteryMemberCardService batteryMemberCardService;
+    
+    @Resource
+    private UserInfoExtraService userInfoExtraService;
 
     /**
      * 获取名下的总滞纳金（单电、单车、车电一体）
@@ -312,6 +316,10 @@ public class UserBizServiceImpl implements UserBizService {
 
                     //给邀请人增加邀请成功人数
                     shareActivityRecordService.addCountByUid(joinShareActivityRecord.getUid(), joinShareActivityRecord.getActivityId());
+                    
+                    //修改会员扩展表活动类型
+                    userInfoExtraService.updateByUid(UserInfoExtra.builder().uid(joinUid).activitySource(UserInfoActivitySourceEnum.SUCCESS_SHARE_ACTIVITY.getCode())
+                            .inviterUid(oldJoinShareActivityHistory.getUid()).build());
                 } else {
                     log.info("share activity, invite fail, activityId = {},memberCardId = {},memberCardIds = {}", joinShareActivityRecord.getActivityId(), packageId, JsonUtil.toJson(memberCardIds));
                 }
@@ -365,7 +373,10 @@ public class UserBizServiceImpl implements UserBizService {
 
                     //返现
                     userAmountService.handleAmount(joinShareMoneyActivityRecord.getUid(), joinShareMoneyActivityRecord.getJoinUid(), shareMoneyActivity.getMoney(), tenantId);
-
+    
+                    //修改会员扩展表活动类型
+                    userInfoExtraService.updateByUid(UserInfoExtra.builder().uid(joinUid).activitySource(UserInfoActivitySourceEnum.SUCCESS_SHARE_MONEY_ACTIVITY.getCode())
+                            .inviterUid(oldJoinShareMoneyActivityHistory.getUid()).build());
                 } else {
                     log.info("share money activity, invite fail, activityId = {},memberCardId = {}, memberCardIds = {}", joinShareMoneyActivityRecord.getActivityId(), packageId, JsonUtil.toJson(packageIds));
                 }
@@ -436,6 +447,10 @@ public class UserBizServiceImpl implements UserBizService {
                 updateChannelActivityHistory.setStatus(ChannelActivityHistory.STATUS_SUCCESS);
                 updateChannelActivityHistory.setUpdateTime(System.currentTimeMillis());
                 channelActivityHistoryService.update(updateChannelActivityHistory);
+    
+                //修改会员扩展表活动类型
+                userInfoExtraService.updateByUid(UserInfoExtra.builder().uid(joinUid).activitySource(UserInfoActivitySourceEnum.SUCCESS_CHANNEL_ACTIVITY.getCode())
+                        .inviterUid(channelActivityHistory.getInviteUid()).build());
             }
         }catch (Exception e){
             log.error("join channel activity process issue, uid = {}", joinUid, e);
@@ -446,7 +461,7 @@ public class UserBizServiceImpl implements UserBizService {
     @Override
     public boolean isBoundDeposit(Long uid) {
         UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
-    
+        
         // 判断用户是否存在已缴纳的押金（电、车或车电一体）
         return Objects.nonNull(userInfo) && (Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES) || Objects.equals(
                 userInfo.getCarDepositStatus(), UserInfo.CAR_DEPOSIT_STATUS_YES) || Objects.equals(userInfo.getCarBatteryDepositStatus(), YesNoEnum.YES.getCode()));

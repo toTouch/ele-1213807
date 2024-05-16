@@ -1,7 +1,5 @@
 package com.xiliulou.electricity.service.impl;
 
-import cn.hutool.core.collection.CollUtil;
-import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.RandomUtil;
 import com.alibaba.excel.EasyExcel;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -16,13 +14,13 @@ import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.service.asset.AssertPermissionService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
-import com.xiliulou.electricity.vo.CouponVO;
 import com.xiliulou.electricity.vo.ShareActivityRecordExcelVO;
 import com.xiliulou.electricity.vo.ShareActivityRecordVO;
 import com.xiliulou.pay.weixin.entity.SharePicture;
 import com.xiliulou.pay.weixin.shareUrl.GenerateShareUrlService;
 import com.xiliulou.security.bean.TokenUser;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.BeanUtils;
@@ -128,7 +126,7 @@ public class ShareActivityRecordServiceImpl implements ShareActivityRecordServic
      * 4、调起微信
      */
     @Override
-    public R generateSharePicture(Integer activityId, String page) {
+    public R generateSharePicture(Integer activityId, String page, String envVersion) {
 
         //用户
         TokenUser user = SecurityUtils.getUserInfo();
@@ -201,6 +199,9 @@ public class ShareActivityRecordServiceImpl implements ShareActivityRecordServic
         sharePicture.setScene(scene);
         sharePicture.setAppId(electricityPayParams.getMerchantMinProAppId());
         sharePicture.setAppSecret(electricityPayParams.getMerchantMinProAppSecert());
+        if (StringUtils.isNotBlank(envVersion)) {
+            sharePicture.setEnvVersion(envVersion);
+        }
         Pair<Boolean, Object> getShareUrlPair = generateShareUrlService.generateSharePicture(sharePicture);
 
         //分享失败

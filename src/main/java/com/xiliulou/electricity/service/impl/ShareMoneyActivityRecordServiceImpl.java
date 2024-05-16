@@ -18,6 +18,7 @@ import com.xiliulou.pay.weixin.entity.SharePicture;
 import com.xiliulou.pay.weixin.shareUrl.GenerateShareUrlService;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -104,7 +105,7 @@ public class ShareMoneyActivityRecordServiceImpl implements ShareMoneyActivityRe
 	 *
 	 */
 	@Override
-	public R generateSharePicture(Integer activityId, String page) {
+	public R generateSharePicture(Integer activityId, String page, String envVersion) {
 
 		//用户
 		TokenUser user = SecurityUtils.getUserInfo();
@@ -178,6 +179,9 @@ public class ShareMoneyActivityRecordServiceImpl implements ShareMoneyActivityRe
 		sharePicture.setScene(scene);
 		sharePicture.setAppId(electricityPayParams.getMerchantMinProAppId());
 		sharePicture.setAppSecret(electricityPayParams.getMerchantMinProAppSecert());
+		if (StringUtils.isNotBlank(envVersion)) {
+			sharePicture.setEnvVersion(envVersion);
+		}
 		Pair<Boolean, Object> getShareUrlPair = generateShareUrlService.generateSharePicture(sharePicture);
 
 		//分享失败

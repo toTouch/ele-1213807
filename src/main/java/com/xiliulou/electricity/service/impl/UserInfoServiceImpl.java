@@ -55,18 +55,19 @@ import com.xiliulou.electricity.entity.UserCar;
 import com.xiliulou.electricity.entity.UserCarDeposit;
 import com.xiliulou.electricity.entity.UserCarMemberCard;
 import com.xiliulou.electricity.entity.UserInfo;
+import com.xiliulou.electricity.entity.UserInfoExtra;
 import com.xiliulou.electricity.entity.UserOauthBind;
 import com.xiliulou.electricity.entity.car.CarRentalPackageMemberTermPo;
 import com.xiliulou.electricity.entity.car.CarRentalPackagePo;
 import com.xiliulou.electricity.entity.enterprise.EnterpriseChannelUser;
 import com.xiliulou.electricity.entity.merchant.Merchant;
-import com.xiliulou.electricity.entity.merchant.MerchantJoinRecord;
 import com.xiliulou.electricity.enums.BatteryMemberCardBusinessTypeEnum;
 import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.enums.MemberTermStatusEnum;
 import com.xiliulou.electricity.enums.OverdueType;
 import com.xiliulou.electricity.enums.RentalPackageTypeEnum;
 import com.xiliulou.electricity.enums.SignStatusEnum;
+import com.xiliulou.electricity.enums.UserInfoActivitySourceEnum;
 import com.xiliulou.electricity.enums.YesNoEnum;
 import com.xiliulou.electricity.enums.enterprise.RentBatteryOrderTypeEnum;
 import com.xiliulou.electricity.enums.enterprise.UserCostTypeEnum;
@@ -151,10 +152,6 @@ import com.xiliulou.electricity.vo.DetailsBatteryInfoVo;
 import com.xiliulou.electricity.vo.DetailsCarInfoVo;
 import com.xiliulou.electricity.vo.DetailsUserInfoVo;
 import com.xiliulou.electricity.vo.EleBatteryServiceFeeVO;
-import com.xiliulou.electricity.vo.FinalJoinChannelActivityHistoryVO;
-import com.xiliulou.electricity.vo.FinalJoinInvitationActivityHistoryVO;
-import com.xiliulou.electricity.vo.FinalJoinShareActivityHistoryVo;
-import com.xiliulou.electricity.vo.FinalJoinShareMoneyActivityHistoryVo;
 import com.xiliulou.electricity.vo.FreeDepositUserInfoVo;
 import com.xiliulou.electricity.vo.HomePageUserByWeekDayVo;
 import com.xiliulou.electricity.vo.InsuranceUserInfoVo;
@@ -203,7 +200,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -694,7 +690,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                 item.setFranchiseeName(Objects.isNull(franchisee) ? "" : franchisee.getName());
                 
                 //获取租车用户邀请人
-                item.setInviterUserName(queryFinalInviterUserName(item.getUid(), userInfoQuery.getTenantId()));
+                item.setInviterUserName(queryFinalInviterUserName(item.getUid()));
                 
             });
         }, threadPool).exceptionally(e -> {
@@ -2201,18 +2197,18 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         
         // 邀请人是否可被修改
         Integer inviterSource = MerchantInviterSourceEnum.MERCHANT_INVITER_SOURCE_USER_FOR_VO.getCode();
-        MerchantInviterVO merchantInviterVO = userInfoExtraService.querySuccessInviter(uid, tenantId);
+        MerchantInviterVO merchantInviterVO = userInfoExtraService.querySuccessInviter(uid);
         if (Objects.isNull(merchantInviterVO)) {
             vo.setCanModifyInviter(MerchantInviterCanModifyEnum.MERCHANT_INVITER_CAN_NOT_MODIFY.getCode());
         } else {
             vo.setCanModifyInviter(MerchantInviterCanModifyEnum.MERCHANT_INVITER_CAN_MODIFY.getCode());
-            if (Objects.equals(merchantInviterVO.getInviterSource(), MerchantInviterSourceEnum.MERCHANT_INVITER_SOURCE_MERCHANT.getCode())) {
+            if (Objects.equals(merchantInviterVO.getInviterSource(), UserInfoActivitySourceEnum.SUCCESS_MERCHANT_ACTIVITY.getCode())) {
                 inviterSource = MerchantInviterSourceEnum.MERCHANT_INVITER_SOURCE_MERCHANT_FOR_VO.getCode();
             }
         }
         
         // 邀请人名称
-        vo.setInviterName(queryFinalInviterUserName(uid, tenantId));
+        vo.setInviterName(queryFinalInviterUserName(uid));
         //邀请人来源
         vo.setInviterSource(inviterSource);
     
@@ -2941,7 +2937,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             excelVo.setBatteryDeposit(Objects.nonNull(userBatteryDeposit) ? userBatteryDeposit.getBatteryDeposit() : BigDecimal.valueOf(0));
             excelVo.setCardName(Objects.nonNull(electricityMemberCard) ? electricityMemberCard.getName() : "");
             excelVo.setNowElectricityBatterySn(userBatteryInfoVO.getNowElectricityBatterySn());
-            excelVo.setInviterUserName(queryFinalInviterUserName(userBatteryInfoVO.getUid(), userBatteryInfoVO.getTenantId()));
+            excelVo.setInviterUserName(queryFinalInviterUserName(userBatteryInfoVO.getUid()));
             
             if (Objects.nonNull(userBatteryInfoVO.getMemberCardExpireTime()) && !Objects.equals(userBatteryInfoVO.getMemberCardExpireTime(), NumberConstant.ZERO_L)) {
                 excelVo.setMemberCardExpireTime(simpleDateFormat.format(new Date(userBatteryInfoVO.getMemberCardExpireTime())));
@@ -3069,62 +3065,43 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         return result;
     }
     
-    //TODO 优化
     @Override
     @Slave
-    public String queryFinalInviterUserName(Long uid, Integer tenantId) {
-        String inviterName = null;
+    public String queryFinalInviterUserName(Long uid) {
+        String inviterName = StringUtils.EMPTY;
         
-        // 邀请返券
-        FinalJoinShareActivityHistoryVo finalJoinShareActivityHistoryVo = joinShareActivityHistoryService.queryFinalHistoryByJoinUid(uid, tenantId);
-        if (Objects.nonNull(finalJoinShareActivityHistoryVo)) {
-            inviterName = finalJoinShareActivityHistoryVo.getUserName();
-        }
-    
-        if (Objects.isNull(inviterName)) {
-            //邀请返现
-            FinalJoinShareMoneyActivityHistoryVo finalJoinShareMoneyActivityHistoryVo = joinShareMoneyActivityHistoryService.queryFinalHistoryByJoinUid(uid, tenantId);
-            if (Objects.nonNull(finalJoinShareMoneyActivityHistoryVo)) {
-                inviterName = finalJoinShareMoneyActivityHistoryVo.getUserName();
+        UserInfoExtra userInfoExtra = userInfoExtraService.queryByUidFromCache(uid);
+        if (Objects.nonNull(userInfoExtra)) {
+            Long inviterUid = userInfoExtra.getInviterUid();
+            Integer activitySource = userInfoExtra.getActivitySource();
+            
+            if (Objects.nonNull(inviterUid) && !Objects.equals(inviterUid, NumberConstant.ZERO_L) && Objects.nonNull(activitySource) && !Objects.equals(activitySource,
+                    NumberConstant.ZERO)) {
+                //商户活动的邀请人来源于user
+                if (!Objects.equals(activitySource, UserInfoActivitySourceEnum.SUCCESS_MERCHANT_ACTIVITY.getCode())) {
+                    Merchant merchant = merchantService.queryByUid(inviterUid);
+                    if (Objects.nonNull(merchant)) {
+                        inviterName = merchant.getName();
+                    }
+                } else {
+                    UserInfo userInfo = this.queryByUidFromCache(inviterUid);
+                    if (Objects.nonNull(userInfo)) {
+                        inviterName = userInfo.getName();
+                    }
+                }
             }
         }
-    
-        if (Objects.isNull(inviterName)) {
-            //渠道活动
-            FinalJoinChannelActivityHistoryVO finalJoinChannelActivityHistoryVO = channelActivityHistoryService.queryFinalHistoryByJoinUid(uid, tenantId);
-            if (Objects.nonNull(finalJoinChannelActivityHistoryVO)) {
-                inviterName = finalJoinChannelActivityHistoryVO.getUserName();
-            }
-        }
-    
-        if (Objects.isNull(inviterName)) {
-            //套餐返现
-            FinalJoinInvitationActivityHistoryVO finalJoinInvitationActivityHistoryVO = invitationActivityJoinHistoryService.queryFinalHistoryByJoinUid(uid, tenantId);
-            if (Objects.nonNull(finalJoinInvitationActivityHistoryVO)) {
-                inviterName = finalJoinInvitationActivityHistoryVO.getUserName();
-            }
-        }
-    
-        if (Objects.isNull(inviterName)) {
-            // 商户活动
-            MerchantJoinRecord merchantJoinRecord = merchantJoinRecordService.querySuccessRecordByJoinUid(uid, tenantId);
-            if (Objects.nonNull(merchantJoinRecord)) {
-                inviterName = Optional.ofNullable(merchantService.queryByIdFromCache(merchantJoinRecord.getMerchantId())).map(Merchant::getName).orElse("");
-            }
-        }
-    
+        
         return inviterName;
     }
     
     @Override
     @Slave
     public R queryEleList(UserInfoQuery userInfoQuery) {
-        
         List<UserEleInfoVO> userEleInfoVOS = userInfoMapper.queryEleList(userInfoQuery);
         if (ObjectUtil.isEmpty(userEleInfoVOS)) {
             return R.ok(Collections.emptyList());
         }
-        
         //获取用户电池套餐相关信息
         CompletableFuture<Void> queryUserBatteryMemberCardInfo = CompletableFuture.runAsync(() -> {
             userEleInfoVOS.forEach(item -> {
@@ -3153,11 +3130,11 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                     item.setUseCount(batteryMemberCard.getUseCount());
                 }
                 // 邀请人
-                item.setInviterUserName(queryFinalInviterUserName(item.getUid(), item.getTenantId()));
+                item.setInviterUserName(queryFinalInviterUserName(item.getUid()));
                 
                 // 设置企业信息
                 EnterpriseChannelUserVO enterpriseChannelUserVO = enterpriseChannelUserService.queryUserRelatedEnterprise(item.getUid());
-                if(Objects.nonNull(enterpriseChannelUserVO) && Objects.equals(enterpriseChannelUserVO.getRenewalStatus(), EnterpriseChannelUser.RENEWAL_CLOSE)){
+                if (Objects.nonNull(enterpriseChannelUserVO) && Objects.equals(enterpriseChannelUserVO.getRenewalStatus(), EnterpriseChannelUser.RENEWAL_CLOSE)) {
                     item.setEnterpriseName(enterpriseChannelUserVO.getEnterpriseName());
                 }
                 

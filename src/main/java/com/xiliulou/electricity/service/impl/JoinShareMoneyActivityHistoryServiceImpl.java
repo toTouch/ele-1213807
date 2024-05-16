@@ -297,8 +297,8 @@ public class JoinShareMoneyActivityHistoryServiceImpl implements JoinShareMoneyA
 	}
     
     @Override
-    public Integer removeById(Long id, Long updateTime) {
-	    return joinShareMoneyActivityHistoryMapper.removeById(id, updateTime);
+    public Integer removeByJoinUid(Long joinUid, Long updateTime, Integer tenantId) {
+	    return joinShareMoneyActivityHistoryMapper.removeByJoinUid(joinUid, updateTime, tenantId);
     }
     
     private String queryStatus(Integer status) {

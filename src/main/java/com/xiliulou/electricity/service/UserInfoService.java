@@ -189,8 +189,7 @@ public interface UserInfoService extends IService<UserInfo> {
      * 查询用户的邀请人名称
      *
      * @param uid
-     * @param tenantId
      * @return
      */
-    String queryFinalInviterUserName(Long uid, Integer tenantId);
+    String queryFinalInviterUserName(Long uid);
 }

@@ -6,13 +6,14 @@ import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.constant.TimeConstant;
 import com.xiliulou.electricity.entity.*;
+import com.xiliulou.electricity.enums.UserInfoActivitySourceEnum;
 import com.xiliulou.electricity.mapper.JoinShareMoneyActivityRecordMapper;
 import com.xiliulou.electricity.service.*;
+import com.xiliulou.electricity.service.merchant.MerchantJoinRecordService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -49,6 +50,12 @@ public class JoinShareMoneyActivityRecordServiceImpl implements JoinShareMoneyAc
 	UserBatteryMemberCardService userBatteryMemberCardService;
 	@Autowired
 	JoinShareActivityHistoryService joinShareActivityHistoryService;
+	
+	@Resource
+	private MerchantJoinRecordService merchantJoinRecordService;
+    
+    @Resource
+    private UserInfoExtraService userInfoExtraService;
 
 	/**
 	 * 修改数据
@@ -113,17 +120,17 @@ public class JoinShareMoneyActivityRecordServiceImpl implements JoinShareMoneyAc
 			}
 		}
 		log.info("start join share money activity, join uid = {}, inviter uid = {}, activity id = {}", user.getUid(), oldUser.getUid(), activityId);
-
-		//3.0版本修改为邀请返券和邀请返现活动只能参加一个，且只是针对新用户参加
-		//查询当前用户是否参与了邀请返现活动
-		List<JoinShareMoneyActivityHistory> joinShareMoneyActivityHistories = joinShareMoneyActivityHistoryService.queryUserJoinedActivity(user.getUid(), tenantId);
-		if(CollectionUtils.isNotEmpty(joinShareMoneyActivityHistories)){
-			return R.fail("110207", "已参加过邀请返现活动");
-		}
-		//检查是否有参与邀请返券的活动
-		List<JoinShareActivityHistory> joinShareActivityHistories = joinShareActivityHistoryService.queryUserJoinedActivity(user.getUid(), tenantId);
-		if(CollectionUtils.isNotEmpty(joinShareActivityHistories)){
-			return R.fail("110206", "已参加过邀请返券活动");
+        
+        UserInfoExtra userInfoExtra = userInfoExtraService.queryByUidFromCache(user.getUid());
+        if (Objects.isNull(userInfoExtra)) {
+            log.error("join share money activity ERROR! ERROR! Not found userInfoExtra, joinUid={}", user.getUid());
+            return R.fail("ELECTRICITY.0019", "未找到用户");
+        }
+		
+		// 530活动互斥判断
+        R canJoinActivity = merchantJoinRecordService.canJoinActivity(userInfo, userInfoExtra, activityId, UserInfoActivitySourceEnum.SUCCESS_SHARE_ACTIVITY.getCode());
+		if (!canJoinActivity.isSuccess()) {
+			return canJoinActivity;
 		}
 		
 		// 计算活动有效期

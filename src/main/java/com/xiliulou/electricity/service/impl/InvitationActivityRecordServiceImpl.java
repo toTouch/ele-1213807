@@ -5,6 +5,7 @@ import cn.hutool.core.util.RandomUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
@@ -14,6 +15,7 @@ import com.xiliulou.electricity.entity.car.CarRentalPackageOrderPo;
 import com.xiliulou.electricity.entity.car.CarRentalPackagePo;
 import com.xiliulou.electricity.enums.PackageTypeEnum;
 import com.xiliulou.electricity.enums.PayStateEnum;
+import com.xiliulou.electricity.enums.UserInfoActivitySourceEnum;
 import com.xiliulou.electricity.mapper.InvitationActivityRecordMapper;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageOrderQryModel;
 import com.xiliulou.electricity.query.InvitationActivityJoinHistoryQuery;
@@ -23,6 +25,7 @@ import com.xiliulou.electricity.request.activity.InvitationActivityAnalysisReque
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.service.car.CarRentalPackageOrderService;
 import com.xiliulou.electricity.service.car.CarRentalPackageService;
+import com.xiliulou.electricity.service.merchant.MerchantJoinRecordService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.AESUtils;
 import com.xiliulou.electricity.utils.DateUtils;
@@ -112,6 +115,12 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
     
     @Resource
     private CarRentalPackageService carRentalPackageService;
+    
+    @Resource
+    private MerchantJoinRecordService merchantJoinRecordService;
+    
+    @Resource
+    private UserInfoExtraService userInfoExtraService;
 
     @Override
     public List<InvitationActivityRecordVO> selectByPage(InvitationActivityRecordQuery query) {
@@ -896,10 +905,16 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
             return Triple.of(false, "ELECTRICITY.0024", "用户已被禁用");
         }
     
-        //3.0 判断用户是否购买套餐(包含换电, 租车, 车电一体套餐)
-        if (userInfo.getPayCount() > NumberConstant.ZERO) {
-            log.info("Exist package pay count for current user, uid = {}", userInfo.getUid());
-            return Triple.of(true, null, null);
+        UserInfoExtra userInfoExtra = userInfoExtraService.queryByUidFromCache(SecurityUtils.getUid());
+        if (Objects.isNull(userInfoExtra)) {
+            log.error("joinActivity  ERROR! Not found userInfoExtra, joinUid={}", SecurityUtils.getUid());
+            return Triple.of(false, "ELECTRICITY.0019", "未找到用户");
+        }
+    
+        // 530活动互斥判断
+        R canJoinActivity = merchantJoinRecordService.canJoinActivity(userInfo, userInfoExtra, null, null);
+        if (!canJoinActivity.isSuccess()) {
+            Triple.of(false, canJoinActivity.getCode(), canJoinActivity.getErrMsg());
         }
     
         String decrypt = null;
@@ -1035,7 +1050,7 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
 
         InvitationActivity invitationActivity = invitationActivityService.queryByIdFromCache(activityJoinHistory.getActivityId());
         if (Objects.isNull(invitationActivity)) {
-            log.error("INVITATION ACTIVITY ERROR!not found invitationActivity,uid={},activityId={}", userInfo.getUid(), invitationActivity.getId());
+            log.error("INVITATION ACTIVITY ERROR!not found invitationActivity,uid={},activityId={}", userInfo.getUid(), activityJoinHistory.getActivityId());
             return;
         }
 
@@ -1238,6 +1253,11 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
             
                 //给邀请人增加邀请成功人数及返现金额
                 this.addCountAndMoneyByUid(rewardAmount, activityJoinHistory.getRecordId());
+    
+                //修改会员扩展表活动类型
+                userInfoExtraService.updateByUid(
+                        UserInfoExtra.builder().uid(activityJoinHistory.getJoinUid()).activitySource(UserInfoActivitySourceEnum.SUCCESS_INVITATION_ACTIVITY.getCode())
+                                .inviterUid(activityJoinHistory.getUid()).build());
             } else {
                 //非首次购买需要判断 首次购买是否成功（同一个邀请人下 所有活动的首次）
                 if (!activityJoinHistoryStatusSet.contains(InvitationActivityJoinHistory.STATUS_SUCCESS)) {

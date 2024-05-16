@@ -14,6 +14,7 @@ import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.entity.car.CarRentalPackageOrderPo;
 import com.xiliulou.electricity.enums.ActivityEnum;
 import com.xiliulou.electricity.enums.PackageTypeEnum;
+import com.xiliulou.electricity.enums.UserInfoActivitySourceEnum;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.service.car.CarRentalPackageOrderService;
@@ -28,6 +29,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.Resource;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -84,6 +86,9 @@ public class ActivityServiceImpl implements ActivityService {
     private UserBizService userBizService;
     @Autowired
     RedisService redisService;
+    
+    @Resource
+    private UserInfoExtraService userInfoExtraService;
 
     /**
      * 用户是否有权限参加此活动
@@ -366,6 +371,10 @@ public class ActivityServiceImpl implements ActivityService {
 
                     //给邀请人增加邀请成功人数
                     shareActivityRecordService.addCountByUid(joinShareActivityRecord.getUid(), joinShareActivityRecord.getActivityId());
+    
+                    //修改会员扩展表活动类型
+                    userInfoExtraService.updateByUid(UserInfoExtra.builder().uid(uid).activitySource(UserInfoActivitySourceEnum.SUCCESS_SHARE_ACTIVITY.getCode())
+                            .inviterUid(oldJoinShareActivityHistory.getUid()).build());
                 }
             }
 
@@ -395,6 +404,10 @@ public class ActivityServiceImpl implements ActivityService {
 
                     //返现
                     userAmountService.handleAmount(joinShareMoneyActivityRecord.getUid(), joinShareMoneyActivityRecord.getJoinUid(), shareMoneyActivity.getMoney(), shareMoneyActivity.getTenantId());
+    
+                    //修改会员扩展表活动类型
+                    userInfoExtraService.updateByUid(UserInfoExtra.builder().uid(uid).activitySource(UserInfoActivitySourceEnum.SUCCESS_SHARE_MONEY_ACTIVITY.getCode())
+                            .inviterUid(oldJoinShareMoneyActivityHistory.getUid()).build());
                 }
 
             }
