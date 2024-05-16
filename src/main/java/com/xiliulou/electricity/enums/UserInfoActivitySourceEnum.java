@@ -16,7 +16,7 @@ public enum UserInfoActivitySourceEnum {
     SUCCESS_SHARE_MONEY_ACTIVITY(2, "邀请返现"),
     SUCCESS_INVITATION_ACTIVITY(3, "套餐返现"),
     SUCCESS_CHANNEL_ACTIVITY(4, "渠道邀请"),
-    SUCCESS_MERCHANT_ACTIVITY(5, "商户活动");
+    SUCCESS_MERCHANT_ACTIVITY(5, "商户邀请");
     
     private Integer code;
     

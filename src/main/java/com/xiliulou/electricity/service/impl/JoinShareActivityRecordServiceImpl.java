@@ -119,7 +119,7 @@ public class JoinShareActivityRecordServiceImpl implements JoinShareActivityReco
         }
     
         // 530活动互斥判断
-        R canJoinActivity = merchantJoinRecordService.canJoinActivity(userInfo, userInfoExtra, activityId,  UserInfoActivitySourceEnum.SUCCESS_SHARE_ACTIVITY.getCode());
+        R canJoinActivity = merchantJoinRecordService.canJoinActivity(userInfo, userInfoExtra, activityId, UserInfoActivitySourceEnum.SUCCESS_SHARE_ACTIVITY.getCode());
         if (!canJoinActivity.isSuccess()) {
             return canJoinActivity;
         }
