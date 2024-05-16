@@ -175,11 +175,13 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
                 sn = item.getSn().substring(6);
             }
             ElectricityBatteryVO electricityBatteryVO = electricityBatteryService.selectBatteryDetailInfoBySN(sn);
-            item.setPower(Objects.nonNull(electricityBatteryVO) ? electricityBatteryVO.getPower() : 0);
-            item.setChargeStatus(Objects.nonNull(electricityBatteryVO) ? electricityBatteryVO.getChargeStatus() : -1);
-            item.setBatteryA(Objects.nonNull(electricityBatteryVO) ? electricityBatteryVO.getBatteryChargeA() : 0);
-            item.setBatteryV(Objects.nonNull(electricityBatteryVO) ? electricityBatteryVO.getBatteryV() : 0);
-            item.setBatteryTemperature(Objects.nonNull(electricityBatteryVO) ? electricityBatteryVO.getBatteryTemperature() : "0.00");
+            if (Objects.nonNull(electricityBatteryVO)) {
+                item.setPower(Objects.nonNull(electricityBatteryVO.getPower()) ? electricityBatteryVO.getPower() : 0);
+                item.setChargeStatus(Objects.nonNull(electricityBatteryVO.getChargeStatus()) ? electricityBatteryVO.getChargeStatus() : -1);
+                item.setBatteryA(Objects.nonNull(electricityBatteryVO.getBatteryChargeA()) ? electricityBatteryVO.getBatteryChargeA() : 0);
+                item.setBatteryV(Objects.nonNull(electricityBatteryVO.getBatteryV()) ? electricityBatteryVO.getBatteryV() : 0);
+                item.setBatteryTemperature(Objects.nonNull(electricityBatteryVO.getBatteryTemperature()) ? electricityBatteryVO.getBatteryTemperature() : "0.00");
+            }
 
             //设置电池短型号
             if (Objects.nonNull(electricityBatteryVO) && Objects.nonNull(electricityBatteryVO.getModel())) {
@@ -300,7 +302,7 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
      */
     @Override
     public ElectricityCabinetBox selectByBatteryId(Long batteryId) {
-        return electricityCabinetBoxMapper.selectOne(new LambdaQueryWrapper<ElectricityCabinetBox>().eq(ElectricityCabinetBox::getBId, batteryId));
+        return electricityCabinetBoxMapper.selectEleBoxByBatteryId(batteryId);
     }
 
     @Override

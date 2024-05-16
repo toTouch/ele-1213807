@@ -1216,6 +1216,12 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             log.error("ENABLE MEMBER CARD ERROR! disable review userId={}", user.getUid());
             return R.fail("ELECTRICITY.100001", "用户停卡申请审核中");
         }
+    
+        if (Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_NOT_DISABLE) ||
+                Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE_REVIEW_REFUSE)) {
+            log.error("ENABLE MEMBER CARD ERROR! member card not disable userId={}", user.getUid());
+            return R.fail("ELECTRICITY.100001", "用户未停卡");
+        }
         
         if (Objects.equals(userBatteryMemberCard.getMemberCardId(), UserBatteryMemberCard.SEND_REMAINING_NUMBER)) {
             log.error("ENABLE MEMBER CARD ERROR! uid={} ", user.getUid());
