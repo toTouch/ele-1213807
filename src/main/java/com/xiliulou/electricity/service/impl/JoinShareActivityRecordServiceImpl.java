@@ -5,8 +5,10 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.constant.TimeConstant;
 import com.xiliulou.electricity.entity.*;
+import com.xiliulou.electricity.enums.UserInfoActivitySourceEnum;
 import com.xiliulou.electricity.mapper.JoinShareActivityRecordMapper;
 import com.xiliulou.electricity.service.*;
+import com.xiliulou.electricity.service.merchant.MerchantJoinRecordService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.AESUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
@@ -54,6 +56,12 @@ public class JoinShareActivityRecordServiceImpl implements JoinShareActivityReco
     @Autowired
     JoinShareMoneyActivityHistoryService joinShareMoneyActivityHistoryService;
     
+    @Resource
+    private MerchantJoinRecordService merchantJoinRecordService;
+    
+    @Resource
+    private UserInfoExtraService userInfoExtraService;
+    
     /**
      * 修改数据
      *
@@ -88,6 +96,12 @@ public class JoinShareActivityRecordServiceImpl implements JoinShareActivityReco
             return R.fail("ELECTRICITY.0024", "用户已被禁用");
         }
     
+        UserInfoExtra userInfoExtra = userInfoExtraService.queryByUidFromCache(user.getUid());
+        if (Objects.isNull(userInfoExtra)) {
+            log.error("joinActivity  ERROR! not found userInfoExtra,uid:{} ", user.getUid());
+            return R.fail("ELECTRICITY.0024", "未找到用户");
+        }
+    
         //查找活动
         ShareActivity shareActivity = shareActivityService.queryByStatus(activityId);
         if (Objects.isNull(shareActivity)) {
@@ -119,26 +133,10 @@ public class JoinShareActivityRecordServiceImpl implements JoinShareActivityReco
     
         log.info("start join share activity, join uid = {}, inviter uid = {}, activity id = {}", user.getUid(), oldUser.getUid(), activityId);
     
-        //2、别人点击链接登录
-    
-        //2.1 判断此人是否首次购买月卡,已购买月卡,则直接返回首页
-        //3.0扩展了活动范围，扩展到登录注册，实名认证及购买套餐。所以不需要再判断是否购买过套餐
-        /*if (Boolean.TRUE.equals(checkUserIsCard(userInfo))) {
-            return R.ok();
-        }*/
-    
-        //3.0修改为用户只能参加邀请返券或者邀请返现其中一种活动。如果已经参与了，则提示已参加对应活动。不允许参加多个活动。如果邀请活动未完成，但是已过期或者下架了。则还可以正常参加。
-        //1. 查看当前用户是否存在正在参加或者已成功参加的活动，如果是，则提示已参加过邀请活动。
-        //2. 若以上都没有参与过，则查看是否存在邀请返现的活动，判断规则和1一致。
-        List<JoinShareActivityHistory> joinShareActivityHistories = joinShareActivityHistoryService.queryUserJoinedActivity(user.getUid(), tenantId);
-        if (CollectionUtils.isNotEmpty(joinShareActivityHistories)) {
-            return R.fail("110206", "已参加过邀请返券活动");
-        }
-    
-        //查询当前用户是否参与了邀请返现活动
-        List<JoinShareMoneyActivityHistory> joinShareMoneyActivityHistories = joinShareMoneyActivityHistoryService.queryUserJoinedActivity(user.getUid(), tenantId);
-        if (CollectionUtils.isNotEmpty(joinShareMoneyActivityHistories)) {
-            return R.fail("110207", "已参加过邀请返现活动");
+        // 530活动互斥判断
+        R canJoinActivity = merchantJoinRecordService.canJoinActivity(userInfo, userInfoExtra, activityId,  UserInfoActivitySourceEnum.SUCCESS_SHARE_ACTIVITY.getCode());
+        if (!canJoinActivity.isSuccess()) {
+            return canJoinActivity;
         }
     
         // 计算活动有效期
