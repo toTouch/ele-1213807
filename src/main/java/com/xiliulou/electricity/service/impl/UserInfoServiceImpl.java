@@ -3071,6 +3071,9 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         String inviterName = StringUtils.EMPTY;
         
         UserInfoExtra userInfoExtra = userInfoExtraService.queryByUidFromCache(uid);
+        
+        log.info("userInfoExtra={}", userInfoExtra);
+        
         if (Objects.nonNull(userInfoExtra)) {
             Long inviterUid = userInfoExtra.getInviterUid();
             Integer activitySource = userInfoExtra.getActivitySource();
@@ -3091,6 +3094,8 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                 }
             }
         }
+        
+        log.info("inviterName={}", inviterName);
         
         return inviterName;
     }
