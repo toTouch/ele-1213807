@@ -162,7 +162,7 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
                 if (Objects.nonNull(joinRecord)) {
                     Long protectionTime = joinRecord.getProtectionTime();
                     //未过保护期
-                    if (!Objects.equals(protectionTime, NumberConstant.ZERO_L) && protectionTime <= System.currentTimeMillis()) {
+                    if (!Objects.equals(protectionTime, NumberConstant.ZERO_L) && protectionTime >= System.currentTimeMillis()) {
                         log.error("MERCHANT JOIN ERROR! in protectionTime, merchantId={}, inviterUid={}, joinUid={}", joinRecord.getMerchantId(), joinRecord.getInviterUid(),
                                 joinUid);
                         
