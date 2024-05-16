@@ -284,21 +284,21 @@
             </if>
         </where>
     </select>
-
+    
     <select id="queryActivityByJoinerAndInviter" resultMap="JoinShareActivityHistoryMap">
         <include refid="selectJoinShareActivityHistory"/>
         <where>
-            status in (1,2)
+            status = 1
             <if test="joinUid != null">
                 and join_uid = #{joinUid}
             </if>
-
+            
             <if test="inviterUid != null">
                 and uid = #{inviterUid}
             </if>
-
+            
             <if test="activityId != null">
-                and  activity_id = #{activityId}
+                and activity_id = #{activityId}
             </if>
         </where>
     </select>

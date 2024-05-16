@@ -14,7 +14,6 @@ import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -115,23 +114,20 @@ public class JoinShareMoneyActivityRecordServiceImpl implements JoinShareMoneyAc
 		if (Objects.equals(uid, user.getUid())) {
 			return R.ok();
 		}
-
-		//检查是否重复扫描同一邀请人的二维码
-		Pair<Boolean, String> sameInviterResult = joinShareMoneyActivityHistoryService.checkJoinedActivityFromSameInviter(user.getUid(), oldUser.getUid(), activityId.longValue());
-		if(sameInviterResult.getLeft()){
-			if(sameInviterResult.getRight().isEmpty()){
-				return R.ok();
-			}else{
-				return R.fail("110208", sameInviterResult.getRight());
-			}
-		}
-		log.info("start join share money activity, join uid = {}, inviter uid = {}, activity id = {}", user.getUid(), oldUser.getUid(), activityId);
 		
 		// 530活动互斥判断
-        R canJoinActivity = merchantJoinRecordService.canJoinActivity(userInfo, userInfoExtra, activityId, UserInfoActivitySourceEnum.SUCCESS_SHARE_MONEY_ACTIVITY.getCode());
+		R canJoinActivity = merchantJoinRecordService.canJoinActivity(userInfo, userInfoExtra, activityId, UserInfoActivitySourceEnum.SUCCESS_SHARE_MONEY_ACTIVITY.getCode());
 		if (!canJoinActivity.isSuccess()) {
 			return canJoinActivity;
 		}
+
+		//检查是否重复扫描同一邀请人的二维码
+		Boolean sameInviter = joinShareMoneyActivityHistoryService.checkJoinedActivityFromSameInviter(user.getUid(), oldUser.getUid(), activityId.longValue());
+		if(sameInviter){
+			return R.ok();
+		}
+		
+		log.info("start join share money activity, join uid = {}, inviter uid = {}, activity id = {}", user.getUid(), oldUser.getUid(), activityId);
 		
 		// 计算活动有效期
 		long expiredTime;

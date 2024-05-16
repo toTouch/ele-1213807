@@ -22,8 +22,6 @@ import com.xiliulou.electricity.vo.JoinShareMoneyActivityHistoryVO;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -275,19 +273,13 @@ public class JoinShareMoneyActivityHistoryServiceImpl implements JoinShareMoneyA
 	}
 
 	@Override
-	public Pair<Boolean, String> checkJoinedActivityFromSameInviter(Long joinUid, Long inviterUid, Long activityId) {
+	public Boolean checkJoinedActivityFromSameInviter(Long joinUid, Long inviterUid, Long activityId) {
 		List<JoinShareMoneyActivityHistory> joinShareMoneyActivityHistories = joinShareMoneyActivityHistoryMapper.queryJoinedActivityByJoinerAndInviter(joinUid, inviterUid, activityId);
-		if(CollectionUtils.isNotEmpty(joinShareMoneyActivityHistories)){
-			for(JoinShareMoneyActivityHistory joinShareMoneyActivityHistory : joinShareMoneyActivityHistories){
-				if(JoinShareMoneyActivityHistory.STATUS_SUCCESS.equals(joinShareMoneyActivityHistory.getStatus())){
-					return Pair.of(Boolean.TRUE, "已参与过邀请返现活动");
-				}
-			}
-			//如果没有参与成功。但是属于二次扫同一个人的码，则直接返回。
-			return Pair.of(Boolean.TRUE, StringUtils.EMPTY);
+		if (CollectionUtils.isEmpty(joinShareMoneyActivityHistories)) {
+			return Boolean.TRUE;
 		}
-
-		return Pair.of(Boolean.FALSE, null);
+		
+		return Boolean.FALSE;
 	}
 	
 	@Slave

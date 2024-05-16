@@ -291,7 +291,7 @@
     <select id="queryJoinedActivityByJoinerAndInviter" resultMap="JoinShareMoneyActivityHistoryMap">
         <include refid="selectJoinShareMoneyActivityHistory"/>
         <where>
-            status in (1,2)
+            status = 1
             <if test="joinUid != null">
                 and join_uid = #{joinUid}
             </if>

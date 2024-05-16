@@ -14,16 +14,13 @@ import com.xiliulou.electricity.utils.AESUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.Base64;
-import java.util.List;
 import java.util.Objects;
 
 /**
@@ -121,23 +118,19 @@ public class JoinShareActivityRecordServiceImpl implements JoinShareActivityReco
             return R.ok();
         }
     
-        //判断是否为重复扫邀请人的码
-        Pair<Boolean, String> sameInviterResult = joinShareActivityHistoryService.checkTheActivityFromSameInviter(user.getUid(), oldUser.getUid(), activityId.longValue());
-        if (sameInviterResult.getLeft()) {
-            if (sameInviterResult.getRight().isEmpty()) {
-                return R.ok();
-            } else {
-                return R.fail("110205", sameInviterResult.getRight());
-            }
-        }
-    
-        log.info("start join share activity, join uid = {}, inviter uid = {}, activity id = {}", user.getUid(), oldUser.getUid(), activityId);
-    
         // 530活动互斥判断
         R canJoinActivity = merchantJoinRecordService.canJoinActivity(userInfo, userInfoExtra, activityId,  UserInfoActivitySourceEnum.SUCCESS_SHARE_ACTIVITY.getCode());
         if (!canJoinActivity.isSuccess()) {
             return canJoinActivity;
         }
+    
+        //判断是否为重复扫邀请人的码
+        Boolean sameInviter = joinShareActivityHistoryService.checkTheActivityFromSameInviter(user.getUid(), oldUser.getUid(), activityId.longValue());
+        if (sameInviter) {
+            return R.ok();
+        }
+    
+        log.info("start join share activity, join uid = {}, inviter uid = {}, activity id = {}", user.getUid(), oldUser.getUid(), activityId);
     
         // 计算活动有效期
         long expiredTime;
