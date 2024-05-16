@@ -386,7 +386,7 @@ public class ChannelActivityHistoryServiceImpl implements ChannelActivityHistory
         // 530活动互斥判断
         UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
         UserInfoExtra userInfoExtra = userInfoExtraService.queryByUidFromCache(uid);
-        if (Objects.isNull(userInfo) && Objects.isNull(userInfoExtra)) {
+        if (Objects.nonNull(userInfo) && Objects.nonNull(userInfoExtra)) {
             R canJoinActivity = merchantJoinRecordService.canJoinActivity(userInfo, userInfoExtra, null, null);
             if (!canJoinActivity.isSuccess()) {
                 return canJoinActivity;
