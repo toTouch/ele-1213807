@@ -706,11 +706,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             electricityCabinetServerService.insertOrUpdateByElectricityCabinet(electricityCabinet, oldElectricityCabinet);
             
             // 修改柜机额外信息
-            Integer rows = updateElectricityCabinetExtra(electricityCabinetAddAndUpdate);
-            if (!Objects.equals(rows, EFFECT_ROWS_ZERO)) {
-                // 删除柜机额外信息redis
-                redisService.delete(CacheConstant.CACHE_ELECTRICITY_CABINET_EXTRA + electricityCabinet.getId());
-            }
+            updateElectricityCabinetExtra(electricityCabinetAddAndUpdate);
             
             // 增加场地费变更记录
             if (Objects.nonNull(finalMerchantPlaceFeeRecord)) {
@@ -1259,8 +1255,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         List<ElectricityCabinetBox> boxes = electricityCabinetBoxService.queryUsableBatteryCellNo(eid, null, fullyCharged);
         
         // 过滤掉电池名称不符合标准的
-        List<ElectricityCabinetBox> exchangeableList = boxes.stream().filter(item -> filterNotExchangeable(item))
-                .collect(Collectors.toList());
+        List<ElectricityCabinetBox> exchangeableList = boxes.stream().filter(item -> filterNotExchangeable(item)).collect(Collectors.toList());
         
         //可换电数量
         if (CollUtil.isNotEmpty(exchangeableList) && exchangeableList.size() >= 1) {
@@ -6041,18 +6036,14 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             update.setMinRetainBatteryCount(countQuery.getMinRetainBatteryCount());
             update.setMaxRetainBatteryCount(countQuery.getMaxRetainBatteryCount());
             update.setId(countQuery.getId());
-            
-            DbUtils.dbOperateSuccessThenHandleCache(this.updateElectricityCabinetExtra(update), i -> {
-                // 删除柜机额外信息redis
-                redisService.delete(CacheConstant.CACHE_ELECTRICITY_CABINET_EXTRA + countQuery.getId());
-            });
+            this.updateElectricityCabinetExtra(update);
         }
         
         
     }
     
     private void checkUpdateBatchElectricityCabinetExtra(ElectricityCabinetBatchEditRentReturnQuery rentReturnQuery, ElectricityCabinetBatchEditRentReturnCountQuery countQuery) {
-      
+        
         if (Objects.equals(rentReturnQuery.getMinIsLimit(), LIMIT) && Objects.isNull(countQuery.getMinRetainBatteryCount())) {
             throw new CustomBusinessException("限制！最保留电池数不能为空");
         }

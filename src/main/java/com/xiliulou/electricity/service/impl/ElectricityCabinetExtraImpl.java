@@ -71,11 +71,19 @@ public class ElectricityCabinetExtraImpl implements ElectricityCabinetExtraServi
     
     @Override
     public Integer updateMaxElectricityCabinetExtra(Integer maxRetainBatteryCount, Integer id) {
-        return electricityCabinetExtraMapper.updateMaxElectricityCabinetExtra(maxRetainBatteryCount, id, System.currentTimeMillis());
+        Integer updated = electricityCabinetExtraMapper.updateMaxElectricityCabinetExtra(maxRetainBatteryCount, id, System.currentTimeMillis());
+        DbUtils.dbOperateSuccessThenHandleCache(updated, i -> {
+            redisService.delete(CacheConstant.CACHE_ELECTRICITY_CABINET_EXTRA + id);
+        });
+        return updated;
     }
     
     @Override
     public Integer updateMinElectricityCabinetExtra(Integer minRetainBatteryCount, Integer id) {
-        return electricityCabinetExtraMapper.updateMinElectricityCabinetExtra(minRetainBatteryCount, id, System.currentTimeMillis());
+        Integer updated = electricityCabinetExtraMapper.updateMinElectricityCabinetExtra(minRetainBatteryCount, id, System.currentTimeMillis());
+        DbUtils.dbOperateSuccessThenHandleCache(updated, i -> {
+            redisService.delete(CacheConstant.CACHE_ELECTRICITY_CABINET_EXTRA + id);
+        });
+        return updated;
     }
 }
