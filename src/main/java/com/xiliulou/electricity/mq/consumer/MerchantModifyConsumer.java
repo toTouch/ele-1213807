@@ -163,6 +163,11 @@ public class MerchantModifyConsumer implements RocketMQListener<String> {
                     BigDecimal oldChannelerRebate =
                             Objects.equals(item.getOrderType(), MerchantConstant.MERCHANT_REBATE_TYPE_INVITATION) ? latestRebateConfig.getChannelerInvitation()
                                     : latestRebateConfig.getChannelerRenewal();
+    
+                    BigDecimal channelerRebate = newChannelerRebate.subtract(oldChannelerRebate);
+                    channelerRebate = channelerRebate.compareTo(BigDecimal.ZERO) < 0 ? channelerRebate : BigDecimal.ZERO;
+                    BigDecimal merchantRebate = newMerchantRebate.subtract(oldMerchantRebate);
+                    merchantRebate = merchantRebate.compareTo(BigDecimal.ZERO) < 0 ? merchantRebate : BigDecimal.ZERO;
                     
                     log.info("MERCHANT MODIFY CONSUMER INFO!orderId={}", item.getOrderId());
                     
@@ -183,8 +188,8 @@ public class MerchantModifyConsumer implements RocketMQListener<String> {
                     rebateRecord.setStatus(MerchantConstant.MERCHANT_REBATE_STATUS_NOT_SETTLE);
                     //渠道员取实时的
                     rebateRecord.setChanneler(merchant.getChannelEmployeeUid());
-                    rebateRecord.setChannelerRebate(newChannelerRebate.subtract(oldChannelerRebate));
-                    rebateRecord.setMerchantRebate(newMerchantRebate.subtract(oldMerchantRebate));
+                    rebateRecord.setChannelerRebate(channelerRebate);
+                    rebateRecord.setMerchantRebate(merchantRebate);
                     rebateRecord.setPlaceId(item.getPlaceId());
                     rebateRecord.setPlaceUid(item.getPlaceUid());
                     rebateRecord.setRebateTime(System.currentTimeMillis());
@@ -199,6 +204,12 @@ public class MerchantModifyConsumer implements RocketMQListener<String> {
     
                     if (Objects.isNull(channel) || Objects.equals(channel.getLockFlag(), User.USER_LOCK)) {
                         rebateRecord.setChannelerRebate(BigDecimal.ZERO);
+                    }
+    
+                    //若渠道员与商户的返利差额都为0  则不生成返利差额记录
+                    if (BigDecimal.ZERO.compareTo(channelerRebate) == 0 && BigDecimal.ZERO.compareTo(merchantRebate) == 0) {
+                        log.info("MERCHANT MODIFY CONSUMER INFO!balance is zero,uid={}", item.getUid());
+                        return;
                     }
                     
                     rebateRecordService.insert(rebateRecord);
