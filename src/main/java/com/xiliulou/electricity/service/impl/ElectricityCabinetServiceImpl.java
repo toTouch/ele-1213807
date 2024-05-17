@@ -1269,6 +1269,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         
         ElectricityCabinetExtra cabinetExtra = electricityCabinetExtraService.queryByEidFromCache(Long.valueOf(eid));
         if (Objects.isNull(cabinetExtra)) {
+            log.warn("electricityCabinetLabelHandler/cabinetExtra is null, eid is:{}", eid);
             return label;
         }
         // 租电
