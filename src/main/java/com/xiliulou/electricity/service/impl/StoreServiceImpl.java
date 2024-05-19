@@ -528,6 +528,7 @@ public class StoreServiceImpl implements StoreService {
         return R.ok(storeVOs.stream().sorted(Comparator.comparing(StoreVO::getDistance)).collect(Collectors.toList()));
     }
 
+    @Slave
     @Override
     public List<Store> queryByFranchiseeId(Long id) {
         return storeMapper.selectList(new LambdaQueryWrapper<Store>().eq(Store::getFranchiseeId, id).eq(Store::getDelFlag, Store.DEL_NORMAL));
@@ -539,21 +540,25 @@ public class StoreServiceImpl implements StoreService {
         return storeMapper.selectOne(new LambdaQueryWrapper<Store>().eq(Store::getUid, uid).eq(Store::getDelFlag, Store.DEL_NORMAL));
     }
 
+    @Slave
     @Override
     public R queryCount(StoreQuery storeQuery) {
         return R.ok(storeMapper.queryCount(storeQuery));
     }
 
+    @Slave
     @Override
     public R queryCountByFranchisee(StoreQuery storeQuery) {
         return R.ok(storeMapper.queryCount(storeQuery));
     }
 
+    @Slave
     @Override
     public List<Long> queryStoreIdsByProvinceIdOrCityId(Integer tenantId, Integer pid, Integer cid) {
         return storeMapper.queryStoreIdsByProvinceId(tenantId, pid, cid);
     }
 
+    @Slave
     @Override
     public List<MapVo> queryCountGroupByCityId(Integer tenantId, Integer pid) {
         return storeMapper.queryCountGroupByCityId(tenantId, pid);
@@ -588,6 +593,7 @@ public class StoreServiceImpl implements StoreService {
         return storeMapper.selectCount(new LambdaQueryWrapper<Store>().eq(Store::getFranchiseeId, id).eq(Store::getDelFlag, Store.DEL_NORMAL).last("limit 0,1"));
     }
 
+    @Slave
     @Override
     public Integer queryCountByFranchisee(Long uid) {
         Store store = queryByUid(uid);
