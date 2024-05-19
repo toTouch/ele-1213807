@@ -29,6 +29,8 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 public class DateUtils {
     
+    static DateTimeFormatter MILLS_FORMAT_DATE_V2 = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
+    
     static DateTimeFormatter MILLS_FORMAT_DATE = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
     
     static SimpleDateFormat simpleDateFormatYearAndMonth = new SimpleDateFormat("yyyy-MM-dd");
@@ -43,6 +45,17 @@ public class DateUtils {
      * 年月正则表达式：yyyy-MM
      */
     public static final String GREP_YEAR_MONTH = "^\\d{4}-\\d{2}$";
+    
+    /**
+     * 解析毫秒的时间字符串
+     *
+     * @param date
+     * @return
+     */
+    public static long parseMillsDateStrToTimestampV2(String date) {
+        LocalDateTime datetime = LocalDateTime.parse(date, MILLS_FORMAT_DATE_V2);
+        return datetime.toInstant(ZoneOffset.of("+8")).toEpochMilli();
+    }
     
     /**
      * 解析毫秒的时间字符串
