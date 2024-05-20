@@ -729,7 +729,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         }
         
         if (Objects.equals(electricityCabinetAddAndUpdate.getMinIsLimit(), LIMIT) && Objects.isNull(electricityCabinetAddAndUpdate.getMinRetainBatteryCount())) {
-            throw new CustomBusinessException("限制！最保留电池数不能为空");
+            throw new CustomBusinessException("限制！最小保留电池数不能为空");
         }
         
         if (Objects.equals(electricityCabinetAddAndUpdate.getMaxIsLimit(), LIMIT) && Objects.isNull(electricityCabinetAddAndUpdate.getMaxRetainBatteryCount())) {
