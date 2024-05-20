@@ -914,7 +914,7 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
         // 530活动互斥判断
         R canJoinActivity = merchantJoinRecordService.canJoinActivity(userInfo, userInfoExtra, null, null);
         if (!canJoinActivity.isSuccess()) {
-            Triple.of(false, canJoinActivity.getCode(), canJoinActivity.getErrMsg());
+            return Triple.of(false, canJoinActivity.getErrCode(), canJoinActivity.getErrMsg());
         }
     
         String decrypt = null;
