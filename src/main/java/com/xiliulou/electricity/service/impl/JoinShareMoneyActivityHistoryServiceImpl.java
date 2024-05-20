@@ -272,14 +272,15 @@ public class JoinShareMoneyActivityHistoryServiceImpl implements JoinShareMoneyA
 		return joinShareMoneyActivityHistoryMapper.queryUserJoinedShareMoneyActivity(joinUid, tenantId);
 	}
 
+	@Slave
 	@Override
 	public Boolean checkJoinedActivityFromSameInviter(Long joinUid, Long inviterUid, Long activityId) {
 		List<JoinShareMoneyActivityHistory> joinShareMoneyActivityHistories = joinShareMoneyActivityHistoryMapper.queryJoinedActivityByJoinerAndInviter(joinUid, inviterUid, activityId);
 		if (CollectionUtils.isEmpty(joinShareMoneyActivityHistories)) {
-			return Boolean.TRUE;
+			return Boolean.FALSE;
 		}
 		
-		return Boolean.FALSE;
+		return Boolean.TRUE;
 	}
 	
 	@Slave
