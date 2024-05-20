@@ -165,9 +165,9 @@ public class MerchantModifyConsumer implements RocketMQListener<String> {
                                     : latestRebateConfig.getChannelerRenewal();
     
                     BigDecimal channelerRebate = newChannelerRebate.subtract(oldChannelerRebate);
-                    channelerRebate = channelerRebate.compareTo(BigDecimal.ZERO) < 0 ? channelerRebate : BigDecimal.ZERO;
+                    channelerRebate = channelerRebate.compareTo(BigDecimal.ZERO) > 0 ? channelerRebate : BigDecimal.ZERO;
                     BigDecimal merchantRebate = newMerchantRebate.subtract(oldMerchantRebate);
-                    merchantRebate = merchantRebate.compareTo(BigDecimal.ZERO) < 0 ? merchantRebate : BigDecimal.ZERO;
+                    merchantRebate = merchantRebate.compareTo(BigDecimal.ZERO) > 0 ? merchantRebate : BigDecimal.ZERO;
                     
                     log.info("MERCHANT MODIFY CONSUMER INFO!orderId={}", item.getOrderId());
                     
