@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.web.R;
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mapper.ShareActivityRecordMapper;
@@ -89,6 +90,7 @@ public class ShareActivityRecordServiceImpl implements ShareActivityRecordServic
      * @return 实例对象
      */
     @Override
+    @Slave
     public ShareActivityRecord queryByIdFromDB(Long id) {
         return this.shareActivityRecordMapper.selectById(id);
     }
@@ -219,6 +221,7 @@ public class ShareActivityRecordServiceImpl implements ShareActivityRecordServic
     }
 
     @Override
+    @Slave
     public ShareActivityRecord queryByUid(Long uid, Integer activityId) {
         return shareActivityRecordMapper.selectOne(new LambdaQueryWrapper<ShareActivityRecord>()
                 .eq(ShareActivityRecord::getUid, uid).eq(ShareActivityRecord::getActivityId, activityId));
@@ -235,6 +238,7 @@ public class ShareActivityRecordServiceImpl implements ShareActivityRecordServic
     }
 
     @Override
+    @Slave
     public R queryList(ShareActivityRecordQuery shareActivityRecordQuery) {
         List<ShareActivityRecordVO> shareActivityRecordVOList = shareActivityRecordMapper.queryList(shareActivityRecordQuery);
         //获取用户领取的优惠券数量
@@ -282,6 +286,7 @@ public class ShareActivityRecordServiceImpl implements ShareActivityRecordServic
     }
 
     @Override
+    @Slave
     public R queryCount(ShareActivityRecordQuery shareActivityRecordQuery) {
         return R.ok(shareActivityRecordMapper.queryCount(shareActivityRecordQuery));
     }

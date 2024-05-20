@@ -111,6 +111,7 @@ public class JoinShareActivityHistoryServiceImpl implements JoinShareActivityHis
 	}
 
 	@Override
+	@Slave
 	public R userList(Integer activityId) {
 		//用户
 		TokenUser user = SecurityUtils.getUserInfo();
@@ -156,6 +157,7 @@ public class JoinShareActivityHistoryServiceImpl implements JoinShareActivityHis
 	}
 	
 	@Override
+	@Slave
 	public FinalJoinShareActivityHistoryVo queryFinalHistoryByJoinUid(Long uid, Integer tenantId) {
 		return joinShareActivityHistoryMapper.queryFinalHistoryByJoinUid(uid, tenantId);
 	}

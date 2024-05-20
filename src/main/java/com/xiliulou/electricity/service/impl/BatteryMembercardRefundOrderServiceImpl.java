@@ -205,6 +205,7 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
     }
     
     @Override
+    @Slave
     public List<BatteryMembercardRefundOrderVO> selectByPage(BatteryMembercardRefundOrderQuery query) {
         List<BatteryMembercardRefundOrder> list = this.batteryMembercardRefundOrderMapper.selectByPage(query);
         if (CollectionUtils.isEmpty(list)) {
@@ -229,6 +230,7 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
     }
     
     @Override
+    @Slave
     public Integer selectPageCount(BatteryMembercardRefundOrderQuery query) {
         return this.batteryMembercardRefundOrderMapper.selectPageCount(query);
     }

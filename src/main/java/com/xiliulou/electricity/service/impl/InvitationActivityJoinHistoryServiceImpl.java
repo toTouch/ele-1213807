@@ -141,6 +141,7 @@ public class InvitationActivityJoinHistoryServiceImpl implements InvitationActiv
     }
 
     @Override
+    @Slave
     public List<InvitationActivityJoinHistoryVO> selectByPage(InvitationActivityJoinHistoryQuery query) {
         Triple<List<Long>, List<Long>, Boolean> triple = assertPermissionService.assertPermissionByTriple(SecurityUtils.getUserInfo());
         if (!triple.getRight()){
@@ -165,6 +166,7 @@ public class InvitationActivityJoinHistoryServiceImpl implements InvitationActiv
     }
 
     @Override
+    @Slave
     public Integer selectByPageCount(InvitationActivityJoinHistoryQuery query) {
         Triple<List<Long>, List<Long>, Boolean> triple = assertPermissionService.assertPermissionByTriple(SecurityUtils.getUserInfo());
         if (!triple.getRight()){
@@ -188,11 +190,13 @@ public class InvitationActivityJoinHistoryServiceImpl implements InvitationActiv
     }
 
     @Override
+    @Slave
     public InvitationActivityJoinHistory selectByJoinUid(Long uid) {
         return invitationActivityJoinHistoryMapper.selectByJoinUid(uid);
     }
 
     @Override
+    @Slave
     public List<InvitationActivityJoinHistoryVO> selectUserByPage(InvitationActivityJoinHistoryQuery query) {
         List<InvitationActivityJoinHistoryVO> list = this.invitationActivityJoinHistoryMapper.selectListByUser(query);
         if (CollectionUtils.isEmpty(list)) {
@@ -217,6 +221,7 @@ public class InvitationActivityJoinHistoryServiceImpl implements InvitationActiv
     }
     
     @Override
+    @Slave
     public List<InvitationActivityJoinHistory> listByJoinUid(Long uid) {
         return invitationActivityJoinHistoryMapper.selectListByJoinUid(uid);
     }

@@ -1112,6 +1112,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         return R.ok();
     }
     
+    @Slave
     @Override
     public R queryUserAuthInfo(UserInfoQuery userInfoQuery) {
         List<UserInfo> userInfos = userInfoMapper.queryList(userInfoQuery);
@@ -1169,6 +1170,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         return R.ok(count);
     }
     
+    @Slave
     @Override
     public R queryAuthenticationCount(UserInfoQuery userInfoQuery) {
         return R.ok(userInfoMapper.queryAuthenticationCount(userInfoQuery));
@@ -1590,6 +1592,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         return this.updateByUid(userInfo);
     }
     
+    @Slave
     @Override
     public R queryUserBelongFranchisee(Long franchiseeId, Integer tenantId) {
         return R.ok(franchiseeService.queryByIdAndTenantId(franchiseeId, tenantId));
@@ -1652,6 +1655,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         return userTurnoverVo;
     }
     
+    @Slave
     @Override
     public UserInfo queryUserInfoByPhone(String phone, Integer tenantId) {
         return userInfoMapper.selectOne(
@@ -2120,6 +2124,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         return Triple.of(true, "", null);
     }
     
+    @Slave
     @Override
     public int selectCountByFranchiseeId(Long id) {
         return userInfoMapper.selectCount(new LambdaQueryWrapper<UserInfo>().eq(UserInfo::getFranchiseeId, id));
@@ -2132,21 +2137,25 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
      * @param tenantId
      * @return
      */
+    @Slave
     @Override
     public Integer isFranchiseeBindUser(Long id, Integer tenantId) {
         return userInfoMapper.isFranchiseeBindUser(id, tenantId);
     }
     
+    @Slave
     @Override
     public List<UserInfo> queryByIdNumber(String idNumber) {
         return userInfoMapper.queryByIdNumber(idNumber, TenantContextHolder.getTenantId());
     }
     
+    @Slave
     @Override
     public Integer verifyIdNumberExist(String idNumber, Integer tenantId) {
         return userInfoMapper.verifyIdNumberExist(idNumber, tenantId);
     }
     
+    @Slave
     @Override
     public R queryDetailsBasicInfo(Long uid) {
         UserInfo userInfo = this.queryByUidFromDb(uid);
@@ -2323,6 +2332,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         return R.ok();
     }
     
+    @Slave
     @Override
     public R queryDetailsBatteryInfo(Long uid) {
         UserInfo userInfo = this.queryByUidFromDb(uid);
@@ -2367,6 +2377,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         return R.ok(vo);
     }
     
+    @Slave
     @Override
     public R queryDetailsCarInfo(Long uid) {
         UserInfo userInfo = this.queryByUidFromCache(uid);
@@ -2677,6 +2688,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         return R.ok();
     }
     
+    @Slave
     @Override
     public R userInfoSearch(Long size, Long offset, String name) {
         List<UserInfoSearchVo> qeury = userInfoMapper.userInfoSearch(size, offset, name, TenantContextHolder.getTenantId());

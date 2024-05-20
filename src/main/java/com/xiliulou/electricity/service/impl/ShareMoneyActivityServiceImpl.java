@@ -8,6 +8,7 @@ import com.google.common.collect.Lists;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.core.web.R;
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
@@ -345,6 +346,7 @@ public class ShareMoneyActivityServiceImpl implements ShareMoneyActivityService 
     }
 
     @Override
+    @Slave
     public R queryList(ShareMoneyActivityQuery shareMoneyActivityQuery) {
         Pair<Boolean, List<Long>> pair = assertPermissionService.assertPermissionByPair(SecurityUtils.getUserInfo());
         if (!pair.getLeft()){
@@ -403,6 +405,7 @@ public class ShareMoneyActivityServiceImpl implements ShareMoneyActivityService 
     }
 
     @Override
+    @Slave
     public R queryCount(ShareMoneyActivityQuery shareMoneyActivityQuery) {
         Pair<Boolean, List<Long>> pair = assertPermissionService.assertPermissionByPair(SecurityUtils.getUserInfo());
         if (!pair.getLeft()){
@@ -436,6 +439,7 @@ public class ShareMoneyActivityServiceImpl implements ShareMoneyActivityService 
 
 
     @Override
+    @Slave
     public ShareMoneyActivity queryByStatus(Integer activityId) {
         return shareMoneyActivityMapper.selectOne(new LambdaQueryWrapper<ShareMoneyActivity>()
                 .eq(ShareMoneyActivity::getId, activityId).eq(ShareMoneyActivity::getStatus, ShareMoneyActivity.STATUS_ON));
@@ -617,6 +621,7 @@ public class ShareMoneyActivityServiceImpl implements ShareMoneyActivityService 
     }
 
     @Override
+    @Slave
     public R checkActivityStatusOn() {
         //租户
         Integer tenantId = TenantContextHolder.getTenantId();
@@ -632,6 +637,7 @@ public class ShareMoneyActivityServiceImpl implements ShareMoneyActivityService 
     }
     
     @Override
+    @Slave
     public Integer existShareMoneyActivity(Integer tenantId) {
         return shareMoneyActivityMapper.existShareMoneyActivity(tenantId);
     }

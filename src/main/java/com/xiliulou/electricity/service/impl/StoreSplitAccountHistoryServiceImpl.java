@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.service.impl;
 
 import com.xiliulou.core.web.R;
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.entity.StoreSplitAccountHistory;
 import com.xiliulou.electricity.mapper.StoreSplitAccountHistoryMapper;
 import com.xiliulou.electricity.query.StoreAccountQuery;
@@ -37,13 +38,15 @@ public class StoreSplitAccountHistoryServiceImpl implements StoreSplitAccountHis
         this.storeSplitAccountHistoryMapper.insert(storeSplitAccountHistory);
         return storeSplitAccountHistory;
     }
-
+    
+    @Slave
     @Override
     public R queryList(StoreAccountQuery storeAccountQuery) {
         List<StoreSplitAccountHistory> storeSplitAccountHistoryList=storeSplitAccountHistoryMapper.queryList(storeAccountQuery);
         return R.ok(storeSplitAccountHistoryList);
     }
 
+    @Slave
     @Override
     public R queryCount(StoreAccountQuery storeAccountQuery) {
         return R.ok(storeSplitAccountHistoryMapper.queryCount(storeAccountQuery));
