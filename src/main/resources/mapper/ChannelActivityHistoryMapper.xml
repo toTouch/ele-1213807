@@ -99,7 +99,7 @@
     </update>
     
     <update id="removeByJoinUid">
-        update t_channel_activity_history set del_flag = 1, update_time = #{updateTime} where join_uid = #{joinUid} and tenant_id = #{tenantId} and status = 2
+        update t_channel_activity_history set del_flag = 1, update_time = #{updateTime} where uid = #{joinUid} and tenant_id = #{tenantId} and status = 2
     </update>
     
     <!--通过主键删除-->
