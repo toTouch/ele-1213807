@@ -1378,7 +1378,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
         } else {
             // 限制；仓电池数低于限值，暂无法租借，请选择其他柜机。
             if (CollUtil.isNotEmpty(exchangeableList) && cabinetExtra.getMinRetainBatteryCount() > exchangeableList.size()) {
-                return Triple.of(false, "ELECTRICITY.0026", "仓电池数低于限值，暂无法租借，请选择其他柜机");
+                return Triple.of(false, "ELECTRICITY.0026", "在仓电池数低于限值，暂无法租借，请选择其他柜机");
             }
         }
         
