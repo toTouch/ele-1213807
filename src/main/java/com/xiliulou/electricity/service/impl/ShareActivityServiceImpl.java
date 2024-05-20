@@ -555,6 +555,7 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 				}
 				couponVO.setCoupon(coupon);
 			}
+			getCouponPackage(Long.valueOf(coupon.getId()), couponVO);
 			couponVOList.add(couponVO);
 		}
 
@@ -690,6 +691,8 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 			couponVO.setTriggerCount(shareActivityRule.getTriggerCount());
 			couponVO.setCoupon(coupon);
 			couponVO.setIsGet(CouponVO.IS_CANNOT_RECEIVE);
+			getCouponPackage(Long.valueOf(coupon.getId()), couponVO);
+			
 			couponVOList.add(couponVO);
 
 			shareActivityVO.setCouponCount(couponCount);
@@ -703,6 +706,7 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 			couponVO.setCoupon(coupon);
 			couponVO.setIsGet(CouponVO.IS_NOT_RECEIVE);
 			couponVO.setTriggerCount(shareActivityRule.getTriggerCount());
+			getCouponPackage(Long.valueOf(coupon.getId()), couponVO);
 
 			couponVOList.add(couponVO);
 		}
@@ -721,18 +725,14 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 		if (CollUtil.isEmpty(packages)){
 			return;
 		}
-		// 换电优惠券ids
-		List<Long> batteryPackageIds = packages.parallelStream().filter(e -> Objects.equals(e.getPackageType(), PackageTypeEnum.PACKAGE_TYPE_BATTERY.getCode()))
-				.map(CouponActivityPackage::getPackageId).collect(Collectors.toList());
 		
-		List<Long> carPackageIds = packages.parallelStream().filter(e -> Objects.equals(e.getPackageType(), PackageTypeEnum.PACKAGE_TYPE_CAR_RENTAL.getCode()))
-				.map(CouponActivityPackage::getPackageId).collect(Collectors.toList());
-		
-		List<Long> carWithBatteryPackageIds = packages.parallelStream().filter(e -> Objects.equals(e.getPackageType(), PackageTypeEnum.PACKAGE_TYPE_CAR_BATTERY.getCode()))
-				.map(CouponActivityPackage::getPackageId).collect(Collectors.toList());
 		
 		List<CouponMemberCardVO> batteryCouponCards = CollUtil.newArrayList();
 		CompletableFuture<Void> batteryCouponFuture = CompletableFuture.runAsync(() -> {
+			// 换电优惠券ids
+			List<Long> batteryPackageIds = packages.parallelStream().filter(e -> Objects.equals(e.getPackageType(), PackageTypeEnum.PACKAGE_TYPE_BATTERY.getCode()))
+					.map(CouponActivityPackage::getPackageId).collect(Collectors.toList());
+			
 			batteryPackageIds.forEach(t -> {
 				BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(t);
 				if (Objects.nonNull(batteryMemberCard)) {
@@ -746,6 +746,9 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 		
 		List<CouponMemberCardVO> carRentalCouponCards = CollUtil.newArrayList();
 		CompletableFuture<Void> carRentalCouponFuture = CompletableFuture.runAsync(() -> {
+			List<Long> carPackageIds = packages.parallelStream().filter(e -> Objects.equals(e.getPackageType(), PackageTypeEnum.PACKAGE_TYPE_CAR_RENTAL.getCode()))
+					.map(CouponActivityPackage::getPackageId).collect(Collectors.toList());
+			
 			carPackageIds.forEach(t -> {
 				CarRentalPackagePo carRentalPackagePO = carRentalPackageService.selectById(t);
 				if (Objects.nonNull(carRentalPackagePO)) {
@@ -759,6 +762,8 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 		
 		List<CouponMemberCardVO> carWithBatteryCouponCards = CollUtil.newArrayList();
 		CompletableFuture<Void> carWithBatteryCouponFuture = CompletableFuture.runAsync(() -> {
+			List<Long> carWithBatteryPackageIds = packages.parallelStream().filter(e -> Objects.equals(e.getPackageType(), PackageTypeEnum.PACKAGE_TYPE_CAR_BATTERY.getCode()))
+					.map(CouponActivityPackage::getPackageId).collect(Collectors.toList());
 			carWithBatteryPackageIds.forEach(t -> {
 				CarRentalPackagePo carRentalPackagePO = carRentalPackageService.selectById(t);
 				if (Objects.nonNull(carRentalPackagePO)) {
@@ -777,6 +782,9 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 			log.warn("getCouponPackage is error",e);
 		}
 		
+		couponVO.setBatteryCouponCards(batteryCouponCards);
+		couponVO.setCarRentalCouponCards(carRentalCouponCards);
+		couponVO.setCarWithBatteryCouponCards(carWithBatteryCouponCards);
 	}
 
 	@Override
