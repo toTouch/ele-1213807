@@ -817,7 +817,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
             
             //分配开门格挡
             //Pair<Boolean, Integer> usableEmptyCellNo = electricityCabinetService.findUsableEmptyCellNoV2(electricityCabinet.getId(), electricityCabinet.getVersion());
-            Pair<Boolean, Integer> usableEmptyCellNo = findUsableEmptyCellNo(electricityCabinet.getId(), electricityCabinet.getVersion());
+            Pair<Boolean, Integer> usableEmptyCellNo = findUsableEmptyCellNo(electricityCabinet.getId(),electricityCabinet.getFullyCharged(), electricityCabinet.getVersion());
             
             if (Objects.isNull(usableEmptyCellNo.getRight())) {
                 log.error("RETURNBATTERY ERROR! electricityCabinet not empty cell,electricityCabinetId={} ", electricityCabinetId);
@@ -895,14 +895,17 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
         return R.ok();
     }
     
-    private Pair<Boolean, Integer> findUsableEmptyCellNo(Integer eid, String version){
+    private Pair<Boolean, Integer> findUsableEmptyCellNo(Integer eid,Double fullyCharged,String version){
         //旧版本仍走旧分配逻辑
         if (StringUtils.isNotBlank(version) && VersionUtil.compareVersion(ELE_CABINET_VERSION, version) > 0) {
             return electricityCabinetService.findUsableEmptyCellNo(eid);
         }
         
         Integer cellNo = null;
-        List<ElectricityCabinetBox> emptyCellList = electricityCabinetBoxService.listUsableEmptyCell(eid);
+        List<ElectricityCabinetBox> emptyCellList = electricityCabinetBoxService.queryUsableBatteryCellNo(eid,null, fullyCharged);
+        
+        // 过滤掉电池名称不符合标准的
+        List<ElectricityCabinetBox> exchangeableList = emptyCellList.stream().filter(item -> filterNotExchangeable(item)).collect(Collectors.toList());
         
         ElectricityCabinetExtra cabinetExtra = electricityCabinetExtraService.queryByEidFromCache(Long.valueOf(eid));
         if (Objects.isNull(cabinetExtra)) {
@@ -910,12 +913,12 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
         }
         if (Objects.isNull(cabinetExtra.getMaxRetainBatteryCount())) {
             // 不限制
-            if (CollUtil.isEmpty(emptyCellList)) {
+            if (CollUtil.isEmpty(exchangeableList)) {
                 throw new BizException("ELECTRICITY.0026", "当前无空余格挡可供退电，请联系客服！");
             }
         } else {
             // 限制
-            if (CollUtil.isNotEmpty(emptyCellList) && emptyCellList.size() > cabinetExtra.getMaxRetainBatteryCount()) {
+            if (CollUtil.isNotEmpty(exchangeableList) && exchangeableList.size() > cabinetExtra.getMaxRetainBatteryCount()) {
                 throw new BizException("ELECTRICITY.0026", "在仓电池数高于限值，暂无法退电，请选择其他柜机!");
             }
         }
@@ -937,6 +940,11 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
         
         cellNo = Integer.parseInt(emptyCellList.get(ThreadLocalRandom.current().nextInt(emptyCellList.size())).getCellNo());
         return Pair.of(true, cellNo);
+    }
+    
+    private boolean filterNotExchangeable(ElectricityCabinetBox electricityCabinetBox) {
+        return Objects.nonNull(electricityCabinetBox.getPower()) && StringUtils.isNotBlank(electricityCabinetBox.getSn()) && !StringUtils.startsWithIgnoreCase(
+                electricityCabinetBox.getSn(), "UNKNOW");
     }
     
     private ElectricityBattery selectLastExchangeOrderBattery(UserInfo userInfo) {
