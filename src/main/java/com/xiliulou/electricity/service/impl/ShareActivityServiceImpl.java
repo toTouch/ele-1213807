@@ -15,6 +15,7 @@ import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.constant.TimeConstant;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.Coupon;
+import com.xiliulou.electricity.entity.CouponActivityPackage;
 import com.xiliulou.electricity.entity.JoinShareActivityHistory;
 import com.xiliulou.electricity.entity.JoinShareActivityRecord;
 import com.xiliulou.electricity.entity.ShareActivity;
@@ -54,6 +55,7 @@ import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.BatteryMemberCardVO;
+import com.xiliulou.electricity.vo.CouponMemberCardVO;
 import com.xiliulou.electricity.vo.CouponVO;
 import com.xiliulou.electricity.vo.ShareActivityVO;
 import com.xiliulou.electricity.vo.activity.ActivityPackageVO;
@@ -77,7 +79,9 @@ import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
+import java.util.stream.Collectors;
 
 /**
  * 活动表(TActivity)表服务实现类
@@ -152,8 +156,14 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 	
 	@Autowired
 	private AssertPermissionService assertPermissionService;
-
-
+	
+	@Autowired
+	private CouponActivityPackageService couponActivityPackageService;
+	
+	
+	ExecutorService couponMemberExecutorService = XllThreadPoolExecutors.newFixedThreadPool("getCouponMemberExecutor", 3, "GET_COUPON_MEMBER_EXECUTOR");
+	
+	
 	/**
 	 * 通过ID查询单条数据从缓存
 	 *
@@ -545,6 +555,7 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 				}
 				couponVO.setCoupon(coupon);
 			}
+			getCouponPackage(Long.valueOf(coupon.getId()), couponVO);
 			couponVOList.add(couponVO);
 		}
 
@@ -680,6 +691,8 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 			couponVO.setTriggerCount(shareActivityRule.getTriggerCount());
 			couponVO.setCoupon(coupon);
 			couponVO.setIsGet(CouponVO.IS_CANNOT_RECEIVE);
+			getCouponPackage(Long.valueOf(coupon.getId()), couponVO);
+			
 			couponVOList.add(couponVO);
 
 			shareActivityVO.setCouponCount(couponCount);
@@ -693,12 +706,85 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 			couponVO.setCoupon(coupon);
 			couponVO.setIsGet(CouponVO.IS_NOT_RECEIVE);
 			couponVO.setTriggerCount(shareActivityRule.getTriggerCount());
+			getCouponPackage(Long.valueOf(coupon.getId()), couponVO);
 
 			couponVOList.add(couponVO);
 		}
+		// couponVOList
 
 		shareActivityVO.setCouponCount(couponCount);
 		shareActivityVO.setCouponVOList(couponVOList);
+	}
+	
+	private void getCouponPackage(Long couponId,CouponVO couponVO){
+		if (Objects.isNull(couponId)){
+			return;
+		}
+		
+		List<CouponActivityPackage> packages = couponActivityPackageService.findActivityPackagesByCouponId(couponId);
+		if (CollUtil.isEmpty(packages)){
+			return;
+		}
+		
+		
+		List<CouponMemberCardVO> batteryCouponCards = CollUtil.newArrayList();
+		CompletableFuture<Void> batteryCouponFuture = CompletableFuture.runAsync(() -> {
+			// 换电优惠券ids
+			List<Long> batteryPackageIds = packages.parallelStream().filter(e -> Objects.equals(e.getPackageType(), PackageTypeEnum.PACKAGE_TYPE_BATTERY.getCode()))
+					.map(CouponActivityPackage::getPackageId).collect(Collectors.toList());
+			
+			batteryPackageIds.forEach(t -> {
+				BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(t);
+				if (Objects.nonNull(batteryMemberCard)) {
+					batteryCouponCards.add(new CouponMemberCardVO(batteryMemberCard.getId(), batteryMemberCard.getName()));
+				}
+			});
+		}, couponMemberExecutorService).exceptionally(e -> {
+			log.error("batteryCouponFuture is error ", e);
+			return null;
+		});
+		
+		List<CouponMemberCardVO> carRentalCouponCards = CollUtil.newArrayList();
+		CompletableFuture<Void> carRentalCouponFuture = CompletableFuture.runAsync(() -> {
+			List<Long> carPackageIds = packages.parallelStream().filter(e -> Objects.equals(e.getPackageType(), PackageTypeEnum.PACKAGE_TYPE_CAR_RENTAL.getCode()))
+					.map(CouponActivityPackage::getPackageId).collect(Collectors.toList());
+			
+			carPackageIds.forEach(t -> {
+				CarRentalPackagePo carRentalPackagePO = carRentalPackageService.selectById(t);
+				if (Objects.nonNull(carRentalPackagePO)) {
+					carRentalCouponCards.add(new CouponMemberCardVO(carRentalPackagePO.getId(), carRentalPackagePO.getName()));
+				}
+			});
+		}, couponMemberExecutorService).exceptionally(e -> {
+			log.error("carRentalCouponFuture is error ", e);
+			return null;
+		});
+		
+		List<CouponMemberCardVO> carWithBatteryCouponCards = CollUtil.newArrayList();
+		CompletableFuture<Void> carWithBatteryCouponFuture = CompletableFuture.runAsync(() -> {
+			List<Long> carWithBatteryPackageIds = packages.parallelStream().filter(e -> Objects.equals(e.getPackageType(), PackageTypeEnum.PACKAGE_TYPE_CAR_BATTERY.getCode()))
+					.map(CouponActivityPackage::getPackageId).collect(Collectors.toList());
+			carWithBatteryPackageIds.forEach(t -> {
+				CarRentalPackagePo carRentalPackagePO = carRentalPackageService.selectById(t);
+				if (Objects.nonNull(carRentalPackagePO)) {
+					carWithBatteryCouponCards.add(new CouponMemberCardVO(carRentalPackagePO.getId(), carRentalPackagePO.getName()));
+				}
+			});
+		}, couponMemberExecutorService).exceptionally(e -> {
+			log.error("carWithBatteryCouponFuture is error ", e);
+			return null;
+		});
+		
+		
+		try {
+			CompletableFuture.allOf(batteryCouponFuture, carRentalCouponFuture, carWithBatteryCouponFuture).get();
+		}catch (Exception e){
+			log.warn("getCouponPackage is error",e);
+		}
+		
+		couponVO.setBatteryCouponCards(batteryCouponCards);
+		couponVO.setCarRentalCouponCards(carRentalCouponCards);
+		couponVO.setCarWithBatteryCouponCards(carWithBatteryCouponCards);
 	}
 
 	@Override
