@@ -588,6 +588,7 @@ public class StoreServiceImpl implements StoreService {
         }
     }
 
+    @Slave
     @Override
     public Integer queryCountByFranchiseeId(Long id) {
         return storeMapper.selectCount(new LambdaQueryWrapper<Store>().eq(Store::getFranchiseeId, id).eq(Store::getDelFlag, Store.DEL_NORMAL).last("limit 0,1"));
@@ -617,11 +618,13 @@ public class StoreServiceImpl implements StoreService {
         });
     }
 
+    @Slave
     @Override
     public List<MapVo> queryCountGroupByProvinceId(Integer tenantId) {
         return storeMapper.queryCountGroupByProvinceId(tenantId);
     }
 
+    @Slave
     @Override
     public List<Store> selectByFranchiseeId(Long id) {
         return storeMapper.selectList(new LambdaQueryWrapper<Store>().eq(Store::getFranchiseeId, id).eq(Store::getDelFlag, Store.DEL_NORMAL));
@@ -633,16 +636,19 @@ public class StoreServiceImpl implements StoreService {
         return storeMapper.queryCount(storeQuery);
     }
 
+    @Slave
     @Override
     public List<Long> queryStoreIdByFranchiseeId(List<Long> id) {
         return storeMapper.queryStoreIdByFranchiseeId(id);
     }
 
+    @Slave
     @Override
     public List<Store> selectByFranchiseeIds(List<Long> franchiseeIds) {
         return storeMapper.selectList(new LambdaQueryWrapper<Store>().in(Store::getFranchiseeId, franchiseeIds).eq(Store::getDelFlag, Store.DEL_NORMAL));
     }
 
+    @Slave
     @Override
     public Triple<Boolean, String, Object> selectListByQuery(StoreQuery storeQuery) {
         List<Store> stores = storeMapper.selectListByQuery(storeQuery);
@@ -664,6 +670,7 @@ public class StoreServiceImpl implements StoreService {
      * @param tenantId
      * @return
      */
+    @Slave
     @Override
     public Integer isStoreBindFranchinsee(Long id, Integer tenantId) {
         return storeMapper.isStoreBindFranchinsee(id, tenantId);
@@ -685,6 +692,7 @@ public class StoreServiceImpl implements StoreService {
         return this.queryByIdFromCache(electricityCabinet.getStoreId());
     }
 
+    @Slave
     @Override
     public List<StoreVO> selectListByDistance(StoreQuery storeQuery) {
         List<StoreVO> list = storeMapper.selectListByDistance(storeQuery);
@@ -742,6 +750,7 @@ public class StoreServiceImpl implements StoreService {
         return storeVO;
     }
     
+    @Slave
     @Override
     public R storeSearch(Long size, Long offset, Long franchiseeId, String name , Integer tenantId,List<Long> storeIds,List<Long> franchiseeIds) {
         List<SearchVo> voList = storeMapper.storeSearch(size, offset, franchiseeId, name , tenantId,storeIds,franchiseeIds);
