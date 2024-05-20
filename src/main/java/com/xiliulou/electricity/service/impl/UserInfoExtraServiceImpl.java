@@ -425,13 +425,13 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
                 userInfoExtra.setPlaceId(NumberConstant.ZERO_L);
                 userInfoExtra.setPlaceUid(NumberConstant.ZERO_L);
                 userInfoExtra.setUpdateTime(System.currentTimeMillis());
-                userInfoExtra.setActivitySource(inviterSource);
+                userInfoExtra.setActivitySource(UserInfoActivitySourceEnum.SUCCESS_MERCHANT_ACTIVITY.getCode());
                 userInfoExtra.setInviterUid(newInviterUid);
         
                 this.updateByUid(userInfoExtra);
             } else {
                 UserInfoExtra insertUserInfoExtra = UserInfoExtra.builder().merchantId(merchantId).channelEmployeeUid(merchant.getChannelEmployeeUid()).uid(uid).tenantId(tenantId)
-                        .delFlag(MerchantConstant.DEL_NORMAL).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).activitySource(inviterSource)
+                        .delFlag(MerchantConstant.DEL_NORMAL).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).activitySource(UserInfoActivitySourceEnum.SUCCESS_MERCHANT_ACTIVITY.getCode())
                         .inviterUid(newInviterUid).build();
         
                 this.insert(insertUserInfoExtra);
