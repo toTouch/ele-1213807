@@ -1,7 +1,9 @@
 package com.xiliulou.electricity.mapper;
 
+import com.xiliulou.electricity.bo.supper.GrantRoleBO;
 import com.xiliulou.electricity.entity.RolePermission;
 
+import java.util.Collection;
 import java.util.List;
 
 import org.apache.ibatis.annotations.Delete;
@@ -18,4 +20,8 @@ public interface RolePermissionMapper extends BaseMapper<RolePermission> {
 
 	@Delete("delete from t_role_permission where role_id = #{rid}")
 	int deleteByRoleId(@Param("rid")Long roleId);
+    
+    List<GrantRoleBO> selectRepeatGrant(@Param("roleIds") List<Integer> roleIds);
+	
+	int batchInsert(@Param("list") Collection<RolePermission> rolePermissions);
 }

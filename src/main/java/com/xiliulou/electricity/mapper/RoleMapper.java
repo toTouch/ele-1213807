@@ -1,6 +1,8 @@
 package com.xiliulou.electricity.mapper;
 
 import com.xiliulou.electricity.entity.Role;
+
+import java.util.Collection;
 import java.util.List;
 import org.apache.ibatis.annotations.Param;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
@@ -39,4 +41,6 @@ public interface RoleMapper  extends BaseMapper<Role>{
 	Role queryByName(@Param("name") String name,@Param("tenantId") Integer tenantId);
 	
 	Integer deleteById(@Param("id") Long id,@Param("tenantId") Integer tenantId);
+	
+	List<Integer> selectIdsByNamesAndTenantIds(@Param("names") Collection<String> names,@Param("tenantIds") Collection<Integer> tenantIds);
 }

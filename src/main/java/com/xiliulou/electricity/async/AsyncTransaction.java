@@ -79,19 +79,24 @@ public class AsyncTransaction {
             return CompletableFuture.failedFuture(new NullPointerException("function is null"));
         }
         final ThreadLocal<TransactionStatus> transactionStatusThreadLocal = new InheritableThreadLocal<>();
+        final AtomicBoolean isCommit = new AtomicBoolean(false);
         return CompletableFuture.supplyAsync(() -> {
             TransactionStatus begin = begin();
             transactionStatusThreadLocal.set(begin);
             R apply = function.apply(params);
             commit(begin);
+            isCommit.set(true);
             return apply;
         }, executor).exceptionally(throwable -> {
             TransactionStatus transactionStatus = transactionStatusThreadLocal.get();
-            rollback(transactionStatus);
-            log.error("The transaction in this thread will be rolled back due to an exception in the asynchronous thread:", throwable);
+            if (transactionStatus != null) {
+                rollback(transactionStatus);
+                isCommit.set(false);
+            }
+            log.error("The transaction in this thread will be rolled back due to an exception in the asynchronous thread: ", throwable);
             return null;
         }).thenApply(r -> {
-            if (r != null && afterTransactionalCommit != null) {
+            if (isCommit.get() && afterTransactionalCommit != null) {
                 afterTransactionalCommit.accept(r);
             }
             return r;

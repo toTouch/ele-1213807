@@ -57,9 +57,26 @@
 		</foreach>
 
 	</select>
-	
-	
-	<!--通过主键删除-->
+    <select id="selectIdsByNamesAndTenantIds" resultType="java.lang.Integer">
+		select id from t_role
+		<where>
+			<if test="names != null and names.size() > 0">
+				and `name` in
+				<foreach collection="names" item="n" open="(" close=")" separator=",">
+					#{n}
+				</foreach>
+			</if>
+			<if test="tenantIds != null and tenantIds.size() > 0">
+				and tenant_id in
+				<foreach collection="tenantIds" item="t" open="(" close=")" separator=",">
+					#{t}
+				</foreach>
+			</if>
+		</where>
+	</select>
+    
+    
+    <!--通过主键删除-->
 	<delete id="deleteById">
         delete
         from t_role
