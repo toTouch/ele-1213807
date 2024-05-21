@@ -14,6 +14,7 @@ import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -120,11 +121,11 @@ public class JoinShareMoneyActivityRecordServiceImpl implements JoinShareMoneyAc
 		if (!canJoinActivity.isSuccess()) {
 			return canJoinActivity;
 		}
-
-		//检查是否重复扫描同一邀请人的二维码
-		Boolean sameInviter = joinShareMoneyActivityHistoryService.checkJoinedActivityFromSameInviter(user.getUid(), oldUser.getUid(), activityId.longValue());
-		if(sameInviter){
-			return R.ok();
+		
+		// 判断是否已经参与过该活动
+		List<JoinShareMoneyActivityHistory> joinShareMoneyActivityHistories = joinShareMoneyActivityHistoryService.queryUserJoinedActivity(user.getUid(), tenantId);
+		if (CollectionUtils.isNotEmpty(joinShareMoneyActivityHistories)) {
+			return R.fail("110207", "已参加过邀请返现活动");
 		}
 		
 		log.info("start join share money activity, join uid = {}, inviter uid = {}, activity id = {}", user.getUid(), oldUser.getUid(), activityId);
@@ -163,6 +164,9 @@ public class JoinShareMoneyActivityRecordServiceImpl implements JoinShareMoneyAc
 		joinShareMoneyActivityHistory.setStatus(JoinShareMoneyActivityHistory.STATUS_INIT);
 		joinShareMoneyActivityHistory.setActivityId(joinShareMoneyActivityRecord.getActivityId());
 		joinShareMoneyActivityHistoryService.insert(joinShareMoneyActivityHistory);
+		
+		// 530会员扩展表更新最新参与活动类型
+		userInfoExtraService.updateByUid(UserInfoExtra.builder().uid(uid).latestActivitySource(UserInfoActivitySourceEnum.SUCCESS_SHARE_MONEY_ACTIVITY.getCode()).build());
 
 		return R.ok();
 

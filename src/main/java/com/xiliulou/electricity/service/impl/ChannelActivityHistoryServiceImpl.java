@@ -15,6 +15,7 @@ import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.UserChannel;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.UserInfoExtra;
+import com.xiliulou.electricity.enums.UserInfoActivitySourceEnum;
 import com.xiliulou.electricity.mapper.ChannelActivityHistoryMapper;
 import com.xiliulou.electricity.query.ChannelActivityHistoryQuery;
 import com.xiliulou.electricity.service.CarMemberCardOrderService;
@@ -378,13 +379,6 @@ public class ChannelActivityHistoryServiceImpl implements ChannelActivityHistory
             return R.fail("100001", "渠道人用户不存在");
         }
         
-        // 是否参与过邀请活动，
-//        ChannelActivityHistory channelActivityHistory = this.queryByUid(uid);
-//        if (Objects.nonNull(channelActivityHistory)) {
-//            log.error("USER CHANNEL SCAN ERROR! user has participated in activities! user={}", uid);
-//            return R.ok();
-//        }
-        
         // 530活动互斥判断
         UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
         UserInfoExtra userInfoExtra = userInfoExtraService.queryByUidFromCache(uid);
@@ -393,6 +387,13 @@ public class ChannelActivityHistoryServiceImpl implements ChannelActivityHistory
             if (!canJoinActivity.isSuccess()) {
                 return canJoinActivity;
             }
+        }
+    
+        // 是否参与过邀请活动
+        ChannelActivityHistory channelActivityHistory = this.queryByUid(uid);
+        if (Objects.nonNull(channelActivityHistory)) {
+            log.error("USER CHANNEL SCAN ERROR! user has participated in activities! user={}", uid);
+            return R.ok();
         }
     
         // 是否渠道人，
@@ -411,6 +412,9 @@ public class ChannelActivityHistoryServiceImpl implements ChannelActivityHistory
         saveChannelActivityHistory.setUpdateTime(System.currentTimeMillis());
         saveChannelActivityHistory.setTenantId(TenantContextHolder.getTenantId());
         insert(saveChannelActivityHistory);
+    
+        // 530会员扩展表更新最新参与活动类型
+        userInfoExtraService.updateByUid(UserInfoExtra.builder().uid(uid).latestActivitySource(UserInfoActivitySourceEnum.SUCCESS_CHANNEL_ACTIVITY.getCode()).build());
     
         return R.ok();
     }

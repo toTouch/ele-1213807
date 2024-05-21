@@ -994,6 +994,9 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
             return Triple.of(false, "100399", "该活动已下架，二维码失效");
         }
         
+        // 会员扩展表是否需要更新最新参与活动类型
+        Boolean needUpdateUserInfoExtra = true;
+        
         for (Long activityId : newActivityIdSet2) {
             //用户是否已参与过此活动
             Integer exist = invitationActivityJoinHistoryService.existsByJoinUidAndActivityId(userInfo.getUid(), activityId);
@@ -1035,6 +1038,12 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
             invitationActivityJoinHistoryInsert.setUpdateTime(System.currentTimeMillis());
         
             invitationActivityJoinHistoryService.insert(invitationActivityJoinHistoryInsert);
+    
+            if (needUpdateUserInfoExtra) {
+                // 530会员扩展表更新最新参与活动类型
+                userInfoExtraService.updateByUid(UserInfoExtra.builder().uid(userInfo.getUid()).latestActivitySource(UserInfoActivitySourceEnum.SUCCESS_INVITATION_ACTIVITY.getCode()).build());
+                needUpdateUserInfoExtra = false;
+            }
         
         }
         return Triple.of(true, null, null);

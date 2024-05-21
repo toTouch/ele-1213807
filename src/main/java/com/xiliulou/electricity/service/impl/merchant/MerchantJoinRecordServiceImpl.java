@@ -114,7 +114,6 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
     @Resource
     private ShareMoneyActivityService shareMoneyActivityService;
     
-    
     @Override
     public R joinScanCode(MerchantJoinScanRequest request) {
         Long joinUid = SecurityUtils.getUid();
@@ -135,18 +134,18 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
                 log.error("MERCHANT JOIN ERROR! not found userInfo, joinUid={}", joinUid);
                 return R.fail(false, "ELECTRICITY.0019", "未找到用户");
             }
-    
+            
             if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
                 log.error("MERCHANT JOIN ERROR! user usable, joinUid={}", joinUid);
                 return R.fail(false, "120105", "该二维码暂时无法使用,请稍后再试");
             }
-    
+            
             UserInfoExtra userInfoExtra = userInfoExtraService.queryByUidFromCache(joinUid);
             if (Objects.isNull(userInfoExtra)) {
                 log.error("MERCHANT JOIN ERROR! Not found userInfoExtra, joinUid={}", joinUid);
                 return R.fail("ELECTRICITY.0019", "未找到用户");
             }
-    
+            
             // 530活动互斥判断
             R canJoinActivity = canJoinActivity(userInfo, userInfoExtra, null, null);
             if (!canJoinActivity.isSuccess()) {
@@ -156,19 +155,25 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
             // 已过保护期+已参与状态 的记录，需要更新为已失效，才能再扫码
             MerchantJoinRecord needUpdatedToInvalidRecord = null;
             List<MerchantJoinRecord> joinRecordList = this.listByJoinUidAndStatus(joinUid, List.of(MerchantJoinRecordConstant.STATUS_INIT));
-            
+    
             if (CollectionUtils.isNotEmpty(joinRecordList)) {
                 MerchantJoinRecord joinRecord = joinRecordList.get(NumberConstant.ZERO);
                 if (Objects.nonNull(joinRecord)) {
                     Long protectionTime = joinRecord.getProtectionTime();
-                    //未过保护期
-                    if (!Objects.equals(protectionTime, NumberConstant.ZERO_L) && protectionTime >= System.currentTimeMillis()) {
-                        log.error("MERCHANT JOIN ERROR! in protectionTime, merchantId={}, inviterUid={}, joinUid={}", joinRecord.getMerchantId(), joinRecord.getInviterUid(),
-                                joinUid);
-                        
-                        return R.fail(false, "120104", "商户保护期内，请稍后再试");
-                    } else {
+                    // 没有保护期
+                    if (Objects.isNull(protectionTime) || Objects.equals(protectionTime, NumberConstant.ZERO_L)) {
                         needUpdatedToInvalidRecord = joinRecord;
+                    } else {
+                        //未过保护期
+                        if (protectionTime >= System.currentTimeMillis()) {
+                            log.error("MERCHANT JOIN ERROR! in protectionTime, merchantId={}, inviterUid={}, joinUid={}", joinRecord.getMerchantId(), joinRecord.getInviterUid(),
+                                    joinUid);
+                    
+                            return R.fail(false, "120104", "商户保护期内，请稍后再试");
+                        } else {
+                            // 已过保护期
+                            needUpdatedToInvalidRecord = joinRecord;
+                        }
                     }
                 }
             }
@@ -274,6 +279,9 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
             if (Objects.nonNull(needUpdatedToInvalidRecord) && Objects.nonNull(result)) {
                 this.updateStatusById(needUpdatedToInvalidRecord.getId(), MerchantJoinRecordConstant.STATUS_INVALID, System.currentTimeMillis());
             }
+            
+            // 530会员扩展表更新最新参与活动类型
+            userInfoExtraService.updateByUid(UserInfoExtra.builder().uid(joinUid).latestActivitySource(UserInfoActivitySourceEnum.SUCCESS_MERCHANT_ACTIVITY.getCode()).build());
             
             return R.ok();
         } finally {
@@ -590,7 +598,7 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
      * 3.平台用户，是否实名认证
      *
      * @param userInfo
-     * @param shareActivityId 邀请返券或邀请返现活动的id（其它活动该参数为null）
+     * @param shareActivityId   邀请返券或邀请返现活动的id（其它活动该参数为null）
      * @param shareActivityType 邀请返券-1,邀请返现-2（其它活动该参数为null）
      */
     @Override
@@ -620,21 +628,21 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
                 default:
                     break;
             }
-        
+            
             log.error("JOIN ACTIVITY ERROR! Is not new user, joinUid={}, successActivity={}", uid, activityName);
             return R.fail("120121", "此活动仅限新用户参加，您已成功参与过{" + activityName + "活动}，无法参与，感谢您的支持");
         }
-    
+        
         // 平台用户，需判断是否购买过套餐
         if (userInfo.getPayCount() > NumberConstant.ZERO) {
             log.error("JOIN ACTIVITY ERROR! Is not new user, payCount > 0, joinUid={}", uid);
             return R.fail("120122", "此活动仅限新用户参加，您已是平台用户无法参与，感谢您的支持");
         }
-    
+        
         // 平台用户，如果邀请返券或邀请返现的成功标准为实名认证，那么需判断是否已实名认证
         if (Objects.nonNull(shareActivityId) && Objects.nonNull(shareActivityType)) {
             boolean authFlag = false;
-        
+            
             if (Objects.equals(shareActivityType, UserInfoActivitySourceEnum.SUCCESS_SHARE_ACTIVITY.getCode())) {
                 // 邀请返券
                 ShareActivity shareActivity = shareActivityService.queryByIdFromCache(shareActivityId);
@@ -648,14 +656,14 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
                     authFlag = true;
                 }
             }
-        
+            
             // 实名认证标准，并且userInfo已实名认证
             if (authFlag && Objects.equals(userInfo.getAuthStatus(), UserInfo.AUTH_STATUS_REVIEW_PASSED)) {
                 log.error("JOIN ACTIVITY ERROR! Is not new user, already auth, joinUid={}", uid);
                 return R.fail("120122", "此活动仅限新用户参加，您已是平台用户无法参与，感谢您的支持");
             }
         }
-    
+        
         return R.ok();
     }
 }

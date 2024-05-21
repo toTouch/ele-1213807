@@ -15,6 +15,7 @@ import com.xiliulou.electricity.utils.AESUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -22,6 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.Base64;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -125,10 +127,10 @@ public class JoinShareActivityRecordServiceImpl implements JoinShareActivityReco
             return canJoinActivity;
         }
     
-        //判断是否为重复扫邀请人的码
-        Boolean sameInviter = joinShareActivityHistoryService.checkTheActivityFromSameInviter(user.getUid(), oldUser.getUid(), activityId.longValue());
-        if (sameInviter) {
-            return R.ok();
+        // 判断是否已经参与过该活动
+        List<JoinShareActivityHistory> joinShareActivityHistories = joinShareActivityHistoryService.queryUserJoinedActivity(user.getUid(), tenantId);
+        if (CollectionUtils.isNotEmpty(joinShareActivityHistories)) {
+            return R.fail("110206", "已参加过邀请返券活动");
         }
     
         log.info("start join share activity, join uid = {}, inviter uid = {}, activity id = {}", user.getUid(), oldUser.getUid(), activityId);
@@ -167,6 +169,9 @@ public class JoinShareActivityRecordServiceImpl implements JoinShareActivityReco
         joinShareActivityHistory.setStatus(JoinShareActivityHistory.STATUS_INIT);
         joinShareActivityHistory.setActivityId(joinShareActivityRecord.getActivityId());
         joinShareActivityHistoryService.insert(joinShareActivityHistory);
+    
+        // 530会员扩展表更新最新参与活动类型
+        userInfoExtraService.updateByUid(UserInfoExtra.builder().uid(uid).latestActivitySource(UserInfoActivitySourceEnum.SUCCESS_SHARE_ACTIVITY.getCode()).build());
     
         return R.ok();
     }

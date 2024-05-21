@@ -4,6 +4,7 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.JoinShareMoneyActivityHistory;
 import com.xiliulou.electricity.query.JsonShareMoneyActivityHistoryQuery;
 import com.xiliulou.electricity.vo.FinalJoinShareMoneyActivityHistoryVo;
+import org.apache.commons.lang3.tuple.Pair;
 
 import javax.servlet.http.HttpServletResponse;
 import java.util.List;
@@ -63,8 +64,8 @@ public interface JoinShareMoneyActivityHistoryService {
     R queryParticipantsCount(JsonShareMoneyActivityHistoryQuery jsonShareMoneyActivityHistoryQuery);
 
     List<JoinShareMoneyActivityHistory> queryUserJoinedActivity(Long joinUid, Integer tenantId);
-    
-    Boolean checkJoinedActivityFromSameInviter(Long joinUid, Long inviterUid, Long activityId);
+
+    Pair<Boolean, String> checkJoinedActivityFromSameInviter(Long joinUid, Long inviterUid, Long activityId);
     
     JoinShareMoneyActivityHistory querySuccessHistoryByJoinUid(Long uid, Integer tenantId);
     

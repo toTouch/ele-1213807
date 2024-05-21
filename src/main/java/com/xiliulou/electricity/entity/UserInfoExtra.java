@@ -67,4 +67,10 @@ public class UserInfoExtra {
      * 邀请人uid(商户活动的邀请人来源于user表，其它活动的邀请人来源于userInfo表)
      */
     private Long inviterUid;
+    
+    /**
+     * 最新参与的活动的类型：0-无参与的活动，1-邀请返券,2-邀请返现,3-套餐返现,4-渠道邀请,5-商户邀请
+     * @see UserInfoActivitySourceEnum
+     */
+    private Integer latestActivitySource;
 }
