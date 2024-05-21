@@ -13,6 +13,7 @@ import com.xiliulou.electricity.entity.car.CarRentalPackageOrderPo;
 import com.xiliulou.electricity.entity.car.CarRentalPackagePo;
 import com.xiliulou.electricity.enums.*;
 import com.xiliulou.electricity.enums.car.CarRentalStateEnum;
+import com.xiliulou.electricity.event.publish.OverdueUserRemarkPublish;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.service.car.CarRentalOrderService;
@@ -91,6 +92,8 @@ public class CarRentalOrderBizServiceImpl implements CarRentalOrderBizService {
     
     @Resource
     private EleUserOperateRecordService eleUserOperateRecordService;
+    
+    private OverdueUserRemarkPublish overdueUserRemarkPublish;
     
     /**
      * 还车申请审批
@@ -198,6 +201,8 @@ public class CarRentalOrderBizServiceImpl implements CarRentalOrderBizService {
             carService.updateCarBindStatusById(electricityCarUpdate);
             // 车辆操作记录
             eleBindCarRecordService.insert(eleBindCarRecord);
+            // 清除逾期用户备注
+            overdueUserRemarkPublish.publish(rentalOrderApprove.getUid(), OverdueType.CAR.getCode(), rentalOrderApprove.getTenantId());
         }
     }
     
