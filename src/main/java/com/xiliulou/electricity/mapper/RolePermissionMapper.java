@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.mapper;
 
 import com.xiliulou.electricity.bo.supper.GrantRoleBO;
+import com.xiliulou.electricity.entity.GrantRolePermission;
 import com.xiliulou.electricity.entity.RolePermission;
 
 import java.util.Collection;
@@ -23,5 +24,5 @@ public interface RolePermissionMapper extends BaseMapper<RolePermission> {
     
     List<GrantRoleBO> selectRepeatGrant(@Param("roleIds") List<Integer> roleIds);
 	
-	int batchInsert(@Param("list") Collection<RolePermission> rolePermissions);
+	int batchInsert(@Param("list") Collection<GrantRolePermission> rolePermissions);
 }

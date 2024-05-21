@@ -12,6 +12,7 @@ import com.xiliulou.electricity.constant.AssetConstant;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.entity.ElectricityBattery;
+import com.xiliulou.electricity.entity.GrantRolePermission;
 import com.xiliulou.electricity.entity.RolePermission;
 import com.xiliulou.electricity.entity.Tenant;
 import com.xiliulou.electricity.enums.asset.AssetTypeEnum;
@@ -202,7 +203,7 @@ public class AdminSupperServiceImpl implements AdminSupperService {
             List<Integer> type = grant.getType();
             List<Integer> sourceId = grant.getSourceIds();
             List<Integer> tenantIds = grant.getTenantIds();
-            Set<RolePermission> rolePermissions = new HashSet<>();
+            Set<GrantRolePermission> rolePermissions = new HashSet<>();
             //根据权限类型和租户查询对应租户的所有角色信息
             List<Integer> roleIds = roleMapper.selectIdsByNamesAndTenantIds(GrantType.namesOfCode(type), tenantIds);
             if (CollectionUtils.isEmpty(roleIds)) {
@@ -214,8 +215,8 @@ public class AdminSupperServiceImpl implements AdminSupperService {
             for (Integer checkRoleId : roleIds) {
                 //为空说明所有权限都未被添加过，该角色无任何权限，添加资源中的所有
                 if (CollectionUtils.isEmpty(checkRoleIds)){
-                    Set<RolePermission> collect = sourceId.stream().map(id -> {
-                        RolePermission rolePermission = new RolePermission();
+                    Set<GrantRolePermission> collect = sourceId.stream().map(id -> {
+                        GrantRolePermission rolePermission = new GrantRolePermission();
                         rolePermission.setRoleId(Long.valueOf(checkRoleId));
                         rolePermission.setPId(Long.valueOf(id));
                         return rolePermission;
@@ -236,8 +237,8 @@ public class AdminSupperServiceImpl implements AdminSupperService {
                     continue;
                 }
                 //批量插入数据构建
-                List<RolePermission> batchInsert = sourceId.stream().map(id -> {
-                    RolePermission rolePermission = new RolePermission();
+                List<GrantRolePermission> batchInsert = sourceId.stream().map(id -> {
+                    GrantRolePermission rolePermission = new GrantRolePermission();
                     rolePermission.setRoleId(Long.valueOf(checkRoleId));
                     rolePermission.setPId(Long.valueOf(id));
                     return rolePermission;
@@ -246,7 +247,9 @@ public class AdminSupperServiceImpl implements AdminSupperService {
             }
             
             rolePermissionMapper.batchInsert(rolePermissions);
-            return rolePermissions.stream().map(RolePermission::getRoleId).collect(Collectors.toSet());
+            Set<Long> ids = rolePermissions.stream().map(GrantRolePermission::getRoleId).collect(Collectors.toSet());
+            log.info("Grant Permission success. grant permission is : {}", rolePermissions);
+            return ids;
         }, executor, userGrantSourceReq, (ids) -> {
             if (CollectionUtils.isEmpty(ids)) {
                 return;
