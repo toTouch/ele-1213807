@@ -93,6 +93,7 @@ public class CarRentalOrderBizServiceImpl implements CarRentalOrderBizService {
     @Resource
     private EleUserOperateRecordService eleUserOperateRecordService;
     
+    @Resource
     private OverdueUserRemarkPublish overdueUserRemarkPublish;
     
     /**
@@ -638,6 +639,8 @@ public class CarRentalOrderBizServiceImpl implements CarRentalOrderBizService {
                 .updateTime(System.currentTimeMillis()).build();
         eleUserOperateRecordService.insert(eleUserOperateRecord);
         
+        //清除逾期用户备注
+        overdueUserRemarkPublish.publish(userInfo.getUid(), OverdueType.CAR.getCode(), userInfo.getTenantId());
         return true;
     }
     
