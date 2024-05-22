@@ -1,9 +1,7 @@
 package com.xiliulou.electricity.service.impl;
 
-import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
 import com.google.common.collect.Maps;
-import com.google.api.client.util.Maps;
 import com.xiliulou.core.thread.XllThreadPoolExecutorService;
 import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.db.dynamic.annotation.Slave;
@@ -18,12 +16,12 @@ import com.xiliulou.electricity.entity.ElectricityCabinetBox;
 import com.xiliulou.electricity.entity.ElectricityCabinetModel;
 import com.xiliulou.electricity.entity.ElectricityCabinetOrder;
 import com.xiliulou.electricity.entity.ElectricityCabinetServer;
+import com.xiliulou.electricity.entity.ElectricityConfig;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.Store;
-import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.entity.merchant.MerchantArea;
-import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.query.ElectricityCabinetQuery;
+import com.xiliulou.electricity.request.merchant.MerchantAreaRequest;
 import com.xiliulou.electricity.service.EleCabinetCoreDataService;
 import com.xiliulou.electricity.service.EleCabinetDataAnalyseService;
 import com.xiliulou.electricity.service.ElePowerService;
@@ -32,12 +30,12 @@ import com.xiliulou.electricity.service.ElectricityBatteryService;
 import com.xiliulou.electricity.service.ElectricityCabinetBoxService;
 import com.xiliulou.electricity.service.ElectricityCabinetModelService;
 import com.xiliulou.electricity.service.ElectricityCabinetOrderService;
+import com.xiliulou.electricity.service.ElectricityCabinetPowerService;
 import com.xiliulou.electricity.service.ElectricityCabinetServerService;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
+import com.xiliulou.electricity.service.ElectricityConfigService;
 import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.StoreService;
-import com.xiliulou.electricity.request.merchant.MerchantAreaRequest;
-import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.service.merchant.MerchantAreaService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DateUtils;
@@ -59,6 +57,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -312,7 +311,7 @@ public class EleCabinetDataAnalyseServiceImpl implements EleCabinetDataAnalyseSe
         List<ElePower> eleCabinetPowerList=elePowerService.listCabinetPowerByEids(electricityCabinetIdList);
         Map<Long, ElePower> eleCabinetPowerMap =Maps.newHashMap();
         if(CollectionUtils.isNotEmpty(eleCabinetPowerList)){
-            eleCabinetPowerMap=eleCabinetPowerList.stream().collect(Collectors.toMap(ElePower::getEid,Function.identity(), (k1, k2) -> k2));
+            eleCabinetPowerMap=eleCabinetPowerList.stream().collect(Collectors.toMap(ElePower::getEid, Function.identity(), (k1, k2) -> k2));
         }
     
         //充电中的电池
