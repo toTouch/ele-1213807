@@ -1724,6 +1724,17 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             return R.fail("100210", "用户未开通套餐");
         }
         
+        if (Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE_REVIEW)) {
+            log.error("ADMIN ENABLE BATTERY MEMBERCARD ERROR! disable review userId={}", userInfo.getUid());
+            return R.fail("ELECTRICITY.100001", "用户停卡申请审核中");
+        }
+        
+        if (Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_NOT_DISABLE) ||
+                Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE_REVIEW_REFUSE)) {
+            log.error("ADMIN ENABLE BATTERY MEMBERCARD ERROR! member card not disable userId={}", userInfo.getUid());
+            return R.fail("ELECTRICITY.100001", "用户未停卡");
+        }
+        
         BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());
         if (Objects.isNull(batteryMemberCard)) {
             log.error("ADMIN ENABLE BATTERY MEMBERCARD ERROR! battery memberCard is not exit,uid={},memberCardId={}", userInfo.getUid(), userBatteryMemberCard.getMemberCardId());
