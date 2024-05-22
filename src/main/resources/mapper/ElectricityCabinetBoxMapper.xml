@@ -245,6 +245,16 @@
         </where>
     </select>
     
+    <select id="selectEleBoxByBatteryId" resultType="com.xiliulou.electricity.entity.ElectricityCabinetBox">
+        SELECT
+            id, electricity_cabinet_id, cell_no, sn, usable_status, status,is_lock,is_fan,is_heat,is_light, create_time, update_time,
+            del_flag,tenant_id,temperature,battery_type,charge_v,charge_a,version,lock_type,empty_grid_start_time
+        FROM t_electricity_cabinet_box
+        WHERE b_id = #{batteryId}
+          AND del_flag = 0
+        ORDER BY update_time LIMIT 1
+    </select>
+    
     <!--新增所有列-->
     <insert id="batchInsertEleBox">
         insert into t_electricity_cabinet_box (electricity_cabinet_id, cell_no, create_time, update_time, del_flag, tenant_id) values

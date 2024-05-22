@@ -1696,8 +1696,8 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
     
     @Override
     @Slave
-    public List<ElectricityBatteryVO> listBatteryBySn(Integer offset, Integer size, Long franchiseeId, String sn) {
+    public List<ElectricityBatteryVO> listBatteriesBySn(Integer offset, Integer size, Integer tenantId, Long franchiseeId, String sn) {
         
-        return electricitybatterymapper.listBatteryBySn(offset, size, franchiseeId, sn);
+        return electricitybatterymapper.selectListBatteriesBySn(offset, size, tenantId, franchiseeId, sn);
     }
 }
