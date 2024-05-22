@@ -164,7 +164,7 @@ public class CarRentalOrderBizServiceImpl implements CarRentalOrderBizService {
         }
         
         // 处理事务
-        approveRefundCarOrderTx(approveFlag, rentalOrderApprove, userInfoUpdate, carModelUpdate, electricityCarUpdate, eleBindCarRecord, carLockCtrlHistory);
+        approveRefundCarOrderTx(approveFlag, rentalOrderApprove, userInfoUpdate, carModelUpdate, electricityCarUpdate, eleBindCarRecord, carLockCtrlHistory,carRentalOrderPo);
         
         return true;
     }
@@ -182,7 +182,7 @@ public class CarRentalOrderBizServiceImpl implements CarRentalOrderBizService {
      */
     @Transactional(rollbackFor = Exception.class)
     public void approveRefundCarOrderTx(boolean approveFlag, CarRentalOrderPo rentalOrderApprove, UserInfo userInfoUpdate, ElectricityCarModel carModelUpdate,
-            ElectricityCar electricityCarUpdate, EleBindCarRecord eleBindCarRecord, CarLockCtrlHistory carLockCtrlHistory) {
+            ElectricityCar electricityCarUpdate, EleBindCarRecord eleBindCarRecord, CarLockCtrlHistory carLockCtrlHistory,CarRentalOrderPo carRentalOrderPo) {
         // 更改车辆租赁订单
         carRentalOrderService.updateById(rentalOrderApprove);
         
@@ -202,7 +202,7 @@ public class CarRentalOrderBizServiceImpl implements CarRentalOrderBizService {
             // 车辆操作记录
             eleBindCarRecordService.insert(eleBindCarRecord);
             // 清除逾期用户备注
-            overdueUserRemarkPublish.publish(rentalOrderApprove.getUid(), OverdueType.CAR.getCode(), rentalOrderApprove.getTenantId());
+            overdueUserRemarkPublish.publish(carRentalOrderPo.getUid(), OverdueType.CAR.getCode(), carRentalOrderPo.getTenantId());
         }
     }
     
