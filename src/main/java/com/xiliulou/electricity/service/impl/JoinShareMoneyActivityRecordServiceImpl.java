@@ -166,7 +166,7 @@ public class JoinShareMoneyActivityRecordServiceImpl implements JoinShareMoneyAc
 		joinShareMoneyActivityHistoryService.insert(joinShareMoneyActivityHistory);
 		
 		// 530会员扩展表更新最新参与活动类型
-		userInfoExtraService.updateByUid(UserInfoExtra.builder().uid(uid).latestActivitySource(UserInfoActivitySourceEnum.SUCCESS_SHARE_MONEY_ACTIVITY.getCode()).build());
+		userInfoExtraService.updateByUid(UserInfoExtra.builder().uid(user.getUid()).latestActivitySource(UserInfoActivitySourceEnum.SUCCESS_SHARE_MONEY_ACTIVITY.getCode()).build());
 
 		return R.ok();
 

@@ -171,7 +171,7 @@ public class JoinShareActivityRecordServiceImpl implements JoinShareActivityReco
         joinShareActivityHistoryService.insert(joinShareActivityHistory);
     
         // 530会员扩展表更新最新参与活动类型
-        userInfoExtraService.updateByUid(UserInfoExtra.builder().uid(uid).latestActivitySource(UserInfoActivitySourceEnum.SUCCESS_SHARE_ACTIVITY.getCode()).build());
+        userInfoExtraService.updateByUid(UserInfoExtra.builder().uid(user.getUid()).latestActivitySource(UserInfoActivitySourceEnum.SUCCESS_SHARE_ACTIVITY.getCode()).build());
     
         return R.ok();
     }
