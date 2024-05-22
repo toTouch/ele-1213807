@@ -906,6 +906,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
         if (Objects.isNull(cabinetExtra)) {
             throw new BizException("ELECTRICITY.0026", "换电柜异常，不存在的电柜扩展信息");
         }
+        
         if (Objects.isNull(cabinetExtra.getMaxRetainBatteryCount())) {
             // 不限制, 无仓情况不允许退电
             if (CollUtil.isEmpty(emptyCellList)) {
@@ -1356,7 +1357,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
     }
     
     private Triple<Boolean, String, Object> allocateFullBatteryBox(ElectricityCabinet electricityCabinet, UserInfo userInfo, Franchisee franchisee) {
-        List<ElectricityCabinetBox> electricityCabinetBoxList = electricityCabinetBoxService.queryUsableBatteryCellNo(electricityCabinet.getId(),  null,
+        List<ElectricityCabinetBox> electricityCabinetBoxList = electricityCabinetBoxService.queryElectricityBatteryBox(electricityCabinet, null, null,
                 electricityCabinet.getFullyCharged());
         
         // 过滤掉电池名称不符合标准的
