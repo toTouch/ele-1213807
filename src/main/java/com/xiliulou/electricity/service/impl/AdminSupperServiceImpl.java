@@ -210,34 +210,30 @@ public class AdminSupperServiceImpl implements AdminSupperService {
             
             //根据角色id查询对应的权限id
             List<GrantRolePermission> checkRoleIds = rolePermissionMapper.selectRepeatGrant(roleIds);
+            Map<Long, List<GrantRolePermission>> collected = null;
+            //根据角色id对权限分组
+            if (!CollectionUtils.isEmpty(checkRoleIds)){
+                collected = checkRoleIds.stream().collect(Collectors.groupingBy(GrantRolePermission::getRoleId));
+            }
             for (Long checkRoleId : roleIds) {
-                //为空说明所有权限都未被添加过，该角色无任何权限，添加资源中的所有
-                if (CollectionUtils.isEmpty(checkRoleIds)) {
-                    Set<GrantRolePermission> collect = sourceIds.stream().map(id -> {
-                        GrantRolePermission rolePermission = new GrantRolePermission();
-                        rolePermission.setRoleId(checkRoleId);
-                        rolePermission.setPId(id);
-                        return rolePermission;
-                    }).collect(Collectors.toSet());
-                    rolePermissions.addAll(collect);
-                    continue;
+                Set<Long> copySourceIds = new HashSet<>(sourceIds);
+                //不为空说明该角色已绑定过部分权限
+                if (!Objects.isNull(collected)) {
+                    //构建资源重复比对的数据
+                    List<GrantRolePermission> roleBOS = collected.getOrDefault(checkRoleId, new ArrayList<>());
+                    Set<Long> collect = roleBOS.stream().map(GrantRolePermission::getPId).collect(Collectors.toSet());
+                    //如果存在则取交集,并在资源中移除重叠的部分
+                    if (collect.retainAll(copySourceIds)) {
+                        copySourceIds.removeAll(collect);
+                    }
+                    //移除完重叠,资源为空说明该权限已存在
+                    if (CollectionUtils.isEmpty(copySourceIds)) {
+                        continue;
+                    }
                 }
-                
-                //构建资源重复比对的数据
-                Map<Long, List<GrantRolePermission>> collected = checkRoleIds.stream().collect(Collectors.groupingBy(GrantRolePermission::getRoleId));
-                List<GrantRolePermission> roleBOS = collected.getOrDefault(checkRoleId, new ArrayList<>());
-                Set<Long> collect = roleBOS.stream().map(GrantRolePermission::getPId).collect(Collectors.toSet());
-                
-                //如果存在则取交集,并在资源中移除重叠的部分
-                if (collect.retainAll(sourceIds)) {
-                    sourceIds.removeAll(collect);
-                }
-                if (CollectionUtils.isEmpty(sourceIds)) {
-                    continue;
-                }
-                
+                //未进入上层if,则为空说明所有权限都未被添加过，该角色无任何权限，添加资源中的所有
                 //批量插入数据构建
-                List<GrantRolePermission> batchInsert = sourceIds.stream().map(id -> {
+                List<GrantRolePermission> batchInsert = copySourceIds.stream().map(id -> {
                     GrantRolePermission rolePermission = new GrantRolePermission();
                     rolePermission.setRoleId(checkRoleId);
                     rolePermission.setPId(id);
