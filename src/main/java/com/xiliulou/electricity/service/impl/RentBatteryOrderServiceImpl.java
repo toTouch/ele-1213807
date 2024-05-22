@@ -900,30 +900,28 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
         if (StringUtils.isNotBlank(version) && VersionUtil.compareVersion(ELE_CABINET_VERSION, version) > 0) {
             return electricityCabinetService.findUsableEmptyCellNo(eid);
         }
-        
-        Integer cellNo = null;
-        List<ElectricityCabinetBox> emptyCellList = electricityCabinetBoxService.queryUsableBatteryCellNo(eid,null, fullyCharged);
-        
-        // 过滤掉电池名称不符合标准的
-        List<ElectricityCabinetBox> exchangeableList = emptyCellList.stream().filter(item -> filterNotExchangeable(item)).collect(Collectors.toList());
+        List<ElectricityCabinetBox> emptyCellList = electricityCabinetBoxService.listUsableEmptyCell(eid);
         
         ElectricityCabinetExtra cabinetExtra = electricityCabinetExtraService.queryByEidFromCache(Long.valueOf(eid));
         if (Objects.isNull(cabinetExtra)) {
             throw new BizException("ELECTRICITY.0026", "换电柜异常，不存在的电柜扩展信息");
         }
         if (Objects.isNull(cabinetExtra.getMaxRetainBatteryCount())) {
-            // 不限制
-            if (CollUtil.isEmpty(exchangeableList)) {
+            // 不限制, 无仓情况不允许退电
+            if (CollUtil.isEmpty(emptyCellList)) {
                 throw new BizException("ELECTRICITY.0026", "当前无空余格挡可供退电，请联系客服！");
             }
         } else {
-            // 限制
+            // 限制， 查询换电标准
+            List<ElectricityCabinetBox> useCellList = electricityCabinetBoxService.queryUsableBatteryCellNo(eid,null, fullyCharged);
+            // 过滤掉电池名称不符合标准的
+            List<ElectricityCabinetBox> exchangeableList = useCellList.stream().filter(item -> filterNotExchangeable(item)).collect(Collectors.toList());
             if (CollUtil.isNotEmpty(exchangeableList) && exchangeableList.size() > cabinetExtra.getMaxRetainBatteryCount()) {
                 throw new BizException("ELECTRICITY.0026", "在仓电池数高于限值，暂无法退电，请选择其他柜机!");
             }
         }
         
-        
+        Integer cellNo = null;
         //可用格挡只有一个默认直接分配
         if (emptyCellList.size() == 1) {
             cellNo = Integer.valueOf(emptyCellList.get(0).getCellNo());
