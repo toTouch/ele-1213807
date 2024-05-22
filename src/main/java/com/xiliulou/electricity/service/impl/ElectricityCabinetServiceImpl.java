@@ -1283,8 +1283,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         //  退电
         if (Objects.isNull(cabinetExtra.getMaxRetainBatteryCount())) {
             // 最多保留电池数量设置为无限制时，无空仓情况下不允许退电
-            //List<ElectricityCabinetBox> emptyCellList = electricityCabinetBoxService.listUsableEmptyCell(eid);
-            if (CollUtil.isNotEmpty(exchangeableList)) {
+            List<ElectricityCabinetBox> emptyCellList = electricityCabinetBoxService.listUsableEmptyCell(eid);
+            if (CollUtil.isNotEmpty(emptyCellList)) {
                 label.add(3);
             }
         } else {
