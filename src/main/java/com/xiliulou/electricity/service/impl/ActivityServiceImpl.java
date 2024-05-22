@@ -178,18 +178,21 @@ public class ActivityServiceImpl implements ActivityService {
             
                 UserInfo userInfo = userInfoService.queryByUidFromDb(uid);
                 if (Objects.isNull(userInfo)) {
-                    log.error("handle activity error ! Not found userInfo, joinUid={}", uid);
+                    log.warn("handle activity error ! Not found userInfo, joinUid={}", uid);
+                    return Triple.of(false, "ELECTRICITY.0019", "未找到用户");
+                }
+    
+                UserInfoExtra userInfoExtra = userInfoExtraService.queryByUidFromCache(uid);
+                if (Objects.isNull(userInfoExtra)) {
+                    log.warn("handle activity error ! Not found userInfoExtra, joinUid={}", uid);
                     return Triple.of(false, "ELECTRICITY.0019", "未找到用户");
                 }
             
                 log.info("Activity flow for battery package, is old user= {}", userInfo.getPayCount());
                 
-                // 处理活动
-                Triple<Boolean, String, Object> triple = handleActivityForBatteryPackageType(userInfo, uid, electricityMemberCardOrder, packageType);
-                if (!triple.getLeft()) {
-                    return triple;
-                }
-    
+                // 处理活动(530需求:以最新的参与活动为准)
+                handleActivityForBatteryPackageType(userInfo, userInfoExtra, uid, electricityMemberCardOrder, packageType);
+                
             } else {
                 //开始处理租车，车电一体购买套餐后的活动
                 log.info("Activity flow for car Rental or car with battery package, orderNo = {}", orderNo);
@@ -202,17 +205,20 @@ public class ActivityServiceImpl implements ActivityService {
                 Long uid = carRentalPackageOrderPo.getUid();
                 UserInfo userInfo = userInfoService.queryByUidFromDb(uid);
                 if (Objects.isNull(userInfo)) {
-                    log.error("Activity flow for car Rental or car with battery package error! Not found userInfo, joinUid={}", uid);
+                    log.warn("Activity flow for car Rental or car with battery package error! Not found userInfo, joinUid={}", uid);
+                    return Triple.of(false, "ELECTRICITY.0019", "未找到用户");
+                }
+    
+                UserInfoExtra userInfoExtra = userInfoExtraService.queryByUidFromCache(uid);
+                if (Objects.isNull(userInfoExtra)) {
+                    log.warn("Activity flow for car Rental or car with battery package error! Not found userInfoExtra, joinUid={}", uid);
                     return Triple.of(false, "ELECTRICITY.0019", "未找到用户");
                 }
             
                 log.info("Activity flow for car Rental or car with battery package, is old user= {}", userInfo.getPayCount());
     
-                // 处理活动
-                Triple<Boolean, String, Object> triple = handleActivityForCarPackageType(userInfo, uid, carRentalPackageOrderPo, packageType, orderNo);
-                if (!triple.getLeft()) {
-                    return triple;
-                }
+                // 处理活动(530需求:以最新的参与活动为准)
+                handleActivityForCarPackageType(userInfo, userInfoExtra, uid, carRentalPackageOrderPo, packageType, orderNo);
             }
         
         } catch (Exception e) {
@@ -231,28 +237,19 @@ public class ActivityServiceImpl implements ActivityService {
     /**
      * 购买换电套餐后，处理活动
      */
-    public Triple<Boolean, String, Object> handleActivityForBatteryPackageType(UserInfo userInfo, Long uid, ElectricityMemberCardOrder electricityMemberCardOrder, Integer packageType) {
-        UserInfoExtra userInfoExtra = userInfoExtraService.queryByUidFromCache(uid);
-        if (Objects.isNull(userInfoExtra)) {
-            log.error("handle activity for battery package type error! Not found userInfoExtra, joinUid={}", uid);
-            return Triple.of(false, "ELECTRICITY.0019", "未找到用户");
-        }
-    
+    public void handleActivityForBatteryPackageType(UserInfo userInfo, UserInfoExtra userInfoExtra, Long uid, ElectricityMemberCardOrder electricityMemberCardOrder,
+            Integer packageType) {
         Integer latestActivitySource = userInfoExtra.getLatestActivitySource();
-        
+    
         if (Objects.equals(UserInfoActivitySourceEnum.SUCCESS_MERCHANT_ACTIVITY.getCode(), latestActivitySource)) {
             //用户绑定商户
             userInfoExtraService.bindMerchant(uid, electricityMemberCardOrder.getOrderId(), electricityMemberCardOrder.getMemberCardId());
-    
+        
             //商户返利
             sendMerchantRebateMQ(uid, electricityMemberCardOrder.getOrderId());
-    
-            return Triple.of(true, "", null);
         } else if (Objects.equals(UserInfoActivitySourceEnum.SUCCESS_INVITATION_ACTIVITY.getCode(), latestActivitySource)) {
             //处理套餐返现活动
             invitationActivityRecordService.handleInvitationActivityByPackage(userInfo, electricityMemberCardOrder.getOrderId(), packageType);
-            
-            return Triple.of(true, "", null);
         }
     
         //是否是新用户
@@ -261,62 +258,52 @@ public class ActivityServiceImpl implements ActivityService {
                 case 1:
                     //处理邀请返券活动
                     userBizService.joinShareActivityProcess(uid, electricityMemberCardOrder.getMemberCardId());
-                    return Triple.of(true, "", null);
+                    break;
                 case 2:
                     //处理邀请返现活动
                     userBizService.joinShareMoneyActivityProcess(uid, electricityMemberCardOrder.getMemberCardId(), electricityMemberCardOrder.getTenantId());
-                    return Triple.of(true, "", null);
+                    break;
                 case 4:
                     //处理渠道活动
                     userBizService.joinChannelActivityProcess(uid);
-                    return Triple.of(true, "", null);
+                    break;
                 default:
-                    return Triple.of(true, "", null);
+                    break;
             }
         }
-    
-        return Triple.of(true, "", null);
     }
     
     /**
      * 购买租车套餐后，处理活动
      */
-    public Triple<Boolean, String, Object> handleActivityForCarPackageType(UserInfo userInfo, Long uid, CarRentalPackageOrderPo carRentalPackageOrderPo, Integer packageType, String orderNo) {
-        UserInfoExtra userInfoExtra = userInfoExtraService.queryByUidFromCache(uid);
-        if (Objects.isNull(userInfoExtra)) {
-            log.error("handle activity for car package type error! Not found userInfoExtra, joinUid={}", uid);
-            return Triple.of(false, "ELECTRICITY.0019", "未找到用户");
-        }
-        
+    public void handleActivityForCarPackageType(UserInfo userInfo, UserInfoExtra userInfoExtra, Long uid, CarRentalPackageOrderPo carRentalPackageOrderPo, Integer packageType,
+            String orderNo) {
         Integer latestActivitySource = userInfoExtra.getLatestActivitySource();
-        
+    
         //处理套餐返现活动
         if (Objects.equals(UserInfoActivitySourceEnum.SUCCESS_INVITATION_ACTIVITY.getCode(), latestActivitySource)) {
             invitationActivityRecordService.handleInvitationActivityByPackage(userInfo, orderNo, packageType);
-            return Triple.of(true, "", null);
         }
-        
+    
         //是否是新用户
         if (NumberUtil.equals(NumberConstant.ONE, userInfo.getPayCount())) {
             switch (latestActivitySource) {
                 case 1:
                     //处理邀请返券活动
                     userBizService.joinShareActivityProcess(uid, carRentalPackageOrderPo.getRentalPackageId());
-                    return Triple.of(true, "", null);
+                    break;
                 case 2:
                     //处理邀请返现活动
                     userBizService.joinShareMoneyActivityProcess(uid, carRentalPackageOrderPo.getRentalPackageId(), carRentalPackageOrderPo.getTenantId());
-                    return Triple.of(true, "", null);
+                    break;
                 case 4:
                     //处理渠道活动
                     userBizService.joinChannelActivityProcess(uid);
-                    return Triple.of(true, "", null);
+                    break;
                 default:
-                    return Triple.of(true, "", null);
+                    break;
             }
         }
-        
-        return Triple.of(true, "", null);
     }
     
     private void sendMerchantRebateMQ(Long uid, String orderId) {
@@ -463,6 +450,7 @@ public class ActivityServiceImpl implements ActivityService {
                 return Triple.of(false, "ELECTRICITY.0019", "未找到用户");
             }
     
+            // 530需求:以最新的参与活动为准
             Integer latestActivitySource = userInfoExtra.getLatestActivitySource();
             if (Objects.equals(UserInfoActivitySourceEnum.SUCCESS_SHARE_ACTIVITY.getCode(), latestActivitySource)) {
                 //获取参与邀请活动记录
