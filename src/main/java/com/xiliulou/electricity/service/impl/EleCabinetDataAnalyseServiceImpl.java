@@ -1,16 +1,41 @@
 package com.xiliulou.electricity.service.impl;
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
+import com.google.common.collect.Maps;
 import com.google.api.client.util.Maps;
 import com.xiliulou.core.thread.XllThreadPoolExecutorService;
 import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.EleCabinetConstant;
 import com.xiliulou.electricity.constant.ElectricityCabinetDataAnalyseConstant;
+import com.xiliulou.electricity.constant.NumberConstant;
+import com.xiliulou.electricity.entity.EleCabinetCoreData;
+import com.xiliulou.electricity.entity.ElePower;
+import com.xiliulou.electricity.entity.ElectricityBattery;
+import com.xiliulou.electricity.entity.ElectricityCabinet;
+import com.xiliulou.electricity.entity.ElectricityCabinetBox;
+import com.xiliulou.electricity.entity.ElectricityCabinetModel;
+import com.xiliulou.electricity.entity.ElectricityCabinetOrder;
+import com.xiliulou.electricity.entity.ElectricityCabinetServer;
+import com.xiliulou.electricity.entity.Franchisee;
+import com.xiliulou.electricity.entity.Store;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.entity.merchant.MerchantArea;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.query.ElectricityCabinetQuery;
+import com.xiliulou.electricity.service.EleCabinetCoreDataService;
+import com.xiliulou.electricity.service.EleCabinetDataAnalyseService;
+import com.xiliulou.electricity.service.ElePowerService;
+import com.xiliulou.electricity.service.EleWarnMsgService;
+import com.xiliulou.electricity.service.ElectricityBatteryService;
+import com.xiliulou.electricity.service.ElectricityCabinetBoxService;
+import com.xiliulou.electricity.service.ElectricityCabinetModelService;
+import com.xiliulou.electricity.service.ElectricityCabinetOrderService;
+import com.xiliulou.electricity.service.ElectricityCabinetServerService;
+import com.xiliulou.electricity.service.ElectricityCabinetService;
+import com.xiliulou.electricity.service.FranchiseeService;
+import com.xiliulou.electricity.service.StoreService;
 import com.xiliulou.electricity.request.merchant.MerchantAreaRequest;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.service.merchant.MerchantAreaService;
@@ -267,23 +292,77 @@ public class EleCabinetDataAnalyseServiceImpl implements EleCabinetDataAnalyseSe
     }
     
     private List<EleCabinetDataAnalyseVO> buildEleCabinetDataAnalyseVOs(List<EleCabinetDataAnalyseVO> electricityCabinetList, ElectricityCabinetQuery cabinetQuery) {
+        List<Integer> electricityCabinetIdList = electricityCabinetList.stream().map(EleCabinetDataAnalyseVO::getId).collect(Collectors.toList());
+    
+        //柜机核心板数据
+        List<EleCabinetCoreData> eleCabinetCoreDataList=eleCabinetCoreDataService.listCabinetCoreDataByEids(electricityCabinetIdList);
+        Map<Long, EleCabinetCoreData> eleCabinetCoreDataMap =Maps.newHashMap();
+        if(CollectionUtils.isNotEmpty(eleCabinetCoreDataList)){
+            eleCabinetCoreDataMap = eleCabinetCoreDataList.stream().collect(Collectors.toMap(EleCabinetCoreData::getElectricityCabinetId, Function.identity(), (k1, k2) -> k2));
+        }
+        
+        //柜机服务时间
+        List<ElectricityCabinetServer> eleCabinetServerList=eleCabinetServerService.listCabinetServerByEids(electricityCabinetIdList);
+        Map<Integer, ElectricityCabinetServer> eleCabinetServerMap =Maps.newHashMap();
+        if(CollectionUtils.isNotEmpty(eleCabinetServerList)){
+            eleCabinetServerMap=eleCabinetServerList.stream().collect(Collectors.toMap(ElectricityCabinetServer::getElectricityCabinetId, Function.identity(), (k1, k2) -> k2));
+        }
+        
+        //柜机电表读数
+        List<ElePower> eleCabinetPowerList=elePowerService.listCabinetPowerByEids(electricityCabinetIdList);
+        Map<Long, ElePower> eleCabinetPowerMap =Maps.newHashMap();
+        if(CollectionUtils.isNotEmpty(eleCabinetPowerList)){
+            eleCabinetPowerMap=eleCabinetPowerList.stream().collect(Collectors.toMap(ElePower::getEid,Function.identity(), (k1, k2) -> k2));
+        }
+    
+        //充电中的电池
+        List<ElectricityBattery> batteryList = electricityBatteryService.listBatteryByEid(electricityCabinetIdList);
+        Map<Integer, Long> chargeBatteryMap = Maps.newHashMap();
+        if (CollectionUtils.isNotEmpty(batteryList)) {
+            chargeBatteryMap = batteryList.stream()
+                    .filter(battery -> Objects.nonNull(battery.getElectricityCabinetId()) && (Objects.equals(battery.getChargeStatus(), ElectricityBattery.CHARGE_STATUS_STARTING)
+                            || Objects.equals(battery.getChargeStatus(), ElectricityBattery.CHARGE_STATUS_CHARGING)))
+                    .collect(Collectors.groupingBy(ElectricityBattery::getElectricityCabinetId, Collectors.counting()));
+        }
+    
+        for (EleCabinetDataAnalyseVO item : electricityCabinetList) {
+            //电柜温度
+            EleCabinetCoreData eleCabinetCoreData =eleCabinetCoreDataMap.get(item.getId().longValue());
+            if(Objects.nonNull(eleCabinetCoreData) && Objects.nonNull(eleCabinetCoreData.getTemp())){
+                item.setTemp(eleCabinetCoreData.getTemp());
+            }else{
+                item.setTemp(0);
+            }
+            
+            //电柜服务时间
+            ElectricityCabinetServer eleCabinetServer =eleCabinetServerMap.get(item.getId());
+            if(Objects.nonNull(eleCabinetServer) && Objects.nonNull(eleCabinetServer.getServerEndTime())){
+                item.setServerEndTime(eleCabinetServer.getServerEndTime());
+            }else{
+                item.setServerEndTime(System.currentTimeMillis());
+            }
+            
+            //电表读数
+            ElePower elePower =eleCabinetPowerMap.get(item.getId().longValue());
+            if(Objects.nonNull(elePower) && Objects.nonNull(elePower.getSumPower())){
+                item.setPowerConsumption(elePower.getSumPower());
+            }else{
+                item.setPowerConsumption(0D);
+            }
+            
+            //充电电池数
+            Long chargeBatteryNumber = chargeBatteryMap.get(item.getId());
+            if(Objects.nonNull(chargeBatteryNumber)){
+                item.setChargeBatteryNumber(Math.toIntExact(chargeBatteryNumber));
+            }else{
+                item.setChargeBatteryNumber(NumberConstant.ZERO);
+            }
+        }
+        
         CompletableFuture<Void> acquireBasicInfo = CompletableFuture.runAsync(() -> electricityCabinetList.forEach(item -> {
             ElectricityCabinetModel cabinetModel = eleCabinetModelService.queryByIdFromCache(item.getModelId());
             item.setModelName(Objects.nonNull(cabinetModel) ? cabinetModel.getName() : "");
             
-            EleCabinetCoreData eleCabinetCoreData = eleCabinetCoreDataService.selectByEid(item.getId());
-            item.setTemp(Objects.nonNull(eleCabinetCoreData) ? eleCabinetCoreData.getTemp() : 0);
-            
-            ElectricityCabinetServer eleCabinetServer = eleCabinetServerService.selectByEid(item.getId());
-            item.setServerEndTime(Objects.nonNull(eleCabinetServer) ? eleCabinetServer.getServerEndTime() : System.currentTimeMillis());
-            
-            ElectricityCabinetPower eleCabinetPower = eleCabinetPowerService.selectLatestByEid(item.getId());
-            item.setPowerConsumption(Objects.nonNull(eleCabinetPower) ? eleCabinetPower.getSumPower() : 0);
-            
-            ElePower elePower = elePowerService.queryLatestByEid(item.getId().longValue());
-            //ElectricityCabinetPower eleCabinetPower = eleCabinetPowerService.selectLatestByEid(item.getId());
-            item.setPowerConsumption(Objects.nonNull(elePower) ? elePower.getSumPower() : 0);
-
             Store store = storeService.queryByIdFromCache(item.getStoreId());
             item.setStoreName(Objects.nonNull(store) ? store.getName() : "");
             
@@ -295,11 +374,18 @@ public class EleCabinetDataAnalyseServiceImpl implements EleCabinetDataAnalyseSe
             return null;
         });
         
+        //将格挡根据柜机id分组
+        List<ElectricityCabinetBox> eleCabinetBoxList = electricityCabinetBoxService.listCabineBoxByEids(electricityCabinetIdList);
+        Map<Integer, List<ElectricityCabinetBox>> cabinetBoxMap=Maps.newHashMap();
+        if(CollectionUtils.isNotEmpty(eleCabinetBoxList)){
+            cabinetBoxMap = eleCabinetBoxList.stream().collect(Collectors.groupingBy(ElectricityCabinetBox::getElectricityCabinetId));
+        }
+    
+        Map<Integer, List<ElectricityCabinetBox>> finalCabinetBoxMap = cabinetBoxMap;
         CompletableFuture<Void> acquireCellInfo = CompletableFuture.runAsync(() -> electricityCabinetList.forEach(item -> {
-            
             Double fullyCharged = item.getFullyCharged();
             
-            List<ElectricityCabinetBox> cabinetBoxList = electricityCabinetBoxService.queryAllBoxByElectricityCabinetId(item.getId());
+            List<ElectricityCabinetBox> cabinetBoxList = finalCabinetBoxMap.get(item.getId());
             if (CollectionUtils.isEmpty(cabinetBoxList)) {
                 return;
             }
@@ -318,12 +404,7 @@ public class EleCabinetDataAnalyseServiceImpl implements EleCabinetDataAnalyseSe
             
             long openFanNumber = cabinetBoxList.stream().filter(e -> !Objects.equals(e.getIsFan(), ElectricityCabinetBox.OPEN_FAN)).count();
             
-            long chargeCellNumber = cabinetBoxList.stream().filter(e -> StringUtils.isNotBlank(e.getSn())).map(t -> electricityBatteryService.queryBySnFromDb(t.getSn()))
-                    .filter(battery -> Objects.nonNull(battery) && (Objects.equals(battery.getChargeStatus(), ElectricityBattery.CHARGE_STATUS_STARTING) || Objects.equals(
-                            battery.getChargeStatus(), ElectricityBattery.CHARGE_STATUS_CHARGING))).count();
-            
             item.setFullBatteryNumber((int) fullBatteryNumber);
-            item.setChargeBatteryNumber((int) chargeCellNumber);
             item.setEmptyCellNumber((int) emptyCellNumber);
             item.setDisableCellNumber((int) disableCellNumber);
             item.setFanOpenNumber((int) openFanNumber);

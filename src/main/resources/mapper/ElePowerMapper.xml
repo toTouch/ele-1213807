@@ -129,6 +129,18 @@
         sum_power, hour_power, electric_charge
         from t_ele_power where eid = #{eid} order by id desc limit 1
     </select>
+    
+    <select id="selectListByEids" resultMap="ElePowerMap">
+        SELECT t1.sum_power , t1.eid
+        FROM
+        t_ele_power t1
+        RIGHT JOIN ( SELECT MAX( id ) AS id FROM t_ele_power WHERE
+        eid in
+        <foreach collection="eIdList" separator="," open="(" close=")" item="id">
+            #{id}
+        </foreach>
+        GROUP BY eid ) t2 ON t1.id = t2.id;
+    </select>
 
     <select id="queryDayList" resultType="com.xiliulou.electricity.vo.ElePowerDayVo">
         select from_unixtime(report_time/1000, '%Y-%m-%d') date,sum(hour_power) sumPower

@@ -171,6 +171,12 @@ public class ElePowerServiceImpl implements ElePowerService {
         return this.elePowerMapper.selectLatestByEid(eid);
     }
     
+    @Slave
+    @Override
+    public List<ElePower> listCabinetPowerByEids(List<Integer> electricityCabinetIdList) {
+        return this.elePowerMapper.selectListByEids(electricityCabinetIdList);
+    }
+    
     @Override
     public void exportList(ElePowerListQuery query, HttpServletResponse response) {
         List<ElePower> elePowers = elePowerMapper.queryPartAttList(query);

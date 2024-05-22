@@ -158,4 +158,6 @@ public interface ElectricityBatteryService extends IService<ElectricityBattery> 
      * @since V1.0 2024/3/18
     */
     Map<String,Long> listIdsBySnArray(List<String> snList, Integer tenantId, Long sourceFranchiseeId);
+    
+    List<ElectricityBattery> listBatteryByEid(List<Integer> electricityCabinetIdList);
 }

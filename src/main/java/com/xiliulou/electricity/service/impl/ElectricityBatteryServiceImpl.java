@@ -1159,6 +1159,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
      * @param snList
      * @return
      */
+    @Slave
     @Override
     public List<ElectricityBattery> listBatteryBySnList(List<String> snList) {
         if (CollectionUtils.isEmpty(snList)) {
@@ -1699,5 +1700,11 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
     public List<ElectricityBatteryVO> listBatteriesBySn(Integer offset, Integer size, Integer tenantId, Long franchiseeId, String sn) {
         
         return electricitybatterymapper.selectListBatteriesBySn(offset, size, tenantId, franchiseeId, sn);
+    }
+    
+    @Slave
+    @Override
+    public List<ElectricityBattery> listBatteryByEid(List<Integer> electricityCabinetIdList) {
+        return electricitybatterymapper.selectListByEid(electricityCabinetIdList);
     }
 }

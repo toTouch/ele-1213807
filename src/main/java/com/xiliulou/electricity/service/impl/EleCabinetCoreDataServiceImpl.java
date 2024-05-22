@@ -48,7 +48,13 @@ public class EleCabinetCoreDataServiceImpl implements EleCabinetCoreDataService 
     public EleCabinetCoreData selectByEid(Integer eid) {
         return eleCabinetCoreDataMapper.selectByEid(eid);
     }
-
+    
+    @Slave
+    @Override
+    public List<EleCabinetCoreData> listCabinetCoreDataByEids(List<Integer> electricityCabinetIdList) {
+        return eleCabinetCoreDataMapper.selectListByEids(electricityCabinetIdList);
+    }
+    
     /**
      * 通过ID查询单条数据从DB
      *

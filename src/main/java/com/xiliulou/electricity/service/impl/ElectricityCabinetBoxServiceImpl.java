@@ -220,6 +220,12 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
         return electricityCabinetBoxMapper.selectListByElectricityCabinetIdS(electricityCabinetIdS, tenantId);
     }
 
+    @Slave
+    @Override
+    public List<ElectricityCabinetBox> listCabineBoxByEids(List<Integer> electricityCabinetIdList) {
+        return electricityCabinetBoxMapper.selectListByEids(electricityCabinetIdList);
+    }
+    
     @Override
     @Slave
     public List<ElectricityCabinetBox> queryAllBoxByElectricityCabinetId(Integer id) {
