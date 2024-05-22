@@ -27,6 +27,8 @@ import com.xiliulou.electricity.service.asset.AssetInventoryService;
 import com.xiliulou.electricity.service.retrofit.BatteryPlatRetrofitService;
 import com.xiliulou.electricity.service.supper.AdminSupperService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
+import com.xiliulou.electricity.ttl.TtlXllThreadPoolExecutorServiceWrapper;
+import com.xiliulou.electricity.ttl.TtlXllThreadPoolExecutorsSupport;
 import com.xiliulou.electricity.tx.AdminSupperTxService;
 import com.xiliulou.electricity.utils.AESUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
@@ -87,7 +89,7 @@ public class AdminSupperServiceImpl implements AdminSupperService {
     @Resource
     private RoleMapper roleMapper;
     
-    private final XllThreadPoolExecutorService executor = XllThreadPoolExecutors.newFixedThreadPool("ADMIN_SUPPER_POOL_EXECUTOR", 1, "admin-supper-executor");
+    private final TtlXllThreadPoolExecutorServiceWrapper serviceWrapper = TtlXllThreadPoolExecutorsSupport.get(XllThreadPoolExecutors.newFixedThreadPool("ADMIN_SUPPER_POOL_EXECUTOR", 1, "admin-supper-executor"));
     
     /**
      * 根据电池SN删除电池
@@ -250,7 +252,7 @@ public class AdminSupperServiceImpl implements AdminSupperService {
             Set<Long> ids = rolePermissions.stream().map(GrantRolePermission::getRoleId).collect(Collectors.toSet());
             log.info("Grant Permission success. grant permission is : {}", rolePermissions);
             return ids;
-        }, executor, userGrantSourceReq, (ids) -> {
+        }, serviceWrapper, userGrantSourceReq, (ids) -> {
             if (CollectionUtils.isEmpty(ids)) {
                 return;
             }
