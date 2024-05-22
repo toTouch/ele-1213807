@@ -9,15 +9,15 @@
     </insert>
     
     
-    <select id="selectRepeatGrant" resultType="com.xiliulou.electricity.bo.supper.GrantRoleBO">
+    <select id="selectRepeatGrant" resultType="com.xiliulou.electricity.entity.GrantRolePermission">
         SELECT role_id,p_id FROM t_role_permission
-            <where>
-                <if test="roleIds != null and roleIds.size() > 0">
-                    `role_id` IN
-                    <foreach collection="roleIds" item="roleId" open="(" separator="," close=")">
-                        #{roleId}
-                    </foreach>
-                </if>
-            </where>
+        <where>
+            <if test="roleIds != null and roleIds.size() > 0">
+                `role_id` IN
+                <foreach collection="roleIds" item="roleId" open="(" separator="," close=")">
+                    #{roleId}
+                </foreach>
+            </if>
+        </where>
     </select>
 </mapper>

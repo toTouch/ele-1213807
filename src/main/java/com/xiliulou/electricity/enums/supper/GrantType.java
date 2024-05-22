@@ -32,17 +32,17 @@ public enum GrantType {
     private final Integer code;
     
     @Getter
-    private final String names;
+    private final String name;
     
-    GrantType(Integer code, String names) {
+    GrantType(Integer code, String name) {
         this.code = code;
-        this.names = names;
+        this.name = name;
     }
     
     public static Set<String> namesOfCode(List<Integer> code) {
         if (CollectionUtils.isEmpty(code) || code.contains(-1)){
-            return Arrays.stream(GrantType.values()).filter(g -> !g.code.equals(-1)).map(GrantType::getNames).collect(Collectors.toSet());
+            return Arrays.stream(GrantType.values()).filter(g -> !g.code.equals(-1)).map(GrantType::getName).collect(Collectors.toSet());
         }
-        return Arrays.stream(GrantType.values()).filter(g -> code.contains(g.code)).map(GrantType::getNames).collect(Collectors.toSet());
+        return Arrays.stream(GrantType.values()).filter(g -> code.contains(g.code)).map(GrantType::getName).collect(Collectors.toSet());
     }
 }

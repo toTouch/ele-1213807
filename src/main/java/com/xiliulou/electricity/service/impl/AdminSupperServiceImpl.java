@@ -3,17 +3,14 @@ package com.xiliulou.electricity.service.impl;
 import cn.hutool.core.lang.Pair;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
-import com.xiliulou.core.thread.XllThreadPoolExecutorService;
 import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.async.AsyncTransaction;
-import com.xiliulou.electricity.bo.supper.GrantRoleBO;
 import com.xiliulou.electricity.constant.AssetConstant;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.entity.GrantRolePermission;
-import com.xiliulou.electricity.entity.RolePermission;
 import com.xiliulou.electricity.entity.Tenant;
 import com.xiliulou.electricity.enums.asset.AssetTypeEnum;
 import com.xiliulou.electricity.enums.supper.GrantType;
@@ -26,7 +23,6 @@ import com.xiliulou.electricity.service.TenantService;
 import com.xiliulou.electricity.service.asset.AssetInventoryService;
 import com.xiliulou.electricity.service.retrofit.BatteryPlatRetrofitService;
 import com.xiliulou.electricity.service.supper.AdminSupperService;
-import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.ttl.TtlXllThreadPoolExecutorServiceWrapper;
 import com.xiliulou.electricity.ttl.TtlXllThreadPoolExecutorsSupport;
 import com.xiliulou.electricity.tx.AdminSupperTxService;
@@ -36,8 +32,6 @@ import com.xiliulou.electricity.web.query.battery.BatteryBatchOperateQuery;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.ObjectUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -49,7 +43,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -89,7 +82,8 @@ public class AdminSupperServiceImpl implements AdminSupperService {
     @Resource
     private RoleMapper roleMapper;
     
-    private final TtlXllThreadPoolExecutorServiceWrapper serviceWrapper = TtlXllThreadPoolExecutorsSupport.get(XllThreadPoolExecutors.newFixedThreadPool("ADMIN_SUPPER_POOL_EXECUTOR", 1, "admin-supper-executor"));
+    private final TtlXllThreadPoolExecutorServiceWrapper serviceWrapper = TtlXllThreadPoolExecutorsSupport.get(
+            XllThreadPoolExecutors.newFixedThreadPool("ADMIN_SUPPER_POOL_EXECUTOR", 1, "admin-supper-executor"));
     
     /**
      * 根据电池SN删除电池
@@ -202,53 +196,57 @@ public class AdminSupperServiceImpl implements AdminSupperService {
             return;
         }
         asyncTransaction.runAsyncTransactional(grant -> {
-            List<Integer> type = grant.getType();
-            List<Integer> sourceId = grant.getSourceIds();
+            List<Integer> types = grant.getType();
+            List<Long> sourceIds = grant.getSourceIds();
             List<Integer> tenantIds = grant.getTenantIds();
             Set<GrantRolePermission> rolePermissions = new HashSet<>();
+            
             //根据权限类型和租户查询对应租户的所有角色信息
-            List<Integer> roleIds = roleMapper.selectIdsByNamesAndTenantIds(GrantType.namesOfCode(type), tenantIds);
+            List<Long> roleIds = roleMapper.selectIdsByNamesAndTenantIds(GrantType.namesOfCode(types), tenantIds);
             if (CollectionUtils.isEmpty(roleIds)) {
                 log.info("grantPermission failed. roleIds is empty.");
                 return null;
             }
+            
             //根据角色id查询对应的权限id
-            List<GrantRoleBO> checkRoleIds = rolePermissionMapper.selectRepeatGrant(roleIds);
-            for (Integer checkRoleId : roleIds) {
+            List<GrantRolePermission> checkRoleIds = rolePermissionMapper.selectRepeatGrant(roleIds);
+            for (Long checkRoleId : roleIds) {
                 //为空说明所有权限都未被添加过，该角色无任何权限，添加资源中的所有
-                if (CollectionUtils.isEmpty(checkRoleIds)){
-                    Set<GrantRolePermission> collect = sourceId.stream().map(id -> {
+                if (CollectionUtils.isEmpty(checkRoleIds)) {
+                    Set<GrantRolePermission> collect = sourceIds.stream().map(id -> {
                         GrantRolePermission rolePermission = new GrantRolePermission();
-                        rolePermission.setRoleId(Long.valueOf(checkRoleId));
-                        rolePermission.setPId(Long.valueOf(id));
+                        rolePermission.setRoleId(checkRoleId);
+                        rolePermission.setPId(id);
                         return rolePermission;
                     }).collect(Collectors.toSet());
                     rolePermissions.addAll(collect);
                     continue;
                 }
-                //构建资源重复比对的数据
-                Map<Integer, List<GrantRoleBO>> collected = checkRoleIds.stream().collect(Collectors.groupingBy(GrantRoleBO::getRoleId));
-                List<GrantRoleBO> roleBOS = collected.getOrDefault(checkRoleId,new ArrayList<>());
-                Set<Integer> collect = roleBOS.stream().map(GrantRoleBO::getPId).collect(Collectors.toSet());
-                //如果存在则取交集,并在资源中移除重叠的部分
-                if (collect.retainAll(sourceId)) {
-                    sourceId.removeAll(collect);
-                }
                 
-                if (CollectionUtils.isEmpty(sourceId)) {
+                //构建资源重复比对的数据
+                Map<Long, List<GrantRolePermission>> collected = checkRoleIds.stream().collect(Collectors.groupingBy(GrantRolePermission::getRoleId));
+                List<GrantRolePermission> roleBOS = collected.getOrDefault(checkRoleId, new ArrayList<>());
+                Set<Long> collect = roleBOS.stream().map(GrantRolePermission::getPId).collect(Collectors.toSet());
+                
+                //如果存在则取交集,并在资源中移除重叠的部分
+                if (collect.retainAll(sourceIds)) {
+                    sourceIds.removeAll(collect);
+                }
+                if (CollectionUtils.isEmpty(sourceIds)) {
                     continue;
                 }
+                
                 //批量插入数据构建
-                List<GrantRolePermission> batchInsert = sourceId.stream().map(id -> {
+                List<GrantRolePermission> batchInsert = sourceIds.stream().map(id -> {
                     GrantRolePermission rolePermission = new GrantRolePermission();
-                    rolePermission.setRoleId(Long.valueOf(checkRoleId));
-                    rolePermission.setPId(Long.valueOf(id));
+                    rolePermission.setRoleId(checkRoleId);
+                    rolePermission.setPId(id);
                     return rolePermission;
                 }).collect(Collectors.toList());
                 rolePermissions.addAll(batchInsert);
             }
             
-            rolePermissionMapper.batchInsert(rolePermissions);
+            rolePermissionMapper.batchInsert(new ArrayList<>(rolePermissions));
             Set<Long> ids = rolePermissions.stream().map(GrantRolePermission::getRoleId).collect(Collectors.toSet());
             log.info("Grant Permission success. grant permission is : {}", rolePermissions);
             return ids;

@@ -22,19 +22,22 @@ import java.util.List;
 public class UserGrantSourceReq implements Serializable {
     
     List<Integer> tenantIds;
+    
     /**
      * <p>
-     *    Description: 角色类型,不传默认所有
-     *    <pre>
+     * Description: 角色类型,不传默认所有
+     * <pre>
      *        0 -- 运营商
      *        1 -- 加盟商
      *        2 -- 门店
      *        -1 -- 所有
      *    </pre>
+     *
+     * @see com.xiliulou.electricity.enums.supper.GrantType
      * </p>
-    */
+     */
     List<Integer> type;
     
     @NotNull(message = "[sourceIds]不能为空")
-    List<Integer> sourceIds;
+    List<Long> sourceIds;
 }
