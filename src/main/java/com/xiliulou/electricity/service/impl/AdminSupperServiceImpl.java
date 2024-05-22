@@ -245,7 +245,10 @@ public class AdminSupperServiceImpl implements AdminSupperService {
                 }).collect(Collectors.toList());
                 rolePermissions.addAll(batchInsert);
             }
-            
+            if (CollectionUtils.isEmpty(rolePermissions)){
+                log.info("grantPermission failed. rolePermissions is empty.");
+                return null;
+            }
             rolePermissionMapper.batchInsert(new ArrayList<>(rolePermissions));
             Set<Long> ids = rolePermissions.stream().map(GrantRolePermission::getRoleId).collect(Collectors.toSet());
             log.info("Grant Permission success. grant permission is : {}", rolePermissions);
