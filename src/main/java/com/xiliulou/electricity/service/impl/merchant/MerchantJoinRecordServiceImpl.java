@@ -630,7 +630,7 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
             }
             
             log.error("JOIN ACTIVITY ERROR! Is not new user, joinUid={}, successActivity={}", uid, activityName);
-            return R.fail("120121", "此活动仅限新用户参加，您已成功参与过{" + activityName + "活动}，无法参与，感谢您的支持");
+            return R.fail("120121", "此活动仅限新用户参加，您已成功参与过" + activityName + "活动，无法参与，感谢您的支持");
         }
         
         // 平台用户，需判断是否购买过套餐
