@@ -25,6 +25,7 @@ import com.xiliulou.electricity.vo.merchant.MerchantCabinetPowerMonthExcelVO;
 import com.xiliulou.electricity.vo.merchant.MerchantCabinetPowerMonthRecordVO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
@@ -124,114 +125,131 @@ public class MerchantCabinetPowerMonthRecordServiceImpl implements MerchantCabin
         }
         
         // 获取场地名称
-        Map<Long, String> placeNameMap = new HashMap<>(detailList.size());
         Set<Long> placeIdSet = detailList.stream().filter(Objects::nonNull).map(MerchantCabinetPowerMonthDetailVO::getPlaceId).collect(Collectors.toSet());
-        List<MerchantPlace> placeList = merchantPlaceService.queryByIdList(new ArrayList<>(placeIdSet), tenantId);
-        if (ObjectUtils.isNotEmpty(placeList)) {
-            placeNameMap = placeList.stream().collect(toMap(MerchantPlace::getId, MerchantPlace::getName, (key, key1) -> key1));
-        }
+        Map<Long, String> placeNameMap = listPlaceNames(placeIdSet, tenantId);
         
-        // sumPower不为0的数据
-        List<MerchantCabinetPowerMonthDetailVO> hasDataDetailList = detailList.stream().filter(item -> !Objects.equals(item.getSumPower(), NumberConstant.ZERO_D))
+        // startPower或sumPower不为0的数据
+        List<MerchantCabinetPowerMonthDetailVO> hasDataDetailList = detailList.stream()
+                .filter(item -> !Objects.equals(item.getStartPower(), NumberConstant.ZERO_D) || !Objects.equals(item.getSumPower(), NumberConstant.ZERO_D))
                 .collect(Collectors.toList());
         
         // 按场地进行分组
         Map<Long, List<MerchantCabinetPowerMonthDetailVO>> placeMap = hasDataDetailList.stream().collect(Collectors.groupingBy(MerchantCabinetPowerMonthDetailVO::getPlaceId));
         
-        Map<Long, String> finalPlaceNameMap = placeNameMap;
         placeMap.forEach((placeId, placeDetailList) -> {
+            if (CollectionUtils.isEmpty(placeDetailList)) {
+                return;
+            }
             
             // 排序
             placeDetailList.sort(Comparator.comparing(MerchantCabinetPowerMonthDetailVO::getEid));
-            
             // 求和
             Double monthSumPower = placeDetailList.stream().mapToDouble(MerchantCabinetPowerMonthDetailVO::getSumPower).sum();
             Double monthSumCharge = placeDetailList.stream().mapToDouble(MerchantCabinetPowerMonthDetailVO::getSumCharge).sum();
             
-            if (CollectionUtils.isNotEmpty(placeDetailList)) {
+            placeDetailList.forEach(item -> {
+                String beginDate = DateUtils.getYearAndMonthAndDayByTimeStamps(item.getBeginTime());
+                String endDate = DateUtils.getYearAndMonthAndDayByTimeStamps(item.getEndTime());
+                String elePrice;
                 
-                placeDetailList.forEach(item -> {
+                List<EleChargeConfigCalcDetailDto> chargeConfigList = JsonUtil.fromJsonArray(item.getJsonRule(), EleChargeConfigCalcDetailDto.class);
+                if (CollectionUtils.isEmpty(chargeConfigList)) {
+                    return;
+                }
+                
+                String elPeekPrice = StringUtils.EMPTY;
+                String elOrdinaryPrice = StringUtils.EMPTY;
+                String elValleyPrice = StringUtils.EMPTY;
+                
+                if (Objects.equals(chargeConfigList.size(), NumberConstant.ONE)) {
+                    EleChargeConfigCalcDetailDto detail = chargeConfigList.get(NumberConstant.ZERO);
+                    elePrice = String.valueOf(detail.getPrice());
                     
-                    String beginDate = DateUtils.getYearAndMonthAndDayByTimeStamps(item.getBeginTime());
-                    String endDate = DateUtils.getYearAndMonthAndDayByTimeStamps(item.getEndTime());
-                    String elePrice = "";
-                    
-                    List<EleChargeConfigCalcDetailDto> chargeConfigList = JsonUtil.fromJsonArray(item.getJsonRule(), EleChargeConfigCalcDetailDto.class);
-                    if (CollectionUtils.isNotEmpty(chargeConfigList)) {
-                        String elPeekPrice = "";
-                        String elOrdinaryPrice = "";
-                        String elValleyPrice = "";
-                        
-                        if (Objects.equals(chargeConfigList.size(), NumberConstant.ONE)) {
-                            EleChargeConfigCalcDetailDto detail = chargeConfigList.get(NumberConstant.ZERO);
-                            elePrice = String.valueOf(detail.getPrice());
-                            
-                        } else {
-                            for (EleChargeConfigCalcDetailDto detail : chargeConfigList) {
-                                switch (detail.getType()) {
-                                    case ElePower.ORDINARY_TYPE:
-                                        elOrdinaryPrice = detail.getPrice() + "(平)";
-                                        break;
-                                    case ElePower.PEEK_TYPE:
-                                        elPeekPrice = detail.getPrice() + "(峰)";
-                                        break;
-                                    case ElePower.VALLEY_TYPE:
-                                        elValleyPrice = detail.getPrice() + "(谷)";
-                                        break;
-                                    default:
-                                        break;
-                                }
-                            }
-                            
-                            elePrice = elPeekPrice + elOrdinaryPrice + elValleyPrice;
+                } else {
+                    for (EleChargeConfigCalcDetailDto detail : chargeConfigList) {
+                        switch (detail.getType()) {
+                            case ElePower.ORDINARY_TYPE:
+                                elOrdinaryPrice = detail.getPrice() + "(平)";
+                                break;
+                            case ElePower.PEEK_TYPE:
+                                elPeekPrice = detail.getPrice() + "(峰)";
+                                break;
+                            case ElePower.VALLEY_TYPE:
+                                elValleyPrice = detail.getPrice() + "(谷)";
+                                break;
+                            default:
+                                break;
                         }
                     }
                     
-                    // 查询场地
-                    MerchantCabinetPowerMonthExcelVO excelVO = MerchantCabinetPowerMonthExcelVO.builder().monthDate(monthDate).monthSumPower(monthSumPower)
-                            .monthSumCharge(monthSumCharge).endPower(item.getEndPower()).sumCharge(item.getSumCharge()).endTime(endDate).beginTime(beginDate)
-                            .startPower(item.getStartPower()).sumPower(item.getSumPower()).jsonRule(elePrice).sn(item.getSn()).build();
-                    
-                    if (ObjectUtils.isNotEmpty(finalPlaceNameMap.get(placeId))) {
-                        excelVO.setPlaceName(finalPlaceNameMap.get(placeId));
-                    }
-                    
-                    excelVOList.add(excelVO);
-                });
-            }
-        });
-        
-        // sumPower为0的数据
-        List<MerchantCabinetPowerMonthDetailVO> emptyDetailList = detailList.stream().filter(item -> Objects.equals(item.getSumPower(), NumberConstant.ZERO_D))
-                .collect(Collectors.toList());
-        if (CollectionUtils.isNotEmpty(emptyDetailList)) {
-    
-            // emptyDetailList 按placeId进行升序
-            emptyDetailList.sort(Comparator.comparing(MerchantCabinetPowerMonthDetailVO::getPlaceId));
-            
-            emptyDetailList.forEach(item -> {
-                Long placeId = item.getPlaceId();
-                String beginDate = DateUtils.getYearAndMonthAndDayByTimeStamps(item.getBeginTime());
-                String endDate = DateUtils.getYearAndMonthAndDayByTimeStamps(item.getEndTime());
+                    elePrice = elPeekPrice + elOrdinaryPrice + elValleyPrice;
+                }
                 
-                MerchantCabinetPowerMonthExcelVO excelVO = MerchantCabinetPowerMonthExcelVO.builder().monthDate(monthDate).endTime(endDate).beginTime(beginDate).build();
+                // 查询场地
+                MerchantCabinetPowerMonthExcelVO excelVO = MerchantCabinetPowerMonthExcelVO.builder().monthDate(monthDate).monthSumPower(monthSumPower)
+                        .monthSumCharge(monthSumCharge).endPower(item.getEndPower()).sumCharge(item.getSumCharge()).endTime(endDate).beginTime(beginDate)
+                        .startPower(item.getStartPower()).sumPower(item.getSumPower()).jsonRule(elePrice).sn(item.getSn()).build();
                 
-                if (ObjectUtils.isNotEmpty(finalPlaceNameMap.get(placeId))) {
-                    excelVO.setPlaceName(finalPlaceNameMap.get(placeId));
+                if (ObjectUtils.isNotEmpty(placeNameMap.get(placeId))) {
+                    excelVO.setPlaceName(placeNameMap.get(placeId));
                 }
                 
                 excelVOList.add(excelVO);
             });
+        });
+        
+        // 移除有数据的集合，再处理空数据
+        detailList.removeAll(hasDataDetailList);
+        if (CollectionUtils.isEmpty(detailList)) {
+            return excelVOList;
         }
         
+        // 按placeId进行升序
+        detailList.sort(Comparator.comparing(MerchantCabinetPowerMonthDetailVO::getPlaceId));
+        
+        detailList.forEach(item -> {
+            Long placeId = item.getPlaceId();
+            String beginDate = DateUtils.getYearAndMonthAndDayByTimeStamps(item.getBeginTime());
+            String endDate = DateUtils.getYearAndMonthAndDayByTimeStamps(item.getEndTime());
+            
+            MerchantCabinetPowerMonthExcelVO excelVO = MerchantCabinetPowerMonthExcelVO.builder().monthDate(monthDate).endTime(endDate).beginTime(beginDate).build();
+            
+            if (ObjectUtils.isNotEmpty(placeNameMap.get(placeId))) {
+                excelVO.setPlaceName(placeNameMap.get(placeId));
+            }
+            
+            excelVOList.add(excelVO);
+        });
+        
         return excelVOList;
+    }
+    
+    private Map<Long, String> listPlaceNames(Set<Long> placeIdSet, Integer tenantId) {
+        Map<Long, String> map = new HashMap<>();
+        if (CollectionUtils.isEmpty(placeIdSet)) {
+            return map;
+        }
+        
+        int batchSize = 50;
+        ArrayList<Long> placeIdList = new ArrayList<>(placeIdSet);
+        ListUtils.partition(placeIdList, batchSize).forEach(ids -> {
+            List<MerchantPlace> placeList = merchantPlaceService.queryByIdList(ids, tenantId);
+            if (CollectionUtils.isEmpty(placeList)) {
+                return;
+            }
+            
+            Map<Long, String> nameMap = placeList.stream().collect(toMap(MerchantPlace::getId, MerchantPlace::getName, (key, key1) -> key1));
+            map.putAll(nameMap);
+            
+        });
+        
+        return map;
     }
     
     @Override
     public void exportExcel(MerchantPowerRequest request, HttpServletResponse response) {
         String fileName = "场地电费出账记录.xlsx";
-        try {
-            ServletOutputStream outputStream = response.getOutputStream();
+        try (ServletOutputStream outputStream = response.getOutputStream()) {
             // 告诉浏览器用什么软件可以打开此文件
             response.setHeader("content-Type", "application/vnd.ms-excel");
             // 下载文件的默认名称
