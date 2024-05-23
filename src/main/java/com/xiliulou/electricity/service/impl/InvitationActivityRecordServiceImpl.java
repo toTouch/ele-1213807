@@ -995,7 +995,7 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
         }
         
         // 会员扩展表是否需要更新最新参与活动类型
-        Boolean needUpdateUserInfoExtra = true;
+        boolean needUpdateUserInfoExtra = true;
         
         for (Long activityId : newActivityIdSet2) {
             //用户是否已参与过此活动
