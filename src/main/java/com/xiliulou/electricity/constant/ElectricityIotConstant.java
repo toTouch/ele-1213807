@@ -72,7 +72,7 @@ public class ElectricityIotConstant {
     
     public static final String HARDWARE_FAILURE_WARN_MSG_HANDLER = "hardwareFailureWarnMsgHandler";
     
-    
+    public static final String HARDWARE_FAULT_MSG_HANDLER = "hardwareFaultWarnMsgHandler";
     
     
     /**
@@ -361,6 +361,8 @@ public class ElectricityIotConstant {
      */
     public static final String HARDWARE_FAILURE_WARN_MSG = "hardware_failure_warn_msg";
     public static final String HARDWARE_FAILURE_WARN_MSG_ACK = "hardware_failure_warn_msg_ack";
+    public static final String HARDWARE_FAULT_WARN_MSG_ACK = "hardware_fault_warn_msg_ack";
+    
     
     /**
      * 离线换电

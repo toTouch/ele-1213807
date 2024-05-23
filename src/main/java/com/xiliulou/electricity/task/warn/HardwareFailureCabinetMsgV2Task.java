@@ -1,4 +1,4 @@
-package com.xiliulou.electricity.task;
+package com.xiliulou.electricity.task.warn;
 
 import com.xiliulou.electricity.service.EleHardwareFailureCabinetMsgService;
 import com.xxl.job.core.biz.model.ReturnT;
@@ -8,17 +8,15 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.Resource;
-
 /**
  * @author maxiaodong
  * @date 2023/12/28 18:55
  * @mood
  */
 @Component
-@JobHandler(value = "hardwareFailureCabinetMsgTask")
+@JobHandler(value = "hardwareFailureCabinetMsgV2Task")
 @Slf4j
-public class HardwareFailureCabinetMsgTask extends IJobHandler {
+public class HardwareFailureCabinetMsgV2Task extends IJobHandler {
 
     @Autowired
     private EleHardwareFailureCabinetMsgService failureCabinetMsgService;
@@ -26,15 +24,15 @@ public class HardwareFailureCabinetMsgTask extends IJobHandler {
     //定时任务--统计每日换电柜上的故障和告警数量
     @Override
     public ReturnT<String> execute(String param) throws Exception {
-        log.info("hardware Failure Cabinet Msg start");
+        log.info("hardware Failure Cabinet Msg v2 start");
         
         try {
-            failureCabinetMsgService.createFailureWarnData();
+            failureCabinetMsgService.createFailureWarnDataV2();
         } catch (Exception e) {
             log.error("hardware Failure Cabinet Msg error",e);
         }
         
-        log.info("hardware Failure Cabinet Msg end");
+        log.info("hardware Failure Cabinet Msg v2 end");
         
         return IJobHandler.SUCCESS;
     }

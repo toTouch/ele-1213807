@@ -25,4 +25,6 @@ public interface EleHardwareFailureCabinetMsgService {
     Triple<Boolean, String, Object> cabinetOverviewPageCount(FailureWarnCabinetMsgPageRequest request);
     
     void cabinetOverviewExport(FailureWarnCabinetMsgPageRequest request, HttpServletResponse response);
+    
+    void createFailureWarnDataV2();
 }

@@ -54,6 +54,8 @@ public interface MqProducerConstant {
      */
     String TOPIC_FAILURE_WARNING_BREAKDOWN = "FAILURE_WARNING_BREAKDOWN_TOPIC";
     
+    String FAULT_FAILURE_WARNING_BREAKDOWN = "FAULT_WARNING_BREAKDOWN_TOPIC";
+    
     
     /**
      * 用户优惠券公用 topic
