@@ -55,9 +55,10 @@ public class FailureAlarmController {
      * @date 2023/12/15 18:17:54
      * @author maxiaodong
      */
-    @GetMapping("/admin/super/failure/alarm/test")
-    public R test(@RequestParam("msg") String msg) {
-        hardwareFaultMsgHandler.testSend(msg);
+    @PostMapping ("/admin/super/failure/alarm/test")
+    public R test(@RequestBody FailureAlarmSaveRequest request) {
+        log.info("testSignalName:{}", request.getSignalName());
+        hardwareFaultMsgHandler.testSend(request.getSignalName());
         return R.ok();
     }
     
