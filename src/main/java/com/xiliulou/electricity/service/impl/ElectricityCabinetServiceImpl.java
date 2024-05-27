@@ -1261,7 +1261,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         List<ElectricityCabinetBox> emptyCellList = electricityCabinetBoxService.listUsableEmptyCell(eid);
         
         //可换电数量,可换电池数>=1 && 必须有一个空仓
-        if (CollUtil.isNotEmpty(exchangeableList) && exchangeableList.size() >= 1 && CollUtil.isNotEmpty(emptyCellList)) {
+        if (exchangeableList.size() >= 1 && CollUtil.isNotEmpty(emptyCellList)) {
             label.add(1);
         }
         
@@ -1273,12 +1273,12 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         // 租电
         if (Objects.isNull(cabinetExtra.getMinRetainBatteryCount())) {
             // 无限制,柜内符合可换电标准的电池≥1，则可租电
-            if (CollUtil.isNotEmpty(exchangeableList) && exchangeableList.size() >= 1) {
+            if (exchangeableList.size() >= 1) {
                 label.add(2);
             }
         } else {
             // 有限制：最少保留电池数量设置为有限制数量时，柜内符合可换电标准的电池＞=设置的数量
-            if (CollUtil.isNotEmpty(exchangeableList) && exchangeableList.size() >= cabinetExtra.getMinRetainBatteryCount()) {
+            if (exchangeableList.size() >= cabinetExtra.getMinRetainBatteryCount()) {
                 label.add(2);
             }
         }
@@ -1290,7 +1290,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             }
         } else {
             // 最少保留电池数量设置为有限制数量时，柜内符合可换电标准的电池＞=设置的数量 && 仓数为0不可退电
-            if (CollUtil.isNotEmpty(exchangeableList) && exchangeableList.size() <= cabinetExtra.getMaxRetainBatteryCount() && CollUtil.isNotEmpty(emptyCellList)) {
+            if (exchangeableList.size() <= cabinetExtra.getMaxRetainBatteryCount() && CollUtil.isNotEmpty(emptyCellList)) {
                 label.add(3);
             }
         }
