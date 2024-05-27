@@ -8,6 +8,9 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
+
+import java.util.Objects;
 
 /**
  * (RolePermission)实体类
@@ -16,20 +19,32 @@ import lombok.NoArgsConstructor;
  * @since 2020-12-09 14:36:22
  */
 @Data
-@AllArgsConstructor
-@NoArgsConstructor
-@Builder
 @TableName("t_role_permission")
-public class RolePermission {
-    
+public class GrantRolePermission implements Comparable<GrantRolePermission> {
+
     @TableId(value = "id", type = IdType.AUTO)
     private Long id;
-    
+
     private Long roleId;
-    
+
     private Long pId;
-    
+
     public static final Integer DEL_NORMAL = 0;
-    
     public static final Integer DEL_DEL = 1;
+    
+    @Override
+    public String toString() {
+        return String.format("{roleId:%s,pId:%s}", roleId, pId);
+    }
+    
+    @Override
+    public int compareTo(GrantRolePermission o) {
+        if (Objects.isNull(o) || Objects.isNull(o.getRoleId()) || Objects.isNull(o.getPId())){
+            return -1;
+        }
+        if (Objects.equals(o.getRoleId(), this.getRoleId()) && Objects.equals(o.getPId(), this.getPId())){
+            return 0;
+        }
+        return 1;
+    }
 }
