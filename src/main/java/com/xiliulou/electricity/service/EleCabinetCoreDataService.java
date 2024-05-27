@@ -75,4 +75,6 @@ public interface EleCabinetCoreDataService {
     EleCabinetCoreData selectByEleCabinetId(Integer id);
 
     EleCabinetCoreData selectByEid(Integer id);
+    
+    List<EleCabinetCoreData> listCabinetCoreDataByEids(List<Integer> electricityCabinetIdList);
 }

@@ -375,7 +375,7 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
     
     @Slave
     @Override
-    public List<BatteryMemberCard> queryListByIdList(BatteryMemberCardQuery query) {
+    public List<BatteryMemberCard> listMemberCardsByIdList(BatteryMemberCardQuery query) {
         return batteryMemberCardMapper.listByIdList(query);
     }
 
