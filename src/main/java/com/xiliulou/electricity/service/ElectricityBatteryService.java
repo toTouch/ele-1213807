@@ -141,7 +141,7 @@ public interface ElectricityBatteryService extends IService<ElectricityBattery> 
     
     List<ElectricityBattery> queryListByIdList(List<Long> batteryIdSet);
     
-    List<ElectricityBatteryVO> listBatteryBySn(Integer offset, Integer size, Long franchiseeId, String sn);
+    List<ElectricityBatteryVO> listBatteriesBySn(Integer offset, Integer size, Integer tenantId, Long franchiseeId, String sn);
     
     /**
      * <p>
@@ -158,4 +158,6 @@ public interface ElectricityBatteryService extends IService<ElectricityBattery> 
      * @since V1.0 2024/3/18
     */
     Map<String,Long> listIdsBySnArray(List<String> snList, Integer tenantId, Long sourceFranchiseeId);
+    
+    List<ElectricityBattery> listBatteryByEid(List<Integer> electricityCabinetIdList);
 }

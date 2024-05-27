@@ -1024,7 +1024,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         
-        if (Objects.nonNull(electricityConfig) && Objects.equals(ElectricityConfig.NOT_DISABLE_MEMBER_CARD, electricityConfig.getDisableMemberCard()) && Objects.equals(
+        if (Objects.equals(ElectricityConfig.DISABLE_MEMBER_CARD, electricityConfig.getDisableMemberCard()) && Objects.equals(
                 ElectricityConfig.ALLOW_FREEZE_ASSETS, electricityConfig.getAllowFreezeWithAssets()) && carRentalPackageOrderBizService.checkUserHasAssets(user.getUid(),
                 user.getTenantId(), CarRentalPackageOrderBizServiceImpl.ELE)) {
             throw new BizException("300060", "套餐冻结服务，需提前退还租赁的资产，请重新操作");
@@ -1208,6 +1208,12 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         if (Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE_REVIEW)) {
             log.error("ENABLE MEMBER CARD ERROR! disable review userId={}", user.getUid());
             return R.fail("ELECTRICITY.100001", "用户停卡申请审核中");
+        }
+    
+        if (Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_NOT_DISABLE) ||
+                Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE_REVIEW_REFUSE)) {
+            log.error("ENABLE MEMBER CARD ERROR! member card not disable userId={}", user.getUid());
+            return R.fail("ELECTRICITY.100001", "用户未停卡");
         }
         
         if (Objects.equals(userBatteryMemberCard.getMemberCardId(), UserBatteryMemberCard.SEND_REMAINING_NUMBER)) {
@@ -1709,6 +1715,17 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         if (Objects.isNull(userBatteryMemberCard) || Objects.isNull(userBatteryMemberCard.getMemberCardId())) {
             log.warn("ADMIN ENABLE BATTERY MEMBERCARD ERROR! user haven't memberCard uid={}", userInfo.getUid());
             return R.fail("100210", "用户未开通套餐");
+        }
+        
+        if (Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE_REVIEW)) {
+            log.error("ADMIN ENABLE BATTERY MEMBERCARD ERROR! disable review userId={}", userInfo.getUid());
+            return R.fail("ELECTRICITY.100001", "用户停卡申请审核中");
+        }
+        
+        if (Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_NOT_DISABLE) ||
+                Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE_REVIEW_REFUSE)) {
+            log.error("ADMIN ENABLE BATTERY MEMBERCARD ERROR! member card not disable userId={}", userInfo.getUid());
+            return R.fail("ELECTRICITY.100001", "用户未停卡");
         }
         
         BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());

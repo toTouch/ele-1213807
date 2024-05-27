@@ -246,6 +246,16 @@
         from t_ele_cabinet_core_data
         where electricity_cabinet_id=#{eid}
     </select>
+    
+    <select id="selectListByEids" resultMap="EleCabinetCoreDataMap">
+        select
+        id, electricity_cabinet_id, temp
+        from t_ele_cabinet_core_data
+        where electricity_cabinet_id in
+        <foreach collection="eIdList" separator="," open="(" close=")" item="id">
+            #{id}
+        </foreach>
+    </select>
 
 
 </mapper>

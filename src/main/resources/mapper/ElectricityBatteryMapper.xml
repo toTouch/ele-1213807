@@ -1272,7 +1272,7 @@
         </if>
     </select>
     
-    <select id="listBatteryBySn" resultType="com.xiliulou.electricity.vo.ElectricityBatteryVO">
+    <select id="selectListBatteriesBySn" resultType="com.xiliulou.electricity.vo.ElectricityBatteryVO">
         SELECT
             id,
             sn
@@ -1280,12 +1280,28 @@
             t_electricity_battery
         <where>
             del_flag = 0
-            and franchisee_id = #{franchiseeId}
+            and tenant_id = #{tenantId}
+            <if test="franchiseeId != null">
+                and franchisee_id = #{franchiseeId}
+            </if>
             <if test="sn != null and sn !=''">
                 and sn like concat('%',#{sn,jdbcType=VARCHAR},'%')
             </if>
         </where>
         limit #{offset}, #{size}
+    </select>
+    
+    <select id="selectListByEid" resultType="com.xiliulou.electricity.entity.ElectricityBattery">
+        SELECT
+        id,sn,charge_status,electricity_cabinet_id
+        FROM
+        t_electricity_battery
+        where
+        del_flag = 0
+        and electricity_cabinet_id in
+        <foreach collection="eIdList" separator="," open="(" close=")" item="id">
+            #{id}
+        </foreach>
     </select>
     
     <update id="batchExitWarehouse">
