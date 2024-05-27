@@ -1274,8 +1274,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 label.add(2);
             }
         } else {
-            // 有限制：最少保留电池数量设置为有限制数量时，柜内符合可换电标准的电池＞设置的数量
-            if (CollUtil.isNotEmpty(exchangeableList) && exchangeableList.size() > cabinetExtra.getMinRetainBatteryCount()) {
+            // 有限制：最少保留电池数量设置为有限制数量时，柜内符合可换电标准的电池＞=设置的数量
+            if (CollUtil.isNotEmpty(exchangeableList) && exchangeableList.size() >= cabinetExtra.getMinRetainBatteryCount()) {
                 label.add(2);
             }
         }
@@ -1288,8 +1288,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 label.add(3);
             }
         } else {
-            // 最少保留电池数量设置为有限制数量时，柜内符合可换电标准的电池＞设置的数量
-            if (CollUtil.isNotEmpty(exchangeableList) && exchangeableList.size() < cabinetExtra.getMaxRetainBatteryCount()) {
+            // 最少保留电池数量设置为有限制数量时，柜内符合可换电标准的电池＞=设置的数量
+            if (CollUtil.isNotEmpty(exchangeableList) && exchangeableList.size() <= cabinetExtra.getMaxRetainBatteryCount()) {
                 label.add(3);
             }
         }
