@@ -8,6 +8,7 @@ import lombok.Builder;
 import lombok.Data;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -81,5 +82,5 @@ public class ElectricityCabinetSimpleVO implements Serializable {
     /**
      * 柜子的可换(1)、可租(2)、可退(3) 标签
      */
-    private List<Integer> label;
+    private List<Integer> label = new ArrayList<>();
 }
