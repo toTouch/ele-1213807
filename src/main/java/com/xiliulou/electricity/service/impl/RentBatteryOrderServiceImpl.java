@@ -944,7 +944,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
     }
     
     private boolean filterNotExchangeable(ElectricityCabinetBox electricityCabinetBox) {
-        return Objects.nonNull(electricityCabinetBox.getPower()) && StringUtils.isNotBlank(electricityCabinetBox.getSn()) && !StringUtils.startsWithIgnoreCase(
+        return Objects.nonNull(electricityCabinetBox) && Objects.nonNull(electricityCabinetBox.getPower()) && StringUtils.isNotBlank(electricityCabinetBox.getSn()) && !StringUtils.startsWithIgnoreCase(
                 electricityCabinetBox.getSn(), "UNKNOW");
     }
     
