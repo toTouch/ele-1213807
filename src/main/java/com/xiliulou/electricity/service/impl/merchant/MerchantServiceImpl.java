@@ -265,7 +265,7 @@ public class MerchantServiceImpl implements MerchantService {
                     .status(BatteryMemberCard.STATUS_UP).idList(merchantSaveRequest.getEnterprisePackageIdList()).businessType(BatteryMemberCard.BUSINESS_TYPE_ENTERPRISE)
                     .delFlag(BatteryMemberCard.DEL_NORMAL).build();
             
-            List<BatteryMemberCard> packageList = batteryMemberCardService.queryListByIdList(query);
+            List<BatteryMemberCard> packageList = batteryMemberCardService.listMemberCardsByIdList(query);
             if (ObjectUtils.isEmpty(packageList)) {
                 log.error("merchant save error, package is not exist name={}, packageId={}", merchantSaveRequest.getName(), merchantSaveRequest.getEnterprisePackageIdList());
                 return Triple.of(false, "120207", "企业套餐不存在");
@@ -606,7 +606,7 @@ public class MerchantServiceImpl implements MerchantService {
                     .status(BatteryMemberCard.STATUS_UP).idList(merchantSaveRequest.getEnterprisePackageIdList()).businessType(BatteryMemberCard.BUSINESS_TYPE_ENTERPRISE)
                     .delFlag(BatteryMemberCard.DEL_NORMAL).build();
             
-            List<BatteryMemberCard> packageList = batteryMemberCardService.queryListByIdList(query);
+            List<BatteryMemberCard> packageList = batteryMemberCardService.listMemberCardsByIdList(query);
             
             if (ObjectUtils.isEmpty(packageList)) {
                 log.error("merchant update error, package is not exist id={}, packageId={}", merchantSaveRequest.getId(), merchantSaveRequest.getEnterprisePackageIdList());

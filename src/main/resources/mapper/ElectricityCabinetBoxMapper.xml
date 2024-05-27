@@ -200,6 +200,20 @@
         </where>
         order by cell_no desc
     </select>
+    
+    <select id="selectListByEids" resultType="com.xiliulou.electricity.entity.ElectricityCabinetBox">
+        select
+        id, electricity_cabinet_id, cell_no, sn, usable_status,
+        status,is_lock,is_fan,temperature,is_heat,is_light,
+        temperature,battery_type,power,charge_v,b_id
+        from t_electricity_cabinet_box
+        where
+        del_flag = 0
+        and electricity_cabinet_id in
+        <foreach collection="eIdList" separator="," open="(" close=")" item="id">
+            #{id}
+        </foreach>
+    </select>
 
     <update id="modifyCellUsableStatus">
         update t_electricity_cabinet_box
@@ -243,6 +257,16 @@
                 </foreach>
             </if>
         </where>
+    </select>
+    
+    <select id="selectEleBoxByBatteryId" resultType="com.xiliulou.electricity.entity.ElectricityCabinetBox">
+        SELECT
+            id, electricity_cabinet_id, cell_no, sn, usable_status, status,is_lock,is_fan,is_heat,is_light, create_time, update_time,
+            del_flag,tenant_id,temperature,battery_type,charge_v,charge_a,version,lock_type,empty_grid_start_time
+        FROM t_electricity_cabinet_box
+        WHERE b_id = #{batteryId}
+          AND del_flag = 0
+        ORDER BY update_time LIMIT 1
     </select>
     
     <!--新增所有列-->

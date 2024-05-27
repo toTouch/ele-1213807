@@ -73,4 +73,6 @@ public interface EleCabinetCoreDataMapper extends BaseMapper<EleCabinetCoreData>
     EleCabinetCoreData selectById( @Param("id") Integer id, @Param("tenantId")  Integer tenantId);
 
     EleCabinetCoreData selectByEid(Integer eid);
+    
+    List<EleCabinetCoreData> selectListByEids(@Param("eIdList") List<Integer> electricityCabinetIdList);
 }

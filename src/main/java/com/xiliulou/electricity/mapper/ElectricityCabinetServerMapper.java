@@ -78,4 +78,6 @@ public interface ElectricityCabinetServerMapper extends BaseMapper<ElectricityCa
     Integer deleteByEid(@Param("eid") Integer eid);
     
     Integer updateByEid(ElectricityCabinetServer electricityCabinetServer);
+    
+    List<ElectricityCabinetServer> selectListByEids(@Param("eIdList") List<Integer> electricityCabinetIdList);
 }

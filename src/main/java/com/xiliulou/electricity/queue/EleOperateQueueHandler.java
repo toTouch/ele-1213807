@@ -804,7 +804,7 @@ public class EleOperateQueueHandler {
      */
     private void handlerUserTakeBatterySoc(UserInfo userInfo, String sn, Double takeAwayPower) {
         if (Objects.isNull(takeAwayPower)) {
-            log.error("EleOperateQueueHandler/handlerUserTakeBatterySoc is error,takeAwayPower is null");
+            log.warn("EleOperateQueueHandler/handlerUserTakeBatterySoc is error,takeAwayPower is null");
             return;
         }
         
@@ -832,17 +832,17 @@ public class EleOperateQueueHandler {
      */
     private void handlerUserRentBatterySoc(String returnSn, Double returnPower) {
         if (StrUtil.isBlank(returnSn)) {
-            log.error("EleOperateQueueHandler/handlerUserRentBatterySoc is error,returnSn is null");
+            log.warn("EleOperateQueueHandler/handlerUserRentBatterySoc is error,returnSn is null");
             return;
         }
         if (Objects.isNull(returnPower)) {
-            log.error("EleOperateQueueHandler/handlerUserRentBatterySoc is error,returnPower is null, sn={}", returnSn);
+            log.warn("EleOperateQueueHandler/handlerUserRentBatterySoc is error,returnPower is null, sn={}", returnSn);
             return;
         }
         
         ExchangeBatterySoc exchangeBatterySoc = exchangeBatterySocService.queryOneByUidAndSn(returnSn);
         if (Objects.isNull(exchangeBatterySoc)) {
-            log.error("EleOperateQueueHandler/handlerUserRentBatterySoc is error, rentBatterySoc should is null, sn={}", returnSn);
+            log.warn("EleOperateQueueHandler/handlerUserRentBatterySoc is error, rentBatterySoc should is null, sn={}", returnSn);
             return;
         }
         
@@ -857,7 +857,7 @@ public class EleOperateQueueHandler {
                 exchangeBatterySocService.update(batterySoc);
             }
         } catch (Exception e) {
-            log.error("EleOperateQueueHandler/handlerUserTakeBatterySoc is exception, sn={}", returnSn, e);
+            log.error("EleOperateQueueHandler/handlerUserRentBatterySoc is error, sn={}", returnSn, e);
         }
     }
     
