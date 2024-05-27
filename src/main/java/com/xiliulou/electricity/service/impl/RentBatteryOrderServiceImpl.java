@@ -900,24 +900,28 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
         if (StringUtils.isNotBlank(version) && VersionUtil.compareVersion(ELE_CABINET_VERSION, version) > 0) {
             return electricityCabinetService.findUsableEmptyCellNo(eid);
         }
-        List<ElectricityCabinetBox> emptyCellList = electricityCabinetBoxService.listUsableEmptyCell(eid);
+      
         
         ElectricityCabinetExtra cabinetExtra = electricityCabinetExtraService.queryByEidFromCache(Long.valueOf(eid));
         if (Objects.isNull(cabinetExtra)) {
             throw new BizException("ELECTRICITY.0026", "换电柜异常，不存在的电柜扩展信息");
         }
         
-        if (Objects.isNull(cabinetExtra.getMaxRetainBatteryCount())) {
-            // 不限制, 无仓情况不允许退电
-            if (CollUtil.isEmpty(emptyCellList)) {
-                throw new BizException("ELECTRICITY.0026", "当前无空余格挡可供退电，请联系客服！");
-            }
-        } else {
+        // 空仓集合
+        List<ElectricityCabinetBox> emptyCellList = electricityCabinetBoxService.listUsableEmptyCell(eid);
+        
+        if (CollUtil.isEmpty(emptyCellList)) {
+            throw new BizException("ELECTRICITY.0026", "当前无空余格挡可供退电，请联系客服！");
+        }
+        
+        if (Objects.nonNull(cabinetExtra.getMaxRetainBatteryCount())) {
             // 限制， 查询换电标准
-            List<ElectricityCabinetBox> useCellList = electricityCabinetBoxService.queryUsableBatteryCellNo(eid,null, fullyCharged);
+            List<ElectricityCabinetBox> useCellList = electricityCabinetBoxService.queryUsableBatteryCellNo(eid, null, fullyCharged);
             // 过滤掉电池名称不符合标准的
             List<ElectricityCabinetBox> exchangeableList = useCellList.stream().filter(item -> filterNotExchangeable(item)).collect(Collectors.toList());
-            if (CollUtil.isNotEmpty(exchangeableList) && exchangeableList.size() > cabinetExtra.getMaxRetainBatteryCount()) {
+            
+            // 在仓电池数高于限值 或者 没有空仓
+            if ((CollUtil.isNotEmpty(exchangeableList) && exchangeableList.size() > cabinetExtra.getMaxRetainBatteryCount())) {
                 throw new BizException("ELECTRICITY.0026", "在仓电池数高于限值，暂无法退电，请选择其他柜机!");
             }
         }
