@@ -2,10 +2,12 @@ package com.xiliulou.electricity.service.warn;
 
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.warn.EleHardwareFaultMsg;
+import com.xiliulou.electricity.queryModel.failureAlarm.FailureWarnMsgPageQueryModel;
 import com.xiliulou.electricity.queryModel.failureAlarm.FaultMsgPageQueryModel;
 import com.xiliulou.electricity.request.failureAlarm.EleHardwareFaultMsgPageRequest;
 import com.xiliulou.electricity.request.failureAlarm.FailureAlarmTaskQueryRequest;
 import com.xiliulou.electricity.vo.failureAlarm.EleHardwareFailureWarnMsgVo;
+import com.xiliulou.electricity.vo.failureAlarm.FailureWarnFrequencyVo;
 import com.xiliulou.electricity.vo.failureAlarm.FailureWarnMsgExcelVo;
 import com.xiliulou.electricity.vo.failureAlarm.FailureWarnProportionVo;
 import org.apache.commons.lang3.tuple.Triple;
@@ -37,7 +39,9 @@ public interface EleHardwareFaultMsgService {
     
     List<FailureWarnProportionVo> listProportion(EleHardwareFaultMsgPageRequest request);
     
-    List<FailureWarnProportionVo> warnProportion(Map<String, Integer> failureMap);
+    List<FailureWarnProportionVo> faultProportion(Map<String, Integer> failureMap);
     
     void proportionExport(List<FailureWarnProportionVo> list, HttpServletResponse response);
+    
+    void setFailureInfo(FailureWarnFrequencyVo vo, FailureWarnMsgPageQueryModel queryModel);
 }

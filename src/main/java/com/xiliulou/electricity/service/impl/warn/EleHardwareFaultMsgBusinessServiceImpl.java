@@ -7,13 +7,19 @@ import com.xiliulou.electricity.constant.TimeConstant;
 import com.xiliulou.electricity.entity.FailureAlarm;
 import com.xiliulou.electricity.entity.warn.EleHardwareFaultMsg;
 import com.xiliulou.electricity.enums.failureAlarm.FailureAlarmTypeEnum;
+import com.xiliulou.electricity.query.ElectricityCabinetQuery;
 import com.xiliulou.electricity.queryModel.failureAlarm.FailureAlarmQueryModel;
+import com.xiliulou.electricity.queryModel.failureAlarm.FailureWarnMsgPageQueryModel;
 import com.xiliulou.electricity.queryModel.failureAlarm.FaultMsgPageQueryModel;
+import com.xiliulou.electricity.request.failureAlarm.EleHardwareFailureWarnMsgPageRequest;
 import com.xiliulou.electricity.request.failureAlarm.EleHardwareFaultMsgPageRequest;
+import com.xiliulou.electricity.service.ElectricityCabinetService;
 import com.xiliulou.electricity.service.FailureAlarmService;
 import com.xiliulou.electricity.service.warn.EleHardwareFaultMsgBusinessService;
 import com.xiliulou.electricity.service.warn.EleHardwareFaultMsgService;
+import com.xiliulou.electricity.service.warn.EleHardwareWarnMsgService;
 import com.xiliulou.electricity.utils.DateUtils;
+import com.xiliulou.electricity.vo.failureAlarm.FailureWarnFrequencyVo;
 import com.xiliulou.electricity.vo.failureAlarm.FailureWarnMsgExcelVo;
 import com.xiliulou.electricity.vo.failureAlarm.FailureWarnProportionVo;
 import lombok.extern.slf4j.Slf4j;
@@ -29,6 +35,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -43,7 +50,13 @@ public class EleHardwareFaultMsgBusinessServiceImpl implements EleHardwareFaultM
     private EleHardwareFaultMsgService eleHardwareFaultMsgService;
     
     @Resource
+    private EleHardwareWarnMsgService eleHardwareWarnMsgService;
+    
+    @Resource
     private FailureAlarmService failureAlarmService;
+    
+    @Resource
+    private ElectricityCabinetService electricityCabinetService;
     
     
     @Override
@@ -118,7 +131,7 @@ public class EleHardwareFaultMsgBusinessServiceImpl implements EleHardwareFaultM
             failureMap = list.stream().collect(Collectors.toMap(FailureWarnProportionVo::getSignalId, FailureWarnProportionVo::getCount));
         }
     
-        List<FailureWarnProportionVo> result = eleHardwareFaultMsgService.warnProportion(failureMap);
+        List<FailureWarnProportionVo> result = eleHardwareFaultMsgService.faultProportion(failureMap);
         
         return Triple.of(true, null, result);
     }
@@ -165,5 +178,58 @@ public class EleHardwareFaultMsgBusinessServiceImpl implements EleHardwareFaultM
         }
     
         eleHardwareFaultMsgService.proportionExport(list, response);
+    }
+    
+    @Override
+    public Triple<Boolean, String, Object> calculateFrequency(EleHardwareFailureWarnMsgPageRequest request) {
+        // 查询设备数量和告警数量
+        if (ObjectUtils.isEmpty(request.getAlarmStartTime())) {
+            return Triple.of(false, "300828", "查询开始时间不能为空");
+        }
+    
+        if (ObjectUtils.isEmpty(request.getAlarmEndTime())) {
+            return Triple.of(false, "300829", "查询结束时间不能为空");
+        }
+    
+        if (request.getAlarmStartTime() > request.getAlarmEndTime()) {
+            return Triple.of(false, "300826", "查询结束时间不能小于开始时间");
+        }
+    
+        // 使用天数
+        long usageDays = DateUtils.diffDayV2(request.getAlarmStartTime(), request.getAlarmEndTime());
+    
+        if (usageDays > TimeConstant.ONE_MONTH) {
+            return Triple.of(false, "300825", "查询天数不能大于30天");
+        }
+        FailureWarnFrequencyVo vo = new FailureWarnFrequencyVo();
+    
+        // 查询设备数量
+        ElectricityCabinetQuery electricityCabinetQuery = new ElectricityCabinetQuery();
+        R r = electricityCabinetService.queryCount(electricityCabinetQuery);
+        Optional.ofNullable(r.getData()).ifPresent(i -> {
+            Integer count = (Integer) r.getData();
+            vo.setCabinetShipment(count);
+        });
+    
+        FailureAlarmQueryModel failureAlarmQueryModel = FailureAlarmQueryModel.builder().status(FailureAlarm.enable).type(FailureAlarmTypeEnum.FAILURE_ALARM_TYPE_FAILURE.getCode()).build();
+        List<FailureAlarm> failureAlarmList = failureAlarmService.listByParams(failureAlarmQueryModel);
+        if (ObjectUtils.isEmpty(failureAlarmList)) {
+            return Triple.of(true, null, vo);
+        }
+    
+        List<String> signalIdList = failureAlarmList.parallelStream().map(FailureAlarm::getSignalId).collect(Collectors.toList());
+    
+        FailureWarnMsgPageQueryModel queryModel = new FailureWarnMsgPageQueryModel();
+        queryModel.setAlarmStartTime(request.getAlarmStartTime());
+        queryModel.setAlarmEndTime(request.getAlarmEndTime());
+        queryModel.setSignalIdList(signalIdList);
+    
+        // 设置故障信息
+        eleHardwareFaultMsgService.setFailureInfo(vo, queryModel);
+    
+        // 设置告警数量和设备数量
+        eleHardwareWarnMsgService.setWarnInfo(vo, queryModel);
+        
+        return Triple.of(true, null, vo);
     }
 }

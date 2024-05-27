@@ -29,6 +29,7 @@ import com.xiliulou.electricity.service.warn.EleHardwareFaultMsgService;
 import com.xiliulou.electricity.utils.DateUtils;
 import com.xiliulou.electricity.vo.failureAlarm.EleHardwareFailureWarnMsgPageVo;
 import com.xiliulou.electricity.vo.failureAlarm.EleHardwareFailureWarnMsgVo;
+import com.xiliulou.electricity.vo.failureAlarm.FailureWarnFrequencyVo;
 import com.xiliulou.electricity.vo.failureAlarm.FailureWarnMsgExcelVo;
 import com.xiliulou.electricity.vo.failureAlarm.FailureWarnProportionExportVo;
 import com.xiliulou.electricity.vo.failureAlarm.FailureWarnProportionVo;
@@ -263,11 +264,9 @@ public class EleHardwareFaultMsgServiceImpl implements EleHardwareFaultMsgServic
         
         // 设置查询参数
         BeanUtils.copyProperties(request, queryModel);
-        if (ObjectUtils.isNotEmpty(queryModel.getDeviceType()) || ObjectUtils.isNotEmpty(queryModel.getGrade()) || ObjectUtils.isNotEmpty(request.getTenantVisible())
-                || ObjectUtils.isNotEmpty(request.getStatus())) {
+        if ( ObjectUtils.isNotEmpty(request.getTenantVisible()) || ObjectUtils.isNotEmpty(request.getStatus())) {
             // 查询故障告警设置是否存在
-            FailureAlarmQueryModel failureAlarmQueryModel = FailureAlarmQueryModel.builder().deviceType(queryModel.getDeviceType()).grade(queryModel.getGrade())
-                    .tenantVisible(request.getTenantVisible()).status(request.getStatus()).build();
+            FailureAlarmQueryModel failureAlarmQueryModel = FailureAlarmQueryModel.builder().tenantVisible(request.getTenantVisible()).status(request.getStatus()).build();
             List<FailureAlarm> failureAlarmList = failureAlarmService.listByParams(failureAlarmQueryModel);
             if (ObjectUtils.isEmpty(failureAlarmList)) {
                 log.error("failure warn query alarm is empty");
@@ -313,10 +312,10 @@ public class EleHardwareFaultMsgServiceImpl implements EleHardwareFaultMsgServic
     
     @Override
     @Slave
-    public List<FailureWarnProportionVo> warnProportion(Map<String, Integer> failureMap) {
+    public List<FailureWarnProportionVo> faultProportion(Map<String, Integer> failureMap) {
         Map<Integer, List<FailureAlarm>> gradeMap = new HashMap<>();
     
-        FailureAlarmQueryModel alarmQueryModel = FailureAlarmQueryModel.builder().type(FailureAlarmTypeEnum.FAILURE_ALARM_TYPE_WARING.getCode()).status(FailureAlarm.enable)
+        FailureAlarmQueryModel alarmQueryModel = FailureAlarmQueryModel.builder().type(FailureAlarmTypeEnum.FAILURE_ALARM_TYPE_FAILURE.getCode()).status(FailureAlarm.enable)
                 .build();
         List<FailureAlarm> failureAlarmList = failureAlarmMapper.selectList(alarmQueryModel);
         if (ObjectUtils.isNotEmpty(failureAlarmList)) {
@@ -327,7 +326,7 @@ public class EleHardwareFaultMsgServiceImpl implements EleHardwareFaultMsgServic
     
         for (FailureAlarmGradeEnum alarmGradeEnum : FailureAlarmGradeEnum.values()) {
             FailureWarnProportionVo vo = new FailureWarnProportionVo();
-            vo.setName(alarmGradeEnum.getDesc() + FailureAlarmTypeEnum.FAILURE_ALARM_TYPE_WARING.getDesc());
+            vo.setName(alarmGradeEnum.getDesc() + FailureAlarmTypeEnum.FAILURE_ALARM_TYPE_FAILURE.getDesc());
             vo.setPath(vo.getName());
             Integer count = 0;
             if (ObjectUtils.isNotEmpty(gradeMap.get(alarmGradeEnum.getCode()))) {
@@ -404,6 +403,15 @@ public class EleHardwareFaultMsgServiceImpl implements EleHardwareFaultMsgServic
         } catch (IOException e) {
             log.error("failure warn proportion export Export error", e);
         }
+    }
+    
+    @Override
+    @DS(value = "clickhouse")
+    public void setFailureInfo(FailureWarnFrequencyVo vo, FailureWarnMsgPageQueryModel queryModel) {
+        // 统计选中时间段的告警次数
+        Integer faultNum = eleHardwareFaultMsgMapper.countFaultNum(queryModel);
+        
+        vo.setFailureCount(faultNum);
     }
     
 }

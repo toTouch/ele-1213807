@@ -4,7 +4,6 @@ import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.EleHardwareFailureWarnMsg;
 import com.xiliulou.electricity.entity.FailureAlarm;
-import com.xiliulou.electricity.request.failureAlarm.EleHardwareFailureWarnMsgPageRequest;
 import com.xiliulou.electricity.request.failureAlarm.EleHardwareWarnMsgPageRequest;
 import com.xiliulou.electricity.service.warn.EleHardwareWarnMsgService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
@@ -37,8 +36,6 @@ public class EleHardwareWarnMsgController {
      * @param size
      * @param offset
      * @param sn
-     * @param deviceType
-     * @param grade
      * @param signalId
      * @param alarmStartTime
      * @param alarmEndTime
@@ -47,7 +44,7 @@ public class EleHardwareWarnMsgController {
      */
     @GetMapping("/admin/warn/page")
     public R page(@RequestParam("size") long size, @RequestParam("offset") long offset, @RequestParam(value = "sn", required = false) String sn,
-            @RequestParam(value = "deviceType", required = false) Integer deviceType, @RequestParam(value = "grade", required = false) Integer grade,
+            @RequestParam(value = "alarmId", required = false) String alarmId,
             @RequestParam(value = "signalId", required = false) Integer signalId, @RequestParam(value = "alarmStartTime", required = true) Long alarmStartTime,
             @RequestParam(value = "alarmEndTime", required = true) Long alarmEndTime, @RequestParam(value = "alarmFlag", required = false) Integer alarmFlag) {
         if (size < 0 || size > 50) {
@@ -67,7 +64,7 @@ public class EleHardwareWarnMsgController {
         Integer tenantId = TenantContextHolder.getTenantId();
         
         EleHardwareWarnMsgPageRequest request = EleHardwareWarnMsgPageRequest.builder().type(EleHardwareFailureWarnMsg.WARN).sn(sn).tenantId(tenantId)
-                .deviceType(deviceType).grade(grade).signalId(signalId).alarmStartTime(alarmStartTime).alarmEndTime(alarmEndTime).alarmFlag(alarmFlag).tenantVisible(tenantVisible)
+                .alarmId(alarmId).signalId(signalId).alarmStartTime(alarmStartTime).alarmEndTime(alarmEndTime).alarmFlag(alarmFlag).tenantVisible(tenantVisible)
                 .status(FailureAlarm.enable).size(size).offset(offset).build();
         
         return eleHardwareWarnMsgService.listByPage(request);
@@ -80,8 +77,8 @@ public class EleHardwareWarnMsgController {
      * @author maxiaodong
      */
     @GetMapping("/admin/warn/pageCount")
-    public R pageCount(@RequestParam(value = "sn", required = false) String sn, @RequestParam(value = "deviceType", required = false) Integer deviceType,
-            @RequestParam(value = "grade", required = false) Integer grade, @RequestParam(value = "signalId", required = false) Integer signalId,
+    public R pageCount(@RequestParam(value = "sn", required = false) String sn, @RequestParam(value = "alarmId", required = false) String alarmId,
+            @RequestParam(value = "signalId", required = false) Integer signalId,
             @RequestParam(value = "alarmStartTime", required = true) Long alarmStartTime, @RequestParam(value = "alarmEndTime", required = true) Long alarmEndTime,
             @RequestParam(value = "alarmFlag", required = false) Integer alarmFlag) {
         TokenUser user = SecurityUtils.getUserInfo();
@@ -93,7 +90,7 @@ public class EleHardwareWarnMsgController {
         Integer tenantId = TenantContextHolder.getTenantId();
         
         EleHardwareWarnMsgPageRequest request = EleHardwareWarnMsgPageRequest.builder().type(EleHardwareFailureWarnMsg.WARN).sn(sn).tenantId(tenantId)
-                .deviceType(deviceType).grade(grade).signalId(signalId).alarmStartTime(alarmStartTime).alarmEndTime(alarmEndTime).alarmFlag(alarmFlag).tenantVisible(tenantVisible)
+                .alarmId(alarmId).signalId(signalId).alarmStartTime(alarmStartTime).alarmEndTime(alarmEndTime).alarmFlag(alarmFlag).tenantVisible(tenantVisible)
                 .status(FailureAlarm.enable).build();
         return eleHardwareWarnMsgService.countTotal(request);
     }
@@ -105,9 +102,8 @@ public class EleHardwareWarnMsgController {
      * @author maxiaodong
      */
     @GetMapping("/admin/super/warn/pageCount")
-    public R superPageCount(@RequestParam(value = "type", required = true) Integer type, @RequestParam(value = "sn", required = false) String sn,
-            @RequestParam(value = "tenantId", required = false) Integer tenantId, @RequestParam(value = "deviceType", required = false) Integer deviceType,
-            @RequestParam(value = "grade", required = false) Integer grade, @RequestParam(value = "signalId", required = false) Integer signalId,
+    public R superPageCount(@RequestParam(value = "sn", required = false) String sn,
+            @RequestParam(value = "tenantId", required = false) Integer tenantId, @RequestParam(value = "signalId", required = false) Integer signalId,@RequestParam(value = "alarmId", required = false) String alarmId,
             @RequestParam(value = "alarmStartTime", required = true) Long alarmStartTime, @RequestParam(value = "alarmEndTime", required = true) Long alarmEndTime,
             @RequestParam(value = "alarmFlag", required = false) Integer alarmFlag
             , @RequestParam(value = "noLimitSignalId", required = false) Integer noLimitSignalId, @RequestParam(value = "cabinetId", required = false) Integer cabinetId) {
@@ -120,7 +116,7 @@ public class EleHardwareWarnMsgController {
             return R.fail("ELECTRICITY.0066", "用户权限不足");
         }
         
-        EleHardwareWarnMsgPageRequest request = EleHardwareWarnMsgPageRequest.builder().type(type).sn(sn).tenantId(tenantId).deviceType(deviceType).grade(grade).cabinetId(cabinetId)
+        EleHardwareWarnMsgPageRequest request = EleHardwareWarnMsgPageRequest.builder().type(EleHardwareFailureWarnMsg.WARN).sn(sn).tenantId(tenantId).alarmId(alarmId).cabinetId(cabinetId)
                 .signalId(signalId).alarmStartTime(alarmStartTime).alarmEndTime(alarmEndTime).alarmFlag(alarmFlag).build();
         
         // 故障告警统计分析运营商总览主动跳转到故障告警记录页面第一次的时候不添加状态的限制
@@ -137,8 +133,6 @@ public class EleHardwareWarnMsgController {
      * @param size
      * @param offset
      * @param sn
-     * @param deviceType
-     * @param grade
      * @param signalId
      * @param alarmStartTime
      * @param alarmEndTime
@@ -147,8 +141,7 @@ public class EleHardwareWarnMsgController {
      */
     @GetMapping("/admin/super/warn/page")
     public R superPage(@RequestParam("size") long size, @RequestParam("offset") long offset, @RequestParam(value = "sn", required = false) String sn,
-            @RequestParam(value = "tenantId", required = false) Integer tenantId, @RequestParam(value = "type", required = true) Integer type,
-            @RequestParam(value = "deviceType", required = false) Integer deviceType, @RequestParam(value = "grade", required = false) Integer grade,
+            @RequestParam(value = "tenantId", required = false) Integer tenantId,@RequestParam(value = "alarmId", required = false) String alarmId,
             @RequestParam(value = "signalId", required = false) Integer signalId, @RequestParam(value = "alarmStartTime", required = true) Long alarmStartTime,
             @RequestParam(value = "alarmEndTime", required = true) Long alarmEndTime, @RequestParam(value = "alarmFlag", required = false) Integer alarmFlag
             , @RequestParam(value = "noLimitSignalId", required = false) Integer noLimitSignalId, @RequestParam(value = "cabinetId", required = false) Integer cabinetId) {
@@ -169,7 +162,7 @@ public class EleHardwareWarnMsgController {
             return R.fail("ELECTRICITY.0066", "用户权限不足");
         }
         
-        EleHardwareWarnMsgPageRequest request = EleHardwareWarnMsgPageRequest.builder().type(type).sn(sn).tenantId(tenantId).deviceType(deviceType).grade(grade).cabinetId(cabinetId)
+        EleHardwareWarnMsgPageRequest request = EleHardwareWarnMsgPageRequest.builder().type(EleHardwareFailureWarnMsg.WARN).sn(sn).tenantId(tenantId).alarmId(alarmId).cabinetId(cabinetId)
                 .signalId(signalId).alarmStartTime(alarmStartTime).alarmEndTime(alarmEndTime).alarmFlag(alarmFlag).size(size).offset(offset).build();
         
         // 故障告警统计分析运营商总览主动跳转到故障告警记录页面第一次的时候不添加状态的限制
@@ -187,8 +180,6 @@ public class EleHardwareWarnMsgController {
      * @param size
      * @param offset
      * @param sn
-     * @param deviceType
-     * @param grade
      * @param signalId
      * @param alarmStartTime
      * @param alarmEndTime
@@ -197,8 +188,7 @@ public class EleHardwareWarnMsgController {
      */
     @GetMapping("/admin/super/warn/export/page")
     public R superExportPage(@RequestParam("size") long size, @RequestParam(value = "offset", required = true) long offset, @RequestParam(value = "sn", required = false) String sn,
-            @RequestParam(value = "tenantId", required = false) Integer tenantId, @RequestParam(value = "type", required = true) Integer type,
-            @RequestParam(value = "deviceType", required = false) Integer deviceType, @RequestParam(value = "grade", required = false) Integer grade,
+            @RequestParam(value = "tenantId", required = false) Integer tenantId, @RequestParam(value = "alarmId", required = false) String alarmId,
             @RequestParam(value = "signalId", required = false) Integer signalId, @RequestParam(value = "alarmStartTime", required = true) Long alarmStartTime,
             @RequestParam(value = "alarmEndTime", required = true) Long alarmEndTime, @RequestParam(value = "alarmFlag", required = false) Integer alarmFlag,
             @RequestParam(value = "noLimitSignalId", required = false) Integer noLimitSignalId, @RequestParam(value = "cabinetId", required = false) Integer cabinetId) {
@@ -224,7 +214,7 @@ public class EleHardwareWarnMsgController {
         }
         
         
-        EleHardwareWarnMsgPageRequest request = EleHardwareWarnMsgPageRequest.builder().type(type).sn(sn).tenantId(tenantId).deviceType(deviceType).grade(grade).cabinetId(cabinetId)
+        EleHardwareWarnMsgPageRequest request = EleHardwareWarnMsgPageRequest.builder().type(EleHardwareFailureWarnMsg.WARN).sn(sn).tenantId(tenantId).alarmId(alarmId).cabinetId(cabinetId)
                 .signalId(signalId).alarmStartTime(alarmStartTime).alarmEndTime(alarmEndTime).alarmFlag(alarmFlag).size(size).offset(offset).build();
         
         // 故障告警统计分析运营商总览主动跳转到故障告警记录页面第一次的时候不添加状态的限制
@@ -241,8 +231,6 @@ public class EleHardwareWarnMsgController {
      * @param size
      * @param offset
      * @param sn
-     * @param deviceType
-     * @param grade
      * @param signalId
      * @param alarmStartTime
      * @param alarmEndTime
@@ -251,7 +239,7 @@ public class EleHardwareWarnMsgController {
      */
     @GetMapping("/admin/warn/export/page")
     public R exportPage(@RequestParam("size") long size, @RequestParam(value = "offset", required = true) long offset, @RequestParam(value = "sn", required = false) String sn,
-            @RequestParam(value = "deviceType", required = false) Integer deviceType, @RequestParam(value = "grade", required = false) Integer grade,
+            @RequestParam(value = "alarmId", required = false) String alarmId,
             @RequestParam(value = "signalId", required = false) Integer signalId, @RequestParam(value = "alarmStartTime", required = true) Long alarmStartTime,
             @RequestParam(value = "alarmEndTime", required = true) Long alarmEndTime, @RequestParam(value = "alarmFlag", required = false) Integer alarmFlag) {
         if (size > 2000) {
@@ -274,7 +262,7 @@ public class EleHardwareWarnMsgController {
         Integer tenantId = TenantContextHolder.getTenantId();
         Integer tenantVisible = FailureAlarm.visible;
         
-        EleHardwareWarnMsgPageRequest request = EleHardwareWarnMsgPageRequest.builder().type(EleHardwareFailureWarnMsg.WARN).sn(sn).tenantId(tenantId).deviceType(deviceType).grade(grade)
+        EleHardwareWarnMsgPageRequest request = EleHardwareWarnMsgPageRequest.builder().type(EleHardwareFailureWarnMsg.WARN).sn(sn).tenantId(tenantId).alarmId(alarmId)
                 .signalId(signalId).alarmStartTime(alarmStartTime).alarmEndTime(alarmEndTime).alarmFlag(alarmFlag).tenantVisible(tenantVisible).status(FailureAlarm.enable).size(size).offset(offset).build();
         
         return eleHardwareWarnMsgService.superExportPage(request);

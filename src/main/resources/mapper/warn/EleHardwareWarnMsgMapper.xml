@@ -128,4 +128,18 @@
         </foreach>
         GROUP BY signal_id
     </select>
+    
+    <select id="countWarnNum" resultType="java.lang.Integer">
+        SELECT
+            count(1)
+        FROM
+            t_ele_hardware_warn_msg t
+        <where>
+            alarm_time between  #{startTime} and #{endTime}
+            and signal_id in
+            <foreach collection="signalIdList" separator="," close=")" open="(" item="signalId">
+                #{signalId}
+            </foreach>
+        </where>
+    </select>
 </mapper>

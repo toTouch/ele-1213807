@@ -27,4 +27,6 @@ public interface EleHardwareFaultMsgMapper {
     List<FailureWarnMsgExcelVo> selectListExport(FaultMsgPageQueryModel queryModel);
     
     List<FailureWarnProportionVo> selectListProportion(FailureWarnMsgPageQueryModel queryModel);
+    
+    Integer countFaultNum(FailureWarnMsgPageQueryModel queryModel);
 }

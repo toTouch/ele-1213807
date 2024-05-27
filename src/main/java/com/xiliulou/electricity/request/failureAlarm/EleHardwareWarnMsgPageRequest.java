@@ -91,5 +91,7 @@ public class EleHardwareWarnMsgPageRequest {
      */
     private Integer cabinetId;
     
+    private String alarmId;
+    
     private List<String> signalIdList;
 }

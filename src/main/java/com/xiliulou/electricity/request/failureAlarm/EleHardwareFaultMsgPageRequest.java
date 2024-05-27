@@ -91,5 +91,10 @@ public class EleHardwareFaultMsgPageRequest {
      */
     private Integer cabinetId;
     
+    /**
+     * 告警id
+     */
+    private String alarmId;
+    
     private List<String> signalIdList;
 }

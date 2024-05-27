@@ -32,6 +32,7 @@ import com.xiliulou.electricity.service.warn.EleHardwareWarnMsgService;
 import com.xiliulou.electricity.utils.DateUtils;
 import com.xiliulou.electricity.vo.failureAlarm.EleHardwareFailureWarnMsgPageVo;
 import com.xiliulou.electricity.vo.failureAlarm.EleHardwareFailureWarnMsgVo;
+import com.xiliulou.electricity.vo.failureAlarm.FailureWarnFrequencyVo;
 import com.xiliulou.electricity.vo.failureAlarm.FailureWarnMsgExcelVo;
 import com.xiliulou.electricity.vo.failureAlarm.FailureWarnProportionExportVo;
 import com.xiliulou.electricity.vo.failureAlarm.FailureWarnProportionVo;
@@ -397,6 +398,14 @@ public class EleHardwareWarnMsgServiceImpl implements EleHardwareWarnMsgService 
         } catch (IOException e) {
             log.error("failure warn proportion export Export error", e);
         }
+    }
+    
+    @Override
+    @Slave
+    public void setWarnInfo(FailureWarnFrequencyVo vo, FailureWarnMsgPageQueryModel queryModel) {
+        // 统计选中时间段的告警次数
+        Integer warnNum = eleHardwareWarnMsgMapper.countWarnNum(queryModel);
+        vo.setWarnCount(warnNum);
     }
     
     private List<FailureWarnProportionVo> warnProportion(Map<String, Integer> failureMap) {
