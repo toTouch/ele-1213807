@@ -1329,7 +1329,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         }
         List<ElectricityCabinetBox> cabinetBoxList = electricityCabinetBoxService.selectEleBoxAttrByEid(e.getId());
         if (CollectionUtils.isEmpty(cabinetBoxList)) {
-            return null;
+            return e;
         }
         //可换电数量
         List<ElectricityCabinetBox> exchangeableList = cabinetBoxList.stream().filter(item -> isExchangeable(item, fullyCharged)).collect(Collectors.toList());
