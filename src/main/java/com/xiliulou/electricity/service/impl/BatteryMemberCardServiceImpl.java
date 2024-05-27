@@ -851,7 +851,7 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
         }
         
         //适配企业渠道添加套餐业务
-        if (Objects.isNull(query.getBusinessType())) {
+        if (Objects.equals(BatteryMemberCardBusinessTypeEnum.BUSINESS_TYPE_BATTERY.getCode(), query.getBusinessType())) {
             batteryMemberCard.setBusinessType(BatteryMemberCardBusinessTypeEnum.BUSINESS_TYPE_BATTERY.getCode());
         } else if (BatteryMemberCardBusinessTypeEnum.BUSINESS_TYPE_ENTERPRISE_BATTERY.getCode().equals(query.getBusinessType())) {
             batteryMemberCard.setBusinessType(BatteryMemberCardBusinessTypeEnum.BUSINESS_TYPE_ENTERPRISE_BATTERY.getCode());
