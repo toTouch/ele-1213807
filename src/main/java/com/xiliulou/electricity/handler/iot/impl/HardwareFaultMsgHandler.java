@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
 
 /**
  * @author : maxiaodong
@@ -97,6 +98,23 @@ public class HardwareFaultMsgHandler extends AbstractElectricityIotHandler {
             list.add(msg);
         });
         return list;
+    }
+    
+    public void testSend(String msg) {
+        List<HardwareFailureWarnMqMsg> list = new ArrayList<>();
+        HardwareFailureWarnMqMsg hardwareFailureWarnMsg = JsonUtil.fromJson(msg, HardwareFailureWarnMqMsg.class);
+        long currentTimeMillis = System.currentTimeMillis();
+        hardwareFailureWarnMsg.setAlarmTime(currentTimeMillis);
+        hardwareFailureWarnMsg.setReportTime(currentTimeMillis);
+        list.add(hardwareFailureWarnMsg);
+        
+        try {
+            Thread.sleep(1000);
+            log.info("HARDWARE FAULT WARN SEND START MSG={}", JsonUtil.toJson(list));
+            rocketMqService.sendAsyncMsg(MqProducerConstant.FAULT_FAILURE_WARNING_BREAKDOWN, JsonUtil.toJson(list));
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
     }
 }
 

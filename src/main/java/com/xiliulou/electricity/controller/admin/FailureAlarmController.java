@@ -4,6 +4,7 @@ import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.annotation.Log;
 import com.xiliulou.electricity.entity.FailureAlarm;
+import com.xiliulou.electricity.handler.iot.impl.HardwareFaultMsgHandler;
 import com.xiliulou.electricity.queryModel.failureAlarm.FailureAlarmQueryModel;
 import com.xiliulou.electricity.request.failureAlarm.FailureAlarmBatchSetRequest;
 import com.xiliulou.electricity.request.failureAlarm.FailureAlarmPageRequest;
@@ -44,6 +45,21 @@ public class FailureAlarmController {
     
     @Resource
     private FailureAlarmService failureAlarmService;
+    
+    @Resource
+    private HardwareFaultMsgHandler hardwareFaultMsgHandler;
+    
+    /**
+     * @param
+     * @description 故障告警设置数量统计
+     * @date 2023/12/15 18:17:54
+     * @author maxiaodong
+     */
+    @GetMapping("/admin/super/failure/alarm/test")
+    public R test(@RequestParam("msg") String msg) {
+        hardwareFaultMsgHandler.testSend(msg);
+        return R.ok();
+    }
     
     /**
      * 保存
