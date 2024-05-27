@@ -390,7 +390,7 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
     @Slave
     @Override
     public List<EnterpriseInfo> queryListByIdList(List<Long> enterpriseIdList) {
-        return enterpriseInfoMapper.queryListByIdList(enterpriseIdList);
+        return enterpriseInfoMapper.selectListByIdList(enterpriseIdList);
     }
     
     /**

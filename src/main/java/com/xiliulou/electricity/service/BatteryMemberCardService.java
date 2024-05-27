@@ -86,7 +86,7 @@ public interface BatteryMemberCardService {
     
     List<BatteryMemberCardVO> selectByPageForMerchant(BatteryMemberCardQuery query);
     
-    List<BatteryMemberCard> queryListByIdList(BatteryMemberCardQuery query);
+    List<BatteryMemberCard> listMemberCardsByIdList(BatteryMemberCardQuery query);
     
     Integer batchUpdateSortParam(List<MemberCardAndCarRentalPackageSortParamQuery> sortParamQueries);
     

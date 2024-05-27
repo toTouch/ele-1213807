@@ -18,7 +18,6 @@ import com.xiliulou.electricity.utils.BatteryExcelListener;
 import com.xiliulou.electricity.utils.BatteryExcelListenerV2;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.validator.CreateGroup;
-import com.xiliulou.electricity.vo.ElectricityBatteryVO;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
@@ -617,11 +616,23 @@ public class JsonAdminElectricityCabinetBatteryController extends BaseController
     
     
     @GetMapping("/admin/battery/getIdAndSn")
-    public R listBatteryBySn(@RequestParam("offset") Integer offset,
+    public R listBatteriesBySn(@RequestParam("offset") Integer offset,
             @RequestParam("size") Integer size,
             @RequestParam("franchiseeId") Long franchiseeId,
             @RequestParam(value = "sn", required = false) String sn) {
+    
+        if (offset < 0) {
+            offset = 0;
+        }
+        if (size < 0 || size > 100) {
+            size = 10;
+        }
         
-        return R.ok(electricityBatteryService.listBatteryBySn(offset, size, franchiseeId, sn));
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            throw new CustomBusinessException("用户不存在");
+        }
+        
+        return R.ok(electricityBatteryService.listBatteriesBySn(offset, size, user.getTenantId(), franchiseeId, sn));
     }
 }

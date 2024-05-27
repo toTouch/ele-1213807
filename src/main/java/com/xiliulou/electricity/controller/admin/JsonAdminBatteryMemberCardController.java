@@ -271,6 +271,7 @@ public class JsonAdminBatteryMemberCardController extends BaseController {
      * @return
      */
     @GetMapping("/admin/battery/memberCard/selectListByQuery")
+    @Deprecated
     public R selectListByQuery(@RequestParam("size") long size, @RequestParam("offset") long offset, @RequestParam(value = "name", required = false) String name,
             @RequestParam(value = "status", required = false) Integer status, @RequestParam(value = "franchiseeId", required = false) Long franchiseeId) {
         
@@ -363,10 +364,6 @@ public class JsonAdminBatteryMemberCardController extends BaseController {
         
         // 仅超级管理员和运营商可修改排序参数
         if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
-            return R.ok();
-        }
-        
-        if (sortParamQueries.isEmpty()) {
             return R.ok();
         }
         

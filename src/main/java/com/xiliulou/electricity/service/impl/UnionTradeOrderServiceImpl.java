@@ -466,10 +466,11 @@ public class UnionTradeOrderServiceImpl extends
         baseMapper.updateById(unionTradeOrderUpdate);
 
         //混合支付的子订单
+        Integer finalTradeOrderStatus = tradeOrderStatus;
         electricityTradeOrderList.parallelStream().forEach(item -> {
             ElectricityTradeOrder electricityTradeOrder = new ElectricityTradeOrder();
             electricityTradeOrder.setId(item.getId());
-            electricityTradeOrder.setStatus(item.getStatus());
+            electricityTradeOrder.setStatus(finalTradeOrderStatus);
             electricityTradeOrder.setUpdateTime(System.currentTimeMillis());
             electricityTradeOrder.setChannelOrderNo(transactionId);
             electricityTradeOrderService.updateElectricityTradeOrderById(electricityTradeOrder);
@@ -560,10 +561,11 @@ public class UnionTradeOrderServiceImpl extends
         baseMapper.updateById(unionTradeOrderUpdate);
 
         //混合支付的子订单
+        Integer finalTradeOrderStatus = tradeOrderStatus;
         electricityTradeOrderList.parallelStream().forEach(item -> {
             ElectricityTradeOrder electricityTradeOrder = new ElectricityTradeOrder();
             electricityTradeOrder.setId(item.getId());
-            electricityTradeOrder.setStatus(item.getStatus());
+            electricityTradeOrder.setStatus(finalTradeOrderStatus);
             electricityTradeOrder.setUpdateTime(System.currentTimeMillis());
             electricityTradeOrder.setChannelOrderNo(transactionId);
             electricityTradeOrderService.updateElectricityTradeOrderById(electricityTradeOrder);
@@ -1363,10 +1365,11 @@ public class UnionTradeOrderServiceImpl extends
         baseMapper.updateById(unionTradeOrderUpdate);
 
         //混合支付的子订单
+        Integer finalTradeOrderStatus = tradeOrderStatus;
         electricityTradeOrderList.parallelStream().forEach(item -> {
             ElectricityTradeOrder electricityTradeOrder = new ElectricityTradeOrder();
             electricityTradeOrder.setId(item.getId());
-            electricityTradeOrder.setStatus(item.getStatus());
+            electricityTradeOrder.setStatus(finalTradeOrderStatus);
             electricityTradeOrder.setUpdateTime(System.currentTimeMillis());
             electricityTradeOrder.setChannelOrderNo(transactionId);
             electricityTradeOrderService.updateElectricityTradeOrderById(electricityTradeOrder);
