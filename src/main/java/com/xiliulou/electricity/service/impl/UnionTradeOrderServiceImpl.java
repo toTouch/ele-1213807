@@ -1428,6 +1428,8 @@ public class UnionTradeOrderServiceImpl extends
      */
     @Transactional(rollbackFor = Exception.class)
     public void handCarSupplierSuccess(String orderNo, String freeAmount, Integer tradeOrderStatus, UserInfo userInfo) {
+        //提前发布逾期用户备注清除事件
+        overdueUserRemarkPublish.publish(userInfo.getUid(), OverdueType.BATTERY.getCode(), userInfo.getTenantId());
         Integer tenantId = userInfo.getTenantId();
         Long uid = userInfo.getUid();
         log.info("handCarSupplierSuccess, orderNo is {}, freeAmount is {}, tradeOrderStatus is {}, uid is {}", orderNo, freeAmount, tradeOrderStatus, uid);
@@ -1495,9 +1497,6 @@ public class UnionTradeOrderServiceImpl extends
 
             // 更新逾期订单
             carRentalPackageOrderSlippageService.updateById(slippageUpdateEntity);
-            //清除逾期用户备注
-            overdueUserRemarkPublish.publish(userInfo.getUid(), OverdueType.CAR.getCode(), userInfo.getTenantId());
-
             // 查询车辆
             ElectricityCar electricityCar = electricityCarService.selectByUid(tenantId, uid);
             if (ObjectUtils.isNotEmpty(electricityCar)) {
@@ -1548,6 +1547,8 @@ public class UnionTradeOrderServiceImpl extends
     }
 
     private void handleBatteryMembercardPauseServiceFeeOrder(String orderId, Integer status, UserInfo userInfo) {
+        //提前发布逾期用户备注清除事件
+        overdueUserRemarkPublish.publish(userInfo.getUid(), OverdueType.BATTERY.getCode(), userInfo.getTenantId());
         EleBatteryServiceFeeOrder eleBatteryServiceFeeOrder = eleBatteryServiceFeeOrderService.selectByOrderNo(orderId);
         if (Objects.isNull(eleBatteryServiceFeeOrder)) {
             log.error("NOTIFY SERVICE FEE UNION ORDER ERROR!not found eleBatteryServiceFeeOrder,orderId={}", orderId);
@@ -1686,10 +1687,11 @@ public class UnionTradeOrderServiceImpl extends
         eleBatteryServiceFeeOrderUpdate.setUpdateTime(System.currentTimeMillis());
         eleBatteryServiceFeeOrderUpdate.setPayTime(System.currentTimeMillis());
         eleBatteryServiceFeeOrderService.update(eleBatteryServiceFeeOrderUpdate);
-        overdueUserRemarkPublish.publish(userInfo.getUid(), OverdueType.BATTERY.getCode(), userInfo.getTenantId());
     }
 
     private void handleBatteryMembercardExpireServiceFeeOrder(String orderId, Integer status, UserInfo userInfo) {
+        //提前发布逾期用户备注清除事件
+        overdueUserRemarkPublish.publish(userInfo.getUid(), OverdueType.BATTERY.getCode(), userInfo.getTenantId());
         EleBatteryServiceFeeOrder eleBatteryServiceFeeOrder = eleBatteryServiceFeeOrderService.selectByOrderNo(orderId);
         if (Objects.isNull(eleBatteryServiceFeeOrder)) {
             log.error("NOTIFY SERVICE FEE UNION ORDER ERROR!not found eleBatteryServiceFeeOrder,orderId={}", orderId);
@@ -1740,8 +1742,6 @@ public class UnionTradeOrderServiceImpl extends
         eleBatteryServiceFeeOrderUpdate.setUpdateTime(System.currentTimeMillis());
         eleBatteryServiceFeeOrderUpdate.setPayTime(System.currentTimeMillis());
         eleBatteryServiceFeeOrderService.update(eleBatteryServiceFeeOrderUpdate);
-        //清除逾期用户备注
-        overdueUserRemarkPublish.publish(userInfo.getUid(), OverdueType.BATTERY.getCode(), userInfo.getTenantId());
     }
 
     /**
