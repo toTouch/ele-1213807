@@ -298,9 +298,6 @@ public class EleHardwareFailureCabinetMsgServiceImpl implements EleHardwareFailu
                 Collectors.collectingAndThen(Collectors.toList(), e -> this.getCabinetFailureWarnMsg(e, request))));
     
         if (ObjectUtils.isNotEmpty(cabinetMsgMap)) {
-            // 删除昨天的历史数据
-            failureCabinetMsgMapper.batchDelete(request.getStartTime(), request.getEndTime());
-        
             List<EleHardwareFailureCabinetMsg> failureCabinetMsgList = cabinetMsgMap.values().parallelStream().collect(Collectors.toList());
             // 批量插入新的数据
             failureCabinetMsgMapper.batchInsert(failureCabinetMsgList);
