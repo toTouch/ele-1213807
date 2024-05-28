@@ -39,8 +39,10 @@ import com.xiliulou.electricity.entity.car.CarRentalPackageMemberTermPo;
 import com.xiliulou.electricity.enums.BatteryMemberCardBusinessTypeEnum;
 import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.enums.MemberTermStatusEnum;
+import com.xiliulou.electricity.enums.OverdueType;
 import com.xiliulou.electricity.enums.YesNoEnum;
 import com.xiliulou.electricity.enums.enterprise.RentBatteryOrderTypeEnum;
+import com.xiliulou.electricity.event.publish.OverdueUserRemarkPublish;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.RentBatteryOrderMapper;
 import com.xiliulou.electricity.mns.EleHardwareHandlerManager;
@@ -221,6 +223,9 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
     
     @Autowired
     BatteryMembercardRefundOrderService batteryMembercardRefundOrderService;
+    
+    @Autowired
+    OverdueUserRemarkPublish overdueUserRemarkPublish;
     
     /**
      * 新增数据
@@ -869,7 +874,8 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
                     .productKey(electricityCabinet.getProductKey()).deviceName(electricityCabinet.getDeviceName()).command(ElectricityIotConstant.ELE_COMMAND_RETURN_OPEN_DOOR)
                     .build();
             eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
-            
+            //为逾期用户清除备注
+            overdueUserRemarkPublish.publish(user.getUid(), OverdueType.BATTERY.getCode(), user.getTenantId());
             return R.ok(orderId);
         } catch (BizException e) {
             throw new BizException(e.getErrCode(), e.getErrMsg());
