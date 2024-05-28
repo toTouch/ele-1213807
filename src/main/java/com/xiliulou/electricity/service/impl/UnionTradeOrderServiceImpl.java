@@ -48,6 +48,7 @@ import com.xiliulou.electricity.entity.car.CarRentalPackageOrderFreezePo;
 import com.xiliulou.electricity.entity.car.CarRentalPackageOrderSlippagePo;
 import com.xiliulou.electricity.entity.enterprise.EnterpriseChannelUser;
 import com.xiliulou.electricity.enums.OverdueType;
+import com.xiliulou.electricity.enums.YesNoEnum;
 import com.xiliulou.electricity.enums.enterprise.CloudBeanStatusEnum;
 import com.xiliulou.electricity.enums.enterprise.EnterprisePaymentStatusEnum;
 import com.xiliulou.electricity.event.publish.OverdueUserRemarkPublish;
@@ -1548,7 +1549,11 @@ public class UnionTradeOrderServiceImpl extends
 
     private void handleBatteryMembercardPauseServiceFeeOrder(String orderId, Integer status, UserInfo userInfo) {
         //提前发布逾期用户备注清除事件
-        overdueUserRemarkPublish.publish(userInfo.getUid(), OverdueType.BATTERY.getCode(), userInfo.getTenantId());
+        if (Objects.equals(userInfo.getCarBatteryDepositStatus(), YesNoEnum.YES.getCode())) {
+            overdueUserRemarkPublish.publish(userInfo.getUid(), OverdueType.CAR.getCode(),TenantContextHolder.getTenantId());
+        }else {
+            overdueUserRemarkPublish.publish(userInfo.getUid(), OverdueType.BATTERY.getCode(),TenantContextHolder.getTenantId());
+        }
         EleBatteryServiceFeeOrder eleBatteryServiceFeeOrder = eleBatteryServiceFeeOrderService.selectByOrderNo(orderId);
         if (Objects.isNull(eleBatteryServiceFeeOrder)) {
             log.error("NOTIFY SERVICE FEE UNION ORDER ERROR!not found eleBatteryServiceFeeOrder,orderId={}", orderId);
@@ -1691,7 +1696,11 @@ public class UnionTradeOrderServiceImpl extends
 
     private void handleBatteryMembercardExpireServiceFeeOrder(String orderId, Integer status, UserInfo userInfo) {
         //提前发布逾期用户备注清除事件
-        overdueUserRemarkPublish.publish(userInfo.getUid(), OverdueType.BATTERY.getCode(), userInfo.getTenantId());
+        if (Objects.equals(userInfo.getCarBatteryDepositStatus(),YesNoEnum.YES.getCode())) {
+            overdueUserRemarkPublish.publish(userInfo.getUid(), OverdueType.CAR.getCode(),TenantContextHolder.getTenantId());
+        }else {
+            overdueUserRemarkPublish.publish(userInfo.getUid(), OverdueType.BATTERY.getCode(),TenantContextHolder.getTenantId());
+        }
         EleBatteryServiceFeeOrder eleBatteryServiceFeeOrder = eleBatteryServiceFeeOrderService.selectByOrderNo(orderId);
         if (Objects.isNull(eleBatteryServiceFeeOrder)) {
             log.error("NOTIFY SERVICE FEE UNION ORDER ERROR!not found eleBatteryServiceFeeOrder,orderId={}", orderId);
