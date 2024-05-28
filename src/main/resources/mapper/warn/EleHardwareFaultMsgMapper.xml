@@ -78,7 +78,7 @@
     <select id="selectListProportion" resultType="com.xiliulou.electricity.vo.failureAlarm.FailureWarnProportionVo">
         SELECT
             signal_id,
-            count(1) as 'count'
+            count(1) count
         FROM
             t_ele_hardware_fault_msg t
         WHERE
