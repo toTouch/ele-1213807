@@ -127,6 +127,9 @@ import java.util.Optional;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
 
+import static com.xiliulou.electricity.entity.ElectricityCabinetBox.STATUS_ELECTRICITY_BATTERY;
+import static com.xiliulou.electricity.entity.ElectricityCabinetBox.STATUS_NO_ELECTRICITY_BATTERY;
+
 /**
  * 租电池记录(TRentBatteryOrder)表服务实现类
  *
@@ -906,20 +909,18 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
             throw new BizException("ELECTRICITY.0026", "换电柜异常，不存在的电柜扩展信息");
         }
         
-        // 空仓集合
-        List<ElectricityCabinetBox> emptyCellList = electricityCabinetBoxService.listUsableEmptyCell(eid);
+        List<ElectricityCabinetBox> cabinetBoxList = electricityCabinetBoxService.selectEleBoxAttrByEid(eid);
+        // 查询空仓数量
+        List<ElectricityCabinetBox> emptyCellList = cabinetBoxList.stream().filter(e -> Objects.equals(e.getStatus(), STATUS_NO_ELECTRICITY_BATTERY)).collect(Collectors.toList());
         if (CollUtil.isEmpty(emptyCellList)) {
             throw new BizException("ELECTRICITY.0026", "当前无空余格挡可供退电，请联系客服！");
         }
         
         if (Objects.nonNull(cabinetExtra.getMaxRetainBatteryCount())) {
-            // 限制， 查询换电标准
-            List<ElectricityCabinetBox> useCellList = electricityCabinetBoxService.queryUsableBatteryCellNo(eid, null, fullyCharged);
-            // 过滤掉电池名称不符合标准的
-            List<ElectricityCabinetBox> exchangeableList = useCellList.stream().filter(item -> filterNotExchangeable(item)).collect(Collectors.toList());
-            
+            // 退电的电池数量
+            List<ElectricityCabinetBox> haveBatteryCellList = cabinetBoxList.stream().filter(e -> Objects.equals(e.getStatus(), STATUS_ELECTRICITY_BATTERY)).collect(Collectors.toList());
             // 在仓电池数高于限值 或者 没有空仓
-            if (exchangeableList.size() > cabinetExtra.getMaxRetainBatteryCount()) {
+            if (haveBatteryCellList.size() > cabinetExtra.getMaxRetainBatteryCount()) {
                 throw new BizException("ELECTRICITY.0026", "在仓电池数高于限值，暂无法退电，请选择其他柜机!");
             }
         }
