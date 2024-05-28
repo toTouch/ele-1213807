@@ -826,11 +826,14 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
             return verifyBatteryMemberCardResult;
         }
         
-        //套餐数量最多50个
-        BatteryMemberCardQuery queryCount = BatteryMemberCardQuery.builder().businessType(BatteryMemberCardBusinessTypeEnum.BUSINESS_TYPE_BATTERY.getCode())
-                .tenantId(TenantContextHolder.getTenantId()).delFlag(BatteryMemberCard.DEL_NORMAL).build();
-        if (selectByPageCount(queryCount) >= 50) {
-            return Triple.of(false, "100378", "换电套餐新增已达最大上限，可删除多余套餐后操作");
+        //套餐数量最多50个，仅对换电套餐做限制
+        if (Objects.equals(query.getBusinessType(), BatteryMemberCardBusinessTypeEnum.BUSINESS_TYPE_BATTERY.getCode())) {
+            BatteryMemberCardQuery queryCount = BatteryMemberCardQuery.builder().businessType(BatteryMemberCardBusinessTypeEnum.BUSINESS_TYPE_BATTERY.getCode())
+                    .tenantId(TenantContextHolder.getTenantId()).delFlag(BatteryMemberCard.DEL_NORMAL).build();
+            
+            if (selectByPageCount(queryCount) >= 50) {
+                return Triple.of(false, "100378", "换电套餐新增已达最大上限，可删除多余套餐后操作");
+            }
         }
         
         BatteryMemberCard batteryMemberCard = new BatteryMemberCard();
@@ -848,7 +851,7 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
         }
         
         //适配企业渠道添加套餐业务
-        if (Objects.isNull(query.getBusinessType())) {
+        if (Objects.equals(BatteryMemberCardBusinessTypeEnum.BUSINESS_TYPE_BATTERY.getCode(), query.getBusinessType())) {
             batteryMemberCard.setBusinessType(BatteryMemberCardBusinessTypeEnum.BUSINESS_TYPE_BATTERY.getCode());
         } else if (BatteryMemberCardBusinessTypeEnum.BUSINESS_TYPE_ENTERPRISE_BATTERY.getCode().equals(query.getBusinessType())) {
             batteryMemberCard.setBusinessType(BatteryMemberCardBusinessTypeEnum.BUSINESS_TYPE_ENTERPRISE_BATTERY.getCode());
