@@ -71,6 +71,9 @@ public class FailureWarnMsgPageQueryModel {
     
     private Long offset;
     
+    private String startTime;
+    private String endTime;
+    
     /**
      * 柜机Id
      */

@@ -75,4 +75,14 @@ public class FaultMsgPageQueryModel {
      * 柜机Id
      */
     private Integer cabinetId;
+    
+    /**
+     * 告警/告警开始时间
+     */
+    private String startTime;
+    
+    /**
+     * 告警/告警结束时间
+     */
+    private String endTime;
 }

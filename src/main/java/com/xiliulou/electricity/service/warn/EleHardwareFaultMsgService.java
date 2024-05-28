@@ -27,7 +27,7 @@ public interface EleHardwareFaultMsgService {
     
     R listByPage(List<EleHardwareFaultMsg> eleHardwareFaultMsgList, EleHardwareFaultMsgPageRequest request);
     
-    R countTotal(EleHardwareFaultMsgPageRequest request, FaultMsgPageQueryModel queryModel);
+    R countTotal(FaultMsgPageQueryModel queryModel);
     
     R superExportPage(EleHardwareFaultMsgPageRequest request, List<FailureWarnMsgExcelVo> list);
     

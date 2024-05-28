@@ -12,8 +12,9 @@
         FROM
             t_ele_hardware_fault_msg
         WHERE
-            alarm_time between  #{startTime} and #{endTime}
-        GROUP BY
+            alarm_time >= #{startTime}
+            and alarm_time &lt; #{endTime}
+         GROUP BY
             tenant_id,
             cabinet_id
     </select>
@@ -84,8 +85,9 @@
         FROM
             t_ele_hardware_fault_msg t
         WHERE
-            alarm_time between  #{alarmStartTime} and #{alarmEndTime}
-          AND signal_id in
+             alarm_time >= #{startTime}
+            and alarm_time &lt; #{endTime}
+           AND signal_id in
           <foreach collection="signalIdList" separator="," close=")" open="(" item="signalId">
               #{signalId}
           </foreach>
@@ -98,7 +100,8 @@
         FROM
             t_ele_hardware_fault_msg
         <where>
-            alarm_time between  #{startTime} and #{endTime}
+            alarm_time >= #{startTime}
+            and alarm_time &lt; #{endTime}
             and signal_id in
             <foreach collection="signalIdList" item="signalId" separator="," open="(" close=")">
                 #{signalId}
@@ -124,8 +127,12 @@
                 and signal_id = #{signalId}
             </if>
             
-            <if test="alarmStartTime != null and alarmEndTime != null">
-                and alarm_time BETWEEN #{alarmStartTime} AND  #{alarmEndTime}
+            <if test="startTime != null">
+                and alarm_time >= #{startTime}
+            </if>
+            
+            <if test="endTime != null">
+                and alarm_time &lt; #{endTime}
             </if>
             
             <if test="signalIdList != null and signalIdList.size() > 0">

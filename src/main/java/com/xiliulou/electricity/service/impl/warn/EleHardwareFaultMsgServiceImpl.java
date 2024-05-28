@@ -18,8 +18,8 @@ import com.xiliulou.electricity.enums.failureAlarm.FailureWarnMsgStatusEnum;
 import com.xiliulou.electricity.mapper.FailureAlarmMapper;
 import com.xiliulou.electricity.mapper.warn.EleHardwareFaultMsgMapper;
 import com.xiliulou.electricity.queryModel.failureAlarm.FailureAlarmQueryModel;
+import com.xiliulou.electricity.queryModel.failureAlarm.FailureFaultMsgTaskQueryModel;
 import com.xiliulou.electricity.queryModel.failureAlarm.FailureWarnMsgPageQueryModel;
-import com.xiliulou.electricity.queryModel.failureAlarm.FailureWarnMsgTaskQueryModel;
 import com.xiliulou.electricity.queryModel.failureAlarm.FaultMsgPageQueryModel;
 import com.xiliulou.electricity.request.failureAlarm.EleHardwareFaultMsgPageRequest;
 import com.xiliulou.electricity.request.failureAlarm.FailureAlarmTaskQueryRequest;
@@ -46,6 +46,9 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -65,21 +68,30 @@ import java.util.stream.Collectors;
 @Service
 @Slf4j
 public class EleHardwareFaultMsgServiceImpl implements EleHardwareFaultMsgService {
+    
     @Resource
     private EleHardwareFaultMsgMapper eleHardwareFaultMsgMapper;
+    
     @Resource
     private FailureAlarmService failureAlarmService;
+    
     @Resource
     private ElectricityCabinetService cabinetService;
+    
     @Resource
     private FailureAlarmMapper failureAlarmMapper;
-   
+    
+    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
     
     @Override
     @DS(value = "clickhouse")
     public List<EleHardwareFailureWarnMsgVo> list(FailureAlarmTaskQueryRequest request) {
-        FailureWarnMsgTaskQueryModel queryModel = FailureWarnMsgTaskQueryModel.builder().startTime(request.getStartTime()).endTime(request.getEndTime()).build();
-    
+        FailureFaultMsgTaskQueryModel queryModel = FailureFaultMsgTaskQueryModel.builder().build();
+        LocalDateTime beginLocalDateTime = LocalDateTime.ofEpochSecond(request.getStartTime() / 1000, 0, ZoneOffset.ofHours(8));
+        LocalDateTime endLocalDateTime = LocalDateTime.ofEpochSecond(request.getEndTime() / 1000, 0, ZoneOffset.ofHours(8));
+        queryModel.setStartTime(formatter.format(beginLocalDateTime));
+        queryModel.setEndTime(formatter.format(endLocalDateTime));
+        
         return eleHardwareFaultMsgMapper.selectList(queryModel);
     }
     
@@ -87,25 +99,25 @@ public class EleHardwareFaultMsgServiceImpl implements EleHardwareFaultMsgServic
     @Slave
     public R listByPage(List<EleHardwareFaultMsg> eleHardwareFaultMsgList, EleHardwareFaultMsgPageRequest request) {
         Integer type = FailureAlarmTypeEnum.FAILURE_ALARM_TYPE_WARING.getCode();
-    
+        
         List<EleHardwareFailureWarnMsgPageVo> resultList = new ArrayList<>();
         Integer finalType = type;
         eleHardwareFaultMsgList.forEach(item -> {
             EleHardwareFailureWarnMsgPageVo vo = new EleHardwareFailureWarnMsgPageVo();
             BeanUtils.copyProperties(item, vo);
-        
+            
             if (Objects.equals(vo.getCellNo(), NumberConstant.ZERO)) {
                 vo.setCellNo(null);
             }
-        
+            
             // 查询柜机版本
             ElectricityCabinet electricityCabinet = cabinetService.queryByIdFromCache(vo.getCabinetId());
             Optional.ofNullable(electricityCabinet).ifPresent(electricityCabinet1 -> {
                 vo.setCabinetVersion(electricityCabinet1.getVersion());
             });
-        
+            
             Map<String, Map<String, String>> map = new HashMap<>();
-        
+            
             // 上报的记录没有
             FailureAlarm failureAlarm = failureAlarmService.queryFromCacheBySignalId(vo.getSignalId());
             if (Objects.nonNull(failureAlarm) && Objects.equals(failureAlarm.getType(), finalType)) {
@@ -115,11 +127,11 @@ public class EleHardwareFaultMsgServiceImpl implements EleHardwareFaultMsgServic
                     descMap = getDescMap(failureAlarm.getEventDesc());
                     map.put(failureAlarm.getSignalId(), descMap);
                 }
-            
+                
                 if (ObjectUtils.isNotEmpty(descMap.get(vo.getAlarmDesc()))) {
                     signalName = signalName + CommonConstant.STR_COMMA + descMap.get(vo.getAlarmDesc());
                 }
-            
+                
                 vo.setFailureAlarmName(signalName);
                 vo.setGrade(failureAlarm.getGrade());
                 vo.setDeviceType(failureAlarm.getDeviceType());
@@ -128,16 +140,16 @@ public class EleHardwareFaultMsgServiceImpl implements EleHardwareFaultMsgServic
                 vo.setGrade(null);
                 vo.setDeviceType(null);
             }
-        
+            
             resultList.add(vo);
         });
-    
+        
         return R.ok(resultList);
     }
     
     @Override
     @DS(value = "clickhouse")
-    public R countTotal(EleHardwareFaultMsgPageRequest request, FaultMsgPageQueryModel queryModel) {
+    public R countTotal(FaultMsgPageQueryModel queryModel) {
         return R.ok(eleHardwareFaultMsgMapper.countTotal(queryModel));
     }
     
@@ -146,9 +158,9 @@ public class EleHardwareFaultMsgServiceImpl implements EleHardwareFaultMsgServic
     public R superExportPage(EleHardwareFaultMsgPageRequest request, List<FailureWarnMsgExcelVo> list) {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         Date date = new Date();
-    
+        
         Integer type = FailureAlarmTypeEnum.FAILURE_ALARM_TYPE_WARING.getCode();
-    
+        
         if (ObjectUtils.isNotEmpty(list)) {
             Map<String, Map<String, String>> map = new HashMap<>();
             for (FailureWarnMsgExcelVo vo : list) {
@@ -157,12 +169,12 @@ public class EleHardwareFaultMsgServiceImpl implements EleHardwareFaultMsgServic
                 Optional.ofNullable(electricityCabinet).ifPresent(electricityCabinet1 -> {
                     vo.setSn(electricityCabinet1.getSn());
                 });
-            
+                
                 FailureAlarm failureAlarm = failureAlarmService.queryFromCacheBySignalId(vo.getSignalId());
-            
+                
                 if (Objects.nonNull(failureAlarm) && Objects.equals(failureAlarm.getType(), type)) {
                     String signalName = failureAlarm.getSignalName();
-                
+                    
                     Map<String, String> descMap = map.get(failureAlarm.getSignalId());
                     if (ObjectUtils.isEmpty(descMap)) {
                         descMap = getDescMap(failureAlarm.getEventDesc());
@@ -172,8 +184,7 @@ public class EleHardwareFaultMsgServiceImpl implements EleHardwareFaultMsgServic
                     if (ObjectUtils.isNotEmpty(descMap.get(vo.getAlarmDesc()))) {
                         signalName = signalName + CommonConstant.STR_COMMA + descMap.get(vo.getAlarmDesc());
                     }
-                
-                
+                    
                     vo.setFailureAlarmName(signalName);
                     vo.setGrade(String.valueOf(failureAlarm.getGrade()));
                     vo.setDeviceType(String.valueOf(failureAlarm.getDeviceType()));
@@ -181,46 +192,46 @@ public class EleHardwareFaultMsgServiceImpl implements EleHardwareFaultMsgServic
                     if (ObjectUtils.isNotEmpty(deviceTypeEnum)) {
                         vo.setDeviceType(deviceTypeEnum.getDesc());
                     }
-                
+                    
                     FailureAlarmGradeEnum gradeEnum = BasicEnum.getEnum(Integer.valueOf(vo.getGrade()), FailureAlarmGradeEnum.class);
                     if (ObjectUtils.isNotEmpty(gradeEnum)) {
                         vo.setGrade(gradeEnum.getDesc());
                     }
-                } else if (Objects.isNull(request.getNoLimitSignalId())){
+                } else if (Objects.isNull(request.getNoLimitSignalId())) {
                     vo.setFailureAlarmName("");
                     vo.setGrade("");
                     vo.setDeviceType("");
                 }
-            
+                
                 if (ObjectUtils.isNotEmpty(vo.getAlarmTime())) {
                     date.setTime(vo.getAlarmTime());
                     vo.setAlarmTimeExport(sdf.format(date));
                 }
-            
+                
                 if (ObjectUtils.isNotEmpty(vo.getRecoverTime())) {
                     date.setTime(vo.getRecoverTime());
                     vo.setRecoverTimeExport(sdf.format(date));
                 }
-            
+                
                 FailureWarnMsgStatusEnum statusEnum = BasicEnum.getEnum(vo.getAlarmFlag(), FailureWarnMsgStatusEnum.class);
                 if (ObjectUtils.isNotEmpty(statusEnum)) {
                     vo.setAlarmFlagExport(statusEnum.getDesc());
                 }
-            
+                
                 if (Objects.equals(vo.getCellNo(), NumberConstant.ZERO)) {
                     vo.setCellNo(null);
                 }
-            
+                
                 if (ObjectUtils.isNotEmpty(vo.getBatterySn())) {
                     vo.setSn(vo.getBatterySn());
                 }
-            
+                
                 if (ObjectUtils.isNotEmpty(vo.getBatterySn())) {
                     vo.setSn(vo.getBatterySn());
                 }
             }
         }
-    
+        
         return R.ok(list);
     }
     
@@ -264,7 +275,7 @@ public class EleHardwareFaultMsgServiceImpl implements EleHardwareFaultMsgServic
         
         // 设置查询参数
         BeanUtils.copyProperties(request, queryModel);
-        if ( ObjectUtils.isNotEmpty(request.getTenantVisible()) || ObjectUtils.isNotEmpty(request.getStatus())) {
+        if (ObjectUtils.isNotEmpty(request.getTenantVisible()) || ObjectUtils.isNotEmpty(request.getStatus())) {
             // 查询故障告警设置是否存在
             FailureAlarmQueryModel failureAlarmQueryModel = FailureAlarmQueryModel.builder().tenantVisible(request.getTenantVisible()).status(request.getStatus()).build();
             List<FailureAlarm> failureAlarmList = failureAlarmService.listByParams(failureAlarmQueryModel);
@@ -277,6 +288,10 @@ public class EleHardwareFaultMsgServiceImpl implements EleHardwareFaultMsgServic
             queryModel.setSignalIdList(signalIdList);
         }
         
+        LocalDateTime beginLocalDateTime = LocalDateTime.ofEpochSecond(request.getAlarmStartTime() / 1000, 0, ZoneOffset.ofHours(8));
+        LocalDateTime endLocalDateTime = LocalDateTime.ofEpochSecond(request.getAlarmEndTime() / 1000, 0, ZoneOffset.ofHours(8));
+        queryModel.setStartTime(formatter.format(beginLocalDateTime));
+        queryModel.setEndTime(formatter.format(endLocalDateTime));
         
         return Triple.of(true, null, null);
     }
@@ -303,9 +318,11 @@ public class EleHardwareFaultMsgServiceImpl implements EleHardwareFaultMsgServic
     @DS(value = "clickhouse")
     public List<FailureWarnProportionVo> listProportion(EleHardwareFaultMsgPageRequest request) {
         FailureWarnMsgPageQueryModel queryModel = new FailureWarnMsgPageQueryModel();
-        queryModel.setAlarmStartTime(request.getAlarmStartTime());
-        queryModel.setAlarmEndTime(request.getAlarmEndTime());
         queryModel.setSignalIdList(request.getSignalIdList());
+        LocalDateTime beginLocalDateTime = LocalDateTime.ofEpochSecond(request.getAlarmStartTime() / 1000, 0, ZoneOffset.ofHours(8));
+        LocalDateTime endLocalDateTime = LocalDateTime.ofEpochSecond(request.getAlarmEndTime() / 1000, 0, ZoneOffset.ofHours(8));
+        queryModel.setStartTime(formatter.format(beginLocalDateTime));
+        queryModel.setEndTime(formatter.format(endLocalDateTime));
         
         return eleHardwareFaultMsgMapper.selectListProportion(queryModel);
     }
@@ -314,16 +331,16 @@ public class EleHardwareFaultMsgServiceImpl implements EleHardwareFaultMsgServic
     @Slave
     public List<FailureWarnProportionVo> faultProportion(Map<String, Integer> failureMap) {
         Map<Integer, List<FailureAlarm>> gradeMap = new HashMap<>();
-    
+        
         FailureAlarmQueryModel alarmQueryModel = FailureAlarmQueryModel.builder().type(FailureAlarmTypeEnum.FAILURE_ALARM_TYPE_FAILURE.getCode()).status(FailureAlarm.enable)
                 .build();
         List<FailureAlarm> failureAlarmList = failureAlarmMapper.selectList(alarmQueryModel);
         if (ObjectUtils.isNotEmpty(failureAlarmList)) {
             gradeMap = failureAlarmList.stream().collect(Collectors.groupingBy(FailureAlarm::getGrade));
         }
-    
+        
         List<FailureWarnProportionVo> resultList = new ArrayList<>();
-    
+        
         for (FailureAlarmGradeEnum alarmGradeEnum : FailureAlarmGradeEnum.values()) {
             FailureWarnProportionVo vo = new FailureWarnProportionVo();
             vo.setName(alarmGradeEnum.getDesc() + FailureAlarmTypeEnum.FAILURE_ALARM_TYPE_FAILURE.getDesc());
@@ -342,7 +359,7 @@ public class EleHardwareFaultMsgServiceImpl implements EleHardwareFaultMsgServic
                         children.add(failureWarnProportionVo);
                     }
                 }
-            
+                
                 if (count > 0) {
                     vo.setChildren(children);
                     vo.setValue(count);
@@ -350,24 +367,25 @@ public class EleHardwareFaultMsgServiceImpl implements EleHardwareFaultMsgServic
                 }
             }
         }
-    
+        
         return resultList;
     }
     
     @Override
     public void proportionExport(List<FailureWarnProportionVo> failureWarnProportionVos, HttpServletResponse response) {
         List<FailureWarnProportionExportVo> exportVoList = new ArrayList<>();
-    
-        if (ObjectUtils.isNotEmpty(failureWarnProportionVos)) {
-            List<FailureWarnProportionVo> list = failureWarnProportionVos.stream().sorted(Comparator.comparing(FailureWarnProportionVo::getCount, Comparator.reverseOrder())).collect(Collectors.toList());
-            int i = 1;
         
+        if (ObjectUtils.isNotEmpty(failureWarnProportionVos)) {
+            List<FailureWarnProportionVo> list = failureWarnProportionVos.stream().sorted(Comparator.comparing(FailureWarnProportionVo::getCount, Comparator.reverseOrder()))
+                    .collect(Collectors.toList());
+            int i = 1;
+            
             for (FailureWarnProportionVo item : list) {
                 FailureWarnProportionExportVo vo = new FailureWarnProportionExportVo();
                 vo.setSignalId(item.getSignalId());
                 vo.setNum(item.getCount());
                 vo.setSerialNumber(i++);
-            
+                
                 // 查询故障告警设置
                 FailureAlarm failureAlarm = failureAlarmService.queryFromCacheBySignalId(item.getSignalId());
                 Optional.ofNullable(failureAlarm).ifPresent(failureAlarm1 -> {
@@ -376,21 +394,21 @@ public class EleHardwareFaultMsgServiceImpl implements EleHardwareFaultMsgServic
                     if (ObjectUtils.isNotEmpty(deviceTypeEnum)) {
                         vo.setDeviceType(deviceTypeEnum.getDesc());
                     }
-                
+                    
                     // 等级
                     FailureAlarmGradeEnum gradeEnum = BasicEnum.getEnum(Integer.valueOf(failureAlarm1.getGrade()), FailureAlarmGradeEnum.class);
                     if (ObjectUtils.isNotEmpty(gradeEnum)) {
                         vo.setGrade(gradeEnum.getDesc());
                     }
-                
+                    
                     // 标准名
                     vo.setSignalName(failureAlarm1.getSignalName());
                 });
-            
+                
                 exportVoList.add(vo);
             }
         }
-    
+        
         String fileName = "故障告警占比导出.xlsx";
         try {
             ServletOutputStream outputStream = response.getOutputStream();
@@ -408,6 +426,11 @@ public class EleHardwareFaultMsgServiceImpl implements EleHardwareFaultMsgServic
     @Override
     @DS(value = "clickhouse")
     public void setFailureInfo(FailureWarnFrequencyVo vo, FailureWarnMsgPageQueryModel queryModel) {
+        LocalDateTime beginLocalDateTime = LocalDateTime.ofEpochSecond(queryModel.getAlarmStartTime() / 1000, 0, ZoneOffset.ofHours(8));
+        LocalDateTime endLocalDateTime = LocalDateTime.ofEpochSecond(queryModel.getAlarmEndTime() / 1000, 0, ZoneOffset.ofHours(8));
+        queryModel.setStartTime(formatter.format(beginLocalDateTime));
+        queryModel.setEndTime(formatter.format(endLocalDateTime));
+        
         // 统计选中时间段的告警次数
         Integer faultNum = eleHardwareFaultMsgMapper.countFaultNum(queryModel);
         
