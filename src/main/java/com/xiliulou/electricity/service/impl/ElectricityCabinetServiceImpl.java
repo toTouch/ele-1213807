@@ -234,6 +234,7 @@ import java.util.stream.Collectors;
 
 import static com.xiliulou.electricity.constant.ElectricityIotConstant.ELE_COMMAND_CELL_UPDATE;
 import static com.xiliulou.electricity.entity.ElectricityCabinet.ELECTRICITY_CABINET_USABLE_STATUS;
+import static com.xiliulou.electricity.entity.ElectricityCabinetBox.STATUS_NO_ELECTRICITY_BATTERY;
 import static com.xiliulou.electricity.entity.ElectricityCabinetExtra.EFFECT_ROWS_ZERO;
 import static com.xiliulou.electricity.query.ElectricityCabinetBatchEditRentReturnQuery.LIMIT;
 import static com.xiliulou.electricity.query.ElectricityCabinetBatchEditRentReturnQuery.NOT_LIMIT;
@@ -1248,17 +1249,11 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         return R.ok(resultVo.stream().sorted(Comparator.comparing(ElectricityCabinetSimpleVO::getDistance)).collect(Collectors.toList()));
     }
     
-    private List<Integer> electricityCabinetLabelHandler(Integer eid, Double fullyCharged) {
+    private List<Integer> electricityCabinetLabelHandler(Integer eid, List<ElectricityCabinetBox> exchangeableList, List<ElectricityCabinetBox> cabinetBoxList) {
         List<Integer> label = CollUtil.newArrayList();
         
-        // 换电限制标签：柜内符合可换电标准的电池≥1，则可换电
-        List<ElectricityCabinetBox> boxes = electricityCabinetBoxService.queryUsableBatteryCellNo(eid, null, fullyCharged);
-        
-        // 过滤掉电池名称不符合标准的
-        List<ElectricityCabinetBox> exchangeableList = boxes.stream().filter(item -> filterNotExchangeable(item)).collect(Collectors.toList());
-        
         // 查询空仓数量
-        List<ElectricityCabinetBox> emptyCellList = electricityCabinetBoxService.listUsableEmptyCell(eid);
+        List<ElectricityCabinetBox> emptyCellList = cabinetBoxList.stream().filter(e -> Objects.equals(e.getStatus(), STATUS_NO_ELECTRICITY_BATTERY)).collect(Collectors.toList());
         
         //可换电数量,可换电池数>=1 && 必须有一个空仓
         if (exchangeableList.size() >= 1 && CollUtil.isNotEmpty(emptyCellList)) {
@@ -1337,7 +1332,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         e.setFullyElectricityBattery((int) exchangeableNumber);//兼容2.0小程序首页显示问题
         
         // 筛选可换、可租、可退标签返回
-        e.setLabel(electricityCabinetLabelHandler(e.getId(), fullyCharged));
+        e.setLabel(electricityCabinetLabelHandler(e.getId(), exchangeableList, cabinetBoxList));
         return e;
     }
     
@@ -3011,7 +3006,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     
     @Override
     public boolean isNoElectricityBattery(ElectricityCabinetBox electricityCabinetBox) {
-        return Objects.equals(electricityCabinetBox.getStatus(), ElectricityCabinetBox.STATUS_NO_ELECTRICITY_BATTERY);
+        return Objects.equals(electricityCabinetBox.getStatus(), STATUS_NO_ELECTRICITY_BATTERY);
     }
     
     @Override
