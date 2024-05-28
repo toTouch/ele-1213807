@@ -29,7 +29,11 @@ public class HardwareFailureCabinetMsgTask extends IJobHandler {
         log.info("hardware Failure Cabinet Msg start");
         
         try {
+            // 旧版本故障告警统计
             failureCabinetMsgService.createFailureWarnData();
+            
+            // 新版本柜机故障告警数量统计
+            failureCabinetMsgService.createFailureWarnDataV2();
         } catch (Exception e) {
             log.error("hardware Failure Cabinet Msg error",e);
         }

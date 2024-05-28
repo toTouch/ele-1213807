@@ -64,7 +64,6 @@ public class EleHardwareFaultMsgBusinessServiceImpl implements EleHardwareFaultM
         FaultMsgPageQueryModel queryModel = new FaultMsgPageQueryModel();
         // 检测数据
         Triple<Boolean, String, Object> triple = eleHardwareFaultMsgService.checkAndInitQuery(request, queryModel, TimeConstant.ONE_MONTH);
-        log.info("checkAndInitQuery result:{}", triple);
         if (!triple.getLeft()) {
             return R.fail(triple.getMiddle(), (String) triple.getRight());
         }
@@ -83,7 +82,6 @@ public class EleHardwareFaultMsgBusinessServiceImpl implements EleHardwareFaultM
         FaultMsgPageQueryModel queryModel = new FaultMsgPageQueryModel();
         // 检测数据
         Triple<Boolean, String, Object> triple = eleHardwareFaultMsgService.checkAndInitQuery(request, queryModel, TimeConstant.ONE_MONTH);
-        log.info("checkAndInitQuery result:{}", triple);
         if (!triple.getLeft()) {
             return R.fail(triple.getMiddle(), (String) triple.getRight());
         }
@@ -122,7 +120,6 @@ public class EleHardwareFaultMsgBusinessServiceImpl implements EleHardwareFaultM
     
         FailureAlarmQueryModel failureAlarmQueryModel = FailureAlarmQueryModel.builder().status(FailureAlarm.enable).type(FailureAlarmTypeEnum.FAILURE_ALARM_TYPE_FAILURE.getCode()).build();
         List<FailureAlarm> failureAlarmList = failureAlarmService.listByParams(failureAlarmQueryModel);
-        log.info("failure alarm list={}", failureAlarmList);
         if (ObjectUtils.isNotEmpty(failureAlarmList)) {
             List<String> signalIdList = failureAlarmList.stream().map(FailureAlarm::getSignalId).collect(Collectors.toList());
             request.setSignalIdList(signalIdList);
@@ -216,7 +213,6 @@ public class EleHardwareFaultMsgBusinessServiceImpl implements EleHardwareFaultM
     
         FailureAlarmQueryModel failureAlarmQueryModel = FailureAlarmQueryModel.builder().status(FailureAlarm.enable).type(FailureAlarmTypeEnum.FAILURE_ALARM_TYPE_FAILURE.getCode()).build();
         List<FailureAlarm> failureAlarmList = failureAlarmService.listByParams(failureAlarmQueryModel);
-        log.info("failure alarm list={}", failureAlarmList);
         if (ObjectUtils.isEmpty(failureAlarmList)) {
             return Triple.of(true, null, vo);
         }

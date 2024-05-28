@@ -5,10 +5,10 @@
     
     <select id="selectList" resultType="com.xiliulou.electricity.vo.failureAlarm.EleHardwareFailureWarnMsgVo">
         SELECT
-            tenant_id as 'tenantId',
-            cabinet_id as 'cabinetId',
-            count( 1 ) as 'failureWarnNum',
-            '1' as  'type'
+            tenant_id tenantId,
+            cabinet_id cabinetId,
+            count( 1 ) failureWarnNum,
+            '1' type
         FROM
             t_ele_hardware_fault_msg
         WHERE
