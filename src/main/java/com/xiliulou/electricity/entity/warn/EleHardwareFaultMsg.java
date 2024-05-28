@@ -39,7 +39,7 @@ public class EleHardwareFaultMsg {
     /**
      * 故障时间
      */
-    private Long alarmTime;
+    private String alarmTime;
     
     /**
      * 换电柜Id
@@ -79,12 +79,12 @@ public class EleHardwareFaultMsg {
     /**
      * 上报时间
      */
-    private Long reportTime;
+    private String reportTime;
     
     /**
      * 创建时间
      */
-    private Long createTime;
+    private String createTime;
 
   
     

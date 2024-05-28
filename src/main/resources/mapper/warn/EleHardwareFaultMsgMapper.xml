@@ -132,7 +132,7 @@
             </if>
             
             <if test="endTime != null">
-                and alarm_time &lt; #{endTime}
+                and alarm_time &lt;= #{endTime}
             </if>
             
             <if test="signalIdList != null and signalIdList.size() > 0">
