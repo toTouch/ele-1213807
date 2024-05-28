@@ -27,12 +27,12 @@ import com.xiliulou.electricity.service.ElectricityCabinetService;
 import com.xiliulou.electricity.service.FailureAlarmService;
 import com.xiliulou.electricity.service.warn.EleHardwareFaultMsgService;
 import com.xiliulou.electricity.utils.DateUtils;
-import com.xiliulou.electricity.vo.failureAlarm.EleHardwareFailureWarnMsgPageVo;
 import com.xiliulou.electricity.vo.failureAlarm.EleHardwareFailureWarnMsgVo;
 import com.xiliulou.electricity.vo.failureAlarm.FailureWarnFrequencyVo;
-import com.xiliulou.electricity.vo.failureAlarm.FailureWarnMsgExcelVo;
 import com.xiliulou.electricity.vo.failureAlarm.FailureWarnProportionExportVo;
 import com.xiliulou.electricity.vo.failureAlarm.FailureWarnProportionVo;
+import com.xiliulou.electricity.vo.warn.EleHardwareFaultMsgPageVo;
+import com.xiliulou.electricity.vo.warn.FaultMsgExcelVo;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -45,14 +45,12 @@ import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.net.URLEncoder;
-import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -100,10 +98,10 @@ public class EleHardwareFaultMsgServiceImpl implements EleHardwareFaultMsgServic
     public R listByPage(List<EleHardwareFaultMsg> eleHardwareFaultMsgList, EleHardwareFaultMsgPageRequest request) {
         Integer type = FailureAlarmTypeEnum.FAILURE_ALARM_TYPE_WARING.getCode();
         
-        List<EleHardwareFailureWarnMsgPageVo> resultList = new ArrayList<>();
+        List<EleHardwareFaultMsgPageVo> resultList = new ArrayList<>();
         Integer finalType = type;
         eleHardwareFaultMsgList.forEach(item -> {
-            EleHardwareFailureWarnMsgPageVo vo = new EleHardwareFailureWarnMsgPageVo();
+            EleHardwareFaultMsgPageVo vo = new EleHardwareFaultMsgPageVo();
             BeanUtils.copyProperties(item, vo);
             
             if (Objects.equals(vo.getCellNo(), NumberConstant.ZERO)) {
@@ -155,21 +153,12 @@ public class EleHardwareFaultMsgServiceImpl implements EleHardwareFaultMsgServic
     
     @Override
     @Slave
-    public R superExportPage(EleHardwareFaultMsgPageRequest request, List<FailureWarnMsgExcelVo> list) {
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        Date date = new Date();
-        
+    public R superExportPage(EleHardwareFaultMsgPageRequest request, List<FaultMsgExcelVo> list) {
         Integer type = FailureAlarmTypeEnum.FAILURE_ALARM_TYPE_WARING.getCode();
         
         if (ObjectUtils.isNotEmpty(list)) {
             Map<String, Map<String, String>> map = new HashMap<>();
-            for (FailureWarnMsgExcelVo vo : list) {
-                // 查询柜机sn
-                ElectricityCabinet electricityCabinet = cabinetService.queryByIdFromCache(vo.getCabinetId());
-                Optional.ofNullable(electricityCabinet).ifPresent(electricityCabinet1 -> {
-                    vo.setSn(electricityCabinet1.getSn());
-                });
-                
+            for (FaultMsgExcelVo vo : list) {
                 FailureAlarm failureAlarm = failureAlarmService.queryFromCacheBySignalId(vo.getSignalId());
                 
                 if (Objects.nonNull(failureAlarm) && Objects.equals(failureAlarm.getType(), type)) {
@@ -203,16 +192,6 @@ public class EleHardwareFaultMsgServiceImpl implements EleHardwareFaultMsgServic
                     vo.setDeviceType("");
                 }
                 
-                if (ObjectUtils.isNotEmpty(vo.getAlarmTime())) {
-                    date.setTime(vo.getAlarmTime());
-                    vo.setAlarmTimeExport(sdf.format(date));
-                }
-                
-                if (ObjectUtils.isNotEmpty(vo.getRecoverTime())) {
-                    date.setTime(vo.getRecoverTime());
-                    vo.setRecoverTimeExport(sdf.format(date));
-                }
-                
                 FailureWarnMsgStatusEnum statusEnum = BasicEnum.getEnum(vo.getAlarmFlag(), FailureWarnMsgStatusEnum.class);
                 if (ObjectUtils.isNotEmpty(statusEnum)) {
                     vo.setAlarmFlagExport(statusEnum.getDesc());
@@ -220,14 +199,6 @@ public class EleHardwareFaultMsgServiceImpl implements EleHardwareFaultMsgServic
                 
                 if (Objects.equals(vo.getCellNo(), NumberConstant.ZERO)) {
                     vo.setCellNo(null);
-                }
-                
-                if (ObjectUtils.isNotEmpty(vo.getBatterySn())) {
-                    vo.setSn(vo.getBatterySn());
-                }
-                
-                if (ObjectUtils.isNotEmpty(vo.getBatterySn())) {
-                    vo.setSn(vo.getBatterySn());
                 }
             }
         }
@@ -304,8 +275,8 @@ public class EleHardwareFaultMsgServiceImpl implements EleHardwareFaultMsgServic
     
     @Override
     @DS(value = "clickhouse")
-    public List<FailureWarnMsgExcelVo> listExportData(FaultMsgPageQueryModel queryModel, Triple<Boolean, String, Object> triple) {
-        List<FailureWarnMsgExcelVo> list = new ArrayList<>();
+    public List<FaultMsgExcelVo> listExportData(FaultMsgPageQueryModel queryModel, Triple<Boolean, String, Object> triple) {
+        List<FaultMsgExcelVo> list = new ArrayList<>();
         
         if (triple.getLeft() && Objects.isNull(triple.getRight())) {
             list = eleHardwareFaultMsgMapper.selectListExport(queryModel);

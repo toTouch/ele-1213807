@@ -8,8 +8,8 @@ import com.xiliulou.electricity.request.failureAlarm.EleHardwareFaultMsgPageRequ
 import com.xiliulou.electricity.request.failureAlarm.FailureAlarmTaskQueryRequest;
 import com.xiliulou.electricity.vo.failureAlarm.EleHardwareFailureWarnMsgVo;
 import com.xiliulou.electricity.vo.failureAlarm.FailureWarnFrequencyVo;
-import com.xiliulou.electricity.vo.failureAlarm.FailureWarnMsgExcelVo;
 import com.xiliulou.electricity.vo.failureAlarm.FailureWarnProportionVo;
+import com.xiliulou.electricity.vo.warn.FaultMsgExcelVo;
 import org.apache.commons.lang3.tuple.Triple;
 
 import javax.servlet.http.HttpServletResponse;
@@ -29,13 +29,13 @@ public interface EleHardwareFaultMsgService {
     
     R countTotal(FaultMsgPageQueryModel queryModel);
     
-    R superExportPage(EleHardwareFaultMsgPageRequest request, List<FailureWarnMsgExcelVo> list);
+    R superExportPage(EleHardwareFaultMsgPageRequest request, List<FaultMsgExcelVo> list);
     
     Triple<Boolean, String, Object> checkAndInitQuery(EleHardwareFaultMsgPageRequest request, FaultMsgPageQueryModel queryModel, int daySize);
     
     List<EleHardwareFaultMsg>  listByRequest(EleHardwareFaultMsgPageRequest request, FaultMsgPageQueryModel queryModel);
     
-    List<FailureWarnMsgExcelVo> listExportData(FaultMsgPageQueryModel queryModel, Triple<Boolean, String, Object> triple);
+    List<FaultMsgExcelVo> listExportData(FaultMsgPageQueryModel queryModel, Triple<Boolean, String, Object> triple);
     
     List<FailureWarnProportionVo> listProportion(EleHardwareFaultMsgPageRequest request);
     

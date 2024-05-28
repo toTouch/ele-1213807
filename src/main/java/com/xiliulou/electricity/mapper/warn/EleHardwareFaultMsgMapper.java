@@ -5,8 +5,8 @@ import com.xiliulou.electricity.queryModel.failureAlarm.FailureFaultMsgTaskQuery
 import com.xiliulou.electricity.queryModel.failureAlarm.FailureWarnMsgPageQueryModel;
 import com.xiliulou.electricity.queryModel.failureAlarm.FaultMsgPageQueryModel;
 import com.xiliulou.electricity.vo.failureAlarm.EleHardwareFailureWarnMsgVo;
-import com.xiliulou.electricity.vo.failureAlarm.FailureWarnMsgExcelVo;
 import com.xiliulou.electricity.vo.failureAlarm.FailureWarnProportionVo;
+import com.xiliulou.electricity.vo.warn.FaultMsgExcelVo;
 
 import java.util.List;
 
@@ -23,7 +23,7 @@ public interface EleHardwareFaultMsgMapper {
     
     Integer countTotal(FaultMsgPageQueryModel queryModel);
     
-    List<FailureWarnMsgExcelVo> selectListExport(FaultMsgPageQueryModel queryModel);
+    List<FaultMsgExcelVo> selectListExport(FaultMsgPageQueryModel queryModel);
     
     List<FailureWarnProportionVo> selectListProportion(FailureWarnMsgPageQueryModel queryModel);
     

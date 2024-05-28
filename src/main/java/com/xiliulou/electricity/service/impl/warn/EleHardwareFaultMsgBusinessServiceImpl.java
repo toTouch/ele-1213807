@@ -20,8 +20,8 @@ import com.xiliulou.electricity.service.warn.EleHardwareFaultMsgService;
 import com.xiliulou.electricity.service.warn.EleHardwareWarnMsgService;
 import com.xiliulou.electricity.utils.DateUtils;
 import com.xiliulou.electricity.vo.failureAlarm.FailureWarnFrequencyVo;
-import com.xiliulou.electricity.vo.failureAlarm.FailureWarnMsgExcelVo;
 import com.xiliulou.electricity.vo.failureAlarm.FailureWarnProportionVo;
+import com.xiliulou.electricity.vo.warn.FaultMsgExcelVo;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.tuple.Triple;
@@ -105,7 +105,7 @@ public class EleHardwareFaultMsgBusinessServiceImpl implements EleHardwareFaultM
             throw new CustomBusinessException((String) triple.getRight());
         }
     
-        List<FailureWarnMsgExcelVo> failureWarnMsgExcelVos = eleHardwareFaultMsgService.listExportData(queryModel, triple);
+        List<FaultMsgExcelVo> failureWarnMsgExcelVos = eleHardwareFaultMsgService.listExportData(queryModel, triple);
     
         return eleHardwareFaultMsgService.superExportPage(request, failureWarnMsgExcelVos);
     }

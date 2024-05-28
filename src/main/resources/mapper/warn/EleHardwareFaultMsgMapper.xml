@@ -51,25 +51,22 @@
         <include refid="filter"/>
     </select>
     
-    <select id="selectListExport" resultType="com.xiliulou.electricity.vo.failureAlarm.FailureWarnMsgExcelVo">
+    <select id="selectListExport" resultType="com.xiliulou.electricity.vo.warn.FaultMsgExcelVo">
         SELECT
-            id,
-            cabinet_id,
-            tenant_id,
-            signal_id,
-            alarm_desc,
-            alarm_flag,
+            sn,
             alarm_id,
             cell_no,
-            sn,
-            grade,
             device_type,
-            failure_alarm_name,
-            tenant_name,
-            dev_id,
-            recover_time,
-            report_time,
+            signal_id,
             alarm_time,
+            cabinet_id,
+            tenant_id,
+            tenant_name,
+            cabinet_name,
+            grade,
+            dev_id,
+            alarm_desc,
+            report_time,
             create_time
         FROM
         t_ele_hardware_fault_msg
