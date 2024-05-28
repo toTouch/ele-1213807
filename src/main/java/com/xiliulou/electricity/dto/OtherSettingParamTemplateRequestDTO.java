@@ -282,12 +282,12 @@ public class OtherSettingParamTemplateRequestDTO {
     /**
      * 开灯时间
      */
-    private Long openLightTime;
+    private String openLightTime;
     
     /**
      * 关灯时间
      */
-    private Long closeLightTime;
+    private String closeLightTime;
     
     /**
      * 音量大小
