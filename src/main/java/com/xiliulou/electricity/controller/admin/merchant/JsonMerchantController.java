@@ -101,6 +101,24 @@ public class JsonMerchantController extends BaseController {
     }
     
     /**
+     * 修改渠道员变更返利开关
+     */
+    @GetMapping("/admin/merchantAttr/switchState")
+    @Log(title = "修改渠道员变更返利开关")
+    public R updateChannelSwitchState(@RequestParam("status") Integer status) {
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        
+        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
+            return R.ok();
+        }
+        
+        return returnTripleResult(merchantAttrService.updateChannelSwitchState(TenantContextHolder.getTenantId(), status));
+    }
+    
+    /**
      * 保存
      *
      * @param merchantSaveRequest

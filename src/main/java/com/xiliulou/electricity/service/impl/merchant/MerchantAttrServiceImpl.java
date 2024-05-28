@@ -158,4 +158,18 @@ public class MerchantAttrServiceImpl implements MerchantAttrService {
         merchantAttr.setUpdateTime(System.currentTimeMillis());
         return this.insert(merchantAttr);
     }
+    
+    @Override
+    public Triple<Boolean, String, Object> updateChannelSwitchState(Integer tenantId, Integer status) {
+        MerchantAttr merchantAttr = this.queryByTenantIdFromCache(tenantId);
+        if (Objects.isNull(merchantAttr) || !Objects.equals(merchantAttr.getTenantId(), TenantContextHolder.getTenantId())) {
+            return Triple.of(true, null, null);
+        }
+        
+        MerchantAttr merchantAttrUpdate = new MerchantAttr();
+        merchantAttrUpdate.setStatus(status);
+        merchantAttrUpdate.setUpdateTime(System.currentTimeMillis());
+        this.updateByTenantId(merchantAttrUpdate, merchantAttr.getTenantId());
+        return Triple.of(true, null, null);
+    }
 }
