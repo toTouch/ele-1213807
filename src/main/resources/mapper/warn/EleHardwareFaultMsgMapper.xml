@@ -13,7 +13,7 @@
             t_ele_hardware_fault_msg
         WHERE
             alarm_time >= #{startTime}
-            and alarm_time &lt; #{endTime}
+            and alarm_time &lt;= #{endTime}
          GROUP BY
             tenant_id,
             cabinet_id
@@ -86,7 +86,7 @@
             t_ele_hardware_fault_msg t
         WHERE
              alarm_time >= #{startTime}
-            and alarm_time &lt; #{endTime}
+            and alarm_time &lt;= #{endTime}
            AND signal_id in
           <foreach collection="signalIdList" separator="," close=")" open="(" item="signalId">
               #{signalId}
@@ -101,7 +101,7 @@
             t_ele_hardware_fault_msg
         <where>
             alarm_time >= #{startTime}
-            and alarm_time &lt; #{endTime}
+            and alarm_time &lt;= #{endTime}
             and signal_id in
             <foreach collection="signalIdList" item="signalId" separator="," open="(" close=")">
                 #{signalId}
