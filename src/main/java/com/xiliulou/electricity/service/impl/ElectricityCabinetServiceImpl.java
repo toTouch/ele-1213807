@@ -238,6 +238,9 @@ import static com.xiliulou.electricity.entity.ElectricityCabinetBox.STATUS_NO_EL
 import static com.xiliulou.electricity.entity.ElectricityCabinetExtra.EFFECT_ROWS_ZERO;
 import static com.xiliulou.electricity.query.ElectricityCabinetBatchEditRentReturnQuery.LIMIT;
 import static com.xiliulou.electricity.query.ElectricityCabinetBatchEditRentReturnQuery.NOT_LIMIT;
+import static com.xiliulou.electricity.vo.ElectricityCabinetSimpleVO.IS_EXCHANGE;
+import static com.xiliulou.electricity.vo.ElectricityCabinetSimpleVO.IS_RENT;
+import static com.xiliulou.electricity.vo.ElectricityCabinetSimpleVO.IS_RETURN;
 
 /**
  * 换电柜表(TElectricityCabinet)表服务实现类
@@ -1257,7 +1260,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         
         //可换电数量,可换电池数>=1 && 必须有一个空仓
         if (exchangeableList.size() >= 1 && CollUtil.isNotEmpty(emptyCellList)) {
-            label.add(1);
+            label.add(IS_EXCHANGE);
         }
         
         ElectricityCabinetExtra cabinetExtra = electricityCabinetExtraService.queryByEidFromCache(Long.valueOf(eid));
@@ -1269,24 +1272,24 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         if (Objects.isNull(cabinetExtra.getMinRetainBatteryCount())) {
             // 无限制,柜内符合可换电标准的电池≥1，则可租电
             if (exchangeableList.size() >= 1) {
-                label.add(2);
+                label.add(IS_RENT);
             }
         } else {
             // 有限制：最少保留电池数量设置为有限制数量时，柜内符合可换电标准的电池＞=设置的数量
             if ((exchangeableList.size() >= 1) && (exchangeableList.size() >= cabinetExtra.getMinRetainBatteryCount())) {
-                label.add(2);
+                label.add(IS_RENT);
             }
         }
         
         //  退电
         if (Objects.isNull(cabinetExtra.getMaxRetainBatteryCount())) {
             if (CollUtil.isNotEmpty(emptyCellList)) {
-                label.add(3);
+                label.add(IS_RETURN);
             }
         } else {
             // 最少保留电池数量设置为有限制数量时，柜内符合可换电标准的电池＞=设置的数量 && 仓数为0不可退电
             if (CollUtil.isNotEmpty(emptyCellList) && exchangeableList.size() <= cabinetExtra.getMaxRetainBatteryCount()) {
-                label.add(3);
+                label.add(IS_RETURN);
             }
         }
         return label;
