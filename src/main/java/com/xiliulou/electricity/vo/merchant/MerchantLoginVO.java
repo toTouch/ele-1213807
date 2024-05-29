@@ -56,6 +56,11 @@ public class MerchantLoginVO {
      */
     private Integer lockFlag;
     
+    /**
+     * 租户名称
+     */
+    private String tenantName;
+    
     public void setBusinessInfo(Integer enterprisePackageAuth, Integer purchaseAuthority){
         this.businessInfo = new BusinessInfo(enterprisePackageAuth, purchaseAuthority);
     }
