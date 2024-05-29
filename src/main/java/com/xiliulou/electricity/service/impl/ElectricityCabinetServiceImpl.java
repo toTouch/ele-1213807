@@ -5741,6 +5741,12 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             //更新柜机GEO缓存信息
             redisService.addGeo(CacheConstant.CACHE_ELECTRICITY_CABINET_GEO + electricityCabinetInsert.getTenantId(), electricityCabinetInsert.getId().toString(),
                     new Point(electricityCabinetInsert.getLongitude(), electricityCabinetInsert.getLatitude()));
+    
+            // 新增柜机扩展参数
+            ElectricityCabinetExtra electricityCabinetExtra = ElectricityCabinetExtra.builder().eid(electricityCabinetInsert.getId().longValue())
+                    .batteryCountType(EleCabinetConstant.BATTERY_COUNT_TYPE_NORMAL).tenantId(electricityCabinetInsert.getTenantId()).delFlag(electricityCabinetInsert.getDelFlag())
+                    .createTime(electricityCabinetInsert.getCreateTime()).updateTime(electricityCabinetInsert.getUpdateTime()).build();
+            electricityCabinetExtraService.insertOne(electricityCabinetExtra);
         });
         
         //生成迁移记录
