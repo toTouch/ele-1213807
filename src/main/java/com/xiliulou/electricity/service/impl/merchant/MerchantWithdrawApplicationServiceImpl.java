@@ -9,6 +9,7 @@ import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.constant.merchant.MerchantWithdrawConstant;
 import com.xiliulou.electricity.entity.ElectricityPayParams;
+import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.UserOauthBind;
 import com.xiliulou.electricity.entity.merchant.Merchant;
 import com.xiliulou.electricity.entity.merchant.MerchantUserAmount;
@@ -43,6 +44,8 @@ import com.xiliulou.pay.weixinv3.query.WechatTransferOrderRecordQuery;
 import com.xiliulou.pay.weixinv3.service.WechatV3TransferService;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Triple;
 import org.slf4j.MDC;
 import org.springframework.stereotype.Service;
@@ -52,6 +55,7 @@ import org.springframework.util.CollectionUtils;
 import javax.annotation.Resource;
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -687,10 +691,22 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
         }
     }
     
+    @Slave
     @Override
     public List<MerchantWithdrawApplicationVO> selectRecordList(MerchantWithdrawApplicationRequest merchantWithdrawApplicationRequest) {
+        List<MerchantWithdrawApplicationVO> merchantWithdrawApplicationVOS = merchantWithdrawApplicationMapper.selectRecordList(merchantWithdrawApplicationRequest);
+        if (CollectionUtils.isEmpty(merchantWithdrawApplicationVOS)) {
+            return Collections.emptyList();
+        }
         
-        return merchantWithdrawApplicationMapper.selectRecordList(merchantWithdrawApplicationRequest);
+        merchantWithdrawApplicationVOS.stream().forEach(e -> {
+            if (StringUtils.isNotEmpty(e.getUid())) {
+                User user = userService.queryByUidFromCache(Long.valueOf(e.getUid()));
+                e.setPhone(ObjectUtils.isNotEmpty(user) ? user.getPhone() : null);
+            }
+        });
+        
+        return merchantWithdrawApplicationVOS;
     }
     
     @Override
