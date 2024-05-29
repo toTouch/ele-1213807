@@ -1360,6 +1360,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
     }
     
     private Triple<Boolean, String, Object> allocateFullBatteryBox(ElectricityCabinet electricityCabinet, UserInfo userInfo, Franchisee franchisee) {
+        // 满电标准的电池
         List<ElectricityCabinetBox> electricityCabinetBoxList = electricityCabinetBoxService.queryElectricityBatteryBox(electricityCabinet, null, null,
                 electricityCabinet.getFullyCharged());
         
@@ -1371,15 +1372,17 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
             return Triple.of(false, "ELECTRICITY.0026", "换电柜异常，不存在扩展信息");
         }
         
-        if (Objects.isNull(cabinetExtra.getMinRetainBatteryCount())) {
+        if (CollectionUtils.isEmpty(exchangeableList)) {
+            log.info("RENT BATTERY INFO!not found electricityCabinetBoxList,uid={}", userInfo.getUid());
+            return Triple.of(false, "ELECTRICITY.0026", "换电柜暂无满电电池");
+        }
+        
+        // 限制，判断的是在仓电池数
+        if (Objects.nonNull(cabinetExtra.getMinRetainBatteryCount())) {
+            List<ElectricityCabinetBox> boxList = electricityCabinetBoxService.selectEleBoxAttrByEid(electricityCabinet.getId());
+            List<ElectricityCabinetBox> haveBatteryCellList = boxList.stream().filter(e -> Objects.equals(e.getStatus(), STATUS_ELECTRICITY_BATTERY)).collect(Collectors.toList());
             // 不限制,走原来的逻辑
-            if (CollectionUtils.isEmpty(exchangeableList)) {
-                log.info("RENT BATTERY INFO!not found electricityCabinetBoxList,uid={}", userInfo.getUid());
-                return Triple.of(false, "ELECTRICITY.0026", "换电柜暂无满电电池");
-            }
-        } else {
-            // 限制；仓电池数低于限值，暂无法租借，请选择其他柜机。
-            if (cabinetExtra.getMinRetainBatteryCount() > exchangeableList.size()) {
+            if (cabinetExtra.getMinRetainBatteryCount() > haveBatteryCellList.size()) {
                 return Triple.of(false, "ELECTRICITY.0026", "在仓电池数低于限值，暂无法租借，请选择其他柜机");
             }
         }
