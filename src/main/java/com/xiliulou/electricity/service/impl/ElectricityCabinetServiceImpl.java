@@ -1281,7 +1281,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             }
         } else {
             // 有限制：最少保留电池数量设置为有限制数量时，柜内符合可换电标准的电池＞=设置的数量
-            if ((exchangeableList.size() >= 1) && (exchangeableList.size() >= cabinetExtra.getMinRetainBatteryCount())) {
+            if ((exchangeableList.size() >= 1) && (haveBatteryCellList.size() >= cabinetExtra.getMinRetainBatteryCount())) {
                 label.add(IS_RENT);
             }
         }
