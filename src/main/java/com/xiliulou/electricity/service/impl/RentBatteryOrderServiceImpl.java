@@ -548,6 +548,21 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
             log.warn("RENT BATTERY WARN! battery memberCard is Expire,uid={}", userInfo.getUid());
             return Triple.of(false, "ELECTRICITY.0023", "套餐已过期");
         }
+    
+        //判断车电关联是否可租电
+        ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(userInfo.getTenantId());
+        if (Objects.nonNull(electricityConfig) && Objects.equals(electricityConfig.getIsOpenCarBatteryBind(), ElectricityConfig.ENABLE_CAR_BATTERY_BIND)) {
+            if (Objects.equals(userInfo.getCarDepositStatus(), UserInfo.CAR_DEPOSIT_STATUS_YES)) {
+                try {
+                    if (carRentalPackageMemberTermBizService.isExpirePackageOrder(userInfo.getTenantId(), userInfo.getUid())) {
+                        log.error("RENT BATTERY WARN! user car memberCard expire,uid={}", userInfo.getUid());
+                        return Triple.of(false, "100233", "租车套餐已过期");
+                    }
+                } catch (Exception e) {
+                    log.error("RENT BATTERY WARN! acquire car membercard expire result fail,uid={}", userInfo.getUid(), e);
+                }
+            }
+        }
         
         //校验是否有退租审核中的订单
         BatteryMembercardRefundOrder batteryMembercardRefundOrder = batteryMembercardRefundOrderService.selectLatestByMembercardOrderNo(userBatteryMemberCard.getOrderId());
