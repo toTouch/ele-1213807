@@ -130,9 +130,9 @@ public class MerchantTokenServiceImpl implements MerchantTokenService {
             String purePhoneNumber = wxMinProPhoneResultDTO.getPurePhoneNumber();
             log.info("TOKEN INFO! 解析微信手机号:{}", purePhoneNumber);
             
-            List<User> users = Optional.ofNullable(userService.listUserByPhone(purePhoneNumber, tenantId)).orElse(Lists.newArrayList()).stream()
+            List<User> users = Optional.ofNullable(userService.listUserByPhone(purePhoneNumber)).orElse(Lists.newArrayList()).stream()
                     .filter(e -> (e.getUserType().equals(User.TYPE_USER_MERCHANT) || e.getUserType().equals(User.TYPE_USER_CHANNEL))).collect(Collectors.toList());
-            ;
+            
             if (Collections.isEmpty(users)) {
                 return Triple.of(false, null, "未找到绑定账号，请检查");
             }

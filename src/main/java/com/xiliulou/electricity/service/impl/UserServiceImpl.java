@@ -219,7 +219,7 @@ public class UserServiceImpl implements UserService {
     
     @Resource
     private UserInfoGroupDetailService userInfoGroupDetailService;
-
+    
     /**
      * 通过ID查询单条数据从缓存
      *
@@ -413,10 +413,27 @@ public class UserServiceImpl implements UserService {
         return this.userMapper.selectList(new QueryWrapper<User>().eq("tenant_id", tenantId).eq("user_type", userType));
     }
     
-    @Override
     @Slave
+    @Override
+    public List<User> listUserByPhone(String phone) {
+        return listUserByPhone(phone, null);
+    }
+    
+    @Slave
+    @Override
     public List<User> listUserByPhone(String phone, Integer tenantId) {
-        return this.userMapper.selectList(new QueryWrapper<User>().eq("phone", phone).eq("tenant_id", tenantId).eq("del_flag", User.DEL_NORMAL));
+        LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(User::getDelFlag, User.DEL_NORMAL);
+        
+        if (StringUtils.isNotBlank(phone)) {
+            queryWrapper.eq(User::getPhone, phone);
+        }
+        
+        if (ObjectUtils.isNotEmpty(tenantId)) {
+            queryWrapper.eq(User::getTenantId, tenantId);
+        }
+        
+        return this.userMapper.selectList(queryWrapper);
     }
     
     @Override
@@ -964,10 +981,9 @@ public class UserServiceImpl implements UserService {
         
         userInfoExtraService.deleteByUid(uid);
         
-        
         // 删除用户分组信息
         userInfoGroupDetailService.deleteByUid(uid, null);
-
+        
         return Triple.of(true, null, null);
     }
     
@@ -1147,10 +1163,9 @@ public class UserServiceImpl implements UserService {
                 }
             }
             
-            
             // 设置用户的邀请人名称
             item.setInviterUserName(userInfoService.queryFinalInviterUserName(item.getUid()));
-
+            
         }).collect(Collectors.toList());
     }
     
