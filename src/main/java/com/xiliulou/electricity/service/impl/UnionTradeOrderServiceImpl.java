@@ -1455,7 +1455,7 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
     @Transactional(rollbackFor = Exception.class)
     public void handCarSupplierSuccess(String orderNo, String freeAmount, Integer tradeOrderStatus, UserInfo userInfo) {
         //提前发布逾期用户备注清除事件
-        overdueUserRemarkPublish.publish(userInfo.getUid(), OverdueType.BATTERY.getCode(), userInfo.getTenantId());
+        overdueUserRemarkPublish.publish(userInfo.getUid(), OverdueType.CAR.getCode(), userInfo.getTenantId());
         Integer tenantId = userInfo.getTenantId();
         Long uid = userInfo.getUid();
         log.info("handCarSupplierSuccess, orderNo is {}, freeAmount is {}, tradeOrderStatus is {}, uid is {}", orderNo, freeAmount, tradeOrderStatus, uid);
