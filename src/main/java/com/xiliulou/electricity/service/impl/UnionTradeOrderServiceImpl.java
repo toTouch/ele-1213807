@@ -1054,11 +1054,11 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
                     
                     electricityMemberCardOrderService.sendUserCoupon(batteryMemberCard, electricityMemberCardOrder);
                     
-                    //用户绑定商户
-                    userInfoExtraService.bindMerchant(electricityMemberCardOrder.getUid(), electricityMemberCardOrder.getOrderId(), electricityMemberCardOrder.getMemberCardId());
-                    
-                    //商户返利
-                    sendMerchantRebateMQ(electricityMemberCardOrder.getUid(), electricityMemberCardOrder.getOrderId());
+//                    //用户绑定商户
+//                    userInfoExtraService.bindMerchant(electricityMemberCardOrder.getUid(), electricityMemberCardOrder.getOrderId(), electricityMemberCardOrder.getMemberCardId());
+//
+//                    //商户返利
+//                    sendMerchantRebateMQ(electricityMemberCardOrder.getUid(), electricityMemberCardOrder.getOrderId());
                     
                 }
             });
