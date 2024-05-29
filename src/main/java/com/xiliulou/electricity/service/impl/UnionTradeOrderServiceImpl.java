@@ -41,6 +41,7 @@ import com.xiliulou.electricity.entity.UserCarDeposit;
 import com.xiliulou.electricity.entity.UserCarMemberCard;
 import com.xiliulou.electricity.entity.UserCoupon;
 import com.xiliulou.electricity.entity.UserInfo;
+import com.xiliulou.electricity.entity.UserInfoExtra;
 import com.xiliulou.electricity.entity.car.CarRentalPackageMemberTermPo;
 import com.xiliulou.electricity.entity.car.CarRentalPackageOrderFreezePo;
 import com.xiliulou.electricity.entity.car.CarRentalPackageOrderSlippagePo;
@@ -150,6 +151,9 @@ import java.util.stream.Collectors;
 @Service
 @Slf4j
 public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMapper, UnionTradeOrder> implements UnionTradeOrderService {
+    
+    @Resource
+    private RocketMqService rocketMqService;
     
     @Resource
     private CarRentalOrderBizService carRentalOrderBizService;
@@ -811,6 +815,7 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
         redisService.delete(CacheConstant.CACHE_USER_BATTERY_MEMBERCARD + userInfo.getUid());
         return Pair.of(true, null);
     }
+
     
     
     private void sendMerchantRebateMQ(Long uid, String orderId) {
