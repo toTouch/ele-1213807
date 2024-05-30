@@ -403,7 +403,7 @@
     <select id="selectRecordListCount" resultType="Integer">
         select count(1)
         from t_merchant_withdraw_application tmwa
-        LEFT JOIN `t_merchant_withdraw_application_record` tmwair on tmwair.`orderNo` = tmwa.`orderNo`
+        LEFT JOIN `t_merchant_withdraw_application_record` tmwair on tmwair.`order_no` = tmwa.`order_no`
         left join t_merchant tm on tm.uid = tmwa.uid
         <where>
             tmwa.del_flag = 0
