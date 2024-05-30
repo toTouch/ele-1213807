@@ -1069,7 +1069,6 @@
         <if test="query.sort == 1">
             order by temc.due_time_total
         </if>
-        order by teb.create_time desc
         limit #{offset}, #{size}
     </select>
     <select id="queryOverdueCarBatteryCount" resultType="java.lang.Integer">
