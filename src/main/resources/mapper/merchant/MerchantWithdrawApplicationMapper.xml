@@ -364,8 +364,8 @@
             tmwa.create_time,
             tmwa.update_time,
             tmwa.`check_time`,
-            tmwair.`transactionBatchId`,
-            tmwair.`transactionBatchDetailId`
+            tmwair.`transaction_batch_id`,
+            tmwair.`transaction_detail_id`
         from t_merchant_withdraw_application tmwa
         LEFT JOIN `t_merchant_withdraw_application_record` tmwair on tmwair.`orderNo` = tmwa.`orderNo`
         left join t_merchant tm on tm.uid = tmwa.uid
