@@ -158,6 +158,7 @@ public class UserInfoGroupServiceImpl implements UserInfoGroupService {
     
             // 系统操作记录
             Map<Object, Object> groupNameMap = MapBuilder.create().put("groupName", delUserInfoGroup.getName()).build();
+            log.info("groupNameMap={}", groupNameMap);
             operateRecordUtil.record(groupNameMap, null);
         });
         
