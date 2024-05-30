@@ -151,14 +151,14 @@ public class UserInfoGroupServiceImpl implements UserInfoGroupService {
         // 逻辑删除用户分组
         UserInfoGroup delUserInfoGroup = UserInfoGroup.builder().id(id).updateTime(System.currentTimeMillis()).delFlag(CommonConstant.DEL_Y).operator(operator).build();
         Integer update = update(delUserInfoGroup);
-        
-        // 系统操作记录
-        Map<Object, Object> groupNameMap = MapBuilder.create().put("groupName", delUserInfoGroup.getName()).build();
-        operateRecordUtil.record(groupNameMap, null);
-        
-        // 删除用户分组缓存
+    
         DbUtils.dbOperateSuccessThenHandleCache(update, i -> {
+            // 删除用户分组缓存
             redisService.delete(CacheConstant.CACHE_USER_GROUP + id);
+    
+            // 系统操作记录
+            Map<Object, Object> groupNameMap = MapBuilder.create().put("groupName", delUserInfoGroup.getName()).build();
+            operateRecordUtil.record(groupNameMap, null);
         });
         
         return R.ok();
