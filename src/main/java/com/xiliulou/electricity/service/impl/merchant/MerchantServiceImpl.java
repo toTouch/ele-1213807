@@ -1581,7 +1581,7 @@ public class MerchantServiceImpl implements MerchantService {
         if (Objects.isNull(userOauthBind)) {
             return Pair.of(false,"解绑失败,请联系客服处理");
         }
-        if (!Objects.equals(userOauthBind.getStatus(), UserOauthBind.STATUS_UN_BIND_VX)){
+        if (Objects.equals(userOauthBind.getStatus(), UserOauthBind.STATUS_UN_BIND_VX)){
             return Pair.of(false,"解绑失败,请联系客服处理");
         }
         userOauthBind.setStatus(UserOauthBind.STATUS_UN_BIND);
