@@ -162,6 +162,7 @@ public class ChannelActivityServiceImpl implements ChannelActivityService {
     }
     
     @Override
+    @Slave
     public ChannelActivity findUsableActivity(Integer tenantId) {
         return channelActivityMapper.findUsableActivity(tenantId);
     }

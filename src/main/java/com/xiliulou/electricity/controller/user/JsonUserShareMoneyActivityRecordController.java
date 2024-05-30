@@ -28,9 +28,9 @@ public class JsonUserShareMoneyActivityRecordController {
      *
      */
     @PostMapping(value = "/user/shareMoneyActivityRecord/generateSharePicture")
-    public R generateShareUrl(@RequestParam(value = "activityId") Integer activityId,
-            @RequestParam(value = "page", required = false) String page) {
-       return shareMoneyActivityRecordService.generateSharePicture(activityId,page);
+    public R generateShareUrl(@RequestParam(value = "activityId") Integer activityId, @RequestParam(value = "page", required = false) String page,
+            @RequestParam(value = "env", required = false) String envVersion) {
+        return shareMoneyActivityRecordService.generateSharePicture(activityId, page, envVersion);
     }
 
     /**

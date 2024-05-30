@@ -55,17 +55,9 @@
         where id = #{id}
     </update>
     
-    <update id="removeById">
-        update t_merchant_join_record set del_flag = 1, update_time = #{updateTime} where id = #{id}
+    <update id="removeByJoinUid">
+        update t_merchant_join_record set del_flag = 1, update_time = #{updateTime} where join_uid = #{joinUid} and tenant_id = #{tenantId} and status = 2
     </update>
-    
-    <select id="existsInProtectionTimeByJoinUid" resultType="java.lang.Integer">
-        select 1
-        from t_merchant_join_record
-        where del_flag = 0
-          and protection_status = 0
-          and join_uid = #{joinUid} limit 1
-    </select>
     
     <select id="selectByMerchantIdAndJoinUid" resultType="com.xiliulou.electricity.entity.merchant.MerchantJoinRecord">
         select

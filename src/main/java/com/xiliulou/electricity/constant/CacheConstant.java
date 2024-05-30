@@ -631,5 +631,7 @@ public interface CacheConstant {
     
     String CACHE_CHANNEL_USER_EXIT_LOCK = "cache_channel_user_exit_lock:";
     
+    String CACHE_CHANNEL_USER_ADMIN_EXIT_LOCK = "cache_channel_user_admin_exit_lock:";
+    
     String CACHE_CHANNEL_USER_EXIT_ALL_LOCK = "cache_channel_user_exit_all_lock:";
 }

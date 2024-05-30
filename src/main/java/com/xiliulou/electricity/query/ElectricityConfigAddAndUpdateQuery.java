@@ -80,7 +80,7 @@ public class ElectricityConfigAddAndUpdateQuery {
     /**
      * 是否开启只剩一个格挡退电池
      */
-    private Integer isEnableReturnBoxCheck;
+    //private Integer isEnableReturnBoxCheck;
 
     /**
      * 是否开启保险 （0--是 1--否）
@@ -125,12 +125,12 @@ public class ElectricityConfigAddAndUpdateQuery {
     /**
      * 是否允许租电 0--是  1--否
      */
-    private Integer allowRentEle;
+    //private Integer allowRentEle;
 
     /**
      * 是否允许退电 0--是  1--否
      */
-    private Integer allowReturnEle;
+    //private Integer allowReturnEle;
 
     /**
      *  冻结是否强制退资产 0--是 1--否

@@ -950,7 +950,7 @@
         select teb.id,teb.sn,teb.longitude,teb.latitude,teb.power,teb.voltage,teb.capacity as
         dbCapacity,teb.model,teb.status,teb.electricity_cabinet_id,teb.electricity_cabinet_name,
         teb.user_name,teb.create_time,teb.update_time,teb.del_flag,teb.charge_status,teb.health_status,teb.tenant_id,teb.borrow_expire_time,tbop.battery_v as boxVoltage,
-        teb.iot_card_number,teb.exchange_count,teb.uid,teb.franchisee_id,teb.physics_status,teb.business_status,tec.cell_no
+        teb.iot_card_number,teb.exchange_count,teb.uid,teb.franchisee_id,teb.physics_status,teb.business_status,tec.cell_no,temc.member_card_expire_time
         from t_electricity_battery teb left join t_user_battery_member_card temc on teb.uid=temc.uid
         left join t_electricity_cabinet_box tec on teb.sn=tec.sn and teb.electricity_cabinet_id=tec.electricity_cabinet_id and tec.del_flag = 0
         left join t_battery_other_properties tbop on tbop.battery_name =teb.sn and tbop.del_flag = 0
@@ -983,7 +983,12 @@
                 #{id}
             </foreach>
         </if>
-        order by teb.create_time desc
+        <if test="query.sort == 0">
+            order by temc.member_card_expire_time desc
+        </if>
+        <if test="query.sort == 1">
+            order by temc.member_card_expire_time
+        </if>
         limit #{offset}, #{size}
     </select>
     <select id="queryOverdueBatteryCount" resultType="java.lang.Integer">
@@ -1025,7 +1030,7 @@
         select teb.id,teb.sn,teb.longitude,teb.latitude,teb.power,teb.voltage,teb.capacity as
         dbCapacity,teb.model,teb.status,teb.electricity_cabinet_id,teb.electricity_cabinet_name,
         teb.user_name,teb.create_time,teb.update_time,teb.del_flag,teb.charge_status,teb.health_status,teb.tenant_id,teb.borrow_expire_time,tbop.battery_v as boxVoltage,
-        teb.iot_card_number,teb.exchange_count,teb.uid,teb.franchisee_id,teb.physics_status,teb.business_status,tec.cell_no
+        teb.iot_card_number,teb.exchange_count,teb.uid,teb.franchisee_id,teb.physics_status,teb.business_status,tec.cell_no,temc.due_time_total as 'memberCardExpireTime'
         from t_electricity_battery teb left join t_car_rental_package_member_term temc on teb.uid=temc.uid
         left join t_electricity_cabinet_box tec on teb.sn=tec.sn and teb.electricity_cabinet_id=tec.electricity_cabinet_id and tec.del_flag = 0
         left join t_battery_other_properties tbop on tbop.battery_name =teb.sn and tbop.del_flag = 0
@@ -1058,7 +1063,12 @@
                 #{id}
             </foreach>
         </if>
-        order by teb.create_time desc
+        <if test="query.sort == 0">
+            order by temc.due_time_total desc
+        </if>
+        <if test="query.sort == 1">
+            order by temc.due_time_total
+        </if>
         limit #{offset}, #{size}
     </select>
     <select id="queryOverdueCarBatteryCount" resultType="java.lang.Integer">

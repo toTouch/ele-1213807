@@ -3,6 +3,7 @@ package com.xiliulou.electricity.controller.admin.supper;
 import cn.hutool.core.lang.Pair;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.query.supper.DelBatteryReq;
+import com.xiliulou.electricity.query.supper.UserGrantSourceReq;
 import com.xiliulou.electricity.service.supper.AdminSupperService;
 import com.xiliulou.electricity.vo.supper.DelBatteryVo;
 import lombok.extern.slf4j.Slf4j;
@@ -39,5 +40,11 @@ public class JsonAdminSupperController {
         delBatteryVo.setSuccessSnList(pair.getKey());
         delBatteryVo.setFailedSnList(pair.getValue());
         return R.ok(delBatteryVo);
+    }
+    
+    @PostMapping("/grantPermission")
+    public R<?> grantPermission(@RequestBody UserGrantSourceReq userGrantSourceReq) {
+        adminSupperService.grantPermission(userGrantSourceReq);
+        return R.ok();
     }
 }

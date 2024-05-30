@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.RandomUtil;
@@ -23,6 +24,7 @@ import com.xiliulou.electricity.entity.EleRefundOrder;
 import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.ElectricityCabinetBox;
+import com.xiliulou.electricity.entity.ElectricityCabinetExtra;
 import com.xiliulou.electricity.entity.ElectricityCabinetOrder;
 import com.xiliulou.electricity.entity.ElectricityCabinetOrderOperHistory;
 import com.xiliulou.electricity.entity.ElectricityConfig;
@@ -39,8 +41,10 @@ import com.xiliulou.electricity.entity.car.CarRentalPackageMemberTermPo;
 import com.xiliulou.electricity.enums.BatteryMemberCardBusinessTypeEnum;
 import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.enums.MemberTermStatusEnum;
+import com.xiliulou.electricity.enums.OverdueType;
 import com.xiliulou.electricity.enums.YesNoEnum;
 import com.xiliulou.electricity.enums.enterprise.RentBatteryOrderTypeEnum;
+import com.xiliulou.electricity.event.publish.OverdueUserRemarkPublish;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.RentBatteryOrderMapper;
 import com.xiliulou.electricity.mns.EleHardwareHandlerManager;
@@ -57,6 +61,7 @@ import com.xiliulou.electricity.service.EleDepositOrderService;
 import com.xiliulou.electricity.service.EleRefundOrderService;
 import com.xiliulou.electricity.service.ElectricityBatteryService;
 import com.xiliulou.electricity.service.ElectricityCabinetBoxService;
+import com.xiliulou.electricity.service.ElectricityCabinetExtraService;
 import com.xiliulou.electricity.service.ElectricityCabinetOrderOperHistoryService;
 import com.xiliulou.electricity.service.ElectricityCabinetOrderService;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
@@ -83,6 +88,7 @@ import com.xiliulou.electricity.service.excel.AutoHeadColumnWidthStyleStrategy;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
+import com.xiliulou.electricity.utils.VersionUtil;
 import com.xiliulou.electricity.vo.EleCabinetUsedRecordVO;
 import com.xiliulou.electricity.vo.ElectricityCabinetBoxVO;
 import com.xiliulou.electricity.vo.ElectricityCabinetVO;
@@ -120,7 +126,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
+
+import static com.xiliulou.electricity.entity.ElectricityCabinetBox.STATUS_ELECTRICITY_BATTERY;
+import static com.xiliulou.electricity.entity.ElectricityCabinetBox.STATUS_NO_ELECTRICITY_BATTERY;
 
 /**
  * 租电池记录(TRentBatteryOrder)表服务实现类
@@ -221,6 +231,16 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
     
     @Autowired
     BatteryMembercardRefundOrderService batteryMembercardRefundOrderService;
+    
+    @Autowired
+    ElectricityCabinetExtraService electricityCabinetExtraService;
+    
+    /**
+     * 吞电池优化版本
+     */
+    private static final String ELE_CABINET_VERSION = "2.1.7";
+    @Autowired
+    OverdueUserRemarkPublish overdueUserRemarkPublish;
     
     /**
      * 新增数据
@@ -641,9 +661,9 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
         
         Integer tenantId = TenantContextHolder.getTenantId();
         ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(tenantId);
-        if (Objects.nonNull(electricityConfig) && Objects.equals(ElectricityConfig.NOT_ALLOW_RETURN_ELE, electricityConfig.getAllowReturnEle())) {
-            return R.fail("ELECTRICITY.100272", "当前柜机不支持退电");
-        }
+//        if (Objects.nonNull(electricityConfig) && Objects.equals(ElectricityConfig.NOT_ALLOW_RETURN_ELE, electricityConfig.getAllowReturnEle())) {
+//            return R.fail("ELECTRICITY.100272", "当前柜机不支持退电");
+//        }
         
         //是否存在未完成的租电池订单
         RentBatteryOrder oldRentBatteryOrder = queryByUidAndType(user.getUid());
@@ -688,10 +708,10 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
         try {
             
             //检查空格挡数量
-            Triple<Boolean, String, Object> checkBoxResult = electricityCabinetBoxService.selectAvailableBoxNumber(electricityCabinetId, TenantContextHolder.getTenantId());
-            if (Boolean.FALSE.equals(checkBoxResult.getLeft())) {
-                return R.fail(checkBoxResult.getMiddle(), String.valueOf(checkBoxResult.getRight()));
-            }
+//            Triple<Boolean, String, Object> checkBoxResult = electricityCabinetBoxService.selectAvailableBoxNumber(electricityCabinetId, TenantContextHolder.getTenantId());
+//            if (Boolean.FALSE.equals(checkBoxResult.getLeft())) {
+//                return R.fail(checkBoxResult.getMiddle(), String.valueOf(checkBoxResult.getRight()));
+//            }
             
             //查找换电柜门店
             if (Objects.isNull(electricityCabinet.getStoreId())) {
@@ -802,8 +822,11 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
                 //                }
             }
             
+            
             //分配开门格挡
-            Pair<Boolean, Integer> usableEmptyCellNo = electricityCabinetService.findUsableEmptyCellNoV2(electricityCabinet.getId(), electricityCabinet.getVersion());
+            //Pair<Boolean, Integer> usableEmptyCellNo = electricityCabinetService.findUsableEmptyCellNoV2(electricityCabinet.getId(), electricityCabinet.getVersion());
+            Pair<Boolean, Integer> usableEmptyCellNo = findUsableEmptyCellNo(electricityCabinet.getId(),electricityCabinet.getFullyCharged(), electricityCabinet.getVersion());
+            
             if (Objects.isNull(usableEmptyCellNo.getRight())) {
                 log.error("RETURNBATTERY ERROR! electricityCabinet not empty cell,electricityCabinetId={} ", electricityCabinetId);
                 return R.fail("100240", "当前无空余格挡可供退电，请联系客服！");
@@ -869,7 +892,8 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
                     .productKey(electricityCabinet.getProductKey()).deviceName(electricityCabinet.getDeviceName()).command(ElectricityIotConstant.ELE_COMMAND_RETURN_OPEN_DOOR)
                     .build();
             eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
-            
+            //为逾期用户清除备注
+            overdueUserRemarkPublish.publish(user.getUid(), OverdueType.BATTERY.getCode(), user.getTenantId());
             return R.ok(orderId);
         } catch (BizException e) {
             throw new BizException(e.getErrCode(), e.getErrMsg());
@@ -878,6 +902,57 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
         }
         
         return R.ok();
+    }
+    
+    private Pair<Boolean, Integer> findUsableEmptyCellNo(Integer eid,Double fullyCharged,String version){
+        //旧版本仍走旧分配逻辑
+        if (StringUtils.isNotBlank(version) && VersionUtil.compareVersion(ELE_CABINET_VERSION, version) > 0) {
+            return electricityCabinetService.findUsableEmptyCellNo(eid);
+        }
+        
+        ElectricityCabinetExtra cabinetExtra = electricityCabinetExtraService.queryByEidFromCache(Long.valueOf(eid));
+        if (Objects.isNull(cabinetExtra)) {
+            throw new BizException("ELECTRICITY.0026", "换电柜异常，不存在的电柜扩展信息");
+        }
+        
+        List<ElectricityCabinetBox> cabinetBoxList = electricityCabinetBoxService.selectEleBoxAttrByEid(eid);
+        // 查询空仓数量
+        List<ElectricityCabinetBox> emptyCellList = cabinetBoxList.stream().filter(e -> Objects.equals(e.getStatus(), STATUS_NO_ELECTRICITY_BATTERY)).collect(Collectors.toList());
+        if (CollUtil.isEmpty(emptyCellList)) {
+            throw new BizException("ELECTRICITY.0026", "当前无空余格挡可供退电，请联系客服！");
+        }
+        
+        if (Objects.nonNull(cabinetExtra.getMaxRetainBatteryCount())) {
+            // 退电的电池数量
+            List<ElectricityCabinetBox> haveBatteryCellList = cabinetBoxList.stream().filter(e -> Objects.equals(e.getStatus(), STATUS_ELECTRICITY_BATTERY)).collect(Collectors.toList());
+            // 在仓电池数高于限值 或者 没有空仓
+            if (haveBatteryCellList.size() > cabinetExtra.getMaxRetainBatteryCount()) {
+                throw new BizException("ELECTRICITY.0026", "在仓电池数高于限值，暂无法退电，请选择其他柜机!");
+            }
+        }
+        
+        Integer cellNo = null;
+        //可用格挡只有一个默认直接分配
+        if (emptyCellList.size() == 1) {
+            cellNo = Integer.valueOf(emptyCellList.get(0).getCellNo());
+            return Pair.of(true, cellNo);
+        }
+        
+        //有多个空格挡  优先分配开门的格挡
+        List<ElectricityCabinetBox> openDoorEmptyCellList = emptyCellList.stream().filter(item -> Objects.equals(item.getIsLock(), ElectricityCabinetBox.OPEN_DOOR))
+                .collect(Collectors.toList());
+        if (!org.springframework.util.CollectionUtils.isEmpty(openDoorEmptyCellList)) {
+            cellNo = Integer.parseInt(openDoorEmptyCellList.get(ThreadLocalRandom.current().nextInt(openDoorEmptyCellList.size())).getCellNo());
+            return Pair.of(true, cellNo);
+        }
+        
+        cellNo = Integer.parseInt(emptyCellList.get(ThreadLocalRandom.current().nextInt(emptyCellList.size())).getCellNo());
+        return Pair.of(true, cellNo);
+    }
+    
+    private boolean filterNotExchangeable(ElectricityCabinetBox electricityCabinetBox) {
+        return Objects.nonNull(electricityCabinetBox) && Objects.nonNull(electricityCabinetBox.getPower()) && StringUtils.isNotBlank(electricityCabinetBox.getSn()) && !StringUtils.startsWithIgnoreCase(
+                electricityCabinetBox.getSn(), "UNKNOW");
     }
     
     private ElectricityBattery selectLastExchangeOrderBattery(UserInfo userInfo) {
@@ -1291,16 +1366,37 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
     }
     
     private Triple<Boolean, String, Object> allocateFullBatteryBox(ElectricityCabinet electricityCabinet, UserInfo userInfo, Franchisee franchisee) {
+        // 满电标准的电池
         List<ElectricityCabinetBox> electricityCabinetBoxList = electricityCabinetBoxService.queryElectricityBatteryBox(electricityCabinet, null, null,
                 electricityCabinet.getFullyCharged());
-        if (CollectionUtils.isEmpty(electricityCabinetBoxList)) {
+        
+        // 过滤掉电池名称不符合标准的
+        List<ElectricityCabinetBox> exchangeableList = electricityCabinetBoxList.stream().filter(item -> filterNotExchangeable(item)).collect(Collectors.toList());
+        
+        ElectricityCabinetExtra cabinetExtra = electricityCabinetExtraService.queryByEidFromCache(Long.valueOf(electricityCabinet.getId()));
+        if (Objects.isNull(cabinetExtra)) {
+            return Triple.of(false, "ELECTRICITY.0026", "换电柜异常，不存在扩展信息");
+        }
+        
+        if (CollectionUtils.isEmpty(exchangeableList)) {
             log.info("RENT BATTERY INFO!not found electricityCabinetBoxList,uid={}", userInfo.getUid());
             return Triple.of(false, "ELECTRICITY.0026", "换电柜暂无满电电池");
         }
         
+        // 限制，判断的是在仓电池数
+        if (Objects.nonNull(cabinetExtra.getMinRetainBatteryCount())) {
+            List<ElectricityCabinetBox> boxList = electricityCabinetBoxService.selectEleBoxAttrByEid(electricityCabinet.getId());
+            List<ElectricityCabinetBox> haveBatteryCellList = boxList.stream().filter(e -> Objects.equals(e.getStatus(), STATUS_ELECTRICITY_BATTERY)).collect(Collectors.toList());
+            // 不限制,走原来的逻辑
+            if (cabinetExtra.getMinRetainBatteryCount() > haveBatteryCellList.size()) {
+                return Triple.of(false, "ELECTRICITY.0026", "在仓电池数低于限值，暂无法租借，请选择其他柜机");
+            }
+        }
+        
+        
         String fullBatteryCell = null;
         
-        for (int i = 0; i < electricityCabinetBoxList.size(); i++) {
+        for (int i = 0; i < exchangeableList.size(); i++) {
             fullBatteryCell = acquireFullBatteryBox(electricityCabinetBoxList, userInfo, franchisee);
             if (StringUtils.isBlank(fullBatteryCell)) {
                 log.info("RENT BATTERY INFO!not found fullBatteryCell,uid={}", userInfo.getUid());

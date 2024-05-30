@@ -1,6 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.xiliulou.electricity.mapper.RolePermissionMapper">
-
-
+    <insert id="batchInsert">
+        insert into t_role_permission(role_id, p_id) values
+        <foreach collection="list" item="item" separator=",">
+            (#{item.roleId},#{item.pId})
+        </foreach>
+    </insert>
+    
+    
+    <select id="selectRepeatGrant" resultType="com.xiliulou.electricity.entity.GrantRolePermission">
+        SELECT role_id,p_id FROM t_role_permission
+        <where>
+            <if test="roleIds != null and roleIds.size() > 0">
+                `role_id` IN
+                <foreach collection="roleIds" item="roleId" open="(" separator="," close=")">
+                    #{roleId}
+                </foreach>
+            </if>
+        </where>
+    </select>
 </mapper>

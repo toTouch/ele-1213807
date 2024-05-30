@@ -7,6 +7,5 @@
         <if test="tenantId != null">
             and tenant_id = #{tenantId}
         </if>
-        ;
     </update>
 </mapper>

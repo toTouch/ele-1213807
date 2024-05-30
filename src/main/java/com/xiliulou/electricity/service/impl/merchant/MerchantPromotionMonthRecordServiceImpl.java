@@ -1,11 +1,12 @@
 package com.xiliulou.electricity.service.impl.merchant;
 
 import com.alibaba.excel.EasyExcel;
+import com.xiliulou.core.thread.XllThreadPoolExecutorService;
+import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.merchant.RebateRecordConstant;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.merchant.Merchant;
-import com.xiliulou.electricity.entity.merchant.MerchantPromotionDayRecord;
 import com.xiliulou.electricity.entity.merchant.MerchantPromotionMonthRecord;
 import com.xiliulou.electricity.mapper.merchant.MerchantPromotionMonthRecordMapper;
 import com.xiliulou.electricity.query.merchant.MerchantPromotionDayRecordQueryModel;
@@ -26,7 +27,7 @@ import com.xiliulou.electricity.vo.merchant.MerchantPromotionMonthExcelVO;
 import com.xiliulou.electricity.vo.merchant.MerchantPromotionMonthRecordVO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
@@ -60,6 +61,9 @@ import static java.util.stream.Collectors.toMap;
 @Service
 @Slf4j
 public class MerchantPromotionMonthRecordServiceImpl implements MerchantPromotionMonthRecordService {
+    
+    protected XllThreadPoolExecutorService executorService = XllThreadPoolExecutors.newFixedThreadPool("EXCEL_EXPORT_MERCHANT_PROMOTION", 3,
+            "excel_export_merchant_promotion_thread");
     
     @Resource
     private MerchantPromotionMonthRecordMapper merchantPromotionMonthRecordMapper;
@@ -125,11 +129,10 @@ public class MerchantPromotionMonthRecordServiceImpl implements MerchantPromotio
         String monthDate = request.getMonthDate();
         //年月格式校验，判断date是否yyyy-MM格式
         if (StringUtils.isBlank(monthDate) || !monthDate.matches(DateUtils.GREP_YEAR_MONTH)) {
-            return excelVOList;
+            return Collections.emptyList();
         }
         
         Integer tenantId = TenantContextHolder.getTenantId();
-        
         MerchantPromotionDayRecordQueryModel queryModel = new MerchantPromotionDayRecordQueryModel();
         queryModel.setTenantId(tenantId);
         queryModel.setStartDate(DateUtils.getFirstDayByMonth(monthDate));
@@ -137,114 +140,121 @@ public class MerchantPromotionMonthRecordServiceImpl implements MerchantPromotio
         
         List<MerchantPromotionDayRecordVO> detailList = merchantPromotionDayRecordService.listByTenantId(queryModel);
         if (CollectionUtils.isEmpty(detailList)) {
-            return excelVOList;
+            return Collections.emptyList();
         }
         
         // 获取商户名称
-        Map<Long, String> merchantNameMap = new HashMap<>(detailList.size());
         Set<Long> merchantIdSet = detailList.stream().filter(Objects::nonNull).map(MerchantPromotionDayRecordVO::getMerchantId).collect(Collectors.toSet());
-        List<Merchant> merchantList = merchantService.listAllByIds(merchantIdSet, tenantId);
-        if (ObjectUtils.isNotEmpty(merchantList)) {
-            merchantNameMap = merchantList.stream().collect(toMap(Merchant::getId, Merchant::getName, (key, key1) -> key1));
-        }
+        Map<Long, String> merchantNameMap = listMerchantNames(merchantIdSet, tenantId);
         
         // 不为0的数据
         List<MerchantPromotionDayRecordVO> hasDataDetailList = detailList.stream().filter(item -> item.getMoney().compareTo(BigDecimal.ZERO) != 0).collect(Collectors.toList());
-        
-        log.info("商户推广费，有数据={}", hasDataDetailList);
-        
         // excelVOList 按merchantId进行分组
         Map<Long, List<MerchantPromotionDayRecordVO>> detailMap = hasDataDetailList.stream().collect(Collectors.groupingBy(MerchantPromotionDayRecordVO::getMerchantId));
         
-        Map<Long, String> finalMerchantNameMap = merchantNameMap;
+        // 遍历map
         detailMap.forEach((merchantId, merchantDayRecordVoList) -> {
-            
-            if (CollectionUtils.isNotEmpty(merchantDayRecordVoList)) {
-                
-                // 排序
-                merchantDayRecordVoList.sort(Comparator.comparing(MerchantPromotionDayRecordVO::getDate));
-                
-                AtomicReference<BigDecimal> firstAmount = new AtomicReference<>(BigDecimal.ZERO);
-                AtomicReference<BigDecimal> renewAmount = new AtomicReference<>(BigDecimal.ZERO);
-                AtomicReference<BigDecimal> balanceFirstAmount = new AtomicReference<>(BigDecimal.ZERO);
-                AtomicReference<BigDecimal> balanceRenewAmount = new AtomicReference<>(BigDecimal.ZERO);
-                
-                merchantDayRecordVoList.stream().filter(record -> Objects.equals(record.getType(), RebateRecordConstant.LASHIN))
-                        .forEach(record -> firstAmount.set(firstAmount.get().add(record.getMoney())));
-                merchantDayRecordVoList.stream().filter(record -> Objects.equals(record.getType(), RebateRecordConstant.RENEW))
-                        .forEach(record -> renewAmount.set(renewAmount.get().add(record.getMoney())));
-                merchantDayRecordVoList.stream().filter(record -> Objects.equals(record.getType(), RebateRecordConstant.BALANCE)).forEach(record -> {
-                    balanceFirstAmount.set(balanceFirstAmount.get().add(Objects.isNull(record.getBalanceFromFirst()) ? BigDecimal.ZERO : record.getBalanceFromFirst()));
-                    balanceRenewAmount.set(balanceRenewAmount.get().add(Objects.isNull(record.getBalanceFromRenew()) ? BigDecimal.ZERO : record.getBalanceFromRenew()));
-                });
-                
-                BigDecimal monthFirstMoney = firstAmount.get().add(balanceFirstAmount.get());
-                BigDecimal monthRenewMoney = renewAmount.get().add(balanceRenewAmount.get());
-                
-                merchantDayRecordVoList.forEach(item -> {
-                    
-                    String typeName = "";
-                    BigDecimal dayMoney = BigDecimal.ZERO;
-                    
-                    switch (item.getType()) {
-                        case MerchantPromotionDayRecord.LASH:
-                            typeName = RebateRecordConstant.LASH_NAME;
-                            dayMoney = item.getMoney();
-                            break;
-                        case MerchantPromotionDayRecord.RENEW:
-                            typeName = RebateRecordConstant.RENEW_NAME;
-                            dayMoney = item.getMoney();
-                            break;
-                        case MerchantPromotionDayRecord.BALANCE:
-                            typeName = RebateRecordConstant.BALANCE_NAME;
-                            dayMoney = item.getMoney();
-                            break;
-                        default:
-                            break;
-                    }
-                    
-                    MerchantPromotionMonthExcelVO excelVO = MerchantPromotionMonthExcelVO.builder().monthDate(monthDate).monthFirstMoney(monthFirstMoney)
-                            .monthRenewMoney(monthRenewMoney).inviterName(Optional.ofNullable(userService.queryByUidFromCache(item.getInviterUid())).orElse(new User()).getName())
-                            .typeName(typeName).dayMoney(dayMoney).date(item.getDate()).build();
-                    
-                    if (ObjectUtils.isNotEmpty(finalMerchantNameMap.get(merchantId))) {
-                        excelVO.setMerchantName(finalMerchantNameMap.get(merchantId));
-                    }
-                    
-                    excelVOList.add(excelVO);
-                });
+            if (CollectionUtils.isEmpty(merchantDayRecordVoList)) {
+                return;
             }
             
+            // 排序
+            merchantDayRecordVoList.sort(Comparator.comparing(MerchantPromotionDayRecordVO::getDate));
+            
+            AtomicReference<BigDecimal> firstAmount = new AtomicReference<>(BigDecimal.ZERO);
+            AtomicReference<BigDecimal> renewAmount = new AtomicReference<>(BigDecimal.ZERO);
+            AtomicReference<BigDecimal> balanceFirstAmount = new AtomicReference<>(BigDecimal.ZERO);
+            AtomicReference<BigDecimal> balanceRenewAmount = new AtomicReference<>(BigDecimal.ZERO);
+            List<MerchantPromotionMonthExcelVO> merchantMonthExcelVOList = new ArrayList<>();
+            
+            merchantDayRecordVoList.forEach(item -> {
+                String typeName = StringUtils.EMPTY;
+                BigDecimal dayMoney = BigDecimal.ZERO;
+                
+                if (Objects.equals(item.getType(), RebateRecordConstant.LASHIN)) {
+                    firstAmount.set(firstAmount.get().add(item.getMoney()));
+                    typeName = RebateRecordConstant.LASH_NAME;
+                    dayMoney = item.getMoney();
+                } else if (Objects.equals(item.getType(), RebateRecordConstant.RENEW)) {
+                    renewAmount.set(renewAmount.get().add(item.getMoney()));
+                    typeName = RebateRecordConstant.RENEW_NAME;
+                    dayMoney = item.getMoney();
+                } else if (Objects.equals(item.getType(), RebateRecordConstant.BALANCE)) {
+                    typeName = RebateRecordConstant.BALANCE_NAME;
+                    dayMoney = item.getMoney();
+                    balanceFirstAmount.set(balanceFirstAmount.get().add(Objects.isNull(item.getBalanceFromFirst()) ? BigDecimal.ZERO : item.getBalanceFromFirst()));
+                    balanceRenewAmount.set(balanceRenewAmount.get().add(Objects.isNull(item.getBalanceFromRenew()) ? BigDecimal.ZERO : item.getBalanceFromRenew()));
+                }
+    
+                MerchantPromotionMonthExcelVO excelVO = MerchantPromotionMonthExcelVO.builder().monthDate(monthDate)
+                        .inviterName(Optional.ofNullable(userService.queryByUidFromCache(item.getInviterUid())).orElse(new User()).getName()).typeName(typeName).dayMoney(dayMoney)
+                        .date(item.getDate()).build();
+    
+                if (StringUtils.isNotBlank(merchantNameMap.get(merchantId))) {
+                    excelVO.setMerchantName(merchantNameMap.get(merchantId));
+                }
+                merchantMonthExcelVOList.add(excelVO);
+            });
+            
+            BigDecimal monthFirstMoney = firstAmount.get().add(balanceFirstAmount.get());
+            BigDecimal monthRenewMoney = renewAmount.get().add(balanceRenewAmount.get());
+            
+            //每一行记录设置相同的月度费用，进行单元个合并
+            merchantMonthExcelVOList.forEach(excelVO -> {
+                MerchantPromotionMonthExcelVO vo = new MerchantPromotionMonthExcelVO();
+                BeanUtils.copyProperties(excelVO, vo);
+                vo.setMonthFirstMoney(monthFirstMoney);
+                vo.setMonthRenewMoney(monthRenewMoney);
+                excelVOList.add(vo);
+            });
         });
         
-        // 为0的数据
-        List<MerchantPromotionDayRecordVO> emptyDetailList = detailList.stream().filter(item -> item.getMoney().compareTo(BigDecimal.ZERO) == 0).collect(Collectors.toList());
-        
-        if (CollectionUtils.isNotEmpty(emptyDetailList)) {
-    
-            // emptyDetailList 按merchantId进行升序
-            emptyDetailList.sort(Comparator.comparing(MerchantPromotionDayRecordVO::getMerchantId));
-            
-            emptyDetailList.forEach(item -> {
-                Long merchantId = item.getMerchantId();
-                MerchantPromotionMonthExcelVO excelVO = MerchantPromotionMonthExcelVO.builder().monthDate(monthDate).date(item.getDate()).build();
-                
-                if (ObjectUtils.isNotEmpty(finalMerchantNameMap.get(merchantId))) {
-                    excelVO.setMerchantName(finalMerchantNameMap.get(merchantId));
-                }
-                
-                excelVOList.add(excelVO);
-            });
+        // 移除有数据的集合，再处理空数据
+        detailList.removeAll(hasDataDetailList);
+        if (CollectionUtils.isEmpty(detailList)) {
+            return excelVOList;
         }
         
+        // 按merchantId进行升序
+        detailList.sort(Comparator.comparing(MerchantPromotionDayRecordVO::getMerchantId));
+        
+        detailList.forEach(item -> {
+            Long merchantId = item.getMerchantId();
+            MerchantPromotionMonthExcelVO excelVO = MerchantPromotionMonthExcelVO.builder().monthDate(monthDate).date(item.getDate()).build();
+            
+            if (StringUtils.isNotBlank(merchantNameMap.get(merchantId))) {
+                excelVO.setMerchantName(merchantNameMap.get(merchantId));
+            }
+            
+            excelVOList.add(excelVO);
+        });
+        
         return excelVOList;
+    }
+    
+    private Map<Long, String> listMerchantNames(Set<Long> merchantIdSet, Integer tenantId) {
+        Map<Long, String> map = new HashMap<>();
+        int batchSize = 50;
+    
+        ArrayList<Long> merchantIdList = new ArrayList<>(merchantIdSet);
+        ListUtils.partition(merchantIdList, batchSize).forEach(ids -> {
+            List<Merchant> merchantList = merchantService.listAllByIds(ids, tenantId);
+            if (CollectionUtils.isEmpty(merchantList)) {
+                return;
+            }
+    
+            Map<Long, String> nameMap = merchantList.stream().collect(toMap(Merchant::getId, Merchant::getName, (key, key1) -> key1));
+            map.putAll(nameMap);
+    
+        });
+        
+        return map;
     }
     
     @Override
     public void exportExcel(MerchantPromotionRequest request, HttpServletResponse response) {
         String fileName = "商户推广费出账记录.xlsx";
-        try {
-            ServletOutputStream outputStream = response.getOutputStream();
+        try (ServletOutputStream outputStream = response.getOutputStream()) {
             // 告诉浏览器用什么软件可以打开此文件
             response.setHeader("content-Type", "application/vnd.ms-excel");
             // 下载文件的默认名称
@@ -256,6 +266,7 @@ public class MerchantPromotionMonthRecordServiceImpl implements MerchantPromotio
                     .registerWriteHandler(new CommentWriteHandler(getComments(), "xlsx")).registerWriteHandler(new AutoHeadColumnWidthStyleStrategy())
                     // 注意：需要先调用registerWriteHandler()再调用sheet()方法才能使合并策略生效！！！
                     .sheet("商户推广费出账记录").doWrite(getData(request));
+        
         } catch (Exception e) {
             log.error("Merchant promotion exportExcel error!", e);
         }

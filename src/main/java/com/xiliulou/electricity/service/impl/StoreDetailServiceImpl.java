@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.service.impl;
 
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.entity.StoreDetail;
 import com.xiliulou.electricity.mapper.StoreDetailMapper;
 import com.xiliulou.electricity.service.StoreDetailService;
@@ -105,6 +106,7 @@ public class StoreDetailServiceImpl implements StoreDetailService {
         return this.storeDetailMapper.deleteByStoreId(id);
     }
 
+    @Slave
     @Override
     public StoreDetail selectByStoreId(Long id) {
         return this.storeDetailMapper.selectByStoreId(id);

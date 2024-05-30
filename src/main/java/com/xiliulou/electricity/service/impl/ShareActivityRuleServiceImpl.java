@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.entity.ShareActivityRule;
 import com.xiliulou.electricity.mapper.ShareActivityRuleMapper;
 import com.xiliulou.electricity.service.ShareActivityRuleService;
@@ -39,12 +40,14 @@ public class ShareActivityRuleServiceImpl implements ShareActivityRuleService {
 
 
     @Override
+    @Slave
     public List<ShareActivityRule> queryByActivity(Integer id) {
         return shareActivityRuleMapper.selectList(new LambdaQueryWrapper<ShareActivityRule>().eq(ShareActivityRule::getActivityId, id)
                 .eq(ShareActivityRule::getDelFlag, ShareActivityRule.DEL_NORMAL));
     }
 
     @Override
+    @Slave
     public ShareActivityRule selectByCouponId(Long id) {
         return shareActivityRuleMapper.selectByCouponId(id);
     }

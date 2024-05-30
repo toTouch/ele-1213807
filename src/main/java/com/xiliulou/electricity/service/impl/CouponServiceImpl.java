@@ -200,6 +200,11 @@ public class CouponServiceImpl implements CouponService {
             return R.fail("000075", "优惠券名称不能重复");
         }
         
+        // 可叠加时不能指定套餐
+        if (Coupon.SUPERPOSITION_YES.equals(couponQuery.getSuperposition()) && SpecificPackagesEnum.SPECIFIC_PACKAGES_YES.getCode().equals(couponQuery.getSpecificPackages())) {
+            return R.fail("SYSTEM.0002", "参数不合法");
+        }
+        
         //判断若选择不可叠加优惠券，则需要检查是否选择了套餐
         if (Coupon.SUPERPOSITION_NO.equals(couponQuery.getSuperposition()) && SpecificPackagesEnum.SPECIFIC_PACKAGES_YES.getCode().equals(couponQuery.getSpecificPackages())) {
             //获取页面传递进来的套餐信息

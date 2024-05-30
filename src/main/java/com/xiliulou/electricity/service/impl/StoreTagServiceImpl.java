@@ -1,23 +1,21 @@
 package com.xiliulou.electricity.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.StoreTag;
 import com.xiliulou.electricity.mapper.StoreTagMapper;
 import com.xiliulou.electricity.query.StoreTagQuery;
 import com.xiliulou.electricity.service.StoreTagService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.annotation.Resource;
 import java.util.List;
-
-import lombok.extern.slf4j.Slf4j;
 
 /**
  * 门店标签表(StoreTag)表服务实现类
@@ -59,11 +57,13 @@ public class StoreTagServiceImpl implements StoreTagService {
      *
      * @return 对象列表
      */
+    @Slave
     @Override
     public List<StoreTag> selectByPage(StoreTagQuery storeTagQuery) {
         return this.storeTagMapper.selectByPage(storeTagQuery);
     }
 
+    @Slave
     @Override
     public Integer selectPageCount(StoreTagQuery query) {
         return this.storeTagMapper.selectPageCount(query);
@@ -131,6 +131,7 @@ public class StoreTagServiceImpl implements StoreTagService {
         return this.storeTagMapper.deleteByStoreId(id);
     }
 
+    @Slave
     @Override
     public List<StoreTag> selectByStoreId(Long id) {
         return this.storeTagMapper.selectList(new LambdaQueryWrapper<StoreTag>().eq(StoreTag::getStoreId,id).orderByAsc(StoreTag::getSeq));

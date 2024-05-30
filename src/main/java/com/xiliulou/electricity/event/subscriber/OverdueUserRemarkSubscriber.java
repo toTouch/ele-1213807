@@ -36,7 +36,8 @@ public class OverdueUserRemarkSubscriber {
             log.warn("Received subscription event OverdueUserRemarkEvent is null");
             return;
         }
-//        log.info("Received subscription event OverdueUserRemarkEvent: uid[{}] type[{}]",event.getUid(),event.getType());
-//        this.userInfoOverdueRemarkMapper.clearRemarksByUidAndType(event.getUid(), event.getType(),event.getTenantId());
+        
+        log.info("Received subscription event OverdueUserRemarkEvent: uid[{}] type[{}]",event.getUid(),event.getType());
+        this.userInfoOverdueRemarkMapper.clearRemarksByUidAndType(event.getUid(), event.getType(),event.getTenantId());
     }
 }

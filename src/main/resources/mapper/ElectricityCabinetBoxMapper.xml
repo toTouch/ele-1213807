@@ -236,7 +236,9 @@
 
     <select id="selectEleBoxAttrByEid" resultType="com.xiliulou.electricity.entity.ElectricityCabinetBox">
         select
-        id, status ,power ,sn, battery_type
+            id, electricity_cabinet_id, cell_no, sn, usable_status,
+            status,is_lock,is_fan,temperature,is_heat,is_light,
+            temperature,battery_type,power,charge_v,b_id
         from t_electricity_cabinet_box
         where
         electricity_cabinet_id = #{eid}
