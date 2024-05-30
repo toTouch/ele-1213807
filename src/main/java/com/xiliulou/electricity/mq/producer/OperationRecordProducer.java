@@ -36,7 +36,6 @@ public class OperationRecordProducer {
     }
     
     public void sendMessage(OperateLogDTO operate) {
-        log.info("operate:{}",operate);
         if (Objects.isNull(operate)) {
             return;
         }

@@ -157,8 +157,7 @@ public class UserInfoGroupServiceImpl implements UserInfoGroupService {
             redisService.delete(CacheConstant.CACHE_USER_GROUP + id);
     
             // 系统操作记录
-            Map<Object, Object> groupNameMap = MapBuilder.create().put("groupName", delUserInfoGroup.getName()).build();
-            log.info("groupNameMap={}", groupNameMap);
+            Map<Object, Object> groupNameMap = MapBuilder.create().put("groupName", userInfoGroup.getName()).build();
             operateRecordUtil.record(groupNameMap, null);
         });
         
