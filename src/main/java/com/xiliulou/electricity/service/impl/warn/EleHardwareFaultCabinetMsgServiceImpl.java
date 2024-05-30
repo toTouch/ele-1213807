@@ -1,20 +1,21 @@
-package com.xiliulou.electricity.service.impl;
+package com.xiliulou.electricity.service.impl.warn;
 
 import com.alibaba.excel.EasyExcel;
 import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.electricity.constant.StringConstant;
 import com.xiliulou.electricity.constant.TimeConstant;
-import com.xiliulou.electricity.entity.EleHardwareFailureCabinetMsg;
 import com.xiliulou.electricity.entity.EleHardwareFailureWarnMsg;
-import com.xiliulou.electricity.mapper.EleHardwareFailureCabinetMsgMapper;
+import com.xiliulou.electricity.entity.warn.EleHardwareFaultCabinetMsg;
+import com.xiliulou.electricity.mapper.warn.EleHardwareFaultCabinetMsgMapper;
 import com.xiliulou.electricity.query.ElectricityCabinetQuery;
 import com.xiliulou.electricity.queryModel.failureAlarm.FailureCabinetMsgQueryModel;
-import com.xiliulou.electricity.request.failureAlarm.FailureWarnCabinetMsgPageRequest;
 import com.xiliulou.electricity.request.failureAlarm.FailureAlarmTaskQueryRequest;
-import com.xiliulou.electricity.service.EleHardwareFailureCabinetMsgService;
-import com.xiliulou.electricity.service.EleHardwareFailureWarnMsgService;
+import com.xiliulou.electricity.request.failureAlarm.FailureWarnCabinetMsgPageRequest;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
 import com.xiliulou.electricity.service.TenantService;
+import com.xiliulou.electricity.service.warn.EleHardwareFaultCabinetMsgService;
+import com.xiliulou.electricity.service.warn.EleHardwareFaultMsgService;
+import com.xiliulou.electricity.service.warn.EleHardwareWarnMsgService;
 import com.xiliulou.electricity.utils.DateUtils;
 import com.xiliulou.electricity.vo.ElectricityCabinetCountVO;
 import com.xiliulou.electricity.vo.failureAlarm.CabinetOverviewFailureExportVo;
@@ -55,13 +56,9 @@ import java.util.stream.Collectors;
 
 @Service
 @Slf4j
-public class EleHardwareFailureCabinetMsgServiceImpl implements EleHardwareFailureCabinetMsgService {
-    
+public class EleHardwareFaultCabinetMsgServiceImpl implements EleHardwareFaultCabinetMsgService {
     @Resource
-    private EleHardwareFailureCabinetMsgMapper failureCabinetMsgMapper;
-    
-    @Resource
-    private EleHardwareFailureWarnMsgService failureWarnMsgService;
+    private EleHardwareFaultCabinetMsgMapper faultCabinetMsgMapper;
     
     @Resource
     private TenantService tenantService;
@@ -69,37 +66,22 @@ public class EleHardwareFailureCabinetMsgServiceImpl implements EleHardwareFailu
     @Resource
     private ElectricityCabinetService cabinetService;
     
-    @Override
-    public void createFailureWarnData() {
-        FailureAlarmTaskQueryRequest request = this.getQueryRequest();
-        List<EleHardwareFailureWarnMsgVo> failureWarnMsgList = failureWarnMsgService.list(request);
-        if (ObjectUtils.isEmpty(failureWarnMsgList)) {
-            log.error("Hardware Failure CabinetMsg task is empty");
-        }
-        
-        Map<Integer, EleHardwareFailureCabinetMsg> cabinetMsgMap = failureWarnMsgList.stream().collect(Collectors.groupingBy(EleHardwareFailureWarnMsgVo::getCabinetId,
-                Collectors.collectingAndThen(Collectors.toList(), e -> this.getCabinetFailureWarnMsg(e, request))));
-        
-        if (ObjectUtils.isNotEmpty(cabinetMsgMap)) {
-            // 删除昨天的历史数据
-            failureCabinetMsgMapper.batchDelete(request.getStartTime(), request.getEndTime());
-            
-            List<EleHardwareFailureCabinetMsg> failureCabinetMsgList = cabinetMsgMap.values().parallelStream().collect(Collectors.toList());
-            // 批量插入新的数据
-            failureCabinetMsgMapper.batchInsert(failureCabinetMsgList);
-        }
-        
-    }
+    @Resource
+    private EleHardwareFaultMsgService eleHardwareFaultMsgService;
     
-    private EleHardwareFailureCabinetMsg getCabinetFailureWarnMsg(List<EleHardwareFailureWarnMsgVo> failureWarnMsgVoList, FailureAlarmTaskQueryRequest request) {
-        EleHardwareFailureCabinetMsg failureCabinetMsg = new EleHardwareFailureCabinetMsg();
+    @Resource
+    private EleHardwareWarnMsgService eleHardwareWarnMsgService;
+    
+    
+    private EleHardwareFaultCabinetMsg getCabinetFailureWarnMsg(List<EleHardwareFailureWarnMsgVo> failureWarnMsgVoList, FailureAlarmTaskQueryRequest request) {
+        EleHardwareFaultCabinetMsg faultCabinetMsg = new EleHardwareFaultCabinetMsg();
         Integer failureNum = 0;
         Integer warnNum = 0;
         for (EleHardwareFailureWarnMsgVo item : failureWarnMsgVoList) {
-            if (ObjectUtils.isEmpty(failureCabinetMsg.getTenantId())) {
-                failureCabinetMsg.setCabinetId(item.getCabinetId());
-                failureCabinetMsg.setTenantId(item.getTenantId());
-                failureCabinetMsg.setCreateTime(request.getTime());
+            if (ObjectUtils.isEmpty(faultCabinetMsg.getTenantId())) {
+                faultCabinetMsg.setCabinetId(item.getCabinetId());
+                faultCabinetMsg.setTenantId(item.getTenantId());
+                faultCabinetMsg.setCreateTime(request.getTime());
             }
             
             if (Objects.equals(item.getType(), EleHardwareFailureWarnMsg.FAILURE)) {
@@ -111,10 +93,10 @@ public class EleHardwareFailureCabinetMsgServiceImpl implements EleHardwareFailu
             }
         }
         
-        failureCabinetMsg.setFailureCount(failureNum);
-        failureCabinetMsg.setWarnCount(warnNum);
+        faultCabinetMsg.setFailureCount(failureNum);
+        faultCabinetMsg.setWarnCount(warnNum);
         
-        return failureCabinetMsg;
+        return faultCabinetMsg;
     }
     
     /**
@@ -170,7 +152,7 @@ public class EleHardwareFailureCabinetMsgServiceImpl implements EleHardwareFailu
         
         if (Objects.equals(request.getType(), EleHardwareFailureWarnMsg.FAILURE)) {
             // 查询
-            list = failureCabinetMsgMapper.selectListForFailure(queryModel);
+            list = faultCabinetMsgMapper.selectListForFailure(queryModel);
             // 设置信息
             setTenantOverviewExport(failureExportVos, warnExportVoList, request, list);
             // 导出
@@ -179,7 +161,7 @@ public class EleHardwareFailureCabinetMsgServiceImpl implements EleHardwareFailu
         
         if (Objects.equals(request.getType(), EleHardwareFailureWarnMsg.WARN)) {
             // 查询
-            list = failureCabinetMsgMapper.selectListForWarn(queryModel);
+            list = faultCabinetMsgMapper.selectListForWarn(queryModel);
             // 设置信息
             setTenantOverviewExport(failureExportVos, warnExportVoList, request, list);
             // 导出
@@ -206,11 +188,11 @@ public class EleHardwareFailureCabinetMsgServiceImpl implements EleHardwareFailu
         FailureCabinetMsgQueryModel queryModel = FailureCabinetMsgQueryModel.builder().alarmStartTime(request.getAlarmStartTime()).alarmEndTime(request.getAlarmEndTime())
                 .size(request.getSize()).type(request.getType()).offset(request.getOffset()).build();
         if (Objects.equals(request.getType(), EleHardwareFailureWarnMsg.FAILURE)) {
-            list = failureCabinetMsgMapper.selectListCabinetFailure(queryModel);
+            list = faultCabinetMsgMapper.selectListCabinetFailure(queryModel);
         }
         
         if (Objects.equals(request.getType(), EleHardwareFailureWarnMsg.WARN)) {
-            list = failureCabinetMsgMapper.selectListCabinetWarn(queryModel);
+            list = faultCabinetMsgMapper.selectListCabinetWarn(queryModel);
         }
         
         cabinetOverviewInfo(list, request);
@@ -228,7 +210,7 @@ public class EleHardwareFailureCabinetMsgServiceImpl implements EleHardwareFailu
         
         FailureCabinetMsgQueryModel queryModel = FailureCabinetMsgQueryModel.builder().alarmStartTime(request.getAlarmStartTime()).alarmEndTime(request.getAlarmEndTime())
                 .size(request.getSize()).type(request.getType()).offset(request.getOffset()).build();
-        Integer count = failureCabinetMsgMapper.countCabinetOverview(queryModel);
+        Integer count = faultCabinetMsgMapper.countCabinetOverview(queryModel);
         
         return Triple.of(true, null, count);
     }
@@ -251,7 +233,7 @@ public class EleHardwareFailureCabinetMsgServiceImpl implements EleHardwareFailu
         
         if (Objects.equals(request.getType(), EleHardwareFailureWarnMsg.FAILURE)) {
             // 查询
-            list = failureCabinetMsgMapper.selectListCabinetFailure(queryModel);
+            list = faultCabinetMsgMapper.selectListCabinetFailure(queryModel);
             // 设置信息
             setCabinetOverviewExport(failureExportVos, warnExportVoList, request, list);
             // 导出
@@ -260,11 +242,40 @@ public class EleHardwareFailureCabinetMsgServiceImpl implements EleHardwareFailu
         
         if (Objects.equals(request.getType(), EleHardwareFailureWarnMsg.WARN)) {
             // 查询
-            list = failureCabinetMsgMapper.selectListCabinetWarn(queryModel);
+            list = faultCabinetMsgMapper.selectListCabinetWarn(queryModel);
             // 设置信息
             setCabinetOverviewExport(failureExportVos, warnExportVoList, request, list);
             // 导出
             doCabinetOverviewWarnExport(warnExportVoList, response);
+        }
+    }
+    
+    @Override
+    public void createFaultWarnData() {
+        FailureAlarmTaskQueryRequest request = this.getQueryRequest();
+        List<EleHardwareFailureWarnMsgVo> faultWarnMsgList = new ArrayList<>();
+        
+        List<EleHardwareFailureWarnMsgVo> faultMsgList = eleHardwareFaultMsgService.list(request);
+        if (ObjectUtils.isNotEmpty(faultMsgList)) {
+            faultWarnMsgList.addAll(faultMsgList);
+        }
+        
+        List<EleHardwareFailureWarnMsgVo> warnMsgList = eleHardwareWarnMsgService.list(request);
+        if (ObjectUtils.isNotEmpty(warnMsgList)) {
+            faultWarnMsgList.addAll(warnMsgList);
+        }
+    
+        
+        Map<Integer, EleHardwareFaultCabinetMsg> cabinetMsgMap = faultWarnMsgList.stream().collect(Collectors.groupingBy(EleHardwareFailureWarnMsgVo::getCabinetId,
+                Collectors.collectingAndThen(Collectors.toList(), e -> this.getCabinetFailureWarnMsg(e, request))));
+    
+        if (ObjectUtils.isNotEmpty(cabinetMsgMap)) {
+            // 删除昨天的历史数据
+            faultCabinetMsgMapper.batchDelete(request.getStartTime(), request.getEndTime());
+            
+            List<EleHardwareFaultCabinetMsg> failureCabinetMsgList = cabinetMsgMap.values().parallelStream().collect(Collectors.toList());
+            // 批量插入新的数据
+            faultCabinetMsgMapper.batchInsert(failureCabinetMsgList);
         }
     }
     
@@ -477,7 +488,7 @@ public class EleHardwareFailureCabinetMsgServiceImpl implements EleHardwareFailu
         
         FailureCabinetMsgQueryModel queryModel = FailureCabinetMsgQueryModel.builder().alarmStartTime(request.getAlarmStartTime()).alarmEndTime(request.getAlarmEndTime())
                 .type(request.getType()).build();
-        Integer count = failureCabinetMsgMapper.countTenantOverview(queryModel);
+        Integer count = faultCabinetMsgMapper.countTenantOverview(queryModel);
         
         return Triple.of(true, null, count);
     }
@@ -501,11 +512,11 @@ public class EleHardwareFailureCabinetMsgServiceImpl implements EleHardwareFailu
         FailureCabinetMsgQueryModel queryModel = FailureCabinetMsgQueryModel.builder().alarmStartTime(request.getAlarmStartTime()).alarmEndTime(request.getAlarmEndTime())
                 .size(request.getSize()).type(request.getType()).offset(request.getOffset()).build();
         if (Objects.equals(request.getType(), EleHardwareFailureWarnMsg.FAILURE)) {
-            list = failureCabinetMsgMapper.selectListForFailure(queryModel);
+            list = faultCabinetMsgMapper.selectListForFailure(queryModel);
         }
         
         if (Objects.equals(request.getType(), EleHardwareFailureWarnMsg.WARN)) {
-            list = failureCabinetMsgMapper.selectListForWarn(queryModel);
+            list = faultCabinetMsgMapper.selectListForWarn(queryModel);
         }
         
         tenantOverviewInfo(list, request);
