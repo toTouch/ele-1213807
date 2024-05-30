@@ -354,7 +354,7 @@
         select tmwa.id,
             tmwa.uid,
             tm.name,
-            tmwa.order_no,
+            tmwa.`order_no`,
             tmwa.amount,
             tmwa.remark,
             tmwa.status,
@@ -367,7 +367,7 @@
             tmwair.`transaction_batch_id`,
             tmwair.`transaction_detail_id`
         from t_merchant_withdraw_application tmwa
-        LEFT JOIN `t_merchant_withdraw_application_record` tmwair on tmwair.`orderNo` = tmwa.`orderNo`
+        LEFT JOIN `t_merchant_withdraw_application_record` tmwair on tmwair.`order_no` = tmwa.`order_no`
         left join t_merchant tm on tm.uid = tmwa.uid
         <where>
             tmwa.del_flag = 0
