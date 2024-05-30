@@ -927,7 +927,7 @@ public class JsonAdminElectricityCabinetController extends BasicController {
     @GetMapping(value = "/admin/electricityCabinet/batchOperate/list")
     public R batchOperateList(@RequestParam("size") Long size, @RequestParam("offset") Long offset, @RequestParam(value = "name", required = false) String name,
             @RequestParam(value = "modelId", required = false) Integer modelId, @RequestParam(value = "sn", required = false) String sn,
-            @RequestParam(value = "onlineStatus", required = false) Integer onlineStatus, @RequestParam("version") String version) {
+            @RequestParam(value = "onlineStatus", required = false) Integer onlineStatus, @RequestParam(value = "version", required = false) String version) {
         if (Objects.isNull(size) || size < 0 || size > 50) {
             size = 10L;
         }

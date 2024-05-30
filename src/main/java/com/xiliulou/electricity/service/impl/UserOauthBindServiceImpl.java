@@ -222,6 +222,11 @@ public class UserOauthBindServiceImpl implements UserOauthBindService {
     }
     
     @Override
+    public UserOauthBind queryOauthByOpenIdAndUid(Long id, String openId, Integer tenantId) {
+        return userOauthBindMapper.queryOauthByOpenIdAndUid(id, openId, tenantId);
+    }
+    
+    @Override
     @Transactional(rollbackFor = Exception.class)
     public Boolean checkOpenIdByJsCode(String jsCode) {
         Long uid = SecurityUtils.getUid();
