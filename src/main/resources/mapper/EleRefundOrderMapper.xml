@@ -187,7 +187,7 @@
                 and tedo.pay_type = #{query.payType}
             </if>
             <if test="query.refundOrderNo != null and query.refundOrderNo != ''">
-                and tero.refund_order_no like concat('%', #{query.phone,jdbcType=VARCHAR}, '%')
+                and tero.refund_order_no = #{query.refundOrderNo}
             </if>
             <if test="query.orderType != null">
                 and tedo.order_type = #{query.orderType}

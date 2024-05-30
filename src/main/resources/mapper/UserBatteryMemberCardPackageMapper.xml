@@ -143,7 +143,7 @@
         WHERE
             uid = #{uid}
           AND EXISTS (
-            SELECT 1 FROM t_battery_member_card b WHERE a.member_card_id = b.id and b.business_type = 1
+            SELECT 1 FROM t_battery_member_card b WHERE a.member_card_id = b.id and b.business_type = 2
             )
     </delete>
 </mapper>

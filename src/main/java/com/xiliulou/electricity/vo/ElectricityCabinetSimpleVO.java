@@ -83,4 +83,11 @@ public class ElectricityCabinetSimpleVO implements Serializable {
      * 柜子的可换(1)、可租(2)、可退(3) 标签
      */
     private List<Integer> label = new ArrayList<>();
+    
+    
+    public final static Integer IS_EXCHANGE = 1;
+    
+    public final static Integer IS_RENT = 2;
+    
+    public final static Integer IS_RETURN = 3;
 }

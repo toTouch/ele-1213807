@@ -234,9 +234,14 @@ import java.util.stream.Collectors;
 
 import static com.xiliulou.electricity.constant.ElectricityIotConstant.ELE_COMMAND_CELL_UPDATE;
 import static com.xiliulou.electricity.entity.ElectricityCabinet.ELECTRICITY_CABINET_USABLE_STATUS;
+import static com.xiliulou.electricity.entity.ElectricityCabinetBox.STATUS_ELECTRICITY_BATTERY;
+import static com.xiliulou.electricity.entity.ElectricityCabinetBox.STATUS_NO_ELECTRICITY_BATTERY;
 import static com.xiliulou.electricity.entity.ElectricityCabinetExtra.EFFECT_ROWS_ZERO;
 import static com.xiliulou.electricity.query.ElectricityCabinetBatchEditRentReturnQuery.LIMIT;
 import static com.xiliulou.electricity.query.ElectricityCabinetBatchEditRentReturnQuery.NOT_LIMIT;
+import static com.xiliulou.electricity.vo.ElectricityCabinetSimpleVO.IS_EXCHANGE;
+import static com.xiliulou.electricity.vo.ElectricityCabinetSimpleVO.IS_RENT;
+import static com.xiliulou.electricity.vo.ElectricityCabinetSimpleVO.IS_RETURN;
 
 /**
  * 换电柜表(TElectricityCabinet)表服务实现类
@@ -1248,21 +1253,19 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         return R.ok(resultVo.stream().sorted(Comparator.comparing(ElectricityCabinetSimpleVO::getDistance)).collect(Collectors.toList()));
     }
     
-    private List<Integer> electricityCabinetLabelHandler(Integer eid, Double fullyCharged) {
+    private List<Integer> electricityCabinetLabelHandler(Integer eid, List<ElectricityCabinetBox> exchangeableList, List<ElectricityCabinetBox> cabinetBoxList) {
         List<Integer> label = CollUtil.newArrayList();
         
-        // 换电限制标签：柜内符合可换电标准的电池≥1，则可换电
-        List<ElectricityCabinetBox> boxes = electricityCabinetBoxService.queryUsableBatteryCellNo(eid, null, fullyCharged);
-        
-        // 过滤掉电池名称不符合标准的
-        List<ElectricityCabinetBox> exchangeableList = boxes.stream().filter(item -> filterNotExchangeable(item)).collect(Collectors.toList());
-        
         // 查询空仓数量
-        List<ElectricityCabinetBox> emptyCellList = electricityCabinetBoxService.listUsableEmptyCell(eid);
+        List<ElectricityCabinetBox> emptyCellList = cabinetBoxList.stream().filter(e -> Objects.equals(e.getStatus(), STATUS_NO_ELECTRICITY_BATTERY)).collect(Collectors.toList());
+        
+        // 退电的电池数量
+        List<ElectricityCabinetBox> haveBatteryCellList = cabinetBoxList.stream().filter(e -> Objects.equals(e.getStatus(), STATUS_ELECTRICITY_BATTERY)).collect(Collectors.toList());
+        
         
         //可换电数量,可换电池数>=1 && 必须有一个空仓
         if (exchangeableList.size() >= 1 && CollUtil.isNotEmpty(emptyCellList)) {
-            label.add(1);
+            label.add(IS_EXCHANGE);
         }
         
         ElectricityCabinetExtra cabinetExtra = electricityCabinetExtraService.queryByEidFromCache(Long.valueOf(eid));
@@ -1274,24 +1277,24 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         if (Objects.isNull(cabinetExtra.getMinRetainBatteryCount())) {
             // 无限制,柜内符合可换电标准的电池≥1，则可租电
             if (exchangeableList.size() >= 1) {
-                label.add(2);
+                label.add(IS_RENT);
             }
         } else {
             // 有限制：最少保留电池数量设置为有限制数量时，柜内符合可换电标准的电池＞=设置的数量
-            if ((exchangeableList.size() >= 1) && (exchangeableList.size() >= cabinetExtra.getMinRetainBatteryCount())) {
-                label.add(2);
+            if ((exchangeableList.size() >= 1) && (haveBatteryCellList.size() >= cabinetExtra.getMinRetainBatteryCount())) {
+                label.add(IS_RENT);
             }
         }
         
         //  退电
         if (Objects.isNull(cabinetExtra.getMaxRetainBatteryCount())) {
             if (CollUtil.isNotEmpty(emptyCellList)) {
-                label.add(3);
+                label.add(IS_RETURN);
             }
         } else {
             // 最少保留电池数量设置为有限制数量时，柜内符合可换电标准的电池＞=设置的数量 && 仓数为0不可退电
-            if (CollUtil.isNotEmpty(emptyCellList) && exchangeableList.size() <= cabinetExtra.getMaxRetainBatteryCount()) {
-                label.add(3);
+            if (CollUtil.isNotEmpty(emptyCellList) && haveBatteryCellList.size() <= cabinetExtra.getMaxRetainBatteryCount()) {
+                label.add(IS_RETURN);
             }
         }
         return label;
@@ -1337,7 +1340,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         e.setFullyElectricityBattery((int) exchangeableNumber);//兼容2.0小程序首页显示问题
         
         // 筛选可换、可租、可退标签返回
-        e.setLabel(electricityCabinetLabelHandler(e.getId(), fullyCharged));
+        e.setLabel(electricityCabinetLabelHandler(e.getId(), exchangeableList, cabinetBoxList));
         return e;
     }
     
@@ -3011,16 +3014,16 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     
     @Override
     public boolean isNoElectricityBattery(ElectricityCabinetBox electricityCabinetBox) {
-        return Objects.equals(electricityCabinetBox.getStatus(), ElectricityCabinetBox.STATUS_NO_ELECTRICITY_BATTERY);
+        return Objects.equals(electricityCabinetBox.getStatus(), STATUS_NO_ELECTRICITY_BATTERY);
     }
     
     @Override
     public boolean isBatteryInElectricity(ElectricityCabinetBox electricityCabinetBox) {
-        return Objects.equals(electricityCabinetBox.getStatus(), ElectricityCabinetBox.STATUS_ELECTRICITY_BATTERY);
+        return Objects.equals(electricityCabinetBox.getStatus(), STATUS_ELECTRICITY_BATTERY);
     }
     
     private boolean isElectricityBattery(ElectricityCabinetBox electricityCabinetBox) {
-        return Objects.equals(electricityCabinetBox.getStatus(), ElectricityCabinetBox.STATUS_ELECTRICITY_BATTERY);
+        return Objects.equals(electricityCabinetBox.getStatus(), STATUS_ELECTRICITY_BATTERY);
     }
     
     @Override
@@ -5095,7 +5098,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 boxNum = electricityCabinetBoxes.size();
                 
                 // 电池在仓数量统计
-                batteryNum = (int) electricityCabinetBoxes.stream().filter(box -> Objects.equals(box.getStatus(), ElectricityCabinetBox.STATUS_ELECTRICITY_BATTERY)).count();
+                batteryNum = (int) electricityCabinetBoxes.stream().filter(box -> Objects.equals(box.getStatus(), STATUS_ELECTRICITY_BATTERY)).count();
                 
                 // 电池锁仓数量统计
                 unusableBoxNum = (int) electricityCabinetBoxes.stream()
