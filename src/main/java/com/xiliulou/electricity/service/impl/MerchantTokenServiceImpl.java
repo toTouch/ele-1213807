@@ -6,10 +6,10 @@ import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.http.resttemplate.service.RestTemplateService;
 import com.xiliulou.core.json.JsonUtil;
+import com.xiliulou.electricity.config.merchant.MerchantConfig;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.dto.WXMinProAuth2SessionResult;
 import com.xiliulou.electricity.dto.WXMinProPhoneResultDTO;
-import com.xiliulou.electricity.entity.ElectricityPayParams;
 import com.xiliulou.electricity.entity.Tenant;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.UserOauthBind;
@@ -23,7 +23,6 @@ import com.xiliulou.electricity.service.merchant.ChannelEmployeeService;
 import com.xiliulou.electricity.service.merchant.MerchantService;
 import com.xiliulou.electricity.service.merchant.MerchantTokenService;
 import com.xiliulou.electricity.service.token.WxProThirdAuthenticationServiceImpl;
-import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.vo.merchant.ChannelEmployeeVO;
 import com.xiliulou.electricity.vo.merchant.MerchantLoginVO;
 import com.xiliulou.security.authentication.JwtTokenManager;
@@ -55,6 +54,9 @@ import java.util.stream.Collectors;
 @Service
 @Slf4j
 public class MerchantTokenServiceImpl implements MerchantTokenService {
+    
+    @Resource
+    private MerchantConfig merchantConfig;
     
     @Resource
     private TenantService tenantService;
@@ -95,23 +97,16 @@ public class MerchantTokenServiceImpl implements MerchantTokenService {
             throw new IllegalArgumentException("缺少xll-sin-client-id请求头");
         }
         
-        Integer tenantId = TenantContextHolder.getTenantId();
         if (!redisService.setNx(CacheConstant.CAHCE_THIRD_OAHTH_KEY + merchantLoginRequest.getCode(), "1", 5000L, false)) {
             return Triple.of(false, null, "操作频繁,请稍后再试");
         }
         
-        ElectricityPayParams electricityPayParams = electricityPayParamsService.queryFromCache(tenantId);
-        if (Objects.isNull(electricityPayParams) || StrUtil.isEmpty(electricityPayParams.getMerchantMinProAppId()) || StrUtil.isEmpty(
-                electricityPayParams.getMerchantMinProAppSecert()) || StrUtil.isEmpty(electricityPayParams.getMerchantAppletId()) || StrUtil.isEmpty(
-                electricityPayParams.getMerchantAppletSecret())) {
-            return Triple.of(false, "100002", "网络不佳，请重试");
-        }
         
         long now = System.currentTimeMillis();
         
         try {
-            String codeUrl = String.format(CacheConstant.WX_MIN_PRO_AUTHORIZATION_CODE_URL, electricityPayParams.getMerchantAppletId(),
-                    electricityPayParams.getMerchantAppletSecret(), merchantLoginRequest.getCode());
+            String codeUrl = String.format(CacheConstant.WX_MIN_PRO_AUTHORIZATION_CODE_URL, merchantConfig.getMerchantAppletId(),
+                    merchantConfig.getMerchantAppletSecret(), merchantLoginRequest.getCode());
             
             String bodyStr = restTemplateService.getForString(codeUrl, null);
             log.info("call wxpro get openId message is {}", bodyStr);
@@ -171,6 +166,8 @@ public class MerchantTokenServiceImpl implements MerchantTokenService {
                 if (Objects.isNull(userBindBusinessDTOS.get(e.getUid()))) {
                     return null;
                 }
+                
+                Integer tenantId = tenant.getId();
                 
                 // 查看是否有绑定的第三方信息,如果没有绑定创建一个
                 Pair<Boolean, List<UserOauthBind>> thirdOauthBindList = wxProThirdAuthenticationService.checkOpenIdExists(result.getOpenid(), tenantId);
