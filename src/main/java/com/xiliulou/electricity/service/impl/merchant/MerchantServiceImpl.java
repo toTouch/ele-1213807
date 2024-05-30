@@ -16,6 +16,7 @@ import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.UserInfo;
+import com.xiliulou.electricity.entity.UserOauthBind;
 import com.xiliulou.electricity.entity.enterprise.EnterpriseChannelUser;
 import com.xiliulou.electricity.entity.enterprise.EnterpriseCloudBeanOrder;
 import com.xiliulou.electricity.entity.enterprise.EnterpriseInfo;
@@ -40,6 +41,7 @@ import com.xiliulou.electricity.query.merchant.MerchantPlaceCabinetBindQueryMode
 import com.xiliulou.electricity.query.merchant.MerchantPlaceMapQueryModel;
 import com.xiliulou.electricity.query.merchant.MerchantPlaceQueryModel;
 import com.xiliulou.electricity.query.merchant.MerchantQueryModel;
+import com.xiliulou.electricity.query.merchant.MerchantUnbindReq;
 import com.xiliulou.electricity.query.merchant.MerchantUserAmountQueryMode;
 import com.xiliulou.electricity.request.merchant.MerchantPageRequest;
 import com.xiliulou.electricity.request.merchant.MerchantSaveRequest;
@@ -64,6 +66,7 @@ import com.xiliulou.electricity.service.merchant.MerchantService;
 import com.xiliulou.electricity.service.merchant.MerchantUserAmountService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
+import com.xiliulou.electricity.utils.OperateRecordUtil;
 import com.xiliulou.electricity.utils.QrCodeUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.enterprise.EnterprisePackageVO;
@@ -79,8 +82,10 @@ import com.xiliulou.electricity.vo.merchant.MerchantVO;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -183,6 +188,9 @@ public class MerchantServiceImpl implements MerchantService {
     
     @Resource
     private UserInfoService userInfoService;
+    
+    @Autowired
+    OperateRecordUtil operateRecordUtil;
     
     /**
      * 商户保存
@@ -1245,6 +1253,11 @@ public class MerchantServiceImpl implements MerchantService {
             });
         }
         
+        //查询openid
+        UserOauthBind userOauthBind = userOauthBindService.queryUserOauthBySysId(merchant.getUid(), merchant.getTenantId());
+        if (!Objects.isNull(userOauthBind) && Objects.nonNull(userOauthBind.getThirdId())){
+            vo.setOpenId(userOauthBind.getThirdId());
+        }
         return Triple.of(true, "", vo);
     }
     
@@ -1559,6 +1572,27 @@ public class MerchantServiceImpl implements MerchantService {
             });
             
         }
+    }
+    
+    @Override
+    @Transactional
+    public Pair<Boolean, Object> unbindOpenId(MerchantUnbindReq params) {
+        UserOauthBind userOauthBind = userOauthBindService.queryOauthByOpenIdAndUid(params.getId(), params.getOpenId(), TenantContextHolder.getTenantId());
+        if (Objects.isNull(userOauthBind)) {
+            return Pair.of(false,"解绑失败,请联系客服处理");
+        }
+        if (!Objects.equals(userOauthBind.getStatus(), UserOauthBind.STATUS_UN_BIND_VX)){
+            return Pair.of(false,"解绑失败,请联系客服处理");
+        }
+        userOauthBind.setStatus(UserOauthBind.STATUS_UN_BIND);
+        userOauthBind.setUpdateTime(System.currentTimeMillis());
+        userOauthBind.setThirdId("");
+        Integer update = userOauthBindService.update(userOauthBind);
+        if (update > 0){
+            operateRecordUtil.record(null,params);
+            return Pair.of(true, "解绑成功");
+        }
+        return Pair.of(false, "解绑失败,请联系客服处理");
     }
     
     @Slave

@@ -99,4 +99,6 @@ public interface UserOauthBindService {
      * @return
      */
     Integer deleteByUid(Long uid, Integer tenantId);
+    
+    UserOauthBind queryOauthByOpenIdAndUid(Long id, String openId,Integer tenantId);
 }
