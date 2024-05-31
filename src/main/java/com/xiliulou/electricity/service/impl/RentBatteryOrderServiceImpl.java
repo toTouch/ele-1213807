@@ -5,7 +5,9 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.RandomUtil;
+import cn.hutool.json.JSONUtil;
 import com.alibaba.excel.EasyExcel;
+import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.google.common.collect.Maps;
@@ -909,6 +911,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
         if (Objects.isNull(cabinetExtra)) {
             throw new BizException("ELECTRICITY.0026", "换电柜异常，不存在的电柜扩展信息");
         }
+        log.info("RentBatteryOrderServiceImpl/findUsableEmptyCellNo, version={}, cabinetExtra is={}", version, JsonUtil.toJson(cabinetExtra));
         
         List<ElectricityCabinetBox> cabinetBoxList = electricityCabinetBoxService.selectEleBoxAttrByEid(eid);
         // 查询空仓数量
