@@ -208,8 +208,10 @@ public class MerchantTokenServiceImpl implements MerchantTokenService {
                 merchantLoginVO.setUserType(e.getUserType());
                 merchantLoginVO.setBusinessInfo(userBindBusinessDTOS.get(e.getUid()).getEnterprisePackageAuth(), userBindBusinessDTOS.get(e.getUid()).getEnterprisePackageAuth());
                 merchantLoginVO.setLockFlag(e.getLockFlag());
-                merchantLoginVO.setTenantId(e.getTenantId().longValue());
+                merchantLoginVO.setTenantId(tenantId.longValue());
                 merchantLoginVO.setTenantName(tenant.getName());
+                merchantLoginVO.setTenantCode(tenant.getCode());
+                merchantLoginVO.setServicePhone(redisService.get(CacheConstant.CACHE_SERVICE_PHONE + tenantId));
                 return merchantLoginVO;
             }).filter(Objects::nonNull).collect(Collectors.toList());
             return Triple.of(true, null, loginVOS);
