@@ -65,6 +65,9 @@
             <if test="protectionTimeUnit != null">
                 protection_time_unit = #{protectionTimeUnit},
             </if>
+            <if test="status != null">
+                status = #{status},
+            </if>
             <if test="delFlag != null">
                 del_flag = #{delFlag},
             </if>
