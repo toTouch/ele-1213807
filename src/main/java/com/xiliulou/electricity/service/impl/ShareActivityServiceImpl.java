@@ -556,8 +556,9 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 					couponCount = couponCount + 1;
 				}
 				couponVO.setCoupon(coupon);
+				getCouponPackage(coupon, couponVO);
 			}
-			getCouponPackage(Long.valueOf(coupon.getId()), couponVO);
+			
 			couponVOList.add(couponVO);
 		}
 
@@ -694,7 +695,7 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 			couponVO.setTriggerCount(shareActivityRule.getTriggerCount());
 			couponVO.setCoupon(coupon);
 			couponVO.setIsGet(CouponVO.IS_CANNOT_RECEIVE);
-			getCouponPackage(Long.valueOf(coupon.getId()), couponVO);
+			getCouponPackage(coupon, couponVO);
 			
 			couponVOList.add(couponVO);
 
@@ -709,7 +710,7 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 			couponVO.setCoupon(coupon);
 			couponVO.setIsGet(CouponVO.IS_NOT_RECEIVE);
 			couponVO.setTriggerCount(shareActivityRule.getTriggerCount());
-			getCouponPackage(Long.valueOf(coupon.getId()), couponVO);
+			getCouponPackage(coupon, couponVO);
 
 			couponVOList.add(couponVO);
 		}
@@ -719,10 +720,14 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 		shareActivityVO.setCouponVOList(couponVOList);
 	}
 	
-	private void getCouponPackage(Long couponId,CouponVO couponVO){
-		if (Objects.isNull(couponId)){
+	private void getCouponPackage(Coupon coupon,CouponVO couponVO){
+		if (Objects.isNull(coupon)) {
 			return;
 		}
+		if (Objects.isNull(coupon.getId())) {
+			return;
+		}
+		Long couponId = Long.valueOf(coupon.getId());
 		
 		List<CouponActivityPackage> packages = couponActivityPackageService.findActivityPackagesByCouponId(couponId);
 		if (CollUtil.isEmpty(packages)){
