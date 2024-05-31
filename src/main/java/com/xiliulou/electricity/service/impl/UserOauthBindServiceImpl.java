@@ -30,6 +30,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Resource;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 /**
  * (UserOauthBind)表服务实现类
@@ -224,6 +225,11 @@ public class UserOauthBindServiceImpl implements UserOauthBindService {
     @Override
     public UserOauthBind queryOauthByOpenIdAndUid(Long id, String openId, Integer tenantId) {
         return userOauthBindMapper.queryOauthByOpenIdAndUid(id, openId, tenantId);
+    }
+    
+    @Override
+    public List<UserOauthBind> queryOpenIdListByUidsAndTenantId(List<Long> longs, Integer tenantId) {
+        return userOauthBindMapper.selectOpenIdListByUidsAndTenantId(longs, tenantId);
     }
     
     @Override

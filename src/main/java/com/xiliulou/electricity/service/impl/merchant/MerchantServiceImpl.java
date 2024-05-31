@@ -1581,14 +1581,8 @@ public class MerchantServiceImpl implements MerchantService {
         if (Objects.isNull(userOauthBind)) {
             return Pair.of(false,"解绑失败,请联系客服处理");
         }
-        if (Objects.equals(userOauthBind.getStatus(), UserOauthBind.STATUS_UN_BIND_VX)){
-            return Pair.of(false,"解绑失败,请联系客服处理");
-        }
-        userOauthBind.setStatus(UserOauthBind.STATUS_UN_BIND);
-        userOauthBind.setUpdateTime(System.currentTimeMillis());
-        userOauthBind.setThirdId("");
-        Integer update = userOauthBindService.update(userOauthBind);
-        if (update > 0){
+        boolean delete = userOauthBindService.deleteById(userOauthBind.getId());
+        if (delete){
             operateRecordUtil.record(null,params);
             return Pair.of(true, "解绑成功");
         }

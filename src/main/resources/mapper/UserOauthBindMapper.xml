@@ -122,6 +122,13 @@
         id, uid, source, third_id, third_nick, access_token, refresh_token, status, create_time, update_time,phone
         from t_user_oauth_bind where third_id = #{openId} and uid=#{id} and tenant_id = #{tenantId}
     </select>
+    <select id="selectOpenIdListByUidsAndTenantId" resultType="com.xiliulou.electricity.entity.UserOauthBind">
+        select uid,third_id from t_user_oauth_bind where uid in
+        <foreach collection="uids" item="uid" open="(" separator="," close=")">
+            #{uid}
+        </foreach>
+        and tenant_id = #{tenantId}
+    </select>
     
     <delete id="deleteByUid">
         delete from t_user_oauth_bind where uid = #{uid} and tenant_id = #{tenantId}

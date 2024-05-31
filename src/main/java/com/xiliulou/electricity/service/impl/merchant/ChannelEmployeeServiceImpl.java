@@ -9,6 +9,7 @@ import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.constant.merchant.MerchantConstant;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.User;
+import com.xiliulou.electricity.entity.UserOauthBind;
 import com.xiliulou.electricity.entity.merchant.ChannelEmployee;
 import com.xiliulou.electricity.entity.merchant.ChannelEmployeeAmount;
 import com.xiliulou.electricity.entity.merchant.Merchant;
@@ -39,8 +40,12 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * @author BaoYu
@@ -123,6 +128,25 @@ public class ChannelEmployeeServiceImpl implements ChannelEmployeeService {
     public List<ChannelEmployeeVO> listChannelEmployee(ChannelEmployeeRequest channelEmployeeRequest) {
         
         List<ChannelEmployeeVO> channelEmployees = channelEmployeeMapper.selectListByCondition(channelEmployeeRequest);
+        //查询openId
+        if (!CollectionUtils.isEmpty(channelEmployees)){
+            Set<Long> longs = channelEmployees.parallelStream().filter(Objects::nonNull).map(ChannelEmployeeVO::getUid).collect(
+                    Collectors.toSet());
+            List<UserOauthBind> openIds=userOauthBindService.queryOpenIdListByUidsAndTenantId(new ArrayList<>(longs), TenantContextHolder.getTenantId());
+            
+            //将查询出来的openid集合与channelEmployees集合进行匹配
+            if (!CollectionUtils.isEmpty(openIds)){
+                Map<Long, String> openIdMap = openIds.parallelStream().collect(Collectors.toMap(UserOauthBind::getUid, UserOauthBind::getThirdId, (k1, k2) -> k2));
+                channelEmployees.parallelStream().forEach(channelEmployeeVO -> {
+                    String openId = openIdMap.get(channelEmployeeVO.getUid());
+                    if (Objects.nonNull(openId)){
+                        channelEmployeeVO.setOpenId(openId);
+                    }
+                });
+            }
+        }
+        
+        
         
         channelEmployees.parallelStream().forEach(item -> {
             

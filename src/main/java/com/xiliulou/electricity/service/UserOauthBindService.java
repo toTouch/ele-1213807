@@ -3,8 +3,10 @@ package com.xiliulou.electricity.service;
 import com.xiliulou.electricity.entity.UserOauthBind;
 import com.xiliulou.electricity.web.query.OauthBindQuery;
 import org.apache.commons.lang3.tuple.Pair;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * (UserOauthBind)表服务接口
@@ -101,4 +103,6 @@ public interface UserOauthBindService {
     Integer deleteByUid(Long uid, Integer tenantId);
     
     UserOauthBind queryOauthByOpenIdAndUid(Long id, String openId,Integer tenantId);
+    
+    List<UserOauthBind> queryOpenIdListByUidsAndTenantId(List<Long> longs, Integer tenantId);
 }
