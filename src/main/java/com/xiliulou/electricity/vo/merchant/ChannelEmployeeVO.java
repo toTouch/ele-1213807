@@ -41,4 +41,5 @@ public class ChannelEmployeeVO {
     
     private Long updateTime;
     
+    private String openId;
 }

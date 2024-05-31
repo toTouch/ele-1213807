@@ -46,9 +46,11 @@
                 tce.del_flag,
                 tce.remark,
                 tce.create_time,
-                tce.update_time
+                tce.update_time,
+                tuo.third_id as openId
         from t_channel_employee tce
         left join t_user tu on tu.uid = tce.uid
+        left join t_user_oauth_bind tuo on tuo.uid = tu.uid
         <where>
             tce.del_flag = 0
             <if test="id != null">
