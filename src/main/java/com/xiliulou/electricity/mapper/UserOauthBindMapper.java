@@ -5,6 +5,7 @@ import com.xiliulou.electricity.entity.UserOauthBind;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * (UserOauthBind)表数据库访问层
@@ -54,4 +55,6 @@ public interface UserOauthBindMapper extends BaseMapper<UserOauthBind> {
     Integer deleteByUid(@Param("uid") Long uid, @Param("tenantId") Integer tenantId);
     
     UserOauthBind queryOauthByOpenIdAndUid(@Param("id") Long id, @Param("openId") String openId, @Param("tenantId") Integer tenantId);
+    
+    List<UserOauthBind> selectOpenIdListByUidsAndTenantId(@Param("uids") List<Long> longs,@Param("tenantId") Integer tenantId);
 }
