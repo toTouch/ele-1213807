@@ -278,5 +278,32 @@
             (#{item.electricityCabinetId}, #{item.cellNo}, #{item.createTime}, #{item.updateTime}, #{item.delFlag}, #{item.tenantId})
         </foreach>
     </insert>
+    
+    <select id="selectAllBoxByBatteryId" resultType="com.xiliulou.electricity.entity.ElectricityCabinetBox">
+        SELECT id,
+               electricity_cabinet_id,
+               cell_no,
+               sn,
+               usable_status,
+               status,
+               is_lock,
+               is_fan,
+               is_heat,
+               is_light,
+               create_time,
+               update_time,
+               del_flag,
+               tenant_id,
+               temperature,
+               battery_type,
+               charge_v,
+               charge_a,
+               version,
+               lock_type,
+               empty_grid_start_time
+        FROM t_electricity_cabinet_box
+        WHERE electricity_cabinet_id = #{eid}
+          AND del_flag = 0
+    </select>
 
 </mapper>

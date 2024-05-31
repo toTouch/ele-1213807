@@ -234,6 +234,7 @@ import java.util.stream.Collectors;
 
 import static com.xiliulou.electricity.constant.ElectricityIotConstant.ELE_COMMAND_CELL_UPDATE;
 import static com.xiliulou.electricity.entity.ElectricityCabinet.ELECTRICITY_CABINET_USABLE_STATUS;
+import static com.xiliulou.electricity.entity.ElectricityCabinetBox.ELECTRICITY_CABINET_BOX_USABLE;
 import static com.xiliulou.electricity.entity.ElectricityCabinetBox.STATUS_ELECTRICITY_BATTERY;
 import static com.xiliulou.electricity.entity.ElectricityCabinetBox.STATUS_NO_ELECTRICITY_BATTERY;
 import static com.xiliulou.electricity.entity.ElectricityCabinetExtra.EFFECT_ROWS_ZERO;
@@ -1253,14 +1254,25 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         return R.ok(resultVo.stream().sorted(Comparator.comparing(ElectricityCabinetSimpleVO::getDistance)).collect(Collectors.toList()));
     }
     
+    /**
+     *
+     * @param eid
+     * @param exchangeableList： 可换电标准集合
+     * @param cabinetBoxList：所有的格挡
+     * @return
+     */
     private List<Integer> electricityCabinetLabelHandler(Integer eid, List<ElectricityCabinetBox> exchangeableList, List<ElectricityCabinetBox> cabinetBoxList) {
         List<Integer> label = CollUtil.newArrayList();
         
-        // 查询空仓数量
-        List<ElectricityCabinetBox> emptyCellList = cabinetBoxList.stream().filter(e -> Objects.equals(e.getStatus(), STATUS_NO_ELECTRICITY_BATTERY)).collect(Collectors.toList());
+        // 查询可用的空仓数量
+        List<ElectricityCabinetBox> emptyCellList = cabinetBoxList.stream()
+                .filter(e -> (Objects.equals(e.getUsableStatus(), ELECTRICITY_CABINET_BOX_USABLE) && Objects.equals(e.getStatus(), STATUS_NO_ELECTRICITY_BATTERY)))
+                .collect(Collectors.toList());
         
-        // 退电的电池数量
-        List<ElectricityCabinetBox> haveBatteryCellList = cabinetBoxList.stream().filter(e -> Objects.equals(e.getStatus(), STATUS_ELECTRICITY_BATTERY)).collect(Collectors.toList());
+        // 可用的在仓电池数
+        List<ElectricityCabinetBox> haveBatteryCellList = cabinetBoxList.stream()
+                .filter(e -> (Objects.equals(e.getUsableStatus(), ELECTRICITY_CABINET_BOX_USABLE) && Objects.equals(e.getStatus(), STATUS_ELECTRICITY_BATTERY))).collect(
+                        Collectors.toList());
         
         
         //可换电数量,可换电池数>=1 && 必须有一个空仓
@@ -1292,8 +1304,12 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 label.add(IS_RETURN);
             }
         } else {
+            // 不可用 || 有电池的格挡数
+            List<ElectricityCabinetBox> notUseAndInBoxList = cabinetBoxList.stream()
+                    .filter(e -> (Objects.equals(e.getUsableStatus(), ELECTRICITY_CABINET_BOX_USABLE) || Objects.equals(e.getStatus(), STATUS_ELECTRICITY_BATTERY)))
+                    .collect(Collectors.toList());
             // 最少保留电池数量设置为有限制数量时，柜内符合可换电标准的电池＞=设置的数量 && 仓数为0不可退电
-            if (CollUtil.isNotEmpty(emptyCellList) && haveBatteryCellList.size() <= cabinetExtra.getMaxRetainBatteryCount()) {
+            if (CollUtil.isNotEmpty(emptyCellList) && notUseAndInBoxList.size() <= cabinetExtra.getMaxRetainBatteryCount()) {
                 label.add(IS_RETURN);
             }
         }
@@ -1330,12 +1346,14 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 }
             }
         }
-        List<ElectricityCabinetBox> cabinetBoxList = electricityCabinetBoxService.selectEleBoxAttrByEid(e.getId());
+        
+        List<ElectricityCabinetBox> cabinetBoxList = electricityCabinetBoxService.selectAllBoxByBatteryId(e.getId());
         if (CollectionUtils.isEmpty(cabinetBoxList)) {
             return e;
         }
-        //可换电数量
-        List<ElectricityCabinetBox> exchangeableList = cabinetBoxList.stream().filter(item -> isExchangeable(item, fullyCharged)).collect(Collectors.toList());
+        // 可换电数量=可用+可换电标准
+        List<ElectricityCabinetBox> exchangeableList = cabinetBoxList.stream()
+                .filter(item -> (Objects.equals(item.getUsableStatus(), ELECTRICITY_CABINET_BOX_USABLE) && isExchangeable(item, fullyCharged))).collect(Collectors.toList());
         long exchangeableNumber = exchangeableList.size();
         e.setFullyElectricityBattery((int) exchangeableNumber);//兼容2.0小程序首页显示问题
         
