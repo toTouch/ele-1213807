@@ -905,11 +905,6 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
     }
     
     private Pair<Boolean, Integer> findUsableEmptyCellNo(Integer eid,Double fullyCharged,String version){
-        //旧版本仍走旧分配逻辑
-        if (StringUtils.isNotBlank(version) && VersionUtil.compareVersion(ELE_CABINET_VERSION, version) > 0) {
-            return electricityCabinetService.findUsableEmptyCellNo(eid);
-        }
-        
         ElectricityCabinetExtra cabinetExtra = electricityCabinetExtraService.queryByEidFromCache(Long.valueOf(eid));
         if (Objects.isNull(cabinetExtra)) {
             throw new BizException("ELECTRICITY.0026", "换电柜异常，不存在的电柜扩展信息");
@@ -924,12 +919,19 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
         
         if (Objects.nonNull(cabinetExtra.getMaxRetainBatteryCount())) {
             // 退电的电池数量
-            List<ElectricityCabinetBox> haveBatteryCellList = cabinetBoxList.stream().filter(e -> Objects.equals(e.getStatus(), STATUS_ELECTRICITY_BATTERY)).collect(Collectors.toList());
+            List<ElectricityCabinetBox> haveBatteryCellList = cabinetBoxList.stream().filter(e -> Objects.equals(e.getStatus(), STATUS_ELECTRICITY_BATTERY))
+                    .collect(Collectors.toList());
             // 在仓电池数高于限值 或者 没有空仓
             if (haveBatteryCellList.size() > cabinetExtra.getMaxRetainBatteryCount()) {
                 throw new BizException("ELECTRICITY.0026", "在仓电池数高于限值，暂无法退电，请选择其他柜机!");
             }
         }
+        
+        //旧版本仍走旧分配逻辑
+        if (StringUtils.isNotBlank(version) && VersionUtil.compareVersion(ELE_CABINET_VERSION, version) > 0) {
+            return electricityCabinetService.findUsableEmptyCellNo(eid);
+        }
+        
         
         Integer cellNo = null;
         //可用格挡只有一个默认直接分配
