@@ -300,6 +300,7 @@
                charge_a,
                version,
                lock_type,
+               power,
                empty_grid_start_time
         FROM t_electricity_cabinet_box
         WHERE electricity_cabinet_id = #{eid}

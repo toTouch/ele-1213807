@@ -1347,18 +1347,21 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             }
         }
         
-        List<ElectricityCabinetBox> cabinetBoxList = electricityCabinetBoxService.selectAllBoxByBatteryId(e.getId());
+        List<ElectricityCabinetBox> allBoxList = electricityCabinetBoxService.selectAllBoxByBatteryId(e.getId());
+        List<ElectricityCabinetBox> cabinetBoxList = allBoxList.stream().filter(t -> Objects.equals(t.getUsableStatus(), ELECTRICITY_CABINET_BOX_USABLE))
+                .collect(Collectors.toList());
         if (CollectionUtils.isEmpty(cabinetBoxList)) {
             return e;
         }
+        
         // 可换电数量=可用+可换电标准
-        List<ElectricityCabinetBox> exchangeableList = cabinetBoxList.stream()
-                .filter(item -> (Objects.equals(item.getUsableStatus(), ELECTRICITY_CABINET_BOX_USABLE) && isExchangeable(item, fullyCharged))).collect(Collectors.toList());
+        // 可换电数量=可换电标准
+        List<ElectricityCabinetBox> exchangeableList = cabinetBoxList.stream().filter(item -> isExchangeable(item, fullyCharged)).collect(Collectors.toList());
         long exchangeableNumber = exchangeableList.size();
         e.setFullyElectricityBattery((int) exchangeableNumber);//兼容2.0小程序首页显示问题
         
         // 筛选可换、可租、可退标签返回
-        e.setLabel(electricityCabinetLabelHandler(e.getId(), exchangeableList, cabinetBoxList));
+        e.setLabel(electricityCabinetLabelHandler(e.getId(), exchangeableList, allBoxList));
         return e;
     }
     
