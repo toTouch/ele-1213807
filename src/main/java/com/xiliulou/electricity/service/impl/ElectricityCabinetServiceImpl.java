@@ -234,6 +234,7 @@ import java.util.stream.Collectors;
 
 import static com.xiliulou.electricity.constant.ElectricityIotConstant.ELE_COMMAND_CELL_UPDATE;
 import static com.xiliulou.electricity.entity.ElectricityCabinet.ELECTRICITY_CABINET_USABLE_STATUS;
+import static com.xiliulou.electricity.entity.ElectricityCabinetBox.ELECTRICITY_CABINET_BOX_UN_USABLE;
 import static com.xiliulou.electricity.entity.ElectricityCabinetBox.ELECTRICITY_CABINET_BOX_USABLE;
 import static com.xiliulou.electricity.entity.ElectricityCabinetBox.STATUS_ELECTRICITY_BATTERY;
 import static com.xiliulou.electricity.entity.ElectricityCabinetBox.STATUS_NO_ELECTRICITY_BATTERY;
@@ -1306,7 +1307,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         } else {
             // 不可用 || 有电池的格挡数
             List<ElectricityCabinetBox> notUseAndInBoxList = cabinetBoxList.stream()
-                    .filter(e -> (Objects.equals(e.getUsableStatus(), ELECTRICITY_CABINET_BOX_USABLE) || Objects.equals(e.getStatus(), STATUS_ELECTRICITY_BATTERY)))
+                    .filter(e -> (Objects.equals(e.getUsableStatus(), ELECTRICITY_CABINET_BOX_UN_USABLE) || Objects.equals(e.getStatus(), STATUS_ELECTRICITY_BATTERY)))
                     .collect(Collectors.toList());
             // 最少保留电池数量设置为有限制数量时，柜内符合可换电标准的电池＞=设置的数量 && 仓数为0不可退电
             if (CollUtil.isNotEmpty(emptyCellList) && notUseAndInBoxList.size() <= cabinetExtra.getMaxRetainBatteryCount()) {
