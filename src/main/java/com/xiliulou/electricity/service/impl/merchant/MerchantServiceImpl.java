@@ -92,6 +92,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Resource;
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -1583,6 +1584,8 @@ public class MerchantServiceImpl implements MerchantService {
         }
         boolean delete = userOauthBindService.deleteById(userOauthBind.getId());
         if (delete){
+            //强制下线
+            userInfoService.clearUserOauthBindToken(List.of(userOauthBind));
             operateRecordUtil.record(null,params);
             return Pair.of(true, "解绑成功");
         }
