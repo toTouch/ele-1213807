@@ -6,7 +6,6 @@ import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.thread.XllThreadPoolExecutorService;
 import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.core.utils.DataUtil;
-import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.constant.merchant.MerchantEleChargeConfigRecordConstant;
@@ -37,11 +36,13 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import lombok.extern.slf4j.Slf4j;
@@ -76,6 +77,9 @@ public class EleChargeConfigServiceImpl implements EleChargeConfigService {
     private EleChargeConfigRecordService eleChargeConfigRecordService;
 
     static DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("H");
+    
+    private static final List<Function<EleChargeConfig, ?>> COMPARE_PROPERTIES = Arrays.asList(EleChargeConfig::getId, EleChargeConfig::getName, EleChargeConfig::getTenantId,
+            EleChargeConfig::getFranchiseeId, EleChargeConfig::getStoreId, EleChargeConfig::getEid, EleChargeConfig::getType, EleChargeConfig::getJsonRule);
 
     /**
      * 通过ID查询单条数据从DB
@@ -368,20 +372,27 @@ public class EleChargeConfigServiceImpl implements EleChargeConfigService {
             update(updateConfig, config);
     
             executorService.execute(() -> {
-                EleChargeConfigRecord record = new EleChargeConfigRecord();
-                BeanUtil.copyProperties(updateConfig, record);
-                record.setOperationType(MerchantEleChargeConfigRecordConstant.OPERATION_TYPE_UPDATE);
-                record.setOperationTime(System.currentTimeMillis());
-                record.setOperator(Optional.ofNullable(SecurityUtils.getUserInfo()).map(TokenUser::getUid).orElse(NumberConstant.ZERO_L));
-                record.setCreateTime(config.getCreateTime());
-                record.setConfigId(config.getId());
-    
-                eleChargeConfigRecordService.insertOne(record);
+                // 配置不同时才增加记录
+                if (areDiffConfig(config, updateConfig)) {
+                    EleChargeConfigRecord record = new EleChargeConfigRecord();
+                    BeanUtil.copyProperties(updateConfig, record);
+                    record.setOperationType(MerchantEleChargeConfigRecordConstant.OPERATION_TYPE_UPDATE);
+                    record.setOperationTime(System.currentTimeMillis());
+                    record.setOperator(Optional.ofNullable(SecurityUtils.getUserInfo()).map(TokenUser::getUid).orElse(NumberConstant.ZERO_L));
+                    record.setCreateTime(config.getCreateTime());
+                    record.setConfigId(config.getId());
+            
+                    eleChargeConfigRecordService.insertOne(record);
+                }
             });
         } finally {
             redisService.delete(CacheConstant.CACHE_CHARGE_CONFIG_OPERATE_LIMIT + TenantContextHolder.getTenantId());
         }
         return Pair.of(true, null);
+    }
+    
+    private Boolean areDiffConfig(EleChargeConfig oldConfig, EleChargeConfig newConfig) {
+        return COMPARE_PROPERTIES.stream().anyMatch(property -> !Objects.equals(property.apply(oldConfig), property.apply(newConfig)));
     }
 
     @Override
