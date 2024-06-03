@@ -155,6 +155,7 @@
             and usable_status = 0
             and del_flag = 0
             and status = 0
+            and is_lock = 1
             and power &gt;= #{fullV}
             <if test="type != null and type!= ''">
                 and battery_type = #{type}
