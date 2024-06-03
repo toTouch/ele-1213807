@@ -200,7 +200,7 @@ public class MerchantTokenServiceImpl implements MerchantTokenService {
                 }
                 
                 String token = jwtTokenManager.createToken(clientId, e.getUserType(),
-                        new TokenUser(e.getUid(), e.getPhone(), e.getName(), e.getUserType(), e.getDataType(), e.getTenantId()), now);
+                        new TokenUser(e.getUid(), e.getPhone(), result.getOpenid(), e.getUserType(), e.getDataType(), e.getTenantId()), now);
                 
                 MerchantLoginVO merchantLoginVO = new MerchantLoginVO();
                 merchantLoginVO.setPhone(e.getPhone());
