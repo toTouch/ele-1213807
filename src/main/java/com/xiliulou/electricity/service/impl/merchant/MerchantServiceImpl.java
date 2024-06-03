@@ -1585,7 +1585,7 @@ public class MerchantServiceImpl implements MerchantService {
         boolean delete = userOauthBindService.deleteById(userOauthBind.getId());
         if (delete){
             //强制下线
-            userInfoService.clearUserOauthBindToken(List.of(userOauthBind));
+            userInfoService.clearUserOauthBindToken(List.of(userOauthBind), CacheConstant.MERCHANT_CLIENT_ID);
             operateRecordUtil.record(null,params);
             return Pair.of(true, "解绑成功");
         }

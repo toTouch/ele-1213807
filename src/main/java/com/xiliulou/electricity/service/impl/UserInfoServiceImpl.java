@@ -2260,7 +2260,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             // 解绑微信成功后 强制用户重新登录
             List<UserOauthBind> userOauthBinds = userOauthBindService.queryListByUid(uid);
             if (DataUtil.collectionIsUsable(userOauthBinds)) {
-                clearUserOauthBindToken(userOauthBinds);
+                clearUserOauthBindToken(userOauthBinds, CacheConstant.CLIENT_ID);
             }
             DbUtils.dbOperateSuccessThenHandleCache(
                     userOauthBindService.updateOpenIdByUid(StringUtils.EMPTY, UserOauthBind.STATUS_UN_BIND, userOauthBind.getUid(), TenantContextHolder.getTenantId()), i -> {
@@ -2278,13 +2278,18 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         return R.ok();
     }
     
-    public void clearUserOauthBindToken(List<UserOauthBind> userOauthBinds) {
-        userOauthBinds.parallelStream().forEach(e -> {
+    public void clearUserOauthBindToken(List<UserOauthBind> userOauthBinds, String clientId) {
+        if (StringUtils.isBlank(clientId)) {
+            clientId = CacheConstant.CLIENT_ID;
+        }
+        
+        String finalClientId = clientId;
+        userOauthBinds.stream().forEach(e -> {
             String thirdId = e.getThirdId();
-            List<String> tokens = redisService.getWithList(TokenConstant.CACHE_LOGIN_TOKEN_LIST_KEY + CacheConstant.CLIENT_ID + e.getTenantId() + ":" + thirdId, String.class);
+            List<String> tokens = redisService.getWithList(TokenConstant.CACHE_LOGIN_TOKEN_LIST_KEY + finalClientId + e.getTenantId() + ":" + thirdId, String.class);
             if (DataUtil.collectionIsUsable(tokens)) {
                 tokens.stream().forEach(s -> {
-                    redisService.delete(TokenConstant.CACHE_LOGIN_TOKEN_KEY + CacheConstant.CLIENT_ID + s);
+                    redisService.delete(TokenConstant.CACHE_LOGIN_TOKEN_KEY + finalClientId + s);
                 });
             }
         });
@@ -2335,7 +2340,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         // 更新成功后 强制用户重新登录
         List<UserOauthBind> userOauthBinds = userOauthBindService.queryListByUid(uid);
         if (DataUtil.collectionIsUsable(userOauthBinds)) {
-            clearUserOauthBindToken(userOauthBinds);
+            clearUserOauthBindToken(userOauthBinds, CacheConstant.CLIENT_ID);
         }
         
         userOauthBindService.updatePhoneByUid(TenantContextHolder.getTenantId(), uid, phone);

@@ -200,5 +200,5 @@ public interface UserInfoService extends IService<UserInfo> {
      * </p>
      * @param userOauthBinds userOauthBinds
     */
-    void clearUserOauthBindToken(List<UserOauthBind> userOauthBinds);
+    void clearUserOauthBindToken(List<UserOauthBind> userOauthBinds, String clientId);
 }
