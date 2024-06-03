@@ -156,7 +156,7 @@ public class MerchantTokenServiceImpl implements MerchantTokenService {
             List<User> merchantUser = users.stream().filter((user -> User.TYPE_USER_MERCHANT.equals(user.getUserType()) || User.TYPE_USER_CHANNEL.equals(user.getUserType())))
                     .collect(Collectors.toList());
             
-            List<MerchantLoginVO> loginVOS = merchantUser.parallelStream().map(e -> {
+            List<MerchantLoginVO> loginVOS = merchantUser.stream().map(e -> {
                 Tenant tenant = tenantService.queryByIdFromCache(e.getTenantId());
                 if (ObjectUtils.isEmpty(tenant) || Tenant.STA_OUT.equals(tenant.getStatus()) || tenant.getExpireTime() <= now) {
                     log.warn("merchant login skip. The tenant info warn. tenant_id is {}", e.getTenantId());
