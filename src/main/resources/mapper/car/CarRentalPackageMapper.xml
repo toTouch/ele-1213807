@@ -302,7 +302,7 @@
             <if test=" giveCoupon != null ">, `give_coupon` = #{giveCoupon}</if>
             <if test=" couponId != null ">, `coupon_id` = #{couponId}</if>
             <if test=" couponArrays != null and couponArrays != '' ">, `coupon_arrays` = #{couponArrays}</if>
-            <if test=" remark != null and remark != '' ">, `remark` = #{remark}</if>
+            <if test=" remark != null ">, `remark` = #{remark}</if>
             <if test=" userGroupIds != null and userGroupIds != '' ">, `user_group_ids` = #{userGroupIds}</if>
             <if test=" isUserGroup != null  ">, `is_user_group` = #{isUserGroup}</if>
         </set>

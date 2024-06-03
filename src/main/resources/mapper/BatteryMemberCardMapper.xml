@@ -541,7 +541,7 @@
             <if test="serviceCharge != null">
                 service_charge = #{serviceCharge},
             </if>
-            <if test="remark != null and remark != ''">
+            <if test="remark != null">
                 remark = #{remark},
             </if>
             <if test="businessType != null">
