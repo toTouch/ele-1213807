@@ -156,6 +156,7 @@ public class MerchantTokenServiceImpl implements MerchantTokenService {
             List<User> merchantUser = users.stream().filter((user -> User.TYPE_USER_MERCHANT.equals(user.getUserType()) || User.TYPE_USER_CHANNEL.equals(user.getUserType())))
                     .collect(Collectors.toList());
             
+            String openid = result.getOpenid();
             List<MerchantLoginVO> loginVOS = merchantUser.stream().map(e -> {
                 Tenant tenant = tenantService.queryByIdFromCache(e.getTenantId());
                 if (ObjectUtils.isEmpty(tenant) || Tenant.STA_OUT.equals(tenant.getStatus()) || tenant.getExpireTime() <= now) {
@@ -170,22 +171,22 @@ public class MerchantTokenServiceImpl implements MerchantTokenService {
                 Integer tenantId = tenant.getId();
                 
                 // 查看是否有绑定的第三方信息,如果没有绑定创建一个
-                Pair<Boolean, List<UserOauthBind>> thirdOauthBindList = wxProThirdAuthenticationService.checkOpenIdExists(result.getOpenid(), tenantId);
+                Pair<Boolean, List<UserOauthBind>> thirdOauthBindList = wxProThirdAuthenticationService.checkOpenIdExists(openid, tenantId);
                 if (!thirdOauthBindList.getLeft()) {
                     List<UserOauthBind> userOauthBindByUidList = userOauthBindService.queryListByUid(e.getUid());
-                    if (CollectionUtils.isNotEmpty(userOauthBindByUidList) && userOauthBindByUidList.stream().anyMatch(n -> !result.getOpenid().equals(n.getThirdId()))) {
+                    if (CollectionUtils.isNotEmpty(userOauthBindByUidList) && userOauthBindByUidList.stream().anyMatch(n -> !openid.equals(n.getThirdId()))) {
                         log.warn("merchant token login warning. the uid is bind other third id. uid is {}", e.getUid());
                         throw new CustomBusinessException("该账号已绑定过微信，无法直接登录，如需使用该微信登录，请先联系客服解除绑定");
                     }
                     
                     UserOauthBind oauthBind = UserOauthBind.builder().createTime(now).updateTime(now).phone(wxMinProPhoneResultDTO.getPurePhoneNumber()).uid(e.getUid())
-                            .accessToken("").refreshToken("").thirdNick("").tenantId(tenantId).thirdId(result.getOpenid()).source(UserOauthBind.SOURCE_WX_PRO)
+                            .accessToken("").refreshToken("").thirdNick("").tenantId(tenantId).thirdId(openid).source(UserOauthBind.SOURCE_WX_PRO)
                             .status(UserOauthBind.STATUS_BIND).build();
                     userOauthBindService.insert(oauthBind);
                 } else {
                     UserOauthBind userOauthBind = userOauthBindService.queryUserOauthBySysId(e.getUid(), tenantId);
                     
-                    if (ObjectUtils.isNotEmpty(userOauthBind) && !result.getOpenid().equals(userOauthBind.getThirdId())) {
+                    if (ObjectUtils.isNotEmpty(userOauthBind) && !openid.equals(userOauthBind.getThirdId())) {
                         log.warn("merchant token login warning. the uid is bind other third id. uid is {}", e.getUid());
                         throw new CustomBusinessException("该账号已绑定过微信，无法直接登录，如需使用该微信登录，请先联系客服解除绑定");
                     }
@@ -193,14 +194,14 @@ public class MerchantTokenServiceImpl implements MerchantTokenService {
                     if (ObjectUtils.isEmpty(userOauthBind)) {
                         // 同一个 open_id 绑定多个账号
                         UserOauthBind oauthBind = UserOauthBind.builder().createTime(now).updateTime(now).phone(wxMinProPhoneResultDTO.getPurePhoneNumber()).uid(e.getUid())
-                                .accessToken("").refreshToken("").thirdNick("").tenantId(tenantId).thirdId(result.getOpenid()).source(UserOauthBind.SOURCE_WX_PRO)
+                                .accessToken("").refreshToken("").thirdNick("").tenantId(tenantId).thirdId(openid).source(UserOauthBind.SOURCE_WX_PRO)
                                 .status(UserOauthBind.STATUS_BIND).build();
                         userOauthBindService.insert(oauthBind);
                     }
                 }
                 
                 String token = jwtTokenManager.createToken(clientId, e.getUserType(),
-                        new TokenUser(e.getUid(), e.getPhone(), result.getOpenid(), e.getUserType(), e.getDataType(), e.getTenantId()), now);
+                        new TokenUser(e.getUid(), e.getPhone(), openid, e.getUserType(), e.getDataType(), e.getTenantId()), now);
                 
                 MerchantLoginVO merchantLoginVO = new MerchantLoginVO();
                 merchantLoginVO.setPhone(e.getPhone());
