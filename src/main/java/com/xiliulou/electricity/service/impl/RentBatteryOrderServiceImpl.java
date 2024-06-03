@@ -5,7 +5,9 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.RandomUtil;
+import cn.hutool.json.JSONUtil;
 import com.alibaba.excel.EasyExcel;
+import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.google.common.collect.Maps;
@@ -129,6 +131,8 @@ import java.util.Optional;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
 
+import static com.xiliulou.electricity.entity.ElectricityCabinetBox.ELECTRICITY_CABINET_BOX_UN_USABLE;
+import static com.xiliulou.electricity.entity.ElectricityCabinetBox.ELECTRICITY_CABINET_BOX_USABLE;
 import static com.xiliulou.electricity.entity.ElectricityCabinetBox.STATUS_ELECTRICITY_BATTERY;
 import static com.xiliulou.electricity.entity.ElectricityCabinetBox.STATUS_NO_ELECTRICITY_BATTERY;
 
@@ -920,31 +924,38 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
     }
     
     private Pair<Boolean, Integer> findUsableEmptyCellNo(Integer eid,Double fullyCharged,String version){
-        //旧版本仍走旧分配逻辑
-        if (StringUtils.isNotBlank(version) && VersionUtil.compareVersion(ELE_CABINET_VERSION, version) > 0) {
-            return electricityCabinetService.findUsableEmptyCellNo(eid);
-        }
-        
         ElectricityCabinetExtra cabinetExtra = electricityCabinetExtraService.queryByEidFromCache(Long.valueOf(eid));
         if (Objects.isNull(cabinetExtra)) {
             throw new BizException("ELECTRICITY.0026", "换电柜异常，不存在的电柜扩展信息");
         }
+        log.info("RentBatteryOrderServiceImpl/findUsableEmptyCellNo, version={}, cabinetExtra is={}", version, JsonUtil.toJson(cabinetExtra));
         
-        List<ElectricityCabinetBox> cabinetBoxList = electricityCabinetBoxService.selectEleBoxAttrByEid(eid);
-        // 查询空仓数量
-        List<ElectricityCabinetBox> emptyCellList = cabinetBoxList.stream().filter(e -> Objects.equals(e.getStatus(), STATUS_NO_ELECTRICITY_BATTERY)).collect(Collectors.toList());
+        List<ElectricityCabinetBox> box = electricityCabinetBoxService.selectAllBoxByBatteryId(eid);
+        // 查询空仓 && 格挡未禁用 的数量
+        List<ElectricityCabinetBox> emptyCellList = box.stream()
+                .filter(e -> (Objects.equals(e.getUsableStatus(), ELECTRICITY_CABINET_BOX_USABLE) && Objects.equals(e.getStatus(), STATUS_NO_ELECTRICITY_BATTERY)))
+                .collect(Collectors.toList());
+        
         if (CollUtil.isEmpty(emptyCellList)) {
             throw new BizException("ELECTRICITY.0026", "当前无空余格挡可供退电，请联系客服！");
         }
         
         if (Objects.nonNull(cabinetExtra.getMaxRetainBatteryCount())) {
-            // 退电的电池数量
-            List<ElectricityCabinetBox> haveBatteryCellList = cabinetBoxList.stream().filter(e -> Objects.equals(e.getStatus(), STATUS_ELECTRICITY_BATTERY)).collect(Collectors.toList());
+            // 在仓电池数+限制的格子 和 阀值比较
+            List<ElectricityCabinetBox> haveBatteryAndUnableBox = box.stream()
+                    .filter(e -> (Objects.equals(e.getStatus(), STATUS_ELECTRICITY_BATTERY) || Objects.equals(e.getUsableStatus(), ELECTRICITY_CABINET_BOX_UN_USABLE)))
+                    .collect(Collectors.toList());
             // 在仓电池数高于限值 或者 没有空仓
-            if (haveBatteryCellList.size() > cabinetExtra.getMaxRetainBatteryCount()) {
+            if (haveBatteryAndUnableBox.size() > cabinetExtra.getMaxRetainBatteryCount()) {
                 throw new BizException("ELECTRICITY.0026", "在仓电池数高于限值，暂无法退电，请选择其他柜机!");
             }
         }
+        
+        //旧版本仍走旧分配逻辑
+        if (StringUtils.isNotBlank(version) && VersionUtil.compareVersion(ELE_CABINET_VERSION, version) > 0) {
+            return electricityCabinetService.findUsableEmptyCellNo(eid);
+        }
+        
         
         Integer cellNo = null;
         //可用格挡只有一个默认直接分配
@@ -1739,7 +1750,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
             return R.fail("ELECTRICITY.0006", "未找到此仓门");
         }
         
-        if (Objects.equals(electricityCabinetBox.getUsableStatus(), ElectricityCabinetBox.ELECTRICITY_CABINET_BOX_UN_USABLE)) {
+        if (Objects.equals(electricityCabinetBox.getUsableStatus(), ELECTRICITY_CABINET_BOX_UN_USABLE)) {
             log.error("self open cell order  ERROR! cellNO unUsable,uid={} ", user.getUid());
             return R.fail("100025", "此仓门已被禁用");
         }
