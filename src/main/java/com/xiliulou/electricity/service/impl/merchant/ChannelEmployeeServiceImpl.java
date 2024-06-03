@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.service.impl.merchant;
 
+import cn.hutool.core.map.MapUtil;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.i18n.MessageUtils;
 import com.xiliulou.db.dynamic.annotation.Slave;
@@ -27,10 +28,12 @@ import com.xiliulou.electricity.service.merchant.ChannelEmployeeService;
 import com.xiliulou.electricity.service.merchant.MerchantAreaService;
 import com.xiliulou.electricity.service.merchant.MerchantService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
+import com.xiliulou.electricity.utils.OperateRecordUtil;
 import com.xiliulou.electricity.vo.merchant.ChannelEmployeeVO;
 import com.xiliulou.security.authentication.console.CustomPasswordEncoder;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
@@ -41,6 +44,7 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
 import javax.annotation.Resource;
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -86,6 +90,9 @@ public class ChannelEmployeeServiceImpl implements ChannelEmployeeService {
     
     @Resource
     private UserOauthBindService userOauthBindService;
+    
+    @Resource
+    private OperateRecordUtil operateRecordUtil;
     
     @Slave
     @Override
@@ -345,6 +352,10 @@ public class ChannelEmployeeServiceImpl implements ChannelEmployeeService {
                 redisService.delete(CacheConstant.CACHE_USER_PHONE + updateUser.getTenantId() + ":" + oldPhone + ":" + updateUser.getUserType());
             }
         });
+        //记录操作日志
+        HashMap<String, Object> newValue = MapUtil.of("status", channelEmployeeRequest.getStatus());
+        newValue.put("name",channelEmployeeRequest.getName());
+        operateRecordUtil.record(null,newValue);
         return Triple.of(true, null, result);
     }
     
@@ -388,7 +399,11 @@ public class ChannelEmployeeServiceImpl implements ChannelEmployeeService {
                     redisService.delete(CacheConstant.CACHE_USER_PHONE + user.getTenantId() + ":" + user.getPhone() + ":" + user.getUserType());
                 }
             });
+            //添加操作记录
+            operateRecordUtil.record(null, MapUtil.of("channelName",user.getName()));
         }
+        
+        
         return result;
     }
     
