@@ -15,7 +15,6 @@ import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.ElectricityCarModelMapper;
 import com.xiliulou.electricity.query.ElectricityCarModelQuery;
 import com.xiliulou.electricity.query.PictureQuery;
-import com.xiliulou.electricity.query.UserCarQuery;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
@@ -478,6 +477,7 @@ public class ElectricityCarModelServiceImpl implements ElectricityCarModelServic
         return null;
     }
 
+    @Deprecated
     @Override
     public void moveCarModel(FranchiseeMoveInfo franchiseeMoveInfo) {
         ElectricityCarModelQuery modelQuery = ElectricityCarModelQuery.builder().delFlag(ElectricityCarModel.DEL_NORMAL).
