@@ -82,6 +82,7 @@ import com.xiliulou.electricity.vo.merchant.MerchantVO;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.BeanUtils;
@@ -593,7 +594,6 @@ public class MerchantServiceImpl implements MerchantService {
             log.error("merchant update error, merchant level is null id={}, merchantLevelId={}", merchantSaveRequest.getId(), merchantSaveRequest.getMerchantGradeId());
             return Triple.of(false, "120204", "商户等级不存在");
         }
-        
         // 检测渠道员是否存在
         if (Objects.nonNull(merchantSaveRequest.getChannelEmployeeUid())) {
             ChannelEmployeeVO channelEmployeeVO = channelEmployeeService.queryByUid(merchantSaveRequest.getChannelEmployeeUid());
@@ -833,6 +833,31 @@ public class MerchantServiceImpl implements MerchantService {
             // 处理解绑场地下关联的员工
             dealPlaceEmployee(unBindList);
         }
+        
+        //异步添加渠道员变更操作记录
+        operateRecordUtil.asyncRecord(new HashMap<String,Object>(),new HashMap<String,Object>(),merchantSaveRequest,merchant,(merchantReq,oldMerchant,operateLogDTO)->{
+            //设置修改后的值
+            if (Objects.nonNull(merchantReq.getChannelEmployeeUid())){
+                Map<String, Object> newValue = operateLogDTO.getNewValue();
+                ChannelEmployeeVO channelEmployeeVO = channelEmployeeService.queryByUid(merchantReq.getChannelEmployeeUid());
+                if (!Objects.isNull(channelEmployeeVO) && StringUtils.isNotBlank(channelEmployeeVO.getName())){
+                    newValue.put("name", channelEmployeeVO.getName());
+                    newValue.put("merchantName", merchantReq.getName());
+                    operateLogDTO.setNewValue(newValue);
+                }
+            }
+            //设置修改前的值
+            if (Objects.nonNull(oldMerchant.getChannelEmployeeUid())){
+                Map<String, Object> oldValue = operateLogDTO.getOldValue();
+                ChannelEmployeeVO employeeVO = channelEmployeeService.queryByUid(oldMerchant.getChannelEmployeeUid());
+                if (!Objects.isNull(employeeVO) && StringUtils.isNotBlank(employeeVO.getName())){
+                    oldValue.put("name", employeeVO.getName());
+                    oldValue.put("merchantName", oldMerchant.getName());
+                    operateLogDTO.setOldValue(oldValue);
+                }
+            }
+            return operateLogDTO;
+        });
         
         return Triple.of(true, "", merchantDeleteCacheDTO);
     }
