@@ -384,7 +384,7 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
     @Override
     public Integer batchUpdateSortParam(List<MemberCardAndCarRentalPackageSortParamQuery> sortParamQueries) {
         
-        if (Objects.isNull(sortParamQueries)) {
+        if (CollectionUtils.isEmpty(sortParamQueries)) {
             return null;
         }
         
