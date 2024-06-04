@@ -145,6 +145,9 @@
         <if test="query.deviceName != null and query.deviceName != ''">
             and device_name = #{query.deviceName}
         </if>
+        <if test="query.version != null and query.version != ''">
+            and version = #{query.version}
+        </if>
 	</select>
 
 

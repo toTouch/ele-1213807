@@ -271,6 +271,7 @@ public class JsonAdminElectricityCabinetController extends BasicController {
                 .storeIdList(permissionTriple.getMiddle())
                 .productKey(productKey)
                 .deviceName(deviceName)
+                .version(version)
                 .build();
 
         return electricityCabinetService.queryCount(electricityCabinetQuery);
