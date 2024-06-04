@@ -200,8 +200,9 @@ public class MerchantTokenServiceImpl implements MerchantTokenService {
                     }
                 }
                 
+                // 创建 token 为了保证只有一个登录，入参拼接 open_id + UID
                 String token = jwtTokenManager.createToken(clientId, e.getUserType(),
-                        new TokenUser(e.getUid(), e.getPhone(), openid, e.getUserType(), e.getDataType(), e.getTenantId()), now);
+                        new TokenUser(e.getUid(), e.getPhone(), openid + e.getUid(), e.getUserType(), e.getDataType(), e.getTenantId()), now);
                 
                 MerchantLoginVO merchantLoginVO = new MerchantLoginVO();
                 merchantLoginVO.setPhone(e.getPhone());

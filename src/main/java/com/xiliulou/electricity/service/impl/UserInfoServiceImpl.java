@@ -2278,17 +2278,21 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         return R.ok();
     }
     
+    @Override
     public void clearUserOauthBindToken(List<UserOauthBind> userOauthBinds, String clientId) {
         if (StringUtils.isBlank(clientId)) {
             clientId = CacheConstant.CLIENT_ID;
         }
         
         String finalClientId = clientId;
-        userOauthBinds.stream().forEach(e -> {
+        userOauthBinds.forEach(e -> {
             String thirdId = e.getThirdId();
+            if (CacheConstant.MERCHANT_CLIENT_ID.equals(finalClientId)) {
+                thirdId = e.getThirdId() + e.getUid();
+            }
             List<String> tokens = redisService.getWithList(TokenConstant.CACHE_LOGIN_TOKEN_LIST_KEY + finalClientId + e.getTenantId() + ":" + thirdId, String.class);
             if (DataUtil.collectionIsUsable(tokens)) {
-                tokens.stream().forEach(s -> {
+                tokens.forEach(s -> {
                     redisService.delete(TokenConstant.CACHE_LOGIN_TOKEN_KEY + finalClientId + s);
                 });
             }
