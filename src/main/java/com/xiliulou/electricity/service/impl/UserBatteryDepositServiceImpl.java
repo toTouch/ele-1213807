@@ -3,6 +3,7 @@ package com.xiliulou.electricity.service.impl;
 import cn.hutool.core.thread.ThreadUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.UserBatteryDeposit;
 import com.xiliulou.electricity.mapper.UserBatteryDepositMapper;
@@ -11,7 +12,6 @@ import com.xiliulou.electricity.utils.DbUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.Objects;
@@ -52,6 +52,7 @@ public class UserBatteryDepositServiceImpl implements UserBatteryDepositService 
      * @param uid
      * @return
      */
+    @Slave
     @Override
     public UserBatteryDeposit queryByUid(Long uid) {
         return this.userBatteryDepositMapper.selectOne(new LambdaQueryWrapper<UserBatteryDeposit>().eq(UserBatteryDeposit::getUid,uid));

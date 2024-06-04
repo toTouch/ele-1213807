@@ -292,12 +292,14 @@ public class UserServiceImpl implements UserService {
         return this.userMapper.deleteById(uid) > 0;
     }
     
+    @Slave
     @Override
     public User queryByUserName(String username) {
         return this.userMapper.queryByUserName(username);
         //        return this.userMapper.selectOne(new LambdaQueryWrapper<User>().eq(User::getName, username).eq(User::getDelFlag, User.DEL_NORMAL));
     }
     
+    @Slave
     @Override
     public User queryByUserNameAndTenantId(String username, Integer tenantId) {
         return this.userMapper.selectOne(new LambdaQueryWrapper<User>().eq(User::getName, username).eq(User::getDelFlag, User.DEL_NORMAL).eq(User::getTenantId, tenantId));
@@ -905,6 +907,7 @@ public class UserServiceImpl implements UserService {
         }
     }
     
+    @Slave
     @Override
     public Pair<Boolean, Object> queryCount(Long uid, String name, String phone, Integer type, Long startTime, Long endTime, Integer tenantId) {
         return Pair.of(true, this.userMapper.queryCount(uid, name, phone, type, startTime, endTime, tenantId));
@@ -1127,6 +1130,7 @@ public class UserServiceImpl implements UserService {
         this.updateUserSource(updateUser);
     }
     
+    @Slave
     @Override
     public List<UserSourceVO> selectUserSourceByPage(UserSourceQuery userSourceQuery) {
         if (!verifyParams(userSourceQuery)) {
@@ -1169,6 +1173,7 @@ public class UserServiceImpl implements UserService {
         }).collect(Collectors.toList());
     }
     
+    @Slave
     @Override
     public Integer selectUserSourcePageCount(UserSourceQuery userSourceQuery) {
         if (!verifyParams(userSourceQuery)) {

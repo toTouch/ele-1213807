@@ -30,7 +30,6 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Resource;
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 
 /**
  * (UserOauthBind)表服务实现类
@@ -108,6 +107,7 @@ public class UserOauthBindServiceImpl implements UserOauthBindService {
         return userOauthBindMapper.selectListOauthByOpenIdAndSource(openid,source,tenantId);
     }
     
+    @Slave
     @Override
     public UserOauthBind queryByUserPhone(Long uid, String phone, int source, Integer tenantId) {
         return this.userOauthBindMapper.selectOne(new LambdaQueryWrapper<UserOauthBind>().eq(UserOauthBind::getUid, uid).eq(UserOauthBind::getPhone, phone).eq(UserOauthBind::getSource, source)
@@ -151,6 +151,7 @@ public class UserOauthBindServiceImpl implements UserOauthBindService {
         return userOauthBindMapper.queryUserOauthBySysId(uid, tenantId);
     }
     
+    @Slave
     @Override
     public List<UserOauthBind> queryListByUid(Long uid) {
         return userOauthBindMapper.selectList(new LambdaQueryWrapper<UserOauthBind>().eq(UserOauthBind::getUid, uid));

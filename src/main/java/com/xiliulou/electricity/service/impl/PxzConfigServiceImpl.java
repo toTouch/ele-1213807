@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.service.impl;
 
 import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.PxzConfig;
 import com.xiliulou.electricity.mapper.PxzConfigMapper;
@@ -42,6 +43,7 @@ public class PxzConfigServiceImpl implements PxzConfigService {
      * @param id 主键
      * @return 实例对象
      */
+    @Slave
     @Override
     public PxzConfig queryByTenantIdFromDB(Integer id) {
         return this.pxzConfigMapper.queryByTenantId(id);
@@ -78,6 +80,7 @@ public class PxzConfigServiceImpl implements PxzConfigService {
      * @param limit  查询条数
      * @return 对象列表
      */
+    @Slave
     @Override
     public List<PxzConfig> queryAllByLimit(int offset, int limit) {
         return this.pxzConfigMapper.queryAllByLimit(offset, limit);
