@@ -54,11 +54,27 @@
             <if test="updateTime != null">
                 update_time = #{updateTime},
             </if>
+            <if test="endTime != null">
+                end_time = #{endTime},
+            </if>
+            <if test="beginTime != null">
+                begin_time = #{beginTime},
+            </if>
             <if test="tenantId != null">
                 tenant_id = #{tenantId},
             </if>
         </set>
         where id = #{id}
+    </update>
+    
+    <update id="batchUpdateBeginAndEndTimeByIds">
+        update t_another_pay_membercard_record set begin_time = begin_time + #{realDisableTime}, end_time = end_time + #{realDisableTime}, update_time = #{updateTime}
+        <where>
+            id in
+            <foreach collection="idList" item="id" open="(" close=")" separator=",">
+                #{id}
+            </foreach>
+        </where>
     </update>
     
     <!--通过主键删除-->
@@ -69,5 +85,5 @@
     <delete id="deleteByUid">
         delete from t_another_pay_membercard_record where uid = #{uid}
     </delete>
-
+    
 </mapper>

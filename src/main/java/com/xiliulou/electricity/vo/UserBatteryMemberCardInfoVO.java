@@ -105,6 +105,12 @@ public class UserBatteryMemberCardInfoVO {
      * @see RenewalStatusEnum
      */
     private Integer renewalStatus;
+    
+    /**
+     * 企业用户是否自主续费退出中：0-否，1-是
+     * @see RenewalStatusEnum
+     */
+    private Integer channelUserExit;
 
     public static final Integer NO = 0;
     public static final Integer YES = 1;

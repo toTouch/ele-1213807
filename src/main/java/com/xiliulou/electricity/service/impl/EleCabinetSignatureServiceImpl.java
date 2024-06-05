@@ -20,6 +20,7 @@ import com.xiliulou.esign.config.EsignConfig;
 import com.xiliulou.esign.constant.EsignConstant;
 import com.xiliulou.esign.entity.query.ComponentData;
 import com.xiliulou.esign.entity.query.EsignCallBackQuery;
+import com.xiliulou.esign.entity.query.SignFieldPositionQuery;
 import com.xiliulou.esign.entity.query.SignFlowDataQuery;
 import com.xiliulou.esign.entity.query.UserInfoQuery;
 import com.xiliulou.esign.entity.resp.*;
@@ -216,12 +217,22 @@ public class EleCabinetSignatureServiceImpl implements EleCabinetSignatureServic
 
             //根据模版ID获取组件位置
             SignComponentResp signComponentResp = signatureFileService.findComponentsLocation(eleEsignConfig.getDocTemplateId(),eleEsignConfig.getAppId(), eleEsignConfig.getAppSecret());
-            ComponentPosition componentPosition = signComponentResp.getData().getComponents().get(0).getComponentPosition();
+            //ComponentPosition componentPosition = signComponentResp.getData().getComponents().get(0).getComponentPosition();
+            List<Component> components = signComponentResp.getData().getComponents();
 
             createFileVO.setFileId(fileId);
-            createFileVO.setComponentPageNum(componentPosition.getComponentPageNum());
-            createFileVO.setComponentPositionX(componentPosition.getComponentPositionX());
-            createFileVO.setComponentPositionY(componentPosition.getComponentPositionY());
+            List<SignFieldPositionQuery> signFieldPositionList = new ArrayList<>();
+            for (Component component : components) {
+                // 只获取填写组件位置坐标
+                if(EleEsignConstant.SIGN_FLOW_COMPONENT_TYPE_TEXT.equals(component.getComponentType())) {
+                    SignFieldPositionQuery signFieldPositionQuery = new SignFieldPositionQuery();
+                    signFieldPositionQuery.setPositionPage(String.valueOf(component.getComponentPosition().getComponentPageNum()));
+                    signFieldPositionQuery.setPositionX(component.getComponentPosition().getComponentPositionX());
+                    signFieldPositionQuery.setPositionY(component.getComponentPosition().getComponentPositionY());
+                    signFieldPositionList.add(signFieldPositionQuery);
+                }
+            }
+            createFileVO.setSignFieldPositionList(signFieldPositionList);
 
         }catch(Exception e){
             log.error("Create File error! create file by template error,uid={},ex={}", userInfo.getUid(), e);
@@ -301,10 +312,7 @@ public class EleCabinetSignatureServiceImpl implements EleCabinetSignatureServic
             signFlowDataQuery.setTenantAppSecret(eleEsignConfig.getAppSecret());
             signFlowDataQuery.setRedirectUrl(esignConfig.getRedirectUrlAfterSign());
             signFlowDataQuery.setNotifyUrl(esignConfig.getSignFlowNotifyUrl() + eleEsignConfig.getId());
-
-            signFlowDataQuery.setPositionPage(String.valueOf(signFileQuery.getComponentPageNum()));
-            signFlowDataQuery.setPositionX(signFileQuery.getComponentPositionX());
-            signFlowDataQuery.setPositionY(signFileQuery.getComponentPositionY());
+            signFlowDataQuery.setSignFieldPositionList(signFileQuery.getSignFieldPositionList());
 
             //signFlowVO = getSignFlowResp(userInfo.getUid(), userInfoQuery, signFlowDataQuery);
             signFlowId = getSignFlowId(userInfo.getUid(), userInfoQuery, signFlowDataQuery);

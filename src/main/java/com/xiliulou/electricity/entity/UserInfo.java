@@ -159,8 +159,9 @@ public class UserInfo {
     //电池押金状态 0--未缴纳押金，1--已缴纳押金
     public static final Integer BATTERY_DEPOSIT_STATUS_NO = 0;
     public static final Integer BATTERY_DEPOSIT_STATUS_YES = 1;
-
-
+    public static final Integer BATTERY_DEPOSIT_STATUS_REFUNDING = 2;
+    
+    
     //车辆赁状态 0--未租车辆，1--已租车辆
     public static final Integer CAR_RENT_STATUS_NO = 0;
     public static final Integer CAR_RENT_STATUS_YES = 1;

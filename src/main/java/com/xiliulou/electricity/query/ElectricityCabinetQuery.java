@@ -130,4 +130,23 @@ public class ElectricityCabinetQuery {
      */
     private Integer status;
     
+    /**
+     * 区域ID
+     */
+    private Long areaId;
+    
+    /**
+     * 柜机id集合
+     */
+    private List<Integer> idList;
+    
+    /**
+     * 少电/多电类型：0-正常 1-少电 2-多电
+     */
+    private Integer batteryCountType;
+    
+    
+    private String productKey;
+    
+    private String deviceName;
 }

@@ -51,5 +51,7 @@ public interface ElectricityCabinetBoxMapper extends BaseMapper<ElectricityCabin
     
     Integer batchInsertEleBox(@Param("boxList") List<ElectricityCabinetBox> boxList);
     
+    List<ElectricityCabinetBox> selectListByElectricityCabinetIdS(@Param("electricityCabinetIdS") List<Integer> electricityCabinetIdS, @Param("tenantId") Integer tenantId);
+    
     List<ElectricityCabinetBox> selectUsableEmptyCell(Integer eid);
 }

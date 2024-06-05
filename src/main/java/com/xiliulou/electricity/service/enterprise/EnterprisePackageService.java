@@ -1,6 +1,8 @@
 package com.xiliulou.electricity.service.enterprise;
 
+import com.xiliulou.electricity.bo.merchant.MerchantEnterprisePackageBO;
 import com.xiliulou.electricity.entity.enterprise.EnterprisePackage;
+import com.xiliulou.electricity.vo.enterprise.EnterprisePackageVO;
 
 import java.util.List;
 
@@ -11,7 +13,7 @@ import java.util.List;
  * @since 2023-09-14 10:15:43
  */
 public interface EnterprisePackageService {
-
+    
     /**
      * 通过ID查询单条数据从数据库
      *
@@ -19,7 +21,7 @@ public interface EnterprisePackageService {
      * @return 实例对象
      */
     EnterprisePackage queryByIdFromDB(Long id);
-
+    
     /**
      * 通过ID查询单条数据从缓存
      *
@@ -27,7 +29,7 @@ public interface EnterprisePackageService {
      * @return 实例对象
      */
     EnterprisePackage queryByIdFromCache(Long id);
-
+    
     /**
      * 修改数据
      *
@@ -35,7 +37,7 @@ public interface EnterprisePackageService {
      * @return 实例对象
      */
     Integer update(EnterprisePackage enterprisePackage);
-
+    
     /**
      * 通过主键删除数据
      *
@@ -43,12 +45,14 @@ public interface EnterprisePackageService {
      * @return 是否成功
      */
     Boolean deleteById(Long id);
-
+    
     void batchInsert(List<EnterprisePackage> packageList);
-
+    
     List<Long> selectByEnterpriseId(Long id);
     
     EnterprisePackage selectByPackageId(Long id);
     
     int deleteByEnterpriseId(Long id);
+    
+    List<EnterprisePackageVO> queryListByEnterpriseId(Long id);
 }

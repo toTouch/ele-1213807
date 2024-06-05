@@ -16,6 +16,7 @@ import com.xiliulou.electricity.service.UserDataScopeService;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.asset.AssertPermissionService;
 import com.xiliulou.electricity.utils.DateUtils;
+import com.xiliulou.electricity.vo.FinalJoinInvitationActivityHistoryVO;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.InvitationActivityJoinHistoryVO;
 import com.xiliulou.electricity.vo.activity.InvitationActivityAnalysisAdminVO;
@@ -311,5 +312,28 @@ public class InvitationActivityJoinHistoryServiceImpl implements InvitationActiv
     @Override
     public InvitationActivityJoinHistory queryByJoinUidAndActivityId(Long joinUid, Long activityId) {
         return invitationActivityJoinHistoryMapper.selectByJoinUidAndActivityId(joinUid, activityId);
+    }
+    
+    @Slave
+    @Override
+    public FinalJoinInvitationActivityHistoryVO queryFinalHistoryByJoinUid(Long uid, Integer tenantId) {
+        return invitationActivityJoinHistoryMapper.selectFinalHistoryByJoinUid(uid, tenantId);
+    }
+    
+    @Slave
+    @Override
+    public InvitationActivityJoinHistory querySuccessHistoryByJoinUid(Long uid, Integer tenantId) {
+        return invitationActivityJoinHistoryMapper.selectSuccessHistoryByJoinUid(uid, tenantId);
+    }
+    
+    @Override
+    public Integer removeByJoinUid(Long uid, Long updateTime, Integer tenantId) {
+        return invitationActivityJoinHistoryMapper.updateByJoinUid(uid, updateTime, tenantId);
+    }
+    
+    @Slave
+    @Override
+    public InvitationActivityJoinHistory queryModifiedInviterHistory(Long joinUid, Integer tenantId) {
+        return invitationActivityJoinHistoryMapper.selectModifiedInviterHistory(joinUid, tenantId);
     }
 }

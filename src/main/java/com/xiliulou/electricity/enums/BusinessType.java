@@ -73,7 +73,19 @@ public enum BusinessType {
     // 资产调拨
     ASSET_ALLOCATE(72),
     
-    ASSET_WAREHOUSE_RECORD(73);
+    ASSET_WAREHOUSE_RECORD(73),
+    
+    //换电套餐返利
+    BATTERY_REBATE(80),
+    
+    //商户申请提现订单
+    MERCHANT_WITHDRAW(81),
+    
+    //商户申请提现批次号
+    MERCHANT_WITHDRAW_BATCH(82),
+    
+    //商户申请提现批次单号下明细项唯一标识号
+    MERCHANT_WITHDRAW_BATCH_DETAIL(83);
 
     private final Integer business;
 

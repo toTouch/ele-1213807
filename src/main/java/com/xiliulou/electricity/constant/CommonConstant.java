@@ -14,6 +14,12 @@ public interface CommonConstant {
     String FRANCHISEE_CODE = "加盟商";
     String STORE_NAME = "STORE_USER";
     String STORE_CODE = "门店";
+    String MERCHANT_NAME="MERCHANT_USER";
+    String MERCHANTL_CODE="商户";
+    String CHANNEL_NAME="CHANNEL_USER";
+    String CHANNEL_CODE="渠道";
+    String MERCHANT_EMPLOYEE_NAME="MERCHANT_EMPLOYEE";
+    String MERCHANT_EMPLOYEE_CODE="渠道员工";
     String MAINTAIN_NAME="MAINTAIN_USER";
     String MAINTAIN_CODE="运维";
 
@@ -51,6 +57,12 @@ public interface CommonConstant {
     Integer DEL_N = 0;
 
     Integer DEL_Y = 1;
+    
+    /**
+     * 时间单位 0：分钟，1：小时
+     */
+    Integer TIME_UNIT_MINUTES = 0;
+    Integer TIME_UNIT_HOURS = 1;
 
     /**
      * 版本

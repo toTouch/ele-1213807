@@ -14,6 +14,9 @@ public interface CacheConstant {
     //加载换电柜GEO缓存锁
     String CACHE_RELOAD_ELECTRICITY_CABINET_GEO = "reload_electricity_cabinet_geo:";
     
+    //换电柜扩充信息缓存
+    String CACHE_ELECTRICITY_CABINET_EXTRA = "electricity_cabinet_extra:";
+    
     String ADMIN_OPERATE_LOCK_KEY = "admin_operate_lock_key:";
     String CACHE_PAY_PARAMS = "cache_pay_params";
     //用户缓存
@@ -333,6 +336,10 @@ public interface CacheConstant {
      */
     String CACHE_CITY_CODE = "city_code:";
     
+    /**
+     * 用户扩展信息缓存
+     */
+    String CACHE_USER_INFO_EXTRA = "user_info_extra:";
     
     /**
      * 加盟商缓存
@@ -533,6 +540,15 @@ public interface CacheConstant {
      */
     String CACHE_ENTERPRISE_INFO = "enterprise_Info:";
     
+    /**
+     * 商户扩展属性缓存
+     */
+    String CACHE_MERCHANT_ATTR = "merchantAttr:";
+    /**
+     * 返利配置
+     */
+    String CACHE_REBATE_CONFIG = "rebateConfig:";
+
     String CACHE_WECHAT_APPROVE = "cache_wechat_approve";
     
     String CACHE_INVITATION_ACTIVITY_USER_SAVE_LOCK = "cache_invitation_activity_user_save_lock:";
@@ -542,6 +558,39 @@ public interface CacheConstant {
     String CACHE_ASSET_WAREHOUSE_UPDATE_LOCK = "cache_asset_warehouse_update_lock:";
     String CACHE_ASSET_ALLOCATE_LOCK = "cache_asset_allocate_lock:";
     String CACHE_ASSET_BATCH_INVENTORY_LOCK = "cache_asset_batch_inventory_lock:";
+
+    String CACHE_BATCH_SEND_COUPON = "cache_batch_send_coupon:";
+
+    String CACHE_MERCHANT_AREA_SAVE_LOCK = "cache_merchant_area_save_lock:";
+
+    String CACHE_MERCHANT_SCAN_INTO_ACTIVITY_LOCK = "cache_merchant_scan_into_activity_lock:";
+    String CACHE_MERCHANT = "cache_merchant:";
+    // 商家修改
+    String MERCHANT_SAVE_UID = "merchant_save_uid:";
+    String MERCHANT_PLACE_SAVE_UID = "merchant_place_save_uid:";
+    
+    String MERCHANT_PLACE_UPDATE_UID = "merchant_place_update_uid:";
+
+    String MERCHANT_PLACE_DELETE_UID = "merchant_place_delete_uid:";
+
+    String CACHE_MERCHANT_PLACE = "cache_merchant_place:";
+
+    String MERCHANT_PLACE_CABINET_BIND_UID = "merchant_place_cabinet_bind_uid:";
+    String MERCHANT_PLACE_CABINET_UNBIND_UID = "merchant_place_cabinet_unbind_uid:";
+
+    String MERCHANT_PLACE_CABINET_DELETE_UID = "merchant_place_cabinet_delete_uid:";
+    
+    String CACHE_CHANNEL_EMPLOYEE_SAVE_LOCK = "cache_channel_employee_save_lock:";
+    
+    String CACHE_CHANNEL_EMPLOYEE_UPDATE_LOCK = "cache_channel_employee_update_lock:";
+    
+    String CACHE_MERCHANT_EMPLOYEE_SAVE_LOCK = "cache_merchant_employee_save_lock:";
+    
+    String CACHE_MERCHANT_EMPLOYEE_UPDATE_LOCK = "cache_merchant_employee_update_lock:";
+    
+    String  CACHE_MERCHANT_WITHDRAW_APPLICATION = "cache_merchant_withdraw_application:";
+    
+    String CACHE_MERCHANT_WITHDRAW_APPLICATION_REVIEW = "cache_merchant_withdraw_application_review:";
     
     String CACHE_FAILURE_ALARM_LOCK = "cache_failure_alarm_lock:";
     
@@ -557,8 +606,6 @@ public interface CacheConstant {
     
     String CACHE_TENANT_NOTE = "cache_tenant_note:";
     
-    String CACHE_BATCH_SEND_COUPON = "cache_batch_send_coupon:";
-    
     String CACHE_USER_NOTICE_UPDATE_LOCK = "cache_user_notice_update_lock:";
     String CACHE_USER_DEPOSIT_PROTOCOL_UPDATE_LOCK = "cache_user_deposit_protocol_update_lock:";
     String CACHE_USER_ORDER_PROTOCOL_UPDATE_LOCK = "cache_user_order_protocol_update_lock:";
@@ -570,5 +617,19 @@ public interface CacheConstant {
     String CACHE_USER_MEMBER_CARD_EDIT_LOCK = "cache_user_member_card_edit_lock:";
     String CACHE_USER_BATTERY_MEMBER_CARD_RENEWAL_LOCK = "cache_user_battery_member_card_renewal_lock:";
     
+    String CACHE_MERCHANT_MODIFY_INVITER_LOCK = "cache_merchant_modify_inviter_lock:";
+
+    
     String CACHE_RECYCLE_CLOUD_BEAN_LOCK = "cache_recycle_cloud_bean_lock:";
+    
+    String CACHE_USER_GROUP_SAVE_LOCK = "cache_user_group_save_lock:";
+    String CACHE_USER_GROUP_UPDATE_LOCK = "cache_user_group_update_lock:";
+    String CACHE_USER_GROUP_BATCH_IMPORT = "cache_user_group_batch_import:";
+    String CACHE_USER_GROUP_DETAIL_UPDATE_LOCK = "cache_user_group_detail_update_lock:";
+    String CACHE_USER_GROUP_DETAIL_BIND_GROUP_LOCK = "cache_user_group_detail_bind_group_lock:";
+    String CACHE_USER_GROUP = "cache_user_group:";
+    
+    String CACHE_CHANNEL_USER_EXIT_LOCK = "cache_channel_user_exit_lock:";
+    
+    String CACHE_CHANNEL_USER_EXIT_ALL_LOCK = "cache_channel_user_exit_all_lock:";
 }

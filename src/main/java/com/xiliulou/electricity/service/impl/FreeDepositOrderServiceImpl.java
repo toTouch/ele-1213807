@@ -98,6 +98,7 @@ import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.service.car.CarRentalPackageDepositPayService;
 import com.xiliulou.electricity.service.car.CarRentalPackageMemberTermService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseChannelUserService;
+import com.xiliulou.electricity.service.userinfo.userInfoGroup.UserInfoGroupDetailService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
@@ -281,6 +282,9 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
     
     @Resource
     CarRentalPackageDepositPayService carRentalPackageDepositPayService;
+    
+    @Resource
+    UserInfoGroupDetailService userInfoGroupDetailService;
 
     /**
      * 通过ID查询单条数据从DB
@@ -2153,7 +2157,7 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         Boolean userRenewalStatus = enterpriseChannelUserService.checkRenewalStatusByUid(uid);
         if(!userRenewalStatus){
             log.warn("BATTERY MEMBER ORDER WARN! user renewal status is false, uid={}, mid={}", uid, query.getMemberCardId());
-            return Triple.of(false, "000088", "自主续费状态已关闭，购买套餐请联系企业负责人");
+            return Triple.of(false, "000088", "您已是渠道用户，请联系对应站点购买套餐");
         }
 
         ElectricityPayParams electricityPayParams = electricityPayParamsService.queryFromCache(tenantId);
@@ -2449,6 +2453,7 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         electricityMemberCardOrder.setRefId(Objects.nonNull(electricityCabinet) ? electricityCabinet.getId().longValue() : null);
         electricityMemberCardOrder.setSource(Objects.nonNull(electricityCabinet) ? ElectricityMemberCardOrder.SOURCE_SCAN : ElectricityMemberCardOrder.SOURCE_NOT_SCAN);
         electricityMemberCardOrder.setStoreId(Objects.nonNull(electricityCabinet) ? electricityCabinet.getStoreId() : userInfo.getStoreId());
+        electricityMemberCardOrder.setCouponIds(batteryMemberCard.getCouponIds());
 
         return Triple.of(true, null, electricityMemberCardOrder);
     }
@@ -3113,6 +3118,9 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
 
                 //删除用户电池服务费
                 serviceFeeUserInfoService.deleteByUid(freeDepositOrder.getUid());
+                
+                //删除用户分组
+                userInfoGroupDetailService.handleAfterRefundDeposit(freeDepositOrder.getUid());
             }
         }
     }

@@ -44,6 +44,26 @@
         where uid = #{uid} and return_time is null order by id desc limit 1
     </select>
     
+    <select id="selectListAlreadyReturn"
+            resultType="com.xiliulou.electricity.entity.enterprise.EnterpriseRentRecord">
+        select
+            r.id,
+            r.uid,
+            r.rent_membercard_order_id,
+            r.return_membercard_order_id,
+            r.rent_time,
+            r.return_time,
+            r.create_time,
+            r.update_time,
+            r.tenant_id
+        from t_enterprise_rent_record r
+            left join t_user_info u on u.uid = r.uid
+        where r.return_time is not null
+           <if test="tenantId != null">
+               and u.tenant_id = #{tenantId}
+           </if>
+    </select>
+    
     <!--通过主键删除-->
     <delete id="deleteById">
         delete from t_enterprise_rent_record where id = #{id}

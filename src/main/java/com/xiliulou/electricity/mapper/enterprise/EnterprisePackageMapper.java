@@ -1,8 +1,10 @@
 package com.xiliulou.electricity.mapper.enterprise;
 
+import com.xiliulou.electricity.bo.merchant.MerchantEnterprisePackageBO;
 import com.xiliulou.electricity.entity.enterprise.EnterprisePackage;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
@@ -13,7 +15,7 @@ import java.util.List;
  * @since 2023-09-14 10:15:43
  */
 public interface EnterprisePackageMapper extends BaseMapper<EnterprisePackage> {
-
+    
     /**
      * 通过ID查询单条数据
      *
@@ -21,7 +23,7 @@ public interface EnterprisePackageMapper extends BaseMapper<EnterprisePackage> {
      * @return 实例对象
      */
     EnterprisePackage queryById(Long id);
-
+    
     /**
      * 修改数据
      *
@@ -29,7 +31,7 @@ public interface EnterprisePackageMapper extends BaseMapper<EnterprisePackage> {
      * @return 影响行数
      */
     int update(EnterprisePackage enterprisePackage);
-
+    
     /**
      * 通过主键删除数据
      *
@@ -37,12 +39,15 @@ public interface EnterprisePackageMapper extends BaseMapper<EnterprisePackage> {
      * @return 影响行数
      */
     int deleteById(Long id);
-
+    
     void batchInsert(List<EnterprisePackage> packageList);
-
+    
     List<Long> selectByEnterpriseId(Long id);
     
     EnterprisePackage selectByPackageId(Long packageId);
     
     int deleteByEnterpriseId(Long id);
+    List<EnterprisePackage> listByIdList(@Param("idList") List<Long> enterprisePackageIdList);
+    
+    List<MerchantEnterprisePackageBO> selectListByEnterpriseId(@Param("id") Long id);
 }

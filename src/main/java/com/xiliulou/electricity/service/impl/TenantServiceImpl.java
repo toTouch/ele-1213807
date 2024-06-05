@@ -12,6 +12,7 @@ import com.xiliulou.electricity.config.RolePermissionConfig;
 import com.xiliulou.electricity.constant.AssetConstant;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.CommonConstant;
+import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.ChannelActivity;
 import com.xiliulou.electricity.entity.ElectricityConfig;
 import com.xiliulou.electricity.entity.FreeDepositData;
@@ -37,6 +38,8 @@ import com.xiliulou.electricity.service.TenantNoteService;
 import com.xiliulou.electricity.service.TenantService;
 import com.xiliulou.electricity.service.UserRoleService;
 import com.xiliulou.electricity.service.UserService;
+import com.xiliulou.electricity.service.merchant.MerchantAttrService;
+import com.xiliulou.electricity.service.merchant.MerchantLevelService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.vo.TenantVO;
 import com.xiliulou.electricity.web.query.AdminUserQuery;
@@ -96,6 +99,13 @@ public class TenantServiceImpl implements TenantService {
     @Resource
     private TenantNoteService noteService;
     
+    @Autowired
+    private MerchantLevelService merchantLevelService;
+    
+    @Autowired
+    private MerchantAttrService merchantAttrService;
+
+    
     @Resource
     private AssetWarehouseMapper assetWarehouseMapper;
     
@@ -150,6 +160,18 @@ public class TenantServiceImpl implements TenantService {
         storeRole.setName(CommonConstant.STORE_NAME);
         storeRole.setCode(CommonConstant.STORE_CODE);
 
+        // 商户角色，渠道角色，商户员工
+        Role merchantRole = new Role();
+        merchantRole.setName(CommonConstant.MERCHANT_NAME);
+        merchantRole.setCode(CommonConstant.MERCHANTL_CODE);
+        
+        Role channelRole = new Role();
+        channelRole.setName(CommonConstant.CHANNEL_NAME);
+        channelRole.setCode(CommonConstant.CHANNEL_CODE);
+        
+        Role merchantEmployeeRole = new Role();
+        merchantEmployeeRole.setName(CommonConstant.MERCHANT_EMPLOYEE_NAME);
+        merchantEmployeeRole.setCode(CommonConstant.MERCHANT_EMPLOYEE_CODE);
         //运维
         Role maintainRole = new Role();
         maintainRole.setName(CommonConstant.MAINTAIN_NAME);
@@ -159,6 +181,9 @@ public class TenantServiceImpl implements TenantService {
         roleList.add(operateRole);
         roleList.add(franchiseeRole);
         roleList.add(storeRole);
+        roleList.add(merchantRole);
+        roleList.add(channelRole);
+        roleList.add(merchantEmployeeRole);
         roleList.add(maintainRole);
 
         roleList.forEach(item -> {
@@ -208,7 +233,10 @@ public class TenantServiceImpl implements TenantService {
                 .isWithdraw(ElectricityConfig.WITHDRAW)
                 .isOpenDoorLock(ElectricityConfig.NON_OPEN_DOOR_LOCK)
                 .disableMemberCard(ElectricityConfig.DISABLE_MEMBER_CARD)
-                .isBatteryReview(ElectricityConfig.NON_BATTERY_REVIEW).build();
+                .isBatteryReview(ElectricityConfig.NON_BATTERY_REVIEW)
+                .lowChargeRate(NumberConstant.TWENTY_FIVE_DB)
+                .fullChargeRate(NumberConstant.SEVENTY_FIVE_DB)
+                .chargeRateType(ElectricityConfig.CHARGE_RATE_TYPE_UNIFY).build();
         electricityConfigService.insertElectricityConfig(electricityConfig);
 
         //新增租户给租户增加渠道活动（产品提的需求）
@@ -229,6 +257,11 @@ public class TenantServiceImpl implements TenantService {
                 .updateTime(System.currentTimeMillis())
                 .tenantId(TenantContextHolder.getTenantId()).build();
         executorService.submit(()->assetWarehouseMapper.insertOne(warehouseSaveOrUpdateQueryModel));
+        
+        //初始化商户等级
+        merchantLevelService.initMerchantLevel(tenant.getId());
+        //初始化商户升级条件
+        merchantAttrService.initMerchantAttr(tenant.getId());
         return R.ok();
     }
 
@@ -371,7 +404,8 @@ public class TenantServiceImpl implements TenantService {
     public Integer querySumCount(TenantQuery tenantQuery) {
         return tenantMapper.queryCount(tenantQuery);
     }
-
+    
+    
     /**
      * 生成新的租户code
      */

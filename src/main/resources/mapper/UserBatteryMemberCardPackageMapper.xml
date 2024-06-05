@@ -47,6 +47,46 @@
         from t_user_battery_member_card_package
         where uid = #{uid} order by id limit 1
     </select>
+    
+    <select id="listChannelByUid" resultType="com.xiliulou.electricity.entity.UserBatteryMemberCardPackage">
+        SELECT
+            id,
+            uid,
+            member_card_id,
+            order_id,
+            tenant_id,
+            create_time,
+            update_time,
+            member_card_expire_time,
+            remaining_number,
+            STATUS
+        FROM
+            t_user_battery_member_card_package a
+        WHERE
+            uid = #{uid}
+          AND EXISTS (
+            SELECT
+                1
+            FROM
+                t_battery_member_card b
+            WHERE
+                a.member_card_id = b.id
+              AND b.business_type = 2
+            )
+    </select>
+    
+    <select id="selectLastEnterprisePackageByUid" resultType="com.xiliulou.electricity.bo.batteryPackage.UserBatteryMemberCardPackageBO">
+        SELECT
+            p.id, p.uid, p.member_card_id, p.order_id,c.deposit,c.limit_count
+        FROM
+            t_user_battery_member_card_package p
+                left join t_battery_member_card c on c.id = p.member_card_id
+        where
+            p.uid = #{uid}
+          and c.business_type = 2
+        order by p.id desc
+            limit 1
+    </select>
 
     <!--通过主键修改数据-->
     <update id="update">
@@ -95,5 +135,15 @@
     <delete id="deleteByOrderId">
         delete from t_user_battery_member_card_package where order_id = #{orderId}
     </delete>
-
+    
+    <delete id="deleteChannelMemberCardByUid">
+        delete
+        FROM
+            t_user_battery_member_card_package a
+        WHERE
+            uid = #{uid}
+          AND EXISTS (
+            SELECT 1 FROM t_battery_member_card b WHERE a.member_card_id = b.id and b.business_type = 1
+            )
+    </delete>
 </mapper>

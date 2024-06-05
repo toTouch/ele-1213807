@@ -1061,7 +1061,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
         }
         
         int raws = electricitybatterymapper.deleteById(id, TenantContextHolder.getTenantId());
-        geoService.deleteBySn(electricityBattery.getSn());
+        // geoService.deleteBySn(electricityBattery.getSn());
         if (raws > 0) {
             redisService.delete(CacheConstant.CACHE_BT_ATTR + electricityBattery.getSn());
             operateRecordUtil.record(null, MapUtil.of("batterySN", electricityBattery.getSn()));

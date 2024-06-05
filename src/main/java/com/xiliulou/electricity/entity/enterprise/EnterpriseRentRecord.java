@@ -71,6 +71,11 @@ public class EnterpriseRentRecord {
     
     private Integer tenantId;
     
+    /**
+     * 租退电所在订单的类型：0：租退电套餐都是企业套餐，1：租电为换电套餐，退电为企业套餐，2：租退电套餐都是换电套餐
+     */
+    private Integer rentOrderType;
+    
     public static final Integer DEL_NORMAL = 0;
     
     public static final Integer DEL_DEL = 1;

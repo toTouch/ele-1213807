@@ -8,12 +8,16 @@ import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.bo.asset.ElectricityCabinetBO;
 import com.xiliulou.electricity.constant.CacheConstant;
+import com.xiliulou.electricity.constant.EleCabinetConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
+import com.xiliulou.electricity.constant.RegularConstant;
 import com.xiliulou.electricity.dto.asset.CabinetBatchOutWarehouseDTO;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
+import com.xiliulou.electricity.entity.ElectricityCabinetExtra;
 import com.xiliulou.electricity.entity.ElectricityCabinetModel;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.Store;
+import com.xiliulou.electricity.entity.merchant.MerchantPlaceFeeRecord;
 import com.xiliulou.electricity.enums.asset.AssetTypeEnum;
 import com.xiliulou.electricity.enums.asset.StockStatusEnum;
 import com.xiliulou.electricity.enums.asset.WarehouseOperateTypeEnum;
@@ -32,6 +36,7 @@ import com.xiliulou.electricity.request.asset.ElectricityCabinetEnableAllocateRe
 import com.xiliulou.electricity.request.asset.ElectricityCabinetOutWarehouseRequest;
 import com.xiliulou.electricity.request.asset.ElectricityCabinetSnSearchRequest;
 import com.xiliulou.electricity.service.ElectricityCabinetBoxService;
+import com.xiliulou.electricity.service.ElectricityCabinetExtraService;
 import com.xiliulou.electricity.service.ElectricityCabinetModelService;
 import com.xiliulou.electricity.service.ElectricityCabinetServerService;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
@@ -39,10 +44,12 @@ import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.StoreService;
 import com.xiliulou.electricity.service.asset.AssetWarehouseRecordService;
 import com.xiliulou.electricity.service.asset.ElectricityCabinetV2Service;
+import com.xiliulou.electricity.service.merchant.MerchantPlaceFeeRecordService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.ElectricityCabinetVO;
+import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -52,6 +59,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -94,6 +102,12 @@ public class ElectricityCabinetServiceV2Impl implements ElectricityCabinetV2Serv
     
     @Resource
     private AssetWarehouseRecordService assetWarehouseRecordService;
+    
+    @Resource
+    private MerchantPlaceFeeRecordService merchantPlaceFeeRecordService;
+    
+    @Resource
+    private ElectricityCabinetExtraService electricityCabinetExtraService;
     
     
     @Override
@@ -147,7 +161,13 @@ public class ElectricityCabinetServiceV2Impl implements ElectricityCabinetV2Serv
                 electricityCabinetBoxService.batchInsertBoxByModelIdV2(electricityCabinetModel, electricityCabinet.getId());
                 // 添加服务时间记录
                 electricityCabinetServerService.insertOrUpdateByElectricityCabinet(electricityCabinet, electricityCabinet);
-    
+                
+                // 新增柜机扩展参数
+                ElectricityCabinetExtra electricityCabinetExtra = ElectricityCabinetExtra.builder().eid(electricityCabinet.getId().longValue())
+                        .batteryCountType(EleCabinetConstant.BATTERY_COUNT_TYPE_NORMAL).tenantId(electricityCabinet.getTenantId()).delFlag(electricityCabinet.getDelFlag())
+                        .createTime(electricityCabinet.getCreateTime()).updateTime(electricityCabinet.getUpdateTime()).build();
+                electricityCabinetExtraService.insertOne(electricityCabinetExtra);
+                
                 // 异步记录
                 Long warehouseId = electricityCabinetAddRequest.getWarehouseId();
                 if (Objects.nonNull(warehouseId) && !Objects.equals(warehouseId, NumberConstant.ZERO_L)) {
@@ -197,6 +217,21 @@ public class ElectricityCabinetServiceV2Impl implements ElectricityCabinetV2Serv
             return Triple.of(false, "100559", "已选择项中有已出库电柜，请重新选择后操作");
         }
         
+        //  如果场地费不为空则需要判断 不能小于零 小数最多两位  整数不能大于8位
+        if (Objects.nonNull(outWarehouseRequest.getPlaceFee())) {
+            // 场地费必须大于零
+            if (Objects.equals(outWarehouseRequest.getPlaceFee().compareTo(BigDecimal.ZERO), NumberConstant.MINUS_ONE)) {
+                return Triple.of(false, "120235", "场地费必须大于等于零");
+            }
+        
+            // 场地费不能是负数
+            String placeFeeStr = outWarehouseRequest.getPlaceFee().toString();
+            if (!RegularConstant.PLACE_PATTERN.matcher(placeFeeStr).matches()) {
+                return Triple.of(false, "120234", "场地费保留两位小数且整数部分不能超过8位");
+            }
+        }
+        
+        
         //判断参数
         if (Objects.nonNull(outWarehouseRequest.getBusinessTimeType())) {
             if (Objects.equals(outWarehouseRequest.getBusinessTimeType(), ElectricityCabinetAddAndUpdate.ALL_DAY)) {
@@ -213,6 +248,9 @@ public class ElectricityCabinetServiceV2Impl implements ElectricityCabinetV2Serv
                 return Triple.of(false, "ELECTRICITY.0007", "不合法的参数");
             }
         }
+    
+        // 获取场地费变更记录
+        MerchantPlaceFeeRecord finalMerchantPlaceFeeRecord = getPlaceFeeRecord(electricityCabinet, outWarehouseRequest, SecurityUtils.getUserInfo());
         
         BeanUtil.copyProperties(outWarehouseRequest, electricityCabinet);
         electricityCabinet.setStockStatus(StockStatusEnum.UN_STOCK.getCode());
@@ -240,15 +278,75 @@ public class ElectricityCabinetServiceV2Impl implements ElectricityCabinetV2Serv
                             WarehouseOperateTypeEnum.WAREHOUSE_OPERATE_TYPE_OUT.getCode());
                 }
             }
+    
+            // 增加场地费变更记录
+            if (Objects.nonNull(finalMerchantPlaceFeeRecord)) {
+                merchantPlaceFeeRecordService.asyncInsertOne(finalMerchantPlaceFeeRecord);
+            }
         });
         
         return Triple.of(true, null, null);
+    }
+    
+    private MerchantPlaceFeeRecord getPlaceFeeRecord(ElectricityCabinet electricityCabinet, ElectricityCabinetOutWarehouseRequest outWarehouseRequest, TokenUser user) {
+        BigDecimal oldFee = BigDecimal.ZERO;
+        BigDecimal newFee = BigDecimal.ZERO;
+        // 判断新的场地费用和就的场地费用是否存在变化如果存在变化则将变换存入到历史表
+        if (Objects.nonNull(electricityCabinet.getPlaceFee())) {
+            oldFee = electricityCabinet.getPlaceFee();
+        } else {
+            oldFee = new BigDecimal(NumberConstant.MINUS_ONE);
+        }
+        
+        if (Objects.nonNull(outWarehouseRequest.getPlaceFee())) {
+            newFee = outWarehouseRequest.getPlaceFee();
+        } else {
+            newFee = new BigDecimal(NumberConstant.MINUS_ONE);
+        }
+        
+        
+        MerchantPlaceFeeRecord merchantPlaceFeeRecord = null;
+        // 场地费有变化则进行记录
+        if (!Objects.equals(newFee.compareTo(oldFee), NumberConstant.ZERO)) {
+            merchantPlaceFeeRecord = new MerchantPlaceFeeRecord();
+            merchantPlaceFeeRecord.setCabinetId(outWarehouseRequest.getId());
+            if (!Objects.equals(newFee.compareTo(BigDecimal.ZERO), NumberConstant.MINUS_ONE)) {
+                merchantPlaceFeeRecord.setNewPlaceFee(newFee);
+            }
+            if (!Objects.equals(oldFee.compareTo(BigDecimal.ZERO), NumberConstant.MINUS_ONE)) {
+                merchantPlaceFeeRecord.setOldPlaceFee(oldFee);
+            }
+            
+            if (Objects.nonNull(user)) {
+                merchantPlaceFeeRecord.setModifyUserId(user.getUid());
+                merchantPlaceFeeRecord.setTenantId(electricityCabinet.getTenantId());
+                long currentTimeMillis = System.currentTimeMillis();
+                merchantPlaceFeeRecord.setCreateTime(currentTimeMillis);
+                merchantPlaceFeeRecord.setUpdateTime(currentTimeMillis);
+            }
+        }
+        
+        return merchantPlaceFeeRecord;
     }
     
     @Override
     public Triple<Boolean, String, Object> batchOutWarehouse(ElectricityCabinetBatchOutWarehouseRequest batchOutWarehouseRequest) {
         if (!redisService.setNx(CacheConstant.ELE_BATCH_OUT_WAREHOUSE + SecurityUtils.getUid(), "1", 5 * 1000L, false)) {
             return Triple.of(false, "ELECTRICITY.0034", "操作频繁");
+        }
+    
+        //  如果场地费不为空则需要判断 不能小于零 小数最多两位  整数不能大于8位
+        if (Objects.nonNull(batchOutWarehouseRequest.getPlaceFee())) {
+            // 场地费必须大于零
+            if (Objects.equals(batchOutWarehouseRequest.getPlaceFee().compareTo(BigDecimal.ZERO), NumberConstant.MINUS_ONE)) {
+                return Triple.of(false, "120235", "场地费必须大于等于零");
+            }
+        
+            // 小数最多两位  整数不能大于8位
+            String placeFeeStr = batchOutWarehouseRequest.getPlaceFee().toString();
+            if (!RegularConstant.PLACE_PATTERN.matcher(placeFeeStr).matches()) {
+                return Triple.of(false, "120234", "场地费保留两位小数且整数部分不能超过8位");
+            }
         }
         
         List<Integer> eleIdList = batchOutWarehouseRequest.getIdList();
@@ -313,6 +411,9 @@ public class ElectricityCabinetServiceV2Impl implements ElectricityCabinetV2Serv
             redisService.addGeo(CacheConstant.CACHE_ELECTRICITY_CABINET_GEO + TenantContextHolder.getTenantId(), item.getId().toString(), new Point(batchOutWarehouseRequest.getLongitude(), batchOutWarehouseRequest.getLatitude()));
         });
     
+        // 保存场地费变更记录
+        merchantPlaceFeeRecordService.asyncRecords(electricityCabinetList, batchOutWarehouseRequest, SecurityUtils.getUserInfo(), TenantContextHolder.getTenantId());
+        
         // 异步记录
         List<ElectricityCabinetBO> electricityCabinetBOList = electricityCabinetMapper.selectListByIdList(batchOutWarehouseRequest.getIdList());
         if (CollectionUtils.isNotEmpty(electricityCabinetBOList)) {

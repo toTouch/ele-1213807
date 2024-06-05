@@ -26,6 +26,22 @@ import java.util.Set;
  */
 public interface ElectricityBatteryMapper extends BaseMapper<ElectricityBattery> {
     
+    /**
+     * 根据电池编码批量删除电池
+     * @param tenantId
+     * @param batterySnList
+     * @return
+     */
+    Integer batchDeleteBySnList(@Param("tenantId") Integer tenantId, @Param("batterySnList") List<String> batterySnList);
+    
+    /**
+     * 根据电池SN集查询电池
+     * <p>用于内部接口，删除电池使用</p>
+     * @param tenantId 租户ID
+     * @param batterySns 电池SN编码集
+     * @return List<ElectricityBattery>
+     */
+    List<ElectricityBattery> selectListBySnList(@Param("tenantId") Integer tenantId, @Param("batterySns") List<String> batterySns);
     
     List<ElectricityBattery> queryList(@Param("query") ElectricityBatteryQuery electricityBatteryQuery,
             @Param("offset") Long offset, @Param("size") Long size);

@@ -1,8 +1,13 @@
 package com.xiliulou.electricity.service.impl.enterprise;
 
+import com.xiliulou.db.dynamic.annotation.Slave;
+import com.xiliulou.electricity.bo.merchant.MerchantEnterprisePackageBO;
 import com.xiliulou.electricity.entity.enterprise.EnterprisePackage;
 import com.xiliulou.electricity.mapper.enterprise.EnterprisePackageMapper;
 import com.xiliulou.electricity.service.enterprise.EnterprisePackageService;
+import com.xiliulou.electricity.vo.enterprise.EnterprisePackageVO;
+import org.apache.commons.lang3.ObjectUtils;
+import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
 import org.springframework.transaction.annotation.Transactional;
@@ -12,6 +17,8 @@ import javax.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.CollectionUtils;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -25,7 +32,7 @@ import java.util.List;
 public class EnterprisePackageServiceImpl implements EnterprisePackageService {
     @Resource
     private EnterprisePackageMapper enterprisePackageMapper;
-
+    
     /**
      * 通过ID查询单条数据从DB
      *
@@ -36,7 +43,7 @@ public class EnterprisePackageServiceImpl implements EnterprisePackageService {
     public EnterprisePackage queryByIdFromDB(Long id) {
         return this.enterprisePackageMapper.queryById(id);
     }
-
+    
     /**
      * 通过ID查询单条数据从缓存
      *
@@ -47,7 +54,7 @@ public class EnterprisePackageServiceImpl implements EnterprisePackageService {
     public EnterprisePackage queryByIdFromCache(Long id) {
         return null;
     }
-
+    
     /**
      * 修改数据
      *
@@ -58,9 +65,9 @@ public class EnterprisePackageServiceImpl implements EnterprisePackageService {
     @Transactional(rollbackFor = Exception.class)
     public Integer update(EnterprisePackage enterprisePackage) {
         return this.enterprisePackageMapper.update(enterprisePackage);
-
+        
     }
-
+    
     /**
      * 通过主键删除数据
      *
@@ -72,16 +79,16 @@ public class EnterprisePackageServiceImpl implements EnterprisePackageService {
     public Boolean deleteById(Long id) {
         return this.enterprisePackageMapper.deleteById(id) > 0;
     }
-
+    
     @Override
     public void batchInsert(List<EnterprisePackage> packageList) {
         if(CollectionUtils.isEmpty(packageList)){
             return;
         }
-
+        
         this.enterprisePackageMapper.batchInsert(packageList);
     }
-
+    
     @Override
     public List<Long> selectByEnterpriseId(Long id) {
         return this.enterprisePackageMapper.selectByEnterpriseId(id);
@@ -95,5 +102,23 @@ public class EnterprisePackageServiceImpl implements EnterprisePackageService {
     @Override
     public int deleteByEnterpriseId(Long id) {
         return this.enterprisePackageMapper.deleteByEnterpriseId(id);
+    }
+    
+    @Slave
+    @Override
+    public List<EnterprisePackageVO> queryListByEnterpriseId(Long id) {
+        List<MerchantEnterprisePackageBO> enterprisePackageBOS = enterprisePackageMapper.selectListByEnterpriseId(id);
+        if (ObjectUtils.isEmpty(enterprisePackageBOS)) {
+            return Collections.emptyList();
+        }
+        
+        List<EnterprisePackageVO> list = new ArrayList<>();
+        enterprisePackageBOS.stream().forEach(enterprisePackage -> {
+            EnterprisePackageVO vo = new EnterprisePackageVO();
+            BeanUtils.copyProperties(enterprisePackage, vo);
+            list.add(vo);
+        });
+        
+        return list;
     }
 }

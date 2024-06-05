@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.merchant.ChannelEmployeePromotionMonthRecordMapper">
+    
+    <insert id="batchInsert">
+        insert into t_channel_employee_promotion_month_record (channel_employees_id  , tenant_id  , month_first_money  , month_renew_money
+         , month_total_money  ,fee_date   ,create_time ,update_time)
+        values
+        <foreach item="item" index="index" collection="statisticList" separator=",">
+            (#{item.channelEmployeesId}, #{item.tenantId}, #{item.monthFirstMoney}, #{item.monthRenewMoney},
+            #{item.monthTotalMoney},#{item.feeDate},#{item.createTime},#{item.updateTime})
+        </foreach>
+    </insert>
+    
+    <sql id="pageFilter">
+        <where>
+            del_flag = 0
+            <if test="tenantId != null">
+                and tenant_id = #{tenantId}
+            </if>
+            <if test="monthDate != null and monthDate != ''">
+                and month_date = #{monthDate}
+            </if>
+        </where>
+    </sql>
+    <select id="selectListByPage" resultType="com.xiliulou.electricity.vo.merchant.ChannelEmployeePromotionVO">
+        SELECT
+            count( 1 ) as 'channelEmployeeCount',
+            SUM( month_first_money ) as 'monthFirstMoney',
+            SUM( month_renew_money ) as 'monthRenewMoney',
+            SUM( month_total_money ) as 'monthTotalMoney',
+            any_value(month_date) as 'month_date'
+        FROM
+        t_channel_employee_promotion_month_record t
+        <include refid="pageFilter"/>
+        GROUP BY month_date
+        order by month_date desc
+        limit #{offset}, #{size}
+    </select>
+    
+    <select id="countTotal" resultType="java.lang.Integer">
+        select count(1) from (
+            SELECT
+            month_date
+            FROM
+            t_channel_employee_promotion_month_record t
+            <include refid="pageFilter"/>
+            GROUP BY
+            month_date
+        ) s
+    </select>
+    <sql id="column">
+        channel_employees_id  , tenant_id  , month_first_money  , month_renew_money,month_date
+         , month_total_money  ,fee_date   ,create_time ,update_time
+    </sql>
+    <select id="selectByFeeDate"
+            resultType="com.xiliulou.electricity.entity.merchant.ChannelEmployeePromotionMonthRecord">
+        select
+            <include refid="column"/>
+        from t_channel_employee_promotion_month_record
+        where
+            tenant_id = #{tenantId}
+             and month_date = #{monthDate}
+    </select>
+</mapper>

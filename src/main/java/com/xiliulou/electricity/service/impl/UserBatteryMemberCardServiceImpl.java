@@ -3,6 +3,7 @@ package com.xiliulou.electricity.service.impl;
 import cn.hutool.core.thread.ThreadUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
@@ -24,6 +25,7 @@ import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseChannelUserService;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.vo.FailureMemberCardVo;
+import com.xiliulou.electricity.vo.UserBatteryMemberCardChannelExitVo;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -290,6 +292,12 @@ public class UserBatteryMemberCardServiceImpl implements UserBatteryMemberCardSe
     public List<UserBatteryMemberCard> selectUseableListByTenantIds(int offset, int size, List<Integer> tenantIds) {
         return userBatteryMemberCardMapper.selectUseableListByTenantIds(offset, size , tenantIds);
     }
+    
+    @Slave
+    @Override
+    public List<UserBatteryMemberCardChannelExitVo> selectExpireExitList(int offset, int size) {
+        return userBatteryMemberCardMapper.selectExpireExitList(offset, size);
+    }
 
     /**
      * 校验用户电池套餐是否过期
@@ -391,4 +399,11 @@ public class UserBatteryMemberCardServiceImpl implements UserBatteryMemberCardSe
             }
         }, 1, TimeUnit.SECONDS);
     }
+    
+    @Slave
+    @Override
+    public Integer queryRenewalNumberByMerchantId(Long merchantId, Integer tenantId) {
+        return userBatteryMemberCardMapper.selectRenewalNumberByMerchantId(merchantId, tenantId);
+    }
+    
 }

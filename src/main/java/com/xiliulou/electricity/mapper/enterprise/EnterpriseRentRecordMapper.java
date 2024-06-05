@@ -36,4 +36,6 @@ public interface EnterpriseRentRecordMapper extends BaseMapper<EnterpriseRentRec
     int deleteByUid(Long uid);
     
     List<EnterpriseRentRecord> selectByUid(@Param("uid") Long uid);
+    
+    List<EnterpriseRentRecord> selectListAlreadyReturn(@Param("tenantId") Integer tenantId);
 }

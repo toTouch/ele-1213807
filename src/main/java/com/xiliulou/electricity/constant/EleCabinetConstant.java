@@ -14,5 +14,12 @@ public interface EleCabinetConstant {
     Integer POWER_TYPE_ORDINARY=0;
     Integer POWER_TYPE_BACKUP=1;
     
+    /**
+     * 柜机少电/多电类型：0--正常，1--少电，2--多电
+     */
+    int BATTERY_COUNT_TYPE_NORMAL = 0;
+    int BATTERY_COUNT_TYPE_LESS = 1;
+    int BATTERY_COUNT_TYPE_MORE = 2;
+    
     
 }

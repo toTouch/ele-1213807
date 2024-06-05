@@ -1,6 +1,10 @@
 package com.xiliulou.electricity.service;
 
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.bo.merchant.AreaCabinetNumBO;
+import com.xiliulou.electricity.entity.*;
+import com.xiliulou.electricity.dto.EleChargeConfigCalcDetailDto;
+import com.xiliulou.electricity.entity.EleChargeConfig;
 import com.xiliulou.electricity.entity.ElectricityAbnormalMessageNotify;
 import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
@@ -265,6 +269,10 @@ public interface ElectricityCabinetService {
     List<ElectricityCabinetCountVO> queryCabinetCount(ElectricityCabinetQuery cabinetQuery);
     
     void addElectricityCabinetLocToGeo(ElectricityCabinet electricityCabinet);
+    
+    Integer existsByAreaId(Long areaId);
+    
+    List<AreaCabinetNumBO> countByAreaGroup(List<Long> areaIdList);
     
     /**
      * <p>

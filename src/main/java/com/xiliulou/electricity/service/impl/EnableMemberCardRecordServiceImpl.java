@@ -106,4 +106,9 @@ public class EnableMemberCardRecordServiceImpl implements EnableMemberCardRecord
     public Integer updatePhoneByUid(Integer tenantId, Long uid, String newPhone) {
         return enableMemberCardRecordMapper.updatePhoneByUid(tenantId, uid, newPhone);
     }
+    
+    @Override
+    public List<EnableMemberCardRecord> queryListByOrderIds(List<String> orderIdList) {
+        return enableMemberCardRecordMapper.selectListByOrderIds(orderIdList);
+    }
 }

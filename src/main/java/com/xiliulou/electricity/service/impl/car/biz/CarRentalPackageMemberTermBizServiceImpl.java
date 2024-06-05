@@ -721,12 +721,14 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
             }
             
             // 购买的时候，赠送的优惠券是否被使用，若为使用中、已使用，则不允许退租
-            UserCoupon userCoupon = userCouponService.selectBySourceOrderId(rentalPackageOrderEntity.getOrderNo());
-            if (ObjectUtils.isNotEmpty(userCoupon)) {
-                Integer status = userCoupon.getStatus();
-                if (UserCoupon.STATUS_IS_BEING_VERIFICATION.equals(status) || UserCoupon.STATUS_USED.equals(status)) {
-                    userMemberInfoVo.setCarRentalPackageOrderRefundFlag(false);
-                }
+            List<UserCoupon> userCoupons = userCouponService.selectListBySourceOrderId(rentalPackageOrderEntity.getOrderNo());
+            if (!CollectionUtils.isEmpty(userCoupons)) {
+                userCoupons.forEach(userCoupon -> {
+                    Integer status = userCoupon.getStatus();
+                    if (UserCoupon.STATUS_IS_BEING_VERIFICATION.equals(status) || UserCoupon.STATUS_USED.equals(status) || UserCoupon.STATUS_DESTRUCTION.equals(status)) {
+                        userMemberInfoVo.setCarRentalPackageOrderRefundFlag(false);
+                    }
+                });
             }
         } else {
             userMemberInfoVo.setCarRentalPackageOrderRefundFlag(false);

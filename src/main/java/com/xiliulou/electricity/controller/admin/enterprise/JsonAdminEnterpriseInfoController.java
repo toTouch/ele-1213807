@@ -11,6 +11,7 @@ import com.xiliulou.electricity.service.UserDataScopeService;
 import com.xiliulou.electricity.service.enterprise.CloudBeanUseRecordService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseChannelUserService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseInfoService;
+import com.xiliulou.electricity.service.enterprise.EnterpriseRentRecordService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.validator.CreateGroup;
@@ -29,6 +30,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.util.Collections;
 import java.util.List;
@@ -50,6 +52,9 @@ public class JsonAdminEnterpriseInfoController extends BaseController {
     private EnterpriseChannelUserService enterpriseChannelUserService;
     @Autowired
     private UserDataScopeService userDataScopeService;
+    
+    @Resource
+    private EnterpriseRentRecordService enterpriseRentRecordService;
 
     /**
      * 分页列表
@@ -125,6 +130,15 @@ public class JsonAdminEnterpriseInfoController extends BaseController {
                 .build();
 
         return R.ok(enterpriseInfoService.selectByPageCount(query));
+    }
+    
+    /**
+     * 根据已经完成的租退电记录生成详情
+     */
+    @GetMapping("/admin/enterpriseInfo/createEnterpriseRecordDetail")
+    public R createEnterpriseRecordDetail(@RequestParam(value = "tenantId", required = false) Integer tenantId) {
+        
+        return R.ok(enterpriseRentRecordService.createEnterpriseRecordDetail(tenantId));
     }
 
     /**

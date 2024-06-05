@@ -16,11 +16,12 @@
         <result property="createTime" column="create_time" jdbcType="INTEGER"/>
         <result property="updateTime" column="update_time" jdbcType="INTEGER"/>
         <result property="remark" column="remark" jdbcType="VARCHAR"/>
+        <result property="paymentStatus" column="payment_status" jdbcType="INTEGER"/>
     </resultMap>
 
     <!-- 基础字段 -->
     <sql id="selectEnterpriseChannelUser">
-        select id, uid, invitation_way, enterprise_id, franchisee_id, tenant_id, renewal_status, cloud_bean_status, inviter_id, create_time, update_time, remark from t_enterprise_channel_user
+        select id, uid, invitation_way, enterprise_id, franchisee_id, tenant_id, renewal_status, cloud_bean_status, inviter_id, create_time, update_time, remark,payment_status from t_enterprise_channel_user
     </sql>
 
     <!--查询单个-->
@@ -245,7 +246,9 @@
             <if test="phone != null ">
                 and tui.phone = #{phone}
             </if>
-        
+            <if test="uid != null">
+                and tui.uid != #{uid}
+            </if>
         </where>
         limit 1
     </select>
@@ -319,6 +322,20 @@
        
     </select>
     
+    <select id="selectListByEnterpriseId"
+        resultType="com.xiliulou.electricity.entity.enterprise.EnterpriseChannelUser">
+        SELECT
+        enterprise_id,
+        id
+        FROM
+        t_enterprise_channel_user
+        WHERE
+        enterprise_id IN
+        <foreach collection="list" item="enterpriseId" separator="," open="(" close=")">
+            #{enterpriseId}
+        </foreach>
+    </select>
+    
     <update id="updateRenewStatus">
         update t_enterprise_channel_user
         <set>
@@ -381,6 +398,10 @@
             #{id}
         </foreach>
       
+    </update>
+    
+    <update id="updateByEnterpriseId">
+        update t_enterprise_channel_user set inviter_id = #{inviterId}, update_time = #{updateTime} where enterprise_id = #{enterpriseId}
     </update>
     
     <delete id="deleteByEnterpriseId">

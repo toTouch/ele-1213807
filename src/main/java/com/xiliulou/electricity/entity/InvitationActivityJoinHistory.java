@@ -79,6 +79,8 @@ public class InvitationActivityJoinHistory {
      * @see PackageTypeEnum
      */
     private Integer packageType;
+    
+    private Integer delFlag;
 
     public static final Integer DEL_NORMAL = 0;
     public static final Integer DEL_DEL = 1;

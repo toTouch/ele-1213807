@@ -100,7 +100,7 @@ public interface CarRentalPackageMapper {
      * @param couponId
      * @return
      */
-    List<CarRentalPackagePo> selectByCouponId(@Param("couponId") Long couponId);
+    List<CarRentalPackagePo> selectByCouponId(@Param("couponId") String couponId);
     
     /**
      * <p>

@@ -200,6 +200,15 @@ public class ElectricityCabinetOtherSetting {
     private String timedChargeParams;
     
     /**
+     * 柜机断电锁仓
+     * <pre>
+     *     0-开
+     *     1-关
+     * </pre>
+     */
+    private Integer restartLockCell;
+    
+    /**
      * 智能充电
      * <pre>
      *     0 - 打开
@@ -212,8 +221,9 @@ public class ElectricityCabinetOtherSetting {
      * 在位检测 0：关闭 1：打开  （默认关闭）
      */
     private Integer checkBatteryExit;
+    
     /**
-     * 少电告警
+     * 少电告警/少电柜机
      */
     private Integer minBatteryCountAlarm;
     
@@ -236,4 +246,9 @@ public class ElectricityCabinetOtherSetting {
      * 单个充电器最大功率
      */
     private Integer cellChargingMaxPower;
+    
+    /**
+     * 多电告警/多电柜机
+     */
+    private Integer maxBatteryCountAlarm;
 }

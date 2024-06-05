@@ -253,9 +253,29 @@
     </select>
     
     <select id="selectExpireList" resultMap="UserBatteryMemberCardMap">
-        <include refid="selectUserBatteryMemberCard"/>
-        where member_card_expire_time &lt;= #{memberCardExpireTime}
-        limit #{offset},#{size}
+        SELECT
+            id,
+            uid,
+            member_card_id,
+            order_id,
+            member_card_expire_time,
+            order_expire_time,
+            order_effective_time,
+            remaining_number,
+            order_remaining_number,
+            member_card_status,
+            disable_member_card_time,
+            del_flag,
+            create_time,
+            update_time,
+            card_pay_count
+        FROM
+            t_user_battery_member_card c
+        where c.member_card_expire_time &lt;= #{memberCardExpireTime}
+          and not EXISTS (
+            select 1 from t_enterprise_channel_user_exit b where b.uid = c.uid and b.type != 2
+        )
+            limit #{offset},#{size}
     </select>
 
     <select id="selectUseableList" resultMap="UserBatteryMemberCardMap">
@@ -299,4 +319,48 @@
         limit #{offset},#{size}
     </select>
     
+    <select id="selectRenewalNumberByMerchantId" resultType="integer">
+        SELECT
+            count( 1 ) from
+            (SELECT 1
+             FROM
+                 t_user_info_extra uie
+                     LEFT JOIN t_electricity_member_card_order emco ON uie.uid = emco.uid
+                     LEFT JOIN t_battery_membercard_refund_order bmro ON (emco.order_id)=(bmro.member_card_order_no collate utf8mb4_0900_ai_ci)
+             WHERE
+                 uie.merchant_id = #{merchantId}  and  uie.tenant_id =#{tenantId} and
+                 emco.pay_count > 1
+               AND emco.STATUS = 1
+               AND (bmro.status is null or bmro.status != 4)
+             GROUP BY	uie.uid) a
+    </select>
+    
+    <select id="selectExpireExitList"
+        resultType="com.xiliulou.electricity.vo.UserBatteryMemberCardChannelExitVo">
+        SELECT
+            b.id,
+            b.uid,
+            b.member_card_id,
+            b.order_id,
+            b.member_card_expire_time,
+            b.order_expire_time,
+            b.order_effective_time,
+            b.remaining_number,
+            b.order_remaining_number,
+            b.member_card_status,
+            b.disable_member_card_time,
+            b.del_flag,
+            b.create_time,
+            b.update_time,
+            b.card_pay_count,
+            a.id as 'channelUserExitId',
+            a.channel_user_id as 'channelUserId'
+        FROM
+            t_enterprise_channel_user_exit a
+                INNER JOIN t_user_battery_member_card b on b.uid = a.uid
+        where
+            a.del_flag = 0
+          and a.type = 0
+            limit #{offset},#{size}
+    </select>
 </mapper>

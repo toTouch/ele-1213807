@@ -1,9 +1,12 @@
 package com.xiliulou.electricity.service.impl;
 
 import com.xiliulou.core.thread.XllThreadPoolExecutors;
+import com.xiliulou.db.dynamic.annotation.Slave;
+import com.xiliulou.electricity.bo.batteryPackage.UserBatteryMemberCardPackageBO;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mapper.UserBatteryMemberCardPackageMapper;
 import com.xiliulou.electricity.service.*;
+import com.xiliulou.electricity.service.enterprise.AnotherPayMembercardRecordService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.tuple.Triple;
@@ -43,6 +46,9 @@ public class UserBatteryMemberCardPackageServiceImpl implements UserBatteryMembe
     
     @Autowired
     private UserBatteryTypeService userBatteryTypeService;
+    
+    @Resource
+    private AnotherPayMembercardRecordService anotherPayMembercardRecordService;
     
     /**
      * 通过ID查询单条数据从DB
@@ -249,6 +255,9 @@ public class UserBatteryMemberCardPackageServiceImpl implements UserBatteryMembe
         }
         
         userBatteryMemberCardService.updateByUid(userBatteryMemberCardUpdate);
+    
+        // 修改企业用户当前套餐的支付记录对应的开始和结束时间
+        anotherPayMembercardRecordService.handlerOrderEffect(userBatteryMemberCardUpdate, userBatteryMemberCard.getUid());
         
         //删除资源包
         this.deleteByOrderId(userBatteryMemberCardPackageLatest.getOrderId());
@@ -282,6 +291,28 @@ public class UserBatteryMemberCardPackageServiceImpl implements UserBatteryMembe
         
         //更新用户电池型号
         userBatteryTypeService.updateUserBatteryType(electricityMemberCardOrder, userInfo);
+    }
+    
+    @Override
+    public Integer deleteChannelMemberCardByUid(Long uid) {
+        return this.userBatteryMemberCardPackageMapper.deleteChannelMemberCardByUid(uid);
+    }
+    
+    @Slave
+    @Override
+    public List<UserBatteryMemberCardPackage> queryChannelListByUid(Long uid) {
+        return userBatteryMemberCardPackageMapper.listChannelByUid(uid);
+    }
+    
+    /**
+     * 根据uid查询用户最新的一条的企业套餐的信息
+     * @param uid
+     * @return
+     */
+    @Slave
+    @Override
+    public UserBatteryMemberCardPackageBO queryEnterprisePackageByUid(Long uid) {
+        return userBatteryMemberCardPackageMapper.selectLastEnterprisePackageByUid(uid);
     }
     
 }

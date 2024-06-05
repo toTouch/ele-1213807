@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.merchant.MerchantCabinetPowerMonthRecordMapper">
+    <!-- 基础字段 -->
+    <sql id="basic_field">
+        id, date, place_count, month_sum_power, month_sum_charge, tenant_id, del_flag, create_time, update_time
+    </sql>
+    
+    <select id="selectListByPage" resultType="com.xiliulou.electricity.vo.merchant.MerchantCabinetPowerMonthRecordVO">
+        select
+        <include refid="basic_field"/>
+        from t_merchant_cabinet_power_month_record
+        <where>
+            del_flag = 0
+            <if test="monthDate != null and monthDate != ''">
+                and date = #{monthDate}
+            </if>
+            <if test="tenantId != null">
+                and tenant_id = #{tenantId}
+            </if>
+        </where>
+        order by date desc
+        <if test="offset != null and size != null">
+            limit #{offset}, #{size}
+        </if>
+    </select>
+    
+    <select id="countTotal" resultType="java.lang.Integer">
+        select count(1)
+        from t_merchant_cabinet_power_month_record
+        <where>
+            del_flag = 0
+            <if test="monthDate != null and monthDate != ''">
+                and date = #{monthDate}
+            </if>
+            <if test="tenantId != null">
+                and tenant_id = #{tenantId}
+            </if>
+        </where>
+    </select>
+</mapper>

@@ -6,7 +6,10 @@
 	<sql id="selectUser">
        	select   uid, phone, login_pwd, salt, avatar, name, gender, del_flag, lock_flag, user_type, create_time, update_time, lang, city, province, address, cid, ref_id, tenant_id, data_type, source        from t_user
     </sql>
-
+	<update id="removeById">
+		update t_user set del_flag = 1, update_time = #{updateTime} where uid = #{uid}
+	</update>
+	
 	<!--查询单个-->
 	<select id="selectById" resultType="com.xiliulou.electricity.entity.User">
 		<include refid="selectUser"/>
@@ -88,7 +91,7 @@
 				and user_type = #{type}
 			</if>
 			<if test="type != null and type ==-1">
-				and user_type !=11
+				and user_type not in (11, 12, 13, 14)
 			</if>
 			<if test="phone != null and phone != ''">
 				and phone=#{phone}
@@ -123,7 +126,7 @@
 				and user_type = #{type}
 			</if>
 			<if test="type != null and type ==-1">
-				and user_type !=11
+				and user_type not in (11, 12, 13, 14)
 			</if>
 			<if test="phone != null and phone != ''">
 				and phone=#{phone}
@@ -276,8 +279,152 @@
 			</if>
 		</where>
 	</select>
+	<select id="checkMerchantExist" resultType="com.xiliulou.electricity.entity.User">
+		SELECT
+			name,
+			phone,
+			uid
+		FROM
+			t_user
+		WHERE
+		  del_flag = 0
+		  and phone = #{phone}
+		  
+		  AND user_type = #{userType}
+		  
+		  <if test="tenantId != null">
+			  AND tenant_id = #{tenantId}
+		  </if>
+		  
+		  <if test="uid != null">
+			  and uid != #{uid}
+		  </if>
+	</select>
+	
+	<select id="queryListByUidList" resultType="com.xiliulou.electricity.entity.User">
+		SELECT
+			name,
+		   phone,
+		   uid
+		FROM
+			t_user
+		WHERE
+			del_flag = 0
+		  and tenant_id = #{tenantId}
+		  AND uid IN
+		  <foreach collection="uidList" separator="," open="(" close=")" item="uid">
+			  #{uid}
+		  </foreach>
+	</select>
+	
+	<select id="selectByUid" resultType="com.xiliulou.electricity.entity.User">
+		<include refid="selectUser"/>
+		where del_flag = 0 and uid = #{uid}
+	</select>
+	
+	<select id="checkMerchantExist" resultType="com.xiliulou.electricity.entity.User">
+		SELECT
+		name,
+		phone,
+		uid
+		FROM
+		t_user
+		WHERE
+		del_flag = 0
+		and phone = #{phone}
+		
+		AND user_type = #{userType}
+		
+		<if test="tenantId != null">
+			AND tenant_id = #{tenantId}
+		</if>
+		
+		<if test="uid != null">
+			and uid != #{uid}
+		</if>
+	</select>
+	
+	<select id="selectByUid" resultType="com.xiliulou.electricity.entity.User">
+		<include refid="selectUser"/>
+		where del_flag = 0 and uid = #{uid}
+	</select>
+	
+	<select id="queryListByUidList" resultType="com.xiliulou.electricity.entity.User">
+		SELECT
+		name,
+		phone,
+		uid
+		FROM
+		t_user
+		WHERE
+		del_flag = 0
+		and tenant_id = #{tenantId}
+		AND uid IN
+		<foreach collection="uidList" separator="," open="(" close=")" item="uid">
+			#{uid}
+		</foreach>
+	</select>
 	
 	<update id="updatePhoneByUid">
 		update t_user set phone=#{newPhone},update_time=#{updateTime} where uid=#{uid} and tenant_id = #{tenantId}
+	</update>
+	<update id="updateMerchantUser">
+		update t_user
+		<set>
+			<if test="phone != null">
+				phone = #{phone},
+			</if>
+			<if test="name != null">
+				name = #{name},
+			</if>
+			<if test="updateTime != null">
+				update_time = #{updateTime},
+			</if>
+		    <if test="lockFlag != null">
+				lock_flag = #{lockFlag},
+			</if>
+		</set>
+		where uid = #{uid}
+	</update>
+	
+    <update id="batchRemoveByUidList">
+		update t_user set del_flag = 1, update_time = #{updateTime}
+		    where uid in
+		    <foreach collection="uidList" item="uid" close=")" open="(" separator=",">
+				#{uid}
+			</foreach>
+		    and del_flag = 0
+	</update>
+	
+	<update id="updateMerchantUser">
+		update t_user
+		<set>
+			<if test="phone != null">
+				phone = #{phone},
+			</if>
+			<if test="name != null">
+				name = #{name},
+			</if>
+			<if test="updateTime != null">
+				update_time = #{updateTime},
+			</if>
+			<if test="lockFlag != null">
+				lock_flag = #{lockFlag},
+			</if>
+		</set>
+		where uid = #{uid}
+	</update>
+	
+	<update id="removeById">
+		update t_user set del_flag = 1, update_time = #{updateTime} where uid = #{uid}
+	</update>
+	
+	<update id="batchRemoveByUidList">
+		update t_user set del_flag = 1, update_time = #{updateTime}
+		where uid in
+		<foreach collection="uidList" item="uid" close=")" open="(" separator=",">
+			#{uid}
+		</foreach>
+		and del_flag = 0
 	</update>
 </mapper>

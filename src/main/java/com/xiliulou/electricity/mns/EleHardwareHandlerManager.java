@@ -4,13 +4,12 @@ import com.google.common.collect.Lists;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.thread.XllThreadPoolExecutors;
-import com.xiliulou.core.utils.TimeUtils;
 import com.xiliulou.electricity.config.TenantConfig;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.CommonConstant;
+import com.xiliulou.electricity.constant.ElectricityIotConstant;
 import com.xiliulou.electricity.entity.EleOnlineLog;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
-import com.xiliulou.electricity.constant.ElectricityIotConstant;
 import com.xiliulou.electricity.entity.Tenant;
 import com.xiliulou.electricity.handler.iot.IElectricityHandler;
 import com.xiliulou.electricity.service.EleOnlineLogService;
@@ -133,7 +132,7 @@ public class EleHardwareHandlerManager extends HardwareHandlerManager {
             newElectricityCabinet.setDeviceName(electricityCabinet.getDeviceName());
             newElectricityCabinet.setId(electricityCabinet.getId());
             newElectricityCabinet.setOnlineStatus(CommonConstant.STATUS_ONLINE.equals(receiverMessage.getStatus()) ? 0 : 1);
-            newElectricityCabinet.setUpdateTime(DateUtils.parseMillsDateStrToTimestamp(receiverMessage.getTime()));
+            newElectricityCabinet.setUpdateTime(DateUtils.parseMillsDateStrToTimestampV2(receiverMessage.getTime()));
 
             EleOnlineLog eleOnlineLog = new EleOnlineLog();
             eleOnlineLog.setElectricityId(electricityCabinet.getId());

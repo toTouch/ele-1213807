@@ -22,10 +22,8 @@ public class JsonUserBatteryModelController {
     /**
      * 获取租户所有电池型号
      */
-    @GetMapping("/user/battery/model/all")
+    @GetMapping({"/user/battery/model/all", "/merchant/battery/model/all"})
     public R selectBatteryTypeAll() {
         return R.ok(batteryModelService.selectBatteryTypeAll());
     }
-
-
 }

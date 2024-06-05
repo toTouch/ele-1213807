@@ -1,6 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.xiliulou.electricity.mapper.UserCouponMapper">
+    
+    <sql id="field">
+        `id`, `source`, `activity_id`, `coupon_id`, `name`, `discount_type`, `status`, `uid`, `phone`, `deadline`, `order_id`, `del_flag`, `create_time`,
+        `update_time`, `tenant_id`, `franchisee_id`, `activity_rule_id`, `source_order_id`
+    </sql>
 
     <!-- 根据来源订单编码作废掉未使用的优惠券 -->
     <update id="cancelBySourceOrderIdAndUnUse">
@@ -176,7 +181,13 @@
             </if>
         </where>
     </select>
-
+    
+    <select id="selectListBySourceOrderId" resultType="com.xiliulou.electricity.entity.UserCoupon">
+        select <include refid="field"/>
+        from t_user_coupon
+        where `source_order_id` = #{orderId}
+    </select>
+    
     <update id="update">
         update t_user_coupon
         <set>

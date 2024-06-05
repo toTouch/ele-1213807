@@ -230,6 +230,21 @@
         and del_flag = 0
     </select>
     
+    <select id="selectListByElectricityCabinetIdS" resultType="com.xiliulou.electricity.entity.ElectricityCabinetBox">
+        select id, electricity_cabinet_id, cell_no, sn, usable_status, status,is_lock,is_fan,is_heat,is_light, create_time, update_time,
+        del_flag,tenant_id,temperature,battery_type,charge_v,charge_a,version,lock_type,empty_grid_start_time
+        from t_electricity_cabinet_box
+        <where>
+            tenant_id = #{tenantId}
+            <if test="electricityCabinetIdS != null and electricityCabinetIdS.size() > 0">
+                and electricity_cabinet_id in
+                <foreach collection="electricityCabinetIdS" item="item" index="index" separator="," open="(" close=")">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+    </select>
+    
     <!--新增所有列-->
     <insert id="batchInsertEleBox">
         insert into t_electricity_cabinet_box (electricity_cabinet_id, cell_no, create_time, update_time, del_flag, tenant_id) values
