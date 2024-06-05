@@ -36,7 +36,7 @@
         from t_user_operate_log
         <where>
             <if test="query.operateType != null and query.operateType.trim()!=''">
-                and operateType like concat('%',#{query.operateType},'%')
+                and operateType = #{query.operateType}
             </if>
             <if test="query.tenantId != null">
                 and tenantId = #{query.tenantId}

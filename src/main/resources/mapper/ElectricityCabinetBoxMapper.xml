@@ -46,7 +46,7 @@
         update_time, del_flag,tenant_id,temperature,battery_type,charge_v
         from t_electricity_cabinet_box
         where del_flag=0 AND electricity_cabinet_id=#{id}
-        and status=0 and usable_status=0
+        and status=0 and usable_status=0 and is_lock = 1
         <if test="fullCharged != null">
             and power >= #{fullCharged}
         </if>
@@ -155,6 +155,7 @@
             and usable_status = 0
             and del_flag = 0
             and status = 0
+            and is_lock = 1
             and power &gt;= #{fullV}
             <if test="type != null and type!= ''">
                 and battery_type = #{type}
@@ -200,6 +201,20 @@
         </where>
         order by cell_no desc
     </select>
+    
+    <select id="selectListByEids" resultType="com.xiliulou.electricity.entity.ElectricityCabinetBox">
+        select
+        id, electricity_cabinet_id, cell_no, sn, usable_status,
+        status,is_lock,is_fan,temperature,is_heat,is_light,
+        temperature,battery_type,power,charge_v,b_id
+        from t_electricity_cabinet_box
+        where
+        del_flag = 0
+        and electricity_cabinet_id in
+        <foreach collection="eIdList" separator="," open="(" close=")" item="id">
+            #{id}
+        </foreach>
+    </select>
 
     <update id="modifyCellUsableStatus">
         update t_electricity_cabinet_box
@@ -222,7 +237,9 @@
 
     <select id="selectEleBoxAttrByEid" resultType="com.xiliulou.electricity.entity.ElectricityCabinetBox">
         select
-        id, status ,power ,sn, battery_type
+            id, electricity_cabinet_id, cell_no, sn, usable_status,
+            status,is_lock,is_fan,temperature,is_heat,is_light,
+            temperature,battery_type,power,charge_v,b_id
         from t_electricity_cabinet_box
         where
         electricity_cabinet_id = #{eid}
@@ -245,6 +262,16 @@
         </where>
     </select>
     
+    <select id="selectEleBoxByBatteryId" resultType="com.xiliulou.electricity.entity.ElectricityCabinetBox">
+        SELECT
+            id, electricity_cabinet_id, cell_no, sn, usable_status, status,is_lock,is_fan,is_heat,is_light, create_time, update_time,
+            del_flag,tenant_id,temperature,battery_type,charge_v,charge_a,version,lock_type,empty_grid_start_time
+        FROM t_electricity_cabinet_box
+        WHERE b_id = #{batteryId}
+          AND del_flag = 0
+        ORDER BY update_time LIMIT 1
+    </select>
+    
     <!--新增所有列-->
     <insert id="batchInsertEleBox">
         insert into t_electricity_cabinet_box (electricity_cabinet_id, cell_no, create_time, update_time, del_flag, tenant_id) values
@@ -252,5 +279,33 @@
             (#{item.electricityCabinetId}, #{item.cellNo}, #{item.createTime}, #{item.updateTime}, #{item.delFlag}, #{item.tenantId})
         </foreach>
     </insert>
+    
+    <select id="selectAllBoxByBatteryId" resultType="com.xiliulou.electricity.entity.ElectricityCabinetBox">
+        SELECT id,
+               electricity_cabinet_id,
+               cell_no,
+               sn,
+               usable_status,
+               status,
+               is_lock,
+               is_fan,
+               is_heat,
+               is_light,
+               create_time,
+               update_time,
+               del_flag,
+               tenant_id,
+               temperature,
+               battery_type,
+               charge_v,
+               charge_a,
+               version,
+               lock_type,
+               power,
+               empty_grid_start_time
+        FROM t_electricity_cabinet_box
+        WHERE electricity_cabinet_id = #{eid}
+          AND del_flag = 0
+    </select>
 
 </mapper>

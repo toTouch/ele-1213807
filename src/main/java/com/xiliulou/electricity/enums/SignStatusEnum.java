@@ -17,7 +17,7 @@ public enum SignStatusEnum implements BasicEnum<Integer, String>  {
     
     SIGNED_COMPLETED(1, "签署了，部署完成"),
     
-    UNSIGNED(2, "签署了，部署完成");
+    UNSIGNED(2, "未做电子签名");
     
     private final Integer code;
     

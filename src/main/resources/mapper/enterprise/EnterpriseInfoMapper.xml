@@ -137,7 +137,7 @@
         ) a
     </select>
     
-    <select id="queryListByIdList" resultType="com.xiliulou.electricity.entity.enterprise.EnterpriseInfo">
+    <select id="selectListByIdList" resultType="com.xiliulou.electricity.entity.enterprise.EnterpriseInfo">
         SELECT
         id,
         total_bean_amount

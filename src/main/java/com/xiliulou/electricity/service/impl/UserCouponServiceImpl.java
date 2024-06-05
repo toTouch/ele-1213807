@@ -166,6 +166,7 @@ public class UserCouponServiceImpl implements UserCouponService {
      * @return
      */
     @Override
+    @Slave
     public List<UserCoupon> selectEffectiveByUid(Long uid, List<Long> ids, Long deadline) {
         if (!ObjectUtils.allNotNull(uid, ids, deadline)) {
             return null;
@@ -174,6 +175,7 @@ public class UserCouponServiceImpl implements UserCouponService {
     }
     
     @Override
+    @Slave
     public R queryList(UserCouponQuery userCouponQuery) {
         List<UserCouponVO> userCouponList = userCouponMapper.queryList(userCouponQuery);
         if (CollectionUtils.isEmpty(userCouponList)) {
@@ -609,17 +611,20 @@ public class UserCouponServiceImpl implements UserCouponService {
     }
     
     @Override
+    @Slave
     public UserCoupon queryByIdFromDB(Integer userCouponId) {
         return userCouponMapper.selectById(userCouponId);
     }
     
     @Override
+    @Slave
     public UserCoupon queryByActivityIdAndCouponId(Integer activityId, Long activityRuleId, Integer couponId, Long uid) {
         return userCouponMapper.selectOne(new LambdaQueryWrapper<UserCoupon>().eq(UserCoupon::getActivityId, activityId).eq(UserCoupon::getActivityRuleId, activityRuleId)
                 .eq(UserCoupon::getCouponId, couponId).eq(UserCoupon::getUid, uid));
     }
     
     @Override
+    @Slave
     public List<UserCoupon> selectListByActivityIdAndCouponId(Integer activityId, Long activityRuleId, Integer couponId, Long uid) {
         return userCouponMapper.selectList(new LambdaQueryWrapper<UserCoupon>().eq(UserCoupon::getActivityId, activityId).eq(UserCoupon::getActivityRuleId, activityRuleId)
                 .eq(UserCoupon::getCouponId, couponId).eq(UserCoupon::getUid, uid));

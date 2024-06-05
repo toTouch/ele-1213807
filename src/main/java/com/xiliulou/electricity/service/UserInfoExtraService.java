@@ -26,7 +26,7 @@ public interface UserInfoExtraService {
     
     void bindMerchant(Long uid, String orderId ,Long memberCardId);
     
-    MerchantInviterVO querySuccessInviter(Long uid, Integer tenantId);
+    MerchantInviterVO querySuccessInviter(Long uid);
     
     R selectInviterList(MerchantModifyInviterRequest request);
     

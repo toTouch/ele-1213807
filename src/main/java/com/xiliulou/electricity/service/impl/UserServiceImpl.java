@@ -1149,7 +1149,7 @@ public class UserServiceImpl implements UserService {
             
             
             // 设置用户的邀请人名称
-            item.setInviterUserName(userInfoService.queryFinalInviterUserName(item.getUid(), item.getTenantId()));
+            item.setInviterUserName(userInfoService.queryFinalInviterUserName(item.getUid()));
 
         }).collect(Collectors.toList());
     }

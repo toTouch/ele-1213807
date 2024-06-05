@@ -3,6 +3,7 @@ package com.xiliulou.electricity.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
 import com.xiliulou.electricity.entity.ElectricityTradeOrder;
@@ -10,7 +11,6 @@ import com.xiliulou.electricity.entity.SplitAccountFailRecord;
 import com.xiliulou.electricity.entity.Store;
 import com.xiliulou.electricity.entity.StoreAmount;
 import com.xiliulou.electricity.entity.StoreSplitAccountHistory;
-import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.mapper.StoreAmountMapper;
 import com.xiliulou.electricity.query.StoreAccountQuery;
 import com.xiliulou.electricity.service.SplitAccountFailRecordService;
@@ -160,6 +160,7 @@ public class StoreAmountServiceImpl implements StoreAmountService {
         storeSplitAccountHistoryService.insert(history);
     }
 
+    @Slave
     @Override
     public R queryList(StoreAccountQuery storeAccountQuery) {
         List<StoreAmount> storeAmountList=storeAmountMapper.queryList(storeAccountQuery);
@@ -182,6 +183,7 @@ public class StoreAmountServiceImpl implements StoreAmountService {
         return R.ok(list);
     }
 
+    @Slave
     @Override
     public R queryCount(StoreAccountQuery storeAccountQuery) {
         return R.ok(storeAmountMapper.queryCount(storeAccountQuery));

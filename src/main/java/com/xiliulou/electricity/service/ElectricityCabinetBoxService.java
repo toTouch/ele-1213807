@@ -81,4 +81,9 @@ public interface ElectricityCabinetBoxService {
     List<ElectricityCabinetBox> selectEleBoxAttrByEid(Integer id);
     
     List<ElectricityCabinetBox> listByElectricityCabinetIdS(List<Integer> electricityCabinetIdS, Integer tenantId);
+    
+    List<ElectricityCabinetBox> listCabineBoxByEids(List<Integer> electricityCabinetIdList);
+    
+    
+    List<ElectricityCabinetBox> selectAllBoxByBatteryId(Integer id);
 }

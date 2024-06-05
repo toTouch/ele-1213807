@@ -1,69 +1,87 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.xiliulou.electricity.mapper.RoleMapper">
-
-
-	<!--新增所有列-->
-	<insert id="insertOne" keyProperty="id" useGeneratedKeys="true">
-        insert into t_role(name, code, `desc`, create_time, update_time,tenant_id)
-        values (#{name}, #{code}, #{desc}, #{createTime}, #{updateTime},#{tenantId})
+    
+    
+    <!--新增所有列-->
+    <insert id="insertOne" keyProperty="id" useGeneratedKeys="true">
+        insert into t_role(name, code, `desc`, create_time, update_time, tenant_id)
+        values (#{name}, #{code}, #{desc}, #{createTime}, #{updateTime}, #{tenantId})
     </insert>
-
-	<update id="update">
-		update t_role
-		<set>
-			<if test="name != null and name != '' ">
-				name = #{name},
-			</if>
-			<if test="code != null and code != '' ">
-				code = #{code},
-			</if>
-			<if test="desc != null and desc != '' ">
-				`desc` = #{desc},
-			</if>
-			<if test="createTime != null  ">
-				create_time = #{createTime},
-			</if>
-			<if test="updateTime != null  ">
-				update_time = #{updateTime},
-			</if>
-		</set>
-		where id =#{id} and tenant_id = #{tenantId}
-
-	</update>
-
-
-	<!--通过实体作为筛选条件查询-->
-	<select id="queryAll" resultType="com.xiliulou.electricity.entity.Role">
-		select
-		id, name, code, `desc`, create_time, update_time,tenant_id
-		from t_role
-		<where>
-			<if test="tenantId != null ">
-				and tenant_id = #{tenantId}
-			</if>
-		</where>
-		order by create_time desc
-	</select>
-
-
-	<select id="queryByRoleIds" resultType="com.xiliulou.electricity.entity.Role">
-		select
-		id, name, code, `desc`, create_time, update_time,tenant_id
-		from t_role
-		where id in
-		<foreach collection="list" close=")" open="(" item="r" separator=",">
-			#{r}
-		</foreach>
-
-	</select>
-	
-	
-	<!--通过主键删除-->
-	<delete id="deleteById">
+    
+    <update id="update">
+        update t_role
+        <set>
+            <if test="name != null and name != '' ">
+                name = #{name},
+            </if>
+            <if test="code != null and code != '' ">
+                code = #{code},
+            </if>
+            <if test="desc != null and desc != '' ">
+                `desc` = #{desc},
+            </if>
+            <if test="createTime != null  ">
+                create_time = #{createTime},
+            </if>
+            <if test="updateTime != null  ">
+                update_time = #{updateTime},
+            </if>
+        </set>
+        where id =#{id} and tenant_id = #{tenantId}
+    
+    </update>
+    
+    
+    <!--通过实体作为筛选条件查询-->
+    <select id="queryAll" resultType="com.xiliulou.electricity.entity.Role">
+        select
+        id, name, code, `desc`, create_time, update_time,tenant_id
+        from t_role
+        <where>
+            <if test="tenantId != null ">
+                and tenant_id = #{tenantId}
+            </if>
+        </where>
+        order by create_time desc
+    </select>
+    
+    
+    <select id="queryByRoleIds" resultType="com.xiliulou.electricity.entity.Role">
+        select
+        id, name, code, `desc`, create_time, update_time,tenant_id
+        from t_role
+        where id in
+        <foreach collection="list" close=")" open="(" item="r" separator=",">
+            #{r}
+        </foreach>
+    
+    </select>
+    <select id="selectIdsByNamesAndTenantIds" resultType="java.lang.Long">
+        select id from t_role
+        <where>
+            <if test="names != null and names.size() > 0">
+                and `name` in
+                <foreach collection="names" item="n" open="(" close=")" separator=",">
+                    #{n}
+                </foreach>
+            </if>
+            <if test="tenantIds != null and tenantIds.size() > 0">
+                and tenant_id in
+                <foreach collection="tenantIds" item="t" open="(" close=")" separator=",">
+                    #{t}
+                </foreach>
+            </if>
+        </where>
+    </select>
+    
+    
+    <!--通过主键删除-->
+    <delete id="deleteById">
         delete
         from t_role
-        where id = #{id} and tenant_id = #{tenantId}
+        where id = #{id}
+          and tenant_id = #{tenantId}
     </delete>
 
 </mapper>

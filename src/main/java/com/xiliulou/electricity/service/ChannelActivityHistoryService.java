@@ -88,5 +88,5 @@ public interface ChannelActivityHistoryService {
     
     ChannelActivityHistory querySuccessHistoryByJoinUid(Long uid, Integer tenantId);
     
-    Integer removeById(Long id, Long updateTime);
+    Integer removeByJoinUid(Long joinUid, Long updateTime, Integer tenantId);
 }

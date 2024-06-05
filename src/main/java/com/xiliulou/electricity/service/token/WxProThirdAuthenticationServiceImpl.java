@@ -8,6 +8,7 @@ import com.xiliulou.core.http.resttemplate.service.RestTemplateService;
 import com.xiliulou.core.i18n.MessageUtils;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.constant.CacheConstant;
+import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.dto.WXMinProAuth2SessionResult;
 import com.xiliulou.electricity.dto.WXMinProPhoneResultDTO;
 import com.xiliulou.electricity.entity.ElectricityPayParams;
@@ -421,6 +422,9 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
         userInfoExtra.setTenantId(tenantId);
         userInfoExtra.setCreateTime(System.currentTimeMillis());
         userInfoExtra.setUpdateTime(System.currentTimeMillis());
+        userInfoExtra.setActivitySource(NumberConstant.ZERO);
+        userInfoExtra.setInviterUid(NumberConstant.ZERO_L);
+        userInfoExtra.setLatestActivitySource(NumberConstant.ZERO);
         return userInfoExtra;
     }
 }

@@ -6,6 +6,7 @@ import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.core.web.R;
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
@@ -85,6 +86,7 @@ public class InvitationActivityServiceImpl implements InvitationActivityService 
     ExecutorService executorService = XllThreadPoolExecutors.newFixedThreadPool("shareActivityHandlerExecutor", 1, "SHARE_ACTIVITY_HANDLER_EXECUTOR");
 
     @Override
+    @Slave
     public List<InvitationActivity> selectBySearch(InvitationActivityQuery query) {
         return this.invitationActivityMapper.selectBySearch(query);
     }
@@ -274,11 +276,13 @@ public class InvitationActivityServiceImpl implements InvitationActivityService 
     }
 
     @Override
+    @Slave
     public Integer checkUsableActivity(Integer tenantId) {
         return invitationActivityMapper.checkUsableActivity(tenantId);
     }
 
     @Override
+    @Slave
     public List<InvitationActivityVO> selectByPage(InvitationActivityQuery query) {
 
         List<InvitationActivity> invitationActivities = invitationActivityMapper.selectByPage(query);
@@ -322,6 +326,7 @@ public class InvitationActivityServiceImpl implements InvitationActivityService 
     }
 
     @Override
+    @Slave
     public Integer selectByPageCount(InvitationActivityQuery query) {
         return invitationActivityMapper.selectByPageCount(query);
     }
@@ -372,6 +377,7 @@ public class InvitationActivityServiceImpl implements InvitationActivityService 
     }
 
     @Override
+    @Slave
     public List<InvitationActivity> selectUsableActivity(Integer tenantId) {
         return invitationActivityMapper.selectUsableActivity(tenantId);
     }

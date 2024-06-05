@@ -2,7 +2,6 @@ package com.xiliulou.electricity.service.impl;
 
 import com.alibaba.excel.EasyExcel;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.sun.xml.bind.v2.TODO;
 import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
@@ -112,6 +111,7 @@ public class JoinShareActivityHistoryServiceImpl implements JoinShareActivityHis
 	}
 
 	@Override
+	@Slave
 	public R userList(Integer activityId) {
 		//用户
 		TokenUser user = SecurityUtils.getUserInfo();
@@ -157,6 +157,7 @@ public class JoinShareActivityHistoryServiceImpl implements JoinShareActivityHis
 	}
 	
 	@Override
+	@Slave
 	public FinalJoinShareActivityHistoryVo queryFinalHistoryByJoinUid(Long uid, Integer tenantId) {
 		return joinShareActivityHistoryMapper.queryFinalHistoryByJoinUid(uid, tenantId);
 	}
@@ -262,6 +263,7 @@ public class JoinShareActivityHistoryServiceImpl implements JoinShareActivityHis
 		return joinShareActivityHistoryMapper.queryUserJoinedActivity(joinUid, tenantId);
 	}
 
+	@Slave
 	@Override
 	public Pair<Boolean, String> checkTheActivityFromSameInviter(Long joinUid, Long inviterUid, Long activityId) {
 		List<JoinShareActivityHistory> joinShareActivityHistories = joinShareActivityHistoryMapper.queryActivityByJoinerAndInviter(joinUid, inviterUid, activityId);
@@ -286,8 +288,8 @@ public class JoinShareActivityHistoryServiceImpl implements JoinShareActivityHis
 	}
 	
 	@Override
-	public Integer removeById(Long id, Long updateTime) {
-		return joinShareActivityHistoryMapper.removeById(id, updateTime);
+	public Integer removeByJoinUid(Long joinUid, Long updateTime, Integer tenantId) {
+		return joinShareActivityHistoryMapper.removeByJoinUid(joinUid, updateTime, tenantId);
 	}
 	
 	private String queryStatus(Integer status) {

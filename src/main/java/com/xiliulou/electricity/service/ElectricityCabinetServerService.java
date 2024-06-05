@@ -79,4 +79,6 @@ public interface ElectricityCabinetServerService {
     Integer deleteByEid(Integer id);
 
     Integer logicalDeleteByEid(Integer id);
+    
+    List<ElectricityCabinetServer> listCabinetServerByEids(List<Integer> electricityCabinetIdList);
 }

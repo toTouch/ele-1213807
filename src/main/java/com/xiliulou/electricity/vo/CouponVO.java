@@ -3,6 +3,8 @@ package com.xiliulou.electricity.vo;
 import com.xiliulou.electricity.entity.Coupon;
 import lombok.Data;
 
+import java.util.List;
+
 /**
  * @author: Miss.Li
  * @Date: 2021/7/15 10:03
@@ -34,4 +36,23 @@ public class CouponVO {
      * 是否领取 1--已领取  2--未领取  3--不能领取
      */
     private Integer isGet;
+    
+    
+    
+    
+    /**
+     * 优惠券的换电套餐列表
+     */
+    private List<CouponMemberCardVO> batteryCouponCards;
+    
+    /**
+     * 优惠券的租车套餐列表
+     */
+    private List<CouponMemberCardVO> carRentalCouponCards;
+    
+    /**
+     * 优惠券的车电一体套餐列表
+     */
+    private List<CouponMemberCardVO> carWithBatteryCouponCards;
+    
 }
