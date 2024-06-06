@@ -3,6 +3,7 @@ package com.xiliulou.electricity.service.impl;
 import cn.hutool.core.util.StrUtil;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.utils.AppSignatureUtil;
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.TenantAppInfo;
 import com.xiliulou.electricity.mapper.TenantAppInfoMapper;
@@ -41,6 +42,7 @@ public class TenantAppInfoServiceImpl implements TenantAppInfoService {
      * @param id 主键
      * @return 实例对象
      */
+    @Slave
     @Override
     public TenantAppInfo queryByIdFromDB(Integer id) {
         return this.tenantAppInfoMapper.queryById(id);
@@ -65,6 +67,7 @@ public class TenantAppInfoServiceImpl implements TenantAppInfoService {
      * @param limit  查询条数
      * @return 对象列表
      */
+    @Slave
     @Override
     public List<TenantAppInfo> queryAllByLimit(int offset, int limit) {
         return this.tenantAppInfoMapper.queryAllByLimit(offset, limit);

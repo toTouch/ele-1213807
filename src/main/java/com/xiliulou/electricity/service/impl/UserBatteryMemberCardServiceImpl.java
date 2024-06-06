@@ -30,7 +30,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
@@ -89,6 +88,7 @@ public class UserBatteryMemberCardServiceImpl implements UserBatteryMemberCardSe
      * @param uid 主键
      * @return 实例对象
      */
+    @Slave
     @Override
     public UserBatteryMemberCard selectByUidFromDB(Long uid) {
         return this.userBatteryMemberCardMapper.selectByUid(uid);
@@ -249,6 +249,7 @@ public class UserBatteryMemberCardServiceImpl implements UserBatteryMemberCardSe
         return update;
     }
 
+    @Slave
     @Override
     public List<UserBatteryMemberCard> selectByMemberCardId(Integer id, Integer tenantId) {
         return userBatteryMemberCardMapper.selectList(new LambdaQueryWrapper<UserBatteryMemberCard>().eq(UserBatteryMemberCard::getMemberCardId, id).eq(UserBatteryMemberCard::getTenantId, tenantId)
@@ -268,6 +269,7 @@ public class UserBatteryMemberCardServiceImpl implements UserBatteryMemberCardSe
         return userBatteryMemberCardMapper.carMemberCardExpire(offset, size, firstTime, lastTime);
     }
 
+    @Slave
     @Override
     public List<FailureMemberCardVo> queryMemberCardExpireUser(Integer offset, Integer size, Long nowTime) {
         return userBatteryMemberCardMapper.queryMemberCardExpireUser(offset, size, nowTime);
@@ -278,16 +280,19 @@ public class UserBatteryMemberCardServiceImpl implements UserBatteryMemberCardSe
         return userBatteryMemberCardMapper.selectByList(offset, size);
     }
     
+    @Slave
     @Override
     public List<UserBatteryMemberCard> selectExpireList(int offset, int size, long memberCardExpireTime) {
         return userBatteryMemberCardMapper.selectExpireList(offset, size, memberCardExpireTime);
     }
 
+    @Slave
     @Override
     public List<UserBatteryMemberCard> selectUseableList(int offset, int size) {
         return userBatteryMemberCardMapper.selectUseableList(offset, size);
     }
 
+    @Slave
     @Override
     public List<UserBatteryMemberCard> selectUseableListByTenantIds(int offset, int size, List<Integer> tenantIds) {
         return userBatteryMemberCardMapper.selectUseableListByTenantIds(offset, size , tenantIds);
@@ -315,6 +320,7 @@ public class UserBatteryMemberCardServiceImpl implements UserBatteryMemberCardSe
         return Boolean.FALSE;
     }
 
+    @Slave
     @Override
     public Integer checkUserByMembercardId(Long id) {
         return userBatteryMemberCardMapper.checkUserByMembercardId(id);
@@ -323,6 +329,7 @@ public class UserBatteryMemberCardServiceImpl implements UserBatteryMemberCardSe
     /**
      * 获取用户套餐订单
      */
+    @Slave
     @Override
     public List<String> selectUserBatteryMemberCardOrder(Long uid) {
         List<String> orderList = new ArrayList<>();

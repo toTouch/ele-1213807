@@ -37,7 +37,6 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
-import javax.validation.Valid;
 import java.util.*;
 
 /**
@@ -223,8 +222,8 @@ public class JsonAdminElectricityCabinetController extends BasicController {
                         @RequestParam(value = "idList", required = false) List<Integer> idList,
                         @RequestParam(value = "modelId", required = false) Integer modelId,
             @RequestParam(value = "productKey", required = false) String productKey,
-            @RequestParam(value = "deviceName", required = false) String deviceName
-            ) {
+            @RequestParam(value = "deviceName", required = false) String deviceName,
+            @RequestParam(value = "version", required = false) String version) {
 
         // 数据权校验
         Triple<List<Long>, List<Long>, Boolean> permissionTriple = checkPermission();
@@ -272,6 +271,7 @@ public class JsonAdminElectricityCabinetController extends BasicController {
                 .storeIdList(permissionTriple.getMiddle())
                 .productKey(productKey)
                 .deviceName(deviceName)
+                .version(version)
                 .build();
 
         return electricityCabinetService.queryCount(electricityCabinetQuery);

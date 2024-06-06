@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.service.impl;
 
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.entity.SysOperLog;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.mapper.SysOperLogMapper;
@@ -63,6 +64,7 @@ public class SysOperLogServiceImpl implements SysOperLogService {
      *
      * @return 对象列表
      */
+    @Slave
     @Override
     public List<SysOperLogVO> selectByPage(SysOperLogQuery sysOperLogQuery) {
         List<SysOperLog> sysOperLogs = this.sysOperLogMapper.selectByPage(sysOperLogQuery);
@@ -84,6 +86,7 @@ public class SysOperLogServiceImpl implements SysOperLogService {
         return sysOperLogVOList;
     }
     
+    @Slave
     @Override
     public int pageCount(SysOperLogQuery sysOperLogQuery) {
         return this.sysOperLogMapper.pageCount(sysOperLogQuery);

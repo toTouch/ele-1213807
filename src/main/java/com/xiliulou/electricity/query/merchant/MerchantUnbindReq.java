@@ -22,6 +22,18 @@ public class MerchantUnbindReq implements Serializable {
     
     private static final long serialVersionUID = 6764983040780816131L;
     
+    /**
+     * <p>
+     *    Description: 解绑类型，此类型仅供操作记录使用,请勿删除
+     *    <pre>
+     *        0 -- 商户类型解绑
+     *        1 -- 渠道员类型解绑
+     *    </pre>
+     * </p>
+    */
+    @NotNull(message = "解绑类型不能为空")
+    private Integer type;
+    
     @NotNull(message = "商户名称不能为空")
     private String merchantName;
     

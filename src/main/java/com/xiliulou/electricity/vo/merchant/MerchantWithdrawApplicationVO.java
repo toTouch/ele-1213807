@@ -101,7 +101,8 @@ public class MerchantWithdrawApplicationVO {
     
     /**
      * 支付机构返回的批次明细单号
+     * transactionDetailId
      */
-    private String transactionBatchDetailId;
+    private String transactionDetailId;
     
 }

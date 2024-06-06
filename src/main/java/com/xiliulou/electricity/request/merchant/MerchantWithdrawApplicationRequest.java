@@ -60,7 +60,7 @@ public class MerchantWithdrawApplicationRequest {
     /**
      * 支付机构返回的批次明细单号
      */
-    private String transactionBatchDetailId;
+    private String transactionDetailId;
     
     /**
      * 审核时间开始

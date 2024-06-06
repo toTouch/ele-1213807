@@ -82,6 +82,7 @@ import com.xiliulou.electricity.vo.merchant.MerchantVO;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.BeanUtils;
@@ -92,6 +93,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Resource;
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -592,7 +594,6 @@ public class MerchantServiceImpl implements MerchantService {
             log.error("merchant update error, merchant level is null id={}, merchantLevelId={}", merchantSaveRequest.getId(), merchantSaveRequest.getMerchantGradeId());
             return Triple.of(false, "120204", "商户等级不存在");
         }
-        
         // 检测渠道员是否存在
         if (Objects.nonNull(merchantSaveRequest.getChannelEmployeeUid())) {
             ChannelEmployeeVO channelEmployeeVO = channelEmployeeService.queryByUid(merchantSaveRequest.getChannelEmployeeUid());
@@ -832,6 +833,31 @@ public class MerchantServiceImpl implements MerchantService {
             // 处理解绑场地下关联的员工
             dealPlaceEmployee(unBindList);
         }
+        
+        //异步添加渠道员变更操作记录
+        operateRecordUtil.asyncRecord(new HashMap<String,Object>(),new HashMap<String,Object>(),merchantSaveRequest,merchant,(merchantReq,oldMerchant,operateLogDTO)->{
+            //设置修改后的值
+            if (Objects.nonNull(merchantReq.getChannelEmployeeUid())){
+                Map<String, Object> newValue = operateLogDTO.getNewValue();
+                ChannelEmployeeVO channelEmployeeVO = channelEmployeeService.queryByUid(merchantReq.getChannelEmployeeUid());
+                if (!Objects.isNull(channelEmployeeVO) && StringUtils.isNotBlank(channelEmployeeVO.getName())){
+                    newValue.put("name", channelEmployeeVO.getName());
+                    newValue.put("merchantName", merchantReq.getName());
+                    operateLogDTO.setNewValue(newValue);
+                }
+            }
+            //设置修改前的值
+            if (Objects.nonNull(oldMerchant.getChannelEmployeeUid())){
+                Map<String, Object> oldValue = operateLogDTO.getOldValue();
+                ChannelEmployeeVO employeeVO = channelEmployeeService.queryByUid(oldMerchant.getChannelEmployeeUid());
+                if (!Objects.isNull(employeeVO) && StringUtils.isNotBlank(employeeVO.getName())){
+                    oldValue.put("name", employeeVO.getName());
+                    oldValue.put("merchantName", oldMerchant.getName());
+                    operateLogDTO.setOldValue(oldValue);
+                }
+            }
+            return operateLogDTO;
+        });
         
         return Triple.of(true, "", merchantDeleteCacheDTO);
     }
@@ -1581,14 +1607,10 @@ public class MerchantServiceImpl implements MerchantService {
         if (Objects.isNull(userOauthBind)) {
             return Pair.of(false,"解绑失败,请联系客服处理");
         }
-        if (Objects.equals(userOauthBind.getStatus(), UserOauthBind.STATUS_UN_BIND_VX)){
-            return Pair.of(false,"解绑失败,请联系客服处理");
-        }
-        userOauthBind.setStatus(UserOauthBind.STATUS_UN_BIND);
-        userOauthBind.setUpdateTime(System.currentTimeMillis());
-        userOauthBind.setThirdId("");
-        Integer update = userOauthBindService.update(userOauthBind);
-        if (update > 0){
+        boolean delete = userOauthBindService.deleteById(userOauthBind.getId());
+        if (delete){
+            // 强制下线
+            userInfoService.clearUserOauthBindToken(List.of(userOauthBind), CacheConstant.MERCHANT_CLIENT_ID);
             operateRecordUtil.record(null,params);
             return Pair.of(true, "解绑成功");
         }

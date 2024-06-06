@@ -61,6 +61,16 @@ public class MerchantLoginVO {
      */
     private String tenantName;
     
+    /**
+     * 租户编号
+     */
+    private String tenantCode;
+    
+    /**
+     * 客服电话
+     */
+    private String servicePhone;
+    
     public void setBusinessInfo(Integer enterprisePackageAuth, Integer purchaseAuthority){
         this.businessInfo = new BusinessInfo(enterprisePackageAuth, purchaseAuthority);
     }
