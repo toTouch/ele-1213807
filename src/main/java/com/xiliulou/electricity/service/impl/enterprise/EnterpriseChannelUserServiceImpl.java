@@ -1341,6 +1341,17 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
         return Triple.of(true, null, null);
     }
     
+    /**
+     * 存在续费关闭用户
+     * @param id
+     * @return
+     */
+    @Override
+    @Slave
+    public int existsRenewCloseUser(Long id) {
+        return enterpriseChannelUserMapper.existsRenewCloseUser(id);
+    }
+    
     private Triple<Boolean, String, Object> channelUserAdminExitCheck(EnterpriseUserAdminExitCheckRequest request, EnterpriseChannelUser channelUser, Integer tenantId) {
         // 判断用户是否存在当前站长的企业内
         Long uid = request.getUid();
@@ -1605,6 +1616,7 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
             enterpriseChannelUser.setRenewalStatus(RenewalStatusEnum.RENEWAL_STATUS_NOT_BY_SELF.getCode());
             enterpriseChannelUser.setFranchiseeId(query.getFranchiseeId());
             enterpriseChannelUser.setPaymentStatus(EnterprisePaymentStatusEnum.PAYMENT_TYPE_NO_PAY.getCode());
+            enterpriseChannelUser.setCloudBeanStatus(EnterpriseChannelUser.CLOUD_BEAN_STATUS_INIT);
             enterpriseChannelUser.setTenantId(TenantContextHolder.getTenantId().longValue());
             enterpriseChannelUser.setInviterId(SecurityUtils.getUid());
             enterpriseChannelUser.setUid(query.getUid());
