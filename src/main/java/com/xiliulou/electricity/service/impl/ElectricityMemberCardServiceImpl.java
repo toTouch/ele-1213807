@@ -350,7 +350,7 @@ public class ElectricityMemberCardServiceImpl extends ServiceImpl<ElectricityMem
         if (Objects.equals(franchisee.getModelType(), Franchisee.NEW_MODEL_TYPE)) {
             UserBattery userBattery = userBatteryService.selectByUidFromCache(userInfo.getUid());
             if (Objects.isNull(userBattery)) {
-                log.error("ELE ERROR! not found userBattery,uid={}", user.getUid());
+                log.warn("ELE WARN! not found userBattery,uid={}", user.getUid());
                 return R.fail("ELECTRICITY.0033", "用户未绑定电池型号");
             }
 

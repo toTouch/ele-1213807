@@ -40,7 +40,7 @@ public class AssetAllocateRecordController {
     public R save(@RequestBody @Validated(value = CreateGroup.class) AssetAllocateRecordRequest assetAllocateRecordRequest) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
-            log.error("ELE ERROR! not found user");
+            log.warn("ELE WARN! not found user");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         
@@ -62,7 +62,7 @@ public class AssetAllocateRecordController {
             @RequestParam(value = "targetFranchiseeId", required = false) Long targetFranchiseeId, @RequestParam(value = "type", required = false) Integer type) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
-            log.error("ELE ERROR! not found user");
+            log.warn("ELE WARN! not found user");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         
@@ -95,7 +95,7 @@ public class AssetAllocateRecordController {
         
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
-            log.error("ELE ERROR! not found user");
+            log.warn("ELE WARN! not found user");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         

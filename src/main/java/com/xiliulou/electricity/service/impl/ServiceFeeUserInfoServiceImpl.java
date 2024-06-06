@@ -160,7 +160,7 @@ public class ServiceFeeUserInfoServiceImpl implements ServiceFeeUserInfoService 
 
         UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
         if (Objects.isNull(userInfo)) {
-            log.error("ELE ERROR! not found user,uid={}", uid);
+            log.warn("ELE WARN! not found user,uid={}", uid);
             return eleBatteryServiceFeeVO;
         }
 

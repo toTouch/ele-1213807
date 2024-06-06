@@ -153,7 +153,7 @@ public class CarModelBizServiceImpl implements CarModelBizService {
         if (!unleasedCarFlag) {
             ElectricityCar electricityCar = carService.selectByUid(tenantId, uid);
             if (ObjectUtils.isEmpty(electricityCar)) {
-                log.error("CarModelBizService.checkBuyByCarModelId, There are no rental vehicles available. carModelId is {}", carModelId);
+                log.warn("CarModelBizService.checkBuyByCarModelId, There are no rental vehicles available. carModelId is {}", carModelId);
                 throw new BizException("300043", "无可租车辆");
             }
             if (ObjectUtils.isNotEmpty(electricityCar) && !electricityCar.getModelId().equals(carModelId)) {

@@ -40,7 +40,7 @@ public class AssetExitWarehouseRecordController {
     public R save(@RequestBody @Validated(value = CreateGroup.class) AssetExitWarehouseSaveRequest assetExitWarehouseSaveRequest) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
-            log.error("ELE ERROR! not found user");
+            log.warn("ELE WARN! not found user");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         
@@ -62,7 +62,7 @@ public class AssetExitWarehouseRecordController {
             @RequestParam(value = "type", required = false) Integer type) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
-            log.error("ELE ERROR! not found user");
+            log.warn("ELE WARN! not found user");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         
@@ -99,7 +99,7 @@ public class AssetExitWarehouseRecordController {
         
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
-            log.error("ELE ERROR! not found user");
+            log.warn("ELE WARN! not found user");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         

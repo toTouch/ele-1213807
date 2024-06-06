@@ -460,7 +460,7 @@ public class ShareMoneyActivityServiceImpl implements ShareMoneyActivityService 
         //用户是否可用
         UserInfo userInfo = userInfoService.queryByUidFromCache(user.getUid());
         if (Objects.isNull(userInfo) || Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
-            log.error("ELECTRICITY  ERROR! not found userInfo,uid:{} ", user.getUid());
+            log.warn("ELECTRICITY  WARN! not found userInfo,uid:{} ", user.getUid());
             return R.fail("ELECTRICITY.0024", "用户已被禁用");
         }
 
@@ -577,7 +577,7 @@ public class ShareMoneyActivityServiceImpl implements ShareMoneyActivityService 
         //用户是否可用
         UserInfo userInfo = userInfoService.queryByUidFromCache(user.getUid());
         if (Objects.isNull(userInfo) || Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
-            log.error("ELECTRICITY  ERROR! not found userInfo,uid:{} ", user.getUid());
+            log.warn("ELECTRICITY  WARN! not found userInfo,uid:{} ", user.getUid());
             return R.fail("ELECTRICITY.0024", "用户已被禁用");
         }
 
@@ -592,7 +592,6 @@ public class ShareMoneyActivityServiceImpl implements ShareMoneyActivityService 
         ShareMoneyActivity shareMoneyActivity = shareMoneyActivityMapper.selectOne(new LambdaQueryWrapper<ShareMoneyActivity>()
                 .eq(ShareMoneyActivity::getTenantId, tenantId).eq(ShareMoneyActivity::getStatus, ShareMoneyActivity.STATUS_ON));
         if (Objects.isNull(shareMoneyActivity)) {
-//            log.error("queryInfo Activity  ERROR! not found Activity ! tenantId:{} ", tenantId);
             map.put("shareMoneyActivity", 1);
         }
 
@@ -600,7 +599,6 @@ public class ShareMoneyActivityServiceImpl implements ShareMoneyActivityService 
         ShareActivity shareActivity = shareActivityMapper.selectOne(new LambdaQueryWrapper<ShareActivity>()
                 .eq(ShareActivity::getTenantId, tenantId).eq(ShareActivity::getStatus, ShareActivity.STATUS_ON));
         if (Objects.isNull(shareActivity)) {
-//            log.error("queryInfo Activity  ERROR! not found Activity ! tenantId:{} ", tenantId);
             map.put("shareActivity", 1);
         }
     
