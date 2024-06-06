@@ -385,7 +385,7 @@
                 and tmwa.receipt_time <![CDATA[ <=  ]]> #{endTime}
             </if>
             <if test=" transactionBatchId != null and transactionBatchId != '' "> AND tmwair.`transaction_batch_id` = #{transactionBatchId} </if>
-            <if test=" transactionBatchDetailId != null and transactionBatchDetailId != '' "> AND tmwair.`transaction_detail_id` = #{transactionBatchDetailId} </if>
+            <if test=" transactionDetailId != null and transactionDetailId != '' "> AND tmwair.`transaction_detail_id` = #{transactionDetailId} </if>
             <if test=" checkTimeStart != null and checkTimeEnd != null "> AND tmwa.`check_time` BETWEEN #{checkTimeStart} AND #{checkTimeEnd} </if>
             <if test="franchiseeIds != null">
                 and tm.franchisee_id in
@@ -421,7 +421,7 @@
                 and tmwa.receipt_time <![CDATA[ <=  ]]> #{endTime}
             </if>
             <if test=" transactionBatchId != null and transactionBatchId != '' "> AND tmwair.`transaction_batch_id` = #{transactionBatchId} </if>
-            <if test=" transactionBatchDetailId != null and transactionBatchDetailId != '' "> AND tmwair.`transaction_detail_id` = #{transactionBatchDetailId} </if>
+            <if test=" transactionDetailId != null and transactionDetailId != '' "> AND tmwair.`transaction_detail_id` = #{transactionDetailId} </if>
             <if test=" checkTimeStart != null and checkTimeEnd != null "> AND tmwa.`check_time` BETWEEN #{checkTimeStart} AND #{checkTimeEnd} </if>
             <if test="franchiseeIds != null">
                 and tm.franchisee_id in

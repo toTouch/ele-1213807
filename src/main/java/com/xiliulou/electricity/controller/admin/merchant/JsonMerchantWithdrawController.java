@@ -158,7 +158,7 @@ public class JsonMerchantWithdrawController extends BaseController {
             @RequestParam(value = "merchantUid", required = false) Long merchantUid, @RequestParam(value = "beginTime", required = false) Long beginTime,
             @RequestParam(value = "endTime", required = false) Long endTime, @RequestParam(value = "status", required = false) Integer status,
             @RequestParam(value = "transactionBatchId", required = false) String transactionBatchId,
-            @RequestParam(value = "transactionBatchDetailId", required = false) String transactionBatchDetailId,
+            @RequestParam(value = "transactionDetailId", required = false) String transactionDetailId,
             @RequestParam(value = "checkTimeStart", required = false) Long checkTimeStart, @RequestParam(value = "checkTimeEnd", required = false) Long checkTimeEnd) {
         
         if (size < 0 || size > 50) {
@@ -183,7 +183,7 @@ public class JsonMerchantWithdrawController extends BaseController {
         }
         
         MerchantWithdrawApplicationRequest merchantWithdrawApplicationRequest = MerchantWithdrawApplicationRequest.builder().tenantId(user.getTenantId()).size(size).offset(offset)
-                .uid(merchantUid).status(status).beginTime(beginTime).endTime(endTime).transactionBatchId(transactionBatchId).transactionBatchDetailId(transactionBatchDetailId)
+                .uid(merchantUid).status(status).beginTime(beginTime).endTime(endTime).transactionBatchId(transactionBatchId).transactionDetailId(transactionDetailId)
                 .checkTimeStart(checkTimeStart).checkTimeEnd(checkTimeEnd).franchiseeIds(franchiseeIds).build();
         
         return R.ok(merchantWithdrawApplicationService.selectRecordList(merchantWithdrawApplicationRequest));
@@ -194,7 +194,7 @@ public class JsonMerchantWithdrawController extends BaseController {
     public R queryRecordListCount(@RequestParam(value = "merchantUid", required = false) Long merchantUid, @RequestParam(value = "beginTime", required = false) Long beginTime,
             @RequestParam(value = "endTime", required = false) Long endTime, @RequestParam(value = "status", required = false) Integer status,
             @RequestParam(value = "transactionBatchId", required = false) String transactionBatchId,
-            @RequestParam(value = "transactionBatchDetailId", required = false) String transactionBatchDetailId,
+            @RequestParam(value = "transactionDetailId", required = false) String transactionDetailId,
             @RequestParam(value = "checkTimeStart", required = false) Long checkTimeStart, @RequestParam(value = "checkTimeEnd", required = false) Long checkTimeEnd) {
         
         TokenUser user = SecurityUtils.getUserInfo();
@@ -211,8 +211,8 @@ public class JsonMerchantWithdrawController extends BaseController {
         }
         
         MerchantWithdrawApplicationRequest merchantWithdrawApplicationRequest = MerchantWithdrawApplicationRequest.builder().tenantId(user.getTenantId()).uid(merchantUid)
-                .status(status).beginTime(beginTime).endTime(endTime).transactionBatchId(transactionBatchId).transactionBatchDetailId(transactionBatchDetailId)
-                .checkTimeStart(checkTimeStart).checkTimeEnd(checkTimeEnd).franchiseeIds(franchiseeIds).build();
+                .status(status).beginTime(beginTime).endTime(endTime).transactionBatchId(transactionBatchId).transactionDetailId(transactionDetailId).checkTimeStart(checkTimeStart)
+                .checkTimeEnd(checkTimeEnd).franchiseeIds(franchiseeIds).build();
         
         return R.ok(merchantWithdrawApplicationService.selectRecordListCount(merchantWithdrawApplicationRequest));
         
