@@ -1280,6 +1280,7 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
      * @return
      */
     @Override
+    @Transactional
     public Triple<Boolean, String, Object> channelUserExitForAdmin(EnterpriseUserAdminExitCheckRequest request) {
         Integer tenantId = TenantContextHolder.getTenantId();
         Long uid = SecurityUtils.getUid();
@@ -1303,7 +1304,9 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
             log.error("channel user admin exit error, uid={}", request.getUid());
             return Triple.of(false, "120212", "商户不存在");
         }
-    
+        
+        request.setEnterpriseId(enterpriseInfo.getId());
+        
         // 云豆回收
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(request.getUid());
         if (Objects.nonNull(userBatteryMemberCard) && Objects.equals(channelUser.getCloudBeanStatus(), EnterpriseChannelUser.NO_RECYCLE)) {

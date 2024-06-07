@@ -588,6 +588,11 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
         return enterpriseInfoMapper.selectList(tenantId);
     }
     
+    @Override
+    public void deleteCacheByEnterpriseId(Long enterpriseId) {
+        redisService.delete(CacheConstant.CACHE_ENTERPRISE_INFO + enterpriseId);
+    }
+    
     private int getRentDayNum(Long beginTime, Long endTime) {
         int maxDaySize = 1;
         
