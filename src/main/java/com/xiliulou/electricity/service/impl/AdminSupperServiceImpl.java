@@ -131,7 +131,7 @@ public class AdminSupperServiceImpl implements AdminSupperService {
         }
         
         // 暴力删除
-        if (1 == violentDel) {
+        if (ObjectUtils.isEmpty(violentDel) || 1 == violentDel) {
             batteryWaitList.addAll(dbBatteryList);
         } else {
             // 根据加盟商 ID 对 DB 数据进行分组
