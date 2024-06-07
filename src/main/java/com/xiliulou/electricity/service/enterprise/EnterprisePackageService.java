@@ -54,6 +54,4 @@ public interface EnterprisePackageService {
     int deleteByEnterpriseId(Long id);
     
     List<EnterprisePackageVO> queryListByEnterpriseId(Long id);
-    
-    int existsBindEnterpriseByPackageId(Long id);
 }

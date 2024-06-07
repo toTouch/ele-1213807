@@ -51,13 +51,6 @@
              and status = 0
     </select>
     
-    <select id="existsBindEnterpriseByPackageId" resultType="java.lang.Integer">
-        select  count(1)
-        from t_enterprise_package
-        where package_id = #{packageId}
-        limit 1
-    </select>
-    
     <!--通过主键修改数据-->
     <update id="update">
         update t_enterprise_package

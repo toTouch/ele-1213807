@@ -706,8 +706,7 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
         }
         
         //套餐是否绑定企业
-        int bindEnterpriseCount = enterprisePackageService.existsBindEnterpriseByPackageId(id);
-        if (bindEnterpriseCount > 0) {
+        if (Objects.nonNull(enterprisePackageService.selectByPackageId(id))) {
             return Triple.of(false, "100272", "删除失败，该套餐已绑定企业");
         }
         
