@@ -27,7 +27,6 @@ import com.xiliulou.electricity.query.BatteryMemberCardQuery;
 import com.xiliulou.electricity.query.BatteryMemberCardStatusQuery;
 import com.xiliulou.electricity.query.MemberCardAndCarRentalPackageSortParamQuery;
 import com.xiliulou.electricity.query.userinfo.userInfoGroup.UserInfoGroupDetailQuery;
-import com.xiliulou.electricity.query.MemberCardAndCarRentalPackageSortParamQuery;
 import com.xiliulou.electricity.service.BatteryMemberCardService;
 import com.xiliulou.electricity.service.BatteryModelService;
 import com.xiliulou.electricity.service.CouponService;
@@ -707,7 +706,8 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
         }
         
         //套餐是否绑定企业
-        if (Objects.nonNull(enterprisePackageService.selectByPackageId(id))) {
+        int bindEnterpriseCount = enterprisePackageService.existsBindEnterpriseByPackageId(id);
+        if (bindEnterpriseCount > 0) {
             return Triple.of(false, "100272", "删除失败，该套餐已绑定企业");
         }
         

@@ -1,6 +1,5 @@
 package com.xiliulou.electricity.service.enterprise;
 
-import com.xiliulou.electricity.bo.merchant.MerchantEnterprisePackageBO;
 import com.xiliulou.electricity.entity.enterprise.EnterprisePackage;
 import com.xiliulou.electricity.vo.enterprise.EnterprisePackageVO;
 
@@ -55,4 +54,6 @@ public interface EnterprisePackageService {
     int deleteByEnterpriseId(Long id);
     
     List<EnterprisePackageVO> queryListByEnterpriseId(Long id);
+    
+    int existsBindEnterpriseByPackageId(Long id);
 }

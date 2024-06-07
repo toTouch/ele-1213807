@@ -121,4 +121,10 @@ public class EnterprisePackageServiceImpl implements EnterprisePackageService {
         
         return list;
     }
+    
+    @Override
+    @Slave
+    public int existsBindEnterpriseByPackageId(Long id) {
+        return enterprisePackageMapper.existsBindEnterpriseByPackageId(id);
+    }
 }

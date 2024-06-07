@@ -50,4 +50,6 @@ public interface EnterprisePackageMapper extends BaseMapper<EnterprisePackage> {
     List<EnterprisePackage> listByIdList(@Param("idList") List<Long> enterprisePackageIdList);
     
     List<MerchantEnterprisePackageBO> selectListByEnterpriseId(@Param("id") Long id);
+    
+    int existsBindEnterpriseByPackageId(@Param("packageId") Long id);
 }
