@@ -1393,6 +1393,12 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
         if (Objects.equals(channelUser.getCloudBeanStatus(), EnterpriseChannelUser.CLOUD_BEAN_STATUS_RECYCLE)) {
             return Triple.of(true, null, null);
         }
+    
+        // 未代付骑手不进行校验
+        if (Objects.equals(channelUser.getPaymentStatus(), EnterprisePaymentStatusEnum.PAYMENT_TYPE_NO_PAY.getCode())) {
+            log.warn("channel user admin Exit Check! user payment not pay,uid={}", uid);
+            return Triple.of(true, null, null);
+        }
         
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
         if (Objects.nonNull(userBatteryMemberCard)) {
