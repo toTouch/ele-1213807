@@ -200,6 +200,12 @@ public class MerchantServiceImpl implements MerchantService {
         }
         
         Integer tenantId = TenantContextHolder.getTenantId();
+    
+        // 检测选中的加盟商和当前登录加盟商是否一致
+        if (Objects.nonNull(merchantSaveRequest.getBindFranchiseeId()) && !Objects.equals(merchantSaveRequest.getBindFranchiseeId(), merchantSaveRequest.getFranchiseeId())) {
+            log.error("merchant save error, franchisee is not different id={}, franchiseeId={}, bindFranchiseeId={}", merchantSaveRequest.getId(), merchantSaveRequest.getFranchiseeId(), merchantSaveRequest.getBindFranchiseeId());
+            return Triple.of(false, "120238", "当前加盟商无权限操作");
+        }
         
         // 检测商户名称是否存在用户表中
         User user = userService.queryByUserName(merchantSaveRequest.getName());
@@ -241,6 +247,11 @@ public class MerchantServiceImpl implements MerchantService {
         if (Objects.isNull(merchantLevel) || !Objects.equals(merchantLevel.getTenantId(), tenantId)) {
             log.error("merchant save error, merchant level is null name={}, merchantLevelId={}", merchantSaveRequest.getName(), merchantSaveRequest.getMerchantGradeId());
             return Triple.of(false, "120204", "商户等级不存在");
+        }
+        
+        // todo 商户等级添加加盟商不一致的判断
+        if (Objects.nonNull(merchantSaveRequest.getBindFranchiseeId()) && !Objects.equals(merchantSaveRequest.getBindFranchiseeId(), 0L)) {
+        
         }
         
         // 检测渠道员是否存在
@@ -538,8 +549,20 @@ public class MerchantServiceImpl implements MerchantService {
         
         Merchant merchant = this.merchantMapper.selectById(merchantSaveRequest.getId());
         if (Objects.isNull(merchant) || !Objects.equals(merchant.getTenantId(), tenantId)) {
-            log.error("merchant update error, merchant is not exit id={}, tenantId", merchantSaveRequest.getId(), tenantId);
+            log.error("merchant update error, merchant is not exit id={}, tenantId={}", merchantSaveRequest.getId(), tenantId);
             return Triple.of(false, "120212", "商户不存在");
+        }
+        
+        // 判断修改的加盟商是否有改变
+        if (!Objects.equals(merchantSaveRequest.getFranchiseeId(), merchant.getFranchiseeId())) {
+            log.error("merchant update error, franchisee not allow change id={}, franchiseeId={}, updateFranchiseeId={}", merchantSaveRequest.getId(), merchant.getFranchiseeId(), merchantSaveRequest.getFranchiseeId());
+            return Triple.of(false, "120239", "商户加盟商不允许修改");
+        }
+        
+        // 检测选中的加盟商和当前登录加盟商是否一致
+        if (Objects.nonNull(merchantSaveRequest.getBindFranchiseeId()) && !Objects.equals(merchantSaveRequest.getBindFranchiseeId(), merchantSaveRequest.getFranchiseeId())) {
+            log.error("merchant update error, franchisee is not different id={}, franchiseeId={}, bindFranchiseeId={}", merchantSaveRequest.getId(), merchantSaveRequest.getFranchiseeId(), merchantSaveRequest.getBindFranchiseeId());
+            return Triple.of(false, "120238", "当前加盟商无权限操作");
         }
         
         // 判断邀请权限和站点代付权限是否都没有选中
@@ -583,6 +606,11 @@ public class MerchantServiceImpl implements MerchantService {
         if (Objects.isNull(merchantLevel) || !Objects.equals(merchantLevel.getTenantId(), tenantId)) {
             log.error("merchant update error, merchant level is null id={}, merchantLevelId={}", merchantSaveRequest.getId(), merchantSaveRequest.getMerchantGradeId());
             return Triple.of(false, "120204", "商户等级不存在");
+        }
+    
+        // todo 商户等级添加加盟商不一致的判断
+        if (Objects.nonNull(merchantSaveRequest.getBindFranchiseeId()) && !Objects.equals(merchantSaveRequest.getBindFranchiseeId(), 0L)) {
+        
         }
         
         // 检测渠道员是否存在
@@ -873,13 +901,18 @@ public class MerchantServiceImpl implements MerchantService {
     
     @Transactional
     @Override
-    public Triple<Boolean, String, Object> remove(Long id) {
+    public Triple<Boolean, String, Object> remove(Long id, Long bindFranchiseeId) {
         // 检测商户是否存在
         Integer tenantId = TenantContextHolder.getTenantId();
         Merchant merchant = this.merchantMapper.selectById(id);
         if (Objects.isNull(merchant) || !Objects.equals(merchant.getTenantId(), tenantId)) {
             log.error("merchant delete error, merchant is not exit id={}, tenantId", id, tenantId);
             return Triple.of(false, "120212", "商户不存在");
+        }
+        
+        if (Objects.nonNull(bindFranchiseeId) && !Objects.equals(merchant.getFranchiseeId(), bindFranchiseeId)) {
+            log.error("merchant delete error, franchisee is not different id={}, franchiseeId={}, bindFranchiseeId={}", id, merchant.getFranchiseeId(), bindFranchiseeId);
+            return Triple.of(false, "120238", "当前加盟商无权限操作");
         }
         
         // 判断商户的余额：t_merchant_user_amount：balance
@@ -1199,11 +1232,16 @@ public class MerchantServiceImpl implements MerchantService {
     
     @Slave
     @Override
-    public Triple<Boolean, String, Object> queryById(Long id) {
+    public Triple<Boolean, String, Object> queryById(Long id, Long franchiseeId) {
         Integer tenantId = TenantContextHolder.getTenantId();
         
         Merchant merchant = merchantMapper.selectById(id);
         if (Objects.isNull(merchant) || !Objects.equals(merchant.getTenantId(), tenantId)) {
+            return Triple.of(false, "120212", "商户不存在");
+        }
+        
+        if (Objects.nonNull(franchiseeId) && !Objects.equals(franchiseeId, merchant.getFranchiseeId())) {
+            log.error("MERCHANT QUERY ERROR! franchisee is not different, id={}, franchiseeId={}", "商户不存在", id, franchiseeId);
             return Triple.of(false, "120212", "商户不存在");
         }
         

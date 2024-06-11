@@ -8,6 +8,7 @@ import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.request.merchant.MerchantAttrRequest;
 import com.xiliulou.electricity.request.merchant.MerchantPageRequest;
 import com.xiliulou.electricity.request.merchant.MerchantSaveRequest;
+import com.xiliulou.electricity.service.UserDataScopeService;
 import com.xiliulou.electricity.service.merchant.MerchantAttrService;
 import com.xiliulou.electricity.service.merchant.MerchantService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
@@ -29,6 +30,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -46,6 +48,9 @@ public class JsonMerchantController extends BaseController {
     
     @Resource
     private MerchantService merchantService;
+    
+    @Resource
+    private UserDataScopeService userDataScopeService;
     
     /**
      * 查询商户升级条件
@@ -110,11 +115,24 @@ public class JsonMerchantController extends BaseController {
     public R save(@RequestBody @Validated(value = CreateGroup.class) MerchantSaveRequest merchantSaveRequest) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
+            log.error("merchant save warn! not find user");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        
+        // 商户保存权限 admin,租户，加盟商
+        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE) || Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE))) {
+            log.error("merchant save warn! user not auth");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
     
-        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
-            return R.fail("ELECTRICITY.0001", "未找到用户");
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            List<Long> franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if (org.apache.commons.collections.CollectionUtils.isEmpty(franchiseeIds)) {
+                log.error("merchant save warn! franchisee is empty");
+                return R.fail("ELECTRICITY.0001", "未找到用户");
+            }
+    
+            merchantSaveRequest.setBindFranchiseeId(franchiseeIds.get(0));
         }
         
         Triple<Boolean, String, Object> r = merchantService.save(merchantSaveRequest);
@@ -138,8 +156,18 @@ public class JsonMerchantController extends BaseController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         
-        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
+        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE) || Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE))) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+    
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            List<Long> franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if (org.apache.commons.collections.CollectionUtils.isEmpty(franchiseeIds)) {
+                log.error("merchant save warn! franchisee is empty");
+                return R.fail("ELECTRICITY.0001", "未找到用户");
+            }
+        
+            merchantSaveRequest.setBindFranchiseeId(franchiseeIds.get(0));
         }
         
         Triple<Boolean, String, Object> r = merchantService.update(merchantSaveRequest);
@@ -167,11 +195,22 @@ public class JsonMerchantController extends BaseController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
     
-        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
+        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE) || Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE))) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         
-        Triple<Boolean, String, Object> r = merchantService.remove(id);
+        Long bindFranchiseeId = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            List<Long> franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if (org.apache.commons.collections.CollectionUtils.isEmpty(franchiseeIds)) {
+                log.error("merchant delete error! franchisee is empty");
+                return R.fail("ELECTRICITY.0001", "未找到用户");
+            }
+    
+            bindFranchiseeId = franchiseeIds.get(0);
+        }
+        
+        Triple<Boolean, String, Object> r = merchantService.remove(id, bindFranchiseeId);
         if (!r.getLeft()) {
             return R.fail(r.getMiddle(), (String) r.getRight());
         }
@@ -214,8 +253,18 @@ public class JsonMerchantController extends BaseController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
     
-        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
+        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE) || Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE))) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+    
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            List<Long> franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if (org.apache.commons.collections.CollectionUtils.isEmpty(franchiseeIds)) {
+                log.error("merchant delete error! franchisee is empty");
+                return R.fail("ELECTRICITY.0001", "未找到用户");
+            }
+            
+            franchiseeId = franchiseeIds.get(0);
         }
         
         MerchantPageRequest merchantPageRequest = MerchantPageRequest.builder().name(name).tenantId(TenantContextHolder.getTenantId())
@@ -246,8 +295,18 @@ public class JsonMerchantController extends BaseController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
     
-        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
+        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE) || Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE))) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+    
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            List<Long> franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if (org.apache.commons.collections.CollectionUtils.isEmpty(franchiseeIds)) {
+                log.error("merchant delete error! franchisee is empty");
+                return R.fail("ELECTRICITY.0001", "未找到用户");
+            }
+        
+            franchiseeId = franchiseeIds.get(0);
         }
         
         MerchantPageRequest merchantPageRequest = MerchantPageRequest.builder().name(name).size(size).offset(offset).tenantId(TenantContextHolder.getTenantId())
@@ -269,11 +328,22 @@ public class JsonMerchantController extends BaseController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         
-        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
+        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE) || Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE))) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
+        
+        Long franchiseeId = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            List<Long> franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if (org.apache.commons.collections.CollectionUtils.isEmpty(franchiseeIds)) {
+                log.error("merchant delete error! franchisee is empty");
+                return R.fail("ELECTRICITY.0001", "未找到用户");
+            }
+        
+            franchiseeId = franchiseeIds.get(0);
+        }
     
-        Triple<Boolean, String, Object> triple = merchantService.queryById(id);
+        Triple<Boolean, String, Object> triple = merchantService.queryById(id, franchiseeId);
         
         return returnTripleResult(triple);
     }
@@ -299,11 +369,22 @@ public class JsonMerchantController extends BaseController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         
-        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
+        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE)) || Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
+    
+        Long franchiseeId = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            List<Long> franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if (org.apache.commons.collections.CollectionUtils.isEmpty(franchiseeIds)) {
+                log.error("merchant delete error! franchisee is empty");
+                return R.fail("ELECTRICITY.0001", "未找到用户");
+            }
         
-        MerchantPageRequest merchantPageRequest = MerchantPageRequest.builder().name(name).size(size).offset(offset).tenantId(TenantContextHolder.getTenantId()).build();
+            franchiseeId = franchiseeIds.get(0);
+        }
+        
+        MerchantPageRequest merchantPageRequest = MerchantPageRequest.builder().name(name).size(size).offset(offset).franchiseeId(franchiseeId).tenantId(TenantContextHolder.getTenantId()).build();
         
         return R.ok(merchantService.queryList(merchantPageRequest));
     }
