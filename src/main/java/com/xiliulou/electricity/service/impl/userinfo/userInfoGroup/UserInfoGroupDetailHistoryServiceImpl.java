@@ -97,7 +97,7 @@ public class UserInfoGroupDetailHistoryServiceImpl implements UserInfoGroupDetai
         List<UserInfoGroupIdAndNameBO> boList = new ArrayList<>();
         String[] split = groupIds.split(CommonConstant.STR_COMMA);
         for (String id : split) {
-            UserInfoGroup userInfoGroup = userInfoGroupService.queryByIdFromCache(Long.valueOf(id));
+            UserInfoGroup userInfoGroup = userInfoGroupService.queryByIdFromDB(Long.valueOf(id));
             if (userInfoGroup != null) {
                 UserInfoGroupIdAndNameBO bo = UserInfoGroupIdAndNameBO.builder().id(Long.valueOf(id)).name(userInfoGroup.getName()).build();
                 boList.add(bo);

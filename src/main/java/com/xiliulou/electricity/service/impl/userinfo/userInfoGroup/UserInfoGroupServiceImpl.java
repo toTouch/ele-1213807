@@ -254,6 +254,12 @@ public class UserInfoGroupServiceImpl implements UserInfoGroupService {
         return userInfoGroupMapper.batchUpdateByIds(groupIds, updateTime, operator, delFlag);
     }
     
+    @Slave
+    @Override
+    public UserInfoGroup queryByIdFromDB(Long id) {
+        return userInfoGroupMapper.selectByIdFromDB(id);
+    }
+    
     @Override
     public R batchImport(UserInfoGroupBatchImportRequest request, Long operator) {
         Long franchiseeId = request.getFranchiseeId();

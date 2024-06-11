@@ -40,4 +40,6 @@ public interface UserInfoGroupService {
     List<UserInfoGroupIdAndNameBO> listAllGroup(UserInfoGroupQuery query);
     
     Integer batchUpdateByIds(List<Long> groupIds, Long updateTime, Long operator, Integer delFlag);
+    
+    UserInfoGroup queryByIdFromDB(Long valueOf);
 }

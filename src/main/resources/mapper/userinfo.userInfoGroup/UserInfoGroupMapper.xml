@@ -137,6 +137,13 @@
             </if>
         </where>
     </select>
+    
+    <select id="selectByIdFromDB" resultType="com.xiliulou.electricity.entity.userinfo.userInfoGroup.UserInfoGroup">
+        select
+        <include refid="basic_field"/>
+        from t_user_info_group
+        where and id = #{id}
+    </select>
 
 </mapper>
 
