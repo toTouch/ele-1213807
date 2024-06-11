@@ -24,9 +24,9 @@ import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
+import com.xiliulou.electricity.bo.asset.ElectricityCabinetBO;
 import com.xiliulou.electricity.bo.cabinet.ElectricityCabinetMapBO;
 import com.xiliulou.electricity.bo.merchant.AreaCabinetNumBO;
-import com.xiliulou.electricity.bo.asset.ElectricityCabinetBO;
 import com.xiliulou.electricity.config.EleCommonConfig;
 import com.xiliulou.electricity.config.EleIotOtaPathConfig;
 import com.xiliulou.electricity.constant.BatteryConstant;
@@ -73,6 +73,7 @@ import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.merchant.MerchantArea;
 import com.xiliulou.electricity.entity.merchant.MerchantPlaceFeeRecord;
 import com.xiliulou.electricity.enums.EleCabinetModelHeatingEnum;
+import com.xiliulou.electricity.enums.RentReturnNormEnum;
 import com.xiliulou.electricity.enums.YesNoEnum;
 import com.xiliulou.electricity.enums.asset.StockStatusEnum;
 import com.xiliulou.electricity.exception.BizException;
@@ -95,6 +96,7 @@ import com.xiliulou.electricity.query.HomepageElectricityExchangeFrequencyQuery;
 import com.xiliulou.electricity.query.LowBatteryExchangeModel;
 import com.xiliulou.electricity.query.StoreQuery;
 import com.xiliulou.electricity.query.api.ApiRequestQuery;
+import com.xiliulou.electricity.queryModel.EleCabinetExtraQueryModel;
 import com.xiliulou.electricity.request.asset.TransferCabinetModelRequest;
 import com.xiliulou.electricity.request.merchant.MerchantAreaRequest;
 import com.xiliulou.electricity.service.BatteryGeoService;
@@ -238,9 +240,6 @@ import static com.xiliulou.electricity.entity.ElectricityCabinetBox.ELECTRICITY_
 import static com.xiliulou.electricity.entity.ElectricityCabinetBox.ELECTRICITY_CABINET_BOX_USABLE;
 import static com.xiliulou.electricity.entity.ElectricityCabinetBox.STATUS_ELECTRICITY_BATTERY;
 import static com.xiliulou.electricity.entity.ElectricityCabinetBox.STATUS_NO_ELECTRICITY_BATTERY;
-import static com.xiliulou.electricity.entity.ElectricityCabinetExtra.EFFECT_ROWS_ZERO;
-import static com.xiliulou.electricity.query.ElectricityCabinetBatchEditRentReturnQuery.LIMIT;
-import static com.xiliulou.electricity.query.ElectricityCabinetBatchEditRentReturnQuery.NOT_LIMIT;
 import static com.xiliulou.electricity.vo.ElectricityCabinetSimpleVO.IS_EXCHANGE;
 import static com.xiliulou.electricity.vo.ElectricityCabinetSimpleVO.IS_RENT;
 import static com.xiliulou.electricity.vo.ElectricityCabinetSimpleVO.IS_RETURN;
@@ -731,45 +730,43 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     }
     
     private void checkUpdateOneElectricityCabinetExtra(ElectricityCabinetAddAndUpdate electricityCabinetAddAndUpdate) {
-        if (Objects.isNull(electricityCabinetAddAndUpdate.getMinIsLimit()) || Objects.isNull(electricityCabinetAddAndUpdate.getMaxIsLimit())) {
-            new CustomBusinessException("限制！必须选择两个");
+        if (Objects.equals(electricityCabinetAddAndUpdate.getRentTabType(), RentReturnNormEnum.CUSTOM_RENT.getCode()) && Objects.isNull(
+                electricityCabinetAddAndUpdate.getMinRetainBatteryCount())) {
+            throw new CustomBusinessException("自定义，最小保留电池数不能为空");
         }
         
-        if (Objects.equals(electricityCabinetAddAndUpdate.getMinIsLimit(), LIMIT) && Objects.isNull(electricityCabinetAddAndUpdate.getMinRetainBatteryCount())) {
-            throw new CustomBusinessException("限制！最小保留电池数不能为空");
-        }
-        
-        if (Objects.equals(electricityCabinetAddAndUpdate.getMaxIsLimit(), LIMIT) && Objects.isNull(electricityCabinetAddAndUpdate.getMaxRetainBatteryCount())) {
-            throw new CustomBusinessException("限制！最大保留电池数不能为空");
+        if (Objects.equals(electricityCabinetAddAndUpdate.getReturnTabType(), RentReturnNormEnum.CUSTOM_RETURN.getCode()) && Objects.isNull(
+                electricityCabinetAddAndUpdate.getMaxRetainBatteryCount())) {
+            throw new CustomBusinessException("自定义！最大保留电池数不能为空");
         }
     }
     
-    private Integer updateElectricityCabinetExtra(ElectricityCabinetAddAndUpdate electricityCabinetAddAndUpdate) {
-        ElectricityCabinetExtra cabinetExtra = electricityCabinetExtraService.queryByEid(Long.valueOf(electricityCabinetAddAndUpdate.getId()));
+    private void updateElectricityCabinetExtra(ElectricityCabinetAddAndUpdate cabinetAddAndUpdate) {
+        if (Objects.isNull(cabinetAddAndUpdate.getId())) {
+            log.warn("updateElectricityCabinetExtra is error, cabinetId is null");
+            return;
+        }
+        ElectricityCabinetExtra cabinetExtra = electricityCabinetExtraService.queryByEid(Long.valueOf(cabinetAddAndUpdate.getId()));
         if (Objects.isNull(cabinetExtra)) {
-            log.warn("updateElectricityCabinetExtra is error, cabinetExtra is null, id:{}", electricityCabinetAddAndUpdate.getId());
-            return 0;
+            log.warn("updateElectricityCabinetExtra is error, cabinetExtra is null, id:{}", cabinetAddAndUpdate.getId());
+            return;
         }
-        int flag = 0;
-        if (Objects.equals(electricityCabinetAddAndUpdate.getMinIsLimit(), NOT_LIMIT)) {
-            // 最小无限制
-            flag = electricityCabinetExtraService.updateMinElectricityCabinetExtra(null, electricityCabinetAddAndUpdate.getId());
-        }
-        if (Objects.equals(electricityCabinetAddAndUpdate.getMinIsLimit(), LIMIT)) {
-            // 最小有限制
-            flag = electricityCabinetExtraService.updateMinElectricityCabinetExtra(electricityCabinetAddAndUpdate.getMinRetainBatteryCount(),
-                    electricityCabinetAddAndUpdate.getId());
-        }
+        Integer rentTabType = cabinetAddAndUpdate.getRentTabType();
+        Integer returnTabType = cabinetAddAndUpdate.getReturnTabType();
         
-        if (Objects.equals(electricityCabinetAddAndUpdate.getMaxIsLimit(), NOT_LIMIT)) {
-            // 最大无限制
-            flag = electricityCabinetExtraService.updateMaxElectricityCabinetExtra(null, electricityCabinetAddAndUpdate.getId());
+        // 更新
+        EleCabinetExtraQueryModel extraQueryModel = EleCabinetExtraQueryModel.builder().id(Long.valueOf(cabinetAddAndUpdate.getId()))
+                .returnTabType(cabinetAddAndUpdate.getRentTabType()).returnTabType(cabinetAddAndUpdate.getReturnTabType())
+                .maxRetainBatteryCount(cabinetAddAndUpdate.getMaxRetainBatteryCount()).minRetainBatteryCount(cabinetAddAndUpdate.getMinRetainBatteryCount()).build();
+        // 如果不是自定义租电，则设置为null
+        if (!Objects.equals(rentTabType, RentReturnNormEnum.CUSTOM_RENT.getCode())) {
+            extraQueryModel.setRentTabType(null);
         }
-        if (Objects.equals(electricityCabinetAddAndUpdate.getMaxIsLimit(), LIMIT)) {
-            flag = electricityCabinetExtraService.updateMaxElectricityCabinetExtra(electricityCabinetAddAndUpdate.getMaxRetainBatteryCount(),
-                    electricityCabinetAddAndUpdate.getId());
+        // 如果不是自定义退电，则设置为null
+        if (!Objects.equals(returnTabType, RentReturnNormEnum.CUSTOM_RETURN.getCode())) {
+            extraQueryModel.setReturnTabType(null);
         }
-        return flag;
+        electricityCabinetExtraService.updateTabTypeCabinetExtra(extraQueryModel);
     }
     
     private MerchantPlaceFeeRecord getPlaceFeeRecord(ElectricityCabinet oldElectricityCabinet, ElectricityCabinetAddAndUpdate electricityCabinetAddAndUpdate, TokenUser user) {
@@ -1256,9 +1253,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     }
     
     /**
-     *
      * @param eid
-     * @param exchangeableList： 可换电标准集合
+     * @param exchangeableList：    可换电标准集合
      * @param cabinetBoxList：所有的格挡
      * @return
      */
@@ -1272,9 +1268,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         
         // 可用的在仓电池数
         List<ElectricityCabinetBox> haveBatteryCellList = cabinetBoxList.stream()
-                .filter(e -> (Objects.equals(e.getUsableStatus(), ELECTRICITY_CABINET_BOX_USABLE) && Objects.equals(e.getStatus(), STATUS_ELECTRICITY_BATTERY))).collect(
-                        Collectors.toList());
-        
+                .filter(e -> (Objects.equals(e.getUsableStatus(), ELECTRICITY_CABINET_BOX_USABLE) && Objects.equals(e.getStatus(), STATUS_ELECTRICITY_BATTERY)))
+                .collect(Collectors.toList());
         
         //可换电数量,可换电池数>=1 && 必须有一个空仓
         if (exchangeableList.size() >= 1 && CollUtil.isNotEmpty(emptyCellList)) {
@@ -1319,8 +1314,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     
     
     private boolean filterNotExchangeable(ElectricityCabinetBox electricityCabinetBox) {
-        return Objects.nonNull(electricityCabinetBox) && Objects.nonNull(electricityCabinetBox.getPower()) && StringUtils.isNotBlank(electricityCabinetBox.getSn()) && !StringUtils.startsWithIgnoreCase(
-                electricityCabinetBox.getSn(), "UNKNOW");
+        return Objects.nonNull(electricityCabinetBox) && Objects.nonNull(electricityCabinetBox.getPower()) && StringUtils.isNotBlank(electricityCabinetBox.getSn())
+                && !StringUtils.startsWithIgnoreCase(electricityCabinetBox.getSn(), "UNKNOW");
     }
     
     private ElectricityCabinetSimpleVO assignAttribute(ElectricityCabinetSimpleVO e, Double fullyCharged, String businessTime) {
@@ -5767,7 +5762,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             //更新柜机GEO缓存信息
             redisService.addGeo(CacheConstant.CACHE_ELECTRICITY_CABINET_GEO + electricityCabinetInsert.getTenantId(), electricityCabinetInsert.getId().toString(),
                     new Point(electricityCabinetInsert.getLongitude(), electricityCabinetInsert.getLatitude()));
-    
+            
             // 新增柜机扩展参数
             ElectricityCabinetExtra electricityCabinetExtra = ElectricityCabinetExtra.builder().eid(electricityCabinetInsert.getId().longValue())
                     .batteryCountType(EleCabinetConstant.BATTERY_COUNT_TYPE_NORMAL).tenantId(electricityCabinetInsert.getTenantId()).delFlag(electricityCabinetInsert.getDelFlag())
@@ -6038,11 +6033,12 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             return new RentReturnEditEchoVO();
         }
         
-        return new RentReturnEditEchoVO(cabinetExtra.getMinRetainBatteryCount(), cabinetExtra.getMaxRetainBatteryCount());
+        return new RentReturnEditEchoVO(cabinetExtra.getEid(), cabinetExtra.getRentTabType(), cabinetExtra.getReturnTabType(), cabinetExtra.getMinRetainBatteryCount(),
+                cabinetExtra.getMaxRetainBatteryCount());
     }
     
     @Override
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public void batchEditRentReturn(ElectricityCabinetBatchEditRentReturnQuery rentReturnQuery) {
         //用户
         TokenUser user = SecurityUtils.getUserInfo();
@@ -6054,9 +6050,6 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             throw new CustomBusinessException("请至少选择一个柜机");
         }
         
-        if (Objects.isNull(rentReturnQuery.getMinIsLimit()) && Objects.isNull(rentReturnQuery.getMaxIsLimit())) {
-            throw new CustomBusinessException("至少选一个限制");
-        }
         
         // 前置校验
         rentReturnQuery.getCountQueryList().forEach(e -> {
@@ -6064,10 +6057,12 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         });
         
         for (ElectricityCabinetBatchEditRentReturnCountQuery countQuery : rentReturnQuery.getCountQueryList()) {
-            ElectricityCabinetAddAndUpdate update = BeanUtil.copyProperties(rentReturnQuery, ElectricityCabinetAddAndUpdate.class);
+            ElectricityCabinetAddAndUpdate update = new ElectricityCabinetAddAndUpdate();
             update.setMinRetainBatteryCount(countQuery.getMinRetainBatteryCount());
             update.setMaxRetainBatteryCount(countQuery.getMaxRetainBatteryCount());
             update.setId(countQuery.getId());
+            update.setRentTabType(rentReturnQuery.getRentTabType());
+            update.setReturnTabType(rentReturnQuery.getReturnTabType());
             this.updateElectricityCabinetExtra(update);
         }
         
@@ -6075,13 +6070,12 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     }
     
     private void checkUpdateBatchElectricityCabinetExtra(ElectricityCabinetBatchEditRentReturnQuery rentReturnQuery, ElectricityCabinetBatchEditRentReturnCountQuery countQuery) {
-        
-        if (Objects.equals(rentReturnQuery.getMinIsLimit(), LIMIT) && Objects.isNull(countQuery.getMinRetainBatteryCount())) {
-            throw new CustomBusinessException("限制！最保留电池数不能为空");
+        if (Objects.equals(rentReturnQuery.getRentTabType(), RentReturnNormEnum.CUSTOM_RENT.getCode()) && Objects.isNull(countQuery.getMinRetainBatteryCount())) {
+            throw new CustomBusinessException("自定义！最保留电池数不能为空");
         }
         
-        if (Objects.equals(rentReturnQuery.getMaxIsLimit(), LIMIT) && Objects.isNull(countQuery.getMaxRetainBatteryCount())) {
-            throw new CustomBusinessException("限制！最大保留电池数不能为空");
+        if (Objects.equals(rentReturnQuery.getReturnTabType(), RentReturnNormEnum.CUSTOM_RETURN.getCode()) && Objects.isNull(countQuery.getMaxRetainBatteryCount())) {
+            throw new CustomBusinessException("自定义！最大保留电池数不能为空");
         }
     }
 }

@@ -42,18 +42,29 @@
     </update>
     
     
-    <update id="updateMaxElectricityCabinetExtra">
+    <update id="updateMinElectricityCabinetExtra">
         update t_electricity_cabinet_extra
-        set max_retain_battery_count = #{maxRetainBatteryCount},
+        set min_retain_battery_count = #{minRetainBatteryCount},
+            rent_tab_type            = #{rentTabType},
             update_time              = #{updateTime}
         where eid = #{id}
     </update>
     
-    
-    <update id="updateMinElectricityCabinetExtra">
+    <update id="updateMaxElectricityCabinetExtra">
         update t_electricity_cabinet_extra
-        set min_retain_battery_count = #{minRetainBatteryCount},
+        set max_retain_battery_count = #{maxRetainBatteryCount},
+            return_tab_type          = #{returnTabType},
             update_time              = #{updateTime}
+        where eid = #{id}
+    </update>
+    
+    <update id="updateTabTypeCabinetExtra">
+        update t_electricity_cabinet_extra
+        set update_time              = #{updateTime},
+            rent_tab_type            = #{rentTabType},
+            return_tab_type          = #{returnTabType},
+            max_retain_battery_count = #{maxRetainBatteryCount},
+            min_retain_battery_count = #{minRetainBatteryCount}
         where eid = #{id}
     </update>
 </mapper>
