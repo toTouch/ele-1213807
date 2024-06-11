@@ -18,6 +18,7 @@ import com.xiliulou.electricity.entity.EleRefundOrderHistory;
 import com.xiliulou.electricity.entity.EleUserOperateRecord;
 import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
 import com.xiliulou.electricity.entity.ElectricityTradeOrder;
+import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.FranchiseeInsurance;
 import com.xiliulou.electricity.entity.FreeDepositAlipayHistory;
 import com.xiliulou.electricity.entity.FreeDepositOrder;
@@ -191,7 +192,10 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
     
     @Resource
     UserInfoGroupDetailService userInfoGroupDetailService;
-
+    
+    @Autowired
+    private FranchiseeServiceImpl franchiseeService;
+    
     /**
      * 新增数据
      *
@@ -1834,7 +1838,10 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
                 item.setIsFreeDepositAliPay(false);
                 return;
             }
-
+            
+            Franchisee franchisee = franchiseeService.queryByIdFromCache(item.getFranchiseeId());
+            item.setFranchiseeName(Objects.isNull(franchisee) ? null : franchisee.getName());
+            
             item.setIsFreeDepositAliPay(true);
         });
         return R.ok(eleRefundOrderVOS);

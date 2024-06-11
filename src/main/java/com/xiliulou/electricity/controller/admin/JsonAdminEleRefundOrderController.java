@@ -81,7 +81,10 @@ public class JsonAdminEleRefundOrderController extends BaseController {
         
         List<Long> storeIds = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
-            return R.ok(Collections.EMPTY_LIST);
+            storeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if (CollectionUtils.isEmpty(storeIds)) {
+                return R.ok(Collections.EMPTY_LIST);
+            }
         }
         
         List<Long> franchiseeIds = null;
@@ -116,7 +119,10 @@ public class JsonAdminEleRefundOrderController extends BaseController {
         
         List<Long> storeIds = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
-            return R.ok(NumberConstant.ZERO);
+            storeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if (CollectionUtils.isEmpty(storeIds)) {
+                return R.ok(Collections.EMPTY_LIST);
+            }
         }
         
         List<Long> franchiseeIds = null;
