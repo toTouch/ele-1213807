@@ -36,6 +36,7 @@ import org.springframework.stereotype.Service;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -135,8 +136,8 @@ public class AssetInventoryServiceImpl implements AssetInventoryService {
                 AssetInventoryVO assetInventoryVO = new AssetInventoryVO();
                 BeanUtils.copyProperties(item, assetInventoryVO);
                 
-                Franchisee franchisee = franchiseeService.queryByIdFromCache(item.getFranchiseeId());
-                assetInventoryVO.setFranchiseeName(franchisee.getName());
+                // TODO(heyafeng) 2024/6/11 17:35
+                assetInventoryVO.setFranchiseeName(Optional.ofNullable(franchiseeService.queryByIdFromCache(item.getFranchiseeId())).orElse(new Franchisee()).getName());
                 
                 return assetInventoryVO;
             }).collect(Collectors.toList());

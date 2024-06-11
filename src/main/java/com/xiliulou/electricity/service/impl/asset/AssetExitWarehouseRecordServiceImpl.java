@@ -53,6 +53,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -357,15 +358,11 @@ public class AssetExitWarehouseRecordServiceImpl implements AssetExitWarehouseRe
         if (CollectionUtils.isNotEmpty(assetExitWarehouseBOList)) {
             rspList = assetExitWarehouseBOList.stream().map(item -> {
                 
-                Franchisee franchisee = franchiseeService.queryByIdFromCache(item.getFranchiseeId());
-                Store store = storeService.queryByIdFromCache(item.getStoreId());
-                
+                // TODO(heyafeng) 2024/6/11 17:33
                 AssetExitWarehouseVO assetExitWarehouseVO = new AssetExitWarehouseVO();
                 BeanUtils.copyProperties(item, assetExitWarehouseVO);
-                assetExitWarehouseVO.setFranchiseeName(franchisee.getName());
-                if (Objects.nonNull(store)) {
-                    assetExitWarehouseVO.setStoreName(store.getName());
-                }
+                assetExitWarehouseVO.setFranchiseeName(Optional.ofNullable(franchiseeService.queryByIdFromCache(item.getFranchiseeId())).orElse(new Franchisee()).getName());
+                assetExitWarehouseVO.setStoreName(Optional.ofNullable(storeService.queryByIdFromCache(item.getStoreId())).orElse(new Store()).getName());
                 
                 return assetExitWarehouseVO;
                 

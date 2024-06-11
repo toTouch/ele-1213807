@@ -524,20 +524,18 @@ public class AssetAllocateRecordServiceImpl implements AssetAllocateRecordServic
                 assetAllocateRecordVO.setSourceFranchiseeId(item.getOldFranchiseeId());
                 assetAllocateRecordVO.setTargetFranchiseeId(item.getNewFranchiseeId());
                 
-                Franchisee oldFranchisee = franchiseeService.queryByIdFromCache(item.getOldFranchiseeId());
-                Franchisee newFranchisee = franchiseeService.queryByIdFromCache(item.getNewFranchiseeId());
-                assetAllocateRecordVO.setSourceFranchiseeName(oldFranchisee.getName());
-                assetAllocateRecordVO.setTargetFranchiseeName(newFranchisee.getName());
+                // TODO(heyafeng) 2024/6/11 17:29
+                assetAllocateRecordVO.setSourceFranchiseeName(Optional.ofNullable(franchiseeService.queryByIdFromCache(item.getOldFranchiseeId())).orElse(new Franchisee()).getName());
+                assetAllocateRecordVO.setTargetFranchiseeName(Optional.ofNullable(franchiseeService.queryByIdFromCache(item.getNewFranchiseeId())).orElse(new Franchisee()).getName());
+    
+                assetAllocateRecordVO.setSourceStoreId(item.getOldStoreId());
+                assetAllocateRecordVO.setTargetStoreId(item.getNewStoreId());
                 
                 if (Objects.nonNull(item.getOldStoreId())) {
-                    Store oldStore = storeService.queryByIdFromCache(item.getOldStoreId());
-                    assetAllocateRecordVO.setSourceStoreId(item.getOldStoreId());
-                    assetAllocateRecordVO.setSourceStoreName(oldStore.getName());
+                    assetAllocateRecordVO.setSourceStoreName(Optional.ofNullable(storeService.queryByIdFromCache(item.getOldStoreId())).orElse(new Store()).getName());
                 }
                 if (Objects.nonNull(item.getNewStoreId())) {
-                    Store newStore = storeService.queryByIdFromCache(item.getNewStoreId());
-                    assetAllocateRecordVO.setTargetStoreId(item.getNewStoreId());
-                    assetAllocateRecordVO.setTargetStoreName(newStore.getName());
+                    assetAllocateRecordVO.setTargetStoreName(Optional.ofNullable(storeService.queryByIdFromCache(item.getNewStoreId())).orElse(new Store()).getName());
                 }
                 
                 List<AssetAllocateDetailVO> allocateDetailVOList = assetAllocateDetailService.listByPage(item.getOrderNo(), TenantContextHolder.getTenantId());

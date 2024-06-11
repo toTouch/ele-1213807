@@ -36,6 +36,7 @@ import javax.annotation.Resource;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -76,11 +77,10 @@ public class AssetInventoryDetailServiceImpl implements AssetInventoryDetailServ
         List<AssetInventoryDetailBO> assetInventoryDetailBOList = assetInventoryDetailMapper.selectListByOrderNo(assetInventoryDetailQueryModel);
         if (CollectionUtils.isNotEmpty(assetInventoryDetailBOList)) {
             rspList = assetInventoryDetailBOList.stream().map(item -> {
-                
-                Franchisee franchisee = franchiseeService.queryByIdFromCache(item.getFranchiseeId());
+                // TODO(heyafeng) 2024/6/11 17:25
                 AssetInventoryDetailVO assetInventoryDetailVO = new AssetInventoryDetailVO();
                 BeanUtils.copyProperties(item, assetInventoryDetailVO);
-                assetInventoryDetailVO.setFranchiseeName(franchisee.getName());
+                assetInventoryDetailVO.setFranchiseeName(Optional.ofNullable(franchiseeService.queryByIdFromCache(item.getFranchiseeId())).orElse(new Franchisee()).getName());
                 
                 return assetInventoryDetailVO;
                 
