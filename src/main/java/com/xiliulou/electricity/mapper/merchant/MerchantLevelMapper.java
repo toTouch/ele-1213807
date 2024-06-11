@@ -14,24 +14,26 @@ import java.util.List;
 public interface MerchantLevelMapper {
     
     MerchantLevel selectById(Long id);
-
-    List<MerchantLevel> selectByTenantId(Integer tenantId);
-
+    
     int insert(MerchantLevel merchantLevel);
     
     int batchInsert(List<MerchantLevel> merchantLevels);
-
-    int updateById(MerchantLevel merchantLevel);
-
-    int deleteById(Long id);
     
-    MerchantLevel selectNextByMerchantLevel(@Param("level") String level, @Param("tenantId") Integer tenantId);
+    int updateById(MerchantLevel merchantLevel);
+    
+    int deleteByFranchiseeId(Long franchiseeId);
+    
+    MerchantLevel selectNextByMerchantLevel(@Param("level") String level, @Param("franchiseeId") Long franchiseeId);
     
     List<MerchantLevel> queryListByIdList(@Param("idList") List<Long> levelIdList);
     
-    MerchantLevel selectLastByMerchantLevel(@Param("level") String level, @Param("tenantId") Integer tenantId);
+    MerchantLevel selectLastByMerchantLevel(@Param("level") String level, @Param("franchiseeId") Long franchiseeId);
     
-    MerchantLevel selectByMerchantLevelAndTenantId(@Param("level") String level, @Param("tenantId") Integer tenantId);
+    MerchantLevel selectByMerchantLevelAndFranchiseeId(@Param("level") String level, @Param("franchiseeId") Long franchiseeId);
     
-    Integer existsLevelName(@Param("name") String name, @Param("tenantId") Integer tenantId);
+    Integer existsLevelName(@Param("name") String name, @Param("franchiseeId") Long franchiseeId);
+    
+    List<MerchantLevel> selectByFranchiseeId(@Param("tenantId") Integer tenantId, @Param("franchiseeId") Long franchiseeId);
+    
+    List<MerchantLevel> selectListByTenantId(Integer tenantId);
 }

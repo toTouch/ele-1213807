@@ -9,15 +9,14 @@ import com.xiliulou.electricity.entity.merchant.MerchantAttr;
  * @since 2024-02-04 09:14:33
  */
 public interface MerchantAttrMapper {
-
+    
     MerchantAttr selectById(Long id);
     
-    MerchantAttr selectByTenantId(Integer tenantId);
-
-    int updateByTenantId(MerchantAttr merchantAttr);
+    int updateByFranchiseeId(MerchantAttr merchantAttr);
     
     int insert(MerchantAttr merchantAttr);
-
-    int deleteByTenantId(Integer tenantId);
-
+    
+    MerchantAttr selectByFranchiseeId(Long franchiseeId);
+    
+    int deleteByFranchiseeId(Long franchiseeId);
 }

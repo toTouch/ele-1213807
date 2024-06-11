@@ -93,7 +93,6 @@ public class RebateConfigServiceImpl implements RebateConfigService {
             RebateConfigVO rebateConfigVO = new RebateConfigVO();
             BeanUtils.copyProperties(item, rebateConfigVO);
             
-            //            MerchantLevel merchantLevel = merchantLevelService.queryByMerchantLevelAndTenantId(item.getLevel(), item.getTenantId());
             rebateConfigVO.setLevelName(merchantLevelMap.getOrDefault(item.getLevel(), ""));
             
             BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(item.getMid());
@@ -135,10 +134,11 @@ public class RebateConfigServiceImpl implements RebateConfigService {
         if (Objects.nonNull(result)) {
             return Triple.of(false, "100318", "套餐返利配置已存在");
         }
-    
+        
         RebateConfig rebateConfig = new RebateConfig();
         BeanUtils.copyProperties(request, rebateConfig);
         rebateConfig.setDelFlag(CommonConstant.DEL_N);
+        rebateConfig.setFranchiseeId(request.getFranchiseeId());
         rebateConfig.setTenantId(TenantContextHolder.getTenantId());
         rebateConfig.setCreateTime(System.currentTimeMillis());
         rebateConfig.setUpdateTime(System.currentTimeMillis());

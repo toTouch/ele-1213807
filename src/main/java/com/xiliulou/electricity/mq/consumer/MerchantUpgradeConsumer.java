@@ -93,13 +93,13 @@ public class MerchantUpgradeConsumer implements RocketMQListener<String> {
                 return;
             }
             
-            MerchantAttr merchantAttr = merchantAttrService.queryByTenantId(merchant.getTenantId());
+            MerchantAttr merchantAttr = merchantAttrService.queryByFranchiseeIdFromCache(merchant.getFranchiseeId());
             if (Objects.isNull(merchantAttr)) {
                 log.warn("MERCHANT UPGRADE CONSUMER WARN!merchantAttr is null,merchantId={}", userInfoExtra.getMerchantId());
                 return;
             }
             
-            List<MerchantLevelVO> merchantLevelList = merchantLevelService.list(merchantAttr.getTenantId());
+            List<MerchantLevelVO> merchantLevelList = merchantLevelService.list(merchantAttr.getTenantId(), merchant.getFranchiseeId());
             if (CollectionUtils.isEmpty(merchantLevelList)) {
                 log.warn("MERCHANT UPGRADE CONSUMER WARN!merchantLevelList is null,merchantId={}", userInfoExtra.getMerchantId());
                 return;
@@ -114,15 +114,15 @@ public class MerchantUpgradeConsumer implements RocketMQListener<String> {
                 //拉新人数
                 Integer invitationNumber = merchantJoinRecordService.countByMerchantIdAndStatus(merchant.getId(), MerchantJoinRecordConstant.STATUS_SUCCESS);
                 log.info("MERCHANT UPGRADE INVITATION INFO!invitationNumber={},merchantId={}", invitationNumber, userInfoExtra.getMerchantId());
-                if(Objects.isNull(invitationNumber)){
+                if (Objects.isNull(invitationNumber)) {
                     return;
                 }
-    
+                
                 MerchantLevelVO merchantLevel = null;
                 
                 for (MerchantLevelVO merchantLevelVO : merchantLevelList) {
-                    if (Objects.nonNull(merchantLevelVO.getInvitationUserCount()) && merchantLevelVO.getInvitationUserCount() > 0
-                            && invitationNumber >= merchantLevelVO.getInvitationUserCount()) {
+                    if (Objects.nonNull(merchantLevelVO.getInvitationUserCount()) && merchantLevelVO.getInvitationUserCount() > 0 && invitationNumber >= merchantLevelVO
+                            .getInvitationUserCount()) {
                         merchantLevel = merchantLevelVO;
                         break;
                     }
@@ -136,15 +136,15 @@ public class MerchantUpgradeConsumer implements RocketMQListener<String> {
                 //续费人数
                 Integer renewalNumber = userBatteryMemberCardService.queryRenewalNumberByMerchantId(merchant.getId(), merchantAttr.getTenantId());
                 log.info("MERCHANT UPGRADE RENEWAL INFO!renewalNumber={},merchantId={}", renewalNumber, userInfoExtra.getMerchantId());
-                if(Objects.isNull(renewalNumber)){
+                if (Objects.isNull(renewalNumber)) {
                     return;
                 }
                 
                 MerchantLevelVO merchantLevel = null;
                 
                 for (MerchantLevelVO merchantLevelVO : merchantLevelList) {
-                    if (Objects.nonNull(merchantLevelVO.getRenewalUserCount()) && merchantLevelVO.getRenewalUserCount() > 0
-                            && renewalNumber >= merchantLevelVO.getRenewalUserCount()) {
+                    if (Objects.nonNull(merchantLevelVO.getRenewalUserCount()) && merchantLevelVO.getRenewalUserCount() > 0 && renewalNumber >= merchantLevelVO
+                            .getRenewalUserCount()) {
                         merchantLevel = merchantLevelVO;
                         break;
                     }
@@ -158,23 +158,23 @@ public class MerchantUpgradeConsumer implements RocketMQListener<String> {
                 //拉新人数
                 Integer invitationNumber = merchantJoinRecordService.countByMerchantIdAndStatus(merchant.getId(), MerchantJoinRecordConstant.STATUS_SUCCESS);
                 log.info("MERCHANT UPGRADE INVITATION INFO!invitationNumber={},merchantId={}", invitationNumber, userInfoExtra.getMerchantId());
-                if(Objects.isNull(invitationNumber)){
+                if (Objects.isNull(invitationNumber)) {
                     return;
                 }
                 
                 //续费人数
                 Integer renewalNumber = userBatteryMemberCardService.queryRenewalNumberByMerchantId(merchant.getId(), merchantAttr.getTenantId());
                 log.info("MERCHANT UPGRADE RENEWAL INFO!renewalNumber={},merchantId={}", renewalNumber, userInfoExtra.getMerchantId());
-                if(Objects.isNull(renewalNumber)){
+                if (Objects.isNull(renewalNumber)) {
                     return;
                 }
                 
                 MerchantLevelVO merchantLevel = null;
                 
                 for (MerchantLevelVO merchantLevelVO : merchantLevelList) {
-                    if (Objects.nonNull(merchantLevelVO.getInvitationUserCount()) && merchantLevelVO.getInvitationUserCount() > 0
-                            && invitationNumber >= merchantLevelVO.getInvitationUserCount() && Objects.nonNull(merchantLevelVO.getRenewalUserCount())
-                            && merchantLevelVO.getRenewalUserCount() > 0 && renewalNumber >= merchantLevelVO.getRenewalUserCount()) {
+                    if (Objects.nonNull(merchantLevelVO.getInvitationUserCount()) && merchantLevelVO.getInvitationUserCount() > 0 && invitationNumber >= merchantLevelVO
+                            .getInvitationUserCount() && Objects.nonNull(merchantLevelVO.getRenewalUserCount()) && merchantLevelVO.getRenewalUserCount() > 0
+                            && renewalNumber >= merchantLevelVO.getRenewalUserCount()) {
                         merchantLevel = merchantLevelVO;
                         break;
                     }

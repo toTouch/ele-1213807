@@ -1465,14 +1465,14 @@ public class MerchantServiceImpl implements MerchantService {
                 return;
             }
             
-            List<MerchantLevel> merchantLevels = merchantLevelService.listByTenantId(tenantId);
-            Long levelId = NumberConstant.ZERO_L;
-            if (ObjectUtils.isNotEmpty(merchantLevels)) {
-                MerchantLevel merchantLevel = merchantLevels.stream().sorted(Comparator.comparing(MerchantLevel::getLevel).reversed()).findFirst().orElse(null);
-                if (Objects.nonNull(merchantLevel)) {
-                    levelId = merchantLevel.getId();
-                }
-            }
+//            List<MerchantLevel> merchantLevels = merchantLevelService.listByTenantId(tenantId);
+//            Long levelId = NumberConstant.ZERO_L;
+//            if (ObjectUtils.isNotEmpty(merchantLevels)) {
+//                MerchantLevel merchantLevel = merchantLevels.stream().sorted(Comparator.comparing(MerchantLevel::getLevel).reversed()).findFirst().orElse(null);
+//                if (Objects.nonNull(merchantLevel)) {
+//                    levelId = merchantLevel.getId();
+//                }
+//            }
             
             // 查询商户等级配置默认为五级
             MerchantSaveRequest merchantSaveRequest = new MerchantSaveRequest();
@@ -1489,7 +1489,7 @@ public class MerchantServiceImpl implements MerchantService {
             merchantSaveRequest.setEnterprisePackageAuth(0);
             merchantSaveRequest.setPurchaseAuthority(0);
             merchantSaveRequest.setAutoUpGrade(0);
-            merchantSaveRequest.setMerchantGradeId(levelId);
+//            merchantSaveRequest.setMerchantGradeId(levelId);
             merchantSaveRequest.setEnterpriseId(enterpriseInfo.getId());
             
             // 为该企业创建商户
