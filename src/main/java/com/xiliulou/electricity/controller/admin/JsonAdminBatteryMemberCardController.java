@@ -11,11 +11,13 @@ import com.xiliulou.electricity.query.BatteryMemberCardStatusQuery;
 import com.xiliulou.electricity.query.MemberCardAndCarRentalPackageSortParamQuery;
 import com.xiliulou.electricity.service.BatteryMemberCardService;
 import com.xiliulou.electricity.service.UserDataScopeService;
+import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.utils.ValidList;
 import com.xiliulou.electricity.validator.CreateGroup;
 import com.xiliulou.electricity.validator.UpdateGroup;
+import com.xiliulou.electricity.vo.BatteryMemberCardVO;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
@@ -30,6 +32,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.annotation.Resource;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -48,6 +51,9 @@ public class JsonAdminBatteryMemberCardController extends BaseController {
     
     @Autowired
     UserDataScopeService userDataScopeService;
+    
+    @Resource
+    UserInfoService userInfoService;
     
     /**
      * 搜索
@@ -327,44 +333,32 @@ public class JsonAdminBatteryMemberCardController extends BaseController {
     /**
      * 批量修改套餐排序参数
      *
-     * @param sortParamQueries
-     * @return
+     * @param sortParamQueries 套餐id、排序参数
+     * @return 修改行数
      */
     @PutMapping("/admin/battery/memberCard/batchUpdateSortParam")
-    public R batchUpdateSortParam(@RequestBody @Validated ValidList<MemberCardAndCarRentalPackageSortParamQuery> sortParamQueries) {
-        
-        TokenUser user = SecurityUtils.getUserInfo();
-        if (Objects.isNull(user)) {
+    public R<Integer> batchUpdateSortParam(@RequestBody @Validated ValidList<MemberCardAndCarRentalPackageSortParamQuery> sortParamQueries) {
+        TokenUser tokenUser = SecurityUtils.getUserInfo();
+        if (Objects.isNull(tokenUser) || Objects.isNull(userInfoService.queryByUidFromCache(tokenUser.getUid()))) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
-        }
-        
-        // 仅超级管理员和运营商可修改排序参数
-        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
-            return R.ok();
         }
         
         return R.ok(batteryMemberCardService.batchUpdateSortParam(sortParamQueries));
     }
     
     /**
-     * 查询id、name、sortParam供排序使用
+     * 查询套餐以供后台排序
      *
-     * @return
+     * @return 返回id、name、sortParam、createTime
      */
     @GetMapping("/admin/battery/memberCard/listMemberCardForSort")
-    public R listMemberCardForSort() {
-        
-        TokenUser user = SecurityUtils.getUserInfo();
-        if (Objects.isNull(user)) {
+    public R<List<BatteryMemberCardVO>> listMemberCardForSort() {
+        TokenUser tokenUser = SecurityUtils.getUserInfo();
+        if (Objects.isNull(tokenUser) || Objects.isNull(userInfoService.queryByUidFromCache(tokenUser.getUid()))) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         
-        // 查询数据较多，限制仅超级管理员和运营商可使用
-        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
-            return R.ok();
-        }
-        
-        return R.ok(batteryMemberCardService.listMemberCardForSort());
+        return R.ok(batteryMemberCardService.listMemberCardForSort(tokenUser));
     }
     
 }
