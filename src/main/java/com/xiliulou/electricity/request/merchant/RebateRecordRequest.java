@@ -5,6 +5,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 /**
  * @author zzlong
  * @email zhaozhilong@xiliulou.com
@@ -27,6 +29,8 @@ public class RebateRecordRequest {
     private Integer type;
     
     private Long franchiseeId;
+    
+    private List<Long> franchiseeIds;
     
     private Long merchantId;
     
