@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.google.api.client.util.Lists;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
+import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.bo.userInfoGroup.UserInfoGroupBO;
 import com.xiliulou.electricity.bo.userInfoGroup.UserInfoGroupNamesBO;
@@ -34,6 +35,7 @@ import com.xiliulou.electricity.service.CouponService;
 import com.xiliulou.electricity.service.ElectricityMemberCardOrderService;
 import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.MemberCardBatteryTypeService;
+import com.xiliulou.electricity.service.StoreService;
 import com.xiliulou.electricity.service.UserBatteryDepositService;
 import com.xiliulou.electricity.service.UserBatteryMemberCardService;
 import com.xiliulou.electricity.service.UserBatteryTypeService;
@@ -134,6 +136,9 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
     
     @Autowired
     private UserDataScopeServiceImpl userDataScopeService;
+    
+    @Resource
+    StoreService storeService;
     
     /**
      * 通过ID查询单条数据从DB
@@ -893,12 +898,26 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
     public List<BatteryMemberCardVO> listMemberCardForSort(TokenUser tokenUser) {
         BatteryMemberCardQuery query = BatteryMemberCardQuery.builder().tenantId(TenantContextHolder.getTenantId()).build();
         
+        final List<Long> franchiseeIds = new ArrayList<>();
         if (Objects.equals(tokenUser.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
-            List<Long> franchiseeIds = userDataScopeService.selectDataIdByUid(SecurityUtils.getUid());
-            if (CollectionUtils.isNotEmpty(franchiseeIds)) {
-                query.setFranchiseeIds(franchiseeIds);
+            franchiseeIds.addAll(userDataScopeService.selectDataIdByUid(tokenUser.getUid()));
+            if (CollectionUtils.isEmpty(franchiseeIds)) {
+                return Collections.emptyList();
             }
         }
+        
+        if (Objects.equals(tokenUser.getDataType(), User.DATA_TYPE_STORE)) {
+            List<Long> storeIds = userDataScopeService.selectDataIdByUid(tokenUser.getUid());
+            if (org.apache.commons.collections.CollectionUtils.isNotEmpty(storeIds)) {
+                storeIds.forEach(storeId -> {
+                    franchiseeIds.add(storeService.queryByIdFromCache(storeId).getFranchiseeId());
+                });
+            }
+            if (CollectionUtils.isEmpty(franchiseeIds)) {
+                return Collections.emptyList();
+            }
+        }
+        query.setFranchiseeIds(franchiseeIds);
         
         return batteryMemberCardMapper.selectListMemberCardForSort(query);
     }

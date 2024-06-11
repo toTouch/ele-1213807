@@ -10,6 +10,7 @@ import com.xiliulou.electricity.query.BatteryMemberCardQuery;
 import com.xiliulou.electricity.query.BatteryMemberCardStatusQuery;
 import com.xiliulou.electricity.query.MemberCardAndCarRentalPackageSortParamQuery;
 import com.xiliulou.electricity.service.BatteryMemberCardService;
+import com.xiliulou.electricity.service.StoreService;
 import com.xiliulou.electricity.service.UserDataScopeService;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.UserService;
@@ -34,6 +35,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -55,6 +57,9 @@ public class JsonAdminBatteryMemberCardController extends BaseController {
     
     @Resource
     UserService userService;
+    
+    @Resource
+    StoreService storeService;
     
     /**
      * 搜索
@@ -113,13 +118,21 @@ public class JsonAdminBatteryMemberCardController extends BaseController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         
-        // if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
-        //     return R.ok(Collections.emptyList());
-        // }
-        
-        List<Long> franchiseeIds = null;
+        final List<Long> franchiseeIds = new ArrayList<>();
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
-            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            franchiseeIds.addAll(userDataScopeService.selectDataIdByUid(user.getUid()));
+            if (CollectionUtils.isEmpty(franchiseeIds)) {
+                return R.ok(Collections.emptyList());
+            }
+        }
+        
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
+            List<Long> storeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if (CollectionUtils.isNotEmpty(storeIds)) {
+                storeIds.forEach(storeId -> {
+                    franchiseeIds.add(storeService.queryByIdFromCache(storeId).getFranchiseeId());
+                });
+            }
             if (CollectionUtils.isEmpty(franchiseeIds)) {
                 return R.ok(Collections.emptyList());
             }
@@ -150,15 +163,23 @@ public class JsonAdminBatteryMemberCardController extends BaseController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         
-        // if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
-        //     return R.ok(NumberConstant.ZERO);
-        // }
-        
-        List<Long> franchiseeIds = null;
+        final List<Long> franchiseeIds = new ArrayList<>();
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
-            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            franchiseeIds.addAll(userDataScopeService.selectDataIdByUid(user.getUid()));
             if (CollectionUtils.isEmpty(franchiseeIds)) {
-                return R.ok(NumberConstant.ZERO);
+                return R.ok(Collections.emptyList());
+            }
+        }
+        
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
+            List<Long> storeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if (CollectionUtils.isNotEmpty(storeIds)) {
+                storeIds.forEach(storeId -> {
+                    franchiseeIds.add(storeService.queryByIdFromCache(storeId).getFranchiseeId());
+                });
+            }
+            if (CollectionUtils.isEmpty(franchiseeIds)) {
+                return R.ok(Collections.emptyList());
             }
         }
         
