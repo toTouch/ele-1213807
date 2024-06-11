@@ -1,22 +1,20 @@
 package com.xiliulou.electricity.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.entity.PermissionTemplate;
 import com.xiliulou.electricity.mapper.PermissionTemplateMapper;
 import com.xiliulou.electricity.query.PermissionTemplateQuery;
 import com.xiliulou.electricity.service.PermissionTemplateService;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.annotation.Resource;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
-
-import lombok.extern.slf4j.Slf4j;
 
 /**
  * (PermissionTemplate)表服务实现类
@@ -36,6 +34,7 @@ public class PermissionTemplateServiceImpl implements PermissionTemplateService 
      * @param id 主键
      * @return 实例对象
      */
+    @Slave
     @Override
     public PermissionTemplate selectByIdFromDB(Long id) {
         return this.permissionTemplateMapper.selectById(id);
@@ -60,6 +59,7 @@ public class PermissionTemplateServiceImpl implements PermissionTemplateService 
      * @param limit  查询条数
      * @return 对象列表
      */
+    @Slave
     @Override
     public List<PermissionTemplate> selectByPage(int offset, int limit) {
         return this.permissionTemplateMapper.selectByPage(offset, limit);
@@ -103,6 +103,7 @@ public class PermissionTemplateServiceImpl implements PermissionTemplateService 
         return this.permissionTemplateMapper.deleteById(id) > 0;
     }
 
+    @Slave
     @Override
     public List<Long> selectByType(Integer typeOperate) {
         List<PermissionTemplate> permissionTemplates = this.permissionTemplateMapper.selectList(new LambdaQueryWrapper<PermissionTemplate>().eq(PermissionTemplate::getType, typeOperate));

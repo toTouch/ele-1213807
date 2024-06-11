@@ -486,6 +486,7 @@ public class FranchiseeInsuranceServiceImpl extends ServiceImpl<FranchiseeInsura
                 .eq(FranchiseeInsurance::getDelFlag, FranchiseeInsurance.DEL_NORMAL).eq(FranchiseeInsurance::getTenantId, tenantId));
     }
     
+    @Deprecated
     @Override
     public void moveInsurance(FranchiseeMoveInfo franchiseeMoveInfo, Franchisee newFranchisee) {
         List<FranchiseeInsurance> oldFranchiseeInsurances = this.selectByFranchiseeId(franchiseeMoveInfo.getFromFranchiseeId(), TenantContextHolder.getTenantId());

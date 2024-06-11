@@ -192,6 +192,8 @@ public interface CacheConstant {
     
     String CLIENT_ID = "xiliulou-ele:";
     
+    String MERCHANT_CLIENT_ID = "xiliulou-merchant:";
+    
     String CACHE_TENANT_MAINTENANCE_USER_CONFIG = "cache_maintenance_config:";
     String CACHE_TENANT_MAINTENANCE_USER_CONFIG_TEST = "cache_maintenance_config_test:";
     

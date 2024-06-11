@@ -4,18 +4,15 @@ import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.entity.UserDataScope;
 import com.xiliulou.electricity.mapper.UserDataScopeMapper;
 import com.xiliulou.electricity.service.UserDataScopeService;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.annotation.Resource;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
-
-import lombok.extern.slf4j.Slf4j;
 
 /**
  * (UserDataScope)表服务实现类
@@ -35,6 +32,7 @@ public class UserDataScopeServiceImpl implements UserDataScopeService {
      * @param id 主键
      * @return 实例对象
      */
+    @Slave
     @Override
     public UserDataScope selectByIdFromDB(Long id) {
         return this.userDataScopeMapper.selectById(id);
@@ -59,6 +57,7 @@ public class UserDataScopeServiceImpl implements UserDataScopeService {
      * @param limit  查询条数
      * @return 对象列表
      */
+    @Slave
     @Override
     public List<UserDataScope> selectByPage(int offset, int limit) {
         return this.userDataScopeMapper.selectByPage(offset, limit);
@@ -114,6 +113,7 @@ public class UserDataScopeServiceImpl implements UserDataScopeService {
         return this.userDataScopeMapper.deleteByUid(uid);
     }
 
+    @Slave
     @Override
     public List<Long> selectByUid(Long uid) {
         List<UserDataScope> userDataScopes = this.userDataScopeMapper.selectByUid(uid);
