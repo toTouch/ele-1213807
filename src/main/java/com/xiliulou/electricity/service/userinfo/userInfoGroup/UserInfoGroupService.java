@@ -9,7 +9,6 @@ import com.xiliulou.electricity.request.userinfo.userInfoGroup.UserInfoGroupBatc
 import com.xiliulou.electricity.request.userinfo.userInfoGroup.UserInfoGroupSaveAndUpdateRequest;
 
 import java.util.List;
-import java.util.stream.Stream;
 
 /**
  * @author HeYafeng
