@@ -12,6 +12,7 @@ import com.xiliulou.electricity.query.MemberCardAndCarRentalPackageSortParamQuer
 import com.xiliulou.electricity.service.BatteryMemberCardService;
 import com.xiliulou.electricity.service.UserDataScopeService;
 import com.xiliulou.electricity.service.UserInfoService;
+import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.utils.ValidList;
@@ -53,7 +54,7 @@ public class JsonAdminBatteryMemberCardController extends BaseController {
     UserDataScopeService userDataScopeService;
     
     @Resource
-    UserInfoService userInfoService;
+    UserService userService;
     
     /**
      * 搜索
@@ -339,7 +340,7 @@ public class JsonAdminBatteryMemberCardController extends BaseController {
     @PutMapping("/admin/battery/memberCard/batchUpdateSortParam")
     public R<Integer> batchUpdateSortParam(@RequestBody @Validated ValidList<MemberCardAndCarRentalPackageSortParamQuery> sortParamQueries) {
         TokenUser tokenUser = SecurityUtils.getUserInfo();
-        if (Objects.isNull(tokenUser) || Objects.isNull(userInfoService.queryByUidFromCache(tokenUser.getUid()))) {
+        if (Objects.isNull(tokenUser) || Objects.isNull(userService.queryByUidFromCache(tokenUser.getUid()))) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         
@@ -354,7 +355,7 @@ public class JsonAdminBatteryMemberCardController extends BaseController {
     @GetMapping("/admin/battery/memberCard/listMemberCardForSort")
     public R<List<BatteryMemberCardVO>> listMemberCardForSort() {
         TokenUser tokenUser = SecurityUtils.getUserInfo();
-        if (Objects.isNull(tokenUser) || Objects.isNull(userInfoService.queryByUidFromCache(tokenUser.getUid()))) {
+        if (Objects.isNull(tokenUser) || Objects.isNull(userService.queryByUidFromCache(tokenUser.getUid()))) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         
