@@ -256,8 +256,8 @@ public class UserInfoGroupServiceImpl implements UserInfoGroupService {
     
     @Slave
     @Override
-    public UserInfoGroup queryByIdFromDB(Long id) {
-        return userInfoGroupMapper.selectByIdFromDB(id);
+    public List<UserInfoGroup> listByIdsFromDB(List<Long> groupIds) {
+        return userInfoGroupMapper.selectListByIdsFromDB(groupIds);
     }
     
     @Override

@@ -9,6 +9,7 @@ import com.xiliulou.electricity.request.userinfo.userInfoGroup.UserInfoGroupBatc
 import com.xiliulou.electricity.request.userinfo.userInfoGroup.UserInfoGroupSaveAndUpdateRequest;
 
 import java.util.List;
+import java.util.stream.Stream;
 
 /**
  * @author HeYafeng
@@ -41,5 +42,5 @@ public interface UserInfoGroupService {
     
     Integer batchUpdateByIds(List<Long> groupIds, Long updateTime, Long operator, Integer delFlag);
     
-    UserInfoGroup queryByIdFromDB(Long valueOf);
+    List<UserInfoGroup> listByIdsFromDB(List<Long> groupIds);
 }
