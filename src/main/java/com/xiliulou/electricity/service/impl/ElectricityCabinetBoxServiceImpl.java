@@ -372,4 +372,13 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
         }
         return boxes;
     }
+    
+    @Override
+    public List<ElectricityCabinetBox> selectHaveBatteryCellId(Integer id) {
+        List<ElectricityCabinetBox> boxes = electricityCabinetBoxMapper.selectHaveBatteryCellId(id);
+        if (CollUtil.isEmpty(boxes)){
+            return new ArrayList<>();
+        }
+        return boxes;
+    }
 }

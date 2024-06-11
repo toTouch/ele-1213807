@@ -69,4 +69,8 @@ public class ElectricityCabinetExtra {
     private Long updateTime;
     
     public final static Integer EFFECT_ROWS_ZERO = 0;
+    
+    public final static Integer MIN_RETAIN_BATTERY = 1;
+    
+    public final static Integer MIN_RETAIN_EMPTY_CELL = 1;
 }
