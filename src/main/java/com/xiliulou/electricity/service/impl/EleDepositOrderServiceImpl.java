@@ -513,7 +513,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
     public R queryList(EleDepositOrderQuery eleDepositOrderQuery) {
         List<EleDepositOrderVO> eleDepositOrderVOS = eleDepositOrderMapper.queryList(eleDepositOrderQuery);
     
-        eleDepositOrderVOS.stream().map(eleDepositOrderVO -> {
+        eleDepositOrderVOS.forEach(eleDepositOrderVO -> {
             eleDepositOrderVO.setRefundFlag(true);
         
             List<EleRefundOrder> eleRefundOrders = eleRefundOrderService.selectByOrderIdNoFilerStatus(eleDepositOrderVO.getOrderId());
@@ -525,8 +525,10 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
                     }
                 }
             }
-            return eleDepositOrderVO;
-        }).collect(Collectors.toList());
+            
+            Franchisee franchisee = franchiseeService.queryByIdFromCache(eleDepositOrderVO.getFranchiseeId());
+            eleDepositOrderVO.setFranchiseeName(Objects.isNull(franchisee) ? "" : franchisee.getName());
+        });
     
         return R.ok(eleDepositOrderVOS);
     }
