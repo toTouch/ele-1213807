@@ -297,6 +297,7 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         return this.freeDepositOrderMapper.queryById(id);
     }
 
+    @Slave
     @Override
     public FreeDepositOrder selectByOrderId(String orderId) {
         return this.freeDepositOrderMapper.selectOne(new LambdaQueryWrapper<FreeDepositOrder>().eq(FreeDepositOrder::getOrderId, orderId));

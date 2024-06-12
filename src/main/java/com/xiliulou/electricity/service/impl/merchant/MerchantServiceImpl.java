@@ -16,6 +16,7 @@ import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.UserInfo;
+import com.xiliulou.electricity.entity.UserOauthBind;
 import com.xiliulou.electricity.entity.enterprise.EnterpriseChannelUser;
 import com.xiliulou.electricity.entity.enterprise.EnterpriseCloudBeanOrder;
 import com.xiliulou.electricity.entity.enterprise.EnterpriseInfo;
@@ -40,6 +41,7 @@ import com.xiliulou.electricity.query.merchant.MerchantPlaceCabinetBindQueryMode
 import com.xiliulou.electricity.query.merchant.MerchantPlaceMapQueryModel;
 import com.xiliulou.electricity.query.merchant.MerchantPlaceQueryModel;
 import com.xiliulou.electricity.query.merchant.MerchantQueryModel;
+import com.xiliulou.electricity.query.merchant.MerchantUnbindReq;
 import com.xiliulou.electricity.query.merchant.MerchantUserAmountQueryMode;
 import com.xiliulou.electricity.request.merchant.MerchantPageRequest;
 import com.xiliulou.electricity.request.merchant.MerchantSaveRequest;
@@ -64,6 +66,7 @@ import com.xiliulou.electricity.service.merchant.MerchantService;
 import com.xiliulou.electricity.service.merchant.MerchantUserAmountService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
+import com.xiliulou.electricity.utils.OperateRecordUtil;
 import com.xiliulou.electricity.utils.QrCodeUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.enterprise.EnterprisePackageVO;
@@ -79,14 +82,18 @@ import com.xiliulou.electricity.vo.merchant.MerchantVO;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -184,6 +191,9 @@ public class MerchantServiceImpl implements MerchantService {
     @Resource
     private UserInfoService userInfoService;
     
+    @Autowired
+    OperateRecordUtil operateRecordUtil;
+    
     /**
      * 商户保存
      *
@@ -222,7 +232,7 @@ public class MerchantServiceImpl implements MerchantService {
         }
         
         // 检测手机号
-        User userPhone = userService.checkPhoneExist(null, merchantSaveRequest.getPhone(), User.TYPE_USER_MERCHANT, null, null);
+        User userPhone = userService.checkPhoneExist(null, merchantSaveRequest.getPhone(), User.TYPE_USER_MERCHANT, tenantId, null);
         if (Objects.nonNull(userPhone)) {
             log.error("merchant save error, phone is exit name={}", merchantSaveRequest.getPhone());
             return Triple.of(false, "120201", "手机号已经存在");
@@ -444,7 +454,7 @@ public class MerchantServiceImpl implements MerchantService {
         }
         
         // 检测手机号
-        User userPhone = userService.checkPhoneExist(null, merchantSaveRequest.getPhone(), User.TYPE_USER_MERCHANT, null, null);
+        User userPhone = userService.checkPhoneExist(null, merchantSaveRequest.getPhone(), User.TYPE_USER_MERCHANT, tenantId, null);
         if (Objects.nonNull(userPhone)) {
             log.error("merchant save error, phone is exit name={}", merchantSaveRequest.getPhone());
             return Triple.of(false, "120201", "手机号已经存在");
@@ -588,7 +598,7 @@ public class MerchantServiceImpl implements MerchantService {
         }
         
         // 检测手机号
-        User userPhone = userService.checkPhoneExist(null, merchantSaveRequest.getPhone(), User.TYPE_USER_MERCHANT, null, merchant.getUid());
+        User userPhone = userService.checkPhoneExist(null, merchantSaveRequest.getPhone(), User.TYPE_USER_MERCHANT, tenantId, merchant.getUid());
         if (Objects.nonNull(userPhone)) {
             log.error("merchant update error, phone is exit id={}, phone={}", merchantSaveRequest.getId(), merchantSaveRequest.getPhone());
             return Triple.of(false, "120201", "手机号已经存在");
@@ -852,6 +862,31 @@ public class MerchantServiceImpl implements MerchantService {
             // 处理解绑场地下关联的员工
             dealPlaceEmployee(unBindList);
         }
+        
+        //异步添加渠道员变更操作记录
+        operateRecordUtil.asyncRecord(new HashMap<String,Object>(),new HashMap<String,Object>(),merchantSaveRequest,merchant,(merchantReq,oldMerchant,operateLogDTO)->{
+            //设置修改后的值
+            if (Objects.nonNull(merchantReq.getChannelEmployeeUid())){
+                Map<String, Object> newValue = operateLogDTO.getNewValue();
+                ChannelEmployeeVO channelEmployeeVO = channelEmployeeService.queryByUid(merchantReq.getChannelEmployeeUid());
+                if (!Objects.isNull(channelEmployeeVO) && StringUtils.isNotBlank(channelEmployeeVO.getName())){
+                    newValue.put("name", channelEmployeeVO.getName());
+                    newValue.put("merchantName", merchantReq.getName());
+                    operateLogDTO.setNewValue(newValue);
+                }
+            }
+            //设置修改前的值
+            if (Objects.nonNull(oldMerchant.getChannelEmployeeUid())){
+                Map<String, Object> oldValue = operateLogDTO.getOldValue();
+                ChannelEmployeeVO employeeVO = channelEmployeeService.queryByUid(oldMerchant.getChannelEmployeeUid());
+                if (!Objects.isNull(employeeVO) && StringUtils.isNotBlank(employeeVO.getName())){
+                    oldValue.put("name", employeeVO.getName());
+                    oldValue.put("merchantName", oldMerchant.getName());
+                    operateLogDTO.setOldValue(oldValue);
+                }
+            }
+            return operateLogDTO;
+        });
         
         return Triple.of(true, "", merchantDeleteCacheDTO);
     }
@@ -1283,6 +1318,11 @@ public class MerchantServiceImpl implements MerchantService {
             });
         }
         
+        //查询openid
+        UserOauthBind userOauthBind = userOauthBindService.queryUserOauthBySysId(merchant.getUid(), merchant.getTenantId());
+        if (!Objects.isNull(userOauthBind) && Objects.nonNull(userOauthBind.getThirdId())){
+            vo.setOpenId(userOauthBind.getThirdId());
+        }
         return Triple.of(true, "", vo);
     }
     
@@ -1597,6 +1637,23 @@ public class MerchantServiceImpl implements MerchantService {
             });
             
         }
+    }
+    
+    @Override
+    @Transactional
+    public Pair<Boolean, Object> unbindOpenId(MerchantUnbindReq params) {
+        UserOauthBind userOauthBind = userOauthBindService.queryOauthByOpenIdAndUid(params.getId(), params.getOpenId(), TenantContextHolder.getTenantId());
+        if (Objects.isNull(userOauthBind)) {
+            return Pair.of(false,"解绑失败,请联系客服处理");
+        }
+        boolean delete = userOauthBindService.deleteById(userOauthBind.getId());
+        if (delete){
+            // 强制下线
+            userInfoService.clearUserOauthBindToken(List.of(userOauthBind), CacheConstant.MERCHANT_CLIENT_ID);
+            operateRecordUtil.record(null,params);
+            return Pair.of(true, "解绑成功");
+        }
+        return Pair.of(false, "解绑失败,请联系客服处理");
     }
     
     @Slave

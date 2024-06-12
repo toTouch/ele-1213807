@@ -37,7 +37,6 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
-import javax.validation.Valid;
 import java.util.*;
 
 /**
@@ -142,7 +141,8 @@ public class JsonAdminElectricityCabinetController extends BasicController {
                        @RequestParam(value = "idList", required = false) List<Integer> idList,
                        @RequestParam(value = "areaId", required = false) Long areaId,
             @RequestParam(value = "productKey", required = false) String productKey,
-            @RequestParam(value = "deviceName", required = false) String deviceName) {
+            @RequestParam(value = "deviceName", required = false) String deviceName,
+            @RequestParam(value = "sn", required = false) String sn) {
         if (Objects.isNull(size) || size < 0 || size > 50) {
             size = 10L;
         }
@@ -199,6 +199,7 @@ public class JsonAdminElectricityCabinetController extends BasicController {
                 .productKey(productKey)
                 .deviceName(deviceName)
                 .idList(idList)
+                .sn(sn)
                 .build();
 
         return electricityCabinetService.queryList(electricityCabinetQuery);
@@ -221,8 +222,8 @@ public class JsonAdminElectricityCabinetController extends BasicController {
                         @RequestParam(value = "idList", required = false) List<Integer> idList,
                         @RequestParam(value = "modelId", required = false) Integer modelId,
             @RequestParam(value = "productKey", required = false) String productKey,
-            @RequestParam(value = "deviceName", required = false) String deviceName
-            ) {
+            @RequestParam(value = "deviceName", required = false) String deviceName,
+            @RequestParam(value = "version", required = false) String version) {
 
         // 数据权校验
         Triple<List<Long>, List<Long>, Boolean> permissionTriple = checkPermission();
@@ -270,6 +271,7 @@ public class JsonAdminElectricityCabinetController extends BasicController {
                 .storeIdList(permissionTriple.getMiddle())
                 .productKey(productKey)
                 .deviceName(deviceName)
+                .version(version)
                 .build();
 
         return electricityCabinetService.queryCount(electricityCabinetQuery);
@@ -925,7 +927,7 @@ public class JsonAdminElectricityCabinetController extends BasicController {
     @GetMapping(value = "/admin/electricityCabinet/batchOperate/list")
     public R batchOperateList(@RequestParam("size") Long size, @RequestParam("offset") Long offset, @RequestParam(value = "name", required = false) String name,
             @RequestParam(value = "modelId", required = false) Integer modelId, @RequestParam(value = "sn", required = false) String sn,
-            @RequestParam(value = "onlineStatus", required = false) Integer onlineStatus) {
+            @RequestParam(value = "onlineStatus", required = false) Integer onlineStatus, @RequestParam(value = "version", required = false) String version) {
         if (Objects.isNull(size) || size < 0 || size > 50) {
             size = 10L;
         }
@@ -954,9 +956,9 @@ public class JsonAdminElectricityCabinetController extends BasicController {
                 return R.ok(Collections.EMPTY_LIST);
             }
         }
-        
+    
         ElectricityCabinetQuery electricityCabinetQuery = ElectricityCabinetQuery.builder().size(size).offset(offset).name(name).modelId(modelId).sn(sn).onlineStatus(onlineStatus)
-                .eleIdList(eleIdList).tenantId(TenantContextHolder.getTenantId()).build();
+                .version(version).eleIdList(eleIdList).tenantId(TenantContextHolder.getTenantId()).build();
         
         return electricityCabinetService.batchOperateList(electricityCabinetQuery);
     }

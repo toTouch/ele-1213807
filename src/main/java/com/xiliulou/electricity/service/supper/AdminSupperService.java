@@ -16,9 +16,10 @@ public interface AdminSupperService {
      * 根据电池SN删除电池
      * @param tenantId 租户ID
      * @param batterySnList 电池SN集
+     * @param violentDel 是否暴力删除
      * @return Pair<已删除的电池编码、未删除的电池编码>
      */
-    Pair<List<String>, List<String>> delBatteryBySnList(Integer tenantId, List<String> batterySnList);
+    Pair<List<String>, List<String>> delBatteryBySnList(Integer tenantId, List<String> batterySnList, Integer violentDel);
     
     /**
      * <p>

@@ -52,4 +52,24 @@ public class MerchantWithdrawApplicationRequest {
     
     private Long offset;
     
+    /**
+     * 支付机构返回的批次单号
+     */
+    private String transactionBatchId;
+    
+    /**
+     * 支付机构返回的批次明细单号
+     */
+    private String transactionDetailId;
+    
+    /**
+     * 审核时间开始
+     */
+    private Long checkTimeStart;
+    
+    /**
+     * 审核时间结束
+     */
+    private Long checkTimeEnd;
+    
 }

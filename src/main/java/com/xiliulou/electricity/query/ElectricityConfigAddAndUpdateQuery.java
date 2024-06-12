@@ -90,11 +90,13 @@ public class ElectricityConfigAddAndUpdateQuery {
     /**
      * 是否迁移加盟商 0--关闭 1--开启
      */
+    @Deprecated
     private Integer isMoveFranchisee;
 
     /**
      * 迁移加盟商
      */
+    @Deprecated
     private FranchiseeMoveInfo franchiseeMoveInfo;
 
     /**
