@@ -765,7 +765,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         // 更新
         EleCabinetExtraQueryModel extraQueryModel = EleCabinetExtraQueryModel.builder().id(Long.valueOf(cabinetAddAndUpdate.getId()))
                 .returnTabType(cabinetAddAndUpdate.getRentTabType()).returnTabType(cabinetAddAndUpdate.getReturnTabType())
-                .maxRetainBatteryCount(cabinetAddAndUpdate.getMaxRetainBatteryCount()).minRetainBatteryCount(cabinetAddAndUpdate.getMinRetainBatteryCount()).build();
+                .maxRetainBatteryCount(cabinetAddAndUpdate.getMaxRetainBatteryCount()).minRetainBatteryCount(cabinetAddAndUpdate.getMinRetainBatteryCount()).updateTime(System.currentTimeMillis()).build();
         // 如果不是自定义租电，则设置为null
         if (!Objects.equals(rentTabType, RentReturnNormEnum.CUSTOM_RENT.getCode())) {
             extraQueryModel.setRentTabType(null);

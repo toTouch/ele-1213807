@@ -34,4 +34,6 @@ public class EleCabinetExtraQueryModel {
      * 最大保留电池数量，只有自定义才需要
      */
     private Integer maxRetainBatteryCount;
+    
+    private Long updateTime;
 }
