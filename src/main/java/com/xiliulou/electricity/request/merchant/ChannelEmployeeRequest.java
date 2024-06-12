@@ -83,4 +83,9 @@ public class ChannelEmployeeRequest {
     
     private List<Long> idList;
     
+    /**
+     * 登录用户绑定的加盟商id
+     */
+    private Long bindFranchiseeId;
+    
 }
