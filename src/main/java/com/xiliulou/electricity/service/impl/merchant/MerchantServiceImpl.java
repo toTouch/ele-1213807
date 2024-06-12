@@ -250,7 +250,7 @@ public class MerchantServiceImpl implements MerchantService {
         }
         
         // todo 商户等级添加加盟商不一致的判断
-        if (Objects.nonNull(merchantSaveRequest.getBindFranchiseeId()) && !Objects.equals(merchantSaveRequest.getBindFranchiseeId(), 0L)) {
+        if (Objects.nonNull(merchantSaveRequest.getFranchiseeId()) && !Objects.equals(merchantSaveRequest.getFranchiseeId(), 0L)) {
         
         }
         
@@ -609,7 +609,7 @@ public class MerchantServiceImpl implements MerchantService {
         }
     
         // todo 商户等级添加加盟商不一致的判断
-        if (Objects.nonNull(merchantSaveRequest.getBindFranchiseeId()) && !Objects.equals(merchantSaveRequest.getBindFranchiseeId(), 0L)) {
+        if (Objects.nonNull(merchantSaveRequest.getFranchiseeId()) && !Objects.equals(merchantSaveRequest.getFranchiseeId(), 0L)) {
         
         }
         

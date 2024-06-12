@@ -3,6 +3,7 @@ package com.xiliulou.electricity.controller.admin.merchant;
 import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.annotation.Log;
+import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.dto.merchant.MerchantDeleteCacheDTO;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.request.merchant.MerchantAttrRequest;
@@ -163,7 +164,7 @@ public class JsonMerchantController extends BaseController {
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
             List<Long> franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
             if (org.apache.commons.collections.CollectionUtils.isEmpty(franchiseeIds)) {
-                log.error("merchant save warn! franchisee is empty");
+                log.error("merchant update warn! franchisee is empty uid={}", user.getUid());
                 return R.fail("ELECTRICITY.0001", "未找到用户");
             }
         
@@ -260,8 +261,8 @@ public class JsonMerchantController extends BaseController {
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
             List<Long> franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
             if (org.apache.commons.collections.CollectionUtils.isEmpty(franchiseeIds)) {
-                log.error("merchant delete error! franchisee is empty");
-                return R.fail("ELECTRICITY.0001", "未找到用户");
+                log.error("merchant page count error! franchisee is empty");
+                return R.ok(NumberConstant.ZERO);
             }
             
             franchiseeId = franchiseeIds.get(0);
@@ -302,7 +303,7 @@ public class JsonMerchantController extends BaseController {
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
             List<Long> franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
             if (org.apache.commons.collections.CollectionUtils.isEmpty(franchiseeIds)) {
-                log.error("merchant delete error! franchisee is empty");
+                log.error("merchant page error! franchisee is empty, uid={}", user.getUid());
                 return R.fail("ELECTRICITY.0001", "未找到用户");
             }
         
@@ -336,7 +337,7 @@ public class JsonMerchantController extends BaseController {
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
             List<Long> franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
             if (org.apache.commons.collections.CollectionUtils.isEmpty(franchiseeIds)) {
-                log.error("merchant delete error! franchisee is empty");
+                log.error("merchant get error! franchisee is empty, uid={}", user.getUid());
                 return R.fail("ELECTRICITY.0001", "未找到用户");
             }
         
@@ -377,7 +378,7 @@ public class JsonMerchantController extends BaseController {
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
             List<Long> franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
             if (org.apache.commons.collections.CollectionUtils.isEmpty(franchiseeIds)) {
-                log.error("merchant delete error! franchisee is empty");
+                log.error("merchant query error! franchisee is empty, uid={}", user.getUid());
                 return R.fail("ELECTRICITY.0001", "未找到用户");
             }
         

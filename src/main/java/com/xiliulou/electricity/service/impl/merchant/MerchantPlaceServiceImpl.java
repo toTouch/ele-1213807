@@ -104,6 +104,12 @@ public class MerchantPlaceServiceImpl implements MerchantPlaceService {
             return Triple.of(false, "ELECTRICITY.0034", "操作频繁");
         }
         
+        // 检测页面上选择的加盟商和当前用户登录的加盟商是否一致
+        if (Objects.nonNull(merchantPlaceSaveRequest.getBindFranchiseeId()) && !Objects.equals(merchantPlaceSaveRequest.getBindFranchiseeId(), merchantPlaceSaveRequest.getFranchiseeId())) {
+            log.error("merchant place save error, franchisee is not different id={}, franchiseeId={}, bindFranchiseeId={}", merchantPlaceSaveRequest.getId(), merchantPlaceSaveRequest.getFranchiseeId(), merchantPlaceSaveRequest.getBindFranchiseeId());
+            return Triple.of(false, "120238", "当前加盟商无权限操作");
+        }
+        
         Integer tenantId = TenantContextHolder.getTenantId();
         MerchantPlaceQueryModel queryModel = MerchantPlaceQueryModel.builder().name(merchantPlaceSaveRequest.getName()).tenantId(tenantId).build();
         
@@ -124,6 +130,12 @@ public class MerchantPlaceServiceImpl implements MerchantPlaceService {
             
             if (Objects.isNull(merchantArea) || !Objects.equals(merchantArea.getTenantId(), tenantId)) {
                 log.error("merchant place save error, area is null name={}, merchantAreaId={}", merchantPlaceSaveRequest.getName(), merchantPlaceSaveRequest.getMerchantAreaId());
+                return Triple.of(false, "120218", "区域不存在");
+            }
+            
+            // todo 区域检测添加加盟商检测
+            if (!Objects.equals(merchantPlaceSaveRequest.getFranchiseeId(), 0L)) {
+                log.error("merchant place save error, area is null franchisee is different ,name={}, merchantAreaId={}", merchantPlaceSaveRequest.getName(), merchantPlaceSaveRequest.getMerchantAreaId());
                 return Triple.of(false, "120218", "区域不存在");
             }
         }
@@ -159,11 +171,29 @@ public class MerchantPlaceServiceImpl implements MerchantPlaceService {
             return Triple.of(false, "120209", "场地不存在");
         }
         
+        // 检测场地的加盟商是否发生改变
+        if (!Objects.equals(merchantPlace.getFranchiseeId(), merchantPlaceSaveRequest.getFranchiseeId())) {
+            log.error("merchant place update error, franchisee not allow change id={}, franchiseeId={}, updateFranchiseeId={}", merchantPlaceSaveRequest.getId(), merchantPlaceSaveRequest.getFranchiseeId(), merchantPlaceSaveRequest.getFranchiseeId());
+            return Triple.of(false, "120239", "场地加盟商不允许修改");
+        }
+    
+        // 检测选中的加盟商和当前登录加盟商是否一致
+        if (Objects.nonNull(merchantPlaceSaveRequest.getBindFranchiseeId()) && !Objects.equals(merchantPlaceSaveRequest.getBindFranchiseeId(), merchantPlaceSaveRequest.getFranchiseeId())) {
+            log.error("merchant place update error, franchisee is not different id={}, franchiseeId={}, bindFranchiseeId={}", merchantPlaceSaveRequest.getId(), merchantPlaceSaveRequest.getFranchiseeId(), merchantPlaceSaveRequest.getBindFranchiseeId());
+            return Triple.of(false, "120238", "当前加盟商无权限操作");
+        }
+        
         if (Objects.nonNull(merchantPlaceSaveRequest.getMerchantAreaId())) {
             MerchantArea merchantArea = merchantAreaService.queryById(merchantPlaceSaveRequest.getMerchantAreaId());
             
             if (Objects.isNull(merchantArea) || !Objects.equals(merchantArea.getTenantId(), tenantId)) {
                 log.error("merchant place save error, area is null name={}, merchantAreaId={}", merchantPlaceSaveRequest.getName(), merchantPlaceSaveRequest.getMerchantAreaId());
+                return Triple.of(false, "120218", "区域不存在");
+            }
+    
+            // todo 区域检测添加加盟商检测
+            if (!Objects.equals(merchantPlaceSaveRequest.getFranchiseeId(), 0L)) {
+                log.error("merchant place save error, area is null franchisee is different ,name={}, merchantAreaId={}", merchantPlaceSaveRequest.getName(), merchantPlaceSaveRequest.getMerchantAreaId());
                 return Triple.of(false, "120218", "区域不存在");
             }
         }
@@ -199,7 +229,7 @@ public class MerchantPlaceServiceImpl implements MerchantPlaceService {
     
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public Triple<Boolean, String, Object> remove(Long id) {
+    public Triple<Boolean, String, Object> remove(Long id, Long bindFranchiseeId) {
         // 检测场地是否存在
         TokenUser user = SecurityUtils.getUserInfo();
         
@@ -225,6 +255,11 @@ public class MerchantPlaceServiceImpl implements MerchantPlaceService {
         if (Objects.isNull(merchantPlace) || !Objects.equals(merchantPlace.getTenantId(), tenantId)) {
             return Triple.of(false, "120209", "场地不存在");
         }
+    
+        if (Objects.nonNull(bindFranchiseeId) && !Objects.equals(merchantPlace.getFranchiseeId(), bindFranchiseeId)) {
+            log.error("merchant place delete error, franchisee is not different id={}, franchiseeId={}, bindFranchiseeId={}", id, merchantPlace.getFranchiseeId(), bindFranchiseeId);
+            return Triple.of(false, "120238", "当前加盟商无权限操作");
+        }
         
         // 检测场地是否存在绑定的换电柜
         MerchantPlaceCabinetBindQueryModel queryModel = MerchantPlaceCabinetBindQueryModel.builder().status(MerchantPlaceConstant.BIND).placeIdList(placeIdList).build();
@@ -241,6 +276,7 @@ public class MerchantPlaceServiceImpl implements MerchantPlaceService {
         merchantPlaceMapper.remove(merchantPlaceDel);
         
         merchantPlaceCabinetBindService.removeByPlaceId(id, currentTimeMillis, MerchantPlaceConstant.DEL_DEL);
+        
         return Triple.of(true, "", merchantPlace);
     }
     
@@ -400,6 +436,12 @@ public class MerchantPlaceServiceImpl implements MerchantPlaceService {
             return Triple.of(false, "120209", "场地不存在");
         }
         
+        // 判断加盟商与场地绑定的是否一致
+        if (Objects.nonNull(merchantPlacePageRequest.getBindFranchiseeId()) && !Objects.equals(merchantPlacePageRequest.getBindFranchiseeId(), merchantPlace.getFranchiseeId())) {
+            log.error("place cabinet error, franchisee is different, placeId={}, franchiseeId={}, bindFranchiseeId={}", merchantPlace.getTenantId(), merchantPlace.getFranchiseeId(), merchantPlacePageRequest.getBindFranchiseeId());
+            return Triple.of(false, "120209", "场地不存在");
+        }
+        
         merchantPlacePageRequest.setFranchiseeId(merchantPlace.getFranchiseeId());
         
         MerchantPlaceQueryModel queryModel = new MerchantPlaceQueryModel();
@@ -467,15 +509,21 @@ public class MerchantPlaceServiceImpl implements MerchantPlaceService {
      * 根据id 获取编辑信息
      *
      * @param id
+     * @param bindFranchiseeId
      * @return
      */
     @Override
-    public Triple<Boolean, String, Object> queryById(Long id) {
+    public Triple<Boolean, String, Object> queryById(Long id, Long bindFranchiseeId) {
         Integer tenantId = TenantContextHolder.getTenantId();
         
         MerchantPlace merchantPlace = merchantPlaceMapper.selectById(id);
         if (Objects.isNull(merchantPlace) || !Objects.equals(merchantPlace.getTenantId(), tenantId)) {
             log.error("merchant place error, query by id error, placeId={}", id);
+            return Triple.of(false, "", "场地不存在");
+        }
+        
+        if (Objects.nonNull(bindFranchiseeId) && !Objects.equals(merchantPlace.getFranchiseeId(), bindFranchiseeId)) {
+            log.error("merchant place error, query by id franchisee is different, placeId={}, bindFranchiseeId={}", id, bindFranchiseeId);
             return Triple.of(false, "", "场地不存在");
         }
         

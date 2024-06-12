@@ -26,4 +26,6 @@ public class MerchantPlaceCabinetPageRequest {
     private Integer tenantId;
     
     private Long placeId;
+    
+    private Long bindFranchiseeId;
 }

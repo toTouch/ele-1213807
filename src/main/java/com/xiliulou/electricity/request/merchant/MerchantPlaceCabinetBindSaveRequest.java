@@ -42,4 +42,10 @@ public class MerchantPlaceCabinetBindSaveRequest {
      */
     @NotNull(message = "结束时间不能为空", groups = {UpdateGroup.class})
     private Long unBindTime;
+    
+    /**
+     * 登录用户绑定加盟商
+     */
+    private Long bindFranchiseeId;
+    
 }
