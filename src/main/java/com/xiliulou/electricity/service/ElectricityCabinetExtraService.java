@@ -1,10 +1,7 @@
 package com.xiliulou.electricity.service;
 
 import com.xiliulou.electricity.entity.ElectricityCabinetExtra;
-import com.xiliulou.electricity.query.ElectricityCabinetBatchEditRentReturnCountQuery;
 import com.xiliulou.electricity.queryModel.EleCabinetExtraQueryModel;
-
-import java.util.List;
 
 /**
  * @author HeYafeng
@@ -22,9 +19,9 @@ public interface ElectricityCabinetExtraService {
     Integer update(ElectricityCabinetExtra electricityCabinetExtra);
     
     
-    Integer updateMaxElectricityCabinetExtra(Integer maxRetainBatteryCount, Integer rentTabType, Integer id);
+    Integer updateMaxElectricityCabinetExtra(Integer maxRetainBatteryCount, Integer returnTabType, Integer id);
     
-    Integer updateMinElectricityCabinetExtra(Integer minRetainBatteryCount, Integer returnTabType, Integer id);
+    Integer updateMinElectricityCabinetExtra(Integer minRetainBatteryCount, Integer rentTabType, Integer id);
     
     void updateTabTypeCabinetExtra(EleCabinetExtraQueryModel extraQueryModel);
 }

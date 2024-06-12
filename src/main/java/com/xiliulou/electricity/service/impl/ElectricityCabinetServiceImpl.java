@@ -763,9 +763,9 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         Integer returnTabType = cabinetAddAndUpdate.getReturnTabType();
         
         // 更新
-        EleCabinetExtraQueryModel extraQueryModel = EleCabinetExtraQueryModel.builder().id(Long.valueOf(cabinetAddAndUpdate.getId()))
-                .rentTabType(rentTabType).returnTabType(returnTabType)
-                .maxRetainBatteryCount(cabinetAddAndUpdate.getMaxRetainBatteryCount()).minRetainBatteryCount(cabinetAddAndUpdate.getMinRetainBatteryCount()).updateTime(System.currentTimeMillis()).build();
+        EleCabinetExtraQueryModel extraQueryModel = EleCabinetExtraQueryModel.builder().id(Long.valueOf(cabinetAddAndUpdate.getId())).rentTabType(rentTabType)
+                .returnTabType(returnTabType).maxRetainBatteryCount(cabinetAddAndUpdate.getMaxRetainBatteryCount())
+                .minRetainBatteryCount(cabinetAddAndUpdate.getMinRetainBatteryCount()).updateTime(System.currentTimeMillis()).build();
         // 如果不是自定义租电，则设置为null
         if (!Objects.equals(rentTabType, RentReturnNormEnum.CUSTOM_RENT.getCode())) {
             extraQueryModel.setMinRetainBatteryCount(null);
@@ -1262,8 +1262,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     
     /**
      * @param eid
-     * @param exchangeableList：    可换电标准集合
-     * @param cabinetBoxList：      可用的仓数
+     * @param exchangeableList： 可换电标准集合
+     * @param cabinetBoxList：   可用的仓数
      * @return
      */
     private List<Integer> electricityCabinetLabelHandler(Integer eid, List<ElectricityCabinetBox> exchangeableList, List<ElectricityCabinetBox> cabinetBoxList) {
@@ -1329,7 +1329,6 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         return label;
     }
     
-
     
     private ElectricityCabinetSimpleVO assignAttribute(ElectricityCabinetSimpleVO e, Double fullyCharged, String businessTime) {
         
@@ -6060,22 +6059,44 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             throw new CustomBusinessException("请至少选择一个柜机");
         }
         
-        
         // 前置校验
         rentReturnQuery.getCountQueryList().forEach(e -> {
             checkUpdateBatchElectricityCabinetExtra(rentReturnQuery, e);
         });
         
-        for (ElectricityCabinetBatchEditRentReturnCountQuery countQuery : rentReturnQuery.getCountQueryList()) {
-            ElectricityCabinetAddAndUpdate update = new ElectricityCabinetAddAndUpdate();
-            update.setMinRetainBatteryCount(countQuery.getMinRetainBatteryCount());
-            update.setMaxRetainBatteryCount(countQuery.getMaxRetainBatteryCount());
-            update.setId(countQuery.getId());
-            update.setRentTabType(rentReturnQuery.getRentTabType());
-            update.setReturnTabType(rentReturnQuery.getReturnTabType());
-            this.updateElectricityCabinetExtra(update);
+        for (ElectricityCabinetBatchEditRentReturnCountQuery query : rentReturnQuery.getCountQueryList()) {
+            this.updateBatchElectricityCabinetExtra(query.getId(), rentReturnQuery.getRentTabType(), rentReturnQuery.getReturnTabType(), query.getMinRetainBatteryCount(),
+                    query.getMaxRetainBatteryCount());
         }
         
+    }
+    
+    private void updateBatchElectricityCabinetExtra(Integer eid, Integer rentTabType, Integer returnTabType, Integer minRetainBatteryCount, Integer maxRetainBatteryCount) {
+        if (Objects.isNull(eid)) {
+            log.warn("updateElectricityCabinetExtra is error, cabinetId is null");
+            return;
+        }
+        ElectricityCabinetExtra cabinetExtra = electricityCabinetExtraService.queryByEid(Long.valueOf(eid));
+        if (Objects.isNull(cabinetExtra)) {
+            log.warn("updateElectricityCabinetExtra is error, cabinetExtra is null, id:{}", eid);
+            return;
+        }
+        
+        if (Objects.nonNull(rentTabType)) {
+            // 如果不是自定义租电，则设置为null
+            if (!Objects.equals(rentTabType, RentReturnNormEnum.CUSTOM_RENT.getCode())) {
+                minRetainBatteryCount = null;
+            }
+            electricityCabinetExtraService.updateMinElectricityCabinetExtra(minRetainBatteryCount, rentTabType, eid);
+        }
+        
+        if (Objects.nonNull(returnTabType)) {
+            // 如果不是自定义退电，则设置为null
+            if (!Objects.equals(returnTabType, RentReturnNormEnum.CUSTOM_RETURN.getCode())) {
+                maxRetainBatteryCount = null;
+            }
+            electricityCabinetExtraService.updateMaxElectricityCabinetExtra(maxRetainBatteryCount, returnTabType, eid);
+        }
         
     }
     

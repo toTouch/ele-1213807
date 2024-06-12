@@ -5,7 +5,6 @@ import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.ElectricityCabinetExtra;
 import com.xiliulou.electricity.mapper.ElectricityCabinetExtraMapper;
-import com.xiliulou.electricity.query.ElectricityCabinetBatchEditRentReturnCountQuery;
 import com.xiliulou.electricity.queryModel.EleCabinetExtraQueryModel;
 import com.xiliulou.electricity.service.ElectricityCabinetExtraService;
 import com.xiliulou.electricity.utils.DbUtils;
@@ -13,7 +12,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.List;
 import java.util.Objects;
 
 /**
@@ -69,8 +67,8 @@ public class ElectricityCabinetExtraServiceImpl implements ElectricityCabinetExt
     
     
     @Override
-    public Integer updateMaxElectricityCabinetExtra(Integer maxRetainBatteryCount, Integer rentTabType, Integer id) {
-        Integer updated = electricityCabinetExtraMapper.updateMaxElectricityCabinetExtra(maxRetainBatteryCount, rentTabType, id, System.currentTimeMillis());
+    public Integer updateMaxElectricityCabinetExtra(Integer maxRetainBatteryCount, Integer returnTabType, Integer id) {
+        Integer updated = electricityCabinetExtraMapper.updateMaxElectricityCabinetExtra(maxRetainBatteryCount, returnTabType, id, System.currentTimeMillis());
         DbUtils.dbOperateSuccessThenHandleCache(updated, i -> {
             redisService.delete(CacheConstant.CACHE_ELECTRICITY_CABINET_EXTRA + id);
         });
@@ -78,8 +76,8 @@ public class ElectricityCabinetExtraServiceImpl implements ElectricityCabinetExt
     }
     
     @Override
-    public Integer updateMinElectricityCabinetExtra(Integer minRetainBatteryCount, Integer returnTabType, Integer id) {
-        Integer updated = electricityCabinetExtraMapper.updateMinElectricityCabinetExtra(minRetainBatteryCount, returnTabType, id, System.currentTimeMillis());
+    public Integer updateMinElectricityCabinetExtra(Integer minRetainBatteryCount, Integer rentTabType, Integer id) {
+        Integer updated = electricityCabinetExtraMapper.updateMinElectricityCabinetExtra(minRetainBatteryCount, rentTabType, id, System.currentTimeMillis());
         DbUtils.dbOperateSuccessThenHandleCache(updated, i -> {
             redisService.delete(CacheConstant.CACHE_ELECTRICITY_CABINET_EXTRA + id);
         });
