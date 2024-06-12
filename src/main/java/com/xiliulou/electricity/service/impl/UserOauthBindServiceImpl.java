@@ -107,6 +107,7 @@ public class UserOauthBindServiceImpl implements UserOauthBindService {
         return userOauthBindMapper.selectListOauthByOpenIdAndSource(openid,source,tenantId);
     }
     
+    @Slave
     @Override
     public UserOauthBind queryByUserPhone(Long uid, String phone, int source, Integer tenantId) {
         return this.userOauthBindMapper.selectOne(new LambdaQueryWrapper<UserOauthBind>().eq(UserOauthBind::getUid, uid).eq(UserOauthBind::getPhone, phone).eq(UserOauthBind::getSource, source)
@@ -150,6 +151,7 @@ public class UserOauthBindServiceImpl implements UserOauthBindService {
         return userOauthBindMapper.queryUserOauthBySysId(uid, tenantId);
     }
     
+    @Slave
     @Override
     public List<UserOauthBind> queryListByUid(Long uid) {
         return userOauthBindMapper.selectList(new LambdaQueryWrapper<UserOauthBind>().eq(UserOauthBind::getUid, uid));
@@ -219,6 +221,16 @@ public class UserOauthBindServiceImpl implements UserOauthBindService {
     @Override
     public Integer deleteByUid(Long uid, Integer tenantId) {
         return userOauthBindMapper.deleteByUid(uid, tenantId);
+    }
+    
+    @Override
+    public UserOauthBind queryOauthByOpenIdAndUid(Long id, String openId, Integer tenantId) {
+        return userOauthBindMapper.queryOauthByOpenIdAndUid(id, openId, tenantId);
+    }
+    
+    @Override
+    public List<UserOauthBind> queryOpenIdListByUidsAndTenantId(List<Long> longs, Integer tenantId) {
+        return userOauthBindMapper.selectOpenIdListByUidsAndTenantId(longs, tenantId);
     }
     
     @Override

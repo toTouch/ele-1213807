@@ -5,7 +5,7 @@
 
     <select id="queryListByCondition" resultType="com.xiliulou.electricity.entity.UserOauthBind">
         select
-        id, uid, source, third_id, third_nick, access_token, refresh_token, status, create_time, update_time,phone
+        id, uid, source, third_id, third_nick, access_token, refresh_token, status, create_time, update_time,phone, `tenant_id`
         from t_user_oauth_bind
         <where>
             <if test="phone != null and phone != ''">
@@ -37,7 +37,8 @@
                  status,
                  phone,
                  create_time,
-                 update_time
+                 update_time,
+                 `tenant_id`
                 FROM
                 t_user_oauth_bind
                 WHERE
@@ -57,7 +58,8 @@
             status,
             phone,
             create_time,
-            update_time
+            update_time,
+            `tenant_id`
         FROM
             t_user_oauth_bind
         WHERE
@@ -77,7 +79,8 @@
             status,
             phone,
             create_time,
-            update_time
+            update_time,
+            `tenant_id`
         FROM
             t_user_oauth_bind
         WHERE
@@ -97,7 +100,8 @@
             status,
             phone,
             create_time,
-            update_time
+            update_time,
+            `tenant_id`
         FROM
             t_user_oauth_bind
         WHERE
@@ -114,8 +118,20 @@
     
     <select id="selectListOauthByOpenIdAndSource" resultType="com.xiliulou.electricity.entity.UserOauthBind">
         select
-        id, uid, source, third_id, third_nick, access_token, refresh_token, status, create_time, update_time,phone
+        id, uid, source, third_id, third_nick, access_token, refresh_token, status, create_time, update_time,phone, `tenant_id`
         from t_user_oauth_bind where third_id = #{openId} and source=#{source} and tenant_id = #{tenantId}
+    </select>
+    <select id="queryOauthByOpenIdAndUid" resultType="com.xiliulou.electricity.entity.UserOauthBind">
+        select
+        id, uid, source, third_id, third_nick, access_token, refresh_token, status, create_time, update_time,phone, `tenant_id`
+        from t_user_oauth_bind where third_id = #{openId} and uid=#{id} and tenant_id = #{tenantId}
+    </select>
+    <select id="selectOpenIdListByUidsAndTenantId" resultType="com.xiliulou.electricity.entity.UserOauthBind">
+        select uid,third_id from t_user_oauth_bind where uid in
+        <foreach collection="uids" item="uid" open="(" separator="," close=")">
+            #{uid}
+        </foreach>
+        and tenant_id = #{tenantId}
     </select>
     
     <delete id="deleteByUid">

@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.service.impl.merchant;
 
+import cn.hutool.core.map.MapUtil;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.i18n.MessageUtils;
 import com.xiliulou.db.dynamic.annotation.Slave;
@@ -9,6 +10,7 @@ import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.constant.merchant.MerchantConstant;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.User;
+import com.xiliulou.electricity.entity.UserOauthBind;
 import com.xiliulou.electricity.entity.merchant.ChannelEmployee;
 import com.xiliulou.electricity.entity.merchant.ChannelEmployeeAmount;
 import com.xiliulou.electricity.entity.merchant.Merchant;
@@ -26,10 +28,12 @@ import com.xiliulou.electricity.service.merchant.ChannelEmployeeService;
 import com.xiliulou.electricity.service.merchant.MerchantAreaService;
 import com.xiliulou.electricity.service.merchant.MerchantService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
+import com.xiliulou.electricity.utils.OperateRecordUtil;
 import com.xiliulou.electricity.vo.merchant.ChannelEmployeeVO;
 import com.xiliulou.security.authentication.console.CustomPasswordEncoder;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
@@ -39,8 +43,13 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * @author BaoYu
@@ -81,6 +90,9 @@ public class ChannelEmployeeServiceImpl implements ChannelEmployeeService {
     
     @Resource
     private UserOauthBindService userOauthBindService;
+    
+    @Resource
+    private OperateRecordUtil operateRecordUtil;
     
     @Slave
     @Override
@@ -123,6 +135,25 @@ public class ChannelEmployeeServiceImpl implements ChannelEmployeeService {
     public List<ChannelEmployeeVO> listChannelEmployee(ChannelEmployeeRequest channelEmployeeRequest) {
         
         List<ChannelEmployeeVO> channelEmployees = channelEmployeeMapper.selectListByCondition(channelEmployeeRequest);
+        //查询openId
+        if (!CollectionUtils.isEmpty(channelEmployees)){
+            Set<Long> longs = channelEmployees.parallelStream().filter(Objects::nonNull).map(ChannelEmployeeVO::getUid).collect(
+                    Collectors.toSet());
+            List<UserOauthBind> openIds=userOauthBindService.queryOpenIdListByUidsAndTenantId(new ArrayList<>(longs), TenantContextHolder.getTenantId());
+            
+            //将查询出来的openid集合与channelEmployees集合进行匹配
+            if (!CollectionUtils.isEmpty(openIds)){
+                Map<Long, String> openIdMap = openIds.parallelStream().collect(Collectors.toMap(UserOauthBind::getUid, UserOauthBind::getThirdId, (k1, k2) -> k2));
+                channelEmployees.parallelStream().forEach(channelEmployeeVO -> {
+                    String openId = openIdMap.get(channelEmployeeVO.getUid());
+                    if (Objects.nonNull(openId)){
+                        channelEmployeeVO.setOpenId(openId);
+                    }
+                });
+            }
+        }
+        
+        
         
         channelEmployees.parallelStream().forEach(item -> {
             
@@ -181,7 +212,7 @@ public class ChannelEmployeeServiceImpl implements ChannelEmployeeService {
         Integer tenantId = TenantContextHolder.getTenantId();
     
         // 检测手机号
-        User userPhone = userService.checkPhoneExist(null, channelEmployeeRequest.getPhone(), User.TYPE_USER_CHANNEL, null, null);
+        User userPhone = userService.checkPhoneExist(null, channelEmployeeRequest.getPhone(), User.TYPE_USER_CHANNEL, tenantId, null);
         if (Objects.nonNull(userPhone)) {
             log.error("current phone has been used by other one, phone = {}, tenant id = {}", channelEmployeeRequest.getPhone(), tenantId);
             return Triple.of(false, "120001", "当前手机号已注册");
@@ -273,7 +304,7 @@ public class ChannelEmployeeServiceImpl implements ChannelEmployeeService {
         
         if (!Objects.equals(user.getPhone(), channelEmployeeRequest.getPhone())) {
             // 检测手机号
-            User userPhone = userService.checkPhoneExist(null, channelEmployeeRequest.getPhone(), User.TYPE_USER_CHANNEL, null, channelEmployee.getUid());
+            User userPhone = userService.checkPhoneExist(null, channelEmployeeRequest.getPhone(), User.TYPE_USER_CHANNEL, tenantId, channelEmployee.getUid());
             if (Objects.nonNull(userPhone)) {
                 log.error("current phone has been used by other one for update channel employee, phone = {}, tenant id = {}", channelEmployeeRequest.getPhone(), tenantId);
                 return Triple.of(false, "120001", "当前手机号已注册");
@@ -321,6 +352,10 @@ public class ChannelEmployeeServiceImpl implements ChannelEmployeeService {
                 redisService.delete(CacheConstant.CACHE_USER_PHONE + updateUser.getTenantId() + ":" + oldPhone + ":" + updateUser.getUserType());
             }
         });
+        //记录操作日志
+        HashMap<String, Object> newValue = MapUtil.of("status", channelEmployeeRequest.getStatus());
+        newValue.put("name",channelEmployeeRequest.getName());
+        operateRecordUtil.record(null,newValue);
         return Triple.of(true, null, result);
     }
     
@@ -364,7 +399,11 @@ public class ChannelEmployeeServiceImpl implements ChannelEmployeeService {
                     redisService.delete(CacheConstant.CACHE_USER_PHONE + user.getTenantId() + ":" + user.getPhone() + ":" + user.getUserType());
                 }
             });
+            //添加操作记录
+            operateRecordUtil.record(null, MapUtil.of("channelName",user.getName()));
         }
+        
+        
         return result;
     }
     

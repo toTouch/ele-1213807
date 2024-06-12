@@ -4,12 +4,10 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.bo.userInfoGroup.UserInfoGroupBO;
 import com.xiliulou.electricity.bo.userInfoGroup.UserInfoGroupIdAndNameBO;
 import com.xiliulou.electricity.controller.BasicController;
-import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.query.userinfo.userInfoGroup.UserInfoGroupQuery;
 import com.xiliulou.electricity.request.userinfo.userInfoGroup.UserInfoGroupBatchImportRequest;
 import com.xiliulou.electricity.request.userinfo.userInfoGroup.UserInfoGroupSaveAndUpdateRequest;
-import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.UserDataScopeService;
 import com.xiliulou.electricity.service.userinfo.userInfoGroup.UserInfoGroupService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
@@ -109,7 +107,7 @@ public class JsonAdminUserInfoGroupController extends BasicController {
             return R.fail("ELECTRICITY.0066", "用户权限不足");
         }
         
-        return userInfoGroupService.update(userInfoGroupSaveAndUpdateRequest, user.getUid());
+        return userInfoGroupService.edit(userInfoGroupSaveAndUpdateRequest, user.getUid());
     }
     
     /**

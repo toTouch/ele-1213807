@@ -748,6 +748,7 @@ public class ElectricityMemberCardServiceImpl extends ServiceImpl<ElectricityMem
      * 根据加盟商迁移套餐
      * @param franchiseeMoveInfo
      */
+    @Deprecated
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void moveMemberCard(FranchiseeMoveInfo franchiseeMoveInfo, Franchisee newFranchisee) {
