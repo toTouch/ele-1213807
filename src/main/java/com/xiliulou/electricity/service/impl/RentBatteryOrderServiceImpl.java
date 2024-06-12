@@ -916,24 +916,25 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
         }
         log.info("RentBatteryOrderServiceImpl/findUsableEmptyCellNo, version={}, cabinetExtra is={}", version, JsonUtil.toJson(cabinetExtra));
         
+        // 空仓数
         List<ElectricityCabinetBox> emptyCellList = electricityCabinetBoxService.listUsableEmptyCell(eid);
-        
         if (CollUtil.isEmpty(emptyCellList)) {
             return Triple.of(false, null, "当前无空余格挡可供退电，请联系客服！");
         }
         
         if (!Objects.equals(cabinetExtra.getReturnTabType(), RentReturnNormEnum.ALL_RETURN.getCode())) {
+            // 不允许退电
             if (Objects.equals(cabinetExtra.getReturnTabType(), RentReturnNormEnum.NOT_RETURN.getCode())) {
-                return Triple.of(false, null, "当前柜机不允许退电！");
+                return Triple.of(false, null, "当前柜机暂不符合退电标准，无法退电，请选择其他柜机！");
             }
-            
+            // 最少保留一个空仓
             if (Objects.equals(cabinetExtra.getReturnTabType(), RentReturnNormEnum.MIN_RETURN.getCode())) {
                 if (emptyCellList.size() <= MIN_RETAIN_EMPTY_CELL) {
                     return Triple.of(false, null, "当前柜机暂不符合退电标准，无法退电，请选择其他柜机！");
                 }
             }
-            
-            if (Objects.equals(cabinetExtra.getReturnTabType(), RentReturnNormEnum.NOT_RETURN.getCode())) {
+            // 自定义退电
+            if (Objects.equals(cabinetExtra.getReturnTabType(), RentReturnNormEnum.CUSTOM_RETURN.getCode())) {
                 if (emptyCellList.size() <= cabinetExtra.getMaxRetainBatteryCount()) {
                     return Triple.of(false, null, "当前柜机暂不符合退电标准，无法退电，请选择其他柜机！");
                 }
@@ -1400,8 +1401,9 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
         }
         
         if (!Objects.equals(cabinetExtra.getRentTabType(), RentReturnNormEnum.ALL_RENT.getCode())) {
+            // 不允许租电
             if (Objects.equals(cabinetExtra.getRentTabType(), RentReturnNormEnum.NOT_RENT.getCode())) {
-                return Triple.of(false, "ELECTRICITY.0026", "当前柜机不允许租电");
+                return Triple.of(false, "ELECTRICITY.0026", "当前柜机暂不符合租电标准，无法租电，请选择其他柜机");
             }
             // 在仓电池数
             List<ElectricityCabinetBox> boxList = electricityCabinetBoxService.selectHaveBatteryCellId(electricityCabinet.getId());
