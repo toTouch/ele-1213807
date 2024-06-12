@@ -38,7 +38,7 @@ import org.springframework.context.annotation.EnableAspectJAutoProxy;
 @EnableXllRestTemplate
 @EnableDynamicDataSource
 @MapperScan("com.xiliulou.**.mapper")
-@EnablePay(isOpenWechatV3 = true)
+@EnablePay(isOpenFranchiseeWechatV3 = true)
 @EnableXllXxlJob
 @EnableSms
 @EnableCH
@@ -50,8 +50,9 @@ import org.springframework.context.annotation.EnableAspectJAutoProxy;
 @EnableEsign
 @Slf4j
 public class ElectricityCabinetApplication {
+    
     public static void main(String[] args) {
         SpringApplication.run(ElectricityCabinetApplication.class, args);
-
+        
     }
 }
