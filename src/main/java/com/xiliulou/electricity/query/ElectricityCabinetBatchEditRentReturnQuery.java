@@ -1,6 +1,5 @@
 package com.xiliulou.electricity.query;
 
-import com.xiliulou.electricity.validator.UpdateGroup;
 import lombok.Data;
 
 import javax.validation.Valid;
@@ -19,13 +18,13 @@ public class ElectricityCabinetBatchEditRentReturnQuery {
     /**
      * 租电类型（全部可租电、不允许租电、最少保留一块电池、自定义） RentReturnNormEnum
      */
-    @NotNull(message = "租电类型不能为空!", groups = {UpdateGroup.class})
+    @NotNull(message = "租电类型不能为空!")
     private Integer rentTabType;
     
     /**
      * 退电类型（全部可退电、不允许退电、最少保留一个空仓、自定义） RentReturnNormEnum
      */
-    @NotNull(message = "退电类型不能为空!", groups = {UpdateGroup.class})
+    @NotNull(message = "退电类型不能为空!")
     private Integer returnTabType;
     
     

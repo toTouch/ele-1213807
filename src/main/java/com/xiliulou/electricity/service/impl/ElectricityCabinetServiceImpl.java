@@ -730,6 +730,14 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     }
     
     private void checkUpdateOneElectricityCabinetExtra(ElectricityCabinetAddAndUpdate electricityCabinetAddAndUpdate) {
+        if (Objects.isNull(electricityCabinetAddAndUpdate.getRentTabType())) {
+            throw new CustomBusinessException("租电类型不能为空");
+        }
+        
+        if (Objects.isNull(electricityCabinetAddAndUpdate.getReturnTabType())) {
+            throw new CustomBusinessException("退电类型不能为空");
+        }
+        
         if (Objects.equals(electricityCabinetAddAndUpdate.getRentTabType(), RentReturnNormEnum.CUSTOM_RENT.getCode()) && Objects.isNull(
                 electricityCabinetAddAndUpdate.getMinRetainBatteryCount())) {
             throw new CustomBusinessException("自定义，最小保留电池数不能为空");
@@ -737,7 +745,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         
         if (Objects.equals(electricityCabinetAddAndUpdate.getReturnTabType(), RentReturnNormEnum.CUSTOM_RETURN.getCode()) && Objects.isNull(
                 electricityCabinetAddAndUpdate.getMaxRetainBatteryCount())) {
-            throw new CustomBusinessException("自定义！最大保留电池数不能为空");
+            throw new CustomBusinessException("自定义！保留空仓数不能为空");
         }
     }
     
@@ -6077,7 +6085,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         }
         
         if (Objects.equals(rentReturnQuery.getReturnTabType(), RentReturnNormEnum.CUSTOM_RETURN.getCode()) && Objects.isNull(countQuery.getMaxRetainBatteryCount())) {
-            throw new CustomBusinessException("自定义！最大保留电池数不能为空");
+            throw new CustomBusinessException("自定义！保留空仓数不能为空");
         }
     }
 }
