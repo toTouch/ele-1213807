@@ -525,9 +525,6 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
                     }
                 }
             }
-            
-            Franchisee franchisee = franchiseeService.queryByIdFromCache(eleDepositOrderVO.getFranchiseeId());
-            eleDepositOrderVO.setFranchiseeName(Objects.isNull(franchisee) ? "" : franchisee.getName());
         });
     
         return R.ok(eleDepositOrderVOS);
