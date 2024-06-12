@@ -827,8 +827,15 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
             log.error("channel User Exit Check user renewal Status close, uid={}", uid);
             return Triple.of(false, "120305", "当前状态无法操作");
         }
-        
+    
+        // 已回收的骑手不进行校验
         if (Objects.equals(user.getCloudBeanStatus(), EnterpriseChannelUser.CLOUD_BEAN_STATUS_RECYCLE)) {
+            return Triple.of(true, null, null);
+        }
+    
+        // 未代付骑手不进行校验
+        if (Objects.equals(user.getPaymentStatus(), EnterprisePaymentStatusEnum.PAYMENT_TYPE_NO_PAY.getCode())) {
+            log.warn("channel User Exit Check! user payment not pay,uid={}, id={}", uid, id);
             return Triple.of(true, null, null);
         }
         
@@ -994,6 +1001,11 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
         
         for (EnterpriseChannelUser channelUser : enterpriseChannelUserList) {
             if (Objects.equals(channelUser.getCloudBeanStatus(), EnterpriseChannelUser.CLOUD_BEAN_STATUS_RECYCLE)) {
+                continue;
+            }
+    
+            // 未代付骑手不进行校验（会员用户未代付的情况不需要进行检测）
+            if (Objects.equals(channelUser.getPaymentStatus(), EnterprisePaymentStatusEnum.PAYMENT_TYPE_NO_PAY.getCode())) {
                 continue;
             }
             
@@ -1268,6 +1280,7 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
      * @return
      */
     @Override
+    @Transactional
     public Triple<Boolean, String, Object> channelUserExitForAdmin(EnterpriseUserAdminExitCheckRequest request) {
         Integer tenantId = TenantContextHolder.getTenantId();
         Long uid = SecurityUtils.getUid();
@@ -1291,7 +1304,9 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
             log.error("channel user admin exit error, uid={}", request.getUid());
             return Triple.of(false, "120212", "商户不存在");
         }
-    
+        
+        request.setEnterpriseId(enterpriseInfo.getId());
+        
         // 云豆回收
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(request.getUid());
         if (Objects.nonNull(userBatteryMemberCard) && Objects.equals(channelUser.getCloudBeanStatus(), EnterpriseChannelUser.NO_RECYCLE)) {
@@ -1341,6 +1356,17 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
         return Triple.of(true, null, null);
     }
     
+    /**
+     * 存在续费关闭用户
+     * @param id
+     * @return
+     */
+    @Override
+    @Slave
+    public int existsRenewCloseUser(Long id) {
+        return enterpriseChannelUserMapper.existsRenewCloseUser(id);
+    }
+    
     private Triple<Boolean, String, Object> channelUserAdminExitCheck(EnterpriseUserAdminExitCheckRequest request, EnterpriseChannelUser channelUser, Integer tenantId) {
         // 判断用户是否存在当前站长的企业内
         Long uid = request.getUid();
@@ -1368,6 +1394,12 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
         
         // 已经回收云豆直接返回正确的状态
         if (Objects.equals(channelUser.getCloudBeanStatus(), EnterpriseChannelUser.CLOUD_BEAN_STATUS_RECYCLE)) {
+            return Triple.of(true, null, null);
+        }
+    
+        // 未代付骑手不进行校验
+        if (Objects.equals(channelUser.getPaymentStatus(), EnterprisePaymentStatusEnum.PAYMENT_TYPE_NO_PAY.getCode())) {
+            log.warn("channel user admin Exit Check! user payment not pay,uid={}", uid);
             return Triple.of(true, null, null);
         }
         
@@ -1605,6 +1637,7 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
             enterpriseChannelUser.setRenewalStatus(RenewalStatusEnum.RENEWAL_STATUS_NOT_BY_SELF.getCode());
             enterpriseChannelUser.setFranchiseeId(query.getFranchiseeId());
             enterpriseChannelUser.setPaymentStatus(EnterprisePaymentStatusEnum.PAYMENT_TYPE_NO_PAY.getCode());
+            enterpriseChannelUser.setCloudBeanStatus(EnterpriseChannelUser.CLOUD_BEAN_STATUS_INIT);
             enterpriseChannelUser.setTenantId(TenantContextHolder.getTenantId().longValue());
             enterpriseChannelUser.setInviterId(SecurityUtils.getUid());
             enterpriseChannelUser.setUid(query.getUid());
@@ -1657,20 +1690,23 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
             
             UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
             UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
-            
-            if (Objects.nonNull(userBatteryMemberCard) && Objects.equals(channelUser.getCloudBeanStatus(), EnterpriseChannelUser.NO_RECYCLE)) {
+    
+            if (Objects.nonNull(userBatteryMemberCard)) {
                 // 检测用户能否退出
                 Triple<Boolean, String, Object> tripleCheck = checkUserEnableExit(uid);
                 if (!tripleCheck.getLeft()) {
                     log.error("enterprise channel switch user check error, uid={},msg={}", userInfo.getUid(), tripleCheck.getRight());
                     return tripleCheck;
                 }
-                
-                // 回收云豆
-                Triple<Boolean, String, Object> triple = enterpriseInfoService.recycleCloudBean(query.getUid());
-                if (!triple.getLeft()) {
-                    log.error("enterprise channel switch user recycle cloud bean error, uid={},msg={}", userInfo.getUid(), triple.getRight());
-                    return triple;
+    
+                // 未回收的云豆的情况进行云豆回收
+                if (Objects.equals(channelUser.getCloudBeanStatus(), EnterpriseChannelUser.NO_RECYCLE)) {
+                    // 回收云豆
+                    Triple<Boolean, String, Object> triple = enterpriseInfoService.recycleCloudBean(query.getUid());
+                    if (!triple.getLeft()) {
+                        log.error("enterprise channel switch user recycle cloud bean error, uid={},msg={}", userInfo.getUid(), triple.getRight());
+                        return triple;
+                    }
                 }
             }
             

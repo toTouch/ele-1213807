@@ -11,6 +11,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.servlet.http.HttpServletRequest;
+
 /**
  * @author : eclair
  * @date : 2024/2/18 10:11
@@ -18,12 +20,12 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @Slf4j
 public class JsonMerchantLoginController extends BaseController {
-
+    
     @Autowired
     MerchantTokenService tokenService;
-
+    
     @PostMapping("/auth/token/merchant")
-    public R merchantLogin(@RequestBody @Validated MerchantLoginRequest merchantLoginRequest) {
-        return returnTripleResult(tokenService.login(merchantLoginRequest));
+    public R merchantLogin(HttpServletRequest request, @RequestBody @Validated MerchantLoginRequest merchantLoginRequest) {
+        return returnTripleResult(tokenService.login(request, merchantLoginRequest));
     }
 }

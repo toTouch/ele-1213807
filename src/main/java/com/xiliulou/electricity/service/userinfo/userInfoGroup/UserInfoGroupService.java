@@ -3,7 +3,6 @@ package com.xiliulou.electricity.service.userinfo.userInfoGroup;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.bo.userInfoGroup.UserInfoGroupBO;
 import com.xiliulou.electricity.bo.userInfoGroup.UserInfoGroupIdAndNameBO;
-import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.userinfo.userInfoGroup.UserInfoGroup;
 import com.xiliulou.electricity.query.userinfo.userInfoGroup.UserInfoGroupQuery;
 import com.xiliulou.electricity.request.userinfo.userInfoGroup.UserInfoGroupBatchImportRequest;
@@ -20,7 +19,9 @@ public interface UserInfoGroupService {
     
     R save(UserInfoGroupSaveAndUpdateRequest request, Long operator);
     
-    R update(UserInfoGroupSaveAndUpdateRequest request, Long operator);
+    Integer update(UserInfoGroup userInfoGroup);
+    
+    R edit(UserInfoGroupSaveAndUpdateRequest request, Long operator);
     
     List<UserInfoGroupBO> listByPage(UserInfoGroupQuery query);
     
@@ -39,4 +40,6 @@ public interface UserInfoGroupService {
     List<UserInfoGroupIdAndNameBO> listAllGroup(UserInfoGroupQuery query);
     
     Integer batchUpdateByIds(List<Long> groupIds, Long updateTime, Long operator, Integer delFlag);
+    
+    List<UserInfoGroup> listByIdsFromDB(List<Long> groupIds);
 }

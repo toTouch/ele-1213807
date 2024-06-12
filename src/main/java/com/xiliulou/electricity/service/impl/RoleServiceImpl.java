@@ -8,6 +8,7 @@ import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.core.web.R;
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mapper.RoleMapper;
@@ -58,6 +59,7 @@ public class RoleServiceImpl implements RoleService {
      * @param id 主键
      * @return 实例对象
      */
+    @Slave
     @Override
     public Role queryByIdFromDB(Long id) {
         return this.roleMapper.queryById(id);
@@ -247,7 +249,7 @@ public class RoleServiceImpl implements RoleService {
         return Collections.emptyList();
     }
 
-    //
+    @Slave
     @Override
     public R queryAll() {
         //租户
@@ -262,6 +264,7 @@ public class RoleServiceImpl implements RoleService {
         return R.ok(roles.stream().filter(e -> e.getId() > 1).collect(Collectors.toList()));
     }
 
+    @Slave
     @Override
     public Long queryByName(String name, Integer tenantId) {
         Role role = roleMapper.queryByName(name, tenantId);

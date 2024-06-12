@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.service.impl.merchant;
 
+import cn.hutool.core.map.MapUtil;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.CommonConstant;
@@ -10,6 +11,7 @@ import com.xiliulou.electricity.request.merchant.MerchantAttrRequest;
 import com.xiliulou.electricity.service.merchant.MerchantAttrService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
+import com.xiliulou.electricity.utils.OperateRecordUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,6 +35,9 @@ public class MerchantAttrServiceImpl implements MerchantAttrService {
     
     @Autowired
     private RedisService redisService;
+    
+    @Autowired
+    private OperateRecordUtil operateRecordUtil;
     
     @Override
     public MerchantAttr queryById(Long id) {
@@ -157,5 +162,21 @@ public class MerchantAttrServiceImpl implements MerchantAttrService {
         merchantAttr.setCreateTime(System.currentTimeMillis());
         merchantAttr.setUpdateTime(System.currentTimeMillis());
         return this.insert(merchantAttr);
+    }
+    
+    @Override
+    public Triple<Boolean, String, Object> updateChannelSwitchState(Integer tenantId, Integer status) {
+        MerchantAttr merchantAttr = this.queryByTenantIdFromCache(tenantId);
+        if (Objects.isNull(merchantAttr) || !Objects.equals(merchantAttr.getTenantId(), TenantContextHolder.getTenantId())) {
+            return Triple.of(true, null, null);
+        }
+        
+        MerchantAttr merchantAttrUpdate = new MerchantAttr();
+        merchantAttrUpdate.setStatus(status);
+        merchantAttrUpdate.setUpdateTime(System.currentTimeMillis());
+        this.updateByTenantId(merchantAttrUpdate, merchantAttr.getTenantId());
+        // 记录操作
+        operateRecordUtil.record(null, MapUtil.of("status",status));
+        return Triple.of(true, null, null);
     }
 }

@@ -341,6 +341,7 @@ public class PermissionResourceServiceImpl implements PermissionResourceService 
 		}).filter(Objects::nonNull).collect(Collectors.toList());
 	}
 	
+	@Slave
 	@Override
 	public Pair<Boolean, Object> getPermissionTempleteList() {
 		List<PermissionResource> permissionResources = this.permissionResourceMapper.queryAll();

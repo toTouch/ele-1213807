@@ -9,6 +9,7 @@
         <result property="validTimeUnit" column="valid_time_unit" jdbcType="INTEGER"/>
         <result property="invitationProtectionTime" column="invitation_protection_time" jdbcType="INTEGER"/>
         <result property="protectionTimeUnit" column="protection_time_unit" jdbcType="INTEGER"/>
+        <result property="status" column="status" jdbcType="INTEGER"/>
         <result property="delFlag" column="del_flag" jdbcType="INTEGER"/>
         <result property="tenantId" column="tenant_id" jdbcType="INTEGER"/>
         <result property="createTime" column="create_time" jdbcType="INTEGER"/>
@@ -24,8 +25,17 @@
     </select>
     
     <select id="selectByTenantId" resultMap="MerchantAttrMap">
-        select
-          id, upgrade_condition, invitation_valid_time, valid_time_unit, invitation_protection_time, protection_time_unit, tenant_id, del_flag, create_time, update_time
+        select id,
+               upgrade_condition,
+               invitation_valid_time,
+               valid_time_unit,
+               invitation_protection_time,
+               protection_time_unit,
+               status,
+               tenant_id,
+               del_flag,
+               create_time,
+               update_time
         from t_merchant_attr
         where tenant_id = #{tenantId}
     </select>
@@ -54,6 +64,9 @@
             </if>
             <if test="protectionTimeUnit != null">
                 protection_time_unit = #{protectionTimeUnit},
+            </if>
+            <if test="status != null">
+                status = #{status},
             </if>
             <if test="delFlag != null">
                 del_flag = #{delFlag},
