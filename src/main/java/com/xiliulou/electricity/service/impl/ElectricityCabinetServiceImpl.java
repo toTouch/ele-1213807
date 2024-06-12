@@ -6080,6 +6080,9 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     }
     
     private void checkUpdateBatchElectricityCabinetExtra(ElectricityCabinetBatchEditRentReturnQuery rentReturnQuery, ElectricityCabinetBatchEditRentReturnCountQuery countQuery) {
+        if (Objects.isNull(rentReturnQuery.getRentTabType()) && Objects.isNull(rentReturnQuery.getReturnTabType())) {
+            throw new CustomBusinessException("设置可租可退标准异常");
+        }
         if (Objects.equals(rentReturnQuery.getRentTabType(), RentReturnNormEnum.CUSTOM_RENT.getCode()) && Objects.isNull(countQuery.getMinRetainBatteryCount())) {
             throw new CustomBusinessException("自定义！最保留电池数不能为空");
         }
