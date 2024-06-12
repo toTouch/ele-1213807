@@ -214,7 +214,7 @@ public class MerchantServiceImpl implements MerchantService {
         // 检测选中的加盟商和当前登录加盟商是否一致
         if (Objects.nonNull(merchantSaveRequest.getBindFranchiseeId()) && !Objects.equals(merchantSaveRequest.getBindFranchiseeId(), merchantSaveRequest.getFranchiseeId())) {
             log.error("merchant save error, franchisee is not different id={}, franchiseeId={}, bindFranchiseeId={}", merchantSaveRequest.getId(), merchantSaveRequest.getFranchiseeId(), merchantSaveRequest.getBindFranchiseeId());
-            return Triple.of(false, "120238", "当前加盟商无权限操作");
+            return Triple.of(false, "120240", "当前加盟商无权限操作");
         }
         
         // 检测商户名称是否存在用户表中
@@ -572,7 +572,7 @@ public class MerchantServiceImpl implements MerchantService {
         // 检测选中的加盟商和当前登录加盟商是否一致
         if (Objects.nonNull(merchantSaveRequest.getBindFranchiseeId()) && !Objects.equals(merchantSaveRequest.getBindFranchiseeId(), merchantSaveRequest.getFranchiseeId())) {
             log.error("merchant update error, franchisee is not different id={}, franchiseeId={}, bindFranchiseeId={}", merchantSaveRequest.getId(), merchantSaveRequest.getFranchiseeId(), merchantSaveRequest.getBindFranchiseeId());
-            return Triple.of(false, "120238", "当前加盟商无权限操作");
+            return Triple.of(false, "120240", "当前加盟商无权限操作");
         }
         
         // 判断邀请权限和站点代付权限是否都没有选中
@@ -947,7 +947,7 @@ public class MerchantServiceImpl implements MerchantService {
         
         if (Objects.nonNull(bindFranchiseeId) && !Objects.equals(merchant.getFranchiseeId(), bindFranchiseeId)) {
             log.error("merchant delete error, franchisee is not different id={}, franchiseeId={}, bindFranchiseeId={}", id, merchant.getFranchiseeId(), bindFranchiseeId);
-            return Triple.of(false, "120238", "当前加盟商无权限操作");
+            return Triple.of(false, "120240", "当前加盟商无权限操作");
         }
         
         // 判断商户的余额：t_merchant_user_amount：balance

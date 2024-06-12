@@ -107,7 +107,7 @@ public class MerchantPlaceServiceImpl implements MerchantPlaceService {
         // 检测页面上选择的加盟商和当前用户登录的加盟商是否一致
         if (Objects.nonNull(merchantPlaceSaveRequest.getBindFranchiseeId()) && !Objects.equals(merchantPlaceSaveRequest.getBindFranchiseeId(), merchantPlaceSaveRequest.getFranchiseeId())) {
             log.error("merchant place save error, franchisee is not different id={}, franchiseeId={}, bindFranchiseeId={}", merchantPlaceSaveRequest.getId(), merchantPlaceSaveRequest.getFranchiseeId(), merchantPlaceSaveRequest.getBindFranchiseeId());
-            return Triple.of(false, "120238", "当前加盟商无权限操作");
+            return Triple.of(false, "120240", "当前加盟商无权限操作");
         }
         
         Integer tenantId = TenantContextHolder.getTenantId();
@@ -180,7 +180,7 @@ public class MerchantPlaceServiceImpl implements MerchantPlaceService {
         // 检测选中的加盟商和当前登录加盟商是否一致
         if (Objects.nonNull(merchantPlaceSaveRequest.getBindFranchiseeId()) && !Objects.equals(merchantPlaceSaveRequest.getBindFranchiseeId(), merchantPlaceSaveRequest.getFranchiseeId())) {
             log.error("merchant place update error, franchisee is not different id={}, franchiseeId={}, bindFranchiseeId={}", merchantPlaceSaveRequest.getId(), merchantPlaceSaveRequest.getFranchiseeId(), merchantPlaceSaveRequest.getBindFranchiseeId());
-            return Triple.of(false, "120238", "当前加盟商无权限操作");
+            return Triple.of(false, "120240", "当前加盟商无权限操作");
         }
         
         if (Objects.nonNull(merchantPlaceSaveRequest.getMerchantAreaId())) {
@@ -258,7 +258,7 @@ public class MerchantPlaceServiceImpl implements MerchantPlaceService {
     
         if (Objects.nonNull(bindFranchiseeId) && !Objects.equals(merchantPlace.getFranchiseeId(), bindFranchiseeId)) {
             log.error("merchant place delete error, franchisee is not different id={}, franchiseeId={}, bindFranchiseeId={}", id, merchantPlace.getFranchiseeId(), bindFranchiseeId);
-            return Triple.of(false, "120238", "当前加盟商无权限操作");
+            return Triple.of(false, "120240", "当前加盟商无权限操作");
         }
         
         // 检测场地是否存在绑定的换电柜
