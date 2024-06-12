@@ -39,6 +39,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * @author zzlong
@@ -118,9 +119,9 @@ public class JsonAdminBatteryMemberCardController extends BaseController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         
-        final List<Long> franchiseeIds = new ArrayList<>();
+        List<Long> franchiseeIds = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
-            franchiseeIds.addAll(userDataScopeService.selectDataIdByUid(user.getUid()));
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
             if (CollectionUtils.isEmpty(franchiseeIds)) {
                 return R.ok(Collections.emptyList());
             }
@@ -129,9 +130,7 @@ public class JsonAdminBatteryMemberCardController extends BaseController {
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
             List<Long> storeIds = userDataScopeService.selectDataIdByUid(user.getUid());
             if (CollectionUtils.isNotEmpty(storeIds)) {
-                storeIds.forEach(storeId -> {
-                    franchiseeIds.add(storeService.queryByIdFromCache(storeId).getFranchiseeId());
-                });
+                franchiseeIds = storeIds.stream().map(storeId -> storeService.queryByIdFromCache(storeId).getFranchiseeId()).collect(Collectors.toList());
             }
             if (CollectionUtils.isEmpty(franchiseeIds)) {
                 return R.ok(Collections.emptyList());
@@ -163,9 +162,9 @@ public class JsonAdminBatteryMemberCardController extends BaseController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         
-        final List<Long> franchiseeIds = new ArrayList<>();
+        List<Long> franchiseeIds = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
-            franchiseeIds.addAll(userDataScopeService.selectDataIdByUid(user.getUid()));
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
             if (CollectionUtils.isEmpty(franchiseeIds)) {
                 return R.ok(Collections.emptyList());
             }
@@ -174,9 +173,7 @@ public class JsonAdminBatteryMemberCardController extends BaseController {
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
             List<Long> storeIds = userDataScopeService.selectDataIdByUid(user.getUid());
             if (CollectionUtils.isNotEmpty(storeIds)) {
-                storeIds.forEach(storeId -> {
-                    franchiseeIds.add(storeService.queryByIdFromCache(storeId).getFranchiseeId());
-                });
+                franchiseeIds = storeIds.stream().map(storeId -> storeService.queryByIdFromCache(storeId).getFranchiseeId()).collect(Collectors.toList());
             }
             if (CollectionUtils.isEmpty(franchiseeIds)) {
                 return R.ok(Collections.emptyList());
