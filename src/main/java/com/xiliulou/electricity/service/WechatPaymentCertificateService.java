@@ -5,20 +5,22 @@ import org.springframework.web.multipart.MultipartFile;
 
 /**
  * @author wangchen
- * @date 2023年5月17日
- * desc: 微信支付证书服务接口
+ * @date 2023年5月17日 desc: 微信支付证书服务接口
  */
 public interface WechatPaymentCertificateService {
     
     /**
      * 根据租户id查询微信支付证书内容
+     *
      * @param tenantId tenantId
      * @return WechatPaymentCertificate
      */
+    @Deprecated
     WechatPaymentCertificate selectByTenantId(Integer tenantId);
     
     /**
      * 根据租户id更新证书信息
+     *
      * @param certificate certificate
      * @return int
      */
@@ -26,6 +28,7 @@ public interface WechatPaymentCertificateService {
     
     /**
      * 插入证书内容
+     *
      * @param certificate certificate
      * @return int
      */
@@ -33,6 +36,7 @@ public interface WechatPaymentCertificateService {
     
     /**
      * 新增或更新证书信息
+     *
      * @param certificate 支付证书信息
      */
     void saveOrUpdateWeChatPaymentCertificate(WechatPaymentCertificate certificate);
@@ -45,4 +49,14 @@ public interface WechatPaymentCertificateService {
      * @throws Exception 异常
      */
     void handleCertificateFile(MultipartFile file, Integer tenantId) throws Exception;
+    
+    /**
+     * 根据支付配置id查询
+     *
+     * @param tenantId
+     * @param franchiseeId
+     * @author caobotao.cbt
+     * @date 2024/6/12 19:47
+     */
+    WechatPaymentCertificate queryByTenantIdAndFranchiseeId(Integer tenantId, Long franchiseeId);
 }

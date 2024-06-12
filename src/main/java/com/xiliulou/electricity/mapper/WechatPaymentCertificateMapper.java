@@ -6,13 +6,13 @@ import org.apache.ibatis.annotations.Param;
 
 /**
  * @author Mr. wang
- * @date: 2023年5月16日
- * desc: 微信支付证书内容mapper层
+ * @date: 2023年5月16日 desc: 微信支付证书内容mapper层
  */
 public interface WechatPaymentCertificateMapper extends BaseMapper<WechatPaymentCertificate> {
     
     /**
      * 根据租户id查询证书
+     *
      * @param tenantId tenantId
      * @return WechatPaymentCertificate
      */
@@ -20,8 +20,19 @@ public interface WechatPaymentCertificateMapper extends BaseMapper<WechatPayment
     
     /**
      * 根据租户id更新证书信息
+     *
      * @param certificate certificate
      * @return int
      */
     int updateByTenantId(WechatPaymentCertificate certificate);
+    
+    /**
+     * 根据支付参数id查询
+     *
+     * @param tenantId
+     * @param franchiseeId
+     * @author caobotao.cbt
+     * @date 2024/6/12 19:57
+     */
+    WechatPaymentCertificate selectByTenantIdAndFranchiseeId(@Param("tenantId") Integer tenantId, @Param("franchiseeId") Long franchiseeId);
 }

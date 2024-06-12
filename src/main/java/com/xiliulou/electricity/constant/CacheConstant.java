@@ -23,7 +23,18 @@ public interface CacheConstant {
     /**
      * 微信支付参数缓存key
      */
-    String ELE_PAY_PARAMS_KEY="saas_ele:cache_pay_params:v2:%d:%d";
+    String ELE_PAY_PARAMS_KEY="saas_ele:pay_params:%d:%d";
+    
+    /**
+     * 微信支付证书
+     */
+    String PAYMENT_CERTIFICATE_KEY="saas_ele:pay_payment_certificate:%d:%d";
+    
+    
+    /**
+     * 微信支付证书缓存（调用微信接口获取）
+     */
+    String WECHAT_CERTIFICATE_KEY="saas_ele:wechat_certificate:%d:%d";
     
     //用户缓存
     String CACHE_USER_UID = "user_uid:";
