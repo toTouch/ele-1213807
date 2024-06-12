@@ -19,6 +19,12 @@ public interface CacheConstant {
     
     String ADMIN_OPERATE_LOCK_KEY = "admin_operate_lock_key:";
     String CACHE_PAY_PARAMS = "cache_pay_params";
+    
+    /**
+     * 微信支付参数缓存key
+     */
+    String ELE_PAY_PARAMS_KEY="saas_ele:cache_pay_params:v2:%d:%d";
+    
     //用户缓存
     String CACHE_USER_UID = "user_uid:";
     String CACHE_USER_PHONE = "user_phone:";

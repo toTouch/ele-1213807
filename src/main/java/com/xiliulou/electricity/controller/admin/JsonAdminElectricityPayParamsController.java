@@ -2,6 +2,7 @@ package com.xiliulou.electricity.controller.admin;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.annotation.Log;
 import com.xiliulou.electricity.entity.ElectricityPayParams;
+import com.xiliulou.electricity.request.payparams.ElectricityPayParamsRequest;
 import com.xiliulou.electricity.service.ElectricityPayParamsService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import lombok.extern.slf4j.Slf4j;
@@ -54,7 +55,14 @@ public class JsonAdminElectricityPayParamsController {
         Integer tenantId = TenantContextHolder.getTenantId();
         return R.ok(electricityPayParamsService.queryFromCache(tenantId));
     }
-
-
+    
+    
+    
+    @PostMapping(value = "/admin/electricityPayParams")
+    @Log(title = "新增支付参数")
+    public R insert(@RequestBody ElectricityPayParamsRequest request) {
+        return electricityPayParamsService.saveOrUpdateElectricityPayParams(request);
+    }
+    
 
 }

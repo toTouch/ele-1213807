@@ -1,34 +1,27 @@
-package com.xiliulou.electricity.entity;
+/**
+ * Copyright(c) 2018 Sunyur.com, All Rights Reserved. Author: sunyur Create date: 2024/6/12
+ */
 
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableName;
+package com.xiliulou.electricity.request.payparams;
+
 import com.xiliulou.electricity.enums.ElectricityPayParamsConfigEnum;
 import lombok.Data;
 
+import javax.validation.constraints.NotNull;
+
 
 /**
- * @program: XILIULOU
- * @description:
- * @author: Mr.YG
- * @create: 2020-12-01 09:26
- **/
+ * description: 支付参数请求
+ *
+ * @author caobotao.cbt
+ * @date 2024/6/12 15:51
+ */
 @Data
-@TableName("t_electricity_pay_params")
-public class ElectricityPayParams {
+public class ElectricityPayParamsRequest {
     
-    @TableId(value = "id", type = IdType.AUTO)
+    
     private Integer id;
     
-    /**
-     * 微信公众号id
-     */
-    private String officeAccountAppId;
-    
-    /**
-     * 微信公众号密钥
-     */
-    private String officeAccountAppSecret;
     
     /**
      * 商家小程序appid
@@ -67,16 +60,6 @@ public class ElectricityPayParams {
     
     
     /**
-     * 创建时间
-     */
-    private Long createTime;
-    
-    /**
-     * 更新时间
-     */
-    private Long updateTime;
-    
-    /**
      * apiName
      */
     private String apiName;
@@ -86,7 +69,6 @@ public class ElectricityPayParams {
      */
     private String paternerKey;
     
-    public static final Integer TYPE_MERCHANT_PATH = 1;
     
     /**
      * 商家版小程序 appid
@@ -104,6 +86,7 @@ public class ElectricityPayParams {
      *
      * @see ElectricityPayParamsConfigEnum
      */
+    @NotNull(message = "配置类型不能为空")
     private Integer configType;
     
     
@@ -112,7 +95,5 @@ public class ElectricityPayParams {
      */
     private Long franchiseeId;
     
-    
-    private Integer delFlag;
     
 }
