@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.util.List;
 
 /**
  * description:
@@ -40,5 +41,12 @@ public class ElectricityPayParamsTxServiceImpl implements ElectricityPayParamsTx
         electricityPayParamsMapper.logicalDelete(id, tenantId);
         wechatPaymentCertificateMapper.logicalDeleteByPayParamsId(id, tenantId);
         wechatWithdrawalCertificateMapper.logicalDeleteByPayParamsId(id, tenantId);
+    }
+    
+    @Override
+    public void update(ElectricityPayParams update, List<Integer> franchiseePayParamIds) {
+        electricityPayParamsMapper.update(update);
+        
+        electricityPayParamsMapper.updateSync(update,franchiseePayParamIds);
     }
 }
