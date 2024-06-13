@@ -18,26 +18,28 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @Slf4j
 public class JsonUserOffLineElectricityCabinetController {
-
+    
     @Autowired
     OffLineElectricityCabinetService offLineElectricityCabinetService;
-
+    
     /**
      * 获取离线换电验证码
+     *
      * @return
      */
     @GetMapping("/user/offLineElectricityCabinet/verificationCode")
-    public R queryVerificationCode(){
+    public R queryVerificationCode() {
         return offLineElectricityCabinetService.generateVerificationCode();
     }
-
+    
     /**
      * 离线换电-手机离线前置检测
+     *
      * @return
      */
     @GetMapping("/user/offLineElectricityCabinet/frontDetection")
-    public R frontDetection(){
+    public R frontDetection() {
         return offLineElectricityCabinetService.frontDetection();
     }
-
+    
 }

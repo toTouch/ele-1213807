@@ -27,28 +27,30 @@ import java.util.List;
 @RestController
 @RequestMapping("/user/recommend")
 public class JsonUserRecommendController extends BasicController {
-
+    
     @Resource
     private RecommendBizService recommendBizService;
-
+    
     /**
      * 根据经纬度，系统用车推荐
+     *
      * @param carModelRecommendQryReq 查询模型
      * @return 推荐车辆型号集
      */
     @PostMapping("/carModelByDistance")
     public R<List<CarModelRecommendVO>> carModelByDistance(@RequestBody @Valid CarModelRecommendQryReq carModelRecommendQryReq) {
-        if (!ObjectUtils.allNotNull(carModelRecommendQryReq, carModelRecommendQryReq.getFranchiseeId(),
-                carModelRecommendQryReq.getLatitude(), carModelRecommendQryReq.getLongitude(), carModelRecommendQryReq.getDistance())) {
+        if (!ObjectUtils
+                .allNotNull(carModelRecommendQryReq, carModelRecommendQryReq.getFranchiseeId(), carModelRecommendQryReq.getLatitude(), carModelRecommendQryReq.getLongitude(),
+                        carModelRecommendQryReq.getDistance())) {
             throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
-
+        
         Integer tenantId = TenantContextHolder.getTenantId();
         carModelRecommendQryReq.setTenantId(tenantId);
-
+        
         List<CarModelRecommendVO> recommendVoList = recommendBizService.carModelByDistance(carModelRecommendQryReq);
-
+        
         return R.ok(recommendVoList);
     }
-
+    
 }

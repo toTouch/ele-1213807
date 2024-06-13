@@ -29,27 +29,26 @@ import java.util.Objects;
 @RestController
 @Slf4j
 public class JsonUserMemberCardFailureRecordController {
-
+    
     @Autowired
     MemberCardFailureRecordService memberCardFailureRecordService;
-
+    
     @GetMapping("user/queryFailureMemberCard")
-    public R queryFailureMemberCard(@RequestParam("size") Integer size,
-                                    @RequestParam("offset") Integer offset) {
+    public R queryFailureMemberCard(@RequestParam("size") Integer size, @RequestParam("offset") Integer offset) {
         Long uid = SecurityUtils.getUid();
         if (Objects.isNull(uid)) {
             return R.fail("ELECTRICITY.0001", "未找到用户!");
         }
-
+        
         if (size <= 0 || size > 50) {
             size = 10;
         }
         if (offset < 0) {
             offset = 0;
         }
-
+        
         return memberCardFailureRecordService.queryFailureMemberCard(uid, offset, size);
     }
-
-
+    
+    
 }

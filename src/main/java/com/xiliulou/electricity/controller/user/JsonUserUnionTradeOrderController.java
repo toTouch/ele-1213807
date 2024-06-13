@@ -25,23 +25,24 @@ import javax.servlet.http.HttpServletRequest;
  */
 @RestController
 @Slf4j
-public class JsonUserUnionTradeOrderController extends BaseController{
+public class JsonUserUnionTradeOrderController extends BaseController {
+    
     /**
      * 服务对象
      */
     @Autowired
     TradeOrderService tradeOrderService;
-
+    
     @Autowired
     FranchiseeService franchiseeService;
-
-
+    
+    
     //集成支付
     @PostMapping("/user/integratedPayment")
     public R payDeposit(@RequestBody IntegratedPaymentAdd integratedPaymentAdd, HttpServletRequest request) {
         return returnTripleResult(tradeOrderService.integratedPayment(integratedPaymentAdd, request));
     }
-
+    
     /**
      * 电池套餐&保险混合支付
      */
@@ -49,7 +50,7 @@ public class JsonUserUnionTradeOrderController extends BaseController{
     public R payMemberCardAndInsurance(@RequestBody @Validated(value = CreateGroup.class) BatteryMemberCardAndInsuranceQuery query, HttpServletRequest request) {
         return returnTripleResult(tradeOrderService.payMemberCardAndInsurance(query, request));
     }
-
+    
     /**
      * 滞纳金混合支付
      */

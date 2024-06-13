@@ -23,12 +23,13 @@ import java.util.Objects;
 @RestController
 @RequestMapping("/user/car/rentCar")
 public class JsonUserCarRentalOrderController {
-
+    
     @Resource
     private CarRentalOrderBizService carRentalOrderBizService;
-
+    
     /**
      * 还车申请
+     *
      * @return true(成功)、false(失败)
      */
     @GetMapping("/refundCarOrderApply")
@@ -41,9 +42,10 @@ public class JsonUserCarRentalOrderController {
         }
         return R.ok(carRentalOrderBizService.refundCarOrderApply(tenantId, user.getUid()));
     }
-
+    
     /**
      * 扫码绑定车辆
+     *
      * @param sn 车辆SN码
      * @return true(成功)、false(失败)
      */
@@ -52,14 +54,14 @@ public class JsonUserCarRentalOrderController {
         if (StringUtils.isBlank(sn)) {
             return R.fail("ELECTRICITY.0007", "不合法的参数");
         }
-
+        
         Integer tenantId = TenantContextHolder.getTenantId();
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             log.error("not found user.");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-
+        
         return R.ok(carRentalOrderBizService.bindingCarByQR(tenantId, franchiseeId, user.getUid(), sn, user.getUid()));
     }
 }

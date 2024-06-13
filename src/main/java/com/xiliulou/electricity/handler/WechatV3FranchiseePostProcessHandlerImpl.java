@@ -1,0 +1,160 @@
+/**
+ * Copyright(c) 2018 Sunyur.com, All Rights Reserved. Author: sunyur Create date: 2024/6/13
+ */
+
+package com.xiliulou.electricity.handler;
+
+import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.core.json.JsonUtil;
+import com.xiliulou.electricity.constant.WechatPayConstant;
+import com.xiliulou.electricity.entity.ElectricityTradeOrder;
+import com.xiliulou.electricity.entity.UnionTradeOrder;
+import com.xiliulou.electricity.enums.CallBackEnums;
+import com.xiliulou.electricity.service.EleRefundOrderService;
+import com.xiliulou.electricity.service.ElectricityTradeOrderService;
+import com.xiliulou.electricity.service.UnionTradeOrderService;
+import com.xiliulou.pay.weixinv3.dto.WechatJsapiOrderCallBackResource;
+import com.xiliulou.pay.weixinv3.dto.WechatJsapiRefundOrderCallBackResource;
+import com.xiliulou.pay.weixinv3.franchisee.handler.WechatV3FranchiseePostProcessHandler;
+import com.xiliulou.pay.weixinv3.franchisee.request.WechatV3FranchiseeMerchantLoadRequest;
+import com.xiliulou.pay.weixinv3.franchisee.request.WechatV3FranchiseeOrderCallBackQuery;
+import com.xiliulou.pay.weixinv3.franchisee.request.WechatV3FranchiseeOrderRequest;
+import com.xiliulou.pay.weixinv3.franchisee.request.WechatV3FranchiseeRefundOrderCallBackQuery;
+import com.xiliulou.pay.weixinv3.franchisee.request.WechatV3FranchiseeRefundRequest;
+import com.xiliulou.pay.weixinv3.franchisee.service.WechatV3FranchiseeMerchantLoadAndUpdateCertificateService;
+import com.xiliulou.pay.weixinv3.query.WechatCallBackResouceData;
+import com.xiliulou.pay.weixinv3.util.AesUtil;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.nio.charset.StandardCharsets;
+import java.util.Objects;
+
+/**
+ * description:
+ *
+ * @author caobotao.cbt
+ * @date 2024/6/13 11:16
+ */
+@Slf4j
+@Service
+public class WechatV3FranchiseePostProcessHandlerImpl implements WechatV3FranchiseePostProcessHandler {
+    
+    @Autowired
+    WechatV3FranchiseeMerchantLoadAndUpdateCertificateService certificateService;
+    
+    @Autowired
+    RedisService redisService;
+    
+    @Autowired
+    ElectricityTradeOrderService electricityTradeOrderService;
+    
+    @Autowired
+    EleRefundOrderService eleRefundOrderService;
+    
+    @Autowired
+    UnionTradeOrderService unionTradeOrderService;
+    
+    @Override
+    public void postProcessBeforeWechatPay(WechatV3FranchiseeOrderRequest request) {
+        //暂时什么都不处理 TODO
+    }
+    
+    @Override
+    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRES_NEW)
+    public void postProcessAfterWechatPay(WechatV3FranchiseeOrderCallBackQuery wechatV3OrderCallBackQuery) {
+        WechatCallBackResouceData resource = wechatV3OrderCallBackQuery.getResource();
+        if (Objects.isNull(resource)) {
+            log.error("WECHAT ERROR! no wechat's info ! msg={}", wechatV3OrderCallBackQuery);
+            return;
+        }
+        
+        String decryptJson = null;
+        try {
+            decryptJson = AesUtil
+                    .decryptToString(resource.getAssociated_data().getBytes(StandardCharsets.UTF_8), resource.getNonce().getBytes(StandardCharsets.UTF_8), resource.getCiphertext(),
+                            certificateService.getMerchantApiV3Key(
+                                    new WechatV3FranchiseeMerchantLoadRequest(wechatV3OrderCallBackQuery.getTenantId(), wechatV3OrderCallBackQuery.getFranchiseeId()))
+                                    .getBytes(StandardCharsets.UTF_8));
+            
+        } catch (Exception e) {
+            log.error("WECHAT ERROR! wechat decrypt error! msg={}", wechatV3OrderCallBackQuery, e);
+            return;
+        }
+        
+        WechatJsapiOrderCallBackResource callBackResource = JsonUtil.fromJson(decryptJson, WechatJsapiOrderCallBackResource.class);
+        
+        //幂等加锁
+        String orderNo = callBackResource.getOutTradeNo();
+        if (!redisService.setNx(WechatPayConstant.PAY_ORDER_ID_CALL_BACK + orderNo, String.valueOf(System.currentTimeMillis()), 10 * 1000L, false)) {
+            log.info("ELE INFO! order in process orderId={}", orderNo);
+            return;
+        }
+        
+        if (Objects.equals(callBackResource.getAttach(), ElectricityTradeOrder.ATTACH_DEPOSIT)) {
+            electricityTradeOrderService.notifyDepositOrder(callBackResource);
+        } else if (Objects.equals(callBackResource.getAttach(), ElectricityTradeOrder.ATTACH_BATTERY_SERVICE_FEE)) {
+            electricityTradeOrderService.notifyBatteryServiceFeeOrder(callBackResource);
+        } else if (Objects.equals(callBackResource.getAttach(), ElectricityTradeOrder.ATTACH_RENT_CAR_DEPOSIT)) {
+            electricityTradeOrderService.notifyRentCarDepositOrder(callBackResource);
+        } else if (Objects.equals(callBackResource.getAttach(), ElectricityTradeOrder.ATTACH_RENT_CAR_MEMBER_CARD)) {
+            electricityTradeOrderService.notifyRentCarMemberOrder(callBackResource);
+        } else if (Objects.equals(callBackResource.getAttach(), CallBackEnums.CAR_RENAL_PACKAGE_ORDER.getDesc())) {
+            // 租车套餐购买订单回调
+            electricityTradeOrderService.notifyCarRenalPackageOrder(callBackResource);
+        } else if (Objects.equals(callBackResource.getAttach(), ElectricityTradeOrder.ATTACH_INSURANCE)) {
+            electricityTradeOrderService.notifyInsuranceOrder(callBackResource);
+        } else if (Objects.equals(callBackResource.getAttach(), UnionTradeOrder.ATTACH_INTEGRATED_PAYMENT)) {
+            unionTradeOrderService.notifyIntegratedPayment(callBackResource);
+        } else if (Objects.equals(callBackResource.getAttach(), UnionTradeOrder.ATTACH_MEMBERCARD_INSURANCE)) {
+            unionTradeOrderService.notifyMembercardInsurance(callBackResource);
+        } else if (Objects.equals(callBackResource.getAttach(), UnionTradeOrder.ATTACH_SERVUCE_FEE)) {
+            unionTradeOrderService.notifyServiceFee(callBackResource);
+        } else if (Objects.equals(callBackResource.getAttach(), ElectricityTradeOrder.ATTACH_CLOUD_BEAN_RECHARGE)) {
+            electricityTradeOrderService.notifyCloudBeanRechargeOrder(callBackResource);
+        } else {
+            electricityTradeOrderService.notifyMemberOrder(callBackResource);
+        }
+    }
+    
+    @Override
+    public void postProcessBeforeWechatRefund(WechatV3FranchiseeRefundRequest request) {
+    
+    }
+    
+    @Override
+    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRES_NEW)
+    public void postProcessAfterWechatRefund(WechatV3FranchiseeRefundOrderCallBackQuery wechatV3RefundOrderCallBackQuery) {
+        WechatCallBackResouceData resource = wechatV3RefundOrderCallBackQuery.getResource();
+        if (Objects.isNull(resource)) {
+            log.error("WECHAT ERROR! no wechat's info ! msg={}", wechatV3RefundOrderCallBackQuery);
+            return;
+        }
+        
+        String decryptJson = null;
+        try {
+            decryptJson = AesUtil
+                    .decryptToString(resource.getAssociated_data().getBytes(StandardCharsets.UTF_8), resource.getNonce().getBytes(StandardCharsets.UTF_8), resource.getCiphertext(),
+                            certificateService.getMerchantApiV3Key(
+                                    new WechatV3FranchiseeMerchantLoadRequest(wechatV3RefundOrderCallBackQuery.getTenantId(), wechatV3RefundOrderCallBackQuery.getFranchiseeId()))
+                                    .getBytes(StandardCharsets.UTF_8));
+            
+        } catch (Exception e) {
+            log.error("WECHAT ERROR! wechat decrypt error! msg={}", wechatV3RefundOrderCallBackQuery, e);
+            return;
+        }
+        
+        WechatJsapiRefundOrderCallBackResource callBackResource = JsonUtil.fromJson(decryptJson, WechatJsapiRefundOrderCallBackResource.class);
+        
+        //幂等加锁
+        String orderNo = callBackResource.getOutTradeNo();
+        if (!redisService.setNx(WechatPayConstant.REFUND_ORDER_ID_CALL_BACK + orderNo, String.valueOf(System.currentTimeMillis()), 10 * 1000L, false)) {
+            return;
+        }
+        
+        eleRefundOrderService.notifyDepositRefundOrder(callBackResource);
+    }
+}

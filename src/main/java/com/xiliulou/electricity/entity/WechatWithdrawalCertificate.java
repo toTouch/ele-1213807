@@ -34,4 +34,19 @@ public class WechatWithdrawalCertificate {
      * 上传时间
      */
     private Long uploadTime;
+    
+    /**
+     * 配置参数表主键id
+     */
+    private Integer payParamsId;
+    
+    /**
+     * 加盟商id
+     */
+    private Long franchiseeId;
+    
+    /**
+     * 删除标识
+     */
+    private Integer delFlag;
 }

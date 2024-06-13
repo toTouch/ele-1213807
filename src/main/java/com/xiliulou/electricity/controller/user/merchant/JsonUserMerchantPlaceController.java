@@ -35,5 +35,5 @@ public class JsonUserMerchantPlaceController {
         return R.ok(merchantService.queryPlaceListByUid(uid, employeeUid));
         
     }
-
+    
 }

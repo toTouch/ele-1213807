@@ -32,93 +32,85 @@ import java.util.Objects;
 @RestController
 @Slf4j
 public class JsonUserWithdrawController extends BaseController {
-	@Autowired
-	WithdrawRecordService withdrawRecordService;
-
-	@Autowired
-	RedisService redisService;
-
-	@Autowired
-	UserService userService;
-
-
-	//提现前校验
-	@PostMapping(value = "/user/withdraw/check")
-	public R check(@Validated @RequestBody CheckQuery query) {
-		TokenUser user = SecurityUtils.getUserInfo();
-		if (Objects.isNull(user)) {
-			log.error("bindBank  ERROR! not found user ");
-			return R.fail("LOCKER.10017", "没有查询到相关用户");
-		}
-
-		query.setUid(user.getUid());
-		return withdrawRecordService.check(query);
-	}
-
-
-	@PostMapping(value = "/user/withdraw")
-	public R withdraw(@Validated @RequestBody WithdrawQuery query) {
-		TokenUser user = SecurityUtils.getUserInfo();
-		if (Objects.isNull(user)) {
-			log.error("bindBank  ERROR! not found user ");
-			return R.fail("LOCKER.10017", "没有查询到相关用户");
-		}
-
-
-		//限频
-		Boolean getLockSuccess = redisService.setNx(CacheConstant.CACHE_WITHDRAW_USER_UID + user.getUid(), "1", 5L, false);
-		if (!getLockSuccess) {
-			return R.fail("PAY_TRANSFER.0007", "请求频繁,请稍后再试");
-		}
-
-		query.setUid(user.getUid());
-		return withdrawRecordService.withdraw(query);
-	}
-
-	/**
-	 * 用户获取提现记录
-	 */
-	@GetMapping("/user/bankcard/getWithdraw")
-	public R queryByUid(@RequestParam(value = "size", required = false) Long size,
-			@RequestParam(value = "offset", required = false) Long offset,
-			@RequestParam(value = "beginTime", required = false) Long beginTime,
-			@RequestParam(value = "endTime", required = false) Long endTime,
-			@RequestParam(value = "status", required = false) Integer status) {
-
-		if (Objects.isNull(size)) {
-			size = 10L;
-		}
-
-		if (Objects.isNull(offset) || offset < 0) {
-			offset = 0L;
-		}
-
-		Long uid = SecurityUtils.getUid();
-
-		List<Integer> statusList=new ArrayList<>();
-		if(Objects.nonNull(status)) {
-			statusList.add(status);
-		}
-
-		WithdrawRecordQuery withdrawRecordQuery = WithdrawRecordQuery.builder()
-				.offset(offset)
-				.size(size)
-				.uid(uid)
-				.beginTime(beginTime)
-				.endTime(endTime)
-				.status(statusList).build();
-
-		return withdrawRecordService.queryList(withdrawRecordQuery);
-	}
-
-	/**
-	 * 用户获取提现审核数量
-	 */
-	@GetMapping("/user/bankcard/getWithdrawCount")
-	public R getWithdrawCount() {
-		Long uid = SecurityUtils.getUid();
-		return withdrawRecordService.getWithdrawCount(uid);
-	}
-
-
+    
+    @Autowired
+    WithdrawRecordService withdrawRecordService;
+    
+    @Autowired
+    RedisService redisService;
+    
+    @Autowired
+    UserService userService;
+    
+    
+    //提现前校验
+    @PostMapping(value = "/user/withdraw/check")
+    public R check(@Validated @RequestBody CheckQuery query) {
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("bindBank  ERROR! not found user ");
+            return R.fail("LOCKER.10017", "没有查询到相关用户");
+        }
+        
+        query.setUid(user.getUid());
+        return withdrawRecordService.check(query);
+    }
+    
+    
+    @PostMapping(value = "/user/withdraw")
+    public R withdraw(@Validated @RequestBody WithdrawQuery query) {
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("bindBank  ERROR! not found user ");
+            return R.fail("LOCKER.10017", "没有查询到相关用户");
+        }
+        
+        //限频
+        Boolean getLockSuccess = redisService.setNx(CacheConstant.CACHE_WITHDRAW_USER_UID + user.getUid(), "1", 5L, false);
+        if (!getLockSuccess) {
+            return R.fail("PAY_TRANSFER.0007", "请求频繁,请稍后再试");
+        }
+        
+        query.setUid(user.getUid());
+        return withdrawRecordService.withdraw(query);
+    }
+    
+    /**
+     * 用户获取提现记录
+     */
+    @GetMapping("/user/bankcard/getWithdraw")
+    public R queryByUid(@RequestParam(value = "size", required = false) Long size, @RequestParam(value = "offset", required = false) Long offset,
+            @RequestParam(value = "beginTime", required = false) Long beginTime, @RequestParam(value = "endTime", required = false) Long endTime,
+            @RequestParam(value = "status", required = false) Integer status) {
+        
+        if (Objects.isNull(size)) {
+            size = 10L;
+        }
+        
+        if (Objects.isNull(offset) || offset < 0) {
+            offset = 0L;
+        }
+        
+        Long uid = SecurityUtils.getUid();
+        
+        List<Integer> statusList = new ArrayList<>();
+        if (Objects.nonNull(status)) {
+            statusList.add(status);
+        }
+        
+        WithdrawRecordQuery withdrawRecordQuery = WithdrawRecordQuery.builder().offset(offset).size(size).uid(uid).beginTime(beginTime).endTime(endTime).status(statusList).build();
+        
+        return withdrawRecordService.queryList(withdrawRecordQuery);
+    }
+    
+    /**
+     * 用户获取提现审核数量
+     */
+    @GetMapping("/user/bankcard/getWithdrawCount")
+    public R getWithdrawCount() {
+        Long uid = SecurityUtils.getUid();
+        return withdrawRecordService.getWithdrawCount(uid);
+    }
+    
+    
 }

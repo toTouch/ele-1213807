@@ -30,50 +30,41 @@ import java.util.Objects;
 @Slf4j
 @RestController
 public class JsonUserRentCarMemberCardOrderController extends BaseController {
-
+    
     @Autowired
     private CarMemberCardOrderService carMemberCardOrderService;
+    
     @Autowired
     private ElectricityCarModelService electricityCarModelService;
-
+    
     @GetMapping("/user/rentCar/memberCard/list")
-    public R getElectricityMemberCardPage(@RequestParam("size") Long size,
-                                          @RequestParam("offset") Long offset,
-                                          @RequestParam(value = "orderId", required = false) String orderId,
-                                          @RequestParam(value = "status", required = false) Integer status,
-                                          @RequestParam(value = "queryStartTime", required = false) Long queryStartTime,
-                                          @RequestParam(value = "queryEndTime", required = false) Long queryEndTime) {
-
+    public R getElectricityMemberCardPage(@RequestParam("size") Long size, @RequestParam("offset") Long offset, @RequestParam(value = "orderId", required = false) String orderId,
+            @RequestParam(value = "status", required = false) Integer status, @RequestParam(value = "queryStartTime", required = false) Long queryStartTime,
+            @RequestParam(value = "queryEndTime", required = false) Long queryEndTime) {
+        
         if (size < 0 || size > 50) {
             size = 10L;
         }
-
+        
         if (offset < 0) {
             offset = 0L;
         }
-
+        
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             log.error("ELE ERROR! not found user");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-
-        RentCarMemberCardOrderQuery memberCardOrderQuery = RentCarMemberCardOrderQuery.builder()
-                .offset(offset)
-                .size(size)
-                .uid(user.getUid())
-                .orderId(orderId)
-                .beginTime(queryStartTime)
-                .endTime(queryEndTime)
-                .tenantId(TenantContextHolder.getTenantId())
-                .status(status)
-                .build();
-
+        
+        RentCarMemberCardOrderQuery memberCardOrderQuery = RentCarMemberCardOrderQuery.builder().offset(offset).size(size).uid(user.getUid()).orderId(orderId)
+                .beginTime(queryStartTime).endTime(queryEndTime).tenantId(TenantContextHolder.getTenantId()).status(status).build();
+        
         return R.ok(carMemberCardOrderService.selectByPage(memberCardOrderQuery));
     }
-
+    
     /**
      * 购买租车套餐
+     *
      * @param carMemberCardOrderQuery
      * @param request
      * @return
@@ -82,7 +73,7 @@ public class JsonUserRentCarMemberCardOrderController extends BaseController {
     public R payRentCarMemberCard(@RequestBody @Validated CarMemberCardOrderQuery carMemberCardOrderQuery, HttpServletRequest request) {
         return returnTripleResult(carMemberCardOrderService.payRentCarMemberCard(carMemberCardOrderQuery, request));
     }
-
+    
     /**
      * 免押购买租车套餐
      */
@@ -90,21 +81,21 @@ public class JsonUserRentCarMemberCardOrderController extends BaseController {
     public R freeDepositPayCarMemberCard(@RequestBody @Validated FreeDepositCarMemberCardOrderQuery freeDepositCarMemberCardOrderQuery, HttpServletRequest request) {
         return returnTripleResult(carMemberCardOrderService.freeDepositPayCarMemberCard(freeDepositCarMemberCardOrderQuery, request));
     }
-
+    
     /**
      * 获取当前用户所属车辆型号租赁方式
      */
     @GetMapping("/user/rentCar/userCarModel/rentType")
-    public R userCarModel(){
+    public R userCarModel() {
         return returnTripleResult(electricityCarModelService.acquireUserCarModelInfo());
     }
-
-
+    
+    
     /**
      * 查询用户套餐详情
      */
     @GetMapping("/user/rentCar/memberCard/info")
-    public R userCarMemberCardInfo(){
+    public R userCarMemberCardInfo() {
         return returnTripleResult(carMemberCardOrderService.userCarMemberCardInfo());
     }
 }
