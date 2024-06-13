@@ -29,7 +29,6 @@ public class IcIdCommandIotHandler extends AbstractElectricityIotHandler {
 	private EleOtherConfigService eleOtherConfigService;
 
 	@Override
-	@Transactional(rollbackFor = Exception.class)
 	public void postHandleReceiveMsg(ElectricityCabinet electricityCabinet, ReceiverMessage receiverMessage) {
 
 		EleIccidVo eleIccidVo = JsonUtil.fromJson(receiverMessage.getOriginContent(), EleIccidVo.class);
