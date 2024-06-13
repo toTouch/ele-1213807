@@ -103,29 +103,24 @@ public class MerchantPlaceCabinetBindServiceImpl implements MerchantPlaceCabinet
         // 检测场地是否存在
         MerchantPlace merchantPlace = merchantPlaceService.queryByIdFromCache(placeCabinetBindSaveRequest.getPlaceId());
         if (Objects.isNull(merchantPlace) || !Objects.equals(merchantPlace.getTenantId(), tenantId)) {
-            log.error("place bind error, place not exists, placeId ={}, tenantId={}", placeCabinetBindSaveRequest.getPlaceId(), tenantId);
+            log.info("place bind info, place not exists, placeId ={}, tenantId={}", placeCabinetBindSaveRequest.getPlaceId(), tenantId);
             return Triple.of(false, "120209", "场地不存在");
         }
         
         // 检测用户的加盟商和场地的加盟商是否一致
         if (Objects.nonNull(placeCabinetBindSaveRequest.getBindFranchiseeId()) && !Objects.equals(placeCabinetBindSaveRequest.getBindFranchiseeId(), merchantPlace.getFranchiseeId())) {
-            log.error("place bind error, franchisee is different, placeId ={}, franchiseeId={}, bindFranchiseeId={}", placeCabinetBindSaveRequest.getPlaceId(), merchantPlace.getFranchiseeId(), placeCabinetBindSaveRequest.getBindFranchiseeId());
+            log.info("place bind info, franchisee is different, placeId ={}, franchiseeId={}, bindFranchiseeId={}", placeCabinetBindSaveRequest.getPlaceId(), merchantPlace.getFranchiseeId(), placeCabinetBindSaveRequest.getBindFranchiseeId());
             return Triple.of(false, "120209", "场地不存在");
         }
         
         // 检测开始时间是否小于上个月的月初
         Long lastMonthDaytime = getLastMonthDay();
         if (placeCabinetBindSaveRequest.getBindTime() < lastMonthDaytime) {
-            log.error("place bind error, bind time less than last month day time, placeId ={}, bindTime={}, lastMonthDaytime={}", placeCabinetBindSaveRequest.getPlaceId(),
-                    placeCabinetBindSaveRequest.getBindTime(), lastMonthDaytime);
-            
             return Triple.of(false, "120221", "开始时间只可选择当月（包含当前时间，不得晚于当前时间），及上月时间");
         }
         
         long currentTimeMillis = System.currentTimeMillis();
         if (placeCabinetBindSaveRequest.getBindTime() > currentTimeMillis) {
-            log.error("place bind error, bind time is after current time, placeId ={}, bindTime={}, currentTimeMillis={}", placeCabinetBindSaveRequest.getPlaceId(),
-                    placeCabinetBindSaveRequest.getBindTime(), currentTimeMillis);
             return Triple.of(false, "120222", "开始时间不得晚于当前时间");
         }
         
@@ -136,7 +131,7 @@ public class MerchantPlaceCabinetBindServiceImpl implements MerchantPlaceCabinet
         }
         
         if (!Objects.equals(electricityCabinet.getFranchiseeId(), merchantPlace.getFranchiseeId())) {
-            log.error("place bind error, franchisee is diff, placeId ={}, merchantFranchiseeId={}, cabinetFranchiseeId={}", placeCabinetBindSaveRequest.getPlaceId(),
+            log.info("place bind info, franchisee is diff, placeId ={}, merchantFranchiseeId={}, cabinetFranchiseeId={}", placeCabinetBindSaveRequest.getPlaceId(),
                     electricityCabinet.getFranchiseeId(), merchantPlace.getFranchiseeId());
             return Triple.of(false, "120224", "柜机所属加盟商和当前选中的加盟商不一致");
         }
@@ -147,7 +142,7 @@ public class MerchantPlaceCabinetBindServiceImpl implements MerchantPlaceCabinet
         List<MerchantPlaceCabinetBind> merchantPlaceCabinetBinds = this.queryList(queryModel);
         
         if (ObjectUtils.isNotEmpty(merchantPlaceCabinetBinds)) {
-            log.error("place bind error, cabinet is bind, placeId ={}, cabinetId={}, bindPlaceId={}", placeCabinetBindSaveRequest.getPlaceId(), electricityCabinet.getId(),
+            log.info("place bind error, cabinet is bind, placeId ={}, cabinetId={}, bindPlaceId={}", placeCabinetBindSaveRequest.getPlaceId(), electricityCabinet.getId(),
                     merchantPlaceCabinetBinds.get(0).getPlaceId());
             return Triple.of(false, "120225", "柜机已经被其他场地绑定");
         }
@@ -170,7 +165,7 @@ public class MerchantPlaceCabinetBindServiceImpl implements MerchantPlaceCabinet
         List<MerchantPlaceCabinetBind> unBindList = this.queryList(queryModel);
         if (ObjectUtils.isNotEmpty(unBindList)) {
             List<Long> ids = unBindList.stream().map(MerchantPlaceCabinetBind::getId).collect(Collectors.toList());
-            log.error("place bind error, bind time is overlap, placeId ={}, ids={}", placeCabinetBindSaveRequest.getPlaceId(), ids);
+            log.info("place bind info, bind time is overlap, placeId ={}, ids={}", placeCabinetBindSaveRequest.getPlaceId(), ids);
             return Triple.of(false, "120227", "您选择的开始时间与已有区间存在冲突，请重新选择");
         }
         
@@ -220,46 +215,38 @@ public class MerchantPlaceCabinetBindServiceImpl implements MerchantPlaceCabinet
         // 检测绑定记录是否存在
         MerchantPlaceCabinetBind cabinetBind = this.queryById(placeCabinetBindSaveRequest.getId());
         if (Objects.isNull(cabinetBind) || !Objects.equals(cabinetBind.getTenantId(), tenantId)) {
-            log.error("place un bind error, data not find, id ={}", placeCabinetBindSaveRequest.getId());
             return Triple.of(false, "120228", "绑定记录不存在");
         }
     
         MerchantPlace merchantPlace = merchantPlaceService.queryByIdFromCache(cabinetBind.getPlaceId());
         if (Objects.isNull(merchantPlace)) {
-            log.error("place un bind error, place not find, id={}, placeId={}", placeCabinetBindSaveRequest.getId(), cabinetBind.getPlaceId());
+            log.info("place un bind error, place not find, id={}, placeId={}", placeCabinetBindSaveRequest.getId(), cabinetBind.getPlaceId());
             return Triple.of(false, "120209", "场地不存在");
         }
         
         if (Objects.nonNull(placeCabinetBindSaveRequest.getBindFranchiseeId()) && !Objects.equals(placeCabinetBindSaveRequest.getBindFranchiseeId(), merchantPlace.getFranchiseeId())) {
-            log.error("place un bind error, franchisee is different, id={}, franchiseeId={}, bindFranchiseeId={}", placeCabinetBindSaveRequest.getId(), merchantPlace.getFranchiseeId(), placeCabinetBindSaveRequest.getBindFranchiseeId());
+            log.info("place un bind error, franchisee is different, id={}, franchiseeId={}, bindFranchiseeId={}", placeCabinetBindSaveRequest.getId(), merchantPlace.getFranchiseeId(), placeCabinetBindSaveRequest.getBindFranchiseeId());
             return Triple.of(false, "120209", "场地不存在");
         }
     
         if (Objects.equals(cabinetBind.getStatus(), MerchantPlaceConstant.UN_BIND)) {
-            log.error("place un bind error, cabinet already un bind, id ={}", placeCabinetBindSaveRequest.getId());
             return Triple.of(false, "120229", "柜机已经解绑了，不能重复解绑");
         }
         
         long currentTimeMillis = System.currentTimeMillis();
         // 检测结束时间是否小于系统当前时间
         if (placeCabinetBindSaveRequest.getUnBindTime() > currentTimeMillis) {
-            log.error("place un bind error, cabinet already un bind, id ={}, unBindTime={},curTime={}", placeCabinetBindSaveRequest.getId(),
-                    placeCabinetBindSaveRequest.getUnBindTime(), currentTimeMillis);
             return Triple.of(false, "120230", "结束时间不能晚于当前时间");
         }
         
         // 检测结束时间是否小于绑定时间
         if (placeCabinetBindSaveRequest.getUnBindTime() < cabinetBind.getBindTime()) {
-            log.error("place un bind error, cabinet already un bind, id ={}, unBindTime={},bindTime={}", placeCabinetBindSaveRequest.getId(),
-                    placeCabinetBindSaveRequest.getUnBindTime(), cabinetBind.getBindTime());
             return Triple.of(false, "120231", "结束时间不能早于开始时间");
         }
         
         // 检测开始时间是否小于上个月的月初
         Long lastMonthDaytime = getLastMonthDay();
         if (placeCabinetBindSaveRequest.getUnBindTime() < lastMonthDaytime) {
-            log.error("place bind error, bind time less than last month day time, placeId ={}, unBindTime={}, lastMonthDaytime={}", placeCabinetBindSaveRequest.getPlaceId(),
-                    placeCabinetBindSaveRequest.getUnBindTime(), lastMonthDaytime);
             return Triple.of(false, "120221", "开始时间只可选择当月（包含当前时间，不得晚于当前时间），及上月时间");
         }
         
@@ -273,7 +260,7 @@ public class MerchantPlaceCabinetBindServiceImpl implements MerchantPlaceCabinet
         List<MerchantPlaceCabinetBind> unBindList = this.queryList(queryModel);
         if (ObjectUtils.isNotEmpty(unBindList)) {
             List<Long> ids = unBindList.stream().map(MerchantPlaceCabinetBind::getId).collect(Collectors.toList());
-            log.error("place un bind error, un bind time is overlap, id ={}, ids={}", placeCabinetBindSaveRequest.getId(), ids);
+            log.info("place un bind info, un bind time is overlap, id ={}, ids={}", placeCabinetBindSaveRequest.getId(), ids);
             return Triple.of(false, "120232", "您选择的开始时间与已有区间存在冲突，请重新选择");
         }
         
@@ -301,18 +288,18 @@ public class MerchantPlaceCabinetBindServiceImpl implements MerchantPlaceCabinet
         // 检测绑定记录是否存在
         MerchantPlaceCabinetBind cabinetBind = this.queryById(id);
         if (Objects.isNull(cabinetBind) || !Objects.equals(cabinetBind.getTenantId(), tenantId)) {
-            log.error("place bind delete error, data not find, id ={}", id);
+            log.info("place bind delete info, data not find, id ={}", id);
             return Triple.of(false, "120228", "绑定记录不存在");
         }
     
         MerchantPlace merchantPlace = merchantPlaceService.queryByIdFromCache(cabinetBind.getPlaceId());
         if (Objects.isNull(merchantPlace)) {
-            log.error("place bind remove error, place not find, id={}, placeId={}", id, cabinetBind.getPlaceId());
+            log.info("place bind remove info, place not find, id={}, placeId={}", id, cabinetBind.getPlaceId());
             return Triple.of(false, "120209", "场地不存在");
         }
     
         if (Objects.nonNull(bindFranchiseeId) && !Objects.equals(bindFranchiseeId, merchantPlace.getFranchiseeId())) {
-            log.error("place bind remove error, franchisee is different, id={}, franchiseeId={}, bindFranchiseeId={}", id, merchantPlace.getFranchiseeId(), bindFranchiseeId);
+            log.info("place bind remove info, franchisee is different, id={}, franchiseeId={}, bindFranchiseeId={}", id, merchantPlace.getFranchiseeId(), bindFranchiseeId);
             return Triple.of(false, "120209", "场地不存在");
         }
         
@@ -320,7 +307,6 @@ public class MerchantPlaceCabinetBindServiceImpl implements MerchantPlaceCabinet
     
         // 检测创建时间是否在当前本月 如果是本月则不允许进行删除
         if (!DateUtils.isSameMonth(cabinetBind.getCreateTime(), currentTimeMillis)) {
-            log.error("place bind delete error, data not find, id ={}", id);
             return Triple.of(false, "120236", "仅可删除本月内创建的记录");
         }
         
@@ -343,12 +329,12 @@ public class MerchantPlaceCabinetBindServiceImpl implements MerchantPlaceCabinet
         // 检测查询的绑定记录的场地是否存在
         MerchantPlace place = merchantPlaceService.queryByIdFromCache(merchantQueryModel.getPlaceId());
         if (Objects.isNull(place)) {
-            log.error("place bind count error, place not find, placeId={}", placeCabinetPageRequest.getPlaceId());
+            log.info("place bind count warn, place not find, placeId={}", placeCabinetPageRequest.getPlaceId());
             return NumberConstant.ZERO;
         }
     
         if (Objects.nonNull(placeCabinetPageRequest.getBindFranchiseeId()) && !Objects.equals(placeCabinetPageRequest.getBindFranchiseeId(), place.getFranchiseeId())) {
-            log.error("place bind count error, franchisee is different, placeId={}, bindFranchiseeId={}", placeCabinetPageRequest.getPlaceId(), placeCabinetPageRequest.getBindFranchiseeId());
+            log.info("place bind count warn, franchisee is different, placeId={}, bindFranchiseeId={}", placeCabinetPageRequest.getPlaceId(), placeCabinetPageRequest.getBindFranchiseeId());
             return NumberConstant.ZERO;
         }
         
@@ -366,12 +352,12 @@ public class MerchantPlaceCabinetBindServiceImpl implements MerchantPlaceCabinet
         // 检测查询的绑定记录的场地是否存在
         MerchantPlace place = merchantPlaceService.queryByIdFromCache(merchantQueryModel.getPlaceId());
         if (Objects.isNull(place)) {
-            log.error("place bind list error, place not find, placeId={}", placeCabinetPageRequest.getPlaceId());
+            log.info("place bind list warn, place not find, placeId={}", placeCabinetPageRequest.getPlaceId());
             return Collections.emptyList();
         }
         
         if (Objects.nonNull(placeCabinetPageRequest.getBindFranchiseeId()) && !Objects.equals(placeCabinetPageRequest.getBindFranchiseeId(), place.getFranchiseeId())) {
-            log.error("place bind list error, franchisee is different, placeId={}, bindFranchiseeId={}", placeCabinetPageRequest.getPlaceId(), placeCabinetPageRequest.getBindFranchiseeId());
+            log.info("place bind list warn, franchisee is different, placeId={}, bindFranchiseeId={}", placeCabinetPageRequest.getPlaceId(), placeCabinetPageRequest.getBindFranchiseeId());
             return Collections.emptyList();
         }
         

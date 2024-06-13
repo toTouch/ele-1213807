@@ -111,7 +111,7 @@ public class JsonMerchantPlaceCabinetBindController extends BaseController {
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
             List<Long> franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
             if (org.apache.commons.collections.CollectionUtils.isEmpty(franchiseeIds)) {
-                log.error("merchant cabinet un bind  error! franchisee is empty, uid={}", user.getUid());
+                log.warn("merchant cabinet un bind warn! franchisee is empty, uid={}", user.getUid());
                 return R.fail("ELECTRICITY.0001", "未找到用户");
             }
         
@@ -148,7 +148,7 @@ public class JsonMerchantPlaceCabinetBindController extends BaseController {
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
             List<Long> franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
             if (org.apache.commons.collections.CollectionUtils.isEmpty(franchiseeIds)) {
-                log.error("merchant cabinet bind delete  error! franchisee is empty, uid={}", user.getUid());
+                log.warn("merchant cabinet bind delete warn! franchisee is empty, uid={}", user.getUid());
                 return R.fail("ELECTRICITY.0001", "未找到用户");
             }
     
@@ -184,7 +184,7 @@ public class JsonMerchantPlaceCabinetBindController extends BaseController {
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
             List<Long> franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
             if (org.apache.commons.collections.CollectionUtils.isEmpty(franchiseeIds)) {
-                log.error("merchant cabinet page count error! franchisee is empty, uid={}", user.getUid());
+                log.warn("merchant cabinet page count warn! franchisee is empty, uid={}", user.getUid());
                 return R.fail("ELECTRICITY.0001", "未找到用户");
             }
         
@@ -226,7 +226,7 @@ public class JsonMerchantPlaceCabinetBindController extends BaseController {
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
             List<Long> franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
             if (org.apache.commons.collections.CollectionUtils.isEmpty(franchiseeIds)) {
-                log.error("merchant cabinet page error! franchisee is empty, uid={}", user.getUid());
+                log.warn("merchant cabinet page warn! franchisee is empty, uid={}", user.getUid());
                 return R.fail("ELECTRICITY.0001", "未找到用户");
             }
         
