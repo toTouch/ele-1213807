@@ -55,4 +55,6 @@ public class UserCouponQuery {
     private List<Long> storeIds;
 
     private Integer superposition;
+    
+    private Long franchiseeId;
 }

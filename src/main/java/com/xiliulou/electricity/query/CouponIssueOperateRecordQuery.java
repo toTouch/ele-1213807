@@ -3,6 +3,8 @@ package com.xiliulou.electricity.query;
 import lombok.Builder;
 import lombok.Data;
 
+import java.util.List;
+
 /**
  * @author: hrp
  * @Date: 2022/08/19 16:02
@@ -32,5 +34,7 @@ public class CouponIssueOperateRecordQuery {
      *             4--已核销， 5--使用中， 6--已失效
      */
     private Integer status;
+    
+    private List<Long> franchiseeIds;
 
 }

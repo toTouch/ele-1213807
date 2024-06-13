@@ -22,6 +22,9 @@
                     #{id}
                 </foreach>
             </if>
+            <if test="franchiseeId != null ">
+                and franchisee_id = #{franchiseeId}
+            </if>
         </where>
         order by id desc
         <if test="offset != null">
@@ -42,6 +45,9 @@
             </if>
             <if test="query.discountType != null">
                 and discount_type = #{query.discountType}
+            </if>
+            <if test="query.franchiseeId!=null">
+                and franchisee_id = #{query.franchiseeId}
             </if>
             <if test="query.franchiseeIds!=null">
                 and franchisee_id in
@@ -81,6 +87,9 @@
             </if>
             <if test="query.discountType != null">
                 and discount_type = #{query.discountType}
+            </if>
+            <if test="query.franchiseeId!=null">
+                and franchisee_id = #{query.franchiseeId}
             </if>
             <if test="query.franchiseeIds!=null">
                 and franchisee_id in

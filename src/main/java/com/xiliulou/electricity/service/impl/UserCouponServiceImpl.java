@@ -35,6 +35,7 @@ import com.xiliulou.electricity.utils.OperateRecordUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.BatchSendCouponVO;
 import com.xiliulou.electricity.vo.BatteryMemberCardVO;
+import com.xiliulou.electricity.vo.CouponVO;
 import com.xiliulou.electricity.vo.UserCouponVO;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
@@ -50,6 +51,7 @@ import javax.annotation.Resource;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 /**
  * 优惠券表(TCoupon)表服务实现类
@@ -425,9 +427,9 @@ public class UserCouponServiceImpl implements UserCouponService {
         userCouponQuery.setUid(uid);
         userCouponQuery.setTypeList(typeList);
         List<UserCouponVO> userCouponVOList = userCouponMapper.queryList(userCouponQuery);
-        
+    
         //若是不可叠加的优惠券且指定了使用套餐,则将对应的套餐信息设置到优惠券中
-        for (UserCouponVO userCouponVO : userCouponVOList) {
+        userCouponVOList = userCouponVOList.stream().filter(userCouponVO -> isSameFranchisee(userCouponVO, userInfo)).peek(userCouponVO -> {
             if (Coupon.SUPERPOSITION_NO.equals(userCouponVO.getSuperposition()) && SpecificPackagesEnum.SPECIFIC_PACKAGES_YES.getCode()
                     .equals(userCouponVO.getSpecificPackages())) {
                 Long couponId = userCouponVO.getCouponId().longValue();
@@ -435,9 +437,23 @@ public class UserCouponServiceImpl implements UserCouponService {
                 userCouponVO.setCarRentalPackages(getCarBatteryPackages(couponId, PackageTypeEnum.PACKAGE_TYPE_CAR_RENTAL.getCode()));
                 userCouponVO.setCarWithBatteryPackages(getCarBatteryPackages(couponId, PackageTypeEnum.PACKAGE_TYPE_CAR_BATTERY.getCode()));
             }
-        }
+        }).collect(Collectors.toList());
         
         return R.ok(userCouponVOList);
+    }
+    
+    private boolean isSameFranchisee(UserCouponVO userCouponVO, UserInfo userInfo) {
+        Coupon coupon = couponService.queryByIdFromCache(userCouponVO.getCouponId());
+        if (Objects.isNull(coupon)) {
+            return false;
+        }
+        
+        return isSameFranchisee(coupon, userInfo);
+    }
+    
+    private boolean isSameFranchisee(Coupon coupon, UserInfo userInfo) {
+        return !Objects.nonNull(coupon.getFranchiseeId()) || !Objects.nonNull(userInfo.getFranchiseeId()) || Objects.equals(coupon.getFranchiseeId().longValue(),
+                userInfo.getFranchiseeId());
     }
     
     private List<BatteryMemberCardVO> getBatteryPackages(Long couponId) {
@@ -531,6 +547,17 @@ public class UserCouponServiceImpl implements UserCouponService {
         if (Objects.isNull(shareActivityRecord)) {
             return R.fail("ELECTRICITY.00103", "该用户邀请好友不够，领劵失败");
         }
+    
+        Coupon coupon = couponService.queryByIdFromCache(couponId);
+        if (Objects.isNull(coupon)) {
+            log.error("getShareCoupon  ERROR! not found coupon,couponId={},uid={}", couponId, user.getUid());
+            return R.fail("ELECTRICITY.0085", "未找到优惠券");
+        }
+    
+        if (!isSameFranchisee(coupon, userInfo)) {
+            log.error("getShareCoupon  ERROR! not same franchisee,couponId={},uid={}", couponId, user.getUid());
+            return R.fail("120126", "所属加盟商不一致，无法领取优惠券");
+        }
         
         if (Objects.equals(shareActivity.getReceiveType(), ShareActivity.RECEIVE_TYPE_CYCLE)) {
             //循环领取
@@ -542,12 +569,6 @@ public class UserCouponServiceImpl implements UserCouponService {
                         return R.fail("ELECTRICITY.00103", "该用户邀请好友不够，领劵失败");
                     } else {
                         //领劵
-                        Coupon coupon = couponService.queryByIdFromCache(couponId);
-                        if (Objects.isNull(coupon)) {
-                            log.error("getShareCoupon  ERROR! not found coupon,couponId={},uid={}", couponId, user.getUid());
-                            return R.fail("ELECTRICITY.0085", "未找到优惠券");
-                        }
-                        
                         //                        UserCoupon oldUserCoupon = queryByActivityIdAndCouponId(activityId, shareActivityRule.getId(), couponId, user.getUid());
                         //                        if (Objects.nonNull(oldUserCoupon)) {
                         //                            continue;
@@ -578,12 +599,6 @@ public class UserCouponServiceImpl implements UserCouponService {
                         return R.fail("ELECTRICITY.00103", "该用户邀请好友不够，领劵失败");
                     } else {
                         //领劵
-                        Coupon coupon = couponService.queryByIdFromCache(couponId);
-                        if (Objects.isNull(coupon)) {
-                            log.error("getShareCoupon  ERROR! not found coupon,couponId={},uid={}", couponId, user.getUid());
-                            return R.fail("ELECTRICITY.0085", "未找到优惠券");
-                        }
-                        
                         UserCoupon oldUserCoupon = queryByActivityIdAndCouponId(activityId, shareActivityRule.getId(), couponId, user.getUid());
                         if (Objects.nonNull(oldUserCoupon)) {
                             continue;
@@ -681,18 +696,12 @@ public class UserCouponServiceImpl implements UserCouponService {
     }
     
     @Override
-    public R adminBatchReleaseV2(CouponBatchSendWithPhonesRequest request) {
+    public R adminBatchReleaseV2(CouponBatchSendWithPhonesRequest request, Long operateUid, Long franchiseeId) {
         Set<String> phones = new HashSet<>(JsonUtil.fromJsonArray(request.getJsonPhones(), String.class));
         if (CollectionUtils.isEmpty(phones)) {
             return R.fail("ELECTRICITY.0007", "手机号不可以为空");
         }
         
-        //增加优惠劵发放人Id
-        Long operateUid = SecurityUtils.getUid();
-        if (Objects.isNull(operateUid)) {
-            log.error("ELECTRICITY  ERROR! not found user ");
-            return R.fail("ELECTRICITY.0001", "未找到用户");
-        }
         User operateUser = userService.queryByUidFromCache(operateUid);
         if (Objects.isNull(operateUser)) {
             log.error("ELECTRICITY  ERROR! not found user ");
@@ -706,18 +715,30 @@ public class UserCouponServiceImpl implements UserCouponService {
             log.error("Coupon  ERROR! not found coupon ! couponId={} ", request.getCouponId());
             return R.fail("ELECTRICITY.0085", "未找到优惠券");
         }
+    
+        if (Objects.nonNull(franchiseeId)) {
+            if (Objects.isNull(coupon.getFranchiseeId()) || !Objects.equals(franchiseeId, coupon.getFranchiseeId().longValue())) {
+                return R.fail("ELECTRICITY.0085", "未找到优惠券");
+            }
+        }
         
         ConcurrentHashSet<String> notExistsPhone = new ConcurrentHashSet<>();
         ConcurrentHashSet<User> existsPhone = new ConcurrentHashSet<>();
-        
+    
         phones.parallelStream().forEach(e -> {
             User user = userService.queryByUserPhone(e, User.TYPE_USER_NORMAL_WX_PRO, tenantId);
             if (Objects.isNull(user)) {
                 notExistsPhone.add(e);
             } else {
                 UserInfo userInfo = userInfoService.queryByUidFromCache(user.getUid());
-                user.setName(userInfo.getName());
-                existsPhone.add(user);
+                if (Objects.nonNull(userInfo)) {
+                    user.setName(userInfo.getName());
+                    if (Objects.nonNull(coupon.getFranchiseeId()) && !Objects.equals(coupon.getFranchiseeId().longValue(), userInfo.getFranchiseeId())) {
+                        notExistsPhone.add(e);
+                    } else {
+                        existsPhone.add(user);
+                    }
+                }
             }
         });
         
@@ -782,10 +803,12 @@ public class UserCouponServiceImpl implements UserCouponService {
             saveCoupon.setDelFlag(UserCoupon.DEL_NORMAL);
             saveCoupon.setVerifiedUid(UserCoupon.INITIALIZE_THE_VERIFIER);
             saveCoupon.setTenantId(user.getTenantId());
+            saveCoupon.setFranchiseeId(coupon.getFranchiseeId());
             userCouponList.add(saveCoupon);
-            
+    
             CouponIssueOperateRecord record = CouponIssueOperateRecord.builder().couponId(coupon.getId()).tenantId(user.getTenantId()).createTime(System.currentTimeMillis())
-                    .updateTime(System.currentTimeMillis()).uid(user.getUid()).name(user.getName()).operateName(name).issuedUid(operateUid).phone(user.getPhone()).build();
+                    .updateTime(System.currentTimeMillis()).uid(user.getUid()).name(user.getName()).operateName(name).issuedUid(operateUid).phone(user.getPhone())
+                    .franchiseeId(coupon.getFranchiseeId().longValue()).build();
             couponIssueOperateRecords.add(record);
             size++;
         }

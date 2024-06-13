@@ -23,6 +23,7 @@ import com.xiliulou.electricity.validator.UpdateGroup;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.CollectionUtils;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -60,8 +61,8 @@ public class JsonAdminCouponController extends BaseController {
      * 搜索
      */
     @GetMapping("/admin/coupon/search")
-    public R page(@RequestParam("size") long size, @RequestParam("offset") long offset,
-                  @RequestParam(value = "name", required = false) String name) {
+    public R page(@RequestParam("size") long size, @RequestParam("offset") long offset, @RequestParam(value = "name", required = false) String name,
+            @RequestParam(value = "franchiseeId", required = false) Long franchiseeId) {
         if (size < 0 || size > 50) {
             size = 10L;
         }
@@ -75,6 +76,7 @@ public class JsonAdminCouponController extends BaseController {
                 .offset(offset)
                 .tenantId(TenantContextHolder.getTenantId())
                 .name(name)
+                .franchiseeId(franchiseeId)
                 .build();
 
         return R.ok(couponService.search(query));
@@ -88,11 +90,11 @@ public class JsonAdminCouponController extends BaseController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
+        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE) || Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE))) {
             return R.ok();
         }
 
-        return couponService.insert(couponQuery);
+        return couponService.insert(couponQuery, user);
     }
 
     //修改--暂时无此功能
@@ -103,12 +105,22 @@ public class JsonAdminCouponController extends BaseController {
         if (Objects.isNull(user)) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-
-        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
+    
+        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE) || Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE))) {
             return R.ok();
         }
+    
+        Long franchiseeId = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            List<Long> franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if (CollectionUtils.isEmpty(franchiseeIds)) {
+                return R.ok();
+            }
+    
+            franchiseeId = franchiseeIds.get(0);
+        }
 
-        return couponService.update(couponQuery);
+        return couponService.update(couponQuery, franchiseeId);
     }
 
     /**
@@ -123,11 +135,21 @@ public class JsonAdminCouponController extends BaseController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
+        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE) || Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE))) {
             return R.ok();
         }
+    
+        Long franchiseeId = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            List<Long> franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if (org.apache.commons.collections.CollectionUtils.isEmpty(franchiseeIds)) {
+                return R.ok(Collections.EMPTY_LIST);
+            }
+        
+            franchiseeId = franchiseeIds.get(0);
+        }
 
-        return returnTripleResult(couponService.findCouponById(id));
+        return returnTripleResult(couponService.findCouponById(id, franchiseeId));
     }
 
     @DeleteMapping("/admin/coupon/delete/{id}")
@@ -138,11 +160,21 @@ public class JsonAdminCouponController extends BaseController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
+        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE) || Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE))) {
             return R.ok();
         }
+    
+        Long franchiseeId = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            List<Long> franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if (CollectionUtils.isEmpty(franchiseeIds)) {
+                return R.ok();
+            }
+    
+            franchiseeId = franchiseeIds.get(0);
+        }
 
-        return returnTripleResult(couponService.deleteById(id));
+        return returnTripleResult(couponService.deleteById(id, franchiseeId));
     }
 
     //列表查询
@@ -157,30 +189,30 @@ public class JsonAdminCouponController extends BaseController {
         if (size < 0 || size > 50) {
             size = 10L;
         }
-
+    
         if (offset < 0) {
             offset = 0L;
         }
-
+    
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-
-        //if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
-        //    return R.ok(Collections.emptyList());
-        //}
-
-        CouponQuery couponQuery = CouponQuery.builder()
-                .offset(offset)
-                .size(size)
-                .name(name)
-                .discountType(discountType)
-                .franchiseeId(franchiseeId)
-//                .franchiseeIds(franchiseeIds)
-                .applyType(applyType)
-                .superposition(superposition)
-                .tenantId(TenantContextHolder.getTenantId()).build();
+    
+        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE) || Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE))) {
+            return R.ok(Collections.emptyList());
+        }
+    
+        List<Long> franchiseeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if (CollectionUtils.isEmpty(franchiseeIds)) {
+                return R.ok(Collections.emptyList());
+            }
+        }
+    
+        CouponQuery couponQuery = CouponQuery.builder().offset(offset).size(size).name(name).discountType(discountType).franchiseeId(franchiseeId).applyType(applyType)
+                .superposition(superposition).tenantId(TenantContextHolder.getTenantId()).franchiseeIds(franchiseeIds).build();
         return couponService.queryCouponList(couponQuery);
     }
 
@@ -199,26 +231,27 @@ public class JsonAdminCouponController extends BaseController {
         if (Objects.isNull(user)) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-
-        //if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
-        //    return R.ok(NumberConstant.ZERO);
-        //}
-
-        CouponQuery couponQuery = CouponQuery.builder()
-                .name(name)
-                .discountType(discountType)
-                .franchiseeId(franchiseeId)
-//                .franchiseeIds(franchiseeIds)
-                .applyType(applyType)
-                .superposition(superposition)
-                .tenantId(tenantId).build();
+    
+        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE) || Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE))) {
+            return R.ok(NumberConstant.ZERO);
+        }
+    
+        List<Long> franchiseeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if (CollectionUtils.isEmpty(franchiseeIds)) {
+                return R.ok(NumberConstant.ZERO);
+            }
+        }
+    
+        CouponQuery couponQuery = CouponQuery.builder().name(name).discountType(discountType).franchiseeId(franchiseeId).applyType(applyType).superposition(superposition)
+                .tenantId(tenantId).franchiseeIds(franchiseeIds).build();
         return couponService.queryCount(couponQuery);
     }
 
     @GetMapping(value = "/admin/coupon/queryPackages")
-    public R queryPackagesByFranchisee(@RequestParam(value = "offset") Long offset,
-                                         @RequestParam(value = "size") Long size,
-                                         @RequestParam(value = "type",  required = true) Integer type) {
+    public R queryPackagesByFranchisee(@RequestParam(value = "offset") Long offset, @RequestParam(value = "size") Long size,
+            @RequestParam(value = "type", required = true) Integer type, @RequestParam(value = "franchiseeId", required = false) Long franchiseeId) {
 
         List<Integer> packageTypes = Arrays.stream(PackageTypeEnum.values()).map(PackageTypeEnum::getCode).collect(Collectors.toList());
         if(!packageTypes.contains(type)){
@@ -231,7 +264,7 @@ public class JsonAdminCouponController extends BaseController {
                     .size(size)
                     .delFlag(BatteryMemberCard.DEL_NORMAL)
                     .status(BatteryMemberCard.STATUS_UP)
-                    .tenantId(TenantContextHolder.getTenantId()).build();
+                    .tenantId(TenantContextHolder.getTenantId()).franchiseeId(franchiseeId).build();
             return R.ok(batteryMemberCardService.selectByQuery(query));
         }else{
             CarRentalPackageQryModel qryModel = new CarRentalPackageQryModel();
@@ -239,6 +272,7 @@ public class JsonAdminCouponController extends BaseController {
             qryModel.setSize(size.intValue());
             qryModel.setTenantId(TenantContextHolder.getTenantId());
             qryModel.setStatus(UpDownEnum.UP.getCode());
+            qryModel.setFranchiseeId(franchiseeId.intValue());
 
             if(PackageTypeEnum.PACKAGE_TYPE_CAR_BATTERY.getCode().equals(type)){
                 qryModel.setType(RentalPackageTypeEnum.CAR_BATTERY.getCode());
@@ -252,7 +286,8 @@ public class JsonAdminCouponController extends BaseController {
     }
 
     @GetMapping(value = "/admin/coupon/queryPackagesCount")
-    public R getElectricityUsablePackageCount(@RequestParam(value = "type",  required = true) Integer type) {
+    public R getElectricityUsablePackageCount(@RequestParam(value = "type", required = true) Integer type,
+            @RequestParam(value = "franchiseeId", required = false) Long franchiseeId) {
 
         List<Integer> packageTypes = Arrays.stream(PackageTypeEnum.values()).map(PackageTypeEnum::getCode).collect(Collectors.toList());
         if(!packageTypes.contains(type)){
@@ -263,12 +298,13 @@ public class JsonAdminCouponController extends BaseController {
             BatteryMemberCardQuery query = BatteryMemberCardQuery.builder()
                     .delFlag(BatteryMemberCard.DEL_NORMAL)
                     .status(BatteryMemberCard.STATUS_UP)
-                    .tenantId(TenantContextHolder.getTenantId()).build();
+                    .tenantId(TenantContextHolder.getTenantId()).franchiseeId(franchiseeId).build();
             return R.ok(batteryMemberCardService.selectByPageCount(query));
         }else{
             CarRentalPackageQryModel qryModel = new CarRentalPackageQryModel();
             qryModel.setTenantId(TenantContextHolder.getTenantId());
             qryModel.setStatus(UpDownEnum.UP.getCode());
+            qryModel.setFranchiseeId(franchiseeId.intValue());
 
             if(PackageTypeEnum.PACKAGE_TYPE_CAR_BATTERY.getCode().equals(type)){
                 qryModel.setType(RentalPackageTypeEnum.CAR_BATTERY.getCode());

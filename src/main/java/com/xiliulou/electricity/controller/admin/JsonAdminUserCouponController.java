@@ -12,6 +12,7 @@ import com.xiliulou.electricity.service.UserDataScopeService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.security.bean.TokenUser;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -50,7 +51,8 @@ public class JsonAdminUserCouponController {
                        @RequestParam(value = "status", required = false) Integer status,
                        @RequestParam(value = "discountType", required = false) Integer discountType,
                        @RequestParam(value = "phone", required = false) String phone,
-                       @RequestParam(value = "superposition", required = false) Integer superposition) {
+                       @RequestParam(value = "superposition", required = false) Integer superposition,
+                       @RequestParam(value = "franchiseeId", required = false) Long franchiseeId) {
         if (size < 0 || size > 50) {
             size = 10L;
         }
@@ -95,7 +97,8 @@ public class JsonAdminUserCouponController {
                 .discountType(discountType)
                 .storeIds(storeIds)
                 .franchiseeIds(franchiseeIds)
-                .tenantId(TenantContextHolder.getTenantId()).build();
+                .tenantId(TenantContextHolder.getTenantId())
+                .franchiseeId(franchiseeId).build();
         return userCouponService.queryList(userCouponQuery);
     }
 
@@ -110,7 +113,8 @@ public class JsonAdminUserCouponController {
                         @RequestParam(value = "status", required = false) Integer status,
                         @RequestParam(value = "discountType", required = false) Integer discountType,
                         @RequestParam(value = "phone", required = false) String phone,
-                        @RequestParam(value = "superposition", required = false) Integer superposition) {
+                        @RequestParam(value = "superposition", required = false) Integer superposition,
+                        @RequestParam(value = "franchiseeId", required = false) Long franchiseeId) {
 
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
@@ -146,7 +150,8 @@ public class JsonAdminUserCouponController {
                 .phone(phone)
                 .storeIds(storeIds)
                 .franchiseeIds(franchiseeIds)
-                .tenantId(TenantContextHolder.getTenantId()).build();
+                .tenantId(TenantContextHolder.getTenantId())
+                .franchiseeId(franchiseeId).build();
         return userCouponService.queryCount(userCouponQuery);
     }
 
@@ -162,7 +167,26 @@ public class JsonAdminUserCouponController {
     @PostMapping(value = "/admin/userCoupon/batchReleaseV2")
     @Log(title = "批量发放优惠券V2")
     public R batchReleaseV2(@RequestBody @Validated CouponBatchSendWithPhonesRequest request) {
-        return userCouponService.adminBatchReleaseV2(request);
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+    
+        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE) || Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE))) {
+            return R.ok();
+        }
+    
+        Long franchiseeId = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            List<Long> franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if (CollectionUtils.isEmpty(franchiseeIds)) {
+                return R.ok();
+            }
+    
+            franchiseeId = franchiseeIds.get(0);
+        }
+        
+        return userCouponService.adminBatchReleaseV2(request, user.getUid(), franchiseeId);
     }
 
     @GetMapping(value = "/admin/userCoupon/check/send/finish")

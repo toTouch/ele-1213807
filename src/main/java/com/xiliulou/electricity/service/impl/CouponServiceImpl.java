@@ -7,7 +7,6 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.CommonConstant;
-import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.entity.car.CarCouponNamePO;
 import com.xiliulou.electricity.entity.car.CarRentalPackagePo;
@@ -22,22 +21,20 @@ import com.xiliulou.electricity.query.CouponQuery;
 import com.xiliulou.electricity.service.BatteryMemberCardService;
 import com.xiliulou.electricity.service.CouponActivityPackageService;
 import com.xiliulou.electricity.service.CouponService;
+import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.NewUserActivityService;
 import com.xiliulou.electricity.service.OldUserActivityService;
 import com.xiliulou.electricity.service.ShareActivityRuleService;
 import com.xiliulou.electricity.service.UserCouponService;
-import com.xiliulou.electricity.service.asset.AssertPermissionService;
 import com.xiliulou.electricity.service.car.CarRentalPackageService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.OperateRecordUtil;
-import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.BatteryMemberCardVO;
 import com.xiliulou.electricity.vo.SearchVo;
 import com.xiliulou.electricity.vo.activity.CouponActivityVO;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,6 +46,7 @@ import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 /**
  * 优惠券规则表(TCoupon)表服务实现类
@@ -90,9 +88,8 @@ public class CouponServiceImpl implements CouponService {
     @Autowired
     BatteryMemberCardService batteryMemberCardService;
     
-    @Autowired
-    private AssertPermissionService assertPermissionService;
-    
+    @Resource
+    private FranchiseeService franchiseeService;
     
     /**
      * 通过ID查询单条数据从缓存
@@ -132,46 +129,23 @@ public class CouponServiceImpl implements CouponService {
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public R insert(CouponQuery couponQuery) {
-        //创建账号
-        TokenUser user = SecurityUtils.getUserInfo();
-        if (Objects.isNull(user)) {
-            log.error("Coupon  ERROR! not found user ");
-            return R.fail("ELECTRICITY.0001", "未找到用户");
-        }
-        
+    public R insert(CouponQuery couponQuery, TokenUser user) {
         //租户
         Integer tenantId = TenantContextHolder.getTenantId();
         couponQuery.setTenantId(tenantId);
-        
-        //        //判断参数
-        //        if (Objects.equals(user.getType(), User.TYPE_USER_FRANCHISEE)) {
-        //            coupon.setType(Coupon.TYPE_FRANCHISEE);
-        //            if (Objects.isNull(coupon.getFranchiseeId())) {
-        //                log.error("Coupon  ERROR! not found FranchiseeId ");
-        //                return R.fail("ELECTRICITY.0094", "加盟商不能为空");
-        //            }
-        //        } else {
-        //            if (Objects.equals(coupon.getType(), Coupon.TYPE_FRANCHISEE)) {
-        //                if (Objects.isNull(coupon.getFranchiseeId())) {
-        //                    log.error("Coupon  ERROR! not found FranchiseeId ");
-        //                    return R.fail("ELECTRICITY.0094", "加盟商不能为空");
-        //                }
-        //            }
-        //        }
         
         //判断参数
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
             couponQuery.setType(Coupon.TYPE_FRANCHISEE);
             if (Objects.isNull(couponQuery.getFranchiseeId())) {
-                log.error("Coupon  ERROR! not found FranchiseeId ");
-                return R.fail("ELECTRICITY.0094", "加盟商不能为空");
+                log.error("Coupon ERROR! not found FranchiseeId, uid={}", user.getUid());
+                return R.fail("120123", "加盟商不能为空");
             }
         } else {
             if (Objects.equals(couponQuery.getType(), Coupon.TYPE_FRANCHISEE)) {
                 if (Objects.isNull(couponQuery.getFranchiseeId())) {
-                    log.error("Coupon  ERROR! not found FranchiseeId ");
-                    return R.fail("ELECTRICITY.0094", "加盟商不能为空");
+                    log.error("Coupon ERROR! not found FranchiseeId, uid={}", user.getUid());
+                    return R.fail("120123", "加盟商不能为空");
                 }
             }
         }
@@ -227,7 +201,7 @@ public class CouponServiceImpl implements CouponService {
             coupon.setStatus(Coupon.STATUS_OFF);
         }
         
-        //先默认为自营活动 以后需要前端传值 TODO
+        // 默认为自营活动
         if (Objects.isNull(coupon.getType())) {
             coupon.setType(Coupon.TYPE_SYSTEM);
         }
@@ -350,11 +324,18 @@ public class CouponServiceImpl implements CouponService {
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public R update(CouponQuery couponQuery) {
+    public R update(CouponQuery couponQuery, Long franchiseeId) {
         Coupon oldCoupon = queryByIdFromCache(couponQuery.getId());
         if (Objects.isNull(oldCoupon) || !Objects.equals(oldCoupon.getTenantId(), TenantContextHolder.getTenantId())) {
-            log.error("update Coupon  ERROR! not found coupon ! couponId={} ", couponQuery.getId());
-            return R.fail("ELECTRICITY.00104", "找不到优惠券");
+            log.error("update coupon ERROR! not found coupon ! couponId={} ", couponQuery.getId());
+            return R.fail("120124", "找不到优惠券");
+        }
+    
+        if (Objects.nonNull(franchiseeId)) {
+            if (Objects.isNull(oldCoupon.getFranchiseeId()) || !Objects.equals(franchiseeId, oldCoupon.getFranchiseeId().longValue())) {
+                log.warn("update coupon ERROR! not the same franchiseeId, couponId={}", couponQuery.getId());
+                return R.fail("120124", "找不到优惠券");
+            }
         }
         
         //检查优惠券是否已经绑定用户
@@ -395,18 +376,13 @@ public class CouponServiceImpl implements CouponService {
     @Slave
     @Override
     public R queryCouponList(CouponQuery couponQuery) {
-        Pair<Boolean, List<Long>> pair = assertPermissionService.assertPermissionByPair(SecurityUtils.getUserInfo());
-        if (!pair.getLeft()) {
-            return R.ok(new ArrayList<>());
-        }
-        couponQuery.setFranchiseeIds(pair.getRight());
-        
         List<Coupon> couponList = couponMapper.queryList(couponQuery);
         List<CouponActivityVO> couponActivityVOList = Lists.newArrayList();
         for (Coupon coupon : couponList) {
             CouponActivityVO couponActivityVO = new CouponActivityVO();
             BeanUtils.copyProperties(coupon, couponActivityVO);
             couponActivityVO.setValidDays(String.valueOf(coupon.getDays()));
+            couponActivityVO.setFranchiseeName(Optional.ofNullable(franchiseeService.queryByIdFromCache(coupon.getFranchiseeId().longValue())).orElse(new Franchisee()).getName());
             couponActivityVOList.add(couponActivityVO);
         }
         
@@ -416,12 +392,6 @@ public class CouponServiceImpl implements CouponService {
     @Slave
     @Override
     public R queryCount(CouponQuery couponQuery) {
-        Pair<Boolean, List<Long>> pair = assertPermissionService.assertPermissionByPair(SecurityUtils.getUserInfo());
-        if (!pair.getLeft()) {
-            return R.ok(NumberConstant.ZERO);
-        }
-        couponQuery.setFranchiseeIds(pair.getRight());
-        
         return R.ok(couponMapper.queryCount(couponQuery));
     }
     
@@ -432,11 +402,20 @@ public class CouponServiceImpl implements CouponService {
     }
     
     @Override
-    public Triple<Boolean, String, Object> findCouponById(Long id) {
+    public Triple<Boolean, String, Object> findCouponById(Long id, Long franchiseeId) {
         Coupon coupon = this.queryByIdFromCache(id.intValue());
         if (Objects.isNull(coupon) || !Objects.equals(coupon.getTenantId(), TenantContextHolder.getTenantId())) {
-            return Triple.of(false, null, "优惠券信息不存在");
+            log.warn("findCouponById ERROR! not found coupon, couponId={}", id);
+            return Triple.of(false, "120125", "优惠券信息不存在");
         }
+    
+        if (Objects.nonNull(franchiseeId)) {
+            if (Objects.isNull(coupon.getFranchiseeId()) || !Objects.equals(franchiseeId, coupon.getFranchiseeId().longValue())) {
+                log.warn("findCouponById ERROR! not the same franchisee, couponId={}", id);
+                return Triple.of(false, "120125", "优惠券信息不存在");
+            }
+        }
+        
         CouponActivityVO couponActivityVO = new CouponActivityVO();
         BeanUtils.copyProperties(coupon, couponActivityVO);
         couponActivityVO.setValidDays(String.valueOf(coupon.getDays()));
@@ -535,10 +514,16 @@ public class CouponServiceImpl implements CouponService {
     }
     
     @Override
-    public Triple<Boolean, String, Object> deleteById(Long id) {
+    public Triple<Boolean, String, Object> deleteById(Long id, Long franchiseeId) {
         Coupon coupon = this.queryByIdFromCache(id.intValue());
         if (Objects.isNull(coupon) || !Objects.equals(coupon.getTenantId(), TenantContextHolder.getTenantId())) {
             return Triple.of(true, null, null);
+        }
+    
+        if (Objects.nonNull(franchiseeId)) {
+            if (Objects.isNull(coupon.getFranchiseeId()) || !Objects.equals(franchiseeId, coupon.getFranchiseeId().longValue())) {
+                return Triple.of(true, null, null);
+            }
         }
         
         List<UserCoupon> userCoupons = userCouponService.selectCouponUserCountById(id);
