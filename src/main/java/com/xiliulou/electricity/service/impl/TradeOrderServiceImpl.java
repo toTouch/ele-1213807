@@ -71,7 +71,6 @@ import com.xiliulou.electricity.service.UserOauthBindService;
 import com.xiliulou.electricity.service.car.CarRentalPackageOrderSlippageService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseChannelUserService;
 import com.xiliulou.electricity.service.userinfo.userInfoGroup.UserInfoGroupDetailService;
-import com.xiliulou.electricity.service.userinfo.userInfoGroup.UserInfoGroupService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DateUtils;
 import com.xiliulou.electricity.utils.OrderIdUtil;
@@ -269,9 +268,9 @@ public class TradeOrderServiceImpl implements TradeOrderService {
                 return Triple.of(false, "ELECTRICITY.0049", "已缴纳押金");
             }
             
-            // 根据标识判断是否支付给加盟商，同时兼容旧版本未传次标识
+            // 根据标识判断是否支付给加盟商，同时兼容旧版本未传此标识
             ElectricityPayParams electricityPayParams = null;
-            if (Objects.equals(integratedPaymentAdd.getPayTheFranchisee(), IntegratedPaymentAdd.PAY_THE_FRANCHISEE_YES)) {
+            if (Objects.nonNull(integratedPaymentAdd.getPayTheFranchisee())) {
                 electricityPayParams = electricityPayParamsService.queryCacheByTenantIdAndFranchiseeId(tenantId, integratedPaymentAdd.getFranchiseeId());
             }else {
                 electricityPayParams = electricityPayParamsService.queryFromCache(tenantId);
@@ -480,7 +479,13 @@ public class TradeOrderServiceImpl implements TradeOrderService {
                 return Triple.of(false, "ELECTRICITY.0049", "未缴纳押金");
             }
             
-            ElectricityPayParams electricityPayParams = electricityPayParamsService.queryFromCache(tenantId);
+            // 兼容旧版本，未传payTheFranchisee即为旧版本
+            ElectricityPayParams electricityPayParams = null;
+            if (Objects.nonNull(query.getPayTheFranchisee())) {
+                electricityPayParams = electricityPayParamsService.queryCacheByTenantIdAndFranchiseeId(tenantId, userInfo.getFranchiseeId());
+            }else {
+                electricityPayParams = electricityPayParamsService.queryFromCache(tenantId);
+            }
             if (Objects.isNull(electricityPayParams)) {
                 log.warn("BATTERY DEPOSIT WARN!not found pay params,uid={}", userInfo.getUid());
                 return Triple.of(false, "100307", "未配置支付参数!");
@@ -625,7 +630,7 @@ public class TradeOrderServiceImpl implements TradeOrderService {
             try {
                 UnionPayOrder unionPayOrder = UnionPayOrder.builder().jsonOrderId(JsonUtil.toJson(orderList)).jsonOrderType(JsonUtil.toJson(orderTypeList))
                         .jsonSingleFee(JsonUtil.toJson(allPayAmount)).payAmount(integratedPaAmount).tenantId(tenantId).attach(UnionTradeOrder.ATTACH_MEMBERCARD_INSURANCE)
-                        .description("租电套餐").uid(userInfo.getUid()).build();
+                        .description("租电套餐").uid(userInfo.getUid()).franchiseeId(userInfo.getFranchiseeId()).build();
                 WechatJsapiOrderResultDTO resultDTO = unionTradeOrderService.unionCreateTradeOrderAndGetPayParams(unionPayOrder, electricityPayParams, userOauthBind.getThirdId(),
                         request);
                 return Triple.of(true, null, resultDTO);
@@ -699,7 +704,7 @@ public class TradeOrderServiceImpl implements TradeOrderService {
     
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Triple<Boolean, String, Object> payServiceFee(HttpServletRequest request) {
+    public Triple<Boolean, String, Object> payServiceFee(Integer payTheFranchisee, HttpServletRequest request) {
         
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
@@ -732,7 +737,13 @@ public class TradeOrderServiceImpl implements TradeOrderService {
                 return Triple.of(false, "ELECTRICITY.0041", "未实名认证");
             }
             
-            ElectricityPayParams electricityPayParams = electricityPayParamsService.queryFromCache(tenantId);
+            // 兼容旧版本，未传payTheFranchisee即为旧版本
+            ElectricityPayParams electricityPayParams = null;
+            if (Objects.nonNull(payTheFranchisee)) {
+                electricityPayParams = electricityPayParamsService.queryCacheByTenantIdAndFranchiseeId(tenantId, userInfo.getFranchiseeId());
+            }else {
+                electricityPayParams = electricityPayParamsService.queryFromCache(tenantId);
+            }
             if (Objects.isNull(electricityPayParams)) {
                 log.warn("SERVICE FEE WARN!not found pay params,uid={}", user.getUid());
                 return Triple.of(false, "100307", "未配置支付参数!");
@@ -773,7 +784,7 @@ public class TradeOrderServiceImpl implements TradeOrderService {
             try {
                 UnionPayOrder unionPayOrder = UnionPayOrder.builder().jsonOrderId(JsonUtil.toJson(orderList)).jsonOrderType(JsonUtil.toJson(orderTypeList))
                         .jsonSingleFee(JsonUtil.toJson(allPayAmountList)).payAmount(totalPayAmount).tenantId(tenantId).attach(UnionTradeOrder.ATTACH_SERVUCE_FEE)
-                        .description("滞纳金").uid(user.getUid()).build();
+                        .description("滞纳金").uid(user.getUid()).franchiseeId(userInfo.getFranchiseeId()).build();
                 WechatJsapiOrderResultDTO resultDTO = unionTradeOrderService.unionCreateTradeOrderAndGetPayParams(unionPayOrder, electricityPayParams, userOauthBind.getThirdId(),
                         request);
                 return Triple.of(true, null, resultDTO);

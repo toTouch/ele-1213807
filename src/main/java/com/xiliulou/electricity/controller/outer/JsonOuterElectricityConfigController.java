@@ -42,18 +42,6 @@ public class JsonOuterElectricityConfigController extends BaseController {
     }
 
     /**
-     * 根据小程序appId查tenantId
-     *
-     * @param
-     * @return
-     */
-    @GetMapping(value = "/outer/getTenantId")
-    public R getTenantId(@RequestParam("appId") String appId) {
-        return electricityPayParamsService.getTenantId(appId);
-    }
-
-
-    /**
      * 根据小程序appId获取tenantId及租户配置信息
      *
      */

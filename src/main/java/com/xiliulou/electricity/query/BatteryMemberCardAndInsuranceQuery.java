@@ -34,4 +34,9 @@ public class BatteryMemberCardAndInsuranceQuery {
     
     //优惠券
     private Set<Integer> userCouponIds;
+    
+    /**
+     * 是否支付给加盟商
+     */
+    private Integer payTheFranchisee;
 }
