@@ -55,8 +55,8 @@ public class JsonUserUnionTradeOrderController extends BaseController {
      * 滞纳金混合支付
      */
     @PostMapping("/user/payServiceFee")
-    public R payServiceFee(@RequestParam(required = false) Integer payTheFranchisee, HttpServletRequest request) {
-        return returnTripleResult(tradeOrderService.payServiceFee(payTheFranchisee, request));
+    public R payServiceFee(HttpServletRequest request) {
+        return returnTripleResult(tradeOrderService.payServiceFee(request));
     }
 }
 

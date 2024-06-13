@@ -40,11 +40,6 @@ public class UnionPayOrder {
      */
     private String description;
     
-    /**
-     * 加盟商id
-     */
-    private Long franchiseeId;
-    
     // 押金支付
     public static final Integer ORDER_TYPE_DEPOSIT = 1;
     

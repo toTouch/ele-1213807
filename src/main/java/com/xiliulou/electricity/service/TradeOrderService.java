@@ -24,5 +24,5 @@ public interface TradeOrderService {
 
     Triple<Boolean, String, Object> payMemberCardAndInsurance(BatteryMemberCardAndInsuranceQuery query, HttpServletRequest request);
 
-    Triple<Boolean, String, Object> payServiceFee(Integer payTheFranchisee, HttpServletRequest request);
+    Triple<Boolean, String, Object> payServiceFee(HttpServletRequest request);
 }

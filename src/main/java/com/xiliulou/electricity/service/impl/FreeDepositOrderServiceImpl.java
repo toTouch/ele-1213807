@@ -2095,7 +2095,7 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
             return Triple.of(false, "000088", "您已是渠道用户，请联系对应站点购买套餐");
         }
         
-        ElectricityPayParams electricityPayParams = electricityPayParamsService.queryFromCache(tenantId);
+        ElectricityPayParams electricityPayParams = electricityPayParamsService.queryCacheByTenantIdAndFranchiseeId(tenantId, query.getFranchiseeId());
         if (Objects.isNull(electricityPayParams)) {
             log.error("FREE DEPOSIT HYBRID ERROR!not found electricityPayParams,uid={}", uid);
             return Triple.of(false, "100234", "未配置支付参数!");

@@ -383,7 +383,7 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
         WechatV3FranchiseeOrderRequest wechatV3OrderQuery = new WechatV3FranchiseeOrderRequest();
         wechatV3OrderQuery.setOrderId(unionTradeOrder.getTradeOrderNo());
         wechatV3OrderQuery.setTenantId(unionTradeOrder.getTenantId());
-        wechatV3OrderQuery.setNotifyUrl(wechatConfig.getPayCallBackUrl() + unionTradeOrder.getTenantId() + "/" + unionPayOrder.getFranchiseeId());
+        wechatV3OrderQuery.setNotifyUrl(wechatConfig.getPayCallBackUrl() + unionTradeOrder.getTenantId() + "/" + electricityPayParams.getFranchiseeId());
         wechatV3OrderQuery.setExpireTime(System.currentTimeMillis() + 3600000);
         wechatV3OrderQuery.setOpenId(openId);
         wechatV3OrderQuery.setDescription(unionPayOrder.getDescription());
@@ -391,7 +391,7 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
         wechatV3OrderQuery.setAttach(unionPayOrder.getAttach());
         wechatV3OrderQuery.setAmount(unionPayOrder.getPayAmount().multiply(new BigDecimal(100)).intValue());
         wechatV3OrderQuery.setAppid(electricityPayParams.getMerchantMinProAppId());
-        wechatV3OrderQuery.setFranchiseeId(unionPayOrder.getFranchiseeId());
+        wechatV3OrderQuery.setFranchiseeId(electricityPayParams.getFranchiseeId());
         log.info("wechatV3OrderQuery is -->{}", wechatV3OrderQuery);
         return wechatV3JsapiFranchiseeService.order(wechatV3OrderQuery);
         
