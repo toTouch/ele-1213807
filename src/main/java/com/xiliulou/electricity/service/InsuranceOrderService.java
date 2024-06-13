@@ -46,8 +46,6 @@ public interface InsuranceOrderService {
 
     R queryCount(InsuranceOrderQuery insuranceOrderQuery);
 
-    R createOrder(InsuranceOrderAdd insuranceOrderAdd, HttpServletRequest request);
-
     InsuranceOrder queryByOrderId(String orderNo);
 
     Integer updateOrderStatusById(InsuranceOrder insuranceOrder);

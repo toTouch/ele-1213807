@@ -39,12 +39,6 @@ public class JsonUserInsuranceOrderController {
     @Autowired
     FranchiseeService franchiseeService;
     
-    //缴纳保险
-    @PostMapping("/user/payInsurance")
-    public R payInsurance(@RequestBody @Validated(value = CreateGroup.class) InsuranceOrderAdd insuranceOrderAdd, HttpServletRequest request) {
-        return insuranceOrderService.createOrder(insuranceOrderAdd, request);
-    }
-    
     //用户查询保险
     @GetMapping(value = "/user/queryInsurance")
     public R queryInsurance() {
