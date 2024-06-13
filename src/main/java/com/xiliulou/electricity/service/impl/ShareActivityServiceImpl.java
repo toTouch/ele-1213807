@@ -24,6 +24,7 @@ import com.xiliulou.electricity.entity.ShareActivityMemberCard;
 import com.xiliulou.electricity.entity.ShareActivityOperateRecord;
 import com.xiliulou.electricity.entity.ShareActivityRecord;
 import com.xiliulou.electricity.entity.ShareActivityRule;
+import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.UserCoupon;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.car.CarRentalPackagePo;
@@ -68,7 +69,6 @@ import com.xiliulou.storage.config.StorageConfig;
 import com.xiliulou.storage.service.StorageService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -198,16 +198,30 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 	 */
 	@Override
 	@Transactional(rollbackFor = Exception.class)
-	public R insert(ShareActivityAddAndUpdateQuery shareActivityAddAndUpdateQuery) {
+	public R insert(ShareActivityAddAndUpdateQuery shareActivityAddAndUpdateQuery, TokenUser user) {
+		// 加盟商判断
+		if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+			if (Objects.isNull(shareActivityAddAndUpdateQuery.getFranchiseeId())) {
+				log.error("ShareActivity ERROR! not found FranchiseeId, uid={}", user.getUid());
+				return R.fail("120123", "加盟商不能为空");
+			}
+			
+			shareActivityAddAndUpdateQuery.setType(ShareActivity.FRANCHISEE);
+		} else {
+			if (Objects.equals(shareActivityAddAndUpdateQuery.getType(), Coupon.TYPE_FRANCHISEE)) {
+				if (Objects.isNull(shareActivityAddAndUpdateQuery.getFranchiseeId())) {
+					log.error("Coupon ERROR! not found FranchiseeId, uid={}", user.getUid());
+					return R.fail("120123", "加盟商不能为空");
+				}
+				
+				shareActivityAddAndUpdateQuery.setType(ShareActivity.FRANCHISEE);
+			}
+		}
+		
 		if (ObjectUtil.isEmpty(shareActivityAddAndUpdateQuery.getHours()) && ObjectUtil.isEmpty(shareActivityAddAndUpdateQuery.getMinutes())) {
 			return R.fail("110209", "有效时间不能为空");
 		}
 		
-		TokenUser user = SecurityUtils.getUserInfo();
-		if (Objects.isNull(user)) {
-			return R.fail("ELECTRICITY.0001", "未找到用户");
-		}
-
 		Integer tenantId = TenantContextHolder.getTenantId();
 		if (Objects.equals(shareActivityAddAndUpdateQuery.getStatus(), ShareActivity.STATUS_ON)) {
 			int count = shareActivityMapper.selectCount(
@@ -290,7 +304,7 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 			List<ActivityPackageVO> activityPackageVOS = getActivityPackages(shareActivityMemberCards);
 			ShareActivityPackageVO shareActivityPackageVO = new ShareActivityPackageVO();
 			shareActivityPackageVO.setPackages(activityPackageVOS);
-			shareActivityOperateRecordService.insert(buildActivityOperateRecord(shareActivity.getId().longValue(),shareActivity.getName(), shareActivityPackageVO));
+			shareActivityOperateRecordService.insert(buildActivityOperateRecord(shareActivity, shareActivityPackageVO));
 
 			return null;
 		});
@@ -337,13 +351,24 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 
 	@Override
 	@Transactional(rollbackFor = Exception.class)
-	public Triple<Boolean, String, Object> updateShareActivity(ShareActivityAddAndUpdateQuery shareActivityAddAndUpdateQuery) {
-		ShareActivity shareActivityUpdate=new ShareActivity();
-		shareActivityUpdate.setId(shareActivityAddAndUpdateQuery.getId());
-		shareActivityUpdate.setName(shareActivityAddAndUpdateQuery.getName());
+	public Triple<Boolean, String, Object> updateShareActivity(ShareActivityAddAndUpdateQuery shareActivityAddAndUpdateQuery, Long franchiseeId) {
+		ShareActivity shareActivity = queryByIdFromCache(shareActivityAddAndUpdateQuery.getId());
+		if (Objects.isNull(shareActivity)) {
+			log.error("update Activity ERROR! not found Activity ! ActivityId={} ", shareActivityAddAndUpdateQuery.getId());
+			return Triple.of(false, "ELECTRICITY.0069", "未找到活动");
+		}
+		
+		if (Objects.nonNull(franchiseeId)) {
+			if (Objects.isNull(shareActivity.getFranchiseeId()) || !Objects.equals(franchiseeId, shareActivity.getFranchiseeId().longValue())) {
+				log.warn("update Activity ERROR! not the same franchiseeId, ActivityId={}", shareActivityAddAndUpdateQuery.getId());
+				return Triple.of(false, "ELECTRICITY.0069", "未找到活动");
+			}
+		}
+		
+		shareActivity.setName(shareActivityAddAndUpdateQuery.getName());
 
-		DbUtils.dbOperateSuccessThenHandleCache(shareActivityMapper.updateById(shareActivityUpdate), i -> {
-			redisService.delete(CacheConstant.SHARE_ACTIVITY_CACHE + shareActivityUpdate.getId());
+		DbUtils.dbOperateSuccessThenHandleCache(shareActivityMapper.updateById(shareActivity), i -> {
+			redisService.delete(CacheConstant.SHARE_ACTIVITY_CACHE + shareActivity.getId());
 
 			//删除绑定的套餐
 			shareActivityMemberCardService.deleteByActivityId(shareActivityAddAndUpdateQuery.getId());
@@ -354,7 +379,7 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 			}*/
 
 			//保存新的套餐设置信息，套餐范围增加，包含了换电，租车和车电一体的套餐
-			List<ShareActivityMemberCard> shareActivityMemberCards = buildShareActivityPackages(shareActivityUpdate.getId().longValue(), shareActivityAddAndUpdateQuery);
+			List<ShareActivityMemberCard> shareActivityMemberCards = buildShareActivityPackages(shareActivity.getId().longValue(), shareActivityAddAndUpdateQuery);
 			if (CollectionUtils.isNotEmpty(shareActivityMemberCards)) {
 				shareActivityMemberCardService.batchInsert(shareActivityMemberCards);
 			}
@@ -366,7 +391,7 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 			ShareActivityPackageVO shareActivityPackageVO = new ShareActivityPackageVO();
 			shareActivityPackageVO.setPackages(activityPackageVOS);
 
-			shareActivityOperateRecordService.insert(buildActivityOperateRecord(shareActivityAddAndUpdateQuery.getId().longValue(),shareActivityAddAndUpdateQuery.getName(), shareActivityPackageVO));
+			shareActivityOperateRecordService.insert(buildActivityOperateRecord(shareActivity, shareActivityPackageVO));
 		});
 
 		return Triple.of(true,"","");
@@ -380,20 +405,36 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 	 */
 	@Override
 	@Transactional(rollbackFor = Exception.class)
-	public R update(ShareActivityAddAndUpdateQuery shareActivityAddAndUpdateQuery) {
+	public R update(ShareActivityAddAndUpdateQuery shareActivityAddAndUpdateQuery, Long franchiseeId) {
 		ShareActivity oldShareActivity = queryByIdFromCache(shareActivityAddAndUpdateQuery.getId());
 		if (Objects.isNull(oldShareActivity)) {
-			log.error("update Activity  ERROR! not found Activity ! ActivityId:{} ", shareActivityAddAndUpdateQuery.getId());
+			log.error("update Activity  ERROR! not found Activity ! ActivityId={} ", shareActivityAddAndUpdateQuery.getId());
 			return R.fail("ELECTRICITY.0069", "未找到活动");
 		}
-
+		
 		//租户
 		Integer tenantId = TenantContextHolder.getTenantId();
+		
+		if (Objects.nonNull(franchiseeId)) {
+			if (Objects.isNull(oldShareActivity.getFranchiseeId()) || !Objects.equals(franchiseeId, oldShareActivity.getFranchiseeId().longValue())) {
+				log.warn("update Activity ERROR! not the same franchiseeId, ActivityId={}", shareActivityAddAndUpdateQuery.getId());
+				return R.fail("ELECTRICITY.0069", "未找到活动");
+			}
+			
+			// 判断改加盟商是否有启用的活动，有则不能启用
+			if (Objects.equals(shareActivityAddAndUpdateQuery.getStatus(), ShareActivity.STATUS_ON)) {
+				int count = shareActivityMapper.selectCount(
+						new LambdaQueryWrapper<ShareActivity>().eq(ShareActivity::getTenantId, tenantId).eq(ShareActivity::getFranchiseeId, franchiseeId).eq(ShareActivity::getStatus, ShareActivity.STATUS_ON));
+				if (count > 0) {
+					return R.fail("ELECTRICITY.00102", "该加盟商已有启用中的邀请活动，请勿重复添加");
+				}
+			}
+		}
 
 		//查询该租户是否有邀请活动，有则不能启用
 		if (Objects.equals(shareActivityAddAndUpdateQuery.getStatus(), ShareActivity.STATUS_ON)) {
 			int count = shareActivityMapper.selectCount(new LambdaQueryWrapper<ShareActivity>()
-					.eq(ShareActivity::getTenantId, tenantId).eq(ShareActivity::getStatus, ShareActivity.STATUS_ON));
+					.eq(ShareActivity::getTenantId, tenantId).eq(ShareActivity::getStatus, ShareActivity.STATUS_ON).eq(ShareActivity::getType, ShareActivity.SYSTEM));
 			if (count > 0) {
 				return R.fail("ELECTRICITY.00102", "该租户已有启用中的邀请活动，请勿重复添加");
 			}
@@ -437,12 +478,6 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 	@Override
 	@Slave
 	public R queryList(ShareActivityQuery shareActivityQuery) {
-		Pair<Boolean, List<Long>> pair = assertPermissionService.assertPermissionByPair(SecurityUtils.getUserInfo());
-		if (!pair.getLeft()){
-			return R.ok(new ArrayList<>());
-		}
-		shareActivityQuery.setFranchiseeIds(pair.getRight());
-		
 		List<ShareActivity> shareActivityList = shareActivityMapper.queryList(shareActivityQuery);
 		List<ShareActivityVO> shareActivityVOList = Lists.newArrayList();
 
@@ -576,12 +611,6 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 	@Override
 	@Slave
 	public R queryCount(ShareActivityQuery shareActivityQuery) {
-		Pair<Boolean, List<Long>> pair = assertPermissionService.assertPermissionByPair(SecurityUtils.getUserInfo());
-		if (!pair.getLeft()){
-			return R.ok(NumberConstant.ZERO);
-		}
-		shareActivityQuery.setFranchiseeIds(pair.getRight());
-		
 		Integer count = shareActivityMapper.queryCount(shareActivityQuery);
 		return R.ok(count);
 	}
@@ -960,14 +989,17 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 		return shareActivityOperateRecord;
 	}
 
-	private ShareActivityOperateRecord buildActivityOperateRecord(Long id, String name, ShareActivityPackageVO shareActivityPackageVO) {
+	private ShareActivityOperateRecord buildActivityOperateRecord(ShareActivity shareActivity, ShareActivityPackageVO shareActivityPackageVO) {
 		ShareActivityOperateRecord shareActivityOperateRecord = new ShareActivityOperateRecord();
 		shareActivityOperateRecord.setUid(SecurityUtils.getUid());
-		shareActivityOperateRecord.setShareActivityId(id);
-		shareActivityOperateRecord.setName(name);
+		shareActivityOperateRecord.setShareActivityId(shareActivity.getId().longValue());
+		shareActivityOperateRecord.setName(shareActivity.getName());
 		//shareActivityOperateRecord.setMemberCard(JsonUtil.toJson(shareActivityPackageVO));
 		shareActivityOperateRecord.setPackageInfo(JsonUtil.toJson(shareActivityPackageVO));
 		shareActivityOperateRecord.setTenantId(TenantContextHolder.getTenantId());
+		if (Objects.nonNull(shareActivity.getFranchiseeId())) {
+			shareActivityOperateRecord.setFranchiseeId(shareActivity.getFranchiseeId());
+		}
 		shareActivityOperateRecord.setCreateTime(System.currentTimeMillis());
 		shareActivityOperateRecord.setUpdateTime(System.currentTimeMillis());
 		return shareActivityOperateRecord;

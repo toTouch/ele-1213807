@@ -4,7 +4,6 @@ import cn.hutool.json.JSONUtil;
 import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.web.R;
-import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.enums.PackageTypeEnum;
@@ -26,6 +25,7 @@ import com.xiliulou.electricity.validator.CreateGroup;
 import com.xiliulou.electricity.validator.UpdateGroup;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -65,7 +65,15 @@ public class JsonAdminShareActivityController extends BaseController {
     //新增
     @PostMapping(value = "/admin/shareActivity")
     public R save(@RequestBody @Validated(value = CreateGroup.class) ShareActivityAddAndUpdateQuery shareActivityAddAndUpdateQuery) {
-        return shareActivityService.insert(shareActivityAddAndUpdateQuery);
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        
+        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE) || Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE))) {
+            return R.ok();
+        }
+        return shareActivityService.insert(shareActivityAddAndUpdateQuery, user);
     }
 
     @GetMapping(value = "/admin/shareActivity/detail/{id}")
@@ -80,7 +88,26 @@ public class JsonAdminShareActivityController extends BaseController {
      */
     @PutMapping(value = "/admin/shareActivity/update")
     public R updateActivity(@RequestBody @Validated(value = UpdateGroup.class) ShareActivityAddAndUpdateQuery shareActivityAddAndUpdateQuery) {
-        return returnTripleResult(shareActivityService.updateShareActivity(shareActivityAddAndUpdateQuery));
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+    
+        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE) || Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE))) {
+            return R.ok();
+        }
+    
+        Long franchiseeId = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            List<Long> franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if (CollectionUtils.isEmpty(franchiseeIds)) {
+                return R.ok();
+            }
+        
+            franchiseeId = franchiseeIds.get(0);
+        }
+        
+        return returnTripleResult(shareActivityService.updateShareActivity(shareActivityAddAndUpdateQuery, franchiseeId));
     }
 
     /**
@@ -90,7 +117,26 @@ public class JsonAdminShareActivityController extends BaseController {
      */
     @PutMapping(value = "/admin/shareActivity")
     public R update(@RequestBody @Validated(value = UpdateGroup.class) ShareActivityAddAndUpdateQuery shareActivityAddAndUpdateQuery) {
-        return shareActivityService.update(shareActivityAddAndUpdateQuery);
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+    
+        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE) || Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE))) {
+            return R.ok();
+        }
+    
+        Long franchiseeId = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            List<Long> franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if (CollectionUtils.isEmpty(franchiseeIds)) {
+                return R.ok();
+            }
+        
+            franchiseeId = franchiseeIds.get(0);
+        }
+        
+        return shareActivityService.update(shareActivityAddAndUpdateQuery, franchiseeId);
     }
 
     //列表查询
@@ -100,7 +146,8 @@ public class JsonAdminShareActivityController extends BaseController {
                        @RequestParam(value = "name", required = false) String name,
                        @RequestParam(value = "franchiseeIds", required = false) List<Long> franchiseeIds,
                        @RequestParam(value = "type", required = false) String type,
-                       @RequestParam(value = "status", required = false) Integer status) {
+                       @RequestParam(value = "status", required = false) Integer status,
+                       @RequestParam(value = "franchiseeId", required = false) Long franchiseeId) {
         if (size < 0 || size > 50) {
             size = 10L;
         }
@@ -113,10 +160,17 @@ public class JsonAdminShareActivityController extends BaseController {
         if (Objects.isNull(user)) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-
-        //if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
-        //    return R.ok(Collections.EMPTY_LIST);
-        //}
+    
+        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE) || Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE))) {
+            return R.ok();
+        }
+    
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if (CollectionUtils.isEmpty(franchiseeIds)) {
+                return R.ok(Collections.EMPTY_LIST);
+            }
+        }
 
         ShareActivityQuery shareActivityQuery = ShareActivityQuery.builder()
                 .offset(offset)
@@ -124,7 +178,8 @@ public class JsonAdminShareActivityController extends BaseController {
                 .name(name)
                 .franchiseeIds(franchiseeIds)
                 .tenantId(TenantContextHolder.getTenantId())
-                .status(status).build();
+                .status(status)
+                .franchiseeId(franchiseeId).build();
 
         if (StringUtils.isNotEmpty(type)) {
             Integer[] types = (Integer[])
@@ -141,22 +196,31 @@ public class JsonAdminShareActivityController extends BaseController {
     public R queryCount(@RequestParam(value = "name", required = false) String name,
                         @RequestParam(value = "franchiseeIds", required = false) List<Long> franchiseeIds,
                         @RequestParam(value = "type", required = false) String type,
-                        @RequestParam(value = "status", required = false) Integer status) {
+                        @RequestParam(value = "status", required = false) Integer status,
+                        @RequestParam(value = "franchiseeId", required = false) Long franchiseeId) {
 
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-
-        //if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
-        //    return R.ok(NumberConstant.ZERO);
-        //}
+    
+        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE) || Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE))) {
+            return R.ok();
+        }
+    
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if (CollectionUtils.isEmpty(franchiseeIds)) {
+                return R.ok();
+            }
+        }
 
         ShareActivityQuery shareActivityQuery = ShareActivityQuery.builder()
                 .name(name)
                 .franchiseeIds(franchiseeIds)
                 .tenantId(TenantContextHolder.getTenantId())
-                .status(status).build();
+                .status(status)
+                .franchiseeId(franchiseeId).build();
 
         if (StringUtils.isNotEmpty(type)) {
             Integer[] types = (Integer[]) JSONUtil.parseArray(type).toArray(Integer[].class);

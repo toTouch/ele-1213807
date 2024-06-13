@@ -117,8 +117,8 @@
 
     <!--新增所有列-->
     <insert id="insertOne" keyProperty="id" useGeneratedKeys="true">
-        insert into t_share_activity_operate_record(share_activity_id, uid, NAME, member_card, package_info, tenant_id, create_time, update_time)
-        values (#{shareActivityId}, #{uid}, #{name}, #{memberCard}, #{packageInfo}, #{tenantId}, #{createTime}, #{updateTime})
+        insert into t_share_activity_operate_record(share_activity_id, uid, NAME, member_card, package_info, tenant_id, create_time, update_time, franchisee_id)
+        values (#{shareActivityId}, #{uid}, #{name}, #{memberCard}, #{packageInfo}, #{tenantId}, #{createTime}, #{updateTime}, #{franchiseeId})
     </insert>
 
     <!--通过主键修改数据-->

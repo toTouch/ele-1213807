@@ -4,6 +4,7 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.ShareActivity;
 import com.xiliulou.electricity.query.ShareActivityAddAndUpdateQuery;
 import com.xiliulou.electricity.query.ShareActivityQuery;
+import com.xiliulou.security.bean.TokenUser;
 import org.apache.commons.lang3.tuple.Triple;
 
 /**
@@ -29,7 +30,7 @@ public interface ShareActivityService {
      * @param shareActivityAddAndUpdateQuery 实例对象
      * @return 实例对象
      */
-    R insert(ShareActivityAddAndUpdateQuery shareActivityAddAndUpdateQuery);
+    R insert(ShareActivityAddAndUpdateQuery shareActivityAddAndUpdateQuery, TokenUser user);
 
     /**
      * 修改数据
@@ -37,7 +38,7 @@ public interface ShareActivityService {
      * @param shareActivityAddAndUpdateQuery 实例对象
      * @return 实例对象
      */
-    R update(ShareActivityAddAndUpdateQuery shareActivityAddAndUpdateQuery);
+    R update(ShareActivityAddAndUpdateQuery shareActivityAddAndUpdateQuery, Long franchiseeId);
 
     R queryList(ShareActivityQuery shareActivityQuery);
 
@@ -51,7 +52,7 @@ public interface ShareActivityService {
 
     Triple<Boolean, String, Object> shareActivityDetail(Integer id);
 
-    Triple<Boolean, String, Object> updateShareActivity(ShareActivityAddAndUpdateQuery shareActivityAddAndUpdateQuery);
+    Triple<Boolean, String, Object> updateShareActivity(ShareActivityAddAndUpdateQuery shareActivityAddAndUpdateQuery, Long franchiseeId);
     
     R checkExistActivity();
     
