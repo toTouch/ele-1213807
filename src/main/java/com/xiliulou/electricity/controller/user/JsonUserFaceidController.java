@@ -30,13 +30,13 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @Slf4j
 public class JsonUserFaceidController extends BaseController {
-
+    
     @Autowired
     private FaceidService faceidService;
-
+    
     @Autowired
     ActivityService activityService;
-
+    
     /**
      * 获取人脸核身token
      */
@@ -44,14 +44,14 @@ public class JsonUserFaceidController extends BaseController {
     public R getToken() {
         return returnTripleResult(faceidService.getEidToken());
     }
-
+    
     /**
      * 人脸核身结果
      */
     @PostMapping(value = "/user/faceid/verifyEidResult")
     public R verifyEidResult(@RequestBody @Validated FaceidResultQuery faceidResultQuery) {
         Triple<Boolean, String, Object> result = faceidService.verifyEidResult(faceidResultQuery);
-
+        
         //人脸核身成功后，异步触发活动处理流程
         ActivityProcessDTO activityProcessDTO = new ActivityProcessDTO();
         activityProcessDTO.setUid(SecurityUtils.getUid());
@@ -59,9 +59,9 @@ public class JsonUserFaceidController extends BaseController {
         activityProcessDTO.setTraceId(IdUtil.simpleUUID());
         log.info("handle activity after face id auth success: {}", JsonUtil.toJson(activityProcessDTO));
         activityService.asyncProcessActivity(activityProcessDTO);
-
+        
         return returnTripleResult(result);
     }
-
-
+    
+    
 }

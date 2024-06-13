@@ -46,6 +46,7 @@ public class JsonUserEnterpriseChannelUserController extends BaseController {
     
     /**
      * 根据UID查询企业渠道骑手信息
+     *
      * @param uid
      * @return
      */
@@ -57,6 +58,7 @@ public class JsonUserEnterpriseChannelUserController extends BaseController {
     
     /**
      * 修改单个骑手自主续费状态
+     *
      * @param enterpriseChannelUserQuery
      * @return
      */
@@ -83,6 +85,7 @@ public class JsonUserEnterpriseChannelUserController extends BaseController {
     
     /**
      * 骑手自主续费检测
+     *
      * @param request
      * @return
      */
@@ -94,6 +97,7 @@ public class JsonUserEnterpriseChannelUserController extends BaseController {
     
     /**
      * 骑手自主续费检测
+     *
      * @param request
      * @return
      */
@@ -105,6 +109,7 @@ public class JsonUserEnterpriseChannelUserController extends BaseController {
     
     /**
      * 骑手自主续费
+     *
      * @param request
      * @return
      */
@@ -116,6 +121,7 @@ public class JsonUserEnterpriseChannelUserController extends BaseController {
     
     /**
      * 骑手自主续费
+     *
      * @param request
      * @return
      */
@@ -127,6 +133,7 @@ public class JsonUserEnterpriseChannelUserController extends BaseController {
     
     /**
      * 骑手自主续费关闭
+     *
      * @param request
      * @return
      */
@@ -149,7 +156,6 @@ public class JsonUserEnterpriseChannelUserController extends BaseController {
     }
     
     
-    
     /**
      * 根据手机号查询当前加盟商下的企业渠道用户信息
      *
@@ -160,10 +166,7 @@ public class JsonUserEnterpriseChannelUserController extends BaseController {
     @GetMapping({"/user/enterprise/queryUser", "/merchant/enterprise/queryUser"})
     public R queryUser(@RequestParam(value = "phone", required = true) String phone) {
         Integer tenantId = TenantContextHolder.getTenantId();
-        EnterpriseChannelUserQuery enterpriseChannelUserQuery = EnterpriseChannelUserQuery.builder()
-                .phone(phone)
-                .tenantId(tenantId.longValue())
-                .build();
+        EnterpriseChannelUserQuery enterpriseChannelUserQuery = EnterpriseChannelUserQuery.builder().phone(phone).tenantId(tenantId.longValue()).build();
         
         return returnTripleResult(enterpriseChannelUserService.queryUser(enterpriseChannelUserQuery));
     }
@@ -178,10 +181,8 @@ public class JsonUserEnterpriseChannelUserController extends BaseController {
     @GetMapping({"/user/enterprise/generateEnterpriseUser", "/merchant/enterprise/generateEnterpriseUser"})
     public R generateUserRecord(@RequestParam(value = "enterpriseId", required = true) Long enterpriseId) {
         
-        EnterpriseChannelUserQuery enterpriseChannelUserQuery = EnterpriseChannelUserQuery.builder()
-                .enterpriseId(enterpriseId)
-                .tenantId(TenantContextHolder.getTenantId().longValue())
-                .build();
+        EnterpriseChannelUserQuery enterpriseChannelUserQuery = EnterpriseChannelUserQuery.builder().enterpriseId(enterpriseId)
+                .tenantId(TenantContextHolder.getTenantId().longValue()).build();
         
         return returnTripleResult(enterpriseChannelUserService.generateChannelUser(enterpriseChannelUserQuery));
     }
@@ -247,15 +248,10 @@ public class JsonUserEnterpriseChannelUserController extends BaseController {
      * @return
      */
     @GetMapping({"/user/enterprise/queryRiderDetails", "/merchant/enterprise/queryRiderDetails"})
-    public R queryRiderDetails(@RequestParam(value = "enterpriseId", required = true) Long enterpriseId,
-            @RequestParam(value = "uid", required = true) Long uid,
+    public R queryRiderDetails(@RequestParam(value = "enterpriseId", required = true) Long enterpriseId, @RequestParam(value = "uid", required = true) Long uid,
             @RequestParam(value = "orderNo", required = false) String orderNo) {
         
-        EnterpriseMemberCardQuery query = EnterpriseMemberCardQuery.builder()
-                .enterpriseId(enterpriseId)
-                .uid(uid)
-                .orderNo(orderNo)
-                .build();
+        EnterpriseMemberCardQuery query = EnterpriseMemberCardQuery.builder().enterpriseId(enterpriseId).uid(uid).orderNo(orderNo).build();
         
         // return returnTripleResult(enterpriseBatteryPackageService.queryRiderDetails(query));
         return returnTripleResult(enterpriseUserCostRecordService.queryRiderDetails(query));
@@ -269,10 +265,8 @@ public class JsonUserEnterpriseChannelUserController extends BaseController {
      * @return
      */
     @GetMapping({"/user/enterprise/queryRiderCostDetails", "/merchant/enterprise/queryRiderCostDetails"})
-    public R queryRiderCostDetails(@RequestParam(value = "enterpriseId", required = true) Long enterpriseId,
-            @RequestParam(value = "uid", required = true) Long uid,
-            @RequestParam(value = "beginTime", required = false) Long beginTime,
-            @RequestParam(value = "endTime", required = false) Long endTime) {
+    public R queryRiderCostDetails(@RequestParam(value = "enterpriseId", required = true) Long enterpriseId, @RequestParam(value = "uid", required = true) Long uid,
+            @RequestParam(value = "beginTime", required = false) Long beginTime, @RequestParam(value = "endTime", required = false) Long endTime) {
         
         /*EnterprisePackageOrderQuery query = EnterprisePackageOrderQuery.builder()
                 .enterpriseId(enterpriseId)
@@ -282,30 +276,24 @@ public class JsonUserEnterpriseChannelUserController extends BaseController {
                 .build();*/
         //return returnTripleResult(enterpriseBatteryPackageService.queryCostDetails(query));
         
-        EnterpriseUserCostRecordQuery enterpriseUserCostRecordQuery = EnterpriseUserCostRecordQuery.builder()
-                .enterpriseId(enterpriseId)
-                .uid(uid)
-                .beginTime(beginTime)
-                .endTime(endTime)
-                .build();
+        EnterpriseUserCostRecordQuery enterpriseUserCostRecordQuery = EnterpriseUserCostRecordQuery.builder().enterpriseId(enterpriseId).uid(uid).beginTime(beginTime)
+                .endTime(endTime).build();
         
         return R.ok(enterpriseUserCostRecordService.queryUserCostRecordList(enterpriseUserCostRecordQuery));
     }
     
     /**
      * 查询企业侧已支付，待支付，未支付骑手对应的套餐信息
-     * @param enterpriseId 企业ID
+     *
+     * @param enterpriseId  企业ID
      * @param paymentStatus 1- 代付到期， 2-已代付， 3-未代付
      * @param userName
      * @param phone
      * @return
      */
     @GetMapping({"/user/enterprise/queryPurchaseOrder", "/merchant/enterprise/queryPurchaseOrder"})
-    public R queryPurchaseOrder(@RequestParam("offset") long offset,
-            @RequestParam("size") long size,
-            @RequestParam(value = "enterpriseId", required = true) Long enterpriseId,
-            @RequestParam(value = "paymentStatus", required = true) Integer paymentStatus,
-            @RequestParam(value = "userName", required = false) String userName,
+    public R queryPurchaseOrder(@RequestParam("offset") long offset, @RequestParam("size") long size, @RequestParam(value = "enterpriseId", required = true) Long enterpriseId,
+            @RequestParam(value = "paymentStatus", required = true) Integer paymentStatus, @RequestParam(value = "userName", required = false) String userName,
             @RequestParam(value = "phone", required = false) String phone) {
         
         if (size < 0 || size > 50) {
@@ -317,16 +305,8 @@ public class JsonUserEnterpriseChannelUserController extends BaseController {
         }
         
         Integer tenantId = TenantContextHolder.getTenantId();
-        EnterprisePurchaseOrderQuery enterprisePurchaseOrderQuery = EnterprisePurchaseOrderQuery.builder()
-                .enterpriseId(enterpriseId)
-                .paymentStatus(paymentStatus)
-                .userName(userName)
-                .phone(phone)
-                .tenantId(tenantId.longValue())
-                .currentTime(System.currentTimeMillis())
-                .offset(offset)
-                .size(size)
-                .build();
+        EnterprisePurchaseOrderQuery enterprisePurchaseOrderQuery = EnterprisePurchaseOrderQuery.builder().enterpriseId(enterpriseId).paymentStatus(paymentStatus)
+                .userName(userName).phone(phone).tenantId(tenantId.longValue()).currentTime(System.currentTimeMillis()).offset(offset).size(size).build();
         
         return returnTripleResult(enterpriseBatteryPackageService.queryPurchasedPackageOrders(enterprisePurchaseOrderQuery));
         
@@ -334,6 +314,7 @@ public class JsonUserEnterpriseChannelUserController extends BaseController {
     
     /**
      * 查询当前骑手的电池信息
+     *
      * @param uid
      * @return
      */

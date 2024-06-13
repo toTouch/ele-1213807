@@ -9,30 +9,6 @@ import org.springframework.web.multipart.MultipartFile;
  */
 public interface WechatPaymentCertificateService {
     
-    /**
-     * 根据租户id查询微信支付证书内容
-     *
-     * @param tenantId tenantId
-     * @return WechatPaymentCertificate
-     */
-    @Deprecated
-    WechatPaymentCertificate selectByTenantId(Integer tenantId);
-    
-    /**
-     * 根据租户id更新证书信息
-     *
-     * @param certificate certificate
-     * @return int
-     */
-    int updateByTenantId(WechatPaymentCertificate certificate);
-    
-    /**
-     * 插入证书内容
-     *
-     * @param certificate certificate
-     * @return int
-     */
-    int insert(WechatPaymentCertificate certificate);
     
     /**
      * 新增或更新证书信息
@@ -41,17 +17,19 @@ public interface WechatPaymentCertificateService {
      */
     void saveOrUpdateWeChatPaymentCertificate(WechatPaymentCertificate certificate);
     
+    
     /**
      * 处理支付证书文件
      *
-     * @param file     证书文件
-     * @param tenantId 租户id
-     * @throws Exception 异常
+     * @param file
+     * @param wechatPaymentCertificate
+     * @author caobotao.cbt
+     * @date 2024/6/13 10:46
      */
-    void handleCertificateFile(MultipartFile file, Integer tenantId) throws Exception;
+    void handleCertificateFile(MultipartFile file, WechatPaymentCertificate wechatPaymentCertificate) throws Exception;
     
     /**
-     * 根据支付配置id查询
+     * 根据租户+加盟商id查询
      *
      * @param tenantId
      * @param franchiseeId
@@ -59,4 +37,15 @@ public interface WechatPaymentCertificateService {
      * @date 2024/6/12 19:47
      */
     WechatPaymentCertificate queryByTenantIdAndFranchiseeId(Integer tenantId, Long franchiseeId);
+    
+    
+    /**
+     * 缓存删除
+     *
+     * @param tenantId
+     * @param franchiseeId
+     * @author caobotao.cbt
+     * @date 2024/6/13 14:24
+     */
+    void deleteCache(Integer tenantId, Long franchiseeId);
 }

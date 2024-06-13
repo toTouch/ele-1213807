@@ -19,12 +19,13 @@ import javax.servlet.http.HttpServletRequest;
 @RestController
 @Slf4j
 public class JsonUserRentCarController extends BaseController {
-
+    
     @Autowired
     UserCarService userCarService;
+    
     @Autowired
     RentCarOrderService rentCarOrderService;
-
+    
     /**
      * 租车&租电下单（混合支付）
      */
@@ -32,7 +33,7 @@ public class JsonUserRentCarController extends BaseController {
     public R rentCarHybridOrder(@RequestBody @Validated RentCarHybridOrderQuery query, HttpServletRequest request) {
         return returnTripleResult(rentCarOrderService.rentCarHybridOrder(query, request));
     }
-
+    
     /**
      * 扫码租车
      */
@@ -40,7 +41,7 @@ public class JsonUserRentCarController extends BaseController {
     public R rentCarOrder(@RequestBody @Validated UserRentCarOrderQuery query) {
         return returnTripleResult(rentCarOrderService.rentCarOrder(query));
     }
-
+    
     /**
      * 查看用户车辆详情
      */
@@ -48,6 +49,6 @@ public class JsonUserRentCarController extends BaseController {
     public R userCar(@RequestParam("uid") Long uid) {
         return R.ok(userCarService.selectDetailByUid(uid));
     }
-
-
+    
+    
 }

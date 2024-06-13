@@ -25,15 +25,16 @@ import java.util.Objects;
 @RestController
 @Slf4j
 public class JsonUserBatteryServiceFeeController {
+    
     @Autowired
     ElectricityBatteryService electricityBatteryService;
-
+    
     @Autowired
     EleBatteryServiceFeeOrderService eleBatteryServiceFeeOrderService;
-
+    
     @Autowired
     ServiceFeeUserInfoService serviceFeeUserInfoService;
-
+    
     /**
      * 查询电池服务费
      *
@@ -47,7 +48,7 @@ public class JsonUserBatteryServiceFeeController {
         }
         return R.ok(serviceFeeUserInfoService.queryUserBatteryServiceFee(uid));
     }
-
+    
     /**
      * 查询用户的服务费支付记录
      *
@@ -59,26 +60,18 @@ public class JsonUserBatteryServiceFeeController {
      */
     @GetMapping("/user/batteryServiceFee/orderList")
     public R queryBatteryServiceFeeOrder(@RequestParam("offset") Long offset, @RequestParam("size") Long size,
-                                         @RequestParam(value = "queryStartTime", required = false) Long queryStartTime,
-                                         @RequestParam(value = "queryEndTime", required = false) Long queryEndTime) {
-
-        BatteryServiceFeeOrderQuery query = BatteryServiceFeeOrderQuery.builder()
-                .size(size)
-                .offset(offset)
-                .tenantId(TenantContextHolder.getTenantId())
-                .uid(SecurityUtils.getUid())
-                .status(EleBatteryServiceFeeOrderVo.STATUS_SUCCESS)
-                .queryStartTime(queryStartTime)
-                .queryEndTime(queryEndTime)
-                .build();
-
+            @RequestParam(value = "queryStartTime", required = false) Long queryStartTime, @RequestParam(value = "queryEndTime", required = false) Long queryEndTime) {
+        
+        BatteryServiceFeeOrderQuery query = BatteryServiceFeeOrderQuery.builder().size(size).offset(offset).tenantId(TenantContextHolder.getTenantId()).uid(SecurityUtils.getUid())
+                .status(EleBatteryServiceFeeOrderVo.STATUS_SUCCESS).queryStartTime(queryStartTime).queryEndTime(queryEndTime).build();
+        
         return eleBatteryServiceFeeOrderService.queryList(query);
     }
-
-
+    
+    
     @GetMapping("/user/batteryServiceFee/info")
     public R selectUserBatteryServiceFee() {
         return R.ok(serviceFeeUserInfoService.selectUserBatteryServiceFee());
     }
-
+    
 }

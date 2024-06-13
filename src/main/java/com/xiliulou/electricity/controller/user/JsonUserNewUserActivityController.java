@@ -19,18 +19,17 @@ import java.util.Objects;
 @RestController
 @Slf4j
 public class JsonUserNewUserActivityController {
-	/**
-	 * 服务对象
-	 */
-	@Autowired
-	private NewUserActivityService newUserActivityService;
-
-
-
-
-	//根据id查询活动详情
-	@GetMapping(value = "/user/newUserActivity/queryNewUserActivity")
-	public R queryNewUserActivity() {
-		return newUserActivityService.queryNewUserActivity();
-	}
+    
+    /**
+     * 服务对象
+     */
+    @Autowired
+    private NewUserActivityService newUserActivityService;
+    
+    
+    //根据id查询活动详情
+    @GetMapping(value = "/user/newUserActivity/queryNewUserActivity")
+    public R queryNewUserActivity() {
+        return newUserActivityService.queryNewUserActivity();
+    }
 }

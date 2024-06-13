@@ -18,22 +18,23 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @Slf4j
 public class JsonUserJoinShareMoneyActivityRecordController {
-	/**
-	 * 服务对象
-	 */
-	@Autowired
-	private JoinShareMoneyActivityRecordService joinShareMoneyActivityRecordService;
-
-	@Autowired
-	GenerateShareUrlService generateShareUrlService;
-
-
-	/**
-	 * 点击分享链接进入活动
-	 */
-	@PostMapping(value = "/user/joinShareMoneyActivityRecord/joinActivity")
-	public R joinActivity(@RequestParam(value = "activityId") Integer activityId, @RequestParam(value = "uid") Long uid) {
-		return joinShareMoneyActivityRecordService.joinActivity(activityId, uid);
-	}
-
+    
+    /**
+     * 服务对象
+     */
+    @Autowired
+    private JoinShareMoneyActivityRecordService joinShareMoneyActivityRecordService;
+    
+    @Autowired
+    GenerateShareUrlService generateShareUrlService;
+    
+    
+    /**
+     * 点击分享链接进入活动
+     */
+    @PostMapping(value = "/user/joinShareMoneyActivityRecord/joinActivity")
+    public R joinActivity(@RequestParam(value = "activityId") Integer activityId, @RequestParam(value = "uid") Long uid) {
+        return joinShareMoneyActivityRecordService.joinActivity(activityId, uid);
+    }
+    
 }

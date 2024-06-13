@@ -17,21 +17,21 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @Slf4j
 public class JsonUserShareMoneyActivityController {
+    
     /**
      * 服务对象
      */
     @Autowired
     private ShareMoneyActivityService shareMoneyActivityService;
-
-
-
+    
+    
     //查询活动详情
     @GetMapping(value = "/user/shareMoneyActivity/activityInfo")
     public R queryInfo() {
         return shareMoneyActivityService.activityInfo();
     }
-
-
+    
+    
     //查询是否有活动
     @GetMapping(value = "/user/shareMoneyActivity/checkActivity")
     public R checkActivity() {

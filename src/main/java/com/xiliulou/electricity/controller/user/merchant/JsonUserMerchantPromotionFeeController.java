@@ -122,7 +122,7 @@ public class JsonUserMerchantPromotionFeeController extends BaseController {
             log.error("ELECTRICITY  ERROR! not found user ");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-        return merchantPromotionFeeService.queryMerchantPromotionScanCode(type, uid,user.getType());
+        return merchantPromotionFeeService.queryMerchantPromotionScanCode(type, uid, user.getType());
     }
     
     /**
@@ -187,7 +187,7 @@ public class JsonUserMerchantPromotionFeeController extends BaseController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         
-        return merchantPromotionFeeService.statisticUser(type, uid, beginTime, endTime,user.getType());
+        return merchantPromotionFeeService.statisticUser(type, uid, beginTime, endTime, user.getType());
     }
     
     /**
@@ -243,7 +243,7 @@ public class JsonUserMerchantPromotionFeeController extends BaseController {
         if (size < 0 || size > 50) {
             size = 10L;
         }
-    
+        
         if (offset < 0) {
             offset = 0L;
         }

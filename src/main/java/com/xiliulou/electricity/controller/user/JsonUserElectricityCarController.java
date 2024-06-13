@@ -29,20 +29,20 @@ import java.util.Objects;
 @RestController
 @Slf4j
 public class JsonUserElectricityCarController {
-
+    
     @Autowired
     ElectricityCarService electricityCarService;
     
     @Autowired
     UserCarService userCarService;
-
+    
     @GetMapping("user/electricityCar")
     public R getSelfElectricityCar() {
         Long uid = SecurityUtils.getUid();
         if (Objects.isNull(uid)) {
             return R.fail("ELECTRICITY.0001", "未找到用户!");
         }
-
+        
         return R.ok(electricityCarService.queryInfoByUid(uid));
     }
     

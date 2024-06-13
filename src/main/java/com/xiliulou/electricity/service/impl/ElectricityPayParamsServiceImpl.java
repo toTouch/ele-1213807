@@ -16,6 +16,8 @@ import com.xiliulou.electricity.converter.ElectricityPayParamsConverter;
 import com.xiliulou.electricity.entity.EleDisableMemberCardRecord;
 import com.xiliulou.electricity.entity.ElectricityPayParams;
 import com.xiliulou.electricity.entity.Tenant;
+import com.xiliulou.electricity.entity.WechatPaymentCertificate;
+import com.xiliulou.electricity.entity.WechatWithdrawalCertificate;
 import com.xiliulou.electricity.enums.ElectricityPayParamsConfigEnum;
 import com.xiliulou.electricity.mapper.ElectricityPayParamsMapper;
 import com.xiliulou.electricity.request.payparams.ElectricityPayParamsRequest;
@@ -23,6 +25,7 @@ import com.xiliulou.electricity.service.ElectricityPayParamsService;
 import com.xiliulou.electricity.service.TenantService;
 import com.xiliulou.electricity.service.WechatPaymentCertificateService;
 import com.xiliulou.electricity.service.WechatWithdrawalCertificateService;
+import com.xiliulou.electricity.service.transaction.ElectricityPayParamsTxService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.vo.ElectricityPayParamsVO;
 import com.xiliulou.electricity.vo.merchant.ElectricityMerchantProConfigVO;
@@ -57,7 +60,7 @@ import java.util.stream.Collectors;
 @Slf4j
 public class ElectricityPayParamsServiceImpl extends ServiceImpl<ElectricityPayParamsMapper, ElectricityPayParams> implements ElectricityPayParamsService {
     
-    @Resource
+    @Autowired
     private TenantService tenantService;
     
     @Autowired
@@ -71,6 +74,9 @@ public class ElectricityPayParamsServiceImpl extends ServiceImpl<ElectricityPayP
     
     @Autowired
     private WechatWithdrawalCertificateService wechatWithdrawalCertificateService;
+    
+    @Autowired
+    private ElectricityPayParamsTxService electricityPayParamsTxService;
     
     /**
      * 新增或修改
@@ -126,9 +132,8 @@ public class ElectricityPayParamsServiceImpl extends ServiceImpl<ElectricityPayP
         
         //更新
         ElectricityPayParams update = ElectricityPayParamsConverter.optRequestToDO(request);
-        baseMapper.update(update);
-        // 缓存删除
-        this.deleteCache(tenantId, payParams.getFranchiseeId());
+        this.commonUpdate(update, tenantId, payParams.getFranchiseeId());
+        
         return R.ok();
     }
     
@@ -155,7 +160,7 @@ public class ElectricityPayParamsServiceImpl extends ServiceImpl<ElectricityPayP
         }
         
         // 逻辑删除
-        baseMapper.logicalDelete(id, tenantId);
+        electricityPayParamsTxService.delete(id, tenantId);
         // 缓存删除
         this.deleteCache(tenantId, payParams.getFranchiseeId());
         return R.ok();
@@ -169,6 +174,14 @@ public class ElectricityPayParamsServiceImpl extends ServiceImpl<ElectricityPayP
         return voList;
     }
     
+    @Override
+    public R getTenantId(String appId) {
+        ElectricityPayParams electricityPayParams = baseMapper.selectOne(new LambdaQueryWrapper<ElectricityPayParams>().eq(ElectricityPayParams::getMerchantMinProAppId, appId));
+        if (Objects.isNull(electricityPayParams)) {
+            return R.fail("ELECTRICITY.00101", "找不到租户");
+        }
+        return R.ok(electricityPayParams.getTenantId());
+    }
     
     /**
      * 获取支付参数 valid_days
@@ -182,16 +195,15 @@ public class ElectricityPayParamsServiceImpl extends ServiceImpl<ElectricityPayP
     }
     
     @Override
-    public R uploadFile(MultipartFile file, Integer type) {
+    public R uploadFile(MultipartFile file, Integer type, Long franchiseeId) {
         Integer tenantId = TenantContextHolder.getTenantId();
-        
         //加锁
-        boolean getLockerSuccess = redisService.setNx(CacheConstant.ADMIN_OPERATE_LOCK_KEY + tenantId, String.valueOf(System.currentTimeMillis()), 3 * 1000L, true);
-        if (!getLockerSuccess) {
+        if (!this.idempotentCheck()) {
             return R.failMsg("操作频繁!");
         }
         try {
-            ElectricityPayParams oldElectricityPayParams = queryFromCache(tenantId);
+            
+            ElectricityPayParams oldElectricityPayParams = queryCacheByTenantIdAndFranchiseeId(tenantId, franchiseeId);
             if (Objects.isNull(oldElectricityPayParams)) {
                 return R.fail("找不到支付配置");
             }
@@ -201,12 +213,20 @@ public class ElectricityPayParamsServiceImpl extends ServiceImpl<ElectricityPayP
             electricityPayParams.setTenantId(tenantId);
             electricityPayParams.setUpdateTime(System.currentTimeMillis());
             if (Objects.isNull(type) || Objects.equals(type, ElectricityPayParams.TYPE_MERCHANT_PATH)) {
-                wechatPaymentCertificateService.handleCertificateFile(file, tenantId);
+                WechatPaymentCertificate wechatPaymentCertificate = new WechatPaymentCertificate();
+                wechatPaymentCertificate.setTenantId(tenantId);
+                wechatPaymentCertificate.setPayParamsId(oldElectricityPayParams.getId());
+                wechatPaymentCertificate.setFranchiseeId(franchiseeId);
+                wechatPaymentCertificateService.handleCertificateFile(file, wechatPaymentCertificate);
             } else {
-                wechatWithdrawalCertificateService.handleCertificateFile(file, tenantId);
+                WechatWithdrawalCertificate wechatWithdrawalCertificate = new WechatWithdrawalCertificate();
+                wechatWithdrawalCertificate.setTenantId(tenantId);
+                wechatWithdrawalCertificate.setPayParamsId(oldElectricityPayParams.getId());
+                wechatWithdrawalCertificate.setFranchiseeId(franchiseeId);
+                wechatWithdrawalCertificateService.handleCertificateFile(file, wechatWithdrawalCertificate);
             }
             //更新支付参数
-            updateElectricityPayParams(electricityPayParams);
+            this.commonUpdate(electricityPayParams, tenantId, franchiseeId);
         } catch (Exception e) {
             log.error("certificate get error, tenantId={}", tenantId);
             return R.fail("证书内容获取失败，请重试！");
@@ -340,6 +360,7 @@ public class ElectricityPayParamsServiceImpl extends ServiceImpl<ElectricityPayP
      */
     private void updateElectricityPayParams(ElectricityPayParams electricityPayParams) {
         baseMapper.updateById(electricityPayParams);
+        
         redisService.delete(CacheConstant.CACHE_PAY_PARAMS + electricityPayParams.getTenantId());
     }
     
@@ -391,6 +412,20 @@ public class ElectricityPayParamsServiceImpl extends ServiceImpl<ElectricityPayP
         return null;
     }
     
+    /**
+     * 更新
+     *
+     * @param update
+     * @param tenantId
+     * @param franchiseeId
+     * @author caobotao.cbt
+     * @date 2024/6/13 10:44
+     */
+    private void commonUpdate(ElectricityPayParams update, Integer tenantId, Long franchiseeId) {
+        baseMapper.update(update);
+        // 缓存删除
+        this.deleteCache(tenantId, franchiseeId);
+    }
     
     /**
      * 缓存删除
@@ -402,6 +437,7 @@ public class ElectricityPayParamsServiceImpl extends ServiceImpl<ElectricityPayP
      */
     private void deleteCache(Integer tenantId, Long franchiseeId) {
         redisService.delete(buildCacheKey(tenantId, franchiseeId));
+        wechatPaymentCertificateService.deleteCache(tenantId, franchiseeId);
     }
     
     /**

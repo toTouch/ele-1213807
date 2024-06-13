@@ -18,20 +18,20 @@ import javax.annotation.Resource;
 @RestController
 @Slf4j
 public class JsonUserJoinShareMoneyActivityHistoryController {
-	/**
-	 * 服务对象
-	 */
-	@Resource
-	private JoinShareMoneyActivityHistoryService joinShareMoneyActivityHistoryService;
-
-
-
-	/**
-	 * 用户邀请记录
-	 */
-	@GetMapping(value = "/user/joinShareMoneyActivityHistory/list")
-	public R joinActivity(@RequestParam( "activityId") Integer activityId) {
-		return joinShareMoneyActivityHistoryService.userList(activityId);
-	}
-
+    
+    /**
+     * 服务对象
+     */
+    @Resource
+    private JoinShareMoneyActivityHistoryService joinShareMoneyActivityHistoryService;
+    
+    
+    /**
+     * 用户邀请记录
+     */
+    @GetMapping(value = "/user/joinShareMoneyActivityHistory/list")
+    public R joinActivity(@RequestParam("activityId") Integer activityId) {
+        return joinShareMoneyActivityHistoryService.userList(activityId);
+    }
+    
 }

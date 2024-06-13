@@ -13,23 +13,15 @@
         del_flag
     </sql>
     
-    <select id="selectByTenantId" resultType="com.xiliulou.electricity.entity.WechatPaymentCertificate">
-        select id,
-               tenant_id,
-               certificate_content,
-               upload_time
-        from t_wechat_payment_certificate
-        where tenant_id = #{tenantId};
-    
-    </select>
     <select id="selectByTenantIdAndFranchiseeId" resultType="com.xiliulou.electricity.entity.WechatPaymentCertificate">
         select
         <include refid="base_column"/>
         from t_wechat_payment_certificate
-        where tenant_id = #{tenantId} and franchisee_id = #{franchiseeId};
+        where tenant_id = #{tenantId} and franchisee_id = #{franchiseeId} and del_flag=#{0}
     </select>
     
-    <update id="updateByTenantId">
+    
+    <update id="updateByIdAndTenantId">
         update t_wechat_payment_certificate
         <set>
             <if test="certificateContent != null and certificateContent != ''">
@@ -39,6 +31,15 @@
                 upload_time = #{uploadTime},
             </if>
         </set>
-        where tenant_id = #{tenantId}
+        where id = #{id} and tenant_id = #{tenantId}
+    </update>
+    
+    <update id="logicalDeleteByPayParamsId">
+        update
+            t_wechat_payment_certificate
+        set del_flag   = 1,
+            update_time=now()
+        where pay_params_id = #{payParamsId}
+          and tenant_id = #{tenantId}
     </update>
 </mapper>

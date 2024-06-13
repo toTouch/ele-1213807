@@ -14,33 +14,30 @@ import org.springframework.web.bind.annotation.*;
  */
 @RestController
 public class JsonUserShareActivityRecordController {
+    
     /**
      * 服务对象
      */
     @Autowired
     private ShareActivityRecordService shareActivityRecordService;
-
-
+    
+    
     /**
      * 生成分享图片
-     *
-     *
      */
     @PostMapping(value = "/user/shareActivityRecord/generateSharePicture")
     public R generateShareUrl(@RequestParam(value = "activityId") Integer activityId, @RequestParam(value = "page", required = false) String page,
             @RequestParam(value = "env", required = false) String envVersion) {
         return shareActivityRecordService.generateSharePicture(activityId, page, envVersion);
     }
-
+    
     /**
      * 生成分享链接
-     *
-     *
      */
     @PostMapping(value = "/user/shareActivityRecord/generateShareUrl")
     public R generateShareUrl(@RequestParam(value = "activityId") Integer activityId) {
         return null;
     }
-
-
+    
+    
 }

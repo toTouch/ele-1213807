@@ -24,6 +24,7 @@ public class WechatPaymentCertificate {
      */
     private Integer tenantId;
     
+    
     /**
      * 证书内容
      */

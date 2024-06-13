@@ -22,13 +22,14 @@ import javax.annotation.Resource;
 @RestController
 @RequestMapping("/user/car/v2")
 public class JsonUserCarController {
-
+    
     @Resource
     private ElectricityCarService carService;
-
-
+    
+    
     /**
      * 根据车辆SN获取车辆型号ID
+     *
      * @param sn 车辆SN码
      * @return
      */
@@ -37,14 +38,14 @@ public class JsonUserCarController {
         if (StringUtils.isBlank(sn)) {
             return R.fail("ELECTRICITY.0007", "不合法的参数");
         }
-
+        
         Integer tenantId = TenantContextHolder.getTenantId();
-
+        
         ElectricityCar electricityCar = carService.selectBySn(sn, tenantId);
         if (ObjectUtils.isNotEmpty(electricityCar)) {
             return R.ok(electricityCar.getModelId());
         }
-
+        
         return R.ok();
     }
 }

@@ -29,54 +29,40 @@ import java.util.Objects;
 @RestController
 @Slf4j
 public class JsonUserStoreGoodsController {
-	/**
-	 * 服务对象
-	 */
-	@Autowired
-	StoreGoodsService storeGoodsService;
-
-	//列表查询
-	@GetMapping(value = "/user/storeShops/list")
-	public R queryList(@RequestParam("size") Long size,
-			@RequestParam("offset") Long offset,
-			@RequestParam(value = "name", required = false) String name,
-			@RequestParam(value = "beginTime", required = false) Long beginTime,
-			@RequestParam(value = "endTime", required = false) Long endTime,
-			@RequestParam(value = "storeId", required = false) Long storeId) {
-		if (size < 0 || size > 50) {
-			size = 10L;
-		}
-
-		if (offset < 0) {
-			offset = 0L;
-		}
-
-		StoreShopsQuery storeShopsQuery = StoreShopsQuery.builder()
-				.offset(offset)
-				.size(size)
-				.name(name)
-				.beginTime(beginTime)
-				.endTime(endTime)
-				.storeId(storeId).build();
-
-		return storeGoodsService.queryList(storeShopsQuery);
-	}
-
-	//列表查询
-	@GetMapping(value = "/user/storeShops/queryCount")
-	public R queryCount(@RequestParam(value = "name", required = false) String name,
-			@RequestParam(value = "beginTime", required = false) Long beginTime,
-			@RequestParam(value = "endTime", required = false) Long endTime,
-			@RequestParam(value = "storeId", required = false) Long storeId) {
-
-		//
-		StoreShopsQuery storeShopsQuery = StoreShopsQuery.builder()
-				.name(name)
-				.beginTime(beginTime)
-				.endTime(endTime)
-				.storeId(storeId).build();
-
-		return storeGoodsService.queryCount(storeShopsQuery);
-	}
-
+    
+    /**
+     * 服务对象
+     */
+    @Autowired
+    StoreGoodsService storeGoodsService;
+    
+    //列表查询
+    @GetMapping(value = "/user/storeShops/list")
+    public R queryList(@RequestParam("size") Long size, @RequestParam("offset") Long offset, @RequestParam(value = "name", required = false) String name,
+            @RequestParam(value = "beginTime", required = false) Long beginTime, @RequestParam(value = "endTime", required = false) Long endTime,
+            @RequestParam(value = "storeId", required = false) Long storeId) {
+        if (size < 0 || size > 50) {
+            size = 10L;
+        }
+        
+        if (offset < 0) {
+            offset = 0L;
+        }
+        
+        StoreShopsQuery storeShopsQuery = StoreShopsQuery.builder().offset(offset).size(size).name(name).beginTime(beginTime).endTime(endTime).storeId(storeId).build();
+        
+        return storeGoodsService.queryList(storeShopsQuery);
+    }
+    
+    //列表查询
+    @GetMapping(value = "/user/storeShops/queryCount")
+    public R queryCount(@RequestParam(value = "name", required = false) String name, @RequestParam(value = "beginTime", required = false) Long beginTime,
+            @RequestParam(value = "endTime", required = false) Long endTime, @RequestParam(value = "storeId", required = false) Long storeId) {
+        
+        //
+        StoreShopsQuery storeShopsQuery = StoreShopsQuery.builder().name(name).beginTime(beginTime).endTime(endTime).storeId(storeId).build();
+        
+        return storeGoodsService.queryCount(storeShopsQuery);
+    }
+    
 }
