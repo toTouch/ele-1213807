@@ -13,13 +13,13 @@ import com.xiliulou.electricity.query.BatteryReportQuery;
 import com.xiliulou.electricity.query.EleOuterCommandQuery;
 import com.xiliulou.electricity.query.ElectricityCabinetAddAndUpdate;
 import com.xiliulou.electricity.query.ElectricityCabinetAddressQuery;
-import com.xiliulou.electricity.query.ElectricityCabinetBatchEditRentReturnCountQuery;
 import com.xiliulou.electricity.query.ElectricityCabinetBatchEditRentReturnQuery;
 import com.xiliulou.electricity.query.ElectricityCabinetImportQuery;
 import com.xiliulou.electricity.query.ElectricityCabinetQuery;
 import com.xiliulou.electricity.query.ElectricityCabinetTransferQuery;
 import com.xiliulou.electricity.query.HomepageBatteryFrequencyQuery;
 import com.xiliulou.electricity.query.HomepageElectricityExchangeFrequencyQuery;
+import com.xiliulou.electricity.query.RentReturnEditQuery;
 import com.xiliulou.electricity.query.api.ApiRequestQuery;
 import com.xiliulou.electricity.request.asset.TransferCabinetModelRequest;
 import com.xiliulou.electricity.vo.CabinetBatteryVO;
@@ -296,6 +296,7 @@ public interface ElectricityCabinetService {
     
     RentReturnEditEchoVO rentReturnEditEcho(Long id);
     
-    void batchEditRentReturn(ElectricityCabinetBatchEditRentReturnQuery rentReturnQuery);
+    R batchEditRentReturn(ElectricityCabinetBatchEditRentReturnQuery rentReturnQuery);
     
+    R editRentReturn(RentReturnEditQuery editQuery);
 }

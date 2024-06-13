@@ -6,6 +6,7 @@ import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.RandomUtil;
 import com.alibaba.excel.EasyExcel;
+import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.google.common.collect.Maps;
@@ -945,7 +946,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
         if (StringUtils.isNotBlank(version) && VersionUtil.compareVersion(ELE_CABINET_VERSION, version) > 0) {
             Pair<Boolean, Integer> versionPair = electricityCabinetService.findUsableEmptyCellNo(eid);
             return versionPair.getLeft() ? Triple.of(versionPair.getLeft(), versionPair.getRight(), null)
-                    : Triple.of(versionPair.getLeft(), versionPair.getRight(), "当前无空余格挡可供退电，请联系客服！");
+                    : Triple.of(versionPair.getLeft(), null, "当前无空余格挡可供退电，请联系客服！");
         }
         
         Integer cellNo = null;
@@ -1399,12 +1400,15 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
         if (Objects.isNull(cabinetExtra)) {
             return Triple.of(false, "ELECTRICITY.0026", "换电柜异常，不存在扩展信息");
         }
+        log.info("rentBattery.allocateFullBatteryBox, cabinetExtra is {}", JSON.toJSONString(cabinetExtra));
         
         if (!Objects.equals(cabinetExtra.getRentTabType(), RentReturnNormEnum.ALL_RENT.getCode())) {
+           
             // 不允许租电
             if (Objects.equals(cabinetExtra.getRentTabType(), RentReturnNormEnum.NOT_RENT.getCode())) {
                 return Triple.of(false, "ELECTRICITY.0026", "当前柜机暂不符合租电标准，无法租电，请选择其他柜机");
             }
+            
             // 在仓电池数
             List<ElectricityCabinetBox> boxList = electricityCabinetBoxService.selectHaveBatteryCellId(electricityCabinet.getId());
             
