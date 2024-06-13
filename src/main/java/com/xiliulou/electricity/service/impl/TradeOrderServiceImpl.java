@@ -269,7 +269,13 @@ public class TradeOrderServiceImpl implements TradeOrderService {
                 return Triple.of(false, "ELECTRICITY.0049", "已缴纳押金");
             }
             
-            ElectricityPayParams electricityPayParams = electricityPayParamsService.queryFromCache(tenantId);
+            // 根据标识判断是否支付给加盟商，同时兼容旧版本未传次标识
+            ElectricityPayParams electricityPayParams = null;
+            if (Objects.equals(integratedPaymentAdd.getPayTheFranchisee(), IntegratedPaymentAdd.PAY_THE_FRANCHISEE_YES)) {
+                electricityPayParams = electricityPayParamsService.queryCacheByTenantIdAndFranchiseeId(tenantId, integratedPaymentAdd.getFranchiseeId());
+            }else {
+                electricityPayParams = electricityPayParamsService.queryFromCache(tenantId);
+            }
             if (Objects.isNull(electricityPayParams)) {
                 log.warn("BATTERY DEPOSIT WARN!not found pay params,uid={}", user.getUid());
                 return Triple.of(false, "100307", "未配置支付参数!");
@@ -421,7 +427,7 @@ public class TradeOrderServiceImpl implements TradeOrderService {
             try {
                 UnionPayOrder unionPayOrder = UnionPayOrder.builder().jsonOrderId(JsonUtil.toJson(orderList)).jsonOrderType(JsonUtil.toJson(orderTypeList))
                         .jsonSingleFee(JsonUtil.toJson(allPayAmount)).payAmount(integratedPaAmount).tenantId(tenantId).attach(UnionTradeOrder.ATTACH_INTEGRATED_PAYMENT)
-                        .description("租电押金").uid(user.getUid()).build();
+                        .description("租电押金").uid(user.getUid()).franchiseeId(integratedPaymentAdd.getFranchiseeId()).build();
                 WechatJsapiOrderResultDTO resultDTO = unionTradeOrderService.unionCreateTradeOrderAndGetPayParams(unionPayOrder, electricityPayParams, userOauthBind.getThirdId(),
                         request);
                 return Triple.of(true, null, resultDTO);

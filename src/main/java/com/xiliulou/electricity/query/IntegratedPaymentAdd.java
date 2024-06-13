@@ -47,4 +47,11 @@ public class IntegratedPaymentAdd {
     
     //优惠券
     private List<Integer> userCouponIds;
+    
+    /**
+     * 是否支付给加盟商
+     */
+    private Integer payTheFranchisee;
+    
+    public static final Integer PAY_THE_FRANCHISEE_YES = 1;
 }
