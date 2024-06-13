@@ -44,4 +44,25 @@ public interface ElectricityPayParamsMapper extends BaseMapper<ElectricityPayPar
      * @date 2024/6/12 18:12
      */
     List<ElectricityPayParams> selectByTenantId(@Param("tenantId") Integer tenantId);
+    
+    /**
+     * 根据租户id+configType 查询
+     *
+     * @param tenantId
+     * @param configType
+     * @author caobotao.cbt
+     * @date 2024/6/13 17:00
+     */
+    List<ElectricityPayParams> selectIdsByTenantIdAndConfigType(@Param("tenantId") Integer tenantId, @Param("configType") Integer configType);
+    
+    /**
+     * 同步小程序配置
+     *
+     * @param update
+     * @param franchiseePayParamIds
+     * @author caobotao.cbt
+     * @date 2024/6/13 17:10
+     */
+    int updateSync(@Param("update") ElectricityPayParams update, @Param("ids") List<Integer> ids);
+    
 }
