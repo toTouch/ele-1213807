@@ -563,8 +563,8 @@ public class NormalOffLineEleExchangeHandlerIot extends AbstractElectricityIotHa
         }
         
         Matcher matcher = MOBILE.matcher(receivePhone);
-        while (matcher.find()) {
-            phone = matcher.group(0);
+        if(matcher.find()){
+            return matcher.group(0);
         }
         
         return phone;
