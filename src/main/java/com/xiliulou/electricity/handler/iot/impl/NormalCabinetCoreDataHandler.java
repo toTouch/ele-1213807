@@ -31,7 +31,6 @@ public class NormalCabinetCoreDataHandler extends AbstractElectricityIotHandler 
     private EleCabinetCoreDataService eleCabinetCoreDataService;
     
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public void postHandleReceiveMsg(ElectricityCabinet electricityCabinet, ReceiverMessage receiverMessage) {
         
         EleCabinetCoreDataVO eleCabinetCoreDataVO = JsonUtil.fromJson(receiverMessage.getOriginContent(), EleCabinetCoreDataVO.class);
