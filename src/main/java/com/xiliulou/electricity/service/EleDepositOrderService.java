@@ -51,8 +51,6 @@ public interface EleDepositOrderService {
 
     BigDecimal queryTurnOver(Integer tenantId);
 
-    R payBatteryServiceFee(HttpServletRequest request);
-
     R adminPayRentCarDeposit(RentCarDepositAdd rentCarDepositAdd);
 
     R refundRentCarDeposit(HttpServletRequest request);
