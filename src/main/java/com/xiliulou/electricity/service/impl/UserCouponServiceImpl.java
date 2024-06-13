@@ -867,6 +867,10 @@ public class UserCouponServiceImpl implements UserCouponService {
             //优惠券过期时间
             LocalDateTime now = LocalDateTime.now().plusDays(coupon.getDays());
             couponBuild.deadline(TimeUtils.convertTimeStamp(now));
+    
+            if (Objects.nonNull(coupon.getFranchiseeId())) {
+                couponBuild.franchiseeId(coupon.getFranchiseeId());
+            }
             
             UserCoupon userCoupon = couponBuild.build();
             userCouponMapper.insert(userCoupon);
