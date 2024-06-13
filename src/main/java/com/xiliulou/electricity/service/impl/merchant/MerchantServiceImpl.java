@@ -213,7 +213,7 @@ public class MerchantServiceImpl implements MerchantService {
     
         // 检测选中的加盟商和当前登录加盟商是否一致
         if (Objects.nonNull(merchantSaveRequest.getBindFranchiseeId()) && !Objects.equals(merchantSaveRequest.getBindFranchiseeId(), merchantSaveRequest.getFranchiseeId())) {
-            log.error("merchant save error, franchisee is not different id={}, franchiseeId={}, bindFranchiseeId={}", merchantSaveRequest.getId(), merchantSaveRequest.getFranchiseeId(), merchantSaveRequest.getBindFranchiseeId());
+            log.info("merchant save info, franchisee is not different id={}, franchiseeId={}, bindFranchiseeId={}", merchantSaveRequest.getId(), merchantSaveRequest.getFranchiseeId(), merchantSaveRequest.getBindFranchiseeId());
             return Triple.of(false, "120240", "当前加盟商无权限操作");
         }
         
@@ -565,13 +565,13 @@ public class MerchantServiceImpl implements MerchantService {
         
         // 判断修改的加盟商是否有改变
         if (!Objects.equals(merchantSaveRequest.getFranchiseeId(), merchant.getFranchiseeId())) {
-            log.error("merchant update error, franchisee not allow change id={}, franchiseeId={}, updateFranchiseeId={}", merchantSaveRequest.getId(), merchant.getFranchiseeId(), merchantSaveRequest.getFranchiseeId());
+            log.info("merchant update info, franchisee not allow change id={}, franchiseeId={}, updateFranchiseeId={}", merchantSaveRequest.getId(), merchant.getFranchiseeId(), merchantSaveRequest.getFranchiseeId());
             return Triple.of(false, "120239", "商户加盟商不允许修改");
         }
         
         // 检测选中的加盟商和当前登录加盟商是否一致
         if (Objects.nonNull(merchantSaveRequest.getBindFranchiseeId()) && !Objects.equals(merchantSaveRequest.getBindFranchiseeId(), merchantSaveRequest.getFranchiseeId())) {
-            log.error("merchant update error, franchisee is not different id={}, franchiseeId={}, bindFranchiseeId={}", merchantSaveRequest.getId(), merchantSaveRequest.getFranchiseeId(), merchantSaveRequest.getBindFranchiseeId());
+            log.info("merchant update info, franchisee is not different id={}, franchiseeId={}, bindFranchiseeId={}", merchantSaveRequest.getId(), merchantSaveRequest.getFranchiseeId(), merchantSaveRequest.getBindFranchiseeId());
             return Triple.of(false, "120240", "当前加盟商无权限操作");
         }
         
@@ -946,7 +946,7 @@ public class MerchantServiceImpl implements MerchantService {
         }
         
         if (Objects.nonNull(bindFranchiseeId) && !Objects.equals(merchant.getFranchiseeId(), bindFranchiseeId)) {
-            log.error("merchant delete error, franchisee is not different id={}, franchiseeId={}, bindFranchiseeId={}", id, merchant.getFranchiseeId(), bindFranchiseeId);
+            log.info("merchant delete info, franchisee is not different id={}, franchiseeId={}, bindFranchiseeId={}", id, merchant.getFranchiseeId(), bindFranchiseeId);
             return Triple.of(false, "120240", "当前加盟商无权限操作");
         }
         
@@ -1276,7 +1276,7 @@ public class MerchantServiceImpl implements MerchantService {
         }
         
         if (Objects.nonNull(franchiseeId) && !Objects.equals(franchiseeId, merchant.getFranchiseeId())) {
-            log.error("MERCHANT QUERY ERROR! franchisee is not different, id={}, franchiseeId={}", "商户不存在", id, franchiseeId);
+            log.info("MERCHANT QUERY INFO! franchisee is not different, id={}, franchiseeId={}", "商户不存在", id, franchiseeId);
             return Triple.of(false, "120212", "商户不存在");
         }
         

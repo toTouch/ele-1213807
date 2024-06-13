@@ -430,7 +430,7 @@ public class MerchantPlaceServiceImpl implements MerchantPlaceService {
         MerchantPlace merchantPlace = this.queryByIdFromCache(merchantPlacePageRequest.getPlaceId());
         
         if (Objects.isNull(merchantPlace) || !Objects.equals(merchantPlace.getTenantId(), merchantPlacePageRequest.getTenantId())) {
-            log.info("place cabinet info, place is not exists, placeId={}, curTenantId={}", merchantPlace.getId(), merchantPlacePageRequest.getTenantId());
+            log.info("place cabinet info, place is not exists, placeId={}, curTenantId={}", merchantPlacePageRequest.getPlaceId(), merchantPlacePageRequest.getTenantId());
             return Triple.of(false, "120209", "场地不存在");
         }
         
