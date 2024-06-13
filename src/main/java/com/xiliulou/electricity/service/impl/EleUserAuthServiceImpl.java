@@ -33,6 +33,7 @@ import com.xiliulou.security.bean.TokenUser;
 import com.xiliulou.storage.config.StorageConfig;
 import com.xiliulou.storage.service.StorageService;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -146,7 +147,7 @@ public class EleUserAuthServiceImpl implements EleUserAuthService {
     
         Triple<Boolean, String, Object> checkResult = checkIdCardExists(eleUserAuthList);
         if (!checkResult.getLeft()) {
-            return R.failMsg(checkResult.getMiddle());
+            return R.fail(ObjectUtils.isEmpty(checkResult.getRight()) ? null : checkResult.getRight().toString(), checkResult.getMiddle());
         }
         
         UserInfo userInfo = new UserInfo();
@@ -241,7 +242,7 @@ public class EleUserAuthServiceImpl implements EleUserAuthService {
             
             for (UserInfo userInfo : userInfos) {
                 if (!Objects.equals(SecurityUtils.getUid(), userInfo.getUid())) {
-                    return Triple.of(false, "身份证信息已存在，请核实后重新提交", null);
+                    return Triple.of(false, "身份证信息已存在，请核实后重新提交", 100339);
                 }
             }
             return Triple.of(true, null, null);
