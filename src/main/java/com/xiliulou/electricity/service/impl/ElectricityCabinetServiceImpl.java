@@ -6118,10 +6118,16 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     
     @Override
     public R editRentReturn(RentReturnEditQuery editQuery) {
+        // 查询柜机
+        ElectricityCabinet electricityCabinet = electricityCabinetService.queryByProductAndDeviceName(editQuery.getProductKey(), editQuery.getDeviceName());
+        if (Objects.isNull(electricityCabinet)) {
+            return R.fail("不存在的柜机");
+        }
         checkUpdateBatchElectricityCabinetExtra(editQuery.getRentTabType(), editQuery.getReturnTabType(), editQuery.getMinRetainBatteryCount(),
                 editQuery.getMaxRetainBatteryCount());
+        // update
         ElectricityCabinetAddAndUpdate cabinetAddAndUpdate = new ElectricityCabinetAddAndUpdate();
-        cabinetAddAndUpdate.setId(editQuery.getId());
+        cabinetAddAndUpdate.setId(electricityCabinet.getId());
         cabinetAddAndUpdate.setRentTabType(editQuery.getRentTabType());
         cabinetAddAndUpdate.setReturnTabType(editQuery.getReturnTabType());
         cabinetAddAndUpdate.setMinRetainBatteryCount(editQuery.getMinRetainBatteryCount());

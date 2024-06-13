@@ -4,6 +4,7 @@ import lombok.Data;
 
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
 /**
@@ -16,10 +17,16 @@ import javax.validation.constraints.NotNull;
 public class RentReturnEditQuery {
     
     /**
-     * 柜机id
+     * 物联网productKey
      */
-    @NotNull(message = "id不能为空")
-    private Integer id;
+    @NotBlank(message = "物联网productKey")
+    private String productKey;
+    
+    /**
+     * 物联网deviceName
+     */
+    @NotBlank(message = "deviceName")
+    private String deviceName;
     
     /**
      * 租电类型（全部可租电、不允许租电、最少保留一块电池、自定义） RentReturnNormEnum
