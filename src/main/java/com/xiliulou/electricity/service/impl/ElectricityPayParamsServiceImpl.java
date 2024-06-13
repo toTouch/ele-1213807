@@ -42,6 +42,7 @@ import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -287,7 +288,6 @@ public class ElectricityPayParamsServiceImpl extends ServiceImpl<ElectricityPayP
     
     @Override
     public ElectricityPayParams queryCacheByTenantIdAndFranchiseeId(Integer tenantId, Long franchiseeId) {
-        
         // 批量查询缓存
         List<ElectricityPayParams> electricityPayParamsList = this.queryFromCacheList(tenantId, Sets.newHashSet(franchiseeId, MultiFranchiseeConstant.DEFAULT_FRANCHISEE));
         if (CollectionUtils.isEmpty(electricityPayParamsList)) {
@@ -346,7 +346,7 @@ public class ElectricityPayParamsServiceImpl extends ServiceImpl<ElectricityPayP
             return payParams;
         }
         
-        // 如果需要，从数据库查询数据
+        // 从数据库查询数据
         List<ElectricityPayParams> dbList = baseMapper.selectListByTenantIdAndFranchiseeIds(tenantId, qryDbList);
         
         if (CollectionUtils.isNotEmpty(dbList)) {
