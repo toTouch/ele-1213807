@@ -65,6 +65,11 @@ public class UnionTradeOrder {
     
     private Integer tenantId;
     
+    /**
+     * 微信商户号
+     */
+    private String wechatMerchantId;
+    
     public static final Integer STATUS_INIT = 0;
     
     public static final Integer STATUS_SUCCESS = 1;

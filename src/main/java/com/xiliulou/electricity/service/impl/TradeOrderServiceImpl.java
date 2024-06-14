@@ -473,7 +473,13 @@ public class TradeOrderServiceImpl implements TradeOrderService {
                 return Triple.of(false, "ELECTRICITY.0049", "未缴纳押金");
             }
             
-            ElectricityPayParams electricityPayParams = electricityPayParamsService.queryCacheByTenantIdAndFranchiseeId(tenantId, userInfo.getFranchiseeId());
+            BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(query.getMemberId());
+            if (Objects.isNull(batteryMemberCard)) {
+                log.warn("BATTERY DEPOSIT WARN!not found batteryMemberCard,uid={},mid={}", userInfo.getUid(), query.getMemberId());
+                return Triple.of(false, "ELECTRICITY.00121", "电池套餐不存在");
+            }
+            
+            ElectricityPayParams electricityPayParams = electricityPayParamsService.queryCacheByTenantIdAndFranchiseeId(tenantId, batteryMemberCard.getFranchiseeId());
             if (Objects.isNull(electricityPayParams)) {
                 log.warn("BATTERY DEPOSIT WARN!not found pay params,uid={}", userInfo.getUid());
                 return Triple.of(false, "100307", "未配置支付参数!");
@@ -496,12 +502,6 @@ public class TradeOrderServiceImpl implements TradeOrderService {
             if (refundCount > 0) {
                 log.warn("ELE DEPOSIT WARN! have refunding order,uid={}", userInfo.getUid());
                 return Triple.of(false, "ELECTRICITY.0047", "电池押金退款中");
-            }
-            
-            BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(query.getMemberId());
-            if (Objects.isNull(batteryMemberCard)) {
-                log.warn("BATTERY DEPOSIT WARN!not found batteryMemberCard,uid={},mid={}", userInfo.getUid(), query.getMemberId());
-                return Triple.of(false, "ELECTRICITY.00121", "电池套餐不存在");
             }
     
             // 判断套餐用户分组和用户的用户分组是否匹配

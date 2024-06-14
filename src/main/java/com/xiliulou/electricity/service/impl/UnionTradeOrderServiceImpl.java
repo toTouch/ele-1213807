@@ -360,6 +360,7 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
         unionTradeOrder.setTotalFee(unionPayOrder.getPayAmount());
         unionTradeOrder.setUid(unionPayOrder.getUid());
         unionTradeOrder.setTenantId(unionPayOrder.getTenantId());
+        unionTradeOrder.setWechatMerchantId(electricityPayParams.getWechatMerchantId());
         baseMapper.insert(unionTradeOrder);
         
         List<String> jsonOrderList = JsonUtil.fromJsonArray(unionPayOrder.getJsonOrderId(), String.class);
@@ -376,6 +377,8 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
             electricityTradeOrder.setUid(unionPayOrder.getUid());
             electricityTradeOrder.setTenantId(unionPayOrder.getTenantId());
             electricityTradeOrder.setParentOrderId(unionTradeOrder.getId());
+            electricityTradeOrder.setFranchiseeId(electricityPayParams.getFranchiseeId());
+            electricityTradeOrder.setWechatMerchantId(electricityPayParams.getWechatMerchantId());
             electricityTradeOrderService.insert(electricityTradeOrder);
         }
         
