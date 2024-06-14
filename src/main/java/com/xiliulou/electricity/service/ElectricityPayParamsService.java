@@ -21,6 +21,7 @@ public interface ElectricityPayParamsService extends IService<ElectricityPayPara
     
     
     R getTenantId(String appId);
+    
     /**
      * 上传支付证书
      *
@@ -28,12 +29,12 @@ public interface ElectricityPayParamsService extends IService<ElectricityPayPara
      * @param type type
      * @return R
      */
-    R uploadFile(MultipartFile file, Integer type,Long franchiseeId);
+    R uploadFile(MultipartFile file, Integer type, Long franchiseeId);
     
     
     ElectricityPayParams selectTenantId(String appId);
     
-    
+    @Deprecated
     Triple<Boolean, String, Object> queryByMerchantAppId(String appId);
     
     

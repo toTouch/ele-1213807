@@ -1,23 +1,25 @@
-package com.xiliulou.electricity.entity;
+/**
+ * Copyright(c) 2018 Sunyur.com, All Rights Reserved. Author: sunyur Create date: 2024/6/14
+ */
 
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableName;
-import com.xiliulou.electricity.enums.ElectricityPayParamsConfigEnum;
+package com.xiliulou.electricity.bo.wechat;
+
 import lombok.Data;
 
+import java.math.BigInteger;
+import java.security.PrivateKey;
+import java.security.cert.X509Certificate;
+import java.util.HashMap;
 
 /**
- * @program: XILIULOU
- * @description:
- * @author: Mr.YG
- * @create: 2020-12-01 09:26
- **/
+ * description: 微信支付参数详情
+ *
+ * @author caobotao.cbt
+ * @date 2024/6/14 13:04
+ */
 @Data
-@TableName("t_electricity_pay_params")
-public class ElectricityPayParams {
+public class WechatPayParamsDetails {
     
-    @TableId(value = "id", type = IdType.AUTO)
     private Integer id;
     
     /**
@@ -67,16 +69,6 @@ public class ElectricityPayParams {
     
     
     /**
-     * 创建时间
-     */
-    private Long createTime;
-    
-    /**
-     * 更新时间
-     */
-    private Long updateTime;
-    
-    /**
      * apiName
      */
     private String apiName;
@@ -86,12 +78,20 @@ public class ElectricityPayParams {
      */
     private String paternerKey;
     
-    public static final Integer TYPE_MERCHANT_PATH = 1;
+    
+    /**
+     * 商家版小程序 appid
+     */
+    private String merchantAppletId;
+    
+    /**
+     * 商家版小程序 appSecret
+     */
+    private String merchantAppletSecret;
+    
     
     /**
      * 配置类型
-     *
-     * @see ElectricityPayParamsConfigEnum
      */
     private Integer configType;
     
@@ -102,6 +102,15 @@ public class ElectricityPayParams {
     private Long franchiseeId;
     
     
-    private Integer delFlag;
+    /**
+     * 私钥
+     */
+    private PrivateKey privateKey;
+    
+    
+    /**
+     * 微信证书
+     */
+    private HashMap<BigInteger, X509Certificate> wechatPlatformCertificateMap;
     
 }

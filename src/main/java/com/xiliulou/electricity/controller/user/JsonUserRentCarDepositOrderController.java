@@ -29,6 +29,7 @@ public class JsonUserRentCarDepositOrderController extends BaseController {
      *
      * @return
      */
+    @Deprecated
     @PostMapping("/user/rentCarDeposit/order")
     public R payRentCarDeposit(@RequestParam(value = "storeId") Long storeId, @RequestParam(value = "carModelId") Integer carModelId, HttpServletRequest request) {
         return returnTripleResult(carDepositOrderService.payRentCarDeposit(storeId, carModelId, request));
