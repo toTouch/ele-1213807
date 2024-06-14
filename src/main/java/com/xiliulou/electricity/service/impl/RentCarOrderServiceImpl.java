@@ -3,6 +3,7 @@ package com.xiliulou.electricity.service.impl;
 import cn.hutool.core.util.ObjectUtil;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
+import com.xiliulou.electricity.bo.wechat.WechatPayParamsDetails;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.*;
@@ -30,6 +31,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.math.BigDecimal;
 import java.util.*;
@@ -104,6 +106,9 @@ public class RentCarOrderServiceImpl implements RentCarOrderService {
 
     @Autowired
     BatteryMemberCardOrderCouponService memberCardOrderCouponService;
+    
+    @Resource
+    private WechatPayParamsBizService wechatPayParamsBizService;
 
     /**
      * 通过ID查询单条数据从DB
@@ -722,8 +727,8 @@ public class RentCarOrderServiceImpl implements RentCarOrderService {
         }
 
         //支付相关
-        ElectricityPayParams electricityPayParams = electricityPayParamsService.queryFromCache(tenantId);
-        if (Objects.isNull(electricityPayParams)) {
+        WechatPayParamsDetails wechatPayParamsDetails = wechatPayParamsBizService.getDetailsByIdTenantIdAndFranchiseeId(tenantId, query.getFranchiseeId());
+        if (Objects.isNull(wechatPayParamsDetails)) {
             log.error("ELE CAR DEPOSIT ERROR!not found electricityPayParams,uid={}", user.getUid());
             return Triple.of(false, "100234", "未配置支付参数!");
         }
@@ -869,7 +874,7 @@ public class RentCarOrderServiceImpl implements RentCarOrderService {
                     .description("租车押金")
                     .uid(user.getUid()).build();
             WechatJsapiOrderResultDTO resultDTO =
-                    unionTradeOrderService.unionCreateTradeOrderAndGetPayParams(unionPayOrder, electricityPayParams, userOauthBind.getThirdId(), request);
+                    unionTradeOrderService.unionCreateTradeOrderAndGetPayParams(unionPayOrder, wechatPayParamsDetails, userOauthBind.getThirdId(), request);
             return Triple.of(true, null, resultDTO);
         } catch (WechatPayException e) {
             log.error("CREATE UNION_INSURANCE_DEPOSIT_ORDER ERROR! wechat v3 order  error! uid={}", user.getUid(), e);

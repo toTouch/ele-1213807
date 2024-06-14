@@ -6,11 +6,13 @@ import cn.hutool.core.util.RandomUtil;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
+import com.xiliulou.electricity.bo.wechat.WechatPayParamsDetails;
 import com.xiliulou.electricity.config.WechatConfig;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.constant.TimeConstant;
 import com.xiliulou.electricity.constant.merchant.MerchantConstant;
+import com.xiliulou.electricity.converter.ElectricityPayParamsConverter;
 import com.xiliulou.electricity.dto.ActivityProcessDTO;
 import com.xiliulou.electricity.dto.DivisionAccountOrderDTO;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
@@ -25,7 +27,6 @@ import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.ElectricityCar;
 import com.xiliulou.electricity.entity.ElectricityConfig;
 import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
-import com.xiliulou.electricity.entity.ElectricityPayParams;
 import com.xiliulou.electricity.entity.ElectricityTradeOrder;
 import com.xiliulou.electricity.entity.EnableMemberCardRecord;
 import com.xiliulou.electricity.entity.FranchiseeInsurance;
@@ -124,10 +125,9 @@ import com.xiliulou.mq.service.RocketMqService;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiOrderCallBackResource;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiOrderResultDTO;
 import com.xiliulou.pay.weixinv3.exception.WechatPayException;
-import com.xiliulou.pay.weixinv3.franchisee.request.WechatV3FranchiseeOrderRequest;
-import com.xiliulou.pay.weixinv3.franchisee.service.WechatV3JsapiFranchiseeService;
-import com.xiliulou.pay.weixinv3.query.WechatV3OrderQuery;
 import com.xiliulou.pay.weixinv3.service.WechatV3JsapiService;
+import com.xiliulou.pay.weixinv3.v2.query.WechatV3OrderRequest;
+import com.xiliulou.pay.weixinv3.v2.service.WechatV3JsapiInvokeService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.ObjectUtils;
@@ -178,7 +178,7 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
     @Autowired
     WechatConfig wechatConfig;
     
-    @Autowired
+    @Resource
     WechatV3JsapiService wechatV3JsapiService;
     
     @Autowired
@@ -341,10 +341,10 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
     private OverdueUserRemarkPublish overdueUserRemarkPublish;
     
     @Resource
-    WechatV3JsapiFranchiseeService wechatV3JsapiFranchiseeService;
+    private WechatV3JsapiInvokeService wechatV3JsapiInvokeService;
     
     @Override
-    public WechatJsapiOrderResultDTO unionCreateTradeOrderAndGetPayParams(UnionPayOrder unionPayOrder, ElectricityPayParams electricityPayParams, String openId,
+    public WechatJsapiOrderResultDTO unionCreateTradeOrderAndGetPayParams(UnionPayOrder unionPayOrder, WechatPayParamsDetails wechatPayParamsDetails, String openId,
             HttpServletRequest request) throws WechatPayException {
         
         String ip = request.getRemoteAddr();
@@ -360,7 +360,7 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
         unionTradeOrder.setTotalFee(unionPayOrder.getPayAmount());
         unionTradeOrder.setUid(unionPayOrder.getUid());
         unionTradeOrder.setTenantId(unionPayOrder.getTenantId());
-        unionTradeOrder.setWechatMerchantId(electricityPayParams.getWechatMerchantId());
+        unionTradeOrder.setWechatMerchantId(wechatPayParamsDetails.getWechatMerchantId());
         baseMapper.insert(unionTradeOrder);
         
         List<String> jsonOrderList = JsonUtil.fromJsonArray(unionPayOrder.getJsonOrderId(), String.class);
@@ -377,26 +377,25 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
             electricityTradeOrder.setUid(unionPayOrder.getUid());
             electricityTradeOrder.setTenantId(unionPayOrder.getTenantId());
             electricityTradeOrder.setParentOrderId(unionTradeOrder.getId());
-            electricityTradeOrder.setFranchiseeId(electricityPayParams.getFranchiseeId());
-            electricityTradeOrder.setWechatMerchantId(electricityPayParams.getWechatMerchantId());
+            electricityTradeOrder.setFranchiseeId(wechatPayParamsDetails.getFranchiseeId());
+            electricityTradeOrder.setWechatMerchantId(wechatPayParamsDetails.getWechatMerchantId());
             electricityTradeOrderService.insert(electricityTradeOrder);
         }
         
-        //支付参数
-        WechatV3FranchiseeOrderRequest wechatV3OrderQuery = new WechatV3FranchiseeOrderRequest();
-        wechatV3OrderQuery.setOrderId(unionTradeOrder.getTradeOrderNo());
-        wechatV3OrderQuery.setTenantId(unionTradeOrder.getTenantId());
-        wechatV3OrderQuery.setNotifyUrl(wechatConfig.getPayCallBackUrl() + unionTradeOrder.getTenantId() + "/" + electricityPayParams.getFranchiseeId());
-        wechatV3OrderQuery.setExpireTime(System.currentTimeMillis() + 3600000);
-        wechatV3OrderQuery.setOpenId(openId);
+        // 支付参数
+        WechatV3OrderRequest wechatV3OrderQuery = new WechatV3OrderRequest();
+        wechatV3OrderQuery.setAppid(wechatPayParamsDetails.getMerchantMinProAppId());
         wechatV3OrderQuery.setDescription(unionPayOrder.getDescription());
-        wechatV3OrderQuery.setCurrency("CNY");
+        wechatV3OrderQuery.setOrderId(unionTradeOrder.getTradeOrderNo());
+        wechatV3OrderQuery.setExpireTime(System.currentTimeMillis() + 3600000);
         wechatV3OrderQuery.setAttach(unionPayOrder.getAttach());
+        wechatV3OrderQuery.setNotifyUrl(wechatConfig.getPayCallBackUrl() + unionTradeOrder.getTenantId() + "/" + wechatPayParamsDetails.getFranchiseeId());
         wechatV3OrderQuery.setAmount(unionPayOrder.getPayAmount().multiply(new BigDecimal(100)).intValue());
-        wechatV3OrderQuery.setAppid(electricityPayParams.getMerchantMinProAppId());
-        wechatV3OrderQuery.setFranchiseeId(electricityPayParams.getFranchiseeId());
+        wechatV3OrderQuery.setCurrency("CNY");
+        wechatV3OrderQuery.setOpenId(openId);
+        wechatV3OrderQuery.setCommonRequest(ElectricityPayParamsConverter.qryDetailsToCommonRequest(wechatPayParamsDetails));
         log.info("wechatV3OrderQuery is -->{}", wechatV3OrderQuery);
-        return wechatV3JsapiFranchiseeService.order(wechatV3OrderQuery);
+        return wechatV3JsapiInvokeService.order(wechatV3OrderQuery);
         
         // WechatV3OrderQuery wechatV3OrderQuery = new WechatV3OrderQuery();
         // wechatV3OrderQuery.setOrderId(unionTradeOrder.getTradeOrderNo());
@@ -420,7 +419,7 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
     @Transactional(rollbackFor = Exception.class)
     public Pair<Boolean, Object> notifyIntegratedPayment(WechatJsapiOrderCallBackResource callBackResource) {
         
-        //回调参数
+        // 回调参数
         String tradeOrderNo = callBackResource.getOutTradeNo();
         String tradeState = callBackResource.getTradeState();
         String transactionId = callBackResource.getTransactionId();
@@ -480,13 +479,13 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
                     return manageMemberCardOrderResult;
                 }
             } else if (Objects.equals(orderTypeList.get(i), UnionPayOrder.ORDER_TYPE_RENT_CAR_DEPOSIT)) {
-                //租车押金
+                // 租车押金
                 Pair<Boolean, Object> rentCarDepositOrderResult = handleRentCarDepositOrder(orderIdLIst.get(i), depositOrderStatus);
                 if (!rentCarDepositOrderResult.getLeft()) {
                     return rentCarDepositOrderResult;
                 }
             } else if (Objects.equals(orderTypeList.get(i), UnionPayOrder.ORDER_TYPE_RENT_CAR_MEMBER_CARD)) {
-                //租车套餐
+                // 租车套餐
                 Pair<Boolean, Object> rentCarMemberCardOrderResult = handleRentCarMemberCardOrder(orderIdLIst.get(i), depositOrderStatus);
                 if (!rentCarMemberCardOrderResult.getLeft()) {
                     return rentCarMemberCardOrderResult;
@@ -494,7 +493,7 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
             }
         }
         
-        //系统订单
+        // 系统订单
         UnionTradeOrder unionTradeOrderUpdate = new UnionTradeOrder();
         unionTradeOrderUpdate.setId(unionTradeOrder.getId());
         unionTradeOrderUpdate.setStatus(tradeOrderStatus);
@@ -502,7 +501,7 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
         unionTradeOrderUpdate.setChannelOrderNo(transactionId);
         baseMapper.updateById(unionTradeOrderUpdate);
         
-        //混合支付的子订单
+        // 混合支付的子订单
         Integer finalTradeOrderStatus = tradeOrderStatus;
         electricityTradeOrderList.parallelStream().forEach(item -> {
             ElectricityTradeOrder electricityTradeOrder = new ElectricityTradeOrder();
@@ -519,7 +518,7 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
             return Pair.of(result, null);
         }
         
-        //小程序虚拟发货
+        // 小程序虚拟发货
         shippingManagerService.uploadShippingInfo(unionTradeOrder.getUid(), userInfo.getPhone(), transactionId, userInfo.getTenantId());
         
         return Pair.of(result, null);
@@ -587,7 +586,7 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
             }
         }
         
-        //系统订单
+        // 系统订单
         UnionTradeOrder unionTradeOrderUpdate = new UnionTradeOrder();
         unionTradeOrderUpdate.setId(unionTradeOrder.getId());
         unionTradeOrderUpdate.setStatus(tradeOrderStatus);
@@ -595,7 +594,7 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
         unionTradeOrderUpdate.setChannelOrderNo(transactionId);
         baseMapper.updateById(unionTradeOrderUpdate);
         
-        //混合支付的子订单
+        // 混合支付的子订单
         Integer finalTradeOrderStatus = tradeOrderStatus;
         electricityTradeOrderList.parallelStream().forEach(item -> {
             ElectricityTradeOrder electricityTradeOrder = new ElectricityTradeOrder();
@@ -606,18 +605,18 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
             electricityTradeOrderService.updateElectricityTradeOrderById(electricityTradeOrder);
         });
         
-        //小程序虚拟发货
+        // 小程序虚拟发货
         shippingManagerService.uploadShippingInfo(unionTradeOrder.getUid(), userInfo.getPhone(), transactionId, userInfo.getTenantId());
         
         return Pair.of(true, null);
     }
     
-    //处理押金订单
+    // 处理押金订单
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Pair<Boolean, Object> manageDepositOrder(String orderNo, Integer orderStatus) {
         
-        //押金订单
+        // 押金订单
         EleDepositOrder eleDepositOrder = eleDepositOrderService.queryByOrderId(orderNo);
         if (ObjectUtil.isEmpty(eleDepositOrder)) {
             log.error("NOTIFY_DEPOSIT_ORDER ERROR ,NOT FOUND ELECTRICITY_DEPOSIT_ORDER ORDER_NO={}", orderNo);
@@ -629,14 +628,14 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
             return Pair.of(false, "押金订单已处理!");
         }
         
-        //用户
+        // 用户
         UserInfo userInfo = userInfoService.queryByUidFromCache(eleDepositOrder.getUid());
         if (Objects.isNull(userInfo)) {
             log.error("NOTIFY  ERROR,NOT FOUND USERINFO,USERID={},ORDER_NO={}", eleDepositOrder.getUid(), orderNo);
             return Pair.of(false, "未找到用户信息!");
         }
         
-        //用户押金
+        // 用户押金
         if (Objects.equals(orderStatus, EleDepositOrder.STATUS_SUCCESS)) {
             UserInfo updateUserInfo = new UserInfo();
             updateUserInfo.setUid(userInfo.getUid());
@@ -662,7 +661,7 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
             userBatteryDeposit.setUpdateTime(System.currentTimeMillis());
             userBatteryDepositService.insertOrUpdate(userBatteryDeposit);
             
-            //保存用户押金对应的电池型号
+            // 保存用户押金对应的电池型号
             List<String> batteryTypeList = memberCardBatteryTypeService.selectBatteryTypeByMid(eleDepositOrder.getMid());
             if (CollectionUtils.isNotEmpty(batteryTypeList)) {
                 userBatteryTypeService.batchInsert(userBatteryTypeService.buildUserBatteryType(batteryTypeList, userInfo));
@@ -671,7 +670,7 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
             TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
                 @Override
                 public void afterCommit() {
-                    //清理缓存，避免缓存操作和数据库提交在同一个事务中失效的问题
+                    // 清理缓存，避免缓存操作和数据库提交在同一个事务中失效的问题
                     redisService.delete(CacheConstant.CACHE_USER_INFO + userInfo.getUid());
                     redisService.delete(CacheConstant.CACHE_USER_DEPOSIT + userInfo.getUid());
                 }
@@ -679,7 +678,7 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
             });
         }
         
-        //押金订单
+        // 押金订单
         EleDepositOrder eleDepositOrderUpdate = new EleDepositOrder();
         eleDepositOrderUpdate.setId(eleDepositOrder.getId());
         eleDepositOrderUpdate.setStatus(orderStatus);
@@ -688,19 +687,19 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
         return Pair.of(true, null);
     }
     
-    //处理购卡订单
+    // 处理购卡订单
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Pair<Boolean, Object> manageMemberCardOrder(String orderNo, Integer orderStatus) {
         
-        //购卡订单
+        // 购卡订单
         ElectricityMemberCardOrder electricityMemberCardOrder = electricityMemberCardOrderService.selectByOrderNo(orderNo);
         if (ObjectUtil.isEmpty(electricityMemberCardOrder)) {
             log.error("NOTIFY_MEMBER_ORDER ERROR ,NOT FOUND ELECTRICITY_MEMBER_CARD_ORDER ORDER_NO={}", orderNo);
             return Pair.of(false, "未找到订单!");
         }
         
-        //处理用户端取消支付的问题
+        // 处理用户端取消支付的问题
         if (Objects.equals(ElectricityMemberCardOrder.STATUS_CANCELL, electricityMemberCardOrder.getStatus())) {
             electricityMemberCardOrder.setStatus(ElectricityMemberCardOrder.STATUS_INIT);
         }
@@ -722,14 +721,14 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
             return Pair.of(false, "套餐不存在");
         }
         
-        //获取套餐订单优惠券
+        // 获取套餐订单优惠券
         List<Long> userCouponIds = memberCardOrderCouponService.selectCouponIdsByOrderId(electricityMemberCardOrder.getOrderId());
         
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(electricityMemberCardOrder.getUid());
         Long remainingNumber = electricityMemberCardOrder.getMaxUseCount();
         Integer payCount = electricityMemberCardOrderService.queryMaxPayCount(userBatteryMemberCard);
         
-        //月卡订单
+        // 月卡订单
         ElectricityMemberCardOrder electricityMemberCardOrderUpdate = new ElectricityMemberCardOrder();
         
         if (Objects.equals(orderStatus, EleDepositOrder.STATUS_SUCCESS)) {
@@ -774,14 +773,14 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
                 serviceFeeUserInfoService.updateByUid(serviceFeeUserInfoInsertOrUpdate);
             }
             
-            //更新优惠券状态
+            // 更新优惠券状态
             if (CollectionUtils.isNotEmpty(userCouponIds)) {
                 Set<Integer> couponIds = userCouponIds.parallelStream().map(Long::intValue).collect(Collectors.toSet());
                 userCouponService.batchUpdateUserCoupon(
                         electricityMemberCardOrderService.buildUserCouponList(couponIds, UserCoupon.STATUS_USED, electricityMemberCardOrder.getOrderId()));
             }
             
-            //修改套餐订单购买次数
+            // 修改套餐订单购买次数
             electricityMemberCardOrderUpdate.setPayCount(userBatteryMemberCardUpdate.getCardPayCount());
             
             electricityMemberCardOrderUpdate.setUseStatus(ElectricityMemberCardOrder.USE_STATUS_USING);
@@ -801,7 +800,7 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
             TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
                 @Override
                 public void afterCommit() {
-                    //清理缓存，避免缓存操作和数据库提交在同一个事务中失效的问题。如有其他业务，请加在清理缓存之后处理
+                    // 清理缓存，避免缓存操作和数据库提交在同一个事务中失效的问题。如有其他业务，请加在清理缓存之后处理
                     redisService.delete(CacheConstant.CACHE_USER_BATTERY_MEMBERCARD + userInfo.getUid());
                     redisService.delete(CacheConstant.SERVICE_FEE_USER_INFO + userInfo.getUid());
                     redisService.delete(CacheConstant.CACHE_USER_INFO + userInfo.getUid());
@@ -826,7 +825,7 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
                 }
             });
         } else {
-            //支付失败 更新优惠券状态
+            // 支付失败 更新优惠券状态
             if (CollectionUtils.isNotEmpty(userCouponIds)) {
                 Set<Integer> couponIds = userCouponIds.parallelStream().map(Long::intValue).collect(Collectors.toSet());
                 userCouponService.batchUpdateUserCoupon(
@@ -841,7 +840,6 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
         redisService.delete(CacheConstant.CACHE_USER_BATTERY_MEMBERCARD + userInfo.getUid());
         return Pair.of(true, null);
     }
-
     
     
     private void sendMerchantRebateMQ(Long uid, String orderId) {
@@ -861,7 +859,7 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
         merchantRebate.setOrderId(orderId);
         merchantRebate.setType(MerchantConstant.TYPE_PURCHASE);
         merchantRebate.setMerchantId(userInfoExtra.getMerchantId());
-        //续费成功  发送返利MQ
+        // 续费成功  发送返利MQ
         rocketMqService.sendAsyncMsg(MqProducerConstant.BATTERY_MEMBER_CARD_MERCHANT_REBATE_TOPIC, JsonUtil.toJson(merchantRebate));
     }
     
@@ -881,7 +879,7 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
             return Pair.of(false, "未找到订单!");
         }
         
-        //处理用户端取消支付的问题
+        // 处理用户端取消支付的问题
         if (Objects.equals(ElectricityMemberCardOrder.STATUS_CANCELL, electricityMemberCardOrder.getStatus())) {
             electricityMemberCardOrder.setStatus(ElectricityMemberCardOrder.STATUS_INIT);
         }
@@ -904,7 +902,7 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
             return Pair.of(false, "套餐不存在");
         }
         
-        //获取套餐订单优惠券
+        // 获取套餐订单优惠券
         List<Long> userCouponIds = memberCardOrderCouponService.selectCouponIdsByOrderId(electricityMemberCardOrder.getOrderId());
         
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(electricityMemberCardOrder.getUid());
@@ -913,12 +911,12 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
         
         Integer payCount = electricityMemberCardOrderService.queryMaxPayCount(userBatteryMemberCard);
         
-        //月卡订单
+        // 月卡订单
         ElectricityMemberCardOrder electricityMemberCardOrderUpdate = new ElectricityMemberCardOrder();
         
         if (Objects.equals(orderStatus, ElectricityMemberCardOrder.STATUS_SUCCESS)) {
             UserBatteryMemberCard userBatteryMemberCardUpdate = new UserBatteryMemberCard();
-            //若用户未购买套餐  直接绑定
+            // 若用户未购买套餐  直接绑定
             if (Objects.isNull(userBatteryMemberCard) || Objects.isNull(userBatteryMemberCard.getMemberCardId()) || Objects.equals(userBatteryMemberCard.getMemberCardId(),
                     UserBatteryMemberCard.SEND_REMAINING_NUMBER)) {
                 electricityMemberCardOrderUpdate.setUseStatus(ElectricityMemberCardOrder.USE_STATUS_USING);
@@ -940,14 +938,14 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
                 userBatteryMemberCardUpdate.setTenantId(electricityMemberCardOrder.getTenantId());
                 userBatteryMemberCardUpdate.setCardPayCount(payCount + 1);
                 
-                //保存用户押金对应的电池型号
+                // 保存用户押金对应的电池型号
                 List<String> batteryTypeList = memberCardBatteryTypeService.selectBatteryTypeByMid(batteryMemberCard.getId());
                 if (CollectionUtils.isNotEmpty(batteryTypeList)) {
                     userBatteryTypeService.batchInsert(userBatteryTypeService.buildUserBatteryType(batteryTypeList, userInfo));
                 }
             } else {
                 BatteryMemberCard userBindbatteryMemberCard = batteryMemberCardService.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());
-                //若用户已购买套餐
+                // 若用户已购买套餐
                 //     1.套餐过期，直接绑定
                 //     2.套餐未过期，保存到资源包
                 if (userBatteryMemberCard.getMemberCardExpireTime() < System.currentTimeMillis() || (
@@ -973,7 +971,7 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
                     userBatteryMemberCardUpdate.setTenantId(userInfo.getTenantId());
                     userBatteryMemberCardUpdate.setCardPayCount(electricityMemberCardOrderService.queryMaxPayCount(userBatteryMemberCard) + 1);
                     
-                    //如果用户原来绑定的有套餐 套餐过期了，需要把原来绑定的套餐订单状态更新为已过期
+                    // 如果用户原来绑定的有套餐 套餐过期了，需要把原来绑定的套餐订单状态更新为已过期
                     if (org.apache.commons.lang3.StringUtils.isNotBlank(userBatteryMemberCard.getOrderId())) {
                         ElectricityMemberCardOrder electricityMemberCardOrderUpdateUseStatus = new ElectricityMemberCardOrder();
                         electricityMemberCardOrderUpdateUseStatus.setOrderId(userBatteryMemberCard.getOrderId());
@@ -982,7 +980,7 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
                         electricityMemberCardOrderService.updateStatusByOrderNo(electricityMemberCardOrderUpdateUseStatus);
                     }
                     
-                    //保存用户押金对应的电池型号
+                    // 保存用户押金对应的电池型号
                     //                    List<String> batteryTypeList = memberCardBatteryTypeService.selectBatteryTypeByMid(batteryMemberCard.getId());
                     //                    if (CollectionUtils.isNotEmpty(batteryTypeList)) {
                     //                        userBatteryTypeService.batchInsert(userBatteryTypeService.buildUserBatteryType(batteryTypeList, userInfo));
@@ -1035,14 +1033,14 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
                 serviceFeeUserInfoService.updateByUid(serviceFeeUserInfoInsertOrUpdate);
             }
             
-            //更新优惠券状态
+            // 更新优惠券状态
             if (CollectionUtils.isNotEmpty(userCouponIds)) {
                 Set<Integer> couponIds = userCouponIds.parallelStream().map(Long::intValue).collect(Collectors.toSet());
                 userCouponService.batchUpdateUserCoupon(
                         electricityMemberCardOrderService.buildUserCouponList(couponIds, UserCoupon.STATUS_USED, electricityMemberCardOrder.getOrderId()));
             }
             
-            //修改套餐订单购买次数
+            // 修改套餐订单购买次数
             electricityMemberCardOrderUpdate.setPayCount(userBatteryMemberCardUpdate.getCardPayCount());
             
             UserInfo userInfoUpdate = new UserInfo();
@@ -1054,7 +1052,7 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
             TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
                 @Override
                 public void afterCommit() {
-                    //清理缓存，避免缓存操作和数据库提交在同一个事务中失效的问题。如有其他业务，请加在清理缓存之后处理
+                    // 清理缓存，避免缓存操作和数据库提交在同一个事务中失效的问题。如有其他业务，请加在清理缓存之后处理
                     redisService.delete(CacheConstant.CACHE_USER_BATTERY_MEMBERCARD + userInfo.getUid());
                     redisService.delete(CacheConstant.SERVICE_FEE_USER_INFO + userInfo.getUid());
                     redisService.delete(CacheConstant.CACHE_USER_INFO + userInfo.getUid());
@@ -1080,7 +1078,7 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
                 }
             });
         } else {
-            //支付失败 更新优惠券状态
+            // 支付失败 更新优惠券状态
             if (CollectionUtils.isNotEmpty(userCouponIds)) {
                 Set<Integer> couponIds = userCouponIds.parallelStream().map(Long::intValue).collect(Collectors.toSet());
                 userCouponService.batchUpdateUserCoupon(
@@ -1123,8 +1121,8 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
             return Pair.of(false, "套餐不存在");
         }
         
-        //获取套餐订单优惠券
-        //List<Long> userCouponIds = memberCardOrderCouponService.selectCouponIdsByOrderId(electricityMemberCardOrder.getOrderId());
+        // 获取套餐订单优惠券
+        // List<Long> userCouponIds = memberCardOrderCouponService.selectCouponIdsByOrderId(electricityMemberCardOrder.getOrderId());
         
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(electricityMemberCardOrder.getUid());
         
@@ -1132,12 +1130,12 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
         
         Integer payCount = electricityMemberCardOrderService.queryMaxPayCount(userBatteryMemberCard);
         
-        //套餐订单
+        // 套餐订单
         ElectricityMemberCardOrder electricityMemberCardOrderUpdate = new ElectricityMemberCardOrder();
         
         if (Objects.equals(orderStatus, ElectricityMemberCardOrder.STATUS_SUCCESS)) {
             UserBatteryMemberCard userBatteryMemberCardUpdate = new UserBatteryMemberCard();
-            //若用户未购买套餐  直接绑定
+            // 若用户未购买套餐  直接绑定
             if (Objects.isNull(userBatteryMemberCard) || Objects.isNull(userBatteryMemberCard.getMemberCardId())) {
                 electricityMemberCardOrderUpdate.setUseStatus(ElectricityMemberCardOrder.USE_STATUS_USING);
                 
@@ -1158,13 +1156,13 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
                 userBatteryMemberCardUpdate.setTenantId(electricityMemberCardOrder.getTenantId());
                 userBatteryMemberCardUpdate.setCardPayCount(payCount + 1);
                 
-                //新用户直接绑定电池
-                //更新用户电池型号
+                // 新用户直接绑定电池
+                // 更新用户电池型号
                 userBatteryTypeService.updateUserBatteryType(electricityMemberCardOrder, userInfo);
                 
             } else {
                 BatteryMemberCard userBindbatteryMemberCard = batteryMemberCardService.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());
-                //若用户已购买套餐
+                // 若用户已购买套餐
                 //     1.套餐过期，直接绑定
                 //     2.套餐未过期，保存到资源包
                 if (userBatteryMemberCard.getMemberCardExpireTime() < System.currentTimeMillis() || (
@@ -1190,7 +1188,7 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
                     userBatteryMemberCardUpdate.setTenantId(userInfo.getTenantId());
                     userBatteryMemberCardUpdate.setCardPayCount(electricityMemberCardOrderService.queryMaxPayCount(userBatteryMemberCard) + 1);
                     
-                    //如果用户原来绑定的有套餐 套餐过期了，需要把原来绑定的套餐订单状态更新为已过期
+                    // 如果用户原来绑定的有套餐 套餐过期了，需要把原来绑定的套餐订单状态更新为已过期
                     if (org.apache.commons.lang3.StringUtils.isNotBlank(userBatteryMemberCard.getOrderId())) {
                         ElectricityMemberCardOrder electricityMemberCardOrderUpdateUseStatus = new ElectricityMemberCardOrder();
                         electricityMemberCardOrderUpdateUseStatus.setOrderId(userBatteryMemberCard.getOrderId());
@@ -1199,8 +1197,8 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
                         electricityMemberCardOrderService.updateStatusByOrderNo(electricityMemberCardOrderUpdateUseStatus);
                     }
                     
-                    //套餐过期后重新 绑定电池信息。
-                    //更新用户电池型号
+                    // 套餐过期后重新 绑定电池信息。
+                    // 更新用户电池型号
                     userBatteryTypeService.updateUserBatteryType(electricityMemberCardOrder, userInfo);
                     
                 } else {
@@ -1249,7 +1247,7 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
                 serviceFeeUserInfoService.updateByUid(serviceFeeUserInfoInsertOrUpdate);
             }
             
-            //修改套餐订单购买次数
+            // 修改套餐订单购买次数
             electricityMemberCardOrderUpdate.setPayCount(userBatteryMemberCardUpdate.getCardPayCount());
             
             UserInfo userInfoUpdate = new UserInfo();
@@ -1261,7 +1259,7 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
             TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
                 @Override
                 public void afterCommit() {
-                    //清理缓存，避免缓存操作和数据库提交在同一个事务中失效的问题。如有其他业务，请加在清理缓存之后处理
+                    // 清理缓存，避免缓存操作和数据库提交在同一个事务中失效的问题。如有其他业务，请加在清理缓存之后处理
                     redisService.delete(CacheConstant.CACHE_USER_BATTERY_MEMBERCARD + userInfo.getUid());
                     redisService.delete(CacheConstant.SERVICE_FEE_USER_INFO + userInfo.getUid());
                     redisService.delete(CacheConstant.CACHE_USER_INFO + userInfo.getUid());
@@ -1276,11 +1274,11 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
         electricityMemberCardOrderUpdate.setUpdateTime(System.currentTimeMillis());
         electricityMemberCardOrderService.updateByID(electricityMemberCardOrderUpdate);
         
-        //保存骑手购买套餐信息，用于云豆回收业务
+        // 保存骑手购买套餐信息，用于云豆回收业务
         anotherPayMembercardRecordService.saveAnotherPayMembercardRecord(electricityMemberCardOrder.getUid(), electricityMemberCardOrder.getOrderId(),
                 electricityMemberCardOrder.getTenantId());
         
-        //更新云豆状态为未回收状态,同时更新代付状态为已代付
+        // 更新云豆状态为未回收状态,同时更新代付状态为已代付
         EnterpriseChannelUser enterpriseChannelUser = enterpriseChannelUserService.selectByUid(electricityMemberCardOrder.getUid());
         
         EnterpriseChannelUserQuery enterpriseChannelUserQuery = new EnterpriseChannelUserQuery();
@@ -1294,12 +1292,12 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
         
     }
     
-    //处理保险订单
+    // 处理保险订单
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Pair<Boolean, Object> manageInsuranceOrder(String orderNo, Integer orderStatus) {
         
-        //保险订单
+        // 保险订单
         InsuranceOrder insuranceOrder = insuranceOrderService.queryByOrderId(orderNo);
         if (ObjectUtil.isEmpty(insuranceOrder)) {
             log.error("NOTIFY_INSURANCE_ORDER ERROR ,NOT FOUND ELECTRICITY_DEPOSIT_ORDER ORDER_NO={}", orderNo);
@@ -1336,7 +1334,7 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
             if (Objects.isNull(insuranceUserInfo)) {
                 insuranceUserInfoService.insert(updateOrAddInsuranceUserInfo);
             } else {
-                //更新旧保险订单状态
+                // 更新旧保险订单状态
                 InsuranceOrder oldInsuranceUserOrder = insuranceOrderService.queryByOrderId(insuranceUserInfo.getInsuranceOrderId());
                 if (Objects.nonNull(oldInsuranceUserOrder)) {
                     InsuranceOrder insuranceUserOrderUpdate = new InsuranceOrder();
@@ -1352,7 +1350,7 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
             TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
                 @Override
                 public void afterCommit() {
-                    //清理缓存，避免缓存操作和数据库提交在同一个事务中失效的问题。如有其他业务，请加在清理缓存之后处理
+                    // 清理缓存，避免缓存操作和数据库提交在同一个事务中失效的问题。如有其他业务，请加在清理缓存之后处理
                     redisService.delete(CacheConstant.CACHE_INSURANCE_USER_INFO + updateOrAddInsuranceUserInfo.getUid());
                     redisService.delete(CacheConstant.CACHE_INSURANCE_USER_INFO + updateOrAddInsuranceUserInfo.getUid() + ":" + updateOrAddInsuranceUserInfo.getType());
                     
@@ -1361,7 +1359,7 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
             
         }
         
-        //保险订单
+        // 保险订单
         InsuranceOrder updateInsuranceOrder = new InsuranceOrder();
         updateInsuranceOrder.setId(insuranceOrder.getId());
         updateInsuranceOrder.setUpdateTime(System.currentTimeMillis());
@@ -1380,7 +1378,7 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Pair<Boolean, Object> notifyServiceFee(WechatJsapiOrderCallBackResource callBackResource) {
-        //回调参数
+        // 回调参数
         String tradeOrderNo = callBackResource.getOutTradeNo();
         String tradeState = callBackResource.getTradeState();
         String transactionId = callBackResource.getTransactionId();
@@ -1438,7 +1436,7 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
             }
         }
         
-        //系统订单
+        // 系统订单
         UnionTradeOrder unionTradeOrderUpdate = new UnionTradeOrder();
         unionTradeOrderUpdate.setId(unionTradeOrder.getId());
         unionTradeOrderUpdate.setStatus(tradeOrderStatus);
@@ -1446,7 +1444,7 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
         unionTradeOrderUpdate.setChannelOrderNo(transactionId);
         baseMapper.updateById(unionTradeOrderUpdate);
         
-        //混合支付的子订单
+        // 混合支付的子订单
         Integer finalTradeOrderStatus = tradeOrderStatus;
         electricityTradeOrderList.parallelStream().forEach(item -> {
             ElectricityTradeOrder electricityTradeOrder = new ElectricityTradeOrder();
@@ -1457,7 +1455,7 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
             electricityTradeOrderService.updateElectricityTradeOrderById(electricityTradeOrder);
         });
         
-        //小程序虚拟发货
+        // 小程序虚拟发货
         shippingManagerService.uploadShippingInfo(unionTradeOrder.getUid(), userInfo.getPhone(), transactionId, userInfo.getTenantId());
         
         return Pair.of(true, null);
@@ -1471,7 +1469,7 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
      */
     @Transactional(rollbackFor = Exception.class)
     public void handCarSupplierSuccess(String orderNo, String freeAmount, Integer tradeOrderStatus, UserInfo userInfo) {
-        //提前发布逾期用户备注清除事件
+        // 提前发布逾期用户备注清除事件
         overdueUserRemarkPublish.publish(userInfo.getUid(), OverdueType.CAR.getCode(), userInfo.getTenantId());
         Integer tenantId = userInfo.getTenantId();
         Long uid = userInfo.getUid();
@@ -1588,7 +1586,7 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
     }
     
     private void handleBatteryMembercardPauseServiceFeeOrder(String orderId, Integer status, UserInfo userInfo) {
-        //提前发布逾期用户备注清除事件
+        // 提前发布逾期用户备注清除事件
         if (Objects.equals(userInfo.getCarBatteryDepositStatus(), YesNoEnum.YES.getCode())) {
             overdueUserRemarkPublish.publish(userInfo.getUid(), OverdueType.CAR.getCode(), userInfo.getTenantId());
         } else {
@@ -1629,21 +1627,21 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
             Long orderExpireTime;
             Long cardDays = 0L;
             
-            //用户套餐是否启用，若已启用  停卡时间取停卡记录中的停卡时间；未启用 取userBatteryMemberCard中的停卡时间。因为系统启用时会清除用户的停卡时间
+            // 用户套餐是否启用，若已启用  停卡时间取停卡记录中的停卡时间；未启用 取userBatteryMemberCard中的停卡时间。因为系统启用时会清除用户的停卡时间
             if (Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE)) {
                 // 兼容2.0冻结不限制天数 冻结天数为空的场景
                 if (Objects.isNull(eleDisableMemberCardRecord.getChooseDays())) {
                     memberCardExpireTime = System.currentTimeMillis() + (userBatteryMemberCard.getMemberCardExpireTime() - userBatteryMemberCard.getDisableMemberCardTime());
-                    //orderExpireTime = System.currentTimeMillis() + (userBatteryMemberCard.getOrderExpireTime() - userBatteryMemberCard.getDisableMemberCardTime());
+                    // orderExpireTime = System.currentTimeMillis() + (userBatteryMemberCard.getOrderExpireTime() - userBatteryMemberCard.getDisableMemberCardTime());
                     orderExpireTime = System.currentTimeMillis() + (userBatteryMemberCard.getOrderExpireTime() - userBatteryMemberCard.getDisableMemberCardTime());
                 } else {
                     // 申请冻结的天数
                     Long chooseTime = eleDisableMemberCardRecord.getChooseDays() * TimeConstant.DAY_MILLISECOND;
                     // 实际的冻结时间
                     Long realTime = System.currentTimeMillis() - userBatteryMemberCard.getDisableMemberCardTime();
-                    //memberCardExpireTime = System.currentTimeMillis() + (userBatteryMemberCard.getMemberCardExpireTime() - userBatteryMemberCard.getDisableMemberCardTime());
+                    // memberCardExpireTime = System.currentTimeMillis() + (userBatteryMemberCard.getMemberCardExpireTime() - userBatteryMemberCard.getDisableMemberCardTime());
                     memberCardExpireTime = userBatteryMemberCard.getMemberCardExpireTime() - (chooseTime - realTime);
-                    //orderExpireTime = System.currentTimeMillis() + (userBatteryMemberCard.getOrderExpireTime() - userBatteryMemberCard.getDisableMemberCardTime());
+                    // orderExpireTime = System.currentTimeMillis() + (userBatteryMemberCard.getOrderExpireTime() - userBatteryMemberCard.getDisableMemberCardTime());
                     orderExpireTime = userBatteryMemberCard.getOrderExpireTime() - (chooseTime - realTime);
                 }
                 
@@ -1652,7 +1650,7 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
                 // 处理企业用户对应的支付记录时间
                 anotherPayMembercardRecordService.enableMemberCardHandler(userBatteryMemberCard.getUid());
                 
-                //更新用户套餐到期时间，启用用户套餐
+                // 更新用户套餐到期时间，启用用户套餐
                 UserBatteryMemberCard userBatteryMemberCardUpdate = new UserBatteryMemberCard();
                 userBatteryMemberCardUpdate.setUid(userBatteryMemberCard.getUid());
                 userBatteryMemberCardUpdate.setMemberCardStatus(UserBatteryMemberCard.MEMBER_CARD_NOT_DISABLE);
@@ -1662,7 +1660,7 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
                 userBatteryMemberCardUpdate.setUpdateTime(System.currentTimeMillis());
                 userBatteryMemberCardService.updateByUidForDisableCard(userBatteryMemberCardUpdate);
                 
-                //解绑停卡单号，更新电池服务费产生时间,解绑停卡电池服务费订单号
+                // 解绑停卡单号，更新电池服务费产生时间,解绑停卡电池服务费订单号
                 ServiceFeeUserInfo serviceFeeUserInfoUpdate = new ServiceFeeUserInfo();
                 serviceFeeUserInfoUpdate.setUid(userBatteryMemberCard.getUid());
                 serviceFeeUserInfoUpdate.setPauseOrderNo("");
@@ -1684,7 +1682,7 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
                 //                userBatteryMemberCardUpdate.setUpdateTime(System.currentTimeMillis());
                 //                userBatteryMemberCardService.updateByUidForDisableCard(userBatteryMemberCardUpdate);
                 
-                //解绑停卡单号，更新电池服务费产生时间,解绑停卡电池服务费订单号
+                // 解绑停卡单号，更新电池服务费产生时间,解绑停卡电池服务费订单号
                 ServiceFeeUserInfo serviceFeeUserInfoUpdate = new ServiceFeeUserInfo();
                 serviceFeeUserInfoUpdate.setUid(userBatteryMemberCard.getUid());
                 serviceFeeUserInfoUpdate.setPauseOrderNo("");
@@ -1694,7 +1692,7 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
                 serviceFeeUserInfoService.updateByUid(serviceFeeUserInfoUpdate);
             }
             
-            //生成启用记录
+            // 生成启用记录
             EnableMemberCardRecord enableMemberCardRecord = enableMemberCardRecordService.queryByDisableCardNO(eleDisableMemberCardRecord.getDisableMemberCardNo(),
                     userInfo.getTenantId());
             if (Objects.isNull(enableMemberCardRecord)) {
@@ -1714,7 +1712,7 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
             }
         }
         
-        //更新滞纳金订单
+        // 更新滞纳金订单
         EleBatteryServiceFeeOrder eleBatteryServiceFeeOrderUpdate = new EleBatteryServiceFeeOrder();
         eleBatteryServiceFeeOrderUpdate.setId(eleBatteryServiceFeeOrder.getId());
         eleBatteryServiceFeeOrderUpdate.setStatus(status);
@@ -1725,7 +1723,7 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
     }
     
     private void handleBatteryMembercardExpireServiceFeeOrder(String orderId, Integer status, UserInfo userInfo) {
-        //提前发布逾期用户备注清除事件
+        // 提前发布逾期用户备注清除事件
         if (Objects.equals(userInfo.getCarBatteryDepositStatus(), YesNoEnum.YES.getCode())) {
             overdueUserRemarkPublish.publish(userInfo.getUid(), OverdueType.CAR.getCode(), userInfo.getTenantId());
         } else {
@@ -1756,7 +1754,7 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
         
         if (Objects.equals(EleBatteryServiceFeeOrder.STATUS_SUCCESS, status)) {
             
-            //更新用户套餐过期时间
+            // 更新用户套餐过期时间
             UserBatteryMemberCard userBatteryMemberCardUpdate = new UserBatteryMemberCard();
             userBatteryMemberCardUpdate.setUid(userBatteryMemberCard.getUid());
             userBatteryMemberCardUpdate.setMemberCardExpireTime(System.currentTimeMillis());
@@ -1764,7 +1762,7 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
             userBatteryMemberCardUpdate.setUpdateTime(System.currentTimeMillis());
             userBatteryMemberCardService.updateByUidForDisableCard(userBatteryMemberCardUpdate);
             
-            //更新电池服务费产生时间,解绑套餐过期电池服务费订单号
+            // 更新电池服务费产生时间,解绑套餐过期电池服务费订单号
             ServiceFeeUserInfo serviceFeeUserInfoUpdate = new ServiceFeeUserInfo();
             serviceFeeUserInfoUpdate.setUid(userBatteryMemberCard.getUid());
             serviceFeeUserInfoUpdate.setExpireOrderNo("");
@@ -1773,7 +1771,7 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
             serviceFeeUserInfoService.updateByUid(serviceFeeUserInfoUpdate);
         }
         
-        //更新滞纳金订单
+        // 更新滞纳金订单
         EleBatteryServiceFeeOrder eleBatteryServiceFeeOrderUpdate = new EleBatteryServiceFeeOrder();
         eleBatteryServiceFeeOrderUpdate.setId(eleBatteryServiceFeeOrder.getId());
         eleBatteryServiceFeeOrderUpdate.setStatus(status);
@@ -1806,7 +1804,7 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
             return Pair.of(false, "用户不存在!");
         }
         
-        //支付成功
+        // 支付成功
         if (Objects.equals(depositOrderStatus, EleDepositOrder.STATUS_SUCCESS)) {
             UserInfo updateUserInfo = new UserInfo();
             updateUserInfo.setUid(userInfo.getUid());
@@ -1838,7 +1836,7 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
             userCarService.insertOrUpdate(userCar);
         }
         
-        //更新订单状态
+        // 更新订单状态
         CarDepositOrder updateCarDepositOrder = new CarDepositOrder();
         updateCarDepositOrder.setId(carDepositOrder.getId());
         updateCarDepositOrder.setStatus(depositOrderStatus);
@@ -1886,7 +1884,7 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
             
             userCarMemberCardService.insertOrUpdate(updateUserCarMemberCard);
             
-            //用户是否有绑定了车辆
+            // 用户是否有绑定了车辆
             //            ElectricityCar electricityCar = electricityCarService.queryInfoByUid(userInfo.getUid());
             //            ElectricityConfig electricityConfig = electricityConfigService
             //                    .queryFromCacheByTenantId(userInfo.getTenantId());
@@ -1927,7 +1925,7 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
                 channelActivityHistoryService.update(updateChannelActivityHistory);
             }
             
-            //租车套餐分帐
+            // 租车套餐分帐
             divisionAccountRecordService.handleCarMembercardDivisionAccount(carMemberCardOrder);
         }
         

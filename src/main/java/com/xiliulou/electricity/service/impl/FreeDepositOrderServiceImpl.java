@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.db.dynamic.annotation.Slave;
+import com.xiliulou.electricity.bo.wechat.WechatPayParamsDetails;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.dto.FreeDepositUserDTO;
@@ -95,6 +96,7 @@ import com.xiliulou.electricity.service.UserCouponService;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.UserOauthBindService;
 import com.xiliulou.electricity.service.UserService;
+import com.xiliulou.electricity.service.WechatPayParamsBizService;
 import com.xiliulou.electricity.service.car.CarRentalPackageDepositPayService;
 import com.xiliulou.electricity.service.car.CarRentalPackageMemberTermService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseChannelUserService;
@@ -286,6 +288,8 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
     @Resource
     UserInfoGroupDetailService userInfoGroupDetailService;
     
+    @Resource
+    private WechatPayParamsBizService wechatPayParamsBizService;
     /**
      * 通过ID查询单条数据从DB
      *
@@ -1902,8 +1906,8 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
             return Triple.of(false, "ELECTRICITY.0041", "未实名认证");
         }
         
-        ElectricityPayParams electricityPayParams = electricityPayParamsService.queryFromCache(tenantId);
-        if (Objects.isNull(electricityPayParams)) {
+        WechatPayParamsDetails wechatPayParamsDetails = wechatPayParamsBizService.getDetailsByIdTenantIdAndFranchiseeId(tenantId, userInfo.getFranchiseeId());
+        if (Objects.isNull(wechatPayParamsDetails)) {
             log.error("FREE DEPOSIT HYBRID ERROR!not found electricityPayParams,uid={}", uid);
             return Triple.of(false, "100234", "未配置支付参数!");
         }
@@ -2047,7 +2051,7 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
             UnionPayOrder unionPayOrder = UnionPayOrder.builder().jsonOrderId(JsonUtil.toJson(orderList)).jsonOrderType(JsonUtil.toJson(orderTypeList))
                     .jsonSingleFee(JsonUtil.toJson(payAmountList)).payAmount(totalPayAmount).tenantId(tenantId).attach(UnionTradeOrder.ATTACH_INTEGRATED_PAYMENT)
                     .description("免押租电").uid(uid).build();
-            WechatJsapiOrderResultDTO resultDTO = unionTradeOrderService.unionCreateTradeOrderAndGetPayParams(unionPayOrder, electricityPayParams, userOauthBind.getThirdId(),
+            WechatJsapiOrderResultDTO resultDTO = unionTradeOrderService.unionCreateTradeOrderAndGetPayParams(unionPayOrder, wechatPayParamsDetails, userOauthBind.getThirdId(),
                     request);
             return Triple.of(true, null, resultDTO);
         } catch (WechatPayException e) {
@@ -2095,8 +2099,8 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
             return Triple.of(false, "000088", "您已是渠道用户，请联系对应站点购买套餐");
         }
         
-        ElectricityPayParams electricityPayParams = electricityPayParamsService.queryCacheByTenantIdAndFranchiseeId(tenantId, query.getFranchiseeId());
-        if (Objects.isNull(electricityPayParams)) {
+        WechatPayParamsDetails wechatPayParamsDetails = wechatPayParamsBizService.getDetailsByIdTenantIdAndFranchiseeId(tenantId, userInfo.getFranchiseeId());
+        if (Objects.isNull(wechatPayParamsDetails)) {
             log.error("FREE DEPOSIT HYBRID ERROR!not found electricityPayParams,uid={}", uid);
             return Triple.of(false, "100234", "未配置支付参数!");
         }
@@ -2243,7 +2247,7 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
             UnionPayOrder unionPayOrder = UnionPayOrder.builder().jsonOrderId(JsonUtil.toJson(orderList)).jsonOrderType(JsonUtil.toJson(orderTypeList))
                     .jsonSingleFee(JsonUtil.toJson(payAmountList)).payAmount(totalPayAmount).tenantId(tenantId).attach(UnionTradeOrder.ATTACH_MEMBERCARD_INSURANCE)
                     .description("免押租电").uid(uid).build();
-            WechatJsapiOrderResultDTO resultDTO = unionTradeOrderService.unionCreateTradeOrderAndGetPayParams(unionPayOrder, electricityPayParams, userOauthBind.getThirdId(),
+            WechatJsapiOrderResultDTO resultDTO = unionTradeOrderService.unionCreateTradeOrderAndGetPayParams(unionPayOrder, wechatPayParamsDetails, userOauthBind.getThirdId(),
                     request);
             return Triple.of(true, null, resultDTO);
         } catch (WechatPayException e) {
@@ -2401,8 +2405,14 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
             return Triple.of(false, "ELECTRICITY.0034", "操作频繁");
         }
         
-        ElectricityPayParams electricityPayParams = electricityPayParamsService.queryFromCache(tenantId);
-        if (Objects.isNull(electricityPayParams)) {
+        UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
+        if (Objects.isNull(userInfo)) {
+            log.error("FREE DEPOSIT HYBRID ERROR! not found user info,uid={}", uid);
+            return Triple.of(false, "ELECTRICITY.0001", "未能查到用户信息");
+        }
+        
+        WechatPayParamsDetails wechatPayParamsDetails = wechatPayParamsBizService.getDetailsByIdTenantIdAndFranchiseeId(tenantId, userInfo.getFranchiseeId());
+        if (Objects.isNull(wechatPayParamsDetails)) {
             log.error("FREE DEPOSIT HYBRID ERROR!not found electricityPayParams,uid={}", uid);
             return Triple.of(false, "100234", "未配置支付参数!");
         }
@@ -2411,12 +2421,6 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         if (Objects.isNull(userOauthBind) || Objects.isNull(userOauthBind.getThirdId())) {
             log.error("FREE DEPOSIT HYBRID ERROR!not found userOauthBind,uid={}", uid);
             return Triple.of(false, "100235", "未找到用户的第三方授权信息!");
-        }
-        
-        UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
-        if (Objects.isNull(userInfo)) {
-            log.error("FREE DEPOSIT HYBRID ERROR! not found user info,uid={}", uid);
-            return Triple.of(false, "ELECTRICITY.0001", "未能查到用户信息");
         }
         
         if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
@@ -2472,7 +2476,7 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
             UnionPayOrder unionPayOrder = UnionPayOrder.builder().jsonOrderId(JsonUtil.toJson(orderList)).jsonOrderType(JsonUtil.toJson(orderTypeList))
                     .jsonSingleFee(JsonUtil.toJson(payAmountList)).payAmount(totalPayAmount).tenantId(tenantId).attach(UnionTradeOrder.ATTACH_INTEGRATED_PAYMENT)
                     .description("免押租车").uid(uid).build();
-            WechatJsapiOrderResultDTO resultDTO = unionTradeOrderService.unionCreateTradeOrderAndGetPayParams(unionPayOrder, electricityPayParams, userOauthBind.getThirdId(),
+            WechatJsapiOrderResultDTO resultDTO = unionTradeOrderService.unionCreateTradeOrderAndGetPayParams(unionPayOrder, wechatPayParamsDetails, userOauthBind.getThirdId(),
                     request);
             return Triple.of(true, null, resultDTO);
         } catch (WechatPayException e) {
@@ -2503,8 +2507,8 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
             return Triple.of(false, "ELECTRICITY.0034", "操作频繁");
         }
         
-        ElectricityPayParams electricityPayParams = electricityPayParamsService.queryFromCache(tenantId);
-        if (Objects.isNull(electricityPayParams)) {
+        WechatPayParamsDetails wechatPayParamsDetails = wechatPayParamsBizService.getDetailsByIdTenantIdAndFranchiseeId(tenantId, query.getFranchiseeId());
+        if (Objects.isNull(wechatPayParamsDetails)) {
             log.error("FREE DEPOSIT HYBRID ERROR!not found electricityPayParams,uid={}", uid);
             return Triple.of(false, "100234", "未配置支付参数!");
         }
@@ -2669,7 +2673,7 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
             UnionPayOrder unionPayOrder = UnionPayOrder.builder().jsonOrderId(JsonUtil.toJson(orderList)).jsonOrderType(JsonUtil.toJson(orderTypeList))
                     .jsonSingleFee(JsonUtil.toJson(payAmountList)).payAmount(totalPayAmount).tenantId(tenantId).attach(UnionTradeOrder.ATTACH_INTEGRATED_PAYMENT)
                     .description("免押租车租电").uid(uid).build();
-            WechatJsapiOrderResultDTO resultDTO = unionTradeOrderService.unionCreateTradeOrderAndGetPayParams(unionPayOrder, electricityPayParams, userOauthBind.getThirdId(),
+            WechatJsapiOrderResultDTO resultDTO = unionTradeOrderService.unionCreateTradeOrderAndGetPayParams(unionPayOrder, wechatPayParamsDetails, userOauthBind.getThirdId(),
                     request);
             return Triple.of(true, null, resultDTO);
         } catch (WechatPayException e) {
@@ -2701,8 +2705,8 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
             return Triple.of(false, "ELECTRICITY.0034", "操作频繁");
         }
         
-        ElectricityPayParams electricityPayParams = electricityPayParamsService.queryFromCache(tenantId);
-        if (Objects.isNull(electricityPayParams)) {
+        WechatPayParamsDetails wechatPayParamsDetails = wechatPayParamsBizService.getDetailsByIdTenantIdAndFranchiseeId(tenantId, query.getFranchiseeId());
+        if (Objects.isNull(wechatPayParamsDetails)) {
             log.error("FREE DEPOSIT HYBRID ERROR!not found electricityPayParams,uid={}", uid);
             return Triple.of(false, "100234", "未配置支付参数!");
         }
@@ -2842,7 +2846,7 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
             UnionPayOrder unionPayOrder = UnionPayOrder.builder().jsonOrderId(JsonUtil.toJson(orderList)).jsonOrderType(JsonUtil.toJson(orderTypeList))
                     .jsonSingleFee(JsonUtil.toJson(payAmountList)).payAmount(totalPayAmount).tenantId(tenantId).attach(UnionTradeOrder.ATTACH_INTEGRATED_PAYMENT)
                     .description("免押租车租电").uid(uid).build();
-            WechatJsapiOrderResultDTO resultDTO = unionTradeOrderService.unionCreateTradeOrderAndGetPayParams(unionPayOrder, electricityPayParams, userOauthBind.getThirdId(),
+            WechatJsapiOrderResultDTO resultDTO = unionTradeOrderService.unionCreateTradeOrderAndGetPayParams(unionPayOrder, wechatPayParamsDetails, userOauthBind.getThirdId(),
                     request);
             return Triple.of(true, null, resultDTO);
         } catch (WechatPayException e) {
