@@ -33,4 +33,5 @@ public interface UserInfoGroupDetailMapper {
     
     Integer deleteByUid(@Param("uid") Long uid, @Param("groupNoList") List<String> groupNoList);
     
+    Integer deleteByGroupNo(@Param("groupNo") String groupNo, @Param("tenantId") Integer tenantId);
 }

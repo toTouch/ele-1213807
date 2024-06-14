@@ -3,6 +3,7 @@ package com.xiliulou.electricity.service.impl;
 import cn.hutool.core.util.StrUtil;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.config.WechatConfig;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.*;
@@ -50,6 +51,7 @@ public class MaintenanceUserNotifyConfigServiceImpl implements MaintenanceUserNo
      * @param id 主键
      * @return 实例对象
      */
+    @Slave
     @Override
     public MaintenanceUserNotifyConfig queryByTenantIdFromDB(Integer id) {
         return this.maintenanceUserNotifyConfigMapper.queryByTenantId(id);
@@ -85,6 +87,7 @@ public class MaintenanceUserNotifyConfigServiceImpl implements MaintenanceUserNo
      * @param limit  查询条数
      * @return 对象列表
      */
+    @Slave
     @Override
     public List<MaintenanceUserNotifyConfig> queryAllByLimit(int offset, int limit) {
         return this.maintenanceUserNotifyConfigMapper.queryAllByLimit(offset, limit);

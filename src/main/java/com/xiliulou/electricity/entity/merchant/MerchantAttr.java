@@ -47,6 +47,11 @@ public class MerchantAttr {
      */
     private Integer protectionTimeUnit;
     
+    /**
+     * 渠道员变更续费返利开关; 默认是0；0开 1关
+     */
+    private Integer status;
+    
     private Integer delFlag;
     
     private Integer tenantId;
@@ -55,4 +60,5 @@ public class MerchantAttr {
     
     private Long updateTime;
     
+    public static final Integer CLOSE_STATUS = 1;
 }

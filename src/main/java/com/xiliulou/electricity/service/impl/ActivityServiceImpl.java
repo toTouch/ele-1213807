@@ -241,7 +241,8 @@ public class ActivityServiceImpl implements ActivityService {
             Integer packageType) {
         Integer latestActivitySource = userInfoExtra.getLatestActivitySource();
     
-        if (Objects.equals(UserInfoActivitySourceEnum.SUCCESS_MERCHANT_ACTIVITY.getCode(), latestActivitySource)) {
+        if (Objects.equals(UserInfoActivitySourceEnum.SUCCESS_MERCHANT_ACTIVITY.getCode(), latestActivitySource) && Objects.equals(ElectricityMemberCardOrder.ONLINE_PAYMENT,
+                electricityMemberCardOrder.getPayType())) {
             //用户绑定商户
             userInfoExtraService.bindMerchant(uid, electricityMemberCardOrder.getOrderId(), electricityMemberCardOrder.getMemberCardId());
         

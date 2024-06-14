@@ -98,6 +98,8 @@ public interface UserService {
     
     List<User> queryByTenantIdAndType(Integer tenantId, Integer status);
     
+    List<User> listUserByPhone(String phone);
+    
     List<User> listUserByPhone(String phone, Integer tenantId);
     
     Triple<Boolean, String, Object> deleteNormalUser(Long uid);

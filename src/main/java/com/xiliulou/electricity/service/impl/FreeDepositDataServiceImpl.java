@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.service.impl;
 
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.entity.FreeDepositData;
 import com.xiliulou.electricity.entity.FreeDepositRechargeRecord;
 import com.xiliulou.electricity.mapper.FreeDepositDataMapper;
@@ -104,6 +105,7 @@ public class FreeDepositDataServiceImpl implements FreeDepositDataService {
         return this.freeDepositDataMapper.deleteById(id) > 0;
     }
 
+    @Slave
     @Override
     public FreeDepositData selectByTenantId(Integer tenantId) {
         return this.freeDepositDataMapper.selectByTenantId(tenantId);
