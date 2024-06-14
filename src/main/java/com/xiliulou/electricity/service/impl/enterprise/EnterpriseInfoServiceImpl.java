@@ -114,6 +114,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
@@ -260,6 +261,12 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
     
     @Resource
     private CloudBeanUseRecordDetailService cloudBeanUseRecordDetailService;
+    
+    @Value("${hexup.merchant.merchantAppletId")
+    private String merchantAppletId;
+    
+    @Value("${hexup.merchant.merchantAppletSecret")
+    private String merchantAppletSecret;
     
     
     /**
@@ -733,15 +740,25 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
                 return Triple.of(false, "100314", "支付金额不合法");
             }
             
-            ElectricityPayParams electricityPayParams = electricityPayParamsService.queryFromCache(TenantContextHolder.getTenantId());
+            ElectricityPayParams electricityPayParams = electricityPayParamsService.queryCacheByTenantIdAndFranchiseeId(TenantContextHolder.getTenantId(), enterpriseInfo.getFranchiseeId());
             if (Objects.isNull(electricityPayParams)) {
                 log.error("CLOUD BEAN RECHARGE ERROR!not found pay params,uid={}", uid);
                 return Triple.of(false, "100314", "未配置支付参数!");
             }
     
+            if (Objects.isNull(merchantAppletId)) {
+                log.error("review Merchant batch withdraw application error, merchant applet id is empty. uid = {}", uid);
+                return Triple.of(false, "120017", "未配置支付参数");
+            }
+    
+            if (Objects.isNull(merchantAppletSecret)) {
+                log.error("review Merchant batch withdraw application error, merchant applet secret is empty. uid = {}", uid);
+                return Triple.of(false, "120017", "未配置支付参数");
+            }
+    
             //兼容商户小程序充值
-            electricityPayParams.setMerchantMinProAppId(electricityPayParams.getMerchantAppletId());
-            electricityPayParams.setMerchantAppletSecret(electricityPayParams.getMerchantAppletSecret());
+            electricityPayParams.setMerchantMinProAppId(merchantAppletId);
+            electricityPayParams.setMerchantAppletSecret(merchantAppletSecret);
             
             UserOauthBind userOauthBind = userOauthBindService.queryUserOauthBySysId(uid, TenantContextHolder.getTenantId());
             if (Objects.isNull(userOauthBind) || Objects.isNull(userOauthBind.getThirdId())) {

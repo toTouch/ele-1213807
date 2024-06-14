@@ -1,4 +1,4 @@
-package com.xiliulou.electricity.entity.merchant;
+package com.xiliulou.electricity.bo.merchant;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
@@ -20,10 +20,8 @@ import java.math.BigDecimal;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@TableName("t_merchant_withdraw_application_record")
-public class MerchantWithdrawApplicationRecord {
+public class MerchantWithdrawApplicationRecordBO {
     
-    @TableId(value = "id", type = IdType.AUTO)
     private Long id;
     
     private Long uid;
@@ -58,5 +56,6 @@ public class MerchantWithdrawApplicationRecord {
      * 支付类型配置：0，默认，1：加盟商
      */
     private Integer payConfigType;
-
+    
+    private Long franchiseeId;
 }

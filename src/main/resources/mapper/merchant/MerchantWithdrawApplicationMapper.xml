@@ -476,6 +476,39 @@
           and tmwa.tenant_id = #{tenantId}
     </select>
     
+    <select id="selectListFranchiseeIdByIds" resultType="java.lang.Long">
+        SELECT
+            distinct m.franchisee_id
+        FROM
+            t_merchant_withdraw_application t
+                left join t_merchant m on m.uid = t.uid
+        <where>
+            t.tenant_id = #{tenantId}
+            and t.id IN
+            <foreach collection="ids" item="id" index="index" open="(" close=")" separator=",">
+                #{id}
+            </foreach>
+        </where>
+        
+    </select>
+    
+    <select id="selectListByBatchNoList" resultType="com.xiliulou.electricity.bo.merchant.MerchantWithdrawApplicationBO">
+        SELECT
+            t.batch_no,
+            t.pay_config_type,
+            m.franchisee_id
+        FROM
+            t_merchant_withdraw_application t
+            left join t_merchant m on m.uid = t.uid
+        <where>
+            t.batch_no IN
+            <foreach collection="batchNoList" item="batchNo" index="index" open="(" close=")" separator=",">
+                #{batchNo}
+            </foreach>
+        </where>
+        
+    </select>
+    
     <update id="updateApplicationStatusByBatchNo">
         update t_merchant_withdraw_application
         set status = #{status},

@@ -128,8 +128,32 @@ public class JsonMerchantWithdrawController extends BaseController {
     
     @PostMapping(value = "/admin/merchant/withdraw/review")
     public R reviewMerchantWithdrawApplication(@Validated @RequestBody ReviewWithdrawApplicationRequest reviewWithdrawApplicationRequest) {
+        
         // 临时处理，暂时对外不开放此功能
         return returnTripleResult(Triple.of(false, "000000", "该功能需要微信商户开通“企业付款到零钱”功能，请确认开通后使用"));
+    
+        /*TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+    
+        // 商户保存权限 admin,租户，加盟商
+        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE) || Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE))) {
+            log.error("review merchant withdraw error! user not auth");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+    
+    
+    
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            List<Long> franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if (org.apache.commons.collections.CollectionUtils.isEmpty(franchiseeIds)) {
+                log.warn("review merchant withdraw error! franchisee is empty");
+                return R.fail("ELECTRICITY.0001", "未找到用户");
+            }
+    
+            reviewWithdrawApplicationRequest.setBindFranchiseeId(franchiseeIds.get(0));
+        }*/
         
         // return returnTripleResult(merchantWithdrawApplicationService.reviewMerchantWithdrawApplication(reviewWithdrawApplicationRequest));
     }
@@ -138,8 +162,31 @@ public class JsonMerchantWithdrawController extends BaseController {
     public R batchReviewMerchantWithdrawApplication(@Validated @RequestBody BatchReviewWithdrawApplicationRequest batchReviewWithdrawApplicationRequest) {
         // 临时处理，暂时对外不开放此功能
         return returnTripleResult(Triple.of(false, "000000", "该功能需要微信商户开通“企业付款到零钱”功能，请确认开通后使用"));
+    
+       /* TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
         
-        // return returnTripleResult(merchantWithdrawApplicationService.batchReviewMerchantWithdrawApplication(batchReviewWithdrawApplicationRequest));
+        // 商户保存权限 admin,租户，加盟商
+        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE) || Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE))) {
+            log.error("batch review merchant withdraw error! user not auth");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        
+      
+        
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            List<Long> franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if (org.apache.commons.collections.CollectionUtils.isEmpty(franchiseeIds)) {
+                log.warn("batch review merchant withdraw error! franchisee is empty");
+                return R.fail("ELECTRICITY.0001", "未找到用户");
+            }
+    
+            batchReviewWithdrawApplicationRequest.setBindFranchiseeId(franchiseeIds.get(0));
+        }
+        
+         return returnTripleResult(merchantWithdrawApplicationService.batchReviewMerchantWithdrawApplication(batchReviewWithdrawApplicationRequest));*/
     }
     
     /**
