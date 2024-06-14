@@ -2,40 +2,35 @@
  * Copyright(c) 2018 Sunyur.com, All Rights Reserved. Author: sunyur Create date: 2024/6/12
  */
 
-package com.xiliulou.electricity.request.payparams;
+package com.xiliulou.electricity.vo;
 
 import com.xiliulou.electricity.enums.ElectricityPayParamsConfigEnum;
-import com.xiliulou.electricity.validator.CreateGroup;
-import com.xiliulou.electricity.validator.UpdateGroup;
 import lombok.Data;
 
-import javax.validation.constraints.NotNull;
-
+import java.io.Serializable;
 
 /**
- * description: 支付参数请求
+ * description: 支付参数vo
  *
  * @author caobotao.cbt
- * @date 2024/6/12 15:51
+ * @date 2024/6/12 18:07
  */
 @Data
-public class ElectricityPayParamsRequest {
+public class ElectricityPayParamsVO implements Serializable {
     
-    @NotNull(groups = UpdateGroup.class, message = "id不可为空")
+    private static final long serialVersionUID = -4627629686526138973L;
+    
     private Integer id;
     
     /**
-     * 配置类型
-     *
-     * @see ElectricityPayParamsConfigEnum
+     * 微信公众号id
      */
-    @NotNull(groups = {CreateGroup.class}, message = "配置类型不能为空")
-    private Integer configType;
+    private String officeAccountAppId;
     
     /**
-     * 加盟商id
+     * 微信公众号密钥
      */
-    private Long franchiseeId;
+    private String officeAccountAppSecret;
     
     /**
      * 商家小程序appid
@@ -74,6 +69,16 @@ public class ElectricityPayParamsRequest {
     
     
     /**
+     * 创建时间
+     */
+    private Long createTime;
+    
+    /**
+     * 更新时间
+     */
+    private Long updateTime;
+    
+    /**
      * apiName
      */
     private String apiName;
@@ -84,14 +89,27 @@ public class ElectricityPayParamsRequest {
     private String paternerKey;
     
     
-//    /**
-//     * 商家版小程序 appid
-//     */
-//    private String merchantAppletId;
-//
-//    /**
-//     * 商家版小程序 appSecret
-//     */
-//    private String merchantAppletSecret;
-
+    /**
+     * 商家版小程序 appid
+     */
+    private String merchantAppletId;
+    
+    /**
+     * 商家版小程序 appSecret
+     */
+    private String merchantAppletSecret;
+    
+    
+    /**
+     * 配置类型
+     *
+     * @see ElectricityPayParamsConfigEnum
+     */
+    private Integer configType;
+    
+    
+    /**
+     * 加盟商id
+     */
+    private Long franchiseeId;
 }

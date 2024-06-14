@@ -8,12 +8,16 @@ import com.google.common.collect.Sets;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.config.WechatConfig;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.MultiFranchiseeConstant;
 import com.xiliulou.electricity.converter.ElectricityPayParamsConverter;
+import com.xiliulou.electricity.entity.EleDisableMemberCardRecord;
 import com.xiliulou.electricity.entity.ElectricityPayParams;
 import com.xiliulou.electricity.entity.Tenant;
+import com.xiliulou.electricity.entity.WechatPaymentCertificate;
+import com.xiliulou.electricity.entity.WechatWithdrawalCertificate;
 import com.xiliulou.electricity.enums.ElectricityPayParamsConfigEnum;
 import com.xiliulou.electricity.mapper.ElectricityPayParamsMapper;
 import com.xiliulou.electricity.request.payparams.ElectricityPayParamsRequest;
@@ -21,7 +25,9 @@ import com.xiliulou.electricity.service.ElectricityPayParamsService;
 import com.xiliulou.electricity.service.TenantService;
 import com.xiliulou.electricity.service.WechatPaymentCertificateService;
 import com.xiliulou.electricity.service.WechatWithdrawalCertificateService;
+import com.xiliulou.electricity.service.transaction.ElectricityPayParamsTxService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
+import com.xiliulou.electricity.vo.ElectricityPayParamsVO;
 import com.xiliulou.electricity.vo.merchant.ElectricityMerchantProConfigVO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
@@ -36,6 +42,7 @@ import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -54,7 +61,7 @@ import java.util.stream.Collectors;
 @Slf4j
 public class ElectricityPayParamsServiceImpl extends ServiceImpl<ElectricityPayParamsMapper, ElectricityPayParams> implements ElectricityPayParamsService {
     
-    @Resource
+    @Autowired
     private TenantService tenantService;
     
     @Autowired
@@ -69,6 +76,9 @@ public class ElectricityPayParamsServiceImpl extends ServiceImpl<ElectricityPayP
     @Autowired
     private WechatWithdrawalCertificateService wechatWithdrawalCertificateService;
     
+    @Autowired
+    private ElectricityPayParamsTxService electricityPayParamsTxService;
+    
     /**
      * 新增或修改
      *
@@ -77,37 +87,7 @@ public class ElectricityPayParamsServiceImpl extends ServiceImpl<ElectricityPayP
      */
     @Override
     public R saveOrUpdateElectricityPayParams(ElectricityPayParams electricityPayParams) {
-        Integer tenantId = TenantContextHolder.getTenantId();
-        //加锁
-        Boolean getLockerSuccess = redisService.setNx(CacheConstant.ADMIN_OPERATE_LOCK_KEY + tenantId, String.valueOf(System.currentTimeMillis()), 20 * 1000L, true);
-        if (!getLockerSuccess) {
-            return R.failMsg("操作频繁!");
-        }
-        
-        ElectricityPayParams oldElectricityPayParams1 = queryFromCache(tenantId);
-        
-        ElectricityPayParams oldElectricityPayParams2 = baseMapper
-                .selectOne(new LambdaQueryWrapper<ElectricityPayParams>().eq(ElectricityPayParams::getMerchantMinProAppId, electricityPayParams.getMerchantMinProAppId()));
-        
-        if (Objects.nonNull(oldElectricityPayParams2)) {
-            if (Objects.isNull(oldElectricityPayParams1) || !Objects.equals(oldElectricityPayParams1.getId(), oldElectricityPayParams2.getId())) {
-                return R.failMsg("该小程序appId已被使用，请勿重复使用!");
-            }
-        }
-        
-        electricityPayParams.setUpdateTime(System.currentTimeMillis());
-        if (Objects.isNull(oldElectricityPayParams1)) {
-            electricityPayParams.setCreateTime(System.currentTimeMillis());
-            electricityPayParams.setTenantId(tenantId);
-            baseMapper.insert(electricityPayParams);
-        } else {
-            if (ObjectUtil.notEqual(oldElectricityPayParams1.getId(), electricityPayParams.getId())) {
-                return R.fail("请求参数id,不合法!");
-            }
-            redisService.delete(CacheConstant.CACHE_PAY_PARAMS + tenantId);
-            baseMapper.updateById(electricityPayParams);
-        }
-        redisService.delete(CacheConstant.ADMIN_OPERATE_LOCK_KEY + tenantId);
+        // TODO: 2024/6/12 CBT后续删除
         return R.ok();
     }
     
@@ -117,10 +97,10 @@ public class ElectricityPayParamsServiceImpl extends ServiceImpl<ElectricityPayP
         request.setTenantId(tenantId);
         
         //加锁
-        Boolean getLockerSuccess = redisService.setNx(CacheConstant.ADMIN_OPERATE_LOCK_KEY + tenantId, String.valueOf(System.currentTimeMillis()), 20 * 1000L, true);
-        if (!getLockerSuccess) {
+        if (!idempotentCheck()) {
             return R.failMsg("操作频繁!");
         }
+        
         // 校验参数
         String msg = this.insertCheck(request);
         if (StringUtils.isNotBlank(msg)) {
@@ -131,10 +111,95 @@ public class ElectricityPayParamsServiceImpl extends ServiceImpl<ElectricityPayP
         ElectricityPayParams insert = ElectricityPayParamsConverter.optRequestToDO(request);
         baseMapper.insert(insert);
         // 缓存删除
-        this.deleteCache(tenantId, insert.getFranchiseeId());
+        redisService.delete(buildCacheKey(tenantId, insert.getFranchiseeId()));
         return R.ok();
     }
     
+    @Override
+    public R update(ElectricityPayParamsRequest request) {
+        
+        if (!this.idempotentCheck()) {
+            return R.failMsg("操作频繁");
+        }
+        
+        Integer tenantId = TenantContextHolder.getTenantId();
+        request.setTenantId(tenantId);
+        // 校验参数
+        ElectricityPayParams oldPayParams = baseMapper.selectOne(
+                new LambdaQueryWrapper<ElectricityPayParams>().eq(ElectricityPayParams::getId, request.getId()).eq(ElectricityPayParams::getTenantId, request.getTenantId()));
+        if (Objects.isNull(oldPayParams)) {
+            return R.failMsg("数据不存在");
+        }
+        
+        // 需要同步的加盟商配置
+        List<ElectricityPayParams> syncFranchiseePayParam = this.getSyncFranchiseePayParam(oldPayParams, request);
+        List<Integer> franchiseePayParamIds = null;
+        if (CollectionUtils.isNotEmpty(syncFranchiseePayParam)) {
+            franchiseePayParamIds = syncFranchiseePayParam.stream().map(ElectricityPayParams::getId).collect(Collectors.toList());
+        }
+        
+        //更新
+        ElectricityPayParams update = ElectricityPayParamsConverter.optRequestToDO(request);
+        
+        electricityPayParamsTxService.update(update, franchiseePayParamIds);
+        
+        // 删除缓存
+        List<String> delKeys = Optional.ofNullable(syncFranchiseePayParam).orElse(Collections.emptyList()).stream().map(v -> buildCacheKey(v.getTenantId(), v.getFranchiseeId()))
+                .collect(Collectors.toList());
+        delKeys.add(buildCacheKey(update.getTenantId(), update.getFranchiseeId()));
+        
+        redisService.delete(delKeys);
+        return R.ok();
+    }
+    
+    
+    @Override
+    public R delete(Long id) {
+        
+        if (!this.idempotentCheck()) {
+            return R.failMsg("操作频繁");
+        }
+        
+        Integer tenantId = TenantContextHolder.getTenantId();
+        
+        // 校验参数
+        ElectricityPayParams payParams = baseMapper
+                .selectOne(new LambdaQueryWrapper<ElectricityPayParams>().eq(ElectricityPayParams::getId, id).eq(ElectricityPayParams::getTenantId, tenantId));
+        
+        if (Objects.isNull(payParams)) {
+            return R.failMsg("数据不存在");
+        }
+        
+        if (ElectricityPayParamsConfigEnum.DEFAULT_CONFIG.getType().equals(payParams.getConfigType())) {
+            return R.failMsg("默认配置不可删除");
+        }
+        
+        // 逻辑删除
+        electricityPayParamsTxService.delete(id, tenantId);
+        
+        // 缓存删除
+        redisService.delete(buildCacheKey(tenantId, payParams.getFranchiseeId()));
+        wechatPaymentCertificateService.deleteCache(tenantId, payParams.getFranchiseeId());
+        
+        return R.ok();
+    }
+    
+    @Slave
+    @Override
+    public List<ElectricityPayParamsVO> queryByTenantId(Integer tenantId) {
+        List<ElectricityPayParams> params = baseMapper.selectByTenantId(tenantId);
+        List<ElectricityPayParamsVO> voList = ElectricityPayParamsConverter.qryDoToVos(params);
+        return voList;
+    }
+    
+    @Override
+    public R getTenantId(String appId) {
+        ElectricityPayParams electricityPayParams = baseMapper.selectOne(new LambdaQueryWrapper<ElectricityPayParams>().eq(ElectricityPayParams::getMerchantMinProAppId, appId));
+        if (Objects.isNull(electricityPayParams)) {
+            return R.fail("ELECTRICITY.00101", "找不到租户");
+        }
+        return R.ok(electricityPayParams.getTenantId());
+    }
     
     /**
      * 获取支付参数 valid_days
@@ -148,16 +213,15 @@ public class ElectricityPayParamsServiceImpl extends ServiceImpl<ElectricityPayP
     }
     
     @Override
-    public R uploadFile(MultipartFile file, Integer type) {
+    public R uploadFile(MultipartFile file, Integer type, Long franchiseeId) {
         Integer tenantId = TenantContextHolder.getTenantId();
-        
         //加锁
-        boolean getLockerSuccess = redisService.setNx(CacheConstant.ADMIN_OPERATE_LOCK_KEY + tenantId, String.valueOf(System.currentTimeMillis()), 3 * 1000L, true);
-        if (!getLockerSuccess) {
+        if (!this.idempotentCheck()) {
             return R.failMsg("操作频繁!");
         }
         try {
-            ElectricityPayParams oldElectricityPayParams = queryFromCache(tenantId);
+            
+            ElectricityPayParams oldElectricityPayParams = queryCacheByTenantIdAndFranchiseeId(tenantId, franchiseeId);
             if (Objects.isNull(oldElectricityPayParams)) {
                 return R.fail("找不到支付配置");
             }
@@ -167,12 +231,22 @@ public class ElectricityPayParamsServiceImpl extends ServiceImpl<ElectricityPayP
             electricityPayParams.setTenantId(tenantId);
             electricityPayParams.setUpdateTime(System.currentTimeMillis());
             if (Objects.isNull(type) || Objects.equals(type, ElectricityPayParams.TYPE_MERCHANT_PATH)) {
-                wechatPaymentCertificateService.handleCertificateFile(file, tenantId);
+                WechatPaymentCertificate wechatPaymentCertificate = new WechatPaymentCertificate();
+                wechatPaymentCertificate.setTenantId(tenantId);
+                wechatPaymentCertificate.setPayParamsId(oldElectricityPayParams.getId());
+                wechatPaymentCertificate.setFranchiseeId(franchiseeId);
+                wechatPaymentCertificateService.handleCertificateFile(file, wechatPaymentCertificate);
             } else {
-                wechatWithdrawalCertificateService.handleCertificateFile(file, tenantId);
+                WechatWithdrawalCertificate wechatWithdrawalCertificate = new WechatWithdrawalCertificate();
+                wechatWithdrawalCertificate.setTenantId(tenantId);
+                wechatWithdrawalCertificate.setPayParamsId(oldElectricityPayParams.getId());
+                wechatWithdrawalCertificate.setFranchiseeId(franchiseeId);
+                wechatWithdrawalCertificateService.handleCertificateFile(file, wechatWithdrawalCertificate);
             }
             //更新支付参数
-            updateElectricityPayParams(electricityPayParams);
+            baseMapper.update(electricityPayParams);
+            // 缓存删除
+            this.deleteCache(tenantId, franchiseeId);
         } catch (Exception e) {
             log.error("certificate get error, tenantId={}", tenantId);
             return R.fail("证书内容获取失败，请重试！");
@@ -214,7 +288,6 @@ public class ElectricityPayParamsServiceImpl extends ServiceImpl<ElectricityPayP
     
     @Override
     public ElectricityPayParams queryCacheByTenantIdAndFranchiseeId(Integer tenantId, Long franchiseeId) {
-        
         // 批量查询缓存
         List<ElectricityPayParams> electricityPayParamsList = this.queryFromCacheList(tenantId, Sets.newHashSet(franchiseeId, MultiFranchiseeConstant.DEFAULT_FRANCHISEE));
         if (CollectionUtils.isEmpty(electricityPayParamsList)) {
@@ -273,7 +346,7 @@ public class ElectricityPayParamsServiceImpl extends ServiceImpl<ElectricityPayP
             return payParams;
         }
         
-        // 如果需要，从数据库查询数据
+        // 从数据库查询数据
         List<ElectricityPayParams> dbList = baseMapper.selectListByTenantIdAndFranchiseeIds(tenantId, qryDbList);
         
         if (CollectionUtils.isNotEmpty(dbList)) {
@@ -297,16 +370,6 @@ public class ElectricityPayParamsServiceImpl extends ServiceImpl<ElectricityPayP
         redisService.multiSet(cacheSaveMap);
         
         return payParams;
-    }
-    
-    /**
-     * 更新支付参数
-     *
-     * @param electricityPayParams electricityPayParams
-     */
-    private void updateElectricityPayParams(ElectricityPayParams electricityPayParams) {
-        baseMapper.updateById(electricityPayParams);
-        redisService.delete(CacheConstant.CACHE_PAY_PARAMS + electricityPayParams.getTenantId());
     }
     
     
@@ -346,17 +409,37 @@ public class ElectricityPayParamsServiceImpl extends ServiceImpl<ElectricityPayP
             List<ElectricityPayParams> electricityPayParams = queryFromCacheList(tenantId, Sets.newHashSet(franchiseeId, MultiFranchiseeConstant.DEFAULT_FRANCHISEE));
             Map<Long, ElectricityPayParams> franchiseeParamsMap = Optional.ofNullable(electricityPayParams).orElse(Collections.emptyList()).stream()
                     .collect(Collectors.toMap(ElectricityPayParams::getFranchiseeId, v -> v, (k1, k2) -> k1));
-            if (!franchiseeParamsMap.containsKey(MultiFranchiseeConstant.DEFAULT_FRANCHISEE)) {
+            ElectricityPayParams defaultPayParams = franchiseeParamsMap.get(MultiFranchiseeConstant.DEFAULT_FRANCHISEE);
+            if (Objects.isNull(defaultPayParams)) {
                 return "默认配置不存在";
             }
+            if (!Objects.equals(defaultPayParams.getMerchantMinProAppId(), request.getMerchantMinProAppId())) {
+                return "用户端小程序appid错误";
+            }
             
+            if (!Objects.equals(defaultPayParams.getMerchantMinProAppSecert(), request.getMerchantMinProAppSecert())) {
+                return "用户端小程序appsecert错误";
+            }
             if (franchiseeParamsMap.containsKey(franchiseeId)) {
                 return "加盟商配置已存在";
             }
         }
+        
         return null;
     }
     
+    /**
+     * 更新
+     *
+     * @param update
+     * @param tenantId
+     * @param franchiseeId
+     * @author caobotao.cbt
+     * @date 2024/6/13 10:44
+     */
+    private void commonUpdate(ElectricityPayParams update, Integer tenantId, Long franchiseeId) {
+    
+    }
     
     /**
      * 缓存删除
@@ -367,6 +450,43 @@ public class ElectricityPayParamsServiceImpl extends ServiceImpl<ElectricityPayP
      * @date 2024/6/12 16:57
      */
     private void deleteCache(Integer tenantId, Long franchiseeId) {
-        redisService.delete(buildCacheKey(tenantId, franchiseeId));
+    
     }
+    
+    private void batchDeleteCache() {
+    
+    }
+    
+    /**
+     * 幂等性校验
+     */
+    private Boolean idempotentCheck() {
+        return redisService.setNx(CacheConstant.ADMIN_OPERATE_LOCK_KEY + TenantContextHolder.getTenantId(), String.valueOf(System.currentTimeMillis()), 20 * 1000L, true);
+    }
+    
+    
+    /**
+     * 获取需要同步的加盟商支付配置
+     *
+     * @param oldPayParams
+     * @param request
+     * @author caobotao.cbt
+     * @date 2024/6/13 17:04
+     */
+    private List<ElectricityPayParams> getSyncFranchiseePayParam(ElectricityPayParams oldPayParams, ElectricityPayParamsRequest request) {
+        //是否是默认配置变更
+        if (!ElectricityPayParamsConfigEnum.DEFAULT_CONFIG.getType().equals(oldPayParams.getConfigType())) {
+            return null;
+        }
+        
+        // 默认配置的小程序appid 和 appSecert 是否变更
+        if (Objects.equals(oldPayParams.getMerchantMinProAppId(), request.getMerchantMinProAppId()) && Objects
+                .equals(oldPayParams.getMerchantMinProAppSecert(), request.getMerchantMinProAppSecert())) {
+            return null;
+        }
+        
+        // 小程序appid获取是小程序 Secert 有变更 则要同步所有的子配置
+        return baseMapper.selectIdsByTenantIdAndConfigType(oldPayParams.getTenantId(), ElectricityPayParamsConfigEnum.FRANCHISEE_CONFIG.getType());
+    }
+    
 }

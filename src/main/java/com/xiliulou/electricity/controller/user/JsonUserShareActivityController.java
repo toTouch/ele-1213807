@@ -17,14 +17,14 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @Slf4j
 public class JsonUserShareActivityController {
+    
     /**
      * 服务对象
      */
     @Autowired
     private ShareActivityService shareActivityService;
-
-
-
+    
+    
     //查询活动详情
     @GetMapping(value = "/user/shareActivity/activityInfo")
     public R queryInfo() {

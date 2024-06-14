@@ -31,75 +31,73 @@ import java.util.Objects;
 @RestController
 @Slf4j
 public class JsonUserBankCardController {
-	@Autowired
-	private BankCardService bankCardService;
-	@Autowired
-	RedisService redisService;
-
-	/**
-	 * 用户获取自己的银行卡
-	 */
-	@GetMapping("/user/bankcard/getCard")
-	public R queryByUid() {
-		Long uid = SecurityUtils.getUid();
-
-		Integer tenantId = TenantContextHolder.getTenantId();
-
-
-		BankCardQuery bankCardQuery = BankCardQuery.builder()
-				.uid(uid).tenantId(tenantId).build();
-		return bankCardService.queryList(bankCardQuery);
-	}
-
-	/**
-	 * 绑卡
-	 */
-	@PostMapping("/user/bankcard/bind")
-	public R bindBank(@Validated @RequestBody BankCard bankCard) {
-		Long uid = SecurityUtils.getUid();
-		if (Objects.isNull(uid)) {
-			log.error("bindBank  ERROR! not found user ");
-			return R.fail("LOCKER.10017", "没有查询到相关用户");
-		}
-
-		if (ObjectUtil.isEmpty(BankNoConstants.BankNoMap.get(bankCard.getEncBankCode()))) {
-			return R.fail("PAY_TRANSFER.0006", "不支持此银行卡");
-		}
-		Boolean getLockSuccess = redisService.setNx(CacheConstant.BIND_BANK_OPER_USER_LOCK + SecurityUtils.getUid(), IdUtil.simpleUUID(), 10L, false);
-		if (!getLockSuccess) {
-			return R.fail("PAY_TRANSFER.0007", "请求频繁,请稍后再试");
-		}
-
-
-		bankCard.setUid(uid);
-		R result=bankCardService.bindBank(bankCard);
-
-		redisService.delete(CacheConstant.BIND_BANK_OPER_USER_LOCK + SecurityUtils.getUid());
-		return  result;
-	}
-
-	/**
-	 * 解绑
-	 */
-	@DeleteMapping("/user/bankcard/unBind")
-	public R unBindBank(@RequestParam("id") Integer id) {
-		Long uid = SecurityUtils.getUid();
-		if (Objects.isNull(uid)) {
-			log.error("bindBank  ERROR! not found user ");
-			return R.fail("LOCKER.10017", "没有查询到相关用户");
-		}
-
-		Boolean getLockSuccess = redisService.setNx(CacheConstant.BIND_BANK_OPER_USER_LOCK + SecurityUtils.getUid(), IdUtil.simpleUUID(), 10L,false);
-		if (!getLockSuccess) {
-			return R.fail("PAY_TRANSFER.0007", "请求频繁,请稍后再试");
-		}
-
-
-		R result=bankCardService.unBindBank(id);
-
-		redisService.delete(CacheConstant.BIND_BANK_OPER_USER_LOCK + SecurityUtils.getUid());
-		return result;
-	}
-
-
+    
+    @Autowired
+    private BankCardService bankCardService;
+    
+    @Autowired
+    RedisService redisService;
+    
+    /**
+     * 用户获取自己的银行卡
+     */
+    @GetMapping("/user/bankcard/getCard")
+    public R queryByUid() {
+        Long uid = SecurityUtils.getUid();
+        
+        Integer tenantId = TenantContextHolder.getTenantId();
+        
+        BankCardQuery bankCardQuery = BankCardQuery.builder().uid(uid).tenantId(tenantId).build();
+        return bankCardService.queryList(bankCardQuery);
+    }
+    
+    /**
+     * 绑卡
+     */
+    @PostMapping("/user/bankcard/bind")
+    public R bindBank(@Validated @RequestBody BankCard bankCard) {
+        Long uid = SecurityUtils.getUid();
+        if (Objects.isNull(uid)) {
+            log.error("bindBank  ERROR! not found user ");
+            return R.fail("LOCKER.10017", "没有查询到相关用户");
+        }
+        
+        if (ObjectUtil.isEmpty(BankNoConstants.BankNoMap.get(bankCard.getEncBankCode()))) {
+            return R.fail("PAY_TRANSFER.0006", "不支持此银行卡");
+        }
+        Boolean getLockSuccess = redisService.setNx(CacheConstant.BIND_BANK_OPER_USER_LOCK + SecurityUtils.getUid(), IdUtil.simpleUUID(), 10L, false);
+        if (!getLockSuccess) {
+            return R.fail("PAY_TRANSFER.0007", "请求频繁,请稍后再试");
+        }
+        
+        bankCard.setUid(uid);
+        R result = bankCardService.bindBank(bankCard);
+        
+        redisService.delete(CacheConstant.BIND_BANK_OPER_USER_LOCK + SecurityUtils.getUid());
+        return result;
+    }
+    
+    /**
+     * 解绑
+     */
+    @DeleteMapping("/user/bankcard/unBind")
+    public R unBindBank(@RequestParam("id") Integer id) {
+        Long uid = SecurityUtils.getUid();
+        if (Objects.isNull(uid)) {
+            log.error("bindBank  ERROR! not found user ");
+            return R.fail("LOCKER.10017", "没有查询到相关用户");
+        }
+        
+        Boolean getLockSuccess = redisService.setNx(CacheConstant.BIND_BANK_OPER_USER_LOCK + SecurityUtils.getUid(), IdUtil.simpleUUID(), 10L, false);
+        if (!getLockSuccess) {
+            return R.fail("PAY_TRANSFER.0007", "请求频繁,请稍后再试");
+        }
+        
+        R result = bankCardService.unBindBank(id);
+        
+        redisService.delete(CacheConstant.BIND_BANK_OPER_USER_LOCK + SecurityUtils.getUid());
+        return result;
+    }
+    
+    
 }

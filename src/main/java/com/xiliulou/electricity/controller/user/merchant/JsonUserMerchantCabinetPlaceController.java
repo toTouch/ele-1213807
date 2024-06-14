@@ -46,7 +46,7 @@ public class JsonUserMerchantCabinetPlaceController extends BaseController {
         if (Objects.isNull(user)) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-    
+        
         Merchant merchant = merchantService.queryByUid(user.getUid());
         if (Objects.isNull(merchant)) {
             log.error("merchant place is Show Place Page merchant is null, uid={}", user.getUid());
@@ -65,7 +65,7 @@ public class JsonUserMerchantCabinetPlaceController extends BaseController {
         if (Objects.isNull(user)) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-    
+        
         Merchant merchant = merchantService.queryByUid(user.getUid());
         if (Objects.isNull(merchant)) {
             log.error("merchant place is Show Place Page merchant is null, uid={}", user.getUid());
@@ -84,7 +84,7 @@ public class JsonUserMerchantCabinetPlaceController extends BaseController {
         if (Objects.isNull(user)) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-    
+        
         Merchant merchant = merchantService.queryByUid(user.getUid());
         if (Objects.isNull(merchant)) {
             log.error("merchant place is Show Place Page merchant is null, uid={}", user.getUid());
@@ -95,24 +95,23 @@ public class JsonUserMerchantCabinetPlaceController extends BaseController {
     }
     
     /**
-     * 统计上月，本月，累计场地费
-     * 统计设备数量
+     * 统计上月，本月，累计场地费 统计设备数量
      */
     @GetMapping("/merchant/place/getFeeData")
-    public R getFeeData(@RequestParam(value = "placeId", required = false) Long placeId,
-            @RequestParam(value = "cabinetId", required = false) Long cabinetId) {
+    public R getFeeData(@RequestParam(value = "placeId", required = false) Long placeId, @RequestParam(value = "cabinetId", required = false) Long cabinetId) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-    
+        
         Merchant merchant = merchantService.queryByUid(user.getUid());
         if (Objects.isNull(merchant)) {
             log.error("merchant place get fee data merchant is null, uid={}", user.getUid());
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-    
-        MerchantPlaceFeeRequest request = MerchantPlaceFeeRequest.builder().merchantId(merchant.getId()).tenantId(TenantContextHolder.getTenantId()).placeId(placeId).cabinetId(cabinetId).build();
+        
+        MerchantPlaceFeeRequest request = MerchantPlaceFeeRequest.builder().merchantId(merchant.getId()).tenantId(TenantContextHolder.getTenantId()).placeId(placeId)
+                .cabinetId(cabinetId).build();
         
         return R.ok(merchantPlaceFeeService.getFeeData(request));
     }
@@ -121,22 +120,20 @@ public class JsonUserMerchantCabinetPlaceController extends BaseController {
      * 统计分析-折线图
      */
     @GetMapping("/merchant/place/getLineData")
-    public R lineData(@RequestParam(value = "placeId", required = false) Long placeId,
-            @RequestParam(value = "cabinetId", required = false) Long cabinetId,@RequestParam(value = "startTime") Long startTime
-            ,@RequestParam(value = "endTime") Long endTime) {
+    public R lineData(@RequestParam(value = "placeId", required = false) Long placeId, @RequestParam(value = "cabinetId", required = false) Long cabinetId,
+            @RequestParam(value = "startTime") Long startTime, @RequestParam(value = "endTime") Long endTime) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-    
+        
         Merchant merchant = merchantService.queryByUid(user.getUid());
         if (Objects.isNull(merchant)) {
             log.error("merchant place is Show Place Page merchant is null, uid={}", user.getUid());
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-    
         
-         MerchantPlaceFeeRequest request = MerchantPlaceFeeRequest.builder().tenantId(TenantContextHolder.getTenantId()).merchantId(merchant.getId()).placeId(placeId)
+        MerchantPlaceFeeRequest request = MerchantPlaceFeeRequest.builder().tenantId(TenantContextHolder.getTenantId()).merchantId(merchant.getId()).placeId(placeId)
                 .cabinetId(cabinetId).startTime(startTime).endTime(endTime).build();
         
         return R.ok(merchantPlaceFeeService.lineData(request));
@@ -146,19 +143,18 @@ public class JsonUserMerchantCabinetPlaceController extends BaseController {
      * 根据柜机id获取场地费
      */
     @GetMapping("/merchant/place/getPlaceDetailByCabinetId")
-    public R getPlaceDetailByCabinetId(@RequestParam("month") String month,
-            @RequestParam(value = "cabinetId") Long cabinetId) {
+    public R getPlaceDetailByCabinetId(@RequestParam("month") String month, @RequestParam(value = "cabinetId") Long cabinetId) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-    
+        
         Merchant merchant = merchantService.queryByUid(user.getUid());
         if (Objects.isNull(merchant)) {
             log.error("merchant place is Show Place Page merchant is null, uid={}", user.getUid());
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-    
+        
         MerchantPlaceFeeRequest request = MerchantPlaceFeeRequest.builder().merchantId(merchant.getId()).month(month).tenantId(TenantContextHolder.getTenantId())
                 .cabinetId(cabinetId).build();
         
@@ -169,26 +165,24 @@ public class JsonUserMerchantCabinetPlaceController extends BaseController {
      * 柜机场地费详情
      */
     @GetMapping("/merchant/place/getCabinetPlaceDetail")
-    public R getCabinetPlaceDetail(@RequestParam(value = "placeId", required = false) Long placeId,
-            @RequestParam(value = "cabinetId", required = false) Long cabinetId) {
+    public R getCabinetPlaceDetail(@RequestParam(value = "placeId", required = false) Long placeId, @RequestParam(value = "cabinetId", required = false) Long cabinetId) {
         TokenUser user = SecurityUtils.getUserInfo();
         
         if (Objects.isNull(user)) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-    
+        
         Merchant merchant = merchantService.queryByUid(user.getUid());
         if (Objects.isNull(merchant)) {
             log.error("merchant place is Show Place Page merchant is null, uid={}", user.getUid());
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-    
+        
         MerchantPlaceFeeRequest request = MerchantPlaceFeeRequest.builder().merchantId(merchant.getId()).placeId(placeId).tenantId(TenantContextHolder.getTenantId())
                 .cabinetId(cabinetId).build();
         
         return R.ok(merchantPlaceFeeService.getCabinetPlaceDetail(request));
     }
-    
     
     
 }

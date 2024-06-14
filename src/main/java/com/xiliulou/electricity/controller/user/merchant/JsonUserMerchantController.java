@@ -28,6 +28,7 @@ public class JsonUserMerchantController extends BaseController {
     
     /**
      * 获取商户/渠道员详情
+     *
      * @return
      */
     @GetMapping("/merchant/queryMerchantDetail")
@@ -37,6 +38,7 @@ public class JsonUserMerchantController extends BaseController {
     
     /**
      * 获取商户详情
+     *
      * @return
      */
     @GetMapping("/merchant/getMerchantQrCode")
@@ -45,7 +47,7 @@ public class JsonUserMerchantController extends BaseController {
         if (Objects.isNull(user)) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-    
+        
         Merchant merchant = merchantService.queryByUid(user.getUid());
         if (Objects.isNull(merchant)) {
             log.error("merchant get merchant qr code merchant is null, uid={}", user.getUid());
@@ -57,6 +59,7 @@ public class JsonUserMerchantController extends BaseController {
     
     /**
      * 获取商户详情
+     *
      * @return
      */
     @GetMapping("/merchant/getMerchantInfo")
@@ -71,7 +74,7 @@ public class JsonUserMerchantController extends BaseController {
             log.error("merchant get merchant qr code merchant is null, uid={}", uid);
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-    
+        
         MerchantVO merchantVO = MerchantVO.builder().enterprisePackageAuth(merchant.getEnterprisePackageAuth()).inviteAuth(merchant.getInviteAuth()).build();
         
         return R.ok(merchantVO);

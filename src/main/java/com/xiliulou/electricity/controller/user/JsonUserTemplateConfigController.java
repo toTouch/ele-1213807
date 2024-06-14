@@ -13,12 +13,12 @@ import org.springframework.web.bind.annotation.RestController;
  */
 @RestController
 public class JsonUserTemplateConfigController {
-
+    
     @Autowired
     TemplateConfigService templateConfigService;
-
+    
     @GetMapping("/user/getTemplateId")
-    public R queryTemplateId(){
+    public R queryTemplateId() {
         return templateConfigService.queryTemplateId();
     }
 }

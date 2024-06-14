@@ -18,44 +18,45 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @Slf4j
 public class JsonUserElectronicSignatureController extends BaseController {
-
+    
     @Autowired
     private EleCabinetSignatureService eleCabinetSignatureService;
-
+    
     @GetMapping(value = "/user/checkEsignStatus")
-    public R checkEsignStatus(){
+    public R checkEsignStatus() {
         return returnTripleResult(eleCabinetSignatureService.checkUserEsignFinished());
     }
-
+    
     @Deprecated
     @GetMapping(value = "/user/identifyAuth")
-    public R identifyAuth(){
+    public R identifyAuth() {
         return returnTripleResult(eleCabinetSignatureService.personalAuthentication());
     }
-
+    
     @GetMapping(value = "/user/createSignFile")
-    public R createSignFile(){
+    public R createSignFile() {
         return returnTripleResult(eleCabinetSignatureService.createFileByTemplate());
     }
-
+    
     @PostMapping(value = "/user/fileSignature")
-    public R fileSignature(@RequestBody @Validated SignFileQuery signFileQuery){
+    public R fileSignature(@RequestBody @Validated SignFileQuery signFileQuery) {
         return returnTripleResult(eleCabinetSignatureService.getSignFlowLink(signFileQuery));
     }
-
+    
     @GetMapping(value = "/user/signFlowLink/{signFlowId}")
-    public R getSignatureLink(@PathVariable("signFlowId") String signFlowId){
+    public R getSignatureLink(@PathVariable("signFlowId") String signFlowId) {
         return returnTripleResult(eleCabinetSignatureService.getSignFlowUrl(signFlowId));
     }
     
     /**
      * 替代上面的方法，修改参数的传入方式，方便在监控中查看接口响应时，同一个接口出现的次数过多。
+     *
      * @param signFlowId
      * @return
      */
     @GetMapping(value = "/user/eSign/flowLink")
-    public R getSignFlowLink(@RequestParam(value = "signFlowId", required = true)  String signFlowId) {
+    public R getSignFlowLink(@RequestParam(value = "signFlowId", required = true) String signFlowId) {
         return returnTripleResult(eleCabinetSignatureService.getSignFlowUrl(signFlowId));
     }
-
+    
 }

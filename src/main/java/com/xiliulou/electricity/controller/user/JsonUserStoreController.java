@@ -21,110 +21,85 @@ import java.util.Objects;
  */
 @RestController
 public class JsonUserStoreController {
+    
     /**
      * 服务对象
      */
     @Autowired
     StoreService storeService;
-
+    
     //列表查询
     @GetMapping(value = "/outer/store/showInfoByDistance")
-    public R showInfoByDistance(@RequestParam(value = "distance", required = false) Double distance,
-                                @RequestParam(value = "name", required = false) String name,
-                                @RequestParam("lon") Double lon,
-                                @RequestParam("lat") Double lat) {
+    public R showInfoByDistance(@RequestParam(value = "distance", required = false) Double distance, @RequestParam(value = "name", required = false) String name,
+            @RequestParam("lon") Double lon, @RequestParam("lat") Double lat) {
         if (Objects.isNull(lon) || Objects.isNull(lat)) {
             return R.ok(Collections.EMPTY_LIST);
         }
-    
+        
         if (lon <= 0.0 || lat <= 0.0) {
             return R.fail("ELECTRICITY.0007", "不合法的参数");
         }
-
+        
         Integer tenantId = TenantContextHolder.getTenantId();
-
-        StoreQuery storeQuery = StoreQuery.builder()
-                .distance(distance)
-                .lon(lon)
-                .lat(lat)
-                .tenantId(tenantId)
-                .name(name).build();
-
+        
+        StoreQuery storeQuery = StoreQuery.builder().distance(distance).lon(lon).lat(lat).tenantId(tenantId).name(name).build();
+        
         return storeService.showInfoByDistance(storeQuery);
     }
-
+    
     /**
      * 门店列表
      */
-	@GetMapping(value = "/user/store/listByDistance")
-    public R storeListByDistance(@RequestParam("size") Long size,
-                                 @RequestParam("offset") Long offset,
-                                 @RequestParam(value = "franchiseeId" , required = false) Long franchiseeId,
-                                 @RequestParam(value = "distance", required = false) Double distance,
-                                 @RequestParam(value = "name", required = false) String name,
-                                 @RequestParam("lon") Double lon,
-                                 @RequestParam("lat") Double lat) {
+    @GetMapping(value = "/user/store/listByDistance")
+    public R storeListByDistance(@RequestParam("size") Long size, @RequestParam("offset") Long offset, @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
+            @RequestParam(value = "distance", required = false) Double distance, @RequestParam(value = "name", required = false) String name, @RequestParam("lon") Double lon,
+            @RequestParam("lat") Double lat) {
         if (Objects.isNull(lon) || Objects.isNull(lat)) {
             return R.ok(Collections.EMPTY_LIST);
         }
-
+        
         if (lon <= 0.0 || lat <= 0.0) {
             return R.fail("ELECTRICITY.0007", "不合法的参数");
         }
-
-        StoreQuery storeQuery = StoreQuery.builder()
-				.size(size)
-				.offset(offset)
-                .distance(distance)
-                .lon(lon)
-                .lat(lat)
-                .franchiseeId(franchiseeId)
-                .tenantId(TenantContextHolder.getTenantId())
-                .name(name).build();
-
+        
+        StoreQuery storeQuery = StoreQuery.builder().size(size).offset(offset).distance(distance).lon(lon).lat(lat).franchiseeId(franchiseeId)
+                .tenantId(TenantContextHolder.getTenantId()).name(name).build();
+        
         return R.ok(storeService.selectListByDistance(storeQuery));
     }
-
+    
     /**
      * 根据位置搜索门店列表 TODO 优化
      */
     @GetMapping(value = "/user/store/selectByAddress")
-    public R selectByAddress(@RequestParam("size") long size, @RequestParam("offset") long offset,
-                             @RequestParam("lon") Double lon,
-                             @RequestParam("lat") Double lat,
-                             @RequestParam(value = "franchiseeId" , required = false) Long franchiseeId,
-                             @RequestParam(value = "address", required = false) String address) {
+    public R selectByAddress(@RequestParam("size") long size, @RequestParam("offset") long offset, @RequestParam("lon") Double lon, @RequestParam("lat") Double lat,
+            @RequestParam(value = "franchiseeId", required = false) Long franchiseeId, @RequestParam(value = "address", required = false) String address) {
         if (Objects.isNull(lon) || Objects.isNull(lat) || lon <= 0.0 || lat <= 0.0) {
             return R.ok(Collections.EMPTY_LIST);
         }
-
+        
         if (size < 0 || size > 50) {
             size = 10L;
         }
-
+        
         if (offset < 0) {
             offset = 0L;
         }
-
-        StoreQuery storeQuery = StoreQuery.builder()
-                .size(size)
-                .offset(offset)
-                .lon(lon).lat(lat)
-                .franchiseeId(franchiseeId)
-                .tenantId(TenantContextHolder.getTenantId()).address(address).build();
-
+        
+        StoreQuery storeQuery = StoreQuery.builder().size(size).offset(offset).lon(lon).lat(lat).franchiseeId(franchiseeId).tenantId(TenantContextHolder.getTenantId())
+                .address(address).build();
+        
         return R.ok(storeService.selectByAddress(storeQuery));
     }
-
-
+    
+    
     /**
      * 门店详情
      */
     @GetMapping(value = "/user/store/{id}")
-    public R storeDetail(@PathVariable("id") Long id){
+    public R storeDetail(@PathVariable("id") Long id) {
         return R.ok(storeService.selectDetailById(id));
     }
-
-
-
+    
+    
 }

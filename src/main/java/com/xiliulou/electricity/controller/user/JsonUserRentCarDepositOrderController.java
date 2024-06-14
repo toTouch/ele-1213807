@@ -20,27 +20,26 @@ import javax.servlet.http.HttpServletRequest;
 @RestController
 @Slf4j
 public class JsonUserRentCarDepositOrderController extends BaseController {
+    
     @Autowired
     private CarDepositOrderService carDepositOrderService;
-
+    
     /**
      * 缴纳租车押金
      *
      * @return
      */
     @PostMapping("/user/rentCarDeposit/order")
-    public R payRentCarDeposit(@RequestParam(value = "storeId") Long storeId,
-                               @RequestParam(value = "carModelId") Integer carModelId,
-                               HttpServletRequest request) {
+    public R payRentCarDeposit(@RequestParam(value = "storeId") Long storeId, @RequestParam(value = "carModelId") Integer carModelId, HttpServletRequest request) {
         return returnTripleResult(carDepositOrderService.payRentCarDeposit(storeId, carModelId, request));
     }
-
+    
     //用户查询租车押金
     @GetMapping(value = "/user/rentCarDeposit/detail")
     public R queryRentCarDeposit() {
         return returnTripleResult(carDepositOrderService.selectRentCarDeposit());
     }
-
+    
     /**
      * 退租车押金
      *
@@ -51,6 +50,6 @@ public class JsonUserRentCarDepositOrderController extends BaseController {
     public R refundRentCarDeposit(HttpServletRequest request) {
         return returnTripleResult(carDepositOrderService.refundRentCarDeposit(request));
     }
-
-
+    
+    
 }

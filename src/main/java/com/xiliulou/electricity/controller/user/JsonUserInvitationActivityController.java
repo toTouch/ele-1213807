@@ -17,10 +17,10 @@ import org.springframework.web.bind.annotation.*;
 @Slf4j
 @RestController
 public class JsonUserInvitationActivityController extends BaseController {
-
+    
     @Autowired
     private InvitationActivityService invitationActivityService;
-
+    
     /**
      * 获取活动详情
      */
@@ -36,5 +36,5 @@ public class JsonUserInvitationActivityController extends BaseController {
     public R activityInfoV2() {
         return returnTripleResult(invitationActivityService.activityInfoV2());
     }
-
+    
 }

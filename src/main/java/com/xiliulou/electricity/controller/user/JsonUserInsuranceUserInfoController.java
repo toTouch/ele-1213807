@@ -21,33 +21,33 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @Slf4j
 public class JsonUserInsuranceUserInfoController extends BaseController {
-
+    
     @Autowired
     InsuranceUserInfoService insuranceUserInfoService;
-
+    
     @Autowired
     RedisService redisService;
-
+    
     @Autowired
     FranchiseeService franchiseeService;
-
+    
     //用户查询缴纳保险
     @GetMapping(value = "/user/queryUserInsurance")
     public R queryUserInsurance() {
         return insuranceUserInfoService.queryUserInsurance();
     }
-
+    
     @GetMapping(value = "/user/queryUserInsuranceV3")
     public R queryUserInsuranceV3(@RequestParam("type") Integer type) {
         return insuranceUserInfoService.queryUserInsurance(SecurityUtils.getUid(), type);
     }
-
+    
     //用户查询缴纳保险
     @GetMapping(value = "/user/queryInsuranceByStatus")
     public R queryInsuranceByStatus(@RequestParam("status") Integer status, @RequestParam("size") Long size, @RequestParam("offset") Long offset) {
-        return insuranceUserInfoService.queryInsuranceByStatus(status,offset,size);
+        return insuranceUserInfoService.queryInsuranceByStatus(status, offset, size);
     }
-
-
+    
+    
 }
 
