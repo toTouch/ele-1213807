@@ -7,6 +7,7 @@ import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.bo.userInfoGroup.UserInfoGroupNamesBO;
+import com.xiliulou.electricity.bo.wechat.WechatPayParamsDetails;
 import com.xiliulou.electricity.config.WechatConfig;
 import com.xiliulou.electricity.constant.CarRenalCacheConstant;
 import com.xiliulou.electricity.constant.TimeConstant;
@@ -78,7 +79,6 @@ import com.xiliulou.electricity.service.ElectricityBatteryService;
 import com.xiliulou.electricity.service.ElectricityCarModelService;
 import com.xiliulou.electricity.service.ElectricityCarService;
 import com.xiliulou.electricity.service.ElectricityConfigService;
-import com.xiliulou.electricity.service.ElectricityPayParamsService;
 import com.xiliulou.electricity.service.ElectricityTradeOrderService;
 import com.xiliulou.electricity.service.FranchiseeInsuranceService;
 import com.xiliulou.electricity.service.FranchiseeService;
@@ -90,6 +90,7 @@ import com.xiliulou.electricity.service.UserCarService;
 import com.xiliulou.electricity.service.UserCouponService;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.UserOauthBindService;
+import com.xiliulou.electricity.service.WechatPayParamsBizService;
 import com.xiliulou.electricity.service.car.CarRentalOrderService;
 import com.xiliulou.electricity.service.car.CarRentalPackageCarBatteryRelService;
 import com.xiliulou.electricity.service.car.CarRentalPackageDepositPayService;
@@ -260,7 +261,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
     private UserOauthBindService userOauthBindService;
     
     @Resource
-    private ElectricityPayParamsService electricityPayParamsService;
+    private WechatPayParamsBizService wechatPayParamsBizService;
     
     @Resource
     private ElectricityTradeOrderService electricityTradeOrderService;
@@ -929,7 +930,8 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             }
             
             // 查询支付参数
-            ElectricityPayParams payParams = electricityPayParamsService.queryCacheByTenantIdAndFranchiseeId(tenantId, Long.valueOf(buyPackageEntity.getFranchiseeId()));
+            WechatPayParamsDetails wechatPayParamsDetails = wechatPayParamsBizService.getDetailsByIdTenantIdAndFranchiseeId(tenantId,
+                    Long.valueOf(buyPackageEntity.getFranchiseeId()));
             
             // 检测结束，进入购买阶段
             Integer payType = buyOptModel.getPayType();
@@ -944,7 +946,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                 // 生成押金缴纳订单，准备 insert
                 depositPayInsertEntity = buildCarRentalPackageDepositPay(tenantId, uid, payDeposit, YesNoEnum.NO.getCode(), buyPackageEntity.getFranchiseeId(),
                         buyPackageEntity.getStoreId(), buyPackageEntity.getType(), payType, buyPackageEntity.getId(), buyPackageEntity.getDeposit(),
-                        payParams.getWechatMerchantId());
+                        wechatPayParamsDetails.getWechatMerchantId());
                 depositPayOrderNo = depositPayInsertEntity.getOrderNo();
             } else {
                 depositPayOrderNo = depositPayVo.getOrderNo();
@@ -962,7 +964,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             
             // 4）生成租车套餐订单，准备 insert
             CarRentalPackageOrderPo carRentalPackageOrder = buildCarRentalPackageOrder(buyPackageEntity, rentPaymentAmount, tenantId, uid, depositPayOrderNo, payType, payDeposit,
-                    payParams.getWechatMerchantId());
+                    wechatPayParamsDetails.getWechatMerchantId());
             carRentalPackageOrderService.insert(carRentalPackageOrder);
             
             // 判定 depositPayInsertEntity 是否需要新增
@@ -2665,8 +2667,8 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             
             // 3. 支付相关
             Long userFranchiseeId = ObjectUtils.isEmpty(userInfo.getFranchiseeId()) ? Long.valueOf(buyOptModel.getFranchiseeId()) : userInfo.getFranchiseeId();
-            ElectricityPayParams payParamsEntity = electricityPayParamsService.queryCacheByTenantIdAndFranchiseeId(tenantId, userFranchiseeId);
-            if (Objects.isNull(payParamsEntity)) {
+            WechatPayParamsDetails wechatPayParamsDetails = wechatPayParamsBizService.getDetailsByIdTenantIdAndFranchiseeId(tenantId, userFranchiseeId);
+            if (Objects.isNull(wechatPayParamsDetails)) {
                 throw new BizException("100234", "未配置支付参数");
             }
             
@@ -2913,7 +2915,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                 // 生成押金缴纳订单，准备 insert
                 depositPayInsertEntity = buildCarRentalPackageDepositPay(tenantId, uid, null, YesNoEnum.NO.getCode(), buyPackageEntity.getFranchiseeId(),
                         buyPackageEntity.getStoreId(), buyPackageEntity.getType(), payType, buyPackageEntity.getId(), buyPackageEntity.getDeposit(),
-                        payParamsEntity.getWechatMerchantId());
+                        wechatPayParamsDetails.getWechatMerchantId());
                 depositPayOrderNo = depositPayInsertEntity.getOrderNo();
             } else {
                 // 存在押金信息
@@ -2942,7 +2944,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             
             // 4）生成租车套餐订单，准备 insert
             CarRentalPackageOrderPo carRentalPackageOrder = buildCarRentalPackageOrder(buyPackageEntity, rentPaymentAmount, tenantId, uid, depositPayOrderNo, payType, null,
-                    payParamsEntity.getWechatMerchantId());
+                    wechatPayParamsDetails.getWechatMerchantId());
             carRentalPackageOrderService.insert(carRentalPackageOrder);
             
             // 判定 depositPayInsertEntity 是否需要新增
@@ -2992,7 +2994,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                     .orderType(CallBackEnums.CAR_RENAL_PACKAGE_ORDER.getCode()).attach(CallBackEnums.CAR_RENAL_PACKAGE_ORDER.getDesc()).description("租车套餐购买收费")
                     .tenantId(tenantId).build();
             
-            WechatJsapiOrderResultDTO resultDTO = electricityTradeOrderService.commonCreateTradeOrderAndGetPayParams(commonPayOrder, payParamsEntity,
+            WechatJsapiOrderResultDTO resultDTO = electricityTradeOrderService.commonCreateTradeOrderAndGetPayParams(commonPayOrder, wechatPayParamsDetails,
                     userOauthBindEntity.getThirdId(), request);
             
             return R.ok(resultDTO);
