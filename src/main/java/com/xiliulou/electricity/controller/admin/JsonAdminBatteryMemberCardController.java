@@ -110,10 +110,10 @@ public class JsonAdminBatteryMemberCardController extends BaseController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         
-        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
-            return R.ok(Collections.emptyList());
-        }
-        
+//        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
+//            return R.ok(Collections.emptyList());
+//        }
+//
         List<Long> franchiseeIds = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
             franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
@@ -159,9 +159,9 @@ public class JsonAdminBatteryMemberCardController extends BaseController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         
-        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
-            return R.ok(NumberConstant.ZERO);
-        }
+//        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
+//            return R.ok(NumberConstant.ZERO);
+//        }
         
         List<Long> franchiseeIds = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
