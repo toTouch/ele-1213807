@@ -3162,9 +3162,6 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                         //正常
                         item.setMemberCardFreezeStatus(0);
                     }
-                } else {
-                    //正常
-                    item.setMemberCardFreezeStatus(0);
                 }
                 
                 //获取用户当前绑定的套餐
