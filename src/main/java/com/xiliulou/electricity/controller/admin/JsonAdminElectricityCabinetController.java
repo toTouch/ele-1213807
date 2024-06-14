@@ -1136,7 +1136,7 @@ public class JsonAdminElectricityCabinetController extends BasicController {
      */
     @GetMapping(value = "/admin/electricityCabinet/rentReturnEditEchoByDeviceName")
     public R rentReturnEditEchoByDeviceName(@RequestParam("productKey") String productKey, @RequestParam("deviceName") String deviceName) {
-        return R.ok(electricityCabinetService.rentReturnEditEchoByDeviceName(productKey, deviceName));
+        return electricityCabinetService.rentReturnEditEchoByDeviceName(productKey, deviceName);
     }
     
 }
