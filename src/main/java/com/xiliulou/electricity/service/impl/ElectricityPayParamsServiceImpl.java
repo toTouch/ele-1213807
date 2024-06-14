@@ -1,9 +1,7 @@
 package com.xiliulou.electricity.service.impl;
 
-import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
@@ -13,9 +11,7 @@ import com.xiliulou.electricity.config.WechatConfig;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.MultiFranchiseeConstant;
 import com.xiliulou.electricity.converter.ElectricityPayParamsConverter;
-import com.xiliulou.electricity.entity.EleDisableMemberCardRecord;
 import com.xiliulou.electricity.entity.ElectricityPayParams;
-import com.xiliulou.electricity.entity.Tenant;
 import com.xiliulou.electricity.entity.WechatPaymentCertificate;
 import com.xiliulou.electricity.entity.WechatWithdrawalCertificate;
 import com.xiliulou.electricity.enums.ElectricityPayParamsConfigEnum;
@@ -29,19 +25,15 @@ import com.xiliulou.electricity.service.transaction.ElectricityPayParamsTxServic
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.OperateRecordUtil;
 import com.xiliulou.electricity.vo.ElectricityPayParamsVO;
-import com.xiliulou.electricity.vo.merchant.ElectricityMerchantProConfigVO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.annotation.Resource;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -169,8 +161,8 @@ public class ElectricityPayParamsServiceImpl extends ServiceImpl<ElectricityPayP
         Integer tenantId = TenantContextHolder.getTenantId();
         
         // 校验参数
-        ElectricityPayParams payParams = baseMapper
-                .selectOne(new LambdaQueryWrapper<ElectricityPayParams>().eq(ElectricityPayParams::getId, id).eq(ElectricityPayParams::getTenantId, tenantId));
+        ElectricityPayParams payParams = baseMapper.selectOne(
+                new LambdaQueryWrapper<ElectricityPayParams>().eq(ElectricityPayParams::getId, id).eq(ElectricityPayParams::getTenantId, tenantId));
         
         if (Objects.isNull(payParams)) {
             return R.failMsg("数据不存在");
@@ -270,9 +262,10 @@ public class ElectricityPayParamsServiceImpl extends ServiceImpl<ElectricityPayP
         return baseMapper.selectOne(new LambdaQueryWrapper<ElectricityPayParams>().eq(ElectricityPayParams::getMerchantMinProAppId, appId));
     }
     
+    @Deprecated
     @Override
     public Triple<Boolean, String, Object> queryByMerchantAppId(String appId) {
-        ElectricityPayParams electricityPayParams = baseMapper.selectOne(new LambdaQueryWrapper<ElectricityPayParams>().eq(ElectricityPayParams::getMerchantAppletId, appId));
+        /*ElectricityPayParams electricityPayParams = baseMapper.selectOne(new LambdaQueryWrapper<ElectricityPayParams>().eq(ElectricityPayParams::getMerchantAppletId, appId));
         if (Objects.isNull(electricityPayParams)) {
             return Triple.of(false, null, "未能发现相关的商户小程序配置");
         }
@@ -287,9 +280,9 @@ public class ElectricityPayParamsServiceImpl extends ServiceImpl<ElectricityPayP
         
         // 获取客服电话
         String servicePhone = redisService.get(CacheConstant.CACHE_SERVICE_PHONE + tenantId);
-        vo.setServicePhone(servicePhone);
+        vo.setServicePhone(servicePhone);*/
         
-        return Triple.of(true, null, vo);
+        return Triple.of(true, null, null);
     }
     
     @Override

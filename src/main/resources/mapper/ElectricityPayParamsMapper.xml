@@ -19,14 +19,12 @@
         <result property="paternerKey" column="paterner_key" jdbcType="VARCHAR"/>
         <result property="configType" column="config_type" jdbcType="INTEGER"/>
         <result property="franchiseeId" column="franchisee_id" jdbcType="BIGINT"/>
-        <result property="merchantAppletId" column="merchant_applet_id" jdbcType="VARCHAR"/>
-        <result property="merchantAppletSecret" column="merchant_applet_secret" jdbcType="VARCHAR"/>
         <result property="delFlag" column="del_flag" jdbcType="INTEGER"/>
     </resultMap>
     
     <sql id="base_column">
-        id
-        , office_account_app_id, office_account_app_secret, merchant_min_pro_app_id, merchant_min_pro_app_secert, wechat_merchant_id, wechat_merchant_certificate_sno, wechat_merchant_private_key_path, wechat_v3_api_key, create_time, update_time, tenant_id, api_name, paterner_key, config_type, franchisee_id, merchant_applet_id, merchant_applet_secret, del_flag    </sql>
+        id, office_account_app_id, office_account_app_secret, merchant_min_pro_app_id, merchant_min_pro_app_secert, wechat_merchant_id, wechat_merchant_certificate_sno, wechat_merchant_private_key_path, wechat_v3_api_key, create_time, update_time, tenant_id, api_name, paterner_key, config_type, franchisee_id, del_flag
+    </sql>
     
     <sql id="table_name">
         t_electricity_pay_params
@@ -50,8 +48,7 @@
     <select id="queryAllByLimit" resultMap="ElectricityPayParamsMap">
         select
         id, office_account_app_id, office_account_app_secret, merchant_min_pro_app_id, merchant_min_pro_app_secert, wechat_merchant_id, wechat_merchant_certificate_sno,
-        wechat_merchant_private_key_path, wechat_v3_api_key, create_time, update_time, tenant_id, api_name, paterner_key, config_type, franchisee_id, merchant_applet_id,
-        merchant_applet_secret, del_flag
+        wechat_merchant_private_key_path, wechat_v3_api_key, create_time, update_time, tenant_id, api_name, paterner_key, config_type, franchisee_id, del_flag
         from t_electricity_pay_params
         <where>
             <if test="id != null">
@@ -101,12 +98,6 @@
             </if>
             <if test="franchiseeId != null">
                 and franchisee_id = #{franchiseeId}
-            </if>
-            <if test="merchantAppletId != null and merchantAppletId != ''">
-                and merchant_applet_id = #{merchantAppletId}
-            </if>
-            <if test="merchantAppletSecret != null and merchantAppletSecret != ''">
-                and merchant_applet_secret = #{merchantAppletSecret}
             </if>
             <if test="delFlag != null">
                 and del_flag = #{delFlag}
@@ -168,12 +159,6 @@
             <if test="franchiseeId != null">
                 and franchisee_id = #{franchiseeId}
             </if>
-            <if test="merchantAppletId != null and merchantAppletId != ''">
-                and merchant_applet_id = #{merchantAppletId}
-            </if>
-            <if test="merchantAppletSecret != null and merchantAppletSecret != ''">
-                and merchant_applet_secret = #{merchantAppletSecret}
-            </if>
             <if test="delFlag != null">
                 and del_flag = #{delFlag}
             </if>
@@ -202,25 +187,52 @@
     <insert id="insert" keyProperty="id" useGeneratedKeys="true">
         insert into t_electricity_pay_params(office_account_app_id, office_account_app_secret, merchant_min_pro_app_id, merchant_min_pro_app_secert, wechat_merchant_id,
                                              wechat_merchant_certificate_sno, wechat_merchant_private_key_path, wechat_v3_api_key, create_time, update_time, tenant_id, api_name,
-                                             paterner_key, config_type, franchisee_id, merchant_applet_id, merchant_applet_secret, del_flag)
+                                             paterner_key, config_type, franchisee_id, del_flag)
         values (#{officeAccountAppId}, #{officeAccountAppSecret}, #{merchantMinProAppId}, #{merchantMinProAppSecert}, #{wechatMerchantId}, #{wechatMerchantCertificateSno},
                 #{wechatMerchantPrivateKeyPath}, #{wechatV3ApiKey}, #{createTime}, #{updateTime}, #{tenantId}, #{apiName}, #{paternerKey}, #{configType}, #{franchiseeId},
-                #{merchantAppletId}, #{merchantAppletSecret}, #{delFlag})
+                #{delFlag})
     </insert>
     
     <insert id="insertBatch" keyProperty="id" useGeneratedKeys="true">
         insert into t_electricity_pay_params(office_account_app_id, office_account_app_secret, merchant_min_pro_app_id, merchant_min_pro_app_secert, wechat_merchant_id,
         wechat_merchant_certificate_sno, wechat_merchant_private_key_path, wechat_v3_api_key, create_time, update_time, tenant_id, api_name, paterner_key, config_type,
-        franchisee_id, merchant_applet_id, merchant_applet_secret, del_flag)
+        franchisee_id, del_flag)
         values
         <foreach collection="entities" item="entity" separator=",">
             (#{entity.officeAccountAppId}, #{entity.officeAccountAppSecret}, #{entity.merchantMinProAppId}, #{entity.merchantMinProAppSecert}, #{entity.wechatMerchantId},
             #{entity.wechatMerchantCertificateSno}, #{entity.wechatMerchantPrivateKeyPath}, #{entity.wechatV3ApiKey}, #{entity.createTime}, #{entity.updateTime},
-            #{entity.tenantId}, #{entity.apiName}, #{entity.paternerKey}, #{entity.configType}, #{entity.franchiseeId}, #{entity.merchantAppletId}, #{entity.merchantAppletSecret},
-            #{entity.delFlag})
+            #{entity.tenantId}, #{entity.apiName}, #{entity.paternerKey}, #{entity.configType}, #{entity.franchiseeId}, #{entity.delFlag})
         </foreach>
     </insert>
     
+    <insert id="insertOrUpdateBatch" keyProperty="id" useGeneratedKeys="true">
+        insert into t_electricity_pay_params(office_account_app_id, office_account_app_secret, merchant_min_pro_app_id, merchant_min_pro_app_secert, wechat_merchant_id,
+        wechat_merchant_certificate_sno, wechat_merchant_private_key_path, wechat_v3_api_key, create_time, update_time, tenant_id, api_name, paterner_key, config_type,
+        franchisee_id, del_flag)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+            (#{entity.officeAccountAppId}, #{entity.officeAccountAppSecret}, #{entity.merchantMinProAppId}, #{entity.merchantMinProAppSecert}, #{entity.wechatMerchantId},
+            #{entity.wechatMerchantCertificateSno}, #{entity.wechatMerchantPrivateKeyPath}, #{entity.wechatV3ApiKey}, #{entity.createTime}, #{entity.updateTime},
+            #{entity.tenantId}, #{entity.apiName}, #{entity.paternerKey}, #{entity.configType}, #{entity.franchiseeId}, #{entity.delFlag})
+        </foreach>
+        on duplicate key update
+        office_account_app_id = values(office_account_app_id),
+        office_account_app_secret = values(office_account_app_secret),
+        merchant_min_pro_app_id = values(merchant_min_pro_app_id),
+        merchant_min_pro_app_secert = values(merchant_min_pro_app_secert),
+        wechat_merchant_id = values(wechat_merchant_id),
+        wechat_merchant_certificate_sno = values(wechat_merchant_certificate_sno),
+        wechat_merchant_private_key_path = values(wechat_merchant_private_key_path),
+        wechat_v3_api_key = values(wechat_v3_api_key),
+        create_time = values(create_time),
+        update_time = values(update_time),
+        tenant_id = values(tenant_id),
+        api_name = values(api_name),
+        paterner_key = values(paterner_key),
+        config_type = values(config_type),
+        franchisee_id = values(franchisee_id),
+        del_flag = values(del_flag)
+    </insert>
     
     <!--通过主键修改数据-->
     <update id="update">
@@ -257,12 +269,6 @@
             </if>
             <if test="paternerKey != null and paternerKey != ''">
                 paterner_key = #{paternerKey},
-            </if>
-            <if test="merchantAppletId != null and merchantAppletId != ''">
-                merchant_applet_id = #{merchantAppletId},
-            </if>
-            <if test="merchantAppletSecret != null and merchantAppletSecret != ''">
-                merchant_applet_secret = #{merchantAppletSecret},
             </if>
         </set>
         where id = #{id} and tenant_id=#{tenantId}

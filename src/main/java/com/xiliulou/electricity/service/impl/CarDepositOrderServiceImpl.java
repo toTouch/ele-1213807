@@ -7,25 +7,67 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
-import com.xiliulou.electricity.entity.*;
+import com.xiliulou.electricity.entity.CarDepositOrder;
+import com.xiliulou.electricity.entity.CommonPayOrder;
+import com.xiliulou.electricity.entity.EleDepositOrder;
+import com.xiliulou.electricity.entity.EleRefundOrder;
+import com.xiliulou.electricity.entity.EleRefundOrderHistory;
+import com.xiliulou.electricity.entity.ElectricityCar;
+import com.xiliulou.electricity.entity.ElectricityCarModel;
+import com.xiliulou.electricity.entity.ElectricityPayParams;
+import com.xiliulou.electricity.entity.ElectricityTradeOrder;
+import com.xiliulou.electricity.entity.FreeDepositAlipayHistory;
+import com.xiliulou.electricity.entity.FreeDepositOrder;
+import com.xiliulou.electricity.entity.InsuranceUserInfo;
+import com.xiliulou.electricity.entity.RefundOrder;
+import com.xiliulou.electricity.entity.Store;
+import com.xiliulou.electricity.entity.UserCarDeposit;
+import com.xiliulou.electricity.entity.UserInfo;
+import com.xiliulou.electricity.entity.UserOauthBind;
 import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.mapper.CarDepositOrderMapper;
 import com.xiliulou.electricity.mapper.EleDepositOrderMapper;
 import com.xiliulou.electricity.query.RentCarDepositOrderQuery;
-import com.xiliulou.electricity.service.*;
+import com.xiliulou.electricity.service.CarDepositOrderService;
+import com.xiliulou.electricity.service.CarMemberCardOrderService;
+import com.xiliulou.electricity.service.EleDepositOrderService;
+import com.xiliulou.electricity.service.EleRefundOrderHistoryService;
+import com.xiliulou.electricity.service.EleRefundOrderService;
+import com.xiliulou.electricity.service.ElectricityCarModelService;
+import com.xiliulou.electricity.service.ElectricityCarService;
+import com.xiliulou.electricity.service.ElectricityPayParamsService;
+import com.xiliulou.electricity.service.ElectricityTradeOrderService;
+import com.xiliulou.electricity.service.FreeDepositAlipayHistoryService;
+import com.xiliulou.electricity.service.FreeDepositOrderService;
+import com.xiliulou.electricity.service.InsuranceUserInfoService;
+import com.xiliulou.electricity.service.MemberCardFailureRecordService;
+import com.xiliulou.electricity.service.StoreService;
+import com.xiliulou.electricity.service.UserBatteryDepositService;
+import com.xiliulou.electricity.service.UserBatteryMemberCardService;
+import com.xiliulou.electricity.service.UserBatteryService;
+import com.xiliulou.electricity.service.UserCarDepositService;
+import com.xiliulou.electricity.service.UserCarMemberCardService;
+import com.xiliulou.electricity.service.UserCarService;
+import com.xiliulou.electricity.service.UserInfoService;
+import com.xiliulou.electricity.service.UserOauthBindService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
-import com.xiliulou.electricity.vo.*;
+import com.xiliulou.electricity.vo.CarBatteryFreeDepositAlipayVo;
+import com.xiliulou.electricity.vo.CarDepositOrderVO;
+import com.xiliulou.electricity.vo.HomePageTurnOverGroupByWeekDayVo;
+import com.xiliulou.electricity.vo.UserCarDepositOrderVo;
+import com.xiliulou.electricity.vo.UserCarDepositVO;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiOrderResultDTO;
 import com.xiliulou.pay.weixinv3.exception.WechatPayException;
 import com.xiliulou.security.bean.TokenUser;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
@@ -36,9 +78,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
-
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.util.CollectionUtils;
 
 /**
  * (CarDepositOrder)表服务实现类
@@ -228,6 +267,7 @@ public class CarDepositOrderServiceImpl implements CarDepositOrderService {
         return this.carDepositOrderMapper.selectOne(new LambdaQueryWrapper<CarDepositOrder>().eq(CarDepositOrder::getOrderId, orderNo).eq(CarDepositOrder::getTenantId, tenantId));
     }
 
+    @Deprecated
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Triple<Boolean, String, Object> payRentCarDeposit(Long storeId, Integer carModelId, HttpServletRequest request) {
