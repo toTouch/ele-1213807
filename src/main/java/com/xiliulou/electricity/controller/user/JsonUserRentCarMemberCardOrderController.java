@@ -2,7 +2,6 @@ package com.xiliulou.electricity.controller.user;
 
 import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.web.R;
-import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.query.CarMemberCardOrderQuery;
 import com.xiliulou.electricity.query.FreeDepositCarMemberCardOrderQuery;
 import com.xiliulou.electricity.query.RentCarMemberCardOrderQuery;
@@ -12,14 +11,15 @@ import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.Collections;
-import java.util.List;
 import java.util.Objects;
 
 /**
@@ -69,6 +69,7 @@ public class JsonUserRentCarMemberCardOrderController extends BaseController {
      * @param request
      * @return
      */
+    @Deprecated
     @PostMapping("/user/rentCar/memberCard/order")
     public R payRentCarMemberCard(@RequestBody @Validated CarMemberCardOrderQuery carMemberCardOrderQuery, HttpServletRequest request) {
         return returnTripleResult(carMemberCardOrderService.payRentCarMemberCard(carMemberCardOrderQuery, request));
@@ -77,6 +78,7 @@ public class JsonUserRentCarMemberCardOrderController extends BaseController {
     /**
      * 免押购买租车套餐
      */
+    @Deprecated
     @PostMapping("/user/rentCar/freeDeposit/memberCard/order")
     public R freeDepositPayCarMemberCard(@RequestBody @Validated FreeDepositCarMemberCardOrderQuery freeDepositCarMemberCardOrderQuery, HttpServletRequest request) {
         return returnTripleResult(carMemberCardOrderService.freeDepositPayCarMemberCard(freeDepositCarMemberCardOrderQuery, request));

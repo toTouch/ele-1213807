@@ -322,6 +322,7 @@ public class CarMemberCardOrderServiceImpl implements CarMemberCardOrderService 
         return Triple.of(true, "", userCarMemberCardVO);
     }
 
+    @Deprecated
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Triple<Boolean, String, Object> payRentCarMemberCard(CarMemberCardOrderQuery carMemberCardOrderQuery, HttpServletRequest request) {
@@ -455,6 +456,7 @@ public class CarMemberCardOrderServiceImpl implements CarMemberCardOrderService 
         return Triple.of(false, "购买失败", null);
     }
 
+    @Deprecated
     @Override
     public Triple<Boolean, String, Object> freeDepositPayCarMemberCard(FreeDepositCarMemberCardOrderQuery freeDepositCarMemberCardOrderQuery, HttpServletRequest request) {
         TokenUser user = SecurityUtils.getUserInfo();

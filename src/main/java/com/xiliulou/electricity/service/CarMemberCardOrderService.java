@@ -68,6 +68,7 @@ public interface CarMemberCardOrderService {
      */
     Boolean deleteById(Long id);
 
+    @Deprecated
     Triple<Boolean,String,Object> payRentCarMemberCard(CarMemberCardOrderQuery carMemberCardOrderQuery, HttpServletRequest request);
 
     CarMemberCardOrder selectByOrderId(String orderNo);
@@ -90,6 +91,7 @@ public interface CarMemberCardOrderService {
     
     R renewalUserMemberCard(CarMemberCardRenewalAddAndUpdate carMemberCardOrderAddAndUpdate);
 
+    @Deprecated
     Triple<Boolean, String, Object> freeDepositPayCarMemberCard(FreeDepositCarMemberCardOrderQuery freeDepositCarMemberCardOrderQuery, HttpServletRequest request);
 
     Triple<Boolean, String, Object> firstEditUserMemberCard(UserCarMemberCardQuery userCarMemberCardQuery);
