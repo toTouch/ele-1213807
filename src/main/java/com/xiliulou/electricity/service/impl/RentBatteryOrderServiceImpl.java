@@ -1431,7 +1431,8 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
         String fullBatteryCell = null;
         
         for (int i = 0; i < exchangeableList.size(); i++) {
-            fullBatteryCell = acquireFullBatteryBox(electricityCabinetBoxList, userInfo, franchisee);
+            // 20240614修改：过滤掉电池不符合标准的电池
+            fullBatteryCell = acquireFullBatteryBox(exchangeableList, userInfo, franchisee);
             if (StringUtils.isBlank(fullBatteryCell)) {
                 log.info("RENT BATTERY INFO!not found fullBatteryCell,uid={}", userInfo.getUid());
                 return Triple.of(false, "ELECTRICITY.0026", "换电柜暂无满电电池");
