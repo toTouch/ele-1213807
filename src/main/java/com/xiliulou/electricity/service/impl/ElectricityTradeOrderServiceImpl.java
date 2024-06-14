@@ -7,9 +7,12 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.core.json.JsonUtil;
+import com.xiliulou.electricity.bo.wechat.WechatPayParamsDetails;
 import com.xiliulou.electricity.config.WechatConfig;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.constant.TimeConstant;
+import com.xiliulou.electricity.converter.ElectricityPayParamsConverter;
 import com.xiliulou.electricity.dto.ActivityProcessDTO;
 import com.xiliulou.electricity.dto.DivisionAccountOrderDTO;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
@@ -24,7 +27,6 @@ import com.xiliulou.electricity.entity.EleDisableMemberCardRecord;
 import com.xiliulou.electricity.entity.ElectricityCar;
 import com.xiliulou.electricity.entity.ElectricityConfig;
 import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
-import com.xiliulou.electricity.entity.ElectricityPayParams;
 import com.xiliulou.electricity.entity.ElectricityTradeOrder;
 import com.xiliulou.electricity.entity.EnableMemberCardRecord;
 import com.xiliulou.electricity.entity.Franchisee;
@@ -108,8 +110,8 @@ import com.xiliulou.mq.service.RocketMqService;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiOrderCallBackResource;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiOrderResultDTO;
 import com.xiliulou.pay.weixinv3.exception.WechatPayException;
-import com.xiliulou.pay.weixinv3.franchisee.request.WechatV3FranchiseeOrderRequest;
-import com.xiliulou.pay.weixinv3.franchisee.service.WechatV3JsapiFranchiseeService;
+import com.xiliulou.pay.weixinv3.v2.query.WechatV3OrderRequest;
+import com.xiliulou.pay.weixinv3.v2.service.WechatV3JsapiInvokeService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.ObjectUtils;
@@ -165,7 +167,7 @@ public class ElectricityTradeOrderServiceImpl extends ServiceImpl<ElectricityTra
     WechatConfig wechatConfig;
     
     @Resource
-    WechatV3JsapiFranchiseeService wechatV3JsapiFranchiseeService;
+    WechatV3JsapiInvokeService wechatV3JsapiInvokeService;
     
     @Autowired
     JoinShareActivityRecordService joinShareActivityRecordService;
@@ -407,7 +409,7 @@ public class ElectricityTradeOrderServiceImpl extends ServiceImpl<ElectricityTra
     }
     
     @Override
-    public WechatJsapiOrderResultDTO commonCreateTradeOrderAndGetPayParams(CommonPayOrder commonOrder, ElectricityPayParams electricityPayParams, String openId,
+    public WechatJsapiOrderResultDTO commonCreateTradeOrderAndGetPayParams(CommonPayOrder commonOrder, WechatPayParamsDetails wechatPayParamsDetails, String openId,
             HttpServletRequest request) throws WechatPayException {
         log.info("commonCreateTradeOrderAndGetPayParams paymentAmount is {}", commonOrder.getPayAmount());
         
@@ -424,26 +426,25 @@ public class ElectricityTradeOrderServiceImpl extends ServiceImpl<ElectricityTra
         electricityTradeOrder.setTotalFee(commonOrder.getPayAmount().multiply(new BigDecimal(100)));
         electricityTradeOrder.setUid(commonOrder.getUid());
         electricityTradeOrder.setTenantId(commonOrder.getTenantId());
-        electricityTradeOrder.setFranchiseeId(electricityPayParams.getFranchiseeId());
-        electricityTradeOrder.setWechatMerchantId(electricityPayParams.getWechatMerchantId());
+        electricityTradeOrder.setFranchiseeId(wechatPayParamsDetails.getFranchiseeId());
+        electricityTradeOrder.setWechatMerchantId(wechatPayParamsDetails.getWechatMerchantId());
         baseMapper.insert(electricityTradeOrder);
         
         //支付参数
-        WechatV3FranchiseeOrderRequest wechatV3FranchiseeOrderRequest = new WechatV3FranchiseeOrderRequest();
-        wechatV3FranchiseeOrderRequest.setOrderId(electricityTradeOrder.getTradeOrderNo());
-        wechatV3FranchiseeOrderRequest.setTenantId(electricityTradeOrder.getTenantId());
-        wechatV3FranchiseeOrderRequest.setNotifyUrl(wechatConfig.getPayCallBackUrl() + electricityTradeOrder.getTenantId());
-        wechatV3FranchiseeOrderRequest.setExpireTime(System.currentTimeMillis() + 3600000);
-        wechatV3FranchiseeOrderRequest.setOpenId(openId);
-        wechatV3FranchiseeOrderRequest.setDescription(commonOrder.getDescription());
-        wechatV3FranchiseeOrderRequest.setCurrency("CNY");
-        wechatV3FranchiseeOrderRequest.setAttach(commonOrder.getAttach());
-        wechatV3FranchiseeOrderRequest.setAmount(commonOrder.getPayAmount().multiply(new BigDecimal(100)).intValue());
-        wechatV3FranchiseeOrderRequest.setAppid(electricityPayParams.getMerchantMinProAppId());
-        wechatV3FranchiseeOrderRequest.setFranchiseeId(electricityPayParams.getFranchiseeId());
-        log.info("wechatV3FranchiseeOrderRequest is -->{}", wechatV3FranchiseeOrderRequest);
+        WechatV3OrderRequest wechatV3OrderRequest = new WechatV3OrderRequest();
+        wechatV3OrderRequest.setAppid(wechatPayParamsDetails.getMerchantMinProAppId());
+        wechatV3OrderRequest.setDescription(commonOrder.getDescription());
+        wechatV3OrderRequest.setOrderId(electricityTradeOrder.getTradeOrderNo());
+        wechatV3OrderRequest.setExpireTime(System.currentTimeMillis() + 3600000);
+        wechatV3OrderRequest.setAttach(commonOrder.getAttach());
+        wechatV3OrderRequest.setNotifyUrl(wechatConfig.getPayCallBackUrl() + electricityTradeOrder.getTenantId());
+        wechatV3OrderRequest.setAmount(commonOrder.getPayAmount().multiply(new BigDecimal(100)).intValue());
+        wechatV3OrderRequest.setCurrency("CNY");
+        wechatV3OrderRequest.setOpenId(openId);
+        wechatV3OrderRequest.setCommonRequest(ElectricityPayParamsConverter.qryDetailsToCommonRequest(wechatPayParamsDetails));
+        log.info("wechatV3FranchiseeOrderRequest is {}", JsonUtil.toJson(wechatV3OrderRequest));
         
-        return wechatV3JsapiFranchiseeService.order(wechatV3FranchiseeOrderRequest);
+        return wechatV3JsapiInvokeService.order(wechatV3OrderRequest);
         
     }
     
