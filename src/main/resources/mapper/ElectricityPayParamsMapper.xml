@@ -198,6 +198,18 @@
         and config_type=#{configType}
     </select>
     
+    <select id="selectByTenantIdAndWechatMerchantId"
+        resultMap="ElectricityPayParamsMap">
+        select
+        <include refid="base_column"/>
+        from
+        <include refid="table_name"/>
+        where del_falg=0
+        and tenant_id=#{tenantId}
+        and wechat_merchant_id=#{wechatMerchantId}
+        limit 1
+    </select>
+    
     <!--新增所有列-->
     <insert id="insert" keyProperty="id" useGeneratedKeys="true">
         insert into t_electricity_pay_params(office_account_app_id, office_account_app_secret, merchant_min_pro_app_id, merchant_min_pro_app_secert, wechat_merchant_id,
