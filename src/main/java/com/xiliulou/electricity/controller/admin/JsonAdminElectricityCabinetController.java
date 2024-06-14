@@ -1129,4 +1129,14 @@ public class JsonAdminElectricityCabinetController extends BasicController {
     public R editRentReturn(@RequestBody RentReturnEditQuery editQuery) {
         return electricityCabinetService.editRentReturn(editQuery);
     }
+    
+    
+    /**
+     * 运维端编辑租退标准回显
+     */
+    @GetMapping(value = "/admin/electricityCabinet/rentReturnEditEchoByDeviceName")
+    public R rentReturnEditEchoByDeviceName(@RequestParam("productKey") String productKey, @RequestParam("deviceName") String deviceName) {
+        return R.ok(electricityCabinetService.rentReturnEditEchoByDeviceName(productKey, deviceName));
+    }
+    
 }

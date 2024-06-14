@@ -6135,4 +6135,22 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         updateElectricityCabinetExtra(cabinetAddAndUpdate);
         return R.ok();
     }
+    
+    @Override
+    public R rentReturnEditEchoByDeviceName(String productKey, String deviceName) {
+        // 查询柜机
+        ElectricityCabinet electricityCabinet = electricityCabinetService.queryByProductAndDeviceName(productKey, deviceName);
+        if (Objects.isNull(electricityCabinet)) {
+            return R.fail("不存在的柜机");
+        }
+        
+        ElectricityCabinetExtra cabinetExtra = electricityCabinetExtraService.queryByEid(Long.valueOf(electricityCabinet.getId()));
+        if (Objects.isNull(cabinetExtra)) {
+            log.warn("rentReturnEditEcho is error, cabinetExtra is null, id:{}", electricityCabinet.getId());
+            return R.ok(new RentReturnEditEchoVO());
+        }
+        
+        return R.ok(new RentReturnEditEchoVO(cabinetExtra.getEid(), cabinetExtra.getRentTabType(), cabinetExtra.getReturnTabType(), cabinetExtra.getMinRetainBatteryCount(),
+                cabinetExtra.getMaxRetainBatteryCount()));
+    }
 }

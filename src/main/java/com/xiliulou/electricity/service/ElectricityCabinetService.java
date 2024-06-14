@@ -299,4 +299,6 @@ public interface ElectricityCabinetService {
     R batchEditRentReturn(ElectricityCabinetBatchEditRentReturnQuery rentReturnQuery);
     
     R editRentReturn(RentReturnEditQuery editQuery);
+    
+    R rentReturnEditEchoByDeviceName(String productKey, String deviceName);
 }
