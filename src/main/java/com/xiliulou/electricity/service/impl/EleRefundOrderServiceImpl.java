@@ -264,7 +264,6 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
     }
 
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public Pair<Boolean, Object> notifyDepositRefundOrder(WechatJsapiRefundOrderCallBackResource callBackResource) {
         //回调参数
         String tradeRefundNo = callBackResource.getOutRefundNo();
@@ -424,7 +423,6 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
     }
 
     @Override
-//    @Transactional(rollbackFor = Exception.class)
     public Triple<Boolean, String, Object> handleRefundOrder(String refundOrderNo, String errMsg, Integer status, BigDecimal refundAmount, Long uid, HttpServletRequest request) {
 
         EleRefundOrder eleRefundOrder = eleRefundOrderMapper.selectOne(
@@ -1048,7 +1046,6 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
      * @return
      */
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public Triple<Boolean, String, Object> batteryFreeDepositRefund(String errMsg, Long uid) {
         UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
         if (Objects.isNull(userInfo) || !Objects.equals(userInfo.getTenantId(), TenantContextHolder.getTenantId())) {
