@@ -186,6 +186,7 @@
         <include refid="table_name"/>
         where del_falg=0
         and tenant_id=#{tenantId}
+        order by id asc
     </select>
     <select id="selectIdsByTenantIdAndConfigType" resultMap="ElectricityPayParamsMap">
         select

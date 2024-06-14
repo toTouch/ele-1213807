@@ -27,6 +27,7 @@ import com.xiliulou.electricity.service.WechatPaymentCertificateService;
 import com.xiliulou.electricity.service.WechatWithdrawalCertificateService;
 import com.xiliulou.electricity.service.transaction.ElectricityPayParamsTxService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
+import com.xiliulou.electricity.utils.OperateRecordUtil;
 import com.xiliulou.electricity.vo.ElectricityPayParamsVO;
 import com.xiliulou.electricity.vo.merchant.ElectricityMerchantProConfigVO;
 import lombok.extern.slf4j.Slf4j;
@@ -71,6 +72,9 @@ public class ElectricityPayParamsServiceImpl extends ServiceImpl<ElectricityPayP
     WechatConfig config;
     
     @Autowired
+    OperateRecordUtil operateRecordUtil;
+    
+    @Autowired
     private WechatPaymentCertificateService wechatPaymentCertificateService;
     
     @Autowired
@@ -112,6 +116,8 @@ public class ElectricityPayParamsServiceImpl extends ServiceImpl<ElectricityPayP
         baseMapper.insert(insert);
         // 缓存删除
         redisService.delete(buildCacheKey(tenantId, insert.getFranchiseeId()));
+    
+//        operateRecordUtil.asyncRecord();
         return R.ok();
     }
     
