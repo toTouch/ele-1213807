@@ -121,6 +121,9 @@
             <if test="updateTime != null">
                 update_time = #{updateTime},
             </if>
+            <if test="payConfigType != null">
+                pay_config_type = #{payConfigType},
+            </if>
         </set>
         where id = #{id}
     </update>
@@ -152,7 +155,9 @@
             <if test="merchantWithdrawApplication.remark != null and merchantWithdrawApplication.remark != ''">
                 remark = #{merchantWithdrawApplication.remark},
             </if>
-           
+            <if test="merchantWithdrawApplication.payConfigType != null">
+                pay_config_type = #{merchantWithdrawApplication.payConfigType},
+            </if>
         </set>
         
         <where>
