@@ -231,7 +231,7 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
         WechatPayParamsDetails wechatPayParamsDetails  = wechatPayParamsBizService.getDetailsByIdTenantIdAndFranchiseeId(tenantId, merchant.getFranchiseeId());
     
         if (Objects.isNull(wechatPayParamsDetails) || Objects.isNull(wechatPayParamsDetails.getFranchiseeId())) {
-            log.error("review Merchant withdraw application error, wechat pay params details is null, batchNo = {}, tenantId = {}, franchiseeId={}", tenantId, merchant.getFranchiseeId());
+            log.error("review Merchant withdraw application error, wechat pay params details is null, tenantId = {}, franchiseeId={}", tenantId, merchant.getFranchiseeId());
             return Triple.of(false, "120017", "未配置支付参数");
         }
         
@@ -429,7 +429,7 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
         WechatPayParamsDetails wechatPayParamsDetails  = wechatPayParamsBizService.getDetailsByIdTenantIdAndFranchiseeId(tenantId, franchiseeId);
     
         if (Objects.isNull(wechatPayParamsDetails) || Objects.isNull(wechatPayParamsDetails.getFranchiseeId())) {
-            log.error("review Merchant batch withdraw application error, wechat pay params details is null, batchNo = {}, tenantId = {}, franchiseeId={}", tenantId, franchiseeId);
+            log.error("review Merchant batch withdraw application error, wechat pay params details is null, tenantId = {}, franchiseeId={}", tenantId, franchiseeId);
             return Triple.of(false, "120017", "未配置支付参数");
         }
     

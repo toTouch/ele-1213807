@@ -13,9 +13,11 @@ import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.thread.XllThreadPoolExecutorService;
 import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.db.dynamic.annotation.Slave;
+import com.xiliulou.electricity.bo.wechat.WechatPayParamsDetails;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.constant.StringConstant;
+import com.xiliulou.electricity.converter.ElectricityPayParamsConverter;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.CommonPayOrder;
 import com.xiliulou.electricity.entity.EleDepositOrder;
@@ -80,6 +82,7 @@ import com.xiliulou.electricity.service.UserBatteryTypeService;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.UserOauthBindService;
 import com.xiliulou.electricity.service.UserService;
+import com.xiliulou.electricity.service.WechatPayParamsBizService;
 import com.xiliulou.electricity.service.enterprise.AnotherPayMembercardRecordService;
 import com.xiliulou.electricity.service.enterprise.CloudBeanUseRecordDetailService;
 import com.xiliulou.electricity.service.enterprise.CloudBeanUseRecordService;
@@ -107,6 +110,7 @@ import com.xiliulou.pay.deposit.paixiaozu.pojo.rsp.PxzDepositUnfreezeRsp;
 import com.xiliulou.pay.deposit.paixiaozu.service.PxzDepositService;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiOrderResultDTO;
 import com.xiliulou.pay.weixinv3.exception.WechatPayException;
+import com.xiliulou.pay.weixinv3.v2.query.WechatV3CommonRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -267,6 +271,9 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
     
     @Value("${hexup.merchant.merchantAppletSecret")
     private String merchantAppletSecret;
+    
+    @Resource
+    private WechatPayParamsBizService wechatPayParamsBizService;
     
     
     /**
@@ -740,10 +747,11 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
                 return Triple.of(false, "100314", "支付金额不合法");
             }
             
-            ElectricityPayParams electricityPayParams = electricityPayParamsService.queryCacheByTenantIdAndFranchiseeId(TenantContextHolder.getTenantId(), enterpriseInfo.getFranchiseeId());
-            if (Objects.isNull(electricityPayParams)) {
-                log.error("CLOUD BEAN RECHARGE ERROR!not found pay params,uid={}", uid);
-                return Triple.of(false, "100314", "未配置支付参数!");
+            //查询支付配置详情
+            WechatPayParamsDetails wechatPayParamsDetails  = wechatPayParamsBizService.getDetailsByIdTenantIdAndFranchiseeId(TenantContextHolder.getTenantId(), enterpriseInfo.getFranchiseeId());
+            if (Objects.isNull(wechatPayParamsDetails) || Objects.isNull(wechatPayParamsDetails.getFranchiseeId())) {
+                log.error("CLOUD BEAN RECHARGE ERROR, wechat pay params details is null, tenantId = {}, franchiseeId={}", TenantContextHolder.getTenantId(), enterpriseInfo.getFranchiseeId());
+                return Triple.of(false, "120017", "未配置支付参数");
             }
     
             if (Objects.isNull(merchantAppletId)) {
@@ -757,8 +765,8 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
             }
     
             //兼容商户小程序充值
-            electricityPayParams.setMerchantMinProAppId(merchantAppletId);
-            electricityPayParams.setMerchantAppletSecret(merchantAppletSecret);
+            wechatPayParamsDetails.setMerchantMinProAppId(merchantAppletId);
+            wechatPayParamsDetails.setMerchantAppletSecret(merchantAppletSecret);
             
             UserOauthBind userOauthBind = userOauthBindService.queryUserOauthBySysId(uid, TenantContextHolder.getTenantId());
             if (Objects.isNull(userOauthBind) || Objects.isNull(userOauthBind.getThirdId())) {
@@ -787,9 +795,9 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
             CommonPayOrder commonPayOrder = CommonPayOrder.builder().orderId(enterpriseCloudBeanOrder.getOrderId()).uid(uid).payAmount(query.getTotalBeanAmount())
                     .orderType(ElectricityTradeOrder.ORDER_TYPE_CLOUD_BEAN_RECHARGE).attach(ElectricityTradeOrder.ATTACH_CLOUD_BEAN_RECHARGE).description("云豆充值")
                     .tenantId(TenantContextHolder.getTenantId()).build();
-            
+    
             WechatJsapiOrderResultDTO resultDTO = electricityTradeOrderService
-                    .commonCreateTradeOrderAndGetPayParams(commonPayOrder, electricityPayParams, userOauthBind.getThirdId(), request);
+                    .commonCreateTradeOrderAndGetPayParams(commonPayOrder, wechatPayParamsDetails, userOauthBind.getThirdId(), request);
             return Triple.of(true, null, resultDTO);
         } catch (Exception e) {
             log.error("CLOUD BEAN RECHARGE ERROR! recharge fail,uid={}", uid, e);
