@@ -749,7 +749,7 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
             
             //查询支付配置详情
             WechatPayParamsDetails wechatPayParamsDetails  = wechatPayParamsBizService.getDetailsByIdTenantIdAndFranchiseeId(TenantContextHolder.getTenantId(), enterpriseInfo.getFranchiseeId());
-            if (Objects.isNull(wechatPayParamsDetails) || Objects.isNull(wechatPayParamsDetails.getFranchiseeId())) {
+            if (Objects.isNull(wechatPayParamsDetails)) {
                 log.error("CLOUD BEAN RECHARGE ERROR, wechat pay params details is null, tenantId = {}, franchiseeId={}", TenantContextHolder.getTenantId(), enterpriseInfo.getFranchiseeId());
                 return Triple.of(false, "120017", "未配置支付参数");
             }
