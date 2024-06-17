@@ -364,14 +364,6 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
         return Triple.of(true, "", "");
     }
     
-    @Override
-    public List<ElectricityCabinetBox> selectAllBoxByBatteryId(Integer id) {
-        List<ElectricityCabinetBox> boxes = electricityCabinetBoxMapper.selectAllBoxByBatteryId(id);
-        if (CollUtil.isEmpty(boxes)){
-            return new ArrayList<>();
-        }
-        return boxes;
-    }
     
     @Override
     public List<ElectricityCabinetBox> selectHaveBatteryCellId(Integer id) {

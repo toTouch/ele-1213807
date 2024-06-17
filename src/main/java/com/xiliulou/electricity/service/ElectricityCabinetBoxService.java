@@ -6,7 +6,6 @@ import com.xiliulou.electricity.entity.ElectricityCabinetBox;
 import com.xiliulou.electricity.entity.ElectricityCabinetModel;
 import com.xiliulou.electricity.query.ElectricityCabinetBoxQuery;
 import com.xiliulou.electricity.query.FreeCellNoQuery;
-import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 
 import java.util.List;
@@ -83,9 +82,6 @@ public interface ElectricityCabinetBoxService {
     List<ElectricityCabinetBox> listByElectricityCabinetIdS(List<Integer> electricityCabinetIdS, Integer tenantId);
     
     List<ElectricityCabinetBox> listCabineBoxByEids(List<Integer> electricityCabinetIdList);
-    
-    
-    List<ElectricityCabinetBox> selectAllBoxByBatteryId(Integer id);
     
     List<ElectricityCabinetBox> selectHaveBatteryCellId(Integer id);
 }
