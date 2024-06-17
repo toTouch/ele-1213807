@@ -184,7 +184,7 @@
         <include refid="base_column"/>
         from
         <include refid="table_name"/>
-        where del_falg=0
+        where del_flag=0
         and tenant_id=#{tenantId}
         order by id asc
     </select>
@@ -193,7 +193,7 @@
         <include refid="base_column"/>
         from
         <include refid="table_name"/>
-        where del_falg=0
+        where del_flag=0
         and tenant_id=#{tenantId}
         and config_type=#{configType}
     </select>
@@ -204,7 +204,7 @@
         <include refid="base_column"/>
         from
         <include refid="table_name"/>
-        where del_falg=0
+        where del_flag=0
         and tenant_id=#{tenantId}
         and wechat_merchant_id=#{wechatMerchantId}
         limit 1
