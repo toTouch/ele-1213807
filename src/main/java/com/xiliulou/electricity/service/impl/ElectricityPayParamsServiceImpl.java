@@ -226,11 +226,14 @@ public class ElectricityPayParamsServiceImpl extends ServiceImpl<ElectricityPayP
     
     @Override
     public R getTenantId(String appId) {
-        ElectricityPayParams electricityPayParams = baseMapper.selectOne(new LambdaQueryWrapper<ElectricityPayParams>().eq(ElectricityPayParams::getMerchantMinProAppId, appId));
-        if (Objects.isNull(electricityPayParams)) {
+        // TODO: 2024/6/17 web未找到对应的调用页面,暂时兼容愿逻辑
+        //        ElectricityPayParams electricityPayParams = baseMapper.selectOne(new LambdaQueryWrapper<ElectricityPayParams>().eq(ElectricityPayParams::getMerchantMinProAppId, appId));
+        List<ElectricityPayParams> electricityPayParams = baseMapper
+                .selectList(new LambdaQueryWrapper<ElectricityPayParams>().eq(ElectricityPayParams::getMerchantMinProAppId, appId));
+        if (CollectionUtils.isEmpty(electricityPayParams)) {
             return R.fail("ELECTRICITY.00101", "找不到租户");
         }
-        return R.ok(electricityPayParams.getTenantId());
+        return R.ok(electricityPayParams.get(0).getTenantId());
     }
     
     /**
@@ -293,7 +296,13 @@ public class ElectricityPayParamsServiceImpl extends ServiceImpl<ElectricityPayP
     
     @Override
     public ElectricityPayParams selectTenantId(String appId) {
-        return baseMapper.selectOne(new LambdaQueryWrapper<ElectricityPayParams>().eq(ElectricityPayParams::getMerchantMinProAppId, appId));
+        //        return baseMapper.selectOne(new LambdaQueryWrapper<ElectricityPayParams>().eq(ElectricityPayParams::getMerchantMinProAppId, appId));
+        List<ElectricityPayParams> electricityPayParams = baseMapper
+                .selectList(new LambdaQueryWrapper<ElectricityPayParams>().eq(ElectricityPayParams::getMerchantMinProAppId, appId));
+        if (CollectionUtils.isEmpty(electricityPayParams)) {
+            return null;
+        }
+        return electricityPayParams.get(0);
     }
     
     @Override
