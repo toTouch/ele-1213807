@@ -22,13 +22,16 @@ import com.xiliulou.electricity.request.asset.AssetInventorySaveOrUpdateRequest;
 import com.xiliulou.electricity.request.asset.ElectricityBatterySnSearchRequest;
 import com.xiliulou.electricity.service.ElectricityBatteryService;
 import com.xiliulou.electricity.service.FranchiseeService;
+import com.xiliulou.electricity.service.asset.AssertPermissionService;
 import com.xiliulou.electricity.service.asset.AssetInventoryDetailService;
 import com.xiliulou.electricity.service.asset.AssetInventoryService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.OrderIdUtil;
+import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.asset.AssetInventoryVO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -64,6 +67,9 @@ public class AssetInventoryServiceImpl implements AssetInventoryService {
     
     @Autowired
     private FranchiseeService franchiseeService;
+    
+    @Autowired
+    private AssertPermissionService assertPermissionService;
     
     @Override
     public R save(AssetInventorySaveOrUpdateRequest assetInventorySaveOrUpdateRequest, Long operator) {
@@ -122,6 +128,13 @@ public class AssetInventoryServiceImpl implements AssetInventoryService {
         
         List<AssetInventoryVO> rspList = Collections.emptyList();
         
+        // 加盟商权限
+        Pair<Boolean, List<Long>> pair = assertPermissionService.assertPermissionByPair(SecurityUtils.getUserInfo());
+        if (!pair.getLeft()){
+            return Collections.emptyList();
+        }
+        assetInventoryQueryModel.setFranchiseeIds(pair.getRight());
+        
         List<AssetInventoryBO> assetInventoryBOList = assetInventoryMapper.selectListByFranchiseeId(assetInventoryQueryModel);
         if (CollectionUtils.isNotEmpty(assetInventoryBOList)) {
             rspList = assetInventoryBOList.stream().map(item -> {
@@ -150,6 +163,13 @@ public class AssetInventoryServiceImpl implements AssetInventoryService {
         AssetInventoryQueryModel assetInventoryQueryModel = new AssetInventoryQueryModel();
         BeanUtils.copyProperties(assetInventoryRequest, assetInventoryQueryModel);
         assetInventoryQueryModel.setTenantId(TenantContextHolder.getTenantId());
+        
+        // 加盟商权限
+        Pair<Boolean, List<Long>> pair = assertPermissionService.assertPermissionByPair(SecurityUtils.getUserInfo());
+        if (!pair.getLeft()){
+            return NumberConstant.ZERO;
+        }
+        assetInventoryQueryModel.setFranchiseeIds(pair.getRight());
         
         return assetInventoryMapper.countTotal(assetInventoryQueryModel);
     }
