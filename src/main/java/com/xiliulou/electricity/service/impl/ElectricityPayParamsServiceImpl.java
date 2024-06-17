@@ -295,7 +295,7 @@ public class ElectricityPayParamsServiceImpl extends ServiceImpl<ElectricityPayP
             // 缓存删除
             redisService.delete(buildCacheKey(tenantId, franchiseeId));
         } catch (Exception e) {
-            log.error("certificate get error:", e);
+            log.error("certificate get error, tenantId={}", tenantId);
             return R.fail("证书内容获取失败，请重试！");
         } finally {
             //解锁
