@@ -14,13 +14,10 @@ import com.xiliulou.electricity.entity.WechatPaymentCertificate;
 import com.xiliulou.electricity.service.ElectricityPayParamsService;
 import com.xiliulou.electricity.service.WechatPayParamsBizService;
 import com.xiliulou.electricity.service.WechatPaymentCertificateService;
-import com.xiliulou.pay.weixinv3.service.WechatV3CommonService;
 import com.xiliulou.pay.weixinv3.util.WechatCertificateUtils;
 import com.xiliulou.pay.weixinv3.v2.query.WechatV3CommonRequest;
 import com.xiliulou.pay.weixinv3.v2.service.WechatV3CommonInvokeService;
 import org.apache.commons.collections4.CollectionUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;

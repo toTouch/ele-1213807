@@ -17,9 +17,4 @@ public interface MultiFranchiseeConstant {
      */
     Long DEFAULT_FRANCHISEE = 0L;
     
-    
-    /**
-     * null 缓存值
-     */
-    String NULL_CACHE = "null";
 }
