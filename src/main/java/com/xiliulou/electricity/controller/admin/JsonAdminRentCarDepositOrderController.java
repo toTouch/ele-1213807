@@ -160,20 +160,6 @@ public class JsonAdminRentCarDepositOrderController extends BaseController {
         return R.ok(carDepositOrderService.selectPageCount(rentCarDepositOrderQuery));
     }
 
-
-    /**
-     * 租车后台线上退押金
-     */
-    @PostMapping("/admin/carDepositRefundByOnline")
-    @Log(title = "后台退租车线上押金")
-    public R refundDepositCarByOnline(@RequestParam("orderId") String orderId,
-                                      @RequestParam("uid") Long uid,
-                                      @RequestParam(value = "remark", required = false) String remark,
-                                      @RequestParam(value = "refundAmount", required = true) BigDecimal refundAmount,
-                                      HttpServletRequest request) {
-        return returnTripleResult(carDepositOrderService.handleRefundCarDeposit(orderId,uid, remark, refundAmount, request));
-    }
-
     /**
      * 租车后台线下退押金
      */

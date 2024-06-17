@@ -3,6 +3,7 @@ package com.xiliulou.electricity.service.impl;
 import cn.hutool.core.util.ObjectUtil;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
+import com.xiliulou.electricity.bo.wechat.WechatPayParamsDetails;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.*;
@@ -30,6 +31,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.math.BigDecimal;
 import java.util.*;
@@ -104,6 +106,9 @@ public class RentCarOrderServiceImpl implements RentCarOrderService {
 
     @Autowired
     BatteryMemberCardOrderCouponService memberCardOrderCouponService;
+    
+    @Resource
+    private WechatPayParamsBizService wechatPayParamsBizService;
 
     /**
      * 通过ID查询单条数据从DB
@@ -703,178 +708,5 @@ public class RentCarOrderServiceImpl implements RentCarOrderService {
             }
         }
         return Triple.of(true, null, null);
-    }
-    
-    
-    @Override
-    @Transactional(rollbackFor = Exception.class)
-    public Triple<Boolean, String, Object> rentCarHybridOrder(RentCarHybridOrderQuery query, HttpServletRequest request) {
-        TokenUser user = SecurityUtils.getUserInfo();
-        if (Objects.isNull(user)) {
-            log.error("ELE CAR DEPOSIT ERROR! not found user");
-            return Triple.of(false, "ELECTRICITY.0001", "未找到用户");
-        }
-
-        Integer tenantId = TenantContextHolder.getTenantId();
-
-        if (!redisService.setNx(CacheConstant.ELE_CACHE_USER_RENT_CAR_LOCK_KEY + user.getUid(), "1", 3 * 1000L, false)) {
-            return Triple.of(false, "ELECTRICITY.0034", "操作频繁");
-        }
-
-        //支付相关
-        ElectricityPayParams electricityPayParams = electricityPayParamsService.queryFromCache(tenantId);
-        if (Objects.isNull(electricityPayParams)) {
-            log.error("ELE CAR DEPOSIT ERROR!not found electricityPayParams,uid={}", user.getUid());
-            return Triple.of(false, "100234", "未配置支付参数!");
-        }
-
-        UserOauthBind userOauthBind = userOauthBindService.queryUserOauthBySysId(user.getUid(), tenantId);
-        if (Objects.isNull(userOauthBind) || Objects.isNull(userOauthBind.getThirdId())) {
-            log.error("ELE CAR DEPOSIT ERROR!not found userOauthBind,uid={}", user.getUid());
-            return Triple.of(false, "100235", "未找到用户的第三方授权信息!");
-        }
-
-        UserInfo userInfo = userInfoService.queryByUidFromCache(user.getUid());
-        if (Objects.isNull(userInfo) || Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
-            log.error("ELE CAR DEPOSIT ERROR! not found userInfo,uid={}", user.getUid());
-            return Triple.of(false, "ELECTRICITY.0024", "用户已被禁用");
-        }
-
-        //未实名认证
-        if (!Objects.equals(userInfo.getAuthStatus(), UserInfo.AUTH_STATUS_REVIEW_PASSED)) {
-            log.error("ELE CAR DEPOSIT ERROR! user not auth,uid={}", user.getUid());
-            return Triple.of(false, "ELECTRICITY.0041", "未实名认证");
-        }
-
-        if (Objects.equals(userInfo.getCarDepositStatus(), UserInfo.CAR_DEPOSIT_STATUS_YES)) {
-            log.error("ELE CAR DEPOSIT ERROR! user already rent deposit,uid={}", user.getUid());
-            return Triple.of(false, "ELECTRICITY.0049", "已缴纳押金");
-        }
-
-
-        //处理租车押金
-        Triple<Boolean, String, Object> rentCarDepositTriple = carDepositOrderService.handleRentCarDeposit(query.getFranchiseeId(), query.getCarModelId(), query.getStoreId(), query.getMemberCardId(), userInfo);
-        if (Boolean.FALSE.equals(rentCarDepositTriple.getLeft())) {
-            return rentCarDepositTriple;
-        }
-
-        //处理租车套餐订单
-        Triple<Boolean, String, Object> rentCarMemberCardTriple = carMemberCardOrderService.handleRentCarMemberCard(query.getStoreId(), query.getCarModelId(), query.getRentTime(), query.getRentType(), userInfo);
-        if (Boolean.FALSE.equals(rentCarMemberCardTriple.getLeft())) {
-            return rentCarMemberCardTriple;
-        }
-
-        //处理电池押金相关
-        Triple<Boolean, String, Object> rentBatteryDepositTriple = eleDepositOrderService.handleRentBatteryDeposit(query.getFranchiseeId(), query.getMemberCardId(),query.getModel(), userInfo);
-        if (Boolean.FALSE.equals(rentBatteryDepositTriple.getLeft())) {
-            return rentBatteryDepositTriple;
-        }
-
-        //处理电池套餐相关
-        Set<Integer> userCouponIds = electricityMemberCardOrderService.generateUserCouponIds(query.getUserCouponId(), query.getUserCouponIds());
-        Triple<Boolean, String, Object> rentBatteryMemberCardTriple = electricityMemberCardOrderService.handleRentBatteryMemberCard(query.getProductKey(), query.getDeviceName(), userCouponIds, query.getMemberCardId(), query.getFranchiseeId(), userInfo);
-        if (Boolean.FALSE.equals(rentBatteryMemberCardTriple.getLeft())) {
-            return rentBatteryMemberCardTriple;
-        }
-
-        //处理保险套餐相关
-        Triple<Boolean, String, Object> rentBatteryInsuranceTriple = insuranceOrderService.handleRentBatteryInsurance(query.getInsuranceId(), userInfo);
-        if (Boolean.FALSE.equals(rentBatteryInsuranceTriple.getLeft())) {
-            return rentBatteryInsuranceTriple;
-        }
-
-        List<String> orderList = new ArrayList<>();
-        List<Integer> orderTypeList = new ArrayList<>();
-        List<BigDecimal> payAmountList = new ArrayList<>();
-        BigDecimal totalPayAmount = BigDecimal.valueOf(0);
-
-
-        //保存租车押金订单
-        if (Boolean.TRUE.equals(rentCarDepositTriple.getLeft()) && Objects.nonNull(rentCarDepositTriple.getRight())) {
-            CarDepositOrder carDepositOrder = (CarDepositOrder) rentCarDepositTriple.getRight();
-            carDepositOrderService.insert(carDepositOrder);
-
-            orderList.add(carDepositOrder.getOrderId());
-            orderTypeList.add(UnionPayOrder.ORDER_TYPE_RENT_CAR_DEPOSIT);
-            payAmountList.add(carDepositOrder.getPayAmount());
-
-            totalPayAmount = totalPayAmount.add(carDepositOrder.getPayAmount());
-        }
-
-        //保存租车套餐订单
-        if (Boolean.TRUE.equals(rentCarMemberCardTriple.getLeft()) && Objects.nonNull(rentCarMemberCardTriple.getRight())) {
-            CarMemberCardOrder carMemberCardOrder = (CarMemberCardOrder) rentCarMemberCardTriple.getRight();
-            carMemberCardOrderService.insert(carMemberCardOrder);
-
-            orderList.add(carMemberCardOrder.getOrderId());
-            orderTypeList.add(UnionPayOrder.ORDER_TYPE_RENT_CAR_MEMBER_CARD);
-            payAmountList.add(carMemberCardOrder.getPayAmount());
-
-            totalPayAmount = totalPayAmount.add(carMemberCardOrder.getPayAmount());
-        }
-
-
-        //保存电池押金订单
-        if (Boolean.TRUE.equals(rentBatteryDepositTriple.getLeft()) && Objects.nonNull(rentBatteryDepositTriple.getRight())) {
-            EleDepositOrder eleDepositOrder = (EleDepositOrder) rentBatteryDepositTriple.getRight();
-            eleDepositOrderService.insert(eleDepositOrder);
-
-            orderList.add(eleDepositOrder.getOrderId());
-            orderTypeList.add(UnionPayOrder.ORDER_TYPE_DEPOSIT);
-            payAmountList.add(eleDepositOrder.getPayAmount());
-
-            totalPayAmount = totalPayAmount.add(eleDepositOrder.getPayAmount());
-        }
-
-
-        //保存保险订单
-        if (Boolean.TRUE.equals(rentBatteryInsuranceTriple.getLeft()) && Objects.nonNull(rentBatteryInsuranceTriple.getRight())) {
-            InsuranceOrder insuranceOrder = (InsuranceOrder) rentBatteryInsuranceTriple.getRight();
-            insuranceOrderService.insert(insuranceOrder);
-
-            orderList.add(insuranceOrder.getOrderId());
-            orderTypeList.add(UnionPayOrder.ORDER_TYPE_INSURANCE);
-            payAmountList.add(insuranceOrder.getPayAmount());
-
-            totalPayAmount = totalPayAmount.add(insuranceOrder.getPayAmount());
-        }
-
-        //保存电池套餐订单
-        if (Boolean.TRUE.equals(rentBatteryMemberCardTriple.getLeft()) && Objects.nonNull(rentBatteryMemberCardTriple.getRight())) {
-            ElectricityMemberCardOrder electricityMemberCardOrder = (ElectricityMemberCardOrder) (rentBatteryMemberCardTriple.getRight());
-            electricityMemberCardOrderService.insert(electricityMemberCardOrder);
-
-            orderList.add(electricityMemberCardOrder.getOrderId());
-            orderTypeList.add(UnionPayOrder.ORDER_TYPE_MEMBER_CARD);
-            payAmountList.add(electricityMemberCardOrder.getPayAmount());
-
-            totalPayAmount = totalPayAmount.add(electricityMemberCardOrder.getPayAmount());
-
-            if (CollectionUtils.isNotEmpty(userCouponIds)) {
-                //保存订单所使用的优惠券
-                memberCardOrderCouponService.batchInsert(electricityMemberCardOrderService.buildMemberCardOrderCoupon(electricityMemberCardOrder.getOrderId(), userCouponIds));
-                //修改优惠券状态为核销中
-                userCouponService.batchUpdateUserCoupon(electricityMemberCardOrderService.buildUserCouponList(userCouponIds, UserCoupon.STATUS_IS_BEING_VERIFICATION, electricityMemberCardOrder.getOrderId()));
-            }
-        }
-
-        try {
-            UnionPayOrder unionPayOrder = UnionPayOrder.builder()
-                    .jsonOrderId(JsonUtil.toJson(orderList))
-                    .jsonOrderType(JsonUtil.toJson(orderTypeList))
-                    .jsonSingleFee(JsonUtil.toJson(payAmountList))
-                    .payAmount(totalPayAmount)
-                    .tenantId(tenantId)
-                    .attach(UnionTradeOrder.ATTACH_INTEGRATED_PAYMENT)
-                    .description("租车押金")
-                    .uid(user.getUid()).build();
-            WechatJsapiOrderResultDTO resultDTO =
-                    unionTradeOrderService.unionCreateTradeOrderAndGetPayParams(unionPayOrder, electricityPayParams, userOauthBind.getThirdId(), request);
-            return Triple.of(true, null, resultDTO);
-        } catch (WechatPayException e) {
-            log.error("CREATE UNION_INSURANCE_DEPOSIT_ORDER ERROR! wechat v3 order  error! uid={}", user.getUid(), e);
-        }
-
-        return Triple.of(false, "ELECTRICITY.0099", "下单失败");
     }
 }
