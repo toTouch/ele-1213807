@@ -23,7 +23,6 @@ import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.entity.ElectricityCar;
 import com.xiliulou.electricity.entity.ElectricityCarModel;
 import com.xiliulou.electricity.entity.ElectricityConfig;
-import com.xiliulou.electricity.entity.ElectricityPayParams;
 import com.xiliulou.electricity.entity.ElectricityTradeOrder;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.FranchiseeInsurance;
@@ -2923,7 +2922,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             }
             
             // 2）保险处理
-            InsuranceOrder insuranceOrderInsertEntity = buildInsuranceOrder(userInfo, buyInsurance, payType);
+            InsuranceOrder insuranceOrderInsertEntity = buildInsuranceOrder(userInfo, buyInsurance, payType, wechatPayParamsDetails);
             // 保险费用
             BigDecimal insuranceAmount = ObjectUtils.isNotEmpty(buyInsurance) ? buyInsurance.getPremium() : BigDecimal.ZERO;
             
@@ -3448,12 +3447,13 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
     /**
      * 构建保险订单信息
      *
-     * @param userInfo     用户信息
-     * @param buyInsurance 保险信息
-     * @param payType      交易方式
+     * @param userInfo               用户信息
+     * @param buyInsurance           保险信息
+     * @param payType                交易方式
+     * @param wechatPayParamsDetails 支付配置
      * @return 保险订单信息
      */
-    private InsuranceOrder buildInsuranceOrder(UserInfo userInfo, FranchiseeInsurance buyInsurance, Integer payType) {
+    private InsuranceOrder buildInsuranceOrder(UserInfo userInfo, FranchiseeInsurance buyInsurance, Integer payType, WechatPayParamsDetails wechatPayParamsDetails) {
         if (ObjectUtils.isEmpty(buyInsurance)) {
             return null;
         }
@@ -3488,6 +3488,9 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             
         }
         insuranceOrder.setPayType(payType);
+        
+        insuranceOrder.setParamFranchiseeId(wechatPayParamsDetails.getFranchiseeId());
+        insuranceOrder.setWechatMerchantId(wechatPayParamsDetails.getWechatMerchantId());
         
         return insuranceOrder;
     }
