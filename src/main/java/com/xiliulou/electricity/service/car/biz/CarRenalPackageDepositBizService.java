@@ -77,9 +77,10 @@ public interface CarRenalPackageDepositBizService {
      * @param apploveDesc 审批意见
      * @param apploveUid 审批人
      * @param refundAmount 退款金额
+     * @param compelOffLine 强制线下退款
      * @return
      */
-    boolean approveRefundDepositOrder(String refundDepositOrderNo, boolean approveFlag, String apploveDesc, Long apploveUid, BigDecimal refundAmount);
+    boolean approveRefundDepositOrder(String refundDepositOrderNo, boolean approveFlag, String apploveDesc, Long apploveUid, BigDecimal refundAmount, Integer compelOffLine);
 
     /**
      * C端退押申请
