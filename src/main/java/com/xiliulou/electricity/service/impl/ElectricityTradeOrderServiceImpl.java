@@ -424,7 +424,7 @@ public class ElectricityTradeOrderServiceImpl extends ServiceImpl<ElectricityTra
         electricityTradeOrder.setTotalFee(commonOrder.getPayAmount().multiply(new BigDecimal(100)));
         electricityTradeOrder.setUid(commonOrder.getUid());
         electricityTradeOrder.setTenantId(commonOrder.getTenantId());
-        electricityTradeOrder.setFranchiseeId(wechatPayParamsDetails.getFranchiseeId());
+        electricityTradeOrder.setPayFranchiseeId(wechatPayParamsDetails.getFranchiseeId());
         electricityTradeOrder.setWechatMerchantId(wechatPayParamsDetails.getWechatMerchantId());
         baseMapper.insert(electricityTradeOrder);
         
@@ -435,7 +435,7 @@ public class ElectricityTradeOrderServiceImpl extends ServiceImpl<ElectricityTra
         wechatV3OrderRequest.setOrderId(electricityTradeOrder.getTradeOrderNo());
         wechatV3OrderRequest.setExpireTime(System.currentTimeMillis() + 3600000);
         wechatV3OrderRequest.setAttach(commonOrder.getAttach());
-        wechatV3OrderRequest.setNotifyUrl(wechatConfig.getPayCallBackUrl() + electricityTradeOrder.getTenantId() + "/" + electricityTradeOrder.getFranchiseeId());
+        wechatV3OrderRequest.setNotifyUrl(wechatConfig.getPayCallBackUrl() + electricityTradeOrder.getTenantId() + "/" + electricityTradeOrder.getPayFranchiseeId());
         wechatV3OrderRequest.setAmount(commonOrder.getPayAmount().multiply(new BigDecimal(100)).intValue());
         wechatV3OrderRequest.setCurrency("CNY");
         wechatV3OrderRequest.setOpenId(openId);
