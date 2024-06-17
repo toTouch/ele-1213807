@@ -199,7 +199,7 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 	@Override
 	@Transactional(rollbackFor = Exception.class)
 	public R insert(ShareActivityAddAndUpdateQuery shareActivityAddAndUpdateQuery, TokenUser user) {
-		// 加盟商判断
+		// 加盟商校验
 		if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
 			if (Objects.isNull(shareActivityAddAndUpdateQuery.getFranchiseeId())) {
 				log.error("ShareActivity ERROR! not found FranchiseeId, uid={}", user.getUid());
@@ -363,8 +363,9 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 			return Triple.of(false, "ELECTRICITY.0069", "未找到活动");
 		}
 		
+		// 加盟商校验
 		if (Objects.nonNull(franchiseeId)) {
-			if (Objects.isNull(shareActivity.getFranchiseeId()) || !Objects.equals(franchiseeId, shareActivity.getFranchiseeId().longValue())) {
+			if (isSameFranchisee(shareActivity.getFranchiseeId(), franchiseeId)) {
 				log.warn("update Activity ERROR! not the same franchiseeId, ActivityId={}", shareActivityAddAndUpdateQuery.getId());
 				return Triple.of(false, "ELECTRICITY.0069", "未找到活动");
 			}
@@ -401,6 +402,14 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 
 		return Triple.of(true,"","");
 	}
+	
+	private boolean isSameFranchisee(Integer activityFranchiseeId, Long franchiseeId) {
+		return isNullFranchisee(activityFranchiseeId) || !Objects.equals(activityFranchiseeId.longValue(), franchiseeId);
+	}
+	
+	private boolean isNullFranchisee(Integer activityFranchiseeId) {
+		return Objects.isNull(activityFranchiseeId) || Objects.equals(activityFranchiseeId, NumberConstant.ZERO);
+	}
 
 	/**
 	 * 修改数据(暂只支持上下架）
@@ -420,10 +429,11 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 		//租户
 		Integer tenantId = TenantContextHolder.getTenantId();
 		
+		// 加盟商校验
 		if (Objects.nonNull(franchiseeId)) {
-			if (Objects.isNull(oldShareActivity.getFranchiseeId()) || !Objects.equals(franchiseeId, oldShareActivity.getFranchiseeId().longValue())) {
+			if (isSameFranchisee(oldShareActivity.getFranchiseeId(), franchiseeId)) {
 				log.warn("update Activity ERROR! not the same franchiseeId, ActivityId={}", shareActivityAddAndUpdateQuery.getId());
-				return R.fail("ELECTRICITY.0069", "未找到活动");
+				return R.fail("120128", "所属加盟商不一致");
 			}
 			
 			// 判断改加盟商是否有启用的活动，有则不能启用
@@ -836,9 +846,9 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 		}
 		
 		if (Objects.nonNull(franchiseeId)) {
-			if (Objects.isNull(shareActivity.getFranchiseeId()) || !Objects.equals(franchiseeId, shareActivity.getFranchiseeId().longValue())) {
+			if (!isSameFranchisee(shareActivity.getFranchiseeId(), franchiseeId)) {
 				log.warn("Query activity detail ERROR! not the same franchiseeId, ActivityId={}", id);
-				return Triple.of(false, "ELECTRICITY.0069", "未找到活动");
+				return Triple.of(false, "120128", "所属加盟商不一致");
 			}
 		}
 
@@ -1085,9 +1095,9 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 		}
 		
 		if (Objects.nonNull(franchiseeId)) {
-			if (Objects.isNull(shareActivity.getFranchiseeId()) || !Objects.equals(franchiseeId, shareActivity.getFranchiseeId().longValue())) {
+			if (!isSameFranchisee(shareActivity.getFranchiseeId(), franchiseeId)) {
 				log.warn("delete Activity  ERROR! not found Activity ! ActivityId={}", id);
-				return R.fail("ELECTRICITY.0069", "未找到活动");
+				return R.fail("120128", "所属加盟商不一致");
 			}
 		}
 		

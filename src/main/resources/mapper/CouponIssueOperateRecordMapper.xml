@@ -101,12 +101,7 @@
             <if test="query.tenantId != null ">
                 and tcior.tenant_id = #{query.tenantId}
             </if>
-            <if test="franchiseeIds != null and franchiseeIds.size()>0">
-                and tcior.franchisee_id in
-                <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
-                    #{id}
-                </foreach>
-            </if>
+
         </where>
         order by tcior.create_time desc
         <if test="query.offset != null and query.size != null">
@@ -117,7 +112,7 @@
     <select id="queryRecordCount" resultType="java.lang.Integer">
         select count(1)
         from t_coupon_issue_operate_record tcior
-        left join t_user_info tui on tui.uid = tcior.uid and tui.franchisee_id = tcior.franchisee_id
+        left join t_user_info tui on tui.uid = tcior.uid
         <where>
             <if test="query.couponId != null ">
                 and tcior.coupon_id = #{query.couponId}
@@ -140,12 +135,7 @@
             <if test="query.tenantId != null ">
                 and tcior.tenant_id = #{query.tenantId}
             </if>
-            <if test="franchiseeIds != null and franchiseeIds.size()>0">
-                and tcior.franchisee_id in
-                <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
-                    #{id}
-                </foreach>
-            </if>
+
         </where>
     </select>
     
@@ -155,10 +145,10 @@
 
     <insert id="batchInsert"  keyProperty="id" useGeneratedKeys="true">
         insert into t_coupon_issue_operate_record
-        (coupon_id,uid,operate_name,issued_uid,phone,create_time,update_time,tenant_id,franchisee_id)
+        (coupon_id,uid,operate_name,issued_uid,phone,create_time,update_time,tenant_id)
         values
         <foreach collection="list" item="item" index="index" separator=",">
-            (#{item.couponId},#{item.uid},#{item.operateName},#{item.issuedUid},#{item.phone},#{item.createTime},#{item.updateTime},#{item.tenantId},#{item.franchiseeId})
+            (#{item.couponId},#{item.uid},#{item.operateName},#{item.issuedUid},#{item.phone},#{item.createTime},#{item.updateTime},#{item.tenantId})
         </foreach>
     </insert>
 

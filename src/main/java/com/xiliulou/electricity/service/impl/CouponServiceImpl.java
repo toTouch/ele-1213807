@@ -7,6 +7,7 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.CommonConstant;
+import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.entity.car.CarCouponNamePO;
 import com.xiliulou.electricity.entity.car.CarRentalPackagePo;
@@ -136,19 +137,19 @@ public class CouponServiceImpl implements CouponService {
         
         // 加盟商判断
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
-            if (Objects.isNull(couponQuery.getFranchiseeId())) {
+            if (isNullFranchisee(couponQuery.getFranchiseeId())) {
                 log.error("Coupon ERROR! not found FranchiseeId, uid={}", user.getUid());
                 return R.fail("120123", "加盟商不能为空");
             }
-    
+        
             couponQuery.setType(Coupon.TYPE_FRANCHISEE);
         } else {
             if (Objects.equals(couponQuery.getType(), Coupon.TYPE_FRANCHISEE)) {
-                if (Objects.isNull(couponQuery.getFranchiseeId())) {
+                if (isNullFranchisee(couponQuery.getFranchiseeId())) {
                     log.error("Coupon ERROR! not found FranchiseeId, uid={}", user.getUid());
                     return R.fail("120123", "加盟商不能为空");
                 }
-    
+            
                 couponQuery.setType(Coupon.TYPE_FRANCHISEE);
             }
         }
@@ -334,10 +335,11 @@ public class CouponServiceImpl implements CouponService {
             return R.fail("120124", "找不到优惠券");
         }
     
+        // 加盟商校验
         if (Objects.nonNull(franchiseeId)) {
-            if (Objects.isNull(oldCoupon.getFranchiseeId()) || !Objects.equals(franchiseeId, oldCoupon.getFranchiseeId().longValue())) {
+            if (isSameFranchisee(oldCoupon.getFranchiseeId(), franchiseeId)) {
                 log.warn("update coupon ERROR! not the same franchiseeId, couponId={}", couponQuery.getId());
-                return R.fail("120124", "找不到优惠券");
+                return R.fail("120128", "所属加盟商不一致");
             }
         }
         
@@ -370,6 +372,14 @@ public class CouponServiceImpl implements CouponService {
         
     }
     
+    private boolean isSameFranchisee(Integer couponFranchiseeId, Long franchiseeId) {
+        return !Objects.nonNull(couponFranchiseeId) || Objects.equals(couponFranchiseeId, NumberConstant.ZERO) || !Objects.equals(couponFranchiseeId.longValue(), franchiseeId);
+    }
+    
+    private boolean isNullFranchisee(Long couponFranchiseeId) {
+        return Objects.isNull(couponFranchiseeId) || Objects.equals(couponFranchiseeId, NumberConstant.ZERO_L);
+    }
+    
     @Slave
     @Override
     public R queryList(CouponQuery couponQuery) {
@@ -385,7 +395,7 @@ public class CouponServiceImpl implements CouponService {
             CouponActivityVO couponActivityVO = new CouponActivityVO();
             BeanUtils.copyProperties(coupon, couponActivityVO);
             couponActivityVO.setValidDays(String.valueOf(coupon.getDays()));
-            couponActivityVO.setFranchiseeName(Optional.ofNullable(franchiseeService.queryByIdFromCache(coupon.getFranchiseeId().longValue())).orElse(new Franchisee()).getName());
+            couponActivityVO.setFranchiseeName(Optional.ofNullable(franchiseeService.queryByIdFromCache(coupon.getFranchiseeId().longValue())).map(Franchisee::getName).orElse(null));
             couponActivityVOList.add(couponActivityVO);
         }
         
@@ -412,16 +422,24 @@ public class CouponServiceImpl implements CouponService {
             return Triple.of(false, "120125", "优惠券信息不存在");
         }
     
+        Integer couponFranchiseeId = coupon.getFranchiseeId();
+        String franchiseeName = null;
+        
+        // 加盟商校验
         if (Objects.nonNull(franchiseeId)) {
-            if (Objects.isNull(coupon.getFranchiseeId()) || !Objects.equals(franchiseeId, coupon.getFranchiseeId().longValue())) {
+            if (!isSameFranchisee(couponFranchiseeId, franchiseeId)) {
                 log.warn("findCouponById ERROR! not the same franchisee, couponId={}", id);
-                return Triple.of(false, "120125", "优惠券信息不存在");
+                return Triple.of(false, "120128", "所属加盟商不一致");
             }
+    
+            Franchisee franchisee = franchiseeService.queryByIdFromCache(couponFranchiseeId.longValue());
+            franchiseeName = Optional.ofNullable(franchisee).map(Franchisee::getName).orElse(null);
         }
         
         CouponActivityVO couponActivityVO = new CouponActivityVO();
         BeanUtils.copyProperties(coupon, couponActivityVO);
         couponActivityVO.setValidDays(String.valueOf(coupon.getDays()));
+        couponActivityVO.setFranchiseeName(franchiseeName);
         
         if (Coupon.SUPERPOSITION_NO.equals(coupon.getSuperposition())) {
             

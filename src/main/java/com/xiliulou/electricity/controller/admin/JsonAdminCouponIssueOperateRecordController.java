@@ -60,23 +60,10 @@ public class JsonAdminCouponIssueOperateRecordController {
         if (offset < 0) {
             offset = 0L;
         }
-    
-        TokenUser user = SecurityUtils.getUserInfo();
-        if (Objects.isNull(user)) {
-            log.error("ELECTRICITY  ERROR! not found user ");
-            return R.fail("ELECTRICITY.0001", "未找到用户");
-        }
 
         //租户
         Integer tenantId = TenantContextHolder.getTenantId();
-    
-        List<Long> franchiseeIds = null;
-        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
-            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
-            if (CollectionUtils.isEmpty(franchiseeIds)) {
-                return R.ok(Collections.emptyList());
-            }
-        }
+
 
         CouponIssueOperateRecordQuery couponIssueOperateRecordQuery = CouponIssueOperateRecordQuery.builder()
                 .couponId(couponId)
@@ -87,8 +74,7 @@ public class JsonAdminCouponIssueOperateRecordController {
                 .endTime(endTime)
                 .offset(offset)
                 .size(size)
-                .tenantId(tenantId)
-                .franchiseeIds(franchiseeIds).build();
+                .tenantId(tenantId).build();
 
         return couponIssueOperateRecordService.queryRecordList(couponIssueOperateRecordQuery);
     }
@@ -101,22 +87,11 @@ public class JsonAdminCouponIssueOperateRecordController {
                         @RequestParam(value = "status", required = false) Integer status,
                         @RequestParam(value = "beginTime", required = false) Long beginTime,
                         @RequestParam(value = "endTime", required = false) Long endTime) {
-        TokenUser user = SecurityUtils.getUserInfo();
-        if (Objects.isNull(user)) {
-            log.error("ELECTRICITY  ERROR! not found user ");
-            return R.fail("ELECTRICITY.0001", "未找到用户");
-        }
-        
+
         //租户
         Integer tenantId = TenantContextHolder.getTenantId();
-    
-        List<Long> franchiseeIds = null;
-        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
-            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
-            if (CollectionUtils.isEmpty(franchiseeIds)) {
-                return R.ok();
-            }
-        }
+
+
 
         CouponIssueOperateRecordQuery couponIssueOperateRecordQuery = CouponIssueOperateRecordQuery.builder()
                 .couponId(couponId)
@@ -125,8 +100,7 @@ public class JsonAdminCouponIssueOperateRecordController {
                 .status(status)
                 .beginTime(beginTime)
                 .endTime(endTime)
-                .tenantId(tenantId)
-                .franchiseeIds(franchiseeIds).build();
+                .tenantId(tenantId).build();
         return couponIssueOperateRecordService.queryRecordCount(couponIssueOperateRecordQuery);
     }
 

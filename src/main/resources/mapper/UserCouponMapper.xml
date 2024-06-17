@@ -98,7 +98,7 @@
                 and tuc.tenant_id = #{query.tenantId}
             </if>
             <if test="query.franchiseeIds != null and query.franchiseeIds.size()>0">
-                and tui.franchisee_id in
+                and tc.franchisee_id in
                 <foreach collection="query.franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
                     #{id}
                 </foreach>
@@ -110,7 +110,7 @@
                 </foreach>
             </if>
             <if test="query.franchiseeId != null ">
-                and tuc.franchisee_id = #{query.franchiseeId}
+                and tc.franchisee_id = #{query.franchiseeId}
             </if>
         </where>
         ORDER BY tuc.update_time DESC, tuc.id ASC
@@ -171,7 +171,7 @@
                 and tuc.tenant_id = #{query.tenantId}
             </if>
             <if test="query.franchiseeIds != null and query.franchiseeIds.size()>0">
-                and tui.franchisee_id in
+                and tc.franchisee_id in
                 <foreach collection="query.franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
                     #{id}
                 </foreach>
@@ -183,7 +183,7 @@
                 </foreach>
             </if>
             <if test="query.franchiseeId != null ">
-                and tuc.franchisee_id = #{query.franchiseeId}
+                and tc.franchisee_id = #{query.franchiseeId}
             </if>
         </where>
     </select>

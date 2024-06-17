@@ -175,7 +175,7 @@ public class JoinShareActivityRecordServiceImpl implements JoinShareActivityReco
         joinShareActivityHistory.setStatus(JoinShareActivityHistory.STATUS_INIT);
         joinShareActivityHistory.setActivityId(joinShareActivityRecord.getActivityId());
         
-        if (nonFranchisee(activityFranchiseeId)) {
+        if (!isNullFranchisee(activityFranchiseeId)) {
             joinShareActivityRecord.setFranchiseeId(activityFranchiseeId.longValue());
             joinShareActivityHistory.setFranchiseeId(activityFranchiseeId.longValue());
         }
@@ -192,15 +192,15 @@ public class JoinShareActivityRecordServiceImpl implements JoinShareActivityReco
     private boolean isSameFranchisee(Integer activityFranchiseeId, UserInfo userInfo) {
         Long userInfoFranchiseeId = userInfo.getFranchiseeId();
         
-        if (nonFranchisee(activityFranchiseeId) && Objects.nonNull(userInfoFranchiseeId) && !Objects.equals(userInfoFranchiseeId, NumberConstant.ZERO_L)) {
+        if (!isNullFranchisee(activityFranchiseeId) && Objects.nonNull(userInfoFranchiseeId) && !Objects.equals(userInfoFranchiseeId, NumberConstant.ZERO_L)) {
             return Objects.equals(activityFranchiseeId.longValue(), userInfoFranchiseeId);
         }
         
         return false;
     }
     
-    private boolean nonFranchisee(Integer activityFranchiseeId) {
-        return Objects.nonNull(activityFranchiseeId) && !Objects.equals(activityFranchiseeId, NumberConstant.ZERO);
+    private boolean isNullFranchisee(Integer activityFranchiseeId) {
+        return Objects.isNull(activityFranchiseeId) || Objects.equals(activityFranchiseeId, NumberConstant.ZERO);
     }
 
     @Override

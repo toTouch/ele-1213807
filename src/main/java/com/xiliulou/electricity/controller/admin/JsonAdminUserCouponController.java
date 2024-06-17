@@ -167,26 +167,7 @@ public class JsonAdminUserCouponController {
     @PostMapping(value = "/admin/userCoupon/batchReleaseV2")
     @Log(title = "批量发放优惠券V2")
     public R batchReleaseV2(@RequestBody @Validated CouponBatchSendWithPhonesRequest request) {
-        TokenUser user = SecurityUtils.getUserInfo();
-        if (Objects.isNull(user)) {
-            return R.fail("ELECTRICITY.0001", "未找到用户");
-        }
-    
-        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE) || Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE))) {
-            return R.ok();
-        }
-    
-        Long franchiseeId = null;
-        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
-            List<Long> franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
-            if (CollectionUtils.isEmpty(franchiseeIds)) {
-                return R.ok();
-            }
-    
-            franchiseeId = franchiseeIds.get(0);
-        }
-        
-        return userCouponService.adminBatchReleaseV2(request, user.getUid(), franchiseeId);
+        return userCouponService.adminBatchReleaseV2(request);
     }
 
     @GetMapping(value = "/admin/userCoupon/check/send/finish")
