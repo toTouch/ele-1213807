@@ -1206,10 +1206,12 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
      * @param apploveDesc          审批意见
      * @param apploveUid           审批人
      * @param refundAmount         退款金额
+     * @param compelOffLine        强制线下退款
      * @return
      */
     @Override
-    public boolean approveRefundDepositOrder(String refundDepositOrderNo, boolean approveFlag, String apploveDesc, Long apploveUid, BigDecimal refundAmount) {
+    public boolean approveRefundDepositOrder(String refundDepositOrderNo, boolean approveFlag, String apploveDesc, Long apploveUid, BigDecimal refundAmount,
+            Integer compelOffLine) {
         if (!ObjectUtils.allNotNull(refundDepositOrderNo, approveFlag, apploveUid)) {
             throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
@@ -1514,7 +1516,7 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
         wechatV3RefundRequest.setRefundId(refundOrder.getRefundOrderNo());
         wechatV3RefundRequest.setOrderId(electricityTradeOrder.getTradeOrderNo());
         wechatV3RefundRequest.setReason("押金退款");
-        wechatV3RefundRequest.setNotifyUrl(wechatConfig.getCarDepositRefundCallBackUrl() + electricityTradeOrder.getTenantId() + "/" + electricityTradeOrder.getFranchiseeId());
+        wechatV3RefundRequest.setNotifyUrl(wechatConfig.getCarDepositRefundCallBackUrl() + electricityTradeOrder.getTenantId() + "/" + electricityTradeOrder.getPayFranchiseeId());
         wechatV3RefundRequest.setRefund(refundOrder.getRefundAmount().multiply(new BigDecimal(100)).intValue());
         wechatV3RefundRequest.setTotal(electricityTradeOrder.getTotalFee().intValue());
         wechatV3RefundRequest.setCurrency("CNY");
