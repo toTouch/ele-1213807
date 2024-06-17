@@ -37,7 +37,7 @@
         from
         <include refid="table_name"/>
         where del_flag = 0
-        and tenantId =#{tenantId}
+        and tenant_id =#{tenantId}
         and franchisee_id in
         <foreach collection="franchiseeIds" open="(" separator="," close=")" item="franchiseeId">
             #{franchiseeId}
@@ -169,7 +169,7 @@
         <include refid="base_column"/>
         from
         <include refid="table_name"/>
-        where del_falg=0
+        where del_flag=0
         and tenant_id=#{tenantId}
         order by id asc
     </select>
@@ -178,30 +178,41 @@
         <include refid="base_column"/>
         from
         <include refid="table_name"/>
-        where del_falg=0
+        where del_flag=0
         and tenant_id=#{tenantId}
         and config_type=#{configType}
+    </select>
+    
+    <select id="selectByTenantIdAndWechatMerchantId"
+        resultMap="ElectricityPayParamsMap">
+        select
+        <include refid="base_column"/>
+        from
+        <include refid="table_name"/>
+        where del_flag=0
+        and tenant_id=#{tenantId}
+        and wechat_merchant_id=#{wechatMerchantId}
+        limit 1
     </select>
     
     <!--新增所有列-->
     <insert id="insert" keyProperty="id" useGeneratedKeys="true">
         insert into t_electricity_pay_params(office_account_app_id, office_account_app_secret, merchant_min_pro_app_id, merchant_min_pro_app_secert, wechat_merchant_id,
                                              wechat_merchant_certificate_sno, wechat_merchant_private_key_path, wechat_v3_api_key, create_time, update_time, tenant_id, api_name,
-                                             paterner_key, config_type, franchisee_id, del_flag)
+                                             paterner_key, config_type, franchisee_id)
         values (#{officeAccountAppId}, #{officeAccountAppSecret}, #{merchantMinProAppId}, #{merchantMinProAppSecert}, #{wechatMerchantId}, #{wechatMerchantCertificateSno},
-                #{wechatMerchantPrivateKeyPath}, #{wechatV3ApiKey}, #{createTime}, #{updateTime}, #{tenantId}, #{apiName}, #{paternerKey}, #{configType}, #{franchiseeId},
-                #{delFlag})
+                #{wechatMerchantPrivateKeyPath}, #{wechatV3ApiKey}, #{createTime}, #{updateTime}, #{tenantId}, #{apiName}, #{paternerKey}, #{configType}, #{franchiseeId})
     </insert>
     
     <insert id="insertBatch" keyProperty="id" useGeneratedKeys="true">
         insert into t_electricity_pay_params(office_account_app_id, office_account_app_secret, merchant_min_pro_app_id, merchant_min_pro_app_secert, wechat_merchant_id,
         wechat_merchant_certificate_sno, wechat_merchant_private_key_path, wechat_v3_api_key, create_time, update_time, tenant_id, api_name, paterner_key, config_type,
-        franchisee_id, del_flag)
+        franchisee_id)
         values
         <foreach collection="entities" item="entity" separator=",">
             (#{entity.officeAccountAppId}, #{entity.officeAccountAppSecret}, #{entity.merchantMinProAppId}, #{entity.merchantMinProAppSecert}, #{entity.wechatMerchantId},
             #{entity.wechatMerchantCertificateSno}, #{entity.wechatMerchantPrivateKeyPath}, #{entity.wechatV3ApiKey}, #{entity.createTime}, #{entity.updateTime},
-            #{entity.tenantId}, #{entity.apiName}, #{entity.paternerKey}, #{entity.configType}, #{entity.franchiseeId}, #{entity.delFlag})
+            #{entity.tenantId}, #{entity.apiName}, #{entity.paternerKey}, #{entity.configType}, #{entity.franchiseeId})
         </foreach>
     </insert>
     

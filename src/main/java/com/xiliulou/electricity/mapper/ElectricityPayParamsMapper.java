@@ -65,4 +65,14 @@ public interface ElectricityPayParamsMapper extends BaseMapper<ElectricityPayPar
      */
     int updateSync(@Param("update") ElectricityPayParams update, @Param("ids") List<Integer> ids);
     
+    
+    /**
+     *
+     * 租户+微信商户号查询
+     * @param tenantId
+     * @param wechatMerchantId
+     * @author caobotao.cbt
+     * @date 2024/6/14 14:47
+     */
+    ElectricityPayParams selectByTenantIdAndWechatMerchantId(@Param("tenantId") Integer tenantId, @Param("wechatMerchantId") String wechatMerchantId);
 }

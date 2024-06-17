@@ -38,7 +38,7 @@ import org.springframework.context.annotation.EnableAspectJAutoProxy;
 @EnableXllRestTemplate
 @EnableDynamicDataSource
 @MapperScan("com.xiliulou.**.mapper")
-@EnablePay(isOpenFranchiseeWechatV3 = true)
+@EnablePay(isOpenNewWechatV3 = true)
 @EnableXllXxlJob
 @EnableSms
 @EnableCH
