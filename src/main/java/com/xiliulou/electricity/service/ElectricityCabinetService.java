@@ -19,7 +19,6 @@ import com.xiliulou.electricity.query.ElectricityCabinetQuery;
 import com.xiliulou.electricity.query.ElectricityCabinetTransferQuery;
 import com.xiliulou.electricity.query.HomepageBatteryFrequencyQuery;
 import com.xiliulou.electricity.query.HomepageElectricityExchangeFrequencyQuery;
-import com.xiliulou.electricity.query.RentReturnEditQuery;
 import com.xiliulou.electricity.query.api.ApiRequestQuery;
 import com.xiliulou.electricity.request.asset.TransferCabinetModelRequest;
 import com.xiliulou.electricity.vo.CabinetBatteryVO;
@@ -298,7 +297,6 @@ public interface ElectricityCabinetService {
     
     R batchEditRentReturn(ElectricityCabinetBatchEditRentReturnQuery rentReturnQuery);
     
-    R editRentReturn(RentReturnEditQuery editQuery);
     
     R rentReturnEditEchoByDeviceName(String productKey, String deviceName);
 }

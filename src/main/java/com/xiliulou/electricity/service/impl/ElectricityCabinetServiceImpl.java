@@ -94,7 +94,6 @@ import com.xiliulou.electricity.query.HomePageDepositQuery;
 import com.xiliulou.electricity.query.HomepageBatteryFrequencyQuery;
 import com.xiliulou.electricity.query.HomepageElectricityExchangeFrequencyQuery;
 import com.xiliulou.electricity.query.LowBatteryExchangeModel;
-import com.xiliulou.electricity.query.RentReturnEditQuery;
 import com.xiliulou.electricity.query.StoreQuery;
 import com.xiliulou.electricity.query.api.ApiRequestQuery;
 import com.xiliulou.electricity.queryModel.EleCabinetExtraQueryModel;
@@ -5737,6 +5736,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             }
         }
         
+        checkUpdateBatchElectricityCabinetExtra(query.getRentTabType(), query.getReturnTabType(), query.getMinRetainBatteryCount(), query.getMaxRetainBatteryCount());
+        
         //当前租户下新增柜机
         ElectricityCabinet electricityCabinetInsert = new ElectricityCabinet();
         electricityCabinetInsert.setName(query.getName());
@@ -5775,8 +5776,10 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             
             // 新增柜机扩展参数
             ElectricityCabinetExtra electricityCabinetExtra = ElectricityCabinetExtra.builder().eid(electricityCabinetInsert.getId().longValue())
-                    .batteryCountType(EleCabinetConstant.BATTERY_COUNT_TYPE_NORMAL).tenantId(electricityCabinetInsert.getTenantId()).delFlag(electricityCabinetInsert.getDelFlag())
-                    .createTime(electricityCabinetInsert.getCreateTime()).updateTime(electricityCabinetInsert.getUpdateTime()).build();
+                    .rentTabType(query.getRentTabType()).returnTabType(query.getReturnTabType()).minRetainBatteryCount(query.getMinRetainBatteryCount())
+                    .maxRetainBatteryCount(query.getMaxRetainBatteryCount()).batteryCountType(EleCabinetConstant.BATTERY_COUNT_TYPE_NORMAL)
+                    .tenantId(electricityCabinetInsert.getTenantId()).delFlag(electricityCabinetInsert.getDelFlag()).createTime(electricityCabinetInsert.getCreateTime())
+                    .updateTime(electricityCabinetInsert.getUpdateTime()).build();
             electricityCabinetExtraService.insertOne(electricityCabinetExtra);
         });
         
@@ -6116,25 +6119,6 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         }
     }
     
-    @Override
-    public R editRentReturn(RentReturnEditQuery editQuery) {
-        // 查询柜机
-        ElectricityCabinet electricityCabinet = electricityCabinetService.queryByProductAndDeviceName(editQuery.getProductKey(), editQuery.getDeviceName());
-        if (Objects.isNull(electricityCabinet)) {
-            return R.fail("不存在的柜机");
-        }
-        checkUpdateBatchElectricityCabinetExtra(editQuery.getRentTabType(), editQuery.getReturnTabType(), editQuery.getMinRetainBatteryCount(),
-                editQuery.getMaxRetainBatteryCount());
-        // update
-        ElectricityCabinetAddAndUpdate cabinetAddAndUpdate = new ElectricityCabinetAddAndUpdate();
-        cabinetAddAndUpdate.setId(electricityCabinet.getId());
-        cabinetAddAndUpdate.setRentTabType(editQuery.getRentTabType());
-        cabinetAddAndUpdate.setReturnTabType(editQuery.getReturnTabType());
-        cabinetAddAndUpdate.setMinRetainBatteryCount(editQuery.getMinRetainBatteryCount());
-        cabinetAddAndUpdate.setMaxRetainBatteryCount(editQuery.getMaxRetainBatteryCount());
-        updateElectricityCabinetExtra(cabinetAddAndUpdate);
-        return R.ok();
-    }
     
     @Override
     public R rentReturnEditEchoByDeviceName(String productKey, String deviceName) {

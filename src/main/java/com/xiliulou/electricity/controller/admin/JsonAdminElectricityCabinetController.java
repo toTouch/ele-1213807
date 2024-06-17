@@ -26,7 +26,6 @@ import com.xiliulou.electricity.query.ElectricityCabinetQuery;
 import com.xiliulou.electricity.query.ElectricityCabinetTransferQuery;
 import com.xiliulou.electricity.query.HomepageBatteryFrequencyQuery;
 import com.xiliulou.electricity.query.HomepageElectricityExchangeFrequencyQuery;
-import com.xiliulou.electricity.query.RentReturnEditQuery;
 import com.xiliulou.electricity.request.asset.TransferCabinetModelRequest;
 import com.xiliulou.electricity.service.EleCabinetCoreDataService;
 import com.xiliulou.electricity.service.EleOnlineLogService;
@@ -1121,14 +1120,6 @@ public class JsonAdminElectricityCabinetController extends BasicController {
         return electricityCabinetService.batchEditRentReturn(rentReturnQuery);
     }
     
-    
-    /**
-     * 运维端编辑租退标准
-     */
-    @PostMapping(value = "/admin/electricityCabinet/editRentReturn")
-    public R editRentReturn(@RequestBody RentReturnEditQuery editQuery) {
-        return electricityCabinetService.editRentReturn(editQuery);
-    }
     
     
     /**
