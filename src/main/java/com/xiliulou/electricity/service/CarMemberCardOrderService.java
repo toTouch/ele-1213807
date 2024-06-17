@@ -68,9 +68,6 @@ public interface CarMemberCardOrderService {
      */
     Boolean deleteById(Long id);
 
-    @Deprecated
-    Triple<Boolean,String,Object> payRentCarMemberCard(CarMemberCardOrderQuery carMemberCardOrderQuery, HttpServletRequest request);
-
     CarMemberCardOrder selectByOrderId(String orderNo);
 
     Triple<Boolean, String, Object> handleRentCarMemberCard(Long storeId, Long carModelId, Integer rentTime, String rentType, UserInfo userInfo);
