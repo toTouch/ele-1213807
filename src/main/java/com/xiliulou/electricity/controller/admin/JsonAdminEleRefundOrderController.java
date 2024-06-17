@@ -265,9 +265,9 @@ public class JsonAdminEleRefundOrderController extends BaseController {
     @Deprecated
     public R refundDepositCarByOnline(@RequestParam("refundOrderNo") String refundOrderNo, @RequestParam("status") Integer status,
             @RequestParam(value = "errMsg", required = false) String errMsg, @RequestParam(value = "refundAmount", required = false) BigDecimal refundAmount,
-            @RequestParam("uid") Long uid, HttpServletRequest request) {
+            @RequestParam(value = "offlineRefund", required = false) Integer offlineRefund, @RequestParam("uid") Long uid, HttpServletRequest request) {
         // TODO 租车押金退款审核重新写方法   不要和电池退押金混一起
-        return returnTripleResult(eleRefundOrderService.handleRefundOrder(refundOrderNo, errMsg, status, refundAmount, uid, request));
+        return returnTripleResult(eleRefundOrderService.handleRefundOrder(refundOrderNo, errMsg, status, refundAmount, uid, offlineRefund, request));
     }
     
     /**
