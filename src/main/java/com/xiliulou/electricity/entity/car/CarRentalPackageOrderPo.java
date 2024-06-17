@@ -227,6 +227,11 @@ public class CarRentalPackageOrderPo extends BasicCarPo {
      */
     private String wechatMerchantId;
     
+    /**
+     * 支付加盟商ID
+     */
+    private Long payFranchiseeId;
+    
     public List<Long> getCouponIds() {
         Set<Long> result = new HashSet<>();
         if (StrUtil.isNotBlank(this.couponArrays)) {
