@@ -409,7 +409,7 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
         List<Long> franchiseeIdList = merchantWithdrawApplicationMapper.selectListFranchiseeIdByIds(batchReviewWithdrawApplicationRequest.getIds(), tenantId.longValue());
         if (ObjectUtils.isEmpty(franchiseeIdList)) {
             log.info("batch handle withdraw record is not exists, franchisee id is empty ids = {}", batchReviewWithdrawApplicationRequest.getIds());
-            return Triple.of(false, "120027", "根据加盟商查询提现记录不存在");
+            return Triple.of(false, "120027", "提现申请不存在");
         }
         
         // 检测审核的提现订单中是否存在不同加盟商的提现订单
