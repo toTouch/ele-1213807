@@ -999,6 +999,7 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
         return Triple.of(true, null, refundOrderDetailVO);
     }
     
+    @Slave
     @Override
     public R checkPayParamsDetails(String orderNo) {
         ElectricityMemberCardOrder electricityMemberCardOrder = batteryMemberCardOrderService.selectByOrderNo(orderNo);
