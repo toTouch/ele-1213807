@@ -124,6 +124,7 @@ public class ElectricityPayParamsServiceImpl extends ServiceImpl<ElectricityPayP
         
         //新增
         ElectricityPayParams insert = ElectricityPayParamsConverter.optRequestToDO(request);
+        insert.setCreateTime(System.currentTimeMillis());
         baseMapper.insert(insert);
         // 缓存删除
         redisService.delete(buildCacheKey(tenantId, insert.getFranchiseeId()));
