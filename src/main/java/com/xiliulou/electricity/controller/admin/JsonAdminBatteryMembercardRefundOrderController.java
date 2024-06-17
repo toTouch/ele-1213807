@@ -141,5 +141,13 @@ public class JsonAdminBatteryMembercardRefundOrderController extends BaseControl
         return returnTripleResult(batteryMembercardRefundOrderService.batteryMembercardRefundForAdmin(orderNo, refundAmount, request));
     }
     
-    
+    /**
+     * 校验订单所用支付参数是否存在
+     * @param orderNo 套餐订单号
+     * @return
+     */
+    @GetMapping("/admin/battery/membercard/checkPayParamsDetails")
+    public R checkPayParamsDetails(@RequestParam("orderNo") String orderNo) {
+        return batteryMembercardRefundOrderService.checkPayParamsDetails(orderNo);
+    }
 }
