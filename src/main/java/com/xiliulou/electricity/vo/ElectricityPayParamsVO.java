@@ -112,4 +112,9 @@ public class ElectricityPayParamsVO implements Serializable {
      * 加盟商id
      */
     private Long franchiseeId;
+    
+    /**
+     * 加盟商名称
+     */
+    private String franchiseeName;
 }

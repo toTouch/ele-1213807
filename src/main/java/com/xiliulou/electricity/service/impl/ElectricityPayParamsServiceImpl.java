@@ -21,6 +21,7 @@ import com.xiliulou.electricity.entity.WechatPaymentCertificate;
 import com.xiliulou.electricity.entity.WechatWithdrawalCertificate;
 import com.xiliulou.electricity.enums.ElectricityPayParamsConfigEnum;
 import com.xiliulou.electricity.mapper.ElectricityPayParamsMapper;
+import com.xiliulou.electricity.query.FranchiseeQuery;
 import com.xiliulou.electricity.request.payparams.ElectricityPayParamsRequest;
 import com.xiliulou.electricity.service.ElectricityPayParamsService;
 import com.xiliulou.electricity.service.FranchiseeService;
@@ -230,8 +231,10 @@ public class ElectricityPayParamsServiceImpl extends ServiceImpl<ElectricityPayP
     public List<ElectricityPayParamsVO> queryByTenantId(Integer tenantId) {
         List<ElectricityPayParams> params = baseMapper.selectByTenantId(tenantId);
         List<ElectricityPayParamsVO> voList = ElectricityPayParamsConverter.qryDoToVos(params);
+        this.buildFranchiseeName(tenantId, voList);
         return voList;
     }
+    
     
     @Override
     public R getTenantId(String appId) {
@@ -544,6 +547,46 @@ public class ElectricityPayParamsServiceImpl extends ServiceImpl<ElectricityPayP
         Map<String, String> record = Maps.newHashMapWithExpectedSize(1);
         record.put("franchiseeName", franchiseeName);
         operateRecordUtil.record(null, record);
+    }
+    
+    /**
+     * 加盟商名称构建
+     *
+     * @param tenantId
+     * @param voList
+     * @author caobotao.cbt
+     * @date 2024/6/17 17:29
+     */
+    private void buildFranchiseeName(Integer tenantId, List<ElectricityPayParamsVO> voList) {
+        if (CollectionUtils.isEmpty(voList)) {
+            return;
+        }
+        
+        List<Long> franchiseeIds = voList.stream().filter(v -> ElectricityPayParamsConfigEnum.FRANCHISEE_CONFIG.getType().equals(v.getConfigType()))
+                .map(ElectricityPayParamsVO::getFranchiseeId).distinct().collect(Collectors.toList());
+        if (CollectionUtils.isEmpty(franchiseeIds)) {
+            return;
+        }
+        
+        FranchiseeQuery franchiseeQuery = new FranchiseeQuery();
+        franchiseeQuery.setTenantId(tenantId);
+        franchiseeQuery.setIds(franchiseeIds);
+        Triple<Boolean, String, Object> franchiseeTriple = franchiseeService.selectListByQuery(franchiseeQuery);
+        if (!franchiseeTriple.getLeft()) {
+            return;
+        }
+        
+        List<Franchisee> franchiseeList = (List<Franchisee>) franchiseeTriple.getRight();
+        if (CollectionUtils.isEmpty(franchiseeList)) {
+            return;
+        }
+        
+        Map<Long, String> franchiseeMap = franchiseeList.stream().collect(Collectors.toMap(Franchisee::getId, v -> v.getName(), (k1, k2) -> k1));
+        
+        voList.stream().filter(v -> ElectricityPayParamsConfigEnum.FRANCHISEE_CONFIG.getType().equals(v.getConfigType())).forEach(vo -> {
+            vo.setFranchiseeName(franchiseeMap.get(vo.getFranchiseeId()));
+        });
+        
     }
     
 }
