@@ -63,28 +63,6 @@ public class JsonUserRentCarMemberCardOrderController extends BaseController {
     }
     
     /**
-     * 购买租车套餐
-     *
-     * @param carMemberCardOrderQuery
-     * @param request
-     * @return
-     */
-    @Deprecated
-    @PostMapping("/user/rentCar/memberCard/order")
-    public R payRentCarMemberCard(@RequestBody @Validated CarMemberCardOrderQuery carMemberCardOrderQuery, HttpServletRequest request) {
-        return returnTripleResult(carMemberCardOrderService.payRentCarMemberCard(carMemberCardOrderQuery, request));
-    }
-    
-    /**
-     * 免押购买租车套餐
-     */
-    @Deprecated
-    @PostMapping("/user/rentCar/freeDeposit/memberCard/order")
-    public R freeDepositPayCarMemberCard(@RequestBody @Validated FreeDepositCarMemberCardOrderQuery freeDepositCarMemberCardOrderQuery, HttpServletRequest request) {
-        return returnTripleResult(carMemberCardOrderService.freeDepositPayCarMemberCard(freeDepositCarMemberCardOrderQuery, request));
-    }
-    
-    /**
      * 获取当前用户所属车辆型号租赁方式
      */
     @GetMapping("/user/rentCar/userCarModel/rentType")

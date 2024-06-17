@@ -87,9 +87,6 @@ public interface CarMemberCardOrderService {
     R editUserMemberCard(CarMemberCardOrderAddAndUpdate carMemberCardOrderAddAndUpdate);
     
     R renewalUserMemberCard(CarMemberCardRenewalAddAndUpdate carMemberCardOrderAddAndUpdate);
-
-    @Deprecated
-    Triple<Boolean, String, Object> freeDepositPayCarMemberCard(FreeDepositCarMemberCardOrderQuery freeDepositCarMemberCardOrderQuery, HttpServletRequest request);
-
+    
     Triple<Boolean, String, Object> firstEditUserMemberCard(UserCarMemberCardQuery userCarMemberCardQuery);
 }
