@@ -378,7 +378,7 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
             electricityTradeOrder.setUid(unionPayOrder.getUid());
             electricityTradeOrder.setTenantId(unionPayOrder.getTenantId());
             electricityTradeOrder.setParentOrderId(unionTradeOrder.getId());
-            electricityTradeOrder.setFranchiseeId(wechatPayParamsDetails.getFranchiseeId());
+            electricityTradeOrder.setPayFranchiseeId(wechatPayParamsDetails.getFranchiseeId());
             electricityTradeOrder.setWechatMerchantId(wechatPayParamsDetails.getWechatMerchantId());
             electricityTradeOrderService.insert(electricityTradeOrder);
         }

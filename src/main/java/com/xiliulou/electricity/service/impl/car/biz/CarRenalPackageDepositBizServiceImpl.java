@@ -1515,10 +1515,26 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
         wechatV3RefundQuery.setReason("押金退款");
         wechatV3RefundQuery.setOrderId(electricityTradeOrder.getTradeOrderNo());
         wechatV3RefundQuery.setNotifyUrl(wechatConfig.getCarDepositRefundCallBackUrl() + electricityTradeOrder.getTenantId());
-        wechatV3RefundQuery.setCurrency("CNY");
-        wechatV3RefundQuery.setRefundId(refundOrder.getRefundOrderNo());
-
-        return wechatV3JsapiService.refund(wechatV3RefundQuery);
+        
+        WechatV3RefundRequest wechatV3RefundRequest = new WechatV3RefundRequest();
+        wechatV3RefundRequest.setRefundId(refundOrder.getRefundOrderNo());
+        wechatV3RefundRequest.setOrderId(electricityTradeOrder.getTradeOrderNo());
+        wechatV3RefundRequest.setReason("押金退款");
+        wechatV3RefundRequest.setNotifyUrl(wechatConfig.getCarDepositRefundCallBackUrl() + electricityTradeOrder.getTenantId() + "/" + electricityTradeOrder.getPayFranchiseeId());
+        wechatV3RefundRequest.setRefund(refundOrder.getRefundAmount().multiply(new BigDecimal(100)).intValue());
+        wechatV3RefundRequest.setTotal(electricityTradeOrder.getTotalFee().intValue());
+        wechatV3RefundRequest.setCurrency("CNY");
+        
+        // 调用支付配置参数
+        WechatPayParamsDetails wechatPayParamsDetails = wechatPayParamsBizService.getDetailsByIdTenantIdAndFranchiseeId(electricityTradeOrder.getTenantId(),
+                electricityTradeOrder.getPayFranchiseeId());
+        if (ObjectUtils.isEmpty(wechatPayParamsDetails)) {
+            throw new WechatPayException("支付配置有误");
+        }
+        
+        wechatV3RefundRequest.setCommonRequest(ElectricityPayParamsConverter.qryDetailsToCommonRequest(wechatPayParamsDetails));
+        
+        return wechatV3JsapiInvokeService.refund(wechatV3RefundRequest);
     }
 
     /**
