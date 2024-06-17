@@ -12,13 +12,11 @@ import com.xiliulou.electricity.dto.FreeDepositUserDTO;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.BatteryMembercardRefundOrder;
 import com.xiliulou.electricity.entity.CarDepositOrder;
-import com.xiliulou.electricity.entity.CarMemberCardOrder;
 import com.xiliulou.electricity.entity.EleDepositOrder;
 import com.xiliulou.electricity.entity.EleRefundOrder;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.ElectricityCarModel;
 import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
-import com.xiliulou.electricity.entity.ElectricityPayParams;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.FranchiseeInsurance;
 import com.xiliulou.electricity.entity.FreeDepositAlipayHistory;
@@ -51,10 +49,7 @@ import com.xiliulou.electricity.mapper.FreeDepositOrderMapper;
 import com.xiliulou.electricity.query.FreeBatteryDepositHybridOrderQuery;
 import com.xiliulou.electricity.query.FreeBatteryDepositQuery;
 import com.xiliulou.electricity.query.FreeBatteryDepositQueryV3;
-import com.xiliulou.electricity.query.FreeCarBatteryDepositHybridOrderQuery;
-import com.xiliulou.electricity.query.FreeCarBatteryDepositOrderQuery;
 import com.xiliulou.electricity.query.FreeCarBatteryDepositQuery;
-import com.xiliulou.electricity.query.FreeCarDepositHybridOrderQuery;
 import com.xiliulou.electricity.query.FreeCarDepositQuery;
 import com.xiliulou.electricity.query.FreeDepositOrderQuery;
 import com.xiliulou.electricity.query.ModelBatteryDeposit;
@@ -139,7 +134,6 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 
 /**
  * (FreeDepositOrder)表服务实现类
@@ -290,6 +284,7 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
     
     @Resource
     private WechatPayParamsBizService wechatPayParamsBizService;
+    
     /**
      * 通过ID查询单条数据从DB
      *
@@ -2004,7 +1999,7 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         }
         
         // 保险订单
-        Triple<Boolean, String, Object> rentBatteryInsuranceTriple = generateInsuranceOrder(userInfo, query, electricityCabinet);
+        Triple<Boolean, String, Object> rentBatteryInsuranceTriple = generateInsuranceOrder(userInfo, query, electricityCabinet, wechatPayParamsDetails);
         if (Boolean.FALSE.equals(rentBatteryInsuranceTriple.getLeft())) {
             return rentBatteryInsuranceTriple;
         }
@@ -2117,7 +2112,8 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         return freeDepositOrderMapper.updatePhoneByUid(tenantId, uid, newPhone);
     }
     
-    private Triple<Boolean, String, Object> generateInsuranceOrder(UserInfo userInfo, FreeBatteryDepositHybridOrderQuery query, ElectricityCabinet electricityCabinet) {
+    private Triple<Boolean, String, Object> generateInsuranceOrder(UserInfo userInfo, FreeBatteryDepositHybridOrderQuery query, ElectricityCabinet electricityCabinet,
+            WechatPayParamsDetails wechatPayParamsDetails) {
         if (Objects.isNull(query.getInsuranceId())) {
             return Triple.of(true, "", null);
         }
@@ -2146,7 +2142,8 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
                 .forehead(franchiseeInsurance.getForehead()).payType(InsuranceOrder.ONLINE_PAY_TYPE).phone(userInfo.getPhone()).status(InsuranceOrder.STATUS_INIT)
                 .storeId(Objects.nonNull(electricityCabinet) ? electricityCabinet.getStoreId() : userInfo.getStoreId()).tenantId(userInfo.getTenantId()).uid(userInfo.getUid())
                 .userName(userInfo.getName()).validDays(franchiseeInsurance.getValidDays()).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis())
-                .simpleBatteryType(franchiseeInsurance.getSimpleBatteryType()).build();
+                .simpleBatteryType(franchiseeInsurance.getSimpleBatteryType()).paramFranchiseeId(wechatPayParamsDetails.getFranchiseeId())
+                .wechatMerchantId(wechatPayParamsDetails.getWechatMerchantId()).build();
         
         return Triple.of(true, null, insuranceOrder);
     }

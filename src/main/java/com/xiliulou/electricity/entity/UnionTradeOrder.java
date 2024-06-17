@@ -66,6 +66,11 @@ public class UnionTradeOrder {
     private Integer tenantId;
     
     /**
+     * 支付参数中的加盟商id
+     */
+    private Long paramFranchiseeId;
+    
+    /**
      * 微信商户号
      */
     private String wechatMerchantId;
