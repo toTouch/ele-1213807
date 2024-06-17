@@ -27,14 +27,6 @@ public class JsonUserRentCarController extends BaseController {
     RentCarOrderService rentCarOrderService;
     
     /**
-     * 租车&租电下单（混合支付）
-     */
-    @PostMapping("/user/rentCar/hybridOrder")
-    public R rentCarHybridOrder(@RequestBody @Validated RentCarHybridOrderQuery query, HttpServletRequest request) {
-        return returnTripleResult(rentCarOrderService.rentCarHybridOrder(query, request));
-    }
-    
-    /**
      * 扫码租车
      */
     @PostMapping("/user/rentCar/scanQR")

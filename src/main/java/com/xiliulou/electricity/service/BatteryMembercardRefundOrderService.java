@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.service;
 
+import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.bo.wechat.WechatPayParamsDetails;
 import com.xiliulou.electricity.entity.BatteryMembercardRefundOrder;
 import com.xiliulou.electricity.entity.UserInfo;
@@ -91,4 +92,6 @@ public interface BatteryMembercardRefundOrderService {
     void sendAuditNotify(UserInfo userInfo);
     
     void sendMerchantRebateRefundMQ(Long uid, String orderId);
+    
+    R checkPayParamsDetails(String orderNo);
 }

@@ -10,12 +10,14 @@ import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
+import com.xiliulou.electricity.bo.wechat.WechatPayParamsDetails;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.constant.UserOperateRecordConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.entity.enterprise.EnterpriseChannelUser;
 import com.xiliulou.electricity.enums.BusinessType;
+import com.xiliulou.electricity.enums.CheckPayParamsResultEnum;
 import com.xiliulou.electricity.mapper.EleBatteryServiceFeeOrderMapper;
 import com.xiliulou.electricity.mapper.EleDepositOrderMapper;
 import com.xiliulou.electricity.query.*;
@@ -165,6 +167,9 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
     
     @Resource
     UserInfoGroupDetailService userInfoGroupDetailService;
+    
+    @Resource
+    private WechatPayParamsBizService wechatPayParamsBizService;
 
     @Override
     public EleDepositOrder queryByOrderId(String orderNo) {
@@ -755,6 +760,26 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
     @Override
     public Integer updatePhoneByUid(Integer tenantId, Long uid,String newPhone) {
         return eleDepositOrderMapper.updatePhoneByUid(tenantId,uid,newPhone);
+    }
+    
+    @Slave
+    @Override
+    public R checkPayParamsDetails(String orderId) {
+        EleDepositOrder eleDepositOrder = this.queryByOrderId(orderId);
+        if (Objects.isNull(eleDepositOrder)) {
+            log.error("CHECK PAY PARAMS DETAILS WARN! NOT FOUND ELECTRICITY_REFUND_ORDER orderId={}", orderId);
+            return R.fail("ELECTRICITY.0015", "未找到订单");
+        }
+        
+        if (Objects.nonNull(eleDepositOrder.getWechatMerchantId())) {
+            WechatPayParamsDetails wechatPayParamsDetails = wechatPayParamsBizService.getDetailsByIdTenantIdAndFranchiseeId(eleDepositOrder.getTenantId(),
+                    eleDepositOrder.getParamFranchiseeId());
+            if (Objects.isNull(wechatPayParamsDetails)) {
+                return R.ok(CheckPayParamsResultEnum.FAIL.getCode());
+            }
+        }
+        
+        return R.ok(CheckPayParamsResultEnum.SUCCESS.getCode());
     }
     
     @Slave
