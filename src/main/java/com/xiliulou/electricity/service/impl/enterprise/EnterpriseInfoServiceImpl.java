@@ -755,18 +755,19 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
             }
     
             if (Objects.isNull(merchantAppletId)) {
-                log.error("review Merchant batch withdraw application error, merchant applet id is empty. uid = {}", uid);
+                log.error("CLOUD BEAN RECHARGE ERROR, merchant applet id is empty. uid = {}", uid);
                 return Triple.of(false, "120017", "未配置支付参数");
             }
     
             if (Objects.isNull(merchantAppletSecret)) {
-                log.error("review Merchant batch withdraw application error, merchant applet secret is empty. uid = {}", uid);
+                log.error("CLOUD BEAN RECHARGE ERROR, merchant applet secret is empty. uid = {}", uid);
                 return Triple.of(false, "120017", "未配置支付参数");
             }
     
             //兼容商户小程序充值
             wechatPayParamsDetails.setMerchantMinProAppId(merchantAppletId);
             wechatPayParamsDetails.setMerchantAppletSecret(merchantAppletSecret);
+            
             
             UserOauthBind userOauthBind = userOauthBindService.queryUserOauthBySysId(uid, TenantContextHolder.getTenantId());
             if (Objects.isNull(userOauthBind) || Objects.isNull(userOauthBind.getThirdId())) {

@@ -102,7 +102,6 @@
     
     <select id="selectListByCondition" resultType="com.xiliulou.electricity.vo.merchant.MerchantWithdrawApplicationRecordVO">
         select mwar.id,
-               mwar.response,
                mwar.create_time,
                mwar.update_time,
                mwar.tenant_id,
@@ -178,7 +177,6 @@
     
     <select id="selectById" resultType="com.xiliulou.electricity.vo.merchant.MerchantWithdrawApplicationRecordVO">
         select mwar.id,
-               mwar.response,
                mwar.create_time,
                mwar.update_time,
                mwar.tenant_id,
@@ -193,7 +191,6 @@
     
      <select id="selectByOrderNo" resultType="com.xiliulou.electricity.entity.merchant.MerchantWithdrawApplicationRecord">
         select mwar.id,
-               mwar.response,
                mwar.create_time,
                mwar.update_time,
                mwar.tenant_id,
@@ -209,7 +206,6 @@
     
     <select id="queryList" resultType="com.xiliulou.electricity.vo.merchant.MerchantWithdrawApplicationRecordVO">
         select mwar.id,
-        mwar.response,
         mwar.create_time,
         mwar.update_time,
         mwar.tenant_id,
@@ -315,7 +311,6 @@
     
     <select id="selectListByBatchNo" resultType="com.xiliulou.electricity.bo.merchant.MerchantWithdrawApplicationRecordBO">
         select mwar.id,
-               mwar.response,
                mwar.create_time,
                mwar.update_time,
                mwar.amount,
