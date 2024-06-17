@@ -55,6 +55,8 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import static com.xiliulou.electricity.constant.MultiFranchiseeConstant.DEFAULT_FRANCHISEE_NAME;
+
 /**
  * @program: XILIULOU
  * @description:
@@ -110,10 +112,13 @@ public class ElectricityPayParamsServiceImpl extends ServiceImpl<ElectricityPayP
         if (!idempotentCheck()) {
             return R.failMsg("操作频繁!");
         }
-        
-        Franchisee franchisee = this.queryFranchisee(request.getTenantId(), request.getFranchiseeId());
-        if (Objects.isNull(franchisee)) {
-            return R.failMsg("加盟商不存在");
+        String franchiseeName = DEFAULT_FRANCHISEE_NAME;
+        if (!ElectricityPayParamsConfigEnum.DEFAULT_CONFIG.getType().equals(request.getConfigType())) {
+            Franchisee franchisee = this.queryFranchisee(request.getTenantId(), request.getFranchiseeId());
+            if (Objects.isNull(franchisee)) {
+                return R.failMsg("加盟商不存在");
+            }
+            franchiseeName = franchisee.getName();
         }
         
         // 校验参数
@@ -131,7 +136,7 @@ public class ElectricityPayParamsServiceImpl extends ServiceImpl<ElectricityPayP
         redisService.delete(buildCacheKey(tenantId, insert.getFranchiseeId()));
         
         // 操作记录
-        this.operateRecord(franchisee);
+        this.operateRecord(franchiseeName);
         
         return R.ok();
     }
@@ -144,11 +149,6 @@ public class ElectricityPayParamsServiceImpl extends ServiceImpl<ElectricityPayP
             return R.failMsg("操作频繁");
         }
         
-        Franchisee franchisee = this.queryFranchisee(request.getTenantId(), request.getFranchiseeId());
-        if (Objects.isNull(franchisee)) {
-            return R.failMsg("加盟商不存在");
-        }
-        
         Integer tenantId = TenantContextHolder.getTenantId();
         request.setTenantId(tenantId);
         // 校验参数
@@ -156,6 +156,15 @@ public class ElectricityPayParamsServiceImpl extends ServiceImpl<ElectricityPayP
                 new LambdaQueryWrapper<ElectricityPayParams>().eq(ElectricityPayParams::getId, request.getId()).eq(ElectricityPayParams::getTenantId, request.getTenantId()));
         if (Objects.isNull(oldPayParams)) {
             return R.failMsg("数据不存在");
+        }
+        
+        String franchiseeName = DEFAULT_FRANCHISEE_NAME;
+        if (!ElectricityPayParamsConfigEnum.DEFAULT_CONFIG.getType().equals(oldPayParams.getConfigType())) {
+            Franchisee franchisee = this.queryFranchisee(tenantId, oldPayParams.getFranchiseeId());
+            if (Objects.isNull(franchisee)) {
+                return R.failMsg("加盟商不存在");
+            }
+            franchiseeName = franchisee.getName();
         }
         
         // 需要同步的加盟商配置
@@ -177,7 +186,7 @@ public class ElectricityPayParamsServiceImpl extends ServiceImpl<ElectricityPayP
         
         redisService.delete(delKeys);
         
-        this.operateRecord(franchisee);
+        this.operateRecord(franchiseeName);
         return R.ok();
     }
     
@@ -212,7 +221,7 @@ public class ElectricityPayParamsServiceImpl extends ServiceImpl<ElectricityPayP
         
         // 操作记录
         Franchisee franchisee = this.queryFranchisee(tenantId, payParams.getFranchiseeId());
-        this.operateRecord(franchisee);
+        this.operateRecord(franchisee.getName());
         return R.ok();
     }
     
@@ -527,13 +536,13 @@ public class ElectricityPayParamsServiceImpl extends ServiceImpl<ElectricityPayP
     /**
      * 操作记录
      *
-     * @param franchisee
+     * @param franchiseeName
      * @author caobotao.cbt
      * @date 2024/6/14 14:56
      */
-    private void operateRecord(Franchisee franchisee) {
+    private void operateRecord(String franchiseeName) {
         Map<String, String> record = Maps.newHashMapWithExpectedSize(1);
-        record.put("franchiseeName", franchisee.getName());
+        record.put("franchiseeName", franchiseeName);
         operateRecordUtil.record(null, record);
     }
     

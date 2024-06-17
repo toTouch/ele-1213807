@@ -17,4 +17,9 @@ public interface MultiFranchiseeConstant {
      */
     Long DEFAULT_FRANCHISEE = 0L;
     
+    /**
+     * 默认加盟商 名称
+     */
+    String DEFAULT_FRANCHISEE_NAME = "默认";
+    
 }
