@@ -30,6 +30,10 @@ public class EnterpriseCloudBeanRechargeQuery {
      * 备注
      */
     private String remark;
-
+    
+    /**
+     * 登录用户绑定的加盟商
+     */
+    private Long bindFranchiseeId;
 
 }

@@ -65,7 +65,7 @@ public class JsonMerchantChannelEmployeeController extends BaseController {
             List<Long> franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
             if (org.apache.commons.collections.CollectionUtils.isEmpty(franchiseeIds)) {
                 log.error("channel employee List error! franchisee is empty, uid={}", user.getUid());
-                return R.fail("ELECTRICITY.0001", "未找到用户");
+                return R.fail("ELECTRICITY.0038", "加盟商不存在");
             }
     
             franchiseeId = franchiseeIds.get(0);
@@ -103,7 +103,7 @@ public class JsonMerchantChannelEmployeeController extends BaseController {
             List<Long> franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
             if (org.apache.commons.collections.CollectionUtils.isEmpty(franchiseeIds)) {
                 log.error("channel employee count error! franchisee is empty, uid={}", user.getUid());
-                return R.fail("ELECTRICITY.0001", "未找到用户");
+                return R.fail("ELECTRICITY.0038", "加盟商不存在");
             }
         
             franchiseeId = franchiseeIds.get(0);
@@ -134,7 +134,7 @@ public class JsonMerchantChannelEmployeeController extends BaseController {
             List<Long> franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
             if (org.apache.commons.collections.CollectionUtils.isEmpty(franchiseeIds)) {
                 log.error("channel employee add error! franchisee is empty, uid={}", user.getUid());
-                return R.fail("ELECTRICITY.0001", "未找到用户");
+                return R.fail("ELECTRICITY.0038", "加盟商不存在");
             }
         
             channelEmployeeRequest.setBindFranchiseeId(franchiseeIds.get(0));
@@ -156,7 +156,7 @@ public class JsonMerchantChannelEmployeeController extends BaseController {
             List<Long> franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
             if (org.apache.commons.collections.CollectionUtils.isEmpty(franchiseeIds)) {
                 log.error("channel employee update error! franchisee is empty, uid={}", user.getUid());
-                return R.fail("ELECTRICITY.0001", "未找到用户");
+                return R.fail("ELECTRICITY.0038", "加盟商不存在");
             }
         
             channelEmployeeRequest.setBindFranchiseeId(franchiseeIds.get(0));
@@ -179,7 +179,7 @@ public class JsonMerchantChannelEmployeeController extends BaseController {
             List<Long> franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
             if (org.apache.commons.collections.CollectionUtils.isEmpty(franchiseeIds)) {
                 log.error("channel employee query by id error! franchisee is empty, uid={}", user.getUid());
-                return R.fail("ELECTRICITY.0001", "未找到用户");
+                return R.fail("ELECTRICITY.0038", "加盟商不存在");
             }
     
             franchiseeId = franchiseeIds.get(0);
@@ -201,7 +201,7 @@ public class JsonMerchantChannelEmployeeController extends BaseController {
             List<Long> franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
             if (org.apache.commons.collections.CollectionUtils.isEmpty(franchiseeIds)) {
                 log.error("channel employee query by id error! franchisee is empty, uid={}", user.getUid());
-                return R.fail("ELECTRICITY.0001", "未找到用户");
+                return R.fail("ELECTRICITY.0038", "加盟商不存在");
             }
         
             franchiseeId = franchiseeIds.get(0);
@@ -242,7 +242,7 @@ public class JsonMerchantChannelEmployeeController extends BaseController {
             List<Long> franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
             if (org.apache.commons.collections.CollectionUtils.isEmpty(franchiseeIds)) {
                 log.error("channel employee query employees error! franchisee is empty, uid={}", user.getUid());
-                return R.fail("ELECTRICITY.0001", "未找到用户");
+                return R.fail("ELECTRICITY.0038", "加盟商不存在");
             }
         
             franchiseeId = franchiseeIds.get(0);

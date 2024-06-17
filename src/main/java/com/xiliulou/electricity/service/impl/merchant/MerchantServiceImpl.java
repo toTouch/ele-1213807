@@ -1646,6 +1646,18 @@ public class MerchantServiceImpl implements MerchantService {
         if (Objects.isNull(userOauthBind)) {
             return Pair.of(false,"解绑失败,请联系客服处理");
         }
+        
+        // 检测用户所属的商户是否存在
+        Merchant merchant = this.queryByUid(userOauthBind.getUid());
+        if (Objects.isNull(merchant)) {
+            return Pair.of(false,"解绑商户不存在,请联系客服处理");
+        }
+        
+        if (Objects.nonNull(params.getBindFranchiseeId()) && !Objects.equals(params.getBindFranchiseeId(), merchant.getFranchiseeId())) {
+            log.info("merchant un bind open id info, franchisee is not different uid={}, franchiseeId={}, bindFranchiseeId={}", userOauthBind.getUid(), merchant.getFranchiseeId(), params.getBindFranchiseeId());
+            return Pair.of(false,  "当前加盟商无权限操作");
+        }
+    
         boolean delete = userOauthBindService.deleteById(userOauthBind.getId());
         if (delete){
             // 强制下线
