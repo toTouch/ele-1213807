@@ -5717,6 +5717,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             return Triple.of(false, "", "柜机型号不存在");
         }
         
+        checkUpdateBatchElectricityCabinetExtra(query.getRentTabType(), query.getReturnTabType(), query.getMinRetainBatteryCount(), query.getMaxRetainBatteryCount());
+        
         Integer modelId = null;
         
         if (Objects.nonNull(query.getModelId())) {
@@ -5736,7 +5738,6 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             }
         }
         
-        checkUpdateBatchElectricityCabinetExtra(query.getRentTabType(), query.getReturnTabType(), query.getMinRetainBatteryCount(), query.getMaxRetainBatteryCount());
         
         //当前租户下新增柜机
         ElectricityCabinet electricityCabinetInsert = new ElectricityCabinet();
