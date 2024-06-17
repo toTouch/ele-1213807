@@ -29,7 +29,7 @@ import java.util.Objects;
 @RestController
 @Slf4j
 @RefreshScope
-public class EleHardwareFailureWarnMsgController {
+public class JsonAdminEleHardwareFailureWarnMsgController {
     
     @Resource
     private EleHardwareFailureWarnMsgService failureWarnMsgService;
