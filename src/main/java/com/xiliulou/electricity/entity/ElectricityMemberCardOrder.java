@@ -136,6 +136,16 @@ public class ElectricityMemberCardOrder {
      */
     private String couponIds;
     
+    /**
+     * 支付参数中的加盟商id
+     */
+    private Long paramFranchiseeId;
+    
+    /**
+     * 微信商户号
+     */
+    private String wechatMerchantId;
+    
     // 订单状态 0未支付,1支付成功 2支付失败,3取消支付
     public static final Integer STATUS_INIT = 0;
     
