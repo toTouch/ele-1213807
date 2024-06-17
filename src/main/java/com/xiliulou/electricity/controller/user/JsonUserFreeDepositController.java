@@ -128,30 +128,6 @@ public class JsonUserFreeDepositController extends BaseController {
     }
     
     /**
-     * 电池免押混合支付
-     */
-    @PostMapping("/user/freeBatteryDeposit/hybridOrder")
-    public R freeBatteryDepositHybridOrder(@RequestBody @Validated FreeBatteryDepositHybridOrderQuery query, HttpServletRequest request) {
-        return returnTripleResult(freeDepositOrderService.freeBatteryDepositHybridOrder(query, request));
-    }
-    
-    /**
-     * 车辆免押混合支付
-     */
-    @PostMapping("/user/freeCarDeposit/hybridOrder")
-    public R freeCarDepositHybridOrder(@RequestBody @Validated FreeCarBatteryDepositHybridOrderQuery query, HttpServletRequest request) {
-        return returnTripleResult(freeDepositOrderService.freeCarBatteryDepositHybridOrder(query, request));
-    }
-    
-    /**
-     * 电池车辆免押混合支付
-     */
-    @PostMapping("/user/freeBatteryCarDeposit/hybridOrder")
-    public R freeBatteryCarDepositHybridOrder(@RequestBody @Validated FreeCarBatteryDepositOrderQuery query, HttpServletRequest request) {
-        return returnTripleResult(freeDepositOrderService.freeCarBatteryCarDepositHybridOrder(query, request));
-    }
-    
-    /**
      * 获取用户免押订单类型
      *
      * @return
