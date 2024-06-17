@@ -72,4 +72,6 @@ public class MerchantWithdrawApplicationRequest {
      */
     private Long checkTimeEnd;
     
+    private Long franchiseeId;
+    
 }
