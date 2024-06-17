@@ -87,27 +87,27 @@ public class JoinShareMoneyActivityRecordServiceImpl implements JoinShareMoneyAc
 		//用户是否可用
 		UserInfo userInfo = userInfoService.queryByUidFromCache(user.getUid());
 		if (Objects.isNull(userInfo) || Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
-			log.error("joinActivity  ERROR! not found userInfo,uid:{} ", user.getUid());
+			log.warn("joinActivity  WARN! not found userInfo,uid:{} ", user.getUid());
 			return R.fail("ELECTRICITY.0024", "用户已被禁用");
 		}
 		
 		UserInfoExtra userInfoExtra = userInfoExtraService.queryByUidFromCache(user.getUid());
 		if (Objects.isNull(userInfoExtra)) {
-			log.error("join share money activity ERROR! ERROR! Not found userInfoExtra, joinUid={}", user.getUid());
+			log.warn("join share money activity WARN! ERROR! Not found userInfoExtra, joinUid={}", user.getUid());
 			return R.fail("ELECTRICITY.0019", "未找到用户");
 		}
 
 		//查找活动
 		ShareMoneyActivity shareMoneyActivity = shareMoneyActivityService.queryByStatus(activityId);
 		if (Objects.isNull(shareMoneyActivity)) {
-			log.error("joinActivity  ERROR! not found Activity ! ActivityId:{} ", activityId);
+			log.warn("joinActivity WARN! not found Activity ! ActivityId={} ", activityId);
 			return R.fail("ELECTRICITY.00106", "活动已下架");
 		}
 
 		//查找分享的用户
 		User oldUser = userService.queryByUidFromCache(uid);
 		if (Objects.isNull(oldUser)) {
-			log.error("joinActivity  ERROR! not found oldUser ,uid :{}", uid);
+			log.warn("joinActivity  WARN! not found oldUser ,uid :{}", uid);
 			return R.fail("ELECTRICITY.0001", "未找到用户");
 		}
 
@@ -127,8 +127,6 @@ public class JoinShareMoneyActivityRecordServiceImpl implements JoinShareMoneyAc
 		if (CollectionUtils.isNotEmpty(joinShareMoneyActivityHistories)) {
 			return R.fail("110207", "已参加过邀请返现活动");
 		}
-		
-		log.info("start join share money activity, join uid = {}, inviter uid = {}, activity id = {}", user.getUid(), oldUser.getUid(), activityId);
 		
 		// 计算活动有效期
 		long expiredTime;

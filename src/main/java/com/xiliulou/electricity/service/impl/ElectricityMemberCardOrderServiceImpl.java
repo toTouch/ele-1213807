@@ -909,7 +909,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         }
         
         if (Boolean.TRUE.equals(userBatteryMemberCardService.verifyUserBatteryMembercardEffective(batteryMemberCard, userBatteryMemberCard))) {
-            log.error("DISABLE MEMBER CARD ERROR! userBatteryMemberCard expire,uid={},memberCardId={}", user.getUid(), userBatteryMemberCard.getMemberCardId());
+            log.warn("DISABLE MEMBER CARD WARN! userBatteryMemberCard expire,uid={},memberCardId={}", user.getUid(), userBatteryMemberCard.getMemberCardId());
             return R.fail("100298", "换电套餐已过期，无法进行暂停操作");
         }
         
@@ -1032,7 +1032,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         
         UserInfo userInfo = userInfoService.queryByUidFromCache(user.getUid());
         if (Objects.isNull(userInfo)) {
-            log.error("DISABLE MEMBER CARD ERROR! not found user,uid={} ", user.getUid());
+            log.warn("DISABLE MEMBER CARD WARN! not found user,uid={} ", user.getUid());
             return R.fail("ELECTRICITY.0019", "未找到用户");
         }
         
@@ -1041,13 +1041,13 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         }
         
         if (Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_NO)) {
-            log.error("DISABLE MEMBER CARD ERROR! user is rent deposit,uid={} ", user.getUid());
+            log.warn("DISABLE MEMBER CARD WARN! user is rent deposit,uid={} ", user.getUid());
             return R.fail("ELECTRICITY.0042", "未缴纳押金");
         }
         
         UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(userInfo.getUid());
         if (Objects.isNull(userBatteryDeposit)) {
-            log.error("DISABLE MEMBER CARD ERROR! not pay deposit,uid={}", user.getUid());
+            log.warn("DISABLE MEMBER CARD WARN! not pay deposit,uid={}", user.getUid());
             return R.fail("ELECTRICITY.0042", "未缴纳押金");
         }
         
@@ -1059,25 +1059,25 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         
         List<BatteryMembercardRefundOrder> batteryMembercardRefundOrders = batteryMembercardRefundOrderService.selectRefundingOrderByUid(userInfo.getUid());
         if (CollectionUtils.isNotEmpty(batteryMembercardRefundOrders)) {
-            log.error("PAUSE BATTERY MEMBERCARD ERROR! battery membercard refund review ,uid={}", userInfo.getUid());
+            log.warn("PAUSE BATTERY MEMBERCARD WARN! battery membercard refund review ,uid={}", userInfo.getUid());
             return R.fail("100018", "套餐租金退款审核中");
         }
         
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
         if (Objects.isNull(userBatteryMemberCard) || Objects.isNull(userBatteryMemberCard.getMemberCardExpireTime()) || Objects.isNull(
                 userBatteryMemberCard.getRemainingNumber())) {
-            log.warn("DISABLE MEMBER CARD ERROR! user haven't memberCard uid={}", user.getUid());
+            log.warn("DISABLE MEMBER CARD WARN! user haven't memberCard uid={}", user.getUid());
             return R.fail("100210", "用户未开通套餐");
         }
         
         BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());
         if (Objects.isNull(batteryMemberCard)) {
-            log.error("DISABLE MEMBER CARD ERROR! memberCard is not exit,uid={},memberCardId={}", user.getUid(), userBatteryMemberCard.getMemberCardId());
+            log.warn("DISABLE MEMBER CARD WARN! memberCard is not exit,uid={},memberCardId={}", user.getUid(), userBatteryMemberCard.getMemberCardId());
             return R.fail("ELECTRICITY.00121", "套餐不存在");
         }
         
         if (Boolean.TRUE.equals(userBatteryMemberCardService.verifyUserBatteryMembercardEffective(batteryMemberCard, userBatteryMemberCard))) {
-            log.error("DISABLE MEMBER CARD ERROR! userBatteryMemberCard expire,uid={},memberCardId={}", user.getUid(), userBatteryMemberCard.getMemberCardId());
+            log.warn("DISABLE MEMBER CARD WARN! userBatteryMemberCard expire,uid={},memberCardId={}", user.getUid(), userBatteryMemberCard.getMemberCardId());
             return R.fail("100298", "换电套餐已过期，无法进行暂停操作");
         }
         
@@ -1088,14 +1088,14 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         }
         
         if (Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE_REVIEW)) {
-            log.error("DISABLE MEMBER CARD ERROR! disable review userId={}", user.getUid());
+            log.warn("DISABLE MEMBER CARD WARN! disable review userId={}", user.getUid());
             return R.fail("ELECTRICITY.100001", "用户停卡申请审核中");
         }
         
         Triple<Boolean, Integer, BigDecimal> acquireUserBatteryServiceFeeResult = serviceFeeUserInfoService.acquireUserBatteryServiceFee(userInfo, userBatteryMemberCard,
                 batteryMemberCard, serviceFeeUserInfo);
         if (Boolean.TRUE.equals(acquireUserBatteryServiceFeeResult.getLeft())) {
-            log.error("DISABLE MEMBER CARD ERROR! user exist battery service fee,uid={}", userInfo.getUid());
+            log.warn("DISABLE MEMBER CARD WARN! user exist battery service fee,uid={}", userInfo.getUid());
             return R.fail("ELECTRICITY.100000", "存在电池服务费", acquireUserBatteryServiceFeeResult.getRight());
         }
     
@@ -1108,7 +1108,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         EnterpriseChannelUserExitQueryModel queryModel = EnterpriseChannelUserExitQueryModel.builder().uidList(uidList).typeList(typeList).build();
         List<EnterpriseChannelUserExit> channelUserList = channelUserExitMapper.list(queryModel);
         if (ObjectUtils.isNotEmpty(channelUserList)) {
-            log.error("DISABLE MEMBER CARD ERROR! channel user exit,uid={}", userInfo.getUid());
+            log.warn("DISABLE MEMBER CARD WARN! channel user exit,uid={}", userInfo.getUid());
             return R.fail("120308", "企业用户无法申请冻结套餐", acquireUserBatteryServiceFeeResult.getRight());
         }
         
@@ -1329,7 +1329,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         
         ServiceFeeUserInfo serviceFeeUserInfo = serviceFeeUserInfoService.queryByUidFromCache(userInfo.getUid());
         if (Objects.isNull(serviceFeeUserInfo)) {
-            log.error("ELE ERROR! not found user,uid={} ", userInfo.getUid());
+            log.warn("ELE WARN! not found user,uid={} ", userInfo.getUid());
             return R.fail("100247", "用户信息不存在");
         }
         
@@ -1440,12 +1440,12 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         
         UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
         if (Objects.isNull(userInfo) || !Objects.equals(userInfo.getTenantId(), TenantContextHolder.getTenantId())) {
-            log.error("admin saveUserMemberCard  ERROR! not found user! uid={}", uid);
+            log.warn("admin saveUserMemberCard  WARN! not found user! uid={}", uid);
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         
         if (Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_NO)) {
-            log.error("admin saveUserMemberCard  ERROR! user is rent deposit,uid={} ", userInfo.getUid());
+            log.warn("admin saveUserMemberCard  WARN! user is rent deposit,uid={} ", userInfo.getUid());
             return R.fail("ELECTRICITY.0042", "未缴纳押金");
         }
         
@@ -1455,25 +1455,25 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         
         UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(userInfo.getUid());
         if (Objects.isNull(userBatteryDeposit)) {
-            log.error("admin saveUserMemberCard  ERROR! not pay deposit,uid={}", userInfo.getUid());
+            log.warn("admin saveUserMemberCard  WARN! not pay deposit,uid={}", userInfo.getUid());
             return R.fail("ELECTRICITY.0042", "未缴纳押金");
         }
         
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
         if (Objects.isNull(userBatteryMemberCard) || Objects.isNull(userBatteryMemberCard.getMemberCardExpireTime()) || Objects.isNull(
                 userBatteryMemberCard.getRemainingNumber())) {
-            log.warn("admin saveUserMemberCard  ERROR! user haven't memberCard uid={}", userInfo.getUid());
+            log.warn("admin saveUserMemberCard  WARN! user haven't memberCard uid={}", userInfo.getUid());
             return R.fail("100210", "用户未开通套餐");
         }
         
         BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());
         if (Objects.isNull(batteryMemberCard)) {
-            log.error("admin saveUserMemberCard  ERROR! memberCard  is not exit,uid={},memberCardId={}", user.getUid(), userBatteryMemberCard.getMemberCardId());
+            log.warn("admin saveUserMember Card  WARN! memberCard  is not exit,uid={},memberCardId={}", user.getUid(), userBatteryMemberCard.getMemberCardId());
             return R.fail("ELECTRICITY.00121", "套餐不存在");
         }
         
         if (Boolean.TRUE.equals(userBatteryMemberCardService.verifyUserBatteryMembercardEffective(batteryMemberCard, userBatteryMemberCard))) {
-            log.error("PAUSE BATTERY MEMBERCARD ERROR! userBatteryMemberCard expire,uid={},memberCardId={}", user.getUid(), userBatteryMemberCard.getMemberCardId());
+            log.warn("PAUSE BATTERY MEMBER CARD WARN! userBatteryMemberCard expire,uid={},memberCardId={}", user.getUid(), userBatteryMemberCard.getMemberCardId());
             return R.fail("100298", "换电套餐已过期，无法进行暂停操作");
         }
         
@@ -1486,31 +1486,31 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         //是否有正在进行的退租
         List<BatteryMembercardRefundOrder> batteryMembercardRefundOrders = batteryMembercardRefundOrderService.selectRefundingOrderByUid(userInfo.getUid());
         if (CollectionUtils.isNotEmpty(batteryMembercardRefundOrders)) {
-            log.error("PAUSE BATTERY MEMBERCARD ERROR! battery membercard refund review userId={}", userInfo.getUid());
+            log.warn("PAUSE BATTERY MEMBER CARD WARN! battery membercard refund review userId={}", userInfo.getUid());
             return R.fail("100018", "套餐租金退款审核中");
         }
         
         if (Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE_REVIEW)) {
-            log.error("PAUSE BATTERY MEMBERCARD ERROR! disable review userId={}", userInfo.getUid());
+            log.warn("PAUSE BATTERY MEMBER CARD WARN! disable review userId={}", userInfo.getUid());
             return R.fail("ELECTRICITY.100001", "用户停卡申请审核中");
         }
         
         Franchisee franchisee = franchiseeService.queryByIdFromCache(userInfo.getFranchiseeId());
         if (Objects.isNull(franchisee)) {
-            log.error("PAUSE BATTERY MEMBERCARD ERROR!not found franchisee,uid={}", userInfo.getUid());
+            log.warn("PAUSE BATTERY MEMBER CARD WARN!not found franchisee,uid={}", userInfo.getUid());
             return R.fail("ELECTRICITY.0038", "加盟商不存在");
         }
         
         ServiceFeeUserInfo serviceFeeUserInfo = serviceFeeUserInfoService.queryByUidFromCache(userInfo.getUid());
         if (Objects.isNull(serviceFeeUserInfo)) {
-            log.error("PAUSE BATTERY MEMBERCARD ERROR! not found serviceFeeUserInfo,uid={}", userInfo.getUid());
+            log.warn("PAUSE BATTERY MEMBER CARD WARN! not found serviceFeeUserInfo,uid={}", userInfo.getUid());
             return R.fail("100247", "用户信息不存在");
         }
         
         Triple<Boolean, Integer, BigDecimal> acquireUserBatteryServiceFeeResult = serviceFeeUserInfoService.acquireUserBatteryServiceFee(userInfo, userBatteryMemberCard,
                 batteryMemberCard, serviceFeeUserInfo);
         if (Boolean.TRUE.equals(acquireUserBatteryServiceFeeResult.getLeft())) {
-            log.error("PAUSE BATTERY MEMBERCARD ERROR! user exist battery service fee,uid={}", userInfo.getUid());
+            log.warn("PAUSE BATTERY MEMBER CARD WARN! user exist battery service fee,uid={}", userInfo.getUid());
             return R.fail("ELECTRICITY.100000", "存在电池服务费");
         }
         
@@ -1692,7 +1692,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         
         UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
         if (Objects.isNull(userInfo) || !Objects.equals(userInfo.getTenantId(), TenantContextHolder.getTenantId())) {
-            log.error("ADMIN ENABLE BATTERY MEMBERCARD ERROR! not found userInfo! uid={}", uid);
+            log.warn("ADMIN ENABLE BATTERY MEMBER CARD WARN! not found userInfo! uid={}", uid);
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         
@@ -1701,50 +1701,50 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         }
         
         if (Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_NO)) {
-            log.error("ADMIN ENABLE BATTERY MEMBERCARD ERROR! user is rent deposit,uid={} ", userInfo.getUid());
+            log.warn("ADMIN ENABLE BATTERY MEMBER CARD WARN! user is rent deposit,uid={} ", userInfo.getUid());
             return R.fail("ELECTRICITY.0042", "未缴纳押金");
         }
         
         ServiceFeeUserInfo serviceFeeUserInfo = serviceFeeUserInfoService.queryByUidFromCache(userInfo.getUid());
         if (Objects.isNull(serviceFeeUserInfo)) {
-            log.error("ADMIN ENABLE BATTERY MEMBERCARD ERROR! not found serviceFeeUserInfo,uid={}", userInfo.getUid());
+            log.warn("ADMIN ENABLE BATTERY MEMBER CARD WARN! not found serviceFeeUserInfo,uid={}", userInfo.getUid());
             return R.fail("100247", "用户信息不存在");
         }
         
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
         if (Objects.isNull(userBatteryMemberCard) || Objects.isNull(userBatteryMemberCard.getMemberCardId())) {
-            log.warn("ADMIN ENABLE BATTERY MEMBERCARD ERROR! user haven't memberCard uid={}", userInfo.getUid());
+            log.warn("ADMIN ENABLE BATTERY MEMBER CARD WARN! user haven't memberCard uid={}", userInfo.getUid());
             return R.fail("100210", "用户未开通套餐");
         }
         
         if (Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE_REVIEW)) {
-            log.error("ADMIN ENABLE BATTERY MEMBERCARD ERROR! disable review userId={}", userInfo.getUid());
+            log.warn("ADMIN ENABLE BATTERY MEMBER CARD WARN! disable review userId={}", userInfo.getUid());
             return R.fail("ELECTRICITY.100001", "用户停卡申请审核中");
         }
         
         if (Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_NOT_DISABLE) ||
                 Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE_REVIEW_REFUSE)) {
-            log.error("ADMIN ENABLE BATTERY MEMBERCARD ERROR! member card not disable userId={}", userInfo.getUid());
+            log.warn("ADMIN ENABLE BATTERY MEMBER CARD WARN! member card not disable userId={}", userInfo.getUid());
             return R.fail("ELECTRICITY.100001", "用户未停卡");
         }
         
         BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());
         if (Objects.isNull(batteryMemberCard)) {
-            log.error("ADMIN ENABLE BATTERY MEMBERCARD ERROR! battery memberCard is not exit,uid={},memberCardId={}", userInfo.getUid(), userBatteryMemberCard.getMemberCardId());
+            log.warn("ADMIN ENABLE BATTERY MEMBER CARD WARN! battery memberCard is not exit,uid={},memberCardId={}", userInfo.getUid(), userBatteryMemberCard.getMemberCardId());
             return R.fail("ELECTRICITY.00121", "套餐不存在");
         }
         
         Triple<Boolean, Integer, BigDecimal> acquireUserBatteryServiceFeeResult = serviceFeeUserInfoService.acquireUserBatteryServiceFee(userInfo, userBatteryMemberCard,
                 batteryMemberCard, serviceFeeUserInfo);
         if (Boolean.TRUE.equals(acquireUserBatteryServiceFeeResult.getLeft())) {
-            log.error("ADMIN ENABLE BATTERY MEMBERCARD ERROR! user exist battery service fee,uid={}", userInfo.getUid());
+            log.warn("ADMIN ENABLE BATTERY MEMBER CARD WARN! user exist battery service fee,uid={}", userInfo.getUid());
             return R.fail("ELECTRICITY.100000", "存在电池服务费");
         }
         
         EleDisableMemberCardRecord eleDisableMemberCardRecord = eleDisableMemberCardRecordService.queryByDisableMemberCardNo(serviceFeeUserInfo.getDisableMemberCardNo(),
                 userInfo.getTenantId());
         if (Objects.isNull(eleDisableMemberCardRecord)) {
-            log.error("ADMIN ENABLE BATTERY MEMBERCARD ERROR! not found eleDisableMemberCardRecord,uid={},disableMemberCardNo={}", userInfo.getUid(),
+            log.warn("ADMIN ENABLE BATTERY MEMBER CARD WARN! not found eleDisableMemberCardRecord,uid={},disableMemberCardNo={}", userInfo.getUid(),
                     serviceFeeUserInfo.getDisableMemberCardNo());
             return R.fail("100370", "停卡记录不存在");
         }
@@ -1831,7 +1831,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         
         UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
         if (Objects.isNull(userInfo) || !Objects.equals(userInfo.getTenantId(), TenantContextHolder.getTenantId())) {
-            log.error("admin saveUserMemberCard  ERROR! not found user! uid={}", uid);
+            log.warn("admin saveUserMemberCard  WARN! not found user! uid={}", uid);
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         
@@ -1854,7 +1854,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         
         BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());
         if (Objects.isNull(batteryMemberCard)) {
-            log.error("admin saveUserMemberCard  ERROR! memberCard  is not exit,uid={},memberCardId={}", user.getUid(), userBatteryMemberCard.getMemberCardId());
+            log.warn("admin saveUserMemberCard  WARN! memberCard  is not exit,uid={},memberCardId={}", user.getUid(), userBatteryMemberCard.getMemberCardId());
             return R.fail("ELECTRICITY.00121", "套餐不存在");
         }
         
@@ -2211,13 +2211,13 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             franchiseeUserInfos.parallelStream().forEach(item -> {
                 ElectricityPayParams ele = electricityPayParamsService.queryFromCache(item.getTenantId());
                 if (Objects.isNull(ele)) {
-                    log.error("BATTERY MEMBER CARD EXPIRING SOON ERROR! ElectricityPayParams is null error! tenantId={}", item.getTenantId());
+                    log.info("BATTERY MEMBER CARD EXPIRING SOON INFO! ElectricityPayParams is null error! tenantId={}", item.getTenantId());
                     return;
                 }
                 
                 TemplateConfigEntity templateConfigEntity = templateConfigService.queryByTenantIdFromCache(item.getTenantId());
                 if (Objects.isNull(templateConfigEntity) || Objects.isNull(templateConfigEntity.getBatteryOuttimeTemplate())) {
-                    log.error("BATTERY MEMBER CARD EXPIRING SOON ERROR! TemplateConfigEntity is null error! tenantId={}", item.getTenantId());
+                    log.info("BATTERY MEMBER CARD EXPIRING SOON INFO! TemplateConfigEntity is null error! tenantId={}", item.getTenantId());
                     return;
                 }
                 
@@ -3917,25 +3917,25 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         for (Integer userCouponId : userCouponIds) {
             UserCoupon userCoupon = userCouponService.queryByIdFromDB(userCouponId);
             if (Objects.isNull(userCoupon)) {
-                log.error("ELE ERROR! not found userCoupon,userCouponId={}", userCouponId);
+                log.warn("ELE WARN! not found userCoupon,userCouponId={}", userCouponId);
                 return Triple.of(false, "ELECTRICITY.0085", "未找到优惠券");
             }
             
             Coupon coupon = couponService.queryByIdFromCache(userCoupon.getCouponId());
             if (Objects.isNull(coupon)) {
-                log.error("ELE ERROR! not found coupon,userCouponId={}", userCouponId);
+                log.warn("ELE WARN! not found coupon,userCouponId={}", userCouponId);
                 return Triple.of(false, "ELECTRICITY.0085", "未找到优惠券");
             }
             
             //优惠券是否使用
             if (!Objects.equals(UserCoupon.STATUS_UNUSED, userCoupon.getStatus())) {
-                log.error("ELE ERROR! userCoupon is used,userCouponId={}", userCouponId);
+                log.warn("ELE WARN! userCoupon is used,userCouponId={}", userCouponId);
                 return Triple.of(false, "ELECTRICITY.0090", "优惠券不可用");
             }
             
             //优惠券是否过期
             if (userCoupon.getDeadline() < System.currentTimeMillis()) {
-                log.error("ELE ERROR! userCoupon is deadline,userCouponId={}", userCouponId);
+                log.warn("ELE WARN! userCoupon is deadline,userCouponId={}", userCouponId);
                 return Triple.of(false, "ELECTRICITY.0091", "您的优惠券已过期");
             }
             

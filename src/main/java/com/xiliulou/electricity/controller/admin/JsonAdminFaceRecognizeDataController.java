@@ -70,7 +70,7 @@ public class JsonAdminFaceRecognizeDataController extends BaseController {
     public R save(@RequestBody @Validated(CreateGroup.class) FaceRecognizeDataQuery faceRecognizeDataQuery) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
-            log.error("ELE ERROR! not found user");
+            log.warn("ELE WARN! not found user");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
@@ -91,7 +91,7 @@ public class JsonAdminFaceRecognizeDataController extends BaseController {
     public R update(@RequestBody @Validated(UpdateGroup.class) FaceRecognizeDataQuery faceRecognizeDataQuery) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
-            log.error("ELE ERROR! not found user");
+            log.warn("ELE WARN! not found user");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
@@ -111,7 +111,7 @@ public class JsonAdminFaceRecognizeDataController extends BaseController {
     public R delete(@PathVariable("id") Long id) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
-            log.error("ELE ERROR! not found user");
+            log.warn("ELE WARN! not found user");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
@@ -131,7 +131,7 @@ public class JsonAdminFaceRecognizeDataController extends BaseController {
     public R recharge(@RequestBody @Validated(UpdateGroup.class) FaceRecognizeDataQuery faceRecognizeDataQuery) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
-            log.error("ELE ERROR! not found user");
+            log.warn("ELE WARN! not found user");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 

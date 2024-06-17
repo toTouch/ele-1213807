@@ -218,7 +218,7 @@ public class ElectricityTradeOrderServiceImpl extends
     public Pair<Boolean, Object> notifyCarRenalPackageOrder(WechatJsapiOrderCallBackResource callBackResource) {
         log.info("notifyCarRenalPackageOrder params callBackResource is {}", JSON.toJSONString(callBackResource));
         if (ObjectUtils.isEmpty(callBackResource)) {
-            log.error("NotifyCarRenalPackageOrder failed, callBackResource is empty");
+            log.warn("NotifyCarRenalPackageOrder failed, callBackResource is empty");
             return Pair.of(false, "参数为空");
         }
 
@@ -233,12 +233,12 @@ public class ElectricityTradeOrderServiceImpl extends
         // 1. 处理交易流水订单
         ElectricityTradeOrder electricityTradeOrder = baseMapper.selectTradeOrderByTradeOrderNo(tradeOrderNo);
         if (Objects.isNull(electricityTradeOrder)) {
-            log.error("NotifyCarRenalPackageOrder failed, not found electricity_trade_order, trade_order_no is {}", tradeOrderNo);
+            log.warn("NotifyCarRenalPackageOrder failed, not found electricity_trade_order, trade_order_no is {}", tradeOrderNo);
             return Pair.of(false, "未找到交易流水订单");
         }
 
         if (ObjectUtil.notEqual(ElectricityTradeOrder.STATUS_INIT, electricityTradeOrder.getStatus())) {
-            log.error("NotifyCarRenalPackageOrder failed, electricity_trade_order processed, trade_order_no is {}", tradeOrderNo);
+            log.warn("NotifyCarRenalPackageOrder failed, electricity_trade_order processed, trade_order_no is {}", tradeOrderNo);
             return Pair.of(false, "交易流水订单已处理");
         }
 
