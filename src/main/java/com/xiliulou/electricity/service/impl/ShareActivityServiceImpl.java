@@ -646,8 +646,7 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 		}
 
 		//邀请活动
-		ShareActivity shareActivity = shareActivityMapper.selectOne(new LambdaQueryWrapper<ShareActivity>()
-				.eq(ShareActivity::getTenantId, tenantId).eq(ShareActivity::getStatus, ShareActivity.STATUS_ON));
+		ShareActivity shareActivity = shareActivityMapper.queryOnlineActivity(tenantId, Objects.isNull(userInfo.getFranchiseeId()) ? null : userInfo.getFranchiseeId().intValue());
 		if (Objects.isNull(shareActivity)) {
 			log.error("ACTIVITY ERROR!not found Activity,tenantId={},uid={}", tenantId, user.getUid());
 			return R.ok();
@@ -1118,5 +1117,12 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 		});
 		return R.ok(count);
 	}
+	
+	@Slave
+	@Override
+	public ShareActivity queryOnlineActivity(Integer tenantId, Integer franchiseeId) {
+		return shareActivityMapper.queryOnlineActivity(tenantId, franchiseeId);
+	}
+	
 }
 

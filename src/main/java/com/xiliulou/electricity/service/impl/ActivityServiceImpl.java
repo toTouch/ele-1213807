@@ -257,7 +257,7 @@ public class ActivityServiceImpl implements ActivityService {
             switch (latestActivitySource) {
                 case 1:
                     //处理邀请返券活动
-                    userBizService.joinShareActivityProcess(uid, electricityMemberCardOrder.getMemberCardId());
+                    userBizService.joinShareActivityProcess(userInfo, electricityMemberCardOrder.getMemberCardId());
                     break;
                 case 2:
                     //处理邀请返现活动
@@ -290,7 +290,7 @@ public class ActivityServiceImpl implements ActivityService {
             switch (latestActivitySource) {
                 case 1:
                     //处理邀请返券活动
-                    userBizService.joinShareActivityProcess(uid, carRentalPackageOrderPo.getRentalPackageId());
+                    userBizService.joinShareActivityProcess(userInfo, carRentalPackageOrderPo.getRentalPackageId());
                     break;
                 case 2:
                     //处理邀请返现活动

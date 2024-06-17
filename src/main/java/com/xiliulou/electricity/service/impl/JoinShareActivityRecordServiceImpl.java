@@ -108,6 +108,13 @@ public class JoinShareActivityRecordServiceImpl implements JoinShareActivityReco
             log.error("joinActivity  ERROR! not found Activity ! ActivityId:{} ", activityId);
             return R.fail("ELECTRICITY.00106", "活动已下架");
         }
+        
+        // 加盟商校验
+        Integer activityFranchiseeId = shareActivity.getFranchiseeId();
+        if (!isSameFranchisee(activityFranchiseeId, userInfo)) {
+            log.error("joinActivity  ERROR! not same franchisee! ActivityId={}, uid={} ", activityId, user.getUid());
+            return R.fail("120127", "所属加盟商不一致，无法参与活动");
+        }
     
         //查找分享的用户
         User oldUser = userService.queryByUidFromCache(uid);
@@ -154,7 +161,6 @@ public class JoinShareActivityRecordServiceImpl implements JoinShareActivityReco
         joinShareActivityRecord.setTenantId(tenantId);
         joinShareActivityRecord.setStatus(JoinShareActivityRecord.STATUS_INIT);
         joinShareActivityRecord.setActivityId(activityId);
-        joinShareActivityRecordMapper.insert(joinShareActivityRecord);
     
         //新增邀请历史记录
         JoinShareActivityHistory joinShareActivityHistory = new JoinShareActivityHistory();
@@ -168,12 +174,33 @@ public class JoinShareActivityRecordServiceImpl implements JoinShareActivityReco
         joinShareActivityHistory.setTenantId(tenantId);
         joinShareActivityHistory.setStatus(JoinShareActivityHistory.STATUS_INIT);
         joinShareActivityHistory.setActivityId(joinShareActivityRecord.getActivityId());
+        
+        if (nonFranchisee(activityFranchiseeId)) {
+            joinShareActivityRecord.setFranchiseeId(activityFranchiseeId.longValue());
+            joinShareActivityHistory.setFranchiseeId(activityFranchiseeId.longValue());
+        }
+    
+        joinShareActivityRecordMapper.insert(joinShareActivityRecord);
         joinShareActivityHistoryService.insert(joinShareActivityHistory);
     
         // 530会员扩展表更新最新参与活动类型
         userInfoExtraService.updateByUid(UserInfoExtra.builder().uid(user.getUid()).latestActivitySource(UserInfoActivitySourceEnum.SUCCESS_SHARE_ACTIVITY.getCode()).build());
     
         return R.ok();
+    }
+    
+    private boolean isSameFranchisee(Integer activityFranchiseeId, UserInfo userInfo) {
+        Long userInfoFranchiseeId = userInfo.getFranchiseeId();
+        
+        if (nonFranchisee(activityFranchiseeId) && Objects.nonNull(userInfoFranchiseeId) && !Objects.equals(userInfoFranchiseeId, NumberConstant.ZERO_L)) {
+            return Objects.equals(activityFranchiseeId.longValue(), userInfoFranchiseeId);
+        }
+        
+        return false;
+    }
+    
+    private boolean nonFranchisee(Integer activityFranchiseeId) {
+        return Objects.nonNull(activityFranchiseeId) && !Objects.equals(activityFranchiseeId, NumberConstant.ZERO);
     }
 
     @Override

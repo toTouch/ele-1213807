@@ -8,6 +8,7 @@ import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
+import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mapper.ShareActivityRecordMapper;
 import com.xiliulou.electricity.query.ShareActivityRecordQuery;
@@ -81,6 +82,9 @@ public class ShareActivityRecordServiceImpl implements ShareActivityRecordServic
     
     @Autowired
     private AssertPermissionService assertPermissionService;
+    
+    @Resource
+    private UserInfoService userInfoService;
 
 
     /**
@@ -180,6 +184,12 @@ public class ShareActivityRecordServiceImpl implements ShareActivityRecordServic
             shareActivityRecord.setCreateTime(System.currentTimeMillis());
             shareActivityRecord.setUpdateTime(System.currentTimeMillis());
             shareActivityRecord.setStatus(ShareActivityRecord.STATUS_INIT);
+    
+            Long franchiseeId = getFranchiseeId(user.getUid());
+            if (Objects.nonNull(franchiseeId)) {
+                shareActivityRecord.setFranchiseeId(franchiseeId);
+            }
+            
             shareActivityRecordMapper.insert(shareActivityRecord);
         }
 
@@ -218,6 +228,14 @@ public class ShareActivityRecordServiceImpl implements ShareActivityRecordServic
         shareActivityRecordMapper.updateById(newShareActivityRecord);
         return R.ok(getShareUrlPair.getRight());
 
+    }
+    
+    private Long getFranchiseeId(Long uid) {
+        UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
+        if (Objects.isNull(userInfo) || Objects.isNull(userInfo.getFranchiseeId()) || Objects.equals(userInfo.getFranchiseeId(), NumberConstant.ZERO_L)) {
+            return null;
+        }
+        return userInfo.getFranchiseeId();
     }
 
     @Override
