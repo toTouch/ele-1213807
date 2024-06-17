@@ -167,7 +167,8 @@ public class JsonMerchantPlaceController extends BaseController {
      */
     @GetMapping("/admin/merchant/place/pageCount")
     public R pageCount(@RequestParam(value = "name", required = false) String name, @RequestParam(value = "merchantAreaId", required = false) Long merchantAreaId,
-            @RequestParam(value = "merchantId", required = false) Long merchantId, @RequestParam(value = "idList", required = false) List<Long> idList) {
+            @RequestParam(value = "merchantId", required = false) Long merchantId, @RequestParam(value = "idList", required = false) List<Long> idList,
+            @RequestParam(value = "franchiseeId", required = false) Long franchiseeId) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
@@ -177,7 +178,6 @@ public class JsonMerchantPlaceController extends BaseController {
             return R.fail("ELECTRICITY.0066", "用户权限不足");
         }
     
-        Long franchiseeId = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
             List<Long> franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
             if (org.apache.commons.collections.CollectionUtils.isEmpty(franchiseeIds)) {
@@ -204,7 +204,7 @@ public class JsonMerchantPlaceController extends BaseController {
     @GetMapping("/admin/merchant/place/page")
     public R page(@RequestParam("size") long size, @RequestParam("offset") long offset, @RequestParam(value = "name", required = false) String name,
             @RequestParam(value = "merchantAreaId", required = false) Long merchantAreaId, @RequestParam(value = "merchantId", required = false) Long merchantId,
-            @RequestParam(value = "idList", required = false) List<Long> idList) {
+            @RequestParam(value = "idList", required = false) List<Long> idList, @RequestParam(value = "franchiseeId", required = false) Long franchiseeId) {
         if (size < 0 || size > 50) {
             size = 10L;
         }
@@ -222,7 +222,6 @@ public class JsonMerchantPlaceController extends BaseController {
             return R.fail("ELECTRICITY.0066", "用户权限不足");
         }
     
-        Long franchiseeId = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
             List<Long> franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
             if (org.apache.commons.collections.CollectionUtils.isEmpty(franchiseeIds)) {

@@ -311,6 +311,11 @@ public class MerchantPlaceServiceImpl implements MerchantPlaceService {
         for (MerchantPlace merchantPlace : merchantPlaceList) {
             MerchantPlaceVO merchantPlaceVO = new MerchantPlaceVO();
             BeanUtils.copyProperties(merchantPlace, merchantPlaceVO);
+    
+            Franchisee franchisee = franchiseeService.queryByIdFromCache(merchantPlace.getFranchiseeId());
+            Optional.ofNullable(franchisee).ifPresent(f -> {
+                merchantPlaceVO.setFranchiseeName(f.getName());
+            });
             
             // 查询
             resList.add(merchantPlaceVO);
