@@ -74,7 +74,7 @@ public class JsonAdminCouponIssueOperateRecordController {
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
             franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
             if (CollectionUtils.isEmpty(franchiseeIds)) {
-                return R.ok(Collections.EMPTY_LIST);
+                return R.ok(Collections.emptyList());
             }
         }
 
@@ -114,7 +114,7 @@ public class JsonAdminCouponIssueOperateRecordController {
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
             franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
             if (CollectionUtils.isEmpty(franchiseeIds)) {
-                return R.ok(Collections.EMPTY_LIST);
+                return R.ok();
             }
         }
 

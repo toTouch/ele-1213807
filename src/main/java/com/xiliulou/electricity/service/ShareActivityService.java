@@ -50,7 +50,7 @@ public interface ShareActivityService {
 
     ShareActivity queryByStatus(Integer activityId);
 
-    Triple<Boolean, String, Object> shareActivityDetail(Integer id);
+    Triple<Boolean, String, Object> shareActivityDetail(Integer id, Long franchiseeId);
 
     Triple<Boolean, String, Object> updateShareActivity(ShareActivityAddAndUpdateQuery shareActivityAddAndUpdateQuery, Long franchiseeId);
     
@@ -70,5 +70,5 @@ public interface ShareActivityService {
      * @author <a href="mailto:wxblifeng@163.com">PeakLee</a>
      * @since V1.0 2024/3/14
      */
-    R<?> removeById(Long id);
+    R<?> removeById(Long id, Long franchiseeId);
 }

@@ -264,7 +264,8 @@ public class JsonAdminCouponController extends BaseController {
                     .size(size)
                     .delFlag(BatteryMemberCard.DEL_NORMAL)
                     .status(BatteryMemberCard.STATUS_UP)
-                    .tenantId(TenantContextHolder.getTenantId()).franchiseeId(franchiseeId).build();
+                    .tenantId(TenantContextHolder.getTenantId())
+                    .franchiseeId(franchiseeId).build();
             return R.ok(batteryMemberCardService.selectByQuery(query));
         }else{
             CarRentalPackageQryModel qryModel = new CarRentalPackageQryModel();

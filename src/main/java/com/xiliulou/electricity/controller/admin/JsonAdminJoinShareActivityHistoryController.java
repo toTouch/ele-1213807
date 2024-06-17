@@ -9,6 +9,7 @@ import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -48,13 +49,29 @@ public class JsonAdminJoinShareActivityHistoryController {
             @RequestParam(value = "beginTime", required = false) Long beginTime,
             @RequestParam(value = "endTime", required = false) Long endTime,
             @RequestParam(value = "status", required = false) Integer status) {
-
 		if (size < 0 || size > 50) {
 			size = 10L;
 		}
 
 		if (offset < 0) {
 			offset = 0L;
+		}
+		
+		TokenUser user = SecurityUtils.getUserInfo();
+		if (Objects.isNull(user)) {
+			return R.fail("ELECTRICITY.0001", "未找到用户");
+		}
+		
+		if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE) || Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE))) {
+			return R.ok();
+		}
+		
+		List<Long> franchiseeIds = null;
+		if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+			franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+			if (CollectionUtils.isEmpty(franchiseeIds)) {
+				return R.ok();
+			}
 		}
 
 		//租户
@@ -64,6 +81,7 @@ public class JsonAdminJoinShareActivityHistoryController {
 				.offset(offset)
 				.size(size).tenantId(tenantId).id(id).joinName(joinName).status(status)
                 .startTime(beginTime).endTime(endTime)
+				.franchiseeIds(franchiseeIds)
                 .build();
 		return joinShareActivityHistoryService.queryList(jsonShareActivityHistoryQuery);
 	}
@@ -75,13 +93,29 @@ public class JsonAdminJoinShareActivityHistoryController {
             @RequestParam(value = "beginTime", required = false) Long beginTime,
             @RequestParam(value = "endTime", required = false) Long endTime,
             @RequestParam(value = "status", required = false) Integer status) {
+	    TokenUser user = SecurityUtils.getUserInfo();
+	    if (Objects.isNull(user)) {
+		    return R.fail("ELECTRICITY.0001", "未找到用户");
+	    }
+	
+	    if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE) || Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE))) {
+		    return R.ok();
+	    }
+	
+	    List<Long> franchiseeIds = null;
+	    if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+		    franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+		    if (CollectionUtils.isEmpty(franchiseeIds)) {
+			    return R.ok();
+		    }
+	    }
         
         //租户
         Integer tenantId = TenantContextHolder.getTenantId();
         
         JsonShareActivityHistoryQuery jsonShareActivityHistoryQuery = JsonShareActivityHistoryQuery.builder()
                 .tenantId(tenantId).id(id).joinName(joinName).status(status)
-                .startTime(beginTime).endTime(endTime).build();
+                .startTime(beginTime).endTime(endTime).franchiseeIds(franchiseeIds).build();
         return joinShareActivityHistoryService.queryCount(jsonShareActivityHistoryQuery);
     }
 
@@ -90,7 +124,7 @@ public class JsonAdminJoinShareActivityHistoryController {
 	 * @param size
 	 * @param offset
 	 * @param joinName
-	 * @param phone
+	 * @param joinPhone
 	 * @param activityName
 	 * @param beginTime
 	 * @param endTime

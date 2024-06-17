@@ -41,7 +41,8 @@ public class JsonAdminShareActivityRecordController {
             @RequestParam(value = "name", required = false) String name,
 			@RequestParam(value = "uid", required = false) Long uid,
             @RequestParam(value = "beginTime", required = false) Long beginTime,
-            @RequestParam(value = "endTime", required = false) Long endTime) {
+            @RequestParam(value = "endTime", required = false) Long endTime,
+			@RequestParam(value = "franchiseeId", required = false) Long franchiseeId) {
 		if (size < 0 || size > 50) {
 			size = 10L;
 		}
@@ -81,7 +82,8 @@ public class JsonAdminShareActivityRecordController {
 				.franchiseeIds(franchiseeIds)
 				.tenantId(TenantContextHolder.getTenantId())
 				.startTime(beginTime)
-				.endTime(endTime).build();
+				.endTime(endTime)
+				.franchiseeId(franchiseeId).build();
 
 		return shareActivityRecordService.queryList(shareActivityRecordQuery);
 	}

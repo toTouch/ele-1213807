@@ -236,6 +236,11 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 		if(Objects.equals( shareActivityAddAndUpdateQuery.getReceiveType(), ShareActivity.RECEIVE_TYPE_CYCLE) && shareActivityAddAndUpdateQuery.getShareActivityRuleQueryList().size()>1){
 			return R.fail("", "活动规则不合法！");
 		}
+		
+		// 邀请标准：去掉实名认证，统一为 购买套餐
+		if (ActivityEnum.INVITATION_CRITERIA_REAL_NAME.getCode().equals(shareActivityAddAndUpdateQuery.getInvitationCriteria())) {
+			shareActivityAddAndUpdateQuery.setInvitationCriteria(ActivityEnum.INVITATION_CRITERIA_BUY_PACKAGE.getCode());
+		}
 
 		//检查所选套餐是否可用
 		if(ActivityEnum.INVITATION_CRITERIA_BUY_PACKAGE.getCode().equals(shareActivityAddAndUpdateQuery.getInvitationCriteria())){
@@ -825,10 +830,17 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 	}
 
 	@Override
-	public Triple<Boolean, String, Object> shareActivityDetail(Integer id) {
+	public Triple<Boolean, String, Object> shareActivityDetail(Integer id, Long franchiseeId) {
 		ShareActivity shareActivity = this.queryByIdFromCache(id);
 		if (Objects.isNull(shareActivity) || !Objects.equals(shareActivity.getTenantId(), TenantContextHolder.getTenantId())) {
 			return Triple.of(false, "ELECTRICITY.0069", "未找到活动");
+		}
+		
+		if (Objects.nonNull(franchiseeId)) {
+			if (Objects.isNull(shareActivity.getFranchiseeId()) || !Objects.equals(franchiseeId, shareActivity.getFranchiseeId().longValue())) {
+				log.warn("Query activity detail ERROR! not the same franchiseeId, ActivityId={}", id);
+				return Triple.of(false, "ELECTRICITY.0069", "未找到活动");
+			}
 		}
 
 		ShareActivityVO shareActivityVO = new ShareActivityVO();
@@ -1033,8 +1045,8 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 	public R checkExistActivity() {
 		ShareMoneyAndShareActivityVO shareActivityVO = new ShareMoneyAndShareActivityVO();
 		//查询该租户是否有邀请活动，
-		Integer shareMoeneyActivityCount = shareMoneyActivityService.existShareMoneyActivity(TenantContextHolder.getTenantId());
-		if (Objects.nonNull(shareMoeneyActivityCount)) {
+		Integer shareMoneyActivityCount = shareMoneyActivityService.existShareMoneyActivity(TenantContextHolder.getTenantId());
+		if (Objects.nonNull(shareMoneyActivityCount)) {
 			shareActivityVO.setExistShareMoneyActivity(Boolean.TRUE);
 		}else {
 			shareActivityVO.setExistShareMoneyActivity(Boolean.FALSE);
@@ -1066,19 +1078,29 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 	 * @since V1.0 2024/3/14
 	 */
 	@Override
-	public R<?> removeById(Long id) {
+	public R<?> removeById(Long id, Long franchiseeId) {
 		ShareActivity shareActivity = this.queryByIdFromCache(Math.toIntExact(id));
 		if (Objects.isNull(shareActivity)) {
-			log.error("delete Activity  ERROR! not found Activity ! ActivityId:{} ", id);
+			log.warn("delete Activity  ERROR! not found Activity ! ActivityId={} ", id);
 			return R.fail("ELECTRICITY.0069", "未找到活动");
 		}
+		
+		if (Objects.nonNull(franchiseeId)) {
+			if (Objects.isNull(shareActivity.getFranchiseeId()) || !Objects.equals(franchiseeId, shareActivity.getFranchiseeId().longValue())) {
+				log.warn("delete Activity  ERROR! not found Activity ! ActivityId={}", id);
+				return R.fail("ELECTRICITY.0069", "未找到活动");
+			}
+		}
+		
 		int count = this.shareActivityMapper.removeById(id,TenantContextHolder.getTenantId().longValue());
 		DbUtils.dbOperateSuccessThenHandleCache(Math.toIntExact(id),(identification)->{
 			redisService.delete(CacheConstant.SHARE_ACTIVITY_CACHE + identification);
 		});
+		
 		if (Objects.equals(shareActivity.getStatus(),ShareActivity.STATUS_OFF)){
 			return R.ok(count);
 		}
+		
 		executorService.submit(()->{
 			//修改邀请状态
 			JoinShareActivityRecord joinShareActivityRecord = new JoinShareActivityRecord();
