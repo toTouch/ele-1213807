@@ -396,20 +396,6 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
         wechatV3OrderQuery.setCommonRequest(ElectricityPayParamsConverter.qryDetailsToCommonRequest(wechatPayParamsDetails));
         log.info("wechatV3OrderQuery is -->{}", wechatV3OrderQuery);
         return wechatV3JsapiInvokeService.order(wechatV3OrderQuery);
-        
-        // WechatV3OrderQuery wechatV3OrderQuery = new WechatV3OrderQuery();
-        // wechatV3OrderQuery.setOrderId(unionTradeOrder.getTradeOrderNo());
-        // wechatV3OrderQuery.setTenantId(unionTradeOrder.getTenantId());
-        // wechatV3OrderQuery.setNotifyUrl(wechatConfig.getPayCallBackUrl() + unionTradeOrder.getTenantId());
-        // wechatV3OrderQuery.setExpireTime(System.currentTimeMillis() + 3600000);
-        // wechatV3OrderQuery.setOpenId(openId);
-        // wechatV3OrderQuery.setDescription(unionPayOrder.getDescription());
-        // wechatV3OrderQuery.setCurrency("CNY");
-        // wechatV3OrderQuery.setAttach(unionPayOrder.getAttach());
-        // wechatV3OrderQuery.setAmount(unionPayOrder.getPayAmount().multiply(new BigDecimal(100)).intValue());
-        // wechatV3OrderQuery.setAppid(electricityPayParams.getMerchantMinProAppId());
-        // log.info("wechatV3OrderQuery is -->{}", wechatV3OrderQuery);
-        // return wechatV3JsapiService.order(wechatV3OrderQuery);
     }
     
     /**

@@ -8,8 +8,10 @@ import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
+import com.xiliulou.electricity.bo.wechat.WechatPayParamsDetails;
 import com.xiliulou.electricity.config.WechatConfig;
 import com.xiliulou.electricity.constant.UserOperateRecordConstant;
+import com.xiliulou.electricity.converter.ElectricityPayParamsConverter;
 import com.xiliulou.electricity.entity.BatteryMembercardRefundOrder;
 import com.xiliulou.electricity.entity.CarDepositOrder;
 import com.xiliulou.electricity.entity.EleDepositOrder;
@@ -65,6 +67,7 @@ import com.xiliulou.electricity.service.UserCarMemberCardService;
 import com.xiliulou.electricity.service.UserCarService;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.UserService;
+import com.xiliulou.electricity.service.WechatPayParamsBizService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseChannelUserService;
 import com.xiliulou.electricity.service.userinfo.userInfoGroup.UserInfoGroupDetailService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
@@ -82,6 +85,8 @@ import com.xiliulou.pay.weixinv3.dto.WechatJsapiRefundResultDTO;
 import com.xiliulou.pay.weixinv3.exception.WechatPayException;
 import com.xiliulou.pay.weixinv3.query.WechatV3RefundQuery;
 import com.xiliulou.pay.weixinv3.service.WechatV3JsapiService;
+import com.xiliulou.pay.weixinv3.v2.query.WechatV3RefundRequest;
+import com.xiliulou.pay.weixinv3.v2.service.WechatV3JsapiInvokeService;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
@@ -215,6 +220,12 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
     @Autowired
     private FranchiseeServiceImpl franchiseeService;
     
+    @Resource
+    private WechatV3JsapiInvokeService wechatV3JsapiInvokeService;
+    
+    @Resource
+    private WechatPayParamsBizService wechatPayParamsBizService;
+    
     /**
      * 新增数据
      *
@@ -251,7 +262,8 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
     }
     
     @Override
-    public WechatJsapiRefundResultDTO commonCreateRefundOrder(RefundOrder refundOrder, HttpServletRequest request) throws WechatPayException {
+    public WechatJsapiRefundResultDTO commonCreateRefundOrder(RefundOrder refundOrder, WechatPayParamsDetails wechatPayParamsDetails, HttpServletRequest request)
+            throws WechatPayException {
         
         // 第三方订单号
         ElectricityTradeOrder electricityTradeOrder = electricityTradeOrderService.selectTradeOrderByOrderId(refundOrder.getOrderId());
@@ -273,17 +285,17 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
         }
         
         // 退款
-        WechatV3RefundQuery wechatV3RefundQuery = new WechatV3RefundQuery();
-        wechatV3RefundQuery.setTenantId(electricityTradeOrder.getTenantId());
-        wechatV3RefundQuery.setTotal(total);
-        wechatV3RefundQuery.setRefund(refundOrder.getRefundAmount().multiply(new BigDecimal(100)).intValue());
-        wechatV3RefundQuery.setReason("退款");
-        wechatV3RefundQuery.setOrderId(tradeOrderNo);
-        wechatV3RefundQuery.setNotifyUrl(wechatConfig.getRefundCallBackUrl() + electricityTradeOrder.getTenantId());
-        wechatV3RefundQuery.setCurrency("CNY");
-        wechatV3RefundQuery.setRefundId(refundOrder.getRefundOrderNo());
+        WechatV3RefundRequest wechatV3RefundRequest = new WechatV3RefundRequest();
+        wechatV3RefundRequest.setRefundId(refundOrder.getRefundOrderNo());
+        wechatV3RefundRequest.setOrderId(tradeOrderNo);
+        wechatV3RefundRequest.setReason("退款");
+        wechatV3RefundRequest.setNotifyUrl(wechatConfig.getRefundCallBackUrl() + electricityTradeOrder.getTenantId() + "/" + electricityTradeOrder.getFranchiseeId());
+        wechatV3RefundRequest.setRefund(refundOrder.getRefundAmount().multiply(new BigDecimal(100)).intValue());
+        wechatV3RefundRequest.setTotal(total);
+        wechatV3RefundRequest.setCurrency("CNY");
+        wechatV3RefundRequest.setCommonRequest(ElectricityPayParamsConverter.qryDetailsToCommonRequest(wechatPayParamsDetails));
         
-        return wechatV3JsapiService.refund(wechatV3RefundQuery);
+        return wechatV3JsapiInvokeService.refund(wechatV3RefundRequest);
     }
     
     @Override
@@ -447,7 +459,8 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
     
     @Override
     //    @Transactional(rollbackFor = Exception.class)
-    public Triple<Boolean, String, Object> handleRefundOrder(String refundOrderNo, String errMsg, Integer status, BigDecimal refundAmount, Long uid, HttpServletRequest request) {
+    public Triple<Boolean, String, Object> handleRefundOrder(String refundOrderNo, String errMsg, Integer status, BigDecimal refundAmount, Long uid, Integer offlineRefund,
+            HttpServletRequest request) {
         
         EleRefundOrder eleRefundOrder = eleRefundOrderMapper.selectOne(
                 new LambdaQueryWrapper<EleRefundOrder>().eq(EleRefundOrder::getRefundOrderNo, refundOrderNo).eq(EleRefundOrder::getTenantId, TenantContextHolder.getTenantId())
@@ -515,11 +528,27 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             return handleBatteryZeroDepositRefundOrder(eleRefundOrderUpdate, userInfo);
         }
         
+        // 加盟商支付配置已删除，线下退款，不调起微信退款
+        if (Objects.equals(offlineRefund, 1)) {
+            eleRefundOrder.setStatus(EleRefundOrder.STATUS_SUCCESS);
+            eleRefundOrder.setRefundAmount(refundAmount);
+            eleRefundOrderService.insert(eleRefundOrder);
+            log.info("OFFLINE REFUND COMPLETED! refundOrderNo={}", eleRefundOrder.getRefundOrderNo());
+            return Triple.of(true, "", null);
+        }
+        
+        WechatPayParamsDetails wechatPayParamsDetails = wechatPayParamsBizService.getDetailsByIdTenantIdAndFranchiseeId(TenantContextHolder.getTenantId(),
+                eleRefundOrder.getFranchiseeId());
+        if (Objects.isNull(wechatPayParamsDetails)) {
+            log.warn("BATTERY DEPOSIT WARN!not found pay params,refundOrderNo={}", eleRefundOrder.getRefundOrderNo());
+            return Triple.of(false,"100307", "未配置支付参数!");
+        }
+        
         try {
             RefundOrder refundOrder = RefundOrder.builder().orderId(eleRefundOrder.getOrderId()).refundOrderNo(eleRefundOrder.getRefundOrderNo())
                     .payAmount(eleRefundOrder.getPayAmount()).refundAmount(eleRefundOrderUpdate.getRefundAmount()).build();
             
-            eleRefundOrderService.commonCreateRefundOrder(refundOrder, request);
+            eleRefundOrderService.commonCreateRefundOrder(refundOrder, wechatPayParamsDetails, request);
             
             eleRefundOrderUpdate.setStatus(EleRefundOrder.STATUS_REFUND);
             eleRefundOrderUpdate.setUpdateTime(System.currentTimeMillis());
@@ -1556,7 +1585,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
     
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public R batteryOffLineRefund(String errMsg, BigDecimal refundAmount, Long uid, Integer refundType) {
+    public R batteryOffLineRefund(String errMsg, BigDecimal refundAmount, Long uid, Integer refundType, Integer offlineRefund) {
         
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
@@ -1757,13 +1786,29 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
                 return R.ok();
             }
             
+            // 加盟商支付配置已删除，线下退款，不调起微信退款
+            if (Objects.equals(offlineRefund, 1)) {
+                eleRefundOrder.setStatus(EleRefundOrder.STATUS_SUCCESS);
+                eleRefundOrder.setRefundAmount(refundAmount);
+                eleRefundOrderService.insert(eleRefundOrder);
+                log.info("OFFLINE REFUND COMPLETED! refundOrderNo={}", eleRefundOrder.getRefundOrderNo());
+                return R.ok();
+            }
+            
+            WechatPayParamsDetails wechatPayParamsDetails = wechatPayParamsBizService.getDetailsByIdTenantIdAndFranchiseeId(TenantContextHolder.getTenantId(),
+                    eleDepositOrder.getFranchiseeId());
+            if (Objects.isNull(wechatPayParamsDetails)) {
+                log.warn("BATTERY DEPOSIT WARN!not found pay params,refundOrderNo={}", eleRefundOrder.getRefundOrderNo());
+                return R.fail("100307", "未配置支付参数!");
+            }
+            
             // 调起退款
             try {
                 
                 RefundOrder refundOrder = RefundOrder.builder().orderId(eleRefundOrder.getOrderId()).refundOrderNo(eleRefundOrder.getRefundOrderNo())
                         .payAmount(eleDepositOrder.getPayAmount()).refundAmount(refundAmount).build();
                 
-                eleRefundOrderService.commonCreateRefundOrder(refundOrder, null);
+                eleRefundOrderService.commonCreateRefundOrder(refundOrder, wechatPayParamsDetails, null);
                 // 提交成功
                 eleRefundOrder.setStatus(EleRefundOrder.STATUS_REFUND);
                 eleRefundOrder.setRefundAmount(refundAmount);

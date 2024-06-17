@@ -122,7 +122,8 @@ public class JsonAdminBatteryMembercardRefundOrderController extends BaseControl
     @PostMapping("/admin/battery/membercard/refund/audit")
     @Log(title = "电池租金退款审核")
     public R batteryMembercardRefundAudit(@RequestParam("refundOrderNo") String refundOrderNo, @RequestParam("refundAmount") BigDecimal refundAmount,
-            @RequestParam("status") Integer status, @RequestParam(value = "errMsg", required = false) String errMsg, HttpServletRequest request) {
+            @RequestParam("status") Integer status, @RequestParam(value = "errMsg", required = false) String errMsg, HttpServletRequest request,
+            @RequestParam(value = "offlineRefund", required = false) Integer offlineRefund) {
         return returnTripleResult(batteryMembercardRefundOrderService.batteryMembercardRefundAudit(refundOrderNo, errMsg, refundAmount, status, request));
     }
     
