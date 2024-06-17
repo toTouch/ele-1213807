@@ -835,7 +835,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
                 return R.fail("100240", usableEmptyCellNo.getRight());
             }
             
-            String cellNo = usableEmptyCellNo.getRight().toString();
+            String cellNo = usableEmptyCellNo.getMiddle().toString();
             
             String orderId = OrderIdUtil.generateBusinessOrderId(BusinessType.RETURN_BATTERY, user.getUid());
             
