@@ -16,7 +16,6 @@ import com.xiliulou.electricity.entity.EleRefundOrder;
 import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
-import com.xiliulou.electricity.entity.ElectricityPayParams;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.FranchiseeInsurance;
 import com.xiliulou.electricity.entity.InsuranceOrder;
@@ -343,7 +342,7 @@ public class TradeOrderServiceImpl implements TradeOrderService {
             }
             
             // 押金订单
-            Triple<Boolean, String, Object> generateDepositOrderResult = generateDepositOrder(userInfo, batteryMemberCard, electricityCabinet);
+            Triple<Boolean, String, Object> generateDepositOrderResult = generateDepositOrder(userInfo, batteryMemberCard, electricityCabinet, wechatPayParamsDetails);
             if (Boolean.FALSE.equals(generateDepositOrderResult.getLeft())) {
                 return generateDepositOrderResult;
             }
@@ -351,13 +350,14 @@ public class TradeOrderServiceImpl implements TradeOrderService {
             // 套餐订单
             Set<Integer> userCouponIds = electricityMemberCardOrderService.generateUserCouponIds(integratedPaymentAdd.getUserCouponId(), integratedPaymentAdd.getUserCouponIds());
             Triple<Boolean, String, Object> generateMemberCardOrderResult = generateMemberCardOrder(userInfo, batteryMemberCard, integratedPaymentAdd, userCouponIds,
-                    electricityCabinet);
+                    electricityCabinet, wechatPayParamsDetails);
             if (Boolean.FALSE.equals(generateMemberCardOrderResult.getLeft())) {
                 return generateMemberCardOrderResult;
             }
             
             // 保险订单
-            Triple<Boolean, String, Object> generateInsuranceOrderResult = generateInsuranceOrder(userInfo, integratedPaymentAdd.getInsuranceId(), electricityCabinet);
+            Triple<Boolean, String, Object> generateInsuranceOrderResult = generateInsuranceOrder(userInfo, integratedPaymentAdd.getInsuranceId(), electricityCabinet,
+                    wechatPayParamsDetails);
             if (Boolean.FALSE.equals(generateInsuranceOrderResult.getLeft())) {
                 return generateInsuranceOrderResult;
             }
@@ -558,13 +558,13 @@ public class TradeOrderServiceImpl implements TradeOrderService {
             }
             
             // 套餐订单
-            Triple<Boolean, String, Object> generateMemberCardOrderResult = generateMemberCardOrder(userInfo, batteryMemberCard, query, electricityCabinet);
+            Triple<Boolean, String, Object> generateMemberCardOrderResult = generateMemberCardOrder(userInfo, batteryMemberCard, query, electricityCabinet, wechatPayParamsDetails);
             if (Boolean.FALSE.equals(generateMemberCardOrderResult.getLeft())) {
                 return generateMemberCardOrderResult;
             }
             
             // 保险订单
-            Triple<Boolean, String, Object> generateInsuranceOrderResult = generateInsuranceOrder(userInfo, query.getInsuranceId(), electricityCabinet);
+            Triple<Boolean, String, Object> generateInsuranceOrderResult = generateInsuranceOrder(userInfo, query.getInsuranceId(), electricityCabinet, wechatPayParamsDetails);
             if (Boolean.FALSE.equals(generateInsuranceOrderResult.getLeft())) {
                 return generateInsuranceOrderResult;
             }
@@ -997,20 +997,22 @@ public class TradeOrderServiceImpl implements TradeOrderService {
         return Triple.of(true, null, null);
     }
     
-    private Triple<Boolean, String, Object> generateDepositOrder(UserInfo userInfo, BatteryMemberCard batteryMemberCard, ElectricityCabinet electricityCabinet) {
+    private Triple<Boolean, String, Object> generateDepositOrder(UserInfo userInfo, BatteryMemberCard batteryMemberCard, ElectricityCabinet electricityCabinet,
+            WechatPayParamsDetails wechatPayParamsDetails) {
         
         // 生成押金独立订单
         String depositOrderId = OrderIdUtil.generateBusinessOrderId(BusinessType.BATTERY_DEPOSIT, userInfo.getUid());
         EleDepositOrder eleDepositOrder = EleDepositOrder.builder().orderId(depositOrderId).uid(userInfo.getUid()).phone(userInfo.getPhone()).name(userInfo.getName())
                 .payAmount(batteryMemberCard.getDeposit()).status(EleDepositOrder.STATUS_INIT).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis())
                 .tenantId(userInfo.getTenantId()).franchiseeId(batteryMemberCard.getFranchiseeId()).payType(EleDepositOrder.ONLINE_PAYMENT)
-                .storeId(Objects.nonNull(electricityCabinet) ? electricityCabinet.getStoreId() : userInfo.getStoreId()).mid(batteryMemberCard.getId()).modelType(0).build();
+                .storeId(Objects.nonNull(electricityCabinet) ? electricityCabinet.getStoreId() : userInfo.getStoreId()).mid(batteryMemberCard.getId()).modelType(0)
+                .paramFranchiseeId(wechatPayParamsDetails.getFranchiseeId()).wechatMerchantId(wechatPayParamsDetails.getWechatMerchantId()).build();
         
         return Triple.of(true, null, eleDepositOrder);
     }
     
     private Triple<Boolean, String, Object> generateMemberCardOrder(UserInfo userInfo, BatteryMemberCard batteryMemberCard, IntegratedPaymentAdd integratedPaymentAdd,
-            Set<Integer> userCouponIds, ElectricityCabinet electricityCabinet) {
+            Set<Integer> userCouponIds, ElectricityCabinet electricityCabinet, WechatPayParamsDetails wechatPayParamsDetails) {
         
         // 查找计算优惠券
         // 计算优惠后支付金额
@@ -1048,12 +1050,14 @@ public class TradeOrderServiceImpl implements TradeOrderService {
         electricityMemberCardOrder.setSource(Objects.nonNull(electricityCabinet) ? ElectricityMemberCardOrder.SOURCE_SCAN : ElectricityMemberCardOrder.SOURCE_NOT_SCAN);
         electricityMemberCardOrder.setStoreId(Objects.nonNull(electricityCabinet) ? electricityCabinet.getStoreId() : userInfo.getStoreId());
         electricityMemberCardOrder.setCouponIds(batteryMemberCard.getCouponIds());
+        electricityMemberCardOrder.setParamFranchiseeId(wechatPayParamsDetails.getFranchiseeId());
+        electricityMemberCardOrder.setWechatMerchantId(wechatPayParamsDetails.getWechatMerchantId());
         
         return Triple.of(true, null, electricityMemberCardOrder);
     }
     
     public Triple<Boolean, String, Object> generateMemberCardOrder(UserInfo userInfo, BatteryMemberCard batteryMemberCard, BatteryMemberCardAndInsuranceQuery query,
-            ElectricityCabinet electricityCabinet) {
+            ElectricityCabinet electricityCabinet, WechatPayParamsDetails wechatPayParamsDetails) {
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
         
         Triple<Boolean, Integer, BigDecimal> acquireUserBatteryServiceFeeResult = serviceFeeUserInfoService.acquireUserBatteryServiceFee(userInfo, userBatteryMemberCard,
@@ -1098,11 +1102,14 @@ public class TradeOrderServiceImpl implements TradeOrderService {
         electricityMemberCardOrder.setSource(Objects.nonNull(electricityCabinet) ? ElectricityMemberCardOrder.SOURCE_SCAN : ElectricityMemberCardOrder.SOURCE_NOT_SCAN);
         electricityMemberCardOrder.setStoreId(Objects.nonNull(electricityCabinet) ? electricityCabinet.getStoreId() : userInfo.getStoreId());
         electricityMemberCardOrder.setCouponIds(batteryMemberCard.getCouponIds());
+        electricityMemberCardOrder.setParamFranchiseeId(wechatPayParamsDetails.getFranchiseeId());
+        electricityMemberCardOrder.setWechatMerchantId(wechatPayParamsDetails.getWechatMerchantId());
         
         return Triple.of(true, null, electricityMemberCardOrder);
     }
     
-    private Triple<Boolean, String, Object> generateInsuranceOrder(UserInfo userInfo, Integer insuranceId, ElectricityCabinet electricityCabinet) {
+    private Triple<Boolean, String, Object> generateInsuranceOrder(UserInfo userInfo, Integer insuranceId, ElectricityCabinet electricityCabinet,
+            WechatPayParamsDetails wechatPayParamsDetails) {
         
         if (Objects.isNull(insuranceId)) {
             return Triple.of(true, "", null);
@@ -1133,7 +1140,8 @@ public class TradeOrderServiceImpl implements TradeOrderService {
                 .forehead(franchiseeInsurance.getForehead()).payType(InsuranceOrder.ONLINE_PAY_TYPE).phone(userInfo.getPhone()).status(InsuranceOrder.STATUS_INIT)
                 .storeId(Objects.nonNull(electricityCabinet) ? electricityCabinet.getStoreId() : userInfo.getStoreId()).tenantId(userInfo.getTenantId()).uid(userInfo.getUid())
                 .userName(userInfo.getName()).validDays(franchiseeInsurance.getValidDays()).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis())
-                .simpleBatteryType(franchiseeInsurance.getSimpleBatteryType()).build();
+                .simpleBatteryType(franchiseeInsurance.getSimpleBatteryType()).paramFranchiseeId(wechatPayParamsDetails.getFranchiseeId())
+                .wechatMerchantId(wechatPayParamsDetails.getWechatMerchantId()).build();
         
         return Triple.of(true, null, insuranceOrder);
     }

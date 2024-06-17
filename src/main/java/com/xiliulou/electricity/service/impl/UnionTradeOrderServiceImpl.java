@@ -360,6 +360,7 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
         unionTradeOrder.setTotalFee(unionPayOrder.getPayAmount());
         unionTradeOrder.setUid(unionPayOrder.getUid());
         unionTradeOrder.setTenantId(unionPayOrder.getTenantId());
+        unionTradeOrder.setParamFranchiseeId(wechatPayParamsDetails.getFranchiseeId());
         unionTradeOrder.setWechatMerchantId(wechatPayParamsDetails.getWechatMerchantId());
         baseMapper.insert(unionTradeOrder);
         
