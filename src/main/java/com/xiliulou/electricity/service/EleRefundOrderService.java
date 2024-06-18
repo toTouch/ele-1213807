@@ -50,19 +50,12 @@ public interface EleRefundOrderService {
     Pair<Boolean, Object> notifyDepositRefundOrder(WechatJsapiRefundOrderCallBackResource callBackResource);
 
     Triple<Boolean, String, Object> handleRefundOrder(String refundOrderNo, String errMsg, Integer status, BigDecimal refundAmount, Long uid, HttpServletRequest request);
-
-    R handleOffLineRefundRentCar(String refundOrderNo, String errMsg, Integer status, BigDecimal refundAmount, Long uid, HttpServletRequest request);
-
+    
     R queryUserDepositPayType(Long uid);
 
     R batteryOffLineRefund(String errMsg, BigDecimal refundAmount, Long uid, Integer refundType);
 
     R queryList(EleRefundQuery eleRefundQuery);
-
-
-    List<EleRefundOrderVO> selectCarRefundPageList(EleRefundQuery eleRefundQuery);
-
-    Integer selectCarRefundPageCount(EleRefundQuery eleRefundQuery);
 
     Integer queryCountByOrderId(String orderId, Integer refundOrderType);
 
@@ -104,12 +97,6 @@ public interface EleRefundOrderService {
     List<EleRefundOrder> selectCarFreeDepositRefundingOrder(int offset, Integer refundOrderLimit);
 
     Triple<Boolean, String, Object> batteryFreeDepostRefundAudit(String refundOrderNo, String errMsg, Integer status, BigDecimal refundAmount, Long uid);
-    
-    Triple<Boolean, String, Object> carRefundDepositReview(Long id, String errMsg, Integer status,
-            BigDecimal refundAmount, HttpServletRequest request);
-    
-    Triple<Boolean, String, Object> carFreeDepostRefundAudit(Long id, String errMsg, Integer status,
-            BigDecimal refundAmount);
 
     List<EleRefundOrder> selectByOrderId(String orderId);
 
@@ -118,8 +105,6 @@ public interface EleRefundOrderService {
     Integer existByOrderIdAndStatus(String orderId, List<Integer> statusList);
     
     List<EleRefundOrder> selectByOrderIdNoFilerStatus(String orderId);
-    
-    Triple<Boolean, String, Object> refund(BigDecimal refundAmount, Long uid, String orderId, HttpServletRequest request);
     
     EleRefundOrder queryLastByOrderId(String orderId);
     

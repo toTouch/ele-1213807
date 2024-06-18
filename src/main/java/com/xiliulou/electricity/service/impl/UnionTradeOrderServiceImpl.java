@@ -14,9 +14,7 @@ import com.xiliulou.electricity.constant.merchant.MerchantConstant;
 import com.xiliulou.electricity.dto.ActivityProcessDTO;
 import com.xiliulou.electricity.dto.DivisionAccountOrderDTO;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
-import com.xiliulou.electricity.entity.CarDepositOrder;
 import com.xiliulou.electricity.entity.CarLockCtrlHistory;
-import com.xiliulou.electricity.entity.CarMemberCardOrder;
 import com.xiliulou.electricity.entity.ChannelActivityHistory;
 import com.xiliulou.electricity.entity.EleBatteryServiceFeeOrder;
 import com.xiliulou.electricity.entity.EleDepositOrder;
@@ -68,9 +66,7 @@ import com.xiliulou.electricity.query.enterprise.EnterpriseChannelUserQuery;
 import com.xiliulou.electricity.service.ActivityService;
 import com.xiliulou.electricity.service.BatteryMemberCardOrderCouponService;
 import com.xiliulou.electricity.service.BatteryMemberCardService;
-import com.xiliulou.electricity.service.CarDepositOrderService;
 import com.xiliulou.electricity.service.CarLockCtrlHistoryService;
-import com.xiliulou.electricity.service.CarMemberCardOrderService;
 import com.xiliulou.electricity.service.ChannelActivityHistoryService;
 import com.xiliulou.electricity.service.DivisionAccountRecordService;
 import com.xiliulou.electricity.service.EleBatteryServiceFeeOrderService;
@@ -170,9 +166,6 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
     @Resource
     private CarRentalPackageOrderSlippageService carRentalPackageOrderSlippageService;
     
-    @Resource
-    UnionTradeOrderMapper unionTradeOrderMapper;
-    
     @Autowired
     WechatConfig wechatConfig;
     
@@ -246,13 +239,7 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
     UserAmountService userAmountService;
     
     @Autowired
-    CarDepositOrderService carDepositOrderService;
-    
-    @Autowired
     UserCarDepositService userCarDepositService;
-    
-    @Autowired
-    CarMemberCardOrderService carMemberCardOrderService;
     
     @Autowired
     UserCarMemberCardService userCarMemberCardService;
@@ -457,17 +444,9 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
                     return manageMemberCardOrderResult;
                 }
             } else if (Objects.equals(orderTypeList.get(i), UnionPayOrder.ORDER_TYPE_RENT_CAR_DEPOSIT)) {
-                //租车押金
-                Pair<Boolean, Object> rentCarDepositOrderResult = handleRentCarDepositOrder(orderIdLIst.get(i), depositOrderStatus);
-                if (!rentCarDepositOrderResult.getLeft()) {
-                    return rentCarDepositOrderResult;
-                }
+       
             } else if (Objects.equals(orderTypeList.get(i), UnionPayOrder.ORDER_TYPE_RENT_CAR_MEMBER_CARD)) {
-                //租车套餐
-                Pair<Boolean, Object> rentCarMemberCardOrderResult = handleRentCarMemberCardOrder(orderIdLIst.get(i), depositOrderStatus);
-                if (!rentCarMemberCardOrderResult.getLeft()) {
-                    return rentCarMemberCardOrderResult;
-                }
+
             }
         }
         
@@ -1759,164 +1738,6 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
         eleBatteryServiceFeeOrderUpdate.setPayTime(System.currentTimeMillis());
         eleBatteryServiceFeeOrderService.update(eleBatteryServiceFeeOrderUpdate);
     }
-    
-    /**
-     * 处理租车押金
-     *
-     * @return
-     */
-    public Pair<Boolean, Object> handleRentCarDepositOrder(String orderNo, Integer depositOrderStatus) {
-        
-        CarDepositOrder carDepositOrder = carDepositOrderService.selectByOrderId(orderNo);
-        if (Objects.isNull(carDepositOrder)) {
-            log.warn("WECHATV3 NOTIFY WARN!not found carDepositOrder,orderNo={}", orderNo);
-            return Pair.of(false, "未找到订单!");
-        }
-        if (!Objects.equals(carDepositOrder.getStatus(), CarDepositOrder.STATUS_INIT)) {
-            log.warn("WECHATV3 NOTIFY WARN!carDepositOrder status is not init,orderNo={}", orderNo);
-            return Pair.of(false, "订单已处理!");
-        }
-        
-        UserInfo userInfo = userInfoService.queryByUidFromCache(carDepositOrder.getUid());
-        if (Objects.isNull(userInfo)) {
-            log.warn("WECHATV3 NOTIFY WARN!userInfo is null,orderNo={},uid={}", orderNo, carDepositOrder.getUid());
-            return Pair.of(false, "用户不存在!");
-        }
-        
-        //支付成功
-        if (Objects.equals(depositOrderStatus, EleDepositOrder.STATUS_SUCCESS)) {
-            UserInfo updateUserInfo = new UserInfo();
-            updateUserInfo.setUid(userInfo.getUid());
-            updateUserInfo.setCarDepositStatus(UserInfo.CAR_DEPOSIT_STATUS_YES);
-            updateUserInfo.setFranchiseeId(carDepositOrder.getFranchiseeId());
-            updateUserInfo.setUpdateTime(System.currentTimeMillis());
-            userInfoService.updateByUid(updateUserInfo);
-            
-            UserCarDeposit userCarDeposit = new UserCarDeposit();
-            userCarDeposit.setUid(userInfo.getUid());
-            userCarDeposit.setDid(carDepositOrder.getId());
-            userCarDeposit.setOrderId(carDepositOrder.getOrderId());
-            userCarDeposit.setCarDeposit(carDepositOrder.getPayAmount());
-            userCarDeposit.setTenantId(userInfo.getTenantId());
-            userCarDeposit.setDelFlag(UserCarDeposit.DEL_NORMAL);
-            userCarDeposit.setApplyDepositTime(System.currentTimeMillis());
-            userCarDeposit.setDepositType(UserBatteryDeposit.DEPOSIT_TYPE_DEFAULT);
-            userCarDeposit.setCreateTime(System.currentTimeMillis());
-            userCarDeposit.setUpdateTime(System.currentTimeMillis());
-            userCarDepositService.insertOrUpdate(userCarDeposit);
-            
-            UserCar userCar = new UserCar();
-            userCar.setUid(userInfo.getUid());
-            userCar.setCarModel(carDepositOrder.getCarModelId());
-            userCar.setDelFlag(UserCar.DEL_NORMAL);
-            userCar.setTenantId(userInfo.getTenantId());
-            userCar.setCreateTime(System.currentTimeMillis());
-            userCar.setUpdateTime(System.currentTimeMillis());
-            userCarService.insertOrUpdate(userCar);
-        }
-        
-        //更新订单状态
-        CarDepositOrder updateCarDepositOrder = new CarDepositOrder();
-        updateCarDepositOrder.setId(carDepositOrder.getId());
-        updateCarDepositOrder.setStatus(depositOrderStatus);
-        updateCarDepositOrder.setUpdateTime(System.currentTimeMillis());
-        carDepositOrderService.update(updateCarDepositOrder);
-        return Pair.of(true, null);
-    }
-    
-    /**
-     * 处理租车套餐
-     *
-     * @return
-     */
-    public Pair<Boolean, Object> handleRentCarMemberCardOrder(String orderNo, Integer orderStatus) {
-        
-        CarMemberCardOrder carMemberCardOrder = carMemberCardOrderService.selectByOrderId(orderNo);
-        if (Objects.isNull(carMemberCardOrder)) {
-            log.warn("WECHATV3 NOTIFY WARN!not found carMemberCardOrder,orderNo={}", orderNo);
-            return Pair.of(false, "未找到订单!");
-        }
-        if (!Objects.equals(carMemberCardOrder.getStatus(), CarMemberCardOrder.STATUS_INIT)) {
-            log.warn("WECHATV3 NOTIFY WARN!carMemberCardOrder status is not init,orderNo={}", orderNo);
-            return Pair.of(false, "订单已处理!");
-        }
-        
-        UserInfo userInfo = userInfoService.queryByUidFromCache(carMemberCardOrder.getUid());
-        if (Objects.isNull(userInfo)) {
-            log.warn("WECHATV3 NOTIFY WARN!userInfo is null,orderNo={},uid={}", orderNo, carMemberCardOrder.getUid());
-            return Pair.of(false, "用户不存在!");
-        }
-        
-        if (Objects.equals(orderStatus, CarMemberCardOrder.STATUS_SUCCESS)) {
-            UserCarMemberCard userCarMemberCard = userCarMemberCardService.selectByUidFromCache(carMemberCardOrder.getUid());
-            
-            UserCarMemberCard updateUserCarMemberCard = new UserCarMemberCard();
-            updateUserCarMemberCard.setUid(userInfo.getUid());
-            updateUserCarMemberCard.setCardId(carMemberCardOrder.getId());
-            updateUserCarMemberCard.setOrderId(carMemberCardOrder.getOrderId());
-            updateUserCarMemberCard.setMemberCardExpireTime(
-                    electricityMemberCardOrderService.calcRentCarMemberCardExpireTime(carMemberCardOrder.getMemberCardType(), carMemberCardOrder.getValidDays(),
-                            userCarMemberCard));
-            updateUserCarMemberCard.setDelFlag(UserCarMemberCard.DEL_NORMAL);
-            updateUserCarMemberCard.setCreateTime(System.currentTimeMillis());
-            updateUserCarMemberCard.setUpdateTime(System.currentTimeMillis());
-            
-            userCarMemberCardService.insertOrUpdate(updateUserCarMemberCard);
-            
-            //用户是否有绑定了车辆
-            //            ElectricityCar electricityCar = electricityCarService.queryInfoByUid(userInfo.getUid());
-            //            ElectricityConfig electricityConfig = electricityConfigService
-            //                    .queryFromCacheByTenantId(userInfo.getTenantId());
-            //            if (Objects.nonNull(electricityCar) && Objects.nonNull(electricityConfig) && Objects
-            //                    .equals(electricityConfig.getIsOpenCarControl(), ElectricityConfig.ENABLE_CAR_CONTROL)
-            //                    && System.currentTimeMillis() < updateUserCarMemberCard.getMemberCardExpireTime()) {
-            //                electricityCarService.retryCarLockCtrl(electricityCar.getSn(), ElectricityCar.TYPE_UN_LOCK, 3);
-            //            }
-            
-            ElectricityCar electricityCar = electricityCarService.queryInfoByUid(userInfo.getUid());
-            ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(TenantContextHolder.getTenantId());
-            if (Objects.nonNull(electricityCar) && Objects.nonNull(electricityConfig) && Objects.equals(electricityConfig.getIsOpenCarControl(),
-                    ElectricityConfig.ENABLE_CAR_CONTROL) && System.currentTimeMillis() < updateUserCarMemberCard.getMemberCardExpireTime()) {
-                boolean boo = electricityCarService.retryCarLockCtrl(electricityCar.getSn(), ElectricityCar.TYPE_UN_LOCK, 3);
-                
-                CarLockCtrlHistory carLockCtrlHistory = new CarLockCtrlHistory();
-                carLockCtrlHistory.setUid(userInfo.getUid());
-                carLockCtrlHistory.setName(userInfo.getName());
-                carLockCtrlHistory.setPhone(userInfo.getPhone());
-                carLockCtrlHistory.setStatus(boo ? CarLockCtrlHistory.STATUS_UN_LOCK_SUCCESS : CarLockCtrlHistory.STATUS_UN_LOCK_FAIL);
-                carLockCtrlHistory.setType(CarLockCtrlHistory.TYPE_MEMBER_CARD_UN_LOCK);
-                carLockCtrlHistory.setCarModelId(electricityCar.getModelId().longValue());
-                carLockCtrlHistory.setCarModel(electricityCar.getModel());
-                carLockCtrlHistory.setCarId(electricityCar.getId().longValue());
-                carLockCtrlHistory.setCarSn(electricityCar.getSn());
-                carLockCtrlHistory.setCreateTime(System.currentTimeMillis());
-                carLockCtrlHistory.setUpdateTime(System.currentTimeMillis());
-                carLockCtrlHistory.setTenantId(TenantContextHolder.getTenantId());
-                carLockCtrlHistoryService.insert(carLockCtrlHistory);
-            }
-            
-            ChannelActivityHistory channelActivityHistory = channelActivityHistoryService.queryByUid(userInfo.getUid());
-            if (Objects.nonNull(channelActivityHistory) && Objects.equals(channelActivityHistory.getStatus(), ChannelActivityHistory.STATUS_INIT)) {
-                ChannelActivityHistory updateChannelActivityHistory = new ChannelActivityHistory();
-                updateChannelActivityHistory.setId(channelActivityHistory.getId());
-                updateChannelActivityHistory.setStatus(ChannelActivityHistory.STATUS_SUCCESS);
-                updateChannelActivityHistory.setUpdateTime(System.currentTimeMillis());
-                channelActivityHistoryService.update(updateChannelActivityHistory);
-            }
-            
-            //租车套餐分帐
-            divisionAccountRecordService.handleCarMembercardDivisionAccount(carMemberCardOrder);
-        }
-        
-        CarMemberCardOrder updateCarMemberCardOrder = new CarMemberCardOrder();
-        updateCarMemberCardOrder.setId(carMemberCardOrder.getId());
-        updateCarMemberCardOrder.setStatus(orderStatus);
-        updateCarMemberCardOrder.setUpdateTime(System.currentTimeMillis());
-        carMemberCardOrderService.update(updateCarMemberCardOrder);
-        
-        return Pair.of(true, null);
-    }
-    
     
     @Override
     public UnionTradeOrder selectTradeOrderByOrderId(String orderId) {

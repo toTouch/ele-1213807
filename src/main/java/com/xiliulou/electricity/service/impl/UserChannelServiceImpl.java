@@ -3,7 +3,6 @@ package com.xiliulou.electricity.service.impl;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
-import com.xiliulou.electricity.entity.CarMemberCardOrder;
 import com.xiliulou.electricity.entity.ChannelActivityHistory;
 import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
 import com.xiliulou.electricity.entity.User;
@@ -12,7 +11,6 @@ import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.car.CarRentalPackageOrderPo;
 import com.xiliulou.electricity.mapper.UserChannelMapper;
 import com.xiliulou.electricity.query.UserChannelQuery;
-import com.xiliulou.electricity.service.CarMemberCardOrderService;
 import com.xiliulou.electricity.service.ChannelActivityHistoryService;
 import com.xiliulou.electricity.service.ElectricityMemberCardOrderService;
 import com.xiliulou.electricity.service.UserBatteryMemberCardService;
@@ -65,9 +63,6 @@ public class UserChannelServiceImpl implements UserChannelService {
     
     @Autowired
     private ChannelActivityHistoryService channelActivityHistoryService;
-    
-    @Autowired
-    private CarMemberCardOrderService carMemberCardOrderService;
     
     @Autowired
     private ElectricityMemberCardOrderService electricityMemberCardOrderService;
@@ -307,12 +302,12 @@ public class UserChannelServiceImpl implements UserChannelService {
             batteryMemberCard = true;
         }
         //3.0之前的租车信息查询
-        CarMemberCardOrder carMemberCardOrder = carMemberCardOrderService
-                .queryLastPayMemberCardTimeByUid(uid, null, TenantContextHolder.getTenantId());
-        if (Objects.nonNull(carMemberCardOrder)) {
-            log.info("Found car member card order info, uid = {}", uid);
-            carMemberCard = true;
-        }
+//        CarMemberCardOrder carMemberCardOrder = carMemberCardOrderService
+//                .queryLastPayMemberCardTimeByUid(uid, null, TenantContextHolder.getTenantId());
+//        if (Objects.nonNull(carMemberCardOrder)) {
+//            log.info("Found car member card order info, uid = {}", uid);
+//            carMemberCard = true;
+//        }
 
         //3.0之后租车，车电一体购买套餐信息查询
         CarRentalPackageOrderPo carRentalPackageOrderPo = carRentalPackageOrderService.selectLastPaySuccessByUid(TenantContextHolder.getTenantId(), uid);

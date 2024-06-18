@@ -30,8 +30,6 @@ import com.xiliulou.electricity.service.ElectricityBatteryService;
 import com.xiliulou.electricity.service.ElectricityCabinetBoxService;
 import com.xiliulou.electricity.service.ElectricityCabinetModelService;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
-import com.xiliulou.electricity.service.NotExistSnService;
-import com.xiliulou.electricity.service.StoreService;
 import com.xiliulou.electricity.utils.VersionUtil;
 import com.xiliulou.iot.entity.ReceiverMessage;
 import lombok.Data;
@@ -80,9 +78,6 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
 
     @Autowired
     BatteryOtherPropertiesService batteryOtherPropertiesService;
-
-    @Autowired
-    NotExistSnService notExistSnService;
 
     @Autowired
     ElectricityCabinetModelService electricityCabinetModelService;
@@ -391,35 +386,6 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
 
             electricityBatteryService.updateBatteryStatus(updateBattery);
             // TODO: 2023/1/3 BTC
-        }
-    }
-
-
-    /**
-     * 判断电池是否录入
-     *
-     * @param batteryName
-     * @param electricityCabinet
-     * @param cellNO
-     * @return
-     */
-    private void insertOrUpdateNotExistSn(NotExistSn notExistSnOld, String batteryName,
-                                          ElectricityCabinet electricityCabinet, String cellNO) {
-
-        if (Objects.isNull(notExistSnOld)) {
-            NotExistSn notExistSn = new NotExistSn();
-            notExistSn.setEId(electricityCabinet.getId());
-            notExistSn.setBatteryName(batteryName);
-            notExistSn.setCellNo(Integer.valueOf(cellNO));
-            notExistSn.setCreateTime(System.currentTimeMillis());
-            notExistSn.setUpdateTime(System.currentTimeMillis());
-            notExistSn.setTenantId(electricityCabinet.getTenantId());
-            notExistSnService.insert(notExistSn);
-        } else {
-            notExistSnOld.setEId(electricityCabinet.getId());
-            notExistSnOld.setCellNo(Integer.valueOf(cellNO));
-            notExistSnOld.setUpdateTime(System.currentTimeMillis());
-            notExistSnService.update(notExistSnOld);
         }
     }
 

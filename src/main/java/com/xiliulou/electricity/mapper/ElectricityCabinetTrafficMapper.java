@@ -1,7 +1,6 @@
 package com.xiliulou.electricity.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.xiliulou.electricity.entity.ElectricityCabinetPower;
 import com.xiliulou.electricity.entity.ElectricityCabinetTraffic;
 import com.xiliulou.electricity.vo.ElectricityCabinetTrafficVo;
 import org.apache.ibatis.annotations.Delete;

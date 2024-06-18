@@ -110,10 +110,6 @@ public class JsonAdminBatteryMemberCardController extends BaseController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         
-//        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
-//            return R.ok(Collections.emptyList());
-//        }
-//
         List<Long> franchiseeIds = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
             franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
@@ -158,10 +154,6 @@ public class JsonAdminBatteryMemberCardController extends BaseController {
         if (Objects.isNull(user)) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-        
-//        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
-//            return R.ok(NumberConstant.ZERO);
-//        }
         
         List<Long> franchiseeIds = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
@@ -265,38 +257,6 @@ public class JsonAdminBatteryMemberCardController extends BaseController {
         return returnTripleResult(batteryMemberCardService.delete(id));
     }
     
-    /**
-     * 后台绑定套餐 下拉列表
-     *
-     * @return
-     */
-    @GetMapping("/admin/battery/memberCard/selectListByQuery")
-    @Deprecated
-    public R selectListByQuery(@RequestParam("size") long size, @RequestParam("offset") long offset, @RequestParam(value = "name", required = false) String name,
-            @RequestParam(value = "status", required = false) Integer status, @RequestParam(value = "franchiseeId", required = false) Long franchiseeId) {
-        
-        TokenUser user = SecurityUtils.getUserInfo();
-        if (Objects.isNull(user)) {
-            return R.fail("ELECTRICITY.0001", "未找到用户");
-        }
-        
-        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
-            return R.ok(Collections.EMPTY_LIST);
-        }
-        
-        List<Long> franchiseeIds = null;
-        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
-            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
-            if (CollectionUtils.isEmpty(franchiseeIds)) {
-                return R.ok(Collections.EMPTY_LIST);
-            }
-        }
-        
-        BatteryMemberCardQuery query = BatteryMemberCardQuery.builder().tenantId(TenantContextHolder.getTenantId()).franchiseeId(franchiseeId).franchiseeIds(franchiseeIds)
-                .delFlag(BatteryMemberCard.DEL_NORMAL).status(status).name(name).size(size).offset(offset).build();
-        
-        return R.ok(batteryMemberCardService.selectListByQuery(query));
-    }
     
     /**
      * 获取可续费套餐列表 （押金、电池型号相同）

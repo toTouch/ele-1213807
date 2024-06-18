@@ -296,13 +296,7 @@ public class JsonAdminUserInfoController extends BaseController {
     public R updateRentBatteryStatus(@RequestParam("uid") Long uid, @RequestParam("batteryRentStatus") Integer batteryRentStatus) {
         return returnTripleResult(userInfoService.updateRentBatteryStatus(uid, batteryRentStatus));
     }
-    
-    @PutMapping(value = "/admin/userInfo/carRentStatus")
-    @Log(title = "修改用户车辆租赁状态")
-    public R updateRentCarStatus(@RequestParam("uid") Long uid, @RequestParam("carRentStatus") Integer carRentStatus) {
-        return returnTripleResult(userInfoService.updateRentCarStatus(uid, carRentStatus));
-    }
-    
+
     /**
      * 实名认证审核列表
      *
@@ -410,16 +404,6 @@ public class JsonAdminUserInfoController extends BaseController {
     }
     
     /**
-     * 用户的总消费金额
-     *
-     * @return
-     */
-    @GetMapping(value = "/admin/queryUserAllConsumption/{id}")
-    public R queryUserAllConsumption(@PathVariable("id") Long id) {
-        return userInfoService.queryUserAllConsumption(id);
-    }
-    
-    /**
      * 会员列表删除
      */
     @DeleteMapping(value = "/admin/userInfo/{uid}")
@@ -459,15 +443,6 @@ public class JsonAdminUserInfoController extends BaseController {
     public R queryDetailsBatteryInfo(@RequestParam("uid") Long uid) {
         return userInfoService.queryDetailsBatteryInfo(uid);
     }
-    
-    /**
-     * 会员列表详情信息（车辆信息）
-     */
-    @GetMapping(value = "/admin/userInfo/details/carInfo")
-    public R queryDetailsCarInfo(@RequestParam("uid") Long uid) {
-        return userInfoService.queryDetailsCarInfo(uid);
-    }
-    
     
     private void verifyMemberCardExpireTimeEnd(UserInfoQuery userInfoQuery) {
         if (Objects.isNull(userInfoQuery.getMemberCardExpireType())) {
