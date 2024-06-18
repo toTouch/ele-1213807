@@ -37,7 +37,7 @@ public class JsonOuterCallBackBasicController {
             return null;
         }
         ElectricityPayParams payParams = electricityPayParamsService
-                .queryCacheByTenantIdAndFranchiseeId(wechatV3RefundOrderCallBackQuery.getTenantId(), MultiFranchiseeConstant.DEFAULT_FRANCHISEE);
+                .queryPreciseCacheByTenantIdAndFranchiseeId(wechatV3RefundOrderCallBackQuery.getTenantId(), MultiFranchiseeConstant.DEFAULT_FRANCHISEE);
         
         String decryptJson = null;
         try {
@@ -70,7 +70,7 @@ public class JsonOuterCallBackBasicController {
         }
         
         ElectricityPayParams payParams = electricityPayParamsService
-                .queryCacheByTenantIdAndFranchiseeId(wechatV3RefundOrderCallBackQuery.getTenantId(), MultiFranchiseeConstant.DEFAULT_FRANCHISEE);
+                .queryPreciseCacheByTenantIdAndFranchiseeId(wechatV3RefundOrderCallBackQuery.getTenantId(), MultiFranchiseeConstant.DEFAULT_FRANCHISEE);
         
         String decryptJson = null;
         try {

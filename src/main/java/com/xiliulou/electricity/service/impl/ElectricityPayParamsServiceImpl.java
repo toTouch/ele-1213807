@@ -268,7 +268,7 @@ public class ElectricityPayParamsServiceImpl extends ServiceImpl<ElectricityPayP
         }
         try {
             
-            ElectricityPayParams oldElectricityPayParams = queryCacheByTenantIdAndFranchiseeId(tenantId, franchiseeId);
+            ElectricityPayParams oldElectricityPayParams = queryPreciseCacheByTenantIdAndFranchiseeId(tenantId, franchiseeId);
             if (Objects.isNull(oldElectricityPayParams)) {
                 return R.fail("找不到支付配置");
             }
@@ -359,6 +359,15 @@ public class ElectricityPayParamsServiceImpl extends ServiceImpl<ElectricityPayP
         }
         
         return payParams;
+    }
+    
+    @Override
+    public ElectricityPayParams queryPreciseCacheByTenantIdAndFranchiseeId(Integer tenantId, Long franchiseeId) {
+        List<ElectricityPayParams> electricityPayParamsList = this.queryFromCacheList(tenantId, Sets.newHashSet(franchiseeId));
+        if (CollectionUtils.isEmpty(electricityPayParamsList)) {
+            return null;
+        }
+        return electricityPayParamsList.get(0);
     }
     
     /**
