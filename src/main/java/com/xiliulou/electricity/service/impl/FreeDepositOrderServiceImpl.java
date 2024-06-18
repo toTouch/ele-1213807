@@ -1902,12 +1902,6 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
             return Triple.of(false, "000088", "您已是渠道用户，请联系对应站点购买套餐");
         }
         
-        WechatPayParamsDetails wechatPayParamsDetails = wechatPayParamsBizService.getDetailsByIdTenantIdAndFranchiseeId(tenantId, userInfo.getFranchiseeId());
-        if (Objects.isNull(wechatPayParamsDetails)) {
-            log.error("FREE DEPOSIT HYBRID ERROR!not found electricityPayParams,uid={}", uid);
-            return Triple.of(false, "100234", "未配置支付参数!");
-        }
-        
         UserOauthBind userOauthBind = userOauthBindService.queryUserOauthBySysId(uid, tenantId);
         if (Objects.isNull(userOauthBind) || Objects.isNull(userOauthBind.getThirdId())) {
             log.error("FREE DEPOSIT HYBRID ERROR!not found userOauthBind,uid={}", uid);
@@ -1942,6 +1936,12 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         if (Objects.isNull(batteryMemberCard)) {
             log.warn("FREE DEPOSIT WARN!not found batteryMemberCard,uid={},mid={}", userInfo.getUid(), query.getMemberCardId());
             return Triple.of(false, "ELECTRICITY.00121", "电池套餐不存在");
+        }
+        
+        WechatPayParamsDetails wechatPayParamsDetails = wechatPayParamsBizService.getDetailsByIdTenantIdAndFranchiseeId(tenantId, batteryMemberCard.getFranchiseeId());
+        if (Objects.isNull(wechatPayParamsDetails)) {
+            log.error("FREE DEPOSIT HYBRID ERROR!not found electricityPayParams,uid={}", uid);
+            return Triple.of(false, "100234", "未配置支付参数!");
         }
         
         if (!Objects.equals(BatteryMemberCard.STATUS_UP, batteryMemberCard.getStatus())) {
