@@ -128,10 +128,12 @@ public class JsonMerchantWithdrawController extends BaseController {
     
     @PostMapping(value = "/admin/merchant/withdraw/review")
     public R reviewMerchantWithdrawApplication(@Validated @RequestBody ReviewWithdrawApplicationRequest reviewWithdrawApplicationRequest) {
+        // todo 下面的注释的代码还未测试，包括加盟商配置的支付逻辑，如果要放开需测试进行测试，还有对应的提现的定时任务，设计的场景包含了旧数据，及新数据的配置的兼容场景
+    
         // 临时处理，暂时对外不开放此功能
-//        return returnTripleResult(Triple.of(false, "000000", "该功能需要微信商户开通“企业付款到零钱”功能，请确认开通后使用"));
+        return returnTripleResult(Triple.of(false, "000000", "该功能需要微信商户开通“企业付款到零钱”功能，请确认开通后使用"));
         
-        TokenUser user = SecurityUtils.getUserInfo();
+        /*TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
@@ -151,17 +153,17 @@ public class JsonMerchantWithdrawController extends BaseController {
     
             reviewWithdrawApplicationRequest.setBindFranchiseeId(franchiseeIds.get(0));
         }
-        
-         return returnTripleResult(merchantWithdrawApplicationService.reviewMerchantWithdrawApplication(reviewWithdrawApplicationRequest));
+         return returnTripleResult(merchantWithdrawApplicationService.reviewMerchantWithdrawApplication(reviewWithdrawApplicationRequest));*/
     }
     
     @PostMapping(value = "/admin/merchant/withdraw/batchReview")
     public R batchReviewMerchantWithdrawApplication(@Validated @RequestBody BatchReviewWithdrawApplicationRequest batchReviewWithdrawApplicationRequest) {
-        
-        // 临时处理，暂时对外不开放此功能
-//        return returnTripleResult(Triple.of(false, "000000", "该功能需要微信商户开通“企业付款到零钱”功能，请确认开通后使用"));
+        // todo 下面的注释的代码还未测试，包括加盟商配置的支付逻辑，如果要放开需测试进行测试，还有对应的提现的定时任务，设计的场景包含了旧数据，及新数据的配置的兼容场景
     
-        TokenUser user = SecurityUtils.getUserInfo();
+        // 临时处理，暂时对外不开放此功能
+        return returnTripleResult(Triple.of(false, "000000", "该功能需要微信商户开通“企业付款到零钱”功能，请确认开通后使用"));
+    
+        /*TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
@@ -182,7 +184,7 @@ public class JsonMerchantWithdrawController extends BaseController {
             batchReviewWithdrawApplicationRequest.setBindFranchiseeId(franchiseeIds.get(0));
         }
         
-         return returnTripleResult(merchantWithdrawApplicationService.batchReviewMerchantWithdrawApplication(batchReviewWithdrawApplicationRequest));
+         return returnTripleResult(merchantWithdrawApplicationService.batchReviewMerchantWithdrawApplication(batchReviewWithdrawApplicationRequest));*/
     }
     
     /**
