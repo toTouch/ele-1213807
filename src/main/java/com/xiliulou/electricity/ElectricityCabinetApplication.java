@@ -18,6 +18,7 @@ import com.xiliulou.pay.EnablePay;
 import com.xiliulou.storage.EnableStorage;
 import lombok.extern.slf4j.Slf4j;
 import org.mybatis.spring.annotation.MapperScan;
+import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
@@ -49,10 +50,20 @@ import org.springframework.context.annotation.EnableAspectJAutoProxy;
 @EnableFreeDeposit
 @EnableEsign
 @Slf4j
-public class ElectricityCabinetApplication {
+public class ElectricityCabinetApplication implements CommandLineRunner {
     
     public static void main(String[] args) {
         SpringApplication.run(ElectricityCabinetApplication.class, args);
-        
+    }
+    
+    /**
+     * Callback used to run the bean.
+     *
+     * @param args incoming main method arguments
+     * @throws Exception on error
+     */
+    @Override
+    public void run(String... args) throws Exception {
+        log.info("ElectricityCabinetApplication started success.");
     }
 }
