@@ -11,6 +11,7 @@ import com.xiliulou.electricity.mapper.ElectricityPayParamsMapper;
 import com.xiliulou.electricity.mapper.WechatPaymentCertificateMapper;
 import com.xiliulou.electricity.mapper.WechatWithdrawalCertificateMapper;
 import com.xiliulou.electricity.service.transaction.ElectricityPayParamsTxService;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -46,7 +47,8 @@ public class ElectricityPayParamsTxServiceImpl implements ElectricityPayParamsTx
     @Override
     public void update(ElectricityPayParams update, List<Integer> franchiseePayParamIds) {
         electricityPayParamsMapper.update(update);
-        
-        electricityPayParamsMapper.updateSync(update,franchiseePayParamIds);
+        if (CollectionUtils.isNotEmpty(franchiseePayParamIds)) {
+            electricityPayParamsMapper.updateSync(update, franchiseePayParamIds);
+        }
     }
 }
