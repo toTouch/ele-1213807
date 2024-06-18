@@ -272,7 +272,7 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
             Long placeId = Optional.ofNullable(merchantEmployeeService.queryMerchantEmployeeByUid(inviterUid)).orElse(new MerchantEmployeeVO()).getPlaceId();
             
             // 保存参与记录
-            MerchantJoinRecord record = this.assembleRecord(merchantId, inviterUid, inviterType, joinUid, channelEmployeeUid, placeId, merchantAttr, tenant.getId());
+            MerchantJoinRecord record = this.assembleRecord(merchantId, inviterUid, inviterType, joinUid, channelEmployeeUid, placeId, merchantAttr, tenant.getId(), merchant.getFranchiseeId());
             Integer result = merchantJoinRecordMapper.insertOne(record);
             
             // 将旧的已参与记录改为已失效
@@ -295,7 +295,7 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
     }
     
     private MerchantJoinRecord assembleRecord(Long merchantId, Long inviterUid, Integer inviterType, Long joinUid, Long channelEmployeeUid, Long placeId, MerchantAttr merchantAttr,
-            Integer tenantId) {
+            Integer tenantId, Long franchiseeId) {
         long nowTime = System.currentTimeMillis();
         Integer protectionTime = merchantAttr.getInvitationProtectionTime();
         Integer protectionTimeUnit = merchantAttr.getProtectionTimeUnit();
@@ -328,7 +328,7 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
         return MerchantJoinRecord.builder().merchantId(merchantId).channelEmployeeUid(channelEmployeeUid).placeId(placeId).inviterUid(inviterUid).inviterType(inviterType)
                 .joinUid(joinUid).startTime(nowTime).expiredTime(expiredTime).status(MerchantJoinRecordConstant.STATUS_INIT).protectionTime(protectionExpireTime)
                 .protectionStatus(MerchantJoinRecordConstant.PROTECTION_STATUS_NORMAL).delFlag(NumberConstant.ZERO).createTime(nowTime).updateTime(nowTime).tenantId(tenantId)
-                .modifyInviter(MerchantJoinRecordConstant.MODIFY_INVITER_NO).build();
+                .modifyInviter(MerchantJoinRecordConstant.MODIFY_INVITER_NO).franchiseeId(franchiseeId).build();
     }
     
     @Slave

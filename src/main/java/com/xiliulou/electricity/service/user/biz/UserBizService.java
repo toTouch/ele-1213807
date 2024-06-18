@@ -1,8 +1,5 @@
 package com.xiliulou.electricity.service.user.biz;
 
-import com.xiliulou.electricity.entity.User;
-import com.xiliulou.electricity.entity.UserInfo;
-
 import java.math.BigDecimal;
 
 /**
@@ -45,10 +42,10 @@ public interface UserBizService {
 
     /**
      * 处理用户参与邀请返券活动
-     * @param userInfo 参与用户
+     * @param joinUid 参与用户ID
      * @param packageId 套餐ID
      */
-    void joinShareActivityProcess(UserInfo userInfo, Long packageId);
+    void joinShareActivityProcess(Long joinUid, Long packageId);
 
     /**
      * 处理用户参与邀请返现活动

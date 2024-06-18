@@ -2,7 +2,6 @@ package com.xiliulou.electricity.service.impl.user.biz;
 
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.db.dynamic.annotation.Slave;
-import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.enums.PayStateEnum;
 import com.xiliulou.electricity.enums.RentalPackageTypeEnum;
@@ -293,8 +292,7 @@ public class UserBizServiceImpl implements UserBizService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void joinShareActivityProcess(UserInfo userInfo, Long packageId) {
-        Long joinUid = userInfo.getUid();
+    public void joinShareActivityProcess(Long joinUid, Long packageId) {
         JoinShareActivityRecord joinShareActivityRecord = joinShareActivityRecordService.queryByJoinUid(joinUid);
         try{
             //是否有人邀请
@@ -303,18 +301,11 @@ public class UserBizServiceImpl implements UserBizService {
                 //是否购买的是活动指定的套餐
                 List<Long> memberCardIds = shareActivityMemberCardService.selectMemberCardIdsByActivityId(joinShareActivityRecord.getActivityId());
                 if (CollectionUtils.isNotEmpty(memberCardIds) && memberCardIds.contains(packageId)) {
-                    // 加盟商校验
-                    if (!isSameFranchisee(joinShareActivityRecord.getFranchiseeId(), userInfo)) {
-                        log.warn("share activity, invite fail, not same franchisee! join uid = {}, activityFranchiseeId = {}, userInfoFranchiseeId = {}", joinUid,
-                                joinShareActivityRecord.getFranchiseeId(), userInfo.getFranchiseeId());
-                        return;
-                    }
-    
                     //修改邀请状态
                     joinShareActivityRecord.setStatus(JoinShareActivityRecord.STATUS_SUCCESS);
                     joinShareActivityRecord.setUpdateTime(System.currentTimeMillis());
                     joinShareActivityRecordService.update(joinShareActivityRecord);
-    
+
                     //修改历史记录状态
                     JoinShareActivityHistory oldJoinShareActivityHistory = joinShareActivityHistoryService.queryByRecordIdAndJoinUid(joinShareActivityRecord.getId(), joinUid);
                     if (Objects.nonNull(oldJoinShareActivityHistory)) {
@@ -322,10 +313,10 @@ public class UserBizServiceImpl implements UserBizService {
                         oldJoinShareActivityHistory.setUpdateTime(System.currentTimeMillis());
                         joinShareActivityHistoryService.update(oldJoinShareActivityHistory);
                     }
-    
+
                     //给邀请人增加邀请成功人数
                     shareActivityRecordService.addCountByUid(joinShareActivityRecord.getUid(), joinShareActivityRecord.getActivityId());
-    
+                    
                     //修改会员扩展表活动类型
                     userInfoExtraService.updateByUid(UserInfoExtra.builder().uid(joinUid).activitySource(UserInfoActivitySourceEnum.SUCCESS_SHARE_ACTIVITY.getCode())
                             .inviterUid(oldJoinShareActivityHistory.getUid()).build());
@@ -394,17 +385,6 @@ public class UserBizServiceImpl implements UserBizService {
         }catch (Exception e){
             log.error("share money activity process issue, uid = {}, packageId = {}", joinUid, packageId, e);
         }
-    }
-    
-    private boolean isSameFranchisee(Long activityFranchiseeId, UserInfo userInfo) {
-        Long userInfoFranchiseeId = userInfo.getFranchiseeId();
-        
-        if (Objects.nonNull(activityFranchiseeId) && !Objects.equals(activityFranchiseeId, NumberConstant.ZERO_L) && Objects.nonNull(userInfoFranchiseeId) && !Objects.equals(
-                userInfoFranchiseeId, NumberConstant.ZERO_L)) {
-            return Objects.equals(activityFranchiseeId, userInfoFranchiseeId);
-        }
-        
-        return false;
     }
 
     private List<BatteryMemberCardVO> getAllBatteryPackages(Integer tenantId){

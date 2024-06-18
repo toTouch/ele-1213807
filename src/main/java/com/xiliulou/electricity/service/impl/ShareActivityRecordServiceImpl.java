@@ -185,9 +185,9 @@ public class ShareActivityRecordServiceImpl implements ShareActivityRecordServic
             shareActivityRecord.setUpdateTime(System.currentTimeMillis());
             shareActivityRecord.setStatus(ShareActivityRecord.STATUS_INIT);
     
-            Long franchiseeId = getFranchiseeId(user.getUid());
+            Integer franchiseeId = getFranchiseeId(activityId);
             if (Objects.nonNull(franchiseeId)) {
-                shareActivityRecord.setFranchiseeId(franchiseeId);
+                shareActivityRecord.setFranchiseeId(franchiseeId.longValue());
             }
             
             shareActivityRecordMapper.insert(shareActivityRecord);
@@ -230,12 +230,12 @@ public class ShareActivityRecordServiceImpl implements ShareActivityRecordServic
 
     }
     
-    private Long getFranchiseeId(Long uid) {
-        UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
-        if (Objects.isNull(userInfo) || Objects.isNull(userInfo.getFranchiseeId()) || Objects.equals(userInfo.getFranchiseeId(), NumberConstant.ZERO_L)) {
+    private Integer getFranchiseeId(Integer activityId) {
+        ShareActivity shareActivity = shareActivityService.queryByIdFromCache(activityId);
+        if (Objects.isNull(activityId) || Objects.isNull(shareActivity.getFranchiseeId()) || Objects.equals(shareActivity.getFranchiseeId(), NumberConstant.ZERO)) {
             return null;
         }
-        return userInfo.getFranchiseeId();
+        return shareActivity.getFranchiseeId();
     }
 
     @Override

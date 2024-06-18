@@ -110,4 +110,9 @@ public class MerchantJoinRecord {
      */
     private Integer modifyInviter;
     
+    /**
+     * 加盟商ID
+     */
+    private Long franchiseeId;
+    
 }
