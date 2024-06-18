@@ -77,11 +77,11 @@ public interface BatteryMembercardRefundOrderService {
 
     void updateUserCouponStatus(String orderId);
 
-    Triple<Boolean, String, Object> batteryMembercardRefundAudit(String refundOrderNo, String errMsg, BigDecimal refundAmount, Integer status, HttpServletRequest request);
+    Triple<Boolean, String, Object> batteryMembercardRefundAudit(String refundOrderNo, String errMsg, BigDecimal refundAmount, Integer status, HttpServletRequest request, Integer offlineRefund);
 
     Integer insert(BatteryMembercardRefundOrder batteryMembercardRefundOrderInsert);
 
-    Triple<Boolean, String, Object> batteryMembercardRefundForAdmin(String orderNo, BigDecimal refundAmount, HttpServletRequest request);
+    Triple<Boolean, String, Object> batteryMembercardRefundForAdmin(String orderNo, BigDecimal refundAmount, HttpServletRequest request, Integer offlineRefund);
 
     WechatJsapiRefundResultDTO handleRefundOrder(BatteryMembercardRefundOrder batteryMembercardRefundOrder, WechatPayParamsDetails wechatPayParamsDetails, HttpServletRequest request) throws WechatPayException;
 
