@@ -14,26 +14,45 @@ import javax.validation.constraints.NotNull;
  */
 @Data
 public class ElectricityCabinetTransferQuery {
-
+    
     @NotBlank(message = "productKey不能为空!")
     private String productKey;
-
+    
     @NotBlank(message = "deviceName不能为空!")
     private String deviceName;
-
+    
     @NotBlank(message = "name不能为空!")
     private String name;
-
+    
     @NotNull(message = "门店id不能为空!")
     private Long storeId;
-
+    
     private Double longitude;
-
+    
     private Double latitude;
-
+    
     private String address;
     
     private Integer modelId;
+    
+    /**
+     * 营业时间类型
+     */
+    private String businessTimeType;
+    
+    /**
+     * 营业开始时间
+     */
+    private Long beginTime;
+    /**
+     * 营业结束时间
+     */
+    private Long endTime;
+    
+    /**
+     * 满电标准
+     */
+    private Double fullyCharged;
     
     /**
      * 租电类型（全部可租电、不允许租电、最少保留一块电池、自定义） RentReturnNormEnum
@@ -60,4 +79,12 @@ public class ElectricityCabinetTransferQuery {
     @Min(value = 0, message = "最大保留电池数量不能小于0")
     @Max(value = 99, message = "最大保留电池数量不能超过99")
     private Integer maxRetainBatteryCount;
+    
+    
+    //全天
+    public static final String ALL_DAY = "-1";
+    
+    //自定义时间段
+    public static final String CUSTOMIZE_TIME = "1";
+    
 }
