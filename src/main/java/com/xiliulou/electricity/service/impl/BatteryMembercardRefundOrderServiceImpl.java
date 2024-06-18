@@ -1017,7 +1017,7 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
     public R checkPayParamsDetails(String orderNo) {
         ElectricityMemberCardOrder electricityMemberCardOrder = batteryMemberCardOrderService.selectByOrderNo(orderNo);
         if (Objects.isNull(electricityMemberCardOrder) || !Objects.equals(electricityMemberCardOrder.getTenantId(), TenantContextHolder.getTenantId())) {
-            log.warn("CHECK PAY PARAMS DETAILS WARN! not found electricityMemberCardOrder,orderNo={}", orderNo);
+            // log.warn("CHECK PAY PARAMS DETAILS WARN! not found electricityMemberCardOrder,orderNo={}", orderNo);
             return R.fail("100281", "电池套餐订单不存在");
         }
         
