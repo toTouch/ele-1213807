@@ -1125,7 +1125,7 @@ public class JsonAdminElectricityCabinetController extends BasicController {
     /**
      * 运维端编辑租退标准回显
      */
-    @GetMapping(value = "/admin/electricityCabinet/rentReturnEditEchoByDeviceName")
+    @GetMapping(value = "/admin/electricityCabinet/rentReturnEditEchoToOps")
     public R rentReturnEditEchoByDeviceName(@RequestParam("productKey") String productKey, @RequestParam("deviceName") String deviceName) {
         return electricityCabinetService.rentReturnEditEchoByDeviceName(productKey, deviceName);
     }
