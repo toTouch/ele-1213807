@@ -703,9 +703,9 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
                 // 支付配置类型map
                 Map<String, Integer> payConfigTypeMap = merchantWithdrawApplicationBOS.stream()
                         .collect(Collectors.toMap(MerchantWithdrawApplicationBO::getBatchNo, MerchantWithdrawApplicationBO::getPayConfigType, (k1, k2) -> k1));
-                
+    
                 Map<String, List<Long>> franchiseeIdMap = merchantWithdrawApplicationBOS.stream()
-                        .collect(Collectors.groupingBy(MerchantWithdrawApplicationBO::getBatchNo, Collectors.mapping(MerchantWithdrawApplicationBO::getFranchiseeId, Collectors.toList())));
+                        .collect(Collectors.groupingBy(MerchantWithdrawApplicationBO::getBatchNo, Collectors.collectingAndThen(Collectors.toList(), list -> list.stream().map(MerchantWithdrawApplicationBO::getFranchiseeId).distinct().collect(Collectors.toList()))));
                 
                 
                 //根据批次号循环调用第三方接口查询提现结果状态
