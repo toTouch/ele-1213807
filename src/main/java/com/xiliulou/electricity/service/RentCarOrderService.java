@@ -66,8 +66,6 @@ public interface RentCarOrderService {
 
     Triple<Boolean,String,Object> rentCarOrder(UserRentCarOrderQuery query);
 
-    Triple<Boolean, String, Object> rentCarHybridOrder(RentCarHybridOrderQuery query, HttpServletRequest request);
-
     Triple<Boolean, String, Object> save(RentCarOrderQuery rentCarOrderQuery);
 
     Integer selectPageCount(RentCarOrderQuery rentCarOrderQuery);

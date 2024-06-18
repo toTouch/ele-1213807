@@ -10,12 +10,14 @@ import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
+import com.xiliulou.electricity.bo.wechat.WechatPayParamsDetails;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.constant.UserOperateRecordConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.entity.enterprise.EnterpriseChannelUser;
 import com.xiliulou.electricity.enums.BusinessType;
+import com.xiliulou.electricity.enums.CheckPayParamsResultEnum;
 import com.xiliulou.electricity.mapper.EleBatteryServiceFeeOrderMapper;
 import com.xiliulou.electricity.mapper.EleDepositOrderMapper;
 import com.xiliulou.electricity.query.*;
@@ -165,6 +167,9 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
     
     @Resource
     UserInfoGroupDetailService userInfoGroupDetailService;
+    
+    @Resource
+    private WechatPayParamsBizService wechatPayParamsBizService;
 
     @Override
     public EleDepositOrder queryByOrderId(String orderNo) {
@@ -513,7 +518,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
     public R queryList(EleDepositOrderQuery eleDepositOrderQuery) {
         List<EleDepositOrderVO> eleDepositOrderVOS = eleDepositOrderMapper.queryList(eleDepositOrderQuery);
     
-        eleDepositOrderVOS.stream().map(eleDepositOrderVO -> {
+        eleDepositOrderVOS.forEach(eleDepositOrderVO -> {
             eleDepositOrderVO.setRefundFlag(true);
         
             List<EleRefundOrder> eleRefundOrders = eleRefundOrderService.selectByOrderIdNoFilerStatus(eleDepositOrderVO.getOrderId());
@@ -525,8 +530,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
                     }
                 }
             }
-            return eleDepositOrderVO;
-        }).collect(Collectors.toList());
+        });
     
         return R.ok(eleDepositOrderVOS);
     }
@@ -760,6 +764,26 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
     
     @Slave
     @Override
+    public R checkPayParamsDetails(String orderId) {
+        EleDepositOrder eleDepositOrder = this.queryByOrderId(orderId);
+        if (Objects.isNull(eleDepositOrder)) {
+            log.error("CHECK PAY PARAMS DETAILS WARN! NOT FOUND ELECTRICITY_REFUND_ORDER orderId={}", orderId);
+            return R.fail("ELECTRICITY.0015", "未找到订单");
+        }
+        
+        if (Objects.nonNull(eleDepositOrder.getWechatMerchantId())) {
+            WechatPayParamsDetails wechatPayParamsDetails = wechatPayParamsBizService.getDetailsByIdTenantIdAndFranchiseeId(eleDepositOrder.getTenantId(),
+                    eleDepositOrder.getParamFranchiseeId());
+            if (Objects.isNull(wechatPayParamsDetails)) {
+                return R.ok(CheckPayParamsResultEnum.FAIL.getCode());
+            }
+        }
+        
+        return R.ok(CheckPayParamsResultEnum.SUCCESS.getCode());
+    }
+    
+    @Slave
+    @Override
     public void exportExcel(EleDepositOrderQuery eleDepositOrderQuery, HttpServletResponse response) {
         eleDepositOrderQuery.setOffset(0L);
         eleDepositOrderQuery.setSize(2000L);
@@ -941,118 +965,6 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         }
 
         return R.ok(franchisee.getModelType());
-    }
-
-    @Override
-    @Deprecated
-    @Transactional(rollbackFor = Exception.class)
-    public R payBatteryServiceFee(HttpServletRequest request) {
-
-        TokenUser user = SecurityUtils.getUserInfo();
-        if (Objects.isNull(user)) {
-            log.error("pay battery service fee  ERROR! not found user ");
-            return R.fail("ELECTRICITY.0001", "未找到用户");
-        }
-
-        Integer tenantId = TenantContextHolder.getTenantId();
-
-        Boolean getLockSuccess = redisService.setNx(CacheConstant.ELE_CACHE_USER_BATTERY_SERVICE_FEE_LOCK_KEY + user.getUid(), IdUtil.fastSimpleUUID(), 3 * 1000L, false);
-        if (!getLockSuccess) {
-            return R.fail("ELECTRICITY.0034", "操作频繁");
-        }
-
-        //支付相关
-        ElectricityPayParams electricityPayParams = electricityPayParamsService.queryFromCache(tenantId);
-        if (Objects.isNull(electricityPayParams)) {
-            log.error("pay battery service fee CREATE MEMBER_ORDER ERROR ,NOT FOUND PAY_PARAMS UID={}", user.getUid());
-            return R.failMsg("未配置支付参数!");
-        }
-
-        UserOauthBind userOauthBind = userOauthBindService.queryUserOauthBySysId(user.getUid(), tenantId);
-        if (Objects.isNull(userOauthBind) || Objects.isNull(userOauthBind.getThirdId())) {
-            log.error("pay battery service fee CREATE MEMBER_ORDER ERROR ,NOT FOUND USEROAUTHBIND OR THIRDID IS NULL  UID={}", user.getUid());
-            return R.failMsg("未找到用户的第三方授权信息!");
-        }
-
-        UserInfo userInfo = userInfoService.queryByUidFromCache(user.getUid());
-        if (Objects.isNull(userInfo)) {
-            log.error("pay battery service fee  ERROR! not found user UID={}", user.getUid());
-            return R.fail("ELECTRICITY.0001", "未找到用户");
-        }
-
-        UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
-        if (Objects.isNull(userBatteryMemberCard) || Objects.isNull(userBatteryMemberCard.getMemberCardExpireTime()) || Objects.isNull(userBatteryMemberCard.getRemainingNumber())) {
-            log.warn("HOME WARN! user haven't memberCard uid={}", user.getUid());
-            return R.fail("100210", "用户未开通套餐");
-        }
-
-        Franchisee franchisee = franchiseeService.queryByIdFromCache(userInfo.getFranchiseeId());
-        if (Objects.isNull(franchisee)) {
-            log.error("pay battery service fee  ERROR! not found user UID={}", user.getUid());
-            return R.fail("ELECTRICITY.0038", "未找到加盟商");
-        }
-
-        BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());
-        if (Objects.isNull(batteryMemberCard)) {
-            log.error("PAY BATTERY SERVICE FEE ERROR! memberCard  is not exit,uid={},memberCardId={}", user.getUid(), userBatteryMemberCard.getMemberCardId());
-            return R.fail("ELECTRICITY.00121", "套餐不存在");
-        }
-
-        ServiceFeeUserInfo serviceFeeUserInfo = serviceFeeUserInfoService.queryByUidFromCache(userInfo.getUid());
-        if (Objects.isNull(serviceFeeUserInfo)) {
-            log.error("PAY BATTERY SERVICE FEE ERROR! not found user,uid={}", user.getUid());
-            return R.fail("100247", "用户信息不存在");
-        }
-
-        Triple<Boolean, Integer, BigDecimal> acquireUserBatteryServiceFeeResult = serviceFeeUserInfoService.acquireUserBatteryServiceFee(userInfo, userBatteryMemberCard, batteryMemberCard, serviceFeeUserInfo);
-        if (Boolean.FALSE.equals(acquireUserBatteryServiceFeeResult.getLeft())) {
-            log.error("admin saveUserMemberCard ERROR! user not exist battery service fee,uid={}", userInfo.getUid());
-            return R.fail("ELECTRICITY.100000", "不存在电池服务费");
-        }
-
-        ElectricityBattery electricityBattery = electricityBatteryService.queryByUid(user.getUid());
-        List<String> userBatteryTypes = userBatteryTypeService.selectByUid(userInfo.getUid());
-
-        /**
-         * 2.0接口每调起支付都会生成订单  3.0版本已优化该问题
-         */
-        EleBatteryServiceFeeOrder eleBatteryServiceFeeOrder = EleBatteryServiceFeeOrder.builder()
-                .orderId(OrderIdUtil.generateBusinessOrderId(BusinessType.BATTERY_STAGNATE, userInfo.getUid()))
-                .uid(user.getUid())
-                .phone(userInfo.getPhone())
-                .name(userInfo.getName())
-                .payAmount(acquireUserBatteryServiceFeeResult.getRight())
-                .status(EleDepositOrder.STATUS_INIT)
-                .createTime(System.currentTimeMillis())
-                .updateTime(System.currentTimeMillis())
-                .tenantId(tenantId)
-                .source(acquireUserBatteryServiceFeeResult.getMiddle())
-                .franchiseeId(franchisee.getId())
-                .storeId(userInfo.getStoreId())
-                .modelType(franchisee.getModelType())
-                .batteryType(CollectionUtils.isEmpty(userBatteryTypes) ? "" : JsonUtil.toJson(userBatteryTypes))
-                .sn(Objects.isNull(electricityBattery) ? "" : electricityBattery.getSn())
-                .batteryServiceFee(batteryMemberCard.getServiceCharge()).build();
-        eleBatteryServiceFeeOrderMapper.insert(eleBatteryServiceFeeOrder);
-
-
-        try {
-            CommonPayOrder commonPayOrder = CommonPayOrder.builder()
-                    .orderId(eleBatteryServiceFeeOrder.getOrderId())
-                    .uid(user.getUid())
-                    .payAmount(acquireUserBatteryServiceFeeResult.getRight())
-                    .orderType(ElectricityTradeOrder.ORDER_TYPE_BATTERY_SERVICE_FEE)
-                    .attach(ElectricityTradeOrder.ATTACH_BATTERY_SERVICE_FEE)
-                    .description("电池服务费")
-                    .tenantId(tenantId).build();
-
-            WechatJsapiOrderResultDTO resultDTO = electricityTradeOrderService.commonCreateTradeOrderAndGetPayParams(commonPayOrder, electricityPayParams, userOauthBind.getThirdId(), request);
-            return R.ok(resultDTO);
-        } catch (WechatPayException e) {
-            log.error("payEleBatteryServiceFee ERROR! wechat v3 order  error! uid={}", user.getUid(), e);
-        }
-
-        return R.fail("ELECTRICITY.0099", "下单失败");
     }
 
     @Override

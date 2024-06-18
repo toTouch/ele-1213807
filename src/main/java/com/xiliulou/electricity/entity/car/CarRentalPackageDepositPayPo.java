@@ -128,4 +128,9 @@ public class CarRentalPackageDepositPayPo extends BasicCarPo {
      */
     private String wechatMerchantId;
     
+    /**
+     * 支付加盟商ID
+     */
+    private Long payFranchiseeId;
+    
 }

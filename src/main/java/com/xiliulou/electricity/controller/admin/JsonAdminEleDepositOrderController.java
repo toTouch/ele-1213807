@@ -233,5 +233,13 @@ public class JsonAdminEleDepositOrderController extends BaseController {
         return returnTripleResult(eleDepositOrderService.queryDepositAndInsuranceDetail(orderId));
     }
     
-    
+    /**
+     * 校验订单所用支付参数是否存在
+     * @param orderId 押金订单号
+     * @return 1校验通过 0校验失败
+     */
+    @GetMapping("/admin/eleDepositOrder/checkPayParamsDetails")
+    public R checkPayParamsDetails(@RequestParam("orderId") String orderId) {
+        return eleDepositOrderService.checkPayParamsDetails(orderId);
+    }
 }

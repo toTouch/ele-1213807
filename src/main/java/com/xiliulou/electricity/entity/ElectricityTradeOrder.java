@@ -54,9 +54,9 @@ public class ElectricityTradeOrder {
     private Long parentOrderId;
     
     /**
-     * 加盟商ID
+     * 支付加盟商ID
      */
-    private Long franchiseeId;
+    private Long payFranchiseeId;
     
     /**
      * 微信商户号

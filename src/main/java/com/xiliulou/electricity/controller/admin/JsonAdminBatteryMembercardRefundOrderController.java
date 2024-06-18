@@ -34,39 +34,33 @@ import java.util.Objects;
 @Slf4j
 @RestController
 public class JsonAdminBatteryMembercardRefundOrderController extends BaseController {
-
+    
     @Autowired
     private BatteryMembercardRefundOrderService batteryMembercardRefundOrderService;
-
+    
     @Autowired
     UserDataScopeService userDataScopeService;
-
+    
     @GetMapping("/admin/battery/membercard/refund/page")
-    public R getElectricityMemberCardPage(@RequestParam("size") long size,
-                                          @RequestParam("offset") long offset,
-                                          @RequestParam(value = "uid", required = false) Long uid,
-                                          @RequestParam(value = "phone", required = false) String phone,
-                                          @RequestParam(value = "refundOrderNo", required = false) String refundOrderNo,
-                                          @RequestParam(value = "rentType", required = false) Integer rentType,
-                                          @RequestParam(value = "mid", required = false) Long mid,
-                                          @RequestParam(value = "status", required = false) Integer status,
-                                          @RequestParam(value = "beginTime", required = false) Long beginTime,
-                                          @RequestParam(value = "endTime", required = false) Long endTime,
-                                          @RequestParam(value = "payType", required = false) Integer payType) {
-
+    public R getElectricityMemberCardPage(@RequestParam("size") long size, @RequestParam("offset") long offset, @RequestParam(value = "uid", required = false) Long uid,
+            @RequestParam(value = "phone", required = false) String phone, @RequestParam(value = "refundOrderNo", required = false) String refundOrderNo,
+            @RequestParam(value = "rentType", required = false) Integer rentType, @RequestParam(value = "mid", required = false) Long mid,
+            @RequestParam(value = "status", required = false) Integer status, @RequestParam(value = "beginTime", required = false) Long beginTime,
+            @RequestParam(value = "endTime", required = false) Long endTime, @RequestParam(value = "payType", required = false) Integer payType) {
+        
         if (size < 0 || size > 50) {
             size = 10L;
         }
-
+        
         if (offset < 0) {
             offset = 0L;
         }
-
+        
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-
+        
         List<Long> franchiseeIds = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
             franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
@@ -74,7 +68,7 @@ public class JsonAdminBatteryMembercardRefundOrderController extends BaseControl
                 return R.ok(Collections.EMPTY_LIST);
             }
         }
-
+        
         List<Long> storeIds = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
             storeIds = userDataScopeService.selectDataIdByUid(user.getUid());
@@ -82,43 +76,26 @@ public class JsonAdminBatteryMembercardRefundOrderController extends BaseControl
                 return R.ok(Collections.EMPTY_LIST);
             }
         }
-
-        BatteryMembercardRefundOrderQuery query = BatteryMembercardRefundOrderQuery.builder()
-                .uid(uid)
-                .phone(phone)
-                .refundOrderNo(refundOrderNo)
-                .startTime(beginTime)
-                .endTime(endTime)
-                .offset(offset)
-                .size(size)
-                .rentType(rentType)
-                .tenantId(TenantContextHolder.getTenantId())
-                .status(status)
-                .franchiseeIds(franchiseeIds)
-                .storeIds(storeIds)
-                .mid(mid)
-                .payType(payType)
-                .build();
-
+        
+        BatteryMembercardRefundOrderQuery query = BatteryMembercardRefundOrderQuery.builder().uid(uid).phone(phone).refundOrderNo(refundOrderNo).startTime(beginTime)
+                .endTime(endTime).offset(offset).size(size).rentType(rentType).tenantId(TenantContextHolder.getTenantId()).status(status).franchiseeIds(franchiseeIds)
+                .storeIds(storeIds).mid(mid).payType(payType).build();
+        
         return R.ok(batteryMembercardRefundOrderService.selectByPage(query));
     }
-
+    
     @GetMapping("/admin/battery/membercard/refund/queryCount")
-    public R queryCount(@RequestParam(value = "uid", required = false) Long uid,
-                        @RequestParam(value = "phone", required = false) String phone,
-                        @RequestParam(value = "refundOrderNo", required = false) String refundOrderNo,
-                        @RequestParam(value = "rentType", required = false) Integer rentType,
-                        @RequestParam(value = "mid", required = false) Long mid,
-                        @RequestParam(value = "status", required = false) Integer status,
-                        @RequestParam(value = "beginTime", required = false) Long beginTime,
-                        @RequestParam(value = "endTime", required = false) Long endTime,
-                        @RequestParam(value = "payType", required = false) Integer payType) {
-
+    public R queryCount(@RequestParam(value = "uid", required = false) Long uid, @RequestParam(value = "phone", required = false) String phone,
+            @RequestParam(value = "refundOrderNo", required = false) String refundOrderNo, @RequestParam(value = "rentType", required = false) Integer rentType,
+            @RequestParam(value = "mid", required = false) Long mid, @RequestParam(value = "status", required = false) Integer status,
+            @RequestParam(value = "beginTime", required = false) Long beginTime, @RequestParam(value = "endTime", required = false) Long endTime,
+            @RequestParam(value = "payType", required = false) Integer payType) {
+        
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-
+        
         List<Long> franchiseeIds = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
             franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
@@ -126,7 +103,7 @@ public class JsonAdminBatteryMembercardRefundOrderController extends BaseControl
                 return R.ok(Collections.EMPTY_LIST);
             }
         }
-
+        
         List<Long> storeIds = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
             storeIds = userDataScopeService.selectDataIdByUid(user.getUid());
@@ -134,34 +111,22 @@ public class JsonAdminBatteryMembercardRefundOrderController extends BaseControl
                 return R.ok(Collections.EMPTY_LIST);
             }
         }
-
-        BatteryMembercardRefundOrderQuery query = BatteryMembercardRefundOrderQuery.builder()
-                .uid(uid)
-                .phone(phone)
-                .refundOrderNo(refundOrderNo)
-                .startTime(beginTime)
-                .endTime(endTime)
-                .tenantId(TenantContextHolder.getTenantId())
-                .status(status)
-                .rentType(rentType)
-                .payType(payType)
-                .franchiseeIds(franchiseeIds)
-                .storeIds(storeIds)
-                .mid(mid)
-                .build();
-
+        
+        BatteryMembercardRefundOrderQuery query = BatteryMembercardRefundOrderQuery.builder().uid(uid).phone(phone).refundOrderNo(refundOrderNo).startTime(beginTime)
+                .endTime(endTime).tenantId(TenantContextHolder.getTenantId()).status(status).rentType(rentType).payType(payType).franchiseeIds(franchiseeIds).storeIds(storeIds)
+                .mid(mid).build();
+        
         return R.ok(batteryMembercardRefundOrderService.selectPageCount(query));
     }
-
+    
     @PostMapping("/admin/battery/membercard/refund/audit")
     @Log(title = "电池租金退款审核")
-    public R batteryMembercardRefundAudit(@RequestParam("refundOrderNo") String refundOrderNo,
-                                          @RequestParam("refundAmount") BigDecimal refundAmount,
-                                          @RequestParam("status") Integer status,
-                                          @RequestParam(value = "errMsg", required = false) String errMsg, HttpServletRequest request) {
+    public R batteryMembercardRefundAudit(@RequestParam("refundOrderNo") String refundOrderNo, @RequestParam("refundAmount") BigDecimal refundAmount,
+            @RequestParam("status") Integer status, @RequestParam(value = "errMsg", required = false) String errMsg, HttpServletRequest request,
+            @RequestParam(value = "offlineRefund", required = false) Integer offlineRefund) {
         return returnTripleResult(batteryMembercardRefundOrderService.batteryMembercardRefundAudit(refundOrderNo, errMsg, refundAmount, status, request));
     }
-
+    
     /**
      * 可退租订单详情
      */
@@ -169,12 +134,20 @@ public class JsonAdminBatteryMembercardRefundOrderController extends BaseControl
     public R batteryMembercardRefundOrderDetail(@RequestParam("orderNo") String orderNo, @RequestParam(value = "confirm", required = false) Integer confirm) {
         return returnTripleResult(batteryMembercardRefundOrderService.batteryMembercardRefundOrderDetail(orderNo, confirm));
     }
-
+    
     @PostMapping("/admin/battery/membercard/refund")
     @Log(title = "后台电池租金退款")
     public R batteryMembercardRefund(@RequestParam("orderNo") String orderNo, @RequestParam("refundAmount") BigDecimal refundAmount, HttpServletRequest request) {
         return returnTripleResult(batteryMembercardRefundOrderService.batteryMembercardRefundForAdmin(orderNo, refundAmount, request));
     }
-
-
+    
+    /**
+     * 校验订单所用支付参数是否存在
+     * @param orderNo 套餐订单号
+     * @return 1校验通过 0校验失败
+     */
+    @GetMapping("/admin/battery/membercard/checkPayParamsDetails")
+    public R checkPayParamsDetails(@RequestParam("orderNo") String orderNo) {
+        return batteryMembercardRefundOrderService.checkPayParamsDetails(orderNo);
+    }
 }

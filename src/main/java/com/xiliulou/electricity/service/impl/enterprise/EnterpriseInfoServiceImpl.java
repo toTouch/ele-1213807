@@ -1911,27 +1911,6 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
         return Boolean.FALSE;
     }
     
-    @Override
-    public Triple<Boolean, String, Object> refund(String orderId, HttpServletRequest request) {
-        try {
-            
-            EnterpriseCloudBeanOrder enterpriseCloudBeanOrder = enterpriseCloudBeanOrderService.selectByOrderId(orderId);
-            if (Objects.isNull(enterpriseCloudBeanOrder)) {
-                return Triple.of(false, null, "订单不存在!");
-            }
-            
-            RefundOrder refundOrder = RefundOrder.builder().orderId(orderId)
-                    .refundOrderNo(OrderIdUtil.generateBusinessOrderId(BusinessType.BATTERY_DEPOSIT_REFUND, enterpriseCloudBeanOrder.getUid()))
-                    .payAmount(enterpriseCloudBeanOrder.getPayAmount()).refundAmount(enterpriseCloudBeanOrder.getPayAmount()).build();
-            
-            return Triple.of(true, "", eleRefundOrderService.commonCreateRefundOrder(refundOrder, request));
-        } catch (WechatPayException e) {
-            log.error("REFUND ORDER ERROR! wechat v3 refund  error! ", e);
-        }
-        
-        return Triple.of(true, null, "退款成功!");
-    }
-    
     private Pair<List<Long>, List<String>> getMembercardNames(Long id) {
         
         List<Long> membercardIds = enterprisePackageService.selectByEnterpriseId(id);

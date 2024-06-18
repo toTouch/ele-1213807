@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.service;
 
 
+import com.xiliulou.electricity.bo.wechat.WechatPayParamsDetails;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiOrderCallBackResource;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiOrderResultDTO;
@@ -13,7 +14,7 @@ public interface UnionTradeOrderService {
 
     //通用生成订单，调起支付
     WechatJsapiOrderResultDTO unionCreateTradeOrderAndGetPayParams(UnionPayOrder unionPayOrder,
-                                                                    ElectricityPayParams electricityPayParams,
+                                                                    WechatPayParamsDetails wechatPayParamsDetails,
                                                                     String openId,
                                                                     HttpServletRequest request) throws WechatPayException;
 

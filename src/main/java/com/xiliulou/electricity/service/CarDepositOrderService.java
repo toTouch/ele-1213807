@@ -76,9 +76,6 @@ public interface CarDepositOrderService {
      */
     Boolean deleteById(Long id);
 
-    @Deprecated
-    Triple<Boolean,String,Object> payRentCarDeposit(Long storeId, Integer carModelId, HttpServletRequest request);
-
     Triple<Boolean, String, Object> selectRentCarDeposit();
     
     @Deprecated
@@ -89,9 +86,7 @@ public interface CarDepositOrderService {
     CarDepositOrder selectByOrderId(String orderNo,Integer tenantId);
 
     Triple<Boolean, String, Object> handleRentCarDeposit(Long franchiseeId,Long carModelId, Long storeId, Integer memberCardId, UserInfo userInfo);
-
-    Triple<Boolean, String, Object> handleRefundCarDeposit(String orderId, Long uid, String remark, BigDecimal refundAmount, HttpServletRequest request);
-
+    
     Triple<Boolean, String, Object> handleOffLineRefundCarDeposit(String orderId, Long uid, HttpServletRequest request);
     
     BigDecimal queryDepositTurnOverByDepositType(Integer tenantId, Long o, Integer rentCarDeposit,

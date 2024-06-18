@@ -24,17 +24,6 @@ public class JsonUserRentCarDepositOrderController extends BaseController {
     @Autowired
     private CarDepositOrderService carDepositOrderService;
     
-    /**
-     * 缴纳租车押金
-     *
-     * @return
-     */
-    @Deprecated
-    @PostMapping("/user/rentCarDeposit/order")
-    public R payRentCarDeposit(@RequestParam(value = "storeId") Long storeId, @RequestParam(value = "carModelId") Integer carModelId, HttpServletRequest request) {
-        return returnTripleResult(carDepositOrderService.payRentCarDeposit(storeId, carModelId, request));
-    }
-    
     //用户查询租车押金
     @GetMapping(value = "/user/rentCarDeposit/detail")
     public R queryRentCarDeposit() {

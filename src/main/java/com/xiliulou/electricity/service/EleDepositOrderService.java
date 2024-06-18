@@ -51,8 +51,6 @@ public interface EleDepositOrderService {
 
     BigDecimal queryTurnOver(Integer tenantId);
 
-    R payBatteryServiceFee(HttpServletRequest request);
-
     R adminPayRentCarDeposit(RentCarDepositAdd rentCarDepositAdd);
 
     R refundRentCarDeposit(HttpServletRequest request);
@@ -94,4 +92,6 @@ public interface EleDepositOrderService {
      * @return 影响行数
      */
     Integer updatePhoneByUid(Integer tenantId, Long uid,String newPhone);
+    
+    R checkPayParamsDetails(String orderId);
 }

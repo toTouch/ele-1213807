@@ -60,15 +60,9 @@ public interface FreeDepositOrderService {
 
     Triple<Boolean, String, Object> acquireUserFreeBatteryDepositStatus();
 
-    Triple<Boolean, String, Object> freeBatteryDepositHybridOrder(FreeBatteryDepositHybridOrderQuery query, HttpServletRequest request);
-
     Triple<Boolean, String, Object> freeCarDepositOrder(FreeCarDepositQuery freeCarDepositQuery);
 
     Triple<Boolean, String, Object> acquireFreeCarDepositStatus();
-
-    Triple<Boolean, String, Object> freeCarDepositHybridOrder(FreeCarDepositHybridOrderQuery query, HttpServletRequest request);
-
-    Triple<Boolean, String, Object> freeCarBatteryDepositHybridOrder(FreeCarBatteryDepositHybridOrderQuery query, HttpServletRequest request);
 
     Integer selectByPageCount(FreeDepositOrderQuery query);
     
@@ -89,8 +83,6 @@ public interface FreeDepositOrderService {
     Triple<Boolean, String, Object> freeCarBatteryDepositOrder(FreeCarBatteryDepositQuery freeCarBatteryDepositQuery);
 
     Triple<Boolean, String, Object> acquireFreeCarBatteryDepositStatus();
-
-    Triple<Boolean, String, Object> freeCarBatteryCarDepositHybridOrder(FreeCarBatteryDepositOrderQuery query, HttpServletRequest request);
 
     Triple<Boolean, String, Object> selectFreeDepositOrderDetail();
 
