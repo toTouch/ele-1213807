@@ -1,9 +1,7 @@
 package com.xiliulou.electricity.service.impl.merchant;
 
 import cn.hutool.core.util.IdUtil;
-import com.huaweicloud.sdk.core.utils.JsonUtils;
 import com.xiliulou.cache.redis.RedisService;
-import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.bo.merchant.MerchantWithdrawApplicationBO;
 import com.xiliulou.electricity.bo.merchant.MerchantWithdrawApplicationRecordBO;
@@ -15,7 +13,6 @@ import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.constant.merchant.MerchantWithdrawApplicationRecordConstant;
 import com.xiliulou.electricity.constant.merchant.MerchantWithdrawConstant;
 import com.xiliulou.electricity.converter.ElectricityPayParamsConverter;
-import com.xiliulou.electricity.entity.ElectricityPayParams;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.UserOauthBind;
 import com.xiliulou.electricity.entity.merchant.Merchant;
@@ -27,7 +24,6 @@ import com.xiliulou.electricity.mapper.merchant.MerchantWithdrawApplicationMappe
 import com.xiliulou.electricity.request.merchant.BatchReviewWithdrawApplicationRequest;
 import com.xiliulou.electricity.request.merchant.MerchantWithdrawApplicationRequest;
 import com.xiliulou.electricity.request.merchant.ReviewWithdrawApplicationRequest;
-import com.xiliulou.electricity.service.ElectricityPayParamsService;
 import com.xiliulou.electricity.service.UserOauthBindService;
 import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.service.WechatPayParamsBizService;
@@ -46,7 +42,6 @@ import com.xiliulou.pay.weixinv3.dto.WechatTransferOrderQueryResult;
 import com.xiliulou.pay.weixinv3.dto.WechatTransferOrderResult;
 import com.xiliulou.pay.weixinv3.exception.WechatPayException;
 import com.xiliulou.pay.weixinv3.query.WechatTransferBatchOrderDetailQuery;
-import com.xiliulou.pay.weixinv3.service.WechatV3TransferService;
 import com.xiliulou.pay.weixinv3.v2.query.WechatTransferBatchOrderRecordRequest;
 import com.xiliulou.pay.weixinv3.v2.query.WechatTransferBatchOrderRequest;
 import com.xiliulou.pay.weixinv3.v2.query.WechatTransferOrderRecordRequest;
@@ -67,7 +62,6 @@ import javax.annotation.Resource;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -109,13 +103,7 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
     private MerchantWithdrawApplicationRecordService merchantWithdrawApplicationRecordService;
     
     @Resource
-    private WechatV3TransferService wechatV3TransferService;
-    
-    @Resource
     private WechatV3TransferInvokeService wechatV3TransferInvokeService;
-    
-    @Resource
-    private ElectricityPayParamsService electricityPayParamsService;
     
     @Value("${hexup.merchant.merchantAppletId")
     private String merchantAppletId;
