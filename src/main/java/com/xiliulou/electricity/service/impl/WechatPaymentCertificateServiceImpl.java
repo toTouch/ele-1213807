@@ -78,7 +78,7 @@ public class WechatPaymentCertificateServiceImpl implements WechatPaymentCertifi
             //存储微信支付证书
             saveOrUpdateWeChatPaymentCertificate(wechatPaymentCertificate);
         } catch (Exception e) {
-            log.error("certificate get error, tenantId={}", wechatPaymentCertificate.getTenantId());
+            log.error("certificate get error:", e);
             throw new Exception("证书内容获取失败，请重试！");
         } finally {
             try {
