@@ -30,12 +30,12 @@ import com.xiliulou.electricity.entity.PxzConfig;
 import com.xiliulou.electricity.entity.RefundOrder;
 import com.xiliulou.electricity.entity.UnionPayOrder;
 import com.xiliulou.electricity.entity.UnionTradeOrder;
-import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.UserBatteryDeposit;
 import com.xiliulou.electricity.entity.UserBatteryMemberCard;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.enterprise.EnterpriseChannelUser;
 import com.xiliulou.electricity.enums.BusinessType;
+import com.xiliulou.electricity.enums.CheckPayParamsResultEnum;
 import com.xiliulou.electricity.enums.enterprise.EnterprisePaymentStatusEnum;
 import com.xiliulou.electricity.enums.enterprise.PackageOrderTypeEnum;
 import com.xiliulou.electricity.mapper.EleRefundOrderMapper;
@@ -486,6 +486,13 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             return Triple.of(false, "100247", "用户信息不存在");
         }
         
+        WechatPayParamsDetails wechatPayParamsDetails = wechatPayParamsBizService.getDetailsByIdTenantIdAndFranchiseeId(TenantContextHolder.getTenantId(),
+                eleRefundOrder.getFranchiseeId());
+        if (Objects.isNull(wechatPayParamsDetails)) {
+            log.warn("BATTERY DEPOSIT WARN!not found pay params,refundOrderNo={}", eleRefundOrder.getRefundOrderNo());
+            return Triple.of(false, "100307", "未配置支付参数!");
+        }
+        
         // 校验退款金额
         if (Objects.nonNull(refundAmount)) {
             if (refundAmount.compareTo(eleRefundOrder.getRefundAmount()) > 0) {
@@ -528,20 +535,11 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             return handleBatteryZeroDepositRefundOrder(eleRefundOrderUpdate, userInfo);
         }
         
-        // 加盟商支付配置已删除，线下退款，不调起微信退款
-        if (Objects.equals(offlineRefund, 1)) {
-            eleRefundOrder.setStatus(EleRefundOrder.STATUS_SUCCESS);
-            eleRefundOrder.setRefundAmount(refundAmount);
-            eleRefundOrderService.insert(eleRefundOrder);
+        // 支付配置校验未通过，原线上退款需转为线下退款
+        if (Objects.equals(offlineRefund, CheckPayParamsResultEnum.FAIL.getCode())) {
+            eleRefundOrderUpdate.setPayType(EleRefundOrder.PAY_TYPE_OFFLINE);
             log.info("OFFLINE REFUND COMPLETED! refundOrderNo={}", eleRefundOrder.getRefundOrderNo());
-            return Triple.of(true, "", null);
-        }
-        
-        WechatPayParamsDetails wechatPayParamsDetails = wechatPayParamsBizService.getDetailsByIdTenantIdAndFranchiseeId(TenantContextHolder.getTenantId(),
-                eleRefundOrder.getFranchiseeId());
-        if (Objects.isNull(wechatPayParamsDetails)) {
-            log.warn("BATTERY DEPOSIT WARN!not found pay params,refundOrderNo={}", eleRefundOrder.getRefundOrderNo());
-            return Triple.of(false,"100307", "未配置支付参数!");
+            return handleBatteryZeroDepositRefundOrder(eleRefundOrderUpdate, userInfo);
         }
         
         try {
@@ -1534,6 +1532,13 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             return R.fail("ELECTRICITY.0051", "押金正在退款中，请勿重复提交");
         }
         
+        WechatPayParamsDetails wechatPayParamsDetails = wechatPayParamsBizService.getDetailsByIdTenantIdAndFranchiseeId(eleDepositOrder.getTenantId(),
+                eleDepositOrder.getParamFranchiseeId());
+        if (Objects.isNull(wechatPayParamsDetails)) {
+            log.warn("BATTERY DEPOSIT WARN!not found pay params,orderId={}", eleDepositOrder.getOrderId());
+            return R.fail("100307", "未配置支付参数!");
+        }
+        
         if (Objects.nonNull(refundAmount)) {
             if (refundAmount.compareTo(eleDepositOrder.getPayAmount()) > 0) {
                 log.error("battery deposit OffLine Refund ERROR ,refundAmount > payAmount uid={}", uid);
@@ -1564,7 +1569,8 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
         // 修改企业用户代付状态为代付过期
         enterpriseChannelUserService.updatePaymentStatusForRefundDeposit(userInfo.getUid(), EnterprisePaymentStatusEnum.PAYMENT_TYPE_EXPIRED.getCode());
         
-        if (Objects.equals(eleDepositOrder.getPayType(), EleDepositOrder.OFFLINE_PAYMENT)) {
+        // 支付配置校验不通过时，需传递offlineRefund，走线下退款
+        if (Objects.equals(eleDepositOrder.getPayType(), EleDepositOrder.OFFLINE_PAYMENT) || Objects.equals(offlineRefund, CheckPayParamsResultEnum.FAIL.getCode())) {
             // 生成退款订单
             eleRefundOrder.setRefundAmount(refundAmount);
             eleRefundOrder.setStatus(EleRefundOrder.STATUS_SUCCESS);
@@ -1660,22 +1666,6 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
                 userInfoGroupDetailService.handleAfterRefundDeposit(uid);
                 
                 return R.ok();
-            }
-            
-            // 加盟商支付配置已删除，线下退款，不调起微信退款
-            if (Objects.equals(offlineRefund, 1)) {
-                eleRefundOrder.setStatus(EleRefundOrder.STATUS_SUCCESS);
-                eleRefundOrder.setRefundAmount(refundAmount);
-                eleRefundOrderService.insert(eleRefundOrder);
-                log.info("OFFLINE REFUND COMPLETED! refundOrderNo={}", eleRefundOrder.getRefundOrderNo());
-                return R.ok();
-            }
-            
-            WechatPayParamsDetails wechatPayParamsDetails = wechatPayParamsBizService.getDetailsByIdTenantIdAndFranchiseeId(TenantContextHolder.getTenantId(),
-                    eleDepositOrder.getFranchiseeId());
-            if (Objects.isNull(wechatPayParamsDetails)) {
-                log.warn("BATTERY DEPOSIT WARN!not found pay params,refundOrderNo={}", eleRefundOrder.getRefundOrderNo());
-                return R.fail("100307", "未配置支付参数!");
             }
             
             // 调起退款
@@ -1928,6 +1918,14 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
                     .payAmount(refundAmount).refundAmount(refundAmount).build();
             
             ElectricityTradeOrder electricityTradeOrder = electricityTradeOrderService.selectTradeOrderByOrderIdV2(refundOrder.getOrderId());
+            
+            WechatPayParamsDetails wechatPayParamsDetails = wechatPayParamsBizService.getDetailsByIdTenantIdAndFranchiseeId(electricityTradeOrder.getTenantId(),
+                    electricityTradeOrder.getPayFranchiseeId());
+            if (Objects.isNull(wechatPayParamsDetails)) {
+                log.error("FREE DEPOSIT HYBRID ERROR!not found electricityPayParams,uid={}", uid);
+                return Triple.of(false, "100234", "未配置支付参数!");
+            }
+            
             String tradeOrderNo = null;
             Integer total = null;
             if (Objects.isNull(electricityTradeOrder)) {
@@ -1946,17 +1944,17 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             }
             
             // 退款
-            WechatV3RefundQuery wechatV3RefundQuery = new WechatV3RefundQuery();
-            wechatV3RefundQuery.setTenantId(electricityTradeOrder.getTenantId());
-            wechatV3RefundQuery.setTotal(total);
-            wechatV3RefundQuery.setRefund(refundOrder.getRefundAmount().multiply(new BigDecimal(100)).intValue());
-            wechatV3RefundQuery.setReason("退款");
-            wechatV3RefundQuery.setOrderId(tradeOrderNo);
-            wechatV3RefundQuery.setNotifyUrl(wechatConfig.getRefundCallBackUrl() + electricityTradeOrder.getTenantId());
-            wechatV3RefundQuery.setCurrency("CNY");
-            wechatV3RefundQuery.setRefundId(refundOrder.getRefundOrderNo());
+            WechatV3RefundRequest wechatV3RefundRequest = new WechatV3RefundRequest();
+            wechatV3RefundRequest.setRefundId(refundOrder.getRefundOrderNo());
+            wechatV3RefundRequest.setOrderId(tradeOrderNo);
+            wechatV3RefundRequest.setReason("退款");
+            wechatV3RefundRequest.setNotifyUrl(wechatConfig.getRefundCallBackUrl() + electricityTradeOrder.getTenantId() + "/" + wechatPayParamsDetails.getFranchiseeId());
+            wechatV3RefundRequest.setRefund(refundOrder.getRefundAmount().multiply(new BigDecimal(100)).intValue());
+            wechatV3RefundRequest.setTotal(total);
+            wechatV3RefundRequest.setCurrency("CNY");
+            wechatV3RefundRequest.setCommonRequest(ElectricityPayParamsConverter.qryDetailsToCommonRequest(wechatPayParamsDetails));
             
-            refund = wechatV3JsapiService.refund(wechatV3RefundQuery);
+            refund = wechatV3JsapiInvokeService.refund(wechatV3RefundRequest);
             
             return Triple.of(true, "", JsonUtil.toJson(refund));
         } catch (WechatPayException e) {
