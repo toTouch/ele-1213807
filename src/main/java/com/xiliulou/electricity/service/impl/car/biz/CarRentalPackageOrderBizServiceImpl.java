@@ -456,6 +456,10 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
     public Boolean refundConfirmation(CarRentalPackageRefundReq carRentalPackageRefundReq) {
         Integer tenantId = TenantContextHolder.getTenantId();
         TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            throw new BizException("ELECTRICITY.0001", "未找到用户");
+        }
+        
         Long optUid = user.getUid();
         
         if (carRentalPackageRefundReq.getEstimatedRefundAmount() == null) {
@@ -519,7 +523,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         
         //开始确认审核操作
         CarRentRefundVo carRentRefundVo = CarRentRefundVo.builder().orderNo(carRentalPackageOrderRentRefundPo.getOrderNo()).approveFlag(Boolean.TRUE)
-                .amount(carRentalPackageRefundReq.getEstimatedRefundAmount()).uid(optUid).build();
+                .amount(carRentalPackageRefundReq.getEstimatedRefundAmount()).uid(optUid).compelOffLine(carRentalPackageRefundReq.getCompelOffLine()).build();
         
         //saveApproveRefundRentOrderTx(carRentRefundVo, rentRefundOrderEntity, packageOrderEntity);
         saveApproveRefundRentOrder(carRentRefundVo, rentRefundOrderEntity, packageOrderEntity);
@@ -547,6 +551,14 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         
         // 购买订单时的支付方式
         Integer payType = packageOrderEntity.getPayType();
+        
+        // 强制线下退款
+        Integer compelOffLine = carRentRefundVo.getCompelOffLine();
+        if (ObjectUtils.isNotEmpty(compelOffLine) && YesNoEnum.YES.getCode().equals(compelOffLine) && PayTypeEnum.ON_LINE.getCode().equals(payType)) {
+            payType = PayTypeEnum.OFF_LINE.getCode();
+            updateRentRefundEntity.setCompelOffLine(YesNoEnum.YES.getCode());
+        }
+        
         // 购买订单时的支付订单号
         String orderNo = packageOrderEntity.getOrderNo();
         
@@ -1224,10 +1236,11 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
      * @param approveFlag       审批标识，true(同意)；false(驳回)
      * @param apploveDesc       审批意见
      * @param apploveUid        审批人
+     * @param compelOffLine     强制线下退款
      * @return
      */
     @Override
-    public Boolean approveRefundRentOrder(String refundRentOrderNo, boolean approveFlag, String apploveDesc, Long apploveUid) {
+    public Boolean approveRefundRentOrder(String refundRentOrderNo, boolean approveFlag, String apploveDesc, Long apploveUid, Integer compelOffLine) {
         if (!ObjectUtils.allNotNull(refundRentOrderNo, approveFlag, apploveUid)) {
             throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
@@ -1263,7 +1276,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         }
         
         // TX 事务落库
-        saveApproveRefundRentOrderTx(refundRentOrderNo, approveFlag, apploveDesc, apploveUid, rentRefundEntity, packageOrderEntity);
+        saveApproveRefundRentOrderTx(refundRentOrderNo, approveFlag, apploveDesc, apploveUid, rentRefundEntity, packageOrderEntity, compelOffLine);
         
         return true;
     }
@@ -1354,12 +1367,13 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
      * @param apploveUid         审批人
      * @param rentRefundEntity   退租申请单DB数据
      * @param packageOrderEntity 套餐购买订单信息
+     * @param compelOffLine      强制线下退款
      * @return void
      * @author xiaohui.song
      **/
     @Transactional(rollbackFor = Exception.class)
     public void saveApproveRefundRentOrderTx(String refundRentOrderNo, boolean approveFlag, String apploveDesc, Long apploveUid, CarRentalPackageOrderRentRefundPo rentRefundEntity,
-            CarRentalPackageOrderPo packageOrderEntity) {
+            CarRentalPackageOrderPo packageOrderEntity, Integer compelOffLine) {
         
         CarRentalPackageOrderRentRefundPo rentRefundUpdateEntity = new CarRentalPackageOrderRentRefundPo();
         rentRefundUpdateEntity.setOrderNo(refundRentOrderNo);
@@ -1371,6 +1385,13 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         if (approveFlag) {
             // 购买订单时的支付方式
             Integer payType = packageOrderEntity.getPayType();
+            
+            // 强制线下退款
+            if (ObjectUtils.isNotEmpty(compelOffLine) && YesNoEnum.YES.getCode().equals(compelOffLine) && PayTypeEnum.ON_LINE.getCode().equals(payType)) {
+                payType = PayTypeEnum.OFF_LINE.getCode();
+                rentRefundUpdateEntity.setCompelOffLine(YesNoEnum.YES.getCode());
+            }
+            
             // 购买订单时的支付订单号
             String orderNo = packageOrderEntity.getOrderNo();
             

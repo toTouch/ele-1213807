@@ -59,7 +59,7 @@ public class JsonAdminUserInfoGroupController extends BasicController {
     public R save(@RequestBody @Validated(value = CreateGroup.class) UserInfoGroupSaveAndUpdateRequest request) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
-            log.error("ELE ERROR! not found user");
+            log.warn("ELE WARN! not found user");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         
@@ -79,7 +79,7 @@ public class JsonAdminUserInfoGroupController extends BasicController {
     public R delete(@PathVariable("id") Long id) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
-            log.error("ELE ERROR! not found user");
+            log.warn("ELE WARN! not found user");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         
@@ -99,7 +99,7 @@ public class JsonAdminUserInfoGroupController extends BasicController {
     public R update(@RequestBody @Validated(value = UpdateGroup.class) UserInfoGroupSaveAndUpdateRequest userInfoGroupSaveAndUpdateRequest) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
-            log.error("ELE ERROR! not found user");
+            log.warn("ELE WARN! not found user");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         
@@ -126,7 +126,7 @@ public class JsonAdminUserInfoGroupController extends BasicController {
         
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
-            log.error("ELE ERROR! not found user");
+            log.warn("ELE WARN! not found user");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         
@@ -175,7 +175,7 @@ public class JsonAdminUserInfoGroupController extends BasicController {
     public R pageCount(@RequestParam(value = "franchiseeId", required = false) Long franchiseeId, @RequestParam(value = "groupId", required = false) Long groupId) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
-            log.error("ELE ERROR! not found user");
+            log.warn("ELE WARN! not found user");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         
@@ -207,7 +207,7 @@ public class JsonAdminUserInfoGroupController extends BasicController {
     public R batchImport(@RequestBody @Validated UserInfoGroupBatchImportRequest request) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
-            log.error("ELE ERROR! not found user");
+            log.warn("ELE WARN! not found user");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         
@@ -234,7 +234,7 @@ public class JsonAdminUserInfoGroupController extends BasicController {
         
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
-            log.error("ELE ERROR! not found user");
+            log.warn("ELE WARN! not found user");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         

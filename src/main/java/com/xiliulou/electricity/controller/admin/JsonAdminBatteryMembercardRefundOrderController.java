@@ -124,7 +124,7 @@ public class JsonAdminBatteryMembercardRefundOrderController extends BaseControl
     public R batteryMembercardRefundAudit(@RequestParam("refundOrderNo") String refundOrderNo, @RequestParam("refundAmount") BigDecimal refundAmount,
             @RequestParam("status") Integer status, @RequestParam(value = "errMsg", required = false) String errMsg, HttpServletRequest request,
             @RequestParam(value = "offlineRefund", required = false) Integer offlineRefund) {
-        return returnTripleResult(batteryMembercardRefundOrderService.batteryMembercardRefundAudit(refundOrderNo, errMsg, refundAmount, status, request));
+        return returnTripleResult(batteryMembercardRefundOrderService.batteryMembercardRefundAudit(refundOrderNo, errMsg, refundAmount, status, request, offlineRefund));
     }
     
     /**
@@ -137,12 +137,14 @@ public class JsonAdminBatteryMembercardRefundOrderController extends BaseControl
     
     @PostMapping("/admin/battery/membercard/refund")
     @Log(title = "后台电池租金退款")
-    public R batteryMembercardRefund(@RequestParam("orderNo") String orderNo, @RequestParam("refundAmount") BigDecimal refundAmount, HttpServletRequest request) {
-        return returnTripleResult(batteryMembercardRefundOrderService.batteryMembercardRefundForAdmin(orderNo, refundAmount, request));
+    public R batteryMembercardRefund(@RequestParam("orderNo") String orderNo, @RequestParam("refundAmount") BigDecimal refundAmount, HttpServletRequest request,
+            @RequestParam(value = "offlineRefund", required = false) Integer offlineRefund) {
+        return returnTripleResult(batteryMembercardRefundOrderService.batteryMembercardRefundForAdmin(orderNo, refundAmount, request, offlineRefund));
     }
     
     /**
      * 校验订单所用支付参数是否存在
+     *
      * @param orderNo 套餐订单号
      * @return 1校验通过 0校验失败
      */

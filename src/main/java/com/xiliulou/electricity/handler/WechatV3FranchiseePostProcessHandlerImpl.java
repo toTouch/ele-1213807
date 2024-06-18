@@ -161,6 +161,6 @@ public class WechatV3FranchiseePostProcessHandlerImpl implements WechatV3PostPro
     
     
     private String getApiV3Key(Integer tenantId, Long franchiseeId) {
-        return electricityPayParamsService.queryCacheByTenantIdAndFranchiseeId(tenantId, franchiseeId).getWechatV3ApiKey();
+        return electricityPayParamsService.queryPreciseCacheByTenantIdAndFranchiseeId(tenantId, franchiseeId).getWechatV3ApiKey();
     }
 }

@@ -382,18 +382,18 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         
         User user = userService.queryByUidFromCache(uid);
         if (Objects.isNull(uid)) {
-            log.error("FREE DEPOSIT ERROR! not found user! uid={}", uid);
+            log.warn("FREE DEPOSIT WARN! not found user! uid={}", uid);
             return Triple.of(false, "ELECTRICITY.0001", "未能查到用户信息");
         }
         
         FreeDepositOrder freeDepositOrder = this.selectByOrderId(orderId);
         if (Objects.isNull(freeDepositOrder) || !Objects.equals(freeDepositOrder.getTenantId(), TenantContextHolder.getTenantId())) {
-            log.error("FREE DEPOSIT ERROR! not found freeDepositOrder,orderId={}", orderId);
+            log.warn("FREE DEPOSIT WARN! not found freeDepositOrder,orderId={}", orderId);
             return Triple.of(false, "100403", "免押订单不存在");
         }
         
         if (!Objects.equals(freeDepositOrder.getPayStatus(), FreeDepositOrder.PAY_STATUS_INIT)) {
-            log.error("FREE DEPOSIT ERROR! freeDepositOrder already AuthToPay,orderId={}", orderId);
+            log.warn("FREE DEPOSIT WARN! freeDepositOrder already AuthToPay,orderId={}", orderId);
             return Triple.of(false, "100412", "免押订单已进行代扣，请勿重复操作");
         }
         
@@ -402,24 +402,29 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         }
         
         if (Objects.isNull(payTransAmt) || payTransAmt.compareTo(BigDecimal.valueOf(freeDepositOrder.getTransAmt())) > 0) {
-            log.error("FREE DEPOSIT ERROR! payTransAmt is illegal,orderId={}", orderId);
+            log.warn("FREE DEPOSIT WARN! payTransAmt is illegal,orderId={}", orderId);
             return Triple.of(false, "ELECTRICITY.0007", "扣款金额不能大于支付金额!");
         }
         
         UserInfo userInfo = userInfoService.queryByUidFromCache(freeDepositOrder.getUid());
         if (Objects.isNull(userInfo) || !Objects.equals(userInfo.getTenantId(), TenantContextHolder.getTenantId())) {
-            log.error("FREE DEPOSIT ERROR! not found user info! uid={}", freeDepositOrder.getUid());
+            log.warn("FREE DEPOSIT WARN! not found user info! uid={}", freeDepositOrder.getUid());
             return Triple.of(false, "ELECTRICITY.0001", "未能查到用户信息");
         }
-        
+
+        if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
+            log.warn("FREE DEPOSIT WARN! user is disable,uid={}", userInfo.getUid());
+            return Triple.of(false, "ELECTRICITY.0024", "用户已被禁用");
+        }
+
         if (!Objects.equals(userInfo.getAuthStatus(), UserInfo.AUTH_STATUS_REVIEW_PASSED)) {
-            log.error("FREE DEPOSIT ERROR! user not auth,uid={}", userInfo.getUid());
+            log.warn("FREE DEPOSIT WARN! user not auth,uid={}", userInfo.getUid());
             return Triple.of(false, "ELECTRICITY.0041", "未实名认证");
         }
-        
-        if (!Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES) && !Objects.equals(userInfo.getCarDepositStatus(),
-                UserInfo.CAR_DEPOSIT_STATUS_YES) && !Objects.equals(userInfo.getCarBatteryDepositStatus(), YesNoEnum.YES.getCode())) {
-            log.error("FREE DEPOSIT ERROR! user not pay deposit,uid={}", userInfo.getUid());
+
+        if (!Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)
+                && !Objects.equals(userInfo.getCarDepositStatus(), UserInfo.CAR_DEPOSIT_STATUS_YES) && !Objects.equals(userInfo.getCarBatteryDepositStatus(), YesNoEnum.YES.getCode())) {
+            log.warn("FREE DEPOSIT WARN! user not pay deposit,uid={}", userInfo.getUid());
             return Triple.of(false, "ELECTRICITY.0042", "未缴纳押金");
         }
         
@@ -494,7 +499,7 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         
         FreeDepositOrder freeDepositOrder = this.selectByOrderId(orderId);
         if (Objects.isNull(freeDepositOrder) || !Objects.equals(freeDepositOrder.getTenantId(), TenantContextHolder.getTenantId())) {
-            log.error("FREE DEPOSIT ERROR! not found freeDepositOrder,orderId={}", orderId);
+            log.warn("FREE DEPOSIT WARN! not found freeDepositOrder,orderId={}", orderId);
             return Triple.of(false, "100403", "免押订单不存在");
         }
         
@@ -553,19 +558,19 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         
         FreeDepositOrder freeDepositOrder = this.selectByOrderId(orderId);
         if (Objects.isNull(freeDepositOrder) || !Objects.equals(freeDepositOrder.getTenantId(), TenantContextHolder.getTenantId())) {
-            log.error("FREE DEPOSIT ERROR! not found freeDepositOrder,orderId={}", orderId);
+            log.warn("FREE DEPOSIT WARN! not found freeDepositOrder,orderId={}", orderId);
             return Triple.of(false, "100403", "免押订单不存在");
         }
         
         UserInfo userInfo = userInfoService.queryByUidFromCache(freeDepositOrder.getUid());
         if (Objects.isNull(userInfo)) {
-            log.error("FREE DEPOSIT ERROR! not found user info,uid={},orderId={}", freeDepositOrder.getUid(), orderId);
+            log.warn("FREE DEPOSIT WARN! not found user info,uid={},orderId={}", freeDepositOrder.getUid(), orderId);
             return Triple.of(false, "ELECTRICITY.0001", "未能查到用户信息");
         }
         
         PxzConfig pxzConfig = pxzConfigService.queryByTenantIdFromCache(TenantContextHolder.getTenantId());
         if (Objects.isNull(pxzConfig) || StringUtils.isBlank(pxzConfig.getAesKey()) || StringUtils.isBlank(pxzConfig.getMerchantCode())) {
-            log.error("FREE DEPOSIT ERROR! not found pxzConfig,tenantId={}", TenantContextHolder.getTenantId());
+            log.warn("FREE DEPOSIT WARN! not found pxzConfig,tenantId={}", TenantContextHolder.getTenantId());
             return Triple.of(false, "100400", "免押功能未配置相关信息,请联系客服处理");
         }
         
@@ -579,13 +584,13 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
             }
             
             if (!Objects.equals(orderId, userBatteryDeposit.getOrderId())) {
-                log.error("FREE DEPOSIT ERROR! illegal orderId,uid={},orderId={}", freeDepositOrder.getUid(), orderId);
+                log.warn("FREE DEPOSIT WARN! illegal orderId,uid={},orderId={}", freeDepositOrder.getUid(), orderId);
                 return Triple.of(false, "100417", "免押订单与用户绑定订单不一致");
             }
             
             EleDepositOrder eleDepositOrder = eleDepositOrderService.queryByOrderId(userBatteryDeposit.getOrderId());
             if (Objects.isNull(eleDepositOrder)) {
-                log.error("FREE DEPOSIT ERROR! not found eleDepositOrder! uid={},orderId={}", freeDepositOrder.getUid(), userBatteryDeposit.getOrderId());
+                log.warn("FREE DEPOSIT WARN! not found eleDepositOrder! uid={},orderId={}", freeDepositOrder.getUid(), userBatteryDeposit.getOrderId());
                 return Triple.of(false, "ELECTRICITY.0015", "未找到订单");
             }
             
@@ -703,8 +708,6 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
                 return Triple.of(false, "100402", "免押查询失败！");
             }
             
-            log.info("synchronizFreeDepositOrderStatus, pxzDepositService.queryFreeDepositOrder result is {}", JsonUtil.toJson(pxzQueryOrderRsp));
-            
             // 返回值判定
             if (ObjectUtils.isEmpty(pxzQueryOrderRsp) || !pxzQueryOrderRsp.isSuccess() || ObjectUtils.isEmpty(pxzQueryOrderRsp.getData())) {
                 log.warn("synchronizFreeDepositOrderStatus, pxzDepositService.queryFreeDepositOrder failed. depositPayOrderNo is {}", orderId);
@@ -798,7 +801,7 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         
         FreeDepositOrder freeDepositOrder = this.selectByOrderId(orderId);
         if (Objects.isNull(freeDepositOrder) || !Objects.equals(freeDepositOrder.getTenantId(), TenantContextHolder.getTenantId())) {
-            log.error("FREE DEPOSIT ERROR! not found freeDepositOrder,orderId={}", orderId);
+            log.warn("FREE DEPOSIT WARN! not found freeDepositOrder,orderId={}", orderId);
             return Triple.of(false, "100403", "免押订单不存在");
         }
         
@@ -1028,19 +1031,19 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         
         UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
         if (Objects.isNull(userInfo)) {
-            log.error("FREE DEPOSIT ERROR! not found user info! uid={}", uid);
+            log.warn("FREE DEPOSIT WARN! not found user info! uid={}", uid);
             return Triple.of(false, "ELECTRICITY.0001", "未能查到用户信息");
         }
         
         // 获取租户免押次数
         FreeDepositData freeDepositData = freeDepositDataService.selectByTenantId(TenantContextHolder.getTenantId());
         if (Objects.isNull(freeDepositData)) {
-            log.error("FREE DEPOSIT ERROR! freeDepositData is null,uid={}", uid);
+            log.warn("FREE DEPOSIT WARN! freeDepositData is null,uid={}", uid);
             return Triple.of(false, "100404", "免押次数未充值，请联系管理员");
         }
         
         if (freeDepositData.getFreeDepositCapacity() <= NumberConstant.ZERO) {
-            log.error("FREE DEPOSIT ERROR! freeDepositCapacity already run out,uid={}", uid);
+            log.warn("FREE DEPOSIT WARN! freeDepositCapacity already run out,uid={}", uid);
             return Triple.of(false, "100405", "免押次数已用完，请联系管理员");
         }
         
@@ -1226,19 +1229,19 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         
         UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
         if (Objects.isNull(userInfo)) {
-            log.error("FREE DEPOSIT ERROR! not found user info! uid={}", uid);
+            log.warn("FREE DEPOSIT WARN! not found user info! uid={}", uid);
             return Triple.of(false, "ELECTRICITY.0001", "未能查到用户信息");
         }
         
         // 获取租户免押次数
         FreeDepositData freeDepositData = freeDepositDataService.selectByTenantId(TenantContextHolder.getTenantId());
         if (Objects.isNull(freeDepositData)) {
-            log.error("FREE DEPOSIT ERROR! freeDepositData is null,uid={}", uid);
+            log.warn("FREE DEPOSIT WARN! freeDepositData is null,uid={}", uid);
             return Triple.of(false, "100404", "免押次数未充值，请联系管理员");
         }
         
         if (freeDepositData.getFreeDepositCapacity() <= NumberConstant.ZERO) {
-            log.error("FREE DEPOSIT ERROR! freeDepositCapacity already run out,uid={}", uid);
+            log.warn("FREE DEPOSIT WARN! freeDepositCapacity already run out,uid={}", uid);
             return Triple.of(false, "100405", "免押次数已用完，请联系管理员");
         }
         
@@ -1329,19 +1332,19 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         
         UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
         if (Objects.isNull(userInfo)) {
-            log.error("FREE DEPOSIT ERROR! not found user info! uid={}", uid);
+            log.warn("FREE DEPOSIT WARN! not found user info! uid={}", uid);
             return Triple.of(false, "ELECTRICITY.0001", "未能查到用户信息");
         }
         
         // 获取租户免押次数
         FreeDepositData freeDepositData = freeDepositDataService.selectByTenantId(TenantContextHolder.getTenantId());
         if (Objects.isNull(freeDepositData)) {
-            log.error("FREE DEPOSIT ERROR! freeDepositData is null,uid={}", uid);
+            log.warn("FREE DEPOSIT WARN! freeDepositData is null,uid={}", uid);
             return Triple.of(false, "100404", "免押次数未充值，请联系管理员");
         }
         
         if (freeDepositData.getFreeDepositCapacity() <= NumberConstant.ZERO) {
-            log.error("FREE DEPOSIT ERROR! freeDepositCapacity already run out,uid={}", uid);
+            log.warn("FREE DEPOSIT WARN! freeDepositCapacity already run out,uid={}", uid);
             return Triple.of(false, "100405", "免押次数已用完，请联系管理员");
         }
         
@@ -1458,7 +1461,7 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         
         UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
         if (Objects.isNull(userInfo)) {
-            log.error("FREE DEPOSIT ERROR! not found user info,uid={}", uid);
+            log.warn("FREE DEPOSIT WARN! not found user info,uid={}", uid);
             return Triple.of(false, "ELECTRICITY.0001", "未能查到用户信息");
         }
         
@@ -1470,7 +1473,7 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         
         FreeDepositOrder freeDepositOrder = this.selectByOrderId(userBatteryDeposit.getOrderId());
         if (Objects.isNull(freeDepositOrder)) {
-            log.error("FREE DEPOSIT ERROR! not found freeDepositOrder,uid={},orderId={}", uid, userBatteryDeposit.getOrderId());
+            log.warn("FREE DEPOSIT WARN! not found freeDepositOrder,uid={},orderId={}", uid, userBatteryDeposit.getOrderId());
             return Triple.of(false, "100403", "免押订单不存在");
         }
         
@@ -1489,13 +1492,13 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         
         PxzConfig pxzConfig = pxzConfigService.queryByTenantIdFromCache(TenantContextHolder.getTenantId());
         if (Objects.isNull(pxzConfig) || StringUtils.isBlank(pxzConfig.getAesKey()) || StringUtils.isBlank(pxzConfig.getMerchantCode())) {
-            log.error("FREE DEPOSIT ERROR! not found pxzConfig,uid={}", uid);
+            log.warn("FREE DEPOSIT WARN! not found pxzConfig,uid={}", uid);
             return Triple.of(false, "100400", "免押功能未配置相关信息,请联系客服处理");
         }
         
         EleDepositOrder eleDepositOrder = eleDepositOrderService.queryByOrderId(userBatteryDeposit.getOrderId());
         if (Objects.isNull(eleDepositOrder)) {
-            log.error("FREE DEPOSIT ERROR! not found eleDepositOrder! uid={},orderId={}", uid, userBatteryDeposit.getOrderId());
+            log.warn("FREE DEPOSIT WARN! not found eleDepositOrder! uid={},orderId={}", uid, userBatteryDeposit.getOrderId());
             return Triple.of(false, "ELECTRICITY.0015", "未找到订单");
         }
         
@@ -1596,19 +1599,19 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         
         UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
         if (Objects.isNull(userInfo)) {
-            log.error("FREE DEPOSIT ERROR! not found user info,uid={}", uid);
+            log.warn("FREE DEPOSIT WARN! not found user info,uid={}", uid);
             return Triple.of(false, "ELECTRICITY.0001", "未能查到用户信息");
         }
         
         UserCarDeposit userCarDeposit = userCarDepositService.selectByUidFromCache(userInfo.getUid());
         if (Objects.isNull(userCarDeposit)) {
-            log.error("FREE DEPOSIT ERROR! not found userCarDeposit,uid={}", uid);
+            log.warn("FREE DEPOSIT WARN! not found userCarDeposit,uid={}", uid);
             return Triple.of(true, "", "");
         }
         
         FreeDepositOrder freeDepositOrder = this.selectByOrderId(userCarDeposit.getOrderId());
         if (Objects.isNull(freeDepositOrder)) {
-            log.error("FREE DEPOSIT ERROR! not found freeDepositOrder,uid={},orderId={}", uid, userCarDeposit.getOrderId());
+            log.warn("FREE DEPOSIT WARN! not found freeDepositOrder,uid={},orderId={}", uid, userCarDeposit.getOrderId());
             return Triple.of(false, "100403", "免押订单不存在");
         }
         
@@ -1626,13 +1629,13 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         
         PxzConfig pxzConfig = pxzConfigService.queryByTenantIdFromCache(TenantContextHolder.getTenantId());
         if (Objects.isNull(pxzConfig) || StringUtils.isBlank(pxzConfig.getAesKey()) || StringUtils.isBlank(pxzConfig.getMerchantCode())) {
-            log.error("FREE DEPOSIT ERROR! not found pxzConfig,uid={}", uid);
+            log.warn("FREE DEPOSIT WARN! not found pxzConfig,uid={}", uid);
             return Triple.of(false, "100400", "免押功能未配置相关信息,请联系客服处理");
         }
         
         CarDepositOrder carDepositOrder = carDepositOrderService.selectByOrderId(userCarDeposit.getOrderId());
         if (Objects.isNull(carDepositOrder)) {
-            log.error("FREE DEPOSIT ERROR! not found carDepositOrder! uid={},orderId={}", uid, userCarDeposit.getOrderId());
+            log.warn("FREE DEPOSIT WARN! not found carDepositOrder! uid={},orderId={}", uid, userCarDeposit.getOrderId());
             return Triple.of(false, "ELECTRICITY.0015", "未找到订单");
         }
         
@@ -1725,24 +1728,24 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         
         UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
         if (Objects.isNull(userInfo)) {
-            log.error("FREE DEPOSIT ERROR! not found user info,uid={}", uid);
+            log.warn("FREE DEPOSIT WARN! not found user info,uid={}", uid);
             return Triple.of(false, "ELECTRICITY.0001", "未能查到用户信息");
         }
         UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(userInfo.getUid());
         if (Objects.isNull(userBatteryDeposit)) {
-            log.info("FREE DEPOSIT INFO! not found userBatteryDeposit,uid={}", uid);
+            log.warn("FREE DEPOSIT WARN! not found userBatteryDeposit,uid={}", uid);
             return Triple.of(true, "", "");
         }
         
         UserCarDeposit userCarDeposit = userCarDepositService.selectByUidFromCache(userInfo.getUid());
         if (Objects.isNull(userCarDeposit)) {
-            log.error("FREE DEPOSIT ERROR! not found userCarDeposit,uid={}", uid);
+            log.warn("FREE DEPOSIT WARN! not found userCarDeposit,uid={}", uid);
             return Triple.of(true, "", "");
         }
         
         FreeDepositOrder freeDepositOrder = this.selectByOrderId(userCarDeposit.getOrderId());
         if (Objects.isNull(freeDepositOrder)) {
-            log.error("FREE DEPOSIT ERROR! not found freeDepositOrder,uid={},orderId={}", uid, userCarDeposit.getOrderId());
+            log.warn("FREE DEPOSIT WARN! not found freeDepositOrder,uid={},orderId={}", uid, userCarDeposit.getOrderId());
             return Triple.of(false, "100403", "免押订单不存在");
         }
         
@@ -1760,19 +1763,19 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         
         PxzConfig pxzConfig = pxzConfigService.queryByTenantIdFromCache(TenantContextHolder.getTenantId());
         if (Objects.isNull(pxzConfig) || StringUtils.isBlank(pxzConfig.getAesKey()) || StringUtils.isBlank(pxzConfig.getMerchantCode())) {
-            log.error("FREE DEPOSIT ERROR! not found pxzConfig,uid={}", uid);
+            log.warn("FREE DEPOSIT WARN! not found pxzConfig,uid={}", uid);
             return Triple.of(false, "100400", "免押功能未配置相关信息,请联系客服处理");
         }
         
         CarDepositOrder carDepositOrder = carDepositOrderService.selectByOrderId(userCarDeposit.getOrderId());
         if (Objects.isNull(carDepositOrder)) {
-            log.error("FREE DEPOSIT ERROR! not found carDepositOrder! uid={},orderId={}", uid, userCarDeposit.getOrderId());
+            log.warn("FREE DEPOSIT WARN! not found carDepositOrder! uid={},orderId={}", uid, userCarDeposit.getOrderId());
             return Triple.of(false, "ELECTRICITY.0015", "未找到订单");
         }
         
         EleDepositOrder eleDepositOrder = eleDepositOrderService.queryByOrderId(userBatteryDeposit.getOrderId());
         if (Objects.isNull(eleDepositOrder)) {
-            log.error("FREE DEPOSIT ERROR! not found eleDepositOrder! uid={},orderId={}", uid, userBatteryDeposit.getOrderId());
+            log.warn("FREE DEPOSIT WARN! not found eleDepositOrder! uid={},orderId={}", uid, userBatteryDeposit.getOrderId());
             return Triple.of(false, "ELECTRICITY.0015", "未找到订单");
         }
         
@@ -1881,17 +1884,17 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         
         UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
         if (Objects.isNull(userInfo)) {
-            log.error("FREE DEPOSIT HYBRID ERROR! not found user info,uid={}", uid);
+            log.warn("FREE DEPOSIT HYBRID WARN! not found user info,uid={}", uid);
             return Triple.of(false, "ELECTRICITY.0001", "未能查到用户信息");
         }
         
         if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
-            log.error("FREE DEPOSIT HYBRID ERROR! not found userInfo,uid={}", uid);
+            log.warn("FREE DEPOSIT HYBRID WARN! not found userInfo,uid={}", uid);
             return Triple.of(false, "ELECTRICITY.0024", "用户已被禁用");
         }
         
         if (!Objects.equals(userInfo.getAuthStatus(), UserInfo.AUTH_STATUS_REVIEW_PASSED)) {
-            log.error("FREE DEPOSIT HYBRID ERROR! user not auth,uid={}", uid);
+            log.warn("FREE DEPOSIT HYBRID WARN! user not auth,uid={}", uid);
             return Triple.of(false, "ELECTRICITY.0041", "未实名认证");
         }
         
@@ -1904,19 +1907,19 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         
         WechatPayParamsDetails wechatPayParamsDetails = wechatPayParamsBizService.getDetailsByIdTenantIdAndFranchiseeId(tenantId, userInfo.getFranchiseeId());
         if (Objects.isNull(wechatPayParamsDetails)) {
-            log.error("FREE DEPOSIT HYBRID ERROR!not found electricityPayParams,uid={}", uid);
+            log.warn("FREE DEPOSIT HYBRID WARN!not found electricityPayParams,uid={}", uid);
             return Triple.of(false, "100234", "未配置支付参数!");
         }
         
         UserOauthBind userOauthBind = userOauthBindService.queryUserOauthBySysId(uid, tenantId);
         if (Objects.isNull(userOauthBind) || Objects.isNull(userOauthBind.getThirdId())) {
-            log.error("FREE DEPOSIT HYBRID ERROR!not found userOauthBind,uid={}", uid);
+            log.warn("FREE DEPOSIT HYBRID WARN!not found userOauthBind,uid={}", uid);
             return Triple.of(false, "100235", "未找到用户的第三方授权信息!");
         }
         
         UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(userInfo.getUid());
         if (Objects.isNull(userBatteryDeposit)) {
-            log.error("FFREE DEPOSIT HYBRID ERROR! not found userBatteryDeposit,uid={}", uid);
+            log.warn("FFREE DEPOSIT HYBRID WARN! not found userBatteryDeposit,uid={}", uid);
             return Triple.of(false, "100247", "用户信息不存在");
         }
         
@@ -1927,14 +1930,14 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         
         FreeDepositOrder freeDepositOrder = this.selectByOrderId(userBatteryDeposit.getOrderId());
         if (Objects.isNull(freeDepositOrder) || !Objects.equals(freeDepositOrder.getAuthStatus(), FreeDepositOrder.AUTH_FROZEN)) {
-            log.error("FFREE DEPOSIT HYBRID ERROR! freeDepositOrder is anomaly,uid={}", uid);
+            log.warn("FFREE DEPOSIT HYBRID WARN! freeDepositOrder is anomaly,uid={}", uid);
             return Triple.of(false, "100402", "免押失败！");
         }
         
         // 获取押金订单
         EleDepositOrder eleDepositOrder = eleDepositOrderService.queryByOrderId(userBatteryDeposit.getOrderId());
         if (Objects.isNull(eleDepositOrder)) {
-            log.error("FREE DEPOSIT ERROR! not found eleDepositOrder! uid={},orderId={}", uid, userBatteryDeposit.getOrderId());
+            log.warn("FREE DEPOSIT WARN! not found eleDepositOrder! uid={},orderId={}", uid, userBatteryDeposit.getOrderId());
             return Triple.of(false, "ELECTRICITY.0015", "未找到订单");
         }
         
@@ -2120,17 +2123,17 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         
         // 查询保险
         FranchiseeInsurance franchiseeInsurance = franchiseeInsuranceService.queryByIdFromCache(query.getInsuranceId());
-        if (Objects.isNull(franchiseeInsurance) || !Objects.equals(franchiseeInsurance.getInsuranceType(), FranchiseeInsurance.INSURANCE_TYPE_BATTERY)) {
-            log.error("CREATE INSURANCE_ORDER ERROR,NOT FOUND MEMBER_CARD BY ID={},uid={}", query.getInsuranceId(), userInfo.getUid());
+        if (Objects.isNull(franchiseeInsurance) || !Objects.equals(franchiseeInsurance.getInsuranceType() , FranchiseeInsurance.INSURANCE_TYPE_BATTERY)) {
+            log.warn("CREATE INSURANCE_ORDER WARN,NOT FOUND MEMBER_CARD BY ID={},uid={}", query.getInsuranceId(), userInfo.getUid());
             return Triple.of(false, "100305", "未找到保险!");
         }
         if (ObjectUtil.equal(FranchiseeInsurance.STATUS_UN_USABLE, franchiseeInsurance.getStatus())) {
-            log.error("CREATE INSURANCE_ORDER ERROR ,MEMBER_CARD IS UN_USABLE ID={},uid={}", query.getInsuranceId(), userInfo.getUid());
+            log.warn("CREATE INSURANCE_ORDER WARN ,MEMBER_CARD IS UN_USABLE ID={},uid={}", query.getInsuranceId(), userInfo.getUid());
             return Triple.of(false, "100306", "保险已禁用!");
         }
         
         if (Objects.isNull(franchiseeInsurance.getPremium())) {
-            log.error("CREATE INSURANCE_ORDER ERROR! payAmount is null ！franchiseeId={},uid={}", query.getInsuranceId(), userInfo.getUid());
+            log.warn("CREATE INSURANCE_ORDER WARN! payAmount is null ！franchiseeId={},uid={}", query.getInsuranceId(), userInfo.getUid());
             return Triple.of(false, "100305", "未找到保险");
         }
         
@@ -2200,7 +2203,7 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         
         UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
         if (Objects.isNull(userInfo)) {
-            log.error("FREE DEPOSIT ERROR! not found user info! uid={}", uid);
+            log.warn("FREE DEPOSIT WARN! not found user info! uid={}", uid);
             return Triple.of(false, "ELECTRICITY.0001", "未能查到用户信息");
         }
         
@@ -2252,7 +2255,7 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         
         UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
         if (Objects.isNull(userInfo)) {
-            log.error("FREE DEPOSIT ERROR! not found user info! uid={}", uid);
+            log.warn("FREE DEPOSIT WARN! not found user info! uid={}", uid);
             return Triple.of(false, "ELECTRICITY.0001", "未能查到用户信息");
         }
         
@@ -2461,12 +2464,12 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         //        }
         
         if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
-            log.error("FREE DEPOSIT ERROR! user is disable,uid={}", userInfo.getUid());
+            log.warn("FREE DEPOSIT WARN! user is disable,uid={}", userInfo.getUid());
             return Triple.of(false, "ELECTRICITY.0024", "用户已被禁用");
         }
         
         if (!Objects.equals(userInfo.getAuthStatus(), UserInfo.AUTH_STATUS_REVIEW_PASSED)) {
-            log.error("FREE DEPOSIT ERROR! user not auth,uid={}", uid);
+            log.warn("FREE DEPOSIT WARN! user not auth,uid={}", uid);
             return Triple.of(false, "ELECTRICITY.0041", "未实名认证");
         }
         
@@ -2483,12 +2486,12 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         //        }
         
         if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
-            log.error("FREE DEPOSIT ERROR! user is disable,uid={}", userInfo.getUid());
+            log.warn("FREE DEPOSIT WARN! user is disable,uid={}", userInfo.getUid());
             return Triple.of(false, "ELECTRICITY.0024", "用户已被禁用");
         }
         
         if (!Objects.equals(userInfo.getAuthStatus(), UserInfo.AUTH_STATUS_REVIEW_PASSED)) {
-            log.error("FREE DEPOSIT ERROR! user not auth,uid={}", uid);
+            log.warn("FREE DEPOSIT WARN! user not auth,uid={}", uid);
             return Triple.of(false, "ELECTRICITY.0041", "未实名认证");
         }
         
@@ -2510,12 +2513,12 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         //        }
         
         if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
-            log.error("FREE DEPOSIT ERROR! user is disable,uid={}", userInfo.getUid());
+            log.warn("FREE DEPOSIT WARN! user is disable,uid={}", userInfo.getUid());
             return Triple.of(false, "ELECTRICITY.0024", "用户已被禁用");
         }
         
         if (!Objects.equals(userInfo.getAuthStatus(), UserInfo.AUTH_STATUS_REVIEW_PASSED)) {
-            log.error("FREE DEPOSIT ERROR! user not auth,uid={}", uid);
+            log.warn("FREE DEPOSIT WARN! user not auth,uid={}", uid);
             return Triple.of(false, "ELECTRICITY.0041", "未实名认证");
         }
         
@@ -2531,7 +2534,7 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         
         Franchisee franchisee = franchiseeService.queryByIdFromCache(freeBatteryDepositQuery.getFranchiseeId());
         if (Objects.isNull(franchisee)) {
-            log.error("payDeposit  ERROR! not found Franchisee ！franchiseeId={},uid={}", freeBatteryDepositQuery.getFranchiseeId(), userInfo.getUid());
+            log.warn("payDeposit  WARN! not found Franchisee ！franchiseeId={},uid={}", freeBatteryDepositQuery.getFranchiseeId(), userInfo.getUid());
             return Triple.of(false, "ELECTRICITY.0038", "未找到加盟商");
         }
         
@@ -2548,7 +2551,8 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
             // 型号押金
             List<ModelBatteryDeposit> modelBatteryDepositList = JsonUtil.fromJsonArray(franchisee.getModelBatteryDeposit(), ModelBatteryDeposit.class);
             if (ObjectUtil.isEmpty(modelBatteryDepositList)) {
-                log.error("payDeposit  ERROR! not found modelBatteryDepositList ！franchiseeId={},uid={}", freeBatteryDepositQuery.getFranchiseeId(), userInfo.getUid());
+                log.warn("payDeposit  WARN! not found modelBatteryDepositList ！franchiseeId={},uid={}",
+                        freeBatteryDepositQuery.getFranchiseeId(), userInfo.getUid());
                 return Triple.of(false, "ELECTRICITY.00110", "未找到押金");
             }
             
@@ -2562,7 +2566,8 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         }
         
         if (Objects.isNull(depositPayAmount)) {
-            log.error("payDeposit  ERROR! payAmount is null ！franchiseeId{},uid={}", freeBatteryDepositQuery.getFranchiseeId(), userInfo.getUid());
+            log.warn("payDeposit  WARN! payAmount is null ！franchiseeId{},uid={}", freeBatteryDepositQuery.getFranchiseeId(),
+                    userInfo.getUid());
             return Triple.of(false, "ELECTRICITY.00110", "未找到押金");
         }
         
@@ -2610,7 +2615,7 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         
         Franchisee franchisee = franchiseeService.queryByIdFromCache(freeCarBatteryDepositQuery.getFranchiseeId());
         if (Objects.isNull(franchisee)) {
-            log.error("payDeposit  ERROR! not found Franchisee ！franchiseeId={},uid={}", freeCarBatteryDepositQuery.getFranchiseeId(), userInfo.getUid());
+            log.warn("payDeposit  WARN! not found Franchisee ！franchiseeId={},uid={}", freeCarBatteryDepositQuery.getFranchiseeId(), userInfo.getUid());
             return Triple.of(false, "ELECTRICITY.0038", "未找到加盟商");
         }
         
@@ -2627,7 +2632,8 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
             // 型号押金
             List<ModelBatteryDeposit> modelBatteryDepositList = JsonUtil.fromJsonArray(franchisee.getModelBatteryDeposit(), ModelBatteryDeposit.class);
             if (ObjectUtil.isEmpty(modelBatteryDepositList)) {
-                log.error("payDeposit  ERROR! not found modelBatteryDepositList ！franchiseeId={},uid={}", freeCarBatteryDepositQuery.getFranchiseeId(), userInfo.getUid());
+                log.warn("payDeposit  WARN! not found modelBatteryDepositList ！franchiseeId={},uid={}",
+                        freeCarBatteryDepositQuery.getFranchiseeId(), userInfo.getUid());
                 return Triple.of(false, "ELECTRICITY.00110", "未找到押金");
             }
             
@@ -2641,7 +2647,8 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         }
         
         if (Objects.isNull(depositPayAmount)) {
-            log.error("payDeposit  ERROR! payAmount is null ！franchiseeId{},uid={}", freeCarBatteryDepositQuery.getFranchiseeId(), userInfo.getUid());
+            log.warn("payDeposit  WARN! payAmount is null ！franchiseeId{},uid={}", freeCarBatteryDepositQuery.getFranchiseeId(),
+                    userInfo.getUid());
             return Triple.of(false, "ELECTRICITY.00110", "未找到押金");
         }
         
@@ -2661,13 +2668,13 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
     private Triple<Boolean, String, Object> generateCarDepositOrder(UserInfo userInfo, FreeCarDepositQuery query) {
         ElectricityCarModel electricityCarModel = electricityCarModelService.queryByIdFromCache(query.getCarModelId().intValue());
         if (Objects.isNull(electricityCarModel)) {
-            log.error("ELE CAR DEPOSIT ERROR! not find carMode, carModelId={},uid={}", query.getCarModelId(), userInfo.getUid());
+            log.warn("ELE CAR DEPOSIT WARN! not find carMode, carModelId={},uid={}", query.getCarModelId(), userInfo.getUid());
             return Triple.of(false, "100009", "未找到该型号车辆");
         }
         
         Store store = storeService.queryByIdFromCache(electricityCarModel.getStoreId());
         if (Objects.isNull(store)) {
-            log.error("ELE CAR DEPOSIT ERROR! not found store,uid={}", userInfo.getUid());
+            log.warn("ELE CAR DEPOSIT WARN! not found store,uid={}", userInfo.getUid());
             return Triple.of(false, "ELECTRICITY.0018", "未找到门店");
         }
         
@@ -2699,13 +2706,13 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         
         ElectricityCarModel electricityCarModel = electricityCarModelService.queryByIdFromCache(query.getCarModelId().intValue());
         if (Objects.isNull(electricityCarModel)) {
-            log.error("ELE CAR DEPOSIT ERROR! not find carMode, carModelId={},uid={}", query.getCarModelId(), userInfo.getUid());
+            log.warn("ELE CAR DEPOSIT WARN! not find carMode, carModelId={},uid={}", query.getCarModelId(), userInfo.getUid());
             return Triple.of(false, "100009", "未找到该型号车辆");
         }
         
         Store store = storeService.queryByIdFromCache(electricityCarModel.getStoreId());
         if (Objects.isNull(store)) {
-            log.error("ELE CAR DEPOSIT ERROR! not found store,uid={}", userInfo.getUid());
+            log.warn("ELE CAR DEPOSIT WARN! not found store,uid={}", userInfo.getUid());
             return Triple.of(false, "ELECTRICITY.0018", "未找到门店");
         }
         

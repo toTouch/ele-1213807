@@ -74,6 +74,11 @@ public class EleRefundOrder {
      * 退款类型 0--电池押金退款 1--租车押金退款
      */
     private Integer refundOrderType;
+    
+    /**
+     * 退款交易方式 0--线上 1--线下
+     */
+    private Integer payType;
 
     public static final Integer DEL_NORMAL = 0;
     public static final Integer DEL_DEL = 1;
@@ -93,5 +98,7 @@ public class EleRefundOrder {
 
     public static final Integer BATTERY_DEPOSIT_REFUND_ORDER = 0;
     public static final Integer RENT_CAR_DEPOSIT_REFUND_ORDER = 1;
-
+    
+    public static final Integer PAY_TYPE_ONLINE = 0;
+    public static final Integer PAY_TYPE_OFFLINE = 1;
 }

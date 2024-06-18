@@ -267,7 +267,7 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
         
         // 生成退押申请单
         CarRentalPackageDepositRefundPo refundDepositInsertEntity = budidCarRentalPackageOrderRentRefund(memberTermEntity, depositPayOrderNo, SystemDefinitionEnum.BACKGROUND,
-                false, payType, realAmount, optUid);
+                false, payType, realAmount, optUid, optModel.getCompelOffLine());
         
         // 退款中（只能是免押）
         if (RefundStateEnum.REFUNDING.getCode().equals(refundDepositInsertEntity.getRefundState())) {
@@ -1104,7 +1104,7 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
         
         // 生成退押申请单
         CarRentalPackageDepositRefundPo refundDepositInsertEntity = budidCarRentalPackageOrderRentRefund(memberTermEntity, depositPayOrderNo, SystemDefinitionEnum.BACKGROUND,
-                false, payType, realAmount, optUid);
+                false, payType, realAmount, optUid, optModel.getCompelOffLine());
         
         // 待审核
         if (RefundStateEnum.REFUNDING.getCode().equals(refundDepositInsertEntity.getRefundState())) {
@@ -1244,7 +1244,7 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
         }
         
         // TX 事务落库
-        saveApproveRefundDepositOrderTx(refundDepositOrderNo, approveFlag, apploveDesc, apploveUid, depositRefundEntity, refundAmount, depositPayEntity);
+        saveApproveRefundDepositOrderTx(refundDepositOrderNo, approveFlag, apploveDesc, apploveUid, depositRefundEntity, refundAmount, depositPayEntity, compelOffLine);
         
         return true;
     }
@@ -1259,10 +1259,11 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
      * @param refundAmount         退款金额
      * @param depositRefundEntity  退押申请单信息
      * @param depositPayEntity     押金缴纳信息
+     * @param compelOffLine        强制线下退押
      */
     @Transactional(rollbackFor = Exception.class)
     public void saveApproveRefundDepositOrderTx(String refundDepositOrderNo, boolean approveFlag, String apploveDesc, Long apploveUid,
-            CarRentalPackageDepositRefundPo depositRefundEntity, BigDecimal refundAmount, CarRentalPackageDepositPayPo depositPayEntity) {
+            CarRentalPackageDepositRefundPo depositRefundEntity, BigDecimal refundAmount, CarRentalPackageDepositPayPo depositPayEntity, Integer compelOffLine) {
         
         CarRentalPackageDepositRefundPo depositRefundUpdateEntity = new CarRentalPackageDepositRefundPo();
         depositRefundUpdateEntity.setOrderNo(refundDepositOrderNo);
@@ -1275,6 +1276,13 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
         if (approveFlag) {
             // 交易方式
             Integer payType = depositRefundEntity.getPayType();
+            
+            // 强制线下退款
+            if (ObjectUtils.isNotEmpty(compelOffLine) && YesNoEnum.YES.getCode().equals(compelOffLine) && PayTypeEnum.ON_LINE.getCode().equals(payType)) {
+                payType = PayTypeEnum.OFF_LINE.getCode();
+                depositRefundUpdateEntity.setPayType(payType);
+                depositRefundUpdateEntity.setCompelOffLine(compelOffLine);
+            }
             
             // 非零元退押
             if (BigDecimal.ZERO.compareTo(refundAmount) < 0) {
@@ -1425,6 +1433,12 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
                     
                     // 删除用户分组
                     userInfoGroupDetailService.handleAfterRefundDeposit(depositPayEntity.getUid());
+                    
+                    // 原始是线上，则不做更改
+                    if (PayTypeEnum.ON_LINE.getCode().equals(depositRefundEntity.getPayType())) {
+                        depositRefundUpdateEntity.setPayType(null);
+                        depositRefundUpdateEntity.setCompelOffLine(null);
+                    }
                 }
                 
                 // 免押
@@ -1590,7 +1604,7 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
         
         // 生成退押申请单
         CarRentalPackageDepositRefundPo refundDepositInsertEntity = budidCarRentalPackageOrderRentRefund(memberTermEntity, depositPayOrderNo, SystemDefinitionEnum.WX_APPLET,
-                depositAuditFlag, payType, null, uid);
+                depositAuditFlag, payType, null, uid, null);
         
         // 待审核
         if (RefundStateEnum.PENDING_APPROVAL.getCode().equals(refundDepositInsertEntity.getRefundState())) {
@@ -1653,10 +1667,11 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
      * @param payType           支付方式
      * @param refundAmount      实际退款金额(可为空，后端操作不能为空)
      * @param optUid            操作用户UID
+     * @param compelOffLine     是否强制线下退款
      * @return
      */
     private CarRentalPackageDepositRefundPo budidCarRentalPackageOrderRentRefund(CarRentalPackageMemberTermPo memberTermEntity, String depositPayOrderNo,
-            SystemDefinitionEnum systemDefinition, boolean depositAuditFlag, Integer payType, BigDecimal refundAmount, Long optUid) {
+            SystemDefinitionEnum systemDefinition, boolean depositAuditFlag, Integer payType, BigDecimal refundAmount, Long optUid, Integer compelOffLine) {
         CarRentalPackageDepositRefundPo refundDepositInsertEntity = new CarRentalPackageDepositRefundPo();
         refundDepositInsertEntity.setOrderNo(OrderIdUtil.generateBusinessOrderId(BusinessType.CAR_DEPOSIT_REFUND, memberTermEntity.getUid()));
         refundDepositInsertEntity.setUid(memberTermEntity.getUid());
@@ -1675,20 +1690,30 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
         if (SystemDefinitionEnum.BACKGROUND.getCode().equals(systemDefinition.getCode())) {
             refundDepositInsertEntity.setRealAmount(refundAmount);
             refundDepositInsertEntity.setCreateUid(optUid);
-            // 0元退
-            if (BigDecimal.ZERO.compareTo(refundAmount) == 0) {
-                // 线上、线下，退款成功
-                if (PayTypeEnum.ON_LINE.getCode().equals(payType) || PayTypeEnum.OFF_LINE.getCode().equals(payType)) {
-                    refundDepositInsertEntity.setRefundState(RefundStateEnum.SUCCESS.getCode());
+            
+            // 若为强制线下退款，则默认退款成功，并未将线上的退款方式，更改为线下，免押不影响，非强制线下退款不影响
+            if (ObjectUtils.isNotEmpty(compelOffLine) && YesNoEnum.YES.getCode().equals(compelOffLine)) {
+                refundDepositInsertEntity.setRefundState(RefundStateEnum.SUCCESS.getCode());
+                if (PayTypeEnum.ON_LINE.getCode().equals(payType)) {
+                    refundDepositInsertEntity.setPayType(PayTypeEnum.OFF_LINE.getCode());
+                    refundDepositInsertEntity.setCompelOffLine(YesNoEnum.YES.getCode());
                 }
             } else {
-                // 线下，退款成功
-                if (PayTypeEnum.OFF_LINE.getCode().equals(payType)) {
-                    refundDepositInsertEntity.setRefundState(RefundStateEnum.SUCCESS.getCode());
-                }
-                // 线上、免押，退款中
-                if (PayTypeEnum.ON_LINE.getCode().equals(payType) || PayTypeEnum.EXEMPT.getCode().equals(payType)) {
-                    refundDepositInsertEntity.setRefundState(RefundStateEnum.REFUNDING.getCode());
+                // 0元退
+                if (BigDecimal.ZERO.compareTo(refundAmount) == 0) {
+                    // 线上、线下，退款成功
+                    if (PayTypeEnum.ON_LINE.getCode().equals(payType) || PayTypeEnum.OFF_LINE.getCode().equals(payType)) {
+                        refundDepositInsertEntity.setRefundState(RefundStateEnum.SUCCESS.getCode());
+                    }
+                } else {
+                    // 线下，退款成功
+                    if (PayTypeEnum.OFF_LINE.getCode().equals(payType)) {
+                        refundDepositInsertEntity.setRefundState(RefundStateEnum.SUCCESS.getCode());
+                    }
+                    // 线上、免押，退款中
+                    if (PayTypeEnum.ON_LINE.getCode().equals(payType) || PayTypeEnum.EXEMPT.getCode().equals(payType)) {
+                        refundDepositInsertEntity.setRefundState(RefundStateEnum.REFUNDING.getCode());
+                    }
                 }
             }
         }
