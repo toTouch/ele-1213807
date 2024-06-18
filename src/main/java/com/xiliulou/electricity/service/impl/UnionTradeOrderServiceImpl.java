@@ -1409,7 +1409,7 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
         if (StringUtils.isNotEmpty(tradeState) && ObjectUtil.equal("SUCCESS", tradeState)) {
             tradeOrderStatus = ElectricityTradeOrder.STATUS_SUCCESS;
         } else {
-            log.error("NOTIFY SERVICE FEE UNION ORDER FAIL,ORDER_NO={}" + tradeOrderNo);
+            log.error("NOTIFY SERVICE FEE UNION ORDER FAIL,ORDER_NO is {}", tradeOrderNo);
         }
         
         for (int i = 0; i < orderTypeList.size(); i++) {
@@ -1419,7 +1419,8 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
                 handleBatteryMembercardExpireServiceFeeOrder(orderIdList.get(i), tradeOrderStatus, userInfo);
             } else if (Objects.equals(orderTypeList.get(i), ServiceFeeEnum.CAR_SLIPPAGE.getCode())) {
                 // 车辆滞纳金
-                handCarSupplierSuccess(orderIdList.get(i), jsonFreeList.get(i), tradeOrderStatus, userInfo);
+                handCarSupplierSuccess(orderIdList.get(i), jsonFreeList.get(i), tradeOrderStatus, userInfo, unionTradeOrder.getParamFranchiseeId(),
+                        unionTradeOrder.getWechatMerchantId());
             }
         }
         
@@ -1449,13 +1450,15 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
     }
     
     /**
-     * @param orderNo          逾期订单号
-     * @param freeAmount       缴纳金额
-     * @param tradeOrderStatus 支付状态
-     * @param userInfo         用户信息
+     * @param orderNo           逾期订单号
+     * @param freeAmount        缴纳金额
+     * @param tradeOrderStatus  支付状态
+     * @param userInfo          用户信息
+     * @param paramFranchiseeId 支付加盟商ID
+     * @param wechatMerchantId  微信商户号
      */
     @Transactional(rollbackFor = Exception.class)
-    public void handCarSupplierSuccess(String orderNo, String freeAmount, Integer tradeOrderStatus, UserInfo userInfo) {
+    public void handCarSupplierSuccess(String orderNo, String freeAmount, Integer tradeOrderStatus, UserInfo userInfo, Long paramFranchiseeId, String wechatMerchantId) {
         // 提前发布逾期用户备注清除事件
         overdueUserRemarkPublish.publish(userInfo.getUid(), OverdueType.CAR.getCode(), userInfo.getTenantId());
         Integer tenantId = userInfo.getTenantId();
@@ -1482,6 +1485,8 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
             slippageUpdateEntity.setUpdateTime(now);
             slippageUpdateEntity.setPayState(PayStateEnum.SUCCESS.getCode());
             slippageUpdateEntity.setPayTime(now);
+            slippageUpdateEntity.setPayFranchiseeId(paramFranchiseeId);
+            slippageUpdateEntity.setWechatMerchantId(wechatMerchantId);
             
             Integer type = slippageEntity.getType();
             // 冻结
