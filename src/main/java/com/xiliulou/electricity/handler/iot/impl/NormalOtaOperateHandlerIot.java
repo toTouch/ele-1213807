@@ -87,7 +87,7 @@ public class NormalOtaOperateHandlerIot extends AbstractElectricityIotHandler {
         EleOtaUpgrade eleOtaUpgradeFromDb = eleOtaUpgradeService
                 .queryByEidAndCellNo(electricityCabinet.getId(), request.getCellNo(), type);
         if (Objects.isNull(eleOtaUpgradeFromDb)) {
-            log.error("OTA UPGRADE ERROR! eleOtaUpgrade is null error! session={}, eid={}, cid={}",
+            log.warn("OTA UPGRADE WARN! eleOtaUpgrade is null error! session={}, eid={}, cid={}",
                     receiverMessage.getSessionId(), electricityCabinet.getId(), request.getCellNo());
             return;
         }
@@ -102,7 +102,7 @@ public class NormalOtaOperateHandlerIot extends AbstractElectricityIotHandler {
                 .queryByCellNoAndSessionId(electricityCabinet.getId(), request.getCellNo(), request.getSessionId(),
                         type);
         if (Objects.isNull(eleOtaUpgradeHistory)) {
-            log.error("OTA UPGRADE ERROR! eleOtaUpgradeHistory is null error! session={}, eid={}, cid={}",
+            log.warn("OTA UPGRADE WARN! eleOtaUpgradeHistory is null error! session={}, eid={}, cid={}",
                     receiverMessage.getSessionId(), electricityCabinet.getId(), request.getCellNo());
             return;
         }

@@ -202,17 +202,17 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
     
         UserInfo userInfo = userInfoService.queryByUidFromCache(SecurityUtils.getUid());
         if (Objects.isNull(userInfo)) {
-            log.error("INVITATION ACTIVITY ERROR! not found userInfo,uid={}", SecurityUtils.getUid());
+            log.warn("INVITATION ACTIVITY WARN! not found userInfo,uid={}", SecurityUtils.getUid());
             return Triple.of(false, "ELECTRICITY.0001", "未找到用户");
         }
     
         if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
-            log.error("INVITATION ACTIVITY ERROR! user is disable,uid={}", userInfo.getUid());
+            log.warn("INVITATION ACTIVITY WARN! user is disable,uid={}", userInfo.getUid());
             return Triple.of(false, "ELECTRICITY.0024", "用户已被禁用");
         }
     
         if (!Objects.equals(userInfo.getAuthStatus(), UserInfo.AUTH_STATUS_REVIEW_PASSED)) {
-            log.error("INVITATION ACTIVITY ERROR! user not auth,uid={}", userInfo.getUid());
+            log.warn("INVITATION ACTIVITY WARN! user not auth,uid={}", userInfo.getUid());
             return Triple.of(false, "ELECTRICITY.0041", "未实名认证");
         }
     
@@ -237,17 +237,17 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
     
         UserInfo userInfo = userInfoService.queryByUidFromCache(SecurityUtils.getUid());
         if (Objects.isNull(userInfo)) {
-            log.error("INVITATION ACTIVITY ERROR! not found userInfo,uid={}", SecurityUtils.getUid());
+            log.warn("INVITATION ACTIVITY WARN! not found userInfo,uid={}", SecurityUtils.getUid());
             return Triple.of(false, "ELECTRICITY.0001", "未找到用户");
         }
     
         if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
-            log.error("INVITATION ACTIVITY ERROR! user is disable,uid={}", userInfo.getUid());
+            log.warn("INVITATION ACTIVITY WARN! user is disable,uid={}", userInfo.getUid());
             return Triple.of(false, "ELECTRICITY.0024", "用户已被禁用");
         }
     
         if (!Objects.equals(userInfo.getAuthStatus(), UserInfo.AUTH_STATUS_REVIEW_PASSED)) {
-            log.error("INVITATION ACTIVITY ERROR! user not auth,uid={}", userInfo.getUid());
+            log.warn("INVITATION ACTIVITY WARN! user not auth,uid={}", userInfo.getUid());
             return Triple.of(false, "ELECTRICITY.0041", "未实名认证");
         }
     
@@ -309,17 +309,17 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
     
         UserInfo userInfo = userInfoService.queryByUidFromCache(SecurityUtils.getUid());
         if (Objects.isNull(userInfo)) {
-            log.error("INVITATION ACTIVITY ERROR! not found userInfo,uid={}", SecurityUtils.getUid());
+            log.warn("INVITATION ACTIVITY WARN! not found userInfo,uid={}", SecurityUtils.getUid());
             return Triple.of(false, "ELECTRICITY.0001", "未找到用户");
         }
     
         if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
-            log.error("INVITATION ACTIVITY ERROR! user is disable,uid={}", userInfo.getUid());
+            log.warn("INVITATION ACTIVITY WARN! user is disable,uid={}", userInfo.getUid());
             return Triple.of(false, "ELECTRICITY.0024", "用户已被禁用");
         }
     
         if (!Objects.equals(userInfo.getAuthStatus(), UserInfo.AUTH_STATUS_REVIEW_PASSED)) {
-            log.error("INVITATION ACTIVITY ERROR! user not auth,uid={}", userInfo.getUid());
+            log.warn("INVITATION ACTIVITY WARN! user not auth,uid={}", userInfo.getUid());
             return Triple.of(false, "ELECTRICITY.0041", "未实名认证");
         }
     
@@ -373,17 +373,17 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
     public Triple<Boolean, String, Object> queryInvitationDetail(InvitationActivityAnalysisRequest request) {
         UserInfo userInfo = userInfoService.queryByUidFromCache(SecurityUtils.getUid());
         if (Objects.isNull(userInfo)) {
-            log.error("INVITATION ACTIVITY ERROR! not found userInfo,uid={}", SecurityUtils.getUid());
+            log.warn("INVITATION ACTIVITY WARN! not found userInfo,uid={}", SecurityUtils.getUid());
             return Triple.of(false, "ELECTRICITY.0001", "未找到用户");
         }
     
         if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
-            log.error("INVITATION ACTIVITY ERROR! user is disable,uid={}", userInfo.getUid());
+            log.warn("INVITATION ACTIVITY WARN! user is disable,uid={}", userInfo.getUid());
             return Triple.of(false, "ELECTRICITY.0024", "用户已被禁用");
         }
     
         if (!Objects.equals(userInfo.getAuthStatus(), UserInfo.AUTH_STATUS_REVIEW_PASSED)) {
-            log.error("INVITATION ACTIVITY ERROR! user not auth,uid={}", userInfo.getUid());
+            log.warn("INVITATION ACTIVITY WARN! user not auth,uid={}", userInfo.getUid());
             return Triple.of(false, "ELECTRICITY.0041", "未实名认证");
         }
     
@@ -460,17 +460,17 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
         
         UserInfo userInfo = userInfoService.queryByUidFromCache(SecurityUtils.getUid());
         if (Objects.isNull(userInfo)) {
-            log.error("INVITATION ACTIVITY ERROR! not found userInfo,uid={}", SecurityUtils.getUid());
+            log.warn("INVITATION ACTIVITY WARN! not found userInfo,uid={}", SecurityUtils.getUid());
             return Triple.of(false, "ELECTRICITY.0001", "未找到用户");
         }
         
         if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
-            log.error("INVITATION ACTIVITY ERROR! user is disable,uid={}", userInfo.getUid());
+            log.warn("INVITATION ACTIVITY WARN! user is disable,uid={}", userInfo.getUid());
             return Triple.of(false, "ELECTRICITY.0024", "用户已被禁用");
         }
         
         if (!Objects.equals(userInfo.getAuthStatus(), UserInfo.AUTH_STATUS_REVIEW_PASSED)) {
-            log.error("INVITATION ACTIVITY ERROR! user not auth,uid={}", userInfo.getUid());
+            log.warn("INVITATION ACTIVITY WARN! user not auth,uid={}", userInfo.getUid());
             return Triple.of(false, "ELECTRICITY.0041", "未实名认证");
         }
         
@@ -507,17 +507,17 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
     public Triple<Boolean, String, Object> queryInvitationIncomeDetail(InvitationActivityAnalysisRequest request) {
         UserInfo userInfo = userInfoService.queryByUidFromCache(SecurityUtils.getUid());
         if (Objects.isNull(userInfo)) {
-            log.error("INVITATION ACTIVITY ERROR! not found userInfo,uid={}", SecurityUtils.getUid());
+            log.warn("INVITATION ACTIVITY WARN! not found userInfo,uid={}", SecurityUtils.getUid());
             return Triple.of(false, "ELECTRICITY.0001", "未找到用户");
         }
     
         if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
-            log.error("INVITATION ACTIVITY ERROR! user is disable,uid={}", userInfo.getUid());
+            log.warn("INVITATION ACTIVITY WARN! user is disable,uid={}", userInfo.getUid());
             return Triple.of(false, "ELECTRICITY.0024", "用户已被禁用");
         }
     
         if (!Objects.equals(userInfo.getAuthStatus(), UserInfo.AUTH_STATUS_REVIEW_PASSED)) {
-            log.error("INVITATION ACTIVITY ERROR! user not auth,uid={}", userInfo.getUid());
+            log.warn("INVITATION ACTIVITY WARN! user not auth,uid={}", userInfo.getUid());
             return Triple.of(false, "ELECTRICITY.0041", "未实名认证");
         }
     
@@ -662,17 +662,17 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
         
         UserInfo userInfo = userInfoService.queryByUidFromCache(SecurityUtils.getUid());
         if (Objects.isNull(userInfo)) {
-            log.error("INVITATION ACTIVITY ERROR! not found userInfo,uid={}", SecurityUtils.getUid());
+            log.warn("INVITATION ACTIVITY WARN! not found userInfo,uid={}", SecurityUtils.getUid());
             return Triple.of(false, "ELECTRICITY.0001", "未找到用户");
         }
         
         if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
-            log.error("INVITATION ACTIVITY ERROR! user is disable,uid={}", userInfo.getUid());
+            log.warn("INVITATION ACTIVITY WARN! user is disable,uid={}", userInfo.getUid());
             return Triple.of(false, "ELECTRICITY.0024", "用户已被禁用");
         }
         
         if (!Objects.equals(userInfo.getAuthStatus(), UserInfo.AUTH_STATUS_REVIEW_PASSED)) {
-            log.error("INVITATION ACTIVITY ERROR! user not auth,uid={}", userInfo.getUid());
+            log.warn("INVITATION ACTIVITY WARN! user not auth,uid={}", userInfo.getUid());
             return Triple.of(false, "ELECTRICITY.0041", "未实名认证");
         }
         
@@ -710,17 +710,17 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
         
         UserInfo userInfo = userInfoService.queryByUidFromCache(SecurityUtils.getUid());
         if (Objects.isNull(userInfo)) {
-            log.error("INVITATION ACTIVITY ERROR! not found userInfo,uid={}", SecurityUtils.getUid());
+            log.warn("INVITATION ACTIVITY WARN! not found userInfo,uid={}", SecurityUtils.getUid());
             return Triple.of(false, "ELECTRICITY.0001", "未找到用户");
         }
         
         if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
-            log.error("INVITATION ACTIVITY ERROR! user is disable,uid={}", userInfo.getUid());
+            log.warn("INVITATION ACTIVITY WARN! user is disable,uid={}", userInfo.getUid());
             return Triple.of(false, "ELECTRICITY.0024", "用户已被禁用");
         }
         
         if (!Objects.equals(userInfo.getAuthStatus(), UserInfo.AUTH_STATUS_REVIEW_PASSED)) {
-            log.error("INVITATION ACTIVITY ERROR! user not auth,uid={}", userInfo.getUid());
+            log.warn("INVITATION ACTIVITY WARN! user not auth,uid={}", userInfo.getUid());
             return Triple.of(false, "ELECTRICITY.0041", "未实名认证");
         }
         
@@ -759,7 +759,7 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
         
         List<InvitationActivity> invitationActivitys = invitationActivityService.selectUsableActivity(TenantContextHolder.getTenantId());
         if (CollectionUtils.isEmpty(invitationActivitys)) {
-            log.error("INVITATION ACTIVITY ERROR! invitationActivitys is empty,uid={}", userInfo.getUid());
+            log.warn("INVITATION ACTIVITY WARN! invitationActivitys is empty,uid={}", userInfo.getUid());
             return Triple.of(false, "100391", "暂无上架的活动");
         }
         
@@ -773,20 +773,20 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
         
         List<InvitationActivityUser> invitationActivityUserList = invitationActivityUserService.selectByUid(userInfo.getUid());
         if (CollectionUtils.isEmpty(invitationActivityUserList) || !activityIds.contains(invitationActivityUserList.get(0).getActivityId())) {
-            log.error("INVITATION ACTIVITY ERROR! invitationActivityUser is null,uid={}", userInfo.getUid());
+            log.warn("INVITATION ACTIVITY WARN! invitationActivityUser is null,uid={}", userInfo.getUid());
             return Triple.of(false, "100392", "无权限参加此活动");
         }
         
         InvitationActivityUser invitationActivityUser = invitationActivityUserList.get(0);
         
         if (StringUtils.isBlank(userInfo.getPhone())) {
-            log.error("INVITATION ACTIVITY ERROR! phone is null,uid={}", userInfo.getUid());
+            log.warn("INVITATION ACTIVITY WARN! phone is null,uid={}", userInfo.getUid());
             return Triple.of(false, "000001", "系统异常");
         }
         
         Tenant tenant = tenantService.queryByIdFromCache(TenantContextHolder.getTenantId());
         if (Objects.isNull(tenant) || StringUtils.isBlank(tenant.getCode())) {
-            log.error("INVITATION ACTIVITY ERROR! tenant is null,uid={}", userInfo.getUid());
+            log.warn("INVITATION ACTIVITY WARN! tenant is null,uid={}", userInfo.getUid());
             return Triple.of(false, "000001", "系统异常");
         }
         
@@ -826,25 +826,25 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
         }
         
         if (StringUtils.isBlank(userInfo.getPhone())) {
-            log.error("INVITATION ACTIVITY ERROR! phone is null,uid={}", userInfo.getUid());
+            log.warn("INVITATION ACTIVITY WARN! phone is null,uid={}", userInfo.getUid());
             return Triple.of(false, "100463", "二维码已失效");
         }
         
         Tenant tenant = tenantService.queryByIdFromCache(TenantContextHolder.getTenantId());
         if (Objects.isNull(tenant) || StringUtils.isBlank(tenant.getCode())) {
-            log.error("INVITATION ACTIVITY ERROR! tenant is null,uid={}", userInfo.getUid());
+            log.warn("INVITATION ACTIVITY WARN! tenant is null,uid={}", userInfo.getUid());
             return Triple.of(false, "100463", "二维码已失效");
         }
         
         List<InvitationActivity> invitationActivities = invitationActivityService.selectUsableActivity(TenantContextHolder.getTenantId());
         if (CollectionUtils.isEmpty(invitationActivities)) {
-            log.error("INVITATION ACTIVITY ERROR! invitationActivities is empty,uid={}", userInfo.getUid());
+            log.warn("INVITATION ACTIVITY WARN! invitationActivities is empty,uid={}", userInfo.getUid());
             return Triple.of(false, "100399", "该活动已下架，二维码失效");
         }
         
         List<InvitationActivityUser> invitationActivityUserList = invitationActivityUserService.selectByUid(userInfo.getUid());
         if (CollectionUtils.isEmpty(invitationActivityUserList)) {
-            log.error("INVITATION ACTIVITY ERROR! invitationActivityUserList is empty,uid={}", userInfo.getUid());
+            log.warn("INVITATION ACTIVITY WARN! invitationActivityUserList is empty,uid={}", userInfo.getUid());
             return Triple.of(false, "100399", "该活动已下架，二维码失效");
         }
         
@@ -853,7 +853,7 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
         //过滤后的
         List<InvitationActivityUser> newInvitationActivityUserList = invitationActivityUserList.stream().filter(activityUser -> activityIdList.contains(activityUser.getActivityId())).collect(Collectors.toList());
         if(CollectionUtils.isEmpty(newInvitationActivityUserList)) {
-            log.error("INVITATION ACTIVITY ERROR! all activities bound user is invalid,uid={}", userInfo.getUid());
+            log.warn("INVITATION ACTIVITY WARN! all activities bound user is invalid,uid={}", userInfo.getUid());
             return Triple.of(false, "100399", "该活动已下架，二维码失效");
         }
         
@@ -890,8 +890,6 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
         invitationActivityCodeVO.setTenantCode(tenant.getCode());
         invitationActivityCodeVO.setPhone(userInfo.getPhone());
         
-        log.info("INVITATION ACTIVITY INFO! codeEnCoder activityIdsStr={}, uid={}", activityIdsStr, userInfo.getUid());
-        
         return Triple.of(true, null, invitationActivityCodeVO);
     }
 
@@ -904,13 +902,13 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
     
         UserInfo userInfo = userInfoService.queryByUidFromCache(SecurityUtils.getUid());
         if (Objects.isNull(userInfo) || Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
-            log.error("INVITATION ACTIVITY ERROR! not found userInfo,uid={}", SecurityUtils.getUid());
+            log.warn("INVITATION ACTIVITY WARN! not found userInfo,uid={}", SecurityUtils.getUid());
             return Triple.of(false, "ELECTRICITY.0024", "用户已被禁用");
         }
     
         UserInfoExtra userInfoExtra = userInfoExtraService.queryByUidFromCache(SecurityUtils.getUid());
         if (Objects.isNull(userInfoExtra)) {
-            log.error("joinActivity  ERROR! Not found userInfoExtra, joinUid={}", SecurityUtils.getUid());
+            log.warn("joinActivity  WARN! Not found userInfoExtra, joinUid={}", SecurityUtils.getUid());
             return Triple.of(false, "ELECTRICITY.0019", "未找到用户");
         }
     
@@ -928,21 +926,19 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
         }
     
         if (StringUtils.isBlank(decrypt)) {
-            log.error("INVITATION ACTIVITY ERROR! invitation activity code decrypt error,code={}, uid={}", query.getCode(), userInfo.getUid());
+            log.warn("INVITATION ACTIVITY WARN! invitation activity code decrypt error,code={}, uid={}", query.getCode(), userInfo.getUid());
             return Triple.of(false, "100463", "二维码已失效");
         }
-    
-        log.info("INVITATION ACTIVITY INFO! joinActivity decrypt={}", decrypt);
-    
+        
         String[] split = decrypt.split(String.valueOf(StrUtil.C_COLON));
         if (ArrayUtils.isEmpty(split) || split.length != NumberConstant.TWO) {
-            log.error("INVITATION ACTIVITY ERROR! illegal code! code={}, uid={}", query.getCode(), userInfo.getUid());
+            log.warn("INVITATION ACTIVITY WARN! illegal code! code={}, uid={}", query.getCode(), userInfo.getUid());
             return Triple.of(false, "100463", "二维码已失效");
         }
     
         String activityIdStr = split[NumberConstant.ZERO];
         if (StringUtils.isEmpty(activityIdStr)) {
-            log.error("INVITATION ACTIVITY ERROR! not found invitationActivity, uid={}", userInfo.getUid());
+            log.warn("INVITATION ACTIVITY WARN! not found invitationActivity, uid={}", userInfo.getUid());
             return Triple.of(false, "100463", "二维码已失效");
         }
     
@@ -955,25 +951,25 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
     
         UserInfo invitationUserInfo = userInfoService.queryByUidFromCache(invitationUid);
         if (Objects.isNull(invitationUserInfo)) {
-            log.error("INVITATION ACTIVITY ERROR! not found invitationUserInfo,invitationUid={},uid={}", invitationUid, userInfo.getUid());
+            log.warn("INVITATION ACTIVITY WARN! not found invitationUserInfo,invitationUid={},uid={}", invitationUid, userInfo.getUid());
             return Triple.of(false, "100463", "二维码已失效");
         }
     
         List<Long> activityIdList = Arrays.stream(activityIdStr.split(String.valueOf(StrUtil.C_COMMA))).map(Long::valueOf).collect(Collectors.toList());
         if (CollectionUtils.isEmpty(activityIdList)) {
-            log.error("INVITATION ACTIVITY ERROR! joinActivity activityIdList is empty,uid={}", userInfo.getUid());
+            log.warn("INVITATION ACTIVITY WARN! joinActivity activityIdList is empty,uid={}", userInfo.getUid());
             return Triple.of(false, "100463", "二维码已失效");
         }
     
         List<InvitationActivity> invitationActivities = invitationActivityService.selectUsableActivity(TenantContextHolder.getTenantId());
         if (CollectionUtils.isEmpty(invitationActivities)) {
-            log.error("INVITATION ACTIVITY ERROR! joinActivity invitationActivities is empty, invitationUid={}, uid={}", invitationUid, userInfo.getUid());
+            log.warn("INVITATION ACTIVITY WARN! joinActivity invitationActivities is empty, invitationUid={}, uid={}", invitationUid, userInfo.getUid());
             return Triple.of(false, "100399", "该活动已下架，二维码失效");
         }
     
         List<InvitationActivityUser> invitationActivityUserList = invitationActivityUserService.selectByUid(invitationUid);
         if (CollectionUtils.isEmpty(invitationActivityUserList)) {
-            log.error("INVITATION ACTIVITY ERROR! joinActivity invitationActivityUserList is empty, invitationUid={}, uid={}", invitationUid, userInfo.getUid());
+            log.warn("INVITATION ACTIVITY WARN! joinActivity invitationActivityUserList is empty, invitationUid={}, uid={}", invitationUid, userInfo.getUid());
             return Triple.of(false, "100399", "该活动已下架，二维码失效");
         }
     
@@ -983,14 +979,14 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
         //过滤掉未上线的活动
         Set<Long> newActivityIdSet1 = activityIdList.stream().filter(invitationActivitiesSet::contains).collect(Collectors.toSet());
         if(CollectionUtils.isEmpty(newActivityIdSet1)) {
-            log.error("INVITATION ACTIVITY ERROR! joinActivity activities in newActivityIdSet1 are all down,uid={}", userInfo.getUid());
+            log.warn("INVITATION ACTIVITY WARN! joinActivity activities in newActivityIdSet1 are all down,uid={}", userInfo.getUid());
             return Triple.of(false, "100399", "该活动已下架，二维码失效");
         }
     
         //过滤掉邀请人解绑的活动
         Set<Long> newActivityIdSet2 =  newActivityIdSet1.stream().filter(invitationActivityUserSet::contains).collect(Collectors.toSet());
         if(CollectionUtils.isEmpty(newActivityIdSet2)) {
-            log.error("INVITATION ACTIVITY ERROR! joinActivity activities in newActivityIdSet2 are all down,uid={}", userInfo.getUid());
+            log.warn("INVITATION ACTIVITY WARN! joinActivity activities in newActivityIdSet2 are all down,uid={}", userInfo.getUid());
             return Triple.of(false, "100399", "该活动已下架，二维码失效");
         }
         
@@ -1001,7 +997,7 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
             //用户是否已参与过此活动
             Integer exist = invitationActivityJoinHistoryService.existsByJoinUidAndActivityId(userInfo.getUid(), activityId);
             if (Objects.nonNull(exist)) {
-                log.error("INVITATION ACTIVITY ERROR! user already join invitation activity,activityId={},uid={}", activityId, userInfo.getUid());
+                log.warn("INVITATION ACTIVITY WARN! user already join invitation activity,activityId={},uid={}", activityId, userInfo.getUid());
                 return Triple.of(true, "100398", "您已参与过该活动，无法重复参加");
             }
         

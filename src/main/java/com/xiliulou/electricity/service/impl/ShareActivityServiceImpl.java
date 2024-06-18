@@ -601,13 +601,13 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 		//用户是否可用
 		UserInfo userInfo = userInfoService.queryByUidFromCache(user.getUid());
 		if (Objects.isNull(userInfo) || Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
-			log.error("ACTIVITY ERROR!not found userInfo,uid={}", user.getUid());
+			log.warn("ACTIVITY WARN!not found userInfo,uid={}", user.getUid());
 			return R.fail("ELECTRICITY.0024", "用户已被禁用");
 		}
 
 		//未实名认证
 		if (!Objects.equals(userInfo.getAuthStatus(), UserInfo.AUTH_STATUS_REVIEW_PASSED)) {
-			log.error("ACTIVITY ERROR!user not auth,uid={}", user.getUid());
+			log.warn("ACTIVITY WARN!user not auth,uid={}", user.getUid());
 			return R.fail("ELECTRICITY.0041", "未实名认证");
 		}
 
@@ -615,7 +615,7 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 		ShareActivity shareActivity = shareActivityMapper.selectOne(new LambdaQueryWrapper<ShareActivity>()
 				.eq(ShareActivity::getTenantId, tenantId).eq(ShareActivity::getStatus, ShareActivity.STATUS_ON));
 		if (Objects.isNull(shareActivity)) {
-			log.error("ACTIVITY ERROR!not found Activity,tenantId={},uid={}", tenantId, user.getUid());
+			log.warn("ACTIVITY WARN!not found Activity,tenantId={},uid={}", tenantId, user.getUid());
 			return R.ok();
 		}
 

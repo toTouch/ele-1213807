@@ -413,17 +413,17 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
         
         UnionTradeOrder unionTradeOrder = baseMapper.selectTradeOrderByTradeOrderNo(tradeOrderNo);
         if (Objects.isNull(unionTradeOrder)) {
-            log.error("NOTIFY_INSURANCE_UNION_DEPOSIT_ORDER ERROR ,NOT FOUND ELECTRICITY_TRADE_ORDER TRADE_ORDER_NO={}", tradeOrderNo);
+            log.warn("NOTIFY_INSURANCE_UNION_DEPOSIT_ORDER WARN ,NOT FOUND ELECTRICITY_TRADE_ORDER TRADE_ORDER_NO={}", tradeOrderNo);
             return Pair.of(false, "未找到交易订单!");
         }
         if (ObjectUtil.notEqual(UnionTradeOrder.STATUS_INIT, unionTradeOrder.getStatus())) {
-            log.error("NOTIFY_INSURANCE_UNION_DEPOSIT_ORDER ERROR , ELECTRICITY_TRADE_ORDER  STATUS IS NOT INIT, TRADE_ORDER_NO={}", tradeOrderNo);
+            log.warn("NOTIFY_INSURANCE_UNION_DEPOSIT_ORDER WARN , ELECTRICITY_TRADE_ORDER  STATUS IS NOT INIT, TRADE_ORDER_NO={}", tradeOrderNo);
             return Pair.of(false, "交易订单已处理");
         }
         
         List<ElectricityTradeOrder> electricityTradeOrderList = electricityTradeOrderService.selectTradeOrderByParentOrderId(unionTradeOrder.getId());
         if (Objects.isNull(electricityTradeOrderList)) {
-            log.error("NOTIFY_INSURANCE_UNION_DEPOSIT_ORDER ERROR ,NOT FOUND ELECTRICITY_TRADE_ORDER TRADE_ORDER_NO={}", tradeOrderNo);
+            log.warn("NOTIFY_INSURANCE_UNION_DEPOSIT_ORDER WARN ,NOT FOUND ELECTRICITY_TRADE_ORDER TRADE_ORDER_NO={}", tradeOrderNo);
             return Pair.of(false, "未找到交易订单!");
         }
         
@@ -434,7 +434,7 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
         List<String> orderIdLIst = JsonUtil.fromJsonArray(jsonOrderId, String.class);
         
         if (CollectionUtils.isEmpty(orderIdLIst)) {
-            log.error("NOTIFY_INSURANCE_UNION_DEPOSIT_ORDER ERROR ,NOT FOUND ELECTRICITY_TRADE_ORDER TRADE_ORDER_NO={}", tradeOrderNo);
+            log.warn("NOTIFY_INSURANCE_UNION_DEPOSIT_ORDER WARN ,NOT FOUND ELECTRICITY_TRADE_ORDER TRADE_ORDER_NO={}", tradeOrderNo);
             return Pair.of(false, "未找到交易订单");
         }
         
@@ -446,7 +446,7 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
             depositOrderStatus = EleDepositOrder.STATUS_SUCCESS;
             result = true;
         } else {
-            log.error("NOTIFY REDULT PAY FAIL,ORDER_NO={}" + tradeOrderNo);
+            log.warn("NOTIFY REDULT PAY FAIL,ORDER_NO={}" + tradeOrderNo);
         }
         
         for (int i = 0; i < orderTypeList.size(); i++) {
@@ -524,29 +524,29 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
         
         UnionTradeOrder unionTradeOrder = baseMapper.selectTradeOrderByTradeOrderNo(tradeOrderNo);
         if (Objects.isNull(unionTradeOrder)) {
-            log.error("NOTIFY MEMBERCARD INSURANCE ORDER ERROR!not found unionTradeOrder,tradeOrderNo={}", tradeOrderNo);
+            log.warn("NOTIFY MEMBERCARD INSURANCE ORDER WARN!not found unionTradeOrder,tradeOrderNo={}", tradeOrderNo);
             return Pair.of(false, "未找到交易订单!");
         }
         if (ObjectUtil.notEqual(UnionTradeOrder.STATUS_INIT, unionTradeOrder.getStatus())) {
-            log.error("NOTIFY MEMBERCARD INSURANCE ORDER ERROR! unionTradeOrder status is not init,tradeOrderNo={}", tradeOrderNo);
+            log.warn("NOTIFY MEMBERCARD INSURANCE ORDER WARN! unionTradeOrder status is not init,tradeOrderNo={}", tradeOrderNo);
             return Pair.of(false, "交易订单已处理");
         }
         
         List<ElectricityTradeOrder> electricityTradeOrderList = electricityTradeOrderService.selectTradeOrderByParentOrderId(unionTradeOrder.getId());
         if (CollectionUtils.isEmpty(electricityTradeOrderList)) {
-            log.error("NOTIFY MEMBERCARD INSURANCE ORDER ERROR! electricityTradeOrderList is empty,tradeOrderNo={}", tradeOrderNo);
+            log.warn("NOTIFY MEMBERCARD INSURANCE ORDER WARN! electricityTradeOrderList is empty,tradeOrderNo={}", tradeOrderNo);
             return Pair.of(false, "未找到交易订单!");
         }
         
         List<Integer> orderTypeList = JsonUtil.fromJsonArray(unionTradeOrder.getJsonOrderType(), Integer.class);
         if (CollectionUtils.isEmpty(orderTypeList)) {
-            log.error("NOTIFY MEMBERCARD INSURANCE ORDER ERROR! orderTypeList is empty,tradeOrderNo={}", tradeOrderNo);
+            log.warn("NOTIFY MEMBERCARD INSURANCE ORDER WARN! orderTypeList is empty,tradeOrderNo={}", tradeOrderNo);
             return Pair.of(false, "未找到交易订单");
         }
         
         List<String> orderIdList = JsonUtil.fromJsonArray(unionTradeOrder.getJsonOrderId(), String.class);
         if (CollectionUtils.isEmpty(orderIdList)) {
-            log.error("NOTIFY MEMBERCARD INSURANCE ORDER ERROR! orderIdList is empty,tradeOrderNo={}", tradeOrderNo);
+            log.warn("NOTIFY MEMBERCARD INSURANCE ORDER WARN! orderIdList is empty,tradeOrderNo={}", tradeOrderNo);
             return Pair.of(false, "未找到交易订单");
         }
         
@@ -554,12 +554,12 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
         if (StringUtils.isNotEmpty(tradeState) && ObjectUtil.equal("SUCCESS", tradeState)) {
             tradeOrderStatus = ElectricityTradeOrder.STATUS_SUCCESS;
         } else {
-            log.error("NOTIFY REDULT PAY FAIL,ORDER_NO={}" + tradeOrderNo);
+            log.warn("NOTIFY REDULT PAY FAIL,ORDER_NO={}" + tradeOrderNo);
         }
         
         UserInfo userInfo = userInfoService.queryByUidFromCache(unionTradeOrder.getUid());
         if (Objects.isNull(userInfo)) {
-            log.error("NOTIFY MEMBERCARD INSURANCE ORDER ERROR! not found userInfo,uid={}", unionTradeOrder.getUid());
+            log.warn("NOTIFY MEMBERCARD INSURANCE ORDER WARN! not found userInfo,uid={}", unionTradeOrder.getUid());
             return Pair.of(true, null);
         }
         
@@ -606,19 +606,19 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
         // 押金订单
         EleDepositOrder eleDepositOrder = eleDepositOrderService.queryByOrderId(orderNo);
         if (ObjectUtil.isEmpty(eleDepositOrder)) {
-            log.error("NOTIFY_DEPOSIT_ORDER ERROR ,NOT FOUND ELECTRICITY_DEPOSIT_ORDER ORDER_NO={}", orderNo);
+            log.warn("NOTIFY_DEPOSIT_ORDER WARN ,NOT FOUND ELECTRICITY_DEPOSIT_ORDER ORDER_NO={}", orderNo);
             return Pair.of(false, "未找到订单!");
         }
         
         if (!ObjectUtil.equal(EleDepositOrder.STATUS_INIT, eleDepositOrder.getStatus())) {
-            log.error("NOTIFY_DEPOSIT_ORDER ERROR , ELECTRICITY_DEPOSIT_ORDER  STATUS IS NOT INIT, ORDER_NO={}", orderNo);
+            log.warn("NOTIFY_DEPOSIT_ORDER WARN , ELECTRICITY_DEPOSIT_ORDER  STATUS IS NOT INIT, ORDER_NO={}", orderNo);
             return Pair.of(false, "押金订单已处理!");
         }
         
         // 用户
         UserInfo userInfo = userInfoService.queryByUidFromCache(eleDepositOrder.getUid());
         if (Objects.isNull(userInfo)) {
-            log.error("NOTIFY  ERROR,NOT FOUND USERINFO,USERID={},ORDER_NO={}", eleDepositOrder.getUid(), orderNo);
+            log.warn("NOTIFY_DEPOSIT_ORDER WARN,NOT FOUND USERINFO,USERID={},ORDER_NO={}", eleDepositOrder.getUid(), orderNo);
             return Pair.of(false, "未找到用户信息!");
         }
         
@@ -682,7 +682,7 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
         // 购卡订单
         ElectricityMemberCardOrder electricityMemberCardOrder = electricityMemberCardOrderService.selectByOrderNo(orderNo);
         if (ObjectUtil.isEmpty(electricityMemberCardOrder)) {
-            log.error("NOTIFY_MEMBER_ORDER ERROR ,NOT FOUND ELECTRICITY_MEMBER_CARD_ORDER ORDER_NO={}", orderNo);
+            log.warn("NOTIFY_MEMBER_ORDER WARN ,NOT FOUND ELECTRICITY_MEMBER_CARD_ORDER ORDER_NO={}", orderNo);
             return Pair.of(false, "未找到订单!");
         }
         
@@ -692,19 +692,19 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
         }
         
         if (!ObjectUtil.equal(ElectricityMemberCardOrder.STATUS_INIT, electricityMemberCardOrder.getStatus())) {
-            log.error("NOTIFY_MEMBER_ORDER ERROR , ELECTRICITY_MEMBER_CARD_ORDER  STATUS IS NOT INIT, ORDER_NO={}", orderNo);
+            log.warn("NOTIFY_MEMBER_ORDER WARN , ELECTRICITY_MEMBER_CARD_ORDER  STATUS IS NOT INIT, ORDER_NO={}", orderNo);
             return Pair.of(false, "套餐订单已处理!");
         }
         
         UserInfo userInfo = userInfoService.queryByUidFromCache(electricityMemberCardOrder.getUid());
         if (Objects.isNull(userInfo)) {
-            log.error("NOTIFY_MEMBER_ORDER ERROR!userInfo is null,uid={}", electricityMemberCardOrder.getUid());
+            log.warn("NOTIFY_MEMBER_ORDER WARN!userInfo is null,uid={}", electricityMemberCardOrder.getUid());
             return Pair.of(false, "用户不存在");
         }
         
         BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(electricityMemberCardOrder.getMemberCardId());
         if (Objects.isNull(batteryMemberCard)) {
-            log.error("NOTIFY_MEMBER_ORDER ERROR!batteryMemberCard is null,uid={},mid={}", electricityMemberCardOrder.getUid(), electricityMemberCardOrder.getMemberCardId());
+            log.warn("NOTIFY_MEMBER_ORDER WARN!batteryMemberCard is null,uid={},mid={}", electricityMemberCardOrder.getUid(), electricityMemberCardOrder.getMemberCardId());
             return Pair.of(false, "套餐不存在");
         }
         
@@ -862,7 +862,7 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
     public Pair<Boolean, Object> manageMemberCardOrderV2(String orderNo, Integer orderStatus) {
         ElectricityMemberCardOrder electricityMemberCardOrder = electricityMemberCardOrderService.selectByOrderNo(orderNo);
         if (ObjectUtil.isEmpty(electricityMemberCardOrder)) {
-            log.error("NOTIFY MEMBERCARD INSURANCE ORDER ERROR!not found electricityMemberCardOrder,orderNo={}", orderNo);
+            log.warn("NOTIFY MEMBERCARD INSURANCE ORDER WARN!not found electricityMemberCardOrder,orderNo={}", orderNo);
             return Pair.of(false, "未找到订单!");
         }
         
@@ -872,19 +872,19 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
         }
         
         if (!ObjectUtil.equal(ElectricityMemberCardOrder.STATUS_INIT, electricityMemberCardOrder.getStatus())) {
-            log.error("NOTIFY MEMBERCARD INSURANCE ORDER ERROR!electricityMemberCardOrder status is not init, orderNo={}", orderNo);
+            log.warn("NOTIFY MEMBERCARD INSURANCE ORDER WARN!electricityMemberCardOrder status is not init, orderNo={}", orderNo);
             return Pair.of(false, "套餐订单已处理!");
         }
         
         UserInfo userInfo = userInfoService.queryByUidFromCache(electricityMemberCardOrder.getUid());
         if (Objects.isNull(userInfo)) {
-            log.error("NOTIFY MEMBERCARD INSURANCE ORDER ERROR!userInfo is null,uid={}", electricityMemberCardOrder.getUid());
+            log.warn("NOTIFY MEMBERCARD INSURANCE ORDER WARN!userInfo is null,uid={}", electricityMemberCardOrder.getUid());
             return Pair.of(false, "用户不存在");
         }
         
         BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(electricityMemberCardOrder.getMemberCardId());
         if (Objects.isNull(batteryMemberCard)) {
-            log.error("NOTIFY MEMBERCARD INSURANCE ORDER ERROR!batteryMemberCard is null,uid={},mid={}", electricityMemberCardOrder.getUid(),
+            log.warn("NOTIFY MEMBERCARD INSURANCE ORDER WARN!batteryMemberCard is null,uid={},mid={}", electricityMemberCardOrder.getUid(),
                     electricityMemberCardOrder.getMemberCardId());
             return Pair.of(false, "套餐不存在");
         }
@@ -1087,24 +1087,24 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
         
         ElectricityMemberCardOrder electricityMemberCardOrder = electricityMemberCardOrderService.selectByOrderNo(orderNo);
         if (ObjectUtil.isEmpty(electricityMemberCardOrder)) {
-            log.error("notify member card order error, not found electricityMemberCardOrder,orderNo={}", orderNo);
+            log.warn("notify member card order WARN, not found electricityMemberCardOrder,orderNo={}", orderNo);
             return Pair.of(false, "未找到订单!");
         }
         
         if (!ObjectUtil.equal(ElectricityMemberCardOrder.STATUS_INIT, electricityMemberCardOrder.getStatus())) {
-            log.error("notify member card order error, electricityMemberCardOrder status is not init, orderNo={}", orderNo);
+            log.warn("notify member card order WARN, electricityMemberCardOrder status is not init, orderNo={}", orderNo);
             return Pair.of(false, "套餐订单已处理!");
         }
         
         UserInfo userInfo = userInfoService.queryByUidFromCache(electricityMemberCardOrder.getUid());
         if (Objects.isNull(userInfo)) {
-            log.error("notify member card order error, userInfo is null,uid={}", electricityMemberCardOrder.getUid());
+            log.warn("notify member card order WARN, userInfo is null,uid={}", electricityMemberCardOrder.getUid());
             return Pair.of(false, "用户不存在");
         }
         
         BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(electricityMemberCardOrder.getMemberCardId());
         if (Objects.isNull(batteryMemberCard)) {
-            log.error("notify member card order error, batteryMemberCard is null,uid={},mid={}", electricityMemberCardOrder.getUid(), electricityMemberCardOrder.getMemberCardId());
+            log.warn("notify member card order WARN, batteryMemberCard is null,uid={},mid={}", electricityMemberCardOrder.getUid(), electricityMemberCardOrder.getMemberCardId());
             return Pair.of(false, "套餐不存在");
         }
         
@@ -1287,18 +1287,18 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
         // 保险订单
         InsuranceOrder insuranceOrder = insuranceOrderService.queryByOrderId(orderNo);
         if (ObjectUtil.isEmpty(insuranceOrder)) {
-            log.error("NOTIFY_INSURANCE_ORDER ERROR ,NOT FOUND ELECTRICITY_DEPOSIT_ORDER ORDER_NO={}", orderNo);
+            log.warn("NOTIFY_INSURANCE_ORDER WARN ,NOT FOUND ELECTRICITY_DEPOSIT_ORDER ORDER_NO={}", orderNo);
             return Pair.of(false, "未找到订单!");
         }
         
         if (!ObjectUtil.equal(EleBatteryServiceFeeOrder.STATUS_INIT, insuranceOrder.getStatus())) {
-            log.error("NOTIFY_INSURANCE_ORDER ERROR , ELECTRICITY_DEPOSIT_ORDER  STATUS IS NOT INIT, ORDER_NO={}", orderNo);
+            log.warn("NOTIFY_INSURANCE_ORDER WARN , ELECTRICITY_DEPOSIT_ORDER  STATUS IS NOT INIT, ORDER_NO={}", orderNo);
             return Pair.of(false, "押金订单已处理!");
         }
         
         FranchiseeInsurance franchiseeInsurance = franchiseeInsuranceService.queryByIdFromCache(insuranceOrder.getInsuranceId());
         if (ObjectUtil.isEmpty(insuranceOrder)) {
-            log.error("NOTIFY_INSURANCE_ORDER ERROR ,NOT FOUND ELECTRICITY_DEPOSIT_ORDER ORDER_NO={}", orderNo);
+            log.warn("NOTIFY_INSURANCE_ORDER WARN ,NOT FOUND ELECTRICITY_DEPOSIT_ORDER ORDER_NO={}", orderNo);
             return Pair.of(false, "未找到订单!");
         }
         
@@ -1372,23 +1372,23 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
         
         UnionTradeOrder unionTradeOrder = baseMapper.selectTradeOrderByTradeOrderNo(tradeOrderNo);
         if (Objects.isNull(unionTradeOrder)) {
-            log.error("NOTIFY SERVICE FEE UNION ORDER ERROR!NOT FOUND ELECTRICITY_TRADE_ORDER TRADE_ORDER_NO={}", tradeOrderNo);
+            log.warn("NOTIFY SERVICE FEE UNION ORDER WARN!NOT FOUND ELECTRICITY_TRADE_ORDER TRADE_ORDER_NO={}", tradeOrderNo);
             return Pair.of(false, "未找到交易订单!");
         }
         if (ObjectUtil.notEqual(UnionTradeOrder.STATUS_INIT, unionTradeOrder.getStatus())) {
-            log.error("NOTIFY SERVICE FEE UNION ORDER ERROR! ELECTRICITY_TRADE_ORDER  STATUS IS NOT INIT, TRADE_ORDER_NO={}", tradeOrderNo);
+            log.warn("NOTIFY SERVICE FEE UNION ORDER WARN! ELECTRICITY_TRADE_ORDER  STATUS IS NOT INIT, TRADE_ORDER_NO={}", tradeOrderNo);
             return Pair.of(false, "交易订单已处理");
         }
         
         UserInfo userInfo = userInfoService.queryByUidFromCache(unionTradeOrder.getUid());
         if (Objects.isNull(userInfo)) {
-            log.error("NOTIFY SERVICE FEE UNION ORDER ERROR! not found userInfo, TRADE_ORDER_NO={}", tradeOrderNo);
+            log.warn("NOTIFY SERVICE FEE UNION ORDER WARN! not found userInfo, TRADE_ORDER_NO={}", tradeOrderNo);
             return Pair.of(false, "未找到用户信息");
         }
         
         List<ElectricityTradeOrder> electricityTradeOrderList = electricityTradeOrderService.selectTradeOrderByParentOrderId(unionTradeOrder.getId());
         if (Objects.isNull(electricityTradeOrderList)) {
-            log.error("NOTIFY SERVICE FEE UNION ORDER ERROR!NOT FOUND ELECTRICITY_TRADE_ORDER TRADE_ORDER_NO={}", tradeOrderNo);
+            log.warn("NOTIFY SERVICE FEE UNION ORDER WARN!NOT FOUND ELECTRICITY_TRADE_ORDER TRADE_ORDER_NO={}", tradeOrderNo);
             return Pair.of(false, "未找到交易订单!");
         }
         
@@ -1401,7 +1401,7 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
         List<String> jsonFreeList = JsonUtil.fromJsonArray(unionTradeOrder.getJsonSingleFee(), String.class);
         
         if (CollectionUtils.isEmpty(orderIdList)) {
-            log.error("NOTIFY SERVICE FEE UNION ORDER ERROR!NOT FOUND ELECTRICITY_TRADE_ORDER TRADE_ORDER_NO={}", tradeOrderNo);
+            log.warn("NOTIFY SERVICE FEE UNION ORDER WARN!NOT FOUND ELECTRICITY_TRADE_ORDER TRADE_ORDER_NO={}", tradeOrderNo);
             return Pair.of(false, "未找到交易订单");
         }
         
@@ -1409,7 +1409,7 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
         if (StringUtils.isNotEmpty(tradeState) && ObjectUtil.equal("SUCCESS", tradeState)) {
             tradeOrderStatus = ElectricityTradeOrder.STATUS_SUCCESS;
         } else {
-            log.error("NOTIFY SERVICE FEE UNION ORDER FAIL,ORDER_NO is {}", tradeOrderNo);
+            log.warn("NOTIFY SERVICE FEE UNION ORDER FAIL,ORDER_NO is {}", tradeOrderNo);
         }
         
         for (int i = 0; i < orderTypeList.size(); i++) {
@@ -1467,12 +1467,12 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
         long now = System.currentTimeMillis();
         CarRentalPackageOrderSlippagePo slippageEntity = carRentalPackageOrderSlippageService.selectByOrderNo(orderNo);
         if (ObjectUtils.isEmpty(slippageEntity)) {
-            log.error("handCarSupplierSuccess, not found t_car_rental_package_order_slippage. orderNo is {}", orderNo);
+            log.warn("handCarSupplierSuccess, not found t_car_rental_package_order_slippage. orderNo is {}", orderNo);
             return;
         }
         
         if (PayStateEnum.SUCCESS.getCode().equals(slippageEntity.getPayState())) {
-            log.error("handCarSupplierSuccess, t_car_rental_package_order_slippage processed. orderNo is {}", orderNo);
+            log.warn("handCarSupplierSuccess, t_car_rental_package_order_slippage processed. orderNo is {}", orderNo);
             return;
         }
         
@@ -1586,30 +1586,30 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
         }
         EleBatteryServiceFeeOrder eleBatteryServiceFeeOrder = eleBatteryServiceFeeOrderService.selectByOrderNo(orderId);
         if (Objects.isNull(eleBatteryServiceFeeOrder)) {
-            log.error("NOTIFY SERVICE FEE UNION ORDER ERROR!not found eleBatteryServiceFeeOrder,orderId={}", orderId);
+            log.warn("NOTIFY SERVICE FEE UNION ORDER WARN!not found eleBatteryServiceFeeOrder,orderId={}", orderId);
             return;
         }
         
         if (Objects.equals(eleBatteryServiceFeeOrder.getStatus(), EleBatteryServiceFeeOrder.STATUS_SUCCESS)) {
-            log.error("NOTIFY SERVICE FEE UNION ORDER ERROR!order status illegal,orderId={}", orderId);
+            log.warn("NOTIFY SERVICE FEE UNION ORDER WARN!order status illegal,orderId={}", orderId);
             return;
         }
         
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(eleBatteryServiceFeeOrder.getUid());
         if (Objects.isNull(userBatteryMemberCard)) {
-            log.error("NOTIFY SERVICE FEE UNION ORDER ERROR!not found userBatteryMemberCard,uid={},orderId={}", eleBatteryServiceFeeOrder.getUid(), orderId);
+            log.warn("NOTIFY SERVICE FEE UNION ORDER WARN!not found userBatteryMemberCard,uid={},orderId={}", eleBatteryServiceFeeOrder.getUid(), orderId);
             return;
         }
         
         ServiceFeeUserInfo serviceFeeUserInfo = serviceFeeUserInfoService.queryByUidFromCache(eleBatteryServiceFeeOrder.getUid());
         if (Objects.isNull(serviceFeeUserInfo)) {
-            log.error("NOTIFY SERVICE FEE UNION ORDER ERROR!not found serviceFeeUserInfo,uid={},orderId={}", eleBatteryServiceFeeOrder.getUid(), orderId);
+            log.warn("NOTIFY SERVICE FEE UNION ORDER WARN!not found serviceFeeUserInfo,uid={},orderId={}", eleBatteryServiceFeeOrder.getUid(), orderId);
             return;
         }
         
         EleDisableMemberCardRecord eleDisableMemberCardRecord = eleDisableMemberCardRecordService.selectByDisableMemberCardNo(serviceFeeUserInfo.getDisableMemberCardNo());
         if (Objects.isNull(eleDisableMemberCardRecord)) {
-            log.error("NOTIFY SERVICE FEE UNION ORDER ERROR!not found eleDisableMemberCardRecord,uid={},orderId={}", eleBatteryServiceFeeOrder.getUid(),
+            log.warn("NOTIFY SERVICE FEE UNION ORDER WARN!not found eleDisableMemberCardRecord,uid={},orderId={}", eleBatteryServiceFeeOrder.getUid(),
                     serviceFeeUserInfo.getDisableMemberCardNo());
             return;
         }
@@ -1723,24 +1723,24 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
         }
         EleBatteryServiceFeeOrder eleBatteryServiceFeeOrder = eleBatteryServiceFeeOrderService.selectByOrderNo(orderId);
         if (Objects.isNull(eleBatteryServiceFeeOrder)) {
-            log.error("NOTIFY SERVICE FEE UNION ORDER ERROR!not found eleBatteryServiceFeeOrder,orderId={}", orderId);
+            log.warn("NOTIFY SERVICE FEE UNION ORDER WARN!not found eleBatteryServiceFeeOrder,orderId={}", orderId);
             return;
         }
         
         if (Objects.equals(eleBatteryServiceFeeOrder.getStatus(), EleBatteryServiceFeeOrder.STATUS_SUCCESS)) {
-            log.error("NOTIFY SERVICE FEE UNION ORDER ERROR!order status illegal,orderId={}", orderId);
+            log.warn("NOTIFY SERVICE FEE UNION ORDER WARN!order status illegal,orderId={}", orderId);
             return;
         }
         
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(eleBatteryServiceFeeOrder.getUid());
         if (Objects.isNull(userBatteryMemberCard)) {
-            log.error("NOTIFY SERVICE FEE UNION ORDER ERROR!not found userBatteryMemberCard,uid={},orderId={}", eleBatteryServiceFeeOrder.getUid(), orderId);
+            log.warn("NOTIFY SERVICE FEE UNION ORDER WARN!not found userBatteryMemberCard,uid={},orderId={}", eleBatteryServiceFeeOrder.getUid(), orderId);
             return;
         }
         
         ServiceFeeUserInfo serviceFeeUserInfo = serviceFeeUserInfoService.queryByUidFromCache(eleBatteryServiceFeeOrder.getUid());
         if (Objects.isNull(serviceFeeUserInfo)) {
-            log.error("NOTIFY SERVICE FEE UNION ORDER ERROR!not found serviceFeeUserInfo,uid={},orderId={}", eleBatteryServiceFeeOrder.getUid(), orderId);
+            log.warn("NOTIFY SERVICE FEE UNION ORDER WARN!not found serviceFeeUserInfo,uid={},orderId={}", eleBatteryServiceFeeOrder.getUid(), orderId);
             return;
         }
         
@@ -1782,17 +1782,17 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
         
         CarDepositOrder carDepositOrder = carDepositOrderService.selectByOrderId(orderNo);
         if (Objects.isNull(carDepositOrder)) {
-            log.error("WECHATV3 NOTIFY ERROR!not found carDepositOrder,orderNo={}", orderNo);
+            log.warn("WECHATV3 NOTIFY WARN!not found carDepositOrder,orderNo={}", orderNo);
             return Pair.of(false, "未找到订单!");
         }
         if (!Objects.equals(carDepositOrder.getStatus(), CarDepositOrder.STATUS_INIT)) {
-            log.error("WECHATV3 NOTIFY ERROR!carDepositOrder status is not init,orderNo={}", orderNo);
+            log.warn("WECHATV3 NOTIFY WARN!carDepositOrder status is not init,orderNo={}", orderNo);
             return Pair.of(false, "订单已处理!");
         }
         
         UserInfo userInfo = userInfoService.queryByUidFromCache(carDepositOrder.getUid());
         if (Objects.isNull(userInfo)) {
-            log.error("WECHATV3 NOTIFY ERROR!userInfo is null,orderNo={},uid={}", orderNo, carDepositOrder.getUid());
+            log.warn("WECHATV3 NOTIFY WARN!userInfo is null,orderNo={},uid={}", orderNo, carDepositOrder.getUid());
             return Pair.of(false, "用户不存在!");
         }
         
@@ -1846,17 +1846,17 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
         
         CarMemberCardOrder carMemberCardOrder = carMemberCardOrderService.selectByOrderId(orderNo);
         if (Objects.isNull(carMemberCardOrder)) {
-            log.error("WECHATV3 NOTIFY ERROR!not found carMemberCardOrder,orderNo={}", orderNo);
+            log.warn("WECHATV3 NOTIFY WARN!not found carMemberCardOrder,orderNo={}", orderNo);
             return Pair.of(false, "未找到订单!");
         }
         if (!Objects.equals(carMemberCardOrder.getStatus(), CarMemberCardOrder.STATUS_INIT)) {
-            log.error("WECHATV3 NOTIFY ERROR!carMemberCardOrder status is not init,orderNo={}", orderNo);
+            log.warn("WECHATV3 NOTIFY WARN!carMemberCardOrder status is not init,orderNo={}", orderNo);
             return Pair.of(false, "订单已处理!");
         }
         
         UserInfo userInfo = userInfoService.queryByUidFromCache(carMemberCardOrder.getUid());
         if (Objects.isNull(userInfo)) {
-            log.error("WECHATV3 NOTIFY ERROR!userInfo is null,orderNo={},uid={}", orderNo, carMemberCardOrder.getUid());
+            log.warn("WECHATV3 NOTIFY WARN!userInfo is null,orderNo={},uid={}", orderNo, carMemberCardOrder.getUid());
             return Pair.of(false, "用户不存在!");
         }
         
