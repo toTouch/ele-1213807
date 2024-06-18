@@ -83,8 +83,6 @@ import com.xiliulou.pay.deposit.paixiaozu.service.PxzDepositService;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiRefundOrderCallBackResource;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiRefundResultDTO;
 import com.xiliulou.pay.weixinv3.exception.WechatPayException;
-import com.xiliulou.pay.weixinv3.query.WechatV3RefundQuery;
-import com.xiliulou.pay.weixinv3.service.WechatV3JsapiService;
 import com.xiliulou.pay.weixinv3.v2.query.WechatV3RefundRequest;
 import com.xiliulou.pay.weixinv3.v2.service.WechatV3JsapiInvokeService;
 import com.xiliulou.security.bean.TokenUser;
@@ -138,9 +136,6 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
     
     @Autowired
     EleRefundOrderService eleRefundOrderService;
-    
-    @Resource
-    WechatV3JsapiService wechatV3JsapiService;
     
     @Autowired
     WechatConfig wechatConfig;

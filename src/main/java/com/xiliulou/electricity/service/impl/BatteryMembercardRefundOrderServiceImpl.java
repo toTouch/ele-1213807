@@ -71,7 +71,6 @@ import com.xiliulou.electricity.vo.BatteryMembercardRefundOrderVO;
 import com.xiliulou.mq.service.RocketMqService;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiRefundResultDTO;
 import com.xiliulou.pay.weixinv3.exception.WechatPayException;
-import com.xiliulou.pay.weixinv3.service.WechatV3JsapiService;
 import com.xiliulou.pay.weixinv3.v2.query.WechatV3RefundRequest;
 import com.xiliulou.pay.weixinv3.v2.service.WechatV3JsapiInvokeService;
 import com.xiliulou.security.bean.TokenUser;
@@ -151,9 +150,6 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
     
     @Autowired
     UnionTradeOrderService unionTradeOrderService;
-    
-    @Autowired
-    WechatV3JsapiService wechatV3JsapiService;
     
     @Autowired
     WechatConfig wechatConfig;

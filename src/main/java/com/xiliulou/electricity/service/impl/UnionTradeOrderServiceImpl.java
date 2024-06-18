@@ -125,7 +125,6 @@ import com.xiliulou.mq.service.RocketMqService;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiOrderCallBackResource;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiOrderResultDTO;
 import com.xiliulou.pay.weixinv3.exception.WechatPayException;
-import com.xiliulou.pay.weixinv3.service.WechatV3JsapiService;
 import com.xiliulou.pay.weixinv3.v2.query.WechatV3OrderRequest;
 import com.xiliulou.pay.weixinv3.v2.service.WechatV3JsapiInvokeService;
 import lombok.extern.slf4j.Slf4j;
@@ -177,9 +176,6 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
     
     @Autowired
     WechatConfig wechatConfig;
-    
-    @Resource
-    WechatV3JsapiService wechatV3JsapiService;
     
     @Autowired
     EleDepositOrderService eleDepositOrderService;
