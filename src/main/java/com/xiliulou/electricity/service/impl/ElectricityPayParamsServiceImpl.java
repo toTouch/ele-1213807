@@ -216,7 +216,7 @@ public class ElectricityPayParamsServiceImpl extends ServiceImpl<ElectricityPayP
         
         // 操作记录
         Franchisee franchisee = this.queryFranchisee(tenantId, payParams.getFranchiseeId());
-        this.operateRecord(franchisee.getName());
+        this.operateRecord(Objects.nonNull(franchisee) ? franchisee.getName() : "");
         return R.ok();
     }
     
@@ -271,17 +271,32 @@ public class ElectricityPayParamsServiceImpl extends ServiceImpl<ElectricityPayP
             electricityPayParams.setId(oldElectricityPayParams.getId());
             electricityPayParams.setTenantId(tenantId);
             electricityPayParams.setUpdateTime(System.currentTimeMillis());
+            
+            String franchiseeName = DEFAULT_FRANCHISEE_NAME;
+            if (!ElectricityPayParamsConfigEnum.DEFAULT_CONFIG.getType().equals(oldElectricityPayParams.getConfigType())) {
+                Franchisee franchisee = this.queryFranchisee(tenantId, franchiseeId);
+                franchiseeName = Objects.nonNull(franchisee) ? franchisee.getName() : "";
+            }
+            
             if (Objects.isNull(type) || Objects.equals(type, ElectricityPayParams.TYPE_MERCHANT_PATH)) {
                 WechatPaymentCertificate wechatPaymentCertificate = new WechatPaymentCertificate();
                 wechatPaymentCertificate.setTenantId(tenantId);
                 wechatPaymentCertificate.setPayParamsId(oldElectricityPayParams.getId());
                 wechatPaymentCertificate.setFranchiseeId(franchiseeId);
                 wechatPaymentCertificateService.handleCertificateFile(file, wechatPaymentCertificate);
+                Map<String, Object> recordMap = Maps.newHashMapWithExpectedSize(2);
+                recordMap.put("franchiseeName", franchiseeName);
+                recordMap.put("watchUploadType", 1);
+                operateRecordUtil.record(null, recordMap);
             } else {
                 WechatWithdrawalCertificate wechatWithdrawalCertificate = new WechatWithdrawalCertificate();
                 wechatWithdrawalCertificate.setTenantId(tenantId);
                 wechatWithdrawalCertificate.setPayParamsId(oldElectricityPayParams.getId());
                 wechatWithdrawalCertificate.setFranchiseeId(franchiseeId);
+                Map<String, Object> recordMap = Maps.newHashMapWithExpectedSize(2);
+                recordMap.put("franchiseeName", franchiseeName);
+                recordMap.put("watchUploadType", 2);
+                operateRecordUtil.record(null, recordMap);
                 wechatWithdrawalCertificateService.handleCertificateFile(file, wechatWithdrawalCertificate);
             }
             //更新支付参数
