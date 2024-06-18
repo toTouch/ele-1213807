@@ -238,8 +238,8 @@ public class JsonAdminEleDepositOrderController extends BaseController {
      * @param orderId 押金订单号
      * @return 1校验通过 0校验失败
      */
-    @GetMapping("/admin/eleDepositOrder/checkPayParamsDetails")
-    public R checkPayParamsDetails(@RequestParam("orderId") String orderId) {
+    @GetMapping("/admin/eleDepositOrder/checkPayParamsDetails/{orderId}")
+    public R checkPayParamsDetails(@PathVariable("orderId") String orderId) {
         return eleDepositOrderService.checkPayParamsDetails(orderId);
     }
 }
