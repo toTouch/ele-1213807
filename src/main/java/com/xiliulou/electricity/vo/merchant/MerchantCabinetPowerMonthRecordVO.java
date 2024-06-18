@@ -37,4 +37,9 @@ public class MerchantCabinetPowerMonthRecordVO {
      */
     private Integer tenantId;
     
+    /**
+     * 加盟商ID
+     */
+    private Long franchiseeId;
+    
 }

@@ -4,16 +4,20 @@ import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.request.merchant.MerchantPowerRequest;
+import com.xiliulou.electricity.service.UserDataScopeService;
 import com.xiliulou.electricity.service.merchant.MerchantCabinetPowerMonthRecordService;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
+import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -27,6 +31,9 @@ public class JsonMerchantCabinetPowerRecordController extends BaseController {
     
     @Resource
     private MerchantCabinetPowerMonthRecordService merchantCabinetPowerMonthRecordService;
+    
+    @Resource
+    private UserDataScopeService userDataScopeService;
     
     @GetMapping("/admin/merchant/power/record/page")
     public R page(@RequestParam("size") long size, @RequestParam("offset") long offset, @RequestParam(value = "monthDate", required = false) String monthDate) {
@@ -42,12 +49,20 @@ public class JsonMerchantCabinetPowerRecordController extends BaseController {
         if (Objects.isNull(user)) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-        
-        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
-            return R.ok();
+    
+        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE) || Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE))) {
+            return R.ok(Collections.emptyList());
         }
-        
-        MerchantPowerRequest request = MerchantPowerRequest.builder().size(size).offset(offset).monthDate(monthDate).build();
+    
+        List<Long> franchiseeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if (CollectionUtils.isEmpty(franchiseeIds)) {
+                return R.ok(Collections.emptyList());
+            }
+        }
+    
+        MerchantPowerRequest request = MerchantPowerRequest.builder().size(size).offset(offset).monthDate(monthDate).franchiseeIds(franchiseeIds).build();
         
         return R.ok(merchantCabinetPowerMonthRecordService.listByPage(request));
     }
@@ -58,12 +73,20 @@ public class JsonMerchantCabinetPowerRecordController extends BaseController {
         if (Objects.isNull(user)) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-        
-        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
+    
+        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE) || Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE))) {
             return R.ok();
         }
-        
-        MerchantPowerRequest request = MerchantPowerRequest.builder().monthDate(monthDate).build();
+    
+        List<Long> franchiseeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if (CollectionUtils.isEmpty(franchiseeIds)) {
+                return R.ok(Collections.emptyList());
+            }
+        }
+    
+        MerchantPowerRequest request = MerchantPowerRequest.builder().monthDate(monthDate).franchiseeIds(franchiseeIds).build();
         
         return R.ok(merchantCabinetPowerMonthRecordService.countTotal(request));
     }
@@ -77,12 +100,20 @@ public class JsonMerchantCabinetPowerRecordController extends BaseController {
         if (Objects.isNull(user)) {
             return;
         }
-        
-        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
+    
+        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE) || Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE))) {
             return;
         }
+    
+        List<Long> franchiseeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if (CollectionUtils.isEmpty(franchiseeIds)) {
+                return;
+            }
+        }
         
-        MerchantPowerRequest request = MerchantPowerRequest.builder().monthDate(monthDate).build();
+        MerchantPowerRequest request = MerchantPowerRequest.builder().monthDate(monthDate).franchiseeIds(franchiseeIds).build();
         
         merchantCabinetPowerMonthRecordService.exportExcel(request, response);
     }

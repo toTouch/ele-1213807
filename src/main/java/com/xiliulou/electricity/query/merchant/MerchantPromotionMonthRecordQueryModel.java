@@ -5,6 +5,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 /**
  * @author HeYafeng
  * @description 商户推广费月度统计查询
@@ -23,4 +25,6 @@ public class MerchantPromotionMonthRecordQueryModel {
     private String monthDate;
     
     private Integer tenantId;
+    
+    private List<Long> franchiseeIds;
 }

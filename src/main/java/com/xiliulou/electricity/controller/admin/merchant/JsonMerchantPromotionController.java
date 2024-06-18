@@ -4,16 +4,20 @@ import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.request.merchant.MerchantPromotionRequest;
+import com.xiliulou.electricity.service.UserDataScopeService;
 import com.xiliulou.electricity.service.merchant.MerchantPromotionMonthRecordService;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
+import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -27,6 +31,9 @@ public class JsonMerchantPromotionController extends BaseController {
     
     @Resource
     private MerchantPromotionMonthRecordService merchantPromotionMonthRecordService;
+    
+    @Resource
+    private UserDataScopeService userDataScopeService;
     
     @GetMapping("/admin/merchant/promotion/record/page")
     public R page(@RequestParam("size") long size, @RequestParam("offset") long offset, @RequestParam(value = "monthDate", required = false) String monthDate) {
@@ -42,12 +49,20 @@ public class JsonMerchantPromotionController extends BaseController {
         if (Objects.isNull(user)) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-        
-        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
-            return R.ok();
+    
+        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE) || Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE))) {
+            return R.ok(Collections.emptyList());
         }
-        
-        MerchantPromotionRequest request = MerchantPromotionRequest.builder().size(size).offset(offset).monthDate(monthDate).build();
+    
+        List<Long> franchiseeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if (CollectionUtils.isEmpty(franchiseeIds)) {
+                return R.ok(Collections.emptyList());
+            }
+        }
+    
+        MerchantPromotionRequest request = MerchantPromotionRequest.builder().size(size).offset(offset).monthDate(monthDate).franchiseeIds(franchiseeIds).build();
         
         return R.ok(merchantPromotionMonthRecordService.listByPage(request));
     }
@@ -58,12 +73,20 @@ public class JsonMerchantPromotionController extends BaseController {
         if (Objects.isNull(user)) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-        
-        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
+    
+        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE) || Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE))) {
             return R.ok();
         }
+    
+        List<Long> franchiseeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if (CollectionUtils.isEmpty(franchiseeIds)) {
+                return R.ok(Collections.emptyList());
+            }
+        }
         
-        MerchantPromotionRequest request = MerchantPromotionRequest.builder().monthDate(monthDate).build();
+        MerchantPromotionRequest request = MerchantPromotionRequest.builder().monthDate(monthDate).franchiseeIds(franchiseeIds).build();
         
         return R.ok(merchantPromotionMonthRecordService.countTotal(request));
     }
@@ -77,12 +100,20 @@ public class JsonMerchantPromotionController extends BaseController {
         if (Objects.isNull(user)) {
             return;
         }
-        
-        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
+    
+        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE) || Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE))) {
             return;
         }
+    
+        List<Long> franchiseeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if (CollectionUtils.isEmpty(franchiseeIds)) {
+                return;
+            }
+        }
         
-        MerchantPromotionRequest request = MerchantPromotionRequest.builder().monthDate(monthDate).build();
+        MerchantPromotionRequest request = MerchantPromotionRequest.builder().monthDate(monthDate).franchiseeIds(franchiseeIds).build();
         
         merchantPromotionMonthRecordService.exportExcel(request, response);
         

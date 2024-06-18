@@ -3,7 +3,7 @@
 <mapper namespace="com.xiliulou.electricity.mapper.merchant.MerchantCabinetPowerMonthRecordMapper">
     <!-- 基础字段 -->
     <sql id="basic_field">
-        id, date, place_count, month_sum_power, month_sum_charge, tenant_id, del_flag, create_time, update_time
+        id, date, place_count, month_sum_power, month_sum_charge, tenant_id, del_flag, create_time, update_time, franchisee_id
     </sql>
     
     <select id="selectListByPage" resultType="com.xiliulou.electricity.vo.merchant.MerchantCabinetPowerMonthRecordVO">
@@ -17,6 +17,12 @@
             </if>
             <if test="tenantId != null">
                 and tenant_id = #{tenantId}
+            </if>
+            <if test="franchiseeIds != null and franchiseeIds.size()>0">
+                and franchisee_id in
+                <foreach collection="franchiseeIds" item="franchiseeId" index="index" open="(" close=")" separator=",">
+                    #{franchiseeId}
+                </foreach>
             </if>
         </where>
         order by date desc
@@ -35,6 +41,12 @@
             </if>
             <if test="tenantId != null">
                 and tenant_id = #{tenantId}
+            </if>
+            <if test="franchiseeIds != null and franchiseeIds.size()>0">
+                and franchisee_id in
+                <foreach collection="franchiseeIds" item="franchiseeId" index="index" open="(" close=")" separator=",">
+                    #{franchiseeId}
+                </foreach>
             </if>
         </where>
     </select>

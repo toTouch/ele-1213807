@@ -5,6 +5,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 /**
  * @author HeYafeng
  * @description 商户推广费请求
@@ -21,4 +23,6 @@ public class MerchantPromotionRequest {
     private long offset;
     
     private String monthDate;
+    
+    private List<Long> franchiseeIds;
 }

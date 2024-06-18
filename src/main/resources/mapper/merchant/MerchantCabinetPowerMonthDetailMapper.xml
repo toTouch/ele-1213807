@@ -10,8 +10,14 @@
         select
         <include refid="basic_field"/>
         from t_merchant_cabinet_power_month_detail
-        where tenant_id = #{tenantId}
-        and del_flag = 0
-        and date = #{monthDate}
+        <where>
+            tenant_id = #{tenantId} and del_flag = 0 and date = #{monthDate}
+            <if test="franchiseeIds != null and franchiseeIds.size()>0">
+                and franchisee_id in
+                <foreach collection="franchiseeIds" item="franchiseeId" index="index" open="(" close=")" separator=",">
+                    #{franchiseeId}
+                </foreach>
+            </if>
+        </where>
     </select>
 </mapper>

@@ -3,8 +3,7 @@
 <mapper namespace="com.xiliulou.electricity.mapper.merchant.MerchantPromotionMonthRecordMapper">
     <!-- 基础字段 -->
     <sql id="basic_field">
-        id
-        , merchant_count, month_first_total_money, month_renew_total_money, month_total_money, date, tenant_id, del_flag, create_time, update_time, remark
+        id, merchant_count, month_first_total_money, month_renew_total_money, month_total_money, date, tenant_id, del_flag, create_time, update_time, remark, franchisee_id
     </sql>
     
     <select id="selectListByPage" resultType="com.xiliulou.electricity.entity.merchant.MerchantPromotionMonthRecord">
@@ -18,6 +17,12 @@
             </if>
             <if test="tenantId != null">
                 and tenant_id = #{tenantId}
+            </if>
+            <if test="franchiseeIds != null and franchiseeIds.size()>0">
+                and franchisee_id in
+                <foreach collection="franchiseeIds" item="franchiseeId" index="index" open="(" close=")" separator=",">
+                    #{franchiseeId}
+                </foreach>
             </if>
         </where>
         order by date desc
@@ -36,6 +41,12 @@
             </if>
             <if test="tenantId != null">
                 and tenant_id = #{tenantId}
+            </if>
+            <if test="franchiseeIds != null and franchiseeIds.size()>0">
+                and franchisee_id in
+                <foreach collection="franchiseeIds" item="franchiseeId" index="index" open="(" close=")" separator=",">
+                    #{franchiseeId}
+                </foreach>
             </if>
         </where>
     </select>
