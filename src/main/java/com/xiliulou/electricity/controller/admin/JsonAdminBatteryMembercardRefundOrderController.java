@@ -13,7 +13,6 @@ import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -149,8 +148,8 @@ public class JsonAdminBatteryMembercardRefundOrderController extends BaseControl
      * @param orderNo 套餐订单号
      * @return 1校验通过 0校验失败
      */
-    @GetMapping("/admin/battery/membercard/checkPayParamsDetails/{orderNo}")
-    public R checkPayParamsDetails(@PathVariable("orderNo") String orderNo) {
+    @GetMapping("/admin/battery/membercard/checkPayParamsDetails")
+    public R checkPayParamsDetails(@RequestParam("orderNo") String orderNo) {
         return batteryMembercardRefundOrderService.checkPayParamsDetails(orderNo);
     }
 }
