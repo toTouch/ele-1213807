@@ -55,6 +55,7 @@ public class WechatV3PostProcessHandlerImpl implements WechatV3PostProcessHandle
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRES_NEW)
     public void postProcessAfterWechatPay(WechatV3OrderCallBackQuery wechatV3OrderCallBackQuery) {
         WechatCallBackResouceData resource = wechatV3OrderCallBackQuery.getResource();
         if (Objects.isNull(resource)) {

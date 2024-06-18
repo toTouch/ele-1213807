@@ -394,6 +394,7 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
      * 押金套餐混合支付回调 （新）
      */
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public Pair<Boolean, Object> notifyIntegratedPayment(WechatJsapiOrderCallBackResource callBackResource) {
         
         //回调参数
@@ -505,6 +506,7 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
      * 套餐&保险支付回调  抄的上面的支付回调 @See notifyIntegratedPayment
      */
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public Pair<Boolean, Object> notifyMembercardInsurance(WechatJsapiOrderCallBackResource callBackResource) {
         
         String tradeOrderNo = callBackResource.getOutTradeNo();
@@ -589,6 +591,7 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
     
     //处理押金订单
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public Pair<Boolean, Object> manageDepositOrder(String orderNo, Integer orderStatus) {
         
         //押金订单
@@ -664,6 +667,7 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
     
     //处理购卡订单
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public Pair<Boolean, Object> manageMemberCardOrder(String orderNo, Integer orderStatus) {
         
         //购卡订单
@@ -846,6 +850,7 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
      * @return
      */
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public Pair<Boolean, Object> manageMemberCardOrderV2(String orderNo, Integer orderStatus) {
         ElectricityMemberCardOrder electricityMemberCardOrder = electricityMemberCardOrderService.selectByOrderNo(orderNo);
         if (ObjectUtil.isEmpty(electricityMemberCardOrder)) {
@@ -1069,6 +1074,7 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
     }
     
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public Pair<Boolean, Object> manageEnterpriseMemberCardOrder(String orderNo, Integer orderStatus) {
         
         ElectricityMemberCardOrder electricityMemberCardOrder = electricityMemberCardOrderService.selectByOrderNo(orderNo);
@@ -1267,6 +1273,7 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
     
     //处理保险订单
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public Pair<Boolean, Object> manageInsuranceOrder(String orderNo, Integer orderStatus) {
         
         //保险订单
@@ -1348,6 +1355,7 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
      * @return
      */
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public Pair<Boolean, Object> notifyServiceFee(WechatJsapiOrderCallBackResource callBackResource) {
         //回调参数
         String tradeOrderNo = callBackResource.getOutTradeNo();
