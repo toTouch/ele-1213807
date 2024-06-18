@@ -86,7 +86,6 @@ import com.xiliulou.electricity.service.InsuranceOrderService;
 import com.xiliulou.electricity.service.InsuranceUserInfoService;
 import com.xiliulou.electricity.service.UserBatteryDepositService;
 import com.xiliulou.electricity.service.UserBatteryTypeService;
-import com.xiliulou.electricity.service.UserCarService;
 import com.xiliulou.electricity.service.UserCouponService;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.UserOauthBindService;
@@ -250,9 +249,6 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
     private ElectricityCarService carService;
     
     @Resource
-    private UserCarService userCarService;
-    
-    @Resource
     private UserBizService userBizService;
     
     @Resource
@@ -303,6 +299,40 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
     public static final Integer CAR = 1;
     
     public static final Integer CAR_AND_ELE = 2;
+    
+    /**
+     * 退租审批确认是否强制线下退款
+     *
+     * @param rentRefundOrderNo 退租申请单号
+     * @return
+     */
+    @Override
+    public Boolean confirmCompelOffLine(String rentRefundOrderNo) {
+        if (StringUtils.isBlank(rentRefundOrderNo)) {
+            throw new BizException("ELECTRICITY.0007", "不合法的参数");
+        }
+        
+        // 退租申请单
+        CarRentalPackageOrderRentRefundPo rentRefundEntity = carRentalPackageOrderRentRefundService.selectByOrderNo(rentRefundOrderNo);
+        if (ObjectUtils.isEmpty(rentRefundEntity) || !RefundStateEnum.PENDING_APPROVAL.getCode().equals(rentRefundEntity.getRefundState())) {
+            throw new BizException("300000", "数据有误");
+        }
+        
+        // 购买套餐编码
+        String orderNo = rentRefundEntity.getRentalPackageOrderNo();
+        CarRentalPackageOrderPo packageOrderEntity = carRentalPackageOrderService.selectByOrderNo(orderNo);
+        if (ObjectUtils.isEmpty(packageOrderEntity) || UseStateEnum.EXPIRED.getCode().equals(packageOrderEntity.getUseState()) || UseStateEnum.RETURNED.getCode()
+                .equals(packageOrderEntity.getUseState())) {
+            throw new BizException("300000", "数据有误");
+        }
+        
+        // 比对是否需要强制线下退款
+        Long payFranchiseeId = packageOrderEntity.getPayFranchiseeId();
+        Integer tenantId = packageOrderEntity.getTenantId();
+        
+        WechatPayParamsDetails wechatPayParamsDetails = wechatPayParamsBizService.getDetailsByIdTenantIdAndFranchiseeId(tenantId, payFranchiseeId);
+        return ObjectUtils.isEmpty(wechatPayParamsDetails) || !wechatPayParamsDetails.getFranchiseeId().equals(payFranchiseeId);
+    }
     
     /**
      * 根据用户UID查询总金额<br /> 订单支付成功总金额 - 退租订单成功总金额
@@ -449,7 +479,15 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         rentalPackageRefundVO.setResidueCount(refundAmountPair.getRight());
         rentalPackageRefundVO.setConfine(packageOrderEntity.getConfine());
         rentalPackageRefundVO.setTenancyUnit(packageOrderEntity.getTenancyUnit());
+        rentalPackageRefundVO.setCompelOffLine(YesNoEnum.NO.getCode());
         
+        // 判定是否需要强制线下退款
+        String wechatMerchantId = packageOrderEntity.getWechatMerchantId();
+        Long payFranchiseeId = packageOrderEntity.getPayFranchiseeId();
+        WechatPayParamsDetails wechatPayParamsDetails = wechatPayParamsBizService.getDetailsByIdTenantIdAndFranchiseeId(tenantId, payFranchiseeId);
+        if (ObjectUtils.isEmpty(wechatPayParamsDetails) || !wechatPayParamsDetails.getWechatMerchantId().equals(wechatMerchantId)) {
+            rentalPackageRefundVO.setCompelOffLine(YesNoEnum.YES.getCode());
+        }
         return rentalPackageRefundVO;
     }
     
