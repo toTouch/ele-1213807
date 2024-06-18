@@ -459,8 +459,9 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
     
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Triple<Boolean, String, Object> handleRefundOrder(String refundOrderNo, String errMsg, Integer status, BigDecimal refundAmount, Long uid, HttpServletRequest request) {
-
+    public Triple<Boolean, String, Object> handleRefundOrder(String refundOrderNo, String errMsg, Integer status, BigDecimal refundAmount, Long uid, Integer offlineRefund,
+            HttpServletRequest request) {
+        
         EleRefundOrder eleRefundOrder = eleRefundOrderMapper.selectOne(
                 new LambdaQueryWrapper<EleRefundOrder>().eq(EleRefundOrder::getRefundOrderNo, refundOrderNo).eq(EleRefundOrder::getTenantId, TenantContextHolder.getTenantId())
                         .in(EleRefundOrder::getStatus, EleRefundOrder.STATUS_INIT, EleRefundOrder.STATUS_REFUSE_REFUND));
