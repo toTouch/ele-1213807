@@ -1025,8 +1025,14 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
             return R.fail("100281", "电池套餐订单不存在");
         }
         
-        WechatPayParamsDetails wechatPayParamsDetails = wechatPayParamsBizService.getDetailsByIdTenantIdAndFranchiseeId(electricityMemberCardOrder.getTenantId(),
-                electricityMemberCardOrder.getParamFranchiseeId());
+        WechatPayParamsDetails wechatPayParamsDetails = null;
+        try {
+            wechatPayParamsDetails = wechatPayParamsBizService.getDetailsByIdTenantIdAndFranchiseeId(electricityMemberCardOrder.getTenantId(),
+                    electricityMemberCardOrder.getParamFranchiseeId());
+        } catch (Exception e) {
+            return R.fail("100281", "支付配置查询失败");
+        }
+        
         if (Objects.isNull(wechatPayParamsDetails)) {
             return R.ok(CheckPayParamsResultEnum.FAIL.getCode());
         }
