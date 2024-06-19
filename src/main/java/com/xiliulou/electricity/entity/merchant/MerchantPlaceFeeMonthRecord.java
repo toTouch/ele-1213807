@@ -56,5 +56,10 @@ public class MerchantPlaceFeeMonthRecord {
      * 场地柜机在最后一天是否绑定：0：否，1：是
      */
     private Integer cabinetEndBind;
+    
+    /**
+     * 加盟商id
+     */
+    private Long franchiseeId;
 }
 

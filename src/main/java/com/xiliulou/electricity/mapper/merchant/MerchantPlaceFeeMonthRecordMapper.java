@@ -15,7 +15,7 @@ import java.util.List;
 public interface MerchantPlaceFeeMonthRecordMapper {
     Integer save(MerchantPlaceFeeMonthRecord record);
     
-    List<MerchantPlaceFeeMonthRecord> selectListBySettlementTime(@Param("date") String date, @Param("tenantId") Integer tenantId);
+    List<MerchantPlaceFeeMonthRecord> selectListBySettlementTime(@Param("date") String date, @Param("tenantId") Integer tenantId, @Param("franchiseeId") Long franchiseeId);
     
     List<MerchantPlaceFeeMonthRecord> selectList(@Param("placeIdList") List<Long> placeIdList,@Param("monthList") List<String> monthList);
 }

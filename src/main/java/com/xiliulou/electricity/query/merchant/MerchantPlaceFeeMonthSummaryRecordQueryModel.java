@@ -25,4 +25,11 @@ public class MerchantPlaceFeeMonthSummaryRecordQueryModel
     private Long offset;
     
     private Integer tenantId;
+    
+    private Long franchiseeId;
+    
+    /**
+     * 类型：0-租户，1-加盟商
+     */
+    private Integer type;
 }

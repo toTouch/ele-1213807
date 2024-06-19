@@ -26,8 +26,9 @@ public class MerchantPlaceFeeMonthRecordServiceImpl implements MerchantPlaceFeeM
     private MerchantPlaceFeeMonthRecordMapper merchantPlaceFeeMonthRecordMapper;
     
     @Override
-    public List<MerchantPlaceFeeMonthRecord> selectByMonthDate(String monthDate, Integer tenantId) {
-        return merchantPlaceFeeMonthRecordMapper.selectListBySettlementTime(monthDate, tenantId);
+    @Slave
+    public List<MerchantPlaceFeeMonthRecord> selectByMonthDate(String monthDate, Integer tenantId, Long franchiseeId) {
+        return merchantPlaceFeeMonthRecordMapper.selectListBySettlementTime(monthDate, tenantId, franchiseeId);
     }
     
     @Slave

@@ -1,14 +1,18 @@
 package com.xiliulou.electricity.controller.admin.merchant;
 
 import com.xiliulou.core.controller.BaseController;
+import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.NumberConstant;
+import com.xiliulou.electricity.constant.merchant.MerchantPlaceFeeMonthSummaryRecordConstant;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.query.merchant.MerchantPlaceFeeMonthSummaryRecordQueryModel;
+import com.xiliulou.electricity.service.UserDataScopeService;
 import com.xiliulou.electricity.service.merchant.MerchantPlaceFeeSettlementService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.security.bean.TokenUser;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -16,6 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
 import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -26,15 +31,38 @@ import java.util.Objects;
  */
 
 @RestController
+@Slf4j
 public class JsonMerchantPlaceFeeSettlementController extends BaseController {
     
     @Resource
     private MerchantPlaceFeeSettlementService merchantPlaceFeeSettlementService;
     
+    @Resource
+    private UserDataScopeService userDataScopeService;
+    
     
     @GetMapping("/admin/merchant/placeFee/settlement/exportExcel")
     public void export(@RequestParam("monthDate") String monthDate,HttpServletResponse response) {
-        merchantPlaceFeeSettlementService.export(monthDate, response);
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            throw new CustomBusinessException("未找到用户");
+        }
+    
+        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE) || Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE))) {
+            throw new CustomBusinessException("用户权限不足");
+        }
+    
+        Long franchiseeId = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            List<Long> franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if (org.apache.commons.collections.CollectionUtils.isEmpty(franchiseeIds)) {
+                log.warn("merchant place fee query warn! franchisee is empty, uid={}", user.getUid());
+            }
+        
+            franchiseeId = franchiseeIds.get(0);
+        }
+        
+        merchantPlaceFeeSettlementService.export(monthDate, response, franchiseeId);
     }
     
     /**
@@ -59,12 +87,24 @@ public class JsonMerchantPlaceFeeSettlementController extends BaseController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
     
-        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
-            return R.ok(Collections.emptyList());
+        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE) || Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE))) {
+            return R.fail("ELECTRICITY.0066", "用户权限不足");        }
+    
+        Long franchiseeId = null;
+        Integer type = MerchantPlaceFeeMonthSummaryRecordConstant.TYPE_FRANCHISEE;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            List<Long> franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if (org.apache.commons.collections.CollectionUtils.isEmpty(franchiseeIds)) {
+                log.warn("merchant place fee query warn! franchisee is empty, uid={}", user.getUid());
+                return R.fail("ELECTRICITY.0038", "加盟商不存在");
+            }
+        
+            franchiseeId = franchiseeIds.get(0);
+            type = MerchantPlaceFeeMonthSummaryRecordConstant.TYPE_TENANT;
         }
     
         MerchantPlaceFeeMonthSummaryRecordQueryModel queryModel = MerchantPlaceFeeMonthSummaryRecordQueryModel.builder().size(size).offset(offset).monthDate(monthDate).tenantId(
-                TenantContextHolder.getTenantId()).build();
+                TenantContextHolder.getTenantId()).franchiseeId(franchiseeId).type(type).build();
         
         return merchantPlaceFeeSettlementService.page(queryModel);
     }
@@ -81,13 +121,26 @@ public class JsonMerchantPlaceFeeSettlementController extends BaseController {
         if (Objects.isNull(user)) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
+    
+        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE) || Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE))) {
+            return R.fail("ELECTRICITY.0038", "加盟商不存在");
+        }
+    
+        Long franchiseeId = null;
+        Integer type = MerchantPlaceFeeMonthSummaryRecordConstant.TYPE_FRANCHISEE;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            List<Long> franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if (org.apache.commons.collections.CollectionUtils.isEmpty(franchiseeIds)) {
+                log.warn("merchant place fee query warn! franchisee is empty, uid={}", user.getUid());
+                return R.fail("ELECTRICITY.0066", "用户权限不足");
+            }
         
-        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
-            return R.ok(NumberConstant.ZERO);
+            franchiseeId = franchiseeIds.get(0);
+            type = MerchantPlaceFeeMonthSummaryRecordConstant.TYPE_TENANT;
         }
         
         MerchantPlaceFeeMonthSummaryRecordQueryModel queryModel = MerchantPlaceFeeMonthSummaryRecordQueryModel.builder().monthDate(monthDate).tenantId(
-                TenantContextHolder.getTenantId()).build();
+                TenantContextHolder.getTenantId()).franchiseeId(franchiseeId).type(type).build();
         
         return merchantPlaceFeeSettlementService.pageCount(queryModel);
     }

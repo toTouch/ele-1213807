@@ -17,6 +17,12 @@
             <if test="tenantId != null">
                 and tenant_id = #{tenantId}
             </if>
+           <if test="type != null">
+                and type = #{type}
+           </if>
+            <if test="franchiseeId != null">
+                and franchisee_id = #{franchiseeId}
+            </if>
         </where>
         order by month_date desc
         <if test="offset != null and size != null">
@@ -34,6 +40,12 @@
         </if>
         <if test="tenantId != null and tenantId != ''">
             and tenant_id = #{tenantId}
+        </if>
+        <if test="type != null">
+            and type = #{type}
+        </if>
+        <if test="franchiseeId != null">
+            and franchisee_id = #{franchiseeId}
         </if>
     
     </select>

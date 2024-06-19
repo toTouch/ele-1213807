@@ -14,6 +14,9 @@
         from t_merchant_place_fee_month_record
         where month_date = #{date}
           and tenant_id = #{tenantId}
+          <if test="franchiseeId != null">
+            and franchisee_id = #{franchiseeId}
+          </if>
           and del_flag = 0 order by place_id desc
     </select>
     
