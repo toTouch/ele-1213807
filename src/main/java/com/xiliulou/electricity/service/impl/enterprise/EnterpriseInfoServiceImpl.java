@@ -14,6 +14,7 @@ import com.xiliulou.core.thread.XllThreadPoolExecutorService;
 import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.bo.wechat.WechatPayParamsDetails;
+import com.xiliulou.electricity.config.merchant.MerchantConfig;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.constant.StringConstant;
@@ -257,11 +258,8 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
     @Resource
     private CloudBeanUseRecordDetailService cloudBeanUseRecordDetailService;
     
-    @Value("${hexup.merchant.merchantAppletId")
-    private String merchantAppletId;
-    
-    @Value("${hexup.merchant.merchantAppletSecret")
-    private String merchantAppletSecret;
+    @Resource
+    private MerchantConfig merchantConfig;
     
     @Resource
     private WechatPayParamsBizService wechatPayParamsBizService;
@@ -745,19 +743,10 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
                 return Triple.of(false, "120017", "未配置支付参数");
             }
     
-            if (Objects.isNull(merchantAppletId)) {
-                log.error("CLOUD BEAN RECHARGE ERROR, merchant applet id is empty. uid = {}", uid);
-                return Triple.of(false, "120017", "未配置支付参数");
-            }
-    
-            if (Objects.isNull(merchantAppletSecret)) {
-                log.error("CLOUD BEAN RECHARGE ERROR, merchant applet secret is empty. uid = {}", uid);
-                return Triple.of(false, "120017", "未配置支付参数");
-            }
     
             //兼容商户小程序充值
-            wechatPayParamsDetails.setMerchantMinProAppId(merchantAppletId);
-            wechatPayParamsDetails.setMerchantAppletSecret(merchantAppletSecret);
+            wechatPayParamsDetails.setMerchantMinProAppId(merchantConfig.getMerchantAppletId());
+            wechatPayParamsDetails.setMerchantAppletSecret(merchantConfig.getMerchantAppletSecret());
             
             
             UserOauthBind userOauthBind = userOauthBindService.queryUserOauthBySysId(uid, TenantContextHolder.getTenantId());

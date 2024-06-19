@@ -6,6 +6,7 @@ import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.bo.merchant.MerchantWithdrawApplicationBO;
 import com.xiliulou.electricity.bo.merchant.MerchantWithdrawApplicationRecordBO;
 import com.xiliulou.electricity.bo.wechat.WechatPayParamsDetails;
+import com.xiliulou.electricity.config.merchant.MerchantConfig;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.constant.MultiFranchiseeConstant;
@@ -105,8 +106,8 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
     @Resource
     private WechatV3TransferInvokeService wechatV3TransferInvokeService;
     
-    @Value("${hexup.merchant.merchantAppletId")
-    private String merchantAppletId;
+    @Resource
+    private MerchantConfig merchantConfig;
     
     @Resource
     private WechatPayParamsBizService wechatPayParamsBizService;
@@ -223,13 +224,8 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
             log.error("review Merchant withdraw application error, wechat pay params details is null, tenantId = {}, franchiseeId={}", tenantId, merchant.getFranchiseeId());
             return Triple.of(false, "120017", "未配置支付参数");
         }
-        
-        if (Objects.isNull(merchantAppletId)) {
-            log.error("review Merchant withdraw application error, merchant applet id is empty. tenantId = {}, franchiseeId = {}", tenantId, merchant.getFranchiseeId());
-            return Triple.of(false, "120017", "未配置支付参数");
-        }
     
-        wechatPayParamsDetails.setMerchantAppletId(merchantAppletId);
+        wechatPayParamsDetails.setMerchantAppletId(merchantConfig.getMerchantAppletId());
         
         // 支付配置类型
         Integer payConfigType = MerchantWithdrawApplicationRecordConstant.PAY_CONFIG_TYPE_DEFAULT;
@@ -422,12 +418,7 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
             return Triple.of(false, "120017", "未配置支付参数");
         }
     
-        if (Objects.isNull(merchantAppletId)) {
-            log.error("review Merchant batch withdraw application error, merchant applet id is empty. tenantId = {}, franchiseeId=", tenantId, franchiseeId);
-            return Triple.of(false, "120017", "未配置支付参数");
-        }
-    
-        wechatPayParamsDetails.setMerchantAppletId(merchantAppletId);
+        wechatPayParamsDetails.setMerchantAppletId(merchantConfig.getMerchantAppletId());
         
         // 支付配置类型
         Integer payConfigType = MerchantWithdrawApplicationRecordConstant.PAY_CONFIG_TYPE_DEFAULT;
