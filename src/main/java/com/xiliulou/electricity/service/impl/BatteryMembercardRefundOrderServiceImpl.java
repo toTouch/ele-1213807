@@ -1017,18 +1017,12 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
     public R checkPayParamsDetails(String orderNo) {
         ElectricityMemberCardOrder electricityMemberCardOrder = batteryMemberCardOrderService.selectByOrderNo(orderNo);
         if (Objects.isNull(electricityMemberCardOrder) || !Objects.equals(electricityMemberCardOrder.getTenantId(), TenantContextHolder.getTenantId())) {
-            // log.warn("CHECK PAY PARAMS DETAILS WARN! not found electricityMemberCardOrder,orderNo={}", orderNo);
+            log.warn("CHECK PAY PARAMS DETAILS WARN! not found electricityMemberCardOrder,orderNo={}", orderNo);
             return R.fail("100281", "电池套餐订单不存在");
         }
         
-        WechatPayParamsDetails wechatPayParamsDetails = null;
-        try {
-            wechatPayParamsDetails = wechatPayParamsBizService.getDetailsByIdTenantIdAndFranchiseeId(electricityMemberCardOrder.getTenantId(),
+        WechatPayParamsDetails wechatPayParamsDetails = wechatPayParamsBizService.getDetailsByIdTenantIdAndFranchiseeId(electricityMemberCardOrder.getTenantId(),
                     electricityMemberCardOrder.getParamFranchiseeId());
-        } catch (Exception e) {
-            log.error("exception", e);
-            return R.fail("100281", e.getMessage());
-        }
         
         if (Objects.isNull(wechatPayParamsDetails)) {
             return R.ok(CheckPayParamsResultEnum.FAIL.getCode());

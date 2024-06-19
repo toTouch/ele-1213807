@@ -1566,8 +1566,12 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
         // 修改企业用户代付状态为代付过期
         enterpriseChannelUserService.updatePaymentStatusForRefundDeposit(userInfo.getUid(), EnterprisePaymentStatusEnum.PAYMENT_TYPE_EXPIRED.getCode());
         
-        // 支付配置校验不通过时，需传递offlineRefund，走线下退款
-        if (Objects.equals(eleDepositOrder.getPayType(), EleDepositOrder.OFFLINE_PAYMENT) || Objects.equals(offlineRefund, CheckPayParamsResultEnum.FAIL.getCode())) {
+        // 支付配置校验不通过时，需传递offlineRefund，线上支付的押金强制走线下退款
+        if (Objects.equals(offlineRefund, CheckPayParamsResultEnum.FAIL.getCode())) {
+            eleRefundOrder.setPayType(EleRefundOrder.PAY_TYPE_OFFLINE);
+        }
+        
+        if (Objects.equals(eleRefundOrder.getPayType(), EleRefundOrder.PAY_TYPE_OFFLINE)) {
             // 生成退款订单
             eleRefundOrder.setRefundAmount(refundAmount);
             eleRefundOrder.setStatus(EleRefundOrder.STATUS_SUCCESS);
