@@ -1111,7 +1111,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             EleRefundOrder eleRefundOrder = EleRefundOrder.builder().orderId(eleDepositOrder.getOrderId())
                     .refundOrderNo(OrderIdUtil.generateBusinessOrderId(BusinessType.BATTERY_DEPOSIT_REFUND, uid)).payAmount(eleDepositOrder.getPayAmount())
                     .refundAmount(eleRefundAmount).status(EleRefundOrder.STATUS_SUCCESS).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis())
-                    .tenantId(eleDepositOrder.getTenantId()).franchiseeId(userInfo.getFranchiseeId()).build();
+                    .tenantId(eleDepositOrder.getTenantId()).franchiseeId(userInfo.getFranchiseeId()).payType(eleDepositOrder.getPayType()).build();
             eleRefundOrderService.insert(eleRefundOrder);
             
             // 更新用户状态
@@ -1169,7 +1169,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
         EleRefundOrder eleRefundOrder = EleRefundOrder.builder().orderId(eleDepositOrder.getOrderId())
                 .refundOrderNo(OrderIdUtil.generateBusinessOrderId(BusinessType.BATTERY_DEPOSIT_REFUND, uid)).payAmount(eleDepositOrder.getPayAmount())
                 .refundAmount(eleRefundAmount).status(EleRefundOrder.STATUS_REFUND).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis())
-                .tenantId(eleDepositOrder.getTenantId()).franchiseeId(userInfo.getFranchiseeId()).build();
+                .tenantId(eleDepositOrder.getTenantId()).franchiseeId(userInfo.getFranchiseeId()).payType(eleDepositOrder.getPayType()).build();
         eleRefundOrderService.insert(eleRefundOrder);
         
         return Triple.of(true, "100413", "免押押金解冻中");
@@ -1561,6 +1561,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
         eleRefundOrder.setUpdateTime(System.currentTimeMillis());
         eleRefundOrder.setPayAmount(eleDepositOrder.getPayAmount());
         eleRefundOrder.setErrMsg(errMsg);
+        eleRefundOrder.setPayType(eleDepositOrder.getPayType());
         
         // 修改企业用户代付状态为代付过期
         enterpriseChannelUserService.updatePaymentStatusForRefundDeposit(userInfo.getUid(), EnterprisePaymentStatusEnum.PAYMENT_TYPE_EXPIRED.getCode());

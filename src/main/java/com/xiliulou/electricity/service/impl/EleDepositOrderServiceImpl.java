@@ -323,7 +323,9 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
                 .createTime(System.currentTimeMillis())
                 .updateTime(System.currentTimeMillis())
                 .tenantId(eleDepositOrder.getTenantId())
-                .memberCardOweNumber(memberCardOweNumber).build();
+                .memberCardOweNumber(memberCardOweNumber)
+                .payType(eleDepositOrder.getPayType())
+                .build();
 
         //如果车电一起免押，
         if (Objects.nonNull(freeDepositOrder) && Objects
@@ -350,7 +352,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
                     .refundOrderNo(OrderIdUtil.generateBusinessOrderId(BusinessType.CAR_DEPOSIT_REFUND, user.getUid())).payAmount(carDepositOrder.getPayAmount()).refundAmount(carRefundAmount)
                     .status(EleRefundOrder.STATUS_INIT).createTime(System.currentTimeMillis())
                     .updateTime(System.currentTimeMillis()).tenantId(eleDepositOrder.getTenantId()).franchiseeId(userInfo.getFranchiseeId())
-                    .refundOrderType(EleRefundOrder.RENT_CAR_DEPOSIT_REFUND_ORDER).build();
+                    .refundOrderType(EleRefundOrder.RENT_CAR_DEPOSIT_REFUND_ORDER).payType(carDepositOrder.getPayType()).build();
 
             //解绑用户车辆信息
             if (carRefundAmount.compareTo(BigDecimal.valueOf(0.01)) < 0 ) {
@@ -1152,7 +1154,8 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
                 .updateTime(System.currentTimeMillis())
                 .tenantId(eleDepositOrder.getTenantId())
                 .franchiseeId(userInfo.getFranchiseeId())
-                .refundOrderType(EleRefundOrder.RENT_CAR_DEPOSIT_REFUND_ORDER).build();
+                .refundOrderType(EleRefundOrder.RENT_CAR_DEPOSIT_REFUND_ORDER)
+                .payType(eleDepositOrder.getPayType()).build();
         eleRefundOrderService.insert(eleRefundOrder);
 
         //等到后台同意退款
@@ -1767,7 +1770,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
                     .refundOrderNo(OrderIdUtil.generateBusinessOrderId(BusinessType.BATTERY_DEPOSIT_REFUND, user.getUid())).payAmount(userBatteryDeposit.getBatteryDeposit())
                     .refundAmount(eleRefundAmount).status(EleRefundOrder.STATUS_INIT)
                     .createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).franchiseeId(userInfo.getFranchiseeId())
-                    .tenantId(eleDepositOrder.getTenantId()).memberCardOweNumber(memberCardOweNumber).build();
+                    .tenantId(eleDepositOrder.getTenantId()).memberCardOweNumber(memberCardOweNumber).payType(eleDepositOrder.getPayType()).build();
 
             if (eleRefundAmount.doubleValue() <= 0) {
                 if (Objects.isNull(electricityConfig) ||  Objects.equals(ElectricityConfig.DISABLE_ZERO_DEPOSIT_AUDIT,electricityConfig.getIsZeroDepositAuditEnabled())) {
@@ -1809,7 +1812,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
                 .refundOrderNo(OrderIdUtil.generateBusinessOrderId(BusinessType.CAR_DEPOSIT_REFUND, user.getUid())).payAmount(userCarDeposit.getCarDeposit()).refundAmount(carRefundAmount)
                 .status(EleRefundOrder.STATUS_INIT)
                 .createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).franchiseeId(userInfo.getFranchiseeId())
-                .tenantId(carDepositOrder.getTenantId()).refundOrderType(EleRefundOrder.RENT_CAR_DEPOSIT_REFUND_ORDER)
+                .tenantId(carDepositOrder.getTenantId()).refundOrderType(EleRefundOrder.RENT_CAR_DEPOSIT_REFUND_ORDER).payType(carDepositOrder.getPayType())
                 .build();
 
 
