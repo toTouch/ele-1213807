@@ -5743,24 +5743,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         //当前租户下新增柜机
         ElectricityCabinet electricityCabinetInsert = new ElectricityCabinet();
         
-        //判断参数
-        if (Objects.nonNull(query.getBusinessTimeType())) {
-            if (Objects.equals(query.getBusinessTimeType(), ElectricityCabinetTransferQuery.ALL_DAY)) {
-                electricityCabinetInsert.setBusinessTime(ElectricityCabinetAddAndUpdate.ALL_DAY);
-            }
-            if (Objects.equals(query.getBusinessTimeType(), ElectricityCabinetTransferQuery.CUSTOMIZE_TIME)) {
-                if (Objects.isNull(query.getBeginTime()) || Objects.isNull(query.getEndTime())
-                        || query.getBeginTime() > query.getEndTime()) {
-                    return Triple.of(false, "ELECTRICITY.0007", "不合法的参数");
-                }
-                electricityCabinetInsert.setBusinessTime(query.getBeginTime() + "-" + query.getEndTime());
-            }
-            if (Objects.isNull(electricityCabinetInsert.getBusinessTime())) {
-                return Triple.of(false, "ELECTRICITY.0007", "不合法的参数");
-            }
-        }
-        
-        
+        electricityCabinetInsert.setBusinessTime(ElectricityCabinetAddAndUpdate.ALL_DAY);
         electricityCabinetInsert.setName(query.getName());
         electricityCabinetInsert.setSn(query.getDeviceName());
         electricityCabinetInsert.setModelId(modelId);
@@ -5773,7 +5756,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         electricityCabinetInsert.setUsableStatus(ELECTRICITY_CABINET_USABLE_STATUS);
         electricityCabinetInsert.setOnlineStatus(ElectricityCabinet.ELECTRICITY_CABINET_OFFLINE_STATUS);
         electricityCabinetInsert.setVersion(testFactoryCabinet.getVersion());
-        electricityCabinetInsert.setFullyCharged(query.getFullyCharged());
+        electricityCabinetInsert.setFullyCharged(ElectricityCabinetAddAndUpdate.FULL_CHARGED);
         electricityCabinetInsert.setServicePhone(testFactoryCabinet.getServicePhone());
         electricityCabinetInsert.setCreateTime(System.currentTimeMillis());
         electricityCabinetInsert.setUpdateTime(System.currentTimeMillis());

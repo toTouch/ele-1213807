@@ -182,6 +182,8 @@ public class ElectricityCabinetAddAndUpdate {
     //全天
     public static final String ALL_DAY = "-1";
     
+    public static final Double FULL_CHARGED = 80.00d;
+    
     //自定义时间段
     public static final String CUSTOMIZE_TIME = "1";
     
