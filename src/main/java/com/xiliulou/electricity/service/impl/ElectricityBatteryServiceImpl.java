@@ -1037,12 +1037,12 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
                 new LambdaQueryWrapper<ElectricityBattery>().eq(ElectricityBattery::getId, id).eq(ElectricityBattery::getDelFlag, ElectricityBattery.DEL_NORMAL)
                         .eq(ElectricityBattery::getTenantId, TenantContextHolder.getTenantId()));
         if (Objects.isNull(electricityBattery)) {
-            log.error("ELE ERROR ,not found electricitybattery,batteryId={}", id);
+            log.warn("ELE WARN ,not found electricitybattery,batteryId={}", id);
             return R.fail("100225", "未找到电池!");
         }
         
         if (ObjectUtil.equal(ElectricityBattery.BUSINESS_STATUS_LEASE, electricityBattery.getBusinessStatus())) {
-            log.error("ELE ERROR ,electricity_battery is using,batteryId={}", id);
+            log.warn("ELE WARN ,electricity_battery is using,batteryId={}", id);
             return R.fail("100226", "电池正在租用中,无法删除!");
         }
         

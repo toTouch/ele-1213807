@@ -397,19 +397,19 @@ public class UserCouponServiceImpl implements UserCouponService {
         
         User user = userService.queryByUidFromCache(uid);
         if (Objects.isNull(user)) {
-            log.error("ELECTRICITY  ERROR! not found user! userId:{}", uid);
+            log.warn("ELECTRICITY WARN! not found user! userId:{}", uid);
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         
         //2.判断用户
         UserInfo userInfo = userInfoService.queryByUidFromCache(user.getUid());
         if (Objects.isNull(userInfo)) {
-            log.error("ELECTRICITY  ERROR! not found user,uid:{} ", user.getUid());
+            log.warn("ELECTRICITY WARN! not found user,uid:{} ", user.getUid());
             return R.fail("ELECTRICITY.0019", "未找到用户");
         }
         //用户是否可用
         if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
-            log.error("ELECTRICITY  ERROR! user is unusable!uid:{} ", user.getUid());
+            log.warn("ELECTRICITY WARN! user is unusable!uid:{} ", user.getUid());
             return R.fail("ELECTRICITY.0024", "用户已被禁用");
         }
         

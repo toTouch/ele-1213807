@@ -134,7 +134,7 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
         Long reportTime = eleBatteryVO.getReportTime();
         //若上报时间为空  或者  上报时间小于上次上报时间，不处理
         if (Objects.nonNull(reportTime) && Objects.nonNull(eleBox.getReportTime()) && eleBox.getReportTime() >= reportTime) {
-            log.warn("ELE BATTERY REPORT ERROR! reportTime is less box reportTime,boxReportTime={},eid={},sessionId={},", eleBox.getReportTime(), electricityCabinet.getId(),
+            log.warn("ELE BATTERY REPORT WARN! reportTime is less box reportTime,boxReportTime={},eid={},sessionId={},", eleBox.getReportTime(), electricityCabinet.getId(),
                     sessionId);
             return;
         }
@@ -172,7 +172,7 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
         ElectricityBattery electricityBattery = electricityBatteryService.queryBySnFromDb(batteryName,
                 electricityCabinet.getTenantId());
         if (Objects.isNull(electricityBattery)) {
-            log.warn("ELE BATTERY REPORT ERROR! not found battery,batteryName={},sessionId={}", batteryName,
+            log.warn("ELE BATTERY REPORT WARN! not found battery,batteryName={},sessionId={}", batteryName,
                     sessionId);
             return;
         }
@@ -515,14 +515,14 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
         voltageCurrentExecutorService.execute(() -> {
             BatteryOtherPropertiesQuery batteryOtherPropertiesQuery = eleBatteryVO.getBatteryOtherProperties();
             if (Objects.isNull(batteryOtherPropertiesQuery)) {
-                log.error("ELE BATTERY REPORT ERROR! batteryOtherPropertiesQuery is null,sessionId={}", sessionId);
+                log.warn("ELE BATTERY REPORT WARN! batteryOtherPropertiesQuery is null,sessionId={}", sessionId);
                 return;
             }
 
             BatteryOtherProperties batteryOtherProperties = batteryOtherPropertiesService.selectByBatteryName(
                     electricityBattery.getSn());
             if (Objects.isNull(batteryOtherProperties)) {
-                log.error("ELE BATTERY REPORT ERROR! batteryOtherProperties is null,sessionId={},sn={}", sessionId,
+                log.warn("ELE BATTERY REPORT WARN! batteryOtherProperties is null,sessionId={},sn={}", sessionId,
                         electricityBattery.getSn());
                 return;
             }

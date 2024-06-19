@@ -3119,36 +3119,36 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         //换电柜
         ElectricityCabinet electricityCabinet = queryByProductAndDeviceName(productKey, deviceName);
         if (Objects.isNull(electricityCabinet)) {
-            log.error("checkBattery error! no electricityCabinet,productKey={},deviceName={}", productKey, deviceName);
+            log.warn("checkBattery warn! no electricityCabinet,productKey={},deviceName={}", productKey, deviceName);
             return R.failMsg("未找到换电柜");
         }
         
         //电池
         ElectricityBattery electricityBattery = electricityBatteryService.queryBySnFromDb(batterySn);
         if (Objects.isNull(electricityBattery)) {
-            log.error("checkBattery error! no electricityBattery,sn={}", batterySn);
+            log.warn("checkBattery warn! no electricityBattery,sn={}", batterySn);
             return R.failMsg("未找到电池");
         }
         
         if (!Objects.equals(electricityCabinet.getTenantId(), electricityBattery.getTenantId())) {
-            log.error("checkBattery error! tenantId is not equal,tenantId1={},tenantId2={}", electricityCabinet.getTenantId(), electricityBattery.getTenantId());
+            log.warn("checkBattery warn! tenantId is not equal,tenantId1={},tenantId2={}", electricityCabinet.getTenantId(), electricityBattery.getTenantId());
             return R.failMsg("电池与换电柜租户不匹配");
         }
         
         //查电池所属加盟商
         if (Objects.isNull(electricityBattery.getFranchiseeId())) {
-            log.error("checkBattery error! battery not bind franchisee,electricityBatteryId={}", electricityBattery.getId());
+            log.warn("checkBattery warn! battery not bind franchisee,electricityBatteryId={}", electricityBattery.getId());
             return R.failMsg("电池未绑定加盟商");
         }
         // 查换电柜所属加盟商
         Store store = storeService.queryByIdFromCache(electricityCabinet.getStoreId());
         if (Objects.isNull(store)) {
-            log.error("checkBattery error! not find store,storeId={}", electricityCabinet.getStoreId());
+            log.warn("checkBattery warn! not find store,storeId={}", electricityCabinet.getStoreId());
             return R.failMsg("找不到换电柜门店");
         }
         
         if (!Objects.equals(store.getFranchiseeId(), electricityBattery.getFranchiseeId())) {
-            log.error("checkBattery error! franchisee is not equal,franchiseeId1={},franchiseeId2={}", store.getFranchiseeId(), electricityBattery.getFranchiseeId());
+            log.warn("checkBattery warn! franchisee is not equal,franchiseeId1={},franchiseeId2={}", store.getFranchiseeId(), electricityBattery.getFranchiseeId());
             return R.failMsg("电池加盟商与电柜加盟商不匹配");
         }
         

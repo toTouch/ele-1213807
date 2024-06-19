@@ -132,7 +132,7 @@ public class EleUserAuthServiceImpl implements EleUserAuthService {
         }
         //用户是否可用
         if (Objects.equals(oldUserInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
-            log.error("ELECTRICITY  ERROR! user is unUsable! uid:{} ", user.getUid());
+            log.warn("ELECTRICITY WARN! user is unUsable! uid:{} ", user.getUid());
             return R.fail("ELECTRICITY.0024", "用户已被禁用");
         }
 
@@ -264,20 +264,20 @@ public class EleUserAuthServiceImpl implements EleUserAuthService {
     private List<MqNotifyCommon<AuthenticationAuditMessageNotify>> buildAuthenticationAuditMessageNotify(UserInfo userInfo) {
         MaintenanceUserNotifyConfig notifyConfig = maintenanceUserNotifyConfigService.queryByTenantIdFromCache(userInfo.getTenantId());
         if (Objects.isNull(notifyConfig) || StringUtils.isBlank(notifyConfig.getPhones())) {
-            log.error("ELE ERROR! not found maintenanceUserNotifyConfig,tenantId={},uid={}", userInfo.getTenantId(),userInfo.getUid());
+            log.warn("ELE WARN! not found maintenanceUserNotifyConfig,tenantId={},uid={}", userInfo.getTenantId(),userInfo.getUid());
             return Collections.EMPTY_LIST;
         }
     
         if ((notifyConfig.getPermissions() & MaintenanceUserNotifyConfig.P_AUTHENTICATION_AUDIT)
                 != MaintenanceUserNotifyConfig.P_AUTHENTICATION_AUDIT) {
-            log.info("ELE ERROR! not maintenance permission,permissions={},uid={}", notifyConfig.getPermissions(),userInfo.getUid());
+            log.info("ELE INFO! not maintenance permission,permissions={},uid={}", notifyConfig.getPermissions(),userInfo.getUid());
             return Collections.EMPTY_LIST;
         }
         
         
         List<String> phones = JSON.parseObject(notifyConfig.getPhones(), List.class);
         if (org.apache.commons.collections.CollectionUtils.isEmpty(phones)) {
-            log.error("ELE ERROR! phones is empty,tenantId={},uid={}", userInfo.getTenantId(), userInfo.getUid());
+            log.warn("ELE WARN! phones is empty,tenantId={},uid={}", userInfo.getTenantId(), userInfo.getUid());
             return Collections.EMPTY_LIST;
         }
         

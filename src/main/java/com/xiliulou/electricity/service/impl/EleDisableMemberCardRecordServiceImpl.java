@@ -205,7 +205,6 @@ public class EleDisableMemberCardRecordServiceImpl extends ServiceImpl<Electrici
             userBatteryMemberCardUpdate.setUpdateTime(System.currentTimeMillis());
             userBatteryMemberCardService.updateByUid(userBatteryMemberCardUpdate);
             
-            log.error("REVIEW_DISABLE_MEMBER_CARD ERROR member card Expire! userId={}", eleDisableMemberCardRecord.getUid());
             return R.fail("100246", "套餐已过期，无法进行停卡审核");
         }
         
