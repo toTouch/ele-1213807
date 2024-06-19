@@ -636,4 +636,9 @@ public interface CacheConstant {
     String CACHE_CHANNEL_USER_ADMIN_EXIT_LOCK = "cache_channel_user_admin_exit_lock:";
     
     String CACHE_CHANNEL_USER_EXIT_ALL_LOCK = "cache_channel_user_exit_all_lock:";
+    
+    
+    
+    //最后一个操作格挡缓存
+    String ROLE_PERMISSION_OPERATE_KEY = "saas_electricity:role_permission_opt:%s";
 }
