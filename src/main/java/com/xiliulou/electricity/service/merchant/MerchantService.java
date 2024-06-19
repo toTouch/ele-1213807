@@ -2,12 +2,14 @@ package com.xiliulou.electricity.service.merchant;
 
 import com.xiliulou.electricity.dto.merchant.MerchantDeleteCacheDTO;
 import com.xiliulou.electricity.entity.merchant.Merchant;
+import com.xiliulou.electricity.query.merchant.MerchantUnbindReq;
 import com.xiliulou.electricity.request.merchant.MerchantPageRequest;
 import com.xiliulou.electricity.request.merchant.MerchantSaveRequest;
 import com.xiliulou.electricity.vo.merchant.MerchantPlaceSelectVO;
 import com.xiliulou.electricity.vo.merchant.MerchantQrCodeVO;
 import com.xiliulou.electricity.vo.merchant.MerchantUserVO;
 import com.xiliulou.electricity.vo.merchant.MerchantVO;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 
 import java.util.List;
@@ -63,4 +65,6 @@ public interface MerchantService {
     void repairEnterprise(List<Long> enterpriseIds, List<Long> merchantIds, Integer tenantId);
     
     void deleteCacheForRepairEnterprise(List<Long> enterpriseIds, List<Long> merchantIds);
+    
+    Pair<Boolean, Object> unbindOpenId(MerchantUnbindReq params);
 }

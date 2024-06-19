@@ -167,7 +167,7 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
             handlePackageNumber(exchangeOrderRsp, receiverMessage, electricityCabinetOrder);
             
             if (electricityCabinetOrder.getOrderSeq() > exchangeOrderRsp.getOrderSeq()) {
-                log.error("EXCHANGE ORDER ERROR! rsp order seq is lower order! requestId={},orderId={},uid={}", receiverMessage.getSessionId(), exchangeOrderRsp.getOrderId(),
+                log.warn("EXCHANGE ORDER WARN! rsp order seq is lower order! requestId={},orderId={},uid={}", receiverMessage.getSessionId(), exchangeOrderRsp.getOrderId(),
                         electricityCabinetOrder.getUid());
                 return;
             }
@@ -221,8 +221,6 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
      * @param electricityCabinetOrder
      */
     private void handlePackageNumber(ExchangeOrderRsp exchangeOrderRsp, ReceiverMessage receiverMessage, ElectricityCabinetOrder electricityCabinetOrder) {
-        log.info("NormalNewExchangeOrderHandlerIot.postHandleReceiveMsg, handlePackageNumber, requestId is {}, orderId is {}, uid is {}, order status is {}",
-                receiverMessage.getSessionId(), exchangeOrderRsp.getOrderId(), electricityCabinetOrder.getUid(), exchangeOrderRsp.getOrderStatus());
         // 定义异常状态，此处需要考虑后续抽出枚举或者常量池的方法
         List<String> warnStateList = new ArrayList<>();
         warnStateList.add(ElectricityCabinetOrder.ORDER_CANCEL);

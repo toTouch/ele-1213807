@@ -77,6 +77,9 @@
         <if test="query.deviceName != null and query.deviceName != ''">
             and device_name = #{query.deviceName}
         </if>
+        <if test="query.sn != null and query.sn != ''">
+            and sn like concat('%',#{query.sn,jdbcType=VARCHAR},'%')
+        </if>
         order by id desc
         limit #{query.offset}, #{query.size}
     </select>
@@ -141,6 +144,9 @@
         </if>
         <if test="query.deviceName != null and query.deviceName != ''">
             and device_name = #{query.deviceName}
+        </if>
+        <if test="query.version != null and query.version != ''">
+            and version = #{query.version}
         </if>
 	</select>
 
@@ -1086,7 +1092,10 @@
         <if test="onlineStatus != null">
             and online_status = #{onlineStatus}
         </if>
-        order by create_time desc
+        <if test="version != null and version != ''">
+            and version = #{version}
+        </if>
+        order by id desc
         limit #{offset}, #{size}
     </select>
     

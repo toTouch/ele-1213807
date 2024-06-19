@@ -3,22 +3,20 @@ package com.xiliulou.electricity.service.impl;
 import cn.hutool.core.util.RandomUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.core.web.R;
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.VerificationCode;
 import com.xiliulou.electricity.mapper.VerificationCodeMapper;
 import com.xiliulou.electricity.query.VerificationCodeQuery;
 import com.xiliulou.electricity.service.VerificationCodeService;
 import com.xiliulou.electricity.utils.SecurityUtils;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.TimeUnit;
-
-import lombok.extern.slf4j.Slf4j;
 
 /**
  * 动态验证码(VerificationCode)表服务实现类
@@ -69,6 +67,7 @@ public class VerificationCodeServiceImpl implements VerificationCodeService {
     }
 
 
+    @Slave
     @Override
     public R checkVerificationCode(String verificationCode) {
         Integer count = verificationCodeMapper.selectCount(new LambdaQueryWrapper<VerificationCode>()
@@ -87,6 +86,7 @@ public class VerificationCodeServiceImpl implements VerificationCodeService {
      * @param id 主键
      * @return 实例对象
      */
+    @Slave
     @Override
     public VerificationCode queryByIdFromDB(Long id) {
         return this.verificationCodeMapper.queryById(id);
@@ -109,11 +109,13 @@ public class VerificationCodeServiceImpl implements VerificationCodeService {
      *
      * @return 对象列表
      */
+    @Slave
     @Override
     public List<VerificationCode> queryAllByLimit(VerificationCodeQuery codeQuery) {
         return this.verificationCodeMapper.queryAllByLimit(codeQuery);
     }
 
+    @Slave
     @Override
     public int selectCountByQuery(VerificationCodeQuery codeQuery) {
         return this.verificationCodeMapper.selectCountByQuery(codeQuery);

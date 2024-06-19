@@ -336,6 +336,10 @@
         </foreach>
     </select>
     
+    <select id="existsRenewCloseUser" resultType="java.lang.Integer">
+        select count(1) from t_enterprise_channel_user where renewal_status = 0 and enterprise_id = #{enterpriseId} and uid is not null
+    </select>
+    
     <update id="updateRenewStatus">
         update t_enterprise_channel_user
         <set>

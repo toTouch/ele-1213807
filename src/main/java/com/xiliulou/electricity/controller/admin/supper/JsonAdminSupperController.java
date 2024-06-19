@@ -35,7 +35,7 @@ public class JsonAdminSupperController {
      */
     @PostMapping("/delBatterys")
     public R<DelBatteryVo> delBatterys(@RequestBody DelBatteryReq delBatteryReq) {
-        Pair<List<String>, List<String>> pair = adminSupperService.delBatteryBySnList(delBatteryReq.getTenantId(), delBatteryReq.getBatterySnList());
+        Pair<List<String>, List<String>> pair = adminSupperService.delBatteryBySnList(delBatteryReq.getTenantId(), delBatteryReq.getBatterySnList(), delBatteryReq.getViolentDel());
         DelBatteryVo delBatteryVo = new DelBatteryVo();
         delBatteryVo.setSuccessSnList(pair.getKey());
         delBatteryVo.setFailedSnList(pair.getValue());

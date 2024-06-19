@@ -92,27 +92,27 @@ public class JoinShareActivityRecordServiceImpl implements JoinShareActivityReco
         //用户是否可用
         UserInfo userInfo = userInfoService.queryByUidFromCache(user.getUid());
         if (Objects.isNull(userInfo) || Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
-            log.error("joinActivity  ERROR! not found userInfo,uid:{} ", user.getUid());
+            log.warn("joinActivity  WARN! not found userInfo,uid:{} ", user.getUid());
             return R.fail("ELECTRICITY.0024", "用户已被禁用");
         }
     
         UserInfoExtra userInfoExtra = userInfoExtraService.queryByUidFromCache(user.getUid());
         if (Objects.isNull(userInfoExtra)) {
-            log.error("joinActivity  ERROR! not found userInfoExtra,uid:{} ", user.getUid());
+            log.warn("joinActivity  WARN! not found userInfoExtra,uid:{} ", user.getUid());
             return R.fail("ELECTRICITY.0024", "未找到用户");
         }
     
         //查找活动
         ShareActivity shareActivity = shareActivityService.queryByStatus(activityId);
         if (Objects.isNull(shareActivity)) {
-            log.error("joinActivity  ERROR! not found Activity ! ActivityId:{} ", activityId);
+            log.warn("joinActivity WARN! not found Activity ! ActivityId:{} ", activityId);
             return R.fail("ELECTRICITY.00106", "活动已下架");
         }
         
         //查找分享的用户
         User oldUser = userService.queryByUidFromCache(uid);
         if (Objects.isNull(oldUser)) {
-            log.error("joinActivity  ERROR! not found oldUser ,uid :{}", uid);
+            log.warn("joinActivity  WARN! not found oldUser ,uid :{}", uid);
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
     
@@ -132,9 +132,7 @@ public class JoinShareActivityRecordServiceImpl implements JoinShareActivityReco
         if (CollectionUtils.isNotEmpty(joinShareActivityHistories)) {
             return R.fail("110206", "已参加过邀请返券活动");
         }
-    
-        log.info("start join share activity, join uid = {}, inviter uid = {}, activity id = {}", user.getUid(), oldUser.getUid(), activityId);
-    
+        
         // 计算活动有效期
         long expiredTime;
         if (Objects.nonNull(shareActivity.getHours()) && !Objects.equals(shareActivity.getHours(), NumberConstant.ZERO)) {

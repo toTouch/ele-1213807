@@ -1,6 +1,5 @@
 package com.xiliulou.electricity.service.enterprise;
 
-import com.xiliulou.electricity.bo.merchant.MerchantEnterprisePackageBO;
 import com.xiliulou.electricity.entity.enterprise.EnterprisePackage;
 import com.xiliulou.electricity.vo.enterprise.EnterprisePackageVO;
 
