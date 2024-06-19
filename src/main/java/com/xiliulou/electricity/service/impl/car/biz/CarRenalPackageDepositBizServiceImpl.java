@@ -205,7 +205,7 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
             }
             
             orderNo = depositRefundEntity.getDepositPayOrderNo();
-        } else if (2 == type) {
+        } else if (0 == type) {
             orderNo = depositOrderNo;
         }
         
