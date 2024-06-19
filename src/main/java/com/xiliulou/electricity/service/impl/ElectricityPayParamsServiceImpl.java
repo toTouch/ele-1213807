@@ -114,6 +114,9 @@ public class ElectricityPayParamsServiceImpl extends ServiceImpl<ElectricityPayP
                 return R.failMsg("加盟商不存在");
             }
             franchiseeName = franchisee.getName();
+        } else {
+            // 默认配置
+            request.setFranchiseeId(MultiFranchiseeConstant.DEFAULT_FRANCHISEE);
         }
         
         // 校验参数
@@ -196,8 +199,8 @@ public class ElectricityPayParamsServiceImpl extends ServiceImpl<ElectricityPayP
         Integer tenantId = TenantContextHolder.getTenantId();
         
         // 校验参数
-        ElectricityPayParams payParams = baseMapper.selectOne(
-                new LambdaQueryWrapper<ElectricityPayParams>().eq(ElectricityPayParams::getId, id).eq(ElectricityPayParams::getTenantId, tenantId));
+        ElectricityPayParams payParams = baseMapper
+                .selectOne(new LambdaQueryWrapper<ElectricityPayParams>().eq(ElectricityPayParams::getId, id).eq(ElectricityPayParams::getTenantId, tenantId));
         
         if (Objects.isNull(payParams)) {
             return R.failMsg("数据不存在");
