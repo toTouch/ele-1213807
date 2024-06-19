@@ -49,8 +49,6 @@ public interface EleDepositOrderService {
 
     BigDecimal queryTurnOver(Integer tenantId);
 
-    R payBatteryServiceFee(HttpServletRequest request);
-
     EleDepositOrder queryLastPayDepositTimeByUid(Long uid, Long franchiseeId, Integer tenantId,Integer depositType);
 
     EleDepositOrder selectLatestByUid(Long uid);
