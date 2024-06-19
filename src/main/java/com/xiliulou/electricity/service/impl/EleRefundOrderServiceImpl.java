@@ -525,16 +525,15 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
         // 修改企业用户代付状态为已过期
         enterpriseChannelUserService.updatePaymentStatusForRefundDeposit(userInfo.getUid(), EnterprisePaymentStatusEnum.PAYMENT_TYPE_EXPIRED.getCode());
         
-        // 退款0元
-        if (refundAmount.compareTo(BigDecimal.ZERO) == 0) {
-            return handleBatteryZeroDepositRefundOrder(eleRefundOrderUpdate, userInfo);
-        }
-        
         // 支付配置校验未通过，原线上退款需转为线下退款
         if (Objects.equals(offlineRefund, CheckPayParamsResultEnum.FAIL.getCode())) {
             eleRefundOrderUpdate.setPayType(EleRefundOrder.PAY_TYPE_OFFLINE);
             log.info("OFFLINE REFUND COMPLETED! refundOrderNo={}", eleRefundOrder.getRefundOrderNo());
-            return handleBatteryZeroDepositRefundOrder(eleRefundOrderUpdate, userInfo);
+        }
+        
+        // 退款0元及线上强制转线下退款处理
+        if (refundAmount.compareTo(BigDecimal.ZERO) == 0 || Objects.equals(offlineRefund, CheckPayParamsResultEnum.FAIL.getCode())) {
+            return handleBatteryZeroDepositAndOfflineRefundOrder(eleRefundOrderUpdate, userInfo);
         }
         
         try {
@@ -1178,7 +1177,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
     /**
      * 处理电池押金0元
      */
-    private Triple<Boolean, String, Object> handleBatteryZeroDepositRefundOrder(EleRefundOrder eleRefundOrderUpdate, UserInfo userInfo) {
+    private Triple<Boolean, String, Object> handleBatteryZeroDepositAndOfflineRefundOrder(EleRefundOrder eleRefundOrderUpdate, UserInfo userInfo) {
         eleRefundOrderUpdate.setStatus(EleRefundOrder.STATUS_SUCCESS);
         eleRefundOrderUpdate.setUpdateTime(System.currentTimeMillis());
         eleRefundOrderService.update(eleRefundOrderUpdate);
