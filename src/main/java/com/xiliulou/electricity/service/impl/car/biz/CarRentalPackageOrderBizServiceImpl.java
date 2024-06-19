@@ -10,6 +10,7 @@ import com.xiliulou.electricity.bo.userInfoGroup.UserInfoGroupNamesBO;
 import com.xiliulou.electricity.bo.wechat.WechatPayParamsDetails;
 import com.xiliulou.electricity.config.WechatConfig;
 import com.xiliulou.electricity.constant.CarRenalCacheConstant;
+import com.xiliulou.electricity.constant.MultiFranchiseeConstant;
 import com.xiliulou.electricity.constant.TimeConstant;
 import com.xiliulou.electricity.constant.UserOperateRecordConstant;
 import com.xiliulou.electricity.converter.ElectricityPayParamsConverter;
@@ -2851,7 +2852,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                     log.warn("buyRentalPackageOrder failed. Package belong mismatch. ");
                     return R.fail("300005", "套餐不匹配");
                 }
-            } else {
+            } else if (ObjectUtils.notEqual(userFranchiseeId, MultiFranchiseeConstant.DEFAULT_FRANCHISEE)) {
                 if (ObjectUtils.notEqual(userTenantId, buyPackageEntity.getTenantId()) || ObjectUtils.notEqual(userFranchiseeId,
                         Long.valueOf(buyPackageEntity.getFranchiseeId()))) {
                     log.warn("buyRentalPackageOrder failed. Package belong mismatch. ");
