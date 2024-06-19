@@ -6,6 +6,7 @@ import com.xiliulou.core.http.resttemplate.service.RestTemplateService;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
+import com.xiliulou.electricity.constant.MultiFranchiseeConstant;
 import com.xiliulou.electricity.dto.WXMinProAuth2SessionResult;
 import com.xiliulou.electricity.entity.ElectricityPayParams;
 import com.xiliulou.electricity.entity.User;
@@ -255,7 +256,7 @@ public class UserOauthBindServiceImpl implements UserOauthBindService {
             return Boolean.FALSE;
         }
         
-        ElectricityPayParams electricityPayParams = electricityPayParamsService.queryFromCache(tenantId.intValue());
+        ElectricityPayParams electricityPayParams = electricityPayParamsService.queryPreciseCacheByTenantIdAndFranchiseeId(tenantId.intValue(), MultiFranchiseeConstant.DEFAULT_FRANCHISEE);
         if (Objects.isNull(electricityPayParams) || StrUtil.isEmpty(electricityPayParams.getMerchantMinProAppId()) || StrUtil.isEmpty(
                 electricityPayParams.getMerchantMinProAppSecert())) {
             log.warn("check open id failed, not found appId,appSecret! uid = {}, tenantId = {}", uid, tenantId);
