@@ -22,6 +22,14 @@ import java.util.List;
 public interface CarRentalPackageOrderBizService {
     
     /**
+     * 退租审批确认是否强制线下退款
+     *
+     * @param rentRefundOrderNo 退租申请单号
+     * @return
+     */
+    Boolean confirmCompelOffLine(String rentRefundOrderNo);
+    
+    /**
      * 根据用户UID查询总金额<br /> 订单支付成功总金额 - 退租订单成功总金额
      *
      * @param tenantId 租户ID
@@ -209,5 +217,5 @@ public interface CarRentalPackageOrderBizService {
      * @return
      */
     boolean checkUserHasAssets(Long uid, Integer tenantId, Integer assetType);
-    
+
 }

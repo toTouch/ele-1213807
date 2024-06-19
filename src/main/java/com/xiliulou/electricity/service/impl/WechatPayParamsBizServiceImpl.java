@@ -7,6 +7,7 @@ package com.xiliulou.electricity.service.impl;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.bo.wechat.WechatPayParamsDetails;
 import com.xiliulou.electricity.converter.ElectricityPayParamsConverter;
 import com.xiliulou.electricity.entity.ElectricityPayParams;
@@ -18,6 +19,7 @@ import com.xiliulou.pay.weixinv3.util.WechatCertificateUtils;
 import com.xiliulou.pay.weixinv3.v2.query.WechatV3CommonRequest;
 import com.xiliulou.pay.weixinv3.v2.service.WechatV3CommonInvokeService;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -93,9 +95,11 @@ public class WechatPayParamsBizServiceImpl implements WechatPayParamsBizService 
         String key = buildCacheKey(details.getTenantId(), details.getFranchiseeId());
         
         // 从缓存中获取证书
-        Set<String> cacheSet = redisService.getAllElementsFromSet(key);
-        
-        List<String> cacheList = Lists.newArrayList(cacheSet);
+        String cacheStr = redisService.get(key);
+        List<String> cacheList = null;
+        if (StringUtils.isNotBlank(cacheStr)){
+            cacheList = JsonUtil.fromJsonArray(cacheStr,String.class);
+        }
         
         if (CollectionUtils.isNotEmpty(cacheList)) {
             // 缓存中存在，直接构建证书并返回
@@ -113,7 +117,7 @@ public class WechatPayParamsBizServiceImpl implements WechatPayParamsBizService 
         }
         
         // 将证书添加到缓存
-        redisService.addAllElementsFromSet(key, wechatPlatformCertificate);
+        redisService.set(key, JsonUtil.toJson(wechatPlatformCertificate));
         
         details.setWechatPlatformCertificateMap(buildCertificatesFromStrings(wechatPlatformCertificate));
     }

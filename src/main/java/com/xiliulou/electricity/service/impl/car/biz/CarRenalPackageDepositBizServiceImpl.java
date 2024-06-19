@@ -183,6 +183,39 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
     private UserInfoGroupDetailService userInfoGroupDetailService;
     
     /**
+     * 退押审批确认是否强制线下退款
+     *
+     * @param depositRefundOrderNo 退押申请单号
+     * @return
+     */
+    @Override
+    public Boolean confirmCompelOffLine(String depositRefundOrderNo) {
+        if (StringUtils.isBlank(depositRefundOrderNo)) {
+            throw new BizException("ELECTRICITY.0007", "不合法的参数");
+        }
+        
+        // 退押订单
+        CarRentalPackageDepositRefundPo depositRefundEntity = carRentalPackageDepositRefundService.selectByOrderNo(depositRefundOrderNo);
+        if (ObjectUtils.isEmpty(depositRefundEntity) || !RefundStateEnum.PENDING_APPROVAL.getCode().equals(depositRefundEntity.getRefundState())) {
+            throw new BizException("300000", "数据有误");
+        }
+        
+        // 押金缴纳编码
+        String orderNo = depositRefundEntity.getDepositPayOrderNo();
+        CarRentalPackageDepositPayPo depositPayEntity = carRentalPackageDepositPayService.selectByOrderNo(orderNo);
+        if (ObjectUtils.isEmpty(depositPayEntity) || !PayStateEnum.SUCCESS.getCode().equals(depositPayEntity.getPayState())) {
+            throw new BizException("300000", "数据有误");
+        }
+        
+        // 比对是否需要强制线下退款
+        Long payFranchiseeId = depositPayEntity.getPayFranchiseeId();
+        Integer tenantId = depositPayEntity.getTenantId();
+        
+        WechatPayParamsDetails wechatPayParamsDetails = wechatPayParamsBizService.getDetailsByIdTenantIdAndFranchiseeId(tenantId, payFranchiseeId);
+        return ObjectUtils.isEmpty(wechatPayParamsDetails) || !wechatPayParamsDetails.getFranchiseeId().equals(payFranchiseeId);
+    }
+    
+    /**
      * 运营商端创建退押，特殊退押(2.0过度数据)
      *
      * @param optModel 操作数据模型

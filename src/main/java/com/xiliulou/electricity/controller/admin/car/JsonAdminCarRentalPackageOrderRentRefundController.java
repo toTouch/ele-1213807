@@ -9,7 +9,6 @@ import com.xiliulou.electricity.model.car.query.CarRentalPackageOrderRentRefundQ
 import com.xiliulou.electricity.query.car.CarRentalPackageOrderRentRefundQryReq;
 import com.xiliulou.electricity.query.car.CarRentalPackageRefundReq;
 import com.xiliulou.electricity.query.car.audit.AuditOptReq;
-import com.xiliulou.electricity.service.car.CarRentalPackageMemberTermService;
 import com.xiliulou.electricity.service.car.CarRentalPackageOrderRentRefundService;
 import com.xiliulou.electricity.service.car.biz.CarRentalPackageOrderBizService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
@@ -23,10 +22,20 @@ import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.BeanUtils;
 import org.springframework.util.CollectionUtils;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
-import java.util.*;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -40,13 +49,21 @@ import java.util.stream.Collectors;
 public class JsonAdminCarRentalPackageOrderRentRefundController extends BasicController {
     
     @Resource
-    private CarRentalPackageMemberTermService carRentalPackageMemberTermService;
-    
-    @Resource
     private CarRentalPackageOrderBizService carRentalPackageOrderBizService;
     
     @Resource
     private CarRentalPackageOrderRentRefundService carRentalPackageOrderRentRefundService;
+    
+    /**
+     * 退租审批确认是否强制线下退款
+     *
+     * @param rentRefundOrderNo 退租申请单号
+     * @return
+     */
+    @GetMapping("/confirmCompelOffLine")
+    public R<Boolean> confirmCompelOffLine(String rentRefundOrderNo) {
+        return R.ok(carRentalPackageOrderBizService.confirmCompelOffLine(rentRefundOrderNo));
+    }
     
     /**
      * 审核拒绝
