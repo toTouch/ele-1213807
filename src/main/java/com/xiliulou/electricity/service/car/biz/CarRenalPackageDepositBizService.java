@@ -17,10 +17,11 @@ public interface CarRenalPackageDepositBizService {
     /**
      * 退押审批确认是否强制线下退款
      *
-     * @param depositRefundOrderNo 退押申请单号
+     * @param depositOrderNo 押金单号
+     * @param type 标记单号的归属，0-押金缴纳订单、1-退押申请单
      * @return
      */
-    Boolean confirmCompelOffLine(String depositRefundOrderNo);
+    Boolean confirmCompelOffLine(String depositOrderNo, Integer type);
     
     /**
      * 运营商端创建退押，特殊退押(2.0过度数据)

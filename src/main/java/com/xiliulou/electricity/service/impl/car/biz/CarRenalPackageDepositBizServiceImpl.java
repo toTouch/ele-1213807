@@ -185,23 +185,30 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
     /**
      * 退押审批确认是否强制线下退款
      *
-     * @param depositRefundOrderNo 退押申请单号
+     * @param depositOrderNo 押金单号
+     * @param type           标记单号的归属，0-押金缴纳订单、1-退押申请单
      * @return
      */
     @Override
-    public Boolean confirmCompelOffLine(String depositRefundOrderNo) {
-        if (StringUtils.isBlank(depositRefundOrderNo)) {
+    public Boolean confirmCompelOffLine(String depositOrderNo, Integer type) {
+        if (StringUtils.isBlank(depositOrderNo) || ObjectUtils.isEmpty(depositOrderNo)) {
             throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
         
-        // 退押订单
-        CarRentalPackageDepositRefundPo depositRefundEntity = carRentalPackageDepositRefundService.selectByOrderNo(depositRefundOrderNo);
-        if (ObjectUtils.isEmpty(depositRefundEntity) || !RefundStateEnum.PENDING_APPROVAL.getCode().equals(depositRefundEntity.getRefundState())) {
-            throw new BizException("300000", "数据有误");
+        // 押金缴纳编码
+        String orderNo = null;
+        if (1 == type) {
+            // 退押订单
+            CarRentalPackageDepositRefundPo depositRefundEntity = carRentalPackageDepositRefundService.selectByOrderNo(depositOrderNo);
+            if (ObjectUtils.isEmpty(depositRefundEntity) || !RefundStateEnum.PENDING_APPROVAL.getCode().equals(depositRefundEntity.getRefundState())) {
+                throw new BizException("300000", "数据有误");
+            }
+            
+            orderNo = depositRefundEntity.getDepositPayOrderNo();
+        } else if (2 == type) {
+            orderNo = depositOrderNo;
         }
         
-        // 押金缴纳编码
-        String orderNo = depositRefundEntity.getDepositPayOrderNo();
         CarRentalPackageDepositPayPo depositPayEntity = carRentalPackageDepositPayService.selectByOrderNo(orderNo);
         if (ObjectUtils.isEmpty(depositPayEntity) || !PayStateEnum.SUCCESS.getCode().equals(depositPayEntity.getPayState())) {
             throw new BizException("300000", "数据有误");
