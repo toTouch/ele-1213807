@@ -411,19 +411,19 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
             log.warn("FREE DEPOSIT WARN! not found user info! uid={}", freeDepositOrder.getUid());
             return Triple.of(false, "ELECTRICITY.0001", "未能查到用户信息");
         }
-
+        
         if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
             log.warn("FREE DEPOSIT WARN! user is disable,uid={}", userInfo.getUid());
             return Triple.of(false, "ELECTRICITY.0024", "用户已被禁用");
         }
-
+        
         if (!Objects.equals(userInfo.getAuthStatus(), UserInfo.AUTH_STATUS_REVIEW_PASSED)) {
             log.warn("FREE DEPOSIT WARN! user not auth,uid={}", userInfo.getUid());
             return Triple.of(false, "ELECTRICITY.0041", "未实名认证");
         }
-
-        if (!Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)
-                && !Objects.equals(userInfo.getCarDepositStatus(), UserInfo.CAR_DEPOSIT_STATUS_YES) && !Objects.equals(userInfo.getCarBatteryDepositStatus(), YesNoEnum.YES.getCode())) {
+        
+        if (!Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES) && !Objects.equals(userInfo.getCarDepositStatus(),
+                UserInfo.CAR_DEPOSIT_STATUS_YES) && !Objects.equals(userInfo.getCarBatteryDepositStatus(), YesNoEnum.YES.getCode())) {
             log.warn("FREE DEPOSIT WARN! user not pay deposit,uid={}", userInfo.getUid());
             return Triple.of(false, "ELECTRICITY.0042", "未缴纳押金");
         }
@@ -2123,7 +2123,7 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         
         // 查询保险
         FranchiseeInsurance franchiseeInsurance = franchiseeInsuranceService.queryByIdFromCache(query.getInsuranceId());
-        if (Objects.isNull(franchiseeInsurance) || !Objects.equals(franchiseeInsurance.getInsuranceType() , FranchiseeInsurance.INSURANCE_TYPE_BATTERY)) {
+        if (Objects.isNull(franchiseeInsurance) || !Objects.equals(franchiseeInsurance.getInsuranceType(), FranchiseeInsurance.INSURANCE_TYPE_BATTERY)) {
             log.warn("CREATE INSURANCE_ORDER WARN,NOT FOUND MEMBER_CARD BY ID={},uid={}", query.getInsuranceId(), userInfo.getUid());
             return Triple.of(false, "100305", "未找到保险!");
         }
@@ -2551,8 +2551,7 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
             // 型号押金
             List<ModelBatteryDeposit> modelBatteryDepositList = JsonUtil.fromJsonArray(franchisee.getModelBatteryDeposit(), ModelBatteryDeposit.class);
             if (ObjectUtil.isEmpty(modelBatteryDepositList)) {
-                log.warn("payDeposit  WARN! not found modelBatteryDepositList ！franchiseeId={},uid={}",
-                        freeBatteryDepositQuery.getFranchiseeId(), userInfo.getUid());
+                log.warn("payDeposit  WARN! not found modelBatteryDepositList ！franchiseeId={},uid={}", freeBatteryDepositQuery.getFranchiseeId(), userInfo.getUid());
                 return Triple.of(false, "ELECTRICITY.00110", "未找到押金");
             }
             
@@ -2566,8 +2565,7 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         }
         
         if (Objects.isNull(depositPayAmount)) {
-            log.warn("payDeposit  WARN! payAmount is null ！franchiseeId{},uid={}", freeBatteryDepositQuery.getFranchiseeId(),
-                    userInfo.getUid());
+            log.warn("payDeposit  WARN! payAmount is null ！franchiseeId{},uid={}", freeBatteryDepositQuery.getFranchiseeId(), userInfo.getUid());
             return Triple.of(false, "ELECTRICITY.00110", "未找到押金");
         }
         
@@ -2632,8 +2630,7 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
             // 型号押金
             List<ModelBatteryDeposit> modelBatteryDepositList = JsonUtil.fromJsonArray(franchisee.getModelBatteryDeposit(), ModelBatteryDeposit.class);
             if (ObjectUtil.isEmpty(modelBatteryDepositList)) {
-                log.warn("payDeposit  WARN! not found modelBatteryDepositList ！franchiseeId={},uid={}",
-                        freeCarBatteryDepositQuery.getFranchiseeId(), userInfo.getUid());
+                log.warn("payDeposit  WARN! not found modelBatteryDepositList ！franchiseeId={},uid={}", freeCarBatteryDepositQuery.getFranchiseeId(), userInfo.getUid());
                 return Triple.of(false, "ELECTRICITY.00110", "未找到押金");
             }
             
@@ -2647,8 +2644,7 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         }
         
         if (Objects.isNull(depositPayAmount)) {
-            log.warn("payDeposit  WARN! payAmount is null ！franchiseeId{},uid={}", freeCarBatteryDepositQuery.getFranchiseeId(),
-                    userInfo.getUid());
+            log.warn("payDeposit  WARN! payAmount is null ！franchiseeId{},uid={}", freeCarBatteryDepositQuery.getFranchiseeId(), userInfo.getUid());
             return Triple.of(false, "ELECTRICITY.00110", "未找到押金");
         }
         
