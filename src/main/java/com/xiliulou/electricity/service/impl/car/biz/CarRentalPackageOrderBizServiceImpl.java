@@ -2727,7 +2727,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             }
             
             // 3. 支付相关
-            Long userFranchiseeId = ObjectUtils.isEmpty(userInfo.getFranchiseeId()) ? Long.valueOf(buyOptModel.getFranchiseeId()) : userInfo.getFranchiseeId();
+            Long userFranchiseeId = ObjectUtils.isEmpty(userInfo.getFranchiseeId()) || MultiFranchiseeConstant.DEFAULT_FRANCHISEE.equals(userInfo.getFranchiseeId()) ? Long.valueOf(buyOptModel.getFranchiseeId()) : userInfo.getFranchiseeId();
             WechatPayParamsDetails wechatPayParamsDetails = wechatPayParamsBizService.getDetailsByIdTenantIdAndFranchiseeId(tenantId, userFranchiseeId);
             if (Objects.isNull(wechatPayParamsDetails)) {
                 throw new BizException("100234", "未配置支付参数");
