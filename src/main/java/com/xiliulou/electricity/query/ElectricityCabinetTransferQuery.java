@@ -35,24 +35,6 @@ public class ElectricityCabinetTransferQuery {
     
     private Integer modelId;
     
-    /**
-     * 营业时间类型
-     */
-    private String businessTimeType;
-    
-    /**
-     * 营业开始时间
-     */
-    private Long beginTime;
-    /**
-     * 营业结束时间
-     */
-    private Long endTime;
-    
-    /**
-     * 满电标准
-     */
-    private Double fullyCharged;
     
     /**
      * 租电类型（全部可租电、不允许租电、最少保留一块电池、自定义） RentReturnNormEnum
