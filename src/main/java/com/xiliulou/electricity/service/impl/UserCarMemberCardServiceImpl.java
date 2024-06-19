@@ -8,6 +8,7 @@ import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.core.wp.entity.AppTemplateQuery;
 import com.xiliulou.core.wp.service.WeChatAppTemplateService;
+import com.xiliulou.electricity.bo.wechat.WechatPayParamsDetails;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mapper.UserCarMemberCardMapper;
@@ -25,6 +26,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
+import javax.annotation.Resource;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -69,6 +71,9 @@ public class UserCarMemberCardServiceImpl implements UserCarMemberCardService {
     
     @Autowired
     private CarLockCtrlHistoryService carLockCtrlHistoryService;
+    
+    @Resource
+    private WechatPayParamsBizService wechatPayParamsBizService;
 
     /**
      * 通过ID查询单条数据从DB
@@ -209,8 +214,8 @@ public class UserCarMemberCardServiceImpl implements UserCarMemberCardService {
             }
 
             carMemberCardExpiringList.parallelStream().forEach(item -> {
-                ElectricityPayParams ele = electricityPayParamsService.queryFromCache(item.getTenantId());
-                if (Objects.isNull(ele)) {
+                WechatPayParamsDetails wechatPayParamsDetails = wechatPayParamsBizService.getDetailsByIdTenantIdAndFranchiseeId(item.getTenantId(), item.getFranchiseeId());
+                if (Objects.isNull(wechatPayParamsDetails)) {
                     log.error("CAR MEMBER CARD EXPIRING SOON ERROR! ElectricityPayParams is null error! tenantId={}",
                             item.getTenantId());
                     return;
@@ -225,8 +230,8 @@ public class UserCarMemberCardServiceImpl implements UserCarMemberCardService {
 
                 date.setTime(item.getRentCarMemberCardExpireTime());
 
-                item.setMerchantMinProAppId(ele.getMerchantMinProAppId());
-                item.setMerchantMinProAppSecert(ele.getMerchantMinProAppSecert());
+                item.setMerchantMinProAppId(wechatPayParamsDetails.getMerchantMinProAppId());
+                item.setMerchantMinProAppSecert(wechatPayParamsDetails.getMerchantMinProAppSecert());
                 item.setMemberCardExpiringTemplate(templateConfigEntity.getCarMemberCardExpiringTemplate());
                 item.setRentCarMemberCardExpireTimeStr(simp.format(date));
                 item.setCardName("租车套餐");
