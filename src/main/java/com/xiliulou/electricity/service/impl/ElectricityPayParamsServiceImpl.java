@@ -114,7 +114,7 @@ public class ElectricityPayParamsServiceImpl extends ServiceImpl<ElectricityPayP
                 return R.failMsg("加盟商不存在");
             }
             franchiseeName = franchisee.getName();
-        } else {
+        }else {
             // 默认配置
             request.setFranchiseeId(MultiFranchiseeConstant.DEFAULT_FRANCHISEE);
         }
