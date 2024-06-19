@@ -898,17 +898,11 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             }
             
             // 7.3 用户归属和套餐归属不一致(租户、加盟商、门店)，拦截
-            if (ObjectUtils.notEqual(userStoreId, UserInfo.VIRTUALLY_STORE_ID)) {
-                if (ObjectUtils.notEqual(userTenantId, buyPackageEntity.getTenantId()) || ObjectUtils.notEqual(userFranchiseeId, Long.valueOf(buyPackageEntity.getFranchiseeId()))
-                        || ObjectUtils.notEqual(userStoreId, Long.valueOf(buyPackageEntity.getStoreId()))) {
-                    log.warn("bindingPackage failed. Package belong mismatch. ");
-                    throw new BizException("300005", "套餐不匹配");
-                }
-            } else {
+            if (ObjectUtils.notEqual(userStoreId, UserInfo.VIRTUALLY_STORE_ID) || ObjectUtils.notEqual(userFranchiseeId, MultiFranchiseeConstant.DEFAULT_FRANCHISEE)) {
                 if (ObjectUtils.notEqual(userTenantId, buyPackageEntity.getTenantId()) || ObjectUtils.notEqual(userFranchiseeId,
                         Long.valueOf(buyPackageEntity.getFranchiseeId()))) {
                     log.warn("bindingPackage failed. Package belong mismatch. ");
-                    throw new BizException("300005", "套餐不匹配");
+                    new BizException("300005", "套餐不匹配");
                 }
             }
             
@@ -2846,13 +2840,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             }
             
             // 7.3 用户归属和套餐归属不一致(租户、加盟商、门店)，拦截
-            if (ObjectUtils.notEqual(userStoreId, UserInfo.VIRTUALLY_STORE_ID)) {
-                if (ObjectUtils.notEqual(userTenantId, buyPackageEntity.getTenantId()) || ObjectUtils.notEqual(userFranchiseeId, Long.valueOf(buyPackageEntity.getFranchiseeId()))
-                        || ObjectUtils.notEqual(userStoreId, Long.valueOf(buyPackageEntity.getStoreId()))) {
-                    log.warn("buyRentalPackageOrder failed. Package belong mismatch. ");
-                    return R.fail("300005", "套餐不匹配");
-                }
-            } else if (ObjectUtils.notEqual(userFranchiseeId, MultiFranchiseeConstant.DEFAULT_FRANCHISEE)) {
+            if (ObjectUtils.notEqual(userStoreId, UserInfo.VIRTUALLY_STORE_ID) || ObjectUtils.notEqual(userFranchiseeId, MultiFranchiseeConstant.DEFAULT_FRANCHISEE)) {
                 if (ObjectUtils.notEqual(userTenantId, buyPackageEntity.getTenantId()) || ObjectUtils.notEqual(userFranchiseeId,
                         Long.valueOf(buyPackageEntity.getFranchiseeId()))) {
                     log.warn("buyRentalPackageOrder failed. Package belong mismatch. ");
