@@ -1024,8 +1024,8 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
         
         WechatPayParamsDetails wechatPayParamsDetails = wechatPayParamsBizService.getDetailsByIdTenantIdAndFranchiseeId(electricityMemberCardOrder.getTenantId(),
                 electricityMemberCardOrder.getParamFranchiseeId());
-        
-        if (Objects.isNull(wechatPayParamsDetails) || Objects.equals(electricityMemberCardOrder.getParamFranchiseeId(), wechatPayParamsDetails.getFranchiseeId())) {
+        if (Objects.isNull(wechatPayParamsDetails) || !Objects.equals(electricityMemberCardOrder.getParamFranchiseeId(), wechatPayParamsDetails.getFranchiseeId())
+                || !Objects.equals(electricityMemberCardOrder.getWechatMerchantId(), wechatPayParamsDetails.getWechatMerchantId())) {
             return R.ok(CheckPayParamsResultEnum.FAIL.getCode());
         }
         return R.ok(CheckPayParamsResultEnum.SUCCESS.getCode());
