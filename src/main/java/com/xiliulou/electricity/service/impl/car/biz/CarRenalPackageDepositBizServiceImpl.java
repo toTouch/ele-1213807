@@ -217,9 +217,10 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
         // 比对是否需要强制线下退款
         Long payFranchiseeId = depositPayEntity.getPayFranchiseeId();
         Integer tenantId = depositPayEntity.getTenantId();
+        String wechatMerchantId = depositPayEntity.getWechatMerchantId();
         
         WechatPayParamsDetails wechatPayParamsDetails = wechatPayParamsBizService.getDetailsByIdTenantIdAndFranchiseeId(tenantId, payFranchiseeId);
-        return ObjectUtils.isEmpty(wechatPayParamsDetails) || !wechatPayParamsDetails.getFranchiseeId().equals(payFranchiseeId);
+        return ObjectUtils.isEmpty(wechatPayParamsDetails) || !wechatPayParamsDetails.getWechatMerchantId().equals(wechatMerchantId);
     }
     
     /**

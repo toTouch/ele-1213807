@@ -330,9 +330,10 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         // 比对是否需要强制线下退款
         Long payFranchiseeId = packageOrderEntity.getPayFranchiseeId();
         Integer tenantId = packageOrderEntity.getTenantId();
+        String wechatMerchantId = packageOrderEntity.getWechatMerchantId();
         
         WechatPayParamsDetails wechatPayParamsDetails = wechatPayParamsBizService.getDetailsByIdTenantIdAndFranchiseeId(tenantId, payFranchiseeId);
-        return ObjectUtils.isEmpty(wechatPayParamsDetails) || !wechatPayParamsDetails.getFranchiseeId().equals(payFranchiseeId);
+        return ObjectUtils.isEmpty(wechatPayParamsDetails) || !wechatPayParamsDetails.getWechatMerchantId().equals(wechatMerchantId);
     }
     
     /**
