@@ -435,7 +435,7 @@ public class TradeOrderServiceImpl implements TradeOrderService {
             //            redisService.delete(CacheConstant.ELE_CACHE_USER_DEPOSIT_LOCK_KEY + user.getUid());
         }
         
-        return Triple.of(false, "ELECTRICITY.0099", "租电押金支付失败");
+        return Triple.of(false, "ELECTRICITY.PAY_TRANSFER.0019", "支付未成功，请联系客服处理");
     }
     
     @Override
