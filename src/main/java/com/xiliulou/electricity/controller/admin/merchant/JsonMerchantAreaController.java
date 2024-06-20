@@ -192,7 +192,7 @@ public class JsonMerchantAreaController extends BaseController {
      * 区域下拉框查询
      */
     @GetMapping("/admin/merchant/area/queryList")
-    public R queryList(@RequestParam("size") long size, @RequestParam("offset") long offset, @RequestParam(value = "name", required = false) String name) {
+    public R queryList(@RequestParam("size") long size, @RequestParam("offset") long offset, @RequestParam(value = "name", required = false) String name, @RequestParam(value = "franchiseeId", required = false) Long franchiseeId) {
         if (size < 0 || size > 50) {
             size = 10L;
         }
@@ -211,7 +211,6 @@ public class JsonMerchantAreaController extends BaseController {
             return R.fail("ELECTRICITY.0066", "用户权限不足");
         }
     
-        Long franchiseeId = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
             List<Long> franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
             if (org.apache.commons.collections.CollectionUtils.isEmpty(franchiseeIds)) {
@@ -228,7 +227,7 @@ public class JsonMerchantAreaController extends BaseController {
     }
     
     @GetMapping("/admin/merchant/area/selectAll")
-    public R listAll(@RequestParam("size") long size, @RequestParam("offset") long offset, @RequestParam(value = "name", required = false) String name) {
+    public R listAll(@RequestParam("size") long size, @RequestParam("offset") long offset, @RequestParam(value = "name", required = false) String name, @RequestParam(value = "franchiseeId", required = false) Long franchiseeId) {
         if (size < 0 || size > 50) {
             size = 10L;
         }
@@ -247,7 +246,6 @@ public class JsonMerchantAreaController extends BaseController {
             return R.fail("ELECTRICITY.0066", "用户权限不足");
         }
     
-        Long franchiseeId = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
             List<Long> franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
             if (org.apache.commons.collections.CollectionUtils.isEmpty(franchiseeIds)) {
