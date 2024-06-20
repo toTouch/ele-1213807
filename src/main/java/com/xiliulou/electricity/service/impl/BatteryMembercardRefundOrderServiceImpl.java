@@ -70,7 +70,6 @@ import com.xiliulou.electricity.vo.BatteryMembercardRefundOrderVO;
 import com.xiliulou.mq.service.RocketMqService;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiRefundResultDTO;
 import com.xiliulou.pay.weixinv3.exception.WechatPayException;
-import com.xiliulou.pay.weixinv3.service.WechatV3JsapiService;
 import com.xiliulou.pay.weixinv3.v2.query.WechatV3RefundRequest;
 import com.xiliulou.pay.weixinv3.v2.service.WechatV3JsapiInvokeService;
 import com.xiliulou.security.bean.TokenUser;
@@ -1025,8 +1024,8 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
         
         WechatPayParamsDetails wechatPayParamsDetails = wechatPayParamsBizService.getDetailsByIdTenantIdAndFranchiseeId(electricityMemberCardOrder.getTenantId(),
                 electricityMemberCardOrder.getParamFranchiseeId());
-        
-        if (Objects.isNull(wechatPayParamsDetails) || Objects.equals(electricityMemberCardOrder.getParamFranchiseeId(), wechatPayParamsDetails.getFranchiseeId())) {
+        if (Objects.isNull(wechatPayParamsDetails) || !Objects.equals(electricityMemberCardOrder.getParamFranchiseeId(), wechatPayParamsDetails.getFranchiseeId())
+                || !Objects.equals(electricityMemberCardOrder.getWechatMerchantId(), wechatPayParamsDetails.getWechatMerchantId())) {
             return R.ok(CheckPayParamsResultEnum.FAIL.getCode());
         }
         return R.ok(CheckPayParamsResultEnum.SUCCESS.getCode());
