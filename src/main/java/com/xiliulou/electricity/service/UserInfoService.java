@@ -50,15 +50,6 @@ public interface UserInfoService extends IService<UserInfo> {
     UserInfo queryByIdFromDB(Long id);
     
     /**
-     * 通过ID查询单条数据从缓存
-     *
-     * @param id 主键
-     * @return 实例对象
-     */
-    @Deprecated
-    UserInfo selectUserByUid(Long id);
-    
-    /**
      * 新增数据
      *
      * @param userInfo 实例对象
@@ -92,8 +83,6 @@ public interface UserInfoService extends IService<UserInfo> {
     
     R getMemberCardInfo(Long uid);
     
-    R getRentCarMemberCardInfo(Long uid);
-    
     R verifyAuth(Long id, Integer authStatus, String msg);
     
     R updateAuth(UserInfo userInfo);
@@ -114,8 +103,6 @@ public interface UserInfoService extends IService<UserInfo> {
     
     R queryUserBelongFranchisee(Long franchiseeId, Integer tenantId);
     
-    R queryUserAllConsumption(Long id);
-    
     UserInfo queryUserInfoByPhone(String phone, Integer tenantId);
     
     UserInfo queryUserByPhoneAndFranchisee(String phone, Integer franchiseeId, Integer tenantId);
@@ -126,8 +113,6 @@ public interface UserInfoService extends IService<UserInfo> {
     
     List<HomePageUserByWeekDayVo> queryUserAnalysisByUserStatus(Integer tenantId, Integer userStatus, Long beginTime, Long endTime);
     
-    UserInfoDetailVO selectUserInfoDetail();
-    
     void exportExcel(UserInfoQuery userInfoQuery, HttpServletResponse response);
     
     void exportCarRentalExcel(UserInfoQuery userInfoQuery, HttpServletResponse response);
@@ -137,8 +122,6 @@ public interface UserInfoService extends IService<UserInfo> {
     Integer updateByUid(UserInfo userInfo);
     
     Triple<Boolean, String, Object> updateRentBatteryStatus(Long uid, Integer rentStatus);
-    
-    Triple<Boolean, String, Object> updateRentCarStatus(Long uid, Integer carRentStatus);
     
     int selectCountByFranchiseeId(Long id);
     
@@ -159,12 +142,6 @@ public interface UserInfoService extends IService<UserInfo> {
     R updateUserPhone(UpdateUserPhoneRequest updateUserPhoneRequest);
     
     R queryDetailsBatteryInfo(Long uid);
-    
-    R queryDetailsCarInfo(Long uid);
-    
-    R webBindCar(UserInfoCarAddAndUpdate userInfoCarAddAndUpdate);
-    
-    R webUnBindCar(Long uid);
     
     R userInfoSearch(Long size, Long offset, String name);
     

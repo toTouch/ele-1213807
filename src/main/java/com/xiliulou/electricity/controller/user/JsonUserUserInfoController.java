@@ -37,14 +37,12 @@ public class JsonUserUserInfoController extends BaseController {
     @Resource
     UserOauthBindService userOauthBindService;
     
-    //TODO  这三个接口都要优化
-    
     /**
      * 小程序首页获取用户详情
      */
     @GetMapping(value = "/user/userInfoDetail")
     public R userInfoDetail() {
-        return R.ok(userInfoService.selectUserInfoDetail());
+        return R.ok();
     }
     
     /**

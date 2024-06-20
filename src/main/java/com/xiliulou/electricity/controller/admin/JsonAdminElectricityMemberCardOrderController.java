@@ -214,7 +214,6 @@ public class JsonAdminElectricityMemberCardOrderController extends BaseControlle
     @PutMapping("/admin/memberCard/enableUserMemberCard")
     @Log(title = "启用用户套餐")
     public R adminEnableMemberCard(@RequestParam("uid") Long uid) {
-        //        return electricityMemberCardOrderService.adminOpenOrDisableMemberCard(usableStatus, uid,null);
         return electricityMemberCardOrderService.adminEnableMemberCard(uid);
     }
     

@@ -114,7 +114,7 @@ public class ElectricityPayParamsServiceImpl extends ServiceImpl<ElectricityPayP
                 return R.failMsg("加盟商不存在");
             }
             franchiseeName = franchisee.getName();
-        }else {
+        } else {
             // 默认配置
             request.setFranchiseeId(MultiFranchiseeConstant.DEFAULT_FRANCHISEE);
         }
@@ -154,6 +154,12 @@ public class ElectricityPayParamsServiceImpl extends ServiceImpl<ElectricityPayP
                 new LambdaQueryWrapper<ElectricityPayParams>().eq(ElectricityPayParams::getId, request.getId()).eq(ElectricityPayParams::getTenantId, request.getTenantId()));
         if (Objects.isNull(oldPayParams)) {
             return R.failMsg("数据不存在");
+        }
+        
+        // 校验微信商户号
+        ElectricityPayParams payParams = baseMapper.selectByTenantIdAndWechatMerchantId(tenantId, request.getWechatMerchantId());
+        if (Objects.nonNull(payParams) && !Objects.equals(payParams.getId(), oldPayParams.getId())) {
+            return R.failMsg("微信商户号与现有支付配置重复，请修改后操作");
         }
         
         String franchiseeName = DEFAULT_FRANCHISEE_NAME;

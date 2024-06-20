@@ -153,36 +153,7 @@ public class JsonUserEleDepositOrderController {
      */
     @PostMapping("/user/payBatteryServiceFee")
     public R payBatteryServiceFee(HttpServletRequest request) {
-        // return eleDepositOrderService.payBatteryServiceFee(request);
         return R.fail("000001", "小程序版本过低，请升级小程序");
-    }
-    
-    //用户查询租车押金
-    @GetMapping(value = "/user/queryRentCarDeposit")
-    @Deprecated
-    public R queryRentCarDeposit() {
-        return eleDepositOrderService.queryRentCarDeposit();
-    }
-    
-    /**
-     * 退租车押金
-     *
-     * @return
-     */
-    @PostMapping("/user/refundRentCarDeposit")
-    @Deprecated
-    public R refundRentCarDeposit(HttpServletRequest request) {
-        return eleDepositOrderService.refundRentCarDeposit(request);
-    }
-    
-    /**
-     * 新退租车押金，可审核退线下缴纳押金
-     *
-     * @return
-     */
-    @PostMapping("/user/refundCarDeposit")
-    public R refundCarDeposit() {
-        return eleDepositOrderService.refundCarDeposit();
     }
     
     /**

@@ -58,20 +58,6 @@ public class JsonAdminElectricityCarController {
     @Autowired
     CarMoveRecordService carMoveRecordService;
     
-    //新增换电柜车辆
-    @Deprecated
-    @PostMapping(value = "/admin/electricityCar")
-    public R save(@RequestBody @Validated(value = CreateGroup.class) ElectricityCarAddAndUpdate electricityCarAddAndUpdate) {
-        return electricityCarService.save(electricityCarAddAndUpdate);
-    }
-    
-    //修改换电柜车辆
-    @Deprecated
-    @PutMapping(value = "/admin/electricityCar")
-    public R update(@RequestBody @Validated(value = UpdateGroup.class) ElectricityCarAddAndUpdate electricityCarAddAndUpdate) {
-        return electricityCarService.edit(electricityCarAddAndUpdate);
-    }
-    
     //删除车辆
     @DeleteMapping(value = "/admin/electricityCar/{id}")
     @Log(title = "删除车辆")
@@ -164,21 +150,6 @@ public class JsonAdminElectricityCarController {
                 .tenantId(TenantContextHolder.getTenantId()).build();
         
         return electricityCarService.queryCount(electricityCarQuery);
-    }
-    
-    //车辆绑定用户
-    @PostMapping("/admin/electricityCar/bindUser")
-    @Log(title = "车辆绑定用户")
-    public R bindUser(@RequestBody @Validated(value = CreateGroup.class) ElectricityCarBindUser electricityCarBindUser) {
-        return electricityCarService.bindUser(electricityCarBindUser);
-    }
-    
-    
-    //用户解绑车辆
-    @PostMapping("/admin/electricityCar/unBindUser")
-    @Log(title = "用户解绑车辆")
-    public R unBindUser(@RequestBody @Validated(value = CreateGroup.class) ElectricityCarBindUser electricityCarBindUser) {
-        return electricityCarService.unBindUser(electricityCarBindUser);
     }
     
     /**

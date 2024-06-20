@@ -81,24 +81,6 @@ public class JsonUserFreeDepositController extends BaseController {
     }
     
     /**
-     * 车辆免押订单
-     *
-     * @return
-     */
-    @PostMapping("/user/free/carDeposit/order")
-    public R freeCarDepositOrder(@RequestBody @Validated FreeCarDepositQuery freeCarDepositQuery) {
-        return returnTripleResult(freeDepositOrderService.freeCarDepositOrder(freeCarDepositQuery));
-    }
-    
-    /**
-     * 查询车辆免押是否成功
-     */
-    @GetMapping("/user/free/carDeposit/order/status")
-    public R freeCarDepositOrderStatus() {
-        return returnTripleResult(freeDepositOrderService.acquireFreeCarDepositStatus());
-    }
-    
-    /**
      * 电池车辆押金免押的前置检查
      *
      * @return
@@ -106,25 +88,6 @@ public class JsonUserFreeDepositController extends BaseController {
     @GetMapping("/user/free/carBatteryDeposit/pre/check")
     public R freeCarBatteryDepositPreCheck() {
         return returnTripleResult(freeDepositOrderService.freeCarBatteryDepositPreCheck());
-    }
-    
-    /**
-     * 电池车辆免押订单
-     *
-     * @return
-     */
-    @PostMapping("/user/free/carBatteryDeposit/order")
-    public R freeCarBatteryDepositOrder(@RequestBody @Validated FreeCarBatteryDepositQuery freeCarBatteryDepositQuery) {
-        return returnTripleResult(freeDepositOrderService.freeCarBatteryDepositOrder(freeCarBatteryDepositQuery));
-    }
-    
-    /**
-     * 查询电池车辆免押是否成功（和时孟杨确定改接口已废弃）
-     */
-    @Deprecated
-    @GetMapping("/user/free/carBatteryDeposit/order/status")
-    public R freeCarBatteryDepositOrderStatus() {
-        return returnTripleResult(freeDepositOrderService.acquireFreeCarBatteryDepositStatus());
     }
     
     /**

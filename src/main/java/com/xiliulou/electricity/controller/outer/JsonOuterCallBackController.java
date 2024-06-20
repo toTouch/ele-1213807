@@ -11,7 +11,6 @@ import com.xiliulou.pay.weixinv3.dto.WechatJsapiRefundOrderCallBackResource;
 import com.xiliulou.pay.weixinv3.query.WechatV3OrderCallBackQuery;
 import com.xiliulou.pay.weixinv3.query.WechatV3RefundOrderCallBackQuery;
 import com.xiliulou.pay.weixinv3.rsp.WechatV3CallBackResult;
-import com.xiliulou.pay.weixinv3.service.WechatV3PostProcessHandler;
 import com.xiliulou.pay.weixinv3.v2.handler.WechatV3PostProcessExecuteHandler;
 import com.xiliulou.pay.weixinv3.v2.query.WechatV3OrderCallBackRequest;
 import com.xiliulou.pay.weixinv3.v2.query.WechatV3RefundOrderCallBackRequest;

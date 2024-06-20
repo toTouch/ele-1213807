@@ -45,12 +45,13 @@ public class JsonAdminCarRentalPackageDepositRefundController extends BasicContr
     /**
      * 退押审批确认是否强制线下退款
      *
-     * @param depositRefundOrderNo 退押申请单号
+     * @param depositOrderNo 押金单号
+     * @param type 标记单号的归属，0-押金缴纳订单、1-退押申请单
      * @return
      */
     @GetMapping("/confirmCompelOffLine")
-    public R<Boolean> confirmCompelOffLine(String depositRefundOrderNo) {
-        return R.ok(carRenalPackageDepositBizService.confirmCompelOffLine(depositRefundOrderNo));
+    public R<Boolean> confirmCompelOffLine(@RequestParam("depositOrderNo") String depositOrderNo, @RequestParam("type") Integer type) {
+        return R.ok(carRenalPackageDepositBizService.confirmCompelOffLine(depositOrderNo, type));
     }
     
     /**

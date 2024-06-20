@@ -1,7 +1,6 @@
 package com.xiliulou.electricity.service;
 
 import com.xiliulou.electricity.dto.DivisionAccountOrderDTO;
-import com.xiliulou.electricity.entity.CarMemberCardOrder;
 import com.xiliulou.electricity.entity.DivisionAccountRecord;
 import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
 import com.xiliulou.electricity.query.DivisionAccountRecordQuery;
@@ -58,18 +57,12 @@ public interface DivisionAccountRecordService {
     List<DivisionAccountRecordStatisticVO> selectStatisticByPage(DivisionAccountRecordQuery query);
 
     Integer selectStatisticByPageCount(DivisionAccountRecordQuery query);
-
-    void handleBatteryMembercardDivisionAccount(ElectricityMemberCardOrder electricityMemberCardOrder);
-
-    void handleCarMembercardDivisionAccount(CarMemberCardOrder carMemberCardOrder);
-
+    
     void handleDivisionAccountByPackage(DivisionAccountOrderDTO divisionAccountOrderDTO);
 
     void handleRefundDivisionAccountByPackage(DivisionAccountOrderDTO divisionAccountOrderDTO);
 
     void updateDivisionAccountStatusForFreezeOrder();
     
-    Triple<Boolean, String, Object> divisionAccountCompensation(String orderId, Integer type);
-
     void asyncHandleDivisionAccount(DivisionAccountOrderDTO divisionAccountOrderDTO);
 }

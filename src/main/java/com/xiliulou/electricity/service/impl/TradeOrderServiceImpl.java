@@ -435,7 +435,7 @@ public class TradeOrderServiceImpl implements TradeOrderService {
             //            redisService.delete(CacheConstant.ELE_CACHE_USER_DEPOSIT_LOCK_KEY + user.getUid());
         }
         
-        return Triple.of(false, "ELECTRICITY.0099", "租电押金支付失败");
+        return Triple.of(false, "ELECTRICITY.PAY_TRANSFER.0019", "支付未成功，请联系客服处理");
     }
     
     @Override
@@ -747,7 +747,7 @@ public class TradeOrderServiceImpl implements TradeOrderService {
             BigDecimal totalPayAmount = BigDecimal.valueOf(0);
             
             // 获取电池滞纳金
-            handleBatteryServiceFee(userInfo, orderList, orderTypeList, allPayAmountList);
+            handleBatteryServiceFee(userInfo, orderList, orderTypeList, allPayAmountList, wechatPayParamsDetails);
             
             // 处理租车套餐的滞纳金
             handCarSlippage(userInfo, orderList, orderTypeList, allPayAmountList);
@@ -821,7 +821,8 @@ public class TradeOrderServiceImpl implements TradeOrderService {
         }
     }
     
-    private Triple<Boolean, String, Object> handleBatteryServiceFee(UserInfo userInfo, List<String> orderList, List<Integer> orderTypeList, List<BigDecimal> allPayAmount) {
+    private Triple<Boolean, String, Object> handleBatteryServiceFee(UserInfo userInfo, List<String> orderList, List<Integer> orderTypeList, List<BigDecimal> allPayAmount,
+            WechatPayParamsDetails wechatPayParamsDetails) {
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
         if (Objects.isNull(userBatteryMemberCard) || Objects.isNull(userBatteryMemberCard.getMemberCardExpireTime()) || Objects.isNull(
                 userBatteryMemberCard.getRemainingNumber())) {
@@ -870,7 +871,8 @@ public class TradeOrderServiceImpl implements TradeOrderService {
                         .updateTime(System.currentTimeMillis()).tenantId(userInfo.getTenantId()).source(EleBatteryServiceFeeOrder.MEMBER_CARD_OVERDUE)
                         .franchiseeId(franchisee.getId()).storeId(userInfo.getStoreId()).modelType(franchisee.getModelType())
                         .batteryType(CollectionUtils.isEmpty(batteryTypeSet) ? "" : JsonUtil.toJson(batteryTypeSet))
-                        .sn(Objects.isNull(electricityBattery) ? "" : electricityBattery.getSn()).batteryServiceFee(batteryMemberCard.getServiceCharge()).build();
+                        .sn(Objects.isNull(electricityBattery) ? "" : electricityBattery.getSn()).batteryServiceFee(batteryMemberCard.getServiceCharge())
+                        .paramFranchiseeId(wechatPayParamsDetails.getFranchiseeId()).wechatMerchantId(wechatPayParamsDetails.getWechatMerchantId()).build();
                 batteryServiceFeeOrderService.insert(eleBatteryServiceFeeOrder);
                 
                 // 将滞纳金订单与用户绑定
@@ -940,7 +942,8 @@ public class TradeOrderServiceImpl implements TradeOrderService {
                         .createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).tenantId(userInfo.getTenantId())
                         .source(EleBatteryServiceFeeOrder.MEMBER_CARD_OVERDUE).franchiseeId(franchisee.getId()).storeId(userInfo.getStoreId()).modelType(franchisee.getModelType())
                         .batteryType(CollectionUtils.isEmpty(batteryTypeSet) ? "" : JsonUtil.toJson(batteryTypeSet))
-                        .sn(Objects.isNull(electricityBattery) ? "" : electricityBattery.getSn()).batteryServiceFee(batteryMemberCard.getServiceCharge()).build();
+                        .sn(Objects.isNull(electricityBattery) ? "" : electricityBattery.getSn()).batteryServiceFee(batteryMemberCard.getServiceCharge())
+                        .paramFranchiseeId(wechatPayParamsDetails.getFranchiseeId()).wechatMerchantId(wechatPayParamsDetails.getWechatMerchantId()).build();
                 batteryServiceFeeOrderService.insert(eleBatteryServiceFeeOrder);
                 
                 // 将滞纳金订单与用户绑定

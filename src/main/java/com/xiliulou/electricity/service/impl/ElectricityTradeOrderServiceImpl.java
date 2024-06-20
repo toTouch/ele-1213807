@@ -16,16 +16,10 @@ import com.xiliulou.electricity.converter.ElectricityPayParamsConverter;
 import com.xiliulou.electricity.dto.ActivityProcessDTO;
 import com.xiliulou.electricity.dto.DivisionAccountOrderDTO;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
-import com.xiliulou.electricity.entity.CarDepositOrder;
-import com.xiliulou.electricity.entity.CarLockCtrlHistory;
-import com.xiliulou.electricity.entity.CarMemberCardOrder;
-import com.xiliulou.electricity.entity.ChannelActivityHistory;
 import com.xiliulou.electricity.entity.CommonPayOrder;
 import com.xiliulou.electricity.entity.EleBatteryServiceFeeOrder;
 import com.xiliulou.electricity.entity.EleDepositOrder;
 import com.xiliulou.electricity.entity.EleDisableMemberCardRecord;
-import com.xiliulou.electricity.entity.ElectricityCar;
-import com.xiliulou.electricity.entity.ElectricityConfig;
 import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
 import com.xiliulou.electricity.entity.ElectricityTradeOrder;
 import com.xiliulou.electricity.entity.EnableMemberCardRecord;
@@ -37,9 +31,6 @@ import com.xiliulou.electricity.entity.ServiceFeeUserInfo;
 import com.xiliulou.electricity.entity.Store;
 import com.xiliulou.electricity.entity.UserBatteryDeposit;
 import com.xiliulou.electricity.entity.UserBatteryMemberCard;
-import com.xiliulou.electricity.entity.UserCar;
-import com.xiliulou.electricity.entity.UserCarDeposit;
-import com.xiliulou.electricity.entity.UserCarMemberCard;
 import com.xiliulou.electricity.entity.UserCoupon;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.enterprise.CloudBeanUseRecord;
@@ -55,9 +46,7 @@ import com.xiliulou.electricity.mq.producer.DivisionAccountProducer;
 import com.xiliulou.electricity.service.ActivityService;
 import com.xiliulou.electricity.service.BatteryMemberCardOrderCouponService;
 import com.xiliulou.electricity.service.BatteryMemberCardService;
-import com.xiliulou.electricity.service.CarDepositOrderService;
 import com.xiliulou.electricity.service.CarLockCtrlHistoryService;
-import com.xiliulou.electricity.service.CarMemberCardOrderService;
 import com.xiliulou.electricity.service.ChannelActivityHistoryService;
 import com.xiliulou.electricity.service.DivisionAccountRecordService;
 import com.xiliulou.electricity.service.EleBatteryServiceFeeOrderService;
@@ -258,12 +247,6 @@ public class ElectricityTradeOrderServiceImpl extends ServiceImpl<ElectricityTra
     
     @Autowired
     ElectricityMemberCardOrderService electricityMemberCardOrderService;
-    
-    @Autowired
-    CarDepositOrderService carDepositOrderService;
-    
-    @Autowired
-    CarMemberCardOrderService carMemberCardOrderService;
     
     @Autowired
     ElectricityCarService electricityCarService;
@@ -898,221 +881,14 @@ public class ElectricityTradeOrderServiceImpl extends ServiceImpl<ElectricityTra
     
     @Override
     public Pair<Boolean, Object> notifyRentCarDepositOrder(WechatJsapiOrderCallBackResource callBackResource) {
-        //回调参数
-        String tradeOrderNo = callBackResource.getOutTradeNo();
-        String tradeState = callBackResource.getTradeState();
-        String transactionId = callBackResource.getTransactionId();
         
-        //系统订单
-        ElectricityTradeOrder electricityTradeOrder = baseMapper.selectTradeOrderByTradeOrderNo(tradeOrderNo);
-        if (Objects.isNull(electricityTradeOrder)) {
-            log.error("NOTIFY_RENT_CAR_DEPOSIT_ORDER ERROR ,NOT FOUND ELECTRICITY_TRADE_ORDER TRADE_ORDER_NO={}", tradeOrderNo);
-            return Pair.of(false, "未找到交易订单!");
-        }
-        if (ObjectUtil.notEqual(ElectricityTradeOrder.STATUS_INIT, electricityTradeOrder.getStatus())) {
-            log.error("NOTIFY_RENT_CAR_DEPOSIT_ORDER ERROR , ELECTRICITY_TRADE_ORDER  STATUS IS NOT INIT, TRADE_ORDER_NO={}", tradeOrderNo);
-            return Pair.of(false, "交易订单已处理");
-        }
-        
-        //押金订单
-        CarDepositOrder carDepositOrder = carDepositOrderService.selectByOrderId(electricityTradeOrder.getOrderNo());
-        if (ObjectUtil.isEmpty(carDepositOrder)) {
-            log.error("NOTIFY_RENT_CAR_DEPOSIT_ORDER ERROR ,NOT FOUND ELECTRICITY_DEPOSIT_ORDER ORDER_NO={}", electricityTradeOrder.getOrderNo());
-            return Pair.of(false, "未找到订单!");
-        }
-        
-        if (!ObjectUtil.equal(EleDepositOrder.STATUS_INIT, carDepositOrder.getStatus())) {
-            log.error("NOTIFY_RENT_CAR_DEPOSIT_ORDER ERROR , ELECTRICITY_DEPOSIT_ORDER  STATUS IS NOT INIT, ORDER_NO={}", electricityTradeOrder.getOrderNo());
-            return Pair.of(false, "押金订单已处理!");
-        }
-        
-        Integer tradeOrderStatus = ElectricityTradeOrder.STATUS_FAIL;
-        Integer depositOrderStatus = EleDepositOrder.STATUS_FAIL;
-        boolean result = false;
-        if (StringUtils.isNotEmpty(tradeState) && ObjectUtil.equal("SUCCESS", tradeState)) {
-            tradeOrderStatus = ElectricityTradeOrder.STATUS_SUCCESS;
-            depositOrderStatus = EleDepositOrder.STATUS_SUCCESS;
-            result = true;
-        } else {
-            log.error("NOTIFY REDULT PAY FAIL,ORDER_NO={}" + tradeOrderNo);
-        }
-        
-        UserInfo userInfo = userInfoService.queryByUidFromCache(carDepositOrder.getUid());
-        if (Objects.isNull(userInfo)) {
-            log.error("NOTIFY ERROR,NOT FOUND USERINFO,USERID={},ORDER_NO={}", carDepositOrder.getUid(), tradeOrderNo);
-            return Pair.of(false, "未找到用户信息!");
-        }
-        
-        //用户押金
-        if (Objects.equals(depositOrderStatus, EleDepositOrder.STATUS_SUCCESS)) {
-            
-            UserInfo updateUserInfo = new UserInfo();
-            updateUserInfo.setUid(userInfo.getUid());
-            updateUserInfo.setCarDepositStatus(UserInfo.CAR_DEPOSIT_STATUS_YES);
-            updateUserInfo.setUpdateTime(System.currentTimeMillis());
-            userInfoService.updateByUid(updateUserInfo);
-            
-            UserCarDeposit userCarDeposit = new UserCarDeposit();
-            userCarDeposit.setUid(userInfo.getUid());
-            userCarDeposit.setOrderId(carDepositOrder.getOrderId());
-            userCarDeposit.setDelFlag(UserCarDeposit.DEL_NORMAL);
-            userCarDeposit.setApplyDepositTime(System.currentTimeMillis());
-            userCarDeposit.setDepositType(UserBatteryDeposit.DEPOSIT_TYPE_DEFAULT);
-            userCarDeposit.setTenantId(carDepositOrder.getTenantId());
-            userCarDeposit.setCreateTime(System.currentTimeMillis());
-            userCarDeposit.setUpdateTime(System.currentTimeMillis());
-            userCarDepositService.insertOrUpdate(userCarDeposit);
-            
-            UserCar userCar = new UserCar();
-            userCar.setUid(userInfo.getUid());
-            userCar.setCarModel(carDepositOrder.getCarModelId());
-            userCar.setTenantId(userInfo.getTenantId());
-            userCar.setCreateTime(System.currentTimeMillis());
-            userCar.setUpdateTime(System.currentTimeMillis());
-            userCarService.insertOrUpdate(userCar);
-        }
-        
-        //交易订单
-        ElectricityTradeOrder electricityTradeOrderUpdate = new ElectricityTradeOrder();
-        electricityTradeOrderUpdate.setId(electricityTradeOrder.getId());
-        electricityTradeOrderUpdate.setStatus(tradeOrderStatus);
-        electricityTradeOrderUpdate.setUpdateTime(System.currentTimeMillis());
-        electricityTradeOrderUpdate.setChannelOrderNo(transactionId);
-        baseMapper.updateById(electricityTradeOrderUpdate);
-        
-        //押金订单
-        EleDepositOrder eleDepositOrderUpdate = new EleDepositOrder();
-        eleDepositOrderUpdate.setId(carDepositOrder.getId());
-        eleDepositOrderUpdate.setStatus(depositOrderStatus);
-        eleDepositOrderUpdate.setUpdateTime(System.currentTimeMillis());
-        eleDepositOrderService.update(eleDepositOrderUpdate);
-        
-        //小程序虚拟发货
-        shippingManagerService.uploadShippingInfo(userInfo.getUid(), userInfo.getPhone(), transactionId, userInfo.getTenantId());
-        
-        return Pair.of(result, null);
+        return Pair.of(false, null);
     }
     
     @Override
     public Pair<Boolean, Object> notifyRentCarMemberOrder(WechatJsapiOrderCallBackResource callBackResource) {
         
-        //回调参数
-        String tradeOrderNo = callBackResource.getOutTradeNo();
-        String tradeState = callBackResource.getTradeState();
-        String transactionId = callBackResource.getTransactionId();
-        
-        //交易订单
-        ElectricityTradeOrder electricityTradeOrder = baseMapper.selectTradeOrderByTradeOrderNo(tradeOrderNo);
-        if (Objects.isNull(electricityTradeOrder)) {
-            log.error("NOTIFY_MEMBER_ORDER ERROR ,NOT FOUND ELECTRICITY_TRADE_ORDER ORDER_NO={}", tradeOrderNo);
-            return Pair.of(false, "未找到交易订单!");
-        }
-        if (ObjectUtil.notEqual(ElectricityTradeOrder.STATUS_INIT, electricityTradeOrder.getStatus())) {
-            log.error("NOTIFY_MEMBER_ORDER ERROR , ELECTRICITY_TRADE_ORDER  STATUS IS NOT INIT, ORDER_NO={}", tradeOrderNo);
-            return Pair.of(false, "交易订单已处理");
-        }
-        
-        //购卡订单
-        CarMemberCardOrder carMemberCardOrder = carMemberCardOrderService.selectByOrderId(electricityTradeOrder.getOrderNo());
-        if (ObjectUtil.isEmpty(carMemberCardOrder)) {
-            log.error("NOTIFY_MEMBER_ORDER ERROR ,NOT FOUND ELECTRICITY_MEMBER_CARD_ORDER ORDER_NO={}", electricityTradeOrder.getOrderNo());
-            return Pair.of(false, "未找到订单!");
-        }
-        if (!ObjectUtil.equal(ElectricityMemberCardOrder.STATUS_INIT, carMemberCardOrder.getStatus())) {
-            log.error("NOTIFY_MEMBER_ORDER ERROR , ELECTRICITY_MEMBER_CARD_ORDER  STATUS IS NOT INIT, ORDER_NO={}", electricityTradeOrder.getOrderNo());
-            return Pair.of(false, "套餐订单已处理!");
-        }
-        
-        //成功或失败
-        Integer tradeOrderStatus = ElectricityTradeOrder.STATUS_FAIL;
-        Integer memberOrderStatus = ElectricityMemberCardOrder.STATUS_FAIL;
-        boolean result = false;
-        if (StringUtils.isNotEmpty(tradeState) && ObjectUtil.equal("SUCCESS", tradeState)) {
-            tradeOrderStatus = ElectricityTradeOrder.STATUS_SUCCESS;
-            memberOrderStatus = ElectricityMemberCardOrder.STATUS_SUCCESS;
-            result = true;
-        } else {
-            log.error("NOTIFY REDULT PAY FAIL,ORDER_NO={}" + tradeOrderNo);
-        }
-        
-        //用户
-        UserInfo userInfo = userInfoService.queryByUidFromCache(carMemberCardOrder.getUid());
-        if (Objects.isNull(userInfo)) {
-            log.error("NOTIFY  ERROR,NOT FOUND USERINFO,USERID={},ORDER_NO={}", carMemberCardOrder.getUid(), tradeOrderNo);
-            return Pair.of(false, "未找到用户信息!");
-        }
-        
-        if (Objects.equals(memberOrderStatus, EleDepositOrder.STATUS_SUCCESS)) {
-            UserCarMemberCard userCarMemberCard = userCarMemberCardService.selectByUidFromCache(userInfo.getUid());
-            
-            UserCarMemberCard updateUserCarMemberCard = new UserCarMemberCard();
-            updateUserCarMemberCard.setUid(userInfo.getUid());
-            updateUserCarMemberCard.setOrderId(carMemberCardOrder.getOrderId());
-            updateUserCarMemberCard.setCardId(carMemberCardOrder.getCarModelId());
-            updateUserCarMemberCard.setMemberCardExpireTime(
-                    electricityMemberCardOrderService.calcRentCarMemberCardExpireTime(carMemberCardOrder.getMemberCardType(), carMemberCardOrder.getValidDays(),
-                            userCarMemberCard));
-            updateUserCarMemberCard.setDelFlag(UserCarMemberCard.DEL_NORMAL);
-            updateUserCarMemberCard.setCreateTime(System.currentTimeMillis());
-            updateUserCarMemberCard.setUpdateTime(System.currentTimeMillis());
-            
-            userCarMemberCardService.insertOrUpdate(updateUserCarMemberCard);
-            
-            //用户是否有绑定了车
-            ElectricityCar electricityCar = electricityCarService.queryInfoByUid(userInfo.getUid());
-            ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(userInfo.getTenantId());
-            if (Objects.nonNull(electricityCar) && Objects.nonNull(electricityConfig) && Objects.equals(electricityConfig.getIsOpenCarControl(),
-                    ElectricityConfig.ENABLE_CAR_CONTROL) && System.currentTimeMillis() < updateUserCarMemberCard.getMemberCardExpireTime()) {
-                boolean boo = electricityCarService.retryCarLockCtrl(electricityCar.getSn(), ElectricityCar.TYPE_UN_LOCK, 3);
-                
-                CarLockCtrlHistory carLockCtrlHistory = new CarLockCtrlHistory();
-                carLockCtrlHistory.setUid(userInfo.getUid());
-                carLockCtrlHistory.setName(userInfo.getName());
-                carLockCtrlHistory.setPhone(userInfo.getPhone());
-                carLockCtrlHistory.setStatus(boo ? CarLockCtrlHistory.STATUS_UN_LOCK_SUCCESS : CarLockCtrlHistory.STATUS_UN_LOCK_FAIL);
-                carLockCtrlHistory.setType(CarLockCtrlHistory.TYPE_MEMBER_CARD_UN_LOCK);
-                carLockCtrlHistory.setCarModelId(electricityCar.getModelId().longValue());
-                carLockCtrlHistory.setCarModel(electricityCar.getModel());
-                carLockCtrlHistory.setCarId(electricityCar.getId().longValue());
-                carLockCtrlHistory.setCarSn(electricityCar.getSn());
-                carLockCtrlHistory.setCreateTime(System.currentTimeMillis());
-                carLockCtrlHistory.setUpdateTime(System.currentTimeMillis());
-                carLockCtrlHistory.setTenantId(userInfo.getTenantId());
-                carLockCtrlHistoryService.insert(carLockCtrlHistory);
-            }
-            
-            ChannelActivityHistory channelActivityHistory = channelActivityHistoryService.queryByUid(userInfo.getUid());
-            if (Objects.nonNull(channelActivityHistory) && Objects.equals(channelActivityHistory.getStatus(), ChannelActivityHistory.STATUS_INIT)) {
-                ChannelActivityHistory updateChannelActivityHistory = new ChannelActivityHistory();
-                updateChannelActivityHistory.setId(channelActivityHistory.getId());
-                updateChannelActivityHistory.setStatus(ChannelActivityHistory.STATUS_SUCCESS);
-                updateChannelActivityHistory.setUpdateTime(System.currentTimeMillis());
-                channelActivityHistoryService.update(updateChannelActivityHistory);
-            }
-            
-            divisionAccountRecordService.handleCarMembercardDivisionAccount(carMemberCardOrder);
-        }
-        
-        //交易订单
-        ElectricityTradeOrder electricityTradeOrderUpdate = new ElectricityTradeOrder();
-        electricityTradeOrderUpdate.setId(electricityTradeOrder.getId());
-        electricityTradeOrderUpdate.setStatus(tradeOrderStatus);
-        electricityTradeOrderUpdate.setUpdateTime(System.currentTimeMillis());
-        electricityTradeOrderUpdate.setChannelOrderNo(transactionId);
-        baseMapper.updateById(electricityTradeOrderUpdate);
-        
-        //租车套餐订单
-        CarMemberCardOrder updateCarMemberCardOrder = new CarMemberCardOrder();
-        updateCarMemberCardOrder.setId(carMemberCardOrder.getId());
-        updateCarMemberCardOrder.setStatus(memberOrderStatus);
-        updateCarMemberCardOrder.setUpdateTime(System.currentTimeMillis());
-        carMemberCardOrderService.update(updateCarMemberCardOrder);
-        
-        //小程序虚拟发货
-        shippingManagerService.uploadShippingInfo(userInfo.getUid(), userInfo.getPhone(), transactionId, userInfo.getTenantId());
-        
-        return Pair.of(result, null);
-        
+        return Pair.of(false, null);
     }
     
     @Override
