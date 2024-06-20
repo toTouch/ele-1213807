@@ -365,7 +365,7 @@ public class DivisionAccountConfigServiceImpl implements DivisionAccountConfigSe
         if (Objects.isNull(divisionAccountConfig) || !Objects.equals(divisionAccountConfig.getTenantId(), TenantContextHolder.getTenantId())) {
             return Triple.of(false, "100480", "分帐配置不存在");
         }
-        log.info("update DA Status flow start: request parameters = {}", JsonUtil.toJson(divisionAccountConfigQuery));
+        
         //若选择启用的分账设置中套餐信息，在之前已启用的配置中存在，则不允许启用当前设置。
         if (DivisionAccountConfig.STATUS_ENABLE.equals(divisionAccountConfigQuery.getStatus())) {
             //1. 查询出当前加盟商下所有的已启用的分账套餐信息。
