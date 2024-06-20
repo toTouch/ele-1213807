@@ -904,6 +904,8 @@ public class TradeOrderServiceImpl implements TradeOrderService {
             eleBatteryServiceFeeOrderUpdate.setId(eleBatteryServiceFeeOrder.getId());
             eleBatteryServiceFeeOrderUpdate.setPayAmount(expireBatteryServiceFee);
             eleBatteryServiceFeeOrderUpdate.setUpdateTime(System.currentTimeMillis());
+            eleBatteryServiceFeeOrderUpdate.setParamFranchiseeId(wechatPayParamsDetails.getFranchiseeId());
+            eleBatteryServiceFeeOrderUpdate.setWechatMerchantId(wechatPayParamsDetails.getWechatMerchantId());
             batteryServiceFeeOrderService.update(eleBatteryServiceFeeOrderUpdate);
             
             orderList.add(eleBatteryServiceFeeOrder.getOrderId());
@@ -972,6 +974,8 @@ public class TradeOrderServiceImpl implements TradeOrderService {
                 eleBatteryServiceFeeOrderUpdate.setId(eleBatteryServiceFeeOrder.getId());
                 eleBatteryServiceFeeOrderUpdate.setPayAmount(pauseBatteryServiceFee);
                 eleBatteryServiceFeeOrderUpdate.setUpdateTime(System.currentTimeMillis());
+                eleBatteryServiceFeeOrderUpdate.setParamFranchiseeId(wechatPayParamsDetails.getFranchiseeId());
+                eleBatteryServiceFeeOrderUpdate.setWechatMerchantId(wechatPayParamsDetails.getWechatMerchantId());
                 batteryServiceFeeOrderService.update(eleBatteryServiceFeeOrderUpdate);
             }
             
@@ -987,6 +991,9 @@ public class TradeOrderServiceImpl implements TradeOrderService {
                 
                 pauseBatteryServiceFee = eleBatteryServiceFeeOrder.getPayAmount();
                 
+                eleBatteryServiceFeeOrder.setParamFranchiseeId(wechatPayParamsDetails.getFranchiseeId());
+                eleBatteryServiceFeeOrder.setWechatMerchantId(wechatPayParamsDetails.getWechatMerchantId());
+                batteryServiceFeeOrderService.update(eleBatteryServiceFeeOrder);
                 log.info("BATTERY SERVICE FEE INFO!user exist pauseBatteryServiceFee,uid={},fee={}", userInfo.getUid(), pauseBatteryServiceFee.doubleValue());
             }
             
