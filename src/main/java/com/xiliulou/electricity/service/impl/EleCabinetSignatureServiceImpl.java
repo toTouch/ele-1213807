@@ -363,7 +363,7 @@ public class EleCabinetSignatureServiceImpl implements EleCabinetSignatureServic
         UserInfo userInfo = userInfoService.queryByUidFromCache(SecurityUtils.getUid());
 
         if (Objects.isNull(userInfo)) {
-            log.error("get sign flow url error! not found userInfo,uid={}", SecurityUtils.getUid());
+            log.warn("get sign flow url error! not found userInfo,uid={}", SecurityUtils.getUid());
             return Triple.of(false, "000100", "未找到用户");
         }
 
@@ -644,7 +644,6 @@ public class EleCabinetSignatureServiceImpl implements EleCabinetSignatureServic
         StringBuilder builder = new StringBuilder().append(timestamp).append(requestQuery).append(reqBody);
         String signData = builder.toString();
         String encryptionSignature = SignUtils.getSignature(signData, esignConfig.getAppSecret());
-        log.info("The request of esign call back request body: {}", reqBody);
         if(encryptionSignature.equals(signature)) {
             EsignCallBackQuery esignCallBackQuery = JsonUtil.fromJson(reqBody, EsignCallBackQuery.class);
             log.info("Esign call back notice type is: {}", esignCallBackQuery.getAction());
