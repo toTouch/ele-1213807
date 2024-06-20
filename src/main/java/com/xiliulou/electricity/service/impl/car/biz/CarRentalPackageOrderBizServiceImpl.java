@@ -598,6 +598,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         Integer compelOffLine = carRentRefundVo.getCompelOffLine();
         if (ObjectUtils.isNotEmpty(compelOffLine) && YesNoEnum.YES.getCode().equals(compelOffLine) && PayTypeEnum.ON_LINE.getCode().equals(payType)) {
             payType = PayTypeEnum.OFF_LINE.getCode();
+            updateRentRefundEntity.setPayType(payType);
             updateRentRefundEntity.setCompelOffLine(YesNoEnum.YES.getCode());
         }
         
@@ -1432,6 +1433,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             // 强制线下退款
             if (ObjectUtils.isNotEmpty(compelOffLine) && YesNoEnum.YES.getCode().equals(compelOffLine) && PayTypeEnum.ON_LINE.getCode().equals(payType)) {
                 payType = PayTypeEnum.OFF_LINE.getCode();
+                rentRefundUpdateEntity.setPayType(payType);
                 rentRefundUpdateEntity.setCompelOffLine(YesNoEnum.YES.getCode());
             }
             
