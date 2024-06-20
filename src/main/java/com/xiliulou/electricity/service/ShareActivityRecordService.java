@@ -39,9 +39,9 @@ public interface ShareActivityRecordService {
      * @return 实例对象
      */
     Integer update(ShareActivityRecord shareActivityRecord);
-
-
-	R generateSharePicture(Integer activityId,String page);
+    
+    
+    R generateSharePicture(Integer activityId, String page, String envVersion);
 
 
 	ShareActivityRecord queryByUid(Long uid,Integer activityId);

@@ -92,4 +92,8 @@ public class ElectricityBatteryDataQuery {
     
     private Tenant tenant;
     
+    /**
+     *  默认为0降序，1为升序
+     */
+    private Integer sort ;
 }

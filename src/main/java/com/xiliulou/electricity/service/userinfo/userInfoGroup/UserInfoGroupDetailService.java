@@ -42,4 +42,5 @@ public interface UserInfoGroupDetailService {
     
     void handleAfterRefundDeposit(Long uid);
     
+    Integer deleteByGroupNo(String groupNo, Integer tenantId);
 }

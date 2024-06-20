@@ -209,9 +209,9 @@
         from t_merchant
         <where>
             tenant_id = #{tenantId}
-            <if test="merchantIdSet != null and merchantIdSet.size() > 0">
+            <if test="merchantIdList != null and merchantIdList.size() > 0">
                 and id in
-                <foreach collection="merchantIdSet" item="id" close=")" open="(" separator=",">
+                <foreach collection="merchantIdList" item="id" close=")" open="(" separator=",">
                     #{id}
                 </foreach>
             </if>

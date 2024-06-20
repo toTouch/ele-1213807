@@ -1,16 +1,14 @@
 package com.xiliulou.electricity.service.impl;
 
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.entity.UserAuthMessage;
 import com.xiliulou.electricity.mapper.UserAuthMessageMapper;
 import com.xiliulou.electricity.service.UserAuthMessageService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-import java.util.List;
-
-import lombok.extern.slf4j.Slf4j;
 
 /**
  * (UserAuthMessage)表服务实现类
@@ -76,6 +74,7 @@ public class UserAuthMessageServiceImpl implements UserAuthMessageService {
         return this.userAuthMessageMapper.insert(userAuthMessage);
     }
 
+    @Slave
     @Override
     public UserAuthMessage selectLatestByUid(Long uid) {
         return this.userAuthMessageMapper.selectLatestByUid(uid);

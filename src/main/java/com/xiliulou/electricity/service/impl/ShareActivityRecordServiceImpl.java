@@ -1,13 +1,12 @@
 package com.xiliulou.electricity.service.impl;
 
-import cn.hutool.core.collection.CollUtil;
-import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.RandomUtil;
 import com.alibaba.excel.EasyExcel;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.web.R;
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mapper.ShareActivityRecordMapper;
@@ -16,13 +15,13 @@ import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.service.asset.AssertPermissionService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
-import com.xiliulou.electricity.vo.CouponVO;
 import com.xiliulou.electricity.vo.ShareActivityRecordExcelVO;
 import com.xiliulou.electricity.vo.ShareActivityRecordVO;
 import com.xiliulou.pay.weixin.entity.SharePicture;
 import com.xiliulou.pay.weixin.shareUrl.GenerateShareUrlService;
 import com.xiliulou.security.bean.TokenUser;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.BeanUtils;
@@ -91,6 +90,7 @@ public class ShareActivityRecordServiceImpl implements ShareActivityRecordServic
      * @return 实例对象
      */
     @Override
+    @Slave
     public ShareActivityRecord queryByIdFromDB(Long id) {
         return this.shareActivityRecordMapper.selectById(id);
     }
@@ -128,7 +128,7 @@ public class ShareActivityRecordServiceImpl implements ShareActivityRecordServic
      * 4、调起微信
      */
     @Override
-    public R generateSharePicture(Integer activityId, String page) {
+    public R generateSharePicture(Integer activityId, String page, String envVersion) {
 
         //用户
         TokenUser user = SecurityUtils.getUserInfo();
@@ -142,9 +142,7 @@ public class ShareActivityRecordServiceImpl implements ShareActivityRecordServic
         if (!result) {
             return R.fail("ELECTRICITY.0034", "操作频繁");
         }
-
-        log.info("Generate share picture for share activity start, activity id = {}, page = {}", activityId, page);
-
+        
         //租户
         Integer tenantId = TenantContextHolder.getTenantId();
 
@@ -201,6 +199,9 @@ public class ShareActivityRecordServiceImpl implements ShareActivityRecordServic
         sharePicture.setScene(scene);
         sharePicture.setAppId(electricityPayParams.getMerchantMinProAppId());
         sharePicture.setAppSecret(electricityPayParams.getMerchantMinProAppSecert());
+        if (StringUtils.isNotBlank(envVersion)) {
+            sharePicture.setEnvVersion(envVersion);
+        }
         Pair<Boolean, Object> getShareUrlPair = generateShareUrlService.generateSharePicture(sharePicture);
 
         //分享失败
@@ -218,6 +219,7 @@ public class ShareActivityRecordServiceImpl implements ShareActivityRecordServic
     }
 
     @Override
+    @Slave
     public ShareActivityRecord queryByUid(Long uid, Integer activityId) {
         return shareActivityRecordMapper.selectOne(new LambdaQueryWrapper<ShareActivityRecord>()
                 .eq(ShareActivityRecord::getUid, uid).eq(ShareActivityRecord::getActivityId, activityId));
@@ -234,6 +236,7 @@ public class ShareActivityRecordServiceImpl implements ShareActivityRecordServic
     }
 
     @Override
+    @Slave
     public R queryList(ShareActivityRecordQuery shareActivityRecordQuery) {
         List<ShareActivityRecordVO> shareActivityRecordVOList = shareActivityRecordMapper.queryList(shareActivityRecordQuery);
         //获取用户领取的优惠券数量
@@ -281,6 +284,7 @@ public class ShareActivityRecordServiceImpl implements ShareActivityRecordServic
     }
 
     @Override
+    @Slave
     public R queryCount(ShareActivityRecordQuery shareActivityRecordQuery) {
         return R.ok(shareActivityRecordMapper.queryCount(shareActivityRecordQuery));
     }

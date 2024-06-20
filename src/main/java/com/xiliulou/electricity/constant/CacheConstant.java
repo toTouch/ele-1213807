@@ -192,6 +192,8 @@ public interface CacheConstant {
     
     String CLIENT_ID = "xiliulou-ele:";
     
+    String MERCHANT_CLIENT_ID = "xiliulou-merchant:";
+    
     String CACHE_TENANT_MAINTENANCE_USER_CONFIG = "cache_maintenance_config:";
     String CACHE_TENANT_MAINTENANCE_USER_CONFIG_TEST = "cache_maintenance_config_test:";
     
@@ -630,6 +632,8 @@ public interface CacheConstant {
     String CACHE_USER_GROUP = "cache_user_group:";
     
     String CACHE_CHANNEL_USER_EXIT_LOCK = "cache_channel_user_exit_lock:";
+    
+    String CACHE_CHANNEL_USER_ADMIN_EXIT_LOCK = "cache_channel_user_admin_exit_lock:";
     
     String CACHE_CHANNEL_USER_EXIT_ALL_LOCK = "cache_channel_user_exit_all_lock:";
 }

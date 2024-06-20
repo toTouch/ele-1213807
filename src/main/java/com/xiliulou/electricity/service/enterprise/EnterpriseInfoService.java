@@ -120,4 +120,6 @@ public interface EnterpriseInfoService {
     Triple<Boolean, String, Object> recycleBatteryMemberCardV2(UserInfo userInfo, EnterpriseInfo enterpriseInfo, UserBatteryMemberCard item);
     
     List<EnterpriseInfo> queryList(Integer tenantId);
+    
+    void deleteCacheByEnterpriseId(Long enterpriseId);
 }

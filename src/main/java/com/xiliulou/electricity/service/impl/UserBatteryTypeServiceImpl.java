@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.service.impl;
 
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
 import com.xiliulou.electricity.entity.UserBatteryType;
 import com.xiliulou.electricity.entity.UserInfo;
@@ -79,6 +80,7 @@ public class UserBatteryTypeServiceImpl implements UserBatteryTypeService {
         return this.userBatteryTypeMapper.selectByUid(uid);
     }
 
+    @Slave
     @Override
     public String selectOneByUid(Long uid) {
         return this.userBatteryTypeMapper.selectOneByUid(uid);

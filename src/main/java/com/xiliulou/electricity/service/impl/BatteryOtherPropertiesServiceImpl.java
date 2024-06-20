@@ -90,6 +90,7 @@ public class BatteryOtherPropertiesServiceImpl implements BatteryOtherProperties
 	}
 	
 	@Override
+	@Slave
 	public List<BatteryOtherProperties> listBatteryOtherPropertiesBySn(List<String> snList) {
 		return batteryOtherPropertiesMapper.selectBatteryOtherPropertiesList(snList);
 	}

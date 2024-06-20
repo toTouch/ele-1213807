@@ -8,6 +8,7 @@ import com.google.common.collect.Lists;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.core.web.R;
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
@@ -345,6 +346,7 @@ public class ShareMoneyActivityServiceImpl implements ShareMoneyActivityService 
     }
 
     @Override
+    @Slave
     public R queryList(ShareMoneyActivityQuery shareMoneyActivityQuery) {
         Pair<Boolean, List<Long>> pair = assertPermissionService.assertPermissionByPair(SecurityUtils.getUserInfo());
         if (!pair.getLeft()){
@@ -403,6 +405,7 @@ public class ShareMoneyActivityServiceImpl implements ShareMoneyActivityService 
     }
 
     @Override
+    @Slave
     public R queryCount(ShareMoneyActivityQuery shareMoneyActivityQuery) {
         Pair<Boolean, List<Long>> pair = assertPermissionService.assertPermissionByPair(SecurityUtils.getUserInfo());
         if (!pair.getLeft()){
@@ -436,6 +439,7 @@ public class ShareMoneyActivityServiceImpl implements ShareMoneyActivityService 
 
 
     @Override
+    @Slave
     public ShareMoneyActivity queryByStatus(Integer activityId) {
         return shareMoneyActivityMapper.selectOne(new LambdaQueryWrapper<ShareMoneyActivity>()
                 .eq(ShareMoneyActivity::getId, activityId).eq(ShareMoneyActivity::getStatus, ShareMoneyActivity.STATUS_ON));
@@ -456,7 +460,7 @@ public class ShareMoneyActivityServiceImpl implements ShareMoneyActivityService 
         //用户是否可用
         UserInfo userInfo = userInfoService.queryByUidFromCache(user.getUid());
         if (Objects.isNull(userInfo) || Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
-            log.error("ELECTRICITY  ERROR! not found userInfo,uid:{} ", user.getUid());
+            log.warn("ELECTRICITY  WARN! not found userInfo,uid:{} ", user.getUid());
             return R.fail("ELECTRICITY.0024", "用户已被禁用");
         }
 
@@ -573,7 +577,7 @@ public class ShareMoneyActivityServiceImpl implements ShareMoneyActivityService 
         //用户是否可用
         UserInfo userInfo = userInfoService.queryByUidFromCache(user.getUid());
         if (Objects.isNull(userInfo) || Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
-            log.error("ELECTRICITY  ERROR! not found userInfo,uid:{} ", user.getUid());
+            log.warn("ELECTRICITY  WARN! not found userInfo,uid:{} ", user.getUid());
             return R.fail("ELECTRICITY.0024", "用户已被禁用");
         }
 
@@ -588,7 +592,6 @@ public class ShareMoneyActivityServiceImpl implements ShareMoneyActivityService 
         ShareMoneyActivity shareMoneyActivity = shareMoneyActivityMapper.selectOne(new LambdaQueryWrapper<ShareMoneyActivity>()
                 .eq(ShareMoneyActivity::getTenantId, tenantId).eq(ShareMoneyActivity::getStatus, ShareMoneyActivity.STATUS_ON));
         if (Objects.isNull(shareMoneyActivity)) {
-//            log.error("queryInfo Activity  ERROR! not found Activity ! tenantId:{} ", tenantId);
             map.put("shareMoneyActivity", 1);
         }
 
@@ -596,7 +599,6 @@ public class ShareMoneyActivityServiceImpl implements ShareMoneyActivityService 
         ShareActivity shareActivity = shareActivityMapper.selectOne(new LambdaQueryWrapper<ShareActivity>()
                 .eq(ShareActivity::getTenantId, tenantId).eq(ShareActivity::getStatus, ShareActivity.STATUS_ON));
         if (Objects.isNull(shareActivity)) {
-//            log.error("queryInfo Activity  ERROR! not found Activity ! tenantId:{} ", tenantId);
             map.put("shareActivity", 1);
         }
     
@@ -617,6 +619,7 @@ public class ShareMoneyActivityServiceImpl implements ShareMoneyActivityService 
     }
 
     @Override
+    @Slave
     public R checkActivityStatusOn() {
         //租户
         Integer tenantId = TenantContextHolder.getTenantId();
@@ -632,6 +635,7 @@ public class ShareMoneyActivityServiceImpl implements ShareMoneyActivityService 
     }
     
     @Override
+    @Slave
     public Integer existShareMoneyActivity(Integer tenantId) {
         return shareMoneyActivityMapper.existShareMoneyActivity(tenantId);
     }

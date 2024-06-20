@@ -3,10 +3,25 @@ package com.xiliulou.electricity.service.impl;
 import cn.hutool.core.thread.ThreadUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
-import com.xiliulou.electricity.entity.*;
+import com.xiliulou.electricity.entity.BatteryMemberCard;
+import com.xiliulou.electricity.entity.EleBatteryServiceFeeOrder;
+import com.xiliulou.electricity.entity.Franchisee;
+import com.xiliulou.electricity.entity.ServiceFeeUserInfo;
+import com.xiliulou.electricity.entity.UserBatteryMemberCard;
+import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.mapper.ServiceFeeUserInfoMapper;
-import com.xiliulou.electricity.service.*;
+import com.xiliulou.electricity.service.BatteryMemberCardService;
+import com.xiliulou.electricity.service.BatteryModelService;
+import com.xiliulou.electricity.service.EleBatteryServiceFeeOrderService;
+import com.xiliulou.electricity.service.ElectricityBatteryService;
+import com.xiliulou.electricity.service.ElectricityMemberCardOrderService;
+import com.xiliulou.electricity.service.FranchiseeService;
+import com.xiliulou.electricity.service.ServiceFeeUserInfoService;
+import com.xiliulou.electricity.service.UserBatteryMemberCardService;
+import com.xiliulou.electricity.service.UserBatteryService;
+import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
@@ -16,7 +31,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -141,6 +155,7 @@ public class ServiceFeeUserInfoServiceImpl implements ServiceFeeUserInfoService 
         this.updateByUid(serviceFeeUserInfo);
     }
 
+    @Slave
     @Override
     public List<ServiceFeeUserInfo> selectDisableMembercardList(int offset, int size) {
         return serviceFeeUserInfoMapper.selectDisableMembercardList(offset, size);
@@ -160,7 +175,7 @@ public class ServiceFeeUserInfoServiceImpl implements ServiceFeeUserInfoService 
 
         UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
         if (Objects.isNull(userInfo)) {
-            log.error("ELE ERROR! not found user,uid={}", uid);
+            log.warn("ELE WARN! not found user,uid={}", uid);
             return eleBatteryServiceFeeVO;
         }
 

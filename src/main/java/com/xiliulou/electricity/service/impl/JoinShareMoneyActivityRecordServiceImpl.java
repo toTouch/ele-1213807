@@ -6,14 +6,15 @@ import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.constant.TimeConstant;
 import com.xiliulou.electricity.entity.*;
+import com.xiliulou.electricity.enums.UserInfoActivitySourceEnum;
 import com.xiliulou.electricity.mapper.JoinShareMoneyActivityRecordMapper;
 import com.xiliulou.electricity.service.*;
+import com.xiliulou.electricity.service.merchant.MerchantJoinRecordService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -49,6 +50,12 @@ public class JoinShareMoneyActivityRecordServiceImpl implements JoinShareMoneyAc
 	UserBatteryMemberCardService userBatteryMemberCardService;
 	@Autowired
 	JoinShareActivityHistoryService joinShareActivityHistoryService;
+	
+	@Resource
+	private MerchantJoinRecordService merchantJoinRecordService;
+    
+    @Resource
+    private UserInfoExtraService userInfoExtraService;
 
 	/**
 	 * 修改数据
@@ -80,21 +87,27 @@ public class JoinShareMoneyActivityRecordServiceImpl implements JoinShareMoneyAc
 		//用户是否可用
 		UserInfo userInfo = userInfoService.queryByUidFromCache(user.getUid());
 		if (Objects.isNull(userInfo) || Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
-			log.error("joinActivity  ERROR! not found userInfo,uid:{} ", user.getUid());
+			log.warn("joinActivity  WARN! not found userInfo,uid:{} ", user.getUid());
 			return R.fail("ELECTRICITY.0024", "用户已被禁用");
+		}
+		
+		UserInfoExtra userInfoExtra = userInfoExtraService.queryByUidFromCache(user.getUid());
+		if (Objects.isNull(userInfoExtra)) {
+			log.warn("join share money activity WARN! ERROR! Not found userInfoExtra, joinUid={}", user.getUid());
+			return R.fail("ELECTRICITY.0019", "未找到用户");
 		}
 
 		//查找活动
 		ShareMoneyActivity shareMoneyActivity = shareMoneyActivityService.queryByStatus(activityId);
 		if (Objects.isNull(shareMoneyActivity)) {
-			log.error("joinActivity  ERROR! not found Activity ! ActivityId:{} ", activityId);
+			log.warn("joinActivity WARN! not found Activity ! ActivityId={} ", activityId);
 			return R.fail("ELECTRICITY.00106", "活动已下架");
 		}
 
 		//查找分享的用户
 		User oldUser = userService.queryByUidFromCache(uid);
 		if (Objects.isNull(oldUser)) {
-			log.error("joinActivity  ERROR! not found oldUser ,uid :{}", uid);
+			log.warn("joinActivity  WARN! not found oldUser ,uid :{}", uid);
 			return R.fail("ELECTRICITY.0001", "未找到用户");
 		}
 
@@ -102,28 +115,17 @@ public class JoinShareMoneyActivityRecordServiceImpl implements JoinShareMoneyAc
 		if (Objects.equals(uid, user.getUid())) {
 			return R.ok();
 		}
-
-		//检查是否重复扫描同一邀请人的二维码
-		Pair<Boolean, String> sameInviterResult = joinShareMoneyActivityHistoryService.checkJoinedActivityFromSameInviter(user.getUid(), oldUser.getUid(), activityId.longValue());
-		if(sameInviterResult.getLeft()){
-			if(sameInviterResult.getRight().isEmpty()){
-				return R.ok();
-			}else{
-				return R.fail("110208", sameInviterResult.getRight());
-			}
+		
+		// 530活动互斥判断
+		R canJoinActivity = merchantJoinRecordService.canJoinActivity(userInfo, userInfoExtra, activityId, UserInfoActivitySourceEnum.SUCCESS_SHARE_MONEY_ACTIVITY.getCode());
+		if (!canJoinActivity.isSuccess()) {
+			return canJoinActivity;
 		}
-		log.info("start join share money activity, join uid = {}, inviter uid = {}, activity id = {}", user.getUid(), oldUser.getUid(), activityId);
-
-		//3.0版本修改为邀请返券和邀请返现活动只能参加一个，且只是针对新用户参加
-		//查询当前用户是否参与了邀请返现活动
+		
+		// 判断是否已经参与过该活动
 		List<JoinShareMoneyActivityHistory> joinShareMoneyActivityHistories = joinShareMoneyActivityHistoryService.queryUserJoinedActivity(user.getUid(), tenantId);
-		if(CollectionUtils.isNotEmpty(joinShareMoneyActivityHistories)){
+		if (CollectionUtils.isNotEmpty(joinShareMoneyActivityHistories)) {
 			return R.fail("110207", "已参加过邀请返现活动");
-		}
-		//检查是否有参与邀请返券的活动
-		List<JoinShareActivityHistory> joinShareActivityHistories = joinShareActivityHistoryService.queryUserJoinedActivity(user.getUid(), tenantId);
-		if(CollectionUtils.isNotEmpty(joinShareActivityHistories)){
-			return R.fail("110206", "已参加过邀请返券活动");
 		}
 		
 		// 计算活动有效期
@@ -160,12 +162,16 @@ public class JoinShareMoneyActivityRecordServiceImpl implements JoinShareMoneyAc
 		joinShareMoneyActivityHistory.setStatus(JoinShareMoneyActivityHistory.STATUS_INIT);
 		joinShareMoneyActivityHistory.setActivityId(joinShareMoneyActivityRecord.getActivityId());
 		joinShareMoneyActivityHistoryService.insert(joinShareMoneyActivityHistory);
+		
+		// 530会员扩展表更新最新参与活动类型
+		userInfoExtraService.updateByUid(UserInfoExtra.builder().uid(user.getUid()).latestActivitySource(UserInfoActivitySourceEnum.SUCCESS_SHARE_MONEY_ACTIVITY.getCode()).build());
 
 		return R.ok();
 
 	}
 
 	@Override
+	@Slave
 	public JoinShareMoneyActivityRecord queryByJoinUid(Long uid) {
 		return joinShareMoneyActivityRecordMapper.selectOne(new LambdaQueryWrapper<JoinShareMoneyActivityRecord>()
 				.eq(JoinShareMoneyActivityRecord::getJoinUid, uid).gt(JoinShareMoneyActivityRecord::getExpiredTime, System.currentTimeMillis())

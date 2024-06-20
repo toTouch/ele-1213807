@@ -13,12 +13,17 @@ import com.xiliulou.electricity.constant.merchant.MerchantConstant;
 import com.xiliulou.electricity.constant.merchant.MerchantJoinRecordConstant;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
+import com.xiliulou.electricity.entity.ShareActivity;
+import com.xiliulou.electricity.entity.ShareMoneyActivity;
 import com.xiliulou.electricity.entity.Tenant;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.UserInfo;
+import com.xiliulou.electricity.entity.UserInfoExtra;
 import com.xiliulou.electricity.entity.merchant.Merchant;
 import com.xiliulou.electricity.entity.merchant.MerchantAttr;
 import com.xiliulou.electricity.entity.merchant.MerchantJoinRecord;
+import com.xiliulou.electricity.enums.ActivityEnum;
+import com.xiliulou.electricity.enums.UserInfoActivitySourceEnum;
 import com.xiliulou.electricity.mapper.merchant.MerchantJoinRecordMapper;
 import com.xiliulou.electricity.query.merchant.MerchantAllPromotionDataDetailQueryModel;
 import com.xiliulou.electricity.query.merchant.MerchantJoinRecordQueryMode;
@@ -30,7 +35,10 @@ import com.xiliulou.electricity.request.merchant.MerchantJoinRecordPageRequest;
 import com.xiliulou.electricity.request.merchant.MerchantJoinScanRequest;
 import com.xiliulou.electricity.service.BatteryMemberCardService;
 import com.xiliulou.electricity.service.ElectricityMemberCardOrderService;
+import com.xiliulou.electricity.service.ShareActivityService;
+import com.xiliulou.electricity.service.ShareMoneyActivityService;
 import com.xiliulou.electricity.service.TenantService;
+import com.xiliulou.electricity.service.UserInfoExtraService;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.service.merchant.MerchantAttrService;
@@ -92,10 +100,19 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
     private MerchantEmployeeService merchantEmployeeService;
     
     @Resource
-    BatteryMemberCardService batteryMemberCardService;
+    private BatteryMemberCardService batteryMemberCardService;
     
     @Resource
-    ElectricityMemberCardOrderService electricityMemberCardOrderService;
+    private ElectricityMemberCardOrderService electricityMemberCardOrderService;
+    
+    @Resource
+    private UserInfoExtraService userInfoExtraService;
+    
+    @Resource
+    private ShareActivityService shareActivityService;
+    
+    @Resource
+    private ShareMoneyActivityService shareMoneyActivityService;
     
     @Override
     public R joinScanCode(MerchantJoinScanRequest request) {
@@ -118,31 +135,45 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
                 return R.fail(false, "ELECTRICITY.0019", "未找到用户");
             }
             
-            if (userInfo.getPayCount() > NumberConstant.ZERO) {
-                log.info("MERCHANT JOIN ERROR! Exist package pay count for current user, joinUid = {}", joinUid);
-                return R.fail("120106", "您已是会员用户,无法参加商户活动");
-            }
-            
             if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
                 log.error("MERCHANT JOIN ERROR! user usable, joinUid={}", joinUid);
                 return R.fail(false, "120105", "该二维码暂时无法使用,请稍后再试");
             }
             
+            UserInfoExtra userInfoExtra = userInfoExtraService.queryByUidFromCache(joinUid);
+            if (Objects.isNull(userInfoExtra)) {
+                log.error("MERCHANT JOIN ERROR! Not found userInfoExtra, joinUid={}", joinUid);
+                return R.fail("ELECTRICITY.0019", "未找到用户");
+            }
+            
+            // 530活动互斥判断
+            R canJoinActivity = canJoinActivity(userInfo, userInfoExtra, null, null);
+            if (!canJoinActivity.isSuccess()) {
+                return canJoinActivity;
+            }
+            
             // 已过保护期+已参与状态 的记录，需要更新为已失效，才能再扫码
             MerchantJoinRecord needUpdatedToInvalidRecord = null;
             List<MerchantJoinRecord> joinRecordList = this.listByJoinUidAndStatus(joinUid, List.of(MerchantJoinRecordConstant.STATUS_INIT));
+    
             if (CollectionUtils.isNotEmpty(joinRecordList)) {
-                
                 MerchantJoinRecord joinRecord = joinRecordList.get(NumberConstant.ZERO);
                 if (Objects.nonNull(joinRecord)) {
-                    //未过有效期
-                    if (Objects.equals(joinRecord.getProtectionStatus(), MerchantJoinRecordConstant.PROTECTION_STATUS_NORMAL)) {
-                        log.error("MERCHANT JOIN ERROR! in protectionTime, merchantId={}, inviterUid={}, joinUid={}", joinRecord.getMerchantId(), joinRecord.getInviterUid(),
-                                joinUid);
-                        
-                        return R.fail(false, "120104", "商户保护期内，请稍后再试");
-                    } else {
+                    Long protectionTime = joinRecord.getProtectionTime();
+                    // 没有保护期
+                    if (Objects.isNull(protectionTime) || Objects.equals(protectionTime, NumberConstant.ZERO_L)) {
                         needUpdatedToInvalidRecord = joinRecord;
+                    } else {
+                        //未过保护期
+                        if (protectionTime >= System.currentTimeMillis()) {
+                            log.error("MERCHANT JOIN ERROR! in protectionTime, merchantId={}, inviterUid={}, joinUid={}", joinRecord.getMerchantId(), joinRecord.getInviterUid(),
+                                    joinUid);
+                    
+                            return R.fail(false, "120104", "商户保护期内，请稍后再试");
+                        } else {
+                            // 已过保护期
+                            needUpdatedToInvalidRecord = joinRecord;
+                        }
                     }
                 }
             }
@@ -249,6 +280,9 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
                 this.updateStatusById(needUpdatedToInvalidRecord.getId(), MerchantJoinRecordConstant.STATUS_INVALID, System.currentTimeMillis());
             }
             
+            // 530会员扩展表更新最新参与活动类型
+            userInfoExtraService.updateByUid(UserInfoExtra.builder().uid(joinUid).latestActivitySource(UserInfoActivitySourceEnum.SUCCESS_MERCHANT_ACTIVITY.getCode()).build());
+            
             return R.ok();
         } finally {
             redisService.delete(CacheConstant.CACHE_MERCHANT_SCAN_INTO_ACTIVITY_LOCK + joinUid);
@@ -321,6 +355,10 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
     }
     
     
+    /**
+     * 530需求废弃该接口，废弃字段：MerchantJoinRecord#protectionStatus，改为实时获取保护期过期时间
+     */
+    @Deprecated
     @Override
     public void handelProtectionStatus() {
         MerchantJoinRecord protectionJoinRecord = new MerchantJoinRecord();
@@ -392,6 +430,7 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
         return voList;
     }
     
+    @Slave
     @Override
     public Integer countByCondition(MerchantPromotionScanCodeQueryModel queryModel) {
         return merchantJoinRecordMapper.countByCondition(queryModel);
@@ -409,6 +448,7 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
         return merchantJoinRecordMapper.selectListPromotionDataDetail(queryModel);
     }
     
+    @Slave
     @Override
     public List<MerchantJoinUserVO> selectJoinUserList(MerchantJoinUserQueryMode merchantJoinUserQueryMode) {
         //获取商户uid, 并检查当前商户是否存在且可用
@@ -431,7 +471,6 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
         merchantJoinUserQueryMode.setCurrentTime(currentTime);
         merchantJoinUserQueryMode.setExpireTime(expiredTime);
         
-        log.info("query join user list for current merchant, request = {}", merchantJoinUserQueryMode);
         //获取当前商户下的用户列表信息
         List<MerchantJoinUserVO> merchantJoinUserVOS = merchantJoinRecordMapper.selectJoinUserList(merchantJoinUserQueryMode);
         
@@ -518,13 +557,13 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
         return merchantJoinRecordMapper.selectSuccessRecordByJoinUid(uid, tenantId);
     }
     
-    @Override
-    public Integer removeById(Long id, Long updateTime) {
-        return merchantJoinRecordMapper.removeById(id, updateTime);
+    public Integer removeByJoinUid(Long joinUid, Long updateTime, Integer tenantId) {
+        return merchantJoinRecordMapper.removeByJoinUid(joinUid, updateTime, tenantId);
     }
     
     /**
      * 查询扫码人数成功的数量
+     *
      * @param employeeIds
      * @param startTime
      * @param endTime
@@ -541,6 +580,7 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
     
     /**
      * 查询扫码人数成功的数量
+     *
      * @param scanCodeQueryModel
      * @return
      */
@@ -548,5 +588,80 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
     @Override
     public Integer countSuccessByCondition(MerchantPromotionScanCodeQueryModel scanCodeQueryModel) {
         return merchantJoinRecordMapper.countSuccessByCondition(scanCodeQueryModel);
+    }
+    
+    /**
+     * 活动互斥判断:
+     * 1.是否成功参与过活动
+     * 2.平台用户，是否购买过套餐
+     * 3.平台用户，是否实名认证
+     *
+     * @param userInfo
+     * @param shareActivityId   邀请返券或邀请返现活动的id（其它活动该参数为null）
+     * @param shareActivityType 邀请返券-1,邀请返现-2（其它活动该参数为null）
+     */
+    @Override
+    public R canJoinActivity(UserInfo userInfo, UserInfoExtra userInfoExtra, Integer shareActivityId, Integer shareActivityType) {
+        Long uid = userInfo.getUid();
+        
+        // 是否成功参与过活动
+        Integer activitySource = userInfoExtra.getActivitySource();
+        if (Objects.nonNull(activitySource) && activitySource > NumberConstant.ZERO) {
+            String activityName = StringUtils.EMPTY;
+            switch (activitySource) {
+                case 1:
+                    activityName = UserInfoActivitySourceEnum.SUCCESS_SHARE_ACTIVITY.getDesc();
+                    break;
+                case 2:
+                    activityName = UserInfoActivitySourceEnum.SUCCESS_SHARE_MONEY_ACTIVITY.getDesc();
+                    break;
+                case 3:
+                    activityName = UserInfoActivitySourceEnum.SUCCESS_INVITATION_ACTIVITY.getDesc();
+                    break;
+                case 4:
+                    activityName = UserInfoActivitySourceEnum.SUCCESS_CHANNEL_ACTIVITY.getDesc();
+                    break;
+                case 5:
+                    activityName = UserInfoActivitySourceEnum.SUCCESS_MERCHANT_ACTIVITY.getDesc();
+                    break;
+                default:
+                    break;
+            }
+            
+            return R.fail("120121", "此活动仅限新用户参加，您已成功参与过" + activityName + "活动，无法参与，感谢您的支持");
+        }
+        
+        // 平台用户，需判断是否购买过套餐
+        if (userInfo.getPayCount() > NumberConstant.ZERO) {
+            log.warn("JOIN ACTIVITY WARN! Is not new user, payCount > 0, joinUid={}", uid);
+            return R.fail("120122", "此活动仅限新用户参加，您已是平台用户无法参与，感谢您的支持");
+        }
+        
+        // 平台用户，如果邀请返券或邀请返现的成功标准为实名认证，那么需判断是否已实名认证
+        if (Objects.nonNull(shareActivityId) && Objects.nonNull(shareActivityType)) {
+            boolean authFlag = false;
+            
+            if (Objects.equals(shareActivityType, UserInfoActivitySourceEnum.SUCCESS_SHARE_ACTIVITY.getCode())) {
+                // 邀请返券
+                ShareActivity shareActivity = shareActivityService.queryByIdFromCache(shareActivityId);
+                if (Objects.nonNull(shareActivity) && Objects.equals(shareActivity.getInvitationCriteria(), ActivityEnum.INVITATION_CRITERIA_REAL_NAME.getCode())) {
+                    authFlag = true;
+                }
+            } else {
+                // 邀请返现
+                ShareMoneyActivity shareMoneyActivity = shareMoneyActivityService.queryByIdFromCache(shareActivityId);
+                if (Objects.nonNull(shareMoneyActivity) && Objects.equals(shareMoneyActivity.getInvitationCriteria(), ActivityEnum.INVITATION_CRITERIA_REAL_NAME.getCode())) {
+                    authFlag = true;
+                }
+            }
+            
+            // 实名认证标准，并且userInfo已实名认证
+            if (authFlag && Objects.equals(userInfo.getAuthStatus(), UserInfo.AUTH_STATUS_REVIEW_PASSED)) {
+                log.warn("JOIN ACTIVITY WARN! Is not new user, already auth, joinUid={}", uid);
+                return R.fail("120122", "此活动仅限新用户参加，您已是平台用户无法参与，感谢您的支持");
+            }
+        }
+        
+        return R.ok();
     }
 }

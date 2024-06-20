@@ -355,6 +355,7 @@ public class TenantServiceImpl implements TenantService {
         return R.ok();
     }
 
+    @Slave
     @Override
     public R queryListTenant(TenantQuery tenantQuery) {
         List<TenantVO> tenantVOS = tenantMapper.queryAll(tenantQuery);
@@ -394,6 +395,7 @@ public class TenantServiceImpl implements TenantService {
         return tenant;
     }
 
+    @Slave
     @Override
     public R queryCount(TenantQuery tenantQuery) {
         return R.ok(tenantMapper.queryCount(tenantQuery));

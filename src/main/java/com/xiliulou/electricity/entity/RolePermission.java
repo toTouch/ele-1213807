@@ -1,26 +1,14 @@
 package com.xiliulou.electricity.entity;
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-            import com.baomidou.mybatisplus.annotation.IdType;
-            import com.baomidou.mybatisplus.annotation.TableId;
-            import lombok.AllArgsConstructor;
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import com.baomidou.mybatisplus.annotation.TableName;
+
 /**
  * (RolePermission)实体类
  *
@@ -33,15 +21,15 @@ import com.baomidou.mybatisplus.annotation.TableName;
 @Builder
 @TableName("t_role_permission")
 public class RolePermission {
-
+    
     @TableId(value = "id", type = IdType.AUTO)
     private Long id;
-
+    
     private Long roleId;
-
+    
     private Long pId;
-
+    
     public static final Integer DEL_NORMAL = 0;
+    
     public static final Integer DEL_DEL = 1;
-
 }

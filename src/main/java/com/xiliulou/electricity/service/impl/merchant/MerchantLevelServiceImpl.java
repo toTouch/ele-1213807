@@ -166,7 +166,7 @@ public class MerchantLevelServiceImpl implements MerchantLevelService {
                     //拉新人数
                     if (Objects.equals(merchantAttr.getUpgradeCondition(), MerchantConstant.UPGRADE_CONDITION_INVITATION)) {
                         if (Objects.nonNull(merchantLevelDTO.getInvitationUserCount()) && Objects.nonNull(request.getInvitationUserCount())
-                                && merchantLevelDTO.getInvitationUserCount() <= request.getInvitationUserCount()) {
+                                && merchantLevelDTO.getInvitationUserCount() < request.getInvitationUserCount()) {
                             return Triple.of(false, "100320", "当前等级设置的人数需小于上一级别，请进行调整");
                         }
                     }
@@ -174,7 +174,7 @@ public class MerchantLevelServiceImpl implements MerchantLevelService {
                     //续费人数
                     if (Objects.equals(merchantAttr.getUpgradeCondition(), MerchantConstant.UPGRADE_CONDITION_RENEWAL)) {
                         if (Objects.nonNull(merchantLevelDTO.getRenewalUserCount()) && Objects.nonNull(request.getRenewalUserCount())
-                                && merchantLevelDTO.getRenewalUserCount() <= request.getRenewalUserCount()) {
+                                && merchantLevelDTO.getRenewalUserCount() < request.getRenewalUserCount()) {
                             return Triple.of(false, "100320", "当前等级设置的人数需小于上一级别，请进行调整");
                         }
                     }
@@ -182,8 +182,8 @@ public class MerchantLevelServiceImpl implements MerchantLevelService {
                     //拉新人数+续费人数
                     if (Objects.equals(merchantAttr.getUpgradeCondition(), MerchantConstant.UPGRADE_CONDITION_ALL)) {
                         if ((Objects.nonNull(merchantLevelDTO.getInvitationUserCount()) && Objects.nonNull(request.getInvitationUserCount())
-                                && merchantLevelDTO.getInvitationUserCount() <= request.getInvitationUserCount()) || (Objects.nonNull(merchantLevelDTO.getRenewalUserCount())
-                                && Objects.nonNull(request.getRenewalUserCount()) && merchantLevelDTO.getRenewalUserCount() <= request.getRenewalUserCount())) {
+                                && merchantLevelDTO.getInvitationUserCount() < request.getInvitationUserCount()) || (Objects.nonNull(merchantLevelDTO.getRenewalUserCount())
+                                && Objects.nonNull(request.getRenewalUserCount()) && merchantLevelDTO.getRenewalUserCount() < request.getRenewalUserCount())) {
                             return Triple.of(false, "100320", "当前等级设置的人数需小于上一级别，请进行调整");
                         }
                     }
@@ -197,7 +197,7 @@ public class MerchantLevelServiceImpl implements MerchantLevelService {
                     //拉新人数
                     if (Objects.equals(merchantAttr.getUpgradeCondition(), MerchantConstant.UPGRADE_CONDITION_INVITATION)) {
                         if (Objects.nonNull(merchantLevelDTO.getInvitationUserCount()) && Objects.nonNull(request.getInvitationUserCount())
-                                && merchantLevelDTO.getInvitationUserCount() >= request.getInvitationUserCount()) {
+                                && merchantLevelDTO.getInvitationUserCount() > request.getInvitationUserCount()) {
                             return Triple.of(false, "100321", "当前等级设置的人数需大于下一级别，请进行调整");
                         }
                     }
@@ -205,7 +205,7 @@ public class MerchantLevelServiceImpl implements MerchantLevelService {
                     //续费人数
                     if (Objects.equals(merchantAttr.getUpgradeCondition(), MerchantConstant.UPGRADE_CONDITION_RENEWAL)) {
                         if (Objects.nonNull(merchantLevelDTO.getRenewalUserCount()) && Objects.nonNull(request.getRenewalUserCount())
-                                && merchantLevelDTO.getRenewalUserCount() >= request.getRenewalUserCount()) {
+                                && merchantLevelDTO.getRenewalUserCount() > request.getRenewalUserCount()) {
                             return Triple.of(false, "100321", "当前等级设置的人数需大于下一级别，请进行调整");
                         }
                     }
@@ -213,8 +213,8 @@ public class MerchantLevelServiceImpl implements MerchantLevelService {
                     //拉新人数+续费人数
                     if (Objects.equals(merchantAttr.getUpgradeCondition(), MerchantConstant.UPGRADE_CONDITION_ALL)) {
                         if ((Objects.nonNull(merchantLevelDTO.getInvitationUserCount()) && Objects.nonNull(request.getInvitationUserCount())
-                                && merchantLevelDTO.getInvitationUserCount() >= request.getInvitationUserCount()) || (Objects.nonNull(merchantLevelDTO.getRenewalUserCount())
-                                && Objects.nonNull(request.getRenewalUserCount()) && merchantLevelDTO.getRenewalUserCount() >= request.getRenewalUserCount())) {
+                                && merchantLevelDTO.getInvitationUserCount() > request.getInvitationUserCount()) || (Objects.nonNull(merchantLevelDTO.getRenewalUserCount())
+                                && Objects.nonNull(request.getRenewalUserCount()) && merchantLevelDTO.getRenewalUserCount() > request.getRenewalUserCount())) {
                             return Triple.of(false, "100321", "当前等级设置的人数需大于下一级别，请进行调整");
                         }
                     }

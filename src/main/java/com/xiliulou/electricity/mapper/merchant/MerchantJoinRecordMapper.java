@@ -66,7 +66,7 @@ public interface MerchantJoinRecordMapper extends BaseMapper<MerchantJoinRecord>
     
     MerchantJoinRecord selectSuccessRecordByJoinUid(@Param("joinUid") Long uid, @Param("tenantId") Integer tenantId);
     
-    Integer removeById(@Param("id") Long id, @Param("updateTime") Long updateTime);
+    Integer removeByJoinUid(@Param("joinUid") Long joinUid, @Param("updateTime") Long updateTime, @Param("tenantId") Integer tenantId);
     
     Integer countEmployeeScanCodeSuccessNum(@Param("uidList") List<Long> employeeIdList, @Param("startTime") Long startTime, @Param("endTime") Long endTime,
             @Param("status") Integer status, @Param("tenantId") Integer tenantId, @Param("channelEmployeeUid") Long channelEmployeeUid);

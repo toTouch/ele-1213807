@@ -354,8 +354,7 @@
         select tmwa.id,
             tmwa.uid,
             tm.name,
-            tu.phone,
-            tmwa.order_no,
+            tmwa.`order_no`,
             tmwa.amount,
             tmwa.remark,
             tmwa.status,
@@ -363,9 +362,12 @@
             tmwa.tenant_id,
             tmwa.del_flag,
             tmwa.create_time,
-            tmwa.update_time
+            tmwa.update_time,
+            tmwa.`check_time`,
+            tmwair.`transaction_batch_id`,
+            tmwair.`transaction_detail_id`
         from t_merchant_withdraw_application tmwa
-        left join t_user tu on tu.uid = tmwa.uid
+        LEFT JOIN `t_merchant_withdraw_application_record` tmwair on tmwair.`order_no` = tmwa.`order_no`
         left join t_merchant tm on tm.uid = tmwa.uid
         <where>
             tmwa.del_flag = 0
@@ -373,37 +375,35 @@
             <if test="uid != null">
                 and tmwa.uid = #{uid}
             </if>
-            
             <if test="status != null">
                 and tmwa.status = #{status}
             </if>
-            
             <if test="beginTime != null ">
                 and tmwa.receipt_time <![CDATA[ >=  ]]> #{beginTime}
             </if>
             <if test="endTime != null ">
                 and tmwa.receipt_time <![CDATA[ <=  ]]> #{endTime}
             </if>
-            
+            <if test=" transactionBatchId != null and transactionBatchId != '' "> AND tmwair.`transaction_batch_id` = #{transactionBatchId} </if>
+            <if test=" transactionDetailId != null and transactionDetailId != '' "> AND tmwair.`transaction_detail_id` = #{transactionDetailId} </if>
+            <if test=" checkTimeStart != null and checkTimeEnd != null "> AND tmwa.`check_time` BETWEEN #{checkTimeStart} AND #{checkTimeEnd} </if>
             <if test="franchiseeIds != null">
                 and tm.franchisee_id in
                 <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
                     #{id}
                 </foreach>
             </if>
-        
         </where>
         order by tmwa.create_time desc
         <if test="offset != null and size != null">
             limit #{offset}, #{size}
         </if>
-    
     </select>
     
     <select id="selectRecordListCount" resultType="Integer">
         select count(1)
         from t_merchant_withdraw_application tmwa
-        left join t_user tu on tu.uid = tmwa.uid
+        LEFT JOIN `t_merchant_withdraw_application_record` tmwair on tmwair.`order_no` = tmwa.`order_no`
         left join t_merchant tm on tm.uid = tmwa.uid
         <where>
             tmwa.del_flag = 0
@@ -411,25 +411,24 @@
             <if test="uid != null">
                 and tmwa.uid = #{uid}
             </if>
-            
             <if test="status != null">
                 and tmwa.status = #{status}
             </if>
-            
             <if test="beginTime != null ">
                 and tmwa.receipt_time <![CDATA[ >=  ]]> #{beginTime}
             </if>
             <if test="endTime != null ">
                 and tmwa.receipt_time <![CDATA[ <=  ]]> #{endTime}
             </if>
-    
+            <if test=" transactionBatchId != null and transactionBatchId != '' "> AND tmwair.`transaction_batch_id` = #{transactionBatchId} </if>
+            <if test=" transactionDetailId != null and transactionDetailId != '' "> AND tmwair.`transaction_detail_id` = #{transactionDetailId} </if>
+            <if test=" checkTimeStart != null and checkTimeEnd != null "> AND tmwa.`check_time` BETWEEN #{checkTimeStart} AND #{checkTimeEnd} </if>
             <if test="franchiseeIds != null">
                 and tm.franchisee_id in
                 <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
                     #{id}
                 </foreach>
             </if>
-
         </where>
     </select>
     

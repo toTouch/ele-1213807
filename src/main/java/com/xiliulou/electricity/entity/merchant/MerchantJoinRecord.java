@@ -77,6 +77,7 @@ public class MerchantJoinRecord {
     /**
      * 邀请保护期是否已过期(0-未过期，1-已过期)
      */
+    @Deprecated
     private Integer protectionStatus;
     
     /**

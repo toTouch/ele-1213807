@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.service.impl;
 
 import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.constant.TimeConstant;
@@ -131,6 +132,7 @@ public class InvitationActivityUserServiceImpl implements InvitationActivityUser
     }
 
     @Override
+    @Slave
     public List<InvitationActivityUserVO> selectByPage(InvitationActivityUserQuery query) {
         List<InvitationActivityUserVO> list = invitationActivityUserMapper.selectByPage(query);
         if (CollectionUtils.isEmpty(list)) {
@@ -145,6 +147,7 @@ public class InvitationActivityUserServiceImpl implements InvitationActivityUser
     }
 
     @Override
+    @Slave
     public Integer selectByPageCount(InvitationActivityUserQuery query) {
         return invitationActivityUserMapper.selectByPageCount(query);
     }
@@ -226,6 +229,7 @@ public class InvitationActivityUserServiceImpl implements InvitationActivityUser
     }
 
     @Override
+    @Slave
     public List<InvitationActivityUser> selectByUid(Long uid) {
         return this.invitationActivityUserMapper.selectByUid(uid);
     }

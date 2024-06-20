@@ -120,7 +120,11 @@ public class ElectricityBatteryDataVO {
      * 加盟商id
      */
     private Long franchiseeId;
-
+    
+    /**
+     * 过期时间
+     */
+    private Long memberCardExpireTime;
 
 
     /**

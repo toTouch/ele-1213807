@@ -46,7 +46,7 @@
         update_time, del_flag,tenant_id,temperature,battery_type,charge_v
         from t_electricity_cabinet_box
         where del_flag=0 AND electricity_cabinet_id=#{id}
-        and status=0 and usable_status=0
+        and status=0 and usable_status=0 and is_lock = 1
         <if test="fullCharged != null">
             and power >= #{fullCharged}
         </if>
@@ -155,6 +155,7 @@
             and usable_status = 0
             and del_flag = 0
             and status = 0
+            and is_lock = 1
             and power &gt;= #{fullV}
             <if test="type != null and type!= ''">
                 and battery_type = #{type}
@@ -236,7 +237,9 @@
 
     <select id="selectEleBoxAttrByEid" resultType="com.xiliulou.electricity.entity.ElectricityCabinetBox">
         select
-        id, status ,power ,sn, battery_type
+            id, electricity_cabinet_id, cell_no, sn, usable_status,
+            status,is_lock,is_fan,temperature,is_heat,is_light,
+            temperature,battery_type,power,charge_v,b_id
         from t_electricity_cabinet_box
         where
         electricity_cabinet_id = #{eid}
@@ -276,5 +279,33 @@
             (#{item.electricityCabinetId}, #{item.cellNo}, #{item.createTime}, #{item.updateTime}, #{item.delFlag}, #{item.tenantId})
         </foreach>
     </insert>
+    
+    <select id="selectAllBoxByBatteryId" resultType="com.xiliulou.electricity.entity.ElectricityCabinetBox">
+        SELECT id,
+               electricity_cabinet_id,
+               cell_no,
+               sn,
+               usable_status,
+               status,
+               is_lock,
+               is_fan,
+               is_heat,
+               is_light,
+               create_time,
+               update_time,
+               del_flag,
+               tenant_id,
+               temperature,
+               battery_type,
+               charge_v,
+               charge_a,
+               version,
+               lock_type,
+               power,
+               empty_grid_start_time
+        FROM t_electricity_cabinet_box
+        WHERE electricity_cabinet_id = #{eid}
+          AND del_flag = 0
+    </select>
 
 </mapper>

@@ -32,8 +32,8 @@
         from t_join_share_money_activity_history
     </sql>
     
-    <update id="removeById">
-        update t_join_share_money_activity_history set del_flag = 1, update_time = #{updateTime} where id = #{id}
+    <update id="removeByJoinUid">
+        update t_join_share_money_activity_history set del_flag = 1, update_time = #{updateTime} where join_uid = #{joinUid} and tenant_id = #{tenantId} and status = 2
     </update>
     
     <!--通过实体作为筛选条件查询-->

@@ -3,6 +3,7 @@ package com.xiliulou.electricity.service.impl.merchant;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.merchant.MerchantInviterModifyRecord;
+import com.xiliulou.electricity.enums.UserInfoActivitySourceEnum;
 import com.xiliulou.electricity.enums.merchant.MerchantInviterSourceEnum;
 import com.xiliulou.electricity.mapper.merchant.MerchantInviterModifyRecordMapper;
 import com.xiliulou.electricity.query.merchant.MerchantInviterModifyRecordQueryModel;
@@ -58,7 +59,7 @@ public class MerchantInviterModifyRecordServiceImpl implements MerchantInviterMo
             BeanUtils.copyProperties(item, recordVO);
             
             Integer inviterSource = MerchantInviterSourceEnum.MERCHANT_INVITER_SOURCE_USER_FOR_VO.getCode();
-            if (Objects.equals(item.getOldInviterSource(), MerchantInviterSourceEnum.MERCHANT_INVITER_SOURCE_MERCHANT.getCode())) {
+            if (Objects.equals(item.getOldInviterSource(), UserInfoActivitySourceEnum.SUCCESS_MERCHANT_ACTIVITY.getCode())) {
                 inviterSource = MerchantInviterSourceEnum.MERCHANT_INVITER_SOURCE_MERCHANT_FOR_VO.getCode();
             }
             

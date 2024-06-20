@@ -2,11 +2,14 @@ package com.xiliulou.electricity.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.core.web.R;
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.constant.TimeConstant;
 import com.xiliulou.electricity.entity.*;
+import com.xiliulou.electricity.enums.UserInfoActivitySourceEnum;
 import com.xiliulou.electricity.mapper.JoinShareActivityRecordMapper;
 import com.xiliulou.electricity.service.*;
+import com.xiliulou.electricity.service.merchant.MerchantJoinRecordService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.AESUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
@@ -14,7 +17,6 @@ import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -54,6 +56,12 @@ public class JoinShareActivityRecordServiceImpl implements JoinShareActivityReco
     @Autowired
     JoinShareMoneyActivityHistoryService joinShareMoneyActivityHistoryService;
     
+    @Resource
+    private MerchantJoinRecordService merchantJoinRecordService;
+    
+    @Resource
+    private UserInfoExtraService userInfoExtraService;
+    
     /**
      * 修改数据
      *
@@ -84,21 +92,27 @@ public class JoinShareActivityRecordServiceImpl implements JoinShareActivityReco
         //用户是否可用
         UserInfo userInfo = userInfoService.queryByUidFromCache(user.getUid());
         if (Objects.isNull(userInfo) || Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
-            log.error("joinActivity  ERROR! not found userInfo,uid:{} ", user.getUid());
+            log.warn("joinActivity  WARN! not found userInfo,uid:{} ", user.getUid());
             return R.fail("ELECTRICITY.0024", "用户已被禁用");
+        }
+    
+        UserInfoExtra userInfoExtra = userInfoExtraService.queryByUidFromCache(user.getUid());
+        if (Objects.isNull(userInfoExtra)) {
+            log.warn("joinActivity  WARN! not found userInfoExtra,uid:{} ", user.getUid());
+            return R.fail("ELECTRICITY.0024", "未找到用户");
         }
     
         //查找活动
         ShareActivity shareActivity = shareActivityService.queryByStatus(activityId);
         if (Objects.isNull(shareActivity)) {
-            log.error("joinActivity  ERROR! not found Activity ! ActivityId:{} ", activityId);
+            log.warn("joinActivity WARN! not found Activity ! ActivityId:{} ", activityId);
             return R.fail("ELECTRICITY.00106", "活动已下架");
         }
     
         //查找分享的用户
         User oldUser = userService.queryByUidFromCache(uid);
         if (Objects.isNull(oldUser)) {
-            log.error("joinActivity  ERROR! not found oldUser ,uid :{}", uid);
+            log.warn("joinActivity  WARN! not found oldUser ,uid :{}", uid);
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
     
@@ -107,40 +121,18 @@ public class JoinShareActivityRecordServiceImpl implements JoinShareActivityReco
             return R.ok();
         }
     
-        //判断是否为重复扫邀请人的码
-        Pair<Boolean, String> sameInviterResult = joinShareActivityHistoryService.checkTheActivityFromSameInviter(user.getUid(), oldUser.getUid(), activityId.longValue());
-        if (sameInviterResult.getLeft()) {
-            if (sameInviterResult.getRight().isEmpty()) {
-                return R.ok();
-            } else {
-                return R.fail("110205", sameInviterResult.getRight());
-            }
+        // 530活动互斥判断
+        R canJoinActivity = merchantJoinRecordService.canJoinActivity(userInfo, userInfoExtra, activityId, UserInfoActivitySourceEnum.SUCCESS_SHARE_ACTIVITY.getCode());
+        if (!canJoinActivity.isSuccess()) {
+            return canJoinActivity;
         }
     
-        log.info("start join share activity, join uid = {}, inviter uid = {}, activity id = {}", user.getUid(), oldUser.getUid(), activityId);
-    
-        //2、别人点击链接登录
-    
-        //2.1 判断此人是否首次购买月卡,已购买月卡,则直接返回首页
-        //3.0扩展了活动范围，扩展到登录注册，实名认证及购买套餐。所以不需要再判断是否购买过套餐
-        /*if (Boolean.TRUE.equals(checkUserIsCard(userInfo))) {
-            return R.ok();
-        }*/
-    
-        //3.0修改为用户只能参加邀请返券或者邀请返现其中一种活动。如果已经参与了，则提示已参加对应活动。不允许参加多个活动。如果邀请活动未完成，但是已过期或者下架了。则还可以正常参加。
-        //1. 查看当前用户是否存在正在参加或者已成功参加的活动，如果是，则提示已参加过邀请活动。
-        //2. 若以上都没有参与过，则查看是否存在邀请返现的活动，判断规则和1一致。
+        // 判断是否已经参与过该活动
         List<JoinShareActivityHistory> joinShareActivityHistories = joinShareActivityHistoryService.queryUserJoinedActivity(user.getUid(), tenantId);
         if (CollectionUtils.isNotEmpty(joinShareActivityHistories)) {
             return R.fail("110206", "已参加过邀请返券活动");
         }
-    
-        //查询当前用户是否参与了邀请返现活动
-        List<JoinShareMoneyActivityHistory> joinShareMoneyActivityHistories = joinShareMoneyActivityHistoryService.queryUserJoinedActivity(user.getUid(), tenantId);
-        if (CollectionUtils.isNotEmpty(joinShareMoneyActivityHistories)) {
-            return R.fail("110207", "已参加过邀请返现活动");
-        }
-    
+        
         // 计算活动有效期
         long expiredTime;
         if (Objects.nonNull(shareActivity.getHours()) && !Objects.equals(shareActivity.getHours(), NumberConstant.ZERO)) {
@@ -176,10 +168,14 @@ public class JoinShareActivityRecordServiceImpl implements JoinShareActivityReco
         joinShareActivityHistory.setActivityId(joinShareActivityRecord.getActivityId());
         joinShareActivityHistoryService.insert(joinShareActivityHistory);
     
+        // 530会员扩展表更新最新参与活动类型
+        userInfoExtraService.updateByUid(UserInfoExtra.builder().uid(user.getUid()).latestActivitySource(UserInfoActivitySourceEnum.SUCCESS_SHARE_ACTIVITY.getCode()).build());
+    
         return R.ok();
     }
 
     @Override
+    @Slave
     public JoinShareActivityRecord queryByJoinUid(Long uid) {
         return joinShareActivityRecordMapper.selectOne(new LambdaQueryWrapper<JoinShareActivityRecord>()
                 .eq(JoinShareActivityRecord::getJoinUid, uid).gt(JoinShareActivityRecord::getExpiredTime, System.currentTimeMillis())

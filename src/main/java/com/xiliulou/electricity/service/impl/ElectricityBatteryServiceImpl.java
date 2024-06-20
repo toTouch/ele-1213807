@@ -208,7 +208,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
         
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
-            log.error("ELE ERROR! not found user ");
+            log.warn("ELE WARN! not found user ");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         
@@ -261,7 +261,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
         
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
-            log.error("ELE ERROR! not found user ");
+            log.warn("ELE WARN! not found user ");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         
@@ -343,7 +343,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
         Franchisee franchisee = franchiseeService.queryByIdFromCache(franchiseeId);
         if (Objects.isNull(franchisee)) {
             log.error("Franchisee id is invalid! uid = {}", uid);
-            return R.fail("ELECTRICITY.0038", "未找到加盟商");
+            return R.fail("ELECTRICITY.0038", "请选择加盟商");
         }
         
         // 校验库房

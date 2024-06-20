@@ -3,6 +3,7 @@ package com.xiliulou.electricity.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.core.web.R;
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mapper.StoreGoodsMapper;
 import com.xiliulou.electricity.query.ElectricityCarQuery;
@@ -118,6 +119,7 @@ public class StoreGoodsServiceImpl implements StoreGoodsService {
         return R.ok(storeGoodsMapper.update(storeGoods));
     }
 
+    @Slave
     @Override
     public R queryList(StoreShopsQuery storeShopsQuery) {
         List<StoreGoodsVO> storeGoodsList = storeGoodsMapper.queryList(storeShopsQuery);
@@ -155,11 +157,13 @@ public class StoreGoodsServiceImpl implements StoreGoodsService {
         return R.ok(result);
     }
 
+    @Slave
     @Override
     public R queryCount(StoreShopsQuery storeShopsQuery) {
         return R.ok(storeGoodsMapper.queryCount(storeShopsQuery));
     }
 
+    @Slave
     @Override
     public StoreGoods queryByStoreIdAndCarModelId(Long storeId, Integer carModelId) {
         return storeGoodsMapper.selectOne(new LambdaQueryWrapper<StoreGoods>().eq(StoreGoods::getStoreId, storeId).eq(StoreGoods::getCarModelId, carModelId));

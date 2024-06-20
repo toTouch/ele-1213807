@@ -12,21 +12,23 @@ import com.xiliulou.electricity.entity.ChannelActivityHistory;
 import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
 import com.xiliulou.electricity.entity.Tenant;
 import com.xiliulou.electricity.entity.User;
-import com.xiliulou.electricity.entity.UserBatteryMemberCard;
 import com.xiliulou.electricity.entity.UserChannel;
 import com.xiliulou.electricity.entity.UserInfo;
+import com.xiliulou.electricity.entity.UserInfoExtra;
+import com.xiliulou.electricity.enums.UserInfoActivitySourceEnum;
 import com.xiliulou.electricity.mapper.ChannelActivityHistoryMapper;
 import com.xiliulou.electricity.query.ChannelActivityHistoryQuery;
 import com.xiliulou.electricity.service.CarMemberCardOrderService;
 import com.xiliulou.electricity.service.ChannelActivityHistoryService;
 import com.xiliulou.electricity.service.ChannelActivityService;
 import com.xiliulou.electricity.service.ElectricityMemberCardOrderService;
-import com.xiliulou.electricity.service.ElectricityMemberCardService;
 import com.xiliulou.electricity.service.TenantService;
 import com.xiliulou.electricity.service.UserBatteryMemberCardService;
 import com.xiliulou.electricity.service.UserChannelService;
+import com.xiliulou.electricity.service.UserInfoExtraService;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.UserService;
+import com.xiliulou.electricity.service.merchant.MerchantJoinRecordService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.AESUtils;
 import com.xiliulou.electricity.utils.DesensitizationUtil;
@@ -35,12 +37,9 @@ import com.xiliulou.electricity.vo.ChannelActivityCodeVo;
 import com.xiliulou.electricity.vo.ChannelActivityHistoryExcelVo;
 import com.xiliulou.electricity.vo.ChannelActivityHistoryVo;
 import com.xiliulou.electricity.vo.FinalJoinChannelActivityHistoryVO;
-import com.xiliulou.electricity.vo.UserInfoExcelVO;
-import org.apache.commons.collections.ArrayStack;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Triple;
-import org.checkerframework.checker.units.qual.A;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -100,6 +99,12 @@ public class ChannelActivityHistoryServiceImpl implements ChannelActivityHistory
     
     @Autowired
     private ElectricityMemberCardOrderService electricityMemberCardOrderService;
+    
+    @Resource
+    private MerchantJoinRecordService merchantJoinRecordService;
+    
+    @Resource
+    private UserInfoExtraService userInfoExtraService;
     
     /**
      * 通过ID查询单条数据从DB
@@ -178,11 +183,13 @@ public class ChannelActivityHistoryServiceImpl implements ChannelActivityHistory
      * 查询邀请人邀请数量
      */
     @Override
+    @Slave
     public Long queryInviteCount(Long uid) {
         return this.channelActivityHistoryMapper.queryInviteCount(uid);
     }
     
     @Override
+    @Slave
     public ChannelActivityHistory queryByUid(Long uid) {
         return this.channelActivityHistoryMapper.queryByUid(uid);
     }
@@ -358,6 +365,7 @@ public class ChannelActivityHistoryServiceImpl implements ChannelActivityHistory
             return R.fail("100459", "渠道活动二维码内容不合法");
         }
     
+        
         //用户是否存在，
         User inviteUser = userService.queryByUidFromCache(inviteUid);
         if (Objects.isNull(inviteUser)) {
@@ -371,7 +379,17 @@ public class ChannelActivityHistoryServiceImpl implements ChannelActivityHistory
             return R.fail("100001", "渠道人用户不存在");
         }
         
-        // 是否参与过邀请活动，
+        // 530活动互斥判断
+        UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
+        UserInfoExtra userInfoExtra = userInfoExtraService.queryByUidFromCache(uid);
+        if (Objects.nonNull(userInfo) && Objects.nonNull(userInfoExtra)) {
+            R canJoinActivity = merchantJoinRecordService.canJoinActivity(userInfo, userInfoExtra, null, null);
+            if (!canJoinActivity.isSuccess()) {
+                return canJoinActivity;
+            }
+        }
+    
+        // 是否参与过邀请活动
         ChannelActivityHistory channelActivityHistory = this.queryByUid(uid);
         if (Objects.nonNull(channelActivityHistory)) {
             log.error("USER CHANNEL SCAN ERROR! user has participated in activities! user={}", uid);
@@ -384,12 +402,6 @@ public class ChannelActivityHistoryServiceImpl implements ChannelActivityHistory
             log.error("USER CHANNEL SCAN ERROR! user is channel user! user={}", uid);
             return R.ok();
         }
-        
-        // 是否购买过套餐
-        if (userBuyMemberCardCheck(uid)) {
-            log.error("USER CHANNEL SCAN ERROR! user has buy memberCard ! user={}", uid);
-            return R.fail("100462", "您是老用户，无法参加渠道活动");
-        }
     
         ChannelActivityHistory saveChannelActivityHistory = new ChannelActivityHistory();
         saveChannelActivityHistory.setUid(uid);
@@ -400,6 +412,9 @@ public class ChannelActivityHistoryServiceImpl implements ChannelActivityHistory
         saveChannelActivityHistory.setUpdateTime(System.currentTimeMillis());
         saveChannelActivityHistory.setTenantId(TenantContextHolder.getTenantId());
         insert(saveChannelActivityHistory);
+    
+        // 530会员扩展表更新最新参与活动类型
+        userInfoExtraService.updateByUid(UserInfoExtra.builder().uid(uid).latestActivitySource(UserInfoActivitySourceEnum.SUCCESS_CHANNEL_ACTIVITY.getCode()).build());
     
         return R.ok();
     }
@@ -526,8 +541,8 @@ public class ChannelActivityHistoryServiceImpl implements ChannelActivityHistory
     }
     
     @Override
-    public Integer removeById(Long id, Long updateTime) {
-        return channelActivityHistoryMapper.removeById(id, updateTime);
+    public Integer removeByJoinUid(Long joinUid, Long updateTime, Integer tenantId) {
+        return channelActivityHistoryMapper.removeByJoinUid(joinUid, updateTime, tenantId);
     }
     
     private String queryStatus(Integer status) {

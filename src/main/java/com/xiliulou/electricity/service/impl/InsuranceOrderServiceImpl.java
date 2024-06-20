@@ -315,6 +315,7 @@ public class InsuranceOrderServiceImpl extends ServiceImpl<InsuranceOrderMapper,
         return R.fail("ELECTRICITY.0099", "下单失败");
     }
     
+    @Slave
     @Override
     public InsuranceOrder queryByOrderId(String orderNo) {
         return insuranceOrderMapper.selectOne(new LambdaQueryWrapper<InsuranceOrder>().eq(InsuranceOrder::getOrderId, orderNo));
@@ -330,6 +331,7 @@ public class InsuranceOrderServiceImpl extends ServiceImpl<InsuranceOrderMapper,
         return insuranceOrderMapper.updateIsUseByOrderId(insuranceOrder);
     }
     
+    @Slave
     @Override
     public R queryInsurance() {
         
@@ -365,6 +367,7 @@ public class InsuranceOrderServiceImpl extends ServiceImpl<InsuranceOrderMapper,
         return R.ok(franchiseeInsuranceService.queryByFranchiseeIdAndSimpleBatteryType(userInfo.getFranchiseeId(), batteryType, tenantId));
     }
     
+    @Slave
     @Override
     public R homeOneQueryInsurance(Integer model, Long franchiseeId) {
         //用户区分
@@ -493,6 +496,7 @@ public class InsuranceOrderServiceImpl extends ServiceImpl<InsuranceOrderMapper,
         return Triple.of(true, "", insuranceOrder);
     }
     
+    @Slave
     @Override
     public List<InsuranceOrderVO> queryListByStatus(InsuranceOrderQuery insuranceOrderQuery) {
         List<InsuranceOrderVO> insuranceOrderVOList = insuranceOrderMapper.queryList(insuranceOrderQuery);

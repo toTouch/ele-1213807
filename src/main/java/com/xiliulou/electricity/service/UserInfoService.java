@@ -3,6 +3,7 @@ package com.xiliulou.electricity.service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.UserInfo;
+import com.xiliulou.electricity.entity.UserOauthBind;
 import com.xiliulou.electricity.query.UserInfoBatteryAddAndUpdate;
 import com.xiliulou.electricity.query.UserInfoCarAddAndUpdate;
 import com.xiliulou.electricity.query.UserInfoQuery;
@@ -189,8 +190,15 @@ public interface UserInfoService extends IService<UserInfo> {
      * 查询用户的邀请人名称
      *
      * @param uid
-     * @param tenantId
      * @return
      */
-    String queryFinalInviterUserName(Long uid, Integer tenantId);
+    String queryFinalInviterUserName(Long uid);
+    
+    /**
+     * <p>
+     *    Description: 强制用户下线
+     * </p>
+     * @param userOauthBinds userOauthBinds
+    */
+    void clearUserOauthBindToken(List<UserOauthBind> userOauthBinds, String clientId);
 }

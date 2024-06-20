@@ -370,25 +370,23 @@ public class UserInfoGroupDetailServiceImpl implements UserInfoGroupDetailServic
             }
             
             List<UserInfoGroupDetail> list = new ArrayList<>();
-            if (CollectionUtils.isNotEmpty(groupIds)) {
-                // 超限判断
-                Integer limitGroupNum = userInfoGroupDetailMapper.countGroupByUid(uid);
-                if (Objects.nonNull(limitGroupNum) && ((limitGroupNum + groupIds.size()) > UserInfoGroupConstant.USER_GROUP_LIMIT)) {
-                    return R.fail("120114", "用户绑定的分组数量已达上限10个");
-                }
-                
-                long nowTime = System.currentTimeMillis();
-                
-                groupIds.parallelStream().forEach(groupId -> {
-                    UserInfoGroup userInfoGroup = userInfoGroupService.queryByIdFromCache(groupId);
-                    if (Objects.nonNull(userInfoGroup)) {
-                        UserInfoGroupDetail detail = UserInfoGroupDetail.builder().groupNo(userInfoGroup.getGroupNo()).uid(uid).franchiseeId(userInfoGroup.getFranchiseeId())
-                                .tenantId(tenantId).createTime(nowTime).updateTime(nowTime).operator(operator).build();
-                        
-                        list.add(detail);
-                    }
-                });
+            // 超限判断
+            Integer limitGroupNum = userInfoGroupDetailMapper.countGroupByUid(uid);
+            if (Objects.nonNull(limitGroupNum) && ((limitGroupNum + groupIds.size()) > UserInfoGroupConstant.USER_GROUP_LIMIT)) {
+                return R.fail("120114", "用户绑定的分组数量已达上限10个");
             }
+    
+            long nowTime = System.currentTimeMillis();
+    
+            groupIds.forEach(groupId -> {
+                UserInfoGroup userInfoGroup = userInfoGroupService.queryByIdFromCache(groupId);
+                if (Objects.nonNull(userInfoGroup)) {
+                    UserInfoGroupDetail detail = UserInfoGroupDetail.builder().groupNo(userInfoGroup.getGroupNo()).uid(uid).franchiseeId(userInfoGroup.getFranchiseeId())
+                            .tenantId(tenantId).createTime(nowTime).updateTime(nowTime).operator(operator).build();
+            
+                    list.add(detail);
+                }
+            });
             
             if (CollectionUtils.isNotEmpty(list)) {
                 Integer integer = this.batchInsert(list);
@@ -440,6 +438,11 @@ public class UserInfoGroupDetailServiceImpl implements UserInfoGroupDetailServic
         
             userInfoGroupDetailHistoryService.insertOne(detail);
         }
+    }
+    
+    @Override
+    public Integer deleteByGroupNo(String groupNo, Integer tenantId) {
+        return userInfoGroupDetailMapper.deleteByGroupNo(groupNo, tenantId);
     }
     
 }

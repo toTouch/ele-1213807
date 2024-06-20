@@ -146,18 +146,19 @@ public class OtherSettingParamTemplateRequestDTO {
     private Integer enableBatteryBMSExceptionCheck;
     
     private List<BatteryMultiConfigDTO> settingParamTemplate;
-
+    
     /**
      * 是否轮循设参
      */
     private Integer isWheelCycleParameter;
-
+    
     /**
      * 充电策略最大电流
      */
     private Integer defaultChargeStorageMaxA;
+    
     private Integer aOpenChargeStrategy;
-
+    
     /**
      * 高温告警阈值
      */
@@ -267,9 +268,29 @@ public class OtherSettingParamTemplateRequestDTO {
      * 单个充电器最大功率
      */
     private Integer cellChargingMaxPower;
+    
     /**
      * 多电告警/多电柜机
      */
     private Integer maxBatteryCountAlarm;
     
+    /**
+     * 自动开灯
+     */
+    private Integer autoLightStatus;
+    
+    /**
+     * 开灯时间
+     */
+    private String openLightTime;
+    
+    /**
+     * 关灯时间
+     */
+    private String closeLightTime;
+    
+    /**
+     * 音量大小
+     */
+    private Integer volumeSize;
 }

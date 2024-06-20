@@ -2,6 +2,7 @@ package com.xiliulou.electricity.service.impl;
 
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.UserNotice;
 import com.xiliulou.electricity.mapper.UserNoticeMapper;
@@ -29,6 +30,7 @@ public class UserNoticeServiceImpl implements UserNoticeService {
 	@Resource
 	private RedisService redisService;
 
+	@Slave
 	@Override
 	public R queryUserNotice() {
 		//tenant

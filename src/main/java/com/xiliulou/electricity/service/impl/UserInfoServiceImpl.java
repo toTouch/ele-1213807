@@ -55,22 +55,25 @@ import com.xiliulou.electricity.entity.UserCar;
 import com.xiliulou.electricity.entity.UserCarDeposit;
 import com.xiliulou.electricity.entity.UserCarMemberCard;
 import com.xiliulou.electricity.entity.UserInfo;
+import com.xiliulou.electricity.entity.UserInfoExtra;
 import com.xiliulou.electricity.entity.UserOauthBind;
 import com.xiliulou.electricity.entity.car.CarRentalPackageMemberTermPo;
 import com.xiliulou.electricity.entity.car.CarRentalPackagePo;
 import com.xiliulou.electricity.entity.enterprise.EnterpriseChannelUser;
 import com.xiliulou.electricity.entity.merchant.Merchant;
-import com.xiliulou.electricity.entity.merchant.MerchantJoinRecord;
 import com.xiliulou.electricity.enums.BatteryMemberCardBusinessTypeEnum;
 import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.enums.MemberTermStatusEnum;
+import com.xiliulou.electricity.enums.OverdueType;
 import com.xiliulou.electricity.enums.RentalPackageTypeEnum;
 import com.xiliulou.electricity.enums.SignStatusEnum;
+import com.xiliulou.electricity.enums.UserInfoActivitySourceEnum;
 import com.xiliulou.electricity.enums.YesNoEnum;
 import com.xiliulou.electricity.enums.enterprise.RentBatteryOrderTypeEnum;
 import com.xiliulou.electricity.enums.enterprise.UserCostTypeEnum;
 import com.xiliulou.electricity.enums.merchant.MerchantInviterCanModifyEnum;
 import com.xiliulou.electricity.enums.merchant.MerchantInviterSourceEnum;
+import com.xiliulou.electricity.event.publish.OverdueUserRemarkPublish;
 import com.xiliulou.electricity.mapper.UserInfoMapper;
 import com.xiliulou.electricity.query.UserInfoBatteryAddAndUpdate;
 import com.xiliulou.electricity.query.UserInfoCarAddAndUpdate;
@@ -149,10 +152,6 @@ import com.xiliulou.electricity.vo.DetailsBatteryInfoVo;
 import com.xiliulou.electricity.vo.DetailsCarInfoVo;
 import com.xiliulou.electricity.vo.DetailsUserInfoVo;
 import com.xiliulou.electricity.vo.EleBatteryServiceFeeVO;
-import com.xiliulou.electricity.vo.FinalJoinChannelActivityHistoryVO;
-import com.xiliulou.electricity.vo.FinalJoinInvitationActivityHistoryVO;
-import com.xiliulou.electricity.vo.FinalJoinShareActivityHistoryVo;
-import com.xiliulou.electricity.vo.FinalJoinShareMoneyActivityHistoryVo;
 import com.xiliulou.electricity.vo.FreeDepositUserInfoVo;
 import com.xiliulou.electricity.vo.HomePageUserByWeekDayVo;
 import com.xiliulou.electricity.vo.InsuranceUserInfoVo;
@@ -201,7 +200,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -413,6 +411,8 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     @Resource
     private UserInfoGroupDetailService userInfoGroupDetailService;
     
+    @Autowired
+    private OverdueUserRemarkPublish overdueUserRemarkPublish;
     /**
      * 分页查询
      *
@@ -690,7 +690,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                 item.setFranchiseeName(Objects.isNull(franchisee) ? "" : franchisee.getName());
                 
                 //获取租车用户邀请人
-                item.setInviterUserName(queryFinalInviterUserName(item.getUid(), userInfoQuery.getTenantId()));
+                item.setInviterUserName(queryFinalInviterUserName(item.getUid()));
                 
             });
         }, threadPool).exceptionally(e -> {
@@ -1112,6 +1112,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         return R.ok();
     }
     
+    @Slave
     @Override
     public R queryUserAuthInfo(UserInfoQuery userInfoQuery) {
         List<UserInfo> userInfos = userInfoMapper.queryList(userInfoQuery);
@@ -1169,6 +1170,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         return R.ok(count);
     }
     
+    @Slave
     @Override
     public R queryAuthenticationCount(UserInfoQuery userInfoQuery) {
         return R.ok(userInfoMapper.queryAuthenticationCount(userInfoQuery));
@@ -1201,7 +1203,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         
         //未实名认证
         if (!Objects.equals(oldUserInfo.getAuthStatus(), UserInfo.AUTH_STATUS_REVIEW_PASSED)) {
-            log.error("WEBBIND ERROR! user not auth! uid={} ", oldUserInfo.getUid());
+            log.warn("WEBBIND WARN! user not auth! uid={} ", oldUserInfo.getUid());
             return R.fail("ELECTRICITY.0041", "未实名认证");
         }
         
@@ -1213,7 +1215,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(oldUserInfo.getUid());
         if (!(Objects.equals(oldUserInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES) || Objects.equals(oldUserInfo.getCarBatteryDepositStatus(),
                 YesNoEnum.YES.getCode()))) {
-            log.error("WEBBIND ERROR ERROR! not pay deposit! uid={} ", oldUserInfo.getUid());
+            log.warn("WEBBIND ERROR WARN! not pay deposit! uid={} ", oldUserInfo.getUid());
             return R.fail("ELECTRICITY.0042", "未缴纳押金");
         }
         
@@ -1223,23 +1225,23 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             
             UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(oldUserInfo.getUid());
             if (Objects.isNull(userBatteryMemberCard)) {
-                log.warn("WEBBIND ERROR ERROR! user haven't memberCard uid={}", oldUserInfo.getUid());
+                log.warn("WEBBIND ERROR WARN! user haven't memberCard uid={}", oldUserInfo.getUid());
                 return R.fail("100210", "用户未开通套餐");
             }
             
             if (Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE_REVIEW)) {
-                log.warn("WEBBIND ERROR ERROR! user's member card is stop! uid={}", oldUserInfo.getUid());
+                log.warn("WEBBIND ERROR WARN! user's member card is stop! uid={}", oldUserInfo.getUid());
                 return R.fail("100211", "换电套餐停卡审核中");
             }
             
             if (Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE)) {
-                log.warn("WEBBIND ERROR ERROR! user's member card is stop! uid={}", oldUserInfo.getUid());
+                log.warn("WEBBIND ERROR WARN! user's member card is stop! uid={}", oldUserInfo.getUid());
                 return R.fail("100211", "换电套餐已暂停");
             }
             
             BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());
             if (Objects.isNull(batteryMemberCard)) {
-                log.error("WEBBIND ERROR ERROR! not found batteryMemberCard,uid={},mid={}", oldUserInfo.getUid(), userBatteryMemberCard.getMemberCardId());
+                log.warn("WEBBIND ERROR WARN! not found batteryMemberCard,uid={},mid={}", oldUserInfo.getUid(), userBatteryMemberCard.getMemberCardId());
                 return R.fail("ELECTRICITY.00121", "套餐不存在");
             }
             
@@ -1260,6 +1262,21 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                 log.warn("WEBBIND ERROR WARN! battery memberCard is Expire,uid={}", oldUserInfo.getUid());
                 return R.fail("ELECTRICITY.0023", "套餐已过期");
             }
+    
+            //判断车电关联是否可租电
+            ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(oldUserInfo.getTenantId());
+            if (Objects.nonNull(electricityConfig) && Objects.equals(electricityConfig.getIsOpenCarBatteryBind(), ElectricityConfig.ENABLE_CAR_BATTERY_BIND)) {
+                if (Objects.equals(oldUserInfo.getCarDepositStatus(), UserInfo.CAR_DEPOSIT_STATUS_YES)) {
+                    try {
+                        if (carRentalPackageMemberTermBizService.isExpirePackageOrder(oldUserInfo.getTenantId(), oldUserInfo.getUid())) {
+                            log.error("WEBBIND ERROR WARN! user car memberCard expire,uid={}", oldUserInfo.getUid());
+                            return R.fail("100233", "租车套餐已过期");
+                        }
+                    } catch (Exception e) {
+                        log.error("WEBBIND ERROR WARN! acquire car membercard expire result fail,uid={}", oldUserInfo.getUid(), e);
+                    }
+                }
+            }
         } else {
             carRentalPackageMemberTermBizService.verifyMemberSwapBattery(oldUserInfo.getTenantId(), oldUserInfo.getUid());
         }
@@ -1267,16 +1284,16 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         //判断电池是否存在，或者已经被绑定
         ElectricityBattery oldElectricityBattery = electricityBatteryService.queryByBindSn(userInfoBatteryAddAndUpdate.getInitElectricityBatterySn());
         if (Objects.isNull(oldElectricityBattery)) {
-            log.error("WEBBIND ERROR ERROR! not found Battery! batteryName={}", userInfoBatteryAddAndUpdate.getInitElectricityBatterySn());
+            log.warn("WEBBIND ERROR WARN! not found Battery! batteryName={}", userInfoBatteryAddAndUpdate.getInitElectricityBatterySn());
             return R.fail("ELECTRICITY.0020", "未找到电池");
         }
         if (Objects.nonNull(oldElectricityBattery.getUid()) && !Objects.equals(oldElectricityBattery.getUid(), userInfoBatteryAddAndUpdate.getUid())) {
-            log.error("WEBBIND ERROR ERROR! battery is bind user! sn={} ", userInfoBatteryAddAndUpdate.getInitElectricityBatterySn());
+            log.warn("WEBBIND ERROR WARN! battery is bind user! sn={} ", userInfoBatteryAddAndUpdate.getInitElectricityBatterySn());
             return R.fail("100019", "该电池已经绑定用户");
         }
         
         if (!Objects.equals(oldUserInfo.getFranchiseeId(), oldElectricityBattery.getFranchiseeId())) {
-            log.error("WEBBIND ERROR ERROR! franchiseeId not equals,userFranchiseeId={},batteryFranchiseeId={}", oldUserInfo.getFranchiseeId(),
+            log.warn("WEBBIND ERROR WARN! franchiseeId not equals,userFranchiseeId={},batteryFranchiseeId={}", oldUserInfo.getFranchiseeId(),
                     oldElectricityBattery.getFranchiseeId());
             return R.fail("100371", "电池加盟商与用户加盟商不一致");
         }
@@ -1451,12 +1468,12 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         
         //未实名认证
         if (!Objects.equals(oldUserInfo.getAuthStatus(), UserInfo.AUTH_STATUS_REVIEW_PASSED)) {
-            log.error("WEBUNBIND ERROR! user not auth,uid={} ", oldUserInfo.getUid());
+            log.warn("WEBUNBIND WARN! user not auth,uid={} ", oldUserInfo.getUid());
             return R.fail("ELECTRICITY.0041", "未实名认证");
         }
         
         if (!Objects.equals(oldUserInfo.getBatteryRentStatus(), UserInfo.BATTERY_RENT_STATUS_YES)) {
-            log.error("WEBUNBIND ERROR! not  rent battery,uid={}", oldUserInfo.getUid());
+            log.warn("WEBUNBIND WARN! not  rent battery,uid={}", oldUserInfo.getUid());
             return R.fail("ELECTRICITY.0033", "用户未绑定电池");
         }
         
@@ -1466,7 +1483,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         
         ElectricityBattery oldElectricityBattery = electricityBatteryService.queryByUid(oldUserInfo.getUid());
         if (Objects.isNull(oldElectricityBattery)) {
-            log.error("WEBUNBIND ERROR! not found user bind battery,uid={}", oldUserInfo.getUid());
+            log.warn("WEBUNBIND WARN! not found user bind battery,uid={}", oldUserInfo.getUid());
             return R.fail("ELECTRICITY.0020", "未找到电池");
         }
         
@@ -1475,23 +1492,23 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             //判断电池滞纳金
             UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(oldUserInfo.getUid());
             if (Objects.isNull(userBatteryMemberCard)) {
-                log.warn("WEBBIND ERROR ERROR! user haven't memberCard uid={}", oldUserInfo.getUid());
+                log.warn("WEBBIND WARN! user haven't memberCard uid={}", oldUserInfo.getUid());
                 return R.fail("100210", "用户未开通套餐");
             }
             
             if (Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE_REVIEW)) {
-                log.warn("WEBBIND ERROR ERROR! user's member card is stop! uid={}", oldUserInfo.getUid());
+                log.warn("WEBBIND WARN! user's member card is stop! uid={}", oldUserInfo.getUid());
                 return R.fail("100211", "换电套餐停卡审核中");
             }
             
             if (Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE)) {
-                log.warn("WEBBIND ERROR ERROR! user's member card is stop! uid={}", oldUserInfo.getUid());
+                log.warn("WEBBIND WARN! user's member card is stop! uid={}", oldUserInfo.getUid());
                 return R.fail("100211", "换电套餐已暂停");
             }
             
             BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());
             if (Objects.isNull(batteryMemberCard)) {
-                log.error("WEBBIND ERROR ERROR! not found batteryMemberCard,uid={},mid={}", oldUserInfo.getUid(), userBatteryMemberCard.getMemberCardId());
+                log.warn("WEBBIND WARN! not found batteryMemberCard,uid={},mid={}", oldUserInfo.getUid(), userBatteryMemberCard.getMemberCardId());
                 return R.fail("ELECTRICITY.00121", "套餐不存在");
             }
             
@@ -1504,7 +1521,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             Triple<Boolean, Integer, BigDecimal> acquireUserBatteryServiceFeeResult = serviceFeeUserInfoService.acquireUserBatteryServiceFee(oldUserInfo, userBatteryMemberCard,
                     batteryMemberCard, serviceFeeUserInfoService.queryByUidFromCache(oldUserInfo.getUid()));
             if (Boolean.TRUE.equals(acquireUserBatteryServiceFeeResult.getLeft())) {
-                log.warn("WEBBIND ERROR ERROR! user exist battery service fee,uid={}", oldUserInfo.getUid());
+                log.warn("WEBBIND WARN! user exist battery service fee,uid={}", oldUserInfo.getUid());
                 return R.fail("ELECTRICITY.100000", "存在电池服务费");
             }
         } else {
@@ -1551,12 +1568,14 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                 .operateContent(EleUserOperateRecord.UN_BIND_BATTERY_CONTENT).operateUid(user.getUid()).uid(oldUserInfo.getUid()).name(user.getUsername())
                 .initElectricityBatterySn(oldElectricityBattery.getSn()).nowElectricityBatterySn(null).tenantId(TenantContextHolder.getTenantId())
                 .createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).build();
-        
+        OverdueType type = null;
         //判断是单电的电池操作还是车电一体的电池操作
         if (Objects.equals(oldUserInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
             eleUserOperateRecord.setOperateType(UserOperateRecordConstant.OPERATE_TYPE_BATTERY);
+            type = OverdueType.BATTERY;
         } else {
             eleUserOperateRecord.setOperateType(UserOperateRecordConstant.OPERATE_TYPE_CAR);
+            type = OverdueType.CAR;
         }
         
         eleUserOperateRecordService.insert(eleUserOperateRecord);
@@ -1565,6 +1584,8 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         
         //记录企业用户还电池记录
         enterpriseUserCostRecordService.asyncSaveUserCostRecordForRentalAndReturnBattery(UserCostTypeEnum.COST_TYPE_RETURN_BATTERY.getCode(), rentBatteryOrder);
+        //清除逾期用户备注
+        overdueUserRemarkPublish.publish(uid,type.getCode(), tenantId);
         try {
             Map<String, Object> map = new HashMap<>();
             map.put("username", oldUserInfo.getName());
@@ -1590,6 +1611,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         return this.updateByUid(userInfo);
     }
     
+    @Slave
     @Override
     public R queryUserBelongFranchisee(Long franchiseeId, Integer tenantId) {
         return R.ok(franchiseeService.queryByIdAndTenantId(franchiseeId, tenantId));
@@ -1652,6 +1674,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         return userTurnoverVo;
     }
     
+    @Slave
     @Override
     public UserInfo queryUserInfoByPhone(String phone, Integer tenantId) {
         return userInfoMapper.selectOne(
@@ -1690,14 +1713,14 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         //用户
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
-            log.error("ELE ERROR! not found user ");
+            log.warn("ELE WARN! not found user ");
             return userInfoDetailVO;
         }
         
         //审核状态
         UserInfo userInfo = this.queryByUidFromCache(user.getUid());
         if (Objects.isNull(userInfo)) {
-            log.error("ELE ERROR! not found userInfo! uid={}", user.getUid());
+            log.warn("ELE WARN! not found userInfo! uid={}", user.getUid());
             return userInfoDetailVO;
         }
         BeanUtils.copyProperties(userInfo, userInfoDetailVO);
@@ -1736,13 +1759,13 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         UserInfoResultVO userInfoResult = new UserInfoResultVO();
         
         if (Objects.isNull(SecurityUtils.getUid())) {
-            log.error("ELE ERROR! not found user ");
+            log.warn("ELE WARN! not found user ");
             return Triple.of(false, "100001", userInfoResult);
         }
         
         UserInfo userInfo = this.queryByUidFromCache(SecurityUtils.getUid());
         if (Objects.isNull(userInfo)) {
-            log.error("ELE ERROR! not found userInfo! uid={}", SecurityUtils.getUid());
+            log.warn("ELE WARN! not found userInfo! uid={}", SecurityUtils.getUid());
             return Triple.of(false, "100001", userInfoResult);
         }
         
@@ -2038,7 +2061,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     public R deleteUserInfo(Long uid) {
         UserInfo userInfo = this.queryByUidFromCache(uid);
         if (Objects.isNull(userInfo)) {
-            log.error("ELE ERROR! not found userInfo,uid={} ", uid);
+            log.warn("ELE WARN! not found userInfo,uid={} ", uid);
             return R.fail("ELECTRICITY.0019", "未找到用户");
         }
         
@@ -2089,6 +2112,14 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         updateUserInfo.setUpdateTime(System.currentTimeMillis());
         
         this.updateByUid(updateUserInfo);
+        //清除逾期用户备注
+        if (Objects.equals(rentStatus, UserInfo.BATTERY_RENT_STATUS_NO)){
+            if (Objects.equals(userInfo.getCarBatteryDepositStatus(),YesNoEnum.YES.getCode())) {
+                overdueUserRemarkPublish.publish(userInfo.getUid(), OverdueType.CAR.getCode(),TenantContextHolder.getTenantId());
+            }else {
+                overdueUserRemarkPublish.publish(userInfo.getUid(), OverdueType.BATTERY.getCode(),TenantContextHolder.getTenantId());
+            }
+        }
         return Triple.of(true, "", null);
     }
     
@@ -2116,6 +2147,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         return Triple.of(true, "", null);
     }
     
+    @Slave
     @Override
     public int selectCountByFranchiseeId(Long id) {
         return userInfoMapper.selectCount(new LambdaQueryWrapper<UserInfo>().eq(UserInfo::getFranchiseeId, id));
@@ -2128,21 +2160,25 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
      * @param tenantId
      * @return
      */
+    @Slave
     @Override
     public Integer isFranchiseeBindUser(Long id, Integer tenantId) {
         return userInfoMapper.isFranchiseeBindUser(id, tenantId);
     }
     
+    @Slave
     @Override
     public List<UserInfo> queryByIdNumber(String idNumber) {
         return userInfoMapper.queryByIdNumber(idNumber, TenantContextHolder.getTenantId());
     }
     
+    @Slave
     @Override
     public Integer verifyIdNumberExist(String idNumber, Integer tenantId) {
         return userInfoMapper.verifyIdNumberExist(idNumber, tenantId);
     }
     
+    @Slave
     @Override
     public R queryDetailsBasicInfo(Long uid) {
         UserInfo userInfo = this.queryByUidFromDb(uid);
@@ -2179,8 +2215,9 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         EleUserEsignRecord eleUserEsignRecord = eleUserEsignRecordService.queryUserEsignRecordFromDB(userInfo.getUid(), Long.valueOf(TenantContextHolder.getTenantId()));
         if (Objects.nonNull(eleUserEsignRecord)) {
             vo.setSignFlowId(eleUserEsignRecord.getSignFlowId());
-            vo.setSignFinishStatus(Objects.isNull(eleUserEsignRecord) ? SignStatusEnum.UNSIGNED.getCode()
-                    : (Objects.equals(1, eleUserEsignRecord.getSignFinishStatus()) ? SignStatusEnum.SIGNED_COMPLETED.getCode() : SignStatusEnum.SIGNED_INCOMPLETE.getCode()));
+            vo.setSignFinishStatus(Objects.equals(1, eleUserEsignRecord.getSignFinishStatus()) ? SignStatusEnum.SIGNED_COMPLETED.getCode() : SignStatusEnum.SIGNED_INCOMPLETE.getCode());
+        }else {
+            vo.setSignFinishStatus(SignStatusEnum.UNSIGNED.getCode());
         }
         
         // 根据openId判断是否可解绑微信
@@ -2193,18 +2230,18 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         
         // 邀请人是否可被修改
         Integer inviterSource = MerchantInviterSourceEnum.MERCHANT_INVITER_SOURCE_USER_FOR_VO.getCode();
-        MerchantInviterVO merchantInviterVO = userInfoExtraService.querySuccessInviter(uid, tenantId);
+        MerchantInviterVO merchantInviterVO = userInfoExtraService.querySuccessInviter(uid);
         if (Objects.isNull(merchantInviterVO)) {
             vo.setCanModifyInviter(MerchantInviterCanModifyEnum.MERCHANT_INVITER_CAN_NOT_MODIFY.getCode());
         } else {
             vo.setCanModifyInviter(MerchantInviterCanModifyEnum.MERCHANT_INVITER_CAN_MODIFY.getCode());
-            if (Objects.equals(merchantInviterVO.getInviterSource(), MerchantInviterSourceEnum.MERCHANT_INVITER_SOURCE_MERCHANT.getCode())) {
+            if (Objects.equals(merchantInviterVO.getInviterSource(), UserInfoActivitySourceEnum.SUCCESS_MERCHANT_ACTIVITY.getCode())) {
                 inviterSource = MerchantInviterSourceEnum.MERCHANT_INVITER_SOURCE_MERCHANT_FOR_VO.getCode();
             }
         }
         
         // 邀请人名称
-        vo.setInviterName(queryFinalInviterUserName(uid, tenantId));
+        vo.setInviterName(queryFinalInviterUserName(uid));
         //邀请人来源
         vo.setInviterSource(inviterSource);
     
@@ -2224,7 +2261,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             // 解绑微信成功后 强制用户重新登录
             List<UserOauthBind> userOauthBinds = userOauthBindService.queryListByUid(uid);
             if (DataUtil.collectionIsUsable(userOauthBinds)) {
-                clearUserOauthBindToken(userOauthBinds);
+                clearUserOauthBindToken(userOauthBinds, CacheConstant.CLIENT_ID);
             }
             DbUtils.dbOperateSuccessThenHandleCache(
                     userOauthBindService.updateOpenIdByUid(StringUtils.EMPTY, UserOauthBind.STATUS_UN_BIND, userOauthBind.getUid(), TenantContextHolder.getTenantId()), i -> {
@@ -2242,13 +2279,22 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         return R.ok();
     }
     
-    private void clearUserOauthBindToken(List<UserOauthBind> userOauthBinds) {
-        userOauthBinds.parallelStream().forEach(e -> {
+    @Override
+    public void clearUserOauthBindToken(List<UserOauthBind> userOauthBinds, String clientId) {
+        if (StringUtils.isBlank(clientId)) {
+            clientId = CacheConstant.CLIENT_ID;
+        }
+        
+        String finalClientId = clientId;
+        userOauthBinds.forEach(e -> {
             String thirdId = e.getThirdId();
-            List<String> tokens = redisService.getWithList(TokenConstant.CACHE_LOGIN_TOKEN_LIST_KEY + CacheConstant.CLIENT_ID + e.getTenantId() + ":" + thirdId, String.class);
+            if (CacheConstant.MERCHANT_CLIENT_ID.equals(finalClientId)) {
+                thirdId = e.getThirdId() + e.getUid();
+            }
+            List<String> tokens = redisService.getWithList(TokenConstant.CACHE_LOGIN_TOKEN_LIST_KEY + finalClientId + e.getTenantId() + ":" + thirdId, String.class);
             if (DataUtil.collectionIsUsable(tokens)) {
-                tokens.stream().forEach(s -> {
-                    redisService.delete(TokenConstant.CACHE_LOGIN_TOKEN_KEY + CacheConstant.CLIENT_ID + s);
+                tokens.forEach(s -> {
+                    redisService.delete(TokenConstant.CACHE_LOGIN_TOKEN_KEY + finalClientId + s);
                 });
             }
         });
@@ -2299,7 +2345,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         // 更新成功后 强制用户重新登录
         List<UserOauthBind> userOauthBinds = userOauthBindService.queryListByUid(uid);
         if (DataUtil.collectionIsUsable(userOauthBinds)) {
-            clearUserOauthBindToken(userOauthBinds);
+            clearUserOauthBindToken(userOauthBinds, CacheConstant.CLIENT_ID);
         }
         
         userOauthBindService.updatePhoneByUid(TenantContextHolder.getTenantId(), uid, phone);
@@ -2319,6 +2365,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         return R.ok();
     }
     
+    @Slave
     @Override
     public R queryDetailsBatteryInfo(Long uid) {
         UserInfo userInfo = this.queryByUidFromDb(uid);
@@ -2363,6 +2410,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         return R.ok(vo);
     }
     
+    @Slave
     @Override
     public R queryDetailsCarInfo(Long uid) {
         UserInfo userInfo = this.queryByUidFromCache(uid);
@@ -2673,6 +2721,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         return R.ok();
     }
     
+    @Slave
     @Override
     public R userInfoSearch(Long size, Long offset, String name) {
         List<UserInfoSearchVo> qeury = userInfoMapper.userInfoSearch(size, offset, name, TenantContextHolder.getTenantId());
@@ -2933,7 +2982,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             excelVo.setBatteryDeposit(Objects.nonNull(userBatteryDeposit) ? userBatteryDeposit.getBatteryDeposit() : BigDecimal.valueOf(0));
             excelVo.setCardName(Objects.nonNull(electricityMemberCard) ? electricityMemberCard.getName() : "");
             excelVo.setNowElectricityBatterySn(userBatteryInfoVO.getNowElectricityBatterySn());
-            excelVo.setInviterUserName(queryFinalInviterUserName(userBatteryInfoVO.getUid(), userBatteryInfoVO.getTenantId()));
+            excelVo.setInviterUserName(queryFinalInviterUserName(userBatteryInfoVO.getUid()));
             
             if (Objects.nonNull(userBatteryInfoVO.getMemberCardExpireTime()) && !Objects.equals(userBatteryInfoVO.getMemberCardExpireTime(), NumberConstant.ZERO_L)) {
                 excelVo.setMemberCardExpireTime(simpleDateFormat.format(new Date(userBatteryInfoVO.getMemberCardExpireTime())));
@@ -3061,62 +3110,43 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         return result;
     }
     
-    //TODO 优化
     @Override
     @Slave
-    public String queryFinalInviterUserName(Long uid, Integer tenantId) {
-        String inviterName = null;
+    public String queryFinalInviterUserName(Long uid) {
+        String inviterName = StringUtils.EMPTY;
         
-        // 邀请返券
-        FinalJoinShareActivityHistoryVo finalJoinShareActivityHistoryVo = joinShareActivityHistoryService.queryFinalHistoryByJoinUid(uid, tenantId);
-        if (Objects.nonNull(finalJoinShareActivityHistoryVo)) {
-            inviterName = finalJoinShareActivityHistoryVo.getUserName();
-        }
-    
-        if (Objects.isNull(inviterName)) {
-            //邀请返现
-            FinalJoinShareMoneyActivityHistoryVo finalJoinShareMoneyActivityHistoryVo = joinShareMoneyActivityHistoryService.queryFinalHistoryByJoinUid(uid, tenantId);
-            if (Objects.nonNull(finalJoinShareMoneyActivityHistoryVo)) {
-                inviterName = finalJoinShareMoneyActivityHistoryVo.getUserName();
+        UserInfoExtra userInfoExtra = userInfoExtraService.queryByUidFromCache(uid);
+        if (Objects.nonNull(userInfoExtra)) {
+            Long inviterUid = userInfoExtra.getInviterUid();
+            Integer activitySource = userInfoExtra.getActivitySource();
+            
+            if (Objects.nonNull(inviterUid) && !Objects.equals(inviterUid, NumberConstant.ZERO_L) && Objects.nonNull(activitySource) && !Objects.equals(activitySource,
+                    NumberConstant.ZERO)) {
+                //商户活动的邀请人来源于user
+                if (Objects.equals(activitySource, UserInfoActivitySourceEnum.SUCCESS_MERCHANT_ACTIVITY.getCode())) {
+                    Merchant merchant = merchantService.queryByUid(inviterUid);
+                    if (Objects.nonNull(merchant)) {
+                        inviterName = merchant.getName();
+                    }
+                } else {
+                    UserInfo userInfo = this.queryByUidFromCache(inviterUid);
+                    if (Objects.nonNull(userInfo)) {
+                        inviterName = userInfo.getName();
+                    }
+                }
             }
         }
-    
-        if (Objects.isNull(inviterName)) {
-            //渠道活动
-            FinalJoinChannelActivityHistoryVO finalJoinChannelActivityHistoryVO = channelActivityHistoryService.queryFinalHistoryByJoinUid(uid, tenantId);
-            if (Objects.nonNull(finalJoinChannelActivityHistoryVO)) {
-                inviterName = finalJoinChannelActivityHistoryVO.getUserName();
-            }
-        }
-    
-        if (Objects.isNull(inviterName)) {
-            //套餐返现
-            FinalJoinInvitationActivityHistoryVO finalJoinInvitationActivityHistoryVO = invitationActivityJoinHistoryService.queryFinalHistoryByJoinUid(uid, tenantId);
-            if (Objects.nonNull(finalJoinInvitationActivityHistoryVO)) {
-                inviterName = finalJoinInvitationActivityHistoryVO.getUserName();
-            }
-        }
-    
-        if (Objects.isNull(inviterName)) {
-            // 商户活动
-            MerchantJoinRecord merchantJoinRecord = merchantJoinRecordService.querySuccessRecordByJoinUid(uid, tenantId);
-            if (Objects.nonNull(merchantJoinRecord)) {
-                inviterName = Optional.ofNullable(merchantService.queryByIdFromCache(merchantJoinRecord.getMerchantId())).map(Merchant::getName).orElse("");
-            }
-        }
-    
+        
         return inviterName;
     }
     
     @Override
     @Slave
     public R queryEleList(UserInfoQuery userInfoQuery) {
-        
         List<UserEleInfoVO> userEleInfoVOS = userInfoMapper.queryEleList(userInfoQuery);
         if (ObjectUtil.isEmpty(userEleInfoVOS)) {
             return R.ok(Collections.emptyList());
         }
-        
         //获取用户电池套餐相关信息
         CompletableFuture<Void> queryUserBatteryMemberCardInfo = CompletableFuture.runAsync(() -> {
             userEleInfoVOS.forEach(item -> {
@@ -3145,11 +3175,11 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                     item.setUseCount(batteryMemberCard.getUseCount());
                 }
                 // 邀请人
-                item.setInviterUserName(queryFinalInviterUserName(item.getUid(), item.getTenantId()));
+                item.setInviterUserName(queryFinalInviterUserName(item.getUid()));
                 
                 // 设置企业信息
                 EnterpriseChannelUserVO enterpriseChannelUserVO = enterpriseChannelUserService.queryUserRelatedEnterprise(item.getUid());
-                if(Objects.nonNull(enterpriseChannelUserVO) && Objects.equals(enterpriseChannelUserVO.getRenewalStatus(), EnterpriseChannelUser.RENEWAL_CLOSE)){
+                if (Objects.nonNull(enterpriseChannelUserVO) && Objects.equals(enterpriseChannelUserVO.getRenewalStatus(), EnterpriseChannelUser.RENEWAL_CLOSE)) {
                     item.setEnterpriseName(enterpriseChannelUserVO.getEnterpriseName());
                 }
                 

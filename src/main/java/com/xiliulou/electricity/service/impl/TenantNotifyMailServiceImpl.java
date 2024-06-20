@@ -3,6 +3,7 @@ package com.xiliulou.electricity.service.impl;
 import cn.hutool.core.lang.Validator;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.core.web.R;
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.dto.TenantNotifyMailDTO;
 import com.xiliulou.electricity.entity.TenantNotifyMail;
 import com.xiliulou.electricity.mapper.TenantNotifyMailMapper;
@@ -38,6 +39,7 @@ public class TenantNotifyMailServiceImpl implements TenantNotifyMailService {
      * @param id 主键
      * @return 实例对象
      */
+    @Slave
     @Override
     public TenantNotifyMail selectByIdFromDB(Long id) {
         return this.tenantNotifyMailMapper.selectById(id);
@@ -62,6 +64,7 @@ public class TenantNotifyMailServiceImpl implements TenantNotifyMailService {
      * @param limit  查询条数
      * @return 对象列表
      */
+    @Slave
     @Override
     public List<TenantNotifyMailVO> selectByPage(int offset, int limit) {
         return this.tenantNotifyMailMapper.selectByPage(offset, limit);
@@ -127,6 +130,7 @@ public class TenantNotifyMailServiceImpl implements TenantNotifyMailService {
     }
 
 
+    @Slave
     @Override
     public List<String> selectByTenantId() {
         List<TenantNotifyMail> tenantNotifyMails = this.tenantNotifyMailMapper.selectList(new LambdaQueryWrapper<TenantNotifyMail>().eq(TenantNotifyMail::getTenantId, TenantContextHolder.getTenantId()));
@@ -137,11 +141,13 @@ public class TenantNotifyMailServiceImpl implements TenantNotifyMailService {
         return null;
     }
 
+    @Slave
     @Override
     public List<TenantNotifyMailVO> selectByTenantId(Long tenantId) {
         return this.tenantNotifyMailMapper.selectByTenantId(tenantId);
     }
 
+    @Slave
     @Override
     public Boolean checkByTenantId() {
         Boolean result = Boolean.TRUE;
@@ -173,6 +179,7 @@ public class TenantNotifyMailServiceImpl implements TenantNotifyMailService {
     }
 
 
+    @Slave
     @Override
     public List<TenantNotifyMailDTO> selectAllTenantNotifyMail() {
         return this.tenantNotifyMailMapper.selectAllTenantNotifyMail();

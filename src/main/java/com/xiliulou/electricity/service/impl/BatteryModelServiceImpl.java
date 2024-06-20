@@ -882,6 +882,7 @@ public class BatteryModelServiceImpl implements BatteryModelService {
     }
     
     @Override
+    @Slave
     public List<BrandNameAndBatteryVShortVO> listBatteryBrandAndModel(BatteryModelQueryModel batteryModelQueryModel) {
         List<BatteryModel> modelList = batteryModelMapper.selectListBrandAndModel(batteryModelQueryModel);
         if (CollectionUtils.isEmpty(modelList)) {

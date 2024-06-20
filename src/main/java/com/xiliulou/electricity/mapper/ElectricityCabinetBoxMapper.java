@@ -58,4 +58,6 @@ public interface ElectricityCabinetBoxMapper extends BaseMapper<ElectricityCabin
     ElectricityCabinetBox selectEleBoxByBatteryId(@Param("batteryId") Long batteryId);
     
     List<ElectricityCabinetBox> selectListByEids(@Param("eIdList") List<Integer> electricityCabinetIdList);
+   
+    List<ElectricityCabinetBox> selectAllBoxByBatteryId(@Param("eid") Integer eid);
 }

@@ -435,7 +435,9 @@ public class JsonAdminElectricityBatteryDataController extends BaseController {
     public R getOverdueBatteryPageData(@RequestParam("offset") long offset, @RequestParam("size") long size, @RequestParam(value = "uid", required = false) Long uid,
             @RequestParam(value = "sn", required = false) String sn, @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
             @RequestParam(value = "electricityCabinetId", required = false) Integer electricityCabinetId,
-            @RequestParam(value = "physicsStatus", required = false) Integer physicsStatus, @RequestParam(value = "businessStatus", required = false) Integer businessStatus) {
+            @RequestParam(value = "physicsStatus", required = false) Integer physicsStatus, @RequestParam(value = "businessStatus", required = false) Integer businessStatus,
+            @RequestParam(value = "sort", required = false , defaultValue = "0") Integer sort
+    ) {
         if (size < 0 || size > 50) {
             size = 10;
         }
@@ -469,7 +471,7 @@ public class JsonAdminElectricityBatteryDataController extends BaseController {
         }
         ElectricityBatteryDataQuery electricityBatteryQuery = ElectricityBatteryDataQuery.builder().tenantId(tenantId).tenant(tenant).sn(sn).uid(uid).size(size).offset(offset)
                 .electricityCabinetId(electricityCabinetId).franchiseeId(franchiseeId).franchiseeIds(franchiseeIds).queryType(ElectricityBatteryDataQuery.QUERY_TYPE_OVERDUE)
-                .currentTimeMillis(System.currentTimeMillis()).businessStatus(businessStatus).physicsStatus(physicsStatus).build();
+                .currentTimeMillis(System.currentTimeMillis()).businessStatus(businessStatus).physicsStatus(physicsStatus).sort(sort).build();
         return electricityBatteryDataService.selectOverdueBatteryPageData(electricityBatteryQuery);
     }
     
@@ -510,7 +512,8 @@ public class JsonAdminElectricityBatteryDataController extends BaseController {
     public R getOverdueCarBatteryPageData(@RequestParam("offset") long offset, @RequestParam("size") long size, @RequestParam(value = "uid", required = false) Long uid,
             @RequestParam(value = "sn", required = false) String sn, @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
             @RequestParam(value = "electricityCabinetId", required = false) Integer electricityCabinetId,
-            @RequestParam(value = "physicsStatus", required = false) Integer physicsStatus, @RequestParam(value = "businessStatus", required = false) Integer businessStatus) {
+            @RequestParam(value = "physicsStatus", required = false) Integer physicsStatus, @RequestParam(value = "businessStatus", required = false) Integer businessStatus,
+            @RequestParam(value = "sort", required = false , defaultValue = "0") Integer sort) {
         if (size < 0 || size > 50) {
             size = 10;
         }
@@ -544,7 +547,7 @@ public class JsonAdminElectricityBatteryDataController extends BaseController {
         }
         ElectricityBatteryDataQuery electricityBatteryQuery = ElectricityBatteryDataQuery.builder().tenantId(tenantId).tenant(tenant).sn(sn).uid(uid).size(size).offset(offset)
                 .electricityCabinetId(electricityCabinetId).franchiseeId(franchiseeId).franchiseeIds(franchiseeIds).queryType(ElectricityBatteryDataQuery.QUERY_TYPE_OVERDUE)
-                .currentTimeMillis(System.currentTimeMillis()).businessStatus(businessStatus).physicsStatus(physicsStatus).build();
+                .currentTimeMillis(System.currentTimeMillis()).businessStatus(businessStatus).physicsStatus(physicsStatus).sort(sort).build();
         return electricityBatteryDataService.selectOverdueCarBatteryPageData(electricityBatteryQuery);
     }
     

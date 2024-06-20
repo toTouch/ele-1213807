@@ -13,6 +13,7 @@ import com.xiliulou.electricity.entity.car.CarRentalPackageOrderPo;
 import com.xiliulou.electricity.entity.car.CarRentalPackagePo;
 import com.xiliulou.electricity.enums.*;
 import com.xiliulou.electricity.enums.car.CarRentalStateEnum;
+import com.xiliulou.electricity.event.publish.OverdueUserRemarkPublish;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.service.car.CarRentalOrderService;
@@ -92,6 +93,9 @@ public class CarRentalOrderBizServiceImpl implements CarRentalOrderBizService {
     @Resource
     private EleUserOperateRecordService eleUserOperateRecordService;
     
+    @Resource
+    private OverdueUserRemarkPublish overdueUserRemarkPublish;
+    
     /**
      * 还车申请审批
      *
@@ -161,7 +165,7 @@ public class CarRentalOrderBizServiceImpl implements CarRentalOrderBizService {
         }
         
         // 处理事务
-        approveRefundCarOrderTx(approveFlag, rentalOrderApprove, userInfoUpdate, carModelUpdate, electricityCarUpdate, eleBindCarRecord, carLockCtrlHistory);
+        approveRefundCarOrderTx(approveFlag, rentalOrderApprove, userInfoUpdate, carModelUpdate, electricityCarUpdate, eleBindCarRecord, carLockCtrlHistory,carRentalOrderPo);
         
         return true;
     }
@@ -179,7 +183,7 @@ public class CarRentalOrderBizServiceImpl implements CarRentalOrderBizService {
      */
     @Transactional(rollbackFor = Exception.class)
     public void approveRefundCarOrderTx(boolean approveFlag, CarRentalOrderPo rentalOrderApprove, UserInfo userInfoUpdate, ElectricityCarModel carModelUpdate,
-            ElectricityCar electricityCarUpdate, EleBindCarRecord eleBindCarRecord, CarLockCtrlHistory carLockCtrlHistory) {
+            ElectricityCar electricityCarUpdate, EleBindCarRecord eleBindCarRecord, CarLockCtrlHistory carLockCtrlHistory,CarRentalOrderPo carRentalOrderPo) {
         // 更改车辆租赁订单
         carRentalOrderService.updateById(rentalOrderApprove);
         
@@ -198,6 +202,8 @@ public class CarRentalOrderBizServiceImpl implements CarRentalOrderBizService {
             carService.updateCarBindStatusById(electricityCarUpdate);
             // 车辆操作记录
             eleBindCarRecordService.insert(eleBindCarRecord);
+            // 清除逾期用户备注
+            overdueUserRemarkPublish.publish(carRentalOrderPo.getUid(), OverdueType.CAR.getCode(), carRentalOrderPo.getTenantId());
         }
     }
     
@@ -633,6 +639,8 @@ public class CarRentalOrderBizServiceImpl implements CarRentalOrderBizService {
                 .updateTime(System.currentTimeMillis()).build();
         eleUserOperateRecordService.insert(eleUserOperateRecord);
         
+        //清除逾期用户备注
+        overdueUserRemarkPublish.publish(userInfo.getUid(), OverdueType.CAR.getCode(), userInfo.getTenantId());
         return true;
     }
     

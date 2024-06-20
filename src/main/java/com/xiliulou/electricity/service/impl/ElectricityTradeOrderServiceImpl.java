@@ -14,18 +14,15 @@ import com.xiliulou.electricity.dto.ActivityProcessDTO;
 import com.xiliulou.electricity.dto.DivisionAccountOrderDTO;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.entity.enterprise.CloudBeanUseRecord;
-import com.xiliulou.electricity.entity.enterprise.EnterpriseChannelUser;
 import com.xiliulou.electricity.entity.enterprise.EnterpriseCloudBeanOrder;
 import com.xiliulou.electricity.entity.enterprise.EnterpriseInfo;
 import com.xiliulou.electricity.enums.ActivityEnum;
 import com.xiliulou.electricity.enums.DivisionAccountEnum;
 import com.xiliulou.electricity.enums.PackageTypeEnum;
-import com.xiliulou.electricity.enums.enterprise.CloudBeanStatusEnum;
 import com.xiliulou.electricity.mapper.ElectricityMemberCardOrderMapper;
 import com.xiliulou.electricity.mapper.ElectricityTradeOrderMapper;
 import com.xiliulou.electricity.mq.producer.ActivityProducer;
 import com.xiliulou.electricity.mq.producer.DivisionAccountProducer;
-import com.xiliulou.electricity.query.enterprise.EnterpriseChannelUserQuery;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.service.car.CarRentalPackageDepositPayService;
 import com.xiliulou.electricity.service.car.CarRentalPackageMemberTermService;
@@ -221,7 +218,7 @@ public class ElectricityTradeOrderServiceImpl extends
     public Pair<Boolean, Object> notifyCarRenalPackageOrder(WechatJsapiOrderCallBackResource callBackResource) {
         log.info("notifyCarRenalPackageOrder params callBackResource is {}", JSON.toJSONString(callBackResource));
         if (ObjectUtils.isEmpty(callBackResource)) {
-            log.error("NotifyCarRenalPackageOrder failed, callBackResource is empty");
+            log.warn("NotifyCarRenalPackageOrder failed, callBackResource is empty");
             return Pair.of(false, "参数为空");
         }
 
@@ -236,12 +233,12 @@ public class ElectricityTradeOrderServiceImpl extends
         // 1. 处理交易流水订单
         ElectricityTradeOrder electricityTradeOrder = baseMapper.selectTradeOrderByTradeOrderNo(tradeOrderNo);
         if (Objects.isNull(electricityTradeOrder)) {
-            log.error("NotifyCarRenalPackageOrder failed, not found electricity_trade_order, trade_order_no is {}", tradeOrderNo);
+            log.warn("NotifyCarRenalPackageOrder failed, not found electricity_trade_order, trade_order_no is {}", tradeOrderNo);
             return Pair.of(false, "未找到交易流水订单");
         }
 
         if (ObjectUtil.notEqual(ElectricityTradeOrder.STATUS_INIT, electricityTradeOrder.getStatus())) {
-            log.error("NotifyCarRenalPackageOrder failed, electricity_trade_order processed, trade_order_no is {}", tradeOrderNo);
+            log.warn("NotifyCarRenalPackageOrder failed, electricity_trade_order processed, trade_order_no is {}", tradeOrderNo);
             return Pair.of(false, "交易流水订单已处理");
         }
 

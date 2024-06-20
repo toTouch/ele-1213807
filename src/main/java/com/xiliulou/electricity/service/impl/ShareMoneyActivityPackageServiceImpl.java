@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.service.impl;
 
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.entity.ShareMoneyActivityPackage;
 import com.xiliulou.electricity.mapper.ShareMoneyActivityPackageMapper;
 import com.xiliulou.electricity.service.ShareMoneyActivityPackageService;
@@ -41,11 +42,13 @@ public class ShareMoneyActivityPackageServiceImpl implements ShareMoneyActivityP
     }
 
     @Override
+    @Slave
     public List<ShareMoneyActivityPackage> findActivityPackagesByActivityId(Long activityId) {
         return shareMoneyActivityPackageMapper.selectActivityPackagesByActivityId(activityId);
     }
 
     @Override
+    @Slave
     public List<ShareMoneyActivityPackage> findPackagesByActivityIdAndType(Long activityId, Integer packageType) {
         return shareMoneyActivityPackageMapper.selectPackagesByActivityIdAndPackageType(activityId, packageType);
     }

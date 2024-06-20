@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.service.impl;
 
 import com.xiliulou.core.web.R;
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.entity.UserAmountHistory;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.mapper.UserAmountHistoryMapper;
@@ -48,16 +49,19 @@ public class UserAmountHistoryServiceImpl implements UserAmountHistoryService {
     }
 
     @Override
+    @Slave
     public R queryList(UserAmountHistoryQuery userAmountHistoryQuery) {
         return R.ok(userAmountHistoryMapper.queryList(userAmountHistoryQuery));
     }
 
     @Override
+    @Slave
     public R queryCount(UserAmountHistoryQuery userAmountHistoryQuery) {
         return R.ok(userAmountHistoryMapper.queryCount(userAmountHistoryQuery));
     }
 
     @Override
+    @Slave
     public List<UserAmountHistoryVO> selectRewardList(UserAmountHistoryQuery userAmountHistoryQuery) {
         List<UserAmountHistoryVO> userAmountHistoryVOS = userAmountHistoryMapper.selectRewardList(userAmountHistoryQuery);
         if (CollectionUtils.isEmpty(userAmountHistoryVOS)) {

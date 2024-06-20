@@ -4,6 +4,7 @@ import cn.hutool.core.util.RandomUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.ElectricityPayParams;
 import com.xiliulou.electricity.entity.JoinShareMoneyActivityRecord;
@@ -18,6 +19,7 @@ import com.xiliulou.pay.weixin.entity.SharePicture;
 import com.xiliulou.pay.weixin.shareUrl.GenerateShareUrlService;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -66,6 +68,7 @@ public class ShareMoneyActivityRecordServiceImpl implements ShareMoneyActivityRe
 	 * @return 实例对象
 	 */
 	@Override
+	@Slave
 	public ShareMoneyActivityRecord queryByIdFromDB(Long id) {
 		return this.shareMoneyActivityRecordMapper.selectById(id);
 	}
@@ -104,7 +107,7 @@ public class ShareMoneyActivityRecordServiceImpl implements ShareMoneyActivityRe
 	 *
 	 */
 	@Override
-	public R generateSharePicture(Integer activityId, String page) {
+	public R generateSharePicture(Integer activityId, String page, String envVersion) {
 
 		//用户
 		TokenUser user = SecurityUtils.getUserInfo();
@@ -118,9 +121,7 @@ public class ShareMoneyActivityRecordServiceImpl implements ShareMoneyActivityRe
 		if (!result) {
 			return R.fail("ELECTRICITY.0034", "操作频繁");
 		}
-
-		log.info("Generate share picture for share money activity start, activity id = {}, page = {}", activityId, page);
-
+		
 		//租户
 		Integer tenantId = TenantContextHolder.getTenantId();
 
@@ -178,6 +179,9 @@ public class ShareMoneyActivityRecordServiceImpl implements ShareMoneyActivityRe
 		sharePicture.setScene(scene);
 		sharePicture.setAppId(electricityPayParams.getMerchantMinProAppId());
 		sharePicture.setAppSecret(electricityPayParams.getMerchantMinProAppSecert());
+		if (StringUtils.isNotBlank(envVersion)) {
+			sharePicture.setEnvVersion(envVersion);
+		}
 		Pair<Boolean, Object> getShareUrlPair = generateShareUrlService.generateSharePicture(sharePicture);
 
 		//分享失败
@@ -195,6 +199,7 @@ public class ShareMoneyActivityRecordServiceImpl implements ShareMoneyActivityRe
 	}
 
 	@Override
+	@Slave
 	public ShareMoneyActivityRecord queryByUid(Long uid,Integer activityId) {
 		return shareMoneyActivityRecordMapper.selectOne(new LambdaQueryWrapper<ShareMoneyActivityRecord>()
 				.eq(ShareMoneyActivityRecord::getUid, uid).eq(ShareMoneyActivityRecord::getActivityId,activityId));
@@ -208,6 +213,7 @@ public class ShareMoneyActivityRecordServiceImpl implements ShareMoneyActivityRe
 
 
 	@Override
+	@Slave
 	public R queryList(ShareMoneyActivityRecordQuery shareMoneyActivityRecordQuery) {
 
 		List<ShareMoneyActivityRecordVO> shareMoneyActivityRecordVOList= shareMoneyActivityRecordMapper.queryList(shareMoneyActivityRecordQuery);
@@ -222,6 +228,7 @@ public class ShareMoneyActivityRecordServiceImpl implements ShareMoneyActivityRe
 	}
 
 	@Override
+	@Slave
 	public R queryCount(ShareMoneyActivityRecordQuery shareMoneyActivityRecordQuery) {
 		return R.ok(shareMoneyActivityRecordMapper.queryCount(shareMoneyActivityRecordQuery));
 	}

@@ -1,11 +1,19 @@
 package com.xiliulou.electricity.service.impl;
 
-import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.bo.batteryPackage.UserBatteryMemberCardPackageBO;
-import com.xiliulou.electricity.entity.*;
+import com.xiliulou.electricity.entity.BatteryMemberCard;
+import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
+import com.xiliulou.electricity.entity.UserBatteryMemberCard;
+import com.xiliulou.electricity.entity.UserBatteryMemberCardPackage;
+import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.mapper.UserBatteryMemberCardPackageMapper;
-import com.xiliulou.electricity.service.*;
+import com.xiliulou.electricity.service.BatteryMemberCardService;
+import com.xiliulou.electricity.service.ElectricityMemberCardOrderService;
+import com.xiliulou.electricity.service.UserBatteryMemberCardPackageService;
+import com.xiliulou.electricity.service.UserBatteryMemberCardService;
+import com.xiliulou.electricity.service.UserBatteryTypeService;
+import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.enterprise.AnotherPayMembercardRecordService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
@@ -17,7 +25,6 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Resource;
 import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.ExecutorService;
 
 /**
  * (UserBatteryMemberCardPackage)表服务实现类
@@ -66,6 +73,7 @@ public class UserBatteryMemberCardPackageServiceImpl implements UserBatteryMembe
         return this.userBatteryMemberCardPackageMapper.selectByUid(uid);
     }
     
+    @Slave
     @Override
     public UserBatteryMemberCardPackage selectNearestByUid(Long uid) {
         return this.userBatteryMemberCardPackageMapper.selectNearestByUid(uid);
@@ -110,11 +118,13 @@ public class UserBatteryMemberCardPackageServiceImpl implements UserBatteryMembe
         return this.userBatteryMemberCardPackageMapper.deleteByUid(uid);
     }
     
+    @Slave
     @Override
     public UserBatteryMemberCardPackage selectByOrderNo(String orderId) {
         return this.userBatteryMemberCardPackageMapper.selectByOrderNo(orderId);
     }
     
+    @Slave
     @Override
     public Integer checkUserBatteryMemberCardPackageByUid(Long uid) {
         return this.userBatteryMemberCardPackageMapper.checkUserBatteryMemberCardPackageByUid(uid);
@@ -128,7 +138,7 @@ public class UserBatteryMemberCardPackageServiceImpl implements UserBatteryMembe
         
         UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
         if (Objects.isNull(userInfo)) {
-            log.error("BATTERY MEMBER TRANSFORM ERROR! not found user,uid={}", uid);
+            log.warn("BATTERY MEMBER TRANSFORM WARN! not found user,uid={}", uid);
             return Triple.of(true, null, null);
         }
         

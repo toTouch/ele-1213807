@@ -9,17 +9,22 @@ import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.constant.TimeConstant;
+import com.xiliulou.electricity.constant.merchant.MerchantConstant;
 import com.xiliulou.electricity.dto.ActivityProcessDTO;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.entity.car.CarRentalPackageOrderPo;
 import com.xiliulou.electricity.enums.ActivityEnum;
 import com.xiliulou.electricity.enums.PackageTypeEnum;
+import com.xiliulou.electricity.enums.UserInfoActivitySourceEnum;
 import com.xiliulou.electricity.exception.BizException;
+import com.xiliulou.electricity.mq.constant.MqProducerConstant;
+import com.xiliulou.electricity.mq.model.BatteryMemberCardMerchantRebate;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.service.car.CarRentalPackageOrderService;
 import com.xiliulou.electricity.service.user.biz.UserBizService;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.ActivityUserInfoVO;
+import com.xiliulou.mq.service.RocketMqService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.tuple.Triple;
@@ -28,6 +33,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.Resource;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -84,6 +90,12 @@ public class ActivityServiceImpl implements ActivityService {
     private UserBizService userBizService;
     @Autowired
     RedisService redisService;
+    
+    @Resource
+    private UserInfoExtraService userInfoExtraService;
+    
+    @Autowired
+    RocketMqService rocketMqService;
 
     /**
      * 用户是否有权限参加此活动
@@ -165,23 +177,22 @@ public class ActivityServiceImpl implements ActivityService {
                 }
             
                 UserInfo userInfo = userInfoService.queryByUidFromDb(uid);
-            
-                log.info("Activity flow for battery package, is old user= {}", userInfo.getPayCount());
-            
-                //是否是新用户
-                if (NumberUtil.equals(userInfo.getPayCount(), NumberConstant.ONE)) {
-                    //处理邀请活动
-                    userBizService.joinShareActivityProcess(uid, electricityMemberCardOrder.getMemberCardId());
-                
-                    //处理返现邀请
-                    userBizService.joinShareMoneyActivityProcess(uid, electricityMemberCardOrder.getMemberCardId(), electricityMemberCardOrder.getTenantId());
+                if (Objects.isNull(userInfo)) {
+                    log.warn("handle activity error ! Not found userInfo, joinUid={}", uid);
+                    return Triple.of(false, "ELECTRICITY.0019", "未找到用户");
+                }
+    
+                UserInfoExtra userInfoExtra = userInfoExtraService.queryByUidFromCache(uid);
+                if (Objects.isNull(userInfoExtra)) {
+                    log.warn("handle activity error ! Not found userInfoExtra, joinUid={}", uid);
+                    return Triple.of(false, "ELECTRICITY.0019", "未找到用户");
                 }
             
-                //处理套餐返现活动
-                invitationActivityRecordService.handleInvitationActivityByPackage(userInfo, electricityMemberCardOrder.getOrderId(), packageType);
-                //处理渠道活动
-                userBizService.joinChannelActivityProcess(uid);
-            
+                log.info("Activity flow for battery package, is old user= {}", userInfo.getPayCount());
+                
+                // 处理活动(530需求:以最新的参与活动为准)
+                handleActivityForBatteryPackageType(userInfo, userInfoExtra, uid, electricityMemberCardOrder, packageType);
+                
             } else {
                 //开始处理租车，车电一体购买套餐后的活动
                 log.info("Activity flow for car Rental or car with battery package, orderNo = {}", orderNo);
@@ -193,21 +204,21 @@ public class ActivityServiceImpl implements ActivityService {
             
                 Long uid = carRentalPackageOrderPo.getUid();
                 UserInfo userInfo = userInfoService.queryByUidFromDb(uid);
-            
-                log.info("Activity flow for car Rental or car with battery package, is old user= {}", userInfo.getPayCount());
-                if (userInfo.getPayCount() == 1) {
-                    //处理邀请活动
-                    userBizService.joinShareActivityProcess(uid, carRentalPackageOrderPo.getRentalPackageId());
-                
-                    //处理返现邀请
-                    userBizService.joinShareMoneyActivityProcess(uid, carRentalPackageOrderPo.getRentalPackageId(), carRentalPackageOrderPo.getTenantId());
+                if (Objects.isNull(userInfo)) {
+                    log.warn("Activity flow for car Rental or car with battery package error! Not found userInfo, joinUid={}", uid);
+                    return Triple.of(false, "ELECTRICITY.0019", "未找到用户");
+                }
+    
+                UserInfoExtra userInfoExtra = userInfoExtraService.queryByUidFromCache(uid);
+                if (Objects.isNull(userInfoExtra)) {
+                    log.warn("Activity flow for car Rental or car with battery package error! Not found userInfoExtra, joinUid={}", uid);
+                    return Triple.of(false, "ELECTRICITY.0019", "未找到用户");
                 }
             
-                //处理套餐返现活动
-                invitationActivityRecordService.handleInvitationActivityByPackage(userInfo, orderNo, packageType);
-                //处理渠道活动
-                userBizService.joinChannelActivityProcess(uid);
-            
+                log.info("Activity flow for car Rental or car with battery package, is old user= {}", userInfo.getPayCount());
+    
+                // 处理活动(530需求:以最新的参与活动为准)
+                handleActivityForCarPackageType(userInfo, userInfoExtra, uid, carRentalPackageOrderPo, packageType, orderNo);
             }
         
         } catch (Exception e) {
@@ -221,6 +232,100 @@ public class ActivityServiceImpl implements ActivityService {
         log.info("Activity by package flow end, orderNo = {}, package type = {}", orderNo, packageType);
     
         return Triple.of(true, "", null);
+    }
+    
+    /**
+     * 购买换电套餐后，处理活动
+     */
+    public void handleActivityForBatteryPackageType(UserInfo userInfo, UserInfoExtra userInfoExtra, Long uid, ElectricityMemberCardOrder electricityMemberCardOrder,
+            Integer packageType) {
+        Integer latestActivitySource = userInfoExtra.getLatestActivitySource();
+    
+        if (Objects.equals(UserInfoActivitySourceEnum.SUCCESS_MERCHANT_ACTIVITY.getCode(), latestActivitySource) && Objects.equals(ElectricityMemberCardOrder.ONLINE_PAYMENT,
+                electricityMemberCardOrder.getPayType())) {
+            //用户绑定商户
+            userInfoExtraService.bindMerchant(uid, electricityMemberCardOrder.getOrderId(), electricityMemberCardOrder.getMemberCardId());
+        
+            //商户返利
+            sendMerchantRebateMQ(uid, electricityMemberCardOrder.getOrderId());
+        } else if (Objects.equals(UserInfoActivitySourceEnum.SUCCESS_INVITATION_ACTIVITY.getCode(), latestActivitySource)) {
+            //处理套餐返现活动
+            invitationActivityRecordService.handleInvitationActivityByPackage(userInfo, electricityMemberCardOrder.getOrderId(), packageType);
+        }
+    
+        //是否是新用户
+        if (NumberUtil.equals(NumberConstant.ONE, userInfo.getPayCount())) {
+            switch (latestActivitySource) {
+                case 1:
+                    //处理邀请返券活动
+                    userBizService.joinShareActivityProcess(uid, electricityMemberCardOrder.getMemberCardId());
+                    break;
+                case 2:
+                    //处理邀请返现活动
+                    userBizService.joinShareMoneyActivityProcess(uid, electricityMemberCardOrder.getMemberCardId(), electricityMemberCardOrder.getTenantId());
+                    break;
+                case 4:
+                    //处理渠道活动
+                    userBizService.joinChannelActivityProcess(uid);
+                    break;
+                default:
+                    break;
+            }
+        }
+    }
+    
+    /**
+     * 购买租车套餐后，处理活动
+     */
+    public void handleActivityForCarPackageType(UserInfo userInfo, UserInfoExtra userInfoExtra, Long uid, CarRentalPackageOrderPo carRentalPackageOrderPo, Integer packageType,
+            String orderNo) {
+        Integer latestActivitySource = userInfoExtra.getLatestActivitySource();
+    
+        //处理套餐返现活动
+        if (Objects.equals(UserInfoActivitySourceEnum.SUCCESS_INVITATION_ACTIVITY.getCode(), latestActivitySource)) {
+            invitationActivityRecordService.handleInvitationActivityByPackage(userInfo, orderNo, packageType);
+        }
+    
+        //是否是新用户
+        if (NumberUtil.equals(NumberConstant.ONE, userInfo.getPayCount())) {
+            switch (latestActivitySource) {
+                case 1:
+                    //处理邀请返券活动
+                    userBizService.joinShareActivityProcess(uid, carRentalPackageOrderPo.getRentalPackageId());
+                    break;
+                case 2:
+                    //处理邀请返现活动
+                    userBizService.joinShareMoneyActivityProcess(uid, carRentalPackageOrderPo.getRentalPackageId(), carRentalPackageOrderPo.getTenantId());
+                    break;
+                case 4:
+                    //处理渠道活动
+                    userBizService.joinChannelActivityProcess(uid);
+                    break;
+                default:
+                    break;
+            }
+        }
+    }
+    
+    private void sendMerchantRebateMQ(Long uid, String orderId) {
+        UserInfoExtra userInfoExtra = userInfoExtraService.queryByUidFromCache(uid);
+        if(Objects.isNull(userInfoExtra)){
+            log.warn("BATTERY MERCHANT REBATE WARN!userInfoExtra is null,uid={}",uid);
+            return;
+        }
+        
+        if(Objects.isNull(userInfoExtra.getMerchantId())){
+            log.warn("BATTERY MERCHANT REBATE WARN!merchantId is null,uid={}",uid);
+            return;
+        }
+        
+        BatteryMemberCardMerchantRebate merchantRebate = new BatteryMemberCardMerchantRebate();
+        merchantRebate.setUid(uid);
+        merchantRebate.setOrderId(orderId);
+        merchantRebate.setType(MerchantConstant.TYPE_PURCHASE);
+        merchantRebate.setMerchantId(userInfoExtra.getMerchantId());
+        //续费成功  发送返利MQ
+        rocketMqService.sendAsyncMsg(MqProducerConstant.BATTERY_MEMBER_CARD_MERCHANT_REBATE_TOPIC, JsonUtil.toJson(merchantRebate));
     }
 
     /**
@@ -339,66 +444,85 @@ public class ActivityServiceImpl implements ActivityService {
                 log.warn("not finished real name authentication! user not auth, user info = {}", JsonUtil.toJson(userInfo));
                 return Triple.of(false, "110006", "未进行实名认证");
             }
-
-            //获取参与邀请活动记录
-            JoinShareActivityRecord joinShareActivityRecord = joinShareActivityRecordService.queryByJoinUid(uid);
-
-            //是否有人邀请参与该活动
-            if(Objects.nonNull(joinShareActivityRecord)){
-                //查询对应的活动邀请标准
-                ShareActivity shareActivity = shareActivityService.queryByIdFromCache(joinShareActivityRecord.getActivityId());
-                //检查该活动是否参与过, 没有参与过，并且活动邀请标准为登录注册，则处理该活动
-                if(JoinShareActivityRecord.STATUS_INIT.equals(joinShareActivityRecord.getStatus())
-                        && ActivityEnum.INVITATION_CRITERIA_REAL_NAME.getCode().equals(shareActivity.getInvitationCriteria())){
-
-                    //修改邀请状态
-                    joinShareActivityRecord.setStatus(JoinShareActivityRecord.STATUS_SUCCESS);
-                    joinShareActivityRecord.setUpdateTime(System.currentTimeMillis());
-                    joinShareActivityRecordService.update(joinShareActivityRecord);
-
-                    //修改历史记录状态
-                    JoinShareActivityHistory oldJoinShareActivityHistory = joinShareActivityHistoryService.queryByRecordIdAndJoinUid(joinShareActivityRecord.getId(), uid);
-                    if (Objects.nonNull(oldJoinShareActivityHistory)) {
-                        oldJoinShareActivityHistory.setStatus(JoinShareActivityHistory.STATUS_SUCCESS);
-                        oldJoinShareActivityHistory.setUpdateTime(System.currentTimeMillis());
-                        joinShareActivityHistoryService.update(oldJoinShareActivityHistory);
-                    }
-
-                    //给邀请人增加邀请成功人数
-                    shareActivityRecordService.addCountByUid(joinShareActivityRecord.getUid(), joinShareActivityRecord.getActivityId());
-                }
+    
+            UserInfoExtra userInfoExtra = userInfoExtraService.queryByUidFromCache(uid);
+            if (Objects.isNull(userInfoExtra)) {
+                log.error("handle activity for real name auth error! Not found userInfoExtra, joinUid={}", uid);
+                return Triple.of(false, "ELECTRICITY.0019", "未找到用户");
             }
-
-            //是否有人返现邀请
-            JoinShareMoneyActivityRecord joinShareMoneyActivityRecord = joinShareMoneyActivityRecordService.queryByJoinUid(uid);
-            if (Objects.nonNull(joinShareMoneyActivityRecord)) {
-                ShareMoneyActivity shareMoneyActivity = shareMoneyActivityService.queryByIdFromCache(joinShareMoneyActivityRecord.getActivityId());
-                if(JoinShareMoneyActivityRecord.STATUS_INIT.equals(joinShareMoneyActivityRecord.getStatus())
-                        && ActivityEnum.INVITATION_CRITERIA_REAL_NAME.getCode().equals(shareMoneyActivity.getInvitationCriteria())){
-                    //修改邀请状态
-                    joinShareMoneyActivityRecord.setStatus(JoinShareMoneyActivityRecord.STATUS_SUCCESS);
-                    joinShareMoneyActivityRecord.setUpdateTime(System.currentTimeMillis());
-                    joinShareMoneyActivityRecordService.update(joinShareMoneyActivityRecord);
-
-                    //修改历史记录状态
-                    JoinShareMoneyActivityHistory oldJoinShareMoneyActivityHistory = joinShareMoneyActivityHistoryService.queryByRecordIdAndJoinUid(joinShareMoneyActivityRecord.getId(), uid);
-                    if (Objects.nonNull(oldJoinShareMoneyActivityHistory)) {
-                        oldJoinShareMoneyActivityHistory.setStatus(JoinShareMoneyActivityHistory.STATUS_SUCCESS);
-                        oldJoinShareMoneyActivityHistory.setUpdateTime(System.currentTimeMillis());
-                        joinShareMoneyActivityHistoryService.update(oldJoinShareMoneyActivityHistory);
-                    }
-
-                    if (Objects.nonNull(shareMoneyActivity)) {
+    
+            // 530需求:以最新的参与活动为准
+            Integer latestActivitySource = userInfoExtra.getLatestActivitySource();
+            if (Objects.equals(UserInfoActivitySourceEnum.SUCCESS_SHARE_ACTIVITY.getCode(), latestActivitySource)) {
+                //获取参与邀请活动记录
+                JoinShareActivityRecord joinShareActivityRecord = joinShareActivityRecordService.queryByJoinUid(uid);
+    
+                //是否有人邀请参与该活动
+                if(Objects.nonNull(joinShareActivityRecord)){
+                    //查询对应的活动邀请标准
+                    ShareActivity shareActivity = shareActivityService.queryByIdFromCache(joinShareActivityRecord.getActivityId());
+                    //检查该活动是否参与过, 没有参与过，并且活动邀请标准为登录注册，则处理该活动
+                    if(JoinShareActivityRecord.STATUS_INIT.equals(joinShareActivityRecord.getStatus())
+                            && ActivityEnum.INVITATION_CRITERIA_REAL_NAME.getCode().equals(shareActivity.getInvitationCriteria())){
+            
+                        //修改邀请状态
+                        joinShareActivityRecord.setStatus(JoinShareActivityRecord.STATUS_SUCCESS);
+                        joinShareActivityRecord.setUpdateTime(System.currentTimeMillis());
+                        joinShareActivityRecordService.update(joinShareActivityRecord);
+            
+                        //修改历史记录状态
+                        JoinShareActivityHistory oldJoinShareActivityHistory = joinShareActivityHistoryService.queryByRecordIdAndJoinUid(joinShareActivityRecord.getId(), uid);
+                        if (Objects.nonNull(oldJoinShareActivityHistory)) {
+                            oldJoinShareActivityHistory.setStatus(JoinShareActivityHistory.STATUS_SUCCESS);
+                            oldJoinShareActivityHistory.setUpdateTime(System.currentTimeMillis());
+                            joinShareActivityHistoryService.update(oldJoinShareActivityHistory);
+                        }
+            
                         //给邀请人增加邀请成功人数
-                        shareMoneyActivityRecordService.addCountByUid(joinShareMoneyActivityRecord.getUid(), shareMoneyActivity.getMoney());
+                        shareActivityRecordService.addCountByUid(joinShareActivityRecord.getUid(), joinShareActivityRecord.getActivityId());
+            
+                        //修改会员扩展表活动类型
+                        userInfoExtraService.updateByUid(UserInfoExtra.builder().uid(uid).activitySource(UserInfoActivitySourceEnum.SUCCESS_SHARE_ACTIVITY.getCode())
+                                .inviterUid(oldJoinShareActivityHistory.getUid()).build());
                     }
-
-                    //返现
-                    userAmountService.handleAmount(joinShareMoneyActivityRecord.getUid(), joinShareMoneyActivityRecord.getJoinUid(), shareMoneyActivity.getMoney(), shareMoneyActivity.getTenantId());
                 }
-
             }
-
+            
+            if (Objects.equals(UserInfoActivitySourceEnum.SUCCESS_SHARE_MONEY_ACTIVITY.getCode(), latestActivitySource)) {
+                //是否有人返现邀请
+                JoinShareMoneyActivityRecord joinShareMoneyActivityRecord = joinShareMoneyActivityRecordService.queryByJoinUid(uid);
+                if (Objects.nonNull(joinShareMoneyActivityRecord)) {
+                    ShareMoneyActivity shareMoneyActivity = shareMoneyActivityService.queryByIdFromCache(joinShareMoneyActivityRecord.getActivityId());
+                    if(JoinShareMoneyActivityRecord.STATUS_INIT.equals(joinShareMoneyActivityRecord.getStatus())
+                            && ActivityEnum.INVITATION_CRITERIA_REAL_NAME.getCode().equals(shareMoneyActivity.getInvitationCriteria())){
+                        //修改邀请状态
+                        joinShareMoneyActivityRecord.setStatus(JoinShareMoneyActivityRecord.STATUS_SUCCESS);
+                        joinShareMoneyActivityRecord.setUpdateTime(System.currentTimeMillis());
+                        joinShareMoneyActivityRecordService.update(joinShareMoneyActivityRecord);
+            
+                        //修改历史记录状态
+                        JoinShareMoneyActivityHistory oldJoinShareMoneyActivityHistory = joinShareMoneyActivityHistoryService.queryByRecordIdAndJoinUid(joinShareMoneyActivityRecord.getId(), uid);
+                        if (Objects.nonNull(oldJoinShareMoneyActivityHistory)) {
+                            oldJoinShareMoneyActivityHistory.setStatus(JoinShareMoneyActivityHistory.STATUS_SUCCESS);
+                            oldJoinShareMoneyActivityHistory.setUpdateTime(System.currentTimeMillis());
+                            joinShareMoneyActivityHistoryService.update(oldJoinShareMoneyActivityHistory);
+                        }
+            
+                        if (Objects.nonNull(shareMoneyActivity)) {
+                            //给邀请人增加邀请成功人数
+                            shareMoneyActivityRecordService.addCountByUid(joinShareMoneyActivityRecord.getUid(), shareMoneyActivity.getMoney());
+                        }
+            
+                        //返现
+                        userAmountService.handleAmount(joinShareMoneyActivityRecord.getUid(), joinShareMoneyActivityRecord.getJoinUid(), shareMoneyActivity.getMoney(), shareMoneyActivity.getTenantId());
+            
+                        //修改会员扩展表活动类型
+                        userInfoExtraService.updateByUid(UserInfoExtra.builder().uid(uid).activitySource(UserInfoActivitySourceEnum.SUCCESS_SHARE_MONEY_ACTIVITY.getCode())
+                                .inviterUid(oldJoinShareMoneyActivityHistory.getUid()).build());
+                    }
+        
+                }
+            }
         }catch (Exception e){
             log.error("handle activity for real name auth error, uid = {}",uid, e);
             throw new BizException("110007", e.getMessage());

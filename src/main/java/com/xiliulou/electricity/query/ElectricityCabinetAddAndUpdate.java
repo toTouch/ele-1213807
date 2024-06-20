@@ -6,6 +6,8 @@ import com.xiliulou.electricity.validator.CreateGroup;
 import com.xiliulou.electricity.validator.UpdateGroup;
 import lombok.Data;
 
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
@@ -133,6 +135,31 @@ public class ElectricityCabinetAddAndUpdate {
      * 场地费
      */
     private BigDecimal placeFee;
+    
+    
+    /**
+     * 最小是否限制 0 无限制，1限制
+     */
+    private Integer minIsLimit;
+    
+    /**
+     * 最大是否限制 0 无限制，1限制
+     */
+    private Integer maxIsLimit;
+    
+    /**
+     * 最小保留电池数量，不限制为null;限制则需要前端传递
+     */
+    @Min(value = 0, message = "最小保留电池数量不能小于0")
+    @Max(value = 99, message = "最小保留电池数量不能超过99")
+    private Integer minRetainBatteryCount;
+    
+    /**
+     * 最大保留电池数量，不限制为null;限制则需要前端传递
+     */
+    @Min(value = 0, message = "最大保留电池数量不能小于0")
+    @Max(value = 99, message = "最大保留电池数量不能超过99")
+    private Integer maxRetainBatteryCount;
 
     //全天
     public static final String ALL_DAY = "-1";

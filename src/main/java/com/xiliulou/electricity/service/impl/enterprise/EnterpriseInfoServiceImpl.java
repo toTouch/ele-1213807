@@ -588,6 +588,11 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
         return enterpriseInfoMapper.selectList(tenantId);
     }
     
+    @Override
+    public void deleteCacheByEnterpriseId(Long enterpriseId) {
+        redisService.delete(CacheConstant.CACHE_ENTERPRISE_INFO + enterpriseId);
+    }
+    
     private int getRentDayNum(Long beginTime, Long endTime) {
         int maxDaySize = 1;
         
@@ -940,9 +945,9 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
             return Triple.of(false, "120212", "商户不存在");
         }
         
-        //校验企业用户云豆是否都已回收
-        if (enterpriseChannelUserService.queryNotRecycleUserCount(id) > 0) {
-            return Triple.of(false, "120237", "该商户下还有未回收的云豆，请先处理后操作");
+        // 校验企业是否存在自主续费关闭的用户
+        if (enterpriseChannelUserService.existsRenewCloseUser(id) > 0) {
+            return Triple.of(false, "120238", "该商户下还有代付用户，暂无法删除，请联系商户开启名下骑手自主续费，解除关系后操作");
         }
         
         if (BigDecimal.ZERO.compareTo(enterpriseInfo.getTotalBeanAmount()) < 0) {
@@ -1724,7 +1729,7 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
         EnterpriseInfo enterpriseInfo = this.selectByUid(SecurityUtils.getUid());
         if (Objects.isNull(enterpriseInfo)) {
             log.error("ENTERPRISE ERROR! not found enterpriseInfo,uid={} ", SecurityUtils.getUid());
-            return null;
+            return Triple.of(true, null, null);
         }
         
         CloudBeanGeneralViewVO cloudBeanGeneralViewVO = new CloudBeanGeneralViewVO();

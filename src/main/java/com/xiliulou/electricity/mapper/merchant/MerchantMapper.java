@@ -40,7 +40,7 @@ public interface MerchantMapper {
     
     Integer batchUpdateExistPlaceFee(@Param("merchantIdList") List<Long> merchantIdList, @Param("existsPlaceFee") Integer existsPlaceFee, @Param("updateTime") Long updateTime);
     
-    List<Merchant> selectListAllByIds(@Param("merchantIdSet") Set<Long> merchantIdSet, @Param("tenantId") Integer tenantId);
+    List<Merchant> selectListAllByIds(@Param("merchantIdList") List<Long> merchantIdList, @Param("tenantId") Integer tenantId);
     
     List<Merchant> selectListByUidList(@Param("uidList") Set<Long> uidList, @Param("tenantId") Integer tenantId);
     

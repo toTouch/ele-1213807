@@ -5,6 +5,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonSyntaxException;
 import com.xiliulou.core.json.JsonUtil;
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.ElectricityMemberCard;
 import com.xiliulou.electricity.entity.ShareActivityOperateRecord;
@@ -79,6 +80,7 @@ public class ShareActivityOperateRecordServiceImpl implements ShareActivityOpera
     }
 
     @Override
+    @Slave
     public List<ShareActivityOperateRecordVO> page(ShareActivityQuery query) {
         List<ShareActivityOperateRecord> list=shareActivityOperateRecordMapper.selectByPage(query);
         if(CollectionUtils.isEmpty(list)){
@@ -179,6 +181,7 @@ public class ShareActivityOperateRecordServiceImpl implements ShareActivityOpera
     }
 
     @Override
+    @Slave
     public Integer count(ShareActivityQuery query) {
         return shareActivityOperateRecordMapper.selectByPageCount(query);
     }

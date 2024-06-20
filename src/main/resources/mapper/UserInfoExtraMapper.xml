@@ -12,20 +12,23 @@
         <result property="tenantId" column="tenant_id" jdbcType="INTEGER"/>
         <result property="createTime" column="create_time" jdbcType="INTEGER"/>
         <result property="updateTime" column="update_time" jdbcType="INTEGER"/>
+        <result property="activitySource" column="activity_source" jdbcType="INTEGER"/>
+        <result property="inviterUid" column="inviter_uid" jdbcType="INTEGER"/>
+        <result property="latestActivitySource" column="latest_activity_source" jdbcType="INTEGER"/>
     </resultMap>
     
     <!--查询单个-->
     <select id="selectByUid" resultMap="UserInfoExtraMap">
         select
-          uid, merchant_id, channel_employee_uid, place_uid, place_id, del_flag, tenant_id, create_time, update_time
+          uid, merchant_id, channel_employee_uid, place_uid, place_id, del_flag, tenant_id, create_time, update_time, activity_source, inviter_uid, latest_activity_source
         from t_user_info_extra
         where uid = #{uid}
     </select>
     
     <!--新增所有列-->
     <insert id="insert" keyProperty="uid" useGeneratedKeys="true">
-        insert into t_user_info_extra(uid, merchant_id, channel_employee_uid, place_uid, place_id, del_flag, tenant_id, create_time, update_time)
-        values (#{uid}, #{merchantId}, #{channelEmployeeUid}, #{placeUid}, #{placeId}, #{delFlag}, #{tenantId}, #{createTime}, #{updateTime})
+        insert into t_user_info_extra(uid, merchant_id, channel_employee_uid, place_uid, place_id, del_flag, tenant_id, create_time, update_time, activity_source, inviter_uid, latest_activity_source)
+        values (#{uid}, #{merchantId}, #{channelEmployeeUid}, #{placeUid}, #{placeId}, #{delFlag}, #{tenantId}, #{createTime}, #{updateTime}, #{activitySource}, #{inviterUid}, #{latestActivitySource})
     </insert>
     
     <!--通过主键修改数据-->
@@ -55,6 +58,15 @@
             </if>
             <if test="updateTime != null">
                 update_time = #{updateTime},
+            </if>
+            <if test="activitySource != null">
+                activity_source = #{activitySource},
+            </if>
+            <if test="inviterUid != null">
+                inviter_uid = #{inviterUid},
+            </if>
+            <if test="latestActivitySource != null">
+                latest_activity_source = #{latestActivitySource},
             </if>
         </set>
         where uid = #{uid}

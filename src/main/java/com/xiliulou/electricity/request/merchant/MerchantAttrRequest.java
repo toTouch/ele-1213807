@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
 
 /**
  * @author zzlong
@@ -33,6 +34,7 @@ public class MerchantAttrRequest {
      * 邀请保护期
      */
     @Max(value = 99999, message = "邀请保护期不合法")
+    @Min(value = 0, message = "邀请保护期不合法")
     private Integer invitationProtectionTime;
     
     /**

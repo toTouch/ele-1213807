@@ -4,7 +4,6 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.JoinShareMoneyActivityHistory;
 import com.xiliulou.electricity.query.JsonShareMoneyActivityHistoryQuery;
 import com.xiliulou.electricity.vo.FinalJoinShareMoneyActivityHistoryVo;
-import com.xiliulou.electricity.vo.JoinShareMoneyActivityHistoryVO;
 import org.apache.commons.lang3.tuple.Pair;
 
 import javax.servlet.http.HttpServletResponse;
@@ -70,5 +69,5 @@ public interface JoinShareMoneyActivityHistoryService {
     
     JoinShareMoneyActivityHistory querySuccessHistoryByJoinUid(Long uid, Integer tenantId);
     
-    Integer removeById(Long id, Long updateTime);
+    Integer removeByJoinUid(Long joinUid, Long updateTime, Integer tenantId);
 }

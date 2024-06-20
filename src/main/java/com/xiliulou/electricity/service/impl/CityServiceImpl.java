@@ -5,14 +5,11 @@ import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.City;
-import com.xiliulou.electricity.entity.Region;
 import com.xiliulou.electricity.mapper.CityMapper;
 import com.xiliulou.electricity.service.CityService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.List;
@@ -61,6 +58,7 @@ public class CityServiceImpl implements CityService {
         return city;
     }
 
+    @Slave
     @Override
     public City queryCityByCode(String code) {
         return cityMapper.selectOne(new LambdaQueryWrapper<City>().eq(City::getCode, code));
@@ -72,6 +70,7 @@ public class CityServiceImpl implements CityService {
         return cityMapper.selectList(new LambdaQueryWrapper<City>().eq(City::getPid, pid));
     }
 
+    @Slave
     @Override
     public List<City> selectByCids(List<Integer> cids) {
         return cityMapper.selectList(new LambdaQueryWrapper<City>().in(City::getId, cids));
