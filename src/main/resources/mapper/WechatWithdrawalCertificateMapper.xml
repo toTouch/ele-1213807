@@ -26,10 +26,12 @@
         select
         <include refid="base_column"/>
         from t_wechat_withdrawal_certificate
-        where del_flag = 0 and (tenant_id,franchisee_id)
+        where
+        del_flag = 0
+        and (tenant_id,franchisee_id)
         in
         <foreach collection="list" item="item" separator="," open="(" close=")">
-            #{item.tenantId},#{item.franchiseeId}
+            (#{item.tenantId},#{item.franchiseeId})
         </foreach>
     </select>
     
