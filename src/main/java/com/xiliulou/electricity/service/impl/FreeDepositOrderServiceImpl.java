@@ -1509,7 +1509,7 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
             log.error("FREE DEPOSIT HYBRID ERROR! wechat v3 order  error! uid={}", uid, e);
         }
         
-        return Triple.of(false, "ELECTRICITY.0099", "下单失败");
+        return Triple.of(false, "PAY_TRANSFER.0019", "支付未成功，请联系客服处理");
     }
     
     @Override
