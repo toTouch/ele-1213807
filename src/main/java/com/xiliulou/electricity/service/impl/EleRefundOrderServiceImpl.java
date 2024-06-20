@@ -530,7 +530,8 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
         enterpriseChannelUserService.updatePaymentStatusForRefundDeposit(userInfo.getUid(), EnterprisePaymentStatusEnum.PAYMENT_TYPE_EXPIRED.getCode());
         
         // 支付配置校验未通过，原线上退款需转为线下退款，但是0元不强制转线下退款
-        log.info("退款强制转线下判断参数，refundAmount={}，offlineRefund={}",refundAmount,offlineRefund);
+        Boolean result = refundAmount.compareTo(BigDecimal.ZERO) > 0 && Objects.equals(offlineRefund, CheckPayParamsResultEnum.FAIL.getCode());
+        log.info("result={}，refundAmount={}，offlineRefund={}",result,refundAmount,offlineRefund);
         if (refundAmount.compareTo(BigDecimal.ZERO) > 0 && Objects.equals(offlineRefund, CheckPayParamsResultEnum.FAIL.getCode())) {
             eleRefundOrderUpdate.setPayType(EleRefundOrder.PAY_TYPE_OFFLINE);
             log.info("OFFLINE REFUND COMPLETED! refundOrderNo={}", eleRefundOrder.getRefundOrderNo());
