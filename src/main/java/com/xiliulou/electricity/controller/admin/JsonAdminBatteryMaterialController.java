@@ -92,7 +92,7 @@ public class JsonAdminBatteryMaterialController extends BaseController {
     public R save(@RequestBody @Validated(CreateGroup.class) BatteryMaterialQuery batteryMaterialQuery) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
-            log.error("ELE ERROR! not found user");
+            log.warn("ELE WARN! not found user");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
@@ -111,7 +111,7 @@ public class JsonAdminBatteryMaterialController extends BaseController {
     public R update(@RequestBody @Validated(UpdateGroup.class) BatteryMaterialQuery batteryMaterialQuery) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
-            log.error("ELE ERROR! not found user");
+            log.warn("ELE WARN! not found user");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
@@ -130,7 +130,7 @@ public class JsonAdminBatteryMaterialController extends BaseController {
     public R delete(@PathVariable("id") Long id) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
-            log.error("ELE ERROR! not found user");
+            log.warn("ELE WARN! not found user");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
