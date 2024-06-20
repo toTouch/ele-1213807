@@ -163,6 +163,7 @@
             <if test=" updateUid != null "> , `update_uid` = #{updateUid} </if>
             <if test=" auditTime != null "> , `audit_time` = #{auditTime} </if>
             <if test=" realAmount != null "> , `real_amount` = #{realAmount} </if>
+            <if test=" payType != null "> , `pay_type` = #{payType} </if>
             <if test=" compelOffLine != null "> , `compel_offLine` = #{compelOffLine} </if>
         </set>
         <where>
