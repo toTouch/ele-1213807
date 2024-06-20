@@ -632,7 +632,7 @@ public class TradeOrderServiceImpl implements TradeOrderService {
             //            redisService.delete(CacheConstant.ELE_CACHE_USER_BATTERY_MEMBER_CARD_LOCK_KEY + SecurityUtils.getUid());
         }
         
-        return Triple.of(false, "ELECTRICITY.0099", "租电套餐支付失败");
+        return Triple.of(false, "PAY_TRANSFER.0019", "支付未成功，请联系客服处理");
     }
     
     /**
@@ -781,7 +781,7 @@ public class TradeOrderServiceImpl implements TradeOrderService {
             // redisService.delete(CacheConstant.ELE_CACHE_SERVICE_FEE_LOCK_KEY + user.getUid());
         }
         
-        return Triple.of(false, "ELECTRICITY.0099", "滞纳金支付失败");
+        return Triple.of(false, "PAY_TRANSFER.0019", "支付未成功，请联系客服处理");
     }
     
     /**
