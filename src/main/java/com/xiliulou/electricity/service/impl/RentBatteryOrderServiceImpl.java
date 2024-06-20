@@ -908,9 +908,6 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
     }
     
     private Triple<Boolean, Integer, String> findUsableEmptyCellNo(Integer eid, String version) {
-        if (Objects.isNull(eid)) {
-            return Triple.of(false, null, "当前换电柜不存在");
-        }
         ElectricityCabinetExtra cabinetExtra = electricityCabinetExtraService.queryByEidFromCache(Long.valueOf(eid));
         if (Objects.isNull(cabinetExtra)) {
             return Triple.of(false, null, "换电柜异常，不存在的换电柜扩展信息");
