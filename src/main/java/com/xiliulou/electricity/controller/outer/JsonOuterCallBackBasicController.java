@@ -25,7 +25,7 @@ public class JsonOuterCallBackBasicController {
     private ElectricityPayParamsService electricityPayParamsService;
     
     /**
-     * 处理回调参数
+     * 处理回调参数 ,老支付回调(兼容上线期间的历史数据)
      *
      * @param wechatV3RefundOrderCallBackQuery
      * @return
@@ -65,12 +65,12 @@ public class JsonOuterCallBackBasicController {
     protected WechatJsapiRefundOrderCallBackResource handCallBackParam(WechatV3RefundOrderCallBackRequest wechatV3RefundOrderCallBackQuery) {
         WechatCallBackResouceData resource = wechatV3RefundOrderCallBackQuery.getResource();
         if (Objects.isNull(resource)) {
-            log.error("WECHAT ERROR! no wechat's info ! msg={}", wechatV3RefundOrderCallBackQuery);
+            log.error("WECHAT ERROR! new call back no wechat's info ! msg={}", wechatV3RefundOrderCallBackQuery);
             return null;
         }
         
         ElectricityPayParams payParams = electricityPayParamsService
-                .queryPreciseCacheByTenantIdAndFranchiseeId(wechatV3RefundOrderCallBackQuery.getTenantId(), MultiFranchiseeConstant.DEFAULT_FRANCHISEE);
+                .queryPreciseCacheByTenantIdAndFranchiseeId(wechatV3RefundOrderCallBackQuery.getTenantId(), wechatV3RefundOrderCallBackQuery.getFranchiseeId());
         
         String decryptJson = null;
         try {
@@ -79,7 +79,7 @@ public class JsonOuterCallBackBasicController {
                             payParams.getWechatV3ApiKey().getBytes(StandardCharsets.UTF_8));
             
         } catch (Exception e) {
-            log.error("WECHAT ERROR! wechat decrypt error! msg={}", wechatV3RefundOrderCallBackQuery, e);
+            log.error("WECHAT ERROR! new call wechat decrypt error! msg={}", wechatV3RefundOrderCallBackQuery, e);
             return null;
         }
         
