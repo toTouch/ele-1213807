@@ -365,7 +365,7 @@ public class DivisionAccountConfigServiceImpl implements DivisionAccountConfigSe
         if (Objects.isNull(divisionAccountConfig) || !Objects.equals(divisionAccountConfig.getTenantId(), TenantContextHolder.getTenantId())) {
             return Triple.of(false, "100480", "分帐配置不存在");
         }
-        log.error("update DA Status flow start: request parameters = {}", JsonUtil.toJson(divisionAccountConfigQuery));
+        log.info("update DA Status flow start: request parameters = {}", JsonUtil.toJson(divisionAccountConfigQuery));
         //若选择启用的分账设置中套餐信息，在之前已启用的配置中存在，则不允许启用当前设置。
         if (DivisionAccountConfig.STATUS_ENABLE.equals(divisionAccountConfigQuery.getStatus())) {
             //1. 查询出当前加盟商下所有的已启用的分账套餐信息。
@@ -407,16 +407,14 @@ public class DivisionAccountConfigServiceImpl implements DivisionAccountConfigSe
 
         //当前分帐配置绑定的套餐
         List<DivisionAccountBatteryMemberCardVO> divisionAccountBatteryMembercards = divisionAccountBatteryMembercardService.selectMemberCardsByDAConfigIdAndHierarchy(divisionAccountConfig.getId(), divisionAccountConfig.getHierarchy());
-        //TODO 排查问题，完成后需要删除
-        log.error("check the da status is enable: enable da config info = {}", JsonUtil.toJson(divisionAccountConfigRefVOS));
-        log.error("current da config packages: current package info = {}", JsonUtil.toJson(divisionAccountBatteryMembercards));
+       
         for(DivisionAccountConfigRefVO divisionAccountConfigRefVO : divisionAccountConfigRefVOS){
             for(DivisionAccountBatteryMemberCardVO divisionAccountBatteryMembercard : divisionAccountBatteryMembercards){
                 //检查设置套餐是否在之前启用的设置套餐中存在
-                log.error("Already enable da package info: old package info = {}, current package info = {}", JsonUtil.toJson(divisionAccountConfigRefVO), JsonUtil.toJson(divisionAccountBatteryMembercard));
+                //log.warn("Already enable da package info: old package info = {}, current package info = {}", JsonUtil.toJson(divisionAccountConfigRefVO), JsonUtil.toJson(divisionAccountBatteryMembercard));
                 if(divisionAccountConfigRefVO.getRefId().equals(divisionAccountBatteryMembercard.getRefId())
                         && divisionAccountConfigRefVO.getPackageType().equals(divisionAccountBatteryMembercard.getType())){
-                    log.error("Already used da config package: old division account config id = {}, current config id = {}", divisionAccountConfigRefVO.getId(), divisionAccountConfig.getId());
+                    log.warn("Already used da config package: old division account config id = {}, current config id = {}", divisionAccountConfigRefVO.getId(), divisionAccountConfig.getId());
                     return Triple.of(false, "", "套餐分帐配置已存在");
                 }
             }
@@ -585,7 +583,7 @@ public class DivisionAccountConfigServiceImpl implements DivisionAccountConfigSe
             //因换电存在老的流程，所以需要检查是否存在之前设置过的套餐信息。
             Triple<Boolean, String, Object> verifyBatteryMembercardResult = verifyBatteryMembercardParams(query);
             if (Boolean.FALSE.equals(verifyBatteryMembercardResult.getLeft())) {
-                log.error("旧换电" + verifyBatteryMembercardResult.getRight());
+                log.warn("旧换电" + verifyBatteryMembercardResult.getRight());
                 return verifyBatteryMembercardResult;
             }
 
@@ -599,7 +597,7 @@ public class DivisionAccountConfigServiceImpl implements DivisionAccountConfigSe
 
             Triple<Boolean, String, Object> existPackagesResult = isExistDAPackages(DivisionAccountBatteryMembercard.TYPE_BATTERY, query.getBatteryPackages(), query.getFranchiseeId(), query.getTenantId());
             if (Boolean.FALSE.equals(existPackagesResult.getLeft())) {
-                log.error("换电" + existPackagesResult.getRight());
+                log.warn("换电" + existPackagesResult.getRight());
                 return existPackagesResult;
             }
         }
@@ -615,7 +613,7 @@ public class DivisionAccountConfigServiceImpl implements DivisionAccountConfigSe
 
             Triple<Boolean, String, Object> existPackagesResult = isExistDAPackages(DivisionAccountBatteryMembercard.TYPE_CAR_RENTAL, query.getCarRentalPackages(), query.getFranchiseeId(), query.getTenantId());
             if (Boolean.FALSE.equals(existPackagesResult.getLeft())) {
-                log.error("租车" + existPackagesResult.getRight());
+                log.warn("租车" + existPackagesResult.getRight());
                 return existPackagesResult;
             }
 
@@ -631,7 +629,7 @@ public class DivisionAccountConfigServiceImpl implements DivisionAccountConfigSe
 
             Triple<Boolean, String, Object> existPackagesResult = isExistDAPackages(DivisionAccountBatteryMembercard.TYPE_CAR_BATTERY, query.getCarWithBatteryPackages(), query.getFranchiseeId(), query.getTenantId());
             if (Boolean.FALSE.equals(existPackagesResult.getLeft())) {
-                log.error("车一体" + existPackagesResult.getRight());
+                log.warn("车一体" + existPackagesResult.getRight());
                 return existPackagesResult;
             }
         }

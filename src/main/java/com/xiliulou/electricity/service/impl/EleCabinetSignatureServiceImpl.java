@@ -476,7 +476,7 @@ public class EleCabinetSignatureServiceImpl implements EleCabinetSignatureServic
         //获取当前用户信息
         UserInfo userInfo = userInfoService.queryByUidFromCache(SecurityUtils.getUid());
         if (Objects.isNull(userInfo)) {
-            log.error("eSign error! not found userInfo,uid={}", SecurityUtils.getUid());
+            log.warn("eSign error! not found userInfo,uid={}", SecurityUtils.getUid());
             return Triple.of(false, "000100", "未找到用户");
         }
 
@@ -489,7 +489,7 @@ public class EleCabinetSignatureServiceImpl implements EleCabinetSignatureServic
         //对应的租户是否已经开启电子签署功能
         ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(TenantContextHolder.getTenantId());
         if (Objects.isNull(electricityConfig)) {
-            log.error("eSign error! electricityConfig is null,tenantId={}", TenantContextHolder.getTenantId());
+            log.warn("eSign error! electricityConfig is null,tenantId={}", TenantContextHolder.getTenantId());
             return Triple.of(false, "000102", "系统异常！");
         }
 
@@ -652,7 +652,7 @@ public class EleCabinetSignatureServiceImpl implements EleCabinetSignatureServic
                 saveSignResultInfo(esignCallBackQuery.getSignFlowId(), esignConfig);
             }
         }else{
-            log.error(" validate signature error for esign call back flow, signature: {}, encryptionSignature: {}", signature, encryptionSignature);
+            log.warn(" validate signature error for esign call back flow, signature: {}, encryptionSignature: {}", signature, encryptionSignature);
         }
 
     }
