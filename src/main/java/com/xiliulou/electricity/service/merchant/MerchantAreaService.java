@@ -17,7 +17,7 @@ public interface MerchantAreaService {
     
     R save(MerchantAreaSaveOrUpdateRequest saveRequest, Long operator);
     
-    R deleteById(Long id);
+    R deleteById(Long id, Long bindFranchiseeId);
     
     R updateById(MerchantAreaSaveOrUpdateRequest updateRequest);
     

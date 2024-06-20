@@ -213,7 +213,7 @@ public class MerchantServiceImpl implements MerchantService {
     
         // 检测选中的加盟商和当前登录加盟商是否一致
         if (Objects.nonNull(merchantSaveRequest.getBindFranchiseeId()) && !Objects.equals(merchantSaveRequest.getBindFranchiseeId(), merchantSaveRequest.getFranchiseeId())) {
-            log.info("merchant save info, franchisee is not different id={}, franchiseeId={}, bindFranchiseeId={}", merchantSaveRequest.getId(), merchantSaveRequest.getFranchiseeId(), merchantSaveRequest.getBindFranchiseeId());
+            log.info("merchant save info, franchisee is not different id={}, franchiseeId={}, bindFranchiseeId={}", merchantSaveRequest.getName(), merchantSaveRequest.getFranchiseeId(), merchantSaveRequest.getBindFranchiseeId());
             return Triple.of(false, "120240", "当前加盟商无权限操作");
         }
         

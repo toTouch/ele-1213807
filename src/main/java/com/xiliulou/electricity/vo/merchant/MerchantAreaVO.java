@@ -46,4 +46,9 @@ public class MerchantAreaVO {
      * 柜机数
      */
     private Integer cabinetNun;
+    
+    /**
+     * 加盟商
+     */
+    private String franchiseeName;
 }

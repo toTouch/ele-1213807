@@ -143,7 +143,7 @@ public class JsonMerchantController extends BaseController {
         
         // 商户保存权限 admin,租户，加盟商
         if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE) || Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE))) {
-            log.error("merchant save warn! user not auth");
+            log.warn("merchant save warn! user not auth");
             return R.fail("ELECTRICITY.0066", "用户权限不足");
         }
     
@@ -418,7 +418,7 @@ public class JsonMerchantController extends BaseController {
         }
         
         if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE) || Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE))) {
-            return R.fail("ELECTRICITY.0038", "加盟商不存在");
+            return R.fail("ELECTRICITY.0066", "用户权限不足");
         }
     
         Long franchiseeId = null;
@@ -426,7 +426,7 @@ public class JsonMerchantController extends BaseController {
             List<Long> franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
             if (org.apache.commons.collections.CollectionUtils.isEmpty(franchiseeIds)) {
                 log.warn("merchant query warn! franchisee is empty, uid={}", user.getUid());
-                return R.fail("ELECTRICITY.0066", "用户权限不足");
+                return R.fail("ELECTRICITY.0038", "加盟商不存在");
             }
         
             franchiseeId = franchiseeIds.get(0);
