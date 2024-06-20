@@ -132,8 +132,7 @@ public class MerchantPlaceServiceImpl implements MerchantPlaceService {
                 return Triple.of(false, "120218", "区域不存在");
             }
             
-            // todo 区域检测添加加盟商检测
-            if (!Objects.equals(merchantPlaceSaveRequest.getFranchiseeId(), 0L)) {
+            if (!Objects.equals(merchantPlaceSaveRequest.getFranchiseeId(), merchantArea.getFranchiseeId())) {
                 log.info("merchant place save info, area is null franchisee is different ,name={}, merchantAreaId={}", merchantPlaceSaveRequest.getName(), merchantPlaceSaveRequest.getMerchantAreaId());
                 return Triple.of(false, "120218", "区域不存在");
             }
@@ -190,8 +189,7 @@ public class MerchantPlaceServiceImpl implements MerchantPlaceService {
                 return Triple.of(false, "120218", "区域不存在");
             }
     
-            // todo 区域检测添加加盟商检测
-            if (!Objects.equals(merchantPlaceSaveRequest.getFranchiseeId(), 0L)) {
+            if (!Objects.equals(merchantPlaceSaveRequest.getFranchiseeId(), merchantArea.getFranchiseeId())) {
                 log.error("merchant place save error, area is null franchisee is different ,name={}, merchantAreaId={}", merchantPlaceSaveRequest.getName(), merchantPlaceSaveRequest.getMerchantAreaId());
                 return Triple.of(false, "120218", "区域不存在");
             }
