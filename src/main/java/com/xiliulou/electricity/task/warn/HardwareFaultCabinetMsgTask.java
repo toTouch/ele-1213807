@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 /**
  * @author maxiaodong
  * @date 2023/12/28 18:55
- * @mood
+ * @mood 故障告警柜机日结统计
  */
 @Component
 @JobHandler(value = "hardwareFaultCabinetMsgTask")
