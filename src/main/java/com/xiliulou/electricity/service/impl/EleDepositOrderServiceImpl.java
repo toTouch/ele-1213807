@@ -775,7 +775,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         
         WechatPayParamsDetails wechatPayParamsDetails = wechatPayParamsBizService.getDetailsByIdTenantIdAndFranchiseeId(eleDepositOrder.getTenantId(),
                 eleDepositOrder.getParamFranchiseeId());
-        if (Objects.isNull(wechatPayParamsDetails)) {
+        if (Objects.isNull(wechatPayParamsDetails) || Objects.equals(eleDepositOrder.getParamFranchiseeId(), wechatPayParamsDetails.getFranchiseeId())) {
             return R.ok(CheckPayParamsResultEnum.FAIL.getCode());
         }
         return R.ok(CheckPayParamsResultEnum.SUCCESS.getCode());
