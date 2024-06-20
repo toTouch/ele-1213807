@@ -403,8 +403,13 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             return Triple.of(false, "100247", "用户信息不存在");
         }
         
+        EleDepositOrder eleDepositOrder = eleDepositOrderService.queryByOrderId(eleRefundOrder.getOrderId());
+        if (Objects.isNull(eleDepositOrder)) {
+            return Triple.of(false, "ELECTRICITY.100273", "未查询到支付订单，操作失败，请联系客服处理");
+        }
+        
         WechatPayParamsDetails wechatPayParamsDetails = wechatPayParamsBizService.getDetailsByIdTenantIdAndFranchiseeId(TenantContextHolder.getTenantId(),
-                eleRefundOrder.getFranchiseeId());
+                eleDepositOrder.getParamFranchiseeId());
         if (Objects.isNull(wechatPayParamsDetails)) {
             log.warn("BATTERY DEPOSIT WARN!not found pay params,refundOrderNo={}", eleRefundOrder.getRefundOrderNo());
             return Triple.of(false, "100307", "未配置支付参数!");

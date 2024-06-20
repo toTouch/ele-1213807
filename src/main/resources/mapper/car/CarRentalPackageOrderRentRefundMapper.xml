@@ -171,6 +171,7 @@
             <if test=" remark != null and remark != '' "> , `remark` = #{remark} </if>
             <if test=" updateUid != null "> , `update_uid` = #{updateUid} </if>
             <if test=" auditTime != null "> , `audit_time` = #{auditTime} </if>
+            <if test=" payType != null "> , `pay_type` = #{payType} </if>
             <if test=" compelOffLine != null "> , `compel_offLine` = #{compelOffLine} </if>
         </set>
         <where>
