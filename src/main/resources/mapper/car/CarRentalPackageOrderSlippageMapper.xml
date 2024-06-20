@@ -170,6 +170,8 @@
             <if test=" payState != null ">, `pay_state` = #{payState}</if>
             <if test=" payTime != null ">, `pay_time` = #{payTime}</if>
             <if test=" updateUid != null ">, `update_uid` = #{updateUid}</if>
+            <if test=" wechatMerchantId != null and wechatMerchantId != '' ">, `wechat_merchant_id` = #{wechatMerchantId}</if>
+            <if test=" payFranchiseeId != null ">, `pay_franchisee_id` = #{payFranchiseeId}</if>
         </set>
         <where>
             `id` = #{id}
