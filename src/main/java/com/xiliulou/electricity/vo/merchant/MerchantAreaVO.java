@@ -51,4 +51,9 @@ public class MerchantAreaVO {
      * 加盟商
      */
     private String franchiseeName;
+    
+    /**
+     * 加盟商id
+     */
+    private Long franchiseeId;
 }
