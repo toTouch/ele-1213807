@@ -20,7 +20,6 @@ import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.BatteryMembercardRefundOrder;
 import com.xiliulou.electricity.entity.EleRefundOrder;
 import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
-import com.xiliulou.electricity.entity.ElectricityPayParams;
 import com.xiliulou.electricity.entity.ElectricityTradeOrder;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.MaintenanceUserNotifyConfig;
@@ -362,7 +361,8 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
                 return Triple.of(false, "100281", "电池套餐订单不存在");
             }
             
-            WechatPayParamsDetails wechatPayParamsDetails = wechatPayParamsBizService.getDetailsByIdTenantIdAndFranchiseeId(electricityMemberCardOrder.getTenantId(), electricityMemberCardOrder.getParamFranchiseeId());
+            WechatPayParamsDetails wechatPayParamsDetails = wechatPayParamsBizService.getDetailsByIdTenantIdAndFranchiseeId(electricityMemberCardOrder.getTenantId(),
+                    electricityMemberCardOrder.getParamFranchiseeId());
             if (Objects.isNull(wechatPayParamsDetails)) {
                 log.warn("BATTERY MEMBERCARD REFUND WARN!not found electricityPayParams,uid={}", user.getUid());
                 return Triple.of(false, "", "未配置支付参数!");
@@ -621,9 +621,9 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
         batteryMembercardRefundOrderInsert.setPayAmount(electricityMemberCardOrder.getPayAmount());
         batteryMembercardRefundOrderInsert.setRefundAmount(refundAmount);
         
-        // 若传递强制线下退款标识，将退款类型改为线下退款
-        batteryMembercardRefundOrderInsert.setPayType(
-                Objects.equals(offlineRefund, CheckPayParamsResultEnum.FAIL.getCode()) ? ElectricityMemberCardOrder.OFFLINE_PAYMENT : electricityMemberCardOrder.getPayType());
+        // 若传递强制线下退款标识，将退款类型修改为线下退款，但是0元退款不用强制转为线下退款
+        batteryMembercardRefundOrderInsert.setPayType((batteryMembercardRefundOrderInsert.getRefundAmount().compareTo(BigDecimal.valueOf(0.01)) > 0 && Objects.equals(offlineRefund,
+                CheckPayParamsResultEnum.FAIL.getCode())) ? ElectricityMemberCardOrder.OFFLINE_PAYMENT : electricityMemberCardOrder.getPayType());
         
         batteryMembercardRefundOrderInsert.setStatus(BatteryMembercardRefundOrder.STATUS_INIT);
         batteryMembercardRefundOrderInsert.setFranchiseeId(electricityMemberCardOrder.getFranchiseeId());
@@ -645,7 +645,8 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
     
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Triple<Boolean, String, Object> batteryMembercardRefundAudit(String refundOrderNo, String msg, BigDecimal refundAmount, Integer status, HttpServletRequest request, Integer offlineRefund) {
+    public Triple<Boolean, String, Object> batteryMembercardRefundAudit(String refundOrderNo, String msg, BigDecimal refundAmount, Integer status, HttpServletRequest request,
+            Integer offlineRefund) {
         BatteryMembercardRefundOrder batteryMembercardRefundOrder = this.batteryMembercardRefundOrderMapper.selectOne(
                 new LambdaQueryWrapper<BatteryMembercardRefundOrder>().eq(BatteryMembercardRefundOrder::getRefundOrderNo, refundOrderNo)
                         .eq(BatteryMembercardRefundOrder::getTenantId, TenantContextHolder.getTenantId())
@@ -727,8 +728,8 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
             return Triple.of(true, "", null);
         }
         
-        // 套餐未过期，若支付配置校验未通过，强制线下退款，修改套餐退款订单的退款支付类型
-        if (Objects.equals(offlineRefund, CheckPayParamsResultEnum.FAIL.getCode())) {
+        // 套餐未过期，若支付配置校验未通过，强制线下退款，修改套餐退款订单的退款支付类型。但是0元退款不用将退款类型转为线下
+        if (refundAmount.compareTo(BigDecimal.valueOf(0.01)) > 0 && Objects.equals(offlineRefund, CheckPayParamsResultEnum.FAIL.getCode())) {
             batteryMembercardRefundOrder.setPayType(ElectricityMemberCardOrder.OFFLINE_PAYMENT);
         }
         
@@ -1023,7 +1024,7 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
         }
         
         WechatPayParamsDetails wechatPayParamsDetails = wechatPayParamsBizService.getDetailsByIdTenantIdAndFranchiseeId(electricityMemberCardOrder.getTenantId(),
-                    electricityMemberCardOrder.getParamFranchiseeId());
+                electricityMemberCardOrder.getParamFranchiseeId());
         
         if (Objects.isNull(wechatPayParamsDetails) || Objects.equals(electricityMemberCardOrder.getParamFranchiseeId(), wechatPayParamsDetails.getFranchiseeId())) {
             return R.ok(CheckPayParamsResultEnum.FAIL.getCode());
