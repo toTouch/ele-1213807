@@ -69,8 +69,6 @@ public interface ElectricityCabinetService {
      */
     Integer update(ElectricityCabinet electricityCabinet);
     
-    R save(ElectricityCabinetAddAndUpdate electricityCabinetAddAndUpdate);
-    
     R edit(ElectricityCabinetAddAndUpdate electricityCabinetAddAndUpdate);
     
     R delete(Integer id);
@@ -89,14 +87,6 @@ public interface ElectricityCabinetService {
     
     R updateStatus(Integer id, Integer usableStatus);
     
-    R homeOne(Long beginTime, Long endTime);
-    
-    R homeTwo(Long beginTime, Long endTime);
-    
-    R homeThree(Long beginTime, Long endTime, Integer type);
-    
-    List<HashMap<String, String>> homeThreeInner(Long startTimeMilliDay, Long endTimeMilliDay, List<Integer> eleIdList, Integer tenantId);
-    
     R home();
     
     ElectricityCabinet queryByProductAndDeviceName(String productKey, String deviceName);
@@ -110,9 +100,6 @@ public interface ElectricityCabinetService {
     R queryByDeviceOuter(String productKey, String deviceName);
     
     R showInfoByStoreId(Long storeId);
-    
-    @Deprecated
-    R queryByOrder(String productKey, String deviceName);
     
     R queryByRentBattery(String productKey, String deviceName);
     
@@ -160,13 +147,7 @@ public interface ElectricityCabinetService {
     
     R queryElectricityCabinetBoxInfoById(Integer electricityCabinetId);
     
-    R homepageTurnover();
-    
-    R homepageDeposit();
-    
     R homepageOverviewDetail();
-    
-    R homepageBenefitAnalysis(Long beginTime, Long enTime);
     
     R homepageUserAnalysis(Long beginTime, Long enTime);
     

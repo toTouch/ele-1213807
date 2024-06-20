@@ -13,7 +13,6 @@ import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -229,26 +228,4 @@ public class JsonAdminDivisionAccountRecordController extends BaseController {
 
         return R.ok(divisionAccountRecordService.selectStatisticByPageCount(query));
     }
-    
-    /**
-     * 分帐 （预留接口）
-     */
-    @PostMapping("/admin/division/account/compensation")
-    public R divisionAccountCompensation(@RequestParam("orderId") String orderId, @RequestParam("type") Integer type) {
-    
-        TokenUser user = SecurityUtils.getUserInfo();
-        if (Objects.isNull(user)) {
-            return R.fail("ELECTRICITY.0001", "未找到用户");
-        }
-    
-        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
-            return R.fail("ELECTRICITY.0066", "用户权限不足");
-        }
-    
-        return  returnTripleResult(divisionAccountRecordService.divisionAccountCompensation(orderId,type));
-    }
-    
-    
-    
-
 }

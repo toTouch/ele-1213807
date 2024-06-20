@@ -39,8 +39,6 @@ public interface ElectricityBatteryService extends IService<ElectricityBattery> 
      */
     List<ElectricityBattery> selectBySnList(Integer tenantId, List<String> snList);
     
-    R saveElectricityBattery(EleBatteryQuery electricityBattery);
-    
     R saveElectricityBatteryV2(BatteryAddRequest batteryAddRequest);
     
     Integer update(ElectricityBattery electricityBattery);
