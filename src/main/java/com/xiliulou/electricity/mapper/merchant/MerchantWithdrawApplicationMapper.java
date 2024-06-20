@@ -65,4 +65,6 @@ public interface MerchantWithdrawApplicationMapper {
     List<Long> selectListFranchiseeIdByIds(@Param("ids") List<Long> ids,@Param("tenantId") long tenantId);
     
     List<MerchantWithdrawApplicationBO> selectListByBatchNoList(@Param("batchNoList") List<String> batchNoList);
+    
+    Integer updatePayConfigWhetherChangeByBatchNo(MerchantWithdrawApplication updateWithdrawApplicationUpdate);
 }

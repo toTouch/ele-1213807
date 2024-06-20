@@ -124,6 +124,9 @@
             <if test="payConfigType != null">
                 pay_config_type = #{payConfigType},
             </if>
+            <if test="wechatMerchantId != null">
+                wechat_merchant_id = #{wechatMerchantId},
+            </if>
         </set>
         where id = #{id}
     </update>
@@ -157,6 +160,9 @@
             </if>
             <if test="merchantWithdrawApplication.payConfigType != null">
                 pay_config_type = #{merchantWithdrawApplication.payConfigType},
+            </if>
+            <if test="merchantWithdrawApplication.wechatMerchantId != null">
+                wechat_merchant_id = #{merchantWithdrawApplication.wechatMerchantId},
             </if>
         </set>
         
@@ -564,4 +570,12 @@
 
     </update>
     
+    <update id="updatePayConfigWhetherChangeByBatchNo">
+        update   t_merchant_withdraw_application
+        set pay_config_whether_change = #{payConfigWhetherChange},
+            update_time = #{updateTime}
+        where batch_no = #{batchNo}
+          and tenant_id = #{tenantId}
+    </update>
+
 </mapper>

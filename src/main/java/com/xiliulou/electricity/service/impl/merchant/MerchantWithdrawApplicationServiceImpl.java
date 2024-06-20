@@ -11,6 +11,7 @@ import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.constant.MultiFranchiseeConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
+import com.xiliulou.electricity.constant.merchant.MerchantWithdrawApplicationConstant;
 import com.xiliulou.electricity.constant.merchant.MerchantWithdrawApplicationRecordConstant;
 import com.xiliulou.electricity.constant.merchant.MerchantWithdrawConstant;
 import com.xiliulou.electricity.converter.ElectricityPayParamsConverter;
@@ -245,6 +246,7 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
         merchantWithdrawApplicationUpdate.setUpdateTime(System.currentTimeMillis());
         merchantWithdrawApplicationUpdate.setOperator(user.getUid());
         merchantWithdrawApplicationUpdate.setPayConfigType(payConfigType);
+        merchantWithdrawApplicationUpdate.setWechatMerchantId(wechatPayParamsDetails.getWechatMerchantId());
         
         //若为拒绝提现，则修改提现状态为已拒绝，并且修改提现记录表中的提现状态为已拒绝。
         if (MerchantWithdrawConstant.REVIEW_REFUSED.equals(reviewWithdrawApplicationRequest.getStatus())) {
@@ -450,6 +452,7 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
         merchantWithdrawApplicationUpdate.setTenantId(tenantId);
         merchantWithdrawApplicationUpdate.setOperator(user.getUid());
         merchantWithdrawApplicationUpdate.setPayConfigType(payConfigType);
+        merchantWithdrawApplicationUpdate.setWechatMerchantId(wechatPayParamsDetails.getWechatMerchantId());
         
         //若为拒绝提现，则修改提现状态为已拒绝，并且修改提现记录表中的提现状态为已拒绝。
         if (MerchantWithdrawConstant.REVIEW_REFUSED.equals(batchReviewWithdrawApplicationRequest.getStatus())) {
@@ -686,7 +689,6 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
                 Map<String, List<Long>> franchiseeIdMap = merchantWithdrawApplicationBOS.stream()
                         .collect(Collectors.groupingBy(MerchantWithdrawApplicationBO::getBatchNo, Collectors.collectingAndThen(Collectors.toList(), list -> list.stream().map(MerchantWithdrawApplicationBO::getFranchiseeId).distinct().collect(Collectors.toList()))));
                 
-                
                 //根据批次号循环调用第三方接口查询提现结果状态
                 merchantWithdrawApplications.forEach(merchantWithdrawApplication -> {
                     String batchNo = merchantWithdrawApplication.getBatchNo();
@@ -718,6 +720,20 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
     
                     if (Objects.isNull(details)) {
                         log.error("update merchant withdraw status error! , wechat pay params details is null, batchNo = {}, tenantId = {}, franchiseeId={}", batchNo, tenantId, franchiseeId);
+                        return;
+                    }
+                    
+                    // 判断支付配置对应的商户号是否发送改变
+                    if (Objects.nonNull(merchantWithdrawApplication.getWechatMerchantId()) && !Objects.equals(merchantWithdrawApplication.getWechatMerchantId(), details.getWechatMerchantId())) {
+                        MerchantWithdrawApplication updateWithdrawApplicationUpdate = new MerchantWithdrawApplication();
+                        updateWithdrawApplicationUpdate.setBatchNo(batchNo);
+                        updateWithdrawApplicationUpdate.setTenantId(tenantId);
+                        updateWithdrawApplicationUpdate.setUpdateTime(System.currentTimeMillis());
+                        // 支付配置发送了改变
+                        updateWithdrawApplicationUpdate.setPayConfigWhetherChange(MerchantWithdrawApplicationConstant.PAY_CONFIG_WHETHER_CHANGE_YES);
+                        merchantWithdrawApplicationMapper.updatePayConfigWhetherChangeByBatchNo(updateWithdrawApplicationUpdate);
+                        
+                        log.error("update merchant withdraw status error! , wechat merchant id is not equal, batchNo = {}, tenantId = {}, franchiseeId={}, oldWechatMerchantId = {}, newWechatMerchantId", batchNo, tenantId, franchiseeId, merchantWithdrawApplication.getWechatMerchantId(), details.getWechatMerchantId());
                         return;
                     }
                     
