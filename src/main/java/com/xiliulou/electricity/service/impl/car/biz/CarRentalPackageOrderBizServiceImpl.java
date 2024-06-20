@@ -1517,6 +1517,15 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             rentRefundUpdateEntity.setRefundAmount(carRentRefundVo.getAmount());
             // 购买订单时的支付方式
             Integer payType = packageOrderEntity.getPayType();
+            
+            // 强制线下退款
+            Integer compelOffLine = carRentRefundVo.getCompelOffLine();
+            if (ObjectUtils.isNotEmpty(compelOffLine) && YesNoEnum.YES.getCode().equals(compelOffLine) && PayTypeEnum.ON_LINE.getCode().equals(payType)) {
+                payType = PayTypeEnum.OFF_LINE.getCode();
+                rentRefundUpdateEntity.setPayType(payType);
+                rentRefundUpdateEntity.setCompelOffLine(YesNoEnum.YES.getCode());
+            }
+            
             // 购买订单时的支付订单号
             String orderNo = packageOrderEntity.getOrderNo();
             
