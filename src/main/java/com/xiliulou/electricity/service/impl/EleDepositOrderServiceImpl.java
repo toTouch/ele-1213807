@@ -773,9 +773,9 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
             return R.fail("ELECTRICITY.0015", "未找到订单");
         }
         
-        WechatPayParamsDetails wechatPayParamsDetails = wechatPayParamsBizService.getDetailsByIdTenantIdAndFranchiseeId(eleDepositOrder.getTenantId(),
+        ElectricityPayParams electricityPayParams = electricityPayParamsService.queryPreciseCacheByTenantIdAndFranchiseeId(eleDepositOrder.getTenantId(),
                 eleDepositOrder.getParamFranchiseeId());
-        if (Objects.isNull(wechatPayParamsDetails)) {
+        if (Objects.isNull(electricityPayParams)) {
             return R.ok(CheckPayParamsResultEnum.FAIL.getCode());
         }
         return R.ok(CheckPayParamsResultEnum.SUCCESS.getCode());
