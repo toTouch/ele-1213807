@@ -26,7 +26,7 @@
         where enterprise_id = #{id}
     </select>
     
-    <select id="selectByPackageId" resultMap="EnterprisePackageMap">
+    <select id="selectByPackageId" resultType="Integer">
         select 1
         from t_enterprise_package
         where package_id = #{packageId} order by id limit 1
