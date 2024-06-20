@@ -786,7 +786,7 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
             redisService.delete(CacheConstant.ELE_CACHE_USER_CLOUD_BEAN_RECHARGE_LOCK_KEY + SecurityUtils.getUid());
         }
         
-        return Triple.of(false, "", "充值失败");
+        return Triple.of(false, "", "支付未成功，请联系客服处理");
     }
     
     @Override
