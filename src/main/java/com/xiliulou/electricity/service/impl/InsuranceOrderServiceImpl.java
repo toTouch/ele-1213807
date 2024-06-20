@@ -316,7 +316,7 @@ public class InsuranceOrderServiceImpl extends ServiceImpl<InsuranceOrderMapper,
             log.error("CREATE INSURANCE_ORDER ERROR! wechat v3 order  error! uid={}", user.getUid(), e);
         }
         
-        return R.fail("ELECTRICITY.0099", "下单失败");
+        return R.fail("PAY_TRANSFER.0019", "支付未成功，请联系客服处理");
     }
     
     @Slave

@@ -405,7 +405,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
         
         EleDepositOrder eleDepositOrder = eleDepositOrderService.queryByOrderId(eleRefundOrder.getOrderId());
         if (Objects.isNull(eleDepositOrder)) {
-            return Triple.of(false, "ELECTRICITY.0015", "未找到押金缴纳订单!");
+            return Triple.of(false, "ELECTRICITY.100273", "未查询到支付订单，操作失败，请联系客服处理");
         }
         
         WechatPayParamsDetails wechatPayParamsDetails = wechatPayParamsBizService.getDetailsByIdTenantIdAndFranchiseeId(TenantContextHolder.getTenantId(),
