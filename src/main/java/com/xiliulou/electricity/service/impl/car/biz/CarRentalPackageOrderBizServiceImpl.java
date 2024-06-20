@@ -3056,10 +3056,13 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             
             return R.ok(resultDTO);
         } catch (BizException e) {
-            log.error("buyRentalPackageOrder failed. ", e);
+            log.error("buyRentalPackageOrder failed. BizException: ", e);
             throw new BizException(e.getErrCode(), e.getErrMsg());
+        } catch (WechatPayException e) {
+            log.error("buyRentalPackageOrder failed. WechatPayException: ", e);
+            throw new BizException("PAY_TRANSFER.0019", "支付未成功，请联系客服处理");
         } catch (Exception e) {
-            log.error("buyRentalPackageOrder failed. ", e);
+            log.error("buyRentalPackageOrder failed. Exception: ", e);
             throw new BizException("000001", "系统异常");
         } finally {
             //临时处理重复提交问题
