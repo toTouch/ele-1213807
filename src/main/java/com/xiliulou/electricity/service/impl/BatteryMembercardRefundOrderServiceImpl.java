@@ -638,7 +638,7 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
                 || batteryMembercardRefundOrderInsert.getRefundAmount().compareTo(BigDecimal.valueOf(0.01)) < 0) {
             return handleBatteryOfflineRefundOrder(userBatteryMemberCard, batteryMembercardRefundOrderInsert, electricityMemberCardOrder, userInfo, refundAmount, null);
         } else {
-            return handleBatteryOnlineRefundOrder(batteryMembercardRefundOrderInsert, electricityMemberCardOrder, refundAmount, null, wechatPayParamsDetails, request);
+            return handleBatteryOnlineRefundOrder(batteryMembercardRefundOrderInsert, electricityMemberCardOrder, refundAmount, null, request);
         }
     }
     
@@ -677,13 +677,6 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
             log.warn("BATTERY MEMBERCARD REFUND WARN! not found electricityMemberCardOrder,uid={},orderNo={}", userInfo.getUid(),
                     batteryMembercardRefundOrder.getMemberCardOrderNo());
             return Triple.of(false, "100281", "电池套餐订单不存在");
-        }
-        
-        WechatPayParamsDetails wechatPayParamsDetails = wechatPayParamsBizService.getDetailsByIdTenantIdAndFranchiseeId(electricityMemberCardOrder.getTenantId(),
-                electricityMemberCardOrder.getParamFranchiseeId());
-        if (Objects.isNull(wechatPayParamsDetails)) {
-            log.warn("BATTERY DEPOSIT WARN!not found pay params,refundOrderNo={}", batteryMembercardRefundOrder.getRefundOrderNo());
-            return Triple.of(false, "100307", "未配置支付参数!");
         }
         
         // 拒绝退款
@@ -735,13 +728,13 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
         if (Objects.equals(batteryMembercardRefundOrder.getPayType(), ElectricityMemberCardOrder.OFFLINE_PAYMENT) || refundAmount.compareTo(BigDecimal.valueOf(0.01)) < 0) {
             return handleBatteryOfflineRefundOrder(userBatteryMemberCard, batteryMembercardRefundOrder, electricityMemberCardOrder, userInfo, refundAmount, msg);
         } else {
-            return handleBatteryOnlineRefundOrder(batteryMembercardRefundOrder, electricityMemberCardOrder, refundAmount, msg, wechatPayParamsDetails, request);
+            return handleBatteryOnlineRefundOrder(batteryMembercardRefundOrder, electricityMemberCardOrder, refundAmount, msg, request);
         }
     }
     
     @Transactional(rollbackFor = Exception.class)
     public Triple<Boolean, String, Object> handleBatteryOnlineRefundOrder(BatteryMembercardRefundOrder batteryMembercardRefundOrder,
-            ElectricityMemberCardOrder electricityMemberCardOrder, BigDecimal refundAmount, String msg, WechatPayParamsDetails wechatPayParamsDetails, HttpServletRequest request) {
+            ElectricityMemberCardOrder electricityMemberCardOrder, BigDecimal refundAmount, String msg, HttpServletRequest request) {
         BatteryMembercardRefundOrder batteryMembercardRefundOrderUpdate = new BatteryMembercardRefundOrder();
         batteryMembercardRefundOrderUpdate.setId(batteryMembercardRefundOrder.getId());
         batteryMembercardRefundOrderUpdate.setMsg(msg);
@@ -751,6 +744,9 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
         ElectricityMemberCardOrder electricityMemberCardOrderUpdate = new ElectricityMemberCardOrder();
         electricityMemberCardOrderUpdate.setId(electricityMemberCardOrder.getId());
         electricityMemberCardOrderUpdate.setUpdateTime(System.currentTimeMillis());
+        
+        WechatPayParamsDetails wechatPayParamsDetails = wechatPayParamsBizService.getDetailsByIdTenantIdAndFranchiseeId(electricityMemberCardOrder.getTenantId(),
+                electricityMemberCardOrder.getParamFranchiseeId());
         
         try {
             batteryMembercardRefundOrder.setRefundAmount(refundAmount);
@@ -773,7 +769,7 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
         electricityMemberCardOrderUpdate.setRefundStatus(ElectricityMemberCardOrder.REFUND_STATUS_FAIL);
         batteryMemberCardOrderService.updateByID(electricityMemberCardOrderUpdate);
         
-        return Triple.of(false, "ELECTRICITY.00100", "退租失败");
+        return Triple.of(false, "ELECTRICITY.00100", "支付调用失败，请检查相关配置");
     }
     
     @Transactional(rollbackFor = Exception.class)

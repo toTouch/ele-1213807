@@ -565,7 +565,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
         eleRefundOrderUpdate.setUpdateTime(System.currentTimeMillis());
         eleRefundOrderService.update(eleRefundOrderUpdate);
         
-        return Triple.of(false, "ELECTRICITY.00100", "退款失败");
+        return Triple.of(false, "ELECTRICITY.00100", "支付调用失败，请检查相关配置");
     }
     
     @Override
@@ -1697,7 +1697,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             eleRefundOrder.setRefundAmount(refundAmount);
             eleRefundOrder.setUpdateTime(System.currentTimeMillis());
             eleRefundOrderService.insert(eleRefundOrder);
-            return R.fail("ELECTRICITY.00100", "退款失败");
+            return R.fail("ELECTRICITY.00100", "支付调用失败，请检查相关配置");
         }
     }
     
@@ -1969,7 +1969,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             log.error("REFUND ORDER ERROR! wechat v3 refund  error! ", e);
         }
         
-        return Triple.of(true, null, "退款失败");
+        return Triple.of(true, null, "支付调用失败，请检查相关配置");
     }
     
     @Slave
