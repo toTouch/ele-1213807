@@ -240,7 +240,6 @@ public class ElectricityPayParamsServiceImpl extends ServiceImpl<ElectricityPayP
         return R.ok(electricityPayParams.get(0).getTenantId());
     }
     
-
     
     @Override
     public R uploadFile(MultipartFile file, Integer type, Long franchiseeId) {
@@ -501,7 +500,8 @@ public class ElectricityPayParamsServiceImpl extends ServiceImpl<ElectricityPayP
      * 幂等性校验
      */
     private Boolean idempotentCheck() {
-        return redisService.setNx(CacheConstant.ADMIN_OPERATE_LOCK_KEY + TenantContextHolder.getTenantId(), String.valueOf(System.currentTimeMillis()), 20 * 1000L, true);
+        // 幂等由20秒 改为 5秒
+        return redisService.setNx(CacheConstant.ADMIN_OPERATE_LOCK_KEY + TenantContextHolder.getTenantId(), String.valueOf(System.currentTimeMillis()), 5 * 1000L, true);
     }
     
     
