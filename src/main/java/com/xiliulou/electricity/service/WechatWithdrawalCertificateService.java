@@ -5,7 +5,6 @@ import com.xiliulou.electricity.query.WechatWithdrawalCertificateQueryModel;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
-import java.util.Map;
 
 /**
  * @author wangchen
@@ -28,7 +27,6 @@ public interface WechatWithdrawalCertificateService {
      * 处理提现证书文件
      *
      * @param file     提现证书
-     * @param tenantId 租户id
      */
     void handleCertificateFile(MultipartFile file, WechatWithdrawalCertificate certificate);
     
