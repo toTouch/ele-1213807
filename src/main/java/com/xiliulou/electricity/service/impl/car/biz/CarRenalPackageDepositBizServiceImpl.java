@@ -219,7 +219,12 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
         Integer tenantId = depositPayEntity.getTenantId();
         String wechatMerchantId = depositPayEntity.getWechatMerchantId();
         
-        WechatPayParamsDetails wechatPayParamsDetails = wechatPayParamsBizService.getDetailsByIdTenantIdAndFranchiseeId(tenantId, payFranchiseeId);
+        WechatPayParamsDetails wechatPayParamsDetails = null;
+        try {
+            wechatPayParamsDetails = wechatPayParamsBizService.getDetailsByIdTenantIdAndFranchiseeId(tenantId, payFranchiseeId);
+        } catch (Exception e) {
+            throw new BizException("PAY_TRANSFER.0021", "支付配置有误，请检查相关配置");
+        }
         return ObjectUtils.isEmpty(wechatPayParamsDetails) || !wechatPayParamsDetails.getWechatMerchantId().equals(wechatMerchantId);
     }
     
@@ -1577,10 +1582,12 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
         wechatV3RefundRequest.setCurrency("CNY");
         
         // 调用支付配置参数
-        WechatPayParamsDetails wechatPayParamsDetails = wechatPayParamsBizService.getDetailsByIdTenantIdAndFranchiseeId(electricityTradeOrder.getTenantId(),
-                electricityTradeOrder.getPayFranchiseeId());
-        if (ObjectUtils.isEmpty(wechatPayParamsDetails)) {
-            throw new WechatPayException("支付配置有误");
+        WechatPayParamsDetails wechatPayParamsDetails = null;
+        try {
+            wechatPayParamsDetails = wechatPayParamsBizService.getDetailsByIdTenantIdAndFranchiseeId(electricityTradeOrder.getTenantId(),
+                    electricityTradeOrder.getPayFranchiseeId());
+        } catch (Exception e) {
+            throw new BizException("PAY_TRANSFER.0021", "支付配置有误，请检查相关配置");
         }
         
         wechatV3RefundRequest.setCommonRequest(ElectricityPayParamsConverter.qryDetailsToCommonRequest(wechatPayParamsDetails));

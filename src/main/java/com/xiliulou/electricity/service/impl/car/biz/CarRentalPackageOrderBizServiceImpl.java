@@ -332,7 +332,12 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         Integer tenantId = packageOrderEntity.getTenantId();
         String wechatMerchantId = packageOrderEntity.getWechatMerchantId();
         
-        WechatPayParamsDetails wechatPayParamsDetails = wechatPayParamsBizService.getDetailsByIdTenantIdAndFranchiseeId(tenantId, payFranchiseeId);
+        WechatPayParamsDetails wechatPayParamsDetails = null;
+        try {
+            wechatPayParamsDetails = wechatPayParamsBizService.getDetailsByIdTenantIdAndFranchiseeId(tenantId, payFranchiseeId);
+        } catch (Exception e) {
+            throw new BizException("PAY_TRANSFER.0021", "支付配置有误，请检查相关配置");
+        }
         return ObjectUtils.isEmpty(wechatPayParamsDetails) || !wechatPayParamsDetails.getWechatMerchantId().equals(wechatMerchantId);
     }
     
@@ -486,9 +491,13 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         // 判定是否需要强制线下退款
         String wechatMerchantId = packageOrderEntity.getWechatMerchantId();
         Long payFranchiseeId = packageOrderEntity.getPayFranchiseeId();
-        WechatPayParamsDetails wechatPayParamsDetails = wechatPayParamsBizService.getDetailsByIdTenantIdAndFranchiseeId(tenantId, payFranchiseeId);
-        if (ObjectUtils.isEmpty(wechatPayParamsDetails) || !wechatPayParamsDetails.getWechatMerchantId().equals(wechatMerchantId)) {
-            rentalPackageRefundVO.setCompelOffLine(YesNoEnum.YES.getCode());
+        try {
+            WechatPayParamsDetails wechatPayParamsDetails = wechatPayParamsBizService.getDetailsByIdTenantIdAndFranchiseeId(tenantId, payFranchiseeId);
+            if (ObjectUtils.isEmpty(wechatPayParamsDetails) || !wechatPayParamsDetails.getWechatMerchantId().equals(wechatMerchantId)) {
+                rentalPackageRefundVO.setCompelOffLine(YesNoEnum.YES.getCode());
+            }
+        } catch (Exception e) {
+            throw new BizException("PAY_TRANSFER.0021", "支付配置有误，请检查相关配置");
         }
         return rentalPackageRefundVO;
     }
@@ -1395,8 +1404,13 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         wechatV3RefundRequest.setCurrency("CNY");
         
         // 调用支付配置参数
-        WechatPayParamsDetails wechatPayParamsDetails = wechatPayParamsBizService.getDetailsByIdTenantIdAndFranchiseeId(electricityTradeOrder.getTenantId(),
-                electricityTradeOrder.getPayFranchiseeId());
+        WechatPayParamsDetails wechatPayParamsDetails = null;
+        try {
+            wechatPayParamsDetails = wechatPayParamsBizService.getDetailsByIdTenantIdAndFranchiseeId(electricityTradeOrder.getTenantId(),
+                    electricityTradeOrder.getPayFranchiseeId());
+        } catch (Exception e) {
+            throw new BizException("PAY_TRANSFER.0021", "支付配置有误，请检查相关配置");
+        }
         wechatV3RefundRequest.setCommonRequest(ElectricityPayParamsConverter.qryDetailsToCommonRequest(wechatPayParamsDetails));
         
         return wechatV3JsapiInvokeService.refund(wechatV3RefundRequest);
