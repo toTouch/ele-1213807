@@ -537,7 +537,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
         // 支付配置校验未通过，原线上退款需转为线下退款，但是0元不强制转线下退款
         if (refundAmount.compareTo(BigDecimal.ZERO) > 0 && Objects.equals(offlineRefund, CheckPayParamsResultEnum.FAIL.getCode())) {
             eleRefundOrderUpdate.setPayType(EleRefundOrder.PAY_TYPE_OFFLINE);
-            log.info("OFFLINE REFUND COMPLETED! refundOrderNo={}", eleRefundOrder.getRefundOrderNo());
+            log.info("CHANGE TO OFFLINE REFUND! refundOrderNo={}", eleRefundOrder.getRefundOrderNo());
         }
         
         // 退款0元及线上强制转线下退款处理
