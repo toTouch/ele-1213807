@@ -32,4 +32,6 @@ public interface EleHardwareWarnMsgService {
     void proportionExport(EleHardwareWarnMsgPageRequest request, HttpServletResponse response);
     
     void setWarnInfo(FailureWarnFrequencyVo vo, FailureWarnMsgPageQueryModel queryModel);
+    
+    int existByAlarmId(String alarmId);
 }

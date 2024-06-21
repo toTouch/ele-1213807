@@ -408,6 +408,12 @@ public class EleHardwareWarnMsgServiceImpl implements EleHardwareWarnMsgService 
         vo.setWarnCount(warnNum);
     }
     
+    @Override
+    @Slave
+    public int existByAlarmId(String alarmId) {
+        return eleHardwareWarnMsgMapper.existByAlarmId(alarmId);
+    }
+    
     private List<FailureWarnProportionVo> warnProportion(Map<String, Integer> failureMap) {
         FailureAlarmQueryModel alarmQueryModel = FailureAlarmQueryModel.builder().type(FailureAlarmTypeEnum.FAILURE_ALARM_TYPE_WARING.getCode()).status(FailureAlarm.enable)
                 .build();

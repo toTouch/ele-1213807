@@ -7,6 +7,7 @@ import com.xiliulou.electricity.queryModel.failureAlarm.WarnMsgPageQueryModel;
 import com.xiliulou.electricity.vo.failureAlarm.EleHardwareFailureWarnMsgVo;
 import com.xiliulou.electricity.vo.failureAlarm.FailureWarnMsgExcelVo;
 import com.xiliulou.electricity.vo.failureAlarm.FailureWarnProportionVo;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
@@ -28,4 +29,6 @@ public interface EleHardwareWarnMsgMapper {
     List<FailureWarnProportionVo> selectListProportion(FailureWarnMsgPageQueryModel queryModel);
     
     Integer countWarnNum(FailureWarnMsgPageQueryModel queryModel);
+    
+    int existByAlarmId(@Param("alarmId") String alarmId);
 }

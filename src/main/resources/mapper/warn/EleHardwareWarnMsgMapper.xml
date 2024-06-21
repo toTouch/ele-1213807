@@ -142,4 +142,8 @@
             </foreach>
         </where>
     </select>
+    
+    <select id="existByAlarmId" resultType="java.lang.Integer">
+        select count(1) from t_ele_hardware_warn_msg where alarm_id = #{alarmId} LIMIT 1
+    </select>
 </mapper>
