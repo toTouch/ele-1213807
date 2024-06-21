@@ -86,17 +86,6 @@ public class ElectricityPayParamsServiceImpl extends ServiceImpl<ElectricityPayP
     @Autowired
     private ElectricityPayParamsTxService electricityPayParamsTxService;
     
-    /**
-     * 新增或修改
-     *
-     * @param electricityPayParams
-     * @return
-     */
-    @Override
-    public R saveOrUpdateElectricityPayParams(ElectricityPayParams electricityPayParams) {
-        // TODO: 2024/6/12 CBT后续删除
-        return R.ok();
-    }
     
     @Override
     public R insert(ElectricityPayParamsRequest request) {
@@ -251,16 +240,7 @@ public class ElectricityPayParamsServiceImpl extends ServiceImpl<ElectricityPayP
         return R.ok(electricityPayParams.get(0).getTenantId());
     }
     
-    /**
-     * 获取支付参数 valid_days
-     *
-     * @return
-     */
-    @Override
-    public ElectricityPayParams queryFromCache(Integer tenantId) {
-        // TODO: 2024/6/12 CBT后续删除
-        return null;
-    }
+
     
     @Override
     public R uploadFile(MultipartFile file, Integer type, Long franchiseeId) {
