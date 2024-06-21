@@ -620,9 +620,9 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
         batteryMembercardRefundOrderInsert.setPayAmount(electricityMemberCardOrder.getPayAmount());
         batteryMembercardRefundOrderInsert.setRefundAmount(refundAmount);
         
-        // 若传递强制线下退款标识，将退款类型修改为线下退款，但是0元退款不用强制转为线下退款
-        batteryMembercardRefundOrderInsert.setPayType((batteryMembercardRefundOrderInsert.getRefundAmount().compareTo(BigDecimal.valueOf(0.01)) >= 0 && Objects.equals(offlineRefund,
-                CheckPayParamsResultEnum.FAIL.getCode())) ? ElectricityMemberCardOrder.OFFLINE_PAYMENT : electricityMemberCardOrder.getPayType());
+        // 若传递强制线下退款标识，将退款类型修改为线下退款
+        batteryMembercardRefundOrderInsert.setPayType(
+                Objects.equals(offlineRefund, CheckPayParamsResultEnum.FAIL.getCode()) ? ElectricityMemberCardOrder.OFFLINE_PAYMENT : electricityMemberCardOrder.getPayType());
         
         batteryMembercardRefundOrderInsert.setStatus(BatteryMembercardRefundOrder.STATUS_INIT);
         batteryMembercardRefundOrderInsert.setFranchiseeId(electricityMemberCardOrder.getFranchiseeId());
@@ -720,8 +720,8 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
             return Triple.of(true, "", null);
         }
         
-        // 套餐未过期，若支付配置校验未通过，强制线下退款，修改套餐退款订单的退款支付类型。但是0元退款不用将退款类型转为线下
-        if (refundAmount.compareTo(BigDecimal.valueOf(0.01)) >= 0 && Objects.equals(offlineRefund, CheckPayParamsResultEnum.FAIL.getCode())) {
+        // 套餐未过期，若支付配置校验未通过，强制线下退款，修改套餐退款订单的退款支付类型
+        if (Objects.equals(offlineRefund, CheckPayParamsResultEnum.FAIL.getCode())) {
             batteryMembercardRefundOrder.setPayType(ElectricityMemberCardOrder.OFFLINE_PAYMENT);
         }
         
