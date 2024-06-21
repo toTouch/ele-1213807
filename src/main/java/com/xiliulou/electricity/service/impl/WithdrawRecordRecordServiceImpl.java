@@ -570,7 +570,8 @@ public class WithdrawRecordRecordServiceImpl implements WithdrawRecordService {
             throw new AuthenticationServiceException("未能查找到appId和appSecret！");
         }
         
-        WechatWithdrawalCertificate certificate = wechatWithdrawalCertificateService.selectByTenantId(withdrawRecord.getTenantId());
+        WechatWithdrawalCertificate certificate = wechatWithdrawalCertificateService.queryByTenantIdAndFranchiseeId(withdrawRecord.getTenantId(),
+                MultiFranchiseeConstant.DEFAULT_FRANCHISEE);
         if (Objects.isNull(certificate) || certificate.getCertificateValue().length == 0) {
             throw new AuthenticationServiceException("未能查找到appId和appSecret！");
         }
