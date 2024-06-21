@@ -88,4 +88,9 @@ public interface MqProducerConstant {
      * </p>
      */
     String USER_OPERATION_RECORD_LOG = "USER_OPERATION_RECORD_LOG";
+    
+    /**
+     * 电池电压电流变化
+     */
+    String BATTERY_CHARGE_ATTR_CHANGE_TOPIC = "battery_charge_attr_change_topic";
 }
