@@ -12,12 +12,6 @@ import java.util.List;
 
 public interface ElectricityPayParamsService extends IService<ElectricityPayParams> {
     
-    @Deprecated
-    R saveOrUpdateElectricityPayParams(ElectricityPayParams electricityPayParams);
-    
-    
-    @Deprecated
-    ElectricityPayParams queryFromCache(Integer tenantId);
     
     
     R getTenantId(String appId);

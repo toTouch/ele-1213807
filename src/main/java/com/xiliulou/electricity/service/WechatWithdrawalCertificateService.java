@@ -12,15 +12,7 @@ import java.util.Map;
  * @date 2023年5月22日 desc: 微信提现证书服务类
  */
 public interface WechatWithdrawalCertificateService {
-    
-    /**
-     * 根据租户id查询提现证书信息
-     *
-     * @param tenantId 承租者id
-     * @return {@link WechatWithdrawalCertificate}
-     */
-    @Deprecated
-    WechatWithdrawalCertificate selectByTenantId(Integer tenantId);
+
     
     /**
      * 根据支付配置id查询
@@ -47,14 +39,6 @@ public interface WechatWithdrawalCertificateService {
      */
     void saveOrUpdateWechatWithdrawalCertificate(WechatWithdrawalCertificate certificate);
     
-    /**
-     * 由租户id列表查询证书列表
-     *
-     * @param tenantIds 租户id
-     * @return {@link Map}<{@link Integer}, {@link byte[]}>
-     */
-    @Deprecated
-    Map<Integer, byte[]> listCertificateInTenantIds(List<Integer> tenantIds);
     
     
     /**

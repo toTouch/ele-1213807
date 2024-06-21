@@ -31,11 +31,7 @@ public class WechatWithdrawalCertificateServiceImpl implements WechatWithdrawalC
     
     @Autowired
     private WechatWithdrawalCertificateMapper wechatWithdrawalCertificateMapper;
-    
-    @Override
-    public WechatWithdrawalCertificate selectByTenantId(Integer tenantId) {
-        return null;
-    }
+ 
     
     @Override
     public WechatWithdrawalCertificate queryByTenantIdAndFranchiseeId(Integer tenantId, Long franchiseeId) {
@@ -81,10 +77,6 @@ public class WechatWithdrawalCertificateServiceImpl implements WechatWithdrawalC
         }
     }
     
-    @Override
-    public Map<Integer, byte[]> listCertificateInTenantIds(List<Integer> tenantIds) {
-        return null;
-    }
     
     @Slave
     @Override
