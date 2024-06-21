@@ -7,8 +7,14 @@
     </sql>
     
     <select id="selectListByPage" resultType="com.xiliulou.electricity.entity.merchant.MerchantPromotionMonthRecord">
-        select
-        <include refid="basic_field"/>
+        select any_value(id) as id,
+               sum(merchant_count) as merchantCount,
+               sum(month_first_total_money) as monthFirstTotalMoney,
+               sum(month_renew_total_money) as monthRenewTotalMoney,
+               sum(month_total_money) as monthTotalMoney,
+               any_value(date) as date,
+               any_value(tenant_id) as tenantId,
+               any_value(franchisee_id) as franchiseeId
         from t_merchant_promotion_month_record
         <where>
             del_flag = 0
@@ -33,6 +39,14 @@
     
     <select id="countTotal" resultType="java.lang.Integer">
         select count(1)
+        from (select any_value(id) as id,
+        sum(merchant_count) as merchantCount,
+        sum(month_first_total_money) as monthFirstTotalMoney,
+        sum(month_renew_total_money) as monthRenewTotalMoney,
+        sum(month_total_money) as monthTotalMoney,
+        any_value(date) as date,
+        any_value(tenant_id) as tenantId,
+        any_value(franchisee_id) as franchiseeId
         from t_merchant_promotion_month_record
         <where>
             del_flag = 0
@@ -49,6 +63,7 @@
                 </foreach>
             </if>
         </where>
+        ) a
     </select>
 
 </mapper>
