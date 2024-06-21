@@ -6,13 +6,13 @@ import cn.hutool.core.util.StrUtil;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.clickhouse.service.ClickHouseService;
 import com.xiliulou.core.json.JsonUtil;
-import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.core.utils.TimeUtils;
 import com.xiliulou.electricity.config.EleCommonConfig;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.constant.ElectricityIotConstant;
 import com.xiliulou.electricity.dto.ElectricityCabinetOtherSetting;
+import com.xiliulou.electricity.dto.VoltageCurrentChangeDTO;
 import com.xiliulou.electricity.entity.BatteryOtherProperties;
 import com.xiliulou.electricity.entity.BatteryOtherPropertiesQuery;
 import com.xiliulou.electricity.entity.BatteryTrackRecord;
@@ -21,7 +21,9 @@ import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.ElectricityCabinetBox;
 import com.xiliulou.electricity.entity.Message;
 import com.xiliulou.electricity.entity.NotExistSn;
+import com.xiliulou.electricity.entity.VoltageCurrentChange;
 import com.xiliulou.electricity.handler.iot.AbstractElectricityIotHandler;
+import com.xiliulou.electricity.mq.constant.MqProducerConstant;
 import com.xiliulou.electricity.queue.MessageDelayQueueService;
 import com.xiliulou.electricity.service.BatteryModelService;
 import com.xiliulou.electricity.service.BatteryOtherPropertiesService;
@@ -31,9 +33,9 @@ import com.xiliulou.electricity.service.ElectricityCabinetBoxService;
 import com.xiliulou.electricity.service.ElectricityCabinetModelService;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
 import com.xiliulou.electricity.service.NotExistSnService;
-import com.xiliulou.electricity.service.StoreService;
 import com.xiliulou.electricity.utils.VersionUtil;
 import com.xiliulou.iot.entity.ReceiverMessage;
+import com.xiliulou.mq.service.RocketMqService;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
@@ -44,11 +46,11 @@ import org.springframework.stereotype.Service;
 import shaded.org.apache.commons.lang3.StringUtils;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.ExecutorService;
 import java.util.stream.Collectors;
 
 /**
@@ -59,10 +61,6 @@ import java.util.stream.Collectors;
 @Service(value = ElectricityIotConstant.NORMAL_ELE_BATTERY_HANDLER)
 @Slf4j
 public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
-
-    ExecutorService voltageCurrentExecutorService = XllThreadPoolExecutors.newFixedThreadPool("eleSaveVoltageCurrent",
-            3, "ele_Save_Voltage_Current");
-
     @Autowired
     ElectricityCabinetService electricityCabinetService;
 
@@ -74,6 +72,9 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
 
     @Autowired
     RedisService redisService;
+    
+    @Autowired
+    RocketMqService rocketMqService;
 
     @Autowired
     EleCommonConfig eleCommonConfig;
@@ -98,9 +99,9 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
 
     @Autowired
     BatteryModelService batteryModelService;
-
+    
     private static DateTimeFormatter formatter = DateTimeFormatter.ofPattern(DatePattern.NORM_DATETIME_PATTERN);
-
+    
     /**
      * 柜机ANCHI模式
      */
@@ -505,68 +506,56 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
     /**
      * 检查电池电压电流、充电器电压电流是否变化
      *
-     * @param eleBox
-     * @param electricityBattery
-     * @param eleBatteryVO
-     * @param sessionId
      */
-    private void checkBatteryAndCharger(ElectricityCabinet electricityCabinet, ElectricityCabinetBox eleBox,
-                                        ElectricityBattery electricityBattery, EleBatteryVO eleBatteryVO, String sessionId) {
-        voltageCurrentExecutorService.execute(() -> {
+    private void checkBatteryAndCharger(ElectricityCabinet electricityCabinet, ElectricityCabinetBox eleBox, ElectricityBattery electricityBattery, EleBatteryVO eleBatteryVO,
+            String sessionId) {
+        try {
             BatteryOtherPropertiesQuery batteryOtherPropertiesQuery = eleBatteryVO.getBatteryOtherProperties();
             if (Objects.isNull(batteryOtherPropertiesQuery)) {
-                log.error("ELE BATTERY REPORT ERROR! batteryOtherPropertiesQuery is null,sessionId={}", sessionId);
                 return;
             }
-
-            BatteryOtherProperties batteryOtherProperties = batteryOtherPropertiesService.selectByBatteryName(
-                    electricityBattery.getSn());
+        
+            BatteryOtherProperties batteryOtherProperties = batteryOtherPropertiesService.selectByBatteryName(electricityBattery.getSn());
             if (Objects.isNull(batteryOtherProperties)) {
-                log.error("ELE BATTERY REPORT ERROR! batteryOtherProperties is null,sessionId={},sn={}", sessionId,
-                        electricityBattery.getSn());
                 return;
             }
-
-            boolean flag = !Objects.equals(eleBox.getChargeA(), eleBatteryVO.getChargeA()) || !Objects.equals(
-                    eleBox.getChargeV(), eleBatteryVO.getChargeV()) || !Objects.equals(
-                    batteryOtherProperties.getBatteryChargeA(), batteryOtherPropertiesQuery.getBatteryChargeA())
-                    || !Objects.equals(batteryOtherProperties.getBatteryV(), batteryOtherPropertiesQuery.getBatteryV());
-
-            if (flag && redisService.setNx(
-                    CacheConstant.CACHE_VOLTAGE_CURRENT_CHANGE + electricityCabinet.getId() + ":" + eleBox.getCellNo(),
-                    "1", 60 * 1000L, false)) {
-                saveVoltageCurrentToClickHouse(electricityCabinet, eleBatteryVO, sessionId);
+        
+            boolean flag = !Objects.equals(eleBox.getChargeA(), eleBatteryVO.getChargeA()) || !Objects.equals(eleBox.getChargeV(), eleBatteryVO.getChargeV()) || !Objects.equals(
+                    batteryOtherProperties.getBatteryChargeA(), batteryOtherPropertiesQuery.getBatteryChargeA()) || !Objects.equals(batteryOtherProperties.getBatteryV(),
+                    batteryOtherPropertiesQuery.getBatteryV());
+        
+            if (!(flag && redisService.setNx(CacheConstant.CACHE_VOLTAGE_CURRENT_CHANGE + electricityCabinet.getId() + ":" + eleBox.getCellNo(), "1", 60 * 1000L, false))) {
+                return;
             }
-        });
+        
+            rocketMqService.sendAsyncMsg(MqProducerConstant.BATTERY_CHARGE_ATTR_CHANGE_TOPIC,
+                    JsonUtil.toJson(buildVoltageCurrentChange(electricityCabinet, eleBatteryVO, sessionId)));
+        } catch (Exception e) {
+            log.error("ELE BATTERY REPORT ERROR! save voltageCurrentChange info failed,sessionId={}", sessionId, e);
+        }
     }
-
+    
     /**
      * 电池电压电流、充电器电压电流保存到ClickHouse
-     *
-     * @param eleBatteryVO
-     * @param sessionId
      */
-    private void saveVoltageCurrentToClickHouse(ElectricityCabinet electricityCabinet, EleBatteryVO eleBatteryVO,
-                                                String sessionId) {
-
-        LocalDateTime reportDateTime = TimeUtils.convertLocalDateTime(
-                Objects.isNull(eleBatteryVO.getReportTime()) ? 0L : eleBatteryVO.getReportTime());
-        BigDecimal batteryChargeA =
-                Objects.isNull(eleBatteryVO.getBatteryOtherProperties().getBatteryChargeA()) ? BigDecimal.valueOf(0)
-                        : BigDecimal.valueOf(eleBatteryVO.getBatteryOtherProperties().getBatteryChargeA())
-                        .setScale(2, BigDecimal.ROUND_HALF_UP);
-        BigDecimal chargeA = Objects.isNull(eleBatteryVO.getChargeA()) ? BigDecimal.valueOf(0)
-                : BigDecimal.valueOf(eleBatteryVO.getChargeA()).setScale(2, BigDecimal.ROUND_HALF_UP);
-
-        String sql = "insert into t_voltage_current_change (electricityCabinetId,cellNo,chargeV,chargeA,batteryChargeV,batteryChargeA,sessionId,reportTime,createTime) values(?,?,?,?,?,?,?,?,?);";
-
-        try {
-            clickHouseService.insert(sql, electricityCabinet.getId(), Integer.parseInt(eleBatteryVO.getCellNo()),
-                    eleBatteryVO.getChargeV(), chargeA, eleBatteryVO.getBatteryOtherProperties().getBatteryV(),
-                    batteryChargeA, sessionId, formatter.format(reportDateTime), formatter.format(LocalDateTime.now()));
-        } catch (Exception e) {
-            log.error("ELE BATTERY REPORT ERROR! save voltageCurrent to clickHouse error!", e);
-        }
+    private VoltageCurrentChangeDTO buildVoltageCurrentChange(ElectricityCabinet electricityCabinet, EleBatteryVO eleBatteryVO, String sessionId) {
+        LocalDateTime reportDateTime = TimeUtils.convertLocalDateTime(Objects.isNull(eleBatteryVO.getReportTime()) ? 0L : eleBatteryVO.getReportTime());
+        BigDecimal batteryChargeA = Objects.isNull(eleBatteryVO.getBatteryOtherProperties().getBatteryChargeA()) ? BigDecimal.valueOf(0)
+                : BigDecimal.valueOf(eleBatteryVO.getBatteryOtherProperties().getBatteryChargeA()).setScale(2, RoundingMode.HALF_UP);
+        BigDecimal chargeA = Objects.isNull(eleBatteryVO.getChargeA()) ? BigDecimal.valueOf(0) : BigDecimal.valueOf(eleBatteryVO.getChargeA()).setScale(2, RoundingMode.HALF_UP);
+        
+        VoltageCurrentChangeDTO voltageCurrentChange = new VoltageCurrentChangeDTO();
+        voltageCurrentChange.setElectricityCabinetId(electricityCabinet.getId().longValue());
+        voltageCurrentChange.setCellNo(Integer.parseInt(eleBatteryVO.getCellNo()));
+        voltageCurrentChange.setChargeV(eleBatteryVO.getChargeV());
+        voltageCurrentChange.setChargeA(chargeA.doubleValue());
+        voltageCurrentChange.setBatteryChargeV(eleBatteryVO.getBatteryOtherProperties().getBatteryV());
+        voltageCurrentChange.setBatteryChargeA(batteryChargeA.doubleValue());
+        voltageCurrentChange.setSessionId(sessionId);
+        voltageCurrentChange.setReportTime(formatter.format(reportDateTime));
+        voltageCurrentChange.setCreateTime(formatter.format(LocalDateTime.now()));
+        
+        return voltageCurrentChange;
     }
 
     /**
