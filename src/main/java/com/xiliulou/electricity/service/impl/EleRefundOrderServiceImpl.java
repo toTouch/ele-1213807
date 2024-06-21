@@ -455,7 +455,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
         // 支付配置校验未通过，原线上退款需转为线下退款，但是0元不强制转线下退款
         if (refundAmount.compareTo(BigDecimal.ZERO) > 0 && Objects.equals(offlineRefund, CheckPayParamsResultEnum.FAIL.getCode())) {
             eleRefundOrderUpdate.setPayType(EleRefundOrder.PAY_TYPE_OFFLINE);
-            log.info("OFFLINE REFUND COMPLETED! refundOrderNo={}", eleRefundOrder.getRefundOrderNo());
+            log.info("CHANGE TO OFFLINE REFUND! refundOrderNo={}", eleRefundOrder.getRefundOrderNo());
         }
         
         // 退款0元及线上强制转线下退款处理
@@ -483,7 +483,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
         eleRefundOrderUpdate.setUpdateTime(System.currentTimeMillis());
         eleRefundOrderService.update(eleRefundOrderUpdate);
         
-        return Triple.of(false, "ELECTRICITY.00100", "退款失败");
+        return Triple.of(false, "ELECTRICITY.00100", "支付调用失败，请检查相关配置");
     }
     
     @Override
@@ -1324,7 +1324,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             eleRefundOrder.setRefundAmount(refundAmount);
             eleRefundOrder.setUpdateTime(System.currentTimeMillis());
             eleRefundOrderService.insert(eleRefundOrder);
-            return R.fail("ELECTRICITY.00100", "退款失败");
+            return R.fail("ELECTRICITY.00100", "支付调用失败，请检查相关配置");
         }
     }
     
