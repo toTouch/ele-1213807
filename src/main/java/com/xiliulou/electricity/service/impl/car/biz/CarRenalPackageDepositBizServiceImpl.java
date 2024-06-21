@@ -1181,7 +1181,7 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
                         
                     } catch (WechatPayException e) {
                         log.error("refundDepositCreate failed.", e);
-                        throw new BizException(e.getMessage());
+                        throw new BizException("PAY_TRANSFER.0020", "支付调用失败，请检查相关配置");
                     }
                 }
                 
@@ -1391,7 +1391,7 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
                         
                     } catch (WechatPayException e) {
                         log.error("saveApproveRefundDepositOrderTx failed.", e);
-                        throw new BizException(e.getMessage());
+                        throw new BizException("PAY_TRANSFER.0020", "支付调用失败，请检查相关配置");
                     }
                 }
                 

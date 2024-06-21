@@ -642,7 +642,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                     
                 } catch (WechatPayException e) {
                     log.error("save approve refund rentOrderTx failed.", e);
-                    throw new BizException(e.getMessage());
+                    throw new BizException("PAY_TRANSFER.0020", "支付调用失败，请检查相关配置");
                 }
             }
         } else {
@@ -1566,7 +1566,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                         
                     } catch (WechatPayException e) {
                         log.error("save approve refund rentOrderTx failed.", e);
-                        throw new BizException(e.getMessage());
+                        throw new BizException("PAY_TRANSFER.0020", "支付调用失败，请检查相关配置");
                     }
                 }
             } else {
