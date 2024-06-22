@@ -729,11 +729,13 @@ public class EleHardwareFailureWarnMsgServiceImpl implements EleHardwareFailureW
             return Triple.of(false, "300836", "租户未充值短信");
         }
     
-        tenantNote.setNoteNum(warnNoteCallBack.getCount());
-        tenantNote.setUpdateTime(System.currentTimeMillis());
+        TenantNote tenantNoteUpdate = new TenantNote();
+        tenantNoteUpdate.setId(tenantNote.getId());
+        tenantNoteUpdate.setNoteNum(warnNoteCallBack.getCount());
+        tenantNoteUpdate.setUpdateTime(System.currentTimeMillis());
         
         // 扣减短信次数
-        tenantNoteService.reduceNoteNumById(tenantNote);
+        tenantNoteService.reduceNoteNumById(tenantNoteUpdate);
         
         // 修改短信标志
         eleHardwareWarnMsgService.updateNoteFlagByAlarmId(warnNoteCallBack.getAlarmId());
@@ -796,6 +798,7 @@ public class EleHardwareFailureWarnMsgServiceImpl implements EleHardwareFailureW
     
         messageCenterRequest.setSendReceiverList(sendReceiverList);
         try {
+            log.info("send lower note notice warn! sessionId={}, alarmId={}, request={}", sessionId, warnNoteCallBack.getAlarmId(), JsonUtil.toJson(messageCenterRequest));
             ResponseEntity<String> responseEntity = restTemplateService.postJsonForResponseEntity(messageCenterConfig.getUrl(), JsonUtil.toJson(messageCenterRequest),
                     null);
             

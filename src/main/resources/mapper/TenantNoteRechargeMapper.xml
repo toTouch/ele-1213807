@@ -11,7 +11,7 @@
     <select id="selectByTenantId" resultType="com.xiliulou.electricity.entity.TenantNote">
         select id, tenant_id, note_num, recharge_time
         from t_tenant_note
-        where tenant_id = #{tenantId};
+        where tenant_id = #{tenantId}
     </select>
     
     <update id="reduceNoteNumById">
