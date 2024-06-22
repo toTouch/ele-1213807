@@ -3,7 +3,7 @@
 <mapper namespace="com.xiliulou.electricity.mapper.warn.EleHardwareWarnMsgMapper">
     <update id="updateNoteFlagByAlarmId">
         UPDATE t_ele_hardware_warn_msg
-        SET note_flag = 1,update_time = #{updateTime}
+        SET send_note_flag = 1,update_time = #{updateTime}
         WHERE alarm_id = #{alarmId}
     </update>
     
