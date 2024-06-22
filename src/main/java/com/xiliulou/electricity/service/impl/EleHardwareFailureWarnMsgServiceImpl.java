@@ -798,10 +798,11 @@ public class EleHardwareFailureWarnMsgServiceImpl implements EleHardwareFailureW
     
         messageCenterRequest.setSendReceiverList(sendReceiverList);
         try {
-            log.info("send lower note notice warn! sessionId={}, alarmId={}, request={}, messageCenterConfig={}", sessionId, warnNoteCallBack.getAlarmId(), messageCenterRequest, messageCenterConfig);
+            log.debug("send lower note notice warn! sessionId={}, alarmId={}, request={}, messageCenterConfig={}", sessionId, warnNoteCallBack.getAlarmId(), messageCenterRequest, messageCenterConfig);
+            
             ResponseEntity<String> responseEntity = restTemplateService.postJsonForResponseEntity(messageCenterConfig.getUrl(), JsonUtil.toJson(messageCenterRequest),
                     null);
-            
+            log.debug("send lower note notice warn! sessionId={}, alarmId={}, response={}", sessionId, warnNoteCallBack.getAlarmId(), responseEntity);
             if (Objects.isNull(responseEntity)) {
                 log.error("send lower note notice error! failure warn send note result is null, sessionId={}, alarmId={}", sessionId, warnNoteCallBack.getAlarmId());
             }
