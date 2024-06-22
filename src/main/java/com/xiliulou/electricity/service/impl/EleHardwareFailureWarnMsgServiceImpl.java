@@ -740,8 +740,9 @@ public class EleHardwareFailureWarnMsgServiceImpl implements EleHardwareFailureW
         // 修改短信标志
         eleHardwareWarnMsgService.updateNoteFlagByAlarmId(warnNoteCallBack.getAlarmId());
     
+        Long noteNum = tenantNote.getNoteNum();
         for (int i = 0; i < warnNoteCallBack.getCount(); i++) {
-            Long noteNum = tenantNote.getNoteNum() - NumberConstant.ONE_L;
+            noteNum = noteNum - NumberConstant.ONE_L;
             if (Objects.equals(noteNum, TenantNoteConstant.NOTE_NUM_FIRST) || Objects.equals(noteNum, TenantNoteConstant.NOTE_NUM_SECOND) || Objects.equals(noteNum,
                     TenantNoteConstant.NOTE_NUM_THIRD)) {
                 sendLowerNoteNotice(warnNoteCallBack, noteNum);
