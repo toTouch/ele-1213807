@@ -1,6 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.xiliulou.electricity.mapper.warn.EleHardwareWarnMsgMapper">
+    <update id="updateNoteFlagByAlarmId">
+        UPDATE t_ele_hardware_warn_msg
+        SET note_flag = 1,update_time = #{updateTime}
+        WHERE alarm_id = #{alarmId}
+    </update>
     
     <select id="selectList" resultType="com.xiliulou.electricity.vo.failureAlarm.EleHardwareFailureWarnMsgVo">
         SELECT

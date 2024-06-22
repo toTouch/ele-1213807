@@ -731,8 +731,12 @@ public class EleHardwareFailureWarnMsgServiceImpl implements EleHardwareFailureW
     
         tenantNote.setNoteNum(warnNoteCallBack.getCount());
         tenantNote.setUpdateTime(System.currentTimeMillis());
-    
+        
+        // 扣减短信次数
         tenantNoteService.reduceNoteNumById(tenantNote);
+        
+        // 修改短信标志
+        eleHardwareWarnMsgService.updateNoteFlagByAlarmId(warnNoteCallBack.getAlarmId());
     
         for (int i = 0; i < warnNoteCallBack.getCount(); i++) {
             Long noteNum = tenantNote.getNoteNum() - NumberConstant.ONE_L;

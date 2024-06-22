@@ -31,4 +31,6 @@ public interface EleHardwareWarnMsgMapper {
     Integer countWarnNum(FailureWarnMsgPageQueryModel queryModel);
     
     int existByAlarmId(@Param("alarmId") String alarmId);
+    
+    int updateNoteFlagByAlarmId(@Param("alarmId") String alarmId, @Param("updateTime") long updateTime);
 }

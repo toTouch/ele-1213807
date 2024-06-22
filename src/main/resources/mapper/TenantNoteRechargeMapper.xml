@@ -14,12 +14,12 @@
         where tenant_id = #{tenantId};
     </select>
     
-    <select id="reduceNoteNumById" resultType="java.lang.Integer">
+    <update id="reduceNoteNumById">
         update t_tenant_note
         set note_num = note_num - #{noteNum},
             update_time = #{updateTime}
         where id = #{id}
-    </select>
+    </update>
     
     <insert id="insertOne" parameterType="com.xiliulou.electricity.entity.TenantNote" keyColumn="id" keyProperty="id" useGeneratedKeys="true">
         insert into t_tenant_note(tenant_id, note_num, recharge_time, create_time)

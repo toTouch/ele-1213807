@@ -414,6 +414,11 @@ public class EleHardwareWarnMsgServiceImpl implements EleHardwareWarnMsgService 
         return eleHardwareWarnMsgMapper.existByAlarmId(alarmId);
     }
     
+    @Override
+    public int updateNoteFlagByAlarmId(String alarmId) {
+        return eleHardwareWarnMsgMapper.updateNoteFlagByAlarmId(alarmId, System.currentTimeMillis());
+    }
+    
     private List<FailureWarnProportionVo> warnProportion(Map<String, Integer> failureMap) {
         FailureAlarmQueryModel alarmQueryModel = FailureAlarmQueryModel.builder().type(FailureAlarmTypeEnum.FAILURE_ALARM_TYPE_WARING.getCode()).status(FailureAlarm.enable)
                 .build();

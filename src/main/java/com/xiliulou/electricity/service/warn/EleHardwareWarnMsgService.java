@@ -34,4 +34,6 @@ public interface EleHardwareWarnMsgService {
     void setWarnInfo(FailureWarnFrequencyVo vo, FailureWarnMsgPageQueryModel queryModel);
     
     int existByAlarmId(String alarmId);
+    
+    int updateNoteFlagByAlarmId(String alarmId);
 }
