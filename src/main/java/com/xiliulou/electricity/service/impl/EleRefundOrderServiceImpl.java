@@ -557,7 +557,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             eleRefundOrderService.update(eleRefundOrderUpdate);
             
             return Triple.of(true, "", null);
-        } catch (DecoderException | WechatPayException e) {
+        } catch (Exception e) {
             log.error("REFUND ORDER ERROR! wechat v3 refund  error! ", e);
         }
         
@@ -1690,7 +1690,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
                 eleRefundOrder.setUpdateTime(System.currentTimeMillis());
                 eleRefundOrderService.insert(eleRefundOrder);
                 return R.ok();
-            } catch (DecoderException | WechatPayException e) {
+            } catch (Exception e) {
                 log.error("battery deposit OffLine Refund ERROR! wechat v3 refund  error! ", e);
             }
             // 提交失败

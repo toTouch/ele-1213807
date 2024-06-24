@@ -760,7 +760,7 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
             batteryMemberCardOrderService.updateByID(electricityMemberCardOrderUpdate);
             
             return Triple.of(true, "", null);
-        } catch (DecoderException | WechatPayException e) {
+        } catch (Exception e) {
             log.error("BATTERY MEMBERCARD REFUND ERROR! wechat v3 refund error! ", e);
         }
         
