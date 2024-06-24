@@ -7,6 +7,7 @@ package com.xiliulou.electricity.handler;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.constant.WechatPayConstant;
+import com.xiliulou.electricity.entity.ElectricityPayParams;
 import com.xiliulou.electricity.entity.ElectricityTradeOrder;
 import com.xiliulou.electricity.entity.UnionTradeOrder;
 import com.xiliulou.electricity.enums.CallBackEnums;
@@ -26,6 +27,7 @@ import com.xiliulou.pay.weixinv3.v2.query.WechatV3RefundOrderCallBackRequest;
 import com.xiliulou.pay.weixinv3.v2.query.WechatV3RefundRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -161,6 +163,14 @@ public class WechatV3FranchiseePostProcessHandlerImpl implements WechatV3PostPro
     
     
     private String getApiV3Key(Integer tenantId, Long franchiseeId) {
-        return electricityPayParamsService.queryPreciseCacheByTenantIdAndFranchiseeId(tenantId, franchiseeId).getWechatV3ApiKey();
+        try {
+            ElectricityPayParams payParams = electricityPayParamsService.queryPreciseCacheByTenantIdAndFranchiseeId(tenantId, franchiseeId);
+            if (Objects.isNull(payParams)) {
+                throw new AuthenticationServiceException("未能查找到appId和appSecret！");
+            }
+            return payParams.getWechatV3ApiKey();
+        } catch (Exception e) {
+            throw new RuntimeException("获取商户apiV3密钥失败！tenantId=" + tenantId + " franchiseeId=" + franchiseeId, e);
+        }
     }
 }

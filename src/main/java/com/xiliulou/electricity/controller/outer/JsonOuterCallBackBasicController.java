@@ -10,6 +10,7 @@ import com.xiliulou.pay.weixinv3.query.WechatV3RefundOrderCallBackQuery;
 import com.xiliulou.pay.weixinv3.util.AesUtil;
 import com.xiliulou.pay.weixinv3.v2.query.WechatV3RefundOrderCallBackRequest;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.authentication.AuthenticationServiceException;
 
 import javax.annotation.Resource;
 import java.nio.charset.StandardCharsets;
@@ -36,14 +37,13 @@ public class JsonOuterCallBackBasicController {
             log.error("WECHAT ERROR! no wechat's info ! msg={}", wechatV3RefundOrderCallBackQuery);
             return null;
         }
-        ElectricityPayParams payParams = electricityPayParamsService
-                .queryPreciseCacheByTenantIdAndFranchiseeId(wechatV3RefundOrderCallBackQuery.getTenantId(), MultiFranchiseeConstant.DEFAULT_FRANCHISEE);
         
         String decryptJson = null;
         try {
+            String apiV3Key = this.getApiV3Key(wechatV3RefundOrderCallBackQuery.getTenantId(), MultiFranchiseeConstant.DEFAULT_FRANCHISEE);
             decryptJson = AesUtil
                     .decryptToString(resource.getAssociated_data().getBytes(StandardCharsets.UTF_8), resource.getNonce().getBytes(StandardCharsets.UTF_8), resource.getCiphertext(),
-                            payParams.getWechatV3ApiKey().getBytes(StandardCharsets.UTF_8));
+                            apiV3Key.getBytes(StandardCharsets.UTF_8));
             
         } catch (Exception e) {
             log.error("WECHAT ERROR! wechat decrypt error! msg={}", wechatV3RefundOrderCallBackQuery, e);
@@ -69,14 +69,12 @@ public class JsonOuterCallBackBasicController {
             return null;
         }
         
-        ElectricityPayParams payParams = electricityPayParamsService
-                .queryPreciseCacheByTenantIdAndFranchiseeId(wechatV3RefundOrderCallBackQuery.getTenantId(), wechatV3RefundOrderCallBackQuery.getFranchiseeId());
-        
         String decryptJson = null;
         try {
+            String apiV3Key = this.getApiV3Key(wechatV3RefundOrderCallBackQuery.getTenantId(), wechatV3RefundOrderCallBackQuery.getFranchiseeId());
             decryptJson = AesUtil
                     .decryptToString(resource.getAssociated_data().getBytes(StandardCharsets.UTF_8), resource.getNonce().getBytes(StandardCharsets.UTF_8), resource.getCiphertext(),
-                            payParams.getWechatV3ApiKey().getBytes(StandardCharsets.UTF_8));
+                            apiV3Key.getBytes(StandardCharsets.UTF_8));
             
         } catch (Exception e) {
             log.error("WECHAT ERROR! new call wechat decrypt error! msg={}", wechatV3RefundOrderCallBackQuery, e);
@@ -86,5 +84,18 @@ public class JsonOuterCallBackBasicController {
         WechatJsapiRefundOrderCallBackResource callBackResource = JsonUtil.fromJson(decryptJson, WechatJsapiRefundOrderCallBackResource.class);
         
         return callBackResource;
+    }
+    
+    
+    private String getApiV3Key(Integer tenantId, Long franchiseeId) {
+        try {
+            ElectricityPayParams payParams = electricityPayParamsService.queryPreciseCacheByTenantIdAndFranchiseeId(tenantId, franchiseeId);
+            if (Objects.isNull(payParams)) {
+                throw new AuthenticationServiceException("未能查找到appId和appSecret！");
+            }
+            return payParams.getWechatV3ApiKey();
+        } catch (Exception e) {
+            throw new RuntimeException("获取商户apiV3密钥失败！tenantId=" + tenantId + " franchiseeId=" + franchiseeId, e);
+        }
     }
 }
