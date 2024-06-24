@@ -207,7 +207,7 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
         wechatV3RefundRequest.setOrderId(tradeOrderNo);
         wechatV3RefundRequest.setReason("退款");
         wechatV3RefundRequest.setNotifyUrl(
-                wechatConfig.getBatteryRentRefundCallBackUrl() + batteryMembercardRefundOrder.getTenantId() + "/" + batteryMembercardRefundOrder.getFranchiseeId());
+                wechatConfig.getBatteryRentRefundCallBackUrl() + wechatPayParamsDetails.getTenantId() + "/" + wechatPayParamsDetails.getFranchiseeId());
         wechatV3RefundRequest.setRefund(batteryMembercardRefundOrder.getRefundAmount().multiply(new BigDecimal(100)).intValue());
         wechatV3RefundRequest.setTotal(total);
         wechatV3RefundRequest.setCurrency("CNY");
