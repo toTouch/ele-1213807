@@ -762,18 +762,6 @@ public class EleHardwareFailureWarnMsgServiceImpl implements EleHardwareFailureW
         return Triple.of(true, null, null);
     }
     
-    public static void main(String[] args) {
-        Long noteNum = 1L;
-        for (int i = 0; i < 2; i++) {
-            noteNum = noteNum - NumberConstant.ONE_L;
-            if (Objects.equals(noteNum, TenantNoteConstant.NOTE_NUM_FIRST) || Objects.equals(noteNum, TenantNoteConstant.NOTE_NUM_SECOND) || Objects.equals(noteNum,
-                    TenantNoteConstant.NOTE_NUM_THIRD)) {
-                String s = "1";
-                break;
-            }
-        }
-    }
-    
     private void sendLowerNoteNotice(WarnNoteCallBack warnNoteCallBack, Long noteNum) {
         Integer tenantId = warnNoteCallBack.getTenantId();
         // 平台名称
