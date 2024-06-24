@@ -745,10 +745,8 @@ public class EleHardwareFailureWarnMsgServiceImpl implements EleHardwareFailureW
         eleHardwareWarnMsgService.updateNoteFlagByAlarmId(warnNoteCallBack.getAlarmId());
     
         Long noteNum = tenantNote.getNoteNum();
-        log.info("warn note notice, noteNum = {}", tenantNote.getNoteNum());
         for (int i = 0; i < warnNoteCallBack.getCount(); i++) {
             noteNum = noteNum - NumberConstant.ONE_L;
-            log.info("warn note notice, noteNum1 = {}", noteNum);
             if (Objects.equals(noteNum, TenantNoteConstant.NOTE_NUM_FIRST) || Objects.equals(noteNum, TenantNoteConstant.NOTE_NUM_SECOND) || Objects.equals(noteNum,
                     TenantNoteConstant.NOTE_NUM_THIRD)) {
                 
