@@ -30,7 +30,7 @@ public interface ShareActivityService {
      * @param shareActivityAddAndUpdateQuery 实例对象
      * @return 实例对象
      */
-    R insert(ShareActivityAddAndUpdateQuery shareActivityAddAndUpdateQuery, TokenUser user);
+    R insert(ShareActivityAddAndUpdateQuery shareActivityAddAndUpdateQuery, TokenUser user, Long franchiseeId);
 
     /**
      * 修改数据

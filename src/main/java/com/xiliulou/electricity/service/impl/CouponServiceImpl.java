@@ -138,13 +138,13 @@ public class CouponServiceImpl implements CouponService {
         // 加盟商判断
         Long couponFranchiseeId = couponQuery.getFranchiseeId();
         if (Objects.isNull(couponFranchiseeId) || Objects.equals(couponFranchiseeId, NumberConstant.ZERO_L)) {
-            log.error("Coupon ERROR! not found FranchiseeId, uid={}", user.getUid());
+            log.warn("Coupon WARN! Not found franchiseeId, uid={}", user.getUid());
             return R.fail("120129", "加盟商不能为空");
         }
         
         // 加盟商一致性校验
         if (Objects.nonNull(franchiseeId) && !Objects.equals(franchiseeId, couponFranchiseeId)) {
-            log.warn("Coupon ERROR! Franchisees are inconsistent, couponId={}", couponQuery.getId());
+            log.warn("Coupon WARN! Franchisees are inconsistent, couponId={}", couponQuery.getId());
             return R.fail("120128", "所属加盟商不一致");
         }
         
@@ -337,7 +337,7 @@ public class CouponServiceImpl implements CouponService {
         if (Objects.nonNull(franchiseeId)) {
             Integer couponFranchiseeId = oldCoupon.getFranchiseeId();
             if (Objects.nonNull(couponFranchiseeId) && !Objects.equals(couponFranchiseeId, NumberConstant.ZERO) && !Objects.equals(franchiseeId, couponFranchiseeId.longValue())) {
-                log.warn("update coupon ERROR! Franchisees are inconsistent, couponId={}", couponQuery.getId());
+                log.warn("update coupon WARN! Franchisees are inconsistent, couponId={}", couponQuery.getId());
                 return R.fail("120128", "所属加盟商不一致");
             }
         }
@@ -414,7 +414,7 @@ public class CouponServiceImpl implements CouponService {
     public Triple<Boolean, String, Object> findCouponById(Long id, Long franchiseeId) {
         Coupon coupon = this.queryByIdFromCache(id.intValue());
         if (Objects.isNull(coupon) || !Objects.equals(coupon.getTenantId(), TenantContextHolder.getTenantId())) {
-            log.warn("findCouponById ERROR! not found coupon, couponId={}", id);
+            log.warn("findCouponById WARN! not found coupon, couponId={}", id);
             return Triple.of(false, "120125", "优惠券信息不存在");
         }
     
@@ -424,7 +424,7 @@ public class CouponServiceImpl implements CouponService {
         if (Objects.nonNull(franchiseeId)) {
             Integer couponFranchiseeId = coupon.getFranchiseeId();
             if (Objects.nonNull(couponFranchiseeId) && !Objects.equals(couponFranchiseeId, NumberConstant.ZERO) && !Objects.equals(franchiseeId, couponFranchiseeId.longValue())) {
-                log.warn("findCouponById ERROR! Franchisees are inconsistent, couponId={}", id);
+                log.warn("findCouponById WARN! Franchisees are inconsistent, couponId={}", id);
                 return Triple.of(false, "120128", "所属加盟商不一致");
             }
     
@@ -541,14 +541,8 @@ public class CouponServiceImpl implements CouponService {
         if (Objects.nonNull(franchiseeId)) {
             Integer couponFranchiseeId = coupon.getFranchiseeId();
             if (Objects.nonNull(couponFranchiseeId) && !Objects.equals(couponFranchiseeId, NumberConstant.ZERO) && !Objects.equals(franchiseeId, couponFranchiseeId.longValue())) {
-                log.warn("delete coupon ERROR! Franchisees are inconsistent, couponId={}", id);
+                log.warn("delete coupon WARN! Franchisees are inconsistent, couponId={}", id);
                 return Triple.of(false, "false", "所属加盟商不一致");
-            }
-        }
-    
-        if (Objects.nonNull(franchiseeId)) {
-            if (Objects.isNull(coupon.getFranchiseeId()) || !Objects.equals(franchiseeId, coupon.getFranchiseeId().longValue())) {
-                return Triple.of(true, null, null);
             }
         }
         

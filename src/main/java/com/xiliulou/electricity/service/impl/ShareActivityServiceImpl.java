@@ -24,7 +24,6 @@ import com.xiliulou.electricity.entity.ShareActivityMemberCard;
 import com.xiliulou.electricity.entity.ShareActivityOperateRecord;
 import com.xiliulou.electricity.entity.ShareActivityRecord;
 import com.xiliulou.electricity.entity.ShareActivityRule;
-import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.UserCoupon;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.car.CarRentalPackagePo;
@@ -198,25 +197,21 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 	 */
 	@Override
 	@Transactional(rollbackFor = Exception.class)
-	public R insert(ShareActivityAddAndUpdateQuery shareActivityAddAndUpdateQuery, TokenUser user) {
-		// 加盟商校验
-		if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
-			if (Objects.isNull(shareActivityAddAndUpdateQuery.getFranchiseeId())) {
-				log.error("ShareActivity ERROR! not found FranchiseeId, uid={}", user.getUid());
-				return R.fail("120129", "加盟商不能为空");
-			}
-			
-			shareActivityAddAndUpdateQuery.setType(ShareActivity.FRANCHISEE);
-		} else {
-			if (Objects.equals(shareActivityAddAndUpdateQuery.getType(), Coupon.TYPE_FRANCHISEE)) {
-				if (Objects.isNull(shareActivityAddAndUpdateQuery.getFranchiseeId())) {
-					log.error("Coupon ERROR! not found FranchiseeId, uid={}", user.getUid());
-					return R.fail("120129", "加盟商不能为空");
-				}
-				
-				shareActivityAddAndUpdateQuery.setType(ShareActivity.FRANCHISEE);
-			}
+	public R insert(ShareActivityAddAndUpdateQuery shareActivityAddAndUpdateQuery, TokenUser user, Long franchiseeId) {
+		// 加盟商判断
+		Integer couponFranchiseeId = shareActivityAddAndUpdateQuery.getFranchiseeId();
+		if (Objects.isNull(couponFranchiseeId) || Objects.equals(couponFranchiseeId, NumberConstant.ZERO)) {
+			log.warn("ShareActivity WARN! Not found franchiseeId, uid={}", user.getUid());
+			return R.fail("120129", "加盟商不能为空");
 		}
+		
+		// 加盟商一致性校验
+		if (Objects.nonNull(franchiseeId) && !Objects.equals(franchiseeId, couponFranchiseeId.longValue())) {
+			log.warn("ShareActivity WARN! Franchisees are inconsistent, couponId={}", couponFranchiseeId);
+			return R.fail("120128", "所属加盟商不一致");
+		}
+		
+		shareActivityAddAndUpdateQuery.setType(ShareActivity.FRANCHISEE);
 		
 		if (ObjectUtil.isEmpty(shareActivityAddAndUpdateQuery.getHours()) && ObjectUtil.isEmpty(shareActivityAddAndUpdateQuery.getMinutes())) {
 			return R.fail("110209", "有效时间不能为空");
@@ -363,11 +358,17 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 			return Triple.of(false, "ELECTRICITY.0069", "未找到活动");
 		}
 		
-		// 加盟商校验
+		// 租户一致性校验
+		if (!Objects.equals(TenantContextHolder.getTenantId(), shareActivity.getTenantId())) {
+			return Triple.of(true, "", "");
+		}
+		
+		// 加盟商一致性校验
 		if (Objects.nonNull(franchiseeId)) {
-			if (isSameFranchisee(shareActivity.getFranchiseeId(), franchiseeId)) {
-				log.warn("update Activity ERROR! not the same franchiseeId, ActivityId={}", shareActivityAddAndUpdateQuery.getId());
-				return Triple.of(false, "ELECTRICITY.0069", "未找到活动");
+			Integer activityFranchiseeId = shareActivity.getFranchiseeId();
+			if (Objects.nonNull(activityFranchiseeId) && !Objects.equals(activityFranchiseeId, NumberConstant.ZERO) && !Objects.equals(franchiseeId, activityFranchiseeId.longValue())) {
+				log.warn("update Activity WARN! Franchisees are inconsistent, ActivityId={}", shareActivityAddAndUpdateQuery.getId());
+				return Triple.of(false, "120128", "所属加盟商不一致");
 			}
 		}
 		
@@ -403,14 +404,6 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 		return Triple.of(true,"","");
 	}
 	
-	private boolean isSameFranchisee(Integer activityFranchiseeId, Long franchiseeId) {
-		return isNullFranchisee(activityFranchiseeId) || !Objects.equals(activityFranchiseeId.longValue(), franchiseeId);
-	}
-	
-	private boolean isNullFranchisee(Integer activityFranchiseeId) {
-		return Objects.isNull(activityFranchiseeId) || Objects.equals(activityFranchiseeId, NumberConstant.ZERO);
-	}
-
 	/**
 	 * 修改数据(暂只支持上下架）
 	 *
@@ -429,14 +422,20 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 		//租户
 		Integer tenantId = TenantContextHolder.getTenantId();
 		
+		// 租户一致性校验
+		if (!Objects.equals(TenantContextHolder.getTenantId(), oldShareActivity.getTenantId())) {
+			return R.ok();
+		}
+		
 		// 加盟商校验
 		if (Objects.nonNull(franchiseeId)) {
-			if (isSameFranchisee(oldShareActivity.getFranchiseeId(), franchiseeId)) {
-				log.warn("update Activity ERROR! not the same franchiseeId, ActivityId={}", shareActivityAddAndUpdateQuery.getId());
+			Integer activityFranchiseeId = oldShareActivity.getFranchiseeId();
+			if (Objects.nonNull(activityFranchiseeId) && !Objects.equals(activityFranchiseeId, NumberConstant.ZERO) && !Objects.equals(franchiseeId, activityFranchiseeId.longValue())) {
+				log.warn("update Activity WARN! Franchisees are inconsistent, ActivityId={}", shareActivityAddAndUpdateQuery.getId());
 				return R.fail("120128", "所属加盟商不一致");
 			}
 			
-			// 判断改加盟商是否有启用的活动，有则不能启用
+			// 判断该加盟商是否有启用的活动，有则不能启用
 			if (Objects.equals(shareActivityAddAndUpdateQuery.getStatus(), ShareActivity.STATUS_ON)) {
 				int count = shareActivityMapper.selectCount(
 						new LambdaQueryWrapper<ShareActivity>().eq(ShareActivity::getTenantId, tenantId).eq(ShareActivity::getFranchiseeId, franchiseeId).eq(ShareActivity::getStatus, ShareActivity.STATUS_ON));
@@ -444,17 +443,17 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 					return R.fail("ELECTRICITY.00102", "该加盟商已有启用中的邀请活动，请勿重复添加");
 				}
 			}
-		}
-
-		//查询该租户是否有邀请活动，有则不能启用
-		if (Objects.equals(shareActivityAddAndUpdateQuery.getStatus(), ShareActivity.STATUS_ON)) {
-			int count = shareActivityMapper.selectCount(new LambdaQueryWrapper<ShareActivity>()
-					.eq(ShareActivity::getTenantId, tenantId).eq(ShareActivity::getStatus, ShareActivity.STATUS_ON).eq(ShareActivity::getType, ShareActivity.SYSTEM));
-			if (count > 0) {
-				return R.fail("ELECTRICITY.00102", "该租户已有启用中的邀请活动，请勿重复添加");
+		} else {
+			//查询该租户是否有邀请活动，有则不能启用
+			if (Objects.equals(shareActivityAddAndUpdateQuery.getStatus(), ShareActivity.STATUS_ON)) {
+				int count = shareActivityMapper.selectCount(new LambdaQueryWrapper<ShareActivity>()
+						.eq(ShareActivity::getTenantId, tenantId).eq(ShareActivity::getStatus, ShareActivity.STATUS_ON).eq(ShareActivity::getType, ShareActivity.SYSTEM));
+				if (count > 0) {
+					return R.fail("ELECTRICITY.00102", "该租户已有启用中的邀请活动，请勿重复添加");
+				}
 			}
 		}
-
+		
 		BeanUtil.copyProperties(shareActivityAddAndUpdateQuery, oldShareActivity);
 		oldShareActivity.setUpdateTime(System.currentTimeMillis());
 
@@ -846,8 +845,9 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 		}
 		
 		if (Objects.nonNull(franchiseeId)) {
-			if (!isSameFranchisee(shareActivity.getFranchiseeId(), franchiseeId)) {
-				log.warn("Query activity detail ERROR! not the same franchiseeId, ActivityId={}", id);
+			Integer activityFranchiseeId = shareActivity.getFranchiseeId();
+			if (Objects.nonNull(activityFranchiseeId) && !Objects.equals(activityFranchiseeId, NumberConstant.ZERO) && !Objects.equals(franchiseeId, activityFranchiseeId.longValue())) {
+				log.warn("Query activity detail WARN! not the same franchiseeId, ActivityId={}", id);
 				return Triple.of(false, "120128", "所属加盟商不一致");
 			}
 		}
@@ -1018,7 +1018,7 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 		//shareActivityOperateRecord.setMemberCard(JsonUtil.toJson(shareActivityPackageVO));
 		shareActivityOperateRecord.setPackageInfo(JsonUtil.toJson(shareActivityPackageVO));
 		shareActivityOperateRecord.setTenantId(TenantContextHolder.getTenantId());
-		if (Objects.nonNull(shareActivity.getFranchiseeId())) {
+		if (Objects.nonNull(shareActivity.getFranchiseeId()) && !Objects.equals(shareActivity.getFranchiseeId(), NumberConstant.ZERO)) {
 			shareActivityOperateRecord.setFranchiseeId(shareActivity.getFranchiseeId());
 		}
 		shareActivityOperateRecord.setCreateTime(System.currentTimeMillis());
@@ -1090,13 +1090,20 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 	public R<?> removeById(Long id, Long franchiseeId) {
 		ShareActivity shareActivity = this.queryByIdFromCache(Math.toIntExact(id));
 		if (Objects.isNull(shareActivity)) {
-			log.warn("delete Activity  ERROR! not found Activity ! ActivityId={} ", id);
+			log.warn("delete Activity WARN! not found Activity ! ActivityId={} ", id);
 			return R.fail("ELECTRICITY.0069", "未找到活动");
 		}
 		
+		// 租户一致性校验
+		if (!Objects.equals(TenantContextHolder.getTenantId(), shareActivity.getTenantId())) {
+			return R.ok();
+		}
+		
+		// 加盟商一致性校验
 		if (Objects.nonNull(franchiseeId)) {
-			if (!isSameFranchisee(shareActivity.getFranchiseeId(), franchiseeId)) {
-				log.warn("delete Activity  ERROR! not found Activity ! ActivityId={}", id);
+			Integer activityFranchiseeId = shareActivity.getFranchiseeId();
+			if (Objects.nonNull(activityFranchiseeId) && !Objects.equals(activityFranchiseeId, NumberConstant.ZERO) && !Objects.equals(franchiseeId, activityFranchiseeId.longValue())) {
+				log.warn("delete Activity WARN! Franchisees are inconsistent, ActivityId={}", id);
 				return R.fail("120128", "所属加盟商不一致");
 			}
 		}

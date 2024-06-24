@@ -226,7 +226,7 @@ public class ShareActivityRecordServiceImpl implements ShareActivityRecordServic
     
     private Integer getFranchiseeId(Integer activityId) {
         ShareActivity shareActivity = shareActivityService.queryByIdFromCache(activityId);
-        if (Objects.isNull(activityId) || Objects.isNull(shareActivity.getFranchiseeId()) || Objects.equals(shareActivity.getFranchiseeId(), NumberConstant.ZERO)) {
+        if (Objects.isNull(shareActivity.getFranchiseeId()) || Objects.equals(shareActivity.getFranchiseeId(), NumberConstant.ZERO)) {
             return null;
         }
         return shareActivity.getFranchiseeId();
