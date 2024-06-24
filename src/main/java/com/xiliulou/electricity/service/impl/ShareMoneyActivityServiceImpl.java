@@ -143,22 +143,17 @@ public class ShareMoneyActivityServiceImpl implements ShareMoneyActivityService 
         if (ObjectUtil.isEmpty(shareMoneyActivityAddAndUpdateQuery.getHours()) && ObjectUtil.isEmpty(shareMoneyActivityAddAndUpdateQuery.getMinutes())) {
             return R.fail("110209", "有效时间不能为空");
         }
-        
-        //创建账号
-        TokenUser user = SecurityUtils.getUserInfo();
-        if (Objects.isNull(user)) {
-            log.error("Coupon  ERROR! not found user ");
-            return R.fail("ELECTRICITY.0001", "未找到用户");
-        }
 
         //租户
         Integer tenantId = TenantContextHolder.getTenantId();
-
+        //加盟商
+        Integer franchiseeId = shareMoneyActivityAddAndUpdateQuery.getFranchiseeId();
+    
         //查询该租户是否有邀请活动，有则不能添加
         // int count = shareMoneyActivityMapper.selectCount(new LambdaQueryWrapper<ShareMoneyActivity>().eq(ShareMoneyActivity::getTenantId, tenantId).eq(ShareMoneyActivity::getStatus, ShareMoneyActivity.STATUS_ON));
         //3.0后修改为，如果状态为上架时，先提示确定上架，确定后则直接上架，并将之前的活动下架
         if(ShareMoneyActivity.STATUS_ON.equals(shareMoneyActivityAddAndUpdateQuery.getStatus())){
-            ShareMoneyActivity activityResult = shareMoneyActivityMapper.selectActivityByTenantIdAndStatus(tenantId.longValue(), ShareMoneyActivity.STATUS_ON);
+            ShareMoneyActivity activityResult = shareMoneyActivityMapper.selectActivityByTenantIdAndStatus(tenantId.longValue(), franchiseeId,  ShareMoneyActivity.STATUS_ON);
             if (Objects.nonNull(activityResult)) {
                 //return R.fail("ELECTRICITY.00102", "该租户已有启用中的邀请活动，请勿重复添加");
                 //如果存在已上架的活动，则将该活动修改为下架
@@ -184,20 +179,16 @@ public class ShareMoneyActivityServiceImpl implements ShareMoneyActivityService 
                 return R.fail("000076", (String) verifyResult.getRight());
             }
         }
+    
+        shareMoneyActivityAddAndUpdateQuery.setType(ShareMoneyActivity.FRANCHISEE);
 
         ShareMoneyActivity shareMoneyActivity = new ShareMoneyActivity();
         BeanUtil.copyProperties(shareMoneyActivityAddAndUpdateQuery, shareMoneyActivity);
-        shareMoneyActivity.setUid(user.getUid());
-        shareMoneyActivity.setUserName(user.getUsername());
         shareMoneyActivity.setCreateTime(System.currentTimeMillis());
         shareMoneyActivity.setUpdateTime(System.currentTimeMillis());
         shareMoneyActivity.setTenantId(tenantId);
         shareMoneyActivity.setHours(Objects.isNull(shareMoneyActivityAddAndUpdateQuery.getHours()) ? NumberConstant.ZERO : (shareMoneyActivityAddAndUpdateQuery.getHours()));
         shareMoneyActivity.setMinutes(Objects.isNull(shareMoneyActivityAddAndUpdateQuery.getMinutes()) ? NumberConstant.ZERO : (shareMoneyActivityAddAndUpdateQuery.getMinutes()));
-
-        if (Objects.isNull(shareMoneyActivity.getType())) {
-            shareMoneyActivity.setType(ShareActivity.SYSTEM);
-        }
 
         int insert = shareMoneyActivityMapper.insert(shareMoneyActivity);
 

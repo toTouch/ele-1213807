@@ -197,33 +197,17 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 	 */
 	@Override
 	@Transactional(rollbackFor = Exception.class)
-	public R insert(ShareActivityAddAndUpdateQuery shareActivityAddAndUpdateQuery, TokenUser user, Long franchiseeId) {
-		// 加盟商判断
-		Integer couponFranchiseeId = shareActivityAddAndUpdateQuery.getFranchiseeId();
-		if (Objects.isNull(couponFranchiseeId) || Objects.equals(couponFranchiseeId, NumberConstant.ZERO)) {
-			log.warn("ShareActivity WARN! Not found franchiseeId, uid={}", user.getUid());
-			return R.fail("120129", "加盟商不能为空");
-		}
-		
-		// 加盟商一致性校验
-		if (Objects.nonNull(franchiseeId) && !Objects.equals(franchiseeId, couponFranchiseeId.longValue())) {
-			log.warn("ShareActivity WARN! Franchisees are inconsistent, couponId={}", couponFranchiseeId);
-			return R.fail("120128", "所属加盟商不一致");
-		}
-		
-		shareActivityAddAndUpdateQuery.setType(ShareActivity.FRANCHISEE);
-		
+	public R insert(ShareActivityAddAndUpdateQuery shareActivityAddAndUpdateQuery) {
 		if (ObjectUtil.isEmpty(shareActivityAddAndUpdateQuery.getHours()) && ObjectUtil.isEmpty(shareActivityAddAndUpdateQuery.getMinutes())) {
 			return R.fail("110209", "有效时间不能为空");
 		}
 		
 		Integer tenantId = TenantContextHolder.getTenantId();
 		if (Objects.equals(shareActivityAddAndUpdateQuery.getStatus(), ShareActivity.STATUS_ON)) {
-			int count = shareActivityMapper.selectCount(
-					new LambdaQueryWrapper<ShareActivity>().eq(ShareActivity::getTenantId, tenantId)
-							.eq(ShareActivity::getStatus, ShareActivity.STATUS_ON));
+			int count = shareActivityMapper.selectCount(new LambdaQueryWrapper<ShareActivity>().eq(ShareActivity::getTenantId, tenantId)
+					.eq(ShareActivity::getFranchiseeId, shareActivityAddAndUpdateQuery.getFranchiseeId()).eq(ShareActivity::getStatus, ShareActivity.STATUS_ON));
 			if (count > 0) {
-				return R.fail("ELECTRICITY.00102", "该租户已有启用中的邀请活动，请勿重复添加");
+				return R.fail("ELECTRICITY.00102", "该加盟商已有启用中的邀请活动，请勿重复添加");
 			}
 		}
 
@@ -253,20 +237,15 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 		}
 
 		List<ShareActivityRuleQuery> shareActivityRuleQueryList = shareActivityAddAndUpdateQuery.getShareActivityRuleQueryList();
+		shareActivityAddAndUpdateQuery.setType(ShareActivity.FRANCHISEE);
 
 		ShareActivity shareActivity = new ShareActivity();
 		BeanUtil.copyProperties(shareActivityAddAndUpdateQuery, shareActivity);
-		shareActivity.setUid(user.getUid());
-		shareActivity.setUserName(user.getUsername());
 		shareActivity.setCreateTime(System.currentTimeMillis());
 		shareActivity.setUpdateTime(System.currentTimeMillis());
 		shareActivity.setTenantId(tenantId);
 		shareActivity.setHours(Objects.isNull(shareActivityAddAndUpdateQuery.getHours()) ? NumberConstant.ZERO : (shareActivityAddAndUpdateQuery.getHours()));
 		shareActivity.setMinutes(Objects.isNull(shareActivityAddAndUpdateQuery.getMinutes()) ? NumberConstant.ZERO : (shareActivityAddAndUpdateQuery.getMinutes()));
-
-		if (Objects.isNull(shareActivity.getType())) {
-			shareActivity.setType(ShareActivity.SYSTEM);
-		}
 
 		int insert = shareActivityMapper.insert(shareActivity);
 		DbUtils.dbOperateSuccessThen(insert, () -> {

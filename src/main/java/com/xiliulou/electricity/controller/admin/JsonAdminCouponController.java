@@ -94,17 +94,23 @@ public class JsonAdminCouponController extends BaseController {
             return R.ok();
         }
     
-        Long franchiseeId = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
             List<Long> franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
             if (CollectionUtils.isEmpty(franchiseeIds)) {
                 return R.ok();
             }
-        
-            franchiseeId = franchiseeIds.get(0);
+    
+            Long franchiseeId = couponQuery.getFranchiseeId();
+            if (Objects.nonNull(franchiseeId) && !Objects.equals(franchiseeIds.get(0), franchiseeId)) {
+                log.warn("Coupon WARN! Franchisees are inconsistent, franchiseeId={}", franchiseeId);
+                return R.fail("120128", "所属加盟商不一致");
+            }
         }
+    
+        couponQuery.setUid(user.getUid());
+        couponQuery.setUserName(user.getUsername());
 
-        return couponService.insert(couponQuery, user, franchiseeId);
+        return couponService.insert(couponQuery);
     }
 
     //修改--暂时无此功能

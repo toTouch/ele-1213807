@@ -2,7 +2,6 @@ package com.xiliulou.electricity.controller.admin;
 
 import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.web.R;
-import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.enums.PackageTypeEnum;
@@ -16,6 +15,7 @@ import com.xiliulou.electricity.query.ShareMoneyActivityQuery;
 import com.xiliulou.electricity.service.BatteryMemberCardService;
 import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.ShareMoneyActivityService;
+import com.xiliulou.electricity.service.UserDataScopeService;
 import com.xiliulou.electricity.service.car.CarRentalPackageService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
@@ -23,6 +23,7 @@ import com.xiliulou.electricity.validator.CreateGroup;
 import com.xiliulou.electricity.validator.UpdateGroup;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -33,8 +34,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.annotation.Resource;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -62,7 +63,10 @@ public class JsonAdminShareMoneyActivityController {
 
 	@Autowired
 	private CarRentalPackageService carRentalPackageService;
-
+	
+	@Resource
+	private UserDataScopeService userDataScopeService;
+	
 	@GetMapping(value = "/admin/shareMoneyActivity/checkActivityStatusOn")
 	public R checkActivityStatusOn() {
 		return shareMoneyActivityService.checkActivityStatusOn();
@@ -71,6 +75,31 @@ public class JsonAdminShareMoneyActivityController {
 	//新增
 	@PostMapping(value = "/admin/shareMoneyActivity")
 	public R save(@RequestBody @Validated(value = CreateGroup.class) ShareMoneyActivityAddAndUpdateQuery shareMoneyActivityAddAndUpdateQuery) {
+		TokenUser user = SecurityUtils.getUserInfo();
+		if (Objects.isNull(user)) {
+			return R.fail("ELECTRICITY.0001", "未找到用户");
+		}
+		
+		if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE) || Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE))) {
+			return R.ok();
+		}
+		
+		if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+			List<Long> franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+			if (CollectionUtils.isEmpty(franchiseeIds)) {
+				return R.ok();
+			}
+			
+			Integer franchiseeId = shareMoneyActivityAddAndUpdateQuery.getFranchiseeId();
+			if (Objects.nonNull(franchiseeId) && !Objects.equals(franchiseeIds.get(0), franchiseeId.longValue())) {
+				log.warn("ShareMoneyActivity WARN! Franchisees are inconsistent, franchiseeId={}", franchiseeId);
+				return R.fail("120128", "所属加盟商不一致");
+			}
+		}
+		
+		shareMoneyActivityAddAndUpdateQuery.setUid(user.getUid());
+		shareMoneyActivityAddAndUpdateQuery.setUserName(user.getUsername());
+		
 		return shareMoneyActivityService.insert(shareMoneyActivityAddAndUpdateQuery);
 	}
 

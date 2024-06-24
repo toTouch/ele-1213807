@@ -74,17 +74,23 @@ public class JsonAdminShareActivityController extends BaseController {
             return R.ok();
         }
     
-        Long franchiseeId = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
             List<Long> franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
             if (CollectionUtils.isEmpty(franchiseeIds)) {
                 return R.ok();
             }
-        
-            franchiseeId = franchiseeIds.get(0);
+    
+            Integer franchiseeId = shareActivityAddAndUpdateQuery.getFranchiseeId();
+            if (Objects.nonNull(franchiseeId) && !Objects.equals(franchiseeIds.get(0), franchiseeId.longValue())) {
+                log.warn("ShareActivity WARN! Franchisees are inconsistent, franchiseeId={}", franchiseeId);
+                return R.fail("120128", "所属加盟商不一致");
+            }
         }
+    
+        shareActivityAddAndUpdateQuery.setUid(user.getUid());
+        shareActivityAddAndUpdateQuery.setUserName(user.getUsername());
         
-        return shareActivityService.insert(shareActivityAddAndUpdateQuery, user, franchiseeId);
+        return shareActivityService.insert(shareActivityAddAndUpdateQuery);
     }
 
     @GetMapping(value = "/admin/shareActivity/detail/{id}")

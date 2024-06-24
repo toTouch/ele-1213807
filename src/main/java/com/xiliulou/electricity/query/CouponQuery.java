@@ -73,6 +73,7 @@ public class CouponQuery {
     /**
      * 加盟商Id
      */
+    @NotEmpty(message = "加盟商不能为空!", groups = {CreateGroup.class})
     private Long franchiseeId;
     
     private List<Long> franchiseeIds;
@@ -119,5 +120,14 @@ public class CouponQuery {
      * 车电一体套餐IDs
      */
     private List<Long> carWithBatteryPackages;
+    
+    /**
+     * 创建人uid
+     */
+    private Long uid;
+    /**
+     * 创建人用户名
+     */
+    private String userName;
 
 }

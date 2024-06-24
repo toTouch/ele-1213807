@@ -79,6 +79,7 @@ public class ShareMoneyActivityAddAndUpdateQuery {
     /**
      * 加盟商Id
      */
+    @NotNull(message = "加盟商不能为空!", groups = {CreateGroup.class})
     private Integer franchiseeId;
 
     /**

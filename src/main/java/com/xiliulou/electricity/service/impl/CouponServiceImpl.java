@@ -130,27 +130,11 @@ public class CouponServiceImpl implements CouponService {
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public R insert(CouponQuery couponQuery, TokenUser user, Long franchiseeId) {
+    public R insert(CouponQuery couponQuery) {
         //租户
         Integer tenantId = TenantContextHolder.getTenantId();
         couponQuery.setTenantId(tenantId);
-    
-        // 加盟商判断
-        Long couponFranchiseeId = couponQuery.getFranchiseeId();
-        if (Objects.isNull(couponFranchiseeId) || Objects.equals(couponFranchiseeId, NumberConstant.ZERO_L)) {
-            log.warn("Coupon WARN! Not found franchiseeId, uid={}", user.getUid());
-            return R.fail("120129", "加盟商不能为空");
-        }
-        
-        // 加盟商一致性校验
-        if (Objects.nonNull(franchiseeId) && !Objects.equals(franchiseeId, couponFranchiseeId)) {
-            log.warn("Coupon WARN! Franchisees are inconsistent, couponId={}", couponQuery.getId());
-            return R.fail("120128", "所属加盟商不一致");
-        }
-        
-        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
-            couponQuery.setType(Coupon.TYPE_FRANCHISEE);
-        }
+        couponQuery.setType(Coupon.TYPE_FRANCHISEE);
         
         //参数判断
         if (Objects.equals(couponQuery.getDiscountType(), Coupon.FULL_REDUCTION)) {
@@ -192,8 +176,6 @@ public class CouponServiceImpl implements CouponService {
         
         Coupon coupon = new Coupon();
         BeanUtils.copyProperties(couponQuery, coupon);
-        coupon.setUid(user.getUid());
-        coupon.setUserName(user.getUsername());
         coupon.setCreateTime(System.currentTimeMillis());
         coupon.setUpdateTime(System.currentTimeMillis());
         coupon.setTenantId(tenantId);
@@ -201,11 +183,6 @@ public class CouponServiceImpl implements CouponService {
         
         if (Objects.isNull(coupon.getStatus())) {
             coupon.setStatus(Coupon.STATUS_OFF);
-        }
-        
-        // 默认为自营活动
-        if (Objects.isNull(coupon.getType())) {
-            coupon.setType(Coupon.TYPE_SYSTEM);
         }
         
         int insert = couponMapper.insert(coupon);
