@@ -35,7 +35,7 @@ public interface CouponService {
      * @param couponQuery 实例对象
      * @return 实例对象
      */
-    R insert(CouponQuery couponQuery, TokenUser user);
+    R insert(CouponQuery couponQuery, TokenUser user, Long franchiseeId);
     
     /**
      * 修改数据

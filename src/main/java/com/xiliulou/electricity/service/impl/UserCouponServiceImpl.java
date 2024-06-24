@@ -580,6 +580,12 @@ public class UserCouponServiceImpl implements UserCouponService {
                                 .deadline(TimeUtils.convertTimeStamp(now)).tenantId(tenantId);
                         
                         UserCoupon userCoupon = couponBuild.build();
+    
+                        Integer couponFranchiseeId = coupon.getFranchiseeId();
+                        if (Objects.nonNull(couponFranchiseeId) && !Objects.equals(couponFranchiseeId, NumberConstant.ZERO)) {
+                            userCoupon.setFranchiseeId(couponFranchiseeId);
+                        }
+                        
                         userCouponMapper.insert(userCoupon);
                         
                         //领劵完，可用邀请人数减少
@@ -610,6 +616,12 @@ public class UserCouponServiceImpl implements UserCouponService {
                                 .deadline(TimeUtils.convertTimeStamp(now)).tenantId(tenantId);
                         
                         UserCoupon userCoupon = couponBuild.build();
+    
+                        Integer couponFranchiseeId = coupon.getFranchiseeId();
+                        if (Objects.nonNull(couponFranchiseeId) && !Objects.equals(couponFranchiseeId, NumberConstant.ZERO)) {
+                            userCoupon.setFranchiseeId(couponFranchiseeId);
+                        }
+                        
                         userCouponMapper.insert(userCoupon);
                         
                         //领劵完，可用邀请人数减少
