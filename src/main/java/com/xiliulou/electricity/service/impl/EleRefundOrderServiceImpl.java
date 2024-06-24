@@ -92,6 +92,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
+import org.bouncycastle.util.encoders.DecoderException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -556,7 +557,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             eleRefundOrderService.update(eleRefundOrderUpdate);
             
             return Triple.of(true, "", null);
-        } catch (WechatPayException e) {
+        } catch (DecoderException | WechatPayException e) {
             log.error("REFUND ORDER ERROR! wechat v3 refund  error! ", e);
         }
         
@@ -1689,7 +1690,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
                 eleRefundOrder.setUpdateTime(System.currentTimeMillis());
                 eleRefundOrderService.insert(eleRefundOrder);
                 return R.ok();
-            } catch (WechatPayException e) {
+            } catch (DecoderException | WechatPayException e) {
                 log.error("battery deposit OffLine Refund ERROR! wechat v3 refund  error! ", e);
             }
             // 提交失败
