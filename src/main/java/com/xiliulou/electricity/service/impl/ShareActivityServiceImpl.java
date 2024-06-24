@@ -203,7 +203,7 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 		if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
 			if (Objects.isNull(shareActivityAddAndUpdateQuery.getFranchiseeId())) {
 				log.error("ShareActivity ERROR! not found FranchiseeId, uid={}", user.getUid());
-				return R.fail("120123", "加盟商不能为空");
+				return R.fail("120129", "加盟商不能为空");
 			}
 			
 			shareActivityAddAndUpdateQuery.setType(ShareActivity.FRANCHISEE);
@@ -211,7 +211,7 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 			if (Objects.equals(shareActivityAddAndUpdateQuery.getType(), Coupon.TYPE_FRANCHISEE)) {
 				if (Objects.isNull(shareActivityAddAndUpdateQuery.getFranchiseeId())) {
 					log.error("Coupon ERROR! not found FranchiseeId, uid={}", user.getUid());
-					return R.fail("120123", "加盟商不能为空");
+					return R.fail("120129", "加盟商不能为空");
 				}
 				
 				shareActivityAddAndUpdateQuery.setType(ShareActivity.FRANCHISEE);

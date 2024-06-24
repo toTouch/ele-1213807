@@ -139,7 +139,7 @@ public class CouponServiceImpl implements CouponService {
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
             if (isNullFranchisee(couponQuery.getFranchiseeId())) {
                 log.error("Coupon ERROR! not found FranchiseeId, uid={}", user.getUid());
-                return R.fail("120123", "加盟商不能为空");
+                return R.fail("120129", "加盟商不能为空");
             }
         
             couponQuery.setType(Coupon.TYPE_FRANCHISEE);
@@ -147,7 +147,7 @@ public class CouponServiceImpl implements CouponService {
             if (Objects.equals(couponQuery.getType(), Coupon.TYPE_FRANCHISEE)) {
                 if (isNullFranchisee(couponQuery.getFranchiseeId())) {
                     log.error("Coupon ERROR! not found FranchiseeId, uid={}", user.getUid());
-                    return R.fail("120123", "加盟商不能为空");
+                    return R.fail("120129", "加盟商不能为空");
                 }
             
                 couponQuery.setType(Coupon.TYPE_FRANCHISEE);

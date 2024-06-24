@@ -83,10 +83,6 @@ public class ShareActivityRecordServiceImpl implements ShareActivityRecordServic
     @Autowired
     private AssertPermissionService assertPermissionService;
     
-    @Resource
-    private UserInfoService userInfoService;
-
-
     /**
      * 通过ID查询单条数据从DB
      *
