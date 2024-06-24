@@ -134,7 +134,7 @@ public class EleHardwareFailureWarnMsgServiceImpl implements EleHardwareFailureW
     @Resource
     private MaintenanceUserNotifyConfigService maintenanceUserNotifyConfigService;
     
-    XllThreadPoolExecutorService xllThreadPoolExecutorService = XllThreadPoolExecutors.newFixedThreadPool("DATA-SCREEN-THREAD-POOL", 4, "dataScreenThread:");
+    XllThreadPoolExecutorService xllThreadPoolExecutorService = XllThreadPoolExecutors.newFixedThreadPool("WARN-LOWER-NOTE-NOTICE-THREAD-POOL", 2, "warnLowerNoteNoticeThread:");
     
     
     @Slave
