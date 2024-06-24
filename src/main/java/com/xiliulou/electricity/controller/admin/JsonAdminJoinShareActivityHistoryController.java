@@ -48,7 +48,8 @@ public class JsonAdminJoinShareActivityHistoryController {
             @RequestParam(value = "joinName", required = false) String joinName,
             @RequestParam(value = "beginTime", required = false) Long beginTime,
             @RequestParam(value = "endTime", required = false) Long endTime,
-            @RequestParam(value = "status", required = false) Integer status) {
+            @RequestParam(value = "status", required = false) Integer status,
+			@RequestParam(value = "franchiseeId", required = false) Long franchiseeId) {
 		if (size < 0 || size > 50) {
 			size = 10L;
 		}
@@ -82,6 +83,7 @@ public class JsonAdminJoinShareActivityHistoryController {
 				.size(size).tenantId(tenantId).id(id).joinName(joinName).status(status)
                 .startTime(beginTime).endTime(endTime)
 				.franchiseeIds(franchiseeIds)
+				.franchiseeId(franchiseeId)
                 .build();
 		return joinShareActivityHistoryService.queryList(jsonShareActivityHistoryQuery);
 	}
@@ -92,7 +94,8 @@ public class JsonAdminJoinShareActivityHistoryController {
             @RequestParam(value = "joinName", required = false) String joinName,
             @RequestParam(value = "beginTime", required = false) Long beginTime,
             @RequestParam(value = "endTime", required = false) Long endTime,
-            @RequestParam(value = "status", required = false) Integer status) {
+            @RequestParam(value = "status", required = false) Integer status,
+		    @RequestParam(value = "franchiseeId", required = false) Long franchiseeId) {
 	    TokenUser user = SecurityUtils.getUserInfo();
 	    if (Objects.isNull(user)) {
 		    return R.fail("ELECTRICITY.0001", "未找到用户");
@@ -112,10 +115,9 @@ public class JsonAdminJoinShareActivityHistoryController {
         
         //租户
         Integer tenantId = TenantContextHolder.getTenantId();
-        
-        JsonShareActivityHistoryQuery jsonShareActivityHistoryQuery = JsonShareActivityHistoryQuery.builder()
-                .tenantId(tenantId).id(id).joinName(joinName).status(status)
-                .startTime(beginTime).endTime(endTime).franchiseeIds(franchiseeIds).build();
+	
+	    JsonShareActivityHistoryQuery jsonShareActivityHistoryQuery = JsonShareActivityHistoryQuery.builder().tenantId(tenantId).id(id).joinName(joinName).status(status)
+			    .startTime(beginTime).endTime(endTime).franchiseeIds(franchiseeIds).franchiseeId(franchiseeId).build();
         return joinShareActivityHistoryService.queryCount(jsonShareActivityHistoryQuery);
     }
 
