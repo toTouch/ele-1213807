@@ -22,7 +22,7 @@ public class MessageCenterConfig {
     private String url;
     
     /**
-     * 故障告警消息模板编码
+     * 短信提醒模板code
      */
-    private String failureWarnMessageTemplateCode;
+    private String lowNoteNoticeMessageTemplateCode;
 }

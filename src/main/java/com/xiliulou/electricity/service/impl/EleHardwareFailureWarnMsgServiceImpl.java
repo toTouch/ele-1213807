@@ -741,10 +741,10 @@ public class EleHardwareFailureWarnMsgServiceImpl implements EleHardwareFailureW
         eleHardwareWarnMsgService.updateNoteFlagByAlarmId(warnNoteCallBack.getAlarmId());
     
         Long noteNum = tenantNote.getNoteNum();
-        log.debug("warn note notice, noteNum = {}", tenantNote.getNoteNum());
+        log.info("warn note notice, noteNum = {}", tenantNote.getNoteNum());
         for (int i = 0; i < warnNoteCallBack.getCount(); i++) {
             noteNum = noteNum - NumberConstant.ONE_L;
-            log.debug("warn note notice, noteNum1 = {}", noteNum);
+            log.info("warn note notice, noteNum1 = {}", noteNum);
             if (Objects.equals(noteNum, TenantNoteConstant.NOTE_NUM_FIRST) || Objects.equals(noteNum, TenantNoteConstant.NOTE_NUM_SECOND) || Objects.equals(noteNum,
                     TenantNoteConstant.NOTE_NUM_THIRD)) {
                 sendLowerNoteNotice(warnNoteCallBack, noteNum);
@@ -792,7 +792,7 @@ public class EleHardwareFailureWarnMsgServiceImpl implements EleHardwareFailureW
     
         MessageCenterRequest messageCenterRequest = new MessageCenterRequest();
         // 消息模板编码
-        messageCenterRequest.setMessageTemplateCode(messageCenterConfig.getFailureWarnMessageTemplateCode());
+        messageCenterRequest.setMessageTemplateCode(messageCenterConfig.getLowNoteNoticeMessageTemplateCode());
         // 消息id
         messageCenterRequest.setMessageId(sessionId);
         // 租户id
@@ -813,7 +813,7 @@ public class EleHardwareFailureWarnMsgServiceImpl implements EleHardwareFailureW
     
         messageCenterRequest.setSendReceiverList(sendReceiverList);
         try {
-            log.debug("send lower note notice warn! sessionId={}, alarmId={}, request={}, messageCenterConfig={}", sessionId, warnNoteCallBack.getAlarmId(), messageCenterRequest, messageCenterConfig);
+            log.info("send lower note notice warn! sessionId={}, alarmId={}, request={}, messageCenterConfig={}", sessionId, warnNoteCallBack.getAlarmId(), messageCenterRequest, messageCenterConfig);
             
             ResponseEntity<String> responseEntity = restTemplateService.postJsonForResponseEntity(messageCenterConfig.getUrl(), JsonUtil.toJson(messageCenterRequest),
                     null);
