@@ -5,6 +5,8 @@ import com.alibaba.fastjson.JSON;
 import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.http.resttemplate.service.RestTemplateService;
 import com.xiliulou.core.json.JsonUtil;
+import com.xiliulou.core.thread.XllThreadPoolExecutorService;
+import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.config.message.MessageCenterConfig;
@@ -131,6 +133,8 @@ public class EleHardwareFailureWarnMsgServiceImpl implements EleHardwareFailureW
     
     @Resource
     private MaintenanceUserNotifyConfigService maintenanceUserNotifyConfigService;
+    
+    XllThreadPoolExecutorService xllThreadPoolExecutorService = XllThreadPoolExecutors.newFixedThreadPool("DATA-SCREEN-THREAD-POOL", 4, "dataScreenThread:");
     
     
     @Slave
@@ -747,7 +751,11 @@ public class EleHardwareFailureWarnMsgServiceImpl implements EleHardwareFailureW
             log.info("warn note notice, noteNum1 = {}", noteNum);
             if (Objects.equals(noteNum, TenantNoteConstant.NOTE_NUM_FIRST) || Objects.equals(noteNum, TenantNoteConstant.NOTE_NUM_SECOND) || Objects.equals(noteNum,
                     TenantNoteConstant.NOTE_NUM_THIRD)) {
-                sendLowerNoteNotice(warnNoteCallBack, noteNum);
+                
+                Long finalNoteNum = noteNum;
+                xllThreadPoolExecutorService.execute(() -> {
+                    sendLowerNoteNotice(warnNoteCallBack, finalNoteNum);
+                });
                 break;
             }
         }
@@ -817,7 +825,7 @@ public class EleHardwareFailureWarnMsgServiceImpl implements EleHardwareFailureW
             
             ResponseEntity<String> responseEntity = restTemplateService.postJsonForResponseEntity(messageCenterConfig.getUrl(), JsonUtil.toJson(messageCenterRequest),
                     null);
-            log.debug("send lower note notice warn! sessionId={}, alarmId={}, response={}", sessionId, warnNoteCallBack.getAlarmId(), responseEntity);
+            
             if (Objects.isNull(responseEntity)) {
                 log.error("send lower note notice error! failure warn send note result is null, sessionId={}, alarmId={}", sessionId, warnNoteCallBack.getAlarmId());
             }
