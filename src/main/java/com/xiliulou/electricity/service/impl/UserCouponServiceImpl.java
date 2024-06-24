@@ -366,7 +366,7 @@ public class UserCouponServiceImpl implements UserCouponService {
         }
         //用户是否可用
         if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
-            log.error("ELECTRICITY  ERROR! user is unusable!uid:{} ", user.getUid());
+            log.warn("ELECTRICITY  WARN! user is unusable!uid:{} ", user.getUid());
             return R.fail("ELECTRICITY.0024", "用户已被禁用");
         }
         
