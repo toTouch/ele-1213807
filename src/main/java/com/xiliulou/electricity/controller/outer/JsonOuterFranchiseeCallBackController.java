@@ -52,10 +52,7 @@ public class JsonOuterFranchiseeCallBackController extends JsonOuterCallBackBasi
     @PostMapping("/outer/wechat/franchisee/pay/notified/{tenantId}/{franchiseeId}")
     public WechatV3CallBackResult payNotified(@PathVariable("tenantId") Integer tenantId, @PathVariable(value = "franchiseeId") Long franchiseeId,
             @RequestBody WechatV3OrderCallBackRequest wechatV3OrderCallBackQuery) {
-        if (Objects.isNull(franchiseeId)) {
-            // 兼容历史订单回调
-            franchiseeId = MultiFranchiseeConstant.DEFAULT_FRANCHISEE;
-        }
+        
         wechatV3OrderCallBackQuery.setTenantId(tenantId);
         wechatV3OrderCallBackQuery.setFranchiseeId(franchiseeId);
         wechatV3PostProcessExecuteHandler.postProcessAfterWechatPay(wechatV3OrderCallBackQuery);
@@ -71,11 +68,6 @@ public class JsonOuterFranchiseeCallBackController extends JsonOuterCallBackBasi
     public WechatV3CallBackResult refundNotified(@PathVariable("tenantId") Integer tenantId, @PathVariable(value = "franchiseeId") Long franchiseeId,
             @RequestBody WechatV3RefundOrderCallBackRequest request) {
         
-        if (Objects.isNull(franchiseeId)) {
-            // 兼容历史订单回调
-            franchiseeId = MultiFranchiseeConstant.DEFAULT_FRANCHISEE;
-        }
-    
         request.setTenantId(tenantId);
         request.setFranchiseeId(franchiseeId);
         wechatV3PostProcessExecuteHandler.postProcessAfterWechatRefund(request);
@@ -90,10 +82,6 @@ public class JsonOuterFranchiseeCallBackController extends JsonOuterCallBackBasi
     @PostMapping("/outer/wechat/franchisee/battery/membercard/refund/notified/{tenantId}/{franchiseeId}")
     public WechatV3CallBackResult batteryMembercardRefundNotified(@PathVariable("tenantId") Integer tenantId, @PathVariable(value = "franchiseeId") Long franchiseeId,
             @RequestBody WechatV3RefundOrderCallBackRequest request) {
-        if (Objects.isNull(franchiseeId)) {
-            // 兼容历史订单回调
-            franchiseeId = MultiFranchiseeConstant.DEFAULT_FRANCHISEE;
-        }
         request.setTenantId(tenantId);
         request.setFranchiseeId(franchiseeId);
         WechatJsapiRefundOrderCallBackResource callBackParam = handCallBackParam(request);
@@ -112,10 +100,6 @@ public class JsonOuterFranchiseeCallBackController extends JsonOuterCallBackBasi
     @PostMapping("/outer/wechat/franchisee/refund/car/deposit/notified/{tenantId}/{franchiseeId}")
     public WechatV3CallBackResult carDepositRefundCallBackUrl(@PathVariable("tenantId") Integer tenantId, @PathVariable(value = "franchiseeId") Long franchiseeId,
             @RequestBody WechatV3RefundOrderCallBackRequest request) {
-        if (Objects.isNull(franchiseeId)) {
-            // 兼容历史订单回调
-            franchiseeId = MultiFranchiseeConstant.DEFAULT_FRANCHISEE;
-        }
         request.setTenantId(tenantId);
         request.setFranchiseeId(franchiseeId);
         WechatJsapiRefundOrderCallBackResource callBackParam = handCallBackParam(request);
@@ -134,10 +118,6 @@ public class JsonOuterFranchiseeCallBackController extends JsonOuterCallBackBasi
     @PostMapping("/outer/wechat/franchisee/refund/car/rent/notified/{tenantId}/{franchiseeId}")
     public WechatV3CallBackResult carRentRefundCallBackUrl(@PathVariable("tenantId") Integer tenantId, @PathVariable(value = "franchiseeId") Long franchiseeId,
             @RequestBody WechatV3RefundOrderCallBackRequest request) {
-        if (Objects.isNull(franchiseeId)) {
-            // 兼容历史订单回调
-            franchiseeId = MultiFranchiseeConstant.DEFAULT_FRANCHISEE;
-        }
         request.setTenantId(tenantId);
         request.setFranchiseeId(franchiseeId);
         WechatJsapiRefundOrderCallBackResource callBackParam = handCallBackParam(request);
