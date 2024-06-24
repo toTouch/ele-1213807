@@ -84,6 +84,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Triple;
+import org.bouncycastle.util.encoders.DecoderException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -428,7 +429,7 @@ public class TradeOrderServiceImpl implements TradeOrderService {
                 WechatJsapiOrderResultDTO resultDTO = unionTradeOrderService.unionCreateTradeOrderAndGetPayParams(unionPayOrder, wechatPayParamsDetails, userOauthBind.getThirdId(),
                         request);
                 return Triple.of(true, null, resultDTO);
-            } catch (Exception e) {
+            } catch (DecoderException | WechatPayException e) {
                 log.error("CREATE UNION_INSURANCE_DEPOSIT_ORDER ERROR! wechat v3 order  error! uid={}", user.getUid(), e);
             }
         } finally {
@@ -625,7 +626,7 @@ public class TradeOrderServiceImpl implements TradeOrderService {
                 WechatJsapiOrderResultDTO resultDTO = unionTradeOrderService.unionCreateTradeOrderAndGetPayParams(unionPayOrder, wechatPayParamsDetails, userOauthBind.getThirdId(),
                         request);
                 return Triple.of(true, null, resultDTO);
-            } catch (Exception e) {
+            } catch (DecoderException | WechatPayException e) {
                 log.error("CREATE UNION_INSURANCE_DEPOSIT_ORDER ERROR! wechat v3 order  error! uid={}", userInfo.getUid(), e);
             }
         } finally {
@@ -773,7 +774,7 @@ public class TradeOrderServiceImpl implements TradeOrderService {
                 WechatJsapiOrderResultDTO resultDTO = unionTradeOrderService.unionCreateTradeOrderAndGetPayParams(unionPayOrder, wechatPayParamsDetails, userOauthBind.getThirdId(),
                         request);
                 return Triple.of(true, null, resultDTO);
-            } catch (Exception e) {
+            } catch (DecoderException | WechatPayException e) {
                 log.error("CREATE UNION SERVICE FEE ERROR! wechat v3 order error! uid={}", user.getUid(), e);
             }
         } finally {

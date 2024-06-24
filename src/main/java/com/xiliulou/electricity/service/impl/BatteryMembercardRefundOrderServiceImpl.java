@@ -76,6 +76,7 @@ import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.tuple.Triple;
+import org.bouncycastle.util.encoders.DecoderException;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -759,7 +760,7 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
             batteryMemberCardOrderService.updateByID(electricityMemberCardOrderUpdate);
             
             return Triple.of(true, "", null);
-        } catch (WechatPayException e) {
+        } catch (DecoderException | WechatPayException e) {
             log.error("BATTERY MEMBERCARD REFUND ERROR! wechat v3 refund error! ", e);
         }
         
