@@ -18,6 +18,7 @@ import com.xiliulou.electricity.service.WechatPaymentCertificateService;
 import com.xiliulou.pay.weixinv3.util.WechatCertificateUtils;
 import com.xiliulou.pay.weixinv3.v2.query.WechatV3CommonRequest;
 import com.xiliulou.pay.weixinv3.v2.service.WechatV3CommonInvokeService;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
@@ -39,6 +40,7 @@ import static com.xiliulou.electricity.constant.CacheConstant.WECHAT_CERTIFICATE
  * @author caobotao.cbt
  * @date 2024/6/14 13:01
  */
+@Slf4j
 @Service
 public class WechatPayParamsBizServiceImpl implements WechatPayParamsBizService {
     
@@ -56,19 +58,24 @@ public class WechatPayParamsBizServiceImpl implements WechatPayParamsBizService 
     
     @Override
     public WechatPayParamsDetails getDetailsByIdTenantIdAndFranchiseeId(Integer tenantId, Long franchiseeId) {
-        ElectricityPayParams payParams = electricityPayParamsService.queryCacheByTenantIdAndFranchiseeId(tenantId, franchiseeId);
-        
-        if (Objects.isNull(payParams)) {
+        try {
+            ElectricityPayParams payParams = electricityPayParamsService.queryCacheByTenantIdAndFranchiseeId(tenantId, franchiseeId);
+            if (Objects.isNull(payParams)) {
+                return null;
+            }
+            
+            WechatPayParamsDetails wechatPayParamsDetails = ElectricityPayParamsConverter.qryDoToDetails(payParams);
+            
+            wechatPayParamsDetails.setPrivateKey(this.getPrivateKey(payParams));
+            
+            this.buildWechatPlatformCertificateMap(wechatPayParamsDetails);
+            
+            return wechatPayParamsDetails;
+            
+        } catch (Exception e) {
+            log.error("WechatPayParamsBizServiceImpl.getDetailsByIdTenantIdAndFranchiseeId error:", e);
             return null;
         }
-        
-        WechatPayParamsDetails wechatPayParamsDetails = ElectricityPayParamsConverter.qryDoToDetails(payParams);
-        
-        wechatPayParamsDetails.setPrivateKey(this.getPrivateKey(payParams));
-        
-        this.buildWechatPlatformCertificateMap(wechatPayParamsDetails);
-        
-        return wechatPayParamsDetails;
     }
     
     
@@ -97,8 +104,8 @@ public class WechatPayParamsBizServiceImpl implements WechatPayParamsBizService 
         // 从缓存中获取证书
         String cacheStr = redisService.get(key);
         List<String> cacheList = null;
-        if (StringUtils.isNotBlank(cacheStr)){
-            cacheList = JsonUtil.fromJsonArray(cacheStr,String.class);
+        if (StringUtils.isNotBlank(cacheStr)) {
+            cacheList = JsonUtil.fromJsonArray(cacheStr, String.class);
         }
         
         if (CollectionUtils.isNotEmpty(cacheList)) {
