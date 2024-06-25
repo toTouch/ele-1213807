@@ -337,18 +337,9 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         }
         
         // 比对是否需要强制线下退款
-        Long payFranchiseeId = packageOrderEntity.getPayFranchiseeId();
-        Integer tenantId = packageOrderEntity.getTenantId();
-        String wechatMerchantId = packageOrderEntity.getWechatMerchantId();
+        ElectricityPayParams payParams = electricityPayParamsService.queryCacheByTenantIdAndFranchiseeId(packageOrderEntity.getTenantId(), packageOrderEntity.getPayFranchiseeId());
         
-        WechatPayParamsDetails wechatPayParamsDetails = null;
-        try {
-            wechatPayParamsDetails = wechatPayParamsBizService.getDetailsByIdTenantIdAndFranchiseeId(tenantId, payFranchiseeId);
-        } catch (Exception e) {
-            throw new BizException("PAY_TRANSFER.0021", "支付配置有误，请检查相关配置");
-        }
-        
-        return ObjectUtils.isEmpty(wechatPayParamsDetails) || !wechatPayParamsDetails.getWechatMerchantId().equals(wechatMerchantId);
+        return ObjectUtils.isEmpty(payParams) || !payParams.getWechatMerchantId().equals(packageOrderEntity.getWechatMerchantId());
     }
     
     /**
@@ -660,8 +651,6 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                     
                 } catch (WechatPayException e) {
                     log.error("save approve refund rentOrderTx failed.", e);
-                    // 缓存问题，事务在管理其中没有提交，但是缓存已经存在，所以需要删除一次缓存
-                    carRentalPackageMemberTermService.deleteCache(packageOrderEntity.getTenantId(), packageOrderEntity.getUid());
                     throw new BizException("PAY_TRANSFER.0020", "支付调用失败，请检查相关配置");
                 }
             }
@@ -1416,6 +1405,8 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             wechatPayParamsDetails = wechatPayParamsBizService.getDetailsByIdTenantIdAndFranchiseeId(electricityTradeOrder.getTenantId(),
                     electricityTradeOrder.getPayFranchiseeId());
         } catch (Exception e) {
+            // 缓存问题，事务在管理其中没有提交，但是缓存已经存在，所以需要删除一次缓存
+            carRentalPackageMemberTermService.deleteCache(electricityTradeOrder.getTenantId(), electricityTradeOrder.getUid());
             throw new BizException("PAY_TRANSFER.0021", "支付配置有误，请检查相关配置");
         }
         wechatV3RefundRequest.setCommonRequest(ElectricityPayParamsConverter.qryDetailsToCommonRequest(wechatPayParamsDetails));

@@ -12,6 +12,7 @@ import com.xiliulou.electricity.dto.FreeDepositUserDTO;
 import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.entity.ElectricityCar;
 import com.xiliulou.electricity.entity.ElectricityConfig;
+import com.xiliulou.electricity.entity.ElectricityPayParams;
 import com.xiliulou.electricity.entity.ElectricityTradeOrder;
 import com.xiliulou.electricity.entity.FreeDepositData;
 import com.xiliulou.electricity.entity.FreeDepositOrder;
@@ -43,6 +44,7 @@ import com.xiliulou.electricity.reqparam.opt.deposit.FreeDepositOptReq;
 import com.xiliulou.electricity.service.ElectricityBatteryService;
 import com.xiliulou.electricity.service.ElectricityCarService;
 import com.xiliulou.electricity.service.ElectricityConfigService;
+import com.xiliulou.electricity.service.ElectricityPayParamsService;
 import com.xiliulou.electricity.service.ElectricityTradeOrderService;
 import com.xiliulou.electricity.service.FreeDepositDataService;
 import com.xiliulou.electricity.service.FreeDepositOrderService;
@@ -103,6 +105,9 @@ import java.util.Objects;
 @Slf4j
 @Service
 public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepositBizService {
+    
+    @Resource
+    private ElectricityPayParamsService electricityPayParamsService;
     
     @Resource
     private WechatPayParamsBizService wechatPayParamsBizService;
@@ -219,18 +224,9 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
         }
         
         // 比对是否需要强制线下退款
-        Long payFranchiseeId = depositPayEntity.getPayFranchiseeId();
-        Integer tenantId = depositPayEntity.getTenantId();
-        String wechatMerchantId = depositPayEntity.getWechatMerchantId();
+        ElectricityPayParams payParams = electricityPayParamsService.queryCacheByTenantIdAndFranchiseeId(depositPayEntity.getTenantId(), depositPayEntity.getPayFranchiseeId());
         
-        WechatPayParamsDetails wechatPayParamsDetails = null;
-        try {
-            wechatPayParamsDetails = wechatPayParamsBizService.getDetailsByIdTenantIdAndFranchiseeId(tenantId, payFranchiseeId);
-        } catch (Exception e) {
-            throw new BizException("PAY_TRANSFER.0021", "支付配置有误，请检查相关配置");
-        }
-        
-        return ObjectUtils.isEmpty(wechatPayParamsDetails) || !wechatPayParamsDetails.getWechatMerchantId().equals(wechatMerchantId);
+        return ObjectUtils.isEmpty(payParams) || !payParams.getWechatMerchantId().equals(depositPayEntity.getWechatMerchantId());
     }
     
     /**
@@ -1191,8 +1187,6 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
                         
                     } catch (WechatPayException e) {
                         log.error("refundDepositCreate failed.", e);
-                        // 缓存问题，事务在管理其中没有提交，但是缓存已经存在，所以需要删除一次缓存
-                        carRentalPackageMemberTermService.deleteCache(memberTermEntity.getTenantId(), memberTermEntity.getUid());
                         throw new BizException("PAY_TRANSFER.0020", "支付调用失败，请检查相关配置");
                     }
                 }
@@ -1594,6 +1588,8 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
             wechatPayParamsDetails = wechatPayParamsBizService.getDetailsByIdTenantIdAndFranchiseeId(electricityTradeOrder.getTenantId(),
                     electricityTradeOrder.getPayFranchiseeId());
         } catch (Exception e) {
+            // 缓存问题，事务在管理其中没有提交，但是缓存已经存在，所以需要删除一次缓存
+            carRentalPackageMemberTermService.deleteCache(electricityTradeOrder.getTenantId(), electricityTradeOrder.getUid());
             throw new BizException("PAY_TRANSFER.0021", "支付配置有误，请检查相关配置");
         }
         
