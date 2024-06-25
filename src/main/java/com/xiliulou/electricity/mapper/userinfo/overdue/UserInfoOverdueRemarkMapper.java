@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.mapper.userinfo.overdue;
 
 
+import com.xiliulou.electricity.entity.userinfo.overdue.UserInfoOverdueRemark;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -18,6 +19,12 @@ import org.apache.ibatis.annotations.Param;
 @Mapper
 public interface UserInfoOverdueRemarkMapper {
     
+    int insertRemark(UserInfoOverdueRemark entity);
+    
+    int updateRemark(UserInfoOverdueRemark entity);
+    
     int clearRemarksByUidAndType(@Param("uid") Long uid, @Param("type") Integer type,@Param("tenantId") Integer tenantId);
+    
+    Long queryIdByUidAndType(@Param("uid") Long uid, @Param("type") Integer type,@Param("tenantId") Long tenantId);
 
 }
