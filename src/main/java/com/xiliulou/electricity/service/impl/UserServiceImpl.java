@@ -1099,8 +1099,13 @@ public class UserServiceImpl implements UserService {
         updateUser.setRefId(query.getSourceId());
         updateUser.setTenantId(TenantContextHolder.getTenantId());
         updateUser.setUpdateTime(System.currentTimeMillis());
-        
-        return this.userMapper.updateUserByUid(updateUser);
+    
+        int update = this.userMapper.updateUserByUid(updateUser);
+        if (update > 0) {
+            redisService.delete(CacheConstant.CACHE_USER_UID + query.getUid());
+        }
+    
+        return update;
     }
     
     @Override
