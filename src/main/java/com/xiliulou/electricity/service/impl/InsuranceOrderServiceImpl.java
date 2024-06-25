@@ -248,7 +248,7 @@ public class InsuranceOrderServiceImpl extends ServiceImpl<InsuranceOrderMapper,
         WechatPayParamsDetails wechatPayParamsDetails = wechatPayParamsBizService.getDetailsByIdTenantIdAndFranchiseeId(tenantId, franchiseeInsurance.getFranchiseeId());
         if (Objects.isNull(wechatPayParamsDetails)) {
             log.error("CREATE INSURANCE_ORDER ERROR ,NOT FOUND PAY_PARAMS");
-            return R.failMsg("未配置支付参数!");
+            return R.fail("PAY_TRANSFER.0019", "支付未成功，请联系客服处理");
         }
         
         if (ObjectUtil.equal(FranchiseeInsurance.STATUS_UN_USABLE, franchiseeInsurance.getStatus())) {

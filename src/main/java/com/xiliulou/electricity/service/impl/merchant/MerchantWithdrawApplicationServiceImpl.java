@@ -230,7 +230,6 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
         
         //查询支付配置详情
         WechatPayParamsDetails wechatPayParamsDetails  = wechatPayParamsBizService.getDetailsByIdTenantIdAndFranchiseeId(tenantId, merchant.getFranchiseeId());
-    
         if (Objects.isNull(wechatPayParamsDetails) || Objects.isNull(wechatPayParamsDetails.getFranchiseeId())) {
             log.error("review Merchant withdraw application error, wechat pay params details is null, tenantId = {}, franchiseeId={}", tenantId, merchant.getFranchiseeId());
             return Triple.of(false, "120017", "未配置支付参数");

@@ -1942,7 +1942,7 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         WechatPayParamsDetails wechatPayParamsDetails = wechatPayParamsBizService.getDetailsByIdTenantIdAndFranchiseeId(tenantId, batteryMemberCard.getFranchiseeId());
         if (Objects.isNull(wechatPayParamsDetails)) {
             log.error("FREE DEPOSIT HYBRID ERROR!not found electricityPayParams,uid={}", uid);
-            return Triple.of(false, "100234", "未配置支付参数!");
+            return Triple.of(false, "PAY_TRANSFER.0019", "支付未成功，请联系客服处理");
         }
         
         if (!Objects.equals(BatteryMemberCard.STATUS_UP, batteryMemberCard.getStatus())) {
