@@ -422,16 +422,20 @@ public class TradeOrderServiceImpl implements TradeOrderService {
             }
             
             // 调起支付
-            try {
-                UnionPayOrder unionPayOrder = UnionPayOrder.builder().jsonOrderId(JsonUtil.toJson(orderList)).jsonOrderType(JsonUtil.toJson(orderTypeList))
-                        .jsonSingleFee(JsonUtil.toJson(allPayAmount)).payAmount(integratedPaAmount).tenantId(tenantId).attach(UnionTradeOrder.ATTACH_INTEGRATED_PAYMENT)
-                        .description("租电押金").uid(user.getUid()).build();
-                WechatJsapiOrderResultDTO resultDTO = unionTradeOrderService.unionCreateTradeOrderAndGetPayParams(unionPayOrder, wechatPayParamsDetails, userOauthBind.getThirdId(),
-                        request);
-                return Triple.of(true, null, resultDTO);
-            } catch (Exception e) {
-                log.error("CREATE UNION_INSURANCE_DEPOSIT_ORDER ERROR! wechat v3 order  error! uid={}", user.getUid(), e);
-            }
+            // try {
+            UnionPayOrder unionPayOrder = UnionPayOrder.builder().jsonOrderId(JsonUtil.toJson(orderList)).jsonOrderType(JsonUtil.toJson(orderTypeList))
+                    .jsonSingleFee(JsonUtil.toJson(allPayAmount)).payAmount(integratedPaAmount).tenantId(tenantId).attach(UnionTradeOrder.ATTACH_INTEGRATED_PAYMENT)
+                    .description("租电押金").uid(user.getUid()).build();
+            WechatJsapiOrderResultDTO resultDTO = unionTradeOrderService.unionCreateTradeOrderAndGetPayParams(unionPayOrder, wechatPayParamsDetails, userOauthBind.getThirdId(),
+                    request);
+            return Triple.of(true, null, resultDTO);
+            // } catch (Exception e) {
+            //     log.error("CREATE UNION_INSURANCE_DEPOSIT_ORDER ERROR! wechat v3 order  error! uid={}", user.getUid(), e);
+            // }
+            
+        // 友好提示，对用户端不展示错误信息
+        } catch (Exception e) {
+            log.error("CREATE UNION_INSURANCE_DEPOSIT_ORDER ERROR! wechat v3 order  error! uid={}", user.getUid(), e);
         } finally {
             //            redisService.delete(CacheConstant.ELE_CACHE_USER_DEPOSIT_LOCK_KEY + user.getUid());
         }
@@ -449,13 +453,13 @@ public class TradeOrderServiceImpl implements TradeOrderService {
             return Triple.of(false, "ELECTRICITY.0034", "操作频繁");
         }
         
+        UserInfo userInfo = userInfoService.queryByUidFromCache(SecurityUtils.getUid());
+        if (Objects.isNull(userInfo)) {
+            log.warn("BATTERY DEPOSIT WARN! not found user,uid={}", SecurityUtils.getUid());
+            return Triple.of(false, "ELECTRICITY.0019", "未找到用户");
+        }
+        
         try {
-            UserInfo userInfo = userInfoService.queryByUidFromCache(SecurityUtils.getUid());
-            if (Objects.isNull(userInfo)) {
-                log.warn("BATTERY DEPOSIT WARN! not found user,uid={}", SecurityUtils.getUid());
-                return Triple.of(false, "ELECTRICITY.0019", "未找到用户");
-            }
-            
             if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
                 log.warn("BATTERY DEPOSIT WARN! user is unUsable,uid={}", userInfo.getUid());
                 return Triple.of(false, "ELECTRICITY.0024", "用户已被禁用");
@@ -619,16 +623,20 @@ public class TradeOrderServiceImpl implements TradeOrderService {
             }
             
             // 调起支付
-            try {
-                UnionPayOrder unionPayOrder = UnionPayOrder.builder().jsonOrderId(JsonUtil.toJson(orderList)).jsonOrderType(JsonUtil.toJson(orderTypeList))
-                        .jsonSingleFee(JsonUtil.toJson(allPayAmount)).payAmount(integratedPaAmount).tenantId(tenantId).attach(UnionTradeOrder.ATTACH_MEMBERCARD_INSURANCE)
-                        .description("租电套餐").uid(userInfo.getUid()).build();
-                WechatJsapiOrderResultDTO resultDTO = unionTradeOrderService.unionCreateTradeOrderAndGetPayParams(unionPayOrder, wechatPayParamsDetails, userOauthBind.getThirdId(),
-                        request);
-                return Triple.of(true, null, resultDTO);
-            } catch (Exception e) {
-                log.error("CREATE UNION_INSURANCE_DEPOSIT_ORDER ERROR! wechat v3 order  error! uid={}", userInfo.getUid(), e);
-            }
+            // try {
+            UnionPayOrder unionPayOrder = UnionPayOrder.builder().jsonOrderId(JsonUtil.toJson(orderList)).jsonOrderType(JsonUtil.toJson(orderTypeList))
+                    .jsonSingleFee(JsonUtil.toJson(allPayAmount)).payAmount(integratedPaAmount).tenantId(tenantId).attach(UnionTradeOrder.ATTACH_MEMBERCARD_INSURANCE)
+                    .description("租电套餐").uid(userInfo.getUid()).build();
+            WechatJsapiOrderResultDTO resultDTO = unionTradeOrderService.unionCreateTradeOrderAndGetPayParams(unionPayOrder, wechatPayParamsDetails, userOauthBind.getThirdId(),
+                    request);
+            return Triple.of(true, null, resultDTO);
+            // } catch (Exception e) {
+            //     log.error("CREATE UNION_INSURANCE_DEPOSIT_ORDER ERROR! wechat v3 order  error! uid={}", userInfo.getUid(), e);
+            // }
+            
+        // 友好提示，对用户端不展示错误信息
+        } catch (Exception e) {
+            log.error("CREATE UNION_INSURANCE_DEPOSIT_ORDER ERROR! wechat v3 order  error! uid={}", userInfo.getUid(), e);
         } finally {
             //            redisService.delete(CacheConstant.ELE_CACHE_USER_BATTERY_MEMBER_CARD_LOCK_KEY + SecurityUtils.getUid());
         }
@@ -767,16 +775,20 @@ public class TradeOrderServiceImpl implements TradeOrderService {
             }
             
             // 调起支付
-            try {
-                UnionPayOrder unionPayOrder = UnionPayOrder.builder().jsonOrderId(JsonUtil.toJson(orderList)).jsonOrderType(JsonUtil.toJson(orderTypeList))
-                        .jsonSingleFee(JsonUtil.toJson(allPayAmountList)).payAmount(totalPayAmount).tenantId(tenantId).attach(UnionTradeOrder.ATTACH_SERVUCE_FEE)
-                        .description("滞纳金").uid(user.getUid()).build();
-                WechatJsapiOrderResultDTO resultDTO = unionTradeOrderService.unionCreateTradeOrderAndGetPayParams(unionPayOrder, wechatPayParamsDetails, userOauthBind.getThirdId(),
-                        request);
-                return Triple.of(true, null, resultDTO);
-            } catch (Exception e) {
-                log.error("CREATE UNION SERVICE FEE ERROR! wechat v3 order error! uid={}", user.getUid(), e);
-            }
+            // try {
+            UnionPayOrder unionPayOrder = UnionPayOrder.builder().jsonOrderId(JsonUtil.toJson(orderList)).jsonOrderType(JsonUtil.toJson(orderTypeList))
+                    .jsonSingleFee(JsonUtil.toJson(allPayAmountList)).payAmount(totalPayAmount).tenantId(tenantId).attach(UnionTradeOrder.ATTACH_SERVUCE_FEE).description("滞纳金")
+                    .uid(user.getUid()).build();
+            WechatJsapiOrderResultDTO resultDTO = unionTradeOrderService.unionCreateTradeOrderAndGetPayParams(unionPayOrder, wechatPayParamsDetails, userOauthBind.getThirdId(),
+                    request);
+            return Triple.of(true, null, resultDTO);
+            // } catch (Exception e) {
+            //     log.error("CREATE UNION SERVICE FEE ERROR! wechat v3 order error! uid={}", user.getUid(), e);
+            // }
+            
+        // 友好提示，对用户端不展示错误信息
+        } catch (Exception e) {
+            log.error("CREATE UNION SERVICE FEE ERROR! wechat v3 order error! uid={}", user.getUid(), e);
         } finally {
             /// 因缓存锁删除过快，导致重复发起支付。因此注释掉该功能
             // redisService.delete(CacheConstant.ELE_CACHE_SERVICE_FEE_LOCK_KEY + user.getUid());
