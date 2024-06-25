@@ -1331,9 +1331,6 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
                 eleRefundOrder.setUpdateTime(System.currentTimeMillis());
                 eleRefundOrderService.insert(eleRefundOrder);
                 return R.ok();
-            } catch (WechatPayException e) {
-                log.warn("BATTERY DEPOSIT WARN!not found pay params,orderId={}", eleDepositOrder.getOrderId());
-                throw new BizException("PAY_TRANSFER.0021", "支付配置有误，请检查相关配置");
             } catch (Exception e) {
                 log.error("battery deposit OffLine Refund ERROR! wechat v3 refund  error! ", e);
             }
