@@ -296,7 +296,7 @@ public class UserInfoGroupServiceImpl implements UserInfoGroupService {
         ConcurrentHashSet<UserInfo> sameFranchiseeUserInfos = new ConcurrentHashSet<>();
         ConcurrentHashMap<Long, UserInfo> userInfoMap = new ConcurrentHashMap<>();
         
-        List<List<String>> partition = ListUtils.partition(new ArrayList<>(phones), 180);
+        List<List<String>> partition = ListUtils.partition(new ArrayList<>(phones), 500);
         partition.parallelStream().forEach(phoneList -> {
             List<User> userList = userService.listByPhones(phoneList, tenantId, User.TYPE_USER_NORMAL_WX_PRO);
             if (CollectionUtils.isEmpty(userList)) {
@@ -347,7 +347,7 @@ public class UserInfoGroupServiceImpl implements UserInfoGroupService {
             existsPhone.addAll(sameFranchiseeUserInfos);
             
             List<Long> uidList = sameFranchiseeUserInfos.stream().map(UserInfo::getUid).collect(Collectors.toList());
-            List<List<Long>> partition1 = ListUtils.partition(uidList, 180);
+            List<List<Long>> partition1 = ListUtils.partition(uidList, 500);
             
             partition1.parallelStream().forEach(uidList1 -> {
                 List<UserInfoGroupNamesBO> listByUidList = userInfoGroupDetailService.listGroupByUidList(uidList1);
