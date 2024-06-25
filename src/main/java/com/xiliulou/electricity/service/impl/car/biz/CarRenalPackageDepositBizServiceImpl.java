@@ -1624,6 +1624,14 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
             throw new BizException("ELECTRICITY.0024", "用户已被禁用");
         }
         
+        // 获取加锁 KEY
+        String buyLockKey = String.format(CarRenalCacheConstant.CAR_RENAL_PACKAGE_REFUND_DEPOSIT_ORDER_UID_KEY, uid);
+        
+        // 加锁
+        if (!redisService.setNx(buyLockKey, uid.toString(), 5 * 1000L, false)) {
+            throw new BizException("ELECTRICITY.0034", "操作频繁");
+        }
+        
         // 查询会员期限信息
         CarRentalPackageMemberTermPo memberTermEntity = carRentalPackageMemberTermService.selectByTenantIdAndUid(tenantId, uid);
         if (ObjectUtils.isEmpty(memberTermEntity) || !MemberTermStatusEnum.NORMAL.getCode().equals(memberTermEntity.getStatus())) {
