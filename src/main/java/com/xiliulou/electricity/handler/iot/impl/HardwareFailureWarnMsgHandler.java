@@ -44,6 +44,9 @@ public class HardwareFailureWarnMsgHandler extends AbstractElectricityIotHandler
     @Resource
     TenantService tenantService;
     
+    @Resource
+    private HardwareFaultMsgHandler hardwareFaultMsgHandler;
+    
     @Override
     protected void postHandleReceiveMsg(ElectricityCabinet electricityCabinet, ReceiverMessage receiverMessage) {
         HardwareFailureWarnMsg hardwareFailureWarnMsg = JsonUtil.fromJson(receiverMessage.getOriginContent(), HardwareFailureWarnMsg.class);
@@ -54,6 +57,9 @@ public class HardwareFailureWarnMsgHandler extends AbstractElectricityIotHandler
         
         List<HardwareFailureWarnMqMsg> list = convertMqMsg(hardwareFailureWarnMsg, electricityCabinet);
         rocketMqService.sendAsyncMsg(MqProducerConstant.TOPIC_FAILURE_WARNING_BREAKDOWN, JsonUtil.toJson(list));
+        
+        // todo 告警同步测试需要删除
+        hardwareFaultMsgHandler.syncSend(electricityCabinet, receiverMessage);
         
         HashMap<String, Object> dataMap = Maps.newHashMap();
         dataMap.put("sessionId", receiverMessage.getSessionId());

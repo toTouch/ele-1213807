@@ -57,6 +57,7 @@ public class FailureAlarmController {
      */
     @PostMapping ("/admin/super/failure/alarm/test")
     public R test(@RequestBody FailureAlarmSaveRequest request) {
+        // todo 告警同步测试需要删除
         log.info("testSignalName:{}", request.getSignalName());
         hardwareFaultMsgHandler.testSend(request.getSignalName(), request.getType());
         return R.ok();

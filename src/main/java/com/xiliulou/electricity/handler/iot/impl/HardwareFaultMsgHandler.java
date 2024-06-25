@@ -101,7 +101,23 @@ public class HardwareFaultMsgHandler extends AbstractElectricityIotHandler {
         return list;
     }
     
+    public void syncSend(ElectricityCabinet electricityCabinet, ReceiverMessage receiverMessage) {
+        // todo 告警同步测试需要删除
+        
+        HardwareFaultWarnMsg hardwareFaultWarnMsg = JsonUtil.fromJson(receiverMessage.getOriginContent(), HardwareFaultWarnMsg.class);
+        if (Objects.isNull(hardwareFaultWarnMsg) || ObjectUtils.isEmpty(hardwareFaultWarnMsg.getAlarmList())) {
+            log.error("PARSE HARDWARE FAULT WARN MSG ERROR! sessionId={}", receiverMessage.getSessionId());
+            return;
+        }
+    
+        List<HardwareFaultWarnMqMsg> list = convertMqMsg(hardwareFaultWarnMsg, electricityCabinet);
+        log.info("HARDWARE FAULT WARN SEND START MSG={}", JsonUtil.toJson(list));
+        rocketMqService.sendAsyncMsg(MqProducerConstant.FAULT_FAILURE_WARNING_BREAKDOWN, JsonUtil.toJson(list));
+    }
+    
     public void testSend(String msg, Integer type) {
+        // todo 告警同步测试需要删除
+        
         List<HardwareFailureWarnMqMsg> list = new ArrayList<>();
         HardwareFailureWarnMqMsg hardwareFailureWarnMsg = JsonUtil.fromJson(msg, HardwareFailureWarnMqMsg.class);
         long currentTimeMillis = System.currentTimeMillis();
