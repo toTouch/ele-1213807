@@ -48,7 +48,6 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -297,49 +296,49 @@ public class UserInfoGroupServiceImpl implements UserInfoGroupService {
         ConcurrentHashSet<UserInfo> sameFranchiseeUserInfos = new ConcurrentHashSet<>();
         ConcurrentHashMap<Long, UserInfo> userInfoMap = new ConcurrentHashMap<>();
         
-        List<List<String>> partition = ListUtils.partition(new ArrayList<>(phones), 500);
+        List<List<String>> partition = ListUtils.partition(new ArrayList<>(phones), 1000);
         partition.parallelStream().forEach(phoneList -> {
             List<User> userList = userService.listByPhones(phoneList, tenantId, User.TYPE_USER_NORMAL_WX_PRO);
-            if (CollectionUtils.isEmpty(userList)) {
-                notExistsPhone.addAll(phoneList);
-                return;
-            }
-            
-            List<User> notExistUsers = userList.parallelStream().filter(u -> !phoneList.contains(u.getPhone())).collect(Collectors.toList());
-            if (CollectionUtils.isNotEmpty(notExistUsers)) {
-                List<String> notExistPhones1 = notExistUsers.parallelStream().map(User::getPhone).collect(Collectors.toList());
-                notExistsPhone.addAll(notExistPhones1);
-                userList.removeAll(notExistUsers);
-            }
-            
-            List<Long> uidList = userList.parallelStream().map(User::getUid).collect(Collectors.toList());
-            List<UserInfo> userInfoList = userInfoService.listByUids(uidList, tenantId);
-            if (CollectionUtils.isEmpty(userInfoList)) {
-                List<String> notExistsPhones2 = userList.parallelStream().map(User::getPhone).collect(Collectors.toList());
-                notExistsPhone.addAll(notExistsPhones2);
-                return;
-            }
-            
-            List<UserInfo> notExistUserInfos = userInfoList.parallelStream().filter(userInfo -> !uidList.contains(userInfo.getUid())).collect(Collectors.toList());
-            if (CollectionUtils.isNotEmpty(notExistUserInfos)) {
-                List<String> notExistsPhones3 = notExistUserInfos.parallelStream().map(UserInfo::getPhone).collect(Collectors.toList());
-                notExistsPhone.addAll(notExistsPhones3);
-                userInfoList.removeAll(notExistUserInfos);
-            }
-            
-            userInfoList.parallelStream().forEach(userInfo -> {
-                Long bindFranchiseeId = userInfo.getFranchiseeId();
-                if (Objects.isNull(bindFranchiseeId) || Objects.equals(bindFranchiseeId, NumberConstant.ZERO_L)) {
-                    notBoundFranchiseePhone.add(userInfo.getPhone());
-                } else {
-                    if (Objects.equals(bindFranchiseeId, franchiseeId)) {
-                        sameFranchiseeUserInfos.add(userInfo);
-                        userInfoMap.put(userInfo.getUid(), userInfo);
-                    } else {
-                        notSameFranchiseePhone.add(userInfo.getPhone());
-                    }
-                }
-            });
+//            if (CollectionUtils.isEmpty(userList)) {
+//                notExistsPhone.addAll(phoneList);
+//                return;
+//            }
+//
+//            List<User> notExistUsers = userList.parallelStream().filter(u -> !phoneList.contains(u.getPhone())).collect(Collectors.toList());
+//            if (CollectionUtils.isNotEmpty(notExistUsers)) {
+//                List<String> notExistPhones1 = notExistUsers.parallelStream().map(User::getPhone).collect(Collectors.toList());
+//                notExistsPhone.addAll(notExistPhones1);
+//                userList.removeAll(notExistUsers);
+//            }
+//
+//            List<Long> uidList = userList.parallelStream().map(User::getUid).collect(Collectors.toList());
+//            List<UserInfo> userInfoList = userInfoService.listByUids(uidList, tenantId);
+//            if (CollectionUtils.isEmpty(userInfoList)) {
+//                List<String> notExistsPhones2 = userList.parallelStream().map(User::getPhone).collect(Collectors.toList());
+//                notExistsPhone.addAll(notExistsPhones2);
+//                return;
+//            }
+//
+//            List<UserInfo> notExistUserInfos = userInfoList.parallelStream().filter(userInfo -> !uidList.contains(userInfo.getUid())).collect(Collectors.toList());
+//            if (CollectionUtils.isNotEmpty(notExistUserInfos)) {
+//                List<String> notExistsPhones3 = notExistUserInfos.parallelStream().map(UserInfo::getPhone).collect(Collectors.toList());
+//                notExistsPhone.addAll(notExistsPhones3);
+//                userInfoList.removeAll(notExistUserInfos);
+//            }
+//
+//            userInfoList.parallelStream().forEach(userInfo -> {
+//                Long bindFranchiseeId = userInfo.getFranchiseeId();
+//                if (Objects.isNull(bindFranchiseeId) || Objects.equals(bindFranchiseeId, NumberConstant.ZERO_L)) {
+//                    notBoundFranchiseePhone.add(userInfo.getPhone());
+//                } else {
+//                    if (Objects.equals(bindFranchiseeId, franchiseeId)) {
+//                        sameFranchiseeUserInfos.add(userInfo);
+//                        userInfoMap.put(userInfo.getUid(), userInfo);
+//                    } else {
+//                        notSameFranchiseePhone.add(userInfo.getPhone());
+//                    }
+//                }
+//            });
         });
         
         AtomicReference<Map<Long, List<UserInfoGroupNamesBO>>> userGroupMap = new AtomicReference<>();
