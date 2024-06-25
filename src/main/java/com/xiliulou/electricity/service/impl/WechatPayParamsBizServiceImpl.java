@@ -73,7 +73,7 @@ public class WechatPayParamsBizServiceImpl implements WechatPayParamsBizService 
             return wechatPayParamsDetails;
             
         } catch (Exception e) {
-            log.warn("WechatPayParamsBizServiceImpl.getDetailsByIdTenantIdAndFranchiseeId error:", e);
+            log.warn("WechatPayParamsBizServiceImpl.getDetailsByIdTenantIdAndFranchiseeId :", e);
             return null;
         }
     }
