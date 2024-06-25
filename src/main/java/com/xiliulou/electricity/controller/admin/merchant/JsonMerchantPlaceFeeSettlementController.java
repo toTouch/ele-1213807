@@ -91,7 +91,7 @@ public class JsonMerchantPlaceFeeSettlementController extends BaseController {
             return R.fail("ELECTRICITY.0066", "用户权限不足");        }
     
         Long franchiseeId = null;
-        Integer type = MerchantPlaceFeeMonthSummaryRecordConstant.TYPE_FRANCHISEE;
+        Integer type = MerchantPlaceFeeMonthSummaryRecordConstant.TYPE_TENANT;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
             List<Long> franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
             if (org.apache.commons.collections.CollectionUtils.isEmpty(franchiseeIds)) {
@@ -100,7 +100,7 @@ public class JsonMerchantPlaceFeeSettlementController extends BaseController {
             }
         
             franchiseeId = franchiseeIds.get(0);
-            type = MerchantPlaceFeeMonthSummaryRecordConstant.TYPE_TENANT;
+            type = MerchantPlaceFeeMonthSummaryRecordConstant.TYPE_FRANCHISEE;
         }
     
         MerchantPlaceFeeMonthSummaryRecordQueryModel queryModel = MerchantPlaceFeeMonthSummaryRecordQueryModel.builder().size(size).offset(offset).monthDate(monthDate).tenantId(
@@ -127,7 +127,7 @@ public class JsonMerchantPlaceFeeSettlementController extends BaseController {
         }
     
         Long franchiseeId = null;
-        Integer type = MerchantPlaceFeeMonthSummaryRecordConstant.TYPE_FRANCHISEE;
+        Integer type = MerchantPlaceFeeMonthSummaryRecordConstant.TYPE_TENANT;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
             List<Long> franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
             if (org.apache.commons.collections.CollectionUtils.isEmpty(franchiseeIds)) {
@@ -136,7 +136,7 @@ public class JsonMerchantPlaceFeeSettlementController extends BaseController {
             }
         
             franchiseeId = franchiseeIds.get(0);
-            type = MerchantPlaceFeeMonthSummaryRecordConstant.TYPE_TENANT;
+            type = MerchantPlaceFeeMonthSummaryRecordConstant.TYPE_FRANCHISEE;
         }
         
         MerchantPlaceFeeMonthSummaryRecordQueryModel queryModel = MerchantPlaceFeeMonthSummaryRecordQueryModel.builder().monthDate(monthDate).tenantId(
