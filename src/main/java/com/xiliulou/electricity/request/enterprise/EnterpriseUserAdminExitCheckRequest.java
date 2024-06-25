@@ -30,4 +30,6 @@ public class EnterpriseUserAdminExitCheckRequest {
      */
     @NotNull(message = "解绑原因不能为空")
     private String reason;
+    
+    private Long enterpriseId;
 }

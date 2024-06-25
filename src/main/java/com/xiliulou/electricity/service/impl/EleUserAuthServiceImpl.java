@@ -33,6 +33,7 @@ import com.xiliulou.security.bean.TokenUser;
 import com.xiliulou.storage.config.StorageConfig;
 import com.xiliulou.storage.service.StorageService;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -127,7 +128,7 @@ public class EleUserAuthServiceImpl implements EleUserAuthService {
         //用户
         UserInfo oldUserInfo = userInfoService.queryByUidFromCache(user.getUid());
         if (Objects.isNull(oldUserInfo)) {
-            log.error("ELECTRICITY  ERROR! not found user！uid:{} ", user.getUid());
+            log.warn("ELECTRICITY WARN! not found user！uid:{} ", user.getUid());
             return R.fail("ELECTRICITY.0019", "未找到用户");
         }
         //用户是否可用
@@ -146,7 +147,7 @@ public class EleUserAuthServiceImpl implements EleUserAuthService {
     
         Triple<Boolean, String, Object> checkResult = checkIdCardExists(eleUserAuthList);
         if (!checkResult.getLeft()) {
-            return R.failMsg(checkResult.getMiddle());
+            return R.fail(ObjectUtils.isEmpty(checkResult.getRight()) ? null : checkResult.getRight().toString(), checkResult.getMiddle());
         }
         
         UserInfo userInfo = new UserInfo();
@@ -157,7 +158,7 @@ public class EleUserAuthServiceImpl implements EleUserAuthService {
     
         ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(tenantId);
         if (Objects.isNull(electricityConfig)) {
-            log.error("not found electricityConfig,uid={}", user.getUid());
+            log.warn("not found electricityConfig,uid={}", user.getUid());
             return R.fail("系统配置不存在");
         }
         
@@ -241,7 +242,7 @@ public class EleUserAuthServiceImpl implements EleUserAuthService {
             
             for (UserInfo userInfo : userInfos) {
                 if (!Objects.equals(SecurityUtils.getUid(), userInfo.getUid())) {
-                    return Triple.of(false, "身份证信息已存在，请核实后重新提交", null);
+                    return Triple.of(false, "身份证信息已存在，请核实后重新提交", 100339);
                 }
             }
             return Triple.of(true, null, null);
@@ -301,7 +302,7 @@ public class EleUserAuthServiceImpl implements EleUserAuthService {
 
         UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
         if (Objects.isNull(userInfo)) {
-            log.error("ELECTRICITY  ERROR! not found userInfo! userId:{}", uid);
+            log.warn("ELECTRICITY  WARN! not found userInfo! userId:{}", uid);
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         return R.ok(userInfo.getAuthStatus());
@@ -312,7 +313,7 @@ public class EleUserAuthServiceImpl implements EleUserAuthService {
 
         UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
         if (Objects.isNull(userInfo)) {
-            log.error("ELE ERROR! not found userInfo! uid={}", uid);
+            log.warn("ELE WARN! not found userInfo! uid={}", uid);
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
@@ -403,7 +404,7 @@ public class EleUserAuthServiceImpl implements EleUserAuthService {
 
         UserInfo userInfo = userInfoService.queryByUidFromCache(user.getUid());
         if (Objects.isNull(userInfo)) {
-            log.error("ELECTRICITY  ERROR! not found userInfo! userId={}", user.getUid());
+            log.warn("ELECTRICITY  WARN! not found userInfo! userId={}", user.getUid());
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 

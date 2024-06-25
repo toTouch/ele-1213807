@@ -2,6 +2,7 @@ package com.xiliulou.electricity.service.impl;
 
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.OrderProtocol;
 import com.xiliulou.electricity.mapper.OrderProtocolMapper;
@@ -29,6 +30,7 @@ public class OrderProtocolServiceImpl implements OrderProtocolService {
     @Resource
     private RedisService redisService;
     
+    @Slave
     @Override
     public R queryOrderProtocol() {
         //tenant

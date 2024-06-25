@@ -32,4 +32,6 @@ public interface UserInfoGroupMapper {
     int update(UserInfoGroup oldUserInfo);
     
     Integer batchUpdateByIds(@Param("ids") List<Long> ids, @Param("updateTime") Long updateTime, @Param("operator") Long operator, @Param("delFlag") Integer delFlag);
+    
+    List<UserInfoGroup> selectListByIdsFromDB(@Param("ids") List<Long> ids);
 }

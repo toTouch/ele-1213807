@@ -72,32 +72,27 @@ public class OffLineElectricityCabinetServiceImpl implements OffLineElectricityC
         //用户验证
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
-            log.warn("OffLINE ELECTRICITY  WARN! not found user ");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
         //校验用户
         UserInfo userInfo = userInfoService.queryByUidFromCache(user.getUid());
         if (Objects.isNull(userInfo)) {
-            log.warn("OffLINE ELECTRICITY  WARN! not found user,uid:{} ", user.getUid());
             return R.fail("ELECTRICITY.0019", "未找到用户");
         }
 
         //用户是否可用
         if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
-            log.warn("OffLINE ELECTRICITY  WARN! user is unUsable! uid:{} ", user.getUid());
             return R.fail("ELECTRICITY.0024", "用户已被禁用");
         }
 
         //用户是否实名认证
         if (!Objects.equals(userInfo.getAuthStatus(), UserInfo.AUTH_STATUS_REVIEW_PASSED)) {
-            log.warn("OffLINE ELECTRICITY  WARN! user not auth!  uid={} ", user.getUid());
             return R.fail("ELECTRICITY.0041", "未实名认证");
         }
     
         //未租电池
         if (!Objects.equals(userInfo.getBatteryRentStatus(), UserInfo.BATTERY_RENT_STATUS_YES)) {
-            log.warn("OffLINE ELECTRICITY  WARN! user not rent battery! uid={} ", user.getUid());
             return R.fail("ELECTRICITY.0033", "用户未绑定电池");
         }
         
@@ -111,7 +106,6 @@ public class OffLineElectricityCabinetServiceImpl implements OffLineElectricityC
             //车电一体
             carRentalPackageMemberTermBizService.verifyMemberSwapBattery(userInfo.getTenantId(),userInfo.getUid());
         } else {
-            log.warn("OffLINE ELECTRICITY WARN! not pay deposit,uid={}", user.getUid());
             return R.fail( "ELECTRICITY.0042", "未缴纳押金");
         }
 

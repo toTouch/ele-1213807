@@ -62,7 +62,9 @@ public interface PermissionResourceService {
 	Pair<Boolean, Object> getPermissionsByRole(Long rid);
 
 	List<PermissionResource> queryPermissionsByRole(Long rid);
-    
+
+	List<PermissionResource> queryPermissionsByRoleList(List<Long> rids);
+
     Pair<Boolean, Object> getPermissionTempleteList();
 
 	/**
