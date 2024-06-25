@@ -494,16 +494,19 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         rentalPackageRefundVO.setCompelOffLine(YesNoEnum.NO.getCode());
         
         // 判定是否需要强制线下退款
-        String wechatMerchantId = packageOrderEntity.getWechatMerchantId();
-        Long payFranchiseeId = packageOrderEntity.getPayFranchiseeId();
-        try {
-            WechatPayParamsDetails wechatPayParamsDetails = wechatPayParamsBizService.getDetailsByIdTenantIdAndFranchiseeId(tenantId, payFranchiseeId);
-            if (ObjectUtils.isEmpty(wechatPayParamsDetails) || !wechatPayParamsDetails.getWechatMerchantId().equals(wechatMerchantId)) {
-                rentalPackageRefundVO.setCompelOffLine(YesNoEnum.YES.getCode());
+        if (PayTypeEnum.ON_LINE.getCode().equals(packageOrderEntity.getPayType())) {
+            String wechatMerchantId = packageOrderEntity.getWechatMerchantId();
+            Long payFranchiseeId = packageOrderEntity.getPayFranchiseeId();
+            try {
+                WechatPayParamsDetails wechatPayParamsDetails = wechatPayParamsBizService.getDetailsByIdTenantIdAndFranchiseeId(tenantId, payFranchiseeId);
+                if (ObjectUtils.isEmpty(wechatPayParamsDetails) || !wechatPayParamsDetails.getWechatMerchantId().equals(wechatMerchantId)) {
+                    rentalPackageRefundVO.setCompelOffLine(YesNoEnum.YES.getCode());
+                }
+            } catch (Exception e) {
+                throw new BizException("PAY_TRANSFER.0021", "支付配置有误，请检查相关配置");
             }
-        } catch (Exception e) {
-            throw new BizException("PAY_TRANSFER.0021", "支付配置有误，请检查相关配置");
         }
+        
         return rentalPackageRefundVO;
     }
     
