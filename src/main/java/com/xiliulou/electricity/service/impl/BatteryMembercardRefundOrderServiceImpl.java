@@ -20,6 +20,7 @@ import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.BatteryMembercardRefundOrder;
 import com.xiliulou.electricity.entity.EleRefundOrder;
 import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
+import com.xiliulou.electricity.entity.ElectricityPayParams;
 import com.xiliulou.electricity.entity.ElectricityTradeOrder;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.MaintenanceUserNotifyConfig;
@@ -732,11 +733,17 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
         electricityMemberCardOrderUpdate.setId(electricityMemberCardOrder.getId());
         electricityMemberCardOrderUpdate.setUpdateTime(System.currentTimeMillis());
         
-        WechatPayParamsDetails wechatPayParamsDetails = wechatPayParamsBizService.getDetailsByIdTenantIdAndFranchiseeId(electricityMemberCardOrder.getTenantId(),
-                electricityMemberCardOrder.getParamFranchiseeId());
-        if (Objects.isNull(wechatPayParamsDetails)) {
+        WechatPayParamsDetails wechatPayParamsDetails = null;
+        try {
+            wechatPayParamsDetails = wechatPayParamsBizService.getDetailsByIdTenantIdAndFranchiseeId(electricityMemberCardOrder.getTenantId(),
+                    electricityMemberCardOrder.getParamFranchiseeId());
+        }catch (WechatPayException e) {
             log.warn("BATTERY DEPOSIT WARN!not found pay params,refundOrderNo={}", batteryMembercardRefundOrder.getRefundOrderNo());
             return Triple.of(false, "PAY_TRANSFER.0021", "支付配置有误，请检查相关配置");
+        }
+        if (Objects.isNull(wechatPayParamsDetails)) {
+            log.warn("BATTERY DEPOSIT WARN!not found pay params,refundOrderNo={}", batteryMembercardRefundOrder.getRefundOrderNo());
+            return Triple.of(false, "100307", "未配置支付参数!");
         }
         
         try {
@@ -1009,10 +1016,10 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
             return R.fail("100281", "电池套餐订单不存在");
         }
         
-        WechatPayParamsDetails wechatPayParamsDetails = wechatPayParamsBizService.getDetailsByIdTenantIdAndFranchiseeId(electricityMemberCardOrder.getTenantId(),
+        ElectricityPayParams electricityPayParams = electricityPayParamsService.queryCacheByTenantIdAndFranchiseeId(electricityMemberCardOrder.getTenantId(),
                 electricityMemberCardOrder.getParamFranchiseeId());
-        if (Objects.isNull(wechatPayParamsDetails) || !Objects.equals(electricityMemberCardOrder.getParamFranchiseeId(), wechatPayParamsDetails.getFranchiseeId())
-                || !Objects.equals(electricityMemberCardOrder.getWechatMerchantId(), wechatPayParamsDetails.getWechatMerchantId())) {
+        if (Objects.isNull(electricityPayParams) || !Objects.equals(electricityMemberCardOrder.getParamFranchiseeId(), electricityPayParams.getFranchiseeId())
+                || !Objects.equals(electricityMemberCardOrder.getWechatMerchantId(), electricityPayParams.getWechatMerchantId())) {
             return R.ok(CheckPayParamsResultEnum.FAIL.getCode());
         }
         return R.ok(CheckPayParamsResultEnum.SUCCESS.getCode());

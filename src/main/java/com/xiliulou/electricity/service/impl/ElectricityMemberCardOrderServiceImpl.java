@@ -47,6 +47,7 @@ import com.xiliulou.electricity.entity.ElectricityCarModel;
 import com.xiliulou.electricity.entity.ElectricityConfig;
 import com.xiliulou.electricity.entity.ElectricityMemberCard;
 import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
+import com.xiliulou.electricity.entity.ElectricityPayParams;
 import com.xiliulou.electricity.entity.EnableMemberCardRecord;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.FranchiseeInsurance;
@@ -2036,8 +2037,8 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             }
             
             franchiseeUserInfos.parallelStream().forEach(item -> {
-                WechatPayParamsDetails wechatPayParamsDetails = wechatPayParamsBizService.getDetailsByIdTenantIdAndFranchiseeId(item.getTenantId(), item.getFranchiseeId());
-                if (Objects.isNull(wechatPayParamsDetails)) {
+                ElectricityPayParams electricityPayParams = electricityPayParamsService.queryCacheByTenantIdAndFranchiseeId(item.getTenantId(), item.getFranchiseeId());
+                if (Objects.isNull(electricityPayParams)) {
                     log.info("BATTERY MEMBER CARD EXPIRING SOON INFO! ElectricityPayParams is null error! tenantId={}", item.getTenantId());
                     return;
                 }
@@ -2050,8 +2051,8 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                 
                 date.setTime(item.getMemberCardExpireTime());
                 
-                item.setMerchantMinProAppId(wechatPayParamsDetails.getMerchantMinProAppId());
-                item.setMerchantMinProAppSecert(wechatPayParamsDetails.getMerchantMinProAppSecert());
+                item.setMerchantMinProAppId(electricityPayParams.getMerchantMinProAppId());
+                item.setMerchantMinProAppSecert(electricityPayParams.getMerchantMinProAppSecert());
                 item.setMemberCardExpiringTemplate(templateConfigEntity.getBatteryMemberCardExpiringTemplate());
                 item.setMemberCardExpireTimeStr(simp.format(date));
                 sendBatteryMemberCardExpiringTemplate(item);

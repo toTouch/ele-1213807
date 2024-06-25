@@ -245,10 +245,16 @@ public class InsuranceOrderServiceImpl extends ServiceImpl<InsuranceOrderMapper,
             return R.fail("100305", "未找到保险!");
         }
         
-        WechatPayParamsDetails wechatPayParamsDetails = wechatPayParamsBizService.getDetailsByIdTenantIdAndFranchiseeId(tenantId, franchiseeInsurance.getFranchiseeId());
-        if (Objects.isNull(wechatPayParamsDetails)) {
+        WechatPayParamsDetails wechatPayParamsDetails = null;
+        try {
+            wechatPayParamsDetails = wechatPayParamsBizService.getDetailsByIdTenantIdAndFranchiseeId(tenantId, franchiseeInsurance.getFranchiseeId());
+        } catch (WechatPayException e) {
             log.error("CREATE INSURANCE_ORDER ERROR ,NOT FOUND PAY_PARAMS");
             return R.fail("PAY_TRANSFER.0019", "支付未成功，请联系客服处理");
+        }
+        if (Objects.isNull(wechatPayParamsDetails)) {
+            log.error("CREATE INSURANCE_ORDER ERROR ,NOT FOUND PAY_PARAMS");
+            return R.fail("100307", "未配置支付参数!");
         }
         
         if (ObjectUtil.equal(FranchiseeInsurance.STATUS_UN_USABLE, franchiseeInsurance.getStatus())) {

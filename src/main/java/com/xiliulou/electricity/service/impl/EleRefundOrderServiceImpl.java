@@ -458,15 +458,21 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             return handleBatteryZeroDepositAndOfflineRefundOrder(eleRefundOrderUpdate, userInfo);
         }
         
+        // 置于此处为了避免干扰线下退款，将异常抛出是为了回滚避免生成数据错误的订单，避免把数据修改成错误的中间态
+        WechatPayParamsDetails wechatPayParamsDetails = null;
         try {
-            // 置于此处为了避免干扰线下退款
-            WechatPayParamsDetails wechatPayParamsDetails = wechatPayParamsBizService.getDetailsByIdTenantIdAndFranchiseeId(TenantContextHolder.getTenantId(),
+            wechatPayParamsDetails = wechatPayParamsBizService.getDetailsByIdTenantIdAndFranchiseeId(TenantContextHolder.getTenantId(),
                     eleDepositOrder.getParamFranchiseeId());
-            if (Objects.isNull(wechatPayParamsDetails)) {
-                log.warn("BATTERY DEPOSIT WARN!not found pay params,refundOrderNo={}", eleRefundOrder.getRefundOrderNo());
-                throw new BizException("PAY_TRANSFER.0021", "支付配置有误，请检查相关配置");
-            }
-            
+        } catch (WechatPayException e) {
+            log.warn("BATTERY DEPOSIT WARN!not found pay params,refundOrderNo={}", eleRefundOrder.getRefundOrderNo());
+            throw new BizException("PAY_TRANSFER.0021", "支付配置有误，请检查相关配置");
+        }
+        if (Objects.isNull(wechatPayParamsDetails)) {
+            log.warn("BATTERY DEPOSIT WARN!not found pay params,refundOrderNo={}", eleRefundOrder.getRefundOrderNo());
+            throw new BizException("100307", "未配置支付参数!");
+        }
+        
+        try {
             RefundOrder refundOrder = RefundOrder.builder().orderId(eleRefundOrder.getOrderId()).refundOrderNo(eleRefundOrder.getRefundOrderNo())
                     .payAmount(eleRefundOrder.getPayAmount()).refundAmount(eleRefundOrderUpdate.getRefundAmount()).build();
             
@@ -1299,16 +1305,22 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
                 return R.ok();
             }
             
+            // 置于此处为了避免干扰线下退款，将异常抛出是为了回滚避免生成数据错误的订单，避免把数据修改成错误的中间态
+            WechatPayParamsDetails wechatPayParamsDetails = null;
+            try {
+                wechatPayParamsDetails = wechatPayParamsBizService.getDetailsByIdTenantIdAndFranchiseeId(eleDepositOrder.getTenantId(),
+                        eleDepositOrder.getParamFranchiseeId());
+            } catch (WechatPayException e) {
+                log.warn("BATTERY DEPOSIT WARN!not found pay params,orderId={}", eleDepositOrder.getOrderId());
+                throw new BizException("PAY_TRANSFER.0021", "支付配置有误，请检查相关配置");
+            }
+            if (Objects.isNull(wechatPayParamsDetails)) {
+                log.warn("BATTERY DEPOSIT WARN!not found pay params,orderId={}", eleDepositOrder.getOrderId());
+                throw new BizException("100307", "未配置支付参数!");
+            }
+            
             // 调起退款
             try {
-                // 置于此处为了避免干扰线下退款
-                WechatPayParamsDetails wechatPayParamsDetails = wechatPayParamsBizService.getDetailsByIdTenantIdAndFranchiseeId(eleDepositOrder.getTenantId(),
-                        eleDepositOrder.getParamFranchiseeId());
-                if (Objects.isNull(wechatPayParamsDetails)) {
-                    log.warn("BATTERY DEPOSIT WARN!not found pay params,orderId={}", eleDepositOrder.getOrderId());
-                    throw new BizException("PAY_TRANSFER.0021", "支付配置有误，请检查相关配置");
-                }
-                
                 RefundOrder refundOrder = RefundOrder.builder().orderId(eleRefundOrder.getOrderId()).refundOrderNo(eleRefundOrder.getRefundOrderNo())
                         .payAmount(eleDepositOrder.getPayAmount()).refundAmount(refundAmount).build();
                 
@@ -1319,6 +1331,9 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
                 eleRefundOrder.setUpdateTime(System.currentTimeMillis());
                 eleRefundOrderService.insert(eleRefundOrder);
                 return R.ok();
+            } catch (WechatPayException e) {
+                log.warn("BATTERY DEPOSIT WARN!not found pay params,orderId={}", eleDepositOrder.getOrderId());
+                throw new BizException("PAY_TRANSFER.0021", "支付配置有误，请检查相关配置");
             } catch (Exception e) {
                 log.error("battery deposit OffLine Refund ERROR! wechat v3 refund  error! ", e);
             }
