@@ -15,6 +15,7 @@ import com.xiliulou.electricity.entity.WechatPaymentCertificate;
 import com.xiliulou.electricity.service.ElectricityPayParamsService;
 import com.xiliulou.electricity.service.WechatPayParamsBizService;
 import com.xiliulou.electricity.service.WechatPaymentCertificateService;
+import com.xiliulou.pay.weixinv3.exception.WechatPayException;
 import com.xiliulou.pay.weixinv3.util.WechatCertificateUtils;
 import com.xiliulou.pay.weixinv3.v2.query.WechatV3CommonRequest;
 import com.xiliulou.pay.weixinv3.v2.service.WechatV3CommonInvokeService;
@@ -57,7 +58,7 @@ public class WechatPayParamsBizServiceImpl implements WechatPayParamsBizService 
     private RedisService redisService;
     
     @Override
-    public WechatPayParamsDetails getDetailsByIdTenantIdAndFranchiseeId(Integer tenantId, Long franchiseeId) {
+    public WechatPayParamsDetails getDetailsByIdTenantIdAndFranchiseeId(Integer tenantId, Long franchiseeId) throws WechatPayException {
         try {
             ElectricityPayParams payParams = electricityPayParamsService.queryCacheByTenantIdAndFranchiseeId(tenantId, franchiseeId);
             if (Objects.isNull(payParams)) {
@@ -74,7 +75,7 @@ public class WechatPayParamsBizServiceImpl implements WechatPayParamsBizService 
             
         } catch (Exception e) {
             log.warn("WechatPayParamsBizServiceImpl.getDetailsByIdTenantIdAndFranchiseeId :", e);
-            return null;
+            throw new WechatPayException("支付配置获取失败!");
         }
     }
     

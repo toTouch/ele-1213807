@@ -5,6 +5,7 @@
 package com.xiliulou.electricity.service;
 
 import com.xiliulou.electricity.bo.wechat.WechatPayParamsDetails;
+import com.xiliulou.pay.weixinv3.exception.WechatPayException;
 
 /**
  * description: 微信支付配置业务查询接口
@@ -25,7 +26,7 @@ public interface WechatPayParamsBizService {
      * @author caobotao.cbt
      * @date 2024/6/12 11:16
      */
-    WechatPayParamsDetails getDetailsByIdTenantIdAndFranchiseeId(Integer tenantId, Long franchiseeId);
+    WechatPayParamsDetails getDetailsByIdTenantIdAndFranchiseeId(Integer tenantId, Long franchiseeId) throws WechatPayException;
     
     
     /**
