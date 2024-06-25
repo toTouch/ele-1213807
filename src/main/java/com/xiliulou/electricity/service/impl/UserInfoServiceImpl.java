@@ -2301,6 +2301,12 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         
     }
     
+    @Slave
+    @Override
+    public List<UserInfo> listByUids(List<Long> uidList, Integer tenantId) {
+        return userInfoMapper.selectListByUids(uidList, tenantId);
+    }
+    
     private EleUserOperateHistory buildEleUserOperateHistory(UserInfo userInfo, Integer operateContent, String oldOperateInfo, String newOperateInfo) {
         return EleUserOperateHistory.builder().operateType(EleUserOperateHistoryConstant.OPERATE_TYPE_USER).operateModel(EleUserOperateHistoryConstant.OPERATE_MODEL_USER_ACCOUNT)
                 .operateContent(operateContent).oldOperateInfo(oldOperateInfo).newOperateInfo(newOperateInfo).uid(userInfo.getUid())

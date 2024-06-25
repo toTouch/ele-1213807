@@ -180,6 +180,9 @@ public class UserServiceImpl implements UserService {
     @Autowired
     UserInfoExtraService userInfoExtraService;
     
+    @Resource
+    private UserInfoGroupDetailService userInfoGroupDetailService;
+    
     /**
      * 启用锁定用户
      *
@@ -215,10 +218,6 @@ public class UserServiceImpl implements UserService {
         
         return num >= 0;
     }
-    
-    
-    @Resource
-    private UserInfoGroupDetailService userInfoGroupDetailService;
     
     /**
      * 通过ID查询单条数据从缓存
@@ -539,6 +538,12 @@ public class UserServiceImpl implements UserService {
     @Override
     public User queryByUidFromDB(Long uid) {
         return userMapper.selectByUid(uid);
+    }
+    
+    @Slave
+    @Override
+    public List<User> listByPhones(List<String> phoneList, Integer tenantId, Integer type) {
+        return userMapper.selectListByPhones(phoneList, tenantId, type);
     }
     
     @Override

@@ -39,6 +39,7 @@ import com.xiliulou.electricity.utils.OperateRecordUtil;
 import com.xiliulou.electricity.vo.userinfo.userInfoGroup.BatchImportUserInfoVO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
@@ -55,7 +56,9 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 /**
@@ -151,11 +154,11 @@ public class UserInfoGroupServiceImpl implements UserInfoGroupService {
         // 逻辑删除用户分组
         UserInfoGroup delUserInfoGroup = UserInfoGroup.builder().id(id).updateTime(System.currentTimeMillis()).delFlag(CommonConstant.DEL_Y).operator(operator).build();
         Integer update = update(delUserInfoGroup);
-    
+        
         DbUtils.dbOperateSuccessThenHandleCache(update, i -> {
             // 删除用户分组缓存
             redisService.delete(CacheConstant.CACHE_USER_GROUP + id);
-    
+            
             // 系统操作记录
             Map<Object, Object> groupNameMap = MapBuilder.create().put("groupName", userInfoGroup.getName()).build();
             operateRecordUtil.record(groupNameMap, null);
@@ -285,65 +288,94 @@ public class UserInfoGroupServiceImpl implements UserInfoGroupService {
         if (Objects.isNull(franchisee)) {
             return R.fail("ELECTRICITY.0038", "未找到加盟商");
         }
-        
+    
         ConcurrentHashSet<String> notExistsPhone = new ConcurrentHashSet<>();
         ConcurrentHashSet<String> notBoundFranchiseePhone = new ConcurrentHashSet<>();
         ConcurrentHashSet<String> notSameFranchiseePhone = new ConcurrentHashSet<>();
         ConcurrentHashSet<String> overLimitGroupNumPhone = new ConcurrentHashSet<>();
         ConcurrentHashSet<UserInfo> existsPhone = new ConcurrentHashSet<>();
         ConcurrentHashSet<UserInfo> sameFranchiseeUserInfos = new ConcurrentHashSet<>();
-        Map<Long, UserInfo> userInfoMap = new HashMap<>();
+        ConcurrentHashMap<Long, UserInfo> userInfoMap = new ConcurrentHashMap<>();
         
-        for (String e : phones) {
-            User user = userService.queryByUserPhone(e, User.TYPE_USER_NORMAL_WX_PRO, tenantId);
-            if (Objects.isNull(user)) {
-                notExistsPhone.add(e);
-                continue;
+        List<List<String>> partition = ListUtils.partition(new ArrayList<>(phones), 500);
+        partition.parallelStream().forEach(phoneList -> {
+            List<User> userList = userService.listByPhones(phoneList, tenantId, User.TYPE_USER_NORMAL_WX_PRO);
+            if (CollectionUtils.isEmpty(userList)) {
+                notExistsPhone.addAll(phoneList);
+                return;
             }
             
-            UserInfo userInfo = userInfoService.queryByUidFromCache(user.getUid());
-            if (Objects.isNull(userInfo)) {
-                notExistsPhone.add(e);
-            } else {
+            List<User> notExistUsers = userList.parallelStream().filter(u -> !phoneList.contains(u.getPhone())).collect(Collectors.toList());
+            if (CollectionUtils.isNotEmpty(notExistUsers)) {
+                List<String> notExistPhones1 = notExistUsers.parallelStream().map(User::getPhone).collect(Collectors.toList());
+                notExistsPhone.addAll(notExistPhones1);
+                userList.removeAll(notExistUsers);
+            }
+            
+            List<Long> uidList = userList.parallelStream().map(User::getUid).collect(Collectors.toList());
+            List<UserInfo> userInfoList = userInfoService.listByUids(uidList, tenantId);
+            if (CollectionUtils.isEmpty(userInfoList)) {
+                List<String> notExistsPhones2 = userList.parallelStream().map(User::getPhone).collect(Collectors.toList());
+                notExistsPhone.addAll(notExistsPhones2);
+                return;
+            }
+            
+            List<UserInfo> notExistUserInfos = userInfoList.parallelStream().filter(userInfo -> !uidList.contains(userInfo.getUid())).collect(Collectors.toList());
+            if (CollectionUtils.isNotEmpty(notExistUserInfos)) {
+                List<String> notExistsPhones3 = notExistUserInfos.parallelStream().map(UserInfo::getPhone).collect(Collectors.toList());
+                notExistsPhone.addAll(notExistsPhones3);
+                userInfoList.removeAll(notExistUserInfos);
+            }
+            
+            userInfoList.parallelStream().forEach(userInfo -> {
                 Long bindFranchiseeId = userInfo.getFranchiseeId();
                 if (Objects.isNull(bindFranchiseeId) || Objects.equals(bindFranchiseeId, NumberConstant.ZERO_L)) {
-                    notBoundFranchiseePhone.add(e);
+                    notBoundFranchiseePhone.add(userInfo.getPhone());
                 } else {
                     if (Objects.equals(bindFranchiseeId, franchiseeId)) {
                         sameFranchiseeUserInfos.add(userInfo);
                         userInfoMap.put(userInfo.getUid(), userInfo);
                     } else {
-                        notSameFranchiseePhone.add(e);
+                        notSameFranchiseePhone.add(userInfo.getPhone());
                     }
                 }
-            }
-        }
+            });
+        });
         
-        Map<Long, List<UserInfoGroupNamesBO>> userGroupMap = null;
+        AtomicReference<Map<Long, List<UserInfoGroupNamesBO>>> userGroupMap = new AtomicReference<>();
         // 判断绑定分组数量是否超限
         if (CollectionUtils.isNotEmpty(sameFranchiseeUserInfos)) {
             existsPhone.addAll(sameFranchiseeUserInfos);
             
             List<Long> uidList = sameFranchiseeUserInfos.stream().map(UserInfo::getUid).collect(Collectors.toList());
-            List<UserInfoGroupNamesBO> listByUidList = userInfoGroupDetailService.listGroupByUidList(uidList);
+            List<List<Long>> partition1 = ListUtils.partition(uidList, 500);
             
-            if (CollectionUtils.isNotEmpty(listByUidList)) {
-                // 根据uid进行分组
-                userGroupMap = listByUidList.stream().collect(Collectors.groupingBy(UserInfoGroupNamesBO::getUid));
-                if (MapUtils.isNotEmpty(userGroupMap)) {
-                    userGroupMap.forEach((uid, v) -> {
-                        if (CollectionUtils.isNotEmpty(v)) {
-                            UserInfo userInfo = userInfoMap.get(uid);
-                            if (Objects.nonNull(userInfo)) {
-                                if (v.size() >= UserInfoGroupConstant.USER_GROUP_LIMIT) {
-                                    overLimitGroupNumPhone.add(userInfo.getPhone());
-                                    existsPhone.removeIf(e -> Objects.equals(e.getUid(), uid));
-                                }
-                            }
-                        }
-                    });
+            partition1.parallelStream().forEach(uidList1 -> {
+                List<UserInfoGroupNamesBO> listByUidList = userInfoGroupDetailService.listGroupByUidList(uidList1);
+                if (CollectionUtils.isEmpty(listByUidList)) {
+                    return;
                 }
-            }
+                
+                // 根据uid进行分组
+                userGroupMap.set(listByUidList.stream().collect(Collectors.groupingBy(UserInfoGroupNamesBO::getUid)));
+                if (MapUtils.isEmpty(userGroupMap.get())) {
+                    return;
+                }
+                
+                userGroupMap.get().forEach((uid, v) -> {
+                    if (CollectionUtils.isEmpty(v)) {
+                        return;
+                    }
+                    
+                    UserInfo userInfo = userInfoMap.get(uid);
+                    if (Objects.nonNull(userInfo)) {
+                        if (v.size() >= UserInfoGroupConstant.USER_GROUP_LIMIT) {
+                            overLimitGroupNumPhone.add(userInfo.getPhone());
+                            existsPhone.removeIf(e -> Objects.equals(e.getUid(), uid));
+                        }
+                    }
+                });
+            });
         }
         
         BatchImportUserInfoVO batchImportUserInfoVO = new BatchImportUserInfoVO();
@@ -360,9 +392,8 @@ public class UserInfoGroupServiceImpl implements UserInfoGroupService {
         }
         
         batchImportUserInfoVO.setIsImported(true);
-        Map<Long, List<UserInfoGroupNamesBO>> finalUserGroupMap = userGroupMap;
         executorService.execute(() -> {
-            handleBatchImportUserInfo(userInfoGroup, existsPhone, sessionId, franchiseeId, tenantId, operator, finalUserGroupMap);
+            handleBatchImportUserInfo(userInfoGroup, existsPhone, sessionId, franchiseeId, tenantId, operator, userGroupMap.get());
         });
         
         return R.ok(batchImportUserInfoVO);
