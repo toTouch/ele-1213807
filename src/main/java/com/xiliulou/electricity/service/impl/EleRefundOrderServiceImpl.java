@@ -37,6 +37,7 @@ import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.enums.CheckPayParamsResultEnum;
 import com.xiliulou.electricity.enums.enterprise.EnterprisePaymentStatusEnum;
 import com.xiliulou.electricity.enums.enterprise.PackageOrderTypeEnum;
+import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.EleRefundOrderMapper;
 import com.xiliulou.electricity.query.EleRefundQuery;
 import com.xiliulou.electricity.service.BatteryMembercardRefundOrderService;
@@ -409,13 +410,6 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             return Triple.of(false, "ELECTRICITY.100273", "未查询到支付订单，操作失败，请联系客服处理");
         }
         
-        WechatPayParamsDetails wechatPayParamsDetails = wechatPayParamsBizService.getDetailsByIdTenantIdAndFranchiseeId(TenantContextHolder.getTenantId(),
-                eleDepositOrder.getParamFranchiseeId());
-        if (Objects.isNull(wechatPayParamsDetails)) {
-            log.warn("BATTERY DEPOSIT WARN!not found pay params,refundOrderNo={}", eleRefundOrder.getRefundOrderNo());
-            return Triple.of(false, "100307", "未配置支付参数!");
-        }
-        
         // 校验退款金额
         if (Objects.nonNull(refundAmount)) {
             if (refundAmount.compareTo(eleRefundOrder.getRefundAmount()) > 0) {
@@ -465,6 +459,14 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
         }
         
         try {
+            // 置于此处为了避免干扰线下退款
+            WechatPayParamsDetails wechatPayParamsDetails = wechatPayParamsBizService.getDetailsByIdTenantIdAndFranchiseeId(TenantContextHolder.getTenantId(),
+                    eleDepositOrder.getParamFranchiseeId());
+            if (Objects.isNull(wechatPayParamsDetails)) {
+                log.warn("BATTERY DEPOSIT WARN!not found pay params,refundOrderNo={}", eleRefundOrder.getRefundOrderNo());
+                throw new BizException("PAY_TRANSFER.0021", "支付配置有误，请检查相关配置");
+            }
+            
             RefundOrder refundOrder = RefundOrder.builder().orderId(eleRefundOrder.getOrderId()).refundOrderNo(eleRefundOrder.getRefundOrderNo())
                     .payAmount(eleRefundOrder.getPayAmount()).refundAmount(eleRefundOrderUpdate.getRefundAmount()).build();
             
@@ -484,7 +486,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
         eleRefundOrderUpdate.setUpdateTime(System.currentTimeMillis());
         eleRefundOrderService.update(eleRefundOrderUpdate);
         
-        return Triple.of(false, "ELECTRICITY.00100", "支付调用失败，请检查相关配置");
+        return Triple.of(false, "PAY_TRANSFER.0020", "支付调用失败，请检查相关配置");
     }
     
     @Override
@@ -1163,13 +1165,6 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             return R.fail("ELECTRICITY.0051", "押金正在退款中，请勿重复提交");
         }
         
-        WechatPayParamsDetails wechatPayParamsDetails = wechatPayParamsBizService.getDetailsByIdTenantIdAndFranchiseeId(eleDepositOrder.getTenantId(),
-                eleDepositOrder.getParamFranchiseeId());
-        if (Objects.isNull(wechatPayParamsDetails)) {
-            log.warn("BATTERY DEPOSIT WARN!not found pay params,orderId={}", eleDepositOrder.getOrderId());
-            return R.fail("100307", "未配置支付参数!");
-        }
-        
         if (Objects.nonNull(refundAmount)) {
             if (refundAmount.compareTo(eleDepositOrder.getPayAmount()) > 0) {
                 log.warn("battery deposit OffLine Refund WARN ,refundAmount > payAmount uid={}", uid);
@@ -1306,6 +1301,13 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             
             // 调起退款
             try {
+                // 置于此处为了避免干扰线下退款
+                WechatPayParamsDetails wechatPayParamsDetails = wechatPayParamsBizService.getDetailsByIdTenantIdAndFranchiseeId(eleDepositOrder.getTenantId(),
+                        eleDepositOrder.getParamFranchiseeId());
+                if (Objects.isNull(wechatPayParamsDetails)) {
+                    log.warn("BATTERY DEPOSIT WARN!not found pay params,orderId={}", eleDepositOrder.getOrderId());
+                    throw new BizException("PAY_TRANSFER.0021", "支付配置有误，请检查相关配置");
+                }
                 
                 RefundOrder refundOrder = RefundOrder.builder().orderId(eleRefundOrder.getOrderId()).refundOrderNo(eleRefundOrder.getRefundOrderNo())
                         .payAmount(eleDepositOrder.getPayAmount()).refundAmount(refundAmount).build();
@@ -1325,7 +1327,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             eleRefundOrder.setRefundAmount(refundAmount);
             eleRefundOrder.setUpdateTime(System.currentTimeMillis());
             eleRefundOrderService.insert(eleRefundOrder);
-            return R.fail("ELECTRICITY.00100", "支付调用失败，请检查相关配置");
+            return R.fail("PAY_TRANSFER.0020", "支付调用失败，请检查相关配置");
         }
     }
     

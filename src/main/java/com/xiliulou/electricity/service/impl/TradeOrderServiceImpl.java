@@ -276,7 +276,7 @@ public class TradeOrderServiceImpl implements TradeOrderService {
             WechatPayParamsDetails wechatPayParamsDetails = wechatPayParamsBizService.getDetailsByIdTenantIdAndFranchiseeId(tenantId, integratedPaymentAdd.getFranchiseeId());
             if (Objects.isNull(wechatPayParamsDetails)) {
                 log.warn("BATTERY DEPOSIT WARN!not found pay params,uid={}", user.getUid());
-                return Triple.of(false, "100307", "未配置支付参数!");
+                return Triple.of(false, "PAY_TRANSFER.0019", "支付未成功，请联系客服处理");
             }
             
             UserOauthBind userOauthBind = userOauthBindService.queryUserOauthBySysId(user.getUid(), tenantId);
@@ -422,16 +422,12 @@ public class TradeOrderServiceImpl implements TradeOrderService {
             }
             
             // 调起支付
-            // try {
             UnionPayOrder unionPayOrder = UnionPayOrder.builder().jsonOrderId(JsonUtil.toJson(orderList)).jsonOrderType(JsonUtil.toJson(orderTypeList))
                     .jsonSingleFee(JsonUtil.toJson(allPayAmount)).payAmount(integratedPaAmount).tenantId(tenantId).attach(UnionTradeOrder.ATTACH_INTEGRATED_PAYMENT)
                     .description("租电押金").uid(user.getUid()).build();
             WechatJsapiOrderResultDTO resultDTO = unionTradeOrderService.unionCreateTradeOrderAndGetPayParams(unionPayOrder, wechatPayParamsDetails, userOauthBind.getThirdId(),
                     request);
             return Triple.of(true, null, resultDTO);
-            // } catch (Exception e) {
-            //     log.error("CREATE UNION_INSURANCE_DEPOSIT_ORDER ERROR! wechat v3 order  error! uid={}", user.getUid(), e);
-            // }
             
         // 友好提示，对用户端不展示错误信息
         } catch (Exception e) {
@@ -440,7 +436,7 @@ public class TradeOrderServiceImpl implements TradeOrderService {
             //            redisService.delete(CacheConstant.ELE_CACHE_USER_DEPOSIT_LOCK_KEY + user.getUid());
         }
         
-        return Triple.of(false, "ELECTRICITY.PAY_TRANSFER.0019", "支付未成功，请联系客服处理");
+        return Triple.of(false, "PAY_TRANSFER.0019", "支付未成功，请联系客服处理");
     }
     
     @Override
@@ -491,7 +487,7 @@ public class TradeOrderServiceImpl implements TradeOrderService {
             WechatPayParamsDetails wechatPayParamsDetails = wechatPayParamsBizService.getDetailsByIdTenantIdAndFranchiseeId(tenantId, batteryMemberCard.getFranchiseeId());
             if (Objects.isNull(wechatPayParamsDetails)) {
                 log.warn("BATTERY DEPOSIT WARN!not found pay params,uid={}", userInfo.getUid());
-                return Triple.of(false, "100307", "未配置支付参数!");
+                return Triple.of(false, "PAY_TRANSFER.0019", "支付未成功，请联系客服处理");
             }
             
             UserOauthBind userOauthBind = userOauthBindService.queryUserOauthBySysId(userInfo.getUid(), tenantId);
@@ -623,16 +619,12 @@ public class TradeOrderServiceImpl implements TradeOrderService {
             }
             
             // 调起支付
-            // try {
             UnionPayOrder unionPayOrder = UnionPayOrder.builder().jsonOrderId(JsonUtil.toJson(orderList)).jsonOrderType(JsonUtil.toJson(orderTypeList))
                     .jsonSingleFee(JsonUtil.toJson(allPayAmount)).payAmount(integratedPaAmount).tenantId(tenantId).attach(UnionTradeOrder.ATTACH_MEMBERCARD_INSURANCE)
                     .description("租电套餐").uid(userInfo.getUid()).build();
             WechatJsapiOrderResultDTO resultDTO = unionTradeOrderService.unionCreateTradeOrderAndGetPayParams(unionPayOrder, wechatPayParamsDetails, userOauthBind.getThirdId(),
                     request);
             return Triple.of(true, null, resultDTO);
-            // } catch (Exception e) {
-            //     log.error("CREATE UNION_INSURANCE_DEPOSIT_ORDER ERROR! wechat v3 order  error! uid={}", userInfo.getUid(), e);
-            // }
             
         // 友好提示，对用户端不展示错误信息
         } catch (Exception e) {
@@ -740,7 +732,7 @@ public class TradeOrderServiceImpl implements TradeOrderService {
             WechatPayParamsDetails wechatPayParamsDetails = wechatPayParamsBizService.getDetailsByIdTenantIdAndFranchiseeId(tenantId, userInfo.getFranchiseeId());
             if (Objects.isNull(wechatPayParamsDetails)) {
                 log.warn("SERVICE FEE WARN!not found pay params,uid={}", user.getUid());
-                return Triple.of(false, "100307", "未配置支付参数!");
+                return Triple.of(false, "PAY_TRANSFER.0019", "支付未成功，请联系客服处理");
             }
             
             UserOauthBind userOauthBind = userOauthBindService.queryUserOauthBySysId(user.getUid(), tenantId);
@@ -775,16 +767,12 @@ public class TradeOrderServiceImpl implements TradeOrderService {
             }
             
             // 调起支付
-            // try {
             UnionPayOrder unionPayOrder = UnionPayOrder.builder().jsonOrderId(JsonUtil.toJson(orderList)).jsonOrderType(JsonUtil.toJson(orderTypeList))
                     .jsonSingleFee(JsonUtil.toJson(allPayAmountList)).payAmount(totalPayAmount).tenantId(tenantId).attach(UnionTradeOrder.ATTACH_SERVUCE_FEE).description("滞纳金")
                     .uid(user.getUid()).build();
             WechatJsapiOrderResultDTO resultDTO = unionTradeOrderService.unionCreateTradeOrderAndGetPayParams(unionPayOrder, wechatPayParamsDetails, userOauthBind.getThirdId(),
                     request);
             return Triple.of(true, null, resultDTO);
-            // } catch (Exception e) {
-            //     log.error("CREATE UNION SERVICE FEE ERROR! wechat v3 order error! uid={}", user.getUid(), e);
-            // }
             
         // 友好提示，对用户端不展示错误信息
         } catch (Exception e) {
