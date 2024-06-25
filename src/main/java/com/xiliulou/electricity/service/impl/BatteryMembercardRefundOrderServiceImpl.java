@@ -605,12 +605,18 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
             return Triple.of(false, "100294", "退租金额不合法");
         }
         
-        WechatPayParamsDetails wechatPayParamsDetails = wechatPayParamsBizService.getDetailsByIdTenantIdAndFranchiseeId(electricityMemberCardOrder.getTenantId(),
-                electricityMemberCardOrder.getParamFranchiseeId());
-        if (Objects.isNull(wechatPayParamsDetails)) {
-            log.warn("BATTERY DEPOSIT WARN!not found pay params,refundOrderNo={}", batteryMembercardRefundOrder.getRefundOrderNo());
+        try {
+            WechatPayParamsDetails wechatPayParamsDetails = wechatPayParamsBizService.getDetailsByIdTenantIdAndFranchiseeId(electricityMemberCardOrder.getTenantId(),
+                    electricityMemberCardOrder.getParamFranchiseeId());
+            if (Objects.isNull(wechatPayParamsDetails)) {
+                log.warn("BATTERY DEPOSIT WARN!not found pay params,refundOrderNo={}", batteryMembercardRefundOrder.getRefundOrderNo());
+                return Triple.of(false, "100307", "未配置支付参数!");
+            }
+        } catch (Exception e) {
+            log.error("BATTERY DEPOSIT WARN! found pay params error, refundOrderNo={}", batteryMembercardRefundOrder.getRefundOrderNo(), e);
             return Triple.of(false, "100307", "未配置支付参数!");
         }
+        
         
         BatteryMembercardRefundOrder batteryMembercardRefundOrderInsert = new BatteryMembercardRefundOrder();
         batteryMembercardRefundOrderInsert.setUid(userInfo.getUid());
