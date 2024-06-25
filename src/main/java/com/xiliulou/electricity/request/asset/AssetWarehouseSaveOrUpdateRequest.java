@@ -60,4 +60,7 @@ public class AssetWarehouseSaveOrUpdateRequest {
     @Length(max = 50, message = "联系方式超出最大限制50字", groups = {CreateGroup.class, UpdateGroup.class})
     private String managerPhone;
     
+    
+    @NotNull(message = "库房加盟商不能为空!", groups = {CreateGroup.class, UpdateGroup.class})
+    private Long franchiseeId;
 }

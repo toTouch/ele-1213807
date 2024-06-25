@@ -79,7 +79,8 @@ public class AssetWarehouseServiceImpl implements AssetWarehouseService {
             AssetWarehouseSaveOrUpdateQueryModel warehouseSaveOrUpdateQueryModel = AssetWarehouseSaveOrUpdateQueryModel.builder().name(assetWarehouseSaveOrUpdateRequest.getName())
                     .status(assetWarehouseSaveOrUpdateRequest.getStatus()).managerName(assetWarehouseSaveOrUpdateRequest.getManagerName())
                     .managerPhone(assetWarehouseSaveOrUpdateRequest.getManagerPhone()).address(assetWarehouseSaveOrUpdateRequest.getAddress()).delFlag(AssetConstant.DEL_NORMAL)
-                    .createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).tenantId(TenantContextHolder.getTenantId()).build();
+                    .createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).tenantId(TenantContextHolder.getTenantId())
+                    .franchiseeId(assetWarehouseSaveOrUpdateRequest.getFranchiseeId()).build();
             
             return R.ok(assetWarehouseMapper.insertOne(warehouseSaveOrUpdateQueryModel));
         } finally {
