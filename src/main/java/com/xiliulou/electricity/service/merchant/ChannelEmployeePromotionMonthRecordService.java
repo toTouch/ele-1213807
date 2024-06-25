@@ -21,5 +21,5 @@ public interface ChannelEmployeePromotionMonthRecordService {
     
     Integer countTotal(ChannelEmployeePromotionRequest channelEmployeeRequest);
     
-    void export(String monthDate, HttpServletResponse response);
+    void export(String monthDate, HttpServletResponse response, Long franchiseeId);
 }

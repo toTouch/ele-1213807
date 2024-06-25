@@ -36,6 +36,9 @@
             and fee_date <![CDATA[ >=  ]]>  #{startTime}
             and fee_date <![CDATA[ <=  ]]>  #{endTime}
             and tenant_id = #{tenantId}
+            <if test="franchiseeId != null">
+                and franchisee_id = #{franchiseeId}
+            </if>
         </where>
         
     </select>

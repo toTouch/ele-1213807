@@ -18,5 +18,5 @@ public interface ChannelEmployeePromotionDayRecordMapper {
             ,@Param("offset") Long offset,@Param("size") Long size);
     
     List<ChannelEmployeePromotionDayRecord> selectListByFeeDate(@Param("startTime") long startTime,@Param("endTime") long endTime,
-            @Param("tenantId") Integer tenantId);
+            @Param("tenantId") Integer tenantId,@Param("franchiseeId") Long franchiseeId);
 }

@@ -34,4 +34,9 @@ public class ChannelEmployeePromotionRequest {
      * 租户Id
      */
     private Integer tenantId;
+    
+    /**
+     * 加盟商id
+     */
+    private Long franchiseeId;
 }

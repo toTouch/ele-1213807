@@ -49,4 +49,9 @@ public class ChannelEmployeePromotionQueryModel {
      * 出账年月日
      */
     private String monthDate;
+    
+    /**
+     * 加盟商id
+     */
+    private Long franchiseeId;
 }

@@ -21,6 +21,9 @@
             <if test="monthDate != null and monthDate != ''">
                 and month_date = #{monthDate}
             </if>
+            <if test="franchiseeId != null">
+                and franchisee_id = #{franchiseeId}
+            </if>
         </where>
     </sql>
     <select id="selectListByPage" resultType="com.xiliulou.electricity.vo.merchant.ChannelEmployeePromotionVO">
@@ -61,5 +64,8 @@
         where
             tenant_id = #{tenantId}
              and month_date = #{monthDate}
+             <if test="franchiseeId != null">
+                and franchisee_id = #{franchiseeId}
+            </if>
     </select>
 </mapper>
