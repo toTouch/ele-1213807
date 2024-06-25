@@ -997,10 +997,6 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                 }
             }
             
-            // 查询支付参数
-            WechatPayParamsDetails wechatPayParamsDetails = wechatPayParamsBizService.getDetailsByIdTenantIdAndFranchiseeId(tenantId,
-                    Long.valueOf(buyPackageEntity.getFranchiseeId()));
-            
             // 检测结束，进入购买阶段
             Integer payType = buyOptModel.getPayType();
             // 1）押金处理
@@ -1013,7 +1009,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             if (ObjectUtils.isEmpty(depositPayVo) || PayStateEnum.UNPAID.getCode().equals(depositPayVo.getPayState())) {
                 // 生成押金缴纳订单，准备 insert
                 depositPayInsertEntity = buildCarRentalPackageDepositPay(tenantId, uid, payDeposit, YesNoEnum.NO.getCode(), buyPackageEntity.getFranchiseeId(),
-                        buyPackageEntity.getStoreId(), buyPackageEntity.getType(), payType, buyPackageEntity.getId(), buyPackageEntity.getDeposit(), wechatPayParamsDetails);
+                        buyPackageEntity.getStoreId(), buyPackageEntity.getType(), payType, buyPackageEntity.getId(), buyPackageEntity.getDeposit(), null);
                 depositPayOrderNo = depositPayInsertEntity.getOrderNo();
             } else {
                 depositPayOrderNo = depositPayVo.getOrderNo();
@@ -1031,7 +1027,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             
             // 4）生成租车套餐订单，准备 insert
             CarRentalPackageOrderPo carRentalPackageOrder = buildCarRentalPackageOrder(buyPackageEntity, rentPaymentAmount, tenantId, uid, depositPayOrderNo, payType, payDeposit,
-                    wechatPayParamsDetails);
+                    null);
             carRentalPackageOrderService.insert(carRentalPackageOrder);
             
             // 判定 depositPayInsertEntity 是否需要新增
@@ -2764,7 +2760,8 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             }
             
             // 3. 支付相关
-            Long userFranchiseeId = ObjectUtils.isEmpty(userInfo.getFranchiseeId()) || MultiFranchiseeConstant.DEFAULT_FRANCHISEE.equals(userInfo.getFranchiseeId()) ? Long.valueOf(buyOptModel.getFranchiseeId()) : userInfo.getFranchiseeId();
+            Long userFranchiseeId = ObjectUtils.isEmpty(userInfo.getFranchiseeId()) || MultiFranchiseeConstant.DEFAULT_FRANCHISEE.equals(userInfo.getFranchiseeId()) ? Long.valueOf(
+                    buyOptModel.getFranchiseeId()) : userInfo.getFranchiseeId();
             WechatPayParamsDetails wechatPayParamsDetails = wechatPayParamsBizService.getDetailsByIdTenantIdAndFranchiseeId(tenantId, userFranchiseeId);
             if (Objects.isNull(wechatPayParamsDetails)) {
                 throw new BizException("100234", "未配置支付参数");
@@ -3630,8 +3627,12 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         carRentalPackageDepositPayEntity.setUpdateTime(System.currentTimeMillis());
         carRentalPackageDepositPayEntity.setDelFlag(DelFlagEnum.OK.getCode());
         carRentalPackageDepositPayEntity.setRentalPackageDeposit(rentalPackageDeposit);
-        carRentalPackageDepositPayEntity.setWechatMerchantId(wechatPayParamsDetails.getWechatMerchantId());
-        carRentalPackageDepositPayEntity.setPayFranchiseeId(wechatPayParamsDetails.getFranchiseeId());
+        
+        // 设置微信商户号和支付加盟商
+        if (ObjectUtils.isNotEmpty(wechatPayParamsDetails)) {
+            carRentalPackageDepositPayEntity.setWechatMerchantId(wechatPayParamsDetails.getWechatMerchantId());
+            carRentalPackageDepositPayEntity.setPayFranchiseeId(wechatPayParamsDetails.getFranchiseeId());
+        }
         
         return carRentalPackageDepositPayEntity;
     }
@@ -3706,8 +3707,12 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         carRentalPackageOrderEntity.setUpdateTime(System.currentTimeMillis());
         carRentalPackageOrderEntity.setDelFlag(DelFlagEnum.OK.getCode());
         carRentalPackageOrderEntity.setRentalPackageDeposit(packagePO.getDeposit());
-        carRentalPackageOrderEntity.setWechatMerchantId(wechatPayParamsDetails.getWechatMerchantId());
-        carRentalPackageOrderEntity.setPayFranchiseeId(wechatPayParamsDetails.getFranchiseeId());
+        
+        // 设置微信商户号和支付加盟商
+        if (ObjectUtils.isNotEmpty(wechatPayParamsDetails)) {
+            carRentalPackageOrderEntity.setWechatMerchantId(wechatPayParamsDetails.getWechatMerchantId());
+            carRentalPackageOrderEntity.setPayFranchiseeId(wechatPayParamsDetails.getFranchiseeId());
+        }
         
         return carRentalPackageOrderEntity;
     }
