@@ -587,6 +587,9 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         //saveApproveRefundRentOrderTx(carRentRefundVo, rentRefundOrderEntity, packageOrderEntity);
         saveApproveRefundRentOrder(carRentRefundVo, rentRefundOrderEntity, packageOrderEntity);
         
+        // 偶现缓存问题，具体场景没有推断出来，怀疑是这里的事务问题，因为后面有多重事务在控制，为了减少事务影响，暂时先删除缓存处理
+        carRentalPackageMemberTermService.deleteCache(tenantId, rentRefundOrderEntity.getUid());
+        
         return Boolean.TRUE;
     }
     
