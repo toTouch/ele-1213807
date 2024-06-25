@@ -214,6 +214,10 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
             throw new BizException("300000", "数据有误");
         }
         
+        if (PayTypeEnum.OFF_LINE.getCode().equals(depositPayEntity.getPayType())) {
+            return Boolean.FALSE;
+        }
+        
         // 比对是否需要强制线下退款
         Long payFranchiseeId = depositPayEntity.getPayFranchiseeId();
         Integer tenantId = depositPayEntity.getTenantId();
@@ -225,6 +229,7 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
         } catch (Exception e) {
             throw new BizException("PAY_TRANSFER.0021", "支付配置有误，请检查相关配置");
         }
+        
         return ObjectUtils.isEmpty(wechatPayParamsDetails) || !wechatPayParamsDetails.getWechatMerchantId().equals(wechatMerchantId);
     }
     
