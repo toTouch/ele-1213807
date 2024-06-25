@@ -25,6 +25,7 @@ import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.entity.ElectricityCar;
 import com.xiliulou.electricity.entity.ElectricityCarModel;
 import com.xiliulou.electricity.entity.ElectricityConfig;
+import com.xiliulou.electricity.entity.ElectricityPayParams;
 import com.xiliulou.electricity.entity.ElectricityTradeOrder;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.FranchiseeInsurance;
@@ -80,6 +81,7 @@ import com.xiliulou.electricity.service.ElectricityBatteryService;
 import com.xiliulou.electricity.service.ElectricityCarModelService;
 import com.xiliulou.electricity.service.ElectricityCarService;
 import com.xiliulou.electricity.service.ElectricityConfigService;
+import com.xiliulou.electricity.service.ElectricityPayParamsService;
 import com.xiliulou.electricity.service.ElectricityTradeOrderService;
 import com.xiliulou.electricity.service.FranchiseeInsuranceService;
 import com.xiliulou.electricity.service.FranchiseeService;
@@ -170,6 +172,9 @@ import java.util.stream.Collectors;
 @Slf4j
 @Service
 public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrderBizService {
+    
+    @Resource
+    private ElectricityPayParamsService electricityPayParamsService;
     
     @Resource
     private UserBatteryDepositService userBatteryDepositService;
@@ -497,13 +502,9 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         if (PayTypeEnum.ON_LINE.getCode().equals(packageOrderEntity.getPayType())) {
             String wechatMerchantId = packageOrderEntity.getWechatMerchantId();
             Long payFranchiseeId = packageOrderEntity.getPayFranchiseeId();
-            try {
-                WechatPayParamsDetails wechatPayParamsDetails = wechatPayParamsBizService.getDetailsByIdTenantIdAndFranchiseeId(tenantId, payFranchiseeId);
-                if (ObjectUtils.isEmpty(wechatPayParamsDetails) || !wechatPayParamsDetails.getWechatMerchantId().equals(wechatMerchantId)) {
-                    rentalPackageRefundVO.setCompelOffLine(YesNoEnum.YES.getCode());
-                }
-            } catch (Exception e) {
-                throw new BizException("PAY_TRANSFER.0021", "支付配置有误，请检查相关配置");
+            ElectricityPayParams electricityPayParams = electricityPayParamsService.queryCacheByTenantIdAndFranchiseeId(tenantId, payFranchiseeId);
+            if (ObjectUtils.isEmpty(electricityPayParams) || !electricityPayParams.getWechatMerchantId().equals(wechatMerchantId)) {
+                rentalPackageRefundVO.setCompelOffLine(YesNoEnum.YES.getCode());
             }
         }
         
