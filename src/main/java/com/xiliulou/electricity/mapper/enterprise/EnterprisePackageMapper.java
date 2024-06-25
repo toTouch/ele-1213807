@@ -44,7 +44,7 @@ public interface EnterprisePackageMapper extends BaseMapper<EnterprisePackage> {
     
     List<Long> selectByEnterpriseId(Long id);
     
-    EnterprisePackage selectByPackageId(Long packageId);
+    Integer selectByPackageId(Long packageId);
     
     int deleteByEnterpriseId(Long id);
     List<EnterprisePackage> listByIdList(@Param("idList") List<Long> enterprisePackageIdList);
