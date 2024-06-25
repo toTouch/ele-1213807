@@ -26,4 +26,5 @@ public class AssetWarehouseRequest {
     
     private Long offset;
     
+    private Long franchiseeId;
 }

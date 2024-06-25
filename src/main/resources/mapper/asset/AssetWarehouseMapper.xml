@@ -78,6 +78,9 @@
             <if test="name != null and name != ''">
                 and name like concat('%', #{name}, '%')
             </if>
+            <if test="franchiseeId != null">
+                and franchisee_id = franchiseeId
+            </if>
             and tenant_id = #{tenantId} and del_flag = 0
         </where>
         ORDER BY id DESC
@@ -91,6 +94,9 @@
             <if test="name != null and name != ''">
                 and name like concat('%', #{name}, '%')
             </if>
+            <if test="franchiseeId != null">
+                and franchisee_id = franchiseeId
+            </if>
             and tenant_id = #{tenantId} and del_flag = 0
         </where>
     </select>
@@ -102,6 +108,9 @@
             tenant_id = #{tenantId} and del_flag = 0 and status = 0
             <if test="name != null and name != ''">
                 and name like concat('%', #{name}, '%')
+            </if>
+            <if test="franchiseeId != null">
+                and franchisee_id = franchiseeId
             </if>
         </where>
         ORDER BY id DESC

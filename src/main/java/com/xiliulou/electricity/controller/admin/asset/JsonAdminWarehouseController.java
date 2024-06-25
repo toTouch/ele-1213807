@@ -84,7 +84,7 @@ public class JsonAdminWarehouseController {
      * @author HeYafeng
      */
     @GetMapping("/admin/asset/warehouse/pageCount")
-    public R pageCount(@RequestParam(value = "name", required = false) String name) {
+    public R pageCount(@RequestParam(value = "name", required = false) String name, @RequestParam(value = "franchiseeId", required = false) Long franchiseeId) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             log.error("ELE ERROR! not found user");
@@ -95,7 +95,7 @@ public class JsonAdminWarehouseController {
             return R.fail("ELECTRICITY.0066", "用户权限不足");
         }
         
-        AssetWarehouseRequest assetInventoryRequest = AssetWarehouseRequest.builder().name(name).build();
+        AssetWarehouseRequest assetInventoryRequest = AssetWarehouseRequest.builder().name(name).franchiseeId(franchiseeId).build();
         
         return R.ok(assetWarehouseService.countTotal(assetInventoryRequest));
     }
@@ -106,7 +106,8 @@ public class JsonAdminWarehouseController {
      * @author HeYafeng
      */
     @GetMapping("/admin/asset/warehouse/page")
-    public R page(@RequestParam("size") long size, @RequestParam("offset") long offset, @RequestParam(value = "name", required = false) String name) {
+    public R page(@RequestParam("size") long size, @RequestParam("offset") long offset, @RequestParam(value = "name", required = false) String name,
+            @RequestParam(value = "franchiseeId", required = false) Long franchiseeId) {
         if (size < 0 || size > 50) {
             size = 10L;
         }
@@ -125,7 +126,7 @@ public class JsonAdminWarehouseController {
             return R.fail("ELECTRICITY.0066", "用户权限不足");
         }
         
-        AssetWarehouseRequest assetInventoryRequest = AssetWarehouseRequest.builder().size(size).offset(offset).name(name).build();
+        AssetWarehouseRequest assetInventoryRequest = AssetWarehouseRequest.builder().size(size).offset(offset).name(name).franchiseeId(franchiseeId).build();
         
         return R.ok(assetWarehouseService.listByPage(assetInventoryRequest));
     }
