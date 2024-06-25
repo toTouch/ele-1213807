@@ -217,9 +217,18 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
         if (!MerchantWithdrawConstant.REVIEW_IN_PROGRESS.equals(merchantWithdrawApplication.getStatus())) {
             return Triple.of(false, "120016", "不能重复审核");
         }
+    
+        WechatPayParamsDetails wechatPayParamsDetails = null;
+        
+        try {
+            wechatPayParamsDetails = wechatPayParamsBizService.getDetailsByIdTenantIdAndFranchiseeId(tenantId, merchant.getFranchiseeId());
+        } catch (Exception e) {
+            log.error("review Merchant withdraw application error, get wechat pay params details error, tenantId = {}, franchiseeId={}", tenantId, merchant.getFranchiseeId(), e);
+            
+            return Triple.of(false, "PAY_TRANSFER.0021", "支付配置有误，请检查相关配置");
+        }
         
         //查询支付配置详情
-        WechatPayParamsDetails wechatPayParamsDetails  = wechatPayParamsBizService.getDetailsByIdTenantIdAndFranchiseeId(tenantId, merchant.getFranchiseeId());
     
         if (Objects.isNull(wechatPayParamsDetails) || Objects.isNull(wechatPayParamsDetails.getFranchiseeId())) {
             log.error("review Merchant withdraw application error, wechat pay params details is null, tenantId = {}, franchiseeId={}", tenantId, merchant.getFranchiseeId());
@@ -413,7 +422,14 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
         }
     
         //查询支付配置详情
-        WechatPayParamsDetails wechatPayParamsDetails  = wechatPayParamsBizService.getDetailsByIdTenantIdAndFranchiseeId(tenantId, franchiseeId);
+        WechatPayParamsDetails wechatPayParamsDetails = null;
+    
+        try {
+            wechatPayParamsDetails  = wechatPayParamsBizService.getDetailsByIdTenantIdAndFranchiseeId(tenantId, franchiseeId);
+        } catch (Exception e) {
+            log.error("review batch merchant withdraw application error, get wechat pay params details error, tenantId = {}, franchiseeId={}", tenantId, franchiseeId, e);
+            return Triple.of(false, "PAY_TRANSFER.0021", "支付配置有误，请检查相关配置");
+        }
     
         if (Objects.isNull(wechatPayParamsDetails) || Objects.isNull(wechatPayParamsDetails.getFranchiseeId())) {
             log.error("review Merchant batch withdraw application error, wechat pay params details is null, tenantId = {}, franchiseeId={}", tenantId, franchiseeId);
@@ -716,8 +732,15 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
                     }
     
                     //查询支付配置详情
-                    WechatPayParamsDetails details  = wechatPayParamsBizService.getDetailsByIdTenantIdAndFranchiseeId(tenantId, franchiseeId);
+                    WechatPayParamsDetails details = null;
     
+                    try {
+                        details  = wechatPayParamsBizService.getDetailsByIdTenantIdAndFranchiseeId(tenantId, franchiseeId);
+                    } catch (Exception e) {
+                        log.error("update merchant withdraw status error get wechat pay params details error, tenantId = {}, franchiseeId={}", tenantId, franchiseeId, e);
+                        return;
+                    }
+                    
                     if (Objects.isNull(details)) {
                         log.error("update merchant withdraw status error! , wechat pay params details is null, batchNo = {}, tenantId = {}, franchiseeId={}", batchNo, tenantId, franchiseeId);
                         return;
@@ -859,7 +882,15 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
             }
             
             //查询支付配置详情
-            WechatPayParamsDetails details  = wechatPayParamsBizService.getDetailsByIdTenantIdAndFranchiseeId(tenantId, franchiseeId);
+            //查询支付配置详情
+            WechatPayParamsDetails details = null;
+    
+            try {
+                details  = wechatPayParamsBizService.getDetailsByIdTenantIdAndFranchiseeId(tenantId, franchiseeId);
+            } catch (Exception e) {
+                log.error("handle batch withdraw application detail error, get wechat pay params details error, batchNo = {}, tenantId = {}, franchiseeId={}",batchNo, tenantId, franchiseeId, e);
+                return;
+            }
             
             if (Objects.isNull(details)) {
                 log.error("handle batch withdraw application detail error , wechat pay params details is null, batchNo = {}, tenantId = {}, franchiseeId={}", batchNo, tenantId, franchiseeId);

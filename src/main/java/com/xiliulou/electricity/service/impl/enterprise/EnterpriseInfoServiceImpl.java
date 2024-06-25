@@ -737,7 +737,15 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
             }
             
             //查询支付配置详情
-            WechatPayParamsDetails wechatPayParamsDetails  = wechatPayParamsBizService.getDetailsByIdTenantIdAndFranchiseeId(TenantContextHolder.getTenantId(), enterpriseInfo.getFranchiseeId());
+            WechatPayParamsDetails wechatPayParamsDetails = null;
+    
+            try {
+                wechatPayParamsDetails  = wechatPayParamsBizService.getDetailsByIdTenantIdAndFranchiseeId(TenantContextHolder.getTenantId(), enterpriseInfo.getFranchiseeId());
+            } catch (Exception e) {
+                log.error("CLOUD BEAN RECHARGE ERROR, get wechat pay params details error, tenantId = {}, franchiseeId={}", TenantContextHolder.getTenantId(), enterpriseInfo.getFranchiseeId(), e);
+                return Triple.of(false, "PAY_TRANSFER.0021", "支付配置有误，请检查相关配置");
+            }
+            
             if (Objects.isNull(wechatPayParamsDetails)) {
                 log.error("CLOUD BEAN RECHARGE ERROR, wechat pay params details is null, tenantId = {}, franchiseeId={}", TenantContextHolder.getTenantId(), enterpriseInfo.getFranchiseeId());
                 return Triple.of(false, "120017", "未配置支付参数");
