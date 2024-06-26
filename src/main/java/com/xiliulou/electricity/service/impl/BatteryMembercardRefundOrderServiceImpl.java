@@ -81,6 +81,7 @@ import org.apache.commons.lang3.tuple.Triple;
 import org.bouncycastle.util.encoders.DecoderException;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import shaded.org.apache.commons.lang3.StringUtils;
@@ -179,6 +180,9 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
     
     @Resource
     private WechatPayParamsBizService wechatPayParamsBizService;
+    
+    @Resource
+    private ApplicationContext applicationContext;
     
     @Override
     public WechatJsapiRefundResultDTO handleRefundOrder(BatteryMembercardRefundOrder batteryMembercardRefundOrder, WechatPayParamsDetails wechatPayParamsDetails,
@@ -503,7 +507,7 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
             }
         }
         
-        BatteryMembercardRefundOrder batteryMembercardRefundOrder = this.selectLatestByMembercardOrderNo(orderNo);
+        BatteryMembercardRefundOrder batteryMembercardRefundOrder = applicationContext.getBean(BatteryMembercardRefundOrderService.class).selectLatestByMembercardOrderNo(orderNo);
         if (Objects.nonNull(batteryMembercardRefundOrder)) {
             if (Objects.equals(batteryMembercardRefundOrder.getStatus(), BatteryMembercardRefundOrder.STATUS_SUCCESS)) {
                 return Triple.of(false, "", "电池套餐订单已退款");
@@ -619,7 +623,7 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
         batteryMembercardRefundOrderInsert.setUpdateTime(System.currentTimeMillis());
         assignOtherAttr(batteryMembercardRefundOrderInsert, userBatteryMemberCard, batteryMemberCard, electricityMemberCardOrder);
         
-        this.insert(batteryMembercardRefundOrderInsert);
+        applicationContext.getBean(BatteryMembercardRefundOrderService.class).insert(batteryMembercardRefundOrderInsert);
         
         if (Objects.equals(batteryMembercardRefundOrderInsert.getPayType(), ElectricityMemberCardOrder.OFFLINE_PAYMENT)
                 || batteryMembercardRefundOrderInsert.getRefundAmount().compareTo(BigDecimal.valueOf(0.01)) < 0) {
@@ -629,7 +633,7 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
         // 后续操作与handleBatteryOnlineRefundOrder方法一致，由于this.insert(batteryMembercardRefundOrderInsert);未能回滚，暂时将逻辑复制到此处，待优化
         // TODO 待优化
         BatteryMembercardRefundOrder batteryMembercardRefundOrderUpdate = new BatteryMembercardRefundOrder();
-        batteryMembercardRefundOrderUpdate.setId(batteryMembercardRefundOrder.getId());
+        batteryMembercardRefundOrderUpdate.setId(batteryMembercardRefundOrderInsert.getId());
         batteryMembercardRefundOrderUpdate.setMsg(null);
         batteryMembercardRefundOrderUpdate.setRefundAmount(refundAmount);
         batteryMembercardRefundOrderUpdate.setUpdateTime(System.currentTimeMillis());
@@ -643,20 +647,20 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
             wechatPayParamsDetails = wechatPayParamsBizService.getDetailsByIdTenantIdAndFranchiseeId(electricityMemberCardOrder.getTenantId(),
                     electricityMemberCardOrder.getParamFranchiseeId());
         }catch (WechatPayException e) {
-            log.warn("BATTERY DEPOSIT WARN!not found pay params,refundOrderNo={}", batteryMembercardRefundOrder.getRefundOrderNo());
+            log.warn("BATTERY DEPOSIT WARN!not found pay params,refundOrderNo={}", batteryMembercardRefundOrderInsert.getRefundOrderNo());
             throw new BizException("PAY_TRANSFER.0021", "支付配置有误，请检查相关配置");
         }
         if (Objects.isNull(wechatPayParamsDetails)) {
-            log.warn("BATTERY DEPOSIT WARN!not found pay params,refundOrderNo={}", batteryMembercardRefundOrder.getRefundOrderNo());
+            log.warn("BATTERY DEPOSIT WARN!not found pay params,refundOrderNo={}", batteryMembercardRefundOrderInsert.getRefundOrderNo());
             throw new BizException("100307", "未配置支付参数!");
         }
         
         try {
-            batteryMembercardRefundOrder.setRefundAmount(refundAmount);
-            this.handleRefundOrder(batteryMembercardRefundOrder, wechatPayParamsDetails, request);
+            batteryMembercardRefundOrderInsert.setRefundAmount(refundAmount);
+            applicationContext.getBean(BatteryMembercardRefundOrderService.class).handleRefundOrder(batteryMembercardRefundOrderInsert, wechatPayParamsDetails, request);
             
             batteryMembercardRefundOrderUpdate.setStatus(BatteryMembercardRefundOrder.STATUS_REFUND);
-            this.update(batteryMembercardRefundOrderUpdate);
+            applicationContext.getBean(BatteryMembercardRefundOrderService.class).update(batteryMembercardRefundOrderUpdate);
             
             electricityMemberCardOrderUpdate.setRefundStatus(ElectricityMemberCardOrder.REFUND_STATUS_REFUNDING);
             batteryMemberCardOrderService.updateByID(electricityMemberCardOrderUpdate);
@@ -667,7 +671,7 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
         }
         
         batteryMembercardRefundOrderUpdate.setStatus(BatteryMembercardRefundOrder.STATUS_FAIL);
-        this.update(batteryMembercardRefundOrderUpdate);
+        applicationContext.getBean(BatteryMembercardRefundOrderService.class).update(batteryMembercardRefundOrderUpdate);
         
         electricityMemberCardOrderUpdate.setRefundStatus(ElectricityMemberCardOrder.REFUND_STATUS_FAIL);
         batteryMemberCardOrderService.updateByID(electricityMemberCardOrderUpdate);
