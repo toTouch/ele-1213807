@@ -7,7 +7,6 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.EnableMemberCardRecord;
-import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.enums.BatteryMemberCardBusinessTypeEnum;
 import com.xiliulou.electricity.mapper.EnableMemberCardRecordMapper;
 import com.xiliulou.electricity.query.EnableMemberCardRecordQuery;
@@ -40,11 +39,8 @@ public class EnableMemberCardRecordServiceImpl implements EnableMemberCardRecord
     
     @Resource
     private BatteryMemberCardService batteryMemberCardService;
-    
-    @Autowired
-    private FranchiseeServiceImpl franchiseeService;
-    
-    
+
+
     @Override
     public R insert(EnableMemberCardRecord enableMemberCardRecord) {
         return R.ok(enableMemberCardRecordMapper.insert(enableMemberCardRecord));
@@ -75,10 +71,7 @@ public class EnableMemberCardRecordServiceImpl implements EnableMemberCardRecord
             } else {
                 enableMemberCardRecordVO.setBusinessType(BatteryMemberCardBusinessTypeEnum.BUSINESS_TYPE_BATTERY.getCode());
             }
-            
-            Franchisee franchisee = franchiseeService.queryByIdFromCache(enableMemberCardRecordVO.getFranchiseeId());
-            enableMemberCardRecordVO.setFranchiseeName(Objects.isNull(franchisee) ? "" : franchisee.getName());
-            
+           
             enableMemberCardRecordVOList.add(enableMemberCardRecordVO);
         }
         
