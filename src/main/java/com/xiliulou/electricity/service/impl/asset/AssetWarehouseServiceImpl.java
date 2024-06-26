@@ -21,12 +21,16 @@ import com.xiliulou.electricity.service.ElectricityBatteryService;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
 import com.xiliulou.electricity.service.ElectricityCarService;
 import com.xiliulou.electricity.service.FranchiseeService;
+import com.xiliulou.electricity.service.asset.AssertPermissionService;
 import com.xiliulou.electricity.service.asset.AssetWarehouseService;
 import com.xiliulou.electricity.service.asset.ElectricityCabinetV2Service;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
+import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.asset.AssetWarehouseNameVO;
 import com.xiliulou.electricity.vo.asset.AssetWarehouseVO;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.math.NumberUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -67,6 +71,9 @@ public class AssetWarehouseServiceImpl implements AssetWarehouseService {
     @Resource
     private FranchiseeService franchiseeService;
     
+    @Resource
+    private AssertPermissionService assertPermissionService;
+    
     @Override
     public R save(AssetWarehouseSaveOrUpdateRequest assetWarehouseSaveOrUpdateRequest, Long uid) {
         
@@ -100,6 +107,13 @@ public class AssetWarehouseServiceImpl implements AssetWarehouseService {
         AssetWarehouseQueryModel assetWarehouseQueryModel = new AssetWarehouseQueryModel();
         BeanUtils.copyProperties(assetInventoryRequest, assetWarehouseQueryModel);
         assetWarehouseQueryModel.setTenantId(TenantContextHolder.getTenantId());
+        
+        // 加盟商权限
+        Pair<Boolean, List<Long>> pair = assertPermissionService.assertPermissionByPair(SecurityUtils.getUserInfo());
+        if (!pair.getLeft()){
+            return Collections.emptyList();
+        }
+        assetWarehouseQueryModel.setFranchiseeIds(pair.getRight());
         
         List<AssetWarehouseVO> rspList = Collections.emptyList();
         List<AssetWarehouseBO> assetWarehouseBOList = assetWarehouseMapper.selectListByPage(assetWarehouseQueryModel);
@@ -150,6 +164,13 @@ public class AssetWarehouseServiceImpl implements AssetWarehouseService {
         AssetWarehouseQueryModel assetWarehouseQueryModel = new AssetWarehouseQueryModel();
         BeanUtils.copyProperties(assetInventoryRequest, assetWarehouseQueryModel);
         assetWarehouseQueryModel.setTenantId(TenantContextHolder.getTenantId());
+        
+        // 加盟商权限
+        Pair<Boolean, List<Long>> pair = assertPermissionService.assertPermissionByPair(SecurityUtils.getUserInfo());
+        if (!pair.getLeft()){
+            return NumberUtils.INTEGER_ZERO;
+        }
+        assetWarehouseQueryModel.setFranchiseeIds(pair.getRight());
         
         return assetWarehouseMapper.countTotal(assetWarehouseQueryModel);
     }
