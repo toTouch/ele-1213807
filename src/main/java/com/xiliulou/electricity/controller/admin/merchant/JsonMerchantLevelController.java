@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Collections;
 import java.util.Objects;
 
 /**
@@ -35,10 +36,14 @@ public class JsonMerchantLevelController extends BaseController {
      * 获取商户等级列表
      */
     @GetMapping("/admin/merchantLevel/list")
-    public R getMerchantLevel(@RequestParam(value = "franchiseeId") Long franchiseeId) {
+    public R getMerchantLevel(@RequestParam(value = "franchiseeId", required = false) Long franchiseeId) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        
+        if(Objects.isNull(franchiseeId)){
+            return R.ok(Collections.emptyList());
         }
         
         return R.ok(merchantLevelService.list(TenantContextHolder.getTenantId(), franchiseeId));
