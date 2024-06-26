@@ -39,6 +39,7 @@ import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.enums.CheckPayParamsResultEnum;
 import com.xiliulou.electricity.enums.DivisionAccountEnum;
 import com.xiliulou.electricity.enums.PackageTypeEnum;
+import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.BatteryMembercardRefundOrderMapper;
 import com.xiliulou.electricity.mq.constant.MqProducerConstant;
 import com.xiliulou.electricity.mq.model.BatteryMemberCardMerchantRebate;
@@ -486,6 +487,7 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
     }
     
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public Triple<Boolean, String, Object> batteryMembercardRefundForAdmin(String orderNo, BigDecimal refundAmount, HttpServletRequest request, Integer offlineRefund) {
         
         ElectricityMemberCardOrder electricityMemberCardOrder = batteryMemberCardOrderService.selectByOrderNo(orderNo);
@@ -625,9 +627,55 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
         if (Objects.equals(batteryMembercardRefundOrderInsert.getPayType(), ElectricityMemberCardOrder.OFFLINE_PAYMENT)
                 || batteryMembercardRefundOrderInsert.getRefundAmount().compareTo(BigDecimal.valueOf(0.01)) < 0) {
             return handleBatteryOfflineRefundOrder(userBatteryMemberCard, batteryMembercardRefundOrderInsert, electricityMemberCardOrder, userInfo, refundAmount, null);
-        } else {
-            return handleBatteryOnlineRefundOrder(batteryMembercardRefundOrderInsert, electricityMemberCardOrder, refundAmount, null, request);
         }
+        
+        // 后续操作与handleBatteryOnlineRefundOrder方法一致，由于this.insert(batteryMembercardRefundOrderInsert);未能回滚，暂时将逻辑复制到此处，待优化
+        // TODO 待优化
+        BatteryMembercardRefundOrder batteryMembercardRefundOrderUpdate = new BatteryMembercardRefundOrder();
+        batteryMembercardRefundOrderUpdate.setId(batteryMembercardRefundOrder.getId());
+        batteryMembercardRefundOrderUpdate.setMsg(null);
+        batteryMembercardRefundOrderUpdate.setRefundAmount(refundAmount);
+        batteryMembercardRefundOrderUpdate.setUpdateTime(System.currentTimeMillis());
+        
+        ElectricityMemberCardOrder electricityMemberCardOrderUpdate = new ElectricityMemberCardOrder();
+        electricityMemberCardOrderUpdate.setId(electricityMemberCardOrder.getId());
+        electricityMemberCardOrderUpdate.setUpdateTime(System.currentTimeMillis());
+        
+        WechatPayParamsDetails wechatPayParamsDetails = null;
+        try {
+            wechatPayParamsDetails = wechatPayParamsBizService.getDetailsByIdTenantIdAndFranchiseeId(electricityMemberCardOrder.getTenantId(),
+                    electricityMemberCardOrder.getParamFranchiseeId());
+        }catch (WechatPayException e) {
+            log.warn("BATTERY DEPOSIT WARN!not found pay params,refundOrderNo={}", batteryMembercardRefundOrder.getRefundOrderNo());
+            throw new BizException("PAY_TRANSFER.0021", "支付配置有误，请检查相关配置");
+        }
+        if (Objects.isNull(wechatPayParamsDetails)) {
+            log.warn("BATTERY DEPOSIT WARN!not found pay params,refundOrderNo={}", batteryMembercardRefundOrder.getRefundOrderNo());
+            throw new BizException("100307", "未配置支付参数!");
+        }
+        
+        try {
+            batteryMembercardRefundOrder.setRefundAmount(refundAmount);
+            this.handleRefundOrder(batteryMembercardRefundOrder, wechatPayParamsDetails, request);
+            
+            batteryMembercardRefundOrderUpdate.setStatus(BatteryMembercardRefundOrder.STATUS_REFUND);
+            this.update(batteryMembercardRefundOrderUpdate);
+            
+            electricityMemberCardOrderUpdate.setRefundStatus(ElectricityMemberCardOrder.REFUND_STATUS_REFUNDING);
+            batteryMemberCardOrderService.updateByID(electricityMemberCardOrderUpdate);
+            
+            return Triple.of(true, "", null);
+        } catch (Exception e) {
+            log.error("BATTERY MEMBERCARD REFUND ERROR! wechat v3 refund error! ", e);
+        }
+        
+        batteryMembercardRefundOrderUpdate.setStatus(BatteryMembercardRefundOrder.STATUS_FAIL);
+        this.update(batteryMembercardRefundOrderUpdate);
+        
+        electricityMemberCardOrderUpdate.setRefundStatus(ElectricityMemberCardOrder.REFUND_STATUS_FAIL);
+        batteryMemberCardOrderService.updateByID(electricityMemberCardOrderUpdate);
+        
+        return Triple.of(false, "PAY_TRANSFER.0020", "支付调用失败，请检查相关配置");
     }
     
     @Override
