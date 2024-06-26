@@ -651,6 +651,8 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                     
                 } catch (WechatPayException e) {
                     log.error("save approve refund rentOrderTx failed.", e);
+                    // 缓存问题，事务在管理其中没有提交，但是缓存已经存在，所以需要删除一次缓存
+                    carRentalPackageMemberTermService.deleteCache(packageOrderEntity.getTenantId(), packageOrderEntity.getUid());
                     throw new BizException("PAY_TRANSFER.0020", "支付调用失败，请检查相关配置");
                 }
             }
@@ -1489,6 +1491,8 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                         
                     } catch (WechatPayException e) {
                         log.error("saveApproveRefundRentOrderTx failed.", e);
+                        // 缓存问题，事务在管理其中没有提交，但是缓存已经存在，所以需要删除一次缓存
+                        carRentalPackageMemberTermService.deleteCache(rentRefundEntity.getTenantId(), rentRefundEntity.getUid());
                         throw new BizException(e.getMessage());
                     }
                 }
@@ -1578,6 +1582,8 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                         
                     } catch (WechatPayException e) {
                         log.error("save approve refund rentOrderTx failed.", e);
+                        // 缓存问题，事务在管理其中没有提交，但是缓存已经存在，所以需要删除一次缓存
+                        carRentalPackageMemberTermService.deleteCache(rentRefundEntity.getTenantId(), rentRefundEntity.getUid());
                         throw new BizException("PAY_TRANSFER.0020", "支付调用失败，请检查相关配置");
                     }
                 }
