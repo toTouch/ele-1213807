@@ -1352,9 +1352,6 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
         }
         
         eleRefundOrderVOS.forEach(item -> {
-            Franchisee franchisee = franchiseeService.queryByIdFromCache(item.getFranchiseeId());
-            item.setFranchiseeName(Objects.isNull(franchisee) ? null : franchisee.getName());
-            
             if (!Objects.equals(item.getPayType(), EleDepositOrder.FREE_DEPOSIT_PAYMENT)) {
                 item.setIsFreeDepositAliPay(false);
                 return;

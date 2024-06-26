@@ -96,10 +96,5 @@ public interface BatteryMemberCardService {
      */
     Integer batchUpdateSortParam(List<MemberCardAndCarRentalPackageSortParamQuery> sortParamQueries);
     
-    /**
-     * 查询套餐以供后台排序
-     * @param tokenUser ContextHolder中保存的用户信息
-     * @return 返回id、name、sortParam、createTime
-     */
-    List<BatteryMemberCardVO> listMemberCardForSort(TokenUser tokenUser);
+    List<BatteryMemberCardVO> listMemberCardForSort();
 }

@@ -139,9 +139,6 @@ public class EleDisableMemberCardRecordServiceImpl extends ServiceImpl<Electrici
             if (Objects.nonNull(userBatteryMemberCard)) {
                 item.setOrderRemainingNumber(userBatteryMemberCard.getOrderRemainingNumber());
             }
-            
-            Franchisee franchisee = franchiseeService.queryByIdFromCache(item.getFranchiseeId());
-            item.setFranchiseeName(Objects.isNull(franchisee) ? null : franchisee.getName());
         });
         
         return R.ok(eleDisableMemberCardRecordVOS);
