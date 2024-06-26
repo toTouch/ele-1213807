@@ -249,7 +249,7 @@ public class JsonAdminCouponController extends BaseController {
         }
     
         if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE) || Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE))) {
-            return R.ok(NumberConstant.ZERO);
+            return R.ok();
         }
     
         List<Long> franchiseeIds = null;

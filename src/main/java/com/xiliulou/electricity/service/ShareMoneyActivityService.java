@@ -36,7 +36,7 @@ public interface ShareMoneyActivityService {
      * @param shareMoneyActivityAddAndUpdateQuery 实例对象
      * @return 实例对象
      */
-    R update(ShareMoneyActivityAddAndUpdateQuery shareMoneyActivityAddAndUpdateQuery);
+    R update(ShareMoneyActivityAddAndUpdateQuery shareMoneyActivityAddAndUpdateQuery, Long franchiseeId);
 
     R queryList(ShareMoneyActivityQuery shareMoneyActivityQuery);
 

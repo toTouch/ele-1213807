@@ -40,6 +40,7 @@ import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.MDC;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -187,6 +188,11 @@ public class UserCouponServiceImpl implements UserCouponService {
             Long verifiedUid = u.getVerifiedUid();
             User user = userService.queryByUidFromCache(verifiedUid);
             u.setVerifiedName(Objects.isNull(user) ? null : user.getName());
+    
+            Integer franchiseeId = u.getFranchiseeId();
+            if (Objects.nonNull(franchiseeId)) {
+                u.setFranchiseeName(Optional.ofNullable(franchiseeService.queryByIdFromCache(franchiseeId.longValue())).map(Franchisee::getName).orElse(StringUtils.EMPTY));
+            }
         });
         //******************************查询核销人结束************************************/
         return R.ok(userCouponList);
@@ -451,8 +457,8 @@ public class UserCouponServiceImpl implements UserCouponService {
     }
     
     private boolean isSameFranchisee(Coupon coupon, UserInfo userInfo) {
-        return Objects.nonNull(coupon.getFranchiseeId()) && !Objects.equals(coupon.getFranchiseeId(), NumberConstant.ZERO) && Objects.nonNull(userInfo.getFranchiseeId())
-                && !Objects.equals(userInfo.getFranchiseeId(), NumberConstant.ZERO_L) && Objects.equals(coupon.getFranchiseeId().longValue(), userInfo.getFranchiseeId());
+        return Objects.nonNull(coupon.getFranchiseeId()) && Objects.nonNull(userInfo.getFranchiseeId()) && !Objects.equals(userInfo.getFranchiseeId(), NumberConstant.ZERO_L)
+                && Objects.equals(coupon.getFranchiseeId().longValue(), userInfo.getFranchiseeId());
     }
     
     private List<BatteryMemberCardVO> getBatteryPackages(Long couponId) {

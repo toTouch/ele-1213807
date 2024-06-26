@@ -25,4 +25,6 @@ public class MerchantPromotionRequest {
     private String monthDate;
     
     private List<Long> franchiseeIds;
+    
+    private Long franchiseeId;
 }

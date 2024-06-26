@@ -41,6 +41,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -82,6 +83,9 @@ public class ShareActivityRecordServiceImpl implements ShareActivityRecordServic
     
     @Autowired
     private AssertPermissionService assertPermissionService;
+    
+    @Resource
+    private FranchiseeService franchiseeService;
     
     /**
      * 通过ID查询单条数据从DB
@@ -226,7 +230,7 @@ public class ShareActivityRecordServiceImpl implements ShareActivityRecordServic
     
     private Integer getFranchiseeId(Integer activityId) {
         ShareActivity shareActivity = shareActivityService.queryByIdFromCache(activityId);
-        if (Objects.isNull(shareActivity.getFranchiseeId()) || Objects.equals(shareActivity.getFranchiseeId(), NumberConstant.ZERO)) {
+        if (Objects.isNull(shareActivity.getFranchiseeId())) {
             return null;
         }
         return shareActivity.getFranchiseeId();
@@ -256,6 +260,11 @@ public class ShareActivityRecordServiceImpl implements ShareActivityRecordServic
         //获取用户领取的优惠券数量
         for(ShareActivityRecordVO shareActivityRecordVO : shareActivityRecordVOList){
             shareActivityRecordVO.setCouponCount(getReceivedCouponCount(shareActivityRecordVO));
+    
+            Long franchiseeId = shareActivityRecordVO.getFranchiseeId();
+            if (Objects.nonNull(franchiseeId)) {
+                shareActivityRecordVO.setFranchiseeName(Optional.ofNullable(franchiseeService.queryByIdFromCache(franchiseeId)).map(Franchisee::getName).orElse(StringUtils.EMPTY));
+            }
         }
         return R.ok(shareActivityRecordVOList);
     }

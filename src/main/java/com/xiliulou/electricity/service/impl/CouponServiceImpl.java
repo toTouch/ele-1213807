@@ -36,6 +36,7 @@ import com.xiliulou.electricity.vo.SearchVo;
 import com.xiliulou.electricity.vo.activity.CouponActivityVO;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -313,7 +314,7 @@ public class CouponServiceImpl implements CouponService {
         // 加盟商一致性校验
         if (Objects.nonNull(franchiseeId)) {
             Integer couponFranchiseeId = oldCoupon.getFranchiseeId();
-            if (Objects.nonNull(couponFranchiseeId) && !Objects.equals(couponFranchiseeId, NumberConstant.ZERO) && !Objects.equals(franchiseeId, couponFranchiseeId.longValue())) {
+            if (Objects.nonNull(couponFranchiseeId) && !Objects.equals(franchiseeId, couponFranchiseeId.longValue())) {
                 log.warn("update coupon WARN! Franchisees are inconsistent, couponId={}", couponQuery.getId());
                 return R.fail("120128", "所属加盟商不一致");
             }
@@ -365,8 +366,8 @@ public class CouponServiceImpl implements CouponService {
             couponActivityVO.setValidDays(String.valueOf(coupon.getDays()));
     
             Integer franchiseeId = coupon.getFranchiseeId();
-            if (Objects.nonNull(franchiseeId) && !Objects.equals(franchiseeId, NumberConstant.ZERO)) {
-                couponActivityVO.setFranchiseeName(Optional.ofNullable(franchiseeService.queryByIdFromCache(franchiseeId.longValue())).map(Franchisee::getName).orElse(null));
+            if (Objects.nonNull(franchiseeId)) {
+                couponActivityVO.setFranchiseeName(Optional.ofNullable(franchiseeService.queryByIdFromCache(franchiseeId.longValue())).map(Franchisee::getName).orElse(StringUtils.EMPTY));
             }
             
             couponActivityVOList.add(couponActivityVO);
@@ -400,7 +401,7 @@ public class CouponServiceImpl implements CouponService {
         // 加盟商一致性校验
         if (Objects.nonNull(franchiseeId)) {
             Integer couponFranchiseeId = coupon.getFranchiseeId();
-            if (Objects.nonNull(couponFranchiseeId) && !Objects.equals(couponFranchiseeId, NumberConstant.ZERO) && !Objects.equals(franchiseeId, couponFranchiseeId.longValue())) {
+            if (Objects.nonNull(couponFranchiseeId) && !Objects.equals(franchiseeId, couponFranchiseeId.longValue())) {
                 log.warn("findCouponById WARN! Franchisees are inconsistent, couponId={}", id);
                 return Triple.of(false, "120128", "所属加盟商不一致");
             }

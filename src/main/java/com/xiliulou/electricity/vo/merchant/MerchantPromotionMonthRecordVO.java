@@ -39,4 +39,6 @@ public class MerchantPromotionMonthRecordVO {
     private Integer tenantId;
     
     private Long franchiseeId;
+    
+    private String franchiseeName;
 }

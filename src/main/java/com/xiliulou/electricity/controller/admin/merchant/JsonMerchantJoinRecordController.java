@@ -28,6 +28,7 @@ import java.util.Objects;
 @Slf4j
 @RestController
 public class JsonMerchantJoinRecordController {
+    
     @Resource
     private MerchantJoinRecordService merchantJoinRecordService;
     
@@ -41,16 +42,17 @@ public class JsonMerchantJoinRecordController {
      * @author maxiaodong
      */
     @GetMapping("/admin/merchantJoinRecord/pageCount")
-    public R pageCount(@RequestParam(value = "merchantId", required = false) Long merchantId, @RequestParam(value = "status", required = false) Integer status) {
+    public R pageCount(@RequestParam(value = "merchantId", required = false) Long merchantId, @RequestParam(value = "status", required = false) Integer status,
+            @RequestParam(value = "franchiseeId", required = false) Long franchiseeId) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-    
+        
         if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE) || Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE))) {
             return R.fail("ELECTRICITY.0066", "用户权限不足");
         }
-    
+        
         List<Long> franchiseeIds = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
             franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
@@ -58,9 +60,9 @@ public class JsonMerchantJoinRecordController {
                 return R.ok(Collections.emptyList());
             }
         }
-    
+        
         MerchantJoinRecordPageRequest merchantJoinRecordPageRequest = MerchantJoinRecordPageRequest.builder().merchantId(merchantId).status(status)
-                .tenantId(TenantContextHolder.getTenantId()).franchiseeIds(franchiseeIds).build();
+                .tenantId(TenantContextHolder.getTenantId()).franchiseeIds(franchiseeIds).franchiseeId(franchiseeId).build();
         return R.ok(merchantJoinRecordService.countTotal(merchantJoinRecordPageRequest));
     }
     
@@ -71,9 +73,8 @@ public class JsonMerchantJoinRecordController {
      * @author maxiaodong
      */
     @GetMapping("/admin/merchantJoinRecord/page")
-    public R page(@RequestParam("size") long size, @RequestParam("offset") long offset,
-            @RequestParam(value = "merchantId", required = false) Long merchantId,
-            @RequestParam(value = "status", required = false) Integer status) {
+    public R page(@RequestParam("size") long size, @RequestParam("offset") long offset, @RequestParam(value = "merchantId", required = false) Long merchantId,
+            @RequestParam(value = "status", required = false) Integer status, @RequestParam(value = "franchiseeId", required = false) Long franchiseeId) {
         if (size < 0 || size > 50) {
             size = 10L;
         }
@@ -90,7 +91,7 @@ public class JsonMerchantJoinRecordController {
         if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE) || Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE))) {
             return R.fail("ELECTRICITY.0066", "用户权限不足");
         }
-    
+        
         List<Long> franchiseeIds = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
             franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
@@ -98,9 +99,9 @@ public class JsonMerchantJoinRecordController {
                 return R.ok(Collections.emptyList());
             }
         }
-    
+        
         MerchantJoinRecordPageRequest merchantJoinRecordPageRequest = MerchantJoinRecordPageRequest.builder().offset(offset).size(size).merchantId(merchantId).status(status)
-                .tenantId(TenantContextHolder.getTenantId()).franchiseeIds(franchiseeIds).build();
+                .tenantId(TenantContextHolder.getTenantId()).franchiseeIds(franchiseeIds).franchiseeId(franchiseeId).build();
         
         return R.ok(merchantJoinRecordService.listByPage(merchantJoinRecordPageRequest));
     }

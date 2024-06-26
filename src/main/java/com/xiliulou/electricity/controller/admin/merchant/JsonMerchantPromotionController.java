@@ -36,7 +36,8 @@ public class JsonMerchantPromotionController extends BaseController {
     private UserDataScopeService userDataScopeService;
     
     @GetMapping("/admin/merchant/promotion/record/page")
-    public R page(@RequestParam("size") long size, @RequestParam("offset") long offset, @RequestParam(value = "monthDate", required = false) String monthDate) {
+    public R page(@RequestParam("size") long size, @RequestParam("offset") long offset, @RequestParam(value = "monthDate", required = false) String monthDate,
+            @RequestParam(value = "franchiseeId", required = false) Long franchiseeId) {
         if (size < 0 || size > 50) {
             size = 10L;
         }
@@ -49,11 +50,11 @@ public class JsonMerchantPromotionController extends BaseController {
         if (Objects.isNull(user)) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-    
+        
         if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE) || Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE))) {
             return R.ok(Collections.emptyList());
         }
-    
+        
         List<Long> franchiseeIds = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
             franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
@@ -61,23 +62,24 @@ public class JsonMerchantPromotionController extends BaseController {
                 return R.ok(Collections.emptyList());
             }
         }
-    
-        MerchantPromotionRequest request = MerchantPromotionRequest.builder().size(size).offset(offset).monthDate(monthDate).franchiseeIds(franchiseeIds).build();
+        
+        MerchantPromotionRequest request = MerchantPromotionRequest.builder().size(size).offset(offset).monthDate(monthDate).franchiseeIds(franchiseeIds).franchiseeId(franchiseeId)
+                .build();
         
         return R.ok(merchantPromotionMonthRecordService.listByPage(request));
     }
     
     @GetMapping("/admin/merchant/promotion/record/pageCount")
-    public R pageCount(@RequestParam(value = "monthDate", required = false) String monthDate) {
+    public R pageCount(@RequestParam(value = "monthDate", required = false) String monthDate, @RequestParam(value = "franchiseeId", required = false) Long franchiseeId) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-    
+        
         if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE) || Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE))) {
             return R.ok();
         }
-    
+        
         List<Long> franchiseeIds = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
             franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
@@ -86,7 +88,7 @@ public class JsonMerchantPromotionController extends BaseController {
             }
         }
         
-        MerchantPromotionRequest request = MerchantPromotionRequest.builder().monthDate(monthDate).franchiseeIds(franchiseeIds).build();
+        MerchantPromotionRequest request = MerchantPromotionRequest.builder().monthDate(monthDate).franchiseeIds(franchiseeIds).franchiseeId(franchiseeId).build();
         
         return R.ok(merchantPromotionMonthRecordService.countTotal(request));
     }
@@ -95,16 +97,17 @@ public class JsonMerchantPromotionController extends BaseController {
      * @param monthDate 格式要求：yyyy-MM 2024-02
      */
     @GetMapping("/admin/merchant/promotion/record/exportExcel")
-    public void exportExcel(@RequestParam(value = "monthDate") String monthDate, HttpServletResponse response) {
+    public void exportExcel(@RequestParam(value = "monthDate") String monthDate, HttpServletResponse response,
+            @RequestParam(value = "franchiseeId", required = false) Long franchiseeId) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             return;
         }
-    
+        
         if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE) || Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE))) {
             return;
         }
-    
+        
         List<Long> franchiseeIds = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
             franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
@@ -113,7 +116,7 @@ public class JsonMerchantPromotionController extends BaseController {
             }
         }
         
-        MerchantPromotionRequest request = MerchantPromotionRequest.builder().monthDate(monthDate).franchiseeIds(franchiseeIds).build();
+        MerchantPromotionRequest request = MerchantPromotionRequest.builder().monthDate(monthDate).franchiseeIds(franchiseeIds).franchiseeId(franchiseeId).build();
         
         merchantPromotionMonthRecordService.exportExcel(request, response);
         

@@ -167,7 +167,7 @@ public class JoinShareActivityRecordServiceImpl implements JoinShareActivityReco
         joinShareActivityHistory.setActivityId(joinShareActivityRecord.getActivityId());
     
         Integer activityFranchiseeId = shareActivity.getFranchiseeId();
-        if (Objects.nonNull(activityFranchiseeId) && !Objects.equals(activityFranchiseeId, NumberConstant.ZERO)) {
+        if (Objects.nonNull(activityFranchiseeId)) {
             joinShareActivityRecord.setFranchiseeId(activityFranchiseeId.longValue());
             joinShareActivityHistory.setFranchiseeId(activityFranchiseeId.longValue());
         }

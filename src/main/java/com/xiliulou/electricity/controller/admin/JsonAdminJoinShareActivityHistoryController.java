@@ -142,7 +142,8 @@ public class JsonAdminJoinShareActivityHistoryController {
 								  @RequestParam(value = "activityName", required = false) String activityName,
 								  @RequestParam(value = "beginTime", required = false) Long beginTime,
 								  @RequestParam(value = "endTime", required = false) Long endTime,
-								  @RequestParam(value = "status", required = false) Integer status) {
+								  @RequestParam(value = "status", required = false) Integer status,
+			                      @RequestParam(value = "franchiseeId", required = false) Long franchiseeId) {
 
 		if (size < 0 || size > 50) {
 			size = 10L;
@@ -190,6 +191,7 @@ public class JsonAdminJoinShareActivityHistoryController {
 				.endTime(endTime)
 				.storeIds(storeIds)
 				.franchiseeIds(franchiseeIds)
+				.franchiseeId(franchiseeId)
 				.build();
 
 		return joinShareActivityHistoryService.queryParticipants(jsonShareActivityHistoryQuery);
@@ -202,8 +204,8 @@ public class JsonAdminJoinShareActivityHistoryController {
 								  @RequestParam(value = "activityName", required = false) String activityName,
 								  @RequestParam(value = "beginTime", required = false) Long beginTime,
 								  @RequestParam(value = "endTime", required = false) Long endTime,
-								  @RequestParam(value = "status", required = false) Integer status) {
-
+								  @RequestParam(value = "status", required = false) Integer status,
+			                     @RequestParam(value = "franchiseeId", required = false) Long franchiseeId) {
 		TokenUser user = SecurityUtils.getUserInfo();
 		if (Objects.isNull(user)) {
 			return R.fail("ELECTRICITY.0001", "未找到用户");
@@ -238,6 +240,7 @@ public class JsonAdminJoinShareActivityHistoryController {
 				.endTime(endTime)
 				.storeIds(storeIds)
 				.franchiseeIds(franchiseeIds)
+				.franchiseeId(franchiseeId)
 				.build();
 
 		return joinShareActivityHistoryService.queryParticipantsCount(jsonShareActivityHistoryQuery);

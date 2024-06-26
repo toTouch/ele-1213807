@@ -39,4 +39,6 @@ public class MerchantJoinRecordQueryMode {
     private Long offset;
     
     private List<Long> franchiseeIds;
+    
+    private Long franchiseeId;
 }

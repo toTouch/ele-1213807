@@ -42,4 +42,6 @@ public class MerchantCabinetPowerMonthRecordVO {
      */
     private Long franchiseeId;
     
+    private String franchiseeName;
+    
 }

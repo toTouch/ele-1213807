@@ -29,6 +29,9 @@
                     #{franchiseeId}
                 </foreach>
             </if>
+            <if test="franchiseeId != null">
+                and franchisee_id = #{franchiseeId}
+            </if>
         </where>
         order by date desc
         <if test="offset != null and size != null">
@@ -59,6 +62,9 @@
                 <foreach collection="franchiseeIds" item="franchiseeId" index="index" open="(" close=")" separator=",">
                     #{franchiseeId}
                 </foreach>
+            </if>
+            <if test="franchiseeId != null">
+                and franchisee_id = #{franchiseeId}
             </if>
         </where>
         ) a

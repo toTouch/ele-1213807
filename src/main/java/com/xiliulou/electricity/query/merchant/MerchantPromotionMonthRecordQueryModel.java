@@ -27,4 +27,6 @@ public class MerchantPromotionMonthRecordQueryModel {
     private Integer tenantId;
     
     private List<Long> franchiseeIds;
+    
+    private Long franchiseeId;
 }

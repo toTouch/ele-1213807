@@ -107,7 +107,26 @@ public class JsonAdminShareMoneyActivityController {
 	//修改--暂时无此功能
 	@PutMapping(value = "/admin/shareMoneyActivity")
 	public R update(@RequestBody @Validated(value = UpdateGroup.class) ShareMoneyActivityAddAndUpdateQuery shareMoneyActivityAddAndUpdateQuery) {
-		return shareMoneyActivityService.update(shareMoneyActivityAddAndUpdateQuery);
+		TokenUser user = SecurityUtils.getUserInfo();
+		if (Objects.isNull(user)) {
+			return R.fail("ELECTRICITY.0001", "未找到用户");
+		}
+		
+		if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE) || Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE))) {
+			return R.ok();
+		}
+		
+		Long franchiseeId = null;
+		if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+			List<Long> franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+			if (CollectionUtils.isEmpty(franchiseeIds)) {
+				return R.ok();
+			}
+			
+			franchiseeId = franchiseeIds.get(0);
+		}
+		
+		return shareMoneyActivityService.update(shareMoneyActivityAddAndUpdateQuery, franchiseeId);
 	}
 
 	//列表查询
@@ -161,7 +180,8 @@ public class JsonAdminShareMoneyActivityController {
 	//列表查询
 	@GetMapping(value = "/admin/shareMoneyActivity/count")
 	public R queryCount(@RequestParam(value = "name", required = false) String name,
-						@RequestParam(value = "status", required = false) Integer status) {
+						@RequestParam(value = "status", required = false) Integer status,
+						@RequestParam(value = "franchiseeId", required = false) Long franchiseeId) {
 
 		//租户
 		Integer tenantId = TenantContextHolder.getTenantId();
@@ -170,16 +190,25 @@ public class JsonAdminShareMoneyActivityController {
 		if (Objects.isNull(user)) {
 			return R.fail("ELECTRICITY.0001", "未找到用户");
 		}
-
-		//if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
-		//	return R.ok(NumberConstant.ZERO);
-		//}
+		
+		if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE) || Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE))) {
+			return R.ok();
+		}
+		
+		List<Long> franchiseeIds = null;
+		if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+			franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+			if (org.springframework.util.CollectionUtils.isEmpty(franchiseeIds)) {
+				return R.ok();
+			}
+		}
 
 		ShareMoneyActivityQuery shareMoneyActivityQuery = ShareMoneyActivityQuery.builder()
 				.name(name)
 				.tenantId(tenantId)
-				.status(status).build();
-
+				.status(status)
+				.franchiseeIds(franchiseeIds)
+				.franchiseeId(franchiseeId).build();
 		return shareMoneyActivityService.queryCount(shareMoneyActivityQuery);
 	}
 

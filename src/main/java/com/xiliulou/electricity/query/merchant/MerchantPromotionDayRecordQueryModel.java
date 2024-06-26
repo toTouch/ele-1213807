@@ -25,4 +25,6 @@ public class MerchantPromotionDayRecordQueryModel {
     private String endDate;
     
     private List<Long> franchiseeIds;
+    
+    private Long franchiseeId;
 }

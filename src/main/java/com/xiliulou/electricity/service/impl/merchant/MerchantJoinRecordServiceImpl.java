@@ -13,6 +13,7 @@ import com.xiliulou.electricity.constant.merchant.MerchantConstant;
 import com.xiliulou.electricity.constant.merchant.MerchantJoinRecordConstant;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
+import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.ShareActivity;
 import com.xiliulou.electricity.entity.ShareMoneyActivity;
 import com.xiliulou.electricity.entity.Tenant;
@@ -35,6 +36,7 @@ import com.xiliulou.electricity.request.merchant.MerchantJoinRecordPageRequest;
 import com.xiliulou.electricity.request.merchant.MerchantJoinScanRequest;
 import com.xiliulou.electricity.service.BatteryMemberCardService;
 import com.xiliulou.electricity.service.ElectricityMemberCardOrderService;
+import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.ShareActivityService;
 import com.xiliulou.electricity.service.ShareMoneyActivityService;
 import com.xiliulou.electricity.service.TenantService;
@@ -113,6 +115,9 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
     
     @Resource
     private ShareMoneyActivityService shareMoneyActivityService;
+    
+    @Resource
+    private FranchiseeService franchiseeService;
     
     @Override
     public R joinScanCode(MerchantJoinScanRequest request) {
@@ -422,6 +427,12 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
             Merchant merchant = merchantService.queryByIdFromCache(merchantJoinRecord.getMerchantId());
             if (Objects.nonNull(merchant)) {
                 vo.setMerchantName(merchant.getName());
+            }
+    
+            // 加盟商名称
+            Long franchiseeId = merchantJoinRecord.getFranchiseeId();
+            if (Objects.nonNull(franchiseeId)) {
+                vo.setFranchiseeName(Optional.ofNullable(franchiseeService.queryByIdFromCache(franchiseeId)).map(Franchisee::getName).orElse(StringUtils.EMPTY));
             }
             
             voList.add(vo);

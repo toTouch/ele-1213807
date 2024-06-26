@@ -3,18 +3,19 @@
 <mapper namespace="com.xiliulou.electricity.mapper.merchant.MerchantPromotionMonthRecordMapper">
     <!-- 基础字段 -->
     <sql id="basic_field">
-        id, merchant_count, month_first_total_money, month_renew_total_money, month_total_money, date, tenant_id, del_flag, create_time, update_time, remark, franchisee_id
+        id
+        , merchant_count, month_first_total_money, month_renew_total_money, month_total_money, date, tenant_id, del_flag, create_time, update_time, remark, franchisee_id
     </sql>
     
     <select id="selectListByPage" resultType="com.xiliulou.electricity.entity.merchant.MerchantPromotionMonthRecord">
         select any_value(id) as id,
-               sum(merchant_count) as merchantCount,
-               sum(month_first_total_money) as monthFirstTotalMoney,
-               sum(month_renew_total_money) as monthRenewTotalMoney,
-               sum(month_total_money) as monthTotalMoney,
-               any_value(date) as date,
-               any_value(tenant_id) as tenantId,
-               any_value(franchisee_id) as franchiseeId
+        sum(merchant_count) as merchantCount,
+        sum(month_first_total_money) as monthFirstTotalMoney,
+        sum(month_renew_total_money) as monthRenewTotalMoney,
+        sum(month_total_money) as monthTotalMoney,
+        any_value(date) as date,
+        any_value(tenant_id) as tenantId,
+        any_value(franchisee_id) as franchiseeId
         from t_merchant_promotion_month_record
         <where>
             del_flag = 0
@@ -29,6 +30,9 @@
                 <foreach collection="franchiseeIds" item="franchiseeId" index="index" open="(" close=")" separator=",">
                     #{franchiseeId}
                 </foreach>
+            </if>
+            <if test="franchiseeId != null">
+                and franchisee_id = #{franchiseeId}
             </if>
         </where>
         order by date desc
@@ -61,6 +65,9 @@
                 <foreach collection="franchiseeIds" item="franchiseeId" index="index" open="(" close=")" separator=",">
                     #{franchiseeId}
                 </foreach>
+            </if>
+            <if test="franchiseeId != null">
+                and franchisee_id = #{franchiseeId}
             </if>
         </where>
         ) a

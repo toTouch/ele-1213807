@@ -6,11 +6,13 @@ import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.dto.EleChargeConfigCalcDetailDto;
 import com.xiliulou.electricity.entity.ElePower;
+import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.merchant.MerchantPlace;
 import com.xiliulou.electricity.mapper.merchant.MerchantCabinetPowerMonthRecordMapper;
 import com.xiliulou.electricity.query.merchant.MerchantPowerDetailQueryModel;
 import com.xiliulou.electricity.query.merchant.MerchantPowerQueryModel;
 import com.xiliulou.electricity.request.merchant.MerchantPowerRequest;
+import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.excel.AutoHeadColumnWidthStyleStrategy;
 import com.xiliulou.electricity.service.excel.CommentWriteHandler;
 import com.xiliulou.electricity.service.excel.HeadContentCellStyle;
@@ -38,11 +40,13 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -66,6 +70,9 @@ public class MerchantCabinetPowerMonthRecordServiceImpl implements MerchantCabin
     @Resource
     private MerchantPlaceService merchantPlaceService;
     
+    @Resource
+    private FranchiseeService franchiseeService;
+    
     @Slave
     @Override
     public List<MerchantCabinetPowerMonthRecordVO> listByPage(MerchantPowerRequest request) {
@@ -80,7 +87,18 @@ public class MerchantCabinetPowerMonthRecordServiceImpl implements MerchantCabin
         BeanUtils.copyProperties(request, queryModel);
         queryModel.setTenantId(TenantContextHolder.getTenantId());
         
-        return merchantCabinetPowerMonthRecordMapper.selectListByPage(queryModel);
+        List<MerchantCabinetPowerMonthRecordVO> recordVOList = merchantCabinetPowerMonthRecordMapper.selectListByPage(queryModel);
+        if (CollectionUtils.isEmpty(recordVOList)) {
+            return Collections.emptyList();
+        }
+        
+        return recordVOList.stream().peek(recordVO -> {
+            Long franchiseeId = recordVO.getFranchiseeId();
+            if (Objects.nonNull(franchiseeId)) {
+                recordVO.setFranchiseeName(Optional.ofNullable(franchiseeService.queryByIdFromCache(franchiseeId)).map(Franchisee::getName).orElse(StringUtils.EMPTY));
+            }
+        }).collect(Collectors.toList());
+        
     }
     
     @Slave

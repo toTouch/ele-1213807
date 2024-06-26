@@ -94,7 +94,8 @@ public class JsonAdminShareActivityRecordController {
             @RequestParam(value = "name", required = false) String name,
 			@RequestParam(value = "uid", required = false) Long uid,
             @RequestParam(value = "beginTime", required = false) Long beginTime,
-            @RequestParam(value = "endTime", required = false) Long endTime) {
+            @RequestParam(value = "endTime", required = false) Long endTime,
+			@RequestParam(value = "franchiseeId", required = false) Long franchiseeId) {
 
 		TokenUser user = SecurityUtils.getUserInfo();
 		if (Objects.isNull(user)) {
@@ -126,12 +127,17 @@ public class JsonAdminShareActivityRecordController {
 				.tenantId(TenantContextHolder.getTenantId())
 				.startTime(beginTime)
 				.endTime(endTime)
+				.franchiseeId(franchiseeId)
 				.build();
 
 		return shareActivityRecordService.queryCount(shareActivityRecordQuery);
     }
     
-    @GetMapping(value = "/admin/shareActivityRecord/exportExcel")
+	/**
+	 * 2024/6/26 17:33:34 与王水红确认 该接口无调用
+	 */
+    @Deprecated
+	@GetMapping(value = "/admin/shareActivityRecord/exportExcel")
     public void shareActivityRecordExportExcel(
             @RequestParam(value = "phone", required = false) String phone,
             @RequestParam(value = "name", required = false) String name,

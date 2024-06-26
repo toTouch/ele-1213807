@@ -1,7 +1,6 @@
 package com.xiliulou.electricity.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
-import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.google.common.collect.Lists;
@@ -33,7 +32,6 @@ import com.xiliulou.electricity.vo.ShareMoneyActivityVO;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,7 +40,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -282,7 +279,7 @@ public class ShareMoneyActivityServiceImpl implements ShareMoneyActivityService 
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public R update(ShareMoneyActivityAddAndUpdateQuery shareMoneyActivityAddAndUpdateQuery) {
+    public R update(ShareMoneyActivityAddAndUpdateQuery shareMoneyActivityAddAndUpdateQuery, Long franchiseeId) {
         ShareMoneyActivity oldShareMoneyActivity = queryByIdFromCache(shareMoneyActivityAddAndUpdateQuery.getId());
         if (Objects.isNull(oldShareMoneyActivity)) {
             log.error("update Activity  ERROR! not found Activity ! ActivityId:{} ", shareMoneyActivityAddAndUpdateQuery.getId());
@@ -291,13 +288,36 @@ public class ShareMoneyActivityServiceImpl implements ShareMoneyActivityService 
 
         //租户
         Integer tenantId = TenantContextHolder.getTenantId();
-
-        //查询该租户是否有邀请活动，有则不能启用
-        if (Objects.equals(shareMoneyActivityAddAndUpdateQuery.getStatus(), ShareMoneyActivity.STATUS_ON)) {
-            int count = shareMoneyActivityMapper.selectCount(new LambdaQueryWrapper<ShareMoneyActivity>()
-                    .eq(ShareMoneyActivity::getTenantId, tenantId).eq(ShareMoneyActivity::getStatus, ShareMoneyActivity.STATUS_ON));
-            if (count > 0) {
-                return R.fail("ELECTRICITY.00102", "该租户已有启用中的邀请活动，请勿重复添加");
+    
+        // 租户一致性校验
+        if (!Objects.equals(TenantContextHolder.getTenantId(), oldShareMoneyActivity.getTenantId())) {
+            return R.ok();
+        }
+    
+        if (Objects.nonNull(franchiseeId)) {
+            Integer activityFranchiseeId = oldShareMoneyActivity.getFranchiseeId();
+            if (Objects.nonNull(activityFranchiseeId) && !Objects.equals(franchiseeId, activityFranchiseeId.longValue())) {
+                log.warn("update Activity WARN! Franchisees are inconsistent, ActivityId={}", shareMoneyActivityAddAndUpdateQuery.getId());
+                return R.fail("120128", "所属加盟商不一致");
+            }
+        
+            // 判断该加盟商是否有启用的活动，有则不能启用
+            if (Objects.equals(shareMoneyActivityAddAndUpdateQuery.getStatus(), ShareActivity.STATUS_ON)) {
+                int count = shareMoneyActivityMapper.selectCount(
+                        new LambdaQueryWrapper<ShareMoneyActivity>().eq(ShareMoneyActivity::getTenantId, tenantId).eq(ShareMoneyActivity::getFranchiseeId, franchiseeId)
+                                .eq(ShareMoneyActivity::getStatus, ShareMoneyActivity.STATUS_ON));
+                if (count > 0) {
+                    return R.fail("ELECTRICITY.00102", "该加盟商已有启用中的邀请活动，请勿重复添加");
+                }
+            }
+        } else {
+            //查询该租户是否有邀请活动，有则不能启用
+            if (Objects.equals(shareMoneyActivityAddAndUpdateQuery.getStatus(), ShareMoneyActivity.STATUS_ON)) {
+                int count = shareMoneyActivityMapper.selectCount(
+                        new LambdaQueryWrapper<ShareMoneyActivity>().eq(ShareMoneyActivity::getTenantId, tenantId).eq(ShareMoneyActivity::getStatus, ShareMoneyActivity.STATUS_ON));
+                if (count > 0) {
+                    return R.fail("ELECTRICITY.00102", "该租户已有启用中的邀请活动，请勿重复添加");
+                }
             }
         }
 
@@ -339,12 +359,6 @@ public class ShareMoneyActivityServiceImpl implements ShareMoneyActivityService 
     @Override
     @Slave
     public R queryList(ShareMoneyActivityQuery shareMoneyActivityQuery) {
-        Pair<Boolean, List<Long>> pair = assertPermissionService.assertPermissionByPair(SecurityUtils.getUserInfo());
-        if (!pair.getLeft()){
-            return R.ok(new ArrayList<>());
-        }
-        shareMoneyActivityQuery.setFranchiseeIds(pair.getRight());
-        
         List<ShareMoneyActivity> shareMoneyActivityList = shareMoneyActivityMapper.queryList(shareMoneyActivityQuery);
         List<ShareMoneyActivityVO> shareMoneyActivityVOList = Lists.newArrayList();
 
@@ -398,12 +412,6 @@ public class ShareMoneyActivityServiceImpl implements ShareMoneyActivityService 
     @Override
     @Slave
     public R queryCount(ShareMoneyActivityQuery shareMoneyActivityQuery) {
-        Pair<Boolean, List<Long>> pair = assertPermissionService.assertPermissionByPair(SecurityUtils.getUserInfo());
-        if (!pair.getLeft()){
-            return R.ok(NumberConstant.ZERO);
-        }
-        shareMoneyActivityQuery.setFranchiseeIds(pair.getRight());
-        
         Integer count = shareMoneyActivityMapper.queryCount(shareMoneyActivityQuery);
         return R.ok(count);
     }

@@ -17,6 +17,7 @@ import com.xiliulou.electricity.constant.TimeConstant;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.Coupon;
 import com.xiliulou.electricity.entity.CouponActivityPackage;
+import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.JoinShareActivityHistory;
 import com.xiliulou.electricity.entity.JoinShareActivityRecord;
 import com.xiliulou.electricity.entity.ShareActivity;
@@ -68,6 +69,7 @@ import com.xiliulou.storage.config.StorageConfig;
 import com.xiliulou.storage.service.StorageService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -79,6 +81,7 @@ import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.stream.Collectors;
@@ -345,7 +348,7 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 		// 加盟商一致性校验
 		if (Objects.nonNull(franchiseeId)) {
 			Integer activityFranchiseeId = shareActivity.getFranchiseeId();
-			if (Objects.nonNull(activityFranchiseeId) && !Objects.equals(activityFranchiseeId, NumberConstant.ZERO) && !Objects.equals(franchiseeId, activityFranchiseeId.longValue())) {
+			if (Objects.nonNull(activityFranchiseeId) && !Objects.equals(franchiseeId, activityFranchiseeId.longValue())) {
 				log.warn("update Activity WARN! Franchisees are inconsistent, ActivityId={}", shareActivityAddAndUpdateQuery.getId());
 				return Triple.of(false, "120128", "所属加盟商不一致");
 			}
@@ -409,7 +412,7 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 		// 加盟商校验
 		if (Objects.nonNull(franchiseeId)) {
 			Integer activityFranchiseeId = oldShareActivity.getFranchiseeId();
-			if (Objects.nonNull(activityFranchiseeId) && !Objects.equals(activityFranchiseeId, NumberConstant.ZERO) && !Objects.equals(franchiseeId, activityFranchiseeId.longValue())) {
+			if (Objects.nonNull(activityFranchiseeId) && !Objects.equals(franchiseeId, activityFranchiseeId.longValue())) {
 				log.warn("update Activity WARN! Franchisees are inconsistent, ActivityId={}", shareActivityAddAndUpdateQuery.getId());
 				return R.fail("120128", "所属加盟商不一致");
 			}
@@ -417,7 +420,8 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 			// 判断该加盟商是否有启用的活动，有则不能启用
 			if (Objects.equals(shareActivityAddAndUpdateQuery.getStatus(), ShareActivity.STATUS_ON)) {
 				int count = shareActivityMapper.selectCount(
-						new LambdaQueryWrapper<ShareActivity>().eq(ShareActivity::getTenantId, tenantId).eq(ShareActivity::getFranchiseeId, franchiseeId).eq(ShareActivity::getStatus, ShareActivity.STATUS_ON));
+						new LambdaQueryWrapper<ShareActivity>().eq(ShareActivity::getTenantId, tenantId).eq(ShareActivity::getFranchiseeId, franchiseeId)
+								.eq(ShareActivity::getStatus, ShareActivity.STATUS_ON));
 				if (count > 0) {
 					return R.fail("ELECTRICITY.00102", "该加盟商已有启用中的邀请活动，请勿重复添加");
 				}
@@ -425,8 +429,9 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 		} else {
 			//查询该租户是否有邀请活动，有则不能启用
 			if (Objects.equals(shareActivityAddAndUpdateQuery.getStatus(), ShareActivity.STATUS_ON)) {
-				int count = shareActivityMapper.selectCount(new LambdaQueryWrapper<ShareActivity>()
-						.eq(ShareActivity::getTenantId, tenantId).eq(ShareActivity::getStatus, ShareActivity.STATUS_ON).eq(ShareActivity::getType, ShareActivity.SYSTEM));
+				int count = shareActivityMapper.selectCount(
+						new LambdaQueryWrapper<ShareActivity>().eq(ShareActivity::getTenantId, tenantId).eq(ShareActivity::getStatus, ShareActivity.STATUS_ON)
+								.eq(ShareActivity::getType, ShareActivity.SYSTEM));
 				if (count > 0) {
 					return R.fail("ELECTRICITY.00102", "该租户已有启用中的邀请活动，请勿重复添加");
 				}
@@ -493,7 +498,11 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 				shareActivityVO.setCarWithBatteryPackages(getCarBatteryPackages(shareActivity.getId(), PackageTypeEnum.PACKAGE_TYPE_CAR_BATTERY.getCode()));
 			}
 			shareActivityVOList.add(shareActivityVO);
-
+			
+			Integer franchiseeId = shareActivity.getFranchiseeId();
+			if (Objects.nonNull(franchiseeId)) {
+				shareActivityVO.setFranchiseeName(Optional.ofNullable(franchiseeService.queryByIdFromCache(franchiseeId.longValue())).map(Franchisee::getName).orElse(StringUtils.EMPTY));
+			}
 		}
 
 		return R.ok(shareActivityVOList);
@@ -1081,7 +1090,7 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 		// 加盟商一致性校验
 		if (Objects.nonNull(franchiseeId)) {
 			Integer activityFranchiseeId = shareActivity.getFranchiseeId();
-			if (Objects.nonNull(activityFranchiseeId) && !Objects.equals(activityFranchiseeId, NumberConstant.ZERO) && !Objects.equals(franchiseeId, activityFranchiseeId.longValue())) {
+			if (Objects.nonNull(activityFranchiseeId) && !Objects.equals(franchiseeId, activityFranchiseeId.longValue())) {
 				log.warn("delete Activity WARN! Franchisees are inconsistent, ActivityId={}", id);
 				return R.fail("120128", "所属加盟商不一致");
 			}

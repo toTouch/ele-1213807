@@ -3,6 +3,7 @@ package com.xiliulou.electricity.service.impl.merchant;
 import com.alibaba.excel.EasyExcel;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.merchant.RebateRecordConstant;
+import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.merchant.Merchant;
 import com.xiliulou.electricity.entity.merchant.MerchantPromotionMonthRecord;
@@ -10,6 +11,7 @@ import com.xiliulou.electricity.mapper.merchant.MerchantPromotionMonthRecordMapp
 import com.xiliulou.electricity.query.merchant.MerchantPromotionDayRecordQueryModel;
 import com.xiliulou.electricity.query.merchant.MerchantPromotionMonthRecordQueryModel;
 import com.xiliulou.electricity.request.merchant.MerchantPromotionRequest;
+import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.service.excel.AutoHeadColumnWidthStyleStrategy;
 import com.xiliulou.electricity.service.excel.CommentWriteHandler;
@@ -71,6 +73,9 @@ public class MerchantPromotionMonthRecordServiceImpl implements MerchantPromotio
     @Resource
     private UserService userService;
     
+    @Resource
+    private FranchiseeService franchiseeService;
+    
     @Slave
     @Override
     public List<MerchantPromotionMonthRecordVO> listByPage(MerchantPromotionRequest request) {
@@ -93,6 +98,11 @@ public class MerchantPromotionMonthRecordServiceImpl implements MerchantPromotio
         return list.stream().map(item -> {
             MerchantPromotionMonthRecordVO vo = new MerchantPromotionMonthRecordVO();
             BeanUtils.copyProperties(item, vo);
+    
+            Long franchiseeId = item.getFranchiseeId();
+            if (Objects.nonNull(franchiseeId)) {
+                vo.setFranchiseeName(Optional.ofNullable(franchiseeService.queryByIdFromCache(franchiseeId)).map(Franchisee::getName).orElse(StringUtils.EMPTY));
+            }
             
             return vo;
         }).collect(Collectors.toList());
@@ -129,6 +139,7 @@ public class MerchantPromotionMonthRecordServiceImpl implements MerchantPromotio
         Integer tenantId = TenantContextHolder.getTenantId();
         MerchantPromotionDayRecordQueryModel queryModel = new MerchantPromotionDayRecordQueryModel();
         queryModel.setTenantId(tenantId);
+        queryModel.setFranchiseeId(request.getFranchiseeId());
         queryModel.setStartDate(DateUtils.getFirstDayByMonth(monthDate));
         queryModel.setEndDate(DateUtils.getLastDayByMonth(monthDate));
         

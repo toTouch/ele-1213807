@@ -109,6 +109,9 @@
                     #{franchiseeId}
                 </foreach>
             </if>
+            <if test="franchiseeId != null">
+                and franchisee_id = #{franchiseeId}
+            </if>
         </where>
     </sql>
     
