@@ -289,7 +289,7 @@ public class JsonAdminCouponController extends BaseController {
             qryModel.setSize(size.intValue());
             qryModel.setTenantId(TenantContextHolder.getTenantId());
             qryModel.setStatus(UpDownEnum.UP.getCode());
-            qryModel.setFranchiseeId(franchiseeId.intValue());
+            qryModel.setFranchiseeId(Objects.isNull(franchiseeId) ? null : franchiseeId.intValue());
 
             if(PackageTypeEnum.PACKAGE_TYPE_CAR_BATTERY.getCode().equals(type)){
                 qryModel.setType(RentalPackageTypeEnum.CAR_BATTERY.getCode());

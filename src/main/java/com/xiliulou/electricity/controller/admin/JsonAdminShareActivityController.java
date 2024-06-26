@@ -305,7 +305,7 @@ public class JsonAdminShareActivityController extends BaseController {
             qryModel.setTenantId(TenantContextHolder.getTenantId());
             qryModel.setStatus(UpDownEnum.UP.getCode());
             qryModel.setRentRebate(YesNoEnum.NO.getCode());
-            qryModel.setFranchiseeId(franchiseeId.intValue());
+            qryModel.setFranchiseeId(Objects.isNull(franchiseeId) ? null : franchiseeId.intValue());
 
             if(PackageTypeEnum.PACKAGE_TYPE_CAR_BATTERY.getCode().equals(type)){
                 qryModel.setType(RentalPackageTypeEnum.CAR_BATTERY.getCode());

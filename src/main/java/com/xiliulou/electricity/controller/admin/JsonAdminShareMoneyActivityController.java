@@ -36,6 +36,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -114,7 +115,8 @@ public class JsonAdminShareMoneyActivityController {
 	public R queryList(@RequestParam("size") Long size,
 			@RequestParam("offset") Long offset,
 			@RequestParam(value = "name", required = false) String name,
-			@RequestParam(value = "status", required = false) Integer status) {
+			@RequestParam(value = "status", required = false) Integer status,
+			@RequestParam(value = "franchiseeId", required = false) Long franchiseeId) {
 		if (size < 0 || size > 50) {
 			size = 10L;
 		}
@@ -130,17 +132,27 @@ public class JsonAdminShareMoneyActivityController {
 		if (Objects.isNull(user)) {
 			return R.fail("ELECTRICITY.0001", "未找到用户");
 		}
-
-		//if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
-		//	return R.ok(Collections.EMPTY_LIST);
-		//}
+		
+		if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE) || Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE))) {
+			return R.ok(Collections.emptyList());
+		}
+		
+		List<Long> franchiseeIds = null;
+		if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+			franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+			if (org.springframework.util.CollectionUtils.isEmpty(franchiseeIds)) {
+				return R.ok(Collections.emptyList());
+			}
+		}
 
 		ShareMoneyActivityQuery shareMoneyActivityQuery = ShareMoneyActivityQuery.builder()
 				.offset(offset)
 				.size(size)
 				.name(name)
 				.tenantId(tenantId)
-				.status(status).build();
+				.status(status)
+				.franchiseeIds(franchiseeIds)
+				.franchiseeId(franchiseeId).build();
 
 		return shareMoneyActivityService.queryList(shareMoneyActivityQuery);
 	}
