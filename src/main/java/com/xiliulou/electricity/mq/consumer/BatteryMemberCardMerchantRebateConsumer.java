@@ -169,7 +169,7 @@ public class BatteryMemberCardMerchantRebateConsumer implements RocketMQListener
             return;
         }
         
-        MerchantAttr merchantAttr = merchantAttrService.queryByTenantId(userInfo.getTenantId());
+        MerchantAttr merchantAttr = merchantAttrService.queryByFranchiseeIdFromCache(electricityMemberCardOrder.getFranchiseeId());
         if (Objects.isNull(merchantAttr)) {
             log.warn("REBATE CONSUMER WARN!not found merchantAttr by tenant,uid={}", batteryMemberCardMerchantRebate.getUid());
             return;

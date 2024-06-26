@@ -43,5 +43,5 @@ public interface MerchantAttrService {
     
     MerchantAttr queryUpgradeCondition(Long franchiseeId);
     
-    Triple<Boolean, String, Object> updateChannelSwitchState(Integer tenantId, Integer status);
+    Triple<Boolean, String, Object> updateChannelSwitchState(Long franchiseeId, Integer status);
 }

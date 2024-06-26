@@ -172,8 +172,8 @@ public class MerchantAttrServiceImpl implements MerchantAttrService {
     }
     
     @Override
-    public Triple<Boolean, String, Object> updateChannelSwitchState(Integer tenantId, Integer status) {
-        MerchantAttr merchantAttr = this.queryByTenantIdFromCache(tenantId);
+    public Triple<Boolean, String, Object> updateChannelSwitchState(Long franchiseeId, Integer status) {
+        MerchantAttr merchantAttr = this.queryByFranchiseeIdFromCache(franchiseeId);
         if (Objects.isNull(merchantAttr) || !Objects.equals(merchantAttr.getTenantId(), TenantContextHolder.getTenantId())) {
             return Triple.of(true, null, null);
         }
@@ -181,7 +181,7 @@ public class MerchantAttrServiceImpl implements MerchantAttrService {
         MerchantAttr merchantAttrUpdate = new MerchantAttr();
         merchantAttrUpdate.setStatus(status);
         merchantAttrUpdate.setUpdateTime(System.currentTimeMillis());
-        this.updateByTenantId(merchantAttrUpdate, merchantAttr.getTenantId());
+        this.updateByFranchiseeId(merchantAttrUpdate, merchantAttr.getFranchiseeId());
         // 记录操作
         operateRecordUtil.record(null, MapUtil.of("status",status));
         return Triple.of(true, null, null);
