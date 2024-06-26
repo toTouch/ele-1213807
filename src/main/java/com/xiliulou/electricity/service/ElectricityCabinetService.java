@@ -13,7 +13,6 @@ import com.xiliulou.electricity.query.BatteryReportQuery;
 import com.xiliulou.electricity.query.EleOuterCommandQuery;
 import com.xiliulou.electricity.query.ElectricityCabinetAddAndUpdate;
 import com.xiliulou.electricity.query.ElectricityCabinetAddressQuery;
-import com.xiliulou.electricity.query.ElectricityCabinetBatchEditRentReturnCountQuery;
 import com.xiliulou.electricity.query.ElectricityCabinetBatchEditRentReturnQuery;
 import com.xiliulou.electricity.query.ElectricityCabinetImportQuery;
 import com.xiliulou.electricity.query.ElectricityCabinetQuery;
@@ -277,6 +276,8 @@ public interface ElectricityCabinetService {
     
     RentReturnEditEchoVO rentReturnEditEcho(Long id);
     
-    void batchEditRentReturn(ElectricityCabinetBatchEditRentReturnQuery rentReturnQuery);
+    R batchEditRentReturn(ElectricityCabinetBatchEditRentReturnQuery rentReturnQuery);
     
+    
+    R rentReturnEditEchoByDeviceName(String productKey, String deviceName);
 }

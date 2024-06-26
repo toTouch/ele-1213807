@@ -29,6 +29,16 @@ public class ElectricityCabinetExtra {
     private Integer batteryCountType;
     
     /**
+     * 租电可选标签
+     */
+    private Integer rentTabType;
+    
+    /**
+     * 退电可选标签
+     */
+    private Integer returnTabType;
+    
+    /**
      * 最小保留电池数量
      */
     private Integer minRetainBatteryCount;
@@ -59,4 +69,8 @@ public class ElectricityCabinetExtra {
     private Long updateTime;
     
     public final static Integer EFFECT_ROWS_ZERO = 0;
+    
+    public final static Integer MIN_RETAIN_BATTERY = 1;
+    
+    public final static Integer MIN_RETAIN_EMPTY_CELL = 1;
 }

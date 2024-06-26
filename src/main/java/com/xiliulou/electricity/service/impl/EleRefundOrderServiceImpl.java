@@ -689,7 +689,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
     public Triple<Boolean, String, Object> batteryFreeDepositRefund(String errMsg, Long uid) {
         UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
         if (Objects.isNull(userInfo) || !Objects.equals(userInfo.getTenantId(), TenantContextHolder.getTenantId())) {
-            log.error("REFUND ORDER ERROR!userInfo is null,uid={}", uid);
+            log.warn("REFUND ORDER WARN!userInfo is null,uid={}", uid);
             return Triple.of(false, "ELECTRICITY.0001", "未找到用户");
         }
         
@@ -702,44 +702,44 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
         
         PxzConfig pxzConfig = pxzConfigService.queryByTenantIdFromCache(TenantContextHolder.getTenantId());
         if (Objects.isNull(pxzConfig) || StringUtils.isBlank(pxzConfig.getAesKey()) || StringUtils.isBlank(pxzConfig.getMerchantCode())) {
-            log.error("REFUND ORDER ERROR! not found pxzConfig,uid={}", uid);
+            log.warn("REFUND ORDER WARN! not found pxzConfig,uid={}", uid);
             return Triple.of(false, "100400", "免押功能未配置相关信息,请联系客服处理");
         }
         
         if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
-            log.error("REFUND ORDER ERROR! user is disable! uid={}", uid);
+            log.warn("REFUND ORDER WARN! user is disable! uid={}", uid);
             return Triple.of(false, "ELECTRICITY.0024", "用户已被禁用");
         }
         
         if (!Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.CAR_DEPOSIT_STATUS_YES)) {
-            log.error("REFUND ORDER ERROR! user is not rent deposit,uid={}", uid);
+            log.warn("REFUND ORDER WARN! user is not rent deposit,uid={}", uid);
             return Triple.of(false, "100238", "未缴纳押金");
         }
         
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
         if (Objects.nonNull(userBatteryMemberCard) && Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE)) {
-            log.error("REFUND ORDER ERROR! user membercard is disable,uid={}", uid);
+            log.warn("REFUND ORDER WARN! user membercard is disable,uid={}", uid);
             return Triple.of(false, "100211", "用户套餐已暂停！");
         }
         if (Objects.nonNull(userBatteryMemberCard) && Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE_REVIEW)) {
-            log.error("REFUND ORDER ERROR! disable member card is reviewing,uid={}", uid);
+            log.warn("REFUND ORDER WARN! disable member card is reviewing,uid={}", uid);
             return Triple.of(false, "ELECTRICITY.100003", "套餐暂停正在审核中");
         }
         
         if (Objects.equals(userInfo.getBatteryRentStatus(), UserInfo.BATTERY_RENT_STATUS_YES)) {
-            log.error("REFUND ORDER ERROR! not return battery,uid={}", uid);
+            log.warn("REFUND ORDER WARN! not return battery,uid={}", uid);
             return Triple.of(false, "ELECTRICITY.0046", "未退还电池");
         }
         
         UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(uid);
         if (Objects.isNull(userBatteryDeposit)) {
-            log.error("REFUND ORDER ERROR！userBatteryDeposit is null,uid={}", uid);
+            log.warn("REFUND ORDER WARN！userBatteryDeposit is null,uid={}", uid);
             return Triple.of(false, "100247", "用户电池押金信息不存在");
         }
         
         FreeDepositOrder freeDepositOrder = freeDepositOrderService.selectByOrderId(userBatteryDeposit.getOrderId());
         if (Objects.isNull(freeDepositOrder)) {
-            log.error("REFUND ORDER ERROR! not found freeDepositOrder,uid={},orderId={}", uid, userBatteryDeposit.getOrderId());
+            log.warn("REFUND ORDER WARN! not found freeDepositOrder,uid={},orderId={}", uid, userBatteryDeposit.getOrderId());
             return Triple.of(false, "100403", "免押订单不存在");
         }
         
@@ -749,13 +749,13 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
         
         EleDepositOrder eleDepositOrder = eleDepositOrderService.queryByOrderId(userBatteryDeposit.getOrderId());
         if (Objects.isNull(eleDepositOrder)) {
-            log.error("REFUND ORDER ERROR! not found eleDepositOrder,uid={},orderId={}", uid, userBatteryDeposit.getOrderId());
+            log.warn("REFUND ORDER WARN! not found eleDepositOrder,uid={},orderId={}", uid, userBatteryDeposit.getOrderId());
             return Triple.of(false, "ELECTRICITY.0015", "未找到订单");
         }
         
         // 企业渠道订单暂不支持退押
         if (PackageOrderTypeEnum.PACKAGE_ORDER_TYPE_ENTERPRISE.getCode().equals(eleDepositOrder.getOrderType())) {
-            log.error("REFUND ORDER ERROR! deposit order is enterprise channel, can't refund deposit, uid={}, orderId={}", uid, userBatteryDeposit.getOrderId());
+            log.warn("REFUND ORDER WARN! deposit order is enterprise channel, can't refund deposit, uid={}, orderId={}", uid, userBatteryDeposit.getOrderId());
             return Triple.of(false, "100032", "企业渠道订单暂不支持退押,请联系企业负责人");
         }
         
@@ -769,7 +769,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
                 .eq(EleRefundOrder::getRefundOrderType, EleRefundOrder.RENT_CAR_DEPOSIT_REFUND_ORDER));
         
         if (!CollectionUtils.isEmpty(refundOrders)) {
-            log.error("REFUND ORDER ERROR! Refund in progress ,uid={},orderId={}", uid, userBatteryDeposit.getOrderId());
+            log.warn("REFUND ORDER WARN! Refund in progress ,uid={},orderId={}", uid, userBatteryDeposit.getOrderId());
             return Triple.of(false, "100031", "不能重复退押金");
         }
 /*
@@ -834,7 +834,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
         }
         
         if (Objects.isNull(pxzDepositUnfreezeRspPxzCommonRsp)) {
-            log.error("Pxz ERROR! freeDepositOrderQuery fail! pxzQueryOrderRsp is null! uid={},orderId={}", uid, userBatteryDeposit.getOrderId());
+            log.warn("Pxz WARN! freeDepositOrderQuery fail! pxzQueryOrderRsp is null! uid={},orderId={}", uid, userBatteryDeposit.getOrderId());
             return Triple.of(false, "100402", "免押查询失败！");
         }
         
