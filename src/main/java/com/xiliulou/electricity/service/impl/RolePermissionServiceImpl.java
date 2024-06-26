@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.utils.DataUtil;
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.RolePermission;
 import com.xiliulou.electricity.mapper.RolePermissionMapper;
@@ -45,6 +46,7 @@ public class RolePermissionServiceImpl implements RolePermissionService {
 		return rolePermission;
 	}
 
+	@Slave
 	@Override
 	public List<Long> queryPidsByRid(Long rid) {
 		String pids = redisService.get(CacheConstant.CACHE_ROLE_PERMISSION_RELATION + rid);

@@ -111,48 +111,48 @@ public class FaceidServiceImpl implements FaceidService {
 
         UserInfo userInfo = userInfoService.queryByUidFromCache(SecurityUtils.getUid());
         if (Objects.isNull(userInfo)) {
-            log.error("ELE ERROR! not found userInfo,uid={}", SecurityUtils.getUid());
+            log.warn("ELE WARN! not found userInfo,uid={}", SecurityUtils.getUid());
             return Triple.of(false, "ELECTRICITY.0019", "未找到用户");
         }
 
         //用户是否可用
         if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
-            log.error("ELE ERROR! user is unUsable,uid={}", userInfo.getUid());
+            log.warn("ELE WARN! user is unUsable,uid={}", userInfo.getUid());
             return Triple.of(false, "ELECTRICITY.0024", "用户已被禁用");
         }
 
         //用户是否已实名认证
         if (Objects.equals(userInfo.getAuthStatus(), UserInfo.AUTH_STATUS_REVIEW_PASSED)) {
-            log.error("ELE ERROR! user already auth passed,uid={}", userInfo.getUid());
+            log.warn("ELE WARN! user already auth passed,uid={}", userInfo.getUid());
             return Triple.of(false, "100336", "用户已实名认证!");
         }
 
         //是否开启人脸核身
         ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(TenantContextHolder.getTenantId());
         if (Objects.isNull(electricityConfig)) {
-            log.error("ELE ERROR! electricityConfig is null,tenantId={}", TenantContextHolder.getTenantId());
+            log.warn("ELE WARN! electricityConfig is null,tenantId={}", TenantContextHolder.getTenantId());
             return Triple.of(false, "000001", "系统异常！");
         }
         if (!Objects.equals(ElectricityConfig.FACE_REVIEW, electricityConfig.getIsManualReview())) {
-            log.error("ELE ERROR! not open face recognize,tenantId={}", TenantContextHolder.getTenantId());
+            log.warn("ELE WARN! not open face recognize,tenantId={}", TenantContextHolder.getTenantId());
             return Triple.of(false, "100337", "未开启人脸核身！");
         }
 
         //校验租户人脸核身资源包
         FaceRecognizeData faceRecognizeData = faceRecognizeDataService.selectByTenantId(TenantContextHolder.getTenantId());
         if (Objects.isNull(faceRecognizeData)) {
-            log.error("ELE ERROR! faceRecognizeData is null,uid={}", SecurityUtils.getUid());
+            log.warn("ELE WARN! faceRecognizeData is null,uid={}", SecurityUtils.getUid());
             return Triple.of(false, "100334", "未购买人脸核身资源包，请联系管理员");
         }
         if (faceRecognizeData.getFaceRecognizeCapacity() <= FACEID_MAX_OVERDRAFT_CAPACITY) {
-            log.error("ELE ERROR! faceRecognizeCapacity disable,uid={}", SecurityUtils.getUid());
+            log.warn("ELE WARN! faceRecognizeCapacity disable,uid={}", SecurityUtils.getUid());
             return Triple.of(false, "100335", "人脸核身资源包余额不足，请联系管理员");
         }
 
         //2.获取当前用户所属租户的商户号
         FaceidConfig faceidConfig = faceidConfigService.selectLatestByTenantId(TenantContextHolder.getTenantId());
         if (Objects.isNull(faceidConfig) || StringUtils.isBlank(faceidConfig.getFaceMerchantId())) {
-            log.error("ELE ERROR!faceidConfig is null,uid={},tenantId={}", SecurityUtils.getUid(),
+            log.warn("ELE WARN!faceidConfig is null,uid={},tenantId={}", SecurityUtils.getUid(),
                     TenantContextHolder.getTenantId());
             return Triple.of(false, "100332", "人脸核身配置信息不存在");
         }
@@ -184,19 +184,19 @@ public class FaceidServiceImpl implements FaceidService {
 
         UserInfo userInfo = userInfoService.queryByUidFromCache(SecurityUtils.getUid());
         if (Objects.isNull(userInfo)) {
-            log.error("ELE ERROR! not found userInfo,uid={}", SecurityUtils.getUid());
+            log.warn("ELE WARN! not found userInfo,uid={}", SecurityUtils.getUid());
             return Triple.of(false, "ELECTRICITY.0019", "未找到用户");
         }
 
         //用户是否可用
         if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
-            log.error("ELE ERROR! user is unUsable,uid={}", userInfo.getUid());
+            log.warn("ELE WARN! user is unUsable,uid={}", userInfo.getUid());
             return Triple.of(false, "ELECTRICITY.0024", "用户已被禁用");
         }
 
         //用户是否已实名认证
         if (Objects.equals(userInfo.getAuthStatus(), UserInfo.AUTH_STATUS_REVIEW_PASSED)) {
-            log.error("ELE ERROR! user already auth passed,uid={}", userInfo.getUid());
+            log.warn("ELE WARN! user already auth passed,uid={}", userInfo.getUid());
             return Triple.of(false, "100336", "用户已实名认证!");
         }
 
@@ -204,17 +204,17 @@ public class FaceidServiceImpl implements FaceidService {
         ElectricityConfig electricityConfig = electricityConfigService
                 .queryFromCacheByTenantId(TenantContextHolder.getTenantId());
         if (Objects.isNull(electricityConfig)) {
-            log.error("ELE ERROR! electricityConfig is null,tenantId={}", TenantContextHolder.getTenantId());
+            log.warn("ELE WARN! electricityConfig is null,tenantId={}", TenantContextHolder.getTenantId());
             return Triple.of(false, "000001", "系统异常！");
         }
         if (!Objects.equals(ElectricityConfig.FACE_REVIEW, electricityConfig.getIsManualReview())) {
-            log.error("ELE ERROR! not open face recognize,tenantId={}", TenantContextHolder.getTenantId());
+            log.warn("ELE WARN! not open face recognize,tenantId={}", TenantContextHolder.getTenantId());
             return Triple.of(false, "100337", "未开启人脸核身！");
         }
 
         FaceidConfig faceidConfig = faceidConfigService.selectLatestByTenantId(TenantContextHolder.getTenantId());
         if (Objects.isNull(faceidConfig) || StringUtils.isBlank(faceidConfig.getFaceidPrivateKey())) {
-            log.error("ELE ERROR!faceidConfig is null,uid={},tenantId={}", SecurityUtils.getUid(),
+            log.warn("ELE WARN!faceidConfig is null,uid={},tenantId={}", SecurityUtils.getUid(),
                     TenantContextHolder.getTenantId());
             return Triple.of(false, "100332", "人脸核身配置信息不存在");
         }
@@ -222,11 +222,11 @@ public class FaceidServiceImpl implements FaceidService {
         //校验租户人脸核身资源包
         FaceRecognizeData faceRecognizeData = faceRecognizeDataService.selectByTenantId(TenantContextHolder.getTenantId());
         if (Objects.isNull(faceRecognizeData)) {
-            log.error("ELE ERROR! faceRecognizeData is null,uid={}", SecurityUtils.getUid());
+            log.warn("ELE WARN! faceRecognizeData is null,uid={}", SecurityUtils.getUid());
             return Triple.of(false, "100334", "未购买人脸核身资源包，请联系管理员");
         }
         if (faceRecognizeData.getFaceRecognizeCapacity() <= FACEID_MAX_OVERDRAFT_CAPACITY) {
-            log.error("ELE ERROR! faceRecognizeCapacity disable,uid={}", SecurityUtils.getUid());
+            log.warn("ELE WARN! faceRecognizeCapacity disable,uid={}", SecurityUtils.getUid());
             return Triple.of(false, "100335", "人脸核身资源包余额不足，请联系管理员");
         }
 
@@ -267,7 +267,7 @@ public class FaceidServiceImpl implements FaceidService {
         try {
             FaceidResultRsp faceidResultRsp = faceidResultService.acquireEidResult(faceidResultQuery.getToken());
             if (Objects.isNull(faceidResultRsp) || Objects.isNull(faceidResultRsp.getTextInfo()) || Objects.isNull(faceidResultRsp.getEidInfo())) {
-                log.error("ELE ERROR! faceidResultRsp is null,uid={},resp={}", userInfo.getUid(), JsonUtil.toJson(faceidResultRsp));
+                log.warn("ELE WARN! faceidResultRsp is null,uid={},resp={}", userInfo.getUid(), JsonUtil.toJson(faceidResultRsp));
                 return Triple.of(false, "100330", "人脸核身结果获取失败");
             }
 
@@ -280,7 +280,7 @@ public class FaceidServiceImpl implements FaceidService {
             faceRecognizeUserRecordService.update(recognizeUserRecordUpdate);
 
             if (!Objects.equals(faceidResultRsp.getTextInfo().getErrCode(), NumberConstant.ZERO_L) || !Objects.equals(faceidResultRsp.getTextInfo().getErrMsg(), SUCCESS_MESSAGE)) {
-                log.error("ELE ERROR! face recognize fail,uid={},faceRecognizeRecordId={}", userInfo.getUid(), recognizeUserRecord.getId());
+                log.warn("ELE WARN! face recognize fail,uid={},faceRecognizeRecordId={}", userInfo.getUid(), recognizeUserRecord.getId());
                 return Triple.of(false, "100340", "人脸核身检测失败");
             }
 
@@ -294,7 +294,7 @@ public class FaceidServiceImpl implements FaceidService {
             //扣减人脸核身次数
             FaceRecognizeData faceRecognizeData = faceRecognizeDataService.selectByTenantId(TenantContextHolder.getTenantId());
             if (Objects.isNull(faceRecognizeData)) {
-                log.error("ELE ERROR! faceRecognizeData is null,uid={}", SecurityUtils.getUid());
+                log.warn("ELE WARN! faceRecognizeData is null,uid={}", SecurityUtils.getUid());
                 return Triple.of(false, "100332", "人脸核身配置信息不存在");
             }
 
@@ -306,14 +306,14 @@ public class FaceidServiceImpl implements FaceidService {
             //人脸核身结果解密
             EidUserInfoDTO eidUserInfo = faceidResultService.decodeEidResult(faceidResultRsp.getEidInfo(), faceidConfig.getFaceidPrivateKey());
             if (Objects.isNull(eidUserInfo)) {
-                log.error("ELE ERROR! eidUserInfo is null,uid={}", userInfo.getUid());
+                log.warn("ELE WARN! eidUserInfo is null,uid={}", userInfo.getUid());
                 return Triple.of(false, "100341", "人脸核身结果解密失败，请联系管理员");
             }
 
             //身份证号唯一性校验
             Integer idNumberExist = userInfoService.verifyIdNumberExist(eidUserInfo.getIdnum(), TenantContextHolder.getTenantId());
             if (!Objects.isNull(idNumberExist)) {
-                log.error("ELE ERROR! idNumber already exist,uid={},idNumber={}", userInfo.getUid(), eidUserInfo.getIdnum());
+                log.warn("ELE WARN! idNumber already exist,uid={},idNumber={}", userInfo.getUid(), eidUserInfo.getIdnum());
                 return Triple.of(false, "100339", "身份证号已存在");
             }
 
@@ -333,7 +333,7 @@ public class FaceidServiceImpl implements FaceidService {
 
             return Triple.of(true, "", null);
         } catch (Exception e) {
-            log.error("ELE ERROR! face recognize fail,uid={},query={}", userInfo.getUid(),
+            log.warn("ELE WARN! face recognize fail,uid={},query={}", userInfo.getUid(),
                     JsonUtil.toJson(faceidResultQuery), e);
             return Triple.of(false, "100330", "人脸核身失败");
         }finally {
@@ -343,7 +343,7 @@ public class FaceidServiceImpl implements FaceidService {
 
     private void uploadIdcardInfo(UserInfo userInfo, FaceidResultRsp faceidResultRsp) {
         if (Objects.isNull(faceidResultRsp.getIdCardData()) || Objects.isNull(faceidResultRsp.getIdCardData().getOcrFront()) || Objects.isNull(faceidResultRsp.getIdCardData().getOcrBack())) {
-            log.error("ELE ERROR! acquire user idcard picture error,uid={},result={}", userInfo.getUid(), JsonUtil.toJson(faceidResultRsp));
+            log.warn("ELE WARN! acquire user idcard picture error,uid={},result={}", userInfo.getUid(), JsonUtil.toJson(faceidResultRsp));
             return;
         }
 

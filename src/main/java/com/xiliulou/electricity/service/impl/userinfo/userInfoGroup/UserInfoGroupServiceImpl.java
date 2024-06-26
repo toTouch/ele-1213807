@@ -2,6 +2,7 @@ package com.xiliulou.electricity.service.impl.userinfo.userInfoGroup;
 
 import cn.hutool.core.collection.ConcurrentHashSet;
 import cn.hutool.core.lang.UUID;
+import cn.hutool.core.map.MapBuilder;
 import cn.hutool.core.util.IdUtil;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
@@ -34,17 +35,18 @@ import com.xiliulou.electricity.service.userinfo.userInfoGroup.UserInfoGroupDeta
 import com.xiliulou.electricity.service.userinfo.userInfoGroup.UserInfoGroupService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
+import com.xiliulou.electricity.utils.OperateRecordUtil;
 import com.xiliulou.electricity.vo.userinfo.userInfoGroup.BatchImportUserInfoVO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -88,6 +90,9 @@ public class UserInfoGroupServiceImpl implements UserInfoGroupService {
     @Resource
     private UserInfoGroupDetailHistoryService userInfoGroupDetailHistoryService;
     
+    @Resource
+    private OperateRecordUtil operateRecordUtil;
+    
     @Override
     public R save(UserInfoGroupSaveAndUpdateRequest request, Long operator) {
         boolean result = redisService.setNx(CacheConstant.CACHE_USER_GROUP_SAVE_LOCK + operator, "1", 3 * 1000L, false);
@@ -99,7 +104,7 @@ public class UserInfoGroupServiceImpl implements UserInfoGroupService {
             Long franchiseeId = request.getFranchiseeId();
             String userGroupName = request.getName();
             Integer tenantId = TenantContextHolder.getTenantId();
-    
+            
             Franchisee franchisee = franchiseeService.queryByIdFromCache(franchiseeId);
             if (Objects.isNull(franchisee)) {
                 return R.fail("ELECTRICITY.0038", "未找到加盟商");
@@ -122,6 +127,12 @@ public class UserInfoGroupServiceImpl implements UserInfoGroupService {
     }
     
     @Override
+    public Integer update(UserInfoGroup userInfoGroup) {
+        return userInfoGroupMapper.update(userInfoGroup);
+    }
+    
+    @Override
+    @Transactional(rollbackFor = Exception.class)
     public R remove(Long id, Long operator) {
         UserInfoGroup userInfoGroup = this.queryByIdFromCache(id);
         if (Objects.isNull(userInfoGroup)) {
@@ -134,22 +145,27 @@ public class UserInfoGroupServiceImpl implements UserInfoGroupService {
             return R.ok();
         }
         
-        Integer count = userInfoGroupDetailService.countUserByGroupId(id);
-        if (Objects.nonNull(count) && count > NumberConstant.ZERO) {
-            return R.fail("120113", "该分组中存在用户，请先移除用户后再操作");
-        }
+        // 物理删除分组绑定的用户
+        userInfoGroupDetailService.deleteByGroupNo(userInfoGroup.getGroupNo(), tenantId);
         
+        // 逻辑删除用户分组
         UserInfoGroup delUserInfoGroup = UserInfoGroup.builder().id(id).updateTime(System.currentTimeMillis()).delFlag(CommonConstant.DEL_Y).operator(operator).build();
-        int update = userInfoGroupMapper.update(delUserInfoGroup);
+        Integer update = update(delUserInfoGroup);
+    
         DbUtils.dbOperateSuccessThenHandleCache(update, i -> {
+            // 删除用户分组缓存
             redisService.delete(CacheConstant.CACHE_USER_GROUP + id);
+    
+            // 系统操作记录
+            Map<Object, Object> groupNameMap = MapBuilder.create().put("groupName", userInfoGroup.getName()).build();
+            operateRecordUtil.record(groupNameMap, null);
         });
         
-        return R.ok(update);
+        return R.ok();
     }
     
     @Override
-    public R update(UserInfoGroupSaveAndUpdateRequest request, Long operator) {
+    public R edit(UserInfoGroupSaveAndUpdateRequest request, Long operator) {
         boolean result = redisService.setNx(CacheConstant.CACHE_USER_GROUP_UPDATE_LOCK + operator, "1", 3 * 1000L, false);
         if (!result) {
             return R.fail("ELECTRICITY.0034", "操作频繁");
@@ -169,7 +185,7 @@ public class UserInfoGroupServiceImpl implements UserInfoGroupService {
             if (!Objects.equals(tenantId, oldUserInfo.getTenantId())) {
                 return R.ok();
             }
-    
+            
             Franchisee franchisee = franchiseeService.queryByIdFromCache(franchiseeId);
             if (Objects.isNull(franchisee)) {
                 return R.fail("ELECTRICITY.0038", "未找到加盟商");
@@ -238,6 +254,12 @@ public class UserInfoGroupServiceImpl implements UserInfoGroupService {
         return userInfoGroupMapper.batchUpdateByIds(groupIds, updateTime, operator, delFlag);
     }
     
+    @Slave
+    @Override
+    public List<UserInfoGroup> listByIdsFromDB(List<Long> groupIds) {
+        return userInfoGroupMapper.selectListByIdsFromDB(groupIds);
+    }
+    
     @Override
     public R batchImport(UserInfoGroupBatchImportRequest request, Long operator) {
         Long franchiseeId = request.getFranchiseeId();
@@ -258,7 +280,7 @@ public class UserInfoGroupServiceImpl implements UserInfoGroupService {
         if (!Objects.equals(tenantId, userInfoGroup.getTenantId())) {
             return R.ok();
         }
-    
+        
         Franchisee franchisee = franchiseeService.queryByIdFromCache(franchiseeId);
         if (Objects.isNull(franchisee)) {
             return R.fail("ELECTRICITY.0038", "未找到加盟商");

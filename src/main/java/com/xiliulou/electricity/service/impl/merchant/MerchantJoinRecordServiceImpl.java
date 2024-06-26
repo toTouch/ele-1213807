@@ -472,7 +472,6 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
         merchantJoinUserQueryMode.setCurrentTime(currentTime);
         merchantJoinUserQueryMode.setExpireTime(expiredTime);
         
-        log.info("query join user list for current merchant, request = {}", merchantJoinUserQueryMode);
         //获取当前商户下的用户列表信息
         List<MerchantJoinUserVO> merchantJoinUserVOS = merchantJoinRecordMapper.selectJoinUserList(merchantJoinUserQueryMode);
         
@@ -630,13 +629,12 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
                     break;
             }
             
-            log.error("JOIN ACTIVITY ERROR! Is not new user, joinUid={}, successActivity={}", uid, activityName);
             return R.fail("120121", "此活动仅限新用户参加，您已成功参与过" + activityName + "活动，无法参与，感谢您的支持");
         }
         
         // 平台用户，需判断是否购买过套餐
         if (userInfo.getPayCount() > NumberConstant.ZERO) {
-            log.error("JOIN ACTIVITY ERROR! Is not new user, payCount > 0, joinUid={}", uid);
+            log.warn("JOIN ACTIVITY WARN! Is not new user, payCount > 0, joinUid={}", uid);
             return R.fail("120122", "此活动仅限新用户参加，您已是平台用户无法参与，感谢您的支持");
         }
         
@@ -660,7 +658,7 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
             
             // 实名认证标准，并且userInfo已实名认证
             if (authFlag && Objects.equals(userInfo.getAuthStatus(), UserInfo.AUTH_STATUS_REVIEW_PASSED)) {
-                log.error("JOIN ACTIVITY ERROR! Is not new user, already auth, joinUid={}", uid);
+                log.warn("JOIN ACTIVITY WARN! Is not new user, already auth, joinUid={}", uid);
                 return R.fail("120122", "此活动仅限新用户参加，您已是平台用户无法参与，感谢您的支持");
             }
         }

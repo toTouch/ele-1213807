@@ -818,12 +818,12 @@ public class FranchiseeServiceImpl implements FranchiseeService {
 
         UserInfo userInfo = userInfoService.queryByUidFromCache(SecurityUtils.getUid());
         if (Objects.isNull(userInfo)) {
-            log.error("ELE ERROR! not found user");
+            log.warn("ELE WARN! not found user");
             return Triple.of(false, "ELECTRICITY.0001", "未找到用户");
         }
 
         if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
-            log.error("ELE ERROR! not found userInfo,uid={}", userInfo.getUid());
+            log.warn("ELE WARN! not found userInfo,uid={}", userInfo.getUid());
             return Triple.of(false, "ELECTRICITY.0024", "用户已被禁用");
         }
 

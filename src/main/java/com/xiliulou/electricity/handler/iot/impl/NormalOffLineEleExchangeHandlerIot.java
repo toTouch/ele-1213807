@@ -1,12 +1,14 @@
 package com.xiliulou.electricity.handler.iot.impl;
 
 import cn.hutool.core.util.IdUtil;
+import cn.hutool.core.util.PhoneUtil;
 import cn.hutool.core.util.StrUtil;
 import com.google.common.collect.Maps;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.thread.XllThreadPoolExecutorService;
 import com.xiliulou.core.thread.XllThreadPoolExecutors;
+import com.xiliulou.core.utils.PhoneUtils;
 import com.xiliulou.core.utils.TimeUtils;
 import com.xiliulou.electricity.config.WechatTemplateNotificationConfig;
 import com.xiliulou.electricity.constant.CacheConstant;
@@ -60,8 +62,10 @@ import org.springframework.stereotype.Service;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
+import java.util.regex.Matcher;
 import java.util.stream.Collectors;
 
+import static cn.hutool.core.lang.PatternPool.MOBILE;
 import static com.xiliulou.electricity.entity.ExchangeBatterySoc.RETURN_POWER_DEFAULT;
 
 /**
@@ -138,22 +142,19 @@ public class NormalOffLineEleExchangeHandlerIot extends AbstractElectricityIotHa
     @Autowired
     private ExchangeBatterySocService exchangeBatterySocService;
     
-    
     XllThreadPoolExecutorService offLineExchangeBatterSocThreadPool = XllThreadPoolExecutors.newFixedThreadPool("OFF_LINE_EXCHANGE_BATTERY_SOC_ANALYZE", 1,
             "off-line-exchange-battery-soc-pool-thread");
     
-    
     @Override
     public void postHandleReceiveMsg(ElectricityCabinet electricityCabinet, ReceiverMessage receiverMessage) {
-        MDC.put(CommonConstant.TRACE_ID, IdUtil.fastSimpleUUID());
         
         OfflineOrderMessage offlineOrderMessage = JsonUtil.fromJson(receiverMessage.getOriginContent(), OfflineOrderMessage.class);
         if (StringUtils.isBlank(receiverMessage.getSessionId()) || Objects.isNull(offlineOrderMessage)) {
             log.warn("OFFLINE EXCHANGE WARN! originalMessage is illegal,sessionId={}", receiverMessage.getSessionId());
             return;
         }
-        
-        User user = userService.queryByUserPhone(offlineOrderMessage.getPhone(), User.TYPE_USER_NORMAL_WX_PRO, electricityCabinet.getTenantId());
+    
+        User user = userService.queryByUserPhone(acquireUserPhone(offlineOrderMessage.getPhone()), User.TYPE_USER_NORMAL_WX_PRO, electricityCabinet.getTenantId());
         if (Objects.isNull(user)) {
             orderConfirm(electricityCabinet, offlineOrderMessage, null);
             log.warn("OFFLINE EXCHANGE WARN! not found user,phone={},sessionId={}", offlineOrderMessage.getPhone(), receiverMessage.getSessionId());
@@ -322,7 +323,6 @@ public class NormalOffLineEleExchangeHandlerIot extends AbstractElectricityIotHa
         
     }
     
-    
     /**
      * 换电取走电池 记录soc
      */
@@ -457,7 +457,7 @@ public class NormalOffLineEleExchangeHandlerIot extends AbstractElectricityIotHa
         String orderStatus = offlineOrderMessage.getIsProcessFail() ? ElectricityCabinetOrder.ORDER_EXCEPTION_CANCEL : offlineOrderMessage.getStatus();
         
         return ElectricityCabinetOrder.builder().orderId(generateOrderId(electricityCabinet.getId(), offlineOrderMessage.getNewCellNo(), user.getUid())).uid(user.getUid())
-                .phone(offlineOrderMessage.getPhone()).electricityCabinetId(electricityCabinet.getId()).oldCellNo(oldCellNo).newCellNo(newCellNo)
+                .phone(user.getPhone()).electricityCabinetId(electricityCabinet.getId()).oldCellNo(oldCellNo).newCellNo(newCellNo)
                 .newElectricityBatterySn(offlineOrderMessage.getNewElectricityBatterySn()).oldElectricityBatterySn(offlineOrderMessage.getOldElectricityBatterySn()).orderSeq(null)
                 .status(orderStatus).source(Objects.isNull(offlineOrderMessage.getOfflineOrderStatus()) ? ORDER_SOURCE_FOR_OFFLINE : offlineOrderMessage.getOfflineOrderStatus())
                 .paymentMethod(BatteryMemberCard.BUSINESS_TYPE_BATTERY).createTime(offlineOrderMessage.getStartTime()).updateTime(offlineOrderMessage.getEndTime())
@@ -550,6 +550,24 @@ public class NormalOffLineEleExchangeHandlerIot extends AbstractElectricityIotHa
         if (!sendResult.getLeft()) {
             log.warn("OFFLINE EXCHANGE WARN! send command error! orderId={}", offlineOrderMessage.getOrderId());
         }
+    }
+    
+    private static String acquireUserPhone(String receivePhone) {
+        String phone = "";
+        if (StringUtils.isBlank(receivePhone)) {
+            return phone;
+        }
+        
+        if (PhoneUtil.isMobile(receivePhone)) {
+            return receivePhone;
+        }
+        
+        Matcher matcher = MOBILE.matcher(receivePhone);
+        if(matcher.find()){
+            return matcher.group(0);
+        }
+        
+        return phone;
     }
     
     private String generateOrderId(Integer id, String cellNo, Long uid) {

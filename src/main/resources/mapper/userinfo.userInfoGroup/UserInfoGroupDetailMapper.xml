@@ -25,6 +25,10 @@
         </if>
     </delete>
     
+    <delete id="deleteByGroupNo">
+        delete from t_user_info_group_detail where tenant_id = #{tenantId} and group_no = #{groupNo}
+    </delete>
+    
     <select id="selectByUid" resultType="com.xiliulou.electricity.entity.userinfo.userInfoGroup.UserInfoGroupDetail">
         select
         <include refid="basic_field"/>

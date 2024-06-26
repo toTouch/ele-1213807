@@ -149,4 +149,6 @@ public class ElectricityCabinetQuery {
     private String productKey;
     
     private String deviceName;
+    
+    private String version;
 }

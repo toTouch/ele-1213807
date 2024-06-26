@@ -42,4 +42,6 @@ public interface MerchantAttrService {
     Boolean checkInvitationTime(MerchantAttr merchantAttr, Long invitationTime);
     
     MerchantAttr queryUpgradeCondition(Long franchiseeId);
+    
+    Triple<Boolean, String, Object> updateChannelSwitchState(Integer tenantId, Integer status);
 }

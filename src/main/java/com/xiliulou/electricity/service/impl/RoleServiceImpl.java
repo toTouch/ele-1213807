@@ -2,12 +2,12 @@ package com.xiliulou.electricity.service.impl;
 
 import cn.hutool.core.util.StrUtil;
 import com.google.api.client.util.Sets;
-import com.google.common.collect.Lists;
 import com.jpay.util.StringUtils;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.core.web.R;
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mapper.RoleMapper;
@@ -58,6 +58,7 @@ public class RoleServiceImpl implements RoleService {
      * @param id 主键
      * @return 实例对象
      */
+    @Slave
     @Override
     public Role queryByIdFromDB(Long id) {
         return this.roleMapper.queryById(id);
@@ -196,6 +197,7 @@ public class RoleServiceImpl implements RoleService {
 
 
     @Override
+    @Slave
     public Pair<Boolean, Object> getMenuByUid() {
         Long uid = SecurityUtils.getUid();
         if (Objects.isNull(uid)) {
@@ -207,16 +209,9 @@ public class RoleServiceImpl implements RoleService {
             return Pair.of(true, Collections.emptyList());
         }
 
-        ArrayList<PermissionResource> result = Lists.newArrayList();
 
-        for (Long rid : rids) {
-            List<PermissionResource> permissionResources = permissionResourceService.queryPermissionsByRole(rid);
-            if (!DataUtil.collectionIsUsable(permissionResources)) {
-                continue;
-            }
-            //result.addAll(permissionResources.stream().filter(e -> e.getType().equals(PermissionResource.TYPE_PAGE)).sorted(Comparator.comparing(PermissionResource::getSort)).collect(Collectors.toList()));
-            result.addAll(permissionResources.stream().sorted(Comparator.comparing(PermissionResource::getSort)).collect(Collectors.toList()));
-        }
+        List<PermissionResource> result = permissionResourceService.queryPermissionsByRoleList(rids).stream()
+                .sorted(Comparator.comparing(PermissionResource::getSort)).collect(Collectors.toList());
 
         List<PermissionResourceTree> permissionResourceTrees = TreeUtils.buildTree(result, PermissionResource.MENU_ROOT);
         return Pair.of(true, permissionResourceTrees);
@@ -247,7 +242,7 @@ public class RoleServiceImpl implements RoleService {
         return Collections.emptyList();
     }
 
-    //
+    @Slave
     @Override
     public R queryAll() {
         //租户
@@ -262,6 +257,7 @@ public class RoleServiceImpl implements RoleService {
         return R.ok(roles.stream().filter(e -> e.getId() > 1).collect(Collectors.toList()));
     }
 
+    @Slave
     @Override
     public Long queryByName(String name, Integer tenantId) {
         Role role = roleMapper.queryByName(name, tenantId);

@@ -208,7 +208,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
         
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
-            log.error("ELE ERROR! not found user ");
+            log.warn("ELE WARN! not found user ");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         
@@ -261,7 +261,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
         
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
-            log.error("ELE ERROR! not found user ");
+            log.warn("ELE WARN! not found user ");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         
@@ -343,7 +343,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
         Franchisee franchisee = franchiseeService.queryByIdFromCache(franchiseeId);
         if (Objects.isNull(franchisee)) {
             log.error("Franchisee id is invalid! uid = {}", uid);
-            return R.fail("ELECTRICITY.0038", "未找到加盟商");
+            return R.fail("ELECTRICITY.0038", "请选择加盟商");
         }
         
         // 校验库房
@@ -1037,12 +1037,12 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
                 new LambdaQueryWrapper<ElectricityBattery>().eq(ElectricityBattery::getId, id).eq(ElectricityBattery::getDelFlag, ElectricityBattery.DEL_NORMAL)
                         .eq(ElectricityBattery::getTenantId, TenantContextHolder.getTenantId()));
         if (Objects.isNull(electricityBattery)) {
-            log.error("ELE ERROR ,not found electricitybattery,batteryId={}", id);
+            log.warn("ELE WARN ,not found electricitybattery,batteryId={}", id);
             return R.fail("100225", "未找到电池!");
         }
         
         if (ObjectUtil.equal(ElectricityBattery.BUSINESS_STATUS_LEASE, electricityBattery.getBusinessStatus())) {
-            log.error("ELE ERROR ,electricity_battery is using,batteryId={}", id);
+            log.warn("ELE WARN ,electricity_battery is using,batteryId={}", id);
             return R.fail("100226", "电池正在租用中,无法删除!");
         }
         

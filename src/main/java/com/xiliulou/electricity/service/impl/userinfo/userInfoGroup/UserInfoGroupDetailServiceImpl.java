@@ -440,4 +440,9 @@ public class UserInfoGroupDetailServiceImpl implements UserInfoGroupDetailServic
         }
     }
     
+    @Override
+    public Integer deleteByGroupNo(String groupNo, Integer tenantId) {
+        return userInfoGroupDetailMapper.deleteByGroupNo(groupNo, tenantId);
+    }
+    
 }

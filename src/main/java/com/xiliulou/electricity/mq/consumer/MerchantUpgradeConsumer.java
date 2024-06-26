@@ -217,6 +217,7 @@ public class MerchantUpgradeConsumer implements RocketMQListener<String> {
         //发送商户升级MQ  重新计算差额
         MerchantModify merchantModify = new MerchantModify();
         merchantModify.setMerchantId(merchant.getId());
+        merchantModify.setUid(userInfoExtra.getUid());
         rocketMqService.sendAsyncMsg(MqProducerConstant.MERCHANT_MODIFY_TOPIC, JsonUtil.toJson(merchantModify));
     }
 }
