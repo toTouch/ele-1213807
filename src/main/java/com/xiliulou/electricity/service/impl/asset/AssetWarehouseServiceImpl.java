@@ -7,6 +7,7 @@ import com.xiliulou.electricity.bo.asset.AssetWarehouseBO;
 import com.xiliulou.electricity.bo.asset.AssetWarehouseNameBO;
 import com.xiliulou.electricity.constant.AssetConstant;
 import com.xiliulou.electricity.constant.CacheConstant;
+import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.enums.asset.StockStatusEnum;
 import com.xiliulou.electricity.mapper.asset.AssetWarehouseMapper;
 import com.xiliulou.electricity.query.ElectricityBatteryQuery;
@@ -19,6 +20,7 @@ import com.xiliulou.electricity.request.asset.AssetWarehouseSaveOrUpdateRequest;
 import com.xiliulou.electricity.service.ElectricityBatteryService;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
 import com.xiliulou.electricity.service.ElectricityCarService;
+import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.asset.AssetWarehouseService;
 import com.xiliulou.electricity.service.asset.ElectricityCabinetV2Service;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
@@ -62,6 +64,9 @@ public class AssetWarehouseServiceImpl implements AssetWarehouseService {
     @Resource
     private ElectricityCabinetService electricityCabinetService;
     
+    @Resource
+    private FranchiseeService franchiseeService;
+    
     @Override
     public R save(AssetWarehouseSaveOrUpdateRequest assetWarehouseSaveOrUpdateRequest, Long uid) {
         
@@ -99,6 +104,7 @@ public class AssetWarehouseServiceImpl implements AssetWarehouseService {
         List<AssetWarehouseVO> rspList = Collections.emptyList();
         List<AssetWarehouseBO> assetWarehouseBOList = assetWarehouseMapper.selectListByPage(assetWarehouseQueryModel);
         if (CollectionUtils.isNotEmpty(assetWarehouseBOList)) {
+            
             rspList = assetWarehouseBOList.stream().map(item -> {
                 AssetWarehouseVO assetWarehouseVO = new AssetWarehouseVO();
                 BeanUtils.copyProperties(item, assetWarehouseVO);
@@ -117,6 +123,12 @@ public class AssetWarehouseServiceImpl implements AssetWarehouseService {
                 ElectricityCarQuery electricityCarQuery = ElectricityCarQuery.builder().tenantId(item.getTenantId()).warehouseId(item.getId())
                         .stockStatus(StockStatusEnum.STOCK.getCode()).build();
                 Integer carCount = (Integer) electricityCarService.queryCountByWarehouse(electricityCarQuery).getData();
+                
+                Franchisee franchisee = franchiseeService.queryByIdFromCache(item.getFranchiseeId());
+                assetWarehouseVO.setFranchiseeId(item.getFranchiseeId());
+                if (Objects.nonNull(franchisee)){
+                    assetWarehouseVO.setFranchiseeName(franchisee.getName());
+                }
                 
                 assetWarehouseVO.setBatteryCount(batteryCount);
                 assetWarehouseVO.setCabinetCount(cabinetCount);
