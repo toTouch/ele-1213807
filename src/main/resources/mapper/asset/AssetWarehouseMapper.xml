@@ -101,7 +101,7 @@
                 and name like concat('%', #{name}, '%')
             </if>
             <if test="franchiseeId != null">
-                and franchisee_id = franchiseeId
+                and franchisee_id = #{franchiseeId}
             </if>
             and tenant_id = #{tenantId} and del_flag = 0
         </where>
