@@ -116,7 +116,7 @@
                 and name like concat('%', #{name}, '%')
             </if>
             <if test="franchiseeId != null">
-                and franchisee_id = franchiseeId
+                and franchisee_id = #{franchiseeId}
             </if>
         </where>
         ORDER BY id DESC
