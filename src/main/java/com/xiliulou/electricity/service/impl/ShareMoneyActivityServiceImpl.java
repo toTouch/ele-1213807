@@ -32,6 +32,7 @@ import com.xiliulou.electricity.vo.ShareMoneyActivityVO;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,6 +45,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 
 /**
@@ -95,8 +97,8 @@ public class ShareMoneyActivityServiceImpl implements ShareMoneyActivityService 
     private JoinShareMoneyActivityHistoryService joinShareMoneyActivityHistoryService;
     
     
-    @Autowired
-    private AssertPermissionService assertPermissionService;
+    @Resource
+    private FranchiseeService franchiseeService;
 
     
     
@@ -388,9 +390,14 @@ public class ShareMoneyActivityServiceImpl implements ShareMoneyActivityService 
                     shareMoneyActivityVO.setBatteryPackages(getAllBatteryPackages(shareMoneyActivityQuery.getTenantId()));
                 }
             }
+    
+            Integer franchiseeId = shareMoneyActivity.getFranchiseeId();
+            if (Objects.nonNull(franchiseeId)) {
+                shareMoneyActivityVO.setFranchiseeName(Optional.ofNullable(franchiseeService.queryByIdFromCache(franchiseeId.longValue())).map(Franchisee::getName).orElse(
+                        StringUtils.EMPTY));
+            }
 
             shareMoneyActivityVOList.add(shareMoneyActivityVO);
-
         }
 
         return R.ok(shareMoneyActivityVOList);
