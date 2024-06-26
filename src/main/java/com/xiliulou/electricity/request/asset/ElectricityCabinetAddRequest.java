@@ -57,8 +57,4 @@ public class ElectricityCabinetAddRequest {
      */
     private Long updateTime;
     
-    /**
-     * 加盟商id
-     */
-    private Long franchiseeId;
 }
