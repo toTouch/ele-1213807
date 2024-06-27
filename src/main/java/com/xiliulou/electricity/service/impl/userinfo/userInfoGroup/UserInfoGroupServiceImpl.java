@@ -287,7 +287,7 @@ public class UserInfoGroupServiceImpl implements UserInfoGroupService {
         if (Objects.isNull(franchisee)) {
             return R.fail("ELECTRICITY.0038", "未找到加盟商");
         }
-    
+        
         ConcurrentHashSet<String> notExistsPhone = new ConcurrentHashSet<>();
         ConcurrentHashSet<String> notBoundFranchiseePhone = new ConcurrentHashSet<>();
         ConcurrentHashSet<String> notSameFranchiseePhone = new ConcurrentHashSet<>();
@@ -303,30 +303,30 @@ public class UserInfoGroupServiceImpl implements UserInfoGroupService {
                 notExistsPhone.addAll(phoneList);
                 return;
             }
-
-            List<User> notExistUsers = userList.parallelStream().filter(u -> !phoneList.contains(u.getPhone())).collect(Collectors.toList());
+            
+            List<User> notExistUsers = userList.stream().filter(u -> !phoneList.contains(u.getPhone())).collect(Collectors.toList());
             if (CollectionUtils.isNotEmpty(notExistUsers)) {
-                List<String> notExistPhones1 = notExistUsers.parallelStream().map(User::getPhone).collect(Collectors.toList());
+                List<String> notExistPhones1 = notExistUsers.stream().map(User::getPhone).collect(Collectors.toList());
                 notExistsPhone.addAll(notExistPhones1);
                 userList.removeAll(notExistUsers);
             }
-
-            List<Long> uidList = userList.parallelStream().map(User::getUid).collect(Collectors.toList());
+            
+            List<Long> uidList = userList.stream().map(User::getUid).collect(Collectors.toList());
             List<UserInfo> userInfoList = userInfoService.listByUids(uidList, tenantId);
             if (CollectionUtils.isEmpty(userInfoList)) {
-                List<String> notExistsPhones2 = userList.parallelStream().map(User::getPhone).collect(Collectors.toList());
+                List<String> notExistsPhones2 = userList.stream().map(User::getPhone).collect(Collectors.toList());
                 notExistsPhone.addAll(notExistsPhones2);
                 return;
             }
-
-            List<UserInfo> notExistUserInfos = userInfoList.parallelStream().filter(userInfo -> !uidList.contains(userInfo.getUid())).collect(Collectors.toList());
+            
+            List<UserInfo> notExistUserInfos = userInfoList.stream().filter(userInfo -> !uidList.contains(userInfo.getUid())).collect(Collectors.toList());
             if (CollectionUtils.isNotEmpty(notExistUserInfos)) {
-                List<String> notExistsPhones3 = notExistUserInfos.parallelStream().map(UserInfo::getPhone).collect(Collectors.toList());
+                List<String> notExistsPhones3 = notExistUserInfos.stream().map(UserInfo::getPhone).collect(Collectors.toList());
                 notExistsPhone.addAll(notExistsPhones3);
                 userInfoList.removeAll(notExistUserInfos);
             }
-
-            userInfoList.parallelStream().forEach(userInfo -> {
+            
+            userInfoList.forEach(userInfo -> {
                 Long bindFranchiseeId = userInfo.getFranchiseeId();
                 if (Objects.isNull(bindFranchiseeId) || Objects.equals(bindFranchiseeId, NumberConstant.ZERO_L)) {
                     notBoundFranchiseePhone.add(userInfo.getPhone());
