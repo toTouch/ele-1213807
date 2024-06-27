@@ -49,7 +49,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.Objects;
 
@@ -135,41 +134,41 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
             }
         }
         
-        String franchiseeMoveDetail = null;
-        //若开启了迁移加盟商
-        if (Objects.equals(electricityConfigAddAndUpdateQuery.getIsMoveFranchisee(), ElectricityConfig.MOVE_FRANCHISEE_OPEN)) {
-            if (Objects.isNull(electricityConfigAddAndUpdateQuery.getFranchiseeMoveInfo()) || Objects.isNull(
-                    electricityConfigAddAndUpdateQuery.getFranchiseeMoveInfo().getBatteryModel())) {
-                return R.fail("ELECTRICITY.0007", "加盟商迁移信息不能为空");
-            }
-            
-            FranchiseeMoveInfo franchiseeMoveInfoQuery = electricityConfigAddAndUpdateQuery.getFranchiseeMoveInfo();
-            
-            Franchisee oldFranchisee = franchiseeService.queryByIdFromCache(franchiseeMoveInfoQuery.getFromFranchiseeId());
-            Franchisee newFranchisee = franchiseeService.queryByIdFromCache(franchiseeMoveInfoQuery.getToFranchiseeId());
-            
-            Triple<Boolean, String, Object> verifyFranchiseeResult = verifyFranchisee(oldFranchisee, newFranchisee, franchiseeMoveInfoQuery);
-            if (!verifyFranchiseeResult.getLeft()) {
-                return R.fail(verifyFranchiseeResult.getMiddle(), (String) verifyFranchiseeResult.getRight());
-            }
-            
-            FranchiseeMoveInfo franchiseeMoveInfo = new FranchiseeMoveInfo();
-            franchiseeMoveInfo.setFromFranchiseeId(electricityConfigAddAndUpdateQuery.getFranchiseeMoveInfo().getFromFranchiseeId());
-            franchiseeMoveInfo.setToFranchiseeId(electricityConfigAddAndUpdateQuery.getFranchiseeMoveInfo().getToFranchiseeId());
-            franchiseeMoveInfo.setBatteryModel(electricityConfigAddAndUpdateQuery.getFranchiseeMoveInfo().getBatteryModel());
-            franchiseeMoveInfo.setFromFranchiseeName(oldFranchisee.getName());
-            franchiseeMoveInfo.setToFranchiseeName(newFranchisee.getName());
-            franchiseeMoveDetail = JsonUtil.toJson(franchiseeMoveInfo);
-            
-            //将旧加盟商下套餐迁移到新加盟商
-            electricityMemberCardService.moveMemberCard(franchiseeMoveInfo, newFranchisee);
-            
-            //将旧加盟商下保险迁移到新加盟商
-            franchiseeInsuranceService.moveInsurance(franchiseeMoveInfo, newFranchisee);
-            
-            //将旧加盟商下的车辆型号迁移到新加盟商下
-            electricityCarModelService.moveCarModel(franchiseeMoveInfo);
-        }
+//        String franchiseeMoveDetail = null;
+//        //若开启了迁移加盟商
+//        if (Objects.equals(electricityConfigAddAndUpdateQuery.getIsMoveFranchisee(), ElectricityConfig.MOVE_FRANCHISEE_OPEN)) {
+//            if (Objects.isNull(electricityConfigAddAndUpdateQuery.getFranchiseeMoveInfo()) || Objects.isNull(
+//                    electricityConfigAddAndUpdateQuery.getFranchiseeMoveInfo().getBatteryModel())) {
+//                return R.fail("ELECTRICITY.0007", "加盟商迁移信息不能为空");
+//            }
+//
+//            FranchiseeMoveInfo franchiseeMoveInfoQuery = electricityConfigAddAndUpdateQuery.getFranchiseeMoveInfo();
+//
+//            Franchisee oldFranchisee = franchiseeService.queryByIdFromCache(franchiseeMoveInfoQuery.getFromFranchiseeId());
+//            Franchisee newFranchisee = franchiseeService.queryByIdFromCache(franchiseeMoveInfoQuery.getToFranchiseeId());
+//
+//            Triple<Boolean, String, Object> verifyFranchiseeResult = verifyFranchisee(oldFranchisee, newFranchisee, franchiseeMoveInfoQuery);
+//            if (!verifyFranchiseeResult.getLeft()) {
+//                return R.fail(verifyFranchiseeResult.getMiddle(), (String) verifyFranchiseeResult.getRight());
+//            }
+//
+//            FranchiseeMoveInfo franchiseeMoveInfo = new FranchiseeMoveInfo();
+//            franchiseeMoveInfo.setFromFranchiseeId(electricityConfigAddAndUpdateQuery.getFranchiseeMoveInfo().getFromFranchiseeId());
+//            franchiseeMoveInfo.setToFranchiseeId(electricityConfigAddAndUpdateQuery.getFranchiseeMoveInfo().getToFranchiseeId());
+//            franchiseeMoveInfo.setBatteryModel(electricityConfigAddAndUpdateQuery.getFranchiseeMoveInfo().getBatteryModel());
+//            franchiseeMoveInfo.setFromFranchiseeName(oldFranchisee.getName());
+//            franchiseeMoveInfo.setToFranchiseeName(newFranchisee.getName());
+//            franchiseeMoveDetail = JsonUtil.toJson(franchiseeMoveInfo);
+//
+//            //将旧加盟商下套餐迁移到新加盟商
+//            electricityMemberCardService.moveMemberCard(franchiseeMoveInfo, newFranchisee);
+//
+//            //将旧加盟商下保险迁移到新加盟商
+//            franchiseeInsuranceService.moveInsurance(franchiseeMoveInfo, newFranchisee);
+//
+//            //将旧加盟商下的车辆型号迁移到新加盟商下
+//            electricityCarModelService.moveCarModel(franchiseeMoveInfo);
+//        }
         
         //若开启免押
         if (Objects.nonNull(electricityConfigAddAndUpdateQuery.getFreeDepositType()) && !Objects.equals(electricityConfigAddAndUpdateQuery.getFreeDepositType(),
@@ -210,8 +209,8 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
             electricityConfig.setIsEnableSelfOpen(electricityConfigAddAndUpdateQuery.getIsEnableSelfOpen());
             //electricityConfig.setIsEnableReturnBoxCheck(electricityConfigAddAndUpdateQuery.getIsEnableReturnBoxCheck());
             electricityConfig.setFreeDepositType(electricityConfigAddAndUpdateQuery.getFreeDepositType());
-            electricityConfig.setIsMoveFranchisee(electricityConfigAddAndUpdateQuery.getIsMoveFranchisee());
-            electricityConfig.setFranchiseeMoveInfo(franchiseeMoveDetail);
+//            electricityConfig.setIsMoveFranchisee(electricityConfigAddAndUpdateQuery.getIsMoveFranchisee());
+//            electricityConfig.setFranchiseeMoveInfo(franchiseeMoveDetail);
             electricityConfig.setIsOpenCarBatteryBind(electricityConfigAddAndUpdateQuery.getIsOpenCarBatteryBind());
             electricityConfig.setIsOpenCarControl(electricityConfigAddAndUpdateQuery.getIsOpenCarControl());
             electricityConfig.setIsZeroDepositAuditEnabled(electricityConfigAddAndUpdateQuery.getIsZeroDepositAuditEnabled());
@@ -250,8 +249,8 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
         //electricityConfig.setIsEnableReturnBoxCheck(electricityConfigAddAndUpdateQuery.getIsEnableReturnBoxCheck());
         electricityConfig.setIsOpenInsurance(electricityConfigAddAndUpdateQuery.getIsOpenInsurance());
         electricityConfig.setFreeDepositType(electricityConfigAddAndUpdateQuery.getFreeDepositType());
-        electricityConfig.setIsMoveFranchisee(electricityConfigAddAndUpdateQuery.getIsMoveFranchisee());
-        electricityConfig.setFranchiseeMoveInfo(franchiseeMoveDetail);
+//        electricityConfig.setIsMoveFranchisee(electricityConfigAddAndUpdateQuery.getIsMoveFranchisee());
+//        electricityConfig.setFranchiseeMoveInfo(franchiseeMoveDetail);
         electricityConfig.setIsOpenCarBatteryBind(electricityConfigAddAndUpdateQuery.getIsOpenCarBatteryBind());
         electricityConfig.setIsOpenCarControl(electricityConfigAddAndUpdateQuery.getIsOpenCarControl());
         electricityConfig.setIsZeroDepositAuditEnabled(electricityConfigAddAndUpdateQuery.getIsZeroDepositAuditEnabled());
@@ -270,6 +269,7 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
         return R.ok();
     }
     
+    @Deprecated
     private Triple<Boolean, String, Object> verifyFranchisee(Franchisee oldFranchisee, Franchisee newFranchisee, FranchiseeMoveInfo franchiseeMoveInfoQuery) {
         //旧加盟商校验
         if (Objects.isNull(oldFranchisee)) {
@@ -356,7 +356,7 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
         //根据appId获取租户id
         ElectricityPayParams electricityPayParams = electricityPayParamsService.selectTenantId(appId);
         if (Objects.isNull(electricityPayParams)) {
-            log.error("ELE ERROR! not found tenant,appId={}", appId);
+            log.warn("ELE WARN! not found tenant,appId={}", appId);
             return tenantConfigVO;
         }
         Integer tenantId = electricityPayParams.getTenantId();

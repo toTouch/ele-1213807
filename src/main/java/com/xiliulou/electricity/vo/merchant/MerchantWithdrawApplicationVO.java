@@ -37,7 +37,7 @@ public class MerchantWithdrawApplicationVO {
     /**
      * 商户名称
      */
-    private String Name;
+    private String name;
     
     /**
      * 商户电话
@@ -93,5 +93,16 @@ public class MerchantWithdrawApplicationVO {
      * 真实原因，微信侧返回的错误原因
      */
     private String realReason;
+    
+    /**
+     * 支付机构返回的批次单号
+     */
+    private String transactionBatchId;
+    
+    /**
+     * 支付机构返回的批次明细单号
+     * transactionDetailId
+     */
+    private String transactionDetailId;
     
 }

@@ -90,11 +90,12 @@ public class AdminSupperServiceImpl implements AdminSupperService {
      *
      * @param tenantId      租户ID
      * @param batterySnList 电池SN集
+     * @param violentDel 是否暴力删除
      * @return Pair<已删除的电池编码 、 未删除的电池编码>
      */
     @Transactional
     @Override
-    public Pair<List<String>, List<String>> delBatteryBySnList(Integer tenantId, List<String> batterySnList) {
+    public Pair<List<String>, List<String>> delBatteryBySnList(Integer tenantId, List<String> batterySnList, Integer violentDel) {
         if (ObjectUtils.isEmpty(tenantId) || CollectionUtils.isEmpty(batterySnList)) {
             throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
@@ -129,34 +130,39 @@ public class AdminSupperServiceImpl implements AdminSupperService {
             batterySnFailList.addAll(batterySnDiffList);
         }
         
-        // 根据加盟商 ID 对 DB 数据进行分组
-        Map<Long, List<ElectricityBattery>> dbBatteryFranchiseeIdGroupMap = dbBatteryList.stream().collect(Collectors.groupingBy(ElectricityBattery::getFranchiseeId));
-        dbBatteryFranchiseeIdGroupMap.forEach((k, v) -> {
-            // 校验加盟商是否正在进行资产盘点
-            Integer status = assetInventoryService.queryInventoryStatusByFranchiseeId(k, AssetTypeEnum.ASSET_TYPE_BATTERY.getCode());
-            if (Objects.equals(status, AssetConstant.ASSET_INVENTORY_STATUS_TAKING)) {
-                List<String> stocktakingSnList = v.stream().map(ElectricityBattery::getSn).collect(Collectors.toList());
-                batterySnFailList.addAll(stocktakingSnList);
-            } else {
-                batteryWaitList.addAll(v);
-            }
-        });
-        
-        // 根据 UID 是否为空分组
-        Map<Boolean, List<ElectricityBattery>> rentGroupBatteryList = batteryWaitList.stream()
-                .collect(Collectors.groupingBy(batteryWait -> batteryWait.getUid() != null, Collectors.mapping(Function.identity(), Collectors.toList())));
-        rentGroupBatteryList.forEach((k, v) -> {
-            // 电池租用中的电池，不允许删除
-            if (Boolean.TRUE.equals(k)) {
-                List<String> rentSnList = v.stream().map(ElectricityBattery::getSn).collect(Collectors.toList());
-                batterySnFailList.addAll(rentSnList);
-                
-                // 从待删除的里面删除这条数据
-                batteryWaitList.removeIf(batteryWait -> rentSnList.contains(batteryWait.getSn()));
-            } else {
-                batteryWaitList.addAll(v);
-            }
-        });
+        // 暴力删除
+        if (ObjectUtils.isNotEmpty(violentDel) && 1 == violentDel) {
+            batteryWaitList.addAll(dbBatteryList);
+        } else {
+            // 根据加盟商 ID 对 DB 数据进行分组
+            Map<Long, List<ElectricityBattery>> dbBatteryFranchiseeIdGroupMap = dbBatteryList.stream().collect(Collectors.groupingBy(ElectricityBattery::getFranchiseeId));
+            dbBatteryFranchiseeIdGroupMap.forEach((k, v) -> {
+                // 校验加盟商是否正在进行资产盘点
+                Integer status = assetInventoryService.queryInventoryStatusByFranchiseeId(k, AssetTypeEnum.ASSET_TYPE_BATTERY.getCode());
+                if (Objects.equals(status, AssetConstant.ASSET_INVENTORY_STATUS_TAKING)) {
+                    List<String> stocktakingSnList = v.stream().map(ElectricityBattery::getSn).collect(Collectors.toList());
+                    batterySnFailList.addAll(stocktakingSnList);
+                } else {
+                    batteryWaitList.addAll(v);
+                }
+            });
+            
+            // 根据 UID 是否为空分组
+            Map<Boolean, List<ElectricityBattery>> rentGroupBatteryList = batteryWaitList.stream()
+                    .collect(Collectors.groupingBy(batteryWait -> batteryWait.getUid() != null, Collectors.mapping(Function.identity(), Collectors.toList())));
+            rentGroupBatteryList.forEach((k, v) -> {
+                // 电池租用中的电池，不允许删除
+                if (Boolean.TRUE.equals(k)) {
+                    List<String> rentSnList = v.stream().map(ElectricityBattery::getSn).collect(Collectors.toList());
+                    batterySnFailList.addAll(rentSnList);
+                    
+                    // 从待删除的里面删除这条数据
+                    batteryWaitList.removeIf(batteryWait -> rentSnList.contains(batteryWait.getSn()));
+                } else {
+                    batteryWaitList.addAll(v);
+                }
+            });
+        }
         
         // 对等待删除的数据，进行删除
         List<String> batteryWaitSnList = batteryWaitList.stream().map(ElectricityBattery::getSn).distinct().collect(Collectors.toList());

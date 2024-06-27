@@ -118,4 +118,11 @@ public class MerchantUpdateShowVO {
      * 修改时间
      */
     private Long updateTime;
+    
+    /**
+     * <p>
+     *    Description: 第三方openid
+     * </p>
+    */
+    private String openId;
 }

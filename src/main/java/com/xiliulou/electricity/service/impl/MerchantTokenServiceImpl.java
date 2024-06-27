@@ -6,26 +6,28 @@ import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.http.resttemplate.service.RestTemplateService;
 import com.xiliulou.core.json.JsonUtil;
+import com.xiliulou.electricity.config.merchant.MerchantConfig;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.dto.WXMinProAuth2SessionResult;
 import com.xiliulou.electricity.dto.WXMinProPhoneResultDTO;
-import com.xiliulou.electricity.entity.ElectricityPayParams;
+import com.xiliulou.electricity.entity.Tenant;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.UserOauthBind;
 import com.xiliulou.electricity.entity.merchant.Merchant;
 import com.xiliulou.electricity.query.merchant.MerchantLoginRequest;
 import com.xiliulou.electricity.service.ElectricityPayParamsService;
+import com.xiliulou.electricity.service.TenantService;
 import com.xiliulou.electricity.service.UserOauthBindService;
 import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.service.merchant.ChannelEmployeeService;
 import com.xiliulou.electricity.service.merchant.MerchantService;
 import com.xiliulou.electricity.service.merchant.MerchantTokenService;
 import com.xiliulou.electricity.service.token.WxProThirdAuthenticationServiceImpl;
-import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.vo.merchant.ChannelEmployeeVO;
 import com.xiliulou.electricity.vo.merchant.MerchantLoginVO;
 import com.xiliulou.security.authentication.JwtTokenManager;
 import com.xiliulou.security.bean.TokenUser;
+import com.xiliulou.security.constant.TokenConstant;
 import io.jsonwebtoken.lang.Collections;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
@@ -37,6 +39,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -51,6 +55,11 @@ import java.util.stream.Collectors;
 @Slf4j
 public class MerchantTokenServiceImpl implements MerchantTokenService {
     
+    @Resource
+    private MerchantConfig merchantConfig;
+    
+    @Resource
+    private TenantService tenantService;
     
     @Autowired
     private UserService userService;
@@ -81,29 +90,30 @@ public class MerchantTokenServiceImpl implements MerchantTokenService {
     JwtTokenManager jwtTokenManager;
     
     @Override
-    public Triple<Boolean, String, Object> login(MerchantLoginRequest merchantLoginRequest) {
-        Integer tenantId = TenantContextHolder.getTenantId();
+    public Triple<Boolean, String, Object> login(HttpServletRequest request, MerchantLoginRequest merchantLoginRequest) {
+        String clientId = request.getHeader(TokenConstant.SINGLE_HEADER_TOKEN_CLIENT_ID_KEY);
+        if (StrUtil.isEmpty(clientId)) {
+            log.error("merchant login error. not found client");
+            throw new IllegalArgumentException("缺少xll-sin-client-id请求头");
+        }
+        
         if (!redisService.setNx(CacheConstant.CAHCE_THIRD_OAHTH_KEY + merchantLoginRequest.getCode(), "1", 5000L, false)) {
             return Triple.of(false, null, "操作频繁,请稍后再试");
         }
         
-        ElectricityPayParams electricityPayParams = electricityPayParamsService.queryFromCache(tenantId);
-        if (Objects.isNull(electricityPayParams)
-                || StrUtil.isEmpty(electricityPayParams.getMerchantMinProAppId()) || StrUtil.isEmpty(electricityPayParams.getMerchantMinProAppSecert())
-                ||StrUtil.isEmpty(electricityPayParams.getMerchantAppletId()) || StrUtil.isEmpty(electricityPayParams.getMerchantAppletSecret())) {
-            return Triple.of(false, "100002", "网络不佳，请重试");
-        }
+        
+        long now = System.currentTimeMillis();
         
         try {
-            String codeUrl = String.format(CacheConstant.WX_MIN_PRO_AUTHORIZATION_CODE_URL, electricityPayParams.getMerchantAppletId(),
-                    electricityPayParams.getMerchantAppletSecret(), merchantLoginRequest.getCode());
-
+            String codeUrl = String.format(CacheConstant.WX_MIN_PRO_AUTHORIZATION_CODE_URL, merchantConfig.getMerchantAppletId(),
+                    merchantConfig.getMerchantAppletSecret(), merchantLoginRequest.getCode());
+            
             String bodyStr = restTemplateService.getForString(codeUrl, null);
-            log.info("TOKEN INFO! call wxpro get openId message={}", bodyStr);
+            log.info("call wxpro get openId message is {}", bodyStr);
             
             WXMinProAuth2SessionResult result = JsonUtil.fromJson(bodyStr, WXMinProAuth2SessionResult.class);
             if (Objects.isNull(result) || StrUtil.isEmpty(result.getOpenid()) || StrUtil.isEmpty(result.getSession_key())) {
-                log.error("TOKEN ERROR! wxResult has error! bodyStr={}", bodyStr);
+                log.error("merchant login error. wxResult has error! bodyStr={}", bodyStr);
                 return Triple.of(false, null, "微信返回异常！");
             }
             
@@ -115,69 +125,85 @@ public class MerchantTokenServiceImpl implements MerchantTokenService {
             
             WXMinProPhoneResultDTO wxMinProPhoneResultDTO = JsonUtil.fromJson(s, WXMinProPhoneResultDTO.class);
             if (Objects.isNull(wxMinProPhoneResultDTO) || StrUtil.isEmpty(wxMinProPhoneResultDTO.getPurePhoneNumber())) {
-                log.error("TOKEN ERROR! 反序列化微信的手机号数据失败！s={}", s);
+                log.error("merchant login error. 反序列化微信的手机号数据失败！s is {}", s);
                 return Triple.of(false, null, "解析微信数据失败");
             }
             
             String purePhoneNumber = wxMinProPhoneResultDTO.getPurePhoneNumber();
             log.info("TOKEN INFO! 解析微信手机号:{}", purePhoneNumber);
-
-            List<User> users = Optional.ofNullable(userService.listUserByPhone(purePhoneNumber, tenantId))
-                    .orElse(Lists.newArrayList()).stream().filter(e->(e.getUserType().equals(User.TYPE_USER_MERCHANT) || e.getUserType().equals(User.TYPE_USER_CHANNEL))).collect(Collectors.toList());;
+            
+            List<User> users = Optional.ofNullable(userService.listUserByPhone(purePhoneNumber)).orElse(Lists.newArrayList()).stream()
+                    .filter(e -> (e.getUserType().equals(User.TYPE_USER_MERCHANT) || e.getUserType().equals(User.TYPE_USER_CHANNEL))).collect(Collectors.toList());
+            
             if (Collections.isEmpty(users)) {
                 return Triple.of(false, null, "未找到绑定账号，请检查");
             }
-
+            
             List<User> notLockUsers = users.stream().filter(user -> !user.isLock()).collect(Collectors.toList());
             if (notLockUsers.isEmpty()) {
                 return Triple.of(false, null, "当前登录账号已禁用，请联系客服处理");
             }
             
             // 用户是否绑定了业务信息
-            Map<Long, UserBindBusinessDTO> userBindBusinessDTOS = users.stream().map(this::checkUserBindingBusiness).filter(UserBindBusinessDTO::isBinding).collect(Collectors.toMap(UserBindBusinessDTO::getUid, e -> e));
+            Map<Long, UserBindBusinessDTO> userBindBusinessDTOS = users.stream().map(this::checkUserBindingBusiness).filter(UserBindBusinessDTO::isBinding)
+                    .collect(Collectors.toMap(UserBindBusinessDTO::getUid, e -> e));
             if (userBindBusinessDTOS.isEmpty()) {
                 return Triple.of(false, null, "未找到绑定账号，请检查");
             }
-
+            
             log.info("userBindBusinessDTOS:{} notLockerUser:{}", userBindBusinessDTOS, notLockUsers);
             
             List<User> merchantUser = users.stream().filter((user -> User.TYPE_USER_MERCHANT.equals(user.getUserType()) || User.TYPE_USER_CHANNEL.equals(user.getUserType())))
                     .collect(Collectors.toList());
             
-            List<MerchantLoginVO> loginVOS = merchantUser.parallelStream().map(e -> {
+            String openid = result.getOpenid();
+            List<MerchantLoginVO> loginVOS = merchantUser.stream().map(e -> {
+                Tenant tenant = tenantService.queryByIdFromCache(e.getTenantId());
+                if (ObjectUtils.isEmpty(tenant) || Tenant.STA_OUT.equals(tenant.getStatus()) || tenant.getExpireTime() <= now) {
+                    log.warn("merchant login skip. The tenant info warn. tenant_id is {}", e.getTenantId());
+                    return null;
+                }
+                
                 if (Objects.isNull(userBindBusinessDTOS.get(e.getUid()))) {
                     return null;
                 }
-
+                
+                Integer tenantId = tenant.getId();
+                
                 // 查看是否有绑定的第三方信息,如果没有绑定创建一个
-                Pair<Boolean, List<UserOauthBind>> thirdOauthBindList = wxProThirdAuthenticationService.checkOpenIdExists(result.getOpenid(), tenantId);
+                Pair<Boolean, List<UserOauthBind>> thirdOauthBindList = wxProThirdAuthenticationService.checkOpenIdExists(openid, tenantId);
                 if (!thirdOauthBindList.getLeft()) {
                     List<UserOauthBind> userOauthBindByUidList = userOauthBindService.queryListByUid(e.getUid());
-                    if (CollectionUtils.isNotEmpty(userOauthBindByUidList) && userOauthBindByUidList.stream().anyMatch(n -> !result.getOpenid().equals(n.getThirdId()))) {
+                    if (CollectionUtils.isNotEmpty(userOauthBindByUidList) && userOauthBindByUidList.stream().anyMatch(n -> !openid.equals(n.getThirdId()))) {
                         log.warn("merchant token login warning. the uid is bind other third id. uid is {}", e.getUid());
-                        throw new CustomBusinessException("当前登录账号异常，请联系客服处理");
+                        throw new CustomBusinessException("该账号已绑定过微信，无法直接登录，如需使用该微信登录，请先联系客服解除绑定");
                     }
-                    UserOauthBind oauthBind = UserOauthBind.builder().createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis())
-                            .phone(wxMinProPhoneResultDTO.getPurePhoneNumber()).uid(e.getUid()).accessToken("").refreshToken("").thirdNick("").tenantId(tenantId)
-                            .thirdId(result.getOpenid()).source(UserOauthBind.SOURCE_WX_PRO).status(UserOauthBind.STATUS_BIND).build();
+                    
+                    UserOauthBind oauthBind = UserOauthBind.builder().createTime(now).updateTime(now).phone(wxMinProPhoneResultDTO.getPurePhoneNumber()).uid(e.getUid())
+                            .accessToken("").refreshToken("").thirdNick("").tenantId(tenantId).thirdId(openid).source(UserOauthBind.SOURCE_WX_PRO)
+                            .status(UserOauthBind.STATUS_BIND).build();
                     userOauthBindService.insert(oauthBind);
                 } else {
                     UserOauthBind userOauthBind = userOauthBindService.queryUserOauthBySysId(e.getUid(), tenantId);
-                    /*if (ObjectUtils.isEmpty(userOauthBind)) {
-                        // 通过 openId 查询到了绑定信息，但是通过当前登录人，并未查询到绑定，则代表同一个微信登陆了不同的商户，此种情况，进行拦截，抛出异常
-                        log.warn("merchant token login warning. The open id is bind other uid. current login uid is {}", e.getUid());
-                        throw new CustomBusinessException("当前登录账号异常，请联系客服处理");
-                    }*/
                     
-                    if (ObjectUtils.isNotEmpty(userOauthBind) && !result.getOpenid().equals(userOauthBind.getThirdId())) {
+                    if (ObjectUtils.isNotEmpty(userOauthBind) && !openid.equals(userOauthBind.getThirdId())) {
                         log.warn("merchant token login warning. the uid is bind other third id. uid is {}", e.getUid());
-                        throw new CustomBusinessException("当前登录账号异常，请联系客服处理");
+                        throw new CustomBusinessException("该账号已绑定过微信，无法直接登录，如需使用该微信登录，请先联系客服解除绑定");
+                    }
+                    
+                    if (ObjectUtils.isEmpty(userOauthBind)) {
+                        // 同一个 open_id 绑定多个账号
+                        UserOauthBind oauthBind = UserOauthBind.builder().createTime(now).updateTime(now).phone(wxMinProPhoneResultDTO.getPurePhoneNumber()).uid(e.getUid())
+                                .accessToken("").refreshToken("").thirdNick("").tenantId(tenantId).thirdId(openid).source(UserOauthBind.SOURCE_WX_PRO)
+                                .status(UserOauthBind.STATUS_BIND).build();
+                        userOauthBindService.insert(oauthBind);
                     }
                 }
                 
-                String token = jwtTokenManager.createTokenV2(e.getUserType(),
-                        new TokenUser(e.getUid(), e.getPhone(), e.getName(), e.getUserType(), e.getDataType(), e.getTenantId()), System.currentTimeMillis());
-
+                // 创建 token 为了保证只有一个登录，入参拼接 open_id + UID
+                String token = jwtTokenManager.createToken(clientId, e.getUserType(),
+                        new TokenUser(e.getUid(), e.getPhone(), openid + e.getUid(), e.getUserType(), e.getDataType(), e.getTenantId()), now);
+                
                 MerchantLoginVO merchantLoginVO = new MerchantLoginVO();
                 merchantLoginVO.setPhone(e.getPhone());
                 merchantLoginVO.setUsername(e.getName());
@@ -187,6 +213,10 @@ public class MerchantTokenServiceImpl implements MerchantTokenService {
                 merchantLoginVO.setUserType(e.getUserType());
                 merchantLoginVO.setBusinessInfo(userBindBusinessDTOS.get(e.getUid()).getEnterprisePackageAuth(), userBindBusinessDTOS.get(e.getUid()).getEnterprisePackageAuth());
                 merchantLoginVO.setLockFlag(e.getLockFlag());
+                merchantLoginVO.setTenantId(tenantId.longValue());
+                merchantLoginVO.setTenantName(tenant.getName());
+                merchantLoginVO.setTenantCode(tenant.getCode());
+                merchantLoginVO.setServicePhone(redisService.get(CacheConstant.CACHE_SERVICE_PHONE + tenantId));
                 return merchantLoginVO;
             }).filter(Objects::nonNull).collect(Collectors.toList());
             return Triple.of(true, null, loginVOS);
@@ -220,7 +250,7 @@ public class MerchantTokenServiceImpl implements MerchantTokenService {
                 userBindBusinessDTO.setPurchaseAuthority(UserBindBusinessDTO.AUTHORITY_DISABLE);
                 userBindBusinessDTO.setEnterprisePackageAuth(UserBindBusinessDTO.AUTHORITY_DISABLE);
             }
-
+            
         } else {
             userBindBusinessDTO.setBinding(false);
         }
@@ -230,7 +260,7 @@ public class MerchantTokenServiceImpl implements MerchantTokenService {
 
 @Data
 class UserBindBusinessDTO {
-
+    
     private Long uid;
     
     private boolean isBinding;

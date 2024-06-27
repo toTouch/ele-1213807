@@ -53,7 +53,6 @@ public class HardwareFailureWarnMsgHandler extends AbstractElectricityIotHandler
         }
         
         List<HardwareFailureWarnMqMsg> list = convertMqMsg(hardwareFailureWarnMsg, electricityCabinet);
-        log.info("HARDWARE FAILURE WARN SEND START MSG={}", JsonUtil.toJson(list));
         rocketMqService.sendAsyncMsg(MqProducerConstant.TOPIC_FAILURE_WARNING_BREAKDOWN, JsonUtil.toJson(list));
         
         HashMap<String, Object> dataMap = Maps.newHashMap();

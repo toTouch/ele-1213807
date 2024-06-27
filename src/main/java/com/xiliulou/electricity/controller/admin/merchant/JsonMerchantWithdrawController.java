@@ -12,6 +12,7 @@ import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Triple;
+import org.springframework.util.CollectionUtils;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -43,6 +44,7 @@ public class JsonMerchantWithdrawController extends BaseController {
     
     /**
      * 提现申请列表查询
+     *
      * @param size
      * @param offset
      * @param merchantUid
@@ -52,21 +54,18 @@ public class JsonMerchantWithdrawController extends BaseController {
      * @return
      */
     @GetMapping(value = "/admin/merchant/withdraw/page")
-    public R queryMerchantWithdrawList(@RequestParam(value = "size", required = true) Long size,
-            @RequestParam(value = "offset", required = true) Long offset,
-            @RequestParam(value = "merchantUid", required = false) Long merchantUid,
-            @RequestParam(value = "beginTime", required = false) Long beginTime,
-            @RequestParam(value = "endTime", required = false) Long endTime,
-            @RequestParam(value = "status", required = false) Integer status) {
-    
+    public R queryMerchantWithdrawList(@RequestParam(value = "size", required = true) Long size, @RequestParam(value = "offset", required = true) Long offset,
+            @RequestParam(value = "merchantUid", required = false) Long merchantUid, @RequestParam(value = "beginTime", required = false) Long beginTime,
+            @RequestParam(value = "endTime", required = false) Long endTime, @RequestParam(value = "status", required = false) Integer status) {
+        
         if (size < 0 || size > 50) {
             size = 10L;
         }
-    
+        
         if (offset < 0) {
             offset = 0L;
         }
-    
+        
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
@@ -75,11 +74,11 @@ public class JsonMerchantWithdrawController extends BaseController {
         List<Long> franchiseeIds = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
             franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
-            if(org.apache.commons.collections.CollectionUtils.isEmpty(franchiseeIds)){
+            if (org.apache.commons.collections.CollectionUtils.isEmpty(franchiseeIds)) {
                 return R.ok(Collections.EMPTY_LIST);
             }
         }
-    
+        
         List<Long> storeIds = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
             storeIds = userDataScopeService.selectDataIdByUid(user.getUid());
@@ -87,17 +86,9 @@ public class JsonMerchantWithdrawController extends BaseController {
                 return R.ok(Collections.EMPTY_LIST);
             }
         }
-    
-        MerchantWithdrawApplicationRequest merchantWithdrawApplicationRequest = MerchantWithdrawApplicationRequest.builder()
-                .tenantId(user.getTenantId())
-                .franchiseeIds(franchiseeIds)
-                .size(size)
-                .offset(offset)
-                .uid(merchantUid)
-                .status(status)
-                .beginTime(beginTime)
-                .endTime(endTime)
-                .build();
+        
+        MerchantWithdrawApplicationRequest merchantWithdrawApplicationRequest = MerchantWithdrawApplicationRequest.builder().tenantId(user.getTenantId())
+                .franchiseeIds(franchiseeIds).size(size).offset(offset).uid(merchantUid).status(status).beginTime(beginTime).endTime(endTime).build();
         
         return R.ok(merchantWithdrawApplicationService.queryMerchantWithdrawApplicationList(merchantWithdrawApplicationRequest));
         
@@ -105,23 +96,22 @@ public class JsonMerchantWithdrawController extends BaseController {
     
     @GetMapping(value = "/admin/merchant/withdraw/pageCount")
     public R queryMerchantWithdrawCount(@RequestParam(value = "merchantUid", required = false) Long merchantUid,
-            @RequestParam(value = "beginTime", required = false) Long beginTime,
-            @RequestParam(value = "endTime", required = false) Long endTime,
+            @RequestParam(value = "beginTime", required = false) Long beginTime, @RequestParam(value = "endTime", required = false) Long endTime,
             @RequestParam(value = "status", required = false) Integer status) {
-    
+        
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-    
+        
         List<Long> franchiseeIds = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
             franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
-            if(org.apache.commons.collections.CollectionUtils.isEmpty(franchiseeIds)){
+            if (org.apache.commons.collections.CollectionUtils.isEmpty(franchiseeIds)) {
                 return R.ok(Collections.EMPTY_LIST);
             }
         }
-    
+        
         List<Long> storeIds = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
             storeIds = userDataScopeService.selectDataIdByUid(user.getUid());
@@ -129,15 +119,9 @@ public class JsonMerchantWithdrawController extends BaseController {
                 return R.ok(Collections.EMPTY_LIST);
             }
         }
-    
-        MerchantWithdrawApplicationRequest merchantWithdrawApplicationRequest = MerchantWithdrawApplicationRequest.builder()
-                .tenantId(user.getTenantId())
-                .franchiseeIds(franchiseeIds)
-                .uid(merchantUid)
-                .status(status)
-                .beginTime(beginTime)
-                .endTime(endTime)
-                .build();
+        
+        MerchantWithdrawApplicationRequest merchantWithdrawApplicationRequest = MerchantWithdrawApplicationRequest.builder().tenantId(user.getTenantId())
+                .franchiseeIds(franchiseeIds).uid(merchantUid).status(status).beginTime(beginTime).endTime(endTime).build();
         
         return R.ok(merchantWithdrawApplicationService.countMerchantWithdrawApplication(merchantWithdrawApplicationRequest));
     }
@@ -160,6 +144,7 @@ public class JsonMerchantWithdrawController extends BaseController {
     
     /**
      * 查询商户提现记录
+     *
      * @param size
      * @param offset
      * @param merchantUid
@@ -169,63 +154,69 @@ public class JsonMerchantWithdrawController extends BaseController {
      * @return
      */
     @GetMapping(value = "/admin/merchant/withdraw/recordList")
-    public R queryRecordList(@RequestParam(value = "size") Long size,
-                                       @RequestParam(value = "offset") Long offset,
-                                       @RequestParam(value = "merchantUid", required = false) Long merchantUid,
-                                       @RequestParam(value = "beginTime", required = false) Long beginTime,
-                                       @RequestParam(value = "endTime", required = false) Long endTime,
-                                       @RequestParam(value = "status", required = false) Integer status) {
-    
+    public R queryRecordList(@RequestParam(value = "size") Long size, @RequestParam(value = "offset") Long offset,
+            @RequestParam(value = "merchantUid", required = false) Long merchantUid, @RequestParam(value = "beginTime", required = false) Long beginTime,
+            @RequestParam(value = "endTime", required = false) Long endTime, @RequestParam(value = "status", required = false) Integer status,
+            @RequestParam(value = "transactionBatchId", required = false) String transactionBatchId,
+            @RequestParam(value = "transactionDetailId", required = false) String transactionDetailId,
+            @RequestParam(value = "checkTimeStart", required = false) Long checkTimeStart, @RequestParam(value = "checkTimeEnd", required = false) Long checkTimeEnd) {
+        
         if (size < 0 || size > 50) {
             size = 10L;
         }
-    
+        
         if (offset < 0) {
             offset = 0L;
         }
-    
+        
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-    
-        MerchantWithdrawApplicationRequest merchantWithdrawApplicationRequest = MerchantWithdrawApplicationRequest.builder()
-                .tenantId(user.getTenantId())
-                .size(size)
-                .offset(offset)
-                .uid(merchantUid)
-                .status(status)
-                .beginTime(beginTime)
-                .endTime(endTime)
-                .build();
         
+        List<Long> franchiseeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if (CollectionUtils.isEmpty(franchiseeIds)) {
+                return R.ok(Collections.EMPTY_LIST);
+            }
+        }
+        
+        MerchantWithdrawApplicationRequest merchantWithdrawApplicationRequest = MerchantWithdrawApplicationRequest.builder().tenantId(user.getTenantId()).size(size).offset(offset)
+                .uid(merchantUid).status(status).beginTime(beginTime).endTime(endTime).transactionBatchId(transactionBatchId).transactionDetailId(transactionDetailId)
+                .checkTimeStart(checkTimeStart).checkTimeEnd(checkTimeEnd).franchiseeIds(franchiseeIds).build();
         
         return R.ok(merchantWithdrawApplicationService.selectRecordList(merchantWithdrawApplicationRequest));
         
     }
     
     @GetMapping(value = "/admin/merchant/withdraw/recordListCount")
-    public R queryRecordListCount(@RequestParam(value = "merchantUid", required = false) Long merchantUid,
-                                  @RequestParam(value = "beginTime", required = false) Long beginTime,
-                                  @RequestParam(value = "endTime", required = false) Long endTime,
-                                  @RequestParam(value = "status", required = false) Integer status) {
-    
+    public R queryRecordListCount(@RequestParam(value = "merchantUid", required = false) Long merchantUid, @RequestParam(value = "beginTime", required = false) Long beginTime,
+            @RequestParam(value = "endTime", required = false) Long endTime, @RequestParam(value = "status", required = false) Integer status,
+            @RequestParam(value = "transactionBatchId", required = false) String transactionBatchId,
+            @RequestParam(value = "transactionDetailId", required = false) String transactionDetailId,
+            @RequestParam(value = "checkTimeStart", required = false) Long checkTimeStart, @RequestParam(value = "checkTimeEnd", required = false) Long checkTimeEnd) {
+        
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-    
-        MerchantWithdrawApplicationRequest merchantWithdrawApplicationRequest = MerchantWithdrawApplicationRequest.builder()
-                .tenantId(user.getTenantId())
-                .uid(merchantUid)
-                .status(status)
-                .beginTime(beginTime)
-                .endTime(endTime)
-                .build();
+        
+        List<Long> franchiseeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if (CollectionUtils.isEmpty(franchiseeIds)) {
+                return R.ok(Collections.EMPTY_LIST);
+            }
+        }
+        
+        MerchantWithdrawApplicationRequest merchantWithdrawApplicationRequest = MerchantWithdrawApplicationRequest.builder().tenantId(user.getTenantId()).uid(merchantUid)
+                .status(status).beginTime(beginTime).endTime(endTime).transactionBatchId(transactionBatchId).transactionDetailId(transactionDetailId).checkTimeStart(checkTimeStart)
+                .checkTimeEnd(checkTimeEnd).franchiseeIds(franchiseeIds).build();
         
         return R.ok(merchantWithdrawApplicationService.selectRecordListCount(merchantWithdrawApplicationRequest));
         
     }
-
-
+    
+    
 }

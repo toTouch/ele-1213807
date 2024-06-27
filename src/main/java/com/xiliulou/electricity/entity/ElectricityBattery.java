@@ -64,7 +64,7 @@ public class ElectricityBattery {
     private Integer physicsStatus;
     
     /**
-     * 电池业务状态：1：已录入，2：租借，3：归还，4：异常交换
+     * 电池业务状态：1：已录入，2：租借，3：归还，4：异常交换 5:后台解绑
      */
     private Integer businessStatus;
     
@@ -177,7 +177,7 @@ public class ElectricityBattery {
     public static final Integer PHYSICS_STATUS_NOT_WARE_HOUSE = 1;
     
     /**
-     * 电池业务状态：1：已录入，2：租借，3：归还，4：异常交换
+     * 电池业务状态：1：已录入，2：租借，3：归还，4：异常交换 5:后台解绑
      */
     public static final Integer BUSINESS_STATUS_INPUT = 1;
     

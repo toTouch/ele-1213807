@@ -20,6 +20,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -96,11 +97,13 @@ public class UserInfoGroupDetailHistoryServiceImpl implements UserInfoGroupDetai
         
         List<UserInfoGroupIdAndNameBO> boList = new ArrayList<>();
         String[] split = groupIds.split(CommonConstant.STR_COMMA);
-        for (String id : split) {
-            UserInfoGroup userInfoGroup = userInfoGroupService.queryByIdFromCache(Long.valueOf(id));
-            if (userInfoGroup != null) {
-                UserInfoGroupIdAndNameBO bo = UserInfoGroupIdAndNameBO.builder().id(Long.valueOf(id)).name(userInfoGroup.getName()).build();
-                boList.add(bo);
+    
+        if (split.length > 0) {
+            List<Long> ids = Arrays.stream(split).map(Long::valueOf).collect(Collectors.toList());
+            List<UserInfoGroup> groupList = userInfoGroupService.listByIdsFromDB(ids);
+    
+            if (CollectionUtils.isNotEmpty(groupList)) {
+                boList = groupList.stream().map(item -> UserInfoGroupIdAndNameBO.builder().id(item.getId()).name(item.getName()).build()).collect(Collectors.toList());
             }
         }
         

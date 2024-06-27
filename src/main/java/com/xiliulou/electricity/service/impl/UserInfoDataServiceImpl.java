@@ -46,6 +46,8 @@ public class UserInfoDataServiceImpl implements UserInfoDataService {
     private UserBatteryMemberCardMapper userBatteryMemberCardMapper;
     @Resource
     private ElectricityBatteryMapper electricityBatteryMapper;
+    
+    @Slave
     @Override
     public PageDataResult queryUserInfoData(UserInfoDataQuery userInfoDataQuery) {
 
