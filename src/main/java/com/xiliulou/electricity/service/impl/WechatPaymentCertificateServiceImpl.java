@@ -4,9 +4,8 @@ import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.entity.WechatPaymentCertificate;
 import com.xiliulou.electricity.mapper.WechatPaymentCertificateMapper;
+import com.xiliulou.electricity.service.WechatPayParamsBizService;
 import com.xiliulou.electricity.service.WechatPaymentCertificateService;
-import com.xiliulou.pay.weixinv3.franchisee.request.WechatV3FranchiseeMerchantLoadRequest;
-import com.xiliulou.pay.weixinv3.franchisee.service.WechatV3FranchiseeMerchantLoadAndUpdateCertificateService;
 import com.xiliulou.pay.weixinv3.util.WechatCertificateUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -37,7 +36,7 @@ public class WechatPaymentCertificateServiceImpl implements WechatPaymentCertifi
     private RedisService redisService;
     
     @Autowired
-    private WechatV3FranchiseeMerchantLoadAndUpdateCertificateService wechatV3FranchiseeMerchantLoadAndUpdateCertificateService;
+    private WechatPayParamsBizService wechatPayParamsBizService;
     
     @Override
     public void saveOrUpdateWeChatPaymentCertificate(WechatPaymentCertificate certificate) {
@@ -79,7 +78,7 @@ public class WechatPaymentCertificateServiceImpl implements WechatPaymentCertifi
             //存储微信支付证书
             saveOrUpdateWeChatPaymentCertificate(wechatPaymentCertificate);
         } catch (Exception e) {
-            log.error("certificate get error, tenantId={}", wechatPaymentCertificate.getTenantId());
+            log.error("certificate get error:", e);
             throw new Exception("证书内容获取失败，请重试！");
         } finally {
             try {
@@ -116,7 +115,7 @@ public class WechatPaymentCertificateServiceImpl implements WechatPaymentCertifi
     @Override
     public void deleteCache(Integer tenantId, Long franchiseeId) {
         redisService.delete(buildCacheKey(tenantId, franchiseeId));
-        wechatV3FranchiseeMerchantLoadAndUpdateCertificateService.refreshMerchantInfo(new WechatV3FranchiseeMerchantLoadRequest(tenantId, franchiseeId));
+        wechatPayParamsBizService.refreshMerchantInfo(tenantId, franchiseeId);
     }
     
     

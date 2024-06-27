@@ -19,14 +19,12 @@
         <result property="paternerKey" column="paterner_key" jdbcType="VARCHAR"/>
         <result property="configType" column="config_type" jdbcType="INTEGER"/>
         <result property="franchiseeId" column="franchisee_id" jdbcType="BIGINT"/>
-        <result property="merchantAppletId" column="merchant_applet_id" jdbcType="VARCHAR"/>
-        <result property="merchantAppletSecret" column="merchant_applet_secret" jdbcType="VARCHAR"/>
         <result property="delFlag" column="del_flag" jdbcType="INTEGER"/>
     </resultMap>
     
     <sql id="base_column">
-        id
-        , office_account_app_id, office_account_app_secret, merchant_min_pro_app_id, merchant_min_pro_app_secert, wechat_merchant_id, wechat_merchant_certificate_sno, wechat_merchant_private_key_path, wechat_v3_api_key, create_time, update_time, tenant_id, api_name, paterner_key, config_type, franchisee_id, merchant_applet_id, merchant_applet_secret, del_flag    </sql>
+        id, office_account_app_id, office_account_app_secret, merchant_min_pro_app_id, merchant_min_pro_app_secert, wechat_merchant_id, wechat_merchant_certificate_sno, wechat_merchant_private_key_path, wechat_v3_api_key, create_time, update_time, tenant_id, api_name, paterner_key, config_type, franchisee_id, del_flag
+    </sql>
     
     <sql id="table_name">
         t_electricity_pay_params
@@ -39,7 +37,7 @@
         from
         <include refid="table_name"/>
         where del_flag = 0
-        and tenantId =#{tenantId}
+        and tenant_id =#{tenantId}
         and franchisee_id in
         <foreach collection="franchiseeIds" open="(" separator="," close=")" item="franchiseeId">
             #{franchiseeId}
@@ -50,8 +48,7 @@
     <select id="queryAllByLimit" resultMap="ElectricityPayParamsMap">
         select
         id, office_account_app_id, office_account_app_secret, merchant_min_pro_app_id, merchant_min_pro_app_secert, wechat_merchant_id, wechat_merchant_certificate_sno,
-        wechat_merchant_private_key_path, wechat_v3_api_key, create_time, update_time, tenant_id, api_name, paterner_key, config_type, franchisee_id, merchant_applet_id,
-        merchant_applet_secret, del_flag
+        wechat_merchant_private_key_path, wechat_v3_api_key, create_time, update_time, tenant_id, api_name, paterner_key, config_type, franchisee_id, del_flag
         from t_electricity_pay_params
         <where>
             <if test="id != null">
@@ -101,12 +98,6 @@
             </if>
             <if test="franchiseeId != null">
                 and franchisee_id = #{franchiseeId}
-            </if>
-            <if test="merchantAppletId != null and merchantAppletId != ''">
-                and merchant_applet_id = #{merchantAppletId}
-            </if>
-            <if test="merchantAppletSecret != null and merchantAppletSecret != ''">
-                and merchant_applet_secret = #{merchantAppletSecret}
             </if>
             <if test="delFlag != null">
                 and del_flag = #{delFlag}
@@ -168,57 +159,72 @@
             <if test="franchiseeId != null">
                 and franchisee_id = #{franchiseeId}
             </if>
-            <if test="merchantAppletId != null and merchantAppletId != ''">
-                and merchant_applet_id = #{merchantAppletId}
-            </if>
-            <if test="merchantAppletSecret != null and merchantAppletSecret != ''">
-                and merchant_applet_secret = #{merchantAppletSecret}
-            </if>
             <if test="delFlag != null">
                 and del_flag = #{delFlag}
             </if>
         </where>
     </select>
     <select id="selectByTenantId" resultMap="ElectricityPayParamsMap">
-        select <include refid="base_column"/>
-        from <include refid="table_name"/>
-        where del_falg=0
+        select
+        <include refid="base_column"/>
+        from
+        <include refid="table_name"/>
+        where del_flag=0
         and tenant_id=#{tenantId}
+        order by id asc
+    </select>
+    <select id="selectIdsByTenantIdAndConfigType" resultMap="ElectricityPayParamsMap">
+        select
+        <include refid="base_column"/>
+        from
+        <include refid="table_name"/>
+        where del_flag=0
+        and tenant_id=#{tenantId}
+        and config_type=#{configType}
+    </select>
+    
+    <select id="selectByTenantIdAndWechatMerchantId"
+        resultMap="ElectricityPayParamsMap">
+        select
+        <include refid="base_column"/>
+        from
+        <include refid="table_name"/>
+        where del_flag=0
+        and tenant_id=#{tenantId}
+        and wechat_merchant_id=#{wechatMerchantId}
+        limit 1
     </select>
     
     <!--新增所有列-->
     <insert id="insert" keyProperty="id" useGeneratedKeys="true">
         insert into t_electricity_pay_params(office_account_app_id, office_account_app_secret, merchant_min_pro_app_id, merchant_min_pro_app_secert, wechat_merchant_id,
                                              wechat_merchant_certificate_sno, wechat_merchant_private_key_path, wechat_v3_api_key, create_time, update_time, tenant_id, api_name,
-                                             paterner_key, config_type, franchisee_id, merchant_applet_id, merchant_applet_secret, del_flag)
+                                             paterner_key, config_type, franchisee_id)
         values (#{officeAccountAppId}, #{officeAccountAppSecret}, #{merchantMinProAppId}, #{merchantMinProAppSecert}, #{wechatMerchantId}, #{wechatMerchantCertificateSno},
-                #{wechatMerchantPrivateKeyPath}, #{wechatV3ApiKey}, #{createTime}, #{updateTime}, #{tenantId}, #{apiName}, #{paternerKey}, #{configType}, #{franchiseeId},
-                #{merchantAppletId}, #{merchantAppletSecret}, #{delFlag})
+                #{wechatMerchantPrivateKeyPath}, #{wechatV3ApiKey}, #{createTime}, #{updateTime}, #{tenantId}, #{apiName}, #{paternerKey}, #{configType}, #{franchiseeId})
     </insert>
     
     <insert id="insertBatch" keyProperty="id" useGeneratedKeys="true">
         insert into t_electricity_pay_params(office_account_app_id, office_account_app_secret, merchant_min_pro_app_id, merchant_min_pro_app_secert, wechat_merchant_id,
         wechat_merchant_certificate_sno, wechat_merchant_private_key_path, wechat_v3_api_key, create_time, update_time, tenant_id, api_name, paterner_key, config_type,
-        franchisee_id, merchant_applet_id, merchant_applet_secret, del_flag)
+        franchisee_id)
         values
         <foreach collection="entities" item="entity" separator=",">
             (#{entity.officeAccountAppId}, #{entity.officeAccountAppSecret}, #{entity.merchantMinProAppId}, #{entity.merchantMinProAppSecert}, #{entity.wechatMerchantId},
             #{entity.wechatMerchantCertificateSno}, #{entity.wechatMerchantPrivateKeyPath}, #{entity.wechatV3ApiKey}, #{entity.createTime}, #{entity.updateTime},
-            #{entity.tenantId}, #{entity.apiName}, #{entity.paternerKey}, #{entity.configType}, #{entity.franchiseeId}, #{entity.merchantAppletId}, #{entity.merchantAppletSecret},
-            #{entity.delFlag})
+            #{entity.tenantId}, #{entity.apiName}, #{entity.paternerKey}, #{entity.configType}, #{entity.franchiseeId})
         </foreach>
     </insert>
     
     <insert id="insertOrUpdateBatch" keyProperty="id" useGeneratedKeys="true">
         insert into t_electricity_pay_params(office_account_app_id, office_account_app_secret, merchant_min_pro_app_id, merchant_min_pro_app_secert, wechat_merchant_id,
         wechat_merchant_certificate_sno, wechat_merchant_private_key_path, wechat_v3_api_key, create_time, update_time, tenant_id, api_name, paterner_key, config_type,
-        franchisee_id, merchant_applet_id, merchant_applet_secret, del_flag)
+        franchisee_id, del_flag)
         values
         <foreach collection="entities" item="entity" separator=",">
             (#{entity.officeAccountAppId}, #{entity.officeAccountAppSecret}, #{entity.merchantMinProAppId}, #{entity.merchantMinProAppSecert}, #{entity.wechatMerchantId},
             #{entity.wechatMerchantCertificateSno}, #{entity.wechatMerchantPrivateKeyPath}, #{entity.wechatV3ApiKey}, #{entity.createTime}, #{entity.updateTime},
-            #{entity.tenantId}, #{entity.apiName}, #{entity.paternerKey}, #{entity.configType}, #{entity.franchiseeId}, #{entity.merchantAppletId}, #{entity.merchantAppletSecret},
-            #{entity.delFlag})
+            #{entity.tenantId}, #{entity.apiName}, #{entity.paternerKey}, #{entity.configType}, #{entity.franchiseeId}, #{entity.delFlag})
         </foreach>
         on duplicate key update
         office_account_app_id = values(office_account_app_id),
@@ -236,8 +242,6 @@
         paterner_key = values(paterner_key),
         config_type = values(config_type),
         franchisee_id = values(franchisee_id),
-        merchant_applet_id = values(merchant_applet_id),
-        merchant_applet_secret = values(merchant_applet_secret),
         del_flag = values(del_flag)
     </insert>
     
@@ -277,12 +281,6 @@
             <if test="paternerKey != null and paternerKey != ''">
                 paterner_key = #{paternerKey},
             </if>
-            <if test="merchantAppletId != null and merchantAppletId != ''">
-                merchant_applet_id = #{merchantAppletId},
-            </if>
-            <if test="merchantAppletSecret != null and merchantAppletSecret != ''">
-                merchant_applet_secret = #{merchantAppletSecret},
-            </if>
         </set>
         where id = #{id} and tenant_id=#{tenantId}
     </update>
@@ -292,6 +290,24 @@
         <include refid="table_name"/>
         set del_flag = 1,update_time=now()
         where id=#{id} and tenant_id=#{tenantId}
+    </update>
+    <update id="updateSync">
+        update
+        <include refid="table_name"/>
+        <set>
+            update_time = now(),
+            <if test="update.merchantMinProAppId != null and update.merchantMinProAppId != ''">
+                merchant_min_pro_app_id = #{update.merchantMinProAppId},
+            </if>
+            <if test="update.merchantMinProAppSecert != null and update.merchantMinProAppSecert != ''">
+                merchant_min_pro_app_secert = #{update.merchantMinProAppSecert},
+            </if>
+        </set>
+        where
+        id in
+        <foreach collection="ids" open="(" close=")" item="item" separator=",">
+            #{item}
+        </foreach>
     </update>
     
     <!--通过主键删除-->

@@ -19,5 +19,11 @@ public interface CarRenalCacheConstant {
     /** 租车套餐生成免押订单缓存KEY，占位符：用户ID */
     String CAR_RENAL_PACKAGE_CREATE_FREE_ORDER_UID_KEY = "car_renal_package_create_free_order_uid:%s";
     
+    /** 租车套餐，退租申请单缓存KEY，占位符：用户ID */
+    String CAR_RENAL_PACKAGE_REFUND_RENT_ORDER_UID_KEY = "car_renal_package_refund_rent_order_uid:%s";
+    
+    /** 租车套餐，退押申请单缓存KEY，占位符：用户ID */
+    String CAR_RENAL_PACKAGE_REFUND_DEPOSIT_ORDER_UID_KEY = "car_renal_package_refund_deposit_order_uid:%s";
+    
     
 }

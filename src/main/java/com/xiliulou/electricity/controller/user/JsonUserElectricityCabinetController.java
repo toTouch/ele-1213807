@@ -175,21 +175,6 @@ public class JsonUserElectricityCabinetController extends BaseController {
     }
     
     /**
-     * 查询租车套餐信息
-     *
-     * @return
-     */
-    @GetMapping(value = "/user/rentCarMemberCard/info")
-    @Deprecated
-    public R getRentCarMemberCardInfo() {
-        Long uid = SecurityUtils.getUid();
-        if (Objects.isNull(uid)) {
-            return R.fail("ELECTRICITY.0001", "未找到用户!");
-        }
-        return userInfoService.getRentCarMemberCardInfo(uid);
-    }
-    
-    /**
      * 获取 小程序服务信息
      *
      * @return
@@ -199,13 +184,6 @@ public class JsonUserElectricityCabinetController extends BaseController {
         //租户
         Integer tenantId = TenantContextHolder.getTenantId();
         String phone = redisService.get(CacheConstant.CACHE_SERVICE_PHONE + tenantId);
-        //		if(StrUtil.isBlank(phone)){
-        //			List<User> userList = userService.queryByTenantIdAndType(tenantId, User.TYPE_USER_OPERATE);
-        //			if(CollectionUtils.isNotEmpty(userList)){
-        //				phone = userList.get(0).getPhone();
-        //			}
-        //
-        //		}
         return R.ok(phone);
     }
     
@@ -231,22 +209,10 @@ public class JsonUserElectricityCabinetController extends BaseController {
     }
     
     /**
-     * 查询换电柜 按三元组
-     *
-     * @return
-     */
-    @GetMapping(value = "/user/electricityCabinet/queryByOrder")
-    @Deprecated
-    public R queryByOrder(@RequestParam("productKey") String productKey, @RequestParam("deviceName") String deviceName) {
-        return electricityCabinetService.queryByOrder(productKey, deviceName);
-    }
-    
-    /**
      * 查询换电柜 电池详情
      */
     @GetMapping(value = "/user/electricityCabinetBoxInfo/{electricityCabinetId}")
     public R queryElectricityCabinetBoxInfoById(@PathVariable("electricityCabinetId") Integer electricityCabinetId) {
-        
         return electricityCabinetService.queryElectricityCabinetBoxInfoById(electricityCabinetId);
     }
     
@@ -255,7 +221,6 @@ public class JsonUserElectricityCabinetController extends BaseController {
      */
     @GetMapping(value = "/user/electricityCabinetFile/{electricityCabinetId}")
     public R queryElectricityCabinetFileById(@PathVariable("electricityCabinetId") Integer electricityCabinetId) {
-        
         return electricityCabinetService.queryElectricityCabinetFileById(electricityCabinetId);
     }
     

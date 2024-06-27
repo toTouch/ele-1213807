@@ -140,87 +140,6 @@ public class JsonAdminEleDepositOrderController extends BaseController {
         return eleDepositOrderService.queryCount(eleDepositOrderQuery);
     }
     
-    //押金订单导出报表
-    @GetMapping("/admin/eleDepositOrder/exportExcel")
-    @Deprecated
-    public void exportExcel(@RequestParam(value = "franchiseeName", required = false) String franchiseeName, @RequestParam(value = "status", required = false) Integer status,
-            @RequestParam(value = "name", required = false) String name, @RequestParam(value = "phone", required = false) String phone,
-            @RequestParam(value = "orderId", required = false) String orderId, @RequestParam(value = "beginTime", required = false) Long beginTime,
-            @RequestParam(value = "endTime", required = false) Long endTime, @RequestParam(value = "depositType", required = false) Integer depositType,
-            @RequestParam(value = "carModel", required = false) String carModel, @RequestParam(value = "payType", required = false) Integer payType,
-            @RequestParam(value = "storeName", required = false) String storeName, HttpServletResponse response) {
-        
-        Double days = (Double.valueOf(endTime - beginTime)) / 1000 / 3600 / 24;
-        if (days > 33) {
-            throw new CustomBusinessException("搜索日期不能大于33天");
-        }
-        
-        TokenUser user = SecurityUtils.getUserInfo();
-        if (Objects.isNull(user)) {
-            log.error("ELECTRICITY  ERROR! not found user ");
-            throw new CustomBusinessException("查不到订单");
-        }
-        
-        List<Long> storeIds = null;
-        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
-            storeIds = userDataScopeService.selectDataIdByUid(user.getUid());
-            if (CollectionUtils.isEmpty(storeIds)) {
-                throw new CustomBusinessException("订单不存在！");
-            }
-        }
-        
-        List<Long> franchiseeIds = null;
-        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
-            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
-            if (CollectionUtils.isEmpty(franchiseeIds)) {
-                throw new CustomBusinessException("订单不存在！");
-            }
-        }
-        
-        EleDepositOrderQuery eleDepositOrderQuery = EleDepositOrderQuery.builder().name(name).phone(phone).beginTime(beginTime).endTime(endTime).status(status).orderId(orderId)
-                .storeIds(storeIds).tenantId(TenantContextHolder.getTenantId()).carModel(carModel).franchiseeName(franchiseeName).depositType(depositType).payType(payType)
-                .storeName(storeName).franchiseeIds(franchiseeIds).build();
-        eleDepositOrderService.exportExcel(eleDepositOrderQuery, response);
-    }
-    
-    //缴纳电池押金
-    @PostMapping(value = "/admin/eleDepositOrder/batteryDeposit")
-    @Deprecated
-    @Log(title = "缴纳电池押金")
-    public R batteryDeposit(@RequestBody @Validated(value = CreateGroup.class) BatteryDepositAdd batteryDepositAdd) {
-        return eleDepositOrderService.adminPayBatteryDeposit(batteryDepositAdd);
-    }
-    
-    //缴纳租车押金
-    @PostMapping(value = "/admin/eleDepositOrder/carDeposit")
-    @Deprecated
-    @Log(title = "缴纳电池押金")
-    public R carDeposit(@RequestBody @Validated(value = CreateGroup.class) RentCarDepositQuery rentCarDepositQuery) {
-        return eleDepositOrderService.adminPayCarDeposit(rentCarDepositQuery);
-    }
-    
-    
-    //缴纳租车押金
-    @Deprecated
-    @PostMapping(value = "/admin/eleDepositOrder/rentCarDeposit")
-    @Log(title = "缴纳租车押金")
-    public R rentCarDeposit(@RequestBody @Validated(value = CreateGroup.class) RentCarDepositAdd rentCarDepositAdd) {
-        
-        //租户
-        Integer tenantId = TenantContextHolder.getTenantId();
-        
-        //用户
-        TokenUser user = SecurityUtils.getUserInfo();
-        if (Objects.isNull(user)) {
-            log.error("ELECTRICITY  ERROR! not found user ");
-            return R.fail("ELECTRICITY.0001", "未找到用户");
-        }
-        rentCarDepositAdd.setTenantId(tenantId);
-        
-        return eleDepositOrderService.adminPayRentCarDeposit(rentCarDepositAdd);
-        
-    }
-    
     /**
      * 查询用户押金是否可退，以及保险信息
      *
@@ -233,5 +152,13 @@ public class JsonAdminEleDepositOrderController extends BaseController {
         return returnTripleResult(eleDepositOrderService.queryDepositAndInsuranceDetail(orderId));
     }
     
-    
+    /**
+     * 校验订单所用支付参数是否存在
+     * @param orderId 押金订单号
+     * @return 1校验通过 0校验失败
+     */
+    @GetMapping("/admin/eleDepositOrder/checkPayParamsDetails")
+    public R checkPayParamsDetails(@RequestParam("orderId") String orderId) {
+        return eleDepositOrderService.checkPayParamsDetails(orderId);
+    }
 }

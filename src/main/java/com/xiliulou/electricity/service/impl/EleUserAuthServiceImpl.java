@@ -12,7 +12,6 @@ import com.xiliulou.electricity.entity.AuthenticationAuditMessageNotify;
 import com.xiliulou.electricity.entity.EleAuthEntry;
 import com.xiliulou.electricity.entity.EleUserAuth;
 import com.xiliulou.electricity.entity.ElectricityConfig;
-import com.xiliulou.electricity.entity.FranchiseeUserInfo;
 import com.xiliulou.electricity.entity.MaintenanceUserNotifyConfig;
 import com.xiliulou.electricity.entity.MqNotifyCommon;
 import com.xiliulou.electricity.entity.UserAuthMessage;
@@ -33,6 +32,7 @@ import com.xiliulou.security.bean.TokenUser;
 import com.xiliulou.storage.config.StorageConfig;
 import com.xiliulou.storage.service.StorageService;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -127,12 +127,12 @@ public class EleUserAuthServiceImpl implements EleUserAuthService {
         //用户
         UserInfo oldUserInfo = userInfoService.queryByUidFromCache(user.getUid());
         if (Objects.isNull(oldUserInfo)) {
-            log.error("ELECTRICITY  ERROR! not found user！uid:{} ", user.getUid());
+            log.warn("ELECTRICITY WARN! not found user！uid:{} ", user.getUid());
             return R.fail("ELECTRICITY.0019", "未找到用户");
         }
         //用户是否可用
         if (Objects.equals(oldUserInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
-            log.error("ELECTRICITY  ERROR! user is unUsable! uid:{} ", user.getUid());
+            log.warn("ELECTRICITY WARN! user is unUsable! uid:{} ", user.getUid());
             return R.fail("ELECTRICITY.0024", "用户已被禁用");
         }
 
@@ -146,7 +146,7 @@ public class EleUserAuthServiceImpl implements EleUserAuthService {
     
         Triple<Boolean, String, Object> checkResult = checkIdCardExists(eleUserAuthList);
         if (!checkResult.getLeft()) {
-            return R.failMsg(checkResult.getMiddle());
+            return R.fail(ObjectUtils.isEmpty(checkResult.getRight()) ? null : checkResult.getRight().toString(), checkResult.getMiddle());
         }
         
         UserInfo userInfo = new UserInfo();
@@ -157,7 +157,7 @@ public class EleUserAuthServiceImpl implements EleUserAuthService {
     
         ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(tenantId);
         if (Objects.isNull(electricityConfig)) {
-            log.error("not found electricityConfig,uid={}", user.getUid());
+            log.warn("not found electricityConfig,uid={}", user.getUid());
             return R.fail("系统配置不存在");
         }
         
@@ -241,7 +241,7 @@ public class EleUserAuthServiceImpl implements EleUserAuthService {
             
             for (UserInfo userInfo : userInfos) {
                 if (!Objects.equals(SecurityUtils.getUid(), userInfo.getUid())) {
-                    return Triple.of(false, "身份证信息已存在，请核实后重新提交", null);
+                    return Triple.of(false, "身份证信息已存在，请核实后重新提交", 100339);
                 }
             }
             return Triple.of(true, null, null);
@@ -264,20 +264,20 @@ public class EleUserAuthServiceImpl implements EleUserAuthService {
     private List<MqNotifyCommon<AuthenticationAuditMessageNotify>> buildAuthenticationAuditMessageNotify(UserInfo userInfo) {
         MaintenanceUserNotifyConfig notifyConfig = maintenanceUserNotifyConfigService.queryByTenantIdFromCache(userInfo.getTenantId());
         if (Objects.isNull(notifyConfig) || StringUtils.isBlank(notifyConfig.getPhones())) {
-            log.error("ELE ERROR! not found maintenanceUserNotifyConfig,tenantId={},uid={}", userInfo.getTenantId(),userInfo.getUid());
+            log.warn("ELE WARN! not found maintenanceUserNotifyConfig,tenantId={},uid={}", userInfo.getTenantId(),userInfo.getUid());
             return Collections.EMPTY_LIST;
         }
     
         if ((notifyConfig.getPermissions() & MaintenanceUserNotifyConfig.P_AUTHENTICATION_AUDIT)
                 != MaintenanceUserNotifyConfig.P_AUTHENTICATION_AUDIT) {
-            log.info("ELE ERROR! not maintenance permission,permissions={},uid={}", notifyConfig.getPermissions(),userInfo.getUid());
+            log.info("ELE INFO! not maintenance permission,permissions={},uid={}", notifyConfig.getPermissions(),userInfo.getUid());
             return Collections.EMPTY_LIST;
         }
         
         
         List<String> phones = JSON.parseObject(notifyConfig.getPhones(), List.class);
         if (org.apache.commons.collections.CollectionUtils.isEmpty(phones)) {
-            log.error("ELE ERROR! phones is empty,tenantId={},uid={}", userInfo.getTenantId(), userInfo.getUid());
+            log.warn("ELE WARN! phones is empty,tenantId={},uid={}", userInfo.getTenantId(), userInfo.getUid());
             return Collections.EMPTY_LIST;
         }
         
@@ -301,7 +301,7 @@ public class EleUserAuthServiceImpl implements EleUserAuthService {
 
         UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
         if (Objects.isNull(userInfo)) {
-            log.error("ELECTRICITY  ERROR! not found userInfo! userId:{}", uid);
+            log.warn("ELECTRICITY  WARN! not found userInfo! userId:{}", uid);
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         return R.ok(userInfo.getAuthStatus());
@@ -312,7 +312,7 @@ public class EleUserAuthServiceImpl implements EleUserAuthService {
 
         UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
         if (Objects.isNull(userInfo)) {
-            log.error("ELE ERROR! not found userInfo! uid={}", uid);
+            log.warn("ELE WARN! not found userInfo! uid={}", uid);
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
@@ -346,86 +346,6 @@ public class EleUserAuthServiceImpl implements EleUserAuthService {
         }).collect(Collectors.toList());
         log.info("collect is -->{}", collect);
         return R.ok(collect);
-    }
-
-    @Override
-    @Deprecated
-    public R getEleUserServiceStatus() {
-
-/*        //用户
-        TokenUser user = SecurityUtils.getUserInfo();
-        if (Objects.isNull(user)) {
-            log.error("payDeposit  ERROR! not found user ");
-            return R.fail("ELECTRICITY.0001", "未找到用户");
-        }
-
-        UserInfo userInfo = userInfoService.queryByUidFromCache(user.getUid());
-        if (Objects.isNull(userInfo)) {
-            log.error("ELECTRICITY  ERROR! not found userInfo! userId:{}", user.getUid());
-            return R.fail("ELECTRICITY.0001", "未找到用户");
-        }
-        Integer serviceStatus = userInfo.getServiceStatus();
-
-        //是否缴纳押金，是否绑定电池
-        FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
-
-        //未找到用户
-        if (Objects.isNull(franchiseeUserInfo)) {
-            log.error("payDeposit  ERROR! not found user! userId:{}", user.getUid());
-            return R.fail("ELECTRICITY.0001", "未找到用户");
-        }
-
-        Long now = System.currentTimeMillis();
-        if (!Objects.equals(franchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_INIT)) {
-            serviceStatus = franchiseeUserInfo.getServiceStatus();
-        }
-
-//        //用户是否开通月卡
-//        if (Objects.isNull(franchiseeUserInfo.getMemberCardExpireTime())
-//                || Objects.isNull(franchiseeUserInfo.getRemainingNumber())) {
-//            log.error("order  ERROR! not found memberCard ! uid:{} ", user.getUid());
-//            serviceStatus = -1;
-//        } else {
-//            if (franchiseeUserInfo.getMemberCardExpireTime() < now || franchiseeUserInfo.getRemainingNumber() == 0) {
-//                log.error("order  ERROR! memberCard  is Expire ! uid:{} ", user.getUid());
-//                serviceStatus = -1;
-//            }
-//        }
-
-        return R.ok(serviceStatus);*/
-
-        //用户
-        TokenUser user = SecurityUtils.getUserInfo();
-        if (Objects.isNull(user)) {
-            log.error("payDeposit  ERROR! not found user");
-            return R.fail("ELECTRICITY.0001", "未找到用户");
-        }
-
-        UserInfo userInfo = userInfoService.queryByUidFromCache(user.getUid());
-        if (Objects.isNull(userInfo)) {
-            log.error("ELECTRICITY  ERROR! not found userInfo! userId={}", user.getUid());
-            return R.fail("ELECTRICITY.0001", "未找到用户");
-        }
-
-
-        Integer serviceStatus = null;
-        //兼容UserInfo serviceStatus
-        if (Objects.equals(userInfo.getAuthStatus(), UserInfo.AUTH_STATUS_REVIEW_PASSED)) {
-            serviceStatus = UserInfo.STATUS_IS_AUTH;
-        } else {
-            serviceStatus = UserInfo.STATUS_INIT;
-        }
-
-        //FranchiseeUserInfo serviceStatus
-        if (Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
-            serviceStatus = FranchiseeUserInfo.STATUS_IS_DEPOSIT;
-        }
-
-        if (Objects.equals(userInfo.getBatteryRentStatus(), UserInfo.BATTERY_RENT_STATUS_YES)) {
-            serviceStatus = FranchiseeUserInfo.STATUS_IS_BATTERY;
-        }
-
-        return R.ok(serviceStatus);
     }
 
     @Override

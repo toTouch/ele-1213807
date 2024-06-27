@@ -139,6 +139,9 @@ public class EleDisableMemberCardRecordServiceImpl extends ServiceImpl<Electrici
             if (Objects.nonNull(userBatteryMemberCard)) {
                 item.setOrderRemainingNumber(userBatteryMemberCard.getOrderRemainingNumber());
             }
+            
+            Franchisee franchisee = franchiseeService.queryByIdFromCache(item.getFranchiseeId());
+            item.setFranchiseeName(Objects.isNull(franchisee) ? null : franchisee.getName());
         });
         
         return R.ok(eleDisableMemberCardRecordVOS);
@@ -162,7 +165,7 @@ public class EleDisableMemberCardRecordServiceImpl extends ServiceImpl<Electrici
                 new LambdaQueryWrapper<EleDisableMemberCardRecord>().eq(EleDisableMemberCardRecord::getDisableMemberCardNo, disableMemberCardNo)
                         .eq(EleDisableMemberCardRecord::getTenantId, tenantId));
         if (Objects.isNull(eleDisableMemberCardRecord)) {
-            log.error("REVIEW_DISABLE_MEMBER_CARD ERROR ,NOT FOUND DISABLE_MEMBER_CARD ORDER_NO={}", disableMemberCardNo);
+            log.warn("REVIEW_DISABLE_MEMBER_CARD WARN ,NOT FOUND DISABLE_MEMBER_CARD ORDER_NO={}", disableMemberCardNo);
             return R.fail("未找到停卡订单!");
         }
     
@@ -172,13 +175,13 @@ public class EleDisableMemberCardRecordServiceImpl extends ServiceImpl<Electrici
         
         UserInfo userInfo = userInfoService.queryByUidFromCache(eleDisableMemberCardRecord.getUid());
         if (Objects.isNull(userInfo)) {
-            log.error("ELECTRICITY  ERROR! not found user,uid={} ", eleDisableMemberCardRecord.getUid());
+            log.warn("ELECTRICITY  WARN! not found user,uid={} ", eleDisableMemberCardRecord.getUid());
             return R.fail("ELECTRICITY.0019", "未找到用户");
         }
         
         Franchisee franchisee = franchiseeService.queryByIdFromCache(userInfo.getFranchiseeId());
         if (Objects.isNull(franchisee)) {
-            log.error("ELECTRICITY  ERROR! not found franchisee,uid={}", eleDisableMemberCardRecord.getUid());
+            log.warn("ELECTRICITY  WARN! not found franchisee,uid={}", eleDisableMemberCardRecord.getUid());
             return R.fail("ELECTRICITY.0038", "未找到加盟商");
         }
         
@@ -186,7 +189,7 @@ public class EleDisableMemberCardRecordServiceImpl extends ServiceImpl<Electrici
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
         if (Objects.isNull(userBatteryMemberCard) || Objects.equals(userBatteryMemberCard.getMemberCardId(), NumberConstant.ZERO_L) || Objects.equals(
                 userBatteryMemberCard.getMemberCardExpireTime(), NumberConstant.ZERO_L) || Objects.isNull(userBatteryMemberCard.getRemainingNumber())) {
-            log.warn("REVIEW_DISABLE_MEMBER_CARD ERROR! user haven't memberCard uid={}", userInfo.getUid());
+            log.warn("REVIEW_DISABLE_MEMBER_CARD WARN! user haven't memberCard uid={}", userInfo.getUid());
             return R.fail("100210", "用户未开通套餐");
         }
         
@@ -205,7 +208,6 @@ public class EleDisableMemberCardRecordServiceImpl extends ServiceImpl<Electrici
             userBatteryMemberCardUpdate.setUpdateTime(System.currentTimeMillis());
             userBatteryMemberCardService.updateByUid(userBatteryMemberCardUpdate);
             
-            log.error("REVIEW_DISABLE_MEMBER_CARD ERROR member card Expire! userId={}", eleDisableMemberCardRecord.getUid());
             return R.fail("100246", "套餐已过期，无法进行停卡审核");
         }
         

@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.google.api.client.util.Lists;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
+import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.bo.userInfoGroup.UserInfoGroupBO;
 import com.xiliulou.electricity.bo.userInfoGroup.UserInfoGroupNamesBO;
@@ -14,6 +15,7 @@ import com.xiliulou.electricity.entity.Coupon;
 import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.MemberCardBatteryType;
+import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.UserBatteryDeposit;
 import com.xiliulou.electricity.entity.UserBatteryMemberCard;
 import com.xiliulou.electricity.entity.UserInfo;
@@ -33,6 +35,7 @@ import com.xiliulou.electricity.service.CouponService;
 import com.xiliulou.electricity.service.ElectricityMemberCardOrderService;
 import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.MemberCardBatteryTypeService;
+import com.xiliulou.electricity.service.StoreService;
 import com.xiliulou.electricity.service.UserBatteryDepositService;
 import com.xiliulou.electricity.service.UserBatteryMemberCardService;
 import com.xiliulou.electricity.service.UserBatteryTypeService;
@@ -50,6 +53,7 @@ import com.xiliulou.electricity.vo.BatteryMemberCardSearchVO;
 import com.xiliulou.electricity.vo.BatteryMemberCardVO;
 import com.xiliulou.electricity.vo.CouponSearchVo;
 import com.xiliulou.electricity.vo.SearchVo;
+import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -57,6 +61,8 @@ import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
@@ -95,7 +101,7 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
     @Autowired
     private MemberCardBatteryTypeService memberCardBatteryTypeService;
     
-    @Autowired
+    @Resource
     private UserInfoService userInfoService;
     
     @Autowired
@@ -127,6 +133,12 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
     
     @Autowired
     private UserInfoGroupService userInfoGroupService;
+    
+    @Autowired
+    private UserDataScopeServiceImpl userDataScopeService;
+    
+    @Resource
+    StoreService storeService;
     
     /**
      * 通过ID查询单条数据从DB
@@ -228,7 +240,7 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
         
         Franchisee franchisee = franchiseeService.queryByIdFromCache(query.getFranchiseeId());
         if (Objects.isNull(franchisee)) {
-            log.error("USER BATTERY MEMBERCARD ERROR!not found franchisee,uid={},franchiseeId={}", userInfo.getUid(), query.getFranchiseeId());
+            log.warn("USER BATTERY MEMBER CARD WARN!not found franchisee,uid={},franchiseeId={}", userInfo.getUid(), query.getFranchiseeId());
             return Collections.emptyList();
         }
         
@@ -381,8 +393,8 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
 
     
     @Override
+    @Transactional(isolation = Isolation.SERIALIZABLE, rollbackFor = Exception.class)
     public Integer batchUpdateSortParam(List<MemberCardAndCarRentalPackageSortParamQuery> sortParamQueries) {
-        
         if (CollectionUtils.isEmpty(sortParamQueries)) {
             return null;
         }
@@ -481,7 +493,7 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
     public List<BatteryMemberCardVO> selectByPageForUser(BatteryMemberCardQuery query) {
         Franchisee franchisee = franchiseeService.queryByIdFromCache(query.getFranchiseeId());
         if (Objects.isNull(franchisee)) {
-            log.error("USER BATTERY MEMBERCARD ERROR!not found franchisee,uid={},franchiseeId={}", SecurityUtils.getUid(), query.getFranchiseeId());
+            log.warn("USER BATTERY MEMBER CARD WARN!not found franchisee,uid={},franchiseeId={}", SecurityUtils.getUid(), query.getFranchiseeId());
             return Collections.emptyList();
         }
         
@@ -883,9 +895,31 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
     
     @Override
     @Slave
-    public List<BatteryMemberCardVO> listMemberCardForSort() {
+    public List<BatteryMemberCardVO> listMemberCardForSort(TokenUser tokenUser) {
+        BatteryMemberCardQuery query = BatteryMemberCardQuery.builder().tenantId(TenantContextHolder.getTenantId()).build();
         
-        return batteryMemberCardMapper.listMemberCardForSort(TenantContextHolder.getTenantId());
+        final List<Long> franchiseeIds = new ArrayList<>();
+        if (Objects.equals(tokenUser.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            franchiseeIds.addAll(userDataScopeService.selectDataIdByUid(tokenUser.getUid()));
+            if (CollectionUtils.isEmpty(franchiseeIds)) {
+                return Collections.emptyList();
+            }
+        }
+        
+        if (Objects.equals(tokenUser.getDataType(), User.DATA_TYPE_STORE)) {
+            List<Long> storeIds = userDataScopeService.selectDataIdByUid(tokenUser.getUid());
+            if (org.apache.commons.collections.CollectionUtils.isNotEmpty(storeIds)) {
+                storeIds.forEach(storeId -> {
+                    franchiseeIds.add(storeService.queryByIdFromCache(storeId).getFranchiseeId());
+                });
+            }
+            if (CollectionUtils.isEmpty(franchiseeIds)) {
+                return Collections.emptyList();
+            }
+        }
+        query.setFranchiseeIds(franchiseeIds);
+        
+        return batteryMemberCardMapper.selectListMemberCardForSort(query);
     }
     
     private List<MemberCardBatteryType> buildMemberCardBatteryTypeList(List<String> batteryModels, Long mid) {

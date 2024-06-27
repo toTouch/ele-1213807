@@ -29,4 +29,6 @@ public class ReviewWithdrawApplicationRequest {
     
     private String remark;
     
+    private Long bindFranchiseeId;
+    
 }

@@ -39,4 +39,9 @@ public interface MqConsumerConstant {
      * 商户返利 consumer group
      */
     String BATTERY_MEMBER_CARD_MERCHANT_REBATE_GROUP = "battery_member_card_merchant_rebate_group";
+    
+    /**
+     * 电池电压电流变化 consumer group
+     */
+    String BATTERY_CHARGE_ATTR_CHANGE_GROUP = "battery_charge_attr_change_group";
 }

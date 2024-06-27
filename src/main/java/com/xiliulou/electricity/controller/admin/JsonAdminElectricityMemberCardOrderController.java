@@ -165,7 +165,7 @@ public class JsonAdminElectricityMemberCardOrderController extends BaseControlle
         
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
-            log.error("ELE ERROR! not found user");
+            log.warn("ELE WARN! not found user");
             throw new CustomBusinessException("查不到订单");
         }
         
@@ -214,7 +214,6 @@ public class JsonAdminElectricityMemberCardOrderController extends BaseControlle
     @PutMapping("/admin/memberCard/enableUserMemberCard")
     @Log(title = "启用用户套餐")
     public R adminEnableMemberCard(@RequestParam("uid") Long uid) {
-        //        return electricityMemberCardOrderService.adminOpenOrDisableMemberCard(usableStatus, uid,null);
         return electricityMemberCardOrderService.adminEnableMemberCard(uid);
     }
     

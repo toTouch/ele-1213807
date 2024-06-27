@@ -51,21 +51,6 @@ public class JsonAdminElectricityCabinetOrderController {
     
     /**
      * 分页查询换电订单列表
-     * @param size
-     * @param offset
-     * @param orderId
-     * @param phone
-     * @param status
-     * @param eid
-     * @param beginTime
-     * @param endTime
-     * @param source
-     * @param paymentMethod
-     * @param electricityCabinetName
-     * @param oldCellNo
-     * @param uid
-     * @param franchiseeId
-     * @return
      */
     @GetMapping("/admin/electricityCabinetOrder/list")
     public R queryList(@RequestParam("size") Long size, @RequestParam("offset") Long offset, @RequestParam(value = "orderId", required = false) String orderId,
@@ -118,7 +103,6 @@ public class JsonAdminElectricityCabinetOrderController {
                 return R.ok(Collections.EMPTY_LIST);
             }
         }
-        
         
         ElectricityCabinetOrderQuery electricityCabinetOrderQuery = ElectricityCabinetOrderQuery.builder().offset(offset).size(size).orderId(orderId).phone(phone).status(status)
                 .eid(eid).beginTime(beginTime).endTime(endTime).paymentMethod(paymentMethod).franchiseeIds(franchiseeIds).storeIds(storeIds).source(source)
@@ -257,54 +241,5 @@ public class JsonAdminElectricityCabinetOrderController {
     @PutMapping(value = "/admin/electricityCabinetOrder/endOrder")
     public R endOrder(@RequestParam("orderId") String orderId) {
         return electricityCabinetOrderService.endOrder(orderId);
-    }
-    
-    //换电柜订单导出报表
-    @GetMapping("/admin/electricityCabinetOrder/exportExcel")
-    public void exportExcel(@RequestParam(value = "orderId", required = false) String orderId, @RequestParam(value = "phone", required = false) String phone,
-            @RequestParam(value = "status", required = false) String status, @RequestParam(value = "beginTime", required = false) Long beginTime,
-            @RequestParam(value = "uid", required = false) Long uid, @RequestParam(value = "endTime", required = false) Long endTime,
-            @RequestParam(value = "source", required = false) Integer source, @RequestParam(value = "paymentMethod", required = false) Integer paymentMethod,
-            @RequestParam(value = "electricityCabinetName", required = false) String electricityCabinetName, @RequestParam(value = "oldCellNo", required = false) Integer oldCellNo,
-            HttpServletResponse response) {
-        
-        Double days = (Double.valueOf(endTime - beginTime)) / 1000 / 3600 / 24;
-        if (days > 33) {
-            throw new CustomBusinessException("搜索日期不能大于33天");
-        }
-        
-        TokenUser user = SecurityUtils.getUserInfo();
-        if (Objects.isNull(user)) {
-            log.error("ELE ERROR! not found user ");
-            throw new CustomBusinessException("查不到订单");
-        }
-        
-        List<Integer> eleIdList = null;
-        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE) || Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
-            UserTypeService userTypeService = userTypeFactory.getInstance(user.getDataType());
-            if (Objects.isNull(userTypeService)) {
-                log.warn("USER TYPE ERROR! not found operate service! userType={}", user.getDataType());
-                throw new CustomBusinessException("查不到订单");
-            }
-            
-            eleIdList = userTypeService.getEleIdListByDataType(user);
-            if (CollectionUtils.isEmpty(eleIdList)) {
-                throw new CustomBusinessException("查不到订单");
-            }
-        }
-        
-        List<Long> franchiseeIds = null;
-        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
-            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
-        }
-        
-        List<Long> storeIds = null;
-        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
-            storeIds = userDataScopeService.selectDataIdByUid(user.getUid());
-        }
-        ElectricityCabinetOrderQuery electricityCabinetOrderQuery = ElectricityCabinetOrderQuery.builder().source(source).paymentMethod(paymentMethod)
-                .electricityCabinetName(electricityCabinetName).oldCellNo(oldCellNo).orderId(orderId).phone(phone).status(status).beginTime(beginTime).endTime(endTime)
-                .franchiseeIds(franchiseeIds).storeIds(storeIds).uid(uid).tenantId(TenantContextHolder.getTenantId()).build();
-        electricityCabinetOrderService.exportExcel(electricityCabinetOrderQuery, response);
     }
 }

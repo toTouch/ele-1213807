@@ -117,4 +117,14 @@ public class CarRentalPackageOrderSlippagePo extends BasicCarPo {
      * 支付时间
      */
     private Long payTime;
+    
+    /**
+     * 微信商户号
+     */
+    private String wechatMerchantId;
+    
+    /**
+     * 支付加盟商ID
+     */
+    private Long payFranchiseeId;
 }

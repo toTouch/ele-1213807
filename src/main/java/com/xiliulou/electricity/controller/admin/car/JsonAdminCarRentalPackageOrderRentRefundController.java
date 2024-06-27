@@ -9,7 +9,6 @@ import com.xiliulou.electricity.model.car.query.CarRentalPackageOrderRentRefundQ
 import com.xiliulou.electricity.query.car.CarRentalPackageOrderRentRefundQryReq;
 import com.xiliulou.electricity.query.car.CarRentalPackageRefundReq;
 import com.xiliulou.electricity.query.car.audit.AuditOptReq;
-import com.xiliulou.electricity.service.car.CarRentalPackageMemberTermService;
 import com.xiliulou.electricity.service.car.CarRentalPackageOrderRentRefundService;
 import com.xiliulou.electricity.service.car.biz.CarRentalPackageOrderBizService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
@@ -23,32 +22,52 @@ import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.BeanUtils;
 import org.springframework.util.CollectionUtils;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
-import java.util.*;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
  * 租车套餐订单退租订单 Controller
+ *
  * @author xiaohui.song
  **/
 @Slf4j
 @RestController
 @RequestMapping("/admin/car/carRentalPackageOrderRentRefund")
 public class JsonAdminCarRentalPackageOrderRentRefundController extends BasicController {
-
-    @Resource
-    private CarRentalPackageMemberTermService carRentalPackageMemberTermService;
-
+    
     @Resource
     private CarRentalPackageOrderBizService carRentalPackageOrderBizService;
-
+    
     @Resource
     private CarRentalPackageOrderRentRefundService carRentalPackageOrderRentRefundService;
-
+    
+    /**
+     * 退租审批确认是否强制线下退款
+     *
+     * @param rentRefundOrderNo 退租申请单号
+     * @return
+     */
+    @GetMapping("/confirmCompelOffLine")
+    public R<Boolean> confirmCompelOffLine(String rentRefundOrderNo) {
+        return R.ok(carRentalPackageOrderBizService.confirmCompelOffLine(rentRefundOrderNo));
+    }
+    
     /**
      * 审核拒绝
+     *
      * @param optReq 审核操作数据
      * @return true(成功)、false(失败)
      */
@@ -57,19 +76,20 @@ public class JsonAdminCarRentalPackageOrderRentRefundController extends BasicCon
         if (!ObjectUtils.allNotNull(optReq, optReq.getOrderNo())) {
             return R.fail("ELECTRICITY.0007", "不合法的参数");
         }
-
+        
         Integer tenantId = TenantContextHolder.getTenantId();
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             log.error("not found user.");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-
-        return R.ok(carRentalPackageOrderBizService.approveRefundRentOrder(optReq.getOrderNo(), false, optReq.getReason(), user.getUid()));
+        
+        return R.ok(carRentalPackageOrderBizService.approveRefundRentOrder(optReq.getOrderNo(), false, optReq.getReason(), user.getUid(), optReq.getCompelOffLine()));
     }
-
+    
     /**
      * 审核通过
+     *
      * @param optReq 审核操作数据
      * @return true(成功)、false(失败)
      */
@@ -78,25 +98,21 @@ public class JsonAdminCarRentalPackageOrderRentRefundController extends BasicCon
         if (!ObjectUtils.allNotNull(optReq, optReq.getOrderNo())) {
             return R.fail("ELECTRICITY.0007", "不合法的参数");
         }
-
+        
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             log.error("not found user.");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-
-        CarRentRefundVo carRentRefundVo = CarRentRefundVo.builder()
-                .orderNo(optReq.getOrderNo())
-                .approveFlag(Boolean.TRUE)
-                .reason(optReq.getReason())
-                .amount(optReq.getAmount())
-                .uid(user.getUid())
-                .build();
+        
+        CarRentRefundVo carRentRefundVo = CarRentRefundVo.builder().orderNo(optReq.getOrderNo()).approveFlag(Boolean.TRUE).reason(optReq.getReason()).amount(optReq.getAmount())
+                .uid(user.getUid()).compelOffLine(optReq.getCompelOffLine()).build();
         return R.ok(carRentalPackageOrderBizService.approveRefundRentOrder(carRentRefundVo));
     }
-
+    
     /**
      * 条件查询列表
+     *
      * @param queryReq 请求参数类
      * @return 退租订单集
      */
@@ -105,29 +121,29 @@ public class JsonAdminCarRentalPackageOrderRentRefundController extends BasicCon
         if (null == queryReq) {
             queryReq = new CarRentalPackageOrderRentRefundQryReq();
         }
-
+        
         // 赋值租户
         Integer tenantId = TenantContextHolder.getTenantId();
         queryReq.setTenantId(tenantId);
-
+        
         // 数据权校验
         Triple<List<Integer>, List<Integer>, Boolean> permissionTriple = checkPermissionInteger();
         if (!permissionTriple.getRight()) {
             return R.ok(Collections.emptyList());
         }
-
+        
         // 转换请求体
         CarRentalPackageOrderRentRefundQryModel qryModel = new CarRentalPackageOrderRentRefundQryModel();
         BeanUtils.copyProperties(queryReq, qryModel);
         qryModel.setFranchiseeIdList(permissionTriple.getLeft());
         qryModel.setStoreIdList(permissionTriple.getMiddle());
-
+        
         // 调用服务
         List<CarRentalPackageOrderRentRefundPo> refundPOList = carRentalPackageOrderRentRefundService.page(qryModel);
         if (CollectionUtils.isEmpty(refundPOList)) {
             return R.ok(Collections.emptyList());
         }
-
+        
         // 获取辅助业务信息（用户信息、租车套餐信息）
         Set<Long> uids = new HashSet<>();
         Set<Long> rentalPackageIdIds = new HashSet<>();
@@ -135,37 +151,38 @@ public class JsonAdminCarRentalPackageOrderRentRefundController extends BasicCon
             uids.add(refundPO.getUid());
             rentalPackageIdIds.add(refundPO.getRentalPackageId());
         });
-
+        
         // 用户信息
         Map<Long, UserInfo> userInfoMap = getUserInfoByUidsForMap(uids);
-
+        
         // 租车套餐信息
         Map<Long, String> carRentalPackageNameMap = getCarRentalPackageNameByIdsForMap(rentalPackageIdIds);
-
+        
         // 模型转换，封装返回
         List<CarRentalPackageOrderRentRefundVo> rentRefundVoList = refundPOList.stream().map(rentRefundPo -> {
-
+            
             CarRentalPackageOrderRentRefundVo rentRefundVo = new CarRentalPackageOrderRentRefundVo();
             BeanUtils.copyProperties(rentRefundPo, rentRefundVo);
-
+            
             if (!userInfoMap.isEmpty()) {
                 UserInfo userInfo = userInfoMap.getOrDefault(rentRefundPo.getUid(), new UserInfo());
                 rentRefundVo.setUserRelName(userInfo.getName());
                 rentRefundVo.setUserPhone(userInfo.getPhone());
             }
-
+            
             if (!carRentalPackageNameMap.isEmpty()) {
                 rentRefundVo.setCarRentalPackageName(carRentalPackageNameMap.getOrDefault(rentRefundPo.getRentalPackageId(), ""));
             }
-
+            
             return rentRefundVo;
         }).collect(Collectors.toList());
-
+        
         return R.ok(rentRefundVoList);
     }
-
+    
     /**
      * 条件查询总数
+     *
      * @param qryReq 请求参数类
      * @return 总数
      */
@@ -174,29 +191,30 @@ public class JsonAdminCarRentalPackageOrderRentRefundController extends BasicCon
         if (null == qryReq) {
             qryReq = new CarRentalPackageOrderRentRefundQryReq();
         }
-
+        
         // 赋值租户
         Integer tenantId = TenantContextHolder.getTenantId();
         qryReq.setTenantId(tenantId);
-
+        
         // 数据权校验
         Triple<List<Integer>, List<Integer>, Boolean> permissionTriple = checkPermissionInteger();
         if (!permissionTriple.getRight()) {
             return R.ok(NumberConstant.ZERO);
         }
-
+        
         // 转换请求体
         CarRentalPackageOrderRentRefundQryModel qryModel = new CarRentalPackageOrderRentRefundQryModel();
         BeanUtils.copyProperties(qryReq, qryModel);
         qryModel.setFranchiseeIdList(permissionTriple.getLeft());
         qryModel.setStoreIdList(permissionTriple.getMiddle());
-
+        
         // 调用服务
         return R.ok(carRentalPackageOrderRentRefundService.count(qryModel));
     }
-
+    
     /**
      * 查询租金退款页面显示信息
+     *
      * @param packageOrderNo 租车订单号
      * @return
      */
@@ -204,9 +222,10 @@ public class JsonAdminCarRentalPackageOrderRentRefundController extends BasicCon
     public R<RentalPackageRefundVO> queryRentalPackageData(@RequestParam(value = "packageOrderNo", required = true) String packageOrderNo) {
         return R.ok(carRentalPackageOrderBizService.queryRentalPackageRefundData(packageOrderNo));
     }
-
+    
     /**
      * 后台租金退款
+     *
      * @param carRentalPackageRefundReq
      * @return
      */
@@ -214,5 +233,5 @@ public class JsonAdminCarRentalPackageOrderRentRefundController extends BasicCon
     public R<Boolean> confirmation(@RequestBody CarRentalPackageRefundReq carRentalPackageRefundReq) {
         return R.ok(carRentalPackageOrderBizService.refundConfirmation(carRentalPackageRefundReq));
     }
-
+    
 }
