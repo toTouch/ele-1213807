@@ -108,7 +108,7 @@ public class MerchantAttrServiceImpl implements MerchantAttrService {
     @Override
     public Triple<Boolean, String, Object> updateUpgradeCondition(Long franchiseeId, Integer condition) {
         MerchantAttr merchantAttr = this.queryByFranchiseeIdFromCache(franchiseeId);
-        if (Objects.isNull(merchantAttr) || !Objects.equals(merchantAttr.getFranchiseeId(), franchiseeId)) {
+        if (Objects.isNull(merchantAttr) || !Objects.equals(merchantAttr.getTenantId(), TenantContextHolder.getTenantId())) {
             return Triple.of(true, null, null);
         }
         
