@@ -29,8 +29,8 @@ public class UserInfoOverdueTxService {
     }
     
     @Transactional(rollbackFor = Exception.class)
-    public void insertOrUpdate(UserInfoOverdueRemark remark) {
-        Long id = userInfoOverdueRemarkMapper.queryIdByUidAndType(remark.getUid(), remark.getType(), remark.getTenantId());
+    public void insertOrUpdate(UserInfoOverdueRemark remark,Long id) {
+        
         if (Objects.isNull(id)){
             remark.setDelFlag(0);
             userInfoOverdueRemarkMapper.insertRemark(remark);

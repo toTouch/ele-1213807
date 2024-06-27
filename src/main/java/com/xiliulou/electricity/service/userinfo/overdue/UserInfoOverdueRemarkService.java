@@ -2,7 +2,6 @@ package com.xiliulou.electricity.service.userinfo.overdue;
 
 
 import com.xiliulou.electricity.query.userinfo.overdue.OverdueRemarkReq;
-import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 
 /**
@@ -18,5 +17,5 @@ import org.apache.commons.lang3.tuple.Triple;
  **/
 public interface UserInfoOverdueRemarkService {
     
-    Triple<Boolean,String, String> insertOrUpdate(OverdueRemarkReq request);
+    Triple<Boolean, String, String> insertOrUpdate(OverdueRemarkReq request);
 }

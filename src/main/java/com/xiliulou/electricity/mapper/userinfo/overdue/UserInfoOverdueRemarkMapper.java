@@ -23,8 +23,8 @@ public interface UserInfoOverdueRemarkMapper {
     
     int updateRemark(UserInfoOverdueRemark entity);
     
-    int clearRemarksByUidAndType(@Param("uid") Long uid, @Param("type") Integer type,@Param("tenantId") Integer tenantId);
+    int clearRemarksByUidAndType(@Param("uid") Long uid, @Param("type") Integer type, @Param("tenantId") Integer tenantId);
     
-    Long queryIdByUidAndType(@Param("uid") Long uid, @Param("type") Integer type,@Param("tenantId") Long tenantId);
-
+    Long queryIdByUidAndType(@Param("uid") Long uid, @Param("type") Integer type, @Param("tenantId") Long tenantId);
+    
 }
