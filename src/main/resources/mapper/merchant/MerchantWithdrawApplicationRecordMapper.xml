@@ -16,7 +16,8 @@
             response,
             create_time,
             update_time,
-            pay_config_type
+            pay_config_type,
+            franchisee_id
         </trim>
         <trim prefix="values (" suffix=")" suffixOverrides=",">
             #{uid},
@@ -30,7 +31,8 @@
             #{response},
             #{createTime},
             #{updateTime},
-            #{payConfigType}
+            #{payConfigType},
+            #{franchiseeId}
         </trim>
     </insert>
     
@@ -48,7 +50,8 @@
             response,
             create_time,
             update_time,
-            pay_config_type
+            pay_config_type,
+            franchisee_id
         </trim>
         values
         <foreach collection="list" item="item" index="index" separator=",">
@@ -64,7 +67,8 @@
             #{item.response},
             #{item.createTime},
             #{item.updateTime},
-            #{item.payConfigType}
+            #{item.payConfigType},
+            #{item.franchiseeId}
             )
         </foreach>
     
@@ -322,10 +326,9 @@
                mwar.batch_detail_no,
                mwar.transaction_batch_id,
                mwar.status,
-               m.franchisee_id,
+               mwar.franchisee_id,
                mwar.pay_config_type
         from t_merchant_withdraw_application_record mwar
-        left join t_merchant m on m.uid = mwar.uid
         where mwar.batch_no = #{batchNo}
           and mwar.tenant_id = #{tenantId}
     </select>

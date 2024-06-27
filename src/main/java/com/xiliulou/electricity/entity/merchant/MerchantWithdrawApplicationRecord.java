@@ -58,5 +58,10 @@ public class MerchantWithdrawApplicationRecord {
      * 支付类型配置：0，默认，1：加盟商
      */
     private Integer payConfigType;
+    
+    /**
+     * 加盟商id
+     */
+    private Long franchiseeId;
 
 }

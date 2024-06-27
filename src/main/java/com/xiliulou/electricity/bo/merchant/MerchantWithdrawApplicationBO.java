@@ -138,5 +138,7 @@ public class MerchantWithdrawApplicationBO {
     private Integer payConfigType;
     
     private Long franchiseeId;
+    
+    private String wechatMerchantId;
 
 }

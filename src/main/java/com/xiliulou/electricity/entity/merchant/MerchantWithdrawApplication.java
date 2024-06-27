@@ -148,4 +148,9 @@ public class MerchantWithdrawApplication {
      * 支付配置是否改变;0 否， 1 是
      */
     private Integer payConfigWhetherChange;
+    
+    /**
+     * 加盟商ID
+     */
+    private Long franchiseeId;
 }
