@@ -37,13 +37,14 @@ public class JsonMerchantRebateConfigController extends BaseController {
      * @return
      */
     @GetMapping("/admin/rebateConfig/list")
-    public R getRebateConfigList(@RequestParam(value = "level", required = false) String level, @RequestParam(value = "mid", required = false) Long mid) {
+    public R getRebateConfigList(@RequestParam("franchiseeId") Long franchiseeId, @RequestParam(value = "level", required = false) String level,
+            @RequestParam(value = "mid", required = false) Long mid) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         
-        RebateConfigRequest rebateConfigRequest = RebateConfigRequest.builder().mid(mid).level(level).delFlag(CommonConstant.DEL_N).build();
+        RebateConfigRequest rebateConfigRequest = RebateConfigRequest.builder().mid(mid).level(level).delFlag(CommonConstant.DEL_N).franchiseeId(franchiseeId).build();
         
         return R.ok(rebateConfigService.listByPage(rebateConfigRequest));
     }

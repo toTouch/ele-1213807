@@ -80,7 +80,7 @@ public class RebateConfigServiceImpl implements RebateConfigService {
     @Slave
     @Override
     public List<RebateConfigVO> listByPage(RebateConfigRequest rebateConfigRequest) {
-        List<MerchantLevel> merchantLevels = merchantLevelService.listByTenantId(TenantContextHolder.getTenantId());
+        List<MerchantLevel> merchantLevels = merchantLevelService.listByFranchiseeId(TenantContextHolder.getTenantId(),rebateConfigRequest.getFranchiseeId());
         
         List<RebateConfig> rebateConfigs = this.rebateConfigMapper.selectByPage(rebateConfigRequest);
         if (CollectionUtils.isEmpty(rebateConfigs) || CollectionUtils.isEmpty(merchantLevels)) {
