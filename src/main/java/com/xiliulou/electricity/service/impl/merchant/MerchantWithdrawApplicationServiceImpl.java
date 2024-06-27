@@ -752,7 +752,7 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
                     
                     // 判断支付配置对应的商户号是否发送改变
                     String wechatMerchantId = weChatMerchantIdMap.get(batchNo);
-                    if (StringUtils.isNotEmpty(wechatMerchantId) && !Objects.equals(wechatMerchantId, details.getWechatMerchantId()) && !Objects.equals(details.getFranchiseeId(), franchiseeId)) {
+                    if (StringUtils.isNotEmpty(wechatMerchantId) && (!Objects.equals(wechatMerchantId, details.getWechatMerchantId()) || !Objects.equals(details.getFranchiseeId(), franchiseeId))) {
                         MerchantWithdrawApplication updateWithdrawApplicationUpdate = new MerchantWithdrawApplication();
                         updateWithdrawApplicationUpdate.setBatchNo(batchNo);
                         updateWithdrawApplicationUpdate.setTenantId(tenantId);
