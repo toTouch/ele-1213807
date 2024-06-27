@@ -134,12 +134,6 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
     @Autowired
     private UserInfoGroupService userInfoGroupService;
     
-    @Autowired
-    private UserDataScopeServiceImpl userDataScopeService;
-    
-    @Resource
-    StoreService storeService;
-    
     /**
      * 通过ID查询单条数据从DB
      *
@@ -393,7 +387,6 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
 
     
     @Override
-    @Transactional(isolation = Isolation.SERIALIZABLE, rollbackFor = Exception.class)
     public Integer batchUpdateSortParam(List<MemberCardAndCarRentalPackageSortParamQuery> sortParamQueries) {
         if (CollectionUtils.isEmpty(sortParamQueries)) {
             return null;
@@ -895,31 +888,9 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
     
     @Override
     @Slave
-    public List<BatteryMemberCardVO> listMemberCardForSort(TokenUser tokenUser) {
-        BatteryMemberCardQuery query = BatteryMemberCardQuery.builder().tenantId(TenantContextHolder.getTenantId()).build();
+    public List<BatteryMemberCardVO> listMemberCardForSort() {
         
-        final List<Long> franchiseeIds = new ArrayList<>();
-        if (Objects.equals(tokenUser.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
-            franchiseeIds.addAll(userDataScopeService.selectDataIdByUid(tokenUser.getUid()));
-            if (CollectionUtils.isEmpty(franchiseeIds)) {
-                return Collections.emptyList();
-            }
-        }
-        
-        if (Objects.equals(tokenUser.getDataType(), User.DATA_TYPE_STORE)) {
-            List<Long> storeIds = userDataScopeService.selectDataIdByUid(tokenUser.getUid());
-            if (org.apache.commons.collections.CollectionUtils.isNotEmpty(storeIds)) {
-                storeIds.forEach(storeId -> {
-                    franchiseeIds.add(storeService.queryByIdFromCache(storeId).getFranchiseeId());
-                });
-            }
-            if (CollectionUtils.isEmpty(franchiseeIds)) {
-                return Collections.emptyList();
-            }
-        }
-        query.setFranchiseeIds(franchiseeIds);
-        
-        return batteryMemberCardMapper.selectListMemberCardForSort(query);
+        return batteryMemberCardMapper.listMemberCardForSort(TenantContextHolder.getTenantId());
     }
     
     private List<MemberCardBatteryType> buildMemberCardBatteryTypeList(List<String> batteryModels, Long mid) {

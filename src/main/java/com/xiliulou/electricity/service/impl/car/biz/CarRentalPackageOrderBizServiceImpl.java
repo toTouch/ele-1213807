@@ -337,18 +337,9 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         }
         
         // 比对是否需要强制线下退款
-        Long payFranchiseeId = packageOrderEntity.getPayFranchiseeId();
-        Integer tenantId = packageOrderEntity.getTenantId();
-        String wechatMerchantId = packageOrderEntity.getWechatMerchantId();
+        ElectricityPayParams payParams = electricityPayParamsService.queryCacheByTenantIdAndFranchiseeId(packageOrderEntity.getTenantId(), packageOrderEntity.getPayFranchiseeId());
         
-        WechatPayParamsDetails wechatPayParamsDetails = null;
-        try {
-            wechatPayParamsDetails = wechatPayParamsBizService.getDetailsByIdTenantIdAndFranchiseeId(tenantId, payFranchiseeId);
-        } catch (Exception e) {
-            throw new BizException("PAY_TRANSFER.0021", "支付配置有误，请检查相关配置");
-        }
-        
-        return ObjectUtils.isEmpty(wechatPayParamsDetails) || !wechatPayParamsDetails.getWechatMerchantId().equals(wechatMerchantId);
+        return ObjectUtils.isEmpty(payParams) || !payParams.getWechatMerchantId().equals(packageOrderEntity.getWechatMerchantId());
     }
     
     /**
@@ -588,9 +579,6 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         //saveApproveRefundRentOrderTx(carRentRefundVo, rentRefundOrderEntity, packageOrderEntity);
         saveApproveRefundRentOrder(carRentRefundVo, rentRefundOrderEntity, packageOrderEntity);
         
-        // 偶现缓存问题，具体场景没有推断出来，怀疑是这里的事务问题，因为后面有多重事务在控制，为了减少事务影响，暂时先删除缓存处理
-        carRentalPackageMemberTermService.deleteCache(tenantId, rentRefundOrderEntity.getUid());
-        
         return Boolean.TRUE;
     }
     
@@ -663,6 +651,8 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                     
                 } catch (WechatPayException e) {
                     log.error("save approve refund rentOrderTx failed.", e);
+                    // 缓存问题，事务在管理其中没有提交，但是缓存已经存在，所以需要删除一次缓存
+                    carRentalPackageMemberTermService.deleteCache(packageOrderEntity.getTenantId(), packageOrderEntity.getUid());
                     throw new BizException("PAY_TRANSFER.0020", "支付调用失败，请检查相关配置");
                 }
             }
@@ -1417,6 +1407,8 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             wechatPayParamsDetails = wechatPayParamsBizService.getDetailsByIdTenantIdAndFranchiseeId(electricityTradeOrder.getTenantId(),
                     electricityTradeOrder.getPayFranchiseeId());
         } catch (Exception e) {
+            // 缓存问题，事务在管理其中没有提交，但是缓存已经存在，所以需要删除一次缓存
+            carRentalPackageMemberTermService.deleteCache(electricityTradeOrder.getTenantId(), electricityTradeOrder.getUid());
             throw new BizException("PAY_TRANSFER.0021", "支付配置有误，请检查相关配置");
         }
         wechatV3RefundRequest.setCommonRequest(ElectricityPayParamsConverter.qryDetailsToCommonRequest(wechatPayParamsDetails));
@@ -1499,6 +1491,8 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                         
                     } catch (WechatPayException e) {
                         log.error("saveApproveRefundRentOrderTx failed.", e);
+                        // 缓存问题，事务在管理其中没有提交，但是缓存已经存在，所以需要删除一次缓存
+                        carRentalPackageMemberTermService.deleteCache(rentRefundEntity.getTenantId(), rentRefundEntity.getUid());
                         throw new BizException(e.getMessage());
                     }
                 }
@@ -1588,6 +1582,8 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                         
                     } catch (WechatPayException e) {
                         log.error("save approve refund rentOrderTx failed.", e);
+                        // 缓存问题，事务在管理其中没有提交，但是缓存已经存在，所以需要删除一次缓存
+                        carRentalPackageMemberTermService.deleteCache(rentRefundEntity.getTenantId(), rentRefundEntity.getUid());
                         throw new BizException("PAY_TRANSFER.0020", "支付调用失败，请检查相关配置");
                     }
                 }
@@ -2132,6 +2128,14 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         }
         if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
             throw new BizException("ELECTRICITY.0024", "用户已被禁用");
+        }
+        
+        // 获取加锁 KEY
+        String buyLockKey = String.format(CarRenalCacheConstant.CAR_RENAL_PACKAGE_REFUND_RENT_ORDER_UID_KEY, uid);
+        
+        // 加锁
+        if (!redisService.setNx(buyLockKey, uid.toString(), 5 * 1000L, false)) {
+            throw new BizException("ELECTRICITY.0034", "操作频繁");
         }
         
         // 查询会员期限信息

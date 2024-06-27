@@ -1391,10 +1391,16 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
             return Triple.of(false, "ELECTRICITY.00121", "电池套餐不存在");
         }
         
-        WechatPayParamsDetails wechatPayParamsDetails = wechatPayParamsBizService.getDetailsByIdTenantIdAndFranchiseeId(tenantId, batteryMemberCard.getFranchiseeId());
-        if (Objects.isNull(wechatPayParamsDetails)) {
+        WechatPayParamsDetails wechatPayParamsDetails = null;
+        try {
+            wechatPayParamsDetails = wechatPayParamsBizService.getDetailsByIdTenantIdAndFranchiseeId(tenantId, batteryMemberCard.getFranchiseeId());
+        } catch (WechatPayException e) {
             log.warn("FREE DEPOSIT HYBRID WARN!not found electricityPayParams,uid={}", uid);
             return Triple.of(false, "PAY_TRANSFER.0019", "支付未成功，请联系客服处理");
+        }
+        if (Objects.isNull(wechatPayParamsDetails)) {
+            log.warn("FREE DEPOSIT HYBRID WARN!not found electricityPayParams,uid={}", uid);
+            return Triple.of(false, "100307", "未配置支付参数!");
         }
         
         if (!Objects.equals(BatteryMemberCard.STATUS_UP, batteryMemberCard.getStatus())) {

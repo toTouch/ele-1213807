@@ -6,7 +6,6 @@ import com.xiliulou.electricity.query.ElectricityCabinetBoxQuery;
 import com.xiliulou.electricity.query.FreeCellNoQuery;
 import com.xiliulou.electricity.vo.ElectricityCabinetBoxVO;
 import org.apache.ibatis.annotations.Param;
-import org.springframework.security.core.parameters.P;
 
 import java.util.List;
 
@@ -58,6 +57,7 @@ public interface ElectricityCabinetBoxMapper extends BaseMapper<ElectricityCabin
     ElectricityCabinetBox selectEleBoxByBatteryId(@Param("batteryId") Long batteryId);
     
     List<ElectricityCabinetBox> selectListByEids(@Param("eIdList") List<Integer> electricityCabinetIdList);
-   
-    List<ElectricityCabinetBox> selectAllBoxByBatteryId(@Param("eid") Integer eid);
+    
+    
+    List<ElectricityCabinetBox> selectHaveBatteryCellId(@Param("eid") Integer eid);
 }

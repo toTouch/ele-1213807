@@ -19,6 +19,7 @@ import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.ElectricityCabinetOrder;
 import com.xiliulou.electricity.entity.ElectricityConfig;
 import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
+import com.xiliulou.electricity.entity.ElectricityPayParams;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.FranchiseeInsurance;
 import com.xiliulou.electricity.entity.FreeDepositAlipayHistory;
@@ -111,6 +112,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * 缴纳押金订单表(TEleDepositOrder)表服务实现类
@@ -520,10 +522,10 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
     @Override
     public R queryList(EleDepositOrderQuery eleDepositOrderQuery) {
         List<EleDepositOrderVO> eleDepositOrderVOS = eleDepositOrderMapper.queryList(eleDepositOrderQuery);
-        
-        eleDepositOrderVOS.forEach(eleDepositOrderVO -> {
+    
+        eleDepositOrderVOS.stream().map(eleDepositOrderVO -> {
             eleDepositOrderVO.setRefundFlag(true);
-            
+        
             List<EleRefundOrder> eleRefundOrders = eleRefundOrderService.selectByOrderIdNoFilerStatus(eleDepositOrderVO.getOrderId());
             // 订单已退押或正在退押中
             if (!CollectionUtils.isEmpty(eleRefundOrders)) {
@@ -533,8 +535,9 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
                     }
                 }
             }
-        });
-        
+            return eleDepositOrderVO;
+        }).collect(Collectors.toList());
+    
         return R.ok(eleDepositOrderVOS);
     }
     
@@ -769,10 +772,10 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
             return R.fail("ELECTRICITY.0015", "未找到订单");
         }
         
-        WechatPayParamsDetails wechatPayParamsDetails = wechatPayParamsBizService.getDetailsByIdTenantIdAndFranchiseeId(eleDepositOrder.getTenantId(),
+        ElectricityPayParams electricityPayParams = electricityPayParamsService.queryCacheByTenantIdAndFranchiseeId(eleDepositOrder.getTenantId(),
                 eleDepositOrder.getParamFranchiseeId());
-        if (Objects.isNull(wechatPayParamsDetails) || !Objects.equals(eleDepositOrder.getParamFranchiseeId(), wechatPayParamsDetails.getFranchiseeId()) || !Objects.equals(
-                eleDepositOrder.getWechatMerchantId(), wechatPayParamsDetails.getWechatMerchantId())) {
+        if (Objects.isNull(electricityPayParams) || !Objects.equals(eleDepositOrder.getParamFranchiseeId(), electricityPayParams.getFranchiseeId()) || !Objects.equals(
+                eleDepositOrder.getWechatMerchantId(), electricityPayParams.getWechatMerchantId())) {
             return R.ok(CheckPayParamsResultEnum.FAIL.getCode());
         }
         return R.ok(CheckPayParamsResultEnum.SUCCESS.getCode());
