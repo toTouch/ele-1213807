@@ -84,37 +84,6 @@ public class ElectricityCabinetOrderOperHistoryServiceImpl implements Electricit
         return R.ok(historyList);
     }
 
-    /**
-     * 查询操作记录为旧数据还是新数据，方便前端页面跳转判断
-     * @param orderId
-     * @param type
-     * @return
-     */
-    @Override
-    public R selectOperateDataType(String orderId, Integer type) {
-
-        //租户
-        Integer tenantId = TenantContextHolder.getTenantId();
-
-        ElectricityCabinetOrderOperHistoryQuery historyQuery = ElectricityCabinetOrderOperHistoryQuery.builder().orderId(orderId).type(type).tenantId(tenantId).build();
-
-        List<ElectricityCabinetOrderOperHistory> historyList = electricityCabinetOrderOperHistoryMapper.queryListByOrderId(historyQuery);
-        if (ObjectUtil.isNotEmpty(historyList)) {
-            boolean falg = Boolean.FALSE;
-            //判断上报的操作记录数据是否有操作顺序及操作结果
-            for (ElectricityCabinetOrderOperHistory history : historyList) {
-                falg = ObjectUtil.isEmpty(history.getSeq()) || ObjectUtil.isEmpty(history.getResult()) || ObjectUtil.equal(history.getSeq(), -1) || ObjectUtil.equal(history.getResult(), -1);
-            }
-
-            //若上报的操作记录数据没有操作顺序或操作结果（即旧数据）
-            if (falg) {
-                return R.ok(TYPE_STATUS_OLD);
-            }
-        }
-
-        return R.ok(TYPE_STATUS_NEW);
-    }
-
     @Slave
     @Override
     public R queryCountByOrderId(ElectricityCabinetOrderOperHistoryQuery electricityCabinetOrderOperHistoryQuery) {

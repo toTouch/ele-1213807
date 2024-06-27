@@ -47,9 +47,7 @@ public interface ElectricityCabinetOrderService {
     List<HomepageElectricityExchangeFrequencyVo> homepageExchangeFrequencyCount(HomepageElectricityExchangeFrequencyQuery homepageElectricityExchangeFrequencyQuery);
 
     Integer queryCountForScreenStatistic(ElectricityCabinetOrderQuery electricityCabinetOrderQuery);
-
-    void exportExcel(ElectricityCabinetOrderQuery electricityCabinetOrderQuery, HttpServletResponse response);
-
+    
     R endOrder(String orderId);
 
     Integer homeOneCount(Long first, Long now, List<Integer> eleIdList, Integer tenantId);

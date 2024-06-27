@@ -19,27 +19,26 @@
         select
         <include refid="base_column"/>
         from t_wechat_withdrawal_certificate
-        where tenant_id = #{tenantId} and franchisee_id = #{franchiseeId} and del_flag=#{0}
+        where tenant_id = #{tenantId} and franchisee_id = #{franchiseeId} and del_flag=0
     </select>
     
-    <select id="selectListByTenantIdAndFranchiseeId"
-        resultType="com.xiliulou.electricity.entity.WechatWithdrawalCertificate">
+    <select id="selectListByTenantIdAndFranchiseeId" resultType="com.xiliulou.electricity.entity.WechatWithdrawalCertificate">
         select
         <include refid="base_column"/>
         from t_wechat_withdrawal_certificate
+        where
         del_flag = 0
         and (tenant_id,franchisee_id)
-        values
+        in
         <foreach collection="list" item="item" separator="," open="(" close=")">
-            (#{item.tenantId},#{item.franchiseeId}
+            (#{item.tenantId},#{item.franchiseeId})
         </foreach>
     </select>
     
     <update id="logicalDeleteByPayParamsId">
         update
             t_wechat_withdrawal_certificate
-        set del_flag   = 1,
-            update_time=now()
+        set del_flag = 1
         where pay_params_id = #{payParamsId}
           and tenant_id = #{tenantId}
     </update>

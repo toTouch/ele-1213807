@@ -84,18 +84,14 @@ public class ElectricityPayParamsRequest {
     private String paternerKey;
     
     
-    /**
-     * 商家版小程序 appid
-     */
-    private String merchantAppletId;
-    
-    /**
-     * 商家版小程序 appSecret
-     */
-    private String merchantAppletSecret;
-    
-    
+//    /**
+//     * 商家版小程序 appid
+//     */
+//    private String merchantAppletId;
+//
+//    /**
+//     * 商家版小程序 appSecret
+//     */
+//    private String merchantAppletSecret;
 
-    
-    
 }

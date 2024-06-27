@@ -24,7 +24,7 @@ import java.util.Objects;
 
 @RestController
 @Slf4j
-public class EleHardwareFailureCabinetMsgController {
+public class JsonAdminEleHardwareFailureCabinetMsgController {
     @Resource
     private EleHardwareFailureCabinetMsgService failureCabinetMsgService;
     

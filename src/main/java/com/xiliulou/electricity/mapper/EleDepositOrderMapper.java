@@ -1,15 +1,11 @@
 package com.xiliulou.electricity.mapper;
 
-import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.xiliulou.electricity.entity.EleDepositOrder;
 
 import java.math.BigDecimal;
 import java.util.List;
 
 import com.xiliulou.electricity.query.EleDepositOrderQuery;
-import com.xiliulou.electricity.query.RentBatteryOrderQuery;
-import com.xiliulou.electricity.vo.CarBatteryFreeDepositAlipayVo;
 import com.xiliulou.electricity.vo.EleDepositOrderVO;
 import com.xiliulou.electricity.vo.HomePageTurnOverGroupByWeekDayVo;
 import com.xiliulou.electricity.vo.PayDepositOrderVO;
@@ -57,11 +53,6 @@ public interface EleDepositOrderMapper extends BaseMapper<EleDepositOrder> {
                                               @Param("depositType")Integer depositType,
                                               @Param("franchiseeIds")List<Long> finalFranchiseeIds);
 
-    List<CarBatteryFreeDepositAlipayVo> queryCarBatteryFreeDepositAlipay(@Param("tenantId")Integer tenantId,
-                                                                         @Param("todayStartTime")Long todayStartTime,
-                                                                         @Param("depositType")Integer depositType,
-                                                                         @Param("franchiseeIds")List<Long> finalFranchiseeIds);
-    
     EleDepositOrder queryByUidAndSourceOrderNo(@Param("uid") Long uid, @Param("sourceOrderNo") String sourceOrderNo);
     
     

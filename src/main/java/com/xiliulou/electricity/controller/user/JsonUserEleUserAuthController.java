@@ -137,17 +137,6 @@ public class JsonUserEleUserAuthController {
     }
     
     /**
-     * 获取当前用户的具体状态
-     *
-     * @param
-     * @return
-     */
-    @GetMapping(value = "/user/serviceStatus")
-    public R getEleUserServiceStatus() {
-        return eleUserAuthService.getEleUserServiceStatus();
-    }
-    
-    /**
      * 获取上传身份证照片所需的签名
      */
     @GetMapping(value = "/user/acquire/upload/idcard/file/sign")

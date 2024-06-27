@@ -7,25 +7,27 @@ package com.xiliulou.electricity.handler;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.constant.WechatPayConstant;
+import com.xiliulou.electricity.entity.ElectricityPayParams;
 import com.xiliulou.electricity.entity.ElectricityTradeOrder;
 import com.xiliulou.electricity.entity.UnionTradeOrder;
 import com.xiliulou.electricity.enums.CallBackEnums;
 import com.xiliulou.electricity.service.EleRefundOrderService;
+import com.xiliulou.electricity.service.ElectricityPayParamsService;
 import com.xiliulou.electricity.service.ElectricityTradeOrderService;
 import com.xiliulou.electricity.service.UnionTradeOrderService;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiOrderCallBackResource;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiRefundOrderCallBackResource;
-import com.xiliulou.pay.weixinv3.franchisee.handler.WechatV3FranchiseePostProcessHandler;
-import com.xiliulou.pay.weixinv3.franchisee.request.WechatV3FranchiseeMerchantLoadRequest;
-import com.xiliulou.pay.weixinv3.franchisee.request.WechatV3FranchiseeOrderCallBackQuery;
-import com.xiliulou.pay.weixinv3.franchisee.request.WechatV3FranchiseeOrderRequest;
-import com.xiliulou.pay.weixinv3.franchisee.request.WechatV3FranchiseeRefundOrderCallBackQuery;
-import com.xiliulou.pay.weixinv3.franchisee.request.WechatV3FranchiseeRefundRequest;
-import com.xiliulou.pay.weixinv3.franchisee.service.WechatV3FranchiseeMerchantLoadAndUpdateCertificateService;
 import com.xiliulou.pay.weixinv3.query.WechatCallBackResouceData;
+import com.xiliulou.pay.weixinv3.service.WechatV3PostProcessHandler;
 import com.xiliulou.pay.weixinv3.util.AesUtil;
+import com.xiliulou.pay.weixinv3.v2.handler.WechatV3PostProcessExecuteHandler;
+import com.xiliulou.pay.weixinv3.v2.query.WechatV3OrderCallBackRequest;
+import com.xiliulou.pay.weixinv3.v2.query.WechatV3OrderRequest;
+import com.xiliulou.pay.weixinv3.v2.query.WechatV3RefundOrderCallBackRequest;
+import com.xiliulou.pay.weixinv3.v2.query.WechatV3RefundRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -41,10 +43,10 @@ import java.util.Objects;
  */
 @Slf4j
 @Service
-public class WechatV3FranchiseePostProcessHandlerImpl implements WechatV3FranchiseePostProcessHandler {
+public class WechatV3FranchiseePostProcessHandlerImpl implements WechatV3PostProcessExecuteHandler {
     
     @Autowired
-    WechatV3FranchiseeMerchantLoadAndUpdateCertificateService certificateService;
+    ElectricityPayParamsService electricityPayParamsService;
     
     @Autowired
     RedisService redisService;
@@ -59,26 +61,26 @@ public class WechatV3FranchiseePostProcessHandlerImpl implements WechatV3Franchi
     UnionTradeOrderService unionTradeOrderService;
     
     @Override
-    public void postProcessBeforeWechatPay(WechatV3FranchiseeOrderRequest request) {
+    public void postProcessBeforeWechatPay(WechatV3OrderRequest request) {
         //暂时什么都不处理 TODO
     }
     
     @Override
     @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRES_NEW)
-    public void postProcessAfterWechatPay(WechatV3FranchiseeOrderCallBackQuery wechatV3OrderCallBackQuery) {
+    public void postProcessAfterWechatPay(WechatV3OrderCallBackRequest wechatV3OrderCallBackQuery) {
         WechatCallBackResouceData resource = wechatV3OrderCallBackQuery.getResource();
         if (Objects.isNull(resource)) {
             log.error("WECHAT ERROR! no wechat's info ! msg={}", wechatV3OrderCallBackQuery);
             return;
         }
         
+        String apiV3Key = this.getApiV3Key(wechatV3OrderCallBackQuery.getTenantId(), wechatV3OrderCallBackQuery.getFranchiseeId());
+        
         String decryptJson = null;
         try {
             decryptJson = AesUtil
                     .decryptToString(resource.getAssociated_data().getBytes(StandardCharsets.UTF_8), resource.getNonce().getBytes(StandardCharsets.UTF_8), resource.getCiphertext(),
-                            certificateService.getMerchantApiV3Key(
-                                    new WechatV3FranchiseeMerchantLoadRequest(wechatV3OrderCallBackQuery.getTenantId(), wechatV3OrderCallBackQuery.getFranchiseeId()))
-                                    .getBytes(StandardCharsets.UTF_8));
+                            apiV3Key.getBytes(StandardCharsets.UTF_8));
             
         } catch (Exception e) {
             log.error("WECHAT ERROR! wechat decrypt error! msg={}", wechatV3OrderCallBackQuery, e);
@@ -120,27 +122,28 @@ public class WechatV3FranchiseePostProcessHandlerImpl implements WechatV3Franchi
         }
     }
     
+    
     @Override
-    public void postProcessBeforeWechatRefund(WechatV3FranchiseeRefundRequest request) {
+    public void postProcessBeforeWechatRefund(WechatV3RefundRequest request) {
     
     }
     
     @Override
     @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRES_NEW)
-    public void postProcessAfterWechatRefund(WechatV3FranchiseeRefundOrderCallBackQuery wechatV3RefundOrderCallBackQuery) {
+    public void postProcessAfterWechatRefund(WechatV3RefundOrderCallBackRequest wechatV3RefundOrderCallBackQuery) {
         WechatCallBackResouceData resource = wechatV3RefundOrderCallBackQuery.getResource();
         if (Objects.isNull(resource)) {
             log.error("WECHAT ERROR! no wechat's info ! msg={}", wechatV3RefundOrderCallBackQuery);
             return;
         }
         
+        String apiV3Key = this.getApiV3Key(wechatV3RefundOrderCallBackQuery.getTenantId(), wechatV3RefundOrderCallBackQuery.getFranchiseeId());
+        
         String decryptJson = null;
         try {
             decryptJson = AesUtil
                     .decryptToString(resource.getAssociated_data().getBytes(StandardCharsets.UTF_8), resource.getNonce().getBytes(StandardCharsets.UTF_8), resource.getCiphertext(),
-                            certificateService.getMerchantApiV3Key(
-                                    new WechatV3FranchiseeMerchantLoadRequest(wechatV3RefundOrderCallBackQuery.getTenantId(), wechatV3RefundOrderCallBackQuery.getFranchiseeId()))
-                                    .getBytes(StandardCharsets.UTF_8));
+                            apiV3Key.getBytes(StandardCharsets.UTF_8));
             
         } catch (Exception e) {
             log.error("WECHAT ERROR! wechat decrypt error! msg={}", wechatV3RefundOrderCallBackQuery, e);
@@ -156,5 +159,18 @@ public class WechatV3FranchiseePostProcessHandlerImpl implements WechatV3Franchi
         }
         
         eleRefundOrderService.notifyDepositRefundOrder(callBackResource);
+    }
+    
+    
+    private String getApiV3Key(Integer tenantId, Long franchiseeId) {
+        try {
+            ElectricityPayParams payParams = electricityPayParamsService.queryPreciseCacheByTenantIdAndFranchiseeId(tenantId, franchiseeId);
+            if (Objects.isNull(payParams)) {
+                throw new AuthenticationServiceException("未能查找到appId和appSecret！");
+            }
+            return payParams.getWechatV3ApiKey();
+        } catch (Exception e) {
+            throw new RuntimeException("获取商户apiV3密钥失败！tenantId=" + tenantId + " franchiseeId=" + franchiseeId, e);
+        }
     }
 }

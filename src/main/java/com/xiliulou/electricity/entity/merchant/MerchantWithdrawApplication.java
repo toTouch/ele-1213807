@@ -133,5 +133,19 @@ public class MerchantWithdrawApplication {
      * 更新时间
      */
     private Long updateTime;
-
+    
+    /**
+     * 支付类型配置：0，默认，1：加盟商
+     */
+    private Integer payConfigType;
+    
+    /**
+     * 微信商户号
+     */
+    private String wechatMerchantId;
+    
+    /**
+     * 支付配置是否改变;0 否， 1 是
+     */
+    private Integer payConfigWhetherChange;
 }

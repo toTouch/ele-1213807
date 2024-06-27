@@ -61,19 +61,6 @@ public class JsonAdminElectricityCabinetBatteryController extends BaseController
     TenantService tenantService;
     
     /**
-     * 新增电池
-     *
-     * @param
-     * @return
-     */
-    @Deprecated
-    @PostMapping(value = "/admin/battery")
-    public R save(@RequestBody @Validated EleBatteryQuery electricityBattery) {
-        
-        return electricityBatteryService.saveElectricityBattery(electricityBattery);
-    }
-    
-    /**
      * 修改电池
      *
      * @param
@@ -195,11 +182,7 @@ public class JsonAdminElectricityCabinetBatteryController extends BaseController
             @RequestParam(value = "franchiseeId") Long franchiseeId) {
         return electricityBatteryService.queryBindListByPage(offset, size, franchiseeId);
     }
-    
-    /**
-     * 分配电池
-     */
-    
+
     /**
      * 电池分页数量
      *

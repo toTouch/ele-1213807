@@ -89,17 +89,6 @@ public class ElectricityPayParams {
     public static final Integer TYPE_MERCHANT_PATH = 1;
     
     /**
-     * 商家版小程序 appid
-     */
-    private String merchantAppletId;
-    
-    /**
-     * 商家版小程序 appSecret
-     */
-    private String merchantAppletSecret;
-    
-    
-    /**
      * 配置类型
      *
      * @see ElectricityPayParamsConfigEnum

@@ -13,6 +13,8 @@ import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.thread.XllThreadPoolExecutorService;
 import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.db.dynamic.annotation.Slave;
+import com.xiliulou.electricity.bo.wechat.WechatPayParamsDetails;
+import com.xiliulou.electricity.config.merchant.MerchantConfig;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.constant.StringConstant;
@@ -21,7 +23,6 @@ import com.xiliulou.electricity.entity.CommonPayOrder;
 import com.xiliulou.electricity.entity.EleDepositOrder;
 import com.xiliulou.electricity.entity.EleRefundOrder;
 import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
-import com.xiliulou.electricity.entity.ElectricityPayParams;
 import com.xiliulou.electricity.entity.ElectricityTradeOrder;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.FranchiseeInsurance;
@@ -29,7 +30,6 @@ import com.xiliulou.electricity.entity.FreeDepositOrder;
 import com.xiliulou.electricity.entity.InsuranceOrder;
 import com.xiliulou.electricity.entity.InsuranceUserInfo;
 import com.xiliulou.electricity.entity.PxzConfig;
-import com.xiliulou.electricity.entity.RefundOrder;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.UserBatteryDeposit;
 import com.xiliulou.electricity.entity.UserBatteryMemberCard;
@@ -64,7 +64,6 @@ import com.xiliulou.electricity.service.BatteryMembercardRefundOrderService;
 import com.xiliulou.electricity.service.EleDepositOrderService;
 import com.xiliulou.electricity.service.EleRefundOrderService;
 import com.xiliulou.electricity.service.ElectricityMemberCardOrderService;
-import com.xiliulou.electricity.service.ElectricityPayParamsService;
 import com.xiliulou.electricity.service.ElectricityTradeOrderService;
 import com.xiliulou.electricity.service.EnableMemberCardRecordService;
 import com.xiliulou.electricity.service.FranchiseeService;
@@ -80,6 +79,7 @@ import com.xiliulou.electricity.service.UserBatteryTypeService;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.UserOauthBindService;
 import com.xiliulou.electricity.service.UserService;
+import com.xiliulou.electricity.service.WechatPayParamsBizService;
 import com.xiliulou.electricity.service.enterprise.AnotherPayMembercardRecordService;
 import com.xiliulou.electricity.service.enterprise.CloudBeanUseRecordDetailService;
 import com.xiliulou.electricity.service.enterprise.CloudBeanUseRecordService;
@@ -106,7 +106,6 @@ import com.xiliulou.pay.deposit.paixiaozu.pojo.rsp.PxzCommonRsp;
 import com.xiliulou.pay.deposit.paixiaozu.pojo.rsp.PxzDepositUnfreezeRsp;
 import com.xiliulou.pay.deposit.paixiaozu.service.PxzDepositService;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiOrderResultDTO;
-import com.xiliulou.pay.weixinv3.exception.WechatPayException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -114,6 +113,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
@@ -176,9 +176,6 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
     
     @Autowired
     private UserOauthBindService userOauthBindService;
-    
-    @Autowired
-    private ElectricityPayParamsService electricityPayParamsService;
     
     @Autowired
     private CloudBeanUseRecordService cloudBeanUseRecordService;
@@ -260,6 +257,12 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
     
     @Resource
     private CloudBeanUseRecordDetailService cloudBeanUseRecordDetailService;
+    
+    @Resource
+    private MerchantConfig merchantConfig;
+    
+    @Resource
+    private WechatPayParamsBizService wechatPayParamsBizService;
     
     
     /**
@@ -733,15 +736,26 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
                 return Triple.of(false, "100314", "支付金额不合法");
             }
             
-            ElectricityPayParams electricityPayParams = electricityPayParamsService.queryFromCache(TenantContextHolder.getTenantId());
-            if (Objects.isNull(electricityPayParams)) {
-                log.error("CLOUD BEAN RECHARGE ERROR!not found pay params,uid={}", uid);
-                return Triple.of(false, "100314", "未配置支付参数!");
+            //查询支付配置详情
+            WechatPayParamsDetails wechatPayParamsDetails = null;
+    
+            try {
+                wechatPayParamsDetails  = wechatPayParamsBizService.getDetailsByIdTenantIdAndFranchiseeId(TenantContextHolder.getTenantId(), enterpriseInfo.getFranchiseeId());
+            } catch (Exception e) {
+                log.error("CLOUD BEAN RECHARGE ERROR, get wechat pay params details error, tenantId = {}, franchiseeId={}", TenantContextHolder.getTenantId(), enterpriseInfo.getFranchiseeId(), e);
+                return Triple.of(false, "PAY_TRANSFER.0021", "支付配置有误，请检查相关配置");
+            }
+            
+            if (Objects.isNull(wechatPayParamsDetails)) {
+                log.error("CLOUD BEAN RECHARGE ERROR, wechat pay params details is null, tenantId = {}, franchiseeId={}", TenantContextHolder.getTenantId(), enterpriseInfo.getFranchiseeId());
+                return Triple.of(false, "120017", "未配置支付参数");
             }
     
+    
             //兼容商户小程序充值
-            electricityPayParams.setMerchantMinProAppId(electricityPayParams.getMerchantAppletId());
-            electricityPayParams.setMerchantAppletSecret(electricityPayParams.getMerchantAppletSecret());
+            wechatPayParamsDetails.setMerchantMinProAppId(merchantConfig.getMerchantAppletId());
+            wechatPayParamsDetails.setMerchantAppletSecret(merchantConfig.getMerchantAppletSecret());
+            
             
             UserOauthBind userOauthBind = userOauthBindService.queryUserOauthBySysId(uid, TenantContextHolder.getTenantId());
             if (Objects.isNull(userOauthBind) || Objects.isNull(userOauthBind.getThirdId())) {
@@ -770,9 +784,9 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
             CommonPayOrder commonPayOrder = CommonPayOrder.builder().orderId(enterpriseCloudBeanOrder.getOrderId()).uid(uid).payAmount(query.getTotalBeanAmount())
                     .orderType(ElectricityTradeOrder.ORDER_TYPE_CLOUD_BEAN_RECHARGE).attach(ElectricityTradeOrder.ATTACH_CLOUD_BEAN_RECHARGE).description("云豆充值")
                     .tenantId(TenantContextHolder.getTenantId()).build();
-            
+    
             WechatJsapiOrderResultDTO resultDTO = electricityTradeOrderService
-                    .commonCreateTradeOrderAndGetPayParams(commonPayOrder, electricityPayParams, userOauthBind.getThirdId(), request);
+                    .commonCreateTradeOrderAndGetPayParams(commonPayOrder, wechatPayParamsDetails, userOauthBind.getThirdId(), request);
             return Triple.of(true, null, resultDTO);
         } catch (Exception e) {
             log.error("CLOUD BEAN RECHARGE ERROR! recharge fail,uid={}", uid, e);
@@ -780,7 +794,7 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
             redisService.delete(CacheConstant.ELE_CACHE_USER_CLOUD_BEAN_RECHARGE_LOCK_KEY + SecurityUtils.getUid());
         }
         
-        return Triple.of(false, "", "充值失败");
+        return Triple.of(false, "", "支付未成功，请联系客服处理");
     }
     
     @Override
@@ -1639,7 +1653,7 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
         EleRefundOrder eleRefundOrder = EleRefundOrder.builder().orderId(userBatteryDeposit.getOrderId())
                 .refundOrderNo(OrderIdUtil.generateBusinessOrderId(BusinessType.BATTERY_DEPOSIT_REFUND, userInfo.getUid())).payAmount(userBatteryDeposit.getBatteryDeposit())
                 .refundAmount(userBatteryDeposit.getBatteryDeposit()).status(status).createTime(System.currentTimeMillis())
-                .updateTime(System.currentTimeMillis()).tenantId(userInfo.getTenantId()).memberCardOweNumber(0).build();
+                .updateTime(System.currentTimeMillis()).tenantId(userInfo.getTenantId()).memberCardOweNumber(0).payType(eleDepositOrder.getPayType()).build();
         eleRefundOrderService.insert(eleRefundOrder);
         
         //记录企业用户退押记录
@@ -1883,27 +1897,6 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
         }
         
         return Boolean.FALSE;
-    }
-    
-    @Override
-    public Triple<Boolean, String, Object> refund(String orderId, HttpServletRequest request) {
-        try {
-            
-            EnterpriseCloudBeanOrder enterpriseCloudBeanOrder = enterpriseCloudBeanOrderService.selectByOrderId(orderId);
-            if (Objects.isNull(enterpriseCloudBeanOrder)) {
-                return Triple.of(false, null, "订单不存在!");
-            }
-            
-            RefundOrder refundOrder = RefundOrder.builder().orderId(orderId)
-                    .refundOrderNo(OrderIdUtil.generateBusinessOrderId(BusinessType.BATTERY_DEPOSIT_REFUND, enterpriseCloudBeanOrder.getUid()))
-                    .payAmount(enterpriseCloudBeanOrder.getPayAmount()).refundAmount(enterpriseCloudBeanOrder.getPayAmount()).build();
-            
-            return Triple.of(true, "", eleRefundOrderService.commonCreateRefundOrder(refundOrder, request));
-        } catch (WechatPayException e) {
-            log.error("REFUND ORDER ERROR! wechat v3 refund  error! ", e);
-        }
-        
-        return Triple.of(true, null, "退款成功!");
     }
     
     private Pair<List<Long>, List<String>> getMembercardNames(Long id) {

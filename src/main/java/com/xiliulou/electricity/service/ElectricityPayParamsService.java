@@ -12,15 +12,10 @@ import java.util.List;
 
 public interface ElectricityPayParamsService extends IService<ElectricityPayParams> {
     
-    @Deprecated
-    R saveOrUpdateElectricityPayParams(ElectricityPayParams electricityPayParams);
-    
-    
-    @Deprecated
-    ElectricityPayParams queryFromCache(Integer tenantId);
     
     
     R getTenantId(String appId);
+    
     /**
      * 上传支付证书
      *
@@ -28,17 +23,20 @@ public interface ElectricityPayParamsService extends IService<ElectricityPayPara
      * @param type type
      * @return R
      */
-    R uploadFile(MultipartFile file, Integer type,Long franchiseeId);
+    R uploadFile(MultipartFile file, Integer type, Long franchiseeId);
     
     
     ElectricityPayParams selectTenantId(String appId);
     
-    
+    @Deprecated
     Triple<Boolean, String, Object> queryByMerchantAppId(String appId);
     
     
     /**
-     * 根据租户id + 加盟商id查询缓存
+     * 根据租户id + 加盟商id查询缓存<br/>
+     * <p>
+     * 1.franchiseeId 不存在配置,则返回运营商默认配置<br/> 2.franchiseeId 存在配置,则返回加盟商配置<br/> 3.如果要查询运营商默认配置，franchiseeId传{@link com.xiliulou.electricity.constant.MultiFranchiseeConstant#DEFAULT_FRANCHISEE}
+     * </p>
      *
      * @param tenantId
      * @param franchiseeId
@@ -46,6 +44,21 @@ public interface ElectricityPayParamsService extends IService<ElectricityPayPara
      * @date 2024/6/12 11:16
      */
     ElectricityPayParams queryCacheByTenantIdAndFranchiseeId(Integer tenantId, Long franchiseeId);
+    
+    
+    /**
+     * 根据租户id + 加盟商id查询缓存<br/>
+     * <p>
+     * 精确查询配置,传入的franchiseeId是什么，就查询franchiseeId对应的配置。
+     * </p>
+     *
+     * @param tenantId
+     * @param franchiseeId
+     * @author caobotao.cbt
+     * @date 2024/6/18 09:19
+     */
+    ElectricityPayParams queryPreciseCacheByTenantIdAndFranchiseeId(Integer tenantId, Long franchiseeId);
+    
     
     /**
      * 新增

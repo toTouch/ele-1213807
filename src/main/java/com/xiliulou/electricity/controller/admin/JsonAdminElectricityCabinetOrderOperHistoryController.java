@@ -29,21 +29,7 @@ public class JsonAdminElectricityCabinetOrderOperHistoryController {
 	ElectricityCabinetOrderOperHistoryService electricityCabinetOrderOperHistoryService;
 	@Autowired
 	UserTypeFactory userTypeFactory;
-
-	/**
-	 * 判断操作记录数据是否为 旧类型数据
-	 * @param orderId
-	 * @param type
-	 * @return
-	 */
-	@GetMapping("/admin/electricityCabinetOrderOperHistory/dataType")
-	@Deprecated
-	public R selectOperateDataType(@RequestParam("orderId") String orderId,
-					   @RequestParam("type") Integer type) {
-
-		return electricityCabinetOrderOperHistoryService.selectOperateDataType(orderId,type);
-	}
-
+	
 	//换电柜历史记录查询
 	@GetMapping("/admin/electricityCabinetOrderOperHistory/list")
 	public R queryList(@RequestParam("size") Long size,

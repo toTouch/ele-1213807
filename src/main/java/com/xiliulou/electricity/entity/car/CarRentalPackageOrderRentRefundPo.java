@@ -126,4 +126,15 @@ public class CarRentalPackageOrderRentRefundPo extends BasicCarPo {
      * 审核时间
      */
     private Long auditTime;
+    
+    /**
+     * 强制线下退款
+     * <pre>
+     *     0: 是
+     *     1: 否
+     * </pre>
+     *
+     * @see YesNoEnum#getCode()
+     */
+    private Integer compelOffLine;
 }
