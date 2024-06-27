@@ -66,9 +66,10 @@ public class AssetAllocateRecordController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         
-        //if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
-        //    return R.fail("ELECTRICITY.0066", "用户权限不足");
-        //}
+        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE) || Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE))) {
+            return R.fail("ELECTRICITY.0066", "用户权限不足");
+        }
+        
         
         AssetAllocateRecordPageRequest allocateRecordPageRequest = AssetAllocateRecordPageRequest.builder().orderNo(orderNo).type(type).sourceFranchiseeId(sourceFranchiseeId)
                 .targetFranchiseeId(targetFranchiseeId).build();
@@ -99,9 +100,9 @@ public class AssetAllocateRecordController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         
-        //if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
-        //    return R.fail("ELECTRICITY.0066", "用户权限不足");
-        //}
+        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE) || Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE))) {
+            return R.fail("ELECTRICITY.0066", "用户权限不足");
+        }
         
         AssetAllocateRecordPageRequest allocateRecordPageRequest = AssetAllocateRecordPageRequest.builder().orderNo(orderNo).type(type).sourceFranchiseeId(sourceFranchiseeId)
                 .targetFranchiseeId(targetFranchiseeId).size(size).offset(offset).build();
