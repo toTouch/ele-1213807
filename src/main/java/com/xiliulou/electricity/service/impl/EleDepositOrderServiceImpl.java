@@ -762,13 +762,12 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
     public Integer updatePhoneByUid(Integer tenantId, Long uid, String newPhone) {
         return eleDepositOrderMapper.updatePhoneByUid(tenantId, uid, newPhone);
     }
-
-    @Slave
+    
     @Override
     public R checkPayParamsDetails(String orderId) {
         EleDepositOrder eleDepositOrder = this.queryByOrderId(orderId);
         if (Objects.isNull(eleDepositOrder)) {
-            log.error("CHECK PAY PARAMS DETAILS WARN! NOT FOUND ELECTRICITY_REFUND_ORDER orderId={}", orderId);
+            log.warn("CHECK PAY PARAMS DETAILS WARN! NOT FOUND ELECTRICITY_REFUND_ORDER orderId={}", orderId);
             return R.fail("ELECTRICITY.0015", "未找到订单");
         }
         
