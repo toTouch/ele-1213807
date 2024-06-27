@@ -77,10 +77,11 @@ public class AssetInventoryDetailServiceImpl implements AssetInventoryDetailServ
         List<AssetInventoryDetailBO> assetInventoryDetailBOList = assetInventoryDetailMapper.selectListByOrderNo(assetInventoryDetailQueryModel);
         if (CollectionUtils.isNotEmpty(assetInventoryDetailBOList)) {
             rspList = assetInventoryDetailBOList.stream().map(item -> {
-                // TODO(heyafeng) 2024/6/11 17:25
                 AssetInventoryDetailVO assetInventoryDetailVO = new AssetInventoryDetailVO();
                 BeanUtils.copyProperties(item, assetInventoryDetailVO);
-                assetInventoryDetailVO.setFranchiseeName(Optional.ofNullable(franchiseeService.queryByIdFromCache(item.getFranchiseeId())).orElse(new Franchisee()).getName());
+                if (Objects.nonNull(item.getFranchiseeId())) {
+                    assetInventoryDetailVO.setFranchiseeName(Optional.ofNullable(franchiseeService.queryByIdFromCache(item.getFranchiseeId())).orElse(new Franchisee()).getName());
+                }
                 
                 return assetInventoryDetailVO;
                 
@@ -116,7 +117,6 @@ public class AssetInventoryDetailServiceImpl implements AssetInventoryDetailServ
     public Integer asyncBatteryProcess(ElectricityBatterySnSearchRequest snSearchRequest, String orderNo, Long operator) {
         List<ElectricityBatteryVO> electricityBatteryVOList = electricityBatteryService.listSnByFranchiseeId(snSearchRequest);
         if (CollectionUtils.isNotEmpty(electricityBatteryVOList)) {
-            // TODO(heyafeng) 2024/4/29 16:50
             List<AssetInventoryDetailSaveQueryModel> inventoryDetailSaveQueryModelList = electricityBatteryVOList.stream().map(item -> AssetInventoryDetailSaveQueryModel.builder().orderNo(orderNo).sn(item.getSn())
                     .type(AssetTypeEnum.ASSET_TYPE_BATTERY.getCode()).franchiseeId(snSearchRequest.getFranchiseeId())
                     .inventoryStatus(AssetConstant.ASSET_INVENTORY_DETAIL_STATUS_NO).operator(operator).tenantId(snSearchRequest.getTenantId())
@@ -164,7 +164,6 @@ public class AssetInventoryDetailServiceImpl implements AssetInventoryDetailServ
         
         try {
             Integer count = 0;
-            // TODO(heyafeng) 2024/4/29 17:06
             List<String> snList = inventoryRequest.getSnList();
             if (CollectionUtils.isNotEmpty(snList)) {
                 String orderNo = inventoryRequest.getOrderNo();

@@ -100,7 +100,6 @@ public class AssetInventoryServiceImpl implements AssetInventoryService {
             ElectricityBatteryQuery electricityBatteryQuery = ElectricityBatteryQuery.builder().tenantId(tenantId).franchiseeId(franchiseeId).build();
             Object data = electricityBatteryService.queryCount(electricityBatteryQuery).getData();
     
-            // TODO(heyafeng) 2024/4/29 16:30
             // 生成资产盘点订单
             Integer insert = NumberConstant.ZERO;
             if (Objects.nonNull(data) && (Integer) data > NumberConstant.ZERO) {
@@ -149,8 +148,9 @@ public class AssetInventoryServiceImpl implements AssetInventoryService {
                 AssetInventoryVO assetInventoryVO = new AssetInventoryVO();
                 BeanUtils.copyProperties(item, assetInventoryVO);
                 
-                // TODO(heyafeng) 2024/6/11 17:35
-                assetInventoryVO.setFranchiseeName(Optional.ofNullable(franchiseeService.queryByIdFromCache(item.getFranchiseeId())).orElse(new Franchisee()).getName());
+                if (Objects.nonNull(item.getFranchiseeId())) {
+                    assetInventoryVO.setFranchiseeName(Optional.ofNullable(franchiseeService.queryByIdFromCache(item.getFranchiseeId())).orElse(new Franchisee()).getName());
+                }
                 
                 return assetInventoryVO;
             }).collect(Collectors.toList());

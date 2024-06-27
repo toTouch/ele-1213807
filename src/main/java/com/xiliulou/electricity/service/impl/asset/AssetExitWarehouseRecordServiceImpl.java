@@ -111,7 +111,6 @@ public class AssetExitWarehouseRecordServiceImpl implements AssetExitWarehouseRe
         }
         
         try {
-            // TODO(heyafeng) 2024/4/29 16:26
             Long franchiseeId = assetExitWarehouseSaveRequest.getFranchiseeId();
             Integer type = assetExitWarehouseSaveRequest.getType();
             Long storeId = assetExitWarehouseSaveRequest.getStoreId();
@@ -358,11 +357,15 @@ public class AssetExitWarehouseRecordServiceImpl implements AssetExitWarehouseRe
         if (CollectionUtils.isNotEmpty(assetExitWarehouseBOList)) {
             rspList = assetExitWarehouseBOList.stream().map(item -> {
                 
-                // TODO(heyafeng) 2024/6/11 17:33
                 AssetExitWarehouseVO assetExitWarehouseVO = new AssetExitWarehouseVO();
                 BeanUtils.copyProperties(item, assetExitWarehouseVO);
-                assetExitWarehouseVO.setFranchiseeName(Optional.ofNullable(franchiseeService.queryByIdFromCache(item.getFranchiseeId())).orElse(new Franchisee()).getName());
-                assetExitWarehouseVO.setStoreName(Optional.ofNullable(storeService.queryByIdFromCache(item.getStoreId())).orElse(new Store()).getName());
+                if (Objects.nonNull(item.getFranchiseeId())) {
+                    assetExitWarehouseVO.setFranchiseeName(Optional.ofNullable(franchiseeService.queryByIdFromCache(item.getFranchiseeId())).orElse(new Franchisee()).getName());
+                }
+                
+                if (Objects.nonNull(item.getStoreId())) {
+                    assetExitWarehouseVO.setStoreName(Optional.ofNullable(storeService.queryByIdFromCache(item.getStoreId())).orElse(new Store()).getName());
+                }
                 
                 return assetExitWarehouseVO;
                 

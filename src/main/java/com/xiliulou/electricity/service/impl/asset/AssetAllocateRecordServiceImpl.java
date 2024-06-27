@@ -131,7 +131,6 @@ public class AssetAllocateRecordServiceImpl implements AssetAllocateRecordServic
         }
         
         try {
-            // TODO(heyafeng) 2024/4/29 16:25
             Integer type = assetAllocateRecordRequest.getType();
             Integer status = assetInventoryService.queryInventoryStatusByFranchiseeId(assetAllocateRecordRequest.getSourceFranchiseeId(), type);
             if (Objects.equals(status, AssetConstant.ASSET_INVENTORY_STATUS_TAKING)) {
@@ -523,14 +522,16 @@ public class AssetAllocateRecordServiceImpl implements AssetAllocateRecordServic
                 BeanUtil.copyProperties(item, assetAllocateRecordVO);
                 assetAllocateRecordVO.setSourceFranchiseeId(item.getOldFranchiseeId());
                 assetAllocateRecordVO.setTargetFranchiseeId(item.getNewFranchiseeId());
-                
-                // TODO(heyafeng) 2024/6/11 17:29
-                assetAllocateRecordVO.setSourceFranchiseeName(Optional.ofNullable(franchiseeService.queryByIdFromCache(item.getOldFranchiseeId())).orElse(new Franchisee()).getName());
-                assetAllocateRecordVO.setTargetFranchiseeName(Optional.ofNullable(franchiseeService.queryByIdFromCache(item.getNewFranchiseeId())).orElse(new Franchisee()).getName());
-    
                 assetAllocateRecordVO.setSourceStoreId(item.getOldStoreId());
                 assetAllocateRecordVO.setTargetStoreId(item.getNewStoreId());
-                
+    
+    
+                if (Objects.nonNull(item.getOldFranchiseeId())) {
+                    assetAllocateRecordVO.setSourceFranchiseeName(Optional.ofNullable(franchiseeService.queryByIdFromCache(item.getOldFranchiseeId())).orElse(new Franchisee()).getName());
+                }
+                if (Objects.nonNull(item.getNewFranchiseeId())) {
+                    assetAllocateRecordVO.setTargetFranchiseeName(Optional.ofNullable(franchiseeService.queryByIdFromCache(item.getNewFranchiseeId())).orElse(new Franchisee()).getName());
+                }
                 if (Objects.nonNull(item.getOldStoreId())) {
                     assetAllocateRecordVO.setSourceStoreName(Optional.ofNullable(storeService.queryByIdFromCache(item.getOldStoreId())).orElse(new Store()).getName());
                 }
