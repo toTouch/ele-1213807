@@ -268,7 +268,7 @@ public class JsonMerchantController extends BaseController {
      * @author maxiaodong
      */
     @GetMapping("/admin/merchant/pageCount")
-    public R pageCount(@RequestParam(value = "name", required = false) String name, @RequestParam(value = "franchiseeId") Long franchiseeId,@RequestParam(value = "merchantGradeId") Long merchantGradeId,
+    public R pageCount(@RequestParam(value = "name", required = false) String name, @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,@RequestParam(value = "merchantGradeId") Long merchantGradeId,
             @RequestParam(value = "channelEmployeeUid", required = false) Long channelEmployeeUid) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {

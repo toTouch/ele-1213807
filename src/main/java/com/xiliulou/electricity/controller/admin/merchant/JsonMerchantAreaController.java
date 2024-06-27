@@ -162,7 +162,7 @@ public class JsonMerchantAreaController extends BaseController {
     }
     
     @GetMapping("/admin/merchant/area/pageCount")
-    public R pageCount(@RequestParam(value = "name", required = false) String name, @RequestParam(value = "franchiseeId") Long franchiseeId) {
+    public R pageCount(@RequestParam(value = "name", required = false) String name, @RequestParam(value = "franchiseeId", required = false) Long franchiseeId) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             return R.fail("ELECTRICITY.0001", "未找到用户");

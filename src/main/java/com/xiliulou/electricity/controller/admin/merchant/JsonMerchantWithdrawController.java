@@ -159,7 +159,7 @@ public class JsonMerchantWithdrawController extends BaseController {
             @RequestParam(value = "merchantUid", required = false) Long merchantUid, @RequestParam(value = "beginTime", required = false) Long beginTime,
             @RequestParam(value = "endTime", required = false) Long endTime, @RequestParam(value = "status", required = false) Integer status,
             @RequestParam(value = "transactionBatchId", required = false) String transactionBatchId,
-            @RequestParam(value = "transactionDetailId", required = false) String transactionDetailId, @RequestParam(value = "franchiseeId") Long franchiseeId ,
+            @RequestParam(value = "transactionDetailId", required = false) String transactionDetailId, @RequestParam(value = "franchiseeId", required = false) Long franchiseeId ,
             @RequestParam(value = "checkTimeStart", required = false) Long checkTimeStart, @RequestParam(value = "checkTimeEnd", required = false) Long checkTimeEnd) {
         
         if (size < 0 || size > 50) {
@@ -195,7 +195,7 @@ public class JsonMerchantWithdrawController extends BaseController {
     public R queryRecordListCount(@RequestParam(value = "merchantUid", required = false) Long merchantUid, @RequestParam(value = "beginTime", required = false) Long beginTime,
             @RequestParam(value = "endTime", required = false) Long endTime, @RequestParam(value = "status", required = false) Integer status,
             @RequestParam(value = "transactionBatchId", required = false) String transactionBatchId,
-            @RequestParam(value = "transactionDetailId", required = false) String transactionDetailId, @RequestParam(value = "franchiseeId") Long franchiseeId,
+            @RequestParam(value = "transactionDetailId", required = false) String transactionDetailId, @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
             @RequestParam(value = "checkTimeStart", required = false) Long checkTimeStart, @RequestParam(value = "checkTimeEnd", required = false) Long checkTimeEnd) {
         
         TokenUser user = SecurityUtils.getUserInfo();
