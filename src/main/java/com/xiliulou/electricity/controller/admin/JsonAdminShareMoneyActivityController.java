@@ -91,8 +91,8 @@ public class JsonAdminShareMoneyActivityController {
 				return R.ok();
 			}
 			
-			Integer franchiseeId = shareMoneyActivityAddAndUpdateQuery.getFranchiseeId();
-			if (Objects.nonNull(franchiseeId) && !Objects.equals(franchiseeIds.get(0), franchiseeId.longValue())) {
+			Long franchiseeId = shareMoneyActivityAddAndUpdateQuery.getFranchiseeId();
+			if (Objects.nonNull(franchiseeId) && !Objects.equals(franchiseeIds.get(0), franchiseeId)) {
 				log.warn("ShareMoneyActivity WARN! Franchisees are inconsistent, franchiseeId={}", franchiseeId);
 				return R.fail("120128", "所属加盟商不一致");
 			}

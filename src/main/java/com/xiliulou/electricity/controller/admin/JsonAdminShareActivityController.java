@@ -80,8 +80,8 @@ public class JsonAdminShareActivityController extends BaseController {
                 return R.ok();
             }
     
-            Integer franchiseeId = shareActivityAddAndUpdateQuery.getFranchiseeId();
-            if (Objects.nonNull(franchiseeId) && !Objects.equals(franchiseeIds.get(0), franchiseeId.longValue())) {
+            Long franchiseeId = shareActivityAddAndUpdateQuery.getFranchiseeId();
+            if (Objects.nonNull(franchiseeId) && !Objects.equals(franchiseeIds.get(0), franchiseeId)) {
                 log.warn("ShareActivity WARN! Franchisees are inconsistent, franchiseeId={}", franchiseeId);
                 return R.fail("120128", "所属加盟商不一致");
             }

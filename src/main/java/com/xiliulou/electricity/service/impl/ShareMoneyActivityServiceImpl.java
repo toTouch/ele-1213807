@@ -146,13 +146,13 @@ public class ShareMoneyActivityServiceImpl implements ShareMoneyActivityService 
         //租户
         Integer tenantId = TenantContextHolder.getTenantId();
         //加盟商
-        Integer franchiseeId = shareMoneyActivityAddAndUpdateQuery.getFranchiseeId();
+        Long franchiseeId = shareMoneyActivityAddAndUpdateQuery.getFranchiseeId();
     
         //查询该租户是否有邀请活动，有则不能添加
         // int count = shareMoneyActivityMapper.selectCount(new LambdaQueryWrapper<ShareMoneyActivity>().eq(ShareMoneyActivity::getTenantId, tenantId).eq(ShareMoneyActivity::getStatus, ShareMoneyActivity.STATUS_ON));
         //3.0后修改为，如果状态为上架时，先提示确定上架，确定后则直接上架，并将之前的活动下架
         if(ShareMoneyActivity.STATUS_ON.equals(shareMoneyActivityAddAndUpdateQuery.getStatus())){
-            ShareMoneyActivity activityResult = shareMoneyActivityMapper.selectActivityByTenantIdAndStatus(tenantId.longValue(), franchiseeId,  ShareMoneyActivity.STATUS_ON);
+            ShareMoneyActivity activityResult = shareMoneyActivityMapper.selectActivityByTenantIdAndStatus(tenantId.longValue(), franchiseeId.intValue(),  ShareMoneyActivity.STATUS_ON);
             if (Objects.nonNull(activityResult)) {
                 //return R.fail("ELECTRICITY.00102", "该租户已有启用中的邀请活动，请勿重复添加");
                 //如果存在已上架的活动，则将该活动修改为下架
@@ -188,6 +188,7 @@ public class ShareMoneyActivityServiceImpl implements ShareMoneyActivityService 
         shareMoneyActivity.setTenantId(tenantId);
         shareMoneyActivity.setHours(Objects.isNull(shareMoneyActivityAddAndUpdateQuery.getHours()) ? NumberConstant.ZERO : (shareMoneyActivityAddAndUpdateQuery.getHours()));
         shareMoneyActivity.setMinutes(Objects.isNull(shareMoneyActivityAddAndUpdateQuery.getMinutes()) ? NumberConstant.ZERO : (shareMoneyActivityAddAndUpdateQuery.getMinutes()));
+        shareMoneyActivity.setFranchiseeId(franchiseeId.intValue());
 
         int insert = shareMoneyActivityMapper.insert(shareMoneyActivity);
 
