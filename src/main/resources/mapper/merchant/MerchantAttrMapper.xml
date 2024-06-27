@@ -20,7 +20,7 @@
     <!--查询单个-->
     <select id="selectById" resultMap="MerchantAttrMap">
         select
-          id, upgrade_condition, invitation_valid_time, valid_time_unit, invitation_protection_time, protection_time_unit, del_flag, franchisee_id, tenant_id, create_time, update_time
+          id, upgrade_condition, invitation_valid_time, valid_time_unit, invitation_protection_time, protection_time_unit, status, del_flag, franchisee_id, tenant_id, create_time, update_time
         from t_merchant_attr
         where id = #{id}
     </select>
@@ -34,7 +34,7 @@
     
     <select id="selectByFranchiseeId" resultMap="MerchantAttrMap">
         select
-          id, upgrade_condition, invitation_valid_time, valid_time_unit, invitation_protection_time, protection_time_unit, tenant_id, del_flag, franchisee_id, create_time, update_time
+          id, upgrade_condition, invitation_valid_time, valid_time_unit, invitation_protection_time, protection_time_unit, status, tenant_id, del_flag, franchisee_id, create_time, update_time
         from t_merchant_attr
         where franchisee_id = #{franchiseeId}
     </select>
