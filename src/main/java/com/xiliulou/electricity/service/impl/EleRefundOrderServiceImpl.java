@@ -385,13 +385,11 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
                 new LambdaQueryWrapper<EleRefundOrder>().eq(EleRefundOrder::getRefundOrderNo, refundOrderNo).eq(EleRefundOrder::getTenantId, TenantContextHolder.getTenantId())
                         .in(EleRefundOrder::getStatus, EleRefundOrder.STATUS_INIT, EleRefundOrder.STATUS_REFUSE_REFUND));
         if (Objects.isNull(eleRefundOrder)) {
-            log.error("REFUND ORDER ERROR! eleRefundOrder is null,refoundOrderNo={},uid={}", refundOrderNo, uid);
             return Triple.of(false, "ELECTRICITY.0015", "未找到退款订单!");
         }
         
         UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
         if (Objects.isNull(userInfo) || !Objects.equals(userInfo.getTenantId(), TenantContextHolder.getTenantId())) {
-            log.error("REFUND ORDER ERROR!userInfo is null,refoundOrderNo={},uid={}", refundOrderNo, uid);
             return Triple.of(false, "ELECTRICITY.0001", "未找到用户");
         }
         
@@ -401,7 +399,6 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
         
         UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(userInfo.getUid());
         if (Objects.isNull(userBatteryDeposit)) {
-            log.error("REFUND ORDER ERROR!userBatteryDeposit is null,refoundOrderNo={},uid={}", refundOrderNo, uid);
             return Triple.of(false, "100247", "用户信息不存在");
         }
         
@@ -413,7 +410,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
         // 校验退款金额
         if (Objects.nonNull(refundAmount)) {
             if (refundAmount.compareTo(eleRefundOrder.getRefundAmount()) > 0) {
-                log.error("REFUND ORDER ERROR!refundAmount is illegal,refoundOrderNo={},uid={}", refundOrderNo, uid);
+                log.warn("REFUND ORDER WARN!refundAmount is illegal,refoundOrderNo={},uid={}", refundOrderNo, uid);
                 return Triple.of(false, "ELECTRICITY.0007", "退款金额不能大于支付金额!");
             }
             
@@ -439,10 +436,6 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             eleRefundOrderService.update(eleRefundOrderUpdate);
             return Triple.of(true, "", null);
         }
-        
-        //        eleRefundOrderUpdate.setRefundAmount(refundAmount);
-        //        eleRefundOrderUpdate.setStatus(EleRefundOrder.STATUS_AGREE_REFUND);
-        //        eleRefundOrderService.update(eleRefundOrderUpdate);
         
         // 修改企业用户代付状态为已过期
         enterpriseChannelUserService.updatePaymentStatusForRefundDeposit(userInfo.getUid(), EnterprisePaymentStatusEnum.PAYMENT_TYPE_EXPIRED.getCode());
