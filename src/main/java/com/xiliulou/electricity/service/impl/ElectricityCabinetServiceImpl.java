@@ -76,6 +76,7 @@ import com.xiliulou.electricity.enums.EleCabinetModelHeatingEnum;
 import com.xiliulou.electricity.enums.RentReturnNormEnum;
 import com.xiliulou.electricity.enums.YesNoEnum;
 import com.xiliulou.electricity.enums.asset.StockStatusEnum;
+import com.xiliulou.electricity.enums.notify.SendMessageTypeEnum;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.ElectricityCabinetMapper;
 import com.xiliulou.electricity.mns.EleHardwareHandlerManager;
@@ -99,6 +100,7 @@ import com.xiliulou.electricity.query.api.ApiRequestQuery;
 import com.xiliulou.electricity.queryModel.EleCabinetExtraQueryModel;
 import com.xiliulou.electricity.request.asset.TransferCabinetModelRequest;
 import com.xiliulou.electricity.request.merchant.MerchantAreaRequest;
+import com.xiliulou.electricity.request.notify.SendNotifyMessageRequest;
 import com.xiliulou.electricity.service.BatteryGeoService;
 import com.xiliulou.electricity.service.BatteryMemberCardService;
 import com.xiliulou.electricity.service.BatteryMembercardRefundOrderService;
@@ -147,6 +149,7 @@ import com.xiliulou.electricity.service.car.biz.CarRentalPackageMemberTermBizSer
 import com.xiliulou.electricity.service.excel.AutoHeadColumnWidthStyleStrategy;
 import com.xiliulou.electricity.service.merchant.MerchantAreaService;
 import com.xiliulou.electricity.service.merchant.MerchantPlaceFeeRecordService;
+import com.xiliulou.electricity.service.notify.NotifyUserInfoService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DateUtils;
 import com.xiliulou.electricity.utils.DbUtils;
@@ -373,6 +376,9 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     
     @Autowired
     RocketMqService rocketMqService;
+    
+    @Autowired
+    NotifyUserInfoService notifyUserInfoService;
     
     @Autowired
     MaintenanceUserNotifyConfigService maintenanceUserNotifyConfigService;
@@ -5461,20 +5467,20 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             
             Boolean cacheFlag = redisService.setNx(CacheConstant.FULL_BOX_ELECTRICITY_CACHE + electricityCabinetId, "1", 1800 * 1000L, false);
             if (cacheFlag) {
-                List<MqNotifyCommon<ElectricityAbnormalMessageNotify>> messageNotifyList = buildAbnormalMessageNotify(electricityCabinet);
+                List<SendNotifyMessageRequest<ElectricityAbnormalMessageNotify>> messageNotifyList = buildAbnormalMessageNotify(electricityCabinet);
                 if (CollectionUtils.isEmpty(messageNotifyList)) {
                     return;
                 }
                 
                 messageNotifyList.forEach(i -> {
-                    rocketMqService.sendAsyncMsg(MqProducerConstant.TOPIC_MAINTENANCE_NOTIFY, JsonUtil.toJson(i), "", "", 0);
+                    notifyUserInfoService.asyncSendMessage(i);
                 });
             }
         });
     }
     
     @Override
-    public List<MqNotifyCommon<ElectricityAbnormalMessageNotify>> buildAbnormalMessageNotify(ElectricityCabinet electricityCabinet) {
+    public List<SendNotifyMessageRequest<ElectricityAbnormalMessageNotify>> buildAbnormalMessageNotify(ElectricityCabinet electricityCabinet) {
         MaintenanceUserNotifyConfig notifyConfig = maintenanceUserNotifyConfigService.queryByTenantIdFromCache(electricityCabinet.getTenantId());
         if (Objects.isNull(notifyConfig) || StringUtils.isBlank(notifyConfig.getPhones())) {
             log.warn("ELE BATTERY REPORT WARN! not found maintenanceUserNotifyConfig,tenantId={}", electricityCabinet.getTenantId());
@@ -5494,11 +5500,12 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             abnormalMessageNotify.setExceptionType(ElectricityAbnormalMessageNotify.BATTERY_FULL_TYPE);
             abnormalMessageNotify.setDescription(ElectricityAbnormalMessageNotify.BATTERY_FULL_MSG);
             abnormalMessageNotify.setReportTime(formatter.format(LocalDateTime.now()));
-            
-            MqNotifyCommon<ElectricityAbnormalMessageNotify> abnormalMessageNotifyCommon = new MqNotifyCommon<>();
+    
+            SendNotifyMessageRequest<ElectricityAbnormalMessageNotify> abnormalMessageNotifyCommon = new SendNotifyMessageRequest<>();
             abnormalMessageNotifyCommon.setTime(System.currentTimeMillis());
-            abnormalMessageNotifyCommon.setType(MqNotifyCommon.TYPE_ABNORMAL_ALARM);
+            abnormalMessageNotifyCommon.setType(SendMessageTypeEnum.ABNORMAL_ALARM_NOTIFY);
             abnormalMessageNotifyCommon.setPhone(item);
+            abnormalMessageNotifyCommon.setTenantId(electricityCabinet.getTenantId());
             abnormalMessageNotifyCommon.setData(abnormalMessageNotify);
             return abnormalMessageNotifyCommon;
         }).collect(Collectors.toList());

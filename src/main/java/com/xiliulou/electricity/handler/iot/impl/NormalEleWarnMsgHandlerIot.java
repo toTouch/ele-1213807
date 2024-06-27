@@ -7,6 +7,9 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import com.xiliulou.electricity.enums.notify.SendMessageTypeEnum;
+import com.xiliulou.electricity.request.notify.SendNotifyMessageRequest;
+import com.xiliulou.electricity.service.notify.NotifyUserInfoService;
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -67,6 +70,8 @@ public class NormalEleWarnMsgHandlerIot extends AbstractElectricityIotHandler {
     TenantConfig tenantConfig;
     @Autowired
     RocketMqService rocketMqService;
+    @Autowired
+    NotifyUserInfoService notifyUserInfoService;
     @Autowired
     MaintenanceUserNotifyConfigService maintenanceUserNotifyConfigService;
     
@@ -211,7 +216,7 @@ public class NormalEleWarnMsgHandlerIot extends AbstractElectricityIotHandler {
      * @param eleWarnMsgVo
      */
     private void sendWarnMessageNotify(ElectricityCabinet electricityCabinet, EleWarnMsgVo eleWarnMsgVo) {
-        List<MqNotifyCommon<ElectricityAbnormalMessageNotify>> messageNotifyList = null;
+        List<SendNotifyMessageRequest<ElectricityAbnormalMessageNotify>> messageNotifyList = null;
         
         if (Objects.equals(SMOKE_WARN_ERROR_CODE, eleWarnMsgVo.getErrorCode())) {
             messageNotifyList = this.buildWarnMessageNotify(electricityCabinet, eleWarnMsgVo,
@@ -225,13 +230,13 @@ public class NormalEleWarnMsgHandlerIot extends AbstractElectricityIotHandler {
         
         if (!CollectionUtils.isEmpty(messageNotifyList)) {
             messageNotifyList.forEach(item -> {
-                rocketMqService.sendAsyncMsg(MqProducerConstant.TOPIC_MAINTENANCE_NOTIFY, JsonUtil.toJson(item), "", "", 0);
+                notifyUserInfoService.asyncSendMessage(item);
                 log.info("ELE WARN MSG INFO! ele warn message notify, msg={}", JsonUtil.toJson(item));
             });
         }
     }
     
-    private List<MqNotifyCommon<ElectricityAbnormalMessageNotify>> buildWarnMessageNotify(
+    private List<SendNotifyMessageRequest<ElectricityAbnormalMessageNotify>> buildWarnMessageNotify(
             ElectricityCabinet electricityCabinet, EleWarnMsgVo eleWarnMsgVo, Integer warnNotifyType,
             String description) {
         
@@ -256,12 +261,13 @@ public class NormalEleWarnMsgHandlerIot extends AbstractElectricityIotHandler {
             messageNotify.setDescription(description);
             messageNotify.setExceptionType(warnNotifyType);
             messageNotify.setReportTime(formatter.format(LocalDateTime.now()));
-            
-            MqNotifyCommon<ElectricityAbnormalMessageNotify> abnormalMessageNotifyCommon = new MqNotifyCommon<>();
+    
+            SendNotifyMessageRequest<ElectricityAbnormalMessageNotify> abnormalMessageNotifyCommon = new SendNotifyMessageRequest<>();
             abnormalMessageNotifyCommon.setTime(System.currentTimeMillis());
-            abnormalMessageNotifyCommon.setType(MqNotifyCommon.TYPE_ABNORMAL_ALARM);
+            abnormalMessageNotifyCommon.setType(SendMessageTypeEnum.ABNORMAL_ALARM_NOTIFY);
             abnormalMessageNotifyCommon.setPhone(item);
             abnormalMessageNotifyCommon.setData(messageNotify);
+            abnormalMessageNotifyCommon.setTenantId(electricityCabinet.getTenantId());
             
             return abnormalMessageNotifyCommon;
         }).collect(Collectors.toList());

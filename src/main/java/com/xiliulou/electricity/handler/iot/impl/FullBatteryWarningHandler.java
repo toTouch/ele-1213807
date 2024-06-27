@@ -7,7 +7,9 @@ import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.MqNotifyCommon;
 import com.xiliulou.electricity.handler.iot.AbstractElectricityIotHandler;
 import com.xiliulou.electricity.mq.constant.MqProducerConstant;
+import com.xiliulou.electricity.request.notify.SendNotifyMessageRequest;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
+import com.xiliulou.electricity.service.notify.NotifyUserInfoService;
 import com.xiliulou.iot.entity.ReceiverMessage;
 import com.xiliulou.mq.service.RocketMqService;
 import lombok.extern.slf4j.Slf4j;
@@ -29,18 +31,21 @@ public class FullBatteryWarningHandler extends AbstractElectricityIotHandler {
     @Autowired
     private ElectricityCabinetService electricityCabinetService;
 
+//    @Autowired
+//    private RocketMqService rocketMqService;
+    
     @Autowired
-    private RocketMqService rocketMqService;
+    private NotifyUserInfoService notifyUserInfoService;
 
     @Override
     public void postHandleReceiveMsg(ElectricityCabinet electricityCabinet, ReceiverMessage receiverMessage) {
 
-        List<MqNotifyCommon<ElectricityAbnormalMessageNotify>> messageNotifyList = electricityCabinetService.buildAbnormalMessageNotify(electricityCabinet);
+        List<SendNotifyMessageRequest<ElectricityAbnormalMessageNotify>> messageNotifyList = electricityCabinetService.buildAbnormalMessageNotify(electricityCabinet);
         if (CollectionUtils.isEmpty(messageNotifyList)) {
             log.warn("FULL BATTERY WARN!messageNotifyList is empty,sessionId={},eid={}", receiverMessage.getSessionId(), electricityCabinet.getId());
             return;
         }
 
-        messageNotifyList.forEach(i -> rocketMqService.sendAsyncMsg(MqProducerConstant.TOPIC_MAINTENANCE_NOTIFY, JsonUtil.toJson(i), "", "", 0));
+        messageNotifyList.forEach(i -> notifyUserInfoService.asyncSendMessage(i));
     }
 }
