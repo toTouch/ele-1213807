@@ -166,25 +166,21 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
         
         boolean exitUnpaid = carRentalPackageOrderSlippageService.isExitUnpaidByRentalPackageType(tenantId, uid, RentalPackageTypeEnum.CAR_BATTERY.getCode());
         if (exitUnpaid) {
-            log.error("verifyMemberSwapBattery, There is a late fee, please pay it first. uid is {}", uid);
             throw new BizException("300001", "存在滞纳金，请先缴纳");
         }
         
         // 查询会员当前信息
         CarRentalPackageMemberTermPo memberTermEntity = carRentalPackageMemberTermService.selectByTenantIdAndUid(tenantId, uid);
         if (ObjectUtils.isEmpty(memberTermEntity)) {
-            log.error("verifyMemberSwapBattery, not found t_car_rental_package_member_term. uid is {}", uid);
             throw new BizException("300057", "数据有误");
         }
         
         if (!MemberTermStatusEnum.NORMAL.getCode().equals(memberTermEntity.getStatus())) {
-            log.error("verifyMemberSwapBattery. t_car_rental_package_member_term status is {}. uid is {}", memberTermEntity.getStatus(), uid);
             throw new BizException("300057", "您有正在审核中/已冻结流程，不支持该操作");
         }
         
         if (now >= memberTermEntity.getDueTimeTotal() || (RenalPackageConfineEnum.NUMBER.getCode().equals(memberTermEntity.getRentalPackageConfine())
                 && memberTermEntity.getResidue() <= 0L)) {
-            log.error("verifyMemberSwapBattery. t_car_rental_package_member_term time or residue is expire.");
             throw new BizException("300065", "套餐已过期");
         }
         
@@ -277,18 +273,17 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
         CarRentalPackageMemberTermPo memberTermEntity = carRentalPackageMemberTermService.selectByTenantIdAndUid(tenantId, uid);
         
         if (ObjectUtils.isEmpty(memberTermEntity)) {
-            log.error("isExpirePackageOrder, not found t_car_rental_package_member_term. uid is {}", uid);
+            log.warn("isExpirePackageOrder, not found t_car_rental_package_member_term. uid is {}", uid);
             throw new BizException("300000", "数据有误");
         }
         
         if (!MemberTermStatusEnum.NORMAL.getCode().equals(memberTermEntity.getStatus())) {
-            log.error("isExpirePackageOrder. t_car_rental_package_member_term status is {}. uid is {}", memberTermEntity.getStatus(), uid);
+            log.warn("isExpirePackageOrder. t_car_rental_package_member_term status is {}. uid is {}", memberTermEntity.getStatus(), uid);
             return false;
         }
         
         if (now >= memberTermEntity.getDueTimeTotal() || (RenalPackageConfineEnum.NUMBER.getCode().equals(memberTermEntity.getRentalPackageConfine())
                 && memberTermEntity.getResidue() <= 0L)) {
-            log.error("isExpirePackageOrder. t_car_rental_package_member_term time or residue is expire.");
             return true;
         }
         
@@ -316,11 +311,9 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
         UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
         
         if (Objects.isNull(userInfo)) {
-            log.error("updateCurrPackage failed. not found user. uid is {}", uid);
             throw new BizException("ELECTRICITY.0001", "未找到用户");
         }
         if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
-            log.error("updateCurrPackage failed. user is disable. uid is {}", uid);
             throw new BizException("ELECTRICITY.0024", "用户已被禁用");
         }
         
@@ -335,31 +328,30 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
         // 查询会员当前信息
         CarRentalPackageMemberTermPo memberTermEntity = carRentalPackageMemberTermService.selectByTenantIdAndUid(tenantId, uid);
         if (ObjectUtils.isEmpty(memberTermEntity) || !MemberTermStatusEnum.NORMAL.getCode().equals(memberTermEntity.getStatus())) {
-            log.error("updateCurrPackage failed. t_car_rental_package_member_term not found or status is error. uid is {}", uid);
+            log.info("updateCurrPackage failed. t_car_rental_package_member_term not found or status is error. uid is {}", uid);
             throw new BizException("300057", "您有正在审核中/已冻结流程，不支持该操作");
         }
         
         String rentalPackageOrderNo = memberTermEntity.getRentalPackageOrderNo();
         if (StringUtils.isBlank(rentalPackageOrderNo) || !optReq.getPackageOrderNo().equals(rentalPackageOrderNo)) {
-            log.error("updateCurrPackage failed. t_car_rental_package_member_term rentalPackageOrderNo is expire. member's rentalPackageOrderNo is {}", rentalPackageOrderNo);
+            log.info("updateCurrPackage failed. t_car_rental_package_member_term rentalPackageOrderNo is expire. member's rentalPackageOrderNo is {}", rentalPackageOrderNo);
             throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
         
         if (memberTermEntity.getDueTime() <= now || (RenalPackageConfineEnum.NUMBER.getCode().equals(memberTermEntity.getRentalPackageConfine())
                 && memberTermEntity.getResidue() <= 0L)) {
-            log.error("updateCurrPackage failed. t_car_rental_package_member_term time or frequency reaching threshold", rentalPackageOrderNo);
             throw new BizException("300042", "该套餐已过期，请返回上一步进行续费套餐");
         }
         
         // 查询订单信息
         CarRentalPackageOrderPo packageOrderEntity = carRentalPackageOrderService.selectByOrderNo(rentalPackageOrderNo);
         if (ObjectUtils.isEmpty(packageOrderEntity)) {
-            log.error("updateCurrPackage failed. t_car_rental_package_order not found. rentalPackageOrderNo is {}", rentalPackageOrderNo);
+            log.info("updateCurrPackage failed. t_car_rental_package_order not found. rentalPackageOrderNo is {}", rentalPackageOrderNo);
             throw new BizException("300008", "未找到租车套餐购买订单");
         }
         
         if (YesNoEnum.YES.getCode().equals(packageOrderEntity.getRentRebate()) && packageOrderEntity.getRentRebateEndTime() >= System.currentTimeMillis()) {
-            log.error("updateCurrPackage failed. No changes allowed within the refundable period. rentalPackageOrderNo is {}", rentalPackageOrderNo);
+            log.info("updateCurrPackage failed. No changes allowed within the refundable period. rentalPackageOrderNo is {}", rentalPackageOrderNo);
             throw new BizException("300058", "可退期限内，不允许变更");
         }
         

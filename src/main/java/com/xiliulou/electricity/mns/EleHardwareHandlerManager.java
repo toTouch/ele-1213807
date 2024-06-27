@@ -122,7 +122,7 @@ public class EleHardwareHandlerManager extends HardwareHandlerManager {
 
             ElectricityCabinet electricityCabinet = electricityCabinetService.queryByProductAndDeviceName(receiverMessage.getProductKey(), receiverMessage.getDeviceName());
             if (Objects.isNull(electricityCabinet)) {
-                log.error("ELE ERROR! no product and device ,p={},d={}", receiverMessage.getProductKey(), receiverMessage.getDeviceName());
+                log.warn("ELE WARN! no product and device ,p={},d={}", receiverMessage.getProductKey(), receiverMessage.getDeviceName());
                 return;
             }
 

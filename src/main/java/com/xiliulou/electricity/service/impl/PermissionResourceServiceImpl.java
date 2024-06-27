@@ -27,10 +27,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -307,6 +304,7 @@ public class PermissionResourceServiceImpl implements PermissionResourceService 
 	}
 
 	@Override
+	@Slave
 	public Pair<Boolean, Object> getPermissionsByRole(Long rid) {
 		Role role = roleService.queryByIdFromDB(rid);
 		if (Objects.isNull(role)) {
@@ -331,7 +329,7 @@ public class PermissionResourceServiceImpl implements PermissionResourceService 
 			return Collections.emptyList();
 		}
 
-		return permissionIds.parallelStream().map(e -> {
+		return permissionIds.parallelStream().distinct().map(e -> {
 			PermissionResource permissionResource = queryByIdFromCache(e);
 			if (Objects.nonNull(permissionResource)) {
 				return permissionResource;
@@ -340,7 +338,31 @@ public class PermissionResourceServiceImpl implements PermissionResourceService 
 			return null;
 		}).filter(Objects::nonNull).collect(Collectors.toList());
 	}
-	
+
+	@Override
+	public List<PermissionResource> queryPermissionsByRoleList(List<Long> rids) {
+		Set<Long> permissionIds = Sets.newHashSet();
+		for (Long rid : rids) {
+			List<Long> ids = rolePermissionService.queryPidsByRid(rid);
+			if (!CollectionUtils.isEmpty(ids)) {
+				permissionIds.addAll(ids);
+			}
+		}
+
+		if (CollectionUtils.isEmpty(permissionIds)) {
+			return Collections.emptyList();
+		}
+
+		return permissionIds.parallelStream().distinct().map(e -> {
+			PermissionResource permissionResource = queryByIdFromCache(e);
+			if (Objects.nonNull(permissionResource)) {
+				return permissionResource;
+			}
+
+			return null;
+		}).filter(Objects::nonNull).collect(Collectors.toList());
+	}
+
 	@Slave
 	@Override
 	public Pair<Boolean, Object> getPermissionTempleteList() {

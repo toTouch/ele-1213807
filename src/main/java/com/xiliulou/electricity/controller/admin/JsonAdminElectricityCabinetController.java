@@ -17,9 +17,24 @@ import com.xiliulou.electricity.entity.EleCabinetCoreData;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.mns.EleHardwareHandlerManager;
-import com.xiliulou.electricity.query.*;
+import com.xiliulou.electricity.query.EleOuterCommandQuery;
+import com.xiliulou.electricity.query.ElectricityCabinetAddAndUpdate;
+import com.xiliulou.electricity.query.ElectricityCabinetAddressQuery;
+import com.xiliulou.electricity.query.ElectricityCabinetBatchEditRentReturnQuery;
+import com.xiliulou.electricity.query.ElectricityCabinetImportQuery;
+import com.xiliulou.electricity.query.ElectricityCabinetQuery;
+import com.xiliulou.electricity.query.ElectricityCabinetTransferQuery;
+import com.xiliulou.electricity.query.HomepageBatteryFrequencyQuery;
+import com.xiliulou.electricity.query.HomepageElectricityExchangeFrequencyQuery;
 import com.xiliulou.electricity.request.asset.TransferCabinetModelRequest;
-import com.xiliulou.electricity.service.*;
+import com.xiliulou.electricity.service.EleCabinetCoreDataService;
+import com.xiliulou.electricity.service.EleOnlineLogService;
+import com.xiliulou.electricity.service.ElectricityCabinetService;
+import com.xiliulou.electricity.service.FranchiseeService;
+import com.xiliulou.electricity.service.StoreService;
+import com.xiliulou.electricity.service.UserDataScopeService;
+import com.xiliulou.electricity.service.UserTypeFactory;
+import com.xiliulou.electricity.service.UserTypeService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.validator.CreateGroup;
@@ -34,7 +49,14 @@ import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletResponse;
 import java.util.*;
@@ -161,7 +183,7 @@ public class JsonAdminElectricityCabinetController extends BasicController {
         //用户区分
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
-            log.error("ELE ERROR! not found user");
+            log.warn("ELE WARN! not found user");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         
@@ -236,7 +258,7 @@ public class JsonAdminElectricityCabinetController extends BasicController {
         
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
-            log.error("ELE ERROR! not found user");
+            log.warn("ELE WARN! not found user");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         
@@ -473,7 +495,7 @@ public class JsonAdminElectricityCabinetController extends BasicController {
         //用户
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
-            log.error("ELE ERROR! not found user");
+            log.warn("ELE WARN! not found user");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         
@@ -518,7 +540,7 @@ public class JsonAdminElectricityCabinetController extends BasicController {
         
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
-            log.error("ELE ERROR! not found user");
+            log.warn("ELE WARN! not found user");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         
@@ -807,7 +829,7 @@ public class JsonAdminElectricityCabinetController extends BasicController {
         //用户区分
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
-            log.error("ELE ERROR! not found user");
+            log.warn("ELE WARN! not found user");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         
@@ -895,7 +917,7 @@ public class JsonAdminElectricityCabinetController extends BasicController {
         
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
-            log.error("ELE ERROR! not found user");
+            log.warn("ELE WARN! not found user");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         
@@ -943,7 +965,7 @@ public class JsonAdminElectricityCabinetController extends BasicController {
         //用户区分
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
-            log.error("ELE ERROR! not found user");
+            log.warn("ELE WARN! not found user");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         
@@ -1097,7 +1119,17 @@ public class JsonAdminElectricityCabinetController extends BasicController {
      */
     @PostMapping(value = "/admin/electricityCabinet/batchEditRentReturn")
     public R batchEditRentReturn(@RequestBody @Validated ElectricityCabinetBatchEditRentReturnQuery rentReturnQuery) {
-        electricityCabinetService.batchEditRentReturn(rentReturnQuery);
-        return R.ok();
+        return electricityCabinetService.batchEditRentReturn(rentReturnQuery);
     }
+    
+    
+    
+    /**
+     * 运维端编辑租退标准回显
+     */
+    @GetMapping(value = "/admin/electricityCabinet/rentReturnEditEchoToOps")
+    public R rentReturnEditEchoByDeviceName(@RequestParam("productKey") String productKey, @RequestParam("deviceName") String deviceName) {
+        return electricityCabinetService.rentReturnEditEchoByDeviceName(productKey, deviceName);
+    }
+    
 }

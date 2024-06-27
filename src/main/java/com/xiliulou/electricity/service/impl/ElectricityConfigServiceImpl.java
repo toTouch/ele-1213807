@@ -356,7 +356,7 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
         //根据appId获取租户id
         ElectricityPayParams electricityPayParams = electricityPayParamsService.selectTenantId(appId);
         if (Objects.isNull(electricityPayParams)) {
-            log.error("ELE ERROR! not found tenant,appId={}", appId);
+            log.warn("ELE WARN! not found tenant,appId={}", appId);
             return tenantConfigVO;
         }
         Integer tenantId = electricityPayParams.getTenantId();

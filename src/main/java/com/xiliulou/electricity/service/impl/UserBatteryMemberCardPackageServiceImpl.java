@@ -138,7 +138,7 @@ public class UserBatteryMemberCardPackageServiceImpl implements UserBatteryMembe
         
         UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
         if (Objects.isNull(userInfo)) {
-            log.error("BATTERY MEMBER TRANSFORM ERROR! not found user,uid={}", uid);
+            log.warn("BATTERY MEMBER TRANSFORM WARN! not found user,uid={}", uid);
             return Triple.of(true, null, null);
         }
         

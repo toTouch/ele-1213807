@@ -36,6 +36,7 @@ import javax.annotation.Resource;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -76,11 +77,10 @@ public class AssetInventoryDetailServiceImpl implements AssetInventoryDetailServ
         List<AssetInventoryDetailBO> assetInventoryDetailBOList = assetInventoryDetailMapper.selectListByOrderNo(assetInventoryDetailQueryModel);
         if (CollectionUtils.isNotEmpty(assetInventoryDetailBOList)) {
             rspList = assetInventoryDetailBOList.stream().map(item -> {
-                
-                Franchisee franchisee = franchiseeService.queryByIdFromCache(item.getFranchiseeId());
+                // TODO(heyafeng) 2024/6/11 17:25
                 AssetInventoryDetailVO assetInventoryDetailVO = new AssetInventoryDetailVO();
                 BeanUtils.copyProperties(item, assetInventoryDetailVO);
-                assetInventoryDetailVO.setFranchiseeName(franchisee.getName());
+                assetInventoryDetailVO.setFranchiseeName(Optional.ofNullable(franchiseeService.queryByIdFromCache(item.getFranchiseeId())).orElse(new Franchisee()).getName());
                 
                 return assetInventoryDetailVO;
                 
@@ -116,16 +116,11 @@ public class AssetInventoryDetailServiceImpl implements AssetInventoryDetailServ
     public Integer asyncBatteryProcess(ElectricityBatterySnSearchRequest snSearchRequest, String orderNo, Long operator) {
         List<ElectricityBatteryVO> electricityBatteryVOList = electricityBatteryService.listSnByFranchiseeId(snSearchRequest);
         if (CollectionUtils.isNotEmpty(electricityBatteryVOList)) {
-            List<AssetInventoryDetailSaveQueryModel> inventoryDetailSaveQueryModelList = electricityBatteryVOList.stream().map(item -> {
-                
-                AssetInventoryDetailSaveQueryModel inventoryDetailSaveQueryModel = AssetInventoryDetailSaveQueryModel.builder().orderNo(orderNo).sn(item.getSn())
-                        .type(AssetTypeEnum.ASSET_TYPE_BATTERY.getCode()).franchiseeId(snSearchRequest.getFranchiseeId())
-                        .inventoryStatus(AssetConstant.ASSET_INVENTORY_DETAIL_STATUS_NO).operator(operator).tenantId(snSearchRequest.getTenantId())
-                        .delFlag(AssetConstant.DEL_NORMAL).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).build();
-                
-                return inventoryDetailSaveQueryModel;
-                
-            }).collect(Collectors.toList());
+            // TODO(heyafeng) 2024/4/29 16:50
+            List<AssetInventoryDetailSaveQueryModel> inventoryDetailSaveQueryModelList = electricityBatteryVOList.stream().map(item -> AssetInventoryDetailSaveQueryModel.builder().orderNo(orderNo).sn(item.getSn())
+                    .type(AssetTypeEnum.ASSET_TYPE_BATTERY.getCode()).franchiseeId(snSearchRequest.getFranchiseeId())
+                    .inventoryStatus(AssetConstant.ASSET_INVENTORY_DETAIL_STATUS_NO).operator(operator).tenantId(snSearchRequest.getTenantId())
+                    .delFlag(AssetConstant.DEL_NORMAL).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).build()).collect(Collectors.toList());
             
             // 批量新增
             if (CollectionUtils.isNotEmpty(inventoryDetailSaveQueryModelList)) {
@@ -169,7 +164,9 @@ public class AssetInventoryDetailServiceImpl implements AssetInventoryDetailServ
         
         try {
             Integer count = 0;
-            if (CollectionUtils.isNotEmpty(inventoryRequest.getSnList())) {
+            // TODO(heyafeng) 2024/4/29 17:06
+            List<String> snList = inventoryRequest.getSnList();
+            if (CollectionUtils.isNotEmpty(snList)) {
                 String orderNo = inventoryRequest.getOrderNo();
                 Integer tenantId = TenantContextHolder.getTenantId();
                 
@@ -180,7 +177,7 @@ public class AssetInventoryDetailServiceImpl implements AssetInventoryDetailServ
                     return R.ok();
                 }
                 
-                List<AssetInventoryDetailVO> assetInventoryDetailVOList = listBySnListAndOrderNo(inventoryRequest.getSnList(), inventoryRequest.getOrderNo());
+                List<AssetInventoryDetailVO> assetInventoryDetailVOList = listBySnListAndOrderNo(snList, inventoryRequest.getOrderNo());
                 if (CollectionUtils.isNotEmpty(assetInventoryDetailVOList)) {
                     for (AssetInventoryDetailVO assetInventoryDetailVO : assetInventoryDetailVOList) {
                         if (Objects.equals(AssetConstant.ASSET_INVENTORY_DETAIL_STATUS_YES, assetInventoryDetailVO.getInventoryStatus())) {
@@ -190,7 +187,7 @@ public class AssetInventoryDetailServiceImpl implements AssetInventoryDetailServ
                 }
                 
                 AssetInventoryDetailBatchInventoryQueryModel assetInventoryDetailBatchInventoryQueryModel = AssetInventoryDetailBatchInventoryQueryModel.builder().orderNo(orderNo)
-                        .status(inventoryRequest.getStatus()).snList(inventoryRequest.getSnList()).operator(operator).tenantId(tenantId).updateTime(System.currentTimeMillis())
+                        .status(inventoryRequest.getStatus()).snList(snList).operator(operator).tenantId(tenantId).updateTime(System.currentTimeMillis())
                         .build();
                 //批量盘点
                 count = batchInventoryBySnList(assetInventoryDetailBatchInventoryQueryModel);

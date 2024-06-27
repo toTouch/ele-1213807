@@ -4,7 +4,7 @@
     <!-- 基础字段 -->
     <sql id="basic_field">
         eid
-        , battery_count_type, min_retain_battery_count ,max_retain_battery_count,tenant_id, del_flag, create_time, update_time
+        , battery_count_type,rent_tab_type,return_tab_type, min_retain_battery_count ,max_retain_battery_count,tenant_id, del_flag, create_time, update_time
     </sql>
     
     <select id="selectByEid" resultType="com.xiliulou.electricity.entity.ElectricityCabinetExtra">
@@ -15,8 +15,10 @@
     </select>
     
     <insert id="insertOne" keyProperty="id" useGeneratedKeys="true">
-        insert into t_electricity_cabinet_extra(eid, battery_count_type, tenant_id, del_flag, create_time, update_time)
-        values (#{eid}, #{batteryCountType}, #{tenantId}, #{delFlag}, #{createTime}, #{updateTime})
+        insert into t_electricity_cabinet_extra(eid, battery_count_type, rent_tab_type, return_tab_type, min_retain_battery_count, max_retain_battery_count, tenant_id, del_flag,
+                                                create_time, update_time)
+        values (#{eid}, #{batteryCountType}, #{rentTabType}, #{returnTabType}, #{minRetainBatteryCount}, #{maxRetainBatteryCount}, #{tenantId}, #{delFlag}, #{createTime},
+                #{updateTime})
     </insert>
     
     <update id="update">
@@ -42,18 +44,29 @@
     </update>
     
     
-    <update id="updateMaxElectricityCabinetExtra">
+    <update id="updateMinElectricityCabinetExtra">
         update t_electricity_cabinet_extra
-        set max_retain_battery_count = #{maxRetainBatteryCount},
+        set min_retain_battery_count = #{minRetainBatteryCount},
+            rent_tab_type            = #{rentTabType},
             update_time              = #{updateTime}
         where eid = #{id}
     </update>
     
-    
-    <update id="updateMinElectricityCabinetExtra">
+    <update id="updateMaxElectricityCabinetExtra">
         update t_electricity_cabinet_extra
-        set min_retain_battery_count = #{minRetainBatteryCount},
+        set max_retain_battery_count = #{maxRetainBatteryCount},
+            return_tab_type          = #{returnTabType},
             update_time              = #{updateTime}
+        where eid = #{id}
+    </update>
+    
+    <update id="updateTabTypeCabinetExtra">
+        update t_electricity_cabinet_extra
+        set update_time              = #{updateTime},
+            rent_tab_type            = #{rentTabType},
+            return_tab_type          = #{returnTabType},
+            max_retain_battery_count = #{maxRetainBatteryCount},
+            min_retain_battery_count = #{minRetainBatteryCount}
         where eid = #{id}
     </update>
 </mapper>

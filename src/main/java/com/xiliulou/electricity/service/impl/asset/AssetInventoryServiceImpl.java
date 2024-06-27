@@ -39,6 +39,7 @@ import org.springframework.stereotype.Service;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -91,29 +92,35 @@ public class AssetInventoryServiceImpl implements AssetInventoryService {
             }
     
             // tenantId校验
-            if (!Objects.equals(franchisee.getTenantId(), TenantContextHolder.getTenantId())) {
+            if (!Objects.equals(franchisee.getTenantId(), tenantId)) {
                 return R.ok();
             }
             
             // 默认资产类型是电池,获取查询电池数量
             ElectricityBatteryQuery electricityBatteryQuery = ElectricityBatteryQuery.builder().tenantId(tenantId).franchiseeId(franchiseeId).build();
             Object data = electricityBatteryService.queryCount(electricityBatteryQuery).getData();
-            
+    
+            // TODO(heyafeng) 2024/4/29 16:30
             // 生成资产盘点订单
-            AssetInventorySaveOrUpdateQueryModel assetInventorySaveOrUpdateQueryModel = AssetInventorySaveOrUpdateQueryModel.builder().orderNo(orderNo).franchiseeId(franchiseeId)
-                    .type(AssetTypeEnum.ASSET_TYPE_BATTERY.getCode()).status(AssetConstant.ASSET_INVENTORY_STATUS_TAKING).inventoriedTotal(NumberConstant.ZERO)
-                    .pendingTotal((Integer) data).finishTime(assetInventorySaveOrUpdateRequest.getFinishTime()).operator(operator).tenantId(tenantId)
-                    .delFlag(AssetConstant.DEL_NORMAL).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).build();
-            
+            Integer insert = NumberConstant.ZERO;
+            if (Objects.nonNull(data) && (Integer) data > NumberConstant.ZERO) {
+                AssetInventorySaveOrUpdateQueryModel assetInventorySaveOrUpdateQueryModel = AssetInventorySaveOrUpdateQueryModel.builder().orderNo(orderNo)
+                        .franchiseeId(franchiseeId).type(AssetTypeEnum.ASSET_TYPE_BATTERY.getCode()).status(AssetConstant.ASSET_INVENTORY_STATUS_TAKING)
+                        .inventoriedTotal(NumberConstant.ZERO).pendingTotal((Integer) data).finishTime(assetInventorySaveOrUpdateRequest.getFinishTime()).operator(operator)
+                        .tenantId(tenantId).delFlag(AssetConstant.DEL_NORMAL).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).build();
+        
+                insert = assetInventoryMapper.insertOne(assetInventorySaveOrUpdateQueryModel);
+            }
+    
             //异步记录
-            if ((Integer) data > NumberConstant.ZERO) {
+            if (insert > NumberConstant.ZERO) {
                 ElectricityBatterySnSearchRequest snSearchRequest = ElectricityBatterySnSearchRequest.builder().tenantId(tenantId).franchiseeId(franchiseeId).build();
                 executorService.execute(() -> {
                     assetInventoryDetailService.asyncBatteryProcess(snSearchRequest, orderNo, operator);
                 });
             }
             
-            return R.ok(assetInventoryMapper.insertOne(assetInventorySaveOrUpdateQueryModel));
+            return R.ok(insert);
         } finally {
             redisService.delete(CacheConstant.CACHE_ASSET_INVENTORY_LOCK + operator);
         }
@@ -142,8 +149,8 @@ public class AssetInventoryServiceImpl implements AssetInventoryService {
                 AssetInventoryVO assetInventoryVO = new AssetInventoryVO();
                 BeanUtils.copyProperties(item, assetInventoryVO);
                 
-                Franchisee franchisee = franchiseeService.queryByIdFromCache(item.getFranchiseeId());
-                assetInventoryVO.setFranchiseeName(franchisee.getName());
+                // TODO(heyafeng) 2024/6/11 17:35
+                assetInventoryVO.setFranchiseeName(Optional.ofNullable(franchiseeService.queryByIdFromCache(item.getFranchiseeId())).orElse(new Franchisee()).getName());
                 
                 return assetInventoryVO;
             }).collect(Collectors.toList());

@@ -3,7 +3,6 @@ package com.xiliulou.electricity.query;
 import lombok.Data;
 
 import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
 import java.util.List;
 
 /**
@@ -16,32 +15,17 @@ import java.util.List;
 public class ElectricityCabinetBatchEditRentReturnQuery {
     
     /**
-     * 最小是否限制 0 无限制，1限制
+     * 租电类型（全部可租电、不允许租电、最少保留一块电池、自定义） RentReturnNormEnum
      */
-    private Integer minIsLimit;
+    private Integer rentTabType;
     
     /**
-     * 最大是否限制 0 无限制，1限制
+     * 退电类型（全部可退电、不允许退电、最少保留一个空仓、自定义） RentReturnNormEnum
      */
-    private Integer maxIsLimit;
+    private Integer returnTabType;
     
     
     @Valid
     private List<ElectricityCabinetBatchEditRentReturnCountQuery> countQueryList;
     
-    
-    
-    
-    
-    
-    
-    /**
-     * 无限制，更新为null
-     */
-    public final static Integer NOT_LIMIT = 0;
-    
-    /**
-     * 限制，前端传递数字
-     */
-    public final static Integer LIMIT = 1;
 }

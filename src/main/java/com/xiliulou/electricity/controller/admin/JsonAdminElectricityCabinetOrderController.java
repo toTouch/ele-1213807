@@ -275,7 +275,7 @@ public class JsonAdminElectricityCabinetOrderController {
         
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
-            log.error("ELE ERROR! not found user ");
+            log.warn("ELE WARN! not found user ");
             throw new CustomBusinessException("查不到订单");
         }
         

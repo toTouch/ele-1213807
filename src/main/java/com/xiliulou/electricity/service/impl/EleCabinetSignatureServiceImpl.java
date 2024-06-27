@@ -99,26 +99,26 @@ public class EleCabinetSignatureServiceImpl implements EleCabinetSignatureServic
         //获取当前用户信息
         UserInfo userInfo = userInfoService.queryByUidFromCache(SecurityUtils.getUid());
         if (Objects.isNull(userInfo)) {
-            log.error("ELE ERROR! not found userInfo,uid={}", SecurityUtils.getUid());
+            log.warn("ELE WARN! not found userInfo,uid={}", SecurityUtils.getUid());
             return Triple.of(false, "000100", "未找到用户!");
         }
 
         //用户是否被限制
         if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
-            log.error("ELE ERROR! user is unUsable,uid={}", userInfo.getUid());
+            log.warn("ELE WARN! user is unUsable,uid={}", userInfo.getUid());
             return Triple.of(false, "000101", "用户已被禁用!");
         }
 
         //对应的租户是否已经开启电子签署功能
         ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(TenantContextHolder.getTenantId());
         if (Objects.isNull(electricityConfig)) {
-            log.error("ELE ERROR! electricityConfig is null,tenantId={}", TenantContextHolder.getTenantId());
+            log.warn("ELE WARN! electricityConfig is null,tenantId={}", TenantContextHolder.getTenantId());
             return Triple.of(false, "000102", "系统异常！");
         }
 
         //未启用该功能，则正常进行其他操作
         if (!Objects.equals(EleEsignConstant.ESIGN_ENABLE, electricityConfig.getIsEnableEsign())) {
-            log.error("ELE ERROR! not open face recognize,tenantId={}", TenantContextHolder.getTenantId());
+            log.warn("ELE WARN! not open face recognize,tenantId={}", TenantContextHolder.getTenantId());
             return Triple.of(true, "", "电子签名功能未启用！");
         }
 
@@ -127,7 +127,7 @@ public class EleCabinetSignatureServiceImpl implements EleCabinetSignatureServic
         if (Objects.isNull(eleEsignConfig)
                 || StringUtils.isBlank(eleEsignConfig.getAppId())
                 || StringUtils.isBlank(eleEsignConfig.getAppSecret())) {
-            log.error("ELE ERROR! esign config is null,uid={},tenantId={}", SecurityUtils.getUid(),
+            log.warn("ELE WARN! esign config is null,uid={},tenantId={}", SecurityUtils.getUid(),
                     TenantContextHolder.getTenantId());
             return Triple.of(false, "000104", "租户电子签名配置信息不存在!");
         }
@@ -172,19 +172,19 @@ public class EleCabinetSignatureServiceImpl implements EleCabinetSignatureServic
             //获取当前用户信息
             userInfo = userInfoService.queryByUidFromCache(SecurityUtils.getUid());
             if (Objects.isNull(userInfo)) {
-                log.error("Create File error! not found userInfo,uid={}", SecurityUtils.getUid());
+                log.warn("Create File WARN! not found userInfo,uid={}", SecurityUtils.getUid());
                 return Triple.of(false, "000100", "未找到用户");
             }
 
             //用户是否被限制
             if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
-                log.error("Create File error! user is unUsable,uid={}", userInfo.getUid());
+                log.warn("Create File WARN! user is unUsable,uid={}", userInfo.getUid());
                 return Triple.of(false, "000101", "用户已被禁用");
             }
 
             //用户是否审核通过
             if (!Objects.equals(userInfo.getAuthStatus(), UserInfo.AUTH_STATUS_REVIEW_PASSED)) {
-                log.error("Create File error! userinfo is UN AUTH! uid={}", userInfo.getUid());
+                log.warn("Create File WARN! userinfo is UN AUTH! uid={}", userInfo.getUid());
                 return Triple.of(false, "100109", "用户未审核");
             }
 
@@ -194,7 +194,7 @@ public class EleCabinetSignatureServiceImpl implements EleCabinetSignatureServic
                     || StringUtils.isBlank(eleEsignConfig.getAppId())
                     || StringUtils.isBlank(eleEsignConfig.getAppSecret())
                     || StringUtils.isBlank(eleEsignConfig.getDocTemplateId())) {
-                log.error("Create File error! esign config is null,uid={},tenantId={}", SecurityUtils.getUid(),
+                log.warn("Create File WARN! esign config is null,uid={},tenantId={}", SecurityUtils.getUid(),
                         TenantContextHolder.getTenantId());
                 return Triple.of(false, "000104", "租户电子签名配置信息不存在");
             }
@@ -202,11 +202,11 @@ public class EleCabinetSignatureServiceImpl implements EleCabinetSignatureServic
             //校验租户签名次数
             EsignCapacityData esignCapacityData = esignCapacityDataService.queryCapacityDataByTenantId(TenantContextHolder.getTenantId().longValue());
             if (Objects.isNull(esignCapacityData)) {
-                log.error("Create File error! eSign capacity data is null, uid={}, tenantId={}", SecurityUtils.getUid(), TenantContextHolder.getTenantId());
+                log.warn("Create File WARN! eSign capacity data is null, uid={}, tenantId={}", SecurityUtils.getUid(), TenantContextHolder.getTenantId());
                 return Triple.of(false, "000106", "未购买签名资源包，请联系管理员");
             }
             if (esignCapacityData.getEsignCapacity() <= EleEsignConstant.ESIGN_MIN_CAPACITY) {
-                log.error("Create File error! eSign capacity is not enough,uid={}, tenantId={}", SecurityUtils.getUid(), TenantContextHolder.getTenantId());
+                log.warn("Create File WARN! eSign capacity is not enough,uid={}, tenantId={}", SecurityUtils.getUid(), TenantContextHolder.getTenantId());
                 return Triple.of(false, "000107", "签名资源包余额不足，请联系管理员");
             }
 
@@ -259,19 +259,19 @@ public class EleCabinetSignatureServiceImpl implements EleCabinetSignatureServic
         try{
             userInfo = userInfoService.queryByUidFromCache(SecurityUtils.getUid());
             if (Objects.isNull(userInfo)) {
-                log.error("get sign flow link error! not found userInfo,uid={}", SecurityUtils.getUid());
+                log.warn("get sign flow link WARN! not found userInfo,uid={}", SecurityUtils.getUid());
                 return Triple.of(false, "000100", "未找到用户");
             }
 
             //用户是否被限制
             if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
-                log.error("get sign flow link error! user is unUsable,uid={}", userInfo.getUid());
+                log.warn("get sign flow link WARN! user is unUsable,uid={}", userInfo.getUid());
                 return Triple.of(false, "000101", "用户已被禁用");
             }
 
             //用户是否审核通过
             if (!Objects.equals(userInfo.getAuthStatus(), UserInfo.AUTH_STATUS_REVIEW_PASSED)) {
-                log.error("get sign flow link error! userinfo is UN AUTH! uid={}", userInfo.getUid());
+                log.warn("get sign flow link WARN! userinfo is UN AUTH! uid={}", userInfo.getUid());
                 return Triple.of(false, "100109", "用户未审核");
             }
 
@@ -281,7 +281,7 @@ public class EleCabinetSignatureServiceImpl implements EleCabinetSignatureServic
                     || StringUtils.isBlank(eleEsignConfig.getAppId())
                     || StringUtils.isBlank(eleEsignConfig.getAppSecret())
                     || StringUtils.isBlank(eleEsignConfig.getDocTemplateId())) {
-                log.error("get sign flow link error! esign config is null,uid={},tenantId={}", SecurityUtils.getUid(),
+                log.warn("get sign flow link WARN! esign config is null,uid={},tenantId={}", SecurityUtils.getUid(),
                         TenantContextHolder.getTenantId());
                 return Triple.of(false, "000104", "租户电子签名配置信息不存在");
             }
@@ -289,11 +289,11 @@ public class EleCabinetSignatureServiceImpl implements EleCabinetSignatureServic
             //校验租户签名次数
             EsignCapacityData esignCapacityData = esignCapacityDataService.queryCapacityDataByTenantId(TenantContextHolder.getTenantId().longValue());
             if (Objects.isNull(esignCapacityData)) {
-                log.error("get sign flow link error! eSign capacity data is null, uid={}, tenantId={}", SecurityUtils.getUid(), TenantContextHolder.getTenantId());
+                log.warn("get sign flow link WARN! eSign capacity data is null, uid={}, tenantId={}", SecurityUtils.getUid(), TenantContextHolder.getTenantId());
                 return Triple.of(false, "000106", "未购买签名资源包，请联系管理员");
             }
             if (esignCapacityData.getEsignCapacity() <= EleEsignConstant.ESIGN_MIN_CAPACITY) {
-                log.error("get sign flow link error! eSign capacity is not enough,uid={}, tenantId={}", SecurityUtils.getUid(), TenantContextHolder.getTenantId());
+                log.warn("get sign flow link WARN! eSign capacity is not enough,uid={}, tenantId={}", SecurityUtils.getUid(), TenantContextHolder.getTenantId());
                 return Triple.of(false, "000107", "签名资源包余额不足，请联系管理员");
             }
 
@@ -337,7 +337,6 @@ public class EleCabinetSignatureServiceImpl implements EleCabinetSignatureServic
         //基于文件发起签署流程, 每发起一次签署流程都需要计费，则需要判断之前是否有发起过签署。如果有，则从数据库中拿出signFlowId
         EleUserEsignRecord eleUserEsignRecord = eleUserEsignRecordMapper.selectLatestEsignRecordByUser(uid, TenantContextHolder.getTenantId().longValue());
         if(Objects.nonNull(eleUserEsignRecord)){
-            log.info("Signing process already exist, sign flow id: {}", eleUserEsignRecord.getSignFlowId());
             signFlowId = eleUserEsignRecord.getSignFlowId();
 
             //根据signFlowId获取psnId信息，并获取有效期信息。
@@ -351,7 +350,6 @@ public class EleCabinetSignatureServiceImpl implements EleCabinetSignatureServic
         //数据库中没有记录，则基于文件发起新的签署流程
         SignDocsCreateResp signDocsCreateResp = electronicSignatureService.createByFileFlow(userInfoQuery, signFlowDataQuery);
         signFlowId = signDocsCreateResp.getData().getSignFlowId();
-        log.info("create new signing process, sign flow id: {}", signFlowId);
 
         //创建新的签署流程记录
         createUserEsignRecord(uid, signFlowId, signFlowDataQuery.getFileId(), signFlowDataQuery.getSignFileName());
@@ -365,7 +363,7 @@ public class EleCabinetSignatureServiceImpl implements EleCabinetSignatureServic
         UserInfo userInfo = userInfoService.queryByUidFromCache(SecurityUtils.getUid());
 
         if (Objects.isNull(userInfo)) {
-            log.error("get sign flow url error! not found userInfo,uid={}", SecurityUtils.getUid());
+            log.warn("get sign flow url error! not found userInfo,uid={}", SecurityUtils.getUid());
             return Triple.of(false, "000100", "未找到用户");
         }
 
@@ -375,7 +373,7 @@ public class EleCabinetSignatureServiceImpl implements EleCabinetSignatureServic
                 || StringUtils.isBlank(eleEsignConfig.getAppId())
                 || StringUtils.isBlank(eleEsignConfig.getAppSecret())
                 || StringUtils.isBlank(eleEsignConfig.getDocTemplateId())) {
-            log.error("get sign flow url error! esign config is null,uid={},tenantId={}", SecurityUtils.getUid(),
+            log.warn("get sign flow url WARN! esign config is null,uid={},tenantId={}", SecurityUtils.getUid(),
                     TenantContextHolder.getTenantId());
             return Triple.of(false, "000104", "租户电子签名配置信息不存在");
         }
@@ -478,20 +476,20 @@ public class EleCabinetSignatureServiceImpl implements EleCabinetSignatureServic
         //获取当前用户信息
         UserInfo userInfo = userInfoService.queryByUidFromCache(SecurityUtils.getUid());
         if (Objects.isNull(userInfo)) {
-            log.error("eSign error! not found userInfo,uid={}", SecurityUtils.getUid());
+            log.warn("eSign error! not found userInfo,uid={}", SecurityUtils.getUid());
             return Triple.of(false, "000100", "未找到用户");
         }
 
         //用户是否被限制
         if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
-            log.error("eSign error! user is unUsable,uid={}", userInfo.getUid());
+            log.warn("eSign WARN! user is unUsable,uid={}", userInfo.getUid());
             return Triple.of(false, "000101", "用户已被禁用");
         }
 
         //对应的租户是否已经开启电子签署功能
         ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(TenantContextHolder.getTenantId());
         if (Objects.isNull(electricityConfig)) {
-            log.error("eSign error! electricityConfig is null,tenantId={}", TenantContextHolder.getTenantId());
+            log.warn("eSign error! electricityConfig is null,tenantId={}", TenantContextHolder.getTenantId());
             return Triple.of(false, "000102", "系统异常！");
         }
 
@@ -507,7 +505,7 @@ public class EleCabinetSignatureServiceImpl implements EleCabinetSignatureServic
                 || StringUtils.isBlank(eleEsignConfig.getAppId())
                 || StringUtils.isBlank(eleEsignConfig.getAppSecret())
                 || StringUtils.isBlank(eleEsignConfig.getDocTemplateId())) {
-            log.error("eSign error! esign config is null,uid={},tenantId={}", SecurityUtils.getUid(),
+            log.warn("eSign WARN! esign config is null,uid={},tenantId={}", SecurityUtils.getUid(),
                     TenantContextHolder.getTenantId());
             return Triple.of(false, "000104", "租户电子签名配置信息不存在");
         }
@@ -563,7 +561,7 @@ public class EleCabinetSignatureServiceImpl implements EleCabinetSignatureServic
         if (Objects.isNull(eleEsignConfig)
                 || StringUtils.isBlank(eleEsignConfig.getAppId())
                 || StringUtils.isBlank(eleEsignConfig.getAppSecret())) {
-            log.error("ELE ERROR! esign config is null,tenantId={}",
+            log.warn("ELE WARN! esign config is null,tenantId={}",
                     TenantContextHolder.getTenantId());
             return Triple.of(false, "000104", "租户电子签名配置信息不存在");
         }
@@ -634,7 +632,7 @@ public class EleCabinetSignatureServiceImpl implements EleCabinetSignatureServic
 
         EleEsignConfig esignConfig = esignConfigMapper.selectEsignConfigById(esignConfigId);
         if(Objects.isNull(esignConfig)){
-            log.error("Esign call back parameters error, esignConfigId: {}", esignConfigId);
+            log.warn("Esign call back parameters WARN, esignConfigId: {}", esignConfigId);
             return;
         }
         //获取query请求字符串
@@ -646,7 +644,6 @@ public class EleCabinetSignatureServiceImpl implements EleCabinetSignatureServic
         StringBuilder builder = new StringBuilder().append(timestamp).append(requestQuery).append(reqBody);
         String signData = builder.toString();
         String encryptionSignature = SignUtils.getSignature(signData, esignConfig.getAppSecret());
-        log.info("The request of esign call back request body: {}", reqBody);
         if(encryptionSignature.equals(signature)) {
             EsignCallBackQuery esignCallBackQuery = JsonUtil.fromJson(reqBody, EsignCallBackQuery.class);
             log.info("Esign call back notice type is: {}", esignCallBackQuery.getAction());
@@ -654,7 +651,7 @@ public class EleCabinetSignatureServiceImpl implements EleCabinetSignatureServic
                 saveSignResultInfo(esignCallBackQuery.getSignFlowId(), esignConfig);
             }
         }else{
-            log.error(" validate signature error for esign call back flow, signature: {}, encryptionSignature: {}", signature, encryptionSignature);
+            log.warn(" validate signature error for esign call back flow, signature: {}, encryptionSignature: {}", signature, encryptionSignature);
         }
 
     }
