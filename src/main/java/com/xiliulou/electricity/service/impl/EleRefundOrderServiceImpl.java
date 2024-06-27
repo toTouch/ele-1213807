@@ -1363,10 +1363,9 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
                 return;
             }
             
-            if (Objects.equals(item.getStatus(), EleRefundOrder.STATUS_INIT) || Objects.equals(item.getStatus(), EleRefundOrder.STATUS_REFUSE_REFUND)) {
-                item.setStatus(null);
+            if (Objects.equals(item.getStatus(), EleRefundOrder.STATUS_REFUSE_REFUND)) {
+                item.setRefundAmount(null);
             }
-            
             item.setIsFreeDepositAliPay(true);
         });
         return R.ok(eleRefundOrderVOS);
