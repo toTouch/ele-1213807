@@ -1,10 +1,8 @@
 package com.xiliulou.electricity.mapper;
 
 import com.xiliulou.electricity.entity.ElectricityCabinetExtra;
-import com.xiliulou.electricity.query.ElectricityCabinetBatchEditRentReturnCountQuery;
+import com.xiliulou.electricity.queryModel.EleCabinetExtraQueryModel;
 import org.apache.ibatis.annotations.Param;
-
-import java.util.List;
 
 /**
  * @author HeYafeng
@@ -19,7 +17,12 @@ public interface ElectricityCabinetExtraMapper {
     
     Integer update(ElectricityCabinetExtra electricityCabinetExtra);
     
-    Integer updateMaxElectricityCabinetExtra(@Param("maxRetainBatteryCount") Integer maxRetainBatteryCount, @Param("id") Integer id, @Param("updateTime") Long updateTime);
     
-    Integer updateMinElectricityCabinetExtra(@Param("minRetainBatteryCount") Integer minRetainBatteryCount, @Param("id") Integer id, @Param("updateTime") Long updateTime);
+    Integer updateMinElectricityCabinetExtra(@Param("minRetainBatteryCount") Integer minRetainBatteryCount, @Param("rentTabType") Integer rentTabType, @Param("id") Integer id,
+            @Param("updateTime") Long updateTime);
+    
+    Integer updateMaxElectricityCabinetExtra(@Param("maxRetainBatteryCount") Integer maxRetainBatteryCount, @Param("returnTabType") Integer returnTabType, @Param("id") Integer id,
+            @Param("updateTime") Long updateTime);
+    
+    Integer updateTabTypeCabinetExtra(EleCabinetExtraQueryModel extraQueryModel);
 }

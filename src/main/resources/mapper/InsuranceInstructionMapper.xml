@@ -6,7 +6,7 @@
     <update id="update">
         update t_insurance_instruction
         <set>
-            <if test="instruction != null and instruction != ''">
+            <if test="instruction != null">
                 instruction = #{instruction},
             </if>
             <if test="updateTime != null">
