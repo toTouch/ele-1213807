@@ -19,6 +19,7 @@ import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.BankCard;
 import com.xiliulou.electricity.entity.ElectricityConfig;
 import com.xiliulou.electricity.entity.ElectricityPayParams;
+import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.PayTransferRecord;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.UserAmount;
@@ -36,6 +37,7 @@ import com.xiliulou.electricity.query.WithdrawRecordQueryModel;
 import com.xiliulou.electricity.service.BankCardService;
 import com.xiliulou.electricity.service.ElectricityConfigService;
 import com.xiliulou.electricity.service.ElectricityPayParamsService;
+import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.PayTransferRecordService;
 import com.xiliulou.electricity.service.UserAmountHistoryService;
 import com.xiliulou.electricity.service.UserAmountService;
@@ -134,6 +136,9 @@ public class WithdrawRecordRecordServiceImpl implements WithdrawRecordService {
     
     @Autowired
     WechatWithdrawalCertificateService wechatWithdrawalCertificateService;
+    
+    @Resource
+    private FranchiseeService franchiseeService;
     
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -247,6 +252,15 @@ public class WithdrawRecordRecordServiceImpl implements WithdrawRecordService {
                     withdrawRecordVO.setAuditorName(auditor.getName());
                 }
             }
+            
+            // 查询加盟商名称
+            if (Objects.nonNull(withdrawRecord.getFranchiseeId())) {
+                Franchisee franchisee = franchiseeService.queryByIdFromCache(withdrawRecord.getFranchiseeId());
+                if (Objects.nonNull(franchisee)) {
+                    withdrawRecordVO.setFranchiseeName(franchisee.getName());
+                }
+            }
+            
             withdrawRecordVOs.add(withdrawRecordVO);
             
         }

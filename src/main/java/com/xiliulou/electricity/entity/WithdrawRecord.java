@@ -86,6 +86,9 @@ public class WithdrawRecord {
     
     // 审核员ID
     private Long auditorId;
+    
+    // 加盟商id
+    private Long franchiseeId;
 
     //状态
     //审核中
