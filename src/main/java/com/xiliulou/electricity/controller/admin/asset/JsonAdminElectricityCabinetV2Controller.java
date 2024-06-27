@@ -91,8 +91,7 @@ public class JsonAdminElectricityCabinetV2Controller extends BasicController {
      * @author HeYafeng
      */
     @GetMapping("/admin/electricityCabinet/warehouse/nameSearch")
-    public R listWarehouseNames(@RequestParam("size") long size, @RequestParam("offset") long offset, @RequestParam(value = "name", required = false) String name,
-            @RequestParam(value = "franchiseeId",required = false) Long franchiseeId) {
+    public R listWarehouseNames(@RequestParam("size") long size, @RequestParam("offset") long offset, @RequestParam(value = "name", required = false) String name) {
         if (size < 0 || size > 50) {
             size = 10L;
         }
@@ -107,7 +106,7 @@ public class JsonAdminElectricityCabinetV2Controller extends BasicController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         
-        AssetWarehouseRequest assetInventoryRequest = AssetWarehouseRequest.builder().size(size).offset(offset).name(name).franchiseeId(franchiseeId).build();
+        AssetWarehouseRequest assetInventoryRequest = AssetWarehouseRequest.builder().size(size).offset(offset).name(name).build();
         
         return R.ok(assetWarehouseService.listWarehouseNames(assetInventoryRequest));
     }

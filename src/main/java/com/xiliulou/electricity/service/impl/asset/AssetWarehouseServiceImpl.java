@@ -184,6 +184,12 @@ public class AssetWarehouseServiceImpl implements AssetWarehouseService {
         
         List<AssetWarehouseNameVO> rspList = Collections.emptyList();
         
+        Pair<Boolean, List<Long>> pair = assertPermissionService.assertPermissionByPair(SecurityUtils.getUserInfo());
+        if (!pair.getLeft()){
+            return rspList;
+        }
+        assetWarehouseQueryModel.setFranchiseeIds(pair.getRight());
+        
         List<AssetWarehouseNameBO> assetWarehouseNameBOList = assetWarehouseMapper.selectListWarehouseNames(assetWarehouseQueryModel);
         if (CollectionUtils.isNotEmpty(assetWarehouseNameBOList)) {
             rspList = assetWarehouseNameBOList.stream().map(item -> {
