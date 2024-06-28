@@ -56,7 +56,7 @@ public interface CouponService {
     
     List<SearchVo> search(CouponQuery query);
     
-    Triple<Boolean, String, Object> findCouponById(Long id, Long franchiseeId);
+    Triple<Boolean, String, Object> findCouponById(Long id);
     
     List<CarCouponNamePO> queryListByIdsFromCache(List<Long> couponId);
 }

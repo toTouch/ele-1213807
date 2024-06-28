@@ -104,7 +104,7 @@ public class JsonAdminShareMoneyActivityController {
 		return shareMoneyActivityService.insert(shareMoneyActivityAddAndUpdateQuery);
 	}
 
-	//修改--暂时无此功能
+	//修改--(暂只支持上下架）
 	@PutMapping(value = "/admin/shareMoneyActivity")
 	public R update(@RequestBody @Validated(value = UpdateGroup.class) ShareMoneyActivityAddAndUpdateQuery shareMoneyActivityAddAndUpdateQuery) {
 		TokenUser user = SecurityUtils.getUserInfo();
@@ -219,13 +219,24 @@ public class JsonAdminShareMoneyActivityController {
 		if (Objects.isNull(id)) {
 			return R.fail("ELECTRICITY.0007", "不合法的参数");
 		}
+		
+		TokenUser user = SecurityUtils.getUserInfo();
+		if (Objects.isNull(user)) {
+			return R.fail("ELECTRICITY.0001", "未找到用户");
+		}
+		
+		if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE) || Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE))) {
+			return R.ok();
+		}
+		
 		return shareMoneyActivityService.queryInfo(id);
 	}
 
 	@GetMapping(value = "/admin/shareMoneyActivity/queryPackages")
 	public R queryPackagesByFranchisee(@RequestParam(value = "offset") Long offset,
 									   @RequestParam(value = "size") Long size,
-									   @RequestParam(value = "type",  required = true) Integer type) {
+									   @RequestParam(value = "type",  required = true) Integer type,
+									   @RequestParam(value = "franchiseeId",  required = false) Long franchiseeId) {
 
 		List<Integer> packageTypes = Arrays.stream(PackageTypeEnum.values()).map(PackageTypeEnum::getCode).collect(Collectors.toList());
 		if(!packageTypes.contains(type)){
@@ -240,7 +251,8 @@ public class JsonAdminShareMoneyActivityController {
 					.delFlag(BatteryMemberCard.DEL_NORMAL)
 					.status(BatteryMemberCard.STATUS_UP)
 					.isRefund(BatteryMemberCard.NO)
-					.tenantId(TenantContextHolder.getTenantId()).build();
+					.tenantId(TenantContextHolder.getTenantId())
+					.franchiseeId(franchiseeId).build();
 			return R.ok(batteryMemberCardService.selectByQuery(query));
 		}else{
 			CarRentalPackageQryModel qryModel = new CarRentalPackageQryModel();
@@ -249,6 +261,7 @@ public class JsonAdminShareMoneyActivityController {
 			qryModel.setTenantId(TenantContextHolder.getTenantId());
 			qryModel.setStatus(UpDownEnum.UP.getCode());
 			qryModel.setRentRebate(YesNoEnum.NO.getCode());
+			qryModel.setFranchiseeId(Objects.isNull(franchiseeId) ? null : franchiseeId.intValue());
 
 			if(PackageTypeEnum.PACKAGE_TYPE_CAR_BATTERY.getCode().equals(type)){
 				qryModel.setType(RentalPackageTypeEnum.CAR_BATTERY.getCode());
@@ -262,7 +275,8 @@ public class JsonAdminShareMoneyActivityController {
 	}
 
 	@GetMapping(value = "/admin/shareMoneyActivity/queryPackagesCount")
-	public R getElectricityUsablePackageCount(@RequestParam(value = "type",  required = true) Integer type) {
+	public R getElectricityUsablePackageCount(@RequestParam(value = "type", required = true) Integer type,
+			@RequestParam(value = "franchiseeId", required = false) Long franchiseeId) {
 
 		List<Integer> packageTypes = Arrays.stream(PackageTypeEnum.values()).map(PackageTypeEnum::getCode).collect(Collectors.toList());
 		if(!packageTypes.contains(type)){
@@ -275,13 +289,15 @@ public class JsonAdminShareMoneyActivityController {
 					.delFlag(BatteryMemberCard.DEL_NORMAL)
 					.status(BatteryMemberCard.STATUS_UP)
 					.isRefund(BatteryMemberCard.NO)
-					.tenantId(TenantContextHolder.getTenantId()).build();
+					.tenantId(TenantContextHolder.getTenantId())
+					.franchiseeId(franchiseeId).build();
 			return R.ok(batteryMemberCardService.selectByPageCount(query));
 		}else{
 			CarRentalPackageQryModel qryModel = new CarRentalPackageQryModel();
 			qryModel.setTenantId(TenantContextHolder.getTenantId());
 			qryModel.setStatus(UpDownEnum.UP.getCode());
 			qryModel.setRentRebate(YesNoEnum.NO.getCode());
+			qryModel.setFranchiseeId(Objects.isNull(franchiseeId) ? null : franchiseeId.intValue());
 
 			if(PackageTypeEnum.PACKAGE_TYPE_CAR_BATTERY.getCode().equals(type)){
 				qryModel.setType(RentalPackageTypeEnum.CAR_BATTERY.getCode());
@@ -308,18 +324,30 @@ public class JsonAdminShareMoneyActivityController {
 	 */
 	@GetMapping("/admin/shareMoneyActivity/delete")
 	public R<?> delete(@RequestParam("id") Long id){
-		TokenUser user = SecurityUtils.getUserInfo();
-		if (Objects.isNull(user)) {
-			log.error("ELECTRICITY  ERROR! not found user ");
-			throw new CustomBusinessException("未找到用户!");
-		}
-		if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
-			return R.fail("ELECTRICITY.0066", "用户权限不足");
-		}
 		if (Objects.isNull(id)){
 			return R.fail("ELECTRICITY.0007", "不合法的参数");
 		}
-		return shareMoneyActivityService.removeById(id);
+		
+		TokenUser user = SecurityUtils.getUserInfo();
+		if (Objects.isNull(user)) {
+			return R.fail("ELECTRICITY.0001", "未找到用户");
+		}
+		
+		if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE) || Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE))) {
+			return R.ok();
+		}
+		
+		Long franchiseeId = null;
+		if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+			List<Long> franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+			if (CollectionUtils.isEmpty(franchiseeIds)) {
+				return R.ok();
+			}
+			
+			franchiseeId = franchiseeIds.get(0);
+		}
+		
+		return shareMoneyActivityService.removeById(id, franchiseeId);
 	}
 	
 }

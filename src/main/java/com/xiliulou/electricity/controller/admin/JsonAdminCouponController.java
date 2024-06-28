@@ -154,18 +154,8 @@ public class JsonAdminCouponController extends BaseController {
         if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE) || Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE))) {
             return R.ok();
         }
-    
-        Long franchiseeId = null;
-        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
-            List<Long> franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
-            if (org.apache.commons.collections.CollectionUtils.isEmpty(franchiseeIds)) {
-                return R.ok(Collections.EMPTY_LIST);
-            }
-        
-            franchiseeId = franchiseeIds.get(0);
-        }
 
-        return returnTripleResult(couponService.findCouponById(id, franchiseeId));
+        return returnTripleResult(couponService.findCouponById(id));
     }
 
     @DeleteMapping("/admin/coupon/delete/{id}")

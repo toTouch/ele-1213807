@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.xiliulou.electricity.entity.ShareActivity;
 import com.xiliulou.electricity.entity.ShareMoneyActivity;
 import com.xiliulou.electricity.query.ShareMoneyActivityQuery;
 import org.apache.ibatis.annotations.Param;
@@ -53,4 +54,6 @@ public interface ShareMoneyActivityMapper extends BaseMapper<ShareMoneyActivity>
      * @since V1.0 2024/3/14
      */
     int removeById(@Param("id") Long id,@Param("tenantId") Long tenantId);
+    
+    ShareMoneyActivity selectOnlineActivity(@Param("tenantId") Integer tenantId, @Param("franchiseeId") Integer franchiseeId);
 }

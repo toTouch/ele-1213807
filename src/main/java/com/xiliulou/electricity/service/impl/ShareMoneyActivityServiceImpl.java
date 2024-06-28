@@ -16,13 +16,11 @@ import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.entity.car.CarRentalPackagePo;
 import com.xiliulou.electricity.enums.ActivityEnum;
 import com.xiliulou.electricity.enums.PackageTypeEnum;
-import com.xiliulou.electricity.mapper.ShareActivityMapper;
 import com.xiliulou.electricity.mapper.ShareMoneyActivityMapper;
 import com.xiliulou.electricity.query.BatteryMemberCardQuery;
 import com.xiliulou.electricity.query.ShareMoneyActivityAddAndUpdateQuery;
 import com.xiliulou.electricity.query.ShareMoneyActivityQuery;
 import com.xiliulou.electricity.service.*;
-import com.xiliulou.electricity.service.asset.AssertPermissionService;
 import com.xiliulou.electricity.service.car.CarRentalPackageService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
@@ -70,7 +68,7 @@ public class ShareMoneyActivityServiceImpl implements ShareMoneyActivityService 
     ShareMoneyActivityRecordService shareMoneyActivityRecordService;
 
     @Resource
-    ShareActivityMapper shareActivityMapper;
+    ShareActivityService shareActivityService;
     
     @Autowired
     ChannelActivityService channelActivityService;
@@ -478,8 +476,7 @@ public class ShareMoneyActivityServiceImpl implements ShareMoneyActivityService 
         }
 
         //邀请活动
-        ShareMoneyActivity shareMoneyActivity = shareMoneyActivityMapper.selectOne(new LambdaQueryWrapper<ShareMoneyActivity>()
-                .eq(ShareMoneyActivity::getTenantId, tenantId).eq(ShareMoneyActivity::getStatus, ShareMoneyActivity.STATUS_ON));
+        ShareMoneyActivity shareMoneyActivity = this.queryOnlineActivity(tenantId, Objects.isNull(userInfo.getFranchiseeId()) ? null : userInfo.getFranchiseeId().intValue());
         if (Objects.isNull(shareMoneyActivity)) {
             log.info("queryInfo Activity INFO! not found Activity,tenantId={} ", tenantId);
             return R.ok();
@@ -596,15 +593,14 @@ public class ShareMoneyActivityServiceImpl implements ShareMoneyActivityService 
 
 
         //邀请返现活动
-        ShareMoneyActivity shareMoneyActivity = shareMoneyActivityMapper.selectOne(new LambdaQueryWrapper<ShareMoneyActivity>()
-                .eq(ShareMoneyActivity::getTenantId, tenantId).eq(ShareMoneyActivity::getStatus, ShareMoneyActivity.STATUS_ON));
+        
+        ShareMoneyActivity shareMoneyActivity = this.queryOnlineActivity(tenantId, userInfo.getFranchiseeId().intValue());
         if (Objects.isNull(shareMoneyActivity)) {
             map.put("shareMoneyActivity", 1);
         }
 
         //邀请活动
-        ShareActivity shareActivity = shareActivityMapper.selectOne(new LambdaQueryWrapper<ShareActivity>()
-                .eq(ShareActivity::getTenantId, tenantId).eq(ShareActivity::getStatus, ShareActivity.STATUS_ON));
+        ShareActivity shareActivity = shareActivityService.queryOnlineActivity(tenantId, userInfo.getFranchiseeId().intValue());
         if (Objects.isNull(shareActivity)) {
             map.put("shareActivity", 1);
         }
@@ -615,7 +611,7 @@ public class ShareMoneyActivityServiceImpl implements ShareMoneyActivityService 
             map.put("channelActivity", 1);
         }
 
-        Integer invitationActivity = invitationActivityService.checkUsableActivity(tenantId);
+        Integer invitationActivity = invitationActivityService.checkUsableActivity(tenantId, userInfo.getFranchiseeId());
         if(Objects.isNull(invitationActivity)){
             map.put("invitationActivity", 1);
         }else{
@@ -663,20 +659,37 @@ public class ShareMoneyActivityServiceImpl implements ShareMoneyActivityService 
      * @since V1.0 2024/3/14
      */
     @Override
-    public R<?> removeById(Long id) {
+    public R<?> removeById(Long id, Long franchiseeId) {
         ShareMoneyActivity shareMoneyActivity = this.queryByIdFromCache(Math.toIntExact(id));
         if (Objects.isNull(shareMoneyActivity)) {
             log.error("delete Activity  ERROR! not found Activity ! ActivityId:{} ", id);
             return R.fail("ELECTRICITY.0069", "未找到活动");
         }
-        int count = this.shareMoneyActivityMapper.removeById(id,TenantContextHolder.getTenantId().longValue());
+    
+        // 租户一致性校验
+        if (!Objects.equals(TenantContextHolder.getTenantId(), shareMoneyActivity.getTenantId())) {
+            return R.ok();
+        }
+    
+        // 加盟商一致性校验
+        if (Objects.nonNull(franchiseeId)) {
+            Integer activityFranchiseeId = shareMoneyActivity.getFranchiseeId();
+            if (Objects.nonNull(activityFranchiseeId) && !Objects.equals(franchiseeId, activityFranchiseeId.longValue())) {
+                log.warn("delete Activity WARN! Franchisees are inconsistent, ActivityId={}", id);
+                return R.fail("120128", "所属加盟商不一致");
+            }
+        }
         
-        DbUtils.dbOperateSuccessThenHandleCache(Math.toIntExact(id),(identifier)->{
-            redisService.delete(CacheConstant.SHARE_MONEY_ACTIVITY_CACHE+identifier);
+        int count = this.shareMoneyActivityMapper.removeById(id,TenantContextHolder.getTenantId().longValue());
+    
+        DbUtils.dbOperateSuccessThenHandleCache(Math.toIntExact(id), (identifier) -> {
+            redisService.delete(CacheConstant.SHARE_MONEY_ACTIVITY_CACHE + identifier);
         });
-        if (Objects.equals(shareMoneyActivity.getStatus(),ShareActivity.STATUS_OFF)){
+    
+        if (Objects.equals(shareMoneyActivity.getStatus(), ShareActivity.STATUS_OFF)) {
             return R.ok(count);
         }
+        
         executorService.submit(()->{
             //修改邀请状态
             JoinShareMoneyActivityRecord joinShareMoneyActivityRecord = new JoinShareMoneyActivityRecord();
@@ -693,6 +706,12 @@ public class ShareMoneyActivityServiceImpl implements ShareMoneyActivityService 
             joinShareMoneyActivityHistoryService.updateByActivityId(joinShareMoneyActivityHistory);
         });
         return R.ok(count);
+    }
+    
+    @Slave
+    @Override
+    public ShareMoneyActivity queryOnlineActivity(Integer tenantId, Integer franchiseeId) {
+        return shareMoneyActivityMapper.selectOnlineActivity(tenantId, franchiseeId);
     }
 }
 

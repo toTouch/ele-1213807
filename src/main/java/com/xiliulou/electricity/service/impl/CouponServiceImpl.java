@@ -390,31 +390,14 @@ public class CouponServiceImpl implements CouponService {
     }
     
     @Override
-    public Triple<Boolean, String, Object> findCouponById(Long id, Long franchiseeId) {
+    public Triple<Boolean, String, Object> findCouponById(Long id) {
         Coupon coupon = this.queryByIdFromCache(id.intValue());
         if (Objects.isNull(coupon) || !Objects.equals(coupon.getTenantId(), TenantContextHolder.getTenantId())) {
-            log.warn("findCouponById WARN! not found coupon, couponId={}", id);
-            return Triple.of(false, "120125", "优惠券信息不存在");
+            return Triple.of(false, null, "优惠券信息不存在");
         }
-    
-        String franchiseeName = null;
-        
-        // 加盟商一致性校验
-        if (Objects.nonNull(franchiseeId)) {
-            Integer couponFranchiseeId = coupon.getFranchiseeId();
-            if (Objects.nonNull(couponFranchiseeId) && !Objects.equals(franchiseeId, couponFranchiseeId.longValue())) {
-                log.warn("findCouponById WARN! Franchisees are inconsistent, couponId={}", id);
-                return Triple.of(false, "120128", "所属加盟商不一致");
-            }
-    
-            Franchisee franchisee = franchiseeService.queryByIdFromCache(couponFranchiseeId.longValue());
-            franchiseeName = Optional.ofNullable(franchisee).map(Franchisee::getName).orElse(null);
-        }
-        
         CouponActivityVO couponActivityVO = new CouponActivityVO();
         BeanUtils.copyProperties(coupon, couponActivityVO);
         couponActivityVO.setValidDays(String.valueOf(coupon.getDays()));
-        couponActivityVO.setFranchiseeName(franchiseeName);
         
         if (Coupon.SUPERPOSITION_NO.equals(coupon.getSuperposition())) {
             
@@ -430,6 +413,12 @@ public class CouponServiceImpl implements CouponService {
                 couponActivityVO.setCarWithBatteryPackages(getAllCarBatteryPackages(PackageTypeEnum.PACKAGE_TYPE_CAR_BATTERY.getCode()));
             }
         }
+    
+        Integer franchiseeId = coupon.getFranchiseeId();
+        if (Objects.nonNull(franchiseeId)) {
+            couponActivityVO.setFranchiseeName(Optional.ofNullable(franchiseeService.queryByIdFromCache(franchiseeId.longValue())).map(Franchisee::getName).orElse(StringUtils.EMPTY));
+        }
+        
         return Triple.of(true, null, couponActivityVO);
     }
     

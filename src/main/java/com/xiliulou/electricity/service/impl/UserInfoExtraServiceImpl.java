@@ -18,6 +18,7 @@ import com.xiliulou.electricity.entity.merchant.MerchantInviterModifyRecord;
 import com.xiliulou.electricity.entity.merchant.MerchantJoinRecord;
 import com.xiliulou.electricity.entity.merchant.MerchantLevel;
 import com.xiliulou.electricity.entity.merchant.RebateConfig;
+import com.xiliulou.electricity.enums.PackageTypeEnum;
 import com.xiliulou.electricity.enums.UserInfoActivitySourceEnum;
 import com.xiliulou.electricity.mapper.UserInfoExtraMapper;
 import com.xiliulou.electricity.request.merchant.MerchantModifyInviterRequest;
@@ -240,6 +241,9 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
             merchantJoinRecordUpdate.setId(merchantJoinRecord.getId());
             merchantJoinRecordUpdate.setStatus(MerchantJoinRecordConstant.STATUS_SUCCESS);
             merchantJoinRecordUpdate.setUpdateTime(System.currentTimeMillis());
+            merchantJoinRecordUpdate.setPackageId(electricityMemberCardOrder.getMemberCardId());
+            merchantJoinRecordUpdate.setPackageType(PackageTypeEnum.PACKAGE_TYPE_BATTERY.getCode());
+            merchantJoinRecordUpdate.setFranchiseeId(electricityMemberCardOrder.getFranchiseeId());
             merchantJoinRecordService.updateById(merchantJoinRecordUpdate);
         } else {
             MerchantJoinRecord merchantJoinRecordUpdate = new MerchantJoinRecord();

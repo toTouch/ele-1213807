@@ -84,7 +84,7 @@
         select 1 from t_share_activity where del_flag=0 and tenant_id = #{tenantId} and status =1 limit 1
     </select>
     
-    <select id="queryOnlineActivity" resultType="com.xiliulou.electricity.entity.ShareActivity">
+    <select id="selectOnlineActivity" resultType="com.xiliulou.electricity.entity.ShareActivity">
         select
             id, name, type, status,  description, invitation_criteria, del_flag, create_time,receive_type,
             update_time, uid,user_name,franchisee_id,hours,minutes,invitation_criteria,franchisee_id

@@ -9,6 +9,7 @@ import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -46,7 +47,8 @@ public class JsonAdminJoinShareMoneyActivityHistoryController {
             @RequestParam("id") Long id, @RequestParam(value = "joinName", required = false) String joinName,
             @RequestParam(value = "beginTime", required = false) Long beginTime,
             @RequestParam(value = "endTime", required = false) Long endTime,
-            @RequestParam(value = "status", required = false) Integer status) {
+            @RequestParam(value = "status", required = false) Integer status,
+            @RequestParam(value = "franchiseeId", required = false) Long franchiseeId) {
 
         if (size < 0 || size > 50) {
             size = 10L;
@@ -55,11 +57,27 @@ public class JsonAdminJoinShareMoneyActivityHistoryController {
         if (offset < 0) {
             offset = 0L;
         }
-
-		JsonShareMoneyActivityHistoryQuery jsonShareMoneyActivityHistoryQuery = JsonShareMoneyActivityHistoryQuery.builder()
-                .offset(offset).size(size).id(id).joinName(joinName).beginTime(beginTime).endTime(endTime)
-                .status(status).tenantId(TenantContextHolder.getTenantId()).build();
-		return joinShareMoneyActivityHistoryService.queryList(jsonShareMoneyActivityHistoryQuery);
+    
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+    
+        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE) || Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE))) {
+            return R.ok();
+        }
+    
+        List<Long> franchiseeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if (CollectionUtils.isEmpty(franchiseeIds)) {
+                return R.ok();
+            }
+        }
+    
+        JsonShareMoneyActivityHistoryQuery jsonShareMoneyActivityHistoryQuery = JsonShareMoneyActivityHistoryQuery.builder().offset(offset).size(size).id(id).joinName(joinName)
+                .beginTime(beginTime).endTime(endTime).status(status).tenantId(TenantContextHolder.getTenantId()).franchiseeIds(franchiseeIds).franchiseeId(franchiseeId).build();
+        return joinShareMoneyActivityHistoryService.queryList(jsonShareMoneyActivityHistoryQuery);
 	}
 
 
@@ -71,7 +89,8 @@ public class JsonAdminJoinShareMoneyActivityHistoryController {
             @RequestParam(value = "joinName", required = false) String joinName,
             @RequestParam(value = "beginTime", required = false) Long beginTime,
             @RequestParam(value = "endTime", required = false) Long endTime,
-            @RequestParam(value = "status", required = false) Integer status) {
+            @RequestParam(value = "status", required = false) Integer status,
+            @RequestParam(value = "franchiseeId", required = false) Long franchiseeId) {
     
         JsonShareMoneyActivityHistoryQuery jsonShareMoneyActivityHistoryQuery = JsonShareMoneyActivityHistoryQuery
                 .builder().id(id).joinName(joinName).beginTime(beginTime).endTime(endTime).status(status)
@@ -97,7 +116,6 @@ public class JsonAdminJoinShareMoneyActivityHistoryController {
      * @param size
      * @param offset
      * @param joinName
-     * @param phone
      * @param activityName
      * @param beginTime
      * @param endTime
@@ -113,7 +131,8 @@ public class JsonAdminJoinShareMoneyActivityHistoryController {
                                @RequestParam(value = "activityName", required = false) String activityName,
                                @RequestParam(value = "beginTime", required = false) Long beginTime,
                                @RequestParam(value = "endTime", required = false) Long endTime,
-                               @RequestParam(value = "status", required = false) Integer status) {
+                               @RequestParam(value = "status", required = false) Integer status,
+                               @RequestParam(value = "franchiseeId", required = false) Long franchiseeId) {
 
         if (size < 0 || size > 50) {
             size = 10L;
@@ -160,6 +179,7 @@ public class JsonAdminJoinShareMoneyActivityHistoryController {
                 .endTime(endTime)
                 .storeIds(storeIds)
                 .franchiseeIds(franchiseeIds)
+                .franchiseeId(franchiseeId)
                 .build();
 
         return joinShareMoneyActivityHistoryService.queryParticipantsRecord(jsonShareMoneyActivityHistoryQuery);
@@ -172,7 +192,8 @@ public class JsonAdminJoinShareMoneyActivityHistoryController {
                                 @RequestParam(value = "activityName", required = false) String activityName,
                                 @RequestParam(value = "beginTime", required = false) Long beginTime,
                                 @RequestParam(value = "endTime", required = false) Long endTime,
-                                @RequestParam(value = "status", required = false) Integer status) {
+                                @RequestParam(value = "status", required = false) Integer status,
+                                @RequestParam(value = "franchiseeId", required = false) Long franchiseeId) {
 
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
@@ -208,6 +229,7 @@ public class JsonAdminJoinShareMoneyActivityHistoryController {
                 .endTime(endTime)
                 .storeIds(storeIds)
                 .franchiseeIds(franchiseeIds)
+                .franchiseeId(franchiseeId)
                 .build();
 
         return joinShareMoneyActivityHistoryService.queryParticipantsCount(jsonShareMoneyActivityHistoryQuery);

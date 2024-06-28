@@ -132,7 +132,18 @@ public class JoinShareActivityHistoryServiceImpl implements JoinShareActivityHis
         
         List<JoinShareActivityHistoryVO> joinShareActivityHistoryVOList = joinShareActivityHistoryMapper
                 .queryList(jsonShareActivityHistoryQuery);
-        return R.ok(Optional.ofNullable(joinShareActivityHistoryVOList).orElse(new ArrayList<>()));
+		if (CollectionUtils.isEmpty(joinShareActivityHistoryVOList)) {
+			return R.ok(Collections.emptyList());
+		}
+		
+		List<JoinShareActivityHistoryVO> list = joinShareActivityHistoryVOList.stream().peek(vo -> {
+			Long franchiseeId = vo.getFranchiseeId();
+			if (Objects.nonNull(franchiseeId)) {
+				vo.setFranchiseeName(Optional.ofNullable(franchiseeService.queryByIdFromCache(franchiseeId)).map(Franchisee::getName).orElse(StringUtils.EMPTY));
+			}
+		}).collect(Collectors.toList());
+		
+		return R.ok(list);
 	}
 
 	@Slave

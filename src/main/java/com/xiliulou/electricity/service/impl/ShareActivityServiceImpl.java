@@ -644,7 +644,7 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 		}
 
 		//邀请活动
-		ShareActivity shareActivity = shareActivityMapper.queryOnlineActivity(tenantId, Objects.isNull(userInfo.getFranchiseeId()) ? null : userInfo.getFranchiseeId().intValue());
+		ShareActivity shareActivity = this.queryOnlineActivity(tenantId, Objects.isNull(userInfo.getFranchiseeId()) ? null : userInfo.getFranchiseeId().intValue());
 		if (Objects.isNull(shareActivity)) {
 			log.warn("ACTIVITY WARN!not found Activity,tenantId={},uid={}", tenantId, user.getUid());
 			return R.ok();
@@ -827,18 +827,10 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 	}
 
 	@Override
-	public Triple<Boolean, String, Object> shareActivityDetail(Integer id, Long franchiseeId) {
+	public Triple<Boolean, String, Object> shareActivityDetail(Integer id) {
 		ShareActivity shareActivity = this.queryByIdFromCache(id);
 		if (Objects.isNull(shareActivity) || !Objects.equals(shareActivity.getTenantId(), TenantContextHolder.getTenantId())) {
 			return Triple.of(false, "ELECTRICITY.0069", "未找到活动");
-		}
-		
-		if (Objects.nonNull(franchiseeId)) {
-			Integer activityFranchiseeId = shareActivity.getFranchiseeId();
-			if (Objects.nonNull(activityFranchiseeId) && !Objects.equals(activityFranchiseeId, NumberConstant.ZERO) && !Objects.equals(franchiseeId, activityFranchiseeId.longValue())) {
-				log.warn("Query activity detail WARN! not the same franchiseeId, ActivityId={}", id);
-				return Triple.of(false, "120128", "所属加盟商不一致");
-			}
 		}
 
 		ShareActivityVO shareActivityVO = new ShareActivityVO();
@@ -874,6 +866,11 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 		List<ShareActivityRule> shareActivityRuleList = shareActivityRuleService.queryByActivity(shareActivity.getId());
 		if (CollectionUtils.isNotEmpty(shareActivityRuleList)) {
 			shareActivityVO.setShareActivityRuleQueryList(getShareActivityRules(shareActivityRuleList));
+		}
+		
+		Integer franchiseeId = shareActivity.getFranchiseeId();
+		if (Objects.nonNull(franchiseeId)) {
+			shareActivityVO.setFranchiseeName(Optional.ofNullable(franchiseeService.queryByIdFromCache(franchiseeId.longValue())).map(Franchisee::getName).orElse(StringUtils.EMPTY));
 		}
 
 		return Triple.of(true, "", shareActivityVO);
@@ -1127,7 +1124,7 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 	@Slave
 	@Override
 	public ShareActivity queryOnlineActivity(Integer tenantId, Integer franchiseeId) {
-		return shareActivityMapper.queryOnlineActivity(tenantId, franchiseeId);
+		return shareActivityMapper.selectOnlineActivity(tenantId, franchiseeId);
 	}
 	
 }

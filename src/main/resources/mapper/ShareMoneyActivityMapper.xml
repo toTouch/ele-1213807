@@ -118,5 +118,18 @@
     <select id="existShareMoneyActivity"  resultType="java.lang.Integer">
         select 1 from t_share_money_activity where del_flg=0 and tenant_id = #{tenantId} and status =1 limit 1
     </select>
+    
+    <select id="selectOnlineActivity" resultType="com.xiliulou.electricity.entity.ShareMoneyActivity">
+        select
+        id, name, type, status,  description, del_flg, create_time,
+        update_time, uid,user_name,franchisee_id,hours,minutes,money, invitation_criteria
+        from t_share_money_activity
+        <where>
+            tenant_id = #{tenantId} and status = 1
+            <if test="franchiseeId != null and franchiseeId != 0">
+                and franchisee_id = #{franchiseeId}
+            </if>
+        </where>
+    </select>
 
 </mapper>

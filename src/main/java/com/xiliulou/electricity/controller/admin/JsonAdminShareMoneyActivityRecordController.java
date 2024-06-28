@@ -40,7 +40,8 @@ public class JsonAdminShareMoneyActivityRecordController {
 			@RequestParam("offset") Long offset,
 			@RequestParam(value = "uid", required = false) Long uid,
 			@RequestParam(value = "phone", required = false) String phone,
-			@RequestParam(value = "name", required = false) String name) {
+			@RequestParam(value = "name", required = false) String name,
+			@RequestParam(value = "franchiseeId", required = false) Long franchiseeId) {
 		if (size < 0 || size > 50) {
 			size = 10L;
 		}
@@ -79,7 +80,8 @@ public class JsonAdminShareMoneyActivityRecordController {
 				.uid(uid)
 				.storeIds(storeIds)
 				.franchiseeIds(franchiseeIds)
-				.tenantId(TenantContextHolder.getTenantId()).build();
+				.tenantId(TenantContextHolder.getTenantId())
+				.franchiseeId(franchiseeId).build();
 
 		return shareMoneyActivityRecordService.queryList(shareMoneyActivityRecordQuery);
 
@@ -89,7 +91,8 @@ public class JsonAdminShareMoneyActivityRecordController {
 	@GetMapping(value = "/admin/shareMoneyActivityRecord/queryCount")
 	public R queryCount(@RequestParam(value = "phone", required = false) String phone,
 						@RequestParam(value = "uid", required = false) Long uid,
-						@RequestParam(value = "name", required = false) String name) {
+						@RequestParam(value = "name", required = false) String name,
+					    @RequestParam(value = "franchiseeId", required = false) Long franchiseeId) {
 
 		TokenUser user = SecurityUtils.getUserInfo();
 		if (Objects.isNull(user)) {
@@ -119,7 +122,8 @@ public class JsonAdminShareMoneyActivityRecordController {
 				.uid(uid)
 				.storeIds(storeIds)
 				.franchiseeIds(franchiseeIds)
-				.tenantId(TenantContextHolder.getTenantId()).build();
+				.tenantId(TenantContextHolder.getTenantId())
+				.franchiseeId(franchiseeId).build();
 
 		return shareMoneyActivityRecordService.queryCount(shareMoneyActivityRecordQuery);
 

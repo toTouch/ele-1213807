@@ -277,8 +277,8 @@ public class InvitationActivityServiceImpl implements InvitationActivityService 
 
     @Override
     @Slave
-    public Integer checkUsableActivity(Integer tenantId) {
-        return invitationActivityMapper.checkUsableActivity(tenantId);
+    public Integer checkUsableActivity(Integer tenantId, Long franchiseeId) {
+        return invitationActivityMapper.checkUsableActivity(tenantId, franchiseeId);
     }
 
     @Override
