@@ -826,7 +826,7 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
             return verifyBatteryMemberCardResult;
         }
         
-        //套餐数量最多50个，仅对换电套餐做限制
+        //套餐数量最多150个，仅对换电套餐做限制
         if (Objects.equals(query.getBusinessType(), BatteryMemberCardBusinessTypeEnum.BUSINESS_TYPE_BATTERY.getCode())) {
             BatteryMemberCardQuery queryCount = BatteryMemberCardQuery.builder().businessType(BatteryMemberCardBusinessTypeEnum.BUSINESS_TYPE_BATTERY.getCode())
                     .tenantId(TenantContextHolder.getTenantId()).delFlag(BatteryMemberCard.DEL_NORMAL).build();
