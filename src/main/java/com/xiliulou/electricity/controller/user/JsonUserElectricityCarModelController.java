@@ -14,34 +14,32 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @Slf4j
 public class JsonUserElectricityCarModelController {
-
+    
     @Autowired
     ElectricityCarModelService electricityCarModelService;
-
+    
     /**
      * 车辆型号列表
      */
     @GetMapping("/user/carModel/list")
-    public R userCar(@RequestParam("storeId") Long storeId,
-                     @RequestParam("size") Long size,
-                     @RequestParam("offset") Long offset) {
+    public R userCar(@RequestParam("storeId") Long storeId, @RequestParam("size") Long size, @RequestParam("offset") Long offset) {
         ElectricityCarModelQuery query = new ElectricityCarModelQuery();
         query.setSize(size);
         query.setOffset(offset);
         query.setDelFlag(ElectricityCarModel.DEL_NORMAL);
         query.setStoreId(storeId);
         query.setTenantId(TenantContextHolder.getTenantId());
-
+        
         return R.ok(electricityCarModelService.selectList(query));
     }
-
+    
     /**
      * 车辆型号详情
      */
     @GetMapping("/user/carModel/detail")
     public R carModelDetail(@RequestParam("id") Long id) {
-
+        
         return R.ok(electricityCarModelService.selectDetailById(id));
     }
-
+    
 }

@@ -8,6 +8,7 @@ import com.xiliulou.core.http.resttemplate.service.RestTemplateService;
 import com.xiliulou.core.i18n.MessageUtils;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.constant.CacheConstant;
+import com.xiliulou.electricity.constant.MultiFranchiseeConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.dto.WXMinProAuth2SessionResult;
 import com.xiliulou.electricity.dto.WXMinProPhoneResultDTO;
@@ -126,7 +127,7 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
             throw new AuthenticationServiceException("操作频繁！请稍后再试！");
         }
         
-        ElectricityPayParams electricityPayParams = electricityPayParamsService.queryFromCache(tenantId);
+        ElectricityPayParams electricityPayParams = electricityPayParamsService.queryPreciseCacheByTenantIdAndFranchiseeId(tenantId, MultiFranchiseeConstant.DEFAULT_FRANCHISEE);
         if (Objects.isNull(electricityPayParams) || StrUtil.isEmpty(electricityPayParams.getMerchantMinProAppId())
                 || StrUtil.isEmpty(electricityPayParams.getMerchantMinProAppSecert())) {
             log.warn("TOKEN ERROR! not found appId,appSecret! authMap={}, params={}, tenantId={}", authMap, electricityPayParams, tenantId);

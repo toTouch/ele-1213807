@@ -19,10 +19,10 @@ import org.springframework.web.bind.annotation.RestController;
 @Slf4j
 @RestController
 public class JsonUserBatteryMembercardRefundOrderController extends BaseController {
-
+    
     @Autowired
     private BatteryMembercardRefundOrderService batteryMembercardRefundOrderService;
-
+    
     /**
      * 退租申请
      */
@@ -30,7 +30,7 @@ public class JsonUserBatteryMembercardRefundOrderController extends BaseControll
     public R batteryMembercardRefund(@PathVariable("orderNo") String orderNo) {
         return returnTripleResult(batteryMembercardRefundOrderService.batteryMembercardRefund(orderNo));
     }
-
+    
     /**
      * 可退租订单详情
      */
@@ -38,6 +38,6 @@ public class JsonUserBatteryMembercardRefundOrderController extends BaseControll
     public R batteryMembercardRefundOrderDetail(@PathVariable("orderNo") String orderNo) {
         return returnTripleResult(batteryMembercardRefundOrderService.batteryMembercardRefundOrderDetail(orderNo, NumberConstant.ONE));
     }
-
-
+    
+    
 }

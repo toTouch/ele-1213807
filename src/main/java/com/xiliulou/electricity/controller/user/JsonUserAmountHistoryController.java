@@ -23,65 +23,56 @@ import java.util.Objects;
 @RestController
 @Slf4j
 public class JsonUserAmountHistoryController {
-	/**
-	 * 服务对象
-	 */
-	@Autowired
-	private UserAmountHistoryService userAmountHistoryService;
-	
-	/**
-	 * 用户邀请记录
-	 */
-	@GetMapping(value = "/user/userAmountHistory/list")
-	public R queryList(@RequestParam("size") Long size,
-			@RequestParam("offset") Long offset,
-			@RequestParam(value = "type", required = false) Integer type) {
-		if (size < 0 || size > 50) {
-			size = 10L;
-		}
-
-		if (offset < 0) {
-			offset = 0L;
-		}
-
-		//租户
-		Integer tenantId = TenantContextHolder.getTenantId();
-
-		//用户区分
-		TokenUser user = SecurityUtils.getUserInfo();
-		if (Objects.isNull(user)) {
-			log.error("ELECTRICITY  ERROR! not found user ");
-			return R.fail("ELECTRICITY.0001", "未找到用户");
-		}
-
-		UserAmountHistoryQuery userAmountHistoryQuery = UserAmountHistoryQuery.builder()
-				.offset(offset)
-				.size(size)
-				.tenantId(tenantId)
-				.uid(user.getUid())
-				.type(type).build();
-		return userAmountHistoryService.queryList(userAmountHistoryQuery);
-	}
-
-
-	/**
-	 * 返现记录
-	 */
-	@GetMapping(value = "/user/userAmountHistory/reward/list")
-	public R rewardList(@RequestParam("size") long size, @RequestParam("offset") long offset) {
-		if (size < 0 || size > 50) {
-			size = 10L;
-		}
-
-		if (offset < 0) {
-			offset = 0L;
-		}
-
-		UserAmountHistoryQuery userAmountHistoryQuery = UserAmountHistoryQuery.builder()
-				.offset(offset)
-				.size(size)
-				.tenantId(TenantContextHolder.getTenantId())
-				.uid(SecurityUtils.getUid()).build();
-		return R.ok(userAmountHistoryService.selectRewardList(userAmountHistoryQuery));
-	}
+    
+    /**
+     * 服务对象
+     */
+    @Autowired
+    private UserAmountHistoryService userAmountHistoryService;
+    
+    /**
+     * 用户邀请记录
+     */
+    @GetMapping(value = "/user/userAmountHistory/list")
+    public R queryList(@RequestParam("size") Long size, @RequestParam("offset") Long offset, @RequestParam(value = "type", required = false) Integer type) {
+        if (size < 0 || size > 50) {
+            size = 10L;
+        }
+        
+        if (offset < 0) {
+            offset = 0L;
+        }
+        
+        //租户
+        Integer tenantId = TenantContextHolder.getTenantId();
+        
+        //用户区分
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELECTRICITY  ERROR! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        
+        UserAmountHistoryQuery userAmountHistoryQuery = UserAmountHistoryQuery.builder().offset(offset).size(size).tenantId(tenantId).uid(user.getUid()).type(type).build();
+        return userAmountHistoryService.queryList(userAmountHistoryQuery);
+    }
+    
+    
+    /**
+     * 返现记录
+     */
+    @GetMapping(value = "/user/userAmountHistory/reward/list")
+    public R rewardList(@RequestParam("size") long size, @RequestParam("offset") long offset) {
+        if (size < 0 || size > 50) {
+            size = 10L;
+        }
+        
+        if (offset < 0) {
+            offset = 0L;
+        }
+        
+        UserAmountHistoryQuery userAmountHistoryQuery = UserAmountHistoryQuery.builder().offset(offset).size(size).tenantId(TenantContextHolder.getTenantId())
+                .uid(SecurityUtils.getUid()).build();
+        return R.ok(userAmountHistoryService.selectRewardList(userAmountHistoryQuery));
+    }
 }

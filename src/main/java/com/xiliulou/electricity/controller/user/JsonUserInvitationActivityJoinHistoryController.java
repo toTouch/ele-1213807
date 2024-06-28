@@ -20,35 +20,29 @@ import org.springframework.web.bind.annotation.RestController;
 @Slf4j
 @RestController
 public class JsonUserInvitationActivityJoinHistoryController extends BaseController {
-
+    
     @Autowired
     private InvitationActivityJoinHistoryService invitationActivityJoinHistoryService;
-
+    
     /**
      * 获取用户邀请记录
      */
     @GetMapping("/user/invitation/activity/join/list")
-    public R selectUserInvitationDetail(@RequestParam("size") long size,
-                                        @RequestParam("offset") long offset,
-                                        @RequestParam(value = "activityId", required = false) Long activityId) {
+    public R selectUserInvitationDetail(@RequestParam("size") long size, @RequestParam("offset") long offset,
+            @RequestParam(value = "activityId", required = false) Long activityId) {
         if (size < 0 || size > 50) {
             size = 10L;
         }
-
+        
         if (offset < 0) {
             offset = 0L;
         }
-
-        InvitationActivityJoinHistoryQuery query = InvitationActivityJoinHistoryQuery.builder()
-                .offset(offset)
-                .size(size)
-                .tenantId(TenantContextHolder.getTenantId())
-                .uid(SecurityUtils.getUid())
-                .activityId(activityId)
-                .build();
-
+        
+        InvitationActivityJoinHistoryQuery query = InvitationActivityJoinHistoryQuery.builder().offset(offset).size(size).tenantId(TenantContextHolder.getTenantId())
+                .uid(SecurityUtils.getUid()).activityId(activityId).build();
+        
         return R.ok(invitationActivityJoinHistoryService.selectUserByPage(query));
     }
-
-
+    
+    
 }

@@ -8,6 +8,7 @@ import com.xiliulou.electricity.query.BatteryMemberCardStatusQuery;
 import com.xiliulou.electricity.query.MemberCardAndCarRentalPackageSortParamQuery;
 import com.xiliulou.electricity.vo.BatteryMemberCardSearchVO;
 import com.xiliulou.electricity.vo.BatteryMemberCardVO;
+import com.xiliulou.security.bean.TokenUser;
 import org.apache.commons.lang3.tuple.Triple;
 
 import java.util.List;
@@ -88,6 +89,11 @@ public interface BatteryMemberCardService {
     
     List<BatteryMemberCard> listMemberCardsByIdList(BatteryMemberCardQuery query);
     
+    /**
+     * 批量修改套餐排序参数
+     * @param sortParamQueries 套餐id、排序参数
+     * @return 修改行数
+     */
     Integer batchUpdateSortParam(List<MemberCardAndCarRentalPackageSortParamQuery> sortParamQueries);
     
     List<BatteryMemberCardVO> listMemberCardForSort();

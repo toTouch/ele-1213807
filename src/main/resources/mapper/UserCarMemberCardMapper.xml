@@ -66,7 +66,8 @@
 	    cmco.card_name as cardName,
 	    ui.uid,
 	    ui.tenant_id,
-	    uob.third_id
+	    uob.third_id,
+        cmco.franchisee_id
         FROM
 	    t_user_car_member_card tucmc
 	    LEFT JOIN t_car_member_card_order cmco on cmco.order_id = tucmc.order_id

@@ -1,7 +1,10 @@
 package com.xiliulou.electricity.service.impl;
 
+import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.entity.WechatPaymentCertificate;
 import com.xiliulou.electricity.mapper.WechatPaymentCertificateMapper;
+import com.xiliulou.electricity.service.WechatPayParamsBizService;
 import com.xiliulou.electricity.service.WechatPaymentCertificateService;
 import com.xiliulou.pay.weixinv3.util.WechatCertificateUtils;
 import lombok.extern.slf4j.Slf4j;
@@ -10,11 +13,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.annotation.Resource;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.Objects;
+
+import static com.xiliulou.electricity.constant.CacheConstant.PAYMENT_CERTIFICATE_KEY;
 
 /**
  * @author wangchen
@@ -23,36 +29,30 @@ import java.util.Objects;
 @Slf4j
 public class WechatPaymentCertificateServiceImpl implements WechatPaymentCertificateService {
     
-    @Autowired
+    @Resource
     private WechatPaymentCertificateMapper wechatPaymentCertificateMapper;
     
-    @Override
-    public WechatPaymentCertificate selectByTenantId(Integer tenantId) {
-        return  wechatPaymentCertificateMapper.selectByTenantId(tenantId);
-    }
+    @Autowired
+    private RedisService redisService;
     
-    @Override
-    public int updateByTenantId(WechatPaymentCertificate certificate) {
-        return wechatPaymentCertificateMapper.updateByTenantId(certificate);
-    }
-    
-    @Override
-    public int insert(WechatPaymentCertificate certificate) {
-        return wechatPaymentCertificateMapper.insert(certificate);
-    }
+    @Autowired
+    private WechatPayParamsBizService wechatPayParamsBizService;
     
     @Override
     public void saveOrUpdateWeChatPaymentCertificate(WechatPaymentCertificate certificate) {
-        WechatPaymentCertificate wechatPaymentCertificate = selectByTenantId(certificate.getTenantId());
+        WechatPaymentCertificate wechatPaymentCertificate = queryByTenantIdAndFranchiseeId(certificate.getTenantId(), certificate.getFranchiseeId());
         if (Objects.nonNull(wechatPaymentCertificate)) {
-            wechatPaymentCertificateMapper.updateByTenantId(certificate);
+            certificate.setId(wechatPaymentCertificate.getId());
+            wechatPaymentCertificateMapper.updateByIdAndTenantId(certificate);
+            this.deleteCache(certificate.getTenantId(), certificate.getFranchiseeId());
         } else {
             wechatPaymentCertificateMapper.insert(certificate);
         }
     }
     
+    
     @Override
-    public void handleCertificateFile(MultipartFile file, Integer tenantId) throws Exception {
+    public void handleCertificateFile(MultipartFile file, WechatPaymentCertificate wechatPaymentCertificate) throws Exception {
         InputStream inputStream = null;
         InputStreamReader streamReader = null;
         BufferedReader reader = null;
@@ -70,17 +70,15 @@ public class WechatPaymentCertificateServiceImpl implements WechatPaymentCertifi
             //解析文件内容
             String privateKey = WechatCertificateUtils.analysisCertificateToPrivateKey(stringBuilder.toString());
             if (StringUtils.isEmpty(privateKey)) {
-                log.error("certificate content is empty, tenantId={}, fileName={}", tenantId, fileName);
+                log.error("certificate content is empty, tenantId={}, fileName={}", wechatPaymentCertificate.getTenantId(), fileName);
                 throw new Exception("证书内容为空!");
             }
+            wechatPaymentCertificate.setCertificateContent(privateKey);
+            wechatPaymentCertificate.setUploadTime(System.currentTimeMillis());
             //存储微信支付证书
-            WechatPaymentCertificate wechatPaymentCertificate = new WechatPaymentCertificate()
-                    .setTenantId(tenantId)
-                    .setCertificateContent(privateKey)
-                    .setUploadTime(System.currentTimeMillis());
             saveOrUpdateWeChatPaymentCertificate(wechatPaymentCertificate);
         } catch (Exception e) {
-            log.error("certificate get error, tenantId={}", tenantId);
+            log.error("certificate get error:", e);
             throw new Exception("证书内容获取失败，请重试！");
         } finally {
             try {
@@ -99,5 +97,30 @@ public class WechatPaymentCertificateServiceImpl implements WechatPaymentCertifi
         }
     }
     
+    @Override
+    public WechatPaymentCertificate queryByTenantIdAndFranchiseeId(Integer tenantId, Long franchiseeId) {
+        String cache = redisService.get(buildCacheKey(tenantId, franchiseeId));
+        WechatPaymentCertificate wechatPaymentCertificate;
+        if (StringUtils.isBlank(cache)) {
+            wechatPaymentCertificate = wechatPaymentCertificateMapper.selectByTenantIdAndFranchiseeId(tenantId, franchiseeId);
+            if (Objects.nonNull(wechatPaymentCertificate)) {
+                redisService.set(buildCacheKey(tenantId, franchiseeId), JsonUtil.toJson(wechatPaymentCertificate));
+            }
+        } else {
+            wechatPaymentCertificate = JsonUtil.fromJson(cache, WechatPaymentCertificate.class);
+        }
+        return wechatPaymentCertificate;
+    }
+    
+    @Override
+    public void deleteCache(Integer tenantId, Long franchiseeId) {
+        redisService.delete(buildCacheKey(tenantId, franchiseeId));
+        wechatPayParamsBizService.refreshMerchantInfo(tenantId, franchiseeId);
+    }
+    
+    
+    private String buildCacheKey(Integer tenantId, Long franchiseeId) {
+        return String.format(PAYMENT_CERTIFICATE_KEY, tenantId, franchiseeId);
+    }
     
 }

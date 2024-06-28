@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.model.car.opt;
 
+import com.xiliulou.electricity.enums.YesNoEnum;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -34,5 +35,16 @@ public class CarRentalPackageDepositRefundOptModel implements Serializable {
      * 实际退款金额
      */
     private BigDecimal realAmount;
+    
+    /**
+     * 强制线下退款
+     * <pre>
+     *     0: 是
+     *     1: 否
+     * </pre>
+     *
+     * @see YesNoEnum#getCode()
+     */
+    private Integer compelOffLine;
 
 }

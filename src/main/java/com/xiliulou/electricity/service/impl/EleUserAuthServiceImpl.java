@@ -11,7 +11,6 @@ import com.xiliulou.electricity.entity.AuthenticationAuditMessageNotify;
 import com.xiliulou.electricity.entity.EleAuthEntry;
 import com.xiliulou.electricity.entity.EleUserAuth;
 import com.xiliulou.electricity.entity.ElectricityConfig;
-import com.xiliulou.electricity.entity.FranchiseeUserInfo;
 import com.xiliulou.electricity.entity.MaintenanceUserNotifyConfig;
 import com.xiliulou.electricity.entity.MqNotifyCommon;
 import com.xiliulou.electricity.entity.UserAuthMessage;
@@ -354,86 +353,7 @@ public class EleUserAuthServiceImpl implements EleUserAuthService {
         log.info("collect is -->{}", collect);
         return R.ok(collect);
     }
-    
-    @Override
-    @Deprecated
-    public R getEleUserServiceStatus() {
 
-/*        //用户
-        TokenUser user = SecurityUtils.getUserInfo();
-        if (Objects.isNull(user)) {
-            log.error("payDeposit  ERROR! not found user ");
-            return R.fail("ELECTRICITY.0001", "未找到用户");
-        }
-
-        UserInfo userInfo = userInfoService.queryByUidFromCache(user.getUid());
-        if (Objects.isNull(userInfo)) {
-            log.error("ELECTRICITY  ERROR! not found userInfo! userId:{}", user.getUid());
-            return R.fail("ELECTRICITY.0001", "未找到用户");
-        }
-        Integer serviceStatus = userInfo.getServiceStatus();
-
-        //是否缴纳押金，是否绑定电池
-        FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
-
-        //未找到用户
-        if (Objects.isNull(franchiseeUserInfo)) {
-            log.error("payDeposit  ERROR! not found user! userId:{}", user.getUid());
-            return R.fail("ELECTRICITY.0001", "未找到用户");
-        }
-
-        Long now = System.currentTimeMillis();
-        if (!Objects.equals(franchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_INIT)) {
-            serviceStatus = franchiseeUserInfo.getServiceStatus();
-        }
-
-//        //用户是否开通月卡
-//        if (Objects.isNull(franchiseeUserInfo.getMemberCardExpireTime())
-//                || Objects.isNull(franchiseeUserInfo.getRemainingNumber())) {
-//            log.error("order  ERROR! not found memberCard ! uid:{} ", user.getUid());
-//            serviceStatus = -1;
-//        } else {
-//            if (franchiseeUserInfo.getMemberCardExpireTime() < now || franchiseeUserInfo.getRemainingNumber() == 0) {
-//                log.error("order  ERROR! memberCard  is Expire ! uid:{} ", user.getUid());
-//                serviceStatus = -1;
-//            }
-//        }
-
-        return R.ok(serviceStatus);*/
-        
-        //用户
-        TokenUser user = SecurityUtils.getUserInfo();
-        if (Objects.isNull(user)) {
-            log.error("payDeposit  ERROR! not found user");
-            return R.fail("ELECTRICITY.0001", "未找到用户");
-        }
-        
-        UserInfo userInfo = userInfoService.queryByUidFromCache(user.getUid());
-        if (Objects.isNull(userInfo)) {
-            log.warn("ELECTRICITY  WARN! not found userInfo! userId={}", user.getUid());
-            return R.fail("ELECTRICITY.0001", "未找到用户");
-        }
-        
-        Integer serviceStatus = null;
-        //兼容UserInfo serviceStatus
-        if (Objects.equals(userInfo.getAuthStatus(), UserInfo.AUTH_STATUS_REVIEW_PASSED)) {
-            serviceStatus = UserInfo.STATUS_IS_AUTH;
-        } else {
-            serviceStatus = UserInfo.STATUS_INIT;
-        }
-        
-        //FranchiseeUserInfo serviceStatus
-        if (Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
-            serviceStatus = FranchiseeUserInfo.STATUS_IS_DEPOSIT;
-        }
-        
-        if (Objects.equals(userInfo.getBatteryRentStatus(), UserInfo.BATTERY_RENT_STATUS_YES)) {
-            serviceStatus = FranchiseeUserInfo.STATUS_IS_BATTERY;
-        }
-        
-        return R.ok(serviceStatus);
-    }
-    
     @Override
     public void updateByUid(Long uid, Integer authStatus) {
         eleUserAuthMapper.updateByUid(uid, authStatus, System.currentTimeMillis());

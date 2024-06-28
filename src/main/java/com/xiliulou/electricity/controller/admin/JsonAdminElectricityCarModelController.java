@@ -73,10 +73,6 @@ public class JsonAdminElectricityCarModelController {
     //新增换电柜车辆型号
     @PostMapping(value = "/admin/electricityCarModel")
     public R save(@RequestBody @Validated(value = CreateGroup.class) ElectricityCarModelQuery electricityCarModelQuery) {
-       /* if (verifyParams(electricityCarModelQuery)) {
-            return R.fail("ELECTRICITY.0007", "不合法的参数");
-        }*/
-
         return electricityCarModelService.save(electricityCarModelQuery);
     }
 
@@ -84,7 +80,6 @@ public class JsonAdminElectricityCarModelController {
     @PutMapping(value = "/admin/electricityCarModel")
     @Log(title = "修改换电柜车辆型号")
     public R update(@RequestBody @Validated(value = UpdateGroup.class) ElectricityCarModelQuery electricityCarModelQuery) {
-
         return electricityCarModelService.edit(electricityCarModelQuery);
     }
 
@@ -206,33 +201,6 @@ public class JsonAdminElectricityCarModelController {
 
         return electricityCarModelService.selectByStoreId(electricityCarModelQuery);
     }
-
-    /**
-     * 校验金额不能为0
-     *
-     * @param 
-     * @return
-     */
-    /*private boolean verifyParams(ElectricityCarModelQuery electricityCarModelQuery) {
-        //校验押金
-        if (NumberConstant.ZERO_BD.compareTo(electricityCarModelQuery.getCarDeposit()) == NumberConstant.ONE) {
-            return Boolean.TRUE;
-        }
-    
-        //校验套餐
-        if (StringUtils.isNotBlank(electricityCarModelQuery.getRentType())) {
-            List<RentCarTypeDTO> rentCarTypes = JsonUtil.fromJsonArray(electricityCarModelQuery.getRentType(), RentCarTypeDTO.class);
-            if (!CollectionUtils.isEmpty(rentCarTypes)) {
-                for (RentCarTypeDTO rentCarType : rentCarTypes) {
-                    if (BigDecimal.valueOf(0.01).compareTo(BigDecimal.valueOf(rentCarType.getPrice())) == NumberConstant.ONE) {
-                        return Boolean.TRUE;
-                    }
-                }
-            }
-        }
-
-        return Boolean.FALSE;
-    }*/
     
     @GetMapping(value = "/admin/electricityCarModel/pull")
     public R queryPull(@RequestParam("size") Long size, @RequestParam("offset") Long offset,

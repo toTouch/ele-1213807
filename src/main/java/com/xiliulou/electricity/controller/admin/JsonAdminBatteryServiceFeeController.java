@@ -230,8 +230,5 @@ public class JsonAdminBatteryServiceFeeController {
                 .build();
 
         return eleBatteryServiceFeeOrderService.queryCount(batteryServiceFeeQuery);
-
-
     }
-
 }

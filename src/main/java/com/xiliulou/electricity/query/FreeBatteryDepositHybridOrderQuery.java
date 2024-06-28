@@ -15,37 +15,37 @@ import java.util.Set;
 @Data
 public class FreeBatteryDepositHybridOrderQuery {
     //==============车辆================
-
-
+    
+    
     private Long storeId;
-
-
+    
+    
     private Long carModelId;
-
-
+    
+    
     private Integer rentTime;
-
-
+    
+    
     private String rentType;
-
+    
     //==============电池================
-
+    
     @NotNull(message = "加盟商不能为空!")
     private Long franchiseeId;
-
+    
     @NotNull(message = "电池套餐不能为空!")
     private Integer memberCardId;
-
+    
     private Integer model;
-
+    
     private Integer insuranceId;
-
+    
     private Integer userCouponId;
-
+    
     private String productKey;
-
+    
     private String deviceName;
-
-    //优惠券
+    
+    // 优惠券
     private List<Integer> userCouponIds;
 }

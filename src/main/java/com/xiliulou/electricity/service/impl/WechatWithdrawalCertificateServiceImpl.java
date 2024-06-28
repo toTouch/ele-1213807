@@ -1,7 +1,9 @@
 package com.xiliulou.electricity.service.impl;
 
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.entity.WechatWithdrawalCertificate;
 import com.xiliulou.electricity.mapper.WechatWithdrawalCertificateMapper;
+import com.xiliulou.electricity.query.WechatWithdrawalCertificateQueryModel;
 import com.xiliulou.electricity.service.WechatWithdrawalCertificateService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
@@ -11,9 +13,12 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -26,14 +31,16 @@ public class WechatWithdrawalCertificateServiceImpl implements WechatWithdrawalC
     
     @Autowired
     private WechatWithdrawalCertificateMapper wechatWithdrawalCertificateMapper;
+ 
     
     @Override
-    public WechatWithdrawalCertificate selectByTenantId(Integer tenantId) {
-        return wechatWithdrawalCertificateMapper.selectByTenantId(tenantId);
+    public WechatWithdrawalCertificate queryByTenantIdAndFranchiseeId(Integer tenantId, Long franchiseeId) {
+        
+        return wechatWithdrawalCertificateMapper.selectByTenantIdAndFranchiseeId(tenantId, franchiseeId);
     }
     
     @Override
-    public void handleCertificateFile(MultipartFile file, Integer tenantId) {
+    public void handleCertificateFile(MultipartFile file, WechatWithdrawalCertificate certificate) {
         InputStream inputStream = null;
         
         try {
@@ -41,10 +48,8 @@ public class WechatWithdrawalCertificateServiceImpl implements WechatWithdrawalC
             byte[] data = new byte[inputStream.available()];
             int read = inputStream.read(data, 0, inputStream.available());
             if (read > 0) {
-                WechatWithdrawalCertificate certificate = new WechatWithdrawalCertificate()
-                        .setCertificateValue(data)
-                        .setTenantId(tenantId)
-                        .setUploadTime(System.currentTimeMillis());
+                certificate.setCertificateValue(data);
+                certificate.setUploadTime(System.currentTimeMillis());
                 saveOrUpdateWechatWithdrawalCertificate(certificate);
             }
         } catch (IOException e) {
@@ -62,25 +67,23 @@ public class WechatWithdrawalCertificateServiceImpl implements WechatWithdrawalC
     
     @Override
     public void saveOrUpdateWechatWithdrawalCertificate(WechatWithdrawalCertificate certificate) {
-        WechatWithdrawalCertificate wechatWithdrawalCertificate = wechatWithdrawalCertificateMapper.selectByTenantId(certificate.getTenantId());
+        WechatWithdrawalCertificate wechatWithdrawalCertificate = wechatWithdrawalCertificateMapper
+                .selectByTenantIdAndFranchiseeId(certificate.getTenantId(), certificate.getFranchiseeId());
         if (Objects.nonNull(wechatWithdrawalCertificate)) {
-            wechatWithdrawalCertificateMapper.updateByTenantId(certificate);
+            certificate.setId(wechatWithdrawalCertificate.getId());
+            wechatWithdrawalCertificateMapper.updateByIdAndTenantId(certificate);
         } else {
             wechatWithdrawalCertificateMapper.insert(certificate);
         }
     }
     
+    
+    @Slave
     @Override
-    public Map<Integer, byte[]> listCertificateInTenantIds(List<Integer> tenantIds) {
-        if (CollectionUtils.isEmpty(tenantIds)) {
-            return null;
-        }
-        List<WechatWithdrawalCertificate> wechatWithdrawalCertificates = wechatWithdrawalCertificateMapper
-                .listCertificateInTenantIds(tenantIds);
-        if (CollectionUtils.isEmpty(wechatWithdrawalCertificates)) {
-            return null;
-        }
-        return wechatWithdrawalCertificates.stream().collect(Collectors
-                .toMap(WechatWithdrawalCertificate::getTenantId, WechatWithdrawalCertificate::getCertificateValue));
+    public List<WechatWithdrawalCertificate> listCertificate(List<WechatWithdrawalCertificateQueryModel> reqs) {
+        
+        List<WechatWithdrawalCertificate> certificates = wechatWithdrawalCertificateMapper.selectListByTenantIdAndFranchiseeId(reqs);
+        
+        return Optional.ofNullable(certificates).orElse(Collections.emptyList());
     }
 }
