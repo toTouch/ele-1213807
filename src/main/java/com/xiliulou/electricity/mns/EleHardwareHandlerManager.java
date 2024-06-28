@@ -148,9 +148,8 @@ public class EleHardwareHandlerManager extends HardwareHandlerManager {
             }
 
 //            feishuSendMsg(electricityCabinet, receiverMessage.getStatus(), receiverMessage.getTime());
-
-            //TODO 发送MQ通知
-            maintenanceUserNotifyConfigService.sendDeviceNotifyMq(electricityCabinet, receiverMessage.getStatus(), receiverMessage.getTime());
+            
+            maintenanceUserNotifyConfigService.sendDeviceNotify(electricityCabinet, receiverMessage.getStatus(), receiverMessage.getTime());
         });
 
     }

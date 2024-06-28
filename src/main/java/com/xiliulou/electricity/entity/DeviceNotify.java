@@ -7,7 +7,7 @@ import lombok.Data;
  * @date : 2022/4/12 10:56
  */
 @Data
-public class MqDeviceNotify {
+public class DeviceNotify {
     /**
      * 产品号
      */

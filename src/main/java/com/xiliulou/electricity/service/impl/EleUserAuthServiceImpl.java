@@ -5,7 +5,6 @@ import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
-import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.AuthenticationAuditMessageNotify;
@@ -19,15 +18,13 @@ import com.xiliulou.electricity.entity.UserAuthMessage;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.enums.notify.SendMessageTypeEnum;
 import com.xiliulou.electricity.mapper.EleUserAuthMapper;
-import com.xiliulou.electricity.mq.constant.MqProducerConstant;
-import com.xiliulou.electricity.request.notify.SendNotifyMessageRequest;
+import com.xiliulou.electricity.mq.producer.MessageSendProducer;
 import com.xiliulou.electricity.service.EleAuthEntryService;
 import com.xiliulou.electricity.service.EleUserAuthService;
 import com.xiliulou.electricity.service.ElectricityConfigService;
 import com.xiliulou.electricity.service.MaintenanceUserNotifyConfigService;
 import com.xiliulou.electricity.service.UserAuthMessageService;
 import com.xiliulou.electricity.service.UserInfoService;
-import com.xiliulou.electricity.service.notify.NotifyUserInfoService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.UserAuthMessageVO;
@@ -85,7 +82,7 @@ public class EleUserAuthServiceImpl implements EleUserAuthService {
     RocketMqService rocketMqService;
     
     @Autowired
-    NotifyUserInfoService notifyUserInfoService;
+    MessageSendProducer messageSendProducer;
     
     
     @Autowired
@@ -260,17 +257,17 @@ public class EleUserAuthServiceImpl implements EleUserAuthService {
     }
     
     private void sendAuthenticationAuditMessage(UserInfo userInfo) {
-        List<SendNotifyMessageRequest<AuthenticationAuditMessageNotify>> messageNotifyList = this.buildAuthenticationAuditMessageNotify(userInfo);
+        List<MqNotifyCommon<AuthenticationAuditMessageNotify>> messageNotifyList = this.buildAuthenticationAuditMessageNotify(userInfo);
         if (CollectionUtils.isEmpty(messageNotifyList)) {
             return;
         }
         
         messageNotifyList.forEach(i -> {
-            notifyUserInfoService.asyncSendMessage(i);
+            messageSendProducer.sendAsyncMsg(i, "", "", 0);
         });
     }
     
-    private List<SendNotifyMessageRequest<AuthenticationAuditMessageNotify>> buildAuthenticationAuditMessageNotify(UserInfo userInfo) {
+    private List<MqNotifyCommon<AuthenticationAuditMessageNotify>> buildAuthenticationAuditMessageNotify(UserInfo userInfo) {
         MaintenanceUserNotifyConfig notifyConfig = maintenanceUserNotifyConfigService.queryByTenantIdFromCache(userInfo.getTenantId());
         if (Objects.isNull(notifyConfig) || StringUtils.isBlank(notifyConfig.getPhones())) {
             log.warn("ELE WARN! not found maintenanceUserNotifyConfig,tenantId={},uid={}", userInfo.getTenantId(), userInfo.getUid());
@@ -294,9 +291,9 @@ public class EleUserAuthServiceImpl implements EleUserAuthService {
             messageNotify.setUserName(userInfo.getName());
             messageNotify.setAuthTime(DateUtil.format(LocalDateTime.now(), DatePattern.NORM_DATETIME_PATTERN));
             
-            SendNotifyMessageRequest<AuthenticationAuditMessageNotify> authMessageNotifyCommon = new SendNotifyMessageRequest<>();
+            MqNotifyCommon<AuthenticationAuditMessageNotify> authMessageNotifyCommon = new MqNotifyCommon<>();
             authMessageNotifyCommon.setTime(System.currentTimeMillis());
-            authMessageNotifyCommon.setType(SendMessageTypeEnum.AUTHENTICATION_AUDIT_NOTIFY);
+            authMessageNotifyCommon.setType(SendMessageTypeEnum.AUTHENTICATION_AUDIT_NOTIFY.getType());
             authMessageNotifyCommon.setPhone(item);
             authMessageNotifyCommon.setData(messageNotify);
             authMessageNotifyCommon.setTenantId(userInfo.getTenantId());

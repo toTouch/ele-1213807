@@ -7,12 +7,12 @@ import com.xiliulou.electricity.constant.ElectricityIotConstant;
 import com.xiliulou.electricity.entity.EleHighTemperatureAlarmNotify;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.MaintenanceUserNotifyConfig;
+import com.xiliulou.electricity.entity.MqNotifyCommon;
 import com.xiliulou.electricity.enums.notify.SendMessageTypeEnum;
 import com.xiliulou.electricity.handler.iot.AbstractElectricityIotHandler;
-import com.xiliulou.electricity.request.notify.SendNotifyMessageRequest;
+import com.xiliulou.electricity.mq.producer.MessageSendProducer;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
 import com.xiliulou.electricity.service.MaintenanceUserNotifyConfigService;
-import com.xiliulou.electricity.service.notify.NotifyUserInfoService;
 import com.xiliulou.iot.entity.ReceiverMessage;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
@@ -37,7 +37,7 @@ import java.util.stream.Collectors;
 public class NormalHighTemperatureAlarmHandler extends AbstractElectricityIotHandler {
     
     @Autowired
-    NotifyUserInfoService notifyUserInfoService;
+    MessageSendProducer messageSendProducer;
     
     @Autowired
     ElectricityCabinetService electricityCabinetService;
@@ -55,15 +55,15 @@ public class NormalHighTemperatureAlarmHandler extends AbstractElectricityIotHan
             return;
         }
         
-        List<SendNotifyMessageRequest<EleHighTemperatureAlarmNotify>> messageNotifyList = buildHighTemperatureAlarmNotify(electricityCabinet, highTemperatureAlarmVO);
+        List<MqNotifyCommon<EleHighTemperatureAlarmNotify>> messageNotifyList = buildHighTemperatureAlarmNotify(electricityCabinet, highTemperatureAlarmVO);
         if (CollectionUtils.isEmpty(messageNotifyList)) {
             return;
         }
         
-        messageNotifyList.forEach(i -> notifyUserInfoService.asyncSendMessage(i));
+        messageNotifyList.forEach(i -> messageSendProducer.sendAsyncMsg(i, "", "", 0));
     }
     
-    private List<SendNotifyMessageRequest<EleHighTemperatureAlarmNotify>> buildHighTemperatureAlarmNotify(ElectricityCabinet electricityCabinet,
+    private List<MqNotifyCommon<EleHighTemperatureAlarmNotify>> buildHighTemperatureAlarmNotify(ElectricityCabinet electricityCabinet,
             HighTemperatureAlarmVO highTemperatureAlarmVO) {
         MaintenanceUserNotifyConfig notifyConfig = maintenanceUserNotifyConfigService.queryByTenantIdFromCache(electricityCabinet.getTenantId());
         if (Objects.isNull(notifyConfig) || StringUtils.isBlank(notifyConfig.getPhones())) {
@@ -89,9 +89,9 @@ public class NormalHighTemperatureAlarmHandler extends AbstractElectricityIotHan
             abnormalMessageNotify.setDescription("柜机高温告警");
             abnormalMessageNotify.setReportTime(DateUtil.format(new Date(), DatePattern.NORM_DATETIME_FORMAT));
             
-            SendNotifyMessageRequest<EleHighTemperatureAlarmNotify> abnormalMessageNotifyCommon = new SendNotifyMessageRequest<>();
+            MqNotifyCommon<EleHighTemperatureAlarmNotify> abnormalMessageNotifyCommon = new MqNotifyCommon<>();
             abnormalMessageNotifyCommon.setTime(System.currentTimeMillis());
-            abnormalMessageNotifyCommon.setType(SendMessageTypeEnum.HIGH_WARNING_NOTIFY);
+            abnormalMessageNotifyCommon.setType(SendMessageTypeEnum.HIGH_WARNING_NOTIFY.getType());
             abnormalMessageNotifyCommon.setPhone(item);
             abnormalMessageNotifyCommon.setData(abnormalMessageNotify);
             abnormalMessageNotifyCommon.setTenantId(electricityCabinet.getTenantId());

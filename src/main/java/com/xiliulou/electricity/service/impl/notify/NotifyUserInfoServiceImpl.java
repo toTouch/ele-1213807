@@ -8,44 +8,31 @@ package com.xiliulou.electricity.service.impl.notify;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.http.resttemplate.service.RestTemplateService;
 import com.xiliulou.core.json.JsonUtil;
-import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.config.WechatConfig;
 import com.xiliulou.electricity.config.message.MessageCenterConfig;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.converter.notify.NotifyUserInfoConverter;
-import com.xiliulou.electricity.converter.notify.SendWechatNotifyDataConverter;
 import com.xiliulou.electricity.converter.notify.SendWechatNotifyDataConverterFactory;
 import com.xiliulou.electricity.dto.WxAuth2AccessTokenResult;
-import com.xiliulou.electricity.dto.message.SendDTO;
-import com.xiliulou.electricity.dto.message.SendReceiverDTO;
 import com.xiliulou.electricity.entity.notify.NotifyUserInfo;
-import com.xiliulou.electricity.enums.notify.SendMessageTypeEnum;
 import com.xiliulou.electricity.mapper.notify.NotifyUserInfoMapper;
 import com.xiliulou.electricity.request.notify.NotifyUserInfoOptRequest;
-import com.xiliulou.electricity.request.notify.SendNotifyMessageRequest;
 import com.xiliulou.electricity.service.notify.NotifyUserInfoService;
-import com.xiliulou.electricity.ttl.TtlTraceIdSupport;
-import com.xiliulou.electricity.ttl.TtlXllThreadPoolExecutorServiceWrapper;
-import com.xiliulou.electricity.ttl.TtlXllThreadPoolExecutorsSupport;
 import com.xiliulou.electricity.vo.notify.NotifyUserInfoVO;
 import com.xiliulou.electricity.vo.notify.NotifyUserInfoWechatResultVO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
-import java.util.UUID;
 import java.util.function.Function;
 
 import static com.xiliulou.electricity.constant.CacheConstant.CACHE_NOTIFY_USER_INFO_LOCK;
@@ -83,76 +70,6 @@ public class NotifyUserInfoServiceImpl implements NotifyUserInfoService {
     @Resource
     private SendWechatNotifyDataConverterFactory sendWechatNotifyDataConverterFactory;
     
-    
-    private final TtlXllThreadPoolExecutorServiceWrapper serviceWrapper = TtlXllThreadPoolExecutorsSupport
-            .get(XllThreadPoolExecutors.newFixedThreadPool("MESSAGE_NOTIFY", 20, "message-notify-executor"));
-    
-    
-    /**
-     * 微信公众号渠道
-     */
-    private static final Integer WECHAT_SEND_CHANNEL = 3;
-    
-    @Override
-    public <T> boolean asyncSendMessage(SendNotifyMessageRequest<T> request) {
-        boolean traceIdExist = StringUtils.isBlank(TtlTraceIdSupport.get());
-        try {
-            if (!traceIdExist) {
-                TtlTraceIdSupport.set();
-            }
-            serviceWrapper.execute(() -> sendMessage(request));
-        } finally {
-            if (!traceIdExist) {
-                TtlTraceIdSupport.clear();
-            }
-        }
-        return true;
-    }
-    
-    @Override
-    public <T> boolean sendMessage(SendNotifyMessageRequest<T> request) {
-        
-        String phone = request.getPhone();
-        SendMessageTypeEnum type = request.getType();
-        if (StringUtils.isBlank(phone)) {
-            log.warn("NotifyUserInfoServiceImpl.sendMessage phone isBlank");
-            return false;
-        }
-        NotifyUserInfo notifyUserInfo = queryFromCacheByPhone(phone);
-        if (Objects.isNull(notifyUserInfo)) {
-            log.warn("NotifyUserInfoServiceImpl.sendMessage phone={} not exist ", phone);
-            return false;
-        }
-        
-        String messageId = UUID.randomUUID().toString().replace("-", "");
-        
-        SendWechatNotifyDataConverter<T> converterByType = sendWechatNotifyDataConverterFactory.getConverterByType(type.getType());
-        
-        Map<String, String> map = converterByType.converterParamMap(request.getData());
-        
-        SendDTO sendDTO = new SendDTO();
-        sendDTO.setMessageTemplateCode(converterByType.converterTemplateCode());
-        sendDTO.setTenantId(request.getTenantId());
-        sendDTO.setMessageId(messageId);
-        sendDTO.setParamMap(map);
-        SendReceiverDTO sendReceiverDTO = new SendReceiverDTO();
-        sendReceiverDTO.setSendChannel(WECHAT_SEND_CHANNEL);
-        sendReceiverDTO.setReceiver(Collections.singleton(notifyUserInfo.getOpenId()));
-        sendDTO.setSendReceiverList(Collections.singletonList(sendReceiverDTO));
-        
-        ResponseEntity<String> responseEntity = restTemplateService.postJsonForResponseEntity(messageCenterConfig.getUrl(), JsonUtil.toJson(sendDTO), null);
-        if (Objects.isNull(responseEntity)) {
-            log.warn("send warn to message center warn! failure warn send note result is null, messageId={}", messageId);
-            return false;
-        }
-        
-        if (!responseEntity.getStatusCode().is2xxSuccessful()) {
-            log.warn("send warn to message center warn! failure warn send note error, sessionId={}, msg = {}", messageId, responseEntity.getBody());
-            return false;
-        }
-        
-        return true;
-    }
     
     @Override
     public R queryWechatOpenIdByCode(String code) {
@@ -253,7 +170,8 @@ public class NotifyUserInfoServiceImpl implements NotifyUserInfoService {
      * @author caobotao.cbt
      * @date 2024/6/26 20:49
      */
-    private NotifyUserInfo queryFromCacheByPhone(String phone) {
+    @Override
+    public NotifyUserInfo queryFromCacheByPhone(String phone) {
         return queryFromCache(phone, p -> String.format(CacheConstant.CACHE_NOTIFY_USER_INFO_PHONE, p), p -> notifyUserInfoMapper.selectByPhone(p));
     }
     

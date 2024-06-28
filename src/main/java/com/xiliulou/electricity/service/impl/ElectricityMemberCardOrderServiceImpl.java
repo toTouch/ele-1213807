@@ -77,6 +77,7 @@ import com.xiliulou.electricity.enums.PackageTypeEnum;
 import com.xiliulou.electricity.enums.enterprise.RenewalStatusEnum;
 import com.xiliulou.electricity.enums.enterprise.UserCostTypeEnum;
 import com.xiliulou.electricity.enums.notify.SendMessageTypeEnum;
+import com.xiliulou.electricity.event.publish.MessageSendPublish;
 import com.xiliulou.electricity.event.publish.OverdueUserRemarkPublish;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.manager.CalcRentCarPriceFactory;
@@ -85,6 +86,7 @@ import com.xiliulou.electricity.mapper.enterprise.EnterpriseChannelUserExitMappe
 import com.xiliulou.electricity.mq.constant.MqProducerConstant;
 import com.xiliulou.electricity.mq.producer.ActivityProducer;
 import com.xiliulou.electricity.mq.producer.DivisionAccountProducer;
+import com.xiliulou.electricity.mq.producer.MessageSendProducer;
 import com.xiliulou.electricity.query.BatteryMemberCardExpiringSoonQuery;
 import com.xiliulou.electricity.query.CarMemberCardExpiringSoonQuery;
 import com.xiliulou.electricity.query.ElectricityMemberCardOrderQuery;
@@ -95,7 +97,6 @@ import com.xiliulou.electricity.query.UserBatteryDepositAndMembercardQuery;
 import com.xiliulou.electricity.query.UserBatteryMembercardQuery;
 import com.xiliulou.electricity.query.userinfo.userInfoGroup.UserInfoGroupDetailQuery;
 import com.xiliulou.electricity.queryModel.enterprise.EnterpriseChannelUserExitQueryModel;
-import com.xiliulou.electricity.request.notify.SendNotifyMessageRequest;
 import com.xiliulou.electricity.service.ActivityService;
 import com.xiliulou.electricity.service.BatteryMemberCardOrderCouponService;
 import com.xiliulou.electricity.service.BatteryMemberCardService;
@@ -313,7 +314,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
     RocketMqService rocketMqService;
     
     @Autowired
-    NotifyUserInfoService notifyUserInfoService;
+    MessageSendProducer messageSendProducer;
     
     @Autowired
     UserBatteryService userBatteryService;
@@ -2582,19 +2583,19 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
     
     //停卡审核通知
     private void sendDisableMemberCardMessage(UserInfo userInfo) {
-        List<SendNotifyMessageRequest<AuthenticationAuditMessageNotify>> messageNotifyList = this.buildDisableMemberCardMessageNotify(userInfo);
+        List<MqNotifyCommon<AuthenticationAuditMessageNotify>> messageNotifyList = this.buildDisableMemberCardMessageNotify(userInfo);
         if (CollectionUtils.isEmpty(messageNotifyList)) {
             return;
         }
         
         messageNotifyList.forEach(i -> {
-            notifyUserInfoService.asyncSendMessage(i);
+            messageSendProducer.sendAsyncMsg(i, "", "", 0);
             log.info("ELE INFO! user authentication audit notify,msg={},uid={}", JsonUtil.toJson(i), userInfo.getUid());
         });
     }
     
     
-    private List<SendNotifyMessageRequest<AuthenticationAuditMessageNotify>> buildDisableMemberCardMessageNotify(UserInfo userInfo) {
+    private List<MqNotifyCommon<AuthenticationAuditMessageNotify>> buildDisableMemberCardMessageNotify(UserInfo userInfo) {
         MaintenanceUserNotifyConfig notifyConfig = maintenanceUserNotifyConfigService.queryByTenantIdFromCache(userInfo.getTenantId());
         if (Objects.isNull(notifyConfig) || StringUtils.isBlank(notifyConfig.getPhones())) {
             log.warn("ELE WARN! not found maintenanceUserNotifyConfig,tenantId={},uid={}", userInfo.getTenantId(), userInfo.getUid());
@@ -2618,9 +2619,9 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             messageNotify.setUserName(userInfo.getName());
             messageNotify.setAuthTime(DateUtil.format(LocalDateTime.now(), DatePattern.NORM_DATETIME_PATTERN));
             
-            SendNotifyMessageRequest<AuthenticationAuditMessageNotify> authMessageNotifyCommon = new SendNotifyMessageRequest<>();
+            MqNotifyCommon<AuthenticationAuditMessageNotify> authMessageNotifyCommon = new MqNotifyCommon<>();
             authMessageNotifyCommon.setTime(System.currentTimeMillis());
-            authMessageNotifyCommon.setType(SendMessageTypeEnum.RENTAL_PACKAGE_FREEZE_AUDIT_NOTIFY);
+            authMessageNotifyCommon.setType(SendMessageTypeEnum.RENTAL_PACKAGE_FREEZE_AUDIT_NOTIFY.getType());
             authMessageNotifyCommon.setPhone(item);
             authMessageNotifyCommon.setData(messageNotify);
             authMessageNotifyCommon.setTenantId(userInfo.getTenantId());

@@ -41,7 +41,9 @@ public interface MqProducerConstant {
     
     /**
      * 运维通知 topic
+     * @see MqProducerConstant#MESSAGE_SEND_SAAS_TOPIC
      */
+    @Deprecated
     String TOPIC_MAINTENANCE_NOTIFY = "MAINTENANCE_NOTIFY";
     
     /**
@@ -93,4 +95,10 @@ public interface MqProducerConstant {
      * 电池电压电流变化
      */
     String BATTERY_CHARGE_ATTR_CHANGE_TOPIC = "battery_charge_attr_change_topic";
+    
+    
+    /**
+     * 运维通知 topic
+     */
+    String MESSAGE_SEND_SAAS_TOPIC = "message_send_saas_topic";
 }

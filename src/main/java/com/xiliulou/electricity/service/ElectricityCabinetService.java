@@ -8,6 +8,7 @@ import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.ElectricityCabinetBox;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.Message;
+import com.xiliulou.electricity.entity.MqNotifyCommon;
 import com.xiliulou.electricity.query.BatteryReportQuery;
 import com.xiliulou.electricity.query.EleOuterCommandQuery;
 import com.xiliulou.electricity.query.ElectricityCabinetAddAndUpdate;
@@ -20,7 +21,6 @@ import com.xiliulou.electricity.query.HomepageBatteryFrequencyQuery;
 import com.xiliulou.electricity.query.HomepageElectricityExchangeFrequencyQuery;
 import com.xiliulou.electricity.query.api.ApiRequestQuery;
 import com.xiliulou.electricity.request.asset.TransferCabinetModelRequest;
-import com.xiliulou.electricity.request.notify.SendNotifyMessageRequest;
 import com.xiliulou.electricity.vo.CabinetBatteryVO;
 import com.xiliulou.electricity.vo.EleCabinetDataAnalyseVO;
 import com.xiliulou.electricity.vo.ElectricityCabinetCountVO;
@@ -208,7 +208,7 @@ public interface ElectricityCabinetService {
     
     void sendFullBatteryMessage(List<Message> messageList);
     
-    List<SendNotifyMessageRequest<ElectricityAbnormalMessageNotify>> buildAbnormalMessageNotify(ElectricityCabinet electricityCabinet);
+    List<MqNotifyCommon<ElectricityAbnormalMessageNotify>> buildAbnormalMessageNotify(ElectricityCabinet electricityCabinet);
     
     List<Integer> selectEidByStoreId(Long storeId);
     

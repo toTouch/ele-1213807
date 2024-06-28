@@ -14,6 +14,7 @@ import lombok.Getter;
  */
 @Getter
 public enum SendMessageTypeEnum {
+    HARDWARE_INFO_NOTIFY(0,"设备通知"),
     DEVICE_LOGIN_NOTIFY(1, "设备上下线"),
     //    REFUND_NOTIFY(2,"退款通知"),todo: 程序未找到此通知
     ABNORMAL_ALARM_NOTIFY(6, "故障上报通知"),
@@ -21,7 +22,7 @@ public enum SendMessageTypeEnum {
     RENTAL_PACKAGE_FREEZE_AUDIT_NOTIFY(10, "套餐冻结审核通知"),
     HIGH_WARNING_NOTIFY(12, "高温预警"),
     REFUND_RENT_AUDIT_NOTIFY(13, "退租审核通知"),
-    //    UPGRADE_SEND_MAIL_NOTIFY(10000,"系统升级邮件通知"),
+    UPGRADE_SEND_MAIL_NOTIFY(10000, "系统升级邮件通知"),
     ;
     
     

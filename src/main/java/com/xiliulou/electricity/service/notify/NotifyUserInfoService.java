@@ -5,8 +5,8 @@
 package com.xiliulou.electricity.service.notify;
 
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.entity.notify.NotifyUserInfo;
 import com.xiliulou.electricity.request.notify.NotifyUserInfoOptRequest;
-import com.xiliulou.electricity.request.notify.SendNotifyMessageRequest;
 
 /**
  * description: 用户公众号通知service
@@ -16,23 +16,6 @@ import com.xiliulou.electricity.request.notify.SendNotifyMessageRequest;
  */
 public interface NotifyUserInfoService {
     
-    
-    /**
-     * 异步发送
-     *
-     * @param request
-     * @author caobotao.cbt
-     * @date 2024/6/27 10:59
-     */
-    <T> boolean asyncSendMessage(SendNotifyMessageRequest<T> request);
-    
-    /**
-     * 消息发送接口
-     *
-     * @author caobotao.cbt
-     * @date 2024/6/26 18:02
-     */
-    <T> boolean sendMessage(SendNotifyMessageRequest<T> request);
     
     /**
      * 获取微信openid
@@ -94,4 +77,12 @@ public interface NotifyUserInfoService {
      */
     R queryAll(Integer offset, Integer size);
     
+    /**
+     * 根据电话查缓存
+     *
+     * @param phone
+     * @author caobotao.cbt
+     * @date 2024/6/27 16:04
+     */
+    NotifyUserInfo queryFromCacheByPhone(String phone);
 }

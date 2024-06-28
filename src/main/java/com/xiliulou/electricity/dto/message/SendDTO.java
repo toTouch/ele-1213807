@@ -27,15 +27,18 @@ public class SendDTO {
      */
     private String messageId;
     
-    /**
-     * 消息模板code
-     */
-    private String messageTemplateCode;
+    
     
     /**
      * 租户id
      */
     private Integer tenantId;
+    
+    
+    /**
+     * 消息模板code
+     */
+    private String messageTemplateCode;
     
     
     /**

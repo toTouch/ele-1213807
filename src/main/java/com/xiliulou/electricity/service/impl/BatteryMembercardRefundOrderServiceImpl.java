@@ -38,8 +38,8 @@ import com.xiliulou.electricity.enums.notify.SendMessageTypeEnum;
 import com.xiliulou.electricity.mapper.BatteryMembercardRefundOrderMapper;
 import com.xiliulou.electricity.mq.constant.MqProducerConstant;
 import com.xiliulou.electricity.mq.model.BatteryMemberCardMerchantRebate;
+import com.xiliulou.electricity.mq.producer.MessageSendProducer;
 import com.xiliulou.electricity.query.BatteryMembercardRefundOrderQuery;
-import com.xiliulou.electricity.request.notify.SendNotifyMessageRequest;
 import com.xiliulou.electricity.service.BatteryMemberCardService;
 import com.xiliulou.electricity.service.BatteryMembercardRefundOrderService;
 import com.xiliulou.electricity.service.DivisionAccountRecordService;
@@ -59,7 +59,6 @@ import com.xiliulou.electricity.service.UserCouponService;
 import com.xiliulou.electricity.service.UserInfoExtraService;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.UserOauthBindService;
-import com.xiliulou.electricity.service.notify.NotifyUserInfoService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
@@ -167,7 +166,7 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
     RocketMqService rocketMqService;
     
     @Autowired
-    NotifyUserInfoService notifyUserInfoService;
+    MessageSendProducer messageSendProducer;
     
     @Autowired
     UserInfoExtraService userInfoExtraService;
@@ -903,14 +902,14 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
             abnormalMessageNotify.setBusinessCode(StringUtils.isBlank(userInfo.getIdNumber()) ? "/" : userInfo.getIdNumber().substring(userInfo.getIdNumber().length() - 6));
             abnormalMessageNotify.setApplyTime(DateUtil.format(new Date(), DatePattern.NORM_DATETIME_FORMAT));
             
-            SendNotifyMessageRequest<RentRefundAuditMessageNotify> abnormalMessageNotifyCommon = new SendNotifyMessageRequest<>();
+            MqNotifyCommon<RentRefundAuditMessageNotify> abnormalMessageNotifyCommon = new MqNotifyCommon<>();
             abnormalMessageNotifyCommon.setTime(System.currentTimeMillis());
-            abnormalMessageNotifyCommon.setType(SendMessageTypeEnum.REFUND_RENT_AUDIT_NOTIFY);
+            abnormalMessageNotifyCommon.setType(SendMessageTypeEnum.REFUND_RENT_AUDIT_NOTIFY.getType());
             abnormalMessageNotifyCommon.setPhone(item);
             abnormalMessageNotifyCommon.setData(abnormalMessageNotify);
             abnormalMessageNotifyCommon.setTenantId(userInfo.getTenantId());
             
-            notifyUserInfoService.asyncSendMessage(abnormalMessageNotifyCommon);
+            messageSendProducer.sendAsyncMsg(abnormalMessageNotifyCommon, "", "", 0);
         });
     }
     
