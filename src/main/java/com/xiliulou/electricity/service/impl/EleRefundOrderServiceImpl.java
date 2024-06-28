@@ -1345,6 +1345,10 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
         }
         
         eleRefundOrderVOS.forEach(item -> {
+            if (Objects.equals(item.getStatus(), EleRefundOrder.STATUS_REFUSE_REFUND)) {
+                item.setRefundAmount(null);
+            }
+            
             if (!Objects.equals(item.getPayType(), EleDepositOrder.FREE_DEPOSIT_PAYMENT)) {
                 item.setIsFreeDepositAliPay(false);
                 return;
@@ -1356,9 +1360,6 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
                 return;
             }
             
-            if (Objects.equals(item.getStatus(), EleRefundOrder.STATUS_REFUSE_REFUND)) {
-                item.setRefundAmount(null);
-            }
             item.setIsFreeDepositAliPay(true);
         });
         return R.ok(eleRefundOrderVOS);
