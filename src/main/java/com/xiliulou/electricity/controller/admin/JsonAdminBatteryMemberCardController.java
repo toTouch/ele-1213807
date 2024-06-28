@@ -3,6 +3,7 @@ package com.xiliulou.electricity.controller.admin;
 import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.annotation.Log;
+import com.xiliulou.electricity.constant.BatteryMemberCardConstants;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.User;
@@ -192,11 +193,11 @@ public class JsonAdminBatteryMemberCardController extends BaseController {
             return R.ok();
         }
 
-        if (CollectionUtils.isNotEmpty(query.getCouponIdsTransfer()) && query.getCouponIdsTransfer().size() > BatteryMemberCardQuery.MAX_COUPON_NO) {
+        if (CollectionUtils.isNotEmpty(query.getCouponIdsTransfer()) && query.getCouponIdsTransfer().size() > BatteryMemberCardConstants.MAX_COUPON_NUM) {
             return R.ok();
         }
 
-        if (CollectionUtils.isNotEmpty(query.getUserInfoGroupIdsTransfer()) && query.getUserInfoGroupIdsTransfer().size() > BatteryMemberCardQuery.MAX_USER_INFO_GROUP_NO) {
+        if (CollectionUtils.isNotEmpty(query.getUserInfoGroupIdsTransfer()) && query.getUserInfoGroupIdsTransfer().size() > BatteryMemberCardConstants.MAX_USER_INFO_GROUP_NUM) {
             return R.ok();
         }
         
@@ -218,11 +219,11 @@ public class JsonAdminBatteryMemberCardController extends BaseController {
             return R.ok();
         }
 
-        if (CollectionUtils.isNotEmpty(query.getCouponIdsTransfer()) && query.getCouponIdsTransfer().size() > BatteryMemberCardQuery.MAX_COUPON_NO) {
+        if (CollectionUtils.isNotEmpty(query.getCouponIdsTransfer()) && query.getCouponIdsTransfer().size() > BatteryMemberCardConstants.MAX_COUPON_NUM) {
             return R.ok();
         }
 
-        if (CollectionUtils.isNotEmpty(query.getUserInfoGroupIdsTransfer()) && query.getUserInfoGroupIdsTransfer().size() > BatteryMemberCardQuery.MAX_USER_INFO_GROUP_NO) {
+        if (CollectionUtils.isNotEmpty(query.getUserInfoGroupIdsTransfer()) && query.getUserInfoGroupIdsTransfer().size() > BatteryMemberCardConstants.MAX_USER_INFO_GROUP_NUM) {
             return R.ok();
         }
         
