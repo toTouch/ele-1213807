@@ -31,7 +31,8 @@
         member_card,
         package_info,
         create_time,
-        update_time
+        update_time,
+        franchisee_id
         from t_share_activity_operate_record
         <where>
             <if test="id != null">

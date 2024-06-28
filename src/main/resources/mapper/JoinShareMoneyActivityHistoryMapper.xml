@@ -184,7 +184,6 @@
             tjsmah.update_time as updateTime,
             tjsmah.tenant_id as tenantId,
             tjsmah.franchisee_id as franchiseeId
-        tjsmah
         from t_join_share_money_activity_history tjsmah
         left join t_user_info as tui on tui.uid = tjsmah.join_uid
         left join t_user_info as tu on tu.uid = tjsmah.uid
