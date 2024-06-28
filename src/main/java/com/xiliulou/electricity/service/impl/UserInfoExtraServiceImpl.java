@@ -241,6 +241,7 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
             merchantJoinRecordUpdate.setId(merchantJoinRecord.getId());
             merchantJoinRecordUpdate.setStatus(MerchantJoinRecordConstant.STATUS_SUCCESS);
             merchantJoinRecordUpdate.setUpdateTime(System.currentTimeMillis());
+            merchantJoinRecordUpdate.setOrderId(orderId);
             merchantJoinRecordUpdate.setPackageId(electricityMemberCardOrder.getMemberCardId());
             merchantJoinRecordUpdate.setPackageType(PackageTypeEnum.PACKAGE_TYPE_BATTERY.getCode());
             merchantJoinRecordUpdate.setFranchiseeId(electricityMemberCardOrder.getFranchiseeId());

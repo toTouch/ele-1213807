@@ -127,4 +127,6 @@ public class MerchantJoinRecord {
      */
     private Integer packageType;
     
+    private String orderId;
+    
 }
