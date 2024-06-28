@@ -150,7 +150,7 @@ public class JsonAdminJoinShareMoneyActivityHistoryController {
         List<Long> franchiseeIds = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
             franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
-            if (org.apache.commons.collections.CollectionUtils.isEmpty(franchiseeIds)) {
+            if (CollectionUtils.isEmpty(franchiseeIds)) {
                 return R.ok(Collections.EMPTY_LIST);
             }
         }
@@ -158,7 +158,7 @@ public class JsonAdminJoinShareMoneyActivityHistoryController {
         List<Long> storeIds = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
             storeIds = userDataScopeService.selectDataIdByUid(user.getUid());
-            if (org.springframework.util.CollectionUtils.isEmpty(storeIds)) {
+            if (CollectionUtils.isEmpty(storeIds)) {
                 return R.ok(Collections.EMPTY_LIST);
             }
         }

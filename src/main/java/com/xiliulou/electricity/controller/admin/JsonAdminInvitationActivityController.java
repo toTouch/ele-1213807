@@ -188,7 +188,7 @@ public class JsonAdminInvitationActivityController extends BaseController {
     
     @GetMapping("/admin/invitationActivity/page")
     public R page(@RequestParam("size") long size, @RequestParam("offset") long offset, @RequestParam(value = "status", required = false) Integer status,
-            @RequestParam(value = "name", required = false) String name) {
+            @RequestParam(value = "name", required = false) String name, @RequestParam(value = "franchiseeId", required = false) Long franchiseeId) {
         if (size < 0 || size > 50) {
             size = 10L;
         }
@@ -202,17 +202,27 @@ public class JsonAdminInvitationActivityController extends BaseController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         
-        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
-            return R.ok(Collections.EMPTY_LIST);
+        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE) || Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE))) {
+            return R.ok();
         }
         
-        InvitationActivityQuery query = InvitationActivityQuery.builder().size(size).offset(offset).name(name).tenantId(TenantContextHolder.getTenantId()).status(status).build();
+        List<Long> franchiseeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if (CollectionUtils.isEmpty(franchiseeIds)) {
+                return R.ok(Collections.emptyList());
+            }
+        }
+        
+        InvitationActivityQuery query = InvitationActivityQuery.builder().size(size).offset(offset).name(name).tenantId(TenantContextHolder.getTenantId()).status(status)
+                .franchiseeId(franchiseeId).franchiseeIds(franchiseeIds).build();
         
         return R.ok(invitationActivityService.selectByPage(query));
     }
     
     @GetMapping("/admin/invitationActivity/queryCount")
-    public R count(@RequestParam(value = "status", required = false) Integer status, @RequestParam(value = "name", required = false) String name) {
+    public R count(@RequestParam(value = "status", required = false) Integer status, @RequestParam(value = "name", required = false) String name,
+            @RequestParam(value = "franchiseeId", required = false) Long franchiseeId) {
         
         InvitationActivityQuery query = InvitationActivityQuery.builder().tenantId(TenantContextHolder.getTenantId()).name(name).status(status).build();
         
@@ -230,7 +240,7 @@ public class JsonAdminInvitationActivityController extends BaseController {
     
     @GetMapping(value = "/admin/invitationActivity/queryPackages")
     public R queryPackagesByFranchisee(@RequestParam(value = "offset") Long offset, @RequestParam(value = "size") Long size,
-            @RequestParam(value = "type", required = true) Integer type, @RequestParam(value = "franchiseeId", required = true) Long franchiseeId) {
+            @RequestParam(value = "type", required = true) Integer type, @RequestParam(value = "franchiseeId", required = false) Long franchiseeId) {
         
         List<Integer> packageTypes = Arrays.stream(PackageTypeEnum.values()).map(PackageTypeEnum::getCode).collect(Collectors.toList());
         if (!packageTypes.contains(type)) {
@@ -263,7 +273,7 @@ public class JsonAdminInvitationActivityController extends BaseController {
     }
     
     @GetMapping(value = "/admin/invitationActivity/queryPackagesCount")
-    public R queryPackagesCount(@RequestParam(value = "type", required = true) Integer type, @RequestParam(value = "franchiseeId", required = true) Long franchiseeId) {
+    public R queryPackagesCount(@RequestParam(value = "type", required = true) Integer type, @RequestParam(value = "franchiseeId", required = false) Long franchiseeId) {
         
         List<Integer> packageTypes = Arrays.stream(PackageTypeEnum.values()).map(PackageTypeEnum::getCode).collect(Collectors.toList());
         if (!packageTypes.contains(type)) {

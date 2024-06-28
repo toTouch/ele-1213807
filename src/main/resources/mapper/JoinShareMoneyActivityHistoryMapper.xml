@@ -220,7 +220,7 @@
                 and tjsmah.start_time &lt;= #{endTime}
             </if>
             <if test="franchiseeId != null">
-                and tjsmah.franchisee_id &lt;= #{franchiseeId}
+                and tjsmah.franchisee_id = #{franchiseeId}
             </if>
             <if test="franchiseeIds != null">
                 and tu.franchisee_id in
@@ -281,7 +281,7 @@
                 and tjsmah.start_time &lt;= #{endTime}
             </if>
             <if test="franchiseeId != null">
-                and tjsmah.franchisee_id &lt;= #{franchiseeId}
+                and tjsmah.franchisee_id = #{franchiseeId}
             </if>
             <if test="franchiseeIds != null">
                 and tu.franchisee_id in

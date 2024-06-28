@@ -87,8 +87,7 @@
     <select id="selectByPage" resultMap="InvitationActivityMap">
         select
         id, name, type, status, description, hours, minutes, discount_type, first_reward, other_reward, operate_uid, del_flag,
-        create_time, update_time,
-        tenant_id
+        create_time, update_time, tenant_id, franchisee_id
         from t_invitation_activity
         where del_flag=0
         <if test="name != null and name != ''">
@@ -99,6 +98,15 @@
         </if>
         <if test="tenantId != null">
             and tenant_id = #{tenantId}
+        </if>
+        <if test="franchiseeId != null">
+            and franchisee_id = #{franchiseeId}
+        </if>
+        <if test="franchiseeIds != null and franchiseeIds.size() > 0">
+            and franchisee_id in
+            <foreach collection="franchiseeIds" item="franchiseeId" index="index" open="(" separator="," close=")">
+                #{franchiseeId}
+            </foreach>
         </if>
         order by id desc
         limit #{offset}, #{size}
@@ -116,6 +124,15 @@
         </if>
         <if test="tenantId != null">
             and tenant_id = #{tenantId}
+        </if>
+        <if test="franchiseeId != null">
+            and franchisee_id = #{franchiseeId}
+        </if>
+        <if test="franchiseeIds != null and franchiseeIds.size() > 0">
+            and franchisee_id in
+            <foreach collection="franchiseeIds" item="franchiseeId" index="index" open="(" separator="," close=")">
+                #{franchiseeId}
+            </foreach>
         </if>
     </select>
     

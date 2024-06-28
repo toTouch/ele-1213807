@@ -12,6 +12,7 @@ import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.constant.TimeConstant;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
+import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.InvitationActivity;
 import com.xiliulou.electricity.entity.InvitationActivityJoinHistory;
 import com.xiliulou.electricity.entity.InvitationActivityMemberCard;
@@ -23,6 +24,7 @@ import com.xiliulou.electricity.mapper.InvitationActivityMapper;
 import com.xiliulou.electricity.query.InvitationActivityQuery;
 import com.xiliulou.electricity.query.InvitationActivityStatusQuery;
 import com.xiliulou.electricity.service.BatteryMemberCardService;
+import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.InvitationActivityJoinHistoryService;
 import com.xiliulou.electricity.service.InvitationActivityMemberCardService;
 import com.xiliulou.electricity.service.InvitationActivityService;
@@ -36,6 +38,7 @@ import com.xiliulou.electricity.vo.InvitationActivityMemberCardVO;
 import com.xiliulou.electricity.vo.InvitationActivityVO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,6 +52,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.stream.Collectors;
@@ -82,6 +86,9 @@ public class InvitationActivityServiceImpl implements InvitationActivityService 
 
     @Autowired
     private CarRentalPackageService carRentalPackageService;
+    
+    @Resource
+    private FranchiseeService franchiseeService;
     
     ExecutorService executorService = XllThreadPoolExecutors.newFixedThreadPool("shareActivityHandlerExecutor", 1, "SHARE_ACTIVITY_HANDLER_EXECUTOR");
 
@@ -319,6 +326,11 @@ public class InvitationActivityServiceImpl implements InvitationActivityService 
             invitationActivityVO.setBatteryPackages(getBatteryPackages(item.getId()));
             invitationActivityVO.setCarRentalPackages(getCarBatteryPackages(item.getId(), PackageTypeEnum.PACKAGE_TYPE_CAR_RENTAL.getCode()));
             invitationActivityVO.setCarWithBatteryPackages(getCarBatteryPackages(item.getId(), PackageTypeEnum.PACKAGE_TYPE_CAR_BATTERY.getCode()));
+    
+            Long franchiseeId = item.getFranchiseeId();
+            if (Objects.nonNull(franchiseeId)) {
+                invitationActivityVO.setFranchiseeName(Optional.ofNullable(franchiseeService.queryByIdFromCache(franchiseeId)).map(Franchisee::getName).orElse(StringUtils.EMPTY));
+            }
 
             return invitationActivityVO;
         }).collect(Collectors.toList());
