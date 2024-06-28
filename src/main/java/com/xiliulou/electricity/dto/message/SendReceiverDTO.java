@@ -18,7 +18,7 @@ import java.util.Set;
 public class SendReceiverDTO {
     
     /**
-     * 发送渠道: 取决SendChannelTypeEnum
+     * 发送渠道
      */
     private Integer sendChannel;
     

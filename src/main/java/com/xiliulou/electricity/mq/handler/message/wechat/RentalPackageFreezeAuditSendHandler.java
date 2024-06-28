@@ -14,7 +14,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * description:
+ * description: 退租审核通知
  *
  * @author caobotao.cbt
  * @date 2024/6/27 21:01
@@ -22,10 +22,6 @@ import java.util.Map;
 @Component
 public class RentalPackageFreezeAuditSendHandler extends AbstractWechatOfficialAccountSendHandler {
     
-    @Override
-    protected String getMessageTemplateCode() {
-        return null;
-    }
     
     @Override
     protected Map<String, String> converterParamMap(String data) {

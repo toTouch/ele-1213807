@@ -11,10 +11,8 @@ import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.config.WechatConfig;
-import com.xiliulou.electricity.config.message.MessageCenterConfig;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.converter.notify.NotifyUserInfoConverter;
-import com.xiliulou.electricity.converter.notify.SendWechatNotifyDataConverterFactory;
 import com.xiliulou.electricity.dto.WxAuth2AccessTokenResult;
 import com.xiliulou.electricity.entity.notify.NotifyUserInfo;
 import com.xiliulou.electricity.mapper.notify.NotifyUserInfoMapper;
@@ -59,16 +57,10 @@ public class NotifyUserInfoServiceImpl implements NotifyUserInfoService {
     @Resource
     private WechatConfig wechatConfig;
     
-    @Resource
-    private MessageCenterConfig messageCenterConfig;
-    
     
     @Qualifier("restTemplateServiceImpl")
     @Autowired
     RestTemplateService restTemplateService;
-    
-    @Resource
-    private SendWechatNotifyDataConverterFactory sendWechatNotifyDataConverterFactory;
     
     
     @Override

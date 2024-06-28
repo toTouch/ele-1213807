@@ -48,6 +48,7 @@ public abstract class AbstractMallSendHandler extends AbstractMessageSendHandler
         
         Set<String> receiver = notify.getTo().stream().map(e -> e.getEmail()).collect(Collectors.toSet());
         
+        //获取模版参数
         Map<String, String> map = converterParamMap(notify);
         
         if (MapUtils.isEmpty(map)) {
@@ -55,7 +56,6 @@ public abstract class AbstractMallSendHandler extends AbstractMessageSendHandler
         }
         
         SendDTO sendDTO = new SendDTO();
-        sendDTO.setMessageTemplateCode(getMessageTemplateCode());
         sendDTO.setParamMap(map);
         SendReceiverDTO sendReceiverDTO = new SendReceiverDTO();
         sendReceiverDTO.setSendChannel(WECHAT_SEND_MAIL);
@@ -64,15 +64,6 @@ public abstract class AbstractMallSendHandler extends AbstractMessageSendHandler
         return sendDTO;
         
     }
-    
-    /**
-     * 获取模版编码
-     *
-     * @author caobotao.cbt
-     * @date 2024/6/28 15:06
-     */
-    protected abstract String getMessageTemplateCode();
-    
     
     /**
      * 获取参数转换

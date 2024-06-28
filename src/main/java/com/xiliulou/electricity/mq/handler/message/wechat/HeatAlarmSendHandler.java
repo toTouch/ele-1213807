@@ -22,10 +22,6 @@ import java.util.Map;
 @Component
 public class HeatAlarmSendHandler extends AbstractWechatOfficialAccountSendHandler {
     
-    @Override
-    protected String getMessageTemplateCode() {
-        return null;
-    }
     
     @Override
     protected Map<String, String> converterParamMap(String data) {

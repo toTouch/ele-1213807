@@ -20,9 +20,4 @@ public class SystemUpgradeSendHandler extends AbstractMallSendHandler {
     public Integer getType() {
         return SendMessageTypeEnum.UPGRADE_SEND_MAIL_NOTIFY.getType();
     }
-    
-    @Override
-    protected String getMessageTemplateCode() {
-        return null;
-    }
 }

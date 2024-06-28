@@ -42,7 +42,6 @@ public class MessageSendConsumer implements RocketMQListener<MessageExt> {
     public void onMessage(MessageExt message) {
         try {
             
-            String msgId = message.getMsgId();
             if (Objects.isNull(message.getBody())) {
                 log.warn("body is empty! messageId:{}", message.getMsgId());
                 return;
@@ -50,7 +49,7 @@ public class MessageSendConsumer implements RocketMQListener<MessageExt> {
             
             String body = new String(message.getBody());
             
-            log.info("messageId :{}, body:{}", msgId, body);
+            log.info("messageId :{}, body:{}", message.getMsgId(), body);
             
             MqNotifyCommon mqNotifyCommon = JsonUtil.fromJson(body, MqNotifyCommon.class);
             

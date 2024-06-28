@@ -31,10 +31,6 @@ public class DeviceStatusSendHandler extends AbstractWechatOfficialAccountSendHa
     @Resource
     private ElectricityCabinetService electricityCabinetService;
     
-    @Override
-    protected String getMessageTemplateCode() {
-        return null;
-    }
     
     @Override
     protected Map<String, String> converterParamMap(String data) {

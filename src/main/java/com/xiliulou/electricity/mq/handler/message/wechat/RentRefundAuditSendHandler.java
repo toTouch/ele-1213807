@@ -26,10 +26,6 @@ public class RentRefundAuditSendHandler extends AbstractWechatOfficialAccountSen
         return SendMessageTypeEnum.REFUND_RENT_AUDIT_NOTIFY.getType();
     }
     
-    @Override
-    protected String getMessageTemplateCode() {
-        return null;
-    }
     
     @Override
     protected Map<String, String> converterParamMap(String data) {

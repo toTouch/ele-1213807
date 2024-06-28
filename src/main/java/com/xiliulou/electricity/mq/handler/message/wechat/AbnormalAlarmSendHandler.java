@@ -24,10 +24,6 @@ import java.util.Optional;
 @Component
 public class AbnormalAlarmSendHandler extends AbstractWechatOfficialAccountSendHandler {
     
-    @Override
-    protected String getMessageTemplateCode() {
-        return null;
-    }
     
     @Override
     protected Map<String, String> converterParamMap(String data) {

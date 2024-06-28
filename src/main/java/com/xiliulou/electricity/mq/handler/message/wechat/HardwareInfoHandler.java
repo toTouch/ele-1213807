@@ -27,10 +27,6 @@ public class HardwareInfoHandler extends AbstractWechatOfficialAccountSendHandle
         return HARDWARE_INFO_NOTIFY.getType();
     }
     
-    @Override
-    protected String getMessageTemplateCode() {
-        return null;
-    }
     
     @Override
     protected Map<String, String> converterParamMap(String data) {

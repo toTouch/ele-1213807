@@ -61,7 +61,6 @@ public abstract class AbstractWechatOfficialAccountSendHandler extends AbstractM
         }
         
         SendDTO sendDTO = new SendDTO();
-        sendDTO.setMessageTemplateCode(getMessageTemplateCode());
         sendDTO.setParamMap(map);
         SendReceiverDTO sendReceiverDTO = new SendReceiverDTO();
         sendReceiverDTO.setSendChannel(WECHAT_SEND_CHANNEL);
@@ -69,14 +68,6 @@ public abstract class AbstractWechatOfficialAccountSendHandler extends AbstractM
         sendDTO.setSendReceiverList(Collections.singletonList(sendReceiverDTO));
         return sendDTO;
     }
-    
-    /**
-     * 消息模版编码
-     *
-     * @author caobotao.cbt
-     * @date 2024/6/27 20:40
-     */
-    protected abstract String getMessageTemplateCode();
     
     
     /**
