@@ -69,7 +69,8 @@ public class JsonAdminInvitationActivityController extends BaseController {
     private UserDataScopeService userDataScopeService;
     
     @GetMapping("/admin/invitationActivity/search")
-    public R search(@RequestParam("size") long size, @RequestParam("offset") long offset, @RequestParam(value = "name", required = false) String name) {
+    public R search(@RequestParam("size") long size, @RequestParam("offset") long offset, @RequestParam(value = "name", required = false) String name,
+            @RequestParam(value = "franchiseeId", required = false) Long franchiseeId) {
         if (size < 0 || size > 50) {
             size = 10L;
         }
@@ -78,7 +79,8 @@ public class JsonAdminInvitationActivityController extends BaseController {
             offset = 0L;
         }
         
-        InvitationActivityQuery query = InvitationActivityQuery.builder().size(size).offset(offset).tenantId(TenantContextHolder.getTenantId()).name(name).build();
+        InvitationActivityQuery query = InvitationActivityQuery.builder().size(size).offset(offset).tenantId(TenantContextHolder.getTenantId()).name(name)
+                .franchiseeId(franchiseeId).build();
         
         return R.ok(invitationActivityService.selectBySearch(query));
     }
@@ -92,7 +94,7 @@ public class JsonAdminInvitationActivityController extends BaseController {
      */
     @GetMapping("/admin/invitationActivity/searchByUser")
     public R searchByUser(@RequestParam("size") long size, @RequestParam("offset") long offset, @RequestParam(value = "uid") Long uid,
-            @RequestParam(value = "activityName", required = false) String activityName) {
+            @RequestParam(value = "activityName", required = false) String activityName, @RequestParam(value = "franchiseeId", required = false) Long franchiseeId) {
         if (size < 0 || size > 50) {
             size = 10L;
         }
@@ -112,7 +114,7 @@ public class JsonAdminInvitationActivityController extends BaseController {
         }
         
         InvitationActivityQuery query = InvitationActivityQuery.builder().size(size).offset(offset).tenantId(TenantContextHolder.getTenantId()).status(NumberConstant.ONE)
-                .name(activityName).build();
+                .name(activityName).franchiseeId(franchiseeId).build();
         
         return returnTripleResult(invitationActivityService.selectActivityByUser(query, uid));
     }
@@ -149,6 +151,18 @@ public class JsonAdminInvitationActivityController extends BaseController {
     
     @GetMapping(value = "/admin/invitation/update/{id}")
     public R update(@PathVariable("id") Long id) {
+        if (Objects.isNull(id)) {
+            return R.fail("ELECTRICITY.0007", "不合法的参数");
+        }
+        
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE) || Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE))) {
+            return R.ok();
+        }
+        
         return returnTripleResult(invitationActivityService.findActivityById(id));
     }
     
@@ -162,11 +176,21 @@ public class JsonAdminInvitationActivityController extends BaseController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         
-        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
-            return R.ok(NumberConstant.ZERO);
+        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE) || Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE))) {
+            return R.ok();
         }
         
-        return returnTripleResult(invitationActivityService.modify(query));
+        Long franchiseeId = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            List<Long> franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if (CollectionUtils.isEmpty(franchiseeIds)) {
+                return R.ok();
+            }
+            
+            franchiseeId = franchiseeIds.get(0);
+        }
+        
+        return returnTripleResult(invitationActivityService.modify(query, franchiseeId));
     }
     
     /**
@@ -179,11 +203,21 @@ public class JsonAdminInvitationActivityController extends BaseController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         
-        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
-            return R.fail("ELECTRICITY.0066", "用户权限不足");
+        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE) || Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE))) {
+            return R.ok();
         }
         
-        return returnTripleResult(invitationActivityService.updateStatus(query));
+        Long franchiseeId = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            List<Long> franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if (CollectionUtils.isEmpty(franchiseeIds)) {
+                return R.ok();
+            }
+            
+            franchiseeId = franchiseeIds.get(0);
+        }
+        
+        return returnTripleResult(invitationActivityService.updateStatus(query, franchiseeId));
     }
     
     @GetMapping("/admin/invitationActivity/page")
@@ -323,13 +357,26 @@ public class JsonAdminInvitationActivityController extends BaseController {
             log.error("ELECTRICITY  ERROR! not found user ");
             throw new CustomBusinessException("未找到用户!");
         }
-        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
-            return R.fail("ELECTRICITY.0066", "用户权限不足");
-        }
+        
         if (Objects.isNull(id)) {
             return R.fail("ELECTRICITY.0007", "不合法的参数");
         }
-        return invitationActivityService.removeById(id);
+        
+        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE) || Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE))) {
+            return R.ok();
+        }
+        
+        Long franchiseeId = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            List<Long> franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if (CollectionUtils.isEmpty(franchiseeIds)) {
+                return R.ok();
+            }
+            
+            franchiseeId = franchiseeIds.get(0);
+        }
+        
+        return invitationActivityService.removeById(id, franchiseeId);
     }
     
 }

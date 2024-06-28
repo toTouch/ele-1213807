@@ -160,9 +160,11 @@
             <if test="payCount != null and payCount == 1">
                 and iajh.pay_count = 1
             </if>
-
             <if test="payCount != null and payCount == 2">
                 and iajh.pay_count > 1
+            </if>
+            <if test="franchiseeId != null">
+                and iajh.franchisee_id = #{franchiseeId}
             </if>
             <if test="franchiseeIds != null and franchiseeIds.size()>0">
                 and tui.franchisee_id in
@@ -276,8 +278,8 @@
     
     <!--新增所有列-->
     <insert id="insertOne" keyProperty="id" useGeneratedKeys="true">
-        insert into t_invitation_activity_join_history(uid, record_id, join_uid, start_time, expired_time, activity_id, status, pay_count, money, tenant_id, create_time, update_time, package_Id, package_type)
-        values (#{uid}, #{recordId}, #{joinUid}, #{startTime}, #{expiredTime}, #{activityId}, #{status}, #{payCount}, #{money}, #{tenantId}, #{createTime}, #{updateTime}, #{packageId}, #{packageType})
+        insert into t_invitation_activity_join_history(uid, record_id, join_uid, start_time, expired_time, activity_id, status, pay_count, money, tenant_id, create_time, update_time, package_Id, package_type, franchisee_id)
+        values (#{uid}, #{recordId}, #{joinUid}, #{startTime}, #{expiredTime}, #{activityId}, #{status}, #{payCount}, #{money}, #{tenantId}, #{createTime}, #{updateTime}, #{packageId}, #{packageType}, #{franchiseeId})
     </insert>
 
     <!--通过主键修改数据-->
@@ -363,6 +365,7 @@
         iajh.money,
         iajh.create_time,
         iajh.join_uid joinUid,
+        iajh.franchisee_id,
         tui.name as joinUserName,
         tui.phone as joinUserPhone
         from t_invitation_activity_join_history iajh
@@ -400,6 +403,9 @@
             <if test="endTime != null">
                 and iajh.create_time &lt;=#{endTime}
             </if>
+            <if test="franchiseeId != null">
+                and iajh.franchisee_id = #{franchiseeId}
+            </if>
             <if test="franchiseeIds != null and franchiseeIds.size()>0">
                 and tu.franchisee_id in
                 <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
@@ -412,11 +418,9 @@
                     #{id}
                 </foreach>
             </if>
-        
             <if test="activityName != null and activityName != ''">
                 and tia.name like concat('%',#{activityName, jdbcType=VARCHAR},'%')
             </if>
-        
             <if test="payCount != null and payCount == 1">
                 and iajh.pay_count = 1
             </if>

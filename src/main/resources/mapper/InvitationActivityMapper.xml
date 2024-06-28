@@ -155,6 +155,9 @@
         <if test="status != null">
             and status = #{status}
         </if>
+        <if test="franchiseeId != null">
+            and franchisee_id = #{franchiseeId}
+        </if>
         order by id
     </select>
 
@@ -162,6 +165,9 @@
         select  id, name, type, status, description, hours, discount_type, first_reward, other_reward, create_time
         from t_invitation_activity
         where tenant_id = #{tenantId} and status=1 and del_flag = 0
+        <if test="franchiseeId != null and franchiseeId != 0">
+            and franchisee_id = #{franchiseeId}
+        </if>
     </select>
     
     <!--新增所有列-->

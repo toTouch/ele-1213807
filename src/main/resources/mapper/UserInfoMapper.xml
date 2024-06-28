@@ -864,6 +864,9 @@
         <if test="name != null and name != ''">
             and name like concat('%', #{name}, '%')
         </if>
+        <if test="franchiseeId != null">
+            and franchisee_id = #{franchiseeId}
+        </if>
         order by id
         limit #{offset}, #{size}
     </select>

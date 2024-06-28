@@ -77,8 +77,8 @@ import com.xiliulou.electricity.event.publish.OverdueUserRemarkPublish;
 import com.xiliulou.electricity.mapper.UserInfoMapper;
 import com.xiliulou.electricity.query.UserInfoBatteryAddAndUpdate;
 import com.xiliulou.electricity.query.UserInfoCarAddAndUpdate;
-import com.xiliulou.electricity.query.userinfo.userInfoGroup.UserInfoGroupDetailQuery;
 import com.xiliulou.electricity.query.UserInfoQuery;
+import com.xiliulou.electricity.query.userinfo.userInfoGroup.UserInfoGroupDetailQuery;
 import com.xiliulou.electricity.request.user.UnbindOpenIdRequest;
 import com.xiliulou.electricity.request.user.UpdateUserPhoneRequest;
 import com.xiliulou.electricity.service.BatteryMemberCardService;
@@ -413,6 +413,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     
     @Autowired
     private OverdueUserRemarkPublish overdueUserRemarkPublish;
+    
     /**
      * 分页查询
      *
@@ -719,15 +720,16 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             log.error("Query user insurance info error for car rental.", e);
             return null;
         });
-    
+        
         CompletableFuture<Void> queryUserGroupInfo = CompletableFuture.runAsync(() -> {
             userCarRentalPackageVOList.forEach(item -> {
                 List<UserInfoGroupNamesBO> namesBOList = userInfoGroupDetailService.listGroupByUid(UserInfoGroupDetailQuery.builder().uid(item.getUid()).build());
                 List<UserInfoGroupIdAndNameVO> groupVoList = new ArrayList<>();
                 if (CollectionUtils.isNotEmpty(namesBOList)) {
-                    groupVoList = namesBOList.stream().map(bo -> UserInfoGroupIdAndNameVO.builder().id(bo.getGroupId()).name(bo.getGroupName()).groupNo(bo.getGroupNo()).build()).collect(Collectors.toList());
+                    groupVoList = namesBOList.stream().map(bo -> UserInfoGroupIdAndNameVO.builder().id(bo.getGroupId()).name(bo.getGroupName()).groupNo(bo.getGroupNo()).build())
+                            .collect(Collectors.toList());
                 }
-            
+                
                 item.setGroupList(CollectionUtils.isEmpty(groupVoList) ? Collections.emptyList() : groupVoList);
             });
         }, threadPool).exceptionally(e -> {
@@ -1262,7 +1264,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                 log.warn("WEBBIND ERROR WARN! battery memberCard is Expire,uid={}", oldUserInfo.getUid());
                 return R.fail("ELECTRICITY.0023", "套餐已过期");
             }
-    
+            
             //判断车电关联是否可租电
             ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(oldUserInfo.getTenantId());
             if (Objects.nonNull(electricityConfig) && Objects.equals(electricityConfig.getIsOpenCarBatteryBind(), ElectricityConfig.ENABLE_CAR_BATTERY_BIND)) {
@@ -1585,7 +1587,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         //记录企业用户还电池记录
         enterpriseUserCostRecordService.asyncSaveUserCostRecordForRentalAndReturnBattery(UserCostTypeEnum.COST_TYPE_RETURN_BATTERY.getCode(), rentBatteryOrder);
         //清除逾期用户备注
-        overdueUserRemarkPublish.publish(uid,type.getCode(), tenantId);
+        overdueUserRemarkPublish.publish(uid, type.getCode(), tenantId);
         try {
             Map<String, Object> map = new HashMap<>();
             map.put("username", oldUserInfo.getName());
@@ -2113,11 +2115,11 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         
         this.updateByUid(updateUserInfo);
         //清除逾期用户备注
-        if (Objects.equals(rentStatus, UserInfo.BATTERY_RENT_STATUS_NO)){
-            if (Objects.equals(userInfo.getCarBatteryDepositStatus(),YesNoEnum.YES.getCode())) {
-                overdueUserRemarkPublish.publish(userInfo.getUid(), OverdueType.CAR.getCode(),TenantContextHolder.getTenantId());
-            }else {
-                overdueUserRemarkPublish.publish(userInfo.getUid(), OverdueType.BATTERY.getCode(),TenantContextHolder.getTenantId());
+        if (Objects.equals(rentStatus, UserInfo.BATTERY_RENT_STATUS_NO)) {
+            if (Objects.equals(userInfo.getCarBatteryDepositStatus(), YesNoEnum.YES.getCode())) {
+                overdueUserRemarkPublish.publish(userInfo.getUid(), OverdueType.CAR.getCode(), TenantContextHolder.getTenantId());
+            } else {
+                overdueUserRemarkPublish.publish(userInfo.getUid(), OverdueType.BATTERY.getCode(), TenantContextHolder.getTenantId());
             }
         }
         return Triple.of(true, "", null);
@@ -2215,8 +2217,9 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         EleUserEsignRecord eleUserEsignRecord = eleUserEsignRecordService.queryUserEsignRecordFromDB(userInfo.getUid(), Long.valueOf(TenantContextHolder.getTenantId()));
         if (Objects.nonNull(eleUserEsignRecord)) {
             vo.setSignFlowId(eleUserEsignRecord.getSignFlowId());
-            vo.setSignFinishStatus(Objects.equals(1, eleUserEsignRecord.getSignFinishStatus()) ? SignStatusEnum.SIGNED_COMPLETED.getCode() : SignStatusEnum.SIGNED_INCOMPLETE.getCode());
-        }else {
+            vo.setSignFinishStatus(
+                    Objects.equals(1, eleUserEsignRecord.getSignFinishStatus()) ? SignStatusEnum.SIGNED_COMPLETED.getCode() : SignStatusEnum.SIGNED_INCOMPLETE.getCode());
+        } else {
             vo.setSignFinishStatus(SignStatusEnum.UNSIGNED.getCode());
         }
         
@@ -2244,7 +2247,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         vo.setInviterName(queryFinalInviterUserName(uid));
         //邀请人来源
         vo.setInviterSource(inviterSource);
-    
+        
         return R.ok(vo);
     }
     
@@ -2723,9 +2726,9 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     
     @Slave
     @Override
-    public R userInfoSearch(Long size, Long offset, String name) {
-        List<UserInfoSearchVo> qeury = userInfoMapper.userInfoSearch(size, offset, name, TenantContextHolder.getTenantId());
-        return R.ok(qeury);
+    public R userInfoSearch(Long size, Long offset, String name, Long franchiseeId) {
+        List<UserInfoSearchVo> query = userInfoMapper.userInfoSearch(size, offset, name, TenantContextHolder.getTenantId(), franchiseeId);
+        return R.ok(query);
     }
     
     private void queryUserCarMemberCard(DetailsCarInfoVo vo, UserInfo userInfo) {
@@ -2846,7 +2849,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         vo.setMemberCardExpireTime(userBatteryMemberCard.getMemberCardExpireTime());
         vo.setOrderExpireTime(userBatteryMemberCard.getOrderExpireTime());
         vo.setMemberCardStatus(userBatteryMemberCard.getMemberCardStatus());
-//        vo.setUserBatteryServiceFee(serviceFeeUserInfoService.queryUserBatteryServiceFee(userInfo));
+        //        vo.setUserBatteryServiceFee(serviceFeeUserInfoService.queryUserBatteryServiceFee(userInfo));
         
         BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());
         vo.setCardName(Objects.isNull(batteryMemberCard) ? "" : batteryMemberCard.getName());
@@ -3215,15 +3218,16 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             log.error("ELE ERROR! query user other info error!", e);
             return null;
         });
-    
+        
         CompletableFuture<Void> queryUserGroupInfo = CompletableFuture.runAsync(() -> {
             userEleInfoVOS.forEach(item -> {
                 List<UserInfoGroupNamesBO> namesBOList = userInfoGroupDetailService.listGroupByUid(UserInfoGroupDetailQuery.builder().uid(item.getUid()).build());
                 List<UserInfoGroupIdAndNameVO> groupVoList = new ArrayList<>();
                 if (CollectionUtils.isNotEmpty(namesBOList)) {
-                    groupVoList = namesBOList.stream().map(bo -> UserInfoGroupIdAndNameVO.builder().id(bo.getGroupId()).name(bo.getGroupName()).groupNo(bo.getGroupNo()).build()).collect(Collectors.toList());
+                    groupVoList = namesBOList.stream().map(bo -> UserInfoGroupIdAndNameVO.builder().id(bo.getGroupId()).name(bo.getGroupName()).groupNo(bo.getGroupNo()).build())
+                            .collect(Collectors.toList());
                 }
-    
+                
                 item.setGroupList(CollectionUtils.isEmpty(groupVoList) ? Collections.emptyList() : groupVoList);
             });
         }, threadPool).exceptionally(e -> {
