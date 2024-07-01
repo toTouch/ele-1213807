@@ -112,7 +112,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 /**
  * 缴纳押金订单表(TEleDepositOrder)表服务实现类
@@ -522,10 +521,10 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
     @Override
     public R queryList(EleDepositOrderQuery eleDepositOrderQuery) {
         List<EleDepositOrderVO> eleDepositOrderVOS = eleDepositOrderMapper.queryList(eleDepositOrderQuery);
-    
-        eleDepositOrderVOS.stream().map(eleDepositOrderVO -> {
-            eleDepositOrderVO.setRefundFlag(true);
         
+        eleDepositOrderVOS.forEach(eleDepositOrderVO -> {
+            eleDepositOrderVO.setRefundFlag(true);
+            
             List<EleRefundOrder> eleRefundOrders = eleRefundOrderService.selectByOrderIdNoFilerStatus(eleDepositOrderVO.getOrderId());
             // 订单已退押或正在退押中
             if (!CollectionUtils.isEmpty(eleRefundOrders)) {
@@ -535,9 +534,8 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
                     }
                 }
             }
-            return eleDepositOrderVO;
-        }).collect(Collectors.toList());
-    
+        });
+        
         return R.ok(eleDepositOrderVOS);
     }
     

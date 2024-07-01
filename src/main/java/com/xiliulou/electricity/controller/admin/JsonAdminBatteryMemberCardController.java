@@ -127,6 +127,16 @@ public class JsonAdminBatteryMemberCardController extends BaseController {
             }
         }
         
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
+            List<Long> storeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if (CollectionUtils.isNotEmpty(storeIds)) {
+                franchiseeIds = storeIds.stream().map(storeId -> storeService.queryByIdFromCache(storeId).getFranchiseeId()).collect(Collectors.toList());
+            }
+            if (CollectionUtils.isEmpty(franchiseeIds)) {
+                return R.ok(Collections.emptyList());
+            }
+        }
+        
         BatteryMemberCardQuery query = BatteryMemberCardQuery.builder().size(size).offset(offset).tenantId(TenantContextHolder.getTenantId()).id(mid).franchiseeId(franchiseeId)
                 .status(status).businessType(businessType == null ? 0 : businessType).rentType(rentType).rentUnit(rentUnit).name(name).delFlag(BatteryMemberCard.DEL_NORMAL)
                 .franchiseeIds(franchiseeIds).batteryModel(batteryModel).userInfoGroupId(Objects.nonNull(userGroupId) ? userGroupId.toString() : null).build();
@@ -156,7 +166,17 @@ public class JsonAdminBatteryMemberCardController extends BaseController {
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
             franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
             if (CollectionUtils.isEmpty(franchiseeIds)) {
-                return R.ok(NumberConstant.ZERO);
+                return R.ok(Collections.emptyList());
+            }
+        }
+        
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
+            List<Long> storeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if (CollectionUtils.isNotEmpty(storeIds)) {
+                franchiseeIds = storeIds.stream().map(storeId -> storeService.queryByIdFromCache(storeId).getFranchiseeId()).collect(Collectors.toList());
+            }
+            if (CollectionUtils.isEmpty(franchiseeIds)) {
+                return R.ok(Collections.emptyList());
             }
         }
         
@@ -304,16 +324,10 @@ public class JsonAdminBatteryMemberCardController extends BaseController {
      * @return 修改行数
      */
     @PutMapping("/admin/battery/memberCard/batchUpdateSortParam")
-    public R batchUpdateSortParam(@RequestBody @Validated ValidList<MemberCardAndCarRentalPackageSortParamQuery> sortParamQueries) {
-        
-        TokenUser user = SecurityUtils.getUserInfo();
-        if (Objects.isNull(user)) {
+    public R<Integer> batchUpdateSortParam(@RequestBody @Validated ValidList<MemberCardAndCarRentalPackageSortParamQuery> sortParamQueries) {
+        TokenUser tokenUser = SecurityUtils.getUserInfo();
+        if (Objects.isNull(tokenUser) || Objects.isNull(userService.queryByUidFromCache(tokenUser.getUid()))) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
-        }
-        
-        // 仅超级管理员和运营商可修改排序参数
-        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
-            return R.ok();
         }
         
         return R.ok(batteryMemberCardService.batchUpdateSortParam(sortParamQueries));
@@ -325,19 +339,13 @@ public class JsonAdminBatteryMemberCardController extends BaseController {
      * @return 返回id、name、sortParam、createTime
      */
     @GetMapping("/admin/battery/memberCard/listMemberCardForSort")
-    public R listMemberCardForSort() {
-        
-        TokenUser user = SecurityUtils.getUserInfo();
-        if (Objects.isNull(user)) {
+    public R<List<BatteryMemberCardVO>> listMemberCardForSort() {
+        TokenUser tokenUser = SecurityUtils.getUserInfo();
+        if (Objects.isNull(tokenUser) || Objects.isNull(userService.queryByUidFromCache(tokenUser.getUid()))) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         
-        // 查询数据较多，限制仅超级管理员和运营商可使用
-        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
-            return R.ok();
-        }
-        
-        return R.ok(batteryMemberCardService.listMemberCardForSort());
+        return R.ok(batteryMemberCardService.listMemberCardForSort(tokenUser));
     }
     
 }
