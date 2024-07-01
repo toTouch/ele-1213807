@@ -658,4 +658,7 @@ public interface CacheConstant {
     
     //角色权限绑定操作
     String ROLE_PERMISSION_OPERATE_KEY = "saas_electricity:role_permission_opt:%s";
+    
+    //逾期用户备注重复提交锁
+    String CACHE_USERINFO_OVERDUE_REMARK_SAVE_LOCK = "cache_userinfo_overdue_remark_save_lock:%d:%d";
 }
