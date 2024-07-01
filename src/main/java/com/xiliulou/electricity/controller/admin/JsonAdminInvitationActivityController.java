@@ -94,7 +94,7 @@ public class JsonAdminInvitationActivityController extends BaseController {
      */
     @GetMapping("/admin/invitationActivity/searchByUser")
     public R searchByUser(@RequestParam("size") long size, @RequestParam("offset") long offset, @RequestParam(value = "uid") Long uid,
-            @RequestParam(value = "activityName", required = false) String activityName, @RequestParam(value = "franchiseeId", required = false) Long franchiseeId) {
+            @RequestParam(value = "activityName", required = false) String activityName) {
         if (size < 0 || size > 50) {
             size = 10L;
         }
@@ -114,7 +114,7 @@ public class JsonAdminInvitationActivityController extends BaseController {
         }
         
         InvitationActivityQuery query = InvitationActivityQuery.builder().size(size).offset(offset).tenantId(TenantContextHolder.getTenantId()).status(NumberConstant.ONE)
-                .name(activityName).franchiseeId(franchiseeId).build();
+                .name(activityName).build();
         
         return returnTripleResult(invitationActivityService.selectActivityByUser(query, uid));
     }
