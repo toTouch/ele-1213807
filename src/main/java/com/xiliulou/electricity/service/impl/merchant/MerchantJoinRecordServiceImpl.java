@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.service.impl.merchant;
 
+import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.StrUtil;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.utils.PhoneUtils;
@@ -7,6 +8,7 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.CommonConstant;
+import com.xiliulou.electricity.constant.DateFormatConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.constant.TimeConstant;
 import com.xiliulou.electricity.constant.merchant.MerchantConstant;
@@ -63,6 +65,7 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -324,12 +327,15 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
         if (Objects.equals(validTimeUnit, CommonConstant.TIME_UNIT_HOURS)) {
             expiredTime += validTime * TimeConstant.HOURS_MILLISECOND;
         }
+    
+        // 创建日期
+        String monthDate = DateUtil.format(new Date(), DateFormatConstant.MONTH_DAY_DATE_FORMAT);
         
         // 生成参与记录
         return MerchantJoinRecord.builder().merchantId(merchantId).channelEmployeeUid(channelEmployeeUid).placeId(placeId).inviterUid(inviterUid).inviterType(inviterType)
                 .joinUid(joinUid).startTime(nowTime).expiredTime(expiredTime).status(MerchantJoinRecordConstant.STATUS_INIT).protectionTime(protectionExpireTime)
                 .protectionStatus(MerchantJoinRecordConstant.PROTECTION_STATUS_NORMAL).delFlag(NumberConstant.ZERO).createTime(nowTime).updateTime(nowTime).tenantId(tenantId)
-                .modifyInviter(MerchantJoinRecordConstant.MODIFY_INVITER_NO).build();
+                .modifyInviter(MerchantJoinRecordConstant.MODIFY_INVITER_NO).monthDate(monthDate).build();
     }
     
     @Slave

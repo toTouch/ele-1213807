@@ -11,11 +11,11 @@
         insert into t_merchant_join_record
         <trim prefix="(" suffix=")" suffixOverrides=",">
             merchant_id, channel_employee_uid, place_id, inviter_uid, inviter_type, join_uid, start_time, expired_time, status, protection_time, protection_status, del_flag,
-            create_time, update_time, tenant_id, remark, modify_inviter
+            create_time, update_time, tenant_id, remark, modify_inviter, month_date
         </trim>
         <trim prefix="values (" suffix=")" suffixOverrides=",">
             #{merchantId}, #{channelEmployeeUid}, #{placeId}, #{inviterUid}, #{inviterType}, #{joinUid}, #{startTime}, #{expiredTime}, #{status}, #{protectionTime},
-            #{protectionStatus}, #{delFlag}, #{createTime}, #{updateTime}, #{tenantId}, #{remark}, #{modifyInviter}
+            #{protectionStatus}, #{delFlag}, #{createTime}, #{updateTime}, #{tenantId}, #{remark}, #{modifyInviter}, #{monthDate}
         </trim>
     </insert>
     
