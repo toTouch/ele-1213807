@@ -43,7 +43,7 @@ public class JsonAdminNotifyUserInfoController {
      * @author caobotao.cbt
      * @date 2024/6/26 15:05
      */
-    @PostMapping("/notify/userInfo")
+    @PostMapping("/admin/notify/userInfo")
     public R create(@RequestBody @Validated(CreateGroup.class) NotifyUserInfoOptRequest request) {
         return notifyUserInfoService.insert(request);
     }
@@ -56,7 +56,7 @@ public class JsonAdminNotifyUserInfoController {
      * @author caobotao.cbt
      * @date 2024/6/26 15:05
      */
-    @PutMapping("/notify/userInfo")
+    @PutMapping("/admin/notify/userInfo")
     public R update(@RequestBody @Validated(UpdateGroup.class) NotifyUserInfoOptRequest request) {
         return notifyUserInfoService.update(request);
     }
@@ -69,7 +69,7 @@ public class JsonAdminNotifyUserInfoController {
      * @author caobotao.cbt
      * @date 2024/6/26 15:05
      */
-    @PostMapping("/notify/user/getOpenid")
+    @PostMapping("/admin/notify/user/getOpenid")
     public R getOpenid(@RequestBody @Validated NotifyUserInfoQryRequest.QueryByCode request) {
         return notifyUserInfoService.queryWechatOpenIdByCode(request.getCode());
     }
@@ -82,7 +82,7 @@ public class JsonAdminNotifyUserInfoController {
      * @author caobotao.cbt
      * @date 2024/6/26 15:05
      */
-    @GetMapping("/notify/userInfo/{id}")
+    @GetMapping("/admin/notify/userInfo/{id}")
     public R userInfo(@PathVariable(value = "id") String openId) {
         return notifyUserInfoService.queryByOpenIdFromCache(openId);
     }
@@ -96,7 +96,7 @@ public class JsonAdminNotifyUserInfoController {
      * @author caobotao.cbt
      * @date 2024/6/26 15:05
      */
-    @GetMapping("/notify/user/list")
+    @GetMapping("/admin/notify/user/list")
     public R userInfo(@RequestParam("offset") Integer offset, @RequestParam("size") Integer size) {
         return notifyUserInfoService.queryAll(offset, size);
     }

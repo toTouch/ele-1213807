@@ -60,7 +60,7 @@
     
     <!--新增所有列-->
     <insert id="insert" keyProperty="id" useGeneratedKeys="true">
-        insert into<include refid="table_name">(user_name, phone, nick_name, open_id, create_time, update_time)
+        insert into<include refid="table_name"/>(user_name, phone, nick_name, open_id, create_time, update_time)
         values (#{userName}, #{phone}, #{nickName}, #{openId},now(),now())
     </insert>
     
