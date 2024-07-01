@@ -4,6 +4,7 @@
 
 package com.xiliulou.electricity.mq.handler.message.wechat;
 
+import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.dto.message.SendDTO;
 import com.xiliulou.electricity.dto.message.SendReceiverDTO;
 import com.xiliulou.electricity.entity.MqNotifyCommon;
@@ -48,7 +49,7 @@ public abstract class AbstractWechatOfficialAccountSendHandler extends AbstractM
         }
         
         
-        Map<String, String> map = converterParamMap(mqNotifyCommon.getData().toString());
+        Map<String, String> map = converterParamMap(JsonUtil.toJson(mqNotifyCommon.getData()));
         
         if (MapUtils.isEmpty(map)) {
             return null;

@@ -44,7 +44,7 @@ public abstract class AbstractMallSendHandler extends AbstractMessageSendHandler
             return null;
         }
         
-        MQMailMessageNotify notify = JsonUtil.fromJson(mqNotifyCommon.getData().toString(), MQMailMessageNotify.class);
+        MQMailMessageNotify notify = JsonUtil.fromJson(JsonUtil.toJson(mqNotifyCommon.getData()), MQMailMessageNotify.class);
         
         Set<String> receiver = notify.getTo().stream().map(e -> e.getEmail()).collect(Collectors.toSet());
         
