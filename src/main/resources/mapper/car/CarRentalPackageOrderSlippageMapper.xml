@@ -30,6 +30,8 @@
         <result property="lateFeePay" column="late_fee_pay" jdbcType="DECIMAL"/>
         <result property="payState" column="pay_state" jdbcType="INTEGER"/>
         <result property="payTime" column="pay_time" jdbcType="BIGINT"/>
+        <result property="wechatMerchantId" column="wechat_merchant_id" jdbcType="VARCHAR"/>
+        <result property="payFranchiseeId" column="pay_franchisee_id" jdbcType="BIGINT"/>
     </resultMap>
     
     <!-- 表名 -->
@@ -43,7 +45,7 @@
     <!-- 私有字段 -->
     <sql id="private_field">
         `uid`, `order_no`, `rental_package_order_no`, `rental_package_id`, `rental_package_type`, `type`, `car_model_id`, `car_sn`, `battery_model_type`, `battery_sn`, `late_fee`, `late_fee_start_time`,
-        `late_fee_end_time`, `late_fee_pay`, `pay_state`, `pay_time`
+        `late_fee_end_time`, `late_fee_pay`, `pay_state`, `pay_time`, `wechat_merchant_id`, `pay_franchisee_id`
     </sql>
     
     <!-- 全部字段 -->
@@ -112,6 +114,8 @@
             <if test=" lateFeePay != null ">`late_fee_pay`,</if>
             <if test=" payState != null ">`pay_state`,</if>
             <if test=" payTime != null ">`pay_time`,</if>
+            <if test=" wechatMerchantId != null and wechatMerchantId != '' ">`wechat_merchant_id`,</if>
+            <if test=" payFranchiseeId != null ">`pay_franchisee_id`,</if>
         </trim>
     </sql>
     <!-- 条件新增字段值 -->
@@ -141,6 +145,8 @@
             <if test=" lateFeePay != null ">#{lateFeePay},</if>
             <if test=" payState != null ">#{payState},</if>
             <if test=" payTime != null ">#{payTime},</if>
+            <if test=" wechatMerchantId != null and wechatMerchantId != '' ">#{wechatMerchantId},</if>
+            <if test=" payFranchiseeId != null ">#{payFranchiseeId},</if>
         </trim>
     </sql>
     
@@ -164,6 +170,8 @@
             <if test=" payState != null ">, `pay_state` = #{payState}</if>
             <if test=" payTime != null ">, `pay_time` = #{payTime}</if>
             <if test=" updateUid != null ">, `update_uid` = #{updateUid}</if>
+            <if test=" wechatMerchantId != null and wechatMerchantId != '' ">, `wechat_merchant_id` = #{wechatMerchantId}</if>
+            <if test=" payFranchiseeId != null ">, `pay_franchisee_id` = #{payFranchiseeId}</if>
         </set>
         <where>
             `id` = #{id}

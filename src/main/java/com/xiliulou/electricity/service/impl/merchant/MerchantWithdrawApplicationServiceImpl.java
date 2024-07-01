@@ -1,15 +1,22 @@
 package com.xiliulou.electricity.service.impl.merchant;
 
 import cn.hutool.core.util.IdUtil;
-import com.huaweicloud.sdk.core.utils.JsonUtils;
 import com.xiliulou.cache.redis.RedisService;
-import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.db.dynamic.annotation.Slave;
+import com.xiliulou.electricity.bo.merchant.MerchantWithdrawApplicationBO;
+import com.xiliulou.electricity.bo.merchant.MerchantWithdrawApplicationRecordBO;
+import com.xiliulou.electricity.bo.wechat.WechatPayParamsDetails;
+import com.xiliulou.electricity.config.merchant.MerchantConfig;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.CommonConstant;
+import com.xiliulou.electricity.constant.MultiFranchiseeConstant;
+import com.xiliulou.electricity.constant.NumberConstant;
+import com.xiliulou.electricity.constant.merchant.MerchantWithdrawApplicationConstant;
+import com.xiliulou.electricity.constant.merchant.MerchantWithdrawApplicationRecordConstant;
 import com.xiliulou.electricity.constant.merchant.MerchantWithdrawConstant;
 import com.xiliulou.electricity.entity.ElectricityPayParams;
 import com.xiliulou.electricity.entity.Franchisee;
+import com.xiliulou.electricity.converter.ElectricityPayParamsConverter;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.UserOauthBind;
 import com.xiliulou.electricity.entity.merchant.Merchant;
@@ -25,6 +32,7 @@ import com.xiliulou.electricity.service.ElectricityPayParamsService;
 import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.UserOauthBindService;
 import com.xiliulou.electricity.service.UserService;
+import com.xiliulou.electricity.service.WechatPayParamsBizService;
 import com.xiliulou.electricity.service.merchant.MerchantService;
 import com.xiliulou.electricity.service.merchant.MerchantUserAmountService;
 import com.xiliulou.electricity.service.merchant.MerchantWithdrawApplicationRecordService;
@@ -40,16 +48,18 @@ import com.xiliulou.pay.weixinv3.dto.WechatTransferOrderQueryResult;
 import com.xiliulou.pay.weixinv3.dto.WechatTransferOrderResult;
 import com.xiliulou.pay.weixinv3.exception.WechatPayException;
 import com.xiliulou.pay.weixinv3.query.WechatTransferBatchOrderDetailQuery;
-import com.xiliulou.pay.weixinv3.query.WechatTransferBatchOrderQuery;
-import com.xiliulou.pay.weixinv3.query.WechatTransferBatchOrderRecordQuery;
-import com.xiliulou.pay.weixinv3.query.WechatTransferOrderRecordQuery;
-import com.xiliulou.pay.weixinv3.service.WechatV3TransferService;
+import com.xiliulou.pay.weixinv3.v2.query.WechatTransferBatchOrderRecordRequest;
+import com.xiliulou.pay.weixinv3.v2.query.WechatTransferBatchOrderRequest;
+import com.xiliulou.pay.weixinv3.v2.query.WechatTransferOrderRecordRequest;
+import com.xiliulou.pay.weixinv3.v2.query.WechatV3CommonRequest;
+import com.xiliulou.pay.weixinv3.v2.service.WechatV3TransferInvokeService;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Triple;
 import org.slf4j.MDC;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
@@ -59,6 +69,7 @@ import javax.swing.text.html.Option;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -101,10 +112,14 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
     private MerchantWithdrawApplicationRecordService merchantWithdrawApplicationRecordService;
     
     @Resource
-    private WechatV3TransferService wechatV3TransferService;
+    private WechatV3TransferInvokeService wechatV3TransferInvokeService;
     
     @Resource
-    private ElectricityPayParamsService electricityPayParamsService;
+    private MerchantConfig merchantConfig;
+    
+    @Resource
+    private WechatPayParamsBizService wechatPayParamsBizService;
+   
     
     @Resource
     private FranchiseeService franchiseeService;
@@ -159,6 +174,7 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
         merchantWithdrawApplication.setDelFlag(CommonConstant.DEL_N);
         merchantWithdrawApplication.setCreateTime(System.currentTimeMillis());
         merchantWithdrawApplication.setUpdateTime(System.currentTimeMillis());
+        merchantWithdrawApplication.setFranchiseeId(queryMerchant.getFranchiseeId());
         
         Integer result = merchantWithdrawApplicationMapper.insertOne(merchantWithdrawApplication);
         
@@ -187,7 +203,7 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
         //检查入参中的状态是否为同意或者拒绝状态，若为其他状态，则提示错误。
         if (!MerchantWithdrawConstant.REVIEW_REFUSED.equals(reviewWithdrawApplicationRequest.getStatus()) && !MerchantWithdrawConstant.REVIEW_SUCCESS.equals(
                 reviewWithdrawApplicationRequest.getStatus())) {
-            log.error("Illegal parameter error for approve withdraw application,  status = {}", reviewWithdrawApplicationRequest.getStatus());
+            log.warn("Illegal parameter error for approve withdraw application,  status = {}", reviewWithdrawApplicationRequest.getStatus());
             return Triple.of(false, "120014", "参数不合法");
         }
         
@@ -196,17 +212,43 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
         if (Objects.isNull(merchantWithdrawApplication)) {
             return Triple.of(false, "120015", "提现申请不存在");
         }
+    
+        Merchant merchant = merchantService.queryByUid(merchantWithdrawApplication.getUid());
+        if (Objects.isNull(merchant) || Objects.isNull(merchant.getFranchiseeId())) {
+            return Triple.of(false, "120212", "商户不存在");
+        }
+        
+        if (Objects.nonNull(reviewWithdrawApplicationRequest.getBindFranchiseeId()) && !Objects.equals(reviewWithdrawApplicationRequest.getBindFranchiseeId(), merchant.getFranchiseeId())) {
+            return Triple.of(false, "120240", "当前加盟商无权限操作");
+        }
         
         //检查提现状态是否为审核中的状态
         if (!MerchantWithdrawConstant.REVIEW_IN_PROGRESS.equals(merchantWithdrawApplication.getStatus())) {
             return Triple.of(false, "120016", "不能重复审核");
         }
+    
+        WechatPayParamsDetails wechatPayParamsDetails = null;
         
-        //支付相关
-        ElectricityPayParams electricityPayParams = electricityPayParamsService.queryFromCache(tenantId);
-        if (Objects.isNull(electricityPayParams)) {
-            log.error("review Merchant withdraw application error, not found pay params for tenant. tenantId = {}", tenantId);
+        try {
+            wechatPayParamsDetails = wechatPayParamsBizService.getDetailsByIdTenantIdAndFranchiseeId(tenantId, merchant.getFranchiseeId());
+        } catch (Exception e) {
+            log.error("review Merchant withdraw application error, get wechat pay params details error, tenantId = {}, franchiseeId={}", tenantId, merchant.getFranchiseeId(), e);
+            
+            return Triple.of(false, "PAY_TRANSFER.0021", "支付配置有误，请检查相关配置");
+        }
+        
+        //查询支付配置详情
+    
+        if (Objects.isNull(wechatPayParamsDetails) || Objects.isNull(wechatPayParamsDetails.getFranchiseeId())) {
             return Triple.of(false, "120017", "未配置支付参数");
+        }
+    
+        wechatPayParamsDetails.setMerchantAppletId(merchantConfig.getMerchantAppletId());
+        
+        // 支付配置类型
+        Integer payConfigType = MerchantWithdrawApplicationRecordConstant.PAY_CONFIG_TYPE_DEFAULT;
+        if (!Objects.equals(wechatPayParamsDetails.getFranchiseeId(), NumberConstant.ZERO_L)) {
+            payConfigType = MerchantWithdrawApplicationRecordConstant.PAY_CONFIG_TYPE_FRANCHISEE;
         }
         
         //生成提现批次单号
@@ -220,6 +262,8 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
         merchantWithdrawApplicationUpdate.setCheckTime(System.currentTimeMillis());
         merchantWithdrawApplicationUpdate.setUpdateTime(System.currentTimeMillis());
         merchantWithdrawApplicationUpdate.setOperator(user.getUid());
+        merchantWithdrawApplicationUpdate.setPayConfigType(payConfigType);
+        merchantWithdrawApplicationUpdate.setWechatMerchantId(wechatPayParamsDetails.getWechatMerchantId());
         
         //若为拒绝提现，则修改提现状态为已拒绝，并且修改提现记录表中的提现状态为已拒绝。
         if (MerchantWithdrawConstant.REVIEW_REFUSED.equals(reviewWithdrawApplicationRequest.getStatus())) {
@@ -236,7 +280,7 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
     
         UserOauthBind userOauthBind = userOauthBindService.queryUserOauthBySysId(merchantWithdrawApplication.getUid(), tenantId);
         if (Objects.isNull(userOauthBind) || Objects.isNull(userOauthBind.getThirdId())) {
-            log.error("review Merchant withdraw application error, not found user auth bind info for merchant user. uid = {}", merchantWithdrawApplication.getUid());
+            log.warn("review Merchant withdraw application warn, not found user auth bind info for merchant user. uid = {}", merchantWithdrawApplication.getUid());
             return Triple.of(false, "120018", "未找到用户的第三方授权信息");
         }
         
@@ -255,15 +299,18 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
         merchantWithdrawApplicationRecord.setTenantId(merchantWithdrawApplication.getTenantId());
         merchantWithdrawApplicationRecord.setCreateTime(System.currentTimeMillis());
         merchantWithdrawApplicationRecord.setUpdateTime(System.currentTimeMillis());
+        merchantWithdrawApplicationRecord.setPayConfigType(payConfigType);
+        merchantWithdrawApplicationRecord.setFranchiseeId(merchantWithdrawApplication.getFranchiseeId());
         
-        //TODO 发起微信第三方提现申请
-        WechatTransferBatchOrderQuery wechatTransferBatchOrderQuery = new WechatTransferBatchOrderQuery();
-        wechatTransferBatchOrderQuery.setAppid(electricityPayParams.getMerchantAppletId());
+        // 发起微信第三方提现申请
+        WechatTransferBatchOrderRequest wechatTransferBatchOrderQuery = new WechatTransferBatchOrderRequest();
+        WechatV3CommonRequest wechatV3CommonRequest = ElectricityPayParamsConverter.qryDetailsToCommonRequest(wechatPayParamsDetails);
+        wechatTransferBatchOrderQuery.setCommonRequest(wechatV3CommonRequest);
+        wechatTransferBatchOrderQuery.setAppid(wechatPayParamsDetails.getMerchantAppletId());
         //转账批次号
         wechatTransferBatchOrderQuery.setOutBatchNo(batchNo);
         wechatTransferBatchOrderQuery.setTotalAmount(merchantWithdrawApplication.getAmount().multiply(new BigDecimal(100)).intValue());
         wechatTransferBatchOrderQuery.setTotalNum(BigDecimal.ONE.intValue());
-        wechatTransferBatchOrderQuery.setTenantId(merchantWithdrawApplication.getTenantId());
         wechatTransferBatchOrderQuery.setBatchName(
                 DateUtils.getYearAndMonthAndDayByTimeStamps(System.currentTimeMillis()) + MerchantWithdrawConstant.WECHAT_TRANSFER_BATCH_NAME_SUFFIX);
         wechatTransferBatchOrderQuery.setBatchRemark(
@@ -285,12 +332,11 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
         Integer result;
         try {
             log.info("wechat transfer for single review start. request = {}", wechatTransferBatchOrderQuery);
-            WechatTransferOrderResult wechatTransferOrderResult = wechatV3TransferService.transferBatch(wechatTransferBatchOrderQuery);
+            WechatTransferOrderResult wechatTransferOrderResult = wechatV3TransferInvokeService.transferBatch(wechatTransferBatchOrderQuery);
             log.info("wechat response data for single review, result = {}", wechatTransferOrderResult);
             if (Objects.nonNull(wechatTransferOrderResult)) {
                 merchantWithdrawApplicationUpdate.setStatus(MerchantWithdrawConstant.WITHDRAW_IN_PROGRESS);
                 merchantWithdrawApplicationUpdate.setTransactionBatchId(wechatTransferOrderResult.getBatchId());
-                merchantWithdrawApplicationUpdate.setResponse(JsonUtil.toJson(wechatTransferOrderResult));
                 //更新明细批次记录状态为提现中
                 merchantWithdrawApplicationRecord.setStatus(MerchantWithdrawConstant.WITHDRAW_IN_PROGRESS);
             } else {
@@ -310,9 +356,8 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
             log.info("wechat transfer for single review end. batch no = {}", batchNo);
         } catch (WechatPayException e) {
             //throw new RuntimeException(e);
-            log.error("transfer amount for merchant withdraw review error, e = {}", e);
+            log.error("transfer amount for merchant withdraw review error", e);
             merchantWithdrawApplicationUpdate.setStatus(MerchantWithdrawConstant.WITHDRAW_FAIL);
-            merchantWithdrawApplicationUpdate.setResponse(e.getMessage());
             merchantWithdrawApplicationRecord.setStatus(MerchantWithdrawConstant.WITHDRAW_FAIL);
             
             merchantWithdrawApplicationRecordService.insertOne(merchantWithdrawApplicationRecord);
@@ -364,12 +409,48 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
             return Triple.of(false, "120015", "提现申请不存在");
         }
         
-        //支付相关
-        ElectricityPayParams electricityPayParams = electricityPayParamsService.queryFromCache(tenantId);
-        if (Objects.isNull(electricityPayParams)) {
-            log.error("review Merchant withdraw application error, not found pay params for tenant. tenantId = {}", tenantId);
+        // 检测审核记录中是否存在不同的加盟商提现审核数据
+        List<Long> franchiseeIdList = merchantWithdrawApplicationMapper.selectListFranchiseeIdByIds(batchReviewWithdrawApplicationRequest.getIds(), tenantId.longValue());
+        if (ObjectUtils.isEmpty(franchiseeIdList)) {
+            return Triple.of(false, "120027", "根据加盟商查询提现记录不存在");
+        }
+        
+        // 检测审核的提现订单中是否存在不同加盟商的提现订单
+        if (franchiseeIdList.size() > NumberConstant.ONE) {
+            log.info("batch handle withdraw record info, franchisee only select one uid={}, ids = {}", user.getUid(), batchReviewWithdrawApplicationRequest.getIds());
+            return Triple.of(false, "120026", "请选择同一加盟商的提现订单进行审核");
+        }
+    
+        Long franchiseeId = franchiseeIdList.get(NumberConstant.ZERO);
+        
+        // 登录用户的加盟商id和提现订单对应的加盟商id是否相等
+        if (Objects.nonNull(batchReviewWithdrawApplicationRequest.getBindFranchiseeId()) && !Objects.equals(batchReviewWithdrawApplicationRequest.getBindFranchiseeId(), franchiseeId)) {
+            log.info("batch handle withdraw record info, franchisee id is not equal, user uid={}, franchisee id={}, ids = {}", user.getUid(), franchiseeId, batchReviewWithdrawApplicationRequest.getIds());
+            return Triple.of(false, "120240", "当前加盟商无权限操作");
+        }
+    
+        //查询支付配置详情
+        WechatPayParamsDetails wechatPayParamsDetails = null;
+    
+        try {
+            wechatPayParamsDetails  = wechatPayParamsBizService.getDetailsByIdTenantIdAndFranchiseeId(tenantId, franchiseeId);
+        } catch (Exception e) {
+            log.error("review batch merchant withdraw application error, get wechat pay params details error, tenantId = {}, franchiseeId={}", tenantId, franchiseeId, e);
+            return Triple.of(false, "PAY_TRANSFER.0021", "支付配置有误，请检查相关配置");
+        }
+    
+        if (Objects.isNull(wechatPayParamsDetails) || Objects.isNull(wechatPayParamsDetails.getFranchiseeId())) {
             return Triple.of(false, "120017", "未配置支付参数");
         }
+    
+        wechatPayParamsDetails.setMerchantAppletId(merchantConfig.getMerchantAppletId());
+        
+        // 支付配置类型
+        Integer payConfigType = MerchantWithdrawApplicationRecordConstant.PAY_CONFIG_TYPE_DEFAULT;
+        if (!Objects.equals(wechatPayParamsDetails.getFranchiseeId(), NumberConstant.ZERO_L)) {
+            payConfigType = MerchantWithdrawApplicationRecordConstant.PAY_CONFIG_TYPE_FRANCHISEE;
+        }
+        
         
         // 过滤已经审核的提现订单
         List<MerchantWithdrawApplication> alreadyReviewList = new ArrayList<>();
@@ -393,6 +474,8 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
         merchantWithdrawApplicationUpdate.setUpdateTime(System.currentTimeMillis());
         merchantWithdrawApplicationUpdate.setTenantId(tenantId);
         merchantWithdrawApplicationUpdate.setOperator(user.getUid());
+        merchantWithdrawApplicationUpdate.setPayConfigType(payConfigType);
+        merchantWithdrawApplicationUpdate.setWechatMerchantId(wechatPayParamsDetails.getWechatMerchantId());
         
         //若为拒绝提现，则修改提现状态为已拒绝，并且修改提现记录表中的提现状态为已拒绝。
         if (MerchantWithdrawConstant.REVIEW_REFUSED.equals(batchReviewWithdrawApplicationRequest.getStatus())) {
@@ -439,6 +522,7 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
         List<WechatTransferBatchOrderDetailQuery> wechatTransferBatchOrderDetailQueryList = new ArrayList<>();
     
         AtomicInteger suffixId = new AtomicInteger();
+        Integer finalPayConfigType = payConfigType;
         merchantWithdrawApplications.forEach(merchantWithdrawApplication -> {
             //生成提现明细的批次号
             String batchDetailNo = OrderIdUtil.generateBusinessId(BusinessType.MERCHANT_WITHDRAW_BATCH_DETAIL, merchantWithdrawApplication.getUid()) + suffixId.getAndIncrement();
@@ -453,6 +537,8 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
             withdrawApplicationRecord.setTenantId(merchantWithdrawApplication.getTenantId());
             withdrawApplicationRecord.setCreateTime(System.currentTimeMillis());
             withdrawApplicationRecord.setUpdateTime(System.currentTimeMillis());
+            withdrawApplicationRecord.setPayConfigType(finalPayConfigType);
+            withdrawApplicationRecord.setFranchiseeId(merchantWithdrawApplication.getFranchiseeId());
             
             merchantWithdrawApplicationRecords.add(withdrawApplicationRecord);
             
@@ -478,13 +564,14 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
         
         //发起微信第三方提现申请
         //创建调用第三方参数信息
-        WechatTransferBatchOrderQuery wechatTransferBatchOrderQuery = new WechatTransferBatchOrderQuery();
-        wechatTransferBatchOrderQuery.setAppid(electricityPayParams.getMerchantAppletId());
+        WechatTransferBatchOrderRequest wechatTransferBatchOrderQuery = new WechatTransferBatchOrderRequest();
+        WechatV3CommonRequest wechatV3CommonRequest = ElectricityPayParamsConverter.qryDetailsToCommonRequest(wechatPayParamsDetails);
+        wechatTransferBatchOrderQuery.setCommonRequest(wechatV3CommonRequest);
+        wechatTransferBatchOrderQuery.setAppid(wechatPayParamsDetails.getMerchantAppletId());
         //转账批次号
         wechatTransferBatchOrderQuery.setOutBatchNo(batchNo);
         wechatTransferBatchOrderQuery.setTotalAmount(totalAmount.multiply(new BigDecimal(100)).intValue());
         wechatTransferBatchOrderQuery.setTotalNum(wechatTransferBatchOrderDetailQueryList.size());
-        wechatTransferBatchOrderQuery.setTenantId(tenantId);
         wechatTransferBatchOrderQuery.setBatchName(
                 DateUtils.getYearAndMonthAndDayByTimeStamps(System.currentTimeMillis()) + MerchantWithdrawConstant.WECHAT_TRANSFER_BATCH_NAME_SUFFIX);
         wechatTransferBatchOrderQuery.setBatchRemark(
@@ -495,13 +582,12 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
         Integer result;
         try {
             log.info("wechat transfer for batch review start. request = {}", wechatTransferBatchOrderQuery);
-            WechatTransferOrderResult wechatTransferOrderResult = wechatV3TransferService.transferBatch(wechatTransferBatchOrderQuery);
+            WechatTransferOrderResult wechatTransferOrderResult = wechatV3TransferInvokeService.transferBatch(wechatTransferBatchOrderQuery);
             log.info("wechat response data for batch review, result = {}", wechatTransferOrderResult);
             if (Objects.nonNull(wechatTransferOrderResult)) {
                 //更新提现申请状态为已审核，并且修改提现批次明细记录表中的提现状态为提现中。
                 merchantWithdrawApplicationUpdate.setStatus(MerchantWithdrawConstant.WITHDRAW_IN_PROGRESS);
                 merchantWithdrawApplicationUpdate.setTransactionBatchId(wechatTransferOrderResult.getBatchId());
-                merchantWithdrawApplicationUpdate.setResponse(JsonUtil.toJson(wechatTransferOrderResult));
                 
             } else {
                 //若返回为空，调用微信第三方错误，将提现状态设置为提现失败
@@ -526,10 +612,9 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
             log.info("wechat transfer for batch review end. batch no = {}", batchNo);
             
         } catch (WechatPayException e) {
-            log.error("batch review merchant withdraw application error, wechat pay exception. e = {}", e);
+            log.error("batch review merchant withdraw application error, wechat pay exception", e);
             //将提现申请状态为提现失败，并且修改提现批次明细记录表中的提现状态为提现失败。
             merchantWithdrawApplicationUpdate.setStatus(MerchantWithdrawConstant.WITHDRAW_FAIL);
-            merchantWithdrawApplicationUpdate.setResponse(e.getMessage());
             
             merchantWithdrawApplicationRecords.forEach(withdrawApplicationRecord -> {
                 withdrawApplicationRecord.setStatus(MerchantWithdrawConstant.WITHDRAW_FAIL);
@@ -598,13 +683,10 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
         return merchantWithdrawApplicationMapper.sumByStatus(tenantId, status, uid);
     }
     
-    @Transactional(rollbackFor = Exception.class)
     @Override
     public void updateMerchantWithdrawStatus() {
         String traceId = IdUtil.simpleUUID();
         MDC.put(CommonConstant.TRACE_ID, traceId);
-        
-        log.info("Merchant withdraw application update status task start. trace id = {}", traceId);
         
         try {
             //获取审核状态为提现中且审核时间为30分钟前的提现申请记录
@@ -617,6 +699,29 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
                 if (CollectionUtils.isEmpty(merchantWithdrawApplications)) {
                     return;
                 }
+    
+                List<String> batchNoList = merchantWithdrawApplications.parallelStream().map(MerchantWithdrawApplication::getBatchNo).collect(Collectors.toList());
+                
+                // 检测当前批次号是否存在加盟商不同的提现订单如果存在则查询使用的是默认的配置
+                List<MerchantWithdrawApplicationBO> merchantWithdrawApplicationBOS = merchantWithdrawApplicationMapper.selectListByBatchNoList(batchNoList);
+                if (CollectionUtils.isEmpty(merchantWithdrawApplicationBOS)) {
+                    log.warn("Merchant withdraw application update status task error, withdraw application is empty, batchNoList = {}", batchNoList);
+                    return;
+                }
+                
+                // 支付配置类型map
+                Map<String, Integer> payConfigTypeMap = new HashMap<>();
+    
+                Map<String, List<Long>> franchiseeIdMap = merchantWithdrawApplicationBOS.stream()
+                        .collect(Collectors.groupingBy(MerchantWithdrawApplicationBO::getBatchNo, Collectors.collectingAndThen(Collectors.toList(), list -> list.stream().map(MerchantWithdrawApplicationBO::getFranchiseeId).distinct().collect(Collectors.toList()))));
+                
+                Map<String, String> weChatMerchantIdMap = new HashMap<>();
+                
+                merchantWithdrawApplicationBOS.stream().forEach(merchantWithdrawApplicationBO -> {
+                    payConfigTypeMap.put(merchantWithdrawApplicationBO.getBatchNo(), merchantWithdrawApplicationBO.getPayConfigType());
+                    weChatMerchantIdMap.put(merchantWithdrawApplicationBO.getBatchNo(), merchantWithdrawApplicationBO.getWechatMerchantId());
+                    
+                });
                 
                 //根据批次号循环调用第三方接口查询提现结果状态
                 merchantWithdrawApplications.forEach(merchantWithdrawApplication -> {
@@ -627,15 +732,65 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
                         return;
                     }
                     
+                    if (ObjectUtils.isEmpty(franchiseeIdMap.get(batchNo))) {
+                        log.warn("update merchant withdraw status error!, franchisee id is empty, batch no = {}", batchNo);
+                        return;
+                    }
+                    
+                    if (ObjectUtils.isEmpty(payConfigTypeMap.get(batchNo))) {
+                        log.warn("update merchant withdraw status error!, pay config type is empty, batch no = {}", batchNo);
+                        return;
+                    }
+                    
+                    Long franchiseeId = MultiFranchiseeConstant.DEFAULT_FRANCHISEE;
+                    
+                    // 批量提现审核的时候使用的支付配置为加盟商的配置
+                    if (Objects.equals(payConfigTypeMap.get(batchNo), MerchantWithdrawApplicationRecordConstant.PAY_CONFIG_TYPE_FRANCHISEE)) {
+                        franchiseeId = franchiseeIdMap.get(batchNo).get(0);
+                    }
+    
+                    //查询支付配置详情
+                    WechatPayParamsDetails details = null;
+    
+                    try {
+                        details  = wechatPayParamsBizService.getDetailsByIdTenantIdAndFranchiseeId(tenantId, franchiseeId);
+                    } catch (Exception e) {
+                        log.error("update merchant withdraw status error get wechat pay params details error, tenantId = {}, franchiseeId={}", tenantId, franchiseeId, e);
+                        return;
+                    }
+                    
+                    if (Objects.isNull(details)) {
+                        log.warn("update merchant withdraw status error! , wechat pay params details is null, batchNo = {}, tenantId = {}, franchiseeId={}", batchNo, tenantId, franchiseeId);
+                        return;
+                    }
+                    
+                    // 判断支付配置对应的商户号是否发送改变
+                    String wechatMerchantId = weChatMerchantIdMap.get(batchNo);
+                    if (StringUtils.isNotEmpty(wechatMerchantId) && (!Objects.equals(wechatMerchantId, details.getWechatMerchantId()) || !Objects.equals(details.getFranchiseeId(), franchiseeId))) {
+                        MerchantWithdrawApplication updateWithdrawApplicationUpdate = new MerchantWithdrawApplication();
+                        updateWithdrawApplicationUpdate.setBatchNo(batchNo);
+                        updateWithdrawApplicationUpdate.setTenantId(tenantId);
+                        updateWithdrawApplicationUpdate.setUpdateTime(System.currentTimeMillis());
+                        // 支付配置发送了改变
+                        updateWithdrawApplicationUpdate.setPayConfigWhetherChange(MerchantWithdrawApplicationConstant.PAY_CONFIG_WHETHER_CHANGE_YES);
+                        merchantWithdrawApplicationMapper.updatePayConfigWhetherChangeByBatchNo(updateWithdrawApplicationUpdate);
+                        
+                        log.warn("update merchant withdraw status error! , wechat merchant id is not equal, batchNo = {}, tenantId = {}, franchiseeId={}, oldWechatMerchantId = {}, newWechatMerchantId", batchNo, tenantId, franchiseeId, merchantWithdrawApplication.getWechatMerchantId(), details.getWechatMerchantId());
+                        return;
+                    }
+                    
+                    //转换支付接口调用参数
+                    WechatV3CommonRequest wechatV3CommonRequest = ElectricityPayParamsConverter.qryDetailsToCommonRequest(details);
+                    
                     //调用第三方接口查询提现结果状态
-                    WechatTransferBatchOrderRecordQuery wechatTransferBatchOrderRecordQuery = new WechatTransferBatchOrderRecordQuery();
+                    WechatTransferBatchOrderRecordRequest wechatTransferBatchOrderRecordQuery = new WechatTransferBatchOrderRecordRequest();
                     wechatTransferBatchOrderRecordQuery.setBatchId(batchNo);
-                    wechatTransferBatchOrderRecordQuery.setTenantId(tenantId);
                     wechatTransferBatchOrderRecordQuery.setNeedQueryDetail(true);
                     wechatTransferBatchOrderRecordQuery.setDetailStatus("ALL");
+                    wechatTransferBatchOrderRecordQuery.setCommonRequest(wechatV3CommonRequest);
                     
                     try {
-                        WechatTransferBatchOrderQueryResult wechatTransferBatchOrderQueryResult = wechatV3TransferService.queryTransferBatchOrder(
+                        WechatTransferBatchOrderQueryResult wechatTransferBatchOrderQueryResult = wechatV3TransferInvokeService.queryTransferBatchOrder(
                                 wechatTransferBatchOrderRecordQuery);
                         if (Objects.isNull(wechatTransferBatchOrderQueryResult) && Objects.isNull(wechatTransferBatchOrderQueryResult.getTransferBatch())) {
                             log.info("query batch wechat transfer order info, response is null, batchNo = {}, tenant id = {}, response = {}",
@@ -654,7 +809,6 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
                         updateWithdrawApplication.setBatchNo(batchNo);
                         updateWithdrawApplication.setTenantId(tenantId);
                         updateWithdrawApplication.setUpdateTime(System.currentTimeMillis());
-                        updateWithdrawApplication.setResponse(JsonUtil.toJson(wechatTransferBatchOrderQueryResult));
                         
                         //如果当前批次结果为已完成，则将提现申请状态修改为提现成功，如果当前批次结果为已关闭，则将提现申请状态修改为提现失败。
                         if (MerchantWithdrawConstant.WECHAT_BATCH_STATUS_FINISHED.equals(batchStatus)) {
@@ -688,7 +842,7 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
                         }
                         
                     } catch (WechatPayException e) {
-                        log.error("query batch wechat transfer order info error, e = {}", e);
+                        log.error("query batch wechat transfer order info error, e = {}, params = {}", e, wechatTransferBatchOrderRecordQuery);
                         
                     }
                     
@@ -732,24 +886,48 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
         return merchantWithdrawApplicationMapper.selectRecordListCount(merchantWithdrawApplicationRequest);
     }
     
-    @Transactional(rollbackFor = Exception.class)
     public void handleBatchDetailsInfo(String batchNo, Integer tenantId, WechatTransferBatchOrderQueryResult wechatTransferBatchOrderQueryResult) {
         //查询当前批次的明细记录，并查询每条明细的处理结果是否为成功状态，若失败，则记录失败原因。
-        List<MerchantWithdrawApplicationRecord> merchantWithdrawApplicationRecords = merchantWithdrawApplicationRecordService.selectListByBatchNo(batchNo, tenantId);
+        List<MerchantWithdrawApplicationRecordBO> merchantWithdrawApplicationRecords = merchantWithdrawApplicationRecordService.selectListByBatchNo(batchNo, tenantId);
         if (CollectionUtils.isEmpty(merchantWithdrawApplicationRecords)) {
             log.info("query batch wechat transfer order detail info, merchant withdraw application record is null, batchNo = {}, tenant id = {}", batchNo, tenantId);
             return;
         }
         
         merchantWithdrawApplicationRecords.forEach(merchantWithdrawApplicationRecord -> {
-            WechatTransferOrderRecordQuery wechatTransferOrderRecordQuery = new WechatTransferOrderRecordQuery();
+            WechatTransferOrderRecordRequest wechatTransferOrderRecordQuery = new WechatTransferOrderRecordRequest();
             wechatTransferOrderRecordQuery.setOutBatchNo(merchantWithdrawApplicationRecord.getBatchNo());
             wechatTransferOrderRecordQuery.setOutDetailNo(merchantWithdrawApplicationRecord.getBatchDetailNo());
-            wechatTransferOrderRecordQuery.setTenantId(merchantWithdrawApplicationRecord.getTenantId());
+    
+            Long franchiseeId = MultiFranchiseeConstant.DEFAULT_FRANCHISEE;
+    
+            // 如果支付配置类型为默认，则查询租户的默认配置
+            if (Objects.equals(merchantWithdrawApplicationRecord.getPayConfigType(), MerchantWithdrawApplicationRecordConstant.PAY_CONFIG_TYPE_FRANCHISEE)) {
+                franchiseeId = merchantWithdrawApplicationRecord.getFranchiseeId();
+            }
+            
+            //查询支付配置详情
+            WechatPayParamsDetails details = null;
+    
+            try {
+                details  = wechatPayParamsBizService.getDetailsByIdTenantIdAndFranchiseeId(tenantId, franchiseeId);
+            } catch (Exception e) {
+                log.error("handle batch withdraw application detail error, get wechat pay params details error, batchNo = {}, tenantId = {}, franchiseeId={}",batchNo, tenantId, franchiseeId, e);
+                return;
+            }
+            
+            if (Objects.isNull(details)) {
+                log.warn("handle batch withdraw application detail error , wechat pay params details is null, batchNo = {}, tenantId = {}, franchiseeId={}", batchNo, tenantId, franchiseeId);
+                return;
+            }
+            
+            //转换支付接口调用参数
+            WechatV3CommonRequest wechatV3CommonRequest = ElectricityPayParamsConverter.qryDetailsToCommonRequest(details);
+            wechatTransferOrderRecordQuery.setCommonRequest(wechatV3CommonRequest);
             
             try {
                 //第三方查询提现结果详细信息
-                WechatTransferOrderQueryResult wechatTransferOrderQueryResult = wechatV3TransferService.queryTransferOrder(wechatTransferOrderRecordQuery);
+                WechatTransferOrderQueryResult wechatTransferOrderQueryResult = wechatV3TransferInvokeService.queryTransferOrder(wechatTransferOrderRecordQuery);
                 
                 //并将失败原因更新至提现详细表中
                 if (Objects.isNull(wechatTransferOrderQueryResult)) {
@@ -767,7 +945,6 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
                 merchantWithdrawApplicationUpdate.setBatchNo(batchNo);
                 merchantWithdrawApplicationUpdate.setTenantId(tenantId);
                 merchantWithdrawApplicationUpdate.setTransactionBatchId(wechatTransferBatchOrderQueryCommonResult.getBatchId());
-                merchantWithdrawApplicationUpdate.setResponse(JsonUtils.toJSON(wechatTransferBatchOrderQueryResult));
                 merchantWithdrawApplicationUpdate.setOrderNo(merchantWithdrawApplicationRecord.getOrderNo());
                 merchantWithdrawApplicationUpdate.setUpdateTime(System.currentTimeMillis());
                 
@@ -778,7 +955,6 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
                 withdrawApplicationRecordUpdate.setUpdateTime(System.currentTimeMillis());
                 withdrawApplicationRecordUpdate.setTransactionBatchId(wechatTransferOrderQueryResult.getBatchId());
                 withdrawApplicationRecordUpdate.setTransactionBatchDetailId(wechatTransferOrderQueryResult.getDetailId());
-                withdrawApplicationRecordUpdate.setResponse(JsonUtils.toJSON(wechatTransferOrderQueryResult));
                 
                 if (MerchantWithdrawConstant.WECHAT_BATCH_DETAIL_STATUS_SUCCESS.equals(detailStatus)) {
                     //更新单条提现申请和单条详细记录为提现成功状态
@@ -802,7 +978,7 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
                 merchantWithdrawApplicationRecordService.updateMerchantWithdrawRecordStatus(withdrawApplicationRecordUpdate);
                 
             } catch (WechatPayException e) {
-                log.error("query wechat transfer order detail info error, e = {}", e);
+                log.error("query wechat transfer order detail info error,  params = {}", wechatTransferOrderRecordQuery, e);
             }
             
         });

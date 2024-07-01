@@ -16,10 +16,10 @@ import org.springframework.web.bind.annotation.RestController;
 @Slf4j
 @RestController
 public class JsonUserActivityInfoController extends BaseController {
-
+    
     @Autowired
     private ActivityService activityService;
-
+    
     /**
      * 获取是否是活动邀请人
      */

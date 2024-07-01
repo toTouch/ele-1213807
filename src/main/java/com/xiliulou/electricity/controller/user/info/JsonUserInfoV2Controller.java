@@ -41,104 +41,105 @@ import java.util.Objects;
 @RestController
 @RequestMapping("/user/info/v2")
 public class JsonUserInfoV2Controller extends BasicController {
-
+    
     @Resource
     private UserBizService userBizService;
-
+    
     @Autowired
     private UserBatteryMemberCardService batteryMemberCardService;
-
+    
     @Autowired
     private BatteryMemberCardService memberCardService;
-
+    
     @Autowired
-
+    
     private CarRentalPackageOrderService carRentalPackageOrderService;
-
+    
     @Resource
     private CarRentalPackageMemberTermService carRentalPackageMemberTermService;
-
+    
     @Resource
     private UserInfoService userInfoService;
     
     @Resource
     private EnterpriseChannelUserService enterpriseChannelUserService;
-
+    
     /**
      * 获取名下的总滞纳金（单电、单车、车电一体）
+     *
      * @return 总金额
      */
     @GetMapping("/querySlippageTotal")
     public R<BigDecimal> querySlippageTotal() {
-
+        
         Integer tenantId = TenantContextHolder.getTenantId();
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-
+        
         return R.ok(userBizService.querySlippageTotal(tenantId, user.getUid()));
     }
-
+    
     /**
-     * 查询用户会员名下的所有套餐的过期时间<br />
-     * 单车、单电、车电一体
+     * 查询用户会员名下的所有套餐的过期时间<br /> 单车、单电、车电一体
+     *
      * @return 会员套餐信息
      */
     @GetMapping("/queryRentalPackage")
     public R<UserMemberPackageVo> queryRentalPackage() {
-
+        
         Integer tenantId = TenantContextHolder.getTenantId();
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             log.error("QueryRentalPackage ERROR! not found user");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-    
+        
         Long uid = user.getUid();
         UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
         if (Objects.isNull(userInfo)) {
             log.error("QueryRentalPackage ERROR! not found user, uid={}", uid);
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-
+        
         UserMemberPackageVo userMemberPackageVo = new UserMemberPackageVo();
         if (ObjectUtils.isNotEmpty(userInfo.getFranchiseeId())) {
             userMemberPackageVo.setFranchiseeId(userInfo.getFranchiseeId().intValue());
         }
-
+        
         // 单电
         if (UserInfo.BATTERY_DEPOSIT_STATUS_YES.equals(userInfo.getBatteryDepositStatus())) {
             UserBatteryMemberCard batteryMemberCard = batteryMemberCardService.selectByUidFromCache(uid);
-                if (ObjectUtils.isNotEmpty(batteryMemberCard) && ObjectUtils.isNotEmpty(batteryMemberCard.getMemberCardId()) && batteryMemberCard.getMemberCardId() != 0L) {
+            if (ObjectUtils.isNotEmpty(batteryMemberCard) && ObjectUtils.isNotEmpty(batteryMemberCard.getMemberCardId()) && batteryMemberCard.getMemberCardId() != 0L) {
                 Long orderExpireTime = batteryMemberCard.getOrderExpireTime();
                 UserMemberBatteryPackageVo batteryPackage = new UserMemberBatteryPackageVo();
                 batteryPackage.setDueTime(orderExpireTime);
                 batteryPackage.setDueTimeTotal(batteryMemberCard.getMemberCardExpireTime());
                 batteryPackage.setMemberCardStatus(batteryMemberCard.getMemberCardStatus());
-
+                
                 BatteryMemberCard batteryMemberCard1 = memberCardService.queryByIdFromCache(batteryMemberCard.getMemberCardId());
                 batteryPackage.setRentUnit(Objects.isNull(batteryMemberCard1) ? null : batteryMemberCard1.getRentUnit());
                 
                 //设置骑手自主续费方式
                 Boolean renewalStatus = enterpriseChannelUserService.checkRenewalStatusByUid(uid);
-                if(renewalStatus){
+                if (renewalStatus) {
                     userMemberPackageVo.setRenewalStatus(RenewalStatusEnum.RENEWAL_STATUS_BY_SELF.getCode());
-                }else{
+                } else {
                     userMemberPackageVo.setRenewalStatus(RenewalStatusEnum.RENEWAL_STATUS_NOT_BY_SELF.getCode());
                 }
                 
                 userMemberPackageVo.setBatteryPackage(batteryPackage);
             }
         }
-
+        
         // 电车、车电一体
         if (UserInfo.CAR_DEPOSIT_STATUS_YES.equals(userInfo.getCarDepositStatus()) || YesNoEnum.YES.getCode().equals(userInfo.getCarBatteryDepositStatus())) {
             CarRentalPackageMemberTermPo memberTermEntity = carRentalPackageMemberTermService.selectByTenantIdAndUid(tenantId, uid);
             if (ObjectUtils.isNotEmpty(memberTermEntity) && StringUtils.isNotBlank(memberTermEntity.getRentalPackageOrderNo())) {
                 Integer rentalPackageType = memberTermEntity.getRentalPackageType();
                 Long dueTime = memberTermEntity.getDueTime();
-
+                
                 if (RentalPackageTypeEnum.CAR.getCode().equals(rentalPackageType)) {
                     UserMemberCarPackageVo carPackage = new UserMemberCarPackageVo();
                     carPackage.setDueTime(dueTime);
@@ -146,25 +147,26 @@ public class JsonUserInfoV2Controller extends BasicController {
                     carPackage.setStatus(memberTermEntity.getStatus());
                     userMemberPackageVo.setCarPackage(carPackage);
                 }
-
+                
                 if (RentalPackageTypeEnum.CAR_BATTERY.getCode().equals(rentalPackageType)) {
                     UserMemberCarBatteryPackageVo carBatteryPackage = new UserMemberCarBatteryPackageVo();
                     carBatteryPackage.setDueTime(dueTime);
                     carBatteryPackage.setDueTimeTotal(memberTermEntity.getDueTimeTotal());
                     carBatteryPackage.setStatus(memberTermEntity.getStatus());
-
+                    
                     CarRentalPackageOrderPo carRentalPackageOrderPo = carRentalPackageOrderService.selectByOrderNo(memberTermEntity.getRentalPackageOrderNo());
                     carBatteryPackage.setRentUnit(carRentalPackageOrderPo.getTenancyUnit());
-
+                    
                     userMemberPackageVo.setCarBatteryPackage(carBatteryPackage);
                 }
             }
         }
         return R.ok(userMemberPackageVo);
     }
-
+    
     /**
      * 获取实名认证信息
+     *
      * @return 用户基本信息
      */
     @GetMapping("/queryAuthentication")
@@ -174,7 +176,7 @@ public class JsonUserInfoV2Controller extends BasicController {
         if (Objects.isNull(user)) {
             throw new BizException("ELECTRICITY.0001", "未找到用户");
         }
-
+        
         // 查询用户信息
         UserInfo userInfo = userInfoService.queryByUidFromCache(user.getUid());
         if (Objects.equals(userInfo.getAuthStatus(), UserInfo.AUTH_STATUS_REVIEW_PASSED)) {
@@ -184,7 +186,7 @@ public class JsonUserInfoV2Controller extends BasicController {
             info.setIdNumber(userInfo.getIdNumber());
             return R.ok(info);
         }
-
+        
         return R.ok();
     }
 }

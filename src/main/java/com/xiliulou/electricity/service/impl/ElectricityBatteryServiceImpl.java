@@ -201,62 +201,6 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
      * @return
      */
     @Override
-    @Transactional
-    public R saveElectricityBattery(EleBatteryQuery query) {
-        
-        Integer tenantId = TenantContextHolder.getTenantId();
-        
-        TokenUser user = SecurityUtils.getUserInfo();
-        if (Objects.isNull(user)) {
-            log.warn("ELE WARN! not found user ");
-            return R.fail("ELECTRICITY.0001", "未找到用户");
-        }
-        
-        Integer count = electricitybatterymapper.selectCount(
-                new LambdaQueryWrapper<ElectricityBattery>().eq(ElectricityBattery::getSn, query.getSn()).eq(ElectricityBattery::getDelFlag, ElectricityBattery.DEL_NORMAL));
-        if (count > 0) {
-            return R.fail("100224", "该电池SN已存在!无法重复创建");
-        }
-        
-        Long franchiseeId = null;
-        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
-            Store store = storeService.queryByUid(user.getUid());
-            if (Objects.nonNull(store)) {
-                franchiseeId = store.getFranchiseeId();
-            }
-        }
-        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
-            Franchisee franchisee = franchiseeService.queryByUid(user.getUid());
-            if (Objects.nonNull(franchisee)) {
-                franchiseeId = franchisee.getId();
-            }
-        }
-        
-        Pair<Boolean, String> result = callBatteryPlatSaveSn(Collections.singletonList(query.getSn()), query.getIsNeedSync());
-        if (!result.getKey()) {
-            return R.fail("200005", result.getRight());
-        }
-        
-        ElectricityBattery saveBattery = new ElectricityBattery();
-        BeanUtils.copyProperties(query, saveBattery);
-        saveBattery.setFranchiseeId(franchiseeId);
-        saveBattery.setPhysicsStatus(ElectricityBattery.PHYSICS_STATUS_NOT_WARE_HOUSE);
-        saveBattery.setBusinessStatus(ElectricityBattery.BUSINESS_STATUS_INPUT);
-        saveBattery.setCreateTime(System.currentTimeMillis());
-        saveBattery.setUpdateTime(System.currentTimeMillis());
-        saveBattery.setTenantId(tenantId);
-        electricitybatterymapper.insert(saveBattery);
-        
-        return R.ok();
-    }
-    
-    /**
-     * 保存电池
-     *
-     * @param
-     * @return
-     */
-    @Override
     public R saveElectricityBatteryV2(BatteryAddRequest batteryAddRequest) {
         
         TokenUser user = SecurityUtils.getUserInfo();

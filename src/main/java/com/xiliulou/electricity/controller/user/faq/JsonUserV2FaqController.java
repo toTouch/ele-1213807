@@ -65,8 +65,7 @@ public class JsonUserV2FaqController {
      * @date 2024/2/23 16:11
      */
     @GetMapping("/user/faq/category/page/v2")
-    public R query(@RequestParam(value = "title", required = false) String title,
-            @RequestParam(value = "typeId", required = false) Integer typeId) {
-        return R.ok(faqCategoryV2Service.listFaqCategory(title,typeId));
+    public R query(@RequestParam(value = "title", required = false) String title, @RequestParam(value = "typeId", required = false) Integer typeId) {
+        return R.ok(faqCategoryV2Service.listFaqCategory(title, typeId));
     }
 }

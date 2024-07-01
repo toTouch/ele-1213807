@@ -16,7 +16,6 @@ import com.xiliulou.electricity.query.BatteryMemberCardExpiringSoonQuery;
 import com.xiliulou.electricity.query.CarMemberCardExpiringSoonQuery;
 import com.xiliulou.electricity.service.BatteryMemberCardService;
 import com.xiliulou.electricity.service.ElectricityMemberCardOrderService;
-import com.xiliulou.electricity.service.MemberCardFailureRecordService;
 import com.xiliulou.electricity.service.UserBatteryDepositService;
 import com.xiliulou.electricity.service.UserBatteryMemberCardPackageService;
 import com.xiliulou.electricity.service.UserBatteryMemberCardService;
@@ -61,9 +60,6 @@ public class UserBatteryMemberCardServiceImpl implements UserBatteryMemberCardSe
 
     @Autowired
     UserInfoService userInfoService;
-
-    @Autowired
-    MemberCardFailureRecordService memberCardFailureRecordService;
 
     @Autowired
     UserBatteryDepositService userBatteryDepositService;

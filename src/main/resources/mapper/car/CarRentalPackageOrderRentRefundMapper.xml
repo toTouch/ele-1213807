@@ -30,6 +30,7 @@
         <result property="rentUnitPrice" column="rent_unit_price" jdbcType="DECIMAL" />
         <result property="payType" column="pay_type" jdbcType="INTEGER" />
         <result property="auditTime" column="audit_time" jdbcType="BIGINT" />
+        <result property="compelOffLine" column="compel_offLine" jdbcType="TINYINT" />
     </resultMap>
 
     <!-- 表名 -->
@@ -43,7 +44,7 @@
     <!-- 私有字段 -->
     <sql id="private_field">
         `uid`, `order_no`, `rental_package_order_no`, `rental_package_id`, `rental_package_type`, `tenancy_residue`, `tenancy_residue_unit`, `confine`, `confine_residue`, `refund_amount`, `refund_state`, `remark`,
-        `rent_payment`, `rent_unit_price`, `pay_type`, `audit_time`
+        `rent_payment`, `rent_unit_price`, `pay_type`, `audit_time`, `compel_offLine`
     </sql>
 
     <!-- 全部字段 -->
@@ -118,6 +119,7 @@
             <if test=" rentUnitPrice != null "> `rent_unit_price`, </if>
             <if test=" payType != null "> `pay_type`, </if>
             <if test=" auditTime != null "> `audit_time`, </if>
+            <if test=" compelOffLine != null "> `compel_offLine`, </if>
         </trim>
     </sql>
     <!-- 条件新增字段值 -->
@@ -147,6 +149,7 @@
             <if test=" rentUnitPrice != null "> #{rentUnitPrice}, </if>
             <if test=" payType != null "> #{payType}, </if>
             <if test=" auditTime != null "> #{auditTime}, </if>
+            <if test=" compelOffLine != null "> #{compelOffLine}, </if>
         </trim>
     </sql>
 
@@ -168,6 +171,8 @@
             <if test=" remark != null and remark != '' "> , `remark` = #{remark} </if>
             <if test=" updateUid != null "> , `update_uid` = #{updateUid} </if>
             <if test=" auditTime != null "> , `audit_time` = #{auditTime} </if>
+            <if test=" payType != null "> , `pay_type` = #{payType} </if>
+            <if test=" compelOffLine != null "> , `compel_offLine` = #{compelOffLine} </if>
         </set>
         <where>
             `order_no` = #{orderNo}

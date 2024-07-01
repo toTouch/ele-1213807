@@ -33,15 +33,16 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/user/car/deposit/refund")
 public class JsonUserCarDepositRefundController extends BasicController {
-
+    
     @Resource
     private CarRenalPackageDepositBizService carRenalPackageDepositBizService;
-
+    
     @Resource
     private CarRentalPackageDepositRefundService carRentalPackageDepositRefundService;
-
+    
     /**
      * 退押申请
+     *
      * @param depositPayOrderNo 押金缴纳订单编码
      * @return true(成功)、false(失败)
      */
@@ -53,14 +54,15 @@ public class JsonUserCarDepositRefundController extends BasicController {
             log.error("not found user.");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-
+        
         return R.ok(carRenalPackageDepositBizService.refundDeposit(tenantId, user.getUid(), depositPayOrderNo));
     }
-
+    
     /**
      * 分页查询
+     *
      * @param offset 偏移量
-     * @param size 取值数量
+     * @param size   取值数量
      * @return 押金退还订单集
      */
     @GetMapping("/page")
@@ -71,33 +73,33 @@ public class JsonUserCarDepositRefundController extends BasicController {
             log.error("not found user.");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-
+        
         CarRentalPackageDepositRefundQryModel qryModel = new CarRentalPackageDepositRefundQryModel();
         qryModel.setTenantId(tenantId);
         qryModel.setUid(user.getUid());
         qryModel.setRefundState(RefundStateEnum.SUCCESS.getCode());
         qryModel.setOffset(offset);
         qryModel.setSize(size);
-
+        
         // 调用服务
         List<CarRentalPackageDepositRefundPo> depositRefundEntityList = carRentalPackageDepositRefundService.page(qryModel);
         if (CollectionUtils.isEmpty(depositRefundEntityList)) {
             return R.ok(Collections.emptyList());
         }
-
-
+        
         // 模型转换，封装返回
         List<CarRentalPackageDepositRefundVo> depositRefundVoList = depositRefundEntityList.stream().map(depositRefundEntity -> {
             CarRentalPackageDepositRefundVo depositRefundVo = new CarRentalPackageDepositRefundVo();
             BeanUtils.copyProperties(depositRefundEntity, depositRefundVo);
             return depositRefundVo;
         }).collect(Collectors.toList());
-
+        
         return R.ok(depositRefundVoList);
     }
-
+    
     /**
      * 查询总数
+     *
      * @return 总数
      */
     @GetMapping("/count")
@@ -108,12 +110,12 @@ public class JsonUserCarDepositRefundController extends BasicController {
             log.error("not found user.");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-
+        
         CarRentalPackageDepositRefundQryModel qryModel = new CarRentalPackageDepositRefundQryModel();
         qryModel.setTenantId(tenantId);
         qryModel.setUid(user.getUid());
         qryModel.setRefundState(RefundStateEnum.SUCCESS.getCode());
-
+        
         // 调用服务
         return R.ok(carRentalPackageDepositRefundService.count(qryModel));
     }

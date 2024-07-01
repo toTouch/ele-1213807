@@ -313,7 +313,21 @@
 		where del_flag = 0 and uid = #{uid}
 	</select>
 	
-	<update id="updatePhoneByUid">
+	<select id="selectListByPhones" resultType="com.xiliulou.electricity.entity.User">
+		<include refid="selectUser"/>
+		where del_flag = 0 and tenant_id = #{tenantId}
+		<if test="type != null and type !=-1">
+			and user_type = #{type}
+		</if>
+		<if test="phoneList != null and phoneList.size() > 0">
+			and phone in
+			<foreach collection="phoneList" separator="," open="(" close=")" item="phone">
+				#{phone}
+			</foreach>
+		</if>
+	</select>
+    
+    <update id="updatePhoneByUid">
 		update t_user set phone=#{newPhone},update_time=#{updateTime} where uid=#{uid} and tenant_id = #{tenantId}
 	</update>
 	

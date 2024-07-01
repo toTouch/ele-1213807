@@ -16,6 +16,7 @@ import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.BankNoConstants;
 import com.xiliulou.electricity.constant.CacheConstant;
+import com.xiliulou.electricity.constant.MultiFranchiseeConstant;
 import com.xiliulou.electricity.entity.BankCard;
 import com.xiliulou.electricity.entity.ElectricityConfig;
 import com.xiliulou.electricity.entity.ElectricityPayParams;
@@ -575,13 +576,16 @@ public class WithdrawRecordRecordServiceImpl implements WithdrawRecordService {
     @Transactional(rollbackFor = Exception.class)
     public R transferPay(WithdrawRecord withdrawRecord) {
         
-        ElectricityPayParams electricityPayParams = electricityPayParamsService.queryFromCache(withdrawRecord.getTenantId());
+        // 和产品沟通，余额提现，加盟商ID传入默认 0
+        ElectricityPayParams electricityPayParams = electricityPayParamsService.queryPreciseCacheByTenantIdAndFranchiseeId(withdrawRecord.getTenantId(),
+                MultiFranchiseeConstant.DEFAULT_FRANCHISEE);
         
         if (Objects.isNull(electricityPayParams)) {
             throw new AuthenticationServiceException("未能查找到appId和appSecret！");
         }
         
-        WechatWithdrawalCertificate certificate = wechatWithdrawalCertificateService.selectByTenantId(withdrawRecord.getTenantId());
+        WechatWithdrawalCertificate certificate = wechatWithdrawalCertificateService.queryByTenantIdAndFranchiseeId(withdrawRecord.getTenantId(),
+                MultiFranchiseeConstant.DEFAULT_FRANCHISEE);
         if (Objects.isNull(certificate) || certificate.getCertificateValue().length == 0) {
             throw new AuthenticationServiceException("未能查找到appId和appSecret！");
         }
@@ -593,7 +597,8 @@ public class WithdrawRecordRecordServiceImpl implements WithdrawRecordService {
                 .channelMchAppId(electricityPayParams.getMerchantMinProAppId()).description(String.valueOf(System.currentTimeMillis())).encTrueName(withdrawRecord.getTrueName())
                 .bankNo(withdrawRecord.getBankCode()).encBankNo(withdrawRecord.getBankNumber()).orderId(withdrawRecord.getOrderId()).requestAmount(amount.longValue())
                 .createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).uid(withdrawRecord.getUid())
-                .transactionOrderNo(generateTransactionId(withdrawRecord.getId(), withdrawRecord.getUid())).tenantId(withdrawRecord.getTenantId()).build();
+                .transactionOrderNo(generateTransactionId(withdrawRecord.getId(), withdrawRecord.getUid())).tenantId(withdrawRecord.getTenantId())
+                .payFranchiseeId(electricityPayParams.getFranchiseeId()).wechatMerchantId(electricityPayParams.getWechatMerchantId()).build();
         payTransferRecordService.insert(payTransferRecord);
         
         PayTransferQuery payTransferQuery = PayTransferQuery.builder().mchId(electricityPayParams.getWechatMerchantId()).partnerOrderNo(payTransferRecord.getOrderId())
