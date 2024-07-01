@@ -1,19 +1,17 @@
-package com.xiliulou.electricity.vo;
+package com.xiliulou.electricity.queryModel;
 
-import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 /**
- * @ClassName: RentReturnEditEchoVO
+ * @ClassName: EleCabinetExtraQueryModel
  * @description:
  * @author: renhang
- * @create: 2024-05-08 09:11
+ * @create: 2024-06-11 14:27
  */
 @Data
-@AllArgsConstructor
-@NoArgsConstructor
-public class RentReturnEditEchoVO {
+@Builder
+public class EleCabinetExtraQueryModel {
     
     private Long id;
     
@@ -28,12 +26,14 @@ public class RentReturnEditEchoVO {
     private Integer returnTabType;
     
     /**
-     * 最小保留电池数量
+     * 最小保留电池数量，只有自定义才需要
      */
     private Integer minRetainBatteryCount;
     
     /**
-     * 最大保留电池数量
+     * 最大保留电池数量，只有自定义才需要
      */
     private Integer maxRetainBatteryCount;
+    
+    private Long updateTime;
 }

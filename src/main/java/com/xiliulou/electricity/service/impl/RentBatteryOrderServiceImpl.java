@@ -5,7 +5,6 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.RandomUtil;
-import cn.hutool.json.JSONUtil;
 import com.alibaba.excel.EasyExcel;
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -44,6 +43,7 @@ import com.xiliulou.electricity.enums.BatteryMemberCardBusinessTypeEnum;
 import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.enums.MemberTermStatusEnum;
 import com.xiliulou.electricity.enums.OverdueType;
+import com.xiliulou.electricity.enums.RentReturnNormEnum;
 import com.xiliulou.electricity.enums.YesNoEnum;
 import com.xiliulou.electricity.enums.enterprise.RentBatteryOrderTypeEnum;
 import com.xiliulou.electricity.event.publish.OverdueUserRemarkPublish;
@@ -132,9 +132,8 @@ import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
 
 import static com.xiliulou.electricity.entity.ElectricityCabinetBox.ELECTRICITY_CABINET_BOX_UN_USABLE;
-import static com.xiliulou.electricity.entity.ElectricityCabinetBox.ELECTRICITY_CABINET_BOX_USABLE;
-import static com.xiliulou.electricity.entity.ElectricityCabinetBox.STATUS_ELECTRICITY_BATTERY;
-import static com.xiliulou.electricity.entity.ElectricityCabinetBox.STATUS_NO_ELECTRICITY_BATTERY;
+import static com.xiliulou.electricity.entity.ElectricityCabinetExtra.MIN_RETAIN_BATTERY;
+import static com.xiliulou.electricity.entity.ElectricityCabinetExtra.MIN_RETAIN_EMPTY_CELL;
 
 /**
  * 租电池记录(TRentBatteryOrder)表服务实现类
@@ -839,14 +838,14 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
             
             //分配开门格挡
             //Pair<Boolean, Integer> usableEmptyCellNo = electricityCabinetService.findUsableEmptyCellNoV2(electricityCabinet.getId(), electricityCabinet.getVersion());
-            Pair<Boolean, Integer> usableEmptyCellNo = findUsableEmptyCellNo(electricityCabinet.getId(),electricityCabinet.getFullyCharged(), electricityCabinet.getVersion());
+            Triple<Boolean, Integer, String> usableEmptyCellNo = findUsableEmptyCellNo(electricityCabinet.getId(), electricityCabinet.getVersion());
             
-            if (Objects.isNull(usableEmptyCellNo.getRight())) {
-                log.warn("RETURN BATTERY WARN! electricityCabinet not empty cell,electricityCabinetId={} ", electricityCabinetId);
-                return R.fail("100240", "当前无空余格挡可供退电，请联系客服！");
+            if ((!usableEmptyCellNo.getLeft()) || Objects.isNull(usableEmptyCellNo.getMiddle())) {
+                log.warn("RETURNBATTERY WARN! electricityCabinet not empty cell,electricityCabinetId={} ", electricityCabinetId);
+                return R.fail("100240", usableEmptyCellNo.getRight());
             }
             
-            String cellNo = usableEmptyCellNo.getRight().toString();
+            String cellNo = usableEmptyCellNo.getMiddle().toString();
             
             String orderId = OrderIdUtil.generateBusinessOrderId(BusinessType.RETURN_BATTERY, user.getUid());
             
@@ -918,45 +917,50 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
         return R.ok();
     }
     
-    private Pair<Boolean, Integer> findUsableEmptyCellNo(Integer eid,Double fullyCharged,String version){
+    private Triple<Boolean, Integer, String> findUsableEmptyCellNo(Integer eid, String version) {
         ElectricityCabinetExtra cabinetExtra = electricityCabinetExtraService.queryByEidFromCache(Long.valueOf(eid));
         if (Objects.isNull(cabinetExtra)) {
-            throw new BizException("ELECTRICITY.0026", "换电柜异常，不存在的电柜扩展信息");
+            return Triple.of(false, null, "换电柜异常，不存在的换电柜扩展信息");
         }
         log.info("RentBatteryOrderServiceImpl/findUsableEmptyCellNo, version={}, cabinetExtra is={}", version, JsonUtil.toJson(cabinetExtra));
         
-        List<ElectricityCabinetBox> box = electricityCabinetBoxService.selectAllBoxByBatteryId(eid);
-        // 查询空仓 && 格挡未禁用 的数量
-        List<ElectricityCabinetBox> emptyCellList = box.stream()
-                .filter(e -> (Objects.equals(e.getUsableStatus(), ELECTRICITY_CABINET_BOX_USABLE) && Objects.equals(e.getStatus(), STATUS_NO_ELECTRICITY_BATTERY)))
-                .collect(Collectors.toList());
-        
+        // 空仓数
+        List<ElectricityCabinetBox> emptyCellList = electricityCabinetBoxService.listUsableEmptyCell(eid);
         if (CollUtil.isEmpty(emptyCellList)) {
-            throw new BizException("ELECTRICITY.0026", "当前无空余格挡可供退电，请联系客服！");
+            return Triple.of(false, null, "当前无空余格挡可供退电，请联系客服！");
         }
         
-        if (Objects.nonNull(cabinetExtra.getMaxRetainBatteryCount())) {
-            // 在仓电池数+限制的格子 和 阀值比较
-            List<ElectricityCabinetBox> haveBatteryAndUnableBox = box.stream()
-                    .filter(e -> (Objects.equals(e.getStatus(), STATUS_ELECTRICITY_BATTERY) || Objects.equals(e.getUsableStatus(), ELECTRICITY_CABINET_BOX_UN_USABLE)))
-                    .collect(Collectors.toList());
-            // 在仓电池数高于限值 或者 没有空仓
-            if (haveBatteryAndUnableBox.size() > cabinetExtra.getMaxRetainBatteryCount()) {
-                throw new BizException("ELECTRICITY.0026", "在仓电池数高于限值，暂无法退电，请选择其他柜机!");
+        if (!Objects.equals(cabinetExtra.getReturnTabType(), RentReturnNormEnum.ALL_RETURN.getCode())) {
+            // 不允许退电
+            if (Objects.equals(cabinetExtra.getReturnTabType(), RentReturnNormEnum.NOT_RETURN.getCode())) {
+                return Triple.of(false, null, "当前柜机暂不符合退电标准，无法退电，请选择其他柜机！");
+            }
+            // 最少保留一个空仓
+            if (Objects.equals(cabinetExtra.getReturnTabType(), RentReturnNormEnum.MIN_RETURN.getCode())) {
+                if (emptyCellList.size() <= MIN_RETAIN_EMPTY_CELL) {
+                    return Triple.of(false, null, "当前柜机暂不符合退电标准，无法退电，请选择其他柜机！");
+                }
+            }
+            // 自定义退电
+            if (Objects.equals(cabinetExtra.getReturnTabType(), RentReturnNormEnum.CUSTOM_RETURN.getCode())) {
+                if (emptyCellList.size() <= cabinetExtra.getMaxRetainBatteryCount()) {
+                    return Triple.of(false, null, "当前柜机暂不符合退电标准，无法退电，请选择其他柜机！");
+                }
             }
         }
         
         //旧版本仍走旧分配逻辑
         if (StringUtils.isNotBlank(version) && VersionUtil.compareVersion(ELE_CABINET_VERSION, version) > 0) {
-            return electricityCabinetService.findUsableEmptyCellNo(eid);
+            Pair<Boolean, Integer> versionPair = electricityCabinetService.findUsableEmptyCellNo(eid);
+            return versionPair.getLeft() ? Triple.of(versionPair.getLeft(), versionPair.getRight(), null)
+                    : Triple.of(versionPair.getLeft(), null, "当前无空余格挡可供退电，请联系客服！");
         }
-        
         
         Integer cellNo = null;
         //可用格挡只有一个默认直接分配
         if (emptyCellList.size() == 1) {
             cellNo = Integer.valueOf(emptyCellList.get(0).getCellNo());
-            return Pair.of(true, cellNo);
+            return Triple.of(true, cellNo, null);
         }
         
         //有多个空格挡  优先分配开门的格挡
@@ -964,11 +968,11 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
                 .collect(Collectors.toList());
         if (!org.springframework.util.CollectionUtils.isEmpty(openDoorEmptyCellList)) {
             cellNo = Integer.parseInt(openDoorEmptyCellList.get(ThreadLocalRandom.current().nextInt(openDoorEmptyCellList.size())).getCellNo());
-            return Pair.of(true, cellNo);
+            return Triple.of(true, cellNo, null);
         }
         
         cellNo = Integer.parseInt(emptyCellList.get(ThreadLocalRandom.current().nextInt(emptyCellList.size())).getCellNo());
-        return Pair.of(true, cellNo);
+        return Triple.of(true, cellNo,null);
     }
     
     private boolean filterNotExchangeable(ElectricityCabinetBox electricityCabinetBox) {
@@ -1394,31 +1398,48 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
         // 过滤掉电池名称不符合标准的
         List<ElectricityCabinetBox> exchangeableList = electricityCabinetBoxList.stream().filter(item -> filterNotExchangeable(item)).collect(Collectors.toList());
         
-        ElectricityCabinetExtra cabinetExtra = electricityCabinetExtraService.queryByEidFromCache(Long.valueOf(electricityCabinet.getId()));
-        if (Objects.isNull(cabinetExtra)) {
-            return Triple.of(false, "ELECTRICITY.0026", "换电柜异常，不存在扩展信息");
-        }
-        
         if (CollectionUtils.isEmpty(exchangeableList)) {
             log.info("RENT BATTERY INFO!not found electricityCabinetBoxList,uid={}", userInfo.getUid());
             return Triple.of(false, "ELECTRICITY.0026", "换电柜暂无满电电池");
         }
         
-        // 限制，判断的是在仓电池数
-        if (Objects.nonNull(cabinetExtra.getMinRetainBatteryCount())) {
-            List<ElectricityCabinetBox> boxList = electricityCabinetBoxService.selectEleBoxAttrByEid(electricityCabinet.getId());
-            List<ElectricityCabinetBox> haveBatteryCellList = boxList.stream().filter(e -> Objects.equals(e.getStatus(), STATUS_ELECTRICITY_BATTERY)).collect(Collectors.toList());
-            // 不限制,走原来的逻辑
-            if (cabinetExtra.getMinRetainBatteryCount() > haveBatteryCellList.size()) {
-                return Triple.of(false, "ELECTRICITY.0026", "在仓电池数低于限值，暂无法租借，请选择其他柜机");
+        ElectricityCabinetExtra cabinetExtra = electricityCabinetExtraService.queryByEidFromCache(Long.valueOf(electricityCabinet.getId()));
+        if (Objects.isNull(cabinetExtra)) {
+            return Triple.of(false, "ELECTRICITY.0026", "换电柜异常，不存在扩展信息");
+        }
+        log.info("rentBattery.allocateFullBatteryBox, cabinetExtra is {}", JSON.toJSONString(cabinetExtra));
+        
+        if (!Objects.equals(cabinetExtra.getRentTabType(), RentReturnNormEnum.ALL_RENT.getCode())) {
+           
+            // 不允许租电
+            if (Objects.equals(cabinetExtra.getRentTabType(), RentReturnNormEnum.NOT_RENT.getCode())) {
+                return Triple.of(false, "ELECTRICITY.0026", "当前柜机暂不符合租电标准，无法租电，请选择其他柜机");
+            }
+            
+            // 在仓电池数
+            List<ElectricityCabinetBox> boxList = electricityCabinetBoxService.selectHaveBatteryCellId(electricityCabinet.getId());
+            
+            // 最少保留一块电池
+            if (Objects.equals(cabinetExtra.getRentTabType(), RentReturnNormEnum.MIN_RETAIN.getCode())) {
+                if (boxList.size() <= MIN_RETAIN_BATTERY) {
+                    return Triple.of(false, "ELECTRICITY.0026", "当前柜机暂不符合租电标准，无法租电，请选择其他柜机");
+                }
+            }
+            
+            // 自定义
+            if (Objects.equals(cabinetExtra.getRentTabType(), RentReturnNormEnum.CUSTOM_RENT.getCode())) {
+                if (boxList.size() <= cabinetExtra.getMinRetainBatteryCount()) {
+                    return Triple.of(false, "ELECTRICITY.0026", "当前柜机暂不符合租电标准，无法租电，请选择其他柜机");
+                }
             }
         }
-        
+       
         
         String fullBatteryCell = null;
         
         for (int i = 0; i < exchangeableList.size(); i++) {
-            fullBatteryCell = acquireFullBatteryBox(electricityCabinetBoxList, userInfo, franchisee);
+            // 20240614修改：过滤掉电池不符合标准的电池
+            fullBatteryCell = acquireFullBatteryBox(exchangeableList, userInfo, franchisee);
             if (StringUtils.isBlank(fullBatteryCell)) {
                 log.info("RENT BATTERY INFO!not found fullBatteryCell,uid={}", userInfo.getUid());
                 return Triple.of(false, "ELECTRICITY.0026", "换电柜暂无满电电池");

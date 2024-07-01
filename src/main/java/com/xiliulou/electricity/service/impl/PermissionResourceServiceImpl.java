@@ -349,7 +349,9 @@ public class PermissionResourceServiceImpl implements PermissionResourceService 
         Set<Long> permissionIds = Sets.newHashSet();
         for (Long rid : rids) {
             List<Long> ids = rolePermissionService.queryPidsByRid(rid);
-            permissionIds.addAll(ids);
+            if (!CollectionUtils.isEmpty(ids)) {
+                permissionIds.addAll(ids);
+            }
         }
         
         if (CollectionUtils.isEmpty(permissionIds)) {

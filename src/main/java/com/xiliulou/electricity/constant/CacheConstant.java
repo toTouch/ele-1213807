@@ -639,6 +639,6 @@ public interface CacheConstant {
     
     
     
-    //最后一个操作格挡缓存
+    //角色权限绑定操作
     String ROLE_PERMISSION_OPERATE_KEY = "saas_electricity:role_permission_opt:%s";
 }
