@@ -10,6 +10,7 @@ import com.xiliulou.electricity.query.merchant.MerchantPromotionDataDetailQueryM
 import com.xiliulou.electricity.query.merchant.MerchantPromotionScanCodeQueryModel;
 import com.xiliulou.electricity.vo.merchant.MerchantJoinRecordVO;
 import com.xiliulou.electricity.vo.merchant.MerchantJoinUserVO;
+import com.xiliulou.electricity.vo.merchant.MerchantStatisticsUserVO;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
@@ -69,5 +70,15 @@ public interface MerchantJoinRecordMapper extends BaseMapper<MerchantJoinRecord>
     Integer removeByJoinUid(@Param("joinUid") Long joinUid, @Param("updateTime") Long updateTime, @Param("tenantId") Integer tenantId);
     
     Integer countEmployeeScanCodeSuccessNum(@Param("uidList") List<Long> employeeIdList, @Param("startTime") Long startTime, @Param("endTime") Long endTime,
+            @Param("status") Integer status, @Param("tenantId") Integer tenantId, @Param("channelEmployeeUid") Long channelEmployeeUid);
+    
+    List<MerchantStatisticsUserVO> selectListSuccessJoinNumByCondition(MerchantPromotionScanCodeQueryModel scanCodeQueryModel);
+    
+    List<MerchantStatisticsUserVO> selectListEmployeeSuccessJoinNum(@Param("uidList") List<Long> employeeIdList, @Param("startTime") Long startTime, @Param("endTime") Long endTime,
+            @Param("status") Integer status, @Param("tenantId") Integer tenantId, @Param("channelEmployeeUid") Long channelEmployeeUid);
+    
+    List<MerchantStatisticsUserVO> selectListJoinNumByCondition(MerchantPromotionScanCodeQueryModel scanCodeQueryModel);
+    
+    List<MerchantStatisticsUserVO> selectListEmployeeJoinNum(@Param("uidList") List<Long> employeeIdList, @Param("startTime") Long startTime, @Param("endTime") Long endTime,
             @Param("status") Integer status, @Param("tenantId") Integer tenantId, @Param("channelEmployeeUid") Long channelEmployeeUid);
 }

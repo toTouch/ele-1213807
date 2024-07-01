@@ -420,6 +420,133 @@
         </where>
         ) a
     </select>
+    
+    <select id="selectListSuccessJoinNumByCondition"
+        resultType="com.xiliulou.electricity.vo.merchant.MerchantStatisticsUserVO">
+        select month_date, count(distinct(join_uid)) as 'scanCodeCount' from t_merchant_join_record
+        <where>
+            del_flag = 0
+            <if test="startTime != null">
+                and start_time >= #{startTime}
+            </if>
+            <if test="endTime != null">
+                and start_time &lt;= #{endTime}
+            </if>
+            <if test="channelEmployeeUid != null">
+                and channel_employee_uid = #{channelEmployeeUid}
+            </if>
+            <if test="type != null and type!=3">
+                and inviter_type = #{type}
+            </if>
+            <if test="uid != null and type!=3">
+                and inviter_uid = #{uid}
+            </if>
+            <if test="status != null">
+                and status = #{status}
+            </if>
+            <if test="tenantId != null">
+                and tenant_id = #{tenantId}
+            </if>
+        
+        </where>
+        
+        group by month_date
+    </select>
+    
+    <select id="selectListEmployeeSuccessJoinNum"
+        resultType="com.xiliulou.electricity.vo.merchant.MerchantStatisticsUserVO">
+        select month_date,count(distinct(join_uid)) as 'scanCodeCount'
+        from t_merchant_join_record
+        <where>
+            del_flag = 0 and inviter_type = 2
+            <if test="startTime != null">
+                and start_time >= #{startTime}
+            </if>
+            <if test="endTime != null">
+                and start_time &lt;= #{endTime}
+            </if>
+            <if test="channelEmployeeUid != null">
+                and channel_employee_uid = #{channelEmployeeUid}
+            </if>
+            <if test="uidList != null">
+                and inviter_uid in
+                <foreach collection="uidList" separator="," open="(" close=")" item="inviterUid">
+                    #{inviterUid}
+                </foreach>
+            </if>
+            <if test="status != null">
+                and status = #{status}
+            </if>
+            <if test="tenantId != null">
+                and tenant_id = #{tenantId}
+            </if>
+    
+        </where>
+        group by month_date
+    </select>
+    
+    <select id="selectListJoinNumByCondition"
+            resultType="com.xiliulou.electricity.vo.merchant.MerchantStatisticsUserVO">
+        select month_date,count(distinct(join_uid)) as 'scanCodeCount'
+        from t_merchant_join_record
+        <where>
+            modify_inviter = 0
+            <if test="startTime != null">
+                and start_time >= #{startTime}
+            </if>
+            <if test="endTime != null">
+                and start_time &lt;= #{endTime}
+            </if>
+            <if test="channelEmployeeUid != null">
+                and channel_employee_uid = #{channelEmployeeUid}
+            </if>
+            <if test="type != null and type!=3">
+                and inviter_type = #{type}
+            </if>
+            <if test="uid != null and type!=3">
+                and inviter_uid = #{uid}
+            </if>
+            <if test="status != null">
+                and status = #{status}
+            </if>
+            <if test="tenantId != null">
+                and tenant_id = #{tenantId}
+            </if>
+    
+        </where>
+        group by month_date
+    </select>
+    
+    <select id="selectListEmployeeJoinNum" resultType="com.xiliulou.electricity.vo.merchant.MerchantStatisticsUserVO">
+        select month_date,count(distinct(join_uid)) as 'scanCodeCount'
+        from t_merchant_join_record
+        <where>
+            modify_inviter = 0 and inviter_type = 2
+            <if test="startTime != null">
+                and start_time >= #{startTime}
+            </if>
+            <if test="endTime != null">
+                and start_time &lt;= #{endTime}
+            </if>
+            <if test="channelEmployeeUid != null">
+                and channel_employee_uid = #{channelEmployeeUid}
+            </if>
+            <if test="uidList != null">
+                and inviter_uid in
+                <foreach collection="uidList" separator="," open="(" close=")" item="inviterUid">
+                    #{inviterUid}
+                </foreach>
+            </if>
+            <if test="status != null">
+                and status = #{status}
+            </if>
+            <if test="tenantId != null">
+                and tenant_id = #{tenantId}
+            </if>
+    
+        </where>
+        group by month_date
+    </select>
 
 </mapper>
 

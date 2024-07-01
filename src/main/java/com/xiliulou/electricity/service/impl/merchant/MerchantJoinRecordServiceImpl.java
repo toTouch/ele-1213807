@@ -51,6 +51,7 @@ import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.merchant.MerchantEmployeeVO;
 import com.xiliulou.electricity.vo.merchant.MerchantJoinRecordVO;
 import com.xiliulou.electricity.vo.merchant.MerchantJoinUserVO;
+import com.xiliulou.electricity.vo.merchant.MerchantStatisticsUserVO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.ArrayUtils;
@@ -663,5 +664,29 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
         }
         
         return R.ok();
+    }
+    
+    @Override
+    @Slave
+    public List<MerchantStatisticsUserVO> listSuccessJoinNumByCondition(MerchantPromotionScanCodeQueryModel scanCodeQueryModel) {
+        return merchantJoinRecordMapper.selectListSuccessJoinNumByCondition(scanCodeQueryModel);
+    }
+    
+    @Override
+    @Slave
+    public List<MerchantStatisticsUserVO> listEmployeeSuccessJoinNum(List<Long> employeeIds, Long startTime, Long endTime, Integer status, Integer tenantId, Long uid) {
+        return merchantJoinRecordMapper.selectListEmployeeSuccessJoinNum(employeeIds, startTime, endTime, status, tenantId, uid);
+    }
+    
+    @Override
+    @Slave
+    public List<MerchantStatisticsUserVO> listJoinNumByCondition(MerchantPromotionScanCodeQueryModel scanCodeQueryModel) {
+        return merchantJoinRecordMapper.selectListJoinNumByCondition(scanCodeQueryModel);
+    }
+    
+    @Override
+    @Slave
+    public List<MerchantStatisticsUserVO> listEmployeeJoinNum(List<Long> employeeIds, Long startTime, Long endTime, Integer status, Integer tenantId, Long uid) {
+        return merchantJoinRecordMapper.selectListEmployeeJoinNum(employeeIds, startTime, endTime, status, tenantId, uid);
     }
 }

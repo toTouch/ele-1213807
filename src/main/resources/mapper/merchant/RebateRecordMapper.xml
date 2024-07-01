@@ -568,5 +568,43 @@
         order by id desc
         limit #{offset}, #{size}
     </select>
+    
+    <select id="selectListRenewal" resultType="com.xiliulou.electricity.vo.merchant.MerchantStatisticsUserVO">
+        SELECT
+            month_date,
+            count( 1 ) AS 'scanCodeCount'
+        FROM
+        t_rebate_record
+            <where>
+                <if test="tenantId != null">
+                    and tenant_id = #{tenantId}
+                </if>
+                <if test="uid != null and userType == 1">
+                    and merchant_uid = #{uid}
+                </if>
+                <if test="uid != null and userType == 2">
+                    and place_uid = #{uid}
+                </if>
+                <if test="channelEmployeeUid != null ">
+                    and channeler = #{channelEmployeeUid}
+                </if>
+                <if test="status != null">
+                    and status = #{status}
+                </if>
+                <if test="rebateType != null">
+                    and type = #{rebateType}
+                </if>
+                <if test="refundFlag != null">
+                    and refund_flag = #{refundFlag}
+                </if>
+                <if test="startTime != null">
+                    and create_time >= #{startTime}
+                </if>
+                <if test="endTime != null">
+                    and create_time &lt;= #{endTime}
+                </if>
+            </where>
+        group by month_date
+    </select>
 
 </mapper>

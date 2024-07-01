@@ -25,6 +25,7 @@ import com.xiliulou.electricity.service.merchant.MerchantUserAmountService;
 import com.xiliulou.electricity.service.merchant.RebateRecordService;
 import com.xiliulou.electricity.utils.DateUtils;
 import com.xiliulou.electricity.vo.merchant.MerchantPromotionEmployeeDetailSpecificsVO;
+import com.xiliulou.electricity.vo.merchant.MerchantStatisticsUserVO;
 import com.xiliulou.electricity.vo.merchant.RebateRecordVO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -177,6 +178,12 @@ public class RebateRecordServiceImpl implements RebateRecordService {
     @Override
     public Integer existsExpireRebateRecordByOriginalOrderId(String originalOrderId) {
         return this.rebateRecordMapper.existsExpireRebateRecordByOriginalOrderId(originalOrderId);
+    }
+    
+    @Override
+    @Slave
+    public List<MerchantStatisticsUserVO> listRenewal(MerchantPromotionRenewalQueryModel renewalQueryModel) {
+        return this.rebateRecordMapper.selectListRenewal(renewalQueryModel);
     }
     
     @Override
