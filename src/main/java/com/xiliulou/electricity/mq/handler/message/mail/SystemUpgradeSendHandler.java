@@ -14,7 +14,7 @@ import org.springframework.stereotype.Component;
  * @date 2024/6/28 15:35
  */
 @Component
-public class SystemUpgradeSendHandler extends AbstractMallSendHandler {
+public class SystemUpgradeSendHandler extends AbstractMailSendHandler {
     
     @Override
     public Integer getType() {

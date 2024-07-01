@@ -31,7 +31,7 @@ import java.util.stream.Collectors;
  * @date 2024/6/28 15:00
  */
 @Slf4j
-public abstract class AbstractMallSendHandler extends AbstractMessageSendHandler {
+public abstract class AbstractMailSendHandler extends AbstractMessageSendHandler {
     
     
     public static final Integer WECHAT_SEND_MAIL = 2;
@@ -40,7 +40,7 @@ public abstract class AbstractMallSendHandler extends AbstractMessageSendHandler
     public SendDTO getSendDTO(MqNotifyCommon mqNotifyCommon) {
         
         if (Objects.isNull(mqNotifyCommon.getData())) {
-            log.warn("AbstractMallSendHandler.getSendDTO data is null");
+            log.warn("AbstractMailSendHandler.getSendDTO data is null");
             return null;
         }
         

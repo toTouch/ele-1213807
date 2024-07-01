@@ -47,7 +47,7 @@ public class DeviceStatusSendHandler extends AbstractWechatOfficialAccountSendHa
         String status = deviceNotify.getStatus();
         
         Optional<DeviceStatusEnum> byStatus = DeviceStatusEnum.getByStatus(status);
-        DeviceStatusEnum deviceStatusEnum = byStatus.orElseThrow();
+        DeviceStatusEnum deviceStatusEnum = byStatus.orElse(DeviceStatusEnum.DEVICE_OFFLINE);
         
         params.put("first", String.format("%s%s通知", projectName, deviceStatusEnum.getStatusMsg()));
         params.put("keyword1", projectName);

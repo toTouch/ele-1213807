@@ -322,7 +322,8 @@ public class MaintenanceUserNotifyConfigServiceImpl implements MaintenanceUserNo
             MqNotifyCommon<DeviceNotify> query = new MqNotifyCommon<>();
             query.setPhone(p);
             query.setTime(System.currentTimeMillis());
-            query.setType(MaintenanceUserNotifyConfig.P_DEVICE);
+            query.setType(SendMessageTypeEnum.DEVICE_LOGIN_NOTIFY.getType());
+            query.setTenantId(tenantId);
 
             DeviceNotify deviceNotify = new DeviceNotify();
             deviceNotify.setProductKey("test");
