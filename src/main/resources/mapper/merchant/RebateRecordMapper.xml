@@ -346,10 +346,10 @@
     <insert id="insertOne" keyProperty="id" useGeneratedKeys="true">
         insert into t_rebate_record(uid, name, phone, order_id, original_order_id, member_card_id, member_card_name, type, order_type, refund_flag, franchisee_id, level,
                                     merchant_id, merchant_uid, status, channeler, channeler_rebate, merchant_rebate, place_id, place_uid, rebate_time, settle_time, tenant_id,
-                                    create_time, update_time)
+                                    create_time, update_time, month_date)
         values (#{uid}, #{name}, #{phone}, #{orderId}, #{originalOrderId}, #{memberCardId}, #{memberCardName}, #{type}, #{orderType}, #{refundFlag}, #{franchiseeId}, #{level},
                 #{merchantId}, #{merchantUid}, #{status}, #{channeler}, #{channelerRebate}, #{merchantRebate}, #{placeId}, #{placeUid}, #{rebateTime}, #{settleTime}, #{tenantId},
-                #{createTime}, #{updateTime})
+                #{createTime}, #{updateTime}, #{monthDate})
     </insert>
     
     <!--通过主键修改数据-->

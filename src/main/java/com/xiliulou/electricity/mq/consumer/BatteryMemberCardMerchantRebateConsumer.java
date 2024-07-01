@@ -1,8 +1,10 @@
 package com.xiliulou.electricity.mq.consumer;
 
+import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.IdUtil;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.constant.CommonConstant;
+import com.xiliulou.electricity.constant.DateFormatConstant;
 import com.xiliulou.electricity.constant.merchant.MerchantConstant;
 import com.xiliulou.electricity.constant.merchant.MerchantJoinRecordConstant;
 import com.xiliulou.electricity.entity.BatteryMembercardRefundOrder;
@@ -47,6 +49,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 
@@ -268,6 +271,7 @@ public class BatteryMemberCardMerchantRebateConsumer implements RocketMQListener
         rebateRecord.setTenantId(electricityMemberCardOrder.getTenantId());
         rebateRecord.setCreateTime(System.currentTimeMillis());
         rebateRecord.setUpdateTime(System.currentTimeMillis());
+        rebateRecord.setMonthDate(DateUtil.format(new Date(), DateFormatConstant.MONTH_DAY_DATE_FORMAT));
         
         //商户禁用后，不给商户返利；渠道员禁用，不返利
         if (Objects.equals(MerchantConstant.DISABLE, merchant.getStatus())) {
@@ -355,6 +359,7 @@ public class BatteryMemberCardMerchantRebateConsumer implements RocketMQListener
             rebateRecordInsert.setCreateTime(System.currentTimeMillis());
             rebateRecordInsert.setUpdateTime(System.currentTimeMillis());
             rebateRecordInsert.setStatus(MerchantConstant.MERCHANT_REBATE_STATUS_RETURNED);
+            rebateRecordInsert.setMonthDate(DateUtil.format(new Date(), DateFormatConstant.MONTH_DAY_DATE_FORMAT));
             rebateRecordService.insert(rebateRecordInsert);
             
             //扣减商户、渠道商返利金额
@@ -436,6 +441,7 @@ public class BatteryMemberCardMerchantRebateConsumer implements RocketMQListener
                 rebateRecordInsert.setCreateTime(System.currentTimeMillis());
                 rebateRecordInsert.setUpdateTime(System.currentTimeMillis());
                 rebateRecordInsert.setStatus(MerchantConstant.MERCHANT_REBATE_STATUS_RETURNED);
+                rebateRecordInsert.setMonthDate(DateUtil.format(new Date(), DateFormatConstant.MONTH_DAY_DATE_FORMAT));
                 rebateRecordService.insert(rebateRecordInsert);
                 
                 //扣减商户、渠道商返利金额
