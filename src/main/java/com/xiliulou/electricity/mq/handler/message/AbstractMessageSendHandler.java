@@ -13,6 +13,8 @@ import com.xiliulou.electricity.dto.message.SendReceiverDTO;
 import com.xiliulou.electricity.entity.MqNotifyCommon;
 import com.xiliulou.electricity.ttl.TtlTraceIdSupport;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -63,6 +65,11 @@ public abstract class AbstractMessageSendHandler implements MessageSendHandler {
             sendDTO.setMessageTemplateCode(this.getMessageTemplateCode());
         }
         
+        // 参数校验
+        if (!this.checkParam(sendDTO)) {
+            return;
+        }
+        
         // 发送前处理
         if (!this.preProcessing(sendDTO)) {
             return;
@@ -73,6 +80,45 @@ public abstract class AbstractMessageSendHandler implements MessageSendHandler {
         
         //发送后处理
         this.postProcessing(sendDTO, responseEntity);
+    }
+    
+    
+    /**
+     * 参数校验
+     *
+     * @param sendDTO
+     * @author caobotao.cbt
+     * @date 2024/7/1 18:25
+     */
+    protected boolean checkParam(SendDTO sendDTO) {
+        Integer tenantId = sendDTO.getTenantId();
+        if (Objects.isNull(tenantId)) {
+            log.warn("AbstractMessageSendHandler.checkParam tenantId isNull");
+            return false;
+        }
+        
+        if (StringUtils.isBlank(sendDTO.getMessageId())) {
+            log.warn("AbstractMessageSendHandler.checkParam messageId is isBlank");
+            return false;
+        }
+        
+        if (StringUtils.isBlank(sendDTO.getMessageTemplateCode())) {
+            log.warn("AbstractMessageSendHandler.checkParam messageTemplateCode is isBlank");
+            return false;
+        }
+        
+        if (MapUtils.isEmpty(sendDTO.getParamMap())) {
+            log.warn("AbstractMessageSendHandler.checkParam paramMap is isEmpty");
+            return false;
+        }
+        
+        if (CollectionUtils.isEmpty(sendDTO.getSendReceiverList())) {
+            log.warn("AbstractMessageSendHandler.checkParam sendReceiverList is isEmpty");
+            return false;
+        }
+        
+        return true;
+        
     }
     
     /**

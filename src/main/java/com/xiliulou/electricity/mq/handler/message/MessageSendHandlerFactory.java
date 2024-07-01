@@ -4,8 +4,6 @@
 
 package com.xiliulou.electricity.mq.handler.message;
 
-import com.xiliulou.electricity.enums.notify.SendMessageTypeEnum;
-import org.apache.poi.ss.formula.functions.T;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.stereotype.Component;

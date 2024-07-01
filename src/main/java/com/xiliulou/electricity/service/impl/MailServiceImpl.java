@@ -28,13 +28,14 @@ public class MailServiceImpl implements MailService {
     MessageSendProducer messageSendProducer;
     
     @Override
-    public void sendVersionNotificationEmailToMQ(MQMailMessageNotify mailMessage) {
+    public void sendVersionNotificationEmailToMQ(MQMailMessageNotify mailMessage, Integer tenantId) {
         
         MqNotifyCommon<MQMailMessageNotify> query = new MqNotifyCommon<>();
         //        query.setPhone(p);
         query.setTime(System.currentTimeMillis());
         query.setType(SendMessageTypeEnum.UPGRADE_SEND_MAIL_NOTIFY.getType());
         query.setData(mailMessage);
+        query.setTenantId(tenantId);
 
         Pair<Boolean, String> result = messageSendProducer.sendSyncMsg(query, "", "", 0);
         log.info("SEND EMAIL INFO! original msg={}", JsonUtil.toJson(query));

@@ -43,12 +43,13 @@ public abstract class AbstractWechatOfficialAccountSendHandler extends AbstractM
             log.warn("AbstractWechatOfficialAccountSendHandler.getSendDTO phone isBlank");
             return null;
         }
+        
         if (Objects.isNull(mqNotifyCommon.getData())) {
             log.warn("AbstractWechatOfficialAccountSendHandler.getSendDTO data isBlank");
             return null;
         }
         
-        
+        //数据转换
         Map<String, String> map = converterParamMap(JsonUtil.toJson(mqNotifyCommon.getData()));
         
         if (MapUtils.isEmpty(map)) {

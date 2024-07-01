@@ -216,6 +216,7 @@ public class MaintenanceUserNotifyConfigServiceImpl implements MaintenanceUserNo
             query.setPhone(p);
             query.setTime(System.currentTimeMillis());
             query.setType(SendMessageTypeEnum.DEVICE_LOGIN_NOTIFY.getType());
+            query.setTenantId(electricityCabinet.getTenantId());
 
             DeviceNotify deviceNotify = new DeviceNotify();
             deviceNotify.setProductKey(electricityCabinet.getProductKey());
@@ -254,6 +255,7 @@ public class MaintenanceUserNotifyConfigServiceImpl implements MaintenanceUserNo
             query.setPhone(p);
             query.setTime(System.currentTimeMillis());
             query.setType(SendMessageTypeEnum.HARDWARE_INFO_NOTIFY.getType());
+            query.setTenantId(electricityCabinet.getTenantId());
 
             MqHardwareNotify mqHardwareNotify = new MqHardwareNotify();
             mqHardwareNotify.setDeviceName(electricityCabinet.getName());
@@ -287,6 +289,7 @@ public class MaintenanceUserNotifyConfigServiceImpl implements MaintenanceUserNo
             query.setPhone(p);
             query.setTime(System.currentTimeMillis());
             query.setType(MaintenanceUserNotifyConfig.TYPE_USER_UPLOAD);
+            query.setTenantId(electricityCabinet.getTenantId());
 
             MqHardwareNotify mqHardwareNotify = new MqHardwareNotify();
             mqHardwareNotify.setDeviceName(electricityCabinet.getName());

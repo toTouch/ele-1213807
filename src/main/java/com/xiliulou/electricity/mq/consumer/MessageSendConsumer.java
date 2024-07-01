@@ -33,6 +33,7 @@ public class MessageSendConsumer implements RocketMQListener<MessageExt> {
     
     private final MessageSendHandlerFactory messageSendHandlerFactory;
     
+    
     public MessageSendConsumer(MessageSendHandlerFactory messageSendHandlerFactory) {
         this.messageSendHandlerFactory = messageSendHandlerFactory;
     }
@@ -54,7 +55,7 @@ public class MessageSendConsumer implements RocketMQListener<MessageExt> {
             MqNotifyCommon mqNotifyCommon = JsonUtil.fromJson(body, MqNotifyCommon.class);
             
             // 设置链路id
-            this.setTraceId(mqNotifyCommon);
+            this.setTraceId(message, mqNotifyCommon);
             
             // 查找handler
             MessageSendHandler handler = this.findHandler(mqNotifyCommon);
@@ -100,11 +101,14 @@ public class MessageSendConsumer implements RocketMQListener<MessageExt> {
      * @author caobotao.cbt
      * @date 2024/6/28 10:01
      */
-    private void setTraceId(MqNotifyCommon mqNotifyCommon) {
+    private void setTraceId(MessageExt messageExt, MqNotifyCommon mqNotifyCommon) {
         // 设置链路id
         String traceId = mqNotifyCommon.getTraceId();
+        
         if (StringUtils.isBlank(traceId)) {
             TtlTraceIdSupport.set();
+            log.info("MessageSendConsumer.setTraceId msgId={},traceId={}", messageExt.getMsgId(), TtlTraceIdSupport.get());
+            
         } else {
             TtlTraceIdSupport.set(traceId);
         }
