@@ -180,7 +180,7 @@
             tui.name as joinName,
             jsah.activity_id as activityId,
             tsa.invitation_criteria as invitationCriteria,
-            tsa.name as activityName
+            tsa.name as activityName,
             jsah.franchisee_id as franchiseeId
         from t_join_share_activity_history as jsah
         left join t_user_info as tui on tui.uid = jsah.join_uid
