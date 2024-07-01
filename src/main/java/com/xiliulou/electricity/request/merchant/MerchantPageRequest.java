@@ -28,4 +28,6 @@ public class MerchantPageRequest {
     private Long channelEmployeeUid;
     
     private Integer tenantId;
+    
+    private String phone;
 }

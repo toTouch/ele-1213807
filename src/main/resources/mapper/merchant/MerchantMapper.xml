@@ -127,7 +127,9 @@
                     #{id}
                 </foreach>
             </if>
-            
+            <if test="phone != null and phone != ''">
+                and phone = #{phone}
+            </if>
         </where>
     </sql>
     <select id="selectListByPage" resultType="com.xiliulou.electricity.entity.merchant.Merchant">
