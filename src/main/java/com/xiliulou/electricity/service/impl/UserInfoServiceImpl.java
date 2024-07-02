@@ -145,6 +145,7 @@ import com.xiliulou.electricity.vo.UserFrontDetectionVO;
 import com.xiliulou.electricity.vo.UserInfoExcelVO;
 import com.xiliulou.electricity.vo.UserInfoResultVO;
 import com.xiliulou.electricity.vo.UserInfoSearchVo;
+import com.xiliulou.electricity.vo.UserTurnoverVo;
 import com.xiliulou.electricity.vo.enterprise.EnterpriseChannelUserVO;
 import com.xiliulou.electricity.vo.merchant.MerchantInviterVO;
 import com.xiliulou.electricity.vo.userinfo.UserCarRentalInfoExcelVO;
@@ -1892,6 +1893,9 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         
         Store store = storeService.queryByIdFromCache(userInfo.getStoreId());
         vo.setStoreName(Objects.isNull(store) ? "" : store.getName());
+    
+        UserTurnoverVo userTurnoverVo = queryUserConsumptionPay(uid);
+        BeanUtils.copyProperties(userTurnoverVo, vo);
         
         vo.setCarRentalPackageOrderAmountTotal(carRentalPackageOrderBizService.queryAmountTotalByUid(userInfo.getTenantId(), userInfo.getUid()));
         vo.setCarRentalPackageOrderSlippageAmountTotal(carRentalPackageOrderSlippageService.selectPaySuccessAmountTotal(userInfo.getTenantId(), userInfo.getUid()));
@@ -1937,6 +1941,52 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         vo.setInviterSource(inviterSource);
     
         return R.ok(vo);
+    }
+    
+    private UserTurnoverVo queryUserConsumptionPay(Long id) {
+        Integer tenantId = TenantContextHolder.getTenantId();
+        
+        UserTurnoverVo userTurnoverVo = new UserTurnoverVo();
+        //用户电池总套餐消费额
+        CompletableFuture<Void> queryMemberCardPayAmount = CompletableFuture.runAsync(() -> {
+            //用户套餐总支付金额
+            BigDecimal pay = electricityMemberCardOrderService.queryTurnOver(tenantId, id);
+            BigDecimal refund = batteryMembercardRefundOrderService.selectUserTotalRefund(tenantId, id);
+            userTurnoverVo.setMemberCardTurnover(pay.subtract(refund));
+            
+            userBatteryMemberCardPackageService.batteryMembercardTransform(id);
+        }, threadPool).exceptionally(e -> {
+            log.error("MEMBER CARD ORDER ERROR! query turn over error", e);
+            return null;
+        });
+        
+        //用户租车总套餐消费额
+//        CompletableFuture<Void> queryCarMemberCardPayAmount = CompletableFuture.runAsync(() -> {
+////            BigDecimal pay = carMemberCardOrderService.queryTurnOver(tenantId, id);
+////            userTurnoverVo.setCarMemberCardTurnover(pay);
+//        }, threadPool).exceptionally(e -> {
+//            log.error("CAR MEMBER CARD ORDER ERROR! query turn over error", e);
+//            return null;
+//        });
+        
+        //用户电池服务费消费额
+        CompletableFuture<Void> queryBatteryServiceFeePayAmount = CompletableFuture.runAsync(() -> {
+            BigDecimal pay = eleBatteryServiceFeeOrderService.queryUserTurnOver(tenantId, id);
+            userTurnoverVo.setBatteryServiceFee(pay);
+        }, threadPool).exceptionally(e -> {
+            log.error("The carSn list ERROR! query carSn error!", e);
+            return null;
+        });
+        
+        //等待所有线程停止 thenAcceptBoth方法会等待a,b线程结束后获取结果
+        CompletableFuture<Void> resultFuture = CompletableFuture.allOf(queryMemberCardPayAmount, queryBatteryServiceFeePayAmount);
+        try {
+            resultFuture.get(10, TimeUnit.SECONDS);
+        } catch (Exception e) {
+            log.error("DATA SUMMARY BROWSING ERROR!", e);
+        }
+        
+        return userTurnoverVo;
     }
     
     @Override
