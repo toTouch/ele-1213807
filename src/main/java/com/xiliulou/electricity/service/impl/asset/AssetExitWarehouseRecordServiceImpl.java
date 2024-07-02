@@ -150,9 +150,9 @@ public class AssetExitWarehouseRecordServiceImpl implements AssetExitWarehouseRe
             if (CollectionUtils.isNotEmpty(assetExitWarehouseSaveRequest.getAssetList())) {
                 List<String> assetList = assetExitWarehouseSaveRequest.getAssetList();
                 
-                if (CollectionUtils.isNotEmpty(assetList) && assetList.size() > AssetConstant.ASSET_EXIT_WAREHOUSE_LIMIT_NUMBER) {
-                    return R.fail("300813", "资产退库数量最大限制50条，请修改");
-                }
+//                if (CollectionUtils.isNotEmpty(assetList) && assetList.size() > AssetConstant.ASSET_EXIT_WAREHOUSE_LIMIT_NUMBER) {
+//                    return R.fail("300813", "资产退库数量最大限制50条，请修改");
+//                }
                 
                 Set<Long> idSet;
                 //根据id退库
@@ -269,6 +269,12 @@ public class AssetExitWarehouseRecordServiceImpl implements AssetExitWarehouseRe
         }
     }
     
+    public static void main(String[] args) {
+        for (int i = 1; i <= 3000; i++) {
+            System.out.println("TTTTT" + 10000 + i);
+        }
+    }
+    
     @Transactional(rollbackFor = Exception.class)
     public void handleExitWarehouse(AssetBatchExitWarehouseRequest assetBatchExitWarehouseRequest, Integer type, AssetExitWarehouseSaveQueryModel recordSaveQueryModel,
             List<AssetExitWarehouseDetailSaveQueryModel> detailSaveQueryModelList, Long operator, List<String> snList) {
@@ -343,7 +349,7 @@ public class AssetExitWarehouseRecordServiceImpl implements AssetExitWarehouseRe
         assetExitWarehouseQueryModel.setTenantId(TenantContextHolder.getTenantId());
         
         Pair<Boolean, List<Long>> pair = assertPermissionService.assertPermissionByPair(SecurityUtils.getUserInfo());
-        if (!pair.getLeft()){
+        if (!pair.getLeft()) {
             return new ArrayList<>();
         }
         assetExitWarehouseQueryModel.setFranchiseeIds(pair.getRight());
@@ -383,14 +389,13 @@ public class AssetExitWarehouseRecordServiceImpl implements AssetExitWarehouseRe
         assetExitWarehouseQueryModel.setTenantId(TenantContextHolder.getTenantId());
         
         Pair<Boolean, List<Long>> pair = assertPermissionService.assertPermissionByPair(SecurityUtils.getUserInfo());
-        if (!pair.getLeft()){
+        if (!pair.getLeft()) {
             return NumberConstant.ZERO;
         }
         assetExitWarehouseQueryModel.setFranchiseeIds(pair.getRight());
         
         return assetExitWarehouseRecordMapper.countTotal(assetExitWarehouseQueryModel);
     }
-    
     
     
 }
