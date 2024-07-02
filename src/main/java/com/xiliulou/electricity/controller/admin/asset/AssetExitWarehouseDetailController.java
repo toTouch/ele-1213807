@@ -38,7 +38,7 @@ public class AssetExitWarehouseDetailController {
             return R.fail("ELECTRICITY.0066", "用户权限不足");
         }
         
-        AssetExitWarehouseDetailRequest assetExitWarehouseDetailRequest = AssetExitWarehouseDetailRequest.builder().orderNo(orderNo).build();
+        AssetExitWarehouseDetailRequest assetExitWarehouseDetailRequest = AssetExitWarehouseDetailRequest.builder().orderNo(orderNo).size(size).offset(offset).build();
         
         return R.ok(assetExitWarehouseDetailService.listSnByOrderNo(assetExitWarehouseDetailRequest));
     }
