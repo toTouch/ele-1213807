@@ -1,8 +1,6 @@
 package com.xiliulou.electricity.service.impl.asset;
 
 import com.xiliulou.cache.redis.RedisService;
-import com.xiliulou.core.thread.XllThreadPoolExecutorService;
-import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.bo.asset.AssetBatchExitWarehouseBO;
@@ -67,9 +65,6 @@ import java.util.stream.Collectors;
 @Slf4j
 @Service
 public class AssetExitWarehouseRecordServiceImpl implements AssetExitWarehouseRecordService {
-    
-    protected XllThreadPoolExecutorService executorService = XllThreadPoolExecutors.newFixedThreadPool("ASSET_EXIT_WAREHOUSE_RECORD_HANDLE_THREAD_POOL", 3,
-            "asset_exit_warehouse_record_handle_thread_pool");
     
     @Autowired
     private RedisService redisService;
@@ -310,25 +305,24 @@ public class AssetExitWarehouseRecordServiceImpl implements AssetExitWarehouseRe
             count = electricityCarService.batchExitWarehouse(assetBatchExitWarehouseRequest);
         }
         
-        //异步记录
+        // 记录
         if (!Objects.equals(count, NumberConstant.ZERO)) {
-            executorService.execute(() -> {
-                Long operator = data.getOperator();
+            Long operator = data.getOperator();
+            
+            // 新增资产退库记录
+            insertOne(data.getRecordSaveQueryModel());
+            // 新增资产退库详情
+            assetExitWarehouseDetailService.batchInsert(data.getDetailSaveQueryModelList(), operator);
+            
+            //库房记录
+            Long warehouseId = assetBatchExitWarehouseRequest.getWarehouseId();
+            if (Objects.nonNull(warehouseId) && !Objects.equals(warehouseId, NumberConstant.ZERO_L)) {
                 
-                // 新增资产退库记录
-                insertOne(data.getRecordSaveQueryModel());
-                // 新增资产退库详情
-                assetExitWarehouseDetailService.batchInsert(data.getDetailSaveQueryModelList(), operator);
-                
-                //库房记录
-                Long warehouseId = assetBatchExitWarehouseRequest.getWarehouseId();
-                if (Objects.nonNull(warehouseId) && !Objects.equals(warehouseId, NumberConstant.ZERO_L)) {
-                    
-                    assetWarehouseRecordService.asyncRecordByWarehouseId(assetBatchExitWarehouseRequest.getTenantId(), operator, warehouseId, data.getSnList(), type,
-                            WarehouseOperateTypeEnum.WAREHOUSE_OPERATE_TYPE_EXIT.getCode());
-                }
-            });
+                assetWarehouseRecordService.asyncRecordByWarehouseId(assetBatchExitWarehouseRequest.getTenantId(), operator, warehouseId, data.getSnList(), type,
+                        WarehouseOperateTypeEnum.WAREHOUSE_OPERATE_TYPE_EXIT.getCode());
+            }
         }
+        
     }
     
     private void handleClearCache(AssetBatchExitWarehouseBO data) {
