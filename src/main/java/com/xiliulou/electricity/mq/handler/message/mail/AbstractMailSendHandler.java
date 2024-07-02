@@ -36,6 +36,13 @@ public abstract class AbstractMailSendHandler extends AbstractMessageSendHandler
     
     public static final Integer WECHAT_SEND_MAIL = 2;
     
+    private static final Map<String, String> HEARDERS = Maps.newHashMapWithExpectedSize(1);
+    
+    static {
+        HEARDERS.put("Accept-Encoding", "gzip, deflate");
+    }
+    
+    
     @Override
     public SendDTO getSendDTO(MqNotifyCommon mqNotifyCommon) {
         
@@ -74,8 +81,15 @@ public abstract class AbstractMailSendHandler extends AbstractMessageSendHandler
      */
     protected Map<String, String> converterParamMap(MQMailMessageNotify notify) {
         HashMap<String, String> map = Maps.newHashMapWithExpectedSize(1);
-        map.put("", notify.getText());
+        map.put("version", notify.getSubject());
+        map.put("content", notify.getText());
         return map;
+    }
+    
+    
+    @Override
+    protected Map<String, String> getHeaders(SendDTO sendDTO) {
+        return this.HEARDERS;
     }
     
 }

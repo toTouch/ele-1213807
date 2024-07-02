@@ -19,9 +19,11 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.Resource;
 import java.util.Collections;
+import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -76,10 +78,21 @@ public abstract class AbstractMessageSendHandler implements MessageSendHandler {
         }
         
         // 发送
-        ResponseEntity<String> responseEntity = restTemplateService.postJsonForResponseEntity(messageCenterConfig.getUrl(), JsonUtil.toJson(sendDTO), null);
+        ResponseEntity<String> responseEntity = restTemplateService.postJsonForResponseEntity(messageCenterConfig.getUrl(), JsonUtil.toJson(sendDTO), this.getHeaders(sendDTO));
         
         //发送后处理
         this.postProcessing(sendDTO, responseEntity);
+    }
+    
+    /**
+     * name: 获取请求头 description:
+     *
+     * @param sendDTO
+     * @author caobotao.cbt
+     * @date 2024/7/2 10:46
+     */
+    protected Map<String, String> getHeaders(SendDTO sendDTO) {
+        return null;
     }
     
     

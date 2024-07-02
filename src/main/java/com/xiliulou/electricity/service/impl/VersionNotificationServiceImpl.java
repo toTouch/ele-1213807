@@ -188,7 +188,7 @@ public class VersionNotificationServiceImpl implements VersionNotificationServic
                 return emailRecipient;
             }).collect(Collectors.toList());
             
-            MQMailMessageNotify mailMessageNotify = MQMailMessageNotify.builder().to(mailList).subject(SUBJECT_PREFIX + versionNotification.getVersion())
+            MQMailMessageNotify mailMessageNotify = MQMailMessageNotify.builder().to(mailList).subject(versionNotification.getVersion())
                     .text(versionNotification.getContent()).build();
             
             mailService.sendVersionNotificationEmailToMQ(mailMessageNotify, entry.getKey().intValue());
