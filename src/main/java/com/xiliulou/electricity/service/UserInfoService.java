@@ -178,4 +178,6 @@ public interface UserInfoService extends IService<UserInfo> {
      * @param userOauthBinds userOauthBinds
     */
     void clearUserOauthBindToken(List<UserOauthBind> userOauthBinds, String clientId);
+    
+    List<UserInfo> listByUids(List<Long> uidList, Integer tenantId);
 }

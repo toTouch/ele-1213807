@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.xiliulou.electricity.mapper.userinfo.overdue.UserInfoOverdueRemarkMapper">
+    <insert id="insertRemark">
+        INSERT INTO t_user_info_overdue_remark (del_flag, tenant_id, type, uid, remark)
+        VALUES (0, #{tenantId}, #{type}, #{uid}, #{remark});
+    </insert>
     
     <update id="clearRemarksByUidAndType">
         update t_user_info_overdue_remark set remark = '' where uid = #{uid} and type = #{type} and del_flag = 0
@@ -8,4 +12,10 @@
             and tenant_id = #{tenantId}
         </if>
     </update>
+    <update id="updateRemark">
+        update t_user_info_overdue_remark set remark = #{remark} where id = #{id} and del_flag = 0
+    </update>
+    <select id="queryIdByUidAndType" resultType="java.lang.Long">
+        SELECT id FROM t_user_info_overdue_remark WHERE del_flag = 0 AND `type` = #{type} AND `uid` = #{uid} AND `tenant_id` = #{tenantId} Limit 1;
+    </select>
 </mapper>
