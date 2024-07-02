@@ -188,8 +188,11 @@ public class AssetInventoryDetailServiceImpl implements AssetInventoryDetailServ
                 AssetInventoryDetailBatchInventoryQueryModel assetInventoryDetailBatchInventoryQueryModel = AssetInventoryDetailBatchInventoryQueryModel.builder().orderNo(orderNo)
                         .status(inventoryRequest.getStatus()).snList(snList).operator(operator).tenantId(tenantId).updateTime(System.currentTimeMillis())
                         .build();
+    
                 //批量盘点
-                count = batchInventoryBySnList(assetInventoryDetailBatchInventoryQueryModel);
+                if (CollectionUtils.isNotEmpty(inventoryRequest.getSnList())) {
+                    count = batchInventoryBySnList(assetInventoryDetailBatchInventoryQueryModel);
+                }
                 
                 // 查询剩余盘点数量
                 Integer pendingTotal = assetInventoryDetailMapper.countPendingTotal(orderNo, tenantId);
