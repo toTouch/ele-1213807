@@ -8,6 +8,7 @@ import com.xiliulou.electricity.dto.asset.CabinetBatchOutWarehouseDTO;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.query.ElectricityCabinetQuery;
 import com.xiliulou.electricity.query.asset.AssetBatchExitWarehouseQueryModel;
+import com.xiliulou.electricity.query.asset.AssetEnableExitWarehouseQueryModel;
 import com.xiliulou.electricity.query.asset.ElectricityCabinetEnableAllocateQueryModel;
 import com.xiliulou.electricity.query.asset.ElectricityCabinetListSnByFranchiseeQueryModel;
 import com.xiliulou.electricity.query.asset.ElectricityCabinetUpdateFranchiseeAndStoreQueryModel;
@@ -104,7 +105,7 @@ public interface ElectricityCabinetMapper extends BaseMapper<ElectricityCabinet>
     
     List<ElectricityCabinetBO> selectListEnableAllocateCabinet(ElectricityCabinetEnableAllocateQueryModel enableAllocateQueryModel);
     
-    List<ElectricityCabinetBO> selectListEnableExitWarehouseCabinet(@Param("idSet") Set<Long> idSet, @Param("tenantId") Integer tenantId, @Param("franchiseeId") Long franchiseeId, @Param("stockStatus") Integer stockStatus);
+    List<ElectricityCabinetBO> selectListEnableExitWarehouseCabinet(AssetEnableExitWarehouseQueryModel queryModel);
     
     List<ElectricityCabinetBO> selectListBySnList(@Param("snList") List<String> snList, @Param("tenantId")Integer tenantId, @Param("franchiseeId") Long franchiseeId);
     

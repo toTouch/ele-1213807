@@ -24,6 +24,7 @@ import com.xiliulou.electricity.enums.asset.WarehouseOperateTypeEnum;
 import com.xiliulou.electricity.mapper.ElectricityCabinetMapper;
 import com.xiliulou.electricity.query.ElectricityCabinetAddAndUpdate;
 import com.xiliulou.electricity.query.asset.AssetBatchExitWarehouseQueryModel;
+import com.xiliulou.electricity.query.asset.AssetEnableExitWarehouseQueryModel;
 import com.xiliulou.electricity.query.asset.ElectricityCabinetEnableAllocateQueryModel;
 import com.xiliulou.electricity.query.asset.ElectricityCabinetListSnByFranchiseeQueryModel;
 import com.xiliulou.electricity.query.asset.ElectricityCabinetUpdateFranchiseeAndStoreQueryModel;
@@ -523,8 +524,8 @@ public class ElectricityCabinetServiceV2Impl implements ElectricityCabinetV2Serv
     
     @Slave
     @Override
-    public List<ElectricityCabinetVO> listEnableExitWarehouseCabinet(Set<Long> idSet, Integer tenantId, Long franchiseeId, Integer stockStatus) {
-        List<ElectricityCabinetBO> electricityCabinetBOList = electricityCabinetMapper.selectListEnableExitWarehouseCabinet(idSet, tenantId, franchiseeId, stockStatus);
+    public List<ElectricityCabinetVO> listEnableExitWarehouseCabinet(AssetEnableExitWarehouseQueryModel queryModel) {
+        List<ElectricityCabinetBO> electricityCabinetBOList = electricityCabinetMapper.selectListEnableExitWarehouseCabinet(queryModel);
         
         List<ElectricityCabinetVO> rspList = null;
         if (CollectionUtils.isNotEmpty(electricityCabinetBOList)) {

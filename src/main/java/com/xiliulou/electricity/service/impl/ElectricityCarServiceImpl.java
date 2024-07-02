@@ -31,6 +31,7 @@ import com.xiliulou.electricity.mapper.CarAttrMapper;
 import com.xiliulou.electricity.mapper.CarMoveRecordMapper;
 import com.xiliulou.electricity.mapper.ElectricityCarMapper;
 import com.xiliulou.electricity.query.*;
+import com.xiliulou.electricity.query.asset.AssetEnableExitWarehouseQueryModel;
 import com.xiliulou.electricity.query.jt808.CarPositionReportQuery;
 import com.xiliulou.electricity.query.asset.AssetBatchExitWarehouseQueryModel;
 import com.xiliulou.electricity.query.asset.ElectricityCarUpdateFranchiseeAndStoreQueryModel;
@@ -956,8 +957,8 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
     
     @Slave
     @Override
-    public List<ElectricityCarVO> listEnableExitWarehouseCar(Set<Long> idSet, Integer tenantId, Long franchiseeId, Integer stockStatus) {
-        List<ElectricityCarBO> electricityCarBOList = electricityCarMapper.selectListEnableExitWarehouseCar(idSet, tenantId, franchiseeId, stockStatus);
+    public List<ElectricityCarVO> listEnableExitWarehouseCar(AssetEnableExitWarehouseQueryModel queryModel) {
+        List<ElectricityCarBO> electricityCarBOList = electricityCarMapper.selectListEnableExitWarehouseCar(queryModel);
         
         List<ElectricityCarVO> rspList = null;
         if (CollectionUtils.isNotEmpty(electricityCarBOList)) {
