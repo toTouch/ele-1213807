@@ -335,9 +335,17 @@ public class AssetExitWarehouseRecordServiceImpl implements AssetExitWarehouseRe
         List<ElectricityCarVO> electricityCarVOList = new ArrayList<>();
         
         dataList.forEach(data -> {
-            electricityCabinetVOList.addAll(data.getExitWarehouseCabinetList());
-            electricityBatteryVOList.addAll(data.getExitWarehouseBatteryList());
-            electricityCarVOList.addAll(data.getExitWarehouseCarList());
+            if (CollectionUtils.isNotEmpty(data.getExitWarehouseCabinetList())) {
+                electricityCabinetVOList.addAll(data.getExitWarehouseCabinetList());
+            }
+            
+            if (CollectionUtils.isNotEmpty(data.getExitWarehouseBatteryList())) {
+                electricityBatteryVOList.addAll(data.getExitWarehouseBatteryList());
+            }
+            
+            if (CollectionUtils.isNotEmpty(data.getExitWarehouseCarList())) {
+                electricityCarVOList.addAll(data.getExitWarehouseCarList());
+            }
         });
         
         //清理柜机缓存
