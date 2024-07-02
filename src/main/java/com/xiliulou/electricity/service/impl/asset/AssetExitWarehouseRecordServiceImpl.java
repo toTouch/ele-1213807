@@ -30,6 +30,7 @@ import com.xiliulou.electricity.service.asset.AssertPermissionService;
 import com.xiliulou.electricity.service.asset.AssetExitWarehouseDetailService;
 import com.xiliulou.electricity.service.asset.AssetExitWarehouseRecordService;
 import com.xiliulou.electricity.service.asset.AssetInventoryService;
+import com.xiliulou.electricity.service.asset.AssetManageService;
 import com.xiliulou.electricity.service.asset.AssetWarehouseRecordService;
 import com.xiliulou.electricity.service.asset.ElectricityCabinetV2Service;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
@@ -99,6 +100,9 @@ public class AssetExitWarehouseRecordServiceImpl implements AssetExitWarehouseRe
     @Resource
     private AssertPermissionService assertPermissionService;
     
+    @Resource
+    private AssetManageService assetManageService;
+    
     
     @Override
     public R save(AssetExitWarehouseSaveRequest assetExitWarehouseSaveRequest, Long operator) {
@@ -136,8 +140,9 @@ public class AssetExitWarehouseRecordServiceImpl implements AssetExitWarehouseRe
             
             List<List<String>> partition = ListUtils.partition(assetList, 1000);
             List<AssetBatchExitWarehouseBO> dataList = new ArrayList<>(partition.size());
+            String orderNo = OrderIdUtil.generateBusinessOrderId(BusinessType.ASSET_EXIT_WAREHOUSE, operator);
             for (List<String> list : partition) {
-                R r = assembleData(assetExitWarehouseSaveRequest, tenantId, franchiseeId, operator, list, type);
+                R r = assembleData(assetExitWarehouseSaveRequest, tenantId, franchiseeId, operator, list, type, orderNo);
                 if (!r.isSuccess()) {
                     return R.fail(r.getErrCode(), r.getErrMsg());
                 } else {
@@ -149,7 +154,7 @@ public class AssetExitWarehouseRecordServiceImpl implements AssetExitWarehouseRe
             if (CollectionUtils.isNotEmpty(dataList)) {
                 dataList.parallelStream().forEach(data -> {
                     // 持久化
-                    handleExitWarehouse(data);
+                    handleTx(data);
                     
                     // 清理缓存
                     handleClearCache(data);
@@ -162,7 +167,17 @@ public class AssetExitWarehouseRecordServiceImpl implements AssetExitWarehouseRe
         }
     }
     
-    private R assembleData(AssetExitWarehouseSaveRequest assetExitWarehouseSaveRequest, Integer tenantId, Long franchiseeId, Long operator, List<String> assetList, Integer type) {
+    @Transactional(rollbackFor = Exception.class)
+    public void handleTx(AssetBatchExitWarehouseBO data) {
+        // 资产退库
+        handleExitWarehouse(data);
+    
+        // 新增资产退库Record
+        assetManageService.insertExitWarehouse(data.getRecordSaveQueryModel());
+    }
+    
+    private R assembleData(AssetExitWarehouseSaveRequest assetExitWarehouseSaveRequest, Integer tenantId, Long franchiseeId, Long operator, List<String> assetList, Integer type,
+            String orderNo) {
         Long storeId = assetExitWarehouseSaveRequest.getStoreId();
         Set<Long> idSet = null;
         List<Long> idList;
@@ -236,7 +251,6 @@ public class AssetExitWarehouseRecordServiceImpl implements AssetExitWarehouseRe
         }
         
         Long warehouseId = assetExitWarehouseSaveRequest.getWarehouseId();
-        String orderNo = OrderIdUtil.generateBusinessOrderId(BusinessType.ASSET_EXIT_WAREHOUSE, operator);
         Long nowTime = System.currentTimeMillis();
         
         // 封装资产退库记录数据
@@ -308,9 +322,6 @@ public class AssetExitWarehouseRecordServiceImpl implements AssetExitWarehouseRe
         // 记录
         if (!Objects.equals(count, NumberConstant.ZERO)) {
             Long operator = data.getOperator();
-            
-            // 新增资产退库记录
-            insertOne(data.getRecordSaveQueryModel());
             // 新增资产退库详情
             assetExitWarehouseDetailService.batchInsert(data.getDetailSaveQueryModelList(), operator);
             
