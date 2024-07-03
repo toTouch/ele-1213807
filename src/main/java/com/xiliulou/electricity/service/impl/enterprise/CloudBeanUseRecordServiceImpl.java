@@ -4,13 +4,10 @@ import cn.hutool.core.date.DateField;
 import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.IdUtil;
-import cn.hutool.core.util.ObjectUtil;
 import com.alibaba.excel.EasyExcel;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.NumberConstant;
-import com.xiliulou.electricity.constant.TimeConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.entity.enterprise.*;
 import com.xiliulou.electricity.enums.enterprise.PackageOrderTypeEnum;
@@ -18,6 +15,8 @@ import com.xiliulou.electricity.mapper.enterprise.CloudBeanUseRecordMapper;
 import com.xiliulou.electricity.mapper.enterprise.EnterpriseChannelUserExitMapper;
 import com.xiliulou.electricity.query.enterprise.CloudBeanUseRecordQuery;
 import com.xiliulou.electricity.query.enterprise.EnterpriseChannelUserQuery;
+import com.xiliulou.electricity.query.enterprise.EnterpriseCloudBeanUseRecordQueryModel;
+import com.xiliulou.electricity.request.enterprise.EnterpriseCloudBeanUseRecordPageRequest;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.service.enterprise.*;
 import com.xiliulou.electricity.service.excel.AutoHeadColumnWidthStyleStrategy;
@@ -27,6 +26,7 @@ import com.xiliulou.electricity.vo.UserBatteryMemberCardChannelExitVo;
 import com.xiliulou.electricity.vo.enterprise.CloudBeanOrderExcelVO;
 import com.xiliulou.electricity.vo.enterprise.CloudBeanSumVO;
 import com.xiliulou.electricity.vo.enterprise.CloudBeanUseRecordVO;
+import com.xiliulou.electricity.vo.enterprise.EnterpriseCloudBeanOrderVO;
 import com.xiliulou.storage.config.StorageConfig;
 import com.xiliulou.storage.service.StorageService;
 import com.xiliulou.storage.service.impl.AliyunOssService;
@@ -141,6 +141,9 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
     
     @Resource
     private EnableMemberCardRecordService enableMemberCardRecordService;
+    
+    @Resource
+    private FranchiseeService franchiseeService;
     
     @Override
     public CloudBeanUseRecord queryByIdFromDB(Long id) {
@@ -680,6 +683,64 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
     @Override
     public int batchInsert(List<CloudBeanUseRecord> cloudBeanUseRecordList) {
         return cloudBeanUseRecordMapper.batchInsert(cloudBeanUseRecordList);
+    }
+    
+    @Override
+    @Slave
+    public List<EnterpriseCloudBeanOrderVO> listByPage(EnterpriseCloudBeanUseRecordPageRequest request) {
+        EnterpriseCloudBeanUseRecordQueryModel queryModel = new EnterpriseCloudBeanUseRecordQueryModel();
+        BeanUtils.copyProperties(request, queryModel);
+        List<CloudBeanUseRecord> cloudBeanUseRecordList = this.cloudBeanUseRecordMapper.selectListByPage(queryModel);
+    
+        if (ObjectUtils.isEmpty(cloudBeanUseRecordList)) {
+            return Collections.emptyList();
+        }
+    
+        List<String> orderIdList = cloudBeanUseRecordList.parallelStream().map(CloudBeanUseRecord::getRef).collect(Collectors.toList());
+        List<EnterpriseCloudBeanOrder> orderList = enterpriseCloudBeanOrderService.listByOrderIdList(orderIdList);
+        Map<String, Long> operateUidMap = new HashMap<>();
+        if (ObjectUtils.isNotEmpty(orderList)) {
+            operateUidMap = orderList.stream()
+                    .collect(Collectors.toMap(EnterpriseCloudBeanOrder::getOrderId, EnterpriseCloudBeanOrder::getOperateUid, (item1, item2) -> item1));
+        }
+    
+        Map<String, Long> finalOperateUidMap = operateUidMap;
+        
+        List<EnterpriseCloudBeanOrderVO> list = cloudBeanUseRecordList.parallelStream().map(item -> {
+            EnterpriseCloudBeanOrderVO enterpriseCloudBeanOrderVO = new EnterpriseCloudBeanOrderVO();
+            BeanUtils.copyProperties(item, enterpriseCloudBeanOrderVO);
+        
+            EnterpriseInfo enterpriseInfo = enterpriseInfoService.queryByIdFromCache(item.getEnterpriseId());
+            enterpriseCloudBeanOrderVO.setEnterpriseName(Objects.isNull(enterpriseInfo) ? "" : enterpriseInfo.getName());
+            enterpriseCloudBeanOrderVO.setBusinessId(Objects.isNull(enterpriseInfo) ? null : enterpriseInfo.getBusinessId());
+        
+            Franchisee franchisee = franchiseeService.queryByIdFromCache(item.getFranchiseeId());
+            enterpriseCloudBeanOrderVO.setFranchiseeName(Objects.isNull(franchisee) ? "" : franchisee.getName());
+    
+            Long operateUid = finalOperateUidMap.get(item.getRef());
+            if (ObjectUtils.isNotEmpty(operateUid)) {
+                User user = userService.queryByUidFromCache(operateUid);
+                enterpriseCloudBeanOrderVO.setOperateName(Objects.isNull(user) ? "" : user.getName());
+            } else {
+                enterpriseCloudBeanOrderVO.setOperateName(Objects.isNull(enterpriseInfo) ? "" : enterpriseInfo.getName());
+            }
+        
+            UserInfo userInfo = userInfoService.queryByUidFromCache(item.getUid());
+            enterpriseCloudBeanOrderVO.setUsername(Objects.isNull(userInfo) ? "" : userInfo.getName());
+        
+            return enterpriseCloudBeanOrderVO;
+        }).collect(Collectors.toList());
+    
+        return list;
+    }
+    
+    @Override
+    @Slave
+    public Integer countTotal(EnterpriseCloudBeanUseRecordPageRequest request) {
+        EnterpriseCloudBeanUseRecordQueryModel queryModel = new EnterpriseCloudBeanUseRecordQueryModel();
+        BeanUtils.copyProperties(request, queryModel);
+        return cloudBeanUseRecordMapper.countTotal(queryModel);
+    
     }
     
     

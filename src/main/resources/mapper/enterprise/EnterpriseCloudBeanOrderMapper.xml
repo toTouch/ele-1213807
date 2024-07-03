@@ -105,6 +105,16 @@
         where  enterprise_id = #{enterpriseId}
     </select>
     
+    <select id="selectListByOrderIdList"
+            resultType="com.xiliulou.electricity.entity.enterprise.EnterpriseCloudBeanOrder">
+        select order_id, operate_uid
+        from t_enterprise_cloud_bean_order
+        where order_id in
+        <foreach collection="orderIdList" item="id" index="index" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </select>
+    
     <!--通过主键修改数据-->
     <update id="update">
         update t_enterprise_cloud_bean_order
