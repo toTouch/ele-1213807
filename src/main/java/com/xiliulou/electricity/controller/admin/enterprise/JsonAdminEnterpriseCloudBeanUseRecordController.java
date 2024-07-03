@@ -28,6 +28,7 @@ import java.util.Objects;
 @Slf4j
 @RestController
 public class JsonAdminEnterpriseCloudBeanUseRecordController extends BaseController {
+    
     @Resource
     private CloudBeanUseRecordService cloudBeanUseRecordService;
     
@@ -38,13 +39,11 @@ public class JsonAdminEnterpriseCloudBeanUseRecordController extends BaseControl
      * 分页列表
      */
     @GetMapping("/admin/enterpriseCloudBeanUseRecord/page")
-    public R page(@RequestParam("size") Long size, @RequestParam("offset") Long offset,
-            @RequestParam(value = "orderId", required = false) String orderId,
-            @RequestParam(value = "uid", required = false) Long uid,
-            @RequestParam(value = "operateUid", required = false) Long operateUid,
-            @RequestParam(value = "type", required = false) Integer type,
-            @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
-            @RequestParam(value = "enterpriseId", required = false) Long enterpriseId) {
+    public R page(@RequestParam("size") Long size, @RequestParam("offset") Long offset, @RequestParam(value = "orderId", required = false) String orderId,
+            @RequestParam(value = "uid", required = false) Long uid, @RequestParam(value = "operateUid", required = false) Long operateUid,
+            @RequestParam(value = "type", required = false) Integer type, @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
+            @RequestParam(value = "enterpriseId", required = false) Long enterpriseId, @RequestParam(value = "startTime", required = false) Long startTime,
+            @RequestParam(value = "endTime", required = false) Long endTime) {
         if (size < 0 || size > 50) {
             size = 10L;
         }
@@ -57,7 +56,7 @@ public class JsonAdminEnterpriseCloudBeanUseRecordController extends BaseControl
         if (Objects.isNull(user)) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-    
+        
         List<Long> franchiseeIds = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
             franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
@@ -66,18 +65,9 @@ public class JsonAdminEnterpriseCloudBeanUseRecordController extends BaseControl
             }
         }
         
-        EnterpriseCloudBeanUseRecordPageRequest request = EnterpriseCloudBeanUseRecordPageRequest.builder()
-                .size(size)
-                .offset(offset)
-                .enterpriseId(enterpriseId)
-                .orderId(orderId)
-                .uid(uid)
-                .operateUid(operateUid)
-                .type(type)
-                .franchiseeId(franchiseeId)
-                .franchiseeIds(franchiseeIds)
-                .tenantId(TenantContextHolder.getTenantId())
-                .build();
+        EnterpriseCloudBeanUseRecordPageRequest request = EnterpriseCloudBeanUseRecordPageRequest.builder().size(size).offset(offset).enterpriseId(enterpriseId).orderId(orderId)
+                .uid(uid).operateUid(operateUid).type(type).franchiseeId(franchiseeId).franchiseeIds(franchiseeIds).tenantId(TenantContextHolder.getTenantId()).startTime(startTime)
+                .endTime(endTime).build();
         
         return R.ok(cloudBeanUseRecordService.listByPage(request));
     }
@@ -86,18 +76,16 @@ public class JsonAdminEnterpriseCloudBeanUseRecordController extends BaseControl
      * 分页总数
      */
     @GetMapping("/admin/enterpriseCloudBeanUseRecord/count")
-    public R pageCount(@RequestParam(value = "uid", required = false) Long uid,
-            @RequestParam(value = "operateUid", required = false) Long operateUid,
-            @RequestParam(value = "orderId", required = false) String orderId,
-            @RequestParam(value = "type", required = false) Integer type,
-            @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
-            @RequestParam(value = "enterpriseId", required = false) Long enterpriseId) {
+    public R pageCount(@RequestParam(value = "uid", required = false) Long uid, @RequestParam(value = "operateUid", required = false) Long operateUid,
+            @RequestParam(value = "orderId", required = false) String orderId, @RequestParam(value = "type", required = false) Integer type,
+            @RequestParam(value = "franchiseeId", required = false) Long franchiseeId, @RequestParam(value = "enterpriseId", required = false) Long enterpriseId,
+            @RequestParam(value = "startTime", required = false) Long startTime, @RequestParam(value = "endTime", required = false) Long endTime) {
         
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-    
+        
         List<Long> franchiseeIds = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
             franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
@@ -105,17 +93,10 @@ public class JsonAdminEnterpriseCloudBeanUseRecordController extends BaseControl
                 return R.ok(Collections.EMPTY_LIST);
             }
         }
-    
-        EnterpriseCloudBeanUseRecordPageRequest request = EnterpriseCloudBeanUseRecordPageRequest.builder()
-                .enterpriseId(enterpriseId)
-                .orderId(orderId)
-                .operateUid(operateUid)
-                .uid(uid)
-                .type(type)
-                .franchiseeId(franchiseeId)
-                .franchiseeIds(franchiseeIds)
-                .tenantId(TenantContextHolder.getTenantId())
-                .build();
+        
+        EnterpriseCloudBeanUseRecordPageRequest request = EnterpriseCloudBeanUseRecordPageRequest.builder().enterpriseId(enterpriseId).orderId(orderId).operateUid(operateUid)
+                .uid(uid).type(type).franchiseeId(franchiseeId).franchiseeIds(franchiseeIds).tenantId(TenantContextHolder.getTenantId()).startTime(startTime)
+                .endTime(endTime).build();
         
         return R.ok(cloudBeanUseRecordService.countTotal(request));
     }

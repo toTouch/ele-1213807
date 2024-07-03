@@ -44,4 +44,8 @@ public class EnterpriseCloudBeanUseRecordPageRequest {
     private String orderId;
     
     private List<Long> franchiseeIds;
+    
+    private Long startTime;
+    
+    private Long endTime;
 }
