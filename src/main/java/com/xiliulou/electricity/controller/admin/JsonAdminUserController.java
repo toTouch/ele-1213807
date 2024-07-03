@@ -33,6 +33,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -267,6 +268,34 @@ public class JsonAdminUserController extends BaseController {
         userService.updateUserByUid(query);
         return R.ok();
     }
-
+    
+    @GetMapping("/user/queryList")
+    public R queryList(@RequestParam("size") Long size, @RequestParam("offset") Long offset,
+            @RequestParam(value = "name", required = false) String name) {
+        if (size < 0 || size > 50) {
+            size = 10L;
+        }
+        
+        if (offset < 0) {
+            offset = 0L;
+        }
+    
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+    
+        List<Long> franchiseeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if (org.apache.commons.collections.CollectionUtils.isEmpty(franchiseeIds)) {
+                return R.ok(Collections.EMPTY_LIST);
+            }
+        }
+        
+        UserInfoQuery query = UserInfoQuery.builder().size(size).offset(offset).name(name).franchiseeIds(franchiseeIds).userTypeList(Arrays.asList(User.TYPE_USER_OPERATE, User.TYPE_USER_MERCHANT)).tenantId(TenantContextHolder.getTenantId()).build();
+        
+        return R.ok(userService.listForSearch(query));
+    }
 
 }
