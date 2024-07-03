@@ -2,6 +2,7 @@ package com.xiliulou.electricity.service.impl;
 
 import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.core.web.R;
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.config.EleIotOtaPathConfig;
 import com.xiliulou.electricity.entity.EleCabinetCoreData;
 import com.xiliulou.electricity.entity.OtaFileConfig;
@@ -96,6 +97,7 @@ public class OtaFileConfigServiceImpl implements OtaFileConfigService {
         return this.otaFileConfigMapper.queryAllByLimit(offset, limit);
     }
     
+    @Slave
     @Override
     public List<OtaFileConfig> queryAll() {
         return this.otaFileConfigMapper.queryAll();

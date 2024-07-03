@@ -57,6 +57,7 @@ public class RegionServiceImpl implements RegionService {
      * @param id 主键
      * @return 实例对象
      */
+    @Slave
     @Override
     public Region selectByIdFromDB(Integer id) {
         return this.regionMapper.selectById(id);
@@ -85,6 +86,7 @@ public class RegionServiceImpl implements RegionService {
      * @param code 主键
      * @return 实例对象
      */
+    @Slave
     @Override
     public Region selectByCode(String code) {
         return this.regionMapper.selectByCode(code);
@@ -109,6 +111,7 @@ public class RegionServiceImpl implements RegionService {
         return this.regionMapper.queryRegionListByPid(pid);
     }
 
+    @Slave
     @Override
     public List<Region> selectByRids(List<Integer> rids) {
         return this.regionMapper.selectList(new LambdaQueryWrapper<Region>().in(Region::getId,rids));

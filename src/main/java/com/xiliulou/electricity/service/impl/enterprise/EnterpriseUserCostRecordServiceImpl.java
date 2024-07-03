@@ -2,6 +2,7 @@ package com.xiliulou.electricity.service.impl.enterprise;
 
 import com.google.common.collect.Lists;
 import com.xiliulou.core.json.JsonUtil;
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.dto.EnterpriseUserCostRecordDTO;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
@@ -101,6 +102,7 @@ public class EnterpriseUserCostRecordServiceImpl implements EnterpriseUserCostRe
     @Resource
     InsuranceUserInfoService insuranceUserInfoService;
     
+    @Slave
     @Override
     public Triple<Boolean, String, Object> queryRiderDetails(EnterpriseMemberCardQuery query) {
         EnterpriseUserPackageDetailsVO enterpriseUserPackageDetailsVO = new EnterpriseUserPackageDetailsVO();
@@ -221,6 +223,7 @@ public class EnterpriseUserCostRecordServiceImpl implements EnterpriseUserCostRe
         
     }
     
+    @Slave
     @Override
     public List<EnterpriseUserCostDetailsVO> queryUserCostRecordList(EnterpriseUserCostRecordQuery enterpriseUserCostRecordQuery) {
         List<EnterpriseUserCostDetailsVO> enterpriseUserCostDetailsVOList = Lists.newArrayList();

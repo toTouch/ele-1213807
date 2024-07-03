@@ -1319,6 +1319,7 @@ public class MerchantServiceImpl implements MerchantService {
         return merchant;
     }
     
+    @Slave
     @Override
     public List<Merchant> queryByChannelEmployeeUid(Long channelEmployeeId) {
         return merchantMapper.selectByChannelEmployeeUid(channelEmployeeId);
@@ -1388,6 +1389,7 @@ public class MerchantServiceImpl implements MerchantService {
         return integer;
     }
     
+    @Slave
     @Override
     public MerchantUserVO queryMerchantUserDetail() {
         User user = userService.queryByUidFromCache(SecurityUtils.getUid());
