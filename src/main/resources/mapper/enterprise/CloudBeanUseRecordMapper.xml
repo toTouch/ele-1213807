@@ -152,7 +152,8 @@
             r.franchisee_id,
             r.type,
             r.bean_amount,
-            r.create_time
+            r.create_time,
+            r.ref
         FROM
         t_cloud_bean_use_record r
         
