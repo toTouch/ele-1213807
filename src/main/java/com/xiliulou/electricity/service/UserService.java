@@ -149,6 +149,4 @@ public interface UserService {
     User queryByUidFromDB(Long uid);
     
     List<User> listByPhones(List<String> phoneList, Integer tenantId, Integer type);
-    
-    List<UserSearchVO> listForSearch(UserInfoQuery query);
 }

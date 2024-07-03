@@ -51,6 +51,4 @@ public interface UserMapper extends BaseMapper<User> {
     User selectByUid(Long uid);
     
     List<User> selectListByPhones(@Param("phoneList") List<String> phoneList, @Param("tenantId") Integer tenantId, @Param("type") Integer type);
-    
-    List<UserSearchVO> selectListForSearch(UserInfoQuery query);
 }

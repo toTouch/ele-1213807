@@ -547,17 +547,6 @@ public class UserServiceImpl implements UserService {
     }
     
     @Override
-    @Slave
-    public List<UserSearchVO> listForSearch(UserInfoQuery query) {
-        List<UserSearchVO> userList = this.userMapper.selectListForSearch(query);
-        if (CollectionUtils.isEmpty(userList)) {
-            return Collections.emptyList();
-        }
-    
-        return userList;
-    }
-    
-    @Override
     @Transactional(rollbackFor = Exception.class)
     public Pair<Boolean, Object> updateAdminUser(AdminUserQuery adminUserQuery) {
         
