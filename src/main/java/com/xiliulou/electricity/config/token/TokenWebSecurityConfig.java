@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.config.token;
 
 import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.electricity.service.token.AliPayThirdAuthenticationServiceImpl;
 import com.xiliulou.electricity.service.token.LoginSuccessPostProcessor;
 import com.xiliulou.electricity.service.token.WxProThirdAuthenticationServiceImpl;
 import com.xiliulou.security.authentication.CustomAccessDeniedHandler;
@@ -50,6 +51,10 @@ public class TokenWebSecurityConfig extends WebSecurityConfigurerAdapter {
 	private UserDetailsService userDetailsService;
 	@Autowired
 	private WxProThirdAuthenticationServiceImpl wxProThirdAuthenticationService;
+	
+	@Autowired
+	private AliPayThirdAuthenticationServiceImpl aliPayThirdAuthenticationService;
+	
 	@Autowired
 	RedisService redisService;
 	@Autowired
@@ -90,8 +95,7 @@ public class TokenWebSecurityConfig extends WebSecurityConfigurerAdapter {
 
 		//增加第三方授权的service
 		ThirdAuthenticationServiceFactory.putService(TokenConstant.THIRD_AUTH_WX_PRO, wxProThirdAuthenticationService);
-
-
+		ThirdAuthenticationServiceFactory.putService(TokenConstant.THIRD_AUTH_ALI_PAY, aliPayThirdAuthenticationService);
 	}
 
 	@Override
