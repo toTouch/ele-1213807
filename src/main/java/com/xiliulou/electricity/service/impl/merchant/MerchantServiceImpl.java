@@ -1583,6 +1583,12 @@ public class MerchantServiceImpl implements MerchantService {
         return Pair.of(false, "解绑失败,请联系客服处理");
     }
     
+    @Override
+    @Slave
+    public List<Merchant> listByEnterpriseList(List<Long> enterpriseIdList) {
+        return merchantMapper.listByEnterpriseList(enterpriseIdList);
+    }
+    
     @Slave
     @Override
     public List<Merchant> queryListByUidList(Set<Long> uidList, Integer tenantId) {

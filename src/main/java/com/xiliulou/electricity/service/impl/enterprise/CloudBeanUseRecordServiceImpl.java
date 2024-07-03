@@ -10,6 +10,7 @@ import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.entity.enterprise.*;
+import com.xiliulou.electricity.entity.merchant.Merchant;
 import com.xiliulou.electricity.enums.enterprise.PackageOrderTypeEnum;
 import com.xiliulou.electricity.mapper.enterprise.CloudBeanUseRecordMapper;
 import com.xiliulou.electricity.mapper.enterprise.EnterpriseChannelUserExitMapper;
@@ -20,6 +21,7 @@ import com.xiliulou.electricity.request.enterprise.EnterpriseCloudBeanUseRecordP
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.service.enterprise.*;
 import com.xiliulou.electricity.service.excel.AutoHeadColumnWidthStyleStrategy;
+import com.xiliulou.electricity.service.merchant.MerchantService;
 import com.xiliulou.electricity.utils.DateUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.UserBatteryMemberCardChannelExitVo;
@@ -144,6 +146,9 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
     
     @Resource
     private FranchiseeService franchiseeService;
+    
+    @Resource
+    private MerchantService merchantService;
     
     @Override
     public CloudBeanUseRecord queryByIdFromDB(Long id) {
@@ -696,33 +701,53 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
             return Collections.emptyList();
         }
     
-        List<String> orderIdList = cloudBeanUseRecordList.parallelStream().map(CloudBeanUseRecord::getRef).collect(Collectors.toList());
-        List<EnterpriseCloudBeanOrder> orderList = enterpriseCloudBeanOrderService.listByOrderIdList(orderIdList);
+        Set<String> orderIdList = new HashSet<>();
+        Set<Long> enterpriseIdList = new HashSet<>();
+        cloudBeanUseRecordList.stream().forEach(item -> {
+            orderIdList.add(item.getRef());
+            enterpriseIdList.add(item.getEnterpriseId());
+        });
+    
+        List<EnterpriseCloudBeanOrder> orderList = enterpriseCloudBeanOrderService.listByOrderIdList(new ArrayList<>(orderIdList));
         Map<String, Long> operateUidMap = new HashMap<>();
         if (ObjectUtils.isNotEmpty(orderList)) {
             operateUidMap = orderList.stream()
                     .collect(Collectors.toMap(EnterpriseCloudBeanOrder::getOrderId, EnterpriseCloudBeanOrder::getOperateUid, (item1, item2) -> item1));
         }
     
+        List<Merchant> merchantList = merchantService.listByEnterpriseList(new ArrayList<>(enterpriseIdList));
+        Map<Long, String> merchantNameMap = new HashMap<>();
+        if (ObjectUtils.isNotEmpty(merchantList)) {
+            merchantNameMap = merchantList.stream()
+                    .collect(Collectors.toMap(Merchant::getEnterpriseId, Merchant::getName, (item1, item2) -> item1));
+        }
+    
         Map<String, Long> finalOperateUidMap = operateUidMap;
-        
+    
+        Map<Long, String> finalMerchantNameMap = merchantNameMap;
         List<EnterpriseCloudBeanOrderVO> list = cloudBeanUseRecordList.parallelStream().map(item -> {
             EnterpriseCloudBeanOrderVO enterpriseCloudBeanOrderVO = new EnterpriseCloudBeanOrderVO();
             BeanUtils.copyProperties(item, enterpriseCloudBeanOrderVO);
         
             EnterpriseInfo enterpriseInfo = enterpriseInfoService.queryByIdFromCache(item.getEnterpriseId());
-            enterpriseCloudBeanOrderVO.setEnterpriseName(Objects.isNull(enterpriseInfo) ? "" : enterpriseInfo.getName());
-            enterpriseCloudBeanOrderVO.setBusinessId(Objects.isNull(enterpriseInfo) ? null : enterpriseInfo.getBusinessId());
-        
+            if (Objects.nonNull(enterpriseInfo)) {
+                enterpriseCloudBeanOrderVO.setEnterpriseName(enterpriseInfo.getName());
+                enterpriseCloudBeanOrderVO.setBusinessId(enterpriseInfo.getBusinessId());
+            }
+            
             Franchisee franchisee = franchiseeService.queryByIdFromCache(item.getFranchiseeId());
-            enterpriseCloudBeanOrderVO.setFranchiseeName(Objects.isNull(franchisee) ? "" : franchisee.getName());
+            if (Objects.nonNull(franchisee)) {
+                enterpriseCloudBeanOrderVO.setFranchiseeName(franchisee.getName());
+            }
     
             Long operateUid = finalOperateUidMap.get(item.getRef());
             if (ObjectUtils.isNotEmpty(operateUid)) {
                 User user = userService.queryByUidFromCache(operateUid);
-                enterpriseCloudBeanOrderVO.setOperateName(Objects.isNull(user) ? "" : user.getName());
-            } else {
-                enterpriseCloudBeanOrderVO.setOperateName(Objects.isNull(enterpriseInfo) ? "" : enterpriseInfo.getName());
+                if (Objects.nonNull(user)) {
+                    enterpriseCloudBeanOrderVO.setOperateName(user.getName());
+                }
+            } else if (ObjectUtils.isNotEmpty(finalMerchantNameMap.get(item.getEnterpriseId()))) {
+                enterpriseCloudBeanOrderVO.setOperateName(finalMerchantNameMap.get(item.getEnterpriseId()));
             }
         
             UserInfo userInfo = userInfoService.queryByUidFromCache(item.getUid());
