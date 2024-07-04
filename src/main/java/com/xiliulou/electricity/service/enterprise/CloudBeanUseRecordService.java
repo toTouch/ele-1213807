@@ -11,6 +11,7 @@ import com.xiliulou.electricity.vo.enterprise.CloudBeanUseRecordVO;
 import com.xiliulou.electricity.vo.enterprise.EnterpriseCloudBeanOrderVO;
 import org.apache.commons.lang3.tuple.Triple;
 
+import javax.servlet.http.HttpServletResponse;
 import java.math.BigDecimal;
 import java.util.List;
 
@@ -95,4 +96,6 @@ public interface CloudBeanUseRecordService {
     List<EnterpriseCloudBeanOrderVO> listByPage(EnterpriseCloudBeanUseRecordPageRequest request);
     
     Integer countTotal(EnterpriseCloudBeanUseRecordPageRequest request);
+    
+    void export(EnterpriseCloudBeanUseRecordPageRequest request, HttpServletResponse response);
 }

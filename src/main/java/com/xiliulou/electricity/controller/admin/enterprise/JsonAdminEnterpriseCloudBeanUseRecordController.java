@@ -1,9 +1,9 @@
 package com.xiliulou.electricity.controller.admin.enterprise;
 
 import com.xiliulou.core.controller.BaseController;
+import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.User;
-import com.xiliulou.electricity.query.enterprise.EnterpriseCloudBeanOrderQuery;
 import com.xiliulou.electricity.request.enterprise.EnterpriseCloudBeanUseRecordPageRequest;
 import com.xiliulou.electricity.service.UserDataScopeService;
 import com.xiliulou.electricity.service.enterprise.CloudBeanUseRecordService;
@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletResponse;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -99,5 +100,31 @@ public class JsonAdminEnterpriseCloudBeanUseRecordController extends BaseControl
                 .endTime(endTime).build();
         
         return R.ok(cloudBeanUseRecordService.countTotal(request));
+    }
+    
+    @GetMapping("/admin/enterpriseCloudBeanUseRecord/exportExcel")
+    public void export(@RequestParam(value = "orderId", required = false) String orderId,
+            @RequestParam(value = "uid", required = false) Long uid, @RequestParam(value = "operateUid", required = false) Long operateUid,
+            @RequestParam(value = "type", required = false) Integer type, @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
+            @RequestParam(value = "enterpriseId", required = false) Long enterpriseId, @RequestParam(value = "startTime", required = false) Long startTime,
+            @RequestParam(value = "endTime", required = false) Long endTime, HttpServletResponse response) {
+    
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            throw new CustomBusinessException("未找到用户");
+        }
+        
+        List<Long> franchiseeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if (org.apache.commons.collections.CollectionUtils.isEmpty(franchiseeIds)) {
+                throw new CustomBusinessException("加盟商不存在");
+            }
+        }
+        
+        EnterpriseCloudBeanUseRecordPageRequest request = EnterpriseCloudBeanUseRecordPageRequest.builder().enterpriseId(enterpriseId).orderId(orderId).operateUid(operateUid)
+                .uid(uid).type(type).franchiseeId(franchiseeId).franchiseeIds(franchiseeIds).tenantId(TenantContextHolder.getTenantId()).startTime(startTime)
+                .endTime(endTime).build();
+        cloudBeanUseRecordService.export(request, response);
     }
 }

@@ -5,12 +5,18 @@ import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.IdUtil;
 import com.alibaba.excel.EasyExcel;
+import com.alibaba.excel.ExcelWriter;
+import com.alibaba.excel.write.metadata.WriteSheet;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.db.dynamic.annotation.Slave;
+import com.xiliulou.electricity.constant.DateFormatConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
+import com.xiliulou.electricity.constant.enterprise.CloudBeanUseRecordConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.entity.enterprise.*;
 import com.xiliulou.electricity.entity.merchant.Merchant;
+import com.xiliulou.electricity.enums.basic.BasicEnum;
+import com.xiliulou.electricity.enums.enterprise.CloudBeanUseRecordTypeEnum;
 import com.xiliulou.electricity.enums.enterprise.PackageOrderTypeEnum;
 import com.xiliulou.electricity.mapper.enterprise.CloudBeanUseRecordMapper;
 import com.xiliulou.electricity.mapper.enterprise.EnterpriseChannelUserExitMapper;
@@ -27,6 +33,7 @@ import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.UserBatteryMemberCardChannelExitVo;
 import com.xiliulou.electricity.vo.enterprise.CloudBeanOrderExcelVO;
 import com.xiliulou.electricity.vo.enterprise.CloudBeanSumVO;
+import com.xiliulou.electricity.vo.enterprise.CloudBeanUseRecordExcelVO;
 import com.xiliulou.electricity.vo.enterprise.CloudBeanUseRecordVO;
 import com.xiliulou.electricity.vo.enterprise.EnterpriseCloudBeanOrderVO;
 import com.xiliulou.storage.config.StorageConfig;
@@ -37,17 +44,25 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Triple;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServletResponse;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.InputStream;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -766,6 +781,100 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
         BeanUtils.copyProperties(request, queryModel);
         return cloudBeanUseRecordMapper.countTotal(queryModel);
     
+    }
+    
+    @Override
+    @Slave
+    public void export(EnterpriseCloudBeanUseRecordPageRequest request, HttpServletResponse response) {
+        EnterpriseCloudBeanUseRecordQueryModel queryModel = new EnterpriseCloudBeanUseRecordQueryModel();
+        BeanUtils.copyProperties(request, queryModel);
+        List<CloudBeanUseRecord> cloudBeanUseRecordList = this.cloudBeanUseRecordMapper.selectListByPage(queryModel);
+    
+        Set<String> enterpriseNameList = new HashSet<>();
+        Map<String, List<CloudBeanUseRecordExcelVO>> enterpriseNameMap = new HashMap<>();
+        
+        cloudBeanUseRecordList.stream().forEach(item -> {
+            CloudBeanUseRecordExcelVO enterpriseCloudBeanOrderVO = new CloudBeanUseRecordExcelVO();
+            BeanUtils.copyProperties(item, enterpriseCloudBeanOrderVO);
+        
+            EnterpriseInfo enterpriseInfo = enterpriseInfoService.queryByIdFromCache(item.getEnterpriseId());
+            if (Objects.nonNull(enterpriseInfo)) {
+                enterpriseCloudBeanOrderVO.setEnterpriseName(enterpriseInfo.getName());
+            }
+        
+            if (Objects.equals(item.getType(), CloudBeanUseRecord.TYPE_ADMIN_RECHARGE) || Objects.equals(item.getType(), CloudBeanUseRecord.TYPE_RECYCLE) || Objects.equals(
+                    item.getType(), CloudBeanUseRecord.TYPE_PRESENT) || Objects.equals(item.getType(), CloudBeanUseRecord.TYPE_USER_RECHARGE)) {
+                enterpriseCloudBeanOrderVO.setIncomeAndExpend("收入");
+            } else {
+                enterpriseCloudBeanOrderVO.setIncomeAndExpend("支出");
+            }
+        
+            CloudBeanUseRecordTypeEnum typeEnum = BasicEnum.getEnum(item.getType(), CloudBeanUseRecordTypeEnum.class);
+            if (Objects.nonNull(typeEnum)) {
+                enterpriseCloudBeanOrderVO.setConsumerType(typeEnum.getDesc());
+            }
+        
+            if (Objects.nonNull(item.getCreateTime())) {
+                enterpriseCloudBeanOrderVO.setCreateTime(DateUtil.format(new Date(item.getCreateTime()), DateFormatConstant.MONTH_DAY_DATE_FORMAT));
+            }
+    
+            enterpriseNameList.add(enterpriseCloudBeanOrderVO.getEnterpriseName());
+            
+            if (ObjectUtils.isNotEmpty(enterpriseNameMap.get(enterpriseCloudBeanOrderVO.getEnterpriseName()))) {
+                enterpriseNameMap.get(enterpriseCloudBeanOrderVO.getEnterpriseName()).add(enterpriseCloudBeanOrderVO);
+            } else {
+                List<CloudBeanUseRecordExcelVO> cloudBeanUseRecordExcelVOList = new ArrayList<>();
+                cloudBeanUseRecordExcelVOList.add(enterpriseCloudBeanOrderVO);
+                enterpriseNameMap.put(enterpriseCloudBeanOrderVO.getEnterpriseName(), cloudBeanUseRecordExcelVOList);
+            }
+        });
+    
+        
+        List<String> sheetNameList = new ArrayList<>(enterpriseNameList);
+        if (ObjectUtils.isEmpty(sheetNameList)) {
+            sheetNameList.add(CloudBeanUseRecordConstant.default_sheet_name);
+        }
+        
+        if (ObjectUtils.isEmpty(enterpriseNameMap)) {
+            enterpriseNameMap.put(sheetNameList.get(0), new ArrayList<>());
+        }
+    
+        try {
+            ServletOutputStream outputStream = response.getOutputStream();
+            // 告诉浏览器用什么软件可以打开此文件
+            response.setHeader("content-Type", "application /vnd.ms-excel");
+            // 下载文件的默认名称
+            response.setHeader("Content-Disposition", "attachment;filename=" + URLEncoder.encode(CloudBeanUseRecordConstant.export_file_name, StandardCharsets.UTF_8));
+    
+            ClassPathResource classPathResource = new ClassPathResource("excelTemplate" + File.separator + CloudBeanUseRecordConstant.export_template_name);
+            InputStream stream = classPathResource.getInputStream();
+            // 把excel流给这个对象，后续可以操作
+            XSSFWorkbook workbook = new XSSFWorkbook(stream);
+            // 设置模板的第一个sheet的名称，名称我们使用合同号
+            workbook.setSheetName(0, sheetNameList.get(0));
+            for (int i = 1; i < sheetNameList.size(); i++) {
+                // 剩余的全部复制模板sheet0即可
+                workbook.cloneSheet(0, sheetNameList.get(i));
+            }
+            
+            // 把workbook写到流里
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            workbook.write(baos);
+            byte[] bytes = baos.toByteArray();
+            stream = new ByteArrayInputStream(bytes);
+            ExcelWriter excelWriter = EasyExcel.write(outputStream).withTemplate(stream).build();
+    
+            for (int i = 0; i < sheetNameList.size(); i++) {
+                WriteSheet writeSheet = EasyExcel.writerSheet(sheetNameList.get(i)).build();
+                excelWriter.fill(enterpriseNameMap.get(sheetNameList.get(i)), writeSheet);
+            }
+    
+            excelWriter.finish();
+            baos.close();
+            stream.close();
+        } catch (Exception e) {
+            log.error("cloud bean use record export error！", e);
+        }
     }
     
     
