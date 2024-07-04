@@ -9,6 +9,7 @@ import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.http.resttemplate.service.RestTemplateService;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
+import com.xiliulou.db.dynamic.annotation.DS;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.config.WechatConfig;
 import com.xiliulou.electricity.constant.CacheConstant;
@@ -62,7 +63,7 @@ public class NotifyUserInfoServiceImpl implements NotifyUserInfoService {
     @Autowired
     RestTemplateService restTemplateService;
     
-    
+    @DS(value = "notify")
     @Override
     public R queryWechatOpenIdByCode(String code) {
         String url = String.format(WECHAT_OAUTH2_ACCESS_TOKEN_URL, wechatConfig.getNotifyUserInfoAppId(), wechatConfig.getNotifyUserInfoSecret(), code);
@@ -79,6 +80,7 @@ public class NotifyUserInfoServiceImpl implements NotifyUserInfoService {
         return R.ok(vo);
     }
     
+    @DS(value = "notify")
     @Override
     public R insert(NotifyUserInfoOptRequest request) {
         if (!checkIdempotent(request)) {
@@ -101,6 +103,7 @@ public class NotifyUserInfoServiceImpl implements NotifyUserInfoService {
         return R.ok(true);
     }
     
+    @DS(value = "notify")
     @Override
     public R update(NotifyUserInfoOptRequest request) {
         if (!checkIdempotent(request)) {
@@ -128,6 +131,7 @@ public class NotifyUserInfoServiceImpl implements NotifyUserInfoService {
         return R.ok(true);
     }
     
+    @DS(value = "notify")
     @Override
     public R queryByOpenIdFromCache(String openId) {
         NotifyUserInfo notifyUserInfo = queryFromCache(openId, p -> String.format(CacheConstant.CACHE_NOTIFY_USER_INFO_OPENID, p), p -> notifyUserInfoMapper.selectByOpenId(p));
@@ -136,6 +140,7 @@ public class NotifyUserInfoServiceImpl implements NotifyUserInfoService {
         return R.ok(vo);
     }
     
+    @DS(value = "notify")
     @Override
     public R queryByPhoneFromCache(String phone) {
         // 查缓存
@@ -146,7 +151,7 @@ public class NotifyUserInfoServiceImpl implements NotifyUserInfoService {
         return R.ok(vo);
     }
     
-    @Slave
+    @DS(value = "notify")
     @Override
     public R queryAll(Integer offset, Integer size) {
         List<NotifyUserInfo> notifyUserInfos = notifyUserInfoMapper.selectList(offset, size);
@@ -162,6 +167,7 @@ public class NotifyUserInfoServiceImpl implements NotifyUserInfoService {
      * @author caobotao.cbt
      * @date 2024/6/26 20:49
      */
+    @DS(value = "notify")
     @Override
     public NotifyUserInfo queryFromCacheByPhone(String phone) {
         return queryFromCache(phone, p -> String.format(CacheConstant.CACHE_NOTIFY_USER_INFO_PHONE, p), p -> notifyUserInfoMapper.selectByPhone(p));

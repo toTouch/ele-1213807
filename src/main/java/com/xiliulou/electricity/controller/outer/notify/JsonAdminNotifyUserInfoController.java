@@ -2,7 +2,7 @@
  * Copyright(c) 2018 Sunyur.com, All Rights Reserved. Author: sunyur Create date: 2024/6/26
  */
 
-package com.xiliulou.electricity.controller.admin.notify;
+package com.xiliulou.electricity.controller.outer.notify;
 
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.request.notify.NotifyUserInfoOptRequest;
@@ -43,7 +43,7 @@ public class JsonAdminNotifyUserInfoController {
      * @author caobotao.cbt
      * @date 2024/6/26 15:05
      */
-    @PostMapping("/admin/notify/userInfo")
+    @PostMapping("/outer/notify/userInfo")
     public R create(@RequestBody @Validated(CreateGroup.class) NotifyUserInfoOptRequest request) {
         return notifyUserInfoService.insert(request);
     }
@@ -56,7 +56,7 @@ public class JsonAdminNotifyUserInfoController {
      * @author caobotao.cbt
      * @date 2024/6/26 15:05
      */
-    @PutMapping("/admin/notify/userInfo")
+    @PutMapping("/outer/notify/userInfo")
     public R update(@RequestBody @Validated(UpdateGroup.class) NotifyUserInfoOptRequest request) {
         return notifyUserInfoService.update(request);
     }
@@ -69,7 +69,7 @@ public class JsonAdminNotifyUserInfoController {
      * @author caobotao.cbt
      * @date 2024/6/26 15:05
      */
-    @PostMapping("/admin/notify/user/getOpenid")
+    @PostMapping("/outer/notify/user/getOpenid")
     public R getOpenid(@RequestBody @Validated NotifyUserInfoQryRequest.QueryByCode request) {
         return notifyUserInfoService.queryWechatOpenIdByCode(request.getCode());
     }
@@ -82,7 +82,7 @@ public class JsonAdminNotifyUserInfoController {
      * @author caobotao.cbt
      * @date 2024/6/26 15:05
      */
-    @GetMapping("/admin/notify/userInfo/{id}")
+    @GetMapping("/outer/notify/userInfo/{id}")
     public R userInfo(@PathVariable(value = "id") String openId) {
         return notifyUserInfoService.queryByOpenIdFromCache(openId);
     }
@@ -96,7 +96,7 @@ public class JsonAdminNotifyUserInfoController {
      * @author caobotao.cbt
      * @date 2024/6/26 15:05
      */
-    @GetMapping("/admin/notify/user/list")
+    @GetMapping("/outer/notify/user/list")
     public R userInfo(@RequestParam("offset") Integer offset, @RequestParam("size") Integer size) {
         return notifyUserInfoService.queryAll(offset, size);
     }
