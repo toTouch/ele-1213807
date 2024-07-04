@@ -46,7 +46,7 @@
         select
         tuc.id as id, tuc.name as name,tuc.verified_uid as  verifiedUid, tuc.uid as uid, tuc.phone as phone, tuc.coupon_id as couponId,
         tuc.deadline as deadline, tuc.order_id as orderId,tuc.create_time as createTime,tc.superposition as superposition,
-        tuc.update_time as updateTime, tuc.status as status, tuc.source as source, tuc.del_flag as delFlag, tuc.franchisee_id as franchiseeId,
+        tuc.update_time as updateTime, tuc.status as status, tuc.source as source, tuc.del_flag as delFlag, tui.franchisee_id as franchiseeId,
         tuc.discount_type as discountType,tc.amount AS amount,tc.discount AS discount,tui.name as userName, tc.description, tc.specific_packages
         from t_user_coupon as tuc
         left join t_user_info tui on tuc.uid=tui.uid
@@ -98,7 +98,7 @@
                 and tuc.tenant_id = #{query.tenantId}
             </if>
             <if test="query.franchiseeId != null ">
-                and tuc.franchisee_id = #{query.franchiseeId}
+                and tui.franchisee_id = #{query.franchiseeId}
             </if>
             <if test="query.franchiseeIds != null and query.franchiseeIds.size()>0">
                 and tui.franchisee_id in
@@ -171,7 +171,7 @@
                 and tuc.tenant_id = #{query.tenantId}
             </if>
             <if test="query.franchiseeId != null ">
-                and tuc.franchisee_id = #{query.franchiseeId}
+                and tui.franchisee_id = #{query.franchiseeId}
             </if>
             <if test="query.franchiseeIds != null and query.franchiseeIds.size()>0">
                 and tui.franchisee_id in

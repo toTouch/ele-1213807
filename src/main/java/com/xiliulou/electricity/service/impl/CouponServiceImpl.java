@@ -368,6 +368,7 @@ public class CouponServiceImpl implements CouponService {
     
             Integer franchiseeId = coupon.getFranchiseeId();
             if (Objects.nonNull(franchiseeId)) {
+                couponActivityVO.setFranchiseeId(franchiseeId.longValue());
                 couponActivityVO.setFranchiseeName(Optional.ofNullable(franchiseeService.queryByIdFromCache(franchiseeId.longValue())).map(Franchisee::getName).orElse(StringUtils.EMPTY));
             }
             
