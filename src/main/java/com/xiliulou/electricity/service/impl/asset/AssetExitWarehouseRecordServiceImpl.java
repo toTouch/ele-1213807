@@ -331,18 +331,7 @@ public class AssetExitWarehouseRecordServiceImpl implements AssetExitWarehouseRe
     
     private void handleClearCache(List<AssetBatchExitWarehouseBO> dataList) {
         dataList.forEach(data -> {
-            // 清除电池缓存
-            if (CollectionUtils.isNotEmpty(data.getExitWarehouseBatteryList())) {
-                List<ElectricityBatteryVO> batteryList = data.getExitWarehouseBatteryList();
-                if (CollectionUtils.isEmpty(batteryList)) {
-                    return;
-                }
-                
-                batteryList.parallelStream().forEach(battery -> {
-                    redisService.delete(CacheConstant.CACHE_BT_ATTR + battery.getSn());
-                });
-            }
-            
+            // 电池(key bt_attr:)无需清除缓存
             // 清除柜机缓存
             if (CollectionUtils.isNotEmpty(data.getExitWarehouseCabinetList())) {
                 List<ElectricityCabinetVO> cabinetList = data.getExitWarehouseCabinetList();
