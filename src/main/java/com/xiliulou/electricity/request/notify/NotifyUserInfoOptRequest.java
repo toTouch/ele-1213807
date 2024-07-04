@@ -41,7 +41,7 @@ public class NotifyUserInfoOptRequest {
     /**
      * 微信授权用户唯一标识
      */
-    @NotBlank(groups = {UpdateGroup.class, CreateGroup.class}, message = "openId不能为空")
+    @NotBlank(groups = {CreateGroup.class}, message = "openId不能为空")
     private String openId;
     
     /**
