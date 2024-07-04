@@ -184,7 +184,7 @@ public class AssetExitWarehouseRecordServiceImpl implements AssetExitWarehouseRe
             }
             
             // 记录
-            if (!Objects.equals(count, NumberConstant.ZERO)) {
+            if (count > NumberConstant.ZERO) {
                 Long operator = data.getOperator();
                 // 新增资产退库详情
                 assetExitWarehouseDetailService.batchInsert(data.getDetailSaveQueryModelList(), operator);
@@ -221,11 +221,11 @@ public class AssetExitWarehouseRecordServiceImpl implements AssetExitWarehouseRe
         // 封装查询条件
         AssetEnableExitWarehouseQueryModel queryModel = AssetEnableExitWarehouseQueryModel.builder().tenantId(tenantId).franchiseeId(franchiseeId)
                 .stockStatus(StockStatusEnum.UN_STOCK.getCode()).build();
-        // 根据id查询可退库的电柜
+        // 根据id退库
         if (Objects.equals(AssetConstant.ASSET_EXIT_WAREHOUSE_MODE_ID, assetExitWarehouseSaveRequest.getMode())) {
             queryModel.setIdSet(idSet);
         } else {
-            // 根据sn进行退库
+            // 根据sn退库
             queryModel.setSnList(assetList);
         }
         
@@ -330,47 +330,44 @@ public class AssetExitWarehouseRecordServiceImpl implements AssetExitWarehouseRe
     }
     
     private void handleClearCache(List<AssetBatchExitWarehouseBO> dataList) {
-        List<ElectricityCabinetVO> electricityCabinetVOList = new ArrayList<>();
-        List<ElectricityBatteryVO> electricityBatteryVOList = new ArrayList<>();
-        List<ElectricityCarVO> electricityCarVOList = new ArrayList<>();
-        
         dataList.forEach(data -> {
-            if (CollectionUtils.isNotEmpty(data.getExitWarehouseCabinetList())) {
-                electricityCabinetVOList.addAll(data.getExitWarehouseCabinetList());
-            }
-            
+            // 清除电池缓存
             if (CollectionUtils.isNotEmpty(data.getExitWarehouseBatteryList())) {
-                electricityBatteryVOList.addAll(data.getExitWarehouseBatteryList());
-            }
-            
-            if (CollectionUtils.isNotEmpty(data.getExitWarehouseCarList())) {
-                electricityCarVOList.addAll(data.getExitWarehouseCarList());
-            }
-        });
-        
-        //清理柜机缓存
-        if (CollectionUtils.isNotEmpty(electricityCabinetVOList)) {
-            electricityCabinetVOList.forEach(electricityCabinet -> {
-                redisService.delete(CacheConstant.CACHE_ELECTRICITY_CABINET + electricityCabinet.getId());
-                redisService.delete(CacheConstant.CACHE_ELECTRICITY_CABINET_DEVICE + electricityCabinet.getProductKey() + electricityCabinet.getDeviceName());
-            });
-        }
-        
-        //清理电池缓存
-        if (CollectionUtils.isNotEmpty(electricityBatteryVOList)) {
-            electricityBatteryVOList.forEach(electricityBattery -> {
-                redisService.delete(CacheConstant.CACHE_BT_ATTR + electricityBattery.getSn());
-            });
-        }
-        
-        //清理车辆缓存
-        if (CollectionUtils.isNotEmpty(electricityCarVOList)) {
-            if (CollectionUtils.isNotEmpty(electricityCarVOList)) {
-                electricityCarVOList.forEach(electricityCar -> {
-                    redisService.delete(CacheConstant.CACHE_ELECTRICITY_CAR + electricityCar.getId());
+                List<ElectricityBatteryVO> batteryList = data.getExitWarehouseBatteryList();
+                if (CollectionUtils.isEmpty(batteryList)) {
+                    return;
+                }
+                
+                batteryList.parallelStream().forEach(battery -> {
+                    redisService.delete(CacheConstant.CACHE_BT_ATTR + battery.getSn());
                 });
             }
-        }
+            
+            // 清除柜机缓存
+            if (CollectionUtils.isNotEmpty(data.getExitWarehouseCabinetList())) {
+                List<ElectricityCabinetVO> cabinetList = data.getExitWarehouseCabinetList();
+                if (CollectionUtils.isEmpty(cabinetList)) {
+                    return;
+                }
+                
+                cabinetList.parallelStream().forEach(cabinet -> {
+                    redisService.delete(CacheConstant.CACHE_ELECTRICITY_CABINET + cabinet.getId());
+                    redisService.delete(CacheConstant.CACHE_ELECTRICITY_CABINET_DEVICE + cabinet.getProductKey() + cabinet.getDeviceName());
+                });
+            }
+            
+            // 清除车辆缓存
+            if (CollectionUtils.isNotEmpty(data.getExitWarehouseCarList())) {
+                List<ElectricityCarVO> carList = data.getExitWarehouseCarList();
+                if (CollectionUtils.isEmpty(carList)) {
+                    return;
+                }
+                
+                carList.parallelStream().forEach(car -> {
+                    redisService.delete(CacheConstant.CACHE_ELECTRICITY_CAR + car.getId());
+                });
+            }
+        });
     }
     
     @Override
