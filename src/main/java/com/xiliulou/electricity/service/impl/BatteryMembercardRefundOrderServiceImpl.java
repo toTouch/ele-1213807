@@ -244,6 +244,9 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
             batteryMembercardRefundOrderVO.setLimitCount(Objects.isNull(batteryMemberCard) ? null : batteryMemberCard.getLimitCount());
             batteryMembercardRefundOrderVO.setRentPriceUnit(Objects.isNull(batteryMemberCard) ? null : batteryMemberCard.getRentPriceUnit());
             
+            Franchisee franchisee = franchiseeService.queryByIdFromCache(item.getFranchiseeId());
+            batteryMembercardRefundOrderVO.setFranchiseeName(Objects.isNull(franchisee) ? "" : franchisee.getName());
+            
             return batteryMembercardRefundOrderVO;
         }).collect(Collectors.toList());
     }
