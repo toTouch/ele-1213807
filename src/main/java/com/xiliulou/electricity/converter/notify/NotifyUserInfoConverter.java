@@ -10,6 +10,7 @@ import com.xiliulou.electricity.request.notify.NotifyUserInfoOptRequest;
 import com.xiliulou.electricity.vo.notify.NotifyUserInfoVO;
 import com.xiliulou.electricity.vo.notify.NotifyUserInfoWechatResultVO;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.Collections;
 import java.util.List;
@@ -40,6 +41,9 @@ public class NotifyUserInfoConverter {
         notifyUserInfo.setUserName(request.getUserName());
         notifyUserInfo.setPhone(request.getPhone());
         notifyUserInfo.setNickName(request.getNickName());
+        if (StringUtils.isBlank(notifyUserInfo.getNickName())){
+            notifyUserInfo.setNickName("");
+        }
         notifyUserInfo.setOpenId(request.getOpenId());
         return notifyUserInfo;
     }
