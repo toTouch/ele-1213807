@@ -11,6 +11,6 @@ import lombok.Data;
 public class AlipayUserPhoneDTO {
     private String msg;
     
-    private String phone;
+    private String mobile;
     
 }
