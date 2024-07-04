@@ -588,7 +588,7 @@ public class UserCouponServiceImpl implements UserCouponService {
                         UserCoupon userCoupon = couponBuild.build();
     
                         Integer couponFranchiseeId = coupon.getFranchiseeId();
-                        if (Objects.nonNull(couponFranchiseeId) && !Objects.equals(couponFranchiseeId, NumberConstant.ZERO)) {
+                        if (Objects.nonNull(couponFranchiseeId)) {
                             userCoupon.setFranchiseeId(couponFranchiseeId);
                         }
                         
@@ -624,7 +624,7 @@ public class UserCouponServiceImpl implements UserCouponService {
                         UserCoupon userCoupon = couponBuild.build();
     
                         Integer couponFranchiseeId = coupon.getFranchiseeId();
-                        if (Objects.nonNull(couponFranchiseeId) && !Objects.equals(couponFranchiseeId, NumberConstant.ZERO)) {
+                        if (Objects.nonNull(couponFranchiseeId)) {
                             userCoupon.setFranchiseeId(couponFranchiseeId);
                         }
                         

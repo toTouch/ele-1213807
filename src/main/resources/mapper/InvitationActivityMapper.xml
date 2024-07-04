@@ -20,12 +20,13 @@
         <result property="createTime" column="create_time" jdbcType="INTEGER"/>
         <result property="updateTime" column="update_time" jdbcType="INTEGER"/>
         <result property="tenantId" column="tenant_id" jdbcType="INTEGER"/>
+        <result property="franchiseeId" column="franchisee_id" jdbcType="BIGINT"/>
     </resultMap>
 
     <!--查询单个-->
     <select id="queryById" resultMap="InvitationActivityMap">
         select
-          id, name, type, status, description, hours, minutes, discount_type, first_reward, other_reward, operate_uid, del_flag, create_time, update_time, tenant_id
+          id, name, type, status, description, hours, minutes, discount_type, first_reward, other_reward, operate_uid, del_flag, create_time, update_time, tenant_id, franchisee_id
         from t_invitation_activity
         where id = #{id} and del_flag =0
     </select>
@@ -165,9 +166,6 @@
         select  id, name, type, status, description, hours, discount_type, first_reward, other_reward, create_time
         from t_invitation_activity
         where tenant_id = #{tenantId} and status=1 and del_flag = 0
-        <if test="franchiseeId != null and franchiseeId != 0">
-            and franchisee_id = #{franchiseeId}
-        </if>
     </select>
     
     <!--新增所有列-->

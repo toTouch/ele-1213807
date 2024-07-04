@@ -2,6 +2,7 @@ package com.xiliulou.electricity.controller.admin;
 
 import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.query.InvitationActivityUserQuery;
 import com.xiliulou.electricity.query.InvitationActivityUserSaveQuery;
@@ -58,7 +59,7 @@ public class JsonAdminInvitationActivityUserController extends BaseController {
         if (Objects.isNull(user)) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-    
+        
         if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE) || Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE))) {
             return R.ok();
         }
@@ -94,16 +95,16 @@ public class JsonAdminInvitationActivityUserController extends BaseController {
         if (Objects.isNull(user)) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-    
+        
         if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE) || Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE))) {
-            return R.ok();
+            return R.ok(NumberConstant.ZERO);
         }
         
         List<Long> storeIds = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
             storeIds = userDataScopeService.selectDataIdByUid(user.getUid());
             if (org.apache.commons.collections.CollectionUtils.isEmpty(storeIds)) {
-                return R.ok(Collections.EMPTY_LIST);
+                return R.ok(NumberConstant.ZERO);
             }
         }
         
@@ -111,7 +112,7 @@ public class JsonAdminInvitationActivityUserController extends BaseController {
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
             franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
             if (org.apache.commons.collections.CollectionUtils.isEmpty(franchiseeIds)) {
-                return R.ok(Collections.EMPTY_LIST);
+                return R.ok(NumberConstant.ZERO);
             }
         }
         
@@ -127,7 +128,7 @@ public class JsonAdminInvitationActivityUserController extends BaseController {
         if (Objects.isNull(user)) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-    
+        
         if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE) || Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE))) {
             return R.fail("ELECTRICITY.0066", "用户权限不足");
         }
@@ -141,21 +142,18 @@ public class JsonAdminInvitationActivityUserController extends BaseController {
         if (Objects.isNull(user)) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-    
+        
         if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE) || Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE))) {
             return R.fail("ELECTRICITY.0066", "用户权限不足");
         }
-    
-        Long franchiseeId = null;
+        
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
             List<Long> franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
             if (CollectionUtils.isEmpty(franchiseeIds)) {
                 return R.ok();
             }
-        
-            franchiseeId = franchiseeIds.get(0);
         }
         
-        return returnTripleResult(invitationActivityUserService.delete(id, franchiseeId));
+        return returnTripleResult(invitationActivityUserService.delete(id));
     }
 }

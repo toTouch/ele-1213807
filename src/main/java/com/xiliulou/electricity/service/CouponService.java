@@ -5,7 +5,6 @@ import com.xiliulou.electricity.entity.Coupon;
 import com.xiliulou.electricity.entity.car.CarCouponNamePO;
 import com.xiliulou.electricity.query.CouponQuery;
 import com.xiliulou.electricity.vo.SearchVo;
-import com.xiliulou.security.bean.TokenUser;
 import org.apache.commons.lang3.tuple.Triple;
 
 import java.util.List;
@@ -43,7 +42,7 @@ public interface CouponService {
      * @param couponQuery 实例对象
      * @return 实例对象
      */
-    R update(CouponQuery couponQuery, Long franchiseeId);
+    R update(CouponQuery couponQuery);
     
     
     R queryList(CouponQuery couponQuery);
@@ -52,7 +51,7 @@ public interface CouponService {
     
     R queryCount(CouponQuery couponQuery);
     
-    Triple<Boolean, String, Object> deleteById(Long id, Long franchiseeId);
+    Triple<Boolean, String, Object> deleteById(Long id);
     
     List<SearchVo> search(CouponQuery query);
     

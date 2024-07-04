@@ -94,7 +94,7 @@ public class JsonAdminInvitationActivityController extends BaseController {
      */
     @GetMapping("/admin/invitationActivity/searchByUser")
     public R searchByUser(@RequestParam("size") long size, @RequestParam("offset") long offset, @RequestParam(value = "uid") Long uid,
-            @RequestParam(value = "activityName", required = false) String activityName) {
+            @RequestParam(value = "activityName", required = false) String activityName, @RequestParam(value = "franchiseeId", required = false) Long franchiseeId) {
         if (size < 0 || size > 50) {
             size = 10L;
         }
@@ -114,7 +114,7 @@ public class JsonAdminInvitationActivityController extends BaseController {
         }
         
         InvitationActivityQuery query = InvitationActivityQuery.builder().size(size).offset(offset).tenantId(TenantContextHolder.getTenantId()).status(NumberConstant.ONE)
-                .name(activityName).build();
+                .name(activityName).franchiseeId(franchiseeId).build();
         
         return returnTripleResult(invitationActivityService.selectActivityByUser(query, uid));
     }
@@ -180,17 +180,14 @@ public class JsonAdminInvitationActivityController extends BaseController {
             return R.ok();
         }
         
-        Long franchiseeId = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
             List<Long> franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
             if (CollectionUtils.isEmpty(franchiseeIds)) {
                 return R.ok();
             }
-            
-            franchiseeId = franchiseeIds.get(0);
         }
         
-        return returnTripleResult(invitationActivityService.modify(query, franchiseeId));
+        return returnTripleResult(invitationActivityService.modify(query));
     }
     
     /**
@@ -207,17 +204,14 @@ public class JsonAdminInvitationActivityController extends BaseController {
             return R.ok();
         }
         
-        Long franchiseeId = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
             List<Long> franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
             if (CollectionUtils.isEmpty(franchiseeIds)) {
                 return R.ok();
             }
-            
-            franchiseeId = franchiseeIds.get(0);
         }
         
-        return returnTripleResult(invitationActivityService.updateStatus(query, franchiseeId));
+        return returnTripleResult(invitationActivityService.updateStatus(query));
     }
     
     @GetMapping("/admin/invitationActivity/page")
@@ -258,16 +252,25 @@ public class JsonAdminInvitationActivityController extends BaseController {
     public R count(@RequestParam(value = "status", required = false) Integer status, @RequestParam(value = "name", required = false) String name,
             @RequestParam(value = "franchiseeId", required = false) Long franchiseeId) {
         
-        InvitationActivityQuery query = InvitationActivityQuery.builder().tenantId(TenantContextHolder.getTenantId()).name(name).status(status).build();
-        
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         
-        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
+        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE) || Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE))) {
             return R.ok(NumberConstant.ZERO);
         }
+        
+        List<Long> franchiseeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if (CollectionUtils.isEmpty(franchiseeIds)) {
+                return R.ok(NumberConstant.ZERO);
+            }
+        }
+        
+        InvitationActivityQuery query = InvitationActivityQuery.builder().tenantId(TenantContextHolder.getTenantId()).name(name).status(status).franchiseeId(franchiseeId)
+                .franchiseeIds(franchiseeIds).build();
         
         return R.ok(invitationActivityService.selectByPageCount(query));
     }
@@ -366,17 +369,14 @@ public class JsonAdminInvitationActivityController extends BaseController {
             return R.ok();
         }
         
-        Long franchiseeId = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
             List<Long> franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
             if (CollectionUtils.isEmpty(franchiseeIds)) {
                 return R.ok();
             }
-            
-            franchiseeId = franchiseeIds.get(0);
         }
         
-        return invitationActivityService.removeById(id, franchiseeId);
+        return invitationActivityService.removeById(id);
     }
     
 }

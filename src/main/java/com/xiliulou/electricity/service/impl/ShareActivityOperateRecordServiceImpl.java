@@ -118,6 +118,7 @@ public class ShareActivityOperateRecordServiceImpl implements ShareActivityOpera
     
             Integer franchiseeId = item.getFranchiseeId();
             if (Objects.nonNull(franchiseeId)) {
+                shareActivityOperateRecordVO.setFranchiseeId(franchiseeId.longValue());
                 shareActivityOperateRecordVO.setFranchiseeName(Optional.ofNullable(franchiseeService.queryByIdFromCache(franchiseeId.longValue())).map(Franchisee::getName).orElse(StringUtils.EMPTY));
             }
 

@@ -63,11 +63,11 @@ public interface InvitationActivityService {
 
     Triple<Boolean, String, Object> save(InvitationActivityQuery query);
 
-    Triple<Boolean, String, Object> modify(InvitationActivityQuery query, Long franchiseeId);
+    Triple<Boolean, String, Object> modify(InvitationActivityQuery query);
 
-    Triple<Boolean, String, Object> updateStatus(InvitationActivityStatusQuery query, Long franchiseeId);
+    Triple<Boolean, String, Object> updateStatus(InvitationActivityStatusQuery query);
 
-    List<InvitationActivity> selectUsableActivity(Integer tenantId, Long franchiseeId);
+    List<InvitationActivity> selectUsableActivity(Integer tenantId);
 
     List<InvitationActivity> selectBySearch(InvitationActivityQuery query);
 
@@ -95,6 +95,6 @@ public interface InvitationActivityService {
      * @author <a href="mailto:wxblifeng@163.com">PeakLee</a>
      * @since V1.0 2024/3/14
      */
-    R<?> removeById(Long id, Long franchiseeId);
+    R<?> removeById(Long id);
     
 }

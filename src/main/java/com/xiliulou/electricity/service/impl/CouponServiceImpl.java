@@ -7,8 +7,14 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.CommonConstant;
-import com.xiliulou.electricity.constant.NumberConstant;
-import com.xiliulou.electricity.entity.*;
+import com.xiliulou.electricity.entity.BatteryMemberCard;
+import com.xiliulou.electricity.entity.Coupon;
+import com.xiliulou.electricity.entity.CouponActivityPackage;
+import com.xiliulou.electricity.entity.Franchisee;
+import com.xiliulou.electricity.entity.NewUserActivity;
+import com.xiliulou.electricity.entity.OldUserActivity;
+import com.xiliulou.electricity.entity.ShareActivityRule;
+import com.xiliulou.electricity.entity.UserCoupon;
 import com.xiliulou.electricity.entity.car.CarCouponNamePO;
 import com.xiliulou.electricity.entity.car.CarRentalPackagePo;
 import com.xiliulou.electricity.enums.PackageTypeEnum;
@@ -34,7 +40,6 @@ import com.xiliulou.electricity.utils.OperateRecordUtil;
 import com.xiliulou.electricity.vo.BatteryMemberCardVO;
 import com.xiliulou.electricity.vo.SearchVo;
 import com.xiliulou.electricity.vo.activity.CouponActivityVO;
-import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Triple;
@@ -305,22 +310,13 @@ public class CouponServiceImpl implements CouponService {
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public R update(CouponQuery couponQuery, Long franchiseeId) {
+    public R update(CouponQuery couponQuery) {
         Coupon oldCoupon = queryByIdFromCache(couponQuery.getId());
         if (Objects.isNull(oldCoupon) || !Objects.equals(oldCoupon.getTenantId(), TenantContextHolder.getTenantId())) {
             log.error("update coupon ERROR! not found coupon ! couponId={} ", couponQuery.getId());
             return R.fail("120124", "找不到优惠券");
         }
-    
-        // 加盟商一致性校验
-        if (Objects.nonNull(franchiseeId)) {
-            Integer couponFranchiseeId = oldCoupon.getFranchiseeId();
-            if (Objects.nonNull(couponFranchiseeId) && !Objects.equals(franchiseeId, couponFranchiseeId.longValue())) {
-                log.warn("update coupon WARN! Franchisees are inconsistent, couponId={}", couponQuery.getId());
-                return R.fail("120128", "所属加盟商不一致");
-            }
-        }
-    
+        
         //检查优惠券是否已经绑定用户
         List<UserCoupon> userCoupons = userCouponService.selectCouponUserCountById(couponQuery.getId().longValue());
         if (!CollectionUtils.isEmpty(userCoupons)) {
@@ -365,11 +361,12 @@ public class CouponServiceImpl implements CouponService {
             CouponActivityVO couponActivityVO = new CouponActivityVO();
             BeanUtils.copyProperties(coupon, couponActivityVO);
             couponActivityVO.setValidDays(String.valueOf(coupon.getDays()));
-    
+            
             Integer franchiseeId = coupon.getFranchiseeId();
             if (Objects.nonNull(franchiseeId)) {
                 couponActivityVO.setFranchiseeId(franchiseeId.longValue());
-                couponActivityVO.setFranchiseeName(Optional.ofNullable(franchiseeService.queryByIdFromCache(franchiseeId.longValue())).map(Franchisee::getName).orElse(StringUtils.EMPTY));
+                couponActivityVO.setFranchiseeName(
+                        Optional.ofNullable(franchiseeService.queryByIdFromCache(franchiseeId.longValue())).map(Franchisee::getName).orElse(StringUtils.EMPTY));
             }
             
             couponActivityVOList.add(couponActivityVO);
@@ -414,10 +411,11 @@ public class CouponServiceImpl implements CouponService {
                 couponActivityVO.setCarWithBatteryPackages(getAllCarBatteryPackages(PackageTypeEnum.PACKAGE_TYPE_CAR_BATTERY.getCode()));
             }
         }
-    
+        
         Integer franchiseeId = coupon.getFranchiseeId();
         if (Objects.nonNull(franchiseeId)) {
-            couponActivityVO.setFranchiseeName(Optional.ofNullable(franchiseeService.queryByIdFromCache(franchiseeId.longValue())).map(Franchisee::getName).orElse(StringUtils.EMPTY));
+            couponActivityVO.setFranchiseeName(
+                    Optional.ofNullable(franchiseeService.queryByIdFromCache(franchiseeId.longValue())).map(Franchisee::getName).orElse(StringUtils.EMPTY));
         }
         
         return Triple.of(true, null, couponActivityVO);
@@ -500,19 +498,10 @@ public class CouponServiceImpl implements CouponService {
     }
     
     @Override
-    public Triple<Boolean, String, Object> deleteById(Long id, Long franchiseeId) {
+    public Triple<Boolean, String, Object> deleteById(Long id) {
         Coupon coupon = this.queryByIdFromCache(id.intValue());
         if (Objects.isNull(coupon) || !Objects.equals(coupon.getTenantId(), TenantContextHolder.getTenantId())) {
             return Triple.of(true, null, null);
-        }
-    
-        // 加盟商一致性校验
-        if (Objects.nonNull(franchiseeId)) {
-            Integer couponFranchiseeId = coupon.getFranchiseeId();
-            if (Objects.nonNull(couponFranchiseeId) && !Objects.equals(couponFranchiseeId, NumberConstant.ZERO) && !Objects.equals(franchiseeId, couponFranchiseeId.longValue())) {
-                log.warn("delete coupon WARN! Franchisees are inconsistent, couponId={}", id);
-                return Triple.of(false, "false", "所属加盟商不一致");
-            }
         }
         
         List<UserCoupon> userCoupons = userCouponService.selectCouponUserCountById(id);

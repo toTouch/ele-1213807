@@ -37,7 +37,7 @@ public interface ShareMoneyActivityService {
      * @param shareMoneyActivityAddAndUpdateQuery 实例对象
      * @return 实例对象
      */
-    R update(ShareMoneyActivityAddAndUpdateQuery shareMoneyActivityAddAndUpdateQuery, Long franchiseeId);
+    R update(ShareMoneyActivityAddAndUpdateQuery shareMoneyActivityAddAndUpdateQuery);
 
     R queryList(ShareMoneyActivityQuery shareMoneyActivityQuery);
 
@@ -69,7 +69,7 @@ public interface ShareMoneyActivityService {
      * @author <a href="mailto:wxblifeng@163.com">PeakLee</a>
      * @since V1.0 2024/3/14
      */
-    R<?> removeById(Long id, Long franchiseeId);
+    R<?> removeById(Long id);
     
     ShareMoneyActivity queryOnlineActivity(Integer tenantId, Integer franchiseeId);
 }

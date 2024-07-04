@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.controller.admin;
 
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.query.InvitationActivityJoinHistoryQuery;
 import com.xiliulou.electricity.request.activity.InvitationActivityAnalysisRequest;
@@ -10,11 +11,14 @@ import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -52,12 +56,20 @@ public class JsonAdminInvitationActivityJoinHistoryController {
         }
         
         if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE) || Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE))) {
-            return R.ok();
+            return R.ok(Collections.EMPTY_LIST);
+        }
+        
+        List<Long> franchiseeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if (CollectionUtils.isEmpty(franchiseeIds)) {
+                return R.ok(NumberConstant.ZERO);
+            }
         }
         
         InvitationActivityJoinHistoryQuery query = InvitationActivityJoinHistoryQuery.builder().size(size).offset(offset).joinUid(joinUid).recordId(id).beginTime(beginTime)
                 .endTime(endTime).activityId(activityId).activityName(activityName).status(status).payCount(payCount).tenantId(TenantContextHolder.getTenantId())
-                .franchiseeId(franchiseeId).build();
+                .franchiseeIds(franchiseeIds).franchiseeId(franchiseeId).build();
         
         return R.ok(invitationActivityJoinHistoryService.selectByPage(query));
     }
@@ -75,11 +87,20 @@ public class JsonAdminInvitationActivityJoinHistoryController {
         }
         
         if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE) || Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE))) {
-            return R.ok();
+            return R.ok(NumberConstant.ZERO);
+        }
+        
+        List<Long> franchiseeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if (CollectionUtils.isEmpty(franchiseeIds)) {
+                return R.ok(NumberConstant.ZERO);
+            }
         }
         
         InvitationActivityJoinHistoryQuery query = InvitationActivityJoinHistoryQuery.builder().joinUid(joinUid).recordId(id).beginTime(beginTime).endTime(endTime)
-                .activityId(activityId).activityName(activityName).status(status).payCount(payCount).tenantId(TenantContextHolder.getTenantId()).franchiseeId(franchiseeId).build();
+                .activityId(activityId).activityName(activityName).status(status).payCount(payCount).tenantId(TenantContextHolder.getTenantId()).franchiseeIds(franchiseeIds)
+                .franchiseeId(franchiseeId).build();
         
         return R.ok(invitationActivityJoinHistoryService.selectByPageCount(query));
     }

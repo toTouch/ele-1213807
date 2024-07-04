@@ -30,13 +30,13 @@
 				and tsar.franchisee_id = #{franchiseeId}
 			</if>
 			<if test="franchiseeIds != null and franchiseeIds.size()>0">
-				and tui.franchisee_id in
+				and tsar.franchisee_id in
 				<foreach collection="franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
 					#{id}
 				</foreach>
 			</if>
 			<if test="storeIds != null and storeIds.size()>0">
-				and tui.store_id in
+				and tsar.store_id in
 				<foreach collection="storeIds" item="id" index="index" open="(" close=")" separator=",">
 					#{id}
 				</foreach>
@@ -67,13 +67,13 @@
 				and tsar.franchisee_id = #{franchiseeId}
 			</if>
 			<if test="franchiseeIds != null and franchiseeIds.size()>0">
-				and tui.franchisee_id in
+				and tsar.franchisee_id in
 				<foreach collection="franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
 					#{id}
 				</foreach>
 			</if>
 			<if test="storeIds != null and storeIds.size()>0">
-				and tui.store_id in
+				and tsar.store_id in
 				<foreach collection="storeIds" item="id" index="index" open="(" close=")" separator=",">
 					#{id}
 				</foreach>

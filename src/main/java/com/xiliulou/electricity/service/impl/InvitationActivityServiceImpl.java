@@ -221,18 +221,10 @@ public class InvitationActivityServiceImpl implements InvitationActivityService 
     
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Triple<Boolean, String, Object> modify(InvitationActivityQuery query, Long franchiseeId) {
+    public Triple<Boolean, String, Object> modify(InvitationActivityQuery query) {
         InvitationActivity invitationActivity = this.queryByIdFromCache(query.getId());
         if (Objects.isNull(invitationActivity) || !Objects.equals(invitationActivity.getTenantId(), TenantContextHolder.getTenantId())) {
             return Triple.of(false, "100390", "活动不存在");
-        }
-    
-        if (Objects.nonNull(franchiseeId)) {
-            Long activityFranchiseeId = invitationActivity.getFranchiseeId();
-            if (Objects.nonNull(activityFranchiseeId) && !Objects.equals(franchiseeId, activityFranchiseeId)) {
-                log.warn("modify Activity WARN! Franchisees are inconsistent, ActivityId={}", query.getId());
-                return Triple.of(false, "120128", "所属加盟商不一致");
-            }
         }
         
         InvitationActivity invitationActivityUpdate = new InvitationActivity();
@@ -274,18 +266,10 @@ public class InvitationActivityServiceImpl implements InvitationActivityService 
     
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Triple<Boolean, String, Object> updateStatus(InvitationActivityStatusQuery query, Long franchiseeId) {
+    public Triple<Boolean, String, Object> updateStatus(InvitationActivityStatusQuery query) {
         InvitationActivity invitationActivity = this.queryByIdFromCache(query.getId());
         if (Objects.isNull(invitationActivity) || !Objects.equals(invitationActivity.getTenantId(), TenantContextHolder.getTenantId())) {
             return Triple.of(false, "100390", "活动不存在");
-        }
-        
-        if (Objects.nonNull(franchiseeId)) {
-            Long activityFranchiseeId = invitationActivity.getFranchiseeId();
-            if (Objects.nonNull(activityFranchiseeId) && !Objects.equals(franchiseeId, activityFranchiseeId)) {
-                log.warn("update Activity WARN! Franchisees are inconsistent, ActivityId={}", query.getId());
-                return Triple.of(false, "120128", "所属加盟商不一致");
-            }
         }
         
         InvitationActivity invitationActivityUpdate = new InvitationActivity();
@@ -349,6 +333,7 @@ public class InvitationActivityServiceImpl implements InvitationActivityService 
             
             Long franchiseeId = item.getFranchiseeId();
             if (Objects.nonNull(franchiseeId)) {
+                invitationActivityVO.setFranchiseeId(franchiseeId);
                 invitationActivityVO.setFranchiseeName(Optional.ofNullable(franchiseeService.queryByIdFromCache(franchiseeId)).map(Franchisee::getName).orElse(StringUtils.EMPTY));
             }
             
@@ -410,8 +395,8 @@ public class InvitationActivityServiceImpl implements InvitationActivityService 
     
     @Override
     @Slave
-    public List<InvitationActivity> selectUsableActivity(Integer tenantId, Long franchiseeId) {
-        return invitationActivityMapper.selectUsableActivity(tenantId, franchiseeId);
+    public List<InvitationActivity> selectUsableActivity(Integer tenantId) {
+        return invitationActivityMapper.selectUsableActivity(tenantId);
     }
     
     @Override
@@ -477,8 +462,8 @@ public class InvitationActivityServiceImpl implements InvitationActivityService 
             log.warn("INVITATION ACTIVITY WARN! not found userInfo,uid={}", uid);
             return Triple.of(false, "ELECTRICITY.0024", "用户已被禁用");
         }
-    
-        List<InvitationActivity> invitationActivities = selectUsableActivity(TenantContextHolder.getTenantId(), userInfo.getFranchiseeId());
+        
+        List<InvitationActivity> invitationActivities = selectUsableActivity(TenantContextHolder.getTenantId());
         if (CollectionUtils.isEmpty(invitationActivities)) {
             return Triple.of(true, null, null);
         }
@@ -518,6 +503,12 @@ public class InvitationActivityServiceImpl implements InvitationActivityService 
                             / NumberConstant.ONE_HUNDRED_D);
                     invitationActivityVO.setTimeType(NumberConstant.TWO);
                 }
+                
+                Long franchiseeId = invitationActivity.getFranchiseeId();
+                if (Objects.nonNull(franchiseeId)) {
+                    invitationActivityVO.setFranchiseeName(
+                            Optional.ofNullable(franchiseeService.queryByIdFromCache(franchiseeId)).map(Franchisee::getName).orElse(StringUtils.EMPTY));
+                }
             }
             return invitationActivityVO;
         }).collect(Collectors.toList());
@@ -544,6 +535,12 @@ public class InvitationActivityServiceImpl implements InvitationActivityService 
         
         invitationActivityVO.setCarRentalPackages(getCarBatteryPackages(id, PackageTypeEnum.PACKAGE_TYPE_CAR_RENTAL.getCode()));
         invitationActivityVO.setCarWithBatteryPackages(getCarBatteryPackages(id, PackageTypeEnum.PACKAGE_TYPE_CAR_BATTERY.getCode()));
+        
+        Long franchiseeId = invitationActivity.getFranchiseeId();
+        if (Objects.nonNull(franchiseeId)) {
+            invitationActivityVO.setFranchiseeId(franchiseeId);
+            invitationActivityVO.setFranchiseeName(Optional.ofNullable(franchiseeService.queryByIdFromCache(franchiseeId)).map(Franchisee::getName).orElse(StringUtils.EMPTY));
+        }
         
         return Triple.of(true, null, invitationActivityVO);
     }
@@ -617,25 +614,16 @@ public class InvitationActivityServiceImpl implements InvitationActivityService 
      * @since V1.0 2024/3/14
      */
     @Override
-    public R<?> removeById(Long id, Long franchiseeId) {
+    public R<?> removeById(Long id) {
         InvitationActivity invitationActivity = this.queryByIdFromCache(id);
         if (Objects.isNull(invitationActivity)) {
             log.error("delete Activity  ERROR! not found Activity ! ActivityId:{} ", id);
             return R.fail("ELECTRICITY.0069", "未找到活动");
         }
-    
+        
         // 租户一致性校验
         if (!Objects.equals(TenantContextHolder.getTenantId(), invitationActivity.getTenantId())) {
             return R.ok();
-        }
-    
-        // 加盟商一致性校验
-        if (Objects.nonNull(franchiseeId)) {
-            Long activityFranchiseeId = invitationActivity.getFranchiseeId();
-            if (Objects.nonNull(activityFranchiseeId) && !Objects.equals(franchiseeId, activityFranchiseeId)) {
-                log.warn("delete Activity WARN! Franchisees are inconsistent, ActivityId={}", id);
-                return R.fail("120128", "所属加盟商不一致");
-            }
         }
         
         int count = this.invitationActivityMapper.removeById(id, TenantContextHolder.getTenantId().longValue());

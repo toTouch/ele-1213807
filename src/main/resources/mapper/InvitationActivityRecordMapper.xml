@@ -100,13 +100,13 @@
                 and iar.franchisee_id = #{franchiseeId}
             </if>
             <if test="franchiseeIds != null">
-                and tui.franchisee_id in
+                and iar.franchisee_id in
                 <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")"  separator=",">
                     #{id}
                 </foreach>
             </if>
             <if test="storeIds != null">
-                and tui.store_id in
+                and iar.store_id in
                 <foreach collection="storeIds" item="id" index="index" open="(" close=")"  separator=",">
                     #{id}
                 </foreach>
@@ -147,13 +147,13 @@
                 and iar.franchisee_id = #{franchiseeId}
             </if>
             <if test="franchiseeIds != null">
-                and tui.franchisee_id in
+                and iar.franchisee_id in
                 <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")"  separator=",">
                     #{id}
                 </foreach>
             </if>
             <if test="storeIds != null">
-                and tui.store_id in
+                and iar.store_id in
                 <foreach collection="storeIds" item="id" index="index" open="(" close=")"  separator=",">
                     #{id}
                 </foreach>

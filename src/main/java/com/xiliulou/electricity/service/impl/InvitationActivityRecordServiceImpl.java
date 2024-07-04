@@ -759,7 +759,7 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
             return Triple.of(false, "100001", "用户不存在");
         }
         
-        List<InvitationActivity> invitationActivities = invitationActivityService.selectUsableActivity(TenantContextHolder.getTenantId(), userInfo.getFranchiseeId());
+        List<InvitationActivity> invitationActivities = invitationActivityService.selectUsableActivity(TenantContextHolder.getTenantId());
         if (CollectionUtils.isEmpty(invitationActivities)) {
             log.warn("INVITATION ACTIVITY WARN! invitationActivities is empty,uid={}", userInfo.getUid());
             return Triple.of(false, "100391", "暂无上架的活动");
@@ -813,8 +813,8 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
             invitationActivityRecordInsert.setCreateTime(System.currentTimeMillis());
             invitationActivityRecordInsert.setUpdateTime(System.currentTimeMillis());
             
-            if (Objects.nonNull(invitationActivityUser.getFranchiseeId()) && !Objects.equals(invitationActivityUser.getFranchiseeId(), NumberConstant.ZERO_L)) {
-                invitationActivityRecordInsert.setFranchiseeId(userInfo.getFranchiseeId());
+            if (Objects.nonNull(invitationActivityUser.getFranchiseeId())) {
+                invitationActivityRecordInsert.setFranchiseeId(invitationActivityUser.getFranchiseeId());
             }
             
             invitationActivityRecordMapper.insertOne(invitationActivityRecordInsert);
@@ -842,7 +842,7 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
             return Triple.of(false, "100463", "二维码已失效");
         }
         
-        List<InvitationActivity> invitationActivities = invitationActivityService.selectUsableActivity(TenantContextHolder.getTenantId(), userInfo.getFranchiseeId());
+        List<InvitationActivity> invitationActivities = invitationActivityService.selectUsableActivity(TenantContextHolder.getTenantId());
         if (CollectionUtils.isEmpty(invitationActivities)) {
             log.warn("INVITATION ACTIVITY WARN! invitationActivities is empty,uid={}", userInfo.getUid());
             return Triple.of(false, "100399", "该活动已下架，二维码失效");
@@ -882,8 +882,8 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
                 
                 BeanUtils.copyProperties(invitationActivityRecordIn, invitationActivityRecordInsert);
                 invitationActivityRecordInsert.setActivityId(item.getActivityId());
-                
-                if (Objects.nonNull(item.getFranchiseeId()) && !Objects.equals(item.getFranchiseeId(), NumberConstant.ZERO_L)) {
+    
+                if (Objects.nonNull(item.getFranchiseeId())) {
                     invitationActivityRecordInsert.setFranchiseeId(item.getFranchiseeId());
                 }
                 
@@ -971,7 +971,7 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
             return Triple.of(false, "100463", "二维码已失效");
         }
     
-        List<InvitationActivity> invitationActivities = invitationActivityService.selectUsableActivity(TenantContextHolder.getTenantId(), invitationUserInfo.getFranchiseeId());
+        List<InvitationActivity> invitationActivities = invitationActivityService.selectUsableActivity(TenantContextHolder.getTenantId());
         if (CollectionUtils.isEmpty(invitationActivities)) {
             log.warn("INVITATION ACTIVITY WARN! joinActivity invitationActivities is empty, invitationUid={}, uid={}", invitationUid, userInfo.getUid());
             return Triple.of(false, "100399", "该活动已下架，二维码失效");
@@ -1078,7 +1078,7 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
         }
 
         //是否有上架的套餐返现活动
-        List<InvitationActivity> invitationActivitys = invitationActivityService.selectUsableActivity(userInfo.getTenantId(), userInfo.getFranchiseeId());
+        List<InvitationActivity> invitationActivitys = invitationActivityService.selectUsableActivity(userInfo.getTenantId());
         if (CollectionUtils.isEmpty(invitationActivitys)) {
             log.info("INVITATION ACTIVITY INFO!invitationActivitys is empty,tenantId={},uid={}", userInfo.getTenantId(), userInfo.getUid());
             return;
@@ -1178,7 +1178,7 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
     
         // 获取租户下所有上架的套餐返现活动
         Integer tenantId = userInfo.getTenantId();
-        List<InvitationActivity> invitationActivities = invitationActivityService.selectUsableActivity(tenantId, userInfo.getFranchiseeId());
+        List<InvitationActivity> invitationActivities = invitationActivityService.selectUsableActivity(tenantId);
         if (CollectionUtils.isEmpty(invitationActivities)) {
             log.info("Invitation activity info! invitationActivities is empty,tenantId={},uid={}", tenantId, userInfo.getUid());
             return;

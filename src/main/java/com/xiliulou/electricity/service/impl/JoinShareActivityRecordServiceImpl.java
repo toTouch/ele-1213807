@@ -153,6 +153,13 @@ public class JoinShareActivityRecordServiceImpl implements JoinShareActivityReco
         joinShareActivityRecord.setStatus(JoinShareActivityRecord.STATUS_INIT);
         joinShareActivityRecord.setActivityId(activityId);
     
+        Integer activityFranchiseeId = shareActivity.getFranchiseeId();
+        if (Objects.nonNull(activityFranchiseeId)) {
+            joinShareActivityRecord.setFranchiseeId(activityFranchiseeId.longValue());
+        }
+    
+        joinShareActivityRecordMapper.insert(joinShareActivityRecord);
+    
         //新增邀请历史记录
         JoinShareActivityHistory joinShareActivityHistory = new JoinShareActivityHistory();
         joinShareActivityHistory.setRecordId(joinShareActivityRecord.getId());
@@ -166,13 +173,10 @@ public class JoinShareActivityRecordServiceImpl implements JoinShareActivityReco
         joinShareActivityHistory.setStatus(JoinShareActivityHistory.STATUS_INIT);
         joinShareActivityHistory.setActivityId(joinShareActivityRecord.getActivityId());
     
-        Integer activityFranchiseeId = shareActivity.getFranchiseeId();
         if (Objects.nonNull(activityFranchiseeId)) {
-            joinShareActivityRecord.setFranchiseeId(activityFranchiseeId.longValue());
             joinShareActivityHistory.setFranchiseeId(activityFranchiseeId.longValue());
         }
     
-        joinShareActivityRecordMapper.insert(joinShareActivityRecord);
         joinShareActivityHistoryService.insert(joinShareActivityHistory);
     
         // 530会员扩展表更新最新参与活动类型

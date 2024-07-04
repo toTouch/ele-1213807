@@ -2,6 +2,7 @@ package com.xiliulou.electricity.controller.admin.merchant;
 
 import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.request.merchant.MerchantPowerRequest;
 import com.xiliulou.electricity.service.UserDataScopeService;
@@ -84,7 +85,7 @@ public class JsonMerchantCabinetPowerRecordController extends BaseController {
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
             franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
             if (CollectionUtils.isEmpty(franchiseeIds)) {
-                return R.ok();
+                return R.ok(NumberConstant.ZERO);
             }
         }
         
