@@ -28,6 +28,7 @@ import com.xiliulou.electricity.constant.AssetConstant;
 import com.xiliulou.electricity.constant.BatteryConstant;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.CommonConstant;
+import com.xiliulou.electricity.constant.MultiFranchiseeConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.constant.StringConstant;
 import com.xiliulou.electricity.dto.BatteryExcelV3DTO;
@@ -1191,10 +1192,11 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
                 }
                 String openId = userOauthBind.getThirdId();
                 
-                BaseMapper<ElectricityPayParams> mapper = electricityPayParamsService.getBaseMapper();
-                QueryWrapper<ElectricityPayParams> wrapper = new QueryWrapper<>();
-                wrapper.eq("tenant_id", tenantId);
-                ElectricityPayParams ele = mapper.selectOne(wrapper);
+//                BaseMapper<ElectricityPayParams> mapper = electricityPayParamsService.getBaseMapper();
+//                QueryWrapper<ElectricityPayParams> wrapper = new QueryWrapper<>();
+//                wrapper.eq("tenant_id", tenantId);
+//                ElectricityPayParams ele = mapper.selectOne(wrapper);
+                ElectricityPayParams ele =electricityPayParamsService.queryPreciseCacheByTenantIdAndFranchiseeId(tenantId, MultiFranchiseeConstant.DEFAULT_FRANCHISEE);
                 if (Objects.isNull(ele)) {
                     log.error("ELECTRICITY_PAY_PARAMS IS NULL ERROR! tenantId={}", tenantId);
                     return;
