@@ -11,8 +11,10 @@ import com.alipay.api.response.AlipaySystemOauthTokenResponse;
 import com.google.common.collect.Lists;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.i18n.MessageUtils;
+import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
+import com.xiliulou.electricity.dto.AlipayUserPhoneDTO;
 import com.xiliulou.electricity.entity.NewUserActivity;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.UserInfo;
@@ -67,6 +69,8 @@ public class AliPayThirdAuthenticationServiceImpl implements ThirdAuthentication
      * 加密算法。默认为 AES
      */
     private static final String ENCRYPT_TYPE = "AES";
+    
+    private static final String DECRYPT_ALIPAY_FLAG="Success";
     
     @Autowired
     RedisService redisService;
@@ -351,9 +355,10 @@ public class AliPayThirdAuthenticationServiceImpl implements ThirdAuthentication
      * @return
      */
     private String decryptAliPayResponseData(String content, String sign) {
+        String phone = "";
         //1.判断是否为加密内容
         boolean isDataEncrypted = !content.startsWith("{");
-        
+    
         //2. 验签
         String signContent = content;
         //支付宝公钥
@@ -363,25 +368,34 @@ public class AliPayThirdAuthenticationServiceImpl implements ThirdAuthentication
         if (isDataEncrypted) {
             signContent = "\"" + signContent + "\"";
         }
-        
-        String plainData = content;
+    
         try {
+        
             if (!AlipaySignature.rsaCheck(signContent, sign, signVeriKey, CharEncoding.UTF_8, SIGN_TYPE)) {
                 //验签不通过（异常或者报文被篡改），终止流程（不需要做解密）
                 log.error("ALIPAY TOKEN ERROR!signature verification failed");
                 throw new AuthenticationServiceException("登录信息异常，请联系客服处理");
             }
-            
+        
             //3. 解密
+            String plainData = "";
             if (isDataEncrypted) {
                 plainData = AlipayEncrypt.decryptContent(content, ENCRYPT_TYPE, decryptKey, CharEncoding.UTF_8);
             }
+        
+            //4.获取手机号
+            AlipayUserPhoneDTO alipayUserPhoneDTO = JsonUtil.fromJson(plainData, AlipayUserPhoneDTO.class);
+            if (!DECRYPT_ALIPAY_FLAG.equals(alipayUserPhoneDTO.getMsg())) {
+                log.error("ALIPAY TOKEN ERROR!convert user phone failed,msg={}", plainData);
+            }
+        
+            phone = alipayUserPhoneDTO.getPhone();
         } catch (AlipayApiException e) {
             log.error("ALIPAY TOKEN ERROR!acquire user phone failed", e);
             throw new AuthenticationServiceException("登录信息异常，请联系客服处理");
         }
-        
-        return plainData;
+    
+        return phone;
     }
     
     private static AlipayConfig getAlipayConfig(String appId) {
