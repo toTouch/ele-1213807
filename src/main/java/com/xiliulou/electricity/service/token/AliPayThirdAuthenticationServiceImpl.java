@@ -389,7 +389,7 @@ public class AliPayThirdAuthenticationServiceImpl implements ThirdAuthentication
                 log.error("ALIPAY TOKEN ERROR!convert user phone failed,msg={}", plainData);
             }
         
-            phone = alipayUserPhoneDTO.getPhone();
+            phone = alipayUserPhoneDTO.getMobile();
         } catch (AlipayApiException e) {
             log.error("ALIPAY TOKEN ERROR!acquire user phone failed", e);
             throw new AuthenticationServiceException("登录信息异常，请联系客服处理");
