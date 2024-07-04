@@ -27,17 +27,21 @@ import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.security.authentication.console.CustomPasswordEncoder;
 import com.xiliulou.security.authentication.thirdauth.ThirdAuthenticationService;
+import com.xiliulou.security.authentication.thirdauth.wxpro.ThirdWxProAuthenticationToken;
 import com.xiliulou.security.bean.SecurityUser;
+import com.xiliulou.security.constant.TokenConstant;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.CharEncoding;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.stereotype.Service;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -88,6 +92,14 @@ public class AliPayThirdAuthenticationServiceImpl implements ThirdAuthentication
     @Autowired
     NewUserActivityService newUserActivityService;
     
+    @Override
+    public AbstractAuthenticationToken generateThirdAuthenticationToken(HttpServletRequest request) {
+        String code = obtainCode(request);
+        String data = obtainData(request);
+        String iv = obtainIv(request);
+        String appType = obtainAppType(request);
+        return new ThirdWxProAuthenticationToken(code, iv, TokenConstant.THIRD_AUTH_ALI_PAY, data, appType);
+    }
     
     @Override
     public SecurityUser registerUserAndLoadUser(HashMap<String, Object> authMap) {
