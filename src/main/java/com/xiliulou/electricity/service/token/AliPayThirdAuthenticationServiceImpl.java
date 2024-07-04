@@ -114,7 +114,7 @@ public class AliPayThirdAuthenticationServiceImpl implements ThirdAuthentication
         }
         
         //获取支付宝小程序appId TODO
-        String appId = "";
+        String appId = "2021004144647049";
         
         //解析手机号 TODO
         String phone = decryptAliPayResponseData(data, iv);
