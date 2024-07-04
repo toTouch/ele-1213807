@@ -56,4 +56,5 @@ public class ElectricityCabinetAddRequest {
      * 更新时间
      */
     private Long updateTime;
+    
 }

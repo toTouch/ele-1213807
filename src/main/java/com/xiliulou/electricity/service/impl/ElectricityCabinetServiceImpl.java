@@ -785,6 +785,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         if (ObjectUtil.isEmpty(electricityCabinetList)) {
             return R.ok();
         }
+        log.info("queryList  is {}",JsonUtil.toJson(electricityCabinetList));
         
         if (ObjectUtil.isNotEmpty(electricityCabinetList)) {
             // 获取库房名称列表 根据库房id查询库房名称，不需要过滤库房状态是已删除的
@@ -943,6 +944,9 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 }
             });
         }
+        
+        log.info("queryList result is {}",JsonUtil.toJson(electricityCabinetList));
+        
         electricityCabinetList.stream().sorted(Comparator.comparing(ElectricityCabinetVO::getCreateTime).reversed()).collect(Collectors.toList());
         return R.ok(electricityCabinetList);
     }

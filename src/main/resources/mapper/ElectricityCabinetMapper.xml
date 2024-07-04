@@ -80,6 +80,10 @@
         <if test="query.sn != null and query.sn != ''">
             and sn like concat('%',#{query.sn,jdbcType=VARCHAR},'%')
         </if>
+        <if test="query.franchiseeId != null">
+            AND `franchisee_id` = #{query.franchiseeId}
+        </if>
+
         order by id desc
         limit #{query.offset}, #{query.size}
     </select>
@@ -148,7 +152,10 @@
         <if test="query.version != null and query.version != ''">
             and version = #{query.version}
         </if>
-	</select>
+        <if test="query.franchiseeId != null">
+            AND `franchisee_id` = #{query.franchiseeId}
+        </if>
+    </select>
 
 
      <select id="showInfoByDistance" resultType="com.xiliulou.electricity.vo.ElectricityCabinetVO">

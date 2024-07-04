@@ -7,6 +7,7 @@ import com.xiliulou.electricity.bo.asset.AssetWarehouseBO;
 import com.xiliulou.electricity.bo.asset.AssetWarehouseNameBO;
 import com.xiliulou.electricity.constant.AssetConstant;
 import com.xiliulou.electricity.constant.CacheConstant;
+import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.enums.asset.StockStatusEnum;
 import com.xiliulou.electricity.mapper.asset.AssetWarehouseMapper;
 import com.xiliulou.electricity.query.ElectricityBatteryQuery;
@@ -19,12 +20,17 @@ import com.xiliulou.electricity.request.asset.AssetWarehouseSaveOrUpdateRequest;
 import com.xiliulou.electricity.service.ElectricityBatteryService;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
 import com.xiliulou.electricity.service.ElectricityCarService;
+import com.xiliulou.electricity.service.FranchiseeService;
+import com.xiliulou.electricity.service.asset.AssertPermissionService;
 import com.xiliulou.electricity.service.asset.AssetWarehouseService;
 import com.xiliulou.electricity.service.asset.ElectricityCabinetV2Service;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
+import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.asset.AssetWarehouseNameVO;
 import com.xiliulou.electricity.vo.asset.AssetWarehouseVO;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.math.NumberUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -62,6 +68,12 @@ public class AssetWarehouseServiceImpl implements AssetWarehouseService {
     @Resource
     private ElectricityCabinetService electricityCabinetService;
     
+    @Resource
+    private FranchiseeService franchiseeService;
+    
+    @Resource
+    private AssertPermissionService assertPermissionService;
+    
     @Override
     public R save(AssetWarehouseSaveOrUpdateRequest assetWarehouseSaveOrUpdateRequest, Long uid) {
         
@@ -79,7 +91,8 @@ public class AssetWarehouseServiceImpl implements AssetWarehouseService {
             AssetWarehouseSaveOrUpdateQueryModel warehouseSaveOrUpdateQueryModel = AssetWarehouseSaveOrUpdateQueryModel.builder().name(assetWarehouseSaveOrUpdateRequest.getName())
                     .status(assetWarehouseSaveOrUpdateRequest.getStatus()).managerName(assetWarehouseSaveOrUpdateRequest.getManagerName())
                     .managerPhone(assetWarehouseSaveOrUpdateRequest.getManagerPhone()).address(assetWarehouseSaveOrUpdateRequest.getAddress()).delFlag(AssetConstant.DEL_NORMAL)
-                    .createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).tenantId(TenantContextHolder.getTenantId()).build();
+                    .createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).tenantId(TenantContextHolder.getTenantId())
+                    .franchiseeId(assetWarehouseSaveOrUpdateRequest.getFranchiseeId()).build();
             
             return R.ok(assetWarehouseMapper.insertOne(warehouseSaveOrUpdateQueryModel));
         } finally {
@@ -95,9 +108,17 @@ public class AssetWarehouseServiceImpl implements AssetWarehouseService {
         BeanUtils.copyProperties(assetInventoryRequest, assetWarehouseQueryModel);
         assetWarehouseQueryModel.setTenantId(TenantContextHolder.getTenantId());
         
+        // 加盟商权限
+        Pair<Boolean, List<Long>> pair = assertPermissionService.assertPermissionByPair(SecurityUtils.getUserInfo());
+        if (!pair.getLeft()){
+            return Collections.emptyList();
+        }
+        assetWarehouseQueryModel.setFranchiseeIds(pair.getRight());
+        
         List<AssetWarehouseVO> rspList = Collections.emptyList();
         List<AssetWarehouseBO> assetWarehouseBOList = assetWarehouseMapper.selectListByPage(assetWarehouseQueryModel);
         if (CollectionUtils.isNotEmpty(assetWarehouseBOList)) {
+            
             rspList = assetWarehouseBOList.stream().map(item -> {
                 AssetWarehouseVO assetWarehouseVO = new AssetWarehouseVO();
                 BeanUtils.copyProperties(item, assetWarehouseVO);
@@ -116,6 +137,12 @@ public class AssetWarehouseServiceImpl implements AssetWarehouseService {
                 ElectricityCarQuery electricityCarQuery = ElectricityCarQuery.builder().tenantId(item.getTenantId()).warehouseId(item.getId())
                         .stockStatus(StockStatusEnum.STOCK.getCode()).build();
                 Integer carCount = (Integer) electricityCarService.queryCountByWarehouse(electricityCarQuery).getData();
+                
+                Franchisee franchisee = franchiseeService.queryByIdFromCache(item.getFranchiseeId());
+                assetWarehouseVO.setFranchiseeId(item.getFranchiseeId());
+                if (Objects.nonNull(franchisee)){
+                    assetWarehouseVO.setFranchiseeName(franchisee.getName());
+                }
                 
                 assetWarehouseVO.setBatteryCount(batteryCount);
                 assetWarehouseVO.setCabinetCount(cabinetCount);
@@ -138,6 +165,13 @@ public class AssetWarehouseServiceImpl implements AssetWarehouseService {
         BeanUtils.copyProperties(assetInventoryRequest, assetWarehouseQueryModel);
         assetWarehouseQueryModel.setTenantId(TenantContextHolder.getTenantId());
         
+        // 加盟商权限
+        Pair<Boolean, List<Long>> pair = assertPermissionService.assertPermissionByPair(SecurityUtils.getUserInfo());
+        if (!pair.getLeft()){
+            return NumberUtils.INTEGER_ZERO;
+        }
+        assetWarehouseQueryModel.setFranchiseeIds(pair.getRight());
+        
         return assetWarehouseMapper.countTotal(assetWarehouseQueryModel);
     }
     
@@ -149,6 +183,12 @@ public class AssetWarehouseServiceImpl implements AssetWarehouseService {
         assetWarehouseQueryModel.setTenantId(TenantContextHolder.getTenantId());
         
         List<AssetWarehouseNameVO> rspList = Collections.emptyList();
+        
+        Pair<Boolean, List<Long>> pair = assertPermissionService.assertPermissionByPair(SecurityUtils.getUserInfo());
+        if (!pair.getLeft()){
+            return rspList;
+        }
+        assetWarehouseQueryModel.setFranchiseeIds(pair.getRight());
         
         List<AssetWarehouseNameBO> assetWarehouseNameBOList = assetWarehouseMapper.selectListWarehouseNames(assetWarehouseQueryModel);
         if (CollectionUtils.isNotEmpty(assetWarehouseNameBOList)) {
@@ -201,12 +241,17 @@ public class AssetWarehouseServiceImpl implements AssetWarehouseService {
         
         // 根据id查库房
         AssetWarehouseNameVO assetWarehouseNameVO = queryById(id);
-        if (Objects.nonNull(assetWarehouseNameVO) && !Objects.equals(assetWarehouseNameVO.getTenantId(), TenantContextHolder.getTenantId())) {
+        if (Objects.isNull(assetWarehouseNameVO)) {
+            return R.fail("100564", "您选择的库房不存在，请检测后操作");
+        }
+    
+        Integer tenantId = TenantContextHolder.getTenantId();
+        if (!Objects.equals(assetWarehouseNameVO.getTenantId(), tenantId)) {
             return R.ok();
         }
-        
+    
         AssetWarehouseSaveOrUpdateQueryModel warehouseSaveOrUpdateQueryModel = AssetWarehouseSaveOrUpdateQueryModel.builder().id(id).delFlag(AssetConstant.DEL_DEL)
-                .updateTime(System.currentTimeMillis()).tenantId(TenantContextHolder.getTenantId()).build();
+                .updateTime(System.currentTimeMillis()).tenantId(tenantId).build();
         
         return R.ok(assetWarehouseMapper.updateById(warehouseSaveOrUpdateQueryModel));
     }
@@ -220,20 +265,26 @@ public class AssetWarehouseServiceImpl implements AssetWarehouseService {
         
         try {
             AssetWarehouseBO assetWarehouseBO = assetWarehouseMapper.selectById(assetWarehouseSaveOrUpdateRequest.getId());
-            if (Objects.nonNull(assetWarehouseBO) && !Objects.equals(assetWarehouseBO.getName(), assetWarehouseSaveOrUpdateRequest.getName())) {
+            Integer tenantId = TenantContextHolder.getTenantId();
+    
+            if (Objects.isNull(assetWarehouseBO)) {
+                return R.fail("100564", "您选择的库房不存在，请检测后操作");
+            }
+            
+            if (!Objects.equals(assetWarehouseBO.getTenantId(), tenantId)) {
+                return R.ok();
+            }
+    
+            if (!Objects.equals(assetWarehouseBO.getName(), assetWarehouseSaveOrUpdateRequest.getName())) {
                 Integer exists = existsByName(assetWarehouseSaveOrUpdateRequest.getName());
                 if (Objects.nonNull(exists)) {
                     return R.fail("300803", "库房名称重复，请修改后操作");
-                }
-                
-                if (!Objects.equals(assetWarehouseBO.getTenantId(), TenantContextHolder.getTenantId())) {
-                    return R.ok();
                 }
             }
             
             AssetWarehouseSaveOrUpdateQueryModel warehouseSaveOrUpdateQueryModel = new AssetWarehouseSaveOrUpdateQueryModel();
             BeanUtils.copyProperties(assetWarehouseSaveOrUpdateRequest, warehouseSaveOrUpdateQueryModel);
-            warehouseSaveOrUpdateQueryModel.setTenantId(TenantContextHolder.getTenantId());
+            warehouseSaveOrUpdateQueryModel.setTenantId(tenantId);
             warehouseSaveOrUpdateQueryModel.setUpdateTime(System.currentTimeMillis());
             
             return R.ok(assetWarehouseMapper.updateById(warehouseSaveOrUpdateQueryModel));

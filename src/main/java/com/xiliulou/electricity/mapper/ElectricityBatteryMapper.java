@@ -134,6 +134,7 @@ public interface ElectricityBatteryMapper extends BaseMapper<ElectricityBattery>
 
     List<ElectricityBatteryDataVO> queryOverdueBatteryList(@Param("query") ElectricityBatteryDataQuery electricityBatteryQuery,
                                               @Param("offset") Long offset, @Param("size") Long size);
+    // TODO(heyafeng) 2024/6/7 16:30 换电套餐到期时间<当期时间为过期 车辆套餐<=当前时间为过期
     Integer queryOverdueBatteryCount(@Param("query") ElectricityBatteryDataQuery electricityBatteryQuery);
 
     List<ElectricityBatteryDataVO> queryOverdueCarBatteryList(@Param("query") ElectricityBatteryDataQuery electricityBatteryQuery,
