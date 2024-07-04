@@ -97,8 +97,6 @@ public interface EnterpriseInfoService {
     
     EnterpriseInfoVO selectDetailByUid(Long uid);
     
-    Triple<Boolean, String, Object> refund(String orderId,HttpServletRequest request);
-    
     int addCloudBean(Long id, BigDecimal add);
     
     int subtractCloudBean(Long id, BigDecimal subtract, long updateTime);

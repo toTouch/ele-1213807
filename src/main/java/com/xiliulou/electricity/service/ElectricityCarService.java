@@ -85,11 +85,8 @@ public interface ElectricityCarService {
      */
     ElectricityCar queryByIdFromCache(Integer id);
     
-    R save(ElectricityCarAddAndUpdate electricityCarAddAndUpdate);
     
     R saveV2(CarAddRequest carAddRequest);
-    
-    R edit(ElectricityCarAddAndUpdate electricityCarAddAndUpdate);
     
     R delete(Integer id);
     
@@ -98,18 +95,6 @@ public interface ElectricityCarService {
     Integer queryByModelId(Integer id);
     
     R queryCount(ElectricityCarQuery electricityCarQuery);
-    
-    /**
-     * 废弃此方法 <br /> 替代方法：{@link CarRentalOrderBizServiceImpl#unBindingCar}
-     */
-    @Deprecated
-    R bindUser(ElectricityCarBindUser electricityCarBindUser);
-    
-    /**
-     * 废弃此方法 <br /> 替代方法：{@link CarRentalOrderBizServiceImpl#bindingCar}
-     */
-    @Deprecated
-    R unBindUser(ElectricityCarBindUser electricityCarBindUser);
     
     ElectricityCar queryInfoByUid(Long uid);
     

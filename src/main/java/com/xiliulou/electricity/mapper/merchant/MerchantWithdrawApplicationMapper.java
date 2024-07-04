@@ -1,7 +1,7 @@
 package com.xiliulou.electricity.mapper.merchant;
 
+import com.xiliulou.electricity.bo.merchant.MerchantWithdrawApplicationBO;
 import com.xiliulou.electricity.entity.merchant.MerchantWithdrawApplication;
-import com.xiliulou.electricity.request.merchant.BatchReviewWithdrawApplicationRequest;
 import com.xiliulou.electricity.request.merchant.MerchantWithdrawApplicationRequest;
 import com.xiliulou.electricity.vo.merchant.MerchantWithdrawApplicationVO;
 import org.apache.ibatis.annotations.Param;
@@ -62,4 +62,9 @@ public interface MerchantWithdrawApplicationMapper {
     Integer updateMerchantWithdrawStatus(MerchantWithdrawApplication merchantWithdrawApplication);
     
     
+    List<Long> selectListFranchiseeIdByIds(@Param("ids") List<Long> ids,@Param("tenantId") long tenantId);
+    
+    List<MerchantWithdrawApplicationBO> selectListByBatchNoList(@Param("batchNoList") List<String> batchNoList);
+    
+    Integer updatePayConfigWhetherChangeByBatchNo(MerchantWithdrawApplication updateWithdrawApplicationUpdate);
 }

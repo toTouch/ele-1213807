@@ -1,179 +1,63 @@
 package com.xiliulou.electricity.service.impl;
 
-import com.xiliulou.cache.redis.RedisService;
-import com.xiliulou.electricity.constant.CacheConstant;
-import com.xiliulou.electricity.entity.ElectricityCarModel;
 import com.xiliulou.electricity.entity.UserCar;
-import com.xiliulou.electricity.mapper.UserCarMapper;
 import com.xiliulou.electricity.query.UserCarQuery;
-import com.xiliulou.electricity.service.ElectricityCarModelService;
 import com.xiliulou.electricity.service.UserCarService;
-import com.xiliulou.electricity.tenant.TenantContextHolder;
-import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.vo.UserCarVO;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Objects;
 
 /**
- * (UserCar)表服务实现类
- *
  * @author zzlong
- * @since 2022-12-07 17:35:15
+ * @email zhaozhilong@xiliulou.com
+ * @date 2024-06-19-16:06
  */
-@Service("userCarService")
-@Slf4j
+@Service
 public class UserCarServiceImpl implements UserCarService {
-    @Autowired
-    private UserCarMapper userCarMapper;
-    @Autowired
-    private RedisService redisService;
-    @Autowired
-    private ElectricityCarModelService carModelService;
-
-    /**
-     * 通过ID查询单条数据从DB
-     *
-     * @param uid 主键
-     * @return 实例对象
-     */
+    
     @Override
     public UserCar selectByUidFromDB(Long uid) {
-        return this.userCarMapper.selectByUid(uid);
+        return null;
     }
-
-    /**
-     * 通过ID查询单条数据从缓存
-     *
-     * @param uid 主键
-     * @return 实例对象
-     */
+    
     @Override
     public UserCar selectByUidFromCache(Long uid) {
-        UserCar cacheUserCar = redisService.getWithHash(CacheConstant.CACHE_USER_CAR + uid, UserCar.class);
-        if (Objects.nonNull(cacheUserCar)) {
-            return cacheUserCar;
-        }
-
-        UserCar userCar = this.selectByUidFromDB(uid);
-        if (Objects.isNull(userCar)) {
-            return null;
-        }
-
-        redisService.saveWithHash(CacheConstant.CACHE_USER_CAR + uid, userCar);
-
-        return userCar;
+        return null;
     }
-
-    /**
-     * 新增数据
-     *
-     * @param userCar 实例对象
-     * @return 实例对象
-     */
+    
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public UserCar insert(UserCar userCar) {
-        int insert = this.userCarMapper.insertOne(userCar);
-
-        DbUtils.dbOperateSuccessThen(insert, () -> {
-            redisService.saveWithHash(CacheConstant.CACHE_USER_CAR + userCar.getUid(), userCar);
-            return null;
-        });
-
-        return userCar;
+        return null;
     }
-
+    
     @Override
     public UserCar insertOrUpdate(UserCar userCar) {
-        int insert = this.userCarMapper.insertOrUpdate(userCar);
-
-        DbUtils.dbOperateSuccessThen(insert, () -> {
-            redisService.delete(CacheConstant.CACHE_USER_CAR + userCar.getUid());
-            return null;
-        });
-
-        return userCar;
+        return null;
     }
-
-    /**
-     * 修改数据
-     *
-     * @param userCar 实例对象
-     * @return 实例对象
-     */
+    
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public Integer updateByUid(UserCar userCar) {
-        int update = this.userCarMapper.updateByUid(userCar);
-        DbUtils.dbOperateSuccessThen(update, () -> {
-            redisService.delete(CacheConstant.CACHE_USER_CAR + userCar.getUid());
-            return null;
-        });
-
-        return update;
+        return null;
     }
-
-    /**
-     * 解绑用户车辆
-     * @param userCar
-     * @return
-     */
+    
     @Override
     public Integer unBindingCarByUid(UserCar userCar) {
-        int update = this.userCarMapper.unBindingCarByUid(userCar);
-        DbUtils.dbOperateSuccessThen(update, () -> {
-            redisService.delete(CacheConstant.CACHE_USER_CAR + userCar.getUid());
-            return null;
-        });
-
-        return update;
+        return null;
     }
-
-    /**
-     * 通过主键删除数据
-     *
-     * @param uid 主键
-     * @return 是否成功
-     */
+    
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public Integer deleteByUid(Long uid) {
-        int delete = this.userCarMapper.deleteByUid(uid);
-
-        DbUtils.dbOperateSuccessThen(delete, () -> {
-            redisService.delete(CacheConstant.CACHE_USER_CAR + uid);
-            return null;
-        });
-
-        return delete;
+        return null;
     }
-
-    /**
-     * 用户车辆详情
-     * @param uid
-     * @return
-     */
+    
     @Override
     public UserCarVO selectDetailByUid(Long uid) {
-        UserCarVO userCarVO = new UserCarVO();
-
-//        UserCar userCar = this.selectByUidFromCache(uid);
-//        if(Objects.isNull(userCar) || Objects.equals(userCar.getTenantId(), TenantContextHolder.getTenantId())){
-//            return userCarVO;
-//        }
-//
-//        ElectricityCarModel electricityCarModel = carModelService.queryByIdFromCache(userCar.getCarModel().intValue());
-
-        return userCarVO;
+        return null;
     }
-
+    
     @Override
     public List<UserCar> selectByQuery(UserCarQuery userCarQuery) {
-        return this.userCarMapper.selectByQuery(userCarQuery);
+        return null;
     }
 }

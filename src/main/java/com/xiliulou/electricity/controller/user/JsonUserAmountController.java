@@ -19,18 +19,19 @@ import javax.annotation.Resource;
 @RestController
 @Slf4j
 public class JsonUserAmountController {
-	/**
-	 * 服务对象
-	 */
-	@Resource
-	private UserAmountService userAmountService;
-
-	/**
-	 * 用户余额
-	 */
-	@GetMapping(value = "/user/userAmount/queryBalance")
-	public R queryBalance() {
-		return userAmountService.queryByUid();
-	}
-
+    
+    /**
+     * 服务对象
+     */
+    @Resource
+    private UserAmountService userAmountService;
+    
+    /**
+     * 用户余额
+     */
+    @GetMapping(value = "/user/userAmount/queryBalance")
+    public R queryBalance() {
+        return userAmountService.queryByUid();
+    }
+    
 }

@@ -16,6 +16,8 @@
             response,
             create_time,
             update_time,
+            pay_config_type,
+            franchisee_id
         </trim>
         <trim prefix="values (" suffix=")" suffixOverrides=",">
             #{uid},
@@ -29,6 +31,8 @@
             #{response},
             #{createTime},
             #{updateTime},
+            #{payConfigType},
+            #{franchiseeId}
         </trim>
     </insert>
     
@@ -46,6 +50,8 @@
             response,
             create_time,
             update_time,
+            pay_config_type,
+            franchisee_id
         </trim>
         values
         <foreach collection="list" item="item" index="index" separator=",">
@@ -60,7 +66,9 @@
             #{item.remark},
             #{item.response},
             #{item.createTime},
-            #{item.updateTime}
+            #{item.updateTime},
+            #{item.payConfigType},
+            #{item.franchiseeId}
             )
         </foreach>
     
@@ -98,7 +106,6 @@
     
     <select id="selectListByCondition" resultType="com.xiliulou.electricity.vo.merchant.MerchantWithdrawApplicationRecordVO">
         select mwar.id,
-               mwar.response,
                mwar.create_time,
                mwar.update_time,
                mwar.tenant_id,
@@ -174,7 +181,6 @@
     
     <select id="selectById" resultType="com.xiliulou.electricity.vo.merchant.MerchantWithdrawApplicationRecordVO">
         select mwar.id,
-               mwar.response,
                mwar.create_time,
                mwar.update_time,
                mwar.tenant_id,
@@ -189,7 +195,6 @@
     
      <select id="selectByOrderNo" resultType="com.xiliulou.electricity.entity.merchant.MerchantWithdrawApplicationRecord">
         select mwar.id,
-               mwar.response,
                mwar.create_time,
                mwar.update_time,
                mwar.tenant_id,
@@ -205,7 +210,6 @@
     
     <select id="queryList" resultType="com.xiliulou.electricity.vo.merchant.MerchantWithdrawApplicationRecordVO">
         select mwar.id,
-        mwar.response,
         mwar.create_time,
         mwar.update_time,
         mwar.tenant_id,
@@ -309,9 +313,8 @@
         </where>
     </update>
     
-    <select id="selectListByBatchNo" resultType="com.xiliulou.electricity.entity.merchant.MerchantWithdrawApplicationRecord">
+    <select id="selectListByBatchNo" resultType="com.xiliulou.electricity.bo.merchant.MerchantWithdrawApplicationRecordBO">
         select mwar.id,
-               mwar.response,
                mwar.create_time,
                mwar.update_time,
                mwar.amount,
@@ -322,7 +325,9 @@
                mwar.batch_no,
                mwar.batch_detail_no,
                mwar.transaction_batch_id,
-               mwar.status
+               mwar.status,
+               mwar.franchisee_id,
+               mwar.pay_config_type
         from t_merchant_withdraw_application_record mwar
         where mwar.batch_no = #{batchNo}
           and mwar.tenant_id = #{tenantId}

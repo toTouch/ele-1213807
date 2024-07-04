@@ -13,15 +13,15 @@ import org.springframework.web.bind.annotation.RestController;
  */
 @RestController
 public class JsonUserOrderProtocolController extends BaseController {
+    
     @Autowired
     OrderProtocolService orderProtocolService;
-
+    
     @GetMapping("/user/orderProtocol")
     public R queryUserNotice() {
-
+        
         return orderProtocolService.queryOrderProtocol();
     }
-
-
-
+    
+    
 }

@@ -2,19 +2,48 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.xiliulou.electricity.mapper.WechatWithdrawalCertificateMapper">
     
-    <select id="selectByTenantId" resultType="com.xiliulou.electricity.entity.WechatWithdrawalCertificate">
-        select
-            id,
-            tenant_id,
-            certificate_value,
-            upload_time
-        from
-            t_wechat_withdrawal_certificate
-        where tenant_id = #{tenantId};
+    <sql id="base_column">
+        id
+        ,
+        tenant_id,
+        certificate_value,
+        upload_time,
+        pay_params_id,
+        franchisee_id,
+        del_flag
+    </sql>
     
+    
+    <select id="selectByTenantIdAndFranchiseeId"
+        resultType="com.xiliulou.electricity.entity.WechatWithdrawalCertificate">
+        select
+        <include refid="base_column"/>
+        from t_wechat_withdrawal_certificate
+        where tenant_id = #{tenantId} and franchisee_id = #{franchiseeId} and del_flag=0
     </select>
     
-    <update id="updateByTenantId">
+    <select id="selectListByTenantIdAndFranchiseeId" resultType="com.xiliulou.electricity.entity.WechatWithdrawalCertificate">
+        select
+        <include refid="base_column"/>
+        from t_wechat_withdrawal_certificate
+        where
+        del_flag = 0
+        and (tenant_id,franchisee_id)
+        in
+        <foreach collection="list" item="item" separator="," open="(" close=")">
+            (#{item.tenantId},#{item.franchiseeId})
+        </foreach>
+    </select>
+    
+    <update id="logicalDeleteByPayParamsId">
+        update
+            t_wechat_withdrawal_certificate
+        set del_flag = 1
+        where pay_params_id = #{payParamsId}
+          and tenant_id = #{tenantId}
+    </update>
+    
+    <update id="updateByIdAndTenantId">
         update t_wechat_withdrawal_certificate
         <set>
             <if test="certificateValue != null">
@@ -24,24 +53,7 @@
                 upload_time = #{uploadTime},
             </if>
         </set>
-        where tenant_id = #{tenantId}
+        where id = #{id} and tenant_id = #{tenantId}
     </update>
-    
-    <select id="listCertificateInTenantIds" resultType="com.xiliulou.electricity.entity.WechatWithdrawalCertificate">
-        select
-            id,
-            tenant_id,
-            certificate_value,
-            upload_time
-        from
-            t_wechat_withdrawal_certificate
-        <where>
-            <if test="tenantIds != null and tenantIds.size > 0">
-                and tenant_id in
-                <foreach collection="tenantIds" item="tenantId" index="index" open="(" close=")" separator=",">
-                    #{tenantId}
-                </foreach>
-            </if>
-        </where>
-    </select>
+
 </mapper>

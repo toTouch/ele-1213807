@@ -36,7 +36,7 @@ public class JsonUserMerchantWithdrawController extends BaseController {
         Integer tenantId = TenantContextHolder.getTenantId();
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
-            return  R.fail("120013", "未找到用户");
+            return R.fail("120013", "未找到用户");
         }
         merchantWithdrawApplicationRequest.setUid(user.getUid());
         merchantWithdrawApplicationRequest.setTenantId(tenantId);
@@ -45,41 +45,31 @@ public class JsonUserMerchantWithdrawController extends BaseController {
     }
     
     @GetMapping("/merchant/withdrawList")
-    public R queryMerchantWithdrawApplicationList(@RequestParam(value = "size", required = true) Long size,
-            @RequestParam(value = "offset", required = true) Long offset,
-            @RequestParam(value = "beginTime", required = false) Long beginTime,
-            @RequestParam(value = "endTime", required = false) Long endTime,
+    public R queryMerchantWithdrawApplicationList(@RequestParam(value = "size", required = true) Long size, @RequestParam(value = "offset", required = true) Long offset,
+            @RequestParam(value = "beginTime", required = false) Long beginTime, @RequestParam(value = "endTime", required = false) Long endTime,
             @RequestParam(value = "status", required = false) Integer status) {
-    
+        
         if (size < 0 || size > 50) {
             size = 10L;
         }
-    
+        
         if (offset < 0) {
             offset = 0L;
         }
-    
+        
         Integer tenantId = TenantContextHolder.getTenantId();
-    
+        
         Long uid = SecurityUtils.getUid();
         if (Objects.isNull(uid)) {
             log.error("bindBank  ERROR! not found user ");
             return R.fail("", "没有查询到相关用户");
         }
-    
-        MerchantWithdrawApplicationRequest merchantWithdrawApplicationRequest = MerchantWithdrawApplicationRequest.builder()
-                .size(size)
-                .offset(offset)
-                .beginTime(beginTime)
-                .endTime(endTime)
-                .status(status)
-                .uid(uid)
-                .tenantId(tenantId)
-                .build();
+        
+        MerchantWithdrawApplicationRequest merchantWithdrawApplicationRequest = MerchantWithdrawApplicationRequest.builder().size(size).offset(offset).beginTime(beginTime)
+                .endTime(endTime).status(status).uid(uid).tenantId(tenantId).build();
         
         return R.ok(merchantWithdrawApplicationService.queryMerchantWithdrawApplicationList(merchantWithdrawApplicationRequest));
     }
     
     
-
 }

@@ -147,4 +147,6 @@ public interface UserService {
     List<User> queryListByUidList(List<Long> employeeUidList, Integer tenantId);
     
     User queryByUidFromDB(Long uid);
+    
+    List<User> listByPhones(List<String> phoneList, Integer tenantId, Integer type);
 }

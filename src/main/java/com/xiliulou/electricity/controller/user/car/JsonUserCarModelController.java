@@ -26,13 +26,13 @@ import java.util.Objects;
 @RestController
 @RequestMapping("/user/car/carModel")
 public class JsonUserCarModelController extends BasicController {
-
+    
     @Resource
     private CarModelBizService carModelBizService;
-
+    
     /**
-     * 根据车辆型号ID获取车辆型号信息<br />
-     * 包含：基本信息、图片信息、门店信息
+     * 根据车辆型号ID获取车辆型号信息<br /> 包含：基本信息、图片信息、门店信息
+     *
      * @param carModelId 车辆型号ID
      * @return 车辆型号详细信息
      */
@@ -43,9 +43,10 @@ public class JsonUserCarModelController extends BasicController {
         }
         return R.ok(carModelBizService.queryDetailByCarModelId(carModelId));
     }
-
+    
     /**
      * 检测是否允许购买此车辆型号
+     *
      * @param carModelId 车辆型号ID
      * @return true(允许)、false(不允许)
      */
@@ -56,8 +57,8 @@ public class JsonUserCarModelController extends BasicController {
         if (Objects.isNull(user)) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-
+        
         return R.ok(carModelBizService.checkBuyByCarModelId(tenantId, user.getUid(), carModelId));
     }
-
+    
 }
