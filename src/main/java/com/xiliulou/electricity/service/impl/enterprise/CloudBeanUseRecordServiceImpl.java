@@ -815,7 +815,7 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
             }
         
             if (Objects.nonNull(item.getCreateTime())) {
-                enterpriseCloudBeanOrderVO.setCreateTime(DateUtil.format(new Date(item.getCreateTime()), DateFormatConstant.MONTH_DAY_DATE_FORMAT));
+                enterpriseCloudBeanOrderVO.setCreateTime(DateUtil.format(new Date(item.getCreateTime()), DateFormatConstant.MONTH_DAY_DATE_TIME_FORMAT));
             }
     
             enterpriseNameList.add(enterpriseCloudBeanOrderVO.getEnterpriseName());
