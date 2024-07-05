@@ -200,6 +200,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -2727,8 +2728,19 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     @Slave
     @Override
     public R userInfoSearch(Long size, Long offset, String name, Long franchiseeId) {
-        List<UserInfoSearchVo> query = userInfoMapper.userInfoSearch(size, offset, name, TenantContextHolder.getTenantId(), franchiseeId);
-        return R.ok(query);
+        List<UserInfoSearchVo> list = userInfoMapper.userInfoSearch(size, offset, name, TenantContextHolder.getTenantId(), franchiseeId);
+        if (CollectionUtils.isEmpty(list)) {
+            return R.ok(Collections.EMPTY_LIST);
+        }
+    
+        List<UserInfoSearchVo> collect = list.stream().peek(vo -> {
+            if (Objects.nonNull(vo.getFranchiseeId())) {
+                vo.setFranchiseeName(Optional.ofNullable(franchiseeService.queryByIdFromCache(franchiseeId)).map(Franchisee::getName).orElse(StringUtils.EMPTY));
+            }
+            
+        }).collect(Collectors.toList());
+    
+        return R.ok(collect);
     }
     
     private void queryUserCarMemberCard(DetailsCarInfoVo vo, UserInfo userInfo) {
