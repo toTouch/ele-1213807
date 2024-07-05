@@ -811,7 +811,7 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
         
             CloudBeanUseRecordTypeEnum typeEnum = BasicEnum.getEnum(item.getType(), CloudBeanUseRecordTypeEnum.class);
             if (Objects.nonNull(typeEnum)) {
-                enterpriseCloudBeanOrderVO.setConsumerType(typeEnum.getDesc());
+                enterpriseCloudBeanOrderVO.setType(typeEnum.getDesc());
             }
         
             if (Objects.nonNull(item.getCreateTime())) {
@@ -1205,5 +1205,10 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
             log.error("dateDifferent error!", e);
         }
         return result;
+    }
+    
+    public static void main(String[] args) {
+        CloudBeanUseRecordTypeEnum typeEnum = BasicEnum.getEnum(2, CloudBeanUseRecordTypeEnum.class);
+        System.out.printf("");
     }
 }

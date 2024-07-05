@@ -18,7 +18,7 @@ public class CloudBeanUseRecordExcelVO {
     @ExcelProperty("支出/收入")
     private String incomeAndExpend;
     @ExcelProperty("消费类型")
-    private String consumerType;
+    private String type;
     @ExcelProperty("云豆数")
     private BigDecimal beanAmount;
     @ExcelProperty("消费时间")
