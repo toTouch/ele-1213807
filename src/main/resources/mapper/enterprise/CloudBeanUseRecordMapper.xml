@@ -106,10 +106,11 @@
     
     <sql id="pageFilter">
         <where>
+            e.del_flag = 0
             <if test="type != null">
-                r.type = #{type}
+                and r.type = #{type}
             </if>
-        
+            
             <if test="enterpriseId != null">
                 and r.enterprise_id = #{enterpriseId}
             </if>
@@ -139,9 +140,9 @@
         
             <if test="operateUid != null">
                 AND (
-                r.type IN ( 2, 3, 4, 5 )
-                AND EXISTS ( SELECT 1 FROM t_enterprise_cloud_bean_order o WHERE o.operate_uid = #{operateUid} AND o.order_id = r.ref )
-                OR ( r.type IN ( 0, 1 ) AND exists (select 1 from t_enterprise_info i where i.id = r.enterprise_id and i.uid = #{operateUid}) ))
+                     (r.type IN ( 2, 3, 4, 5 )
+                AND EXISTS ( SELECT 1 FROM t_enterprise_cloud_bean_order o WHERE o.operate_uid = #{operateUid} AND o.order_id = r.ref ))
+                OR ( r.type IN ( 0, 1 )  and e.uid = #{operateUid} ))
             </if>
         </where>
     </sql>
@@ -157,7 +158,7 @@
             r.id
         FROM
         t_cloud_bean_use_record r
-        
+        left join t_enterprise_info e on e.id = r.enterprise_id
         <include refid="pageFilter"/>
         ORDER BY r.create_time DESC
         <if test="offset != null and size != null">
@@ -170,6 +171,7 @@
             count(1)
         FROM
         t_cloud_bean_use_record r
+        left join t_enterprise_info e on e.id = r.enterprise_id
         <include refid="pageFilter"/>
     </select>
     
