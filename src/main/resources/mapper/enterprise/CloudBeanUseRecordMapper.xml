@@ -153,12 +153,13 @@
             r.type,
             r.bean_amount,
             r.create_time,
-            r.ref
+            r.ref,
+            r.id
         FROM
         t_cloud_bean_use_record r
         
         <include refid="pageFilter"/>
-        ORDER BY r.id DESC
+        ORDER BY r.create_time DESC
         <if test="offset != null and size != null">
             limit #{offset}, #{size}
         </if>
