@@ -798,10 +798,12 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
             BeanUtils.copyProperties(item, enterpriseCloudBeanOrderVO);
         
             EnterpriseInfo enterpriseInfo = enterpriseInfoService.queryByIdFromCache(item.getEnterpriseId());
-            if (Objects.nonNull(enterpriseInfo)) {
-                enterpriseCloudBeanOrderVO.setEnterpriseName(enterpriseInfo.getName());
+            if (Objects.isNull(enterpriseInfo)) {
+                return;
             }
-        
+            
+            enterpriseCloudBeanOrderVO.setEnterpriseName(enterpriseInfo.getName());
+    
             if (Objects.equals(item.getType(), CloudBeanUseRecord.TYPE_ADMIN_RECHARGE) || Objects.equals(item.getType(), CloudBeanUseRecord.TYPE_RECYCLE) || Objects.equals(
                     item.getType(), CloudBeanUseRecord.TYPE_PRESENT) || Objects.equals(item.getType(), CloudBeanUseRecord.TYPE_USER_RECHARGE)) {
                 enterpriseCloudBeanOrderVO.setIncomeAndExpend("收入");
