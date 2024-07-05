@@ -110,14 +110,14 @@
     
     <!--新增所有列-->
     <insert id="insertOne" keyProperty="id" useGeneratedKeys="true">
-        insert into t_invitation_activity_user(activity_id, uid, operator, create_time, update_time, tenant_id)
-        values (#{activityId}, #{uid}, #{operator},  #{createTime}, #{updateTime}, #{tenantId})
+        insert into t_invitation_activity_user(activity_id, uid, operator, create_time, update_time, tenant_id, franchiseeId)
+        values (#{activityId}, #{uid}, #{operator},  #{createTime}, #{updateTime}, #{tenantId}, #{franchiseeId})
     </insert>
     
     <insert id="batchInsert" keyProperty="id" useGeneratedKeys="true">
-        insert into t_invitation_activity_user(activity_id, uid, operator, create_time, update_time, tenant_id) values
+        insert into t_invitation_activity_user(activity_id, uid, operator, create_time, update_time, tenant_id, franchiseeId) values
         <foreach item="item" index="index" collection="invitationActivityUsers" separator=",">
-            (#{item.activityId}, #{item.uid}, #{item.operator}, #{item.createTime}, #{item.updateTime}, #{item.tenantId})
+            (#{item.activityId}, #{item.uid}, #{item.operator}, #{item.createTime}, #{item.updateTime}, #{item.tenantId}, #{item.franchiseeId})
         </foreach>
     </insert>
     
