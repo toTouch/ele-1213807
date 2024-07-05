@@ -898,9 +898,9 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
     public List<BatteryMemberCardVO> listMemberCardForSort(TokenUser tokenUser) {
         BatteryMemberCardQuery query = BatteryMemberCardQuery.builder().tenantId(TenantContextHolder.getTenantId()).build();
         
-        final List<Long> franchiseeIds = new ArrayList<>();
+        List<Long> franchiseeIds = null;
         if (Objects.equals(tokenUser.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
-            franchiseeIds.addAll(userDataScopeService.selectDataIdByUid(tokenUser.getUid()));
+            franchiseeIds = (userDataScopeService.selectDataIdByUid(tokenUser.getUid()));
             if (CollectionUtils.isEmpty(franchiseeIds)) {
                 return Collections.emptyList();
             }
@@ -909,9 +909,7 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
         if (Objects.equals(tokenUser.getDataType(), User.DATA_TYPE_STORE)) {
             List<Long> storeIds = userDataScopeService.selectDataIdByUid(tokenUser.getUid());
             if (org.apache.commons.collections.CollectionUtils.isNotEmpty(storeIds)) {
-                storeIds.forEach(storeId -> {
-                    franchiseeIds.add(storeService.queryByIdFromCache(storeId).getFranchiseeId());
-                });
+                franchiseeIds = storeIds.stream().map(storeId -> storeService.queryByIdFromCache(storeId).getFranchiseeId()).collect(Collectors.toList());
             }
             if (CollectionUtils.isEmpty(franchiseeIds)) {
                 return Collections.emptyList();
