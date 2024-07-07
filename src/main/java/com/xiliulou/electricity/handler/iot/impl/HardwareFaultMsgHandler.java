@@ -15,7 +15,6 @@ import com.xiliulou.iot.entity.ReceiverMessage;
 import com.xiliulou.mq.service.RocketMqService;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
@@ -28,7 +27,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
-import java.util.UUID;
 
 /**
  * @author : maxiaodong
@@ -56,7 +54,6 @@ public class HardwareFaultMsgHandler extends AbstractElectricityIotHandler {
         }
         
         List<HardwareFaultWarnMqMsg> list = convertMqMsg(hardwareFaultWarnMsg, electricityCabinet);
-        log.info("HARDWARE FAULT WARN SEND START MSG={}", JsonUtil.toJson(list));
         rocketMqService.sendAsyncMsg(MqProducerConstant.FAULT_FAILURE_WARNING_BREAKDOWN, JsonUtil.toJson(list));
         
         HashMap<String, Object> dataMap = Maps.newHashMap();
@@ -100,20 +97,6 @@ public class HardwareFaultMsgHandler extends AbstractElectricityIotHandler {
             list.add(msg);
         });
         return list;
-    }
-    
-    public void syncSend(ElectricityCabinet electricityCabinet, ReceiverMessage receiverMessage) {
-        // todo 告警同步测试需要删除
-        
-        HardwareFaultWarnMsg hardwareFaultWarnMsg = JsonUtil.fromJson(receiverMessage.getOriginContent(), HardwareFaultWarnMsg.class);
-        if (Objects.isNull(hardwareFaultWarnMsg) || ObjectUtils.isEmpty(hardwareFaultWarnMsg.getAlarmList())) {
-            log.error("PARSE HARDWARE FAULT WARN MSG ERROR! sessionId={}", receiverMessage.getSessionId());
-            return;
-        }
-    
-        List<HardwareFaultWarnMqMsg> list = convertMqMsg(hardwareFaultWarnMsg, electricityCabinet);
-        log.info("HARDWARE FAULT WARN SEND START MSG={}", JsonUtil.toJson(list));
-        rocketMqService.sendAsyncMsg(MqProducerConstant.FAULT_FAILURE_WARNING_BREAKDOWN, JsonUtil.toJson(list));
     }
     
     public void testSend(String msg, Integer type) {
