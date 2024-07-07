@@ -192,6 +192,11 @@ class HardwareFaultMsg {
     private Long alarmTime;
     
     /**
+     * 告警结束时间
+     */
+    private Long alarmEndTime;
+    
+    /**
      * 告警事件描述
      */
     private String alarmDesc;
@@ -290,6 +295,11 @@ class HardwareFaultWarnMqMsg {
      * 告警时间
      */
     private Long alarmTime;
+    
+    /**
+     * 告警结束时间
+     */
+    private Long alarmEndTime;
     
     /**
      * 告警事件描述
