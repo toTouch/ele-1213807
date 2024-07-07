@@ -1,7 +1,5 @@
 package com.xiliulou.electricity.task;
 
-import com.xiliulou.electricity.service.CarMemberCardOrderService;
-import com.xiliulou.electricity.service.ElectricityMemberCardOrderService;
 import com.xiliulou.electricity.service.UserCarMemberCardService;
 import com.xxl.job.core.biz.model.ReturnT;
 import com.xxl.job.core.handler.IJobHandler;

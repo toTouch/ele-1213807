@@ -8,6 +8,7 @@ import com.xiliulou.core.thread.XllThreadPoolExecutorService;
 import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.core.wp.entity.AppTemplateQuery;
 import com.xiliulou.core.wp.service.WeChatAppTemplateService;
+import com.xiliulou.electricity.constant.MultiFranchiseeConstant;
 import com.xiliulou.electricity.dto.BatteryPowerNotifyDto;
 import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.entity.ElectricityPayParams;
@@ -94,10 +95,9 @@ public class BatteryLowerPowerConsumeListener implements RocketMQListener<String
         }
         String openId = userOauthBind.getThirdId();
 
-        BaseMapper<ElectricityPayParams> mapper = electricityPayParamsService.getBaseMapper();
-        QueryWrapper<ElectricityPayParams> wrapper = new QueryWrapper<>();
-        wrapper.eq("tenant_id", tenantId);
-        ElectricityPayParams ele = mapper.selectOne(wrapper);
+        
+        ElectricityPayParams ele = electricityPayParamsService.queryPreciseCacheByTenantIdAndFranchiseeId(tenantId, MultiFranchiseeConstant.DEFAULT_FRANCHISEE);
+        
         if (Objects.isNull(ele)) {
             log.error("ELECTRICITY_PAY_PARAMS IS NULL ERROR! tenantId={},sn={}", tenantId, batteryPowerNotifyDto.getSn());
             return;

@@ -54,8 +54,6 @@ public interface ElectricityCabinetMapper extends BaseMapper<ElectricityCabinet>
 
     Integer queryCount(@Param("query") ElectricityCabinetQuery electricityCabinetQuery);
 
-    List<HashMap<String, String>> homeThree(@Param("startTimeMilliDay") long startTimeMilliDay, @Param("endTimeMilliDay") Long endTimeMilliDay, @Param("eleIdList") List<Integer> eleIdList, @Param("tenantId") Integer tenantId);
-
     Integer queryCountByStoreIds(@Param("tenantId") Integer tenantId, @Param("storeIds") List<Long> storeIds);
 
 	Integer queryCountByStoreIdsAndStatus(@Param("tenantId") Integer tenantId,@Param("storeIds") List<Long> storeIds,@Param("status") Integer status);

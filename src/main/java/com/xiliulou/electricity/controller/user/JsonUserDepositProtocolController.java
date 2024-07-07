@@ -13,15 +13,15 @@ import org.springframework.web.bind.annotation.RestController;
  */
 @RestController
 public class JsonUserDepositProtocolController extends BaseController {
+    
     @Autowired
     DepositProtocolService depositProtocolService;
-
+    
     @GetMapping("/user/depositProtocol")
     public R queryUserNotice() {
-
+        
         return depositProtocolService.queryDepositProtocol();
     }
-
-
-
+    
+    
 }

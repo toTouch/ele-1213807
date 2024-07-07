@@ -30,7 +30,6 @@ public interface EleUserAuthService {
      */
     Integer update(EleUserAuth eleUserAuth);
 
-
     R webAuth(List<EleUserAuth> eleUserAuthList);
 
 
@@ -39,8 +38,6 @@ public interface EleUserAuthService {
     R selectUserAuthStatus(Long uid);
 
     R selectCurrentEleAuthEntriesList(Long uid);
-
-    R getEleUserServiceStatus();
 
     void updateByUid(Long uid, Integer authStatus);
 

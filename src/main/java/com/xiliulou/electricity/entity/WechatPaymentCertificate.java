@@ -9,8 +9,7 @@ import lombok.experimental.Accessors;
 
 /**
  * @author Mr. wang
- * @date: 2023年5月16日
- * desc: 微信支付证书内容实体类
+ * @date: 2023年5月16日 desc: 微信支付证书内容实体类
  */
 @Data
 @TableName("t_wechat_payment_certificate")
@@ -25,13 +24,30 @@ public class WechatPaymentCertificate {
      */
     private Integer tenantId;
     
+    
     /**
      * 证书内容
      */
     private String certificateContent;
     
+    
+    /**
+     * 配置参数表主键id
+     */
+    private Integer payParamsId;
+    
+    /**
+     * 加盟商id
+     */
+    private Long franchiseeId;
+    
     /**
      * 上传时间
      */
     private Long uploadTime;
+    
+    /**
+     * 删除标识
+     */
+    private Integer delFlag;
 }

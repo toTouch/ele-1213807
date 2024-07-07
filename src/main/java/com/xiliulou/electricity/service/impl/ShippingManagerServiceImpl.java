@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.service.impl;
 
 import com.xiliulou.core.thread.XllThreadPoolExecutors;
+import com.xiliulou.electricity.constant.MultiFranchiseeConstant;
 import com.xiliulou.electricity.entity.ElectricityPayParams;
 import com.xiliulou.electricity.entity.UserOauthBind;
 import com.xiliulou.electricity.service.ElectricityPayParamsService;
@@ -39,15 +40,18 @@ public class ShippingManagerServiceImpl implements ShippingManagerService {
 
     @Override
     public void uploadShippingInfo(Long uid, String phone, String orderNo, Integer tenantId) {
-
         //支付相关
-        ElectricityPayParams electricityPayParams = electricityPayParamsService.queryFromCache(tenantId);
+        // 只使用 merchantMinProAppId、merchantMinProAppSecert 参数，可以调用此方法，加盟商ID传入默认 0
+        ElectricityPayParams electricityPayParams = electricityPayParamsService.queryPreciseCacheByTenantIdAndFranchiseeId(tenantId, MultiFranchiseeConstant.DEFAULT_FRANCHISEE);
         if (Objects.isNull(electricityPayParams)) {
             log.error("SHIPPING ERROR! not found electricityPayParams,tenantId={}", tenantId);
             return;
         }
-
-        if (StringUtils.isBlank(electricityPayParams.getMerchantMinProAppId()) || StringUtils.isBlank(electricityPayParams.getMerchantMinProAppSecert())) {
+        
+        String merchantMinProAppId = electricityPayParams.getMerchantMinProAppId();
+        String merchantMinProAppSecert = electricityPayParams.getMerchantMinProAppSecert();
+        
+        if (StringUtils.isBlank(merchantMinProAppId) || StringUtils.isBlank(merchantMinProAppSecert)) {
             log.error("SHIPPING ERROR! electricityPayParams is illegal,tenantId={}", tenantId);
             return;
         }
@@ -58,6 +62,6 @@ public class ShippingManagerServiceImpl implements ShippingManagerService {
             return;
         }
 
-        shippingManagerExecutorService.execute(() -> shippingUploadService.shippingUploadInfo(userOauthBind.getThirdId(), orderNo, electricityPayParams.getMerchantMinProAppId(), electricityPayParams.getMerchantMinProAppSecert()));
+        shippingManagerExecutorService.execute(() -> shippingUploadService.shippingUploadInfo(userOauthBind.getThirdId(), orderNo, merchantMinProAppId, merchantMinProAppSecert));
     }
 }

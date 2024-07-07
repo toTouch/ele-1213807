@@ -21,12 +21,13 @@ import java.util.List;
  */
 @RestController
 public class JsonUserUserCouponController {
+    
     /**
      * 服务对象
      */
     @Autowired
     private UserCouponService userCouponService;
-
+    
     //我的优惠券查询
     //status 1--未使用  2--已使用  3--已过期
     //type  1--减免券，2--打折券，3-体验劵
@@ -36,48 +37,44 @@ public class JsonUserUserCouponController {
     public R queryMyCoupon(@RequestParam(value = "status", required = false) String status, @RequestParam(value = "type", required = false) String type) {
         List<Integer> typeList = null;
         if (StringUtils.isNotEmpty(type)) {
-            Integer[] types = (Integer[])
-                    JSONUtil.parseArray(type).toArray(Integer[].class);
-
+            Integer[] types = (Integer[]) JSONUtil.parseArray(type).toArray(Integer[].class);
+            
             typeList = Arrays.asList(types);
         }
-
+        
         List<Integer> statusList = null;
         if (StringUtils.isNotEmpty(status)) {
-            Integer[] statuses = (Integer[])
-                    JSONUtil.parseArray(status).toArray(Integer[].class);
-
+            Integer[] statuses = (Integer[]) JSONUtil.parseArray(status).toArray(Integer[].class);
+            
             statusList = Arrays.asList(statuses);
         }
         return userCouponService.queryMyCoupon(statusList, typeList);
     }
-
+    
     @GetMapping(value = "/user/userCoupon/queryMyCoupons")
     public R queryMyCoupons(@RequestParam(value = "status", required = false) String status, @RequestParam(value = "type", required = false) String type) {
         List<Integer> typeList = null;
         if (StringUtils.isNotEmpty(type)) {
-            Integer[] types = (Integer[])
-                    JSONUtil.parseArray(type).toArray(Integer[].class);
-
+            Integer[] types = (Integer[]) JSONUtil.parseArray(type).toArray(Integer[].class);
+            
             typeList = Arrays.asList(types);
         }
-
+        
         List<Integer> statusList = null;
         if (StringUtils.isNotEmpty(status)) {
-            Integer[] statuses = (Integer[])
-                    JSONUtil.parseArray(status).toArray(Integer[].class);
-
+            Integer[] statuses = (Integer[]) JSONUtil.parseArray(status).toArray(Integer[].class);
+            
             statusList = Arrays.asList(statuses);
         }
         return userCouponService.queryMyCoupons(statusList, typeList);
-
+        
     }
-
-
+    
+    
     //领劵
     @PostMapping(value = "/user/userCoupon/getCoupon")
-    public R getCoupon( @RequestParam("activityId") Integer activityId,@RequestParam("couponId") Integer couponId) {
-        return userCouponService.getShareCoupon(activityId,couponId);
+    public R getCoupon(@RequestParam("activityId") Integer activityId, @RequestParam("couponId") Integer couponId) {
+        return userCouponService.getShareCoupon(activityId, couponId);
     }
-
+    
 }

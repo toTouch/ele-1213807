@@ -14,12 +14,12 @@ import org.springframework.web.bind.annotation.RestController;
  */
 @RestController
 public class JsonUserFaqController extends BaseController {
+    
     @Autowired
     FaqService faqService;
-
+    
     @GetMapping("/user/faq/list")
-    public R getList(@RequestParam("size") Integer size,
-                     @RequestParam("offset") Integer offset) {
+    public R getList(@RequestParam("size") Integer size, @RequestParam("offset") Integer offset) {
         if (size <= 0 || size > 50) {
             size = 10;
         }

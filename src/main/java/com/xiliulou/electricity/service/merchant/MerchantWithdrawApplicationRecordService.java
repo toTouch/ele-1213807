@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.service.merchant;
 
+import com.xiliulou.electricity.bo.merchant.MerchantWithdrawApplicationRecordBO;
 import com.xiliulou.electricity.entity.merchant.MerchantWithdrawApplicationRecord;
 import com.xiliulou.electricity.request.merchant.MerchantWithdrawApplicationRecordRequest;
 import com.xiliulou.electricity.request.merchant.MerchantWithdrawApplicationRequest;
@@ -32,7 +33,7 @@ public interface MerchantWithdrawApplicationRecordService {
     
     Integer updateApplicationRecordStatusByBatchNo(Integer status, String batchNo, Integer tenantId);
     
-    List<MerchantWithdrawApplicationRecord> selectListByBatchNo(String batchNo, Integer tenantId);
+    List<MerchantWithdrawApplicationRecordBO> selectListByBatchNo(String batchNo, Integer tenantId);
     
     Integer updateMerchantWithdrawRecordStatus(MerchantWithdrawApplicationRecord merchantWithdrawApplicationRecord);
     
