@@ -96,7 +96,7 @@ public class EleHardwareFaultMsgServiceImpl implements EleHardwareFaultMsgServic
     @Override
     @Slave
     public R transferListPage(List<EleHardwareFaultMsg> eleHardwareFaultMsgList, EleHardwareFaultMsgPageRequest request) {
-        Integer type = FailureAlarmTypeEnum.FAILURE_ALARM_TYPE_WARING.getCode();
+        Integer type = FailureAlarmTypeEnum.FAILURE_ALARM_TYPE_FAILURE.getCode();
         
         List<EleHardwareFaultMsgPageVo> resultList = new ArrayList<>();
         Integer finalType = type;
