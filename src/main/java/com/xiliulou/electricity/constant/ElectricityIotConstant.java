@@ -361,6 +361,7 @@ public class ElectricityIotConstant {
      */
     public static final String HARDWARE_FAILURE_WARN_MSG = "hardware_failure_warn_msg";
     public static final String HARDWARE_FAILURE_WARN_MSG_ACK = "hardware_failure_warn_msg_ack";
+    public static final String HARDWARE_FAULT_WARN_MSG = "hardware_fault_warn_msg";
     public static final String HARDWARE_FAULT_WARN_MSG_ACK = "hardware_fault_warn_msg_ack";
     
     
@@ -605,6 +606,13 @@ public class ElectricityIotConstant {
     
         COMMAND_HANDLER_MAPS.put(HARDWARE_FAILURE_WARN_MSG, HARDWARE_FAILURE_WARN_MSG_HANDLER);
         COMMAND_HANDLER_MAPS.put(HARDWARE_FAILURE_WARN_MSG_ACK, HARDWARE_FAILURE_WARN_MSG_HANDLER);
+    
+        /**
+         * 柜机故障告警上报
+         */
+    
+        COMMAND_HANDLER_MAPS.put(HARDWARE_FAULT_WARN_MSG, HARDWARE_FAULT_MSG_HANDLER);
+        COMMAND_HANDLER_MAPS.put(HARDWARE_FAULT_WARN_MSG_ACK, HARDWARE_FAULT_MSG_HANDLER);
     
         /**
          * 离线换电密码设置

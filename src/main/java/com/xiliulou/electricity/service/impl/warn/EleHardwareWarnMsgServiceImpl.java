@@ -186,7 +186,6 @@ public class EleHardwareWarnMsgServiceImpl implements EleHardwareWarnMsgService 
         // 检测数据
         Triple<Boolean, String, Object> triple = checkAndInitQuery(request, queryModel, TimeConstant.ONE_MONTH);
         if (!triple.getLeft()) {
-            log.error("warn msg export check error info={}", triple.getRight());
             throw new CustomBusinessException((String) triple.getRight());
         }
         
@@ -299,7 +298,6 @@ public class EleHardwareWarnMsgServiceImpl implements EleHardwareWarnMsgService 
     public Triple<Boolean, String, Object> proportion(EleHardwareWarnMsgPageRequest request) {
         Triple<Boolean, String, Object> triple = checkParams(request);
         if (!triple.getLeft()) {
-            log.error("warn proportion params is error={}", triple.getRight());
             return triple;
         }
     
@@ -508,7 +506,6 @@ public class EleHardwareWarnMsgServiceImpl implements EleHardwareWarnMsgService 
                     .tenantVisible(request.getTenantVisible()).status(request.getStatus()).build();
             List<FailureAlarm> failureAlarmList = failureAlarmService.listByParams(failureAlarmQueryModel);
             if (ObjectUtils.isEmpty(failureAlarmList)) {
-                log.error("failure warn query alarm is empty");
                 return Triple.of(true, null, Collections.emptyList());
             }
             
