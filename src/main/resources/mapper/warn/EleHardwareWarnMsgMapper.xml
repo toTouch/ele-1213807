@@ -41,7 +41,8 @@
         t.recover_time,
         t.report_time,
         t.alarm_time,
-        t.create_time
+        t.create_time,
+        t.cabinet_sn
         FROM
         t_ele_hardware_warn_msg t
         <include refid="filter"/>

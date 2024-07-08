@@ -85,6 +85,11 @@ public class EleHardwareFaultMsg {
      * 创建时间
      */
     private String createTime;
+    
+    /**
+     * 柜机编号
+     */
+    private String cabinetSn;
 
   
     

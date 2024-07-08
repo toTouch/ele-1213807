@@ -35,7 +35,8 @@
             dev_id,
             alarm_desc,
             report_time,
-            create_time
+            create_time,
+            cabinet_sn
         FROM
         t_ele_hardware_fault_msg
         <include refid="filter"/>

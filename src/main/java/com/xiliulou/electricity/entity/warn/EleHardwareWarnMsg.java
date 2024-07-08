@@ -119,6 +119,11 @@ public class EleHardwareWarnMsg {
     
     private Long updateTime;
     
+    /**
+     * 柜机编号
+     */
+    private String cabinetSn;
+    
     
     /**
      * 告警标识
