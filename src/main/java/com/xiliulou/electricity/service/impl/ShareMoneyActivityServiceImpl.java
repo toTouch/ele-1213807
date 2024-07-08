@@ -449,11 +449,10 @@ public class ShareMoneyActivityServiceImpl implements ShareMoneyActivityService 
         
         ShareMoneyActivityVO activityVO = new ShareMoneyActivityVO();
         BeanUtils.copyProperties(shareMoneyActivity, activityVO);
-    
+        
         Integer franchiseeId = shareMoneyActivity.getFranchiseeId();
         if (Objects.nonNull(franchiseeId)) {
-            activityVO.setFranchiseeName(
-                    Optional.ofNullable(franchiseeService.queryByIdFromCache(franchiseeId.longValue())).map(Franchisee::getName).orElse(StringUtils.EMPTY));
+            activityVO.setFranchiseeName(Optional.ofNullable(franchiseeService.queryByIdFromCache(franchiseeId.longValue())).map(Franchisee::getName).orElse(StringUtils.EMPTY));
         }
         
         return R.ok(shareMoneyActivity);
@@ -540,7 +539,7 @@ public class ShareMoneyActivityServiceImpl implements ShareMoneyActivityService 
                 shareMoneyActivityVO.setBatteryPackages(getAllBatteryPackages(tenantId));
             }
         }
-    
+        
         Integer franchiseeId = shareMoneyActivity.getFranchiseeId();
         if (Objects.nonNull(franchiseeId)) {
             shareMoneyActivityVO.setFranchiseeName(
@@ -614,14 +613,13 @@ public class ShareMoneyActivityServiceImpl implements ShareMoneyActivityService 
         }
         
         //邀请返现活动
-        
-        ShareMoneyActivity shareMoneyActivity = this.queryOnlineActivity(tenantId, userInfo.getFranchiseeId().intValue());
+        ShareMoneyActivity shareMoneyActivity = this.queryOnlineActivity(tenantId, Objects.isNull(userInfo.getFranchiseeId()) ? null : userInfo.getFranchiseeId().intValue());
         if (Objects.isNull(shareMoneyActivity)) {
             map.put("shareMoneyActivity", 1);
         }
         
         //邀请活动
-        ShareActivity shareActivity = shareActivityService.queryOnlineActivity(tenantId, userInfo.getFranchiseeId().intValue());
+        ShareActivity shareActivity = shareActivityService.queryOnlineActivity(tenantId, Objects.isNull(userInfo.getFranchiseeId()) ? null : userInfo.getFranchiseeId().intValue());
         if (Objects.isNull(shareActivity)) {
             map.put("shareActivity", 1);
         }

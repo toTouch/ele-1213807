@@ -121,14 +121,19 @@
     
     <select id="selectOnlineActivity" resultType="com.xiliulou.electricity.entity.ShareMoneyActivity">
         select
-        id, name, type, status,  description, del_flg, create_time,
+        id, name, type, status, description, del_flg, create_time,
         update_time, uid,user_name,franchisee_id,hours,minutes,money, invitation_criteria
         from t_share_money_activity
         <where>
             tenant_id = #{tenantId} and status = 1
-            <if test="franchiseeId != null and franchiseeId != 0">
-                and franchisee_id = #{franchiseeId}
-            </if>
+            <choose>
+                <when test="franchiseeId != null and franchiseeId != 0">
+                    and franchisee_id = #{franchiseeId}
+                </when>
+                <otherwise>
+                    and franchisee_id is not null
+                </otherwise>
+            </choose>
         </where>
     </select>
 

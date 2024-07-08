@@ -91,9 +91,14 @@
         from t_share_activity
         <where>
             tenant_id = #{tenantId} and status = 1
-            <if test="franchiseeId != null and franchiseeId != 0">
-                and franchisee_id = #{franchiseeId}
-            </if>
+            <choose>
+                <when test="franchiseeId != null and franchiseeId != 0">
+                    and franchisee_id = #{franchiseeId}
+                </when>
+                <otherwise>
+                    and franchisee_id is not null
+                </otherwise>
+            </choose>
         </where>
     </select>
 </mapper>
