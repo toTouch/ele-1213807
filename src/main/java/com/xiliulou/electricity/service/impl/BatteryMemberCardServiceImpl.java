@@ -971,8 +971,9 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
             Franchisee franchisee = franchiseeService.queryByIdFromCache(item.getFranchiseeId());
             batteryMemberCardVO.setFranchiseeName(Objects.nonNull(franchisee) ? franchisee.getName() : "");
             
-            if (Objects.nonNull(franchisee) && Objects.equals(franchisee.getModelType(), Franchisee.NEW_MODEL_TYPE)) {
-                batteryMemberCardVO.setBatteryModels(batteryModelService.selectShortBatteryType(memberCardBatteryTypeService.selectBatteryTypeByMid(item.getId()), item.getTenantId()));
+            List<String> batteryTypeByMid = memberCardBatteryTypeService.selectBatteryTypeByMid(item.getId());
+            if (Objects.nonNull(franchisee) && Objects.equals(franchisee.getModelType(), Franchisee.NEW_MODEL_TYPE) && CollectionUtils.isNotEmpty(batteryTypeByMid)) {
+                batteryMemberCardVO.setBatteryModels(batteryModelService.selectShortBatteryType(batteryTypeByMid, item.getTenantId()));
             }
             
             if (Objects.nonNull(item.getCouponId())) {
