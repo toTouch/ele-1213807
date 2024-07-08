@@ -72,9 +72,9 @@ public class EleHardwareFaultMsgBusinessServiceImpl implements EleHardwareFaultM
             return R.ok(Collections.emptyList());
         }
     
-        List<EleHardwareFaultMsg> eleHardwareFaultMsgList = eleHardwareFaultMsgService.listByRequest(request, queryModel);
+        List<EleHardwareFaultMsg> eleHardwareFaultMsgList = eleHardwareFaultMsgService.listByPage(request, queryModel);
     
-        return eleHardwareFaultMsgService.listByPage(eleHardwareFaultMsgList, request);
+        return eleHardwareFaultMsgService.transferListPage(eleHardwareFaultMsgList, request);
     }
     
     @Override
@@ -99,7 +99,6 @@ public class EleHardwareFaultMsgBusinessServiceImpl implements EleHardwareFaultM
         // 检测数据
         Triple<Boolean, String, Object> triple = eleHardwareFaultMsgService.checkAndInitQuery(request, queryModel, TimeConstant.ONE_MONTH);
         if (!triple.getLeft()) {
-            log.error("warn msg export check error info={}", triple.getRight());
             throw new CustomBusinessException((String) triple.getRight());
         }
     
@@ -112,7 +111,6 @@ public class EleHardwareFaultMsgBusinessServiceImpl implements EleHardwareFaultM
     public Triple<Boolean, String, Object> proportion(EleHardwareFaultMsgPageRequest request) {
         Triple<Boolean, String, Object> triple = checkParams(request);
         if (!triple.getLeft()) {
-            log.error("failure warn proportion params is error={}", triple.getRight());
             return triple;
         }
     

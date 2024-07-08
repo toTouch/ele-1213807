@@ -95,7 +95,7 @@ public class EleHardwareFaultMsgServiceImpl implements EleHardwareFaultMsgServic
     
     @Override
     @Slave
-    public R listByPage(List<EleHardwareFaultMsg> eleHardwareFaultMsgList, EleHardwareFaultMsgPageRequest request) {
+    public R transferListPage(List<EleHardwareFaultMsg> eleHardwareFaultMsgList, EleHardwareFaultMsgPageRequest request) {
         Integer type = FailureAlarmTypeEnum.FAILURE_ALARM_TYPE_WARING.getCode();
         
         List<EleHardwareFaultMsgPageVo> resultList = new ArrayList<>();
@@ -154,7 +154,7 @@ public class EleHardwareFaultMsgServiceImpl implements EleHardwareFaultMsgServic
     @Override
     @Slave
     public R superExportPage(EleHardwareFaultMsgPageRequest request, List<FaultMsgExcelVo> list) {
-        Integer type = FailureAlarmTypeEnum.FAILURE_ALARM_TYPE_WARING.getCode();
+        Integer type = FailureAlarmTypeEnum.FAILURE_ALARM_TYPE_FAILURE.getCode();
         
         if (ObjectUtils.isNotEmpty(list)) {
             Map<String, Map<String, String>> map = new HashMap<>();
@@ -269,7 +269,7 @@ public class EleHardwareFaultMsgServiceImpl implements EleHardwareFaultMsgServic
     
     @Override
     @DS(value = "clickhouse")
-    public List<EleHardwareFaultMsg> listByRequest(EleHardwareFaultMsgPageRequest request, FaultMsgPageQueryModel queryModel) {
+    public List<EleHardwareFaultMsg> listByPage(EleHardwareFaultMsgPageRequest request, FaultMsgPageQueryModel queryModel) {
         return eleHardwareFaultMsgMapper.selectListByPage(queryModel);
     }
     

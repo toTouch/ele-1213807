@@ -25,7 +25,7 @@ public interface EleHardwareFaultMsgService {
     
     List<EleHardwareFailureWarnMsgVo> list(FailureAlarmTaskQueryRequest request);
     
-    R listByPage(List<EleHardwareFaultMsg> eleHardwareFaultMsgList, EleHardwareFaultMsgPageRequest request);
+    R transferListPage(List<EleHardwareFaultMsg> eleHardwareFaultMsgList, EleHardwareFaultMsgPageRequest request);
     
     R countTotal(FaultMsgPageQueryModel queryModel);
     
@@ -33,7 +33,7 @@ public interface EleHardwareFaultMsgService {
     
     Triple<Boolean, String, Object> checkAndInitQuery(EleHardwareFaultMsgPageRequest request, FaultMsgPageQueryModel queryModel, int daySize);
     
-    List<EleHardwareFaultMsg>  listByRequest(EleHardwareFaultMsgPageRequest request, FaultMsgPageQueryModel queryModel);
+    List<EleHardwareFaultMsg> listByPage(EleHardwareFaultMsgPageRequest request, FaultMsgPageQueryModel queryModel);
     
     List<FaultMsgExcelVo> listExportData(FaultMsgPageQueryModel queryModel, Triple<Boolean, String, Object> triple);
     
