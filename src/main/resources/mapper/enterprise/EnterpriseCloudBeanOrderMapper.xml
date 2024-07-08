@@ -30,74 +30,93 @@
 
     <select id="selectByPage" resultType="com.xiliulou.electricity.entity.enterprise.EnterpriseCloudBeanOrder">
         select
-          id, enterprise_id, uid, operate_uid ,pay_amount, order_id, status, pay_type, type, bean_amount, franchisee_id, tenant_id, create_time, update_time, remark
-        from t_enterprise_cloud_bean_order
-        where status=1
+            o.id,
+            o.enterprise_id,
+            o.uid,
+            o.operate_uid,
+            o.pay_amount,
+            o.order_id,
+            o.STATUS,
+            o.pay_type,
+            o.type,
+            o.bean_amount,
+            o.franchisee_id,
+            o.tenant_id,
+            o.create_time,
+            o.update_time,
+            o.remark
+        from t_enterprise_cloud_bean_order o
+        LEFT JOIN t_enterprise_info e ON e.id = o.enterprise_id
+        where o.status=1
+          and e.del_flag = 0
         <if test="orderId != null and orderId != ''">
-            and order_id = #{orderId},
+            and o.order_id = #{orderId},
         </if>
         <if test="enterpriseId != null">
-            and enterprise_id = #{enterpriseId}
+            and o.enterprise_id = #{enterpriseId}
         </if>
         <if test="franchiseeId != null">
-            and franchisee_id = #{franchiseeId}
+            and o.franchisee_id = #{franchiseeId}
         </if>
         <if test="uid != null">
-            and uid = #{uid}
+            and o.uid = #{uid}
         </if>
         <if test="operateUid != null">
-            and operate_uid = #{operateUid}
+            and o.operate_uid = #{operateUid}
         </if>
         <if test="type != null">
-            and type = #{type}
+            and o.type = #{type}
         </if>
         <if test="tenantId != null">
-            and tenant_id = #{tenantId}
+            and o.tenant_id = #{tenantId}
         </if>
         <if test="startTime != null">
-            and create_time >= #{startTime}
+            and o.create_time >= #{startTime}
         </if>
         <if test="endTime != null">
-            and create_time &lt;= #{endTime}
+            and o.create_time &lt;= #{endTime}
         </if>
         <if test="franchiseeIds != null and franchiseeIds.size()>0">
-            and franchisee_id in
+            and o.franchisee_id in
             <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
                 #{id}
             </foreach>
         </if>
-        order by id desc
+        order by o.id desc
         limit #{offset}, #{size}
     </select>
 
     <select id="selectByPageCount" resultType="int">
         select
         count(1)
-        from t_enterprise_cloud_bean_order
-        where status=1
+        from t_enterprise_cloud_bean_order o
+        LEFT JOIN t_enterprise_info e ON e.id = o.enterprise_id
+        where
+            o.status=1
+        and e.del_flag = 0
         <if test="orderId != null and orderId != ''">
-            order_id = #{orderId},
+            o.order_id = #{orderId},
         </if>
         <if test="enterpriseId != null">
-            and enterprise_id = #{enterpriseId}
+            and o.enterprise_id = #{enterpriseId}
         </if>
         <if test="franchiseeId != null">
-            and franchisee_id = #{franchiseeId}
+            and o.franchisee_id = #{franchiseeId}
         </if>
         <if test="uid != null">
-            and uid = #{uid}
+            and o.uid = #{uid}
         </if>
         <if test="operateUid != null">
-            and operate_uid = #{operateUid}
+            and o.operate_uid = #{operateUid}
         </if>
         <if test="type != null">
-            and type = #{type}
+            and o.type = #{type}
         </if>
         <if test="tenantId != null">
-            and tenant_id = #{tenantId}
+            and o.tenant_id = #{tenantId}
         </if>
         <if test="franchiseeIds != null and franchiseeIds.size()>0">
-            and franchisee_id in
+            and o.franchisee_id in
             <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
                 #{id}
             </foreach>
