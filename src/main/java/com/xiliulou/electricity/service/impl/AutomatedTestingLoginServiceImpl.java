@@ -66,9 +66,9 @@ public class AutomatedTestingLoginServiceImpl implements AutomatedTestingLoginSe
         
         String clientId = request.getHeader(TokenConstant.SINGLE_HEADER_TOKEN_CLIENT_ID_KEY);
     
-        String tenantId = request.getHeader("testing_tenantid");
+        Integer tenantId = loginRequest.getTenantId();
         
-        User user = userService.queryByUserPhoneFromDB(loginRequest.getUserPhone(), User.TYPE_USER_NORMAL_WX_PRO, Integer.parseInt(tenantId));
+        User user = userService.queryByUserPhoneFromDB(loginRequest.getUserPhone(), User.TYPE_USER_NORMAL_WX_PRO, tenantId);
         
         
         if (!customPasswordEncoder.matches(this.decryptPassword(loginRequest.getPassword()), user.getLoginPwd())) {

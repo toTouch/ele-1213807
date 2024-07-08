@@ -19,5 +19,16 @@ public class AutomatedTestingLoginRequest {
     @NotBlank(message = "password不能为空")
     private String password;
     
+    
+    
+    /**
+     * tenantId
+     */
+    @NotBlank(message = "tenantId不能为空")
+    private Integer tenantId;
+    
+    
+    
+    
 }
 
