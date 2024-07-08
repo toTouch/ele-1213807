@@ -112,7 +112,9 @@ public class JsonAdminEnterpriseCloudBeanOrderController extends BaseController 
             @RequestParam(value = "type", required = false) Integer type,
             @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
             @RequestParam(value = "operateUid", required = false) Long operateUid,
-            @RequestParam(value = "enterpriseId", required = false) Long enterpriseId) {
+            @RequestParam(value = "enterpriseId", required = false) Long enterpriseId,
+            @RequestParam(value = "startTime", required = false) Long startTime,
+            @RequestParam(value = "endTime", required = false) Long endTime) {
         
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
@@ -133,6 +135,8 @@ public class JsonAdminEnterpriseCloudBeanOrderController extends BaseController 
                 .type(type)
                 .franchiseeId(franchiseeId)
                 .tenantId(TenantContextHolder.getTenantId())
+                .startTime(startTime)
+                .endTime(endTime)
                 .build();
         
         return R.ok(enterpriseCloudBeanOrderService.selectTotalCloudBean(query));
