@@ -3,6 +3,7 @@ package com.xiliulou.electricity.query.merchant;
 import lombok.Data;
 
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 
 @Data
 public class AutomatedTestingLoginRequest {
@@ -24,7 +25,7 @@ public class AutomatedTestingLoginRequest {
     /**
      * tenantId
      */
-    @NotBlank(message = "tenantId不能为空")
+    @NotNull(message = "tenantId不能为空")
     private Integer tenantId;
     
     
