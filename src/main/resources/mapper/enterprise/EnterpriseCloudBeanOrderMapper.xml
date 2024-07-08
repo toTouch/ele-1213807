@@ -50,7 +50,7 @@
         where o.status=1
           and e.del_flag = 0
         <if test="orderId != null and orderId != ''">
-            and o.order_id = #{orderId},
+            and o.order_id = #{orderId}
         </if>
         <if test="enterpriseId != null">
             and o.enterprise_id = #{enterpriseId}
@@ -95,7 +95,7 @@
             o.status=1
         and e.del_flag = 0
         <if test="orderId != null and orderId != ''">
-            o.order_id = #{orderId},
+            o.order_id = #{orderId}
         </if>
         <if test="enterpriseId != null">
             and o.enterprise_id = #{enterpriseId}
