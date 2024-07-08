@@ -951,8 +951,11 @@
         <if test="query.physicsStatus != null">
             and teb.physics_status =#{query.physicsStatus}
         </if>
-        <if test="query.businessStatus != null">
-            and teb.business_status =#{query.businessStatus}
+        <if test="query.businessStatus != null and query.businessStatus.size()>0">
+            and teb.business_status in
+            <foreach collection="query.businessStatus" item="item" index="index" open="(" close=")" separator=",">
+                #{item}
+            </foreach>
         </if>
     </select>
     
