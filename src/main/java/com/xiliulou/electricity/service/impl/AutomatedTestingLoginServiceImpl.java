@@ -8,6 +8,7 @@ import cn.hutool.core.codec.Base64;
 import cn.hutool.crypto.Mode;
 import cn.hutool.crypto.Padding;
 import cn.hutool.crypto.symmetric.AES;
+import com.aliyuncs.auth.AuthConstant;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.UserOauthBind;
@@ -52,16 +53,14 @@ public class AutomatedTestingLoginServiceImpl implements AutomatedTestingLoginSe
     @Autowired
     private UserService userService;
     
-    @Autowired
-    private UserOauthBindService userOauthBindService;
     
-    @Value("automated-testing.tenantId")
-    private Integer tenantId;
+    @Value("${automated-testing.tenantId}")
+    private String tenantId;
     
     @Autowired
     private JwtTokenManager jwtTokenManager;
     
-    String ENCODE_PASSWORD_KEY = "xiliu&lo@u%12345";
+   static String ENCODE_PASSWORD_KEY = "xiliu&lo@u%12345";
     
     
     @Override
@@ -69,17 +68,16 @@ public class AutomatedTestingLoginServiceImpl implements AutomatedTestingLoginSe
         
         String clientId = request.getHeader(TokenConstant.SINGLE_HEADER_TOKEN_CLIENT_ID_KEY);
         
-        User user = userService.queryByUserPhoneFromDB(loginRequest.getUserPhone(), User.TYPE_USER_NORMAL_WX_PRO, tenantId);
+        User user = userService.queryByUserPhoneFromDB(loginRequest.getUserPhone(), User.TYPE_USER_NORMAL_WX_PRO, Integer.parseInt(tenantId));
         
+        
+        if (!customPasswordEncoder.matches(this.decryptPassword(loginRequest.getPassword()), user.getLoginPwd())) {
+            throw new AuthenticationServiceException("登录信息异常，请联系客服处理");
+        }
+    
         String token = jwtTokenManager
                 .createToken(clientId, user.getUserType(), new TokenUser(user.getUid(), user.getPhone(), user.getName(), user.getUserType(), user.getTenantId()),
                         System.currentTimeMillis());
-        
-        String encodePassword = customPasswordEncoder.encode(this.decryptPassword(loginRequest.getPasswrod()));
-        
-        if (!customPasswordEncoder.matches(encodePassword, user.getLoginPwd())) {
-            throw new AuthenticationServiceException("登录信息异常，请联系客服处理");
-        }
         
         SecurityUserVo vo = SecurityUserVo.builder().phone(user.getPhone()).uid(user.getUid()).username(user.getName()).userType(user.getUserType()).token(token)
                 .tenantId(user.getTenantId()).build();
@@ -87,7 +85,7 @@ public class AutomatedTestingLoginServiceImpl implements AutomatedTestingLoginSe
     }
     
     
-    public String decryptPassword(String encryptPassword) {
+    public static String decryptPassword(String encryptPassword) {
         AES aes = new AES(Mode.CBC, Padding.ZeroPadding, new SecretKeySpec(ENCODE_PASSWORD_KEY.getBytes(), "AES"), new IvParameterSpec(ENCODE_PASSWORD_KEY.getBytes()));
         return new String(aes.decrypt(Base64.decode(encryptPassword.getBytes(StandardCharsets.UTF_8))), StandardCharsets.UTF_8);
     }
