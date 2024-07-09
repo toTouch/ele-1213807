@@ -143,7 +143,7 @@
         id, name
         from t_battery_member_card
         <where>
-            business_type=0
+            business_type in (0, 2)
             <if test="franchiseeId != null">
                 and franchisee_id = #{franchiseeId}
             </if>
