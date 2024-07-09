@@ -232,12 +232,12 @@
     <select id="selectListShortBatteryTypeByMemberIds" resultMap="BatteryModelDTOMap">
         select tmcbt.mid, tbm.battery_v_short
             from t_battery_model tbm inner join t_member_card_battery_type tmcbt on tbm.battery_type = tmcbt.battery_type
-        where tmcbt.mid EXISTS
+        where tmcbt.mid in
         <foreach collection="memberCardIds" item="memberCardId" index="index" open="(" separator="," close=")">
             #{memberCardId}
         </foreach>
         <if test="tenantId != null">
-            and tenant_id = #{tenantId}
+            and tbm.tenant_id = #{tenantId}
         </if>
     </select>
 </mapper>
