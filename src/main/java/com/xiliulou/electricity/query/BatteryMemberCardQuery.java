@@ -152,4 +152,9 @@ public class BatteryMemberCardQuery {
      * 分组类型，0-系统分组，1-用户分组。
      */
     private Integer groupType;
+    
+    /**
+     * 是否需要查询企业套餐数据，0-否，1-是
+     */
+    private Integer catchEnterprise;
 }
