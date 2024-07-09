@@ -40,7 +40,7 @@ public class EleHardwareFaultMsgController {
      */
     @GetMapping("/admin/super/fault/pageCount")
     public R superPageCount(@RequestParam(value = "sn", required = false) String sn, @RequestParam(value = "tenantId", required = false) Integer tenantId,
-             @RequestParam(value = "signalId", required = false) Integer signalId, @RequestParam(value = "alarmStartTime", required = true) Long alarmStartTime,
+             @RequestParam(value = "signalId", required = false) String signalId, @RequestParam(value = "alarmStartTime", required = true) Long alarmStartTime,
             @RequestParam(value = "alarmEndTime", required = true) Long alarmEndTime, @RequestParam(value = "alarmFlag", required = false) Integer alarmFlag, @RequestParam(value = "alarmId", required = false) String alarmId,
             @RequestParam(value = "noLimitSignalId", required = false) Integer noLimitSignalId, @RequestParam(value = "cabinetId", required = false) Integer cabinetId) {
         TokenUser user = SecurityUtils.getUserInfo();
@@ -77,7 +77,7 @@ public class EleHardwareFaultMsgController {
      */
     @GetMapping("/admin/super/fault/page")
     public R superPage(@RequestParam("size") long size, @RequestParam("offset") long offset, @RequestParam(value = "sn", required = false) String sn, @RequestParam(value = "tenantId", required = false) Integer tenantId,
-            @RequestParam(value = "signalId", required = false) Integer signalId, @RequestParam(value = "alarmStartTime", required = true) Long alarmStartTime,
+            @RequestParam(value = "signalId", required = false) String signalId, @RequestParam(value = "alarmStartTime", required = true) Long alarmStartTime,
             @RequestParam(value = "alarmEndTime", required = true) Long alarmEndTime, @RequestParam(value = "alarmFlag", required = false) Integer alarmFlag, @RequestParam(value = "alarmId", required = false) String alarmId,
             @RequestParam(value = "noLimitSignalId", required = false) Integer noLimitSignalId, @RequestParam(value = "cabinetId", required = false) Integer cabinetId) {
         if (size < 0 || size > 50) {
@@ -123,7 +123,7 @@ public class EleHardwareFaultMsgController {
      */
     @GetMapping("/admin/super/fault/export/page")
     public R superExportPage(@RequestParam("size") long size, @RequestParam(value = "offset", required = true) long offset, @RequestParam(value = "sn", required = false) String sn, @RequestParam(value = "tenantId", required = false) Integer tenantId,
-            @RequestParam(value = "signalId", required = false) Integer signalId, @RequestParam(value = "alarmStartTime", required = true) Long alarmStartTime,
+            @RequestParam(value = "signalId", required = false) String signalId, @RequestParam(value = "alarmStartTime", required = true) Long alarmStartTime,
             @RequestParam(value = "alarmEndTime", required = true) Long alarmEndTime, @RequestParam(value = "alarmFlag", required = false) Integer alarmFlag, @RequestParam(value = "alarmId", required = false) String alarmId,
             @RequestParam(value = "noLimitSignalId", required = false) Integer noLimitSignalId, @RequestParam(value = "cabinetId", required = false) Integer cabinetId) {
         if (size > 2000) {
@@ -174,7 +174,7 @@ public class EleHardwareFaultMsgController {
     @GetMapping("/admin/fault/export/page")
     public R exportPage(@RequestParam("size") long size, @RequestParam(value = "offset", required = true) long offset, @RequestParam(value = "sn", required = false) String sn,
             @RequestParam(value = "alarmId", required = false) String alarmId,
-            @RequestParam(value = "signalId", required = false) Integer signalId, @RequestParam(value = "alarmStartTime", required = true) Long alarmStartTime,
+            @RequestParam(value = "signalId", required = false) String signalId, @RequestParam(value = "alarmStartTime", required = true) Long alarmStartTime,
             @RequestParam(value = "alarmEndTime", required = true) Long alarmEndTime, @RequestParam(value = "alarmFlag", required = false) Integer alarmFlag) {
         if (size > 2000) {
             size = 2000L;

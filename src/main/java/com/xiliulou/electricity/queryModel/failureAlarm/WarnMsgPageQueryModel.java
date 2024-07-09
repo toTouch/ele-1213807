@@ -45,7 +45,7 @@ public class WarnMsgPageQueryModel {
     /**
      * 故障名称
      */
-    private Integer signalId;
+    private String signalId;
     
     /**
      * 告警/告警开始时间
