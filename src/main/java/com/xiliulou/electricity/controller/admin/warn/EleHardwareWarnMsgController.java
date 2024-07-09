@@ -45,6 +45,7 @@ public class EleHardwareWarnMsgController {
     @GetMapping("/admin/warn/page")
     public R page(@RequestParam("size") long size, @RequestParam("offset") long offset, @RequestParam(value = "sn", required = false) String sn,
             @RequestParam(value = "alarmId", required = false) String alarmId,
+            @RequestParam(value = "deviceType", required = false) Integer deviceType, @RequestParam(value = "grade", required = false) Integer grade,
             @RequestParam(value = "signalId", required = false) Integer signalId, @RequestParam(value = "alarmStartTime", required = true) Long alarmStartTime,
             @RequestParam(value = "alarmEndTime", required = true) Long alarmEndTime, @RequestParam(value = "alarmFlag", required = false) Integer alarmFlag) {
         if (size < 0 || size > 50) {
@@ -65,7 +66,7 @@ public class EleHardwareWarnMsgController {
         
         EleHardwareWarnMsgPageRequest request = EleHardwareWarnMsgPageRequest.builder().type(EleHardwareFailureWarnMsg.WARN).sn(sn).tenantId(tenantId)
                 .alarmId(alarmId).signalId(signalId).alarmStartTime(alarmStartTime).alarmEndTime(alarmEndTime).alarmFlag(alarmFlag).tenantVisible(tenantVisible)
-                .status(FailureAlarm.enable).size(size).offset(offset).build();
+                .status(FailureAlarm.enable).deviceType(deviceType).grade(grade).size(size).offset(offset).build();
         
         return eleHardwareWarnMsgService.listByPage(request);
     }
@@ -79,6 +80,7 @@ public class EleHardwareWarnMsgController {
     @GetMapping("/admin/warn/pageCount")
     public R pageCount(@RequestParam(value = "sn", required = false) String sn, @RequestParam(value = "alarmId", required = false) String alarmId,
             @RequestParam(value = "signalId", required = false) Integer signalId,
+            @RequestParam(value = "deviceType", required = false) Integer deviceType, @RequestParam(value = "grade", required = false) Integer grade,
             @RequestParam(value = "alarmStartTime", required = true) Long alarmStartTime, @RequestParam(value = "alarmEndTime", required = true) Long alarmEndTime,
             @RequestParam(value = "alarmFlag", required = false) Integer alarmFlag) {
         TokenUser user = SecurityUtils.getUserInfo();
@@ -91,7 +93,7 @@ public class EleHardwareWarnMsgController {
         
         EleHardwareWarnMsgPageRequest request = EleHardwareWarnMsgPageRequest.builder().type(EleHardwareFailureWarnMsg.WARN).sn(sn).tenantId(tenantId)
                 .alarmId(alarmId).signalId(signalId).alarmStartTime(alarmStartTime).alarmEndTime(alarmEndTime).alarmFlag(alarmFlag).tenantVisible(tenantVisible)
-                .status(FailureAlarm.enable).build();
+                .status(FailureAlarm.enable).deviceType(deviceType).grade(grade).build();
         return eleHardwareWarnMsgService.countTotal(request);
     }
     
