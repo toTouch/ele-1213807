@@ -133,7 +133,7 @@ public interface UserInfoService extends IService<UserInfo> {
     
     List<UserInfo> queryByIdNumber(String value);
     
-    Integer verifyIdNumberExist(String idNumber, Integer tenantId);
+    Integer existsByIdNumber(String idNumber, Integer tenantId);
     
     R queryDetailsBasicInfo(Long uid);
     

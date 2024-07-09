@@ -73,7 +73,7 @@ public interface UserInfoMapper extends BaseMapper<UserInfo> {
     
     List<UserInfo> queryByIdNumber(@Param("idNumber") String idNumber, @Param("tenantId") Integer tenantId);
 
-    Integer verifyIdNumberExist(@Param("idNumber") String idNumber, @Param("tenantId") Integer tenantId);
+    Integer existsByIdNumber(@Param("idNumber") String idNumber, @Param("tenantId") Integer tenantId);
     
     UserInfo queryDetailsUserInfo(@Param("uid") Long uid, @Param("tenantId") Integer tenantId);
     

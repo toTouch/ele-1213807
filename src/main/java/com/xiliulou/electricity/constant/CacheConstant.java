@@ -473,14 +473,21 @@ public interface CacheConstant {
     String CACHE_BT_ATTR = "bt_attr:";
     
     /**
+     * 用户端提交人脸核身信息缓存锁
+     */
+    String ELE_CACHE_ALIPAY_CERTIFY_INFO_LOCK_KEY = "alipay_certify_info_lock_key:";
+    
+    /**
      * 人脸核身token缓存锁
      */
     String ELE_CACHE_FACEID_TOKEN_LOCK_KEY = "faceid_token_lock_key:";
+    String ELE_CACHE_ALIPAY_CERTIFY_LOCK_KEY = "alipay_certify_lock_key:";
     
     /**
      * 人脸核身结果缓存锁
      */
     String ELE_CACHE_FACEID_RESULT_LOCK_KEY = "faceid_result_lock_key:";
+    String ELE_CACHE_ALIPAY_CERTIFY_RESULT_LOCK_KEY = "alipay_certify_result_lock_key:";
     String CACHE_PXZ_CONFIG = "cache_pxz_config:";
     
     /**

@@ -1869,8 +1869,8 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     
     @Slave
     @Override
-    public Integer verifyIdNumberExist(String idNumber, Integer tenantId) {
-        return userInfoMapper.verifyIdNumberExist(idNumber, tenantId);
+    public Integer existsByIdNumber(String idNumber, Integer tenantId) {
+        return userInfoMapper.existsByIdNumber(idNumber, tenantId);
     }
     
     @Slave

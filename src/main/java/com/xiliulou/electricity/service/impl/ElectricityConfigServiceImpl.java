@@ -11,6 +11,7 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.EleEsignConstant;
 import com.xiliulou.electricity.dto.FranchiseeBatteryModelDTO;
+import com.xiliulou.electricity.entity.AlipayAppConfig;
 import com.xiliulou.electricity.entity.EleEsignConfig;
 import com.xiliulou.electricity.entity.ElectricityConfig;
 import com.xiliulou.electricity.entity.ElectricityPayParams;
@@ -22,6 +23,7 @@ import com.xiliulou.electricity.enums.YesNoEnum;
 import com.xiliulou.electricity.mapper.ElectricityConfigMapper;
 import com.xiliulou.electricity.query.ElectricityConfigAddAndUpdateQuery;
 import com.xiliulou.electricity.query.ElectricityConfigWxCustomerQuery;
+import com.xiliulou.electricity.service.AlipayAppConfigService;
 import com.xiliulou.electricity.service.EleEsignConfigService;
 import com.xiliulou.electricity.service.ElectricityCarModelService;
 import com.xiliulou.electricity.service.ElectricityConfigService;
@@ -38,6 +40,7 @@ import com.xiliulou.electricity.utils.OperateRecordUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.TenantConfigVO;
 import com.xiliulou.security.bean.TokenUser;
+import com.xiliulou.security.constant.TokenConstant;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -98,7 +101,8 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
     @Autowired
     EleEsignConfigService eleEsignConfigService;
     
-    
+    @Autowired
+    AlipayAppConfigService alipayAppConfigService;
     
     @Autowired
     OperateRecordUtil operateRecordUtil;
@@ -375,7 +379,47 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
         
         return tenantConfigVO;
     }
-
+    
+    @Override
+    public TenantConfigVO queryTenantConfigByAppId(String appId, String appType) {
+        TenantConfigVO tenantConfigVO = new TenantConfigVO();
+    
+        Integer tenantId = null;
+        if (TokenConstant.THIRD_AUTH_WX_PRO.equals(appType)) {
+            ElectricityPayParams electricityPayParams = electricityPayParamsService.selectTenantId(appId);
+            if (Objects.isNull(electricityPayParams)) {
+                log.warn("ELE WARN! not found tenant,appId={}", appId);
+                return tenantConfigVO;
+            }
+        
+            tenantId = electricityPayParams.getTenantId();
+        }
+    
+        if (TokenConstant.THIRD_AUTH_ALI_PAY.equals(appType)) {
+            AlipayAppConfig alipayAppConfig = alipayAppConfigService.queryByAppId(appId);
+            if (Objects.isNull(alipayAppConfig)) {
+                log.warn("ELE WARN! not found alipayAppConfig,appId={}", appId);
+                return tenantConfigVO;
+            }
+        
+            tenantId = alipayAppConfig.getTenantId();
+        }
+    
+        //获取租户配置信息
+        ElectricityConfig electricityConfig = this.queryFromCacheByTenantId(tenantId);
+        BeanUtils.copyProperties(electricityConfig, tenantConfigVO);
+    
+        //获取租户模板id
+        List<String> templateConfigList = templateConfigService.selectTemplateId(tenantId);
+        tenantConfigVO.setTemplateConfigList(templateConfigList);
+    
+        //获取客服电话
+        String servicePhone = userService.selectServicePhone(tenantId);
+        tenantConfigVO.setServicePhone(servicePhone);
+    
+        return tenantConfigVO;
+    }
+    
     @Override
     public Triple<Boolean, String, Object> editWxCustomer(ElectricityConfigWxCustomerQuery electricityConfigAddAndUpdateQuery) {
         ElectricityConfig electricityConfig = queryFromCacheByTenantId(TenantContextHolder.getTenantId());
