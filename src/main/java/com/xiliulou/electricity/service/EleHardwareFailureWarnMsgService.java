@@ -2,6 +2,7 @@ package com.xiliulou.electricity.service;
 
 
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.entity.warn.WarnNoteCallBack;
 import com.xiliulou.electricity.request.failureAlarm.EleHardwareFailureWarnMsgPageRequest;
 import com.xiliulou.electricity.request.failureAlarm.FailureAlarmTaskQueryRequest;
 import com.xiliulou.electricity.vo.failureAlarm.EleHardwareFailureWarnMsgVo;
@@ -25,4 +26,6 @@ public interface EleHardwareFailureWarnMsgService {
     Triple<Boolean, String, Object> proportion(EleHardwareFailureWarnMsgPageRequest request);
     
     void proportionExport(EleHardwareFailureWarnMsgPageRequest request, HttpServletResponse response);
+    
+    Triple<Boolean, String, Object> warnNoteNotice(WarnNoteCallBack warnNoteCallBack);
 }

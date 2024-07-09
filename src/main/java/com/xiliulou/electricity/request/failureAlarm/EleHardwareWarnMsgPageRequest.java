@@ -1,4 +1,4 @@
-package com.xiliulou.electricity.queryModel.failureAlarm;
+package com.xiliulou.electricity.request.failureAlarm;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,14 +9,14 @@ import java.util.List;
 
 /**
  * @author maxiaodong
- * @date 2024/1/2 10:17
- * @desc 故障告警记录分页查询model
+ * @date 2024/1/2 9:23
+ * @desc
  */
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
-public class FailureWarnMsgPageQueryModel {
+public class EleHardwareWarnMsgPageRequest {
     /**
      * 类型：0-告警，1-故障
      */
@@ -45,7 +45,7 @@ public class FailureWarnMsgPageQueryModel {
     /**
      * 故障名称
      */
-    private Integer signalId;
+    private String signalId;
     
     /**
      * 告警/告警开始时间
@@ -63,19 +63,35 @@ public class FailureWarnMsgPageQueryModel {
     private Integer alarmFlag;
     
     /**
-     * 信号量Id集合
+     * 运营商可见(0-不可见， 1-可见)
      */
-    private List<String> signalIdList;
+    private Integer tenantVisible;
+    
+    /**
+     * 运作状态(0-启用， 1-禁用)
+     */
+    private Integer status;
     
     private Long size;
     
     private Long offset;
     
-    private String startTime;
-    private String endTime;
+    /**
+     * 导出查询添加限制
+     */
+    private Integer days;
+    
+    /**
+     * 不限制故障告警设置
+     */
+    private Integer noLimitSignalId;
     
     /**
      * 柜机Id
      */
     private Integer cabinetId;
+    
+    private String alarmId;
+    
+    private List<String> signalIdList;
 }

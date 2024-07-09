@@ -16,7 +16,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
-public class FailureWarnMsgPageQueryModel {
+public class WarnMsgPageQueryModel {
     /**
      * 类型：0-告警，1-故障
      */
@@ -45,7 +45,7 @@ public class FailureWarnMsgPageQueryModel {
     /**
      * 故障名称
      */
-    private Integer signalId;
+    private String signalId;
     
     /**
      * 告警/告警开始时间
@@ -70,9 +70,6 @@ public class FailureWarnMsgPageQueryModel {
     private Long size;
     
     private Long offset;
-    
-    private String startTime;
-    private String endTime;
     
     /**
      * 柜机Id
