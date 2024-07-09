@@ -13,7 +13,7 @@
     </resultMap>
     
     <select id="selectByUid" resultType="com.xiliulou.electricity.entity.InvitationActivityUser">
-        select id, activity_id, uid
+        select id, activity_id, uid, franchisee_id
         from t_invitation_activity_user
         where uid = #{uid}
     </select>
