@@ -592,8 +592,8 @@ public class FaceidServiceImpl implements FaceidService {
         alipayUserCertifyInfo.setIdNumber(userInfo.getIdNumber());
         alipayUserCertifyInfo.setServerUrl(aliPayConfig.getServerUrl());
         alipayUserCertifyInfo.setAppId(alipayAppConfig.getAppId());
-        alipayUserCertifyInfo.setPrivateKey(alipayAppConfig.getPrivateKey());
-        alipayUserCertifyInfo.setAlipayPublicKey(alipayAppConfig.getAppPublicKey());
+        alipayUserCertifyInfo.setPrivateKey(alipayAppConfig.getAppPrivateKey());
+        alipayUserCertifyInfo.setAlipayPublicKey(alipayAppConfig.getPublicKey());
         return alipayUserCertifyInfo;
     }
     
