@@ -138,12 +138,6 @@ public class JsonAdminInvitationActivityController extends BaseController {
             if (CollectionUtils.isEmpty(franchiseeIds)) {
                 return R.ok();
             }
-            
-            Long franchiseeId = query.getFranchiseeId();
-            if (Objects.nonNull(franchiseeId) && !Objects.equals(franchiseeIds.get(0), franchiseeId)) {
-                log.warn("InvitationActivity WARN! Franchisees are inconsistent, franchiseeId={}", franchiseeId);
-                return R.fail("120128", "所属加盟商不一致");
-            }
         }
         
         return returnTripleResult(invitationActivityService.save(query));

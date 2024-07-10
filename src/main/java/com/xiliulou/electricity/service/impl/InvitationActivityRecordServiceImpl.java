@@ -1148,6 +1148,9 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
             activityJoinHistoryInsert.setTenantId(userInfo.getTenantId());
             activityJoinHistoryInsert.setCreateTime(System.currentTimeMillis());
             activityJoinHistoryInsert.setUpdateTime(System.currentTimeMillis());
+            if (Objects.nonNull(activityJoinHistory.getFranchiseeId())) {
+                activityJoinHistoryInsert.setFranchiseeId(activityJoinHistory.getFranchiseeId());
+            }
             invitationActivityJoinHistoryService.insert(activityJoinHistoryInsert);
 
             //给邀请人增加返现金额
