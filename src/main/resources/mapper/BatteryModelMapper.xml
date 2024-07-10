@@ -20,6 +20,13 @@
         <result property="size" column="size" jdbcType="VARCHAR"/>
         <result property="weight" column="weight" jdbcType="DOUBLE"/>
     </resultMap>
+    
+    <resultMap id="BatteryModelDTOMap" type="com.xiliulou.electricity.dto.BatteryModelDTO">
+        <result property="mid" column="mid" jdbcType="BIGINT"/>
+        <collection property="batteryModels" ofType="string" jdbcType="VARCHAR">
+            <result column="battery_v_short" jdbcType="VARCHAR"/>
+        </collection>
+    </resultMap>
 
     <!--查询单个-->
     <select id="queryById" resultMap="BatteryModelMap">
@@ -219,6 +226,18 @@
         </if>
         <if test="tenantId != null">
             and tenant_id = #{tenantId}
+        </if>
+    </select>
+    
+    <select id="selectListShortBatteryTypeByMemberIds" resultMap="BatteryModelDTOMap">
+        select tmcbt.mid, tbm.battery_v_short
+            from t_battery_model tbm inner join t_member_card_battery_type tmcbt on tbm.battery_type = (tmcbt.battery_type collate utf8mb4_0900_ai_ci)
+        where tmcbt.mid in
+        <foreach collection="memberCardIds" item="memberCardId" index="index" open="(" separator="," close=")">
+            #{memberCardId}
+        </foreach>
+        <if test="tenantId != null">
+            and tbm.tenant_id = #{tenantId}
         </if>
     </select>
 </mapper>
