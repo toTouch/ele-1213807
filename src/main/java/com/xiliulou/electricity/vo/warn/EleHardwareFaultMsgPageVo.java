@@ -1,4 +1,4 @@
-package com.xiliulou.electricity.vo.failureAlarm;
+package com.xiliulou.electricity.vo.warn;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -14,7 +14,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class EleHardwareFailureWarnMsgPageVo {
+public class EleHardwareFaultMsgPageVo {
     /**
      * 设备sn
      */
@@ -53,13 +53,13 @@ public class EleHardwareFailureWarnMsgPageVo {
     /**
      * 恢复时间
      */
-    private Long recoverTime;
+    private String recoverTime;
     
     
     /**
      * 告警时间
      */
-    private Long alarmTime;
+    private String alarmTime;
     
     private Long id;
     /**
@@ -115,12 +115,12 @@ public class EleHardwareFailureWarnMsgPageVo {
     /**
      * 上报时间
      */
-    private Long reportTime;
+    private String reportTime;
     
     /**
      * 创建时间
      */
-    private Long createTime;
+    private String createTime;
     
     /**
      * 修改时间

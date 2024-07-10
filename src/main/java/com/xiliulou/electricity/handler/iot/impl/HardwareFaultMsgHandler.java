@@ -32,9 +32,9 @@ import java.util.Objects;
  * @author : maxiaodong
  * @date : 2023/12/26 10:56
  */
-@Service(value = ElectricityIotConstant.HARDWARE_FAILURE_WARN_MSG_HANDLER)
+@Service(value = ElectricityIotConstant.HARDWARE_FAULT_MSG_HANDLER)
 @Slf4j
-public class HardwareFailureWarnMsgHandler extends AbstractElectricityIotHandler {
+public class HardwareFaultMsgHandler extends AbstractElectricityIotHandler {
     
     @Autowired
     RocketMqService rocketMqService;
@@ -47,52 +47,51 @@ public class HardwareFailureWarnMsgHandler extends AbstractElectricityIotHandler
     
     @Override
     protected void postHandleReceiveMsg(ElectricityCabinet electricityCabinet, ReceiverMessage receiverMessage) {
-        HardwareFailureWarnMsg hardwareFailureWarnMsg = JsonUtil.fromJson(receiverMessage.getOriginContent(), HardwareFailureWarnMsg.class);
-        if (Objects.isNull(hardwareFailureWarnMsg) || ObjectUtils.isEmpty(hardwareFailureWarnMsg.getAlarmList())) {
-            log.error("PARSE HARDWARE FAILURE WARN MSG ERROR! sessionId={}", receiverMessage.getSessionId());
+        HardwareFaultWarnMsg hardwareFaultWarnMsg = JsonUtil.fromJson(receiverMessage.getOriginContent(), HardwareFaultWarnMsg.class);
+        if (Objects.isNull(hardwareFaultWarnMsg) || ObjectUtils.isEmpty(hardwareFaultWarnMsg.getAlarmList())) {
+            log.error("PARSE HARDWARE FAULT WARN MSG ERROR! sessionId={}", receiverMessage.getSessionId());
             return;
         }
         
-        List<HardwareFailureWarnMqMsg> list = convertMqMsg(hardwareFailureWarnMsg, electricityCabinet);
-        rocketMqService.sendAsyncMsg(MqProducerConstant.TOPIC_FAILURE_WARNING_BREAKDOWN, JsonUtil.toJson(list));
+        List<HardwareFaultWarnMqMsg> list = convertMqMsg(hardwareFaultWarnMsg, electricityCabinet);
+        rocketMqService.sendAsyncMsg(MqProducerConstant.FAULT_FAILURE_WARNING_BREAKDOWN, JsonUtil.toJson(list));
         
         HashMap<String, Object> dataMap = Maps.newHashMap();
         dataMap.put("sessionId", receiverMessage.getSessionId());
         dataMap.put("msgType", CommonConstant.MSG_TYPE);
-        dataMap.put("devId", hardwareFailureWarnMsg.getDevId());
-        dataMap.put("t", hardwareFailureWarnMsg.getT());
+        dataMap.put("devId", hardwareFaultWarnMsg.getDevId());
+        dataMap.put("t", hardwareFaultWarnMsg.getT());
         
         HardwareCommandQuery comm = HardwareCommandQuery.builder().sessionId(receiverMessage.getSessionId()).productKey(electricityCabinet.getProductKey())
-                .deviceName(electricityCabinet.getDeviceName()).data(dataMap).command(ElectricityIotConstant.HARDWARE_FAILURE_WARN_MSG_ACK).build();
+                .deviceName(electricityCabinet.getDeviceName()).data(dataMap).command(ElectricityIotConstant.HARDWARE_FAULT_WARN_MSG_ACK).build();
         Pair<Boolean, String> sendResult = eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
         if (!sendResult.getLeft()) {
-            log.error("HARDWARE WARN MSG ERROR! send command error! requestId:{}", receiverMessage.getSessionId());
+            log.error("HARDWARE FAULT WARN MSG ERROR! send command error! requestId:{}", receiverMessage.getSessionId());
         }
     }
     
-    private List<HardwareFailureWarnMqMsg> convertMqMsg(HardwareFailureWarnMsg hardwareFailureWarnMsg, ElectricityCabinet electricityCabinet) {
+    private List<HardwareFaultWarnMqMsg> convertMqMsg(HardwareFaultWarnMsg hardwareFaultWarnMsg, ElectricityCabinet electricityCabinet) {
         Tenant tenant = tenantService.queryByIdFromCache(electricityCabinet.getTenantId());
         String tenantName = tenant != null ? tenant.getName() : "";
         
-        List<HardwareFailureWarnMqMsg> list = new ArrayList<>();
-        hardwareFailureWarnMsg.getAlarmList().forEach(item -> {
-            HardwareFailureWarnMqMsg msg = new HardwareFailureWarnMqMsg();
+        List<HardwareFaultWarnMqMsg> list = new ArrayList<>();
+        hardwareFaultWarnMsg.getAlarmList().forEach(item -> {
+            HardwareFaultWarnMqMsg msg = new HardwareFaultWarnMqMsg();
             BeanUtils.copyProperties(item, msg);
             msg.setCabinetId(electricityCabinet.getId());
             msg.setTenantId(electricityCabinet.getTenantId());
             msg.setAddress(electricityCabinet.getAddress());
-            msg.setMsgType(hardwareFailureWarnMsg.getMsgType());
+            msg.setMsgType(hardwareFaultWarnMsg.getMsgType());
             msg.setSignalId(item.getId());
             msg.setCellNo(item.getBoxId());
-            msg.setSn(electricityCabinet.getSn());
             msg.setCabinetSn(electricityCabinet.getSn());
+            msg.setSn(electricityCabinet.getSn());
             if (StringUtils.isNotEmpty(item.getBatterySn())) {
                 msg.setSn(item.getBatterySn());
             }
-            msg.setBatterySn(item.getBatterySn());
-            msg.setDevId(hardwareFailureWarnMsg.getDevId());
-            msg.setReportTime(hardwareFailureWarnMsg.getT());
-            msg.setTxnNo(hardwareFailureWarnMsg.getTxnNo());
+            msg.setDevId(hardwareFaultWarnMsg.getDevId());
+            msg.setReportTime(hardwareFaultWarnMsg.getT());
+            msg.setTxnNo(hardwareFaultWarnMsg.getTxnNo());
             msg.setTenantName(tenantName);
             msg.setCabinetName(electricityCabinet.getName());
             list.add(msg);
@@ -102,7 +101,7 @@ public class HardwareFailureWarnMsgHandler extends AbstractElectricityIotHandler
 }
 
 @Data
-class HardwareFailureWarnMsg {
+class HardwareFaultWarnMsg {
     
     /**
      * 报文类型：410
@@ -127,12 +126,12 @@ class HardwareFailureWarnMsg {
     /**
      * 警告信号量
      */
-    private List<HardwareAlarmMsg> alarmList;
+    private List<HardwareFaultMsg> alarmList;
 }
 
 
 @Data
-class HardwareAlarmMsg {
+class HardwareFaultMsg {
     
     /**
      * 信号量
@@ -143,6 +142,11 @@ class HardwareAlarmMsg {
      * 告警时间
      */
     private Long alarmTime;
+    
+    /**
+     * 告警结束时间
+     */
+    private Long alarmEndTime;
     
     /**
      * 告警事件描述
@@ -182,7 +186,7 @@ class HardwareAlarmMsg {
 
 
 @Data
-class HardwareFailureWarnMqMsg {
+class HardwareFaultWarnMqMsg {
     
     /**
      * 换电柜Id
@@ -208,11 +212,6 @@ class HardwareFailureWarnMqMsg {
      * 设备sn
      */
     private String sn;
-    
-    /**
-     * 柜机sn
-     */
-    private String cabinetSn;
     
     /**
      * 换电柜地址
@@ -250,6 +249,11 @@ class HardwareFailureWarnMqMsg {
     private Long alarmTime;
     
     /**
+     * 告警结束时间
+     */
+    private Long alarmEndTime;
+    
+    /**
      * 告警事件描述
      */
     private String alarmDesc;
@@ -270,11 +274,6 @@ class HardwareFailureWarnMqMsg {
     private Integer cellNo;
     
     /**
-     * 电池sn
-     */
-    private String batterySn;
-    
-    /**
      * 类型：0-告警，1-故障
      */
     private Integer type;
@@ -283,4 +282,6 @@ class HardwareFailureWarnMqMsg {
      * 故障发生次数
      */
     private Integer occurNum;
+    
+    private String cabinetSn;
 }
