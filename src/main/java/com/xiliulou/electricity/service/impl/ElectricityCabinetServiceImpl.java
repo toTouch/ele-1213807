@@ -42,9 +42,7 @@ import com.xiliulou.electricity.entity.BatteryMembercardRefundOrder;
 import com.xiliulou.electricity.entity.BatteryModel;
 import com.xiliulou.electricity.entity.CabinetMoveHistory;
 import com.xiliulou.electricity.entity.EleCabinetCoreData;
-import com.xiliulou.electricity.entity.EleDepositOrder;
 import com.xiliulou.electricity.entity.EleOtaFile;
-import com.xiliulou.electricity.entity.EleRefundOrder;
 import com.xiliulou.electricity.entity.ElectricityAbnormalMessageNotify;
 import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
@@ -65,7 +63,6 @@ import com.xiliulou.electricity.entity.RentBatteryOrder;
 import com.xiliulou.electricity.entity.Store;
 import com.xiliulou.electricity.entity.Tenant;
 import com.xiliulou.electricity.entity.User;
-import com.xiliulou.electricity.entity.UserBattery;
 import com.xiliulou.electricity.entity.UserBatteryMemberCard;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.merchant.MerchantArea;
@@ -88,7 +85,6 @@ import com.xiliulou.electricity.query.ElectricityCabinetImportQuery;
 import com.xiliulou.electricity.query.ElectricityCabinetQuery;
 import com.xiliulou.electricity.query.ElectricityCabinetTransferQuery;
 import com.xiliulou.electricity.query.FreeCellNoQuery;
-import com.xiliulou.electricity.query.HomePageDepositQuery;
 import com.xiliulou.electricity.query.HomepageBatteryFrequencyQuery;
 import com.xiliulou.electricity.query.HomepageElectricityExchangeFrequencyQuery;
 import com.xiliulou.electricity.query.LowBatteryExchangeModel;
@@ -144,7 +140,6 @@ import com.xiliulou.electricity.service.excel.AutoHeadColumnWidthStyleStrategy;
 import com.xiliulou.electricity.service.merchant.MerchantAreaService;
 import com.xiliulou.electricity.service.merchant.MerchantPlaceFeeRecordService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
-import com.xiliulou.electricity.utils.DateUtils;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.OperateRecordUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
@@ -159,11 +154,7 @@ import com.xiliulou.electricity.vo.ElectricityCabinetListMapVO;
 import com.xiliulou.electricity.vo.ElectricityCabinetMapVO;
 import com.xiliulou.electricity.vo.ElectricityCabinetSimpleVO;
 import com.xiliulou.electricity.vo.ElectricityCabinetVO;
-import com.xiliulou.electricity.vo.HomePageDepositVo;
 import com.xiliulou.electricity.vo.HomePageElectricityOrderVo;
-import com.xiliulou.electricity.vo.HomePageTurnOverAnalysisVo;
-import com.xiliulou.electricity.vo.HomePageTurnOverGroupByWeekDayVo;
-import com.xiliulou.electricity.vo.HomePageTurnOverVo;
 import com.xiliulou.electricity.vo.HomePageUserAnalysisVo;
 import com.xiliulou.electricity.vo.HomePageUserByWeekDayVo;
 import com.xiliulou.electricity.vo.HomepageBatteryFrequencyVo;
@@ -785,8 +776,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         if (ObjectUtil.isEmpty(electricityCabinetList)) {
             return R.ok();
         }
-        log.info("queryList  is {}",JsonUtil.toJson(electricityCabinetList));
-        
+       
         if (ObjectUtil.isNotEmpty(electricityCabinetList)) {
             // 获取库房名称列表 根据库房id查询库房名称，不需要过滤库房状态是已删除的
             List<Long> warehouseIdList = electricityCabinetList.stream().map(ElectricityCabinetVO::getWarehouseId).filter(Objects::nonNull).distinct().collect(Collectors.toList());
@@ -945,7 +935,6 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             });
         }
         
-        log.info("queryList result is {}",JsonUtil.toJson(electricityCabinetList));
         
         electricityCabinetList.stream().sorted(Comparator.comparing(ElectricityCabinetVO::getCreateTime).reversed()).collect(Collectors.toList());
         return R.ok(electricityCabinetList);
