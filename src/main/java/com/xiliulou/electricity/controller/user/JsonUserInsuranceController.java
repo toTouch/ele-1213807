@@ -20,31 +20,25 @@ import org.springframework.web.bind.annotation.RestController;
 @Slf4j
 @RestController
 public class JsonUserInsuranceController extends BaseController {
-
+    
     @Autowired
     private FranchiseeInsuranceService franchiseeInsuranceService;
-
+    
     /**
      * 根据加盟商、电池型号/车辆型号 查询保险
      *
      * @return
      */
     @GetMapping(value = "/user/selectInsuranceByType")
-    public R selectInsuranceByType(@RequestParam("franchiseeId") Long franchiseeId,
-                                   @RequestParam("insuranceType") Integer insuranceType,
-                                   @RequestParam(value = "storeId", required = false) Long storeId,
-                                   @RequestParam(value = "carModelId", required = false) Long carModelId,
-                                   @RequestParam(value = "simpleBatteryType", required = false) String simpleBatteryType) {
-
-        FranchiseeInsuranceQuery query = FranchiseeInsuranceQuery.builder()
-                .franchiseeId(franchiseeId)
-                .insuranceType(insuranceType)
-                .storeId(storeId)
-                .status(FranchiseeInsurance.STATUS_USABLE)
-                .carModelId(carModelId).simpleBatteryType(simpleBatteryType).tenantId(TenantContextHolder.getTenantId()).build();
-
+    public R selectInsuranceByType(@RequestParam("franchiseeId") Long franchiseeId, @RequestParam("insuranceType") Integer insuranceType,
+            @RequestParam(value = "storeId", required = false) Long storeId, @RequestParam(value = "carModelId", required = false) Long carModelId,
+            @RequestParam(value = "simpleBatteryType", required = false) String simpleBatteryType) {
+        
+        FranchiseeInsuranceQuery query = FranchiseeInsuranceQuery.builder().franchiseeId(franchiseeId).insuranceType(insuranceType).storeId(storeId)
+                .status(FranchiseeInsurance.STATUS_USABLE).carModelId(carModelId).simpleBatteryType(simpleBatteryType).tenantId(TenantContextHolder.getTenantId()).build();
+        
         return R.ok(franchiseeInsuranceService.selectInsuranceByType(query));
     }
-
-
+    
+    
 }

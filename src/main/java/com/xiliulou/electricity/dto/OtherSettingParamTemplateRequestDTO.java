@@ -293,4 +293,9 @@ public class OtherSettingParamTemplateRequestDTO {
      * 音量大小
      */
     private Integer volumeSize;
+    
+    /**
+     * 上报频率
+     */
+    private Integer faultUploadTime;
 }

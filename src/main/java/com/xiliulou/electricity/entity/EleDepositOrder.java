@@ -109,6 +109,16 @@ public class EleDepositOrder {
      * 来源订单编码
      */
     private String sourceOrderNo;
+    
+    /**
+     * 支付参数中的加盟商id
+     */
+    private Long paramFranchiseeId;
+    
+    /**
+     * 微信商户号
+     */
+    private String wechatMerchantId;
 
     public static final Integer STATUS_INIT = 0;
     public static final Integer STATUS_SUCCESS = 1;

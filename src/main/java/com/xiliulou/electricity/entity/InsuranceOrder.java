@@ -119,6 +119,16 @@ public class InsuranceOrder {
      * 电池型号
      */
     private String simpleBatteryType;
+    
+    /**
+     * 支付参数中的加盟商id
+     */
+    private Long paramFranchiseeId;
+    
+    /**
+     * 微信商户号
+     */
+    private String wechatMerchantId;
 
     //保险状态 3.0重新定义  0：未出险  1：已出险  2：已过期  3：已失效
     public static final Integer NOT_USE = 0;

@@ -176,7 +176,7 @@ public class CarRentalPackageOrderPo extends BasicCarPo {
     
     /**
      * <p>
-     *    Description: 优惠劵组id,JSON数组格式
+     * Description: 优惠劵组id,JSON数组格式
      * </p>
      */
     private String couponArrays;
@@ -222,15 +222,25 @@ public class CarRentalPackageOrderPo extends BasicCarPo {
      */
     private BigDecimal rentalPackageDeposit;
     
+    /**
+     * 微信商户号
+     */
+    private String wechatMerchantId;
+    
+    /**
+     * 支付加盟商ID
+     */
+    private Long payFranchiseeId;
+    
     public List<Long> getCouponIds() {
         Set<Long> result = new HashSet<>();
         if (StrUtil.isNotBlank(this.couponArrays)) {
             List<Long> longs = JsonUtil.fromJsonArray(this.couponArrays, Long.class);
-            if (!CollectionUtils.isEmpty(longs)){
+            if (!CollectionUtils.isEmpty(longs)) {
                 result.addAll(longs);
             }
         }
-        if (!Objects.isNull(this.couponId)){
+        if (!Objects.isNull(this.couponId)) {
             result.add(this.couponId);
         }
         return new ArrayList<>(result);

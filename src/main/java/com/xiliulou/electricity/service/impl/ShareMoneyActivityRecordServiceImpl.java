@@ -6,6 +6,7 @@ import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
+import com.xiliulou.electricity.constant.MultiFranchiseeConstant;
 import com.xiliulou.electricity.entity.ElectricityPayParams;
 import com.xiliulou.electricity.entity.JoinShareMoneyActivityRecord;
 import com.xiliulou.electricity.entity.ShareMoneyActivityRecord;
@@ -126,7 +127,8 @@ public class ShareMoneyActivityRecordServiceImpl implements ShareMoneyActivityRe
 		Integer tenantId = TenantContextHolder.getTenantId();
 
 		//获取小程序appId
-		ElectricityPayParams electricityPayParams = electricityPayParamsService.queryFromCache(tenantId);
+		// 只使用 merchantMinProAppId、merchantMinProAppSecert 参数，可以调用此方法，加盟商ID传入默认 0
+		ElectricityPayParams electricityPayParams = electricityPayParamsService.queryPreciseCacheByTenantIdAndFranchiseeId(tenantId, MultiFranchiseeConstant.DEFAULT_FRANCHISEE);
 		if (Objects.isNull(electricityPayParams)) {
 			log.error("CREATE MEMBER_ORDER ERROR ,NOT FOUND PAY_PARAMS");
 			return R.failMsg("未配置支付参数!");
