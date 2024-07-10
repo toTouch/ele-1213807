@@ -229,7 +229,7 @@ public class JsonMerchantController extends BaseController {
      */
     @GetMapping("/admin/merchant/pageCount")
     public R pageCount(@RequestParam(value = "name", required = false) String name, @RequestParam(value = "franchiseeId") Long franchiseeId,@RequestParam(value = "merchantGradeId") Long merchantGradeId,
-            @RequestParam(value = "channelEmployeeUid", required = false) Long channelEmployeeUid) {
+            @RequestParam(value = "channelEmployeeUid", required = false) Long channelEmployeeUid, @RequestParam(value = "phone", required = false) String phone) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
@@ -240,7 +240,7 @@ public class JsonMerchantController extends BaseController {
         }
         
         MerchantPageRequest merchantPageRequest = MerchantPageRequest.builder().name(name).tenantId(TenantContextHolder.getTenantId())
-                .merchantGradeId(merchantGradeId).channelEmployeeUid(channelEmployeeUid).franchiseeId(franchiseeId).build();
+                .merchantGradeId(merchantGradeId).channelEmployeeUid(channelEmployeeUid).franchiseeId(franchiseeId).phone(phone).build();
         
         return R.ok(merchantService.countTotal(merchantPageRequest));
     }
@@ -253,7 +253,7 @@ public class JsonMerchantController extends BaseController {
      */
     @GetMapping("/admin/merchant/page")
     public R page(@RequestParam("size") long size, @RequestParam("offset") long offset, @RequestParam(value = "name", required = false) String name, @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,@RequestParam(value = "merchantGradeId", required = false) Long merchantGradeId,
-            @RequestParam(value = "channelEmployeeUid", required = false) Long channelEmployeeUid) {
+            @RequestParam(value = "channelEmployeeUid", required = false) Long channelEmployeeUid, @RequestParam(value = "phone", required = false) String phone) {
         if (size < 0 || size > 50) {
             size = 10L;
         }
@@ -272,7 +272,7 @@ public class JsonMerchantController extends BaseController {
         }
         
         MerchantPageRequest merchantPageRequest = MerchantPageRequest.builder().name(name).size(size).offset(offset).tenantId(TenantContextHolder.getTenantId())
-                .merchantGradeId(merchantGradeId).channelEmployeeUid(channelEmployeeUid).franchiseeId(franchiseeId).build();
+                .merchantGradeId(merchantGradeId).channelEmployeeUid(channelEmployeeUid).franchiseeId(franchiseeId).phone(phone).build();
         
         return R.ok(merchantService.listByPage(merchantPageRequest));
     }

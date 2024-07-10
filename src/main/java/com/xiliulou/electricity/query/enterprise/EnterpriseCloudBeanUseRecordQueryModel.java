@@ -16,7 +16,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class EnterpriseCloudBeanOrderQuery {
+public class EnterpriseCloudBeanUseRecordQueryModel {
     private Long size;
     private Long offset;
 

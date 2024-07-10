@@ -273,7 +273,7 @@
             t_user_battery_member_card c
         where c.member_card_expire_time &lt;= #{memberCardExpireTime}
           and not EXISTS (
-            select 1 from t_enterprise_channel_user_exit b where b.uid = c.uid and b.type != 2
+            select 1 from t_enterprise_channel_user_exit b where b.uid = c.uid and b.type != 1
         )
             limit #{offset},#{size}
     </select>

@@ -1,4 +1,4 @@
-package com.xiliulou.electricity.query.enterprise;
+package com.xiliulou.electricity.request.enterprise;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -16,7 +16,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class EnterpriseCloudBeanOrderQuery {
+public class EnterpriseCloudBeanUseRecordPageRequest {
     private Long size;
     private Long offset;
 
