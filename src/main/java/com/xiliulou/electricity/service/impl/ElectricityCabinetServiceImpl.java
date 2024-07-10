@@ -796,8 +796,19 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 areaNameMap = merchantAreaList.stream().collect(Collectors.toMap(MerchantArea::getId, MerchantArea::getName, (item1, item2) -> item2));
             }
             
+            // 柜机cell提取
+            List<Integer> idList = electricityCabinetList.stream().map(ElectricityCabinetVO::getId).collect(Collectors.toList());
+            List<ElectricityCabinetBox> boxList = electricityCabinetBoxService.listCabineBoxByEids(idList);
+            Map<Integer, List<ElectricityCabinetBox>> electricityCabinetBoxMap = new HashMap<>();
+            if (CollUtil.isNotEmpty(boxList)) {
+                electricityCabinetBoxMap = boxList.stream().filter(e -> Objects.equals(e.getUsableStatus(), ElectricityCabinetBox.ELECTRICITY_CABINET_BOX_USABLE))
+                        .collect(Collectors.groupingBy(ElectricityCabinetBox::getElectricityCabinetId));
+            }
+            
+            
             Map<Long, String> finalWarehouseNameVOMap = warehouseNameVOMap;
             Map<Long, String> finalAreaNameMap = areaNameMap;
+            Map<Integer, List<ElectricityCabinetBox>> finalElectricityCabinetBoxMap = electricityCabinetBoxMap;
             
             electricityCabinetList.parallelStream().forEach(e -> {
                 
@@ -869,7 +880,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 
                 Double fullyCharged = e.getFullyCharged();
                 
-                List<ElectricityCabinetBox> cabinetBoxList = electricityCabinetBoxService.queryBoxByElectricityCabinetId(e.getId());
+                List<ElectricityCabinetBox> cabinetBoxList = finalElectricityCabinetBoxMap.get(e.getId());
                 if (!CollectionUtils.isEmpty(cabinetBoxList)) {
                     //空仓
                     noElectricityBattery = (int) cabinetBoxList.stream().filter(this::isNoElectricityBattery).count();
