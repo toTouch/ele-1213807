@@ -54,6 +54,7 @@ import com.xiliulou.electricity.vo.CouponSearchVo;
 import com.xiliulou.electricity.vo.SearchVo;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.BeanUtils;
@@ -968,8 +969,13 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
         
         // 减少查询数据库次数，降低接口响应时间
         List<Long> memberCardIds = list.parallelStream().map(BatteryMemberCard::getId).collect(Collectors.toList());
-        Map<Long, List<String>> batteryModels = batteryModelService.listShortBatteryTypeByMemberIds(memberCardIds, TenantContextHolder.getTenantId()).parallelStream()
-                .collect(Collectors.toMap(BatteryModelDTO::getMid, BatteryModelDTO::getBatteryModels));
+        Map<Long, List<String>> batteryModels;
+        if (CollectionUtils.isNotEmpty(memberCardIds)) {
+            batteryModels = batteryModelService.listShortBatteryTypeByMemberIds(memberCardIds, TenantContextHolder.getTenantId()).parallelStream()
+                    .collect(Collectors.toMap(BatteryModelDTO::getMid, BatteryModelDTO::getBatteryModels));
+        } else {
+            batteryModels = null;
+        }
         
         return list.parallelStream().map(item -> {
             BatteryMemberCardVO batteryMemberCardVO = new BatteryMemberCardVO();
@@ -978,7 +984,7 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
             Franchisee franchisee = franchiseeService.queryByIdFromCache(item.getFranchiseeId());
             batteryMemberCardVO.setFranchiseeName(Objects.nonNull(franchisee) ? franchisee.getName() : "");
             
-            if (Objects.nonNull(franchisee) && Objects.equals(franchisee.getModelType(), Franchisee.NEW_MODEL_TYPE)) {
+            if (Objects.nonNull(franchisee) && Objects.equals(franchisee.getModelType(), Franchisee.NEW_MODEL_TYPE) && MapUtils.isNotEmpty(batteryModels)) {
                 batteryMemberCardVO.setBatteryModels(batteryModels.get(item.getId()));
             }
             
