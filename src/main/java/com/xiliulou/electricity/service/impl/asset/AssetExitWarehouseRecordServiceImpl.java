@@ -206,23 +206,19 @@ public class AssetExitWarehouseRecordServiceImpl implements AssetExitWarehouseRe
     private R assembleData(AssetExitWarehouseSaveRequest assetExitWarehouseSaveRequest, Integer tenantId, Long franchiseeId, Long operator, List<String> assetList, Integer type,
             String orderNo) {
         Long storeId = assetExitWarehouseSaveRequest.getStoreId();
-        Set<Long> idSet = null;
         List<Long> idList;
         List<String> snList;
         List<ElectricityCabinetVO> exitWarehouseCabinetList = null;
         List<ElectricityBatteryVO> exitWarehouseBatteryList = null;
         List<ElectricityCarVO> exitWarehouseCarList = null;
         
-        if (Objects.equals(AssetConstant.ASSET_EXIT_WAREHOUSE_MODE_ID, assetExitWarehouseSaveRequest.getMode())) {
-            // 根据id进行退库
-            idSet = assetList.stream().map(Long::parseLong).collect(Collectors.toSet());
-        }
-        
         // 封装查询条件
         AssetEnableExitWarehouseQueryModel queryModel = AssetEnableExitWarehouseQueryModel.builder().tenantId(tenantId).franchiseeId(franchiseeId)
                 .stockStatus(StockStatusEnum.UN_STOCK.getCode()).build();
-        // 根据id退库
+        
         if (Objects.equals(AssetConstant.ASSET_EXIT_WAREHOUSE_MODE_ID, assetExitWarehouseSaveRequest.getMode())) {
+            // 根据id进行退库
+            Set<Long> idSet = assetList.stream().map(Long::parseLong).collect(Collectors.toSet());
             queryModel.setIdSet(idSet);
         } else {
             // 根据sn退库
