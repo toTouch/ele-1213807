@@ -65,7 +65,6 @@ public class JsonAdminFranchiseeInsuranceController extends BaseController {
         return franchiseeInsuranceService.add(franchiseeInsuranceAddAndUpdate);
     }
 
-
     /**
      * 修改
      *
@@ -89,7 +88,6 @@ public class JsonAdminFranchiseeInsuranceController extends BaseController {
 
         return franchiseeInsuranceService.update(franchiseeInsuranceAddAndUpdate);
     }
-
 
     /**
      * 禁用启用保险
@@ -153,9 +151,6 @@ public class JsonAdminFranchiseeInsuranceController extends BaseController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-        //if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
-        //    return R.ok(Collections.emptyList());
-        //}
         FranchiseeInsuranceQuery query = FranchiseeInsuranceQuery.builder()
                 .offset(offset)
                 .size(size)
@@ -181,16 +176,11 @@ public class JsonAdminFranchiseeInsuranceController extends BaseController {
                                           @RequestParam(value = "status", required = false) Integer status,
                                           @RequestParam(value = "franchiseeId", required = false) Long franchiseeId) {
 
-        //Integer tenantId = TenantContextHolder.getTenantId();
-
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-        //if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
-         //   return R.ok(NumberConstant.ZERO);
-        //}
         
         FranchiseeInsuranceQuery query = FranchiseeInsuranceQuery.builder()
                 .franchiseeId(franchiseeId)
@@ -199,7 +189,6 @@ public class JsonAdminFranchiseeInsuranceController extends BaseController {
                 .name(name)
                 .status(status)
                 .tenantId(TenantContextHolder.getTenantId()).build();
-       //return franchiseeInsuranceService.queryCount(status, insuranceType, tenantId, franchiseeId);
         return R.ok(franchiseeInsuranceService.selectPageCount(query));
     }
 

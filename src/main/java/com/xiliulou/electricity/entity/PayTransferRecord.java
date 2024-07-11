@@ -66,6 +66,16 @@ public class PayTransferRecord {
 	private Integer status;
 	//租户id
 	private Integer tenantId;
+	
+	/**
+	 * 微信商户号
+	 */
+	private String wechatMerchantId;
+	
+	/**
+	 * 支付加盟商ID
+	 */
+	private Long payFranchiseeId;
 
 
 	public static final String TRANSFER_RESULT_FAIL = "FAIL";

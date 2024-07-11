@@ -238,15 +238,6 @@ public class JsonAdminFranchiseeController extends BasicController {
         return franchiseeService.getElectricityBatteryList(id);
     }
 
-    /**
-     * 删除电池型号校验
-     */
-    @Deprecated
-    @GetMapping(value = "/admin/franchisee/checkBatteryType")
-    public R checkBatteryType(@RequestParam("id") Long id, @RequestParam("batteryType") Integer batteryType) {
-        return returnTripleResult(franchiseeService.checkBatteryType(id, batteryType));
-    }
-
     //分账设置
     @PostMapping(value = "/admin/franchisee/setSplit")
 	@Log(title = "加盟商分帐设置")
@@ -301,7 +292,6 @@ public class JsonAdminFranchiseeController extends BasicController {
 
         return franchiseeAmountService.queryList(franchiseeAccountQuery);
     }
-
 
     /**
      * 加盟商用户金额列表数量
@@ -370,8 +360,7 @@ public class JsonAdminFranchiseeController extends BasicController {
 
         return franchiseeSplitAccountHistoryService.queryList(franchiseeAccountQuery);
     }
-
-
+    
 	/**
 	 * 加盟商用户金额列表数量
 	 */
@@ -393,8 +382,7 @@ public class JsonAdminFranchiseeController extends BasicController {
 
         return franchiseeSplitAccountHistoryService.queryCount(franchiseeAccountQuery);
     }
-
-
+    
     //修改余额
     @PostMapping("/admin/franchisee/modifyAccount")
 	@Log(title = "修改加盟商余额")
@@ -406,5 +394,4 @@ public class JsonAdminFranchiseeController extends BasicController {
 
         return franchiseeAmountService.modifyBalance(franchiseeId, modifyBalance);
     }
-
 }

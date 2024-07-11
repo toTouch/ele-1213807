@@ -11,8 +11,15 @@
     <select id="selectByTenantId" resultType="com.xiliulou.electricity.entity.TenantNote">
         select id, tenant_id, note_num, recharge_time
         from t_tenant_note
-        where tenant_id = #{tenantId};
+        where tenant_id = #{tenantId}
     </select>
+    
+    <update id="reduceNoteNumById">
+        update t_tenant_note
+        set note_num = note_num - #{noteNum},
+            update_time = #{updateTime}
+        where id = #{id}
+    </update>
     
     <insert id="insertOne" parameterType="com.xiliulou.electricity.entity.TenantNote" keyColumn="id" keyProperty="id" useGeneratedKeys="true">
         insert into t_tenant_note(tenant_id, note_num, recharge_time, create_time)

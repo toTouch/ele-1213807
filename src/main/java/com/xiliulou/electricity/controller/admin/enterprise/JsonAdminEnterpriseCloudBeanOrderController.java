@@ -5,6 +5,7 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.query.enterprise.EnterpriseCloudBeanOrderQuery;
+import com.xiliulou.electricity.service.UserDataScopeService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseCloudBeanOrderService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
@@ -15,7 +16,9 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.annotation.Resource;
 import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -29,6 +32,9 @@ public class JsonAdminEnterpriseCloudBeanOrderController extends BaseController 
 
     @Autowired
     private EnterpriseCloudBeanOrderService enterpriseCloudBeanOrderService;
+    
+    @Resource
+    private UserDataScopeService userDataScopeService;
 
     /**
      * 分页列表
@@ -112,15 +118,25 @@ public class JsonAdminEnterpriseCloudBeanOrderController extends BaseController 
             @RequestParam(value = "type", required = false) Integer type,
             @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
             @RequestParam(value = "operateUid", required = false) Long operateUid,
-            @RequestParam(value = "enterpriseId", required = false) Long enterpriseId) {
+            @RequestParam(value = "enterpriseId", required = false) Long enterpriseId,
+            @RequestParam(value = "startTime", required = false) Long startTime,
+            @RequestParam(value = "endTime", required = false) Long endTime) {
         
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         
-        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
+        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE) || Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE))) {
             return R.ok(NumberConstant.ZERO);
+        }
+    
+        List<Long> franchiseeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if (org.apache.commons.collections.CollectionUtils.isEmpty(franchiseeIds)) {
+                return R.ok(NumberConstant.ZERO);
+            }
         }
         
         EnterpriseCloudBeanOrderQuery query = EnterpriseCloudBeanOrderQuery.builder()
@@ -133,6 +149,9 @@ public class JsonAdminEnterpriseCloudBeanOrderController extends BaseController 
                 .type(type)
                 .franchiseeId(franchiseeId)
                 .tenantId(TenantContextHolder.getTenantId())
+                .startTime(startTime)
+                .endTime(endTime)
+                .franchiseeIds(franchiseeIds)
                 .build();
         
         return R.ok(enterpriseCloudBeanOrderService.selectTotalCloudBean(query));

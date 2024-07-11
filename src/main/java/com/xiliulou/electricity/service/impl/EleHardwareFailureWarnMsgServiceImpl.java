@@ -1,17 +1,33 @@
 package com.xiliulou.electricity.service.impl;
 
 import com.alibaba.excel.EasyExcel;
+import com.alibaba.fastjson.JSON;
 import com.xiliulou.core.exception.CustomBusinessException;
+import com.xiliulou.core.http.resttemplate.service.RestTemplateService;
+import com.xiliulou.core.json.JsonUtil;
+import com.xiliulou.core.thread.XllThreadPoolExecutorService;
+import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
+import com.xiliulou.electricity.config.message.MessageCenterConfig;
 import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.constant.StringConstant;
 import com.xiliulou.electricity.constant.TimeConstant;
+import com.xiliulou.electricity.constant.note.MessageCenterConstant;
+import com.xiliulou.electricity.constant.note.TenantNoteConstant;
 import com.xiliulou.electricity.entity.EleHardwareFailureWarnMsg;
 import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
+import com.xiliulou.electricity.entity.ElectricityConfig;
+import com.xiliulou.electricity.entity.ElectricityTradeOrder;
 import com.xiliulou.electricity.entity.FailureAlarm;
+import com.xiliulou.electricity.entity.Franchisee;
+import com.xiliulou.electricity.entity.MaintenanceUserNotifyConfig;
+import com.xiliulou.electricity.entity.TenantNote;
+import com.xiliulou.electricity.entity.notify.MessageCenterSendReceiver;
+import com.xiliulou.electricity.entity.notify.TenantNoteLowerNotice;
+import com.xiliulou.electricity.entity.warn.WarnNoteCallBack;
 import com.xiliulou.electricity.enums.basic.BasicEnum;
 import com.xiliulou.electricity.enums.failureAlarm.FailureAlarmDeviceTypeEnum;
 import com.xiliulou.electricity.enums.failureAlarm.FailureAlarmGradeEnum;
@@ -25,10 +41,15 @@ import com.xiliulou.electricity.queryModel.failureAlarm.FailureWarnMsgPageQueryM
 import com.xiliulou.electricity.queryModel.failureAlarm.FailureWarnMsgTaskQueryModel;
 import com.xiliulou.electricity.request.failureAlarm.EleHardwareFailureWarnMsgPageRequest;
 import com.xiliulou.electricity.request.failureAlarm.FailureAlarmTaskQueryRequest;
+import com.xiliulou.electricity.request.notify.MessageCenterRequest;
 import com.xiliulou.electricity.service.EleHardwareFailureWarnMsgService;
 import com.xiliulou.electricity.service.ElectricityBatteryService;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
+import com.xiliulou.electricity.service.ElectricityConfigService;
 import com.xiliulou.electricity.service.FailureAlarmService;
+import com.xiliulou.electricity.service.MaintenanceUserNotifyConfigService;
+import com.xiliulou.electricity.service.TenantNoteService;
+import com.xiliulou.electricity.service.warn.EleHardwareWarnMsgService;
 import com.xiliulou.electricity.utils.DateUtils;
 import com.xiliulou.electricity.vo.failureAlarm.EleHardwareFailureWarnMsgPageVo;
 import com.xiliulou.electricity.vo.failureAlarm.EleHardwareFailureWarnMsgVo;
@@ -37,11 +58,16 @@ import com.xiliulou.electricity.vo.failureAlarm.FailureWarnMsgExcelVo;
 import com.xiliulou.electricity.vo.failureAlarm.FailureWarnProportionExportVo;
 import com.xiliulou.electricity.vo.failureAlarm.FailureWarnProportionVo;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.autoconfigure.klock.annotation.Klock;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -63,6 +89,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
@@ -87,6 +114,27 @@ public class EleHardwareFailureWarnMsgServiceImpl implements EleHardwareFailureW
     
     @Resource
     private ElectricityBatteryService batteryService;
+    
+    @Resource
+    private TenantNoteService tenantNoteService;
+    
+    @Qualifier("restTemplateServiceImpl")
+    @Autowired
+    RestTemplateService restTemplateService;
+    
+    @Resource
+    private EleHardwareWarnMsgService eleHardwareWarnMsgService;
+    
+    @Resource
+    private MessageCenterConfig messageCenterConfig;
+    
+    @Resource
+    private ElectricityConfigService electricityConfigService;
+    
+    @Resource
+    private MaintenanceUserNotifyConfigService maintenanceUserNotifyConfigService;
+    
+    XllThreadPoolExecutorService xllThreadPoolExecutorService = XllThreadPoolExecutors.newFixedThreadPool("WARN-LOWER-NOTE-NOTICE-THREAD-POOL", 2, "warnLowerNoteNoticeThread:");
     
     
     @Slave
@@ -225,7 +273,7 @@ public class EleHardwareFailureWarnMsgServiceImpl implements EleHardwareFailureW
                     .tenantVisible(request.getTenantVisible()).status(request.getStatus()).build();
             List<FailureAlarm> failureAlarmList = failureAlarmService.listByParams(failureAlarmQueryModel);
             if (ObjectUtils.isEmpty(failureAlarmList)) {
-                log.error("failure warn query alarm is empty");
+                log.warn("failure warn query alarm is empty");
                 return Triple.of(true, null, Collections.emptyList());
             }
             
@@ -552,23 +600,6 @@ public class EleHardwareFailureWarnMsgServiceImpl implements EleHardwareFailureW
         return resMap;
     }
     
-    public static void main(String[] args) {
-        String eventDesc = "00: 短路保护\n" + "01: 单芯欠压保护\n" + "02：单芯过压保护\n" + "03：放电过流保护\n" + "04：充电过流保护\n" + "05：低温保护\n" + "06：过温保护\n" + "07：状态异常保护\n"
-                + "08:  MOS异常\n" + "09: 总电压过压保护\n" + "10: 总电压欠压保护\n" + "11: 单芯间压差过大\n" + "12：超高温保护\n" + "000: 无";
-        Map<String, String> resMap = new HashMap<>();
-        eventDesc = eventDesc.replace("：", ":");
-        String[] split = eventDesc.split(StringConstant.CHANGE_ROW);
-        if (ObjectUtils.isNotEmpty(split) && split.length > 0) {
-            for (String desc : split) {
-                String[] dArr = desc.split(":");
-                if (ObjectUtils.isNotEmpty(dArr) && dArr.length == 2) {
-                    resMap.put(dArr[0], desc);
-                }
-            }
-        }
-        
-        log.info("s:{}", resMap);
-    }
     @Slave
     @Override
     public Triple<Boolean, String, Object> proportion(EleHardwareFailureWarnMsgPageRequest request) {
@@ -662,6 +693,138 @@ public class EleHardwareFailureWarnMsgServiceImpl implements EleHardwareFailureW
         } catch (IOException e) {
             log.error("failure warn proportion export Export error", e);
         }
+    }
+    
+    @Override
+    @Klock(name = "warnNoteNotice", keys = {"#warnNoteCallBack.tenantId"}, waitTime = 3, customLockTimeoutStrategy = "createFranchiseeSplitAccountLockFail")
+    public Triple<Boolean, String, Object> warnNoteNotice(WarnNoteCallBack warnNoteCallBack) {
+        log.info("warn note notice info! failure warn sessionId = {}, alarmId={}, tenantId={}, count={}", warnNoteCallBack.getSessionId(), warnNoteCallBack.getAlarmId(),
+                warnNoteCallBack.getTenantId(), warnNoteCallBack.getCount());
+    
+        if (Objects.isNull(warnNoteCallBack.getCount()) || warnNoteCallBack.getCount() < NumberConstant.ZERO_L) {
+            log.warn("warn note notice info! failure warn count is empty, count={}", warnNoteCallBack.getCount());
+            return Triple.of(false, "300832", "无效的短信次数");
+        }
+    
+        if (Objects.isNull(warnNoteCallBack.getTenantId())) {
+            log.warn("warn note notice info! failure warn tenantId is empty, tenantId={}", warnNoteCallBack.getTenantId());
+            return Triple.of(false, "300833", "无效的租户id");
+        }
+    
+        if (Objects.isNull(warnNoteCallBack.getAlarmId())) {
+            log.warn("warn note notice info! failure warn alarmId is empty, alarmId={}", warnNoteCallBack.getAlarmId());
+            return Triple.of(false, "300834", "无效的告警id");
+        }
+    
+        // 检测告警是否存在
+        int count = eleHardwareWarnMsgService.existByAlarmId(warnNoteCallBack.getAlarmId());
+        if (count == 0) {
+            log.warn("warn note notice info! failure warn alarmId is not exist, alarmId={}", warnNoteCallBack.getAlarmId());
+            return Triple.of(false, "300835", "无效的告警id");
+        }
+        
+        // 修改租户对应的短信次数：更新缓存等。
+        // 查询每个租户对应的短信的次数
+        TenantNote tenantNote = tenantNoteService.queryFromCacheByTenantId(warnNoteCallBack.getTenantId());
+    
+        // 判断租户是否分配过短信次数
+        if (ObjectUtils.isEmpty(tenantNote)) {
+            log.warn("warn note notice error! failure warn not find tenant note config, tenantId={}", warnNoteCallBack.getTenantId());
+            return Triple.of(false, "300836", "租户未充值短信");
+        }
+    
+        TenantNote tenantNoteUpdate = new TenantNote();
+        tenantNoteUpdate.setId(tenantNote.getId());
+        tenantNoteUpdate.setNoteNum(warnNoteCallBack.getCount());
+        tenantNoteUpdate.setUpdateTime(System.currentTimeMillis());
+        
+        // 扣减短信次数
+        tenantNoteService.reduceNoteNumById(tenantNoteUpdate);
+        
+        // 修改短信标志
+        eleHardwareWarnMsgService.updateNoteFlagByAlarmId(warnNoteCallBack.getAlarmId());
+    
+        Long noteNum = tenantNote.getNoteNum();
+        for (int i = 0; i < warnNoteCallBack.getCount(); i++) {
+            noteNum = noteNum - NumberConstant.ONE_L;
+            if (Objects.equals(noteNum, TenantNoteConstant.NOTE_NUM_FIRST) || Objects.equals(noteNum, TenantNoteConstant.NOTE_NUM_SECOND) || Objects.equals(noteNum,
+                    TenantNoteConstant.NOTE_NUM_THIRD)) {
+                
+                Long finalNoteNum = noteNum;
+                xllThreadPoolExecutorService.execute(() -> {
+                    sendLowerNoteNotice(warnNoteCallBack, finalNoteNum);
+                });
+                break;
+            }
+        }
+        
+    
+        return Triple.of(true, null, null);
+    }
+    
+    private void sendLowerNoteNotice(WarnNoteCallBack warnNoteCallBack, Long noteNum) {
+        Integer tenantId = warnNoteCallBack.getTenantId();
+        // 平台名称
+        ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(tenantId);
+        if (Objects.isNull(electricityConfig)) {
+            log.warn("send lower note notice warn! not find electricity config, tenantId={}", tenantId);
+        }
+    
+        MaintenanceUserNotifyConfig notifyConfig = maintenanceUserNotifyConfigService.queryByTenantIdFromCache(tenantId);
+        if (Objects.isNull(notifyConfig) || StringUtils.isBlank(notifyConfig.getPhones()) || ObjectUtils.isEmpty(notifyConfig.getPermissions())) {
+            log.warn("send lower note notice warn! not found maintenanceUserNotifyConfig,tenantId={}", tenantId);
+            return;
+        }
+    
+        List<String> phones = JSON.parseObject(notifyConfig.getPhones(), List.class);
+        if (CollectionUtils.isEmpty(phones)) {
+            log.info("send lower note notice warn! phones is empty,tenantId={}", tenantId);
+            return;
+        }
+        
+        String sessionId = UUID.randomUUID().toString().replace("-", "");
+    
+        MessageCenterRequest messageCenterRequest = new MessageCenterRequest();
+        // 消息模板编码
+        messageCenterRequest.setMessageTemplateCode(messageCenterConfig.getLowNoteNoticeMessageTemplateCode());
+        // 消息id
+        messageCenterRequest.setMessageId(sessionId);
+        // 租户id
+        messageCenterRequest.setTenantId(tenantId);
+    
+        // 设置消息内容
+        TenantNoteLowerNotice tenantNoteLowerNotice = TenantNoteLowerNotice.builder().platformName(electricityConfig.getName()).noteNum(noteNum).build();
+        messageCenterRequest.setParamMap(tenantNoteLowerNotice);
+    
+    
+        // 短信通知
+        MessageCenterSendReceiver noteMessageCenterSendReceiver = MessageCenterSendReceiver.builder().sendChannel(MessageCenterConstant.SEND_CHANNEL_NOTE).callBackUrl(null)
+                .callBackMap(null).receiver(phones).build();
+        
+        // 消息接收者
+        List<MessageCenterSendReceiver> sendReceiverList = new ArrayList<>();
+        sendReceiverList.add(noteMessageCenterSendReceiver);
+    
+        messageCenterRequest.setSendReceiverList(sendReceiverList);
+        try {
+            ResponseEntity<String> responseEntity = restTemplateService.postJsonForResponseEntity(messageCenterConfig.getUrl(), JsonUtil.toJson(messageCenterRequest),
+                    null);
+            
+            if (Objects.isNull(responseEntity)) {
+                log.error("send lower note notice error! failure warn send note result is null, sessionId={}, alarmId={}", sessionId, warnNoteCallBack.getAlarmId());
+            }
+    
+            if (!responseEntity.getStatusCode().is2xxSuccessful()) {
+                log.error("send lower note notice error! failure warn send note error, sessionId={}, alarmId={}, msg = {}", sessionId, warnNoteCallBack.getAlarmId(), responseEntity.getBody());
+            }
+            
+        } catch (Exception e) {
+            log.error("send lower note notice error! exception, sessionId={}, alarmId={}, e = {}", sessionId, warnNoteCallBack.getAlarmId(), e);
+        }
+    }
+    
+    private void createFranchiseeSplitAccountLockFail(Franchisee franchisee, ElectricityTradeOrder payRecord, int percent) {
+        log.error("ELE ORDER ERROR! handleSplitAccount error! franchiseeId={}", franchisee.getId());
     }
     
     private List<FailureWarnProportionVo> failureProportion(Map<String, Integer> failureMap) {

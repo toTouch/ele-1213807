@@ -3,6 +3,7 @@ package com.xiliulou.electricity.entity;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.xiliulou.electricity.enums.ElectricityPayParamsConfigEnum;
 import lombok.Data;
 
 
@@ -64,6 +65,7 @@ public class ElectricityPayParams {
      */
     private Integer tenantId;
     
+    
     /**
      * 创建时间
      */
@@ -87,13 +89,19 @@ public class ElectricityPayParams {
     public static final Integer TYPE_MERCHANT_PATH = 1;
     
     /**
-     * 商家版小程序 appid
+     * 配置类型
+     *
+     * @see ElectricityPayParamsConfigEnum
      */
-    private String merchantAppletId;
+    private Integer configType;
+    
     
     /**
-     * 商家版小程序 appSecret
+     * 加盟商id
      */
-    private String merchantAppletSecret;
+    private Long franchiseeId;
+    
+    
+    private Integer delFlag;
     
 }

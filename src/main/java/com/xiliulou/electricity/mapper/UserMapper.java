@@ -1,8 +1,6 @@
 package com.xiliulou.electricity.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.query.UserInfoQuery;
 import com.xiliulou.electricity.query.UserSourceQuery;
@@ -51,4 +49,6 @@ public interface UserMapper extends BaseMapper<User> {
     List<User> queryListByUidList(@Param("uidList") List<Long> uidList,@Param("tenantId") Integer tenantId);
     
     User selectByUid(Long uid);
+    
+    List<User> selectListByPhones(@Param("phoneList") List<String> phoneList, @Param("tenantId") Integer tenantId, @Param("type") Integer type);
 }

@@ -8,6 +8,7 @@ import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.constant.StringConstant;
+import com.xiliulou.electricity.dto.BatteryModelDTO;
 import com.xiliulou.electricity.entity.BatteryMaterial;
 import com.xiliulou.electricity.entity.BatteryModel;
 import com.xiliulou.electricity.entity.Tenant;
@@ -916,5 +917,10 @@ public class BatteryModelServiceImpl implements BatteryModelService {
             return Lists.newArrayList();
         }
         return batteryModelMapper.selectListBatteryModelByBatteryTypeList(batteryTypeList, tenantId);
+    }
+    
+    @Override
+    public List<BatteryModelDTO> listShortBatteryTypeByMemberIds(List<Long> memberCardIds, Integer tenantId) {
+        return batteryModelMapper.selectListShortBatteryTypeByMemberIds(memberCardIds, tenantId);
     }
 }

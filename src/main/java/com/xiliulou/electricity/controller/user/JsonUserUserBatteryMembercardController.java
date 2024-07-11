@@ -15,19 +15,19 @@ import org.springframework.web.bind.annotation.RestController;
  */
 @RestController
 public class JsonUserUserBatteryMembercardController extends BaseController {
-
+    
     @Autowired
     private UserBatteryMemberCardPackageService userBatteryMemberCardPackageService;
-
+    
     /**
      * 用户资源包转换
+     *
      * @return
      */
     @GetMapping(value = "/user/userBatteryMembercard/transform")
     public R userBatteryMembercardTransform() {
         return returnTripleResult(userBatteryMemberCardPackageService.batteryMembercardTransform(SecurityUtils.getUid()));
     }
-
-
-
+    
+    
 }

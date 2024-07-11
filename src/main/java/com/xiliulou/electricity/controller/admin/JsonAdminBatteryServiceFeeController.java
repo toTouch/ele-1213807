@@ -94,7 +94,7 @@ public class JsonAdminBatteryServiceFeeController {
 
         UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
         if (Objects.isNull(userInfo)) {
-            log.error("admin saveUserMemberCard  ERROR! not found user! uid={}", uid);
+            log.warn("admin saveUserMemberCard  WARN! not found user! uid={}", uid);
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
@@ -230,8 +230,5 @@ public class JsonAdminBatteryServiceFeeController {
                 .build();
 
         return eleBatteryServiceFeeOrderService.queryCount(batteryServiceFeeQuery);
-
-
     }
-
 }

@@ -2,6 +2,7 @@ package com.xiliulou.electricity.vo.rental;
 
 import com.xiliulou.electricity.enums.RenalPackageConfineEnum;
 import com.xiliulou.electricity.enums.RentalUnitEnum;
+import com.xiliulou.electricity.enums.YesNoEnum;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -54,5 +55,14 @@ public class RentalPackageRefundVO implements Serializable {
      */
     private Integer tenancyUnit;
     
-    
+    /**
+     * 强制线下退款
+     * <pre>
+     *     0: 是
+     *     1: 否
+     * </pre>
+     *
+     * @see YesNoEnum#getCode()
+     */
+    private Integer compelOffLine;
 }

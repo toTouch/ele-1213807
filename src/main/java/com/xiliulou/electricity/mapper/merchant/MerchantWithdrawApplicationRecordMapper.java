@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.mapper.merchant;
 
+import com.xiliulou.electricity.bo.merchant.MerchantWithdrawApplicationRecordBO;
 import com.xiliulou.electricity.entity.merchant.MerchantWithdrawApplicationRecord;
 import com.xiliulou.electricity.request.merchant.MerchantWithdrawApplicationRecordRequest;
 import com.xiliulou.electricity.vo.merchant.MerchantWithdrawApplicationRecordVO;
@@ -44,6 +45,6 @@ public interface MerchantWithdrawApplicationRecordMapper {
     
     Integer updateApplicationRecordStatus(MerchantWithdrawApplicationRecord merchantWithdrawApplicationRecord);
     
-    List<MerchantWithdrawApplicationRecord> selectListByBatchNo(@Param("batchNo") String batchNo, @Param("tenantId") Integer tenantId);
+    List<MerchantWithdrawApplicationRecordBO> selectListByBatchNo(@Param("batchNo") String batchNo, @Param("tenantId") Integer tenantId);
     
 }

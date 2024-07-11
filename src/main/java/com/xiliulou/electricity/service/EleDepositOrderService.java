@@ -36,9 +36,7 @@ public interface EleDepositOrderService {
     void update(EleDepositOrder eleDepositOrderUpdate);
 
     R queryUserDeposit();
-
-    void exportExcel(EleDepositOrderQuery eleDepositOrderQuery, HttpServletResponse response);
-
+    
     R queryFranchiseeDeposit(String productKey, String deviceName, Long franchiseeId);
 
     R queryDeposit(String productKey, String deviceName, Long franchiseeId);
@@ -51,19 +49,9 @@ public interface EleDepositOrderService {
 
     BigDecimal queryTurnOver(Integer tenantId);
 
-    R payBatteryServiceFee(HttpServletRequest request);
-
-    R adminPayRentCarDeposit(RentCarDepositAdd rentCarDepositAdd);
-
-    R refundRentCarDeposit(HttpServletRequest request);
-
-    R queryRentCarDeposit();
-
     EleDepositOrder queryLastPayDepositTimeByUid(Long uid, Long franchiseeId, Integer tenantId,Integer depositType);
 
     EleDepositOrder selectLatestByUid(Long uid);
-
-    R adminPayBatteryDeposit(BatteryDepositAdd batteryDepositAdd);
     
     BigDecimal queryDepositTurnOverByDepositType(Integer tenantId, Long todayStartTime, Integer depositType,
             List<Long> franchiseeIds, Integer payType);
@@ -74,12 +62,6 @@ public interface EleDepositOrderService {
 
     Triple<Boolean, String, Object> handleRentBatteryDeposit(Long franchiseeId, Integer memberCardId,Integer model, UserInfo userInfo);
     
-    R adminPayCarDeposit(RentCarDepositQuery rentCarDepositQuery);
-
-    R refundCarDeposit();
-
-    BigDecimal queryFreeDepositAlipayTurnOver(Integer tenantId, Long todayStartTime, Integer electricityDeposit, List<Long> finalFranchiseeIds);
-
     R selectUserBatteryDeposit();
 
     Triple<Boolean, String, Object> queryDepositAndInsuranceDetail(String orderId);
@@ -94,4 +76,6 @@ public interface EleDepositOrderService {
      * @return 影响行数
      */
     Integer updatePhoneByUid(Integer tenantId, Long uid,String newPhone);
+    
+    R checkPayParamsDetails(String orderId);
 }

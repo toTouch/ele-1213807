@@ -12,10 +12,10 @@ import org.springframework.web.bind.annotation.GetMapping;
  * @date 2023-02-06-15:19
  */
 public class JsonUserElectricityConfigController {
-
+    
     @Autowired
     private ElectricityConfigService ElectricityConfigService;
-
+    
     /**
      * 获取系统设置信息
      */

@@ -154,18 +154,7 @@ public class BatteryMemberCardQuery {
     private Integer groupType;
     
     /**
-     * 不分型号
+     * 是否需要查询企业套餐数据，0-否，1-是
      */
-    public static final String REGARDLESS_OF_MODEL = "0";
-
-    /**
-     * 套餐最大赠送优惠券数
-     */
-    public static final Integer MAX_COUPON_NO = 6;
-
-    /**
-     * 套餐绑定最大用户分组数
-     */
-    public static final Integer MAX_USER_INFO_GROUP_NO = 10;
-    
+    private Integer catchEnterprise;
 }
