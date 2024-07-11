@@ -837,11 +837,11 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
             Map<Long, String> finalEnterpriseNameMap = enterpriseNameMap;
             ExcelWriter finalExcelWriter = excelWriter;
             log.info("enterpriseNameMap:{}, enterpriseIdList:{}, finalExcelWriter={}", finalEnterpriseNameMap, enterpriseIdList, finalExcelWriter);
-            for (Long enterpriseId : enterpriseIdList) {
+            enterpriseIdList.parallelStream().forEach(enterpriseId -> {
                 log.info("sheetName:{}", finalEnterpriseNameMap.get(enterpriseId));
                 WriteSheet writeSheet = EasyExcel.writerSheet(finalEnterpriseNameMap.get(enterpriseId)).build();
                 fillData(finalExcelWriter, writeSheet, enterpriseId, queryModel);
-            }
+            });
         } catch (Exception e) {
             log.error("cloud bean use record export error！", e);
         } finally {
@@ -883,7 +883,7 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
             }
             
             excelWriter.fill(transferExportData(cloudBeanUseRecordList), writeSheet);
-            offset = offset + NumberConstant.ONE_L;
+            offset += size;
         }
     }
     
