@@ -793,7 +793,6 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
         //查询出符合条件的租户下的企业名称和id
         List<CloudBeanUseRecordEnterpriseBo> enterpriseBoList = cloudBeanUseRecordMapper.listForEnterpriseId(queryModel);
         Map<Long, String> enterpriseNameMap = new HashMap<>();
-        log.info("enterpriseNameMap:{}, enterpriseBoList:{}", enterpriseNameMap, enterpriseBoList);
         // 过滤企业名称为空的企业，封装为map
         if (ObjectUtils.isNotEmpty(enterpriseBoList)) {
             enterpriseNameMap = enterpriseBoList.stream().filter(item -> StringUtils.isNotEmpty(item.getEnterpriseName()))
@@ -836,9 +835,7 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
     
             Map<Long, String> finalEnterpriseNameMap = enterpriseNameMap;
             ExcelWriter finalExcelWriter = excelWriter;
-            log.info("enterpriseNameMap:{}, enterpriseIdList:{}, finalExcelWriter={}", finalEnterpriseNameMap, enterpriseIdList, finalExcelWriter);
             for (Long enterpriseId : enterpriseIdList) {
-                log.info("sheetName:{}", finalEnterpriseNameMap.get(enterpriseId));
                 WriteSheet writeSheet = EasyExcel.writerSheet(finalEnterpriseNameMap.get(enterpriseId)).build();
                 fillData(finalExcelWriter, writeSheet, enterpriseId, queryModel);
             }
@@ -877,7 +874,6 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
         while (true) {
             cloudBeanUseRecordQueryModel.setOffset(offset);
             List<CloudBeanUseRecord> cloudBeanUseRecordList = this.cloudBeanUseRecordMapper.selectListByPage(cloudBeanUseRecordQueryModel);
-            log.info("fill data enterpriseId={}, cloudBeanUseRecordList={}, offset = {}", enterpriseId, cloudBeanUseRecordList, offset);
             if (CollectionUtils.isEmpty(cloudBeanUseRecordList)) {
                 break;
             }
