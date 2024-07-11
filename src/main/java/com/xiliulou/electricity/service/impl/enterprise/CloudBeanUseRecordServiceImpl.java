@@ -827,6 +827,7 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
                 workbook.cloneSheet(0, enterpriseNameMap.get(enterpriseIdList.get(i)));
             }
             
+            log.info("enterpriseNameMap:{}, enterpriseIdList:{}", enterpriseNameMap, enterpriseIdList);
             // 把workbook写到流里
             workbook.write(baos);
             byte[] bytes = baos.toByteArray();
@@ -875,6 +876,7 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
         while (true) {
             cloudBeanUseRecordQueryModel.setOffset(offset);
             List<CloudBeanUseRecord> cloudBeanUseRecordList = this.cloudBeanUseRecordMapper.selectListByPage(cloudBeanUseRecordQueryModel);
+            log.info("fill data enterpriseId={}, cloudBeanUseRecordList={}, offset = {}", enterpriseId, cloudBeanUseRecordList, offset);
             if (CollectionUtils.isEmpty(cloudBeanUseRecordList)) {
                 break;
             }
