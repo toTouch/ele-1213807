@@ -142,6 +142,9 @@ public class AssetWarehouseServiceImpl implements AssetWarehouseService {
                 assetWarehouseVO.setFranchiseeId(item.getFranchiseeId());
                 if (Objects.nonNull(franchisee)){
                     assetWarehouseVO.setFranchiseeName(franchisee.getName());
+                }else {
+                    assetWarehouseVO.setFranchiseeId(null);
+                    assetWarehouseVO.setFranchiseeName(null);
                 }
                 
                 assetWarehouseVO.setBatteryCount(batteryCount);
