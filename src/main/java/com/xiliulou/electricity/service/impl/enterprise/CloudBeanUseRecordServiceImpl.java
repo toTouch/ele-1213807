@@ -837,11 +837,11 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
             Map<Long, String> finalEnterpriseNameMap = enterpriseNameMap;
             ExcelWriter finalExcelWriter = excelWriter;
             log.info("enterpriseNameMap:{}, enterpriseIdList:{}, finalExcelWriter={}", finalEnterpriseNameMap, enterpriseIdList, finalExcelWriter);
-            enterpriseIdList.parallelStream().forEach(enterpriseId -> {
+            for (Long enterpriseId : enterpriseIdList) {
                 log.info("sheetName:{}", finalEnterpriseNameMap.get(enterpriseId));
                 WriteSheet writeSheet = EasyExcel.writerSheet(finalEnterpriseNameMap.get(enterpriseId)).build();
                 fillData(finalExcelWriter, writeSheet, enterpriseId, queryModel);
-            });
+            }
         } catch (Exception e) {
             log.error("cloud bean use record export error！", e);
         } finally {
