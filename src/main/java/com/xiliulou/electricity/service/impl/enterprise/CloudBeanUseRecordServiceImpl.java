@@ -828,7 +828,6 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
                 workbook.cloneSheet(0, enterpriseNameMap.get(enterpriseIdList.get(i)));
             }
             
-            log.info("enterpriseNameMap:{}, enterpriseIdList:{}", enterpriseNameMap, enterpriseIdList);
             // 把workbook写到流里
             workbook.write(baos);
             byte[] bytes = baos.toByteArray();
@@ -837,11 +836,12 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
     
             Map<Long, String> finalEnterpriseNameMap = enterpriseNameMap;
             ExcelWriter finalExcelWriter = excelWriter;
-            enterpriseIdList.parallelStream().forEach(enterpriseId -> {
+            log.info("enterpriseNameMap:{}, enterpriseIdList:{}, finalExcelWriter={}", finalEnterpriseNameMap, enterpriseIdList, finalExcelWriter);
+            for (Long enterpriseId : enterpriseIdList) {
+                log.info("sheetName:{}", finalEnterpriseNameMap.get(enterpriseId));
                 WriteSheet writeSheet = EasyExcel.writerSheet(finalEnterpriseNameMap.get(enterpriseId)).build();
                 fillData(finalExcelWriter, writeSheet, enterpriseId, queryModel);
-            });
-           
+            }
         } catch (Exception e) {
             log.error("cloud bean use record export error！", e);
         } finally {
