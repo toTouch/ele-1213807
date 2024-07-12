@@ -883,7 +883,7 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
         }
     }
     
-    private Object transferExportData(List<CloudBeanUseRecord> cloudBeanUseRecordList) {
+    private List<CloudBeanUseRecordExcelVO> transferExportData(List<CloudBeanUseRecord> cloudBeanUseRecordList) {
         List<CloudBeanUseRecordExcelVO> cloudBeanUseRecordExcelVOList = new ArrayList<>();
         
         cloudBeanUseRecordList.stream().forEach(item -> {
