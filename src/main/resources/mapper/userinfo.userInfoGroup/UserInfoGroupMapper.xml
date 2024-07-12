@@ -43,10 +43,14 @@
                 del_flag = #{delFlag},
             </if>
         </set>
-        where id in
-        <foreach collection="ids" item="id" index="index" open="(" close=")" separator=",">
-            #{id}
-        </foreach>
+        <where>
+            id in
+            <if test="ids != null and ids.size() > 0">
+                <foreach collection="ids" item="id" index="index" open="(" close=")" separator=",">
+                    #{id}
+                </foreach>
+            </if>
+        </where>
     </update>
     
     <select id="selectPage" resultType="com.xiliulou.electricity.bo.userInfoGroup.UserInfoGroupBO">
