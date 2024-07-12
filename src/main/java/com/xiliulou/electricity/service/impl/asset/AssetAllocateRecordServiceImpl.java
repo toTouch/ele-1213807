@@ -246,11 +246,11 @@ public class AssetAllocateRecordServiceImpl implements AssetAllocateRecordServic
                 }
             } else {
                 //电池调拨
-                if (Objects.equals(assetAllocateRecordRequest.getSourceFranchiseeId(), assetAllocateRecordRequest.getTargetFranchiseeId())) {
-                    log.error("ASSET_ALLOCATE ERROR! same franchisee! sourceFranchiseeId={}, targetFranchiseeId={}", assetAllocateRecordRequest.getSourceFranchiseeId(),
-                            assetAllocateRecordRequest.getTargetFranchiseeId());
-                    return R.fail("300809", "调出加盟商与调入加盟商不能相同，请修改");
-                }
+//                if (Objects.equals(assetAllocateRecordRequest.getSourceFranchiseeId(), assetAllocateRecordRequest.getTargetFranchiseeId())) {
+//                    log.error("ASSET_ALLOCATE ERROR! same franchisee! sourceFranchiseeId={}, targetFranchiseeId={}", assetAllocateRecordRequest.getSourceFranchiseeId(),
+//                            assetAllocateRecordRequest.getTargetFranchiseeId());
+//                    return R.fail("300809", "调出加盟商与调入加盟商不能相同，请修改");
+//                }
                 return electricityBatteryMove(assetAllocateRecordRequest, tenantId, idList, uid);
             }
         } finally {
