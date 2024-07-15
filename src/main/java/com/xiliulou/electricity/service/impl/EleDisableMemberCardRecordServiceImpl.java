@@ -131,8 +131,6 @@ public class EleDisableMemberCardRecordServiceImpl extends ServiceImpl<Electrici
                     .collect(Collectors.toMap(EnableMemberCardRecord::getDisableMemberCardNo, EnableMemberCardRecord::getEnableTime, (k1, k2) -> k1));
         }
         
-        log.info("disableMemberCardNoToEnableTimeMap:{}, eleDisableMemberCardRecordVOS:{},enableMemberCardRecords:{}", disableMemberCardNoToEnableTimeMap, eleDisableMemberCardRecordVOS, enableMemberCardRecords);
-        
         Map<String, Long> finalDisableMemberCardNoToEnableTimeMap = disableMemberCardNoToEnableTimeMap;
         eleDisableMemberCardRecordVOS.forEach(item -> {
             //            if(Objects.isNull(item.getDisableTime())){
