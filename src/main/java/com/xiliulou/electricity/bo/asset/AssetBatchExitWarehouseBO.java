@@ -38,4 +38,6 @@ public class AssetBatchExitWarehouseBO {
     private List<ElectricityBatteryVO> exitWarehouseBatteryList;
     
     private List<ElectricityCarVO> exitWarehouseCarList;
+    
+    private List<String> notSameFranchiseeSnList;
 }

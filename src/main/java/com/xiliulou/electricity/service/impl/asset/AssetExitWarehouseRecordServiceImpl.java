@@ -13,7 +13,6 @@ import com.xiliulou.electricity.entity.Store;
 import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.enums.asset.AssetTypeEnum;
 import com.xiliulou.electricity.enums.asset.StockStatusEnum;
-import com.xiliulou.electricity.enums.asset.WarehouseOperateTypeEnum;
 import com.xiliulou.electricity.mapper.asset.AssetExitWarehouseRecordMapper;
 import com.xiliulou.electricity.query.asset.AssetEnableExitWarehouseQueryModel;
 import com.xiliulou.electricity.query.asset.AssetExitWarehouseDetailSaveQueryModel;
@@ -27,11 +26,9 @@ import com.xiliulou.electricity.service.ElectricityCarService;
 import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.StoreService;
 import com.xiliulou.electricity.service.asset.AssertPermissionService;
-import com.xiliulou.electricity.service.asset.AssetExitWarehouseDetailService;
 import com.xiliulou.electricity.service.asset.AssetExitWarehouseRecordService;
 import com.xiliulou.electricity.service.asset.AssetInventoryService;
 import com.xiliulou.electricity.service.asset.AssetManageService;
-import com.xiliulou.electricity.service.asset.AssetWarehouseRecordService;
 import com.xiliulou.electricity.service.asset.ElectricityCabinetV2Service;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.OrderIdUtil;
@@ -77,9 +74,6 @@ public class AssetExitWarehouseRecordServiceImpl implements AssetExitWarehouseRe
     private ElectricityCabinetV2Service electricityCabinetV2Service;
     
     @Autowired
-    private AssetExitWarehouseDetailService assetExitWarehouseDetailService;
-    
-    @Autowired
     private ElectricityCarService electricityCarService;
     
     @Autowired
@@ -93,9 +87,6 @@ public class AssetExitWarehouseRecordServiceImpl implements AssetExitWarehouseRe
     
     @Autowired
     private ElectricityBatteryService electricityBatteryService;
-    
-    @Resource
-    private AssetWarehouseRecordService assetWarehouseRecordService;
     
     @Resource
     private AssertPermissionService assertPermissionService;
@@ -150,57 +141,40 @@ public class AssetExitWarehouseRecordServiceImpl implements AssetExitWarehouseRe
                 }
             }
             
+            List<String> notSameFranchiseeSnList = null;
+            
             // 处理数据
             if (CollectionUtils.isNotEmpty(dataList)) {
                 // 持久化
-                handleTx(dataList);
+                assetManageService.batchExistWarehouseTx(dataList);
                 
                 // 清除缓存
                 handleClearCache(dataList);
+                
+                // 返回加盟商不一致的sn
+                notSameFranchiseeSnList = handleNotSameFranchiseeSn(dataList);
             }
             
-            return R.ok();
+            if (CollectionUtils.isEmpty(notSameFranchiseeSnList)) {
+                return R.ok(Collections.emptyList());
+            }
+            
+            return R.ok(notSameFranchiseeSnList);
         } finally {
             redisService.delete(CacheConstant.CACHE_ASSET_EXIT_WAREHOUSE_RECORD_LOCK + operator);
         }
     }
     
-    @Transactional(rollbackFor = Exception.class)
-    public void handleTx(List<AssetBatchExitWarehouseBO> dataList) {
-        // 资产退库
-        dataList.parallelStream().forEach(data -> {
-            Integer count;
-            Integer type = data.getType();
-            AssetBatchExitWarehouseRequest assetBatchExitWarehouseRequest = data.getAssetBatchExitWarehouseRequest();
-            if (AssetTypeEnum.ASSET_TYPE_CABINET.getCode().equals(type)) {
-                // 电柜批量退库
-                count = electricityCabinetV2Service.batchExitWarehouse(assetBatchExitWarehouseRequest);
-            } else if (AssetTypeEnum.ASSET_TYPE_BATTERY.getCode().equals(type)) {
-                // 电池批量退库
-                count = electricityBatteryService.batchExitWarehouse(assetBatchExitWarehouseRequest);
-            } else {
-                //车辆批量退库
-                count = electricityCarService.batchExitWarehouse(assetBatchExitWarehouseRequest);
-            }
-            
-            // 记录
-            if (count > NumberConstant.ZERO) {
-                Long operator = data.getOperator();
-                // 新增资产退库详情
-                assetExitWarehouseDetailService.batchInsert(data.getDetailSaveQueryModelList(), operator);
-                
-                //库房记录
-                Long warehouseId = assetBatchExitWarehouseRequest.getWarehouseId();
-                if (Objects.nonNull(warehouseId) && !Objects.equals(warehouseId, NumberConstant.ZERO_L)) {
-                    
-                    assetWarehouseRecordService.asyncRecordByWarehouseId(assetBatchExitWarehouseRequest.getTenantId(), operator, warehouseId, data.getSnList(), type,
-                            WarehouseOperateTypeEnum.WAREHOUSE_OPERATE_TYPE_EXIT.getCode());
-                }
+    private List<String> handleNotSameFranchiseeSn(List<AssetBatchExitWarehouseBO> dataList) {
+        List<String> list = new ArrayList<>();
+        dataList.forEach(data -> {
+            List<String> notSameFranchiseeSnList = data.getNotSameFranchiseeSnList();
+            if (CollectionUtils.isNotEmpty(notSameFranchiseeSnList)) {
+                list.addAll(notSameFranchiseeSnList);
             }
         });
         
-        // 新增Record
-        assetManageService.insertExitWarehouse(dataList.get(0).getRecordSaveQueryModel());
+        return list;
     }
     
     private R assembleData(AssetExitWarehouseSaveRequest assetExitWarehouseSaveRequest, Integer tenantId, Long franchiseeId, Long operator, List<String> assetList, Integer type,
@@ -216,12 +190,15 @@ public class AssetExitWarehouseRecordServiceImpl implements AssetExitWarehouseRe
         AssetEnableExitWarehouseQueryModel queryModel = AssetEnableExitWarehouseQueryModel.builder().tenantId(tenantId).franchiseeId(franchiseeId)
                 .stockStatus(StockStatusEnum.UN_STOCK.getCode()).build();
         
+        boolean snFlag = false;
+        List<String> notSameFranchiseeSnList = null;
         if (Objects.equals(AssetConstant.ASSET_EXIT_WAREHOUSE_MODE_ID, assetExitWarehouseSaveRequest.getMode())) {
             // 根据id进行退库
             Set<Long> idSet = assetList.stream().map(Long::parseLong).collect(Collectors.toSet());
             queryModel.setIdSet(idSet);
         } else {
             // 根据sn退库
+            snFlag = true;
             queryModel.setSnList(assetList);
         }
         
@@ -273,6 +250,13 @@ public class AssetExitWarehouseRecordServiceImpl implements AssetExitWarehouseRe
             snList = exitWarehouseCarList.stream().map(ElectricityCarVO::getSn).collect(Collectors.toList());
         }
         
+        // 根据sn退库时，返回加盟商不一致的sn
+        if (snFlag && !Objects.equals(snList.size(), queryModel.getSnList().size())) {
+            List<String> querySnList = queryModel.getSnList();
+            
+            notSameFranchiseeSnList = querySnList.stream().filter(sn -> !snList.contains(sn)).collect(Collectors.toList());
+        }
+        
         Long warehouseId = assetExitWarehouseSaveRequest.getWarehouseId();
         Long nowTime = System.currentTimeMillis();
         
@@ -299,7 +283,8 @@ public class AssetExitWarehouseRecordServiceImpl implements AssetExitWarehouseRe
         
         AssetBatchExitWarehouseBO data = AssetBatchExitWarehouseBO.builder().assetBatchExitWarehouseRequest(assetBatchExitWarehouseRequest)
                 .recordSaveQueryModel(recordSaveQueryModel).detailSaveQueryModelList(detailSaveQueryModelList).snList(snList).type(type).operator(operator)
-                .exitWarehouseCabinetList(exitWarehouseCabinetList).exitWarehouseBatteryList(exitWarehouseBatteryList).exitWarehouseCarList(exitWarehouseCarList).build();
+                .exitWarehouseCabinetList(exitWarehouseCabinetList).exitWarehouseBatteryList(exitWarehouseBatteryList).exitWarehouseCarList(exitWarehouseCarList)
+                .notSameFranchiseeSnList(notSameFranchiseeSnList).build();
         
         return R.ok(data);
     }
@@ -356,6 +341,7 @@ public class AssetExitWarehouseRecordServiceImpl implements AssetExitWarehouseRe
     }
     
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public Integer insertOne(AssetExitWarehouseSaveQueryModel recordSaveQueryModel) {
         return assetExitWarehouseRecordMapper.insertOne(recordSaveQueryModel);
     }
